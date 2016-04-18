@@ -1,0 +1,1 @@
+import './register-api.js';
