@@ -25,3 +25,6 @@ kadira:flow-router
 aldeed:simple-schema
 aldeed:collection2
 dburles:collection-helpers
+practicalmeteor:mocha
+dburles:factory
+anti:fake

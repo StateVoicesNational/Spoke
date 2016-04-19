@@ -3,7 +3,7 @@ import React from 'react'
 import { mount } from 'react-mounter'
 
 import AppContainer from '../../ui/containers/app_container'
-
+import {App} from '../../ui/layouts/app'
 import {TextingPage} from '../../ui/pages/texting_page'
 import {SetupPage} from '../../ui/pages/setup_page'
 
@@ -26,18 +26,18 @@ FlowRouter.route('/', {
             incompleteReplyCount: 18
         },
     ]
-    mount(AppContainer, {
+    mount(App, {
         // TODO props not worknig from app_container for some reeason
-      content: (props) =>  <TextingPage assignments={dummyAssignments} />
+      content: () =>  <AppContainer />
     })
   }
 })
 
-FlowRouter.route('/setup', {
-  name: 'setup',
-  action() {
-    mount(AppContainer, {
-      content: (props) => <SetupPage {...props} />
-    })
-  }
-})
+// FlowRouter.route('/setup', {
+//   name: 'setup',
+//   action() {
+//     mount(AppContainer, {
+//       content: (props) => <SetupPage {...props} />
+//     })
+//   }
+// })
