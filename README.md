@@ -1,4 +1,5 @@
 # Running the app
 
-`meteor npm install`
-`meteor`
+```meteor npm install
+meteor
+```
