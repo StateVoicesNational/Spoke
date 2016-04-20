@@ -1,5 +1,6 @@
 # Running the app
 
-```meteor npm install
+```
+meteor npm install
 meteor
 ```
