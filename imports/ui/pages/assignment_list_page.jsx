@@ -4,7 +4,7 @@ import FlatButton from 'material-ui/FlatButton';
 //First, we pass in any props transferred to this component
 import {AssignmentSummaryList} from '../components/assignment_summary_list'
 
-export class TextingPage extends React.Component {
+export class AssignmentListPage extends React.Component {
     render () {
       const {assignments} = this.props;
       return <div>
