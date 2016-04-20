@@ -11,6 +11,12 @@ CampaignContacts.deny({
   remove() { return true; },
 });
 
+const MessageSchema = new SimpleSchema({
+  isFromContact: {type: Boolean},
+  text: {type: String},
+  createdAt: {type: Date}
+});
+
 CampaignContacts.schema = new SimpleSchema({
   // userId: { type: String, regEx: SimpleSchema.RegEx.Id, optional: true },
   campaignId: {type: String},
@@ -21,7 +27,8 @@ CampaignContacts.schema = new SimpleSchema({
   number: {type: String},
   custom_fields: {type: Object},
   createdAt: {type: Date},
-  assignmentId: {type: String} // so we can tell easily what is unassigned
+  assignmentId: {type: String}, // so we can tell easily what is unassigned
+  messages: {type: [MessageSchema]}
 });
 
 CampaignContacts.attachSchema(CampaignContacts.schema);
@@ -37,7 +44,8 @@ Factory.define('campaign_contact', CampaignContacts, {
     return fields
   },
   createdAt: () => new Date(),
-  assignmentId: () => Factory.get('assignment')
+  assignmentId: () => Factory.get('assignment'),
+  messages: []
 });
 
 // This represents the keys from CampaignContacts objects that should be published

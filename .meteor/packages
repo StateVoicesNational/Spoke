@@ -28,3 +28,6 @@ dburles:collection-helpers
 practicalmeteor:mocha
 dburles:factory
 anti:fake
+mdg:validated-method
+tap:i18n
+momentjs:moment
