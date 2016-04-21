@@ -12,7 +12,7 @@ export class AssignmentPage extends React.Component {
         return <div>Loading!</div>
       else
         return <div>
-                  <AppBar title={"Assignment"}
+                  <AppBar title={assignment.campaign.title}
                     iconElementLeft={<div/>}
                         />
                     {contacts.length > 0 ? <Texter assignment={assignment} contacts={contacts} /> : 'No contacts!'}

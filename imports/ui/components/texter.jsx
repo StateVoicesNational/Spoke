@@ -115,7 +115,7 @@ export class Texter extends Component {
             </ToolbarGroup>
 
           </Toolbar>
-          <LinearProgress mode="determinate" value={currentCount/contactCount} />
+          <LinearProgress mode="determinate" value={this.state.currentContactIndex * 100/contactCount} />
 
           <Card>
             <CardHeader
