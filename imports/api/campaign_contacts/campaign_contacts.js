@@ -35,12 +35,12 @@ CampaignContacts.attachSchema(CampaignContacts.schema);
 
 Factory.define('campaign_contact', CampaignContacts, {
   campaignId: () => Factory.get('campaign'),
-  contactId: Fake.word,
-  name:   Fake.user({fields: ['name']}).name,
+  contactId: () => Fake.word(),
+  name:  () => Fake.user({fields: ['name']}).name,
   number: '669-221-6251',
   custom_fields: function() {
     fields = {}
-    fields[Fake.word] = Fake.sentence(2)
+    fields[Fake.word()] = Fake.sentence(2)
     return fields
   },
   createdAt: () => new Date(),

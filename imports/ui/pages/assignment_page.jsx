@@ -12,14 +12,8 @@ export class AssignmentPage extends React.Component {
       return <div>
                 <AppBar title={"Assignment"}
                   iconElementLeft={<div/>}
-                  iconElementRight={
-                      <FlatButton
-                        label="Go to Setup"
-                        linkButton={true}
-                        href="/setup"
-                        secondary={true} />}
                       />
-                  {contacts.length > 0 ? <Texter contact={contacts[0]}/> : 'No contacts!'}
+                  {contacts.length > 0 ? <Texter contacts={contacts} /> : 'No contacts!'}
               </div>
     }
 }

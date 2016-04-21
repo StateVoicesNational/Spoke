@@ -8,6 +8,10 @@ import Divider from 'material-ui/Divider';
 import IconMenu from 'material-ui/IconMenu';
 import IconButton from 'material-ui/IconButton/IconButton';
 import DescriptionIcon from 'material-ui/svg-icons/action/description';
+import NavigateBeforeIcon from 'material-ui/svg-icons/image/navigate-before';
+import NavigateNextIcon from 'material-ui/svg-icons/image/navigate-next';
+import PersonIcon from 'material-ui/svg-icons/social/person';
+
 import MenuItem from 'material-ui/MenuItem';
 
 import RaisedButton from 'material-ui/RaisedButton';
@@ -15,32 +19,104 @@ import { Toolbar, ToolbarGroup, ToolbarSeparator, ToolbarTitle } from 'material-
 import { MessagesList } from './messages_list'
 import { sendMessage } from '../../api/campaign_contacts/methods.js';
 import { displayError } from '../helpers/errors.js';
+import LinearProgress from 'material-ui/LinearProgress';
 
 export class Texter extends Component {
-  sendMessage(event) {
+  constructor(props) {
+    super(props);
+    this.state = { currentContactIndex: 0 };
+  }
+
+  currentContact() {
+    const {contacts} = this.props
+    const index = this.state.currentContactIndex
+    return (index >= contacts.length) ? null : contacts[index];
+  }
+
+  contactCount() {
+    const {contacts} = this.props
+    return contacts.length
+  }
+
+  handleNavigateNext(event) {
+    this.goToNextContact()
+  }
+
+  handleNavigatePrevious(event) {
+    this.goToPreviousContact()
+  }
+
+  goToNextContact()
+  {
+    this.incrementCurrentContactIndex(1)
+  }
+
+  goToPreviousConutact()
+  {
+    this.incrementCurrentContactIndex(-1)
+  }
+
+  incrementCurrentContactIndex(increment) {
+    let newIndex = this.state.currentContactIndex;
+    newIndex = newIndex + increment;
+    this.setState({currentContactIndex: newIndex})
+  }
+
+  handleSendMessage(event) {
     event.preventDefault();
     const input = this.refs.newMessageInput;
     if (input.getValue().trim()) {
       sendMessage.call({
-        campaignContactId: this.props.contact._id,
+        campaignContactId: this.currentContact()._id,
         text: input.getValue(),
         isFromContact: false
-      }, displayError);
-      input.value = '';
+      }, (error, result) => {
+        if (error)
+        {
+            alert(error);
+        }
+        else
+        {
+          input.value = '';
+          this.goToNextContact()
+        }
+      });
     }
+
   }
 
   render() {
-    const { contact } = this.props;
+    const contact = this.currentContact()
+
+    if (!contact)
+      return <Paper><h1>Great job! You finished all the texts!</h1></Paper>
+    const currentCount = this.state.currentContactIndex + 1
+
     return (
         <Paper>
-          <Card key={contact.contactId}>
+          <Toolbar>
+            <ToolbarGroup firstChild={true} float="left">
+              <IconButton onClick={this.handleNavigatePrevious.bind(this)}><NavigateBeforeIcon /></IconButton>
+            </ToolbarGroup>
+            <ToolbarGroup>
+              <ToolbarTitle text={currentCount + "/" + this.contactCount() + " messages" } />
+            </ToolbarGroup>
+            <ToolbarGroup lastChild={true} float="right">
+              <IconButton onClick={this.handleNavigateNext.bind(this)}><NavigateNextIcon /></IconButton>
+            </ToolbarGroup>
+
+          </Toolbar>
+          <LinearProgress mode="determinate" value={currentCount/this.contactCount()} />
+
+          <Card>
             <CardHeader
+              avatar={<PersonIcon/>}
               title={contact.name}
               subtitle={contact.number} />
           </Card>
 
-          <MessagesList messages={contact.messages}/>
+          {contact.messages.length > 0 ? <MessagesList messages={contact.messages}/> : ''}
+
           <Divider />
           <TextField
             ref="newMessageInput"
@@ -61,7 +137,7 @@ export class Texter extends Component {
                  </IconMenu>
                  </ToolbarGroup>
                  <ToolbarGroup>
-                   <RaisedButton onClick={this.sendMessage.bind(this)} label="Send" primary={true} />
+                   <RaisedButton onClick={this.handleSendMessage.bind(this)} label="Send" primary={true} />
                  </ToolbarGroup>
                </Toolbar>
       </Paper>
