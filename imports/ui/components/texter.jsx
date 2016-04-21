@@ -62,12 +62,11 @@ export class Texter extends Component {
   }
 
   defaultScript() {
-    const {assignment} = this.props
-    console.log(assignment, this.props);
     const contact = this.currentContact()
     if (contact.messages.length > 0)
       return ''
 
+    const {assignment} = this.props
     return applyScript(assignment.campaign.script, contact);
   }
 
@@ -100,6 +99,7 @@ export class Texter extends Component {
     if (!contact)
       return <Paper><h1>Great job! You finished all the texts!</h1></Paper>
     const currentCount = this.state.currentContactIndex + 1
+    const contactCount = this.contactCount()
 
     return (
         <Paper>
@@ -108,14 +108,14 @@ export class Texter extends Component {
               <IconButton onClick={this.handleNavigatePrevious.bind(this)}><NavigateBeforeIcon /></IconButton>
             </ToolbarGroup>
             <ToolbarGroup>
-              <ToolbarTitle text={currentCount + "/" + this.contactCount() + " messages" } />
+              <ToolbarTitle text={currentCount + "/" + contactCount + " messages" } />
             </ToolbarGroup>
             <ToolbarGroup lastChild={true} float="right">
               <IconButton onClick={this.handleNavigateNext.bind(this)}><NavigateNextIcon /></IconButton>
             </ToolbarGroup>
 
           </Toolbar>
-          <LinearProgress mode="determinate" value={currentCount/this.contactCount()} />
+          <LinearProgress mode="determinate" value={currentCount/contactCount} />
 
           <Card>
             <CardHeader
@@ -130,7 +130,7 @@ export class Texter extends Component {
           <TextField
             ref="newMessageInput"
              hintText="Enter your message here!"
-             defaultValue={this.defaultScript()}
+             value={this.defaultScript()}
              multiLine={true}
              fullWidth={true}/>
 

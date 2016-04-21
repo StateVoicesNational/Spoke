@@ -54,5 +54,22 @@ Factory.define('campaign_contact', CampaignContacts, {
 CampaignContacts.publicFields = {
 };
 
+
+const DEFAULT_SCRIPT_FIELDS = ['name', 'number']
+
 CampaignContacts.helpers({
+  scriptFields() {
+    return Object.keys(this.custom_fields).concat(DEFAULT_SCRIPT_FIELDS);
+
+  },
+
+  getScriptField(fieldName) {
+    if (this.scriptFields().indexOf(fieldName) === -1)
+      throw new Error("Invalid script field " + fieldName + " requested for campaignContact " + this._id)
+
+    if (DEFAULT_SCRIPT_FIELDS.indexOf(fieldName) !== -1)
+      return this[fieldName]
+
+    return this.custom_fields[fieldName]
+  }
 });

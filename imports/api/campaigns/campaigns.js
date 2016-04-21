@@ -17,7 +17,8 @@ Campaigns.schema = new SimpleSchema({
   title: {type: String},
   description: {type: String},
   createdAt: {type: Date},
-  script: {type: String}
+  script: {type: String},
+  custom_fields: {type: [String]}
 });
 
 Campaigns.attachSchema(Campaigns.schema);
@@ -34,6 +35,3 @@ Factory.define('campaign', Campaigns, {
 // them here to keep them private to the server.
 Campaigns.publicFields = {
 };
-
-Campaigns.helpers({
-});

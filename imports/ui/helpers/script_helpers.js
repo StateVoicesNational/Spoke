@@ -1,8 +1,7 @@
 export const applyScript = (script, contact) => {
-  const fields = ['name']
-  for(let field of fields){
+  for(let field of contact.scriptFields()){
     let re = new RegExp("<<" + field + ">>", "g");
-    script = script.replace(re, contact[field]);
+    script = script.replace(re, contact.getScriptField(field));
   }
   return script
 };
