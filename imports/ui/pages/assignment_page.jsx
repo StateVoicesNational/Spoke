@@ -41,7 +41,7 @@ export class AssignmentPage extends React.Component {
 
           <AssignmentSummaryList onChangeList={this.onChangeList.bind(this)} assignments={assignments}/>
         </Drawer>
-        <AppBar title={loading || !assignment ? '' : assignment.campaign.title}
+        <AppBar title="Townsquare Texting"
         onLeftIconButtonTouchTap={this.handleTouchTapLeftIconButton.bind(this)}
                 />
         {assignment && contacts.length > 0 ? <Texter assignment={assignment} contacts={contacts} /> : ''}

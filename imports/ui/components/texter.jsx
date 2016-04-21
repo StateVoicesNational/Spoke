@@ -10,7 +10,6 @@ import IconButton from 'material-ui/IconButton/IconButton';
 import DescriptionIcon from 'material-ui/svg-icons/action/description';
 import NavigateBeforeIcon from 'material-ui/svg-icons/image/navigate-before';
 import NavigateNextIcon from 'material-ui/svg-icons/image/navigate-next';
-import PersonIcon from 'material-ui/svg-icons/social/person';
 
 import MenuItem from 'material-ui/MenuItem';
 
@@ -37,6 +36,14 @@ export class Texter extends Component {
   contactCount() {
     const {contacts} = this.props
     return contacts.length
+  }
+
+  hasPrevious() {
+    return this.state.currentContactIndex > 0
+  }
+
+  hasNext() {
+    return this.state.currentContactIndex < this.contactCount() - 1
   }
 
   handleNavigateNext(event) {
@@ -67,8 +74,6 @@ export class Texter extends Component {
       return ''
 
     const {assignment} = this.props
-    console.log("assignment", assignment)
-    console.log(assignment.campaign);
     return applyScript(assignment.campaign.script, contact);
   }
 
@@ -92,67 +97,79 @@ export class Texter extends Component {
         }
       });
     }
-
   }
 
   render() {
     const contact = this.currentContact()
-
+    const {assignment} = this.props
     if (!contact)
       return <Paper><h1>Great job! You finished all the texts!</h1></Paper>
     const currentCount = this.state.currentContactIndex + 1
     const contactCount = this.contactCount()
 
     return (
-        <Paper>
+        <div>
+          <Card style={styles.card}>
+           <CardTitle title={assignment.campaign.title} subtitle={assignment.campaign.description}/>
           <Toolbar>
             <ToolbarGroup firstChild={true} float="left">
-              <IconButton onClick={this.handleNavigatePrevious.bind(this)}><NavigateBeforeIcon /></IconButton>
+              <IconButton
+                disabled={!this.hasPrevious()}
+                onClick={this.handleNavigatePrevious.bind(this)}><NavigateBeforeIcon /></IconButton>
+
             </ToolbarGroup>
             <ToolbarGroup>
-              <ToolbarTitle text={currentCount + "/" + contactCount + " messages" } />
+              <ToolbarTitle text={contact.name + " - " +  currentCount + "/" + contactCount + " messages" } />
             </ToolbarGroup>
             <ToolbarGroup lastChild={true} float="right">
-              <IconButton onClick={this.handleNavigateNext.bind(this)}><NavigateNextIcon /></IconButton>
+              <IconButton
+                disabled={!this.hasNext()}
+                onClick={this.handleNavigateNext.bind(this)}><NavigateNextIcon /></IconButton>
             </ToolbarGroup>
 
           </Toolbar>
           <LinearProgress mode="determinate" value={this.state.currentContactIndex * 100/contactCount} />
 
-          <Card>
-            <CardHeader
-              avatar={<PersonIcon/>}
-              title={contact.name}
-              subtitle={contact.number} />
-          </Card>
+
 
           {contact.messages.length > 0 ? <MessagesList messages={contact.messages}/> : ''}
 
           <Divider />
+          <div style={styles.textarea}>
           <TextField
             ref="newMessageInput"
              hintText="Enter your message here!"
              value={this.defaultScript()}
              multiLine={true}
              fullWidth={true}/>
-
+            </div>
           <Toolbar>
                  <ToolbarGroup firstChild={true}>
                  <IconMenu
                    iconButtonElement={<IconButton><DescriptionIcon /></IconButton>}>
-                   <MenuItem primaryText="Refresh" />
-                   <MenuItem primaryText="Send feedback" />
-                   <MenuItem primaryText="Settings" />
-                   <MenuItem primaryText="Help" />
-                   <MenuItem primaryText="Sign out" />
+                   <MenuItem primaryText="Insert scripts" />
                  </IconMenu>
                  </ToolbarGroup>
                  <ToolbarGroup>
                    <RaisedButton onClick={this.handleSendMessage.bind(this)} label="Send" primary={true} />
                  </ToolbarGroup>
                </Toolbar>
-      </Paper>
+          </Card>
+      </div>
     );
   }
+}
+
+const styles = {
+  card: {
+    width:500,
+    margin: '20px auto',
+  },
+  textarea: {
+    padding: 20
+  },
+  heading: {
+    padding: 20
+  },
 }
 

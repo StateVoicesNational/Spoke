@@ -28,6 +28,6 @@ export class MessagesList extends Component {
 }
 
 const style = {
-  height: 400,
+  'maxHeight': 400,
   overflow: 'auto'
 };
