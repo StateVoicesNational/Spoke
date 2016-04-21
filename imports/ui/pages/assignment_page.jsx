@@ -3,6 +3,7 @@ import AppBar from 'material-ui/AppBar';
 import FlatButton from 'material-ui/FlatButton';
 //First, we pass in any props transferred to this component
 import {AssignmentSummaryList} from '../components/assignment_summary_list'
+import { Assignments } from '../../api/assignments/assignments.js';
 import {Texter} from '../components/texter'
 import Drawer from 'material-ui/Drawer';
 
@@ -12,20 +13,25 @@ export class AssignmentPage extends React.Component {
     this.state = {navDrawerOpen: false}
   }
 
+  componentWillReceiveProps({ loading }) {
+    // redirect / to an assignment if possible
+    if (!loading && !assignment) {
+      const assignment = Assignments.findOne();
+      FlowRouter.go("/assignments/" + assignment._id);
+    }
+  }
+
   handleTouchTapLeftIconButton() {
     this.setState({
       navDrawerOpen: !this.state.navDrawerOpen,
     });
-    console.log("now the state is", this.state.navDrawerOpen)
   }
 
   onChangeList(assignmentId) {
     FlowRouter.go('/assignments/' + assignmentId);
     this.setState({navDrawerOpen: false})
-    console.log("draweropen!?", this.state.navDrawerOpen)
   }
     render () {
-      console.log("rendering drawer", this.state.navDrawerOpen);
       const {assignment, assignments, contacts, loading} = this.props;
      return <div>
         <Drawer open={this.state.navDrawerOpen}
