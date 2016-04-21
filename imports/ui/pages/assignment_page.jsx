@@ -13,7 +13,7 @@ export class AssignmentPage extends React.Component {
     this.state = {navDrawerOpen: false}
   }
 
-  componentWillReceiveProps({ loading }) {
+  componentWillReceiveProps({ loading, assignment }) {
     // redirect / to an assignment if possible
     if (!loading && !assignment) {
       const assignment = Assignments.findOne();

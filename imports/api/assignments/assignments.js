@@ -17,7 +17,11 @@ Assignments.schema = new SimpleSchema({
   campaignId: { type: String },
   createdAt: { type: Date   },
   // userId: { type: String, regEx: SimpleSchema.RegEx.Id, optional: true },
-  campaign: {type: Object}
+  campaign: {type: Object, },
+  'campaign.title': {type: String},
+  'campaign.description': {type: String},
+  'campaign.script': {type: String},
+  'campaign.custom_fields': {type: [String]},
 });
 
 Assignments.attachSchema(Assignments.schema);
@@ -27,7 +31,13 @@ Factory.define('assignment', Assignments, {
   campaignId: () => Factory.get('campaign'),
   createdAt: () => new Date(),
   // TODO: Campaign cached here isn't the same as campaignId created above
-  campaign: () => Factory.tree('campaign')
+  campaign: function() {
+    console.log(Factory.tree('campaign'))
+    let campaignData = Factory.tree('campaign')
+    delete campaignData['createdAt']
+
+    return campaignData
+  }
 });
 
 // This represents the keys from Assignments objects that should be published

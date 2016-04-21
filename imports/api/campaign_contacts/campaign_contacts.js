@@ -25,7 +25,7 @@ CampaignContacts.schema = new SimpleSchema({
   // not an ID in our own system
   name: {type: String},
   number: {type: String},
-  custom_fields: {type: Object},
+  custom_fields: {type: Object, blackbox: true},
   createdAt: {type: Date},
   assignmentId: {type: String}, // so we can tell easily what is unassigned
   messages: {type: [MessageSchema]}

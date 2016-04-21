@@ -18,9 +18,9 @@ export default createContainer(({id}) => {
     if (handle.ready())
     {
       const assignment = Assignments.findOne(id);
-      console.log("hello?!")
       data.assignment = assignment
-      data.contacts = assignment.contacts().fetch()
+      if (assignment)
+        data.contacts = assignment.contacts().fetch()
     }
     return data
 }, AssignmentPage);

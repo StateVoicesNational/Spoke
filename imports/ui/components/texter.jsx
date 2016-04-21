@@ -67,6 +67,8 @@ export class Texter extends Component {
       return ''
 
     const {assignment} = this.props
+    console.log("assignment", assignment)
+    console.log(assignment.campaign);
     return applyScript(assignment.campaign.script, contact);
   }
 

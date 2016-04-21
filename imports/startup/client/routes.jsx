@@ -13,9 +13,9 @@ injectTapEventPlugin();
 
 FlowRouter.route('/', {
   name: 'texting',
-  action() {
+  action: function(params) {
     mount(App, {
-      content: () =>  <AppContainer />
+      content: () =>  <AssignmentContainer id={params.id}/>
     })
   }
 })
