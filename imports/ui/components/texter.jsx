@@ -24,7 +24,11 @@ import LinearProgress from 'material-ui/LinearProgress';
 export class Texter extends Component {
   constructor(props) {
     super(props);
-    this.state = { currentContactIndex: 0 };
+
+    this.state = {
+      currentContactIndex: 0,
+      inputValue: ''
+    };
   }
 
   currentContact() {
@@ -65,11 +69,20 @@ export class Texter extends Component {
   incrementCurrentContactIndex(increment) {
     let newIndex = this.state.currentContactIndex;
     newIndex = newIndex + increment;
-    this.setState({currentContactIndex: newIndex})
+    this.updateCurrentContactIndex(newIndex)
   }
 
-  defaultScript() {
-    const contact = this.currentContact()
+  updateCurrentContactIndex(newIndex) {
+    console.log(newIndex)
+    const contact = this.props.contacts[newIndex]
+    inputValue = this.defaultScript(contact)
+    this.setState({
+      currentContactIndex: newIndex,
+      inputValue
+    });
+  }
+
+  defaultScript(contact) {
     if (contact.messages.length > 0)
       return ''
 
@@ -97,6 +110,13 @@ export class Texter extends Component {
         }
       });
     }
+  }
+
+  handleChange (event) {
+    console.log("handleChange", event)
+    this.setState({
+      inputValue: event.target.value
+    });
   }
 
   render() {
@@ -138,8 +158,9 @@ export class Texter extends Component {
           <div style={styles.textarea}>
           <TextField
             ref="newMessageInput"
-             hintText="Enter your message here!"
-             value={this.defaultScript()}
+            floatingLabelText="Your message"
+             value={this.state.inputValue}
+             onChange={this.handleChange.bind(this)}
              multiLine={true}
              fullWidth={true}/>
             </div>
@@ -151,7 +172,7 @@ export class Texter extends Component {
                  </IconMenu>
                  </ToolbarGroup>
                  <ToolbarGroup>
-                   <RaisedButton onClick={this.handleSendMessage.bind(this)} label="Send" primary={true} />
+                   <RaisedButton disabled={!this.state.inputValue} onClick={this.handleSendMessage.bind(this)} label="Send" primary={true} />
                  </ToolbarGroup>
                </Toolbar>
           </Card>
