@@ -7,21 +7,19 @@ import { AssignmentPage } from '../pages/assignment_page';
 export default createContainer(({id}) => {
     // Either use publish composite or figure out how not to need to refresh the assignment data here?
   const contactsHandle = Meteor.subscribe('campaignContacts.forAssignment', id);
-  const assignmentHandle = Meteor.subscribe('assignment', id);
-  const loading = !contactsHandle.ready() || !assignmentHandle.ready();
+  const loading = !contactsHandle.ready();
 
-  let assignment;
-  let contacts = []
-  if (assignmentHandle.ready())
+  console.log(contactsHandle.ready())
+  let data = {
+    assignment: null,
+    contacts: []
+  }
+  if (contactsHandle.ready())
   {
-    console.log("did this ever happen?");
     const assignment = Assignments.findOne(id);
-    contacts = assignment.contacts().fetch()
+    data.assignment = assignment
+    data.contacts = assignment.contacts().fetch()
   }
 
-  return {
-    loading,
-    assignment,
-    contacts
-  };
+  return data;
 }, AssignmentPage);

@@ -7,13 +7,15 @@ import {Texter} from '../components/texter'
 
 export class AssignmentPage extends React.Component {
     render () {
-      const {assignment, contacts} = this.props;
-      console.log("contacts", contacts);
-      return <div>
-                <AppBar title={"Assignment"}
-                  iconElementLeft={<div/>}
-                      />
-                  {contacts.length > 0 ? <Texter contacts={contacts} /> : 'No contacts!'}
-              </div>
+      const {assignment, contacts, loading} = this.props;
+      if (!assignment)
+        return <div>Loading!</div>
+      else
+        return <div>
+                  <AppBar title={"Assignment"}
+                    iconElementLeft={<div/>}
+                        />
+                    {contacts.length > 0 ? <Texter assignment={assignment} contacts={contacts} /> : 'No contacts!'}
+                </div>
     }
 }

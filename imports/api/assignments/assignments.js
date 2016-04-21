@@ -15,8 +15,9 @@ Assignments.deny({
 Assignments.schema = new SimpleSchema({
   // userId: {type:String},
   campaignId: { type: String },
-  createdAt: { type: Date   }
+  createdAt: { type: Date   },
   // userId: { type: String, regEx: SimpleSchema.RegEx.Id, optional: true },
+  campaign: {type: Object}
 });
 
 Assignments.attachSchema(Assignments.schema);
@@ -25,6 +26,8 @@ Factory.define('assignment', Assignments, {
   // userId: Factory.get('user'),
   campaignId: () => Factory.get('campaign'),
   createdAt: () => new Date(),
+  // TODO: Campaign cached here isn't the same as campaignId created above
+  campaign: () => Factory.tree('campaign')
 });
 
 // This represents the keys from Assignments objects that should be published

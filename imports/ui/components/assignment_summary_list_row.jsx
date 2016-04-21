@@ -9,8 +9,8 @@ export class AssignmentSummaryListRow extends Component {
     return (
       <Card key={assignment._id}>
         <CardHeader
-          title={assignment.title}
-          subtitle={assignment.description}
+          title={assignment.campaign.title}
+          subtitle={assignment.campaign.description}
           avatar="http://lorempixel.com/100/100/nature/"
         />
         <CardActions>

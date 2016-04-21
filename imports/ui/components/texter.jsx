@@ -17,8 +17,9 @@ import MenuItem from 'material-ui/MenuItem';
 import RaisedButton from 'material-ui/RaisedButton';
 import { Toolbar, ToolbarGroup, ToolbarSeparator, ToolbarTitle } from 'material-ui/Toolbar';
 import { MessagesList } from './messages_list'
-import { sendMessage } from '../../api/campaign_contacts/methods.js';
-import { displayError } from '../helpers/errors.js';
+import { sendMessage } from '../../api/campaign_contacts/methods';
+import { displayError } from '../helpers/errors';
+import { applyScript } from '../helpers/script_helpers'
 import LinearProgress from 'material-ui/LinearProgress';
 
 export class Texter extends Component {
@@ -46,13 +47,11 @@ export class Texter extends Component {
     this.goToPreviousContact()
   }
 
-  goToNextContact()
-  {
+  goToNextContact() {
     this.incrementCurrentContactIndex(1)
   }
 
-  goToPreviousConutact()
-  {
+  goToPreviousContact() {
     this.incrementCurrentContactIndex(-1)
   }
 
@@ -60,6 +59,16 @@ export class Texter extends Component {
     let newIndex = this.state.currentContactIndex;
     newIndex = newIndex + increment;
     this.setState({currentContactIndex: newIndex})
+  }
+
+  defaultScript() {
+    const {assignment} = this.props
+    console.log(assignment, this.props);
+    const contact = this.currentContact()
+    if (contact.messages.length > 0)
+      return ''
+
+    return applyScript(assignment.campaign.script, contact);
   }
 
   handleSendMessage(event) {
@@ -121,7 +130,7 @@ export class Texter extends Component {
           <TextField
             ref="newMessageInput"
              hintText="Enter your message here!"
-             defaultValue={contact.messages.length > 0 ? '' : "Hey there, " + contact.name + "! This is Smee from the Batman 2016 campaign. Thanks for helping us out. The next few states are really important for us to win! Can you join us for a phonebanking event near you next Thursday at 5pm?"}
+             defaultValue={this.defaultScript()}
              multiLine={true}
              fullWidth={true}/>
 
