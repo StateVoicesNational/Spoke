@@ -6,6 +6,7 @@ import {AssignmentListPage} from '../pages/assignment_list_page';
 
 export default createContainer(() => {
   const handle = Meteor.subscribe('assignments');
+
   return {
     assignments: Assignments.find({}).fetch(),
   };
