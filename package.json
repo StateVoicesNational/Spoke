@@ -1,5 +1,5 @@
 {
-  "name": "brand-new-texts",
+  "name": "townsquare-text",
   "private": true,
   "scripts": {
     "start": "meteor run"
