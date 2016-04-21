@@ -1,14 +1,13 @@
-import { Meteor } from 'meteor/meteor';
+import { Meteor } from 'meteor/meteor'
 
-import { Assignments } from '../assignments.js';
+import { Assignments } from '../assignments.js'
 
-Meteor.publish('assignments', () => {
+Meteor.publish('assignments', () =>
   // TODO: actually filter correctly and return public fields only
-  return Assignments.find({});
-});
+  Assignments.find({})
+)
 
-Meteor.publish('assignment', (assignmentId) => {
+Meteor.publish('assignment', (assignmentId) =>
   // TODO: check if you have access
-  console.log("here in assignment fetch");
-  return Assignments.find({ _id: assignmentId });
-});
+  Assignments.find({ _id: assignmentId })
+)

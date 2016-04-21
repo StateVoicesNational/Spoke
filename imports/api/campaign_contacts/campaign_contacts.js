@@ -1,44 +1,46 @@
-import { Mongo } from 'meteor/mongo';
-import { SimpleSchema } from 'meteor/aldeed:simple-schema';
-import {Fake} from 'meteor/anti:fake';
+import { Mongo } from 'meteor/mongo'
+import { SimpleSchema } from 'meteor/aldeed:simple-schema'
+import { Fake } from 'meteor/anti:fake'
 
-export const CampaignContacts = new Mongo.Collection('campaign_contacts');
+export const CampaignContacts = new Mongo.Collection('campaign_contacts')
 
 // Deny all client-side updates since we will be using methods to manage this collection
 CampaignContacts.deny({
-  insert() { return true; },
-  update() { return true; },
-  remove() { return true; },
-});
+  insert() { return true },
+  update() { return true },
+  remove() { return true }
+})
 
 const MessageSchema = new SimpleSchema({
-  isFromContact: {type: Boolean},
-  text: {type: String},
-  createdAt: {type: Date}
-});
+  isFromContact: { type: Boolean },
+  text: { type: String },
+  createdAt: { type: Date }
+})
 
 CampaignContacts.schema = new SimpleSchema({
   // userId: { type: String, regEx: SimpleSchema.RegEx.Id, optional: true },
-  campaignId: {type: String},
-  contactId: {type: String}, // This would be used to send data back to whatever your source of contacts is --
-  // You could then remove users if opting them out or mark phone numbers as untextable, etc. This is taken from the source data itself,
+  campaignId: { type: String },
+  // This would be used to send data back to whatever your source of contacts is --
+  // You could then remove users if opting them out or mark phone numbers as
+  // untextable, etc. This is taken from the source data itself,
   // not an ID in our own system
-  name: {type: String},
-  number: {type: String},
-  custom_fields: {type: Object, blackbox: true},
-  createdAt: {type: Date},
-  assignmentId: {type: String}, // so we can tell easily what is unassigned
-  messages: {type: [MessageSchema]}
-});
+  contactId: { type: String },
+  name: { type: String },
+  number: { type: String },
+  custom_fields: { type: Object, blackbox: true },
+  createdAt: { type: Date },
+  assignmentId: { type: String }, // so we can tell easily what is unassigned
+  messages: { type: [MessageSchema] }
+})
 
-CampaignContacts.attachSchema(CampaignContacts.schema);
+CampaignContacts.attachSchema(CampaignContacts.schema)
 
 Factory.define('campaign_contact', CampaignContacts, {
   campaignId: () => Factory.get('campaign'),
   contactId: () => Fake.word(),
-  name:  () => Fake.user({fields: ['name']}).name,
+  name:  () => Fake.user({ fields: ['name'] }).name,
   number: '669-221-6251',
-  custom_fields: function() {
+  custom_fields: function () {
     fields = {}
     fields[Fake.word()] = Fake.sentence(2)
     return fields
@@ -46,30 +48,30 @@ Factory.define('campaign_contact', CampaignContacts, {
   createdAt: () => new Date(),
   assignmentId: () => Factory.get('assignment'),
   messages: []
-});
+})
 
 // This represents the keys from CampaignContacts objects that should be published
 // to the client. If we add secret properties to List objects, don't list
 // them here to keep them private to the server.
 CampaignContacts.publicFields = {
-};
+}
 
 
 const DEFAULT_SCRIPT_FIELDS = ['name', 'number']
 
 CampaignContacts.helpers({
   scriptFields() {
-    return Object.keys(this.custom_fields).concat(DEFAULT_SCRIPT_FIELDS);
+    return Object.keys(this.custom_fields).concat(DEFAULT_SCRIPT_FIELDS)
 
   },
 
   getScriptField(fieldName) {
     if (this.scriptFields().indexOf(fieldName) === -1)
-      throw new Error("Invalid script field " + fieldName + " requested for campaignContact " + this._id)
+      throw new Error('Invalid script field ' + fieldName + ' requested for campaignContact ' + this._id)
 
     if (DEFAULT_SCRIPT_FIELDS.indexOf(fieldName) !== -1)
       return this[fieldName]
 
     return this.custom_fields[fieldName]
   }
-});
+})

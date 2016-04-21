@@ -1,20 +1,20 @@
-import { Meteor } from 'meteor/meteor';
-import { _ } from 'meteor/underscore';
-import { ValidatedMethod } from 'meteor/mdg:validated-method';
-import { SimpleSchema } from 'meteor/aldeed:simple-schema';
-import { DDPRateLimiter } from 'meteor/ddp-rate-limiter';
+import { Meteor } from 'meteor/meteor'
+import { _ } from 'meteor/underscore'
+import { ValidatedMethod } from 'meteor/mdg:validated-method'
+import { SimpleSchema } from 'meteor/aldeed:simple-schema'
+import { DDPRateLimiter } from 'meteor/ddp-rate-limiter'
 
-import { CampaignContacts } from './campaign_contacts.js';
+import { CampaignContacts } from './campaign_contacts.js'
 
 export const sendMessage = new ValidatedMethod({
   name: 'campaignContacts.sendMessage',
   validate: new SimpleSchema({
-    campaignContactId: {type: String},
+    campaignContactId: { type: String },
     text: { type: String },
-    isFromContact: {type: Boolean}
+    isFromContact: { type: Boolean }
   }).validator(),
   run({ campaignContactId, isFromContact, text }) {
-    const campaignContact = CampaignContacts.findOne(campaignContactId);
+    const campaignContact = CampaignContacts.findOne(campaignContactId)
 
     const message = {
       isFromContact,
@@ -27,10 +27,10 @@ export const sendMessage = new ValidatedMethod({
 
     CampaignContacts.update(campaignContactId, { $set: {
       messages: newMessages
-    } });
+    } })
 
   },
-});
+})
 
 
 // TODO:Is this necessary?

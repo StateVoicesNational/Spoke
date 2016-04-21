@@ -1,11 +1,11 @@
-import { CampaignContacts }  from '../../api/campaign_contacts/campaign_contacts.js';
-import { Assignments }  from '../../api/assignments/assignments.js';
-import { Campaigns }  from '../../api/campaigns/campaigns.js';
-import { Fake } from 'meteor/anti:fake';
+import { CampaignContacts } from '../../api/campaign_contacts/campaign_contacts.js'
+import { Assignments } from '../../api/assignments/assignments.js'
+import { Campaigns } from '../../api/campaigns/campaigns.js'
+import { Fake } from 'meteor/anti:fake'
 
-Meteor.startup(function() {
+Meteor.startup(function () {
   if (Assignments.find({}).count() === 0) {
-    _(2).times(function(b) {
+    _(2).times(function (b) {
       let custom_fields = ['event_url']
 
       script = Factory.tree('campaign').script
@@ -13,7 +13,7 @@ Meteor.startup(function() {
 
       let campaign = Factory.create('campaign', {
         custom_fields,
-        script})
+        script })
 
       campaignId = campaign._id
 
@@ -28,11 +28,11 @@ Meteor.startup(function() {
       })
       let assignmentId = assignment._id
       // Factory.create('campaign_contact', {campaignId: campaign._id, assignmentId: assignment._id});
-      _(10).times(function(n) {
+      _(10).times(function (n) {
         let url = 'http://bit.ly/' + Fake.word(8)
-        Factory.create('campaign_contact', {assignmentId, campaignId, custom_fields: {'event_url': url}})
-      });
+        Factory.create('campaign_contact', { assignmentId, campaignId, custom_fields: { 'event_url': url } })
+      })
 
     })
   }
-});
+})
