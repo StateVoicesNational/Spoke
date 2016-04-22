@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Card, CardTitle } from 'material-ui/Card'
+import { Card, CardTitle, CardText, CardActions } from 'material-ui/Card'
 import Paper from 'material-ui/Paper'
 import TextField from 'material-ui/TextField'
 import Divider from 'material-ui/Divider'
@@ -32,19 +32,22 @@ const styles = {
   }
 }
 
+const STARTING_INDEX = -1
 
 export class Texter extends Component {
   constructor(props) {
     super(props)
 
     this.state = {
-      currentContactIndex: 0,
+      currentContactIndex: -1,
       inputValue: ''
     }
 
     this.handleChange = this.handleChange.bind(this)
     this.handleNavigateNext = this.handleNavigateNext.bind(this)
     this.handleNavigatePrevious = this.handleNavigatePrevious.bind(this)
+    this.handleSendMessage = this.handleSendMessage.bind(this)
+    this.handleBeginTexting = this.handleBeginTexting.bind(this)
   }
 
   currentContact() {
@@ -72,6 +75,10 @@ export class Texter extends Component {
 
   handleNavigatePrevious() {
     this.goToPreviousContact()
+  }
+
+  handleBeginTexting() {
+    this.updateCurrentContactIndex(0)
   }
 
   goToNextContact() {
@@ -166,48 +173,60 @@ export class Texter extends Component {
     const { assignment } = this.props
     const campaign = assignment.campaign
 
+    console.log(this.currentContactIndex, STARTING_INDEX)
+    if (this.currentContactIndex === STARTING_INDEX) {
+      return (
+      <Card style={styles.card}>
+         <CardTitle title={campaign.title} subtitle={campaign.description} />
+         <CardText>You have {this.contactCount()} initial messages to send!</CardText>
+         <CardActions>
+           <RaisedButton onChange={this.handleBeginTexting} label="Start sending messages!" />
+        </CardActions>
+      </Card>)
+    }
+
     if (!contact) {
-      return <Paper><h1>Great job! You finished all the texts!</h1></Paper>
+      return (<Paper><h1>Great job! You finished all the texts!</h1></Paper>)
     }
 
     return (
         <div>
           <Card style={styles.card}>
-           <CardTitle title={campaign.title} subtitle={campaign.description} />
-           {this.renderNavigationToolbar(contact)}
-          <LinearProgress mode="determinate" value={this.state.currentContactIndex * 100 / this.contactCount()} />
+            <CardTitle title={campaign.title} subtitle={campaign.description} />
+            {this.renderNavigationToolbar(contact)}
+            <LinearProgress mode="determinate" value={this.state.currentContactIndex * 100 / this.contactCount()} />
 
-          {contact.messages.length > 0 ? <MessagesList messages={contact.messages} /> : ''}
+            {contact.messages.length > 0 ? <MessagesList messages={contact.messages} /> : ''}
 
-          <Divider />
-          <div style={styles.textarea}>
-          <TextField
-            ref="newMessageInput"
-            floatingLabelText="Your message"
-            value={this.state.inputValue}
-            onChange={this.handleChange}
-            multiLine
-            fullWidth
-          />
+            <Divider />
+            <div style={styles.textarea}>
+              <TextField
+                ref="newMessageInput"
+                floatingLabelText="Your message"
+                value={this.state.inputValue}
+                onChange={this.handleChange}
+                multiLine
+                fullWidth
+              />
             </div>
-          <Toolbar>
-                 <ToolbarGroup firstChild>
-                 <IconMenu
-                   iconButtonElement={<IconButton><DescriptionIcon /></IconButton>}>
-                   <MenuItem primaryText="Insert scripts" />
-                 </IconMenu>
-                 </ToolbarGroup>
-                 <ToolbarGroup>
-                  <RaisedButton
-                    disabled={!this.state.inputValue}
-                    onClick={this.handleSendMessage.bind}
-                    label="Send"
-                    primary
-                  />
-                 </ToolbarGroup>
-               </Toolbar>
+            <Toolbar>
+              <ToolbarGroup firstChild>
+                <IconMenu
+                  iconButtonElement={<IconButton><DescriptionIcon /></IconButton>}>
+                  <MenuItem primaryText="Insert scripts" />
+                </IconMenu>
+              </ToolbarGroup>
+              <ToolbarGroup>
+                <RaisedButton
+                  disabled={!this.state.inputValue}
+                  onClick={this.handleSendMessage}
+                  label="Send"
+                  primary
+                />
+              </ToolbarGroup>
+            </Toolbar>
           </Card>
-      </div>
+        </div>
     )
   }
 }

@@ -18,11 +18,12 @@ export const sendMessage = new ValidatedMethod({
       createdAt: new Date()
     }
 
-    const newMessages = campaignContact.messages
-    newMessages.push(message)
+    const messages = campaignContact.messages
+    messages.push(message)
 
     CampaignContacts.update(campaignContactId, { $set: {
-      messages: newMessages
+      messages,
+      lastMessage: message
     } })
   }
 })

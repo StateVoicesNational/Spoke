@@ -31,7 +31,8 @@ CampaignContacts.schema = new SimpleSchema({
   custom_fields: { type: Object, blackbox: true },
   createdAt: { type: Date },
   assignmentId: { type: String }, // so we can tell easily what is unassigned
-  messages: { type: [MessageSchema] }
+  messages: { type: [MessageSchema] },
+  lastMessage: { type: MessageSchema } // cached so we can query easily since we can't query by the last in a message array.
 })
 
 CampaignContacts.attachSchema(CampaignContacts.schema)
@@ -48,7 +49,8 @@ Factory.define('campaign_contact', CampaignContacts, {
   },
   createdAt: () => new Date(),
   assignmentId: () => Factory.get('assignment'),
-  messages: []
+  messages: [],
+  lastMessage: null
 })
 
 // This represents the keys from CampaignContacts objects that should be published

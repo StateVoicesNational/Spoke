@@ -18,8 +18,8 @@ Campaigns.schema = new SimpleSchema({
   title: { type: String },
   description: { type: String },
   createdAt: { type: Date },
-  script: { type: String },
-  custom_fields: { type: [String] }
+  campaignSurveyId: { type: String },
+  customFields: { type: [String] }
 })
 
 Campaigns.attachSchema(Campaigns.schema)
@@ -30,21 +30,13 @@ Factory.define('campaign', Campaigns, {
     'Baltimore Phonebank Recruitment',
     'Bernie Journey',
     'NY GOTV',
-    'CA Phonebanking'
-  ]),
+    'CA Phonebanking']),
   description: () => Fake.fromArray([
     'Invite users to canvassing',
     'Sign up volunteers',
-    'Get out the vote!'
-  ]),
-  custom_fields: [],
-  script: () => Fake.fromArray([
-    `Hi there, <<name>>! We have an event coming up soon and we\'re
-    hoping you can join us to help Bernie win! If you can, let us know!`,
-    'Hey <<name>>! Come help us out at this upcoming event.',
-    `Hi <<name>>. We'd love to have you join us at an upcoming rally in your
-    area. Do you think you'll be free?`
-  ])
+    'Get out the vote!']),
+  campaignSurveyId: () => Factory.get('campaign_survey'),
+  customFields: []
 })
 
 // This represents the keys from Campaigns objects that should be published

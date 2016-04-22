@@ -2,6 +2,7 @@ import { Mongo } from 'meteor/mongo'
 import { Factory } from 'meteor/dburles:factory'
 import { SimpleSchema } from 'meteor/aldeed:simple-schema'
 import { CampaignContacts } from '../campaign_contacts/campaign_contacts.js'
+import { Factory } from 'meteor/dburles:factory'
 
 export const Assignments = new Mongo.Collection('assignments')
 

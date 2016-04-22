@@ -1,20 +1,38 @@
-import { Meteor } from 'meteor/meteor'
-import { _ } from 'underscore'
 import { Assignments } from '../../api/assignments/assignments.js'
+import { Campaigns } from '../../api/campaigns/campaigns.js'
+import { CampaignContacts } from '../../api/campaign_contacts/campaign_contacts.js'
+import { CampaignSurveys } from '../../api/campaign_surveys/campaign_surveys.js'
+
 import { Fake } from 'meteor/anti:fake'
+import { Meteor } from 'meteor/meteor'
 import { Factory } from 'meteor/dburles:factory'
+import _ from 'meteor/underscore'
 
 Meteor.startup(() => {
   if (Assignments.find({}).count() === 0) {
     _(2).times(() => {
-      const customFields = ['event_url']
 
-      let script = Factory.tree('campaign').script
-      script += ' Let us know at <<event_url>>!'
+      const removeData = () => {
+        Assignments.remove({})
+        Campaigns.remove({})
+        CampaignContacts.remove({})
+        CampaignSurveys.remove({})
+      }
+
+      removeData()
+
+      const customFields = ['eventUrl']
+
+      let script = factory.tree('campaign_survey').script
+      script += ' Let us know at <<eventUrl>>!'
+
+      const survey = Factory.create('campaign_survey', { script })
+
 
       const campaign = Factory.create('campaign', {
         customFields,
-        script })
+        script,
+        campaignSurveyId: survey._id })
 
       const campaignId = campaign._id
 
@@ -24,16 +42,14 @@ Meteor.startup(() => {
           title: campaign.title,
           description: campaign.description,
           script: campaign.script,
-          customFields: campaign.custom_fields
+          customFields: campaign.customFields
         }
       })
       const assignmentId = assignment._id
-      // Factory.create('campaign_contact',
-      // {campaignId: campaign._id, assignmentId: assignment._id});
+
       _(10).times(() => {
-        const url = `http://bit.ly/${Fake.word(8)}`
-        Factory.create('campaign_contact',
-          { assignmentId, campaignId, customFields: { event_url: url } })
+        const eventUrl = `http://bit.ly/${Fake.word(8)}`
+        Factory.create('campaign_contact', { assignmentId, campaignId, customFields: { eventUrl } })
       })
     })
   }

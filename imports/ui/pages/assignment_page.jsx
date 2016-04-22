@@ -1,10 +1,11 @@
 import React from 'react'
-import AppBar from 'material-ui/AppBar'
 import { AssignmentSummaryList } from '../components/assignment_summary_list'
 import { Assignments } from '../../api/assignments/assignments.js'
 import { Texter } from '../components/texter'
-import Drawer from 'material-ui/Drawer'
+import { AssignmentSummary } from '../components/assignment_summary'
 import { FlowRouter } from 'meteor/kadira:flow-router'
+import AppBar from 'material-ui/AppBar'
+import Drawer from 'material-ui/Drawer'
 
 export class AssignmentPage extends React.Component {
   constructor(props) {
@@ -16,7 +17,7 @@ export class AssignmentPage extends React.Component {
 
   componentWillReceiveProps({ loading, assignment }) {
     // redirect / to an assignment if possible
-    // TODO this is not the right way to do this
+    // TODO this is not the right way to do this and there may not be an assignment
     if (!loading && !assignment) {
       const newAssignment = Assignments.findOne()
       this.navigateToAssignmentId(newAssignment._id)
@@ -51,7 +52,7 @@ export class AssignmentPage extends React.Component {
         title="Townsquare Texting"
         onLeftIconButtonTouchTap={this.handleTouchTapLeftIconButton}
       />
-      {assignment && contacts.length > 0 ? <Texter assignment={assignment} contacts={contacts} /> : ''}
+      <AssignmentSummary assignment={assignment} contacts={contacts} />
     </div>)
   }
 }
