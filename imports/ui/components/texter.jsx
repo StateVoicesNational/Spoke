@@ -41,6 +41,10 @@ export class Texter extends Component {
       currentContactIndex: 0,
       inputValue: ''
     }
+
+    this.handleChange = this.handleChange.bind(this)
+    this.handleNavigateNext = this.handleNavigateNext.bind(this)
+    this.handleNavigatePrevious = this.handleNavigatePrevious.bind(this)
   }
 
   currentContact() {
@@ -128,6 +132,35 @@ export class Texter extends Component {
     })
   }
 
+  renderNavigationToolbar(contact) {
+    const currentCount = this.state.currentContactIndex + 1
+    const title = contact.name + ' - ' + currentCount + '/' + this.contactCount() + ' messages'
+    return (
+    <Toolbar>
+      <ToolbarGroup firstChild float="left">
+        <IconButton
+          disabled={!this.hasPrevious()}
+          onClick={this.handleNavigatePrevious}
+        >
+          <NavigateBeforeIcon />
+        </IconButton>
+
+      </ToolbarGroup>
+      <ToolbarGroup>
+        <ToolbarTitle text={title} />
+      </ToolbarGroup>
+      <ToolbarGroup lastChild float="right">
+        <IconButton
+          disabled={!this.hasNext()}
+          onClick={this.handleNavigateNext}
+        >
+          <NavigateNextIcon />
+        </IconButton>
+      </ToolbarGroup>
+
+    </Toolbar>)
+  }
+
   render() {
     const contact = this.currentContact()
     const { assignment } = this.props
@@ -136,39 +169,13 @@ export class Texter extends Component {
     if (!contact) {
       return <Paper><h1>Great job! You finished all the texts!</h1></Paper>
     }
-    const currentCount = this.state.currentContactIndex + 1
-    const contactCount = this.contactCount()
 
     return (
         <div>
           <Card style={styles.card}>
            <CardTitle title={campaign.title} subtitle={campaign.description} />
-          <Toolbar>
-            <ToolbarGroup firstChild float="left">
-              <IconButton
-                disabled={!this.hasPrevious()}
-                onClick={this.handleNavigatePrevious}
-              >
-                <NavigateBeforeIcon />
-              </IconButton>
-
-            </ToolbarGroup>
-            <ToolbarGroup>
-              <ToolbarTitle text={ contact.name + ' - ' + currentCount + '/' + contactCount + ' messages' } />
-            </ToolbarGroup>
-            <ToolbarGroup lastChild float="right">
-              <IconButton
-                disabled={!this.hasNext()}
-                onClick={this.handleNavigateNext}
-              >
-                <NavigateNextIcon />
-              </IconButton>
-            </ToolbarGroup>
-
-          </Toolbar>
-          <LinearProgress mode="determinate" value={this.state.currentContactIndex * 100 / contactCount} />
-
-
+           {this.renderNavigationToolbar(contact)}
+          <LinearProgress mode="determinate" value={this.state.currentContactIndex * 100 / this.contactCount()} />
 
           {contact.messages.length > 0 ? <MessagesList messages={contact.messages} /> : ''}
 

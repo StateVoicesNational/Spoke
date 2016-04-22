@@ -1,50 +1,64 @@
 import React from 'react'
-import AppBar from 'material-ui/AppBar';
-import FlatButton from 'material-ui/FlatButton';
-//First, we pass in any props transferred to this component
-import {AssignmentSummaryList} from '../components/assignment_summary_list'
-import { Assignments } from '../../api/assignments/assignments.js';
-import {Texter} from '../components/texter'
-import Drawer from 'material-ui/Drawer';
+import AppBar from 'material-ui/AppBar'
+import { AssignmentSummaryList } from '../components/assignment_summary_list'
+import { Assignments } from '../../api/assignments/assignments.js'
+import { Texter } from '../components/texter'
+import Drawer from 'material-ui/Drawer'
+import { FlowRouter } from 'meteor/kadira:flow-router'
 
 export class AssignmentPage extends React.Component {
   constructor(props) {
     super(props)
-    this.state = {navDrawerOpen: false}
+    this.handleTouchTapLeftIconButton = this.handleTouchTapLeftIconButton.bind(this)
+    this.onChangeList = this.onChangeList.bind(this)
+    this.state = { navDrawerOpen: false }
   }
 
   componentWillReceiveProps({ loading, assignment }) {
     // redirect / to an assignment if possible
+    // TODO this is not the right way to do this
     if (!loading && !assignment) {
-      const assignment = Assignments.findOne();
-      FlowRouter.go("/assignments/" + assignment._id);
+      const newAssignment = Assignments.findOne()
+      this.navigateToAssignmentId(newAssignment._id)
     }
+  }
+
+  onChangeList(assignmentId) {
+    this.navigateToAssignmentId(assignmentId)
+    this.setState({ navDrawerOpen: false })
+  }
+
+  navigateToAssignmentId(assignmentId) {
+    FlowRouter.go(`/assignments/${assignmentId}`)
   }
 
   handleTouchTapLeftIconButton() {
     this.setState({
-      navDrawerOpen: !this.state.navDrawerOpen,
-    });
+      navDrawerOpen: !this.state.navDrawerOpen
+    })
   }
 
-  onChangeList(assignmentId) {
-    FlowRouter.go('/assignments/' + assignmentId);
-    this.setState({navDrawerOpen: false})
-  }
-    render () {
-      const {assignment, assignments, contacts, loading} = this.props;
-     return <div>
-        <Drawer open={this.state.navDrawerOpen}
+  render() {
+    const { assignment, assignments, contacts } = this.props
+    return (<div>
+      <Drawer open={this.state.navDrawerOpen}
         docked={false}
-        onRequestChange={(navDrawerOpen) => this.setState({navDrawerOpen})}
->
+        onRequestChange={(navDrawerOpen) => this.setState({ navDrawerOpen })}
+      >
+        <AssignmentSummaryList onChangeList={this.onChangeList} assignments={assignments} />
+      </Drawer>
+      <AppBar
+        title="Townsquare Texting"
+        onLeftIconButtonTouchTap={this.handleTouchTapLeftIconButton}
+      />
+      {assignment && contacts.length > 0 ? <Texter assignment={assignment} contacts={contacts} /> : ''}
+    </div>)
+  }
+}
 
-          <AssignmentSummaryList onChangeList={this.onChangeList.bind(this)} assignments={assignments}/>
-        </Drawer>
-        <AppBar title="Townsquare Texting"
-        onLeftIconButtonTouchTap={this.handleTouchTapLeftIconButton.bind(this)}
-                />
-        {assignment && contacts.length > 0 ? <Texter assignment={assignment} contacts={contacts} /> : ''}
-      </div>
-    }
+AssignmentPage.propTypes = {
+  assignment: React.PropTypes.object,      // current assignment
+  assignments: React.PropTypes.array,   // all assignments for showing in sidebar
+  loading: React.PropTypes.bool,     // subscription status
+  contacts: React.PropTypes.array   // contacts for current assignment
 }
