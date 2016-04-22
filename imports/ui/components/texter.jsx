@@ -1,44 +1,56 @@
-import React, { Component } from 'react';
-import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
+import React, { Component } from 'react'
+import { Card, CardTitle } from 'material-ui/Card'
 import Paper from 'material-ui/Paper'
-import FlatButton from 'material-ui/FlatButton';
 import TextField from 'material-ui/TextField'
-import Divider from 'material-ui/Divider';
+import Divider from 'material-ui/Divider'
 
-import IconMenu from 'material-ui/IconMenu';
-import IconButton from 'material-ui/IconButton/IconButton';
-import DescriptionIcon from 'material-ui/svg-icons/action/description';
-import NavigateBeforeIcon from 'material-ui/svg-icons/image/navigate-before';
-import NavigateNextIcon from 'material-ui/svg-icons/image/navigate-next';
+import IconMenu from 'material-ui/IconMenu'
+import IconButton from 'material-ui/IconButton/IconButton'
+import DescriptionIcon from 'material-ui/svg-icons/action/description'
+import NavigateBeforeIcon from 'material-ui/svg-icons/image/navigate-before'
+import NavigateNextIcon from 'material-ui/svg-icons/image/navigate-next'
 
-import MenuItem from 'material-ui/MenuItem';
+import MenuItem from 'material-ui/MenuItem'
 
-import RaisedButton from 'material-ui/RaisedButton';
-import { Toolbar, ToolbarGroup, ToolbarSeparator, ToolbarTitle } from 'material-ui/Toolbar';
+import RaisedButton from 'material-ui/RaisedButton'
+import { Toolbar, ToolbarGroup, ToolbarTitle } from 'material-ui/Toolbar'
 import { MessagesList } from './messages_list'
-import { sendMessage } from '../../api/campaign_contacts/methods';
-import { displayError } from '../helpers/errors';
+import { sendMessage } from '../../api/campaign_contacts/methods'
 import { applyScript } from '../helpers/script_helpers'
-import LinearProgress from 'material-ui/LinearProgress';
+import LinearProgress from 'material-ui/LinearProgress'
+
+const styles = {
+  card: {
+    width: 500,
+    margin: '20px auto'
+  },
+  textarea: {
+    padding: 20
+  },
+  heading: {
+    padding: 20
+  }
+}
+
 
 export class Texter extends Component {
   constructor(props) {
-    super(props);
+    super(props)
 
     this.state = {
       currentContactIndex: 0,
       inputValue: ''
-    };
+    }
   }
 
   currentContact() {
-    const {contacts} = this.props
+    const { contacts } = this.props
     const index = this.state.currentContactIndex
-    return (index >= contacts.length) ? null : contacts[index];
+    return (index >= contacts.length) ? null : contacts[index]
   }
 
   contactCount() {
-    const {contacts} = this.props
+    const { contacts } = this.props
     return contacts.length
   }
 
@@ -50,11 +62,11 @@ export class Texter extends Component {
     return this.state.currentContactIndex < this.contactCount() - 1
   }
 
-  handleNavigateNext(event) {
+  handleNavigateNext() {
     this.goToNextContact()
   }
 
-  handleNavigatePrevious(event) {
+  handleNavigatePrevious() {
     this.goToPreviousContact()
   }
 
@@ -67,130 +79,128 @@ export class Texter extends Component {
   }
 
   incrementCurrentContactIndex(increment) {
-    let newIndex = this.state.currentContactIndex;
-    newIndex = newIndex + increment;
+    let newIndex = this.state.currentContactIndex
+    newIndex = newIndex + increment
     this.updateCurrentContactIndex(newIndex)
   }
 
   updateCurrentContactIndex(newIndex) {
-    console.log(newIndex)
     const contact = this.props.contacts[newIndex]
-    inputValue = this.defaultScript(contact)
+    const inputValue = this.defaultScript(contact)
     this.setState({
       currentContactIndex: newIndex,
       inputValue
-    });
+    })
   }
 
   defaultScript(contact) {
     if (contact.messages.length > 0)
+    {
       return ''
+    }
 
-    const {assignment} = this.props
-    return applyScript(assignment.campaign.script, contact);
+    const { assignment } = this.props
+    return applyScript(assignment.campaign.script, contact)
   }
 
   handleSendMessage(event) {
-    event.preventDefault();
-    const input = this.refs.newMessageInput;
+    event.preventDefault()
+    const input = this.refs.newMessageInput
     if (input.getValue().trim()) {
       sendMessage.call({
         campaignContactId: this.currentContact()._id,
         text: input.getValue(),
         isFromContact: false
-      }, (error, result) => {
-        if (error)
-        {
-            alert(error);
-        }
-        else
-        {
-          input.value = '';
+      }, (error) => {
+        if (error) {
+            alert(error)
+        } else {
+          input.value = ''
           this.goToNextContact()
         }
-      });
+      })
     }
   }
 
-  handleChange (event) {
-    console.log("handleChange", event)
+  handleChange(event) {
     this.setState({
       inputValue: event.target.value
-    });
+    })
   }
 
   render() {
     const contact = this.currentContact()
-    const {assignment} = this.props
-    if (!contact)
+    const { assignment } = this.props
+    const campaign = assignment.campaign
+
+    if (!contact) {
       return <Paper><h1>Great job! You finished all the texts!</h1></Paper>
+    }
     const currentCount = this.state.currentContactIndex + 1
     const contactCount = this.contactCount()
 
     return (
         <div>
           <Card style={styles.card}>
-           <CardTitle title={assignment.campaign.title} subtitle={assignment.campaign.description}/>
+           <CardTitle title={campaign.title} subtitle={campaign.description} />
           <Toolbar>
-            <ToolbarGroup firstChild={true} float="left">
+            <ToolbarGroup firstChild float="left">
               <IconButton
                 disabled={!this.hasPrevious()}
-                onClick={this.handleNavigatePrevious.bind(this)}><NavigateBeforeIcon /></IconButton>
+                onClick={this.handleNavigatePrevious}
+              >
+                <NavigateBeforeIcon />
+              </IconButton>
 
             </ToolbarGroup>
             <ToolbarGroup>
-              <ToolbarTitle text={contact.name + " - " +  currentCount + "/" + contactCount + " messages" } />
+              <ToolbarTitle text={ contact.name + ' - ' + currentCount + '/' + contactCount + ' messages' } />
             </ToolbarGroup>
-            <ToolbarGroup lastChild={true} float="right">
+            <ToolbarGroup lastChild float="right">
               <IconButton
                 disabled={!this.hasNext()}
-                onClick={this.handleNavigateNext.bind(this)}><NavigateNextIcon /></IconButton>
+                onClick={this.handleNavigateNext}
+              >
+                <NavigateNextIcon />
+              </IconButton>
             </ToolbarGroup>
 
           </Toolbar>
-          <LinearProgress mode="determinate" value={this.state.currentContactIndex * 100/contactCount} />
+          <LinearProgress mode="determinate" value={this.state.currentContactIndex * 100 / contactCount} />
 
 
 
-          {contact.messages.length > 0 ? <MessagesList messages={contact.messages}/> : ''}
+          {contact.messages.length > 0 ? <MessagesList messages={contact.messages} /> : ''}
 
           <Divider />
           <div style={styles.textarea}>
           <TextField
             ref="newMessageInput"
             floatingLabelText="Your message"
-             value={this.state.inputValue}
-             onChange={this.handleChange.bind(this)}
-             multiLine={true}
-             fullWidth={true}/>
+            value={this.state.inputValue}
+            onChange={this.handleChange}
+            multiLine
+            fullWidth
+          />
             </div>
           <Toolbar>
-                 <ToolbarGroup firstChild={true}>
+                 <ToolbarGroup firstChild>
                  <IconMenu
                    iconButtonElement={<IconButton><DescriptionIcon /></IconButton>}>
                    <MenuItem primaryText="Insert scripts" />
                  </IconMenu>
                  </ToolbarGroup>
                  <ToolbarGroup>
-                   <RaisedButton disabled={!this.state.inputValue} onClick={this.handleSendMessage.bind(this)} label="Send" primary={true} />
+                  <RaisedButton
+                    disabled={!this.state.inputValue}
+                    onClick={this.handleSendMessage.bind}
+                    label="Send"
+                    primary
+                  />
                  </ToolbarGroup>
                </Toolbar>
           </Card>
       </div>
-    );
+    )
   }
 }
-
-const styles = {
-  card: {
-    width:500,
-    margin: '20px auto',
-  },
-  textarea: {
-    padding: 20
-  },
-  heading: {
-    padding: 20
-  },
-}
-
