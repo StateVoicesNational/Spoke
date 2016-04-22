@@ -83,7 +83,8 @@ if (Meteor.isServer) {
       //     });
       //   });
 
-      //   it('sends no assignments for a private list when logged in as another user', function (done) {
+      //   it('sends no assignments for a private list when logged in as
+      // another user', function (done) {
       //     const collector = new PublicationCollector({ userId: Random.id() });
       //     collector.collect('assignments.inList', privateList._id, (collections) => {
       //       chai.assert.isUndefined(collections.Assignments);

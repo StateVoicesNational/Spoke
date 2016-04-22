@@ -5,7 +5,7 @@ import { CampaignContacts } from '../campaign_contacts.js'
 import { Assignments } from '../../assignments/assignments.js'
 Meteor.publish('campaignContacts.forAssignment', (assignmentId) => {
   new SimpleSchema({
-    assignmentId: { type: String },
+    assignmentId: { type: String }
   }).validate({ assignmentId })
 
   return [

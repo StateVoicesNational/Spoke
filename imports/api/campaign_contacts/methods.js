@@ -1,9 +1,5 @@
-import { Meteor } from 'meteor/meteor'
-import { _ } from 'meteor/underscore'
 import { ValidatedMethod } from 'meteor/mdg:validated-method'
 import { SimpleSchema } from 'meteor/aldeed:simple-schema'
-import { DDPRateLimiter } from 'meteor/ddp-rate-limiter'
-
 import { CampaignContacts } from './campaign_contacts.js'
 
 export const sendMessage = new ValidatedMethod({
@@ -22,14 +18,13 @@ export const sendMessage = new ValidatedMethod({
       createdAt: new Date()
     }
 
-    newMessages = campaignContact.messages
+    const newMessages = campaignContact.messages
     newMessages.push(message)
 
     CampaignContacts.update(campaignContactId, { $set: {
       messages: newMessages
     } })
-
-  },
+  }
 })
 
 

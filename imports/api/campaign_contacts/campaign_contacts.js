@@ -38,10 +38,10 @@ CampaignContacts.attachSchema(CampaignContacts.schema)
 Factory.define('campaign_contact', CampaignContacts, {
   campaignId: () => Factory.get('campaign'),
   contactId: () => Fake.word(),
-  name:  () => Fake.user({ fields: ['name'] }).name,
+  name: () => Fake.user({ fields: ['name'] }).name,
   number: '669-221-6251',
-  custom_fields: function () {
-    fields = {}
+  custom_fields: () => {
+    const fields = {}
     fields[Fake.word()] = Fake.sentence(2)
     return fields
   },
@@ -62,15 +62,16 @@ const DEFAULT_SCRIPT_FIELDS = ['name', 'number']
 CampaignContacts.helpers({
   scriptFields() {
     return Object.keys(this.custom_fields).concat(DEFAULT_SCRIPT_FIELDS)
-
   },
 
   getScriptField(fieldName) {
-    if (this.scriptFields().indexOf(fieldName) === -1)
-      throw new Error('Invalid script field ' + fieldName + ' requested for campaignContact ' + this._id)
+    if (this.scriptFields().indexOf(fieldName) === -1) {
+      throw new Error(`Invalid script field ${fieldName} requested for campaignContact ${this._id}`)
+    }
 
-    if (DEFAULT_SCRIPT_FIELDS.indexOf(fieldName) !== -1)
+    if (DEFAULT_SCRIPT_FIELDS.indexOf(fieldName) !== -1) {
       return this[fieldName]
+    }
 
     return this.custom_fields[fieldName]
   }

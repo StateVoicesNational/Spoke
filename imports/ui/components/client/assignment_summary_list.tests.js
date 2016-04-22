@@ -2,7 +2,7 @@
 /* eslint-disable func-names, prefer-arrow-callback */
 
 import { Factory } from 'meteor/dburles:factory'
-import { expect, assert } from 'meteor/practicalmeteor:chai'
+import { expect } from 'meteor/practicalmeteor:chai'
 import React from 'react'
 import { shallow } from 'enzyme'
 
@@ -19,9 +19,8 @@ describe('AssignmentSummaryList', function () {
     const assignment = Factory.build('assignment')
     const assignments = [assignment, assignment, assignment]
 
-    const el = shallow(<AssignmentSummaryList assignments={assignments}></AssignmentSummaryList>)
+    const el = shallow(<AssignmentSummaryList assignments={assignments} />)
     const rows = el.find(AssignmentSummaryListRow)
     expect(rows).to.have.length.of(3)
-
   })
 })
