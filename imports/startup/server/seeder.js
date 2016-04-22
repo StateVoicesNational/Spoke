@@ -2,6 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { _ } from 'underscore'
 import { Assignments } from '../../api/assignments/assignments.js'
 import { Fake } from 'meteor/anti:fake'
+import { Factory } from 'meteor/dburles:factory'
 
 Meteor.startup(() => {
   if (Assignments.find({}).count() === 0) {

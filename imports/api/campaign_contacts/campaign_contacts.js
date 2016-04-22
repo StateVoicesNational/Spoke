@@ -1,4 +1,5 @@
 import { Mongo } from 'meteor/mongo'
+import { Factory } from 'meteor/dburles:factory'
 import { SimpleSchema } from 'meteor/aldeed:simple-schema'
 import { Fake } from 'meteor/anti:fake'
 

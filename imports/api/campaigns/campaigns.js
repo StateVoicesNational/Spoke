@@ -1,6 +1,7 @@
 import { Mongo } from 'meteor/mongo'
 import { SimpleSchema } from 'meteor/aldeed:simple-schema'
 import { Fake } from 'meteor/anti:fake'
+import { Factory } from 'meteor/dburles:factory'
 
 export const Campaigns = new Mongo.Collection('campaigns')
 
