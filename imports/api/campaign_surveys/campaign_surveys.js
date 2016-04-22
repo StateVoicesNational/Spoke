@@ -35,6 +35,6 @@ Factory.define('campaign_survey', CampaignSurveys, {
     "Hi <<name>>. We'd love to have you join us at an upcoming rally in your area. Do you think you'll be free?"
   ]),
   question: () => Fake.fromArray(['Can the user attend the event?', 'Will this person support Bernie?']),
-  answerChildren: () => [Factory.get('campaign_survey')],
+  answerChildren: () => [],
   instructions: () => Fake.sentence(20)
 })

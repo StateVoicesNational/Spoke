@@ -32,7 +32,10 @@ CampaignContacts.schema = new SimpleSchema({
   createdAt: { type: Date },
   assignmentId: { type: String }, // so we can tell easily what is unassigned
   messages: { type: [MessageSchema] },
-  lastMessage: { type: MessageSchema } // cached so we can query easily since we can't query by the last in a message array.
+  lastMessage: {
+    type: MessageSchema,
+    optional: true
+  } // cached so we can query easily since we can't query by the last in a message array.
 })
 
 CampaignContacts.attachSchema(CampaignContacts.schema)

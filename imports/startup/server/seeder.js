@@ -6,32 +6,34 @@ import { CampaignSurveys } from '../../api/campaign_surveys/campaign_surveys.js'
 import { Fake } from 'meteor/anti:fake'
 import { Meteor } from 'meteor/meteor'
 import { Factory } from 'meteor/dburles:factory'
-import _ from 'meteor/underscore'
+import { _ } from 'meteor/underscore'
 
 Meteor.startup(() => {
+
+  const removeData = () => {
+    Assignments.remove({})
+    Campaigns.remove({})
+    CampaignContacts.remove({})
+    CampaignSurveys.remove({})
+  }
+
+  removeData()
+
   if (Assignments.find({}).count() === 0) {
     _(2).times(() => {
-
-      const removeData = () => {
-        Assignments.remove({})
-        Campaigns.remove({})
-        CampaignContacts.remove({})
-        CampaignSurveys.remove({})
-      }
-
-      removeData()
-
       const customFields = ['eventUrl']
 
-      let script = factory.tree('campaign_survey').script
-      script += ' Let us know at <<eventUrl>>!'
+      const newSurvey = (answerChildren) => {
+        let script = Factory.tree('campaign_survey').script
+        script += ' Let us know at <<eventUrl>>!'
+        return Factory.create('campaign_survey', { script, answerChildren })
+      }
+      const childSurveys = _(3).range().map(() => newSurvey([]))
 
-      const survey = Factory.create('campaign_survey', { script })
-
+      const survey = newSurvey(childSurveys)
 
       const campaign = Factory.create('campaign', {
         customFields,
-        script,
         campaignSurveyId: survey._id })
 
       const campaignId = campaign._id
@@ -53,4 +55,7 @@ Meteor.startup(() => {
       })
     })
   }
+  //   _(2).times(() => {
+
+  // }
 })
