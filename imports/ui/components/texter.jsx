@@ -19,6 +19,7 @@ import { sendMessage } from '../../api/campaign_contacts/methods'
 import { applyScript } from '../helpers/script_helpers'
 import LinearProgress from 'material-ui/LinearProgress'
 
+import { CampaignSurveys } from '../../api/campaign_surveys/campaign_surveys'
 const styles = {
   card: {
     width: 500,
@@ -39,7 +40,7 @@ export class Texter extends Component {
     super(props)
 
     this.state = {
-      currentContactIndex: -1,
+      currentContactIndex: 0,
       inputValue: ''
     }
 
@@ -109,9 +110,11 @@ export class Texter extends Component {
     {
       return ''
     }
+    const { assignment, surveys } = this.props
 
-    const { assignment } = this.props
-    return applyScript(assignment.campaign.script, contact)
+    console.log("SURVEYS", surveys)
+
+    return applyScript(contact.survey().script, contact)
   }
 
   handleSendMessage(event) {
@@ -171,7 +174,7 @@ export class Texter extends Component {
   render() {
     const contact = this.currentContact()
     const { assignment } = this.props
-    const campaign = assignment.campaign
+    const campaign = assignment.campaign()
 
     console.log(this.currentContactIndex, STARTING_INDEX)
     if (this.currentContactIndex === STARTING_INDEX) {
@@ -209,6 +212,10 @@ export class Texter extends Component {
                 fullWidth
               />
             </div>
+            <CardText>
+              {contact.survey().instructions}
+            </CardText>
+            {contact.survey().children().fetch().map((survey) => <p>{survey.answer}<p>) }
             <Toolbar>
               <ToolbarGroup firstChild>
                 <IconMenu

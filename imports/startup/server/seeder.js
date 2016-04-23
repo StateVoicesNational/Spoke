@@ -8,54 +8,64 @@ import { Meteor } from 'meteor/meteor'
 import { Factory } from 'meteor/dburles:factory'
 import { _ } from 'meteor/underscore'
 
-Meteor.startup(() => {
+const removeData = () => {
+  Assignments.remove({})
+  Campaigns.remove({})
+  CampaignContacts.remove({})
+  CampaignSurveys.remove({})
+}
 
-  const removeData = () => {
-    Assignments.remove({})
-    Campaigns.remove({})
-    CampaignContacts.remove({})
-    CampaignSurveys.remove({})
+const createContacts = (assignmentId, campaignId, contactCount) => {
+  _(contactCount).times(() => {
+    const eventUrl = `http://bit.ly/${Fake.word(8)}`
+    Factory.create('campaign_contact', {
+      assignmentId,
+      campaignId,
+      customFields: { eventUrl } })
+  })
+}
+
+const createSurveys = (campaignId) => {
+  const newSurvey = (answerParent) => {
+    let script = Factory.tree('campaign_survey').script
+    script += ' Let us know at <<eventUrl>>!'
+    return Factory.create('campaign_survey', {
+      script,
+      answerParent,
+      campaignId   })
   }
 
-  removeData()
+  const parentSurvey = newSurvey(null)
+  _(3).range().map(() => newSurvey(parentSurvey))
+}
+
+const createAssignment = () => {
+  const customFields = ['eventUrl']
+
+  const campaign = Factory.create('campaign', { customFields })
+  const campaignId = campaign._id
+
+  createSurveys(campaignId)
+
+  const assignment = Factory.create('assignment', {
+    campaignId,
+    campaign: {
+      title: campaign.title,
+      description: campaign.description,
+      script: campaign.script,
+      customFields: campaign.customFields
+    }
+  })
+  createContacts(assignment._id, campaignId, 10)
+}
+
+
+Meteor.startup(() => {
+  // removeData()
 
   if (Assignments.find({}).count() === 0) {
     _(2).times(() => {
-      const customFields = ['eventUrl']
-
-      const newSurvey = (answerChildren) => {
-        let script = Factory.tree('campaign_survey').script
-        script += ' Let us know at <<eventUrl>>!'
-        return Factory.create('campaign_survey', { script, answerChildren })
-      }
-      const childSurveys = _(3).range().map(() => newSurvey([]))
-
-      const survey = newSurvey(childSurveys)
-
-      const campaign = Factory.create('campaign', {
-        customFields,
-        campaignSurveyId: survey._id })
-
-      const campaignId = campaign._id
-
-      const assignment = Factory.create('assignment', {
-        campaignId,
-        campaign: {
-          title: campaign.title,
-          description: campaign.description,
-          script: campaign.script,
-          customFields: campaign.customFields
-        }
-      })
-      const assignmentId = assignment._id
-
-      _(10).times(() => {
-        const eventUrl = `http://bit.ly/${Fake.word(8)}`
-        Factory.create('campaign_contact', { assignmentId, campaignId, customFields: { eventUrl } })
-      })
+      createAssignment()
     })
   }
-  //   _(2).times(() => {
-
-  // }
 })

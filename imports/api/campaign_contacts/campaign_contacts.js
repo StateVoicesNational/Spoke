@@ -2,6 +2,7 @@ import { Mongo } from 'meteor/mongo'
 import { Factory } from 'meteor/dburles:factory'
 import { SimpleSchema } from 'meteor/aldeed:simple-schema'
 import { Fake } from 'meteor/anti:fake'
+import { CampaignSurveys } from '../campaign_surveys/campaign_surveys'
 
 export const CampaignContacts = new Mongo.Collection('campaign_contacts')
 
@@ -28,14 +29,18 @@ CampaignContacts.schema = new SimpleSchema({
   contactId: { type: String },
   name: { type: String },
   number: { type: String },
-  custom_fields: { type: Object, blackbox: true },
+  customFields: { type: Object, blackbox: true },
   createdAt: { type: Date },
   assignmentId: { type: String }, // so we can tell easily what is unassigned
   messages: { type: [MessageSchema] },
   lastMessage: {
     type: MessageSchema,
     optional: true
-  } // cached so we can query easily since we can't query by the last in a message array.
+  }, // cached so we can query easily since we can't query by the last in a message array.
+  campaignSurveyId: {
+    type: String,
+    optional: true
+  }
 })
 
 CampaignContacts.attachSchema(CampaignContacts.schema)
@@ -45,7 +50,7 @@ Factory.define('campaign_contact', CampaignContacts, {
   contactId: () => Fake.word(),
   name: () => Fake.user({ fields: ['name'] }).name,
   number: '669-221-6251',
-  custom_fields: () => {
+  customFields: () => {
     const fields = {}
     fields[Fake.word()] = Fake.sentence(2)
     return fields
@@ -53,7 +58,8 @@ Factory.define('campaign_contact', CampaignContacts, {
   createdAt: () => new Date(),
   assignmentId: () => Factory.get('assignment'),
   messages: [],
-  lastMessage: null
+  lastMessage: null,
+  campaignSurveyId: null
 })
 
 // This represents the keys from CampaignContacts objects that should be published
@@ -66,8 +72,17 @@ CampaignContacts.publicFields = {
 const DEFAULT_SCRIPT_FIELDS = ['name', 'number']
 
 CampaignContacts.helpers({
+  survey() {
+    if (!this.campaignSurveyId) {
+      console.log("find default")
+      return CampaignSurveys.findOne({ campaignId: this.campaignId, parentAnswer: null})
+    }
+    console.log("find one", this.campaignSurveyId, CampaignSurveys.findOne({ _id: this.campaignSurveyId }))
+    return CampaignSurveys.findOne({ _id: this.campaignSurveyId })
+  },
+
   scriptFields() {
-    return Object.keys(this.custom_fields).concat(DEFAULT_SCRIPT_FIELDS)
+    return Object.keys(this.customFields).concat(DEFAULT_SCRIPT_FIELDS)
   },
 
   getScriptField(fieldName) {
@@ -79,6 +94,6 @@ CampaignContacts.helpers({
       return this[fieldName]
     }
 
-    return this.custom_fields[fieldName]
+    return this.customFields[fieldName]
   }
 })

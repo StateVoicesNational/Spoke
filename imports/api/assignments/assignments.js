@@ -2,7 +2,7 @@ import { Mongo } from 'meteor/mongo'
 import { Factory } from 'meteor/dburles:factory'
 import { SimpleSchema } from 'meteor/aldeed:simple-schema'
 import { CampaignContacts } from '../campaign_contacts/campaign_contacts.js'
-
+import { Campaigns } from '../campaigns/campaigns'
 export const Assignments = new Mongo.Collection('assignments')
 
 // Deny all client-side updates since we will be using methods to manage this collection
@@ -37,5 +37,8 @@ Assignments.publicFields = {
 Assignments.helpers({
   contacts() {
     return CampaignContacts.find({ assignmentId: this._id })
+  },
+  campaign() {
+    return Campaigns.findOne({ _id: this.campaignId })
   }
 })

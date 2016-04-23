@@ -2,6 +2,7 @@ import { Mongo } from 'meteor/mongo'
 import { SimpleSchema } from 'meteor/aldeed:simple-schema'
 import { Fake } from 'meteor/anti:fake'
 import { Factory } from 'meteor/dburles:factory'
+import { CampaignSurveys } from '../campaign_surveys/campaign_surveys'
 
 export const Campaigns = new Mongo.Collection('campaigns')
 
@@ -18,7 +19,6 @@ Campaigns.schema = new SimpleSchema({
   title: { type: String },
   description: { type: String },
   createdAt: { type: Date },
-  campaignSurveyId: { type: String },
   customFields: { type: [String] }
 })
 
@@ -35,7 +35,6 @@ Factory.define('campaign', Campaigns, {
     'Invite users to canvassing',
     'Sign up volunteers',
     'Get out the vote!']),
-  campaignSurveyId: () => Factory.get('campaign_survey'),
   customFields: []
 })
 
@@ -44,3 +43,9 @@ Factory.define('campaign', Campaigns, {
 // them here to keep them private to the server.
 Campaigns.publicFields = {
 }
+
+Campaigns.helpers({
+  surveys() {
+    return CampaignSurveys.find({ campaignId: this._id })
+  }
+})

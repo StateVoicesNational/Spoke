@@ -1,26 +1,32 @@
-import { Meteor } from 'meteor/meteor';
-import { Assignments } from '../../api/assignments/assignments.js';
-import { createContainer } from 'meteor/react-meteor-data';
-import { AssignmentPage } from '../pages/assignment_page';
+import { Meteor } from 'meteor/meteor'
+import { Assignments } from '../../api/assignments/assignments.js'
+import { createContainer } from 'meteor/react-meteor-data'
+import { AssignmentPage } from '../pages/assignment_page'
 
 
-export default createContainer(({id}) => {
-    const handle = Meteor.subscribe('assignments');
-    const contactsHandle = Meteor.subscribe('campaignContacts.forAssignment', id);
-    const loading = !contactsHandle.ready();
+export default createContainer(({ id }) => {
+  Meteor.subscribe('assignments')
+  const assignmentHandle = Meteor.subscribe('assignment.allRelatedData', id)
 
-    console.log(contactsHandle.ready())
-    let data = {
-      assignments: Assignments.find({}).fetch(),
-      assignment: null,
-      contacts: []
-    }
-    if (handle.ready())
+  let data = {
+    assignments: Assignments.find({}).fetch(),
+    assignment: null,
+    campaign: null,
+    surveys: [],
+    contacts: [],
+  }
+  if (assignmentHandle.ready()) {
+    const assignment = Assignments.findOne(id)
+    data.assignment = assignment
+    if (assignment)
     {
-      const assignment = Assignments.findOne(id);
-      data.assignment = assignment
-      if (assignment)
-        data.contacts = assignment.contacts().fetch()
+      data.contacts = assignment.contacts().fetch()
+      const campaign = assignment.campaign()
+      data.campaign = campaign
+      data.surveys = campaign.surveys().fetch()
     }
-    return data
-}, AssignmentPage);
+  }
+
+  console.log("in createContainer data", data)
+  return data
+}, AssignmentPage)
