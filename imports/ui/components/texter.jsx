@@ -13,6 +13,8 @@ import NavigateNextIcon from 'material-ui/svg-icons/image/navigate-next'
 import MenuItem from 'material-ui/MenuItem'
 
 import RaisedButton from 'material-ui/RaisedButton'
+import FlatButton from 'material-ui/FlatButton';
+
 import { Toolbar, ToolbarGroup, ToolbarTitle } from 'material-ui/Toolbar'
 import { MessagesList } from './messages_list'
 import { sendMessage } from '../../api/campaign_contacts/methods'
@@ -171,6 +173,19 @@ export class Texter extends Component {
     </Toolbar>)
   }
 
+  renderAnswers() {
+    const contact = this.currentContact()
+    const survey = contact.survey()
+    const answers = survey.children().fetch()
+    console.log("render answers", contact.survey())
+    return (
+      <div>
+        <p>{survey.question}</p>
+        {answers.map(survey => <FlatButton key={survey._id} label={survey.answer}/> )}
+      </div>
+    )
+  }
+
   render() {
     const contact = this.currentContact()
     const { assignment } = this.props
@@ -202,6 +217,10 @@ export class Texter extends Component {
             {contact.messages.length > 0 ? <MessagesList messages={contact.messages} /> : ''}
 
             <Divider />
+            <div>
+              {this.renderAnswers()}
+            </div>
+
             <div style={styles.textarea}>
               <TextField
                 ref="newMessageInput"
@@ -214,8 +233,8 @@ export class Texter extends Component {
             </div>
             <CardText>
               {contact.survey().instructions}
+              hihihi
             </CardText>
-            {contact.survey().children().fetch().map((survey) => <p>{survey.answer}<p>) }
             <Toolbar>
               <ToolbarGroup firstChild>
                 <IconMenu

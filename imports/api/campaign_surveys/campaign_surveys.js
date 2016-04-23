@@ -18,7 +18,7 @@ CampaignSurveys.schema = new SimpleSchema({
     type: String,
     optional: true
   },
-  answerParent: { // array of nested CampaignSurveys
+  parentCampaignSurveyId: { // array of nested CampaignSurveys
     type: String,
     optional: true
   },
@@ -30,19 +30,19 @@ CampaignSurveys.schema = new SimpleSchema({
 
 Factory.define('campaign_survey', CampaignSurveys, {
   campaignId: () => Factory.get('campaign'),
-  answer: () => Fake.fromArray['Yes', 'No', 'Maybe'],
+  answer: () => Fake.fromArray(['Yes', 'No', 'Maybe']),
   script: () => Fake.fromArray([
     "Hi there, <<name>>! We have an event coming up soon and we're hoping you can join us to help Bernie win! If you can, let us know!",
     'Hey <<name>>! Come help us out at this upcoming event.',
     "Hi <<name>>. We'd love to have you join us at an upcoming rally in your area. Do you think you'll be free?"
   ]),
   question: () => Fake.fromArray(['Can the user attend the event?', 'Will this person support Bernie?']),
-  answerParent: () => null,
+  parentCampaignSurveyId: () => null,
   instructions: () => Fake.sentence(20)
 })
 
 CampaignSurveys.helpers({
   children() {
-    return CampaignSurveys.find({ parentAnswer: this._id})
+    return CampaignSurveys.find({ parentCampaignSurveyId: this._id})
   }
 })
