@@ -1,34 +1,29 @@
 import React, { Component } from 'react'
 import { Card, CardTitle, CardText, CardActions } from 'material-ui/Card'
 import Paper from 'material-ui/Paper'
-import TextField from 'material-ui/TextField'
 import Divider from 'material-ui/Divider'
 
 import IconMenu from 'material-ui/IconMenu'
 import IconButton from 'material-ui/IconButton/IconButton'
 import DescriptionIcon from 'material-ui/svg-icons/action/description'
-import NavigateBeforeIcon from 'material-ui/svg-icons/image/navigate-before'
-import NavigateNextIcon from 'material-ui/svg-icons/image/navigate-next'
 
 import MenuItem from 'material-ui/MenuItem'
 
 import RaisedButton from 'material-ui/RaisedButton'
-import FlatButton from 'material-ui/FlatButton';
 
 import { Toolbar, ToolbarGroup, ToolbarTitle } from 'material-ui/Toolbar'
 import { MessagesList } from './messages_list'
 import { sendMessage } from '../../api/campaign_contacts/methods'
 import { applyScript } from '../helpers/script_helpers'
 import LinearProgress from 'material-ui/LinearProgress'
+import { Survey } from './survey'
+import { MessageField } from './message_field'
+import { TexterNavigationToolbar } from './texter_navigation_toolbar'
 
-import { CampaignSurveys } from '../../api/campaign_surveys/campaign_surveys'
 const styles = {
   card: {
     width: 500,
     margin: '20px auto'
-  },
-  textarea: {
-    padding: 20
   },
   heading: {
     padding: 20
@@ -43,7 +38,6 @@ export class Texter extends Component {
 
     this.state = {
       currentContactIndex: 0,
-      inputValue: ''
     }
 
     this.handleChange = this.handleChange.bind(this)
@@ -107,6 +101,7 @@ export class Texter extends Component {
     })
   }
 
+
   defaultScript(contact) {
     if (contact.messages.length > 0)
     {
@@ -118,10 +113,9 @@ export class Texter extends Component {
 
     return applyScript(contact.survey().script, contact)
   }
-
   handleSendMessage(event) {
     event.preventDefault()
-    const input = this.refs.newMessageInput
+    const input = this.refs.input
     if (input.getValue().trim()) {
       sendMessage.call({
         campaignContactId: this.currentContact()._id,
@@ -144,46 +138,9 @@ export class Texter extends Component {
     })
   }
 
-  renderNavigationToolbar(contact) {
-    const currentCount = this.state.currentContactIndex + 1
-    const title = contact.name + ' - ' + currentCount + '/' + this.contactCount() + ' messages'
-    return (
-    <Toolbar>
-      <ToolbarGroup firstChild float="left">
-        <IconButton
-          disabled={!this.hasPrevious()}
-          onClick={this.handleNavigatePrevious}
-        >
-          <NavigateBeforeIcon />
-        </IconButton>
-
-      </ToolbarGroup>
-      <ToolbarGroup>
-        <ToolbarTitle text={title} />
-      </ToolbarGroup>
-      <ToolbarGroup lastChild float="right">
-        <IconButton
-          disabled={!this.hasNext()}
-          onClick={this.handleNavigateNext}
-        >
-          <NavigateNextIcon />
-        </IconButton>
-      </ToolbarGroup>
-
-    </Toolbar>)
-  }
-
-  renderAnswers() {
-    const contact = this.currentContact()
-    const survey = contact.survey()
-    const answers = survey.children().fetch()
-    console.log("render answers", contact.survey())
-    return (
-      <div>
-        <p>{survey.question}</p>
-        {answers.map(survey => <FlatButton key={survey._id} label={survey.answer}/> )}
-      </div>
-    )
+  navigationTitle(contact) {
+    const currentCount = this.props.currentContactIndex + 1
+    return contact.name + ' - ' + currentCount + '/' + this.contactCount() + ' messages'
   }
 
   render() {
@@ -211,26 +168,21 @@ export class Texter extends Component {
         <div>
           <Card style={styles.card}>
             <CardTitle title={campaign.title} subtitle={campaign.description} />
-            {this.renderNavigationToolbar(contact)}
-            <LinearProgress mode="determinate" value={this.state.currentContactIndex * 100 / this.contactCount()} />
 
-            {contact.messages.length > 0 ? <MessagesList messages={contact.messages} /> : ''}
+            <TexterNavigationToolbar
+              title={this.navigationTitle(contact)}
+              hasPrevious={this.hasPrevious()}
+              hasNext={this.hasNext()}
+              onNext={this.handleNavigateNext}
+              onPrevious={this.handleNavigatePrevious}
+              progressValue={this.state.currentContactIndex * 100 / this.contactCount()} />
+
+            <MessagesList messages={contact.messages} />
 
             <Divider />
-            <div>
-              {this.renderAnswers()}
-            </div>
+            <Survey question={contact.survey().question} answers={contact.survey().children().fetch()} />
 
-            <div style={styles.textarea}>
-              <TextField
-                ref="newMessageInput"
-                floatingLabelText="Your message"
-                value={this.state.inputValue}
-                onChange={this.handleChange}
-                multiLine
-                fullWidth
-              />
-            </div>
+            <MessageField refs="input" script={this.defaultScript(contact)} />
             <CardText>
               {contact.survey().instructions}
               hihihi

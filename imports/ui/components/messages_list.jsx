@@ -1,16 +1,25 @@
-import React, { Component } from 'react';
-import {List, ListItem} from 'material-ui/List';
-import Subheader from 'material-ui/Subheader';
+import React, { Component } from 'react'
+import { List, ListItem } from 'material-ui/List'
+import Subheader from 'material-ui/Subheader'
 import { moment } from 'meteor/momentjs:moment'
+
+const style = {
+  maxHeight: 400,
+  overflow: 'auto'
+}
 
 export class MessagesList extends Component {
   componentDidMount() {
-    let node = this.refs.scrollContainer;
-    node.scrollTop = node.scrollHeight;
+    const node = this.refs.scrollContainer
+    node.scrollTop = node.scrollHeight
   }
 
   render() {
     const { messages } = this.props;
+    if (messages.length === 0) {
+      return <div/>
+    }
+
     return (
       <div ref="scrollContainer" style={style}>
         <List>
@@ -26,8 +35,3 @@ export class MessagesList extends Component {
     );
   }
 }
-
-const style = {
-  'maxHeight': 400,
-  overflow: 'auto'
-};
