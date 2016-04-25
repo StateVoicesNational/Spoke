@@ -14,6 +14,7 @@ export default createContainer(({ id }) => {
     campaign: null,
     surveys: [],
     contacts: [],
+    messages: []
   }
   if (assignmentHandle.ready()) {
     const assignment = Assignments.findOne(id)
@@ -24,6 +25,8 @@ export default createContainer(({ id }) => {
       const campaign = assignment.campaign()
       data.campaign = campaign
       data.surveys = campaign.surveys().fetch()
+      // TODO: This is really dumb. I think I need to do one contact at a time.
+      data.messages = campaign.messages().fetch()
     }
   }
 

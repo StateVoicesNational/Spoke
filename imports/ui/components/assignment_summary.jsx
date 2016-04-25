@@ -2,7 +2,7 @@ import React from 'react'
 import { Texter } from '../components/texter'
 
 export const AssignmentSummary = (props) => {
-  const { assignment, contacts, surveys } = props
+  const { assignment, contacts, surveys, messages } = props
   if (!assignment) {
     return (
       <div>
@@ -16,7 +16,7 @@ export const AssignmentSummary = (props) => {
       </div>
     )
   } else {
-    return <Texter assignment={assignment} contacts={contacts} surveys={surveys} />
+    return <Texter assignment={assignment} contacts={contacts} messages={messages} surveys={surveys} />
     // const unmessagedContacts = contacts.filter(contact => !contact.lastMessage);
     // if (unmessagedContacts.length > 0) {
     //   return <Texter assignment={assignment} contacts={unmessagedContacts} surveys={surveys} />
@@ -33,6 +33,7 @@ export const AssignmentSummary = (props) => {
 
 AssignmentSummary.propTypes = {
   assignment: React.PropTypes.object,      // current assignment
+  messages: React.PropTypes.array,   // contacts for current assignment
   contacts: React.PropTypes.array,   // contacts for current assignment
   surveys: React.PropTypes.array   // contacts for current assignment
 }

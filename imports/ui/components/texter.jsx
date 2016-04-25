@@ -13,7 +13,8 @@ import RaisedButton from 'material-ui/RaisedButton'
 
 import { Toolbar, ToolbarGroup, ToolbarTitle } from 'material-ui/Toolbar'
 import { MessagesList } from './messages_list'
-import { sendMessage, updateSurveyResponse } from '../../api/campaign_contacts/methods'
+import { updateSurveyResponse } from '../../api/campaign_contacts/methods'
+import { sendMessage } from '../../api/messages/methods'
 import { applyScript } from '../helpers/script_helpers'
 import { Survey } from './survey'
 import { MessageField } from './message_field'
@@ -120,7 +121,9 @@ export class Texter extends Component {
 
     if (input.getValue().trim()) {
       sendMessage.call({
-        campaignContactId: this.currentContact()._id,
+        campaignId: this.props.assignment.campaignId,
+        contactNumber: this.currentContact().number,
+        userNumber: "test",
         text: input.getValue(),
         isFromContact: false
       }, (error) => {
@@ -128,7 +131,7 @@ export class Texter extends Component {
             alert(error)
         } else {
           input.value = ''
-          this.goToNextContact()
+          // this.goToNextContact()
         }
       })
     }
@@ -149,9 +152,10 @@ export class Texter extends Component {
 
   render() {
     const contact = this.currentContact()
-    const { assignment } = this.props
+    const { assignment, messages } = this.props
     const campaign = assignment.campaign()
 
+    console.log("messages in texter", messages)
     console.log(this.currentContactIndex, STARTING_INDEX)
     if (this.currentContactIndex === STARTING_INDEX) {
       return (
@@ -181,7 +185,7 @@ export class Texter extends Component {
               onPrevious={this.handleNavigatePrevious}
               progressValue={this.state.currentContactIndex * 100 / this.contactCount()} />
 
-            <MessagesList messages={contact.messages} />
+            <MessagesList messages={messages.filter((message) => message.contactNumber === contact.number)} />
 
             <Divider />
             <Survey question={contact.survey().question}

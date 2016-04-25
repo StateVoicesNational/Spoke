@@ -40,7 +40,7 @@ export class AssignmentPage extends React.Component {
   }
 
   render() {
-    const { assignment, assignments, contacts, surveys } = this.props
+    const { assignment, assignments, contacts, messages, surveys } = this.props
     return (<div>
       <Drawer open={this.state.navDrawerOpen}
         docked={false}
@@ -52,7 +52,7 @@ export class AssignmentPage extends React.Component {
         title="Townsquare Texting"
         onLeftIconButtonTouchTap={this.handleTouchTapLeftIconButton}
       />
-      <AssignmentSummary assignment={assignment} contacts={contacts} surveys={surveys}/>
+      <AssignmentSummary messages={messages} assignment={assignment} contacts={contacts} surveys={surveys} />
     </div>)
   }
 }
@@ -60,6 +60,7 @@ export class AssignmentPage extends React.Component {
 AssignmentPage.propTypes = {
   assignment: React.PropTypes.object,      // current assignment
   assignments: React.PropTypes.array,   // all assignments for showing in sidebar
+  messages: React.PropTypes.array,   // all assignments for showing in sidebar
   loading: React.PropTypes.bool,     // subscription status
   contacts: React.PropTypes.array,   // contacts for current assignment
   surveys: React.PropTypes.array,   // contacts for current assignment

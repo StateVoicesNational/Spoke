@@ -3,6 +3,7 @@ import { SimpleSchema } from 'meteor/aldeed:simple-schema'
 import { Fake } from 'meteor/anti:fake'
 import { Factory } from 'meteor/dburles:factory'
 import { CampaignSurveys } from '../campaign_surveys/campaign_surveys'
+import { Messages } from '../messages/messages'
 
 export const Campaigns = new Mongo.Collection('campaigns')
 
@@ -47,5 +48,8 @@ Campaigns.publicFields = {
 Campaigns.helpers({
   surveys() {
     return CampaignSurveys.find({ campaignId: this._id })
+  },
+  messages() {
+    return Messages.find({ campaignId: this._id })
   }
 })

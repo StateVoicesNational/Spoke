@@ -4,6 +4,7 @@ import { Assignments } from '../assignments.js'
 import { Campaigns } from '../../campaigns/campaigns'
 import { CampaignContacts } from '../../campaign_contacts/campaign_contacts'
 import { CampaignSurveys } from '../../campaign_surveys/campaign_surveys'
+import { Messages } from '../../messages/messages'
 
 Meteor.publish('assignments', () =>
   // TODO: actually filter correctly and return public fields only
@@ -24,6 +25,10 @@ Meteor.publishComposite('assignment.allRelatedData', (assignmentId) => {
         children: [
           {
             find: (campaign) => CampaignSurveys.find({ campaignId: campaign._id })
+          },
+          {
+            // TODO sort by created
+            find: (campaign) => Messages.find({ campaignId: campaign._id })
           }
         ]
       },
