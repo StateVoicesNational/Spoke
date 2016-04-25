@@ -13,13 +13,12 @@ import RaisedButton from 'material-ui/RaisedButton'
 
 import { Toolbar, ToolbarGroup, ToolbarTitle } from 'material-ui/Toolbar'
 import { MessagesList } from './messages_list'
-import { sendMessage } from '../../api/campaign_contacts/methods'
+import { sendMessage, updateSurveyResponse } from '../../api/campaign_contacts/methods'
 import { applyScript } from '../helpers/script_helpers'
-import LinearProgress from 'material-ui/LinearProgress'
 import { Survey } from './survey'
 import { MessageField } from './message_field'
 import { TexterNavigationToolbar } from './texter_navigation_toolbar'
-
+import { ResponseDropdown } from './response_dropdown'
 const styles = {
   card: {
     width: 500,
@@ -40,11 +39,12 @@ export class Texter extends Component {
       currentContactIndex: 0,
     }
 
-    this.handleChange = this.handleChange.bind(this)
     this.handleNavigateNext = this.handleNavigateNext.bind(this)
     this.handleNavigatePrevious = this.handleNavigatePrevious.bind(this)
     this.handleSendMessage = this.handleSendMessage.bind(this)
     this.handleBeginTexting = this.handleBeginTexting.bind(this)
+
+    this.handleSurveyChange = this.handleSurveyChange.bind(this)
   }
 
   currentContact() {
@@ -113,9 +113,11 @@ export class Texter extends Component {
 
     return applyScript(contact.survey().script, contact)
   }
+
   handleSendMessage(event) {
     event.preventDefault()
     const input = this.refs.input
+
     if (input.getValue().trim()) {
       sendMessage.call({
         campaignContactId: this.currentContact()._id,
@@ -132,14 +134,16 @@ export class Texter extends Component {
     }
   }
 
-  handleChange(event) {
-    this.setState({
-      inputValue: event.target.value
+  handleSurveyChange(event) {
+    const campaignSurveyId = event.target.value
+    updateSurveyResponse.call({
+      campaignSurveyId,
+      campaignContactId: this.currentContact()._id
     })
   }
 
   navigationTitle(contact) {
-    const currentCount = this.props.currentContactIndex + 1
+    const currentCount = this.state.currentContactIndex + 1
     return contact.name + ' - ' + currentCount + '/' + this.contactCount() + ' messages'
   }
 
@@ -180,13 +184,11 @@ export class Texter extends Component {
             <MessagesList messages={contact.messages} />
 
             <Divider />
-            <Survey question={contact.survey().question} answers={contact.survey().children().fetch()} />
-
-            <MessageField refs="input" script={this.defaultScript(contact)} />
-            <CardText>
-              {contact.survey().instructions}
-              hihihi
-            </CardText>
+            <Survey question={contact.survey().question}
+              answers={contact.survey().children().fetch()}
+              onSurveyChange={this.handleSurveyChange} />
+            <ResponseDropdown />
+            <MessageField ref="input" script={this.defaultScript(contact)} />
             <Toolbar>
               <ToolbarGroup firstChild>
                 <IconMenu
@@ -196,7 +198,6 @@ export class Texter extends Component {
               </ToolbarGroup>
               <ToolbarGroup>
                 <RaisedButton
-                  disabled={!this.state.inputValue}
                   onClick={this.handleSendMessage}
                   label="Send"
                   primary

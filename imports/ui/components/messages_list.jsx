@@ -11,13 +11,15 @@ const style = {
 export class MessagesList extends Component {
   componentDidMount() {
     const node = this.refs.scrollContainer
-    node.scrollTop = node.scrollHeight
+    if (node) {
+      node.scrollTop = node.scrollHeight
+    }
   }
 
   render() {
     const { messages } = this.props;
     if (messages.length === 0) {
-      return <div/>
+      return null
     }
 
     return (

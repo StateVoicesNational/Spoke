@@ -28,7 +28,20 @@ export const sendMessage = new ValidatedMethod({
   }
 })
 
+export const updateSurveyResponse = new ValidatedMethod({
+  name: 'campaignContacts.updateSurveyResponse',
+  validate: new SimpleSchema({
+    campaignContactId: { type: String },
+    campaignSurveyId: { type: String },
+  }).validator(),
+  run({ campaignContactId, campaignSurveyId }) {
+    const campaignContact = CampaignContacts.findOne(campaignContactId)
 
+    CampaignContacts.update(campaignContactId, { $set: {
+      campaignSurveyId
+    } })
+  }
+})
 // TODO:Is this necessary?
 // // Get list of all method names on Todos
 // const CAMPAIGN_CONTACTS_METHODS = _.pluck([

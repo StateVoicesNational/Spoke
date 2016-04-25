@@ -16,17 +16,18 @@ export const AssignmentSummary = (props) => {
       </div>
     )
   } else {
-    const unmessagedContacts = contacts.filter(contact => !contact.lastMessage);
-    if (unmessagedContacts.length > 0) {
-      return <Texter assignment={assignment} contacts={unmessagedContacts} surveys={surveys} />
-    } else {
-      const unrespondedContacts = contacts.filter(contact => contact.lastMessage.isFromContact);
-      if (unrespondedContacts.length > 0) {
-        return <Texter assignment={assignment} contacts={unrespondedContacts} surveys={surveys} />
-      } else {
-        return <div>You have nothing to respond to right now! Great job</div>
-      }
-    }
+    return <Texter assignment={assignment} contacts={contacts} surveys={surveys} />
+    // const unmessagedContacts = contacts.filter(contact => !contact.lastMessage);
+    // if (unmessagedContacts.length > 0) {
+    //   return <Texter assignment={assignment} contacts={unmessagedContacts} surveys={surveys} />
+    // } else {
+    //   const unrespondedContacts = contacts.filter(contact => contact.lastMessage.isFromContact);
+    //   if (unrespondedContacts.length > 0) {
+    //     return <Texter assignment={assignment} contacts={unrespondedContacts} surveys={surveys} />
+    //   } else {
+    //     return <div>You have nothing to respond to right now! Great job</div>
+    //   }
+    // }
   }
 }
 

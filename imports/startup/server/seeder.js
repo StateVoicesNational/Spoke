@@ -61,7 +61,7 @@ const createAssignment = () => {
 
 
 Meteor.startup(() => {
-  removeData()
+  // removeData()
 
   if (Assignments.find({}).count() === 0) {
     _(2).times(() => {

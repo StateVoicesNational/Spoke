@@ -1,9 +1,16 @@
 import React from 'react'
-import FlatButton from 'material-ui/FlatButton';
+import {RadioButton, RadioButtonGroup} from 'material-ui/RadioButton';
 
-export const Survey = ({question, answers}) => (
+export const Survey = ({question, answers, onSurveyChange}) => (
   <div>
     <p>{question}</p>
-    {answers.map(answer => <FlatButton key={answer._id} label={answer.answer}/> )}
+    <RadioButtonGroup name="survey"
+      onChange={onSurveyChange} >
+      {answers.map(answer => <RadioButton
+          key={answer._id}
+          value={answer._id}
+          label={answer.answer}
+        /> )}
+    </RadioButtonGroup>
   </div>
 )
