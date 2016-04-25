@@ -1,6 +1,7 @@
 import { ValidatedMethod } from 'meteor/mdg:validated-method'
 import { SimpleSchema } from 'meteor/aldeed:simple-schema'
 import { CampaignContacts } from './campaign_contacts.js'
+import {Plivo} from 'meteor/pfafman:plivo'
 
 export const sendMessage = new ValidatedMethod({
   name: 'campaignContacts.sendMessage',
@@ -12,19 +13,47 @@ export const sendMessage = new ValidatedMethod({
   run({ campaignContactId, isFromContact, text }) {
     const campaignContact = CampaignContacts.findOne(campaignContactId)
 
-    const message = {
-      isFromContact,
-      text,
-      createdAt: new Date()
+    if (Meteor.isServer)
+    {
+      plivo = Plivo.RestAPI({
+        authId: Meteor.settings.private.plivo.authId,
+        authToken: Meteor.settings.private.plivo.authToken,
+      });
+
+      const params = {
+          src: Meteor.settings.plivo.fromPhoneNumber, // Caller Id
+          dst : Meteor.settings.plivo.testPhoneNumbers.sheena, // User Number to Call
+          text : text,
+          type : "sms",
+      };
+
+      plivo.send_message(params, function (status, response) {
+        if (status === 202)
+        {
+          const plivoMessageId = response['message_uuid'][0]
+          const message = {
+            isFromContact,
+            text,
+            plivoMessageId,
+            createdAt: new Date()
+          }
+
+          const messages = campaignContact.messages
+          messages.push(message)
+          // TODO This hsould not be in server block bc optimistic UI should be working but not sure how
+
+          CampaignContacts.update(campaignContactId, { $set: {
+            messages,
+            lastMessage: message
+          } })
+        }
+        else {
+          console.log("error")
+          console.log(status, response);
+        }
+      });
     }
 
-    const messages = campaignContact.messages
-    messages.push(message)
-
-    CampaignContacts.update(campaignContactId, { $set: {
-      messages,
-      lastMessage: message
-    } })
   }
 })
 
