@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Card, CardTitle, CardText, CardActions } from 'material-ui/Card'
+import { Card, CardTitle, CardText, CardHeader } from 'material-ui/Card'
 import Paper from 'material-ui/Paper'
 import Divider from 'material-ui/Divider'
 
@@ -20,10 +20,6 @@ import { Survey } from './survey'
 import { MessageField } from './message_field'
 import { ResponseDropdown } from './response_dropdown'
 const styles = {
-  card: {
-    width: 500,
-    margin: '20px auto'
-  },
   heading: {
     padding: 20
   }
@@ -38,10 +34,11 @@ export class Texter extends Component {
   }
 
   defaultScript(contact) {
-    if (contact.messages.length > 0) {
+    const { assignment,  messages, surveys } = this.props
+
+    if (messages.length > 0) {
       return ''
     }
-    const { assignment, surveys } = this.props
 
     return applyScript(contact.survey().script, contact)
   }
@@ -81,34 +78,70 @@ export class Texter extends Component {
     const campaign = assignment.campaign()
 
     return (
-        <div>
-          <Card style={styles.card}>
-            <CardTitle title={contact.name} subtitle={contact.number} />
-            <CardTitle title={campaign.title} subtitle={campaign.description} />
-            <MessagesList messages={messages} />
-            <Divider />
-            <Survey question={contact.survey().question}
-              answers={contact.survey().children().fetch()}
-              onSurveyChange={this.handleSurveyChange} />
-            <ResponseDropdown />
-            <MessageField ref="input" script={this.defaultScript(contact)} />
-            <Toolbar>
-              <ToolbarGroup firstChild>
-                <IconMenu
-                  iconButtonElement={<IconButton><DescriptionIcon /></IconButton>}>
-                  <MenuItem primaryText="Insert scripts" />
-                </IconMenu>
-              </ToolbarGroup>
-              <ToolbarGroup>
-                <RaisedButton
-                  onClick={this.handleSendMessage}
-                  label="Send"
-                  primary
-                />
-              </ToolbarGroup>
-            </Toolbar>
-          </Card>
+      <div>
+        <div className="row">
+          <div className="col-xs-12 col-sm-3 col-md-2 col-lg-1">
+            <div className="box-row">
+              empty rows
+            </div>
+
+          </div>
         </div>
+        <div className="row">
+          <div className="col-xs-12 col-sm-3 col-md-2 col-lg-1">
+            <div className="box-row">
+            </div>
+          </div>
+          <div className="col-xs-6 col-sm-6 col-md-8 col-lg-10">
+              <div className="box-row">
+                <Card>
+                  <CardHeader
+                    title={contact.name}
+                    subtitle={contact.number}
+                  />
+                  <Divider />
+
+                  <MessagesList messages={messages} />
+                  <Divider />
+
+                  <CardHeader
+                    title={contact.name}
+                    subtitle={contact.number}
+                  />
+
+                  <Survey question={contact.survey().question}
+                    answers={contact.survey().children().fetch()}
+                    onSurveyChange={this.handleSurveyChange}/>
+                  <Divider />
+                  <MessageField ref="input" script={this.defaultScript(contact)} />
+                    <ResponseDropdown />
+
+
+                  <Toolbar>
+                    <ToolbarGroup firstChild>
+                      <IconMenu
+                        iconButtonElement={<IconButton><DescriptionIcon /></IconButton>}
+                      >
+                        <MenuItem primaryText="Insert scripts" />
+                      </IconMenu>
+                    </ToolbarGroup>
+                    <ToolbarGroup>
+                      <RaisedButton
+                        onClick={this.handleSendMessage}
+                        label="Send"
+                        primary
+                      />
+                    </ToolbarGroup>
+                  </Toolbar>
+                </Card>
+                <Card>
+                  <CardText>
+                  </CardText>
+                </Card>
+              </div>
+          </div>
+        </div>
+      </div>
     )
   }
 }

@@ -5,11 +5,12 @@ import { moment } from 'meteor/momentjs:moment'
 
 const styles = {
   scroll: {
-    maxHeight: 400,
-    overflow: 'auto'
+    // maxHeight: 200,
+    // overflow: 'auto'
   },
   fromContact: {
-    textAlign: 'right'
+    textAlign: 'right',
+    color: "blue"
   }
 }
 
@@ -31,7 +32,6 @@ export class MessagesList extends Component {
     return (
       <div ref="scrollContainer" style={styles.scroll}>
         <List>
-        <Subheader>Your conversation</Subheader>
           {messages.map(message => (
           <ListItem
             style={message.isFromContact ? styles.fromContact : {}}

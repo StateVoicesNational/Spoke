@@ -1,8 +1,12 @@
 import React from 'react'
 import {RadioButton, RadioButtonGroup} from 'material-ui/RadioButton';
-
+const styles = {
+  survey: {
+    backgroundColor: "green"
+  }
+}
 export const Survey = ({question, answers, onSurveyChange}) => (
-  <div>
+  <div style={styles.survey}>
     <p>{question}</p>
     <RadioButtonGroup name="survey"
       onChange={onSurveyChange} >
