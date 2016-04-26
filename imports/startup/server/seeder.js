@@ -2,6 +2,7 @@ import { Assignments } from '../../api/assignments/assignments.js'
 import { Campaigns } from '../../api/campaigns/campaigns.js'
 import { CampaignContacts } from '../../api/campaign_contacts/campaign_contacts.js'
 import { CampaignSurveys } from '../../api/campaign_surveys/campaign_surveys.js'
+import { Messages } from '../../api/messages/messages.js'
 
 import { Fake } from 'meteor/anti:fake'
 import { Meteor } from 'meteor/meteor'
@@ -13,14 +14,22 @@ const removeData = () => {
   Campaigns.remove({})
   CampaignContacts.remove({})
   CampaignSurveys.remove({})
+  Messages.remove({})
 }
 
-const createContacts = (assignmentId, campaignId, contactCount) => {
-  _(contactCount).times(() => {
+const createContacts = (assignmentId, campaignId) => {
+
+  const numbers = [
+    Meteor.settings.private.plivo.testPhoneNumbers.saikat,
+    Meteor.settings.private.plivo.testPhoneNumbers.sheena
+  ]
+
+  numbers.forEach((number) => {
     const eventUrl = `http://bit.ly/${Fake.word(8)}`
     Factory.create('campaign_contact', {
       assignmentId,
       campaignId,
+      number,
       customFields: { eventUrl } })
   })
 }
@@ -56,11 +65,13 @@ const createAssignment = () => {
       customFields: campaign.customFields
     }
   })
-  createContacts(assignment._id, campaignId, 10)
+  createContacts(assignment._id, campaignId)
 }
 
 
 Meteor.startup(() => {
+  if (Meteor.settings.public.isProduction)
+    return
   // removeData()
 
   if (Assignments.find({}).count() === 0) {

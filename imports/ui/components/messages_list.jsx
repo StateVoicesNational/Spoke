@@ -3,9 +3,14 @@ import { List, ListItem } from 'material-ui/List'
 import Subheader from 'material-ui/Subheader'
 import { moment } from 'meteor/momentjs:moment'
 
-const style = {
-  maxHeight: 400,
-  overflow: 'auto'
+const styles = {
+  scroll: {
+    maxHeight: 400,
+    overflow: 'auto'
+  },
+  fromContact: {
+    textAlign: 'right'
+  }
 }
 
 export class MessagesList extends Component {
@@ -24,11 +29,12 @@ export class MessagesList extends Component {
     }
 
     return (
-      <div ref="scrollContainer" style={style}>
+      <div ref="scrollContainer" style={styles.scroll}>
         <List>
         <Subheader>Your conversation</Subheader>
           {messages.map(message => (
           <ListItem
+            style={message.isFromContact ? styles.fromContact : {}}
             key={message.createdAt}
             primaryText={message.text}
             secondaryText={moment(message.createdAt).fromNow()}
