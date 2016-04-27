@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Texter } from '../components/texter'
+import { Texter } from './texter'
 import { TexterNavigationToolbar } from './texter_navigation_toolbar'
 
 export class AssignmentSummary extends Component {
@@ -76,16 +76,24 @@ export class AssignmentSummary extends Component {
         </div>
       )
     } else {
+        const navigation = (
+          <TexterNavigationToolbar
+          title={this.navigationTitle(this.currentContact())}
+          hasPrevious={this.hasPrevious()}
+          hasNext={this.hasNext()}
+          onNext={this.handleNavigateNext}
+          onPrevious={this.handleNavigatePrevious}
+          progressValue={this.state.currentContactIndex * 100 / this.contactCount()} />
+        )
+        const filteredMessages = messages.filter((message) => message.contactNumber == this.currentContact().number )
       return (
         <div>
-          <TexterNavigationToolbar
-            title={this.navigationTitle(this.currentContact())}
-            hasPrevious={this.hasPrevious()}
-            hasNext={this.hasNext()}
-            onNext={this.handleNavigateNext}
-            onPrevious={this.handleNavigatePrevious}
-            progressValue={this.state.currentContactIndex * 100 / this.contactCount()} />
-            <Texter assignment={assignment} contact={this.currentContact()} messages={messages.filter((message) => message.contactNumber == this.currentContact().number )} surveys={surveys} />
+            <Texter
+              assignment={assignment}
+              contact={this.currentContact()}
+              messages={filteredMessages}
+              surveys={surveys}
+            />
         </div>
         )
       // const unmessagedContacts = contacts.filter(contact => !contact.lastMessage);

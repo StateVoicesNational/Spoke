@@ -8,9 +8,16 @@ const styles = {
     // maxHeight: 200,
     // overflow: 'auto'
   },
-  fromContact: {
-    textAlign: 'right',
-    color: "blue"
+  message: {
+    sent: {
+      fontSize: "13px",
+      // backgroundColor: "blue",
+      marginLeft: "20px"
+    },
+    received: {
+      fontSize: "13px",
+      marginRight: "20px"
+    },
   }
 }
 
@@ -34,7 +41,7 @@ export class MessagesList extends Component {
         <List>
           {messages.map(message => (
           <ListItem
-            style={message.isFromContact ? styles.fromContact : {}}
+            style={message.isFromContact ? styles.message.received : styles.message.sent}
             key={message.createdAt}
             primaryText={message.text}
             secondaryText={moment(message.createdAt).fromNow()}

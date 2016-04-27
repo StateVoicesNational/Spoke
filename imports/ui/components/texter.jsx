@@ -11,12 +11,12 @@ import MenuItem from 'material-ui/MenuItem'
 
 import RaisedButton from 'material-ui/RaisedButton'
 
-import { Toolbar, ToolbarGroup } from 'material-ui/Toolbar'
+import { Toolbar, ToolbarGroup, ToolbarTitle } from 'material-ui/Toolbar'
 import { MessagesList } from './messages_list'
 import { updateSurveyResponse } from '../../api/campaign_contacts/methods'
 import { sendMessage } from '../../api/messages/methods'
 import { applyScript } from '../helpers/script_helpers'
-import { Survey } from './survey'
+import { SurveyList } from './survey_list'
 import { MessageField } from './message_field'
 import { ResponseDropdown } from './response_dropdown'
 const styles = {
@@ -64,9 +64,11 @@ export class Texter extends Component {
     }
   }
 
-  handleSurveyChange(event) {
+
+  handleSurveyChange(event, index, value) {
     const { contact } = this.props
-    const campaignSurveyId = event.target.value
+    const campaignSurveyId = value
+    console.log(value)
     updateSurveyResponse.call({
       campaignSurveyId,
       campaignContactId: contact._id
@@ -74,7 +76,8 @@ export class Texter extends Component {
   }
 
   render() {
-    const { assignment, messages, contact } = this.props
+    const { assignment, messages, contact, surveys } = this.props
+    console.log(surveys)
     const campaign = assignment.campaign()
 
     return (
@@ -94,36 +97,27 @@ export class Texter extends Component {
           </div>
           <div className="col-xs-6 col-sm-6 col-md-8 col-lg-10">
               <div className="box-row">
-                <Card>
-                  <CardHeader
-                    title={contact.name}
-                    subtitle={contact.number}
-                  />
+                <Paper>
+                  <Toolbar>
+                    <ToolbarGroup float="left">
+                      <ToolbarTitle text={contact.name} />
+                    </ToolbarGroup>
+                    <ToolbarGroup float="right">
+                      <IconButton touch={true} tooltip={"hello"}>
+                        <DescriptionIcon />
+                      </IconButton>
+                    </ToolbarGroup>
+                  </Toolbar>
                   <Divider />
 
                   <MessagesList messages={messages} />
                   <Divider />
-
-                  <CardHeader
-                    title={contact.name}
-                    subtitle={contact.number}
-                  />
-
-                  <Survey question={contact.survey().question}
-                    answers={contact.survey().children().fetch()}
-                    onSurveyChange={this.handleSurveyChange}/>
+                    <SurveyList surveys={surveys}/>
                   <Divider />
                   <MessageField ref="input" script={this.defaultScript(contact)} />
-                    <ResponseDropdown />
-
-
                   <Toolbar>
                     <ToolbarGroup firstChild>
-                      <IconMenu
-                        iconButtonElement={<IconButton><DescriptionIcon /></IconButton>}
-                      >
-                        <MenuItem primaryText="Insert scripts" />
-                      </IconMenu>
+                      <ResponseDropdown />
                     </ToolbarGroup>
                     <ToolbarGroup>
                       <RaisedButton
@@ -133,11 +127,7 @@ export class Texter extends Component {
                       />
                     </ToolbarGroup>
                   </Toolbar>
-                </Card>
-                <Card>
-                  <CardText>
-                  </CardText>
-                </Card>
+                </Paper>
               </div>
           </div>
         </div>

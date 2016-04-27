@@ -7,6 +7,8 @@ export const CampaignSurveys = new Mongo.Collection('campaign_surveys')
 
 // TODO: The issue with this is it's not immediately obvious from looking at a document what its children are (e.g. its possible answers)
 
+// answers = {yes: id, no: questionId, maybe: null } , answer
+
 CampaignSurveys.schema = new SimpleSchema({
   campaignId: { type: String },
   answer: { // the current response recorded -- this will be null for the top level survey

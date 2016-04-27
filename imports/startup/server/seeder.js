@@ -35,17 +35,18 @@ const createContacts = (assignmentId, campaignId) => {
 }
 
 const createSurveys = (campaignId) => {
-  const newSurvey = (parentCampaignSurveyId) => {
+  const newSurvey = (parentCampaignSurveyId, answer) => {
     let script = Factory.tree('campaign_survey').script
     script += ' Let us know at <<eventUrl>>!'
     return Factory.create('campaign_survey', {
       script,
+      answer,
       parentCampaignSurveyId,
       campaignId   })
   }
 
   const parentSurvey = newSurvey(null)
-  _(3).range().map(() => newSurvey(parentSurvey._id))
+  // ['Yes','No', 'Maybe'].map((answer) => newSurvey(parentSurvey._id, answer))
 }
 
 const createAssignment = () => {
@@ -72,7 +73,7 @@ const createAssignment = () => {
 Meteor.startup(() => {
   if (Meteor.settings.public.isProduction)
     return
-  // removeData()
+  removeData()
 
   if (Assignments.find({}).count() === 0) {
     _(2).times(() => {
