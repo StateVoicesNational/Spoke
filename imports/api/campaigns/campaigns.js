@@ -2,7 +2,7 @@ import { Mongo } from 'meteor/mongo'
 import { SimpleSchema } from 'meteor/aldeed:simple-schema'
 import { Fake } from 'meteor/anti:fake'
 import { Factory } from 'meteor/dburles:factory'
-import { CampaignSurveys } from '../campaign_surveys/campaign_surveys'
+import { SurveyQuestions } from '../survey_questions/survey_questions'
 import { Messages } from '../messages/messages'
 
 export const Campaigns = new Mongo.Collection('campaigns')
@@ -20,7 +20,11 @@ Campaigns.schema = new SimpleSchema({
   title: { type: String },
   description: { type: String },
   createdAt: { type: Date },
-  customFields: { type: [String] }
+  customFields: { type: [String] },
+  surveyQuestionId: {
+    type: String,
+    optional: true
+  }
 })
 
 Campaigns.attachSchema(Campaigns.schema)
@@ -36,7 +40,8 @@ Factory.define('campaign', Campaigns, {
     'Invite users to canvassing',
     'Sign up volunteers',
     'Get out the vote!']),
-  customFields: []
+  customFields: [],
+  surveyQuestionId: Factory.get('survey_question')
 })
 
 // This represents the keys from Campaigns objects that should be published
@@ -46,8 +51,8 @@ Campaigns.publicFields = {
 }
 
 Campaigns.helpers({
-  surveys() {
-    return CampaignSurveys.find({ campaignId: this._id })
+  survey() {
+    return SurveyQuestions.findOne({ _id: this.surveyQuestionId })
   },
   messages() {
     return Messages.find({ campaignId: this._id })

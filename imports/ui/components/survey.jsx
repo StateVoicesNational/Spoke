@@ -1,6 +1,6 @@
 import React from 'react'
 import SelectField from 'material-ui/SelectField'
-import MenuItem from 'material-ui/MenuItem';
+import MenuItem from 'material-ui/MenuItem'
 
 export const SurveyQuestion = ({ survey, onSurveyChange }) => (
   <div>
@@ -8,23 +8,17 @@ export const SurveyQuestion = ({ survey, onSurveyChange }) => (
       floatingLabelText={survey.question}
       onChange={onSurveyChange}
     >
-      {survey.children().fetch().map(answer =>
+      {survey.allowedAnswers.map(answer =>
         <MenuItem
-          key={answer._id}
-          value={answer._id}
-          primaryText={answer.answer}
+          key={answer.value}
+          value={{answer, surveyQuestionId:survey._id}}
+          primaryText={answer.value}
         />)}
     </SelectField>
-    {survey._id} -
-    { survey.question } -
-    { survey.parentCampaignSurveyId }
-    { survey.answer }
   </div>
 )
 
 SurveyQuestion.propTypes = {
   onSurveyChange: React.PropTypes.object,
-  survey: React.PropTypes.object,
+  survey: React.PropTypes.object
 }
-
-

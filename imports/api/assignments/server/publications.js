@@ -3,7 +3,7 @@ import { SimpleSchema } from 'meteor/aldeed:simple-schema'
 import { Assignments } from '../assignments.js'
 import { Campaigns } from '../../campaigns/campaigns'
 import { CampaignContacts } from '../../campaign_contacts/campaign_contacts'
-import { CampaignSurveys } from '../../campaign_surveys/campaign_surveys'
+import { SurveyQuestions } from '../../survey_questions/survey_questions'
 import { Messages } from '../../messages/messages'
 
 Meteor.publish('assignments', () =>
@@ -24,7 +24,12 @@ Meteor.publishComposite('assignment.allRelatedData', (assignmentId) => {
         find: (assignment) => Campaigns.find({ _id: assignment.campaignId }),
         children: [
           {
-            find: (campaign) => CampaignSurveys.find({ campaignId: campaign._id })
+            find: (campaign) => SurveyQuestions.find({ _id: campaign.surveyQuestionId }),
+            children: [
+              {
+                find: (surveyQuestion) => SurveyQuestions.find( {_id: {$in: []}})
+              }
+            ]
           },
           {
             // TODO sort by created

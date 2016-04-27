@@ -2,6 +2,11 @@ import React, { Component } from 'react'
 import { Texter } from './texter'
 import { TexterNavigationToolbar } from './texter_navigation_toolbar'
 
+const styles = {
+  base: {
+    marginTop: '24px'
+  }
+}
 export class AssignmentSummary extends Component {
   constructor(props) {
     super(props)
@@ -62,7 +67,7 @@ export class AssignmentSummary extends Component {
     return (index >= contacts.length) ? null : contacts[index]
   }
   render() {
-    const { assignment, contacts, surveys, messages } = this.props
+    const { assignment, contacts, survey, messages } = this.props
     if (!assignment) {
       return (
         <div>
@@ -87,12 +92,12 @@ export class AssignmentSummary extends Component {
         )
         const filteredMessages = messages.filter((message) => message.contactNumber == this.currentContact().number )
       return (
-        <div>
+        <div style={styles.base}>
             <Texter
               assignment={assignment}
               contact={this.currentContact()}
               messages={filteredMessages}
-              surveys={surveys}
+              survey={survey}
             />
         </div>
         )
@@ -115,7 +120,7 @@ AssignmentSummary.propTypes = {
   assignment: React.PropTypes.object,      // current assignment
   messages: React.PropTypes.array,   // contacts for current assignment
   contacts: React.PropTypes.array,   // contacts for current assignment
-  surveys: React.PropTypes.array   // contacts for current assignment
+  survey: React.PropTypes.object   // contacts for current assignment
 }
 
 

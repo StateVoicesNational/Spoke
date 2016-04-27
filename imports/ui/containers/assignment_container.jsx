@@ -12,7 +12,7 @@ export default createContainer(({ id }) => {
     assignments: Assignments.find({}).fetch(),
     assignment: null,
     campaign: null,
-    surveys: [],
+    survey: null,
     contacts: [],
     messages: []
   }
@@ -24,7 +24,7 @@ export default createContainer(({ id }) => {
       data.contacts = assignment.contacts().fetch()
       const campaign = assignment.campaign()
       data.campaign = campaign
-      data.surveys = campaign.surveys().fetch()
+      data.survey = campaign.survey()
       // TODO: This is really dumb. I think I need to do one contact at a time.
       data.messages = campaign.messages().fetch()
     }

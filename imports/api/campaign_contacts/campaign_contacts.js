@@ -2,7 +2,7 @@ import { Mongo } from 'meteor/mongo'
 import { Factory } from 'meteor/dburles:factory'
 import { SimpleSchema } from 'meteor/aldeed:simple-schema'
 import { Fake } from 'meteor/anti:fake'
-import { CampaignSurveys } from '../campaign_surveys/campaign_surveys'
+import { SurveyQuestions } from '../survey_questions/survey_questions'
 
 export const CampaignContacts = new Mongo.Collection('campaign_contacts')
 
@@ -75,10 +75,10 @@ CampaignContacts.helpers({
   survey() {
     if (!this.campaignSurveyId) {
       console.log("find default")
-      return CampaignSurveys.findOne({ campaignId: this.campaignId, parentAnswer: null})
+      return SurveyQuestions.findOne({ campaignId: this.campaignId, parentAnswer: null})
     }
-    console.log("find one", this.campaignSurveyId, CampaignSurveys.findOne({ _id: this.campaignSurveyId }))
-    return CampaignSurveys.findOne({ _id: this.campaignSurveyId })
+    console.log("find one", this.campaignSurveyId, SurveyQuestions.findOne({ _id: this.campaignSurveyId }))
+    return SurveyQuestions.findOne({ _id: this.campaignSurveyId })
   },
 
   scriptFields() {

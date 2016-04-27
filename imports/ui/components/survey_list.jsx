@@ -9,16 +9,21 @@ const styles = {
 }
 
 export class SurveyList extends Component {
+  renderQuestion(survey) {
+    const { onSurveyChange } = this.props
+    return <SurveyQuestion
+      survey={survey}
+      onSurveyChange={onSurveyChange}
+    />
+  }
+
   renderChildren(survey) {
-
-    const children = survey.children().fetch()
-
+    let children = survey.children().fetch()
+    // TODO - his is wrong
     if(children) {
-      return children.map((child) =>
-        <SurveyQuestion
-          survey={child}
-          onSurveyChange={this.handleSurveyChange}
-        />)
+      children = children.filter((child) => child.answer == survey.answer)
+
+      return children.map((child) => this.renderQuestion(child))
     }
     else {
       return ''
@@ -26,17 +31,19 @@ export class SurveyList extends Component {
   }
 
   render() {
-    const { surveys } = this.props
-    const survey = surveys[0]
-    return (<div style={styles.base}>
-        <SurveyQuestion survey={survey}
-          onSurveyChange={this.handleSurveyChange}
-        />
-      {this.renderChildren(survey)}
-    </div>)
+    const { survey } = this.props
+    if (!survey) {
+      return null
+    }
+
+    return (
+      <div style={styles.base}>
+        {this.renderQuestion(survey)})
+        {this.renderChildren(survey)}
+      </div>)
   }
 }
 
 SurveyList.propTypes = {
-  surveys: React.PropTypes.array
+  survey: React.PropTypes.object
 }

@@ -13,10 +13,8 @@ Assignments.deny({
 })
 
 Assignments.schema = new SimpleSchema({
-  // userId: {type:String},
   campaignId: { type: String },
   createdAt: { type: Date },
-  // userId: { type: String, regEx: SimpleSchema.RegEx.Id, optional: true },
 })
 
 Assignments.attachSchema(Assignments.schema)

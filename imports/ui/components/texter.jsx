@@ -34,7 +34,8 @@ export class Texter extends Component {
   }
 
   defaultScript(contact) {
-    const { assignment,  messages, surveys } = this.props
+    return ''
+    const { messages } = this.props
 
     if (messages.length > 0) {
       return ''
@@ -52,7 +53,7 @@ export class Texter extends Component {
         campaignId: assignment.campaignId,
         contactNumber: contact.number,
         userNumber: "18053959604",
-        text: input.getValue(),
+        text: input.getValue()
       }, (error) => {
         if (error) {
             alert(error)
@@ -66,30 +67,36 @@ export class Texter extends Component {
 
 
   handleSurveyChange(event, index, value) {
+    console.log("hihihi", value)
+    const { answer, surveyQuestionId } = value
     const { contact } = this.props
-    const campaignSurveyId = value
-    console.log(value)
-    updateSurveyResponse.call({
-      campaignSurveyId,
-      campaignContactId: contact._id
-    })
+    console.log("Updating response", surveyQuestionId, contact._id, answer)
+    // updateSurveyResponse.call({
+    //   campaignSurveyId,
+    //   campaignContactId: contact._id
+    // })
+  }
+
+  renderSurvey() {
+    const { assignment, messages, contact, survey } = this.props
+    if (messages.length === 0) {
+      return ''
+    } else {
+      return [
+        <SurveyList survey={survey}
+          onSurveyChange={this.handleSurveyChange} />,
+        <Divider />
+      ]
+    }
   }
 
   render() {
-    const { assignment, messages, contact, surveys } = this.props
-    console.log(surveys)
+    const { assignment, messages, contact, survey } = this.props
+    console.log(survey)
     const campaign = assignment.campaign()
 
     return (
       <div>
-        <div className="row">
-          <div className="col-xs-12 col-sm-3 col-md-2 col-lg-1">
-            <div className="box-row">
-              empty rows
-            </div>
-
-          </div>
-        </div>
         <div className="row">
           <div className="col-xs-12 col-sm-3 col-md-2 col-lg-1">
             <div className="box-row">
@@ -112,8 +119,7 @@ export class Texter extends Component {
 
                   <MessagesList messages={messages} />
                   <Divider />
-                    <SurveyList surveys={surveys}/>
-                  <Divider />
+                  {this.renderSurvey()}
                   <MessageField ref="input" script={this.defaultScript(contact)} />
                   <Toolbar>
                     <ToolbarGroup firstChild>
@@ -135,3 +141,12 @@ export class Texter extends Component {
     )
   }
 }
+
+Texter.propTypes = {
+  assignment: React.PropTypes.object,      // current assignment
+  messages: React.PropTypes.array,   // all assignments for showing in sidebar
+  contact: React.PropTypes.object,   // contacts for current assignment
+  survey: React.PropTypes.object,   // contacts for current assignment
+  campaign: React.PropTypes.object   // contacts for current assignment
+}
+
