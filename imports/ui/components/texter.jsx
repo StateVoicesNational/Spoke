@@ -13,7 +13,7 @@ import RaisedButton from 'material-ui/RaisedButton'
 
 import { Toolbar, ToolbarGroup, ToolbarTitle } from 'material-ui/Toolbar'
 import { MessagesList } from './messages_list'
-import { updateSurveyResponse } from '../../api/campaign_contacts/methods'
+import { updateAnswer } from '../../api/survey_answers/methods'
 import { sendMessage } from '../../api/messages/methods'
 import { applyScript } from '../helpers/script_helpers'
 import { SurveyList } from './survey_list'
@@ -66,15 +66,15 @@ export class Texter extends Component {
   }
 
 
-  handleSurveyChange(event, index, value) {
-    console.log("hihihi", value)
-    const { answer, surveyQuestionId } = value
+  handleSurveyChange(event, index, values) {
+    const { answer, surveyQuestionId } = values
     const { contact } = this.props
-    console.log("Updating response", surveyQuestionId, contact._id, answer)
-    // updateSurveyResponse.call({
-    //   campaignSurveyId,
-    //   campaignContactId: contact._id
-    // })
+    console.log("updating aswer?", answer)
+    updateAnswer.call({
+      surveyQuestionId,
+      value: answer,
+      campaignContactId: contact._id
+    })
   }
 
   renderSurvey() {
@@ -84,7 +84,8 @@ export class Texter extends Component {
     } else {
       return [
         <SurveyList survey={survey}
-          onSurveyChange={this.handleSurveyChange} />,
+          onSurveyChange={this.handleSurveyChange}
+          contact= {contact} />,
         <Divider />
       ]
     }

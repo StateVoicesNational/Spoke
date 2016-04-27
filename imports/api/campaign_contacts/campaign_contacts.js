@@ -3,6 +3,7 @@ import { Factory } from 'meteor/dburles:factory'
 import { SimpleSchema } from 'meteor/aldeed:simple-schema'
 import { Fake } from 'meteor/anti:fake'
 import { SurveyQuestions } from '../survey_questions/survey_questions'
+import { SurveyAnswers } from '../survey_answers/survey_answers'
 
 export const CampaignContacts = new Mongo.Collection('campaign_contacts')
 
@@ -72,6 +73,13 @@ CampaignContacts.publicFields = {
 const DEFAULT_SCRIPT_FIELDS = ['name', 'number']
 
 CampaignContacts.helpers({
+  surveyAnswer(surveyQuestionId) {
+    console.log("SURVEY QUESTION FIND", surveyQuestionId, this._id)
+    return SurveyAnswers.findOne({
+      surveyQuestionId,
+      campaignContactId: this._id
+    })
+  },
   survey() {
     if (!this.campaignSurveyId) {
       console.log("find default")

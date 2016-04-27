@@ -8,3 +8,5 @@ import '../../api/campaign_contacts/server/publications.js'
 
 import '../../api/messages/methods.js'
 import '../../api/messages/server/publications.js'
+
+import '../../api/survey_answers/methods.js'

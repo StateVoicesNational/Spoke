@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
-import { SurveyQuestion } from './survey'
-
+import { QuestionDropdown } from './survey'
 const styles = {
   base: {
     padding: '0px 24px',
@@ -10,19 +9,24 @@ const styles = {
 
 export class SurveyList extends Component {
   renderQuestion(survey) {
-    const { onSurveyChange } = this.props
-    return <SurveyQuestion
+    const { onSurveyChange, contact } = this.props
+
+    console.log("\nSURVEYS")
+    console.log("answer", contact.surveyAnswer(survey._id))
+    return <QuestionDropdown
       survey={survey}
+      answer={contact.surveyAnswer(survey._id)}
       onSurveyChange={onSurveyChange}
     />
   }
 
   renderChildren(survey) {
+    console.log("rendering children", survey._id)
     let children = survey.children().fetch()
+    console.log(children)
     // TODO - his is wrong
     if(children) {
-      children = children.filter((child) => child.answer == survey.answer)
-
+      children = children.filter((child) => child.answer == this.props.contact.surveyAnswer(survey._id))
       return children.map((child) => this.renderQuestion(child))
     }
     else {
@@ -38,12 +42,14 @@ export class SurveyList extends Component {
 
     return (
       <div style={styles.base}>
-        {this.renderQuestion(survey)})
+        {this.renderQuestion(survey)}
         {this.renderChildren(survey)}
       </div>)
   }
 }
 
 SurveyList.propTypes = {
-  survey: React.PropTypes.object
+  survey: React.PropTypes.object,
+  contact: React.PropTypes.object,
+  onSurveyChange: React.PropTypes.function
 }

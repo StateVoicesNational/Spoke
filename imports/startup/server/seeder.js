@@ -2,6 +2,7 @@ import { Assignments } from '../../api/assignments/assignments.js'
 import { Campaigns } from '../../api/campaigns/campaigns.js'
 import { CampaignContacts } from '../../api/campaign_contacts/campaign_contacts.js'
 import { SurveyQuestions } from '../../api/survey_questions/survey_questions.js'
+import { SurveyAnswers } from '../../api/survey_answers/survey_answers.js'
 import { Messages } from '../../api/messages/messages.js'
 
 import { Fake } from 'meteor/anti:fake'
@@ -14,6 +15,7 @@ const removeData = () => {
   Campaigns.remove({})
   CampaignContacts.remove({})
   SurveyQuestions.remove({})
+  SurveyAnswers.remove({})
   Messages.remove({})
 }
 
