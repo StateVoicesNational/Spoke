@@ -100,11 +100,14 @@ const createAssignment = () => {
 Meteor.startup(() => {
   if (Meteor.settings.public.isProduction)
     return
-  removeData()
 
-  if (Assignments.find({}).count() === 0) {
-    _(2).times(() => {
-      createAssignment()
-    })
+  if (Meteor.settings.public.refreshTestData) {
+    removeData()
+
+    if (Assignments.find({}).count() === 0) {
+      _(2).times(() => {
+        createAssignment()
+      })
+    }
   }
 })
