@@ -79,17 +79,19 @@ export class Texter extends Component {
     if (messages.length === 0) {
       return ''
     } else {
+      const lastMessage = messages[messages.length - 1]
       return [
         <SurveyList survey={survey}
           onScriptChange={this.handleScriptChange}
-          contact= {contact} />,
+          contact= {contact}
+          responseNeeded={ lastMessage.isFromContact } />,
         <Divider />
       ]
     }
   }
 
   render() {
-    const { assignment, messages, contact, survey } = this.props
+    const { messages, contact } = this.props
 
     return (
       <div>

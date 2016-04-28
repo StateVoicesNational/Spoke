@@ -10,14 +10,15 @@ const styles = {
   },
   message: {
     sent: {
-      fontSize: "13px",
-      // backgroundColor: "blue",
-      marginLeft: "20px"
+      textAlign: 'right',
+      fontSize: '13px',
+      // backgroundColor: 'blue',
+      marginLeft: '24px'
     },
     received: {
-      fontSize: "13px",
-      marginRight: "20px"
-    },
+      fontSize: '13px',
+      marginRight: '24px'
+    }
   }
 }
 

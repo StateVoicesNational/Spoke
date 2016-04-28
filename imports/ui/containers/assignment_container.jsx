@@ -33,6 +33,5 @@ export default createContainer(({ id }) => {
     }
   }
 
-  console.log("in createContainer data", data)
   return data
 }, AssignmentPage)

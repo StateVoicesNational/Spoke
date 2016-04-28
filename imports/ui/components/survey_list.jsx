@@ -37,12 +37,16 @@ export class SurveyList extends Component {
   }
 
   renderChildren(survey) {
-    const answer = this.props.contact.surveyAnswer(survey._id)
+    const { contact, responseNeeded } = this.props
+
+    const answer = contact.surveyAnswer(survey._id)
     if (answer) {
-      const child = survey.allowedAnswers.find(({ value }) => value == answer.value)
+      const child = survey.allowedAnswers.find(({ value }) => value === answer.value)
       if (child.surveyQuestionId) {
-        console.log(SurveyQuestions.find({}))
-        return this.renderQuestion(SurveyQuestions.findOne(child.surveyQuestionId))
+        const childQuestion = SurveyQuestions.findOne(child.surveyQuestionId)
+        if (contact.surveyAnswer(childQuestion._id) || responseNeeded) {
+          return this.renderQuestion(childQuestion)
+        }
       }
     }
 
@@ -67,5 +71,6 @@ SurveyList.propTypes = {
   survey: React.PropTypes.object,
   contact: React.PropTypes.object,
   onSurveyChange: React.PropTypes.function,
-  onScriptChange: React.PropTypes.function
+  onScriptChange: React.PropTypes.function,
+  responseNeeded: React.PropTypes.boolean
 }
