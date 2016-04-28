@@ -12,7 +12,7 @@ export const updateAnswer = new ValidatedMethod({
   run({ campaignContactId, surveyQuestionId, value }) {
     console.log(campaignContactId, surveyQuestionId, value)
     const answer = SurveyAnswers.findOne({ campaignContactId, surveyQuestionId })
-    console.log(answer)
+    console.log("all survey answers", SurveyAnswers.find({}).fetch())
     if (answer) {
       SurveyAnswers.update(
         { _id: answer._id },

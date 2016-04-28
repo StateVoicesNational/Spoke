@@ -26,38 +26,23 @@ Meteor.publishComposite('assignment.allRelatedData', (assignmentId) => {
         children: [
           {
             find: (campaign) => {
-              SurveyQuestions.find({ _id: campaign.surveyQuestionId })
-              const ids = [];
+              // This is not reactive.
+              const ids = []
+              const search = (questionId) => {
+                if (questionId === null) {
+                  return
+                }
 
-               // recursive search for child articles - populates
-               // the ids array
-               // This is not reactive.
-               const search = function(questionId) {
-                console.log("searching questionid", questionId)
+                ids.push(questionId)
+                const surveyQuestion = SurveyQuestions.findOne({ _id: questionId })
+                const childIds = surveyQuestion.allowedAnswers.map(({ surveyQuestionId }) => surveyQuestionId).filter((val) => val)
 
-                  if (questionId === null)
-                  {
-                    return
-                  }
-
-                 ids.push(questionId);
-                 const surveyQuestion = SurveyQuestions.findOne({_id : questionId })
-                 const childIds = surveyQuestion.allowedAnswers.map(({surveyQuestionId}) => surveyQuestionId).filter((val) => val)
-
-                 console.log("childIds", childIds)
-                 for (let childId of childIds) {
-                  console.log("child is ", childId)
-                    search(childId);
-                  }
-               }
-
-
-               // populate ids, starting with articleId
-               search(campaign.surveyQuestionId);
-
-               console.log("FETCHING IDS", ids)
-
-               return SurveyQuestions.find({_id: {$in: ids}})
+                for (let childId of childIds) {
+                  search(childId)
+                }
+              }
+              search(campaign.surveyQuestionId)
+              return SurveyQuestions.find({ _id: { $in: ids } })
             }
           },
           {

@@ -24,7 +24,8 @@ Campaigns.schema = new SimpleSchema({
   surveyQuestionId: {
     type: String,
     optional: true
-  }
+  },
+  script: { type: String } // TODO Should scripts be in a separate collection? Currently they are strewn about
 })
 
 Campaigns.attachSchema(Campaigns.schema)
@@ -41,7 +42,8 @@ Factory.define('campaign', Campaigns, {
     'Sign up volunteers',
     'Get out the vote!']),
   customFields: [],
-  surveyQuestionId: Factory.get('survey_question')
+  surveyQuestionId: Factory.get('survey_question'),
+  script: () => 'Hey there <<name>>'
 })
 
 // This represents the keys from Campaigns objects that should be published

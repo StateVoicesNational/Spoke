@@ -10,3 +10,5 @@ import '../../api/messages/methods.js'
 import '../../api/messages/server/publications.js'
 
 import '../../api/survey_answers/methods.js'
+
+import '../../api/survey_questions/survey_questions.js'

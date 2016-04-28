@@ -1,5 +1,8 @@
 import React, { Component } from 'react'
 import { QuestionDropdown } from './survey'
+import { SurveyQuestions } from '../../api/survey_questions/survey_questions'
+import { updateAnswer } from '../../api/survey_answers/methods'
+
 const styles = {
   base: {
     padding: '0px 24px',
@@ -8,30 +11,42 @@ const styles = {
 }
 
 export class SurveyList extends Component {
-  renderQuestion(survey) {
-    const { onSurveyChange, contact } = this.props
+  constructor(props) {
+    super(props)
+    this.handleSurveyChange = this.handleSurveyChange.bind(this)
+  }
 
-    console.log("\nSURVEYS")
-    console.log("answer", contact.surveyAnswer(survey._id))
+  handleSurveyChange(surveyQuestionId, answer, script) {
+    const { contact, onScriptChange } = this.props
+    updateAnswer.call({
+      surveyQuestionId,
+      value: answer,
+      campaignContactId: contact._id
+    })
+    onScriptChange(script)
+  }
+
+  renderQuestion(survey) {
+    const { contact } = this.props
+
     return <QuestionDropdown
       survey={survey}
       answer={contact.surveyAnswer(survey._id)}
-      onSurveyChange={onSurveyChange}
+      onSurveyChange={this.handleSurveyChange}
     />
   }
 
   renderChildren(survey) {
-    console.log("rendering children", survey._id)
-    let children = survey.children().fetch()
-    console.log(children)
-    // TODO - his is wrong
-    if(children) {
-      children = children.filter((child) => child.answer == this.props.contact.surveyAnswer(survey._id))
-      return children.map((child) => this.renderQuestion(child))
+    const answer = this.props.contact.surveyAnswer(survey._id)
+    if (answer) {
+      const child = survey.allowedAnswers.find(({ value }) => value == answer.value)
+      if (child.surveyQuestionId) {
+        console.log(SurveyQuestions.find({}))
+        return this.renderQuestion(SurveyQuestions.findOne(child.surveyQuestionId))
+      }
     }
-    else {
-      return ''
-    }
+
+    return ''
   }
 
   render() {
@@ -51,5 +66,6 @@ export class SurveyList extends Component {
 SurveyList.propTypes = {
   survey: React.PropTypes.object,
   contact: React.PropTypes.object,
-  onSurveyChange: React.PropTypes.function
+  onSurveyChange: React.PropTypes.function,
+  onScriptChange: React.PropTypes.function
 }

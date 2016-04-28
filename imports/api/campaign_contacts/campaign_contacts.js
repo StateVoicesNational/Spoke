@@ -74,7 +74,11 @@ const DEFAULT_SCRIPT_FIELDS = ['name', 'number']
 
 CampaignContacts.helpers({
   surveyAnswer(surveyQuestionId) {
-    console.log("SURVEY QUESTION FIND", surveyQuestionId, this._id)
+    console.log("survey question id ", surveyQuestionId, "and campaignContactId", this._id, SurveyAnswers.findOne({
+      surveyQuestionId,
+      campaignContactId: this._id
+    }))
+    console.log("all survey answers", SurveyAnswers.find({}).fetch())
     return SurveyAnswers.findOne({
       surveyQuestionId,
       campaignContactId: this._id

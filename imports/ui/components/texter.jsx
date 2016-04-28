@@ -13,12 +13,12 @@ import RaisedButton from 'material-ui/RaisedButton'
 
 import { Toolbar, ToolbarGroup, ToolbarTitle } from 'material-ui/Toolbar'
 import { MessagesList } from './messages_list'
-import { updateAnswer } from '../../api/survey_answers/methods'
 import { sendMessage } from '../../api/messages/methods'
 import { applyScript } from '../helpers/script_helpers'
 import { SurveyList } from './survey_list'
 import { MessageField } from './message_field'
 import { ResponseDropdown } from './response_dropdown'
+
 const styles = {
   heading: {
     padding: 20
@@ -28,20 +28,28 @@ const styles = {
 export class Texter extends Component {
   constructor(props) {
     super(props)
-
     this.handleSendMessage = this.handleSendMessage.bind(this)
-    this.handleSurveyChange = this.handleSurveyChange.bind(this)
+    this.handleScriptChange = this.handleScriptChange.bind(this)
+
+    this.state = {
+      script: ''
+    }
   }
 
-  defaultScript(contact) {
-    return ''
-    const { messages } = this.props
 
-    if (messages.length > 0) {
-      return ''
+  componentDidMount() {
+    const { assignment, messages } = this.props
+    if (messages.length === 0) {
+      this.setSuggestedScript(assignment.campaign().script)
     }
+  }
 
-    return applyScript(contact.survey().script, contact)
+  setSuggestedScript(script) {
+    this.setState({script})
+  }
+
+  handleScriptChange(script) {
+    this.setSuggestedScript(script)
   }
 
   handleSendMessage(event) {
@@ -58,33 +66,22 @@ export class Texter extends Component {
         if (error) {
             alert(error)
         } else {
-          input.value = ''
+
+          this.setState({script: ''})
           // this.goToNextContact()
         }
       })
     }
   }
 
-
-  handleSurveyChange(event, index, values) {
-    const { answer, surveyQuestionId } = values
-    const { contact } = this.props
-    console.log("updating aswer?", answer)
-    updateAnswer.call({
-      surveyQuestionId,
-      value: answer,
-      campaignContactId: contact._id
-    })
-  }
-
   renderSurvey() {
-    const { assignment, messages, contact, survey } = this.props
+    const { messages, contact, survey } = this.props
     if (messages.length === 0) {
       return ''
     } else {
       return [
         <SurveyList survey={survey}
-          onSurveyChange={this.handleSurveyChange}
+          onScriptChange={this.handleScriptChange}
           contact= {contact} />,
         <Divider />
       ]
@@ -93,8 +90,6 @@ export class Texter extends Component {
 
   render() {
     const { assignment, messages, contact, survey } = this.props
-    console.log(survey)
-    const campaign = assignment.campaign()
 
     return (
       <div>
@@ -121,7 +116,7 @@ export class Texter extends Component {
                   <MessagesList messages={messages} />
                   <Divider />
                   {this.renderSurvey()}
-                  <MessageField ref="input" script={this.defaultScript(contact)} />
+                  <MessageField ref="input" script={applyScript(this.state.script, contact)} />
                   <Toolbar>
                     <ToolbarGroup firstChild>
                       <ResponseDropdown />
@@ -147,7 +142,6 @@ Texter.propTypes = {
   assignment: React.PropTypes.object,      // current assignment
   messages: React.PropTypes.array,   // all assignments for showing in sidebar
   contact: React.PropTypes.object,   // contacts for current assignment
-  survey: React.PropTypes.object,   // contacts for current assignment
-  campaign: React.PropTypes.object   // contacts for current assignment
+  survey: React.PropTypes.object,   // survey for current assignment
 }
 

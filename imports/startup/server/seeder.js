@@ -65,14 +65,14 @@ const createSurvey = (campaignId) => {
     allowedAnswer('No', 'Ok, thought we would give it a shot!')
   ]
 
-  const childSurvey = newSurvey('Can you help phonebank?', childAnswers)
+  const childSurvey = newSurvey('Can the supporter help phonebank?', childAnswers)
 
   const parentAnswers = [
     allowedAnswer('Yes', 'Great, please sign up on the website!'),
     allowedAnswer('No', 'Ok, no problem. Do you think you can phonebank instead?', childSurvey._id)
   ]
 
-  return newSurvey('Can you attend this event?', parentAnswers)
+  return newSurvey('Can the supporter attend this event?', parentAnswers)
 }
 
 const createAssignment = () => {

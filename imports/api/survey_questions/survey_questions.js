@@ -5,8 +5,9 @@ import { Factory } from 'meteor/dburles:factory'
 
 export const SurveyQuestions = new Mongo.Collection('survey_questions')
 
-const AnswerSchema = new SimpleSchema({
+const AllowedAnswerSchema = new SimpleSchema({
   value: { type: String },
+  label: { type: String },
   script: { // should this be its own ID?
     type: String,
     optional: true
@@ -19,7 +20,7 @@ const AnswerSchema = new SimpleSchema({
 
 SurveyQuestions.schema = new SimpleSchema({
   question: { type: String },
-  allowedAnswers: { type: [AnswerSchema] },
+  allowedAnswers: { type: [AllowedAnswerSchema] },
   instructions: { // any instructions for the texter at this step
     type: String,
     optional: true
