@@ -14,6 +14,11 @@ Campaigns.deny({
   remove() { return true }
 })
 
+const FAQSchema = new SimpleSchema({
+  title: { type: String },
+  script: { type: String }
+})
+
 Campaigns.schema = new SimpleSchema({
   // userId: { type: String, regEx: SimpleSchema.RegEx.Id, optional: true },
   // TODO: I think normalization is ok here bc this should not change so DPP won't update stuff
@@ -25,7 +30,8 @@ Campaigns.schema = new SimpleSchema({
     type: String,
     optional: true
   },
-  script: { type: String } // TODO Should scripts be in a separate collection? Currently they are strewn about
+  script: { type: String }, // TODO Should scripts be in a separate collection? Currently they are strewn about
+  faqScripts: { type: [FAQSchema]}
 })
 
 Campaigns.attachSchema(Campaigns.schema)
@@ -43,7 +49,17 @@ Factory.define('campaign', Campaigns, {
     'Get out the vote!']),
   customFields: [],
   surveyQuestionId: Factory.get('survey_question'),
-  script: () => 'Hey there <<name>>'
+  script: () => 'Hey there <<name>>',
+  faqScripts: () => [
+    {
+      title: "I don't have a laptop",
+      script: 'No problem, <<name>>. You can usually use a tablet. Just be sure to check beforehand!'
+    },
+    {
+      title: "I can only make it for part of the time.",
+      script: "That's okay. You can still come. Just let us know if you can or not."
+    }
+  ]
 })
 
 // This represents the keys from Campaigns objects that should be published

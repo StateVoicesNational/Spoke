@@ -91,7 +91,7 @@ export class Texter extends Component {
   }
 
   render() {
-    const { messages, contact } = this.props
+    const { messages, contact, assignment } = this.props
 
     return (
       <div>
@@ -121,7 +121,10 @@ export class Texter extends Component {
                   <MessageField ref="input" script={applyScript(this.state.script, contact)} />
                   <Toolbar>
                     <ToolbarGroup firstChild>
-                      <ResponseDropdown />
+                      <ResponseDropdown
+                        responses={assignment.campaign().faqScripts}
+                        onScriptChange={this.handleScriptChange}
+                      />
                     </ToolbarGroup>
                     <ToolbarGroup>
                       <RaisedButton
