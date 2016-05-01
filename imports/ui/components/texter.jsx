@@ -108,7 +108,7 @@ export class Texter extends Component {
                       <ToolbarTitle text={contact.name} />
                     </ToolbarGroup>
                     <ToolbarGroup float="right">
-                      <IconButton touch={true} tooltip={"hello"}>
+                      <IconButton touch tooltip={"hello"}>
                         <DescriptionIcon />
                       </IconButton>
                     </ToolbarGroup>
