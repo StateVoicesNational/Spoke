@@ -12,7 +12,7 @@ export class AssignmentSummary extends Component {
     super(props)
 
     this.state = {
-      currentContactIndex: 0,
+      currentContactIndex: 0
     }
 
     this.handleNavigateNext = this.handleNavigateNext.bind(this)
@@ -28,18 +28,25 @@ export class AssignmentSummary extends Component {
     return this.state.currentContactIndex > 0
   }
 
+  hasNext() {
+    return this.state.currentContactIndex < this.contactCount() - 1
+  }
+
   handleNavigateNext() {
-    this.goToNextContact()
+    if (this.hasNext())
+      this.incrementCurrentContactIndex(1)
   }
 
   handleNavigatePrevious() {
-    this.goToPreviousContact()
+    this.incrementCurrentContactIndex(-1)
   }
 
   navigationTitle(contact) {
     const currentCount = this.state.currentContactIndex + 1
+    console.log("navigationTitle", contact)
     return contact.name + ' - ' + currentCount + '/' + this.contactCount() + ' messages'
   }
+
   incrementCurrentContactIndex(increment) {
     let newIndex = this.state.currentContactIndex
     newIndex = newIndex + increment
@@ -47,18 +54,9 @@ export class AssignmentSummary extends Component {
   }
 
   updateCurrentContactIndex(newIndex) {
-    const contact = this.props.contacts[newIndex]
-    const inputValue = this.defaultScript(contact)
     this.setState({
-      currentContactIndex: newIndex,
-      inputValue
+      currentContactIndex: newIndex
     })
-  }
-
-
-
-  hasNext() {
-    return this.state.currentContactIndex < this.contactCount() - 1
   }
 
   currentContact() {
@@ -83,21 +81,26 @@ export class AssignmentSummary extends Component {
     } else {
         const navigation = (
           <TexterNavigationToolbar
-          title={this.navigationTitle(this.currentContact())}
-          hasPrevious={this.hasPrevious()}
-          hasNext={this.hasNext()}
-          onNext={this.handleNavigateNext}
-          onPrevious={this.handleNavigatePrevious}
-          progressValue={this.state.currentContactIndex * 100 / this.contactCount()} />
+            contact={this.currentContact()}
+            contactIndex={this.state.currentContactIndex}
+            contactCount={contacts.length}
+            hasPrevious={this.hasPrevious()}
+            hasNext={this.hasNext()}
+            onPrevious={this.handleNavigatePrevious}
+            onNext={this.handleNavigateNext}
+          />
         )
+        //TODO - do we really want to grab all messages at once here?
         const filteredMessages = messages.filter((message) => message.contactNumber == this.currentContact().number )
       return (
         <div style={styles.base}>
+          {navigation}
             <Texter
               assignment={assignment}
               contact={this.currentContact()}
               messages={filteredMessages}
               survey={survey}
+              onNextContact={this.handleNavigateNext}
             />
         </div>
         )

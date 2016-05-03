@@ -5,30 +5,30 @@ import NavigateNextIcon from 'material-ui/svg-icons/image/navigate-next'
 import IconButton from 'material-ui/IconButton/IconButton'
 import LinearProgress from 'material-ui/LinearProgress'
 
-export const TexterNavigationToolbar = (props) => (
+export const TexterNavigationToolbar = ({ hasPrevious, onPrevious, contactIndex, contactCount, hasNext, onNext, contact}) => (
   <div>
   <Toolbar>
     <ToolbarGroup firstChild float="left">
       <IconButton
-        disabled={!props.hasPrevious}
-        onClick={props.onPrevious}
+        disabled={!hasPrevious}
+        onClick={onPrevious}
       >
         <NavigateBeforeIcon />
       </IconButton>
 
     </ToolbarGroup>
     <ToolbarGroup>
-      <ToolbarTitle text={props.title} />
+      <ToolbarTitle text={`${contactCount} remaining`} />
     </ToolbarGroup>
     <ToolbarGroup lastChild float="right">
       <IconButton
-        disabled={!props.hasNext}
-        onClick={props.onNext}
+        disabled={!hasNext}
+        onClick={onNext}
       >
         <NavigateNextIcon />
       </IconButton>
     </ToolbarGroup>
   </Toolbar>
-  <LinearProgress mode="determinate" value={props.progressValue} />
+  <LinearProgress mode="determinate" value={contactIndex * 100/contactCount} />
   </div>
 )

@@ -1,46 +1,41 @@
 import React, { Component } from 'react'
-import { Card, CardTitle, CardText, CardHeader } from 'material-ui/Card'
 import Paper from 'material-ui/Paper'
 import Divider from 'material-ui/Divider'
-
-import IconMenu from 'material-ui/IconMenu'
 import IconButton from 'material-ui/IconButton/IconButton'
-import DescriptionIcon from 'material-ui/svg-icons/action/description'
-
-import MenuItem from 'material-ui/MenuItem'
-
+import DeleteIcon from 'material-ui/svg-icons/action/delete';
 import RaisedButton from 'material-ui/RaisedButton'
-
+import FlatButton from 'material-ui/FlatButton'
+import Dialog from 'material-ui/Dialog'
 import { Toolbar, ToolbarGroup, ToolbarTitle } from 'material-ui/Toolbar'
 import { MessagesList } from './messages_list'
-import { sendMessage } from '../../api/messages/methods'
-import { applyScript } from '../helpers/script_helpers'
 import { SurveyList } from './survey_list'
 import { MessageField } from './message_field'
 import { ResponseDropdown } from './response_dropdown'
-
-const styles = {
-  heading: {
-    padding: 20
-  }
-}
+import { sendMessage } from '../../api/messages/methods'
+import { applyScript } from '../helpers/script_helpers'
 
 export class Texter extends Component {
   constructor(props) {
     super(props)
     this.handleSendMessage = this.handleSendMessage.bind(this)
     this.handleScriptChange = this.handleScriptChange.bind(this)
+    this.handleOpenDialog = this.handleOpenDialog.bind(this)
+    this.handleCloseDialog = this.handleCloseDialog.bind(this)
+    this.handleOptOut = this.handleOptOut.bind(this)
 
     this.state = {
-      script: ''
+      script: '',
+      open: false
     }
   }
 
 
-  componentDidMount() {
-    const { assignment, messages } = this.props
+  componentWillReceiveProps({assignment, messages}) {
+    console.log("received props", assignment.campaign().script, messages)
     if (messages.length === 0) {
-      this.setSuggestedScript(assignment.campaign().script)
+      const script = assignment.campaign().script
+      console.log(script)
+      this.setSuggestedScript({ script })
     }
   }
 
@@ -48,30 +43,63 @@ export class Texter extends Component {
     this.setState({script})
   }
 
+  sendMessageToCurrentContact(text, onSuccess) {
+    if (!text) {
+      return
+    }
+
+    const { contact, assignment, onNextContact } = this.props
+    sendMessage.call({
+      text,
+      campaignId: assignment.campaignId,
+      contactNumber: contact.number,
+      userNumber: "18053959604"
+    }, (error) => {
+      if (error) {
+        alert(error)
+      } else {
+        onSuccess()
+      }
+    })
+  }
+
+  handleOpenDialog() {
+    this.setState({open: true})
+  }
+
+  handleCloseDialog() {
+    this.setState({open: false})
+  }
+
+  handleOptOut() {
+    const messageText = this.refs.optOutInput.getValue().trim()
+    const { onNextContact } = this.props
+    const onSuccess = () => {
+      console.log("opting user out!")
+      this.handleCloseDialog()
+      onNextContact()
+    }
+    this.sendMessageToCurrentContact(messageText, onSuccess)
+  }
+
   handleScriptChange(script) {
     this.setSuggestedScript(script)
   }
 
   handleSendMessage(event) {
+    const { contact, messages, onNextContact } = this.props
+
     event.preventDefault()
     const input = this.refs.input
-    const { contact, assignment } = this.props
-    if (input.getValue().trim()) {
-      sendMessage.call({
-        campaignId: assignment.campaignId,
-        contactNumber: contact.number,
-        userNumber: "18053959604",
-        text: input.getValue()
-      }, (error) => {
-        if (error) {
-            alert(error)
-        } else {
-
-          this.setState({script: ''})
-          // this.goToNextContact()
-        }
-      })
+    const onSuccess =  () => {
+      onNextContact()
+      // if (messages.length === 0) {
+      //   onNextContact()
+      // } else {
+      //   this.setState({ script: '' })
+      // }
     }
+    this.sendMessageToCurrentContact(input.getValue().trim(), onSuccess)
   }
 
   renderSurvey() {
@@ -93,6 +121,22 @@ export class Texter extends Component {
   render() {
     const { messages, contact, assignment } = this.props
 
+    const actions = [
+      <FlatButton
+        label="Cancel"
+        onTouchTap={this.handleCloseDialog}
+        primary
+      />,
+      <FlatButton
+        label="Send message and opt out user"
+        onTouchTap={this.handleOptOut}
+        primary
+        keyboardFocused
+      />
+    ]
+
+    const optOutScript = "I'm opting you out of text-based communication immediately. Have a great day."
+
     return (
       <div>
         <div className="row">
@@ -108,9 +152,18 @@ export class Texter extends Component {
                       <ToolbarTitle text={contact.name} />
                     </ToolbarGroup>
                     <ToolbarGroup float="right">
-                      <IconButton touch tooltip={"hello"}>
-                        <DescriptionIcon />
+                      <IconButton onTouchTap={this.handleOpenDialog}>
+                        <DeleteIcon tooltip="Opt out" />
                       </IconButton>
+                      <Dialog
+                        title="Opt out user"
+                        actions={actions}
+                        modal={false}
+                        open={this.state.open}
+                        onRequestClose={this.handleCloseDialog}
+                      >
+                        <MessageField ref="optOutInput" initialScript={applyScript(optOutScript, contact) } />
+                      </Dialog>
                     </ToolbarGroup>
                   </Toolbar>
                   <Divider />
@@ -118,7 +171,7 @@ export class Texter extends Component {
                   <MessagesList messages={messages} />
                   <Divider />
                   {this.renderSurvey()}
-                  <MessageField ref="input" script={applyScript(this.state.script, contact)} />
+                  <MessageField ref="input" initialScript={applyScript(this.state.script, contact)} />
                   <Toolbar>
                     <ToolbarGroup firstChild>
                       <ResponseDropdown

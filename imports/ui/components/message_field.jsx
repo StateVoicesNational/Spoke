@@ -14,13 +14,18 @@ export class MessageField extends Component {
     this.handleChange = this.handleChange.bind(this)
 
     this.state = {
-      inputValue: ''
+      inputValue: props.initialScript
     }
   }
 
   componentWillReceiveProps(props) {
-    inputValue = props.script
+    const inputValue = props.initialScript
+    console.log("receiving props input", inputValue)
     this.setState({ inputValue })
+  }
+
+  getValue() {
+    return this.refs.input.getValue()
   }
 
   handleChange(event) {
@@ -29,9 +34,6 @@ export class MessageField extends Component {
     })
   }
 
-  getValue() {
-    return this.refs.input.getValue()
-  }
   render() {
     return (
       <div style={styles.textarea}>

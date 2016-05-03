@@ -2,6 +2,7 @@ import { FlowRouter } from 'meteor/kadira:flow-router'
 import React from 'react'
 import { mount } from 'react-mounter'
 import AssignmentContainer from '../../ui/containers/assignment_container'
+import CampaignsContainer from '../../ui/containers/campaigns_container'
 import { App } from '../../ui/layouts/app'
 
 import injectTapEventPlugin from 'react-tap-event-plugin'
@@ -23,6 +24,15 @@ FlowRouter.route('/assignments/:id', {
   action: (params) => {
     mount(App, {
       content: () => <AssignmentContainer id={params.id} />
+    })
+  }
+})
+
+FlowRouter.route('/admin', {
+  name: 'admin',
+  action: () => {
+    mount(App, {
+      content: () => <CampaignsContainer />
     })
   }
 })

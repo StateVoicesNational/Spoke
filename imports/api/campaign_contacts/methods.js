@@ -71,6 +71,7 @@ export const updateSurveyResponse = new ValidatedMethod({
     } })
   }
 })
+
 // TODO:Is this necessary?
 // // Get list of all method names on Todos
 // const CAMPAIGN_CONTACTS_METHODS = _.pluck([

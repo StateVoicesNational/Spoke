@@ -7,11 +7,10 @@ import { Messages } from '../messages/messages'
 
 export const Campaigns = new Mongo.Collection('campaigns')
 
+// TODO necessary?
 // Deny all client-side updates since we will be using methods to manage this collection
 Campaigns.deny({
   insert() { return true },
-  update() { return true },
-  remove() { return true }
 })
 
 const FAQSchema = new SimpleSchema({
@@ -31,7 +30,10 @@ Campaigns.schema = new SimpleSchema({
     optional: true
   },
   script: { type: String }, // TODO Should scripts be in a separate collection? Currently they are strewn about
-  faqScripts: { type: [FAQSchema]}
+  faqScripts: {
+    type: [FAQSchema],
+    optional: true
+  }
 })
 
 Campaigns.attachSchema(Campaigns.schema)

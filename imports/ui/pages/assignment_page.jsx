@@ -11,7 +11,7 @@ export class AssignmentPage extends React.Component {
   constructor(props) {
     super(props)
     this.handleTouchTapLeftIconButton = this.handleTouchTapLeftIconButton.bind(this)
-    this.onChangeList = this.onChangeList.bind(this)
+    this.onChangeAssignment = this.onChangeAssignment.bind(this)
     this.state = { navDrawerOpen: false }
   }
 
@@ -24,7 +24,7 @@ export class AssignmentPage extends React.Component {
     }
   }
 
-  onChangeList(assignmentId) {
+  onChangeAssignment(assignmentId) {
     this.navigateToAssignmentId(assignmentId)
     this.setState({ navDrawerOpen: false })
   }
@@ -46,7 +46,7 @@ export class AssignmentPage extends React.Component {
         docked={false}
         onRequestChange={(navDrawerOpen) => this.setState({ navDrawerOpen })}
       >
-        <AssignmentSummaryList onChangeList={this.onChangeList} assignments={assignments} />
+        <AssignmentSummaryList onChangeList={this.onChangeAssignment} assignments={assignments} />
       </Drawer>
       <AppBar
         title="Townsquare Texting"
