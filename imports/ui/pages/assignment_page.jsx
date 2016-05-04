@@ -41,6 +41,17 @@ export class AssignmentPage extends React.Component {
 
   render() {
     const { assignment, assignments, contacts, messages, survey } = this.props
+    const unmessagedContacts = contacts.filter(contact => !contact.lastMessage);
+    // if (unmessagedContacts.length > 0) {
+    //   return <Texter assignment={assignment} contacts={unmessagedContacts} surveys={surveys} />
+    // } else {
+    //   const unrespondedContacts = contacts.filter(contact => contact.lastMessage.isFromContact);
+    //   if (unrespondedContacts.length > 0) {
+    //     return <Texter assignment={assignment} contacts={unrespondedContacts} surveys={surveys} />
+    //   } else {
+    //     return <div>You have nothing to respond to right now! Great job</div>
+    //   }
+    // }
     return (<div>
       <Drawer open={this.state.navDrawerOpen}
         docked={false}
@@ -52,7 +63,28 @@ export class AssignmentPage extends React.Component {
         title="Townsquare Texting"
         onLeftIconButtonTouchTap={this.handleTouchTapLeftIconButton}
       />
-      <AssignmentSummary messages={messages} assignment={assignment} contacts={contacts} survey={survey} />
+      <div>
+        You have {unmessagedContacts.length } unmessaged contacts.
+        You have { contacts.length } total contacts
+      </div>
+      <div>
+        <div className="row">
+          <div className="col-xs-12 col-sm-3 col-md-2 col-lg-1">
+            <div className="box-row">
+            </div>
+          </div>
+          <div className="col-xs-6 col-sm-6 col-md-8 col-lg-10">
+              <div className="box-row">
+                <AssignmentSummary
+                  messages={messages}
+                  assignment={assignment}
+                  contacts={contacts}
+                  survey={survey}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
     </div>)
   }
 }

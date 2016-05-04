@@ -1,16 +1,13 @@
 import React, { Component } from 'react'
-import Paper from 'material-ui/Paper'
 import Divider from 'material-ui/Divider'
 import IconButton from 'material-ui/IconButton/IconButton'
 import DeleteIcon from 'material-ui/svg-icons/action/delete';
-import RaisedButton from 'material-ui/RaisedButton'
 import FlatButton from 'material-ui/FlatButton'
 import Dialog from 'material-ui/Dialog'
-import { Toolbar, ToolbarGroup, ToolbarTitle } from 'material-ui/Toolbar'
+import { Toolbar, ToolbarGroup, ToolbarTitle, ToolbarSeparator } from 'material-ui/Toolbar'
 import { MessagesList } from './messages_list'
 import { SurveyList } from './survey_list'
 import { MessageField } from './message_field'
-import { ResponseDropdown } from './response_dropdown'
 import { sendMessage } from '../../api/messages/methods'
 import { applyScript } from '../helpers/script_helpers'
 
@@ -24,23 +21,21 @@ export class Texter extends Component {
     this.handleOptOut = this.handleOptOut.bind(this)
 
     this.state = {
-      script: '',
+      script: this.defaultScript(),
       open: false
     }
   }
 
-
-  componentWillReceiveProps({assignment, messages}) {
-    console.log("received props", assignment.campaign().script, messages)
-    if (messages.length === 0) {
-      const script = assignment.campaign().script
-      console.log(script)
-      this.setSuggestedScript({ script })
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.contact !== this.props.contact) {
+      this.setState({ script: this.defaultScript()})
     }
   }
 
-  setSuggestedScript(script) {
-    this.setState({script})
+
+  defaultScript() {
+    const { assignment, messages } = this.props
+    return (messages.length === 0) ? assignment.campaign().script : ''
   }
 
   sendMessageToCurrentContact(text, onSuccess) {
@@ -139,58 +134,31 @@ export class Texter extends Component {
 
     return (
       <div>
-        <div className="row">
-          <div className="col-xs-12 col-sm-3 col-md-2 col-lg-1">
-            <div className="box-row">
-            </div>
-          </div>
-          <div className="col-xs-6 col-sm-6 col-md-8 col-lg-10">
-              <div className="box-row">
-                <Paper>
-                  <Toolbar>
-                    <ToolbarGroup float="left">
-                      <ToolbarTitle text={contact.name} />
-                    </ToolbarGroup>
-                    <ToolbarGroup float="right">
-                      <IconButton onTouchTap={this.handleOpenDialog}>
-                        <DeleteIcon tooltip="Opt out" />
-                      </IconButton>
-                      <Dialog
-                        title="Opt out user"
-                        actions={actions}
-                        modal={false}
-                        open={this.state.open}
-                        onRequestClose={this.handleCloseDialog}
-                      >
-                        <MessageField ref="optOutInput" initialScript={applyScript(optOutScript, contact) } />
-                      </Dialog>
-                    </ToolbarGroup>
-                  </Toolbar>
-                  <Divider />
+        <Toolbar>
+          <ToolbarGroup float="left">
+            <ToolbarTitle text={contact.name} />
+          </ToolbarGroup>
+          <ToolbarGroup float="right">
+            <IconButton onTouchTap={this.handleOpenDialog}>
+              <DeleteIcon tooltip="Opt out" />
+            </IconButton>
+            <Dialog
+              title="Opt out user"
+              actions={actions}
+              modal={false}
+              open={this.state.open}
+              onRequestClose={this.handleCloseDialog}
+            >
+              <MessageField ref="optOutInput" initialScript={applyScript(optOutScript, contact) } />
+            </Dialog>
+          </ToolbarGroup>
+        </Toolbar>
+        <Divider />
 
-                  <MessagesList messages={messages} />
-                  <Divider />
-                  {this.renderSurvey()}
-                  <MessageField ref="input" initialScript={applyScript(this.state.script, contact)} />
-                  <Toolbar>
-                    <ToolbarGroup firstChild>
-                      <ResponseDropdown
-                        responses={assignment.campaign().faqScripts}
-                        onScriptChange={this.handleScriptChange}
-                      />
-                    </ToolbarGroup>
-                    <ToolbarGroup>
-                      <RaisedButton
-                        onClick={this.handleSendMessage}
-                        label="Send"
-                        primary
-                      />
-                    </ToolbarGroup>
-                  </Toolbar>
-                </Paper>
-              </div>
-          </div>
-        </div>
+        <MessagesList messages={messages} />
+        <Divider />
+        {this.renderSurvey()}
+        <MessageField ref="input" initialScript={applyScript(this.state.script, contact)} />
       </div>
     )
   }

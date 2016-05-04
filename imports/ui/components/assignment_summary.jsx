@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { Texter } from './texter'
 import { TexterNavigationToolbar } from './texter_navigation_toolbar'
+import Paper from 'material-ui/Paper'
 
 const styles = {
   base: {
@@ -39,6 +40,10 @@ export class AssignmentSummary extends Component {
 
   handleNavigatePrevious() {
     this.incrementCurrentContactIndex(-1)
+  }
+
+  handleSendMessage() {
+    console.log("sending message!")
   }
 
   navigationTitle(contact) {
@@ -88,33 +93,24 @@ export class AssignmentSummary extends Component {
             hasNext={this.hasNext()}
             onPrevious={this.handleNavigatePrevious}
             onNext={this.handleNavigateNext}
+            onSendMessage={this.handleSendMessage}
+            faqScripts={assignment.campaign().faqScripts}
           />
         )
-        //TODO - do we really want to grab all messages at once here?
+        //TODO - do we really want to grab all messages at once here? should I actually be doing a collection serach
         const filteredMessages = messages.filter((message) => message.contactNumber == this.currentContact().number )
       return (
-        <div style={styles.base}>
-          {navigation}
-            <Texter
+        <Paper style={styles.base}>
+          <Texter
               assignment={assignment}
               contact={this.currentContact()}
               messages={filteredMessages}
               survey={survey}
               onNextContact={this.handleNavigateNext}
             />
-        </div>
+            { navigation }
+        </Paper>
         )
-      // const unmessagedContacts = contacts.filter(contact => !contact.lastMessage);
-      // if (unmessagedContacts.length > 0) {
-      //   return <Texter assignment={assignment} contacts={unmessagedContacts} surveys={surveys} />
-      // } else {
-      //   const unrespondedContacts = contacts.filter(contact => contact.lastMessage.isFromContact);
-      //   if (unrespondedContacts.length > 0) {
-      //     return <Texter assignment={assignment} contacts={unrespondedContacts} surveys={surveys} />
-      //   } else {
-      //     return <div>You have nothing to respond to right now! Great job</div>
-      //   }
-      // }
     }
   }
 }
