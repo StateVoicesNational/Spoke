@@ -40,7 +40,7 @@ export class AssignmentPage extends React.Component {
   }
 
   render() {
-    const { assignment, assignments, contacts, messages, survey } = this.props
+    const { assignment, assignments, contacts, messages, survey, loading } = this.props
     const unmessagedContacts = contacts.filter(contact => !contact.lastMessage);
     // if (unmessagedContacts.length > 0) {
     //   return <Texter assignment={assignment} contacts={unmessagedContacts} surveys={surveys} />
@@ -64,10 +64,6 @@ export class AssignmentPage extends React.Component {
         onLeftIconButtonTouchTap={this.handleTouchTapLeftIconButton}
       />
       <div>
-        You have {unmessagedContacts.length } unmessaged contacts.
-        You have { contacts.length } total contacts
-      </div>
-      <div>
         <div className="row">
           <div className="col-xs-12 col-sm-3 col-md-2 col-lg-1">
             <div className="box-row">
@@ -75,12 +71,10 @@ export class AssignmentPage extends React.Component {
           </div>
           <div className="col-xs-6 col-sm-6 col-md-8 col-lg-10">
               <div className="box-row">
-                <AssignmentSummary
-                  messages={messages}
+              {loading ? <div>Loading</div> : <AssignmentSummary
                   assignment={assignment}
                   contacts={contacts}
-                  survey={survey}
-                />
+                />}
               </div>
             </div>
           </div>
@@ -92,10 +86,8 @@ export class AssignmentPage extends React.Component {
 AssignmentPage.propTypes = {
   assignment: React.PropTypes.object,      // current assignment
   assignments: React.PropTypes.array,   // all assignments for showing in sidebar
-  messages: React.PropTypes.array,   // all assignments for showing in sidebar
   loading: React.PropTypes.bool,     // subscription status
   contacts: React.PropTypes.array,   // contacts for current assignment
-  survey: React.PropTypes.object,   // contacts for current assignment
   campaign: React.PropTypes.object   // contacts for current assignment
 
 }

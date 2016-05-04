@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import Divider from 'material-ui/Divider'
 import { QuestionDropdown } from './survey'
 import { SurveyQuestions } from '../../api/survey_questions/survey_questions'
 import { updateAnswer } from '../../api/survey_answers/methods'
@@ -37,7 +38,11 @@ export class SurveyList extends Component {
   }
 
   renderChildren(survey) {
-    const { contact, responseNeeded } = this.props
+    const { contact } = this.props
+
+    const messages = contact.messages().fetch()
+    console.log("messages in renderChildren", messages)
+    const responseNeeded = (messages.length > 0 && messages[messages.length - 1].isFromContact)
 
     const answer = contact.surveyAnswer(survey._id)
     if (answer) {
@@ -54,8 +59,8 @@ export class SurveyList extends Component {
   }
 
   render() {
-    const { survey } = this.props
-    if (!survey) {
+    const { survey, contact } = this.props
+    if (!survey || contact.messages().fetch().length === 0) {
       return null
     }
 
@@ -63,14 +68,13 @@ export class SurveyList extends Component {
       <div style={styles.base}>
         {this.renderQuestion(survey)}
         {this.renderChildren(survey)}
+        <Divider />
       </div>)
   }
 }
 
 SurveyList.propTypes = {
-  survey: React.PropTypes.object,
   contact: React.PropTypes.object,
-  onSurveyChange: React.PropTypes.function,
+  survey: React.PropTypes.object,
   onScriptChange: React.PropTypes.function,
-  responseNeeded: React.PropTypes.boolean
 }

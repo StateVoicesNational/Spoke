@@ -4,6 +4,7 @@ import { SimpleSchema } from 'meteor/aldeed:simple-schema'
 import { Fake } from 'meteor/anti:fake'
 import { SurveyQuestions } from '../survey_questions/survey_questions'
 import { SurveyAnswers } from '../survey_answers/survey_answers'
+import { Messages } from '../messages/messages'
 
 export const CampaignContacts = new Mongo.Collection('campaign_contacts')
 
@@ -12,12 +13,6 @@ CampaignContacts.deny({
   insert() { return true },
   update() { return true },
   remove() { return true }
-})
-
-const MessageSchema = new SimpleSchema({
-  isFromContact: { type: Boolean },
-  text: { type: String },
-  createdAt: { type: Date }
 })
 
 CampaignContacts.schema = new SimpleSchema({
@@ -33,11 +28,6 @@ CampaignContacts.schema = new SimpleSchema({
   customFields: { type: Object, blackbox: true },
   createdAt: { type: Date },
   assignmentId: { type: String }, // so we can tell easily what is unassigned
-  messages: { type: [MessageSchema] },
-  lastMessage: {
-    type: MessageSchema,
-    optional: true
-  }, // cached so we can query easily since we can't query by the last in a message array.
   campaignSurveyId: {
     type: String,
     optional: true
@@ -58,8 +48,6 @@ Factory.define('campaign_contact', CampaignContacts, {
   },
   createdAt: () => new Date(),
   assignmentId: () => Factory.get('assignment'),
-  messages: [],
-  lastMessage: null,
   campaignSurveyId: null
 })
 
@@ -73,12 +61,15 @@ CampaignContacts.publicFields = {
 const DEFAULT_SCRIPT_FIELDS = ['name', 'number']
 
 CampaignContacts.helpers({
+  messages() {
+    return Messages.find({ contactNumber: this.number })
+  },
   surveyAnswer(surveyQuestionId) {
     console.log("survey question id ", surveyQuestionId, "and campaignContactId", this._id, SurveyAnswers.findOne({
       surveyQuestionId,
       campaignContactId: this._id
     }))
-    console.log("all survey answers", SurveyAnswers.find({}).fetch())
+
     return SurveyAnswers.findOne({
       surveyQuestionId,
       campaignContactId: this._id
@@ -86,10 +77,8 @@ CampaignContacts.helpers({
   },
   survey() {
     if (!this.campaignSurveyId) {
-      console.log("find default")
       return SurveyQuestions.findOne({ campaignId: this.campaignId, parentAnswer: null})
     }
-    console.log("find one", this.campaignSurveyId, SurveyQuestions.findOne({ _id: this.campaignSurveyId }))
     return SurveyQuestions.findOne({ _id: this.campaignSurveyId })
   },
 

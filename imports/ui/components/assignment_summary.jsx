@@ -1,9 +1,28 @@
 import React, { Component } from 'react'
-import { Texter } from './texter'
-import { TexterNavigationToolbar } from './texter_navigation_toolbar'
 import Paper from 'material-ui/Paper'
+import { Toolbar, ToolbarGroup, ToolbarTitle, ToolbarSeparator } from 'material-ui/Toolbar'
+import IconButton from 'material-ui/IconButton/IconButton'
+import RaisedButton from 'material-ui/RaisedButton'
+import NavigateBeforeIcon from 'material-ui/svg-icons/image/navigate-before'
+import NavigateNextIcon from 'material-ui/svg-icons/image/navigate-next'
+import Divider from 'material-ui/Divider'
+
+import { ContactToolbar } from './contact_toolbar'
+import { MessagesList } from './messages_list'
+import { SurveyList } from './survey_list'
+import { MessageField } from './message_field'
+import { ResponseDropdown } from './response_dropdown'
+
+import { sendMessage } from '../../api/messages/methods'
+import { applyScript } from '../helpers/script_helpers'
 
 const styles = {
+  navigationToolbar: {
+    backgroundColor: 'white'
+  },
+  navigationToolbarTitle: {
+    fontSize: "12px"
+  },
   base: {
     marginTop: '24px'
   }
@@ -13,11 +32,30 @@ export class AssignmentSummary extends Component {
     super(props)
 
     this.state = {
-      currentContactIndex: 0
+      currentContactIndex: 0,
+      script: ''
     }
 
     this.handleNavigateNext = this.handleNavigateNext.bind(this)
     this.handleNavigatePrevious = this.handleNavigatePrevious.bind(this)
+    this.handleSendMessage = this.handleSendMessage.bind(this)
+    this.handleScriptChange = this.handleScriptChange.bind(this)
+
+    this.setSuggestedScript(this.defaultScript())
+
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    console.log("component did update", prevState)
+    if (prevState.currentContactIndex !== this.state.currentContactIndex || prevProps.contacts !== this.props.contacts) {
+      this.setSuggestedScript(this.defaultScript())
+    }
+  }
+
+  defaultScript() {
+    const { assignment } = this.props
+    console.log("in default script", this.currentContact(), this.currentContact())
+    return (this.currentContact() && this.currentContact().messages().fetch().length === 0) ? assignment.campaign().script : ''
   }
 
   contactCount() {
@@ -46,10 +84,47 @@ export class AssignmentSummary extends Component {
     console.log("sending message!")
   }
 
+  setSuggestedScript(script)
+  {
+    this.setState({script})
+  }
+  handleScriptChange(script) {
+    this.setSuggestedScript(script)
+  }
+
+  handleSendMessage(event) {
+    event.preventDefault()
+    const input = this.refs.input
+    const onSuccess =  () => {
+      this.handleNavigateNext()
+      // if (messages.length === 0) {
+      //   onNextContact()
+      // } else {
+      //   this.setState({ script: '' })
+      // }
+    }
+    this.sendMessageToCurrentContact(input.getValue().trim(), onSuccess)
+  }
+
+  sendMessageToCurrentContact(text, onSuccess) {
+    const { assignment } = this.props
+    const contact = this.currentContact()
+    sendMessage.call({
+      text,
+      campaignId: assignment.campaignId,
+      contactNumber: contact.number,
+      userNumber: "18053959604"
+    }, (error) => {
+      if (error) {
+        alert(error)
+      } else {
+        onSuccess()
+      }
+    })
+  }
+
   navigationTitle(contact) {
-    const currentCount = this.state.currentContactIndex + 1
-    console.log("navigationTitle", contact)
-    return contact.name + ' - ' + currentCount + '/' + this.contactCount() + ' messages'
+    return `${this.state.currentContactIndex + 1} of ${this.contactCount()}`
   }
 
   incrementCurrentContactIndex(increment) {
@@ -69,47 +144,77 @@ export class AssignmentSummary extends Component {
     const index = this.state.currentContactIndex
     return (index >= contacts.length) ? null : contacts[index]
   }
+
+  renderSurvey() {
+    const { assignment } = this.props
+    return [
+      <SurveyList onScriptChange={this.handleScriptChange}
+        contact= {this.currentContact()}
+        survey={assignment.campaign().survey()}
+      />
+    ]
+  }
+
+  renderNavigationToolbar() {
+    const { assignment } = this.props
+    return (<Toolbar style={styles.navigationToolbar}>
+      <ToolbarGroup firstChild>
+        <RaisedButton
+          onClick={this.handleSendMessage}
+          label="Send"
+          primary
+        />
+        <ToolbarSeparator />
+        <ResponseDropdown
+          responses={assignment.campaign().faqScripts}
+          onScriptChange={this.handleScriptChange}
+        />
+      </ToolbarGroup>
+      <ToolbarGroup float="right">
+        <ToolbarTitle style={styles.navigationToolbarTitle} text={this.navigationTitle()} />
+        <IconButton onTouchTap={this.handleNavigatePrevious}
+          disabled={!this.hasPrevious()}
+        >
+          <NavigateBeforeIcon />
+        </IconButton>
+        <IconButton onTouchTap={this.handleNavigateNext}
+          disabled={!this.hasNext()}
+        >
+          <NavigateNextIcon />
+        </IconButton>
+      </ToolbarGroup>
+    </Toolbar>)
+  }
   render() {
-    const { assignment, contacts, survey, messages } = this.props
+    const { assignment } = this.props
+    const contact = this.currentContact()
+
     if (!assignment) {
       return (
         <div>
           You don't have any assignments yet
         </div>
       )
-    } else if (contacts.length === 0) {
+    } else if (this.contactCount() === 0) {
       return (
         <div>
           You have no contacts!
         </div>
       )
     } else {
-        const navigation = (
-          <TexterNavigationToolbar
-            contact={this.currentContact()}
-            contactIndex={this.state.currentContactIndex}
-            contactCount={contacts.length}
-            hasPrevious={this.hasPrevious()}
-            hasNext={this.hasNext()}
-            onPrevious={this.handleNavigatePrevious}
-            onNext={this.handleNavigateNext}
-            onSendMessage={this.handleSendMessage}
-            faqScripts={assignment.campaign().faqScripts}
-          />
-        )
-        //TODO - do we really want to grab all messages at once here? should I actually be doing a collection serach
-        const filteredMessages = messages.filter((message) => message.contactNumber == this.currentContact().number )
+      //TODO - do we really want to grab all messages at once here? should I actually be doing a collection serach
+      const filteredMessages = this.currentContact().messages().fetch()
       return (
         <Paper style={styles.base}>
-          <Texter
-              assignment={assignment}
-              contact={this.currentContact()}
-              messages={filteredMessages}
-              survey={survey}
-              onNextContact={this.handleNavigateNext}
-            />
-            { navigation }
-        </Paper>
+          <ContactToolbar contact={contact} />
+          <Divider />
+
+          <MessagesList messages={filteredMessages} />
+          <Divider />
+          {this.renderSurvey()}
+          <MessageField ref="input" initialScript={applyScript(this.state.script, contact)} />
+          {this.renderNavigationToolbar()}
+          </Paper>
         )
     }
   }
@@ -117,9 +222,7 @@ export class AssignmentSummary extends Component {
 
 AssignmentSummary.propTypes = {
   assignment: React.PropTypes.object,      // current assignment
-  messages: React.PropTypes.array,   // contacts for current assignment
   contacts: React.PropTypes.array,   // contacts for current assignment
-  survey: React.PropTypes.object   // contacts for current assignment
 }
 
 
