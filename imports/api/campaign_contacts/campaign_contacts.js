@@ -23,7 +23,8 @@ CampaignContacts.schema = new SimpleSchema({
   // untextable, etc. This is taken from the source data itself,
   // not an ID in our own system
   contactId: { type: String },
-  name: { type: String },
+  firstName: { type: String },
+  lastName: { type: String },
   number: { type: String },
   customFields: { type: Object, blackbox: true },
   createdAt: { type: Date },
@@ -36,10 +37,14 @@ CampaignContacts.schema = new SimpleSchema({
 
 CampaignContacts.attachSchema(CampaignContacts.schema)
 
+CampaignContacts.requiredUploadFields = ['first_name', 'last_name', 'phone']
+
 Factory.define('campaign_contact', CampaignContacts, {
   campaignId: () => Factory.get('campaign'),
   contactId: () => Fake.word(),
-  name: () => Fake.user({ fields: ['name'] }).name,
+  firstName: () => Fake.user({ fields: ['name'] }).name,
+  lastName: () => Fake.user({ fields: ['surname'] }).surname,
+  state: () => Fake.fromArray(['CA', 'DE', 'MN', 'IL', 'TX', 'NY', 'HI']),
   number: '669-221-6251',
   customFields: () => {
     const fields = {}
@@ -57,12 +62,12 @@ Factory.define('campaign_contact', CampaignContacts, {
 CampaignContacts.publicFields = {
 }
 
-
-const DEFAULT_SCRIPT_FIELDS = ['name', 'number']
-
 CampaignContacts.helpers({
   messages() {
-    return Messages.find({ contactNumber: this.number })
+    return Messages.find({ contactNumber: this.number, campaignId: this.campaignId })
+  },
+  lastMessage() {
+    return Messages.findOne({ contactNumber: this.number, campaignId: this.campaignId }, { sort: { createdAt: -1 }})
   },
   surveyAnswer(surveyQuestionId) {
     console.log("survey question id ", surveyQuestionId, "and campaignContactId", this._id, SurveyAnswers.findOne({

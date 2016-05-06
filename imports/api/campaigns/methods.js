@@ -9,8 +9,9 @@ export const insert = new ValidatedMethod({
   validate: new SimpleSchema({
     title: { type: String },
     description: { type: String },
+    contacts: { type: [Object], blackbox: true }
   }).validator(),
-  run({ title, description }) {
+  run({ title, description, contacts }) {
     const campaign = {
       title,
       description,
@@ -19,6 +20,17 @@ export const insert = new ValidatedMethod({
       customFields: ['hi', 'bye', 'smee']
     };
 
-    Campaigns.insert(campaign);
+    // TODO do this only if the contacst validate!
+    Campaigns.insert(campaign)
+    for (let row of contacts) {
+      // TODO: Require upload in this format.
+      const contact = {
+        firstName: row.first_name,
+        lastName: row.last_name,
+        number: row.phone,
+        // state: row.state,
+        customFields: []
+      }
+    }
   }
-});
+})

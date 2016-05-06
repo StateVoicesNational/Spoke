@@ -1,22 +1,19 @@
 import React, { Component } from 'react'
 import Paper from 'material-ui/Paper'
-import Dialog from 'material-ui/Dialog';
 import { CampaignList } from '../components/campaign_list'
 import { CampaignForm } from '../components/campaign_form'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
-import FlatButton from 'material-ui/FlatButton'
-import { insert } from '../../api/campaigns/methods.js';
 
 import ContentAdd from 'material-ui/svg-icons/content/add'
 
 export class CampaignsPage extends Component {
   constructor(props) {
     super(props)
-    this.handleSave = this.handleSave.bind(this)
+    this.handleSubmit = this.handleSubmit.bind(this)
     this.handleCloseDialog = this.handleCloseDialog.bind(this)
     this.handleOpenDialog = this.handleOpenDialog.bind(this)
     this.state = {
-      open: false
+      open: true
     }
   }
 
@@ -26,30 +23,10 @@ export class CampaignsPage extends Component {
   }
   handleCloseDialog() {
     this.setState({ open: false })
-    console.log("close")
   }
 
-  handleSave() {
-    console.log("save")
-    insert.call(this.refs.form.formData(), (err) => console.log(err));
-
+  handleSubmit() {
     this.handleCloseDialog()
-  }
-
-  renderDialogActions() {
-    return [
-      <FlatButton
-        label="Cancel"
-        onTouchTap={this.handleCloseDialog}
-        primary
-      />,
-      <FlatButton
-        label="Save"
-        onTouchTap={this.handleSave}
-        primary
-        keyboardFocused
-      />
-    ]
   }
 
   render() {
@@ -59,16 +36,9 @@ export class CampaignsPage extends Component {
         onTouchTap={this.handleOpenDialog}>
         <ContentAdd />
       </FloatingActionButton>
-      <Dialog
-        actions={this.renderDialogActions()}
-        title="Create campaign"
-        modal={false}
-        open={this.state.open}
-        onRequestClose={this.handleSave}
-      >
-        <CampaignForm ref="form" />
-      </Dialog>
       <CampaignList campaigns={campaigns} />
+      aoenuthaoeushtn
+      <CampaignForm open={this.state.open} onSubmit={this.handleSubmit} />
     </Paper>
   }
 }

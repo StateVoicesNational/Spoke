@@ -7,7 +7,7 @@ import { AssignmentPage } from '../pages/assignment_page'
 
 export default createContainer(({ id }) => {
   Meteor.subscribe('assignments')
-  const assignmentHandle = Meteor.subscribe('assignment.allRelatedData', id)
+  const handle = Meteor.subscribe('assignment.allRelatedData', id)
 
   let data = {
     assignments: Assignments.find({}).fetch(),
@@ -15,9 +15,10 @@ export default createContainer(({ id }) => {
     campaign: null,
     survey: null,
     contacts: [],
-    messages: []
+    messages: [],
+    loading: !handle.ready()
   }
-  if (assignmentHandle.ready()) {
+  if (handle.ready()) {
     const assignment = Assignments.findOne(id)
     data.assignment = assignment
     if (assignment)

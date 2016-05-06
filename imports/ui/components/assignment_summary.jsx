@@ -41,20 +41,21 @@ export class AssignmentSummary extends Component {
     this.handleSendMessage = this.handleSendMessage.bind(this)
     this.handleScriptChange = this.handleScriptChange.bind(this)
 
-    this.setSuggestedScript(this.defaultScript())
+    this.state.script = this.defaultScript()
+    console.log("after set suggested script in cronstrucotr", this.state)
 
   }
 
   componentDidUpdate(prevProps, prevState) {
     console.log("component did update", prevState)
-    if (prevState.currentContactIndex !== this.state.currentContactIndex || prevProps.contacts !== this.props.contacts) {
+    // TODO: This needs to be in a child component with state.
+    if (this.getContact(prevProps.contacts, prevState.currentContactIndex)._id !== this.currentContact()._id) {
       this.setSuggestedScript(this.defaultScript())
     }
   }
 
   defaultScript() {
     const { assignment } = this.props
-    console.log("in default script", this.currentContact(), this.currentContact())
     return (this.currentContact() && this.currentContact().messages().fetch().length === 0) ? assignment.campaign().script : ''
   }
 
@@ -86,6 +87,7 @@ export class AssignmentSummary extends Component {
 
   setSuggestedScript(script)
   {
+    debugger;
     this.setState({script})
   }
   handleScriptChange(script) {
@@ -139,10 +141,13 @@ export class AssignmentSummary extends Component {
     })
   }
 
+  getContact(contacts, index) {
+    return (contacts.length > index) ? contacts[index] :  null
+  }
+
   currentContact() {
     const { contacts } = this.props
-    const index = this.state.currentContactIndex
-    return (index >= contacts.length) ? null : contacts[index]
+    return this.getContact(contacts, this.state.currentContactIndex)
   }
 
   renderSurvey() {
@@ -186,8 +191,10 @@ export class AssignmentSummary extends Component {
     </Toolbar>)
   }
   render() {
-    const { assignment } = this.props
+    const { assignment, contacts } = this.props
     const contact = this.currentContact()
+
+    const filteredMessages = this.currentContact().messages().fetch()
 
     if (!assignment) {
       return (
@@ -203,7 +210,6 @@ export class AssignmentSummary extends Component {
       )
     } else {
       //TODO - do we really want to grab all messages at once here? should I actually be doing a collection serach
-      const filteredMessages = this.currentContact().messages().fetch()
       return (
         <Paper style={styles.base}>
           <ContactToolbar contact={contact} />

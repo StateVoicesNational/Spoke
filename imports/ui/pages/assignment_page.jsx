@@ -1,15 +1,16 @@
 import React from 'react'
 import { AssignmentSummaryList } from '../components/assignment_summary_list'
 import { Assignments } from '../../api/assignments/assignments.js'
-import { Texter } from '../components/texter'
 import { AssignmentSummary } from '../components/assignment_summary'
 import { FlowRouter } from 'meteor/kadira:flow-router'
 import AppBar from 'material-ui/AppBar'
 import Drawer from 'material-ui/Drawer'
+import CircularProgress from 'material-ui/CircularProgress';
 
 export class AssignmentPage extends React.Component {
   constructor(props) {
     super(props)
+    console.log("props", props)
     this.handleTouchTapLeftIconButton = this.handleTouchTapLeftIconButton.bind(this)
     this.onChangeAssignment = this.onChangeAssignment.bind(this)
     this.state = { navDrawerOpen: false }
@@ -39,19 +40,27 @@ export class AssignmentPage extends React.Component {
     })
   }
 
+  getAssignedContacts() {
+    const { contacts } = this.props
+    return contacts
+    let assignedContacts = []
+
+    const unmessagedContacts = contacts.filter((c) => !c.lastMessage())
+    if (unmessagedContacts.length > 0) {
+      assignedContacts = unmessagedContacts
+    } else {
+      const unrespondedContacts = contacts.filter((c) => c.lastMessage() && c.lastMessage().isFromContact)
+      if (unrespondedContacts.length > 0) {
+        assignedContacts = unrespondedContacts
+      }
+    }
+
+    return assignedContacts
+  }
+
   render() {
-    const { assignment, assignments, contacts, messages, survey, loading } = this.props
-    const unmessagedContacts = contacts.filter(contact => !contact.lastMessage);
-    // if (unmessagedContacts.length > 0) {
-    //   return <Texter assignment={assignment} contacts={unmessagedContacts} surveys={surveys} />
-    // } else {
-    //   const unrespondedContacts = contacts.filter(contact => contact.lastMessage.isFromContact);
-    //   if (unrespondedContacts.length > 0) {
-    //     return <Texter assignment={assignment} contacts={unrespondedContacts} surveys={surveys} />
-    //   } else {
-    //     return <div>You have nothing to respond to right now! Great job</div>
-    //   }
-    // }
+    const { assignment, assignments, contacts, loading } = this.props
+    console.log("loading", loading)
     return (<div>
       <Drawer open={this.state.navDrawerOpen}
         docked={false}
@@ -71,9 +80,10 @@ export class AssignmentPage extends React.Component {
           </div>
           <div className="col-xs-6 col-sm-6 col-md-8 col-lg-10">
               <div className="box-row">
-              {loading ? <div>Loading</div> : <AssignmentSummary
+              {loading ? <CircularProgress /> :
+                <AssignmentSummary
                   assignment={assignment}
-                  contacts={contacts}
+                  contacts={this.getAssignedContacts()}
                 />}
               </div>
             </div>
