@@ -3,7 +3,9 @@ import TextField from 'material-ui/TextField'
 import RaisedButton from 'material-ui/RaisedButton'
 import FlatButton from 'material-ui/FlatButton'
 import Dialog from 'material-ui/Dialog'
-import { insert } from '../../api/campaigns/methods.js'
+import { insert } from '../../api/campaigns/methods'
+import { findScriptVariable } from '../helpers/script_helpers'
+import { ScriptEditor } from './script_field'
 import { parseCSV } from '../../api/campaign_contacts/parse_csv'
 
 const styles = {
@@ -27,10 +29,20 @@ export class CampaignForm extends Component {
     super(props)
     this.handleUpload = this.handleUpload.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
+    this.handleOpenScriptDialog = this.handleOpenScriptDialog.bind(this)
+    this.handleCloseScriptDialog = this.handleCloseScriptDialog.bind(this)
+    this.handleScriptSubmit = this.handleScriptSubmit.bind(this)
+    this.onScriptChange = this.onScriptChange.bind(this)
+    this.resetState()
+  }
+
+  resetState() {
     this.state = {
       uploading: false,
       contacts: [],
-      customFields: []
+      customFields: [],
+      scriptDialogOpen: true,
+      script: ''
     }
   }
 
@@ -38,19 +50,21 @@ export class CampaignForm extends Component {
     const title = this.refs.title.getValue().trim()
     const description = this.refs.title.getValue().trim()
 
-    const { contacts } = this.state
+    const { contacts, script } = this.state
 
     const data = {
       title,
       description,
-      contacts
+      contacts,
+      script
     }
 
     insert.call(data, (err) => {
       if (err) {
         console.log(err)
       } else {
-        this.props.handleSubmit()
+        this.props.onRequestClose()
+        this.resetState()
       }
     })
 
@@ -67,11 +81,38 @@ export class CampaignForm extends Component {
     })
 
   }
-   formData() {
-    return {
-      title: this.refs.title.getValue().trim(),
-      description: this.refs.description.getValue().trim()
-    }
+
+  handleOpenScriptDialog() {
+    this.setState({ scriptDialogOpen: true })
+  }
+  handleCloseScriptDialog() {
+    this.setState({ scriptDialogOpen: false })
+  }
+
+  onScriptChange(script) {
+    console.log("onscript change", script)
+    this.setState({ script })
+  }
+
+  handleScriptSubmit() {
+    console.log("script change!", this.state.script)
+    this.handleCloseScriptDialog()
+  }
+
+  renderScriptDialogOptions() {
+    return [
+      <FlatButton
+        label="Cancel"
+        onTouchTap={this.handleCloseScriptDialog}
+        primary={false}
+      />,
+      <FlatButton
+        label="Done"
+        onTouchTap={this.handleScriptSubmit}
+        primary
+        keyboardFocused
+      />
+    ]
   }
 
   renderDialogActions() {
@@ -90,17 +131,35 @@ export class CampaignForm extends Component {
     ]
   }
 
+  renderScriptForm() {
+    return (<Dialog actions={this.renderScriptDialogOptions()}
+      title="Create script"
+      modal={true}
+      open={this.state.scriptDialogOpen}
+      onRequestClose={this.handleCloseScriptDialog}
+      autoScrollBodyContent={true}
+    >
+
+      <ScriptEditor
+        customFields={this.state.customFields}
+        onScriptChange={this.onScriptChange}
+      />
+
+      { this.state.customFields.map((field) => <div>{field}</div>)}
+    </Dialog>)
+  }
   render() {
     const { contacts } = this.state
-    const { open, handleSubmit } = this.props
-    console.log("hello odongo!?")
+    const { open, onRequestClose } = this.props
+
     return (
       <Dialog
         actions={this.renderDialogActions()}
         title="Create campaign"
-        modal={false}
+        modal={true}
         open={open}
-        onRequestClose={handleSubmit}
+        onRequestClose={onRequestClose}
+        autoScrollBodyContent={true}
       >
         <TextField
           fullWidth
@@ -121,6 +180,13 @@ export class CampaignForm extends Component {
         </RaisedButton>
         <div>Uploaded {contacts.length} contacts</div>
         { this.state.customFields.map((field) => <div>{field}</div>)}
+        <RaisedButton
+          label="Add script"
+          labelPosition="before"
+          style={styles.button}
+          onClick={this.handleOpenScriptDialog}
+        />
+        {this.renderScriptForm()}
       </Dialog>
     )
   }

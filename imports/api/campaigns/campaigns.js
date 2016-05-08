@@ -51,7 +51,7 @@ Factory.define('campaign', Campaigns, {
     'Get out the vote!']),
   customFields: [],
   surveyQuestionId: Factory.get('survey_question'),
-  script: () => 'Hey there <<name>>',
+  script: () => 'Hey there name>>',
   faqScripts: () => [
     {
       title: "I don't have a laptop",

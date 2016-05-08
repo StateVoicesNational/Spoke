@@ -18,7 +18,6 @@ export class CampaignsPage extends Component {
   }
 
   handleOpenDialog() {
-    console.log("open")
     this.setState({ open: true })
   }
   handleCloseDialog() {
@@ -38,7 +37,7 @@ export class CampaignsPage extends Component {
       </FloatingActionButton>
       <CampaignList campaigns={campaigns} />
       aoenuthaoeushtn
-      <CampaignForm open={this.state.open} onSubmit={this.handleSubmit} />
+      <CampaignForm open={this.state.open} onRequestClose={this.handleSubmit} />
     </Paper>
   }
 }

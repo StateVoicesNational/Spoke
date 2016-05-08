@@ -5,6 +5,11 @@
     "start": "meteor run"
   },
   "dependencies": {
+    "body-parser": "^1.15.1",
+    "draft-js": "^0.7.0",
+    "draft-js-mention-plugin": "^1.0.1",
+    "draft-js-plugins-editor": "^1.0.1",
+    "immutable": "^3.8.1",
     "material-ui": "^0.15.0-beta.1",
     "meteor-node-stubs": "~0.2.0",
     "react": "^15.0.1",

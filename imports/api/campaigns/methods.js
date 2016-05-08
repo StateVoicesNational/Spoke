@@ -9,13 +9,14 @@ export const insert = new ValidatedMethod({
   validate: new SimpleSchema({
     title: { type: String },
     description: { type: String },
-    contacts: { type: [Object], blackbox: true }
+    contacts: { type: [Object], blackbox: true },
+    script: { type: String }
   }).validator(),
-  run({ title, description, contacts }) {
+  run({ title, description, contacts, script }) {
     const campaign = {
       title,
       description,
-      script: 'Hi here is a script',
+      script,
       createdAt: new Date(),
       customFields: ['hi', 'bye', 'smee']
     };
