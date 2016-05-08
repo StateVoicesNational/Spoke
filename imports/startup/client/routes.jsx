@@ -3,6 +3,8 @@ import React from 'react'
 import { mount } from 'react-mounter'
 import AssignmentContainer from '../../ui/containers/assignment_container'
 import CampaignsContainer from '../../ui/containers/campaigns_container'
+import CampaignEditContainer from '../../ui/containers/campaign_edit_container'
+
 import { App } from '../../ui/layouts/app'
 
 import injectTapEventPlugin from 'react-tap-event-plugin'
@@ -28,8 +30,18 @@ FlowRouter.route('/assignments/:id', {
   }
 })
 
-FlowRouter.route('/admin', {
-  name: 'admin',
+FlowRouter.route('/campaigns/new', {
+  name: 'newCampaign',
+  action: () => {
+    mount(App, {
+      content: () => <CampaignEditContainer />
+    })
+  }
+})
+
+
+FlowRouter.route('/campaigns', {
+  name: 'campaigns',
   action: () => {
     mount(App, {
       content: () => <CampaignsContainer />

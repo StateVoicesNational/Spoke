@@ -3,6 +3,8 @@ import TextField from 'material-ui/TextField'
 import RaisedButton from 'material-ui/RaisedButton'
 import FlatButton from 'material-ui/FlatButton'
 import Dialog from 'material-ui/Dialog'
+import Badge from 'material-ui/Badge';
+
 import { insert } from '../../api/campaigns/methods'
 import { findScriptVariable } from '../helpers/script_helpers'
 import { ScriptEditor } from './script_field'
@@ -131,6 +133,44 @@ export class CampaignForm extends Component {
     ]
   }
 
+  renderScriptSection() {
+    return (this.state.contacts.length === 0) ? '' : (
+      <div>
+        <RaisedButton
+          label="Add script"
+          labelPosition="before"
+          style={styles.button}
+          onClick={this.handleOpenScriptDialog}
+        />
+        {this.renderScriptForm()}
+      </div>
+    )
+  }
+
+  renderUploadSection() {
+    const { contacts } = this.state
+    const contactsUploaded = contacts.length > 0
+
+    const uploadButton = <RaisedButton
+      label= "Upload contacts"
+      labelPosition="before"
+      style={styles.button}
+    >
+      <input type="file" style={styles.exampleImageInput} onChange={this.handleUpload}/>
+    </RaisedButton>
+
+    const reuploadButton = <div>
+      <span>{contacts.length} contacts</span>
+      <FlatButton
+        label="Re-upload"
+        primary
+      >
+        <input type="file" style={styles.exampleImageInput} onChange={this.handleUpload}/>
+      </FlatButton>
+      </div>
+
+    return contactsUploaded ? reuploadButton : uploadButton
+  }
   renderScriptForm() {
     return (<Dialog actions={this.renderScriptDialogOptions()}
       title="Create script"
@@ -153,14 +193,7 @@ export class CampaignForm extends Component {
     const { open, onRequestClose } = this.props
 
     return (
-      <Dialog
-        actions={this.renderDialogActions()}
-        title="Create campaign"
-        modal={true}
-        open={open}
-        onRequestClose={onRequestClose}
-        autoScrollBodyContent={true}
-      >
+      <div>
         <TextField
           fullWidth
           ref="title"
@@ -171,23 +204,9 @@ export class CampaignForm extends Component {
           ref="description"
           floatingLabelText="Description"
         />
-        <RaisedButton
-          label="Upload contacts"
-          labelPosition="before"
-          style={styles.button}
-        >
-          <input type="file" style={styles.exampleImageInput} onChange={this.handleUpload}/>
-        </RaisedButton>
-        <div>Uploaded {contacts.length} contacts</div>
-        { this.state.customFields.map((field) => <div>{field}</div>)}
-        <RaisedButton
-          label="Add script"
-          labelPosition="before"
-          style={styles.button}
-          onClick={this.handleOpenScriptDialog}
-        />
-        {this.renderScriptForm()}
-      </Dialog>
+        {this.renderUploadSection()}
+        {this.renderScriptSection()}
+      </div>
     )
   }
 }
