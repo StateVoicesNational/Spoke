@@ -4,6 +4,8 @@ import RaisedButton from 'material-ui/RaisedButton'
 import FlatButton from 'material-ui/FlatButton'
 import Dialog from 'material-ui/Dialog'
 import Badge from 'material-ui/Badge';
+import Divider from 'material-ui/Divider';
+
 
 import { insert } from '../../api/campaigns/methods'
 import { findScriptVariable } from '../helpers/script_helpers'
@@ -12,7 +14,8 @@ import { parseCSV } from '../../api/campaign_contacts/parse_csv'
 
 const styles = {
   button: {
-    margin: '24px 0'
+    margin: '24px 5px 24px 0',
+    fontSize: '10px'
   },
   exampleImageInput: {
     cursor: 'pointer',
@@ -23,6 +26,9 @@ const styles = {
     left: 0,
     width: '100%',
     opacity: 0
+  },
+  scriptSection: {
+    marginTop: 24
   }
 }
 
@@ -43,7 +49,7 @@ export class CampaignForm extends Component {
       uploading: false,
       contacts: [],
       customFields: [],
-      scriptDialogOpen: true,
+      scriptDialogOpen: false,
       script: ''
     }
   }
@@ -102,17 +108,6 @@ export class CampaignForm extends Component {
 
   renderScriptDialogOptions() {
     return [
-      <FlatButton
-        label="Cancel"
-        onTouchTap={this.handleCloseScriptDialog}
-        primary={false}
-      />,
-      <FlatButton
-        label="Done"
-        onTouchTap={this.handleScriptSubmit}
-        primary
-        keyboardFocused
-      />
     ]
   }
 
@@ -127,15 +122,12 @@ export class CampaignForm extends Component {
   }
 
   renderScriptSection() {
-    return (this.state.contacts.length === 0) ? '' : (
+    // const showScriptSection = this.state.contacts.length === 0
+    const hideScriptSection = false
+    return hideScriptSection ? '' : (
       <div>
-        {this.state.script}
-        <RaisedButton
-          label="Add script"
-          labelPosition="before"
-          style={styles.button}
-          onClick={this.handleOpenScriptDialog}
-        />
+        <Divider />
+          <h2>Scripts</h2>
         {this.renderScriptForm()}
       </div>
     )
@@ -144,29 +136,54 @@ export class CampaignForm extends Component {
   renderUploadSection() {
     const { contacts } = this.state
     const contactsUploaded = contacts.length > 0
+    return (
+      <div>
+        <RaisedButton
+          style={styles.button}
+          label= "Upload contacts"
+          labelPosition="before"
+        >
+          <input type="file" style={styles.exampleImageInput} onChange={this.handleUpload}/>
+        </RaisedButton>
 
-    const uploadButton = <RaisedButton
-      label= "Upload contacts"
-      labelPosition="before"
-      style={styles.button}
-    >
-      <input type="file" style={styles.exampleImageInput} onChange={this.handleUpload}/>
-    </RaisedButton>
-
-    const reuploadButton = <div>
-      <span>{contacts.length} contacts</span>
-      <FlatButton
-        label="Re-upload"
-        labelPosition="before"
-        primary
-      >
-        <input type="file" style={styles.exampleImageInput} onChange={this.handleUpload}/>
-      </FlatButton>
+        {contactsUploaded ? (<span>{`${contacts.length} contacts uploaded`}</span>) : ''}
       </div>
-
-    return contactsUploaded ? reuploadButton : uploadButton
+    )
   }
+
+  formValid() {
+    return this.state.contacts.length > 0 && this.state.script !== ''
+  }
+
+  renderSaveButton() {
+    return !this.formValid() ? '' : <FlatButton
+      label="Save"
+      onTouchTap={this.handleSubmit}
+      primary
+      keyboardFocused
+    />
+  }
+
   renderScriptForm() {
+    return (
+      <div style={styles.scriptSection}>
+        <ScriptEditor
+          sampleContact={this.state.contacts[0]}
+          customFields={this.state.customFields}
+          onScriptChange={this.onScriptChange}
+        />
+
+        <FlatButton
+          label="Cancel"
+          onTouchTap={this.handleCloseScriptDialog}
+        />,
+        <FlatButton
+          label="Add script"
+          onTouchTap={this.handleScriptSubmit}
+          secondary
+        />
+      </div>
+    )
     return (<Dialog actions={this.renderScriptDialogOptions()}
       title="Create script"
       modal={true}
@@ -174,13 +191,6 @@ export class CampaignForm extends Component {
       onRequestClose={this.handleCloseScriptDialog}
       autoScrollBodyContent={true}
     >
-
-      <ScriptEditor
-        sampleContact={this.state.contacts[0]}
-        customFields={this.state.customFields}
-        onScriptChange={this.onScriptChange}
-      />
-
       { this.state.customFields.map((field) => <div>{field}</div>)}
     </Dialog>)
   }
@@ -202,12 +212,7 @@ export class CampaignForm extends Component {
         />
         {this.renderUploadSection()}
         {this.renderScriptSection()}
-        <FlatButton
-          label="Save"
-          onTouchTap={this.handleSubmit}
-          primary
-          keyboardFocused
-        />
+        {this.renderSaveButton()}
       </div>
 
     )

@@ -3,10 +3,13 @@ import { EditorState } from 'draft-js';
 import Editor from 'draft-js-plugins-editor';
 import createMentionPlugin, { defaultSuggestionsFilter } from 'draft-js-mention-plugin';
 import { fromJS } from 'immutable'
+import { applyScript } from '../helpers/script_helpers'
+import { convertRowToContact } from '../../api/campaign_contacts/parse_csv'
 
 const styles = {
   input: {
-    border: "1px solid gray"
+    borderBottom: "1px solid lightgray",
+    padding: "16px"
   }
 }
 const positionSuggestions = ({ state, props }) => {
@@ -80,25 +83,37 @@ export class ScriptEditor extends Component {
     this.refs.editor.focus();
   }
 
+  renderPreview() {
+    const { sampleContact } = this.props
+    const script = this.state.editorState.getCurrentContent().getPlainText()
+    return sampleContact ? (
+      <div>
+        <h3>Preview</h3>
+        {applyScript(script, convertRowToContact(sampleContact))}
+      </div>) : ''
+  }
   render() {
     return (
-      <div>
-        <div onClick={ this.focus }
-          style={styles.input}
-        >
-          <Editor
-            editorState={ this.state.editorState }
-            onChange={this.onChange}
-            plugins={plugins}
-            ref="editor"
+      <div className="row">
+        <div className="col-xs">
+          <h3>Script</h3>
+          <div onClick={ this.focus }
+            style={styles.input}
+          >
+            <Editor
+              editorState={ this.state.editorState }
+              onChange={this.onChange}
+              plugins={plugins}
+              ref="editor"
+            />
+            <MentionSuggestions
+              onSearchChange={ this.onSearchChange }
+              suggestions={ this.state.suggestions }
           />
-          <MentionSuggestions
-            onSearchChange={ this.onSearchChange }
-            suggestions={ this.state.suggestions }
-          />
+          </div>
         </div>
-        <div>
-          <h2>Preview</h2>
+        <div className="col-xs">
+          {this.renderPreview()}
         </div>
       </div>
     );

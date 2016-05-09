@@ -6,6 +6,7 @@ import { insertContact } from '../campaign_contacts/methods'
 import { Campaigns } from './campaigns.js'
 import { CampaignContacts } from '../campaign_contacts/campaign_contacts.js'
 import { Assignments } from '../assignments/assignments.js'
+import { convertRowToContact } from '../campaign_contacts/parse_csv'
 
 // TODO I should actually do the campaignContact validation here so I don't have
 // a chance of failing between campaign save and contact save
@@ -33,17 +34,11 @@ export const insert = new ValidatedMethod({
         console.log("inserted with assignmentID", assignmentId)
         for (let row of contacts) {
           // TODO: Require upload in this format.
-          const contact = {
-            campaignId,
-            assignmentId
-          }
 
-          for (let requiredField of CampaignContacts.requiredUploadFields) {
-            contact[requiredField] = row[requiredField]
-            delete row[requiredField]
-          }
+          const contact = convertRowToContact(row)
+          contact.assignmentId = assignmentId
+          contact.campaignId = campaignId
 
-          contact.customFields = row
           // TODO BBulk insert instead of individual!
           insertContact.call(contact, (contactError) => {
             if (contactError) {
