@@ -54,17 +54,13 @@ export class ScriptEditor extends Component {
   }
 
   onChange (editorState) {
-    var text = editorState.getCurrentContent().getPlainText();
 
     this.setState({
       editorState,
     });
 
+    var text = editorState.getCurrentContent().getPlainText();
     this.props.onScriptChange(text)
-  }
-
-  componentDidUpdate() {
-
   }
 
   formatMentions(fields) {
@@ -86,19 +82,24 @@ export class ScriptEditor extends Component {
 
   render() {
     return (
-      <div onClick={ this.focus }
-        style={styles.input}
-      >
-        <Editor
-          editorState={ this.state.editorState }
-          onChange={this.onChange}
-          plugins={plugins}
-          ref="editor"
-        />
-        <MentionSuggestions
-          onSearchChange={ this.onSearchChange }
-          suggestions={ this.state.suggestions }
-        />
+      <div>
+        <div onClick={ this.focus }
+          style={styles.input}
+        >
+          <Editor
+            editorState={ this.state.editorState }
+            onChange={this.onChange}
+            plugins={plugins}
+            ref="editor"
+          />
+          <MentionSuggestions
+            onSearchChange={ this.onSearchChange }
+            suggestions={ this.state.suggestions }
+          />
+        </div>
+        <div>
+          <h2>Preview</h2>
+        </div>
       </div>
     );
   }

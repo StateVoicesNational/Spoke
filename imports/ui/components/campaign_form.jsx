@@ -12,7 +12,7 @@ import { parseCSV } from '../../api/campaign_contacts/parse_csv'
 
 const styles = {
   button: {
-    margin: 12
+    margin: '24px 0'
   },
   exampleImageInput: {
     cursor: 'pointer',
@@ -65,7 +65,6 @@ export class CampaignForm extends Component {
       if (err) {
         console.log(err)
       } else {
-        this.props.onRequestClose()
         this.resetState()
       }
     })
@@ -124,18 +123,13 @@ export class CampaignForm extends Component {
         onTouchTap={this.handleCloseDialog}
         primary
       />,
-      <FlatButton
-        label="Save"
-        onTouchTap={this.handleSubmit}
-        primary
-        keyboardFocused
-      />
     ]
   }
 
   renderScriptSection() {
     return (this.state.contacts.length === 0) ? '' : (
       <div>
+        {this.state.script}
         <RaisedButton
           label="Add script"
           labelPosition="before"
@@ -163,6 +157,7 @@ export class CampaignForm extends Component {
       <span>{contacts.length} contacts</span>
       <FlatButton
         label="Re-upload"
+        labelPosition="before"
         primary
       >
         <input type="file" style={styles.exampleImageInput} onChange={this.handleUpload}/>
@@ -181,6 +176,7 @@ export class CampaignForm extends Component {
     >
 
       <ScriptEditor
+        sampleContact={this.state.contacts[0]}
         customFields={this.state.customFields}
         onScriptChange={this.onScriptChange}
       />
@@ -206,7 +202,14 @@ export class CampaignForm extends Component {
         />
         {this.renderUploadSection()}
         {this.renderScriptSection()}
+        <FlatButton
+          label="Save"
+          onTouchTap={this.handleSubmit}
+          primary
+          keyboardFocused
+        />
       </div>
+
     )
   }
 }

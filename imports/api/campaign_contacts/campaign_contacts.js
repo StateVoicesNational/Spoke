@@ -18,17 +18,15 @@ CampaignContacts.deny({
 CampaignContacts.schema = new SimpleSchema({
   // userId: { type: String, regEx: SimpleSchema.RegEx.Id, optional: true },
   campaignId: { type: String },
-  // This would be used to send data back to whatever your source of contacts is --
-  // You could then remove users if opting them out or mark phone numbers as
-  // untextable, etc. This is taken from the source data itself,
-  // not an ID in our own system
-  contactId: { type: String },
   firstName: { type: String },
   lastName: { type: String },
-  number: { type: String },
+  cell: { type: String },
   customFields: { type: Object, blackbox: true },
   createdAt: { type: Date },
-  assignmentId: { type: String }, // so we can tell easily what is unassigned
+  assignmentId: {
+    type: String,
+    optional: true
+  }, // so we can tell easily what is unassigned
   campaignSurveyId: {
     type: String,
     optional: true
@@ -37,15 +35,14 @@ CampaignContacts.schema = new SimpleSchema({
 
 CampaignContacts.attachSchema(CampaignContacts.schema)
 
-CampaignContacts.requiredUploadFields = ['first_name', 'last_name', 'phone']
+CampaignContacts.requiredUploadFields = ['firstName', 'lastName', 'cell']
 
 Factory.define('campaign_contact', CampaignContacts, {
   campaignId: () => Factory.get('campaign'),
-  contactId: () => Fake.word(),
   firstName: () => Fake.user({ fields: ['name'] }).name,
   lastName: () => Fake.user({ fields: ['surname'] }).surname,
   state: () => Fake.fromArray(['CA', 'DE', 'MN', 'IL', 'TX', 'NY', 'HI']),
-  number: '669-221-6251',
+  cell: '669-221-6251',
   customFields: () => {
     const fields = {}
     fields[Fake.word()] = Fake.sentence(2)
@@ -64,10 +61,10 @@ CampaignContacts.publicFields = {
 
 CampaignContacts.helpers({
   messages() {
-    return Messages.find({ contactNumber: this.number, campaignId: this.campaignId })
+    return Messages.find({ contactNumber: this.cell, campaignId: this.campaignId })
   },
   lastMessage() {
-    return Messages.findOne({ contactNumber: this.number, campaignId: this.campaignId }, { sort: { createdAt: -1 }})
+    return Messages.findOne({ contactNumber: this.cell, campaignId: this.campaignId }, { sort: { createdAt: -1 }})
   },
   surveyAnswer(surveyQuestionId) {
     console.log("survey question id ", surveyQuestionId, "and campaignContactId", this._id, SurveyAnswers.findOne({

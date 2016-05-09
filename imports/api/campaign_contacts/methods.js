@@ -3,6 +3,22 @@ import { SimpleSchema } from 'meteor/aldeed:simple-schema'
 import { CampaignContacts } from './campaign_contacts.js'
 import {Plivo} from 'meteor/pfafman:plivo'
 
+// TODO We don't actually want to loop this -- we want to bulk insert
+export const insertContact = new ValidatedMethod({
+  name: 'campaignContacts.insert',
+  validate: new SimpleSchema({
+    campaignId: { type: String },
+    firstName: { type: String },
+    lastName: { type: String },
+    cell: { type: String },
+    customFields: { type: Object, blackbox: true }
+  }).validator(),
+  run(contact) {
+    contact.createdAt = new Date()
+    CampaignContacts.insert(contact)
+  }
+})
+
 export const sendMessage = new ValidatedMethod({
   name: 'campaignContacts.sendMessage',
   validate: new SimpleSchema({
