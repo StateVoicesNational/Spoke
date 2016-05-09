@@ -7,10 +7,16 @@ import { SurveyQuestions } from '../../survey_questions/survey_questions'
 import { SurveyAnswers } from '../../survey_answers/survey_answers'
 import { Messages } from '../../messages/messages'
 
-Meteor.publish('assignments', () =>
-  // TODO: actually filter correctly and return public fields only
-  Assignments.find({})
-)
+// TODO: actually filter correctly and return public fields only
+
+Meteor.publishComposite('assignments', {
+  find: () => Assignments.find({}),
+  children: [
+    {
+      find: (assignment) => Campaigns.find({_id : assignment.campaignId})
+    }
+  ]
+})
 
 Meteor.publishComposite('assignment.allRelatedData', (assignmentId) => {
   new SimpleSchema({
@@ -29,7 +35,7 @@ Meteor.publishComposite('assignment.allRelatedData', (assignmentId) => {
               // This is not reactive.
               const ids = []
               const search = (questionId) => {
-                if (questionId === null) {
+                if (!questionId) {
                   return
                 }
 

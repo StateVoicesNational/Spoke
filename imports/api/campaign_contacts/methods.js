@@ -8,13 +8,15 @@ export const insertContact = new ValidatedMethod({
   name: 'campaignContacts.insert',
   validate: new SimpleSchema({
     campaignId: { type: String },
+    assignmentId: { type: String },
     firstName: { type: String },
     lastName: { type: String },
     cell: { type: String },
-    customFields: { type: Object, blackbox: true }
+    customFields: { type: Object, blackbox: true },
   }).validator(),
   run(contact) {
     contact.createdAt = new Date()
+    console.log("inserting contact!?!?!?")
     CampaignContacts.insert(contact)
   }
 })

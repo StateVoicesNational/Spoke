@@ -1,13 +1,16 @@
 import { Meteor } from 'meteor/meteor'
 import { Assignments } from '../../api/assignments/assignments.js'
 import { SurveyAnswers } from '../../api/survey_answers/survey_answers.js'
+import { Campaigns } from '../../api/campaigns/campaigns.js'
+import { CampaignContacts } from '../../api/campaign_contacts/campaign_contacts.js'
 import { createContainer } from 'meteor/react-meteor-data'
 import { AssignmentPage } from '../pages/assignment_page'
 
 
 export default createContainer(({ id }) => {
-  Meteor.subscribe('assignments')
-  const handle = Meteor.subscribe('assignment.allRelatedData', id)
+  let handle = Meteor.subscribe('assignments')
+  console.log("ID", id)
+  let assignmentHandle = Meteor.subscribe('assignment.allRelatedData', id)
 
   let data = {
     assignments: Assignments.find({}).fetch(),
@@ -16,13 +19,17 @@ export default createContainer(({ id }) => {
     survey: null,
     contacts: [],
     messages: [],
-    loading: !handle.ready()
+    loading: !(handle.ready() && assignmentHandle.ready())
   }
-  if (handle.ready()) {
+
+  console.log(assignmentHandle.ready())
+  if (handle.ready() && assignmentHandle.ready()) {
+    console.log("here?")
     const assignment = Assignments.findOne(id)
     data.assignment = assignment
     if (assignment)
     {
+      console.log("hello!?\n\n\n")
       data.contacts = assignment.contacts().fetch()
       const campaign = assignment.campaign()
       data.campaign = campaign
@@ -30,9 +37,11 @@ export default createContainer(({ id }) => {
       data.messages = campaign.messages().fetch()
       data.survey = campaign.survey()
       // TODO is it ok to fetch things that are never referenced directly in the container?
-      SurveyAnswers.find({}).fetch()
     }
   }
+  CampaignContacts.find({}).fetch()
+  SurveyAnswers.find({}).fetch()
 
+  console.log("container assignments", data.assignments)
   return data
 }, AssignmentPage)

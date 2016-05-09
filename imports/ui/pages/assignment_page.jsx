@@ -42,6 +42,8 @@ export class AssignmentPage extends React.Component {
 
   getAssignedContacts() {
     const { contacts } = this.props
+
+    console.log("assignedContacts", contacts)
     return contacts
     let assignedContacts = []
 
@@ -62,16 +64,16 @@ export class AssignmentPage extends React.Component {
     const { assignment, assignments, contacts, loading } = this.props
     console.log("loading", loading)
     return (<div>
+      <AppBar
+        title="Townsquare Texting"
+        onLeftIconButtonTouchTap={this.handleTouchTapLeftIconButton}
+      />
       <Drawer open={this.state.navDrawerOpen}
         docked={false}
         onRequestChange={(navDrawerOpen) => this.setState({ navDrawerOpen })}
       >
         <AssignmentSummaryList onChangeList={this.onChangeAssignment} assignments={assignments} />
       </Drawer>
-      <AppBar
-        title="Townsquare Texting"
-        onLeftIconButtonTouchTap={this.handleTouchTapLeftIconButton}
-      />
       <div>
         <div className="row">
           <div className="col-xs-12 col-sm-3 col-md-2 col-lg-1">
@@ -83,7 +85,7 @@ export class AssignmentPage extends React.Component {
               {loading ? <CircularProgress /> :
                 <AssignmentSummary
                   assignment={assignment}
-                  contacts={this.getAssignedContacts()}
+                  contacts={assignment.contacts().fetch()}
                 />}
               </div>
             </div>

@@ -34,6 +34,7 @@ Assignments.publicFields = {
 
 Assignments.helpers({
   contacts() {
+    console.log("looking for ",this._id, CampaignContacts.find({ assignmentId: this._id }), CampaignContacts.find({ assignmentId: this._id }).fetch() )
     return CampaignContacts.find({ assignmentId: this._id })
   },
   campaign() {

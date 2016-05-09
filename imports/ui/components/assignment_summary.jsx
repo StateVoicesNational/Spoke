@@ -49,7 +49,9 @@ export class AssignmentSummary extends Component {
   componentDidUpdate(prevProps, prevState) {
     console.log("component did update", prevState)
     // TODO: This needs to be in a child component with state.
-    if (this.getContact(prevProps.contacts, prevState.currentContactIndex)._id !== this.currentContact()._id) {
+    const prevContact = this.getContact(prevProps.contacts, prevState.currentContactIndex)
+    const newContact = this.currentContact()
+    if (newContact && (!prevContact || (prevContact._id !== newContact._id))) {
       this.setSuggestedScript(this.defaultScript())
     }
   }
@@ -60,7 +62,8 @@ export class AssignmentSummary extends Component {
   }
 
   contactCount() {
-    const { contacts } = this.props
+    const { contacts, assignment } = this.props
+    console.log("contacts passed to AssignmentSummary", contacts, assignment, assignment.contacts().fetch())
     return contacts.length
   }
 
@@ -114,7 +117,7 @@ export class AssignmentSummary extends Component {
     sendMessage.call({
       text,
       campaignId: assignment.campaignId,
-      contactNumber: contact.number,
+      contactNumber: contact.cell,
       userNumber: "18053959604"
     }, (error) => {
       if (error) {
@@ -171,7 +174,7 @@ export class AssignmentSummary extends Component {
         />
         <ToolbarSeparator />
         <ResponseDropdown
-          responses={assignment.campaign().faqScripts}
+          responses={assignment.campaign().faqScripts || []}
           onScriptChange={this.handleScriptChange}
         />
       </ToolbarGroup>
@@ -194,8 +197,6 @@ export class AssignmentSummary extends Component {
     const { assignment, contacts } = this.props
     const contact = this.currentContact()
 
-    const filteredMessages = this.currentContact().messages().fetch()
-
     if (!assignment) {
       return (
         <div>
@@ -209,6 +210,8 @@ export class AssignmentSummary extends Component {
         </div>
       )
     } else {
+      const filteredMessages = this.currentContact().messages().fetch()
+
       //TODO - do we really want to grab all messages at once here? should I actually be doing a collection serach
       return (
         <Paper style={styles.base}>

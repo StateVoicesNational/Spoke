@@ -22,11 +22,12 @@ export class AssignmentSummaryList extends Component {
     const {onChangeList} = this.props
     const assignmentId = assignment._id
 
+    console.log("assignment campaign", assignment.campaign());
     return (
         <ListItem
           key={assignmentId}
-          primaryText={assignment.campaign.title}
-          secondaryText={assignment.campaign.description}
+          primaryText={assignment.campaign().title}
+          secondaryText={assignment.campaign().description}
           disabled={true}
           initiallyOpen={true}
           primaryTogglesNestedList={false}

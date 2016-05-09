@@ -63,7 +63,7 @@ export class ContactToolbar extends Component {
     return (
         <Toolbar>
           <ToolbarGroup float="left">
-            <ToolbarTitle text={`${contact.firstName} - ${contact.number}`} />
+            <ToolbarTitle text={`${contact.firstName} - ${contact.cell}`} />
           </ToolbarGroup>
           <ToolbarGroup float="right">
             <IconButton onTouchTap={this.handleOpenDialog}>

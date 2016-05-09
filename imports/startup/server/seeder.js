@@ -21,17 +21,17 @@ const removeData = () => {
 
 const createContacts = (assignmentId, campaignId) => {
 
-  const numbers = [
+  const cells = [
     Meteor.settings.private.plivo.testPhoneNumbers.saikat,
     Meteor.settings.private.plivo.testPhoneNumbers.sheena
   ]
   const eventUrl = `http://bit.ly/${Fake.word(8)}`
 
-  numbers.forEach((number) =>
+  cells.forEach((cell) =>
     Factory.create('campaign_contact', {
       assignmentId,
       campaignId,
-      number,
+      cell,
       customFields: { eventUrl } })
   )
 }
@@ -86,12 +86,6 @@ const createAssignment = () => {
   const campaignId = campaign._id
   const assignment = Factory.create('assignment', {
     campaignId,
-    campaign: {
-      title: campaign.title,
-      description: campaign.description,
-      script: campaign.script,
-      customFields: campaign.customFields
-    }
   })
   createContacts(assignment._id, campaignId)
 }

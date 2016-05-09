@@ -85,7 +85,7 @@ CampaignContacts.helpers({
   },
 
   scriptFields() {
-    return Object.keys(this.customFields).concat(DEFAULT_SCRIPT_FIELDS)
+    return Object.keys(this.customFields).concat(CampaignContacts.requiredUploadFields)
   },
 
   getScriptField(fieldName) {
@@ -93,7 +93,7 @@ CampaignContacts.helpers({
       throw new Error(`Invalid script field ${fieldName} requested for campaignContact ${this._id}`)
     }
 
-    if (DEFAULT_SCRIPT_FIELDS.indexOf(fieldName) !== -1) {
+    if (CampaignContacts.requiredUploadFields.indexOf(fieldName) !== -1) {
       return this[fieldName]
     }
 
