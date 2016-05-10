@@ -6,7 +6,6 @@ import Dialog from 'material-ui/Dialog'
 import Badge from 'material-ui/Badge';
 import Divider from 'material-ui/Divider';
 
-
 import { insert } from '../../api/campaigns/methods'
 import { findScriptVariable } from '../helpers/script_helpers'
 import { ScriptEditor } from './script_field'
@@ -39,7 +38,7 @@ export class CampaignForm extends Component {
     this.handleSubmit = this.handleSubmit.bind(this)
     this.handleOpenScriptDialog = this.handleOpenScriptDialog.bind(this)
     this.handleCloseScriptDialog = this.handleCloseScriptDialog.bind(this)
-    this.handleScriptSubmit = this.handleScriptSubmit.bind(this)
+    this.handleAddScriptRow = this.handleAddScriptRow.bind(this)
     this.onScriptChange = this.onScriptChange.bind(this)
     this.resetState()
   }
@@ -50,7 +49,17 @@ export class CampaignForm extends Component {
       contacts: [],
       customFields: [],
       scriptDialogOpen: false,
-      script: ''
+      script: '',
+      faqScripts: [
+        {
+          script: 'Hey there!',
+          title: 'default'
+        },
+        {
+          script: 'What else?',
+          title: 'smee'
+        }
+      ]
     }
   }
 
@@ -98,12 +107,17 @@ export class CampaignForm extends Component {
 
   onScriptChange(script) {
     console.log("onscript change", script)
-    this.setState({ script })
+    // this.setState({ script })
   }
 
-  handleScriptSubmit() {
-    console.log("script change!", this.state.script)
-    this.handleCloseScriptDialog()
+  handleAddScriptRow() {
+    const { faqScripts } = this.state
+    faqScripts.push({
+      script: '',
+      title: ''
+    })
+    this.setState({faqScripts})
+
   }
 
   renderScriptDialogOptions() {
@@ -128,7 +142,13 @@ export class CampaignForm extends Component {
       <div>
         <Divider />
           <h2>Scripts</h2>
-        {this.renderScriptForm()}
+                {this.renderScriptRow(this.state.script, 'Default script')}
+                { this.state.faqScripts.map((faqScript) => this.renderScriptRow(faqScript.script, faqScript.title))}
+        <FlatButton
+          label="Add another script"
+          onTouchTap={this.handleAddScriptRow}
+          secondary
+        />
       </div>
     )
   }
@@ -164,35 +184,18 @@ export class CampaignForm extends Component {
     />
   }
 
-  renderScriptForm() {
+  renderScriptRow(script, title) {
     return (
-      <div style={styles.scriptSection}>
-        <ScriptEditor
-          sampleContact={this.state.contacts[0]}
-          customFields={this.state.customFields}
-          onScriptChange={this.onScriptChange}
-        />
-
-        <FlatButton
-          label="Cancel"
-          onTouchTap={this.handleCloseScriptDialog}
-        />,
-        <FlatButton
-          label="Add script"
-          onTouchTap={this.handleScriptSubmit}
-          secondary
-        />
-      </div>
+          [
+          <label>{title}</label>,
+          <ScriptEditor
+            sampleContact={this.state.contacts[0]}
+            customFields={this.state.customFields}
+            onScriptChange={this.onScriptChange}
+          />,
+          <Divider/>
+          ]
     )
-    return (<Dialog actions={this.renderScriptDialogOptions()}
-      title="Create script"
-      modal={true}
-      open={this.state.scriptDialogOpen}
-      onRequestClose={this.handleCloseScriptDialog}
-      autoScrollBodyContent={true}
-    >
-      { this.state.customFields.map((field) => <div>{field}</div>)}
-    </Dialog>)
   }
   render() {
     const { contacts } = this.state

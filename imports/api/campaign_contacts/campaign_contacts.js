@@ -83,20 +83,4 @@ CampaignContacts.helpers({
     }
     return SurveyQuestions.findOne({ _id: this.campaignSurveyId })
   },
-
-  scriptFields() {
-    return Object.keys(this.customFields).concat(CampaignContacts.requiredUploadFields)
-  },
-
-  getScriptField(fieldName) {
-    if (this.scriptFields().indexOf(fieldName) === -1) {
-      throw new Error(`Invalid script field ${fieldName} requested for campaignContact ${this._id}`)
-    }
-
-    if (CampaignContacts.requiredUploadFields.indexOf(fieldName) !== -1) {
-      return this[fieldName]
-    }
-
-    return this.customFields[fieldName]
-  }
 })

@@ -1,15 +1,17 @@
 import React, { Component } from 'react';
+import { Factory } from 'meteor/dburles:factory'
 import { EditorState } from 'draft-js';
 import Editor from 'draft-js-plugins-editor';
+import Paper from 'material-ui/Paper'
 import createMentionPlugin, { defaultSuggestionsFilter } from 'draft-js-mention-plugin';
 import { fromJS } from 'immutable'
-import { applyScript } from '../helpers/script_helpers'
+import { applyScript, scriptFields } from '../helpers/script_helpers'
 import { convertRowToContact } from '../../api/campaign_contacts/parse_csv'
 
+import Subheader from 'material-ui/Subheader'
 const styles = {
   input: {
-    borderBottom: "1px solid lightgray",
-    padding: "16px"
+    padding: "8px 0"
   }
 }
 const positionSuggestions = ({ state, props }) => {
@@ -84,23 +86,25 @@ export class ScriptEditor extends Component {
   }
 
   renderPreview() {
-    const { sampleContact } = this.props
+    const { sampleContact, customFields } = this.props
+    console.log("sampleContact", sampleContact)
     const script = this.state.editorState.getCurrentContent().getPlainText()
     return sampleContact ? (
       <div>
         <h3>Preview</h3>
-        {applyScript(script, convertRowToContact(sampleContact))}
-      </div>) : ''
+        {applyScript(script, convertRowToContact(sampleContact), scriptFields(customFields) )}
+      </div>
+    ) : ''
   }
   render() {
     return (
       <div className="row">
         <div className="col-xs">
-          <h3>Script</h3>
           <div onClick={ this.focus }
             style={styles.input}
           >
             <Editor
+              // placeholder="Type { to see available custom fields."
               editorState={ this.state.editorState }
               onChange={this.onChange}
               plugins={plugins}

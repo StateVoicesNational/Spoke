@@ -4,6 +4,7 @@ import { Fake } from 'meteor/anti:fake'
 import { Factory } from 'meteor/dburles:factory'
 import { SurveyQuestions } from '../survey_questions/survey_questions'
 import { Messages } from '../messages/messages'
+import { CampaignContacts } from '../campaign_contacts/campaign_contacts'
 
 export const Campaigns = new Mongo.Collection('campaigns')
 
@@ -71,6 +72,9 @@ Campaigns.publicFields = {
 }
 
 Campaigns.helpers({
+  scriptFields() {
+    return Object.keys(this.customFields).concat(CampaignContacts.requiredUploadFields)
+  },
   survey() {
     return SurveyQuestions.findOne({ _id: this.surveyQuestionId })
   },

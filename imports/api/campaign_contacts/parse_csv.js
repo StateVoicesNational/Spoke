@@ -17,12 +17,14 @@ export const parseCSV  = (file, callback) => {
 }
 
 export const convertRowToContact = (row) => {
+  const customFields = row
   const contact = {}
   for (let requiredField of CampaignContacts.requiredUploadFields) {
+    console.log(requiredField, row[requiredField])
     contact[requiredField] = row[requiredField]
-    delete row[requiredField]
+    // delete customFields[requiredField]
   }
 
-  contact.customFields = row
+  contact.customFields = customFields
   return contact
 }
