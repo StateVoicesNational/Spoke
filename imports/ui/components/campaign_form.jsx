@@ -1,14 +1,16 @@
 import React, { Component } from 'react'
 import TextField from 'material-ui/TextField'
+import {Card, CardActions, CardHeader, CardText} from 'material-ui/Card';
 import RaisedButton from 'material-ui/RaisedButton'
 import FlatButton from 'material-ui/FlatButton'
 import Dialog from 'material-ui/Dialog'
 import Badge from 'material-ui/Badge';
+import { FlowRouter } from 'meteor/kadira:flow-router'
 import Divider from 'material-ui/Divider';
 
 import { insert } from '../../api/campaigns/methods'
 import { findScriptVariable } from '../helpers/script_helpers'
-import { ScriptEditor } from './script_field'
+import { ScriptEditor } from './script_editor'
 import { parseCSV } from '../../api/campaign_contacts/parse_csv'
 
 const styles = {
@@ -31,6 +33,7 @@ const styles = {
   }
 }
 
+ScriptCollection = new Mongo.Collection(null)
 export class CampaignForm extends Component {
   constructor(props) {
     super(props)
@@ -40,47 +43,53 @@ export class CampaignForm extends Component {
     this.handleCloseScriptDialog = this.handleCloseScriptDialog.bind(this)
     this.handleAddScriptRow = this.handleAddScriptRow.bind(this)
     this.onScriptChange = this.onScriptChange.bind(this)
-    this.resetState()
-  }
 
-  resetState() {
     this.state = {
       uploading: false,
       contacts: [],
       customFields: [],
       scriptDialogOpen: false,
-      script: '',
-      faqScripts: [
-        {
-          script: 'Hey there!',
-          title: 'default'
-        },
-        {
-          script: 'What else?',
-          title: 'smee'
-        }
-      ]
+      script: null,
+      faqScripts: []
     }
+
   }
 
+  componentWillMount() {
+    Tracker.autorun(() => {
+      const faqScripts = ScriptCollection.find({ isFaqReply: true }).fetch()
+      const script = ScriptCollection.findOne({ initial: true })
+      this.setState({ faqScripts, script })
+    })
+
+    ScriptCollection.insert({
+      script: 'This is the initial message we send to the users',
+      isFaqReply: false,
+      initial: true
+    })
+  }
+
+
   handleSubmit() {
+    const { contacts, script, faqScripts } = this.state
     const title = this.refs.title.getValue().trim()
     const description = this.refs.title.getValue().trim()
-
-    const { contacts, script } = this.state
 
     const data = {
       title,
       description,
       contacts,
-      script
+      faqScripts,
+      script: script.script,
     }
 
     insert.call(data, (err) => {
       if (err) {
         console.log(err)
       } else {
-        this.resetState()
+        console.log("submitted!")
+        FlowRouter.go('/campaigns')
+        // this.resetState()
       }
     })
 
@@ -111,12 +120,20 @@ export class CampaignForm extends Component {
   }
 
   handleAddScriptRow() {
-    const { faqScripts } = this.state
-    faqScripts.push({
-      script: '',
-      title: ''
-    })
-    this.setState({faqScripts})
+    const script = {
+      script: 'Hello {firstName}',
+      title: 'Label here',
+      isFaqReply: true
+    }
+
+    ScriptCollection.insert(script)
+
+    // const { faqScripts } = this.state
+    // faqScripts.push({
+    //   script: '',
+    //   title: ''
+    // })
+    // this.setState({faqScripts})
 
   }
 
@@ -136,14 +153,14 @@ export class CampaignForm extends Component {
   }
 
   renderScriptSection() {
-    // const showScriptSection = this.state.contacts.length === 0
-    const hideScriptSection = false
+    const hideScriptSection = this.state.contacts.length === 0
+    const { faqScripts, script } = this.state
     return hideScriptSection ? '' : (
       <div>
         <Divider />
           <h2>Scripts</h2>
-                {this.renderScriptRow(this.state.script, 'Default script')}
-                { this.state.faqScripts.map((faqScript) => this.renderScriptRow(faqScript.script, faqScript.title))}
+                {this.renderScriptRow(script)}
+                { faqScripts.map((faqScript) => this.renderScriptRow(faqScript))}
         <FlatButton
           label="Add another script"
           onTouchTap={this.handleAddScriptRow}
@@ -180,21 +197,22 @@ export class CampaignForm extends Component {
       label="Save"
       onTouchTap={this.handleSubmit}
       primary
-      keyboardFocused
     />
   }
 
-  renderScriptRow(script, title) {
-    return (
-          [
-          <label>{title}</label>,
+  renderScriptRow(script) {
+    console.log("script, script", script)
+    return (!script ? '' :
           <ScriptEditor
+            key={script._id}
+            title={script.title}
+            script={script.script}
+            titleEditable={!script.initial}
+            expandable={true}
             sampleContact={this.state.contacts[0]}
             customFields={this.state.customFields}
             onScriptChange={this.onScriptChange}
-          />,
-          <Divider/>
-          ]
+          />
     )
   }
   render() {

@@ -22,6 +22,8 @@ export default createContainer(({ id }) => {
     loading: !(handle.ready() && assignmentHandle.ready())
   }
 
+  console.log(handle.ready(), assignmentHandle.ready(), "handle, assignmentHandle")
+
   console.log(assignmentHandle.ready())
   if (handle.ready() && assignmentHandle.ready()) {
     console.log("here?")

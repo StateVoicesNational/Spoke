@@ -19,9 +19,9 @@ Meteor.publishComposite('assignments', {
 })
 
 Meteor.publishComposite('assignment.allRelatedData', (assignmentId) => {
-  new SimpleSchema({
-    assignmentId: { type: String }
-  }).validate({ assignmentId })
+  // new SimpleSchema({
+  //   assignmentId: { type: String }
+  // }).validate({ assignmentId })
 
 // TODO I actually don't think we need reactivity here.
   return {

@@ -73,7 +73,7 @@ Campaigns.publicFields = {
 
 Campaigns.helpers({
   scriptFields() {
-    return Object.keys(this.customFields).concat(CampaignContacts.requiredUploadFields)
+    return this.customFields.concat(CampaignContacts.requiredUploadFields)
   },
   survey() {
     return SurveyQuestions.findOne({ _id: this.surveyQuestionId })

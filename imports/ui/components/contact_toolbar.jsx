@@ -42,7 +42,7 @@ export class ContactToolbar extends Component {
   }
 
   render() {
-    const { contact } = this.props
+    const { contact, scriptFields } = this.props
 
     const actions = [
       <FlatButton
@@ -76,7 +76,7 @@ export class ContactToolbar extends Component {
               open={this.state.open}
               onRequestClose={this.handleCloseDialog}
             >
-              <MessageField ref="optOutInput" initialScript={applyScript(optOutScript, contact) } />
+              <MessageField ref="optOutInput" initialScript={applyScript(optOutScript, contact, scriptFields) } />
             </Dialog>
           </ToolbarGroup>
         </Toolbar>

@@ -16,13 +16,15 @@ export const insert = new ValidatedMethod({
     title: { type: String },
     description: { type: String },
     contacts: { type: [Object], blackbox: true },
-    script: { type: String }
+    script: { type: String },
+    faqScripts: { type: [Object], blackbox: true} // todo
   }).validator(),
-  run({ title, description, contacts, script }) {
+  run({ title, description, contacts, script, faqScripts }) {
     const campaignData = {
       title,
       description,
       script,
+      faqScripts,
       createdAt: new Date(),
       customFields: ['hi', 'bye', 'smee']
     };

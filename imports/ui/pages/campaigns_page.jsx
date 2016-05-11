@@ -3,6 +3,7 @@ import Paper from 'material-ui/Paper'
 import { CampaignList } from '../components/campaign_list'
 import { CampaignForm } from '../components/campaign_form'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
+import { FlowRouter } from 'meteor/kadira:flow-router'
 
 import ContentAdd from 'material-ui/svg-icons/content/add'
 
@@ -12,9 +13,14 @@ export class CampaignsPage extends Component {
     this.handleSubmit = this.handleSubmit.bind(this)
     this.handleCloseDialog = this.handleCloseDialog.bind(this)
     this.handleOpenDialog = this.handleOpenDialog.bind(this)
+    this.createNewCampaign = this.createNewCampaign.bind(this)
     this.state = {
       open: true
     }
+  }
+
+  createNewCampaign() {
+    FlowRouter.go('/campaigns/new')
   }
 
   handleOpenDialog() {
@@ -32,12 +38,10 @@ export class CampaignsPage extends Component {
     const { campaigns } = this.props
     return <Paper>
       <FloatingActionButton mini
-        onTouchTap={this.handleOpenDialog}>
+        onTouchTap={this.createNewCampaign}>
         <ContentAdd />
       </FloatingActionButton>
       <CampaignList campaigns={campaigns} />
-      aoenuthaoeushtn
-      <CampaignForm open={this.state.open} onRequestClose={this.handleSubmit} />
     </Paper>
   }
 }

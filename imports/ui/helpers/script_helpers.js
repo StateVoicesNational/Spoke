@@ -9,6 +9,7 @@ const getScriptField = (contact, fieldName) => {
 }
 
 export const applyScript = (script, contact, scriptFields) => {
+  console.log("scriptfields", scriptFields)
   let appliedScript = script
   for (const field of scriptFields) {
     const re = new RegExp(`${delimit(field)}`, 'g')

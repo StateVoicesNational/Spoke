@@ -212,16 +212,20 @@ export class AssignmentSummary extends Component {
     } else {
       const filteredMessages = this.currentContact().messages().fetch()
 
+      const scriptFields = assignment.campaign().scriptFields()
       //TODO - do we really want to grab all messages at once here? should I actually be doing a collection serach
       return (
         <Paper style={styles.base}>
-          <ContactToolbar contact={contact} />
+          <ContactToolbar
+            contact={contact}
+            scriptFields={scriptFields}
+          />
           <Divider />
 
           <MessagesList messages={filteredMessages} />
           <Divider />
           {this.renderSurvey()}
-          <MessageField ref="input" initialScript={applyScript(this.state.script, contact)} />
+          <MessageField ref="input" initialScript={applyScript(this.state.script, contact, scriptFields)} />
           {this.renderNavigationToolbar()}
           </Paper>
         )
