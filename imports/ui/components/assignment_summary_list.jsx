@@ -1,6 +1,8 @@
 import React, { Component, PropTypes } from 'react';
 import {List, ListItem} from 'material-ui/List';
 import Badge from 'material-ui/Badge';
+import AppBar from 'material-ui/AppBar'
+import Drawer from 'material-ui/Drawer'
 import Subheader from 'material-ui/Subheader';
 import {FlowRouter} from 'meteor/kadira:flow-router'
 

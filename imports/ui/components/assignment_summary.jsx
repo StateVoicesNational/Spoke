@@ -165,33 +165,35 @@ export class AssignmentSummary extends Component {
 
   renderNavigationToolbar() {
     const { assignment } = this.props
-    return (<Toolbar style={styles.navigationToolbar}>
-      <ToolbarGroup firstChild>
-        <RaisedButton
-          onClick={this.handleSendMessage}
-          label="Send"
-          primary
-        />
-        <ToolbarSeparator />
-        <ResponseDropdown
-          responses={assignment.campaign().faqScripts || []}
-          onScriptChange={this.handleScriptChange}
-        />
-      </ToolbarGroup>
-      <ToolbarGroup float="right">
-        <ToolbarTitle style={styles.navigationToolbarTitle} text={this.navigationTitle()} />
-        <IconButton onTouchTap={this.handleNavigatePrevious}
-          disabled={!this.hasPrevious()}
-        >
-          <NavigateBeforeIcon />
-        </IconButton>
-        <IconButton onTouchTap={this.handleNavigateNext}
-          disabled={!this.hasNext()}
-        >
-          <NavigateNextIcon />
-        </IconButton>
-      </ToolbarGroup>
-    </Toolbar>)
+    return (
+      <Toolbar style={styles.navigationToolbar}>
+        <ToolbarGroup firstChild>
+          <RaisedButton
+            onClick={this.handleSendMessage}
+            label="Send"
+            primary
+          />
+          <ToolbarSeparator />
+          <ResponseDropdown
+            responses={assignment.campaign().faqScripts || []}
+            onScriptChange={this.handleScriptChange}
+          />
+        </ToolbarGroup>
+        <ToolbarGroup float="right">
+          <ToolbarTitle style={styles.navigationToolbarTitle} text={this.navigationTitle()} />
+          <IconButton onTouchTap={this.handleNavigatePrevious}
+            disabled={!this.hasPrevious()}
+          >
+            <NavigateBeforeIcon />
+          </IconButton>
+          <IconButton onTouchTap={this.handleNavigateNext}
+            disabled={!this.hasNext()}
+          >
+            <NavigateNextIcon />
+          </IconButton>
+        </ToolbarGroup>
+      </Toolbar>
+    )
   }
   render() {
     const { assignment, contacts } = this.props

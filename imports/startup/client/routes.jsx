@@ -12,7 +12,7 @@ import injectTapEventPlugin from 'react-tap-event-plugin'
 // http://stackoverflow.com/a/34015469/988941
 injectTapEventPlugin()
 
-FlowRouter.route('/', {
+FlowRouter.route('/assignments', {
   name: 'texting',
   action: (params) => {
     mount(App, {

@@ -12,6 +12,8 @@ import { insert } from '../../api/campaigns/methods'
 import { findScriptVariable } from '../helpers/script_helpers'
 import { ScriptEditor } from './script_editor'
 import { parseCSV } from '../../api/campaign_contacts/parse_csv'
+import AutoComplete from 'material-ui/AutoComplete';
+
 
 const styles = {
   button: {
@@ -152,6 +154,37 @@ export class CampaignForm extends Component {
     ]
   }
 
+  handleUpdateInput (value) {
+    console.log("update autocomplete value", value)
+  }
+  renderAssignmentSection() {
+    const dataSource = [
+      {'value': 1, 'text': 'Sheena Pakanati'},
+      {'value': 2, 'text': 'Saikat Chakrabarti'},
+      {'value': 3, 'text': 'Supratik Lahiri'}
+    ]
+
+    // TODO https://github.com/callemall/material-ui/pull/4193/commits/8e80a35e8d2cdb410c3727333e8518cadc08783b
+    const autocomplete =       <AutoComplete
+        filter={AutoComplete.caseInsensitiveFilter}
+        hintText="Search for a name"
+        dataSource={dataSource}
+        onUpdateInput={this.handleUpdateInput}
+      />
+
+    // const dataSource = [
+    //   'Sheena',
+    //   'Saikat',
+    //   'Rossy',
+    //   'Supratik'
+    // ]
+    return <div>
+      <Divider />
+      <h2>Assignments</h2>
+     {autocomplete}
+    </div>
+  }
+
   renderScriptSection() {
     const hideScriptSection = this.state.contacts.length === 0
     const { faqScripts, script } = this.state
@@ -233,6 +266,7 @@ export class CampaignForm extends Component {
         />
         {this.renderUploadSection()}
         {this.renderScriptSection()}
+        {this.renderAssignmentSection()}
         {this.renderSaveButton()}
       </div>
 
