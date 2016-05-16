@@ -6,6 +6,8 @@ import { FlowRouter } from 'meteor/kadira:flow-router'
 import AppBar from 'material-ui/AppBar'
 import Drawer from 'material-ui/Drawer'
 import CircularProgress from 'material-ui/CircularProgress';
+import IconButton from 'material-ui/IconButton';
+import ArrowBackIcon from 'material-ui/svg-icons/navigation/arrow-back';
 
 export class AssignmentPage extends React.Component {
   constructor(props) {
@@ -62,36 +64,29 @@ export class AssignmentPage extends React.Component {
 
   render() {
     const { assignment, assignments, contacts, loading } = this.props
-    console.log("loading", loading)
-    return (<div>
-      <AppBar
-        title="Townsquare Texting"
-        onLeftIconButtonTouchTap={this.handleTouchTapLeftIconButton}
-      />
-      <Drawer open={this.state.navDrawerOpen}
-        docked={false}
-        onRequestChange={(navDrawerOpen) => this.setState({ navDrawerOpen })}
-      >
-        <AssignmentSummaryList onChangeList={this.onChangeAssignment} assignments={assignments} />
-      </Drawer>
+    console.log("assignment")
+    return (loading ? <CircularProgress /> :
       <div>
-        <div className="row">
-          <div className="col-xs-12 col-sm-3 col-md-2 col-lg-1">
-            <div className="box-row">
-            </div>
-          </div>
-          <div className="col-xs-6 col-sm-6 col-md-8 col-lg-10">
-              <div className="box-row">
-              {loading ? <CircularProgress /> :
-                <AssignmentSummary
-                  assignment={assignment}
-                  contacts={assignment.contacts().fetch()}
-                />}
-              </div>
-            </div>
-          </div>
-        </div>
-    </div>)
+        <AppBar
+          iconElementLeft={
+            <IconButton onTouchTap={ () => FlowRouter.go('/assignments') }>
+              <ArrowBackIcon />
+            </IconButton>}
+          title={assignment.campaign().title}
+        />
+        <Drawer
+          open={this.state.navDrawerOpen}
+          docked={false}
+          onRequestChange={(navDrawerOpen) => this.setState({ navDrawerOpen })}
+        >
+          <AssignmentSummaryList onChangeList={this.onChangeAssignment} assignments={assignments} />
+        </Drawer>
+        <AssignmentSummary
+          assignment={assignment}
+          contacts={assignment.contacts().fetch()}
+        />
+      </div>
+    )
   }
 }
 

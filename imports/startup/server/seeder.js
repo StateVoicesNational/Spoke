@@ -40,7 +40,7 @@ const allowedAnswer = (value, script, surveyQuestionId) => (
   {
     value,
     surveyQuestionId,
-    script: `${script} Let us know at <<eventUrl>>!` // Just to demo/test the interpolation
+    script: `${script} Let us know at {eventUrl}!` // Just to demo/test the interpolation
   }
 )
 

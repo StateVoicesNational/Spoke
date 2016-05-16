@@ -4,6 +4,7 @@ import { mount } from 'react-mounter'
 import AssignmentContainer from '../../ui/containers/assignment_container'
 import CampaignsContainer from '../../ui/containers/campaigns_container'
 import CampaignEditContainer from '../../ui/containers/campaign_edit_container'
+import AssignmentsContainer from '../../ui/containers/assignments_container'
 
 import { App } from '../../ui/layouts/app'
 
@@ -12,14 +13,14 @@ import injectTapEventPlugin from 'react-tap-event-plugin'
 // http://stackoverflow.com/a/34015469/988941
 injectTapEventPlugin()
 
-FlowRouter.route('/assignments', {
-  name: 'texting',
-  action: (params) => {
-    mount(App, {
-      content: () => <AssignmentContainer id={params.id} />
-    })
-  }
-})
+// FlowRouter.route('/assignments', {
+//   name: 'texting',
+//   action: (params) => {
+//     mount(App, {
+//       content: () => <AssignmentContainer id={params.id} />
+//     })
+//   }
+// })
 
 FlowRouter.route('/assignments/:id', {
   name: 'assignment',
@@ -45,6 +46,15 @@ FlowRouter.route('/campaigns', {
   action: () => {
     mount(App, {
       content: () => <CampaignsContainer />
+    })
+  }
+})
+
+FlowRouter.route('/assignments', {
+  name: 'campaigns',
+  action: () => {
+    mount(App, {
+      content: () => <AssignmentsContainer />
     })
   }
 })

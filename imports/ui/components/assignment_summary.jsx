@@ -90,7 +90,6 @@ export class AssignmentSummary extends Component {
 
   setSuggestedScript(script)
   {
-    debugger;
     this.setState({script})
   }
   handleScriptChange(script) {

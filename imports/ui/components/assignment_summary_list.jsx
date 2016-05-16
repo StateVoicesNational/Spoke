@@ -24,7 +24,6 @@ export class AssignmentSummaryList extends Component {
     const {onChangeList} = this.props
     const assignmentId = assignment._id
 
-    console.log("assignment campaign", assignment.campaign());
     return (
         <ListItem
           key={assignmentId}

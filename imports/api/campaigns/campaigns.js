@@ -52,11 +52,11 @@ Factory.define('campaign', Campaigns, {
     'Get out the vote!']),
   customFields: [],
   surveyQuestionId: Factory.get('survey_question'),
-  script: () => 'Hey there name>>',
+  script: () => 'Hey there {name}',
   faqScripts: () => [
     {
       title: "I don't have a laptop",
-      script: 'No problem, <<name>>. You can usually use a tablet. Just be sure to check beforehand!'
+      script: 'No problem, {name}. You can usually use a tablet. Just be sure to check beforehand!'
     },
     {
       title: "I can only make it for part of the time.",
