@@ -13,6 +13,7 @@ Assignments.deny({
 })
 
 Assignments.schema = new SimpleSchema({
+  userId: { type: String },
   campaignId: { type: String },
   createdAt: { type: Date },
 })
@@ -20,7 +21,7 @@ Assignments.schema = new SimpleSchema({
 Assignments.attachSchema(Assignments.schema)
 
 Factory.define('assignment', Assignments, {
-  // userId: Factory.get('user'),
+  userId: 'abcd', // fixme
   campaignId: () => Factory.get('campaign'),
   createdAt: () => new Date(),
   // TODO: Campaign cached here isn't the same as campaignId created above

@@ -25,17 +25,19 @@ export class CampaignEditPage extends Component {
   }
   render() {
     const { campaigns } = this.props
-    return (<div>
-      <AppBar
-        iconElementLeft={
-          <IconButton onTouchTap={ this.handleBack.bind(this) }>
-            <ArrowBackIcon />
-          </IconButton>}
-        title="Create new campaign"
-      />
-      <Paper style={styles.root}>
-        <CampaignForm />
-      </Paper>
-    </div>)
+    return (
+    <div>
+        <AppBar
+          iconElementLeft={
+            <IconButton onTouchTap={ this.handleBack.bind(this) }>
+              <ArrowBackIcon />
+            </IconButton>}
+          title="Create new campaign"
+        />
+        <Paper style={styles.root}>
+          <CampaignForm />
+        </Paper>
+      </div>
+    )
   }
 }

@@ -5,6 +5,7 @@ import Popover from 'material-ui/Popover';
 import Menu from 'material-ui/Menu';
 import MenuItem from 'material-ui/MenuItem';
 import { Fake } from 'meteor/anti:fake'
+import { LoginForm } from './login_form'
 const styles = {
   toolbar: {
     backgroundColor: 'white'
@@ -27,9 +28,11 @@ export class Login extends Component {
       password: 'test'
     }
     const { email, password } = data
-    Accounts.createUser({email: email, password: password}, (error) => {
+    Accounts.createUser(data, (error) => {
       Meteor.loginWithPassword(email, password, (loginError) => {
-    });
+        console.log("loginError", loginError)
+      });
+      console.log("create User error?", error)
     });
     console.log("should have logged in!")
   }
@@ -53,11 +56,11 @@ export class Login extends Component {
   renderUserMenu(user) {
     return (
       <div>
-      <FlatButton
-        label={user.emails[0].address}
-        onTouchTap={this.handleTouchTap}
-        primary
-      />
+        <FlatButton
+          label={user.emails[0].address}
+          onTouchTap={this.handleTouchTap}
+          primary
+        />
         <Popover
           open={this.state.open}
           anchorEl={this.state.anchorEl}
@@ -76,17 +79,15 @@ export class Login extends Component {
   }
 
   renderLoginButton() {
+
     return (
-      <FlatButton
-        label="Log in"
-        onTouchTap={this.login}
-      />
+      <LoginForm />
     )
   }
   render() {
     const { user } = this.props
     console.log("METEOR USER in login", user)
-
+    // return (<div>Hihi</div>)
     return (
       <Toolbar style={styles.toolbar}>
         <ToolbarGroup float="left">

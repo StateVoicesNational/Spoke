@@ -75,17 +75,17 @@ const createSurvey = (campaignId) => {
   return newSurvey('Can the supporter attend this event?', parentAnswers)
 }
 
-const createAssignment = () => {
+const createAssignment = (userId) => {
 
   const survey = createSurvey()
 
   const customFields = ['eventUrl']
   const campaign = Factory.create('campaign', { customFields, surveyQuestionId:survey._id })
 
-
   const campaignId = campaign._id
   const assignment = Factory.create('assignment', {
     campaignId,
+    userId
   })
   createContacts(assignment._id, campaignId)
 }
@@ -99,9 +99,13 @@ Meteor.startup(() => {
     removeData()
 
     if (Assignments.find({}).count() === 0) {
-      _(2).times(() => {
-        createAssignment()
+      const email  = 'test@test.com'
+      const password = 'test'
+      const userId = Accounts.createUser({
+        email,
+        password
       })
+      _(2).times(() => createAssignment(userId))
     }
   }
 })

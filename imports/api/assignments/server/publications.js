@@ -9,8 +9,13 @@ import { Messages } from '../../messages/messages'
 
 // TODO: actually filter correctly and return public fields only
 
+
 Meteor.publishComposite('assignments', {
-  find: () => Assignments.find({}),
+  find: function() {
+    console.log("this.userId", this.userId)
+    return Assignments.find({
+    userId: this.userId
+  })},
   children: [
     {
       find: (assignment) => Campaigns.find({_id : assignment.campaignId})
@@ -22,10 +27,13 @@ Meteor.publishComposite('assignment.allRelatedData', (assignmentId) => {
   // new SimpleSchema({
   //   assignmentId: { type: String }
   // }).validate({ assignmentId })
-
+  const userId = this.userId
+  console.log("this userID")
 // TODO I actually don't think we need reactivity here.
   return {
-    find: () => Assignments.find({ _id: assignmentId }),
+    find: () => Assignments.find({
+      _id: assignmentId
+    }),
     children: [
       {
         find: (assignment) => Campaigns.find({ _id: assignment.campaignId }),
