@@ -12,13 +12,13 @@ import { Messages } from '../../messages/messages'
 
 Meteor.publishComposite('assignments', {
   find: function() {
-    console.log("this.userId", this.userId)
+    console.log('this.userId', this.userId)
     return Assignments.find({
     userId: this.userId
   })},
   children: [
     {
-      find: (assignment) => Campaigns.find({_id : assignment.campaignId})
+      find: (assignment) => Campaigns.find({ _id : assignment.campaignId })
     }
   ]
 })

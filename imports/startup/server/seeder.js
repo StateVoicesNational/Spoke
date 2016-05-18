@@ -4,19 +4,23 @@ import { CampaignContacts } from '../../api/campaign_contacts/campaign_contacts.
 import { SurveyQuestions } from '../../api/survey_questions/survey_questions.js'
 import { SurveyAnswers } from '../../api/survey_answers/survey_answers.js'
 import { Messages } from '../../api/messages/messages.js'
+import { Organizations } from '../../api/organizations/organizations.js'
 
 import { Fake } from 'meteor/anti:fake'
 import { Meteor } from 'meteor/meteor'
 import { Factory } from 'meteor/dburles:factory'
 import { _ } from 'meteor/underscore'
+import { Roles } from 'meteor/alanning:roles'
 
 const removeData = () => {
+  Organizations.remove({})
   Assignments.remove({})
   Campaigns.remove({})
   CampaignContacts.remove({})
   SurveyQuestions.remove({})
   SurveyAnswers.remove({})
   Messages.remove({})
+  Meteor.users.remove({})
 }
 
 const createContacts = (assignmentId, campaignId) => {
@@ -75,14 +79,17 @@ const createSurvey = (campaignId) => {
   return newSurvey('Can the supporter attend this event?', parentAnswers)
 }
 
-const createAssignment = (userId) => {
-
+const createCampaign = (organizationId) => {
   const survey = createSurvey()
-
   const customFields = ['eventUrl']
-  const campaign = Factory.create('campaign', { customFields, surveyQuestionId:survey._id })
+  return Factory.create('campaign', {
+    organizationId,
+    customFields,
+    surveyQuestionId: survey._id
+  })
+}
 
-  const campaignId = campaign._id
+const createAssignment = (userId, campaignId) => {
   const assignment = Factory.create('assignment', {
     campaignId,
     userId
@@ -92,20 +99,45 @@ const createAssignment = (userId) => {
 
 
 Meteor.startup(() => {
+  // TODO this should be a separate settings file
   if (Meteor.settings.public.isProduction)
     return
 
   if (Meteor.settings.public.refreshTestData) {
     removeData()
 
-    if (Assignments.find({}).count() === 0) {
-      const email  = 'test@test.com'
-      const password = 'test'
+    const users = [
+      {
+        email: 'admin@test.com',
+        roles: 'admin'
+      },
+      {
+        email: 'texter1@test.com',
+        roles: 'texter'
+      },
+      {
+        email: 'texter2@test.com',
+        roles: 'texter'
+      }
+    ]
+
+    const organizationId = Factory.create('organization', { name: 'Batmans for Change' })._id
+
+    for (let user of users) {
+      const { email, roles } = user
       const userId = Accounts.createUser({
         email,
-        password
+        firstName: Fake.user().name,
+        lastName: Fake.user().surname,
+        password: 'test'
       })
-      _(2).times(() => createAssignment(userId))
+
+      Roles.addUsersToRoles(userId, roles, organizationId)
+
+      _(2).times(() => {
+        const campaignId = createCampaign(organizationId)._id
+        createAssignment(userId, campaignId)
+      })
     }
   }
 })

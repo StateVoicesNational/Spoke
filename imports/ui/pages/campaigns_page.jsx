@@ -1,14 +1,13 @@
 import React, { Component } from 'react'
 import Paper from 'material-ui/Paper'
 import { CampaignList } from '../components/campaign_list'
-import { CampaignForm } from '../components/campaign_form'
-import Subheader from 'material-ui/Subheader';
+import Subheader from 'material-ui/Subheader'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import { FlowRouter } from 'meteor/kadira:flow-router'
-import {List, ListItem} from 'material-ui/List';
+import { List, ListItem } from 'material-ui/List'
 import AppBar from 'material-ui/AppBar'
 import Drawer from 'material-ui/Drawer'
-import Divider from 'material-ui/Divider';
+import Divider from 'material-ui/Divider'
 
 import ContentAdd from 'material-ui/svg-icons/content/add'
 
@@ -24,7 +23,8 @@ export class CampaignsPage extends Component {
   }
 
   handleClickNewButton() {
-    FlowRouter.go('/campaigns/new')
+    const { organizationId } = this.props
+    FlowRouter.go(`/${organizationId}/campaigns/new`)
   }
 
   handleClickCampaigns() {
@@ -44,6 +44,7 @@ export class CampaignsPage extends Component {
   }
 
   render() {
+    console.log("campaign props", this.props)
     const { campaigns } = this.props
     const { navDrawerOpen } = this.state
 

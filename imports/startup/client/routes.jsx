@@ -5,6 +5,8 @@ import AssignmentContainer from '../../ui/containers/assignment_container'
 import CampaignsContainer from '../../ui/containers/campaigns_container'
 import CampaignEditContainer from '../../ui/containers/campaign_edit_container'
 import AssignmentsContainer from '../../ui/containers/assignments_container'
+import { SignupForm } from '../../ui/components/signup_form'
+import TexterSignupPage from '../../ui/pages/texter_signup_page'
 
 import { App } from '../../ui/layouts/app'
 
@@ -31,30 +33,48 @@ FlowRouter.route('/assignments/:id', {
   }
 })
 
-FlowRouter.route('/campaigns/new', {
+FlowRouter.route('/:organizationId/campaigns/new', {
   name: 'newCampaign',
-  action: () => {
+  action: (params) => {
     mount(App, {
-      content: () => <CampaignEditContainer />
+      content: () => <CampaignEditContainer {...params} />
     })
   }
 })
 
 
-FlowRouter.route('/campaigns', {
+FlowRouter.route('/:organizationId/campaigns', {
   name: 'campaigns',
-  action: () => {
+  action: (params) => {
     mount(App, {
-      content: () => <CampaignsContainer />
+      content: () => <CampaignsContainer {...params} />
     })
   }
 })
 
 FlowRouter.route('/assignments', {
-  name: 'campaigns',
+  name: 'assignments',
   action: () => {
     mount(App, {
       content: () => <AssignmentsContainer />
+    })
+  }
+})
+
+FlowRouter.route('/signup', {
+  name: 'signup',
+  action: () => {
+    mount(App, {
+      content: () => <SignupForm />
+    })
+  }
+})
+
+FlowRouter.route('/:organizationId/join', {
+  name: 'organizationSignup',
+  action: (params) => {
+    mount(App, {
+      content: () => <TexterSignupPage {...params} />
     })
   }
 })

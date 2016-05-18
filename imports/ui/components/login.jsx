@@ -27,7 +27,7 @@ export class Login extends Component {
       email: Fake.user().email,
       password: 'test'
     }
-    const { email, password } = data
+
     Accounts.createUser(data, (error) => {
       Meteor.loginWithPassword(email, password, (loginError) => {
         console.log("loginError", loginError)

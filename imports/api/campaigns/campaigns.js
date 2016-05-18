@@ -21,7 +21,8 @@ const FAQSchema = new SimpleSchema({
 
 Campaigns.schema = new SimpleSchema({
   // userId: { type: String, regEx: SimpleSchema.RegEx.Id, optional: true },
-  // TODO: I think normalization is ok here bc this should not change so DPP won't update stuff
+  // TODO: I think normalization is ok here bc this should not change so won't update stuff
+  organizationId: { type: String },
   title: { type: String },
   description: { type: String },
   createdAt: { type: Date },

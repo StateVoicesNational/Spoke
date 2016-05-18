@@ -1,30 +1,28 @@
 import React, { Component } from 'react'
 import Paper from 'material-ui/Paper'
 import AppBar from 'material-ui/AppBar'
-import { CampaignList } from '../components/campaign_list'
 import { CampaignForm } from '../components/campaign_form'
-import FloatingActionButton from 'material-ui/FloatingActionButton'
-import IconButton from 'material-ui/IconButton';
-import ArrowBackIcon from 'material-ui/svg-icons/navigation/arrow-back';
+import IconButton from 'material-ui/IconButton'
+import ArrowBackIcon from 'material-ui/svg-icons/navigation/arrow-back'
 import { FlowRouter } from 'meteor/kadira:flow-router'
-
-import ContentAdd from 'material-ui/svg-icons/content/add'
 
 const styles = {
   root: {
-      width: '800px',
-      margin: '24px auto',
-      padding: '24px'
+    width: '800px',
+    margin: '24px auto',
+    padding: '24px'
 
   }
 }
 export class CampaignEditPage extends Component {
-  handleBack (event) {
-    console.log("handle back!?")
-    FlowRouter.go('/campaigns')
+  handleBack(event) {
+    const { organizationId } = this.props
+    FlowRouter.go(`/${organizationId}/campaigns`)
   }
+
   render() {
-    const { campaigns } = this.props
+    const { organizationId, texters } = this.props
+    console.log("TEXTERS", texters)
     return (
     <div>
         <AppBar
@@ -35,7 +33,7 @@ export class CampaignEditPage extends Component {
           title="Create new campaign"
         />
         <Paper style={styles.root}>
-          <CampaignForm />
+          <CampaignForm organizationId={organizationId} texters={texters} />
         </Paper>
       </div>
     )

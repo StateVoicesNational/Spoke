@@ -13,3 +13,6 @@ import '../../api/messages/server/publications.js'
 import '../../api/survey_answers/methods.js'
 
 import '../../api/survey_questions/survey_questions.js'
+
+import '../../api/organizations/methods.js'
+import '../../api/organizations/server/publications.js'

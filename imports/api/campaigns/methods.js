@@ -14,25 +14,29 @@ export const insert = new ValidatedMethod({
   name: 'campaigns.insert',
   validate: new SimpleSchema({
     title: { type: String },
+    organizationId: { type: String },
     description: { type: String },
     contacts: { type: [Object], blackbox: true },
     script: { type: String },
     faqScripts: { type: [Object], blackbox: true} // todo
   }).validator(),
-  run({ title, description, contacts, script, faqScripts }) {
+  run({ title, description, contacts, script, faqScripts, organizationId }) {
     const campaignData = {
       title,
       description,
       script,
       faqScripts,
+      organizationId,
       createdAt: new Date(),
       customFields: ['hi', 'bye', 'smee']
     };
 
-    // TODO do this only if the contacst validate!
+    // TODO do this only if the contacts validate!
     Campaigns.insert(campaignData, (campaignError, campaignId) => {
       // TODO - autoassignment alternative
+      // TODO check error!
       Assignments.insert({campaignId, createdAt: new Date() }, (assignmentError, assignmentId) => {
+        console.log(assignmentError)
         console.log("inserted with assignmentID", assignmentId)
         for (let row of contacts) {
           // TODO: Require upload in this format.

@@ -23,7 +23,7 @@ Assignments.attachSchema(Assignments.schema)
 Factory.define('assignment', Assignments, {
   userId: 'abcd', // fixme
   campaignId: () => Factory.get('campaign'),
-  createdAt: () => new Date(),
+  createdAt: () => new Date()
   // TODO: Campaign cached here isn't the same as campaignId created above
 })
 
