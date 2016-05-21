@@ -22,7 +22,8 @@ export const insertMessage = new ValidatedMethod({
       text,
       campaignId,
       serviceMessageId,
-      createdAt: new Date()
+      createdAt: new Date(),
+      userId: this.userId
     }
 
     Messages.insert(message)

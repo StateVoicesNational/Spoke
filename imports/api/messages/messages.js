@@ -2,7 +2,7 @@ import { Mongo } from 'meteor/mongo'
 import { SimpleSchema } from 'meteor/aldeed:simple-schema'
 import { Fake } from 'meteor/anti:fake'
 import { Factory } from 'meteor/dburles:factory'
-
+import { CampaignContacts } from '../campaign_contacts/campaign_contacts'
 export const Messages = new Mongo.Collection('messages')
 
 // Deny all client-side updates since we will be using methods to manage this collection
@@ -15,6 +15,7 @@ Messages.deny({
 Messages.schema = new SimpleSchema({
   contactNumber: { type: String },
   userNumber: { type: String },
+  userId: { type: String }, // theoretically the phone number userNumber should stay constant for a texter, but this is not guaranteed
   campaignId: { type: String },
   createdAt: { type: Date },
   isFromContact: { type: Boolean },
@@ -27,6 +28,7 @@ Messages.attachSchema(Messages.schema)
 Factory.define('message', Messages, {
   contactNumber: () => Meteor.settings.private.plivo.testPhoneNumbers.sheena,
   userNumber: () => Meteor.settings.private.plivo.fromPhoneNumber,
+  userId: () => 'abcd',
   campaignId: () => Factory.get('campaign'),
   createdAt: () => new Date(),
   isFromContact: () => Fake.fromArray([true, false]),
@@ -36,3 +38,9 @@ Factory.define('message', Messages, {
 
 Messages.publicFields = {
 }
+
+Messages.helpers({
+  campaignContact() {
+    return CampaignContacts.findOne({ campaignId: this.campaignId, cell: this.contactNumber })
+  }
+})
