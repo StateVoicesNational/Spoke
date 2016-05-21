@@ -29,7 +29,8 @@ export class CampaignsPage extends Component {
         <CampaignList campaigns={campaigns} />
         <FloatingActionButton
           mini
-          onTouchTap={this.handleClickNewButton}>
+          onTouchTap={this.handleClickNewButton}
+        >
           <ContentAdd />
         </FloatingActionButton>
       </Paper>
@@ -37,7 +38,7 @@ export class CampaignsPage extends Component {
     return (
       <AppPage
         navigation={<AdminNavigation
-          title='Campaigns'
+          title="Campaigns"
           organizationId={organizationId}
         />}
         content={content}
