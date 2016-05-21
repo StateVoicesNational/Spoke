@@ -24,7 +24,6 @@ export const App = createContainer(() => {
       <MuiThemeProvider muiTheme={muiTheme}>
         <div>
           <Login user={user} organizations={organizations} />
-          {props.navigation()}
           {props.content()}
         </div>
       </MuiThemeProvider>

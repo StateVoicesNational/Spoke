@@ -2,22 +2,25 @@ import React from 'react'
 import Paper from 'material-ui/Paper'
 import { FlowRouter } from 'meteor/kadira:flow-router'
 import { List, ListItem } from 'material-ui/List'
-import AppBar from 'material-ui/AppBar'
+import { AppNavigation } from '../../ui/components/navigation'
 
-export const AssignmentsPage = ({ assignments }) => (
+export const AssignmentsPage = ({ assignments, organizationId }) => (
+  <div>
+    <AppNavigation
+      organizationId={organizationId}
+      title="Assignments"
+    />
   <Paper>
-      <AppBar
-        title="Assignments"
-      />
       <List>
         { assignments.map((assignment) => (
           <ListItem
             key={assignment._id}
-            onTouchTap={() => FlowRouter.go(`/assignments/${assignment._id}`)}
+            onTouchTap={() => FlowRouter.go(`/${organizationId}/assignments/${assignment._id}`)}
             primaryText={assignment.campaign().title}
             secondaryText={assignment.campaign().description}
           />
         ))}
       </List>
   </Paper>
+  </div>
 )

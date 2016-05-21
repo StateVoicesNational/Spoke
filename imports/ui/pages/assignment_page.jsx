@@ -6,8 +6,7 @@ import { FlowRouter } from 'meteor/kadira:flow-router'
 import AppBar from 'material-ui/AppBar'
 import Drawer from 'material-ui/Drawer'
 import CircularProgress from 'material-ui/CircularProgress';
-import IconButton from 'material-ui/IconButton';
-import ArrowBackIcon from 'material-ui/svg-icons/navigation/arrow-back';
+import { BackNavigation } from '../../ui/components/navigation'
 
 export class AssignmentPage extends React.Component {
   constructor(props) {
@@ -63,24 +62,15 @@ export class AssignmentPage extends React.Component {
   }
 
   render() {
-    const { assignment, assignments, contacts, loading } = this.props
-    console.log("assignment")
+    const { assignment, contacts, loading, organizationId } = this.props
     return (loading ? <CircularProgress /> :
       <div>
-        <AppBar
-          iconElementLeft={
-            <IconButton onTouchTap={ () => FlowRouter.go('/assignments') }>
-              <ArrowBackIcon />
-            </IconButton>}
+        <BackNavigation
+          organizationId={organizationId}
           title={assignment.campaign().title}
+          backToSection='assignments'
         />
-        <Drawer
-          open={this.state.navDrawerOpen}
-          docked={false}
-          onRequestChange={(navDrawerOpen) => this.setState({ navDrawerOpen })}
-        >
-          <AssignmentSummaryList onChangeList={this.onChangeAssignment} assignments={assignments} />
-        </Drawer>
+
         <AssignmentSummary
           assignment={assignment}
           contacts={assignment.contacts().fetch()}

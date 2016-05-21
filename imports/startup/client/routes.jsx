@@ -52,18 +52,16 @@ FlowRouter.route('/:organizationId/assignments', {
   name: 'assignments',
   action: (params) => {
     mount(App, {
-      content: () => <AssignmentsContainer />,
-      navigation: () => <AppNavigation {...params} />
+      content: () => <AssignmentsContainer {...params} />
     })
   }
 })
 
-FlowRouter.route('/:organizationId/assignments/:id', {
+FlowRouter.route('/:organizationId/assignments/:assignmentId', {
   name: 'assignmentDetails',
   action: (params) => {
     mount(App, {
-      content: () => <AssignmentContainer id={params.id} />,
-      navigation: () => <AppNavigation {...params} />
+      content: () => <AssignmentContainer {...params} />
     })
   }
 })

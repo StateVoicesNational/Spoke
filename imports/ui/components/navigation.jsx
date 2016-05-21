@@ -7,6 +7,11 @@ import { List, ListItem } from 'material-ui/List'
 import AppBar from 'material-ui/AppBar'
 import Drawer from 'material-ui/Drawer'
 import { capitalize } from 'lodash'
+import ArrowBackIcon from 'material-ui/svg-icons/navigation/arrow-back';
+
+import IconButton from 'material-ui/IconButton';
+
+const sectionUrl = (organizationId, section) => `/${organizationId}/${section}`
 
 export class Navigation extends Component {
   constructor(props) {
@@ -20,20 +25,7 @@ export class Navigation extends Component {
     }
   }
 
-  handleClick(event) {
-    console.log(event.target)
-    console.log(event.target.key)
-    FlowRouter.go(`/${organizationId}/texters`)
-  }
-
-  handleClickCampaigns(value) {
-    console.log("value", value)
-    const { organizationId } = this.props
-    FlowRouter.go(`/${organizationId}/campaigns`)
-  }
-
   handleOpenDrawer() {
-    console.log("handle open drawer!?!?")
     this.setState({ open: true })
   }
   handleCloseDrawer() {
@@ -41,14 +33,14 @@ export class Navigation extends Component {
   }
 
   render() {
-    const { campaigns, organizationId, sections } = this.props
+    const { organizationId, title, sections } = this.props
     const { open } = this.state
 
     return (
       <div>
         <AppBar
           onLeftIconButtonTouchTap={ this.handleOpenDrawer }
-          title="Campaigns"
+          title={title}
         />
         <Drawer open={open}
           docked={false}
@@ -61,10 +53,9 @@ export class Navigation extends Component {
               <ListItem
                 key={section}
                 primaryText={capitalize(section)}
-                onTouchTap={() => FlowRouter.go(`/${organizationId}/${section}`)}
+                onTouchTap={() => FlowRouter.go(sectionUrl(organizationId, section))}
               />
             ))}
-
           </List>
         </Drawer>
       </div>
@@ -72,16 +63,27 @@ export class Navigation extends Component {
   }
 }
 
-export const AdminNavigation = ({ organizationId }) => (
+export const BackNavigation = ({ organizationId, title, backToSection}) => (
+  <AppBar
+    iconElementLeft={
+      <IconButton onTouchTap={ () => FlowRouter.go(sectionUrl(organizationId, backToSection)) }>
+        <ArrowBackIcon />
+      </IconButton>}
+    title={title}
+  />
+)
+export const AdminNavigation = ({ organizationId, title }) => (
   <Navigation
+    title={title}
     organizationId={organizationId}
     sections={['campaigns', 'texters']}
   />
 )
 
-export const AppNavigation = ({ organizationId }) => (
+export const AppNavigation = ({ organizationId, title }) => (
   <Navigation
     organizationId={organizationId}
+    title={title}
     sections={['messages', 'assignments']}
   />
 )

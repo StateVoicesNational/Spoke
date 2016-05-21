@@ -7,31 +7,24 @@ import { createContainer } from 'meteor/react-meteor-data'
 import { AssignmentPage } from '../pages/assignment_page'
 
 
-export default createContainer(({ id }) => {
-  let handle = Meteor.subscribe('assignments')
-  console.log("ID", id)
-  let assignmentHandle = Meteor.subscribe('assignment.allRelatedData', id)
+export default createContainer(({ assignmentId, organizationId }) => {
+  let handle = Meteor.subscribe('assignment.allRelatedData', assignmentId)
 
   let data = {
-    assignments: Assignments.find({}).fetch(),
     assignment: null,
     campaign: null,
     survey: null,
     contacts: [],
     messages: [],
-    loading: !(handle.ready() && assignmentHandle.ready())
+    loading: !handle.ready(),
+    organizationId
   }
 
-  console.log(handle.ready(), assignmentHandle.ready(), "handle, assignmentHandle")
-
-  console.log(assignmentHandle.ready())
-  if (handle.ready() && assignmentHandle.ready()) {
-    console.log("here?")
-    const assignment = Assignments.findOne(id)
+  if (handle.ready()) {
+    const assignment = Assignments.findOne(assignmentId)
     data.assignment = assignment
     if (assignment)
     {
-      console.log("hello!?\n\n\n")
       data.contacts = assignment.contacts().fetch()
       const campaign = assignment.campaign()
       data.campaign = campaign
@@ -43,7 +36,5 @@ export default createContainer(({ id }) => {
   }
   CampaignContacts.find({}).fetch()
   SurveyAnswers.find({}).fetch()
-
-  console.log("container assignments", data.assignments)
   return data
 }, AssignmentPage)
