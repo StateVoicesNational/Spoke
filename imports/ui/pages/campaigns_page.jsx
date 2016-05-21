@@ -1,13 +1,10 @@
 import React, { Component } from 'react'
 import Paper from 'material-ui/Paper'
 import { CampaignList } from '../components/campaign_list'
-import Subheader from 'material-ui/Subheader'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import { FlowRouter } from 'meteor/kadira:flow-router'
-import { List, ListItem } from 'material-ui/List'
-import AppBar from 'material-ui/AppBar'
-import Drawer from 'material-ui/Drawer'
-import Divider from 'material-ui/Divider'
+import { AdminNavigation } from '../../ui/components/navigation'
+import { AppPage } from '../../ui/layouts/app_page'
 
 import ContentAdd from 'material-ui/svg-icons/content/add'
 
@@ -22,16 +19,30 @@ export class CampaignsPage extends Component {
     FlowRouter.go(`/${organizationId}/campaigns/new`)
   }
 
-  render() {
-    const { campaigns } = this.props
+  navigation() {
 
-    return <Paper>
-      <CampaignList campaigns={campaigns} />
-      <FloatingActionButton
-        mini
-        onTouchTap={this.handleClickNewButton}>
-        <ContentAdd />
-      </FloatingActionButton>
-    </Paper>
+  }
+  render() {
+    const { campaigns, loading, organizationId } = this.props
+    const content = (
+      <Paper>
+        <CampaignList campaigns={campaigns} />
+        <FloatingActionButton
+          mini
+          onTouchTap={this.handleClickNewButton}>
+          <ContentAdd />
+        </FloatingActionButton>
+      </Paper>
+    )
+    return (
+      <AppPage
+        navigation={<AdminNavigation
+          title='Campaigns'
+          organizationId={organizationId}
+        />}
+        content={content}
+        loading={loading}
+      />
+    )
   }
 }

@@ -1,46 +1,9 @@
 import React from 'react'
-import { AssignmentSummaryList } from '../components/assignment_summary_list'
-import { Assignments } from '../../api/assignments/assignments.js'
 import { AssignmentSummary } from '../components/assignment_summary'
-import { FlowRouter } from 'meteor/kadira:flow-router'
-import AppBar from 'material-ui/AppBar'
-import Drawer from 'material-ui/Drawer'
-import CircularProgress from 'material-ui/CircularProgress';
 import { BackNavigation } from '../../ui/components/navigation'
+import { AppPage } from '../../ui/layouts/app_page'
 
 export class AssignmentPage extends React.Component {
-  constructor(props) {
-    super(props)
-    console.log("props", props)
-    this.handleTouchTapLeftIconButton = this.handleTouchTapLeftIconButton.bind(this)
-    this.onChangeAssignment = this.onChangeAssignment.bind(this)
-    this.state = { navDrawerOpen: false }
-  }
-
-  componentWillReceiveProps({ loading, assignment }) {
-    // redirect / to an assignment if possible
-    // TODO this is not the right way to do this and there may not be an assignment
-    if (!loading && !assignment) {
-      const newAssignment = Assignments.findOne()
-      this.navigateToAssignmentId(newAssignment._id)
-    }
-  }
-
-  onChangeAssignment(assignmentId) {
-    this.navigateToAssignmentId(assignmentId)
-    this.setState({ navDrawerOpen: false })
-  }
-
-  navigateToAssignmentId(assignmentId) {
-    FlowRouter.go(`/assignments/${assignmentId}`)
-  }
-
-  handleTouchTapLeftIconButton() {
-    this.setState({
-      navDrawerOpen: !this.state.navDrawerOpen
-    })
-  }
-
   getAssignedContacts() {
     const { contacts } = this.props
 
@@ -61,21 +24,35 @@ export class AssignmentPage extends React.Component {
     return assignedContacts
   }
 
-  render() {
-    const { assignment, contacts, loading, organizationId } = this.props
-    return (loading ? <CircularProgress /> :
-      <div>
-        <BackNavigation
-          organizationId={organizationId}
-          title={assignment.campaign().title}
-          backToSection='assignments'
-        />
+  navigation() {
+    const { organizationId, assignment } = this.props
+    return (
+      <BackNavigation
+        organizationId={organizationId}
+        title={assignment.campaign().title}
+        backToSection='assignments'
+      />
+    )
+  }
 
-        <AssignmentSummary
-          assignment={assignment}
-          contacts={assignment.contacts().fetch()}
-        />
-      </div>
+  content() {
+    const { assignment } = this.props
+    return (
+      <AssignmentSummary
+        assignment={assignment}
+        contacts={assignment.contacts().fetch()}
+      />
+    )
+  }
+
+  render() {
+    const { loading } = this.props
+    return (
+      <AppPage
+        navigation={loading ? '' : this.navigation() }
+        content={loading ? '' : this.content()}
+        loading={loading}
+      />
     )
   }
 }
@@ -85,6 +62,5 @@ AssignmentPage.propTypes = {
   assignments: React.PropTypes.array,   // all assignments for showing in sidebar
   loading: React.PropTypes.bool,     // subscription status
   contacts: React.PropTypes.array,   // contacts for current assignment
-  campaign: React.PropTypes.object   // contacts for current assignment
 
 }
