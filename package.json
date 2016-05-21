@@ -11,6 +11,7 @@
     "draft-js-plugins-editor": "^1.0.1",
     "formsy-react": "^0.18.0",
     "immutable": "^3.8.1",
+    "lodash": "^4.12.0",
     "material-ui": "^0.15.0",
     "meteor-node-stubs": "~0.2.0",
     "react": "^15.0.1",

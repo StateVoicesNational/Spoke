@@ -6,6 +6,8 @@ import Menu from 'material-ui/Menu';
 import MenuItem from 'material-ui/MenuItem';
 import { Fake } from 'meteor/anti:fake'
 import { LoginForm } from './login_form'
+import { FlowRouter } from 'meteor/kadira:flow-router'
+
 const styles = {
   toolbar: {
     backgroundColor: 'white'
@@ -53,7 +55,12 @@ export class Login extends Component {
     });
   };
 
+  handleMenuChange(event, value) {
+    FlowRouter.go(`/${value}/campaigns`)
+    console.log("value!", value)
+  }
   renderUserMenu(user) {
+    const { organizations } = this.props
     return (
       <div>
         <FlatButton
@@ -68,8 +75,14 @@ export class Login extends Component {
           targetOrigin={{horizontal: 'left', vertical: 'top'}}
           onRequestClose={this.handleRequestClose}
         >
-          <Menu>
-            <MenuItem primaryText="Switch to a new org" />
+          <Menu onChange={this.handleMenuChange}>
+            { organizations.map((organization) => (
+              <MenuItem
+                key={organization._id}
+                primaryText={organization.name}
+                value={organization._id}
+              />
+            ))}
             <MenuItem primaryText="Sign out" />
           </Menu>
         </Popover>

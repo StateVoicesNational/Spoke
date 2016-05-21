@@ -16,3 +16,6 @@ import '../../api/survey_questions/survey_questions.js'
 
 import '../../api/organizations/methods.js'
 import '../../api/organizations/server/publications.js'
+
+import '../../api/users/users.js'
+import '../../api/users/server/publications.js'

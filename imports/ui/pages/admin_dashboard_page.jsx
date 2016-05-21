@@ -1,24 +1,28 @@
 import React from 'react'
 import Paper from 'material-ui/Paper'
-import { FlowRouter } from 'meteor/kadira:flow-router'
-import { List, ListItem } from 'material-ui/List'
 import AppBar from 'material-ui/AppBar'
 import { Meteor } from 'meteor/meteor'
 import { Organizations } from '../../api/organizations/organizations.js'
 import { createContainer } from 'meteor/react-meteor-data'
-import { TexterSignup } from '../components/texter_signup'
 
-const Page = ({ organization, loading, user }) => (
-  <div>
-    { loading ? 'Loading' : <TexterSignup user={user} organization={organization} />}
-  </div>
+const Dashboard = ({ organization, loading }) => (
+  <Paper>
+    { loading ? 'Loading' : (
+        <div>
+          You have no texters.
+          You have no campaigns.
+        </div>
+    )}
+  </Paper>
 )
 
 export default createContainer(({ organizationId }) => {
+  console.log("organizationId", organizationId)
   const handle = Meteor.subscribe('organization', organizationId)
+
+  console.log("Organizations.findOne({ _id: organizationId })", Organizations.findOne({ _id: organizationId }))
   return {
     organization: Organizations.findOne({ _id: organizationId }),
-    user: Meteor.user(),
     loading: !handle.ready()
   }
-}, Page)
+}, Dashboard)

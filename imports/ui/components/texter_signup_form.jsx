@@ -70,47 +70,42 @@ export class TexterSignupForm extends React.Component {
     let { emailError, numericError, urlError } = errorMessages;
 
     return (
-      <Paper style={paperStyle}>
-        <div>
-          You're signing up to text for {organization.name}.
-        </div>
-        <Formsy.Form
-          onValid={this.enableButton.bind(this)}
-          onInvalid={this.disableButton.bind(this)}
-          onValidSubmit={this.submitForm.bind(this)}
-          onInvalidSubmit={this.notifyFormError.bind(this)}
-        >
-          <FormsyText
-            name="firstName"
-            required
-            floatingLabelText="First name"
-          />
-          <FormsyText
-            name="lastName"
-            required
-            floatingLabelText="Last name"
-          />
-          <FormsyText
-            name="email"
-            validations="isEmail"
-            validationError={emailError}
-            required
-            floatingLabelText="Your email"
-          />
-          <FormsyText
-            name="password"
-            type="password"
-            required
-            floatingLabelText="Password"
-          />
-          <RaisedButton
-            style={submitStyle}
-            type="submit"
-            label="Join organization"
-            disabled={!this.state.canSubmit}
-          />
-        </Formsy.Form>
-      </Paper>
+      <Formsy.Form
+        onValid={this.enableButton.bind(this)}
+        onInvalid={this.disableButton.bind(this)}
+        onValidSubmit={this.submitForm.bind(this)}
+        onInvalidSubmit={this.notifyFormError.bind(this)}
+      >
+        <FormsyText
+          name="firstName"
+          required
+          floatingLabelText="First name"
+        />
+        <FormsyText
+          name="lastName"
+          required
+          floatingLabelText="Last name"
+        />
+        <FormsyText
+          name="email"
+          validations="isEmail"
+          validationError={emailError}
+          required
+          floatingLabelText="Your email"
+        />
+        <FormsyText
+          name="password"
+          type="password"
+          required
+          floatingLabelText="Password"
+        />
+        <RaisedButton
+          style={submitStyle}
+          type="submit"
+          label="Join organization"
+          disabled={!this.state.canSubmit}
+        />
+      </Formsy.Form>
     )
   }
 }

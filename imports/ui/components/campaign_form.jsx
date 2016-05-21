@@ -1,60 +1,31 @@
 import React, { Component } from 'react'
 import TextField from 'material-ui/TextField'
-import {Card, CardActions, CardHeader, CardText} from 'material-ui/Card';
-import RaisedButton from 'material-ui/RaisedButton'
 import FlatButton from 'material-ui/FlatButton'
-import Dialog from 'material-ui/Dialog'
-import Badge from 'material-ui/Badge';
 import { FlowRouter } from 'meteor/kadira:flow-router'
-import Divider from 'material-ui/Divider';
-
 import { insert } from '../../api/campaigns/methods'
-import { findScriptVariable } from '../helpers/script_helpers'
-import { ScriptEditor } from './script_editor'
-import { parseCSV } from '../../api/campaign_contacts/parse_csv'
-import AutoComplete from 'material-ui/AutoComplete';
+import { CampaignScriptsForm } from './campaign_scripts_form'
+import { CampaignPeopleForm } from './campaign_people_form'
+import {Tabs, Tab} from 'material-ui/Tabs'
 
+const ScriptCollection = new Mongo.Collection(null)
 
-const styles = {
-  button: {
-    margin: '24px 5px 24px 0',
-    fontSize: '10px'
-  },
-  exampleImageInput: {
-    cursor: 'pointer',
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    right: 0,
-    left: 0,
-    width: '100%',
-    opacity: 0
-  },
-  scriptSection: {
-    marginTop: 24
-  }
-}
-
-ScriptCollection = new Mongo.Collection(null)
 export class CampaignForm extends Component {
   constructor(props) {
     super(props)
-    this.handleUpload = this.handleUpload.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
-    this.handleOpenScriptDialog = this.handleOpenScriptDialog.bind(this)
-    this.handleCloseScriptDialog = this.handleCloseScriptDialog.bind(this)
-    this.handleAddScriptRow = this.handleAddScriptRow.bind(this)
     this.onScriptChange = this.onScriptChange.bind(this)
-
+    this.handleAddScriptRow = this.handleAddScriptRow.bind(this)
+    this.onContactsUpload = this.onContactsUpload.bind(this)
+    this.onTexterAssignment = this.onTexterAssignment.bind(this)
     this.state = {
       uploading: false,
       contacts: [],
       customFields: [],
       scriptDialogOpen: false,
       script: null,
-      faqScripts: []
+      faqScripts: [],
+      assignedTexters: []
     }
-
   }
 
   componentWillMount() {
@@ -72,8 +43,16 @@ export class CampaignForm extends Component {
   }
 
 
+  onScriptChange(script) {
+    // this.setState({ script })
+  }
+
+  onTexterAssignment(assignedTexters) {
+    this.setState({ assignedTexters })
+  }
+
   handleSubmit() {
-    const { contacts, script, faqScripts } = this.state
+    const { contacts, script, faqScripts, assignedTexters } = this.state
     const { organizationId } = this.props
 
     const title = this.refs.title.getValue().trim()
@@ -85,6 +64,7 @@ export class CampaignForm extends Component {
       description,
       contacts,
       faqScripts,
+      assignedTexters,
       script: script.script,
     }
 
@@ -93,58 +73,11 @@ export class CampaignForm extends Component {
         console.log(err)
       } else {
         console.log("submitted!")
-        FlowRouter.go('/campaigns')
+        FlowRouter.go(`/${organizationId}/campaigns`)
         // this.resetState()
       }
     })
 
-  }
-
-  handleUpload(event) {
-    event.preventDefault()
-    parseCSV(event.target.files[0], ({ contacts, customFields }) => {
-      this.setState({
-        contacts,
-        customFields
-      })
-
-    })
-
-  }
-
-  handleOpenScriptDialog() {
-    this.setState({ scriptDialogOpen: true })
-  }
-  handleCloseScriptDialog() {
-    this.setState({ scriptDialogOpen: false })
-  }
-
-  onScriptChange(script) {
-    console.log("onscript change", script)
-    // this.setState({ script })
-  }
-
-  handleAddScriptRow() {
-    const script = {
-      script: 'Hello {firstName}',
-      title: 'Label here',
-      isFaqReply: true
-    }
-
-    ScriptCollection.insert(script)
-
-    // const { faqScripts } = this.state
-    // faqScripts.push({
-    //   script: '',
-    //   title: ''
-    // })
-    // this.setState({faqScripts})
-
-  }
-
-  renderScriptDialogOptions() {
-    return [
-    ]
   }
 
   renderDialogActions() {
@@ -155,79 +88,6 @@ export class CampaignForm extends Component {
         primary
       />,
     ]
-  }
-
-  handleUpdateInput (value) {
-    console.log("update autocomplete value", value)
-  }
-  renderAssignmentSection() {
-    const { texters } = this.props
-    let dataSource = texters.map((texter) => {
-      return {
-        value: texter._id,
-        text: `${texter.firstName} ${texter.lastName}`
-      }
-    })
-
-    dataSource = ['hi', 'bype']
-    console.log(dataSource)
-    // TODO https://github.com/callemall/material-ui/pull/4193/commits/8e80a35e8d2cdb410c3727333e8518cadc08783b
-    const autocomplete = (
-      <AutoComplete
-        filter={AutoComplete.caseInsensitiveFilter}
-        hintText="Search for a name"
-        dataSource={dataSource}
-        onUpdateInput={this.handleUpdateInput}
-      />
-    )
-
-    // const dataSource = [
-    //   'Sheena',
-    //   'Saikat',
-    //   'Rossy',
-    //   'Supratik'
-    // ]
-    return <div>
-      <Divider />
-      <h2>Assignments</h2>
-     {autocomplete}
-    </div>
-  }
-
-  renderScriptSection() {
-    const hideScriptSection = this.state.contacts.length === 0
-    const { faqScripts, script } = this.state
-    return hideScriptSection ? '' : (
-      <div>
-        <Divider />
-          <h2>Scripts</h2>
-                {this.renderScriptRow(script)}
-                { faqScripts.map((faqScript) => this.renderScriptRow(faqScript))}
-        <FlatButton
-          label="Add another script"
-          onTouchTap={this.handleAddScriptRow}
-          secondary
-        />
-      </div>
-    )
-  }
-
-  renderUploadSection() {
-    const { contacts } = this.state
-    const contactsUploaded = contacts.length > 0
-    return (
-      <div>
-        <RaisedButton
-          style={styles.button}
-          label= "Upload contacts"
-          labelPosition="before"
-        >
-          <input type="file" style={styles.exampleImageInput} onChange={this.handleUpload}/>
-        </RaisedButton>
-
-        {contactsUploaded ? (<span>{`${contacts.length} contacts uploaded`}</span>) : ''}
-      </div>
-    )
   }
 
   formValid() {
@@ -242,41 +102,81 @@ export class CampaignForm extends Component {
     />
   }
 
-  renderScriptRow(script) {
-    console.log("script, script", script)
-    return (!script ? '' :
-          <ScriptEditor
-            key={script._id}
-            title={script.title}
-            script={script.script}
-            titleEditable={!script.initial}
-            expandable={true}
-            sampleContact={this.state.contacts[0]}
-            customFields={this.state.customFields}
-            onScriptChange={this.onScriptChange}
-          />
+  handleAddScriptRow() {
+    const script = {
+      script: 'Hello {firstName}',
+      title: 'Label here',
+      isFaqReply: true
+    }
+
+    ScriptCollection.insert(script)
+  }
+
+  handleActiveTab(tab) {
+    console.log("tab activated", tab)
+  }
+
+  onContactsUpload(contacts, customFields) {
+    this.setState({
+      contacts,
+      customFields
+    })
+  }
+  renderSummarySection() {
+    const { contacts, assignedTexters } = this.state
+    return (
+      <div>
+        <h1>Summary</h1>
+        <p>
+          { this.renderSaveButton() }
+        </p>
+      </div>
     )
   }
   render() {
-    const { contacts } = this.state
-    const { open, onRequestClose } = this.props
-
+    const { contacts, assignedTexters, customFields, script, faqScripts } = this.state
+    const { texters } = this.props
     return (
       <div>
-        <TextField
-          fullWidth
-          ref="title"
-          floatingLabelText="Title"
-        />
-        <TextField
-          fullWidth
-          ref="description"
-          floatingLabelText="Description"
-        />
-        {this.renderUploadSection()}
-        {this.renderScriptSection()}
-        {this.renderAssignmentSection()}
-        {this.renderSaveButton()}
+        <Tabs>
+          <Tab label="1 - People" >
+            <div>
+              <TextField
+                fullWidth
+                ref="title"
+                floatingLabelText="Title"
+              />
+              <TextField
+                fullWidth
+                ref="description"
+                floatingLabelText="Description"
+              />
+              <CampaignPeopleForm
+                texters={texters}
+                contacts={contacts}
+                assignedTexters={assignedTexters}
+                onTexterAssignment={this.onTexterAssignment}
+                onContactsUpload={this.onContactsUpload}
+              />
+            </div>
+          </Tab>
+          <Tab label="2 - Scripts" >
+            <CampaignScriptsForm
+              script={script}
+              faqScripts={faqScripts}
+              onScriptChange={this.onScriptChange}
+              customFields={customFields}
+              sampleContact={contacts[0]}
+            />
+          </Tab>
+          <Tab
+            label="3 - Assignments"
+            route="/home"
+            onActive={this.handleActiveTab}
+          >
+            { this.renderSummarySection()}
+          </Tab>
+        </Tabs>
       </div>
 
     )
