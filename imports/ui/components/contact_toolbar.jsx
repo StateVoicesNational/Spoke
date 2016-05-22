@@ -53,7 +53,6 @@ export class ContactToolbar extends Component {
         label="Send message and opt out user"
         onTouchTap={this.handleOptOut}
         primary
-        keyboardFocused
       />
     ]
 

@@ -50,63 +50,15 @@ export class MessageForm extends Component {
     })
   }
 
-  navigationTitle(contact) {
-    return `${this.state.currentContactIndex + 1} of ${this.contactCount()}`
-  }
-
-  renderSurvey() {
-    return
-    const { assignment } = this.props
-    return [
-      <SurveyList onScriptChange={this.handleScriptChange}
-        contact= {this.currentContact()}
-        survey={assignment.campaign().survey()}
-      />
-    ]
-  }
-
-  renderNavigationToolbar() {
-    //   return <Toolbar style={styles.navigationToolbar}>
-    //   <ToolbarGroup firstChild>
-    //     <RaisedButton
-    //       onClick={this.handleSendMessage}
-    //       label="Send"
-    //       primary
-    //     />
-    //     <ToolbarSeparator />
-    //     <ResponseDropdown
-    //       responses={assignment.campaign().faqScripts || []}
-    //       onScriptChange={this.handleScriptChange}
-    //     />
-    //   </ToolbarGroup>
-    //   <ToolbarGroup float="right">
-    //     <ToolbarTitle style={styles.navigationToolbarTitle} text={this.navigationTitle()} />
-    //     <IconButton onTouchTap={this.handleNavigatePrevious}
-    //       disabled={!this.hasPrevious()}
-    //     >
-    //       <NavigateBeforeIcon />
-    //     </IconButton>
-    //     <IconButton onTouchTap={this.handleNavigateNext}
-    //       disabled={!this.hasNext()}
-    //     >
-    //       <NavigateNextIcon />
-    //     </IconButton>
-    //   </ToolbarGroup>
-    // </Toolbar>
-    return (
-      <Toolbar style={styles.navigationToolbar}>
-        <ToolbarGroup firstChild>
-          <RaisedButton
-            onClick={this.handleSendMessage.bind(this)}
-            label="Send"
-            primary
-          />
-        </ToolbarGroup>
-      </Toolbar>
-    )
-  }
   render() {
-    const { campaignContact, initialScript } = this.props
+    const {
+      campaignContact,
+      initialScript,
+      leftToolbarChildren,
+      rightToolbarChildren,
+      secondaryToolbar
+    } = this.props
+
     const messages = campaignContact.messages().fetch()
     return (
       <Paper>
@@ -116,9 +68,21 @@ export class MessageForm extends Component {
         <Divider />
         <MessagesList messages={messages} />
         <Divider />
-        {this.renderSurvey()}
+        { secondaryToolbar }
         <MessageField ref="input" initialScript={initialScript} />
-        {this.renderNavigationToolbar()}
+        <Toolbar style={styles.navigationToolbar}>
+          <ToolbarGroup firstChild>
+            <RaisedButton
+              onClick={this.handleSendMessage.bind(this)}
+              label="Send"
+              primary
+            />
+            { leftToolbarChildren }
+          </ToolbarGroup>
+          <ToolbarGroup float="right">
+            { rightToolbarChildren }
+          </ToolbarGroup>
+        </Toolbar>
       </Paper>
     )
 

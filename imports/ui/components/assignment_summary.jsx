@@ -5,12 +5,9 @@ import IconButton from 'material-ui/IconButton/IconButton'
 import RaisedButton from 'material-ui/RaisedButton'
 import NavigateBeforeIcon from 'material-ui/svg-icons/image/navigate-before'
 import NavigateNextIcon from 'material-ui/svg-icons/image/navigate-next'
-import Divider from 'material-ui/Divider'
 
-import { ContactToolbar } from './contact_toolbar'
 import { SurveyList } from './survey_list'
-import { MessagesList } from './messages_list'
-import { MessageField } from './message_field'
+import { MessageForm } from './message_form'
 import { ResponseDropdown } from './response_dropdown'
 
 import { sendMessage } from '../../api/messages/methods'
@@ -215,20 +212,42 @@ export class AssignmentSummary extends Component {
 
       const scriptFields = assignment.campaign().scriptFields()
       //TODO - do we really want to grab all messages at once here? should I actually be doing a collection serach
-      return (
-        <Paper style={styles.base}>
-          <ContactToolbar
-            contact={contact}
-            scriptFields={scriptFields}
-          />
-          <Divider />
+      const leftToolbarChildren = [
+        <ToolbarSeparator />,
+        <ResponseDropdown
+          responses={assignment.campaign().faqScripts || []}
+          onScriptChange={this.handleScriptChange}
+        />
+      ]
 
-          <MessagesList messages={filteredMessages} />
-          <Divider />
-          {this.renderSurvey()}
-          <MessageField ref="input" initialScript={applyScript(this.state.script, contact, scriptFields)} />
-          {this.renderNavigationToolbar()}
-          </Paper>
+      const rightToolbarChildren = [
+        <ToolbarTitle style={styles.navigationToolbarTitle} text={this.navigationTitle()} />,
+        <IconButton onTouchTap={this.handleNavigatePrevious}
+          disabled={!this.hasPrevious()}
+        >
+          <NavigateBeforeIcon />
+        </IconButton> ,
+        <IconButton onTouchTap={this.handleNavigateNext}
+          disabled={!this.hasNext()}
+        >
+          <NavigateNextIcon />
+        </IconButton>
+      ]
+
+      const subheader = (
+        <SurveyList onScriptChange={this.handleScriptChange}
+          contact= {this.currentContact()}
+          survey={assignment.campaign().survey()}
+        />
+      )
+      return (
+          <MessageForm
+            leftToolbarChildren={leftToolbarChildren}
+            rightToolbarChildren={rightToolbarChildren}
+            campaignContact={contact}
+            initialScript={applyScript(this.state.script, contact, scriptFields)}
+            subheader={subheader}
+          />
         )
     }
   }
