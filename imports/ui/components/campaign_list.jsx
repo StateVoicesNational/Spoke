@@ -1,5 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import { List, ListItem } from 'material-ui/List';
+import HappyFace from 'material-ui/svg-icons/social/sentiment-satisfied';
+import { Empty } from './empty'
 
 export class CampaignList extends Component {
   renderRow (campaign) {
@@ -14,8 +16,13 @@ export class CampaignList extends Component {
 
   render() {
     const { campaigns } = this.props
-    console.log(campaigns)
-    return (
+    const empty = (
+      <Empty
+        title="No campaigns yet"
+        icon={<HappyFace />}
+      />
+    )
+    return campaigns.length === 0 ? empty : (
         <List>
           {campaigns.map((campaign) => this.renderRow(campaign))}
         </List>

@@ -8,6 +8,17 @@ import { AppPage } from '../../ui/layouts/app_page'
 
 import ContentAdd from 'material-ui/svg-icons/content/add'
 
+const styles = {
+  floatingButton: {
+    margin: 0,
+    top: 'auto',
+    right: 20,
+    bottom: 20,
+    left: 'auto',
+    position: 'fixed'
+  }
+}
+
 export class CampaignsPage extends Component {
   constructor(props) {
     super(props)
@@ -25,15 +36,15 @@ export class CampaignsPage extends Component {
   render() {
     const { campaigns, loading, organizationId } = this.props
     const content = (
-      <Paper>
+      <div>
         <CampaignList campaigns={campaigns} />
         <FloatingActionButton
-          mini
+          style={styles.floatingButton}
           onTouchTap={this.handleClickNewButton}
         >
           <ContentAdd />
         </FloatingActionButton>
-      </Paper>
+      </div>
     )
     return (
       <AppPage

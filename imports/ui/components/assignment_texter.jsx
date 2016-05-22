@@ -34,8 +34,7 @@ const styles = {
     width:'100%'
   },
   paper: {
-    marginTop: '56px',
-    margin: 'auto',
+    margin: '56px auto',
     top: 56,
     maxWidth: 800,
     height: '100%'

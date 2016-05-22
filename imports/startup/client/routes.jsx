@@ -10,7 +10,7 @@ import TexterSignupPage from '../../ui/pages/texter_signup_page'
 import { TextersPage } from '../../ui/pages/texters_page'
 import { MessagesPage } from '../../ui/pages/messages_page'
 import { MessagePage } from '../../ui/pages/message_page'
-import AdminDashboardPage from '../../ui/pages/admin_dashboard_page'
+import { AdminDashboardPage } from '../../ui/pages/admin_dashboard_page'
 import { AdminNavigation, AppNavigation } from '../../ui/components/navigation'
 
 import { App } from '../../ui/layouts/app'
@@ -96,7 +96,7 @@ FlowRouter.route('/signup', {
   }
 })
 
-FlowRouter.route('/:organizationId/dashboard', {
+FlowRouter.route('/admin', {
   name: 'organizerDashboard',
   action: (params) => {
     mount(App, {

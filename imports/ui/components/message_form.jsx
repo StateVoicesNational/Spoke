@@ -24,6 +24,7 @@ const styles = {
     bottom: 0
   },
   messageField: {
+    backgroundColor: 'green',
     position: 'fixed',
     width: '100%',
     left: 0,
@@ -72,12 +73,13 @@ export class MessageForm extends Component {
     return (
       <div>
         <div style={styles.messageField}>
-          <MessageField ref="input" initialScript={initialScript} />
+          <div>
+            { secondaryToolbar }
+            <MessageField ref="input" initialScript={initialScript} />
+          </div>
         </div>
 
         <MessagesList messages={messages} />
-        <Divider />
-        { secondaryToolbar }
         <Toolbar style={styles.navigationToolbar}>
           <ToolbarGroup firstChild>
             <RaisedButton

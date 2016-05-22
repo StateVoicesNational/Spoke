@@ -3,7 +3,10 @@ import TextField from 'material-ui/TextField'
 
 const styles = {
   textarea: {
-    padding: 20
+    padding: 20,
+    position: 'relative',
+    width: '100%',
+    backgroundColor: 'blue'
   }
 }
 
@@ -20,7 +23,6 @@ export class MessageField extends Component {
 
   componentWillReceiveProps(props) {
     const inputValue = props.initialScript
-    console.log("receiving props input", inputValue)
     this.setState({ inputValue })
   }
 

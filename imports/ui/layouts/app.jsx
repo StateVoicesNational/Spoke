@@ -17,15 +17,22 @@ export const App = createContainer(() => {
     loading: !handle.ready()
   }
 }, (props) => {
-  const { user, organizations } = props
+  const { user, organizations, loading } = props
     // <Login user={user} organizations={organizations} />
+
+    // you suggest (I will also have the props, passed from the router)
+    const content = React.cloneElement(props.content(), {
+      user,
+      organizations,
+      loading // this may
+    })
 
   return (
     <div>
 
       <MuiThemeProvider muiTheme={muiTheme}>
         <div>
-          {props.content()}
+          { content }
         </div>
       </MuiThemeProvider>
     </div>

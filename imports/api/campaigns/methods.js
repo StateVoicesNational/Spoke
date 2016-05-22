@@ -75,6 +75,10 @@ export const insert = new ValidatedMethod({
 
   }).validator(),
   run({ title, description, contacts, script, faqScripts, organizationId, assignedTexters }) {
+    if (!this.userId || !Roles.userIsInRole(this.userId, 'admin', organizationId)) {
+      throw new Meteor.Error('not-authorized');
+    }
+
     const campaignData = {
       title,
       description,
@@ -87,14 +91,19 @@ export const insert = new ValidatedMethod({
 
     // TODO do this only if the contacts validate!
     Campaigns.insert(campaignData, (campaignError, campaignId) => {
+      if (campaignError) {
+        console.log("there was an error creating campaign")
+      }
+      else {
+        console.log("assignedTexters in campaign insert", assignedTexters)
+        const dividedContacts = divideContacts(contacts, assignedTexters)
+        forEach(dividedContacts, ( [texterId, texterContacts] ) => {
+          createAssignment(campaignId, texterId, texterContacts)
+        })
+      }
       // TODO - autoassignment alternative
       // TODO check error!
 
-      console.log("assignedTexters in campaign insert", assignedTexters)
-      const dividedContacts = divideContacts(contacts, assignedTexters)
-      forEach(dividedContacts, ( [texterId, texterContacts] ) => {
-        createAssignment(campaignId, texterId, texterContacts)
-      })
     })
   }
 })
