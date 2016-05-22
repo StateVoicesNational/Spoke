@@ -1,261 +1,117 @@
 import React, { Component } from 'react'
+import { AssignmentTexter } from './assignment_texter'
 import Paper from 'material-ui/Paper'
-import { Toolbar, ToolbarGroup, ToolbarTitle, ToolbarSeparator } from 'material-ui/Toolbar'
-import IconButton from 'material-ui/IconButton/IconButton'
-import RaisedButton from 'material-ui/RaisedButton'
-import NavigateBeforeIcon from 'material-ui/svg-icons/image/navigate-before'
-import NavigateNextIcon from 'material-ui/svg-icons/image/navigate-next'
-
-import { SurveyList } from './survey_list'
-import { MessageForm } from './message_form'
-import { ResponseDropdown } from './response_dropdown'
-
-import { sendMessage } from '../../api/messages/methods'
-import { applyScript } from '../helpers/script_helpers'
+import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
+import FlatButton from 'material-ui/FlatButton'
+import Badge from 'material-ui/Badge';
+import Dialog from 'material-ui/Dialog';
 
 const styles = {
-  navigationToolbar: {
-    backgroundColor: 'white'
+  dialog: {
+    width: '100%',
+    maxWidth: 'none',
+    top: -80,
+    padding: 0
   },
-  navigationToolbarTitle: {
-    fontSize: "12px"
+  dialogBody: {
+    padding: 0,
   },
-  base: {
-    marginTop: '24px'
+  dialogContent: {
+    // Purely to get the dialog to be fullscreen
+    height: '2000px',
+  },
+  badge: {
+    top: 16,
+    right: 16
   }
 }
 export class AssignmentSummary extends Component {
   constructor(props) {
     super(props)
-
     this.state = {
-      currentContactIndex: 0,
-      script: ''
-    }
-
-    this.handleNavigateNext = this.handleNavigateNext.bind(this)
-    this.handleNavigatePrevious = this.handleNavigatePrevious.bind(this)
-    this.handleSendMessage = this.handleSendMessage.bind(this)
-    this.handleScriptChange = this.handleScriptChange.bind(this)
-
-    this.state.script = this.defaultScript()
-    console.log("after set suggested script in cronstrucotr", this.state)
-
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    console.log("component did update", prevState)
-    // TODO: This needs to be in a child component with state.
-    const prevContact = this.getContact(prevProps.contacts, prevState.currentContactIndex)
-    const newContact = this.currentContact()
-    if (newContact && (!prevContact || (prevContact._id !== newContact._id))) {
-      this.setSuggestedScript(this.defaultScript())
+      currentTextingContacts: []
     }
   }
 
-  defaultScript() {
-    const { assignment } = this.props
-    return (this.currentContact() && this.currentContact().messages().fetch().length === 0) ? assignment.campaign().script : ''
+  handleStopTexting() {
+    this.setState({currentTextingContacts: []})
   }
 
-  contactCount() {
-    const { contacts, assignment } = this.props
-    console.log("contacts passed to AssignmentSummary", contacts, assignment, assignment.contacts().fetch())
-    return contacts.length
-  }
-
-  hasPrevious() {
-    return this.state.currentContactIndex > 0
-  }
-
-  hasNext() {
-    return this.state.currentContactIndex < this.contactCount() - 1
-  }
-
-  handleNavigateNext() {
-    if (this.hasNext())
-      this.incrementCurrentContactIndex(1)
-  }
-
-  handleNavigatePrevious() {
-    this.incrementCurrentContactIndex(-1)
-  }
-
-  handleSendMessage() {
-    console.log("sending message!")
-  }
-
-  setSuggestedScript(script)
-  {
-    this.setState({script})
-  }
-  handleScriptChange(script) {
-    this.setSuggestedScript(script)
-  }
-
-  handleSendMessage(event) {
-    event.preventDefault()
-    const input = this.refs.input
-    const onSuccess =  () => {
-      this.handleNavigateNext()
-      // if (messages.length === 0) {
-      //   onNextContact()
-      // } else {
-      //   this.setState({ script: '' })
-      // }
-    }
-    this.sendMessageToCurrentContact(input.getValue().trim(), onSuccess)
-  }
-
-  sendMessageToCurrentContact(text, onSuccess) {
-    const { assignment } = this.props
-    const contact = this.currentContact()
-    sendMessage.call({
-      text,
-      campaignId: assignment.campaignId,
-      contactNumber: contact.cell,
-      userNumber: "18053959604"
-    }, (error) => {
-      if (error) {
-        alert(error)
-      } else {
-        onSuccess()
-      }
-    })
-  }
-
-  navigationTitle(contact) {
-    return `${this.state.currentContactIndex + 1} of ${this.contactCount()}`
-  }
-
-  incrementCurrentContactIndex(increment) {
-    let newIndex = this.state.currentContactIndex
-    newIndex = newIndex + increment
-    this.updateCurrentContactIndex(newIndex)
-  }
-
-  updateCurrentContactIndex(newIndex) {
-    this.setState({
-      currentContactIndex: newIndex
-    })
-  }
-
-  getContact(contacts, index) {
-    return (contacts.length > index) ? contacts[index] :  null
-  }
-
-  currentContact() {
-    const { contacts } = this.props
-    return this.getContact(contacts, this.state.currentContactIndex)
-  }
-
-  renderSurvey() {
-    const { assignment } = this.props
-    return [
-      <SurveyList onScriptChange={this.handleScriptChange}
-        contact= {this.currentContact()}
-        survey={assignment.campaign().survey()}
-      />
-    ]
-  }
-
-  renderNavigationToolbar() {
-    const { assignment } = this.props
-    return (
-      <Toolbar style={styles.navigationToolbar}>
-        <ToolbarGroup firstChild>
-          <RaisedButton
-            onClick={this.handleSendMessage}
-            label="Send"
-            primary
-          />
-          <ToolbarSeparator />
-          <ResponseDropdown
-            responses={assignment.campaign().faqScripts || []}
-            onScriptChange={this.handleScriptChange}
-          />
-        </ToolbarGroup>
-        <ToolbarGroup float="right">
-          <ToolbarTitle style={styles.navigationToolbarTitle} text={this.navigationTitle()} />
-          <IconButton onTouchTap={this.handleNavigatePrevious}
-            disabled={!this.hasPrevious()}
-          >
-            <NavigateBeforeIcon />
-          </IconButton>
-          <IconButton onTouchTap={this.handleNavigateNext}
-            disabled={!this.hasNext()}
-          >
-            <NavigateNextIcon />
-          </IconButton>
-        </ToolbarGroup>
-      </Toolbar>
+  renderBadgedButton(title, currentTextingContacts, isPrimary) {
+    const count = currentTextingContacts.length
+    return (count === 0 ? '' :
+      <Badge
+        badgeStyle={styles.badge}
+        badgeContent={count}
+        primary={isPrimary}
+        secondary={!isPrimary}
+      >
+        <FlatButton
+          label={title}
+          onTouchTap={() => this.setState({currentTextingContacts})}
+        />
+      </Badge>
     )
+
   }
+
   render() {
     const { assignment, contacts } = this.props
-    const contact = this.currentContact()
+    const { currentTextingContacts } = this.state
 
-    if (!assignment) {
-      return (
-        <div>
-          You don't have any assignments yet
-        </div>
-      )
-    } else if (this.contactCount() === 0) {
-      return (
-        <div>
-          You have no contacts!
-        </div>
-      )
-    } else {
-      const filteredMessages = this.currentContact().messages().fetch()
+    const unmessagedContacts = contacts.filter((contact) => !contact.lastMessage())
+    const unrespondedContacts = contacts.filter((contact) => {
+      const lastMessage = contact.lastMessage()
+      return (!!lastMessage && lastMessage.isFromContact)
+    })
 
-      const scriptFields = assignment.campaign().scriptFields()
-      //TODO - do we really want to grab all messages at once here? should I actually be doing a collection serach
-      const leftToolbarChildren = [
-        <ToolbarSeparator />,
-        <ResponseDropdown
-          responses={assignment.campaign().faqScripts || []}
-          onScriptChange={this.handleScriptChange}
-        />
-      ]
+    const firstMessageCount = unmessagedContacts.length
+    const replyCount = unrespondedContacts.length
 
-      const rightToolbarChildren = [
-        <ToolbarTitle style={styles.navigationToolbarTitle} text={this.navigationTitle()} />,
-        <IconButton onTouchTap={this.handleNavigatePrevious}
-          disabled={!this.hasPrevious()}
+    console.log(firstMessageCount, replyCount)
+    const summary = (
+      <Card>
+        <CardTitle title={assignment.campaign().title} subtitle={assignment.campaign().description} />
+        <CardText>
+          { (replyCount > 0 || firstMessageCount > 0) ? "Start messaging!" : "Looks like you're done for now. Nice work!"}
+        </CardText>
+
+        <CardActions>
+          { this.renderBadgedButton('Send first texts', unmessagedContacts, true)}
+          { this.renderBadgedButton('Send replies', unrespondedContacts, false)}
+        </CardActions>
+      </Card>
+    )
+    const actions = []
+    return (
+      <Paper>
+        {summary}
+        <Dialog
+          actions={actions}
+          modal = {true}
+          bodyStyle={styles.dialogBody}
+          autoDetectWindowHeight={false}
+          autoScrollBodyContent={false}
+          contentStyle={styles.dialog}
+          open={currentTextingContacts.length > 0}
         >
-          <NavigateBeforeIcon />
-        </IconButton> ,
-        <IconButton onTouchTap={this.handleNavigateNext}
-          disabled={!this.hasNext()}
-        >
-          <NavigateNextIcon />
-        </IconButton>
-      ]
-
-      const subheader = (
-        <SurveyList onScriptChange={this.handleScriptChange}
-          contact= {this.currentContact()}
-          survey={assignment.campaign().survey()}
-        />
-      )
-      return (
-          <MessageForm
-            leftToolbarChildren={leftToolbarChildren}
-            rightToolbarChildren={rightToolbarChildren}
-            campaignContact={contact}
-            initialScript={applyScript(this.state.script, contact, scriptFields)}
-            subheader={subheader}
+        <div style={styles.dialogContent}>
+          <AssignmentTexter
+            assignment={assignment}
+            contacts={currentTextingContacts}
+            handleStopTexting={this.handleStopTexting.bind(this)}
           />
-        )
-    }
+        </div>
+        </Dialog>
+
+      </Paper>
+    )
   }
 }
 
 AssignmentSummary.propTypes = {
   assignment: React.PropTypes.object,      // current assignment
-  contacts: React.PropTypes.array,   // contacts for current assignment
+  contacts: React.PropTypes.array   // contacts for current assignment
 }
 
 

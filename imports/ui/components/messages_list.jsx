@@ -41,6 +41,7 @@ export class MessagesList extends Component {
         <List>
           {messages.map(message => (
           <ListItem
+            disabled
             style={message.isFromContact ? styles.message.received : styles.message.sent}
             key={message.createdAt}
             primaryText={message.text}

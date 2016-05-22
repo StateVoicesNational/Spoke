@@ -21,7 +21,7 @@ export class Navigation extends Component {
     this.handleOpenDrawer = this.handleOpenDrawer.bind(this)
 
     this.state = {
-      open: true
+      open: false
     }
   }
 

@@ -1,5 +1,4 @@
 import React, { Component } from 'react'
-import Paper from 'material-ui/Paper'
 import { Toolbar, ToolbarGroup, ToolbarTitle, ToolbarSeparator } from 'material-ui/Toolbar'
 import RaisedButton from 'material-ui/RaisedButton'
 import NavigateBeforeIcon from 'material-ui/svg-icons/image/navigate-before'
@@ -61,11 +60,7 @@ export class MessageForm extends Component {
 
     const messages = campaignContact.messages().fetch()
     return (
-      <Paper>
-        <ContactToolbar
-          campaignContact={campaignContact}
-        />
-        <Divider />
+      <div>
         <MessagesList messages={messages} />
         <Divider />
         { secondaryToolbar }
@@ -83,7 +78,7 @@ export class MessageForm extends Component {
             { rightToolbarChildren }
           </ToolbarGroup>
         </Toolbar>
-      </Paper>
+      </div>
     )
 
   }

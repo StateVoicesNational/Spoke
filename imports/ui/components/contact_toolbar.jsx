@@ -67,16 +67,16 @@ export class ContactToolbar extends Component {
             <IconButton onTouchTap={this.handleOpenDialog}>
               <DeleteIcon tooltip="Opt out" />
             </IconButton>
-            <Dialog
-              title="Opt out user"
-              actions={actions}
-              modal={false}
-              open={this.state.open}
-              onRequestClose={this.handleCloseDialog}
-            >
-              <MessageField ref="optOutInput" initialScript={optOutScript} />
-            </Dialog>
           </ToolbarGroup>
+          <Dialog
+            title="Opt out user"
+            actions={actions}
+            modal={false}
+            open={this.state.open}
+            onRequestClose={this.handleCloseDialog}
+          >
+            <MessageField ref="optOutInput" initialScript={optOutScript} />
+          </Dialog>
         </Toolbar>
     )
   }
