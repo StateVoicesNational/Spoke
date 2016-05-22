@@ -1,93 +1,33 @@
-import React, { Component } from 'react'
+import React from 'react'
 import Paper from 'material-ui/Paper'
-import { CampaignList } from '../components/campaign_list'
-import { CampaignForm } from '../components/campaign_form'
-import Subheader from 'material-ui/Subheader';
-import FloatingActionButton from 'material-ui/FloatingActionButton'
 import { FlowRouter } from 'meteor/kadira:flow-router'
-import {List, ListItem} from 'material-ui/List';
-import AppBar from 'material-ui/AppBar'
-import Drawer from 'material-ui/Drawer'
-import Divider from 'material-ui/Divider';
+import { List, ListItem } from 'material-ui/List'
+import { AppNavigation } from '../../ui/components/navigation'
+import { AppPage } from '../../ui/layouts/app_page'
 
-import ContentAdd from 'material-ui/svg-icons/content/add'
-
-export class CampaignsPage extends Component {
-  constructor(props) {
-    super(props)
-    this.handleCloseDrawer = this.handleCloseDrawer.bind(this)
-    this.handleOpenDrawer = this.handleOpenDrawer.bind(this)
-    this.handleClickNewButton = this.handleClickNewButton.bind(this)
-    this.state = {
-      navDrawerOpen: false
-    }
-  }
-
-  handleClickNewButton() {
-    FlowRouter.go('/campaigns/new')
-  }
-
-  handleClickCampaigns() {
-    FlowRouter.go('/campaigns')
-  }
-
-  handleClickAssignments() {
-    FlowRouter.go('/assignments')
-  }
-
-  handleOpenDrawer() {
-    console.log("handle open drawer!?!?")
-    this.setState({ navDrawerOpen: true })
-  }
-  handleCloseDrawer() {
-    this.setState({ navDrawerOpen: false })
-  }
-
-  render() {
-    const { campaigns } = this.props
-    const { navDrawerOpen } = this.state
-
-    return <Paper>
-      <AppBar
-        onLeftIconButtonTouchTap={ this.handleOpenDrawer }
-        title="Campaigns"
+export const AssignmentsPage = ({ assignments, organizationId, loading }) => (
+  <AppPage
+    navigation={(
+      <AppNavigation
+        organizationId={organizationId}
+        title="Assignments"
       />
-      <Drawer open={this.state.navDrawerOpen}
-        docked={false}
-        onRequestChange={(navDrawerOpen) => this.setState({ navDrawerOpen })}
-      >
+    )}
+    content={(
+      <Paper>
         <List>
-          <Subheader>Setup</Subheader>
-          <ListItem
-            key={1}
-            primaryText="Campaigns"
-            onTouchTap={this.handleClickCampaigns.bind(this)}
-          />
-          <ListItem
-            key={2}
-            primaryText="Texters"
-          />
-          <Divider />
-          <Subheader>Texting</Subheader>
-          <ListItem
-            key={3}
-            primaryText="Assignments"
-            onTouchTap={this.handleClickAssignments.bind(this)}
-          />
-          <ListItem
-            key={4}
-            primaryText="Messages"
-          />
+          { assignments.map((assignment) => (
+            <ListItem
+              key={assignment._id}
+              onTouchTap={() => FlowRouter.go(`/${organizationId}/assignments/${assignment._id}`)}
+              primaryText={assignment.campaign().title}
+              secondaryText={assignment.campaign().description}
+            />
+          ))}
         </List>
-      </Drawer>
+      </Paper>
+    )}
+    loading={loading}
+  />
+)
 
-
-      <FloatingActionButton
-        mini
-        onTouchTap={this.handleClickNewButton}>
-        <ContentAdd />
-      </FloatingActionButton>
-      <CampaignList campaigns={campaigns} />
-    </Paper>
-  }
-}

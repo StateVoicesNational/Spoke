@@ -9,4 +9,5 @@ export const displayName = (user) => [user.firstName, user.lastName].join(' ')
 Meteor.users.publicFields = {
   firstName: 1,
   lastName: 1,
+  assignedNumber: 1
 }

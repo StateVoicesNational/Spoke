@@ -8,8 +8,8 @@ import NavigateNextIcon from 'material-ui/svg-icons/image/navigate-next'
 import Divider from 'material-ui/Divider'
 
 import { ContactToolbar } from './contact_toolbar'
-import { MessagesList } from './messages_list'
 import { SurveyList } from './survey_list'
+import { MessagesList } from './messages_list'
 import { MessageField } from './message_field'
 import { ResponseDropdown } from './response_dropdown'
 

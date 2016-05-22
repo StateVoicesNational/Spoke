@@ -8,7 +8,6 @@ import { MessagesList } from './messages_list'
 import { SurveyList } from './survey_list'
 import { MessageField } from './message_field'
 import { sendMessage } from '../../api/messages/methods'
-import { applyScript } from '../helpers/script_helpers'
 
 export class ContactToolbar extends Component {
   constructor(props) {
@@ -42,7 +41,7 @@ export class ContactToolbar extends Component {
   }
 
   render() {
-    const { contact, scriptFields } = this.props
+    const { campaignContact } = this.props
 
     const actions = [
       <FlatButton
@@ -63,7 +62,7 @@ export class ContactToolbar extends Component {
     return (
         <Toolbar>
           <ToolbarGroup float="left">
-            <ToolbarTitle text={`${contact.firstName} - ${contact.cell}`} />
+            <ToolbarTitle text={`${campaignContact.firstName} - ${campaignContact.cell}`} />
           </ToolbarGroup>
           <ToolbarGroup float="right">
             <IconButton onTouchTap={this.handleOpenDialog}>
@@ -76,7 +75,7 @@ export class ContactToolbar extends Component {
               open={this.state.open}
               onRequestClose={this.handleCloseDialog}
             >
-              <MessageField ref="optOutInput" initialScript={applyScript(optOutScript, contact, scriptFields) } />
+              <MessageField ref="optOutInput" initialScript={optOutScript} />
             </Dialog>
           </ToolbarGroup>
         </Toolbar>
@@ -85,6 +84,6 @@ export class ContactToolbar extends Component {
 }
 
 ContactToolbar.propTypes = {
-  contact: React.PropTypes.object,   // contacts for current assignment
+  campaignContact: React.PropTypes.object,   // contacts for current assignment
 }
 

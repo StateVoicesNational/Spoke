@@ -1,8 +1,38 @@
 import { ValidatedMethod } from 'meteor/mdg:validated-method'
 import { SimpleSchema } from 'meteor/aldeed:simple-schema'
 import { Messages } from './messages.js'
-import { Plivo } from 'meteor/pfafman:plivo'
 import { Meteor } from 'meteor/meteor'
+
+const getAssignedPhoneNumber = (userId, onSuccess, onError) => {
+
+  if (Meteor.isServer) {
+    const plivo = require('plivo').RestAPI({
+      authId: Meteor.settings.private.plivo.authId,
+      authToken: Meteor.settings.private.plivo.authToken
+    })
+
+    const params = {
+        'country_iso': 'US', // The ISO code A2 of the country
+        'type' : 'national', // The type of number you are looking for. The possible number types are local, national and tollfree.
+        // 'pattern' : '210', // Represents the pattern of the number to be searched.
+        // 'region' : 'Texas' // This filter is only applicable when the number_type is local. Region based filtering can be performed.
+    };
+
+    plivo.search_phone_numbers(params, Meteor.bindEnvironment((status, response) => {
+      if (status === 200) {
+        const userNumber = response.objects[0].number
+        console.log("got some respnoses", userNumber, userId)
+        Meteor.users.update(userId, { $set: { userNumber } })
+        onSuccess(userNumber)
+      }
+      else {
+        console.log("oops, looks like we did not get a number")
+        onError()
+      }
+    }))
+  }
+}
+
 
 export const insertMessage = new ValidatedMethod({
   name: 'messages.insert',
@@ -26,14 +56,27 @@ export const insertMessage = new ValidatedMethod({
       userId: this.userId
     }
 
+    console.log("inserting message!", message)
     Messages.insert(message)
   }
 })
 
-const remoteCreateMessage = (text, userNumber, contactNumber, onSuccess, onError) => {
+const remoteCreateMessage = (text, userNumber, contactNumber, campaignId, onError) => {
+  const onMessageSendSuccess = (serviceMessageId) => {
+    const message = {
+      userNumber,
+      contactNumber,
+      text,
+      campaignId,
+      serviceMessageId,
+      isFromContact: false,
+    }
+    insertMessage.call(message)
+  }
+
   if (!Meteor.settings.public.isProduction && !Meteor.settings.public.textingEnabled) {
     console.log("Faking message sending")
-    onSuccess('fake_message_id')
+    onMessageSendSuccess('fake_message_id')
   } else {
     const plivo = Plivo.RestAPI({
       authId: Meteor.settings.private.plivo.authId,
@@ -50,7 +93,7 @@ const remoteCreateMessage = (text, userNumber, contactNumber, onSuccess, onError
     plivo.send_message(params, Meteor.bindEnvironment((status, response) => {
       if (status === 202) {
         const serviceMessageId = response.message_uuid[0]
-        onSuccess(serviceMessageId)
+        onMessageSendSuccess(serviceMessageId)
       } else {
         onError()
       }
@@ -62,29 +105,20 @@ export const sendMessage = new ValidatedMethod({
   name: 'messages.send',
   validate: new SimpleSchema({
     contactNumber: { type: String },
-    userNumber: { type: String },
     text: { type: String },
     campaignId: { type: String }
   }).validator(),
-  run({ text, userNumber, contactNumber, campaignId }) {
+  run({ text, contactNumber, campaignId }) {
     if (Meteor.isServer) {
-
-      const onSuccess = (serviceMessageId) => {
-        const message = {
-          userNumber,
-          contactNumber,
-          text,
-          campaignId,
-          serviceMessageId,
-          isFromContact: false,
-        }
-
-        insertMessage.call(message)
+      const user = Meteor.users.findOne({_id: this.userId})
+      if (!user.userNumber) {
+        getAssignedPhoneNumber(this.userId, (userNumber) => {
+          remoteCreateMessage(text, userNumber, contactNumber, campaignId)
+        })
       }
-
-      const onError = () => console.log("Couldn't create message")
-
-      remoteCreateMessage(text, userNumber, contactNumber, onSuccess, onError)
+      else {
+        remoteCreateMessage(text, user.userNumber, contactNumber, campaignId)
+      }
     }
   }
 })

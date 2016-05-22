@@ -17,3 +17,17 @@ Meteor.publishComposite('messages', {
     }
   ]
 })
+
+
+Meteor.publishComposite('messageThread', function (campaignContactId) {
+  return {
+    find: function() {
+      return CampaignContacts.find({ _id: campaignContactId })
+    },
+    children: [
+      {
+        find: (contact) => contact.messages()
+      }
+    ]
+  }
+})

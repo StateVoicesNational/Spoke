@@ -26,8 +26,8 @@ const removeData = () => {
 const createContacts = (assignmentId, campaignId) => {
 
   const cells = [
-    Meteor.settings.private.plivo.testPhoneNumbers.saikat,
-    Meteor.settings.private.plivo.testPhoneNumbers.sheena
+    Meteor.settings.plivo.testPhoneNumbers.saikat,
+    Meteor.settings.plivo.testPhoneNumbers.sheena
   ]
   const eventUrl = `http://bit.ly/${Fake.word(8)}`
 
@@ -129,6 +129,7 @@ Meteor.startup(() => {
         email,
         firstName: Fake.user().name,
         lastName: Fake.user().surname,
+        assignedNumber: Meteor.settings.plivo.fromPhoneNumber,
         password: 'test'
       })
 

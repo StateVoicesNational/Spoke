@@ -73,7 +73,6 @@ npm-bcrypt@0.7.8_2
 npm-mongo@1.4.42
 observe-sequence@1.0.10
 ordered-dict@1.0.6
-pfafman:plivo@1.1.0
 practicalmeteor:chai@2.1.0_1
 practicalmeteor:loglevel@1.2.0_2
 practicalmeteor:mocha@2.4.5_1

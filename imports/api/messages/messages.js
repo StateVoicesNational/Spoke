@@ -26,8 +26,8 @@ Messages.schema = new SimpleSchema({
 Messages.attachSchema(Messages.schema)
 
 Factory.define('message', Messages, {
-  contactNumber: () => Meteor.settings.private.plivo.testPhoneNumbers.sheena,
-  userNumber: () => Meteor.settings.private.plivo.fromPhoneNumber,
+  contactNumber: () => Meteor.settings.plivo.testPhoneNumbers.sheena,
+  userNumber: () => Meteor.settings.plivo.fromPhoneNumber,
   userId: () => 'abcd',
   campaignId: () => Factory.get('campaign'),
   createdAt: () => new Date(),

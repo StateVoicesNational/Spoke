@@ -17,8 +17,9 @@ const Page = ({ threads, organizationId }) => (
     />
     <List>
       {threads.map((message) => (
-            <ListItem
+        <ListItem
           key={message._id}
+          onTouchTap={() => FlowRouter.go(`/${organizationId}/messages/${message.campaignContact()._id}`)}
           primaryText={displayName(message.campaignContact())}
           secondaryText={`${message.text}`}
           secondaryTextLines={2}
@@ -40,7 +41,6 @@ export const MessagesPage = createContainer(({ organizationId }) => {
 
   let threads = groupBy(messages, (message) => message.contactNumber)
   threads = toPairs(threads).map(([contactNumber, messageList]) => last(messageList))
-  threads.map((msg) => (console.log("msg and cmp cotact", msg, msg.campaignContact())))
 
   return {
     organizationId,

@@ -9,6 +9,7 @@ import { SignupForm } from '../../ui/components/signup_form'
 import TexterSignupPage from '../../ui/pages/texter_signup_page'
 import { TextersPage } from '../../ui/pages/texters_page'
 import { MessagesPage } from '../../ui/pages/messages_page'
+import { MessagePage } from '../../ui/pages/message_page'
 import AdminDashboardPage from '../../ui/pages/admin_dashboard_page'
 import { AdminNavigation, AppNavigation } from '../../ui/components/navigation'
 
@@ -68,10 +69,19 @@ FlowRouter.route('/:organizationId/assignments/:assignmentId', {
 })
 
 FlowRouter.route('/:organizationId/messages', {
-  name: 'assignments',
+  name: 'messages',
   action: (params) => {
     mount(App, {
       content: () => <MessagesPage {...params} />
+    })
+  }
+})
+
+FlowRouter.route('/:organizationId/messages/:campaignContactId', {
+  name: 'messageThread',
+  action: (params) => {
+    mount(App, {
+      content: () => <MessagePage {...params} />
     })
   }
 })
