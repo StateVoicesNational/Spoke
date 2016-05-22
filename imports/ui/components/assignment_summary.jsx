@@ -1,44 +1,26 @@
 import React, { Component } from 'react'
-import { AssignmentTexter } from './assignment_texter'
 import Paper from 'material-ui/Paper'
 import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
 import FlatButton from 'material-ui/FlatButton'
 import Badge from 'material-ui/Badge';
-import Dialog from 'material-ui/Dialog';
 
 const styles = {
-  dialog: {
-    width: '100%',
-    maxWidth: 'none',
-    top: -80,
-    padding: 0
-  },
-  dialogBody: {
-    padding: 0,
-  },
-  dialogContent: {
-    // Purely to get the dialog to be fullscreen
-    height: '2000px',
-  },
   badge: {
     top: 16,
     right: 16
   }
 }
 export class AssignmentSummary extends Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      currentTextingContacts: []
-    }
-  }
+  startTexting() {
+    console.log("hello odongo")
+    const { handleStartTexting, contacts } = this.props
 
-  handleStopTexting() {
-    this.setState({currentTextingContacts: []})
+    handleStartTexting(contacts)
   }
-
   renderBadgedButton(title, currentTextingContacts, isPrimary) {
     const count = currentTextingContacts.length
+    const { onStartTexting } = this.props
+
     return (count === 0 ? '' :
       <Badge
         badgeStyle={styles.badge}
@@ -48,16 +30,14 @@ export class AssignmentSummary extends Component {
       >
         <FlatButton
           label={title}
-          onTouchTap={() => this.setState({currentTextingContacts})}
+          onTouchTap={ () => onStartTexting(currentTextingContacts) }
         />
       </Badge>
     )
-
   }
 
   render() {
     const { assignment, contacts } = this.props
-    const { currentTextingContacts } = this.state
 
     const unmessagedContacts = contacts.filter((contact) => !contact.lastMessage())
     const unrespondedContacts = contacts.filter((contact) => {
@@ -68,7 +48,6 @@ export class AssignmentSummary extends Component {
     const firstMessageCount = unmessagedContacts.length
     const replyCount = unrespondedContacts.length
 
-    console.log(firstMessageCount, replyCount)
     const summary = (
       <Card>
         <CardTitle title={assignment.campaign().title} subtitle={assignment.campaign().description} />
@@ -82,28 +61,9 @@ export class AssignmentSummary extends Component {
         </CardActions>
       </Card>
     )
-    const actions = []
     return (
       <Paper>
         {summary}
-        <Dialog
-          actions={actions}
-          modal = {true}
-          bodyStyle={styles.dialogBody}
-          autoDetectWindowHeight={false}
-          autoScrollBodyContent={false}
-          contentStyle={styles.dialog}
-          open={currentTextingContacts.length > 0}
-        >
-        <div style={styles.dialogContent}>
-          <AssignmentTexter
-            assignment={assignment}
-            contacts={currentTextingContacts}
-            handleStopTexting={this.handleStopTexting.bind(this)}
-          />
-        </div>
-        </Dialog>
-
       </Paper>
     )
   }
@@ -111,7 +71,8 @@ export class AssignmentSummary extends Component {
 
 AssignmentSummary.propTypes = {
   assignment: React.PropTypes.object,      // current assignment
-  contacts: React.PropTypes.array   // contacts for current assignment
+  contacts: React.PropTypes.array, // contacts for current assignment
+  handleStartTexting: React.PropTypes.func
 }
 
 

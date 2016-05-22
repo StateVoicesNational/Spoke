@@ -18,12 +18,13 @@ export const App = createContainer(() => {
   }
 }, (props) => {
   const { user, organizations } = props
+    // <Login user={user} organizations={organizations} />
 
   return (
     <div>
+
       <MuiThemeProvider muiTheme={muiTheme}>
         <div>
-          <Login user={user} organizations={organizations} />
           {props.content()}
         </div>
       </MuiThemeProvider>

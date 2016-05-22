@@ -21,9 +21,6 @@ import { sendMessage } from '../../api/messages/methods'
 import { applyScript } from '../helpers/script_helpers'
 
 const styles = {
-  navigationToolbar: {
-    backgroundColor: 'white'
-  },
   navigationToolbarTitle: {
     fontSize: "12px"
   },
@@ -31,10 +28,17 @@ const styles = {
     // without this the toolbar icons are not centered vertically
     height: '56px'
   },
+  contactToolbar: {
+    position: 'fixed',
+    top: 0,
+    width:'100%'
+  },
   paper: {
-    marginTop: '24px',
+    marginTop: '56px',
     margin: 'auto',
-    maxWidth: 1000
+    top: 56,
+    maxWidth: 800,
+    height: '100%'
   }
 }
 export class AssignmentTexter extends Component {
@@ -90,8 +94,8 @@ export class AssignmentTexter extends Component {
       this.incrementCurrentContactIndex(1)
     }
     else {
-      const { handleStopTexting } = this.props
-      handleStopTexting()
+      const { onStopTexting } = this.props
+      onStopTexting()
     }
   }
 
@@ -177,44 +181,8 @@ export class AssignmentTexter extends Component {
     ]
   }
 
-  renderNavigationToolbar() {
-    const { assignment } = this.props
-    return (
-      <Toolbar style={styles.navigationToolbar}>
-        <ToolbarGroup
-          firstChild
-        >
-          <RaisedButton
-            onClick={this.handleSendMessage}
-            label="Send"
-            primary
-          />
-          <ToolbarSeparator />
-          <ResponseDropdown
-            responses={assignment.campaign().faqScripts || []}
-            onScriptChange={this.handleScriptChange}
-          />
-        </ToolbarGroup>
-        <ToolbarGroup
-          lastChild
-        >
-          <ToolbarTitle style={styles.navigationToolbarTitle} text={this.navigationTitle()} />
-          <IconButton onTouchTap={this.handleNavigatePrevious}
-            disabled={!this.hasPrevious()}
-          >
-            <NavigateBeforeIcon />
-          </IconButton>
-          <IconButton onTouchTap={this.handleNavigateNext}
-            disabled={!this.hasNext()}
-          >
-            <NavigateNextIcon />
-          </IconButton>
-        </ToolbarGroup>
-      </Toolbar>
-    )
-  }
   render() {
-    const { assignment, contacts, handleStopTexting } = this.props
+    const { assignment, contacts, onStopTexting } = this.props
     const contact = this.currentContact()
     if (!contact) {
       return ''
@@ -253,8 +221,8 @@ export class AssignmentTexter extends Component {
       />
     )
     return (
-      <div>
-        <Toolbar>
+      <div style={{height: '100%'}}>
+        <Toolbar style={styles.contactToolbar}>
           <ToolbarGroup
             firstChild
           >
@@ -277,7 +245,7 @@ export class AssignmentTexter extends Component {
             lastChild
           >
             <IconButton
-              onTouchTap={handleStopTexting}
+              onTouchTap={onStopTexting}
               style={styles.toolbarIconButton}
             >
               <NavigateCloseIcon />
@@ -288,7 +256,7 @@ export class AssignmentTexter extends Component {
 
         <Divider />
 
-        <Paper style={styles.paper}>
+        <div style={styles.paper}>
           <MessageForm
             leftToolbarChildren={leftToolbarChildren}
             rightToolbarChildren={rightToolbarChildren}
@@ -296,7 +264,7 @@ export class AssignmentTexter extends Component {
             initialScript={applyScript(this.state.script, contact, scriptFields)}
             secondaryToolbar={secondaryToolbar}
           />
-        </Paper>
+        </div>
       </div>
     )
   }
@@ -305,6 +273,7 @@ export class AssignmentTexter extends Component {
 AssignmentTexter.propTypes = {
   assignment: React.PropTypes.object,      // current assignment
   contacts: React.PropTypes.array,   // contacts for current assignment
+  onStopTexting: React.PropTypes.func
 }
 
 

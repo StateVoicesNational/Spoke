@@ -5,7 +5,6 @@ import NavigateBeforeIcon from 'material-ui/svg-icons/image/navigate-before'
 import NavigateNextIcon from 'material-ui/svg-icons/image/navigate-next'
 import Divider from 'material-ui/Divider'
 
-import { ContactToolbar } from './contact_toolbar'
 import { MessagesList } from './messages_list'
 import { SurveyList } from './survey_list'
 import { MessageField } from './message_field'
@@ -16,10 +15,21 @@ import { applyScript } from '../helpers/script_helpers'
 
 const styles = {
   navigationToolbar: {
-    backgroundColor: 'white'
+    backgroundColor: 'white',
+    position: 'fixed',
+    width: '100%',
+    left: 0,
+    display: 'flex',
+    right: 0,
+    bottom: 0
   },
-  navigationToolbarTitle: {
-    fontSize: "12px"
+  messageField: {
+    position: 'fixed',
+    width: '100%',
+    left: 0,
+    display: 'flex',
+    right: 0,
+    bottom: 56
   }
 }
 
@@ -61,10 +71,13 @@ export class MessageForm extends Component {
     const messages = campaignContact.messages().fetch()
     return (
       <div>
+        <div style={styles.messageField}>
+          <MessageField ref="input" initialScript={initialScript} />
+        </div>
+
         <MessagesList messages={messages} />
         <Divider />
         { secondaryToolbar }
-        <MessageField ref="input" initialScript={initialScript} />
         <Toolbar style={styles.navigationToolbar}>
           <ToolbarGroup firstChild>
             <RaisedButton
