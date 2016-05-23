@@ -13,18 +13,7 @@ import { Empty } from '../components/empty'
 import FlatButton from 'material-ui/FlatButton'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import ContentAdd from 'material-ui/svg-icons/content/add'
-
-// TODO same as campaigns page
-const styles = {
-  floatingButton: {
-    margin: 0,
-    top: 'auto',
-    right: 20,
-    bottom: 20,
-    left: 'auto',
-    position: 'fixed'
-  }
-}
+import { commonStyles } from '../components/styles'
 
 class Page extends React.Component {
   constructor(props) {
@@ -70,7 +59,7 @@ class Page extends React.Component {
             </List>
           }
           <FloatingActionButton
-            style={styles.floatingButton}
+            style={commonStyles.floatingButton}
             onTouchTap={this.handleOpen}
           >
             <ContentAdd />

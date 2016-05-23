@@ -6,6 +6,12 @@ import { insert } from '../../api/campaigns/methods'
 import { CampaignScriptsForm } from './campaign_scripts_form'
 import { CampaignPeopleForm } from './campaign_people_form'
 import {Tabs, Tab} from 'material-ui/Tabs'
+import {
+  Step,
+  Stepper,
+  StepLabel,
+} from 'material-ui/Stepper';
+import RaisedButton from 'material-ui/RaisedButton';
 
 const ScriptCollection = new Mongo.Collection(null)
 
@@ -17,11 +23,16 @@ export class CampaignForm extends Component {
     this.handleAddScriptRow = this.handleAddScriptRow.bind(this)
     this.onContactsUpload = this.onContactsUpload.bind(this)
     this.onTexterAssignment = this.onTexterAssignment.bind(this)
+    this.handleNext = this.handleNext.bind(this)
+    this.handlePrev = this.handlePrev.bind(this)
+
+
     this.state = {
+      stepsFinished: false,
+      stepIndex: 0,
       uploading: false,
       contacts: [],
       customFields: [],
-      scriptDialogOpen: false,
       script: null,
       faqScripts: [],
       assignedTexters: []
@@ -42,6 +53,22 @@ export class CampaignForm extends Component {
     })
   }
 
+
+  handleNext() {
+    const {stepIndex} = this.state;
+    this.setState({
+      stepIndex: stepIndex + 1,
+      // not dynamic
+      stepsFinished: stepIndex >= 3,
+    });
+  };
+
+  handlePrev() {
+    const {stepIndex} = this.state;
+    if (stepIndex > 0) {
+      this.setState({stepIndex: stepIndex - 1});
+    }
+  }
 
   onScriptChange(script) {
     // this.setState({ script })
@@ -133,52 +160,107 @@ export class CampaignForm extends Component {
       </div>
     )
   }
-  render() {
-    const { contacts, assignedTexters, customFields, script, faqScripts } = this.state
-    const { texters } = this.props
+
+  renderNavigation() {
+    const { stepIndex } = this.state
+
     return (
       <div>
-        <Tabs>
-          <Tab label="1 - People" >
-            <div>
-              <TextField
-                fullWidth
-                ref="title"
-                floatingLabelText="Title"
-              />
-              <TextField
-                fullWidth
-                ref="description"
-                floatingLabelText="Description"
-              />
-              <CampaignPeopleForm
-                texters={texters}
-                contacts={contacts}
-                assignedTexters={assignedTexters}
-                onTexterAssignment={this.onTexterAssignment}
-                onContactsUpload={this.onContactsUpload}
-              />
-            </div>
-          </Tab>
-          <Tab label="2 - Scripts" >
-            <CampaignScriptsForm
-              script={script}
-              faqScripts={faqScripts}
-              onScriptChange={this.onScriptChange}
-              customFields={customFields}
-              sampleContact={contacts[0]}
-            />
-          </Tab>
-          <Tab
-            label="3 - Assignments"
-            route="/home"
-            onActive={this.handleActiveTab}
-          >
-            { this.renderSummarySection()}
-          </Tab>
-        </Tabs>
+        <FlatButton
+          label="Back"
+          disabled={stepIndex === 0}
+          onTouchTap={this.handlePrev}
+        />
+        <RaisedButton
+          label={stepIndex === 2 ? 'Finish' : 'Next'}
+          primary
+          onTouchTap={this.handleNext}
+        />
       </div>
+    )
+  }
 
+  renderPeopleSection() {
+    const { assignedTexters, contacts } = this.state
+    const { texters } = this.props
+
+    return (
+      <div>
+        <TextField
+          fullWidth
+          ref="title"
+          floatingLabelText="Title"
+        />
+        <TextField
+          fullWidth
+          ref="description"
+          floatingLabelText="Description"
+        />
+        <CampaignPeopleForm
+          texters={texters}
+          contacts={contacts}
+          assignedTexters={assignedTexters}
+          onTexterAssignment={this.onTexterAssignment}
+          onContactsUpload={this.onContactsUpload}
+        />
+      </div>
+    )
+  }
+
+  renderScriptSection() {
+    const { contacts, customFields, script, faqScripts } = this.state
+
+    return (
+      <CampaignScriptsForm
+        script={script}
+        faqScripts={faqScripts}
+        onScriptChange={this.onScriptChange}
+        customFields={customFields}
+        sampleContact={contacts[0]}
+      />
+    )
+  }
+
+  render() {
+    const { stepIndex, stepsFinished} = this.state
+
+    const steps = [
+      ['People', this.renderPeopleSection()],
+      ['Scripts', this.renderScriptSection()],
+      ['Surveys', <div>Surveys</div>],
+      ['Review & submit', this.renderSummarySection()]
+    ]
+
+    return (
+      <div>
+        <Stepper activeStep={stepIndex}>
+          { steps.map(([stepTitle, ...rest]) => (
+            <Step>
+              <StepLabel>{stepTitle}</StepLabel>
+            </Step>
+          ))}
+        </Stepper>
+        <div>
+          {stepsFinished ? (
+            <p>
+              <a
+                href="#"
+                onClick={(event) => {
+                  event.preventDefault();
+                  this.setState({stepIndex: 0, stepsFinished: false});
+                }}
+              >
+                Click here
+              </a> to reset the example.
+            </p>
+          ) : (
+            <div>
+              {steps[stepIndex][1]}
+              {this.renderNavigation()}
+            </div>
+          )}
+        </div>
+      </div>
     )
   }
 }

@@ -10,6 +10,7 @@ import { capitalize } from 'lodash'
 import ArrowBackIcon from 'material-ui/svg-icons/navigation/arrow-back';
 import { UserMenu } from './user_menu'
 import { organizationsForUser } from '../../api/users/users'
+import IconButton from 'material-ui/IconButton'
 const sectionUrl = (organizationId, section) => `/${organizationId}/${section}`
 
 

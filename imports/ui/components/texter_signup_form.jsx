@@ -4,6 +4,7 @@ import Paper from 'material-ui/Paper'
 import RaisedButton from 'material-ui/RaisedButton'
 import { FormsyText } from 'formsy-material-ui/lib'
 import { addTexter } from '../../api/organizations/methods'
+import { FlowRouter } from 'meteor/kadira:flow-router'
 
 const errorMessages = {
   emailError: "Please only use letters",
@@ -44,16 +45,19 @@ export class TexterSignupForm extends React.Component {
   }
 
   submitForm(data) {
+    console.log("submit form!")
     const { organization } = this.props
     Accounts.createUser(data, (accountError) => {
       if (accountError) {
         console.log("account creation error", accountError)
       } else {
+        console.log("calling add texter")
         addTexter.call({organizationId: organization._id}, (organizationError) => {
           if (organizationError) {
-            console.log("error creating org", organizationError)
+            console.log("error adding texter to org", organizationError)
           } else {
-            console.log("successfully joined!")
+            console.log("successfully added tetxer")
+            FlowRouter.go(`${organization._id}/assignments`)
           }
         })
       }
