@@ -13,7 +13,10 @@ import { convertRowToContact } from '../../api/campaign_contacts/parse_csv'
 import { Toolbar, ToolbarGroup } from 'material-ui/Toolbar'
 import IconButton from 'material-ui/IconButton/IconButton'
 import DeleteIcon from 'material-ui/svg-icons/action/delete';
-
+import Formsy from 'formsy-react';
+import { FormsyCheckbox, FormsyDate, FormsyRadio, FormsyRadioGroup,
+    FormsySelect, FormsyText, FormsyTime, FormsyToggle } from 'formsy-material-ui/lib'
+import RaisedButton from 'material-ui/RaisedButton'
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
 
 import Subheader from 'material-ui/Subheader'
@@ -24,12 +27,12 @@ const styles = {
     // border: '1px solid grey',
   },
   form: {
-    marginBottom: '24px',
-    padding: '6px 42px 24px 42px',
+    marginBottom: '16px',
+    padding: '16px',
   },
   preview: {
     backgroundColor: 'lightgray',
-    border: '1px solid gray',
+    // border: '1px solid gray',
     padding: '6px',
     opacity: 0.3
   },
@@ -88,11 +91,13 @@ export class ScriptEditor extends Component {
     this.onSearchChange = this.onSearchChange.bind(this)
     this.onFocus = this.onFocus.bind(this)
     this.onBlur = this.onBlur.bind(this)
-    console.log(props.script)
+    console.log("props, script", props.script)
     this.state = {
       editorState: EditorState.createWithContent(ContentState.createFromText(props.script)),
       suggestions: fromJS([]),
-      editing: false
+      editing: false,
+      script: props.script,
+      title: props.title,
     }
   }
 
@@ -130,8 +135,11 @@ export class ScriptEditor extends Component {
 
   renderPreview() {
     const { sampleContact, customFields } = this.props
-    const script = this.state.editorState.getCurrentContent().getPlainText()
-    return sampleContact && script !== ''? (
+    console.log()
+    // const script = this.state.editorState.getCurrentContent().getPlainText()
+    const script = this.state.script
+    console.log("render preview", script, sampleContact)
+    return sampleContact && script !== '' ? (
       <div style={styles.preview}>
         <label>Preview</label>
         <div>
@@ -140,54 +148,61 @@ export class ScriptEditor extends Component {
       </div>
     ) : ''
   }
+
   render() {
-    const {titleEditable, title } = this.props
-    console.log(title)
+    const { title, isFaqReply } = this.props
+
     const toolbar = [
       <Divider />,
       <Toolbar style={styles.toolbar}>
-        <ToolbarGroup float="right">
-          <IconButton>
+        <ToolbarGroup
+          float="left"
+          firstChild
+        >
+          {this.state.editing ? this.renderPreview() : ''}
+        </ToolbarGroup>
+        <ToolbarGroup
+          float="right"
+          lastChild
+        >
+          {isFaqReply ? <IconButton>
             <DeleteIcon tooltip="Delete script" />
-          </IconButton>
+          </IconButton> : ''
+          }
         </ToolbarGroup>
       </Toolbar>
-  ]
-
-
-  // <TextField
-  //   multiLine
-  //   fullWidth
-  //   underlineShow={this.state.editing}
-  //   value="No problem! You can still participate. Try on your tablet, {firstName}"
-  // />
-
-
+    ]
 
     return (
-      <Paper zDepth={this.state.editing ? 2 : 1}>
+      <Paper zDepth={this.state.editing ? 1 : 0}>
         <div style={styles.root} onClick={ this.onFocus }>
           <div style={styles.form}>
-            { titleEditable ? <TextField
-              style={styles.scriptTitle}
-              underlineShow={this.state.editing}
-              value={title}
-            /> : ''}
-            <br />
-
-            <div style={styles.editor}>
-            <Editor
-              editorState={ this.state.editorState }
-              onChange={this.onChange}
-              // onFocus={this.onFocus}
-              // onBlur={this.onBlur}
-              plugins={plugins}
-              ref="editor"
-            />
-          </div>
-          {this.state.editing ? this.renderPreview() : ''}
+              <Formsy.Form
+                // onValid={this.enableButton.bind(this)}
+                // onInvalid={this.disableButton.bind(this)}
+              >
+                {isFaqReply ? <FormsyText
+                  name="title"
+                  value={title}
+                    onFocus={this.onFocus}
+                    onBlur={this.onBlur}
+                  underlineShow={this.state.editing}
+                  required
+                /> : ''}
+                <FormsyText
+                  required
+                  multiLine
+                  fullWidth
+                  onFocus={this.onFocus}
+                  onBlur={this.onBlur}
+                  onChange={(event, script) => this.setState({script})}
+                  value={this.state.script}
+                  name="script"
+                  type="script"
+                />
+              </Formsy.Form>
         </div>
-        { this.state.editing && titleEditable ? toolbar : ''}
+        { this.state.editing ? toolbar : ''}
       </div>
       {this.state.editing ? <MentionSuggestions
         onSearchChange={ this.onSearchChange }

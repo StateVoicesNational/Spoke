@@ -13,6 +13,7 @@ export class CampaignScriptsForm extends Component {
             key={script._id}
             title={script.title}
             script={script.script}
+            isFaqReply={script.isFaqReply}
             titleEditable={!script.initial}
             sampleContact={sampleContact}
             customFields={customFields}
@@ -22,9 +23,9 @@ export class CampaignScriptsForm extends Component {
   }
   render() {
     const { faqScripts, script, handleAddScriptRow } = this.props
+    console.log(script)
     return (
       <div>
-        <h2>Scripts</h2>
           {this.renderScriptRow(script)}
           { faqScripts.map((faqScript) => this.renderScriptRow(faqScript))}
         <FlatButton

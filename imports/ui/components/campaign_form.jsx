@@ -33,7 +33,11 @@ export class CampaignForm extends Component {
     this.handleNext = this.handleNext.bind(this)
     this.handlePrev = this.handlePrev.bind(this)
 
-
+    const script = {
+      script: 'Hi, {firstName}. This is {texterName} here!',
+      isFaqReply: false,
+      initial: true
+    }
     this.state = {
       stepsFinished: false,
       stepIndex: 0,
@@ -41,25 +45,29 @@ export class CampaignForm extends Component {
       uploading: false,
       contacts: [],
       customFields: [],
-      script: null,
+      script,
       faqScripts: [],
       assignedTexters: []
     }
   }
 
-  componentWillMount() {
-    Tracker.autorun(() => {
-      const faqScripts = ScriptCollection.find({ isFaqReply: true }).fetch()
-      const script = ScriptCollection.findOne({ initial: true })
-      this.setState({ faqScripts, script })
-    })
+  // TODO: an't get the scrptcollectin to work
+  // componentWillMount() {
+  //   Tracker.autorun(() => {
+  //     const scripts = ScriptCollection.find({}).fetch() // reactive
+  //     if (scripts.length > 0) {
+  //       this.setState({
+  //         faqScripts: ScriptCollection.find({ isFaqReply: true }).fetch(),
+  //         script: ScriptCollection.findOne({ initial: true })
+  //       })
+  //     }
+  //   })
 
-    ScriptCollection.insert({
-      script: 'This is the initial message we send to the users',
-      isFaqReply: false,
-      initial: true
-    })
-  }
+  //   ScriptCollection.insert()
+
+  //   console.log("ok script collection now has", ScriptCollection.find({}).fetch())
+  //   console.log("but state is", this.state.script)
+  // }
 
 
   handleNext() {
@@ -148,12 +156,15 @@ export class CampaignForm extends Component {
 
   handleAddScriptRow() {
     const script = {
-      script: 'Hello {firstName}',
-      title: 'Label here',
+      script: 'Hi, {firstName}. This is an answer to a common question',
+      title: 'Label',
       isFaqReply: true
     }
 
-    ScriptCollection.insert(script)
+    const { faqScripts } = this.state
+    this.setState({
+      faqScripts: faqScripts.concat([script])
+    })
   }
 
   enableNext() {
@@ -232,11 +243,14 @@ export class CampaignForm extends Component {
   renderScriptSection() {
     const { contacts, customFields, script, faqScripts } = this.state
 
+
+    console.log("STATE SCRIPT renderScriptSection", faqScripts, script)
     return (
       <CampaignScriptsForm
         script={script}
         faqScripts={faqScripts}
         onScriptChange={this.onScriptChange}
+        handleAddScriptRow={this.handleAddScriptRow}
         customFields={customFields}
         sampleContact={contacts[0]}
       />
@@ -246,8 +260,9 @@ export class CampaignForm extends Component {
   render() {
     const { stepIndex, stepsFinished} = this.state
 
+    console.log("rendering script", this.state.script)
     const steps = [
-      ['People', this.renderPeopleSection()],
+      // ['People', this.renderPeopleSection()],
       ['Scripts', this.renderScriptSection()],
       ['Surveys', <div>Surveys</div>],
       ['Review & submit', this.renderSummarySection()]
