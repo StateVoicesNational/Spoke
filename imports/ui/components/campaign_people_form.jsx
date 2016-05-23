@@ -5,6 +5,8 @@ import RaisedButton from 'material-ui/RaisedButton'
 import Divider from 'material-ui/Divider'
 import { ListItem } from 'material-ui/List'
 import { parseCSV } from '../../api/campaign_contacts/parse_csv'
+import Formsy from 'formsy-react'
+import { FormsyText } from 'formsy-material-ui/lib'
 
 
 const styles = {
@@ -22,6 +24,9 @@ const styles = {
     width: '100%',
     opacity: 0
   },
+  hiddenInput: {
+    opacity: 0
+  }
 }
 
 export class CampaignPeopleForm extends Component {
@@ -32,12 +37,45 @@ export class CampaignPeopleForm extends Component {
     this.handleNewRequest = this.handleNewRequest.bind(this)
   }
 
+  notifyFormError(data) {
+    console.error('Form error:', data);
+  }
+
   handleUpload(event) {
     event.preventDefault()
     // TODO: Handle error!
-    parseCSV(event.target.files[0], ({ contacts, customFields }) => {
-      const { onContactsUpload } = this.props
-      onContactsUpload(contacts, customFields)
+    parseCSV(event.target.files[0], ({ contacts, customFields, error}) => {
+      let newContactsValue = ''
+      let contactError = null
+
+      if (error) {
+        contactError = error
+      } else if (contacts.length === 0) {
+        contactError = 'Upload at least one contact'
+      } else if (contacts.length > 0) {
+        contactError = null
+        newContactsValue = `${contacts.length} contacts uploaded`
+      }
+
+      // Focus first so the blur refisters
+      this.refs.contacts.focus()
+
+      this.refs.contacts.setState({
+        value: newContactsValue,
+      }, () => {
+          // Blur just so we can actually get our form to validate
+          this.refs.hiddenInput.focus()
+
+          this.refs.form.updateInputsWithError({
+            contacts: contactError
+          })
+
+          if (!contactError) {
+            const { onContactsUpload } = this.props
+            onContactsUpload(contacts, customFields)
+          }
+
+      })
     })
 
   }
@@ -76,6 +114,7 @@ export class CampaignPeopleForm extends Component {
     }
   }
   renderAssignmentSection() {
+    return null
     const { texters, assignedTexters } = this.props
     // TODO remove already assigned texters
     const dataSource = [this.dataSourceItem('Assign all texters', 'allTexters', null)].concat(
@@ -97,15 +136,13 @@ export class CampaignPeopleForm extends Component {
       <AutoComplete
         openOnFocus
         filter={filter}
-        hintText="Search for a name"
+        hintText="Search for texters to assign"
         dataSource={dataSource}
         onNewRequest={this.handleNewRequest}
         onUpdateInput={this.handleUpdateInput}
       />
     )
     return (<div>
-      <Divider />
-      <h2>Assignments</h2>
      {autocomplete}
      { assignedTexters.map((texterId) => <div>{ Meteor.users.findOne({_id: texterId}).firstName}</div>) }
     </div>)
@@ -113,7 +150,6 @@ export class CampaignPeopleForm extends Component {
 
   renderUploadSection() {
     const { contacts } = this.props
-    const contactsUploaded = contacts.length > 0
     return (
       <div>
         <RaisedButton
@@ -126,17 +162,46 @@ export class CampaignPeopleForm extends Component {
             onChange={this.handleUpload}
           />
         </RaisedButton>
-
-        {contactsUploaded ? (<span>{`${contacts.length} contacts uploaded`}</span>) : ''}
+        <FormsyText
+          required
+          ref="contacts"
+          name="contacts"
+        />
       </div>
     )
   }
 
   render() {
+    const { onValid, onInvalid } = this.props
     return (
       <div>
+      <Formsy.Form
+        ref="form"
+        onValid={onValid}
+        onInvalid={onInvalid}
+        // onValidSubmit={this.submitForm.bind(this)}
+        // onInvalidSubmit={this.notifyFormError.bind(this)}
+      >
+        <FormsyText
+          fullWidth
+          required
+          ref="title"
+          name='title'
+          floatingLabelText="Title"
+        />
+        <FormsyText
+          name='description'
+          fullWidth
+          required
+          ref="description"
+          floatingLabelText="Description"
+        />
+        <input style={styles.hiddenInput} ref="hiddenInput" />
         { this.renderUploadSection() }
         { this.renderAssignmentSection() }
+
+      </Formsy.Form>
+
       </div>
     )
   }

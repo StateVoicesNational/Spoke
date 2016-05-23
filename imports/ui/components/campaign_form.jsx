@@ -15,6 +15,11 @@ import RaisedButton from 'material-ui/RaisedButton';
 
 const ScriptCollection = new Mongo.Collection(null)
 
+const styles = {
+  stepperNavigation: {
+    marginTop: 48
+  }
+}
 export class CampaignForm extends Component {
   constructor(props) {
     super(props)
@@ -30,6 +35,7 @@ export class CampaignForm extends Component {
     this.state = {
       stepsFinished: false,
       stepIndex: 0,
+      nextStepEnabled: false,
       uploading: false,
       contacts: [],
       customFields: [],
@@ -139,10 +145,17 @@ export class CampaignForm extends Component {
     ScriptCollection.insert(script)
   }
 
-  handleActiveTab(tab) {
-    console.log("tab activated", tab)
+  enableNext() {
+    this.setState({
+      nextStepEnabled: true
+    })
   }
 
+  disableNext() {
+    this.setState({
+      nextStepEnabled: false
+    })
+  }
   onContactsUpload(contacts, customFields) {
     this.setState({
       contacts,
@@ -162,18 +175,19 @@ export class CampaignForm extends Component {
   }
 
   renderNavigation() {
-    const { stepIndex } = this.state
+    const { stepIndex, nextStepEnabled } = this.state
 
     return (
-      <div>
+      <div style={styles.stepperNavigation}>
         <FlatButton
           label="Back"
           disabled={stepIndex === 0}
           onTouchTap={this.handlePrev}
         />
         <RaisedButton
-          label={stepIndex === 2 ? 'Finish' : 'Next'}
           primary
+          label={stepIndex === 2 ? 'Finish' : 'Next'}
+          disabled={!nextStepEnabled}
           onTouchTap={this.handleNext}
         />
       </div>
@@ -186,22 +200,14 @@ export class CampaignForm extends Component {
 
     return (
       <div>
-        <TextField
-          fullWidth
-          ref="title"
-          floatingLabelText="Title"
-        />
-        <TextField
-          fullWidth
-          ref="description"
-          floatingLabelText="Description"
-        />
         <CampaignPeopleForm
           texters={texters}
           contacts={contacts}
           assignedTexters={assignedTexters}
           onTexterAssignment={this.onTexterAssignment}
           onContactsUpload={this.onContactsUpload}
+          onValid={this.enableNext.bind(this)}
+          onInvalid={this.disableNext.bind(this)}
         />
       </div>
     )
