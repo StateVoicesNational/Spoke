@@ -12,7 +12,8 @@ import { MessagesPage } from '../../ui/pages/messages_page'
 import { MessagePage } from '../../ui/pages/message_page'
 import { AdminDashboardPage } from '../../ui/pages/admin_dashboard_page'
 import { AdminNavigation, AppNavigation } from '../../ui/components/navigation'
-
+import { HomePage } from '../../ui/pages/home_page'
+import { LoginPage } from '../../ui/pages/login_page'
 import { App } from '../../ui/layouts/app'
 
 import injectTapEventPlugin from 'react-tap-event-plugin'
@@ -35,11 +36,19 @@ FlowRouter.route('/', {
   name: 'index',
   action: () => {
     mount(App, {
-      content: () => <div/>
+      content: () => <HomePage />
     })
   }
 })
 
+FlowRouter.route('/login', {
+  name: 'login',
+  action: () => {
+    mount(App, {
+      content: () => <LoginPage />
+    })
+  }
+})
 /* TEXTERS */
 FlowRouter.route('/:organizationId/join', {
   name: 'texterSignup',

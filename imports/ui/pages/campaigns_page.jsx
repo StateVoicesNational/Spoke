@@ -1,11 +1,11 @@
 import React, { Component } from 'react'
 import Paper from 'material-ui/Paper'
 import { CampaignList } from '../components/campaign_list'
-import FloatingActionButton from 'material-ui/FloatingActionButton'
 import { FlowRouter } from 'meteor/kadira:flow-router'
 import { AdminNavigation } from '../../ui/components/navigation'
 import { AppPage } from '../../ui/layouts/app_page'
 
+import FloatingActionButton from 'material-ui/FloatingActionButton'
 import ContentAdd from 'material-ui/svg-icons/content/add'
 
 const styles = {

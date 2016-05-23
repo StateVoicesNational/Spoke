@@ -1,21 +1,27 @@
 import React, { Component } from 'react'
 import { Toolbar, ToolbarGroup, ToolbarTitle, ToolbarSeparator } from 'material-ui/Toolbar'
 import FlatButton from 'material-ui/FlatButton'
-import Popover from 'material-ui/Popover';
-import Menu from 'material-ui/Menu';
-import MenuItem from 'material-ui/MenuItem';
+import Popover from 'material-ui/Popover'
+import Menu from 'material-ui/Menu'
+import MenuItem from 'material-ui/MenuItem'
 import { Fake } from 'meteor/anti:fake'
 import { LoginForm } from './login_form'
 import { FlowRouter } from 'meteor/kadira:flow-router'
 import Divider from 'material-ui/Divider'
-import Subheader from 'material-ui/Subheader';
+import Subheader from 'material-ui/Subheader'
+import IconButton from 'material-ui/IconButton'
+import Avatar from 'material-ui/Avatar'
+import { displayName } from '../../api/users/users'
+import {List, ListItem} from 'material-ui/List';
+
+const avatarSize = 28
 
 const styles = {
   toolbar: {
     backgroundColor: 'white'
   }
 }
-export class Login extends Component {
+export class UserMenu extends Component {
   constructor(props) {
     super(props)
 
@@ -24,6 +30,7 @@ export class Login extends Component {
     }
     this.handleRequestClose = this.handleRequestClose.bind(this)
     this.handleTouchTap = this.handleTouchTap.bind(this)
+    this.handleMenuChange = this.handleMenuChange.bind(this)
   }
 
   login() {
@@ -35,7 +42,7 @@ export class Login extends Component {
     Accounts.createUser(data, (error) => {
       Meteor.loginWithPassword(email, password, (loginError) => {
         console.log("loginError", loginError)
-      });
+      })
       console.log("create User error?", error)
     });
     console.log("should have logged in!")
@@ -58,18 +65,30 @@ export class Login extends Component {
   };
 
   handleMenuChange(event, value) {
-    FlowRouter.go(`/${value}/campaigns`)
-    console.log("value!", value)
+    if (value === 'logout') {
+      Meteor.logout()
+    }
+    else {
+      FlowRouter.go(`/${value}/campaigns`)
+    }
+    this.handleRequestClose()
   }
-  renderUserMenu(user) {
-    const { organizations } = this.props
+
+  renderAvatar(user, size) {
+    return <Avatar size={size}>{displayName(user).charAt(0)}</Avatar>
+  }
+  render() {
+    const { organizations, user } = this.props
+    if (!user) {
+      return null
+    }
     return (
       <div>
-        <FlatButton
-          label={user.emails[0].address}
+        <IconButton
           onTouchTap={this.handleTouchTap}
-          primary
-        />
+        >
+          {this.renderAvatar(user, avatarSize)}
+        </IconButton>
         <Popover
           open={this.state.open}
           anchorEl={this.state.anchorEl}
@@ -77,6 +96,15 @@ export class Login extends Component {
           targetOrigin={{horizontal: 'left', vertical: 'top'}}
           onRequestClose={this.handleRequestClose}
         >
+          <ListItem
+            disabled
+            primaryText={displayName(user)}
+            secondaryText={user.emails[0].address}
+            leftAvatar={this.renderAvatar(user, 40)}
+          />
+          <Divider />
+
+
           <Menu onChange={this.handleMenuChange}>
             <Subheader>Teams</Subheader>
             { organizations.map((organization) => (
@@ -87,37 +115,13 @@ export class Login extends Component {
               />
             ))}
             <Divider />
-            <MenuItem primaryText="Sign out" />
+            <MenuItem
+              primaryText="Log out"
+              value="logout"
+            />
           </Menu>
         </Popover>
-
       </div>
-    )
-  }
-
-  renderLoginButton() {
-
-    return (
-      <FlatButton
-        primary
-        onTouchTap={() => FlowRouter.go('/login')}
-        label="Log in"
-      />
-    )
-  }
-  render() {
-    const { user } = this.props
-    console.log("METEOR USER in login", user)
-    // return (<div>Hihi</div>)
-    return (
-      <Toolbar style={styles.toolbar}>
-        <ToolbarGroup float="left">
-          <ToolbarTitle>Townsquare Texter</ToolbarTitle>
-        </ToolbarGroup>
-        <ToolbarGroup float="right">
-          { user ? this.renderUserMenu(user) : this.renderLoginButton()}
-        </ToolbarGroup>
-      </Toolbar>
     )
   }
 }

@@ -50,8 +50,7 @@ export class LoginForm extends React.Component {
   submitForm(data) {
     const { email, password } = data
     Meteor.loginWithPassword(email, password, (loginError) => {
-      console.log("LOGGED IN!")
-      console.log("loginError", loginError)
+      FlowRouter.go('/')
     });
   }
 
@@ -86,6 +85,7 @@ export class LoginForm extends React.Component {
               floatingLabelText="Password"
             />
             <RaisedButton
+              fullWidth
               style={submitStyle}
               type="submit"
               label="Login"

@@ -8,10 +8,10 @@ import AppBar from 'material-ui/AppBar'
 import Drawer from 'material-ui/Drawer'
 import { capitalize } from 'lodash'
 import ArrowBackIcon from 'material-ui/svg-icons/navigation/arrow-back';
-
-import IconButton from 'material-ui/IconButton';
-
+import { UserMenu } from './user_menu'
+import { organizationsForUser } from '../../api/users/users'
 const sectionUrl = (organizationId, section) => `/${organizationId}/${section}`
+
 
 export class Navigation extends Component {
   constructor(props) {
@@ -33,14 +33,22 @@ export class Navigation extends Component {
   }
 
   render() {
-    const { organizationId, title, sections } = this.props
+    const { organizationId, title, sections, user, organizations} = this.props
     const { open } = this.state
+
+    // const iconElementRight = (
+    //   <FlatButton
+    //     style={styles.avatarButton}
+    //     children={[<Avatar size={avatarSize}>A</Avatar>]}
+    //   />
+    // )
 
     return (
       <div>
         <AppBar
           onLeftIconButtonTouchTap={ this.handleOpenDrawer }
           title={title}
+          iconElementRight={<UserMenu user={Meteor.user()} organizations={organizationsForUser(Meteor.user())} />}
         />
         <Drawer open={open}
           docked={false}

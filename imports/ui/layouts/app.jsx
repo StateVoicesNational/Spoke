@@ -29,7 +29,6 @@ export const App = createContainer(() => {
 
   return (
     <div>
-
       <MuiThemeProvider muiTheme={muiTheme}>
         <div>
           { content }

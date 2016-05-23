@@ -8,7 +8,7 @@ const styles = {
   }
 }
 
-export const AppPage = ({ navigation, content, loading }) => (
+export const AppPage = ({ navigation, content, loading}) => (
   <div>
     { loading ? '' : navigation }
     <div className="wrap container-fluid" style={styles.container}>

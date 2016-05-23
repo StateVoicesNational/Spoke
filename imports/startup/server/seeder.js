@@ -26,8 +26,8 @@ const removeData = () => {
 const createContacts = (assignmentId, campaignId) => {
 
   const cells = [
-    Meteor.settings.plivo.testPhoneNumbers.saikat,
-    Meteor.settings.plivo.testPhoneNumbers.sheena
+    Meteor.settings.private.plivo.testPhoneNumbers.saikat,
+    Meteor.settings.private.plivo.testPhoneNumbers.sheena
   ]
   const eventUrl = `http://bit.ly/${Fake.word(8)}`
 
@@ -111,14 +111,14 @@ Meteor.startup(() => {
         email: 'admin@test.com',
         roles: 'admin'
       },
-      {
-        email: 'texter1@test.com',
-        roles: 'texter'
-      },
-      {
-        email: 'texter2@test.com',
-        roles: 'texter'
-      }
+      // {
+      //   email: 'texter1@test.com',
+      //   roles: 'texter'
+      // },
+      // {
+      //   email: 'texter2@test.com',
+      //   roles: 'texter'
+      // }
     ]
 
     const organizationId = Factory.create('organization', { name: 'Batmans for Change' })._id
@@ -129,7 +129,7 @@ Meteor.startup(() => {
         email,
         firstName: Fake.user().name,
         lastName: Fake.user().surname,
-        assignedNumber: Meteor.settings.plivo.fromPhoneNumber,
+        assignedNumber: Meteor.settings.private.plivo.fromPhoneNumber,
         password: 'test'
       })
 
