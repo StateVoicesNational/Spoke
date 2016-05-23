@@ -76,12 +76,11 @@ class Page extends React.Component {
             <ContentAdd />
           </FloatingActionButton>
           <Dialog
-            title="Dialog With Actions"
+            title="Invite new texters"
             actions={[
               <FlatButton
                 label="OK"
                 primary={true}
-                keyboardFocused={true}
                 onTouchTap={this.handleClose}
               />
             ]}
@@ -89,7 +88,13 @@ class Page extends React.Component {
             open={this.state.open}
             onRequestClose={this.handleClose}
           >
-            Invite new texter!
+            <p>
+              Send your texting volunteers this link!
+            </p>
+            <TextField
+              value={`${Meteor.absoluteUrl()}${organizationId}/join`}
+              fullWidth
+              />
           </Dialog>
 
           </div>
