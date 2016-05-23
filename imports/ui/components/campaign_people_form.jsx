@@ -7,7 +7,7 @@ import { ListItem } from 'material-ui/List'
 import { parseCSV } from '../../api/campaign_contacts/parse_csv'
 import Formsy from 'formsy-react'
 import { FormsyText } from 'formsy-material-ui/lib'
-
+import { Chip } from './chip'
 
 const styles = {
   button: {
@@ -83,7 +83,6 @@ export class CampaignPeopleForm extends Component {
 
   }
 
-
   handleNewRequest(value) {
     // If you're searching but get no match, value is a string
     // representing your search term, but we only want to handle matches
@@ -117,7 +116,6 @@ export class CampaignPeopleForm extends Component {
     }
   }
   renderAssignmentSection() {
-    return null
     const { texters, assignedTexters } = this.props
     // TODO remove already assigned texters
     const dataSource = [this.dataSourceItem('Assign all texters', 'allTexters', null)].concat(
@@ -142,12 +140,18 @@ export class CampaignPeopleForm extends Component {
         hintText="Search for texters to assign"
         dataSource={dataSource}
         onNewRequest={this.handleNewRequest}
-        onUpdateInput={this.handleUpdateInput}
       />
     )
     return (<div>
      {autocomplete}
-     { assignedTexters.map((texterId) => <div>{ Meteor.users.findOne({_id: texterId}).firstName}</div>) }
+     { assignedTexters.map((texterId) => {
+        const user = Meteor.users.findOne({_id: texterId})
+        return (
+            <Chip
+              text={user.firstName}
+            />
+        )
+     }) }
     </div>)
   }
 
