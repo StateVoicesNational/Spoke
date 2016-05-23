@@ -41,6 +41,9 @@ export class CampaignPeopleForm extends Component {
     console.error('Form error:', data);
   }
 
+  getUploadInputValue(contacts) {
+    return contacts.length > 0 ? `${contacts.length} contacts uploaded` : ''
+  }
   handleUpload(event) {
     event.preventDefault()
     // TODO: Handle error!
@@ -54,7 +57,7 @@ export class CampaignPeopleForm extends Component {
         contactError = 'Upload at least one contact'
       } else if (contacts.length > 0) {
         contactError = null
-        newContactsValue = `${contacts.length} contacts uploaded`
+        newContactsValue = this.getUploadInputValue(contacts)
       }
 
       // Focus first so the blur refisters
@@ -166,13 +169,20 @@ export class CampaignPeopleForm extends Component {
           required
           ref="contacts"
           name="contacts"
+          value={this.getUploadInputValue(contacts)}
         />
       </div>
     )
   }
-
   render() {
-    const { onValid, onInvalid } = this.props
+    const {
+      title,
+      description,
+      onValid,
+      onInvalid,
+      onTitleChange,
+      onDescriptionChange
+    } = this.props
     return (
       <div>
       <Formsy.Form
@@ -185,13 +195,17 @@ export class CampaignPeopleForm extends Component {
         <FormsyText
           fullWidth
           required
+          onChange={onTitleChange}
           ref="title"
           name='title'
+          value={title}
           floatingLabelText="Title"
         />
         <FormsyText
           name='description'
           fullWidth
+          value={description}
+          onChange={onDescriptionChange}
           required
           ref="description"
           floatingLabelText="Description"

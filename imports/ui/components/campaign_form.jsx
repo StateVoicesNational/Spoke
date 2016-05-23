@@ -28,6 +28,8 @@ export class CampaignForm extends Component {
     this.handleAddScriptRow = this.handleAddScriptRow.bind(this)
     this.onContactsUpload = this.onContactsUpload.bind(this)
     this.onTexterAssignment = this.onTexterAssignment.bind(this)
+    this.onTitleChange = this.onTitleChange.bind(this)
+    this.onDescriptionChange = this.onDescriptionChange.bind(this)
     this.handleNext = this.handleNext.bind(this)
     this.handlePrev = this.handlePrev.bind(this)
 
@@ -76,7 +78,16 @@ export class CampaignForm extends Component {
     }
   }
 
+  onTitleChange(event) {
+    this.setState({title: event.target.value})
+  }
+
+  onDescriptionChange(event) {
+    this.setState({description: event.target.value})
+  }
+
   onScriptChange(script) {
+
     // this.setState({ script })
   }
 
@@ -157,6 +168,7 @@ export class CampaignForm extends Component {
     })
   }
   onContactsUpload(contacts, customFields) {
+    console.log("contacts upload!")
     this.setState({
       contacts,
       customFields
@@ -195,7 +207,7 @@ export class CampaignForm extends Component {
   }
 
   renderPeopleSection() {
-    const { assignedTexters, contacts } = this.state
+    const { assignedTexters, contacts, title, description } = this.state
     const { texters } = this.props
 
     return (
@@ -203,6 +215,10 @@ export class CampaignForm extends Component {
         <CampaignPeopleForm
           texters={texters}
           contacts={contacts}
+          title={title}
+          description={description}
+          onDescriptionChange={this.onDescriptionChange}
+          onTitleChange={this.onTitleChange}
           assignedTexters={assignedTexters}
           onTexterAssignment={this.onTexterAssignment}
           onContactsUpload={this.onContactsUpload}
