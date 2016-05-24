@@ -23,9 +23,17 @@ const getAssignedPhoneNumber = (userId, onSuccess, onError) => {
     plivo.search_phone_numbers(params, Meteor.bindEnvironment((status, response) => {
       if (status === 200) {
         const userNumber = response.objects[0].number
-        console.log("got some respnoses", userNumber, userId)
-        Meteor.users.update(userId, { $set: { userNumber } })
-        onSuccess(userNumber)
+        plivo.buy_phone_number({number: userNumber}, Meteor.bindEnvironment(function (status, response) {
+            console.log('Status: ', status);
+            console.log('API Response:\n', response);
+            if (status === 201) {
+              const { e164 } = require('libphonenumber')
+              e164(userNumber, 'US', (error, result) => {
+                Meteor.users.update({_id: userId}, { $set: { userNumber: result } })
+                onSuccess(result)
+              })
+            }
+        }))
       }
       else {
         console.log("oops, looks like we did not get a number")
@@ -48,26 +56,7 @@ export const insertMessage = new ValidatedMethod({
   }).validator(),
   run({ text, userNumber, contactNumber, isFromContact, campaignId, serviceMessageId }) {
 
-    // TODO: Not sure about this pattern?
-    if (Meteor.isServer) {
-      const organizationId = Campaigns.findOne({ _id: campaignId }).organizationId
-
-      if (!this.userId || !Roles.userIsInRole(this.userId, 'texter', organizationId)) {
-        throw new Meteor.Error('not-authorized');
-      }
-
-      const optOut = OptOuts.findOne({
-        organizationId,
-        cell: contactNumber
-      })
-
-      if (optOut) {
-        throw new Meteor.Error('contact-opt-out');
-      }
-
-    }
-
-
+    const user = Meteor.users.findOne({ userNumber })
     const message = {
       userNumber,
       contactNumber,
@@ -76,7 +65,7 @@ export const insertMessage = new ValidatedMethod({
       campaignId,
       serviceMessageId,
       createdAt: new Date(),
-      userId: this.userId
+      userId: user._id
     }
 
     console.log("inserting message!", message)
@@ -101,7 +90,7 @@ const remoteCreateMessage = (text, userNumber, contactNumber, campaignId, onErro
     console.log("Faking message sending")
     onMessageSendSuccess('fake_message_id')
   } else {
-    const plivo = Plivo.RestAPI({
+    const plivo = require('plivo').RestAPI({
       authId: Meteor.settings.private.plivo.authId,
       authToken: Meteor.settings.private.plivo.authToken
     })
@@ -118,7 +107,8 @@ const remoteCreateMessage = (text, userNumber, contactNumber, campaignId, onErro
         const serviceMessageId = response.message_uuid[0]
         onMessageSendSuccess(serviceMessageId)
       } else {
-        onError()
+        console.log(response)
+        throw new Meteor.Error('message-send-error');
       }
     }))
   }
@@ -132,6 +122,27 @@ export const sendMessage = new ValidatedMethod({
     campaignId: { type: String }
   }).validator(),
   run({ text, contactNumber, campaignId }) {
+    // TODO: Not sure about this pattern?
+    if (Meteor.isServer) {
+      const organizationId = Campaigns.findOne({ _id: campaignId }).organizationId
+
+      if (!this.userId || !Roles.userIsInRole(this.userId, 'texter', organizationId)) {
+        throw new Meteor.Error('not-authorized');
+      }
+
+      const optOut = OptOuts.findOne({
+        organizationId,
+        cell: contactNumber
+      })
+
+      if (optOut) {
+        throw new Meteor.Error('contact-opt-out');
+      }
+
+    }
+
+
+
     if (Meteor.isServer) {
       const user = Meteor.users.findOne({_id: this.userId})
       if (!user.userNumber) {

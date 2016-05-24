@@ -16,7 +16,22 @@ export const insertContact = new ValidatedMethod({
   run(contact) {
     contact.createdAt = new Date()
     console.log("inserting contact!?!?!?")
-    CampaignContacts.insert(contact)
+
+    if (Meteor.server){
+      const { e164} = require('libphonenumber')
+      console.log("contatct cell", contact.cell)
+      e164(contact.cell, 'US', (error, result) => {
+        if (error) {
+          console.log("error", error)
+        }
+        else {
+          console.log('success', result)
+          contact.cell = result
+          CampaignContacts.insert(contact)
+        }
+      })
+    }
+
   }
 })
 
@@ -33,8 +48,8 @@ export const insertContact = new ValidatedMethod({
 //     if (Meteor.isServer)
 //     {
 //       plivo = Plivo.RestAPI({
-//         authId: Meteor.settings.private.plivo.authId,
-//         authToken: Meteor.settings.private.plivo.authToken,
+//         authId: Meteor.settings.plivo.authId,
+//         authToken: Meteor.settings.plivo.authToken,
 //       });
 
 //       const params = {

@@ -1,5 +1,4 @@
 import { CampaignContacts } from './campaign_contacts.js'
-
 export const parseCSV  = (file, callback) => {
   Papa.parse(file, {
     header: true,

@@ -36,7 +36,7 @@ export class CampaignForm extends Component {
     this.handlePrev = this.handlePrev.bind(this)
 
     const script = {
-      script: 'Hi, {firstName}. This is {texterName}. Here is a default script initial message to the supporter',
+      script: 'Hi, {firstName}. This is {texterFirstName}. Here is a default script initial message to the supporter',
       isFaqReply: false,
       initial: true
     }

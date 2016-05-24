@@ -23,8 +23,9 @@ const getScriptField = (contact, fieldName) => {
 
 export const applyScript = (script, contact, scriptFields) => {
   console.log("scriptfields", scriptFields)
+  // FIXME
   let appliedScript = script
-  for (const field of scriptFields) {
+  for (const field of scriptFields.concat(CampaignContacts.userScriptFields)) {
     const re = new RegExp(`${delimit(field)}`, 'g')
     appliedScript = appliedScript.replace(re, getScriptField(contact, field))
   }

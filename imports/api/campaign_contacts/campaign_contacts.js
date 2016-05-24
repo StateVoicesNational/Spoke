@@ -68,9 +68,6 @@ CampaignContacts.helpers({
   },
   optOut() {
     const campaign = Campaigns.findOne({_id: this.campaignId})
-    console.log(this.campaignId, campaign, campaign.organizationId, this.cell)
-    console.log("result", OptOuts.findOne({ organizationId: campaign.organizationId, cell: this.cell}))
-    console.log(OptOuts.find({}).fetch())
     return OptOuts.findOne({ organizationId: campaign.organizationId, cell: this.cell})
   },
   lastMessage() {

@@ -221,6 +221,7 @@ export class AssignmentTexter extends Component {
       <div style={{height: '100%'}}>
         <ContactToolbar
           campaignContact={contact}
+          onOptOut={this.handleNavigateNext}
           rightToolbarIcon={(
             <IconButton
               onTouchTap={onStopTexting}
