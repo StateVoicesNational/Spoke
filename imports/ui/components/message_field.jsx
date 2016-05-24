@@ -38,6 +38,7 @@ export class MessageField extends Component {
     return (
       <div style={styles.textarea}>
       <TextField
+        autoFocus
         ref="input"
         floatingLabelText="Your message"
         value={this.state.inputValue}
