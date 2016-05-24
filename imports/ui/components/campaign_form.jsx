@@ -38,7 +38,7 @@ export class CampaignForm extends Component {
     this.handlePrev = this.handlePrev.bind(this)
 
     const script = {
-      script: 'Hi, {firstName}. This is {texterFirstName}. Here is a default script initial message to the supporter',
+      script: 'Hi, {firstName}. Here is a default script initial message to the supporter',
       isFaqReply: false,
       initial: true
     }
@@ -74,7 +74,7 @@ export class CampaignForm extends Component {
 
     const script = {
       type: 'script',
-      script: 'Hi, {firstName}. This is {texterName}. Here is a default script initial message to the supporter',
+      script: 'Hi, {firstName}. Here is a default script initial message',
       isFaqReply: false,
       initial: true
     }
@@ -89,7 +89,6 @@ export class CampaignForm extends Component {
       ['People', this.renderPeopleSection.bind(this)],
       ['Scripts', this.renderScriptSection.bind(this)],
       ['Surveys', this.renderSurveySection.bind(this)],
-      ['Review & submit', this.renderSummarySection.bind(this)]
     ]
   }
 
@@ -191,8 +190,8 @@ export class CampaignForm extends Component {
   handleAddScriptRow() {
     const script = {
       type: 'script',
-      script: 'Hi, {firstName}. This is an answer to a common question',
-      title: 'Label',
+      script: 'Hi, {firstName}. This is response to a common FAQ',
+      title: 'Common issue',
       isFaqReply: true
     }
 
@@ -235,7 +234,7 @@ export class CampaignForm extends Component {
         />
       ))}
       <FlatButton
-        label="Add a survey"
+        label="Add question"
         onTouchTap={this.handleAddSurvey}
         secondary
       />

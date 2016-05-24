@@ -19,7 +19,6 @@ import { FormsyCheckbox, FormsyDate, FormsyRadio, FormsyRadioGroup,
 import RaisedButton from 'material-ui/RaisedButton'
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
 import { Chip } from './chip'
-
 import Subheader from 'material-ui/Subheader'
 const styles = {
 
@@ -39,7 +38,7 @@ const styles = {
   },
   toolbar: {
     backgroundColor: "lightgray",
-    opacity: 0.2
+    opacity: 0.3
   },
   scriptTitle: {
     fontWeight: 'bold'
@@ -153,7 +152,8 @@ export class ScriptEditor extends Component {
     console.log("render preview", scriptFieldValue, sampleContact)
     return sampleContact && scriptFieldValue !== '' ? (
       <div style={styles.preview}>
-        <label>Preview</label>
+        <Subheader>Preview</Subheader>
+        <br/>
         {applyScript(scriptFieldValue, convertRowToContact(sampleContact), scriptFields(customFields) )}
       </div>
     ) : ''

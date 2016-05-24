@@ -35,7 +35,7 @@ export class CampaignScriptsForm extends Component {
           {this.renderScriptRow(script)}
           { faqScripts.map((faqScript) => this.renderScriptRow(faqScript))}
         <FlatButton
-          label="Add another script"
+          label="Add FAQ response script"
           onTouchTap={handleAddScriptRow}
           secondary
         />
