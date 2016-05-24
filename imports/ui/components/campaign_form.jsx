@@ -13,6 +13,7 @@ import {
 } from 'material-ui/Stepper';
 import RaisedButton from 'material-ui/RaisedButton';
 
+
 const ScriptCollection = new Mongo.Collection(null)
 
 const styles = {
@@ -25,6 +26,7 @@ export class CampaignForm extends Component {
     super(props)
     this.handleSubmit = this.handleSubmit.bind(this)
     this.onScriptChange = this.onScriptChange.bind(this)
+    this.onScriptDelete = this.onScriptDelete.bind(this)
     this.handleAddScriptRow = this.handleAddScriptRow.bind(this)
     this.onContactsUpload = this.onContactsUpload.bind(this)
     this.onTexterAssignment = this.onTexterAssignment.bind(this)
@@ -34,48 +36,71 @@ export class CampaignForm extends Component {
     this.handlePrev = this.handlePrev.bind(this)
 
     const script = {
-      script: 'Hi, {firstName}. This is {texterName} here!',
+      script: 'Hi, {firstName}. This is {texterName}. Here is a default script initial message to the supporter',
       isFaqReply: false,
       initial: true
     }
     this.state = {
-      stepsFinished: false,
       stepIndex: 0,
-      nextStepEnabled: false,
+      nextStepEnabled: true,
       uploading: false,
       contacts: [],
       customFields: [],
-      script,
+      script: null,
       faqScripts: [],
       assignedTexters: []
     }
   }
 
-  // TODO: an't get the scrptcollectin to work
-  // componentWillMount() {
-  //   Tracker.autorun(() => {
-  //     const scripts = ScriptCollection.find({}).fetch() // reactive
-  //     if (scripts.length > 0) {
-  //       this.setState({
-  //         faqScripts: ScriptCollection.find({ isFaqReply: true }).fetch(),
-  //         script: ScriptCollection.findOne({ initial: true })
-  //       })
-  //     }
-  //   })
+  componentWillUnmount() {
+    this._computation.stop();
+  }
 
-  //   ScriptCollection.insert()
+  startComputation() {
+    this._computation = Tracker.autorun(() => {
+      const scripts = ScriptCollection.find({}).fetch() // reactive
+      if (scripts.length > 0) {
+        console.log(ScriptCollection.findOne({initial: true}))
+        this.setState({
+          faqScripts: ScriptCollection.find({ isFaqReply: true }).fetch(),
+          script: ScriptCollection.findOne({ initial: true })
+        })
+      }
+    })
 
-  //   console.log("ok script collection now has", ScriptCollection.find({}).fetch())
-  //   console.log("but state is", this.state.script)
-  // }
+    const script = {
+      script: 'Hi, {firstName}. This is {texterName}. Here is a default script initial message to the supporter',
+      isFaqReply: false,
+      initial: true
+    }
 
+    ScriptCollection.insert(script)
+  }
+
+  componentWillMount() {
+    // workaround for https://github.com/meteor/react-packages/issues/99
+    setTimeout(this.startComputation.bind(this), 0);
+    this.steps = [
+      ['People', this.renderPeopleSection.bind(this)],
+      ['Scripts', this.renderScriptSection.bind(this)],
+      ['Surveys', this.renderSurveySection.bind(this)],
+      ['Review & submit', this.renderSummarySection.bind(this)]
+    ]
+  }
+
+
+  lastStepIndex() {
+    return this.steps.length - 1
+  }
 
   handleNext() {
-    const {stepIndex} = this.state;
+    const {stepIndex} = this.state
+    if (stepIndex === this.lastStepIndex()) {
+      this.handleSubmit()
+    }
+
     this.setState({
       stepIndex: stepIndex + 1,
-      // not dynamic
-      stepsFinished: stepIndex >= 3,
     });
   };
 
@@ -94,8 +119,13 @@ export class CampaignForm extends Component {
     this.setState({description: event.target.value})
   }
 
-  onScriptChange(script) {
+  onScriptDelete(scriptId) {
+    ScriptCollection.remove({_id: scriptId})
+  }
 
+  onScriptChange(scriptId, data) {
+    console.log("scriptid updated sdata", scriptId, data)
+    ScriptCollection.update({_id: scriptId}, {$set: data})
     // this.setState({ script })
   }
 
@@ -104,20 +134,24 @@ export class CampaignForm extends Component {
   }
 
   handleSubmit() {
-    const { contacts, script, faqScripts, assignedTexters } = this.state
-    const { organizationId } = this.props
-
-    const title = this.refs.title.getValue().trim()
-    const description = this.refs.title.getValue().trim()
-
-    const data = {
-      organizationId,
+    const {
       title,
       description,
       contacts,
+      script,
       faqScripts,
+      assignedTexters
+    } = this.state
+    const { organizationId } = this.props
+
+    const data = {
+      title,
+      description,
+      contacts,
+      organizationId,
       assignedTexters,
-      script: script.script,
+      faqScripts,
+      script: script.script // only want the string
     }
 
     insert.call(data, (err) => {
@@ -146,14 +180,6 @@ export class CampaignForm extends Component {
     return this.state.contacts.length > 0 && this.state.script !== ''
   }
 
-  renderSaveButton() {
-    return !this.formValid() ? '' : <FlatButton
-      label="Save"
-      onTouchTap={this.handleSubmit}
-      primary
-    />
-  }
-
   handleAddScriptRow() {
     const script = {
       script: 'Hi, {firstName}. This is an answer to a common question',
@@ -161,10 +187,13 @@ export class CampaignForm extends Component {
       isFaqReply: true
     }
 
-    const { faqScripts } = this.state
-    this.setState({
-      faqScripts: faqScripts.concat([script])
-    })
+    ScriptCollection.insert(script)
+
+    console.log(ScriptCollection.find({}).fetch().length, "script count")
+    // const { faqScripts } = this.state
+    // this.setState({
+    //   faqScripts: faqScripts.concat([script])
+    // })
   }
 
   enableNext() {
@@ -185,13 +214,20 @@ export class CampaignForm extends Component {
       customFields
     })
   }
+  renderSurveySection() {
+    return (
+      <div>
+        Surveys
+      </div>
+    )
+  }
+
   renderSummarySection() {
     const { contacts, assignedTexters } = this.state
     return (
       <div>
         <h1>Summary</h1>
         <p>
-          { this.renderSaveButton() }
         </p>
       </div>
     )
@@ -209,7 +245,7 @@ export class CampaignForm extends Component {
         />
         <RaisedButton
           primary
-          label={stepIndex === 2 ? 'Finish' : 'Next'}
+          label={stepIndex === this.lastStepIndex() ? 'Finish' : 'Next'}
           disabled={!nextStepEnabled}
           onTouchTap={this.handleNext}
         />
@@ -240,16 +276,18 @@ export class CampaignForm extends Component {
     )
   }
 
+  stepContent(stepIndex) {
+    return this.steps[stepIndex][1]()
+  }
+
   renderScriptSection() {
     const { contacts, customFields, script, faqScripts } = this.state
-
-
-    console.log("STATE SCRIPT renderScriptSection", faqScripts, script)
     return (
       <CampaignScriptsForm
         script={script}
         faqScripts={faqScripts}
         onScriptChange={this.onScriptChange}
+        onScriptDelete={this.onScriptDelete}
         handleAddScriptRow={this.handleAddScriptRow}
         customFields={customFields}
         sampleContact={contacts[0]}
@@ -258,45 +296,21 @@ export class CampaignForm extends Component {
   }
 
   render() {
-    const { stepIndex, stepsFinished} = this.state
-
-    console.log("rendering script", this.state.script)
-    const steps = [
-      // ['People', this.renderPeopleSection()],
-      ['Scripts', this.renderScriptSection()],
-      ['Surveys', <div>Surveys</div>],
-      ['Review & submit', this.renderSummarySection()]
-    ]
+    const { stepIndex} = this.state
 
     return (
       <div>
         <Stepper activeStep={stepIndex}>
-          { steps.map(([stepTitle, ...rest]) => (
+          { this.steps.map(([stepTitle, ...rest]) => (
             <Step>
               <StepLabel>{stepTitle}</StepLabel>
             </Step>
           ))}
         </Stepper>
         <div>
-          {stepsFinished ? (
-            <p>
-              <a
-                href="#"
-                onClick={(event) => {
-                  event.preventDefault();
-                  this.setState({stepIndex: 0, stepsFinished: false});
-                }}
-              >
-                Click here
-              </a> to reset the example.
-            </p>
-          ) : (
-            <div>
-              {steps[stepIndex][1]}
-              {this.renderNavigation()}
-            </div>
-          )}
-        </div>
+          {this.stepContent(stepIndex)}
+          {this.renderNavigation()}
+      </div>
       </div>
     )
   }

@@ -18,6 +18,7 @@ import { FormsyCheckbox, FormsyDate, FormsyRadio, FormsyRadioGroup,
     FormsySelect, FormsyText, FormsyTime, FormsyToggle } from 'formsy-material-ui/lib'
 import RaisedButton from 'material-ui/RaisedButton'
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
+import { Chip } from './chip'
 
 import Subheader from 'material-ui/Subheader'
 const styles = {
@@ -28,13 +29,13 @@ const styles = {
   },
   form: {
     marginBottom: '16px',
-    padding: '16px',
+    padding: '6px 16px',
   },
   preview: {
     backgroundColor: 'lightgray',
     // border: '1px solid gray',
     padding: '6px',
-    opacity: 0.3
+    width: '600px'
   },
   toolbar: {
     backgroundColor: "lightgray",
@@ -89,27 +90,40 @@ export class ScriptEditor extends Component {
     super(props)
     this.onChange = this.onChange.bind(this)
     this.onSearchChange = this.onSearchChange.bind(this)
+    this.onScriptDelete = this.onScriptDelete.bind(this)
     this.onFocus = this.onFocus.bind(this)
     this.onBlur = this.onBlur.bind(this)
-    console.log("props, script", props.script)
+
     this.state = {
-      editorState: EditorState.createWithContent(ContentState.createFromText(props.script)),
       suggestions: fromJS([]),
       editing: false,
-      script: props.script,
-      title: props.title,
+      scriptFieldValue: props.script.script
     }
   }
 
-  onChange (editorState) {
+  onScriptDelete() {
+    this.setState({editing: true})
+    const { script, onScriptDelete } = this.props
+    onScriptDelete(script._id)
 
-    this.setState({
-      editorState,
-    });
-
-    var text = editorState.getCurrentContent().getPlainText();
-    this.props.onScriptChange(text)
   }
+  onChange (event) {
+    const scriptFieldValue = event.target.value
+    this.setState({scriptFieldValue})
+
+    const scriptId = this.props.script._id
+    this.props.onScriptChange(scriptId, {script: scriptFieldValue})
+  }
+
+  // onChange (editorState) {
+
+  //   this.setState({
+  //     editorState,
+  //   });
+
+  //   var text = editorState.getCurrentContent().getPlainText();
+  //   this.props.onScriptChange(text)
+  // }
 
   formatMentions(fields) {
     return fromJS(fields.map((field) => ({ name: field })))
@@ -135,22 +149,35 @@ export class ScriptEditor extends Component {
 
   renderPreview() {
     const { sampleContact, customFields } = this.props
-    console.log()
-    // const script = this.state.editorState.getCurrentContent().getPlainText()
-    const script = this.state.script
-    console.log("render preview", script, sampleContact)
-    return sampleContact && script !== '' ? (
+    const scriptFieldValue = this.state.scriptFieldValue
+    console.log("render preview", scriptFieldValue, sampleContact)
+    return sampleContact && scriptFieldValue !== '' ? (
       <div style={styles.preview}>
         <label>Preview</label>
-        <div>
-        {applyScript(script, convertRowToContact(sampleContact), scriptFields(customFields) )}
-        </div>
+        {applyScript(scriptFieldValue, convertRowToContact(sampleContact), scriptFields(customFields) )}
       </div>
     ) : ''
   }
 
+  addText(event) {
+    event.preventDefault()
+    console.log(this.refs.scriptField.messageInput())
+
+    console.log(this.refs.scriptField.input)
+    var caretPos = this.refs.scriptField.input.selectionStart;
+    var textAreaTxt = this.state.scriptFieldValue ;
+    var txtToAdd = "text to add!";
+    const newText = (textAreaTxt.substring(0, caretPos) + txtToAdd + textAreaTxt.substring(caretPos) )
+    this.refs.scriptField.input.focus()
+    this.setState({
+      scriptFieldValue: newText,
+      // otherwise field gets blurred
+      editing: true
+    })
+
+  }
   render() {
-    const { title, isFaqReply } = this.props
+    const { title, isFaqReply } = this.props.script
 
     const toolbar = [
       <Divider />,
@@ -161,11 +188,12 @@ export class ScriptEditor extends Component {
         >
           {this.state.editing ? this.renderPreview() : ''}
         </ToolbarGroup>
+
         <ToolbarGroup
           float="right"
           lastChild
         >
-          {isFaqReply ? <IconButton>
+          {isFaqReply ? <IconButton onTouchTap={this.onScriptDelete}>
             <DeleteIcon tooltip="Delete script" />
           </IconButton> : ''
           }
@@ -191,12 +219,14 @@ export class ScriptEditor extends Component {
                 /> : ''}
                 <FormsyText
                   required
+                  ref="scriptField"
                   multiLine
                   fullWidth
                   onFocus={this.onFocus}
                   onBlur={this.onBlur}
-                  onChange={(event, script) => this.setState({script})}
-                  value={this.state.script}
+                  underlineShow={this.state.editing}
+                  onChange={this.onChange}
+                  value={this.state.scriptFieldValue}
                   name="script"
                   type="script"
                 />
@@ -213,15 +243,3 @@ export class ScriptEditor extends Component {
     );
   }
 }
-
-// <div style={styles.editor}>
-// <Editor
-//   editorState={ this.state.editorState }
-//   onChange={this.onChange}
-//   onFocus={this.onFocus}
-//   onBlur={this.onBlur}
-//   plugins={plugins}
-//   value="No problem! You can still participate. Try {firstName} on your tablet."
-//   ref="editor"
-// />
-// </div>
