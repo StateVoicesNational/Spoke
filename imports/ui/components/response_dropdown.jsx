@@ -22,7 +22,6 @@ export class ResponseDropdown extends Component {
         { responses.map((response) =>
           <MenuItem value={response}
             primaryText={response.title}
-            rightIcon={<span>{response.script}</span>}
           />) }
       </DropDownMenu>
     )
