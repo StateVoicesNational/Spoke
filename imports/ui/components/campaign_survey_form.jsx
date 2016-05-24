@@ -9,6 +9,9 @@ import { FormsyCheckbox, FormsyDate, FormsyRadio, FormsyRadioGroup,
 import RadioButtonUnchecked from 'material-ui/svg-icons/toggle/radio-button-unchecked'
 
 const styles = {
+  root: {
+    marginBottom: 24
+  },
   radioButtonIcon: {
     height: '14px',
     verticalAlign: 'middle'
@@ -59,7 +62,7 @@ export class CampaignSurveyForm extends Component {
 
     const { showScript } = this.state
     return (
-      <div>
+      <div style={styles.root}>
         <Formsy.Form ref="form">
           <div className="row">
             <FormsyText
