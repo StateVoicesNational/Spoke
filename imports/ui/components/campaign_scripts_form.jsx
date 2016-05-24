@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import FlatButton from 'material-ui/FlatButton'
 import { ScriptEditor } from './script_editor'
 import Divider from 'material-ui/Divider'
-
+import Subheader from 'material-ui/Subheader'
 
 export class CampaignScriptsForm extends Component {
   renderScriptRow(script) {
@@ -32,10 +32,12 @@ export class CampaignScriptsForm extends Component {
     console.log(script, faqScripts)
     return (
       <div>
+        <Subheader>Default script</Subheader>
           {this.renderScriptRow(script)}
+        <Subheader>Saved replies</Subheader>
           { faqScripts.map((faqScript) => this.renderScriptRow(faqScript))}
         <FlatButton
-          label="Add FAQ response script"
+          label="Add saved reply"
           onTouchTap={handleAddScriptRow}
           secondary
         />
