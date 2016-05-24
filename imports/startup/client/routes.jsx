@@ -14,6 +14,7 @@ import { AdminDashboardPage } from '../../ui/pages/admin_dashboard_page'
 import { AdminNavigation, AppNavigation } from '../../ui/components/navigation'
 import { HomePage } from '../../ui/pages/home_page'
 import { LoginPage } from '../../ui/pages/login_page'
+import { OptOutsPage } from '../../ui/pages/opt_outs_page'
 import { App } from '../../ui/layouts/app'
 
 import injectTapEventPlugin from 'react-tap-event-plugin'
@@ -137,6 +138,15 @@ FlowRouter.route('/:organizationId/campaigns', {
   }
 })
 
+FlowRouter.route('/:organizationId/optouts', {
+  name: 'optouts',
+  action: (params) => {
+    mount(App, {
+      content: () => <OptOutsPage { ...params} />,
+      navigation: () => <AdminNavigation {...params} />
+    })
+  }
+})
 FlowRouter.route('/:organizationId/campaigns/new', {
   name: 'newCampaign',
   action: (params) => {

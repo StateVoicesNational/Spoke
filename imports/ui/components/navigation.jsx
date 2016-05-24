@@ -85,7 +85,7 @@ export const AdminNavigation = ({ organizationId, title }) => (
   <Navigation
     title={title}
     organizationId={organizationId}
-    sections={['campaigns', 'texters']}
+    sections={['campaigns', 'texters', 'optouts']}
   />
 )
 
