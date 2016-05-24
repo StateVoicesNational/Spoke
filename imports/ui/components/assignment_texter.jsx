@@ -19,6 +19,7 @@ import { QuestionDropdown } from './survey'
 
 import { sendMessage } from '../../api/messages/methods'
 import { applyScript } from '../helpers/script_helpers'
+import { updateAnswer } from '../../api/survey_answers/methods'
 
 const styles = {
   navigationToolbarTitle: {
@@ -167,6 +168,18 @@ export class AssignmentTexter extends Component {
     this.setState({open: true})
   }
 
+  handleSurveyChange(surveyQuestionId, answer, script) {
+    const contact = this.currentContact()
+    updateAnswer.call({
+      surveyQuestionId,
+      value: answer,
+      campaignContactId: contact._id
+    })
+    // This should actually happen from propagating props
+    console.log("new script!", script)
+    this.handleScriptChange(script)
+  }
+
   render() {
     const { assignment, contacts, onStopTexting } = this.props
     const contact = this.currentContact()
@@ -209,6 +222,7 @@ export class AssignmentTexter extends Component {
         {campaign.surveys().map((survey) => (
           <QuestionDropdown
             answer={contact.surveyAnswer(survey._id)}
+            onSurveyChange={this.handleSurveyChange.bind(this)}
             survey={survey}
           />
         ))}

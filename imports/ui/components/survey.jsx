@@ -18,9 +18,15 @@ export class QuestionDropdown extends Component {
     this.handleSurveyChange = this.handleSurveyChange.bind(this)
   }
 
-  handleSurveyChange(event, index, value) {
+  handleSurveyChange(event, value, index) {
     const { onSurveyChange, survey } = this.props
-    const script = survey.allowedAnswers.find( (allowedAnswer) => allowedAnswer.value == value).script
+    console.log(event.target.value)
+    console.log("event", event, value, index)
+    console.log(survey.allowedAnswers.map((a) => a.value))
+    console.log("survey.allowedAnswers", survey.allowedAnswers)
+    const script = survey.allowedAnswers.find((allowedAnswer) => allowedAnswer.value === value).script
+
+    console.log(survey.allowedAnswers)
     onSurveyChange(survey._id, value, script)
   }
 

@@ -22,6 +22,10 @@ const getScriptField = (contact, fieldName) => {
 }
 
 export const applyScript = (script, contact, scriptFields) => {
+  if (!script) {
+    console.log("missing script!", script)
+    return ''
+  }
   console.log("scriptfields", scriptFields)
   // FIXME
   let appliedScript = script

@@ -107,7 +107,7 @@ export class CampaignSurveyForm extends Component {
                         hintStyle={styles.scriptHint}
                         onKeyDown={ this.handleOnKeyDown.bind(this) }
                         hintText="Script for this answer"
-                        name={`allowedAnswers[${index}].value`}
+                        name={`allowedAnswers[${index}].script`}
                         value={ answer.script }
                         onChange={ this.handleSurveyChange.bind(this) }
                       />
