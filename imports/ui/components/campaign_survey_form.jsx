@@ -14,10 +14,30 @@ const styles = {
     verticalAlign: 'middle'
   },
   answer: {
-    fontSize: '13px'
+    fontSize: '12'
+  },
+  script: {
+    marginLeft: '24'
+  },
+  scriptHint: {
+    fontSize: '12',
+  },
+  scriptInput: {
+    fontSize: '12',
+  },
+  button: {
+    fontSize: '11px',
+    opacity: 0.5
   }
+
 }
 export class CampaignSurveyForm extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      showScript: false
+    }
+  }
   handleOnKeyDown(event) {
     if (event.keyCode === 13) {
       const {onAddSurveyAnswer, survey} = this.props
@@ -36,36 +56,65 @@ export class CampaignSurveyForm extends Component {
 
     const questionIsFocused = survey.question === ''
     console.log("questionIsFocused", questionIsFocused)
+
+    const { showScript } = this.state
     return (
       <div>
         <Formsy.Form ref="form">
-          <FormsyText
-            autoFocus={questionIsFocused}
-            onChange={this.handleSurveyChange.bind(this)}
-            required
-            fullWidth
-            name="question"
-            hintText="Question"
-            value={ survey.question }
-          />
-          { _.map(survey.allowedAnswers, (answer, index) => (
-            <div>
-              <RadioButtonUnchecked
-                style={styles.radioButtonIcon}
-              />
-              <FormsyText
-                onKeyDown={ this.handleOnKeyDown.bind(this) }
-                onChange={ this.handleSurveyChange.bind(this)}
-                inputStyle={styles.answer}
-                required
-                name={`allowedAnswers[${index}].value`}
-                autoFocus={ !questionIsFocused && index === (survey.allowedAnswers.length - 1) }
-                value={ answer.value }
+          <div className="row">
+            <FormsyText
+              autoFocus={questionIsFocused}
+              onChange={this.handleSurveyChange.bind(this)}
+              required
+              fullWidth
+              name="question"
+              hintText="Question"
+              value={ survey.question }
+            />
+            { _.map(survey.allowedAnswers, (answer, index) => (
+              <div className="row">
+                <div className="col-xs">
+                  <RadioButtonUnchecked
+                    style={styles.radioButtonIcon}
+                  />
+                  <FormsyText
+                    onKeyDown={ this.handleOnKeyDown.bind(this) }
+                    onChange={ this.handleSurveyChange.bind(this)}
+                    inputStyle={styles.answer}
+                    hintStyle={styles.answer}
+                    required
+                    name={`allowedAnswers[${index}].value`}
+                    autoFocus={ !questionIsFocused && index === (survey.allowedAnswers.length - 1) }
+                    value={ answer.value }
+                  />
+                  { showScript ? '' : (
+                    <FlatButton
+                      labelStyle={styles.button}
+                      label="Add script"
+                      onTouchTap={() => this.setState({showScript: true})}
+                    />
+                  )}
+                </div>
+                {
+                  showScript ? (
+                    <div className="col-xs">
+                      <FormsyText
+                        style={styles.script}
+                        inputStyle={styles.scriptInput}
+                        hintStyle={styles.scriptHint}
+                        onKeyDown={ this.handleOnKeyDown.bind(this) }
+                        hintText="Script for this answer"
+                        name={`allowedAnswers[${index}].value`}
+                        value={ answer.script }
+                        onChange={ this.handleSurveyChange.bind(this) }
+                      />
+                    </div>
+                  ) : ''
+                }
 
-              />
-            </div>
-          ))}
-
+              </div>
+            ))}
+          </div>
         </Formsy.Form>
       </div>
     )

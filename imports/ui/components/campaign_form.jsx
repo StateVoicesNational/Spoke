@@ -86,8 +86,8 @@ export class CampaignForm extends Component {
     // workaround for https://github.com/meteor/react-packages/issues/99
     setTimeout(this.startComputation.bind(this), 0);
     this.steps = [
-      ['People', this.renderPeopleSection.bind(this)],
-      ['Scripts', this.renderScriptSection.bind(this)],
+      // ['People', this.renderPeopleSection.bind(this)],
+      // ['Scripts', this.renderScriptSection.bind(this)],
       ['Surveys', this.renderSurveySection.bind(this)],
       ['Review & submit', this.renderSummarySection.bind(this)]
     ]
