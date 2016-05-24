@@ -19,7 +19,7 @@ const Page = ({ loading, messages, campaignContact, organizationId }) => (
     content={loading ? '' :
     <div>
       <ContactToolbar
-        campaignContact={contact}
+        campaignContact={campaignContact}
       />
       <MessageForm
         campaignContact={campaignContact}

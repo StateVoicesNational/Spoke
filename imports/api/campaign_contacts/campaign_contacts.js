@@ -36,6 +36,7 @@ CampaignContacts.schema = new SimpleSchema({
 CampaignContacts.attachSchema(CampaignContacts.schema)
 
 CampaignContacts.requiredUploadFields = ['firstName', 'lastName', 'cell']
+CampaignContacts.userScriptFields = ['texterFirstName', 'texterLastName']
 
 Factory.define('campaign_contact', CampaignContacts, {
   campaignId: () => Factory.get('campaign'),

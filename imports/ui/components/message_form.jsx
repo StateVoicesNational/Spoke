@@ -5,9 +5,7 @@ import NavigateBeforeIcon from 'material-ui/svg-icons/image/navigate-before'
 import NavigateNextIcon from 'material-ui/svg-icons/image/navigate-next'
 
 import { MessagesList } from './messages_list'
-import { SurveyList } from './survey_list'
 import { MessageField } from './message_field'
-import { ResponseDropdown } from './response_dropdown'
 import { Empty } from '../components/empty'
 import TextField from 'material-ui/TextField'
 import { sendMessage } from '../../api/messages/methods'
@@ -50,7 +48,9 @@ export class MessageForm extends Component {
 
     const onSuccess = () => {
       this.setState({ isSending: false })
-      this.props.onSendMessage()
+      if (this.props.onSendMessage) {
+        this.props.onSendMessage()
+      }
     }
     this.sendMessageToCurrentContact(messageText, onSuccess)
   }
@@ -97,6 +97,7 @@ export class MessageForm extends Component {
         ) : <MessagesList messages={messages} /> }
         <div style={styles.messageField}>
           { secondaryToolbar }
+          <br />
           <MessageField
             ref="input"
             initialScript={initialScript}

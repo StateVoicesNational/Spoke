@@ -10,7 +10,7 @@ const styles = {
   icon: {
     width: '200',
     height: '200',
-    opacity: 0.2
+    opacity: 0.1
   }
 }
 

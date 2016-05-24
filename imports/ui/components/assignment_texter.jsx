@@ -51,7 +51,7 @@ export class AssignmentTexter extends Component {
 
     this.handleNavigateNext = this.handleNavigateNext.bind(this)
     this.handleNavigatePrevious = this.handleNavigatePrevious.bind(this)
-    this.handleSendMessage = this.handleSendMessage.bind(this)
+    this.onSendMessage = this.onSendMessage.bind(this)
     this.handleScriptChange = this.handleScriptChange.bind(this)
 
     this.state.script = this.defaultScript()
@@ -102,10 +102,6 @@ export class AssignmentTexter extends Component {
     this.incrementCurrentContactIndex(-1)
   }
 
-  handleSendMessage() {
-    console.log("sending message!")
-  }
-
   setSuggestedScript(script)
   {
     this.setState({script})
@@ -114,18 +110,8 @@ export class AssignmentTexter extends Component {
     this.setSuggestedScript(script)
   }
 
-  handleSendMessage(event) {
-    event.preventDefault()
-    const input = this.refs.input
-    const onSuccess =  () => {
-      this.handleNavigateNext()
-      // if (messages.length === 0) {
-      //   onNextContact()
-      // } else {
-      //   this.setState({ script: '' })
-      // }
-    }
-    this.sendMessageToCurrentContact(input.getValue().trim(), onSuccess)
+  onSendMessage() {
+    this.handleNavigateNext()
   }
 
   sendMessageToCurrentContact(text, onSuccess) {
@@ -257,6 +243,7 @@ export class AssignmentTexter extends Component {
 
         <div style={styles.paper}>
           <MessageForm
+            onSendMessage={this.onSendMessage}
             leftToolbarChildren={leftToolbarChildren}
             rightToolbarChildren={rightToolbarChildren}
             campaignContact={contact}

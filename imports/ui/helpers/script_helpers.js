@@ -1,11 +1,24 @@
 import { delimit, delimiters } from '../../api/campaigns/scripts'
 import { CampaignContacts } from '../../api/campaign_contacts/campaign_contacts'
 
-export const scriptFields = (customFields) => customFields.concat(CampaignContacts.requiredUploadFields)
+export const scriptFields = (customFields) => customFields.concat(
+  CampaignContacts.requiredUploadFields).concat(
+    CampaignContacts.userScriptFields
+  )
 
 const getScriptField = (contact, fieldName) => {
-  const isCustom = CampaignContacts.requiredUploadFields.indexOf(fieldName) === -1
-  return isCustom ? contact.customFields[fieldName] : contact[fieldName]
+  let result
+  if (fieldName === 'texterFirstName') {
+    result = Meteor.user().firstName
+  } else if (fieldName === 'texterLastName') {
+    result = Meteor.user().lastName
+  } else if (CampaignContacts.requiredUploadFields.indexOf(fieldName) !== -1) {
+    result = contact[fieldName]
+  } else {
+    result = contact.customFields[fieldName]
+  }
+
+  return result
 }
 
 export const applyScript = (script, contact, scriptFields) => {
