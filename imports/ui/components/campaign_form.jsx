@@ -5,7 +5,9 @@ import { FlowRouter } from 'meteor/kadira:flow-router'
 import { insert } from '../../api/campaigns/methods'
 import { CampaignScriptsForm } from './campaign_scripts_form'
 import { CampaignPeopleForm } from './campaign_people_form'
+import { CampaignSurveyForm } from './campaign_survey_form'
 import {Tabs, Tab} from 'material-ui/Tabs'
+
 import {
   Step,
   Stepper,
@@ -14,7 +16,7 @@ import {
 import RaisedButton from 'material-ui/RaisedButton';
 
 
-const ScriptCollection = new Mongo.Collection(null)
+const LocalCollection = new Mongo.Collection(null)
 
 const styles = {
   stepperNavigation: {
@@ -48,7 +50,8 @@ export class CampaignForm extends Component {
       customFields: [],
       script: null,
       faqScripts: [],
-      assignedTexters: []
+      assignedTexters: [],
+      surveys: []
     }
   }
 
@@ -58,23 +61,25 @@ export class CampaignForm extends Component {
 
   startComputation() {
     this._computation = Tracker.autorun(() => {
-      const scripts = ScriptCollection.find({}).fetch() // reactive
+      const scripts = LocalCollection.find({}).fetch() // reactive
+      console.log("updated surveys", LocalCollection.find({ type: 'survey' }).fetch())
       if (scripts.length > 0) {
-        console.log(ScriptCollection.findOne({initial: true}))
         this.setState({
-          faqScripts: ScriptCollection.find({ isFaqReply: true }).fetch(),
-          script: ScriptCollection.findOne({ initial: true })
+          faqScripts: LocalCollection.find({ isFaqReply: true }).fetch(),
+          script: LocalCollection.findOne({ initial: true }),
+          surveys: LocalCollection.find({ type: 'survey' }).fetch()
         })
       }
     })
 
     const script = {
+      type: 'script',
       script: 'Hi, {firstName}. This is {texterName}. Here is a default script initial message to the supporter',
       isFaqReply: false,
       initial: true
     }
 
-    ScriptCollection.insert(script)
+    LocalCollection.insert(script)
   }
 
   componentWillMount() {
@@ -98,10 +103,11 @@ export class CampaignForm extends Component {
     if (stepIndex === this.lastStepIndex()) {
       this.handleSubmit()
     }
-
-    this.setState({
-      stepIndex: stepIndex + 1,
-    });
+    else {
+      this.setState({
+        stepIndex: stepIndex + 1,
+      });
+    }
   };
 
   handlePrev() {
@@ -120,12 +126,12 @@ export class CampaignForm extends Component {
   }
 
   onScriptDelete(scriptId) {
-    ScriptCollection.remove({_id: scriptId})
+    LocalCollection.remove({_id: scriptId})
   }
 
   onScriptChange(scriptId, data) {
     console.log("scriptid updated sdata", scriptId, data)
-    ScriptCollection.update({_id: scriptId}, {$set: data})
+    LocalCollection.update({_id: scriptId}, {$set: data})
     // this.setState({ script })
   }
 
@@ -140,7 +146,8 @@ export class CampaignForm extends Component {
       contacts,
       script,
       faqScripts,
-      assignedTexters
+      assignedTexters,
+      surveys
     } = this.state
     const { organizationId } = this.props
 
@@ -151,6 +158,7 @@ export class CampaignForm extends Component {
       organizationId,
       assignedTexters,
       faqScripts,
+      surveys: _.map(surveys, (survey) => _.omit(survey, 'type')),
       script: script.script // only want the string
     }
 
@@ -182,14 +190,15 @@ export class CampaignForm extends Component {
 
   handleAddScriptRow() {
     const script = {
+      type: 'script',
       script: 'Hi, {firstName}. This is an answer to a common question',
       title: 'Label',
       isFaqReply: true
     }
 
-    ScriptCollection.insert(script)
+    LocalCollection.insert(script)
 
-    console.log(ScriptCollection.find({}).fetch().length, "script count")
+    console.log(LocalCollection.find({}).fetch().length, "script count")
     // const { faqScripts } = this.state
     // this.setState({
     //   faqScripts: faqScripts.concat([script])
@@ -214,12 +223,57 @@ export class CampaignForm extends Component {
       customFields
     })
   }
+
   renderSurveySection() {
     return (
       <div>
-        Surveys
+      { this.state.surveys.map ((survey) => (
+        <CampaignSurveyForm
+          survey={survey}
+          onAddSurveyAnswer={this.handleAddSurveyAnswer}
+          onEditSurvey={this.handleEditSurvey}
+        />
+      ))}
+      <FlatButton
+        label="Add a survey"
+        onTouchTap={this.handleAddSurvey}
+        secondary
+      />
       </div>
     )
+  }
+
+  handleEditSurvey(surveyId, data) {
+    LocalCollection.update({
+      _id: surveyId
+    }, {
+      $set: data
+    })
+  }
+
+  handleAddSurveyAnswer(surveyId) {
+    console.log("handle add survey answer", surveyId)
+    const survey = LocalCollection.findOne({_id: surveyId})
+    console.log(survey, "add survey answer", surveyId)
+    LocalCollection.update({
+      _id: surveyId
+    }, {
+      $set: {
+        allowedAnswers: survey.allowedAnswers.concat([{value: ''}])
+      }
+    })
+  }
+
+  handleAddSurvey() {
+    const survey = {
+      question: '',
+      allowedAnswers: [{
+        value: 'Option 1' // prob want script eventually
+      }],
+      type: 'survey'
+    }
+
+    LocalCollection.insert(survey)
   }
 
   renderSummarySection() {

@@ -76,6 +76,9 @@ Campaigns.helpers({
   scriptFields() {
     return this.customFields.concat(CampaignContacts.requiredUploadFields)
   },
+  surveys() {
+    return SurveyQuestions.find({campaignId: this._id})
+  },
   survey() {
     return SurveyQuestions.findOne({ _id: this.surveyQuestionId })
   },

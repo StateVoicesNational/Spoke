@@ -2,12 +2,10 @@ import { Mongo } from 'meteor/mongo'
 import { SimpleSchema } from 'meteor/aldeed:simple-schema'
 import { Fake } from 'meteor/anti:fake'
 import { Factory } from 'meteor/dburles:factory'
-
 export const SurveyQuestions = new Mongo.Collection('survey_questions')
 
 const AllowedAnswerSchema = new SimpleSchema({
   value: { type: String },
-  label: { type: String },
   script: { // should this be its own ID?
     type: String,
     optional: true
@@ -19,6 +17,7 @@ const AllowedAnswerSchema = new SimpleSchema({
 })
 
 SurveyQuestions.schema = new SimpleSchema({
+  campaignId: { type: String },
   question: { type: String },
   allowedAnswers: { type: [AllowedAnswerSchema] },
   instructions: { // any instructions for the texter at this step
@@ -26,6 +25,8 @@ SurveyQuestions.schema = new SimpleSchema({
     optional: true
   }
 })
+
+SurveyQuestions.attachSchema(SurveyQuestions.schema)
 
 const createAnswer = (value) => ({
   value,

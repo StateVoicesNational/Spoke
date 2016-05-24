@@ -15,6 +15,7 @@ import { ContactToolbar } from './contact_toolbar'
 import { SurveyList } from './survey_list'
 import { MessageForm } from './message_form'
 import { ResponseDropdown } from './response_dropdown'
+import { QuestionDropdown } from './survey'
 
 import { sendMessage } from '../../api/messages/methods'
 import { applyScript } from '../helpers/script_helpers'
@@ -165,15 +166,6 @@ export class AssignmentTexter extends Component {
   openOptOutDialog() {
     this.setState({open: true})
   }
-  renderSurvey() {
-    const { assignment } = this.props
-    return [
-      <SurveyList onScriptChange={this.handleScriptChange}
-        contact= {this.currentContact()}
-        survey={assignment.campaign().survey()}
-      />
-    ]
-  }
 
   render() {
     const { assignment, contacts, onStopTexting } = this.props
@@ -210,11 +202,18 @@ export class AssignmentTexter extends Component {
       </IconButton>
     ]
 
+    console.log("CAMPAIGN SURVEYS", campaign.surveys().fetch())
     const secondaryToolbar = (
-      <SurveyList onScriptChange={this.handleScriptChange}
-        contact= {this.currentContact()}
-        survey={campaign.survey()}
-      />
+      <div>
+        <Divider />
+        {campaign.surveys().map((survey) => (
+          <QuestionDropdown
+            answer={contact.surveyAnswer(survey._id)}
+            survey={survey}
+          />
+        ))}
+        <Divider />
+      </div>
     )
 
     return (

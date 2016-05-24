@@ -4,6 +4,7 @@ import { SimpleSchema } from 'meteor/aldeed:simple-schema'
 import { insertContact } from '../campaign_contacts/methods'
 
 import { Campaigns } from './campaigns.js'
+import { SurveyQuestions } from '../survey_questions/survey_questions.js'
 import { CampaignContacts } from '../campaign_contacts/campaign_contacts.js'
 import { Assignments } from '../assignments/assignments.js'
 import { convertRowToContact } from '../campaign_contacts/parse_csv'
@@ -71,10 +72,11 @@ export const insert = new ValidatedMethod({
     contacts: { type: [Object], blackbox: true },
     script: { type: String },
     faqScripts: { type: [Object], blackbox: true}, // todo,
-    assignedTexters: { type: [String]}
+    assignedTexters: { type: [String]},
+    surveys: { type: [Object], blackbox: true}
 
   }).validator(),
-  run({ title, description, contacts, script, faqScripts, organizationId, assignedTexters }) {
+  run({ title, description, contacts, script, faqScripts, organizationId, assignedTexters, surveys }) {
     if (!this.userId || !Roles.userIsInRole(this.userId, 'admin', organizationId)) {
       throw new Meteor.Error('not-authorized');
     }
@@ -89,12 +91,20 @@ export const insert = new ValidatedMethod({
       customFields: ['hi', 'bye', 'smee']       // FIXMe
     };
 
+    // TODO this needs to be in one transaction
     // TODO do this only if the contacts validate!
     Campaigns.insert(campaignData, (campaignError, campaignId) => {
       if (campaignError) {
         console.log("there was an error creating campaign")
       }
       else {
+        for (let survey of surveys) {
+          survey.campaignId = campaignId
+          console.log("\n\n\n")
+          console.log("inserting survey", survey)
+          console.log("\n\n\n")
+          SurveyQuestions.insert(survey)
+        }
         console.log("assignedTexters in campaign insert", assignedTexters)
         const dividedContacts = divideContacts(contacts, assignedTexters)
         forEach(dividedContacts, ( [texterId, texterContacts] ) => {

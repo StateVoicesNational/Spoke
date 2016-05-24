@@ -1,6 +1,16 @@
 import React, { Component } from 'react'
 import SelectField from 'material-ui/SelectField'
 import MenuItem from 'material-ui/MenuItem'
+import Formsy from 'formsy-react';
+import { FormsySelect } from 'formsy-material-ui/lib'
+
+const styles = {
+  form: {
+    padding: '0 20px',
+    backgroundColor: '#F8F8F8',
+    width: '100%'
+  }
+}
 
 export class QuestionDropdown extends Component {
   constructor(props) {
@@ -16,21 +26,23 @@ export class QuestionDropdown extends Component {
 
   render () {
     const { survey, answer } = this.props
-    return <div>
-      <SelectField
-        floatingLabelText={survey.question}
-        onChange={this.handleSurveyChange}
-        value={answer ? answer.value : ''}
-        fullWidth
-      >
-        {survey.allowedAnswers.map(allowedAnswer =>
-          <MenuItem
-            key={allowedAnswer.value}
-            value={allowedAnswer.value}
-            primaryText={allowedAnswer.value}
-          />)}
-      </SelectField>
-    </div>
+    return (
+      <Formsy.Form style={styles.form}>
+        <FormsySelect
+          floatingLabelText={survey.question}
+          onChange={this.handleSurveyChange}
+          name={survey.question}
+          value={answer ? answer.value : ''}
+        >
+          {survey.allowedAnswers.map(allowedAnswer =>
+            <MenuItem
+              key={allowedAnswer.value}
+              value={allowedAnswer.value}
+              primaryText={allowedAnswer.value}
+            />)}
+        </FormsySelect>
+      </Formsy.Form>
+    )
   }
 }
 

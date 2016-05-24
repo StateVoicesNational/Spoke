@@ -41,23 +41,25 @@ Meteor.publishComposite('assignment.allRelatedData', (assignmentId) => {
         children: [
           {
             find: (campaign) => {
+              return SurveyQuestions.find({ campaignId: campaign._id})
+
               // This is not reactive.
-              const ids = []
-              const search = (questionId) => {
-                if (!questionId) {
-                  return
-                }
+              // const ids = []
+              // const search = (questionId) => {
+              //   if (!questionId) {
+              //     return
+              //   }
 
-                ids.push(questionId)
-                const surveyQuestion = SurveyQuestions.findOne({ _id: questionId })
-                const childIds = surveyQuestion.allowedAnswers.map(({ surveyQuestionId }) => surveyQuestionId).filter((val) => val)
+              //   ids.push(questionId)
+              //   const surveyQuestion = SurveyQuestions.findOne({ _id: questionId })
+              //   const childIds = surveyQuestion.allowedAnswers.map(({ surveyQuestionId }) => surveyQuestionId).filter((val) => val)
 
-                for (let childId of childIds) {
-                  search(childId)
-                }
-              }
-              search(campaign.surveyQuestionId)
-              return SurveyQuestions.find({ _id: { $in: ids } })
+              //   for (let childId of childIds) {
+              //     search(childId)
+              //   }
+              // }
+              // search(campaign.surveyQuestionId)
+              // return SurveyQuestions.find({ _id: { $in: ids } })
             }
           },
           {

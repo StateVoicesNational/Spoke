@@ -29,9 +29,8 @@ const styles = {
   messageField: {
     width: '100%',
     position: 'fixed',
-    width: '100%',
     left: 0,
-    display: 'flex',
+    // display: 'flex',
     right: 0,
     bottom: 56
   },
@@ -112,15 +111,17 @@ export class MessageForm extends Component {
             />
           </div>
           ) : (
+          <div>
+            <div>
+            </div>
           <div style={styles.messageField}>
             { secondaryToolbar }
-            <br />
             <MessageField
               ref="input"
               initialScript={initialScript}
             />
           </div>
-
+          </div>
           )}
         <Toolbar style={styles.navigationToolbar}>
           <ToolbarGroup firstChild>

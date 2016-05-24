@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { Assignments } from '../../api/assignments/assignments.js'
 import { SurveyAnswers } from '../../api/survey_answers/survey_answers.js'
+import { SurveyQuestions } from '../../api/survey_questions/survey_questions.js'
 import { Campaigns } from '../../api/campaigns/campaigns.js'
 import { CampaignContacts } from '../../api/campaign_contacts/campaign_contacts.js'
 import { OptOuts } from '../../api/opt_outs/opt_outs.js'
@@ -14,7 +15,7 @@ export default createContainer(({ assignmentId, organizationId }) => {
   let data = {
     assignment: null,
     campaign: null,
-    survey: null,
+    surveys: null,
     contacts: [],
     messages: [],
     loading: !handle.ready(),
@@ -31,12 +32,13 @@ export default createContainer(({ assignmentId, organizationId }) => {
       data.campaign = campaign
       // TODO: This is really dumb. I think I need to do one contact at a time.
       data.messages = campaign.messages().fetch()
-      data.survey = campaign.survey()
+      data.surveys = campaign.surveys().fetch()
       // TODO is it ok to fetch things that are never referenced directly in the container?
     }
   }
   OptOuts.find({}).fetch()
   CampaignContacts.find({}).fetch()
+  SurveyQuestions.find({}).fetch()
   SurveyAnswers.find({}).fetch()
   return data
 }, AssignmentPage)
