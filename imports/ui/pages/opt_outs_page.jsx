@@ -34,8 +34,8 @@ class Page extends React.Component {
               {optOuts.map((optOut) => (
                 <ListItem
                   key={optOut._id}
-                  primaryText={optOut.contact().cell}
-                  secondaryText={displayName(optOut.contact())}
+                  primaryText={optOut.cell}
+                  // secondaryText={displayName(optOut.contact())}
                 />
               ))}
             </List>
