@@ -3,6 +3,7 @@ import { Assignments } from '../../api/assignments/assignments.js'
 import { SurveyAnswers } from '../../api/survey_answers/survey_answers.js'
 import { Campaigns } from '../../api/campaigns/campaigns.js'
 import { CampaignContacts } from '../../api/campaign_contacts/campaign_contacts.js'
+import { OptOuts } from '../../api/opt_outs/opt_outs.js'
 import { createContainer } from 'meteor/react-meteor-data'
 import { AssignmentPage } from '../pages/assignment_page'
 
@@ -34,6 +35,7 @@ export default createContainer(({ assignmentId, organizationId }) => {
       // TODO is it ok to fetch things that are never referenced directly in the container?
     }
   }
+  OptOuts.find({}).fetch()
   CampaignContacts.find({}).fetch()
   SurveyAnswers.find({}).fetch()
   return data

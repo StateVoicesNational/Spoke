@@ -1,6 +1,8 @@
 import { ValidatedMethod } from 'meteor/mdg:validated-method'
 import { SimpleSchema } from 'meteor/aldeed:simple-schema'
 import { Messages } from './messages.js'
+import { Campaigns } from '../campaigns/campaigns.js'
+import { OptOuts } from '../opt_outs/opt_outs.js'
 import { Meteor } from 'meteor/meteor'
 
 const getAssignedPhoneNumber = (userId, onSuccess, onError) => {
@@ -45,6 +47,27 @@ export const insertMessage = new ValidatedMethod({
     serviceMessageId: { type: String }
   }).validator(),
   run({ text, userNumber, contactNumber, isFromContact, campaignId, serviceMessageId }) {
+
+    // TODO: Not sure about this pattern?
+    if (Meteor.isServer) {
+      const organizationId = Campaigns.findOne({ _id: campaignId }).organizationId
+
+      if (!this.userId || !Roles.userIsInRole(this.userId, 'texter', organizationId)) {
+        throw new Meteor.Error('not-authorized');
+      }
+
+      const optOut = OptOuts.findOne({
+        organizationId,
+        cell: contactNumber
+      })
+
+      if (optOut) {
+        throw new Meteor.Error('contact-opt-out');
+      }
+
+    }
+
+
     const message = {
       userNumber,
       contactNumber,

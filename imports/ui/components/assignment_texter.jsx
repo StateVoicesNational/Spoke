@@ -10,7 +10,6 @@ import NavigateMoreVert from 'material-ui/svg-icons/navigation/more-vert'
 import IconMenu from 'material-ui/IconMenu'
 import Divider from 'material-ui/Divider'
 import MenuItem from 'material-ui/MenuItem';
-
 import { ContactToolbar } from './contact_toolbar'
 
 import { SurveyList } from './survey_list'
@@ -23,10 +22,6 @@ import { applyScript } from '../helpers/script_helpers'
 const styles = {
   navigationToolbarTitle: {
     fontSize: "12px"
-  },
-  toolbarIconButton: {
-    // without this the toolbar icons are not centered vertically
-    height: '56px'
   },
   contactToolbar: {
     position: 'fixed',
@@ -114,6 +109,17 @@ export class AssignmentTexter extends Component {
     this.handleNavigateNext()
   }
 
+  handleOptOut() {
+    const messageText = this.refs.optOutInput.getValue().trim()
+    const { onNextContact } = this.props
+    const onSuccess = () => {
+      console.log("opting user out!")
+      this.handleCloseDialog()
+      onNextContact()
+    }
+    this.sendMessageToCurrentContact(messageText, onSuccess)
+  }
+
   sendMessageToCurrentContact(text, onSuccess) {
     const { assignment } = this.props
     const contact = this.currentContact()
@@ -156,6 +162,9 @@ export class AssignmentTexter extends Component {
     return this.getContact(contacts, this.state.currentContactIndex)
   }
 
+  openOptOutDialog() {
+    this.setState({open: true})
+  }
   renderSurvey() {
     const { assignment } = this.props
     return [
@@ -172,12 +181,14 @@ export class AssignmentTexter extends Component {
     if (!contact) {
       return ''
     }
-    const scriptFields = assignment.campaign().scriptFields()
+
+    const campaign = assignment.campaign()
+    const scriptFields = campaign.scriptFields()
     //TODO - do we really want to grab all messages at once here? should I actually be doing a collection serach
     const leftToolbarChildren = [
       <ToolbarSeparator />,
       <ResponseDropdown
-        responses={assignment.campaign().faqScripts || []}
+        responses={campaign.faqScripts || []}
         onScriptChange={this.handleScriptChange}
       />
     ]
@@ -202,33 +213,15 @@ export class AssignmentTexter extends Component {
     const secondaryToolbar = (
       <SurveyList onScriptChange={this.handleScriptChange}
         contact= {this.currentContact()}
-        survey={assignment.campaign().survey()}
+        survey={campaign.survey()}
       />
     )
+
     return (
       <div style={{height: '100%'}}>
-        <Toolbar style={styles.contactToolbar}>
-          <ToolbarGroup
-            firstChild
-          >
-            <IconMenu
-              iconButtonElement={
-                <IconButton
-                  touch={true}
-                  style={styles.toolbarIconButton}
-                >
-                  <NavigateMoreVert />
-                </IconButton>
-              }
-            >
-              <MenuItem primaryText="Download" />
-              <MenuItem primaryText="More Info" />
-            </IconMenu>
-            <ToolbarTitle text={`${contact.firstName} - ${contact.cell}`} />
-          </ToolbarGroup>
-          <ToolbarGroup
-            lastChild
-          >
+        <ContactToolbar
+          campaignContact={contact}
+          rightToolbarIcon={(
             <IconButton
               onTouchTap={onStopTexting}
               style={styles.toolbarIconButton}
@@ -236,8 +229,9 @@ export class AssignmentTexter extends Component {
               <NavigateCloseIcon />
 
             </IconButton>
-        </ToolbarGroup>
-        </Toolbar>
+          )}
+          style={styles.contactToolbar}
+        />
 
         <Divider />
 

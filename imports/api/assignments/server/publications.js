@@ -6,6 +6,7 @@ import { CampaignContacts } from '../../campaign_contacts/campaign_contacts'
 import { SurveyQuestions } from '../../survey_questions/survey_questions'
 import { SurveyAnswers } from '../../survey_answers/survey_answers'
 import { Messages } from '../../messages/messages'
+import { OptOuts } from '../../opt_outs/opt_outs'
 
 // TODO: actually filter correctly and return public fields only
 
@@ -62,6 +63,9 @@ Meteor.publishComposite('assignment.allRelatedData', (assignmentId) => {
           {
             // TODO sort by created
             find: (campaign) => Messages.find({ campaignId: campaign._id })
+          },
+          {
+            find: (campaign) => OptOuts.find({ organizationId: campaign.organizationId})
           }
         ]
       },

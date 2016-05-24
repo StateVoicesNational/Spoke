@@ -19,3 +19,6 @@ import '../../api/organizations/server/publications.js'
 
 import '../../api/users/users.js'
 import '../../api/users/server/publications.js'
+
+import '../../api/opt_outs/methods.js'
+

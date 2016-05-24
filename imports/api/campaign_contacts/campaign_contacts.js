@@ -5,6 +5,8 @@ import { Fake } from 'meteor/anti:fake'
 import { SurveyQuestions } from '../survey_questions/survey_questions'
 import { SurveyAnswers } from '../survey_answers/survey_answers'
 import { Messages } from '../messages/messages'
+import { Campaigns } from '../campaigns/campaigns'
+import { OptOuts } from '../opt_outs/opt_outs'
 
 export const CampaignContacts = new Mongo.Collection('campaign_contacts')
 
@@ -63,6 +65,13 @@ CampaignContacts.publicFields = {
 CampaignContacts.helpers({
   messages() {
     return Messages.find({ contactNumber: this.cell, campaignId: this.campaignId })
+  },
+  optOut() {
+    const campaign = Campaigns.findOne({_id: this.campaignId})
+    console.log(this.campaignId, campaign, campaign.organizationId, this.cell)
+    console.log("result", OptOuts.findOne({ organizationId: campaign.organizationId, cell: this.cell}))
+    console.log(OptOuts.find({}).fetch())
+    return OptOuts.findOne({ organizationId: campaign.organizationId, cell: this.cell})
   },
   lastMessage() {
     return Messages.findOne({ contactNumber: this.cell, campaignId: this.campaignId }, { sort: { createdAt: -1 }})

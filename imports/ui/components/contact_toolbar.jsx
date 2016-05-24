@@ -1,13 +1,22 @@
 import React, { Component } from 'react'
 import IconButton from 'material-ui/IconButton/IconButton'
-import DeleteIcon from 'material-ui/svg-icons/action/delete';
 import FlatButton from 'material-ui/FlatButton'
 import Dialog from 'material-ui/Dialog'
 import { Toolbar, ToolbarGroup, ToolbarTitle, ToolbarSeparator } from 'material-ui/Toolbar'
-import { MessagesList } from './messages_list'
-import { SurveyList } from './survey_list'
 import { MessageField } from './message_field'
+import NavigateCloseIcon from 'material-ui/svg-icons/navigation/close'
+import NavigateMoreVert from 'material-ui/svg-icons/navigation/more-vert'
+import IconMenu from 'material-ui/IconMenu'
+import MenuItem from 'material-ui/MenuItem';
+import { insert } from '../../api/opt_outs/methods'
 import { sendMessage } from '../../api/messages/methods'
+
+const styles = {
+  toolbarIconButton: {
+    // without this the toolbar icons are not centered vertically
+    height: '56px'
+  }
+}
 
 export class ContactToolbar extends Component {
   constructor(props) {
@@ -31,23 +40,52 @@ export class ContactToolbar extends Component {
 
   handleOptOut() {
     const messageText = this.refs.optOutInput.getValue().trim()
-    const { onNextContact } = this.props
-    const onSuccess = () => {
-      console.log("opting user out!")
-      this.handleCloseDialog()
-      onNextContact()
+    const { onOptOut, campaignContact } = this.props
+    const cell = campaignContact.cell
+    const assignmentId = campaignContact.assignmentId
+    const campaignId = campaignContact.campaignId
+
+    const onMessageSendSuccess = () => {
+      insert.call({
+        cell,
+        assignmentId
+      }, (optOutError) => {
+        if (optOutError) {
+          console.log("output error", optOutError)
+        } else {
+          console.log("no error")
+          this.handleCloseDialog()
+          if (onOptOut) {
+            onOptOut()
+          }
+        }
+      })
     }
-    this.sendMessageToCurrentContact(messageText, onSuccess)
+
+    sendMessage.call({
+      campaignId,
+      text: messageText,
+      contactNumber: cell,
+    }, (messageSendError) => {
+      if (messageSendError) {
+        alert(messageSendError)
+      } else {
+        console.log("on messagesend seccess")
+        onMessageSendSuccess()
+      }
+    })
   }
 
   render() {
-    const { campaignContact } = this.props
+    const { campaignContact, style, rightToolbarIcon } = this.props
 
+    // FIXME: don't fetch data here -- pass it down from the top level everewhere
+
+    const optOut = campaignContact.optOut()
     const actions = [
       <FlatButton
         label="Cancel"
         onTouchTap={this.handleCloseDialog}
-        primary
       />,
       <FlatButton
         label="Send message and opt out user"
@@ -59,15 +97,35 @@ export class ContactToolbar extends Component {
     const optOutScript = "I'm opting you out of text-based communication immediately. Have a great day."
 
     return (
-        <Toolbar>
-          <ToolbarGroup float="left">
+        <Toolbar style={style}>
+          <ToolbarGroup
+            firstChild
+          >
+            <IconMenu
+              iconButtonElement={
+                <IconButton
+                  touch={true}
+                  style={styles.toolbarIconButton}
+                >
+                  <NavigateMoreVert />
+                </IconButton>
+              }
+            >
+              <MenuItem
+                onTouchTap={this.handleOpenDialog}
+                disabled={!!optOut}
+                primaryText={optOut ? "Opted out" : "Opt out"} />
+            </IconMenu>
+
             <ToolbarTitle text={`${campaignContact.firstName} - ${campaignContact.cell}`} />
           </ToolbarGroup>
-          <ToolbarGroup float="right">
-            <IconButton onTouchTap={this.handleOpenDialog}>
-              <DeleteIcon tooltip="Opt out" />
-            </IconButton>
+          <ToolbarGroup
+            lastChild
+          >
+            { rightToolbarIcon }
+
           </ToolbarGroup>
+
           <Dialog
             title="Opt out user"
             actions={actions}

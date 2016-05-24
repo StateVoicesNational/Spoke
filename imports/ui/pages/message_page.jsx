@@ -3,6 +3,8 @@ import { createContainer } from 'meteor/react-meteor-data'
 import { BackNavigation } from '../../ui/components/navigation'
 import { AppPage } from '../../ui/layouts/app_page'
 import { CampaignContacts } from '../../api/campaign_contacts/campaign_contacts'
+import { OptOuts } from '../../api/opt_outs/opt_outs'
+import { Campaigns } from '../../api/campaigns/campaigns'
 import { displayName } from '../../api/users/users'
 import { MessageForm } from '../../ui/components/message_form'
 import { ContactToolbar } from '../../ui/components/contact_toolbar'
@@ -34,6 +36,7 @@ const Page = ({ loading, messages, campaignContact, organizationId }) => (
 export const MessagePage = createContainer(({ organizationId, campaignContactId }) => {
   const handle = Meteor.subscribe('messageThread', campaignContactId)
   const campaignContact = CampaignContacts.findOne({_id: campaignContactId})
+  Campaigns.find({}).fetch()
   return {
     organizationId,
     campaignContact,
