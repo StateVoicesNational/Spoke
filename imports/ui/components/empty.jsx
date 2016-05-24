@@ -2,7 +2,7 @@ import React from 'react'
 
 const styles = {
   container: {
-    marginTop: '56px',
+    marginTop: '56px'
   },
   title: {
     opacity: 0.2

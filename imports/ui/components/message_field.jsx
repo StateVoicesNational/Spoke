@@ -4,9 +4,7 @@ import TextField from 'material-ui/TextField'
 const styles = {
   textarea: {
     padding: 20,
-    position: 'relative',
     width: '100%',
-    backgroundColor: 'blue'
   }
 }
 
@@ -47,6 +45,7 @@ export class MessageField extends Component {
         multiLine
         fullWidth
       />
-    </div>)
+    </div>
+    )
   }
 }

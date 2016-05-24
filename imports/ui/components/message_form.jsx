@@ -3,18 +3,20 @@ import { Toolbar, ToolbarGroup, ToolbarTitle, ToolbarSeparator } from 'material-
 import RaisedButton from 'material-ui/RaisedButton'
 import NavigateBeforeIcon from 'material-ui/svg-icons/image/navigate-before'
 import NavigateNextIcon from 'material-ui/svg-icons/image/navigate-next'
-import Divider from 'material-ui/Divider'
 
 import { MessagesList } from './messages_list'
 import { SurveyList } from './survey_list'
 import { MessageField } from './message_field'
 import { ResponseDropdown } from './response_dropdown'
-
+import { Empty } from '../components/empty'
+import TextField from 'material-ui/TextField'
 import { sendMessage } from '../../api/messages/methods'
 import { applyScript } from '../helpers/script_helpers'
+import SmsIcon from 'material-ui/svg-icons/communication/textsms';
 
 const styles = {
   navigationToolbar: {
+    width: '100%',
     backgroundColor: 'white',
     position: 'fixed',
     width: '100%',
@@ -24,7 +26,7 @@ const styles = {
     bottom: 0
   },
   messageField: {
-    backgroundColor: 'green',
+    width: '100%',
     position: 'fixed',
     width: '100%',
     left: 0,
@@ -35,11 +37,22 @@ const styles = {
 }
 
 export class MessageForm extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      isSending: false
+    }
+  }
   handleSendMessage(event) {
     event.preventDefault()
     const input = this.refs.input
-    const onSuccess =  this.props.onSendMessage
-    this.sendMessageToCurrentContact(input.getValue().trim(), onSuccess)
+    const messageText = input.getValue().trim()
+
+    const onSuccess = () => {
+      this.setState({ isSending: false })
+      this.props.onSendMessage()
+    }
+    this.sendMessageToCurrentContact(messageText, onSuccess)
   }
 
   sendMessageToCurrentContact(text, onSendMessage) {
@@ -50,6 +63,9 @@ export class MessageForm extends Component {
       contactNumber: campaignContact.cell,
     }, (error) => {
       if (error) {
+        this.setState({
+          isSending: false
+        })
         alert(error)
       } else {
         if (onSendMessage)
@@ -69,22 +85,29 @@ export class MessageForm extends Component {
       secondaryToolbar
     } = this.props
 
+    const { isSending } = this.state
     const messages = campaignContact.messages().fetch()
     return (
       <div>
+        { messages.length === 0 ? (
+            <Empty
+              title="No conversation yet"
+              icon={<SmsIcon />}
+            />
+        ) : <MessagesList messages={messages} /> }
         <div style={styles.messageField}>
-          <div>
-            { secondaryToolbar }
-            <MessageField ref="input" initialScript={initialScript} />
-          </div>
+          { secondaryToolbar }
+          <MessageField
+            ref="input"
+            initialScript={initialScript}
+          />
         </div>
-
-        <MessagesList messages={messages} />
         <Toolbar style={styles.navigationToolbar}>
           <ToolbarGroup firstChild>
             <RaisedButton
               onClick={this.handleSendMessage.bind(this)}
               label="Send"
+              disabled={isSending}
               primary
             />
             { leftToolbarChildren }
@@ -93,7 +116,7 @@ export class MessageForm extends Component {
             { rightToolbarChildren }
           </ToolbarGroup>
         </Toolbar>
-      </div>
+    </div>
     )
 
   }

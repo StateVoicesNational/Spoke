@@ -76,5 +76,5 @@ export class SurveyList extends Component {
 SurveyList.propTypes = {
   contact: React.PropTypes.object,
   survey: React.PropTypes.object,
-  onScriptChange: React.PropTypes.function,
+  onScriptChange: React.PropTypes.func,
 }
