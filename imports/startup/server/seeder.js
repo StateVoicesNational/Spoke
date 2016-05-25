@@ -53,6 +53,7 @@ const createSurvey = (campaignId) => {
   const newSurvey = (question, allowedAnswers) => {
     return Factory.create('survey_question', {
       question,
+      campaignId,
       allowedAnswers,
     })
   }
@@ -80,12 +81,10 @@ const createSurvey = (campaignId) => {
 }
 
 const createCampaign = (organizationId) => {
-  const survey = createSurvey()
   const customFields = ['eventUrl']
   return Factory.create('campaign', {
     organizationId,
     customFields,
-    surveyQuestionId: survey._id
   })
 }
 
@@ -137,6 +136,7 @@ Meteor.startup(() => {
 
       _(2).times(() => {
         const campaignId = createCampaign(organizationId)._id
+        createSurvey(campaignId)
         createAssignment(userId, campaignId)
       })
     }

@@ -4,6 +4,7 @@ import { CampaignList } from '../components/campaign_list'
 import { FlowRouter } from 'meteor/kadira:flow-router'
 import { AdminNavigation } from '../../ui/components/navigation'
 import { AppPage } from '../../ui/layouts/app_page'
+import {Tabs, Tab} from 'material-ui/Tabs';
 
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import ContentAdd from 'material-ui/svg-icons/content/add'
@@ -30,14 +31,26 @@ export class CampaignsPage extends Component {
     FlowRouter.go(`/${organizationId}/campaigns/new`)
   }
 
-  navigation() {
-
-  }
   render() {
-    const { campaigns, loading, organizationId } = this.props
+    const { ongoingCampaigns, pastCampaigns, loading, organizationId } = this.props
+
+    console.log("campaigns", ongoingCampaigns, pastCampaigns)
     const content = (
       <div>
-        <CampaignList campaigns={campaigns} />
+        <Tabs>
+          <Tab label="Ongoing" >
+            <CampaignList
+              campaigns={ongoingCampaigns}
+              organizationId={organizationId}
+            />
+          </Tab>
+          <Tab label="Past" >
+            <CampaignList
+              campaigns={pastCampaigns}
+              organizationId={organizationId}
+            />
+          </Tab>
+        </Tabs>
         <FloatingActionButton
           style={styles.floatingButton}
           onTouchTap={this.handleClickNewButton}

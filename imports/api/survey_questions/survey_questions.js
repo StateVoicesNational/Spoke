@@ -43,6 +43,7 @@ Factory.define('survey_question', SurveyQuestions, {
     'Can the user attend the event?',
     'Will this person support Bernie?'
   ]),
+  campaignId: () => 'abcd',
   allowedAnswers: () => ['Yes', 'No', 'Maybe'].map((answer) => createAnswer(answer)),
   instructions: () => Fake.sentence(20)
 })

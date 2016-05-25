@@ -6,10 +6,19 @@ import { CampaignsPage } from '../pages/campaigns_page'
 
 export default createContainer(({organizationId}) => {
   const handle = Meteor.subscribe('campaigns', organizationId)
-  console.log(Campaigns.find({}).fetch(), "campaigns")
+
+  let today = new Date()
+  // UTC
+  today = new Date(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate())
+
+  const ongoingCampaigns = Campaigns.find({ dueBy: { $gte: today } }).fetch()
+  const pastCampaigns = Campaigns.find({ dueBy: { $lt: today } }).fetch()
+
+  console.log(Campaigns.find({}).fetch())
   return {
     organizationId,
-    campaigns: Campaigns.find({}).fetch(),
+    pastCampaigns,
+    ongoingCampaigns,
     loading: !handle.ready()
   }
 }, CampaignsPage)

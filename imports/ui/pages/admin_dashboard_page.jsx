@@ -1,28 +1,52 @@
 import React from 'react'
-import Paper from 'material-ui/Paper'
-import AppBar from 'material-ui/AppBar'
 import { Meteor } from 'meteor/meteor'
-import { Organizations } from '../../api/organizations/organizations.js'
 import { createContainer } from 'meteor/react-meteor-data'
+import { AdminNavigation } from '../../ui/components/navigation'
+import { Dashboard } from '../../ui/components/dashboard'
+import { AppPage } from '../../ui/layouts/app_page'
+import { Campaigns } from '../../api/campaigns/campaigns'
+import { Organizations } from '../../api/organizations/organizations'
 import { FlowRouter } from 'meteor/kadira:flow-router'
-
-export class AdminDashboardPage extends React.Component {
-  componentWillReceiveProps({ loading }) {
+import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
+import FlatButton from 'material-ui/FlatButton'
+class Page extends React.Component {
+  componentWillReceiveProps({ organizationId, organizations, loading }) {
     // redirect / to a list once lists are ready
-    if (!loading) {
-      const organization = Organizations.findOne()
-      FlowRouter.go(`/${organization._id}/campaigns`)
+    if (!organizationId && !loading) {
+      console.log("organizations", organizations)
+      const organization = organizations[0]
+      FlowRouter.go(`/admin/${organization._id}`)
     }
   }
+
   render() {
-    const { loading } = this.props
-    return <Paper>
-      { loading ? 'Loading' : (
-          <div>
-            You have no texters.
-            You have no campaigns.
-          </div>
-      )}
-    </Paper>
+    const { organizationId, campaigns, loading } = this.props
+    const stats = [
+      ['Campaigns', campaigns.length]
+    ]
+    return (
+      <AppPage
+        navigation={<AdminNavigation
+          title="Dashboard"
+          organizationId={organizationId}
+        />}
+        content={
+          <Dashboard stats={stats} />
+
+        }
+        loading={loading}
+      />
+    )
   }
 }
+export const AdminDashboardPage = createContainer(({ organizationId, organizations }) => {
+  const handle = Meteor.subscribe('campaigns', organizationId)
+  return {
+    organizations,
+    organizationId,
+    // TODO: Route to an organization ID better
+    campaigns: Campaigns.find().fetch(),
+    loading: !handle.ready()
+  }
+}, Page)
+

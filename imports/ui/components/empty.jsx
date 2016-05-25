@@ -16,7 +16,7 @@ const styles = {
 
 // TODO: React clone element ok?
 export const Empty = ({ title, icon }) => (
-  <div className="row center-xs" styles={styles.container}>
+  <div className="row center-xs" style={styles.container}>
     <div className="col-xs">
       { React.cloneElement(icon, {style: styles.icon}) }
       <h2 style={styles.title}>

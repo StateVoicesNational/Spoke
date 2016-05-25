@@ -5,6 +5,7 @@ import { Factory } from 'meteor/dburles:factory'
 import { SurveyQuestions } from '../survey_questions/survey_questions'
 import { Messages } from '../messages/messages'
 import { CampaignContacts } from '../campaign_contacts/campaign_contacts'
+import { moment } from 'meteor/momentjs:moment'
 
 export const Campaigns = new Mongo.Collection('campaigns')
 
@@ -26,6 +27,7 @@ Campaigns.schema = new SimpleSchema({
   title: { type: String },
   description: { type: String },
   createdAt: { type: Date },
+  dueBy: { type: Date},
   customFields: { type: [String] },
   surveyQuestionId: {
     type: String,
@@ -42,6 +44,7 @@ Campaigns.attachSchema(Campaigns.schema)
 
 Factory.define('campaign', Campaigns, {
   createdAt: () => new Date(),
+  dueBy: () => moment().add(5, 'days').toDate(),
   title: () => Fake.fromArray([
     'Baltimore Phonebank Recruitment',
     'Bernie Journey',

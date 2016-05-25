@@ -15,6 +15,7 @@ import { AdminNavigation, AppNavigation } from '../../ui/components/navigation'
 import { HomePage } from '../../ui/pages/home_page'
 import { LoginPage } from '../../ui/pages/login_page'
 import { OptOutsPage } from '../../ui/pages/opt_outs_page'
+import { CampaignPage } from '../../ui/pages/campaign_page'
 import { App } from '../../ui/layouts/app'
 
 import injectTapEventPlugin from 'react-tap-event-plugin'
@@ -46,7 +47,7 @@ FlowRouter.route('/login', {
   name: 'login',
   action: () => {
     mount(App, {
-      content: () => <LoginPage />
+      content: () => <LoginPage onSubmit={() => FlowRouter.go('/')}/>
     })
   }
 })
@@ -96,7 +97,6 @@ FlowRouter.route('/:organizationId/messages/:campaignContactId', {
   }
 })
 
-/* ORGANIZER ADMIN */
 FlowRouter.route('/signup', {
   name: 'organizerSignup',
   action: () => {
@@ -106,18 +106,36 @@ FlowRouter.route('/signup', {
   }
 })
 
-FlowRouter.route('/admin', {
-  name: 'organizerDashboard',
+/* ORGANIZER ADMIN */
+
+const adminSection = FlowRouter.group({
+    prefix: "/admin"
+});
+
+const adminOrganizationSection = adminSection.group({
+  prefix: '/:organizationId'
+})
+
+adminSection.route('/', {
+  name: 'adminDashboard',
   action: (params) => {
     mount(App, {
-      content: () => <AdminDashboardPage {...params} />,
-      navigation: () => <AdminNavigation {...params} />
+      content: () => <AdminDashboardPage {...params} />
+    })
+  }
+})
+
+adminOrganizationSection.route('/', {
+  name: 'organizationDashboard',
+  action: (params) => {
+    mount(App, {
+      content: () => <AdminDashboardPage {...params} />
     })
   }
 })
 
 
-FlowRouter.route('/:organizationId/texters', {
+adminOrganizationSection.route('/texters', {
   name: 'texters',
   action: (params) => {
     mount(App, {
@@ -128,7 +146,7 @@ FlowRouter.route('/:organizationId/texters', {
 })
 
 
-FlowRouter.route('/:organizationId/campaigns', {
+adminOrganizationSection.route('/campaigns', {
   name: 'campaigns',
   action: (params) => {
     mount(App, {
@@ -138,20 +156,30 @@ FlowRouter.route('/:organizationId/campaigns', {
   }
 })
 
-FlowRouter.route('/:organizationId/optouts', {
-  name: 'optouts',
-  action: (params) => {
-    mount(App, {
-      content: () => <OptOutsPage { ...params} />,
-      navigation: () => <AdminNavigation {...params} />
-    })
-  }
-})
-FlowRouter.route('/:organizationId/campaigns/new', {
+adminOrganizationSection.route('/campaigns/new', {
   name: 'newCampaign',
   action: (params) => {
     mount(App, {
       content: () => <CampaignEditContainer {...params} />,
+      navigation: () => <AdminNavigation {...params} />
+    })
+  }
+})
+
+adminOrganizationSection.route('/campaigns/:campaignId', {
+  name: 'campaign',
+  action: (params) => {
+    mount(App, {
+      content: () => <CampaignPage {...params} />
+    })
+  }
+})
+
+adminOrganizationSection.route('/optouts', {
+  name: 'optouts',
+  action: (params) => {
+    mount(App, {
+      content: () => <OptOutsPage { ...params} />,
       navigation: () => <AdminNavigation {...params} />
     })
   }

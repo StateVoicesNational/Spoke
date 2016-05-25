@@ -1,15 +1,16 @@
 import React from 'react'
 import { createContainer } from 'meteor/react-meteor-data'
-import { Login } from '../components/login'
+import { LoginPage } from '../pages/login_page'
 import { Organizations } from '../../api/organizations/organizations'
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider'
 import getMuiTheme from 'material-ui/styles/getMuiTheme'
+
 const muiTheme = getMuiTheme()
 
 export const App = createContainer(() => {
   const user = Meteor.user()
   const handle = Meteor.subscribe('organizations')
-  const organizations = Organizations.find({})
+  const organizations = Organizations.find({}).fetch()
 
   return {
     user,
@@ -18,7 +19,7 @@ export const App = createContainer(() => {
   }
 }, (props) => {
   const { user, organizations, loading } = props
-    // <Login user={user} organizations={organizations} />
+    // <LoginPage user={user} organizations={organizations} />
 
     // you suggest (I will also have the props, passed from the router)
     const content = React.cloneElement(props.content(), {
@@ -31,7 +32,7 @@ export const App = createContainer(() => {
     <div>
       <MuiThemeProvider muiTheme={muiTheme}>
         <div>
-          { content }
+          { user ? content : <LoginPage user={user} organizations={organizations}  />}
         </div>
       </MuiThemeProvider>
     </div>
