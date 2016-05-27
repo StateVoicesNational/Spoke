@@ -60,7 +60,8 @@ export class CampaignSurveyForm extends Component {
     const questionIsFocused = survey.question === ''
     console.log("questionIsFocused", questionIsFocused)
 
-    const { showScript } = this.state
+    // const { showScript } = this.state
+    const showScript = true // FIXME
     return (
       <div style={styles.root}>
         <Formsy.Form ref="form">

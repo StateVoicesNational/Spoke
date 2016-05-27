@@ -70,7 +70,8 @@ export class PublicNavigation extends Component {
               <div>
                 <FlatButton
                   label={ user ? user.emails[0].address : 'Create team' }
-                  onTouchTap={this.handleOpenUserMenu}
+                  linkButton
+                  href={ '/signup' }
                   primary
                 />
 

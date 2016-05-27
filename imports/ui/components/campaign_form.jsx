@@ -55,7 +55,8 @@ export class CampaignForm extends Component {
       script: null,
       faqScripts: [],
       assignedTexters: [],
-      surveys: []
+      surveys: [],
+      submitting: false
     }
   }
 
@@ -164,14 +165,15 @@ export class CampaignForm extends Component {
       surveys: _.map(surveys, (survey) => _.omit(survey, 'type')),
       script: script.script // only want the string
     }
+    this.setState( { submitting: true })
 
     insert.call(data, (err) => {
+      this.setState({ submitting: false })
+
       if (err) {
-        console.log(err)
+        alert(err)
       } else {
-        console.log("submitted!")
-        FlowRouter.go(`/${organizationId}/campaigns`)
-        // this.resetState()
+        FlowRouter.go('campaigns', { organizationId })
       }
     })
 
@@ -353,9 +355,13 @@ export class CampaignForm extends Component {
   }
 
   render() {
-    const { stepIndex} = this.state
+    const { stepIndex, submitting } = this.state
 
-    return (
+    return submitting ? (
+      <div>
+        Creating your campaign...
+      </div>
+    ) : (
       <div>
         <Stepper activeStep={stepIndex}>
           { this.steps.map(([stepTitle, ...rest]) => (
@@ -367,7 +373,7 @@ export class CampaignForm extends Component {
         <div>
           {this.stepContent(stepIndex)}
           {this.renderNavigation()}
-      </div>
+        </div>
       </div>
     )
   }

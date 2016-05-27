@@ -24,7 +24,6 @@ const divideContacts = (contactRows, texters) => {
     forEach(leftovers, (leftover, index) => chunked[index].push(leftover))
   }
 
-  console.log("ASSIGEND", zip(texters, chunked))
   return zip(texters, chunked)
 }
 
@@ -49,10 +48,8 @@ const createAssignment = (campaignId, userId, texterContacts) => {
         // TODO BBulk insert instead of individual!
         insertContact.call(contact, (contactError) => {
           if (contactError) {
-            console.log("failed to insert", contactError)
           }
           else {
-            console.log("inserted contact?")
           }
         })
       }
@@ -96,17 +93,12 @@ export const insert = new ValidatedMethod({
     Campaigns.insert(campaignData, (campaignError, campaignId) => {
       if (campaignError) {
         throw new Meteor.Error(campaignError)
-        console.log("there was an error creating campaign", campaignError)
       }
       else {
         for (let survey of surveys) {
           survey.campaignId = campaignId
-          console.log("\n\n\n")
-          console.log("inserting survey", survey)
-          console.log("\n\n\n")
           SurveyQuestions.insert(survey)
         }
-        console.log("assignedTexters in campaign insert", assignedTexters)
         const dividedContacts = divideContacts(contacts, assignedTexters)
         forEach(dividedContacts, ( [texterId, texterContacts] ) => {
           createAssignment(campaignId, texterId, texterContacts)

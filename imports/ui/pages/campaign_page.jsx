@@ -1,6 +1,6 @@
 import React from 'react'
 import { createContainer } from 'meteor/react-meteor-data'
-import { BackNavigation } from '../../ui/components/navigation'
+import { AdminNavigation } from '../../ui/components/navigation'
 import { AppPage } from '../../ui/layouts/app_page'
 import { CampaignContacts } from '../../api/campaign_contacts/campaign_contacts'
 import { Assignments } from '../../api/assignments/assignments'
@@ -15,7 +15,7 @@ import RaisedButton from 'material-ui/RaisedButton'
 const Page = ({ loading, organizationId, campaign, contacts, assignments }) => (
   <AppPage
     navigation={loading ? '' :
-      <BackNavigation
+      <AdminNavigation
         organizationId={organizationId}
         title={campaign.title}
         backToSection='campaigns'

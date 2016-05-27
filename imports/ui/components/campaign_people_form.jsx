@@ -203,7 +203,7 @@ export class CampaignPeopleForm extends Component {
           ref="title"
           name='title'
           value={title}
-          floatingLabelText="Title"
+          floatingLabelText="Campaign title"
         />
         <FormsyText
           name='description'
@@ -212,7 +212,7 @@ export class CampaignPeopleForm extends Component {
           onChange={onDescriptionChange}
           required
           ref="description"
-          floatingLabelText="Description"
+          floatingLabelText="Campaign description"
         />
         <input style={styles.hiddenInput} ref="hiddenInput" />
         { this.renderUploadSection() }

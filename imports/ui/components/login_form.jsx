@@ -16,9 +16,9 @@ const errorMessages = {
 
 const styles = {
   paperStyle: {
-    width: 300,
+    width: 400,
     margin: 'auto',
-    padding: 20
+    padding: 24
   },
   switchStyle: {
     marginBottom: 16

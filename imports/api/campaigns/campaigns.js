@@ -27,7 +27,7 @@ Campaigns.schema = new SimpleSchema({
   title: { type: String },
   description: { type: String },
   createdAt: { type: Date },
-  dueBy: { type: Date},
+  // dueBy: { type: Date},
   customFields: { type: [String] },
   surveyQuestionId: {
     type: String,
@@ -44,7 +44,7 @@ Campaigns.attachSchema(Campaigns.schema)
 
 Factory.define('campaign', Campaigns, {
   createdAt: () => new Date(),
-  dueBy: () => moment().add(5, 'days').toDate(),
+  // dueBy: () => moment().add(5, 'days').toDate(),
   title: () => Fake.fromArray([
     'Baltimore Phonebank Recruitment',
     'Bernie Journey',

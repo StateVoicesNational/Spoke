@@ -4,6 +4,7 @@ import Paper from 'material-ui/Paper';
 import RaisedButton from 'material-ui/RaisedButton';
 import MenuItem from 'material-ui/MenuItem';
 import { insert } from '../../api/organizations/methods'
+import { FlowRouter } from 'meteor/kadira:flow-router'
 import { FormsyCheckbox, FormsyDate, FormsyRadio, FormsyRadioGroup,
     FormsySelect, FormsyText, FormsyTime, FormsyToggle } from 'formsy-material-ui/lib'
 
@@ -15,7 +16,7 @@ const errorMessages = {
 
 const styles = {
   paperStyle: {
-    width: 300,
+    width: 400,
     margin: 'auto',
     padding: 20
   },
@@ -26,6 +27,7 @@ const styles = {
     marginTop: 32
   }
 }
+
 export class SignupForm extends React.Component {
   constructor(props) {
     super(props)
@@ -46,15 +48,17 @@ export class SignupForm extends React.Component {
     });
   }
 
-  submitForm(data) {
+  submitForm(data, resetForm, invalidateForm) {
     Accounts.createUser(data, (accountError) => {
       if (accountError) {
-        console.log("account creation error", accountError)
+        invalidateForm( { email: accountError.message })
       } else {
         const { organizationName } = data
         insert.call({name: organizationName}, (organizationError) => {
           if (organizationError) {
-            console.log("error creating org", organizationError)
+            alert(organizationError)
+          } else {
+            FlowRouter.go('adminDashboard')
           }
         })
       }
@@ -66,11 +70,11 @@ export class SignupForm extends React.Component {
   }
 
   render() {
-    let {paperStyle, switchStyle, submitStyle } = styles;
+    let {switchStyle, submitStyle, paperStyle} = styles;
     let { emailError, numericError, urlError } = errorMessages;
 
     return (
-      <Paper style={paperStyle}>
+      <Paper style={styles.paperStyle}>
         <Formsy.Form
           onValid={this.enableButton.bind(this)}
           onInvalid={this.disableButton.bind(this)}
@@ -80,11 +84,14 @@ export class SignupForm extends React.Component {
           <FormsyText
             name="firstName"
             required
+            autoFocus
+            fullWidth
             floatingLabelText="First name"
           />
           <FormsyText
             name="lastName"
             required
+            fullWidth
             floatingLabelText="Last name"
           />
           <FormsyText
@@ -92,17 +99,20 @@ export class SignupForm extends React.Component {
             validations="isEmail"
             validationError={emailError}
             required
+            fullWidth
             floatingLabelText="Your email"
           />
           <FormsyText
             name="password"
             type="password"
             required
+            fullWidth
             floatingLabelText="Password"
           />
           <FormsyText
             name="organizationName"
             required
+            fullWidth
             floatingLabelText="Your organization"
           />
           <RaisedButton

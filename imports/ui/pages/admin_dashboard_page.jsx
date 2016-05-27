@@ -33,7 +33,7 @@ class Page extends React.Component {
           organizationId={organizationId}
         />}
         content={
-          loading ? <Dashboard stats={stats} /> : ''
+          loading ? '' : <Dashboard stats={stats} />
         }
         loading={loading}
       />
@@ -47,7 +47,7 @@ export const AdminDashboardPage = createContainer(({ organizationId, organizatio
     organizationId,
     organizations,
     // TODO: Route to an organization ID better
-    campaigns: Campaigns.find().fetch(),
+    campaigns: Campaigns.find({ organizationId }).fetch(),
     loading: !handle.ready() && loading // global layouts loading
   }
 }, Page)
