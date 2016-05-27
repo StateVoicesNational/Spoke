@@ -7,26 +7,41 @@ import { CampaignContacts } from '../../api/campaign_contacts/campaign_contacts'
 import { moment } from 'meteor/momentjs:moment'
 import { groupBy, toPairs, last } from 'lodash'
 import { displayName } from '../../api/users/users'
+import ChatBubble from 'material-ui/svg-icons/communication/chat-bubble';
+import { Empty } from '../components/empty'
+import { AppPage } from '../../ui/layouts/app_page'
 
 const Page = ({ threads, organizationId }) => (
-  //  ${moment(message.createdAt).fromNow()}
-  <div>
-    <AppNavigation
-      organizationId={organizationId}
-      title="Messages"
-    />
-    <List>
-      {threads.map((message) => (
-        <ListItem
-          key={message._id}
-          onTouchTap={() => FlowRouter.go(`/${organizationId}/messages/${message.campaignContact()._id}`)}
-          primaryText={displayName(message.campaignContact())}
-          secondaryText={`${message.text}`}
-          secondaryTextLines={2}
-        />
-      ))}
-    </List>
-  </div>
+  <AppPage
+    navigation={
+      <AppNavigation
+        organizationId={organizationId}
+        title="Messages"
+      />
+    }
+    content={
+      <div>
+        {threads.length === 0 ? (
+          <Empty
+            title="No conversations yet"
+            icon={<ChatBubble />}
+          />
+        ) : (
+          <List>
+            {threads.map((message) => (
+              <ListItem
+                key={message._id}
+                onTouchTap={() => FlowRouter.go(`/${organizationId}/messages/${message.campaignContact()._id}`)}
+                primaryText={displayName(message.campaignContact())}
+                secondaryText={`${message.text}`}
+                secondaryTextLines={2}
+              />
+            ))}
+          </List>
+        )}
+      </div>
+    }
+  />
 )
 
 export const MessagesPage = createContainer(({ organizationId }) => {

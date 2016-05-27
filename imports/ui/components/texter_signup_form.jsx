@@ -81,6 +81,7 @@ export class TexterSignupForm extends React.Component {
       >
         <FormsyText
           name="firstName"
+          autoFocus
           fullWidth
           required
           floatingLabelText="First name"

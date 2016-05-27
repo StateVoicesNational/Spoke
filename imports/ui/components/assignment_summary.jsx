@@ -12,12 +12,11 @@ const styles = {
 }
 export class AssignmentSummary extends Component {
   startTexting() {
-    console.log("hello odongo")
     const { handleStartTexting, contacts } = this.props
 
     handleStartTexting(contacts)
   }
-  renderBadgedButton(title, currentTextingContacts, isPrimary) {
+  renderBadgedButton(assignment, title, currentTextingContacts, isPrimary) {
     const count = currentTextingContacts.length
     const { onStartTexting } = this.props
 
@@ -30,7 +29,7 @@ export class AssignmentSummary extends Component {
       >
         <FlatButton
           label={title}
-          onTouchTap={ () => onStartTexting(currentTextingContacts) }
+          onTouchTap={ () => onStartTexting(assignment, currentTextingContacts) }
         />
       </Badge>
     )
@@ -39,9 +38,9 @@ export class AssignmentSummary extends Component {
   render() {
     const { assignment, contacts } = this.props
 
-    const unmessagedContacts = contacts.filter((contact) => !contact.lastMessage())
+    const unmessagedContacts = contacts.filter((contact) => !contact.lastMessage)
     const unrespondedContacts = contacts.filter((contact) => {
-      const lastMessage = contact.lastMessage()
+      const lastMessage = contact.lastMessage
       return (!!lastMessage && lastMessage.isFromContact)
     })
 
@@ -49,15 +48,13 @@ export class AssignmentSummary extends Component {
     const replyCount = unrespondedContacts.length
 
     const summary = (
-      <Card>
+      <Card style={styles.root}>
         <CardTitle title={assignment.campaign().title} subtitle={assignment.campaign().description} />
-        <CardText>
-          { (replyCount > 0 || firstMessageCount > 0) ? "Start messaging!" : "Looks like you're done for now. Nice work!"}
-        </CardText>
+        { (replyCount > 0 || firstMessageCount > 0) ? '' : <CardText>Looks like you're done for now. Nice work!</CardText>}
 
         <CardActions>
-          { this.renderBadgedButton('Send first texts', unmessagedContacts, true)}
-          { this.renderBadgedButton('Send replies', unrespondedContacts, false)}
+          { this.renderBadgedButton(assignment, 'Send first texts', unmessagedContacts, true)}
+          { this.renderBadgedButton(assignment, 'Send replies', unrespondedContacts, false)}
         </CardActions>
       </Card>
     )

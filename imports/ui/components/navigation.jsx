@@ -11,7 +11,8 @@ import ArrowBackIcon from 'material-ui/svg-icons/navigation/arrow-back';
 import { UserMenu } from './user_menu'
 import { organizationsForUser } from '../../api/users/users'
 import IconButton from 'material-ui/IconButton'
-const sectionUrl = (organizationId, section) => `/admin/${organizationId}/${section}`
+import Divider from 'material-ui/Divider'
+const sectionUrl = (organizationId, section) => FlowRouter.path(section, { organizationId })
 
 const styles = {
   appbar: {
@@ -41,7 +42,7 @@ export class Navigation extends Component {
   }
 
   render() {
-    const { organizationId, title, sections, user, organizations} = this.props
+    const { organizationId, title, sections, user, organizations, backToSection} = this.props
     const { open } = this.state
 
     // const iconElementRight = (
@@ -67,11 +68,23 @@ export class Navigation extends Component {
                 onTouchTap={() => FlowRouter.go(sectionUrl(organizationId, section))}
               />
             ))}
+            <Divider />
+            <ListItem
+              key='switch'
+              primaryText='Go to texter'
+              onTouchTap={() => FlowRouter.go('/text')}
+            />
           </List>
+
         </Drawer>
         <AppBar
           style={styles.appbar}
-          onLeftIconButtonTouchTap={ this.handleOpenDrawer }
+          iconElementLeft={backToSection ? (
+            <IconButton onTouchTap={ () => FlowRouter.go(sectionUrl(organizationId, backToSection)) }>
+              <ArrowBackIcon />
+            </IconButton>
+          ) : <div />}
+          // onLeftIconButtonTouchTap={ this.handleOpenDrawer }
           title={title}
           iconElementRight={<UserMenu user={Meteor.user()} organizations={organizationsForUser(Meteor.user())} />}
         />
@@ -80,27 +93,20 @@ export class Navigation extends Component {
   }
 }
 
-export const BackNavigation = ({ organizationId, title, backToSection}) => (
-  <AppBar
-    iconElementLeft={
-      <IconButton onTouchTap={ () => FlowRouter.go(sectionUrl(organizationId, backToSection)) }>
-        <ArrowBackIcon />
-      </IconButton>}
-    title={title}
-  />
-)
-export const AdminNavigation = ({ organizationId, title }) => (
+export const AdminNavigation = ({ backToSection, organizationId, title }) => (
   <Navigation
     title={title}
     organizationId={organizationId}
+    backToSection={backToSection}
     sections={['campaigns', 'texters', 'optouts']}
   />
 )
 
-export const AppNavigation = ({ organizationId, title }) => (
+export const AppNavigation = ({ backToSection, organizationId, title }) => (
   <Navigation
     organizationId={organizationId}
     title={title}
-    sections={['messages', 'assignments']}
+    backToSection={backToSection}
+    sections={['todos', 'assignments', 'messages']}
   />
 )

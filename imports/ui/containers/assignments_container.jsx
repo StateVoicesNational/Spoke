@@ -9,10 +9,10 @@ export default createContainer(({organizationId}) => {
   const handle = Meteor.subscribe('assignments')
 
   let assignments = []
-  console.log(organizationId, assignments, assignments.map((a) => a.campaign()))
 
   if (handle.ready())
   {
+    // TODO - I need to do this in the DB
     assignments = Assignments.find({
       userId: Meteor.userId()
     }).fetch().filter((assignment) => assignment.campaign().organizationId === organizationId)

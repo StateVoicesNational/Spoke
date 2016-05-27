@@ -8,7 +8,10 @@ const styles = {
   form: {
     padding: '0 20px',
     backgroundColor: '#F8F8F8',
-    width: '100%'
+    width: '100%',
+  },
+  select: {
+    fontSize: '12px'
   }
 }
 
@@ -20,13 +23,7 @@ export class QuestionDropdown extends Component {
 
   handleSurveyChange(event, value, index) {
     const { onSurveyChange, survey } = this.props
-    console.log(event.target.value)
-    console.log("event", event, value, index)
-    console.log(survey.allowedAnswers.map((a) => a.value))
-    console.log("survey.allowedAnswers", survey.allowedAnswers)
     const script = survey.allowedAnswers.find((allowedAnswer) => allowedAnswer.value === value).script
-
-    console.log(survey.allowedAnswers)
     onSurveyChange(survey._id, value, script)
   }
 
@@ -37,6 +34,9 @@ export class QuestionDropdown extends Component {
         <FormsySelect
           floatingLabelText={survey.question}
           onChange={this.handleSurveyChange}
+          showUnderline={false}
+          fullWidth
+          inputStyle={styles.select}
           name={survey.question}
           value={answer ? answer.value : ''}
         >

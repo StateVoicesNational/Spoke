@@ -87,6 +87,7 @@ export class LoginForm extends React.Component {
               validations="isEmail"
               validationError={emailError}
               required
+              autoFocus
               floatingLabelText="Email"
             />
             <FormsyText

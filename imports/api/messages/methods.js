@@ -2,6 +2,7 @@ import { ValidatedMethod } from 'meteor/mdg:validated-method'
 import { SimpleSchema } from 'meteor/aldeed:simple-schema'
 import { Messages } from './messages.js'
 import { Campaigns } from '../campaigns/campaigns.js'
+import { CampaignContacts } from '../campaign_contacts/campaign_contacts.js'
 import { OptOuts } from '../opt_outs/opt_outs.js'
 import { Meteor } from 'meteor/meteor'
 
@@ -56,6 +57,7 @@ export const insertMessage = new ValidatedMethod({
   }).validator(),
   run({ text, userNumber, contactNumber, isFromContact, campaignId, serviceMessageId }) {
 
+    const createdAt = new Date()
     const user = Meteor.users.findOne({ userNumber })
     const message = {
       userNumber,
@@ -64,12 +66,21 @@ export const insertMessage = new ValidatedMethod({
       text,
       campaignId,
       serviceMessageId,
-      createdAt: new Date(),
+      createdAt,
       userId: user._id
     }
 
     console.log("inserting message!", message)
     Messages.insert(message)
+
+    // TODO: Cache -- is this ok?
+    const contact = CampaignContacts.findOne({ campaignId, cell: contactNumber })
+
+    const lastMessage = {
+      createdAt,
+      isFromContact
+    }
+    CampaignContacts.update( { _id: contact._id }, { $set: { lastMessage }})
   }
 })
 

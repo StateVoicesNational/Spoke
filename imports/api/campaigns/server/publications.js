@@ -7,7 +7,7 @@ import { Roles } from 'meteor/alanning:roles'
 // Standardize this
 const adminCheck = (userId, organizationId) => (!!userId && Roles.userIsInRole(userId, 'admin', organizationId))
 
-Meteor.publish('campaign.list', function campaignsPublication(organizationId) {
+Meteor.publish('campaigns', function campaignsPublication(organizationId) {
 
   if (!adminCheck(this.userId, organizationId)) {
     return this.ready();

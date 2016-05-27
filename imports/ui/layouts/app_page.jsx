@@ -6,7 +6,7 @@ const styles = {
     maxWidth: 800,
     margin: '24px auto'
   },
-  content: {
+  nonDrawerContent: {
     // because drawer is open
     marginLeft: '256px',
 
@@ -16,7 +16,7 @@ const styles = {
 export const AppPage = ({ navigation, content, loading}) => (
   <div>
     { loading ? '' : navigation }
-    <div style={styles.content}>
+    <div style={styles.nonDrawerContent}>
       <div className="wrap container-fluid" style={styles.container}>
         <div className="row">
           <div className={`col-xs ${ loading ? ' center-xs' : ''}`}>

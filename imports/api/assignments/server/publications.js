@@ -7,10 +7,12 @@ import { SurveyQuestions } from '../../survey_questions/survey_questions'
 import { SurveyAnswers } from '../../survey_answers/survey_answers'
 import { Messages } from '../../messages/messages'
 import { OptOuts } from '../../opt_outs/opt_outs'
+import { todosForUser } from '../../users/users'
 
 // TODO: actually filter correctly and return public fields only
 
 
+// FIXME publishing too much data to the client
 Meteor.publishComposite('assignments', {
   find: function() {
     console.log('this.userId', this.userId)
@@ -20,6 +22,31 @@ Meteor.publishComposite('assignments', {
   children: [
     {
       find: (assignment) => Campaigns.find({ _id : assignment.campaignId })
+    }
+  ]
+})
+
+Meteor.publishComposite('assignments.todo', function(organizationId) {
+  const userId = this.userId
+  return [
+    {
+      find: () => Campaigns.find({ organizationId }),
+      children: [
+        {
+          find: (campaign) => {
+            const user = Meteor.users.findOne({ _id: this.userId })
+            return todosForUser(user, organizationId)
+          },
+          children: [
+            {
+              find: (assignment) => assignment.contacts(),
+            }
+          ]
+        }
+      ]
+    },
+    {
+      find: () => OptOuts.find( { organizationId })
     }
   ]
 })

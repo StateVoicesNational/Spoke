@@ -17,29 +17,20 @@ import { OptOutsPage } from '../../ui/pages/opt_outs_page'
 import { CampaignPage } from '../../ui/pages/campaign_page'
 import { CampaignNewPage } from '../../ui/pages/campaign_new_page'
 import { CampaignEditPage } from '../../ui/pages/campaign_edit_page'
+import { TodosPage } from '../../ui/pages/todos_page'
 import { App } from '../../ui/layouts/app'
-import { Main } from '../../ui/layouts/main'
+import { Public } from '../../ui/layouts/public'
 
 import injectTapEventPlugin from 'react-tap-event-plugin'
 // Needed for onTouchTap
 // http://stackoverflow.com/a/34015469/988941
 injectTapEventPlugin()
 
-// think believe
-
-// FlowRouter.route('/assignments', {
-//   name: 'texting',
-//   action: (params) => {
-//     mount(App, {
-//       content: () => <AssignmentContainer id={params.id} />
-//     })
-//   }
-// })
-
+/* PUBLIC ROUTES*/
 FlowRouter.route('/', {
   name: 'index',
   action: () => {
-    mount(App, {
+    mount(Public, {
       content: () => <HomePage />
     })
   }
@@ -48,22 +39,41 @@ FlowRouter.route('/', {
 FlowRouter.route('/login', {
   name: 'login',
   action: () => {
-    mount(App, {
+    mount(Public, {
       content: () => <LoginPage onSubmit={() => FlowRouter.go('/')}/>
     })
   }
 })
-/* TEXTERS */
-FlowRouter.route('/:organizationId/join', {
-  name: 'texterSignup',
-  action: (params) => {
-    mount(Main, {
-      content: () => <TexterSignupPage {...params} />
+
+FlowRouter.route('/signup', {
+  name: 'createTeam',
+  action: () => {
+    mount(Public, {
+      content: () => <SignupForm />
     })
   }
 })
 
-FlowRouter.route('/:organizationId/assignments', {
+FlowRouter.route('/:organizationId/join', {
+  name: 'texterSignup',
+  action: (params) => {
+    mount(Public, {
+      content: () => <TexterSignupPage {...params} />
+    })
+  }
+})
+/* END PUBLIC ROUTES */
+
+/* APP TEXTER ROUTES */
+const appSection = FlowRouter.group({
+    prefix: "/app"
+});
+
+const appOrganizationSection = appSection.group({
+  prefix: '/:organizationId'
+})
+
+appOrganizationSection.route('/assignments', {
   name: 'assignments',
   action: (params) => {
     mount(App, {
@@ -72,8 +82,16 @@ FlowRouter.route('/:organizationId/assignments', {
   }
 })
 
-FlowRouter.route('/:organizationId/assignments/:assignmentId', {
-  name: 'assignmentDetails',
+appOrganizationSection.route('/todos', {
+  name: 'todos',
+  action: (params) => {
+    mount(App, {
+      content: () => <TodosPage {...params} />
+    })
+  }
+})
+appOrganizationSection.route('/assignments/:assignmentId', {
+  name: 'assignment',
   action: (params) => {
     mount(App, {
       content: () => <AssignmentContainer {...params} />
@@ -81,7 +99,7 @@ FlowRouter.route('/:organizationId/assignments/:assignmentId', {
   }
 })
 
-FlowRouter.route('/:organizationId/messages', {
+appOrganizationSection.route('/messages', {
   name: 'messages',
   action: (params) => {
     mount(App, {
@@ -90,26 +108,17 @@ FlowRouter.route('/:organizationId/messages', {
   }
 })
 
-FlowRouter.route('/:organizationId/messages/:campaignContactId', {
-  name: 'messageThread',
+appOrganizationSection.route('/messages/:campaignContactId', {
+  name: 'message',
   action: (params) => {
     mount(App, {
       content: () => <MessagePage {...params} />
     })
   }
 })
+/* END APP TEXTER ROUTES */
 
-FlowRouter.route('/signup', {
-  name: 'organizerSignup',
-  action: () => {
-    mount(App, {
-      content: () => <SignupForm />
-    })
-  }
-})
-
-/* ORGANIZER ADMIN */
-
+/* END APP ADMIN ROUTES */
 const adminSection = FlowRouter.group({
     prefix: "/admin"
 });
@@ -149,7 +158,7 @@ adminOrganizationSection.route('/texters', {
 
 
 adminOrganizationSection.route('/campaigns', {
-  name: 'campaign.list',
+  name: 'campaigns',
   action: (params) => {
     mount(App, {
       content: () => <CampaignsContainer {...params} />,
@@ -196,5 +205,4 @@ adminOrganizationSection.route('/optouts', {
     })
   }
 })
-
-
+/* END APP ADMIN ROUTES */

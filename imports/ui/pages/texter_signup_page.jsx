@@ -6,12 +6,13 @@ import AppBar from 'material-ui/AppBar'
 import { Meteor } from 'meteor/meteor'
 import { Organizations } from '../../api/organizations/organizations.js'
 import { createContainer } from 'meteor/react-meteor-data'
-import { TexterSignup } from '../components/texter_signup'
+// import { TexterSignup } from '../components/texter_signup'
 import { AppPage } from '../layouts/app_page'
-import { Login} from '../components/login'
 import { Roles } from 'meteor/alanning:roles'
-
-
+import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
+import { TexterSignupForm } from '../components/texter_signup_form'
+import RaisedButton from 'material-ui/RaisedButton'
+import { addTexter } from '../../api/organizations/methods'
 
 class Page extends React.Component {
   componentWillReceiveProps({organization, user}) {
@@ -23,18 +24,54 @@ class Page extends React.Component {
     }
   }
 
+  handleExistingUserJoin() {
+    console.log("calling texter!?")
+    const { organization } = this.props
+    addTexter.call({ organizationId: organization._id }, (err) => {
+      if (err) {
+        alert(err)
+      } else {
+        FlowRouter.go(`/assignments`)
+        console.log("successfully joined!")
+      }
+    })
+  }
   render() {
     const { organization, organizations, loading, user } = this.props
-    return (
-      <div>
-          <Login user={user} organizations={organizations} />
-          <AppPage
-            navigation=''
-            content={
-              loading ? 'Loading' : <TexterSignup user={user} organization={organization} />
-            }
+    if (loading)
+      return null
+
+    if (!organization)
+      return (
+        <Card>
+          <CardHeader
+            title="Not found"
+            subtitle="Sorry, we can't seem to find what you're looking for."
           />
-      </div>
+        </Card>
+      )
+
+    return loading ? null : (
+      <Card>
+        <CardTitle
+          title={ user ? `Hi, ${user.firstName}.` : 'Welcome.'}
+          subtitle={`Start texting for ${organization.name}.`}
+        />
+        <CardText>
+          { user ? (
+              <Formsy.Form
+                onValidSubmit={this.handleExistingUserJoin.bind(this)}
+              >
+                <RaisedButton
+                  primary
+                  type="submit"
+                  label={`Join ${organization.name}`}
+                />
+              </Formsy.Form>
+          ) : <TexterSignupForm /> }
+        </CardText>
+      </Card>
+      // <TexterSignup user={user} organization={organization} />
     )
 
   }
@@ -43,7 +80,6 @@ class Page extends React.Component {
 export default createContainer(({ organizationId, organizations }) => {
   const handle = Meteor.subscribe('organization', organizationId)
   return {
-    organizations,
     organization: Organizations.findOne({ _id: organizationId }),
     user: Meteor.user(),
     loading: !handle.ready()

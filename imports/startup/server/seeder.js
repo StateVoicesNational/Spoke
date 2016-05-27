@@ -5,6 +5,7 @@ import { SurveyQuestions } from '../../api/survey_questions/survey_questions.js'
 import { SurveyAnswers } from '../../api/survey_answers/survey_answers.js'
 import { Messages } from '../../api/messages/messages.js'
 import { Organizations } from '../../api/organizations/organizations.js'
+import { OptOuts } from '../../api/opt_outs/opt_outs.js'
 
 import { Fake } from 'meteor/anti:fake'
 import { Meteor } from 'meteor/meteor'
@@ -20,6 +21,7 @@ const removeData = () => {
   SurveyQuestions.remove({})
   SurveyAnswers.remove({})
   Messages.remove({})
+  OptOuts.remove({})
   Meteor.users.remove({})
 }
 

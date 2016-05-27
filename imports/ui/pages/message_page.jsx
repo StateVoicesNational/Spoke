@@ -1,6 +1,6 @@
 import React from 'react'
 import { createContainer } from 'meteor/react-meteor-data'
-import { BackNavigation } from '../../ui/components/navigation'
+import { AppNavigation } from '../../ui/components/navigation'
 import { AppPage } from '../../ui/layouts/app_page'
 import { CampaignContacts } from '../../api/campaign_contacts/campaign_contacts'
 import { OptOuts } from '../../api/opt_outs/opt_outs'
@@ -12,7 +12,7 @@ import { ContactToolbar } from '../../ui/components/contact_toolbar'
 const Page = ({ loading, messages, campaignContact, organizationId }) => (
   <AppPage
     navigation={loading ? '' :
-      <BackNavigation
+      <AppNavigation
         organizationId={organizationId}
         title={displayName(campaignContact)}
         backToSection='messages'

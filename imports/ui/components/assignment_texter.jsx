@@ -180,11 +180,26 @@ export class AssignmentTexter extends Component {
     this.handleScriptChange(script)
   }
 
+  renderSurveys(campaign) {
+    return (this.currentContact().messages().fetch().length === 0 ) ? <div/> : (
+      <div>
+        <Divider />
+        {campaign.surveys().map((survey) => (
+          <QuestionDropdown
+            answer={contact.surveyAnswer(survey._id)}
+            onSurveyChange={this.handleSurveyChange.bind(this)}
+            survey={survey}
+          />
+        ))}
+        <Divider />
+      </div>
+    )
+  }
   render() {
     const { assignment, contacts, onStopTexting } = this.props
     const contact = this.currentContact()
     if (!contact) {
-      return ''
+      return null
     }
 
     const campaign = assignment.campaign()
@@ -215,20 +230,7 @@ export class AssignmentTexter extends Component {
       </IconButton>
     ]
 
-    console.log("CAMPAIGN SURVEYS", campaign.surveys().fetch())
-    const secondaryToolbar = (
-      <div>
-        <Divider />
-        {campaign.surveys().map((survey) => (
-          <QuestionDropdown
-            answer={contact.surveyAnswer(survey._id)}
-            onSurveyChange={this.handleSurveyChange.bind(this)}
-            survey={survey}
-          />
-        ))}
-        <Divider />
-      </div>
-    )
+    const secondaryToolbar = this.renderSurveys(campaign)
 
     return (
       <div style={{height: '100%'}}>

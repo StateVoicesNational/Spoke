@@ -96,10 +96,7 @@ export class MessageForm extends Component {
     return (
       <div>
         { messages.length === 0 ? (
-            <Empty
-              title="No conversation yet"
-              icon={<SmsIcon />}
-            />
+            <div/>
         ) : <MessagesList messages={messages} /> }
         { optOut ? (
           <div style={styles.optOutMessage}>

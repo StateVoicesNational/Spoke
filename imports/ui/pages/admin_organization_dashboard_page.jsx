@@ -9,7 +9,6 @@ import { Organizations } from '../../api/organizations/organizations'
 import { FlowRouter } from 'meteor/kadira:flow-router'
 import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
 import FlatButton from 'material-ui/FlatButton'
-
 class Page extends React.Component {
   componentWillReceiveProps({ organizationId, organizations, loading }) {
     // redirect / to a list once lists are ready
@@ -40,9 +39,8 @@ class Page extends React.Component {
     )
   }
 }
-export const AdminDashboardPage = createContainer(({ organizationId, organizations, loading }) => {
+export const AdminOrganizationDashboardPage = createContainer(({ organizationId, organizations, loading }) => {
   const handle = Meteor.subscribe('campaigns', organizationId)
-  console.log("subscribing with rogs", organizations)
   return {
     organizationId,
     organizations,

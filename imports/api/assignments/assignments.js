@@ -3,6 +3,7 @@ import { Factory } from 'meteor/dburles:factory'
 import { SimpleSchema } from 'meteor/aldeed:simple-schema'
 import { CampaignContacts } from '../campaign_contacts/campaign_contacts.js'
 import { Campaigns } from '../campaigns/campaigns'
+import { OptOuts } from '../opt_outs/opt_outs'
 export const Assignments = new Mongo.Collection('assignments')
 
 // Deny all client-side updates since we will be using methods to manage this collection
@@ -24,7 +25,6 @@ Factory.define('assignment', Assignments, {
   userId: 'abcd', // fixme
   campaignId: () => Factory.get('campaign'),
   createdAt: () => new Date()
-  // TODO: Campaign cached here isn't the same as campaignId created above
 })
 
 // This represents the keys from Assignments objects that should be published
@@ -35,7 +35,6 @@ Assignments.publicFields = {
 
 Assignments.helpers({
   contacts() {
-    console.log("looking for ",this._id, CampaignContacts.find({ assignmentId: this._id }), CampaignContacts.find({ assignmentId: this._id }).fetch() )
     return CampaignContacts.find({ assignmentId: this._id })
   },
   campaign() {

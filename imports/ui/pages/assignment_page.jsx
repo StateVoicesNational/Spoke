@@ -1,6 +1,6 @@
 import React from 'react'
 import { AssignmentSummary } from '../components/assignment_summary'
-import { BackNavigation } from '../../ui/components/navigation'
+import { AppNavigation } from '../../ui/components/navigation'
 import { AppPage } from '../../ui/layouts/app_page'
 import { AssignmentTexter } from '../../ui/components/assignment_texter'
 
@@ -8,7 +8,7 @@ export class AssignmentPage extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      currentTextingContacts: []
+      currentTextingContacts: [],
     }
   }
 
@@ -37,7 +37,7 @@ export class AssignmentPage extends React.Component {
     const { assignment, organizationId } = this.props
 
     return (
-      <BackNavigation
+      <AppNavigation
         organizationId={organizationId}
         title={assignment.campaign().title}
         backToSection="assignments"
@@ -71,7 +71,6 @@ export class AssignmentPage extends React.Component {
   }
   render() {
     const { currentTextingContacts } = this.state
-    console.log("currentTextingContacts", currentTextingContacts)
     return currentTextingContacts.length > 0 ? this.texterPage() : this.summaryPage()
   }
 }
