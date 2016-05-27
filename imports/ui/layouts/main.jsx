@@ -7,17 +7,18 @@ import getMuiTheme from 'material-ui/styles/getMuiTheme'
 
 const muiTheme = getMuiTheme()
 
-export const App = createContainer(() => {
+export const Main = createContainer(() => {
+  const user = Meteor.user()
   const handle = Meteor.subscribe('organizations')
+  const organizations = Organizations.find({}).fetch()
 
   return {
-    user: Meteor.user(),
-    organizations: Organizations.find({}).fetch(),
+    user,
+    organizations,
     loading: !handle.ready()
   }
 }, (props) => {
   const { user, organizations, loading } = props
-    // <LoginPage user={user} organizations={organizations} />
 
     // you suggest (I will also have the props, passed from the router)
     const content = React.cloneElement(props.content(), {
@@ -30,7 +31,7 @@ export const App = createContainer(() => {
     <div>
       <MuiThemeProvider muiTheme={muiTheme}>
         <div>
-          { user ? content : <LoginPage user={user} organizations={organizations}  />}
+          { content }
         </div>
       </MuiThemeProvider>
     </div>

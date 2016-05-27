@@ -3,7 +3,6 @@ import React from 'react'
 import { mount } from 'react-mounter'
 import AssignmentContainer from '../../ui/containers/assignment_container'
 import CampaignsContainer from '../../ui/containers/campaigns_container'
-import CampaignEditContainer from '../../ui/containers/campaign_edit_container'
 import AssignmentsContainer from '../../ui/containers/assignments_container'
 import { SignupForm } from '../../ui/components/signup_form'
 import TexterSignupPage from '../../ui/pages/texter_signup_page'
@@ -16,7 +15,10 @@ import { HomePage } from '../../ui/pages/home_page'
 import { LoginPage } from '../../ui/pages/login_page'
 import { OptOutsPage } from '../../ui/pages/opt_outs_page'
 import { CampaignPage } from '../../ui/pages/campaign_page'
+import { CampaignNewPage } from '../../ui/pages/campaign_new_page'
+import { CampaignEditPage } from '../../ui/pages/campaign_edit_page'
 import { App } from '../../ui/layouts/app'
+import { Main } from '../../ui/layouts/main'
 
 import injectTapEventPlugin from 'react-tap-event-plugin'
 // Needed for onTouchTap
@@ -55,7 +57,7 @@ FlowRouter.route('/login', {
 FlowRouter.route('/:organizationId/join', {
   name: 'texterSignup',
   action: (params) => {
-    mount(App, {
+    mount(Main, {
       content: () => <TexterSignupPage {...params} />
     })
   }
@@ -126,7 +128,7 @@ adminSection.route('/', {
 })
 
 adminOrganizationSection.route('/', {
-  name: 'organizationDashboard',
+  name: 'adminDashboard',
   action: (params) => {
     mount(App, {
       content: () => <AdminDashboardPage {...params} />
@@ -147,7 +149,7 @@ adminOrganizationSection.route('/texters', {
 
 
 adminOrganizationSection.route('/campaigns', {
-  name: 'campaigns',
+  name: 'campaign.list',
   action: (params) => {
     mount(App, {
       content: () => <CampaignsContainer {...params} />,
@@ -156,11 +158,21 @@ adminOrganizationSection.route('/campaigns', {
   }
 })
 
-adminOrganizationSection.route('/campaigns/new', {
-  name: 'newCampaign',
+adminOrganizationSection.route('/campaigns/:campaignId/edit', {
+  name: 'campaign.edit',
   action: (params) => {
     mount(App, {
-      content: () => <CampaignEditContainer {...params} />,
+      content: () => <CampaignEditPage {...params} />,
+      navigation: () => <AdminNavigation {...params} />
+    })
+  }
+})
+
+adminOrganizationSection.route('/campaigns/new', {
+  name: 'campaign.new',
+  action: (params) => {
+    mount(App, {
+      content: () => <CampaignNewPage {...params} />,
       navigation: () => <AdminNavigation {...params} />
     })
   }
@@ -176,7 +188,7 @@ adminOrganizationSection.route('/campaigns/:campaignId', {
 })
 
 adminOrganizationSection.route('/optouts', {
-  name: 'optouts',
+  name: 'optout.list',
   action: (params) => {
     mount(App, {
       content: () => <OptOutsPage { ...params} />,

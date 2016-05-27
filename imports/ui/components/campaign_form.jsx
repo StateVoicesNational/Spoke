@@ -26,6 +26,7 @@ const styles = {
 export class CampaignForm extends Component {
   constructor(props) {
     super(props)
+
     this.handleSubmit = this.handleSubmit.bind(this)
     this.onScriptChange = this.onScriptChange.bind(this)
     this.onScriptDelete = this.onScriptDelete.bind(this)
@@ -37,15 +38,18 @@ export class CampaignForm extends Component {
     this.handleNext = this.handleNext.bind(this)
     this.handlePrev = this.handlePrev.bind(this)
 
-    const script = {
-      script: 'Hi, {firstName}. Here is a default script initial message to the supporter',
-      isFaqReply: false,
-      initial: true
-    }
+    this.setupState()
+  }
+
+
+  setupState() {
+    const { campaign } = this.props
+
     this.state = {
       stepIndex: 0,
       nextStepEnabled: true,
-      uploading: false,
+      title: campaign ? campaign.title : '',
+      description: campaign ? campaign.description : '',
       contacts: [],
       customFields: [],
       script: null,

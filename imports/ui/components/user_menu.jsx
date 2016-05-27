@@ -65,6 +65,7 @@ export class UserMenu extends Component {
   };
 
   handleMenuChange(event, value) {
+    console.log("value", value)
     if (value === 'logout') {
       Meteor.logout()
     }

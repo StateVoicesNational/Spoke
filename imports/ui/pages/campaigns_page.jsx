@@ -28,7 +28,7 @@ export class CampaignsPage extends Component {
 
   handleClickNewButton() {
     const { organizationId } = this.props
-    FlowRouter.go(`/${organizationId}/campaigns/new`)
+    FlowRouter.go('campaign.new', { organizationId })
   }
 
   render() {

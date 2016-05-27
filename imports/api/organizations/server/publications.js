@@ -10,5 +10,6 @@ Meteor.publish('organization', (organizationId) => {
 
 Meteor.publish('organizations', function () {
   const ids = Roles.getGroupsForUser(this.userId)
+  console.log("ids for user", ids)
   return Organizations.find({ _id: { $in: ids} })
 })

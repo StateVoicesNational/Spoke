@@ -47,15 +47,20 @@ export class LoginForm extends React.Component {
     });
   }
 
-  submitForm(data) {
+  submitForm(data, resetForm, invalidateForm) {
     const { email, password } = data
     const { onSubmit } = this.props
 
     Meteor.loginWithPassword(email, password, (loginError) => {
-      if (!loginError) {
+      if (loginError) {
+        const key = loginError.reason === 'User not found' ? 'email' : 'password'
+        invalidateForm({ [key]: loginError.reason })
+      }
+      else {
         if (onSubmit) {
           onSubmit()
         }
+
       }
     });
   }

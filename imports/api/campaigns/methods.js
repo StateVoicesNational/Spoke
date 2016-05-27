@@ -95,7 +95,8 @@ export const insert = new ValidatedMethod({
     // TODO do this only if the contacts validate!
     Campaigns.insert(campaignData, (campaignError, campaignId) => {
       if (campaignError) {
-        console.log("there was an error creating campaign")
+        throw new Meteor.Error(campaignError)
+        console.log("there was an error creating campaign", campaignError)
       }
       else {
         for (let survey of surveys) {

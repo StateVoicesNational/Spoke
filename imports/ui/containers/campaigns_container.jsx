@@ -5,7 +5,7 @@ import { CampaignsPage } from '../pages/campaigns_page'
 
 
 export default createContainer(({organizationId}) => {
-  const handle = Meteor.subscribe('campaigns', organizationId)
+  const handle = Meteor.subscribe('campaign.list', organizationId)
 
   let today = new Date()
   // UTC
@@ -14,7 +14,6 @@ export default createContainer(({organizationId}) => {
   const ongoingCampaigns = Campaigns.find({ dueBy: { $gte: today } }).fetch()
   const pastCampaigns = Campaigns.find({ dueBy: { $lt: today } }).fetch()
 
-  console.log(Campaigns.find({}).fetch())
   return {
     organizationId,
     pastCampaigns,

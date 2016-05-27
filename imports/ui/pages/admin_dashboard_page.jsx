@@ -9,11 +9,13 @@ import { Organizations } from '../../api/organizations/organizations'
 import { FlowRouter } from 'meteor/kadira:flow-router'
 import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
 import FlatButton from 'material-ui/FlatButton'
+
 class Page extends React.Component {
   componentWillReceiveProps({ organizationId, organizations, loading }) {
     // redirect / to a list once lists are ready
+    console.log("organizationId", organizationId, Meteor.user())
     if (!organizationId && !loading) {
-      console.log("organizations", organizations)
+      console.log("organizations", organizations, organizationId)
       const organization = organizations[0]
       FlowRouter.go(`/admin/${organization._id}`)
     }
@@ -31,22 +33,22 @@ class Page extends React.Component {
           organizationId={organizationId}
         />}
         content={
-          <Dashboard stats={stats} />
-
+          loading ? <Dashboard stats={stats} /> : ''
         }
         loading={loading}
       />
     )
   }
 }
-export const AdminDashboardPage = createContainer(({ organizationId, organizations }) => {
-  const handle = Meteor.subscribe('campaigns', organizationId)
+export const AdminDashboardPage = createContainer(({ organizationId, organizations, loading }) => {
+  const handle = Meteor.subscribe('campaign.list', organizationId)
+  console.log("subscribing with rogs", organizations)
   return {
-    organizations,
     organizationId,
+    organizations,
     // TODO: Route to an organization ID better
     campaigns: Campaigns.find().fetch(),
-    loading: !handle.ready()
+    loading: !handle.ready() && loading // global layouts loading
   }
 }, Page)
 

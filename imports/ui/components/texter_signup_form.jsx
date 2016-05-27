@@ -12,7 +12,6 @@ const errorMessages = {
 
 const styles = {
   paperStyle: {
-    width: 300,
     margin: 'auto',
     padding: 20
   },
@@ -82,28 +81,33 @@ export class TexterSignupForm extends React.Component {
       >
         <FormsyText
           name="firstName"
+          fullWidth
           required
           floatingLabelText="First name"
         />
         <FormsyText
           name="lastName"
+          fullWidth
           required
           floatingLabelText="Last name"
         />
         <FormsyText
           name="email"
+          fullWidth
           validations="isEmail"
           validationError={emailError}
           required
           floatingLabelText="Your email"
         />
         <FormsyText
+          fullWidth
           name="password"
           type="password"
           required
           floatingLabelText="Password"
         />
         <RaisedButton
+          fullWidth
           style={submitStyle}
           type="submit"
           label="Join organization"

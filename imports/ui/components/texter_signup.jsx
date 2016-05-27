@@ -13,9 +13,9 @@ const errorMessages = {
 
 const styles = {
   paperStyle: {
-    width: 300,
+    width: 400,
     margin: 'auto',
-    padding: 20
+    padding: 24
   },
   switchStyle: {
     marginBottom: 16
@@ -43,20 +43,15 @@ export class TexterSignup extends React.Component {
     const { user, organization } = this.props
     console.log('user')
     return (
-      <div>
-        Hi, {user.firstName}. We're excited to have you on board.
         <Formsy.Form
           onValidSubmit={this.handleExistingUserJoin.bind(this)}
         >
-        aoesnuhtaosneuhtaoesnuth
           <RaisedButton
             primary
             type="submit"
             label={`Join ${organization.name}`}
           />
-
         </Formsy.Form>
-      </div>
     )
   }
 
@@ -68,9 +63,12 @@ export class TexterSignup extends React.Component {
     return (
       <Paper style={paperStyle}>
         <div>
-          You're signing up to text for {organization.name}.
+          <h1>{ user ? `Hi, ${user.firstName}.` : 'Welcome.'}</h1>
+          <p>
+            You're signing up to send texts for {organization.name}. Welcome aboard!
+          </p>
+          { user ? this.renderExistingUser() : <TexterSignupForm /> }
         </div>
-        { user ? this.renderExistingUser() : <TexterSignupForm /> }
       </Paper>
     )
   }

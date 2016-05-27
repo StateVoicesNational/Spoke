@@ -13,7 +13,14 @@ import { organizationsForUser } from '../../api/users/users'
 import IconButton from 'material-ui/IconButton'
 const sectionUrl = (organizationId, section) => `/admin/${organizationId}/${section}`
 
-
+const styles = {
+  appbar: {
+    zIndex: 10000
+  },
+  drawer: {
+    top: '56px'
+  }
+}
 export class Navigation extends Component {
   constructor(props) {
     super(props)
@@ -22,7 +29,7 @@ export class Navigation extends Component {
     this.handleOpenDrawer = this.handleOpenDrawer.bind(this)
 
     this.state = {
-      open: false
+      open: true
     }
   }
 
@@ -46,18 +53,13 @@ export class Navigation extends Component {
 
     return (
       <div>
-        <AppBar
-          onLeftIconButtonTouchTap={ this.handleOpenDrawer }
-          title={title}
-          iconElementRight={<UserMenu user={Meteor.user()} organizations={organizationsForUser(Meteor.user())} />}
-        />
-        <Drawer open={open}
-          docked={false}
+        <Drawer
+          open={open}
+          containerStyle={styles.drawer}
+          docked={true}
           onRequestChange={(open) => this.setState({ open })}
         >
           <List>
-            <Subheader>Setup</Subheader>
-
             { sections.map((section) => (
               <ListItem
                 key={section}
@@ -67,6 +69,12 @@ export class Navigation extends Component {
             ))}
           </List>
         </Drawer>
+        <AppBar
+          style={styles.appbar}
+          onLeftIconButtonTouchTap={ this.handleOpenDrawer }
+          title={title}
+          iconElementRight={<UserMenu user={Meteor.user()} organizations={organizationsForUser(Meteor.user())} />}
+        />
       </div>
     )
   }
