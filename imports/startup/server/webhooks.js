@@ -2,7 +2,7 @@ import { Picker } from 'meteor/meteorhacks:picker'
 import bodyParser from 'body-parser'
 import { insertMessage } from '../../api/messages/methods'
 import { Messages } from '../../api/messages/messages'
-import { e164 } from 'libphonenumber'
+// import { e164 } from 'libphonenumber'
 Picker.middleware( bodyParser.urlencoded( { extended: false } ) );
 
 console.log(bodyParser)

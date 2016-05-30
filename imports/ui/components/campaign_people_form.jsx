@@ -8,6 +8,8 @@ import { parseCSV } from '../../api/campaign_contacts/parse_csv'
 import Formsy from 'formsy-react'
 import { FormsyText } from 'formsy-material-ui/lib'
 import { Chip } from './chip'
+import {Card, CardActions, CardHeader, CardText} from 'material-ui/Card';
+import {Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn} from 'material-ui/Table';
 
 const styles = {
   button: {
@@ -156,7 +158,7 @@ export class CampaignPeopleForm extends Component {
   }
 
   renderUploadSection() {
-    const { contacts, validationStats } = this.props
+    const { contacts, validationStats, customFields } = this.props
     return (
       <div>
         <RaisedButton
@@ -175,11 +177,37 @@ export class CampaignPeopleForm extends Component {
           name="contacts"
           value={this.getUploadInputValue(contacts)}
         />
-        <div>
-          { validationStats ? `${validationStats.dupeCount} duplicate rows removed` : ''}
-          { validationStats ? `${validationStats.missingCellCount} missing/invalid cell rows removed` : ''}
-        </div>
+        { this.renderImportValidation()}
       </div>
+    )
+  }
+
+  renderImportValidation() {
+    const { contacts, customFields, validationStats } = this.props
+    return (
+      <Card>
+        <CardHeader
+          title={`${contacts.length} contacts; ${customFields.length} custom fields`}
+          subtitle="Subtitle"
+          actAsExpander={true}
+          showExpandableButton={true}
+        />
+        <CardText expandable={true}>
+          <div>
+            Custom fields:
+            { customFields.map((field) => (
+              <Chip
+                text={field}
+              />
+            ))}
+            <div>
+              { validationStats ? `${validationStats.dupeCount} duplicate rows removed` : ''}
+              { validationStats ? `${validationStats.missingCellCount} missing/invalid cell rows removed` : ''}
+            </div>
+          </div>
+        </CardText>
+      </Card>
+
     )
   }
   render() {

@@ -24,14 +24,34 @@ export const parseCSV  = (file, callback) => {
         callback({ error })
       }
       else {
+        let validatedData = []
         // DEDUPE
         const validationStats = {}
         const count = data.length
-        let validatedData = uniqBy(data, (row) => row.cell )
+
+        const badCells = []
+
+        const { NumberParseException, PhoneNumberUtil, PhoneNumberFormat } = require('google-libphonenumber')
+
+        const phoneUtil = PhoneNumberUtil.getInstance();
+
+        _.each(data, (contact) => {
+          try {
+            const inputNumber = phoneUtil.parse(contact.cell, "US");
+            const formattedCell = phoneUtil.format(inputNumber, PhoneNumberFormat.E164);
+            console.log(formattedCell)
+            validatedData.push(_.extend(contact, { formattedCell }))
+          } catch (e) {
+            badCells.push(contact)
+          }
+        })
+
+        validationStats.invalidCellCount = badCells.length
+        validatedData = uniqBy(validatedData, (row) => row.formattedCell )
         validationStats.dupeCount = count - validatedData.length
 
         validatedData = _.filter(validatedData, (row) => !!row.cell)
-        validationStats.missingCellCount = validationStats.dupeCount - validatedData.length
+        validationStats.missingCellCount = count - validationStats.dupeCount - validatedData.length
 
         console.log("validated data", validatedData)
         const customFields = fields.filter((field) => CampaignContacts.requiredUploadFields.indexOf(field) === -1)

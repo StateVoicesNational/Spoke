@@ -44,8 +44,11 @@ const createAssignment = (campaignId, userId, texterContacts) => {
         contact.assignmentId = assignmentId
         contact.campaignId = campaignId
         contact.createdAt = new Date()
-        return contact
+        console.log("contact", contact)
       })
+
+
+      console.log("smee", data)
 
       // FIXME - need to convert to e164 here
       // const { e164} = require('libphonenumber')

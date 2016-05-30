@@ -343,7 +343,7 @@ export class CampaignForm extends Component {
   }
 
   renderScriptSection() {
-    const { contacts, validationStats, script, faqScripts } = this.state
+    const { contacts, validationStats, script, faqScripts, customFields} = this.state
     return (
       <CampaignScriptsForm
         script={script}
