@@ -1,4 +1,6 @@
 import { CampaignContacts } from './campaign_contacts.js'
+import { uniqBy } from 'lodash'
+
 export const parseCSV  = (file, callback) => {
   Papa.parse(file, {
     header: true,
@@ -22,10 +24,21 @@ export const parseCSV  = (file, callback) => {
         callback({ error })
       }
       else {
+        // DEDUPE
+        const validationStats = {}
+        const count = data.length
+        let validatedData = uniqBy(data, (row) => row.cell )
+        validationStats.dupeCount = count - validatedData.length
+
+        validatedData = _.filter(validatedData, (row) => !!row.cell)
+        validationStats.missingCellCount = validationStats.dupeCount - validatedData.length
+
+        console.log("validated data", validatedData)
         const customFields = fields.filter((field) => CampaignContacts.requiredUploadFields.indexOf(field) === -1)
         callback({
           customFields,
-          contacts: data
+          validationStats,
+          contacts: validatedData,
         })
       }
     }

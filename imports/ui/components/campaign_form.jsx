@@ -221,11 +221,12 @@ export class CampaignForm extends Component {
       nextStepEnabled: false
     })
   }
-  onContactsUpload(contacts, customFields) {
+  onContactsUpload(contacts, customFields, validationStats) {
     console.log("contacts upload!")
     this.setState({
       contacts,
-      customFields
+      customFields,
+      validationStats
     })
   }
 
@@ -313,7 +314,7 @@ export class CampaignForm extends Component {
   }
 
   renderPeopleSection() {
-    const { assignedTexters, contacts, title, description } = this.state
+    const { assignedTexters, contacts, customFields, validationStats, title, description } = this.state
     const { texters } = this.props
 
     return (
@@ -321,6 +322,8 @@ export class CampaignForm extends Component {
         <CampaignPeopleForm
           texters={texters}
           contacts={contacts}
+          customFields={customFields}
+          validationStats={validationStats}
           title={title}
           description={description}
           onDescriptionChange={this.onDescriptionChange}
@@ -340,7 +343,7 @@ export class CampaignForm extends Component {
   }
 
   renderScriptSection() {
-    const { contacts, customFields, script, faqScripts } = this.state
+    const { contacts, validationStats, script, faqScripts } = this.state
     return (
       <CampaignScriptsForm
         script={script}

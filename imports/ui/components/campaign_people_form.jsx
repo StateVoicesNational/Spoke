@@ -47,7 +47,7 @@ export class CampaignPeopleForm extends Component {
   handleUpload(event) {
     event.preventDefault()
     // TODO: Handle error!
-    parseCSV(event.target.files[0], ({ contacts, customFields, error}) => {
+    parseCSV(event.target.files[0], ({ contacts, customFields, validationStats, error}) => {
       let newContactsValue = ''
       let contactError = null
 
@@ -75,7 +75,7 @@ export class CampaignPeopleForm extends Component {
 
           if (!contactError) {
             const { onContactsUpload } = this.props
-            onContactsUpload(contacts, customFields)
+            onContactsUpload(contacts, customFields, validationStats)
           }
 
       })
@@ -156,7 +156,7 @@ export class CampaignPeopleForm extends Component {
   }
 
   renderUploadSection() {
-    const { contacts } = this.props
+    const { contacts, validationStats } = this.props
     return (
       <div>
         <RaisedButton
@@ -175,6 +175,10 @@ export class CampaignPeopleForm extends Component {
           name="contacts"
           value={this.getUploadInputValue(contacts)}
         />
+        <div>
+          { validationStats ? `${validationStats.dupeCount} duplicate rows removed` : ''}
+          { validationStats ? `${validationStats.missingCellCount} missing/invalid cell rows removed` : ''}
+        </div>
       </div>
     )
   }

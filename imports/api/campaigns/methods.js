@@ -143,7 +143,6 @@ export const exportContacts = new ValidatedMethod({
   }).validator(),
   run({ campaignId }) {
 
-    console.log("trying to find campaign Id", campaignId)
     // TODO:
     if (Meteor.isServer) {
         const campaign = Campaigns.findOne( { _id: campaignId })
