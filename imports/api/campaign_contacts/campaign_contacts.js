@@ -71,6 +71,7 @@ CampaignContacts.helpers({
     return OptOuts.findOne({ organizationId: campaign.organizationId, cell: this.cell})
   },
   lastMessage() {
+    console.log(this.cell, this.campaignId, Messages.find({}).fetch())
     return Messages.findOne({ contactNumber: this.cell, campaignId: this.campaignId }, { sort: { createdAt: -1 }})
   },
   surveyAnswer(surveyQuestionId) {

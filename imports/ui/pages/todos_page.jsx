@@ -4,6 +4,7 @@ import { List, ListItem } from 'material-ui/List'
 import { Roles } from 'meteor/alanning:roles'
 import { createContainer } from 'meteor/react-meteor-data'
 import { displayName, todosForUser } from '../../api/users/users'
+import { Messages } from '../../api/messages/messages'
 import TextField from 'material-ui/TextField'
 import { AppNavigation } from '../../ui/components/navigation'
 import { AppPage } from '../../ui/layouts/app_page'
@@ -96,6 +97,7 @@ class _TodosPage extends React.Component {
 export const TodosPage = createContainer(({ organizationId }) => {
   const handle = Meteor.subscribe('assignments.todo', organizationId)
 
+  Messages.find({}).fetch() // FIXME should not just blindly fetch here
   console.log(todosForUser(Meteor.user(), organizationId).fetch())
   return {
     organizationId,

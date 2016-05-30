@@ -38,6 +38,7 @@ export class AssignmentSummary extends Component {
   render() {
     const { assignment, contacts } = this.props
     const { title, description } = assignment.campaign()
+
     const unmessagedContacts = contacts.filter((contact) => !contact.lastMessage())
     const unrespondedContacts = contacts.filter((contact) => {
       const lastMessage = contact.lastMessage()

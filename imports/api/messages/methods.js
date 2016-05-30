@@ -74,13 +74,13 @@ export const insertMessage = new ValidatedMethod({
     Messages.insert(message)
 
     // TODO: Cache -- is this ok?
-    const contact = CampaignContacts.findOne({ campaignId, cell: contactNumber })
+    // const contact = CampaignContacts.findOne({ campaignId, cell: contactNumber })
 
-    const lastMessage = {
-      createdAt,
-      isFromContact
-    }
-    CampaignContacts.update( { _id: contact._id }, { $set: { lastMessage }})
+    // const lastMessage = {
+    //   createdAt,
+    //   isFromContact
+    // }
+    // CampaignContacts.update( { _id: contact._id }, { $set: { lastMessage }})
   }
 })
 

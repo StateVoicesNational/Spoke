@@ -15,7 +15,6 @@ import { todosForUser } from '../../users/users'
 // FIXME publishing too much data to the client
 Meteor.publishComposite('assignments', {
   find: function() {
-    console.log('this.userId', this.userId)
     return Assignments.find({
     userId: this.userId
   })},
@@ -32,6 +31,9 @@ Meteor.publishComposite('assignments.todo', function(organizationId) {
     {
       find: () => Campaigns.find({ organizationId }),
       children: [
+        {
+          find: (campaign) => Messages.find({ campaignId: campaign._id })
+        },
         {
           find: (campaign) => {
             const user = Meteor.users.findOne({ _id: this.userId })

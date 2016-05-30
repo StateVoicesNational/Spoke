@@ -137,7 +137,7 @@ adminSection.route('/', {
 })
 
 adminOrganizationSection.route('/', {
-  name: 'adminDashboard',
+  name: 'adminOrganizationDashboard',
   action: (params) => {
     mount(App, {
       content: () => <AdminDashboardPage {...params} />

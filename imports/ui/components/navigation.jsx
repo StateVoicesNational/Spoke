@@ -42,7 +42,7 @@ export class Navigation extends Component {
   }
 
   render() {
-    const { organizationId, title, sections, user, organizations, backToSection} = this.props
+    const { organizationId, title, sections, user, organizations, backToSection, switchListItem} = this.props
     const { open } = this.state
 
     // const iconElementRight = (
@@ -69,13 +69,8 @@ export class Navigation extends Component {
               />
             ))}
             <Divider />
-            <ListItem
-              key='switch'
-              primaryText='Go to texter'
-              onTouchTap={() => FlowRouter.go('/text')}
-            />
+            {switchListItem}
           </List>
-
         </Drawer>
         <AppBar
           style={styles.appbar}
@@ -99,6 +94,12 @@ export const AdminNavigation = ({ backToSection, organizationId, title }) => (
     organizationId={organizationId}
     backToSection={backToSection}
     sections={['campaigns', 'texters', 'optouts']}
+    switchListItem={
+      <ListItem
+        primaryText='Switch to texter'
+        onTouchTap={() => FlowRouter.go('todos', { organizationId })}
+      />
+    }
   />
 )
 
@@ -108,5 +109,11 @@ export const AppNavigation = ({ backToSection, organizationId, title }) => (
     title={title}
     backToSection={backToSection}
     sections={['todos', 'assignments', 'messages']}
+    switchListItem={
+      <ListItem
+        primaryText='Switch to admin'
+        onTouchTap={() => FlowRouter.go('adminOrganizationDashboard', { organizationId })}
+      />
+    }
   />
 )
