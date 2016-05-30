@@ -17,11 +17,6 @@ CampaignContacts.deny({
   remove() { return true }
 })
 
-const LastMessageSchema = new SimpleSchema({
-  createdAt: { type: Date },
-  isFromContact: { type: Boolean }
-})
-
 CampaignContacts.schema = new SimpleSchema({
   // userId: { type: String, regEx: SimpleSchema.RegEx.Id, optional: true },
   campaignId: { type: String },
@@ -36,10 +31,6 @@ CampaignContacts.schema = new SimpleSchema({
   }, // so we can tell easily what is unassigned
   campaignSurveyId: {
     type: String,
-    optional: true
-  },
-  lastMessage: {
-    type: LastMessageSchema,
     optional: true
   }
 })
@@ -79,7 +70,15 @@ CampaignContacts.helpers({
     const campaign = Campaigns.findOne({_id: this.campaignId})
     return OptOuts.findOne({ organizationId: campaign.organizationId, cell: this.cell})
   },
+  lastMessage() {
+    return Messages.findOne({ contactNumber: this.cell, campaignId: this.campaignId }, { sort: { createdAt: -1 }})
+  },
   surveyAnswer(surveyQuestionId) {
+    console.log("survey question id ", surveyQuestionId, "and campaignContactId", this._id, SurveyAnswers.findOne({
+      surveyQuestionId,
+      campaignContactId: this._id
+    }))
+
     return SurveyAnswers.findOne({
       surveyQuestionId,
       campaignContactId: this._id

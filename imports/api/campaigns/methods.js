@@ -8,7 +8,7 @@ import { SurveyQuestions } from '../survey_questions/survey_questions.js'
 import { CampaignContacts } from '../campaign_contacts/campaign_contacts.js'
 import { Assignments } from '../assignments/assignments.js'
 import { convertRowToContact } from '../campaign_contacts/parse_csv'
-
+import { batchInsert } from 'meteor/mikowals:batch-insert'
 import { chunk, last, forEach, zip } from 'lodash'
 
 const divideContacts = (contactRows, texters) => {
@@ -38,21 +38,44 @@ const createAssignment = (campaignId, userId, texterContacts) => {
       throw Meteor.error()
     }
     else {
-      for (let row of texterContacts) {
-        // TODO: Require upload in this format.
-
+      // TODO can still batch insert
+      const data = texterContacts.map((row) => {
         const contact = convertRowToContact(row)
         contact.assignmentId = assignmentId
         contact.campaignId = campaignId
+        contact.createdAt = new Date()
+        return contact
+      })
 
-        // TODO BBulk insert instead of individual!
-        insertContact.call(contact, (contactError) => {
-          if (contactError) {
-          }
-          else {
-          }
-        })
-      }
+      // FIXME - need to convert to e164 here
+      // const { e164} = require('libphonenumber')
+      // e164(contact.cell, 'US', (error, result) => {
+      //   if (error) {
+      //   }
+      //   else {
+      //     contact.cell = result
+      //     CampaignContacts.insert(contact)
+      //   }
+      // })
+      // validate schema
+      var moreIds = CampaignContacts.batchInsert(data)
+
+
+      // for (let row of texterContacts) {
+      //   // TODO: Require upload in this format.
+
+      //   const contact = convertRowToContact(row)
+      //   contact.assignmentId = assignmentId
+      //   contact.campaignId = campaignId
+
+      //   // TODO BBulk insert instead of individual!
+      //   insertContact.call(contact, (contactError) => {
+      //     if (contactError) {
+      //     }
+      //     else {
+      //     }
+      //   })
+      // }
     }
   })
 }
@@ -109,4 +132,52 @@ export const insert = new ValidatedMethod({
 
     })
   }
+})
+
+// TODO I should actually do the campaignContact validation here so I don't have
+// a chance of failing between campaign save and contact save
+export const exportContacts = new ValidatedMethod({
+  name: 'campaign.export',
+  validate: new SimpleSchema({
+    campaignId: { type: String },
+  }).validator(),
+  run({ campaignId }) {
+
+    console.log("trying to find campaign Id", campaignId)
+    // TODO:
+    if (Meteor.isServer) {
+        const campaign = Campaigns.findOne( { _id: campaignId })
+        console.log("got campaign", campaign)
+        const organizationId = campaign.organizationId
+
+        const surveyQuestions = campaign.surveys().fetch()
+        if (!this.userId || !Roles.userIsInRole(this.userId, 'admin', organizationId)) {
+          throw new Meteor.Error('not-authorized');
+        }
+
+        data = []
+        const contacts = CampaignContacts.find( { campaignId }).fetch()
+
+        for (let contact of contacts) {
+          let row = {}
+          for (let requiredField of CampaignContacts.requiredUploadFields) {
+            row[requiredField] = contact.requiredField
+          }
+
+          row = _.extend(row, contact.customFields)
+          row.optOut = !!contact.optOut()
+
+          _.each(surveyQuestions, (survey, index) => {
+            row[`question ${index + 1}`] = survey.question
+            const answer = contact.surveyAnswer(survey._id)
+            row[`answer ${index + 1}`] = answer ? answer.value : ''
+          })
+
+          data.push(row)
+        }
+
+        return data
+      }
+
+    }
 })

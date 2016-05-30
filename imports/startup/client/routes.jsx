@@ -197,7 +197,7 @@ adminOrganizationSection.route('/campaigns/:campaignId', {
 })
 
 adminOrganizationSection.route('/optouts', {
-  name: 'optout.list',
+  name: 'optouts',
   action: (params) => {
     mount(App, {
       content: () => <OptOutsPage { ...params} />,

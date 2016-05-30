@@ -19,7 +19,7 @@ class Page extends React.Component {
     if (organization && user) {
       console.log("texter roles", Roles.userIsInRole(user, 'texter', organization._id))
       if (Roles.userIsInRole(user, 'texter', organization._id)) {
-        FlowRouter.go(`/${organization._id}/assignments`)
+        FlowRouter.go('todos', { organizationId: organization._id })
       }
     }
   }
@@ -31,7 +31,7 @@ class Page extends React.Component {
       if (err) {
         alert(err)
       } else {
-        FlowRouter.go(`/assignments`)
+        FlowRouter.go(`todos`, { organizationId })
         console.log("successfully joined!")
       }
     })

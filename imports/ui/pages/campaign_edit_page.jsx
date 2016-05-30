@@ -29,7 +29,6 @@ export const Page = ({ organizationId, texters, campaign, loading }) => (
 
 export const CampaignEditPage = createContainer(({ campaignId, organizationId }) => {
   const handle = Meteor.subscribe('campaign.edit', campaignId, organizationId)
-  console.log("TEXTERS", texters)
   return {
     organizationId,
     campaign: Campaigns.findOne({ _id: campaignId }),

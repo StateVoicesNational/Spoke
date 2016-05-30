@@ -37,10 +37,10 @@ export class AssignmentSummary extends Component {
 
   render() {
     const { assignment, contacts } = this.props
-
-    const unmessagedContacts = contacts.filter((contact) => !contact.lastMessage)
+    const { title, description } = assignment.campaign()
+    const unmessagedContacts = contacts.filter((contact) => !contact.lastMessage())
     const unrespondedContacts = contacts.filter((contact) => {
-      const lastMessage = contact.lastMessage
+      const lastMessage = contact.lastMessage()
       return (!!lastMessage && lastMessage.isFromContact)
     })
 
@@ -49,7 +49,7 @@ export class AssignmentSummary extends Component {
 
     const summary = (
       <Card style={styles.root}>
-        <CardTitle title={assignment.campaign().title} subtitle={assignment.campaign().description} />
+        <CardTitle title={title} subtitle={description} />
         { (replyCount > 0 || firstMessageCount > 0) ? '' : <CardText>Looks like you're done for now. Nice work!</CardText>}
 
         <CardActions>
