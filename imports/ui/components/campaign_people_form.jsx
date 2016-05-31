@@ -3,14 +3,13 @@ import AutoComplete from 'material-ui/AutoComplete'
 import Avatar from 'material-ui/Avatar'
 import RaisedButton from 'material-ui/RaisedButton'
 import Divider from 'material-ui/Divider'
-import { ListItem } from 'material-ui/List'
+import { ListItem, List } from 'material-ui/List'
 import { parseCSV } from '../../api/campaign_contacts/parse_csv'
 import Formsy from 'formsy-react'
 import { FormsyText } from 'formsy-material-ui/lib'
 import { Chip } from './chip'
+import Subheader from 'material-ui/Subheader'
 import {Card, CardActions, CardHeader, CardText} from 'material-ui/Card';
-import {Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn} from 'material-ui/Table';
-
 const styles = {
   button: {
     margin: '24px 5px 24px 0',
@@ -28,6 +27,14 @@ const styles = {
   },
   hiddenInput: {
     opacity: 0
+  },
+  uploadErrorListItem: {
+    fontSize: '12px',
+    padding: '8px 16px'
+  },
+  customField: {
+    fontStyle: 'italic',
+    margin: '10px'
   }
 }
 
@@ -186,29 +193,49 @@ export class CampaignPeopleForm extends Component {
     const { contacts, customFields, validationStats } = this.props
     return (
       <Card>
-        <CardHeader
-          title={`${contacts.length} contacts; ${customFields.length} custom fields`}
-          subtitle="Subtitle"
-          actAsExpander={true}
-          showExpandableButton={true}
-        />
-        <CardText expandable={true}>
+        <CardText>
           <div>
-            Custom fields:
-            { customFields.map((field) => (
-              <Chip
-                text={field}
-              />
-            ))}
-            <div>
-              { validationStats ? `${validationStats.dupeCount} duplicate rows removed` : ''}
-              { validationStats ? `${validationStats.missingCellCount} missing/invalid cell rows removed` : ''}
-              { validationStats ? `${validationStats.invalidCellCount} missing/invalid cell rows removed` : ''}
-            </div>
+            {validationStats ? this.renderValidationStats() : ''}
           </div>
         </CardText>
       </Card>
 
+    )
+  }
+
+  renderValidationStats() {
+    const { customFields, contacts } = this.props
+    const { dupeCount, missingCellCount, invalidCellCount } = this.props.validationStats
+    const stats = [
+      `${dupeCount} duplicate numbers removed`,
+      `${missingCellCount} missing numbers removed`,
+      `${invalidCellCount} invalid numbers removed`
+    ]
+    return (
+      <List>
+        <Subheader>Upload summary</Subheader>
+
+        <ListItem
+          primaryText={`${contacts.length} contacts`}
+        />
+        <ListItem
+          primaryText={`${customFields.length} custom fields`}
+          nestedItems={customFields.map((field) => (
+            <ListItem
+              innerDivStyle={styles.uploadErrorListItem}
+              primaryText={field}
+            />
+          ))}
+        />
+        <Divider />
+        <Subheader>Errors</Subheader>
+        { stats.map((stat) => (
+          <ListItem
+            innerDivStyle={styles.uploadErrorListItem}
+            primaryText={stat}
+          />
+        )) }
+      </List>
     )
   }
   render() {
@@ -222,37 +249,35 @@ export class CampaignPeopleForm extends Component {
     } = this.props
     return (
       <div>
-      <Formsy.Form
-        ref="form"
-        onValid={onValid}
-        onInvalid={onInvalid}
-        // onValidSubmit={this.submitForm.bind(this)}
-        // onInvalidSubmit={this.notifyFormError.bind(this)}
-      >
-        <FormsyText
-          fullWidth
-          required
-          onChange={onTitleChange}
-          ref="title"
-          name='title'
-          value={title}
-          floatingLabelText="Campaign title"
-        />
-        <FormsyText
-          name='description'
-          fullWidth
-          value={description}
-          onChange={onDescriptionChange}
-          required
-          ref="description"
-          floatingLabelText="Campaign description"
-        />
-        <input style={styles.hiddenInput} ref="hiddenInput" />
-        { this.renderUploadSection() }
-        { this.renderAssignmentSection() }
-
-      </Formsy.Form>
-
+        <Formsy.Form
+          ref="form"
+          onValid={onValid}
+          onInvalid={onInvalid}
+          // onValidSubmit={this.submitForm.bind(this)}
+          // onInvalidSubmit={this.notifyFormError.bind(this)}
+        >
+          <FormsyText
+            fullWidth
+            required
+            onChange={onTitleChange}
+            ref="title"
+            name='title'
+            value={title}
+            floatingLabelText="Campaign title"
+          />
+          <FormsyText
+            name='description'
+            fullWidth
+            value={description}
+            onChange={onDescriptionChange}
+            required
+            ref="description"
+            floatingLabelText="Campaign description"
+          />
+          <input style={styles.hiddenInput} ref="hiddenInput" />
+          { this.renderUploadSection() }
+          { this.renderAssignmentSection() }
+        </Formsy.Form>
       </div>
     )
   }
