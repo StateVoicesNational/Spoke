@@ -6,6 +6,8 @@ import { insert } from '../../api/campaigns/methods'
 import { CampaignScriptsForm } from './campaign_scripts_form'
 import { CampaignPeopleForm } from './campaign_people_form'
 import { CampaignSurveyForm } from './campaign_survey_form'
+import { CampaignAssignmentForm } from './campaign_assignment_form'
+
 import {Tabs, Tab} from 'material-ui/Tabs'
 
 import {
@@ -92,6 +94,7 @@ export class CampaignForm extends Component {
     setTimeout(this.startComputation.bind(this), 0);
     this.steps = [
       ['People', this.renderPeopleSection.bind(this)],
+      ['Assignment', this.renderAssignmentSection.bind(this)],
       ['Scripts', this.renderScriptSection.bind(this)],
       ['Surveys', this.renderSurveySection.bind(this)],
     ]
@@ -313,14 +316,27 @@ export class CampaignForm extends Component {
     )
   }
 
-  renderPeopleSection() {
-    const { assignedTexters, contacts, customFields, validationStats, title, description } = this.state
+  renderAssignmentSection() {
+    const { assignedTexters } = this.state
     const { texters } = this.props
+
+    return (
+      <CampaignAssignmentForm
+        texters={texters}
+        assignedTexters={assignedTexters}
+        onTexterAssignment={this.onTexterAssignment}
+        onValid={this.enableNext.bind(this)}
+        onInvalid={this.disableNext.bind(this)}
+      />
+    )
+  }
+
+  renderPeopleSection() {
+    const { contacts, customFields, validationStats, title, description } = this.state
 
     return (
       <div>
         <CampaignPeopleForm
-          texters={texters}
           contacts={contacts}
           customFields={customFields}
           validationStats={validationStats}
@@ -328,8 +344,6 @@ export class CampaignForm extends Component {
           description={description}
           onDescriptionChange={this.onDescriptionChange}
           onTitleChange={this.onTitleChange}
-          assignedTexters={assignedTexters}
-          onTexterAssignment={this.onTexterAssignment}
           onContactsUpload={this.onContactsUpload}
           onValid={this.enableNext.bind(this)}
           onInvalid={this.disableNext.bind(this)}

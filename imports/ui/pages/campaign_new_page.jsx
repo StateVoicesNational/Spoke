@@ -7,7 +7,7 @@ import  TextField from 'material-ui/TextField'
 import { FlowRouter } from 'meteor/kadira:flow-router'
 import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
 
-class Page extends React.Component {
+class _CampaignNewPage extends React.Component {
   render () {
     const { organizationId, texters, loading } = this.props
     return (
@@ -59,4 +59,4 @@ export const CampaignNewPage = createContainer(({ organizationId }) => {
     texters,
     loading: !handle.ready()
   }
-}, Page)
+}, _CampaignNewPage)
