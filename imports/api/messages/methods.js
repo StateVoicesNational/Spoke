@@ -6,6 +6,27 @@ import { CampaignContacts } from '../campaign_contacts/campaign_contacts.js'
 import { OptOuts } from '../opt_outs/opt_outs.js'
 import { Meteor } from 'meteor/meteor'
 
+// FIXME - this is used in parse_csv too
+const getFormattedPhoneNumber = (cell) => {
+  const { NumberParseException, PhoneNumberUtil, PhoneNumberFormat } = require('google-libphonenumber')
+  const phoneUtil = PhoneNumberUtil.getInstance()
+
+  try {
+    console.log("CELL", cell)
+    const inputNumber = phoneUtil.parse(cell, "US")
+    const isValid = phoneUtil.isValidNumber(inputNumber)
+    console.log("isvalid", isValid)
+    if (isValid) {
+      return phoneUtil.format(inputNumber, PhoneNumberFormat.E164)
+    } else {
+      return null
+    }
+  } catch (e) {
+    console.log(e)
+    return null
+  }
+}
+
 const getAssignedPhoneNumber = (userId, onSuccess, onError) => {
 
   if (Meteor.isServer) {
@@ -28,11 +49,14 @@ const getAssignedPhoneNumber = (userId, onSuccess, onError) => {
             console.log('Status: ', status);
             console.log('API Response:\n', response);
             if (status === 201) {
-              const { e164 } = require('libphonenumber')
-              e164(userNumber, 'US', (error, result) => {
+              const result = getFormattedPhoneNumber(userNumber)
+              console.log("RESULT", result)
+              if (result) {
                 Meteor.users.update({_id: userId}, { $set: { userNumber: result } })
                 onSuccess(result)
-              })
+              } else {
+                console.log("failed to get formatted phone number")
+              }
             }
         }))
       }

@@ -35,8 +35,8 @@ CampaignContacts.schema = new SimpleSchema({
   }
 })
 
+// FIXME: Add unformattedCell
 CampaignContacts.attachSchema(CampaignContacts.schema)
-
 CampaignContacts.requiredUploadFields = ['firstName', 'lastName', 'cell']
 CampaignContacts.userScriptFields = ['texterFirstName', 'texterLastName']
 

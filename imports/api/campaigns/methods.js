@@ -44,7 +44,7 @@ const createAssignment = (campaignId, userId, texterContacts) => {
         contact.assignmentId = assignmentId
         contact.campaignId = campaignId
         contact.createdAt = new Date()
-        console.log("contact", contact)
+        return contact
       })
 
 

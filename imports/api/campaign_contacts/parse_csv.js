@@ -33,21 +33,28 @@ export const parseCSV  = (file, callback) => {
 
         const { NumberParseException, PhoneNumberUtil, PhoneNumberFormat } = require('google-libphonenumber')
 
-        const phoneUtil = PhoneNumberUtil.getInstance();
+        const phoneUtil = PhoneNumberUtil.getInstance()
 
         _.each(data, (contact) => {
           try {
-            const inputNumber = phoneUtil.parse(contact.cell, "US");
-            const formattedCell = phoneUtil.format(inputNumber, PhoneNumberFormat.E164);
-            console.log(formattedCell)
-            validatedData.push(_.extend(contact, { formattedCell }))
+            const inputNumber = phoneUtil.parse(contact.cell, "US")
+            const isValid = phoneUtil.isValidNumber(inputNumber)
+            if (isValid) {
+              const formattedCell = phoneUtil.format(inputNumber, PhoneNumberFormat.E164)
+              validatedData.push(_.extend(contact, { cell: formattedCell, unformattedCell: contact.cell }))
+            }
+            else {
+              console.log("not valid", contact.cell)
+              badCells.push(contact)
+            }
           } catch (e) {
+            console.log(e)
             badCells.push(contact)
           }
         })
 
         validationStats.invalidCellCount = badCells.length
-        validatedData = uniqBy(validatedData, (row) => row.formattedCell )
+        validatedData = uniqBy(validatedData, (row) => row.cell )
         validationStats.dupeCount = count - validatedData.length
 
         validatedData = _.filter(validatedData, (row) => !!row.cell)

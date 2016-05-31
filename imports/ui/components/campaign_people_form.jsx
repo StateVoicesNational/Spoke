@@ -203,6 +203,7 @@ export class CampaignPeopleForm extends Component {
             <div>
               { validationStats ? `${validationStats.dupeCount} duplicate rows removed` : ''}
               { validationStats ? `${validationStats.missingCellCount} missing/invalid cell rows removed` : ''}
+              { validationStats ? `${validationStats.invalidCellCount} missing/invalid cell rows removed` : ''}
             </div>
           </div>
         </CardText>
