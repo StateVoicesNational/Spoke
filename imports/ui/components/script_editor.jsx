@@ -8,6 +8,8 @@ import {
   Editor,
   Entity,
 } from 'draft-js'
+import {Chip} from './chip'
+
 
 function findWithRegex(regex, contentBlock, callback) {
   const text = contentBlock.getText();
@@ -104,6 +106,18 @@ export class ScriptEditor extends React.Component {
     this.setState( { editorState: newEditorState })
   }
 
+  renderCustomFields() {
+    const customFields = ['smee', 'tree']
+    return (
+      <div>
+        {customFields.map((field) => (
+          <Chip text={field} />
+        ))}
+      </div>
+    )
+
+  }
+
   render() {
     return (
       <div style={styles.root}>
@@ -116,6 +130,7 @@ export class ScriptEditor extends React.Component {
             spellCheck={true}
           />
         </div>
+        {this.renderCustomFields()}
       </div>
     );
   }
