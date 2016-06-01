@@ -11,10 +11,9 @@ import { Chip } from './chip'
 import Subheader from 'material-ui/Subheader'
 import {Card, CardActions, CardHeader, CardText} from 'material-ui/Card';
 
-export class CampaignAssignmentform extends Component {
+export class CampaignAssignmentForm extends Component {
   constructor(props) {
     super(props)
-
     this.handleNewRequest = this.handleNewRequest.bind(this)
   }
 
@@ -78,16 +77,19 @@ export class CampaignAssignmentform extends Component {
         onNewRequest={this.handleNewRequest}
       />
     )
-    return (<div>
-     {autocomplete}
-     { assignedTexters.map((texterId) => {
-        const user = Meteor.users.findOne({_id: texterId})
-        return (
-            <Chip
-              text={user.firstName}
-            />
-        )
-     }) }
-    </div>)
+
+    return (
+      <div>
+       {autocomplete}
+       { assignedTexters.map((texterId) => {
+          const user = Meteor.users.findOne({_id: texterId})
+          return (
+              <Chip
+                text={user.firstName}
+              />
+          )
+       }) }
+      </div>
+    )
   }
 }

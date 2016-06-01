@@ -42,7 +42,7 @@ export class Navigation extends Component {
   }
 
   render() {
-    const { organizationId, title, sections, user, organizations, backToSection, switchListItem} = this.props
+    const { organizationId, title, sections, user, organizations, backToSection, switchListItem, hideSidebar} = this.props
     const { open } = this.state
 
     // const iconElementRight = (
@@ -54,24 +54,26 @@ export class Navigation extends Component {
 
     return (
       <div>
-        <Drawer
-          open={open}
-          containerStyle={styles.drawer}
-          docked={true}
-          onRequestChange={(open) => this.setState({ open })}
-        >
-          <List>
-            { sections.map((section) => (
-              <ListItem
-                key={section}
-                primaryText={capitalize(section)}
-                onTouchTap={() => FlowRouter.go(sectionUrl(organizationId, section))}
-              />
-            ))}
-            <Divider />
-            {switchListItem}
-          </List>
-        </Drawer>
+        { hideSidebar ? '' : (
+          <Drawer
+            open={open}
+            containerStyle={styles.drawer}
+            docked={true}
+            onRequestChange={(open) => this.setState({ open })}
+          >
+            <List>
+              { sections.map((section) => (
+                <ListItem
+                  key={section}
+                  primaryText={capitalize(section)}
+                  onTouchTap={() => FlowRouter.go(sectionUrl(organizationId, section))}
+                />
+              ))}
+              <Divider />
+              {switchListItem}
+            </List>
+          </Drawer>
+        )}
         <AppBar
           style={styles.appbar}
           iconElementLeft={backToSection ? (
@@ -88,12 +90,13 @@ export class Navigation extends Component {
   }
 }
 
-export const AdminNavigation = ({ backToSection, organizationId, title }) => (
+export const AdminNavigation = ({ backToSection, organizationId, title, hideSidebar }) => (
   <Navigation
     title={title}
     organizationId={organizationId}
     backToSection={backToSection}
     sections={['campaigns', 'texters', 'optouts']}
+    hideSidebar={hideSidebar}
     switchListItem={
       <ListItem
         primaryText='Switch to texter'

@@ -17,6 +17,7 @@ class _CampaignNewPage extends React.Component {
             title="Create new campaign"
             organizationId={organizationId}
             backToSection="campaigns"
+            hideSidebar
           />
         }
         content={ texters.length === 0 ? (
@@ -44,6 +45,7 @@ class _CampaignNewPage extends React.Component {
               texters={texters}
             />
         )}
+        hideSidebar
         loading={loading}
       />
     )

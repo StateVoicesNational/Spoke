@@ -104,11 +104,12 @@ export class CampaignPeopleForm extends Component {
         </RaisedButton>
         <FormsyText
           required
+          style={{opacity: 0}}
           ref="contacts"
           name="contacts"
           value={this.getUploadInputValue(contacts)}
         />
-        { this.renderImportValidation()}
+        {validationStats ? this.renderImportValidation() : ''}
       </div>
     )
   }
@@ -119,7 +120,7 @@ export class CampaignPeopleForm extends Component {
       <Card>
         <CardText>
           <div>
-            {validationStats ? this.renderValidationStats() : ''}
+            {this.renderValidationStats()}
           </div>
         </CardText>
       </Card>
@@ -137,7 +138,7 @@ export class CampaignPeopleForm extends Component {
     ]
     return (
       <List>
-        <Subheader>Upload summary</Subheader>
+        <Subheader>Summary</Subheader>
 
         <ListItem
           primaryText={`${contacts.length} contacts`}
@@ -182,21 +183,24 @@ export class CampaignPeopleForm extends Component {
         >
           <FormsyText
             fullWidth
+            autoFocus
             required
             onChange={onTitleChange}
             ref="title"
             name='title'
             value={title}
-            floatingLabelText="Campaign title"
+            hintText="e.g. Election Day 2016"
+            floatingLabelText="Name"
           />
           <FormsyText
             name='description'
             fullWidth
             value={description}
             onChange={onDescriptionChange}
+            hintText="Get out the vote"
             required
             ref="description"
-            floatingLabelText="Campaign description"
+            floatingLabelText="Description"
           />
           <input style={styles.hiddenInput} ref="hiddenInput" />
           { this.renderUploadSection() }

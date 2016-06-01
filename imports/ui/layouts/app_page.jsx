@@ -6,17 +6,18 @@ const styles = {
     maxWidth: 800,
     margin: '24px auto'
   },
-  nonDrawerContent: {
+  withSidebar: {
     // because drawer is open
     marginLeft: '256px',
 
   }
 }
 
-export const AppPage = ({ navigation, content, loading}) => (
+// FIXME: This should probably just split up appbar and sidebar
+export const AppPage = ({ navigation, content, loading, hideSidebar}) => (
   <div>
     { loading ? '' : navigation }
-    <div style={styles.nonDrawerContent}>
+    <div style={hideSidebar ? {} : styles.withSidebar }>
       <div className="wrap container-fluid" style={styles.container}>
         <div className="row">
           <div className={`col-xs ${ loading ? ' center-xs' : ''}`}>
