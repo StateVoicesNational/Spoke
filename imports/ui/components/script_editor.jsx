@@ -2,14 +2,14 @@ import React, { Component } from 'react'
 import {
   EditorState,
   ContentState,
-  convertFromRaw,
-  convertToRaw,
   CompositeDecorator,
   Editor,
+  Modifier,
   Entity,
 } from 'draft-js'
 import {Chip} from './chip'
-
+import IconButton from 'material-ui/IconButton'
+import { delimit } from '../../api/campaigns/scripts'
 
 function findWithRegex(regex, contentBlock, callback) {
   const text = contentBlock.getText();
@@ -51,7 +51,7 @@ const styles = {
     unicodeBidi: 'bidi-override',
   },
   badField: {
-    color: 'red',
+    color: 'red'
   },
 };
 
@@ -70,6 +70,7 @@ export class ScriptEditor extends React.Component {
 
     this.focus = () => this.refs.editor.focus()
     this.onChange = (editorState) => this.setState({editorState})
+    this.addCustomField = this.addCustomField.bind(this)
   }
 
   getCompositeDecorator(customFields) {
@@ -80,7 +81,7 @@ export class ScriptEditor extends React.Component {
 
     const unrecognizedFieldStrategy = (contentBlock, callback) =>
     {
-      return findWithRegex(/\{[\w]*\}/g, contentBlock, callback)
+      return findWithRegex(/\{[^{]*\}/g, contentBlock, callback)
     }
 
     return new CompositeDecorator([
@@ -111,11 +112,28 @@ export class ScriptEditor extends React.Component {
     return (
       <div>
         {customFields.map((field) => (
-          <Chip text={field} />
+          <IconButton
+            onTouchTap={() => this.addCustomField(field)}
+          >
+            <Chip
+              text={field}
+            />
+          </IconButton>
         ))}
       </div>
     )
 
+  }
+
+  addCustomField(field) {
+    const textToInsert = delimit(field)
+    const { editorState } = this.state
+    const selection = editorState.getSelection();
+    const contentState = editorState.getCurrentContent();
+    const newContentState = Modifier.insertText(contentState, selection, textToInsert);
+    const newEditorState = EditorState.push(editorState, newContentState, 'insert-fragment');
+    this.setState({ editorState: newEditorState});
+    console.log("add field!", field)
   }
 
   render() {
