@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "body-parser": "^1.15.1",
+    "chart.js": "^1.1.1",
     "draft-js": "^0.7.0",
     "draft-js-mention-plugin": "^1.0.1",
     "draft-js-plugins-editor": "^1.0.1",
@@ -20,6 +21,7 @@
     "plivo": "^0.3.3",
     "react": "^15.0.1",
     "react-addons-pure-render-mixin": "^15.0.1",
+    "react-chartjs": "^0.7.3",
     "react-dom": "^15.0.1",
     "react-mounter": "^1.2.0",
     "react-tap-event-plugin": "^1.0.0"

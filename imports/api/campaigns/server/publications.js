@@ -48,73 +48,51 @@ Meteor.publish('campaign', function(campaignId) {
     Roles.getUsersInRole('texter', organizationId),
     Campaigns.find({ _id: campaignId }),
     Assignments.find({ campaignId }),
-    CampaignContacts.find( { campaignId }, { fields: {}}),
     Messages.find()
   ]
-
-  // return [
-  //   {
-  //     // TODO: This isn't actually a child
-  //     find: (campaign) => Roles.getUsersInRole('texter', organizationId)
-  //   },
-  //   {
-  //     find: () => Campaigns.find({ _id: campaignId }),
-  //     children: [
-  //       {
-  //         find: (campaign) => Assignments.find({ campaignId })
-  //       },
-  //       {
-  //         find: (campaign) => CampaignContacts.find( { campaignId }, { fields: {}}),
-  //         children: [
-  //           {
-  //             find: (contact) => Messages.find({
-  //               contactNumber: contact.cell,
-  //               campaignId
-  //             }, {
-  //               limit: 1,
-  //               sort: { createdAt: -1 }
-  //             })
-  //           }
-  //         ]
-  //       }
-  //     ]
-  //   }
-  // ]
 })
 
-// Meteor.publishComposite('campaign', function(campaignId) {
-//   const campaign = Campaigns.findOne({ _id: campaignId })
-//   const organizationId = campaign.organizationId
-//   if (!adminCheck(this.userId, organizationId)) {
-//     return this.ready()
-//   }
+// server: publish the current size of a collection
+Meteor.publish("campaign.stats", function(campaignId) {
+  console.log("publishing?")
+  let contactCount = 0
+  let messageCount = 0
+  let initializing = true
 
-//   return [
-//     {
-//       // TODO: This isn't actually a child
-//       find: (campaign) => Roles.getUsersInRole('texter', organizationId)
-//     },
-//     {
-//       find: () => Campaigns.find({ _id: campaignId }),
-//       children: [
-//         {
-//           find: (campaign) => Assignments.find({ campaignId })
-//         },
-//         {
-//           find: (campaign) => CampaignContacts.find( { campaignId }, { fields: {}}),
-//           children: [
-//             {
-//               find: (contact) => Messages.find({
-//                 contactNumber: contact.cell,
-//                 campaignId
-//               }, {
-//                 limit: 1,
-//                 sort: { createdAt: -1 }
-//               })
-//             }
-//           ]
-//         }
-//       ]
-//     }
-//   ]
-// })
+  const contactCountHandle = CampaignContacts.find({ campaignId }).observeChanges({
+    added: function() {
+      contactCount++
+      console.log("campaigncontacts added?")
+      if (!initializing) {
+        this.changed('campaignStats', campaignId, { contactCount })
+      }
+    },
+    removed: function() {
+      contactCount--
+      this.changed('campaignStats', campaignId, { contactCount })
+    }
+  })
+
+  const messageCountHandle = Messages.find({ campaignId }).observeChanges({
+    added: function() {
+      messageCount++
+      if (!initializing) {
+        this.changed('campaignStats', campaignId, { messageCount })
+      }
+    },
+    removed: function() {
+      messageCount--
+      this.changed('campaignStats', campaignId, { messageCount })
+    }
+  })
+
+  initializing = false
+
+  this.added('campaignStats', campaignId, { contactCount, messageCount })
+  this.ready()
+
+  this.onStop(() => {
+    contactCountHandle.stop()
+    messageCountHandle.stop()
+  })
+})

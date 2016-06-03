@@ -36,7 +36,7 @@ const createAssignment = (campaignId, userId, texterContacts) => {
   }
   Assignments.insert(assignmentData, (assignmentError, assignmentId) => {
     if (assignmentError) {
-      throw Meteor.error()
+      throw Meteor.Error(assignmentError)
     }
     else {
       // TODO can still batch insert
@@ -47,9 +47,6 @@ const createAssignment = (campaignId, userId, texterContacts) => {
         contact.createdAt = new Date()
         return contact
       })
-
-
-      console.log("smee", data)
 
       // FIXME - need to convert to e164 here
       // const { e164} = require('libphonenumber')
@@ -62,7 +59,7 @@ const createAssignment = (campaignId, userId, texterContacts) => {
       //   }
       // })
       // validate schema
-      var moreIds = CampaignContacts.batchInsert(data)
+      CampaignContacts.batchInsert(data, (err, res) => console.log("ERROR creating contacts", err))
 
 
       // for (let row of texterContacts) {
@@ -148,7 +145,6 @@ export const exportContacts = new ValidatedMethod({
     // TODO:
     if (Meteor.isServer) {
         const campaign = Campaigns.findOne( { _id: campaignId })
-        console.log("got campaign", campaign)
         const organizationId = campaign.organizationId
 
         const surveyQuestions = campaign.surveys().fetch()

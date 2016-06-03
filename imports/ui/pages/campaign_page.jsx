@@ -12,15 +12,9 @@ import { ContactToolbar } from '../../ui/components/contact_toolbar'
 import { FlowRouter } from 'meteor/kadira:flow-router'
 import RaisedButton from 'material-ui/RaisedButton'
 import { Export } from '../../ui/components/export'
+import { Chart } from '../../ui/components/chart'
 
-const Page = ({ loading, organizationId, campaign, contacts, assignments }) => {
-  const unmessagedContacts = contacts.filter((contact) => !contact.lastMessage())
-  const messagedContacts = contacts.filter((contact) => !!contact.lastMessage())
-  const unrespondedContacts = contacts.filter((contact) => {
-    const lastMessage = contact.lastMessage()
-    return (!!lastMessage && lastMessage.isFromContact)
-  })
-
+const _CampaignPage = ({ loading, organizationId, campaign, stats, assignments }) => {
   return (
     <AppPage
       navigation={loading ? '' :
@@ -33,10 +27,14 @@ const Page = ({ loading, organizationId, campaign, contacts, assignments }) => {
       content={loading ? '' :
       <div>
         <p>
-          Total contacts: {contacts.length} contacts.
-        </p>
-        <p>
-          Contacts who got a first message: { messagedContacts.length }
+          { stats ? (
+              <div>
+                Total contacts: {stats.contactCount}
+                Messages: {stats.messageCount}
+                <Chart />
+              </div>
+            ) : ''
+          }
         </p>
         <p>
           Assigned texters: { assignments.length }
@@ -53,16 +51,21 @@ const Page = ({ loading, organizationId, campaign, contacts, assignments }) => {
   )
 }
 
+CampaignStats = new Mongo.Collection("campaignStats");
+
 export const CampaignPage = createContainer(({ organizationId, campaignId }) => {
   const handle = Meteor.subscribe('campaign', campaignId)
+  Meteor.subscribe('campaign.stats', campaignId)
+
 
   const campaign = Campaigns.findOne({_id: campaignId})
-  const contacts = CampaignContacts.find({ campaignId }).fetch()
   const assignments = Assignments.find({ campaignId }).fetch()
+  const stats = CampaignStats.findOne(campaignId)
+  console.log("stats", stats)
   return {
     campaign,
-    contacts,
     assignments,
+    stats,
     loading: !handle.ready()
   }
-}, Page)
+}, _CampaignPage)
