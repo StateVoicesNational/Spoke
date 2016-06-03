@@ -7,7 +7,6 @@ import { AppPage } from '../../ui/layouts/app_page'
 import { Campaigns } from '../../api/campaigns/campaigns'
 import { Organizations } from '../../api/organizations/organizations'
 import { FlowRouter } from 'meteor/kadira:flow-router'
-import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
 import FlatButton from 'material-ui/FlatButton'
 
 class Page extends React.Component {

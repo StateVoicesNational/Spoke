@@ -13,7 +13,42 @@ import { FlowRouter } from 'meteor/kadira:flow-router'
 import RaisedButton from 'material-ui/RaisedButton'
 import { Export } from '../../ui/components/export'
 import { Chart } from '../../ui/components/chart'
+import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
 
+const styles = {
+  stat: {
+    margin: '10px 0'
+  },
+  count: {
+    fontSize: '80px',
+    paddingTop: '10px',
+    textAlign: 'center'
+  },
+  title: {
+    textTransform: 'uppercase',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: 'gray'
+  }
+}
+const Stat = ({ title, count }) => (
+  <div className="col-xs-4">
+    <Card
+      key={title}
+      style={styles.stat}
+    >
+      <CardTitle
+        title={count}
+        titleStyle={styles.count}
+      />
+      <CardText
+        style={styles.title}
+      >
+        {title}
+      </CardText>
+    </Card>
+  </div>
+)
 const _CampaignPage = ({ loading, organizationId, campaign, stats, assignments }) => {
   return (
     <AppPage
@@ -26,18 +61,17 @@ const _CampaignPage = ({ loading, organizationId, campaign, stats, assignments }
       }
       content={loading ? '' :
       <div>
+        { stats ? (
+            <div className="row">
+              <Stat title="Contacts" count={stats.contactCount} />
+              <Stat title="Texters" count={assignments.length} />
+              <Stat title="Messages sent" count={stats.messageSentCount} />
+              <Stat title="Replies" count={stats.messageReceivedCount} />
+              <Chart />
+            </div>
+          ) : ''
+        }
         <p>
-          { stats ? (
-              <div>
-                Total contacts: {stats.contactCount}
-                Messages: {stats.messageCount}
-                <Chart />
-              </div>
-            ) : ''
-          }
-        </p>
-        <p>
-          Assigned texters: { assignments.length }
         </p>
         <RaisedButton
           label="Edit"

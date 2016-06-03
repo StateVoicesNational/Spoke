@@ -5,7 +5,7 @@ export const Dashboard = ({ stats }) => (
     <div>
       <div className="row">
         { stats.map(([title, stat]) => (
-            <div className="col-xs-12">
+            <div className="col-xs-3">
                 <Card key={title}>
                   <CardTitle title={title} />
                   <CardText>{stat}</CardText>

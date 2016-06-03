@@ -56,43 +56,58 @@ Meteor.publish('campaign', function(campaignId) {
 Meteor.publish("campaign.stats", function(campaignId) {
   console.log("publishing?")
   let contactCount = 0
-  let messageCount = 0
+  let messageSentCount = 0
+  let messageReceivedCount = 0
   let initializing = true
 
   const contactCountHandle = CampaignContacts.find({ campaignId }).observeChanges({
-    added: function() {
+    added: () => {
       contactCount++
       console.log("campaigncontacts added?")
       if (!initializing) {
         this.changed('campaignStats', campaignId, { contactCount })
       }
     },
-    removed: function() {
+    removed: () => {
       contactCount--
       this.changed('campaignStats', campaignId, { contactCount })
     }
   })
 
-  const messageCountHandle = Messages.find({ campaignId }).observeChanges({
-    added: function() {
-      messageCount++
+  const messageSentCountHandle = Messages.find({ campaignId, isFromContact: false }).observeChanges({
+    added: () => {
+      messageSentCount++
       if (!initializing) {
-        this.changed('campaignStats', campaignId, { messageCount })
+        this.changed('campaignStats', campaignId, { messageSentCount })
       }
     },
-    removed: function() {
-      messageCount--
-      this.changed('campaignStats', campaignId, { messageCount })
+    removed: () => {
+      messageSentCount--
+      this.changed('campaignStats', campaignId, { messageSentCount })
+    }
+  })
+
+  const messageReceivedCountHandle = Messages.find({ campaignId, isFromContact: true }).observeChanges({
+    added: () => {
+      messageReceivedCount++
+      if (!initializing) {
+        this.changed('campaignStats', campaignId, { messageReceivedCount })
+      }
+    },
+    removed: () => {
+      messageReceivedCount--
+      this.changed('campaignStats', campaignId, { messageReceivedCount })
     }
   })
 
   initializing = false
 
-  this.added('campaignStats', campaignId, { contactCount, messageCount })
+  this.added('campaignStats', campaignId, { contactCount, messageSentCount, messageReceivedCount })
   this.ready()
 
   this.onStop(() => {
     contactCountHandle.stop()
-    messageCountHandle.stop()
+    messageSentCountHandle.stop()
+    messageReceivedCountHandle.stop()
   })
 })
