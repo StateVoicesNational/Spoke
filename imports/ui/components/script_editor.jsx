@@ -7,10 +7,9 @@ import {
   Modifier,
   Entity,
 } from 'draft-js'
-import {Chip} from './chip'
-import IconButton from 'material-ui/IconButton'
 import { delimit } from '../../api/campaigns/scripts'
-
+import AddIcon from 'material-ui/svg-icons/content/add';
+import FlatButton from 'material-ui/FlatButton'
 function findWithRegex(regex, contentBlock, callback) {
   const text = contentBlock.getText();
   let matchArr, start;
@@ -53,6 +52,14 @@ const styles = {
   badField: {
     color: 'red'
   },
+  scriptFieldButtonLabel: {
+    textTransform: 'none'
+  },
+  scriptFieldButton: {
+    fontSize: '11px',
+    border: '1px solid lightgray',
+    margin: '6px'
+  }
 };
 
 
@@ -60,27 +67,42 @@ export class ScriptEditor extends React.Component {
   constructor(props) {
     super(props)
 
-    // const customFields = props.customFields
-    const customFields = ['smee', 'tree']
-
+    const scriptFields = props.scriptFields
 
     this.state = {
-      editorState: EditorState.createEmpty(this.getCompositeDecorator(customFields)),
+      editorState: EditorState.createEmpty(this.getCompositeDecorator(scriptFields))
     }
 
     this.focus = () => this.refs.editor.focus()
-    this.onChange = (editorState) => this.setState({editorState})
+    this.onChange = this.onChange.bind(this)
     this.addCustomField = this.addCustomField.bind(this)
   }
 
-  getCompositeDecorator(customFields) {
+  getValue() {
+    const { editorState } = this.state
+    return editorState.getCurrentContent().getPlainText();
+  }
+
+  onChange(editorState) {
+    this.setState( { editorState })
+  }
+
+  componentWillReceiveProps() {
+    const { scriptFields } = this.props
+    const { editorState } = this.state
+    const decorator = this.getCompositeDecorator(scriptFields)
+    const newEditorState = EditorState.set(editorState, { decorator })
+
+    this.setState({ editorState: newEditorState })
+  }
+
+  getCompositeDecorator(scriptFields) {
     const recognizedFieldStrategy = (contentBlock, callback) => {
-      const regex = new RegExp(`\{(${customFields.join('|')})\}`, 'g')
+      const regex = new RegExp(`\{(${scriptFields.join('|')})\}`, 'g')
       return findWithRegex(regex, contentBlock, callback)
     }
 
-    const unrecognizedFieldStrategy = (contentBlock, callback) =>
-    {
+    const unrecognizedFieldStrategy = (contentBlock, callback) => {
       return findWithRegex(/\{[^{]*\}/g, contentBlock, callback)
     }
 
@@ -92,37 +114,8 @@ export class ScriptEditor extends React.Component {
       {
         strategy: unrecognizedFieldStrategy,
         component: UnrecognizedField
-      },
-    ]);
-  }
-
-  componentWillReceiveProps() {
-    // const customFields = { this.props }
-    // const cust
-    const customFields = ['smee,', 'tree']
-    const { editorState } = this.state
-    const decorator = this.getCompositeDecorator(customFields)
-    const newEditorState = EditorState.set(editorState, { decorator })
-
-    this.setState( { editorState: newEditorState })
-  }
-
-  renderCustomFields() {
-    const customFields = ['smee', 'tree']
-    return (
-      <div>
-        {customFields.map((field) => (
-          <IconButton
-            onTouchTap={() => this.addCustomField(field)}
-          >
-            <Chip
-              text={field}
-            />
-          </IconButton>
-        ))}
-      </div>
-    )
-
+      }
+    ])
   }
 
   addCustomField(field) {
@@ -132,8 +125,26 @@ export class ScriptEditor extends React.Component {
     const contentState = editorState.getCurrentContent();
     const newContentState = Modifier.insertText(contentState, selection, textToInsert);
     const newEditorState = EditorState.push(editorState, newContentState, 'insert-fragment');
-    this.setState({ editorState: newEditorState});
-    console.log("add field!", field)
+    this.setState({ editorState: newEditorState}, this.focus)
+  }
+
+  renderCustomFields() {
+    const { scriptFields } = this.props
+    return (
+      <div>
+        {scriptFields.map((field) => (
+          <FlatButton
+            labelStyle={styles.scriptFieldButtonLabel}
+            style={styles.scriptFieldButton}
+            label={delimit(field)}
+            labelPosition="before"
+            icon={<AddIcon />}
+            onTouchTap={() => this.addCustomField(field)}
+            mini
+          />
+        ))}
+      </div>
+    )
   }
 
   render() {

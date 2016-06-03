@@ -3,6 +3,7 @@ import TextField from 'material-ui/TextField'
 import FlatButton from 'material-ui/FlatButton'
 import { FlowRouter } from 'meteor/kadira:flow-router'
 import { insert } from '../../api/campaigns/methods'
+import { ScriptTypes } from '../../api/campaigns/scripts'
 import { CampaignScriptsForm } from './campaign_scripts_form'
 import { CampaignPeopleForm } from './campaign_people_form'
 import { CampaignSurveyForm } from './campaign_survey_form'
@@ -32,17 +33,15 @@ export class CampaignForm extends Component {
     this.handleSubmit = this.handleSubmit.bind(this)
     this.onScriptChange = this.onScriptChange.bind(this)
     this.onScriptDelete = this.onScriptDelete.bind(this)
-    this.handleAddScriptRow = this.handleAddScriptRow.bind(this)
+    this.handleAddScript = this.handleAddScript.bind(this)
     this.onContactsUpload = this.onContactsUpload.bind(this)
     this.onTexterAssignment = this.onTexterAssignment.bind(this)
     this.onTitleChange = this.onTitleChange.bind(this)
     this.onDescriptionChange = this.onDescriptionChange.bind(this)
     this.handleNext = this.handleNext.bind(this)
     this.handlePrev = this.handlePrev.bind(this)
-
     this.setupState()
   }
-
 
   setupState() {
     const { campaign } = this.props
@@ -54,8 +53,7 @@ export class CampaignForm extends Component {
       description: campaign ? campaign.description : '',
       contacts: [],
       customFields: [],
-      script: null,
-      faqScripts: [],
+      scripts: [],
       assignedTexters: [],
       surveys: [],
       submitting: false
@@ -69,21 +67,18 @@ export class CampaignForm extends Component {
   startComputation() {
     this._computation = Tracker.autorun(() => {
       const scripts = LocalCollection.find({}).fetch() // reactive
-      console.log("updated surveys", LocalCollection.find({ type: 'survey' }).fetch())
       if (scripts.length > 0) {
         this.setState({
-          faqScripts: LocalCollection.find({ isFaqReply: true }).fetch(),
-          script: LocalCollection.findOne({ initial: true }),
-          surveys: LocalCollection.find({ type: 'survey' }).fetch()
+          scripts: LocalCollection.find({ collectionType: 'script' }).fetch(),
+          surveys: LocalCollection.find({ collectionType: 'survey' }).fetch()
         })
       }
     })
 
     const script = {
-      type: 'script',
-      script: 'Hi, {firstName}. Here is a default script initial message',
-      isFaqReply: false,
-      initial: true
+      collectionType: 'script',
+      text: 'Hi, {firstName}. Here is a default script initial message',
+      type: ScriptTypes.INITIAL
     }
 
     LocalCollection.insert(script)
@@ -93,8 +88,8 @@ export class CampaignForm extends Component {
     // workaround for https://github.com/meteor/react-packages/issues/99
     setTimeout(this.startComputation.bind(this), 0);
     this.steps = [
-      // ['People', this.renderPeopleSection.bind(this)],
-      // ['Assignment', this.renderAssignmentSection.bind(this)],
+      ['People', this.renderPeopleSection.bind(this)],
+      ['Assignment', this.renderAssignmentSection.bind(this)],
       ['Scripts', this.renderScriptSection.bind(this)],
       ['Surveys', this.renderSurveySection.bind(this)],
     ]
@@ -151,11 +146,12 @@ export class CampaignForm extends Component {
       title,
       description,
       contacts,
-      script,
-      faqScripts,
+      scripts,
       assignedTexters,
-      surveys
+      surveys,
+      customFields
     } = this.state
+
     const { organizationId } = this.props
 
     const data = {
@@ -164,9 +160,10 @@ export class CampaignForm extends Component {
       contacts,
       organizationId,
       assignedTexters,
-      faqScripts,
-      surveys: _.map(surveys, (survey) => _.omit(survey, 'type')),
-      script: script.script // only want the string
+      customFields,
+      // FIXME This omit is really awkward. Decide if I should be using subdocument _ids instead.
+      scripts: _.map(scripts, (script) => _.omit(script, ['collectionType', '_id'])),
+      surveys: _.map(surveys, (survey) => _.omit(survey, ['collectionType', '_id'])),
     }
     this.setState( { submitting: true })
 
@@ -196,21 +193,8 @@ export class CampaignForm extends Component {
     return this.state.contacts.length > 0 && this.state.script !== ''
   }
 
-  handleAddScriptRow() {
-    const script = {
-      type: 'script',
-      script: 'Hi, {firstName}. This is response to a common FAQ',
-      title: 'Common issue',
-      isFaqReply: true
-    }
-
-    LocalCollection.insert(script)
-
-    console.log(LocalCollection.find({}).fetch().length, "script count")
-    // const { faqScripts } = this.state
-    // this.setState({
-    //   faqScripts: faqScripts.concat([script])
-    // })
+  handleAddScript(script) {
+    LocalCollection.insert(_.extend(script, { collectionType: 'script'}))
   }
 
   enableNext() {
@@ -279,7 +263,7 @@ export class CampaignForm extends Component {
       allowedAnswers: [{
         value: 'Option 1' // prob want script eventually
       }],
-      type: 'survey'
+      collectionType: 'survey'
     }
 
     LocalCollection.insert(survey)
@@ -357,14 +341,18 @@ export class CampaignForm extends Component {
   }
 
   renderScriptSection() {
-    const { contacts, validationStats, script, faqScripts, customFields} = this.state
+    const { contacts, validationStats, scripts, customFields} = this.state
+
+    const faqScripts = scripts.filter((script) => script.type === ScriptTypes.FAQ)
+    const defaultScript = scripts.find((script) => script.type === ScriptTypes.INITIAL)
+
     return (
       <CampaignScriptsForm
-        script={script}
+        script={defaultScript}
         faqScripts={faqScripts}
         onScriptChange={this.onScriptChange}
         onScriptDelete={this.onScriptDelete}
-        handleAddScriptRow={this.handleAddScriptRow}
+        handleAddScript={this.handleAddScript}
         customFields={customFields}
         sampleContact={contacts[0]}
       />

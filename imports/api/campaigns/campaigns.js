@@ -6,6 +6,7 @@ import { SurveyQuestions } from '../survey_questions/survey_questions'
 import { Messages } from '../messages/messages'
 import { CampaignContacts } from '../campaign_contacts/campaign_contacts'
 import { moment } from 'meteor/momentjs:moment'
+import { ScriptSchema } from './scripts'
 
 export const Campaigns = new Mongo.Collection('campaigns')
 
@@ -13,11 +14,6 @@ export const Campaigns = new Mongo.Collection('campaigns')
 // Deny all client-side updates since we will be using methods to manage this collection
 Campaigns.deny({
   insert() { return true },
-})
-
-const FAQSchema = new SimpleSchema({
-  title: { type: String },
-  script: { type: String }
 })
 
 Campaigns.schema = new SimpleSchema({
@@ -33,11 +29,7 @@ Campaigns.schema = new SimpleSchema({
     type: String,
     optional: true
   },
-  script: { type: String }, // TODO Should scripts be in a separate collection? Currently they are strewn about
-  faqScripts: {
-    type: [FAQSchema],
-    optional: true
-  }
+  scripts: { type: [ScriptSchema]}
 })
 
 Campaigns.attachSchema(Campaigns.schema)

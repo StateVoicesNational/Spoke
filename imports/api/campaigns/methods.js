@@ -10,6 +10,7 @@ import { Assignments } from '../assignments/assignments.js'
 import { convertRowToContact } from '../campaign_contacts/parse_csv'
 import { batchInsert } from 'meteor/mikowals:batch-insert'
 import { chunk, last, forEach, zip } from 'lodash'
+import { ScriptSchema } from './scripts.js'
 
 const divideContacts = (contactRows, texters) => {
 
@@ -93,13 +94,12 @@ export const insert = new ValidatedMethod({
     organizationId: { type: String },
     description: { type: String },
     contacts: { type: [Object], blackbox: true },
-    script: { type: String },
-    faqScripts: { type: [Object], blackbox: true}, // todo,
+    scripts: { type: [ScriptSchema] },
     assignedTexters: { type: [String]},
-    surveys: { type: [Object], blackbox: true}
-
+    surveys: { type: [Object], blackbox: true},
+    customFields: { type: [String]}
   }).validator(),
-  run({ title, description, contacts, script, faqScripts, organizationId, assignedTexters, surveys }) {
+  run({ title, description, contacts, scripts, customFields, organizationId, assignedTexters, surveys }) {
     if (!this.userId || !Roles.userIsInRole(this.userId, 'admin', organizationId)) {
       throw new Meteor.Error('not-authorized');
     }
@@ -107,11 +107,10 @@ export const insert = new ValidatedMethod({
     const campaignData = {
       title,
       description,
-      script,
-      faqScripts,
+      scripts,
       organizationId,
+      customFields,
       createdAt: new Date(),
-      customFields: ['hi', 'bye', 'smee']       // FIXMe
     };
 
     // TODO this needs to be in one transaction
