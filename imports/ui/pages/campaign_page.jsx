@@ -20,19 +20,19 @@ const styles = {
     margin: '10px 0'
   },
   count: {
-    fontSize: '80px',
+    fontSize: '60px',
     paddingTop: '10px',
-    textAlign: 'center'
+    textAlign: 'center',
+    fontWeight: 'bold'
   },
   title: {
     textTransform: 'uppercase',
-    fontWeight: 'bold',
     textAlign: 'center',
     color: 'gray'
   }
 }
 const Stat = ({ title, count }) => (
-  <div className="col-xs-4">
+  <div className="col-xs-3">
     <Card
       key={title}
       style={styles.stat}
@@ -67,17 +67,14 @@ const _CampaignPage = ({ loading, organizationId, campaign, stats, assignments }
               <Stat title="Texters" count={assignments.length} />
               <Stat title="Messages sent" count={stats.messageSentCount} />
               <Stat title="Replies" count={stats.messageReceivedCount} />
-              <Chart />
             </div>
           ) : ''
         }
         <p>
         </p>
-        <RaisedButton
-          label="Edit"
-          onTouchTap={() => FlowRouter.go('campaign.edit', { campaignId: campaign._id, organizationId })}
-        />
-        <Export campaign={campaign}/>
+        <p>
+          <Export campaign={campaign}/>
+        </p>
       </div>
       }
       loading={loading}
