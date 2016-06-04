@@ -20,6 +20,7 @@ import { CampaignEditPage } from '../../ui/pages/campaign_edit_page'
 import { TodosPage } from '../../ui/pages/todos_page'
 import { App } from '../../ui/layouts/app'
 import { Public } from '../../ui/layouts/public'
+import { AssignmentTextingPage } from '../../ui/pages/assignment_texting_page'
 
 import injectTapEventPlugin from 'react-tap-event-plugin'
 // Needed for onTouchTap
@@ -90,11 +91,21 @@ appOrganizationSection.route('/todos', {
     })
   }
 })
+
 appOrganizationSection.route('/assignments/:assignmentId', {
   name: 'assignment',
   action: (params) => {
     mount(App, {
       content: () => <AssignmentContainer {...params} />
+    })
+  }
+})
+
+appOrganizationSection.route('/assignments/:assignmentId/:contactFilter', {
+  name: 'textUnmessaged',
+  action: (params) => {
+    mount(App, {
+      content: () => <AssignmentTextingPage {...params} />
     })
   }
 })

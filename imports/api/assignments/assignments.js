@@ -2,6 +2,7 @@ import { Mongo } from 'meteor/mongo'
 import { Factory } from 'meteor/dburles:factory'
 import { SimpleSchema } from 'meteor/aldeed:simple-schema'
 import { CampaignContacts } from '../campaign_contacts/campaign_contacts.js'
+import { ContactFilters } from '../campaign_contacts/methods'
 import { Campaigns } from '../campaigns/campaigns'
 import { OptOuts } from '../opt_outs/opt_outs'
 export const Assignments = new Mongo.Collection('assignments')
@@ -33,9 +34,19 @@ Factory.define('assignment', Assignments, {
 Assignments.publicFields = {
 }
 
+export const contactsForAssignmentCursor = (assignmentId, contactFilter) => {
+  let query = {}
+  if (contactFilter === ContactFilters.UNMESSAGED) {
+    query = { lastMessage: null }
+  } else if (contactFilter === ContactFilters.UNREPLIED) {
+    query = { 'lastMessage.isFromContact': true }
+  }
+  return CampaignContacts.find(_.extend(query, { assignmentId }))
+}
+
 Assignments.helpers({
-  contacts() {
-    return CampaignContacts.find({ assignmentId: this._id })
+  contacts(contactFilter) {
+    return contactsForAssignmentCursor(this._id, contactFilter)
   },
   campaign() {
     return Campaigns.findOne({ _id: this.campaignId })

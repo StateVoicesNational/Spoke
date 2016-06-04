@@ -1,6 +1,7 @@
 import { ValidatedMethod } from 'meteor/mdg:validated-method'
 import { SimpleSchema } from 'meteor/aldeed:simple-schema'
 import { CampaignContacts } from './campaign_contacts.js'
+import { Assignments } from '../assignments/assignments.js'
 
 export const ContactFilters = {
   UNMESSAGED: 'unmessaged',

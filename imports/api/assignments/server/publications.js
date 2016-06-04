@@ -1,8 +1,9 @@
 import { Meteor } from 'meteor/meteor'
 import { SimpleSchema } from 'meteor/aldeed:simple-schema'
-import { Assignments } from '../assignments.js'
+import { Assignments, contactsForAssignmentCursor } from '../assignments.js'
 import { Campaigns } from '../../campaigns/campaigns'
 import { CampaignContacts } from '../../campaign_contacts/campaign_contacts'
+import { ContactFilters } from '../../campaign_contacts/methods'
 import { SurveyQuestions } from '../../survey_questions/survey_questions'
 import { SurveyAnswers } from '../../survey_answers/survey_answers'
 import { Messages } from '../../messages/messages'
@@ -25,33 +26,7 @@ Meteor.publishComposite('assignments', {
   ]
 })
 
-// Meteor.publish("assignments.todo", function(organizationId) {
-
-//   const userId = this.userId
-//   const assignments = Assignments.find({ userId})
-//   _.each(assignments, (assignment) => {
-//     const campaignId = assignment.campaignId
-
-//     const aggregation = Messages.aggregate(
-//        [
-//         { $match: { campaignId, userId }}
-//          { $sort: { contactNumber: 1, createdAt: 1 } },
-//          {
-//            $group:
-//              {
-//                _id: "$contactNumber",
-//                last: { $last: "$createdAt" }
-//              }
-//          }
-//        ]
-//     )
-//     console.log("AGGREGATION", aggregation)
-//   })
-//   // FIXME
-//   return Assignments.find({})
-// })
-
-Meteor.publishComposite('assignments.todo', function(organizationId) {
+Meteor.publish('assignments.todo', function(organizationId) {
   const userId = this.userId
   const assignments = Assignments.find({ userId }).fetch()
   const assignmentIds = assignments.map((assignment) => assignment._id)
@@ -96,53 +71,21 @@ Meteor.publishComposite('assignments.todo', function(organizationId) {
 
   this.added('todos', organizationId, { results })
   this.ready()
+})
 
-  // const aggregation = Messages.aggregate([
-  //   {
-  //     $match: {
-  //       campaignId: {$in: campaignIds},
-  //       userId
-  //     }
-  //   },
-  //   {
-  //     $sort: { contactNumber: 1, createdAt: 1 }
-  //   },
-  //   {
-  //     $group: {
-  //       _id : {
-  //         contactNumber: "$contactNumber",
-  //         userId: "$userId",
-  //         campaignId: "$campaignId"
-  //       },
-  //       lastMessageIsFromContact: { $last: "$isFromContact"}
-  //     }
-  //  },
-  //  {
-  //   $group: {
-  //     _id: {lastMessageIsFromContact: "$lastMessageIsFromContact", campaignId: "$_id.campaignId"},
-  //     count: { $sum: 1 }
-  //   }
-  //  }
-  // ])
+Meteor.publish('assignment.text', function(assignmentId, contactFilter) {
+  const contactsCursor = contactsForAssignmentCursor(assignmentId, contactFilter)
+  const contacts = contactsCursor.fetch()
 
+  const userId = this.userId
+  const contactNumbers = contacts.map((contact) => contact.contactNumber)
 
-  // assignmentWithCounts = assignments.map((assignment) => {
-  //   const data = {
-  //     assignment,
-  //     unrepliedCount:
-  //   }
-  //   return data
-  // })
-  // ]
-  console.log("AGGREGATION", aggregation)
-
+  const assignment = Assignments.findOne(assignmentId) // TODO redundant loading
   return [
-    {
-      find: () => Campaigns.find({ organizationId })
-    },
-    {
-      find: () => OptOuts.find( { organizationId })
-    }
+    Assignments.find({ _id: assignmentId }),
+    contactsCursor,
+    Campaigns.find({ _id: assignment.campaignId}),
+    Messages.find( { contactNumber: {$in: contactNumbers}, userId })
   ]
 })
 

@@ -23,6 +23,8 @@ export class AssignmentSummary extends Component {
   }
 
   renderBadgedButton(assignment, title, count, isPrimary) {
+    const { organizationId } = this.props
+    console.log("organizationId", organizationId)
     return (count === 0 ? '' :
       <Badge
         badgeStyle={styles.badge}
@@ -30,9 +32,10 @@ export class AssignmentSummary extends Component {
         primary={isPrimary}
         secondary={!isPrimary}
       >
+        console.log("organizationId")
         <FlatButton
           label={title}
-          onTouchTap={ () => this.getContactsToText(assignment, ContactFilters.UNMESSAGED) }
+          onTouchTap={ () => FlowRouter.go('textUnmessaged', { organizationId, contactFilter: ContactFilters.UNMESSAGED, assignmentId: assignment._id }) }
         />
       </Badge>
     )
@@ -72,6 +75,7 @@ export class AssignmentSummary extends Component {
 }
 
 AssignmentSummary.propTypes = {
+  organizationId: React.PropTypes.string,
   assignment: React.PropTypes.object,      // current assignment
   contacts: React.PropTypes.array, // contacts for current assignment
   handleStartTexting: React.PropTypes.func

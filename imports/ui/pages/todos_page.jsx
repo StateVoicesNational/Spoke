@@ -44,6 +44,7 @@ class _TodosPage extends React.Component {
 
   onStartTexting(currentTextingAssignment, currentTextingContacts) {
     this.setState({ currentTextingAssignment, currentTextingContacts })
+    console.log("on test", "currentTextingContacts")
   }
 
   summaryPage() {
@@ -62,6 +63,7 @@ class _TodosPage extends React.Component {
                 icon={<Check />}
               /> : (results.map((result) => (
                   <AssignmentSummary
+                    organizationId={organizationId}
                     unmessagedCount={result.unmessagedCount}
                     assignment={result.assignment}
                     unrepliedCount={result.unrepliedCount}
