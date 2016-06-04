@@ -44,11 +44,10 @@ class _TodosPage extends React.Component {
 
   onStartTexting(currentTextingAssignment, currentTextingContacts) {
     this.setState({ currentTextingAssignment, currentTextingContacts })
-    console.log("on test", "currentTextingContacts")
   }
 
   summaryPage() {
-    const { organizationId, loading, assignmentTodos} = this.props
+    const { organizationId, loading, results} = this.props
 
     return (
       <AppPage
@@ -58,13 +57,14 @@ class _TodosPage extends React.Component {
         />}
         content={
           <div>
-            {assignmentTodos.length === 0 ? <Empty
+            {results.length === 0 ? <Empty
                 title="You have nothing to do!"
                 icon={<Check />}
-              /> : (assignmentTodos.map((assignment) => (
+              /> : (results.map((result) => (
                   <AssignmentSummary
-                    assignment={assignment}
-                    contacts={assignment.contacts().fetch()}
+                    unmessagedCount={result.unmessagedCount}
+                    assignment={result.assignment}
+                    unrepliedCount={result.unrepliedCount}
                     onStartTexting={this.onStartTexting.bind(this)}
                   />
                 )))
@@ -94,14 +94,21 @@ class _TodosPage extends React.Component {
   }
 }
 
+Todos = new Meteor.Collection('todos')
 export const TodosPage = createContainer(({ organizationId }) => {
   const handle = Meteor.subscribe('assignments.todo', organizationId)
 
+  const todo = Todos.findOne(organizationId)
+  let results = []
+  if (todo) {
+    results = todo.results
+  }
+
+  console.log("todo", todo)
   Messages.find({}).fetch() // FIXME should not just blindly fetch here
-  console.log(todosForUser(Meteor.user(), organizationId).fetch())
   return {
     organizationId,
-    assignmentTodos: Meteor.user() ? todosForUser(Meteor.user(), organizationId).fetch() : [],
+    results,
     loading: !handle.ready()
   }
 }, _TodosPage)

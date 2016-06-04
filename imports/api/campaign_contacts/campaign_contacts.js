@@ -40,6 +40,10 @@ CampaignContacts.attachSchema(CampaignContacts.schema)
 CampaignContacts.requiredUploadFields = ['firstName', 'lastName', 'cell']
 CampaignContacts.userScriptFields = ['texterFirstName', 'texterLastName']
 
+const LastMessageSchema = new SimpleSchema({
+  isFromContact: { type: Boolean },
+})
+
 Factory.define('campaign_contact', CampaignContacts, {
   campaignId: () => Factory.get('campaign'),
   firstName: () => Fake.user({ fields: ['name'] }).name,
@@ -53,7 +57,12 @@ Factory.define('campaign_contact', CampaignContacts, {
   },
   createdAt: () => new Date(),
   assignmentId: () => Factory.get('assignment'),
-  campaignSurveyId: null
+  campaignSurveyId: null,
+
+  // Cached last Message
+  lastMessage: {
+    type: [LastMessageSchema]
+  }
 })
 
 // This represents the keys from CampaignContacts objects that should be published
@@ -69,9 +78,6 @@ CampaignContacts.helpers({
   optOut() {
     const campaign = Campaigns.findOne({_id: this.campaignId})
     return OptOuts.findOne({ organizationId: campaign.organizationId, cell: this.cell})
-  },
-  lastMessage() {
-    return Messages.findOne({ contactNumber: this.cell, campaignId: this.campaignId }, { sort: { createdAt: -1 }})
   },
   surveyAnswer(surveyQuestionId) {
     console.log("survey question id ", surveyQuestionId, "and campaignContactId", this._id, SurveyAnswers.findOne({

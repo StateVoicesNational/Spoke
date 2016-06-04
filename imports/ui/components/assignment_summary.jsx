@@ -3,23 +3,26 @@ import Paper from 'material-ui/Paper'
 import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
 import FlatButton from 'material-ui/FlatButton'
 import Badge from 'material-ui/Badge';
-
+import { getContactsToText, ContactFilters } from '../../api/campaign_contacts/methods'
 const styles = {
   badge: {
     top: 16,
     right: 16
   }
 }
+
 export class AssignmentSummary extends Component {
+  constructor(props) {
+    super(props)
+    this.getContactsToText = this.getContactsToText.bind(this)
+  }
   startTexting() {
     const { handleStartTexting, contacts } = this.props
 
     handleStartTexting(contacts)
   }
-  renderBadgedButton(assignment, title, currentTextingContacts, isPrimary) {
-    const count = currentTextingContacts.length
-    const { onStartTexting } = this.props
 
+  renderBadgedButton(assignment, title, count, isPrimary) {
     return (count === 0 ? '' :
       <Badge
         badgeStyle={styles.badge}
@@ -29,33 +32,34 @@ export class AssignmentSummary extends Component {
       >
         <FlatButton
           label={title}
-          onTouchTap={ () => onStartTexting(assignment, currentTextingContacts) }
+          onTouchTap={ () => this.getContactsToText(assignment, ContactFilters.UNMESSAGED) }
         />
       </Badge>
     )
   }
 
-  render() {
-    const { assignment, contacts } = this.props
-    const { title, description } = assignment.campaign()
-
-    const unmessagedContacts = contacts.filter((contact) => !contact.lastMessage())
-    const unrespondedContacts = contacts.filter((contact) => {
-      const lastMessage = contact.lastMessage()
-      return (!!lastMessage && lastMessage.isFromContact)
+  getContactsToText(assignment, contactFilter) {
+    getContactsToText.call({assignmentId: assignment._id, contactFilter}, (err, contacts) => {
+      const { onStartTexting } = this.props
+      onStartTexting(assignment, contacts)
     })
+  }
 
-    const firstMessageCount = unmessagedContacts.length
-    const replyCount = unrespondedContacts.length
+  render() {
+    const { assignment, unmessagedCount, unrepliedCount } = this.props
+    // FIXME
+    // const { title, description } = assignment.campaign()
 
+    const title = 'hi'
+    const description = 'bype'
     const summary = (
       <Card style={styles.root}>
         <CardTitle title={title} subtitle={description} />
-        { (replyCount > 0 || firstMessageCount > 0) ? '' : <CardText>Looks like you're done for now. Nice work!</CardText>}
+        { (unrepliedCount > 0 || unmessagedCount > 0) ? '' : <CardText>Looks like you're done for now. Nice work!</CardText>}
 
         <CardActions>
-          { this.renderBadgedButton(assignment, 'Send first texts', unmessagedContacts, true)}
-          { this.renderBadgedButton(assignment, 'Send replies', unrespondedContacts, false)}
+          { this.renderBadgedButton(assignment, 'Send first texts', unmessagedCount, true)}
+          { this.renderBadgedButton(assignment, 'Send replies', unrepliedCount, false)}
         </CardActions>
       </Card>
     )

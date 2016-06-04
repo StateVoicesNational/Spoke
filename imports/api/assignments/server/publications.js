@@ -25,27 +25,120 @@ Meteor.publishComposite('assignments', {
   ]
 })
 
+// Meteor.publish("assignments.todo", function(organizationId) {
+
+//   const userId = this.userId
+//   const assignments = Assignments.find({ userId})
+//   _.each(assignments, (assignment) => {
+//     const campaignId = assignment.campaignId
+
+//     const aggregation = Messages.aggregate(
+//        [
+//         { $match: { campaignId, userId }}
+//          { $sort: { contactNumber: 1, createdAt: 1 } },
+//          {
+//            $group:
+//              {
+//                _id: "$contactNumber",
+//                last: { $last: "$createdAt" }
+//              }
+//          }
+//        ]
+//     )
+//     console.log("AGGREGATION", aggregation)
+//   })
+//   // FIXME
+//   return Assignments.find({})
+// })
+
 Meteor.publishComposite('assignments.todo', function(organizationId) {
   const userId = this.userId
+  const assignments = Assignments.find({ userId }).fetch()
+  const assignmentIds = assignments.map((assignment) => assignment._id)
+  // Contacts - lastMessage
+
+  const aggregation = CampaignContacts.aggregate([
+  {
+    $match: {
+      assignmentId: {$in: assignmentIds}
+    },
+  },
+  {
+    $group: {
+      _id : {isFromContact: '$lastMessage.isFromContact', assignmentId: '$assignmentId'},
+      count: { $sum: 1 }
+    },
+  },
+  ])
+
+  const results = _.map(assignments, (assignment) => {
+    const result = {
+      assignment,
+      unmessagedCount: 0,
+      unrepliedCount: 0
+    }
+
+    _.each(aggregation.filter((row) => row._id.assignmentId === assignment._id), (row) => {
+      if (row._id.isFromContact === true) { // Last message is from the contact
+        result.unrepliedCount = row.count
+        console.log("unrepliedCount", row.count)
+      } else if (row._id.isFromContact === undefined) { // No last message found
+        result.unmessagedCount = row.count
+        console.log("unmessagedCount", row.count)
+      } else {
+        console.log("i found some messaged counts")
+      }
+    })
+
+    return result
+  })
+
+
+  this.added('todos', organizationId, { results })
+  this.ready()
+
+  // const aggregation = Messages.aggregate([
+  //   {
+  //     $match: {
+  //       campaignId: {$in: campaignIds},
+  //       userId
+  //     }
+  //   },
+  //   {
+  //     $sort: { contactNumber: 1, createdAt: 1 }
+  //   },
+  //   {
+  //     $group: {
+  //       _id : {
+  //         contactNumber: "$contactNumber",
+  //         userId: "$userId",
+  //         campaignId: "$campaignId"
+  //       },
+  //       lastMessageIsFromContact: { $last: "$isFromContact"}
+  //     }
+  //  },
+  //  {
+  //   $group: {
+  //     _id: {lastMessageIsFromContact: "$lastMessageIsFromContact", campaignId: "$_id.campaignId"},
+  //     count: { $sum: 1 }
+  //   }
+  //  }
+  // ])
+
+
+  // assignmentWithCounts = assignments.map((assignment) => {
+  //   const data = {
+  //     assignment,
+  //     unrepliedCount:
+  //   }
+  //   return data
+  // })
+  // ]
+  console.log("AGGREGATION", aggregation)
+
   return [
     {
-      find: () => Campaigns.find({ organizationId }),
-      children: [
-        {
-          find: (campaign) => Messages.find({ campaignId: campaign._id })
-        },
-        {
-          find: (campaign) => {
-            const user = Meteor.users.findOne({ _id: this.userId })
-            return todosForUser(user, organizationId)
-          },
-          children: [
-            {
-              find: (assignment) => assignment.contacts(),
-            }
-          ]
-        }
-      ]
+      find: () => Campaigns.find({ organizationId })
     },
     {
       find: () => OptOuts.find( { organizationId })
