@@ -57,7 +57,7 @@ export class AssignmentSummary extends Component {
 
     const summary = (
       <Card style={styles.root}>
-        <CardTitle title={title} subtitle=`${description} - ${moment(assignment.dueBy).format('MMM D')}` />
+        <CardTitle title={title} subtitle={`${description} - ${moment(assignment.dueBy).format('MMM D YYYY')}`} />
         { (unrepliedCount > 0 || unmessagedCount > 0) ? '' : <CardText>Looks like you're done for now. Nice work!</CardText>}
 
         <CardActions>
