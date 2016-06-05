@@ -38,6 +38,7 @@ export class CampaignForm extends Component {
     this.onTexterAssignment = this.onTexterAssignment.bind(this)
     this.onTitleChange = this.onTitleChange.bind(this)
     this.onDescriptionChange = this.onDescriptionChange.bind(this)
+    this.onDueByChange = this.onDueByChange.bind(this)
     this.handleNext = this.handleNext.bind(this)
     this.handlePrev = this.handlePrev.bind(this)
     this.setupState()
@@ -51,6 +52,7 @@ export class CampaignForm extends Component {
       nextStepEnabled: true,
       title: campaign ? campaign.title : '',
       description: campaign ? campaign.description : '',
+      dueBy: campaign ? campaign.dueBy : null,
       contacts: [],
       customFields: [],
       scripts: [],
@@ -123,6 +125,10 @@ export class CampaignForm extends Component {
     this.setState({title: event.target.value})
   }
 
+  onDueByChange(event, date) {
+    this.setState({dueBy: date})
+  }
+
   onDescriptionChange(event) {
     this.setState({description: event.target.value})
   }
@@ -149,7 +155,8 @@ export class CampaignForm extends Component {
       scripts,
       assignedTexters,
       surveys,
-      customFields
+      customFields,
+      dueBy
     } = this.state
 
     const { organizationId } = this.props
@@ -161,6 +168,7 @@ export class CampaignForm extends Component {
       organizationId,
       assignedTexters,
       customFields,
+      dueBy,
       // FIXME This omit is really awkward. Decide if I should be using subdocument _ids instead.
       scripts: _.map(scripts, (script) => _.omit(script, ['collectionType', '_id'])),
       surveys: _.map(surveys, (survey) => _.omit(survey, ['collectionType', '_id'])),
@@ -328,6 +336,7 @@ export class CampaignForm extends Component {
           description={description}
           onDescriptionChange={this.onDescriptionChange}
           onTitleChange={this.onTitleChange}
+          onDueByChange={this.onDueByChange}
           onContactsUpload={this.onContactsUpload}
           onValid={this.enableNext.bind(this)}
           onInvalid={this.disableNext.bind(this)}

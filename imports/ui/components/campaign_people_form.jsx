@@ -6,10 +6,13 @@ import Divider from 'material-ui/Divider'
 import { ListItem, List } from 'material-ui/List'
 import { parseCSV } from '../../api/campaign_contacts/parse_csv'
 import Formsy from 'formsy-react'
-import { FormsyText } from 'formsy-material-ui/lib'
+import { FormsyText, FormsyDate } from 'formsy-material-ui/lib'
+
 import { Chip } from './chip'
 import Subheader from 'material-ui/Subheader'
 import {Card, CardActions, CardHeader, CardText} from 'material-ui/Card';
+import { moment } from 'meteor/momentjs:moment'
+
 const styles = {
   button: {
     margin: '24px 5px 24px 0',
@@ -163,6 +166,7 @@ export class CampaignPeopleForm extends Component {
       </List>
     )
   }
+
   render() {
     const {
       title,
@@ -170,8 +174,10 @@ export class CampaignPeopleForm extends Component {
       onValid,
       onInvalid,
       onTitleChange,
-      onDescriptionChange
+      onDescriptionChange,
+      onDueByChange
     } = this.props
+
     return (
       <div>
         <Formsy.Form
@@ -186,7 +192,6 @@ export class CampaignPeopleForm extends Component {
             autoFocus
             required
             onChange={onTitleChange}
-            ref="title"
             name='title'
             value={title}
             hintText="e.g. Election Day 2016"
@@ -199,8 +204,15 @@ export class CampaignPeopleForm extends Component {
             onChange={onDescriptionChange}
             hintText="Get out the vote"
             required
-            ref="description"
             floatingLabelText="Description"
+          />
+          <FormsyDate
+            required
+            name='dueBy'
+            floatingLabelText="Due date"
+            onChange={onDueByChange}
+            locale="en-US"
+            shouldDisableDate={(date) => moment(date).diff(moment()) < 0 }
           />
           <input style={styles.hiddenInput} ref="hiddenInput" />
           { this.renderUploadSection() }

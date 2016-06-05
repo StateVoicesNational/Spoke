@@ -94,9 +94,20 @@ export const insert = new ValidatedMethod({
     scripts: { type: [ScriptSchema] },
     assignedTexters: { type: [String]},
     surveys: { type: [Object], blackbox: true},
-    customFields: { type: [String]}
+    customFields: { type: [String]},
+    dueBy: { type: Date }
   }).validator(),
-  run({ title, description, contacts, scripts, customFields, organizationId, assignedTexters, surveys }) {
+  run({
+    title,
+    description,
+    contacts,
+    scripts,
+    customFields,
+    organizationId,
+    assignedTexters,
+    surveys,
+    dueBy
+  }) {
     if (!this.userId || !Roles.userIsInRole(this.userId, 'admin', organizationId)) {
       throw new Meteor.Error('not-authorized');
     }
@@ -107,6 +118,7 @@ export const insert = new ValidatedMethod({
       scripts,
       organizationId,
       customFields,
+      dueBy,
       createdAt: new Date(),
     };
 
