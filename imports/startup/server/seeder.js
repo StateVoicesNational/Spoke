@@ -12,6 +12,22 @@ import { Meteor } from 'meteor/meteor'
 import { Factory } from 'meteor/dburles:factory'
 import { _ } from 'meteor/underscore'
 import { Roles } from 'meteor/alanning:roles'
+import { moment } from 'meteor/momentjs:moment'
+
+const users = [
+  {
+    email: 'admin@test.com',
+    roles: 'admin'
+  },
+  {
+    email: 'texter1@test.com',
+    roles: 'texter'
+  },
+  {
+    email: 'texter2@test.com',
+    roles: 'texter'
+  }
+]
 
 const removeData = () => {
   Organizations.remove({})
@@ -27,10 +43,7 @@ const removeData = () => {
 
 const createContacts = (assignmentId, campaignId) => {
 
-  const cells = [
-    Meteor.settings.private.plivo.testPhoneNumbers.saikat,
-    Meteor.settings.private.plivo.testPhoneNumbers.sheena
-  ]
+  const cells = Meteor.settings.private.plivo.testPhoneNumbers
   const eventUrl = `http://bit.ly/${Fake.word(8)}`
 
   cells.forEach((cell) =>
@@ -82,12 +95,16 @@ const createSurvey = (campaignId) => {
   return newSurvey('Can the supporter attend this event?', parentAnswers)
 }
 
-const createCampaign = (organizationId) => {
+const createCampaign = (data) => {
+  const { organizationId, dueBy } = data
   const customFields = ['eventUrl']
-  return Factory.create('campaign', {
+  const campaign = Factory.create('campaign', {
     organizationId,
+    dueBy,
     customFields,
   })
+  createSurvey(campaign._id)
+  return campaign
 }
 
 const createAssignment = (userId, campaignId) => {
@@ -98,6 +115,19 @@ const createAssignment = (userId, campaignId) => {
   createContacts(assignment._id, campaignId)
 }
 
+const createUser = (user, organizationId) => {
+  const { email, roles } = user
+  const userId = Accounts.createUser({
+    email,
+    firstName: Fake.user().name,
+    lastName: Fake.user().surname,
+    userNumber: Meteor.settings.private.plivo.fromPhoneNumber,
+    password: 'test'
+  })
+
+  Roles.addUsersToRoles(userId, roles, organizationId)
+  return userId
+}
 
 Meteor.startup(() => {
   // TODO this should be a separate settings file
@@ -107,40 +137,20 @@ Meteor.startup(() => {
   if (Meteor.settings.public.refreshTestData) {
     removeData()
 
-    const users = [
-      {
-        email: 'admin@test.com',
-        roles: 'admin'
-      },
-      {
-        email: 'texter1@test.com',
-        roles: 'texter'
-      },
-      {
-        email: 'texter2@test.com',
-        roles: 'texter'
-      }
-    ]
-
     const organizationId = Factory.create('organization', { name: 'Bartlet For President' })._id
 
-    for (let user of users) {
-      const { email, roles } = user
-      const userId = Accounts.createUser({
-        email,
-        firstName: Fake.user().name,
-        lastName: Fake.user().surname,
-        assignedNumber: Meteor.settings.private.plivo.fromPhoneNumber,
-        password: 'test'
-      })
+    const dueDates = [
+      moment().add(3, 'months'),
+      moment().add(2, 'months'),
+      moment().add(1, 'months'),
+      moment().add(-1, 'months'),
+      moment().add(-2, 'months')
+    ]
+    const campaigns = dueDates.map((dueBy) => createCampaign({ organizationId, dueBy: dueBy.toDate() }))
 
-      Roles.addUsersToRoles(userId, roles, organizationId)
-
-      _(2).times(() => {
-        const campaignId = createCampaign(organizationId)._id
-        createSurvey(campaignId)
-        createAssignment(userId, campaignId)
-      })
+    for (let userData of users) {
+      const userId = createUser(userData, organizationId)
+      _.each(campaigns, (campaign) => createAssignment(userId, campaign._id))
     }
   }
 })

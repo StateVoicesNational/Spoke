@@ -33,7 +33,6 @@ export class CampaignsPage extends Component {
   render() {
     const { campaigns, loading, organizationId } = this.props
 
-    console.log("campaigns", campaigns)
     const content = (
       <div>
         <CampaignList

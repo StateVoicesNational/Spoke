@@ -23,7 +23,7 @@ Campaigns.schema = new SimpleSchema({
   title: { type: String },
   description: { type: String },
   createdAt: { type: Date },
-  // dueBy: { type: Date},
+  dueBy: { type: Date },
   customFields: { type: [String] },
   surveyQuestionId: {
     type: String,
@@ -47,6 +47,7 @@ Factory.define('campaign', Campaigns, {
     'Sign up volunteers',
     'Get out the vote!']),
   customFields: [],
+  dueBy: () => new Date(),
   surveyQuestionId: Factory.get('survey_question'),
   scripts: () => [
     {

@@ -10,6 +10,7 @@ import { displayName } from '../../api/users/users'
 import ChatBubble from 'material-ui/svg-icons/communication/chat-bubble';
 import { Empty } from '../components/empty'
 import { AppPage } from '../../ui/layouts/app_page'
+import { FlowRouter } from 'meteor/kadira:flow-router'
 
 const Page = ({ threads, organizationId }) => (
   <AppPage
@@ -31,7 +32,7 @@ const Page = ({ threads, organizationId }) => (
             {threads.map((message) => (
               <ListItem
                 key={message._id}
-                onTouchTap={() => FlowRouter.go(`/${organizationId}/messages/${message.campaignContact()._id}`)}
+                onTouchTap={() => FlowRouter.go('message', { campaignContactId: message.campaignContact()._id, organizationId })}
                 primaryText={displayName(message.campaignContact())}
                 secondaryText={`${message.text}`}
                 secondaryTextLines={2}

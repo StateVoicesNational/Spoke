@@ -2,6 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { Campaigns } from '../../api/campaigns/campaigns.js'
 import { createContainer } from 'meteor/react-meteor-data'
 import { CampaignsPage } from '../pages/campaigns_page'
+import { moment } from 'meteor/momentjs:moment'
 
 
 export default createContainer(({organizationId}) => {
@@ -11,7 +12,8 @@ export default createContainer(({organizationId}) => {
   // UTC
   today = new Date(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate())
 
-  const campaigns = Campaigns.find({ organizationId }).fetch()
+  let campaigns = Campaigns.find({ organizationId }, { sort: { dueBy: -1}}).fetch()
+  // campaigns = _.groupBy(campaigns, (campaign) => moment(campaign.dueBy).diff(moment(today)))
 
   return {
     organizationId,
