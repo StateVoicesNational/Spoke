@@ -60,6 +60,7 @@ Factory.define('campaign', Campaigns, {
       type: ScriptTypes.FAQ
     },
     {
+      // TODO: Enforce that there is only one INITIAL
       text: "Hi {firstName}. This is {texterFirstName} here.",
       type: ScriptTypes.INITIAL
     }
@@ -73,6 +74,10 @@ Campaigns.publicFields = {
 }
 
 Campaigns.helpers({
+  initialScriptText() {
+    const initialScript = _.find(this.scripts, (script) => script.type === ScriptTypes.INITIAL)
+    return initialScript ? initialScript.text : null
+  },
   scriptFields() {
     return this.customFields.concat(CampaignContacts.requiredUploadFields)
   },

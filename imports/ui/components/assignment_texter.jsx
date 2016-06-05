@@ -52,7 +52,6 @@ export class AssignmentTexter extends Component {
     this.handleScriptChange = this.handleScriptChange.bind(this)
 
     this.state.script = this.defaultScript()
-    console.log("after set suggested script in cronstrucotr", this.state)
 
   }
 
@@ -68,7 +67,7 @@ export class AssignmentTexter extends Component {
 
   defaultScript() {
     const { assignment } = this.props
-    return (this.currentContact() && this.currentContact().messages().fetch().length === 0) ? assignment.campaign().script : ''
+    return (this.currentContact() && this.currentContact().messages().fetch().length === 0) ? assignment.campaign().initialScriptText() : ''
   }
 
   contactCount() {
@@ -86,9 +85,11 @@ export class AssignmentTexter extends Component {
 
   handleNavigateNext() {
     if (this.hasNext()) {
+      console.log("navigating next and has next")
       this.incrementCurrentContactIndex(1)
     }
     else {
+      console.log("navigating next and does not have next")
       const { onStopTexting } = this.props
       onStopTexting()
     }
@@ -107,6 +108,7 @@ export class AssignmentTexter extends Component {
   }
 
   onSendMessage() {
+    console.log("on send mesage?")
     this.handleNavigateNext()
   }
 
@@ -133,6 +135,7 @@ export class AssignmentTexter extends Component {
       if (error) {
         alert(error)
       } else {
+        console.log("ON SUCCESS")
         onSuccess()
       }
     })
@@ -197,6 +200,8 @@ export class AssignmentTexter extends Component {
   render() {
     const { assignment, contacts, onStopTexting } = this.props
     const contact = this.currentContact()
+    console.log("CONTACTS", contacts)
+    console.log("THE CONTACT IS", contact)
     if (!contact) {
       return null
     }

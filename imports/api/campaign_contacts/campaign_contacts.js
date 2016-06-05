@@ -17,6 +17,10 @@ CampaignContacts.deny({
   remove() { return true }
 })
 
+const LastMessageSchema = new SimpleSchema({
+  isFromContact: { type: Boolean },
+})
+
 CampaignContacts.schema = new SimpleSchema({
   // userId: { type: String, regEx: SimpleSchema.RegEx.Id, optional: true },
   campaignId: { type: String },
@@ -32,6 +36,11 @@ CampaignContacts.schema = new SimpleSchema({
   campaignSurveyId: {
     type: String,
     optional: true
+  },
+  // Cached last Message
+  lastMessage: {
+    type: LastMessageSchema,
+    optional: true
   }
 })
 
@@ -39,10 +48,6 @@ CampaignContacts.schema = new SimpleSchema({
 CampaignContacts.attachSchema(CampaignContacts.schema)
 CampaignContacts.requiredUploadFields = ['firstName', 'lastName', 'cell']
 CampaignContacts.userScriptFields = ['texterFirstName', 'texterLastName']
-
-const LastMessageSchema = new SimpleSchema({
-  isFromContact: { type: Boolean },
-})
 
 Factory.define('campaign_contact', CampaignContacts, {
   campaignId: () => Factory.get('campaign'),
@@ -58,11 +63,6 @@ Factory.define('campaign_contact', CampaignContacts, {
   createdAt: () => new Date(),
   assignmentId: () => Factory.get('assignment'),
   campaignSurveyId: null,
-
-  // Cached last Message
-  lastMessage: {
-    type: [LastMessageSchema]
-  }
 })
 
 // This represents the keys from CampaignContacts objects that should be published

@@ -73,6 +73,7 @@ momentjs:moment@2.13.1
 mongo@1.1.6
 mongo-id@1.0.3
 mongo-livedata@1.0.11
+msavin:fetcher@1.1.0
 npm-bcrypt@0.7.8_2
 npm-mongo@1.4.42
 observe-sequence@1.0.10

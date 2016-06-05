@@ -96,21 +96,17 @@ Meteor.publishComposite('assignments.todo.additional', function(organizationId) 
 })
 
 
-Meteor.publish('assignment.text', function(assignmentId, contactFilter, organizationId) {
+Meteor.publish('assignment.text', function(assignmentId, contacts, organizationId) {
   console.log("start assignment.text publication")
-  const contactsCursor = contactsForAssignmentCursor(assignmentId, contactFilter)
-  const contacts = contactsCursor.fetch()
 
   const userId = this.userId
   const contactNumbers = contacts.map((contact) => contact.contactNumber)
 
   const assignment = Assignments.findOne(assignmentId) // TODO redundant loading
-  console.log("end publication")
 
   // TODO: Maybe optouts should be reactive, but nothing else really needs to be.
   return [
     Assignments.find({ _id: assignmentId }),
-    contactsCursor,
     Campaigns.find({ _id: assignment.campaignId}),
     Messages.find( { contactNumber: {$in: contactNumbers}, userId }),
     OptOuts.find({ organizationId: organizationId})

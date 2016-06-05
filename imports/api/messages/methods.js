@@ -27,44 +27,47 @@ const getFormattedPhoneNumber = (cell) => {
   }
 }
 
-const getAssignedPhoneNumber = (userId, onSuccess, onError) => {
+const getAssignedPhoneNumber = (userId, onSuccess) => {
+  if (!Meteor.settings.public.textingEnabled) {
+    const result = Meteor.settings.private.plivo.fromPhoneNumber
+    Meteor.users.update({_id: userId}, { $set: { userNumber: result } })
+    onSuccess(result)
+  } else {
+    if (Meteor.isServer) {
+      const plivo = require('plivo').RestAPI({
+        authId: Meteor.settings.private.plivo.authId,
+        authToken: Meteor.settings.private.plivo.authToken
+      })
 
-  if (Meteor.isServer) {
-    const plivo = require('plivo').RestAPI({
-      authId: Meteor.settings.private.plivo.authId,
-      authToken: Meteor.settings.private.plivo.authToken
-    })
+      const params = {
+          'country_iso': 'US', // The ISO code A2 of the country
+          'type' : 'national', // The type of number you are looking for. The possible number types are local, national and tollfree.
+          // 'pattern' : '210', // Represents the pattern of the number to be searched.
+          // 'region' : 'Texas' // This filter is only applicable when the number_type is local. Region based filtering can be performed.
+      };
 
-    const params = {
-        'country_iso': 'US', // The ISO code A2 of the country
-        'type' : 'national', // The type of number you are looking for. The possible number types are local, national and tollfree.
-        // 'pattern' : '210', // Represents the pattern of the number to be searched.
-        // 'region' : 'Texas' // This filter is only applicable when the number_type is local. Region based filtering can be performed.
-    };
-
-    plivo.search_phone_numbers(params, Meteor.bindEnvironment((status, response) => {
-      if (status === 200) {
-        const userNumber = response.objects[0].number
-        plivo.buy_phone_number({number: userNumber}, Meteor.bindEnvironment(function (status, response) {
-            console.log('Status: ', status);
-            console.log('API Response:\n', response);
-            if (status === 201) {
-              const result = getFormattedPhoneNumber(userNumber)
-              console.log("RESULT", result)
-              if (result) {
-                Meteor.users.update({_id: userId}, { $set: { userNumber: result } })
-                onSuccess(result)
-              } else {
-                console.log("failed to get formatted phone number")
+      plivo.search_phone_numbers(params, Meteor.bindEnvironment((status, response) => {
+        if (status === 200) {
+          const userNumber = response.objects[0].number
+          plivo.buy_phone_number({number: userNumber}, Meteor.bindEnvironment(function (status, response) {
+              console.log('Status: ', status);
+              console.log('API Response:\n', response);
+              if (status === 201) {
+                const result = getFormattedPhoneNumber(userNumber)
+                if (result) {
+                  Meteor.users.update({_id: userId}, { $set: { userNumber: result } })
+                  onSuccess(result)
+                } else {
+                  throw new Meteor.Error(500, 'plivo-error', 'could not format response from plivo')
+                }
               }
-            }
-        }))
-      }
-      else {
-        console.log("oops, looks like we did not get a number")
-        onError()
-      }
-    }))
+          }))
+        }
+        else {
+          throw new Meteor.Error(500, 'plivo-error', 'error purchasing number from plivo')
+        }
+      }))
+    }
   }
 }
 
@@ -97,13 +100,17 @@ export const insertMessage = new ValidatedMethod({
     console.log("inserting message!", message)
     Messages.insert(message)
 
+    console.log("HERE")
     // TODO: Cache -- is this ok?
     const contact = CampaignContacts.findOne({ campaignId, cell: contactNumber })
 
     const lastMessage = {
       isFromContact
     }
+    console.log("last Message", lastMessage)
+    console.log("HERE 2")
     CampaignContacts.update( { _id: contact._id }, { $set: { lastMessage }})
+    console.log("HERE 3")
   }
 })
 

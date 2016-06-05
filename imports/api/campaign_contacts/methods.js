@@ -1,12 +1,13 @@
 import { ValidatedMethod } from 'meteor/mdg:validated-method'
 import { SimpleSchema } from 'meteor/aldeed:simple-schema'
 import { CampaignContacts } from './campaign_contacts.js'
-import { Assignments } from '../assignments/assignments.js'
+import { Assignments, contactsForAssignmentCursor } from '../assignments/assignments.js'
 
 export const ContactFilters = {
   UNMESSAGED: 'unmessaged',
   UNREPLIED: 'unreplied'
 }
+
 
 export const getContactsToText = new ValidatedMethod({
   name: 'campaignContacts.getContactsToText',
@@ -18,15 +19,13 @@ export const getContactsToText = new ValidatedMethod({
     }
   }).validator(),
   run({ assignmentId, contactFilter }) {
-    let query
-    if (contactFilter === ContactFilters.UNMESSAGED) {
-      query = { assignmentId, lastMessage: null }
-    } else if (contactFilter === ContactFilters.UNREPLIED) {
-      query = { assignmentId, 'lastMessage.isFromContact': true }
-    }
-    return CampaignContacts.find(query).fetch()
+    console.log("contacts",  contactsForAssignmentCursor(assignmentId, contactFilter).fetch().length)
+    return contactsForAssignmentCursor(assignmentId, contactFilter).fetch()
   }
 })
+
+export const wrappedGetContactsToText = Meteor.wrapAsync(getContactsToText)
+
 
 // TODO We don't actually want to loop this -- we want to bulk insert
 export const insertContact = new ValidatedMethod({

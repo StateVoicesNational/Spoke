@@ -37,7 +37,7 @@ class Page extends React.Component {
 
   render() {
     const { organizationId, loading, texters} = this.props
-
+    const joinUrl = `${Meteor.absoluteUrl()}${organizationId}/join`
     return (
       <AppPage
         navigation={<AdminNavigation
@@ -81,7 +81,7 @@ class Page extends React.Component {
               Send your texting volunteers this link!
             </p>
             <TextField
-              value={`${Meteor.absoluteUrl()}${organizationId}/join`}
+              value={joinUrl}
               fullWidth
               />
           </Dialog>
