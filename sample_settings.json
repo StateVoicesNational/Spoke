@@ -1,0 +1,13 @@
+{
+    "public": {
+        "textingEnabled": false,
+        "refreshTestData": false,
+        "isProduction": false
+    },
+    "private": {
+        "plivo": {
+            "fromPhoneNumber": "+11111111",
+            "toPhoneNumbers": []
+        }
+    }
+}

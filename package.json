@@ -13,6 +13,7 @@
     "draft-js-plugins-editor": "^1.0.1",
     "formsy-material-ui": "^0.4.3",
     "formsy-react": "^0.18.0",
+    "google-libphonenumber": "^1.0.22",
     "immutable": "^3.8.1",
     "libphonenumber": "0.0.10",
     "lodash": "^4.13.1",
