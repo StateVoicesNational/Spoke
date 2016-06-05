@@ -28,7 +28,7 @@ Meteor.publishComposite('assignments', {
 
 Meteor.publish('assignments.todo', function(organizationId) {
   const userId = this.userId
-  const assignments = Assignments.find({ userId }).fetch()
+  const assignments = Assignments.find({ userId }, { sort: {dueBy: -1}}).fetch()
   const assignmentIds = assignments.map((assignment) => assignment._id)
   // Contacts - lastMessage
 

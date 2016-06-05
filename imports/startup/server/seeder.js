@@ -107,10 +107,12 @@ const createCampaign = (data) => {
   return campaign
 }
 
-const createAssignment = (userId, campaignId) => {
+const createAssignment = (userId, campaign) => {
+  const campaignId = campaign._id
   const assignment = Factory.create('assignment', {
-    campaignId,
-    userId
+    userId,
+    campaignId: campaignId,
+    dueBy: campaign.dueBy
   })
   createContacts(assignment._id, campaignId)
 }
@@ -150,7 +152,7 @@ Meteor.startup(() => {
 
     for (let userData of users) {
       const userId = createUser(userData, organizationId)
-      _.each(campaigns, (campaign) => createAssignment(userId, campaign._id))
+      _.each(campaigns, (campaign) => createAssignment(userId, campaign))
     }
   }
 })

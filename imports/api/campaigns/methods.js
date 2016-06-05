@@ -28,12 +28,14 @@ const divideContacts = (contactRows, texters) => {
   return zip(texters, chunked)
 }
 
-const createAssignment = (campaignId, userId, texterContacts) => {
+const createAssignment = ({dueBy, campaignId, userId, texterContacts}) => {
   const assignmentData = {
     campaignId,
     userId,
-    createdAt: new Date()
+    dueBy,
+    createdAt: new Date(),
   }
+
   Assignments.insert(assignmentData, (assignmentError, assignmentId) => {
     if (assignmentError) {
       throw Meteor.Error(assignmentError)
@@ -135,7 +137,7 @@ export const insert = new ValidatedMethod({
         }
         const dividedContacts = divideContacts(contacts, assignedTexters)
         forEach(dividedContacts, ( [texterId, texterContacts] ) => {
-          createAssignment(campaignId, texterId, texterContacts)
+          createAssignment({ dueBy, campaignId, texterId, texterContacts })
         })
       }
       // TODO - autoassignment alternative

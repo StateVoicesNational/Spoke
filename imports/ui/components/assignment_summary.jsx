@@ -5,6 +5,7 @@ import FlatButton from 'material-ui/FlatButton'
 import { Campaigns } from '../../api/campaigns/campaigns'
 import Badge from 'material-ui/Badge'
 import { getContactsToText, ContactFilters } from '../../api/campaign_contacts/methods'
+import { moment } from 'meteor/momentjs:moment'
 
 const styles = {
   badge: {
@@ -56,7 +57,7 @@ export class AssignmentSummary extends Component {
 
     const summary = (
       <Card style={styles.root}>
-        <CardTitle title={title} subtitle={description} />
+        <CardTitle title={title} subtitle=`${description} - ${moment(assignment.dueBy).format('MMM D')}` />
         { (unrepliedCount > 0 || unmessagedCount > 0) ? '' : <CardText>Looks like you're done for now. Nice work!</CardText>}
 
         <CardActions>

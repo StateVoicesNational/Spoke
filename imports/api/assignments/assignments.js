@@ -18,6 +18,7 @@ Assignments.schema = new SimpleSchema({
   userId: { type: String },
   campaignId: { type: String },
   createdAt: { type: Date },
+  dueBy: { type: Date }
 })
 
 Assignments.attachSchema(Assignments.schema)
@@ -25,7 +26,8 @@ Assignments.attachSchema(Assignments.schema)
 Factory.define('assignment', Assignments, {
   userId: 'abcd', // fixme
   campaignId: () => Factory.get('campaign'),
-  createdAt: () => new Date()
+  createdAt: () => new Date(),
+  dueBy: () => new Date()
 })
 
 // This represents the keys from Assignments objects that should be published
