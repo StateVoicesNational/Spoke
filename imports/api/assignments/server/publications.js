@@ -73,7 +73,31 @@ Meteor.publish('assignments.todo', function(organizationId) {
   this.ready()
 })
 
-Meteor.publish('assignment.text', function(assignmentId, contactFilter) {
+// FIXME: between this and assignment.todo we are loading the
+// Assignments twice
+Meteor.publishComposite('assignments.todo.additional', function(organizationId) {
+  // new SimpleSchema({
+  //   assignmentId: { type: String }
+  // }).validate({ assignmentId })
+  const userId = this.userId
+  console.log("publishcomposite assignments.todo.additional", userId)
+  // TODO I actually don't think we need reactivity here.
+  return {
+    find: () => Assignments.find({ userId }),
+    children: [
+      {
+        find: (assignment) => {
+          console.log("find assignment acmapign", assignment.campaignId)
+          return Campaigns.find({ _id: assignment.campaignId })
+        }
+      }
+    ]
+  }
+})
+
+
+Meteor.publish('assignment.text', function(assignmentId, contactFilter, organizationId) {
+  console.log("start assignment.text publication")
   const contactsCursor = contactsForAssignmentCursor(assignmentId, contactFilter)
   const contacts = contactsCursor.fetch()
 
@@ -81,11 +105,15 @@ Meteor.publish('assignment.text', function(assignmentId, contactFilter) {
   const contactNumbers = contacts.map((contact) => contact.contactNumber)
 
   const assignment = Assignments.findOne(assignmentId) // TODO redundant loading
+  console.log("end publication")
+
+  // TODO: Maybe optouts should be reactive, but nothing else really needs to be.
   return [
     Assignments.find({ _id: assignmentId }),
     contactsCursor,
     Campaigns.find({ _id: assignment.campaignId}),
-    Messages.find( { contactNumber: {$in: contactNumbers}, userId })
+    Messages.find( { contactNumber: {$in: contactNumbers}, userId }),
+    OptOuts.find({ organizationId: organizationId})
   ]
 })
 
@@ -94,8 +122,7 @@ Meteor.publishComposite('assignment.allRelatedData', (assignmentId) => {
   //   assignmentId: { type: String }
   // }).validate({ assignmentId })
   const userId = this.userId
-  console.log("this userID")
-// TODO I actually don't think we need reactivity here.
+  // TODO I actually don't think we need reactivity here.
   return {
     find: () => Assignments.find({
       _id: assignmentId

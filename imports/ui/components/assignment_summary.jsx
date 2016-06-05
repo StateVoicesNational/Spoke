@@ -1,9 +1,11 @@
 import React, { Component } from 'react'
 import Paper from 'material-ui/Paper'
-import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
+import {Card, CardActions, CardTitle, CardText} from 'material-ui/Card';
 import FlatButton from 'material-ui/FlatButton'
-import Badge from 'material-ui/Badge';
+import { Campaigns } from '../../api/campaigns/campaigns'
+import Badge from 'material-ui/Badge'
 import { getContactsToText, ContactFilters } from '../../api/campaign_contacts/methods'
+
 const styles = {
   badge: {
     top: 16,
@@ -24,7 +26,6 @@ export class AssignmentSummary extends Component {
 
   renderBadgedButton(assignment, title, count, isPrimary) {
     const { organizationId } = this.props
-    console.log("organizationId", organizationId)
     return (count === 0 ? '' :
       <Badge
         badgeStyle={styles.badge}
@@ -32,7 +33,6 @@ export class AssignmentSummary extends Component {
         primary={isPrimary}
         secondary={!isPrimary}
       >
-        console.log("organizationId")
         <FlatButton
           label={title}
           onTouchTap={ () => FlowRouter.go('textUnmessaged', { organizationId, contactFilter: ContactFilters.UNMESSAGED, assignmentId: assignment._id }) }
@@ -50,11 +50,10 @@ export class AssignmentSummary extends Component {
 
   render() {
     const { assignment, unmessagedCount, unrepliedCount } = this.props
-    // FIXME
-    // const { title, description } = assignment.campaign()
+    console.log("campaigns", assignment.campaignId)
+    console.log(Campaigns.findOne(assignment.campaignId))
+    const { title, description } = Campaigns.findOne(assignment.campaignId)
 
-    const title = 'hi'
-    const description = 'bype'
     const summary = (
       <Card style={styles.root}>
         <CardTitle title={title} subtitle={description} />

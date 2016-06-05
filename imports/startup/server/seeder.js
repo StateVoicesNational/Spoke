@@ -112,17 +112,17 @@ Meteor.startup(() => {
         email: 'admin@test.com',
         roles: 'admin'
       },
-      // {
-      //   email: 'texter1@test.com',
-      //   roles: 'texter'
-      // },
-      // {
-      //   email: 'texter2@test.com',
-      //   roles: 'texter'
-      // }
+      {
+        email: 'texter1@test.com',
+        roles: 'texter'
+      },
+      {
+        email: 'texter2@test.com',
+        roles: 'texter'
+      }
     ]
 
-    const organizationId = Factory.create('organization', { name: 'Batmans for Change' })._id
+    const organizationId = Factory.create('organization', { name: 'Bartlet For President' })._id
 
     for (let user of users) {
       const { email, roles } = user

@@ -6,7 +6,7 @@ import { SurveyQuestions } from '../survey_questions/survey_questions'
 import { Messages } from '../messages/messages'
 import { CampaignContacts } from '../campaign_contacts/campaign_contacts'
 import { moment } from 'meteor/momentjs:moment'
-import { ScriptSchema } from './scripts'
+import { ScriptSchema, ScriptTypes } from './scripts'
 
 export const Campaigns = new Mongo.Collection('campaigns')
 
@@ -39,7 +39,7 @@ Factory.define('campaign', Campaigns, {
   // dueBy: () => moment().add(5, 'days').toDate(),
   title: () => Fake.fromArray([
     'Baltimore Phonebank Recruitment',
-    'Bernie Journey',
+    'Young Voters Rally',
     'NY GOTV',
     'CA Phonebanking']),
   description: () => Fake.fromArray([
@@ -48,15 +48,20 @@ Factory.define('campaign', Campaigns, {
     'Get out the vote!']),
   customFields: [],
   surveyQuestionId: Factory.get('survey_question'),
-  script: () => 'Hey there {name}',
-  faqScripts: () => [
+  scripts: () => [
     {
       title: "I don't have a laptop",
-      script: 'No problem, {name}. You can usually use a tablet. Just be sure to check beforehand!'
+      text: 'No problem, {firstName}. You can usually use a tablet. Just be sure to check beforehand!',
+      type: ScriptTypes.FAQ
     },
     {
       title: "I can only make it for part of the time.",
-      script: "That's okay. You can still come. Just let us know if you can or not."
+      text: "That's okay. You can still come. Just let us know if you can or not.",
+      type: ScriptTypes.FAQ
+    },
+    {
+      text: "Hi {firstName}. This is {texterFirstName} here.",
+      type: ScriptTypes.INITIAL
     }
   ]
 })

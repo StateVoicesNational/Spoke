@@ -62,8 +62,8 @@ export class PublicNavigation extends Component {
           <div>
             { user ? (
               <FlatButton
-                label='Go to your teams'
-                onTouchTap={this.handleOpenUserMenu}
+                label='Go to your account'
+                onTouchTap={() => FlowRouter.go('adminDashboard')}
                 primary
               />
             ) : (

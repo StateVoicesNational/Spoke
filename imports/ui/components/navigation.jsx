@@ -10,6 +10,7 @@ import { capitalize } from 'lodash'
 import ArrowBackIcon from 'material-ui/svg-icons/navigation/arrow-back';
 import { UserMenu } from './user_menu'
 import { organizationsForUser } from '../../api/users/users'
+import { Organizations } from '../../api/organizations/organizations'
 import IconButton from 'material-ui/IconButton'
 import Divider from 'material-ui/Divider'
 const sectionUrl = (organizationId, section) => FlowRouter.path(section, { organizationId })
@@ -51,7 +52,7 @@ export class Navigation extends Component {
     //     children={[<Avatar size={avatarSize}>A</Avatar>]}
     //   />
     // )
-
+    const organization = Organizations.findOne(organizationId)
     return (
       <div>
         { hideSidebar ? '' : (
@@ -61,6 +62,7 @@ export class Navigation extends Component {
             docked={true}
             onRequestChange={(open) => this.setState({ open })}
           >
+            <Subheader>{organization.name}</Subheader>
             <List>
               { sections.map((section) => (
                 <ListItem

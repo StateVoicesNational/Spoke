@@ -73,7 +73,6 @@ export class AssignmentTexter extends Component {
 
   contactCount() {
     const { contacts, assignment } = this.props
-    console.log("contacts passed to AssignmentSummary", contacts, assignment, assignment.contacts().fetch())
     return contacts.length
   }
 

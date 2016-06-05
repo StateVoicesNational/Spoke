@@ -88,12 +88,14 @@ export class LoginForm extends React.Component {
               validationError={emailError}
               required
               autoFocus
+              fullWidth
               floatingLabelText="Email"
             />
             <FormsyText
               required
               name="password"
               type="password"
+              fullWidth
               floatingLabelText="Password"
             />
             <RaisedButton

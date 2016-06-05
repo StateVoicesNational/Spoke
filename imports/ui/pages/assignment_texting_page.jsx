@@ -26,9 +26,9 @@ class _AssignmentTextingPage extends Component {
 }
 
 export const AssignmentTextingPage = createContainer(({ organizationId, assignmentId, contactFilter }) => {
-  const handle = Meteor.subscribe('assignment.text', assignmentId, contactFilter)
-
+  const handle = Meteor.subscribe('assignment.text', assignmentId, contactFilter, organizationId)
   const assignment = Assignments.findOne(assignmentId)
+
   Messages.find({}).fetch() // FIXME should not just blindly fetch here
   return {
     assignment,

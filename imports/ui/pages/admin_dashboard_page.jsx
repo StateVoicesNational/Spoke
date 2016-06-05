@@ -28,7 +28,7 @@ class Page extends React.Component {
     return (
       <AppPage
         navigation={<AdminNavigation
-          title="Dashboard"
+          title='Overview'
           organizationId={organizationId}
         />}
         content={
