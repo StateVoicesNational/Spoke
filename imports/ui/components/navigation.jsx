@@ -113,7 +113,7 @@ export const AppNavigation = ({ backToSection, organizationId, title }) => (
     organizationId={organizationId}
     title={title}
     backToSection={backToSection}
-    sections={['todos', 'assignments', 'messages']}
+    sections={['todos', 'messages']}
     switchListItem={
       <ListItem
         primaryText='Switch to admin'

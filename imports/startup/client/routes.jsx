@@ -1,9 +1,7 @@
 import { FlowRouter } from 'meteor/kadira:flow-router'
 import React from 'react'
 import { mount } from 'react-mounter'
-import AssignmentContainer from '../../ui/containers/assignment_container'
 import CampaignsContainer from '../../ui/containers/campaigns_container'
-import AssignmentsContainer from '../../ui/containers/assignments_container'
 import { SignupForm } from '../../ui/components/signup_form'
 import TexterSignupPage from '../../ui/pages/texter_signup_page'
 import { TextersPage } from '../../ui/pages/texters_page'
@@ -74,29 +72,11 @@ const appOrganizationSection = appSection.group({
   prefix: '/:organizationId'
 })
 
-appOrganizationSection.route('/assignments', {
-  name: 'assignments',
-  action: (params) => {
-    mount(App, {
-      content: () => <AssignmentsContainer {...params} />
-    })
-  }
-})
-
 appOrganizationSection.route('/todos', {
   name: 'todos',
   action: (params) => {
     mount(App, {
       content: () => <TodosPage {...params} />
-    })
-  }
-})
-
-appOrganizationSection.route('/assignments/:assignmentId', {
-  name: 'assignment',
-  action: (params) => {
-    mount(App, {
-      content: () => <AssignmentContainer {...params} />
     })
   }
 })
