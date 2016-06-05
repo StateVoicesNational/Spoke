@@ -19,7 +19,6 @@ export const getContactsToText = new ValidatedMethod({
     }
   }).validator(),
   run({ assignmentId, contactFilter }) {
-    console.log("contacts",  contactsForAssignmentCursor(assignmentId, contactFilter).fetch().length)
     return contactsForAssignmentCursor(assignmentId, contactFilter).fetch()
   }
 })

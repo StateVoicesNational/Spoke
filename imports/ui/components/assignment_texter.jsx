@@ -67,6 +67,8 @@ export class AssignmentTexter extends Component {
 
   defaultScript() {
     const { assignment } = this.props
+
+    console.log("this current contact", this.currentContact())
     return (this.currentContact() && this.currentContact().messages().fetch().length === 0) ? assignment.campaign().initialScriptText() : ''
   }
 
