@@ -1,6 +1,7 @@
 import { Organizations } from '../organizations/organizations'
 import { Campaigns } from '../campaigns/campaigns'
 import { Assignments } from '../assignments/assignments'
+import { Roles } from 'meteor/alanning:roles'
 
 export const displayName = (user) => [user.firstName, user.lastName].join(' ')
 // TODO: Only doing this because Meteor.users.helpers does not seem to work
@@ -9,6 +10,10 @@ export const displayName = (user) => [user.firstName, user.lastName].join(' ')
 
 //   }
 // })
+
+export const userIsTexter = (user) =>  (Roles.getGroupsForUser(user, 'texter').length > 0)
+export const userIsAdmin = (user) =>  (Roles.getGroupsForUser(user, 'admin').length > 0)
+
 
 export const organizationsForUser = (user) => {
   const ids = Roles.getGroupsForUser(user)

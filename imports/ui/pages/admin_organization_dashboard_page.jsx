@@ -12,9 +12,7 @@ import FlatButton from 'material-ui/FlatButton'
 class Page extends React.Component {
   componentWillReceiveProps({ organizationId, organizations, loading }) {
     // redirect / to a list once lists are ready
-    console.log("organizationId", organizationId, Meteor.user())
     if (!organizationId && !loading) {
-      console.log("organizations", organizations, organizationId)
       const organization = organizations[0]
       FlowRouter.go(`/admin/${organization._id}`)
     }

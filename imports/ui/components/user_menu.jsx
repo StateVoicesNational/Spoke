@@ -67,7 +67,7 @@ export class UserMenu extends Component {
   handleMenuChange(event, value) {
     console.log("value", value)
     if (value === 'logout') {
-      Meteor.logout()
+      Meteor.logout(() => FlowRouter.go('/'))
     }
     else {
       FlowRouter.go(`/${value}/campaigns`)

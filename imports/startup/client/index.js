@@ -1,1 +1,2 @@
+import './webfonts'
 import './routes'

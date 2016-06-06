@@ -9,7 +9,7 @@ import Drawer from 'material-ui/Drawer'
 import { capitalize } from 'lodash'
 import ArrowBackIcon from 'material-ui/svg-icons/navigation/arrow-back';
 import { UserMenu } from './user_menu'
-import { organizationsForUser } from '../../api/users/users'
+import { organizationsForUser, userIsTexter, userIsAdmin } from '../../api/users/users'
 import { Organizations } from '../../api/organizations/organizations'
 import IconButton from 'material-ui/IconButton'
 import Divider from 'material-ui/Divider'
@@ -92,33 +92,33 @@ export class Navigation extends Component {
   }
 }
 
-export const AdminNavigation = ({ backToSection, organizationId, title, hideSidebar }) => (
+export const AdminNavigation = ({ user, backToSection, organizationId, title, hideSidebar }) => (
   <Navigation
     title={title}
     organizationId={organizationId}
     backToSection={backToSection}
     sections={['campaigns', 'texters', 'optouts']}
     hideSidebar={hideSidebar}
-    switchListItem={
+    switchListItem={ userIsTexter(user) ?
       <ListItem
         primaryText='Switch to texter'
         onTouchTap={() => FlowRouter.go('todos', { organizationId })}
-      />
+      /> : ''
     }
   />
 )
 
-export const AppNavigation = ({ backToSection, organizationId, title }) => (
+export const AppNavigation = ({ user, backToSection, organizationId, title }) => (
   <Navigation
     organizationId={organizationId}
     title={title}
     backToSection={backToSection}
     sections={['todos', 'messages']}
-    switchListItem={
+    switchListItem={ userIsAdmin(user) ?
       <ListItem
         primaryText='Switch to admin'
         onTouchTap={() => FlowRouter.go('adminOrganizationDashboard', { organizationId })}
-      />
+      /> : ''
     }
   />
 )

@@ -3,10 +3,8 @@ import { createContainer } from 'meteor/react-meteor-data'
 import { LoginPage } from '../pages/login_page'
 import { Organizations } from '../../api/organizations/organizations'
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider'
-import getMuiTheme from 'material-ui/styles/getMuiTheme'
+import { muiTheme } from '../../ui/theme'
 import { PublicNavigation } from '../components/public_navigation'
-
-const muiTheme = getMuiTheme()
 
 const styles = {
   container: {
@@ -35,20 +33,10 @@ export const Public = createContainer(() => {
     })
 
   return (
-    <div>
+    <div style={{height: '100%'}}>
       <MuiThemeProvider muiTheme={muiTheme}>
         <div>
-          <PublicNavigation  user={user} organizations={organizations} />
-          <div className="wrap container-fluid" style={styles.container}>
-            <div className="row">
-              <div className='col-xs'>
-                  <div className="box">
-                    { content }
-                  </div>
-              </div>
-            </div>
-          </div>
-
+          { content }
         </div>
       </MuiThemeProvider>
     </div>

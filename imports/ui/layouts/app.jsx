@@ -3,9 +3,7 @@ import { createContainer } from 'meteor/react-meteor-data'
 import { LoginPage } from '../pages/login_page'
 import { Organizations } from '../../api/organizations/organizations'
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider'
-import getMuiTheme from 'material-ui/styles/getMuiTheme'
-
-const muiTheme = getMuiTheme()
+import { muiTheme } from '../../ui/theme'
 
 export const App = createContainer(() => {
   const handle = Meteor.subscribe('organizations')

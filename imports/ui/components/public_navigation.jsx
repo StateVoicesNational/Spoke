@@ -2,13 +2,9 @@ import React, { Component } from 'react'
 import { Toolbar, ToolbarGroup, ToolbarTitle, ToolbarSeparator } from 'material-ui/Toolbar'
 import FlatButton from 'material-ui/FlatButton'
 import Popover from 'material-ui/Popover';
-import Menu from 'material-ui/Menu';
-import MenuItem from 'material-ui/MenuItem';
-import { Fake } from 'meteor/anti:fake'
 import { LoginForm } from './login_form'
 import { FlowRouter } from 'meteor/kadira:flow-router'
-import Divider from 'material-ui/Divider'
-import Subheader from 'material-ui/Subheader';
+import { userIsTexter, userIsAdmin } from '../../api/users/users'
 
 const styles = {
   toolbar: {
@@ -48,9 +44,24 @@ export class PublicNavigation extends Component {
   }
 
   render() {
-    const { user } = this.props
+    const { user, toolbarStyle } = this.props
+
+    const texterButton = userIsTexter(user) ? (
+      <FlatButton
+        label='Your tasks'
+        onTouchTap={() => FlowRouter.go('appDashboard')}
+        primary
+      />
+    ) : ''
+    const adminButton = userIsAdmin(user) ? (
+      <FlatButton
+        label='Admin'
+        onTouchTap={() => FlowRouter.go('adminDashboard')}
+        primary
+      />
+    ) : ''
     return (
-      <Toolbar style={styles.toolbar}>
+      <Toolbar style={_.extend(styles.toolbar, toolbarStyle || {})}>
         <ToolbarGroup
           float="left"
           firstChild
@@ -60,13 +71,10 @@ export class PublicNavigation extends Component {
           lastChild
         >
           <div>
-            { user ? (
-              <FlatButton
-                label='Go to your account'
-                onTouchTap={() => FlowRouter.go('adminDashboard')}
-                primary
-              />
-            ) : (
+            { user ? [
+              texterButton,
+              adminButton
+            ] : (
               <div>
                 <FlatButton
                   label={ user ? user.emails[0].address : 'Create team' }
