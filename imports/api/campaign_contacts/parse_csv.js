@@ -20,7 +20,7 @@ export const parseCSV  = (file, callback) => {
 
       if (missingFields.length > 0) {
         // TODO better to throw error?
-        const error = `Missing fields: ${missingFields.join(',')}`
+        const error = `Missing fields: ${missingFields.join(', ')}`
         callback({ error })
       }
       else {

@@ -5,9 +5,17 @@ import { ListItem, List } from 'material-ui/List'
 import { parseCSV } from '../../api/campaign_contacts/parse_csv'
 import Subheader from 'material-ui/Subheader'
 import { CampaignFormSectionHeading } from './campaign_form_section_heading'
-import CheckCircle from 'material-ui/svg-icons/action/check-circle'
-import Warning from 'material-ui/svg-icons/alert/warning'
+import CheckIcon from 'material-ui/svg-icons/action/check-circle'
+import WarningIcon from 'material-ui/svg-icons/alert/warning'
+import ErrorIcon from 'material-ui/svg-icons/alert/error'
 import { orange200, red400, green500 } from 'material-ui/styles/colors'
+
+// TODO: https://github.com/callemall/material-ui/pull/4025 color property
+// may be fixed on the SVGIcons eventually
+
+const checkIcon = <CheckIcon style={{fill: green500}} />
+const warningIcon = <WarningIcon style={{fill: orange200}} />
+const errorIcon = <ErrorIcon style={{fill: red400}} />
 
 const styles = {
   button: {
@@ -42,7 +50,9 @@ export class CampaignPeopleForm extends Component {
 
     this.handleUpload = this.handleUpload.bind(this)
     this.state = {
-      uploading: false
+      uploading: false,
+      validationStats: null,
+      contactUploadError: null
     }
   }
 
@@ -55,29 +65,24 @@ export class CampaignPeopleForm extends Component {
     const file = event.target.files[0]
     this.setState({uploading: true}, () => {
       // TODO: Handle error!
+      const uploading = false
       parseCSV(file, ({ contacts, customFields, validationStats, error}) => {
-        let newContactsValue = ''
-        let contactError = null
-
         if (error) {
-          contactError = error
+          this.setState({ validationStats: null, uploading, contactUploadError: error})
         } else if (contacts.length === 0) {
-          contactError = 'Upload at least one contact'
+          this.setState({ validationStats: null, uploading, contactUploadError: 'Upload at least one contact'})
         } else if (contacts.length > 0) {
-          contactError = null
+          this.setState( { validationStats, uploading, contactUploadError: null })
           const { onContactsUpload } = this.props
-          onContactsUpload({ contacts, customFields, validationStats})
-          newContactsValue = this.getUploadInputValue(contacts)
+          onContactsUpload({ contacts, customFields })
         }
-
-        this.setState( { uploading: false })
       })
     })
   }
 
   renderValidationStats() {
     const { customFields, contacts } = this.props
-    const { dupeCount, missingCellCount, invalidCellCount } = this.props.validationStats
+    const { dupeCount, missingCellCount, invalidCellCount } = this.state.validationStats
 
     let stats = [
       [dupeCount, 'duplicates'],
@@ -86,21 +91,16 @@ export class CampaignPeopleForm extends Component {
     ]
     stats = stats.filter(([count, text]) => count > 0).map(([count, text]) => `${count} ${text} removed`)
 
-    // TODO: https://github.com/callemall/material-ui/pull/4025 color property
-    // may be fixed on the SVGIcons eventually
-    const check = <CheckCircle style={{fill: green500}} />
-    const warning = <Warning style={{fill: orange200}} />
-
     return (
       <List>
         <ListItem
           primaryText={`${contacts.length} contacts`}
-          leftIcon={check}
+          leftIcon={checkIcon}
           leftIconColor={green500}
         />
         <ListItem
           primaryText={`${customFields.length} custom fields`}
-          leftIcon={check}
+          leftIcon={checkIcon}
           nestedItems={customFields.map((field) => (
             <ListItem
               innerDivStyle={styles.nestedItem}
@@ -111,7 +111,7 @@ export class CampaignPeopleForm extends Component {
         <Divider />
         { stats.map((stat) => (
           <ListItem
-            leftIcon={warning}
+            leftIcon={warningIcon}
             innerDivStyle={styles.nestedItem}
             primaryText={stat}
           />
@@ -121,13 +121,14 @@ export class CampaignPeopleForm extends Component {
   }
 
   render() {
-    const { contacts, validationStats, customFields } = this.props
+    const { contacts, customFields } = this.props
+    const { validationStats, contactUploadError } = this.state
     console.log("validation Stas", validationStats)
     const { uploading } = this.state
     return (
       <div>
         <CampaignFormSectionHeading
-          title='Tell us who you need to contact'
+          title='Who are you contacting?'
           subtitle='Upload a CSV with your list of contacts and cell phone numbers.'
         />
 
@@ -142,7 +143,14 @@ export class CampaignPeopleForm extends Component {
           />
         </RaisedButton>
         {validationStats ? this.renderValidationStats() : ''}
-
+        { contactUploadError ? (
+          <List>
+            <ListItem
+              primaryText={contactUploadError}
+              leftIcon={errorIcon}
+            />
+          </List>
+        ) : ''}
       </div>
     )
   }

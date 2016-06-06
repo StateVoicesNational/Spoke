@@ -28,15 +28,17 @@ const styles = {
     marginTop: 48,
   },
   stepContent: {
-    marginTop: 56
+    marginTop: 56,
+    paddingBottom: 60
   },
   stepper: {
     backgroundColor: grey50,
-    position: 'absolute',
     padding: '25 10',
     bottom: 0,
     right: 0,
-    left: 0
+    left: 0,
+    height: 56,
+    position: 'fixed'
   }
 }
 export class CampaignForm extends Component {
@@ -231,12 +233,11 @@ export class CampaignForm extends Component {
     })
   }
 
-  onContactsUpload({contacts, customFields, validationStats}) {
+  onContactsUpload({contacts, customFields }) {
     console.log("setting state now!", )
     this.setState({
       contacts,
       customFields,
-      validationStats
     })
   }
 
@@ -358,14 +359,13 @@ export class CampaignForm extends Component {
   }
 
   renderPeopleSection() {
-    const { contacts, customFields, validationStats } = this.state
+    const { contacts, customFields } = this.state
 
     return (
       <div>
         <CampaignPeopleForm
           contacts={contacts}
           customFields={customFields}
-          validationStats={validationStats}
           onContactsUpload={this.onContactsUpload}
           onValid={this.enableNext.bind(this)}
           onInvalid={this.disableNext.bind(this)}
@@ -379,7 +379,7 @@ export class CampaignForm extends Component {
   }
 
   renderScriptSection() {
-    const { contacts, validationStats, scripts, customFields} = this.state
+    const { contacts, scripts, customFields} = this.state
 
     const faqScripts = scripts.filter((script) => script.type === ScriptTypes.FAQ)
     const defaultScript = scripts.find((script) => script.type === ScriptTypes.INITIAL)
@@ -406,6 +406,10 @@ export class CampaignForm extends Component {
       </div>
     ) : (
       <div>
+        <div style={styles.stepContent} >
+          {this.stepContent(stepIndex)}
+          {this.renderNavigation()}
+        </div>
         <Stepper
           style={styles.stepper}
           activeStep={stepIndex}
@@ -416,10 +420,7 @@ export class CampaignForm extends Component {
             </Step>
           ))}
         </Stepper>
-        <div style={styles.stepContent} >
-          {this.stepContent(stepIndex)}
-          {this.renderNavigation()}
-        </div>
+
       </div>
     )
   }

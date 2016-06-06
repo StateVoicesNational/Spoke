@@ -25,8 +25,9 @@ export class CampaignBasicsForm extends Component {
 
     return (
       <div>
-        <CampaignFormSectionHeading title='Tell us the basics'
-        subtitle="Describe what you're hoping to accomplish" />
+        <CampaignFormSectionHeading
+          title="What's your campaign about?"
+        />
         <Formsy.Form
           ref="form"
           onValid={onValid}
