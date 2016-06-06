@@ -1,18 +1,27 @@
-# Running the app
+# Installation/setup
 
-1. Install necessary packages.
+After cloning, install necessary packages
+
 ```
 meteor npm install
 
 ```
 
-2. Run script to set up settings
+Run script to create settings file
+
 ```
 ./setup
 
 ```
 
-3. Edit the newly created `private/settings.json` to add any API keys, etc.
+Edit the newly created `private/settings.json` to add any API keys, etc.
 
-4. Start app
-`meteor --settings private/settings.json`
+
+# Running app
+
+```
+meteor --settings private/settings.json`
+```
+
+# Creating dummy data
+To create dummy data, change refreshTestData in `private/settings.json` to `true` and refresh server (then change back to `false` or it'll recreate data every time any file changes.)
