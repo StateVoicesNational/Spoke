@@ -1,15 +1,9 @@
 import React, { Component } from 'react'
 import AutoComplete from 'material-ui/AutoComplete'
-import Avatar from 'material-ui/Avatar'
-import RaisedButton from 'material-ui/RaisedButton'
-import Divider from 'material-ui/Divider'
-import { ListItem, List } from 'material-ui/List'
-import { parseCSV } from '../../api/campaign_contacts/parse_csv'
-import Formsy from 'formsy-react'
-import { FormsyText } from 'formsy-material-ui/lib'
+import { MenuItem } from 'material-ui/Menu'
 import { Chip } from './chip'
-import Subheader from 'material-ui/Subheader'
-import {Card, CardActions, CardHeader, CardText} from 'material-ui/Card';
+import {RadioButton, RadioButtonGroup} from 'material-ui/RadioButton';
+import { CampaignFormSectionHeading } from './campaign_form_section_heading'
 
 export class CampaignAssignmentForm extends Component {
   constructor(props) {
@@ -23,28 +17,25 @@ export class CampaignAssignmentForm extends Component {
     if (typeof(value) === 'object') {
       const texterId = value.value.key
       // TODO react addon for modifying immutable state
-      let newAssignedTexters
-      if (texterId === 'allTexters') {
-        const { texters } = this.props
-        newAssignedTexters = texters.map((texter) => texter._id)
-      } else {
-        const { assignedTexters } = this.props
-        newAssignedTexters = assignedTexters.concat([texterId])
-      }
-
+      const newAssignedTexters = assignedTexters.concat([texterId])
       const { onTexterAssignment } = this.props
       onTexterAssignment(newAssignedTexters)
     }
+  }
+
+  onChange(event, value) {
+    const { texters, onTexterAssignment } = this.props
+    const assignedTexters = (value === 'assignAll') ? texters.map((texter) => texter._id) : []
+    onTexterAssignment(assignedTexters)
   }
 
   dataSourceItem(name, key, image) {
     return {
       text: name,
       value: (
-        <ListItem
+        <MenuItem
           key={key}
           primaryText={name}
-          avatar={<Avatar src={image} />}
         />
       )
     }
@@ -53,15 +44,12 @@ export class CampaignAssignmentForm extends Component {
   render() {
     const { texters, assignedTexters } = this.props
     // TODO remove already assigned texters
-    const dataSource = [this.dataSourceItem('Assign all texters', 'allTexters', null)].concat(
-      texters.filter((texter) =>
+    const dataSource = texters.filter((texter) =>
         assignedTexters.indexOf(texter._id) === -1).map((texter) =>
           this.dataSourceItem(
           `${texter.firstName} ${texter.lastName}`,
-          texter._id,
-          'images/chexee-128.jpg'
+          texter._id
         )
-      )
     )
     // TODO helper function for the names
 
@@ -80,6 +68,20 @@ export class CampaignAssignmentForm extends Component {
 
     return (
       <div>
+        <CampaignFormSectionHeading
+          title='Who should send the texts?'
+        />
+
+        <RadioButtonGroup name="assignment" defaultSelected="assignAll">
+          <RadioButton
+            value="assignAll"
+            label="Assign all currently available texters"
+          />
+          <RadioButton
+            value="assignIndividual"
+            label="Choose individual people to assign"
+          />
+        </RadioButtonGroup>
        {autocomplete}
        { assignedTexters.map((texterId) => {
           const user = Meteor.users.findOne({_id: texterId})

@@ -8,7 +8,30 @@ import Dialog from 'material-ui/Dialog'
 import { CampaignContacts } from '../../api/campaign_contacts/campaign_contacts'
 import { ScriptTypes } from '../../api/campaigns/scripts'
 import TextField from 'material-ui/TextField'
+import Divider from 'material-ui/Divider'
+import { muiTheme } from '../../ui/theme'
+import { CampaignFormSectionHeading } from './campaign_form_section_heading'
 
+const styles = {
+  scriptRow: {
+    padding: 15,
+    marginBottom: 40,
+    borderLeft: `5px solid ${muiTheme.palette.primary1Color}`
+  },
+  scriptTitle: {
+    fontWeight: 'medium'
+  },
+  scriptSectionSubtitle: {
+    color: 'gray',
+    fontWeight: 'light',
+    marginTop: 0,
+    marginBottom: 36,
+    fontSize: 12
+  },
+  scriptSectionTitle: {
+    marginBottom: 0
+  }
+}
 export class CampaignScriptsForm extends Component {
   constructor(props) {
     super(props)
@@ -96,6 +119,25 @@ export class CampaignScriptsForm extends Component {
       </Dialog>
     )
   }
+
+  renderScriptRow(script) {
+    return (script ? (
+      <div style={styles.scriptRow}>
+        <span style={styles.scriptTitle}>
+          {script.title}
+        </span>
+        <div>
+          {script.text}
+        </div>
+      </div>
+    ) : (
+        <RaisedButton
+          label={'Add script'}
+          onTouchTap={this.handleAddScript }
+        />
+      )
+    )
+  }
   render() {
     const {
       faqScripts,
@@ -105,39 +147,25 @@ export class CampaignScriptsForm extends Component {
       onScriptDelete,
       sampleContact,
       customFields } = this.props
+
+    const sectionHeading = (title, subtitle) => [
+      <h3 style={styles.scriptSectionTitle}>{title}</h3>,
+      <h4 style={styles.scriptSectionSubtitle}>{subtitle}</h4>
+    ]
     return (
       <div>
-        <Table>
-          <TableBody
-            displayRowCheckbox={false}
-          >
-            <TableRow>
-              <TableRowColumn>Default script</TableRowColumn>
-              <TableRowColumn>
-                {script ? script.text : ''}
-              </TableRowColumn>
-              <TableRowColumn>
-                  <FlatButton
-                    label={script ? 'Edit' : 'Add script'}
-                    // onTouchTap={handleSaveScriptRow}
-                    secondary
-                  />
-              </TableRowColumn>
-            </TableRow>
-            {faqScripts.map((faqScript) => (
-                <TableRow>
-                  <TableRowColumn>{faqScript.title}</TableRowColumn>
-                  <TableRowColumn>{faqScript.text}</TableRowColumn>
-                </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-        <FlatButton
+        <CampaignFormSectionHeading
+          title='What do you want to say?'
+        />
+        { sectionHeading('First message script', "This script is what we'll automatically fill in for texters when they first send the first message to a contact.")}
+        { this.renderScriptRow(script)}
+        <Divider />
+        { sectionHeading('Saved replies', "These replies will appear in a list for texters to choose to answer common issues and questions when a contact has responded. You can think of it as a FAQ section of sorts.")}
+        { faqScripts.map((faqScript) => this.renderScriptRow(faqScript))}
+        <RaisedButton
           label={'Add saved reply'}
           onTouchTap={this.handleAddScript }
-          secondary
         />
-
         { this.renderDialog()}
       </div>
     )
