@@ -2,8 +2,6 @@ import React, { Component } from 'react'
 import FlatButton from 'material-ui/FlatButton'
 import RaisedButton from 'material-ui/RaisedButton'
 import { ScriptEditor } from './script_editor'
-import Subheader from 'material-ui/Subheader'
-import { Table, TableBody, TableRow, TableRowColumn } from 'material-ui/Table'
 import Dialog from 'material-ui/Dialog'
 import { CampaignContacts } from '../../api/campaign_contacts/campaign_contacts'
 import { ScriptTypes } from '../../api/campaigns/scripts'
@@ -11,11 +9,20 @@ import TextField from 'material-ui/TextField'
 import Divider from 'material-ui/Divider'
 import { muiTheme } from '../../ui/theme'
 import { CampaignFormSectionHeading } from './campaign_form_section_heading'
-
+import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
+import DeleteIcon from 'material-ui/svg-icons/action/delete'
+import EditIcon from 'material-ui/svg-icons/image/edit'
+import IconButton from 'material-ui/IconButton'
 const styles = {
+  icon: {
+    width: 18,
+    height: 18,
+  },
+  button: {
+    width: 22,
+    height: 18,
+  },
   scriptRow: {
-    padding: 15,
-    marginBottom: 40,
     borderLeft: `5px solid ${muiTheme.palette.primary1Color}`
   },
   scriptTitle: {
@@ -122,14 +129,33 @@ export class CampaignScriptsForm extends Component {
 
   renderScriptRow(script) {
     return (script ? (
-      <div style={styles.scriptRow}>
-        <span style={styles.scriptTitle}>
-          {script.title}
-        </span>
-        <div>
+      <Card style={styles.scriptRow}>
+        { script.title ? (
+          <CardHeader
+            style={styles.scriptTitle}
+            title={script.title}
+          />
+        ) : ''
+        }
+        <CardText>
           {script.text}
-        </div>
-      </div>
+        </CardText>
+        <Divider />
+        <CardActions>
+          <IconButton
+            iconStyle={styles.icon}
+            style={styles.button}
+          >
+            <EditIcon />
+          </IconButton>
+          <IconButton
+            iconStyle={styles.icon}
+            style={styles.icon}
+          >
+            <DeleteIcon />
+          </IconButton>
+        </CardActions>
+      </Card>
     ) : (
         <RaisedButton
           label={'Add script'}
