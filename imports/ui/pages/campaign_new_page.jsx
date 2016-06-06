@@ -35,7 +35,7 @@ class _CampaignNewPage extends React.Component {
                   autoFocus
                   onFocus={(event) => event.target.select()}
                   fullWidth
-                  value={`${Meteor.absoluteUrl()}${FlowRouter.path('texterSignup', { organizationId })}`}
+                  value={`${Meteor.absoluteUrl()}${organizationId}/join`}
                 />
               </CardText>
             </Card>

@@ -9,6 +9,9 @@ import { userIsTexter, userIsAdmin } from '../../api/users/users'
 const styles = {
   toolbar: {
     backgroundColor: 'white'
+  },
+  button: {
+    color: 'white'
   }
 }
 export class PublicNavigation extends Component {
@@ -40,7 +43,6 @@ export class PublicNavigation extends Component {
 
   handleMenuChange(event, value) {
     FlowRouter.go(`/${value}/campaigns`)
-    console.log("value!", value)
   }
 
   render() {
@@ -48,6 +50,7 @@ export class PublicNavigation extends Component {
 
     const texterButton = userIsTexter(user) ? (
       <FlatButton
+        style={styles.button}
         label='Your tasks'
         onTouchTap={() => FlowRouter.go('appDashboard')}
         primary
@@ -55,6 +58,7 @@ export class PublicNavigation extends Component {
     ) : ''
     const adminButton = userIsAdmin(user) ? (
       <FlatButton
+        style={styles.button}
         label='Admin'
         onTouchTap={() => FlowRouter.go('adminDashboard')}
         primary
@@ -77,13 +81,15 @@ export class PublicNavigation extends Component {
             ] : (
               <div>
                 <FlatButton
+                  style={styles.button}
                   label={ user ? user.emails[0].address : 'Create team' }
                   linkButton
-                  href={ '/signup' }
+                  href={ FlowRouter.path('createTeam') }
                   primary
                 />
 
                 <FlatButton
+                  style={styles.button}
                   label={ user ? user.emails[0].address : 'Log in' }
                   onTouchTap={this.handleOpenUserMenu}
                   primary

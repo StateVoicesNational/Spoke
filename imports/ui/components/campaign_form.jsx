@@ -6,8 +6,10 @@ import { insert } from '../../api/campaigns/methods'
 import { ScriptTypes } from '../../api/campaigns/scripts'
 import { CampaignScriptsForm } from './campaign_scripts_form'
 import { CampaignPeopleForm } from './campaign_people_form'
+import { CampaignBasicsForm } from './campaign_basics_form'
 import { CampaignSurveyForm } from './campaign_survey_form'
 import { CampaignAssignmentForm } from './campaign_assignment_form'
+import { grey50 } from 'material-ui/styles/colors'
 
 import {Tabs, Tab} from 'material-ui/Tabs'
 
@@ -23,7 +25,18 @@ const LocalCollection = new Mongo.Collection(null)
 
 const styles = {
   stepperNavigation: {
-    marginTop: 48
+    marginTop: 48,
+  },
+  stepContent: {
+    marginTop: 56
+  },
+  stepper: {
+    backgroundColor: grey50,
+    position: 'absolute',
+    padding: '25 10',
+    bottom: 0,
+    right: 0,
+    left: 0
   }
 }
 export class CampaignForm extends Component {
@@ -90,8 +103,9 @@ export class CampaignForm extends Component {
     // workaround for https://github.com/meteor/react-packages/issues/99
     setTimeout(this.startComputation.bind(this), 0);
     this.steps = [
-      ['People', this.renderPeopleSection.bind(this)],
-      ['Assignment', this.renderAssignmentSection.bind(this)],
+      // ['Basics', this.renderBasicsSection.bind(this)],
+      ['Contacts', this.renderPeopleSection.bind(this)],
+      ['Texters', this.renderAssignmentSection.bind(this)],
       ['Scripts', this.renderScriptSection.bind(this)],
       ['Surveys', this.renderSurveySection.bind(this)],
     ]
@@ -216,8 +230,9 @@ export class CampaignForm extends Component {
       nextStepEnabled: false
     })
   }
-  onContactsUpload(contacts, customFields, validationStats) {
-    console.log("contacts upload!")
+
+  onContactsUpload({contacts, customFields, validationStats}) {
+    console.log("setting state now!", )
     this.setState({
       contacts,
       customFields,
@@ -323,8 +338,27 @@ export class CampaignForm extends Component {
     )
   }
 
+  renderBasicsSection() {
+    const { title, description, dueBy } = this.state
+
+    return (
+      <div>
+        <CampaignBasicsForm
+          title={title}
+          description={description}
+          dueBy={dueBy}
+          onDescriptionChange={this.onDescriptionChange}
+          onTitleChange={this.onTitleChange}
+          onDueByChange={this.onDueByChange}
+          onValid={this.enableNext.bind(this)}
+          onInvalid={this.disableNext.bind(this)}
+        />
+      </div>
+    )
+  }
+
   renderPeopleSection() {
-    const { contacts, customFields, validationStats, title, description } = this.state
+    const { contacts, customFields, validationStats } = this.state
 
     return (
       <div>
@@ -332,11 +366,6 @@ export class CampaignForm extends Component {
           contacts={contacts}
           customFields={customFields}
           validationStats={validationStats}
-          title={title}
-          description={description}
-          onDescriptionChange={this.onDescriptionChange}
-          onTitleChange={this.onTitleChange}
-          onDueByChange={this.onDueByChange}
           onContactsUpload={this.onContactsUpload}
           onValid={this.enableNext.bind(this)}
           onInvalid={this.disableNext.bind(this)}
@@ -377,14 +406,17 @@ export class CampaignForm extends Component {
       </div>
     ) : (
       <div>
-        <Stepper activeStep={stepIndex}>
+        <Stepper
+          style={styles.stepper}
+          activeStep={stepIndex}
+        >
           { this.steps.map(([stepTitle, ...rest]) => (
             <Step>
               <StepLabel>{stepTitle}</StepLabel>
             </Step>
           ))}
         </Stepper>
-        <div>
+        <div style={styles.stepContent} >
           {this.stepContent(stepIndex)}
           {this.renderNavigation()}
         </div>

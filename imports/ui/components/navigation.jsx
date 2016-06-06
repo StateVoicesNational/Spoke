@@ -62,7 +62,6 @@ export class Navigation extends Component {
             docked={true}
             onRequestChange={(open) => this.setState({ open })}
           >
-            <Subheader>{organization.name}</Subheader>
             <List>
               { sections.map((section) => (
                 <ListItem

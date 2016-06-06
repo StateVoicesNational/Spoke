@@ -113,9 +113,11 @@ export class SignupForm extends React.Component {
             name="organizationName"
             required
             fullWidth
+            hintText="Bartlet Campaign"
             floatingLabelText="Your organization"
           />
           <RaisedButton
+            fullWidth
             style={submitStyle}
             type="submit"
             label="Sign up"

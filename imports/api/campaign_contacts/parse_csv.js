@@ -54,14 +54,16 @@ export const parseCSV  = (file, callback) => {
         })
 
         validationStats.invalidCellCount = badCells.length
-        // validatedData = uniqBy(validatedData, (row) => row.cell )
+        validatedData = uniqBy(validatedData, (row) => row.cell )
 
-        // validationStats.dupeCount = count - validatedData.length
+        validationStats.dupeCount = count - validatedData.length
 
         validatedData = _.filter(validatedData, (row) => !!row.cell)
         validationStats.missingCellCount = count - validationStats.dupeCount - validatedData.length
 
         const customFields = fields.filter((field) => CampaignContacts.requiredUploadFields.indexOf(field) === -1)
+
+        console.log("validation stats!", validationStats)
         callback({
           customFields,
           validationStats,

@@ -7,17 +7,10 @@ import { addTexter } from '../../api/organizations/methods'
 import { FlowRouter } from 'meteor/kadira:flow-router'
 
 const errorMessages = {
-  emailError: "Please only use letters",
+  emailError: "Please enter a valid email",
 }
 
 const styles = {
-  paperStyle: {
-    margin: 'auto',
-    padding: 20
-  },
-  switchStyle: {
-    marginBottom: 16
-  },
   submitStyle: {
     marginTop: 32
   }
@@ -69,7 +62,7 @@ export class TexterSignupForm extends React.Component {
 
   render() {
     const { organization } = this.props
-    let {paperStyle, switchStyle, submitStyle } = styles;
+    let {submitStyle } = styles;
     let { emailError, numericError, urlError } = errorMessages;
 
     return (

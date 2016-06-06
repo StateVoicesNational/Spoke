@@ -1,17 +1,13 @@
 import React, { Component } from 'react'
-import AutoComplete from 'material-ui/AutoComplete'
-import Avatar from 'material-ui/Avatar'
 import RaisedButton from 'material-ui/RaisedButton'
 import Divider from 'material-ui/Divider'
 import { ListItem, List } from 'material-ui/List'
 import { parseCSV } from '../../api/campaign_contacts/parse_csv'
-import Formsy from 'formsy-react'
-import { FormsyText, FormsyDate } from 'formsy-material-ui/lib'
-
-import { Chip } from './chip'
 import Subheader from 'material-ui/Subheader'
-import {Card, CardActions, CardHeader, CardText} from 'material-ui/Card';
-import { moment } from 'meteor/momentjs:moment'
+import { CampaignFormSectionHeading } from './campaign_form_section_heading'
+import CheckCircle from 'material-ui/svg-icons/action/check-circle'
+import Warning from 'material-ui/svg-icons/alert/warning'
+import { orange200, red400, green500 } from 'material-ui/styles/colors'
 
 const styles = {
   button: {
@@ -31,9 +27,8 @@ const styles = {
   hiddenInput: {
     opacity: 0
   },
-  uploadErrorListItem: {
+  nestedItem: {
     fontSize: '12px',
-    padding: '8px 16px'
   },
   customField: {
     fontStyle: 'italic',
@@ -46,6 +41,9 @@ export class CampaignPeopleForm extends Component {
     super(props)
 
     this.handleUpload = this.handleUpload.bind(this)
+    this.state = {
+      uploading: false
+    }
   }
 
 
@@ -54,112 +52,67 @@ export class CampaignPeopleForm extends Component {
   }
   handleUpload(event) {
     event.preventDefault()
-    // TODO: Handle error!
-    parseCSV(event.target.files[0], ({ contacts, customFields, validationStats, error}) => {
-      let newContactsValue = ''
-      let contactError = null
+    const file = event.target.files[0]
+    this.setState({uploading: true}, () => {
+      // TODO: Handle error!
+      parseCSV(file, ({ contacts, customFields, validationStats, error}) => {
+        let newContactsValue = ''
+        let contactError = null
 
-      if (error) {
-        contactError = error
-      } else if (contacts.length === 0) {
-        contactError = 'Upload at least one contact'
-      } else if (contacts.length > 0) {
-        contactError = null
-        newContactsValue = this.getUploadInputValue(contacts)
-      }
+        if (error) {
+          contactError = error
+        } else if (contacts.length === 0) {
+          contactError = 'Upload at least one contact'
+        } else if (contacts.length > 0) {
+          contactError = null
+          const { onContactsUpload } = this.props
+          onContactsUpload({ contacts, customFields, validationStats})
+          newContactsValue = this.getUploadInputValue(contacts)
+        }
 
-      // Focus first so the blur refisters
-      this.refs.contacts.focus()
-
-      this.refs.contacts.setState({
-        value: newContactsValue,
-      }, () => {
-          // Blur just so we can actually get our form to validate
-          this.refs.hiddenInput.focus()
-
-          this.refs.form.updateInputsWithError({
-            contacts: contactError
-          })
-
-          if (!contactError) {
-            const { onContactsUpload } = this.props
-            onContactsUpload(contacts, customFields, validationStats)
-          }
-
+        this.setState( { uploading: false })
       })
     })
-
-  }
-
-  renderUploadSection() {
-    const { contacts, validationStats, customFields } = this.props
-    return (
-      <div>
-        <RaisedButton
-          style={styles.button}
-          label= "Upload contacts"
-          labelPosition="before"
-        >
-          <input type="file"
-            style={styles.exampleImageInput}
-            onChange={this.handleUpload}
-          />
-        </RaisedButton>
-        <FormsyText
-          required
-          style={{opacity: 0}}
-          ref="contacts"
-          name="contacts"
-          value={this.getUploadInputValue(contacts)}
-        />
-        {validationStats ? this.renderImportValidation() : ''}
-      </div>
-    )
-  }
-
-  renderImportValidation() {
-    const { contacts, customFields, validationStats } = this.props
-    return (
-      <Card>
-        <CardText>
-          <div>
-            {this.renderValidationStats()}
-          </div>
-        </CardText>
-      </Card>
-
-    )
   }
 
   renderValidationStats() {
     const { customFields, contacts } = this.props
     const { dupeCount, missingCellCount, invalidCellCount } = this.props.validationStats
-    const stats = [
-      `${dupeCount} duplicate numbers removed`,
-      `${missingCellCount} missing numbers removed`,
-      `${invalidCellCount} invalid numbers removed`
+
+    let stats = [
+      [dupeCount, 'duplicates'],
+      [missingCellCount, 'rows with missing numbers'],
+      [invalidCellCount, 'rows with invalid numbers']
     ]
+    stats = stats.filter(([count, text]) => count > 0).map(([count, text]) => `${count} ${text} removed`)
+
+    // TODO: https://github.com/callemall/material-ui/pull/4025 color property
+    // may be fixed on the SVGIcons eventually
+    const check = <CheckCircle style={{fill: green500}} />
+    const warning = <Warning style={{fill: orange200}} />
+
     return (
       <List>
-        <Subheader>Summary</Subheader>
-
         <ListItem
           primaryText={`${contacts.length} contacts`}
+          leftIcon={check}
+          leftIconColor={green500}
         />
         <ListItem
           primaryText={`${customFields.length} custom fields`}
+          leftIcon={check}
           nestedItems={customFields.map((field) => (
             <ListItem
-              innerDivStyle={styles.uploadErrorListItem}
+              innerDivStyle={styles.nestedItem}
               primaryText={field}
             />
           ))}
         />
         <Divider />
-        <Subheader>Errors</Subheader>
         { stats.map((stat) => (
           <ListItem
-            innerDivStyle={styles.uploadErrorListItem}
+            leftIcon={warning}
+            innerDivStyle={styles.nestedItem}
             primaryText={stat}
           />
         )) }
@@ -168,57 +121,29 @@ export class CampaignPeopleForm extends Component {
   }
 
   render() {
-    const {
-      title,
-      description,
-      onValid,
-      onInvalid,
-      onTitleChange,
-      onDescriptionChange,
-      onDueByChange
-    } = this.props
-
+    const { contacts, validationStats, customFields } = this.props
+    console.log("validation Stas", validationStats)
+    const { uploading } = this.state
     return (
       <div>
-        <Formsy.Form
-          ref="form"
-          onValid={onValid}
-          onInvalid={onInvalid}
-          // onValidSubmit={this.submitForm.bind(this)}
-          // onInvalidSubmit={this.notifyFormError.bind(this)}
+        <CampaignFormSectionHeading
+          title='Tell us who you need to contact'
+          subtitle='Upload a CSV with your list of contacts and cell phone numbers.'
+        />
+
+        <RaisedButton
+          style={styles.button}
+          label= {uploading ? 'Uploading...' : "Upload contacts"}
+          labelPosition="before"
         >
-          <FormsyText
-            fullWidth
-            autoFocus
-            required
-            onChange={onTitleChange}
-            name='title'
-            value={title}
-            hintText="e.g. Election Day 2016"
-            floatingLabelText="Name"
+          <input type="file"
+            style={styles.exampleImageInput}
+            onChange={this.handleUpload}
           />
-          <FormsyText
-            name='description'
-            fullWidth
-            value={description}
-            onChange={onDescriptionChange}
-            hintText="Get out the vote"
-            required
-            floatingLabelText="Description"
-          />
-          <FormsyDate
-            required
-            name='dueBy'
-            floatingLabelText="Due date"
-            onChange={onDueByChange}
-            locale="en-US"
-            shouldDisableDate={(date) => moment(date).diff(moment()) < 0 }
-          />
-          <input style={styles.hiddenInput} ref="hiddenInput" />
-          { this.renderUploadSection() }
-        </Formsy.Form>
+        </RaisedButton>
+        {validationStats ? this.renderValidationStats() : ''}
+
       </div>
     )
   }
-
 }

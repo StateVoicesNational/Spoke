@@ -10,7 +10,29 @@ const styles = {
   container: {
     maxWidth: 600,
     margin: '24px auto'
+  },
+  page: {
+    backgroundColor: muiTheme.palette.primary1Color,
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0
+  },
+  header: {
+    padding: "48px 24px",
+    boxSizing: "border-box",
+    overflow: 'hidden',
+    backgroundColor: muiTheme.palette.primary1Color,
+    color: "white",
+  },
+  navigation: {
+    backgroundColor: muiTheme.palette.primary1Color
+  },
+  row: {
+    height: 400
   }
+
 }
 export const Public = createContainer(() => {
   const user = Meteor.user()
@@ -33,10 +55,23 @@ export const Public = createContainer(() => {
     })
 
   return (
-    <div style={{height: '100%'}}>
+    <div>
       <MuiThemeProvider muiTheme={muiTheme}>
-        <div>
-          { content }
+        <div style={styles.page}>
+          <PublicNavigation
+            toolbarStyle={styles.navigation}
+            user={user}
+            orgainzations={organizations}
+          />
+          <div style={styles.header}>
+            <div className="container-fluid" style={styles.container}>
+              <div className="row center-xs middle-xs" style={styles.row}>
+                <div className="col-xs">
+                  {content}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </MuiThemeProvider>
     </div>
