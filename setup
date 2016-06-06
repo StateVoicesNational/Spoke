@@ -1,3 +1,4 @@
 #!/bin/bash
 mkdir private
 cp sample_settings.json private/settings.json
+cp sample_settings.json private/settings.production.json

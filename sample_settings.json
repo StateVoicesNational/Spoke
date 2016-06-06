@@ -6,10 +6,16 @@
     },
     "private": {
         "plivo": {
-            "authId": "PLIVO_API_KEY",
-            "authToken": "PLIVO_API_TOKEN",
+            "authId": "<PLIVO_API_KEY>",
+            "authToken": "<PLIVO_API_TOKEN>",
             "fromPhoneNumber": "+11111111",
             "toPhoneNumbers": []
         }
-    }
+    },
+    "galaxy.meteor.com": {
+       "env": {
+          "ROOT_URL": "<GALAXY_ROOT_URL>", // http://XXX.meteorapp.com>
+          "MONGO_URL": "<MONGO_URL>" //e.g.mongodb://xxx:yyy@zzz.com:1111
+       }
+     }
 }
