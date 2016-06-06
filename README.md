@@ -3,7 +3,7 @@
 After cloning, install necessary packages
 
 ```
-meteor npm install
+npm install
 
 ```
 
