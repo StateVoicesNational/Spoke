@@ -16,6 +16,7 @@ export const insert = new ValidatedMethod({
     })
 
     Roles.addUsersToRoles(this.userId, ['admin'], organizationId)
+    return organizationId
   }
 })
 

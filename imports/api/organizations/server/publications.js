@@ -8,9 +8,13 @@ Meteor.publish('organization', (organizationId) => {
 })
 
 
-Meteor.publish('organizations', function () {
-    console.log(this.userId, "organizations pub")
-  const ids = Roles.getGroupsForUser(this.userId)
-  console.log("ids for user", ids)
-  return Organizations.find({ _id: { $in: ids} })
+Meteor.publishComposite('organizations', function () {
+return {
+    find: () =>  Meteor.users.find({ _id: this.userId }),
+    children: [
+        {
+            find: (user) =>  Organizations.find({ _id: { $in: Roles.getGroupsForUser(this.userId) } })
+        }
+    ]
+}
 })

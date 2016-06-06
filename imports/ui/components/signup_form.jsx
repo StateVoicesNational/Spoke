@@ -50,11 +50,13 @@ export class SignupForm extends React.Component {
 
   submitForm(data, resetForm, invalidateForm) {
     Accounts.createUser(data, (accountError) => {
+      console.log("creating user account error", accountError)
       if (accountError) {
         invalidateForm( { email: accountError.message })
       } else {
         const { organizationName } = data
         insert.call({name: organizationName}, (organizationError) => {
+          console.log("finished!", organizationError)
           if (organizationError) {
             alert(organizationError)
           } else {

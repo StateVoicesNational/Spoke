@@ -38,7 +38,7 @@ export const Public = createContainer(() => {
   const user = Meteor.user()
   const handle = Meteor.subscribe('organizations')
   const organizations = Organizations.find({}).fetch()
-
+  console.log("Organizations", organizations)
   return {
     user,
     organizations,

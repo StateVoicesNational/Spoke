@@ -13,8 +13,10 @@ class Page extends React.Component {
   componentWillReceiveProps({ organizationId, organizations, loading }) {
     // redirect / to a list once lists are ready
     if (!organizationId && !loading) {
-      const organization = organizations[0]
-      FlowRouter.go('campaigns', { organizationId: organization._id })
+      if (organizations.length > 0 ) {
+        const organization = organizations[0]
+        FlowRouter.go('campaigns', { organizationId: organization._id })
+      }
     } else {
       FlowRouter.go('campaigns', { organizationId })
     }
