@@ -98,7 +98,7 @@ export const AdminNavigation = ({ user, backToSection, organizationId, title, hi
     backToSection={backToSection}
     sections={['campaigns', 'texters', 'optouts']}
     hideSidebar={hideSidebar}
-    switchListItem={ userIsTexter(user) ?
+    switchListItem={ userIsTexter(Meteor.user()) ?
       <ListItem
         primaryText='Switch to texter'
         onTouchTap={() => FlowRouter.go('todos', { organizationId })}
@@ -113,7 +113,7 @@ export const AppNavigation = ({ user, backToSection, organizationId, title }) =>
     title={title}
     backToSection={backToSection}
     sections={['todos', 'messages']}
-    switchListItem={ userIsAdmin(user) ?
+    switchListItem={ userIsAdmin(Meteor.user()) ?
       <ListItem
         primaryText='Switch to admin'
         onTouchTap={() => FlowRouter.go('adminOrganizationDashboard', { organizationId })}
