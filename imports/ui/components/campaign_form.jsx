@@ -83,13 +83,10 @@ export class CampaignForm extends Component {
 
   startComputation() {
     this._computation = Tracker.autorun(() => {
-      const scripts = LocalCollection.find({}).fetch() // reactive
-      if (scripts.length > 0) {
-        this.setState({
-          scripts: LocalCollection.find({ collectionType: 'script' }).fetch(),
-          surveys: LocalCollection.find({ collectionType: 'survey' }).fetch()
-        })
-      }
+      this.setState({
+        scripts: LocalCollection.find({ collectionType: 'script' }).fetch(),
+        surveys: LocalCollection.find({ collectionType: 'survey' }).fetch()
+      })
     })
 
     const script = {
@@ -150,7 +147,9 @@ export class CampaignForm extends Component {
   }
 
   onScriptDelete(scriptId) {
+    console.log("ON SCRIPT DELETE?", scriptId)
     LocalCollection.remove({_id: scriptId})
+    console.log(LocalCollection.find().fetch())
   }
 
   onScriptChange(scriptId, data) {
@@ -380,7 +379,7 @@ export class CampaignForm extends Component {
 
   renderScriptSection() {
     const { contacts, scripts, customFields} = this.state
-
+    console.log("render script section", scripts)
     const faqScripts = scripts.filter((script) => script.type === ScriptTypes.FAQ)
     const defaultScript = scripts.find((script) => script.type === ScriptTypes.INITIAL)
 

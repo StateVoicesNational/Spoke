@@ -28,6 +28,9 @@ const styles = {
   scriptTitle: {
     fontWeight: 'medium'
   },
+  scriptSection: {
+    marginBottom: 46
+  },
   scriptSectionSubtitle: {
     color: 'gray',
     fontWeight: 'light',
@@ -45,7 +48,9 @@ export class CampaignScriptsForm extends Component {
     this.handleOpenDialog = this.handleOpenDialog.bind(this)
     this.handleCloseDialog = this.handleCloseDialog.bind(this)
     this.handleSaveScript = this.handleSaveScript.bind(this)
-    this.handleAddScript = this.handleAddScript.bind(this )
+    this.handleAddScript = this.handleAddScript.bind(this)
+    this.handleAddSavedReply = this.handleAddSavedReply.bind(this)
+    this.handleStartEditingScript = this.handleStartEditingScript.bind(this)
     this.state = {
       open: false
     }
@@ -60,39 +65,49 @@ export class CampaignScriptsForm extends Component {
   }
 
   handleSaveScript() {
-    const script = {
-      title: this.refs.titleInput.getValue(),
+    const { editingScript } = this.state
+    const scriptData = {
       text: this.refs.scriptInput.getValue(),
-      type: ScriptTypes.FAQ
     }
 
-    const { handleAddScript } = this.props
-    handleAddScript(script)
+    if (editingScript.type === ScriptTypes.FAQ) {
+      scriptData['title'] = this.refs.scriptTitle.getValue()
+    }
+
+    if (editingScript._id) {
+      const { onScriptChange } = this.props
+      onScriptChange(editingScript._id, scriptData)
+    } else {
+      const { handleAddScript } = this.props
+      handleAddScript(_.extend(editingScript, scriptData))
+    }
     this.handleCloseDialog()
   }
 
   handleAddScript() {
-    const script = {}
-    this.setState({ editingScript: script } )
-    this.handleOpenDialog()
+    const script = {
+      type: ScriptTypes.INITIAL,
+      text: ''
+    }
 
+    this.handleStartEditingScript(script)
   }
 
-  handleEditScript(script) {
+  handleAddSavedReply() {
+    const script = {
+      type: ScriptTypes.FAQ,
+      text: ''
+    }
+    this.handleStartEditingScript(script)
+  }
+
+  handleStartEditingScript(script) {
     this.setState( { editingScript: script })
+    this.handleOpenDialog()
   }
 
   renderDialog() {
-    const {
-      faqScripts,
-      script,
-      handleSaveScriptRow,
-      onScriptChange,
-      onScriptDelete,
-      sampleContact,
-      customFields } = this.props
-
-    const scriptFields = CampaignContacts.requiredUploadFields.concat(CampaignContacts.userScriptFields).concat(customFields)
+    const { editingScript } = this.state
     return (
       <Dialog
         actions={[
@@ -110,24 +125,46 @@ export class CampaignScriptsForm extends Component {
         open={this.state.open}
         onRequestClose={this.handleCloseDialog}
       >
-        <TextField
-          floatingLabelText="Common issue"
-          ref="titleInput"
-          value={ script ? script.title : ''}
-        />
-        <ScriptEditor
-          // value={ script ? script.text : ''}
-          expandable
-          ref="scriptInput"
-          script={this.state.editingScript}
-          sampleContact={sampleContact}
-          scriptFields={scriptFields}
-        />
+        { editingScript ? this.renderForm() : ' '}
       </Dialog>
     )
   }
 
+  renderForm() {
+    const {
+      sampleContact,
+      customFields } = this.props
+
+    const { editingScript } = this.state
+    const scriptFields = CampaignContacts.requiredUploadFields.concat(CampaignContacts.userScriptFields).concat(customFields)
+
+    const titleField = editingScript.type === ScriptTypes.INITIAL ? '' : (
+      <TextField
+        floatingLabelText="Reply descriptor"
+        ref="titleInput"
+        fullWidth
+        hintText="E.g. Can I attend only part of the event?"
+        value={ editingScript.title }
+      />
+    )
+
+    return (
+      <div>
+        { titleField }
+        <ScriptEditor
+          expandable
+          ref="scriptInput"
+          script={editingScript}
+          sampleContact={sampleContact}
+          scriptFields={scriptFields}
+        />
+      </div>
+    )
+  }
+
   renderScriptRow(script) {
+    const { onScriptDelete } = this.props
+
     return (script ? (
       <Card style={styles.scriptRow}>
         { script.title ? (
@@ -145,12 +182,14 @@ export class CampaignScriptsForm extends Component {
           <IconButton
             iconStyle={styles.icon}
             style={styles.button}
+            onTouchTap={() => this.handleStartEditingScript(script)}
           >
             <EditIcon />
           </IconButton>
           <IconButton
             iconStyle={styles.icon}
             style={styles.icon}
+            onTouchTap={() => onScriptDelete(script._id)}
           >
             <DeleteIcon />
           </IconButton>
@@ -168,9 +207,6 @@ export class CampaignScriptsForm extends Component {
     const {
       faqScripts,
       script,
-      handleSaveScriptRow,
-      onScriptChange,
-      onScriptDelete,
       sampleContact,
       customFields } = this.props
 
@@ -178,19 +214,27 @@ export class CampaignScriptsForm extends Component {
       <h3 style={styles.scriptSectionTitle}>{title}</h3>,
       <h4 style={styles.scriptSectionSubtitle}>{subtitle}</h4>
     ]
+
+    // const { handleAddScript } = this.props
+    // handleAddScript(script)
+
     return (
       <div>
         <CampaignFormSectionHeading
           title='What do you want to say?'
         />
-        { sectionHeading('First message script', "This script is what we'll automatically fill in for texters when they first send the first message to a contact.")}
-        { this.renderScriptRow(script)}
+        <div style={styles.scriptSection}>
+          { sectionHeading('First message script', "This script is what we'll automatically fill in for texters when they first send the first message to a contact.")}
+          { this.renderScriptRow(script)}
+        </div>
         <Divider />
-        { sectionHeading('Saved replies', "These replies will appear in a list for texters to choose to answer common issues and questions when a contact has responded. You can think of it as a FAQ section of sorts.")}
-        { faqScripts.map((faqScript) => this.renderScriptRow(faqScript))}
+          <div style={styles.scriptSection}>
+          { sectionHeading('Saved replies', "These replies will appear in a list for texters to choose to answer common issues and questions when a contact has responded. You can think of it as a FAQ section of sorts.")}
+          { faqScripts.map((faqScript) => this.renderScriptRow(faqScript))}
+        </div>
         <RaisedButton
           label={'Add saved reply'}
-          onTouchTap={this.handleAddScript }
+          onTouchTap={this.handleAddSavedReply }
         />
         { this.renderDialog()}
       </div>

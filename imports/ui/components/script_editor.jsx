@@ -9,7 +9,8 @@ import {
 } from 'draft-js'
 import { delimit } from '../../api/campaigns/scripts'
 import AddIcon from 'material-ui/svg-icons/content/add';
-import FlatButton from 'material-ui/FlatButton'
+import { red400, green500 } from 'material-ui/styles/colors'
+
 function findWithRegex(regex, contentBlock, callback) {
   const text = contentBlock.getText();
   let matchArr, start;
@@ -29,36 +30,36 @@ const UnrecognizedField = (props) => (
 )
 
 const styles = {
-  root: {
-    fontFamily: '\'Helvetica\', sans-serif',
-    padding: 20,
-  },
   editor: {
     border: '1px solid #ddd',
     cursor: 'text',
     fontSize: 16,
     minHeight: 40,
-    padding: 10,
+    padding: 5,
   },
   button: {
     marginTop: 10,
     textAlign: 'center',
   },
   goodField: {
-    color: 'green',
+    color: green500,
     direction: 'ltr',
     unicodeBidi: 'bidi-override',
   },
   badField: {
-    color: 'red'
-  },
-  scriptFieldButtonLabel: {
-    textTransform: 'none'
+    color: red400
   },
   scriptFieldButton: {
     fontSize: '11px',
-    border: '1px solid lightgray',
-    margin: '6px'
+    color: green500,
+    textTransform: 'none',
+    margin: 10
+  },
+  scriptFieldButtonIcon: {
+    width: 15,
+    height: 15,
+    fill: green500,
+    verticalAlign: 'middle',
   }
 };
 
@@ -67,10 +68,17 @@ export class ScriptEditor extends React.Component {
   constructor(props) {
     super(props)
 
-    const scriptFields = props.scriptFields
+    const { scriptFields, script } = this.props
+    const decorator = this.getCompositeDecorator(scriptFields)
+    let editorState
+    if (script) {
+      editorState = EditorState.createWithContent(ContentState.createFromText(script.text), decorator)
+    } else {
+      editorState = EditorState.createEmpty(decorator)
+    }
 
     this.state = {
-      editorState: EditorState.createEmpty(this.getCompositeDecorator(scriptFields))
+      editorState
     }
 
     this.focus = () => this.refs.editor.focus()
@@ -96,6 +104,9 @@ export class ScriptEditor extends React.Component {
     this.setState({ editorState: newEditorState })
   }
 
+  componentDidUpdate() {
+    this.focus()
+  }
   getCompositeDecorator(scriptFields) {
     const recognizedFieldStrategy = (contentBlock, callback) => {
       const regex = new RegExp(`\{(${scriptFields.join('|')})\}`, 'g')
@@ -133,15 +144,13 @@ export class ScriptEditor extends React.Component {
     return (
       <div>
         {scriptFields.map((field) => (
-          <FlatButton
-            labelStyle={styles.scriptFieldButtonLabel}
+          <span
             style={styles.scriptFieldButton}
-            label={delimit(field)}
-            labelPosition="before"
-            icon={<AddIcon />}
             onTouchTap={() => this.addCustomField(field)}
-            mini
-          />
+          >
+            <AddIcon style={styles.scriptFieldButtonIcon} />
+              {delimit(field)}
+          </span>
         ))}
       </div>
     )
@@ -149,7 +158,7 @@ export class ScriptEditor extends React.Component {
 
   render() {
     return (
-      <div style={styles.root}>
+      <div>
         <div style={styles.editor} onClick={this.focus}>
           <Editor
             editorState={this.state.editorState}
