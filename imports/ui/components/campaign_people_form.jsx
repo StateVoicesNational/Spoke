@@ -7,7 +7,7 @@ import { CampaignFormSectionHeading } from './campaign_form_section_heading'
 import CheckIcon from 'material-ui/svg-icons/action/check-circle'
 import WarningIcon from 'material-ui/svg-icons/alert/warning'
 import ErrorIcon from 'material-ui/svg-icons/alert/error'
-import { orange200, red400, green500 } from 'material-ui/styles/colors'
+import { orange200, red400, green500, grey200 } from 'material-ui/styles/colors'
 
 // TODO: https://github.com/callemall/material-ui/pull/4025 color property
 // may be fixed on the SVGIcons eventually
@@ -40,6 +40,11 @@ const styles = {
   customField: {
     fontStyle: 'italic',
     margin: '10px'
+  },
+  csvHeader: {
+    fontFamily: 'Courier',
+    backgroundColor: grey200,
+    padding: 3
   }
 }
 
@@ -128,7 +133,13 @@ export class CampaignPeopleForm extends Component {
       <div>
         <CampaignFormSectionHeading
           title='Who are you contacting?'
-          subtitle='Upload a CSV with your list of contacts and cell phone numbers.'
+          subtitle={<span>
+            Your upload file should be in CSV format with column headings in
+            the first row. You must include <span style={styles.csvHeader}>firstName</span>,
+            <span style={styles.csvHeader}>lastName</span>, and
+            <span style={styles.csvHeader}>cell</span> columns. Any additional columns
+            in your file will be available as custom fields to use in your texting scripts.
+          </span>}
         />
 
         <RaisedButton

@@ -70,8 +70,9 @@ export class CampaignScriptsForm extends Component {
       text: this.refs.scriptInput.getValue(),
     }
 
+    console.log("editingScript in handleSaveScript", editingScript)
     if (editingScript.type === ScriptTypes.FAQ) {
-      scriptData['title'] = this.refs.scriptTitle.getValue()
+      scriptData['title'] = this.refs.titleInput.getValue()
     }
 
     if (editingScript._id) {
@@ -87,7 +88,7 @@ export class CampaignScriptsForm extends Component {
   handleAddScript() {
     const script = {
       type: ScriptTypes.INITIAL,
-      text: ''
+      text: '',
     }
 
     this.handleStartEditingScript(script)
@@ -96,7 +97,8 @@ export class CampaignScriptsForm extends Component {
   handleAddSavedReply() {
     const script = {
       type: ScriptTypes.FAQ,
-      text: ''
+      text: '',
+      title: ''
     }
     this.handleStartEditingScript(script)
   }
@@ -136,13 +138,16 @@ export class CampaignScriptsForm extends Component {
       customFields } = this.props
 
     const { editingScript } = this.state
-    const scriptFields = CampaignContacts.requiredUploadFields.concat(CampaignContacts.userScriptFields).concat(customFields)
+    console.log("editingScript in renderForm", editingScript)
 
-    const titleField = editingScript.type === ScriptTypes.INITIAL ? '' : (
+    const scriptFields = CampaignContacts.requiredUploadFields.concat(CampaignContacts.userScriptFields).concat(customFields)
+    console.log("editing field")
+    const titleField = editingScript.type !== ScriptTypes.FAQ ? '' : (
       <TextField
-        floatingLabelText="Reply descriptor"
         ref="titleInput"
         fullWidth
+        floatingLabelText="Reply label"
+        onChange={(event) => this.setState( {editingScript: _.extend(editingScript, {title: event.target.value})})}
         hintText="E.g. Can I attend only part of the event?"
         value={ editingScript.title }
       />
@@ -152,13 +157,14 @@ export class CampaignScriptsForm extends Component {
       <div>
         { titleField }
         <ScriptEditor
-          expandable
           ref="scriptInput"
           script={editingScript}
+          onChange={(text) => this.setState( {editingScript: _.extend(editingScript, {text})})}
           sampleContact={sampleContact}
           scriptFields={scriptFields}
         />
       </div>
+
     )
   }
 

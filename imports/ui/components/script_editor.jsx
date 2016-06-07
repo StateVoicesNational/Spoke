@@ -68,15 +68,7 @@ export class ScriptEditor extends React.Component {
   constructor(props) {
     super(props)
 
-    const { scriptFields, script } = this.props
-    const decorator = this.getCompositeDecorator(scriptFields)
-    let editorState
-    if (script) {
-      editorState = EditorState.createWithContent(ContentState.createFromText(script.text), decorator)
-    } else {
-      editorState = EditorState.createEmpty(decorator)
-    }
-
+    const editorState = this.getEditorState()
     this.state = {
       editorState
     }
@@ -91,8 +83,25 @@ export class ScriptEditor extends React.Component {
     return editorState.getCurrentContent().getPlainText();
   }
 
+  getEditorState() {
+    const { scriptFields, script } = this.props
+
+    const decorator = this.getCompositeDecorator(scriptFields)
+    let editorState
+    if (script) {
+      editorState = EditorState.createWithContent(ContentState.createFromText(script.text), decorator)
+    } else {
+      editorState = EditorState.createEmpty(decorator)
+    }
+
+    return editorState
+  }
+
   onChange(editorState) {
-    this.setState( { editorState })
+    this.setState( { editorState }, () => {
+      const { onChange } = this.props
+      onChange(this.getValue())
+    })
   }
 
   componentWillReceiveProps() {
@@ -101,12 +110,9 @@ export class ScriptEditor extends React.Component {
     const decorator = this.getCompositeDecorator(scriptFields)
     const newEditorState = EditorState.set(editorState, { decorator })
 
-    this.setState({ editorState: newEditorState })
+    this.setState({ editorState: this.getEditorState() })
   }
 
-  componentDidUpdate() {
-    this.focus()
-  }
   getCompositeDecorator(scriptFields) {
     const recognizedFieldStrategy = (contentBlock, callback) => {
       const regex = new RegExp(`\{(${scriptFields.join('|')})\}`, 'g')
