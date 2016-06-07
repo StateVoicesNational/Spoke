@@ -134,7 +134,7 @@ export const insert = new ValidatedMethod({
       }
       else {
         for (let survey of surveys) {
-          survey.campaignId = campaignId          _.
+          survey.campaignId = campaignId
           SurveyQuestions.insert(survey)
         }
 

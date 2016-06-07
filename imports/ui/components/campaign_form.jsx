@@ -250,14 +250,18 @@ export class CampaignForm extends Component {
       <CampaignSurveyForm
         questions={questions}
         onAddSurveyAnswer={this.handleAddSurveyAnswer}
-        onEditSurvey={this.handleEditSurvey}
-        onAddSurvey={this.handleAddSurvey}
+        onEditQuestion={this.handleEditSurvey}
+        onAddQuestion={this.handleAddSurvey}
+        onDeleteQuestion={this.handleDeleteQuestion}
         sampleContact={sampleContact}
         customFields={customFields}
       />
     )
   }
 
+  handleDeleteQuestion(questionId) {
+    LocalCollection.remove({_id: questionId})
+  }
   handleEditSurvey(questionId, data) {
     console.log("DATA", data, questionId)
     LocalCollection.update({

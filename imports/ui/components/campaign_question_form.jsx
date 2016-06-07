@@ -113,6 +113,7 @@ export class CampaignQuestionForm extends Component {
     this.handleSaveScript = this.handleSaveScript.bind(this)
     this.handleDeleteScript = this.handleDeleteScript.bind(this)
     this.handleUpdateAnswer = this.handleUpdateAnswer.bind(this)
+    this.handleDeleteQuestion = this.handleDeleteQuestion.bind(this)
     // this.handleAddFollowup = this.handleAddFollowup.bind(this)
 
     this.state = {
@@ -140,12 +141,13 @@ export class CampaignQuestionForm extends Component {
   }
 
   handleQuestionChange(event) {
-    const { question, onEditSurvey } = this.props
-    onEditSurvey(question._id, { text: event.target.value })
+    const { question, onEditQuestion } = this.props
+    onEditQuestion(question._id, { text: event.target.value })
   }
 
   renderAnswer(otherQuestions, question, answer, autoFocus, index) {
-    const showFollowUp  = otherQuestions.length > 0
+    // const showFollowUp  = otherQuestions.length > 0
+    const showFollowUp = false
     const followUpQuestions = showFollowUp ? (
       <div>
         <Divider />
@@ -230,7 +232,7 @@ export class CampaignQuestionForm extends Component {
   }
 
   handleUpdateAnswer(answerId, updates) {
-    const { question, onEditSurvey } = this.props
+    const { question, onEditQuestion } = this.props
     console.log(answerId, updates)
     //FIXME inefficintes
     const allowedAnswers = question.allowedAnswers.map((allowedAnswer) => {
@@ -240,15 +242,19 @@ export class CampaignQuestionForm extends Component {
       }
       return allowedAnswer
     })
-    onEditSurvey(question._id, { allowedAnswers })
+    onEditQuestion(question._id, { allowedAnswers })
 
   }
 
+  handleDeleteQuestion() {
+    const {onDeleteQuestion, question} = this.props
+    onDeleteQuestion(question._id)
+  }
   handleDeleteAnswer(answer) {
-    const { question, onEditSurvey } = this.props
+    const { question, onEditQuestion } = this.props
     const allowedAnswers = _.reject(question.allowedAnswers, (allowedAnswer) => allowedAnswer._id === answer._id)
     console.log("new allowedAnswers", allowedAnswers, 'try to remove', answer._id)
-    onEditSurvey(question._id, { allowedAnswers })
+    onEditQuestion(question._id, { allowedAnswers })
   }
 
   handleDeleteScript(answer) {
@@ -320,10 +326,10 @@ export class CampaignQuestionForm extends Component {
 
   render() {
     const { question, questions } = this.props
-    console.log("render questions", questions)
     const questionIsFocused = question.text === ''
+    // const parentQuestions = questions.filter((q) => _.includes(q.allowedAnswers.map((answer) => answer.surveyQuestionId), question._id))
+    const parentQuestions = []
 
-    const parentQuestions = questions.filter((q) => _.includes(q.allowedAnswers.map((answer) => answer.surveyQuestionId), question._id))
     const isFollowUp = parentQuestions.length > 0
     return (
       <Card style={isFollowUp ? styles.followUp : styles.question}>
@@ -359,7 +365,7 @@ export class CampaignQuestionForm extends Component {
           <IconButton
             iconStyle={styles.icon}
             style={styles.icon}
-            // onTouchTap={() => onScriptDelete(script._id)}
+            onTouchTap={this.handleDeleteQuestion}
           >
             <DeleteIcon />
           </IconButton>

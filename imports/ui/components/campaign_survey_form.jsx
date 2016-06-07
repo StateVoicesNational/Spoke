@@ -10,7 +10,7 @@ const styles = {
 }
 export class CampaignSurveyForm extends Component {
   render() {
-    const { questions, onAddSurveyAnswer, onEditSurvey, onAddSurvey, customFields, sampleContact} = this.props
+    const { questions, onAddSurveyAnswer, onDeleteQuestion, onEditQuestion, onAddQuestion, customFields, sampleContact} = this.props
     console.log("questions here", questions)
 
     return (
@@ -25,7 +25,8 @@ export class CampaignSurveyForm extends Component {
             question={question}
             questions={questions}
             onAddSurveyAnswer={onAddSurveyAnswer}
-            onEditSurvey={onEditSurvey}
+            onEditQuestion={onEditQuestion}
+            onDeleteQuestion={onDeleteQuestion}
             customFields={customFields}
             sampleContact={sampleContact}
           />
@@ -33,7 +34,7 @@ export class CampaignSurveyForm extends Component {
         <RaisedButton
           style={styles.questionButton}
           label="Add question"
-          onTouchTap={onAddSurvey}
+          onTouchTap={onAddQuestion}
         />
       </div>
     )
