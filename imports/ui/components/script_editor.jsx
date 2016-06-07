@@ -100,7 +100,9 @@ export class ScriptEditor extends React.Component {
   onChange(editorState) {
     this.setState( { editorState }, () => {
       const { onChange } = this.props
-      onChange(this.getValue())
+      if (onChange) {
+        onChange(this.getValue())
+      }
     })
   }
 

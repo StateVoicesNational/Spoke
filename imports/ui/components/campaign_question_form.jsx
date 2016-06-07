@@ -4,14 +4,18 @@ import IconButton from 'material-ui/IconButton'
 import RaisedButton from 'material-ui/RaisedButton'
 import { ScriptEditor } from './script_editor'
 
-import Formsy from 'formsy-react';
+import Formsy from 'formsy-react'
 import { FormsyText } from 'formsy-material-ui/lib'
 import RadioButtonUnchecked from 'material-ui/svg-icons/toggle/radio-button-unchecked'
+import IconMenu from 'material-ui/IconMenu'
+import MenuItem from 'material-ui/MenuItem'
+import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert'
+
 import ContentClear from 'material-ui/svg-icons/content/clear'
 import Dialog from 'material-ui/Dialog'
 import { CampaignContacts } from '../../api/campaign_contacts/campaign_contacts'
 import { muiTheme } from '../../ui/theme'
-
+import { grey400 } from 'material-ui/styles/colors'
 const styles = {
   question: {
     borderLeft: `5px solid ${muiTheme.palette.primary1Color}`,
@@ -25,8 +29,20 @@ const styles = {
   answer: {
     fontSize: '12'
   },
+  answerRow: {
+    marginTop: 16,
+    marginBottom: 16
+  },
   script: {
-    marginLeft: '24'
+    verticalAlign: 'middle',
+    display: 'inline-block',
+    width: '250px',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    marginLeft: '24',
+    fontSize: 11,
+    color: grey400
   },
   scriptHint: {
     fontSize: '12',
@@ -34,10 +50,6 @@ const styles = {
   scriptInput: {
     fontSize: '12',
   },
-  button: {
-    fontSize: '11px',
-    opacity: 0.5
-  }
 
 }
 export class CampaignQuestionForm extends Component {
@@ -80,33 +92,54 @@ export class CampaignQuestionForm extends Component {
   }
 
   renderAnswer(survey, answer, autoFocus, index) {
-    return [
-      <RadioButtonUnchecked
-        style={styles.radioButtonIcon}
-      />,
-      <FormsyText
-        onKeyDown={ this.handleOnKeyDown.bind(this) }
-        onChange={ (event) => this.handleUpdateAnswer(answer._id, { value: event.target.value })}
-        inputStyle={styles.answer}
-        hintStyle={styles.answer}
-        required
-        name={`allowedAnswers[${index}].value`}
-        autoFocus={autoFocus}
-        value={ answer.value }
-      />,
-      <span>
-        { answer.script }
-      </span>,
-      <IconButton
-        onTouchTap={() => this.handleDeleteAnswer(answer)}
-      >
-        <ContentClear />
-      </IconButton>,
-      <FlatButton
-        label="Edit script"
-        onTouchTap={() => this.handleEditScript(answer)}
-      />,
-    ]
+    return (
+        <div style={styles.answerRow}>
+          <RadioButtonUnchecked
+            style={styles.radioButtonIcon}
+          />
+          <FormsyText
+            onKeyDown={ this.handleOnKeyDown.bind(this) }
+            onChange={ (event) => this.handleUpdateAnswer(answer._id, { value: event.target.value })}
+            inputStyle={styles.answer}
+            hintStyle={styles.answer}
+            required
+            name={`allowedAnswers[${index}].value`}
+            autoFocus={autoFocus}
+            value={ answer.value }
+          />
+          <div style={styles.script}>
+            { answer.script }
+          </div>
+          <IconMenu
+            style={{float: 'right', width: 24, height: 20}}
+            iconButtonElement={
+              <IconButton
+                style={{float: 'right', width: 24, height: 20}}
+                iconStyle={{width: 20, height: 20}}
+              ><MoreVertIcon /></IconButton>}
+            anchorOrigin={{horizontal: 'left', vertical: 'top'}}
+            targetOrigin={{horizontal: 'left', vertical: 'top'}}
+          >
+            <MenuItem
+              primaryText="Edit script"
+              onTouchTap={() => this.handleEditScript(answer)}
+            />
+            <MenuItem
+              primaryText="Delete script"
+              onTouchTap={() => this.handleDeleteScript(answer)}
+            />
+          </IconMenu>
+
+          <IconButton
+            style={{float: 'right', width: 24, height: 20}}
+            iconStyle={{width: 20, height: 20}}
+            onTouchTap={() => this.handleDeleteAnswer(answer)}
+          >
+            <ContentClear />
+          </IconButton>
+      </div>
+    )
+
   }
 
   handleEditScript(answer) {
@@ -152,11 +185,7 @@ export class CampaignQuestionForm extends Component {
     return (
       <div>
         { _.map(answers, (answer, index) => (
-          <div className="row">
-            <div className="col-xs">
-              {this.renderAnswer(survey, answer,  !questionIsFocused && index === (answers.length - 1), index)}
-            </div>
-          </div>
+          this.renderAnswer(survey, answer,  !questionIsFocused && index === (answers.length - 1), index)
         ))}
         <FlatButton
           label="Add answer"
@@ -208,12 +237,10 @@ export class CampaignQuestionForm extends Component {
     return (
       <div style={styles.question}>
         <Formsy.Form ref="form">
-          <div className="row">
             <FormsyText
               autoFocus={questionIsFocused}
               onChange={this.handleQuestionChange.bind(this)}
               required
-              floatingLabelText="Question"
               fullWidth
               ref="questionInput"
               name="question"
@@ -221,7 +248,6 @@ export class CampaignQuestionForm extends Component {
               value={ survey.question }
             />
             { this.renderAnswers(survey, questionIsFocused) }
-          </div>
         </Formsy.Form>
         { this.renderDialog()}
       </div>
