@@ -23,13 +23,14 @@ const getScriptField = (contact, fieldName) => {
 
 export const applyScript = (script, contact, scriptFields) => {
   if (!script) {
-    console.log("missing script!", script)
     return ''
   }
-  console.log("scriptfields", scriptFields)
+  if (typeof(script) === 'object') {
+    script = script.text
+  }
   // FIXME
   let appliedScript = script
-  for (const field of scriptFields.concat(CampaignContacts.userScriptFields)) {
+  for (let field of scriptFields.concat(CampaignContacts.userScriptFields)) {
     const re = new RegExp(`${delimit(field)}`, 'g')
     appliedScript = appliedScript.replace(re, getScriptField(contact, field))
   }

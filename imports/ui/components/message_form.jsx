@@ -89,7 +89,7 @@ export class MessageForm extends Component {
       rightToolbarChildren,
       secondaryToolbar
     } = this.props
-
+    console.log("MessageForm initialScript", initialScript)
     const optOut = campaignContact.optOut()
     const { isSending } = this.state
     const messages = campaignContact.messages().fetch()

@@ -80,11 +80,6 @@ CampaignContacts.helpers({
     return OptOuts.findOne({ organizationId: campaign.organizationId, cell: this.cell})
   },
   surveyAnswer(surveyQuestionId) {
-    console.log("survey question id ", surveyQuestionId, "and campaignContactId", this._id, SurveyAnswers.findOne({
-      surveyQuestionId,
-      campaignContactId: this._id
-    }))
-
     return SurveyAnswers.findOne({
       surveyQuestionId,
       campaignContactId: this._id

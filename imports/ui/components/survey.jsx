@@ -33,6 +33,7 @@ export class QuestionDropdown extends Component {
       <Formsy.Form style={styles.form}>
         <FormsySelect
           floatingLabelText={survey.question}
+          floatingLabelStyle={{pointerEvents: 'none'}} // https://github.com/callemall/material-ui/issues/3908
           onChange={this.handleSurveyChange}
           showUnderline={false}
           fullWidth

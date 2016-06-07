@@ -56,7 +56,6 @@ export class AssignmentTexter extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log("component did update", prevState)
     // TODO: This needs to be in a child component with state.
     const prevContact = this.getContact(prevProps.contacts, prevState.currentContactIndex)
     const newContact = this.currentContact()
@@ -68,7 +67,6 @@ export class AssignmentTexter extends Component {
   defaultScript() {
     const { assignment } = this.props
 
-    console.log("this current contact", this.currentContact())
     return (this.currentContact() && this.currentContact().messages().fetch().length === 0) ? assignment.campaign().initialScriptText() : ''
   }
 
@@ -87,11 +85,9 @@ export class AssignmentTexter extends Component {
 
   handleNavigateNext() {
     if (this.hasNext()) {
-      console.log("navigating next and has next")
       this.incrementCurrentContactIndex(1)
     }
     else {
-      console.log("navigating next and does not have next")
       const { onStopTexting } = this.props
       onStopTexting()
     }
@@ -110,7 +106,6 @@ export class AssignmentTexter extends Component {
   }
 
   onSendMessage() {
-    console.log("on send mesage?")
     this.handleNavigateNext()
   }
 
@@ -118,7 +113,6 @@ export class AssignmentTexter extends Component {
     const messageText = this.refs.optOutInput.getValue().trim()
     const { onNextContact } = this.props
     const onSuccess = () => {
-      console.log("opting user out!")
       this.handleCloseDialog()
       onNextContact()
     }
@@ -137,7 +131,6 @@ export class AssignmentTexter extends Component {
       if (error) {
         alert(error)
       } else {
-        console.log("ON SUCCESS")
         onSuccess()
       }
     })
@@ -180,15 +173,15 @@ export class AssignmentTexter extends Component {
       campaignContactId: contact._id
     })
     // This should actually happen from propagating props
-    console.log("new script!", script)
     this.handleScriptChange(script)
   }
 
   renderSurveys(campaign) {
-    return (this.currentContact().messages().fetch().length === 0 ) ? <div/> : (
+    const contact = this.currentContact()
+    return (contact.messages().fetch().length === 0 ) ? <div/> : (
       <div>
         <Divider />
-        {campaign.surveys().map((survey) => (
+        {campaign.surveys().fetch().map((survey) => (
           <QuestionDropdown
             answer={contact.surveyAnswer(survey._id)}
             onSurveyChange={this.handleSurveyChange.bind(this)}
@@ -202,14 +195,15 @@ export class AssignmentTexter extends Component {
   render() {
     const { assignment, contacts, onStopTexting } = this.props
     const contact = this.currentContact()
-    console.log("CONTACTS", contacts)
-    console.log("THE CONTACT IS", contact)
     if (!contact) {
       return null
     }
 
     const campaign = assignment.campaign()
     const scriptFields = campaign.scriptFields()
+    console.log("THIS SICRPT", this.state.script)
+    console.log("apply script", applyScript(this.state.script, contact, scriptFields))
+
     //TODO - do we really want to grab all messages at once here? should I actually be doing a collection serach
     const leftToolbarChildren = [
       <ToolbarSeparator />,

@@ -25,7 +25,7 @@ export class AssignmentSummary extends Component {
     handleStartTexting(contacts)
   }
 
-  renderBadgedButton(assignment, title, count, isPrimary) {
+  renderBadgedButton(assignment, title, count, isPrimary, contactFilter) {
     const { organizationId } = this.props
     return (count === 0 ? '' :
       <Badge
@@ -36,7 +36,8 @@ export class AssignmentSummary extends Component {
       >
         <FlatButton
           label={title}
-          onTouchTap={ () => FlowRouter.go('textUnmessaged', { organizationId, contactFilter: ContactFilters.UNMESSAGED, assignmentId: assignment._id }) }
+          onTouchTap={ () => FlowRouter.go('textUnmessaged', { organizationId, contactFilter, assignmentId: assignment._id })
+}
         />
       </Badge>
     )
@@ -59,10 +60,9 @@ export class AssignmentSummary extends Component {
       <Card style={styles.root}>
         <CardTitle title={title} subtitle={`${description} - ${moment(assignment.dueBy).format('MMM D YYYY')}`} />
         { (unrepliedCount > 0 || unmessagedCount > 0) ? '' : <CardText>Looks like you're done for now. Nice work!</CardText>}
-
         <CardActions>
-          { this.renderBadgedButton(assignment, 'Send first texts', unmessagedCount, true)}
-          { this.renderBadgedButton(assignment, 'Send replies', unrepliedCount, false)}
+          { this.renderBadgedButton(assignment, 'Send first texts', unmessagedCount, true, ContactFilters.UNMESSAGED)}
+          { this.renderBadgedButton(assignment, 'Send replies', unrepliedCount, false, ContactFilters.UNREPLIED)}
         </CardActions>
       </Card>
     )
