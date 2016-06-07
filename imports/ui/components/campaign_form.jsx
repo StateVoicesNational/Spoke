@@ -10,7 +10,8 @@ import { CampaignBasicsForm } from './campaign_basics_form'
 import { CampaignSurveyForm } from './campaign_survey_form'
 import { CampaignAssignmentForm } from './campaign_assignment_form'
 import { grey50 } from 'material-ui/styles/colors'
-
+import { CampaignFormSectionHeading } from './campaign_form_section_heading'
+import { newAllowedAnswer } from '../../api/survey_questions/survey_questions'
 import {Tabs, Tab} from 'material-ui/Tabs'
 
 import {
@@ -105,7 +106,7 @@ export class CampaignForm extends Component {
       // ['Basics', this.renderBasicsSection.bind(this)],
       // ['Contacts', this.renderPeopleSection.bind(this)],
       // ['Texters', this.renderAssignmentSection.bind(this)],
-      ['Scripts', this.renderScriptSection.bind(this)],
+      // ['Scripts', this.renderScriptSection.bind(this)],
       ['Surveys', this.renderSurveySection.bind(this)],
     ]
   }
@@ -241,25 +242,21 @@ export class CampaignForm extends Component {
   }
 
   renderSurveySection() {
+    const { surveys, customFields, sampleContact } = this.state
     return (
-      <div>
-      { this.state.surveys.map ((survey) => (
-        <CampaignSurveyForm
-          survey={survey}
-          onAddSurveyAnswer={this.handleAddSurveyAnswer}
-          onEditSurvey={this.handleEditSurvey}
-        />
-      ))}
-      <FlatButton
-        label="Add question"
-        onTouchTap={this.handleAddSurvey}
-        secondary
+      <CampaignSurveyForm
+        surveys={surveys}
+        onAddSurveyAnswer={this.handleAddSurveyAnswer}
+        onEditSurvey={this.handleEditSurvey}
+        onAddSurvey={this.handleAddSurvey}
+        sampleContact={sampleContact}
+        customFields={customFields}
       />
-      </div>
     )
   }
 
   handleEditSurvey(surveyId, data) {
+    console.log("DATA", data, surveyId)
     LocalCollection.update({
       _id: surveyId
     }, {
@@ -268,24 +265,23 @@ export class CampaignForm extends Component {
   }
 
   handleAddSurveyAnswer(surveyId) {
-    console.log("handle add survey answer", surveyId)
     const survey = LocalCollection.findOne({_id: surveyId})
-    console.log(survey, "add survey answer", surveyId)
+
     LocalCollection.update({
       _id: surveyId
     }, {
       $set: {
-        allowedAnswers: survey.allowedAnswers.concat([{value: ''}])
+        allowedAnswers: survey.allowedAnswers.concat([newAllowedAnswer('')])
       }
     })
   }
 
   handleAddSurvey() {
+    console.log("handle add survey")
+    console.log("[newAllowedAnswer('Option 1')]", newAllowedAnswer('aosentuhaoesntuh'))
     const survey = {
       question: '',
-      allowedAnswers: [{
-        value: 'Option 1' // prob want script eventually
-      }],
+      allowedAnswers: [newAllowedAnswer('Option 1')],
       collectionType: 'survey'
     }
 

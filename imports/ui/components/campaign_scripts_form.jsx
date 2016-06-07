@@ -107,7 +107,7 @@ export class CampaignScriptsForm extends Component {
   }
 
   renderDialog() {
-    const { editingScript } = this.state
+    const { editingScript, open } = this.state
     return (
       <Dialog
         actions={[
@@ -122,7 +122,7 @@ export class CampaignScriptsForm extends Component {
           />
         ]}
         modal
-        open={this.state.open}
+        open={open}
         onRequestClose={this.handleCloseDialog}
       >
         { editingScript ? this.renderForm() : ' '}

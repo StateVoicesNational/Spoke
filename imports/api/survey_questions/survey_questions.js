@@ -2,9 +2,11 @@ import { Mongo } from 'meteor/mongo'
 import { SimpleSchema } from 'meteor/aldeed:simple-schema'
 import { Fake } from 'meteor/anti:fake'
 import { Factory } from 'meteor/dburles:factory'
+import { Random } from 'meteor/random'
 export const SurveyQuestions = new Mongo.Collection('survey_questions')
 
 const AllowedAnswerSchema = new SimpleSchema({
+  _id: { type: String },
   value: { type: String },
   script: { // should this be its own ID?
     type: String,
@@ -28,14 +30,9 @@ SurveyQuestions.schema = new SimpleSchema({
 
 SurveyQuestions.attachSchema(SurveyQuestions.schema)
 
-const createAnswer = (value) => ({
+export const newAllowedAnswer = (value) => ({
   value,
-  script: Fake.fromArray([
-    "Hi there, <<name>>! We have an event coming up soon and we're hoping you can join us to help Bernie win! If you can, let us know!",
-    'Hey <<name>>! Come help us out at this upcoming event.',
-    "Hi <<name>>. We'd love to have you join us at an upcoming rally in your area. Do you think you'll be free?"
-  ]),
-  surveyQuestionId: null
+  _id: Random.id(),
 })
 
 Factory.define('survey_question', SurveyQuestions, {
