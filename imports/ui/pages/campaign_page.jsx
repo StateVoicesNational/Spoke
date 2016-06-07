@@ -65,7 +65,7 @@ const _CampaignPage = ({ loading, organizationId, campaign, stats, assignments }
             <div className="row">
               <Stat title="Contacts" count={stats.contactCount} />
               <Stat title="Texters" count={assignments.length} />
-              <Stat title="Messages sent" count={stats.messageSentCount} />
+              <Stat title="Sent" count={stats.messageSentCount} />
               <Stat title="Replies" count={stats.messageReceivedCount} />
             </div>
           ) : ''

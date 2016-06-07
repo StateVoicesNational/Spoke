@@ -103,8 +103,8 @@ export class CampaignForm extends Component {
     // workaround for https://github.com/meteor/react-packages/issues/99
     setTimeout(this.startComputation.bind(this), 0);
     this.steps = [
-      // ['Basics', this.renderBasicsSection.bind(this)],
-      // ['Contacts', this.renderPeopleSection.bind(this)],
+      ['Basics', this.renderBasicsSection.bind(this)],
+      ['Contacts', this.renderPeopleSection.bind(this)],
       ['Texters', this.renderAssignmentSection.bind(this)],
       ['Scripts', this.renderScriptSection.bind(this)],
       ['Surveys', this.renderSurveySection.bind(this)],
@@ -195,6 +195,7 @@ export class CampaignForm extends Component {
       this.setState({ submitting: false })
 
       if (err) {
+        console.log("ERROR", err)
         alert(err)
       } else {
         FlowRouter.go('campaigns', { organizationId })

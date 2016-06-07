@@ -57,6 +57,7 @@ export class CampaignBasicsForm extends Component {
           <FormsyDate
             required
             name='dueBy'
+            floatingLabelStyle={{pointerEvents: 'none'}} // https://github.com/callemall/material-ui/issues/3908
             floatingLabelText="Due date"
             onChange={onDueByChange}
             locale="en-US"

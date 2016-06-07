@@ -74,9 +74,9 @@ export class CampaignQuestionForm extends Component {
     onAddSurveyAnswer(survey._id)
   }
 
-  handleQuestionChange() {
+  handleQuestionChange(event) {
     const { survey, onEditSurvey } = this.props
-    onEditSurvey(survey._id, { question: this.refs.questionInput.getValue()})
+    onEditSurvey(survey._id, { question: event.target.value })
   }
 
   renderAnswer(survey, answer, autoFocus, index) {
@@ -86,7 +86,7 @@ export class CampaignQuestionForm extends Component {
       />,
       <FormsyText
         onKeyDown={ this.handleOnKeyDown.bind(this) }
-        onChange={ (event, value) => this.handleUpdateAnswer(answer._id, { value })}
+        onChange={ (event) => this.handleUpdateAnswer(answer._id, { value: event.target.value })}
         inputStyle={styles.answer}
         hintStyle={styles.answer}
         required
@@ -120,6 +120,7 @@ export class CampaignQuestionForm extends Component {
     //FIXME inefficintes
     const allowedAnswers = survey.allowedAnswers.map((allowedAnswer) => {
       if (allowedAnswer._id === answerId) {
+        console.log(updates)
         return _.extend(allowedAnswer, updates)
       }
       return allowedAnswer

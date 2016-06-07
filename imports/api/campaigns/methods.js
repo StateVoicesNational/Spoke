@@ -28,17 +28,18 @@ const divideContacts = (contactRows, texters) => {
   return zip(texters, chunked)
 }
 
-const createAssignment = ({dueBy, campaignId, userId, texterContacts}) => {
+const createAssignment = ({dueBy, campaignId, texterId, texterContacts}) => {
   const assignmentData = {
     campaignId,
-    userId,
     dueBy,
+    userId: texterId,
     createdAt: new Date(),
   }
 
   Assignments.insert(assignmentData, (assignmentError, assignmentId) => {
     if (assignmentError) {
-      throw Meteor.Error(assignmentError)
+      console.log(assignmentError)
+      throw new Meteor.Error(assignmentError)
     }
     else {
       // TODO can still batch insert
@@ -61,6 +62,7 @@ const createAssignment = ({dueBy, campaignId, userId, texterContacts}) => {
       //   }
       // })
       // validate schema
+      console.log("batch insert?")
       CampaignContacts.batchInsert(data, (err, res) => console.log("ERROR creating contacts", err))
 
 
@@ -128,18 +130,27 @@ export const insert = new ValidatedMethod({
     // TODO do this only if the contacts validate!
     Campaigns.insert(campaignData, (campaignError, campaignId) => {
       if (campaignError) {
+        console.log("campaignError", campaignError)
         throw new Meteor.Error(campaignError)
       }
       else {
+        console.log("HELLO?!")
         for (let survey of surveys) {
           survey.campaignId = campaignId
           SurveyQuestions.insert(survey)
+          console.log("inserting survey")
         }
+
         const dividedContacts = divideContacts(contacts, assignedTexters)
         forEach(dividedContacts, ( [texterId, texterContacts] ) => {
+          console.log("trying to create assignment", texterId)
           createAssignment({ dueBy, campaignId, texterId, texterContacts })
         })
       }
+
+      console.log("now what")
+      return campaignId
+      console.log("HERE?")
       // TODO - autoassignment alternative
       // TODO check error!
 
