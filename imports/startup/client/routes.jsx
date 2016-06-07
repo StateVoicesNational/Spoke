@@ -8,6 +8,7 @@ import { TextersPage } from '../../ui/pages/texters_page'
 import { MessagesPage } from '../../ui/pages/messages_page'
 import { MessagePage } from '../../ui/pages/message_page'
 import { AdminDashboardPage } from '../../ui/pages/admin_dashboard_page'
+import { AppDashboardPage } from '../../ui/pages/app_dashboard_page'
 import { AdminNavigation, AppNavigation } from '../../ui/components/navigation'
 import { HomePage } from '../../ui/pages/home_page'
 import { LoginPage } from '../../ui/pages/login_page'
@@ -67,6 +68,15 @@ FlowRouter.route('/:organizationId/join', {
 const appSection = FlowRouter.group({
     prefix: "/app"
 });
+
+appSection.route('/', {
+  name: 'appDashboard',
+  action: (params) => {
+    mount(App, {
+      content: () => <AppDashboardPage {...params} />
+    })
+  }
+})
 
 const appOrganizationSection = appSection.group({
   prefix: '/:organizationId'

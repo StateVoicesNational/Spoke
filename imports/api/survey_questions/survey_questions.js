@@ -30,10 +30,10 @@ SurveyQuestions.schema = new SimpleSchema({
 
 SurveyQuestions.attachSchema(SurveyQuestions.schema)
 
-export const newAllowedAnswer = (value) => ({
+export const newAllowedAnswer = (value) => { return {
   value,
   _id: Random.id(),
-})
+}}
 
 Factory.define('survey_question', SurveyQuestions, {
   question: () => Fake.fromArray([
@@ -41,7 +41,7 @@ Factory.define('survey_question', SurveyQuestions, {
     'Will this person support Bernie?'
   ]),
   campaignId: () => 'abcd',
-  allowedAnswers: () => ['Yes', 'No', 'Maybe'].map((answer) => createAnswer(answer)),
+  allowedAnswers: () => ['Yes', 'No', 'Maybe'].map((answer) => newAllowedAnswer(answer)),
   instructions: () => Fake.sentence(20)
 })
 

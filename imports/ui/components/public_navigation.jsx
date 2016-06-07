@@ -101,7 +101,7 @@ export class PublicNavigation extends Component {
                   targetOrigin={{horizontal: 'left', vertical: 'top'}}
                   onRequestClose={this.handleRequestClose}
                 >
-                  <LoginForm />
+                  <LoginForm onSubmit={() => FlowRouter.go( userIsAdmin(Meteor.user()) ? 'adminDashboard' : 'appDashboard')}/>
                 </Popover>
               </div>
             )

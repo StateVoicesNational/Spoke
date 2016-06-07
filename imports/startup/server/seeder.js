@@ -6,6 +6,7 @@ import { SurveyAnswers } from '../../api/survey_answers/survey_answers.js'
 import { Messages } from '../../api/messages/messages.js'
 import { Organizations } from '../../api/organizations/organizations.js'
 import { OptOuts } from '../../api/opt_outs/opt_outs.js'
+import { Random } from 'meteor/random'
 
 import { Fake } from 'meteor/anti:fake'
 import { Meteor } from 'meteor/meteor'
@@ -57,6 +58,7 @@ const createContacts = (assignmentId, campaignId) => {
 
 const allowedAnswer = (value, script, surveyQuestionId) => (
   {
+    _id: Random.id(),
     value,
     surveyQuestionId,
     script: `${script} Let us know at {eventUrl}!` // Just to demo/test the interpolation
