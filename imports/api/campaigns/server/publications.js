@@ -63,7 +63,6 @@ Meteor.publish("campaign.stats", function(campaignId) {
   const contactCountHandle = CampaignContacts.find({ campaignId }).observeChanges({
     added: () => {
       contactCount++
-      console.log("campaigncontacts added?")
       if (!initializing) {
         this.changed('campaignStats', campaignId, { contactCount })
       }
@@ -88,6 +87,19 @@ Meteor.publish("campaign.stats", function(campaignId) {
   })
 
   const messageReceivedCountHandle = Messages.find({ campaignId, isFromContact: true }).observeChanges({
+    added: () => {
+      messageReceivedCount++
+      if (!initializing) {
+        this.changed('campaignStats', campaignId, { messageReceivedCount })
+      }
+    },
+    removed: () => {
+      messageReceivedCount--
+      this.changed('campaignStats', campaignId, { messageReceivedCount })
+    }
+  })
+
+  const surveyData = SurveyAnswers.find({ campaignId }).observeChanges({
     added: () => {
       messageReceivedCount++
       if (!initializing) {

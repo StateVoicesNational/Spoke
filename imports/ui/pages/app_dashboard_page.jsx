@@ -21,6 +21,7 @@ class _AppDashboardPage extends React.Component {
   }
 }
 export const AppDashboardPage = createContainer(({ organizationId, organizations, loading }) => {
+  const handle = Meteor.subscribe('organizations')
   return {
     organizationId,
     organizations,

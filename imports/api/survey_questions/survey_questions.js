@@ -15,17 +15,18 @@ const AllowedAnswerSchema = new SimpleSchema({
   surveyQuestionId: {
     type: String,
     optional: true
-  }
+  },
 })
 
 SurveyQuestions.schema = new SimpleSchema({
   campaignId: { type: String },
-  question: { type: String },
+  text: { type: String },
   allowedAnswers: { type: [AllowedAnswerSchema] },
   instructions: { // any instructions for the texter at this step
     type: String,
     optional: true
-  }
+  },
+  isTopLevel: { type: Boolean }
 })
 
 SurveyQuestions.attachSchema(SurveyQuestions.schema)
@@ -36,19 +37,19 @@ export const newAllowedAnswer = (value) => { return {
 }}
 
 Factory.define('survey_question', SurveyQuestions, {
-  question: () => Fake.fromArray([
+  text: () => Fake.fromArray([
     'Can the user attend the event?',
     'Will this person support Bernie?'
   ]),
   campaignId: () => 'abcd',
   allowedAnswers: () => ['Yes', 'No', 'Maybe'].map((answer) => newAllowedAnswer(answer)),
-  instructions: () => Fake.sentence(20)
+  instructions: () => Fake.sentence(20),
+  isTopLevel:() => true
 })
 
 SurveyQuestions.helpers({
   children() {
     const childIds = this.allowedAnswers.map(({ surveyQuestionId }) => surveyQuestionId).filter((val) => val)
-    console.log("childIds", childIds)
     return SurveyQuestions.find({ _id: {$in: childIds}})
   }
 })

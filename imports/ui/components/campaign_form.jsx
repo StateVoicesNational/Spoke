@@ -73,7 +73,7 @@ export class CampaignForm extends Component {
       customFields: [],
       scripts: [],
       assignedTexters: texters.map((texter) => texter._id),
-      surveys: [],
+      questions: [],
       submitting: false
     }
   }
@@ -86,7 +86,7 @@ export class CampaignForm extends Component {
     this._computation = Tracker.autorun(() => {
       this.setState({
         scripts: LocalCollection.find({ collectionType: 'script' }).fetch(),
-        surveys: LocalCollection.find({ collectionType: 'survey' }).fetch()
+        questions: LocalCollection.find({ collectionType: 'question' }).fetch()
       })
     })
 
@@ -103,10 +103,10 @@ export class CampaignForm extends Component {
     // workaround for https://github.com/meteor/react-packages/issues/99
     setTimeout(this.startComputation.bind(this), 0);
     this.steps = [
-      ['Basics', this.renderBasicsSection.bind(this)],
-      ['Contacts', this.renderPeopleSection.bind(this)],
-      ['Texters', this.renderAssignmentSection.bind(this)],
-      ['Scripts', this.renderScriptSection.bind(this)],
+      // ['Basics', this.renderBasicsSection.bind(this)],
+      // ['Contacts', this.renderPeopleSection.bind(this)],
+      // ['Texters', this.renderAssignmentSection.bind(this)],
+      // ['Scripts', this.renderScriptSection.bind(this)],
       ['Surveys', this.renderSurveySection.bind(this)],
     ]
   }
@@ -170,7 +170,7 @@ export class CampaignForm extends Component {
       contacts,
       scripts,
       assignedTexters,
-      surveys,
+      questions,
       customFields,
       dueBy
     } = this.state
@@ -187,10 +187,12 @@ export class CampaignForm extends Component {
       dueBy,
       // FIXME This omit is really awkward. Decide if I should be using subdocument _ids instead.
       scripts: _.map(scripts, (script) => _.omit(script, ['collectionType', '_id'])),
-      surveys: _.map(surveys, (survey) => _.omit(survey, ['collectionType', '_id'])),
+      // FIXME
+      surveys: _.map(questions, (question) => _.omit(question, ['collectionType', '_id'])),
     }
     this.setState( { submitting: true })
 
+    console.log("SURVEYS", data.surveys)
     insert.call(data, (err) => {
       this.setState({ submitting: false })
 
@@ -243,10 +245,10 @@ export class CampaignForm extends Component {
   }
 
   renderSurveySection() {
-    const { surveys, customFields, sampleContact } = this.state
+    const { questions, customFields, sampleContact } = this.state
     return (
       <CampaignSurveyForm
-        surveys={surveys}
+        questions={questions}
         onAddSurveyAnswer={this.handleAddSurveyAnswer}
         onEditSurvey={this.handleEditSurvey}
         onAddSurvey={this.handleAddSurvey}
@@ -256,37 +258,38 @@ export class CampaignForm extends Component {
     )
   }
 
-  handleEditSurvey(surveyId, data) {
-    console.log("DATA", data, surveyId)
+  handleEditSurvey(questionId, data) {
+    console.log("DATA", data, questionId)
     LocalCollection.update({
-      _id: surveyId
+      _id: questionId
     }, {
       $set: data
     })
   }
 
-  handleAddSurveyAnswer(surveyId) {
-    const survey = LocalCollection.findOne({_id: surveyId})
+  handleAddSurveyAnswer(questionId) {
+    const question = LocalCollection.findOne({_id: questionId})
 
     LocalCollection.update({
-      _id: surveyId
+      _id: questionId
     }, {
       $set: {
-        allowedAnswers: survey.allowedAnswers.concat([newAllowedAnswer('')])
+        allowedAnswers: question.allowedAnswers.concat([newAllowedAnswer('')])
       }
     })
   }
 
   handleAddSurvey() {
-    console.log("handle add survey")
+    console.log("handle add question")
     console.log("[newAllowedAnswer('Option 1')]", newAllowedAnswer('aosentuhaoesntuh'))
-    const survey = {
-      question: '',
+    const question = {
+      text: '',
       allowedAnswers: [newAllowedAnswer('Option 1')],
-      collectionType: 'survey'
+      isTopLevel: true,
+      collectionType: 'question'
     }
 
-    LocalCollection.insert(survey)
+    LocalCollection.insert(question)
   }
 
   renderSummarySection() {

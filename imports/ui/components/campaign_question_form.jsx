@@ -5,7 +5,7 @@ import RaisedButton from 'material-ui/RaisedButton'
 import { ScriptEditor } from './script_editor'
 
 import Formsy from 'formsy-react'
-import { FormsyText } from 'formsy-material-ui/lib'
+import { FormsyText, FormsySelect } from 'formsy-material-ui/lib'
 import RadioButtonUnchecked from 'material-ui/svg-icons/toggle/radio-button-unchecked'
 import IconMenu from 'material-ui/IconMenu'
 import MenuItem from 'material-ui/MenuItem'
@@ -16,15 +16,60 @@ import Dialog from 'material-ui/Dialog'
 import { CampaignContacts } from '../../api/campaign_contacts/campaign_contacts'
 import { muiTheme } from '../../ui/theme'
 import { grey400 } from 'material-ui/styles/colors'
+import { Toolbar, ToolbarGroup, ToolbarTitle, ToolbarSeparator } from 'material-ui/Toolbar'
+import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
+import DeleteIcon from 'material-ui/svg-icons/action/delete'
+import ForwardIcon from 'material-ui/svg-icons/navigation/arrow-forward'
+import BackIcon from 'material-ui/svg-icons/navigation/arrow-back'
+import EditIcon from 'material-ui/svg-icons/image/edit'
+import Divider from 'material-ui/Divider'
+import Subheader from 'material-ui/Subheader'
+
 const styles = {
+  icon: {
+    width: 18,
+    height: 18,
+  },
+  button: {
+    width: 22,
+    height: 18,
+  },
+  scriptRow: {
+    borderLeft: `5px solid ${muiTheme.palette.primary1Color}`
+  },
+  scriptTitle: {
+    fontWeight: 'medium'
+  },
+  scriptSection: {
+    marginBottom: 46
+  },
+  scriptSectionSubtitle: {
+    color: 'gray',
+    fontWeight: 'light',
+    marginTop: 0,
+    marginBottom: 36,
+    fontSize: 12
+  },
+  scriptSectionTitle: {
+    marginBottom: 0
+  },
   question: {
     borderLeft: `5px solid ${muiTheme.palette.primary1Color}`,
     marginBottom: 24,
-    padding: '0 20px'
+  },
+  followUp: {
+    borderLeft: `5px solid ${muiTheme.palette.primary2Color}`,
+    marginLeft: 24,
+    marginBottom: 24,
   },
   radioButtonIcon: {
     height: '14px',
     verticalAlign: 'middle'
+  },
+  addAnswerButton: {
+    textTransform: 'none',
+    paddingLeft: 0,
+    fontSize: '12'
   },
   answer: {
     fontSize: '12'
@@ -36,7 +81,7 @@ const styles = {
   script: {
     verticalAlign: 'middle',
     display: 'inline-block',
-    width: '250px',
+    width: '180px',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -50,8 +95,15 @@ const styles = {
   scriptInput: {
     fontSize: '12',
   },
-
 }
+
+const QuestionLink = ({text, isLinkToParent}) => (
+  <FlatButton
+    label={text}
+    secondary
+    icon={isLinkToParent ? <BackIcon /> : <ForwardIcon />}
+  />
+)
 export class CampaignQuestionForm extends Component {
   constructor(props) {
     super(props)
@@ -61,6 +113,7 @@ export class CampaignQuestionForm extends Component {
     this.handleSaveScript = this.handleSaveScript.bind(this)
     this.handleDeleteScript = this.handleDeleteScript.bind(this)
     this.handleUpdateAnswer = this.handleUpdateAnswer.bind(this)
+    // this.handleAddFollowup = this.handleAddFollowup.bind(this)
 
     this.state = {
       open: false,
@@ -82,16 +135,41 @@ export class CampaignQuestionForm extends Component {
   }
 
   addAnswer() {
-    const {onAddSurveyAnswer, survey} = this.props
-    onAddSurveyAnswer(survey._id)
+    const {onAddSurveyAnswer, question} = this.props
+    onAddSurveyAnswer(question._id)
   }
 
   handleQuestionChange(event) {
-    const { survey, onEditSurvey } = this.props
-    onEditSurvey(survey._id, { question: event.target.value })
+    const { question, onEditSurvey } = this.props
+    onEditSurvey(question._id, { text: event.target.value })
   }
 
-  renderAnswer(survey, answer, autoFocus, index) {
+  renderAnswer(otherQuestions, question, answer, autoFocus, index) {
+    const showFollowUp  = otherQuestions.length > 0
+    const followUpQuestions = showFollowUp ? (
+      <div>
+        <Divider />
+        <Subheader>
+          Follow-up question
+        </Subheader>
+        <MenuItem
+          insetChildren={true}
+          checked={!answer.surveyQuestionId}
+          value={'none'}
+          primaryText="No follow-up"
+          onTouchTap={ () => this.handleUpdateAnswer(answer._id, { surveyQuestionId: null})}
+        />
+        { otherQuestions.map((otherQuestion) => (
+          <MenuItem
+            insetChildren={true}
+            checked={answer.surveyQuestionId === otherQuestion._id}
+            value={otherQuestion._id}
+            onTouchTap={ (event) => this.handleUpdateAnswer(answer._id, { surveyQuestionId: otherQuestion._id})}
+            primaryText={otherQuestion.text}
+          />
+        ))}
+      </div>
+    ) : ''
     return (
         <div style={styles.answerRow}>
           <RadioButtonUnchecked
@@ -109,6 +187,9 @@ export class CampaignQuestionForm extends Component {
           />
           <div style={styles.script}>
             { answer.script }
+          </div>
+          <div style={styles.script}>
+            { answer.surveyQuestionId ? <QuestionLink text={otherQuestions.find((q) => q._id === answer.surveyQuestionId).text} isLinkToParent={false} /> : '' }
           </div>
           <IconMenu
             style={{float: 'right', width: 24, height: 20}}
@@ -128,6 +209,7 @@ export class CampaignQuestionForm extends Component {
               primaryText="Delete script"
               onTouchTap={() => this.handleDeleteScript(answer)}
             />
+            { followUpQuestions }
           </IconMenu>
 
           <IconButton
@@ -148,25 +230,25 @@ export class CampaignQuestionForm extends Component {
   }
 
   handleUpdateAnswer(answerId, updates) {
-    const { survey, onEditSurvey } = this.props
-
+    const { question, onEditSurvey } = this.props
+    console.log(answerId, updates)
     //FIXME inefficintes
-    const allowedAnswers = survey.allowedAnswers.map((allowedAnswer) => {
+    const allowedAnswers = question.allowedAnswers.map((allowedAnswer) => {
       if (allowedAnswer._id === answerId) {
         console.log(updates)
         return _.extend(allowedAnswer, updates)
       }
       return allowedAnswer
     })
-    onEditSurvey(survey._id, { allowedAnswers })
+    onEditSurvey(question._id, { allowedAnswers })
 
   }
 
   handleDeleteAnswer(answer) {
-    const { survey, onEditSurvey } = this.props
-    const allowedAnswers = _.reject(survey.allowedAnswers, (allowedAnswer) => allowedAnswer._id === answer._id)
+    const { question, onEditSurvey } = this.props
+    const allowedAnswers = _.reject(question.allowedAnswers, (allowedAnswer) => allowedAnswer._id === answer._id)
     console.log("new allowedAnswers", allowedAnswers, 'try to remove', answer._id)
-    onEditSurvey(survey._id, { allowedAnswers })
+    onEditSurvey(question._id, { allowedAnswers })
   }
 
   handleDeleteScript(answer) {
@@ -180,14 +262,21 @@ export class CampaignQuestionForm extends Component {
     this.handleCloseDialog()
   }
 
-  renderAnswers(survey, questionIsFocused) {
-    const answers = survey.allowedAnswers
+  renderAnswers(questions, question, questionIsFocused) {
+    const otherQuestions = _.reject(questions, (q) => q._id === question._id)
+
+    const answers = question.allowedAnswers
     return (
       <div>
         { _.map(answers, (answer, index) => (
-          this.renderAnswer(survey, answer,  !questionIsFocused && index === (answers.length - 1), index)
+          this.renderAnswer(otherQuestions, question, answer,  !questionIsFocused && index === (answers.length - 1), index)
         ))}
+        <RadioButtonUnchecked
+          style={styles.radioButtonIcon}
+        />
         <FlatButton
+          style={styles.addAnswerButton}
+          labelStyle={styles.addAnswerButton}
           label="Add answer"
           onTouchTap={this.addAnswer}
         />
@@ -230,27 +319,52 @@ export class CampaignQuestionForm extends Component {
 
 
   render() {
-    const { survey } = this.props
+    const { question, questions } = this.props
+    console.log("render questions", questions)
+    const questionIsFocused = question.text === ''
 
-    const questionIsFocused = survey.question === ''
-
+    const parentQuestions = questions.filter((q) => _.includes(q.allowedAnswers.map((answer) => answer.surveyQuestionId), question._id))
+    const isFollowUp = parentQuestions.length > 0
     return (
-      <div style={styles.question}>
-        <Formsy.Form ref="form">
-            <FormsyText
-              autoFocus={questionIsFocused}
-              onChange={this.handleQuestionChange.bind(this)}
-              required
-              fullWidth
-              ref="questionInput"
-              name="question"
-              hintText="e.g. Can the contact attend the event?"
-              value={ survey.question }
-            />
-            { this.renderAnswers(survey, questionIsFocused) }
-        </Formsy.Form>
-        { this.renderDialog()}
-      </div>
+      <Card style={isFollowUp ? styles.followUp : styles.question}>
+        <CardText>
+          <div>
+            <Formsy.Form ref="form">
+                <FormsyText
+                  autoFocus={questionIsFocused}
+                  onChange={this.handleQuestionChange.bind(this)}
+                  required
+                  fullWidth
+                  ref="questionInput"
+                  name="question"
+                  hintText="e.g. Can the contact attend the event?"
+                  value={ question.question }
+                />
+                { this.renderAnswers(questions, question, questionIsFocused) }
+            </Formsy.Form>
+            { this.renderDialog()}
+          </div>
+        </CardText>
+        <Divider />
+        <CardActions
+          style={{textAlign: 'right'}}
+        >
+          { parentQuestions.length > 0 ? (
+            <span>
+              { parentQuestions.map((parentQuestion) => <QuestionLink text={parentQuestion.text} isLinkToParent={true}/>)}
+            </span>
+
+          ) : ''}
+
+          <IconButton
+            iconStyle={styles.icon}
+            style={styles.icon}
+            // onTouchTap={() => onScriptDelete(script._id)}
+          >
+            <DeleteIcon />
+          </IconButton>
+        </CardActions>
+      </Card>
     )
   }
 }

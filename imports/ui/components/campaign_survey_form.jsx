@@ -10,7 +10,9 @@ const styles = {
 }
 export class CampaignSurveyForm extends Component {
   render() {
-    const { surveys, onAddSurveyAnswer, onEditSurvey, onAddSurvey, customFields, sampleContact} = this.props
+    const { questions, onAddSurveyAnswer, onEditSurvey, onAddSurvey, customFields, sampleContact} = this.props
+    console.log("questions here", questions)
+
     return (
       <div>
         <CampaignFormSectionHeading
@@ -18,9 +20,10 @@ export class CampaignSurveyForm extends Component {
           subtitle='You can add questions and your texters can indicate responses from your contacts. For example, you might want to collect RSVPs to an event or find out whether to follow up about a different volunteer activity.'
         />
 
-        { surveys.map ((survey) => (
+        { questions.map ((question) => (
           <CampaignQuestionForm
-            survey={survey}
+            question={question}
+            questions={questions}
             onAddSurveyAnswer={onAddSurveyAnswer}
             onEditSurvey={onEditSurvey}
             customFields={customFields}

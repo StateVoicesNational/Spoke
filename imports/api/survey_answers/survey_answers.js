@@ -4,7 +4,10 @@ import { SimpleSchema } from 'meteor/aldeed:simple-schema'
 export const SurveyAnswers = new Mongo.Collection('survey_answers')
 
 SurveyAnswers.schema = new SimpleSchema({
+  campaignId: { type: String },
   campaignContactId: { type: String },
   surveyQuestionId: { type: String },
   value: { type: String }
 })
+
+SurveyAnswers.attachSchema(SurveyAnswers.schema)

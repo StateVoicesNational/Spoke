@@ -33,10 +33,7 @@ CampaignContacts.schema = new SimpleSchema({
     type: String,
     optional: true
   }, // so we can tell easily what is unassigned
-  campaignSurveyId: {
-    type: String,
-    optional: true
-  },
+
   // Cached last Message
   lastMessage: {
     type: LastMessageSchema,
@@ -62,7 +59,6 @@ Factory.define('campaign_contact', CampaignContacts, {
   },
   createdAt: () => new Date(),
   assignmentId: () => Factory.get('assignment'),
-  campaignSurveyId: null,
 })
 
 // This represents the keys from CampaignContacts objects that should be published
@@ -84,11 +80,5 @@ CampaignContacts.helpers({
       surveyQuestionId,
       campaignContactId: this._id
     })
-  },
-  survey() {
-    if (!this.campaignSurveyId) {
-      return SurveyQuestions.findOne({ campaignId: this.campaignId, parentAnswer: null})
-    }
-    return SurveyQuestions.findOne({ _id: this.campaignSurveyId })
-  },
+  }
 })

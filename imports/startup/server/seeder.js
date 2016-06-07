@@ -67,11 +67,12 @@ const allowedAnswer = (value, script, surveyQuestionId) => (
 
 const createSurvey = (campaignId) => {
 
-  const newSurvey = (question, allowedAnswers) => {
+  const newSurvey = (question, allowedAnswers, isTopLevel) => {
     return Factory.create('survey_question', {
       question,
       campaignId,
       allowedAnswers,
+      isTopLevel
     })
   }
 
@@ -81,20 +82,20 @@ const createSurvey = (campaignId) => {
     allowedAnswer('DE', 'See you there!')
   ]
 
-  const grandChildSurvey = newSurvey('What state for phonebanking?', grandChildAnswers)
+  const grandChildSurvey = newSurvey('What state for phonebanking?', grandChildAnswers, false)
   const childAnswers = [
     allowedAnswer('Yes', 'Great, thank you! What state can you help with?', grandChildSurvey._id),
     allowedAnswer('No', 'Ok, thought we would give it a shot!')
   ]
 
-  const childSurvey = newSurvey('Can the supporter help phonebank?', childAnswers)
+  const childSurvey = newSurvey('Can the supporter help phonebank?', childAnswers, false)
 
   const parentAnswers = [
     allowedAnswer('Yes', 'Great, please sign up on the website!'),
     allowedAnswer('No', 'Ok, no problem. Do you think you can phonebank instead?', childSurvey._id)
   ]
 
-  return newSurvey('Can the supporter attend this event?', parentAnswers)
+  return newSurvey('Can the supporter attend this event?', parentAnswers, true)
 }
 
 const createCampaign = (data) => {

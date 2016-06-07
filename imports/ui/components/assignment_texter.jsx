@@ -15,7 +15,7 @@ import { ContactToolbar } from './contact_toolbar'
 import { SurveyList } from './survey_list'
 import { MessageForm } from './message_form'
 import { ResponseDropdown } from './response_dropdown'
-import { QuestionDropdown } from './survey'
+import { QuestionDropdown } from './question_dropdown'
 
 import { sendMessage } from '../../api/messages/methods'
 import { applyScript } from '../helpers/script_helpers'
@@ -165,12 +165,13 @@ export class AssignmentTexter extends Component {
     this.setState({open: true})
   }
 
-  handleSurveyChange(surveyQuestionId, answer, script) {
+  handleSurveyAnswerChange(surveyQuestionId, answer, script) {
     const contact = this.currentContact()
     updateAnswer.call({
       surveyQuestionId,
       value: answer,
-      campaignContactId: contact._id
+      campaignContactId: contact._id,
+      campaignId: contact.campaignId
     })
     // This should actually happen from propagating props
     this.handleScriptChange(script)
@@ -181,11 +182,11 @@ export class AssignmentTexter extends Component {
     return (contact.messages().fetch().length === 0 ) ? <div/> : (
       <div>
         <Divider />
-        {campaign.surveys().fetch().map((survey) => (
+        {campaign.surveys().fetch().map((question) => (
           <QuestionDropdown
-            answer={contact.surveyAnswer(survey._id)}
-            onSurveyChange={this.handleSurveyChange.bind(this)}
-            survey={survey}
+            answer={contact.surveyAnswer(question._id)}
+            onAnswerChange={this.handleSurveyAnswerChange.bind(this)}
+            question={question}
           />
         ))}
         <Divider />

@@ -18,30 +18,30 @@ const styles = {
 export class QuestionDropdown extends Component {
   constructor(props) {
     super(props)
-    this.handleSurveyChange = this.handleSurveyChange.bind(this)
+    this.handleAnswerChange = this.handleAnswerChange.bind(this)
   }
 
-  handleSurveyChange(event, value, index) {
-    const { onSurveyChange, survey } = this.props
-    const script = survey.allowedAnswers.find((allowedAnswer) => allowedAnswer.value === value).script
-    onSurveyChange(survey._id, value, script)
+  handleAnswerChange(event, value, index) {
+    const { onAnswerChange, question } = this.props
+    const script = question.allowedAnswers.find((allowedAnswer) => allowedAnswer.value === value).script
+    onAnswerChange(question._id, value, script)
   }
 
   render () {
-    const { survey, answer } = this.props
+    const { question, answer } = this.props
     return (
       <Formsy.Form style={styles.form}>
         <FormsySelect
-          floatingLabelText={survey.question}
+          floatingLabelText={question.text}
           floatingLabelStyle={{pointerEvents: 'none'}} // https://github.com/callemall/material-ui/issues/3908
-          onChange={this.handleSurveyChange}
+          onChange={this.handleAnswerChange}
           showUnderline={false}
           fullWidth
           inputStyle={styles.select}
-          name={survey.question}
+          name={question.text}
           value={answer ? answer.value : ''}
         >
-          {survey.allowedAnswers.map(allowedAnswer =>
+          {question.allowedAnswers.map(allowedAnswer =>
             <MenuItem
               key={allowedAnswer.value}
               value={allowedAnswer.value}
@@ -55,7 +55,7 @@ export class QuestionDropdown extends Component {
 
 
 QuestionDropdown.propTypes = {
-  onSurveyChange: React.PropTypes.function,
-  survey: React.PropTypes.object,
+  onAnswerChange: React.PropTypes.function,
+  question: React.PropTypes.object,
   answer: React.PropTypes.object
 }

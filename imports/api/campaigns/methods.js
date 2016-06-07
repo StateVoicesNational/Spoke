@@ -130,15 +130,12 @@ export const insert = new ValidatedMethod({
     // TODO do this only if the contacts validate!
     Campaigns.insert(campaignData, (campaignError, campaignId) => {
       if (campaignError) {
-        console.log("campaignError", campaignError)
         throw new Meteor.Error(campaignError)
       }
       else {
-        console.log("HELLO?!")
         for (let survey of surveys) {
-          survey.campaignId = campaignId
+          survey.campaignId = campaignId          _.
           SurveyQuestions.insert(survey)
-          console.log("inserting survey")
         }
 
         const dividedContacts = divideContacts(contacts, assignedTexters)
