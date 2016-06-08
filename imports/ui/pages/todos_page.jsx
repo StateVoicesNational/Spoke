@@ -17,6 +17,9 @@ import ContentFilter from 'material-ui/svg-icons/content/filter-list';
 import IconMenu from 'material-ui/IconMenu';
 import IconButton from 'material-ui/IconButton';
 
+const styles = {
+  toolbar: {backgroundColor: 'white'}
+}
 
 const Todos = new Meteor.Collection('todos')
 
@@ -35,12 +38,17 @@ class _TodosPage extends React.Component {
 
   filteredSections() {
     const { showInactive } = this.state
-    let filters = ['active']
+    let filters
     if (showInactive) {
-      filters = filters.concat(['done', 'past'])
+      filters = ['done', 'past']
+
+    } else {
+      filters = ['active']
     }
+
     return filters
   }
+
   render () {
     const { organizationId, loading, results} = this.props
 
@@ -105,7 +113,7 @@ class _TodosPage extends React.Component {
     console.log(groupedResults)
     const content = results.length > 0 ? (
         <div>
-          <Toolbar>
+          <Toolbar style={styles.toolbar}>
             <ToolbarGroup firstChild={true}>
             </ToolbarGroup>
             <ToolbarGroup lastChild>
