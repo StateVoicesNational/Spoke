@@ -13,7 +13,7 @@ const styles = {
     right: 16
   },
   root: {
-    margin: '10px 0'
+    margin: '20px 0'
   }
 }
 
@@ -55,8 +55,6 @@ export class AssignmentSummary extends Component {
 
   render() {
     const { assignment, unmessagedCount, unrepliedCount } = this.props
-    console.log("campaigns", assignment.campaignId)
-    console.log(Campaigns.findOne(assignment.campaignId))
     const { title, description } = Campaigns.findOne(assignment.campaignId)
 
     const summary = (

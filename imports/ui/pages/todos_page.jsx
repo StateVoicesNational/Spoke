@@ -10,13 +10,45 @@ import { AssignmentSummary } from '../components/assignment_summary'
 import { moment } from 'meteor/momentjs:moment'
 import Subheader from 'material-ui/Subheader'
 import { ListItem } from 'material-ui/List'
+import DropDownMenu from 'material-ui/DropDownMenu';
+import MenuItem from 'material-ui/MenuItem';
+
+
 const Todos = new Meteor.Collection('todos')
 
 class _TodosPage extends React.Component {
+  constructor(props) {
+    super(props)
+    this.handleChange = this.handleChange.bind(this)
+    this.state = {
+      showInactive: false
+    }
+  }
+
+  handleChange(event, index, value) {
+    this.setState({ showInactive: value});
+  }
+
+  filteredSections() {
+    const { showInactive } = this.state
+    let filters = ['active']
+    if (showInactive) {
+      filters = filters.concat(['done', 'past'])
+    }
+    return filters
+  }
   render () {
     const { organizationId, loading, results} = this.props
 
-    const groupedByPast = _.groupBy(results, (result) =>  moment(result.assignment.dueBy).isBefore(moment()))
+    const groupedResults = _.groupBy(results, (result) =>  {
+      if (moment(result.assignment.dueBy).isBefore(moment())) {
+        return 'past'
+      } else if ((result.unmessagedCount + result.unrepliedCount) > 0) {
+        return 'active'
+      } else {
+        return 'done'
+      }
+    })
 
     // const groupedResults = _.groupBy(results, (result) => [
     //   // (result.unmessagedCount + result.unrepliedCount) > 0,  //hasTodos
@@ -30,41 +62,58 @@ class _TodosPage extends React.Component {
       />
     )
 
-    const section = (group, isPast) => (
+    const section = (group, groupKey) => (
       <div>
-        <Subheader>{isPast ? 'Past' : 'Now'}</Subheader>
+        <Subheader>{groupKey}</Subheader>
           {
             group.map((result) => {
               const { title, description } = Campaigns.findOne(result.assignment.campaignId)
-
-              return isPast ? (
-                <ListItem
-                  primaryText={title}
-                  secondaryText={description}
-                />
-              ) : (
-                <AssignmentSummary
-                  organizationId={organizationId}
-                  unmessagedCount={result.unmessagedCount}
-                  assignment={result.assignment}
-                  unrepliedCount={result.unrepliedCount}
-                />
-              )
+              if (groupKey === 'past') {
+                return (
+                  <ListItem
+                    primaryText={title}
+                    secondaryText={description}
+                  />
+                )
+              } else if (groupKey === 'done') {
+                return (
+                  <ListItem
+                    primaryText={title}
+                    secondaryText={description}
+                  />
+                )
+              } else {
+                return (
+                  <AssignmentSummary
+                    organizationId={organizationId}
+                    unmessagedCount={result.unmessagedCount}
+                    assignment={result.assignment}
+                    unrepliedCount={result.unrepliedCount}
+                  />
+                )
+              }
             }
           )
-        }
-      </div>
-
+         }
+    </div>
     )
 
-    console.log(groupedByPast)
+    console.log(groupedResults)
     const content = results.length > 0 ? (
-      [false, true].map((isPast) => {
-        const group = _.has(groupedByPast, isPast) ? groupedByPast[isPast] : []
-        return group.length > 0 ? section(group, isPast) : ''
-      })) : empty
+        <div>
+          <DropDownMenu value={this.state.showInactive} onChange={this.handleChange}>
+            <MenuItem value={false} primaryText="Active only" />
+            <MenuItem value={true} primaryText="All" />
+          </DropDownMenu>
 
-
+          {
+            this.filteredSections().map((groupKey) => {
+              const group = _.has(groupedResults, groupKey) ? groupedResults[groupKey] : []
+              return group.length > 0 ? section(group, groupKey) : (groupKey === 'active' ? empty : '')
+            })
+          }
+      </div>
+      ) : empty
 
     return (
       <AppPage
