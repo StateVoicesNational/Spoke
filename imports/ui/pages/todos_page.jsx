@@ -12,6 +12,10 @@ import Subheader from 'material-ui/Subheader'
 import { ListItem } from 'material-ui/List'
 import DropDownMenu from 'material-ui/DropDownMenu';
 import MenuItem from 'material-ui/MenuItem';
+import {Toolbar, ToolbarGroup, ToolbarSeparator, ToolbarTitle} from 'material-ui/Toolbar';
+import ContentFilter from 'material-ui/svg-icons/content/filter-list';
+import IconMenu from 'material-ui/IconMenu';
+import IconButton from 'material-ui/IconButton';
 
 
 const Todos = new Meteor.Collection('todos')
@@ -25,7 +29,7 @@ class _TodosPage extends React.Component {
     }
   }
 
-  handleChange(event, index, value) {
+  handleChange(event, value) {
     this.setState({ showInactive: value});
   }
 
@@ -64,7 +68,7 @@ class _TodosPage extends React.Component {
 
     const section = (group, groupKey) => (
       <div>
-        <Subheader>{groupKey}</Subheader>
+        <Subheader>{groupKey === 'active' ? '': groupKey}</Subheader>
           {
             group.map((result) => {
               const { title, description } = Campaigns.findOne(result.assignment.campaignId)
@@ -101,10 +105,20 @@ class _TodosPage extends React.Component {
     console.log(groupedResults)
     const content = results.length > 0 ? (
         <div>
-          <DropDownMenu value={this.state.showInactive} onChange={this.handleChange}>
-            <MenuItem value={false} primaryText="Active only" />
-            <MenuItem value={true} primaryText="All" />
-          </DropDownMenu>
+          <Toolbar>
+            <ToolbarGroup firstChild={true}>
+            </ToolbarGroup>
+            <ToolbarGroup lastChild>
+              <IconMenu
+                iconButtonElement={<IconButton><ContentFilter /></IconButton>}
+                onChange={this.handleChange}
+                value={this.state.showInactive}
+              >
+              <MenuItem value={false} primaryText="To-dos only" />
+              <MenuItem value={true} primaryText="Done & past" />
+              </IconMenu>
+            </ToolbarGroup>
+          </Toolbar>
 
           {
             this.filteredSections().map((groupKey) => {
