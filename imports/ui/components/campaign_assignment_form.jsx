@@ -6,6 +6,8 @@ import {RadioButton, RadioButtonGroup} from 'material-ui/RadioButton';
 import { CampaignFormSectionHeading } from './campaign_form_section_heading'
 import Divider from 'material-ui/Divider'
 import ContentClear from 'material-ui/svg-icons/content/clear'
+import Formsy from 'formsy-react'
+import { FormsyText, FormsyDate } from 'formsy-material-ui/lib'
 
 const styles = {
   radioButtonGroup: {
@@ -59,9 +61,10 @@ export class CampaignAssignmentForm extends Component {
   }
 
   render() {
-    const { texters, assignedTexters } = this.props
+    const { texters, assignedTexters, onValid, onInvalid } = this.props
 
     const assignAll = assignedTexters.length === texters.length
+
     // TODO remove already assigned texters
     const dataSource = texters.filter((texter) =>
         assignedTexters.indexOf(texter._id) === -1).map((texter) =>
@@ -73,6 +76,9 @@ export class CampaignAssignmentForm extends Component {
     // TODO helper function for the names
 
     const filter = (searchText, key) => (key === 'allTexters') ? true : AutoComplete.caseInsensitiveFilter(searchText, key)
+    // TODO : I have a dummy formsy field here just to enable/disable Next, but I should
+    // actually probably do something smarter with the form submissions and getFormModel and do
+    // multiple assignedTexters[0] fields, etc. Maybe custom components
 
     // TODO https://github.com/callemall/material-ui/pull/4193/commits/8e80a35e8d2cdb410c3727333e8518cadc08783b
     const autocomplete = (
@@ -87,11 +93,13 @@ export class CampaignAssignmentForm extends Component {
     )
 
     return (
-      <div>
+      <Formsy.Form
+        onValid={onValid}
+        onInvalid={onInvalid}
+      >
         <CampaignFormSectionHeading
           title='Who should send the texts?'
         />
-
         <RadioButtonGroup
           style={styles.radioButtonGroup}
           name="assignment"
@@ -107,20 +115,26 @@ export class CampaignAssignmentForm extends Component {
             label="Choose individual people to assign"
           />
         </RadioButtonGroup>
-       {assignAll ? '' : autocomplete}
-       <div>
-         { assignedTexters.map((texterId) => {
-            const user = Meteor.users.findOne({_id: texterId})
-            return (
-                <Chip
-                  text={user.firstName}
-                  iconRightClass={ContentClear}
-                  onIconRightTouchTap={() => this.removeTexter(texterId)}
-                />
-            )
-         }) }
-      </div>
-      </div>
+         {assignAll ? '' : autocomplete}
+         <div>
+          <FormsyText
+            name="assignedTexters"
+            style={{opacity: 0, width: 0, height: 0}}
+            value={assignedTexters.length > 0 ? 'formsy-valid' : ''}
+            required
+          />
+           { assignedTexters.map((texterId) => {
+              const user = Meteor.users.findOne({_id: texterId})
+              return (
+                  <Chip
+                    text={user.firstName}
+                    iconRightClass={ContentClear}
+                    onIconRightTouchTap={() => this.removeTexter(texterId)}
+                  />
+              )
+           }) }
+        </div>
+      </Formsy.Form>
     )
   }
 }

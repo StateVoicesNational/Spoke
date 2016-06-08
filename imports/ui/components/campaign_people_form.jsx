@@ -61,7 +61,7 @@ export class CampaignPeopleForm extends Component {
       uploading: false,
       validationStats: null,
       contactUploadError: null,
-      contacts: null
+      contacts: null //For now this is just to help us with the formsy validation
     }
   }
 
@@ -159,17 +159,17 @@ export class CampaignPeopleForm extends Component {
           onValid={onValid}
           onInvalid={onInvalid}
         >
-
-        <RaisedButton
-          style={styles.button}
-          label= {uploading ? 'Uploading...' : "Upload contacts"}
-          labelPosition="before"
-        >
-          <input
-            type="file"
-            style={styles.exampleImageInput}
-            onChange={this.handleUpload}
-          />
+            <RaisedButton
+              style={styles.button}
+              label= {uploading ? 'Uploading...' : "Upload contacts"}
+              labelPosition="before"
+            >
+              <input
+                type="file"
+                style={styles.exampleImageInput}
+                onChange={this.handleUpload}
+              />
+          </RaisedButton>
           <FormsyText
             required
             name="contacts"
@@ -177,7 +177,6 @@ export class CampaignPeopleForm extends Component {
             style={styles.exampleImageInput}
           />
 
-        </RaisedButton>
         {validationStats ? this.renderValidationStats() : ''}
         { contactUploadError ? (
           <List>
