@@ -1,6 +1,7 @@
+
 Meteor.startup(function() {
 
-  WebFontConfig = {
+  window.WebFontConfig = {
     google: { families: [ 'Poppins' ] }
   };
   (function() {

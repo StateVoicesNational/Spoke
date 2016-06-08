@@ -65,7 +65,7 @@ export class CampaignsPage extends Component {
     return (
       <AppPage
         navigation={<AdminNavigation
-          title="Campaigns"
+          title="Campaigns smee fleeeesnahtoensuthaeo"
           organizationId={organizationId}
         />}
         content={content}

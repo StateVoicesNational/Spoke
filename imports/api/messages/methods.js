@@ -131,10 +131,10 @@ const remoteCreateMessage = (text, userNumber, contactNumber, campaignId, onErro
     console.log("Faking message sending")
     onMessageSendSuccess('fake_message_id')
   } else {
-    // const plivo = require('plivo').RestAPI({
-    //   authId: Meteor.settings.private.plivo.authId,
-    //   authToken: Meteor.settings.private.plivo.authToken
-    // })
+    const plivo = require('plivo').RestAPI({
+      authId: Meteor.settings.private.plivo.authId,
+      authToken: Meteor.settings.private.plivo.authToken
+    })
 
     const params = {
       text,
