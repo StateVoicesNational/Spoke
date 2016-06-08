@@ -91,7 +91,7 @@ const _CampaignPage = ({ loading, organizationId, campaign, stats, assignments }
             {stats.surveyStats.map((question) => (
               <div style={styles.question}>
                 <h3>{question.text}</h3>
-                { response.count > 0 ? (
+                { question.responseCount > 0 ? (
                   <div className="row center-xs">
                     <div className="col-xs">
                       <Stat title="responses" count={question.responseCount} />

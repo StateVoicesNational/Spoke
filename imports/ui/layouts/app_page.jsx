@@ -19,13 +19,19 @@ export const AppPage = ({ navigation, content, loading, hideSidebar}) => (
     { loading ? '' : navigation }
     <div style={hideSidebar ? {} : styles.withSidebar }>
       <div className="wrap container-fluid" style={styles.container}>
-        <div className="row">
-          <div className={`col-xs ${ loading ? ' center-xs' : ''}`}>
-              <div className="box">
-                { loading ? <CircularProgress /> : content }
-              </div>
+        { loading ? (
+          <div className="row center-xs middle-xs">
+            <CircularProgress />
           </div>
-        </div>
+        ) : (
+          <div className="row">
+            <div className='col-xs'>
+                <div className="box">
+                   { content }
+                </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   </div>

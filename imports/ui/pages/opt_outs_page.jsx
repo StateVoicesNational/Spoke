@@ -21,7 +21,7 @@ class _OptOutsPage extends React.Component {
         content={
           <div>
           {optOuts.length === 0 ? <Empty
-              title="No opt-outs yet"
+              title="Yay, no one has opted out!"
               icon={<ProhibitedIcon />}
             /> : <List>
               {optOuts.map((optOut) => (
@@ -48,5 +48,5 @@ export const OptOutsPage = createContainer(({ organizationId }) => {
     optOuts: OptOuts.find({}).fetch(),
     loading: !handle.ready()
   }
-}, OptOutsPage)
+}, _OptOutsPage)
 

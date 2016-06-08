@@ -28,7 +28,16 @@ export const App = createContainer(() => {
     <div>
       <MuiThemeProvider muiTheme={muiTheme}>
         <div>
-          {loading ? '' : (user ? content : <LoginPage user={user} organizations={organizations}  />)}
+          {loading ? '' : (user ? content : (
+            <div>
+              <div className="row center-xs middle-xs" style={{height: 400}}>
+                <div className="col-xs">
+                  <h2>Welcome back.</h2>
+                  <LoginPage user={user} organizations={organizations}  />
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </MuiThemeProvider>
     </div>

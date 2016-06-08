@@ -1,6 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import { List, ListItem } from 'material-ui/List';
-import HappyFace from 'material-ui/svg-icons/social/sentiment-satisfied';
+import SpeakerNotesIcon from 'material-ui/svg-icons/action/speaker-notes'
 import { Empty } from './empty'
 import { moment } from 'meteor/momentjs:moment'
 
@@ -32,7 +32,7 @@ export class CampaignList extends Component {
     const empty = (
       <Empty
         title="No campaigns yet"
-        icon={<HappyFace />}
+        icon={<SpeakerNotesIcon />}
       />
     )
     return campaigns.length === 0 ? empty : (
