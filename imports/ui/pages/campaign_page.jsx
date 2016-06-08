@@ -113,7 +113,7 @@ const _CampaignPage = ({ loading, organizationId, campaign, stats, assignments }
   )
 }
 
-CampaignStats = new Mongo.Collection("campaignStats");
+const CampaignStats = new Mongo.Collection("campaignStats");
 
 export const CampaignPage = createContainer(({ organizationId, campaignId }) => {
   const handle = Meteor.subscribe('campaign', campaignId)

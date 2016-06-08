@@ -32,9 +32,10 @@ tap:i18n
 momentjs:moment
 reywood:publish-composite
 meteorhacks:picker
-ecmascript
 alanning:roles
 accounts-base
 mikowals:batch-insert
 meteorhacks:aggregate
 msavin:fetcher
+webpack:webpack
+webpack:react

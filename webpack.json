@@ -1,0 +1,23 @@
+{
+  "node": {
+    "net": false,
+    "tls": false,
+    "fs": false,
+    "console": true
+  },
+  "browser": {
+    "net": false,
+    "tls": false,
+    "fs": false,
+    "console": true
+  },
+  "devServer": {
+    "host": "localhost"
+  },
+  "externals": {
+    "net": false,
+    "tls": false,
+    "fs": false,
+    "console": true
+  }
+}
