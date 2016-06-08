@@ -40,12 +40,14 @@ export class CampaignAssignmentForm extends Component {
       const { onTexterAssignment } = this.props
       onTexterAssignment(newAssignedTexters)
     }
+    console.log("clear search Text")
   }
 
   onChange(event, value) {
     const { texters, onTexterAssignment } = this.props
     const assignedTexters = (value === 'assignAll') ? texters.map((texter) => texter._id) : []
     onTexterAssignment(assignedTexters)
+
   }
 
   dataSourceItem(name, key, image) {
@@ -59,6 +61,7 @@ export class CampaignAssignmentForm extends Component {
       )
     }
   }
+
 
   render() {
     const { texters, assignedTexters, onValid, onInvalid } = this.props
@@ -83,8 +86,10 @@ export class CampaignAssignmentForm extends Component {
     // TODO https://github.com/callemall/material-ui/pull/4193/commits/8e80a35e8d2cdb410c3727333e8518cadc08783b
     const autocomplete = (
       <AutoComplete
+        ref="autocomplete"
         style={styles.autocomplete}
         autoFocus
+        searchText=''
         filter={filter}
         hintText="Search for texters to assign"
         dataSource={dataSource}
@@ -108,7 +113,7 @@ export class CampaignAssignmentForm extends Component {
         >
           <RadioButton
             value="assignAll"
-            label="Assign all currently available texters"
+            label="Everyone available"
           />
           <RadioButton
             value="assignIndividual"

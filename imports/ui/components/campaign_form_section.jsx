@@ -29,7 +29,6 @@ export class CampaignFormSection extends Component {
   }
 
   render() {
-    console.log("this", this)
     const { onNext, onPrevious, content, previousStepEnabled, nextStepLabel} = this.props
     const { nextStepEnabled } = this.state
     return (
