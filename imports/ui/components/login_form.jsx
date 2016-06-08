@@ -1,18 +1,12 @@
-import React from 'react';
-import getMuiTheme from 'material-ui/styles/getMuiTheme'
-import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
-import Paper from 'material-ui/Paper';
-import RaisedButton from 'material-ui/RaisedButton';
-import MenuItem from 'material-ui/MenuItem';
-import Formsy from 'formsy-react';
-import { FormsyCheckbox, FormsyDate, FormsyRadio, FormsyRadioGroup,
-    FormsySelect, FormsyText, FormsyTime, FormsyToggle } from 'formsy-material-ui/lib'
+import React from 'react'
+import Paper from 'material-ui/Paper'
+import RaisedButton from 'material-ui/RaisedButton'
+import Formsy from 'formsy-react'
+import { FormsyText } from 'formsy-material-ui/lib'
 
 const errorMessages = {
-  emailError: "Please only use letters",
-  numericError: "Please provide a number",
-  urlError: "Please provide a valid URL",
-};
+  emailError: "Please enter a valid email",
+}
 
 const styles = {
   paperStyle: {
@@ -74,40 +68,38 @@ export class LoginForm extends React.Component {
     let { emailError, numericError, urlError } = errorMessages;
 
     return (
-      <MuiThemeProvider muiTheme={getMuiTheme()}>
-        <Paper style={paperStyle}>
-          <Formsy.Form
-            onValid={this.enableButton.bind(this)}
-            onInvalid={this.disableButton.bind(this)}
-            onValidSubmit={this.submitForm.bind(this)}
-            onInvalidSubmit={this.notifyFormError.bind(this)}
-          >
-            <FormsyText
-              name="email"
-              validations="isEmail"
-              validationError={emailError}
-              required
-              autoFocus
-              fullWidth
-              floatingLabelText="Email"
-            />
-            <FormsyText
-              required
-              name="password"
-              type="password"
-              fullWidth
-              floatingLabelText="Password"
-            />
-            <RaisedButton
-              fullWidth
-              style={submitStyle}
-              type="submit"
-              label="Login"
-              disabled={!this.state.canSubmit}
-            />
-          </Formsy.Form>
-        </Paper>
-      </MuiThemeProvider>
+      <Paper style={paperStyle}>
+        <Formsy.Form
+          onValid={this.enableButton.bind(this)}
+          onInvalid={this.disableButton.bind(this)}
+          onValidSubmit={this.submitForm.bind(this)}
+          onInvalidSubmit={this.notifyFormError.bind(this)}
+        >
+          <FormsyText
+            name="email"
+            validations="isEmail"
+            validationError={emailError}
+            required
+            autoFocus
+            fullWidth
+            floatingLabelText="Email"
+          />
+          <FormsyText
+            required
+            name="password"
+            type="password"
+            fullWidth
+            floatingLabelText="Password"
+          />
+          <RaisedButton
+            fullWidth
+            style={submitStyle}
+            type="submit"
+            label="Login"
+            disabled={!this.state.canSubmit}
+          />
+        </Formsy.Form>
+      </Paper>
     )
   }
 }

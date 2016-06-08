@@ -4,7 +4,7 @@ import { LoginPage } from '../pages/login_page'
 import { Organizations } from '../../api/organizations/organizations'
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider'
 import { muiTheme } from '../../ui/theme'
-
+import { _PublicLayout } from '../layouts/public'
 export const App = createContainer(() => {
   const handle = Meteor.subscribe('organizations')
 
@@ -28,7 +28,7 @@ export const App = createContainer(() => {
     <div>
       <MuiThemeProvider muiTheme={muiTheme}>
         <div>
-          { user ? content : (loading ? '' : <LoginPage user={user} organizations={organizations}  />)}
+          {loading ? '' : (user ? content : <LoginPage user={user} organizations={organizations}  />)}
         </div>
       </MuiThemeProvider>
     </div>

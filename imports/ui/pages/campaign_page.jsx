@@ -91,14 +91,16 @@ const _CampaignPage = ({ loading, organizationId, campaign, stats, assignments }
             {stats.surveyStats.map((question) => (
               <div style={styles.question}>
                 <h3>{question.text}</h3>
-                <div className="row center-xs">
-                  <div className="col-xs">
-                    <Stat title="responses" count={question.responseCount} />
+                { response.count > 0 ? (
+                  <div className="row center-xs">
+                    <div className="col-xs">
+                      <Stat title="responses" count={question.responseCount} />
+                    </div>
+                    <div className="col-xs">
+                      <Chart data={ question.responses.map(({ answer, count }) => [answer, count])} />
+                    </div>
                   </div>
-                  <div className="col-xs">
-                    <Chart data={ question.responses.map(({ answer, count }) => [answer, count])} />
-                  </div>
-                </div>
+                ) : 'No responses yet'}
               </div>
             ))}
           </div>

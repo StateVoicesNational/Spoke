@@ -2,7 +2,8 @@
   "name": "townsquare-text",
   "private": true,
   "scripts": {
-    "deploy": "DEPLOY_HOSTNAME=galaxy.meteor.com meteor deploy axlefactory.meteorapp.com --settings private/settings.production.json",
+    "deploy:production": "DEPLOY_HOSTNAME=galaxy.meteor.com meteor deploy axlefactory.meteorapp.com --settings private/settings.production.json",
+    "deploy:qa": "DEPLOY_HOSTNAME=galaxy.meteor.com meteor deploy axlefactory-qa.meteorapp.com --settings private/settings.qa.json",
     "start": "meteor run"
   },
   "dependencies": {

@@ -49,7 +49,7 @@ const getAssignedPhoneNumber = (userId, onSuccess) => {
       plivo.search_phone_numbers(params, Meteor.bindEnvironment((status, response) => {
         if (status === 200) {
           const userNumber = response.objects[0].number
-          plivo.buy_phone_number({number: userNumber}, Meteor.bindEnvironment(function (status, response) {
+          plivo.buy_phone_number({number: userNumber, appId: Meteor.settings.private.plivo.appId }, Meteor.bindEnvironment(function (status, response) {
               console.log('Status: ', status);
               console.log('API Response:\n', response);
               if (status === 201) {

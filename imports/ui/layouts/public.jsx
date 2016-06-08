@@ -6,6 +6,41 @@ import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider'
 import { muiTheme } from '../../ui/theme'
 import { PublicNavigation } from '../components/public_navigation'
 
+// FIXME
+export const _PublicLayout = (props) => {
+  const { user, organizations, loading } = props
+
+    // you suggest (I will also have the props, passed from the router)
+    const content = React.cloneElement(props.content(), {
+      user,
+      organizations,
+      loading // this may
+    })
+
+  return (
+    <div>
+      <MuiThemeProvider muiTheme={muiTheme}>
+        <div style={styles.page}>
+          <PublicNavigation
+            toolbarStyle={styles.navigation}
+            user={user}
+            orgainzations={organizations}
+          />
+          <div style={styles.header}>
+            <div className="container-fluid" style={styles.container}>
+              <div className="row center-xs middle-xs" style={styles.row}>
+                <div className="col-xs">
+                  {content}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </MuiThemeProvider>
+    </div>
+  )
+}
+
 const styles = {
   container: {
     maxWidth: 600,
@@ -44,36 +79,4 @@ export const Public = createContainer(() => {
     organizations,
     loading: !handle.ready()
   }
-}, (props) => {
-  const { user, organizations, loading } = props
-
-    // you suggest (I will also have the props, passed from the router)
-    const content = React.cloneElement(props.content(), {
-      user,
-      organizations,
-      loading // this may
-    })
-
-  return (
-    <div>
-      <MuiThemeProvider muiTheme={muiTheme}>
-        <div style={styles.page}>
-          <PublicNavigation
-            toolbarStyle={styles.navigation}
-            user={user}
-            orgainzations={organizations}
-          />
-          <div style={styles.header}>
-            <div className="container-fluid" style={styles.container}>
-              <div className="row center-xs middle-xs" style={styles.row}>
-                <div className="col-xs">
-                  {content}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </MuiThemeProvider>
-    </div>
-  )
-})
+}, _PublicLayout)

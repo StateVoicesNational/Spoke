@@ -9,7 +9,8 @@
             "authId": "<PLIVO_API_KEY>",
             "authToken": "<PLIVO_API_TOKEN>",
             "fromPhoneNumber": "+11111111",
-            "toPhoneNumbers": []
+            "toPhoneNumbers": [],
+            "appId": "<PLIVO_APP_ID>"
         }
     },
     "galaxy.meteor.com": {
