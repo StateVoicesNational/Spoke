@@ -75,15 +75,20 @@ const computeSurveyStats = (campaignId) => {
   const surveys = SurveyQuestions.find({ campaignId }, { fields: {text: 1, allowedAnswers: 1}}).fetch()
 
   const surveyStats = surveys.map((survey) => {
-    return {
-      _id: survey._id,
-      text: survey.text,
-      responses: survey.allowedAnswers.map((answer) => {
+    const responses = survey.allowedAnswers.map((answer) => {
         return {
           answer: answer.value,
           count: getAnswerCount(survey._id, answer.value)
         }
       })
+
+    // TODO - not efficient
+    const responseCount = _.reduce(responses.map(({count}) => count ), (memo, num) => memo + num)
+    return {
+      _id: survey._id,
+      text: survey.text,
+      responses,
+      responseCount
     }
   })
 
@@ -154,6 +159,7 @@ Meteor.publish("campaign.stats", function(campaignId) {
   const surveyStats = computeSurveyStats(campaignId)
   initializing = false
 
+  // Not reactives
   this.added('campaignStats', campaignId, { contactCount, messageSentCount, messageReceivedCount, surveyAnswerCount, surveyStats })
   this.ready()
 

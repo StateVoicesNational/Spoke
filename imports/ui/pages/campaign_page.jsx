@@ -29,10 +29,12 @@ const styles = {
     textTransform: 'uppercase',
     textAlign: 'center',
     color: 'gray'
+  },
+  question: {
+    marginBottom: 24
   }
 }
 const Stat = ({ title, count }) => (
-  <div className="col-xs-3">
     <Card
       key={title}
       style={styles.stat}
@@ -47,53 +49,61 @@ const Stat = ({ title, count }) => (
         {title}
       </CardText>
     </Card>
-  </div>
 )
 const _CampaignPage = ({ loading, organizationId, campaign, stats, assignments }) => {
-  return <Chart />
   return (
     <AppPage
       navigation={loading ? '' :
         <AdminNavigation
           organizationId={organizationId}
-          title={campaign.title}
+          title='Overview'
           backToSection='campaigns'
         />
       }
       content={loading ? '' :
       <div>
-        <Chart />
-
         { stats ? (
           <div>
-            <div className="row">
-              <Stat title="Contacts" count={stats.contactCount} />
-              <Stat title="Texters" count={assignments.length} />
-              <Stat title="Sent" count={stats.messageSentCount} />
-              <Stat title="Replies" count={stats.messageReceivedCount} />
+            <div className="row middle-xs">
+              <div className="col-xs">
+                <h2>{campaign.title}</h2>
+              </div>
+              <div className="col-xs" style={{textAlign: 'right'}}>
+                <Export campaign={campaign}/>
+              </div>
             </div>
             <div className="row">
-              <Stat title="Survey responses" count={stats.surveyAnswerCount} />
-              {stats.surveyStats.map((surveyStat) => (
-                <div>
-                { surveyStat.responses.map((response) => (
-                  <div>
-                    { `${response.answer}: ${response.count}`}
+              <div className="col-xs">
+                <Stat title="Contacts" count={stats.contactCount} />
+              </div>
+              <div className="col-xs">
+                <Stat title="Texters" count={assignments.length} />
+              </div>
+              <div className="col-xs">
+                <Stat title="Sent" count={stats.messageSentCount} />
+              </div>
+              <div className="col-xs">
+                <Stat title="Replies" count={stats.messageReceivedCount} />
+              </div>
+            </div>
+            <h2>Surveys</h2>
+
+            {stats.surveyStats.map((question) => (
+              <div style={styles.question}>
+                <h3>{question.text}</h3>
+                <div className="row center-xs">
+                  <div className="col-xs">
+                    <Stat title="responses" count={question.responseCount} />
                   </div>
-                ))}
-
+                  <div className="col-xs">
+                    <Chart data={ question.responses.map(({ answer, count }) => [answer, count])} />
+                  </div>
                 </div>
-              ))}
-
-            </div>
-
+              </div>
+            ))}
           </div>
-
           ) : ''
         }
-        <p>
-          <Export campaign={campaign}/>
-        </p>
       </div>
       }
       loading={loading}

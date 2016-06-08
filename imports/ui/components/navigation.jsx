@@ -20,7 +20,7 @@ const styles = {
     zIndex: 10000
   },
   drawer: {
-    top: '56px'
+    paddingTop: '56px'
   }
 }
 export class Navigation extends Component {

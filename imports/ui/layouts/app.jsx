@@ -28,7 +28,7 @@ export const App = createContainer(() => {
     <div>
       <MuiThemeProvider muiTheme={muiTheme}>
         <div>
-          { user ? content : <LoginPage user={user} organizations={organizations}  />}
+          { user ? content : (loading ? '' : <LoginPage user={user} organizations={organizations}  />)}
         </div>
       </MuiThemeProvider>
     </div>
