@@ -11,6 +11,9 @@ const styles = {
   badge: {
     top: 16,
     right: 16
+  },
+  root: {
+    margin: '10px 0'
   }
 }
 
