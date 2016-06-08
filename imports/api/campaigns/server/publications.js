@@ -97,7 +97,6 @@ Meteor.publish("campaign.stats", function(campaignId) {
   let messageSentCount = 0
   let messageReceivedCount = 0
   let surveyAnswerCount = 0
-  let surveyStats = []
   let initializing = true
 
   const contactCountHandle = CampaignContacts.find({ campaignId }).observeChanges({

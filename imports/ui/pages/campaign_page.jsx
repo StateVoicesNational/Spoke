@@ -50,6 +50,7 @@ const Stat = ({ title, count }) => (
   </div>
 )
 const _CampaignPage = ({ loading, organizationId, campaign, stats, assignments }) => {
+  return <Chart />
   return (
     <AppPage
       navigation={loading ? '' :
@@ -61,6 +62,8 @@ const _CampaignPage = ({ loading, organizationId, campaign, stats, assignments }
       }
       content={loading ? '' :
       <div>
+        <Chart />
+
         { stats ? (
           <div>
             <div className="row">
@@ -88,8 +91,6 @@ const _CampaignPage = ({ loading, organizationId, campaign, stats, assignments }
 
           ) : ''
         }
-        <p>
-        </p>
         <p>
           <Export campaign={campaign}/>
         </p>
