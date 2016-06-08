@@ -40,6 +40,7 @@ export class Export extends React.Component {
     const { exporting } = this.state
     return (
       <RaisedButton
+        tooltip="Export a CSV"
         label={exporting ? "Exporting..." : "Export campaign data" }
         disabled={exporting}
         onTouchTap={this.exportAllContacts.bind(this)}

@@ -186,9 +186,9 @@ export const exportContacts = new ValidatedMethod({
           row = _.extend(row, contact.customFields)
           row.optOut = !!contact.optOut()
 
-          _.each(surveyQuestions, (survey, index) => {
-            row[`question ${index + 1}`] = survey.question
-            const answer = contact.surveyAnswer(survey._id)
+          _.each(surveyQuestions, (question, index) => {
+            row[`question ${index + 1}`] = question.text
+            const answer = contact.surveyAnswer(question._id)
             row[`answer ${index + 1}`] = answer ? answer.value : ''
           })
 
