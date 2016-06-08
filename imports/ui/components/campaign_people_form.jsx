@@ -1,6 +1,9 @@
 import React, { Component } from 'react'
 import RaisedButton from 'material-ui/RaisedButton'
 import Divider from 'material-ui/Divider'
+import Formsy from 'formsy-react'
+import { FormsyText, FormsyDate } from 'formsy-material-ui/lib'
+
 import { ListItem, List } from 'material-ui/List'
 import { parseCSV } from '../../api/campaign_contacts/parse_csv'
 import { CampaignFormSectionHeading } from './campaign_form_section_heading'
@@ -52,14 +55,15 @@ export class CampaignPeopleForm extends Component {
   constructor(props) {
     super(props)
 
+
     this.handleUpload = this.handleUpload.bind(this)
     this.state = {
       uploading: false,
       validationStats: null,
-      contactUploadError: null
+      contactUploadError: null,
+      contacts: null
     }
   }
-
 
   getUploadInputValue(contacts) {
     return contacts.length > 0 ? `${contacts.length} contacts uploaded` : ''
@@ -72,16 +76,27 @@ export class CampaignPeopleForm extends Component {
       const uploading = false
       parseCSV(file, ({ contacts, customFields, validationStats, error}) => {
         if (error) {
-          this.setState({ validationStats: null, uploading, contactUploadError: error})
+          this.handleUploadError(error)
         } else if (contacts.length === 0) {
-          this.setState({ validationStats: null, uploading, contactUploadError: 'Upload at least one contact'})
+          this.handleUploadError('Upload at least one contact')
         } else if (contacts.length > 0) {
-          this.setState( { validationStats, uploading, contactUploadError: null })
-          const { onContactsUpload } = this.props
-          onContactsUpload({ contacts, customFields })
+          this.handleUploadSuccess(validationStats, contacts, customFields)
         }
       })
     })
+  }
+
+  handleUploadError(error) {
+    const { onInvalid } = this.props
+    this.setState({ validationStats: null, uploading: false, contactUploadError: error, contacts: null})
+    onInvalid()
+  }
+
+  handleUploadSuccess(validationStats, contacts, customFields) {
+    const { onContactsUpload, onValid, onInvalid } = this.props
+    this.setState( { validationStats, uploading: false, contacts, contactUploadError: null })
+    onContactsUpload({ contacts, customFields })
+    onValid()
   }
 
   renderValidationStats() {
@@ -125,9 +140,8 @@ export class CampaignPeopleForm extends Component {
   }
 
   render() {
-    const { contacts, customFields } = this.props
+    const { contacts, customFields, onValid, onInvalid } = this.props
     const { validationStats, contactUploadError } = this.state
-    console.log("validation Stas", validationStats)
     const { uploading } = this.state
     return (
       <div>
@@ -141,16 +155,28 @@ export class CampaignPeopleForm extends Component {
             in your file will be available as custom fields to use in your texting scripts.
           </span>}
         />
+        <Formsy.Form
+          onValid={onValid}
+          onInvalid={onInvalid}
+        >
 
         <RaisedButton
           style={styles.button}
           label= {uploading ? 'Uploading...' : "Upload contacts"}
           labelPosition="before"
         >
-          <input type="file"
+          <input
+            type="file"
             style={styles.exampleImageInput}
             onChange={this.handleUpload}
           />
+          <FormsyText
+            required
+            name="contacts"
+            value={this.state.contacts ? 'Contacts' : ''}
+            style={styles.exampleImageInput}
+          />
+
         </RaisedButton>
         {validationStats ? this.renderValidationStats() : ''}
         { contactUploadError ? (
@@ -161,6 +187,7 @@ export class CampaignPeopleForm extends Component {
             />
           </List>
         ) : ''}
+        </Formsy.Form>
       </div>
     )
   }

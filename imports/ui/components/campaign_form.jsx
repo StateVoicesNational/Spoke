@@ -9,6 +9,7 @@ import { CampaignPeopleForm } from './campaign_people_form'
 import { CampaignBasicsForm } from './campaign_basics_form'
 import { CampaignSurveyForm } from './campaign_survey_form'
 import { CampaignAssignmentForm } from './campaign_assignment_form'
+import { CampaignFormSection } from './campaign_form_section'
 import { grey50 } from 'material-ui/styles/colors'
 import { CampaignFormSectionHeading } from './campaign_form_section_heading'
 import { newAllowedAnswer } from '../../api/survey_questions/survey_questions'
@@ -25,9 +26,6 @@ import RaisedButton from 'material-ui/RaisedButton';
 const LocalCollection = new Mongo.Collection(null)
 
 const styles = {
-  stepperNavigation: {
-    marginTop: 48,
-  },
   stepContent: {
     marginTop: 56,
     paddingBottom: 60
@@ -42,6 +40,7 @@ const styles = {
     position: 'fixed'
   }
 }
+
 export class CampaignForm extends Component {
   constructor(props) {
     super(props)
@@ -57,6 +56,7 @@ export class CampaignForm extends Component {
     this.onDueByChange = this.onDueByChange.bind(this)
     this.handleNext = this.handleNext.bind(this)
     this.handlePrev = this.handlePrev.bind(this)
+    this.renderFormSection = this.renderFormSection.bind(this)
     this.setupState()
   }
 
@@ -65,7 +65,6 @@ export class CampaignForm extends Component {
 
     this.state = {
       stepIndex: 0,
-      nextStepEnabled: true,
       title: campaign ? campaign.title : '',
       description: campaign ? campaign.description : '',
       dueBy: campaign ? campaign.dueBy : null,
@@ -80,6 +79,18 @@ export class CampaignForm extends Component {
 
   componentWillUnmount() {
     this._computation.stop();
+  }
+
+  componentWillMount() {
+    // workaround for https://github.com/meteor/react-packages/issues/99
+    setTimeout(this.startComputation.bind(this), 0);
+    this.steps = [
+      // ['Basics', this.renderBasicsSection.bind(this)],
+      ['Contacts', this.renderPeopleSection.bind(this)],
+      ['Texters', this.renderAssignmentSection.bind(this)],
+      ['Scripts', this.renderScriptSection.bind(this)],
+      ['Surveys', this.renderSurveySection.bind(this)],
+    ]
   }
 
   startComputation() {
@@ -99,19 +110,7 @@ export class CampaignForm extends Component {
     LocalCollection.insert(script)
   }
 
-  componentWillMount() {
-    // workaround for https://github.com/meteor/react-packages/issues/99
-    setTimeout(this.startComputation.bind(this), 0);
-    this.steps = [
-      ['Basics', this.renderBasicsSection.bind(this)],
-      ['Contacts', this.renderPeopleSection.bind(this)],
-      ['Texters', this.renderAssignmentSection.bind(this)],
-      ['Scripts', this.renderScriptSection.bind(this)],
-      ['Surveys', this.renderSurveySection.bind(this)],
-    ]
-  }
-
-
+  //NAVIGATION
   lastStepIndex() {
     return this.steps.length - 1
   }
@@ -129,11 +128,13 @@ export class CampaignForm extends Component {
   };
 
   handlePrev() {
+    console.log("handle previous?")
     const {stepIndex} = this.state;
     if (stepIndex > 0) {
       this.setState({stepIndex: stepIndex - 1});
     }
   }
+  // END NAVIGATION
 
   onTitleChange(event) {
     this.setState({title: event.target.value})
@@ -206,34 +207,8 @@ export class CampaignForm extends Component {
 
   }
 
-  renderDialogActions() {
-    return [
-      <FlatButton
-        label="Cancel"
-        onTouchTap={this.handleCloseDialog}
-        primary
-      />,
-    ]
-  }
-
-  formValid() {
-    return this.state.contacts.length > 0 && this.state.script !== ''
-  }
-
   handleAddScript(script) {
     LocalCollection.insert(_.extend(script, { collectionType: 'script'}))
-  }
-
-  enableNext() {
-    this.setState({
-      nextStepEnabled: true
-    })
-  }
-
-  disableNext() {
-    this.setState({
-      nextStepEnabled: false
-    })
   }
 
   onContactsUpload({contacts, customFields }) {
@@ -242,21 +217,6 @@ export class CampaignForm extends Component {
       contacts,
       customFields,
     })
-  }
-
-  renderSurveySection() {
-    const { questions, customFields, sampleContact } = this.state
-    return (
-      <CampaignSurveyForm
-        questions={questions}
-        onAddSurveyAnswer={this.handleAddSurveyAnswer}
-        onEditQuestion={this.handleEditSurvey}
-        onAddQuestion={this.handleAddSurvey}
-        onDeleteQuestion={this.handleDeleteQuestion}
-        sampleContact={sampleContact}
-        customFields={customFields}
-      />
-    )
   }
 
   handleDeleteQuestion(questionId) {
@@ -297,34 +257,48 @@ export class CampaignForm extends Component {
     LocalCollection.insert(question)
   }
 
-  renderSummarySection() {
-    const { contacts, assignedTexters } = this.state
+  stepContent(stepIndex) {
+    const content = this.steps[stepIndex][1]()
+    return this.renderFormSection(content)
+  }
+
+  renderFormSection(content) {
+    const { stepIndex } = this.state
+
     return (
-      <div>
-        <h1>Summary</h1>
-        <p>
-        </p>
-      </div>
+      <CampaignFormSection
+        previousStepEnabled={(stepIndex !== 0)}
+        content={content}
+        onPrevious={this.handlePrev}
+        onNext={this.handleNext}
+        nextStepLabel={stepIndex === this.lastStepIndex() ? 'Finish' : 'Next'}
+      />
     )
   }
 
-  renderNavigation() {
-    const { stepIndex, nextStepEnabled } = this.state
+  renderBasicsSection() {
+    const { title, description, dueBy, stepIndex } = this.state
+    return (
+      <CampaignBasicsForm
+        title={title}
+        description={description}
+        dueBy={dueBy}
+        onDescriptionChange={this.onDescriptionChange}
+        onTitleChange={this.onTitleChange}
+        onDueByChange={this.onDueByChange}
+      />
+    )
+  }
+
+  renderPeopleSection() {
+    const { contacts, customFields } = this.state
 
     return (
-      <div style={styles.stepperNavigation}>
-        <FlatButton
-          label="Back"
-          disabled={stepIndex === 0}
-          onTouchTap={this.handlePrev}
-        />
-        <RaisedButton
-          primary
-          label={stepIndex === this.lastStepIndex() ? 'Finish' : 'Next'}
-          disabled={!nextStepEnabled}
-          onTouchTap={this.handleNext}
-        />
-      </div>
+      <CampaignPeopleForm
+        contacts={contacts}
+        customFields={customFields}
+        onContactsUpload={this.onContactsUpload}
+      />
     )
   }
 
@@ -337,54 +311,12 @@ export class CampaignForm extends Component {
         texters={texters}
         assignedTexters={assignedTexters}
         onTexterAssignment={this.onTexterAssignment}
-        onValid={this.enableNext.bind(this)}
-        onInvalid={this.disableNext.bind(this)}
       />
     )
   }
 
-  renderBasicsSection() {
-    const { title, description, dueBy } = this.state
-
-    return (
-      <div>
-        <CampaignBasicsForm
-          title={title}
-          description={description}
-          dueBy={dueBy}
-          onDescriptionChange={this.onDescriptionChange}
-          onTitleChange={this.onTitleChange}
-          onDueByChange={this.onDueByChange}
-          onValid={this.enableNext.bind(this)}
-          onInvalid={this.disableNext.bind(this)}
-        />
-      </div>
-    )
-  }
-
-  renderPeopleSection() {
-    const { contacts, customFields } = this.state
-
-    return (
-      <div>
-        <CampaignPeopleForm
-          contacts={contacts}
-          customFields={customFields}
-          onContactsUpload={this.onContactsUpload}
-          onValid={this.enableNext.bind(this)}
-          onInvalid={this.disableNext.bind(this)}
-        />
-      </div>
-    )
-  }
-
-  stepContent(stepIndex) {
-    return this.steps[stepIndex][1]()
-  }
-
   renderScriptSection() {
     const { contacts, scripts, customFields} = this.state
-    console.log("render script section", scripts)
     const faqScripts = scripts.filter((script) => script.type === ScriptTypes.FAQ)
     const defaultScript = scripts.find((script) => script.type === ScriptTypes.INITIAL)
 
@@ -401,6 +333,20 @@ export class CampaignForm extends Component {
     )
   }
 
+  renderSurveySection() {
+    const { questions, customFields, sampleContact } = this.state
+    return (
+      <CampaignSurveyForm
+        questions={questions}
+        onAddSurveyAnswer={this.handleAddSurveyAnswer}
+        onEditQuestion={this.handleEditSurvey}
+        onAddQuestion={this.handleAddSurvey}
+        onDeleteQuestion={this.handleDeleteQuestion}
+        sampleContact={sampleContact}
+        customFields={customFields}
+      />
+    )
+  }
   render() {
     const { stepIndex, submitting } = this.state
 
@@ -412,7 +358,6 @@ export class CampaignForm extends Component {
       <div>
         <div style={styles.stepContent} >
           {this.stepContent(stepIndex)}
-          {this.renderNavigation()}
         </div>
         <Stepper
           style={styles.stepper}

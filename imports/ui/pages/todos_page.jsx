@@ -110,7 +110,6 @@ class _TodosPage extends React.Component {
     </div>
     )
 
-    console.log(groupedResults)
     const content = results.length > 0 ? (
         <div>
           <Toolbar style={styles.toolbar}>

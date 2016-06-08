@@ -32,8 +32,6 @@ export class CampaignBasicsForm extends Component {
           ref="form"
           onValid={onValid}
           onInvalid={onInvalid}
-          // onValidSubmit={this.submitForm.bind(this)}
-          // onInvalidSubmit={this.notifyFormError.bind(this)}
         >
           <FormsyText
             fullWidth
