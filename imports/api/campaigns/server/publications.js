@@ -4,6 +4,7 @@ import { Messages } from '../../messages/messages.js'
 import { CampaignContacts } from '../../campaign_contacts/campaign_contacts.js'
 import { Assignments } from '../../assignments/assignments.js'
 import { SurveyQuestions } from '../../survey_questions/survey_questions.js'
+import { SurveyAnswers } from '../../survey_answers/survey_answers.js'
 import { Roles } from 'meteor/alanning:roles'
 // Standardize this
 const adminCheck = (userId, organizationId) => (!!userId && Roles.userIsInRole(userId, 'admin', organizationId))
@@ -52,12 +53,51 @@ Meteor.publish('campaign', function(campaignId) {
   ]
 })
 
+const computeSurveyStats = (campaignId) => {
+  const aggregation = SurveyAnswers.aggregate([
+  {
+    $match: {
+      campaignId
+    },
+  },
+  {
+    $group: {
+      _id : {surveyQuestionId: '$surveyQuestionId', value: '$value'},
+      count: { $sum: 1 },
+    },
+  },
+  ])
+
+  const getAnswerCount = (surveyQuestionId, value) => {
+    const stat = aggregation.find((x) => x._id.surveyQuestionId === surveyQuestionId && x._id.value === value)
+    return stat ? stat.count : 0
+  }
+  const surveys = SurveyQuestions.find({ campaignId }, { fields: {text: 1, allowedAnswers: 1}}).fetch()
+
+  const surveyStats = surveys.map((survey) => {
+    return {
+      _id: survey._id,
+      text: survey.text,
+      responses: survey.allowedAnswers.map((answer) => {
+        return {
+          answer: answer.value,
+          count: getAnswerCount(survey._id, answer.value)
+        }
+      })
+    }
+  })
+
+  return surveyStats
+}
+
 // server: publish the current size of a collection
 Meteor.publish("campaign.stats", function(campaignId) {
   console.log("publishing?")
   let contactCount = 0
   let messageSentCount = 0
   let messageReceivedCount = 0
+  let surveyAnswerCount = 0
+  let surveyStats = []
   let initializing = true
 
   const contactCountHandle = CampaignContacts.find({ campaignId }).observeChanges({
@@ -99,27 +139,29 @@ Meteor.publish("campaign.stats", function(campaignId) {
     }
   })
 
-  const surveyData = SurveyAnswers.find({ campaignId }).observeChanges({
+  const surveyHandle = SurveyAnswers.find({ campaignId }).observeChanges({
     added: () => {
-      messageReceivedCount++
+      surveyAnswerCount++
       if (!initializing) {
-        this.changed('campaignStats', campaignId, { messageReceivedCount })
+        this.changed('campaignStats', campaignId, { surveyAnswerCount })
       }
     },
     removed: () => {
-      messageReceivedCount--
-      this.changed('campaignStats', campaignId, { messageReceivedCount })
+      surveyAnswerCount--
+      this.changed('campaignStats', campaignId, { surveyAnswerCount })
     }
   })
 
+  const surveyStats = computeSurveyStats(campaignId)
   initializing = false
 
-  this.added('campaignStats', campaignId, { contactCount, messageSentCount, messageReceivedCount })
+  this.added('campaignStats', campaignId, { contactCount, messageSentCount, messageReceivedCount, surveyAnswerCount, surveyStats })
   this.ready()
 
   this.onStop(() => {
     contactCountHandle.stop()
     messageSentCountHandle.stop()
     messageReceivedCountHandle.stop()
+    surveyHandle.stop()
   })
 })

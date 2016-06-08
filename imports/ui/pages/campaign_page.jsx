@@ -62,12 +62,30 @@ const _CampaignPage = ({ loading, organizationId, campaign, stats, assignments }
       content={loading ? '' :
       <div>
         { stats ? (
+          <div>
             <div className="row">
               <Stat title="Contacts" count={stats.contactCount} />
               <Stat title="Texters" count={assignments.length} />
               <Stat title="Sent" count={stats.messageSentCount} />
               <Stat title="Replies" count={stats.messageReceivedCount} />
             </div>
+            <div className="row">
+              <Stat title="Survey responses" count={stats.surveyAnswerCount} />
+              {stats.surveyStats.map((surveyStat) => (
+                <div>
+                { surveyStat.responses.map((response) => (
+                  <div>
+                    { `${response.answer}: ${response.count}`}
+                  </div>
+                ))}
+
+                </div>
+              ))}
+
+            </div>
+
+          </div>
+
           ) : ''
         }
         <p>

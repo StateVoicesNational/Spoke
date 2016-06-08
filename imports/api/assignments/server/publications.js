@@ -115,6 +115,7 @@ Meteor.publish('assignment.text', function(assignmentId, contactFilter, organiza
     Messages.find( { contactNumber: {$in: contactNumbers}, userId }),
     OptOuts.find({ organizationId: organizationId}),
     SurveyQuestions.find( { campaignId }),
+    SurveyAnswers.find( { campaignId }),
     // FIXME survey answers
     CampaignContacts.find({_id: {$in: contacts.map((contact) => contact._id)}}),
   ]
