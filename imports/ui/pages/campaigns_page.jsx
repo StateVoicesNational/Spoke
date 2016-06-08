@@ -7,7 +7,8 @@ import { AppPage } from '../../ui/layouts/app_page'
 
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import ContentAdd from 'material-ui/svg-icons/content/add'
-
+import { moment } from 'meteor/momentjs:moment'
+import Subheader from 'material-ui/Subheader'
 const styles = {
   floatingButton: {
     margin: 0,
@@ -33,18 +34,32 @@ export class CampaignsPage extends Component {
   render() {
     const { campaigns, loading, organizationId } = this.props
 
+    const groupedCampaigns = _.groupBy(campaigns, (campaign) => moment(campaign.dueBy).diff(moment()) < 0)
+
     const content = (
       <div>
-        <CampaignList
-          campaigns={campaigns}
-          organizationId={organizationId}
-        />
-        <FloatingActionButton
-          style={styles.floatingButton}
-          onTouchTap={this.handleClickNewButton}
-        >
-          <ContentAdd />
-        </FloatingActionButton>
+        {
+          [false, true].map((isPast) => (
+            groupedCampaigns[isPast] ? (
+              <div>
+                <Subheader>{ isPast ? 'Past' : 'Current'}</Subheader>
+                <CampaignList
+                  campaigns={groupedCampaigns[isPast]}
+                  organizationId={organizationId}
+                />
+                <FloatingActionButton
+                  style={styles.floatingButton}
+                  onTouchTap={this.handleClickNewButton}
+                >
+                  <ContentAdd />
+                </FloatingActionButton>
+              </div>
+            ) : (
+              ''
+            )
+
+          ))
+        }
       </div>
     )
     return (

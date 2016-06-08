@@ -6,7 +6,7 @@ import { moment } from 'meteor/momentjs:moment'
 
 const styles = {
   past: {
-    opacity: 0.8,
+    opacity: 0.6,
   }
 }
 export class CampaignList extends Component {
@@ -21,7 +21,15 @@ export class CampaignList extends Component {
           key={campaign._id}
           primaryText={campaign.title}
           onTouchTap={() => FlowRouter.go('campaign', {organizationId, campaignId: campaign._id })}
-          secondaryText={`${campaign.description} - ${moment(campaign.dueBy).format('MMM D')}`}
+          secondaryText={(
+            <span>
+              <span>
+                {campaign.description}
+                <br/>
+                {moment(campaign.dueBy).format('MMM D, YYYY')}
+              </span>
+            </span>
+          )}
         />
     )
   }
