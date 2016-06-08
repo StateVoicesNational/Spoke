@@ -87,7 +87,7 @@ export class CampaignForm extends Component {
     this.steps = [
       // ['Basics', this.renderBasicsSection.bind(this)],
       // ['Contacts', this.renderPeopleSection.bind(this)],
-      ['Texters', this.renderAssignmentSection.bind(this)],
+      // ['Texters', this.renderAssignmentSection.bind(this)],
       ['Scripts', this.renderScriptSection.bind(this)],
       ['Surveys', this.renderSurveySection.bind(this)],
     ]

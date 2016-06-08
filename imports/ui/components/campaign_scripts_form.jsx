@@ -64,16 +64,17 @@ export class CampaignScriptsForm extends Component {
     this.setState({ open: false, editingScript: null })
   }
 
+  getModel() {
+    // TODO: Extend Formsy to enclose Draft.js editor
+    return _.extend(this.refs.form.getModel(), {
+      text: this.refs.scriptInput.getValue(),
+      type: this.state.editingScript.type
+    })
+  }
+
   handleSaveScript() {
     const { editingScript } = this.state
-    const scriptData = {
-      text: this.refs.scriptInput.getValue(),
-    }
-
-    console.log("editingScript in handleSaveScript", editingScript)
-    if (editingScript.type === ScriptTypes.FAQ) {
-      scriptData['title'] = this.refs.titleInput.getValue()
-    }
+    const scriptData = this.getModel()
 
     if (editingScript._id) {
       const { onScriptChange } = this.props
@@ -144,26 +145,27 @@ export class CampaignScriptsForm extends Component {
     console.log("editing field")
     const titleField = editingScript.type !== ScriptTypes.FAQ ? '' : (
       <TextField
-        ref="titleInput"
         fullWidth
+        name="title"
         floatingLabelText="Reply label"
-        onChange={(event) => this.setState( {editingScript: _.extend(editingScript, {title: event.target.value})})}
         hintText="E.g. Can I attend only part of the event?"
         value={ editingScript.title }
       />
     )
 
     return (
-      <div>
+      <Formsy.Form
+        ref="form"
+      >
         { titleField }
         <ScriptEditor
+          name="text"
           ref="scriptInput"
           script={editingScript}
-          onChange={(text) => this.setState( {editingScript: _.extend(editingScript, {text})})}
           sampleContact={sampleContact}
           scriptFields={scriptFields}
         />
-      </div>
+      </Formsy.Form>
 
     )
   }

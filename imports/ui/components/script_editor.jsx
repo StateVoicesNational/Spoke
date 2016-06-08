@@ -99,10 +99,11 @@ export class ScriptEditor extends React.Component {
 
   onChange(editorState) {
     this.setState( { editorState }, () => {
-      const { onChange } = this.props
-      if (onChange) {
-        onChange(this.getValue())
-      }
+      // const { onChange } = this.props
+      // if (onChange) {
+      //   console.log("changing script!")
+      //   onChange(this.getValue())
+      // }
     })
   }
 
@@ -165,10 +166,13 @@ export class ScriptEditor extends React.Component {
   }
 
   render() {
+    const { name} = this.props
+
     return (
       <div>
         <div style={styles.editor} onClick={this.focus}>
           <Editor
+            name={name}
             editorState={this.state.editorState}
             onChange={this.onChange}
             placeholder="E.g. Hi {firstName}! Using my {customField}"
