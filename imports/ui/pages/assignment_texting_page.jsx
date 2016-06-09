@@ -20,7 +20,6 @@ class _AssignmentTextingPage extends Component {
             contacts={contacts}
             onStopTexting={() => FlowRouter.go('todos', { organizationId })}
           />
-        )
       </div>
     )
   }

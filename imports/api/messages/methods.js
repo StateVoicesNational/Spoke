@@ -12,10 +12,8 @@ export const getFormattedPhoneNumber = (cell) => {
   const phoneUtil = PhoneNumberUtil.getInstance()
 
   try {
-    console.log("CELL", cell)
     const inputNumber = phoneUtil.parse(cell, "US")
     const isValid = phoneUtil.isValidNumber(inputNumber)
-    console.log("isvalid", isValid)
     if (isValid) {
       return phoneUtil.format(inputNumber, PhoneNumberFormat.E164)
     } else {
@@ -27,11 +25,9 @@ export const getFormattedPhoneNumber = (cell) => {
   }
 }
 
-const getAssignedPhoneNumber = (userId, onSuccess) => {
+const getAssignedPhoneNumber = (userId) => {
   if (!Meteor.settings.public.textingEnabled) {
-    const result = Meteor.settings.private.plivo.fromPhoneNumber
-    Meteor.users.update({_id: userId}, { $set: { userNumber: result } })
-    onSuccess(result)
+    return Meteor.settings.private.plivo.fromPhoneNumber
   } else {
     if (Meteor.isServer) {
       const params = {
@@ -41,37 +37,29 @@ const getAssignedPhoneNumber = (userId, onSuccess) => {
           // 'region' : 'Texas' // This filter is only applicable when the number_type is local. Region based filtering can be performed.
       };
 
-      Plivo.searchNumbers(params, Meteor.bindEnvironment((error, response) => {
-        if (error) {
-          console.log("error", error)
-        } else {
-          console.log("response!", response.statusCode, response.statusCode === 200, response.statusCode === '200')
-          if (response.statusCode === 200) {
-            response.data.objects
-            const userNumber = response.data.objects[1].number
-            console.log("userNumber", userNumber)
-            Plivo.buyNumber({ number: userNumber, app_id: Meteor.settings.private.plivo.appId }, Meteor.bindEnvironment(function (error, response) {
-                if (error) {
-                  console.log("error buying number", error)
-                  console.log(response.data, response.statusCode)
-                } else {
-                  if (response.statusCode === 201) {
-                    const result = getFormattedPhoneNumber(userNumber)
-                    if (result) {
-                      Meteor.users.update({_id: userId}, { $set: { userNumber: result } })
-                      onSuccess(result)
-                    } else {
-                      throw new Meteor.Error(500, 'plivo-error', 'could not format response from plivo')
-                    }
-                  }
-                }
-            }))
-          }
-          else {
-            throw new Meteor.Error(500, 'plivo-error', 'error purchasing number from plivo')
-          }
-        }
-      }))
+
+      const searchNumbers = Meteor.wrapAsync(Plivo.searchNumbers, Plivo)
+      response = searchNumbers(params)
+      if (response.statusCode !== 200)
+      {
+        throw new Meteor.Error(500, 'plivo-error', 'Could not find a number to buy')
+      }
+      const userNumber = response.data.objects[0].number
+
+      const buyNumber = Meteor.wrapAsync(Plivo.buyNumber, Plivo)
+      response = buyNumber({ number: userNumber, app_id: Meteor.settings.private.plivo.appId })
+
+      if (response.statusCode !== 200)
+      {
+        throw new Meteor.Error(500, 'plivo-error', 'Could not find buy number')
+      }
+
+      const formattedNumber = getFormattedPhoneNumber(userNumber)
+      if (!formattedNumber) {
+        throw new Meteor.Error(500, 'plivo-error', 'could not format phone number')
+      }
+
+      return formattedNumber
     }
   }
 }
@@ -102,36 +90,35 @@ export const insertMessage = new ValidatedMethod({
       userId: user._id
     }
 
-    console.log("inserting message!", message)
     Messages.insert(message)
 
-    console.log("HERE")
     // TODO: Cache -- is this ok?
     const contact = CampaignContacts.findOne({ campaignId, cell: contactNumber })
 
     const lastMessage = {
       isFromContact
     }
-    console.log("last Message", lastMessage)
-    console.log("HERE 2")
     CampaignContacts.update( { _id: contact._id }, { $set: { lastMessage }})
-    console.log("HERE 3")
   }
 })
 
-const remoteCreateMessage = (text, userNumber, contactNumber, campaignId, onError) => {
-  const onMessageSendSuccess = (serviceMessageId) => {
-    const message = {
-      userNumber,
-      contactNumber,
-      text,
-      campaignId,
-      serviceMessageId,
-      isFromContact: false,
-    }
-    return insertMessage.call(message)
+const remoteCreateMessage = (params) => {
+  if (!Meteor.settings.public.isProduction && !Meteor.settings.public.textingEnabled) {
+    return 'fake_message_id'
   }
+  else {
+    const sendMessage = Meteor.wrapAsync(Plivo.sendMessage, Plivo)
+    const response = sendMessage(params)
+    if (response.statusCode !== 202) {
+      throw new Meteor.Error('message-send-error')
+    }
 
+    const serviceMessageId = response.data.message_uuid[0]
+    return serviceMessageId
+  }
+}
+
+const createMessage = ({ text, userNumber, contactNumber, campaignId }) => {
   if (!Meteor.settings.public.isProduction && !Meteor.settings.public.textingEnabled) {
     console.log("Faking message sending")
     onMessageSendSuccess('fake_message_id')
@@ -143,21 +130,30 @@ const remoteCreateMessage = (text, userNumber, contactNumber, campaignId, onErro
       type: 'sms'
     }
 
-    Plivo.sendMessage(params, Meteor.bindEnvironment((error, response) => {
-      if (error) {
-        console.log("error", error)
-      }
-      else if (response.statusCode === 202) {
-        const serviceMessageId = response.data.message_uuid[0]
-        onMessageSendSuccess(serviceMessageId)
-      } else {
-        console.log(response.statusCode, response.data)
-        throw new Meteor.Error('message-send-error');
-      }
-    }))
+    const serviceMessageId = remoteCreateMessage(params)
+
+    const message = {
+      userNumber,
+      contactNumber,
+      text,
+      campaignId,
+      serviceMessageId,
+      isFromContact: false,
+    }
+    return insertMessage.call(message)
   }
 }
 
+const checkOptOut = ({ organizationId, contactNumber }) => {
+  const optOut = OptOuts.findOne({
+    organizationId,
+    cell: contactNumber
+  })
+
+  if (optOut) {
+    throw new Meteor.Error('contact-opt-out');
+  }
+}
 export const sendMessage = new ValidatedMethod({
   name: 'messages.send',
   validate: new SimpleSchema({
@@ -174,29 +170,17 @@ export const sendMessage = new ValidatedMethod({
         throw new Meteor.Error('not-authorized');
       }
 
-      const optOut = OptOuts.findOne({
-        organizationId,
-        cell: contactNumber
-      })
+      checkOptOut({ organizationId, contactNumber })
 
-      if (optOut) {
-        throw new Meteor.Error('contact-opt-out');
-      }
-
-    }
-
-
-
-    if (Meteor.isServer) {
       const user = Meteor.users.findOne({_id: this.userId})
-      if (!user.userNumber) {
-        getAssignedPhoneNumber(this.userId, (userNumber) => {
-          remoteCreateMessage(text, userNumber, contactNumber, campaignId)
-        })
+      let userNumber = user.userNumber
+
+      if (!userNumber) {
+        userNumber = getAssignedPhoneNumber(this.userId)
+        Meteor.users.update({_id: userId}, { $set: { userNumber: result } })
       }
-      else {
-        remoteCreateMessage(text, user.userNumber, contactNumber, campaignId)
-      }
+
+      createMessage({text, userNumber, contactNumber, campaignId})
     }
   }
 })
