@@ -100,14 +100,6 @@ export class CampaignForm extends Component {
         questions: LocalCollection.find({ collectionType: 'question' }).fetch()
       })
     })
-
-    const script = {
-      collectionType: 'script',
-      text: 'Hi, {firstName}. Here is a default script initial message',
-      type: ScriptTypes.INITIAL
-    }
-
-    LocalCollection.insert(script)
   }
 
   //NAVIGATION
@@ -208,6 +200,7 @@ export class CampaignForm extends Component {
   }
 
   handleAddScript(script) {
+    console.log("trying to insert script", script)
     LocalCollection.insert(_.extend(script, { collectionType: 'script'}))
   }
 

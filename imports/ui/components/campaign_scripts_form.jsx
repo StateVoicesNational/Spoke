@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import FlatButton from 'material-ui/FlatButton'
 import RaisedButton from 'material-ui/RaisedButton'
+import Formsy from 'formsy-react'
 import { ScriptEditor } from './script_editor'
 import Dialog from 'material-ui/Dialog'
 import { CampaignContacts } from '../../api/campaign_contacts/campaign_contacts'
@@ -57,7 +58,9 @@ export class CampaignScriptsForm extends Component {
   }
 
   handleOpenDialog() {
-    this.setState({ open: true })
+    this.setState({ open: true }, function() {
+      this.refs.scriptInput.focus()
+    })
   }
 
   handleCloseDialog() {
@@ -157,7 +160,6 @@ export class CampaignScriptsForm extends Component {
       <Formsy.Form
         ref="form"
       >
-        { titleField }
         <ScriptEditor
           name="text"
           ref="scriptInput"
@@ -165,6 +167,7 @@ export class CampaignScriptsForm extends Component {
           sampleContact={sampleContact}
           scriptFields={scriptFields}
         />
+        { titleField }
       </Formsy.Form>
 
     )
@@ -211,11 +214,14 @@ export class CampaignScriptsForm extends Component {
       )
     )
   }
+
   render() {
     const {
       faqScripts,
       script,
       sampleContact,
+      onValid,
+      onInvalid,
       customFields } = this.props
 
     const sectionHeading = (title, subtitle) => [
@@ -227,7 +233,10 @@ export class CampaignScriptsForm extends Component {
     // handleAddScript(script)
 
     return (
-      <div>
+      <Formsy.Form
+        onValid={onValid}
+        onInvalid={onInvalid}
+      >
         <CampaignFormSectionHeading
           title='What do you want to say?'
         />
@@ -245,7 +254,7 @@ export class CampaignScriptsForm extends Component {
           onTouchTap={this.handleAddSavedReply }
         />
         { this.renderDialog()}
-      </div>
+      </Formsy.Form>
     )
   }
 }

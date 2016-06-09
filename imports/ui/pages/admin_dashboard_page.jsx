@@ -41,7 +41,6 @@ class Page extends React.Component {
 }
 export const AdminDashboardPage = createContainer(({ organizationId, organizations, loading }) => {
   const handle = Meteor.subscribe('campaigns', organizationId)
-  console.log("subscribing with rogs", organizations)
   return {
     organizationId,
     organizations,

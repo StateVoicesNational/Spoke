@@ -9,7 +9,7 @@ import {
 } from 'draft-js'
 import { delimit } from '../../api/campaigns/scripts'
 import AddIcon from 'material-ui/svg-icons/content/add';
-import { red400, green500 } from 'material-ui/styles/colors'
+import { red400, green500, grey200 } from 'material-ui/styles/colors'
 
 function findWithRegex(regex, contentBlock, callback) {
   const text = contentBlock.getText();
@@ -34,7 +34,6 @@ const styles = {
     border: '1px solid #ddd',
     cursor: 'text',
     fontSize: 16,
-    minHeight: 40,
     padding: 5,
   },
   button: {
@@ -53,13 +52,21 @@ const styles = {
     fontSize: '11px',
     color: green500,
     textTransform: 'none',
-    margin: 10
+    margin: '5px 10px',
+    cursor: 'pointer',
+    display: 'inline-block',
   },
   scriptFieldButtonIcon: {
-    width: 15,
+    width: 16,
     height: 15,
+    marginRight: 0,
     fill: green500,
     verticalAlign: 'middle',
+  },
+  scriptFieldButtonSection: {
+    border: '1px solid #ddd',
+    backgroundColor: grey200,
+    padding: 5
   }
 };
 
@@ -151,7 +158,7 @@ export class ScriptEditor extends React.Component {
   renderCustomFields() {
     const { scriptFields } = this.props
     return (
-      <div>
+      <div style={styles.scriptFieldButtonSection}>
         {scriptFields.map((field) => (
           <span
             style={styles.scriptFieldButton}
