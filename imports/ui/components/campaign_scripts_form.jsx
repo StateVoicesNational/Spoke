@@ -24,7 +24,8 @@ const styles = {
     height: 18,
   },
   scriptRow: {
-    borderLeft: `5px solid ${muiTheme.palette.primary1Color}`
+    borderLeft: `5px solid ${muiTheme.palette.primary1Color}`,
+    marginBottom: 24
   },
   scriptTitle: {
     fontWeight: 'medium'
@@ -41,6 +42,9 @@ const styles = {
   },
   scriptSectionTitle: {
     marginBottom: 0
+  },
+  titleInput: {
+    marginBottom:24
   }
 }
 export class CampaignScriptsForm extends Component {
@@ -53,7 +57,10 @@ export class CampaignScriptsForm extends Component {
     this.handleAddSavedReply = this.handleAddSavedReply.bind(this)
     this.handleStartEditingScript = this.handleStartEditingScript.bind(this)
     this.state = {
-      open: false
+      open: false,
+      title: null, // controlled input title
+      text: null,
+      editingScript: null
     }
   }
 
@@ -72,11 +79,16 @@ export class CampaignScriptsForm extends Component {
   }
 
   getModel() {
-    // TODO: Extend Formsy to enclose Draft.js editor
-    return _.extend(this.refs.form.getModel(), {
-      text: this.refs.scriptInput.getValue(),
-      type: this.state.editingScript.type
-    })
+    const { text, title, editingScript } = this.state
+    const type = editingScript.type
+    let model = {
+      text,
+      type
+    }
+    if (type === ScriptTypes.FAQ) {
+      model = _.extend(model, { title })
+    }
+    return model
   }
 
   handleSaveScript() {
@@ -112,7 +124,7 @@ export class CampaignScriptsForm extends Component {
   }
 
   handleStartEditingScript(script) {
-    this.setState( { editingScript: script })
+    this.setState( { editingScript: script, title: script.title, text: script.text })
     this.handleOpenDialog()
   }
 
@@ -152,11 +164,13 @@ export class CampaignScriptsForm extends Component {
     console.log("editing field")
     const titleField = editingScript.type !== ScriptTypes.FAQ ? '' : (
       <TextField
+        style={styles.titleInput}
         fullWidth
         name="title"
+        onChange={(event, value) => this.setState({ title: value})}
         floatingLabelText="Reply label"
         hintText="E.g. Can I attend only part of the event?"
-        value={ editingScript.title }
+        value={this.state.title}
       />
     )
 
@@ -164,14 +178,16 @@ export class CampaignScriptsForm extends Component {
       <Formsy.Form
         ref="form"
       >
+        { titleField }
+
         <ScriptEditor
           name="text"
           ref="scriptInput"
-          script={editingScript}
+          scriptText={this.state.text}
           sampleContact={sampleContact}
+          onChange={(value) => this.setState({ text: value})}
           scriptFields={scriptFields}
         />
-        { titleField }
       </Formsy.Form>
 
     )

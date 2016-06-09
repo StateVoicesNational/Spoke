@@ -91,12 +91,12 @@ export class ScriptEditor extends React.Component {
   }
 
   getEditorState() {
-    const { scriptFields, script } = this.props
+    const { scriptFields, scriptText } = this.props
 
     const decorator = this.getCompositeDecorator(scriptFields)
     let editorState
-    if (script) {
-      editorState = EditorState.createWithContent(ContentState.createFromText(script.text), decorator)
+    if (scriptText) {
+      editorState = EditorState.createWithContent(ContentState.createFromText(scriptText), decorator)
     } else {
       editorState = EditorState.createEmpty(decorator)
     }
@@ -106,11 +106,11 @@ export class ScriptEditor extends React.Component {
 
   onChange(editorState) {
     this.setState( { editorState }, () => {
-      // const { onChange } = this.props
-      // if (onChange) {
-      //   console.log("changing script!")
-      //   onChange(this.getValue())
-      // }
+      const { onChange } = this.props
+      if (onChange) {
+        console.log("changing script!")
+        onChange(this.getValue())
+      }
     })
   }
 
@@ -120,7 +120,7 @@ export class ScriptEditor extends React.Component {
     const decorator = this.getCompositeDecorator(scriptFields)
     const newEditorState = EditorState.set(editorState, { decorator })
 
-    this.setState({ editorState: this.getEditorState() })
+    // this.setState({ editorState: this.getEditorState() })
   }
 
   getCompositeDecorator(scriptFields) {
