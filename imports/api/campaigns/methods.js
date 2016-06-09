@@ -174,7 +174,7 @@ export const exportContacts = new ValidatedMethod({
           throw new Meteor.Error('not-authorized');
         }
 
-        data = []
+        const data = []
         const contacts = CampaignContacts.find( { campaignId }).fetch()
 
         for (let contact of contacts) {
