@@ -51,6 +51,7 @@ export class AssignmentTexter extends Component {
     this.onSendMessage = this.onSendMessage.bind(this)
     this.handleScriptChange = this.handleScriptChange.bind(this)
 
+    console.log("hi")
     this.state.script = this.defaultScript()
 
   }
@@ -66,8 +67,11 @@ export class AssignmentTexter extends Component {
 
   defaultScript() {
     const { assignment } = this.props
-
-    return (this.currentContact() && this.currentContact().messages().fetch().length === 0) ? assignment.campaign().initialScriptText() : ''
+    console.log("current contact", this.currentContact())
+    const contact = this.currentContact()
+    console.log(assignment.campaign())
+    console.log(assignment.campaign().initialScriptText(), "script text here")
+    return (contact && contact.messages().fetch().length === 0) ? assignment.campaign().initialScriptText() : ''
   }
 
   contactCount() {

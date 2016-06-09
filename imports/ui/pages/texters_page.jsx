@@ -8,7 +8,7 @@ import TextField from 'material-ui/TextField'
 import { AdminNavigation } from '../../ui/components/navigation'
 import { AppPage } from '../../ui/layouts/app_page'
 import Dialog from 'material-ui/Dialog'
-import SmsIcon from 'material-ui/svg-icons/communication/textsms';
+import PeopleIcon from 'material-ui/svg-icons/social/people';
 import { Empty } from '../components/empty'
 import FlatButton from 'material-ui/FlatButton'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
@@ -48,7 +48,7 @@ class Page extends React.Component {
           <div>
           {texters.length === 0 ? <Empty
               title="No texters yet"
-              icon={<SmsIcon />}
+              icon={<PeopleIcon />}
             /> : <List>
               {texters.map((texter) => (
                 <ListItem

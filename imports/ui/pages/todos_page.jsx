@@ -79,7 +79,9 @@ class _TodosPage extends React.Component {
         <Subheader>{groupKey === 'active' ? '': groupKey}</Subheader>
           {
             group.map((result) => {
+              console.log("RESULT CAMP", result.assignment.campaignId)
               const { title, description } = Campaigns.findOne(result.assignment.campaignId)
+
               if (groupKey === 'past') {
                 return (
                   <ListItem

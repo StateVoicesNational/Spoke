@@ -5,7 +5,6 @@ import { Campaigns } from '../campaigns/campaigns.js'
 import { CampaignContacts } from '../campaign_contacts/campaign_contacts.js'
 import { OptOuts } from '../opt_outs/opt_outs.js'
 import { Meteor } from 'meteor/meteor'
-
 // FIXME - this is used in parse_csv too
 const getFormattedPhoneNumber = (cell) => {
   const { NumberParseException, PhoneNumberUtil, PhoneNumberFormat } = require('google-libphonenumber')
@@ -34,10 +33,11 @@ const getAssignedPhoneNumber = (userId, onSuccess) => {
     onSuccess(result)
   } else {
     if (Meteor.isServer) {
-      // const plivo = require('plivo').RestAPI({
-      //   authId: Meteor.settings.private.plivo.authId,
-      //   authToken: Meteor.settings.private.plivo.authToken
-      // })
+      console.log("require plivo", require('plivo'))
+      const plivo = require('plivo').RestAPI({
+        authId: Meteor.settings.private.plivo.authId,
+        authToken: Meteor.settings.private.plivo.authToken
+      })
 
       const params = {
           'country_iso': 'US', // The ISO code A2 of the country
