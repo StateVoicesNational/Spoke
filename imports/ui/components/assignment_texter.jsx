@@ -43,6 +43,11 @@ import { updateAnswer } from '../../api/survey_answers/methods'
 const styles = {
   root: {
     margin:0,
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
     display: 'flex',
     flexDirection: 'column',
     height: '100%',
@@ -52,11 +57,6 @@ const styles = {
   },
   topToolbar: {
     flex: '0 0 auto',
-    background: 'red',
-    // order: 1,
-    // flexShrink: 0,
-    // flexBasis: '50px',
-    // backgroundColor: 'red',
   },
   messageList: {
     flex: '1 1 auto',
@@ -64,11 +64,6 @@ const styles = {
   },
   bottomToolbar: {
     flex: '0 0 auto',
-    backgroundColor: 'green'
-    // order: 3,
-    // flexShrink: 0,
-    // flexBasis: '50px',
-    // background: 'blue',
   }
 }
 
@@ -119,6 +114,16 @@ export class AssignmentTexter extends Component {
     if (newContact && (!prevContact || (prevContact._id !== newContact._id))) {
       this.setSuggestedScript(this.defaultScript())
     }
+
+    // FIXME scroll to bottom of converatiosn
+    // componentDidMount() {
+    //   const node = this.refs.scrollContainer
+    //   if (node) {
+    //     node.scrollTop = node.scrollHeight
+    //   }
+    // }
+
+
   }
 
   defaultScript() {
@@ -306,18 +311,21 @@ export class AssignmentTexter extends Component {
             )}
           />
         </div>
-        <div style={styles.messageList}>
+        <div
+          style={styles.messageList}
+          ref="messageListContainer"
+        >
           <MessagesList messages={contact.messages().fetch()} />
         </div>
         <div style={styles.bottomToolbar}>
-        <MessageForm
-          onSendMessage={this.onSendMessage}
-          leftToolbarChildren={leftToolbarChildren}
-          rightToolbarChildren={rightToolbarChildren}
-          campaignContact={contact}
-          initialScript={applyScript(this.state.script, contact, scriptFields)}
-          secondaryToolbar={secondaryToolbar}
-        />
+          <MessageForm
+            onSendMessage={this.onSendMessage}
+            leftToolbarChildren={leftToolbarChildren}
+            rightToolbarChildren={rightToolbarChildren}
+            campaignContact={contact}
+            initialScript={applyScript(this.state.script, contact, scriptFields)}
+            secondaryToolbar={secondaryToolbar}
+          />
         </div>
       </div>
     )

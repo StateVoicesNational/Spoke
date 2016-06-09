@@ -3,7 +3,7 @@ import TextField from 'material-ui/TextField'
 
 const styles = {
   textarea: {
-    padding: 20,
+    padding: '0 20px 10px 20px',
   }
 }
 

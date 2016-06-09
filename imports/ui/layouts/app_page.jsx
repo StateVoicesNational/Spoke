@@ -3,7 +3,7 @@ import CircularProgress from 'material-ui/CircularProgress';
 
 const styles = {
   root: {
-    height: '100%'
+    // height: '100%'
   },
   container: {
     maxWidth: 800,

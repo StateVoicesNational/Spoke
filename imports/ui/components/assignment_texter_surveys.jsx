@@ -2,6 +2,12 @@ import React, { Component } from 'react'
 import { QuestionDropdown } from './question_dropdown'
 import { updateAnswer } from '../../api/survey_answers/methods'
 
+const styles = {
+  root: {
+    padding: '0px 20px',
+    backgroundColor: 'white'
+  }
+}
 export class AssignmentTexterSurveys extends Component {
   constructor(props) {
     super(props)
@@ -52,8 +58,12 @@ export class AssignmentTexterSurveys extends Component {
   }
   render() {
     const { contact, questions } = this.props
-    console.log(questions, "QUSETIONS!!!!")
-    return questions.length === 0 ? <div /> : this.renderCurrentQuestion()
+    return questions.length === 0 ? <div /> : (
+      <div style={styles.root}>
+        {this.renderCurrentQuestion()}
+      </div>
+
+    )
   }
 }
 

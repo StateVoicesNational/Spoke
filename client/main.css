@@ -13,10 +13,4 @@ body {
   font-size: 14px;
 }
 
-#react-root {
-  height: 100%;
-}
-
-[data-reactroot] {
-  height: 100%;
-}
+/**/

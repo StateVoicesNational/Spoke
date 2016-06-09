@@ -11,8 +11,7 @@ import { ReactiveVar } from 'meteor/reactive-var'
 
 const styles = {
   root: {
-    height: '100%',
-    backgroundColor: 'blue'
+    // height: '100%',
   },
 }
 class _AssignmentTextingPage extends Component {
