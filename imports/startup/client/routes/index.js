@@ -8,4 +8,7 @@ import './appRoutes'
 import './publicRoutes'
 
 
-FlowRouter.initialize();
+Meteor.startup(function() {
+    FlowRouter.initialize();
+})
+
