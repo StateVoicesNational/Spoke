@@ -9,9 +9,7 @@ import { FormsyCheckbox, FormsyDate, FormsyRadio, FormsyRadioGroup,
     FormsySelect, FormsyText, FormsyTime, FormsyToggle } from 'formsy-material-ui/lib'
 
 const errorMessages = {
-  emailError: "Please only use letters",
-  numericError: "Please provide a number",
-  urlError: "Please provide a valid URL",
+  emailError: "Please enter a valid email",
 };
 
 const styles = {
@@ -32,7 +30,8 @@ export class SignupForm extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      canSubmit: false
+      canSubmit: false,
+      submitting: false
     };
   }
 
@@ -49,16 +48,18 @@ export class SignupForm extends React.Component {
   }
 
   submitForm(data, resetForm, invalidateForm) {
+    this.setState({ submitting: true})
+
     Accounts.createUser(data, (accountError) => {
-      console.log("creating user account error", accountError)
       if (accountError) {
+        this.setState({ submitting: false })
         invalidateForm( { email: accountError.message })
       } else {
         const { organizationName } = data
         insert.call({name: organizationName}, (organizationError) => {
-          console.log("finished!", organizationError)
           if (organizationError) {
             alert(organizationError)
+            this.setState({ submitting: false })
           } else {
             FlowRouter.go('adminDashboard')
           }
@@ -123,7 +124,7 @@ export class SignupForm extends React.Component {
             style={submitStyle}
             type="submit"
             label="Sign up"
-            disabled={!this.state.canSubmit}
+            disabled={this.state.submitting || !this.state.canSubmit}
           />
         </Formsy.Form>
       </Paper>
