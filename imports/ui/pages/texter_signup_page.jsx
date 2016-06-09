@@ -27,7 +27,8 @@ class Page extends React.Component {
   handleExistingUserJoin() {
     console.log("calling texter!?")
     const { organization } = this.props
-    addTexter.call({ organizationId: organization._id }, (err) => {
+    const organizationId = organization._id
+    addTexter.call({ organizationId }, (err) => {
       if (err) {
         alert(err)
       } else {
