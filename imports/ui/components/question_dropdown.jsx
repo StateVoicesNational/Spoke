@@ -5,10 +5,6 @@ import Formsy from 'formsy-react';
 import { FormsySelect } from 'formsy-material-ui/lib'
 
 const styles = {
-  form: {
-    padding: '0px 10px',
-    backgroundColor: '#F8F8F8',
-  },
 }
 
 export class QuestionDropdown extends Component {

@@ -21,7 +21,8 @@ import { QuestionDropdown } from './question_dropdown'
 import { sendMessage } from '../../api/messages/methods'
 import { applyScript } from '../helpers/script_helpers'
 import { updateAnswer } from '../../api/survey_answers/methods'
-        import { MessagesList } from './messages_list'
+import { MessagesList } from './messages_list'
+import { grey100 } from 'material-ui/styles/colors'
 
 // .Site {
 //   display: flex;
@@ -63,6 +64,7 @@ const styles = {
     overflowY: 'scroll'
   },
   bottomToolbar: {
+    backgroundColor: grey100,
     flex: '0 0 auto',
   }
 }

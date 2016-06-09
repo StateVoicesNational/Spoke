@@ -1,11 +1,11 @@
 import React, { Component } from 'react'
 import { QuestionDropdown } from './question_dropdown'
 import { updateAnswer } from '../../api/survey_answers/methods'
+import Divider from 'material-ui/Divider'
 
 const styles = {
   root: {
     padding: '0px 20px',
-    backgroundColor: 'white'
   }
 }
 export class AssignmentTexterSurveys extends Component {
