@@ -32,10 +32,6 @@ export class CampaignsPage extends Component {
     FlowRouter.go('campaign.new', { organizationId })
   }
 
-  renderList() {
-
-  }
-
   renderEmpty() {
     return (
       <Empty
@@ -47,10 +43,8 @@ export class CampaignsPage extends Component {
 
   renderList() {
     const { campaigns, loading, organizationId } = this.props
-
     const groupedCampaigns = _.groupBy(campaigns, (campaign) => moment(campaign.dueBy).diff(moment()) < 0)
-
-    const list = (
+    return (
       <div>
         {
           [false, true].map((isPast) => (

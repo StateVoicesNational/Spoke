@@ -16,23 +16,26 @@ const styles = {
 // FIXME: This should probably just split up appbar and sidebar
 export const AppPage = ({ navigation, content, loading, hideSidebar}) => (
   <div>
-    { loading ? '' : navigation }
-    <div style={hideSidebar ? {} : styles.withSidebar }>
-      <div className="wrap container-fluid" style={styles.container}>
-        { loading ? (
-          <div className="row center-xs middle-xs">
-            <CircularProgress />
-          </div>
-        ) : (
-          <div className="row">
-            <div className='col-xs'>
-                <div className="box">
-                   { content }
+    { loading ? (
+      <div className="row center-xs middle-xs">
+        <CircularProgress />
+      </div>
+      ) : (
+        <div>
+          {navigation}
+          <div style={hideSidebar ? {} : styles.withSidebar }>
+            <div className="wrap container-fluid" style={styles.container}>
+                <div className="row">
+                  <div className='col-xs'>
+                      <div className="box">
+                         { content }
+                      </div>
+                  </div>
                 </div>
             </div>
           </div>
-        )}
-      </div>
-    </div>
+        </div>
+      )
+    }
   </div>
 )
