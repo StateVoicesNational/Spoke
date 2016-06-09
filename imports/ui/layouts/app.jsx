@@ -4,7 +4,10 @@ import { LoginPage } from '../pages/login_page'
 import { Organizations } from '../../api/organizations/organizations'
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider'
 import { muiTheme } from '../../ui/theme'
-import { _PublicLayout } from '../layouts/public'
+
+const styles = {
+  root: {height: '100%', backgroundColor: 'green'}
+}
 export const App = createContainer(() => {
   const handle = Meteor.subscribe('organizations')
 
@@ -25,9 +28,8 @@ export const App = createContainer(() => {
     })
 
   return (
-    <div>
+    <div style={styles.root}>
       <MuiThemeProvider muiTheme={muiTheme}>
-        <div>
           {loading ? '' : (user ? content : (
             <div>
               <div className="row center-xs middle-xs" style={{height: 400}}>
@@ -38,7 +40,6 @@ export const App = createContainer(() => {
               </div>
             </div>
           ))}
-        </div>
       </MuiThemeProvider>
     </div>
   )

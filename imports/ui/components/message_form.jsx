@@ -5,7 +5,6 @@ import NavigateBeforeIcon from 'material-ui/svg-icons/image/navigate-before'
 import NavigateNextIcon from 'material-ui/svg-icons/image/navigate-next'
 import { moment } from 'meteor/momentjs:moment'
 
-import { MessagesList } from './messages_list'
 import { MessageField } from './message_field'
 import { Empty } from '../components/empty'
 import TextField from 'material-ui/TextField'
@@ -17,22 +16,20 @@ import  Divider from 'material-ui/Divider'
 
 const styles = {
   navigationToolbar: {
-    width: '100%',
-    backgroundColor: 'white',
-    position: 'fixed',
-    width: '100%',
-    left: 0,
-    display: 'flex',
-    right: 0,
-    bottom: 0
+    // width: '100%',
+    // backgroundColor: 'white',
+    // position: 'fixed',
+    // width: '100%',
+    // left: 0,
+    // display: 'flex',
+    // right: 0,
+    // bottom: 0
   },
   messageField: {
-    width: '100%',
-    position: 'fixed',
-    left: 0,
-    // display: 'flex',
-    right: 0,
-    bottom: 56
+    // left: 0,
+    // // display: 'flex',
+    // right: 0,
+    // bottom: 56
   },
   optOutMessage: {
     fontStyle: 'italic'
@@ -95,9 +92,6 @@ export class MessageForm extends Component {
     const messages = campaignContact.messages().fetch()
     return (
       <div>
-        { messages.length === 0 ? (
-            <div/>
-        ) : <MessagesList messages={messages} /> }
         { optOut ? (
           <div style={styles.optOutMessage}>
             <Divider />

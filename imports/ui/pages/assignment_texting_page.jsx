@@ -9,12 +9,18 @@ import { ContactFilters, getContactsToText, wrappedGetContactsToText} from '../.
 import { Fetcher } from 'meteor/msavin:fetcher'
 import { ReactiveVar } from 'meteor/reactive-var'
 
+const styles = {
+  root: {
+    height: '100%',
+    backgroundColor: 'blue'
+  },
+}
 class _AssignmentTextingPage extends Component {
   render () {
     const { assignment, contacts, loading, organizationId } = this.props
 
     return loading ? <div>Loading</div> : (
-      <div>
+      <div style={styles.root}>
           <AssignmentTexter
             assignment={assignment}
             contacts={contacts}

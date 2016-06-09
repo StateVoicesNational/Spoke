@@ -5,12 +5,12 @@ const styles = {
     marginTop: '56px'
   },
   title: {
-    opacity: 0.1
+    opacity: 0.2
   },
   icon: {
     width: '200',
     height: '200',
-    opacity: 0.05
+    opacity: 0.2
   }
 }
 

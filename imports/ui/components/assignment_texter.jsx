@@ -11,6 +11,7 @@ import IconMenu from 'material-ui/IconMenu'
 import Divider from 'material-ui/Divider'
 import MenuItem from 'material-ui/MenuItem';
 import { ContactToolbar } from './contact_toolbar'
+import { AssignmentTexterSurveys} from './assignment_texter_surveys'
 
 import { SurveyList } from './survey_list'
 import { MessageForm } from './message_form'
@@ -20,23 +21,78 @@ import { QuestionDropdown } from './question_dropdown'
 import { sendMessage } from '../../api/messages/methods'
 import { applyScript } from '../helpers/script_helpers'
 import { updateAnswer } from '../../api/survey_answers/methods'
+        import { MessagesList } from './messages_list'
+
+// .Site {
+//   display: flex;
+//   flex-direction: column;
+//   height: 100%; /* 1, 3 */
+// }
+
+// .Site-header,
+// .Site-footer {
+//   flex: none; /* 2 */
+// }
+
+// .Site-content {
+//   flex: 1 0 auto; /* 2 */
+//   padding: var(--space) var(--space) 0;
+//   width: 100%;
+// }
 
 const styles = {
+  root: {
+    margin:0,
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100%',
+  },
   navigationToolbarTitle: {
     fontSize: "12px"
   },
-  contactToolbar: {
-    position: 'fixed',
-    top: 0,
-    width:'100%'
+  topToolbar: {
+    flex: '0 0 auto',
+    background: 'red',
+    // order: 1,
+    // flexShrink: 0,
+    // flexBasis: '50px',
+    // backgroundColor: 'red',
   },
-  paper: {
-    margin: '56px auto',
-    top: 56,
-    maxWidth: 800,
-    height: '100%'
+  messageList: {
+    flex: '1 1 auto',
+    overflowY: 'scroll'
+  },
+  bottomToolbar: {
+    flex: '0 0 auto',
+    backgroundColor: 'green'
+    // order: 3,
+    // flexShrink: 0,
+    // flexBasis: '50px',
+    // background: 'blue',
   }
 }
+
+// html, body {
+//   height:100%;
+//   min-height:100%;
+//   overflow: hidden;
+// }
+
+// body {
+//   display: flex;
+//   flex-direction: column;
+// }
+
+// .StickyHeader, .StickyFooter {
+//   flex: 0 0 auto;
+//   background: red;
+// }
+
+// .StickyContent {
+//   flex: 1 1 auto;
+//   overflow-y: scroll;
+//   background: green;
+// }
 export class AssignmentTexter extends Component {
   constructor(props) {
     super(props)
@@ -181,22 +237,18 @@ export class AssignmentTexter extends Component {
     this.handleScriptChange(script)
   }
 
-  renderSurveys(campaign) {
+  renderSurveySection(campaign) {
     const contact = this.currentContact()
-    return (contact.messages().fetch().length === 0 ) ? <div/> : (
-      <div>
-        <Divider />
-        {campaign.surveys().fetch().map((question) => (
-          <QuestionDropdown
-            answer={contact.surveyAnswer(question._id)}
-            onAnswerChange={this.handleSurveyAnswerChange.bind(this)}
-            question={question}
-          />
-        ))}
-        <Divider />
-      </div>
+    return (
+      <AssignmentTexterSurveys
+        contact={contact}
+        questions={campaign.surveys().fetch()}
+        onScriptChange={this.handleScriptChange}
+      />
     )
   }
+
+
   render() {
     const { assignment, contacts, onStopTexting } = this.props
     const contact = this.currentContact()
@@ -235,36 +287,51 @@ export class AssignmentTexter extends Component {
       </IconButton>
     ]
 
-    const secondaryToolbar = this.renderSurveys(campaign)
+    const secondaryToolbar = this.renderSurveySection(campaign)
 
     return (
-      <div style={{height: '100%'}}>
-        <ContactToolbar
-          campaignContact={contact}
-          onOptOut={this.handleNavigateNext}
-          rightToolbarIcon={(
-            <IconButton
-              onTouchTap={onStopTexting}
-              style={styles.toolbarIconButton}
-            >
-              <NavigateCloseIcon />
-
-            </IconButton>
-          )}
-          style={styles.contactToolbar}
-        />
-
-        <Divider />
-
-        <div style={styles.paper}>
-          <MessageForm
-            onSendMessage={this.onSendMessage}
-            leftToolbarChildren={leftToolbarChildren}
-            rightToolbarChildren={rightToolbarChildren}
+      <div style={styles.root}>
+        <div style={styles.topToolbar}>
+          <ContactToolbar
             campaignContact={contact}
-            initialScript={applyScript(this.state.script, contact, scriptFields)}
-            secondaryToolbar={secondaryToolbar}
+            onOptOut={this.handleNavigateNext}
+            rightToolbarIcon={(
+              <IconButton
+                onTouchTap={onStopTexting}
+                style={styles.toolbarIconButton}
+              >
+                <NavigateCloseIcon />
+
+              </IconButton>
+            )}
           />
+        </div>
+        <div style={styles.messageList}>
+          <MessagesList messages={contact.messages().fetch()} />
+        </div>
+        <div style={styles.bottomToolbar}>
+        <MessageForm
+          onSendMessage={this.onSendMessage}
+          leftToolbarChildren={leftToolbarChildren}
+          rightToolbarChildren={rightToolbarChildren}
+          campaignContact={contact}
+          initialScript={applyScript(this.state.script, contact, scriptFields)}
+          secondaryToolbar={secondaryToolbar}
+        />
+        </div>
+      </div>
+    )
+    return (
+      <div style={styles.root}>
+        <div style={styles.topToolbar}>
+
+        </div>
+        <Divider />
+        <div style={styles.messageList}>
+        </div>
+
+        <div style={styles.bottomToolbar}>
+
         </div>
       </div>
     )
