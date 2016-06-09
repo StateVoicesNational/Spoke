@@ -11,7 +11,6 @@ import { convertRowToContact } from '../campaign_contacts/parse_csv'
 import { batchInsert } from 'meteor/mikowals:batch-insert'
 import { chunk, last, forEach, zip } from 'lodash'
 import { ScriptSchema } from './scripts.js'
-
 const divideContacts = (contactRows, texters) => {
 
   const rowCount = contactRows.length
