@@ -22,7 +22,6 @@
     "lodash": "^4.13.1",
     "material-ui": "^0.15.0",
     "meteor-node-stubs": "https://registry.npmjs.org/meteor-node-stubs/-/meteor-node-stubs-0.2.3.tgz",
-    "plivo": "^0.3.3",
     "react": "^15.1.0",
     "react-addons-pure-render-mixin": "^15.0.1",
     "react-chartjs": "^0.7.3",
