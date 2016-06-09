@@ -57,6 +57,10 @@ export class CampaignScriptsForm extends Component {
     }
   }
 
+  componentDidMount() {
+    const { onValid } = this.props
+    onValid()
+  }
   handleOpenDialog() {
     this.setState({ open: true }, function() {
       this.refs.scriptInput.focus()

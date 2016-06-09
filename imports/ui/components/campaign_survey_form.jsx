@@ -31,11 +31,15 @@ export class CampaignSurveyForm extends Component {
             sampleContact={sampleContact}
           />
         ))}
-        <RaisedButton
-          style={styles.questionButton}
-          label="Add question"
-          onTouchTap={onAddQuestion}
-        />
+        {
+          questions.length === 0 ? (
+            <RaisedButton
+              style={styles.questionButton}
+              label="Add question"
+              onTouchTap={onAddQuestion}
+            />
+          ) : ''
+        }
       </div>
     )
   }

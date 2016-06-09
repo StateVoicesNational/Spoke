@@ -6,6 +6,9 @@ const styles = {
   navigation: {
     marginTop: 48,
   },
+  backButton: {
+    marginRight: 10
+  }
 }
 
 export class CampaignFormSection extends Component {
@@ -39,6 +42,7 @@ export class CampaignFormSection extends Component {
         }) }
         <div style={styles.navigation}>
           <FlatButton
+            style={styles.backButton}
             label="Back"
             disabled={!previousStepEnabled}
             onTouchTap={onPrevious}

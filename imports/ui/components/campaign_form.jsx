@@ -232,16 +232,14 @@ export class CampaignForm extends Component {
       _id: questionId
     }, {
       $set: {
-        allowedAnswers: question.allowedAnswers.concat([newAllowedAnswer('')])
+        allowedAnswers: question.allowedAnswers.concat([newAllowedAnswer('Answer')])
       }
     })
   }
 
   handleAddSurvey() {
-    console.log("handle add question")
-    console.log("[newAllowedAnswer('Option 1')]", newAllowedAnswer('aosentuhaoesntuh'))
     const question = {
-      text: '',
+      text: 'Question',
       allowedAnswers: [newAllowedAnswer('Option 1')],
       isTopLevel: true,
       collectionType: 'question'
