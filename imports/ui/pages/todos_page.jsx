@@ -112,7 +112,7 @@ class _TodosPage extends React.Component {
     </div>
     )
 
-    const content = results.length > 0 ? (
+    const content = !loading && results.length > 0 ? (
         <div>
           <Toolbar style={styles.toolbar}>
             <ToolbarGroup firstChild={true}>

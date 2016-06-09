@@ -64,7 +64,7 @@ const styles = {
     overflowY: 'scroll'
   },
   bottomToolbar: {
-    backgroundColor: grey100,
+    borderTop: `1px solid ${grey100}`,
     flex: '0 0 auto',
   }
 }
@@ -246,7 +246,7 @@ export class AssignmentTexter extends Component {
 
   renderSurveySection(campaign) {
     const contact = this.currentContact()
-    return (
+    return contact.messages().fetch().length === 0  ? <div/> : (
       <AssignmentTexterSurveys
         contact={contact}
         questions={campaign.surveys().fetch()}

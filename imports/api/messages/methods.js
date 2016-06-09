@@ -39,19 +39,19 @@ const getAssignedPhoneNumber = (userId) => {
 
 
       const searchNumbers = Meteor.wrapAsync(Plivo.searchNumbers, Plivo)
-      response = searchNumbers(params)
+      let response = searchNumbers(params)
       if (response.statusCode !== 200)
       {
         throw new Meteor.Error(500, 'plivo-error', 'Could not find a number to buy')
       }
-      const userNumber = response.data.objects[0].number
+      const userNumber = response.data.objects[1].number
 
       const buyNumber = Meteor.wrapAsync(Plivo.buyNumber, Plivo)
       response = buyNumber({ number: userNumber, app_id: Meteor.settings.private.plivo.appId })
-
-      if (response.statusCode !== 200)
+      console.log("RESPONSE", response)
+      if (response.statusCode !== 201)
       {
-        throw new Meteor.Error(500, 'plivo-error', 'Could not find buy number')
+        throw new Meteor.Error(500, 'plivo-error', 'Could not buy number')
       }
 
       const formattedNumber = getFormattedPhoneNumber(userNumber)
@@ -119,29 +119,24 @@ const remoteCreateMessage = (params) => {
 }
 
 const createMessage = ({ text, userNumber, contactNumber, campaignId }) => {
-  if (!Meteor.settings.public.isProduction && !Meteor.settings.public.textingEnabled) {
-    console.log("Faking message sending")
-    onMessageSendSuccess('fake_message_id')
-  } else {
-    const params = {
-      text,
-      src: userNumber, // Caller Id
-      dst: contactNumber,
-      type: 'sms'
-    }
-
-    const serviceMessageId = remoteCreateMessage(params)
-
-    const message = {
-      userNumber,
-      contactNumber,
-      text,
-      campaignId,
-      serviceMessageId,
-      isFromContact: false,
-    }
-    return insertMessage.call(message)
+  const params = {
+    text,
+    src: userNumber, // Caller Id
+    dst: contactNumber,
+    type: 'sms'
   }
+
+  const serviceMessageId = remoteCreateMessage(params)
+
+  const message = {
+    userNumber,
+    contactNumber,
+    text,
+    campaignId,
+    serviceMessageId,
+    isFromContact: false,
+  }
+  return insertMessage.call(message)
 }
 
 const checkOptOut = ({ organizationId, contactNumber }) => {
@@ -177,7 +172,7 @@ export const sendMessage = new ValidatedMethod({
 
       if (!userNumber) {
         userNumber = getAssignedPhoneNumber(this.userId)
-        Meteor.users.update({_id: userId}, { $set: { userNumber: result } })
+        Meteor.users.update({_id: this.userId}, { $set: { userNumber } })
       }
 
       createMessage({text, userNumber, contactNumber, campaignId})

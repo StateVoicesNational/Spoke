@@ -57,10 +57,10 @@ export class CampaignForm extends Component {
     this.handleNext = this.handleNext.bind(this)
     this.handlePrev = this.handlePrev.bind(this)
     this.renderFormSection = this.renderFormSection.bind(this)
-    this.setupState()
+    this.resetState()
   }
 
-  setupState() {
+  resetState() {
     const { campaign, texters } = this.props
 
     this.state = {
@@ -193,6 +193,7 @@ export class CampaignForm extends Component {
         console.log("ERROR", err)
         alert(err)
       } else {
+        this.resetState()
         FlowRouter.go('campaigns', { organizationId })
       }
     })

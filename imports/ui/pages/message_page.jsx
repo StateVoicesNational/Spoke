@@ -7,6 +7,7 @@ import { OptOuts } from '../../api/opt_outs/opt_outs'
 import { Campaigns } from '../../api/campaigns/campaigns'
 import { displayName } from '../../api/users/users'
 import { MessageForm } from '../../ui/components/message_form'
+import { MessagesList } from '../../ui/components/messages_list'
 import { ContactToolbar } from '../../ui/components/contact_toolbar'
 
 const Page = ({ loading, messages, campaignContact, organizationId }) => (
@@ -23,6 +24,7 @@ const Page = ({ loading, messages, campaignContact, organizationId }) => (
       <ContactToolbar
         campaignContact={campaignContact}
       />
+      <MessagesList messages={messages} />
       <MessageForm
         campaignContact={campaignContact}
         initialScript=""
