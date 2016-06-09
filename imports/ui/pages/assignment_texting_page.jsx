@@ -30,8 +30,6 @@ class _AssignmentTextingPage extends Component {
   }
 }
 
-let retrieved = new ReactiveVar(false)
-let contacts = new ReactiveVar([])
 export const AssignmentTextingPage = createContainer(({ organizationId, assignmentId, contactFilter }) => {
   const  handle = Meteor.subscribe('assignment.text', assignmentId, contactFilter, organizationId)
   const assignment = Assignments.findOne(assignmentId)

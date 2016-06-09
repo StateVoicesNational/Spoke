@@ -24,7 +24,7 @@ const Page = ({ loading, messages, campaignContact, organizationId }) => (
       <ContactToolbar
         campaignContact={campaignContact}
       />
-      <MessagesList messages={messages} />
+      <MessagesList contact={campaignContact} messages={messages} />
       <MessageForm
         campaignContact={campaignContact}
         initialScript=""

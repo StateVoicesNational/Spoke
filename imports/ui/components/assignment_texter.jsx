@@ -317,7 +317,10 @@ export class AssignmentTexter extends Component {
           style={styles.messageList}
           ref="messageListContainer"
         >
-          <MessagesList messages={contact.messages().fetch()} />
+          <MessagesList
+            contact={contact}
+            messages={contact.messages().fetch()}
+          />
         </div>
         <div style={styles.bottomToolbar}>
           <MessageForm

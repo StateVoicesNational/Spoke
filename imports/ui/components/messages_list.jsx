@@ -1,25 +1,42 @@
 import React, { Component } from 'react'
 import { List, ListItem } from 'material-ui/List'
-import Subheader from 'material-ui/Subheader'
 import { moment } from 'meteor/momentjs:moment'
-
+import ProhibitedIcon from 'material-ui/svg-icons/av/not-interested'
+import Divider from 'material-ui/Divider'
+import { red300 } from 'material-ui/styles/colors'
 const styles = {
-  message: {
-    sent: {
-      textAlign: 'right',
+    optOut: {
       fontSize: '13px',
+      fontStyle: 'italic',
+    },
+    sent: {
+      fontSize: '13px',
+      textAlign: 'right',
       marginLeft: '24px'
     },
     received: {
       fontSize: '13px',
       marginRight: '24px'
     }
-  }
 }
 
 export class MessagesList extends Component {
   render() {
-    const { messages } = this.props;
+    const { messages, contact } = this.props
+    const optOut = contact.optOut()
+
+    const optOutItem = optOut ? (
+      <div>
+        <Divider />
+        <ListItem
+          style={styles.optOut}
+          leftIcon={<ProhibitedIcon style={{fill: red300}} />}
+          disabled
+          primaryText={`${contact.firstName} opted out of texts`}
+          secondaryText={moment(optOut.createdAt).fromNow()}
+        />
+      </div>
+    ) : ''
     if (messages.length === 0) {
       return null
     }
@@ -29,11 +46,12 @@ export class MessagesList extends Component {
         {messages.map(message => (
         <ListItem
           disabled
-          style={message.isFromContact ? styles.message.received : styles.message.sent}
+          style={message.isFromContact ? styles.received : styles.sent}
           key={message.createdAt}
           primaryText={message.text}
           secondaryText={moment(message.createdAt).fromNow()}
         />))}
+        {optOutItem}
       </List>
     )
   }
