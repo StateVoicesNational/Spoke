@@ -32,8 +32,15 @@ You can then log in as `admin@test.com/test`, `texter1@test.com/test`, or `texte
 # Deploying
 Currently set up to deploy with [Galaxy](galaxy.meteor.com). Edit `private/settings.json` to add ROOT_URL and MONGO_URL.
 
-To deploy:
+## QA
+```
+meteor npm run deploy:qa
 
 ```
-npm run deploy
+
+## Production
+
+```
+meteor npm run deploy:production
+
 ```
