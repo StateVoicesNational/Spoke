@@ -1,7 +1,5 @@
 import React, { Component, PropTypes } from 'react';
 import { List, ListItem } from 'material-ui/List';
-import SpeakerNotesIcon from 'material-ui/svg-icons/action/speaker-notes'
-import { Empty } from './empty'
 import { moment } from 'meteor/momentjs:moment'
 
 const styles = {
@@ -37,13 +35,7 @@ export class CampaignList extends Component {
 
   render() {
     const { campaigns } = this.props
-    const empty = (
-      <Empty
-        title="No campaigns yet"
-        icon={<SpeakerNotesIcon />}
-      />
-    )
-    return campaigns.length === 0 ? empty : (
+    return campaigns.length === 0 ? '' : (
         <List>
           {campaigns.map((campaign) => this.renderRow(campaign))}
         </List>

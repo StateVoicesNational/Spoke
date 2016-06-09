@@ -29,12 +29,10 @@ class Page extends React.Component {
     ]
     return (
       <AppPage
-        navigation={<AdminNavigation
-          title='Overview'
-          organizationId={organizationId}
-        />}
-        content={
-          loading ? '' : <Dashboard stats={stats} />
+        navigation={
+          <AdminNavigation
+            organizationId={organizationId}
+          />
         }
         loading={loading}
       />
