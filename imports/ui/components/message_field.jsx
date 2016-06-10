@@ -34,6 +34,9 @@ export class MessageField extends Component {
     })
   }
 
+  focus() {
+    this.refs.input.focus()
+  }
   render() {
     return (
       <div style={styles.textarea}>

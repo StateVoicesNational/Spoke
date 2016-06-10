@@ -100,11 +100,14 @@ export class MessageForm extends Component {
         />
       </div>
     )
+    const isMac = (navigator.appVersion.indexOf("Mac") !== -1 )
+
     const sendButton = (
       <ToolbarGroup firstChild>
         <RaisedButton
           onClick={this.handleSendMessage}
-          label={"Send"}
+          label="Send"
+          label={`Send ${isMac ? '⌘' : 'ctrl'}  \u21b5`}
           disabled={this.state.submitting|| optOut}
           primary
         />
