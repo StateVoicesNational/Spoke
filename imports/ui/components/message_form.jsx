@@ -29,21 +29,22 @@ const styles = {
 export class MessageForm extends Component {
   constructor(props) {
     super(props)
+    this.handleSendMessage = this.handleSendMessage.bind(this)
+    this.handleMessageFieldKeyDown = this.handleMessageFieldKeyDown.bind(this)
     this.state = {
-      isSending: false
+      submitting: false
     }
   }
-  handleSendMessage(event) {
+
+  handleSendMessage() {
     console.log("handle send!")
     const { onSendMessage } = this.props
 
-    this.setState( { isSubmitting: true })
-    event.preventDefault()
+    this.setState( { submitting: true })
     const input = this.refs.input
     const messageText = input.getValue().trim()
 
     const onSuccess = () => {
-      this.setState({ isSending: false })
       if (onSendMessage) {
         onSendMessage()
       }
@@ -58,10 +59,11 @@ export class MessageForm extends Component {
       campaignId: campaignContact.campaignId,
       contactNumber: campaignContact.cell,
     }, (error) => {
+      this.setState({
+        submitting: false
+      })
+
       if (error) {
-        this.setState({
-          isSending: false
-        })
         alert(error)
       } else {
         if (onSendMessage)
@@ -72,6 +74,12 @@ export class MessageForm extends Component {
     })
   }
 
+  handleMessageFieldKeyDown(event) {
+    if ((event.keyCode == 10 || event.keyCode == 13) && event.metaKey) {
+      console.log(this.handleSendMessage, this)
+      this.handleSendMessage()
+    }
+  }
   render() {
     const {
       campaignContact,
@@ -86,6 +94,7 @@ export class MessageForm extends Component {
       <div style={styles.messageField}>
         { secondaryToolbar }
         <MessageField
+          onKeyDown={this.handleMessageFieldKeyDown}
           ref="input"
           initialScript={initialScript}
         />
@@ -94,16 +103,16 @@ export class MessageForm extends Component {
     const sendButton = (
       <ToolbarGroup firstChild>
         <RaisedButton
-          onClick={this.handleSendMessage.bind(this)}
-          label="Send"
-          disabled={this.state.isSending || optOut}
+          onClick={this.handleSendMessage}
+          label={"Send"}
+          disabled={this.state.submitting|| optOut}
           primary
         />
         { leftToolbarChildren }
       </ToolbarGroup>
     )
 
-    const { isSending } = this.state
+    const { submitting } = this.state
     const messages = campaignContact.messages().fetch()
     return (
       <div>

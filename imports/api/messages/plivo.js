@@ -10,8 +10,6 @@ export const Plivo = {
            options = _.extend(options, { data: params })
         }
 
-        console.log("OPTIONS", options)
-        console.log("URL", url)
         HTTP.call(method, url, options, callback )
     },
     sendMessage: function(params, callback) {
@@ -38,14 +36,12 @@ export const Plivo = {
 Meteor.startup(function() {
     if (Meteor.isServer) {
         // Access to meteor.settings
-        console.log("METEOR SETTINGS", Meteor.settings)
         const authId = Meteor.settings.private.plivo.authId
         const authToken = Meteor.settings.private.plivo.authToken
         Plivo.authId = authId
         Plivo.authToken = authToken
         Plivo.baseUrl = `https://api.plivo.com/v1/Account/${authId}/`
 
-        console.log(Plivo)
 
     }
 })

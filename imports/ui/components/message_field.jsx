@@ -39,6 +39,7 @@ export class MessageField extends Component {
       <div style={styles.textarea}>
       <TextField
         autoFocus
+        onKeyDown={this.props.onKeyDown}
         ref="input"
         floatingLabelText="Your message"
         value={this.state.inputValue}
