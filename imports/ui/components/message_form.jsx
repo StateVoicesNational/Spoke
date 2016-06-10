@@ -34,20 +34,22 @@ export class MessageForm extends Component {
     }
   }
   handleSendMessage(event) {
+    this.setState( { isSubmitting: true })
+
     event.preventDefault()
     const input = this.refs.input
     const messageText = input.getValue().trim()
 
-    const onSuccess = () => {
+    const callback = () => {
       this.setState({ isSending: false })
-      if (this.props.onSendMessage) {
-        this.props.onSendMessage()
+      if (this.props.callback) {
+        this.props.callback()
       }
     }
-    this.sendMessageToCurrentContact(messageText, onSuccess)
+    this.sendMessageToCurrentContact(messageText, callback)
   }
 
-  sendMessageToCurrentContact(text, onSendMessage) {
+  sendMessageToCurrentContact(text, callback) {
     const { campaignContact } = this.props
     sendMessage.call({
       text,

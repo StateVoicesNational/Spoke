@@ -73,7 +73,6 @@ export class LoginForm extends React.Component {
           onValid={this.enableButton.bind(this)}
           onInvalid={this.disableButton.bind(this)}
           onValidSubmit={this.submitForm.bind(this)}
-          onInvalidSubmit={this.notifyFormError.bind(this)}
         >
           <FormsyText
             name="email"
@@ -95,6 +94,7 @@ export class LoginForm extends React.Component {
             fullWidth
             style={submitStyle}
             type="submit"
+            formNoValidate
             label="Login"
             disabled={!this.state.canSubmit}
           />

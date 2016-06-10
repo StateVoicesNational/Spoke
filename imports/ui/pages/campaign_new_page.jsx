@@ -26,8 +26,8 @@ class _CampaignNewPage extends React.Component {
               />
 
               <CardTitle
-                title="A campaign needs texters!"
-                subtitle="Share this link to get people signed up to text for you"
+                title="First step: enroll some texters!"
+                subtitle="Share this link to get people signed up to text for you (or visit the link yourself if you plan to text for your organization), then come back here to create a campaign."
               />
               <CardText>
                 <TextField

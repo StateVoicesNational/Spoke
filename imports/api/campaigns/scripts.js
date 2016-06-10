@@ -8,7 +8,24 @@ export const ScriptSchema = new SimpleSchema({
   text: { type: String },
   title: {
     type: String,
-    optional: true
+    optional: true,
+    custom: function () {
+      var shouldBeRequired = this.field('type').value == ScriptTypes.FAQ
+
+      if (shouldBeRequired) {
+        // inserts
+        if (!this.operator) {
+          if (!this.isSet || this.value === null || this.value === "") return "required";
+        }
+
+        // updates
+        else if (this.isSet) {
+          if (this.operator === "$set" && this.value === null || this.value === "") return "required";
+          if (this.operator === "$unset") return "required";
+          if (this.operator === "$rename") return "required";
+        }
+      }
+    }
   },
   type: {
     type: String,

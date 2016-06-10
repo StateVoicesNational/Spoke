@@ -5,8 +5,9 @@ import Formsy from 'formsy-react'
 import { ScriptEditor } from './script_editor'
 import Dialog from 'material-ui/Dialog'
 import { CampaignContacts } from '../../api/campaign_contacts/campaign_contacts'
-import { ScriptTypes } from '../../api/campaigns/scripts'
+import { ScriptTypes, ScriptSchema } from '../../api/campaigns/scripts'
 import TextField from 'material-ui/TextField'
+import { FormsyText } from 'formsy-material-ui/lib'
 import Divider from 'material-ui/Divider'
 import { muiTheme } from '../../ui/theme'
 import { CampaignFormSectionHeading } from './campaign_form_section_heading'
@@ -69,9 +70,7 @@ export class CampaignScriptsForm extends Component {
     onValid()
   }
   handleOpenDialog() {
-    this.setState({ open: true }, function() {
-      this.refs.scriptInput.focus()
-    })
+    this.setState({ open: true })
   }
 
   handleCloseDialog() {
@@ -86,23 +85,35 @@ export class CampaignScriptsForm extends Component {
       type
     }
     if (type === ScriptTypes.FAQ) {
-      model = _.extend(model, { title })
+      model['title'] = title
     }
     return model
   }
 
-  handleSaveScript() {
+
+  handleSaveScript(data, resetForm, invalidateForm) {
+
     const { editingScript } = this.state
     const scriptData = this.getModel()
+    const context = ScriptSchema.namedContext("formContext")
 
-    if (editingScript._id) {
-      const { onScriptChange } = this.props
-      onScriptChange(editingScript._id, scriptData)
+    console.log("validating script data?", scriptData)
+    const isValid = context.validate(scriptData)
+    if (!isValid) {
+      const errors = {}
+      _.each(context.invalidKeys(), ({name, type}) => errors[name] = type)
+      console.log(errors)
+      invalidateForm(errors)
     } else {
-      const { handleAddScript } = this.props
-      handleAddScript(_.extend(editingScript, scriptData))
+      if (editingScript._id) {
+        const { onScriptChange } = this.props
+        onScriptChange(editingScript._id, scriptData)
+      } else {
+        const { handleAddScript } = this.props
+        handleAddScript(_.extend(editingScript, scriptData))
+      }
+      this.handleCloseDialog()
     }
-    this.handleCloseDialog()
   }
 
   handleAddScript() {
@@ -128,9 +139,25 @@ export class CampaignScriptsForm extends Component {
     this.handleOpenDialog()
   }
 
+  enableDoneButton() {
+    this.setState({ scriptDialogButtonEnabled: true })
+  }
+  disableDoneButton() {
+    this.setState({ scriptDialogButtonEnabled: false})
+  }
+  submit() {
+    this.refs.form.submit()
+    console.log("hi", this.refs.form.getModel())
+  }
   renderDialog() {
     const { editingScript, open } = this.state
     return (
+      <Formsy.Form
+        ref="form"
+        onValidSubmit={this.handleSaveScript.bind(this)}
+        onInvalidSubmit={this.notifyFormError.bind(this)}
+      >
+
       <Dialog
         actions={[
           <FlatButton
@@ -139,7 +166,9 @@ export class CampaignScriptsForm extends Component {
           />,
           <RaisedButton
             label="Done"
-            onTouchTap={this.handleSaveScript}
+            type="submit"
+            // disabled={!this.state.scriptDialogButtonEnabled}
+            onTouchTap={this.submit.bind(this)}
             primary
           />
         ]}
@@ -147,9 +176,15 @@ export class CampaignScriptsForm extends Component {
         open={open}
         onRequestClose={this.handleCloseDialog}
       >
-        { editingScript ? this.renderForm() : ' '}
+          { editingScript ? this.renderForm() : ' '}
       </Dialog>
+      </Formsy.Form>
+
     )
+  }
+
+  notifyFormError(data) {
+    console.error('Form error:', data);
   }
 
   renderForm() {
@@ -163,11 +198,12 @@ export class CampaignScriptsForm extends Component {
     const scriptFields = CampaignContacts.requiredUploadFields.concat(CampaignContacts.userScriptFields).concat(customFields)
     console.log("editing field")
     const titleField = editingScript.type !== ScriptTypes.FAQ ? '' : (
-      <TextField
+      <FormsyText
         style={styles.titleInput}
         fullWidth
+        autoFocus
         name="title"
-        onChange={(event, value) => this.setState({ title: value})}
+        onChange={(event, value) => this.setState({ title: event.currentTarget.value})}
         floatingLabelText="Reply label"
         hintText="E.g. Can I attend only part of the event?"
         value={this.state.title}
@@ -175,9 +211,7 @@ export class CampaignScriptsForm extends Component {
     )
 
     return (
-      <Formsy.Form
-        ref="form"
-      >
+        <div>
         { titleField }
 
         <ScriptEditor
@@ -188,8 +222,7 @@ export class CampaignScriptsForm extends Component {
           onChange={(value) => this.setState({ text: value})}
           scriptFields={scriptFields}
         />
-      </Formsy.Form>
-
+        </div>
     )
   }
 
@@ -253,28 +286,31 @@ export class CampaignScriptsForm extends Component {
     // handleAddScript(script)
 
     return (
-      <Formsy.Form
-        onValid={onValid}
-        onInvalid={onInvalid}
-      >
-        <CampaignFormSectionHeading
-          title='What do you want to say?'
-        />
-        <div style={styles.scriptSection}>
-          { sectionHeading('First message script', "This script is what we'll automatically fill in for texters when they first send the first message to a contact.")}
-          { this.renderScriptRow(script)}
-        </div>
-        <Divider />
+      <div>
+        <Formsy.Form
+          onValid={onValid}
+          onInvalid={onInvalid}
+        >
+          <CampaignFormSectionHeading
+            title='What do you want to say?'
+          />
           <div style={styles.scriptSection}>
-          { sectionHeading('Saved replies', "These replies will appear in a list for texters to choose to answer common issues and questions when a contact has responded. You can think of it as a FAQ section of sorts.")}
-          { faqScripts.map((faqScript) => this.renderScriptRow(faqScript))}
-        </div>
-        <RaisedButton
-          label={'Add saved reply'}
-          onTouchTap={this.handleAddSavedReply }
-        />
-        { this.renderDialog()}
-      </Formsy.Form>
+            { sectionHeading('First message script', "This script is what we'll automatically fill in for texters when they first send the first message to a contact.")}
+            { this.renderScriptRow(script)}
+          </div>
+          <Divider />
+            <div style={styles.scriptSection}>
+            { sectionHeading('Saved replies', "These replies will appear in a list for texters to choose to answer common issues and questions when a contact has responded. You can think of it as a FAQ section of sorts.")}
+            { faqScripts.map((faqScript) => this.renderScriptRow(faqScript))}
+          </div>
+          <RaisedButton
+            label={'Add saved reply'}
+            onTouchTap={this.handleAddSavedReply }
+          />
+        </Formsy.Form>
+
+          { this.renderDialog()}
+      </div>
     )
   }
 }
