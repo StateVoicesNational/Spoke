@@ -114,6 +114,7 @@ export class AssignmentTexter extends Component {
     const prevContact = this.getContact(prevProps.contacts, prevState.currentContactIndex)
     const newContact = this.currentContact()
     if (newContact && (!prevContact || (prevContact._id !== newContact._id))) {
+      console.log("here?")
       this.setSuggestedScript(this.defaultScript())
     }
 
@@ -166,6 +167,7 @@ export class AssignmentTexter extends Component {
 
   setSuggestedScript(script)
   {
+    console.log("setting script")
     this.setState({script})
   }
   handleScriptChange(script) {
@@ -272,7 +274,7 @@ export class AssignmentTexter extends Component {
     const leftToolbarChildren = [
       <ToolbarSeparator />,
       <ResponseDropdown
-        responses={campaign.faqScripts || []}
+        responses={campaign.faqScripts() || []}
         onScriptChange={this.handleScriptChange}
       />
     ]
@@ -296,6 +298,8 @@ export class AssignmentTexter extends Component {
 
     const secondaryToolbar = this.renderSurveySection(campaign)
 
+    const appliedScript = applyScript(this.state.script, contact, scriptFields)
+    console.log("appliedScript", appliedScript)
     return (
       <div style={styles.root}>
         <div style={styles.topToolbar}>
@@ -328,7 +332,7 @@ export class AssignmentTexter extends Component {
             leftToolbarChildren={leftToolbarChildren}
             rightToolbarChildren={rightToolbarChildren}
             campaignContact={contact}
-            initialScript={applyScript(this.state.script, contact, scriptFields)}
+            initialScript={appliedScript}
             secondaryToolbar={secondaryToolbar}
           />
         </div>

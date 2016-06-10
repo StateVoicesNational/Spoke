@@ -79,6 +79,9 @@ Campaigns.helpers({
     const initialScript = _.find(this.scripts, (script) => script.type === ScriptTypes.INITIAL)
     return initialScript ? initialScript.text : null
   },
+  faqScripts() {
+    return this.scripts.filter((script) => script.type === ScriptTypes.FAQ)
+  },
   scriptFields() {
     return this.customFields.concat(CampaignContacts.requiredUploadFields)
   },

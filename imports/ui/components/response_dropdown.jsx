@@ -10,17 +10,19 @@ export class ResponseDropdown extends Component {
   }
 
   handleChange(event, index, value) {
+    console.log(event, index, value)
     const { onScriptChange } = this.props
-    onScriptChange(value.script)
+    onScriptChange(value)
   }
 
   render() {
     const { responses } = this.props
+    console.log("responses", responses)
     return (
       <DropDownMenu value={1} onChange={this.handleChange}>
         <MenuItem value={1} primaryText='Saved responses' disabled />
         { responses.map((response) =>
-          <MenuItem value={response}
+          <MenuItem value={response.text}
             primaryText={response.title}
           />) }
       </DropDownMenu>
