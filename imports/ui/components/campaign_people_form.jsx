@@ -163,6 +163,7 @@ export class CampaignPeopleForm extends Component {
               style={styles.button}
               label= {uploading ? 'Uploading...' : "Upload contacts"}
               labelPosition="before"
+              disabled={uploading}
             >
               <input
                 type="file"
@@ -176,7 +177,6 @@ export class CampaignPeopleForm extends Component {
             value={this.state.contacts ? 'Contacts' : ''}
             style={styles.exampleImageInput}
           />
-
         {validationStats ? this.renderValidationStats() : ''}
         { contactUploadError ? (
           <List>
