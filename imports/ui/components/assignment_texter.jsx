@@ -152,6 +152,7 @@ export class AssignmentTexter extends Component {
   }
 
   handleNavigateNext() {
+    console.log("hi?")
     if (this.hasNext()) {
       this.incrementCurrentContactIndex(1)
     }
