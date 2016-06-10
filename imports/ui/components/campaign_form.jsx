@@ -193,6 +193,7 @@ export class CampaignForm extends Component {
         console.log("ERROR", err)
         alert(err)
       } else {
+        LocalCollection.remove({})
         this.resetState()
         FlowRouter.go('campaigns', { organizationId })
       }
