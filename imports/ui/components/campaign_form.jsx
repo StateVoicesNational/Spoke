@@ -2,8 +2,11 @@ import React, { Component } from 'react'
 import TextField from 'material-ui/TextField'
 import FlatButton from 'material-ui/FlatButton'
 import { FlowRouter } from 'meteor/kadira:flow-router'
-import { insert } from '../../api/campaigns/methods'
+import { insert, update } from '../../api/campaigns/methods'
 import { ScriptTypes } from '../../api/campaigns/scripts'
+import { Assignments } from '../../api/assignments/assignments'
+import { Messages } from '../../api/messages/messages'
+import {Card, CardActions, CardHeader, CardText} from 'material-ui/Card';
 import { CampaignScriptsForm } from './campaign_scripts_form'
 import { CampaignPeopleForm } from './campaign_people_form'
 import { CampaignBasicsForm } from './campaign_basics_form'
@@ -14,18 +17,20 @@ import { grey50 } from 'material-ui/styles/colors'
 import { CampaignFormSectionHeading } from './campaign_form_section_heading'
 import { newAllowedAnswer } from '../../api/survey_questions/survey_questions'
 import {Tabs, Tab} from 'material-ui/Tabs'
-
+import RaisedButton from 'material-ui/RaisedButton'
 import {
   Step,
   Stepper,
   StepLabel,
 } from 'material-ui/Stepper';
-import RaisedButton from 'material-ui/RaisedButton';
 
 
 const LocalCollection = new Mongo.Collection(null)
 
 const styles = {
+  cardActions: {
+    padding: 16
+  },
   stepContent: {
     marginTop: 56,
     paddingBottom: 60
@@ -63,18 +68,21 @@ export class CampaignForm extends Component {
   resetState() {
     const { campaign, texters } = this.props
 
+    const assignedTexters = campaign ? Assignments.find({ campaignId: campaign._id }).fetch().map(({ userId }) => userId) : texters.map((texter) => texter._id)
     this.state = {
       stepIndex: 0,
       title: campaign ? campaign.title : '',
       description: campaign ? campaign.description : '',
       dueBy: campaign ? campaign.dueBy : null,
+      customFields: campaign ? campaign.customFields : [],
+      scripts: campaign ? campaign.scripts : [],
       contacts: [],
-      customFields: [],
-      scripts: [],
-      assignedTexters: texters.map((texter) => texter._id),
+      assignedTexters,
       questions: [],
       submitting: false
     }
+
+    console.log("assignedTexters", assignedTexters)
   }
 
   componentWillUnmount() {
@@ -85,12 +93,19 @@ export class CampaignForm extends Component {
     // workaround for https://github.com/meteor/react-packages/issues/99
     setTimeout(this.startComputation.bind(this), 0);
     this.steps = [
-      ['Basics', this.renderBasicsSection.bind(this)],
-      ['Contacts', this.renderPeopleSection.bind(this)],
-      ['Texters', this.renderAssignmentSection.bind(this)],
-      ['Scripts', this.renderScriptSection.bind(this)],
-      ['Surveys', this.renderSurveySection.bind(this)],
+      ['Basics', this.renderBasicsSection.bind(this), true],
+      ['Contacts', this.renderPeopleSection.bind(this), false],
+      ['Texters', this.renderAssignmentSection.bind(this), true],
+      ['Scripts', this.renderScriptSection.bind(this), true],
+      ['Surveys', this.renderSurveySection.bind(this), false],
     ]
+
+    const { campaign } = this.props
+    if (campaign) {
+      _.each(campaign.scripts, (script) => LocalCollection.insert(_.extend({}, script, {collectionType: 'script'})) )
+      _.each(campaign.surveys().fetch(), (survey) => LocalCollection.insert(_.extend({}, survey, {collectionType: 'question'})))
+    }
+
   }
 
   startComputation() {
@@ -147,7 +162,6 @@ export class CampaignForm extends Component {
   }
 
   onScriptChange(scriptId, data) {
-    console.log("scriptid updated sdata", scriptId, data)
     LocalCollection.update({_id: scriptId}, {$set: data})
     // this.setState({ script })
   }
@@ -156,7 +170,7 @@ export class CampaignForm extends Component {
     this.setState({ assignedTexters })
   }
 
-  handleSubmit() {
+  getCampaignModel() {
     const {
       title,
       description,
@@ -170,7 +184,7 @@ export class CampaignForm extends Component {
 
     const { organizationId } = this.props
 
-    const data = {
+    return {
       title,
       description,
       contacts,
@@ -183,22 +197,34 @@ export class CampaignForm extends Component {
       // FIXME
       surveys: _.map(questions, (question) => _.omit(question, ['collectionType', '_id'])),
     }
+  }
+
+  handleSubmit() {
+    const { campaign, organizationId } = this.props
     this.setState( { submitting: true })
+    const data = _.extend({}, this.getCampaignModel(), {campaignId: campaign._id})
 
-    console.log("SURVEYS", data.surveys)
-    insert.call(data, (err) => {
-      this.setState({ submitting: false })
+    if (campaign) {
+      update.call(data, (err) => {
+        this.setState( { submitting: false })
+        if (err) {
+          alert(err)
+        }
+      })
+    } else {
+      insert.call(data, (err) => {
+        this.setState({ submitting: false })
 
-      if (err) {
-        console.log("ERROR", err)
-        alert(err)
-      } else {
-        LocalCollection.remove({})
-        this.resetState()
-        FlowRouter.go('campaigns', { organizationId })
-      }
-    })
-
+        if (err) {
+          console.log("ERROR", err)
+          alert(err)
+        } else {
+          LocalCollection.remove({})
+          this.resetState()
+          FlowRouter.go('campaigns', { organizationId })
+        }
+      })
+    }
   }
 
   handleAddScript(script) {
@@ -219,7 +245,6 @@ export class CampaignForm extends Component {
   }
 
   handleEditSurvey(questionId, data) {
-    console.log("DATA", data, questionId)
     LocalCollection.update({
       _id: questionId
     }, {
@@ -340,30 +365,61 @@ export class CampaignForm extends Component {
       />
     )
   }
+
+  renderNewForm(stepIndex) {
+    return <div>
+      <div style={styles.stepContent} >
+        {this.stepContent(stepIndex)}
+      </div>
+      <Stepper
+        style={styles.stepper}
+        activeStep={stepIndex}
+      >
+        { this.steps.map(([stepTitle, ...rest]) => (
+          <Step>
+            <StepLabel>{stepTitle}</StepLabel>
+          </Step>
+        ))}
+      </Stepper>
+    </div>
+  }
+
+  renderExistingForm() {
+    const { campaign } = this.props
+    const hasMessage = Messages.findOne({ campaignId: campaign._id })
+    return <div style={styles.stepContent} >
+    { this.steps.map(([stepTitle, stepContent, alwaysEditable]) => (
+      <Card>
+        <CardHeader
+          title={stepTitle}
+          actAsExpander={true}
+          showExpandableButton={true}
+        />
+        <CardText expandable={true}>
+          {alwaysEditable || !hasMessage ? stepContent() : "This campaign has already begun so you can't edit this section."}
+        </CardText>
+        {alwaysEditable || !hasMessage ? (
+          <CardActions style={styles.cardActions} expandable={true}>
+            <RaisedButton
+              label="Save"
+              primary
+              onTouchTap={this.handleSubmit}
+            />
+          </CardActions>
+
+        ): ""}
+      </Card>
+    ))}
+    </div>
+  }
   render() {
     const { stepIndex, submitting } = this.state
-
+    const { campaign } = this.props
+    const form = campaign ? this.renderExistingForm() : this.renderNewForm(stepIndex)
     return submitting ? (
       <div>
-        Creating your campaign...
+        Saving your campaign...
       </div>
-    ) : (
-      <div>
-        <div style={styles.stepContent} >
-          {this.stepContent(stepIndex)}
-        </div>
-        <Stepper
-          style={styles.stepper}
-          activeStep={stepIndex}
-        >
-          { this.steps.map(([stepTitle, ...rest]) => (
-            <Step>
-              <StepLabel>{stepTitle}</StepLabel>
-            </Step>
-          ))}
-        </Stepper>
-
-      </div>
-    )
+    ) : form
   }
 }

@@ -2,18 +2,20 @@ import React from 'react'
 import { Campaigns } from '../../api/campaigns/campaigns.js'
 import { CampaignForm } from '../components/campaign_form'
 import { AppPage } from '../../ui/layouts/app_page'
-import { BackNavigation } from '../../ui/components/navigation'
+import { AdminNavigation } from '../../ui/components/navigation'
 import { createContainer } from 'meteor/react-meteor-data'
 import { Roles } from 'meteor/alanning:roles'
 
 
-export const Page = ({ organizationId, texters, campaign, loading }) => (
+const _CampaignEditPage = ({ organizationId, texters, campaign, loading }) => (
   <AppPage
     navigation={
-      <BackNavigation
+      <AdminNavigation
         organizationId={organizationId}
-        title="Create new campaign"
+        // title="Edit campaign"
+        title={campaign ? campaign.title : ''}
         backToSection="campaigns"
+
       />
     }
     content={loading ? '' : (
@@ -25,7 +27,7 @@ export const Page = ({ organizationId, texters, campaign, loading }) => (
     )}
     loading={loading}
   />
-)
+  )
 
 export const CampaignEditPage = createContainer(({ campaignId, organizationId }) => {
   const handle = Meteor.subscribe('campaign.edit', campaignId, organizationId)
@@ -35,4 +37,4 @@ export const CampaignEditPage = createContainer(({ campaignId, organizationId })
     texters: Roles.getUsersInRole('texter', organizationId).fetch(),
     loading: !handle.ready()
   }
-}, Page)
+}, _CampaignEditPage)

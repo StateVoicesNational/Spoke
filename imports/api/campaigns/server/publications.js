@@ -21,25 +21,29 @@ Meteor.publish('campaigns', function campaignsPublication(organizationId) {
 Meteor.publish('campaign.new', (organizationId) => Roles.getUsersInRole('texter', organizationId))
 
 Meteor.publishComposite('campaign.edit', (campaignId, organizationId) => {
-  return {
-    find: () => Campaigns.find({ _id: campaignId }),
-    children: [
-      {
-        // TODO: This isn't actually a child
-        find: (campaign) => Roles.getUsersInRole('texter', organizationId)
-      },
-      {
-        find: (campaign) => Assignments.find({ campaignId })
-      },
-      {
-        find: (campaign) => SurveyQuestions.find( { campaignId })
-      }
-    ]
-  }
+  return [
+    {
+      find: () => Campaigns.find({ _id: campaignId }),
+      children: [
+        {
+          find: (campaign) => Messages.findOne( { campaignId })
+        },
+        {
+          find: (campaign) => Assignments.find({ campaignId })
+        },
+        {
+          find: (campaign) => SurveyQuestions.find( { campaignId })
+        }
+      ]
+    },
+    {
+      find: () => Roles.getUsersInRole('texter', organizationId)
+    }
+  ]
 })
 
 Meteor.publish('campaign', function(campaignId) {
-  const campaign = Campaigns.findOne({ _id: campaignId })
+  const campaign = Campaigns.findOne(campaignId)
   const organizationId = campaign.organizationId
   if (!adminCheck(this.userId, organizationId)) {
     return this.ready()

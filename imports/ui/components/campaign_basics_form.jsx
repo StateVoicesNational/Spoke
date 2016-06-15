@@ -58,6 +58,7 @@ export class CampaignBasicsForm extends Component {
             floatingLabelStyle={{pointerEvents: 'none'}} // https://github.com/callemall/material-ui/issues/3908
             floatingLabelText="Due date"
             onChange={onDueByChange}
+            value={dueBy}
             locale="en-US"
             shouldDisableDate={(date) => moment(date).diff(moment()) < 0 }
           />

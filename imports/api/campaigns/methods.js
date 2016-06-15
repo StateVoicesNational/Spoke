@@ -1,92 +1,11 @@
 import { Meteor } from 'meteor/meteor';
 import { ValidatedMethod } from 'meteor/mdg:validated-method'
 import { SimpleSchema } from 'meteor/aldeed:simple-schema'
-import { insertContact } from '../campaign_contacts/methods'
-
 import { Campaigns } from './campaigns.js'
-import { SurveyQuestions } from '../survey_questions/survey_questions.js'
+import { assignContacts, saveContacts, saveCampaignSurveys } from './assignment.js'
 import { CampaignContacts } from '../campaign_contacts/campaign_contacts.js'
-import { Assignments } from '../assignments/assignments.js'
-import { convertRowToContact } from '../campaign_contacts/parse_csv'
-import { batchInsert } from 'meteor/mikowals:batch-insert'
-import { chunk, last, forEach, zip } from 'lodash'
 import { ScriptSchema } from './scripts.js'
-const divideContacts = (contactRows, texters) => {
 
-  const rowCount = contactRows.length
-  const texterCount = texters.length
-
-  const chunkSize = Math.floor(rowCount / texterCount)
-
-  const chunked = chunk(contactRows, chunkSize)
-  if (rowCount % texterCount > 0) {
-    const leftovers = chunked.pop()
-    forEach(leftovers, (leftover, index) => chunked[index].push(leftover))
-  }
-
-  return zip(texters, chunked)
-}
-
-const createAssignment = ({dueBy, campaignId, texterId, texterContacts}) => {
-  const assignmentData = {
-    campaignId,
-    dueBy,
-    userId: texterId,
-    createdAt: new Date(),
-  }
-
-  Assignments.insert(assignmentData, (assignmentError, assignmentId) => {
-    if (assignmentError) {
-      console.log(assignmentError)
-      throw new Meteor.Error(assignmentError)
-    }
-    else {
-      // TODO can still batch insert
-      const data = texterContacts.map((row) => {
-        const contact = convertRowToContact(row)
-        contact.assignmentId = assignmentId
-        contact.campaignId = campaignId
-        contact.createdAt = new Date()
-        return contact
-      })
-
-      // FIXME - need to convert to e164 here
-      // const { e164} = require('libphonenumber')
-      // e164(contact.cell, 'US', (error, result) => {
-      //   if (error) {
-      //   }
-      //   else {
-      //     contact.cell = result
-      //     CampaignContacts.insert(contact)
-      //   }
-      // })
-      // validate schema
-      console.log("batch insert?")
-      CampaignContacts.batchInsert(data, (err, res) => console.log("ERROR creating contacts", err))
-
-
-      // for (let row of texterContacts) {
-      //   // TODO: Require upload in this format.
-
-      //   const contact = convertRowToContact(row)
-      //   contact.assignmentId = assignmentId
-      //   contact.campaignId = campaignId
-
-      //   // TODO BBulk insert instead of individual!
-      //   insertContact.call(contact, (contactError) => {
-      //     if (contactError) {
-      //     }
-      //     else {
-      //     }
-      //   })
-      // }
-    }
-  })
-}
-
-
-// TODO I should actually do the campaignContact validation here so I don't have
-// a chance of failing between campaign save and contact save
 export const insert = new ValidatedMethod({
   name: 'campaigns.insert',
   validate: new SimpleSchema({
@@ -123,39 +42,54 @@ export const insert = new ValidatedMethod({
       customFields,
       dueBy,
       createdAt: new Date(),
-    };
+    }
 
     // TODO this needs to be in one transaction
-    // TODO do this only if the contacts validate!
-    Campaigns.insert(campaignData, (campaignError, campaignId) => {
-      if (campaignError) {
-        throw new Meteor.Error(campaignError)
-      }
-      else {
-        for (let survey of surveys) {
-          survey.campaignId = campaignId
-          SurveyQuestions.insert(survey)
-        }
-
-        const dividedContacts = divideContacts(contacts, assignedTexters)
-        forEach(dividedContacts, ( [texterId, texterContacts] ) => {
-          console.log("trying to create assignment", texterId)
-          createAssignment({ dueBy, campaignId, texterId, texterContacts })
-        })
-      }
-
-      console.log("now what")
-      return campaignId
-      console.log("HERE?")
-      // TODO - autoassignment alternative
-      // TODO check error!
-
-    })
+    const campaignId = Campaigns.insert(campaignData)
+    saveCampaignSurveys(campaignId, surveys)
+    saveContacts(campaignId, contacts)
+    assignContacts(campaignId, dueBy, assignedTexters)
+    return campaignId
   }
 })
 
-// TODO I should actually do the campaignContact validation here so I don't have
-// a chance of failing between campaign save and contact save
+export const update = new ValidatedMethod({
+  name: 'campaigns.update',
+  validate: new SimpleSchema({
+    campaignId: { type: String },
+    organizationId: { type: String },
+    title: { type: String },
+    description: { type: String },
+    dueBy: { type: Date },
+    assignedTexters: { type: [String]},
+    scripts: { type: [ScriptSchema] },
+    contacts: { type: [Object], blackbox: true },
+    surveys: { type: [Object], blackbox: true},
+    customFields: { type: [String]},
+  }).validator(),
+  run({
+    organizationId,
+    campaignId,
+    title,
+    description,
+    dueBy,
+    scripts,
+    customFields,
+    contacts,
+    // assignedTexters,
+    // surveys,
+  }) {
+    if (!this.userId || !Roles.userIsInRole(this.userId, 'admin', organizationId)) {
+      throw new Meteor.Error('not-authorized');
+    }
+
+    // TODO: If campaign has a message, throw not-authorized for editing contacts or surveys
+    Campaigns.update({ _id: campaignId }, { $set: { title, description, dueBy, scripts, customFields }})
+    saveContacts(campaignId, contacts)
+  }
+})
+
+
 export const exportContacts = new ValidatedMethod({
   name: 'campaign.export',
   validate: new SimpleSchema({

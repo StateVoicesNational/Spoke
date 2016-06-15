@@ -37,9 +37,6 @@ export class MessagesList extends Component {
         />
       </div>
     ) : ''
-    if (messages.length === 0) {
-      return null
-    }
 
     return (
       <List>
