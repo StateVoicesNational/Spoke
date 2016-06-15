@@ -61,7 +61,7 @@ export class CampaignForm extends Component {
     this.onDueByChange = this.onDueByChange.bind(this)
     this.handleNext = this.handleNext.bind(this)
     this.handlePrev = this.handlePrev.bind(this)
-    this.renderFormSection = this.renderFormSection.bind(this)
+    this.renderFormStepSection = this.renderFormStepSection.bind(this)
     this.resetState()
   }
 
@@ -75,10 +75,10 @@ export class CampaignForm extends Component {
       description: campaign ? campaign.description : '',
       dueBy: campaign ? campaign.dueBy : null,
       customFields: campaign ? campaign.customFields : [],
-      scripts: campaign ? campaign.scripts : [],
       contacts: [],
       assignedTexters,
-      questions: [],
+      scripts: [], // FIXME
+      questions: [], // FIXME
       submitting: false
     }
 
@@ -93,7 +93,7 @@ export class CampaignForm extends Component {
     // workaround for https://github.com/meteor/react-packages/issues/99
     setTimeout(this.startComputation.bind(this), 0);
     this.steps = [
-      ['Basics', this.renderBasicsSection.bind(this), true],
+      // ['Basics', this.renderBasicsSection.bind(this), true],
       ['Contacts', this.renderPeopleSection.bind(this), false],
       ['Texters', this.renderAssignmentSection.bind(this), true],
       ['Scripts', this.renderScriptSection.bind(this), true],
@@ -277,10 +277,10 @@ export class CampaignForm extends Component {
 
   stepContent(stepIndex) {
     const content = this.steps[stepIndex][1]()
-    return this.renderFormSection(content)
+    return this.renderFormStepSection(content)
   }
 
-  renderFormSection(content) {
+  renderFormStepSection(content) {
     const { stepIndex } = this.state
 
     return (
@@ -396,18 +396,15 @@ export class CampaignForm extends Component {
           showExpandableButton={true}
         />
         <CardText expandable={true}>
-          {alwaysEditable || !hasMessage ? stepContent() : "This campaign has already begun so you can't edit this section."}
-        </CardText>
-        {alwaysEditable || !hasMessage ? (
-          <CardActions style={styles.cardActions} expandable={true}>
-            <RaisedButton
-              label="Save"
-              primary
-              onTouchTap={this.handleSubmit}
+          {alwaysEditable || !hasMessage ? (
+            <CampaignFormSection
+            showPreviousStep={false}
+              content={stepContent()}
+              onNext={this.handleSubmit}
+              nextStepLabel='Save'
             />
-          </CardActions>
-
-        ): ""}
+          ) : "This campaign has already begun so you can't edit this section."}
+        </CardText>
       </Card>
     ))}
     </div>

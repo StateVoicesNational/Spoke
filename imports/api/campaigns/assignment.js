@@ -5,7 +5,7 @@ import { chunk, forEach, zip } from 'lodash'
 import { batchInsert } from 'meteor/mikowals:batch-insert'
 import { CampaignContacts } from '../campaign_contacts/campaign_contacts.js'
 
-export const divideContacts = (contactIds, texters) => {
+const divideContacts = (contactIds, texters) => {
 
   const rowCount = contactIds.length
   const texterCount = texters.length
@@ -22,15 +22,9 @@ export const divideContacts = (contactIds, texters) => {
   return zip(texters.slice(0, chunked.length), chunked)
 }
 
-export const createAssignment = ({dueBy, campaignId, texterId, texterContactIds }) => {
-  const assignmentData = {
-    campaignId,
-    dueBy,
-    userId: texterId,
-    createdAt: new Date(),
-  }
-
-  const assignmentId = Assignments.insert(assignmentData)
+const updateAssignments = ({dueBy, campaignId, texterId, texterContactIds }) => {
+  const assignment = Assignments.findOne( { campaignId, userId: texterId })
+  const assignmentId = assignment ? assignment._id : Assignments.insert({ campaignId, dueBy, createdAt: new Date(), userId: texterId})
   CampaignContacts.update({ _id: { $in: texterContactIds } }, { $set: { assignmentId } }, { multi: true })
 }
 
@@ -41,10 +35,10 @@ export const saveCampaignSurveys = (campaignId, surveys) => {
   }
 }
 
-export const saveContacts = (campaignId, contacts) => {
+export const saveContacts = (campaignId, contactRows) => {
   CampaignContacts.remove({ campaignId })
 
-  const data = contacts.map((row) => {
+  const data = contactRows.map((row) => {
     const contact = convertRowToContact(row)
     contact.campaignId = campaignId
     contact.createdAt = new Date()
@@ -59,8 +53,7 @@ export const assignContacts = (campaignId, dueBy, assignedTexters) => {
   const contactIds = _.map(contacts, ({ _id }) => _id )
 
   const dividedContacts = divideContacts(contactIds, assignedTexters)
-  console.log("dividerContacts", dividedContacts)
   forEach(dividedContacts, ( [texterId, texterContactIds] ) => {
-    createAssignment({ dueBy, campaignId, texterId, texterContactIds })
+    updateAssignments({ dueBy, campaignId, texterId, texterContactIds })
   })
 }

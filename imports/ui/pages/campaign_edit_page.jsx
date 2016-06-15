@@ -31,6 +31,7 @@ const _CampaignEditPage = ({ organizationId, texters, campaign, loading }) => (
 
 export const CampaignEditPage = createContainer(({ campaignId, organizationId }) => {
   const handle = Meteor.subscribe('campaign.edit', campaignId, organizationId)
+  // OptOuts.find( { organizationId }).fetch()
   return {
     organizationId,
     campaign: Campaigns.findOne({ _id: campaignId }),

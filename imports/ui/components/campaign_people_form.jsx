@@ -101,12 +101,13 @@ export class CampaignPeopleForm extends Component {
 
   renderValidationStats() {
     const { customFields, contacts } = this.props
-    const { dupeCount, missingCellCount, invalidCellCount } = this.state.validationStats
+    const { dupeCount, missingCellCount, invalidCellCount, optOutCount } = this.state.validationStats
 
     let stats = [
       [dupeCount, 'duplicates'],
       [missingCellCount, 'rows with missing numbers'],
-      [invalidCellCount, 'rows with invalid numbers']
+      [invalidCellCount, 'rows with invalid numbers'],
+      [optOutCount, 'opt-outs']
     ]
     stats = stats.filter(([count, text]) => count > 0).map(([count, text]) => `${count} ${text} removed`)
 

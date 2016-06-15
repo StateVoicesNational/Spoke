@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { Campaigns } from '../campaigns.js'
 import { Messages } from '../../messages/messages.js'
+import { OptOuts } from '../../opt_outs/opt_outs'
 import { CampaignContacts } from '../../campaign_contacts/campaign_contacts.js'
 import { Assignments } from '../../assignments/assignments.js'
 import { SurveyQuestions } from '../../survey_questions/survey_questions.js'
@@ -18,7 +19,11 @@ Meteor.publish('campaigns', function campaignsPublication(organizationId) {
   return Campaigns.find({ organizationId })
 })
 
-Meteor.publish('campaign.new', (organizationId) => Roles.getUsersInRole('texter', organizationId))
+
+Meteor.publish('campaign.new', (organizationId) => [
+  Roles.getUsersInRole('texter', organizationId),
+  OptOuts.find({ organizationId }, { fields: {cell: 1}})
+])
 
 Meteor.publishComposite('campaign.edit', (campaignId, organizationId) => {
   return [

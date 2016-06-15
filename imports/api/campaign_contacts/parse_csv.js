@@ -1,5 +1,42 @@
 import { CampaignContacts } from './campaign_contacts.js'
+import { OptOuts } from '../opt_outs/opt_outs.js'
 import { uniqBy } from 'lodash'
+import { getFormattedPhoneNumber } from '../messages/methods'
+
+const getValidatedData = (data) => {
+  let validatedData
+  let result
+  // For some reason destructuring is not working here
+  result = _.partition(data, (row) => !!row.cell)
+  validatedData = result[0]
+  const missingCellRows = result[1]
+
+  validatedData = _.map(validatedData, (row) => _.extend(row, {
+    cell: getFormattedPhoneNumber(row.cell),
+    unformattedCell: row.cell }))
+  result = _.partition(validatedData, (row) => !!row.cell)
+  validatedData = result[0]
+  const invalidCellRows = result[1]
+
+  const count = validatedData.length
+  validatedData = uniqBy(validatedData, (row) => row.cell )
+  const dupeCount = (count - validatedData.length)
+
+  // TODO: organizationID
+  result = _.partition(validatedData, (row) => !OptOuts.findOne({ cell: row.cell }))
+  validatedData = result[0]
+  const optOutRows = result[1]
+
+  return {
+    validatedData,
+    validationStats: {
+      dupeCount,
+      optOutCount: optOutRows.length,
+      invalidCellCount: invalidCellRows.length,
+      missingCellCount: missingCellRows.length
+    },
+  }
+}
 
 export const parseCSV  = (file, callback) => {
   Papa.parse(file, {
@@ -24,46 +61,10 @@ export const parseCSV  = (file, callback) => {
         callback({ error })
       }
       else {
-        let validatedData = []
-        // DEDUPE
-        const validationStats = {}
-        const count = data.length
-
-        const badCells = []
-
-        const { NumberParseException, PhoneNumberUtil, PhoneNumberFormat } = require('google-libphonenumber')
-
-        const phoneUtil = PhoneNumberUtil.getInstance()
-
-        _.each(data, (contact) => {
-          try {
-            const inputNumber = phoneUtil.parse(contact.cell, "US")
-            const isValid = phoneUtil.isValidNumber(inputNumber)
-            if (isValid) {
-              const formattedCell = phoneUtil.format(inputNumber, PhoneNumberFormat.E164)
-              validatedData.push(_.extend(contact, { cell: formattedCell, unformattedCell: contact.cell }))
-            }
-            else {
-              console.log("not valid", contact.cell)
-              badCells.push(contact)
-            }
-          } catch (e) {
-            console.log(e)
-            badCells.push(contact)
-          }
-        })
-
-        validationStats.invalidCellCount = badCells.length
-        validatedData = uniqBy(validatedData, (row) => row.cell )
-
-        validationStats.dupeCount = count - validatedData.length
-
-        validatedData = _.filter(validatedData, (row) => !!row.cell)
-        validationStats.missingCellCount = count - validationStats.dupeCount - validatedData.length
+        const { validationStats, validatedData } = getValidatedData(data)
 
         const customFields = fields.filter((field) => CampaignContacts.requiredUploadFields.indexOf(field) === -1)
 
-        console.log("validation stats!", validationStats)
         callback({
           customFields,
           validationStats,

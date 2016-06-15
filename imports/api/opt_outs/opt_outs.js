@@ -12,11 +12,8 @@ OptOuts.deny({
 OptOuts.schema = new SimpleSchema({
   cell: { type: String },
   createdAt: { type: String },
-  assignmentId: { type: String }
+  assignmentId: { type: String },
+  organizationId: { type: String }
 })
 
-OptOuts.helpers({
-    contact() {
-        return CampaignContacts.findOne({_id: this.campaignContactId})
-    }
-})
+OptOuts.attachSchema(OptOuts.schema)

@@ -6,7 +6,7 @@ import { createContainer } from 'meteor/react-meteor-data'
 import  TextField from 'material-ui/TextField'
 import { FlowRouter } from 'meteor/kadira:flow-router'
 import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
-
+import { OptOuts } from '../../api/opt_outs/opt_outs'
 class _CampaignNewPage extends React.Component {
   render () {
     const { organizationId, texters, loading } = this.props
@@ -55,7 +55,7 @@ class _CampaignNewPage extends React.Component {
 export const CampaignNewPage = createContainer(({ organizationId }) => {
  const handle = Meteor.subscribe('campaign.new', organizationId)
   const texters = Roles.getUsersInRole('texter', organizationId).fetch()
-  console.log(texters)
+  // OptOuts.find({organizationId}).fetch()
   return {
     organizationId,
     texters,

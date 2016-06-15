@@ -76,7 +76,7 @@ export const update = new ValidatedMethod({
     scripts,
     customFields,
     contacts,
-    // assignedTexters,
+    assignedTexters,
     // surveys,
   }) {
     if (!this.userId || !Roles.userIsInRole(this.userId, 'admin', organizationId)) {
@@ -85,7 +85,12 @@ export const update = new ValidatedMethod({
 
     // TODO: If campaign has a message, throw not-authorized for editing contacts or surveys
     Campaigns.update({ _id: campaignId }, { $set: { title, description, dueBy, scripts, customFields }})
-    saveContacts(campaignId, contacts)
+    if (contacts.length > 0) {
+      // TODO: Validate the presence of new contats to upload
+      saveContacts(campaignId, contacts)
+    }
+    assignContacts(campaignId, dueBy, assignedTexters)
+    return campaignId
   }
 })
 

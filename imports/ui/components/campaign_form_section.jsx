@@ -32,7 +32,7 @@ export class CampaignFormSection extends Component {
   }
 
   render() {
-    const { onNext, onPrevious, content, previousStepEnabled, nextStepLabel} = this.props
+    const { onNext, onPrevious, showPreviousStep, content, previousStepEnabled, nextStepLabel} = this.props
     const { nextStepEnabled } = this.state
     return (
       <div>
@@ -41,12 +41,15 @@ export class CampaignFormSection extends Component {
           onInvalid: this.disableNext.bind(this)
         }) }
         <div style={styles.navigation}>
-          <FlatButton
-            style={styles.backButton}
-            label="Back"
-            disabled={!previousStepEnabled}
-            onTouchTap={onPrevious}
-          />
+          { showPreviousStep ? (
+            <FlatButton
+              style={styles.backButton}
+              label="Back"
+              disabled={!previousStepEnabled}
+              onTouchTap={onPrevious}
+            />
+          ) : ''
+          }
           <RaisedButton
             primary
             label={nextStepLabel}
