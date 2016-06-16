@@ -10,11 +10,14 @@ const styles = {
 }
 export class CampaignSurveyForm extends Component {
   render() {
-    const { questions, onAddSurveyAnswer, onDeleteQuestion, onEditQuestion, onAddQuestion, customFields, sampleContact} = this.props
+    const { questions, onValid, onInvalid, onAddSurveyAnswer, onDeleteQuestion, onEditQuestion, onAddQuestion, customFields, sampleContact} = this.props
     console.log("questions here", questions)
 
     return (
-      <div>
+      <Formsy.Form
+        onValid={onValid}
+        onInvalid={onInvalid}
+      >
         <CampaignFormSectionHeading
           title='What do you want to learn?'
           subtitle='You can add questions and your texters can indicate responses from your contacts. For example, you might want to collect RSVPs to an event or find out whether to follow up about a different volunteer activity.'
@@ -40,7 +43,7 @@ export class CampaignSurveyForm extends Component {
             />
           ) : ''
         }
-      </div>
+      </Formsy.Form>
     )
   }
 }

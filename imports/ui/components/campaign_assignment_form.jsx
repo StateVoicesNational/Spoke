@@ -2,12 +2,21 @@ import React, { Component } from 'react'
 import AutoComplete from 'material-ui/AutoComplete'
 import { MenuItem } from 'material-ui/Menu'
 import { Chip } from './chip'
-import {RadioButton, RadioButtonGroup} from 'material-ui/RadioButton';
+import { RadioButton, RadioButtonGroup } from 'material-ui/RadioButton'
 import { CampaignFormSectionHeading } from './campaign_form_section_heading'
 import Divider from 'material-ui/Divider'
 import ContentClear from 'material-ui/svg-icons/content/clear'
 import Formsy from 'formsy-react'
 import { FormsyText, FormsyDate } from 'formsy-material-ui/lib'
+import Dialog from 'material-ui/Dialog'
+import FlatButton from 'material-ui/FlatButton'
+import RaisedButton from 'material-ui/RaisedButton'
+
+const handleError = (error) => {
+  if (error) {
+    console.log(error)
+  }
+}
 
 const styles = {
   radioButtonGroup: {
@@ -15,7 +24,7 @@ const styles = {
   },
   autocomplete: {
     marginBottom: 24
-  },
+  }
 }
 export class CampaignAssignmentForm extends Component {
   constructor(props) {
@@ -25,10 +34,6 @@ export class CampaignAssignmentForm extends Component {
     this.onChange = this.onChange.bind(this)
   }
 
-  removeTexter(texterId) {
-    const { assignedTexters, onTexterAssignment } = this.props
-    onTexterAssignment(_.without(assignedTexters, texterId))
-  }
   handleNewRequest(value) {
     const { assignedTexters } = this.props
     // If you're searching but get no match, value is a string
@@ -37,17 +42,21 @@ export class CampaignAssignmentForm extends Component {
       const texterId = value.value.key
       // TODO react addon for modifying immutable state
       const newAssignedTexters = assignedTexters.concat([texterId])
-      const { onTexterAssignment } = this.props
-      onTexterAssignment(newAssignedTexters)
+      const { onChange } = this.props
+      onChange({ assignedTexters: newAssignedTexters })
     }
-    console.log("clear search Text")
+    console.log('clear search Text')
   }
 
   onChange(event, value) {
-    const { texters, onTexterAssignment } = this.props
+    const { texters, onChange } = this.props
     const assignedTexters = (value === 'assignAll') ? texters.map((texter) => texter._id) : []
-    onTexterAssignment(assignedTexters)
+    onChange({ assignedTexters })
+  }
 
+  removeTexter(texterId) {
+    const { assignedTexters, onChange } = this.props
+    onChange({ assignedTexters: _.without(assignedTexters, texterId) })
   }
 
   dataSourceItem(name, key, image) {
@@ -89,7 +98,7 @@ export class CampaignAssignmentForm extends Component {
         ref="autocomplete"
         style={styles.autocomplete}
         autoFocus
-        searchText=''
+        searchText=""
         filter={filter}
         hintText="Search for texters to assign"
         dataSource={dataSource}
@@ -103,7 +112,7 @@ export class CampaignAssignmentForm extends Component {
         onInvalid={onInvalid}
       >
         <CampaignFormSectionHeading
-          title='Who should send the texts?'
+          title="Who should send the texts?"
         />
         <RadioButtonGroup
           style={styles.radioButtonGroup}
@@ -124,13 +133,13 @@ export class CampaignAssignmentForm extends Component {
          <div>
           <FormsyText
             name="assignedTexters"
-            style={{opacity: 0, width: 0, height: 0}}
+            style={{ opacity: 0, width: 0, height: 0 }}
             value={assignedTexters.length > 0 ? 'formsy-valid' : ''}
             required
           />
            { assignedTexters.map((texterId) => {
-              const user = Meteor.users.findOne({_id: texterId})
-              return (
+             const user = Meteor.users.findOne({ _id: texterId })
+             return (
                   <Chip
                     text={user.firstName}
                     iconRightClass={ContentClear}

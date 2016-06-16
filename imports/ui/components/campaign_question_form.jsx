@@ -146,7 +146,7 @@ export class CampaignQuestionForm extends Component {
   }
 
   renderAnswer(otherQuestions, question, answer, autoFocus, index) {
-    console.log("autofocus on answer is", autoFocus)
+    console.log("otherQuestions", otherQuestions, question, answer)
     // const showFollowUp  = otherQuestions.length > 0
     const showFollowUp = false
     const followUpQuestions = showFollowUp ? (
@@ -335,19 +335,17 @@ export class CampaignQuestionForm extends Component {
       <Card style={isFollowUp ? styles.followUp : styles.question}>
         <CardText>
           <div>
-            <Formsy.Form ref="form">
-                <FormsyText
-                  name="question"
-                  autoFocus={questionIsFocused}
-                  onChange={this.handleQuestionChange.bind(this)}
-                  required
-                  fullWidth
-                  ref="questionInput"
-                  hintText="e.g. Can the contact attend the event?"
-                  value={ question.text }
-                />
-                { this.renderAnswers(questions, question, questionIsFocused) }
-            </Formsy.Form>
+            <FormsyText
+              name="question"
+              autoFocus={questionIsFocused}
+              onChange={this.handleQuestionChange.bind(this)}
+              required
+              fullWidth
+              ref="questionInput"
+              hintText="e.g. Can the contact attend the event?"
+              value={ question.text }
+            />
+            { this.renderAnswers(questions, question, questionIsFocused) }
             { this.renderDialog()}
           </div>
         </CardText>

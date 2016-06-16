@@ -30,6 +30,7 @@ const updateAssignments = ({dueBy, campaignId, texterId, texterContactIds }) => 
 
 export const saveCampaignSurveys = (campaignId, surveys) => {
   for (let survey of surveys) {
+    console.log("surveys", surveys)
     survey.campaignId = campaignId
     SurveyQuestions.insert(survey)
   }

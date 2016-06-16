@@ -1,12 +1,20 @@
 import React, { Component } from 'react'
-import TextField from 'material-ui/TextField'
 import FlatButton from 'material-ui/FlatButton'
 import { FlowRouter } from 'meteor/kadira:flow-router'
-import { insert, update } from '../../api/campaigns/methods'
+import {
+  insert,
+  updateBasics,
+  updateContacts,
+  updateTexters,
+  updateSurveys,
+  updateScripts
+} from '../../api/campaigns/methods'
 import { ScriptTypes } from '../../api/campaigns/scripts'
 import { Assignments } from '../../api/assignments/assignments'
 import { Messages } from '../../api/messages/messages'
-import {Card, CardActions, CardHeader, CardText} from 'material-ui/Card';
+import { Card, CardActions, CardHeader, CardText } from 'material-ui/Card'
+import { CampaignNewForm } from './campaign_new_form'
+import { CampaignEditForm } from './campaign_edit_form'
 import { CampaignScriptsForm } from './campaign_scripts_form'
 import { CampaignPeopleForm } from './campaign_people_form'
 import { CampaignBasicsForm } from './campaign_basics_form'
@@ -16,33 +24,31 @@ import { CampaignFormSection } from './campaign_form_section'
 import { grey50 } from 'material-ui/styles/colors'
 import { CampaignFormSectionHeading } from './campaign_form_section_heading'
 import { newAllowedAnswer } from '../../api/survey_questions/survey_questions'
-import {Tabs, Tab} from 'material-ui/Tabs'
+import { Tabs, Tab } from 'material-ui/Tabs'
 import RaisedButton from 'material-ui/RaisedButton'
+import { Random } from 'meteor/random'
+
 import {
   Step,
   Stepper,
-  StepLabel,
-} from 'material-ui/Stepper';
+  StepLabel
+} from 'material-ui/Stepper'
 
 
-const LocalCollection = new Mongo.Collection(null)
+export const SectionTitles = {
+  basics: 'Basics',
+  contacts: 'Contacts',
+  texters: 'Texters',
+  scripts: 'Scripts',
+  surveys: 'Surveys'
+}
+
+const ScriptCollection = new Mongo.Collection(null)
+const QuestionCollection = new Mongo.Collection(null)
 
 const styles = {
   cardActions: {
     padding: 16
-  },
-  stepContent: {
-    marginTop: 56,
-    paddingBottom: 60
-  },
-  stepper: {
-    backgroundColor: grey50,
-    padding: '25 10',
-    bottom: 0,
-    right: 0,
-    left: 0,
-    height: 56,
-    position: 'fixed'
   }
 }
 
@@ -50,18 +56,17 @@ export class CampaignForm extends Component {
   constructor(props) {
     super(props)
 
-    this.handleSubmit = this.handleSubmit.bind(this)
-    this.onScriptChange = this.onScriptChange.bind(this)
-    this.onScriptDelete = this.onScriptDelete.bind(this)
-    this.handleAddScript = this.handleAddScript.bind(this)
-    this.onContactsUpload = this.onContactsUpload.bind(this)
-    this.onTexterAssignment = this.onTexterAssignment.bind(this)
-    this.onTitleChange = this.onTitleChange.bind(this)
-    this.onDescriptionChange = this.onDescriptionChange.bind(this)
-    this.onDueByChange = this.onDueByChange.bind(this)
-    this.handleNext = this.handleNext.bind(this)
-    this.handlePrev = this.handlePrev.bind(this)
-    this.renderFormStepSection = this.renderFormStepSection.bind(this)
+    this.handleCreateNewCampaign = this.handleCreateNewCampaign.bind(this)
+    this.handleSubmitBasics = this.handleSubmitBasics.bind(this)
+    this.handleSubmitContacts = this.handleSubmitContacts.bind(this)
+    this.handleSubmitTexters = this.handleSubmitTexters.bind(this)
+    this.handleSubmitScripts = this.handleSubmitScripts.bind(this)
+    this.handleSubmitSurveys = this.handleSubmitSurveys.bind()
+
+    this.handleScriptChange = this.handleScriptChange.bind(this)
+    this.handleScriptDelete = this.handleScriptDelete.bind(this)
+    this.handleScriptAdd = this.handleScriptAdd.bind(this)
+    this.handleChange = this.handleChange.bind(this)
     this.resetState()
   }
 
@@ -82,28 +87,42 @@ export class CampaignForm extends Component {
       submitting: false
     }
 
-    console.log("assignedTexters", assignedTexters)
+    this.sections = [
+      {
+        title: SectionTitles.basics,
+        content: this.renderBasicsSection.bind(this)
+      },
+      {
+        title: SectionTitles.contacts,
+        content: this.renderPeopleSection.bind(this)
+      },
+      {
+        title: SectionTitles.texters,
+        content: this.renderAssignmentSection.bind(this)
+      },
+      {
+        title: SectionTitles.scripts,
+        content: this.renderScriptSection.bind(this)
+      },
+      {
+        title: SectionTitles.surveys,
+        content: this.renderSurveySection.bind(this)
+      }
+    ]
   }
 
   componentWillUnmount() {
-    this._computation.stop();
+    this._computation.stop()
   }
 
   componentWillMount() {
     // workaround for https://github.com/meteor/react-packages/issues/99
-    setTimeout(this.startComputation.bind(this), 0);
-    this.steps = [
-      // ['Basics', this.renderBasicsSection.bind(this), true],
-      ['Contacts', this.renderPeopleSection.bind(this), false],
-      ['Texters', this.renderAssignmentSection.bind(this), true],
-      ['Scripts', this.renderScriptSection.bind(this), true],
-      ['Surveys', this.renderSurveySection.bind(this), false],
-    ]
+    setTimeout(this.startComputation.bind(this), 0)
 
     const { campaign } = this.props
     if (campaign) {
-      _.each(campaign.scripts, (script) => LocalCollection.insert(_.extend({}, script, {collectionType: 'script'})) )
-      _.each(campaign.surveys().fetch(), (survey) => LocalCollection.insert(_.extend({}, survey, {collectionType: 'question'})))
+      _.each(campaign.scripts, (script) => ScriptCollection.insert(script))
+      _.each(campaign.surveys().fetch(), (survey) => QuestionCollection.insert(survey))
     }
 
   }
@@ -111,63 +130,59 @@ export class CampaignForm extends Component {
   startComputation() {
     this._computation = Tracker.autorun(() => {
       this.setState({
-        scripts: LocalCollection.find({ collectionType: 'script' }).fetch(),
-        questions: LocalCollection.find({ collectionType: 'question' }).fetch()
+        scripts: ScriptCollection.find().fetch(),
+        questions: QuestionCollection.find({}).fetch()
       })
     })
   }
 
-  //NAVIGATION
-  lastStepIndex() {
-    return this.steps.length - 1
+  // UPDATE CAMPAIGN
+  handleChange(newState) {
+    console.log(newState)
+    this.setState(newState)
+    console.log(this.state)
   }
 
-  handleNext() {
-    const {stepIndex} = this.state
-    if (stepIndex === this.lastStepIndex()) {
-      this.handleSubmit()
+  //    SCRIPTS
+  handleScriptAdd(script) {
+    ScriptCollection.insert(script)
+  }
+
+  handleScriptChange(scriptId, data) {
+    ScriptCollection.update(scriptId, { $set: data })
+  }
+
+  handleScriptDelete(scriptId) {
+    ScriptCollection.remove(scriptId)
+  }
+
+  // QUESTIONS
+  handleDeleteQuestion(questionId) {
+    QuestionCollection.update({ 'allowedAnswers.surveyQuestionId': questionId }, { $set: { 'allowedAnswers.$.surveyQuestionId': null } }, { multi: true })
+    QuestionCollection.remove(questionId)
+  }
+
+  handleEditSurvey(questionId, data) {
+    QuestionCollection.update(questionId, { $set: data })
+  }
+
+  handleAddSurveyAnswer(questionId) {
+    const question = QuestionCollection.findOne({ _id: questionId })
+
+    QuestionCollection.update(questionId, {
+      $set: {
+        allowedAnswers: question.allowedAnswers.concat([newAllowedAnswer('Answer')])
+      }
+    })
+  }
+
+  handleAddSurvey() {
+    const question = {
+      text: 'Question',
+      allowedAnswers: [newAllowedAnswer('Option 1')],
+      isTopLevel: true
     }
-    else {
-      this.setState({
-        stepIndex: stepIndex + 1,
-      });
-    }
-  };
-
-  handlePrev() {
-    console.log("handle previous?")
-    const {stepIndex} = this.state;
-    if (stepIndex > 0) {
-      this.setState({stepIndex: stepIndex - 1});
-    }
-  }
-  // END NAVIGATION
-
-  onTitleChange(event) {
-    this.setState({title: event.target.value})
-  }
-
-  onDueByChange(event, date) {
-    this.setState({dueBy: date})
-  }
-
-  onDescriptionChange(event) {
-    this.setState({description: event.target.value})
-  }
-
-  onScriptDelete(scriptId) {
-    console.log("ON SCRIPT DELETE?", scriptId)
-    LocalCollection.remove({_id: scriptId})
-    console.log(LocalCollection.find().fetch())
-  }
-
-  onScriptChange(scriptId, data) {
-    LocalCollection.update({_id: scriptId}, {$set: data})
-    // this.setState({ script })
-  }
-
-  onTexterAssignment(assignedTexters) {
-    this.setState({ assignedTexters })
+    QuestionCollection.insert(question)
   }
 
   getCampaignModel() {
@@ -193,105 +208,96 @@ export class CampaignForm extends Component {
       customFields,
       dueBy,
       // FIXME This omit is really awkward. Decide if I should be using subdocument _ids instead.
-      scripts: _.map(scripts, (script) => _.omit(script, ['collectionType', '_id'])),
+      scripts: _.map(scripts, (script) => _.omit(script, ['_id'])),
       // FIXME
-      surveys: _.map(questions, (question) => _.omit(question, ['collectionType', '_id'])),
+      surveys: questions
     }
   }
 
-  handleSubmit() {
+  // SUBMIT TO SERVER
+  handleSubmitBasics() {
+    const { title, description, dueBy } = this.state
+    console.log('title, description, basics', title)
+
     const { campaign, organizationId } = this.props
-    this.setState( { submitting: true })
-    const data = _.extend({}, this.getCampaignModel(), {campaignId: campaign._id})
-
-    if (campaign) {
-      update.call(data, (err) => {
-        this.setState( { submitting: false })
-        if (err) {
-          alert(err)
-        }
-      })
-    } else {
-      insert.call(data, (err) => {
-        this.setState({ submitting: false })
-
-        if (err) {
-          console.log("ERROR", err)
-          alert(err)
-        } else {
-          LocalCollection.remove({})
-          this.resetState()
-          FlowRouter.go('campaigns', { organizationId })
-        }
-      })
+    const data = {
+      title,
+      description,
+      dueBy,
+      organizationId,
+      campaignId: campaign._id
     }
+
+    updateBasics.call(data, (err) => console.log('error', err))
   }
 
-  handleAddScript(script) {
-    console.log("trying to insert script", script)
-    LocalCollection.insert(_.extend(script, { collectionType: 'script'}))
+  handleSubmitScripts() {
+    const { scripts } = this.state
+    const { campaign, organizationId } = this.props
+    const data = {
+      scripts,
+      organizationId,
+      campaignId: campaign._id
+    }
+    updateScripts.call(data, (err) => alert(err))
   }
 
-  onContactsUpload({contacts, customFields }) {
-    console.log("setting state now!", )
-    this.setState({
+  handleSubmitTexters() {
+    const { assignedTexters } = this.state
+    const { campaign, organizationId } = this.props
+    const data = {
+      assignedTexters,
+      organizationId,
+      campaignId: campaign._id
+    }
+    updateTexters.call(data, (err) => alert(err))
+
+    console.log('campaign assigned texter submit')
+  }
+
+  handleSubmitSurveys() {
+    const { surveys } = this.state
+    const { campaign, organizationId } = this.props
+    const data = {
+      surveys,
+      organizationId,
+      campaignId: campaign._id
+    }
+    updateSurveys.call(data, (err) => alert(err))
+
+    console.log('campaign survey submit')
+  }
+
+  handleSubmitContacts() {
+    const { contacts } = this.state
+    const { campaign, organizationId } = this.props
+    const data = {
       contacts,
-      customFields,
-    })
+      organizationId,
+      campaignId: campaign._id
+    }
+    updateContacts.call(data, (err) => alert(err))
+
+    console.log('campaign contact submit')
   }
 
-  handleDeleteQuestion(questionId) {
-    LocalCollection.remove({_id: questionId})
-  }
+  handleCreateNewCampaign() {
+    const { campaign, organizationId } = this.props
+    this.setState({ submitting: true })
 
-  handleEditSurvey(questionId, data) {
-    LocalCollection.update({
-      _id: questionId
-    }, {
-      $set: data
-    })
-  }
+    const data = this.getCampaignModel()
 
-  handleAddSurveyAnswer(questionId) {
-    const question = LocalCollection.findOne({_id: questionId})
+    insert.call(data, (err) => {
+      this.setState({ submitting: false })
 
-    LocalCollection.update({
-      _id: questionId
-    }, {
-      $set: {
-        allowedAnswers: question.allowedAnswers.concat([newAllowedAnswer('Answer')])
+      if (err) {
+        alert(err)
+      } else {
+        ScriptCollection.remove({})
+        this.resetState()
+        FlowRouter.go('campaigns', { organizationId })
       }
     })
-  }
-
-  handleAddSurvey() {
-    const question = {
-      text: 'Question',
-      allowedAnswers: [newAllowedAnswer('Option 1')],
-      isTopLevel: true,
-      collectionType: 'question'
-    }
-
-    LocalCollection.insert(question)
-  }
-
-  stepContent(stepIndex) {
-    const content = this.steps[stepIndex][1]()
-    return this.renderFormStepSection(content)
-  }
-
-  renderFormStepSection(content) {
-    const { stepIndex } = this.state
-
-    return (
-      <CampaignFormSection
-        previousStepEnabled={(stepIndex !== 0)}
-        content={content}
-        onPrevious={this.handlePrev}
-        onNext={this.handleNext}
-        nextStepLabel={stepIndex === this.lastStepIndex() ? 'Finish' : 'Next'}
-      />
-    )
   }
 
   renderBasicsSection() {
@@ -301,9 +307,7 @@ export class CampaignForm extends Component {
         title={title}
         description={description}
         dueBy={dueBy}
-        onDescriptionChange={this.onDescriptionChange}
-        onTitleChange={this.onTitleChange}
-        onDueByChange={this.onDueByChange}
+        onChange={this.handleChange}
       />
     )
   }
@@ -315,7 +319,7 @@ export class CampaignForm extends Component {
       <CampaignPeopleForm
         contacts={contacts}
         customFields={customFields}
-        onContactsUpload={this.onContactsUpload}
+        onChange={this.handleChange}
       />
     )
   }
@@ -328,13 +332,13 @@ export class CampaignForm extends Component {
       <CampaignAssignmentForm
         texters={texters}
         assignedTexters={assignedTexters}
-        onTexterAssignment={this.onTexterAssignment}
+        onChange={this.handleChange}
       />
     )
   }
 
   renderScriptSection() {
-    const { contacts, scripts, customFields} = this.state
+    const { contacts, scripts, customFields } = this.state
     const faqScripts = scripts.filter((script) => script.type === ScriptTypes.FAQ)
     const defaultScript = scripts.find((script) => script.type === ScriptTypes.INITIAL)
 
@@ -342,9 +346,9 @@ export class CampaignForm extends Component {
       <CampaignScriptsForm
         script={defaultScript}
         faqScripts={faqScripts}
-        onScriptChange={this.onScriptChange}
-        onScriptDelete={this.onScriptDelete}
-        handleAddScript={this.handleAddScript}
+        onScriptChange={this.handleScriptChange}
+        onScriptDelete={this.handleScriptDelete}
+        onAddScript={this.handleScriptAdd}
         customFields={customFields}
         sampleContact={contacts[0]}
       />
@@ -366,57 +370,28 @@ export class CampaignForm extends Component {
     )
   }
 
-  renderNewForm(stepIndex) {
-    return <div>
-      <div style={styles.stepContent} >
-        {this.stepContent(stepIndex)}
-      </div>
-      <Stepper
-        style={styles.stepper}
-        activeStep={stepIndex}
-      >
-        { this.steps.map(([stepTitle, ...rest]) => (
-          <Step>
-            <StepLabel>{stepTitle}</StepLabel>
-          </Step>
-        ))}
-      </Stepper>
-    </div>
-  }
-
-  renderExistingForm() {
-    const { campaign } = this.props
-    const hasMessage = Messages.findOne({ campaignId: campaign._id })
-    return <div style={styles.stepContent} >
-    { this.steps.map(([stepTitle, stepContent, alwaysEditable]) => (
-      <Card>
-        <CardHeader
-          title={stepTitle}
-          actAsExpander={true}
-          showExpandableButton={true}
-        />
-        <CardText expandable={true}>
-          {alwaysEditable || !hasMessage ? (
-            <CampaignFormSection
-            showPreviousStep={false}
-              content={stepContent()}
-              onNext={this.handleSubmit}
-              nextStepLabel='Save'
-            />
-          ) : "This campaign has already begun so you can't edit this section."}
-        </CardText>
-      </Card>
-    ))}
-    </div>
-  }
   render() {
-    const { stepIndex, submitting } = this.state
     const { campaign } = this.props
-    const form = campaign ? this.renderExistingForm() : this.renderNewForm(stepIndex)
+    const { submitting } = this.state
     return submitting ? (
       <div>
         Saving your campaign...
       </div>
-    ) : form
+    ) : (campaign ?
+      <CampaignEditForm
+        sections={this.sections}
+        campaign={campaign}
+        onSubmitContacts={this.handleSubmitContacts}
+        onSubmitSurveys={this.handleSubmitSurveys}
+        onSubmitScripts={this.handleSubmitScripts}
+        onSubmitTexters={this.handleSubmitTexters}
+        onSubmitBasics={this.handleSubmitBasics}
+
+      /> :
+      <CampaignNewForm
+        onSubmit={this.handleCreateNewCampaign}
+        steps={this.sections}
+      />
+    )
   }
 }

@@ -18,9 +18,7 @@ export class CampaignBasicsForm extends Component {
       dueBy,
       onValid,
       onInvalid,
-      onTitleChange,
-      onDescriptionChange,
-      onDueByChange
+      onChange
     } = this.props
 
     return (
@@ -37,27 +35,27 @@ export class CampaignBasicsForm extends Component {
             fullWidth
             autoFocus
             required
-            onChange={onTitleChange}
-            name='title'
+            onChange={(event) => onChange({ title: event.target.value })}
+            name="title"
             value={title}
             hintText="e.g. Election Day 2016"
             floatingLabelText="Name"
           />
           <FormsyText
-            name='description'
+            name="description"
             fullWidth
             value={description}
-            onChange={onDescriptionChange}
+            onChange={(event) => onChange({ description: event.target.value })}
             hintText="Get out the vote"
             required
             floatingLabelText="Description"
           />
           <FormsyDate
             required
-            name='dueBy'
-            floatingLabelStyle={{pointerEvents: 'none'}} // https://github.com/callemall/material-ui/issues/3908
+            name="dueBy"
+            floatingLabelStyle={{ pointerEvents: 'none' }} // https://github.com/callemall/material-ui/issues/3908
             floatingLabelText="Due date"
-            onChange={onDueByChange}
+            onChange={(event, dueBy) => onChange({ dueBy })}
             value={dueBy}
             locale="en-US"
             shouldDisableDate={(date) => moment(date).diff(moment()) < 0 }

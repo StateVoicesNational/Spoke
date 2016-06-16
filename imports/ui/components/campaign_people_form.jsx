@@ -93,9 +93,9 @@ export class CampaignPeopleForm extends Component {
   }
 
   handleUploadSuccess(validationStats, contacts, customFields) {
-    const { onContactsUpload, onValid, onInvalid } = this.props
+    const { onChange, onValid, onInvalid } = this.props
     this.setState( { validationStats, uploading: false, contacts, contactUploadError: null })
-    onContactsUpload({ contacts, customFields })
+    onChange({ contacts, customFields })
     onValid()
   }
 
