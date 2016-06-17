@@ -3,7 +3,7 @@ import { ValidatedMethod } from 'meteor/mdg:validated-method'
 import { SimpleSchema } from 'meteor/aldeed:simple-schema'
 import { Campaigns } from './campaigns.js'
 import { Messages } from '../messages/messages'
-import { assignContacts, saveContacts, saveCampaignSurveys } from './assignment.js'
+import { assignContacts, saveContacts, saveQuestions } from './assignment.js'
 import { CampaignContacts } from '../campaign_contacts/campaign_contacts.js'
 import { Assignments } from '../assignments/assignments.js'
 import { ScriptSchema } from './scripts.js'
@@ -17,7 +17,7 @@ export const insert = new ValidatedMethod({
     contacts: { type: [Object], blackbox: true },
     scripts: { type: [ScriptSchema] },
     assignedTexters: { type: [String] },
-    surveys: { type: [Object], blackbox: true },
+    questions: { type: [Object], blackbox: true },
     customFields: { type: [String] },
     dueBy: { type: Date }
   }).validator(),
@@ -29,7 +29,7 @@ export const insert = new ValidatedMethod({
     customFields,
     organizationId,
     assignedTexters,
-    surveys,
+    questions,
     dueBy
   }) {
     if (!this.userId || !Roles.userIsInRole(this.userId, 'admin', organizationId)) {
@@ -48,7 +48,7 @@ export const insert = new ValidatedMethod({
 
     // TODO this needs to be in one transaction
     const campaignId = Campaigns.insert(campaignData)
-    saveCampaignSurveys(campaignId, surveys)
+    saveQuestions(campaignId, questions)
     saveContacts(campaignId, contacts)
     assignContacts(campaignId, dueBy, assignedTexters)
     return campaignId
@@ -150,23 +150,23 @@ export const updateScripts = new ValidatedMethod({
   }
 })
 
-export const updateSurveys = new ValidatedMethod({
-  name: 'campaigns.updateSurveys',
+export const updateQuestions = new ValidatedMethod({
+  name: 'campaigns.updateQuestions',
   validate: new SimpleSchema({
     campaignId: { type: String },
     organizationId: { type: String },
-    surveys: { type: [Object], blackbox: true } // TODO: Survey schema?
+    questions: { type: [Object], blackbox: true } // TODO: Survey schema?
   }).validator(),
   run({
     organizationId,
     campaignId,
-    surveys
+    questions
   }) {
     if (!this.userId || !Roles.userIsInRole(this.userId, 'admin', organizationId)) {
       throw new Meteor.Error('not-authorized')
     }
 
-    saveCampaignSurveys(campaignId, surveys)
+    saveQuestions(campaignId, questions)
   }
 })
 
@@ -182,7 +182,7 @@ export const exportContacts = new ValidatedMethod({
       const campaign = Campaigns.findOne({ _id: campaignId })
       const organizationId = campaign.organizationId
 
-      const surveyQuestions = campaign.surveys().fetch()
+      const surveyQuestions = campaign.questions().fetch()
       if (!this.userId || !Roles.userIsInRole(this.userId, 'admin', organizationId)) {
         throw new Meteor.Error('not-authorized')
       }

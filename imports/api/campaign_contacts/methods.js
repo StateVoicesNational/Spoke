@@ -12,14 +12,15 @@ export const ContactFilters = {
 export const getContactsToText = new ValidatedMethod({
   name: 'campaignContacts.getContactsToText',
   validate: new SimpleSchema({
-    assignmentId: {type: String},
+    assignmentId: { type: String },
+    organizationId: { type: String },
     contactFilter: {
       type: String,
       allowedValues: [ContactFilters.UNMESSAGED, ContactFilters.UNREPLIED]
     }
   }).validator(),
   run({ assignmentId, contactFilter }) {
-    return contactsForAssignmentCursor(assignmentId, contactFilter).fetch()
+    return contactsForAssignmentCursor(assignmentId, contactFilter, organizationId).fetch()
   }
 })
 

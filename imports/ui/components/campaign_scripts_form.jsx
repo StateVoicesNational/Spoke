@@ -11,18 +11,18 @@ import { FormsyText } from 'formsy-material-ui/lib'
 import Divider from 'material-ui/Divider'
 import { muiTheme } from '../../ui/theme'
 import { CampaignFormSectionHeading } from './campaign_form_section_heading'
-import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
+import { Card, CardActions, CardHeader, CardMedia, CardTitle, CardText } from 'material-ui/Card'
 import DeleteIcon from 'material-ui/svg-icons/action/delete'
 import EditIcon from 'material-ui/svg-icons/image/edit'
 import IconButton from 'material-ui/IconButton'
 const styles = {
   icon: {
     width: 18,
-    height: 18,
+    height: 18
   },
   button: {
     width: 22,
-    height: 18,
+    height: 18
   },
   scriptRow: {
     borderLeft: `5px solid ${muiTheme.palette.primary1Color}`,
@@ -45,7 +45,7 @@ const styles = {
     marginBottom: 0
   },
   titleInput: {
-    marginBottom:24
+    marginBottom: 24
   }
 }
 export class CampaignScriptsForm extends Component {
@@ -95,13 +95,13 @@ export class CampaignScriptsForm extends Component {
 
     const { editingScript } = this.state
     const scriptData = this.getModel()
-    const context = ScriptSchema.namedContext("formContext")
+    const context = ScriptSchema.namedContext('formContext')
 
-    console.log("validating script data?", scriptData)
+    console.log('validating script data?', scriptData)
     const isValid = context.validate(scriptData)
     if (!isValid) {
       const errors = {}
-      _.each(context.invalidKeys(), ({name, type}) => errors[name] = type)
+      _.each(context.invalidKeys(), ({ name, type }) => errors[name] = type)
       console.log(errors)
       invalidateForm(errors)
     } else {
@@ -109,8 +109,8 @@ export class CampaignScriptsForm extends Component {
         const { onScriptChange } = this.props
         onScriptChange(editingScript._id, scriptData)
       } else {
-        const { handleAddScript } = this.props
-        handleAddScript(_.extend(editingScript, scriptData))
+        const { onScriptAdd } = this.props
+        onScriptAdd(_.extend(editingScript, scriptData))
       }
       this.handleCloseDialog()
     }
@@ -119,7 +119,7 @@ export class CampaignScriptsForm extends Component {
   handleAddScript() {
     const script = {
       type: ScriptTypes.INITIAL,
-      text: '',
+      text: ''
     }
 
     this.handleStartEditingScript(script)
@@ -135,7 +135,7 @@ export class CampaignScriptsForm extends Component {
   }
 
   handleStartEditingScript(script) {
-    this.setState( { editingScript: script, title: script.title, text: script.text })
+    this.setState({ editingScript: script, title: script.title, text: script.text })
     this.handleOpenDialog()
   }
 
@@ -143,11 +143,11 @@ export class CampaignScriptsForm extends Component {
     this.setState({ scriptDialogButtonEnabled: true })
   }
   disableDoneButton() {
-    this.setState({ scriptDialogButtonEnabled: false})
+    this.setState({ scriptDialogButtonEnabled: false })
   }
   submit() {
     this.refs.form.submit()
-    console.log("hi", this.refs.form.getModel())
+    console.log('hi', this.refs.form.getModel())
   }
   renderDialog() {
     const { editingScript, open } = this.state
@@ -184,7 +184,7 @@ export class CampaignScriptsForm extends Component {
   }
 
   notifyFormError(data) {
-    console.error('Form error:', data);
+    console.error('Form error:', data)
   }
 
   renderForm() {
@@ -193,17 +193,17 @@ export class CampaignScriptsForm extends Component {
       customFields } = this.props
 
     const { editingScript } = this.state
-    console.log("editingScript in renderForm", editingScript)
+    console.log('editingScript in renderForm', editingScript)
 
     const scriptFields = CampaignContacts.requiredUploadFields.concat(CampaignContacts.userScriptFields).concat(customFields)
-    console.log("editing field")
+    console.log('editing field')
     const titleField = editingScript.type !== ScriptTypes.FAQ ? '' : (
       <FormsyText
         style={styles.titleInput}
         fullWidth
         autoFocus
         name="title"
-        onChange={(event, value) => this.setState({ title: event.currentTarget.value})}
+        onChange={(event, value) => this.setState({ title: event.currentTarget.value })}
         floatingLabelText="Reply label"
         hintText="E.g. Can I attend only part of the event?"
         value={this.state.title}
@@ -219,7 +219,7 @@ export class CampaignScriptsForm extends Component {
           ref="scriptInput"
           scriptText={this.state.text}
           sampleContact={sampleContact}
-          onChange={(value) => this.setState({ text: value})}
+          onChange={(value) => this.setState({ text: value })}
           scriptFields={scriptFields}
         />
         </div>
@@ -292,7 +292,7 @@ export class CampaignScriptsForm extends Component {
           onInvalid={onInvalid}
         >
           <CampaignFormSectionHeading
-            title='What do you want to say?'
+            title="What do you want to say?"
           />
           <div style={styles.scriptSection}>
             { sectionHeading('First message script', "This script is what we'll automatically fill in for texters when they first send the first message to a contact.")}
@@ -300,7 +300,7 @@ export class CampaignScriptsForm extends Component {
           </div>
           <Divider />
             <div style={styles.scriptSection}>
-            { sectionHeading('Saved replies', "These replies will appear in a list for texters to choose to answer common issues and questions when a contact has responded. You can think of it as a FAQ section of sorts.")}
+            { sectionHeading('Saved replies', 'These replies will appear in a list for texters to choose to answer common issues and questions when a contact has responded. You can think of it as a FAQ section of sorts.')}
             { faqScripts.map((faqScript) => this.renderScriptRow(faqScript))}
           </div>
           <RaisedButton

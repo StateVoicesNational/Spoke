@@ -6,7 +6,7 @@ import {
   updateBasics,
   updateContacts,
   updateTexters,
-  updateSurveys,
+  updateQuestions,
   updateScripts
 } from '../../api/campaigns/methods'
 import { ScriptTypes } from '../../api/campaigns/scripts'
@@ -34,7 +34,12 @@ import {
   StepLabel
 } from 'material-ui/Stepper'
 
-
+const handleError = (error) => {
+  if (error) {
+    console.log(error)
+    alert('Sorry, something went wrong!')
+  }
+}
 export const SectionTitles = {
   basics: 'Basics',
   contacts: 'Contacts',
@@ -61,7 +66,7 @@ export class CampaignForm extends Component {
     this.handleSubmitContacts = this.handleSubmitContacts.bind(this)
     this.handleSubmitTexters = this.handleSubmitTexters.bind(this)
     this.handleSubmitScripts = this.handleSubmitScripts.bind(this)
-    this.handleSubmitSurveys = this.handleSubmitSurveys.bind()
+    this.handleSubmitQuestions = this.handleSubmitQuestions.bind()
 
     this.handleScriptChange = this.handleScriptChange.bind(this)
     this.handleScriptDelete = this.handleScriptDelete.bind(this)
@@ -130,7 +135,7 @@ export class CampaignForm extends Component {
   startComputation() {
     this._computation = Tracker.autorun(() => {
       this.setState({
-        scripts: ScriptCollection.find().fetch(),
+        scripts: ScriptCollection.find().fetch().map((script) => _.omit(script, '_id')),
         questions: QuestionCollection.find({}).fetch()
       })
     })
@@ -210,7 +215,7 @@ export class CampaignForm extends Component {
       // FIXME This omit is really awkward. Decide if I should be using subdocument _ids instead.
       scripts: _.map(scripts, (script) => _.omit(script, ['_id'])),
       // FIXME
-      surveys: questions
+      questions
     }
   }
 
@@ -228,7 +233,7 @@ export class CampaignForm extends Component {
       campaignId: campaign._id
     }
 
-    updateBasics.call(data, (err) => console.log('error', err))
+    updateBasics.call(data, handleError)
   }
 
   handleSubmitScripts() {
@@ -239,7 +244,7 @@ export class CampaignForm extends Component {
       organizationId,
       campaignId: campaign._id
     }
-    updateScripts.call(data, (err) => alert(err))
+    updateScripts.call(data, handleError)
   }
 
   handleSubmitTexters() {
@@ -250,22 +255,20 @@ export class CampaignForm extends Component {
       organizationId,
       campaignId: campaign._id
     }
-    updateTexters.call(data, (err) => alert(err))
+    updateTexters.call(data, handleError)
 
     console.log('campaign assigned texter submit')
   }
 
-  handleSubmitSurveys() {
-    const { surveys } = this.state
+  handleSubmitQuestions() {
+    const { questions } = this.state
     const { campaign, organizationId } = this.props
     const data = {
-      surveys,
       organizationId,
+      questions,
       campaignId: campaign._id
     }
-    updateSurveys.call(data, (err) => alert(err))
-
-    console.log('campaign survey submit')
+    updateQuestions.call(data, handleError)
   }
 
   handleSubmitContacts() {
@@ -276,7 +279,7 @@ export class CampaignForm extends Component {
       organizationId,
       campaignId: campaign._id
     }
-    updateContacts.call(data, (err) => alert(err))
+    updateContacts.call(data, handleError)
 
     console.log('campaign contact submit')
   }
@@ -348,7 +351,7 @@ export class CampaignForm extends Component {
         faqScripts={faqScripts}
         onScriptChange={this.handleScriptChange}
         onScriptDelete={this.handleScriptDelete}
-        onAddScript={this.handleScriptAdd}
+        onScriptAdd={this.handleScriptAdd}
         customFields={customFields}
         sampleContact={contacts[0]}
       />
@@ -382,7 +385,7 @@ export class CampaignForm extends Component {
         sections={this.sections}
         campaign={campaign}
         onSubmitContacts={this.handleSubmitContacts}
-        onSubmitSurveys={this.handleSubmitSurveys}
+        onSubmitSurveys={this.handleSubmitQuestions}
         onSubmitScripts={this.handleSubmitScripts}
         onSubmitTexters={this.handleSubmitTexters}
         onSubmitBasics={this.handleSubmitBasics}

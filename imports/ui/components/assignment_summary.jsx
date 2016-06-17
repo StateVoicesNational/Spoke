@@ -47,7 +47,8 @@ export class AssignmentSummary extends Component {
   }
 
   getContactsToText(assignment, contactFilter) {
-    getContactsToText.call({assignmentId: assignment._id, contactFilter}, (err, contacts) => {
+    const { organizationId } = this.props
+    getContactsToText.call({assignmentId: assignment._id, contactFilter, organizationId}, (err, contacts) => {
       const { onStartTexting } = this.props
       onStartTexting(assignment, contacts)
     })

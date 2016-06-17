@@ -38,7 +38,7 @@ CampaignContacts.schema = new SimpleSchema({
   lastMessage: {
     type: LastMessageSchema,
     optional: true
-  }
+  },
 })
 
 // FIXME: Add unformattedCell
@@ -59,6 +59,7 @@ Factory.define('campaign_contact', CampaignContacts, {
   },
   createdAt: () => new Date(),
   assignmentId: () => Factory.get('assignment'),
+  optOut: false
 })
 
 // This represents the keys from CampaignContacts objects that should be published

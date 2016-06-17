@@ -36,20 +36,18 @@ Factory.define('assignment', Assignments, {
 Assignments.publicFields = {
 }
 
-export const contactsForAssignmentCursor = (assignmentId, contactFilter) => {
+export const contactsForAssignmentCursor = (assignmentId, contactFilter, organizationId) => {
+  const optOuts = OptOuts.find({ organizationId}, { fields: {cell: 1}}).fetch()
   let query = {}
   if (contactFilter === ContactFilters.UNMESSAGED) {
     query = { lastMessage: null }
   } else if (contactFilter === ContactFilters.UNREPLIED) {
     query = { 'lastMessage.isFromContact': true }
   }
-  return CampaignContacts.find(_.extend(query, { assignmentId }))
+  return CampaignContacts.find(_.extend(query, { assignmentId,  cell: {$nin: optOuts.map((optOut) => optOut.cell)}}))
 }
 
 Assignments.helpers({
-  contacts(contactFilter) {
-    return contactsForAssignmentCursor(this._id, contactFilter)
-  },
   campaign() {
     return Campaigns.findOne({ _id: this.campaignId })
   }

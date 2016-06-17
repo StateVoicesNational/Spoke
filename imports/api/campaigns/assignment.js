@@ -22,15 +22,15 @@ const divideContacts = (contactIds, texters) => {
   return zip(texters.slice(0, chunked.length), chunked)
 }
 
-const updateAssignments = ({dueBy, campaignId, texterId, texterContactIds }) => {
-  const assignment = Assignments.findOne( { campaignId, userId: texterId })
-  const assignmentId = assignment ? assignment._id : Assignments.insert({ campaignId, dueBy, createdAt: new Date(), userId: texterId})
+const updateAssignments = ({ dueBy, campaignId, texterId, texterContactIds }) => {
+  const assignment = Assignments.findOne({ campaignId, userId: texterId })
+  const assignmentId = assignment ? assignment._id : Assignments.insert({ campaignId, dueBy, createdAt: new Date(), userId: texterId })
   CampaignContacts.update({ _id: { $in: texterContactIds } }, { $set: { assignmentId } }, { multi: true })
 }
 
-export const saveCampaignSurveys = (campaignId, surveys) => {
+export const saveQuestions = (campaignId, surveys) => {
   for (let survey of surveys) {
-    console.log("surveys", surveys)
+    console.log('surveys', surveys)
     survey.campaignId = campaignId
     SurveyQuestions.insert(survey)
   }
@@ -51,10 +51,10 @@ export const saveContacts = (campaignId, contactRows) => {
 
 export const assignContacts = (campaignId, dueBy, assignedTexters) => {
   const contacts = CampaignContacts.find({ campaignId, lastMessage: null }, { fields: {} }).fetch()
-  const contactIds = _.map(contacts, ({ _id }) => _id )
+  const contactIds = _.map(contacts, ({ _id }) => _id)
 
   const dividedContacts = divideContacts(contactIds, assignedTexters)
-  forEach(dividedContacts, ( [texterId, texterContactIds] ) => {
+  forEach(dividedContacts, ([texterId, texterContactIds]) => {
     updateAssignments({ dueBy, campaignId, texterId, texterContactIds })
   })
 }

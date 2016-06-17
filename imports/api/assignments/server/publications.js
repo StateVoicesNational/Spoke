@@ -31,11 +31,12 @@ Meteor.publish('assignments.todo', function(organizationId) {
   const assignments = Assignments.find({ userId }, { sort: {dueBy: 1}}).fetch()
   const assignmentIds = assignments.map((assignment) => assignment._id)
   // Contacts - lastMessage
-
+  const optOuts = OptOuts.find( { organizationId }, { fields: { cell: 1 }})
   const aggregation = CampaignContacts.aggregate([
   {
     $match: {
-      assignmentId: {$in: assignmentIds}
+      assignmentId: { $in: assignmentIds },
+      cell: { $nin: optOuts.map((optOut) => optOut.cell)}
     },
   },
   {
@@ -97,15 +98,9 @@ Meteor.publishComposite('assignments.todo.additional', function(organizationId) 
 
 
 Meteor.publish('assignment.text', function(assignmentId, contactFilter, organizationId) {
-  console.log("start assignment.text publication")
-
-  const contacts = contactsForAssignmentCursor(assignmentId, contactFilter).fetch()
-  console.log("HERE ARE THE CONTACTS", contacts)
-  console.log(contacts)
+  const contacts = contactsForAssignmentCursor(assignmentId, contactFilter, organizationId).fetch()
   const userId = this.userId
-  console.log("CONTACTS", contacts)
   const contactNumbers = contacts.map((contact) => contact.cell)
-  console.log("i n message asignment.text publication: contactNumber", contactNumbers, "userId", userId)
   const assignment = Assignments.findOne(assignmentId) // TODO redundant loading
   const campaignId = assignment.campaignId
   // TODO: Maybe optouts should be reactive, but nothing else really needs to be.

@@ -12,12 +12,6 @@ import Dialog from 'material-ui/Dialog'
 import FlatButton from 'material-ui/FlatButton'
 import RaisedButton from 'material-ui/RaisedButton'
 
-const handleError = (error) => {
-  if (error) {
-    console.log(error)
-  }
-}
-
 const styles = {
   radioButtonGroup: {
     marginBottom: 12
