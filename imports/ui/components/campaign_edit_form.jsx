@@ -5,6 +5,23 @@ import { CampaignFormSection } from './campaign_form_section'
 import { SectionTitles } from './campaign_form'
 
 export class CampaignEditForm extends Component {
+  constructor(props) {
+    super(props)
+    this.onExpandChange = this.onExpandChange.bind(this)
+    this.state = {
+      expandedSection: null
+    }
+  }
+
+  onExpandChange(title, newExpandedState) {
+    const { expandedSection } = this.state
+    if (newExpandedState) {
+      this.setState({ expandedSection: title })
+    } else if (title === expandedSection) {
+      this.setState({ expandedSection: null })
+    }
+  }
+
   render() {
     const {
       campaign,
@@ -15,6 +32,8 @@ export class CampaignEditForm extends Component {
       onSubmitTexters,
       onSubmitScripts
     } = this.props
+
+    const { expandedSection } = this.state
     const hasMessage = Messages.findOne({ campaignId: campaign._id })
 
     const submitAction = (sectionTitle) => {
@@ -38,7 +57,11 @@ export class CampaignEditForm extends Component {
     return (
       <div>
         { sections.map(({ title, content }) => (
-          <Card key={title} >
+          <Card
+            key={title}
+            expanded={title === expandedSection}
+            onExpandChange={(newExpandedState) => this.onExpandChange(title, newExpandedState)}
+          >
             <CardHeader
               title={title}
               actAsExpander

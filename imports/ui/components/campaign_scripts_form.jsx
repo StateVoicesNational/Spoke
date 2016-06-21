@@ -147,7 +147,6 @@ export class CampaignScriptsForm extends Component {
   }
   submit() {
     this.refs.form.submit()
-    console.log('hi', this.refs.form.getModel())
   }
   renderDialog() {
     const { editingScript, open } = this.state
