@@ -9,15 +9,15 @@ import { createContainer } from 'meteor/react-meteor-data'
 // import { TexterSignup } from '../components/texter_signup'
 import { AppPage } from '../layouts/app_page'
 import { Roles } from 'meteor/alanning:roles'
-import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
+import { Card, CardActions, CardHeader, CardMedia, CardTitle, CardText } from 'material-ui/Card'
 import { TexterSignupForm } from '../components/texter_signup_form'
 import RaisedButton from 'material-ui/RaisedButton'
 import { addTexter } from '../../api/organizations/methods'
 
 class Page extends React.Component {
-  componentWillReceiveProps({organization, user}) {
+  componentWillReceiveProps({ organization, user }) {
     if (organization && user) {
-      console.log("texter roles", Roles.userIsInRole(user, 'texter', organization._id))
+      console.log('texter roles', Roles.userIsInRole(user, 'texter', organization._id))
       if (Roles.userIsInRole(user, 'texter', organization._id)) {
         FlowRouter.go('todos', { organizationId: organization._id })
       }
@@ -25,15 +25,15 @@ class Page extends React.Component {
   }
 
   handleExistingUserJoin() {
-    console.log("calling texter!?")
+    console.log('calling texter!?')
     const { organization } = this.props
     const organizationId = organization._id
     addTexter.call({ organizationId }, (err) => {
       if (err) {
         alert(err)
       } else {
-        FlowRouter.go(`todos`, { organizationId })
-        console.log("successfully joined!")
+        FlowRouter.go('todos', { organizationId })
+        console.log('successfully joined!')
       }
     })
   }
@@ -69,7 +69,7 @@ class Page extends React.Component {
                   label={`Join ${organization.name}`}
                 />
               </Formsy.Form>
-          ) : <TexterSignupForm /> }
+          ) : <TexterSignupForm organization={organization} /> }
         </CardText>
       </Card>
       // <TexterSignup user={user} organization={organization} />

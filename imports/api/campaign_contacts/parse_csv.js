@@ -1,7 +1,7 @@
 import { CampaignContacts } from './campaign_contacts.js'
 import { OptOuts } from '../opt_outs/opt_outs.js'
 import { uniqBy } from 'lodash'
-import { getFormattedPhoneNumber } from '../messages/methods'
+import { getFormattedPhoneNumber } from '../../../both/phone_format'
 
 const getValidatedData = (data) => {
   let validatedData
@@ -19,7 +19,7 @@ const getValidatedData = (data) => {
   const invalidCellRows = result[1]
 
   const count = validatedData.length
-  validatedData = uniqBy(validatedData, (row) => row.cell )
+  validatedData = uniqBy(validatedData, (row) => row.cell)
   const dupeCount = (count - validatedData.length)
 
   // TODO: organizationID
@@ -34,14 +34,14 @@ const getValidatedData = (data) => {
       optOutCount: optOutRows.length,
       invalidCellCount: invalidCellRows.length,
       missingCellCount: missingCellRows.length
-    },
+    }
   }
 }
 
-export const parseCSV  = (file, callback) => {
+export const parseCSV = (file, callback) => {
   Papa.parse(file, {
     header: true,
-    complete: ({data, meta, errors}, file) => {
+    complete: ({ data, meta, errors }, file) => {
       // TODO: Validate fields
       // Papaparse errors are very permissiive so we cerate
       // our own error
@@ -68,7 +68,7 @@ export const parseCSV  = (file, callback) => {
         callback({
           customFields,
           validationStats,
-          contacts: validatedData,
+          contacts: validatedData
         })
       }
     }

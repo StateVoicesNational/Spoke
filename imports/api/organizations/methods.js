@@ -2,7 +2,7 @@ import { Roles } from 'meteor/alanning:roles'
 import { ValidatedMethod } from 'meteor/mdg:validated-method'
 import { SimpleSchema } from 'meteor/aldeed:simple-schema'
 
-import { Organizations } from './organizations.js';
+import { Organizations } from './organizations.js'
 
 export const insert = new ValidatedMethod({
   name: 'organizations.insert',
@@ -23,7 +23,7 @@ export const insert = new ValidatedMethod({
 export const addTexter = new ValidatedMethod({
   name: 'organizations.addTexter',
   validate: new SimpleSchema({
-    organizationId: { type: String },
+    organizationId: { type: String }
   }).validator(),
   run({ organizationId }) {
     if (!this.userId)

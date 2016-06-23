@@ -1,13 +1,14 @@
 import React from 'react'
 import Formsy from 'formsy-react'
-import Paper from 'material-ui/Paper'
 import RaisedButton from 'material-ui/RaisedButton'
 import { FormsyText } from 'formsy-material-ui/lib'
 import { addTexter } from '../../api/organizations/methods'
 import { FlowRouter } from 'meteor/kadira:flow-router'
+import { getFormattedPhoneNumber } from '../../../both/phone_format'
 
 const errorMessages = {
-  emailError: "Please enter a valid email",
+  emailError: 'Please enter a valid email',
+  cellError: 'Please enter a valid mobile number'
 }
 
 const styles = {
@@ -16,39 +17,40 @@ const styles = {
   }
 }
 
+Formsy.addValidationRule('isPhoneNumber', (values, value) => !!getFormattedPhoneNumber(value))
+
+
 export class TexterSignupForm extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
       canSubmit: false
-    };
+    }
   }
 
   enableButton() {
     this.setState({
-      canSubmit: true,
-    });
+      canSubmit: true
+    })
   }
 
   disableButton() {
     this.setState({
-      canSubmit: false,
-    });
+      canSubmit: false
+    })
   }
 
   submitForm(data) {
-    console.log("submit form!")
     const { organization } = this.props
+    data.cell = getFormattedPhoneNumber(data.cell)
     Accounts.createUser(data, (accountError) => {
       if (accountError) {
-        console.log("account creation error", accountError)
+        alert('There was an error signing you up')
       } else {
-        console.log("calling add texter")
-        addTexter.call({organizationId: organization._id}, (organizationError) => {
+        addTexter.call({ organizationId: organization._id }, (organizationError) => {
           if (organizationError) {
-            console.log("error adding texter to org", organizationError)
+            alert('There was an error joining the organization')
           } else {
-            console.log("successfully added tetxer")
             FlowRouter.go(`${organization._id}/assignments`)
           }
         })
@@ -57,13 +59,13 @@ export class TexterSignupForm extends React.Component {
   }
 
   notifyFormError(data) {
-    console.error('Form error:', data);
+    console.error('Form error:', data)
   }
 
   render() {
     const { organization } = this.props
-    let {submitStyle } = styles;
-    let { emailError, numericError, urlError } = errorMessages;
+    let { submitStyle } = styles
+    let { emailError, cellError } = errorMessages
 
     return (
       <Formsy.Form
@@ -92,6 +94,14 @@ export class TexterSignupForm extends React.Component {
           validationError={emailError}
           required
           floatingLabelText="Your email"
+        />
+        <FormsyText
+          name="cell"
+          validations="isPhoneNumber"
+          fullWidth
+          validationError={cellError}
+          required
+          floatingLabelText="Your cell"
         />
         <FormsyText
           fullWidth

@@ -19,6 +19,7 @@ import '../../api/organizations/server/publications.js'
 
 import '../../api/users/users.js'
 import '../../api/users/server/publications.js'
+import '../../api/users/server/account-creation.js'
 
 import '../../api/opt_outs/methods.js'
 import '../../api/opt_outs/server/publications.js'

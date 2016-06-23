@@ -6,24 +6,7 @@ import { CampaignContacts } from '../campaign_contacts/campaign_contacts.js'
 import { OptOuts } from '../opt_outs/opt_outs.js'
 import { Meteor } from 'meteor/meteor'
 import { Plivo } from './plivo'
-// FIXME - this is used in parse_csv too
-export const getFormattedPhoneNumber = (cell) => {
-  const { NumberParseException, PhoneNumberUtil, PhoneNumberFormat } = require('google-libphonenumber')
-  const phoneUtil = PhoneNumberUtil.getInstance()
-
-  try {
-    const inputNumber = phoneUtil.parse(cell, "US")
-    const isValid = phoneUtil.isValidNumber(inputNumber)
-    if (isValid) {
-      return phoneUtil.format(inputNumber, PhoneNumberFormat.E164)
-    } else {
-      return null
-    }
-  } catch (e) {
-    console.log(e)
-    return null
-  }
-}
+import { getFormattedPhoneNumber } from '../../../both/phone_format'
 
 const getAssignedPhoneNumber = (userId) => {
   if (!Meteor.settings.public.textingEnabled) {
@@ -31,11 +14,11 @@ const getAssignedPhoneNumber = (userId) => {
   } else {
     if (Meteor.isServer) {
       const params = {
-          'country_iso': 'US', // The ISO code A2 of the country
-          'type' : 'national', // The type of number you are looking for. The possible number types are local, national and tollfree.
+        'country_iso': 'US', // The ISO code A2 of the country
+        'type': 'national' // The type of number you are looking for. The possible number types are local, national and tollfree.
           // 'pattern' : '210', // Represents the pattern of the number to be searched.
           // 'region' : 'Texas' // This filter is only applicable when the number_type is local. Region based filtering can be performed.
-      };
+      }
 
 
       const searchNumbers = Meteor.wrapAsync(Plivo.searchNumbers, Plivo)
@@ -48,7 +31,7 @@ const getAssignedPhoneNumber = (userId) => {
 
       const buyNumber = Meteor.wrapAsync(Plivo.buyNumber, Plivo)
       response = buyNumber({ number: userNumber, app_id: Meteor.settings.private.plivo.appId })
-      console.log("RESPONSE", response)
+      console.log('RESPONSE', response)
       if (response.statusCode !== 201)
       {
         throw new Meteor.Error(500, 'plivo-error', 'Could not buy number')
@@ -98,7 +81,7 @@ export const insertMessage = new ValidatedMethod({
     const lastMessage = {
       isFromContact
     }
-    CampaignContacts.update( { _id: contact._id }, { $set: { lastMessage }})
+    CampaignContacts.update({ _id: contact._id }, { $set: { lastMessage } })
   }
 })
 
@@ -134,7 +117,7 @@ const createMessage = ({ text, userNumber, contactNumber, campaignId }) => {
     text,
     campaignId,
     serviceMessageId,
-    isFromContact: false,
+    isFromContact: false
   }
   return insertMessage.call(message)
 }
@@ -146,7 +129,7 @@ const checkOptOut = ({ organizationId, contactNumber }) => {
   })
 
   if (optOut) {
-    throw new Meteor.Error('contact-opt-out');
+    throw new Meteor.Error('contact-opt-out')
   }
 }
 export const sendMessage = new ValidatedMethod({
@@ -162,20 +145,20 @@ export const sendMessage = new ValidatedMethod({
       const organizationId = Campaigns.findOne({ _id: campaignId }).organizationId
 
       if (!this.userId || !Roles.userIsInRole(this.userId, 'texter', organizationId)) {
-        throw new Meteor.Error('not-authorized');
+        throw new Meteor.Error('not-authorized')
       }
 
       checkOptOut({ organizationId, contactNumber })
 
-      const user = Meteor.users.findOne({_id: this.userId})
+      const user = Meteor.users.findOne({ _id: this.userId })
       let userNumber = user.userNumber
 
       if (!userNumber) {
         userNumber = getAssignedPhoneNumber(this.userId)
-        Meteor.users.update({_id: this.userId}, { $set: { userNumber } })
+        Meteor.users.update({ _id: this.userId }, { $set: { userNumber } })
       }
 
-      createMessage({text, userNumber, contactNumber, campaignId})
+      createMessage({ text, userNumber, contactNumber, campaignId })
     }
   }
 })
