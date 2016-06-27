@@ -14,6 +14,7 @@ import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert'
 import ContentClear from 'material-ui/svg-icons/content/clear'
 import Dialog from 'material-ui/Dialog'
 import { CampaignContacts } from '../../api/campaign_contacts/campaign_contacts'
+import { allScriptFields } from '../../api/campaigns/scripts'
 import { muiTheme } from '../../ui/theme'
 import { grey400 } from 'material-ui/styles/colors'
 import { Toolbar, ToolbarGroup, ToolbarTitle, ToolbarSeparator } from 'material-ui/Toolbar'
@@ -293,7 +294,7 @@ export class CampaignQuestionForm extends Component {
   renderDialog() {
     const { editingAnswer, open } = this.state
     const { customFields, sampleContact } = this.props
-    const scriptFields = CampaignContacts.requiredUploadFields.concat(CampaignContacts.userScriptFields).concat(customFields)
+    const scriptFields = allScriptFields(customFields)
 
     return (
       <Dialog

@@ -55,7 +55,7 @@ class _TodosPage extends React.Component {
     const groupedResults = _.groupBy(results, (result) =>  {
       if (moment(result.assignment.dueBy).isBefore(moment())) {
         return 'past'
-      } else if ((result.unmessagedCount + result.unrepliedCount) > 0) {
+      } else if ((result.unmessagedCount + result.unrepliedCount + result.badTimezoneCount) > 0) {
         return 'active'
       } else {
         return 'done'
@@ -100,9 +100,10 @@ class _TodosPage extends React.Component {
                 return (
                   <AssignmentSummary
                     organizationId={organizationId}
-                    unmessagedCount={result.unmessagedCount}
                     assignment={result.assignment}
+                    unmessagedCount={result.unmessagedCount}
                     unrepliedCount={result.unrepliedCount}
+                    badTimezoneCount={result.badTimezoneCount}
                   />
                 )
               }

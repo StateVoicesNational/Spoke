@@ -2,7 +2,7 @@ import { Mongo } from 'meteor/mongo'
 import { Factory } from 'meteor/dburles:factory'
 import { SimpleSchema } from 'meteor/aldeed:simple-schema'
 import { Fake } from 'meteor/anti:fake'
-import { SurveyQuestions } from '../survey_questions/survey_questions'
+import { ZipCodes } from '../zip_codes/zip_codes'
 import { SurveyAnswers } from '../survey_answers/survey_answers'
 import { Messages } from '../messages/messages'
 import { Campaigns } from '../campaigns/campaigns'
@@ -44,6 +44,7 @@ CampaignContacts.schema = new SimpleSchema({
 // FIXME: Add unformattedCell
 CampaignContacts.attachSchema(CampaignContacts.schema)
 CampaignContacts.requiredUploadFields = ['firstName', 'lastName', 'cell']
+CampaignContacts.topLevelUploadFields = ['firstName', 'lastName', 'cell', 'zip']
 CampaignContacts.userScriptFields = ['texterFirstName', 'texterLastName']
 
 Factory.define('campaign_contact', CampaignContacts, {
@@ -69,6 +70,10 @@ CampaignContacts.publicFields = {
 }
 
 CampaignContacts.helpers({
+  utcOffset() {
+    const zip = ZipCodes.findOne( { zip: this.zip })
+    return zip ? zip.timezoneOffset : null
+  },
   messages() {
     return Messages.find({ contactNumber: this.cell, campaignId: this.campaignId })
   },

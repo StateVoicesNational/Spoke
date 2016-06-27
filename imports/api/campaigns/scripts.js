@@ -1,3 +1,4 @@
+import { CampaignContacts } from '../campaign_contacts/campaign_contacts'
 export const ScriptTypes = {
     INITIAL: 'initial', // First time contacting a supporter
     REPEAT: 'repeat', // Contact who has been texted before
@@ -46,3 +47,6 @@ export const delimit = (text) => {
   const { startDelimiter, endDelimiter } = delimiters
   return `${startDelimiter}${text}${endDelimiter}`
 }
+
+// TODO: This will include zipCode even if you ddin't upload it
+export const allScriptFields = (customFields) => CampaignContacts.topLevelUploadFields.concat(CampaignContacts.userScriptFields).concat(customFields)

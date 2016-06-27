@@ -63,7 +63,7 @@ export const parseCSV = (file, callback) => {
       else {
         const { validationStats, validatedData } = getValidatedData(data)
 
-        const customFields = fields.filter((field) => CampaignContacts.requiredUploadFields.indexOf(field) === -1)
+        const customFields = fields.filter((field) => CampaignContacts.topLevelUploadFields.indexOf(field) === -1)
 
         callback({
           customFields,
@@ -78,8 +78,11 @@ export const parseCSV = (file, callback) => {
 export const convertRowToContact = (row) => {
   const customFields = row
   const contact = {}
-  for (let requiredField of CampaignContacts.requiredUploadFields) {
-    contact[requiredField] = row[requiredField]
+  for (let field of CampaignContacts.topLevelUploadFields) {
+    if (_.has(row, field)) {
+      contact[field] = row[field]
+    }
+    // contact[requiredField] = row[requiredField]
     // delete customFields[requiredField]
   }
 

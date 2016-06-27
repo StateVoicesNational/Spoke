@@ -192,8 +192,10 @@ export const exportContacts = new ValidatedMethod({
 
       for (let contact of contacts) {
         let row = {}
-        for (let requiredField of CampaignContacts.requiredUploadFields) {
-          row[requiredField] = contact.requiredField
+        for (let field of CampaignContacts.topLevelUploadFields) {
+          if (_.has(contact, field)) {
+            row[field] = contact[field]
+          }
         }
 
         row = _.extend(row, contact.customFields)

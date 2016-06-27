@@ -6,7 +6,7 @@ import { SurveyQuestions } from '../survey_questions/survey_questions'
 import { Messages } from '../messages/messages'
 import { CampaignContacts } from '../campaign_contacts/campaign_contacts'
 import { moment } from 'meteor/momentjs:moment'
-import { ScriptSchema, ScriptTypes } from './scripts'
+import { ScriptSchema, ScriptTypes, allScriptFields } from './scripts'
 
 export const Campaigns = new Mongo.Collection('campaigns')
 
@@ -83,7 +83,7 @@ Campaigns.helpers({
     return this.scripts.filter((script) => script.type === ScriptTypes.FAQ)
   },
   scriptFields() {
-    return this.customFields.concat(CampaignContacts.requiredUploadFields)
+    return allScriptFields(this.customFields)
   },
   surveys() {
     return SurveyQuestions.find({campaignId: this._id})

@@ -4,9 +4,10 @@ import {Card, CardActions, CardTitle, CardText} from 'material-ui/Card';
 import FlatButton from 'material-ui/FlatButton'
 import { Campaigns } from '../../api/campaigns/campaigns'
 import Badge from 'material-ui/Badge'
-import { getContactsToText, ContactFilters } from '../../api/campaign_contacts/methods'
+import {  ContactFilters } from '../../api/campaign_contacts/methods'
 import { moment } from 'meteor/momentjs:moment'
-
+import Divider from 'material-ui/Divider'
+import Tooltip from 'material-ui/internal/Tooltip'
 const styles = {
   badge: {
     top: 16,
@@ -20,51 +21,74 @@ const styles = {
 export class AssignmentSummary extends Component {
   constructor(props) {
     super(props)
-    this.getContactsToText = this.getContactsToText.bind(this)
-  }
-  startTexting() {
-    const { handleStartTexting, contacts } = this.props
-
-    handleStartTexting(contacts)
+    this.state = { badTimezoneTooltipOpen: false }
   }
 
-  renderBadgedButton(assignment, title, count, isPrimary, contactFilter) {
+  renderBadgedButton({ assignment, title, count, primary, disabled, contactFilter, tooltip }) {
     const { organizationId } = this.props
+    console.log(organizationId)
+    const { badTimezoneTooltipOpen } = this.state
     return (count === 0 ? '' :
       <Badge
         badgeStyle={styles.badge}
         badgeContent={count}
-        primary={isPrimary}
-        secondary={!isPrimary}
+        primary={primary}
+        secondary={!primary}
       >
         <FlatButton
+          disabled={disabled}
           label={title}
-          onTouchTap={ () => FlowRouter.go('textUnmessaged', { organizationId, contactFilter, assignmentId: assignment._id })
-}
+          onTouchTap={ () => contactFilter ? FlowRouter.go('textUnmessaged', { organizationId, contactFilter, assignmentId: assignment._id }) : null }
+          onMouseEnter={tooltip ? ()=>{this.setState({badTimezoneTooltipOpen: true})} : null}
+          onMouseLeave={tooltip ? ()=>{this.setState({badTimezoneTooltipOpen: false})} : null }
         />
+         <Tooltip show={badTimezoneTooltipOpen}
+          label={tooltip}
+          horizontalPosition="right"
+          verticalPosition="top"
+          touch={true}
+         />
       </Badge>
     )
   }
 
-  getContactsToText(assignment, contactFilter) {
-    const { organizationId } = this.props
-    getContactsToText.call({assignmentId: assignment._id, contactFilter, organizationId}, (err, contacts) => {
-      const { onStartTexting } = this.props
-      onStartTexting(assignment, contacts)
-    })
-  }
-
   render() {
-    const { assignment, unmessagedCount, unrepliedCount } = this.props
+    const { assignment, unmessagedCount, unrepliedCount, badTimezoneCount } = this.props
     const { title, description } = Campaigns.findOne(assignment.campaignId)
+
+    const hasTextableContacts = unrepliedCount > 0 || unmessagedCount > 0
+    const hasUntextableContacts = badTimezoneCount > 0
 
     const summary = (
       <Card style={styles.root}>
         <CardTitle title={title} subtitle={`${description} - ${moment(assignment.dueBy).format('MMM D YYYY')}`} />
-        { (unrepliedCount > 0 || unmessagedCount > 0) ? '' : <CardText>Looks like you're done for now. Nice work!</CardText>}
+        <Divider />
         <CardActions>
-          { this.renderBadgedButton(assignment, 'Send first texts', unmessagedCount, true, ContactFilters.UNMESSAGED)}
-          { this.renderBadgedButton(assignment, 'Send replies', unrepliedCount, false, ContactFilters.UNREPLIED)}
+          { this.renderBadgedButton({
+            assignment,
+            title: 'Send first texts',
+            count: unmessagedCount,
+            primary: true,
+            disabled: false,
+            contactFilter: ContactFilters.UNMESSAGED
+          })}
+          { this.renderBadgedButton({
+            assignment,
+            title: 'Send replies',
+            count: unrepliedCount,
+            primary: false,
+            disabled: false,
+            contactFilter: ContactFilters.UNREPLIED
+          })}
+          { this.renderBadgedButton({
+            assignment,
+            title: 'Send later',
+            count: badTimezoneCount,
+            primary: false,
+            disabled: true,
+            contactFilter: null,
+            tooltip: `It's outside texting hours for some contacts. Come back later!`
+          })}
         </CardActions>
       </Card>
     )

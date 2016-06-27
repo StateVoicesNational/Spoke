@@ -563,6 +563,11 @@
       "from": "babylon@>=6.7.0 <7.0.0",
       "resolved": "https://registry.npmjs.org/babylon/-/babylon-6.8.1.tgz"
     },
+    "babyparse": {
+      "version": "0.4.6",
+      "from": "babyparse@*",
+      "resolved": "https://registry.npmjs.org/babyparse/-/babyparse-0.4.6.tgz"
+    },
     "balanced-match": {
       "version": "0.4.1",
       "from": "balanced-match@>=0.4.1 <0.5.0",

@@ -6,10 +6,11 @@ import { CampaignContacts } from '../../campaign_contacts/campaign_contacts'
 import { ContactFilters } from '../../campaign_contacts/methods'
 import { SurveyQuestions } from '../../survey_questions/survey_questions'
 import { SurveyAnswers } from '../../survey_answers/survey_answers'
+import { ZipCodes } from '../../zip_codes/zip_codes'
 import { Messages } from '../../messages/messages'
 import { OptOuts } from '../../opt_outs/opt_outs'
 import { todosForUser } from '../../users/users'
-
+import { defaultTimezoneIsBetweenTextingHours, validOffsets } from '../../../../both/timezones'
 // TODO: actually filter correctly and return public fields only
 
 
@@ -32,12 +33,34 @@ Meteor.publish('assignments.todo', function(organizationId) {
   const assignmentIds = assignments.map((assignment) => assignment._id)
   // Contacts - lastMessage
   const optOuts = OptOuts.find( { organizationId }, { fields: { cell: 1 }})
+
+  const validZips = ZipCodes.find({ timezoneOffset: {$in: validOffsets() } }, { fields: { zip: 1 } }).fetch().map(({zip}) => zip)
+
+  if (defaultTimezoneIsBetweenTextingHours()) {
+    validZips.push(null)
+  }
+
+  const baseQuery = {
+    assignmentId: { $in: assignmentIds },
+    cell: { $nin: optOuts.map((optOut) => optOut.cell)}
+  }
+
+  const badTimezoneAggregation = CampaignContacts.aggregate([
+  {
+    $match: _.extend({}, baseQuery, { zip: { $nin: validZips }})
+  },
+  {
+    $group: {
+      _id : '$assignmentId',
+      count: { $sum: 1 }
+    },
+  },
+  ])
+
+  console.log(badTimezoneAggregation)
   const aggregation = CampaignContacts.aggregate([
   {
-    $match: {
-      assignmentId: { $in: assignmentIds },
-      cell: { $nin: optOuts.map((optOut) => optOut.cell)}
-    },
+    $match: _.extend({}, baseQuery, { zip: { $in: validZips } })
   },
   {
     $group: {
@@ -53,6 +76,10 @@ Meteor.publish('assignments.todo', function(organizationId) {
       unmessagedCount: 0,
       unrepliedCount: 0
     }
+
+    _.each(badTimezoneAggregation.filter((row) => row._id === assignment._id), (row) => {
+        result.badTimezoneCount = row.count
+    })
 
     _.each(aggregation.filter((row) => row._id.assignmentId === assignment._id), (row) => {
       if (row._id.isFromContact === true) { // Last message is from the contact
@@ -88,7 +115,6 @@ Meteor.publishComposite('assignments.todo.additional', function(organizationId) 
     children: [
       {
         find: (assignment) => {
-          console.log("find assignment acmapign", assignment.campaignId)
           return Campaigns.find({ _id: assignment.campaignId })
         }
       }
@@ -101,6 +127,7 @@ Meteor.publish('assignment.text', function(assignmentId, contactFilter, organiza
   const contacts = contactsForAssignmentCursor(assignmentId, contactFilter, organizationId).fetch()
   const userId = this.userId
   const contactNumbers = contacts.map((contact) => contact.cell)
+  const zipCodes = contacts.map((contact) => contact.zip)
   const assignment = Assignments.findOne(assignmentId) // TODO redundant loading
   const campaignId = assignment.campaignId
   // TODO: Maybe optouts should be reactive, but nothing else really needs to be.
@@ -110,8 +137,9 @@ Meteor.publish('assignment.text', function(assignmentId, contactFilter, organiza
     Messages.find( { contactNumber: {$in: contactNumbers}, userId }),
     OptOuts.find({ organizationId: organizationId}),
     SurveyQuestions.find( { campaignId }),
+        // FIXME survey answers
     SurveyAnswers.find( { campaignId }),
-    // FIXME survey answers
+    ZipCodes.find({ zip: { $in: zipCodes }}),
     CampaignContacts.find({_id: {$in: contacts.map((contact) => contact._id)}}),
   ]
 })

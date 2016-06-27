@@ -5,7 +5,7 @@ import Formsy from 'formsy-react'
 import { ScriptEditor } from './script_editor'
 import Dialog from 'material-ui/Dialog'
 import { CampaignContacts } from '../../api/campaign_contacts/campaign_contacts'
-import { ScriptTypes, ScriptSchema } from '../../api/campaigns/scripts'
+import { ScriptTypes, ScriptSchema, allScriptFields } from '../../api/campaigns/scripts'
 import TextField from 'material-ui/TextField'
 import { FormsyText } from 'formsy-material-ui/lib'
 import Divider from 'material-ui/Divider'
@@ -187,14 +187,12 @@ export class CampaignScriptsForm extends Component {
   }
 
   renderForm() {
-    const {
-      sampleContact,
-      customFields } = this.props
+    const { sampleContact, customFields } = this.props
 
     const { editingScript } = this.state
     console.log('editingScript in renderForm', editingScript)
 
-    const scriptFields = CampaignContacts.requiredUploadFields.concat(CampaignContacts.userScriptFields).concat(customFields)
+    const scriptFields = allScriptFields(customFields)
     console.log('editing field')
     const titleField = editingScript.type !== ScriptTypes.FAQ ? '' : (
       <FormsyText

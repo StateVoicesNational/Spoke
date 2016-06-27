@@ -21,9 +21,10 @@ import { QuestionDropdown } from './question_dropdown'
 import { sendMessage } from '../../api/messages/methods'
 import { applyScript } from '../helpers/script_helpers'
 import { updateAnswer } from '../../api/survey_answers/methods'
+import { ZipCodes } from '../../api/zip_codes/zip_codes'
 import { MessagesList } from './messages_list'
 import { grey100 } from 'material-ui/styles/colors'
-
+import { isBetweenTextingHours } from '../../../both/timezones'
 // .Site {
 //   display: flex;
 //   flex-direction: column;
@@ -266,6 +267,10 @@ export class AssignmentTexter extends Component {
       return null
     }
 
+    console.log(ZipCodes.find({}).fetch())
+    console.log("CURRENT CONTACT OFFEST", contact.utcOffset())
+    const canText = isBetweenTextingHours(contact.utcOffset())
+    console.log("IS isBetweenTextingHours", canText)
     const campaign = assignment.campaign()
     const scriptFields = campaign.scriptFields()
     console.log("THIS SICRPT", this.state.script)

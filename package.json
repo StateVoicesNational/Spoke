@@ -9,6 +9,7 @@
     "start": "meteor run"
   },
   "dependencies": {
+    "babyparse": "^0.4.6",
     "body-parser": "^1.15.1",
     "chart.js": "^1.1.1",
     "draft-js": "^0.7.0",
