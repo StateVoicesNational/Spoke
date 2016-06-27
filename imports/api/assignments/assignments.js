@@ -36,8 +36,9 @@ Factory.define('assignment', Assignments, {
 // This represents the keys from Assignments objects that should be published
 // to the client. If we add secret properties to List objects, don't list
 // them here to keep them private to the server.
-Assignments.publicFields = {
-}
+// Assignments.publicFields = {
+//   contactsForAssignmentCursor:
+// }
 
 // TODO: Can't use this from the client safely
 export const contactsForAssignmentCursor = (assignmentId, contactFilter, organizationId) => {

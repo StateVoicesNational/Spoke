@@ -7,6 +7,7 @@ import { OptOuts } from '../opt_outs/opt_outs.js'
 import { Meteor } from 'meteor/meteor'
 import { Plivo } from './plivo'
 import { getFormattedPhoneNumber } from '../../../both/phone_format'
+import { isBetweenTextingHours } from '../../../both/timezones'
 
 const getAssignedPhoneNumber = (userId) => {
   if (!Meteor.settings.public.textingEnabled) {
@@ -137,11 +138,16 @@ export const sendMessage = new ValidatedMethod({
   validate: new SimpleSchema({
     contactNumber: { type: String },
     text: { type: String },
-    campaignId: { type: String }
+    campaignId: { type: String },
+    timezoneOffset: { type: Number, optional: true }
   }).validator(),
-  run({ text, contactNumber, campaignId }) {
+  run({ text, contactNumber, campaignId, timezoneOffset }) {
     // TODO: Not sure about this pattern?
     if (Meteor.isServer) {
+      if (!isBetweenTextingHours(timezoneOffset)) {
+        throw new Meteor.Error('message-timezone-send-error')
+      }
+
       const organizationId = Campaigns.findOne({ _id: campaignId }).organizationId
 
       if (!this.userId || !Roles.userIsInRole(this.userId, 'texter', organizationId)) {

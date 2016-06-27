@@ -195,7 +195,8 @@ export class AssignmentTexter extends Component {
       text,
       campaignId: assignment.campaignId,
       contactNumber: contact.cell,
-      userNumber: "18053959604"
+      userNumber: "18053959604",
+      timezoneOffset: contact.utcOffset()
     }, (error) => {
       if (error) {
         alert(error)
@@ -265,14 +266,8 @@ export class AssignmentTexter extends Component {
       return null
     }
 
-    console.log(ZipCodes.find({}).fetch())
-    console.log("CURRENT CONTACT OFFEST", contact.utcOffset())
-    const canText = isBetweenTextingHours(contact.utcOffset())
-    console.log("IS isBetweenTextingHours", canText)
     const campaign = assignment.campaign()
     const scriptFields = campaign.scriptFields()
-    console.log("THIS SICRPT", this.state.script)
-    console.log("apply script", applyScript(this.state.script, contact, scriptFields))
 
     //TODO - do we really want to grab all messages at once here? should I actually be doing a collection serach
     const leftToolbarChildren = [

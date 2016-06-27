@@ -1,20 +1,10 @@
-// const TIMEZONE_CONFIG = {
-//   allowedStart: 9,
-//   allowedEnd: 21,
-//   missingTimeZone: {
-//     offset: -5, // EST
-//     allowedStart: 12, // 12pm EST/9am PST
-//     allowedEnd: 21, // 9pm EST/6pm PST
-//   }
-// }
-
 const TIMEZONE_CONFIG = {
-  allowedStart: 0,
-  allowedEnd: 24,
+  allowedStart: 9,
+  allowedEnd: 21,
   missingTimeZone: {
     offset: -5, // EST
-    allowedStart: 0, // 12pm EST/9am PST
-    allowedEnd: 24, // 9pm EST/6pm PST
+    allowedStart: 12, // 12pm EST/9am PST
+    allowedEnd: 21, // 9pm EST/6pm PST
   }
 }
 

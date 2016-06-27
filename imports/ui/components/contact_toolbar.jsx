@@ -77,6 +77,7 @@ export class ContactToolbar extends Component {
       campaignId,
       text: messageText,
       contactNumber: cell,
+      timezoneOffset: campaignContact.utcOffset()
     }, (messageSendError) => {
       if (messageSendError) {
         alert(messageSendError)
