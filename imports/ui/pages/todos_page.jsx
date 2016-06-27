@@ -62,11 +62,6 @@ class _TodosPage extends React.Component {
       }
     })
 
-    // const groupedResults = _.groupBy(results, (result) => [
-    //   // (result.unmessagedCount + result.unrepliedCount) > 0,  //hasTodos
-    //   moment(result.dueBy).diff(moment()) < 0 //isPast
-    // ])
-
     const empty = (
       <Empty
         title="You have nothing to do!"
@@ -113,6 +108,7 @@ class _TodosPage extends React.Component {
     </div>
     )
 
+    console.log(results)
     const content = !loading && results.length > 0 ? (
         <div>
           <Toolbar style={styles.toolbar}>

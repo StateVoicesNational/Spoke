@@ -74,7 +74,8 @@ Meteor.publish('assignments.todo', function(organizationId) {
     const result = {
       assignment,
       unmessagedCount: 0,
-      unrepliedCount: 0
+      unrepliedCount: 0,
+      badTimezoneCount: 0
     }
 
     _.each(badTimezoneAggregation.filter((row) => row._id === assignment._id), (row) => {

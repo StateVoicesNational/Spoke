@@ -16,3 +16,9 @@ export const getFormattedPhoneNumber = (cell) => {
     return null
   }
 }
+
+export const getDisplayPhoneNumber = (e164Number) => {
+  const phoneUtil = PhoneNumberUtil.getInstance()
+  const parsed = phoneUtil.parse(e164Number, 'US')
+  return phoneUtil.format(parsed, PhoneNumberFormat.NATIONAL)
+}

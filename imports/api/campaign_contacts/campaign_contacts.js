@@ -70,8 +70,11 @@ CampaignContacts.publicFields = {
 }
 
 CampaignContacts.helpers({
+  zipDatum() {
+    return ZipCodes.findOne({ zip: this.zip })
+  },
   utcOffset() {
-    const zip = ZipCodes.findOne( { zip: this.zip })
+    const zip = this.zipDatum()
     return zip ? zip.timezoneOffset : null
   },
   messages() {

@@ -13,10 +13,8 @@ import MenuItem from 'material-ui/MenuItem';
 import { ContactToolbar } from './contact_toolbar'
 import { AssignmentTexterSurveys} from './assignment_texter_surveys'
 
-import { SurveyList } from './survey_list'
 import { MessageForm } from './message_form'
 import { ResponseDropdown } from './response_dropdown'
-import { QuestionDropdown } from './question_dropdown'
 
 import { sendMessage } from '../../api/messages/methods'
 import { applyScript } from '../helpers/script_helpers'

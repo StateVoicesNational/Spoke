@@ -10,12 +10,24 @@ import IconMenu from 'material-ui/IconMenu'
 import MenuItem from 'material-ui/MenuItem';
 import { insert } from '../../api/opt_outs/methods'
 import { sendMessage } from '../../api/messages/methods'
+import { getDisplayPhoneNumber } from '../../../both/phone_format'
+import { getLocalTime } from '../../../both/timezones'
 
 const styles = {
   toolbarIconButton: {
     // without this the toolbar icons are not centered vertically
     height: '56px'
+  },
+  cellToolbarTitle: {
+    fontSize: 14
+  },
+  locationToolbarTitle: {
+    fontSize: 14
+  },
+  timeToolbarTitle: {
+    fontSize: 14
   }
+
 }
 
 export class ContactToolbar extends Component {
@@ -96,6 +108,7 @@ export class ContactToolbar extends Component {
 
     const optOutScript = "I'm opting you out of text-based communication immediately. Have a great day."
 
+    const zipDatum = campaignContact.zipDatum()
     return (
         <Toolbar style={style}>
           <ToolbarGroup
@@ -117,11 +130,31 @@ export class ContactToolbar extends Component {
                 primaryText={optOut ? "Opted out" : "Opt out"} />
             </IconMenu>
 
-            <ToolbarTitle text={`${campaignContact.firstName} - ${campaignContact.cell}`} />
+            <ToolbarTitle
+              text={campaignContact.firstName}
+            />
+            <ToolbarTitle
+              text={getDisplayPhoneNumber(campaignContact.cell)}
+              style={styles.cellToolbarTitle}
+            />
           </ToolbarGroup>
           <ToolbarGroup
             lastChild
           >
+            { zipDatum ? (
+                <ToolbarTitle
+                  text={getLocalTime(zipDatum.timezoneOffset).format('h:mm a')}
+                  style={styles.timeToolbarTitle}
+                />
+              ) : ''
+            }
+            { zipDatum ? (
+                <ToolbarTitle
+                  text={`${zipDatum.city}, ${zipDatum.state}`}
+                  style={styles.locationToolbarTitle}
+                />
+              ) : ''
+            }
             { rightToolbarIcon }
 
           </ToolbarGroup>
