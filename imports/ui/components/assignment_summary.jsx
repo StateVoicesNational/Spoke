@@ -27,6 +27,7 @@ export class AssignmentSummary extends Component {
   renderBadgedButton({ assignment, title, count, primary, disabled, contactFilter, tooltip }) {
     const { organizationId } = this.props
     const { badTimezoneTooltipOpen } = this.state
+
     return (count === 0 ? '' :
       <Badge
         badgeStyle={styles.badge}
@@ -38,8 +39,8 @@ export class AssignmentSummary extends Component {
           disabled={disabled}
           label={title}
           onTouchTap={ () => contactFilter ? FlowRouter.go('textUnmessaged', { organizationId, contactFilter, assignmentId: assignment._id }) : null }
-          onMouseEnter={tooltip ? ()=> this.setState({badTimezoneTooltipOpen: true}) : null}
-          onMouseLeave={tooltip ? ()=> this.setState({badTimezoneTooltipOpen: false}) : null }
+          onMouseEnter={()=> tooltip ? this.setState({badTimezoneTooltipOpen: true}) : {}}
+          onMouseLeave={()=> tooltip ? this.setState({badTimezoneTooltipOpen: false}) : {}}
         />
          <Tooltip show={badTimezoneTooltipOpen}
           label={tooltip}
