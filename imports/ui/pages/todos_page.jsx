@@ -51,7 +51,6 @@ class _TodosPage extends React.Component {
 
   render () {
     const { organizationId, loading, results} = this.props
-
     const groupedResults = _.groupBy(results, (result) =>  {
       if (moment(result.assignment.dueBy).isBefore(moment())) {
         return 'past'
@@ -74,7 +73,6 @@ class _TodosPage extends React.Component {
         <Subheader>{groupKey === 'active' ? '': groupKey}</Subheader>
           {
             group.map((result) => {
-              console.log("RESULT CAMP", result.assignment.campaignId)
               const { title, description } = Campaigns.findOne(result.assignment.campaignId)
 
               if (groupKey === 'past') {
@@ -108,7 +106,7 @@ class _TodosPage extends React.Component {
     </div>
     )
 
-    console.log(results)
+
     const content = !loading && results.length > 0 ? (
         <div>
           <Toolbar style={styles.toolbar}>
