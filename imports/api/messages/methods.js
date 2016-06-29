@@ -143,9 +143,10 @@ export const sendMessage = new ValidatedMethod({
   }).validator(),
   run({ text, contactNumber, campaignId, timezoneOffset }) {
     // TODO: Not sure about this pattern?
+    throw new Meteor.Error('message-send-timezone-error', "It's outside of texting hours for this contact")
     if (Meteor.isServer) {
       if (!isBetweenTextingHours(timezoneOffset)) {
-        throw new Meteor.Error('message-timezone-send-error')
+        throw new Meteor.Error('message-send-timezone-error', "It's outside of texting hours for this contact")
       }
 
       const organizationId = Campaigns.findOne({ _id: campaignId }).organizationId

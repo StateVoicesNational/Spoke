@@ -49,7 +49,11 @@ export class CampaignEditForm extends Component {
       } else if (sectionTitle === SectionTitles.scripts) {
         action = onSubmitScripts
       }
-      return action
+
+      return () => {
+        action()
+        this.setState( { expandedSection: null })
+      }
     }
 
     // TODO

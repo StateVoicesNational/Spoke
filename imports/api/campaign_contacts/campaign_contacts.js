@@ -77,6 +77,9 @@ CampaignContacts.helpers({
     const zip = this.zipDatum()
     return zip ? zip.timezoneOffset : null
   },
+  campaign() {
+    return Campaigns.findOne(this.campaignId)
+  },
   messages() {
     return Messages.find({ contactNumber: this.cell, campaignId: this.campaignId })
   },

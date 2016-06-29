@@ -16,9 +16,9 @@ export const insert = new ValidatedMethod({
     description: { type: String },
     contacts: { type: [Object], blackbox: true },
     scripts: { type: [ScriptSchema] },
-    assignedTexters: { type: [String] },
     questions: { type: [Object], blackbox: true },
     customFields: { type: [String] },
+    assignedTexters: { type: [String] },
     dueBy: { type: Date }
   }).validator(),
   run({
@@ -50,7 +50,10 @@ export const insert = new ValidatedMethod({
     const campaignId = Campaigns.insert(campaignData)
     saveQuestions(campaignId, questions)
     saveContacts(campaignId, contacts)
-    assignContacts(campaignId, dueBy, assignedTexters)
+
+    if (assignedTexters.length > 0) {
+      assignContacts(campaignId, dueBy, assignedTexters)
+    }
     return campaignId
   }
 })

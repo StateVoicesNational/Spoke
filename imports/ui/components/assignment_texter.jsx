@@ -22,7 +22,7 @@ import { updateAnswer } from '../../api/survey_answers/methods'
 import { ZipCodes } from '../../api/zip_codes/zip_codes'
 import { MessagesList } from './messages_list'
 import { grey100 } from 'material-ui/styles/colors'
-import { isBetweenTextingHours } from '../../../both/timezones'
+
 // .Site {
 //   display: flex;
 //   flex-direction: column;
@@ -95,7 +95,7 @@ export class AssignmentTexter extends Component {
 
     this.state = {
       currentContactIndex: 0,
-      script: ''
+      script: '',
     }
 
     this.handleNavigateNext = this.handleNavigateNext.bind(this)
@@ -199,7 +199,9 @@ export class AssignmentTexter extends Component {
       timezoneOffset: contact.utcOffset()
     }, (error) => {
       if (error) {
-        alert(error)
+        console.log("naotheusntahoeusnahtoeu")
+        console.log("ERROR", error)
+        // alert(error)
       } else {
         onSuccess()
       }
@@ -257,7 +259,6 @@ export class AssignmentTexter extends Component {
       />
     )
   }
-
 
   render() {
     const { assignment, contacts, onStopTexting } = this.props
@@ -334,20 +335,6 @@ export class AssignmentTexter extends Component {
             initialScript={appliedScript}
             secondaryToolbar={secondaryToolbar}
           />
-        </div>
-      </div>
-    )
-    return (
-      <div style={styles.root}>
-        <div style={styles.topToolbar}>
-
-        </div>
-        <Divider />
-        <div style={styles.messageList}>
-        </div>
-
-        <div style={styles.bottomToolbar}>
-
         </div>
       </div>
     )

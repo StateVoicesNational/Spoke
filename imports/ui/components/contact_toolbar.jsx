@@ -80,6 +80,7 @@ export class ContactToolbar extends Component {
       timezoneOffset: campaignContact.utcOffset()
     }, (messageSendError) => {
       if (messageSendError) {
+        console.log()
         alert(messageSendError)
       } else {
         console.log("on messagesend seccess")

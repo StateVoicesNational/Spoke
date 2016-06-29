@@ -3,22 +3,28 @@ import { Campaigns } from '../campaigns.js'
 import { Messages } from '../../messages/messages.js'
 import { OptOuts } from '../../opt_outs/opt_outs'
 import { CampaignContacts } from '../../campaign_contacts/campaign_contacts.js'
-import { Assignments } from '../../assignments/assignments.js'
+import { Assignments, activeAssignmentQuery } from '../../assignments/assignments.js'
 import { SurveyQuestions } from '../../survey_questions/survey_questions.js'
 import { SurveyAnswers } from '../../survey_answers/survey_answers.js'
 import { Roles } from 'meteor/alanning:roles'
 // Standardize this
 const adminCheck = (userId, organizationId) => (!!userId && Roles.userIsInRole(userId, 'admin', organizationId))
 
-Meteor.publish('campaigns', function campaignsPublication(organizationId) {
+Meteor.publishComposite('campaigns', function (organizationId) {
 
   if (!adminCheck(this.userId, organizationId)) {
-    return this.ready();
+    return
   }
 
-  return Campaigns.find({ organizationId })
+  return {
+    find: () => Campaigns.find({ organizationId }),
+    children: [
+      {
+        find: (campaign) => Assignments.find(activeAssignmentQuery(campaign), { limit: 1 })
+      }
+    ]
+  }
 })
-
 
 Meteor.publish('campaign.new', (organizationId) => [
   Roles.getUsersInRole('texter', organizationId),
@@ -31,7 +37,7 @@ Meteor.publishComposite('campaign.edit', (campaignId, organizationId) => {
       find: () => Campaigns.find({ _id: campaignId }),
       children: [
         {
-          find: (campaign) => Messages.findOne( { campaignId })
+          find: (campaign) => Messages.find( { campaignId }, { limit: 1})
         },
         {
           find: (campaign) => Assignments.find({ campaignId })

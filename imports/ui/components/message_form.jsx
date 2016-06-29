@@ -6,6 +6,7 @@ import { moment } from 'meteor/momentjs:moment'
 import { MessageField } from './message_field'
 import { sendMessage } from '../../api/messages/methods'
 import { applyScript } from '../helpers/script_helpers'
+import Snackbar from 'material-ui/Snackbar';
 
 const styles = {
   navigationToolbar: {
@@ -32,8 +33,14 @@ export class MessageForm extends Component {
     this.handleSendMessage = this.handleSendMessage.bind(this)
     this.handleMessageFieldKeyDown = this.handleMessageFieldKeyDown.bind(this)
     this.state = {
-      submitting: false
+      submitting: false,
+      snackbarOpen: false,
+      snackbarMessage: ''
     }
+  }
+
+  handleRequestChange() {
+    this.setState({ snackbarOpen: false })
   }
 
   handleSendMessage() {
@@ -52,6 +59,19 @@ export class MessageForm extends Component {
     this.sendMessageToCurrentContact(messageText, onSuccess)
   }
 
+  handleError(error) {
+    const { onSendMessage } = this.props
+    if (error.error === 'message-send-timezone-error') {
+      this.setState({
+        snackbarMessage: "Didn't send that last message because it's outside texting hours for the contact.",
+        snackbarOpen: true
+      })
+      if (onSendMessage) {
+        onSendMessage()
+      }
+    }
+  }
+
   sendMessageToCurrentContact(text, onSendMessage) {
     const { campaignContact } = this.props
     sendMessage.call({
@@ -64,7 +84,7 @@ export class MessageForm extends Component {
       })
 
       if (error) {
-        alert(error)
+        this.handleError(error)
       } else {
         if (onSendMessage)
         {
@@ -127,6 +147,12 @@ export class MessageForm extends Component {
             { rightToolbarChildren }
           </ToolbarGroup>
         </Toolbar>
+        <Snackbar
+          open={this.state.snackbarOpen}
+          message={this.state.snackbarMessage}
+          autoHideDuration={3000}
+          onRequestClose={this.handleRequestClose}
+        />
     </div>
     )
 

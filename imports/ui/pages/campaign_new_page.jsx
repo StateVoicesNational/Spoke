@@ -20,26 +20,7 @@ class _CampaignNewPage extends React.Component {
             hideSidebar
           />
         }
-        content={ texters.length === 0 ? (
-            <Card>
-              <CardHeader
-              />
-
-              <CardTitle
-                title="First step: enroll some texters!"
-                subtitle="Share this link to get people signed up to text for you (or visit the link yourself if you plan to text for your organization), then come back here to create a campaign."
-              />
-              <CardText>
-                <TextField
-                  ref="linkField"
-                  autoFocus
-                  onFocus={(event) => event.target.select()}
-                  fullWidth
-                  value={`${Meteor.absoluteUrl()}${organizationId}/join`}
-                />
-              </CardText>
-            </Card>
-          ) : (
+        content={(
             <CampaignForm
               organizationId={organizationId}
               texters={texters}

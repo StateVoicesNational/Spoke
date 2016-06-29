@@ -20,6 +20,7 @@ const styles = {
     marginBottom: 24
   }
 }
+
 export class CampaignAssignmentForm extends Component {
   constructor(props) {
     super(props)
@@ -70,7 +71,6 @@ export class CampaignAssignmentForm extends Component {
     const { texters, assignedTexters, onValid, onInvalid } = this.props
 
     const assignAll = assignedTexters.length === texters.length
-
     // TODO remove already assigned texters
     const dataSource = texters.filter((texter) =>
         assignedTexters.indexOf(texter._id) === -1).map((texter) =>
@@ -86,6 +86,9 @@ export class CampaignAssignmentForm extends Component {
     // actually probably do something smarter with the form submissions and getFormModel and do
     // multiple assignedTexters[0] fields, etc. Maybe custom components
 
+    const valueSelected = assignAll ? 'assignAll' : 'assignIndividual'
+
+    console.log("value selected", valueSelected)
     // TODO https://github.com/callemall/material-ui/pull/4193/commits/8e80a35e8d2cdb410c3727333e8518cadc08783b
     const autocomplete = (
       <AutoComplete
@@ -100,18 +103,12 @@ export class CampaignAssignmentForm extends Component {
       />
     )
 
-    return (
-      <Formsy.Form
-        onValid={onValid}
-        onInvalid={onInvalid}
-      >
-        <CampaignFormSectionHeading
-          title="Who should send the texts?"
-        />
+    const radioButtonGroup = texters.length === 0 ? '' : (
+      [
         <RadioButtonGroup
           style={styles.radioButtonGroup}
           name="assignment"
-          valueSelected={assignAll ? 'assignAll' : 'assignIndividual'}
+          valueSelected={valueSelected}
           onChange={this.onChange}
         >
           <RadioButton
@@ -122,14 +119,26 @@ export class CampaignAssignmentForm extends Component {
             value="assignIndividual"
             label="Choose individual people to assign"
           />
-        </RadioButtonGroup>
-         {assignAll ? '' : autocomplete}
+        </RadioButtonGroup>,
+         !assignAll ? autocomplete : ''
+      ]
+    )
+    const subtitle = texters.length > 0 ? '' : 'You have no texters set up. You can skip assignment for now and come back to add texters later.'
+    return (
+      <Formsy.Form
+        onValid={onValid}
+        onInvalid={onInvalid}
+      >
+        <CampaignFormSectionHeading
+          title="Who should send the texts?"
+          subtitle={subtitle}
+        />
+        { radioButtonGroup }
          <div>
           <FormsyText
             name="assignedTexters"
             style={{ opacity: 0, width: 0, height: 0 }}
             value={assignedTexters.length > 0 ? 'formsy-valid' : ''}
-            required
           />
            { assignedTexters.map((texterId) => {
              const user = Meteor.users.findOne({ _id: texterId })

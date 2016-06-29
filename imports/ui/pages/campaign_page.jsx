@@ -69,6 +69,12 @@ const _CampaignPage = ({ loading, organizationId, campaign, stats, assignments }
                 <h2>{campaign.title}</h2>
               </div>
               <div className="col-xs" style={{textAlign: 'right'}}>
+                <RaisedButton
+                  onTouchTap={() => FlowRouter.go('campaign.edit', { organizationId, campaignId: campaign._id })}
+                  label="Edit"
+                />
+              </div>
+              <div className="col-xs" style={{textAlign: 'right'}}>
                 <Export campaign={campaign}/>
               </div>
             </div>

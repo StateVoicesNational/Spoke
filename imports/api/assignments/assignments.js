@@ -40,6 +40,11 @@ Factory.define('assignment', Assignments, {
 //   contactsForAssignmentCursor:
 // }
 
+export const activeAssignmentQuery = (campaign) => {
+  return {
+    campaignId: campaign._id
+  }
+}
 // TODO: Can't use this from the client safely
 export const contactsForAssignmentCursor = (assignmentId, contactFilter, organizationId) => {
   const validZips = ZipCodes.find({ timezoneOffset: { $in: validOffsets() } }, { fields: { zip: 1 } }).fetch().map(({zip}) => zip)

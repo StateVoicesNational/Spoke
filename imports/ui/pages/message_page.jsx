@@ -21,6 +21,7 @@ const Page = ({ loading, messages, campaignContact, organizationId }) => (
     }
     content={loading ? '' :
     <div>
+    <span>Campaign: {campaignContact.campaign().title}</span>
       <ContactToolbar
         campaignContact={campaignContact}
       />

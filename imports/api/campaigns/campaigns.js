@@ -4,7 +4,7 @@ import { Fake } from 'meteor/anti:fake'
 import { Factory } from 'meteor/dburles:factory'
 import { SurveyQuestions } from '../survey_questions/survey_questions'
 import { Messages } from '../messages/messages'
-import { CampaignContacts } from '../campaign_contacts/campaign_contacts'
+import { Assignments, activeAssignmentQuery } from '../assignments/assignments'
 import { moment } from 'meteor/momentjs:moment'
 import { ScriptSchema, ScriptTypes, allScriptFields } from './scripts'
 
@@ -49,6 +49,7 @@ Factory.define('campaign', Campaigns, {
   customFields: [],
   dueBy: () => new Date(),
   surveyQuestionId: Factory.get('survey_question'),
+  assignedTexters: [],
   scripts: () => [
     {
       title: "I don't have a laptop",
@@ -74,6 +75,7 @@ Factory.define('campaign', Campaigns, {
 Campaigns.publicFields = {
 }
 
+
 Campaigns.helpers({
   initialScriptText() {
     const initialScript = _.find(this.scripts, (script) => script.type === ScriptTypes.INITIAL)
@@ -81,6 +83,9 @@ Campaigns.helpers({
   },
   faqScripts() {
     return this.scripts.filter((script) => script.type === ScriptTypes.FAQ)
+  },
+  activeAssignment() {
+    return Assignments.findOne(activeAssignmentQuery(this))
   },
   scriptFields() {
     return allScriptFields(this.customFields)
