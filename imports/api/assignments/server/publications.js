@@ -131,12 +131,17 @@ Meteor.publish('assignment.text', function(assignmentId, contactFilter, organiza
   const zipCodes = contacts.map((contact) => contact.zip)
   const assignment = Assignments.findOne(assignmentId) // TODO redundant loading
   const campaignId = assignment.campaignId
-  // TODO: Maybe optouts should be reactive, but nothing else really needs to be.
+  console.log("contactNumbers", contactNumbers, "userID", this.userId)
+  console.log('mess', Messages.find({ contactNumber: { $in: contactNumbers }}).fetch())
+  console.log("messages", Messages.find( { contactNumber: {$in: contactNumbers}, userId }).fetch())
+
+
+    // TODO: Maybe optouts should be reactive, but nothing else really needs to be.
   return [
     Assignments.find({ _id: assignmentId }),
     Campaigns.find({ _id: campaignId}),
     Messages.find( { contactNumber: {$in: contactNumbers}, userId }),
-    OptOuts.find({ organizationId: organizationId}),
+    OptOuts.find({ organizationId }),
     SurveyQuestions.find( { campaignId }),
         // FIXME survey answers
     SurveyAnswers.find( { campaignId }),

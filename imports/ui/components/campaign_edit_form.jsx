@@ -56,8 +56,7 @@ export class CampaignEditForm extends Component {
       }
     }
 
-    // TODO
-    const alwaysEditable = false
+    const alwaysEditable = (sectionTitle) => _.includes([SectionTitles.scripts, SectionTitles.basics, SectionTitles.texters], sectionTitle)
     return (
       <div>
         { sections.map(({ title, content }) => (
@@ -72,7 +71,7 @@ export class CampaignEditForm extends Component {
               showExpandableButton
             />
             <CardText expandable>
-              {alwaysEditable || !hasMessage ? (
+              {alwaysEditable(title) || !hasMessage ? (
                 <CampaignFormSection
                   showPreviousStep={false}
                   content={content()}
@@ -93,5 +92,7 @@ CampaignEditForm.propTypes = {
   campaign: React.PropTypes.object,
   onSubmitSurveys: React.PropTypes.func,
   onSubmitContacts: React.PropTypes.func,
-  onSubmitCampaignEdit: React.PropTypes.func
+  onSubmitBasics: React.PropTypes.func,
+  onSubmitTexters: React.PropTypes.func,
+  onSubmitScripts: React.PropTypes.func,
 }

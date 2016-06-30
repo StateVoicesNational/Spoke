@@ -3,7 +3,7 @@ import SelectField from 'material-ui/SelectField'
 import MenuItem from 'material-ui/MenuItem'
 import Formsy from 'formsy-react';
 import { FormsySelect } from 'formsy-material-ui/lib'
-
+import Divider from 'material-ui/Divider'
 const styles = {
 }
 
@@ -28,7 +28,8 @@ export class QuestionDropdown extends Component {
           floatingLabelText={question.text}
           floatingLabelStyle={{pointerEvents: 'none'}} // https://github.com/callemall/material-ui/issues/3908
           onChange={this.handleAnswerChange}
-          showUnderline={false}
+          underlineStyle={{display: 'none'}}
+          underlineShow={false}
           name={question.text}
           value={answer ? answer.value : ''}
         >
@@ -39,6 +40,7 @@ export class QuestionDropdown extends Component {
               primaryText={allowedAnswer.value}
             />)}
         </SelectField>
+        <Divider/>
       </div>
     )
   }

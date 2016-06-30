@@ -55,14 +55,14 @@ export const insertMessage = new ValidatedMethod({
     contactNumber: { type: String },
     userNumber: { type: String },
     text: { type: String },
+    userId: { type: String },
     isFromContact: { type: Boolean },
     campaignId: { type: String },
     serviceMessageId: { type: String }
   }).validator(),
-  run({ text, userNumber, contactNumber, isFromContact, campaignId, serviceMessageId }) {
+  run({ text, userNumber, contactNumber, isFromContact, campaignId, serviceMessageId, userId }) {
 
     const createdAt = new Date()
-    const user = Meteor.users.findOne({ userNumber })
     const message = {
       userNumber,
       contactNumber,
@@ -71,7 +71,7 @@ export const insertMessage = new ValidatedMethod({
       campaignId,
       serviceMessageId,
       createdAt,
-      userId: user._id
+      userId
     }
 
     Messages.insert(message)
@@ -102,7 +102,7 @@ const remoteCreateMessage = (params) => {
   }
 }
 
-const createMessage = ({ text, userNumber, contactNumber, campaignId }) => {
+const createMessage = ({ text, userNumber, contactNumber, campaignId, userId }) => {
   const params = {
     text,
     src: userNumber, // Caller Id
@@ -117,8 +117,9 @@ const createMessage = ({ text, userNumber, contactNumber, campaignId }) => {
     contactNumber,
     text,
     campaignId,
+    userId,
     serviceMessageId,
-    isFromContact: false
+    isFromContact: false,
   }
   return insertMessage.call(message)
 }
@@ -164,7 +165,7 @@ export const sendMessage = new ValidatedMethod({
         Meteor.users.update({ _id: this.userId }, { $set: { userNumber } })
       }
 
-      createMessage({ text, userNumber, contactNumber, campaignId })
+      createMessage({ text, userNumber, contactNumber, campaignId, userId: this.userId })
     }
   }
 })
