@@ -8,7 +8,8 @@ import {
 } from 'draft-js'
 import { delimit } from '../../api/campaigns/scripts'
 import AddIcon from 'material-ui/svg-icons/content/add';
-import { red400, green500, grey200 } from 'material-ui/styles/colors'
+import { Chip } from './chip'
+import { red400, green500, green600, grey100 } from 'material-ui/styles/colors'
 
 function findWithRegex(regex, contentBlock, callback) {
   const text = contentBlock.getText();
@@ -49,22 +50,15 @@ const styles = {
   },
   scriptFieldButton: {
     fontSize: '11px',
-    color: green500,
+    color: green600,
     textTransform: 'none',
-    margin: '5px 10px',
+    backgroundColor: grey100,
+    // margin: '5px 10px',
     cursor: 'pointer',
-    display: 'inline-block',
-  },
-  scriptFieldButtonIcon: {
-    width: 16,
-    height: 15,
-    marginRight: 0,
-    fill: green500,
-    verticalAlign: 'middle',
+    // display: 'inline-block',
   },
   scriptFieldButtonSection: {
-    border: '1px solid #ddd',
-    backgroundColor: grey200,
+    marginTop: 10,
     padding: 5
   }
 };
@@ -159,13 +153,11 @@ export class ScriptEditor extends React.Component {
     return (
       <div style={styles.scriptFieldButtonSection}>
         {scriptFields.map((field) => (
-          <span
+          <Chip
             style={styles.scriptFieldButton}
+            text={delimit(field)}
             onTouchTap={() => this.addCustomField(field)}
-          >
-            <AddIcon style={styles.scriptFieldButtonIcon} />
-              {delimit(field)}
-          </span>
+          />
         ))}
       </div>
     )

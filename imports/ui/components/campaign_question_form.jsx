@@ -125,7 +125,7 @@ export class CampaignQuestionForm extends Component {
   }
 
   handleOpenDialog() {
-    this.setState({ open: true})
+    this.setState({ open: true}, () => this.refs.scriptInput.focus())
   }
   handleCloseDialog() {
     this.setState({ open: false})
@@ -177,55 +177,63 @@ export class CampaignQuestionForm extends Component {
       </div>
     ) : ''
     return (
-        <div style={styles.answerRow}>
-          <RadioButtonUnchecked
-            style={styles.radioButtonIcon}
-          />
-          <FormsyText
-            onKeyDown={ (event) => this.handleAnswerInputOnKeyDown(answer, event) }
-            onFocus={(event) => event.target.select()}
-            onChange={ (event) => this.handleUpdateAnswer(answer._id, { value: event.target.value })}
-            inputStyle={styles.answer}
-            autoFocus={autoFocus}
-            hintStyle={styles.answer}
-            required
-            name={`allowedAnswers[${index}].value`}
-            value={ answer.value }
-          />
-          <div style={styles.script}>
-            { answer.script }
-          </div>
-          <div style={styles.script}>
-            { answer.surveyQuestionId ? <QuestionLink text={otherQuestions.find((q) => q._id === answer.surveyQuestionId).text} isLinkToParent={false} /> : '' }
-          </div>
-          <IconMenu
-            style={{float: 'right', width: 24, height: 20}}
-            iconButtonElement={
-              <IconButton
-                style={{float: 'right', width: 24, height: 20}}
-                iconStyle={{width: 20, height: 20}}
-              ><MoreVertIcon /></IconButton>}
-            anchorOrigin={{horizontal: 'left', vertical: 'top'}}
-            targetOrigin={{horizontal: 'left', vertical: 'top'}}
-          >
-            <MenuItem
-              primaryText="Edit script"
-              onTouchTap={() => this.handleEditScript(answer)}
+        <div style={styles.answerRow} className="row">
+          <div className="col-xs">
+            <RadioButtonUnchecked
+              style={styles.radioButtonIcon}
             />
-            <MenuItem
-              primaryText="Delete script"
-              onTouchTap={() => this.handleDeleteScript(answer)}
+            <FormsyText
+              onKeyDown={ (event) => this.handleAnswerInputOnKeyDown(answer, event) }
+              onFocus={(event) => event.target.select()}
+              onChange={ (event) => this.handleUpdateAnswer(answer._id, { value: event.target.value })}
+              inputStyle={styles.answer}
+              autoFocus={autoFocus}
+              hintStyle={styles.answer}
+              required
+              name={`allowedAnswers[${index}].value`}
+              value={ answer.value }
             />
-            { followUpQuestions }
-          </IconMenu>
-
-          <IconButton
-            style={{float: 'right', width: 24, height: 20}}
-            iconStyle={{width: 20, height: 20}}
-            onTouchTap={() => this.handleDeleteAnswer(answer)}
-          >
-            <ContentClear />
-          </IconButton>
+            <IconButton
+              style={{width: 42, height: 42, verticalAlign: 'middle'}}
+              iconStyle={{width: 20, height: 20}}
+              onTouchTap={() => this.handleDeleteAnswer(answer)}
+            >
+              <ContentClear />
+            </IconButton>
+          </div>
+          <div className="col-xs">
+            { answer.script ? <div>
+              {answer.script}
+              <IconMenu
+                       iconButtonElement={
+                         <IconButton
+                           style={{float: 'right', width: 24, height: 28}}
+                           iconStyle={{width: 20, height: 20}}
+                         ><MoreVertIcon /></IconButton>}
+                       anchorOrigin={{horizontal: 'left', vertical: 'top'}}
+                       targetOrigin={{horizontal: 'left', vertical: 'top'}}
+                     >
+                       <MenuItem
+                         primaryText="Edit script"
+                         onTouchTap={() => this.handleEditScript(answer)}
+                       />
+                       <MenuItem
+                         primaryText="Delete script"
+                         onTouchTap={() => this.handleDeleteScript(answer)}
+                       />
+                       { followUpQuestions }
+                     </IconMenu>
+            </div> : (
+              <FlatButton
+                label="Add script"
+                onTouchTap={() => this.handleEditScript(answer)}
+              />
+            )
+            }
+            <div style={styles.script}>
+              { answer.surveyQuestionId ? <QuestionLink text={otherQuestions.find((q) => q._id === answer.surveyQuestionId).text} isLinkToParent={false} /> : '' }
+            </div>
+          </div>
       </div>
     )
 
