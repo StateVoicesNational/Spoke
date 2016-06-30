@@ -27,8 +27,8 @@ const styles = {
   }
 }
 
-export const Chip = ({text, iconRightClass, onIconRightTouchTap, style={}}) => (
-  <div style={_.extend({}, styles.chip, style)}>
+export const Chip = ({text, iconRightClass, onIconRightTouchTap, onTouchTap, style={}}) => (
+  <div style={_.extend({}, styles.chip, style)} onTouchTap={onTouchTap}>
     { text }
     { iconRightClass ? React.createElement(iconRightClass, {style: styles.icon, onTouchTap: onIconRightTouchTap }) : ''}
   </div>
