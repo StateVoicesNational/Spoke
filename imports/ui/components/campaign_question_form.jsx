@@ -115,6 +115,7 @@ export class CampaignQuestionForm extends Component {
     this.handleDeleteScript = this.handleDeleteScript.bind(this)
     this.handleUpdateAnswer = this.handleUpdateAnswer.bind(this)
     this.handleDeleteQuestion = this.handleDeleteQuestion.bind(this)
+    this.handleAnswerInputOnKeyDown = this.handleAnswerInputOnKeyDown.bind(this)
     // this.handleAddFollowup = this.handleAddFollowup.bind(this)
 
     this.state = {
@@ -130,9 +131,11 @@ export class CampaignQuestionForm extends Component {
     this.setState({ open: false})
   }
 
-  handleOnKeyDown(event) {
+  handleAnswerInputOnKeyDown(answer, event) {
     if (event.keyCode === 13) {
       this.addAnswer()
+    } else if (event.keyCode === 8 && event.target.value === '') {
+      this.handleDeleteAnswer(answer)
     }
   }
 
@@ -147,7 +150,6 @@ export class CampaignQuestionForm extends Component {
   }
 
   renderAnswer(otherQuestions, question, answer, autoFocus, index) {
-    console.log("otherQuestions", otherQuestions, question, answer)
     // const showFollowUp  = otherQuestions.length > 0
     const showFollowUp = false
     const followUpQuestions = showFollowUp ? (
@@ -180,9 +182,11 @@ export class CampaignQuestionForm extends Component {
             style={styles.radioButtonIcon}
           />
           <FormsyText
-            onKeyDown={ this.handleOnKeyDown.bind(this) }
+            onKeyDown={ (event) => this.handleAnswerInputOnKeyDown(answer, event) }
+            onFocus={(event) => event.target.select()}
             onChange={ (event) => this.handleUpdateAnswer(answer._id, { value: event.target.value })}
             inputStyle={styles.answer}
+            autoFocus={autoFocus}
             hintStyle={styles.answer}
             required
             name={`allowedAnswers[${index}].value`}
@@ -234,11 +238,9 @@ export class CampaignQuestionForm extends Component {
 
   handleUpdateAnswer(answerId, updates) {
     const { question, onEditQuestion } = this.props
-    console.log(answerId, updates)
     //FIXME inefficintes
     const allowedAnswers = question.allowedAnswers.map((allowedAnswer) => {
       if (allowedAnswer._id === answerId) {
-        console.log(updates)
         return _.extend(allowedAnswer, updates)
       }
       return allowedAnswer
@@ -251,10 +253,10 @@ export class CampaignQuestionForm extends Component {
     const {onDeleteQuestion, question} = this.props
     onDeleteQuestion(question._id)
   }
+
   handleDeleteAnswer(answer) {
     const { question, onEditQuestion } = this.props
     const allowedAnswers = _.reject(question.allowedAnswers, (allowedAnswer) => allowedAnswer._id === answer._id)
-    console.log("new allowedAnswers", allowedAnswers, 'try to remove', answer._id)
     onEditQuestion(question._id, { allowedAnswers })
   }
 
@@ -327,7 +329,6 @@ export class CampaignQuestionForm extends Component {
   render() {
     const { question, questions } = this.props
     const questionIsFocused = question.text === ''
-    console.log("IS QUSETION FOCUSED", questionIsFocused, question.text)
     // const parentQuestions = questions.filter((q) => _.includes(q.allowedAnswers.map((answer) => answer.surveyQuestionId), question._id))
     const parentQuestions = []
 
@@ -340,10 +341,11 @@ export class CampaignQuestionForm extends Component {
               name="question"
               autoFocus={questionIsFocused}
               onChange={this.handleQuestionChange.bind(this)}
+              onFocus={(event) => event.target.select()}
               required
               fullWidth
               ref="questionInput"
-              hintText="e.g. Can the contact attend the event?"
+              hintText="Question (e.g. Can the contact attend the event?)"
               value={ question.text }
             />
             { this.renderAnswers(questions, question, questionIsFocused) }

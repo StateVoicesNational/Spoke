@@ -70,11 +70,22 @@ export class CampaignScriptsForm extends Component {
     onValid()
   }
   handleOpenDialog() {
-    this.setState({ open: true })
+    this.setState({ open: true }, () => this.focusDialog())
+
+    // console.log("THIS refs", this.refs, this.refs.scriptInput, this.refs.form, this.refs['scriptInput'])
+    // this.refs.scriptInput.focus()
   }
 
   handleCloseDialog() {
     this.setState({ open: false, editingScript: null })
+  }
+
+  focusDialog() {
+    if (this.refs.titleInput) {
+      this.refs.titleInput.focus()
+    } else {
+      this.refs.scriptInput.focus()
+    }
   }
 
   getModel() {
@@ -204,8 +215,8 @@ export class CampaignScriptsForm extends Component {
     const titleField = editingScript.type !== ScriptTypes.FAQ ? '' : (
       <FormsyText
         style={styles.titleInput}
+        ref="titleInput"
         fullWidth
-        autoFocus
         name="title"
         onChange={(event, value) => this.setState({ title: event.currentTarget.value })}
         floatingLabelText="Reply label"

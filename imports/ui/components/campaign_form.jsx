@@ -175,8 +175,8 @@ export class CampaignForm extends Component {
 
   handleAddSurvey() {
     const question = {
-      text: 'Question',
-      allowedAnswers: [newAllowedAnswer('Option 1')],
+      text: '',
+      allowedAnswers: [newAllowedAnswer('')],
       isTopLevel: true
     }
     QuestionCollection.insert(question)

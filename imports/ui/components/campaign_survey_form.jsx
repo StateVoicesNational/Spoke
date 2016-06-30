@@ -11,7 +11,6 @@ const styles = {
 export class CampaignSurveyForm extends Component {
   render() {
     const { questions, onValid, onInvalid, onAddSurveyAnswer, onDeleteQuestion, onEditQuestion, onAddQuestion, customFields, sampleContact} = this.props
-    console.log("questions here", questions)
 
     return (
       <Formsy.Form
