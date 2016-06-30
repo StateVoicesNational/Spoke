@@ -123,7 +123,7 @@ export class CampaignAssignmentForm extends Component {
          !assignAll ? autocomplete : ''
       ]
     )
-    const subtitle = texters.length > 0 ? '' : 'You have no texters set up. You can skip assignment for now and come back to add texters later.'
+    const subtitle = texters.length > 0 ? '' : 'You have no texters. You can skip assignment for now and come back to add texters later.'
     return (
       <Formsy.Form
         onValid={onValid}

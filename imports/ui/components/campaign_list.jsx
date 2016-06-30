@@ -25,7 +25,7 @@ export class CampaignList extends Component {
       listItemStyle = styles.past
     }
 
-    const secondaryText = isUnassigned ? 'Unassigned' : (
+    const secondaryText = isUnassigned ? 'ON HOLD: No texters assigned' : (
       <span>
         <span>
           {campaign.description}

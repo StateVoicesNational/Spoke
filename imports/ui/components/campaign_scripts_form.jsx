@@ -4,14 +4,12 @@ import RaisedButton from 'material-ui/RaisedButton'
 import Formsy from 'formsy-react'
 import { ScriptEditor } from './script_editor'
 import Dialog from 'material-ui/Dialog'
-import { CampaignContacts } from '../../api/campaign_contacts/campaign_contacts'
 import { ScriptTypes, ScriptSchema, allScriptFields } from '../../api/campaigns/scripts'
-import TextField from 'material-ui/TextField'
 import { FormsyText } from 'formsy-material-ui/lib'
 import Divider from 'material-ui/Divider'
 import { muiTheme } from '../../ui/theme'
 import { CampaignFormSectionHeading } from './campaign_form_section_heading'
-import { Card, CardActions, CardHeader, CardMedia, CardTitle, CardText } from 'material-ui/Card'
+import { Card, CardActions, CardHeader, CardText } from 'material-ui/Card'
 import DeleteIcon from 'material-ui/svg-icons/action/delete'
 import EditIcon from 'material-ui/svg-icons/image/edit'
 import IconButton from 'material-ui/IconButton'
@@ -57,6 +55,8 @@ export class CampaignScriptsForm extends Component {
     this.handleAddScript = this.handleAddScript.bind(this)
     this.handleAddSavedReply = this.handleAddSavedReply.bind(this)
     this.handleStartEditingScript = this.handleStartEditingScript.bind(this)
+    this.enableDoneButton = this.enableDoneButton.bind(this)
+    this.disableDoneButton = this.disableDoneButton.bind(this)
     this.state = {
       open: false,
       title: null, // controlled input title
@@ -279,7 +279,8 @@ export class CampaignScriptsForm extends Component {
       sampleContact,
       onValid,
       onInvalid,
-      customFields } = this.props
+      customFields
+    } = this.props
 
     const sectionHeading = (title, subtitle) => [
       <h3 style={styles.scriptSectionTitle}>{title}</h3>,

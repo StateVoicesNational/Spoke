@@ -5,6 +5,7 @@ import { Campaigns } from './campaigns.js'
 import { Messages } from '../messages/messages'
 import { assignContacts, saveContacts, saveQuestions } from './assignment.js'
 import { CampaignContacts } from '../campaign_contacts/campaign_contacts.js'
+import { SurveyQuestions } from '../survey_questions/survey_questions.js'
 import { Assignments } from '../assignments/assignments.js'
 import { ScriptSchema } from './scripts.js'
 
@@ -185,7 +186,7 @@ export const exportContacts = new ValidatedMethod({
       const campaign = Campaigns.findOne({ _id: campaignId })
       const organizationId = campaign.organizationId
 
-      const surveyQuestions = campaign.questions().fetch()
+      const surveyQuestions = SurveyQuestions.find({ campaignId }).fetch()
       if (!this.userId || !Roles.userIsInRole(this.userId, 'admin', organizationId)) {
         throw new Meteor.Error('not-authorized')
       }

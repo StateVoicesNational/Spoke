@@ -31,9 +31,9 @@ export const ScriptSchema = new SimpleSchema({
   type: {
     type: String,
     allowedValues: [
-        ScriptTypes.INITIAL,
-        ScriptTypes.REPEAT,
-        ScriptTypes.FAQ
+      ScriptTypes.INITIAL,
+      ScriptTypes.REPEAT,
+      ScriptTypes.FAQ
     ]
   }
 })

@@ -77,6 +77,7 @@ export class MessageForm extends Component {
       text,
       campaignId: campaignContact.campaignId,
       contactNumber: campaignContact.cell,
+      timezoneOffset: campaignContact.utcOffset()
     }, (error) => {
       this.setState({
         submitting: false
