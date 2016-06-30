@@ -100,15 +100,19 @@ export class CampaignScriptsForm extends Component {
     console.log('validating script data?', scriptData)
     const isValid = context.validate(scriptData)
     if (!isValid) {
+      console.log("invalid script data")
       const errors = {}
       _.each(context.invalidKeys(), ({ name, type }) => errors[name] = type)
       console.log(errors)
       invalidateForm(errors)
     } else {
+      console.log("valid script data")
       if (editingScript._id) {
+        console.log("EDITING SCRIPT", editingScript)
         const { onScriptChange } = this.props
         onScriptChange(editingScript._id, scriptData)
       } else {
+        console.log("EDITING SCRIPT", editingScript)
         const { onScriptAdd } = this.props
         onScriptAdd(_.extend(editingScript, scriptData))
       }
@@ -145,6 +149,7 @@ export class CampaignScriptsForm extends Component {
   disableDoneButton() {
     this.setState({ scriptDialogButtonEnabled: false })
   }
+
   submit() {
     this.refs.form.submit()
   }
@@ -153,6 +158,8 @@ export class CampaignScriptsForm extends Component {
     return (
       <Formsy.Form
         ref="form"
+        onValid={this.enableDoneButton}
+        onInvalid={this.disableDoneButton}
         onValidSubmit={this.handleSaveScript.bind(this)}
         onInvalidSubmit={this.notifyFormError.bind(this)}
       >

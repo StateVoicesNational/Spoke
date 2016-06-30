@@ -44,7 +44,6 @@ export class MessageForm extends Component {
   }
 
   handleSendMessage() {
-    console.log("handle send!")
     const { onSendMessage } = this.props
 
     this.setState( { submitting: true })

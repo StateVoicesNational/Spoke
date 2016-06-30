@@ -1,5 +1,4 @@
 import React, { Component } from 'react'
-import FlatButton from 'material-ui/FlatButton'
 import { FlowRouter } from 'meteor/kadira:flow-router'
 import {
   insert,
@@ -11,8 +10,6 @@ import {
 } from '../../api/campaigns/methods'
 import { ScriptTypes } from '../../api/campaigns/scripts'
 import { Assignments } from '../../api/assignments/assignments'
-import { Messages } from '../../api/messages/messages'
-import { Card, CardActions, CardHeader, CardText } from 'material-ui/Card'
 import { CampaignNewForm } from './campaign_new_form'
 import { CampaignEditForm } from './campaign_edit_form'
 import { CampaignScriptsForm } from './campaign_scripts_form'
@@ -20,13 +17,7 @@ import { CampaignPeopleForm } from './campaign_people_form'
 import { CampaignBasicsForm } from './campaign_basics_form'
 import { CampaignSurveyForm } from './campaign_survey_form'
 import { CampaignAssignmentForm } from './campaign_assignment_form'
-import { CampaignFormSection } from './campaign_form_section'
-import { grey50 } from 'material-ui/styles/colors'
-import { CampaignFormSectionHeading } from './campaign_form_section_heading'
 import { newAllowedAnswer } from '../../api/survey_questions/survey_questions'
-import { Tabs, Tab } from 'material-ui/Tabs'
-import RaisedButton from 'material-ui/RaisedButton'
-import { Random } from 'meteor/random'
 
 import {
   Step,
@@ -135,7 +126,7 @@ export class CampaignForm extends Component {
   startComputation() {
     this._computation = Tracker.autorun(() => {
       this.setState({
-        scripts: ScriptCollection.find().fetch().map((script) => _.omit(script, '_id')),
+        scripts: ScriptCollection.find({}).fetch(),
         questions: QuestionCollection.find({}).fetch()
       })
     })
@@ -158,6 +149,7 @@ export class CampaignForm extends Component {
   }
 
   handleScriptDelete(scriptId) {
+    console.log("scriptID")
     ScriptCollection.remove(scriptId)
   }
 

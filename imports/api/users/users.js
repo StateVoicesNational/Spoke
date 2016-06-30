@@ -21,20 +21,20 @@ export const organizationsForUser = (user) => {
 }
 
 export const todosForUser = (user, organizationId) => {
-    const campaignIds = Campaigns.find({
-        organizationId,
-        // dueBy: {$gte: new Date()}
-    }).fetch().map((campaign) => campaign._id)
+  const campaignIds = Campaigns.find({
+      organizationId,
+      // dueBy: {$gte: new Date()}
+  }).fetch().map((campaign) => campaign._id)
 
-    console.log("campaigns", campaignIds, user._id)
-    console.log( Assignments.find({
-        campaignId: { $in: campaignIds },
-        userId: user._id
-    }).fetch())
-    return Assignments.find({
-        campaignId: { $in: campaignIds },
-        userId: user._id
-    })
+  console.log("campaigns", campaignIds, user._id)
+  console.log( Assignments.find({
+    campaignId: { $in: campaignIds },
+    userId: user._id
+  }).fetch())
+  return Assignments.find({
+    campaignId: { $in: campaignIds },
+    userId: user._id
+  })
 }
 
 Meteor.users.publicFields = {

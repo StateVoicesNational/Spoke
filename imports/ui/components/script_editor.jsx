@@ -5,7 +5,6 @@ import {
   CompositeDecorator,
   Editor,
   Modifier,
-  Entity,
 } from 'draft-js'
 import { delimit } from '../../api/campaigns/scripts'
 import AddIcon from 'material-ui/svg-icons/content/add';
