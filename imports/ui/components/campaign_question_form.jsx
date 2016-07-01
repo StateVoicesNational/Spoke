@@ -150,8 +150,20 @@ export class CampaignQuestionForm extends Component {
   }
 
   renderAnswer(otherQuestions, question, answer, autoFocus, index) {
+
     // const showFollowUp  = otherQuestions.length > 0
+    const { campaignStarted } = this.props
+    const deleteAnswerButton = (
+      <IconButton
+        style={{width: 42, height: 42, verticalAlign: 'middle'}}
+        iconStyle={{width: 20, height: 20}}
+        onTouchTap={() => this.handleDeleteAnswer(answer)}
+      >
+        <ContentClear />
+      </IconButton>
+    )
     const showFollowUp = false
+
     const followUpQuestions = showFollowUp ? (
       <div>
         <Divider />
@@ -190,16 +202,11 @@ export class CampaignQuestionForm extends Component {
               autoFocus={autoFocus}
               hintStyle={styles.answer}
               required
+              disabled={campaignStarted}
               name={`allowedAnswers[${index}].value`}
               value={ answer.value }
             />
-            <IconButton
-              style={{width: 42, height: 42, verticalAlign: 'middle'}}
-              iconStyle={{width: 20, height: 20}}
-              onTouchTap={() => this.handleDeleteAnswer(answer)}
-            >
-              <ContentClear />
-            </IconButton>
+            { campaignStarted ? '' : deleteAnswerButton}
           </div>
           <div className="col-xs">
             { answer.script ? <div>
@@ -335,11 +342,31 @@ export class CampaignQuestionForm extends Component {
   }
 
   render() {
-    const { question, questions } = this.props
+    const { question, questions, campaignStarted } = this.props
     const questionIsFocused = question.text === ''
     // const parentQuestions = questions.filter((q) => _.includes(q.allowedAnswers.map((answer) => answer.surveyQuestionId), question._id))
     const parentQuestions = []
+    const cardActions = campaignStarted ? '' : (
+      <Divider />,
+      <CardActions
+        style={{textAlign: 'right'}}
+      >
+        { parentQuestions.length > 0 ? (
+          <span>
+            { parentQuestions.map((parentQuestion) => <QuestionLink text={parentQuestion.text} isLinkToParent={true}/>)}
+          </span>
 
+        ) : ''}
+
+        <IconButton
+          iconStyle={styles.icon}
+          style={styles.icon}
+          onTouchTap={this.handleDeleteQuestion}
+        >
+          <DeleteIcon />
+        </IconButton>
+      </CardActions>
+    )
     const isFollowUp = parentQuestions.length > 0
     return (
       <Card style={isFollowUp ? styles.followUp : styles.question}>
@@ -352,6 +379,7 @@ export class CampaignQuestionForm extends Component {
               onFocus={(event) => event.target.select()}
               required
               fullWidth
+              disabled={campaignStarted}
               ref="questionInput"
               hintText="Question (e.g. Can the contact attend the event?)"
               value={ question.text }
@@ -360,25 +388,7 @@ export class CampaignQuestionForm extends Component {
             { this.renderDialog()}
           </div>
         </CardText>
-        <Divider />
-        <CardActions
-          style={{textAlign: 'right'}}
-        >
-          { parentQuestions.length > 0 ? (
-            <span>
-              { parentQuestions.map((parentQuestion) => <QuestionLink text={parentQuestion.text} isLinkToParent={true}/>)}
-            </span>
-
-          ) : ''}
-
-          <IconButton
-            iconStyle={styles.icon}
-            style={styles.icon}
-            onTouchTap={this.handleDeleteQuestion}
-          >
-            <DeleteIcon />
-          </IconButton>
-        </CardActions>
+        {cardActions}
       </Card>
     )
   }

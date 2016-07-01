@@ -77,6 +77,9 @@ Campaigns.publicFields = {
 
 
 Campaigns.helpers({
+  hasMessage() {
+    return !!Messages.findOne( { campaignId: this._id })
+  },
   initialScriptText() {
     const initialScript = _.find(this.scripts, (script) => script.type === ScriptTypes.INITIAL)
     return initialScript ? initialScript.text : null

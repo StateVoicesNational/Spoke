@@ -334,6 +334,7 @@ export class CampaignForm extends Component {
 
   renderScriptSection() {
     const { contacts, scripts, customFields } = this.state
+    const { campaign } = this.props
     const faqScripts = scripts.filter((script) => script.type === ScriptTypes.FAQ)
     const defaultScript = scripts.find((script) => script.type === ScriptTypes.INITIAL)
 
@@ -352,9 +353,11 @@ export class CampaignForm extends Component {
 
   renderSurveySection() {
     const { questions, customFields, sampleContact } = this.state
+    const { campaign } = this.props
     return (
       <CampaignSurveyForm
         questions={questions}
+        campaign={campaign}
         onAddSurveyAnswer={this.handleAddSurveyAnswer}
         onEditQuestion={this.handleEditSurvey}
         onAddQuestion={this.handleAddSurvey}

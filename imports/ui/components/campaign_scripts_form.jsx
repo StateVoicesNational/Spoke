@@ -69,9 +69,9 @@ export class CampaignScriptsForm extends Component {
     const { onValid } = this.props
     onValid()
   }
+
   handleOpenDialog() {
     this.setState({ open: true }, () => this.focusDialog())
-
     // console.log("THIS refs", this.refs, this.refs.scriptInput, this.refs.form, this.refs['scriptInput'])
     // this.refs.scriptInput.focus()
   }
@@ -290,7 +290,7 @@ export class CampaignScriptsForm extends Component {
       sampleContact,
       onValid,
       onInvalid,
-      customFields
+      customFields,
     } = this.props
 
     const sectionHeading = (title, subtitle) => [

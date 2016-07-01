@@ -10,7 +10,18 @@ const styles = {
 }
 export class CampaignSurveyForm extends Component {
   render() {
-    const { questions, onValid, onInvalid, onAddSurveyAnswer, onDeleteQuestion, onEditQuestion, onAddQuestion, customFields, sampleContact} = this.props
+    const { questions, onValid, onInvalid, onAddSurveyAnswer, onDeleteQuestion, onEditQuestion, onAddQuestion, customFields, sampleContact, campaign} = this.props
+
+    // const campaignStarted = campaign && campaign.hasMessage()
+    const campaignStarted = true
+
+    let subtitle
+    if (campaignStarted) {
+      subtitle = "Once messages have been sent to contacts in this campaign, you can't edit the questions or answers, but you can still edit scripts if you need."
+    }
+    else {
+      subtitle = 'You can add questions and your texters can indicate responses from your contacts. For example, you might want to collect RSVPs to an event or find out whether to follow up about a different volunteer activity.'
+    }
 
     return (
       <Formsy.Form
@@ -19,7 +30,7 @@ export class CampaignSurveyForm extends Component {
       >
         <CampaignFormSectionHeading
           title='What do you want to learn?'
-          subtitle='You can add questions and your texters can indicate responses from your contacts. For example, you might want to collect RSVPs to an event or find out whether to follow up about a different volunteer activity.'
+          subtitle={subtitle}
         />
 
         { questions.map ((question) => (
@@ -31,6 +42,7 @@ export class CampaignSurveyForm extends Component {
             onDeleteQuestion={onDeleteQuestion}
             customFields={customFields}
             sampleContact={sampleContact}
+            campaignStarted={campaignStarted}
           />
         ))}
         {
