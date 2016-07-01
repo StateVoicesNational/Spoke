@@ -140,54 +140,71 @@ export class CampaignPeopleForm extends Component {
     )
   }
 
+  renderForm() {
+    const { contacts, customFields, onValid, onInvalid, campaign } = this.props
+
+    return <Formsy.Form
+      onValid={onValid}
+      onInvalid={onInvalid}
+    >
+        <RaisedButton
+          style={styles.button}
+          label= {uploading ? 'Uploading...' : "Upload contacts"}
+          labelPosition="before"
+          disabled={uploading}
+        >
+          <input
+            type="file"
+            style={styles.exampleImageInput}
+            onChange={this.handleUpload}
+          />
+      </RaisedButton>
+      <FormsyText
+        required
+        name="contacts"
+        value={this.state.contacts ? 'Contacts' : ''}
+        style={styles.exampleImageInput}
+      />
+    {validationStats ? this.renderValidationStats() : ''}
+    { contactUploadError ? (
+      <List>
+        <ListItem
+          primaryText={contactUploadError}
+          leftIcon={errorIcon}
+        />
+      </List>
+    ) : ''}
+    </Formsy.Form>
+  }
+
   render() {
-    const { contacts, customFields, onValid, onInvalid } = this.props
+    const { contacts, customFields, onValid, onInvalid, campaign } = this.props
     const { validationStats, contactUploadError } = this.state
     const { uploading } = this.state
+
+    const editable = !campaign || !campaign.hasMessage()
+    let subtitle
+    if (editable) {
+      subtitle = (
+        <span>
+          Your upload file should be in CSV format with column headings in
+          the first row. You must include <span style={styles.csvHeader}>firstName</span>,
+          <span style={styles.csvHeader}>lastName</span>, and
+          <span style={styles.csvHeader}>cell</span> columns. Any additional columns
+          in your file will be available as custom fields to use in your texting scripts.
+        </span>
+      )
+    } else {
+      subtitle = 'Once the campaign has messages, you cannot edit contacts.'
+    }
+
     return (
       <div>
         <CampaignFormSectionHeading
           title='Who are you contacting?'
-          subtitle={<span>
-            Your upload file should be in CSV format with column headings in
-            the first row. You must include <span style={styles.csvHeader}>firstName</span>,
-            <span style={styles.csvHeader}>lastName</span>, and
-            <span style={styles.csvHeader}>cell</span> columns. Any additional columns
-            in your file will be available as custom fields to use in your texting scripts.
-          </span>}
+          subtitle={subtitle}
         />
-        <Formsy.Form
-          onValid={onValid}
-          onInvalid={onInvalid}
-        >
-            <RaisedButton
-              style={styles.button}
-              label= {uploading ? 'Uploading...' : "Upload contacts"}
-              labelPosition="before"
-              disabled={uploading}
-            >
-              <input
-                type="file"
-                style={styles.exampleImageInput}
-                onChange={this.handleUpload}
-              />
-          </RaisedButton>
-          <FormsyText
-            required
-            name="contacts"
-            value={this.state.contacts ? 'Contacts' : ''}
-            style={styles.exampleImageInput}
-          />
-        {validationStats ? this.renderValidationStats() : ''}
-        { contactUploadError ? (
-          <List>
-            <ListItem
-              primaryText={contactUploadError}
-              leftIcon={errorIcon}
-            />
-          </List>
-        ) : ''}
-        </Formsy.Form>
+        { editable ? this.renderForm() : ''}
       </div>
     )
   }

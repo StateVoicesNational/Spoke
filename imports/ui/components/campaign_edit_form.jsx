@@ -56,7 +56,6 @@ export class CampaignEditForm extends Component {
       }
     }
 
-    const alwaysEditable = (sectionTitle) => _.includes([SectionTitles.scripts, SectionTitles.basics, SectionTitles.texters], sectionTitle)
     return (
       <div>
         { sections.map(({ title, content }) => (
@@ -71,14 +70,12 @@ export class CampaignEditForm extends Component {
               showExpandableButton
             />
             <CardText expandable>
-              {alwaysEditable(title) || !hasMessage ? (
-                <CampaignFormSection
-                  showPreviousStep={false}
-                  content={content()}
-                  onNext={submitAction(title)}
-                  nextStepLabel="Save"
-                />
-              ) : "This campaign has already begun so you can't edit this section."}
+              <CampaignFormSection
+                showPreviousStep={false}
+                content={content()}
+                onNext={submitAction(title)}
+                nextStepLabel="Save"
+              />
             </CardText>
           </Card>
         ))}

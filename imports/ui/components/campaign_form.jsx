@@ -309,9 +309,10 @@ export class CampaignForm extends Component {
 
   renderPeopleSection() {
     const { contacts, customFields } = this.state
-
+    const { campaign } = this.props
     return (
       <CampaignPeopleForm
+        campaign={campaign}
         contacts={contacts}
         customFields={customFields}
         onChange={this.handleChange}
