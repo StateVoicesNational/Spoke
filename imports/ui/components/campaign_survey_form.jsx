@@ -12,8 +12,7 @@ export class CampaignSurveyForm extends Component {
   render() {
     const { questions, onValid, onInvalid, onAddSurveyAnswer, onDeleteQuestion, onEditQuestion, onAddQuestion, customFields, sampleContact, campaign} = this.props
 
-    // const campaignStarted = campaign && campaign.hasMessage()
-    const campaignStarted = true
+    const campaignStarted = campaign && campaign.hasMessage()
 
     let subtitle
     if (campaignStarted) {
