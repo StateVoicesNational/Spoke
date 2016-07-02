@@ -8,12 +8,14 @@ const styles = {
     marginTop: 24
   }
 }
+
+
 export class CampaignSurveyForm extends Component {
   render() {
-    const { questions, onValid, onInvalid, onAddSurveyAnswer, onDeleteQuestion, onEditQuestion, onAddQuestion, customFields, sampleContact, campaign} = this.props
+    const { interactionSteps, onValid, onInvalid, onAddSurveyAnswer, onDeleteQuestion, onEditQuestion, onAddQuestion, customFields, sampleContact, campaign} = this.props
 
-    // const campaignStarted = campaign && campaign.hasMessage()
-    const campaignStarted = true
+    const campaignStarted = campaign && campaign.hasMessage()
+    // const campaignStarted = true
 
     let subtitle
     if (campaignStarted) {
@@ -33,20 +35,21 @@ export class CampaignSurveyForm extends Component {
           subtitle={subtitle}
         />
 
-        { questions.map ((question) => (
+        { interactionSteps.map ((interactionStep) => (
           <CampaignQuestionForm
-            question={question}
-            questions={questions}
+            interactionStep={interactionStep}
+            questions={interactionSteps}
             onAddSurveyAnswer={onAddSurveyAnswer}
             onEditQuestion={onEditQuestion}
             onDeleteQuestion={onDeleteQuestion}
+            onAddQuestion={onAddQuestion}
             customFields={customFields}
             sampleContact={sampleContact}
             campaignStarted={campaignStarted}
           />
         ))}
         {
-          questions.length === 0 ? (
+          interactionSteps.length === 0 ? (
             <RaisedButton
               style={styles.questionButton}
               label="Add question"

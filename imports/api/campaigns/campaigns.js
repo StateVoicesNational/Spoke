@@ -3,6 +3,7 @@ import { SimpleSchema } from 'meteor/aldeed:simple-schema'
 import { Fake } from 'meteor/anti:fake'
 import { Factory } from 'meteor/dburles:factory'
 import { SurveyQuestions } from '../survey_questions/survey_questions'
+import { InteractionSteps } from '../interaction_steps/interaction_steps'
 import { Messages } from '../messages/messages'
 import { Assignments, activeAssignmentQuery } from '../assignments/assignments'
 import { moment } from 'meteor/momentjs:moment'
@@ -25,6 +26,7 @@ Campaigns.schema = new SimpleSchema({
   createdAt: { type: Date },
   dueBy: { type: Date },
   customFields: { type: [String] },
+  // FIXME: interactionsteps
   surveyQuestionId: {
     type: String,
     optional: true
@@ -93,8 +95,8 @@ Campaigns.helpers({
   scriptFields() {
     return allScriptFields(this.customFields)
   },
-  surveys() {
-    return SurveyQuestions.find({campaignId: this._id})
+  interactionSteps() {
+    return InteractionSteps.find({ campaignId: this._id })
   },
   survey() {
     return SurveyQuestions.findOne({ _id: this.surveyQuestionId })

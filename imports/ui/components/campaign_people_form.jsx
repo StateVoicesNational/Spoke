@@ -142,6 +142,7 @@ export class CampaignPeopleForm extends Component {
 
   renderForm() {
     const { contacts, customFields, onValid, onInvalid, campaign } = this.props
+    const { validationStats, contactUploadError, uploading } = this.state
 
     return <Formsy.Form
       onValid={onValid}
