@@ -252,17 +252,16 @@ export class CampaignQuestionForm extends Component {
               autoFocus
               floatingLabelText="Script"
               ref="formsyScript"
-              onChange={this.handleQuestionChange}
+              onChange={this.handleScriptChange}
               fullWidth
               value={script}
-              // floatingLabelText="Script"
             />
 
             <FormsyText
               name="interactionStep"
               floatingLabelText="Question"
               autoFocus={interactionStepIsFocused}
-              onChange={this.handleScriptChange}
+              onChange={this.handleQuestionChange}
               onFocus={(event) => event.target.select()}
               required
               fullWidth

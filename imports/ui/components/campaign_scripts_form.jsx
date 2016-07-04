@@ -313,11 +313,6 @@ export class CampaignScriptsForm extends Component {
           <CampaignFormSectionHeading
             title="What do you want to say?"
           />
-          <div style={styles.scriptSection}>
-            { sectionHeading('First message script', "This script is what we'll automatically fill in for texters when they first send the first message to a contact.")}
-            { this.renderScriptRow(script)}
-          </div>
-          <Divider />
             <div style={styles.scriptSection}>
             { sectionHeading('Saved replies', 'These replies will appear in a list for texters to choose to answer common issues and questions when a contact has responded. You can think of it as a FAQ section of sorts.')}
             { faqScripts.map((faqScript) => this.renderScriptRow(faqScript))}

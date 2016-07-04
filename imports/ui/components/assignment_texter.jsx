@@ -16,6 +16,7 @@ import { AssignmentTexterSurveys} from './assignment_texter_surveys'
 import { MessageForm } from './message_form'
 import { ResponseDropdown } from './response_dropdown'
 
+import { Scripts } from '../../api/scripts/scripts'
 import { sendMessage } from '../../api/messages/methods'
 import { applyScript } from '../helpers/script_helpers'
 import { updateAnswer } from '../../api/survey_answers/methods'
@@ -267,12 +268,15 @@ export class AssignmentTexter extends Component {
 
     const campaign = assignment.campaign()
     const scriptFields = campaign.scriptFields()
-
+    const faqScripts = Scripts.find( { $or: [
+      {campaignId: campaign._id,  userId: null },
+      { campaignId: campaign._id,  userId: Meteor.userId() }
+    ] })
     //TODO - do we really want to grab all messages at once here? should I actually be doing a collection serach
     const leftToolbarChildren = [
       <ToolbarSeparator />,
       <ResponseDropdown
-        responses={campaign.faqScripts() || []}
+        responses={faqScripts}
         onScriptChange={this.handleScriptChange}
       />
     ]

@@ -4,9 +4,9 @@ import { convertRowToContact } from '../campaign_contacts/parse_csv'
 import { chunk, forEach, zip } from 'lodash'
 import { batchInsert } from 'meteor/mikowals:batch-insert'
 import { CampaignContacts } from '../campaign_contacts/campaign_contacts.js'
-
+import { InteractionSteps } from '../interaction_steps/interaction_steps'
 const divideContacts = (contactIds, texters) => {
-
+  console.log(contactIds, texters)
   const rowCount = contactIds.length
   const texterCount = texters.length
 
@@ -28,11 +28,10 @@ const updateAssignments = ({ dueBy, campaignId, texterId, texterContactIds }) =>
   CampaignContacts.update({ _id: { $in: texterContactIds } }, { $set: { assignmentId } }, { multi: true })
 }
 
-export const saveQuestions = (campaignId, surveys) => {
-  for (let survey of surveys) {
-    console.log('surveys', surveys)
-    survey.campaignId = campaignId
-    SurveyQuestions.insert(survey)
+export const saveQuestions = (campaignId, interactionSteps) => {
+  for (let interactionStep of interactionSteps) {
+    interactionStep.campaignId = campaignId
+    InteractionSteps.insert(interactionStep)
   }
 }
 
@@ -52,9 +51,10 @@ export const saveContacts = (campaignId, contactRows) => {
 export const assignContacts = (campaignId, dueBy, assignedTexters) => {
   const contacts = CampaignContacts.find({ campaignId, lastMessage: null }, { fields: {} }).fetch()
   const contactIds = _.map(contacts, ({ _id }) => _id)
-
+  console.log("contactIds", contactIds)
   const dividedContacts = divideContacts(contactIds, assignedTexters)
   forEach(dividedContacts, ([texterId, texterContactIds]) => {
+    console.log("updateAssignments")
     updateAssignments({ dueBy, campaignId, texterId, texterContactIds })
   })
 }

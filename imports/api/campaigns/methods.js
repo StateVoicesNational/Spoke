@@ -1,92 +1,14 @@
-import { Meteor } from 'meteor/meteor';
+import { Meteor } from 'meteor/meteor'
 import { ValidatedMethod } from 'meteor/mdg:validated-method'
 import { SimpleSchema } from 'meteor/aldeed:simple-schema'
-import { insertContact } from '../campaign_contacts/methods'
-
 import { Campaigns } from './campaigns.js'
-import { InteractionSteps } from '../interaction_steps/interaction_steps.js'
+import { Messages } from '../messages/messages'
+import { assignContacts, saveContacts, saveQuestions } from './assignment.js'
 import { CampaignContacts } from '../campaign_contacts/campaign_contacts.js'
+import { SurveyQuestions } from '../survey_questions/survey_questions.js'
 import { Assignments } from '../assignments/assignments.js'
-import { convertRowToContact } from '../campaign_contacts/parse_csv'
-import { batchInsert } from 'meteor/mikowals:batch-insert'
-import { chunk, last, forEach, zip } from 'lodash'
-import { ScriptSchema, Scripts } from '../scripts/scripts'
-const divideContacts = (contactRows, texters) => {
+import { Scripts, ScriptSchema } from '../scripts/scripts.js'
 
-  const rowCount = contactRows.length
-  const texterCount = texters.length
-
-  const chunkSize = Math.floor(rowCount / texterCount)
-
-  const chunked = chunk(contactRows, chunkSize)
-  if (rowCount % texterCount > 0) {
-    const leftovers = chunked.pop()
-    forEach(leftovers, (leftover, index) => chunked[index].push(leftover))
-  }
-
-  return zip(texters, chunked)
-}
-
-const createAssignment = ({dueBy, campaignId, texterId, texterContacts}) => {
-  const assignmentData = {
-    campaignId,
-    dueBy,
-    userId: texterId,
-    createdAt: new Date(),
-  }
-
-  Assignments.insert(assignmentData, (assignmentError, assignmentId) => {
-    if (assignmentError) {
-      console.log(assignmentError)
-      throw new Meteor.Error(assignmentError)
-    }
-    else {
-      // TODO can still batch insert
-      const data = texterContacts.map((row) => {
-        const contact = convertRowToContact(row)
-        contact.assignmentId = assignmentId
-        contact.campaignId = campaignId
-        contact.createdAt = new Date()
-        return contact
-      })
-
-      // FIXME - need to convert to e164 here
-      // const { e164} = require('libphonenumber')
-      // e164(contact.cell, 'US', (error, result) => {
-      //   if (error) {
-      //   }
-      //   else {
-      //     contact.cell = result
-      //     CampaignContacts.insert(contact)
-      //   }
-      // })
-      // validate schema
-      console.log("batch insert?")
-      CampaignContacts.batchInsert(data, (err, res) => console.log("ERROR creating contacts", err))
-
-
-      // for (let row of texterContacts) {
-      //   // TODO: Require upload in this format.
-
-      //   const contact = convertRowToContact(row)
-      //   contact.assignmentId = assignmentId
-      //   contact.campaignId = campaignId
-
-      //   // TODO BBulk insert instead of individual!
-      //   insertContact.call(contact, (contactError) => {
-      //     if (contactError) {
-      //     }
-      //     else {
-      //     }
-      //   })
-      // }
-    }
-  })
-}
-
-
-// TODO I should actually do the campaignContact validation here so I don't have
-// a chance of failing between campaign save and contact save
 export const insert = new ValidatedMethod({
   name: 'campaigns.insert',
   validate: new SimpleSchema({
@@ -95,9 +17,9 @@ export const insert = new ValidatedMethod({
     description: { type: String },
     contacts: { type: [Object], blackbox: true },
     scripts: { type: [Object], blackbox: true },
-    assignedTexters: { type: [String]},
-    interactionSteps: { type: [Object], blackbox: true},
-    customFields: { type: [String]},
+    questions: { type: [Object], blackbox: true },
+    customFields: { type: [String] },
+    assignedTexters: { type: [String] },
     dueBy: { type: Date }
   }).validator(),
   run({
@@ -108,11 +30,11 @@ export const insert = new ValidatedMethod({
     customFields,
     organizationId,
     assignedTexters,
-    interactionSteps,
+    questions,
     dueBy
   }) {
     if (!this.userId || !Roles.userIsInRole(this.userId, 'admin', organizationId)) {
-      throw new Meteor.Error('not-authorized');
+      throw new Meteor.Error('not-authorized')
     }
 
     const campaignData = {
@@ -121,86 +43,179 @@ export const insert = new ValidatedMethod({
       organizationId,
       customFields,
       dueBy,
-      createdAt: new Date(),
-    };
+      createdAt: new Date()
+    }
 
     // TODO this needs to be in one transaction
-    // TODO do this only if the contacts validate!
-    Campaigns.insert(campaignData, (campaignError, campaignId) => {
-      if (campaignError) {
-        throw new Meteor.Error(campaignError)
-      }
-      else {
+    const campaignId = Campaigns.insert(campaignData)
+    saveQuestions(campaignId, questions)
+    saveContacts(campaignId, contacts)
 
-        for (let script of scripts) {
-          script.campaignId = campaignId
-          Scripts.insert(script)
-        }
-
-        for (let interactionStep of interactionSteps) {
-          interactionStep.campaignId = campaignId
-          InteractionSteps.insert(interactionStep)
-        }
-
-        const dividedContacts = divideContacts(contacts, assignedTexters)
-        forEach(dividedContacts, ( [texterId, texterContacts] ) => {
-          console.log("trying to create assignment", texterId)
-          createAssignment({ dueBy, campaignId, texterId, texterContacts })
-        })
-      }
-
-      console.log("now what")
-      return campaignId
-      console.log("HERE?")
-      // TODO - autoassignment alternative
-      // TODO check error!
-
-    })
+    if (assignedTexters.length > 0) {
+      assignContacts(campaignId, dueBy, assignedTexters)
+    }
+    return campaignId
   }
 })
 
-// TODO I should actually do the campaignContact validation here so I don't have
-// a chance of failing between campaign save and contact save
+export const updateBasics = new ValidatedMethod({
+  name: 'campaigns.updateBasics',
+  validate: new SimpleSchema({
+    campaignId: { type: String },
+    organizationId: { type: String },
+    title: { type: String },
+    description: { type: String },
+    dueBy: { type: Date }
+  }).validator(),
+  run({
+    organizationId,
+    campaignId,
+    title,
+    description,
+    dueBy
+  }) {
+    if (!this.userId || !Roles.userIsInRole(this.userId, 'admin', organizationId)) {
+      throw new Meteor.Error('not-authorized')
+    }
+
+    console.log(campaignId, title, description, dueBy)
+    Campaigns.update(campaignId, { $set: { title, description, dueBy } })
+    return campaignId
+  }
+})
+
+export const updateContacts = new ValidatedMethod({
+  name: 'campaigns.updateContacts',
+  validate: new SimpleSchema({
+    campaignId: { type: String },
+    organizationId: { type: String },
+    contacts: { type: [Object], blackbox: true }
+  }).validator(),
+  run({
+    organizationId,
+    campaignId,
+    contacts
+  }) {
+    if (!this.userId || !Roles.userIsInRole(this.userId, 'admin', organizationId)) {
+      throw new Meteor.Error('not-authorized')
+    }
+
+    const hasMessage = Messages.findOne({ campaignId })
+    if (hasMessage) {
+      throw new Meteor.Error(400, 'campaign-not-editable')
+    }
+
+    saveContacts(campaignId, contacts)
+    const assignments = Assignments.find({ campaignId }, { fields: { userId: 1 } }).fetch()
+    const assignedTexters = assignments.map((assignment) => assignment.userId)
+    const { dueBy } = Campaigns.findOne(campaignId)
+    assignContacts(campaignId, dueBy, assignedTexters)
+  }
+})
+
+export const updateTexters = new ValidatedMethod({
+  name: 'campaigns.updateTexters',
+  validate: new SimpleSchema({
+    campaignId: { type: String },
+    organizationId: { type: String },
+    assignedTexters: { type: [String] }
+  }).validator(),
+  run({
+    organizationId,
+    campaignId,
+    assignedTexters
+  }) {
+    if (!this.userId || !Roles.userIsInRole(this.userId, 'admin', organizationId)) {
+      throw new Meteor.Error('not-authorized')
+    }
+    const { dueBy } = Campaigns.findOne(campaignId)
+    console.log("assignedTexters", assignedTexters)
+    assignContacts(campaignId, dueBy, assignedTexters)
+  }
+})
+
+export const updateScripts = new ValidatedMethod({
+  name: 'campaigns.updateScripts',
+  validate: new SimpleSchema({
+    campaignId: { type: String },
+    organizationId: { type: String },
+    scripts: { type: [ScriptSchema] }
+  }).validator(),
+  run({
+    organizationId,
+    campaignId,
+    scripts
+  }) {
+    if (!this.userId || !Roles.userIsInRole(this.userId, 'admin', organizationId)) {
+      throw new Meteor.Error('not-authorized')
+    }
+
+    Campaigns.update(campaignId, { $set: { scripts } })
+  }
+})
+
+export const updateQuestions = new ValidatedMethod({
+  name: 'campaigns.updateQuestions',
+  validate: new SimpleSchema({
+    campaignId: { type: String },
+    organizationId: { type: String },
+    questions: { type: [Object], blackbox: true } // TODO: Survey schema?
+  }).validator(),
+  run({
+    organizationId,
+    campaignId,
+    questions
+  }) {
+    if (!this.userId || !Roles.userIsInRole(this.userId, 'admin', organizationId)) {
+      throw new Meteor.Error('not-authorized')
+    }
+
+    saveQuestions(campaignId, questions)
+  }
+})
+
 export const exportContacts = new ValidatedMethod({
   name: 'campaign.export',
   validate: new SimpleSchema({
-    campaignId: { type: String },
+    campaignId: { type: String }
   }).validator(),
   run({ campaignId }) {
 
     // TODO:
     if (Meteor.isServer) {
-        const campaign = Campaigns.findOne( { _id: campaignId })
-        const organizationId = campaign.organizationId
+      const campaign = Campaigns.findOne({ _id: campaignId })
+      const organizationId = campaign.organizationId
 
-        const surveyQuestions = campaign.surveys().fetch()
-        if (!this.userId || !Roles.userIsInRole(this.userId, 'admin', organizationId)) {
-          throw new Meteor.Error('not-authorized');
-        }
-
-        const data = []
-        const contacts = CampaignContacts.find( { campaignId }).fetch()
-
-        for (let contact of contacts) {
-          let row = {}
-          for (let requiredField of CampaignContacts.requiredUploadFields) {
-            row[requiredField] = contact.requiredField
-          }
-
-          row = _.extend(row, contact.customFields)
-          row.optOut = !!contact.optOut()
-
-          _.each(surveyQuestions, (question, index) => {
-            row[`question ${index + 1}`] = question.text
-            const answer = contact.surveyAnswer(question._id)
-            row[`answer ${index + 1}`] = answer ? answer.value : ''
-          })
-
-          data.push(row)
-        }
-
-        return data
+      const surveyQuestions = SurveyQuestions.find({ campaignId }).fetch()
+      if (!this.userId || !Roles.userIsInRole(this.userId, 'admin', organizationId)) {
+        throw new Meteor.Error('not-authorized')
       }
 
+      const data = []
+      const contacts = CampaignContacts.find({ campaignId }).fetch()
+
+      for (let contact of contacts) {
+        let row = {}
+        for (let field of CampaignContacts.topLevelUploadFields) {
+          if (_.has(contact, field)) {
+            row[field] = contact[field]
+          }
+        }
+
+        row = _.extend(row, contact.customFields)
+        row.optOut = !!contact.optOut()
+
+        _.each(surveyQuestions, (question, index) => {
+          row[`question ${index + 1}`] = question.text
+          const answer = contact.surveyAnswer(question._id)
+          row[`answer ${index + 1}`] = answer ? answer.value : ''
+        })
+
+        data.push(row)
+      }
+
+      return data
     }
+
+  }
 })
