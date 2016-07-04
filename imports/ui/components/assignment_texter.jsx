@@ -130,10 +130,8 @@ export class AssignmentTexter extends Component {
 
   defaultScript() {
     const { assignment } = this.props
-    console.log("current contact", this.currentContact())
     const contact = this.currentContact()
-    console.log(assignment.campaign())
-    console.log(assignment.campaign().initialScriptText(), "script text here")
+    console.log(assignment.campaign().initialScriptText())
     return (contact && contact.messages().fetch().length === 0) ? assignment.campaign().initialScriptText() : ''
   }
 
@@ -254,7 +252,7 @@ export class AssignmentTexter extends Component {
     return contact.messages().fetch().length === 0  ? <div/> : (
       <AssignmentTexterSurveys
         contact={contact}
-        questions={campaign.surveys().fetch()}
+        steps={campaign.interactionSteps().fetch()}
         onScriptChange={this.handleScriptChange}
       />
     )

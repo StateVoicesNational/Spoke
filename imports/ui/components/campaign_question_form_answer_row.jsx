@@ -13,8 +13,8 @@ import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert'
 
 import ContentClear from 'material-ui/svg-icons/content/clear'
 import Dialog from 'material-ui/Dialog'
-import { CampaignContacts } from '../../api/campaign_contacts/campaign_contacts'
-import { getAllParents } from '../local_collections/interaction_steps'
+import { InteractionSteps } from '../../api/interaction_steps/interaction_steps'
+import { getAllParents, InteractionStepCollection } from '../local_collections/interaction_steps'
 import { allScriptFields } from '../../api/campaigns/scripts'
 import { muiTheme } from '../../ui/theme'
 import { grey400, grey100 } from 'material-ui/styles/colors'
@@ -27,9 +27,9 @@ import EditIcon from 'material-ui/svg-icons/image/edit'
 import Divider from 'material-ui/Divider'
 import Subheader from 'material-ui/Subheader'
 import SelectField from 'material-ui/SelectField'
-const QuestionLink = ({text, isLinkToParent}) => (
+const QuestionLink = ({text, isLinkToParent, interactionStep}) => (
   <FlatButton
-    label={text}
+    label={interactionStep.question || 'Step'}
     secondary
     icon={isLinkToParent ? <BackIcon /> : <ForwardIcon />}
   />
@@ -101,7 +101,7 @@ export class CampaignQuestionFormAnswerRow extends Component {
 
     const addNextQuestionButton = (
       <RaisedButton
-        label="Add next step"
+        label="Go to new step"
         onTouchTap={() => onAddQuestion({parentStepId: interactionStep._id, parentAnswerId: answer._id })}
       />
     )
@@ -130,7 +130,7 @@ export class CampaignQuestionFormAnswerRow extends Component {
           </div>
           <div className="col-xs">
 
-          { answer.interactionStepId ? <QuestionLink text="Linked" /> : addNextQuestionButton }
+          { answer.interactionStepId ? <QuestionLink interactionStep={InteractionStepCollection.findOne(answer.interactionStepId)} text="Linked" /> : addNextQuestionButton }
           </div>
       </div>
     )

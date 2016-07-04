@@ -3,7 +3,7 @@ import FlatButton from 'material-ui/FlatButton'
 import IconButton from 'material-ui/IconButton'
 import RaisedButton from 'material-ui/RaisedButton'
 import { ScriptEditor } from './script_editor'
-import { FormsyText, FormsySelect } from 'formsy-material-ui/lib'
+import { FormsyText, FormsyDate } from 'formsy-material-ui/lib'
 import RadioButtonUnchecked from 'material-ui/svg-icons/toggle/radio-button-unchecked'
 import Dialog from 'material-ui/Dialog'
 import { allScriptFields } from '../../api/campaigns/scripts'
@@ -80,10 +80,12 @@ export class CampaignQuestionForm extends Component {
     this.handleDeleteScript = this.handleDeleteScript.bind(this)
     this.handleDeleteQuestion = this.handleDeleteQuestion.bind(this)
     this.handleQuestionChange = this.handleQuestionChange.bind(this)
+    this.handleScriptChange = this.handleScriptChange.bind(this)
+    // TODO can probably simplify these  into one or two methods that send the whole formsy form
 
     this.state = {
       open: false,
-      editingAnswer: null
+      script: null
     }
   }
 
@@ -104,9 +106,9 @@ export class CampaignQuestionForm extends Component {
     onEditQuestion(interactionStep._id, { question: event.target.value })
   }
 
-  handleEditScript(answer) {
-    this.setState({ editingAnswer: answer })
-    this.handleOpenDialog()
+  handleScriptChange(event) {
+    const { interactionStep, onEditQuestion } = this.props
+    onEditQuestion(interactionStep._id, { script: event.target.value })
   }
 
   handleDeleteQuestion() {
@@ -125,9 +127,9 @@ export class CampaignQuestionForm extends Component {
   }
 
   handleSaveScript() {
-    const { editingAnswer } = this.state
     const script =  this.refs.scriptInput.getValue()
-    this.handleUpdateAnswer(editingAnswer._id, {script})
+    this.refs.formsyScript.setState({ value: script })
+    this.setState( { script })
     this.handleCloseDialog()
   }
 
@@ -159,7 +161,7 @@ export class CampaignQuestionForm extends Component {
         <FlatButton
           style={styles.addAnswerButton}
           labelStyle={styles.addAnswerButton}
-          label="Add answer"
+          label="Add another answer"
           onTouchTap={this.addAnswer}
         />
       </div>
@@ -167,7 +169,7 @@ export class CampaignQuestionForm extends Component {
   }
 
   renderDialog() {
-    const { editingAnswer, open } = this.state
+    const { script, open } = this.state
     const { customFields, sampleContact } = this.props
     const scriptFields = allScriptFields(customFields)
 
@@ -191,7 +193,7 @@ export class CampaignQuestionForm extends Component {
         <ScriptEditor
           expandable
           ref="scriptInput"
-          script={editingAnswer && editingAnswer.script ? {text: editingAnswer.script} : null}
+          scriptText={script}
           sampleContact={sampleContact}
           scriptFields={scriptFields}
         />
@@ -201,6 +203,7 @@ export class CampaignQuestionForm extends Component {
 
   render() {
     const { interactionStep, interactionSteps, campaignStarted } = this.props
+    const { script } = this.state
     const interactionStepIsFocused = interactionStep.question === ''
     // const parentQuestions = interactionSteps.filter((q) => _.includes(q.allowedAnswers.map((answer) => answer.surveyQuestionId), interactionStep._id))
     const parentQuestions = []
@@ -222,12 +225,14 @@ export class CampaignQuestionForm extends Component {
 
     const stepTitle = (step) => {
       if (step.isTopLevel) {
-        return `Start - ${step.question}`
+        return "Start"
       } else {
         const parents = getAllParents(step)
         return parents.map((step) => step).join(' > ')
       }
     }
+
+    console.log("script text", script)
 
     const isFollowUp = parentQuestions.length > 0
     return (
@@ -242,14 +247,22 @@ export class CampaignQuestionForm extends Component {
         <CardText>
           <div>
             <FormsyText
+              onTouchTap={this.handleOpenDialog}
               name="script"
+              autoFocus
               floatingLabelText="Script"
+              ref="formsyScript"
+              onChange={this.handleQuestionChange}
+              fullWidth
+              value={script}
+              // floatingLabelText="Script"
             />
+
             <FormsyText
               name="interactionStep"
               floatingLabelText="Question"
               autoFocus={interactionStepIsFocused}
-              onChange={this.handleQuestionChange}
+              onChange={this.handleScriptChange}
               onFocus={(event) => event.target.select()}
               required
               fullWidth

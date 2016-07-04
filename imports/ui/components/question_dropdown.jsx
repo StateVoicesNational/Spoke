@@ -14,26 +14,26 @@ export class QuestionDropdown extends Component {
   }
 
   handleAnswerChange(event, index, value) {
-    const { onAnswerChange, question } = this.props
-    console.log("event, value, index", question.allowedAnswers, value)
-    const script = question.allowedAnswers.find((allowedAnswer) => allowedAnswer.value === value).script
-    onAnswerChange(question._id, value, script)
+    const { onAnswerChange, step } = this.props
+    console.log("event, value, index", step.allowedAnswers, value)
+    const script = step.allowedAnswers.find((allowedAnswer) => allowedAnswer.value === value).script
+    onAnswerChange(step._id, value, script)
   }
 
   render () {
-    const { question, answer } = this.props
+    const { step, answer } = this.props
     return (
       <div style={styles.form}>
         <SelectField
-          floatingLabelText={question.text}
+          floatingLabelText={step.question}
           floatingLabelStyle={{pointerEvents: 'none'}} // https://github.com/callemall/material-ui/issues/3908
           onChange={this.handleAnswerChange}
           underlineStyle={{display: 'none'}}
           underlineShow={false}
-          name={question.text}
+          name={step.question}
           value={answer ? answer.value : ''}
         >
-          {question.allowedAnswers.map(allowedAnswer =>
+          {step.allowedAnswers.map(allowedAnswer =>
             <MenuItem
               key={allowedAnswer.value}
               value={allowedAnswer.value}
@@ -49,6 +49,6 @@ export class QuestionDropdown extends Component {
 
 QuestionDropdown.propTypes = {
   onAnswerChange: React.PropTypes.function,
-  question: React.PropTypes.object,
+  step: React.PropTypes.object,
   answer: React.PropTypes.object
 }

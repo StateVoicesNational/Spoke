@@ -84,22 +84,22 @@ export class CampaignForm extends Component {
     }
 
     this.sections = [
-      // {
-      //   title: SectionTitles.basics,
-      //   content: this.renderBasicsSection.bind(this)
-      // },
-      // {
-      //   title: SectionTitles.contacts,
-      //   content: this.renderPeopleSection.bind(this)
-      // },
-      // {
-      //   title: SectionTitles.texters,
-      //   content: this.renderAssignmentSection.bind(this)
-      // },
-      // {
-      //   title: SectionTitles.scripts,
-      //   content: this.renderScriptSection.bind(this)
-      // },
+      {
+        title: SectionTitles.basics,
+        content: this.renderBasicsSection.bind(this)
+      },
+      {
+        title: SectionTitles.contacts,
+        content: this.renderPeopleSection.bind(this)
+      },
+      {
+        title: SectionTitles.texters,
+        content: this.renderAssignmentSection.bind(this)
+      },
+      {
+        title: SectionTitles.scripts,
+        content: this.renderScriptSection.bind(this)
+      },
       {
         title: SectionTitles.surveys,
         content: this.renderSurveySection.bind(this)
@@ -122,7 +122,7 @@ export class CampaignForm extends Component {
     } else {
       const step = {
           allowedAnswers: [newAllowedAnswer('')],
-          isTopLevel: false
+          isTopLevel: true
         }
       InteractionStepCollection.insert(step)
     }
@@ -291,15 +291,18 @@ export class CampaignForm extends Component {
   }
 
   handleCreateNewCampaign() {
+    console.log("hi?")
     const { campaign, organizationId } = this.props
     this.setState({ submitting: true })
 
     const data = this.getCampaignModel()
 
+    console.log("data", data)
     insert.call(data, (err) => {
       this.setState({ submitting: false })
 
       if (err) {
+        console.log("error createing campaign")
         alert(err)
       } else {
         ScriptCollection.remove({})

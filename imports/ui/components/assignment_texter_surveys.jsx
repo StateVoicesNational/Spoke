@@ -12,21 +12,21 @@ export class AssignmentTexterSurveys extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      questionIndex: 0
+      stepIndex: 0
     }
   }
 
   handleNext() {
-    const {questionIndex} = this.state
+    const {stepIndex} = this.state
     this.setState({
-      questionIndex: questionIndex + 1,
+      stepIndex: stepIndex + 1,
     })
   }
 
   handlePrevious() {
-    const {questionIndex} = this.state
+    const {stepIndex} = this.state
     this.setState({
-      questionIndex: questionIndex - 1,
+      stepIndex: stepIndex - 1,
     })
   }
 
@@ -44,21 +44,23 @@ export class AssignmentTexterSurveys extends Component {
   }
 
   renderCurrentQuestion() {
-    const { contact, questions } = this.props
-    const { questionIndex } = this.state
-    const question = questions[questionIndex]
-    console.log(question)
+    const { contact, steps } = this.props
+    console.log("steps", steps)
+    const { stepIndex } = this.state
+
+    const step = steps[stepIndex]
+    console.log(step)
     return (
       <QuestionDropdown
-        answer={contact.surveyAnswer(question._id)}
+        answer={contact.surveyAnswer(step._id)}
         onAnswerChange={this.handleSurveyAnswerChange.bind(this)}
-        question={question}
+        step={step}
       />
     )
   }
   render() {
-    const { contact, questions } = this.props
-    return questions.length === 0 ? <div /> : (
+    const { contact, steps } = this.props
+    return steps.length === 0 ? <div /> : (
       <div style={styles.root}>
         {this.renderCurrentQuestion()}
       </div>

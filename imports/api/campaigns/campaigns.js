@@ -83,8 +83,10 @@ Campaigns.helpers({
     return !!Messages.findOne( { campaignId: this._id })
   },
   initialScriptText() {
-    const initialScript = _.find(this.scripts, (script) => script.type === ScriptTypes.INITIAL)
-    return initialScript ? initialScript.text : null
+    console.log("INITIAL SCRIPT TEXT")
+    const firstStep = this.firstStep()
+    console.log("first step?", firstStep)
+    return firstStep ? firstStep.script : null
   },
   faqScripts() {
     return this.scripts.filter((script) => script.type === ScriptTypes.FAQ)
@@ -94,6 +96,9 @@ Campaigns.helpers({
   },
   scriptFields() {
     return allScriptFields(this.customFields)
+  },
+  firstStep() {
+    return InteractionSteps.findOne({ isTopLevel: true, campaignId: this._id})
   },
   interactionSteps() {
     return InteractionSteps.find({ campaignId: this._id })

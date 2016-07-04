@@ -26,8 +26,8 @@ const AllowedAnswerSchema = new SimpleSchema({
 
 InteractionSteps.schema = new SimpleSchema({
   campaignId: { type: String },
-  question: { type: String },
-  script: { type: String },
+  question: { type: String, optional: true },
+  script: { type: String, optional: true },
   allowedAnswers: { type: [AllowedAnswerSchema] },
   instructions: { // any instructions for the texter at this step
     type: String,

@@ -5,6 +5,7 @@ import { Campaigns } from '../../campaigns/campaigns'
 import { CampaignContacts } from '../../campaign_contacts/campaign_contacts'
 import { ContactFilters } from '../../campaign_contacts/methods'
 import { SurveyQuestions } from '../../survey_questions/survey_questions'
+import { InteractionSteps } from '../../interaction_steps/interaction_steps'
 import { SurveyAnswers } from '../../survey_answers/survey_answers'
 import { ZipCodes } from '../../zip_codes/zip_codes'
 import { Messages } from '../../messages/messages'
@@ -143,6 +144,7 @@ Meteor.publish('assignment.text', function(assignmentId, contactFilter, organiza
     Messages.find( { contactNumber: {$in: contactNumbers}, userId }),
     OptOuts.find({ organizationId }),
     SurveyQuestions.find( { campaignId }),
+    InteractionSteps.find( { campaignId }),
         // FIXME survey answers
     SurveyAnswers.find( { campaignId }),
     ZipCodes.find({ zip: { $in: zipCodes }}),
