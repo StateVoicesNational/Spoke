@@ -29,7 +29,7 @@ import Subheader from 'material-ui/Subheader'
 import SelectField from 'material-ui/SelectField'
 const QuestionLink = ({text, isLinkToParent, interactionStep}) => (
   <FlatButton
-    label={interactionStep.question || 'Step'}
+    label={interactionStep.question || 'Next Step'}
     secondary
     icon={isLinkToParent ? <BackIcon /> : <ForwardIcon />}
   />
