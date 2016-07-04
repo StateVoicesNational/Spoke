@@ -6,7 +6,7 @@ import { ScriptEditor } from './script_editor'
 import { FormsyText, FormsyDate } from 'formsy-material-ui/lib'
 import RadioButtonUnchecked from 'material-ui/svg-icons/toggle/radio-button-unchecked'
 import Dialog from 'material-ui/Dialog'
-import { allScriptFields } from '../../api/campaigns/scripts'
+import { allScriptFields } from '../../api/scripts/scripts'
 import { muiTheme } from '../../ui/theme'
 import { grey100 } from 'material-ui/styles/colors'
 import {Card, CardActions, CardHeader,  CardText} from 'material-ui/Card';

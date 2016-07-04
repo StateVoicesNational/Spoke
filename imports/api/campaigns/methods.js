@@ -10,7 +10,7 @@ import { Assignments } from '../assignments/assignments.js'
 import { convertRowToContact } from '../campaign_contacts/parse_csv'
 import { batchInsert } from 'meteor/mikowals:batch-insert'
 import { chunk, last, forEach, zip } from 'lodash'
-import { ScriptSchema } from './scripts.js'
+import { ScriptSchema, Scripts } from '../scripts/scripts'
 const divideContacts = (contactRows, texters) => {
 
   const rowCount = contactRows.length
@@ -94,7 +94,7 @@ export const insert = new ValidatedMethod({
     organizationId: { type: String },
     description: { type: String },
     contacts: { type: [Object], blackbox: true },
-    scripts: { type: [ScriptSchema] },
+    scripts: { type: [Object], blackbox: true },
     assignedTexters: { type: [String]},
     interactionSteps: { type: [Object], blackbox: true},
     customFields: { type: [String]},
@@ -118,7 +118,6 @@ export const insert = new ValidatedMethod({
     const campaignData = {
       title,
       description,
-      scripts,
       organizationId,
       customFields,
       dueBy,
@@ -132,6 +131,12 @@ export const insert = new ValidatedMethod({
         throw new Meteor.Error(campaignError)
       }
       else {
+
+        for (let script of scripts) {
+          script.campaignId = campaignId
+          Scripts.insert(script)
+        }
+
         for (let interactionStep of interactionSteps) {
           interactionStep.campaignId = campaignId
           InteractionSteps.insert(interactionStep)

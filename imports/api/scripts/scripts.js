@@ -1,11 +1,18 @@
 import { CampaignContacts } from '../campaign_contacts/campaign_contacts'
+import { Mongo } from 'meteor/mongo'
+import { SimpleSchema } from 'meteor/aldeed:simple-schema'
+
 export const ScriptTypes = {
     INITIAL: 'initial', // First time contacting a supporter
     REPEAT: 'repeat', // Contact who has been texted before
     FAQ: 'faq' // FAQ script
 }
 
+export const Scripts = new Mongo.Collection('scripts')
+
 export const ScriptSchema = new SimpleSchema({
+  campaignId: { type: String },
+  userId: { type: String, optional: true },
   text: { type: String },
   title: {
     type: String,
@@ -37,6 +44,8 @@ export const ScriptSchema = new SimpleSchema({
     ]
   }
 })
+
+Scripts.schema = ScriptSchema
 
 export const delimiters = {
   startDelimiter: '{',

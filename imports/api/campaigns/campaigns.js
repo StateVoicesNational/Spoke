@@ -2,12 +2,11 @@ import { Mongo } from 'meteor/mongo'
 import { SimpleSchema } from 'meteor/aldeed:simple-schema'
 import { Fake } from 'meteor/anti:fake'
 import { Factory } from 'meteor/dburles:factory'
-import { SurveyQuestions } from '../survey_questions/survey_questions'
+import { Scripts, ScriptSchema, ScriptTypes, allScriptFields } from '../scripts/scripts'
 import { InteractionSteps } from '../interaction_steps/interaction_steps'
 import { Messages } from '../messages/messages'
 import { Assignments, activeAssignmentQuery } from '../assignments/assignments'
 import { moment } from 'meteor/momentjs:moment'
-import { ScriptSchema, ScriptTypes, allScriptFields } from './scripts'
 
 export const Campaigns = new Mongo.Collection('campaigns')
 
@@ -31,7 +30,6 @@ Campaigns.schema = new SimpleSchema({
     type: String,
     optional: true
   },
-  scripts: { type: [ScriptSchema]}
 })
 
 Campaigns.attachSchema(Campaigns.schema)
@@ -50,25 +48,7 @@ Factory.define('campaign', Campaigns, {
     'Get out the vote!']),
   customFields: [],
   dueBy: () => new Date(),
-  surveyQuestionId: Factory.get('survey_question'),
-  assignedTexters: [],
-  scripts: () => [
-    {
-      title: "I don't have a laptop",
-      text: 'No problem, {firstName}. You can usually use a tablet. Just be sure to check beforehand!',
-      type: ScriptTypes.FAQ
-    },
-    {
-      title: "I can only make it for part of the time.",
-      text: "That's okay. You can still come. Just let us know if you can or not.",
-      type: ScriptTypes.FAQ
-    },
-    {
-      // TODO: Enforce that there is only one INITIAL
-      text: "Hi {firstName}. This is {texterFirstName} here.",
-      type: ScriptTypes.INITIAL
-    }
-  ]
+  assignedTexters: []
 })
 
 // This represents the keys from Campaigns objects that should be published
@@ -83,13 +63,11 @@ Campaigns.helpers({
     return !!Messages.findOne( { campaignId: this._id })
   },
   initialScriptText() {
-    console.log("INITIAL SCRIPT TEXT")
     const firstStep = this.firstStep()
-    console.log("first step?", firstStep)
     return firstStep ? firstStep.script : null
   },
   faqScripts() {
-    return this.scripts.filter((script) => script.type === ScriptTypes.FAQ)
+    return Scripts.find({ campaignId: this._id, type: ScriptTypes.FAQ })
   },
   activeAssignment() {
     return Assignments.findOne(activeAssignmentQuery(this))

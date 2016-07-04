@@ -8,7 +8,7 @@ import {
   updateQuestions,
   updateScripts
 } from '../../api/campaigns/methods'
-import { ScriptTypes } from '../../api/campaigns/scripts'
+import { ScriptTypes } from '../../api/scripts/scripts'
 import { Assignments } from '../../api/assignments/assignments'
 import { CampaignNewForm } from './campaign_new_form'
 import { CampaignEditForm } from './campaign_edit_form'
@@ -97,12 +97,12 @@ export class CampaignForm extends Component {
         content: this.renderAssignmentSection.bind(this)
       },
       {
-        title: SectionTitles.scripts,
-        content: this.renderScriptSection.bind(this)
-      },
-      {
         title: SectionTitles.surveys,
         content: this.renderSurveySection.bind(this)
+      },
+      {
+        title: SectionTitles.scripts,
+        content: this.renderScriptSection.bind(this)
       }
     ]
   }

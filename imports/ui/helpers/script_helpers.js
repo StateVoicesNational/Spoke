@@ -1,4 +1,4 @@
-import { delimit, delimiters } from '../../api/campaigns/scripts'
+import { delimit, delimiters } from '../../api/scripts/scripts'
 import { CampaignContacts } from '../../api/campaign_contacts/campaign_contacts'
 
 export const scriptFields = (customFields) => customFields.concat(
