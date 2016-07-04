@@ -17,7 +17,7 @@ export const insert = new ValidatedMethod({
     description: { type: String },
     contacts: { type: [Object], blackbox: true },
     scripts: { type: [Object], blackbox: true },
-    questions: { type: [Object], blackbox: true },
+    interactionSteps: { type: [Object], blackbox: true },
     customFields: { type: [String] },
     assignedTexters: { type: [String] },
     dueBy: { type: Date }
@@ -30,7 +30,7 @@ export const insert = new ValidatedMethod({
     customFields,
     organizationId,
     assignedTexters,
-    questions,
+    interactionSteps,
     dueBy
   }) {
     if (!this.userId || !Roles.userIsInRole(this.userId, 'admin', organizationId)) {
@@ -48,7 +48,8 @@ export const insert = new ValidatedMethod({
 
     // TODO this needs to be in one transaction
     const campaignId = Campaigns.insert(campaignData)
-    saveQuestions(campaignId, questions)
+    _.each(scripts, (script) => Scripts.insert(_.extend(script, { campaignId })))
+    saveQuestions(campaignId, interactionSteps)
     saveContacts(campaignId, contacts)
 
     if (assignedTexters.length > 0) {

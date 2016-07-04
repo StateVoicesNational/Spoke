@@ -85,7 +85,7 @@ export class CampaignQuestionForm extends Component {
 
     this.state = {
       open: false,
-      script: null
+      script: props.interactionStep.script
     }
   }
 
@@ -129,7 +129,8 @@ export class CampaignQuestionForm extends Component {
   handleSaveScript() {
     const script =  this.refs.scriptInput.getValue()
     this.refs.formsyScript.setState({ value: script })
-    this.setState( { script })
+    const { onEditQuestion, interactionStep } = this.props
+    onEditQuestion(interactionStep._id, { script })
     this.handleCloseDialog()
   }
 
