@@ -66,6 +66,9 @@ const styles = {
   },
   cardHeader: {
     backgroundColor: grey100
+  },
+  cardText: {
+    marginBottom:48
   }
 }
 
@@ -80,12 +83,15 @@ export class CampaignQuestionForm extends Component {
     this.handleDeleteScript = this.handleDeleteScript.bind(this)
     this.handleDeleteQuestion = this.handleDeleteQuestion.bind(this)
     this.handleQuestionChange = this.handleQuestionChange.bind(this)
+    this.handleFocusQuestion = this.handleFocusQuestion.bind(this)
+    this.handleBlurQuestion = this.handleBlurQuestion.bind(this)
     this.handleScriptChange = this.handleScriptChange.bind(this)
     // TODO can probably simplify these  into one or two methods that send the whole formsy form
 
     this.state = {
       open: false,
-      script: props.interactionStep.script
+      script: props.interactionStep.script,
+      questionIsFocused: false
     }
   }
 
@@ -99,6 +105,7 @@ export class CampaignQuestionForm extends Component {
   addAnswer() {
     const {onAddSurveyAnswer, interactionStep} = this.props
     onAddSurveyAnswer(interactionStep._id)
+    const answers = interactionStep.allowedAnswers
   }
 
   handleQuestionChange(event) {
@@ -108,6 +115,7 @@ export class CampaignQuestionForm extends Component {
 
   handleScriptChange(event) {
     const { interactionStep, onEditQuestion } = this.props
+    console.log("interactionStep", event.target.value)
     onEditQuestion(interactionStep._id, { script: event.target.value })
   }
 
@@ -116,11 +124,6 @@ export class CampaignQuestionForm extends Component {
     onDeleteQuestion(interactionStep._id)
   }
 
-  handleDeleteAnswer(answer) {
-    const { interactionStep, onEditQuestion } = this.props
-    const allowedAnswers = _.reject(interactionStep.allowedAnswers, (allowedAnswer) => allowedAnswer._id === answer._id)
-    onEditQuestion(interactionStep._id, { allowedAnswers })
-  }
 
   handleDeleteScript(answer) {
     this.handleUpdateAnswer(answer._id, {script: null})
@@ -128,30 +131,28 @@ export class CampaignQuestionForm extends Component {
 
   handleSaveScript() {
     const script =  this.refs.scriptInput.getValue()
-    this.refs.formsyScript.setState({ value: script })
     const { onEditQuestion, interactionStep } = this.props
     onEditQuestion(interactionStep._id, { script })
+    this.refs.script.setState({ value: script })
     this.handleCloseDialog()
   }
 
-  renderAnswers(interactionSteps, interactionStep, interactionStepIsFocused) {
+  renderAnswers(interactionSteps, interactionStep, questionIsFocused) {
     const { onAddQuestion, onEditQuestion } = this.props
-
     const otherQuestions = _.reject(interactionSteps, (q) => q._id === interactionStep._id)
-
-
     const answers = interactionStep.allowedAnswers
     return (
       <div>
         { _.map(answers, (answer, index) => (
           <CampaignQuestionFormAnswerRow
+            ref={`allowedAnswers[${index}]`}
             onAddAnswer={this.addAnswer}
             onDeleteAnswer={this.handleDeleteAnswer}
             onEditQuestion={onEditQuestion}
             otherQuestions={otherQuestions}
             interactionStep={interactionStep}
             answer={answer}
-            autoFocus={!interactionStepIsFocused && index === (answers.length - 1)}
+            autoFocus={index === answers.length - 1 && !questionIsFocused}
             index={index}
             onAddQuestion={onAddQuestion}
           />
@@ -171,7 +172,7 @@ export class CampaignQuestionForm extends Component {
 
   renderDialog() {
     const { script, open } = this.state
-    const { customFields, sampleContact } = this.props
+    const { customFields, sampleContact, interactionStep } = this.props
     const scriptFields = allScriptFields(customFields)
 
     return (
@@ -194,7 +195,7 @@ export class CampaignQuestionForm extends Component {
         <ScriptEditor
           expandable
           ref="scriptInput"
-          scriptText={script}
+          scriptText={interactionStep.script}
           sampleContact={sampleContact}
           scriptFields={scriptFields}
         />
@@ -202,13 +203,46 @@ export class CampaignQuestionForm extends Component {
     )
   }
 
+  handleFocusQuestion(event) {
+    this.setState({ questionIsFocused: true})
+    event.target.select()
+  }
+
+  handleBlurQuestion() {
+    this.setState({ questionIsFocused: false })
+  }
+
+  renderQuestion() {
+    const { interactionStep, interactionSteps, campaignStarted } = this.props
+    const { questionIsFocused } = this.state
+    console.log("QUESTION IS FOCUSED", questionIsFocused)
+    return [
+      <FormsyText
+        name="interactionStep"
+        floatingLabelText="Question"
+        onChange={this.handleQuestionChange}
+        onFocus={this.handleFocusQuestion}
+        onBlur={this.handleBlurQuestion}
+        required
+        fullWidth
+        disabled={campaignStarted}
+        ref="interactionStepInput"
+        hintText="E.g. Can the contact attend the event?"
+        value={ interactionStep.question }
+      />,
+
+      interactionStep.question ? this.renderAnswers(interactionSteps, interactionStep, questionIsFocused) : '',
+      this.renderDialog()
+    ]
+
+  }
+
   render() {
     const { interactionStep, interactionSteps, campaignStarted } = this.props
-    const { script } = this.state
     const interactionStepIsFocused = interactionStep.question === ''
     // const parentQuestions = interactionSteps.filter((q) => _.includes(q.allowedAnswers.map((answer) => answer.surveyQuestionId), interactionStep._id))
     const parentQuestions = []
-    const cardActions = campaignStarted ? '' : (
+    const cardActions = campaignStarted || interactionStep.isTopLevel ? '' : (
       <Divider />,
       <CardActions
         style={{textAlign: 'right'}}
@@ -233,46 +267,33 @@ export class CampaignQuestionForm extends Component {
       }
     }
 
-    console.log("script text", script)
+    console.log("interactionStep.script", interactionStep.script)
 
-    const isFollowUp = parentQuestions.length > 0
+
     return (
-      <Card style={isFollowUp ? styles.followUp : styles.interactionStep}>
+      <Card style={styles.interactionStep}>
         <CardHeader
           style={styles.cardHeader}
           title={stepTitle(interactionStep)}
-          subtitle=""
+          subtitle="Enter a script for your texter along with the question you want the texter be able to answer on behalf of the contact."
         />
         <Divider/>
 
-        <CardText>
+        <CardText style={styles.cardText}>
           <div>
             <FormsyText
-              onTouchTap={this.handleOpenDialog}
               name="script"
-              autoFocus
               floatingLabelText="Script"
-              ref="formsyScript"
-              onChange={this.handleScriptChange}
-              fullWidth
-              value={script}
-            />
-
-            <FormsyText
-              name="interactionStep"
-              floatingLabelText="Question"
-              autoFocus={interactionStepIsFocused}
-              onChange={this.handleQuestionChange}
-              onFocus={(event) => event.target.select()}
+              onFocus={this.handleOpenDialog}
               required
               fullWidth
-              disabled={campaignStarted}
-              ref="interactionStepInput"
-              hintText="E.g. Can the contact attend the event?"
-              value={ interactionStep.text }
+              multiLine
+              ref="script"
+              hintText="Hi, {firstName}. It's {texterFirstName} here."
+              value={ interactionStep.script }
             />
-            { this.renderAnswers(interactionSteps, interactionStep, interactionStepIsFocused) }
-            { this.renderDialog()}
+            {this.renderQuestion() }
+
           </div>
         </CardText>
         <Divider/>

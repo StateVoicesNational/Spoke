@@ -46,23 +46,14 @@ const styles = {
     marginTop: 16,
     marginBottom: 16
   },
-  script: {
-    verticalAlign: 'middle',
-    display: 'inline-block',
-    width: '180px',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    marginLeft: '24',
-    fontSize: 11,
-    color: grey400
-  },
 }
 
 export class CampaignQuestionFormAnswerRow extends Component {
   constructor(props) {
     super(props)
     this.handleUpdateAnswer = this.handleUpdateAnswer.bind(this)
+    this.handleDeleteAnswer = this.handleDeleteAnswer.bind(this)
+    this.focus = () => this.refs.input.focus()
 
   }
   handleAnswerInputOnKeyDown(answer, event) {
@@ -84,8 +75,14 @@ export class CampaignQuestionFormAnswerRow extends Component {
       return allowedAnswer
     })
     onEditQuestion(interactionStep._id, { allowedAnswers })
-
   }
+
+  handleDeleteAnswer(answer) {
+    const { interactionStep, onEditQuestion } = this.props
+    const allowedAnswers = _.reject(interactionStep.allowedAnswers, (allowedAnswer) => allowedAnswer._id === answer._id)
+    onEditQuestion(interactionStep._id, { allowedAnswers })
+  }
+
   render() {
     const { otherQuestions, interactionStep, answer, autoFocus, index, campaignStarted, onAddQuestion } = this.props
 
@@ -114,6 +111,7 @@ export class CampaignQuestionFormAnswerRow extends Component {
             />
 
             <FormsyText
+              ref="input"
               onKeyDown={ (event) => this.handleAnswerInputOnKeyDown(answer, event) }
               onFocus={(event) => event.target.select()}
               onChange={ (event) => this.handleUpdateAnswer(answer._id, { value: event.target.value })}
