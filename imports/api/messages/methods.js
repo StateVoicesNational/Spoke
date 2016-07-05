@@ -91,9 +91,13 @@ const remoteCreateMessage = (params) => {
     return 'fake_message_id'
   }
   else {
-    const sendMessage = Meteor.wrapAsync(Plivo.sendMessage, Plivo)
-    const response = sendMessage(params)
+//    const sendMessage = Meteor.wrapAsync(Plivo.sendMessage, Plivo)
+//    const response = sendMessage(params)
+    const response = {
+      statusCode: 500
+    }
     if (response.statusCode !== 202) {
+      console.log('HERERE');
       throw new Meteor.Error('message-send-error')
     }
 
