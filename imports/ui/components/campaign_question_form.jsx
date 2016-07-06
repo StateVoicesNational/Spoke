@@ -69,7 +69,21 @@ const styles = {
   },
   cardText: {
     marginBottom:48
+  },
+  questionSpan: {
+    fontWeight: 'normal',
+    opacity: 0.8
+  },
+  answerSpan: {
+    fontWeight: 'normal',
+    opacity: 0.8
+  },
+  stepTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: 'black'
   }
+
 }
 
 
@@ -223,7 +237,6 @@ export class CampaignQuestionForm extends Component {
         onChange={this.handleQuestionChange}
         onFocus={this.handleFocusQuestion}
         onBlur={this.handleBlurQuestion}
-        required
         fullWidth
         disabled={campaignStarted}
         ref="interactionStepInput"
@@ -238,10 +251,7 @@ export class CampaignQuestionForm extends Component {
   }
 
   render() {
-    const { interactionStep, interactionSteps, campaignStarted } = this.props
-    const interactionStepIsFocused = interactionStep.question === ''
-    // const parentQuestions = interactionSteps.filter((q) => _.includes(q.allowedAnswers.map((answer) => answer.surveyQuestionId), interactionStep._id))
-    const parentQuestions = []
+    const { interactionStep, interactionStepIndex, campaignStarted } = this.props
     const cardActions = campaignStarted || interactionStep.isTopLevel ? '' : (
       <Divider />,
       <CardActions
@@ -258,13 +268,19 @@ export class CampaignQuestionForm extends Component {
       </CardActions>
     )
 
+    const displayStep = (step) =>  <span style={step.question ? styles.questionSpan : styles.answerSpan }>{step.question ? step.question : step.value} > </span>
+
     const stepTitle = (step) => {
+      console.log("interactionStepIndex", interactionStepIndex)
+
+      const title = step.question || `This step`
       if (step.isTopLevel) {
-        return "Start"
+        return ['Start: ', <span style={styles.stepTitle}>{title}</span>]
       } else {
         const parents = getAllParents(step)
-        return parents.map((step) => step).join(' > ')
+        return [parents.map((step) => displayStep(step)), <span style={styles.stepTitle}>{title}</span>]
       }
+
     }
 
     console.log("interactionStep.script", interactionStep.script)
@@ -275,7 +291,7 @@ export class CampaignQuestionForm extends Component {
         <CardHeader
           style={styles.cardHeader}
           title={stepTitle(interactionStep)}
-          subtitle="Enter a script for your texter along with the question you want the texter be able to answer on behalf of the contact."
+          subtitle={interactionStep.isTopLevel ? "Enter a script for your texter along with the question you want the texter be able to answer on behalf of the contact." : ''}
         />
         <Divider/>
 

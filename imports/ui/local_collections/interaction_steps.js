@@ -12,7 +12,7 @@ export const getAllParents = (step) => {
 
     if (parent) {
         answer = parent.allowedAnswers.find((answer) => answer.interactionStepId === step._id)
-        parents = parents.concat([parent.question, answer.value])
+        parents = [parent, answer].concat(parents)
     }
 
     step = parent

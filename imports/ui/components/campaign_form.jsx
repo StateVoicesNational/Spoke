@@ -84,26 +84,26 @@ export class CampaignForm extends Component {
     }
 
     this.sections = [
-      {
-        title: SectionTitles.basics,
-        content: this.renderBasicsSection.bind(this)
-      },
-      {
-        title: SectionTitles.contacts,
-        content: this.renderPeopleSection.bind(this)
-      },
-      {
-        title: SectionTitles.texters,
-        content: this.renderAssignmentSection.bind(this)
-      },
+      // {
+      //   title: SectionTitles.basics,
+      //   content: this.renderBasicsSection.bind(this)
+      // },
+      // {
+      //   title: SectionTitles.contacts,
+      //   content: this.renderPeopleSection.bind(this)
+      // },
+      // {
+      //   title: SectionTitles.texters,
+      //   content: this.renderAssignmentSection.bind(this)
+      // },
       {
         title: SectionTitles.surveys,
         content: this.renderSurveySection.bind(this)
       },
-      {
-        title: SectionTitles.scripts,
-        content: this.renderScriptSection.bind(this)
-      }
+      // {
+      //   title: SectionTitles.scripts,
+      //   content: this.renderScriptSection.bind(this)
+      // }
     ]
   }
 

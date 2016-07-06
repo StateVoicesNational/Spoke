@@ -22,7 +22,7 @@ export class CampaignSurveyForm extends Component {
       subtitle = "Once messages have been sent to contacts in this campaign, you can't edit the questions or answers, but you can still edit scripts if you need."
     }
     else {
-      subtitle = 'You can add questions and your texters can indicate responses from your contacts. For example, you might want to collect RSVPs to an event or find out whether to follow up about a different volunteer activity.'
+      subtitle = 'You can add  scripts and questions and your texters can indicate responses from your contacts. For example, you might want to collect RSVPs to an event or find out whether to follow up about a different volunteer activity.'
     }
 
     return (
@@ -31,11 +31,11 @@ export class CampaignSurveyForm extends Component {
         onInvalid={onInvalid}
       >
         <CampaignFormSectionHeading
-          title='What do you want to learn?'
+          title='What do you want to discuss?'
           subtitle={subtitle}
         />
 
-        { interactionSteps.map ((interactionStep) => (
+        { _.map(interactionSteps, (interactionStep, index) => (
           <CampaignQuestionForm
             interactionStep={interactionStep}
             questions={interactionSteps}
