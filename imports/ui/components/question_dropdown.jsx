@@ -4,6 +4,8 @@ import MenuItem from 'material-ui/MenuItem'
 import Formsy from 'formsy-react';
 import { FormsySelect } from 'formsy-material-ui/lib'
 import Divider from 'material-ui/Divider'
+import { InteractionSteps } from '../../api/interaction_steps/interaction_steps'
+
 const styles = {
 }
 
@@ -15,9 +17,9 @@ export class QuestionDropdown extends Component {
 
   handleAnswerChange(event, index, value) {
     const { onAnswerChange, step } = this.props
-    console.log("event, value, index", step.allowedAnswers, value)
-    const script = step.allowedAnswers.find((allowedAnswer) => allowedAnswer.value === value).script
-    onAnswerChange(step._id, value, script)
+    const interactionStepId = step.allowedAnswers.find((allowedAnswer) => allowedAnswer.value === value).interactionStepId
+    const nextStep = InteractionSteps.findOne({ _id: interactionStepId })
+    onAnswerChange(step._id, value, nextStep ? nextStep.script : null)
   }
 
   render () {

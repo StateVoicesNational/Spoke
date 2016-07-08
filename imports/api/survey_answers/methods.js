@@ -6,12 +6,12 @@ export const updateAnswer = new ValidatedMethod({
   name: 'answer.update',
   validate: new SimpleSchema({
     campaignContactId: { type: String },
-    surveyQuestionId: { type: String },
+    interactionStepId: { type: String },
     campaignId: { type: String },
     value: { type: String } // TODO: validate based on questionsurvey id
   }).validator(),
-  run({ campaignContactId, campaignId, surveyQuestionId, value }) {
-    const answer = SurveyAnswers.findOne({ campaignContactId, surveyQuestionId })
+  run({ campaignContactId, campaignId, interactionStepId, value }) {
+    const answer = SurveyAnswers.findOne({ campaignContactId, interactionStepId })
     if (answer) {
       SurveyAnswers.update(
         { _id: answer._id },
@@ -19,7 +19,7 @@ export const updateAnswer = new ValidatedMethod({
     } else {
       SurveyAnswers.insert({
         campaignContactId,
-        surveyQuestionId,
+        interactionStepId,
         campaignId,
         value
       })

@@ -166,7 +166,7 @@ export class AssignmentTexter extends Component {
 
   setSuggestedScript(script)
   {
-    console.log("setting script")
+    console.log("setting script", script)
     this.setState({script})
   }
   handleScriptChange(script) {
@@ -174,7 +174,9 @@ export class AssignmentTexter extends Component {
   }
 
   onSendMessage() {
-    this.handleNavigateNext()
+    const contact = this.currentContact()
+
+  this.handleNavigateNext()
   }
 
   handleOptOut() {
@@ -236,24 +238,14 @@ export class AssignmentTexter extends Component {
     this.setState({open: true})
   }
 
-  handleSurveyAnswerChange(surveyQuestionId, answer, script) {
-    const contact = this.currentContact()
-    updateAnswer.call({
-      surveyQuestionId,
-      value: answer,
-      campaignContactId: contact._id,
-      campaignId: contact.campaignId
-    })
-    // This should actually happen from propagating props
-    this.handleScriptChange(script)
-  }
-
   renderSurveySection(campaign) {
     const contact = this.currentContact()
-    return contact.messages().fetch().length === 0  ? <div/> : (
+
+    // return contact.messages().fetch().length === 0  ? <div/> :
+    return (
       <AssignmentTexterSurveys
         contact={contact}
-        steps={campaign.interactionSteps().fetch()}
+        initialStep={campaign.firstStep()}
         onScriptChange={this.handleScriptChange}
       />
     )

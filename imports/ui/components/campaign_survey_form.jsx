@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React,  { Component } from 'react'
 import RaisedButton from 'material-ui/RaisedButton'
 import { CampaignQuestionForm } from './campaign_question_form'
 import { CampaignFormSectionHeading } from './campaign_form_section_heading'
@@ -9,8 +9,19 @@ const styles = {
   }
 }
 
-
 export class CampaignSurveyForm extends Component {
+  constructor(props) {
+    super(props)
+    this.handleClickStepLink = this.handleClickStepLink.bind(this)
+  }
+  handleClickStepLink(interactionStepId) {
+    const node = React.findDOMNode(this.refs[interactionStepId])
+    console.log("handleClickStepLink", this, node)
+
+    node.scrollTop = node.offset().top
+()
+  }
+
   render() {
     const { interactionSteps, onValid, onInvalid, onAddSurveyAnswer, onDeleteQuestion, onEditQuestion, onAddQuestion, customFields, sampleContact, campaign} = this.props
 
@@ -37,11 +48,13 @@ export class CampaignSurveyForm extends Component {
 
         { _.map(interactionSteps, (interactionStep, index) => (
           <CampaignQuestionForm
+            ref={interactionStep._id}
             interactionStep={interactionStep}
             questions={interactionSteps}
             onAddSurveyAnswer={onAddSurveyAnswer}
             onEditQuestion={onEditQuestion}
             onDeleteQuestion={onDeleteQuestion}
+            onClickStepLink={this.handleClickStepLink}
             onAddQuestion={onAddQuestion}
             customFields={customFields}
             sampleContact={sampleContact}

@@ -169,7 +169,7 @@ Meteor.publishComposite('assignment.allRelatedData', (assignmentId) => {
         children: [
           {
             find: (campaign) => {
-              return SurveyQuestions.find({ campaignId: campaign._id})
+              return InteractionSteps.find({ campaignId: campaign._id})
 
               // This is not reactive.
               // const ids = []

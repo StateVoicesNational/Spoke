@@ -54,3 +54,6 @@ Factory.define('interaction_steps', InteractionSteps, {
   instructions: () => Fake.sentence(20),
   isTopLevel:() => true
 })
+
+InteractionSteps.helpers({
+})

@@ -87,9 +87,9 @@ CampaignContacts.helpers({
     const campaign = Campaigns.findOne({_id: this.campaignId})
     return OptOuts.findOne({ organizationId: campaign.organizationId, cell: this.cell})
   },
-  surveyAnswer(surveyQuestionId) {
+  surveyAnswer(interactionStepId) {
     return SurveyAnswers.findOne({
-      surveyQuestionId,
+      interactionStepId,
       campaignContactId: this._id
     })
   }

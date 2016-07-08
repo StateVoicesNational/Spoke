@@ -54,11 +54,11 @@ const createContacts = (assignmentId, campaignId) => {
   )
 }
 
-const allowedAnswer = (value, script, surveyQuestionId) => (
+const allowedAnswer = (value, script, interactionStepId) => (
   {
     _id: Random.id(),
     value,
-    surveyQuestionId,
+    interactionStepId,
     script: `${script} Let us know at {eventUrl}!` // Just to demo/test the interpolation
   }
 )
@@ -66,7 +66,7 @@ const allowedAnswer = (value, script, surveyQuestionId) => (
 const createSurvey = (campaignId) => {
 
   const newSurvey = (question, allowedAnswers, isTopLevel) => {
-    return Factory.create('survey_question', {
+    return Factory.create('interaction_step', {
       question,
       campaignId,
       allowedAnswers,

@@ -27,11 +27,12 @@ import EditIcon from 'material-ui/svg-icons/image/edit'
 import Divider from 'material-ui/Divider'
 import Subheader from 'material-ui/Subheader'
 import SelectField from 'material-ui/SelectField'
-const QuestionLink = ({text, isLinkToParent, interactionStep}) => (
+const QuestionLink = ({ text, interactionStep, onClickStepLink }) => (
   <FlatButton
     label={interactionStep.question ? `Next step: ${interactionStep.question}` : 'Next Step'}
     secondary
-    icon={isLinkToParent ? <BackIcon /> : <ForwardIcon />}
+    onTouchTap={() => onClickStepLink(interactionStep._id)}
+    icon={<ForwardIcon />}
   />
 )
 const styles = {
@@ -84,7 +85,7 @@ export class CampaignQuestionFormAnswerRow extends Component {
   }
 
   render() {
-    const { otherQuestions, interactionStep, answer, autoFocus, index, campaignStarted, onAddQuestion } = this.props
+    const { otherQuestions, interactionStep, answer, autoFocus, index, campaignStarted, onAddQuestion, onClickStepLink } = this.props
 
     const deleteAnswerButton = (
       <IconButton
@@ -128,7 +129,13 @@ export class CampaignQuestionFormAnswerRow extends Component {
           </div>
           <div className="col-xs">
 
-          { answer.interactionStepId ? <QuestionLink interactionStep={InteractionStepCollection.findOne(answer.interactionStepId)} text="Linked" /> : addNextQuestionButton }
+          { answer.interactionStepId ? (
+            <QuestionLink
+              interactionStep={InteractionStepCollection.findOne(answer.interactionStepId)}
+              text="Linked"
+              onClickStepLink={onClickStepLink}
+            />
+            ): addNextQuestionButton }
           </div>
       </div>
     )

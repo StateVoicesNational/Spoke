@@ -77,31 +77,31 @@ const computeSurveyStats = (campaignId) => {
   },
   {
     $group: {
-      _id : {surveyQuestionId: '$surveyQuestionId', value: '$value'},
+      _id : {interactionStepId: '$interactionStepId', value: '$value'},
       count: { $sum: 1 },
     },
   },
   ])
 
-  const getAnswerCount = (surveyQuestionId, value) => {
-    const stat = aggregation.find((x) => x._id.surveyQuestionId === surveyQuestionId && x._id.value === value)
+  const getAnswerCount = (interactionStepId, value) => {
+    const stat = aggregation.find((x) => x._id.interactionStepId === interactionStepId && x._id.value === value)
     return stat ? stat.count : 0
   }
-  const surveys = SurveyQuestions.find({ campaignId }, { fields: {text: 1, allowedAnswers: 1}}).fetch()
+  const steps = InteractionSteps.find({ campaignId }, { fields: {text: 1, allowedAnswers: 1}}).fetch()
 
-  const surveyStats = surveys.map((survey) => {
-    const responses = survey.allowedAnswers.map((answer) => {
+  const surveyStats = steps.map((step) => {
+    const responses = step.allowedAnswers.map((answer) => {
         return {
           answer: answer.value,
-          count: getAnswerCount(survey._id, answer.value)
+          count: getAnswerCount(step._id, answer.value)
         }
       })
 
     // TODO - not efficient
     const responseCount = _.reduce(responses.map(({count}) => count ), (memo, num) => memo + num)
     return {
-      _id: survey._id,
-      text: survey.text,
+      _id: step._id,
+      text: step.question,
       responses,
       responseCount
     }

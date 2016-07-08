@@ -152,7 +152,7 @@ export class CampaignQuestionForm extends Component {
   }
 
   renderAnswers(interactionSteps, interactionStep, questionIsFocused) {
-    const { onAddQuestion, onEditQuestion } = this.props
+    const { onAddQuestion, onEditQuestion, onClickStepLink } = this.props
     const otherQuestions = _.reject(interactionSteps, (q) => q._id === interactionStep._id)
     const answers = interactionStep.allowedAnswers
     return (
@@ -161,6 +161,7 @@ export class CampaignQuestionForm extends Component {
           <CampaignQuestionFormAnswerRow
             ref={`allowedAnswers[${index}]`}
             onAddAnswer={this.addAnswer}
+            onClickStepLink={onClickStepLink}
             onDeleteAnswer={this.handleDeleteAnswer}
             onEditQuestion={onEditQuestion}
             otherQuestions={otherQuestions}

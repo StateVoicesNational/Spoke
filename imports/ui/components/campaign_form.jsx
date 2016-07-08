@@ -84,26 +84,26 @@ export class CampaignForm extends Component {
     }
 
     this.sections = [
-      // {
-      //   title: SectionTitles.basics,
-      //   content: this.renderBasicsSection.bind(this)
-      // },
-      // {
-      //   title: SectionTitles.contacts,
-      //   content: this.renderPeopleSection.bind(this)
-      // },
-      // {
-      //   title: SectionTitles.texters,
-      //   content: this.renderAssignmentSection.bind(this)
-      // },
+      {
+        title: SectionTitles.basics,
+        content: this.renderBasicsSection.bind(this)
+      },
+      {
+        title: SectionTitles.contacts,
+        content: this.renderPeopleSection.bind(this)
+      },
+      {
+        title: SectionTitles.texters,
+        content: this.renderAssignmentSection.bind(this)
+      },
       {
         title: SectionTitles.surveys,
         content: this.renderSurveySection.bind(this)
       },
-      // {
-      //   title: SectionTitles.scripts,
-      //   content: this.renderScriptSection.bind(this)
-      // }
+      {
+        title: SectionTitles.scripts,
+        content: this.renderScriptSection.bind(this)
+      }
     ]
   }
 
@@ -111,27 +111,29 @@ export class CampaignForm extends Component {
     this._computation.stop()
   }
 
+  componentDidUpdate(prevProps) {
+    const { campaign } = this.props
+    if (prevProps.campaign != campaign) {
+      this.resetState()
+      if (campaign) {
+        _.each(campaign.scripts, (script) => ScriptCollection.insert(script))
+        _.each(campaign.interactionSteps().fetch(), (step) => InteractionStepCollection.insert(step))
+      } else {
+        const step = {
+            allowedAnswers: [newAllowedAnswer('')],
+            isTopLevel: true
+          }
+        InteractionStepCollection.insert(step)
+      }
+    }
+  }
   componentWillMount() {
     // workaround for https://github.com/meteor/react-packages/issues/99
     setTimeout(this.startComputation.bind(this), 0)
-
-    const { campaign } = this.props
-    if (campaign) {
-      _.each(campaign.scripts, (script) => ScriptCollection.insert(script))
-      _.each(campaign.interactionSteps().fetch(), (step) => InteractionStepCollection.insert(step))
-    } else {
-      const step = {
-          allowedAnswers: [newAllowedAnswer('')],
-          isTopLevel: true
-        }
-      InteractionStepCollection.insert(step)
-    }
-
   }
 
   startComputation() {
     this._computation = Tracker.autorun(() => {
-      console.log("AUTORUN COMPutation")
       this.setState({
         scripts: ScriptCollection.find({}).fetch(),
         interactionSteps: InteractionStepCollection.find({}).fetch()
@@ -162,7 +164,7 @@ export class CampaignForm extends Component {
 
   // QUESTIONS
   handleDeleteQuestion(questionId) {
-    InteractionStepCollection.update({ 'allowedAnswers.surveyQuestionId': questionId }, { $set: { 'allowedAnswers.$.surveyQuestionId': null } }, { multi: true })
+    InteractionStepCollection.update({ 'allowedAnswers.interactionStepId': questionId }, { $set: { 'allowedAnswers.$.interactionStepId': null } }, { multi: true })
     InteractionStepCollection.remove(questionId)
   }
 
@@ -212,6 +214,7 @@ export class CampaignForm extends Component {
 
     const { organizationId } = this.props
 
+    let newInteractionSteps =  interactionSteps.map((step) => _.extend({}, step, step.question ? {} : { allowedAnswers: [] }))
     return {
       title,
       description,
@@ -220,7 +223,7 @@ export class CampaignForm extends Component {
       assignedTexters,
       customFields,
       dueBy,
-      interactionSteps,
+      interactionSteps: newInteractionSteps,
       // FIXME This omit is really awkward. Decide if I should be using subdocument _ids instead.
       scripts: _.map(scripts, (script) => _.omit(script, ['_id'])),
     }

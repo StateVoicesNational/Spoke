@@ -6,7 +6,7 @@ export const SurveyAnswers = new Mongo.Collection('survey_answers')
 SurveyAnswers.schema = new SimpleSchema({
   campaignId: { type: String },
   campaignContactId: { type: String },
-  surveyQuestionId: { type: String },
+  interactionStepId: { type: String },
   value: { type: String }
 })
 

@@ -25,11 +25,6 @@ Campaigns.schema = new SimpleSchema({
   createdAt: { type: Date },
   dueBy: { type: Date },
   customFields: { type: [String] },
-  // FIXME: interactionsteps
-  surveyQuestionId: {
-    type: String,
-    optional: true
-  },
 })
 
 Campaigns.attachSchema(Campaigns.schema)
@@ -81,9 +76,6 @@ Campaigns.helpers({
   },
   interactionSteps() {
     return InteractionSteps.find({ campaignId: this._id })
-  },
-  survey() {
-    return SurveyQuestions.findOne({ _id: this.surveyQuestionId })
   },
   messages() {
     return Messages.find({ campaignId: this._id })
