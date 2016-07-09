@@ -29,7 +29,7 @@ import {
 const handleError = (error) => {
   if (error) {
     console.log(error)
-    alert('Sorry, something went wrong!')
+    alert(error)
   }
 }
 export const SectionTitles = {
@@ -67,9 +67,10 @@ export class CampaignForm extends Component {
   }
 
   resetState() {
-    const { campaign, texters } = this.props
+    const { campaign, texters, assignedTexters, scripts, interactionSteps } = this.props
 
-    const assignedTexters = campaign ? Assignments.find({ campaignId: campaign._id }).fetch().map(({ userId }) => userId) : texters.map((texter) => texter._id)
+    console.log("RESET STATE", this.props)
+    debugger;
     this.state = {
       stepIndex: 0,
       title: campaign ? campaign.title : '',
@@ -78,11 +79,12 @@ export class CampaignForm extends Component {
       customFields: campaign ? campaign.customFields : [],
       contacts: [],
       assignedTexters,
-      scripts: [], // FIXME
+      scripts,
+      interactionSteps,
       submitting: false,
-      interactionSteps: []
     }
 
+    console.log("SCRIPTS", scripts)
     this.sections = [
       {
         title: SectionTitles.basics,
@@ -107,29 +109,29 @@ export class CampaignForm extends Component {
     ]
   }
 
-  componentWillUnmount() {
-    this._computation.stop()
+  componentWillMount() {
+    // workaround for https://github.com/meteor/react-packages/issues/99
+    setTimeout(this.startComputation.bind(this), 0)
   }
 
   componentDidUpdate(prevProps) {
-    const { campaign } = this.props
+    const { campaign, scripts, interactionSteps } = this.props
     if (prevProps.campaign != campaign) {
       this.resetState()
       if (campaign) {
-        _.each(campaign.scripts, (script) => ScriptCollection.insert(script))
-        _.each(campaign.interactionSteps().fetch(), (step) => InteractionStepCollection.insert(step))
+        _.each(scripts, (script) => ScriptCollection.insert(script))
+        _.each(interactionSteps, (step) => InteractionStepCollection.insert(step))
       } else {
         const step = {
-            allowedAnswers: [newAllowedAnswer('')],
-            isTopLevel: true
-          }
+          allowedAnswers: [newAllowedAnswer('')],
+          isTopLevel: true
+        }
         InteractionStepCollection.insert(step)
       }
     }
   }
-  componentWillMount() {
-    // workaround for https://github.com/meteor/react-packages/issues/99
-    setTimeout(this.startComputation.bind(this), 0)
+  componentWillUnmount() {
+    this._computation.stop()
   }
 
   startComputation() {
@@ -214,7 +216,9 @@ export class CampaignForm extends Component {
 
     const { organizationId } = this.props
 
-    let newInteractionSteps =  interactionSteps.map((step) => _.extend({}, step, step.question ? {} : { allowedAnswers: [] }))
+    const newInteractionSteps =  interactionSteps.map((step) => _.extend({}, step, step.question ? {} : { allowedAnswers: [] }))
+
+    console.log("scripts in campaignModel", scripts)
     return {
       title,
       description,
@@ -253,6 +257,8 @@ export class CampaignForm extends Component {
       organizationId,
       campaignId: campaign._id
     }
+
+    console.log("subit scripts", data)
     updateScripts.call(data, handleError)
   }
 

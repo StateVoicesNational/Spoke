@@ -5,9 +5,13 @@ import { Campaigns } from './campaigns.js'
 import { Messages } from '../messages/messages'
 import { assignContacts, saveContacts, saveQuestions } from './assignment.js'
 import { CampaignContacts } from '../campaign_contacts/campaign_contacts.js'
-import { SurveyQuestions } from '../survey_questions/survey_questions.js'
+import { InteractionSteps } from '../interaction_steps/interaction_steps.js'
 import { Assignments } from '../assignments/assignments.js'
-import { Scripts, ScriptSchema } from '../scripts/scripts.js'
+import { Scripts } from '../scripts/scripts.js'
+
+const saveScripts = (scripts, campaignId) => {
+  _.each(scripts, (script) => Scripts.insert(_.extend(script, { campaignId })))
+}
 
 export const insert = new ValidatedMethod({
   name: 'campaigns.insert',
@@ -48,7 +52,7 @@ export const insert = new ValidatedMethod({
 
     // TODO this needs to be in one transaction
     const campaignId = Campaigns.insert(campaignData)
-    _.each(scripts, (script) => Scripts.insert(_.extend(script, { campaignId })))
+    saveScripts(scripts, campaignId)
     saveQuestions(campaignId, interactionSteps)
     saveContacts(campaignId, contacts)
 
@@ -140,7 +144,7 @@ export const updateScripts = new ValidatedMethod({
   validate: new SimpleSchema({
     campaignId: { type: String },
     organizationId: { type: String },
-    scripts: { type: [ScriptSchema] }
+    scripts: { type: [Object], blackbox: true }
   }).validator(),
   run({
     organizationId,
@@ -151,7 +155,8 @@ export const updateScripts = new ValidatedMethod({
       throw new Meteor.Error('not-authorized')
     }
 
-    Campaigns.update(campaignId, { $set: { scripts } })
+    Scripts.remove({ campaignId, userId: null})
+    saveScripts(scripts, campaignId)
   }
 })
 
@@ -187,7 +192,7 @@ export const exportContacts = new ValidatedMethod({
       const campaign = Campaigns.findOne({ _id: campaignId })
       const organizationId = campaign.organizationId
 
-      const surveyQuestions = SurveyQuestions.find({ campaignId }).fetch()
+      const surveyQuestions = InteractionSteps.find({ campaignId }).fetch()
       if (!this.userId || !Roles.userIsInRole(this.userId, 'admin', organizationId)) {
         throw new Meteor.Error('not-authorized')
       }

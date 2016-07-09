@@ -4,7 +4,7 @@ import RaisedButton from 'material-ui/RaisedButton'
 import Formsy from 'formsy-react'
 import { ScriptEditor } from './script_editor'
 import Dialog from 'material-ui/Dialog'
-import { ScriptTypes, ScriptSchema, allScriptFields } from '../../api/scripts/scripts'
+import { ScriptTypes, allScriptFields } from '../../api/scripts/scripts'
 import { FormsyText } from 'formsy-material-ui/lib'
 import Divider from 'material-ui/Divider'
 import { muiTheme } from '../../ui/theme'
@@ -106,32 +106,15 @@ export class CampaignScriptsForm extends Component {
 
     const { editingScript } = this.state
     const scriptData = this.getModel()
-    const context = ScriptSchema.namedContext('formContext')
-
-    console.log('validating script data?', scriptData)
-    // const isValid = context.validate(scriptData)
-
-    // FIXME - restore validation of scripts
-    const isValid = true
-    if (!isValid) {
-      console.log("invalid script data")
-      const errors = {}
-      _.each(context.invalidKeys(), ({ name, type }) => errors[name] = type)
-      console.log(errors)
-      invalidateForm(errors)
+    if (editingScript._id) {
+      const { onScriptChange } = this.props
+      onScriptChange(editingScript._id, scriptData)
     } else {
-      console.log("valid script data")
-      if (editingScript._id) {
-        console.log("EDITING SCRIPT", editingScript)
-        const { onScriptChange } = this.props
-        onScriptChange(editingScript._id, scriptData)
-      } else {
-        console.log("EDITING SCRIPT", editingScript)
-        const { onScriptAdd } = this.props
-        onScriptAdd(_.extend(editingScript, scriptData))
-      }
-      this.handleCloseDialog()
+      console.log("EDITING SCRIPT", editingScript)
+      const { onScriptAdd } = this.props
+      onScriptAdd(_.extend(editingScript, scriptData))
     }
+    this.handleCloseDialog()
   }
 
   handleAddScript() {

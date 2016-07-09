@@ -5,6 +5,7 @@ import { OptOuts } from '../../opt_outs/opt_outs'
 import { CampaignContacts } from '../../campaign_contacts/campaign_contacts.js'
 import { Assignments, activeAssignmentQuery } from '../../assignments/assignments.js'
 import { InteractionSteps } from '../../interaction_steps/interaction_steps.js'
+import { Scripts } from '../../scripts/scripts.js'
 import { SurveyAnswers } from '../../survey_answers/survey_answers.js'
 import { Roles } from 'meteor/alanning:roles'
 // Standardize this
@@ -43,7 +44,10 @@ Meteor.publishComposite('campaign.edit', (campaignId, organizationId) => {
           find: (campaign) => Assignments.find({ campaignId })
         },
         {
-          find: (campaign) => SurveyQuestions.find( { campaignId })
+          find: (campaign) => InteractionSteps.find( { campaignId })
+        },
+        {
+          find: (campaign) => Scripts.find( { campaignId })
         }
       ]
     },
@@ -87,6 +91,7 @@ const computeSurveyStats = (campaignId) => {
     const stat = aggregation.find((x) => x._id.interactionStepId === interactionStepId && x._id.value === value)
     return stat ? stat.count : 0
   }
+
   const steps = InteractionSteps.find({ question: {$ne: null}, campaignId }, { fields: {question: 1, allowedAnswers: 1}}).fetch()
 
   const surveyStats = steps.map((step) => {

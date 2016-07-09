@@ -10,7 +10,7 @@ export const ScriptTypes = {
 
 export const Scripts = new Mongo.Collection('scripts')
 
-export const ScriptSchema = new SimpleSchema({
+Scripts.schema = new SimpleSchema({
   campaignId: { type: String },
   userId: { type: String, optional: true },
   text: { type: String },
@@ -45,7 +45,7 @@ export const ScriptSchema = new SimpleSchema({
   }
 })
 
-Scripts.schema = ScriptSchema
+// Scripts.attachSchema(Scripts.schema)
 
 export const delimiters = {
   startDelimiter: '{',
