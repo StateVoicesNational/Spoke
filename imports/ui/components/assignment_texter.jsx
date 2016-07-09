@@ -19,7 +19,7 @@ import { ResponseDropdown } from './response_dropdown'
 import { Scripts } from '../../api/scripts/scripts'
 import { sendMessage } from '../../api/messages/methods'
 import { applyScript } from '../helpers/script_helpers'
-import { updateAnswer } from '../../api/survey_answers/methods'
+import { updateAnswers } from '../../api/survey_answers/methods'
 import { ZipCodes } from '../../api/zip_codes/zip_codes'
 import { MessagesList } from './messages_list'
 import { grey100 } from 'material-ui/styles/colors'
@@ -175,8 +175,17 @@ export class AssignmentTexter extends Component {
 
   onSendMessage() {
     const contact = this.currentContact()
-
-  this.handleNavigateNext()
+    updateAnswers.call({
+      answers: this.refs.surveySection.answers(),
+      campaignContactId: contact._id,
+      campaignId: contact.campaignId
+    }, (err) => {
+      if (err) {
+        alert(err)
+      } else {
+        this.handleNavigateNext()
+      }
+    })
   }
 
   handleOptOut() {

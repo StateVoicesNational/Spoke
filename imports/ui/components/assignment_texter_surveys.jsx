@@ -44,7 +44,7 @@ export class AssignmentTexterSurveys extends Component {
 
   componentDidUpdate(prevProps) {
     if (prevProps.contact !== this.props.contact) {
-      this.setAnswersState(this.getAnswersState())
+      this.setState(this.getAnswersState())
     }
   }
 
@@ -92,6 +92,10 @@ export class AssignmentTexterSurveys extends Component {
     })
   }
 
+  answers() {
+    return this.state.answers
+  }
+
   handleSurveyAnswerChange(interactionStepId, answer, script) {
     const { contact, onScriptChange } = this.props
 
@@ -102,28 +106,9 @@ export class AssignmentTexterSurveys extends Component {
 
 
     const step = InteractionSteps.findOne(interactionStepId)
-    console.log("CHAGING ANSWER SURVEY", interactionStepId, step)
     const children = getAllChildren(step)
-    console.log("CHILDREN", children)
     _.each(children, (childStep) => delete answers[childStep._id])
-    console.log(answers)
     this.setState( { answers })
-    console.log("new state")
-
-    // updateAnswer.call({
-    //   interactionStepId,
-    //   value: answer,
-    //   campaignContactId: contact._id,
-    //   campaignId: contact.campaignId
-    // }, (err) => {
-    //   if (err) {
-    //     alert(err)
-    //   } else {
-    //     // This should actually happen from propagating props
-    //     onScriptChange(script)
-    //   }
-    // })
-
   }
 
 
