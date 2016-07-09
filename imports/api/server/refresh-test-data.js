@@ -1,7 +1,7 @@
 import { Assignments } from '../assignments/assignments.js'
 import { Campaigns } from '../campaigns/campaigns.js'
 import { CampaignContacts } from '../campaign_contacts/campaign_contacts.js'
-import { SurveyQuestions } from '../survey_questions/survey_questions.js'
+import { InteractionSteps } from '../interaction_steps/interaction_steps.js'
 import { SurveyAnswers } from '../survey_answers/survey_answers.js'
 import { Messages } from '../messages/messages.js'
 import { Organizations } from '../organizations/organizations.js'
@@ -33,7 +33,7 @@ const removeData = () => {
   Assignments.remove({})
   Campaigns.remove({})
   CampaignContacts.remove({})
-  SurveyQuestions.remove({})
+  InteractionSteps.remove({})
   SurveyAnswers.remove({})
   Messages.remove({})
   OptOuts.remove({})
@@ -54,18 +54,17 @@ const createContacts = (assignmentId, campaignId) => {
   )
 }
 
-const allowedAnswer = (value, script, interactionStepId) => (
+const allowedAnswer = (value, interactionStepId) => (
   {
     _id: Random.id(),
     value,
     interactionStepId,
-    script: `${script} Let us know at {eventUrl}!` // Just to demo/test the interpolation
   }
 )
 
-const createSurvey = (campaignId) => {
+const createStep = (campaignId) => {
 
-  const newSurvey = (question, allowedAnswers, isTopLevel) => {
+  const newStep = (question, allowedAnswers, script, isTopLevel) => {
     return Factory.create('interaction_step', {
       question,
       campaignId,
@@ -76,24 +75,24 @@ const createSurvey = (campaignId) => {
 
   // Allow interpolation of scripts with <<answer>>
   const grandChildAnswers = [
-    allowedAnswer('CA', 'See you in CA!'),
-    allowedAnswer('DE', 'See you there!')
+    allowedAnswer('CA'),
+    allowedAnswer('DE')
   ]
 
-  const grandChildSurvey = newSurvey('What state for phonebanking?', grandChildAnswers, false)
+  const grandChildSurvey = newStep('What state for phonebanking?', grandChildAnswers, 'Ok, great, what state?', false)
   const childAnswers = [
-    allowedAnswer('Yes', 'Great, thank you! What state can you help with?', grandChildSurvey._id),
-    allowedAnswer('No', 'Ok, thought we would give it a shot!')
+    allowedAnswer('Yes', grandChildSurvey._id),
+    allowedAnswer('No')
   ]
 
-  const childSurvey = newSurvey('Can the supporter help phonebank?', childAnswers, false)
+  const childSurvey = newStep('Can the supporter help phonebank?', childAnswers, 'No problem, can you phone bank instead?', false)
 
   const parentAnswers = [
-    allowedAnswer('Yes', 'Great, please sign up on the website!'),
-    allowedAnswer('No', 'Ok, no problem. Do you think you can phonebank instead?', childSurvey._id)
+    allowedAnswer('Yes'),
+    allowedAnswer('No', childSurvey._id)
   ]
 
-  return newSurvey('Can the supporter attend this event?', parentAnswers, true)
+  return newStep('Can the supporter attend this event?', parentAnswers, 'Can you attend this event?', true)
 }
 
 const createCampaign = (data) => {
@@ -104,7 +103,7 @@ const createCampaign = (data) => {
     dueBy,
     customFields,
   })
-  createSurvey(campaign._id)
+  createStep(campaign._id)
   return campaign
 }
 

@@ -29,29 +29,19 @@ InteractionSteps.schema = new SimpleSchema({
   question: { type: String, optional: true },
   script: { type: String, optional: true },
   allowedAnswers: { type: [AllowedAnswerSchema] },
-  instructions: { // any instructions for the texter at this step
-    type: String,
-    optional: true
-  },
   isTopLevel: { type: Boolean }
 })
 
 InteractionSteps.attachSchema(InteractionSteps.schema)
 
-Factory.define('interaction_steps', InteractionSteps, {
+Factory.define('interaction_step', InteractionSteps, {
   campaignId: () => 'abcd',
-  text: () => Fake.fromArray([
-    'Yes',
-    'No',
-    'Maybe'
-  ]),
   question: () => Fake.fromArray([
     'Can the user attend the event?',
     'Will this person support Bernie?'
   ]),
   script: () => 'Test script',
   allowedAnswers: () => ['Yes', 'No', 'Maybe'].map((answer) => newAllowedAnswer(answer)),
-  instructions: () => Fake.sentence(20),
   isTopLevel:() => true
 })
 

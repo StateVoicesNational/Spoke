@@ -78,9 +78,9 @@ export class CampaignForm extends Component {
       dueBy: campaign ? campaign.dueBy : null,
       customFields: campaign ? campaign.customFields : [],
       contacts: [],
-      assignedTexters,
-      scripts,
-      interactionSteps,
+      assignedTexters: assignedTexters || [],
+      scripts: scripts || [],
+      interactionSteps: interactionSteps || [],
       submitting: false,
     }
 
@@ -115,6 +115,7 @@ export class CampaignForm extends Component {
   }
 
   componentDidUpdate(prevProps) {
+    // TODO - there seems to be a problem here
     const { campaign, scripts, interactionSteps } = this.props
     if (prevProps.campaign != campaign) {
       this.resetState()
@@ -218,7 +219,6 @@ export class CampaignForm extends Component {
 
     const newInteractionSteps =  interactionSteps.map((step) => _.extend({}, step, step.question ? {} : { allowedAnswers: [] }))
 
-    console.log("scripts in campaignModel", scripts)
     return {
       title,
       description,
@@ -350,6 +350,7 @@ export class CampaignForm extends Component {
     const { assignedTexters } = this.state
     const { texters } = this.props
 
+    console.log("assignedTexters, texters", assignedTexters, texters)
     return (
       <CampaignAssignmentForm
         texters={texters}

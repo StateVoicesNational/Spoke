@@ -1,4 +1,3 @@
-import { SurveyQuestions } from '../survey_questions/survey_questions.js'
 import { Assignments } from '../assignments/assignments.js'
 import { convertRowToContact } from '../campaign_contacts/parse_csv'
 import { chunk, forEach, zip } from 'lodash'

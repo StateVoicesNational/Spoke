@@ -1,17 +1,13 @@
 import { Meteor } from 'meteor/meteor'
-import { SimpleSchema } from 'meteor/aldeed:simple-schema'
 import { Assignments, contactsForAssignmentCursor } from '../assignments.js'
 import { Campaigns } from '../../campaigns/campaigns'
 import { CampaignContacts } from '../../campaign_contacts/campaign_contacts'
-import { ContactFilters } from '../../campaign_contacts/methods'
-import { SurveyQuestions } from '../../survey_questions/survey_questions'
 import { Scripts } from '../../scripts/scripts'
 import { InteractionSteps } from '../../interaction_steps/interaction_steps'
 import { SurveyAnswers } from '../../survey_answers/survey_answers'
 import { ZipCodes } from '../../zip_codes/zip_codes'
 import { Messages } from '../../messages/messages'
 import { OptOuts } from '../../opt_outs/opt_outs'
-import { todosForUser } from '../../users/users'
 import { defaultTimezoneIsBetweenTextingHours, validOffsets } from '../../../../both/timezones'
 // TODO: actually filter correctly and return public fields only
 
@@ -133,9 +129,6 @@ Meteor.publish('assignment.text', function(assignmentId, contactFilter, organiza
   const zipCodes = contacts.map((contact) => contact.zip)
   const assignment = Assignments.findOne(assignmentId) // TODO redundant loading
   const campaignId = assignment.campaignId
-  console.log("contactNumbers", contactNumbers, "userID", this.userId)
-  console.log('mess', Messages.find({ contactNumber: { $in: contactNumbers }}).fetch())
-  console.log("messages", Messages.find( { contactNumber: {$in: contactNumbers}, userId }).fetch())
 
 
     // TODO: Maybe optouts should be reactive, but nothing else really needs to be.
@@ -170,24 +163,6 @@ Meteor.publishComposite('assignment.allRelatedData', (assignmentId) => {
           {
             find: (campaign) => {
               return InteractionSteps.find({ campaignId: campaign._id})
-
-              // This is not reactive.
-              // const ids = []
-              // const search = (questionId) => {
-              //   if (!questionId) {
-              //     return
-              //   }
-
-              //   ids.push(questionId)
-              //   const surveyQuestion = SurveyQuestions.findOne({ _id: questionId })
-              //   const childIds = surveyQuestion.allowedAnswers.map(({ surveyQuestionId }) => surveyQuestionId).filter((val) => val)
-
-              //   for (let childId of childIds) {
-              //     search(childId)
-              //   }
-              // }
-              // search(campaign.surveyQuestionId)
-              // return SurveyQuestions.find({ _id: { $in: ids } })
             }
           },
           {

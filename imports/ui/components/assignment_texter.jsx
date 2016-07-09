@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import Paper from 'material-ui/Paper'
 import { Toolbar, ToolbarGroup, ToolbarTitle, ToolbarSeparator } from 'material-ui/Toolbar'
 import IconButton from 'material-ui/IconButton/IconButton'
@@ -96,9 +97,11 @@ export class AssignmentTexter extends Component {
 
     this.state = {
       currentContactIndex: 0,
+      direction: 'right',
       script: '',
     }
 
+    console.log('this.state', this.state)
     this.handleNavigateNext = this.handleNavigateNext.bind(this)
     this.handleNavigatePrevious = this.handleNavigatePrevious.bind(this)
     this.onSendMessage = this.onSendMessage.bind(this)
@@ -150,18 +153,19 @@ export class AssignmentTexter extends Component {
   }
 
   handleNavigateNext() {
-    console.log("hi?")
-    if (this.hasNext()) {
-      this.incrementCurrentContactIndex(1)
-    }
-    else {
-      const { onStopTexting } = this.props
-      onStopTexting()
-    }
+    this.setState({ direction: 'right'}, () => {
+      if (this.hasNext()) {
+        this.incrementCurrentContactIndex(1)
+      }
+      else {
+        const { onStopTexting } = this.props
+        onStopTexting()
+      }
+    })
   }
 
   handleNavigatePrevious() {
-    this.incrementCurrentContactIndex(-1)
+    this.setState({ direction: 'left'}, () => this.incrementCurrentContactIndex(-1))
   }
 
   setSuggestedScript(script)
@@ -305,9 +309,20 @@ export class AssignmentTexter extends Component {
     const secondaryToolbar = this.renderSurveySection(campaign)
 
     const appliedScript = applyScript(this.state.script, contact, scriptFields)
-    console.log("appliedScript", appliedScript)
+
+    const direction = this.state.direction
+    console.log(direction)
+    console.log("transitionName", `slide-${direction}`)
     return (
-      <div style={styles.root}>
+      <ReactCSSTransitionGroup
+        transitionName={`slide-${this.state.direction}`}
+        transitionEnterTimeout={500}
+        transitionLeaveTimeout={500}
+      >
+
+      <div
+        key={contact._id}
+        style={styles.root}>
         <div style={styles.topToolbar}>
           <ContactToolbar
             campaignContact={contact}
@@ -343,6 +358,7 @@ export class AssignmentTexter extends Component {
           />
         </div>
       </div>
+      </ReactCSSTransitionGroup>
     )
   }
 }

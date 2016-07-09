@@ -40,6 +40,7 @@ export const CampaignEditPage = createContainer(({ campaignId, organizationId })
 
   const scripts = Scripts.find( { campaignId }).fetch()
   const interactionSteps = InteractionSteps.find( { campaignId }).fetch()
+  console.log(interactionSteps)
   const campaign = Campaigns.findOne({ _id: campaignId })
   const texters = Roles.getUsersInRole('texter', organizationId).fetch()
   const assignedTexters = campaign ? Assignments.find({ campaignId }).fetch().map(({ userId }) => userId) : texters.map((texter) => texter._id)
