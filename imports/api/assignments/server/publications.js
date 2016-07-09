@@ -26,6 +26,8 @@ Meteor.publishComposite('assignments', {
 })
 
 Meteor.publish('assignments.todo', function(organizationId) {
+
+  // FIXME why am I not using the contactsForAssignmentQuery
   const userId = this.userId
   const assignments = Assignments.find({ userId }, { sort: {dueBy: 1}}).fetch()
   const assignmentIds = assignments.map((assignment) => assignment._id)
@@ -40,7 +42,8 @@ Meteor.publish('assignments.todo', function(organizationId) {
 
   const baseQuery = {
     assignmentId: { $in: assignmentIds },
-    cell: { $nin: optOuts.map((optOut) => optOut.cell)}
+    cell: { $nin: optOuts.map((optOut) => optOut.cell)},
+    'lastMessage.closed': {$ne: true}
   }
 
   const badTimezoneAggregation = CampaignContacts.aggregate([

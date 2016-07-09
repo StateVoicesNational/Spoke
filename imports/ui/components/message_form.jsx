@@ -1,10 +1,11 @@
 import React, { Component } from 'react'
 import { Toolbar, ToolbarGroup, ToolbarTitle, ToolbarSeparator } from 'material-ui/Toolbar'
 import RaisedButton from 'material-ui/RaisedButton'
+import FlatButton from 'material-ui/FlatButton'
 import { moment } from 'meteor/momentjs:moment'
 
 import { MessageField } from './message_field'
-import { sendMessage } from '../../api/messages/methods'
+import { sendMessage, markMessageNeedsNoResponse } from '../../api/messages/methods'
 import { applyScript } from '../helpers/script_helpers'
 import Snackbar from 'material-ui/Snackbar';
 
@@ -31,6 +32,7 @@ export class MessageForm extends Component {
   constructor(props) {
     super(props)
     this.handleSendMessage = this.handleSendMessage.bind(this)
+    this.handleSkip = this.handleSkip.bind(this)
     this.handleMessageFieldKeyDown = this.handleMessageFieldKeyDown.bind(this)
     this.state = {
       submitting: false,
@@ -43,6 +45,19 @@ export class MessageForm extends Component {
     this.setState({ snackbarOpen: false })
   }
 
+  handleSkip() {
+    // FIXME not onSendMessage
+    const { campaignContact, onSendMessage } = this.props
+    markMessageNeedsNoResponse.call( { campaignContactId: campaignContact._id}, (err) => {
+      if (err) {
+        console.log("ERROR", err)
+        alert(err)
+      } else {
+        console.log("FINISHED!")
+        onSendMessage()
+      }
+    })
+  }
   handleSendMessage() {
     const { onSendMessage } = this.props
 
@@ -102,6 +117,7 @@ export class MessageForm extends Component {
       this.handleSendMessage()
     }
   }
+
   render() {
     const {
       campaignContact,
@@ -133,6 +149,11 @@ export class MessageForm extends Component {
           disabled={this.state.submitting|| optOut}
           primary
         />
+        {  campaignContact.needsResponse() ?  <RaisedButton
+          onTouchTap={this.handleSkip}
+          label="Don't respond"
+        /> : ''
+        }
         { leftToolbarChildren }
       </ToolbarGroup>
     )

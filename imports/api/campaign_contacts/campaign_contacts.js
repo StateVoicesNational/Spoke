@@ -19,6 +19,7 @@ CampaignContacts.deny({
 
 const LastMessageSchema = new SimpleSchema({
   isFromContact: { type: Boolean },
+  closed: { type: Boolean, optional: true}
 })
 
 CampaignContacts.schema = new SimpleSchema({
@@ -70,6 +71,9 @@ CampaignContacts.publicFields = {
 }
 
 CampaignContacts.helpers({
+  needsResponse() {
+    return this.lastMessage && this.lastMessage.isFromContact && !this.lastMessage.closed
+  },
   zipDatum() {
     return ZipCodes.findOne({ zip: this.zip })
   },

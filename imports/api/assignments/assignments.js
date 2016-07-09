@@ -57,7 +57,7 @@ export const contactsForAssignmentCursor = (assignmentId, contactFilter, organiz
   if (contactFilter === ContactFilters.UNMESSAGED) {
     query = { lastMessage: null }
   } else if (contactFilter === ContactFilters.UNREPLIED) {
-    query = { 'lastMessage.isFromContact': true }
+    query = { 'lastMessage.isFromContact': true, 'lastMessage.closed': {$ne: true} }
   }
   return CampaignContacts.find(_.extend(query, {
     assignmentId,

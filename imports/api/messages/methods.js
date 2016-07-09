@@ -138,6 +138,7 @@ const checkOptOut = ({ organizationId, contactNumber }) => {
     throw new Meteor.Error('contact-opt-out')
   }
 }
+
 export const sendMessage = new ValidatedMethod({
   name: 'messages.send',
   validate: new SimpleSchema({
@@ -170,6 +171,24 @@ export const sendMessage = new ValidatedMethod({
       }
 
       createMessage({ text, userNumber, contactNumber, campaignId, userId: this.userId })
+    }
+  }
+})
+
+export const markMessageNeedsNoResponse = new ValidatedMethod({
+  name: 'campaignContactId.needsNoResponse',
+  validate: new SimpleSchema({
+    campaignContactId: { type: String },
+  }).validator(),
+  run({ campaignContactId }) {
+    const contact = CampaignContacts.findOne(campaignContactId)
+    const lastMessage = contact.lastMessage
+    if (lastMessage && lastMessage.isFromContact) {
+      lastMessage.closed = true
+    console.log(lastMessage, "markMessageNeedsNoResponse")
+
+      CampaignContacts.update({ _id: campaignContactId }, { $set: { lastMessage } })
+      console.log(CampaignContacts.findOne(campaignContactId))
     }
   }
 })
