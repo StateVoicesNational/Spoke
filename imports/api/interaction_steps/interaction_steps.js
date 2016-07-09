@@ -3,7 +3,12 @@ import { SimpleSchema } from 'meteor/aldeed:simple-schema'
 import { Fake } from 'meteor/anti:fake'
 import { Factory } from 'meteor/dburles:factory'
 import { Random } from 'meteor/random'
-export const SurveyQuestions = new Mongo.Collection('survey_questions')
+export const InteractionSteps = new Mongo.Collection('interaction_steps')
+
+export const newAllowedAnswer = (value) => { return {
+  value,
+  _id: Random.id(),
+}}
 
 const AllowedAnswerSchema = new SimpleSchema({
   _id: { type: String },
@@ -12,44 +17,33 @@ const AllowedAnswerSchema = new SimpleSchema({
     type: String,
     optional: true
   },
-  surveyQuestionId: {
+  interactionStepId: {
     type: String,
     optional: true
   },
 })
 
-SurveyQuestions.schema = new SimpleSchema({
+
+InteractionSteps.schema = new SimpleSchema({
   campaignId: { type: String },
-  text: { type: String },
+  question: { type: String, optional: true },
+  script: { type: String, optional: true },
   allowedAnswers: { type: [AllowedAnswerSchema] },
-  instructions: { // any instructions for the texter at this step
-    type: String,
-    optional: true
-  },
   isTopLevel: { type: Boolean }
 })
 
-SurveyQuestions.attachSchema(SurveyQuestions.schema)
+InteractionSteps.attachSchema(InteractionSteps.schema)
 
-export const newAllowedAnswer = (value) => { return {
-  value,
-  _id: Random.id(),
-}}
-
-Factory.define('survey_question', SurveyQuestions, {
-  text: () => Fake.fromArray([
+Factory.define('interaction_step', InteractionSteps, {
+  campaignId: () => 'abcd',
+  question: () => Fake.fromArray([
     'Can the user attend the event?',
     'Will this person support Bernie?'
   ]),
-  campaignId: () => 'abcd',
+  script: () => 'Test script',
   allowedAnswers: () => ['Yes', 'No', 'Maybe'].map((answer) => newAllowedAnswer(answer)),
-  instructions: () => Fake.sentence(20),
   isTopLevel:() => true
 })
 
-SurveyQuestions.helpers({
-  children() {
-    const childIds = this.allowedAnswers.map(({ surveyQuestionId }) => surveyQuestionId).filter((val) => val)
-    return SurveyQuestions.find({ _id: {$in: childIds}})
-  }
+InteractionSteps.helpers({
 })

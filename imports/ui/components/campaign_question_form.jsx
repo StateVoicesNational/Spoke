@@ -3,28 +3,17 @@ import FlatButton from 'material-ui/FlatButton'
 import IconButton from 'material-ui/IconButton'
 import RaisedButton from 'material-ui/RaisedButton'
 import { ScriptEditor } from './script_editor'
-
-import Formsy from 'formsy-react'
-import { FormsyText, FormsySelect } from 'formsy-material-ui/lib'
+import { FormsyText, FormsyDate } from 'formsy-material-ui/lib'
 import RadioButtonUnchecked from 'material-ui/svg-icons/toggle/radio-button-unchecked'
-import IconMenu from 'material-ui/IconMenu'
-import MenuItem from 'material-ui/MenuItem'
-import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert'
-
-import ContentClear from 'material-ui/svg-icons/content/clear'
 import Dialog from 'material-ui/Dialog'
-import { CampaignContacts } from '../../api/campaign_contacts/campaign_contacts'
-import { allScriptFields } from '../../api/campaigns/scripts'
+import { allScriptFields } from '../../api/scripts/scripts'
 import { muiTheme } from '../../ui/theme'
-import { grey400 } from 'material-ui/styles/colors'
-import { Toolbar, ToolbarGroup, ToolbarTitle, ToolbarSeparator } from 'material-ui/Toolbar'
-import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
+import { grey100 } from 'material-ui/styles/colors'
+import {Card, CardActions, CardHeader,  CardText} from 'material-ui/Card';
 import DeleteIcon from 'material-ui/svg-icons/action/delete'
-import ForwardIcon from 'material-ui/svg-icons/navigation/arrow-forward'
-import BackIcon from 'material-ui/svg-icons/navigation/arrow-back'
-import EditIcon from 'material-ui/svg-icons/image/edit'
 import Divider from 'material-ui/Divider'
-import Subheader from 'material-ui/Subheader'
+import {CampaignQuestionFormAnswerRow} from './campaign_question_form_answer_row'
+import { getAllParents } from '../local_collections/interaction_steps'
 
 const styles = {
   icon: {
@@ -54,7 +43,7 @@ const styles = {
   scriptSectionTitle: {
     marginBottom: 0
   },
-  question: {
+  interactionStep: {
     borderLeft: `5px solid ${muiTheme.palette.primary1Color}`,
     marginBottom: 24,
   },
@@ -72,39 +61,32 @@ const styles = {
     paddingLeft: 0,
     fontSize: '12'
   },
-  answer: {
-    fontSize: '12'
-  },
-  answerRow: {
-    marginTop: 16,
-    marginBottom: 16
-  },
-  script: {
-    verticalAlign: 'middle',
-    display: 'inline-block',
-    width: '180px',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    marginLeft: '24',
-    fontSize: 11,
-    color: grey400
-  },
-  scriptHint: {
-    fontSize: '12',
-  },
   scriptInput: {
     fontSize: '12',
   },
+  cardHeader: {
+    backgroundColor: grey100
+  },
+  cardText: {
+    marginBottom:48
+  },
+  questionSpan: {
+    fontWeight: 'normal',
+    opacity: 0.8
+  },
+  answerSpan: {
+    fontWeight: 'normal',
+    opacity: 0.8
+  },
+  stepTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: 'black'
+  }
+
 }
 
-const QuestionLink = ({text, isLinkToParent}) => (
-  <FlatButton
-    label={text}
-    secondary
-    icon={isLinkToParent ? <BackIcon /> : <ForwardIcon />}
-  />
-)
+
 export class CampaignQuestionForm extends Component {
   constructor(props) {
     super(props)
@@ -113,14 +95,17 @@ export class CampaignQuestionForm extends Component {
     this.addAnswer = this.addAnswer.bind(this)
     this.handleSaveScript = this.handleSaveScript.bind(this)
     this.handleDeleteScript = this.handleDeleteScript.bind(this)
-    this.handleUpdateAnswer = this.handleUpdateAnswer.bind(this)
     this.handleDeleteQuestion = this.handleDeleteQuestion.bind(this)
-    this.handleAnswerInputOnKeyDown = this.handleAnswerInputOnKeyDown.bind(this)
-    // this.handleAddFollowup = this.handleAddFollowup.bind(this)
+    this.handleQuestionChange = this.handleQuestionChange.bind(this)
+    this.handleFocusQuestion = this.handleFocusQuestion.bind(this)
+    this.handleBlurQuestion = this.handleBlurQuestion.bind(this)
+    this.handleScriptChange = this.handleScriptChange.bind(this)
+    // TODO can probably simplify these  into one or two methods that send the whole formsy form
 
     this.state = {
       open: false,
-      editingAnswer: null
+      script: props.interactionStep.script,
+      questionIsFocused: false
     }
   }
 
@@ -131,169 +116,61 @@ export class CampaignQuestionForm extends Component {
     this.setState({ open: false})
   }
 
-  handleAnswerInputOnKeyDown(answer, event) {
-    if (event.keyCode === 13) {
-      this.addAnswer()
-    } else if (event.keyCode === 8 && event.target.value === '') {
-      this.handleDeleteAnswer(answer)
-    }
-  }
-
   addAnswer() {
-    const {onAddSurveyAnswer, question} = this.props
-    onAddSurveyAnswer(question._id)
+    const {onAddSurveyAnswer, interactionStep} = this.props
+    onAddSurveyAnswer(interactionStep._id)
+    const answers = interactionStep.allowedAnswers
   }
 
   handleQuestionChange(event) {
-    const { question, onEditQuestion } = this.props
-    onEditQuestion(question._id, { text: event.target.value })
+    const { interactionStep, onEditQuestion } = this.props
+    onEditQuestion(interactionStep._id, { question: event.target.value })
   }
 
-  renderAnswer(otherQuestions, question, answer, autoFocus, index) {
-
-    // const showFollowUp  = otherQuestions.length > 0
-    const { campaignStarted } = this.props
-    const deleteAnswerButton = (
-      <IconButton
-        style={{width: 42, height: 42, verticalAlign: 'middle'}}
-        iconStyle={{width: 20, height: 20}}
-        onTouchTap={() => this.handleDeleteAnswer(answer)}
-      >
-        <ContentClear />
-      </IconButton>
-    )
-    const showFollowUp = false
-
-    const followUpQuestions = showFollowUp ? (
-      <div>
-        <Divider />
-        <Subheader>
-          Follow-up question
-        </Subheader>
-        <MenuItem
-          insetChildren={true}
-          checked={!answer.surveyQuestionId}
-          value={'none'}
-          primaryText="No follow-up"
-          onTouchTap={ () => this.handleUpdateAnswer(answer._id, { surveyQuestionId: null})}
-        />
-        { otherQuestions.map((otherQuestion) => (
-          <MenuItem
-            insetChildren={true}
-            checked={answer.surveyQuestionId === otherQuestion._id}
-            value={otherQuestion._id}
-            onTouchTap={ (event) => this.handleUpdateAnswer(answer._id, { surveyQuestionId: otherQuestion._id})}
-            primaryText={otherQuestion.text}
-          />
-        ))}
-      </div>
-    ) : ''
-    return (
-        <div style={styles.answerRow} className="row">
-          <div className="col-xs">
-            <RadioButtonUnchecked
-              style={styles.radioButtonIcon}
-            />
-            <FormsyText
-              onKeyDown={ (event) => this.handleAnswerInputOnKeyDown(answer, event) }
-              onFocus={(event) => event.target.select()}
-              onChange={ (event) => this.handleUpdateAnswer(answer._id, { value: event.target.value })}
-              inputStyle={styles.answer}
-              autoFocus={autoFocus}
-              hintStyle={styles.answer}
-              required
-              disabled={campaignStarted}
-              name={`allowedAnswers[${index}].value`}
-              value={ answer.value }
-            />
-            { campaignStarted ? '' : deleteAnswerButton}
-          </div>
-          <div className="col-xs">
-            { answer.script ? <div>
-              {answer.script}
-              <IconMenu
-                       iconButtonElement={
-                         <IconButton
-                           style={{float: 'right', width: 24, height: 28}}
-                           iconStyle={{width: 20, height: 20}}
-                         ><MoreVertIcon /></IconButton>}
-                       anchorOrigin={{horizontal: 'left', vertical: 'top'}}
-                       targetOrigin={{horizontal: 'left', vertical: 'top'}}
-                     >
-                       <MenuItem
-                         primaryText="Edit script"
-                         onTouchTap={() => this.handleEditScript(answer)}
-                       />
-                       <MenuItem
-                         primaryText="Delete script"
-                         onTouchTap={() => this.handleDeleteScript(answer)}
-                       />
-                       { followUpQuestions }
-                     </IconMenu>
-            </div> : (
-              <FlatButton
-                label="Add script"
-                onTouchTap={() => this.handleEditScript(answer)}
-              />
-            )
-            }
-            <div style={styles.script}>
-              { answer.surveyQuestionId ? <QuestionLink text={otherQuestions.find((q) => q._id === answer.surveyQuestionId).text} isLinkToParent={false} /> : '' }
-            </div>
-          </div>
-      </div>
-    )
-
-  }
-
-  handleEditScript(answer) {
-    this.setState({ editingAnswer: answer })
-    this.handleOpenDialog()
-  }
-
-  handleUpdateAnswer(answerId, updates) {
-    const { question, onEditQuestion } = this.props
-    //FIXME inefficintes
-    const allowedAnswers = question.allowedAnswers.map((allowedAnswer) => {
-      if (allowedAnswer._id === answerId) {
-        return _.extend(allowedAnswer, updates)
-      }
-      return allowedAnswer
-    })
-    onEditQuestion(question._id, { allowedAnswers })
-
+  handleScriptChange(event) {
+    const { interactionStep, onEditQuestion } = this.props
+    console.log("interactionStep", event.target.value)
+    onEditQuestion(interactionStep._id, { script: event.target.value })
   }
 
   handleDeleteQuestion() {
-    const {onDeleteQuestion, question} = this.props
-    onDeleteQuestion(question._id)
+    const {onDeleteQuestion, interactionStep} = this.props
+    onDeleteQuestion(interactionStep._id)
   }
 
-  handleDeleteAnswer(answer) {
-    const { question, onEditQuestion } = this.props
-    const allowedAnswers = _.reject(question.allowedAnswers, (allowedAnswer) => allowedAnswer._id === answer._id)
-    onEditQuestion(question._id, { allowedAnswers })
-  }
 
   handleDeleteScript(answer) {
     this.handleUpdateAnswer(answer._id, {script: null})
   }
 
   handleSaveScript() {
-    const { editingAnswer } = this.state
     const script =  this.refs.scriptInput.getValue()
-    this.handleUpdateAnswer(editingAnswer._id, {script})
+    const { onEditQuestion, interactionStep } = this.props
+    onEditQuestion(interactionStep._id, { script })
+    this.refs.script.setState({ value: script })
     this.handleCloseDialog()
   }
 
-  renderAnswers(questions, question, questionIsFocused) {
-    const otherQuestions = _.reject(questions, (q) => q._id === question._id)
-
-    const answers = question.allowedAnswers
+  renderAnswers(interactionSteps, interactionStep, questionIsFocused) {
+    const { onAddQuestion, onEditQuestion, onClickStepLink } = this.props
+    const otherQuestions = _.reject(interactionSteps, (q) => q._id === interactionStep._id)
+    const answers = interactionStep.allowedAnswers
     return (
       <div>
         { _.map(answers, (answer, index) => (
-          this.renderAnswer(otherQuestions, question, answer,  !questionIsFocused && index === (answers.length - 1), index)
+          <CampaignQuestionFormAnswerRow
+            ref={`allowedAnswers[${index}]`}
+            onAddAnswer={this.addAnswer}
+            onClickStepLink={onClickStepLink}
+            onDeleteAnswer={this.handleDeleteAnswer}
+            onEditQuestion={onEditQuestion}
+            otherQuestions={otherQuestions}
+            interactionStep={interactionStep}
+            answer={answer}
+            autoFocus={index === answers.length - 1 && !questionIsFocused}
+            index={index}
+            onAddQuestion={onAddQuestion}
+          />
         ))}
         <RadioButtonUnchecked
           style={styles.radioButtonIcon}
@@ -301,7 +178,7 @@ export class CampaignQuestionForm extends Component {
         <FlatButton
           style={styles.addAnswerButton}
           labelStyle={styles.addAnswerButton}
-          label="Add answer"
+          label="Add another answer"
           onTouchTap={this.addAnswer}
         />
       </div>
@@ -309,8 +186,8 @@ export class CampaignQuestionForm extends Component {
   }
 
   renderDialog() {
-    const { editingAnswer, open } = this.state
-    const { customFields, sampleContact } = this.props
+    const { script, open } = this.state
+    const { customFields, sampleContact, interactionStep } = this.props
     const scriptFields = allScriptFields(customFields)
 
     return (
@@ -333,7 +210,7 @@ export class CampaignQuestionForm extends Component {
         <ScriptEditor
           expandable
           ref="scriptInput"
-          script={editingAnswer && editingAnswer.script ? {text: editingAnswer.script} : null}
+          scriptText={interactionStep.script}
           sampleContact={sampleContact}
           scriptFields={scriptFields}
         />
@@ -341,22 +218,46 @@ export class CampaignQuestionForm extends Component {
     )
   }
 
+  handleFocusQuestion(event) {
+    this.setState({ questionIsFocused: true})
+    event.target.select()
+  }
+
+  handleBlurQuestion() {
+    this.setState({ questionIsFocused: false })
+  }
+
+  renderQuestion() {
+    const { interactionStep, interactionSteps, campaignStarted } = this.props
+    const { questionIsFocused } = this.state
+    console.log("QUESTION IS FOCUSED", questionIsFocused)
+    return [
+      <FormsyText
+        name="interactionStep"
+        floatingLabelText="Question"
+        onChange={this.handleQuestionChange}
+        onFocus={this.handleFocusQuestion}
+        onBlur={this.handleBlurQuestion}
+        fullWidth
+        disabled={campaignStarted}
+        ref="interactionStepInput"
+        hintText="E.g. Can the contact attend the event?"
+        value={ interactionStep.question }
+      />,
+
+      interactionStep.question ? this.renderAnswers(interactionSteps, interactionStep, questionIsFocused) : '',
+      this.renderDialog()
+    ]
+
+  }
+
   render() {
-    const { question, questions, campaignStarted } = this.props
-    const questionIsFocused = question.text === ''
-    // const parentQuestions = questions.filter((q) => _.includes(q.allowedAnswers.map((answer) => answer.surveyQuestionId), question._id))
-    const parentQuestions = []
-    const cardActions = campaignStarted ? '' : (
+    const { interactionStep, interactionStepIndex, campaignStarted } = this.props
+    const cardActions = campaignStarted || interactionStep.isTopLevel ? '' : (
       <Divider />,
       <CardActions
         style={{textAlign: 'right'}}
       >
-        { parentQuestions.length > 0 ? (
-          <span>
-            { parentQuestions.map((parentQuestion) => <QuestionLink text={parentQuestion.text} isLinkToParent={true}/>)}
-          </span>
-
-        ) : ''}
 
         <IconButton
           iconStyle={styles.icon}
@@ -367,27 +268,52 @@ export class CampaignQuestionForm extends Component {
         </IconButton>
       </CardActions>
     )
-    const isFollowUp = parentQuestions.length > 0
+
+    const displayStep = (step) =>  <span style={step.question ? styles.questionSpan : styles.answerSpan }>{step.question ? step.question : step.value} > </span>
+
+    const stepTitle = (step) => {
+      console.log("interactionStepIndex", interactionStepIndex)
+
+      const title = step.question || `This step`
+      if (step.isTopLevel) {
+        return ['Start: ', <span style={styles.stepTitle}>{title}</span>]
+      } else {
+        const parents = getAllParents(step)
+        return [parents.map((step) => displayStep(step)), <span style={styles.stepTitle}>{title}</span>]
+      }
+
+    }
+
+    console.log("interactionStep.script", interactionStep.script)
+
+
     return (
-      <Card style={isFollowUp ? styles.followUp : styles.question}>
-        <CardText>
+      <Card style={styles.interactionStep}>
+        <CardHeader
+          style={styles.cardHeader}
+          title={stepTitle(interactionStep)}
+          subtitle={interactionStep.isTopLevel ? "Enter a script for your texter along with the question you want the texter be able to answer on behalf of the contact." : ''}
+        />
+        <Divider/>
+
+        <CardText style={styles.cardText}>
           <div>
             <FormsyText
-              name="question"
-              autoFocus={questionIsFocused}
-              onChange={this.handleQuestionChange.bind(this)}
-              onFocus={(event) => event.target.select()}
+              name="script"
+              floatingLabelText="Script"
+              onFocus={this.handleOpenDialog}
               required
               fullWidth
-              disabled={campaignStarted}
-              ref="questionInput"
-              hintText="Question (e.g. Can the contact attend the event?)"
-              value={ question.text }
+              multiLine
+              ref="script"
+              hintText="Hi, {firstName}. It's {texterFirstName} here."
+              value={ interactionStep.script }
             />
-            { this.renderAnswers(questions, question, questionIsFocused) }
-            { this.renderDialog()}
+            {this.renderQuestion() }
+
           </div>
         </CardText>
+        <Divider/>
         {cardActions}
       </Card>
     )

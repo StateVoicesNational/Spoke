@@ -8,7 +8,7 @@ import {
   updateQuestions,
   updateScripts
 } from '../../api/campaigns/methods'
-import { ScriptTypes } from '../../api/campaigns/scripts'
+import { ScriptTypes } from '../../api/scripts/scripts'
 import { Assignments } from '../../api/assignments/assignments'
 import { CampaignNewForm } from './campaign_new_form'
 import { CampaignEditForm } from './campaign_edit_form'
@@ -17,7 +17,8 @@ import { CampaignPeopleForm } from './campaign_people_form'
 import { CampaignBasicsForm } from './campaign_basics_form'
 import { CampaignSurveyForm } from './campaign_survey_form'
 import { CampaignAssignmentForm } from './campaign_assignment_form'
-import { newAllowedAnswer } from '../../api/survey_questions/survey_questions'
+import { newAllowedAnswer } from '../../api/interaction_steps/interaction_steps'
+import { InteractionStepCollection } from '../local_collections/interaction_steps'
 
 import {
   Step,
@@ -28,7 +29,7 @@ import {
 const handleError = (error) => {
   if (error) {
     console.log(error)
-    alert('Sorry, something went wrong!')
+    alert(error)
   }
 }
 export const SectionTitles = {
@@ -40,7 +41,6 @@ export const SectionTitles = {
 }
 
 const ScriptCollection = new Mongo.Collection(null)
-const QuestionCollection = new Mongo.Collection(null)
 
 const styles = {
   cardActions: {
@@ -57,7 +57,7 @@ export class CampaignForm extends Component {
     this.handleSubmitContacts = this.handleSubmitContacts.bind(this)
     this.handleSubmitTexters = this.handleSubmitTexters.bind(this)
     this.handleSubmitScripts = this.handleSubmitScripts.bind(this)
-    this.handleSubmitQuestions = this.handleSubmitQuestions.bind()
+    this.handleSubmitInteractionSteps = this.handleSubmitInteractionSteps.bind()
 
     this.handleScriptChange = this.handleScriptChange.bind(this)
     this.handleScriptDelete = this.handleScriptDelete.bind(this)
@@ -67,9 +67,10 @@ export class CampaignForm extends Component {
   }
 
   resetState() {
-    const { campaign, texters } = this.props
+    const { campaign, texters, assignedTexters, scripts, interactionSteps } = this.props
 
-    const assignedTexters = campaign ? Assignments.find({ campaignId: campaign._id }).fetch().map(({ userId }) => userId) : texters.map((texter) => texter._id)
+    console.log("RESET STATE", this.props)
+    debugger;
     this.state = {
       stepIndex: 0,
       title: campaign ? campaign.title : '',
@@ -77,12 +78,13 @@ export class CampaignForm extends Component {
       dueBy: campaign ? campaign.dueBy : null,
       customFields: campaign ? campaign.customFields : [],
       contacts: [],
-      assignedTexters,
-      scripts: [], // FIXME
-      questions: [], // FIXME
-      submitting: false
+      assignedTexters: assignedTexters || [],
+      scripts: scripts || [],
+      interactionSteps: interactionSteps || [],
+      submitting: false,
     }
 
+    console.log("SCRIPTS", scripts)
     this.sections = [
       {
         title: SectionTitles.basics,
@@ -97,37 +99,47 @@ export class CampaignForm extends Component {
         content: this.renderAssignmentSection.bind(this)
       },
       {
-        title: SectionTitles.scripts,
-        content: this.renderScriptSection.bind(this)
-      },
-      {
         title: SectionTitles.surveys,
         content: this.renderSurveySection.bind(this)
+      },
+      {
+        title: SectionTitles.scripts,
+        content: this.renderScriptSection.bind(this)
       }
     ]
-  }
-
-  componentWillUnmount() {
-    this._computation.stop()
   }
 
   componentWillMount() {
     // workaround for https://github.com/meteor/react-packages/issues/99
     setTimeout(this.startComputation.bind(this), 0)
+  }
 
-    const { campaign } = this.props
-    if (campaign) {
-      _.each(campaign.scripts, (script) => ScriptCollection.insert(script))
-      _.each(campaign.surveys().fetch(), (survey) => QuestionCollection.insert(survey))
+  componentDidUpdate(prevProps) {
+    // TODO - there seems to be a problem here
+    const { campaign, scripts, interactionSteps } = this.props
+    if (prevProps.campaign != campaign) {
+      this.resetState()
+      if (campaign) {
+        _.each(scripts, (script) => ScriptCollection.insert(script))
+        _.each(interactionSteps, (step) => InteractionStepCollection.insert(step))
+      } else {
+        const step = {
+          allowedAnswers: [newAllowedAnswer('')],
+          isTopLevel: true
+        }
+        InteractionStepCollection.insert(step)
+      }
     }
-
+  }
+  componentWillUnmount() {
+    this._computation.stop()
   }
 
   startComputation() {
     this._computation = Tracker.autorun(() => {
       this.setState({
         scripts: ScriptCollection.find({}).fetch(),
-        questions: QuestionCollection.find({}).fetch()
+        interactionSteps: InteractionStepCollection.find({}).fetch()
       })
     })
   }
@@ -155,31 +167,40 @@ export class CampaignForm extends Component {
 
   // QUESTIONS
   handleDeleteQuestion(questionId) {
-    QuestionCollection.update({ 'allowedAnswers.surveyQuestionId': questionId }, { $set: { 'allowedAnswers.$.surveyQuestionId': null } }, { multi: true })
-    QuestionCollection.remove(questionId)
+    InteractionStepCollection.update({ 'allowedAnswers.interactionStepId': questionId }, { $set: { 'allowedAnswers.$.interactionStepId': null } }, { multi: true })
+    InteractionStepCollection.remove(questionId)
   }
 
   handleEditSurvey(questionId, data) {
-    QuestionCollection.update(questionId, { $set: data })
+    InteractionStepCollection.update(questionId, { $set: data })
   }
 
-  handleAddSurveyAnswer(questionId) {
-    const question = QuestionCollection.findOne({ _id: questionId })
+  handleAddInteractionStepAnswer(questionId) {
+    const question = InteractionStepCollection.findOne({ _id: questionId })
 
-    QuestionCollection.update(questionId, {
+    InteractionStepCollection.update(questionId, {
       $set: {
         allowedAnswers: question.allowedAnswers.concat([newAllowedAnswer('Answer')])
       }
     })
   }
 
-  handleAddSurvey() {
-    const question = {
-      text: '',
+  handleAddInteractionStep({ parentStepId, parentAnswerId }) {
+    console.log("adding interaction step?")
+    const step = {
       allowedAnswers: [newAllowedAnswer('')],
-      isTopLevel: true
+      isTopLevel: false
     }
-    QuestionCollection.insert(question)
+    const newStepId = InteractionStepCollection.insert(step)
+    // console.log("all steps", InteractionStepCollection.find({}).fetch())
+    InteractionStepCollection.update({
+      _id: parentStepId,
+      "allowedAnswers._id": parentAnswerId
+    }, {
+      $set: {
+        "allowedAnswers.$.interactionStepId": newStepId
+      }
+    })
   }
 
   getCampaignModel() {
@@ -189,12 +210,14 @@ export class CampaignForm extends Component {
       contacts,
       scripts,
       assignedTexters,
-      questions,
       customFields,
-      dueBy
+      dueBy,
+      interactionSteps
     } = this.state
 
     const { organizationId } = this.props
+
+    const newInteractionSteps =  interactionSteps.map((step) => _.extend({}, step, step.question ? {} : { allowedAnswers: [] }))
 
     return {
       title,
@@ -204,17 +227,15 @@ export class CampaignForm extends Component {
       assignedTexters,
       customFields,
       dueBy,
+      interactionSteps: newInteractionSteps,
       // FIXME This omit is really awkward. Decide if I should be using subdocument _ids instead.
       scripts: _.map(scripts, (script) => _.omit(script, ['_id'])),
-      // FIXME
-      questions
     }
   }
 
   // SUBMIT TO SERVER
   handleSubmitBasics() {
     const { title, description, dueBy } = this.state
-    console.log('title, description, basics', title)
 
     const { campaign, organizationId } = this.props
     const data = {
@@ -236,6 +257,8 @@ export class CampaignForm extends Component {
       organizationId,
       campaignId: campaign._id
     }
+
+    console.log("subit scripts", data)
     updateScripts.call(data, handleError)
   }
 
@@ -252,12 +275,12 @@ export class CampaignForm extends Component {
     console.log('campaign assigned texter submit')
   }
 
-  handleSubmitQuestions() {
-    const { questions } = this.state
+  handleSubmitInteractionSteps() {
+    const { interactionSteps } = this.state
     const { campaign, organizationId } = this.props
     const data = {
       organizationId,
-      questions,
+      interactionSteps,
       campaignId: campaign._id
     }
     updateQuestions.call(data, handleError)
@@ -277,15 +300,18 @@ export class CampaignForm extends Component {
   }
 
   handleCreateNewCampaign() {
+    console.log("hi?")
     const { campaign, organizationId } = this.props
     this.setState({ submitting: true })
 
     const data = this.getCampaignModel()
 
+    console.log("data", data)
     insert.call(data, (err) => {
       this.setState({ submitting: false })
 
       if (err) {
+        console.log("error createing campaign")
         alert(err)
       } else {
         ScriptCollection.remove({})
@@ -324,6 +350,7 @@ export class CampaignForm extends Component {
     const { assignedTexters } = this.state
     const { texters } = this.props
 
+    console.log("assignedTexters, texters", assignedTexters, texters)
     return (
       <CampaignAssignmentForm
         texters={texters}
@@ -353,15 +380,16 @@ export class CampaignForm extends Component {
   }
 
   renderSurveySection() {
-    const { questions, customFields, sampleContact } = this.state
+    const { interactionSteps, customFields, sampleContact } = this.state
+    console.log("INTERACTION STEPS!?", interactionSteps)
     const { campaign } = this.props
     return (
       <CampaignSurveyForm
-        questions={questions}
+        interactionSteps={interactionSteps}
         campaign={campaign}
-        onAddSurveyAnswer={this.handleAddSurveyAnswer}
+        onAddSurveyAnswer={this.handleAddInteractionStepAnswer}
         onEditQuestion={this.handleEditSurvey}
-        onAddQuestion={this.handleAddSurvey}
+        onAddQuestion={this.handleAddInteractionStep}
         onDeleteQuestion={this.handleDeleteQuestion}
         sampleContact={sampleContact}
         customFields={customFields}
@@ -381,7 +409,7 @@ export class CampaignForm extends Component {
         sections={this.sections}
         campaign={campaign}
         onSubmitContacts={this.handleSubmitContacts}
-        onSubmitSurveys={this.handleSubmitQuestions}
+        onSubmitSurveys={this.handleSubmitInteractionSteps}
         onSubmitScripts={this.handleSubmitScripts}
         onSubmitTexters={this.handleSubmitTexters}
         onSubmitBasics={this.handleSubmitBasics}

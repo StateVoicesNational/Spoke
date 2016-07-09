@@ -5,9 +5,13 @@ import { Campaigns } from './campaigns.js'
 import { Messages } from '../messages/messages'
 import { assignContacts, saveContacts, saveQuestions } from './assignment.js'
 import { CampaignContacts } from '../campaign_contacts/campaign_contacts.js'
-import { SurveyQuestions } from '../survey_questions/survey_questions.js'
+import { InteractionSteps } from '../interaction_steps/interaction_steps.js'
 import { Assignments } from '../assignments/assignments.js'
-import { ScriptSchema } from './scripts.js'
+import { Scripts } from '../scripts/scripts.js'
+
+const saveScripts = (scripts, campaignId) => {
+  _.each(scripts, (script) => Scripts.insert(_.extend(script, { campaignId })))
+}
 
 export const insert = new ValidatedMethod({
   name: 'campaigns.insert',
@@ -16,8 +20,8 @@ export const insert = new ValidatedMethod({
     organizationId: { type: String },
     description: { type: String },
     contacts: { type: [Object], blackbox: true },
-    scripts: { type: [ScriptSchema] },
-    questions: { type: [Object], blackbox: true },
+    scripts: { type: [Object], blackbox: true },
+    interactionSteps: { type: [Object], blackbox: true },
     customFields: { type: [String] },
     assignedTexters: { type: [String] },
     dueBy: { type: Date }
@@ -30,7 +34,7 @@ export const insert = new ValidatedMethod({
     customFields,
     organizationId,
     assignedTexters,
-    questions,
+    interactionSteps,
     dueBy
   }) {
     if (!this.userId || !Roles.userIsInRole(this.userId, 'admin', organizationId)) {
@@ -40,7 +44,6 @@ export const insert = new ValidatedMethod({
     const campaignData = {
       title,
       description,
-      scripts,
       organizationId,
       customFields,
       dueBy,
@@ -49,7 +52,8 @@ export const insert = new ValidatedMethod({
 
     // TODO this needs to be in one transaction
     const campaignId = Campaigns.insert(campaignData)
-    saveQuestions(campaignId, questions)
+    saveScripts(scripts, campaignId)
+    saveQuestions(campaignId, interactionSteps)
     saveContacts(campaignId, contacts)
 
     if (assignedTexters.length > 0) {
@@ -130,6 +134,7 @@ export const updateTexters = new ValidatedMethod({
       throw new Meteor.Error('not-authorized')
     }
     const { dueBy } = Campaigns.findOne(campaignId)
+    console.log("assignedTexters", assignedTexters)
     assignContacts(campaignId, dueBy, assignedTexters)
   }
 })
@@ -139,7 +144,7 @@ export const updateScripts = new ValidatedMethod({
   validate: new SimpleSchema({
     campaignId: { type: String },
     organizationId: { type: String },
-    scripts: { type: [ScriptSchema] }
+    scripts: { type: [Object], blackbox: true }
   }).validator(),
   run({
     organizationId,
@@ -150,7 +155,8 @@ export const updateScripts = new ValidatedMethod({
       throw new Meteor.Error('not-authorized')
     }
 
-    Campaigns.update(campaignId, { $set: { scripts } })
+    Scripts.remove({ campaignId, userId: null})
+    saveScripts(scripts, campaignId)
   }
 })
 
@@ -186,7 +192,7 @@ export const exportContacts = new ValidatedMethod({
       const campaign = Campaigns.findOne({ _id: campaignId })
       const organizationId = campaign.organizationId
 
-      const surveyQuestions = SurveyQuestions.find({ campaignId }).fetch()
+      const interactionSteps = InteractionSteps.find({ campaignId, question: {$ne: null} }).fetch()
       if (!this.userId || !Roles.userIsInRole(this.userId, 'admin', organizationId)) {
         throw new Meteor.Error('not-authorized')
       }
@@ -205,10 +211,9 @@ export const exportContacts = new ValidatedMethod({
         row = _.extend(row, contact.customFields)
         row.optOut = !!contact.optOut()
 
-        _.each(surveyQuestions, (question, index) => {
-          row[`question ${index + 1}`] = question.text
-          const answer = contact.surveyAnswer(question._id)
-          row[`answer ${index + 1}`] = answer ? answer.value : ''
+        _.each(interactionSteps, (step, index) => {
+          const answer = contact.surveyAnswer(step._id)
+          row[step.question] = answer ? answer.value : ''
         })
 
         data.push(row)

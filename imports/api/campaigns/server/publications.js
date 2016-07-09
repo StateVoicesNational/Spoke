@@ -4,7 +4,8 @@ import { Messages } from '../../messages/messages.js'
 import { OptOuts } from '../../opt_outs/opt_outs'
 import { CampaignContacts } from '../../campaign_contacts/campaign_contacts.js'
 import { Assignments, activeAssignmentQuery } from '../../assignments/assignments.js'
-import { SurveyQuestions } from '../../survey_questions/survey_questions.js'
+import { InteractionSteps } from '../../interaction_steps/interaction_steps.js'
+import { Scripts } from '../../scripts/scripts.js'
 import { SurveyAnswers } from '../../survey_answers/survey_answers.js'
 import { Roles } from 'meteor/alanning:roles'
 // Standardize this
@@ -43,7 +44,10 @@ Meteor.publishComposite('campaign.edit', (campaignId, organizationId) => {
           find: (campaign) => Assignments.find({ campaignId })
         },
         {
-          find: (campaign) => SurveyQuestions.find( { campaignId })
+          find: (campaign) => InteractionSteps.find( { campaignId })
+        },
+        {
+          find: (campaign) => Scripts.find( { campaignId })
         }
       ]
     },
@@ -77,31 +81,32 @@ const computeSurveyStats = (campaignId) => {
   },
   {
     $group: {
-      _id : {surveyQuestionId: '$surveyQuestionId', value: '$value'},
+      _id : {interactionStepId: '$interactionStepId', value: '$value'},
       count: { $sum: 1 },
     },
   },
   ])
 
-  const getAnswerCount = (surveyQuestionId, value) => {
-    const stat = aggregation.find((x) => x._id.surveyQuestionId === surveyQuestionId && x._id.value === value)
+  const getAnswerCount = (interactionStepId, value) => {
+    const stat = aggregation.find((x) => x._id.interactionStepId === interactionStepId && x._id.value === value)
     return stat ? stat.count : 0
   }
-  const surveys = SurveyQuestions.find({ campaignId }, { fields: {text: 1, allowedAnswers: 1}}).fetch()
 
-  const surveyStats = surveys.map((survey) => {
-    const responses = survey.allowedAnswers.map((answer) => {
+  const steps = InteractionSteps.find({ question: {$ne: null}, campaignId }, { fields: {question: 1, allowedAnswers: 1}}).fetch()
+
+  const surveyStats = steps.map((step) => {
+    const responses = step.allowedAnswers.map((answer) => {
         return {
           answer: answer.value,
-          count: getAnswerCount(survey._id, answer.value)
+          count: getAnswerCount(step._id, answer.value)
         }
       })
 
     // TODO - not efficient
     const responseCount = _.reduce(responses.map(({count}) => count ), (memo, num) => memo + num)
     return {
-      _id: survey._id,
-      text: survey.text,
+      _id: step._id,
+      text: step.question,
       responses,
       responseCount
     }

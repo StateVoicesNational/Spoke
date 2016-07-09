@@ -68,6 +68,8 @@ export class MessageForm extends Component {
       if (onSendMessage) {
         onSendMessage()
       }
+    } else {
+      alert(error)
     }
   }
 

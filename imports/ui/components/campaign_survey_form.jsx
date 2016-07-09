@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React,  { Component } from 'react'
 import RaisedButton from 'material-ui/RaisedButton'
 import { CampaignQuestionForm } from './campaign_question_form'
 import { CampaignFormSectionHeading } from './campaign_form_section_heading'
@@ -8,9 +8,22 @@ const styles = {
     marginTop: 24
   }
 }
+
 export class CampaignSurveyForm extends Component {
+  constructor(props) {
+    super(props)
+    this.handleClickStepLink = this.handleClickStepLink.bind(this)
+  }
+  handleClickStepLink(interactionStepId) {
+    const node = React.findDOMNode(this.refs[interactionStepId])
+    console.log("handleClickStepLink", this, node)
+
+    node.scrollTop = node.offset().top
+()
+  }
+
   render() {
-    const { questions, onValid, onInvalid, onAddSurveyAnswer, onDeleteQuestion, onEditQuestion, onAddQuestion, customFields, sampleContact, campaign} = this.props
+    const { interactionSteps, onValid, onInvalid, onAddSurveyAnswer, onDeleteQuestion, onEditQuestion, onAddQuestion, customFields, sampleContact, campaign} = this.props
 
     const campaignStarted = campaign && campaign.hasMessage()
 
@@ -19,7 +32,7 @@ export class CampaignSurveyForm extends Component {
       subtitle = "Once messages have been sent to contacts in this campaign, you can't edit the questions or answers, but you can still edit scripts if you need."
     }
     else {
-      subtitle = 'You can add questions and your texters can indicate responses from your contacts. For example, you might want to collect RSVPs to an event or find out whether to follow up about a different volunteer activity.'
+      subtitle = 'You can add  scripts and questions and your texters can indicate responses from your contacts. For example, you might want to collect RSVPs to an event or find out whether to follow up about a different volunteer activity.'
     }
 
     return (
@@ -28,24 +41,27 @@ export class CampaignSurveyForm extends Component {
         onInvalid={onInvalid}
       >
         <CampaignFormSectionHeading
-          title='What do you want to learn?'
+          title='What do you want to discuss?'
           subtitle={subtitle}
         />
 
-        { questions.map ((question) => (
+        { _.map(interactionSteps, (interactionStep, index) => (
           <CampaignQuestionForm
-            question={question}
-            questions={questions}
+            ref={interactionStep._id}
+            interactionStep={interactionStep}
+            questions={interactionSteps}
             onAddSurveyAnswer={onAddSurveyAnswer}
             onEditQuestion={onEditQuestion}
             onDeleteQuestion={onDeleteQuestion}
+            onClickStepLink={this.handleClickStepLink}
+            onAddQuestion={onAddQuestion}
             customFields={customFields}
             sampleContact={sampleContact}
             campaignStarted={campaignStarted}
           />
         ))}
         {
-          questions.length === 0 ? (
+          interactionSteps.length === 0 ? (
             <RaisedButton
               style={styles.questionButton}
               label="Add question"

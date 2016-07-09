@@ -24,6 +24,7 @@
     "material-ui": "^0.15.0",
     "meteor-node-stubs": "https://registry.npmjs.org/meteor-node-stubs/-/meteor-node-stubs-0.2.3.tgz",
     "react": "^15.1.0",
+    "react-addons-css-transition-group": "^15.1.0",
     "react-addons-pure-render-mixin": "^15.0.1",
     "react-chartjs": "^0.7.3",
     "react-dom": "^15.0.1",

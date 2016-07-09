@@ -1,5 +1,8 @@
 import React from 'react'
 import { Campaigns } from '../../api/campaigns/campaigns.js'
+import { Assignments } from '../../api/assignments/assignments.js'
+import { Scripts } from '../../api/scripts/scripts.js'
+import { InteractionSteps } from '../../api/interaction_steps/interaction_steps.js'
 import { CampaignForm } from '../components/campaign_form'
 import { AppPage } from '../../ui/layouts/app_page'
 import { AdminNavigation } from '../../ui/components/navigation'
@@ -7,7 +10,7 @@ import { createContainer } from 'meteor/react-meteor-data'
 import { Roles } from 'meteor/alanning:roles'
 
 
-const _CampaignEditPage = ({ organizationId, texters, campaign, loading }) => (
+const _CampaignEditPage = ({ organizationId, texters, assignedTexters, scripts, interactionSteps, campaign, loading }) => (
   <AppPage
     navigation={
       <AdminNavigation
@@ -23,6 +26,9 @@ const _CampaignEditPage = ({ organizationId, texters, campaign, loading }) => (
         organizationId={organizationId}
         texters={texters}
         campaign={campaign}
+        interactionSteps={interactionSteps}
+        scripts={scripts}
+        assignedTexters={assignedTexters}
       />
     )}
     loading={loading}
@@ -31,11 +37,22 @@ const _CampaignEditPage = ({ organizationId, texters, campaign, loading }) => (
 
 export const CampaignEditPage = createContainer(({ campaignId, organizationId }) => {
   const handle = Meteor.subscribe('campaign.edit', campaignId, organizationId)
+
+  const scripts = Scripts.find( { campaignId }).fetch()
+  const interactionSteps = InteractionSteps.find( { campaignId }).fetch()
+  console.log(interactionSteps)
+  const campaign = Campaigns.findOne({ _id: campaignId })
+  const texters = Roles.getUsersInRole('texter', organizationId).fetch()
+  const assignedTexters = campaign ? Assignments.find({ campaignId }).fetch().map(({ userId }) => userId) : texters.map((texter) => texter._id)
+
   // OptOuts.find( { organizationId }).fetch()
   return {
     organizationId,
-    campaign: Campaigns.findOne({ _id: campaignId }),
-    texters: Roles.getUsersInRole('texter', organizationId).fetch(),
+    interactionSteps,
+    scripts,
+    campaign,
+    assignedTexters,
+    texters: texters,
     loading: !handle.ready()
   }
 }, _CampaignEditPage)

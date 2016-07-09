@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import Paper from 'material-ui/Paper'
 import { Toolbar, ToolbarGroup, ToolbarTitle, ToolbarSeparator } from 'material-ui/Toolbar'
 import IconButton from 'material-ui/IconButton/IconButton'
@@ -16,9 +17,10 @@ import { AssignmentTexterSurveys} from './assignment_texter_surveys'
 import { MessageForm } from './message_form'
 import { ResponseDropdown } from './response_dropdown'
 
+import { Scripts } from '../../api/scripts/scripts'
 import { sendMessage } from '../../api/messages/methods'
 import { applyScript } from '../helpers/script_helpers'
-import { updateAnswer } from '../../api/survey_answers/methods'
+import { updateAnswers } from '../../api/survey_answers/methods'
 import { ZipCodes } from '../../api/zip_codes/zip_codes'
 import { MessagesList } from './messages_list'
 import { grey100 } from 'material-ui/styles/colors'
@@ -95,9 +97,11 @@ export class AssignmentTexter extends Component {
 
     this.state = {
       currentContactIndex: 0,
+      direction: 'right',
       script: '',
     }
 
+    console.log('this.state', this.state)
     this.handleNavigateNext = this.handleNavigateNext.bind(this)
     this.handleNavigatePrevious = this.handleNavigatePrevious.bind(this)
     this.onSendMessage = this.onSendMessage.bind(this)
@@ -130,10 +134,8 @@ export class AssignmentTexter extends Component {
 
   defaultScript() {
     const { assignment } = this.props
-    console.log("current contact", this.currentContact())
     const contact = this.currentContact()
-    console.log(assignment.campaign())
-    console.log(assignment.campaign().initialScriptText(), "script text here")
+    console.log(assignment.campaign().initialScriptText())
     return (contact && contact.messages().fetch().length === 0) ? assignment.campaign().initialScriptText() : ''
   }
 
@@ -151,23 +153,24 @@ export class AssignmentTexter extends Component {
   }
 
   handleNavigateNext() {
-    console.log("hi?")
-    if (this.hasNext()) {
-      this.incrementCurrentContactIndex(1)
-    }
-    else {
-      const { onStopTexting } = this.props
-      onStopTexting()
-    }
+    this.setState({ direction: 'right'}, () => {
+      if (this.hasNext()) {
+        this.incrementCurrentContactIndex(1)
+      }
+      else {
+        const { onStopTexting } = this.props
+        onStopTexting()
+      }
+    })
   }
 
   handleNavigatePrevious() {
-    this.incrementCurrentContactIndex(-1)
+    this.setState({ direction: 'left'}, () => this.incrementCurrentContactIndex(-1))
   }
 
   setSuggestedScript(script)
   {
-    console.log("setting script")
+    console.log("setting script", script)
     this.setState({script})
   }
   handleScriptChange(script) {
@@ -175,7 +178,20 @@ export class AssignmentTexter extends Component {
   }
 
   onSendMessage() {
-    this.handleNavigateNext()
+    console.log("\nANSWERS")
+    console.log(this.refs.surveySection.answers())
+    const contact = this.currentContact()
+    updateAnswers.call({
+      answers: this.refs.surveySection.answers(),
+      campaignContactId: contact._id,
+      campaignId: contact.campaignId
+    }, (err) => {
+      if (err) {
+        alert(err)
+      } else {
+        this.handleNavigateNext()
+      }
+    })
   }
 
   handleOptOut() {
@@ -237,24 +253,15 @@ export class AssignmentTexter extends Component {
     this.setState({open: true})
   }
 
-  handleSurveyAnswerChange(surveyQuestionId, answer, script) {
-    const contact = this.currentContact()
-    updateAnswer.call({
-      surveyQuestionId,
-      value: answer,
-      campaignContactId: contact._id,
-      campaignId: contact.campaignId
-    })
-    // This should actually happen from propagating props
-    this.handleScriptChange(script)
-  }
-
   renderSurveySection(campaign) {
     const contact = this.currentContact()
-    return contact.messages().fetch().length === 0  ? <div/> : (
+
+    // return contact.messages().fetch().length === 0  ? <div/> :
+    return (
       <AssignmentTexterSurveys
+        ref="surveySection"
         contact={contact}
-        questions={campaign.surveys().fetch()}
+        initialStep={campaign.firstStep()}
         onScriptChange={this.handleScriptChange}
       />
     )
@@ -269,12 +276,15 @@ export class AssignmentTexter extends Component {
 
     const campaign = assignment.campaign()
     const scriptFields = campaign.scriptFields()
-
+    const faqScripts = Scripts.find( { $or: [
+      {campaignId: campaign._id,  userId: null },
+      { campaignId: campaign._id,  userId: Meteor.userId() }
+    ] })
     //TODO - do we really want to grab all messages at once here? should I actually be doing a collection serach
     const leftToolbarChildren = [
       <ToolbarSeparator />,
       <ResponseDropdown
-        responses={campaign.faqScripts() || []}
+        responses={faqScripts}
         onScriptChange={this.handleScriptChange}
       />
     ]
@@ -299,9 +309,20 @@ export class AssignmentTexter extends Component {
     const secondaryToolbar = this.renderSurveySection(campaign)
 
     const appliedScript = applyScript(this.state.script, contact, scriptFields)
-    console.log("appliedScript", appliedScript)
+
+    const direction = this.state.direction
+    console.log(direction)
+    console.log("transitionName", `slide-${direction}`)
     return (
-      <div style={styles.root}>
+      <ReactCSSTransitionGroup
+        transitionName={`slide-${this.state.direction}`}
+        transitionEnterTimeout={500}
+        transitionLeaveTimeout={500}
+      >
+
+      <div
+        key={contact._id}
+        style={styles.root}>
         <div style={styles.topToolbar}>
           <ContactToolbar
             campaignContact={contact}
@@ -337,6 +358,7 @@ export class AssignmentTexter extends Component {
           />
         </div>
       </div>
+      </ReactCSSTransitionGroup>
     )
   }
 }

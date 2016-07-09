@@ -6,7 +6,7 @@ import {
   Editor,
   Modifier,
 } from 'draft-js'
-import { delimit } from '../../api/campaigns/scripts'
+import { delimit } from '../../api/scripts/scripts'
 import AddIcon from 'material-ui/svg-icons/content/add';
 import { Chip } from './chip'
 import { red400, green500, green600, grey100 } from 'material-ui/styles/colors'

@@ -2,27 +2,38 @@ import { ValidatedMethod } from 'meteor/mdg:validated-method'
 import { SimpleSchema } from 'meteor/aldeed:simple-schema'
 import { SurveyAnswers } from './survey_answers.js'
 
-export const updateAnswer = new ValidatedMethod({
-  name: 'answer.update',
+export const updateAnswers = new ValidatedMethod({
+  name: 'answers.update',
   validate: new SimpleSchema({
     campaignContactId: { type: String },
-    surveyQuestionId: { type: String },
     campaignId: { type: String },
-    value: { type: String } // TODO: validate based on questionsurvey id
+    answers: { type: Object, blackbox: true } // TODO: validate based on  key value id
   }).validator(),
-  run({ campaignContactId, campaignId, surveyQuestionId, value }) {
-    const answer = SurveyAnswers.findOne({ campaignContactId, surveyQuestionId })
-    if (answer) {
-      SurveyAnswers.update(
-        { _id: answer._id },
-        { $set: { value } })
-    } else {
-      SurveyAnswers.insert({
-        campaignContactId,
-        surveyQuestionId,
-        campaignId,
-        value
-      })
-    }
+  run({ campaignContactId, campaignId, answers }) {
+
+    const interactionStepIds = _.keys(answers)
+
+    SurveyAnswers.remove({
+      campaignContactId,
+      campaignId,
+      interactionStepId: { $nin: interactionStepIds }
+    })
+
+    _.each(answers, (value, interactionStepId) => {
+      const answer = SurveyAnswers.findOne({ campaignContactId, interactionStepId })
+      if (answer) {
+        SurveyAnswers.update(
+          { _id: answer._id },
+          { $set: { value } })
+      } else {
+        SurveyAnswers.insert({
+          campaignContactId,
+          interactionStepId,
+          campaignId,
+          value
+        })
+      }
+    })
+
   }
 })
