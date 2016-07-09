@@ -39,6 +39,7 @@ export class AssignmentTexterSurveys extends Component {
     this.handleNext = this.handleNext.bind(this)
     this.handlePrevious = this.handlePrevious.bind(this)
     // TODO this should actually happen only when the contact changes
+    console.log("this.getAnswersState", this.getAnswersState())
     this.state = this.getAnswersState()
   }
 
@@ -53,7 +54,7 @@ export class AssignmentTexterSurveys extends Component {
     let answers = SurveyAnswers.find({ campaignContactId: contact._id, campaignId: contact.campaignId }).fetch()
     let newAnswers = {}
     _.each(answers, (answer) => newAnswers[answer.interactionStepId] = answer.value )
-    return { answers }
+    return { answers: newAnswers }
 
   }
 
@@ -93,6 +94,7 @@ export class AssignmentTexterSurveys extends Component {
   }
 
   answers() {
+    console.log("this.state.answers", this.state.answers)
     return this.state.answers
   }
 

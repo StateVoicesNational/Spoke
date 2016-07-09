@@ -174,6 +174,8 @@ export class AssignmentTexter extends Component {
   }
 
   onSendMessage() {
+    console.log("\nANSWERS")
+    console.log(this.refs.surveySection.answers())
     const contact = this.currentContact()
     updateAnswers.call({
       answers: this.refs.surveySection.answers(),
@@ -253,6 +255,7 @@ export class AssignmentTexter extends Component {
     // return contact.messages().fetch().length === 0  ? <div/> :
     return (
       <AssignmentTexterSurveys
+        ref="surveySection"
         contact={contact}
         initialStep={campaign.firstStep()}
         onScriptChange={this.handleScriptChange}
