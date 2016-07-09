@@ -18,7 +18,8 @@ export const updateAnswers = new ValidatedMethod({
       campaignId,
       interactionStepId: { $nin: interactionStepIds }
     })
-    _.each(answers, (interactionStepId, value) => {
+
+    _.each(answers, (value, interactionStepId) => {
       const answer = SurveyAnswers.findOne({ campaignContactId, interactionStepId })
       if (answer) {
         SurveyAnswers.update(
