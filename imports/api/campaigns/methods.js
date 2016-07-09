@@ -192,7 +192,7 @@ export const exportContacts = new ValidatedMethod({
       const campaign = Campaigns.findOne({ _id: campaignId })
       const organizationId = campaign.organizationId
 
-      const surveyQuestions = InteractionSteps.find({ campaignId }).fetch()
+      const interactionSteps = InteractionSteps.find({ campaignId, question: {$ne: null} }).fetch()
       if (!this.userId || !Roles.userIsInRole(this.userId, 'admin', organizationId)) {
         throw new Meteor.Error('not-authorized')
       }
@@ -211,10 +211,9 @@ export const exportContacts = new ValidatedMethod({
         row = _.extend(row, contact.customFields)
         row.optOut = !!contact.optOut()
 
-        _.each(surveyQuestions, (question, index) => {
-          row[`question ${index + 1}`] = question.text
-          const answer = contact.surveyAnswer(question._id)
-          row[`answer ${index + 1}`] = answer ? answer.value : ''
+        _.each(interactionSteps, (step, index) => {
+          const answer = contact.surveyAnswer(step._id)
+          row[step.question] = answer ? answer.value : ''
         })
 
         data.push(row)
