@@ -35,14 +35,6 @@ Scripts.schema = new SimpleSchema({
       }
     }
   },
-  type: {
-    type: String,
-    allowedValues: [
-      ScriptTypes.INITIAL,
-      ScriptTypes.REPEAT,
-      ScriptTypes.FAQ
-    ]
-  },
   createdAt: { type: Date }
 })
 

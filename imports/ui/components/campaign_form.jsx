@@ -69,8 +69,6 @@ export class CampaignForm extends Component {
   resetState() {
     const { campaign, texters, assignedTexters, scripts, interactionSteps } = this.props
 
-    console.log("RESET STATE", this.props)
-    debugger;
     this.state = {
       stepIndex: 0,
       title: campaign ? campaign.title : '',
@@ -84,7 +82,6 @@ export class CampaignForm extends Component {
       submitting: false,
     }
 
-    console.log("SCRIPTS", scripts)
     this.sections = [
       {
         title: SectionTitles.basics,
@@ -141,6 +138,9 @@ export class CampaignForm extends Component {
         scripts: ScriptCollection.find({}).fetch(),
         interactionSteps: InteractionStepCollection.find({}).fetch()
       })
+
+      console.log(ScriptCollection.find({}).fetch())
+      console.log(this.state.scripts)
     })
   }
 
@@ -152,12 +152,17 @@ export class CampaignForm extends Component {
   }
 
   //    SCRIPTS
-  handleScriptAdd(script) {
+  handleScriptAdd(script, callback) {
     ScriptCollection.insert(script)
+    console.log("added a script")
+    console.log(ScriptCollection.find({}).fetch())
+    callback()
   }
 
-  handleScriptChange(scriptId, data) {
+  handleScriptChange(scriptId, data, callback) {
+    console.log("edit script?", scriptId, data)
     ScriptCollection.update(scriptId, { $set: data })
+    callback()
   }
 
   handleScriptDelete(scriptId) {
@@ -227,9 +232,8 @@ export class CampaignForm extends Component {
       assignedTexters,
       customFields,
       dueBy,
-      interactionSteps: newInteractionSteps,
-      // FIXME This omit is really awkward. Decide if I should be using subdocument _ids instead.
-      scripts: _.map(scripts, (script) => _.omit(script, ['_id'])),
+      scripts,
+      interactionSteps: newInteractionSteps
     }
   }
 
@@ -258,7 +262,6 @@ export class CampaignForm extends Component {
       campaignId: campaign._id
     }
 
-    console.log("subit scripts", data)
     updateScripts.call(data, handleError)
   }
 
@@ -271,8 +274,6 @@ export class CampaignForm extends Component {
       campaignId: campaign._id
     }
     updateTexters.call(data, handleError)
-
-    console.log('campaign assigned texter submit')
   }
 
   handleSubmitInteractionSteps() {
@@ -295,18 +296,14 @@ export class CampaignForm extends Component {
       campaignId: campaign._id
     }
     updateContacts.call(data, handleError)
-
-    console.log('campaign contact submit')
   }
 
   handleCreateNewCampaign() {
-    console.log("hi?")
     const { campaign, organizationId } = this.props
     this.setState({ submitting: true })
 
     const data = this.getCampaignModel()
 
-    console.log("data", data)
     insert.call(data, (err) => {
       this.setState({ submitting: false })
 
@@ -350,7 +347,6 @@ export class CampaignForm extends Component {
     const { assignedTexters } = this.state
     const { texters } = this.props
 
-    console.log("assignedTexters, texters", assignedTexters, texters)
     return (
       <CampaignAssignmentForm
         texters={texters}
@@ -362,14 +358,10 @@ export class CampaignForm extends Component {
 
   renderScriptSection() {
     const { contacts, scripts, customFields } = this.state
-    const { campaign } = this.props
-    const faqScripts = scripts.filter((script) => script.type === ScriptTypes.FAQ)
-    const defaultScript = scripts.find((script) => script.type === ScriptTypes.INITIAL)
-
+    console.log("SCRIPTS", scripts)
     return (
       <CampaignScriptsForm
-        script={defaultScript}
-        faqScripts={faqScripts}
+        scripts={scripts}
         onScriptChange={this.handleScriptChange}
         onScriptDelete={this.handleScriptDelete}
         onScriptAdd={this.handleScriptAdd}
