@@ -1,5 +1,4 @@
 import React, { Component } from 'react'
-import DropDownMenu from 'material-ui/DropDownMenu'
 import MenuItem from 'material-ui/MenuItem'
 import Divider from 'material-ui/Divider'
 import Dialog from 'material-ui/Dialog'
@@ -34,6 +33,7 @@ export class ResponseDropdown extends Component {
     this.handleCloseDialog = this.handleCloseDialog.bind(this)
     this.handleOpenPopover = this.handleOpenPopover.bind(this)
     this.handleClosePopover = this.handleClosePopover.bind(this)
+    this.handleCancelDialog = this.handleCancelDialog.bind(this)
     this.handleEditScript = this.handleEditScript.bind(this)
     this.submit = this.submit.bind(this)
     this.state = {
@@ -61,6 +61,11 @@ export class ResponseDropdown extends Component {
     })
   }
 
+  handleCancelDialog() {
+    this.handleCloseDialog()
+    this.handleClosePopover()
+  }
+
   handleCloseDialog() {
     this.setState({
       dialogOpen: false,
@@ -85,6 +90,7 @@ export class ResponseDropdown extends Component {
       } else {
         this.handleCloseDialog()
         onScriptChange(model.text)
+        this.handleClosePopover()
       }
     }
 
@@ -181,7 +187,7 @@ export class ResponseDropdown extends Component {
           actions={[
             <FlatButton
               label="Cancel"
-              onTouchTap={this.handleCloseDialog}
+              onTouchTap={this.handleCancelDialog}
             />,
             <RaisedButton
               label="Save"

@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { FormsyText, FormsyDate } from 'formsy-material-ui/lib'
+import { ScriptField } from './script_field'
 export class CannedResponseForm extends Component {
   constructor(props) {
     super(props)
@@ -37,6 +38,7 @@ export class CannedResponseForm extends Component {
   }
 
   render() {
+
     const { onValid, onInvalid } = this.props
     const { text, title } = this.state
     return (
@@ -53,14 +55,14 @@ export class CannedResponseForm extends Component {
           floatingLabelText="Title"
           value={title}
         />
-        <FormsyText
+        <ScriptField
+          customFields={['hi', 'hi2']}
           name="text"
-          onChange={this.handleTextChange}
-          fullWidth
           floatingLabelText="Script"
           value={text}
-          required
           multiLine
+          required
+          fullWidth
         />
       </Formsy.Form>
     )
