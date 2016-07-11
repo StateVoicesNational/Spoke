@@ -2,7 +2,7 @@
     "public": {
         "textingEnabled": false,
         "refreshTestData": false,
-        "isProduction": false
+        "isProduction": false,
     },
     "private": {
         "plivo": {

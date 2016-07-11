@@ -1,22 +1,14 @@
-// const TIMEZONE_CONFIG = {
-//   allowedStart: 9,
-//   allowedEnd: 21,
-//   missingTimeZone: {
-//     offset: -5, // EST
-//     allowedStart: 12, // 12pm EST/9am PST
-//     allowedEnd: 21, // 9pm EST/6pm PST
-//   }
-// }
-
 const TIMEZONE_CONFIG = {
-  allowedStart: 0,
-  allowedEnd: 24,
+  allowedStart: 9,
+  allowedEnd: 21,
   missingTimeZone: {
     offset: -5, // EST
-    allowedStart: 0, // 12pm EST/9am PST
-    allowedEnd: 24, // 9pm EST/6pm PST
+    allowedStart: 12, // 12pm EST/9am PST
+    allowedEnd: 21, // 9pm EST/6pm PST
   }
 }
+
+
 export const getLocalTime = (offset) => moment().utc().utcOffset(moment().isDST() ? offset + 1 : offset)
 
 export const defaultTimezoneIsBetweenTextingHours = () => isBetweenTextingHours(null)
@@ -28,6 +20,12 @@ export const validOffsets = () => _.filter(ALL_OFFSETS, (offset) => isBetweenTex
 
 // TODO hasDST or not?
 export const isBetweenTextingHours = (userOffset) => {
+  console.log("IS isBetweenTextingHours", Meteor.settings.public.ignoreTextingHours)
+
+  if (Meteor.settings.public.ignoreTextingHours) {
+    return true
+  }
+
   let offset, allowedStart, allowedEnd
   if (userOffset) {
     allowedStart = TIMEZONE_CONFIG.allowedStart

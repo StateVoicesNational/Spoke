@@ -58,7 +58,6 @@ Meteor.publish('assignments.todo', function(organizationId) {
   },
   ])
 
-  console.log(badTimezoneAggregation)
   const aggregation = CampaignContacts.aggregate([
   {
     $match: _.extend({}, baseQuery, { zip: { $in: validZips } })
@@ -71,6 +70,7 @@ Meteor.publish('assignments.todo', function(organizationId) {
   },
   ])
 
+  console.log(aggregation)
   const results = _.map(assignments, (assignment) => {
     const result = {
       assignment,

@@ -268,7 +268,7 @@ export class AssignmentTexter extends Component {
   }
 
   render() {
-    const { assignment, contacts, onStopTexting } = this.props
+    const { assignment, contacts, onStopTexting, userResponses, campaignResponses } = this.props
     const contact = this.currentContact()
     if (!contact) {
       return null
@@ -277,8 +277,6 @@ export class AssignmentTexter extends Component {
     const campaign = assignment.campaign()
     const campaignId = campaign._id
     const scriptFields = campaign.scriptFields()
-    const campaignResponses = Scripts.find( { campaignId, userId: null })
-    const userResponses = Scripts.find( { campaignId, userId: Meteor.userId() })
     //TODO - do we really want to grab all messages at once here? should I actually be doing a collection serach
     const leftToolbarChildren = [
       <ToolbarSeparator />,
