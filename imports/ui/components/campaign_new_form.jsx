@@ -73,6 +73,7 @@ export class CampaignNewForm extends Component {
         previousStepEnabled={(stepIndex !== 0)}
         content={content}
         onPrevious={this.handlePrev}
+        showPreviousStep
         onNext={this.handleNext}
         nextStepLabel={stepIndex === this.lastStepIndex() ? 'Finish' : 'Next'}
       />
