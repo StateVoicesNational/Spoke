@@ -99,15 +99,16 @@ export class AssignmentTexter extends Component {
       currentContactIndex: 0,
       direction: 'right',
       script: '',
+      responsePopoverOpen: true,
     }
 
-    console.log('this.state', this.state)
     this.handleNavigateNext = this.handleNavigateNext.bind(this)
     this.handleNavigatePrevious = this.handleNavigatePrevious.bind(this)
+    this.handleOpenPopover = this.handleOpenPopover.bind(this)
+    this.handleClosePopover = this.handleClosePopover.bind(this)
     this.onSendMessage = this.onSendMessage.bind(this)
     this.handleScriptChange = this.handleScriptChange.bind(this)
 
-    console.log("hi")
     this.state.script = this.defaultScript()
 
   }
@@ -117,7 +118,6 @@ export class AssignmentTexter extends Component {
     const prevContact = this.getContact(prevProps.contacts, prevState.currentContactIndex)
     const newContact = this.currentContact()
     if (newContact && (!prevContact || (prevContact._id !== newContact._id))) {
-      console.log("here?")
       this.setSuggestedScript(this.defaultScript())
     }
 
@@ -135,7 +135,6 @@ export class AssignmentTexter extends Component {
   defaultScript() {
     const { assignment } = this.props
     const contact = this.currentContact()
-    console.log(assignment.campaign().initialScriptText())
     return (contact && contact.messages().fetch().length === 0) ? assignment.campaign().initialScriptText() : ''
   }
 
@@ -170,16 +169,26 @@ export class AssignmentTexter extends Component {
 
   setSuggestedScript(script)
   {
-    console.log("setting script", script)
     this.setState({script})
   }
   handleScriptChange(script) {
     this.setSuggestedScript(script)
   }
 
+  handleOpenPopover(event) {
+    event.preventDefault()
+    this.setState({
+      responsePopoverAnchorEl: event.currentTarget,
+      responsePopoverOpen: true,
+    })
+  }
+
+  handleClosePopover() {
+    this.setState({
+      responsePopoverOpen: false,
+    })
+  }
   onSendMessage() {
-    console.log("\nANSWERS")
-    console.log(this.refs.surveySection.answers())
     const contact = this.currentContact()
     updateAnswers.call({
       answers: this.refs.surveySection.answers(),
@@ -215,8 +224,6 @@ export class AssignmentTexter extends Component {
       timezoneOffset: contact.utcOffset()
     }, (error) => {
       if (error) {
-        console.log("naotheusntahoeusnahtoeu")
-        console.log("ERROR", error)
         // alert(error)
       } else {
         onSuccess()
@@ -280,7 +287,15 @@ export class AssignmentTexter extends Component {
     //TODO - do we really want to grab all messages at once here? should I actually be doing a collection serach
     const leftToolbarChildren = [
       <ToolbarSeparator />,
+      <RaisedButton
+        style={{height: 36}}
+        label="Canned responses"
+        onTouchTap={this.handleOpenPopover}
+      />,
       <ResponseDropdown
+        onRequestClose={this.handleClosePopover}
+        open={this.state.responsePopoverOpen}
+        anchorEl={this.state.responsePopoverAnchorEl}
         campaignResponses={campaignResponses}
         userResponses={userResponses}
         campaignId={campaign._id}
@@ -310,8 +325,6 @@ export class AssignmentTexter extends Component {
     const appliedScript = applyScript(this.state.script, contact, scriptFields)
 
     const direction = this.state.direction
-    console.log(direction)
-    console.log("transitionName", `slide-${direction}`)
     return (
       <ReactCSSTransitionGroup
         transitionName={`slide-${this.state.direction}`}

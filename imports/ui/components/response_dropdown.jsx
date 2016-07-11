@@ -31,8 +31,6 @@ export class ResponseDropdown extends Component {
     this.handleSelectScript = this.handleSelectScript.bind(this)
     this.handleOpenDialog = this.handleOpenDialog.bind(this)
     this.handleCloseDialog = this.handleCloseDialog.bind(this)
-    this.handleOpenPopover = this.handleOpenPopover.bind(this)
-    this.handleClosePopover = this.handleClosePopover.bind(this)
     this.handleCancelDialog = this.handleCancelDialog.bind(this)
     this.handleEditScript = this.handleEditScript.bind(this)
     this.submit = this.submit.bind(this)
@@ -42,19 +40,6 @@ export class ResponseDropdown extends Component {
     }
   }
 
-  handleOpenPopover(event) {
-    event.preventDefault()
-    this.setState({
-      anchorEl: event.currentTarget,
-      popoverOpen: true,
-    })
-  }
-
-  handleClosePopover() {
-    this.setState({
-      popoverOpen: false,
-    })
-  }
   handleOpenDialog() {
     this.setState({
       dialogOpen: true
@@ -74,9 +59,9 @@ export class ResponseDropdown extends Component {
   }
 
   handleSelectScript(script) {
-    const { onScriptChange } = this.props
+    const { onScriptChange, onRequestClose } = this.props
     onScriptChange(script)
-    this.handleClosePopover()
+    onRequestClose()
   }
 
   submit() {
@@ -90,7 +75,6 @@ export class ResponseDropdown extends Component {
       } else {
         this.handleCloseDialog()
         onScriptChange(model.text)
-        this.handleClosePopover()
       }
     }
 
@@ -150,22 +134,18 @@ export class ResponseDropdown extends Component {
   }
 
   render() {
-    const { userResponses, campaignResponses } = this.props
+    const { userResponses, campaignResponses, open, onRequestClose, anchorEl } = this.props
     console.log("userResponses.length", userResponses, userResponses.length)
-    const { dialogOpen, popoverOpen, anchorEl } = this.state
+    const { dialogOpen } = this.state
     return (
       <div>
-        <RaisedButton
-          label="Canned responses"
-          onTouchTap={this.handleOpenPopover}
-        />
         <Popover
           style={styles.popover}
-          open={popoverOpen}
+          open={open}
           anchorEl={anchorEl}
           anchorOrigin={{horizontal: 'left', vertical: 'bottom'}}
           targetOrigin={{horizontal: 'left', vertical: 'top'}}
-          onRequestClose={this.handleClosePopover}
+          onRequestClose={onRequestClose}
         >
           <List>
             <Subheader>Suggested responses</Subheader>

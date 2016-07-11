@@ -49,6 +49,7 @@ export class CannedResponseForm extends Component {
       >
         <FormsyText
           name="title"
+          fullWidth
           onChange={this.handleTitleChange}
           autoFocus
           required
