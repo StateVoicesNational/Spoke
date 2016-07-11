@@ -5,7 +5,6 @@ import RaisedButton from 'material-ui/RaisedButton'
 import { ScriptEditor } from './script_editor'
 import { FormsyText, FormsyDate } from 'formsy-material-ui/lib'
 import RadioButtonUnchecked from 'material-ui/svg-icons/toggle/radio-button-unchecked'
-import Dialog from 'material-ui/Dialog'
 import { allScriptFields } from '../../api/scripts/scripts'
 import { muiTheme } from '../../ui/theme'
 import { grey100 } from 'material-ui/styles/colors'
@@ -14,7 +13,7 @@ import DeleteIcon from 'material-ui/svg-icons/action/delete'
 import Divider from 'material-ui/Divider'
 import {CampaignQuestionFormAnswerRow} from './campaign_question_form_answer_row'
 import { getAllParents } from '../local_collections/interaction_steps'
-
+import { ScriptField } from './script_field'
 const styles = {
   icon: {
     width: 18,
@@ -90,8 +89,6 @@ const styles = {
 export class CampaignQuestionForm extends Component {
   constructor(props) {
     super(props)
-    this.handleOpenDialog = this.handleOpenDialog.bind(this)
-    this.handleCloseDialog = this.handleCloseDialog.bind(this)
     this.addAnswer = this.addAnswer.bind(this)
     this.handleSaveScript = this.handleSaveScript.bind(this)
     this.handleDeleteScript = this.handleDeleteScript.bind(this)
@@ -103,17 +100,9 @@ export class CampaignQuestionForm extends Component {
     // TODO can probably simplify these  into one or two methods that send the whole formsy form
 
     this.state = {
-      open: false,
       script: props.interactionStep.script,
       questionIsFocused: false
     }
-  }
-
-  handleOpenDialog() {
-    this.setState({ open: true}, () => this.refs.scriptInput.focus())
-  }
-  handleCloseDialog() {
-    this.setState({ open: false})
   }
 
   addAnswer() {
@@ -141,14 +130,6 @@ export class CampaignQuestionForm extends Component {
 
   handleDeleteScript(answer) {
     this.handleUpdateAnswer(answer._id, {script: null})
-  }
-
-  handleSaveScript() {
-    const script =  this.refs.scriptInput.getValue()
-    const { onEditQuestion, interactionStep } = this.props
-    onEditQuestion(interactionStep._id, { script })
-    this.refs.script.setState({ value: script })
-    this.handleCloseDialog()
   }
 
   renderAnswers(interactionSteps, interactionStep, questionIsFocused) {
@@ -185,38 +166,7 @@ export class CampaignQuestionForm extends Component {
     )
   }
 
-  renderDialog() {
-    const { script, open } = this.state
-    const { customFields, sampleContact, interactionStep } = this.props
-    const scriptFields = allScriptFields(customFields)
 
-    return (
-      <Dialog
-        actions={[
-          <FlatButton
-            label="Cancel"
-            onTouchTap={this.handleCloseDialog}
-          />,
-          <RaisedButton
-            label="Done"
-            onTouchTap={this.handleSaveScript}
-            primary
-          />
-        ]}
-        modal
-        open={open}
-        onRequestClose={this.handleCloseDialog}
-      >
-        <ScriptEditor
-          expandable
-          ref="scriptInput"
-          scriptText={interactionStep.script}
-          sampleContact={sampleContact}
-          scriptFields={scriptFields}
-        />
-      </Dialog>
-    )
-  }
 
   handleFocusQuestion(event) {
     this.setState({ questionIsFocused: true})
@@ -230,7 +180,6 @@ export class CampaignQuestionForm extends Component {
   renderQuestion() {
     const { interactionStep, interactionSteps, campaignStarted } = this.props
     const { questionIsFocused } = this.state
-    console.log("QUESTION IS FOCUSED", questionIsFocused)
     return [
       <FormsyText
         name="interactionStep"
@@ -246,7 +195,6 @@ export class CampaignQuestionForm extends Component {
       />,
 
       interactionStep.question ? this.renderAnswers(interactionSteps, interactionStep, questionIsFocused) : '',
-      this.renderDialog()
     ]
 
   }
@@ -284,9 +232,6 @@ export class CampaignQuestionForm extends Component {
 
     }
 
-    console.log("interactionStep.script", interactionStep.script)
-
-
     return (
       <Card style={styles.interactionStep}>
         <CardHeader
@@ -298,19 +243,17 @@ export class CampaignQuestionForm extends Component {
 
         <CardText style={styles.cardText}>
           <div>
-            <FormsyText
-              name="script"
+            <ScriptField
+              customFields={['hi', 'hi2']}
+              name="text"
               floatingLabelText="Script"
-              onFocus={this.handleOpenDialog}
-              required
-              fullWidth
-              multiLine
-              ref="script"
-              hintText="Hi, {firstName}. It's {texterFirstName} here."
               value={ interactionStep.script }
+              multiLine
+              required
+              hintText="Hi, {firstName}. It's {texterFirstName} here."
+              fullWidth
             />
             {this.renderQuestion() }
-
           </div>
         </CardText>
         <Divider/>

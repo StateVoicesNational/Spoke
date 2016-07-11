@@ -114,7 +114,7 @@ export class CampaignForm extends Component {
   componentDidUpdate(prevProps) {
     // TODO - there seems to be a problem here
     const { campaign, scripts, interactionSteps } = this.props
-    if (prevProps.campaign != campaign) {
+    if (prevProps.campaign !== campaign) {
       this.resetState()
       if (campaign) {
         _.each(scripts, (script) => ScriptCollection.insert(script))

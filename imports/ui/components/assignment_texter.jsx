@@ -135,6 +135,7 @@ export class AssignmentTexter extends Component {
   defaultScript() {
     const { assignment } = this.props
     const contact = this.currentContact()
+    console.log(assignment.campaign().firstStep())
     return (contact && contact.messages().fetch().length === 0) ? assignment.campaign().initialScriptText() : ''
   }
 
@@ -323,7 +324,8 @@ export class AssignmentTexter extends Component {
     const secondaryToolbar = this.renderSurveySection(campaign)
 
     const appliedScript = applyScript(this.state.script, contact, scriptFields)
-
+    console.log(this.defaultScript())
+    console.log("APLLIED SCRIPT", appliedScript)
     const direction = this.state.direction
     return (
       <ReactCSSTransitionGroup
