@@ -12,7 +12,9 @@ const styles = {
   withSidebar: {
     // because drawer is open
     marginLeft: '256px',
-
+  },
+  loading: {
+    height: 500
   }
 }
 
@@ -20,7 +22,7 @@ const styles = {
 export const AppPage = ({ navigation, content, loading, hideSidebar}) => (
   <div style={styles.root}>
     { loading ? (
-      <div className="row center-xs middle-xs">
+      <div style={styles.loading} className="row center-xs middle-xs">
         <CircularProgress />
       </div>
       ) : (

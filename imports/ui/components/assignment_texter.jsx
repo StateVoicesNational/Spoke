@@ -99,7 +99,7 @@ export class AssignmentTexter extends Component {
       currentContactIndex: 0,
       direction: 'right',
       script: '',
-      responsePopoverOpen: true,
+      responsePopoverOpen: false,
     }
 
     this.handleNavigateNext = this.handleNavigateNext.bind(this)
@@ -328,8 +328,8 @@ export class AssignmentTexter extends Component {
     return (
       <ReactCSSTransitionGroup
         transitionName={`slide-${this.state.direction}`}
-        transitionEnterTimeout={500}
-        transitionLeaveTimeout={500}
+        transitionEnterTimeout={400}
+        transitionLeaveTimeout={400}
       >
 
       <div

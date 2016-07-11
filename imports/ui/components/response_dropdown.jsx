@@ -31,7 +31,6 @@ export class ResponseDropdown extends Component {
     this.handleSelectScript = this.handleSelectScript.bind(this)
     this.handleOpenDialog = this.handleOpenDialog.bind(this)
     this.handleCloseDialog = this.handleCloseDialog.bind(this)
-    this.handleCancelDialog = this.handleCancelDialog.bind(this)
     this.handleEditScript = this.handleEditScript.bind(this)
     this.submit = this.submit.bind(this)
     this.state = {
@@ -44,11 +43,6 @@ export class ResponseDropdown extends Component {
     this.setState({
       dialogOpen: true
     })
-  }
-
-  handleCancelDialog() {
-    this.handleCloseDialog()
-    this.handleClosePopover()
   }
 
   handleCloseDialog() {
@@ -106,31 +100,38 @@ export class ResponseDropdown extends Component {
     }, this.handleOpenDialog)
   }
 
-  renderResponses(scripts) {
-    return scripts.map((response) => (
-      <ListItem value={response.text}
-        key={response._id}
-        primaryText={response.title}
-        secondaryText={response.text}
-        onTouchTap={() => this.handleSelectScript(response.text)}
-        rightIconButton={
-          <IconMenu
-            iconButtonElement={<IconButton><MoreVertIcon /></IconButton>}
-            anchorOrigin={{horizontal: 'left', vertical: 'bottom'}}
-            targetOrigin={{horizontal: 'left', vertical: 'bottom'}}
-          >
-            <MenuItem primaryText="Edit"
-              onTouchTap={() => this.handleEditScript(response)}
+  renderScripts(scripts, subheader) {
+    return scripts.length === 0 ? '' : [
+      <Subheader>{subheader}</Subheader>,
+      scripts.map((script) => (
+            <ListItem value={script.text}
+              key={script._id}
+              primaryText={script.title}
+              secondaryText={script.text}
+              onTouchTap={() => this.handleSelectScript(script.text)}
+              rightIconButton={
+                <IconMenu
+                  iconButtonElement={<IconButton><MoreVertIcon /></IconButton>}
+                  anchorOrigin={{horizontal: 'left', vertical: 'bottom'}}
+                  targetOrigin={{horizontal: 'left', vertical: 'bottom'}}
+                >
+                  <MenuItem primaryText="Edit"
+                    onTouchTap={() => this.handleEditScript(script)}
+                  />
+                  {
+                    script.userId ? (
+                      <MenuItem primaryText="Delete"
+                        onTouchTap={() => this.handleDeleteScript(script._id)}
+                      />
+                    ) : ''
+                  }
+                </IconMenu>
+              }
+              onRightIconTouchTap={() => console.log("RIGHT ICON?")}
+              secondaryTextLines={2}
             />
-            <MenuItem primaryText="Delete"
-              onTouchTap={() => this.handleDeleteScript(response._id)}
-            />
-          </IconMenu>
-        }
-        onRightIconTouchTap={() => console.log("RIGHT ICON?")}
-        secondaryTextLines={2}
-      />
-    ))
+          ))
+    ]
   }
 
   render() {
@@ -144,15 +145,13 @@ export class ResponseDropdown extends Component {
           open={open}
           anchorEl={anchorEl}
           anchorOrigin={{horizontal: 'left', vertical: 'bottom'}}
-          targetOrigin={{horizontal: 'left', vertical: 'top'}}
+          targetOrigin={{horizontal: 'left', vertical: 'bottom'}}
           onRequestClose={onRequestClose}
         >
           <List>
-            <Subheader>Suggested responses</Subheader>
-            {this.renderResponses(campaignResponses)}
+            {this.renderScripts(campaignResponses, 'Suggested')}
             <Divider />
-            <Subheader>Your responses</Subheader>
-            {this.renderResponses(userResponses)}
+            {this.renderScripts(userResponses, 'Personal')}
             <Divider />
             <MenuItem
               primaryText="Create new"
@@ -167,7 +166,7 @@ export class ResponseDropdown extends Component {
           actions={[
             <FlatButton
               label="Cancel"
-              onTouchTap={this.handleCancelDialog}
+              onTouchTap={this.handleCloseDialog}
             />,
             <RaisedButton
               label="Save"

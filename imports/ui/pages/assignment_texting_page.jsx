@@ -5,30 +5,24 @@ import { Scripts } from '../../api/scripts/scripts'
 import { CampaignContacts } from '../../api/campaign_contacts/campaign_contacts'
 import { AssignmentTexter } from '../../ui/components/assignment_texter'
 import { FlowRouter } from 'meteor/kadira:flow-router'
-import { ContactFilters, getContactsToText, wrappedGetContactsToText} from '../../api/campaign_contacts/methods'
-import { Fetcher } from 'meteor/msavin:fetcher'
-import { ReactiveVar } from 'meteor/reactive-var'
+import { AppPage } from '../../ui/layouts/app_page'
 
-const styles = {
-  root: {
-    // height: '100%',
-  },
-}
 class _AssignmentTextingPage extends Component {
   render () {
     const { assignment, contacts, loading, organizationId, userResponses, campaignResponses } = this.props
 
-    return loading ? <div>Loading</div> : (
-      <div style={styles.root}>
-          <AssignmentTexter
-            assignment={assignment}
-            contacts={contacts}
-            userResponses={userResponses}
-            campaignResponses={campaignResponses}
-            onStopTexting={() => FlowRouter.go('todos', { organizationId })}
-          />
-      </div>
-    )
+    return  <AppPage
+      loading={loading}
+      content={ loading ? '' :
+        <AssignmentTexter
+          assignment={assignment}
+          contacts={contacts}
+          userResponses={userResponses}
+          campaignResponses={campaignResponses}
+          onStopTexting={() => FlowRouter.go('todos', { organizationId })}
+        />
+      }
+      />
   }
 }
 
