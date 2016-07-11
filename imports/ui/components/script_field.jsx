@@ -65,7 +65,8 @@ export class ScriptField extends Component {
     )
   }
 
-  handleOpenDialog() {
+  handleOpenDialog(event) {
+    event.preventDefault()
     this.setState({
       open: true
     }, () => this.refs.dialogScriptInput.focus())

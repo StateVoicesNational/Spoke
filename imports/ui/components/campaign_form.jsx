@@ -64,23 +64,6 @@ export class CampaignForm extends Component {
     this.handleScriptAdd = this.handleScriptAdd.bind(this)
     this.handleChange = this.handleChange.bind(this)
     this.resetState()
-  }
-
-  resetState() {
-    const { campaign, texters, assignedTexters, scripts, interactionSteps } = this.props
-
-    this.state = {
-      stepIndex: 0,
-      title: campaign ? campaign.title : '',
-      description: campaign ? campaign.description : '',
-      dueBy: campaign ? campaign.dueBy : null,
-      customFields: campaign ? campaign.customFields : [],
-      contacts: [],
-      assignedTexters: assignedTexters || [],
-      scripts: scripts || [],
-      interactionSteps: interactionSteps || [],
-      submitting: false,
-    }
 
     this.sections = [
       {
@@ -106,28 +89,51 @@ export class CampaignForm extends Component {
     ]
   }
 
+  resetState() {
+    const { campaign, texters, assignedTexters, scripts, interactionSteps } = this.props
+
+    console.log("RESET STATE INTERACTION STEPS", interactionSteps)
+    this.state = {
+      stepIndex: 0,
+      title: campaign ? campaign.title : '',
+      description: campaign ? campaign.description : '',
+      dueBy: campaign ? campaign.dueBy : null,
+      customFields: campaign ? campaign.customFields : [],
+      contacts: [],
+      assignedTexters: assignedTexters || [],
+      scripts: scripts || [],
+      interactionSteps: interactionSteps || [],
+      submitting: false,
+    }
+
+    console.log("campaign", campaign)
+    if (campaign) {
+      _.each(scripts, (script) => ScriptCollection.insert(script))
+      _.each(interactionSteps, (step) => InteractionStepCollection.insert(step))
+    } else {
+      console.log("got here!?")
+      const step = {
+        allowedAnswers: [newAllowedAnswer('')],
+        isTopLevel: true
+      }
+      InteractionStepCollection.insert(step)
+    }
+  }
+
   componentWillMount() {
     // workaround for https://github.com/meteor/react-packages/issues/99
     setTimeout(this.startComputation.bind(this), 0)
   }
 
   componentDidUpdate(prevProps) {
-    // TODO - there seems to be a problem here
-    const { campaign, scripts, interactionSteps } = this.props
-    if (prevProps.campaign !== campaign) {
+    console.log("prev props", this.props, prevProps)
+    if (prevProps !== this.props) {
+      const { campaign, scripts, interactionSteps } = this.props
       this.resetState()
-      if (campaign) {
-        _.each(scripts, (script) => ScriptCollection.insert(script))
-        _.each(interactionSteps, (step) => InteractionStepCollection.insert(step))
-      } else {
-        const step = {
-          allowedAnswers: [newAllowedAnswer('')],
-          isTopLevel: true
-        }
-        InteractionStepCollection.insert(step)
-      }
     }
+
   }
+
   componentWillUnmount() {
     this._computation.stop()
   }

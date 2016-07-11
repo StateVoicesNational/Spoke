@@ -3,17 +3,13 @@ import RaisedButton from 'material-ui/RaisedButton'
 import FlatButton from 'material-ui/FlatButton'
 import IconButton from 'material-ui/IconButton'
 import { ScriptEditor } from './script_editor'
-
 import Formsy from 'formsy-react'
 import { FormsyText, FormsySelect } from 'formsy-material-ui/lib'
 import RadioButtonUnchecked from 'material-ui/svg-icons/toggle/radio-button-unchecked'
 import IconMenu from 'material-ui/IconMenu'
 import MenuItem from 'material-ui/MenuItem'
-import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert'
-
 import ContentClear from 'material-ui/svg-icons/content/clear'
 import Dialog from 'material-ui/Dialog'
-import { InteractionSteps } from '../../api/interaction_steps/interaction_steps'
 import { getAllParents, InteractionStepCollection } from '../local_collections/interaction_steps'
 import { allScriptFields } from '../../api/scripts/scripts'
 import { muiTheme } from '../../ui/theme'
@@ -99,7 +95,7 @@ export class CampaignQuestionFormAnswerRow extends Component {
 
     const addNextQuestionButton = (
       <RaisedButton
-        label="Go to new step"
+        label="Link to next step"
         onTouchTap={() => onAddQuestion({parentStepId: interactionStep._id, parentAnswerId: answer._id })}
       />
     )

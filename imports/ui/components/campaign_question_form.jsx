@@ -90,7 +90,6 @@ export class CampaignQuestionForm extends Component {
   constructor(props) {
     super(props)
     this.addAnswer = this.addAnswer.bind(this)
-    this.handleSaveScript = this.handleSaveScript.bind(this)
     this.handleDeleteScript = this.handleDeleteScript.bind(this)
     this.handleDeleteQuestion = this.handleDeleteQuestion.bind(this)
     this.handleQuestionChange = this.handleQuestionChange.bind(this)
@@ -190,7 +189,7 @@ export class CampaignQuestionForm extends Component {
         fullWidth
         disabled={campaignStarted}
         ref="interactionStepInput"
-        hintText="E.g. Can the contact attend the event?"
+        hintText="A question for texters to answer. E.g. Can this person attend the event?"
         value={ interactionStep.question }
       />,
 
@@ -250,7 +249,7 @@ export class CampaignQuestionForm extends Component {
               value={ interactionStep.script }
               multiLine
               required
-              hintText="Hi, {firstName}. It's {texterFirstName} here."
+              hintText="This is what your texters will send to your contacts. E.g. Hi, {firstName}. It's {texterFirstName} here."
               fullWidth
             />
             {this.renderQuestion() }
