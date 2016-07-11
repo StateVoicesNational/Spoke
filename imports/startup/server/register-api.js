@@ -24,3 +24,6 @@ import '../../api/users/server/account-creation.js'
 import '../../api/opt_outs/methods.js'
 import '../../api/opt_outs/server/publications.js'
 
+
+import '../../api/scripts/methods.js'
+

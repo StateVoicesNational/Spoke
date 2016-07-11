@@ -42,7 +42,8 @@ Scripts.schema = new SimpleSchema({
       ScriptTypes.REPEAT,
       ScriptTypes.FAQ
     ]
-  }
+  },
+  createdAt: { type: Date }
 })
 
 // Scripts.attachSchema(Scripts.schema)

@@ -275,16 +275,17 @@ export class AssignmentTexter extends Component {
     }
 
     const campaign = assignment.campaign()
+    const campaignId = campaign._id
     const scriptFields = campaign.scriptFields()
-    const faqScripts = Scripts.find( { $or: [
-      {campaignId: campaign._id,  userId: null },
-      { campaignId: campaign._id,  userId: Meteor.userId() }
-    ] })
+    const campaignResponses = Scripts.find( { campaignId, userId: null })
+    const userResponses = Scripts.find( { campaignId, userId: Meteor.userId() })
     //TODO - do we really want to grab all messages at once here? should I actually be doing a collection serach
     const leftToolbarChildren = [
       <ToolbarSeparator />,
       <ResponseDropdown
-        responses={faqScripts}
+        campaignResponses={campaignResponses}
+        userResponses={userResponses}
+        campaignId={campaign._id}
         onScriptChange={this.handleScriptChange}
       />
     ]
