@@ -59,7 +59,6 @@ Campaigns.helpers({
   },
   initialScriptText() {
     const firstStep = this.firstStep()
-    console.log("first step", firstStep)
     return firstStep ? firstStep.script : null
   },
   faqScripts() {

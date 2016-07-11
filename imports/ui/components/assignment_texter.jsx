@@ -328,8 +328,8 @@ export class AssignmentTexter extends Component {
     return (
       <ReactCSSTransitionGroup
         transitionName={`slide-${this.state.direction}`}
-        transitionEnterTimeout={400}
-        transitionLeaveTimeout={400}
+        transitionEnterTimeout={0}
+        transitionLeaveTimeout={0}
       >
 
       <div

@@ -81,7 +81,6 @@ export class ResponseDropdown extends Component {
   }
 
   handleDeleteScript(scriptId) {
-    console.log("HANDLE DELETE", scriptId)
     remove.call({ scriptId }, (err) => {
       if (err) {
         alert(err)
@@ -127,7 +126,6 @@ export class ResponseDropdown extends Component {
                   }
                 </IconMenu>
               }
-              onRightIconTouchTap={() => console.log("RIGHT ICON?")}
               secondaryTextLines={2}
             />
           ))
@@ -136,7 +134,6 @@ export class ResponseDropdown extends Component {
 
   render() {
     const { userResponses, campaignResponses, open, onRequestClose, anchorEl } = this.props
-    console.log("userResponses.length", userResponses, userResponses.length)
     const { dialogOpen } = this.state
     return (
       <div>

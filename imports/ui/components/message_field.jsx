@@ -20,7 +20,6 @@ export class MessageField extends Component {
 
   componentWillReceiveProps(props) {
     const inputValue = props.initialScript
-    console.log("inputValue", inputValue, props.initialScript, props)
     this.setState({ inputValue })
   }
 

@@ -25,7 +25,6 @@ export class MessagesList extends Component {
     const { messages, contact } = this.props
     const optOut = contact.optOut()
 
-    console.log("MESSAGES", messages)
     const optOutItem = optOut ? (
       <div>
         <Divider />

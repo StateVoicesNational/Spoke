@@ -12,7 +12,6 @@ import { grey200 } from 'material-ui/styles/colors'
 const getAllChildren = (parentStep) => {
   let allChildren  = []
 
-  console.log("PARENT STEP", parentStep)
 
   const getChildren = (step) => {
     let children = step.allowedAnswers.map((allowedAnswer) => InteractionSteps.findOne(allowedAnswer.interactionStepId))
@@ -39,7 +38,6 @@ export class AssignmentTexterSurveys extends Component {
     this.handleNext = this.handleNext.bind(this)
     this.handlePrevious = this.handlePrevious.bind(this)
     // TODO this should actually happen only when the contact changes
-    console.log("this.getAnswersState", this.getAnswersState())
     this.state = this.getAnswersState()
   }
 
@@ -94,7 +92,6 @@ export class AssignmentTexterSurveys extends Component {
   }
 
   answers() {
-    console.log("this.state.answers", this.state.answers)
     return this.state.answers
   }
 
@@ -118,7 +115,6 @@ export class AssignmentTexterSurveys extends Component {
     const { answers } = this.state
     const steps = this.steps()
 
-    console.log("steps", steps)
     return (
       <div style={styles.root}>
         { _.map(steps, (step, index) => (

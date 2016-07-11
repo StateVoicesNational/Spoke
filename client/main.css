@@ -21,7 +21,7 @@ body {
 .slide-right-enter.slide-right-enter-active {
   opacity: 0.3;
   transform: translate(0%);
-  transition: transform 500ms ease-in-out;
+  transition: transform 300ms ease-in-out;
 }
 .slide-right-leave {
   opacity: 0.3;
@@ -30,7 +30,7 @@ body {
 .slide-right-leave.slide-right-leave-active {
   opacity: 0.3;
   transform: translate(-100%);
-  transition: transform 500ms ease-in-out;
+  transition: transform 300ms ease-in-out;
 }
 
 .slide-left-enter {
@@ -40,7 +40,7 @@ body {
 .slide-left-enter.slide-left-enter-active {
   opacity: 0.3;
   transform: translate(0%);
-  transition: transform 500ms ease-in-out;
+  transition: transform 300ms ease-in-out;
 }
 .slide-left-leave {
   opacity: 0.3;
@@ -49,7 +49,7 @@ body {
 .slide-left-leave.slide-left-leave-active {
   opacity: 0.3;
   transform: translate(100%);
-  transition: transform 500ms ease-in-out;
+  transition: transform 300ms ease-in-out;
 }
 
 /*

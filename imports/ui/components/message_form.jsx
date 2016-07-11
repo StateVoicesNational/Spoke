@@ -50,10 +50,8 @@ export class MessageForm extends Component {
     const { campaignContact, onSendMessage } = this.props
     markMessageNeedsNoResponse.call( { campaignContactId: campaignContact._id}, (err) => {
       if (err) {
-        console.log("ERROR", err)
         alert(err)
       } else {
-        console.log("FINISHED!")
         onSendMessage()
       }
     })
@@ -113,7 +111,6 @@ export class MessageForm extends Component {
 
   handleMessageFieldKeyDown(event) {
     if ((event.keyCode == 10 || event.keyCode == 13) && event.metaKey) {
-      console.log(this.handleSendMessage, this)
       this.handleSendMessage()
     }
   }
