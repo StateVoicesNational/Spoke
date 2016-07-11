@@ -92,7 +92,6 @@ export class CampaignForm extends Component {
   resetState() {
     const { campaign, texters, assignedTexters, scripts, interactionSteps } = this.props
 
-    console.log("RESET STATE INTERACTION STEPS", interactionSteps)
     this.state = {
       stepIndex: 0,
       title: campaign ? campaign.title : '',
@@ -106,6 +105,8 @@ export class CampaignForm extends Component {
       submitting: false,
     }
 
+    ScriptCollection.remove({})
+    InteractionStepCollection.remove({})
     console.log("campaign", campaign)
     if (campaign) {
       _.each(scripts, (script) => ScriptCollection.insert(script))
@@ -317,7 +318,6 @@ export class CampaignForm extends Component {
         console.log("error createing campaign")
         alert(err)
       } else {
-        ScriptCollection.remove({})
         this.resetState()
         FlowRouter.go('campaigns', { organizationId })
       }
