@@ -1,4 +1,5 @@
 import React,  { Component } from 'react'
+import ReactDOM from 'react-dom'
 import RaisedButton from 'material-ui/RaisedButton'
 import { CampaignQuestionForm } from './campaign_question_form'
 import { CampaignFormSectionHeading } from './campaign_form_section_heading'
@@ -13,17 +14,31 @@ export class CampaignSurveyForm extends Component {
   constructor(props) {
     super(props)
     this.handleClickStepLink = this.handleClickStepLink.bind(this)
+    this.handleAddQuestion = this.handleAddQuestion.bind(this)
   }
   handleClickStepLink(interactionStepId) {
-    const node = React.findDOMNode(this.refs[interactionStepId])
-    console.log("handleClickStepLink", this, node)
-
-    node.scrollTop = node.offset().top
-()
+    this.scrollToStep(interactionStepId)
   }
 
+  scrollToStep(interactionStepId) {
+    const node = ReactDOM.findDOMNode(this.refs[interactionStepId])
+    node.scrollIntoView()
+  }
+
+  handleAddQuestion(step) {
+    const {  onAddQuestion } = this.props
+    onAddQuestion(step)
+    this.scrollStepId = step.newStepId
+  }
+
+  componentDidUpdate() {
+    if (this.scrollStepId) {
+      this.scrollToStep(this.scrollStepId)
+      this.scrollStepId = null
+    }
+  }
   render() {
-    const { interactionSteps, onValid, onInvalid, onAddSurveyAnswer, onDeleteQuestion, onEditQuestion, onAddQuestion, customFields, sampleContact, campaign} = this.props
+    const { interactionSteps, onValid, onInvalid, onAddSurveyAnswer, onDeleteQuestion, onEditQuestion,  customFields, sampleContact, campaign} = this.props
 
     const campaignStarted = campaign && campaign.hasMessage()
 
@@ -54,7 +69,7 @@ export class CampaignSurveyForm extends Component {
             onEditQuestion={onEditQuestion}
             onDeleteQuestion={onDeleteQuestion}
             onClickStepLink={this.handleClickStepLink}
-            onAddQuestion={onAddQuestion}
+            onAddQuestion={this.handleAddQuestion}
             customFields={customFields}
             sampleContact={sampleContact}
             campaignStarted={campaignStarted}

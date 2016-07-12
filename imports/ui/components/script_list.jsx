@@ -81,7 +81,7 @@ export class ScriptList extends Component {
     const listItems = scripts.map((script) => (
       <ListItem
         value={script.text}
-        onItemTouchTap={onItemTouchTap}
+        onTouchTap={onItemTouchTap}
         key={script._id}
         primaryText={script.title}
         secondaryText={script.text}

@@ -73,7 +73,6 @@ export class ScriptField extends Component {
   handleOpenDialog(event) {
     event.stopPropagation()
     event.preventDefault()
-    debugger
     this.setState({
       open: true
     }, () => this.refs.dialogScriptInput.focus())
@@ -92,7 +91,6 @@ export class ScriptField extends Component {
           ref="input"
           onFocus={this.handleOpenDialog}
           onTouchTap={(event) => {
-            console.log("event.preventDefault")
             event.stopPropagation()
         }}
           {...this.props}

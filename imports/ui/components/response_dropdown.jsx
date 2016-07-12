@@ -46,8 +46,9 @@ export class ResponseDropdown extends Component {
   }
 
   handleSelectScript(script) {
+    console.log("handel touch top")
     const { onScriptChange, onRequestClose } = this.props
-    onScriptChange(script)
+    onScriptChange(script.text)
     onRequestClose()
   }
 

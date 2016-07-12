@@ -197,13 +197,15 @@ export class CampaignForm extends Component {
     })
   }
 
-  handleAddInteractionStep({ parentStepId, parentAnswerId }) {
+  handleAddInteractionStep({ newStepId, parentStepId, parentAnswerId }) {
     console.log("adding interaction step?")
     const step = {
       allowedAnswers: [newAllowedAnswer('')],
-      isTopLevel: false
+      isTopLevel: false,
+      _id: newStepId
     }
-    const newStepId = InteractionStepCollection.insert(step)
+
+    InteractionStepCollection.insert(step)
     // console.log("all steps", InteractionStepCollection.find({}).fetch())
     InteractionStepCollection.update({
       _id: parentStepId,

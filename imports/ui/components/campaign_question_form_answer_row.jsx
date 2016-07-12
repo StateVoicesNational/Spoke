@@ -2,27 +2,13 @@ import React, { Component } from 'react'
 import RaisedButton from 'material-ui/RaisedButton'
 import FlatButton from 'material-ui/FlatButton'
 import IconButton from 'material-ui/IconButton'
-import { ScriptEditor } from './script_editor'
-import Formsy from 'formsy-react'
-import { FormsyText, FormsySelect } from 'formsy-material-ui/lib'
+import { FormsyText } from 'formsy-material-ui/lib'
 import RadioButtonUnchecked from 'material-ui/svg-icons/toggle/radio-button-unchecked'
-import IconMenu from 'material-ui/IconMenu'
-import MenuItem from 'material-ui/MenuItem'
 import ContentClear from 'material-ui/svg-icons/content/clear'
-import Dialog from 'material-ui/Dialog'
-import { getAllParents, InteractionStepCollection } from '../local_collections/interaction_steps'
-import { allScriptFields } from '../../api/scripts/scripts'
-import { muiTheme } from '../../ui/theme'
-import { grey400, grey100 } from 'material-ui/styles/colors'
-import { Toolbar, ToolbarGroup, ToolbarTitle, ToolbarSeparator } from 'material-ui/Toolbar'
-import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
-import DeleteIcon from 'material-ui/svg-icons/action/delete'
 import ForwardIcon from 'material-ui/svg-icons/navigation/arrow-forward'
-import BackIcon from 'material-ui/svg-icons/navigation/arrow-back'
-import EditIcon from 'material-ui/svg-icons/image/edit'
-import Divider from 'material-ui/Divider'
-import Subheader from 'material-ui/Subheader'
-import SelectField from 'material-ui/SelectField'
+import { Random } from 'meteor/random'
+import { InteractionStepCollection } from '../local_collections/interaction_steps'
+
 const QuestionLink = ({ text, interactionStep, onClickStepLink }) => (
   <FlatButton
     label={interactionStep.question ? `Next step: ${interactionStep.question}` : 'Next Step'}
@@ -96,7 +82,7 @@ export class CampaignQuestionFormAnswerRow extends Component {
     const addNextQuestionButton = (
       <RaisedButton
         label="Link to next step"
-        onTouchTap={() => onAddQuestion({parentStepId: interactionStep._id, parentAnswerId: answer._id })}
+        onTouchTap={() => onAddQuestion({newStepId: Random.id(), parentStepId: interactionStep._id, parentAnswerId: answer._id })}
       />
     )
 
