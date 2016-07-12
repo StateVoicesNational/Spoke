@@ -47,7 +47,7 @@ export class CampaignSurveyForm extends Component {
       subtitle = "Once messages have been sent to contacts in this campaign, you can't edit the questions or answers, but you can still edit scripts if you need."
     }
     else {
-      subtitle = 'You can add  scripts and questions and your texters can indicate responses from your contacts. For example, you might want to collect RSVPs to an event or find out whether to follow up about a different volunteer activity.'
+      subtitle = 'You can add scripts and questions and your texters can indicate responses from your contacts. For example, you might want to collect RSVPs to an event or find out whether to follow up about a different volunteer activity.'
     }
 
     return (
@@ -75,15 +75,6 @@ export class CampaignSurveyForm extends Component {
             campaignStarted={campaignStarted}
           />
         ))}
-        {
-          interactionSteps.length === 0 ? (
-            <RaisedButton
-              style={styles.questionButton}
-              label="Add question"
-              onTouchTap={onAddQuestion}
-            />
-          ) : ''
-        }
       </Formsy.Form>
     )
   }
