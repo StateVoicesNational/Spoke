@@ -12,7 +12,7 @@ export default createContainer(({organizationId}) => {
   // UTC
   today = new Date(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate())
 
-  let campaigns = Campaigns.find({ organizationId }, { sort: { dueBy: -1}}).fetch()
+  let campaigns = Campaigns.find({ organizationId }, { sort: { dueBy: 1}}).fetch()
   // campaigns = _.groupBy(campaigns, (campaign) => moment(campaign.dueBy).diff(moment(today)))
 
   return {
