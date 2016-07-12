@@ -59,6 +59,7 @@ export class CampaignScriptsForm extends Component {
             subtitle="Save some scripts for your texters to use to answer additional FAQs that may come up outside of the survey questions and scripts you already set up."
           />
             <ScriptList
+              customFields={customFields}
               scripts={scripts}
               showAddScriptButton
               duplicateCampaignResponses={false}

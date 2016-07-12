@@ -39,7 +39,7 @@ export class CannedResponseForm extends Component {
 
   render() {
 
-    const { onValid, onInvalid } = this.props
+    const { onValid, onInvalid, customFields } = this.props
     const { text, title } = this.state
     return (
       <Formsy.Form
@@ -57,7 +57,7 @@ export class CannedResponseForm extends Component {
           value={title}
         />
         <ScriptField
-          customFields={['hi', 'hi2']}
+          customFields={customFields}
           name="text"
           floatingLabelText="Script"
           value={text}

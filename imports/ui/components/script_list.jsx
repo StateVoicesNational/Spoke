@@ -76,7 +76,7 @@ export class ScriptList extends Component {
   }
 
   render() {
-    const { subheader, scripts, onSelectScript, duplicateCampaignResponses, showAddScriptButton } = this.props
+    const { subheader, scripts, onSelectScript, duplicateCampaignResponses, showAddScriptButton, customFields } = this.props
     const { dialogOpen } = this.state
 
     const listItems = scripts.map((script) => (
@@ -148,6 +148,7 @@ export class ScriptList extends Component {
         >
           <CannedResponseForm
             ref="form"
+            customFields={customFields}
             script={this.state.script}
             onValid={() => this.setState( { doneButtonEnabled: true })}
             onInvalid={() => this.setState( { doneButtonEnabled: false })}
