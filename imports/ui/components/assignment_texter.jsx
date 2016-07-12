@@ -106,6 +106,7 @@ export class AssignmentTexter extends Component {
     this.handleNavigatePrevious = this.handleNavigatePrevious.bind(this)
     this.handleOpenPopover = this.handleOpenPopover.bind(this)
     this.handleClosePopover = this.handleClosePopover.bind(this)
+    this.handleExitTexter = this.handleExitTexter.bind(this)
     this.onSendMessage = this.onSendMessage.bind(this)
     this.handleScriptChange = this.handleScriptChange.bind(this)
 
@@ -152,20 +153,40 @@ export class AssignmentTexter extends Component {
     return this.state.currentContactIndex < this.contactCount() - 1
   }
 
-  handleNavigateNext() {
-    this.setState({ direction: 'right'}, () => {
-      if (this.hasNext()) {
-        this.incrementCurrentContactIndex(1)
-      }
-      else {
-        const { onStopTexting } = this.props
-        onStopTexting()
+  handleSaveSurvey(onSaveSurvey) {
+    const contact = this.currentContact()
+    updateAnswers.call({
+      answers: this.refs.surveySection.answers(),
+      campaignContactId: contact._id,
+      campaignId: contact.campaignId
+    }, (err) => {
+      if (err) {
+        alert(err)
+      } else {
+        onSaveSurvey()
       }
     })
   }
 
+  handleNavigateNext() {
+    this.handleSaveSurvey(() => {
+      this.setState({ direction: 'right'}, () => {
+        if (this.hasNext()) {
+          this.incrementCurrentContactIndex(1)
+        }
+        else {
+          const { onStopTexting } = this.props
+          onStopTexting()
+        }
+      })
+    })
+
+  }
+
   handleNavigatePrevious() {
-    this.setState({ direction: 'left'}, () => this.incrementCurrentContactIndex(-1))
+    this.handleSaveSurvey(() => {
+      this.setState({ direction: 'left'}, () => this.incrementCurrentContactIndex(-1))
+    })
   }
 
   setSuggestedScript(script)
@@ -190,18 +211,7 @@ export class AssignmentTexter extends Component {
     })
   }
   onSendMessage() {
-    const contact = this.currentContact()
-    updateAnswers.call({
-      answers: this.refs.surveySection.answers(),
-      campaignContactId: contact._id,
-      campaignId: contact.campaignId
-    }, (err) => {
-      if (err) {
-        alert(err)
-      } else {
-        this.handleNavigateNext()
-      }
-    })
+    this.handleNavigateNext()
   }
 
   handleOptOut() {
@@ -259,6 +269,11 @@ export class AssignmentTexter extends Component {
 
   openOptOutDialog() {
     this.setState({open: true})
+  }
+
+  handleExitTexter() {
+    const {onStopTexting} = this.props
+    this.handleSaveSurvey(onStopTexting)
   }
 
   renderSurveySection(campaign) {
@@ -343,7 +358,7 @@ export class AssignmentTexter extends Component {
             onOptOut={this.handleNavigateNext}
             rightToolbarIcon={(
               <IconButton
-                onTouchTap={onStopTexting}
+                onTouchTap={this.handleExitTexter}
                 style={styles.toolbarIconButton}
               >
                 <NavigateCloseIcon />

@@ -8,7 +8,7 @@ import IconButton from 'material-ui/IconButton'
 import FlatButton from 'material-ui/FlatButton'
 import NavigateBeforeIcon from 'material-ui/svg-icons/image/navigate-before'
 import NavigateNextIcon from 'material-ui/svg-icons/image/navigate-next'
-import { grey100 } from 'material-ui/styles/colors'
+import { grey50 } from 'material-ui/styles/colors'
 import {Card, CardActions, CardHeader, CardText} from 'material-ui/Card';
 
 const getAllChildren = (parentStep) => {
@@ -30,8 +30,16 @@ const getAllChildren = (parentStep) => {
 
 const styles = {
   root: {
-    // padding: '0px 20px',
-    backgroundColor: grey100
+  },
+  card: {
+    backgroundColor: grey50,
+    padding: 20
+  },
+  cardHeader: {
+    padding: 0
+  },
+  cardText: {
+    padding: 0
   }
 }
 export class AssignmentTexterSurveys extends Component {
@@ -84,6 +92,9 @@ export class AssignmentTexterSurveys extends Component {
       }
     }
 
+    if (steps.length > 0 && !currentStep) {
+      currentStep = steps[steps.length - 1]
+    }
     return {
       steps,
       currentStep
@@ -111,14 +122,18 @@ export class AssignmentTexterSurveys extends Component {
   handleExpandChange(newExpandedState) {
     this.setState( { showAllQuestions: newExpandedState })
   }
+
   handleSurveyAnswerChange(interactionStepId, answer, script) {
     const { contact, onScriptChange } = this.props
 
     onScriptChange(script)
 
     const answers = this.state.answers
-    answers[interactionStepId] = answer
-
+    if (answer)
+      answers[interactionStepId] = answer
+    else {
+      delete answers[interactionStepId]
+    }
 
     const step = InteractionSteps.findOne(interactionStepId)
     const children = getAllChildren(step)
@@ -126,12 +141,12 @@ export class AssignmentTexterSurveys extends Component {
     this.setState( { answers })
   }
 
-  renderStep(step) {
+  renderStep(step, isCurrentStep) {
     const { answers } = this.state
 
     return (
       <QuestionDropdown
-        isCurrentStep={false}
+        isCurrentStep={isCurrentStep}
         answerValue={answers[step._id]}
         onAnswerChange={this.handleSurveyAnswerChange.bind(this)}
         step={step}
@@ -144,21 +159,29 @@ export class AssignmentTexterSurveys extends Component {
     const otherSteps = steps.filter((step) => step._id !== currentStep._id)
     const { showAllQuestions } = this.state
     return (
-      <div style={styles.root}>
-        <Card
-          onExpandChange={this.handleExpandChange}
+      <Card
+        style={styles.card}
+        onExpandChange={this.handleExpandChange}
+      >
+        <CardHeader
+          style={styles.cardHeader}
+          title={showAllQuestions ? 'All questions' : 'Current question'}
+          showExpandableButton={true}
+        />
+        <CardText
+          style={styles.cardText}
         >
-          <CardHeader
-            title={showAllQuestions ? 'All survey questions' : 'Current survey question'}
-            showExpandableButton={otherSteps.length > 0}
-          >
-            {showAllQuestions ? '' : this.renderStep(currentStep)}
-          </CardHeader>
-          <CardText expandable={true}>
-            {_.map(showAllQuestions ? steps : otherSteps, (step, index) => this.renderStep(step))}
-          </CardText>
-        </Card>
-      </div>
+          {showAllQuestions ? '' : this.renderStep(currentStep, true)}
+        </CardText>
+        <CardText
+          style={styles.cardText}
+          expandable={true}
+        >
+          {_.map(steps, (step) => (
+            this.renderStep(step, step._id === currentStep._id)
+          ))}
+        </CardText>
+      </Card>
     )
   }
 }
