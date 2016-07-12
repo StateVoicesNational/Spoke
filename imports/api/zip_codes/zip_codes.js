@@ -14,8 +14,8 @@ ZipCodes.schema = new SimpleSchema({
   zip: { type: String },
   city: { type: String },
   state: { type: String },
-  latitude: { type: Number },
-  longitude: { type: Number },
+  latitude: { type: Number, decimal: true },
+  longitude: { type: Number, decimal: true },
   timezoneOffset: { type: Number },
   hasDst: { type: Boolean}
 })

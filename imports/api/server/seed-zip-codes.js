@@ -17,7 +17,18 @@ export const seedZipCodes = () => {
         latitude: Number(row.latitude),
         longitude: Number(row.longitude)
       }))
-      ZipCodes.batchInsert(zipCodes)
+      _.each(zipCodes, (zipCode) =>  {
+        try {
+          ZipCodes.insert(zipCode)
+        } catch (ex) {
+          console.log("Failed to insert", zipCode)
+        }
+
+      })
+
+      // This is throwing an error when deployed for some reason
+      // "MongoError: Invalid Operation, No operations in bulk"
+      // ZipCodes.batchInsert(zipCodes)
     }
   }
 }
