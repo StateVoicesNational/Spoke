@@ -1,6 +1,5 @@
 import { ZipCodes } from '../zip_codes/zip_codes.js'
 import Baby from 'babyparse'
-import { batchInsert } from 'meteor/mikowals:batch-insert'
 
 export const seedZipCodes = () => {
   if (!ZipCodes.findOne()) {
