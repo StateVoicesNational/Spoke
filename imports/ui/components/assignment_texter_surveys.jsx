@@ -156,9 +156,9 @@ export class AssignmentTexterSurveys extends Component {
   render() {
     const { steps, currentStep } = this.steps()
 
-    const otherSteps = steps.filter((step) => step._id !== currentStep._id)
+    console.log(steps)
     const { showAllQuestions } = this.state
-    return (
+    return steps.length === 0 || (steps.length === 1 && !currentStep.question) ? null : (
       <Card
         style={styles.card}
         onExpandChange={this.handleExpandChange}

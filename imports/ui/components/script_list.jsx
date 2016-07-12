@@ -41,8 +41,9 @@ export class ScriptList extends Component {
   }
 
   handleEditScript(response) {
+    const { duplicateCampaignResponses } = this.props
     const script = response
-    if (!response.userId) {
+    if (!response.userId && duplicateCampaignResponses) {
       delete script['_id']
     }
 
@@ -75,13 +76,13 @@ export class ScriptList extends Component {
   }
 
   render() {
-    const { subheader, scripts, onItemTouchTap } = this.props
+    const { subheader, scripts, onSelectScript, duplicateCampaignResponses, showAddScriptButton } = this.props
     const { dialogOpen } = this.state
 
     const listItems = scripts.map((script) => (
       <ListItem
         value={script.text}
-        onTouchTap={onItemTouchTap}
+        onTouchTap={() => onSelectScript(script)}
         key={script._id}
         primaryText={script.title}
         secondaryText={script.text}
@@ -91,7 +92,7 @@ export class ScriptList extends Component {
             anchorOrigin={{horizontal: 'left', vertical: 'bottom'}}
             targetOrigin={{horizontal: 'left', vertical: 'bottom'}}
           >
-            <MenuItem primaryText="Edit"
+            <MenuItem primaryText={duplicateCampaignResponses && !script.userId ? "Duplicate and edit" : "Edit"}
               onTouchTap={() => this.handleEditScript(script)}
             />
             {
@@ -119,11 +120,14 @@ export class ScriptList extends Component {
     return (
       <div>
         { list }
-        <RaisedButton
-          label="Add new canned response"
-          icon={ <CreateIcon />}
-          onTouchTap={this.handleOpenDialog}
-        />
+        { showAddScriptButton ? (
+          <FlatButton
+            secondary
+            label="Add new canned response"
+            icon={ <CreateIcon />}
+            onTouchTap={this.handleOpenDialog}
+          />
+        ) : ''}
         <Dialog
           style={styles.dialog}
           open={dialogOpen}

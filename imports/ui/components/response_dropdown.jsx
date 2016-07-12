@@ -26,38 +26,40 @@ export class ResponseDropdown extends Component {
     }
   }
 
-  submit(script, model) {
+  submit(script, model, callback) {
     const { campaignId, onScriptChange } = this.props
 
-    const callback = (err) => {
+    const newCallback = (err) => {
       if (err) {
         alert(err)
       } else {
-        this.handleCloseDialog()
         onScriptChange(model.text)
+        callback()
       }
     }
 
     if (script && script._id) {
-      update.call(_.extend(model, { scriptId: script._id }), callback)
+      update.call(_.extend(model, { scriptId: script._id }), newCallback)
     } else {
-      insert.call(_.extend(model, { campaignId }), callback)
+      insert.call(_.extend(model, { campaignId }), newCallback)
     }
   }
 
   handleSelectScript(script) {
-    console.log("handel touch top")
+    console.log("handel touch top", script)
     const { onScriptChange, onRequestClose } = this.props
     onScriptChange(script.text)
     onRequestClose()
   }
 
-  renderScripts(scripts, subheader) {
+  renderScripts({ scripts, subheader, showAddScriptButton }) {
     return (
       <ScriptList
         scripts={scripts}
+        showAddScriptButton={showAddScriptButton}
+        duplicateCampaignResponses
         subheader={subheader}
-        onItemTouchTap={this.handleSelectScript}
+        onSelectScript={this.handleSelectScript}
         onSaveScript={this.submit}
       />
     )
@@ -77,8 +79,8 @@ export class ResponseDropdown extends Component {
           onRequestClose={onRequestClose}
         >
           <List>
-            {this.renderScripts(campaignResponses, 'Suggested')}
-            {this.renderScripts(userResponses, 'Personal')}
+            {this.renderScripts({scripts: campaignResponses, subheader: 'Suggested', showAddScriptButton: false})}
+            {this.renderScripts({scripts: userResponses, subheader: 'Personal', showAddScriptButton: true})}
           </List>
         </Popover>
       </div>

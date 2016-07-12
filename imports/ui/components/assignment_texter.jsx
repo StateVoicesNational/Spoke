@@ -70,27 +70,6 @@ const styles = {
   }
 }
 
-// html, body {
-//   height:100%;
-//   min-height:100%;
-//   overflow: hidden;
-// }
-
-// body {
-//   display: flex;
-//   flex-direction: column;
-// }
-
-// .StickyHeader, .StickyFooter {
-//   flex: 0 0 auto;
-//   background: red;
-// }
-
-// .StickyContent {
-//   flex: 1 1 auto;
-//   overflow-y: scroll;
-//   background: green;
-// }
 export class AssignmentTexter extends Component {
   constructor(props) {
     super(props)
@@ -192,6 +171,11 @@ export class AssignmentTexter extends Component {
   setSuggestedScript(script)
   {
     this.setState({script})
+  }
+
+  handleCannedResponseChange(script) {
+    this.handleScriptChange(script)
+    this.handleClosePopover()
   }
   handleScriptChange(script) {
     this.setSuggestedScript(script)
@@ -315,7 +299,7 @@ export class AssignmentTexter extends Component {
         campaignResponses={campaignResponses}
         userResponses={userResponses}
         campaignId={campaign._id}
-        onScriptChange={this.handleScriptChange}
+        onChange={this.handleCannedResponseChange}
       />
     ]
 

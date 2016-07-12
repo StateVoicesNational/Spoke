@@ -29,7 +29,8 @@ export class ScriptField extends Component {
     this.refs.input.setState({ value }, () => {
       const { onChange } = this.props
       // FIXME: This should have an event and it does not
-      onChange()
+      if (onChange)
+        onChange()
       this.handleCloseDialog()
     })
   }
