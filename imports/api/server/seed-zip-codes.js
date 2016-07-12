@@ -27,6 +27,7 @@ export const seedZipCodes = () => {
 
       })
 
+      console.log("Finishing seeding", ZipCodes.find({}).count())
       // This is throwing an error when deployed for some reason
       // "MongoError: Invalid Operation, No operations in bulk"
       // ZipCodes.batchInsert(zipCodes)
