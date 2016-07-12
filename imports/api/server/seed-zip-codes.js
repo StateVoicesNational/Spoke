@@ -12,6 +12,7 @@ export const seedZipCodes = () => {
     if (error) {
       throw new Error('Failed to seed zip codes')
     } else {
+      console.log("Parsed a CSV with ", data.length, " zip codes")
       const zipCodes = data.map((row) => _.extend(row, {
         timezoneOffset: Number(row.timezoneOffset),
         hasDst: Boolean(row.hasDst),
