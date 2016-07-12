@@ -59,6 +59,7 @@ export class CampaignScriptsForm extends Component {
           />
             <ScriptList
               scripts={scripts}
+              showAddScriptButton
               duplicateCampaignResponses={false}
               subheader=''
               onSaveScript={this.submit}
