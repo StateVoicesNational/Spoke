@@ -5,7 +5,6 @@ import RaisedButton from 'material-ui/RaisedButton'
 import { ScriptEditor } from './script_editor'
 import { FormsyText, FormsyDate } from 'formsy-material-ui/lib'
 import RadioButtonUnchecked from 'material-ui/svg-icons/toggle/radio-button-unchecked'
-import { allScriptFields } from '../../api/scripts/scripts'
 import { muiTheme } from '../../ui/theme'
 import { grey100 } from 'material-ui/styles/colors'
 import {Card, CardActions, CardHeader,  CardText} from 'material-ui/Card';
@@ -204,7 +203,7 @@ export class CampaignQuestionForm extends Component {
   }
 
   render() {
-    const { interactionStep, interactionStepIndex, campaignStarted } = this.props
+    const { interactionStep, interactionStepIndex, campaignStarted, customFields } = this.props
     const cardActions = campaignStarted || interactionStep.isTopLevel ? '' : (
       <Divider />,
       <CardActions
@@ -248,7 +247,7 @@ export class CampaignQuestionForm extends Component {
         <CardText style={styles.cardText}>
           <div>
             <ScriptField
-              customFields={['hi', 'hi2']}
+              customFields={customFields}
               name="script"
               ref="script"
               onChange={this.handleScriptChange}
