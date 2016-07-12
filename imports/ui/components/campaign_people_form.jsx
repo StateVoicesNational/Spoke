@@ -191,8 +191,9 @@ export class CampaignPeopleForm extends Component {
           Your upload file should be in CSV format with column headings in
           the first row. You must include <span style={styles.csvHeader}>firstName</span>,
           <span style={styles.csvHeader}>lastName</span>, and
-          <span style={styles.csvHeader}>cell</span> columns. Any additional columns
-          in your file will be available as custom fields to use in your texting scripts.
+          <span style={styles.csvHeader}>cell</span> columns. If you include a <span style={styles.csvHeader}>zip</span> column,
+          we'll use the zip to guess the contact's timezone for enforcing texting hours.
+          Any additional columns in your file will be available as custom fields to use in your texting scripts.
         </span>
       )
     } else {
