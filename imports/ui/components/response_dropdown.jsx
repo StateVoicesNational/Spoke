@@ -53,11 +53,13 @@ export class ResponseDropdown extends Component {
   }
 
   renderScripts({ scripts, subheader, showAddScriptButton }) {
+    const { customFields } = this.props
     return (
       <ScriptList
         scripts={scripts}
         showAddScriptButton={showAddScriptButton}
         duplicateCampaignResponses
+        customFields={customFields}
         subheader={subheader}
         onSelectScript={this.handleSelectScript}
         onSaveScript={this.submit}

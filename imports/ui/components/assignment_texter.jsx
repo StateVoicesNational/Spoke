@@ -298,6 +298,7 @@ export class AssignmentTexter extends Component {
         anchorEl={this.state.responsePopoverAnchorEl}
         campaignResponses={campaignResponses}
         userResponses={userResponses}
+        customFields={campaign.customFields}
         campaignId={campaign._id}
         onChange={this.handleCannedResponseChange}
       />
