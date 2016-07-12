@@ -134,7 +134,7 @@ export class CampaignQuestionForm extends Component {
   }
 
   renderAnswers(interactionSteps, interactionStep, questionIsFocused) {
-    const { onAddQuestion, onEditQuestion, onClickStepLink } = this.props
+    const { onAddQuestion, onEditQuestion, campaignStarted, onClickStepLink } = this.props
     const otherQuestions = _.reject(interactionSteps, (q) => q._id === interactionStep._id)
     const answers = interactionStep.allowedAnswers
     return (
@@ -147,6 +147,7 @@ export class CampaignQuestionForm extends Component {
             onDeleteAnswer={this.handleDeleteAnswer}
             onEditQuestion={onEditQuestion}
             otherQuestions={otherQuestions}
+            disabled={campaignStarted}
             interactionStep={interactionStep}
             answer={answer}
             autoFocus={index === answers.length - 1 && !questionIsFocused}
@@ -162,6 +163,7 @@ export class CampaignQuestionForm extends Component {
           labelStyle={styles.addAnswerButton}
           label="Add another answer"
           onTouchTap={this.addAnswer}
+          disabled={campaignStarted}
         />
       </div>
     )
@@ -180,6 +182,7 @@ export class CampaignQuestionForm extends Component {
 
   renderQuestion() {
     const { interactionStep, interactionSteps, campaignStarted } = this.props
+    console.log("CAMPAIGNSTARTED", campaignStarted)
     const { questionIsFocused } = this.state
     return [
       <FormsyText

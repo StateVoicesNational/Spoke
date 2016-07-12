@@ -67,7 +67,7 @@ export class CampaignQuestionFormAnswerRow extends Component {
   }
 
   render() {
-    const { otherQuestions, interactionStep, answer, autoFocus, index, campaignStarted, onAddQuestion, onClickStepLink } = this.props
+    const { otherQuestions, interactionStep, answer, autoFocus, index, disabled, onAddQuestion, onClickStepLink } = this.props
 
     const deleteAnswerButton = (
       <IconButton
@@ -82,6 +82,7 @@ export class CampaignQuestionFormAnswerRow extends Component {
     const addNextQuestionButton = (
       <RaisedButton
         label="Link to next step"
+        disabled={disabled}
         onTouchTap={() => onAddQuestion({newStepId: Random.id(), parentStepId: interactionStep._id, parentAnswerId: answer._id })}
       />
     )
@@ -102,12 +103,12 @@ export class CampaignQuestionFormAnswerRow extends Component {
               autoFocus={autoFocus}
               hintStyle={styles.answer}
               required
-              disabled={campaignStarted}
+              disabled={disabled}
               name={`allowedAnswers[${index}].value`}
               hintText='Answer'
               value={ answer.value }
             />
-            { campaignStarted ? '' : deleteAnswerButton}
+            { disabled ? '' : deleteAnswerButton}
           </div>
           <div className="col-xs">
 
