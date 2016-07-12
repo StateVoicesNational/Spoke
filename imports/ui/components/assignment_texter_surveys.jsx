@@ -4,10 +4,12 @@ import { updateAnswer } from '../../api/survey_answers/methods'
 import { SurveyAnswers } from '../../api/survey_answers/survey_answers'
 import { InteractionSteps } from '../../api/interaction_steps/interaction_steps'
 import Divider from 'material-ui/Divider'
-import IconButton from 'material-ui/IconButton/IconButton'
+import IconButton from 'material-ui/IconButton'
+import FlatButton from 'material-ui/FlatButton'
 import NavigateBeforeIcon from 'material-ui/svg-icons/image/navigate-before'
 import NavigateNextIcon from 'material-ui/svg-icons/image/navigate-next'
-import { grey200 } from 'material-ui/styles/colors'
+import { grey100 } from 'material-ui/styles/colors'
+import {Card, CardActions, CardHeader, CardText} from 'material-ui/Card';
 
 const getAllChildren = (parentStep) => {
   let allChildren  = []
@@ -28,8 +30,8 @@ const getAllChildren = (parentStep) => {
 
 const styles = {
   root: {
-    padding: '0px 20px',
-    backgroundColor: grey200
+    // padding: '0px 20px',
+    backgroundColor: grey100
   }
 }
 export class AssignmentTexterSurveys extends Component {
@@ -37,8 +39,9 @@ export class AssignmentTexterSurveys extends Component {
     super(props)
     this.handleNext = this.handleNext.bind(this)
     this.handlePrevious = this.handlePrevious.bind(this)
+    this.handleExpandChange = this.handleExpandChange.bind(this)
     // TODO this should actually happen only when the contact changes
-    this.state = this.getAnswersState()
+    this.state = _.extend({ showAllQuestions: false }, this.getAnswersState())
   }
 
   componentDidUpdate(prevProps) {
@@ -57,12 +60,19 @@ export class AssignmentTexterSurveys extends Component {
   }
 
   steps() {
-    const { initialStep } = this.props
+    const { initialStep, contact } = this.props
     let step = initialStep
 
+    let answers = SurveyAnswers.find({ campaignContactId: contact._id, campaignId: contact.campaignId }).fetch()
+
+    let currentStep = null
     const steps = []
     while (step) {
       steps.push(step)
+
+      if (!currentStep && !contact.surveyAnswer(step._id)) {
+        currentStep = step
+      }
 
       const answerValue = this.state.answers[step._id]
       if (answerValue) {
@@ -74,7 +84,10 @@ export class AssignmentTexterSurveys extends Component {
       }
     }
 
-    return steps
+    return {
+      steps,
+      currentStep
+    }
   }
 
   handleNext() {
@@ -95,6 +108,9 @@ export class AssignmentTexterSurveys extends Component {
     return this.state.answers
   }
 
+  handleExpandChange(newExpandedState) {
+    this.setState( { showAllQuestions: newExpandedState })
+  }
   handleSurveyAnswerChange(interactionStepId, answer, script) {
     const { contact, onScriptChange } = this.props
 
@@ -110,21 +126,38 @@ export class AssignmentTexterSurveys extends Component {
     this.setState( { answers })
   }
 
-
-  render() {
+  renderStep(step) {
     const { answers } = this.state
-    const steps = this.steps()
 
     return (
+      <QuestionDropdown
+        isCurrentStep={false}
+        answerValue={answers[step._id]}
+        onAnswerChange={this.handleSurveyAnswerChange.bind(this)}
+        step={step}
+      />
+    )
+  }
+  render() {
+    const { steps, currentStep } = this.steps()
+
+    const otherSteps = steps.filter((step) => step._id !== currentStep._id)
+    const { showAllQuestions } = this.state
+    return (
       <div style={styles.root}>
-        { _.map(steps, (step, index) => (
-          <QuestionDropdown
-            isCurrentStep={index===steps.length - 1}
-            answerValue={answers[step._id]}
-            onAnswerChange={this.handleSurveyAnswerChange.bind(this)}
-            step={step}
-          />
-        ))}
+        <Card
+          onExpandChange={this.handleExpandChange}
+        >
+          <CardHeader
+            title={showAllQuestions ? 'All survey questions' : 'Current survey question'}
+            showExpandableButton={otherSteps.length > 0}
+          >
+            {showAllQuestions ? '' : this.renderStep(currentStep)}
+          </CardHeader>
+          <CardText expandable={true}>
+            {_.map(showAllQuestions ? steps : otherSteps, (step, index) => this.renderStep(step))}
+          </CardText>
+        </Card>
       </div>
     )
   }

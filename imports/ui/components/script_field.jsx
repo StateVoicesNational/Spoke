@@ -26,7 +26,12 @@ export class ScriptField extends Component {
   handleSaveScript() {
     const value =  this.refs.dialogScriptInput.getValue()
     this.setState({ value })
-    this.refs.input.setState({ value }, this.handleCloseDialog)
+    this.refs.input.setState({ value }, () => {
+      const { onChange } = this.props
+      // FIXME: This should have an event and it does not
+      onChange()
+      this.handleCloseDialog()
+    })
   }
 
   renderDialog() {
@@ -88,7 +93,7 @@ export class ScriptField extends Component {
           onFocus={this.handleOpenDialog}
           onTouchTap={(event) => {
             console.log("event.preventDefault")
-            event.preventDefault()
+            event.stopPropagation()
         }}
           {...this.props}
           value={this.state.value}

@@ -7,7 +7,7 @@ SurveyAnswers.schema = new SimpleSchema({
   campaignId: { type: String },
   campaignContactId: { type: String },
   interactionStepId: { type: String },
-  value: { type: String }
+  value: { type: String },
 })
 
 SurveyAnswers.attachSchema(SurveyAnswers.schema)

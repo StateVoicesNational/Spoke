@@ -165,18 +165,18 @@ export const updateQuestions = new ValidatedMethod({
   validate: new SimpleSchema({
     campaignId: { type: String },
     organizationId: { type: String },
-    questions: { type: [Object], blackbox: true } // TODO: Survey schema?
+    interactionSteps: { type: [Object], blackbox: true } // TODO: Survey schema?
   }).validator(),
   run({
     organizationId,
     campaignId,
-    questions
+    interactionSteps
   }) {
     if (!this.userId || !Roles.userIsInRole(this.userId, 'admin', organizationId)) {
       throw new Meteor.Error('not-authorized')
     }
 
-    saveQuestions(campaignId, questions)
+    saveQuestions(campaignId, interactionSteps)
   }
 })
 

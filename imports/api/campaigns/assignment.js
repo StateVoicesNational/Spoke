@@ -30,7 +30,8 @@ const updateAssignments = ({ dueBy, campaignId, texterId, texterContactIds }) =>
 export const saveQuestions = (campaignId, interactionSteps) => {
   for (let interactionStep of interactionSteps) {
     interactionStep.campaignId = campaignId
-    InteractionSteps.insert(interactionStep)
+    console.log("INTERACTION STEPS", interactionStep)
+    InteractionSteps.upsert(interactionStep._id, { $set: interactionStep })
   }
 }
 

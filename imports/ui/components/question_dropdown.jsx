@@ -78,7 +78,6 @@ export class QuestionDropdown extends Component {
           >
             { this.renderAnswers() }
           </SelectField>
-          <Divider/>
         </div>
       )
     } else {
@@ -91,10 +90,10 @@ export class QuestionDropdown extends Component {
             onChange={this.handleAnswerChange}
             name={step.question}
             value={answerValue}
+            autoWidth
           >
             { this.renderAnswers() }
           </SelectField>
-          <Divider/>
         </div>
       )
     }

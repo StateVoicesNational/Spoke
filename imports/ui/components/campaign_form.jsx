@@ -57,7 +57,7 @@ export class CampaignForm extends Component {
     this.handleSubmitContacts = this.handleSubmitContacts.bind(this)
     this.handleSubmitTexters = this.handleSubmitTexters.bind(this)
     this.handleSubmitScripts = this.handleSubmitScripts.bind(this)
-    this.handleSubmitInteractionSteps = this.handleSubmitInteractionSteps.bind()
+    this.handleSubmitInteractionSteps = this.handleSubmitInteractionSteps.bind(this)
 
     this.handleScriptChange = this.handleScriptChange.bind(this)
     this.handleScriptDelete = this.handleScriptDelete.bind(this)
@@ -291,6 +291,8 @@ export class CampaignForm extends Component {
       interactionSteps,
       campaignId: campaign._id
     }
+
+    console.log("HANDLE SUBMIT INTERACTION STESP")
     updateQuestions.call(data, handleError)
   }
 

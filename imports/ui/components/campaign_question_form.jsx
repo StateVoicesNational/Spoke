@@ -111,14 +111,16 @@ export class CampaignQuestionForm extends Component {
   }
 
   handleQuestionChange(event) {
+    console.log(event.target.value, "quentschange")
     const { interactionStep, onEditQuestion } = this.props
     onEditQuestion(interactionStep._id, { question: event.target.value })
   }
 
-  handleScriptChange(event) {
+  handleScriptChange() {
+    // The way ScriptField is set up it does not actually trigger onChange with an event.
     const { interactionStep, onEditQuestion } = this.props
-    console.log("interactionStep", event.target.value)
-    onEditQuestion(interactionStep._id, { script: event.target.value })
+    console.log("script changing")
+    onEditQuestion(interactionStep._id, { script: this.refs.script.state.value })
   }
 
   handleDeleteQuestion() {
@@ -244,7 +246,9 @@ export class CampaignQuestionForm extends Component {
           <div>
             <ScriptField
               customFields={['hi', 'hi2']}
-              name="text"
+              name="script"
+              ref="script"
+              onChange={this.handleScriptChange}
               floatingLabelText="Script"
               value={ interactionStep.script }
               multiLine

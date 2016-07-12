@@ -38,7 +38,7 @@ const _CampaignEditPage = ({ organizationId, texters, assignedTexters, scripts, 
 export const CampaignEditPage = createContainer(({ campaignId, organizationId }) => {
   const handle = Meteor.subscribe('campaign.edit', campaignId, organizationId)
 
-  const scripts = Scripts.find( { campaignId }).fetch()
+  const scripts = Scripts.find( { campaignId }, { sort: { topLevel: 1 }}).fetch()
   const interactionSteps = InteractionSteps.find( { campaignId }).fetch()
   const campaign = Campaigns.findOne({ _id: campaignId })
   const texters = Roles.getUsersInRole('texter', organizationId).fetch()
