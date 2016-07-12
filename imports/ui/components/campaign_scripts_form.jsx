@@ -55,7 +55,8 @@ export class CampaignScriptsForm extends Component {
           onInvalid={onInvalid}
         >
           <CampaignFormSectionHeading
-            title="What do you want to say?"
+            title="Canned responses"
+            subtitle="Save some scripts for your texters to use to answer additional FAQs that may come up outside of the survey questions and scripts you already set up."
           />
             <ScriptList
               scripts={scripts}
