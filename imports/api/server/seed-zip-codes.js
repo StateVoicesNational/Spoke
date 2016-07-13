@@ -5,6 +5,7 @@ export const seedZipCodes = () => {
   console.log("Checking if zip code is needed")
   if (!ZipCodes.findOne()) {
     console.log("Starting to seed zip codes")
+    console.log(process.env.HOMEPATH, "Homepath?")
     const absolutePath = `${process.env.PWD}/imports/api/server/data/zip-codes.csv`
     const { data, error } = Baby.parseFiles(absolutePath, {
       header: true
