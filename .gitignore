@@ -1,3 +1,6 @@
+/node_modules
+/build
+npm-debug.log
 .DS_Store
-node_modules/
-settings*.json
+rethinkdb_data
+.env

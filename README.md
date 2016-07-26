@@ -1,46 +1,18 @@
-# Installation/setup
+# Spoke
 
-After cloning, install necessary packages
+This is generated from [react-apollo-starter-kit](https://github.com/saikat/react-apollo-starter-kit).  Look at that project's README for info on some of the libraries used.
 
-```
-npm install
+## Getting started
 
-```
+1. [Install RethinkDB](https://www.rethinkdb.com/docs/install/osx/)
+1. `npm install`
+1. `npm run dev`
+1. Go to `localhost:3000` to load the app
+1. Go to `localhost:3000/graphql` to mess around with the GraphQL API
+1. Go to `localhost:8080` to use the RethinkDB admin console
 
-Run script to create settings file
+## Helpful Dev Tips
 
-```
-./setup
-
-```
-
-Edit the newly created `private/settings.json` to add any API keys, etc.
-
-
-# Running
-
-```
-meteor --settings private/settings.json`
-```
-
-# Creating dummy data
-To create dummy data, change refreshTestData in `private/settings.json` to `true` and refresh server (then change back to `false` or it'll recreate data every time any file changes.)
-
-You can then log in as `admin@test.com/test`, `texter1@test.com/test`, or `texter2@test.com/test`
-
-
-# Deploying
-Currently set up to deploy with [Galaxy](galaxy.meteor.com). Edit `private/settings.json` to add ROOT_URL and MONGO_URL.
-
-## QA
-```
-meteor npm run deploy:qa
-
-```
-
-## Production
-
-```
-meteor npm run deploy:production
-
-```
+* [Set up an ESLint plugin in your code editor so that you catch coding errors and follow code style guidelines more easily!](https://medium.com/planet-arkency/catch-mistakes-before-you-run-you-javascript-code-6e524c36f0c8#.oboqsse48)
+* [Install the redux-devtools-extension](https://github.com/zalmoxisus/redux-devtools-extension) in Chrome to get advanced Redux debugging features.
+* Right now there is a bug in Apollo (https://github.com/apollostack/react-apollo/issues/57) that means in one particular case, errors get swallowed.  If you end up with an app that is silently breaking, console.log(this.props.data) and check the errors property.

@@ -1,7 +1,11 @@
 {
   "extends" : "airbnb",
+  "parser": "babel-eslint",
   "rules": {
     "semi": ["error", "never"],
-    "comma-dangle": ["error", "never"]
+    "comma-dangle": ["error", "never"],
+    "no-alert": ["off"],
+    "jsx-quotes": ["error", "prefer-single"],
+    "no-confusing-arrow": ["off"]
   }
 }
