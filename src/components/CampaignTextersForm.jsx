@@ -5,19 +5,21 @@ import GSForm from '../components/forms/GSForm'
 import yup from 'yup'
 import Form from 'react-formal'
 import Chip from './Chip'
+import OrganizationJoinLink from './OrganizationJoinLink'
 import { RadioButton, RadioButtonGroup } from 'material-ui/RadioButton'
+import Divider from 'material-ui/Divider'
 import CampaignFormSectionHeading from './CampaignFormSectionHeading'
 import ContentClear from 'material-ui/svg-icons/content/clear'
+import { StyleSheet, css } from 'aphrodite'
 
-const styles = {
-  radioButtonGroup: {
-    marginBottom: 12
-  },
+const inlineStyles = {
   autocomplete: {
     marginBottom: 24
+  },
+  radioButtonGroup: {
+    marginBottom: 12
   }
 }
-
 export default class CampaignTextersForm extends Component {
 
   handleNewRequest = (value) => {
@@ -66,7 +68,7 @@ export default class CampaignTextersForm extends Component {
     const autocomplete = (
       <AutoComplete
         ref="autocomplete"
-        style={styles.autocomplete}
+        style={inlineStyles.autocomplete}
         autoFocus
         searchText=""
         filter={filter}
@@ -79,7 +81,7 @@ export default class CampaignTextersForm extends Component {
     const radioButtonGroup = orgTexters.length === 0 ? '' : (
       [
         <RadioButtonGroup
-          style={styles.radioButtonGroup}
+          style={inlineStyles.radioButtonGroup}
           name="assignment"
           valueSelected={valueSelected}
           onChange={this.onChange}
@@ -159,10 +161,16 @@ export default class CampaignTextersForm extends Component {
   }
 
   render() {
-    const { orgTexters, ensureComplete } = this.props
-    let subtitle = orgTexters.length > 0 ? '' : 'You have no texters. Add some texters to your organization and come back!'
+    const { orgTexters, ensureComplete, organizationId } = this.props
+    let subtitle = ''
     if (ensureComplete) {
       subtitle = 'This campaign has already started so you cannot modify the texters on it. These are the texters currently assigned:'
+    } else {
+      subtitle = (
+        <div>
+            <OrganizationJoinLink organizationId={organizationId} />
+        </div>
+      )
     }
     return (
       <div>

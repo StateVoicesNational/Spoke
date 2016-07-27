@@ -208,7 +208,8 @@ class AdminCampaignEdit extends React.Component {
     keys: ['texters'],
     checkCompleted: () => this.state.campaignFormValues.texters.length > 0,
     extraProps: {
-      orgTexters: this.props.organizationData.organization.texters
+      orgTexters: this.props.organizationData.organization.texters,
+      organizationId: this.props.params.organizationId
     }
   }, {
     title: 'Interactions',

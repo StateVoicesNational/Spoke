@@ -2,8 +2,6 @@ import React from 'react'
 import Check from 'material-ui/svg-icons/action/check-circle'
 import Empty from '../components/Empty'
 import AssignmentSummary from '../components/AssignmentSummary'
-import Subheader from 'material-ui/Subheader'
-import { ListItem } from 'material-ui/List'
 import loadData from './hoc/load-data'
 import gql from 'graphql-tag'
 

@@ -1,16 +1,15 @@
 import React from 'react'
 import { List, ListItem } from 'material-ui/List'
-import TextField from 'material-ui/TextField'
 import Dialog from 'material-ui/Dialog'
 import PeopleIcon from 'material-ui/svg-icons/social/people'
 import Empty from '../components/Empty'
+import OrganizationJoinLink from '../components/OrganizationJoinLink'
 import FlatButton from 'material-ui/FlatButton'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import ContentAdd from 'material-ui/svg-icons/content/add'
 import theme from '../styles/theme'
 import loadData from './hoc/load-data'
 import gql from 'graphql-tag'
-
 class AdminTexterList extends React.Component {
   state = {
     open: false
@@ -47,13 +46,8 @@ class AdminTexterList extends React.Component {
   }
 
   render() {
-    const { params, data, location } = this.props
+    const { params } = this.props
 
-    let baseUrl = 'http://base'
-    if (typeof window !== 'undefined')
-      baseUrl = window.location.origin
-
-    const joinUrl = `${baseUrl}/${params.organizationId}/join`
     return (
       <div>
         {this.renderTexters()}
@@ -76,12 +70,8 @@ class AdminTexterList extends React.Component {
           open={this.state.open}
           onRequestClose={this.handleClose}
         >
-          <div>
-            Send your texting volunteers this link!
-          </div>
-          <TextField
-            value={joinUrl}
-            fullWidth
+          <OrganizationJoinLink
+            organizationId={params.organizationId}
           />
         </Dialog>
       </div>
