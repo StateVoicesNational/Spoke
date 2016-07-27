@@ -3,6 +3,7 @@ import RaisedButton from 'material-ui/RaisedButton'
 //import { Export } from '../../ui/components/export'
 import Chart from '../components/Chart'
 import { Card, CardActions, CardHeader, CardMedia, CardTitle, CardText } from 'material-ui/Card'
+import TexterStats from '../components/TexterStats'
 import { withRouter } from 'react-router'
 import { StyleSheet, css } from 'aphrodite'
 import loadData from './hoc/load-data'
@@ -158,6 +159,12 @@ class AdminCampaignStats extends React.Component {
         </div>
         <div className={css(styles.header)}>Survey Questions</div>
         {this.renderSurveyStats()}
+
+        <div className={css(styles.header)}>Texter stats</div>
+        <div className={css(styles.secondaryHeader)}>% of first texts sent</div>
+        <TexterStats
+          campaign={campaign}
+        />
       </div>
     )
   }
@@ -165,12 +172,21 @@ class AdminCampaignStats extends React.Component {
 
 const mapQueriesToProps = ({ ownProps }) => ({
   data: {
-    query: gql`query getCampaign($campaignId: String!) {
+    query: gql`query getCampaign($campaignId: String!, $needsResponseString: String) {
       campaign(id: $campaignId) {
         id
         title
         assignments {
           id
+          texter {
+            id
+            firstName
+            lastName
+          }
+          contacts {
+            unmessagedCount: count(contactFilter:$needsResponseString)
+            count
+          }
         }
         interactionSteps {
           id
@@ -192,7 +208,8 @@ const mapQueriesToProps = ({ ownProps }) => ({
       }
     }`,
     variables: {
-      campaignId: ownProps.params.campaignId
+      campaignId: ownProps.params.campaignId,
+      needsResponseString: 'needsResponse'
     }
   }
 })

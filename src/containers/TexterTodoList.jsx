@@ -8,48 +8,6 @@ import loadData from './hoc/load-data'
 import gql from 'graphql-tag'
 
 class TexterTodoList extends React.Component {
-  renderSection(group, groupKey) {
-    return <div>section</div>
-    const { organizationId } = this.props
-    return (
-      <div>
-        <Subheader>{groupKey === 'active' ? '': groupKey}</Subheader>
-          {
-            group.map((result) => {
-              const { title, description } = result.assignment.campaign
-
-              if (groupKey === 'past') {
-                return (
-                  <ListItem
-                    primaryText={title}
-                    secondaryText={description}
-                  />
-                )
-              } else if (groupKey === 'done') {
-                return (
-                  <ListItem
-                    primaryText={title}
-                    secondaryText={description}
-                  />
-                )
-              } else {
-                return (
-                  <AssignmentSummary
-                    organizationId={organizationId}
-                    assignment={result.assignment}
-                    unmessagedCount={result.unmessagedCount}
-                    unrepliedCount={result.unrepliedCount}
-                    badTimezoneCount={result.badTimezoneCount}
-                  />
-                )
-              }
-            }
-          )
-         }
-    </div>
-    )
-  }
-
   renderTodoList(assignments) {
     const organizationId = this.props.params.organizationId
     return assignments.map((assignment) => (
@@ -57,9 +15,9 @@ class TexterTodoList extends React.Component {
         organizationId={organizationId}
         key={assignment.id}
         assignment={assignment}
-        unmessagedCount={assignment.unmessagedCount}
-        unrepliedCount={assignment.unrepliedCount}
-        badTimezoneCount={assignment.badTimezoneCount}
+        unmessagedCount={assignment.contacts.unmessagedCount}
+        unrepliedCount={assignment.contacts.unrepliedCount}
+        badTimezoneCount={assignment.contacts.badTimezoneCount}
       />
     ))
   }
@@ -91,7 +49,7 @@ TexterTodoList.propTypes = {
 
 const mapQueriesToProps = ({ ownProps }) => ({
   data: {
-    query: gql`query getTodos($organizationId: String!) {
+    query: gql`query getTodos($organizationId: String!, $needsMessageString: String, $needsResponseString: String, $badTimezoneString: String) {
       currentUser {
         id
         todos(organizationId: $organizationId) {
@@ -101,14 +59,19 @@ const mapQueriesToProps = ({ ownProps }) => ({
             title
             description
           }
-          unmessagedCount
-          unrepliedCount
-          badTimezoneCount
+          contacts {
+            unmessagedCount: count(contactFilter: $needsMessageString)
+            unrepliedCount: count(contactFilter: $needsResponseString)
+            badTimezoneCount: count(contactFilter: $badTimezoneString)
+          }
         }
       }
     }`,
     variables: {
-      organizationId: ownProps.params.organizationId
+      organizationId: ownProps.params.organizationId,
+      needsMessageString: 'needsMessage',
+      needsResponseString: 'needsResponse',
+      badTimezoneString: 'badTimezone'
     },
     forceFetch: true
   }

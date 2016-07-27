@@ -7,7 +7,8 @@ class TexterTodo extends React.Component {
   render() {
     const { assignment } = this.props.data.currentUser
     console.log(this.props.data)
-    const { contacts } = assignment
+    const contacts = assignment.contacts.data
+
     return <AssignmentTexter
       assignment={assignment}
       contacts={contacts}
@@ -51,9 +52,11 @@ const mapQueriesToProps = ({ ownProps }) => ({
               customFields
             }
           }
-          contacts(contactFilter: $contactFilter) {
-            id
-            customFields
+          contacts {
+            data(contactFilter: $contactFilter) {
+              id
+              customFields
+            }
           }
         }
       }
