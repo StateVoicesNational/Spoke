@@ -17,18 +17,22 @@ export default ({ data }) => {
       color: chartColors[index % chartColors.length]
     }
   })
+
   return (
     <div>
       <Pie data={pieData} />
       <div>
-        {pieData.map((datum) => (
-          <span style={{
-            backgroundColor: datum.color,
-            padding: 5,
-            margin: 5,
-            fontSize: 12
-          }}>
-            {datum.label}
+        {pieData.map(({label, color}) => (
+          <span
+            style={{
+              backgroundColor: color,
+              width:20,
+              padding: 5,
+              margin: 5,
+              fontSize: 12
+            }}
+          >
+            {label}
           </span>
         ))}
       </div>

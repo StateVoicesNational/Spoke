@@ -89,7 +89,7 @@ class AdminCampaignStats extends React.Component {
     const { interactionSteps } = this.props.data.campaign
 
     return interactionSteps.map((step) => {
-      if (!step.question)
+      if (step.question === '')
         return <div></div>
 
       const totalResponseCount = step
@@ -106,7 +106,9 @@ class AdminCampaignStats extends React.Component {
               </div>
               <div className={css(styles.flexColumn)}>
                 <div className={css(styles.rightAlign)}>
-                  <Chart data={step.question.answerOptions.map((answer) => [answer.text, answer.respondersCount])} />
+                  <Chart
+                    data={step.question.answerOptions.map((answer) => [answer.value, answer.responderCount])}
+                  />
                 </div>
               </div>
             </div>
