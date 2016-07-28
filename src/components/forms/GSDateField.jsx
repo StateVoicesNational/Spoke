@@ -15,9 +15,15 @@ export default class GCDateField extends GSFormField {
       oldDate = moment(fakeDate).toObject()
       value = { value: fakeDate }
     }
+    const propCopy = {
+      ...this.props
+    }
+    delete propCopy['value']
+    delete propCopy['type']
 
     return (
       <DatePicker
+        {...propCopy}
         floatingLabelText={this.floatingLabelText()}
         onChange={(_, date) => {
           let newDate = moment(date)

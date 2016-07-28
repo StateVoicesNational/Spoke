@@ -62,6 +62,7 @@ export default class CampaignBasicsForm extends React.Component {
             type='date'
             locale='en-US'
             shouldDisableDate={(date) => moment(date).diff(moment()) < 0}
+            autoOk
             fullWidth
             utcOffset={0}
           />
