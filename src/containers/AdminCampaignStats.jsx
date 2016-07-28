@@ -1,9 +1,10 @@
 import React from 'react'
 import RaisedButton from 'material-ui/RaisedButton'
-//import { Export } from '../../ui/components/export'
+import Export from './Export'
 import Chart from '../components/Chart'
 import { Card, CardActions, CardHeader, CardMedia, CardTitle, CardText } from 'material-ui/Card'
-import TexterStats from '../components/TexterStats'
+import CircularProgress from 'material-ui/CircularProgress'
+//import TexterStats from '../components/TexterStats'
 import { withRouter } from 'react-router'
 import { StyleSheet, css } from 'aphrodite'
 import loadData from './hoc/load-data'
@@ -26,7 +27,7 @@ const inlineStyles = {
     textTransform: 'uppercase',
     textAlign: 'center',
     color: 'gray'
-  },
+  }
 }
 
 const styles = StyleSheet.create({
@@ -37,7 +38,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap'
   },
   header: {
-    ...theme.text.header,
+    ...theme.text.header
   },
   flexColumn: {
     flex: 1,
@@ -53,7 +54,8 @@ const styles = StyleSheet.create({
   },
   inline: {
     display: 'inline-block',
-    marginLeft: 20
+    marginLeft: 20,
+    verticalAlign: 'middle'
   },
   spacer: {
     marginRight: 20
@@ -86,12 +88,17 @@ Stat.propTypes = {
 }
 
 class AdminCampaignStats extends React.Component {
+  state = {
+    exporting: false
+  }
+
   renderSurveyStats() {
     const { interactionSteps } = this.props.data.campaign
 
     return interactionSteps.map((step) => {
-      if (step.question === '')
+      if (step.question === '') {
         return <div></div>
+      }
 
       const totalResponseCount = step
         .question
@@ -119,7 +126,42 @@ class AdminCampaignStats extends React.Component {
     })
   }
 
+  renderExport() {
+    const button = (
+      <RaisedButton
+        tooltip='Export a CSV'
+        label='Export Data'
+        disabled={this.state.exporting}
+        onTouchTap={() => this.setState({ exporting: true })}
+      />
+    )
+    const exporter = (
+      <Export
+        campaign={this.props.data.campaign}
+        onComplete={() => this.setState({ exporting: false })}
+      />
+    )
+    return (
+      <div>
+        <div className={css(styles.inline)}>
+          {this.state.exporting ? (
+            <CircularProgress size={0.4} style={{
+              verticalAlign: 'middle',
+              display: 'inline-block',
+              height: 37,
+              width: 37
+            }} />) : ''}
+        </div>
+        <div className={css(styles.inline)}>
+          {this.state.exporting ? exporter : ''}
+          {button}
+        </div>
+      </div>
+    )
+  }
+
   render() {
+    console.log(this.state)
     const { data, params } = this.props
     const { organizationId, campaignId } = params
     const campaign = data.campaign
@@ -132,13 +174,15 @@ class AdminCampaignStats extends React.Component {
           <div className={css(styles.flexColumn)}>
             <div className={css(styles.rightAlign)}>
               <div className={css(styles.inline)}>
-                <RaisedButton
-                  onTouchTap={() => this.props.router.push(`/admin/${organizationId}/campaigns/${campaignId}/edit`)}
-                  label='Edit'
-                />
-              </div>
-              <div className={css(styles.inline)}>
-                Export Campaign Data
+                <div className={css(styles.inline)}>
+                  {this.renderExport()}
+                </div>
+                <div className={css(styles.inline)}>
+                  <RaisedButton
+                    onTouchTap={() => this.props.router.push(`/admin/${organizationId}/campaigns/${campaignId}/edit`)}
+                    label='Edit'
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -162,9 +206,6 @@ class AdminCampaignStats extends React.Component {
 
         <div className={css(styles.header)}>Texter stats</div>
         <div className={css(styles.secondaryHeader)}>% of first texts sent</div>
-        <TexterStats
-          campaign={campaign}
-        />
       </div>
     )
   }

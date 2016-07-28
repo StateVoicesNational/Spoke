@@ -9,6 +9,7 @@ export const schema = `
     lastName: String
     displayName: String
     email: String
+    cell: String
     organizations(role:String): [Organization]
     todos(organizationId: String): [Assignment]
     assignedCell: Phone
@@ -23,6 +24,7 @@ export const resolvers = {
       'firstName',
       'lastName',
       'email',
+      'cell',
       'assignedCell'
     ], User),
     displayName: (user) => `${user.first_name} ${user.last_name}`,

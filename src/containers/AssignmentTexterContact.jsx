@@ -526,7 +526,6 @@ const mapQueriesToProps = ({ ownProps }) => ({
           questionResponse(campaignContactId: $campaignContactId) {
             value
           }
-          isCurrentInteractionStep(campaignContactId: $campaignContactId)
           question {
             text
             answerOptions {

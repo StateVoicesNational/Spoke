@@ -34,6 +34,10 @@ import {
   resolvers as interactionStepResolvers
 } from './interaction-step'
 import {
+  schema as questionSchema,
+  resolvers as questionResolvers
+} from './question'
+import {
   schema as questionResponseSchema,
   resolvers as questionResponseResolvers
 } from './question-response'
@@ -501,6 +505,7 @@ export const schema = [
   campaignContactSchema,
   cannedResponseSchema,
   questionResponseSchema,
+  questionSchema,
   inviteSchema
 ]
 
@@ -520,5 +525,6 @@ export const resolvers = {
   ...dateResolvers,
   ...jsonResolvers,
   ...phoneResolvers,
+  ...questionResolvers,
   ...rootMutations
 }

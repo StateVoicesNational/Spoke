@@ -29,11 +29,10 @@ export const schema = `
     zip: String
     customFields: JSON
     messages: [Message]
-    needsResponse: Boolean
     location: Location
-    assignment: Assignment
     optOut: OptOut
     campaign: Campaign
+    questionResponses: [AnswerOption]
     interactionSteps: [InteractionStep]
     currentInteractionStepScript: String
     currentInteractionStepId: String
@@ -65,10 +64,22 @@ export const resolvers = {
     campaign: async (campaignContact, _, { loaders }) => (
       loaders.campaign.load(campaignContact.campaign_id)
     ),
+    questionResponses: async (campaignContact) => (
+      r.table('question_response')
+        .getAll(campaignContact.id, { index: 'campaign_contact_id' })
+        .eqJoin('interaction_step_id', r.db('spoke').table('interaction_step'))
+        .concatMap((row) => (
+          row('right')('answer_options')
+            .map((option) => option.merge({
+              parent_interaction_step: row('right'),
+              contact_response_value: row('left')('value')
+            }))
+        ))
+        .filter((row) => row('value').eq(row('contact_response_value')))
+    ),
     location: async (campaignContact, _, { loaders }) => {
       const mainZip = campaignContact.zip.split('-')[0]
       let loc = await loaders.zipCode.load(mainZip)
-      console.log(loc, campaignContact.zip)
       return loc
     },
     messages: async (campaignContact) => {
@@ -79,12 +90,11 @@ export const resolvers = {
         })
         .orderBy('created_at')
 
-      console.log("messages", messages)
       return messages
     },
     optOut: async(campaignContact) => (
       await r.table('opt_out')
-        .getAll(campaignContact.cell, { index: 'cell'})
+        .getAll(campaignContact.cell, { index: 'cell' })
         // .filter(filter by organization ID but I only have assignment_id)
         .limit(1)(0)
         .default(null)
