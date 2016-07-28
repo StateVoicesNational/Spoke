@@ -130,14 +130,16 @@ class AdminCampaignStats extends React.Component {
     const button = (
       <RaisedButton
         tooltip='Export a CSV'
-        label='Export Data'
+        label={this.state.exporting || 'Export Data'}
         disabled={this.state.exporting}
-        onTouchTap={() => this.setState({ exporting: true })}
+        onTouchTap={() => this.setState({ exporting: 'Preparing data...' })}
       />
     )
     const exporter = (
       <Export
         campaign={this.props.data.campaign}
+        onParseStart={() => this.setState({ exporting: 'Creating CSV...' })}
+        onDownloadStart={() => this.setState({ exporting: 'Downloading...' })}
         onComplete={() => this.setState({ exporting: false })}
       />
     )

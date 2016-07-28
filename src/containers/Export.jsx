@@ -9,6 +9,7 @@ class Export extends React.Component {
   componentWillReceiveProps(props) {
     console.log(props)
     if (!props.data.loading) {
+      props.onParseStart()
       log.debug('Starting to download data...')
       const convertedAssignments = props.data.campaign.assignments.map((assignment) => {
         return assignment.contacts.data.map((contact) => {
@@ -22,8 +23,8 @@ class Export extends React.Component {
             'contact[lastName]': contact.lastName,
             'contact[cell]': contact.cell,
             'contact[zip]': contact.zip,
-            'contact[city]': contact.location.city,
-            'contact[state]': contact.location.state,
+            'contact[city]': contact.location? contact.location.city : null,
+            'contact[state]': contact.location ? contact.location.state : null,
             'contact[optOut]': contact.optOut ? 'true' : 'false',
             'contact[messageStatus]': contact.messageStatus
           }
@@ -40,7 +41,7 @@ class Export extends React.Component {
       const csv = Papa.unparse(convertedAssignments)
       log.debug('Data converted.')
       if (isClient()) {
-        log.debug('Downloading...')
+        props.onDownloadStart()
         this.downloadCSV(csv, props.data.campaign)
         log.debug('Download complete!')
       }
