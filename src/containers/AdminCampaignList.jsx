@@ -127,7 +127,8 @@ const mapQueriesToProps = ({ ownProps }) => ({
     }`,
     variables: {
       organizationId: ownProps.params.organizationId
-    }
+    },
+    forceFetch: true
   }
 })
 
@@ -140,7 +141,7 @@ const mapMutationsToProps = () => ({
         }
       }
     `,
-    variables: { campaign }
+    variables: { campaign },
   })
 })
 

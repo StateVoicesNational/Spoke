@@ -117,7 +117,8 @@ const mapQueriesToProps = () => ({
           name
         }
       }
-    }`
+    }`,
+    forceFetch: true
   }
 })
 

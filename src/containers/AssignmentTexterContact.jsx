@@ -556,7 +556,8 @@ const mapQueriesToProps = ({ ownProps }) => ({
     }`,
     variables: {
       campaignContactId: ownProps.campaignContactId
-    }
+    },
+    forceFetch: true
   }
 })
 

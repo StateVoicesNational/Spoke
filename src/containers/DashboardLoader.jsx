@@ -35,7 +35,8 @@ const mapQueriesToProps = () => ({
           id
         }
       }
-    }`
+    }`,
+    forceFetch: true
   }
 })
 

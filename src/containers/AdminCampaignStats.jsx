@@ -256,7 +256,8 @@ const mapQueriesToProps = ({ ownProps }) => ({
     variables: {
       campaignId: ownProps.params.campaignId,
       needsResponseString: 'needsResponse'
-    }
+    },
+    forceFetch: true
   }
 })
 

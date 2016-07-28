@@ -414,7 +414,8 @@ const mapQueriesToProps = ({ ownProps }) => ({
     }`,
     variables: {
       campaignId: ownProps.params.campaignId
-    }
+    },
+    forceFetch: true
   },
   organizationData: {
     query: gql`query getOptOuts($organizationId: String!) {
@@ -431,7 +432,8 @@ const mapQueriesToProps = ({ ownProps }) => ({
     }`,
     variables: {
       organizationId: ownProps.params.organizationId
-    }
+    },
+    forceFetch: true
   }
 })
 

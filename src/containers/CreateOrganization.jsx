@@ -115,14 +115,16 @@ const mapQueriesToProps = ({ ownProps }) => ({
     }`,
     variables: {
       inviteId: ownProps.params.inviteId
-    }
+    },
+    forceFetch: true
   },
   userData: {
     query: gql` query getCurrentUser {
       currentUser {
         id
       }
-    }`
+    }`,
+    forceFetch: true
   }
 })
 
