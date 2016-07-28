@@ -8,6 +8,7 @@ import Papa from 'papaparse'
 class Export extends React.Component {
   componentWillReceiveProps(props) {
     if (!props.data.loading) {
+      log.debug('Starting to download data...')
       const convertedAssignments = props.data.campaign.assignments.map((assignment) => {
         return assignment.contacts.data.map((contact) => {
           let contactRow = {
@@ -34,9 +35,13 @@ class Export extends React.Component {
           return contactRow
         })
       }).reduce((prev, row) => prev.concat(row))
+      log.debug('Converting to csv...')
       const csv = Papa.unparse(convertedAssignments)
+      log.debug('Data converted.')
       if (isClient()) {
+        log.debug('Downloading...')
         this.downloadCSV(csv, props.data.campaign)
+        log.debug('Download complete!')
       }
       props.onComplete()
     }
