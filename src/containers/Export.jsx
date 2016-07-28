@@ -7,6 +7,7 @@ import Papa from 'papaparse'
 
 class Export extends React.Component {
   componentWillReceiveProps(props) {
+    console.log(props)
     if (!props.data.loading) {
       log.debug('Starting to download data...')
       const convertedAssignments = props.data.campaign.assignments.map((assignment) => {
