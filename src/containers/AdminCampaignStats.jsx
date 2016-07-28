@@ -4,7 +4,7 @@ import Export from './Export'
 import Chart from '../components/Chart'
 import { Card, CardActions, CardHeader, CardMedia, CardTitle, CardText } from 'material-ui/Card'
 import CircularProgress from 'material-ui/CircularProgress'
-//import TexterStats from '../components/TexterStats'
+import TexterStats from '../components/TexterStats'
 import { withRouter } from 'react-router'
 import { StyleSheet, css } from 'aphrodite'
 import loadData from './hoc/load-data'
@@ -208,6 +208,9 @@ class AdminCampaignStats extends React.Component {
 
         <div className={css(styles.header)}>Texter stats</div>
         <div className={css(styles.secondaryHeader)}>% of first texts sent</div>
+        <TexterStats
+          campaign={campaign}
+        />
       </div>
     )
   }
