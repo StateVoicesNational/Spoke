@@ -68,10 +68,10 @@ class Terms extends React.Component {
             By operating the Service, Axle Factory does not represent or imply that it endorses the Content created or shared by users of the Service, or that it believes such Content to be accurate, useful or non-harmful. The Service may also contain Content uploaded by others that violates the privacy or publicity rights, or infringes the intellectual property and other proprietary rights, of third parties, or the downloading, copying or use of which is subject to additional terms and conditions, stated or unstated. Axle Factory disclaims any responsibility for any harm resulting from the use by visitors of the Service (e.g. visitors who do not have an account but are viewing a shared project).  Axle Factory shall not share any Content with third parties, except and solely to the extent as required by applicable law.
           </div>
         </div>
-        <div className={css(styles.className)}>Fees and Payment</div>
+        <div className={css(styles.header)}>Fees and Payment</div>
         <div className={css(styles.paragraph)}>
           <div className={css(styles.paragraph)}>
-            The fees and billing cycle for the Service are explained in the pricing plan selection form. By your selection of a particular plan in this form, you agree to pay Axle Factory the monthly or annual subscription fees indicated for that plan. The time at which payments will be charged are indicated in the pricing form, and in cases where the payment cannot be billed directly from a payment instrument on file, all invoices must be paid in full within 14 days of the date of invoice. Service fees are not refundable.
+            The fees and billing cycle for the Service are explained in the pricing plan selection form (the “Pricing Form”). By your selection of a particular plan in the Pricing Form, you agree to pay Axle Factory the monthly or annual subscription fees (as applicable) indicated for that plan. The time at which payments will be charged are indicated in the Pricing Form, and in cases where the payment cannot be billed directly from a payment instrument on file, all invoices must be paid in full within 14 days of the date of invoice. Service fees are not refundable.
           </div>
           <div className={css(styles.paragraph)}>
             Axle Factory expressly reserves the right to change or modify its prices and fees at any time with 30 days' notice. Your continued use of the Service after any price change indicates your agreement with the new fees and charges after the effective date of the change.
@@ -128,7 +128,7 @@ class Terms extends React.Component {
           Spoke Terms of Service
         </div>
         <div className={css(styles.subtitle)}>
-          Last modified: July 28, 2016
+          Last modified: July 29, 2016
         </div>
         <div className={css(styles.content)}>
           {this.renderContent()}
