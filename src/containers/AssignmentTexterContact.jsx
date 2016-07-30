@@ -181,8 +181,10 @@ class AssignmentTexterContact extends React.Component {
 
   handleSendMessage = async () => {
     const { contact } = this.props.data
+    this.setState({ sending: true})
     const message = this.createMessageToContact(this.refs.messageText.getValue().trim())
     await this.props.mutations.sendMessage(message, contact.id)
+    this.setState({ sending: false})
   }
 
   handleSubmitSurveys = async () => {
@@ -394,6 +396,7 @@ class AssignmentTexterContact extends React.Component {
         >
           <RaisedButton
             onTouchTap={this.handleClickSendMessageButton}
+            disabled={this.state.sending}
             label={`Send ${isMac ? '⌘' : 'ctrl'}  \u21b5`}
             primary
           />
