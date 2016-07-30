@@ -9,7 +9,6 @@ import Store from '../store'
 import { ApolloProvider } from 'react-apollo'
 import ApolloClientSingleton from '../network/apollo-client-singleton'
 import { login } from './auth-service'
-import { log } from '../lib'
 
 window.onerror = (msg, file, line, col, error) => { errorCatcher(error) }
 window.addEventListener('unhandledrejection', (event) => { errorCatcher(event.reason) })

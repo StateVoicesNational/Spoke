@@ -8,7 +8,7 @@
     "npm": "3.7.3"
   },
   "scripts": {
-    "test": "test",
+    "test": "npm run lint",
     "clean": "rm -rf $OUTPUT_DIR",
     "lint": "eslint --fix --ext js --ext jsx src",
     "prod-build-client": "webpack --config ./webpack/config.js",
