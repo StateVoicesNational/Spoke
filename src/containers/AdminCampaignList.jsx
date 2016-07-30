@@ -141,12 +141,12 @@ const mapMutationsToProps = () => ({
         }
       }
     `,
-    variables: { campaign },
+    variables: { campaign }
   })
 })
 
 export default loadData(wrapMutations(
   withRouter(AdminCampaignList)), {
-  mapQueriesToProps,
-  mapMutationsToProps
-})
+    mapQueriesToProps,
+    mapMutationsToProps
+  })

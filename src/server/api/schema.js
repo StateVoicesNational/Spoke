@@ -434,7 +434,7 @@ const rootMutations = {
     },
     deleteQuestionResponses: async(_, { interactionStepIds, campaignContactId }, { loaders }) => {
       await r.table('question_response')
-        .getAll(campaignContactId, { index :'campaign_contact_id'})
+        .getAll(campaignContactId, { index: 'campaign_contact_id' })
         .filter((doc) => r.expr(interactionStepIds).contains(doc('interaction_step_id')))
         .delete()
 

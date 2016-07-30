@@ -9,10 +9,10 @@ class TexterTodo extends React.Component {
     console.log(this.props.data)
     const contacts = assignment.contacts.data
 
-    return <AssignmentTexter
+    return (<AssignmentTexter
       assignment={assignment}
       contacts={contacts}
-    />
+    />)
   }
 }
 
@@ -62,8 +62,8 @@ const mapQueriesToProps = ({ ownProps }) => ({
       }
     }`,
     variables: {
-      contactFilter: ownProps.contactFilter, //FIXME
-      assignmentId: ownProps.params.assignmentId,
+      contactFilter: ownProps.contactFilter, // FIXME
+      assignmentId: ownProps.params.assignmentId
     }
   }
 })

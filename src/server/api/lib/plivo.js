@@ -7,7 +7,7 @@ const plivoAPI = plivo.RestAPI({
   authToken: process.env.PLIVO_AUTH_TOKEN
 })
 
-export async function findNewCell (params={}) {
+export async function findNewCell(params = {}) {
   const searchParams = {
     country_iso: 'US', // The ISO code A2 of the country
     type: 'national', // The type of number you are looking for. The possible number types are local, national and tollfree.
@@ -69,7 +69,7 @@ export async function sendMessage(params = {}) {
   })
 }
 
-export async function handleIncomingMessage(body)  {
+export async function handleIncomingMessage(body) {
   const { To, From, Text, MessageUUID } = body
 
   const contactNumber = getFormattedPhoneNumber(From)
@@ -100,9 +100,9 @@ export async function handleIncomingMessage(body)  {
 
     await r.table('campaign_contact')
       .getAll(assignmentId, { index: 'assignment_id' })
-      .filter( { cell: contactNumber })
+      .filter({ cell: contactNumber })
       .limit(1)
-      .update({ message_status: 'needsResponse'})
+      .update({ message_status: 'needsResponse' })
 
     return messageInstance.id
   } else {

@@ -23,7 +23,7 @@ class Export extends React.Component {
             'contact[lastName]': contact.lastName,
             'contact[cell]': contact.cell,
             'contact[zip]': contact.zip,
-            'contact[city]': contact.location? contact.location.city : null,
+            'contact[city]': contact.location ? contact.location.city : null,
             'contact[state]': contact.location ? contact.location.state : null,
             'contact[optOut]': contact.optOut ? 'true' : 'false',
             'contact[messageStatus]': contact.messageStatus
@@ -52,7 +52,7 @@ class Export extends React.Component {
   downloadCSV(csv, campaign) {
     const blob = new Blob([csv])
     const a = window.document.createElement('a')
-    a.href = window.URL.createObjectURL(blob, {type: 'text/plain'})
+    a.href = window.URL.createObjectURL(blob, { type: 'text/plain' })
     a.download = `${campaign.title} - ${moment(new Date()).format('YYYY-MM-DD')}.csv`
     document.body.appendChild(a)
     a.click()
@@ -60,7 +60,7 @@ class Export extends React.Component {
   }
 
   render() {
-    return <div style={{display: 'hidden'}}></div>
+    return <div style={{ display: 'hidden' }}></div>
   }
 }
 

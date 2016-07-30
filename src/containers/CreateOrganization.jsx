@@ -60,7 +60,6 @@ class CreateOrganization extends React.Component {
             <GSForm
               schema={this.formSchema}
               onSubmit={async (formValues) => {
-
                 const newOrganization = await this.props.mutations.createOrganization(
                     formValues.name,
                     this.props.userData.currentUser.id,

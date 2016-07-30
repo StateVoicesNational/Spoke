@@ -13,7 +13,7 @@ class AdminOptOutList extends React.Component {
       <div>
         {optOuts.length === 0 ?
           <Empty
-            title="Yay, no one has opted out!"
+            title='Yay, no one has opted out!'
             icon={<ProhibitedIcon />}
           /> :
           <List>

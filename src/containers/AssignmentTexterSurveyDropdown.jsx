@@ -15,7 +15,7 @@ const styles = {
   },
   currentStepSelect: {
     fontSize: 16,
-    color: 'red',
+    color: 'red'
   },
   previousStepSelect: {
     fontSize: 16,
@@ -29,7 +29,7 @@ const styles = {
     fontSize: 16,
     color: 'red',
     fontWeight: 'bold'
-  },
+  }
 }
 
 class AssignmentTexterSurveyDropdown extends Component {
@@ -60,7 +60,7 @@ class AssignmentTexterSurveyDropdown extends Component {
       />
     )
 
-    menuItems.push(<Divider/>)
+    menuItems.push(<Divider />)
     menuItems.push(
       <MenuItem
         key='clear'
@@ -73,7 +73,7 @@ class AssignmentTexterSurveyDropdown extends Component {
     return menuItems
   }
 
-  render () {
+  render() {
     const { step, isCurrentStep } = this.props
     const responseValue = step.questionResponse ? step.questionResponse.value : null
     const { question } = step
@@ -89,14 +89,13 @@ class AssignmentTexterSurveyDropdown extends Component {
               name={question.id}
               value={responseValue}
               floatingLabelText={question.text}
-              hintText="Choose answer"
+              hintText='Choose answer'
             >
-              { this.renderAnswers() }
+              {this.renderAnswers()}
             </SelectField>
         </div>
       )
     }
-
   }
 }
 

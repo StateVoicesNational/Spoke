@@ -24,7 +24,7 @@ class TexterTodoList extends React.Component {
     const todos = this.props.data.currentUser.todos
     const empty = (
       <Empty
-        title="You have nothing to do!"
+        title='You have nothing to do!'
         icon={<Check />}
       />
     )

@@ -6,7 +6,7 @@ const TIMEZONE_CONFIG = {
   missingTimeZone: {
     offset: -5, // EST
     allowedStart: 12, // 12pm EST/9am PST
-    allowedEnd: 21, // 9pm EST/6pm PST
+    allowedEnd: 21 // 9pm EST/6pm PST
   }
 }
 

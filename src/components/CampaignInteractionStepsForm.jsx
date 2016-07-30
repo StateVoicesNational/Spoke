@@ -243,8 +243,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
         <div style={{
           display: 'inline-block',
           marginRight: 16
-        }}
-        >
+        }}>
           <RadioButtonUnchecked
             style={{
               height: 14,
@@ -263,7 +262,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
             onKeyDown={(event) => {
               if (event.keyCode === 13) {
                 this.addAnswer(interactionStep)
-                event.preventDefault();
+                event.preventDefault()
               }
             }}
           />

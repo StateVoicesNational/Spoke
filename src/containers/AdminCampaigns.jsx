@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-//import { CampaignList } from '../components/campaign_list'
+// import { CampaignList } from '../components/campaign_list'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import ContentAdd from 'material-ui/svg-icons/content/add'
 import { moment } from 'moment'
@@ -27,7 +27,7 @@ export class AdminCampaigns extends Component {
   renderEmpty() {
     return (
       <Empty
-        title="No campaigns yet"
+        title='No campaigns yet'
         icon={<SpeakerNotesIcon />}
       />
     )
@@ -42,7 +42,7 @@ export class AdminCampaigns extends Component {
           [false, true].map((isPast) => (
             groupedCampaigns[isPast] ? (
               <div>
-                <Subheader>{ isPast ? 'Past' : 'Current'}</Subheader>
+                <Subheader>{isPast ? 'Past' : 'Current'}</Subheader>
                 <CampaignList
                   campaigns={groupedCampaigns[isPast]}
                   organizationId={organizationId}
@@ -56,7 +56,6 @@ export class AdminCampaigns extends Component {
         }
       </div>
     )
-
   }
   render() {
 /*    const { campaigns, loading, organizationId } = this.props

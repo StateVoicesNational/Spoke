@@ -23,7 +23,7 @@ import GSSubmitButton from '../components/forms/GSSubmitButton'
 import { getChildren, getTopMostParent, interactionStepForId } from '../lib'
 const styles = StyleSheet.create({
   container: {
-    margin:0,
+    margin: 0,
     position: 'absolute',
     top: 0,
     bottom: 0,
@@ -34,13 +34,13 @@ const styles = StyleSheet.create({
     height: '100%'
   },
   navigationToolbarTitle: {
-    fontSize: "12px",
+    fontSize: '12px',
     position: 'absolute',
     top: 5
 
   },
   topFixedSection: {
-    flex: '0 0 auto',
+    flex: '0 0 auto'
   },
   middleScrollingSection: {
     flex: '1 1 auto',
@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
   },
   bottomFixedSection: {
     borderTop: `1px solid ${grey100}`,
-    flex: '0 0 auto',
+    flex: '0 0 auto'
   },
   messageField: {
     padding: 20
@@ -85,8 +85,6 @@ class AssignmentTexterContact extends React.Component {
       questionResponses,
       currentInteractionStep: availableSteps.length > 0 ? availableSteps[availableSteps.length - 1] : null
     }
-
-
   }
 
   getAvailableInteractionSteps(questionResponses) {
@@ -133,7 +131,7 @@ class AssignmentTexterContact extends React.Component {
       contact,
       texter,
       script,
-      customFields: campaign.customFields,
+      customFields: campaign.customFields
     }) : null
   }
 
@@ -147,7 +145,7 @@ class AssignmentTexterContact extends React.Component {
     event.preventDefault()
     this.setState({
       responsePopoverAnchorEl: event.currentTarget,
-      responsePopoverOpen: true,
+      responsePopoverOpen: true
     })
   }
 
@@ -244,11 +242,11 @@ class AssignmentTexterContact extends React.Component {
   }
 
   handleOpenDialog = () => {
-    this.setState({optOutDialogOpen: true})
+    this.setState({ optOutDialogOpen: true })
   }
 
   handleCloseDialog = () => {
-    this.setState({optOutDialogOpen: false})
+    this.setState({ optOutDialogOpen: false })
   }
 
   handleChangeScript = (newScript) => {
@@ -259,7 +257,7 @@ class AssignmentTexterContact extends React.Component {
     })
   }
 
-  handleQuestionResponseChange = ({interactionStep, questionResponseValue, nextScript}) => {
+  handleQuestionResponseChange = ({ interactionStep, questionResponseValue, nextScript }) => {
     const { questionResponses } = this.state
     const { interactionSteps } = this.props.data.contact
     questionResponses[interactionStep.id] = questionResponseValue
@@ -282,7 +280,7 @@ class AssignmentTexterContact extends React.Component {
     const { campaign, assignment, texter } = this.props
     const { userCannedResponses, campaignCannedResponses } = assignment
 
-    return <CannedResponseMenu
+    return (<CannedResponseMenu
       onRequestClose={this.handleClosePopover}
       open={this.state.responsePopoverOpen}
       anchorEl={this.state.responsePopoverAnchorEl}
@@ -292,20 +290,20 @@ class AssignmentTexterContact extends React.Component {
       campaignId={campaign.id}
       texterId={texter.id}
       onSelectCannedResponse={this.handleCannedResponseChange}
-    />
+    />)
   }
   renderOptOutDialog() {
     const { contact } = this.props.data
     const isOptedOut = contact.isOptedOut
     const actions = [
       <FlatButton
-        label="Cancel"
+        label='Cancel'
         onTouchTap={this.handleCloseDialog}
       />,
       <Form.Button
-        type="submit"
+        type='submit'
         component={GSSubmitButton}
-        label="Send message and opt out user"
+        label='Send message and opt out user'
       />
     ]
 
@@ -319,18 +317,18 @@ class AssignmentTexterContact extends React.Component {
       <div>
         <GSForm
           schema={schema}
-          value={{optOutMessageText: optOutScript}}
+          value={{ optOutMessageText: optOutScript }}
           onSubmit={this.handleOptOut}
         >
         <Dialog
-          title="Opt out user"
+          title='Opt out user'
           actions={actions}
           modal={false}
           open={this.state.optOutDialogOpen}
           onRequestClose={this.handleCloseDialog}
         >
             <Form.Field
-              name="optOutMessageText"
+              name='optOutMessageText'
               fullWidth
               multiLine
             />
@@ -366,15 +364,15 @@ class AssignmentTexterContact extends React.Component {
     const { messageStatus } = contact
     let button = null
     if (messageStatus === 'closed') {
-      button = <RaisedButton
+      button = (<RaisedButton
         onTouchTap={() => this.handleEditMessageStatus('needsResponse')}
         label='Reopen'
-      />
+      />)
     } else if (messageStatus === 'needsResponse') {
-      button = <RaisedButton
-      onTouchTap={this.handleClickCloseContactButton}
-        label="Close without responding"
-      />
+      button = (<RaisedButton
+        onTouchTap={this.handleClickCloseContactButton}
+        label='Close without responding'
+      />)
     }
 
     return button
@@ -382,12 +380,12 @@ class AssignmentTexterContact extends React.Component {
 
   renderActionToolbar() {
     const { data, campaign, navigationToolbarChildren } = this.props
-    const isMac = (navigator.appVersion.indexOf("Mac") !== -1 )
+    const isMac = (navigator.appVersion.indexOf('Mac') !== -1)
 
     const { contact } = data
 
     // FIXME
-      return (
+    return (
       <Toolbar
         style={inlineStyles.actionToolbar}
       >
@@ -400,27 +398,27 @@ class AssignmentTexterContact extends React.Component {
             label={`Send ${isMac ? '⌘' : 'ctrl'}  \u21b5`}
             primary
           />
-          { this.renderNeedsResponseToggleButton(contact) }
+          {this.renderNeedsResponseToggleButton(contact)}
           <ToolbarSeparator />
           <RaisedButton
-            label="Canned responses"
+            label='Canned responses'
             onTouchTap={this.handleOpenPopover}
           />
           <ToolbarSeparator />
           <IconButton
             secondary
             style={inlineStyles.toolbarIconButton}
-            label="Opt out"
+            label='Opt out'
             onTouchTap={this.handleOpenDialog}
-            tooltip="Opt out this contact"
-            tooltipPosition="top-center"
+            tooltip='Opt out this contact'
+            tooltipPosition='top-center'
           >
-            <ProhibitedIcon/>
+            <ProhibitedIcon />
           </IconButton>
           <div
-            style={{float: 'right', marginLeft: 20}}
+            style={{ float: 'right', marginLeft: 20 }}
           >
-            { navigationToolbarChildren}
+            {navigationToolbarChildren}
           </div>
         </ToolbarGroup>
       </Toolbar>
@@ -437,8 +435,8 @@ class AssignmentTexterContact extends React.Component {
           <IconButton
             onTouchTap={this.props.onExitTexter}
             style={inlineStyles.exitTexterIconButton}
-            tooltip="Exit assignment"
-            tooltipPosition="bottom-center"
+            tooltip='Exit assignment'
+            tooltipPosition='bottom-center'
           >
             <NavigateCloseIcon />
           </IconButton>
@@ -462,7 +460,7 @@ class AssignmentTexterContact extends React.Component {
       <div>
           {this.renderSurveySection()}
           <div>
-            <div  className={css(styles.messageField)}>
+            <div className={css(styles.messageField)}>
               <TextField
                 autoFocus
                 ref='messageText'
@@ -474,10 +472,10 @@ class AssignmentTexterContact extends React.Component {
                 value={this.state.messageText}
               />
             </div>
-            { this.renderActionToolbar()}
+            {this.renderActionToolbar()}
           </div>
-          { this.renderOptOutDialog()}
-          { this.renderCannedResponsePopover()}
+          {this.renderOptOutDialog()}
+          {this.renderCannedResponsePopover()}
       </div>
     )
   }
@@ -491,7 +489,7 @@ class AssignmentTexterContact extends React.Component {
         <div
           className={css(styles.middleScrollingSection)}
         >
-          { this.renderMiddleScrollingSection()}
+          {this.renderMiddleScrollingSection()}
         </div>
         <div className={css(styles.bottomFixedSection)}>
           {this.renderBottomFixedSection()}
@@ -594,7 +592,7 @@ const mapMutationsToProps = () => ({
     variables: {
       messageStatus,
       campaignContactId
-    },
+    }
   }),
   deleteQuestionResponses: (interactionStepIds, campaignContactId) => ({
     mutation: gql`
@@ -608,7 +606,7 @@ const mapMutationsToProps = () => ({
       interactionStepIds,
       campaignContactId
     }
- }),
+  }),
   updateQuestionResponses: (questionResponses, campaignContactId) => ({
     mutation: gql`
       mutation updateQuestionResponses($questionResponses:[QuestionResponseInput], $campaignContactId: String!) {
@@ -640,7 +638,7 @@ const mapMutationsToProps = () => ({
     variables: {
       message,
       campaignContactId
-    },
+    }
   })
 })
 

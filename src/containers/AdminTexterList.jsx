@@ -16,11 +16,11 @@ class AdminTexterList extends React.Component {
   }
 
   handleOpen = () => {
-    this.setState({ open: true})
+    this.setState({ open: true })
   }
 
   handleClose = () => {
-    this.setState({ open: false})
+    this.setState({ open: false })
   }
 
   renderTexters() {
@@ -28,7 +28,7 @@ class AdminTexterList extends React.Component {
     if (texters.length === 0) {
       return (
         <Empty
-          title="No texters yet"
+          title='No texters yet'
           icon={<PeopleIcon />}
         />
       )
@@ -58,11 +58,11 @@ class AdminTexterList extends React.Component {
           <ContentAdd />
         </FloatingActionButton>
         <Dialog
-          title="Invite new texters"
+          title='Invite new texters'
           actions={[
             <FlatButton
-              label="OK"
-              primary={true}
+              label='OK'
+              primary
               onTouchTap={this.handleClose}
             />
           ]}

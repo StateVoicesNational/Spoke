@@ -27,11 +27,11 @@ const styles = {
   }
 }
 
-export default function Chip({text, iconRightClass, onIconRightTouchTap, onTouchTap, style={}}) {
+export default function Chip({ text, iconRightClass, onIconRightTouchTap, onTouchTap, style = {} }) {
   return (
     <div style={_.extend({}, styles.chip, style)} onTouchTap={onTouchTap}>
-      { text }
-      { iconRightClass ? React.createElement(iconRightClass, {style: styles.icon, onTouchTap: onIconRightTouchTap }) : ''}
+      {text}
+      {iconRightClass ? React.createElement(iconRightClass, { style: styles.icon, onTouchTap: onIconRightTouchTap }) : ''}
     </div>
   )
 }

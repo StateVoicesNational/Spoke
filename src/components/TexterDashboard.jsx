@@ -22,10 +22,10 @@ class TexterDashboard extends React.Component {
       fullScreen
     ) : (
       <div>
-        { topNav }
+        {topNav}
         <div className={css(styles.container)}>
           <div className={css(styles.content)}>
-            { main }
+            {main}
           </div>
         </div>
       </div>

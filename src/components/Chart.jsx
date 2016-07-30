@@ -22,11 +22,11 @@ export default ({ data }) => {
     <div>
       <Pie data={pieData} />
       <div>
-        {pieData.map(({label, color}) => (
+        {pieData.map(({ label, color }) => (
           <span
             style={{
               backgroundColor: color,
-              width:20,
+              width: 20,
               padding: 5,
               margin: 5,
               fontSize: 12

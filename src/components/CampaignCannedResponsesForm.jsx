@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
 
 // THIS IS A COPY/PASTE FROM CANNED RESPONSE FORM BECAUSE I CANT MAKE FORM.CONTEXT WORK
 class CannedResponseForm extends React.Component {
-  handleSave = (formValues) =>  {
+  handleSave = (formValues) => {
     const { onSaveCannedResponse } = this.props
     console.log('saving...', this, formValues)
     onSaveCannedResponse(formValues)
@@ -74,14 +74,14 @@ class CannedResponseForm extends React.Component {
           />
           <div className={css(styles.buttonRow)}>
             <Form.Button
-              type="submit"
-              label="Add Response"
+              type='submit'
+              label='Add Response'
               style={{
                 display: 'inline-block'
               }}
             />
             <FlatButton
-              label="Cancel"
+              label='Cancel'
               onTouchTap={() => this.setState({ showForm: false })}
               style={{
                 marginLeft: 5,
@@ -116,14 +116,14 @@ export default class CampaignCannedResponsesForm extends React.Component {
         >
           <div
             className={css(styles.form)}
-        >
+          >
             <CannedResponseForm
               onSaveCannedResponse={(ele) => {
                 let newVals = this.props.formValues.cannedResponses.slice(0)
                 ele.id = Math.random().toString(36).replace(/[^a-zA-Z1-9]+/g, '')
                 newVals.push(ele)
                 this.props.onChange({
-                  cannedResponses: newVals})
+                  cannedResponses: newVals })
                 this.setState({ showForm: false })
               }}
               customFields={this.props.customFields}
@@ -135,8 +135,8 @@ export default class CampaignCannedResponsesForm extends React.Component {
     return (
       <FlatButton
         secondary
-        label="Add new canned response"
-        icon={ <CreateIcon />}
+        label='Add new canned response'
+        icon={<CreateIcon />}
         onTouchTap={() => this.setState({ showForm: true })}
       />
     )
@@ -160,7 +160,7 @@ export default class CampaignCannedResponsesForm extends React.Component {
               }).filter((ele) => ele !== null)
 
               this.props.onChange({
-                cannedResponses: newVals})
+                cannedResponses: newVals })
             }}
           >
             <DeleteIcon />

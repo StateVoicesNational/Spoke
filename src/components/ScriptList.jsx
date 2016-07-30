@@ -28,7 +28,7 @@ class ScriptList extends React.Component {
     super(props)
     this.state = {
       script: props.script,
-      dialogOpen: false,
+      dialogOpen: false
     }
   }
 
@@ -67,10 +67,10 @@ class ScriptList extends React.Component {
           campaignId,
           userId: texterId
         }
-        console.log("trying to save", saveObject)
+        console.log('trying to save', saveObject)
         await mutations.createCannedResponse(saveObject)
         this.setState({ dialogOpen: false })
-      } catch(err) {
+      } catch (err) {
         console.log(err)
       }
     }
@@ -111,18 +111,18 @@ class ScriptList extends React.Component {
     const list = scripts.length === 0 ? null : (
       <List>
         <Subheader>{subheader}</Subheader>,
-        { listItems}
+        {listItems}
         <Divider />
       </List>
     )
 
     return (
       <div>
-        { list }
-        { showAddScriptButton ? (
+        {list}
+        {showAddScriptButton ? (
           <FlatButton
-            label="Add new canned response"
-            icon={ <CreateIcon />}
+            label='Add new canned response'
+            icon={<CreateIcon />}
             onTouchTap={this.handleOpenDialog}
           />
         ) : ''}
@@ -132,13 +132,13 @@ class ScriptList extends React.Component {
             open={dialogOpen}
             actions={[
               <FlatButton
-                label="Cancel"
+                label='Cancel'
                 onTouchTap={this.handleCloseDialog}
               />,
               <Form.Button
-                type="submit"
+                type='submit'
                 component={GSSubmitButton}
-                label="Save"
+                label='Save'
               />
             ]}
             onRequestClose={this.handleCloseDialog}

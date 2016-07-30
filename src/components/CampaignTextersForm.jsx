@@ -67,36 +67,36 @@ export default class CampaignTextersForm extends Component {
     // TODO https://github.com/callemall/material-ui/pull/4193/commits/8e80a35e8d2cdb410c3727333e8518cadc08783b
     const autocomplete = (
       <AutoComplete
-        ref="autocomplete"
+        ref='autocomplete'
         style={inlineStyles.autocomplete}
         autoFocus
-        searchText=""
+        searchText=''
         filter={filter}
-        hintText="Search for texters to assign"
+        hintText='Search for texters to assign'
         dataSource={dataSource}
         onNewRequest={this.handleNewRequest}
       />
     )
 
     const radioButtonGroup = orgTexters.length === 0 ? '' : (
-      [
-        <RadioButtonGroup
-          style={inlineStyles.radioButtonGroup}
-          name="assignment"
-          valueSelected={valueSelected}
-          onChange={this.onChange}
-        >
+    [
+      <RadioButtonGroup
+        style={inlineStyles.radioButtonGroup}
+        name='assignment'
+        valueSelected={valueSelected}
+        onChange={this.onChange}
+      >
           <RadioButton
-            value="assignAll"
-            label="Everyone available"
+            value='assignAll'
+            label='Everyone available'
           />
           <RadioButton
-            value="assignIndividual"
-            label="Choose individual people to assign"
+            value='assignIndividual'
+            label='Choose individual people to assign'
           />
         </RadioButtonGroup>,
-         !assignAll ? autocomplete : ''
-      ]
+      !assignAll ? autocomplete : ''
+    ]
     )
     if (this.props.ensureComplete) {
       return (
@@ -123,7 +123,7 @@ export default class CampaignTextersForm extends Component {
         {radioButtonGroup}
          <div>
            {texters.map((texter) => {
-              return (
+             return (
                 <Chip
                   text={texter.firstName}
                   iconRightClass={ContentClear}

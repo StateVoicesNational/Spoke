@@ -46,14 +46,14 @@ export const resolvers = {
     contacts: (assignment) => assignment,
     campaignCannedResponses: async(assignment) => (
       await r.table('canned_response')
-        .getAll(assignment.campaign_id, {index: 'campaign_id'})
+        .getAll(assignment.campaign_id, { index: 'campaign_id' })
         .filter({ user_id: '' })
     ),
     userCannedResponses: async(assignment) => (
       await r.table('canned_response')
-        .getAll(assignment.campaign_id, {index: 'campaign_id'})
+        .getAll(assignment.campaign_id, { index: 'campaign_id' })
         .filter({ user_id: assignment.user_id })
-    ),
+    )
   },
   AssignmentCampaignContactCollection: {
     data: async (assignment, { contactFilter }) => {

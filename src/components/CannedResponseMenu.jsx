@@ -6,8 +6,8 @@ import ScriptList from './ScriptList'
 
 const styles = {
   popover: {
-    width: 500,
-  },
+    width: 500
+  }
 }
 
 
@@ -15,7 +15,7 @@ class CannedResponseMenu extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      popoverOpen: false,
+      popoverOpen: false
     }
   }
 
@@ -51,13 +51,13 @@ class CannedResponseMenu extends React.Component {
           style={styles.popover}
           open={open}
           anchorEl={anchorEl}
-          anchorOrigin={{horizontal: 'left', vertical: 'bottom'}}
-          targetOrigin={{horizontal: 'left', vertical: 'bottom'}}
+          anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
+          targetOrigin={{ horizontal: 'left', vertical: 'bottom' }}
           onRequestClose={onRequestClose}
         >
           <List>
-            {this.renderCannedResponses({scripts: campaignCannedResponses, subheader: 'Suggested', showAddScriptButton: false})}
-            {this.renderCannedResponses({scripts: userCannedResponses, subheader: 'Personal', showAddScriptButton: true})}
+            {this.renderCannedResponses({ scripts: campaignCannedResponses, subheader: 'Suggested', showAddScriptButton: false })}
+            {this.renderCannedResponses({ scripts: userCannedResponses, subheader: 'Personal', showAddScriptButton: true })}
           </List>
         </Popover>
       </div>

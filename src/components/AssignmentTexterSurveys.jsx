@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { grey50 } from 'material-ui/styles/colors'
-import {Card, CardHeader, CardText} from 'material-ui/Card';
+import { Card, CardHeader, CardText } from 'material-ui/Card'
 import MenuItem from 'material-ui/MenuItem'
 import Divider from 'material-ui/Divider'
 import SelectField from 'material-ui/SelectField'
@@ -22,30 +22,29 @@ const styles = {
 }
 class AssignmentTexterSurveys extends Component {
   constructor(props) {
-
     super(props)
 
     this.state = {
-      showAllQuestions: false,
+      showAllQuestions: false
     }
   }
 
   handleNext = () => {
-    const {stepIndex} = this.state
+    const { stepIndex } = this.state
     this.setState({
-      stepIndex: stepIndex + 1,
+      stepIndex: stepIndex + 1
     })
   }
 
   handlePrevious = () => {
-    const {stepIndex} = this.state
+    const { stepIndex } = this.state
     this.setState({
-      stepIndex: stepIndex - 1,
+      stepIndex: stepIndex - 1
     })
   }
 
   handleExpandChange = (newExpandedState) => {
-    this.setState( { showAllQuestions: newExpandedState })
+    this.setState({ showAllQuestions: newExpandedState })
   }
 
   getNextScript({ interactionStep, answerIndex }) {
@@ -81,7 +80,7 @@ class AssignmentTexterSurveys extends Component {
       />
     )
 
-    menuItems.push(<Divider/>)
+    menuItems.push(<Divider />)
     menuItems.push(
       <MenuItem
         key='clear'
@@ -109,9 +108,9 @@ class AssignmentTexterSurveys extends Component {
         fullWidth
         value={responseValue}
         floatingLabelText={question.text}
-        hintText="Choose answer"
+        hintText='Choose answer'
       >
-        { this.renderAnswers(step) }
+        {this.renderAnswers(step)}
       </SelectField>
       </div>
     ) : ''

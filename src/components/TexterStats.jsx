@@ -1,5 +1,5 @@
 import React from 'react'
-import LinearProgress from 'material-ui/LinearProgress';
+import LinearProgress from 'material-ui/LinearProgress'
 
 class TexterStats extends React.Component {
   renderAssignment(assignment) {
@@ -13,7 +13,7 @@ class TexterStats extends React.Component {
         {texter.firstName}
         <div>{percentComplete}%</div>
         <LinearProgress
-          mode="determinate"
+          mode='determinate'
           value={percentComplete}
         />
       </div>
@@ -25,7 +25,7 @@ class TexterStats extends React.Component {
     const { assignments } = campaign
     return (
       <div>
-        { assignments.map((assignment) => this.renderAssignment(assignment)) }
+        {assignments.map((assignment) => this.renderAssignment(assignment))}
       </div>
     )
   }

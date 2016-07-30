@@ -14,7 +14,7 @@ import Invite from './invite'
 import ZipCode from './zip-code'
 import thinky from './thinky'
 
-function createLoader(model, idKey='id') {
+function createLoader(model, idKey = 'id') {
   return new DataLoader(async (keys) => {
     const docs = await model.getAll(...keys, { index: idKey })
     return keys.map((key) => (

@@ -6,7 +6,7 @@ import { grey100 } from 'material-ui/styles/colors'
 
 const inlineStyles = {
   toolbar: {
-    backgroundColor: grey100,
+    backgroundColor: grey100
   },
   cellToolbarTitle: {
     fontSize: 14
@@ -53,8 +53,7 @@ class ContactToolbar extends Component {
       <Toolbar
         style={inlineStyles.toolbar}
       >
-        <ToolbarGroup
-        >
+        <ToolbarGroup >
           <ToolbarTitle
             text={campaignContact.firstName}
           />
@@ -82,7 +81,7 @@ class ContactToolbar extends Component {
 }
 
 ContactToolbar.propTypes = {
-  campaignContact: React.PropTypes.object,   // contacts for current assignment
+  campaignContact: React.PropTypes.object   // contacts for current assignment
 }
 
 export default ContactToolbar

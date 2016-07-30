@@ -4,18 +4,18 @@ import {
   ContentState,
   CompositeDecorator,
   Editor,
-  Modifier,
+  Modifier
 } from 'draft-js'
 import { delimit } from '../lib/scripts'
 import Chip from './Chip'
 import { red400, green500, green600, grey100 } from 'material-ui/styles/colors'
 
 function findWithRegex(regex, contentBlock, callback) {
-  const text = contentBlock.getText();
-  let matchArr, start;
+  const text = contentBlock.getText()
+  let matchArr, start
   while ((matchArr = regex.exec(text)) !== null) {
-    start = matchArr.index;
-    callback(start, start + matchArr[0].length);
+    start = matchArr.index
+    callback(start, start + matchArr[0].length)
   }
 }
 
@@ -33,16 +33,16 @@ const styles = {
     border: '1px solid #ddd',
     cursor: 'text',
     fontSize: 16,
-    padding: 5,
+    padding: 5
   },
   button: {
     marginTop: 10,
-    textAlign: 'center',
+    textAlign: 'center'
   },
   goodField: {
     color: green500,
     direction: 'ltr',
-    unicodeBidi: 'bidi-override',
+    unicodeBidi: 'bidi-override'
   },
   badField: {
     color: red400
@@ -53,7 +53,7 @@ const styles = {
     textTransform: 'none',
     backgroundColor: grey100,
     // margin: '5px 10px',
-    cursor: 'pointer',
+    cursor: 'pointer'
     // display: 'inline-block',
   },
   scriptFieldButtonSection: {
@@ -79,7 +79,7 @@ class ScriptEditor extends React.Component {
 
   getValue() {
     const { editorState } = this.state
-    return editorState.getCurrentContent().getPlainText();
+    return editorState.getCurrentContent().getPlainText()
   }
 
   getEditorState() {
@@ -97,10 +97,10 @@ class ScriptEditor extends React.Component {
   }
 
   onChange(editorState) {
-    this.setState( { editorState }, () => {
+    this.setState({ editorState }, () => {
       const { onChange } = this.props
       if (onChange) {
-        console.log("changing script!")
+        console.log('changing script!')
         onChange(this.getValue())
       }
     })
@@ -140,11 +140,11 @@ class ScriptEditor extends React.Component {
   addCustomField(field) {
     const textToInsert = delimit(field)
     const { editorState } = this.state
-    const selection = editorState.getSelection();
-    const contentState = editorState.getCurrentContent();
-    const newContentState = Modifier.insertText(contentState, selection, textToInsert);
-    const newEditorState = EditorState.push(editorState, newContentState, 'insert-fragment');
-    this.setState({ editorState: newEditorState}, this.focus)
+    const selection = editorState.getSelection()
+    const contentState = editorState.getCurrentContent()
+    const newContentState = Modifier.insertText(contentState, selection, textToInsert)
+    const newEditorState = EditorState.push(editorState, newContentState, 'insert-fragment')
+    this.setState({ editorState: newEditorState }, this.focus)
   }
 
   renderCustomFields() {
@@ -163,7 +163,7 @@ class ScriptEditor extends React.Component {
   }
 
   render() {
-    const { name} = this.props
+    const { name } = this.props
 
     return (
       <div>
@@ -172,13 +172,13 @@ class ScriptEditor extends React.Component {
             name={name}
             editorState={this.state.editorState}
             onChange={this.onChange}
-            ref="editor"
-            spellCheck={true}
+            ref='editor'
+            spellCheck
           />
         </div>
         {this.renderCustomFields()}
       </div>
-    );
+    )
   }
 }
 

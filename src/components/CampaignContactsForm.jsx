@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
     left: 0,
     width: '100%',
     opacity: 0
-  },
+  }
 })
 
 export default class CampaignContactsForm extends React.Component {
@@ -64,7 +64,7 @@ export default class CampaignContactsForm extends React.Component {
     const file = event.target.files[0]
     this.setState({ uploading: true }, () => {
       const uploading = false
-      parseCSV(file, this.props.optOuts, ({ contacts, customFields, validationStats, error}) => {
+      parseCSV(file, this.props.optOuts, ({ contacts, customFields, validationStats, error }) => {
         if (error) {
           this.handleUploadError(error)
         } else if (contacts.length === 0) {
@@ -234,7 +234,7 @@ export default class CampaignContactsForm extends React.Component {
           title='Who are you contacting?'
           subtitle={subtitle}
         />
-        { this.renderForm() }
+        {this.renderForm()}
       </div>
     )
   }

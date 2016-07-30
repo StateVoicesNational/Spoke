@@ -4,7 +4,7 @@ import Subheader from 'material-ui/Subheader'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import { List, ListItem } from 'material-ui/List'
 import AppBar from 'material-ui/AppBar'
-import ArrowBackIcon from 'material-ui/svg-icons/navigation/arrow-back';
+import ArrowBackIcon from 'material-ui/svg-icons/navigation/arrow-back'
 import IconButton from 'material-ui/IconButton'
 import Divider from 'material-ui/Divider'
 import { withRouter } from 'react-router'
@@ -22,7 +22,7 @@ class Navigation extends Component {
         }}
       >
         <List>
-          { sections.map((section) => (
+          {sections.map((section) => (
             <ListItem
               key={section.name}
               primaryText={section.name}

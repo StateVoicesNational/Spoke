@@ -13,19 +13,19 @@ import { withRouter } from 'react-router'
 
 const styles = StyleSheet.create({
   container: {
-    position:'fixed',
-    top:0,
-    left:0,
+    position: 'fixed',
+    top: 0,
+    left: 0,
     // right: 0,
     // bottom: 0
-    width:'100%',
-    height:'100%',
-    zIndex:1002,
+    width: '100%',
+    height: '100%',
+    zIndex: 1002,
     backgroundColor: 'white',
     overflow: 'hidden'
   },
   navigationToolbarTitle: {
-    fontSize: "12px"
+    fontSize: '12px'
   }
 })
 
@@ -64,7 +64,7 @@ class AssignmentTexter extends React.Component {
       return
     }
 
-    console.log("trying to navigate next", this.state.currentContactIndex)
+    console.log('trying to navigate next', this.state.currentContactIndex)
 
     this.setState({ direction: 'right' }, () => this.incrementCurrentContactIndex(1))
   }
@@ -98,7 +98,7 @@ class AssignmentTexter extends React.Component {
   }
 
   getContact(contacts, index) {
-    return (contacts.length > index) ? contacts[index] :  null
+    return (contacts.length > index) ? contacts[index] : null
   }
 
   contactCount() {
@@ -146,14 +146,14 @@ class AssignmentTexter extends React.Component {
     return (
       <div className={css(styles.container)}>
         <ReactCSSTransitionGroup
-          transitionName={ {
+          transitionName={{
             enter: cssClassName('Enter'),
             enterActive: cssClassName('EnterActive'),
             leave: cssClassName('Leave'),
             leaveActive: cssClassName('LeaveActive'),
             appear: cssClassName('Appear'),
             appearActive: cssClassName('AppearActive')
-          } }
+          }}
           transitionEnterTimeout={300}
           transitionLeaveTimeout={300}
         >
@@ -188,9 +188,8 @@ class AssignmentTexter extends React.Component {
 AssignmentTexter.propTypes = {
   currentUser: React.PropTypes.object,
   assignment: React.PropTypes.object,      // current assignment
-  contacts: React.PropTypes.array,   // contacts for current assignment
+  contacts: React.PropTypes.array   // contacts for current assignment
 }
 
 export default withRouter(AssignmentTexter)
-
 

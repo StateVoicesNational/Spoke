@@ -6,19 +6,19 @@ import Divider from 'material-ui/Divider'
 import { red300 } from 'material-ui/styles/colors'
 
 const styles = {
-    optOut: {
-      fontSize: '13px',
-      fontStyle: 'italic',
-    },
-    sent: {
-      fontSize: '13px',
-      textAlign: 'right',
-      marginLeft: '24px'
-    },
-    received: {
-      fontSize: '13px',
-      marginRight: '24px'
-    }
+  optOut: {
+    fontSize: '13px',
+    fontStyle: 'italic'
+  },
+  sent: {
+    fontSize: '13px',
+    textAlign: 'right',
+    marginLeft: '24px'
+  },
+  received: {
+    fontSize: '13px',
+    marginRight: '24px'
+  }
 }
 
 class MessageList extends React.Component {
@@ -31,7 +31,7 @@ class MessageList extends React.Component {
         <Divider />
         <ListItem
           style={styles.optOut}
-          leftIcon={<ProhibitedIcon style={{fill: red300}} />}
+          leftIcon={<ProhibitedIcon style={{ fill: red300 }} />}
           disabled
           primaryText={`${contact.firstName} opted out of texts`}
           secondaryText={moment(optOut.createdAt).fromNow()}
