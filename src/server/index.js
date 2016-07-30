@@ -70,7 +70,7 @@ app.get('/login-callback',
         auth0_id: req.user.id,
         first_name: req.user._json.user_metadata.given_name,
         last_name: req.user._json.user_metadata.family_name,
-        cell: getFormattedPhoneNumber(req.user._json.user_metadata.cell),
+        cell: req.user._json.user_metadata.cell,
         email: req.user._json.email,
         assigned_cell: ''
       })
