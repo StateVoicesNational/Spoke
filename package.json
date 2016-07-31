@@ -87,6 +87,7 @@
     "react-tap-event-plugin": "^1.0.0",
     "redux-thunk": "^2.1.0",
     "rollbar": "^0.6.2",
+    "stripe": "^4.9.0",
     "thinky": "^2.3.3",
     "transform-loader": "^0.2.3",
     "webpack": "^1.13.1",
