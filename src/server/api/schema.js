@@ -138,7 +138,8 @@ const rootSchema = `
     organization(id:String!): Organization
     campaign(id:String!): Campaign
     invite(id:String!): Invite
-    contact(id:String!): CampaignContact
+    contact(id:String!): CampaignContact,
+    stripePublishableKey: String
   }
 
   type RootMutation {
@@ -486,7 +487,8 @@ const rootResolvers = {
       const contact = await loaders.campaignContact.load(id)
       // await accessRequired(user, contact.organization_id, 'TEXTER')
       return contact
-    }
+    },
+    stripePublishableKey: () => process.env.STRIPE_PUBLISHABLE_KEY
   }
 }
 

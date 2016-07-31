@@ -3,6 +3,11 @@ import { r, Organization } from '../models'
 import { accessRequired } from './errors'
 
 export const schema = `
+  type BillingDetails {
+    creditAmount: Int
+    creditCurrency: String
+  }
+
   type Organization {
     id: ID
     name: String
@@ -10,10 +15,15 @@ export const schema = `
     texters: [User]
     admins: [User]
     optOuts: [OptOut]
+    billingDetails: BillingDetails
   }
 `
 
 export const resolvers = {
+  BillingDetails: {
+    creditAmount: (organization) => organization.credit_amount || 0,
+    creditCurrency: (organization) => organization.credit_currency || 'usd'
+  },
   Organization: {
     ...mapFieldsToModel([
       'id',
@@ -54,7 +64,8 @@ export const resolvers = {
       .getAll(organization.id, { index: 'organization_id' })
       .filter((userOrganization) => userOrganization('roles').contains('ADMIN'))
       .eqJoin('user_id', r.table('user'))('right')
-    }
+    },
+    billingDetails: (organization) => organization
   }
 }
 

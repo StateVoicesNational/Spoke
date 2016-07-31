@@ -61,7 +61,10 @@ class AdminDashboard extends React.Component {
     }, {
       name: 'Optouts',
       path: 'optouts'
-    }]
+    }, {
+      name: 'Billing',
+      path: 'billing'
+    } ]
 
     const { location, children } = this.props
     let currentSection = sections.filter(
