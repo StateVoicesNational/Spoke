@@ -71,16 +71,35 @@ const Billing = React.createClass({
     })
 
     return (
-      <div>
-        <GSForm
-          schema={cardFormSchema}
-          onSubmit={this.handleSubmitCardForm}
+      <GSForm
+        schema={cardFormSchema}
+        onSubmit={this.handleSubmitCardForm}
+      >
+
+        <Dialog
+          open={this.state.creditCardDialogOpen}
+          actions={[
+            <FlatButton
+              label='Cancel'
+              onTouchTap={this.handleCloseCreditCardDialog}
+            />,
+            <Form.Button
+              type='submit'
+              label='Change card'
+              component={GSSubmitButton}
+              fullWidth
+              secondary
+              style={{ marginTop: 40 }}
+            />
+          ]}
+          onRequestClose={this.handleCloseCreditCardDialog}
         >
           <Form.Field
             name='number'
             data-stripe
             label='Card number'
             fullWidth
+            autoFocus
           />
           <Form.Field
             name='exp_month'
@@ -92,16 +111,8 @@ const Billing = React.createClass({
             label='Expiration year'
             hintText="2019"
           />
-          <Form.Button
-            type='submit'
-            label='Change card'
-            name='submit'
-            fullWidth
-            secondary
-            style={{ marginTop: 40 }}
-          />
-        </GSForm>
-      </div>
+        </Dialog>
+      </GSForm>
     )
   },
 
@@ -168,6 +179,10 @@ const Billing = React.createClass({
         </div>
         <div>
           { this.renderCreditCard(creditCard) }
+          <RaisedButton
+            label='Update card'
+            onTouchTap={this.handleOpenCreditCardDialog}
+          />
           { this.renderCardForm() }
         </div>
 
@@ -182,7 +197,9 @@ const mapMutationsToProps = ({ ownProps }) => ({
     mutation: gql`
       mutation addAccountCredit($creditAmount: Int!, $organizationId: String!) {
         addAccountCredit(creditAmount: $creditAmount, organizationId: $organizationId) {
-          creditAmount
+          billingDetails {
+            creditAmount
+          }
         }
       }`,
     variables: {
@@ -194,11 +211,13 @@ const mapMutationsToProps = ({ ownProps }) => ({
     mutation: gql`
       mutation updateCard($stripeToken: String!, $organizationId: String!) {
         updateCard(stripeToken: $stripeToken, organizationId: $organizationId) {
-          creditCard {
-            last4
-            brand
-            expMonth
-            expYear
+          billingDetails {
+            creditCard {
+              last4
+              brand
+              expMonth
+              expYear
+            }
           }
         }
       }`,
