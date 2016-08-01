@@ -3716,6 +3716,11 @@
       "from": "react-router-redux@>=4.0.5 <5.0.0",
       "resolved": "https://registry.npmjs.org/react-router-redux/-/react-router-redux-4.0.5.tgz"
     },
+    "react-script-loader": {
+      "version": "0.0.1",
+      "from": "react-script-loader@*",
+      "resolved": "https://registry.npmjs.org/react-script-loader/-/react-script-loader-0.0.1.tgz"
+    },
     "react-tap-event-plugin": {
       "version": "1.0.0",
       "from": "react-tap-event-plugin@latest",
