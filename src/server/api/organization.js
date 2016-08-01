@@ -1,11 +1,19 @@
 import { mapFieldsToModel } from './lib/utils'
 import { r, Organization } from '../models'
 import { accessRequired } from './errors'
+import stripe from 'stripe'
 
 export const schema = `
+  type CreditCard {
+    expMonth: String
+    last4: String
+    expYear: String
+    brand: String
+  }
   type BillingDetails {
     creditAmount: Int
     creditCurrency: String
+    creditCard: CreditCard
   }
 
   type Organization {
@@ -20,9 +28,26 @@ export const schema = `
 `
 
 export const resolvers = {
+  CreditCard: {
+    expMonth: (card) => card.exp_month,
+    expYear: (card) => card.exp_year,
+    last4: (card) => card.last4,
+    brand: (card) => card.brand
+  },
   BillingDetails: {
     creditAmount: (organization) => organization.credit_amount || 0,
-    creditCurrency: (organization) => organization.credit_currency || 'usd'
+    creditCurrency: (organization) => organization.credit_currency || 'usd',
+    creditCard: async (organization) => {
+      if (!organization.stripe_id)
+        return null
+      else {
+        const stripeAPI = stripe(process.env.STRIPE_SECRET_KEY)
+        const result = await stripeAPI.customers.retrieve(organization.stripe_id, {
+          expand: ['default_source']
+        })
+        return result.default_source
+      }
+    }
   },
   Organization: {
     ...mapFieldsToModel([
