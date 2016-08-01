@@ -22,8 +22,7 @@ const Billing = React.createClass({
   },
 
   onScriptLoaded: function() {
-    const { stripePublishableKey,  organization } = this.props.data
-    const { creditAmount, creditCurrrency } = organization.billingDetails
+    const { stripePublishableKey } = this.props.data
     Stripe.setPublishableKey(stripePublishableKey);
     this.setState({ stripeLoading: false, stripeLoadingError: false })
   },
@@ -117,11 +116,27 @@ const Billing = React.createClass({
       </GSForm>
     )
   },
+  renderCreditCard(card) {
+    return card ? (
+      <div>
+        {card.brand} - {card.last4} exp {card.expMonth}/{card.expYear}
+      </div>
+    ) : 'No card'
+  },
   render: function() {
+    const {  organization } = this.props.data
+    const { creditAmount, creditCurrency, creditCard } = organization.billingDetails
     return (
       <div>
-        { this.renderCardForm() }
-        { this.renderCreditForm() }
+        <div>
+          Credit: { creditAmount }
+          { this.renderCreditForm() }
+        </div>
+        <div>
+          { this.renderCreditCard(creditCard) }
+          { this.renderCardForm() }
+        </div>
+
       </div>
     )
   }
@@ -133,6 +148,7 @@ const mapMutationsToProps = ({ ownProps }) => ({
     mutation: gql`
       mutation addAccountCredit($creditAmount: Int!, $organizationId: String!) {
         addAccountCredit(creditAmount: $creditAmount, organizationId: $organizationId)
+          creditAmount
       }`,
     variables: {
       organizationId: ownProps.params.organizationId,
@@ -143,6 +159,12 @@ const mapMutationsToProps = ({ ownProps }) => ({
     mutation: gql`
       mutation updateCard($stripeToken: String!, $organizationId: String!) {
         updateCard(stripeToken: $stripeToken, organizationId: $organizationId)
+          creditCard {
+            last4
+            brand
+            expMonth
+            expYear
+          }
       }`,
     variables: {
       organizationId: ownProps.params.organizationId,
@@ -155,9 +177,17 @@ const mapQueriesToProps = ({ ownProps }) => ({
   data: {
     query: gql`query adminGetCampaigns($organizationId: String!) {
       organization(id: $organizationId) {
+        id
+        name
         billingDetails {
           creditAmount
           creditCurrency
+          creditCard {
+            expMonth
+            expYear
+            last4
+            brand
+          }
         }
       }
       stripePublishableKey

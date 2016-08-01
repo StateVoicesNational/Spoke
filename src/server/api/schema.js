@@ -148,8 +148,8 @@ const rootSchema = `
     createCannedResponse(cannedResponse:CannedResponseInput!): CannedResponse
     createOrganization(name: String!, userId: String!, inviteId: String!): Organization
     joinOrganization(organizationId: String!): Organization
-    updateCard( organizationId: String!, stripeToken: String!): String
-    addAccountCredit( organizationId: String!, creditAmount: Int!): String
+    updateCard( organizationId: String!, stripeToken: String!): Organization
+    addAccountCredit( organizationId: String!, creditAmount: Int!): Organization
     sendMessage(message:MessageInput!, campaignContactId:String!): CampaignContact,
     createOptOut(optOut:OptOutInput!, campaignContactId:String!):CampaignContact,
     editCampaignContactMessageStatus(messageStatus: String!, campaignContactId:String!): CampaignContact,
@@ -296,21 +296,27 @@ const rootMutations = {
     },
     addAccountCredit: async (_, { organizationId, creditAmount }, { user, loaders }) => {
       await accessRequired(user, organizationId, 'ADMIN')
-      const organization = loaders.organization.load(organizationId)
+      const organization = await loaders.organization.load(organizationId)
       const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
-      await stripe.charges.create({ customer: organization.stripe_id })
-      organization.credit_amount = organization.credit_amount + creditAmount
-      organization.save()
+
+      await stripe.charges.create({
+        customer: organization.stripe_id,
+        amount: creditAmount,
+        currency: 'usd'
+      })
+      const newCreditAmount = organization.credit_amount + creditAmount
+      return await Organization.get(organizationId).update({ credit_amount: newCreditAmount })
     },
     updateCard: async(_, { organizationId, stripeToken }, { user, loaders }) => {
       await accessRequired(user, organizationId, 'ADMIN')
-      const organization = loaders.organization.load(organizationId)
+      const organization =  await loaders.organization.load(organizationId)
       const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 
       if (organization.stripe_id) {
         await stripe.customers.update(organization.stripe_id, {
           source: stripeToken
         })
+        return organization
       } else {
         const customer = await stripe.customers.create({
           description: organization.name,
@@ -320,8 +326,11 @@ const rootMutations = {
           },
           source: stripeToken
         })
-        organization.stripe_id = customer.id
-        await organization.save()
+        return await Organization
+          .get(organizationId)
+          .update({
+            stripe_id: customer.id
+          })
       }
     },
     createCampaign: async (_, { campaign }, { user, loaders }) => {
