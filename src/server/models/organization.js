@@ -12,4 +12,7 @@ const Organization = thinky.createModel('organization', type.object().schema({
   credit_amount: type.number().integer().default(STARTING_CREDIT)
 }).allowExtra(false))
 
+Organization.define('currency', 'usd')
+Organization.define("pricePerContact", 10)
+
 export default Organization
