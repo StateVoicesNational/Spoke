@@ -302,7 +302,7 @@ const rootMutations = {
       await stripe.charges.create({
         customer: organization.stripe_id,
         amount: creditAmount,
-        currency: 'usd'
+        currency: organization.currency
       })
       const newCreditAmount = organization.credit_amount + creditAmount
       return await Organization.get(organizationId).update({ credit_amount: newCreditAmount })

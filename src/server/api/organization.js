@@ -36,7 +36,7 @@ export const resolvers = {
   },
   BillingDetails: {
     creditAmount: (organization) => organization.credit_amount || 0,
-    creditCurrency: (organization) => organization.credit_currency || 'usd',
+    creditCurrency: (organization) => organization.currency,
     creditCard: async (organization) => {
       if (!organization.stripe_id)
         return null
