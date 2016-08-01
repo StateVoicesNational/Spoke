@@ -444,6 +444,18 @@ const rootMutations = {
       const texter = await loaders.user.load(message.userId)
       const contact = await loaders.campaignContact.load(campaignContactId)
 
+      const campaign = await loaders.campaign.load(contact.campaign_id)
+      const organization = await loaders.organization.load(campaign.organization_id)
+
+      if (contact.message_status === 'needsMessage') {
+        if (organization.creditAmount < organization.pricePerContact) {
+          throw new GraphQLError({
+            status: 400,
+            message: 'Not enough account credit to send message'
+          })
+        }
+      }
+
       if (!texter.assigned_cell) {
         const newCell = await rentNewCell()
         texter.assigned_cell = getFormattedPhoneNumber(newCell)
@@ -468,6 +480,11 @@ const rootMutations = {
       })
 
       await messageInstance.save()
+
+      if (contact.message_status === 'needsMessage') {
+        organization.credit_amount = organization.credit_amount - organization.pricePerContact
+        organization.save()
+      }
 
       contact.message_status = 'messaged'
       await contact.save()
