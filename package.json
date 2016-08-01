@@ -84,6 +84,7 @@
     "react-formal": "^0.18.5",
     "react-router": "^2.5.2",
     "react-router-redux": "^4.0.5",
+    "react-script-loader": "0.0.1",
     "react-tap-event-plugin": "^1.0.0",
     "redux-thunk": "^2.1.0",
     "rollbar": "^0.6.2",

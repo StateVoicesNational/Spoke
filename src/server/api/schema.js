@@ -148,6 +148,8 @@ const rootSchema = `
     createCannedResponse(cannedResponse:CannedResponseInput!): CannedResponse
     createOrganization(name: String!, userId: String!, inviteId: String!): Organization
     joinOrganization(organizationId: String!): Organization
+    updateCard( organizationId: String!, stripeToken: String!): String
+    addAccountCredit( organizationId: String!, creditAmount: Int!): String
     sendMessage(message:MessageInput!, campaignContactId:String!): CampaignContact,
     createOptOut(optOut:OptOutInput!, campaignContactId:String!):CampaignContact,
     editCampaignContactMessageStatus(messageStatus: String!, campaignContactId:String!): CampaignContact,
@@ -291,6 +293,36 @@ const rootMutations = {
         })
       }
       return loaders.organization.load(organizationId)
+    },
+    addAccountCredit: async (_, { organizationId, creditAmount }, { user, loaders }) => {
+      await accessRequired(user, organizationId, 'ADMIN')
+      const organization = loaders.organization.load(organizationId)
+      const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
+      await stripe.charges.create({ customer: organization.stripe_id })
+      organization.credit_amount = organization.credit_amount + creditAmount
+      organization.save()
+    },
+    updateCard: async(_, { organizationId, stripeToken }, { user, loaders }) => {
+      await accessRequired(user, organizationId, 'ADMIN')
+      const organization = loaders.organization.load(organizationId)
+      const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
+
+      if (organization.stripe_id) {
+        await stripe.customers.update(organization.stripe_id, {
+          source: stripeToken
+        })
+      } else {
+        const customer = await stripe.customers.create({
+          description: organization.name,
+          email: user.email,
+          metadata: {
+            organizationId
+          },
+          source: stripeToken
+        })
+        organization.stripe_id = customer.id
+        await organization.save()
+      }
     },
     createCampaign: async (_, { campaign }, { user, loaders }) => {
       await accessRequired(user, campaign.organizationId, 'ADMIN')
