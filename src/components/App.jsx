@@ -8,6 +8,7 @@ import Form from 'react-formal'
 import GSTextField from './forms/GSTextField'
 import GSDateField from './forms/GSDateField'
 import GSScriptField from './forms/GSScriptField'
+import GSSelectField from './forms/GSSelectField'
 
 // Needed for MaterialUI
 injectTapEventPlugin()
@@ -17,7 +18,8 @@ Form.addInputTypes({
   number: GSTextField,
   date: GSDateField,
   email: GSTextField,
-  script: GSScriptField
+  script: GSScriptField,
+  select: GSSelectField
 })
 
 const styles = StyleSheet.create({
