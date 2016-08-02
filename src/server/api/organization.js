@@ -24,6 +24,7 @@ export const schema = `
     admins: [User]
     optOuts: [OptOut]
     billingDetails: BillingDetails
+    pricePerContact: Int
   }
 `
 
@@ -52,8 +53,9 @@ export const resolvers = {
   Organization: {
     ...mapFieldsToModel([
       'id',
-      'name'
+      'name',
     ], Organization),
+    pricePerContact: (organization) => organization.pricePerContact,
     campaigns: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, 'ADMIN')
       return r.table('campaign').getAll(organization.id, { index:

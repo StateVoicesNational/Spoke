@@ -10,6 +10,8 @@ import GSSubmitButton from '../components/forms/GSSubmitButton'
 import FlatButton from 'material-ui/FlatButton'
 import RaisedButton from 'material-ui/RaisedButton'
 import yup from 'yup'
+import { formatMoney } from '../lib'
+import {Card, CardActions, CardHeader, CardText} from 'material-ui/Card';
 
 const Billing = React.createClass({
   mixins: [ ReactScriptLoaderMixin ],
@@ -37,8 +39,8 @@ const Billing = React.createClass({
       console.log(error)
     }
     else {
-      console.log("response.", response)
       await this.props.mutations.updateCard(response.id)
+      this.handleCloseCreditCardDialog()
     }
   },
   handleSubmitCardForm: function(formValues) {
@@ -47,8 +49,8 @@ const Billing = React.createClass({
   },
 
   handleSubmitAccountCreditForm: async function({ creditAmount }) {
-    console.log(creditAmount, "credit amount submission")
-    await this.props.mutations.addAccountCredit(creditAmount * 100)
+    await this.props.mutations.addAccountCredit(creditAmount)
+    this.handleCloseAddCreditDialog()
   },
   handleOpenCreditCardDialog: function() {
     this.setState({ creditCardDialogOpen: true })
@@ -60,6 +62,7 @@ const Billing = React.createClass({
     this.setState({ addCreditDialogOpen: true })
   },
   handleCloseAddCreditDialog: function() {
+    console.log("here?")
     this.setState({ addCreditDialogOpen: false })
   },
 
@@ -87,9 +90,6 @@ const Billing = React.createClass({
               type='submit'
               label='Change card'
               component={GSSubmitButton}
-              fullWidth
-              secondary
-              style={{ marginTop: 40 }}
             />
           ]}
           onRequestClose={this.handleCloseCreditCardDialog}
@@ -117,6 +117,9 @@ const Billing = React.createClass({
   },
 
   renderCreditForm() {
+    const {  organization } = this.props.data
+    const {  creditCurrency } = organization.billingDetails
+
     const formSchema = yup.object({
       'creditAmount': yup.number().required()
     })
@@ -131,28 +134,36 @@ const Billing = React.createClass({
         schema={formSchema}
         onSubmit={this.handleSubmitAccountCreditForm}
       >
-      <Form.Field
-        name='creditAmount'
-        value={50000}
-        type='select'
-      >
-        { amounts.map((amount) => (
-          <option
-            value={amount}
+        <Dialog
+          open={this.state.addCreditDialogOpen}
+          actions={[
+            <FlatButton
+              label='Cancel'
+              onTouchTap={this.handleCloseAddCreditDialog}
+            />,
+            <Form.Button
+              type='submit'
+              component={GSSubmitButton}
+              label='Add credit'
+            />
+          ]}
+          onRequestClose={this.handleCloseAddCreditDialog}
+        >
+          <Form.Field
+            name='creditAmount'
+            value={50000}
+            type='select'
           >
-            {amount} - approx 1000 contacts
-          </option>
-        ))}
-      </Form.Field>
-        <Form.Button
-            type='submit'
-            component={GSSubmitButton}
-            label='Add credit'
-          />
-          <FlatButton
-            label='Cancel'
-            onTouchTap={this.handleCloseAddCreditDialog}
-          />
+            { amounts.map((amount) => (
+              <option
+                key={amount}
+                value={amount}
+              >
+                {formatMoney(amount, creditCurrency)} - approx {amount/organization.pricePerContact} contacts
+              </option>
+            ))}
+          </Form.Field>
+        </Dialog>
       </GSForm>
     )
   },
@@ -168,24 +179,36 @@ const Billing = React.createClass({
     const { creditAmount, creditCurrency, creditCard } = organization.billingDetails
     return (
       <div>
-        <div>
-          Credit: ${ creditAmount/100 }
-          { this.state.addCreditDialogOpen ? this.renderCreditForm()  : (
-            <RaisedButton
+        <Card>
+          <CardHeader
+            title="Account credit"
+            subtitle={ formatMoney(creditAmount, creditCurrency) }
+          />
+          <CardActions>
+            <FlatButton
               label='Add credit'
+              primary
               onTouchTap={this.handleOpenAddCreditDialog}
             />
-          )}
-        </div>
-        <div>
-          { this.renderCreditCard(creditCard) }
-          <RaisedButton
-            label='Update card'
-            onTouchTap={this.handleOpenCreditCardDialog}
+          </CardActions>
+        </Card>
+        <Card>
+          <CardHeader
+            title="Credit card"
+            subtitle={ this.renderCreditCard(creditCard) }
           />
+          <CardActions>
+            <FlatButton
+              label='Change card'
+              primary
+              onTouchTap={this.handleOpenCreditCardDialog}
+            />
+          </CardActions>
+        </Card>
+        <div>
+          { this.renderCreditForm()}
           { this.renderCardForm() }
         </div>
-
       </div>
     )
   }
@@ -197,6 +220,7 @@ const mapMutationsToProps = ({ ownProps }) => ({
     mutation: gql`
       mutation addAccountCredit($creditAmount: Int!, $organizationId: String!) {
         addAccountCredit(creditAmount: $creditAmount, organizationId: $organizationId) {
+          id
           billingDetails {
             creditAmount
           }
@@ -211,6 +235,7 @@ const mapMutationsToProps = ({ ownProps }) => ({
     mutation: gql`
       mutation updateCard($stripeToken: String!, $organizationId: String!) {
         updateCard(stripeToken: $stripeToken, organizationId: $organizationId) {
+          id
           billingDetails {
             creditCard {
               last4
@@ -234,6 +259,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
       organization(id: $organizationId) {
         id
         name
+        pricePerContact
         billingDetails {
           creditAmount
           creditCurrency
