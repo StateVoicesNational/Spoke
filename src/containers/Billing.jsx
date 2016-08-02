@@ -129,6 +129,14 @@ const Billing = React.createClass({
       50000,
       100000
     ]
+
+    let choices = {}
+    const count = amounts.length
+    for (let i = 0; i < count; i++) {
+      const amount = amounts[i]
+      choices[amount] = `${formatMoney(amount, creditCurrency)} - approx ${amount/organization.pricePerContact} contacts`
+    }
+
     return (
       <GSForm
         schema={formSchema}
@@ -153,16 +161,9 @@ const Billing = React.createClass({
             name='creditAmount'
             value={50000}
             type='select'
-          >
-            { amounts.map((amount) => (
-              <option
-                key={amount}
-                value={amount}
-              >
-                {formatMoney(amount, creditCurrency)} - approx {amount/organization.pricePerContact} contacts
-              </option>
-            ))}
-          </Form.Field>
+            fullWidth
+            choices={choices}
+          />
         </Dialog>
       </GSForm>
     )
