@@ -298,12 +298,20 @@ const rootMutations = {
       await accessRequired(user, organizationId, 'ADMIN')
       const organization = await loaders.organization.load(organizationId)
       const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
-
-      await stripe.charges.create({
-        customer: organization.stripe_id,
-        amount: creditAmount,
-        currency: organization.currency
-      })
+      try {
+        await stripe.charges.create({
+          customer: organization.stripe_id,
+          amount: creditAmount,
+          currency: organization.currency
+        })
+      } catch (e) {
+        if (e.type === 'StripeCardError') {
+          throw new GraphQLError({
+            status: 400,
+            message: e.message
+          })
+        }
+      }
       const newCreditAmount = organization.credit_amount + creditAmount
       return await Organization.get(organizationId).update({ credit_amount: newCreditAmount })
     },
@@ -312,26 +320,37 @@ const rootMutations = {
       const organization =  await loaders.organization.load(organizationId)
       const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 
-      if (organization.stripe_id) {
-        await stripe.customers.update(organization.stripe_id, {
-          source: stripeToken
-        })
-        return organization
-      } else {
-        const customer = await stripe.customers.create({
-          description: organization.name,
-          email: user.email,
-          metadata: {
-            organizationId
-          },
-          source: stripeToken
-        })
-        return await Organization
-          .get(organizationId)
-          .update({
-            stripe_id: customer.id
+      try {
+        if (organization.stripe_id) {
+          await stripe.customers.update(organization.stripe_id, {
+            source: stripeToken
           })
+          return organization
+        } else {
+          const customer = await stripe.customers.create({
+            description: organization.name,
+            email: user.email,
+            metadata: {
+              organizationId
+            },
+            source: stripeToken
+          })
+          return await Organization
+            .get(organizationId)
+            .update({
+              stripe_id: customer.id
+            })
+        }
+      } catch (e) {
+        if (e.type === 'StripeCardError') {
+          throw new GraphQLError({
+            status: 400,
+            message: e.message
+          })
+        }
+        throw e
       }
+
     },
     createCampaign: async (_, { campaign }, { user, loaders }) => {
       await accessRequired(user, campaign.organizationId, 'ADMIN')

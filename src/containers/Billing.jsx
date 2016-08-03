@@ -8,44 +8,65 @@ import Form from 'react-formal'
 import Dialog from 'material-ui/Dialog'
 import GSSubmitButton from '../components/forms/GSSubmitButton'
 import FlatButton from 'material-ui/FlatButton'
-import RaisedButton from 'material-ui/RaisedButton'
 import yup from 'yup'
 import { formatMoney } from '../lib'
-import {Card, CardActions, CardHeader, CardText} from 'material-ui/Card';
+import { Card, CardText, CardActions, CardHeader } from 'material-ui/Card'
+import { GraphQLRequestError } from '../network/errors'
+import { StyleSheet, css } from 'aphrodite'
+
+const styles = StyleSheet.create({
+  section: {
+    margin: '10px 0',
+  },
+  sectionLabel: {
+    opacity: 0.8,
+    marginRight: 5
+  }
+})
+
+const inlineStyles = {
+  dialogButton: {
+    display: 'inline-block'
+  }
+}
 
 const Billing = React.createClass({
-  mixins: [ ReactScriptLoaderMixin ],
+  mixins: [ReactScriptLoaderMixin],
 
-  getInitialState: function() {
+  getInitialState: () => {
     return {
       addCreditDialogOpen: false,
       creditCardDialogOpen: false
-    };
+    }
   },
 
-  getScriptURL: function() {
-    return 'https://js.stripe.com/v2/'
-  },
 
   onScriptLoaded: function() {
     const { stripePublishableKey } = this.props.data
-    Stripe.setPublishableKey(stripePublishableKey);
+    Stripe.setPublishableKey(stripePublishableKey)
   },
 
-  onScriptError: () =>  this.setState({ stripeLoading: false, stripeLoadingError: true }),
+  onScriptError: () => this.setState({ stripeLoading: false, stripeLoadingError: true }),
+  getScriptURL: () => 'https://js.stripe.com/v2/',
 
-  handleStripeResponse: async function(status, response) {
-    if (response.error) {
-      console.log(error)
+  createStripeToken: async (formValues) => {
+    return new Promise((resolve, reject) => {
+      Stripe.card.createToken(formValues, function (status, response) {
+        if (response.error) {
+          reject(new GraphQLRequestError({
+            status: 400,
+            message: response.error.message
+          }))
+        } else {
+          resolve(response.id)
+        }
+      })
     }
-    else {
-      await this.props.mutations.updateCard(response.id)
-      this.handleCloseCreditCardDialog()
-    }
-  },
-  handleSubmitCardForm: function(formValues) {
-    console.log("ONSUBMIT", formValues)
-    Stripe.card.createToken(formValues, this.handleStripeResponse)
+  )},
+  handleSubmitCardForm: async function(formValues) {
+    const token = await this.createStripeToken(formValues)
+    await this.props.mutations.updateCard(token)
+    this.handleCloseCreditCardDialog()
   },
 
   handleSubmitAccountCreditForm: async function({ creditAmount }) {
@@ -62,57 +83,59 @@ const Billing = React.createClass({
     this.setState({ addCreditDialogOpen: true })
   },
   handleCloseAddCreditDialog: function() {
-    console.log("here?")
     this.setState({ addCreditDialogOpen: false })
   },
 
   renderCardForm() {
     const cardFormSchema = yup.object({
       'number': yup.string().required(),
-      'exp_year': yup.string().required(),
-      'exp_month': yup.string().required(),
+      'exp_year': yup.number().required(),
+      'exp_month': yup.number().required(),
     })
 
     return (
-      <GSForm
-        schema={cardFormSchema}
-        onSubmit={this.handleSubmitCardForm}
-      >
-
+      <Form.Context>
         <Dialog
           open={this.state.creditCardDialogOpen}
           actions={[
             <FlatButton
               label='Cancel'
+              style={inlineStyles.dialogButton}
               onTouchTap={this.handleCloseCreditCardDialog}
             />,
             <Form.Button
               type='submit'
               label='Change card'
+              style={inlineStyles.dialogButton}
               component={GSSubmitButton}
             />
           ]}
           onRequestClose={this.handleCloseCreditCardDialog}
         >
-          <Form.Field
-            name='number'
-            data-stripe
-            label='Card number'
-            fullWidth
-            autoFocus
-          />
-          <Form.Field
-            name='exp_month'
-            label='Expiration month'
-            hintText="01"
-          />
-          <Form.Field
-            name='exp_year'
-            label='Expiration year'
-            hintText="2019"
-          />
+          <GSForm
+            schema={cardFormSchema}
+            onSubmit={this.handleSubmitCardForm}
+          >
+            <Form.Field
+              name='number'
+              data-stripe
+              label='Card number'
+              fullWidth
+              autoFocus
+            />
+            <Form.Field
+              name='exp_month'
+              label='Expiration month'
+              hintText="01"
+            />
+            <Form.Field
+              name='exp_year'
+              label='Expiration year'
+              hintText="2019"
+            />
+          </GSForm>
         </Dialog>
-      </GSForm>
+      </Form.Context>
     )
   },
 
@@ -138,42 +161,42 @@ const Billing = React.createClass({
     }
 
     return (
-      <GSForm
-        schema={formSchema}
-        onSubmit={this.handleSubmitAccountCreditForm}
-      >
+      <Form.Context>
         <Dialog
           open={this.state.addCreditDialogOpen}
           actions={[
             <FlatButton
               label='Cancel'
+              style={inlineStyles.dialogButton}
               onTouchTap={this.handleCloseAddCreditDialog}
             />,
             <Form.Button
               type='submit'
+              style={inlineStyles.dialogButton}
               component={GSSubmitButton}
               label='Add credit'
             />
           ]}
           onRequestClose={this.handleCloseAddCreditDialog}
         >
+          <GSForm
+            schema={formSchema}
+            onSubmit={this.handleSubmitAccountCreditForm}
+          >
+
           <Form.Field
+            label="Credit amount"
             name='creditAmount'
-            value={50000}
             type='select'
             fullWidth
             choices={choices}
+            value={50000}
           />
+          </GSForm>
+
         </Dialog>
-      </GSForm>
+      </Form.Context>
     )
-  },
-  renderCreditCard(card) {
-    return card ? (
-      <div>
-        {card.brand} - {card.last4} exp {card.expMonth}/{card.expYear}
-      </div>
-    ) : 'No card'
   },
   render: function() {
     const {  organization } = this.props.data
@@ -183,24 +206,32 @@ const Billing = React.createClass({
         <Card>
           <CardHeader
             title="Account credit"
-            subtitle={ formatMoney(creditAmount, creditCurrency) }
           />
+          <CardText>
+            <div className={css(styles.section)}>
+              <span className={css(styles.sectionLabel)}>
+                Balance:
+              </span>
+              { formatMoney(creditAmount, creditCurrency) }
+            </div>
+            <div className={css(styles.section)}>
+              <span className={css(styles.sectionLabel)}>
+                Card:
+              </span>
+              { creditCard ? `${creditCard.brand} ****${creditCard.last4}` : 'No card' }
+            </div>
+          </CardText>
           <CardActions>
+            { creditCard ? (
+                <FlatButton
+                  label='Buy account credit'
+                  primary
+                  onTouchTap={this.handleOpenAddCreditDialog}
+                />
+              ) : ''
+            }
             <FlatButton
-              label='Add credit'
-              primary
-              onTouchTap={this.handleOpenAddCreditDialog}
-            />
-          </CardActions>
-        </Card>
-        <Card>
-          <CardHeader
-            title="Credit card"
-            subtitle={ this.renderCreditCard(creditCard) }
-          />
-          <CardActions>
-            <FlatButton
-              label='Change card'
+              label={creditCard ? 'Change card' : 'Add credit card'}
               primary
               onTouchTap={this.handleOpenCreditCardDialog}
             />
@@ -280,4 +311,5 @@ const mapQueriesToProps = ({ ownProps }) => ({
     forceFetch: true
   }
 })
+
 export default loadData(wrapMutations(Billing), { mapQueriesToProps, mapMutationsToProps })
