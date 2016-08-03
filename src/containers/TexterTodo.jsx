@@ -64,7 +64,8 @@ const mapQueriesToProps = ({ ownProps }) => ({
     variables: {
       contactFilter: ownProps.contactFilter, // FIXME
       assignmentId: ownProps.params.assignmentId
-    }
+    },
+    forceFetch: true
   }
 })
 
