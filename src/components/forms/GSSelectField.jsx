@@ -14,7 +14,6 @@ export default class GSSelectField extends GSFormField {
   }
 
   render() {
-    console.log(this.props.value)
     return (
       <SelectField
         children={this.createMenuItems()}
