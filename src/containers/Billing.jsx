@@ -16,7 +16,7 @@ import { StyleSheet, css } from 'aphrodite'
 
 const styles = StyleSheet.create({
   section: {
-    margin: '10px 0',
+    margin: '10px 0'
   },
   sectionLabel: {
     opacity: 0.8,
@@ -30,18 +30,16 @@ const inlineStyles = {
   }
 }
 
-const Billing = React.createClass({
+class Billing extends React.Component {
 
-  getInitialState: () => {
-    return {
-      addCreditDialogOpen: false,
-      creditCardDialogOpen: false
-    }
-  },
+  state = {
+    addCreditDialogOpen: false,
+    creditCardDialogOpen: false
+  }
 
-  createStripeToken: async (formValues) => {
-    return new Promise((resolve, reject) => {
-      Stripe.card.createToken(formValues, function (status, response) {
+  createStripeToken = async (formValues) => (
+    new Promise((resolve, reject) => (
+      Stripe.card.createToken(formValues, (status, response) => {
         if (response.error) {
           reject(new GraphQLRequestError({
             status: 400,
@@ -51,36 +49,33 @@ const Billing = React.createClass({
           resolve(response.id)
         }
       })
-    }
-  )},
-  handleSubmitCardForm: async function(formValues) {
+    ))
+  )
+
+  handleSubmitCardForm = async (formValues) => {
     const token = await this.createStripeToken(formValues)
     await this.props.mutations.updateCard(token)
     this.handleCloseCreditCardDialog()
-  },
+  }
 
-  handleSubmitAccountCreditForm: async function({ creditAmount }) {
+  handleSubmitAccountCreditForm = async ({ creditAmount }) => {
     await this.props.mutations.addAccountCredit(creditAmount)
     this.handleCloseAddCreditDialog()
-  },
-  handleOpenCreditCardDialog: function() {
-    this.setState({ creditCardDialogOpen: true })
-  },
-  handleCloseCreditCardDialog: function() {
-    this.setState({ creditCardDialogOpen: false })
-  },
-  handleOpenAddCreditDialog: function() {
-    this.setState({ addCreditDialogOpen: true })
-  },
-  handleCloseAddCreditDialog: function() {
-    this.setState({ addCreditDialogOpen: false })
-  },
+  }
+
+  handleOpenCreditCardDialog = () => this.setState({ creditCardDialogOpen: true })
+
+  handleCloseCreditCardDialog = () => this.setState({ creditCardDialogOpen: false })
+
+  handleOpenAddCreditDialog = () => this.setState({ addCreditDialogOpen: true })
+
+  handleCloseAddCreditDialog = () => this.setState({ addCreditDialogOpen: false })
 
   renderCardForm() {
     const cardFormSchema = yup.object({
-      'number': yup.string().required(),
-      'exp_year': yup.number().required(),
-      'exp_month': yup.number().required(),
+      number: yup.string().required(),
+      exp_year: yup.number().required(),
+      exp_month: yup.number().required()
     })
 
     return (
@@ -116,25 +111,25 @@ const Billing = React.createClass({
             <Form.Field
               name='exp_month'
               label='Expiration month'
-              hintText="01"
+              hintText='01'
             />
             <Form.Field
               name='exp_year'
               label='Expiration year'
-              hintText="2019"
+              hintText='2019'
             />
           </GSForm>
         </Dialog>
       </Form.Context>
     )
-  },
+  }
 
   renderCreditForm() {
-    const {  organization } = this.props.data
-    const {  creditCurrency } = organization.billingDetails
+    const { organization } = this.props.data
+    const { creditCurrency } = organization.billingDetails
 
     const formSchema = yup.object({
-      'creditAmount': yup.number().required()
+      creditAmount: yup.number().required()
     })
 
     const amounts = [
@@ -147,7 +142,9 @@ const Billing = React.createClass({
     const count = amounts.length
     for (let i = 0; i < count; i++) {
       const amount = amounts[i]
-      choices[amount] = `${formatMoney(amount, creditCurrency)} - approx ${amount/organization.pricePerContact} contacts`
+      const formattedAmount = formatMoney(amount, creditCurrency)
+      const contactCount = amount / organization.pricePerContact
+      choices[amount] = `${formattedAmount} - approx ${contactCount} contacts`
     }
 
     return (
@@ -173,52 +170,51 @@ const Billing = React.createClass({
             schema={formSchema}
             onSubmit={this.handleSubmitAccountCreditForm}
           >
-
-          <Form.Field
-            label="Credit amount"
-            name='creditAmount'
-            type='select'
-            fullWidth
-            choices={choices}
-            value={50000}
-          />
+            <Form.Field
+              label='Credit amount'
+              name='creditAmount'
+              type='select'
+              fullWidth
+              choices={choices}
+              value={50000}
+            />
           </GSForm>
 
         </Dialog>
       </Form.Context>
     )
-  },
-  render: function() {
-    const {  organization } = this.props.data
+  }
+
+  render() {
+    const { organization } = this.props.data
     const { creditAmount, creditCurrency, creditCard } = organization.billingDetails
     return (
       <div>
         <Card>
           <CardHeader
-            title="Account credit"
+            title='Account credit'
           />
           <CardText>
             <div className={css(styles.section)}>
               <span className={css(styles.sectionLabel)}>
                 Balance:
               </span>
-              { formatMoney(creditAmount, creditCurrency) }
+              {formatMoney(creditAmount, creditCurrency)}
             </div>
             <div className={css(styles.section)}>
               <span className={css(styles.sectionLabel)}>
                 Card:
               </span>
-              { creditCard ? `${creditCard.brand} ****${creditCard.last4}` : 'No card' }
+              {creditCard ? `${creditCard.brand} ****${creditCard.last4}` : 'No card'}
             </div>
           </CardText>
           <CardActions>
-            { creditCard ? (
-                <FlatButton
-                  label='Buy account credit'
-                  primary
-                  onTouchTap={this.handleOpenAddCreditDialog}
-                />
-              ) : ''
+            {creditCard ?
+              <FlatButton
+                label='Buy account credit'
+                primary
+                onTouchTap={this.handleOpenAddCreditDialog}
+              /> : ''
             }
             <FlatButton
               label={creditCard ? 'Change card' : 'Add credit card'}
@@ -228,14 +224,19 @@ const Billing = React.createClass({
           </CardActions>
         </Card>
         <div>
-          { this.renderCreditForm()}
-          { this.renderCardForm() }
+          {this.renderCreditForm()}
+          {this.renderCardForm()}
         </div>
       </div>
     )
   }
+}
 
-})
+Billing.propTypes = {
+  data: React.PropTypes.object,
+  params: React.PropTypes.object,
+  mutations: React.PropTypes.object
+}
 
 const mapMutationsToProps = ({ ownProps }) => ({
   addAccountCredit: (creditAmount) => ({
@@ -301,4 +302,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
   }
 })
 
-export default loadStripe(loadData(wrapMutations(Billing), { mapQueriesToProps, mapMutationsToProps }))
+export default loadStripe(
+  loadData(
+    wrapMutations(Billing),
+    { mapQueriesToProps, mapMutationsToProps }))
