@@ -3630,6 +3630,11 @@
       "from": "react-apollo@0.3.19",
       "resolved": "https://registry.npmjs.org/react-apollo/-/react-apollo-0.3.19.tgz"
     },
+    "react-async-script": {
+      "version": "0.6.0",
+      "from": "react-async-script@*",
+      "resolved": "https://registry.npmjs.org/react-async-script/-/react-async-script-0.6.0.tgz"
+    },
     "react-chartjs": {
       "version": "0.7.3",
       "from": "react-chartjs@latest",
@@ -3715,11 +3720,6 @@
       "version": "4.0.5",
       "from": "react-router-redux@>=4.0.5 <5.0.0",
       "resolved": "https://registry.npmjs.org/react-router-redux/-/react-router-redux-4.0.5.tgz"
-    },
-    "react-script-loader": {
-      "version": "0.0.1",
-      "from": "react-script-loader@*",
-      "resolved": "https://registry.npmjs.org/react-script-loader/-/react-script-loader-0.0.1.tgz"
     },
     "react-tap-event-plugin": {
       "version": "1.0.0",

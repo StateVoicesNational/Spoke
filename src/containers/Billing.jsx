@@ -1,8 +1,8 @@
 import React from 'react'
 import loadData from './hoc/load-data'
+import loadStripe from './hoc/load-stripe'
 import gql from 'graphql-tag'
 import wrapMutations from './hoc/wrap-mutations'
-import { ReactScriptLoaderMixin } from 'react-script-loader'
 import GSForm from '../components/forms/GSForm'
 import Form from 'react-formal'
 import Dialog from 'material-ui/Dialog'
@@ -31,7 +31,6 @@ const inlineStyles = {
 }
 
 const Billing = React.createClass({
-  mixins: [ReactScriptLoaderMixin],
 
   getInitialState: () => {
     return {
@@ -39,15 +38,6 @@ const Billing = React.createClass({
       creditCardDialogOpen: false
     }
   },
-
-
-  onScriptLoaded: function() {
-    const { stripePublishableKey } = this.props.data
-    Stripe.setPublishableKey(stripePublishableKey)
-  },
-
-  onScriptError: () => this.setState({ stripeLoading: false, stripeLoadingError: true }),
-  getScriptURL: () => 'https://js.stripe.com/v2/',
 
   createStripeToken: async (formValues) => {
     return new Promise((resolve, reject) => {
@@ -303,7 +293,6 @@ const mapQueriesToProps = ({ ownProps }) => ({
           }
         }
       }
-      stripePublishableKey
     }`,
     variables: {
       organizationId: ownProps.params.organizationId
@@ -312,4 +301,4 @@ const mapQueriesToProps = ({ ownProps }) => ({
   }
 })
 
-export default loadData(wrapMutations(Billing), { mapQueriesToProps, mapMutationsToProps })
+export default loadStripe(loadData(wrapMutations(Billing), { mapQueriesToProps, mapMutationsToProps }))
