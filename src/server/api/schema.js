@@ -456,18 +456,23 @@ const rootMutations = {
         assignment_id: optOut.assignmentId,
         cell: optOut.cell
       }).save()
-
-      const contact = await loaders.campaignContact.load(campaignContactId)
     },
     sendMessage: async(_, { message, campaignContactId }, { loaders }) => {
       const texter = await loaders.user.load(message.userId)
       const contact = await loaders.campaignContact.load(campaignContactId)
 
-      const campaign = await loaders.campaign.load(contact.campaign_id)
-      const organization = await loaders.organization.load(campaign.organization_id)
+      const merged = await r.table('campaign')
+        .get(contact.campaign_id)
+        .merge((doc) => ({
+          organization: r.table('organization').get(doc('organization_id'))
+        }))
+        .pluck('organization')
+      const organization = merged.organization
+      // FIXME
+      const pricePerContact = 10
 
       if (contact.message_status === 'needsMessage') {
-        if (organization.creditAmount < organization.pricePerContact) {
+        if (organization.credit_amount < pricePerContact) {
           throw new GraphQLError({
             status: 400,
             message: 'Not enough account credit to send message'
@@ -501,8 +506,8 @@ const rootMutations = {
       await messageInstance.save()
 
       if (contact.message_status === 'needsMessage') {
-        organization.credit_amount = organization.credit_amount - organization.pricePerContact
-        organization.save()
+        organization.credit_amount = organization.credit_amount - pricePerContact
+        Organization.save(organization, { conflict: 'update'})
       }
 
       contact.message_status = 'messaged'
