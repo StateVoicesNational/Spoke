@@ -9,10 +9,9 @@ const Organization = thinky.createModel('organization', type.object().schema({
   name: requiredString(),
   created_at: timestamp(),
   stripe_id: type.string(),
-  credit_amount: type.number().integer().default(STARTING_CREDIT)
+  currency: requiredString().default('usd'),
+  plan_id: requiredString().default(() => Plan.getDefaultPlan('usd')),
+  credit_amount: type.number().integer().default(STARTING_CREDIT),
 }).allowExtra(false))
-
-Organization.define('currency', 'usd')
-Organization.define("pricePerContact", 10)
 
 export default Organization
