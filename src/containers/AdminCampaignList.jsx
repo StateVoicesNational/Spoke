@@ -86,6 +86,7 @@ class AdminCampaignList extends React.Component {
   }
 
   render() {
+    console.log(this.props)
     const { campaigns } = this.props.data.organization
 
     return (
