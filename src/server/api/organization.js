@@ -24,7 +24,7 @@ export const schema = `
     admins: [User]
     optOuts: [OptOut]
     billingDetails: BillingDetails
-    pricePerContact: Int
+    plan: Plan
   }
 `
 
@@ -55,7 +55,6 @@ export const resolvers = {
       'id',
       'name',
     ], Organization),
-    pricePerContact: (organization) => organization.pricePerContact,
     campaigns: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, 'ADMIN')
       return r.table('campaign').getAll(organization.id, { index:
@@ -78,6 +77,7 @@ export const resolvers = {
         .concatMap((ele) => ele('assignments'))
         .concatMap((ele) => ele('optOuts'))
     },
+    plan: async (organization, _, { loaders }) => await loaders.plan.load(organization.plan_id),
     texters: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, 'ADMIN')
       return r.table('user_organization')
