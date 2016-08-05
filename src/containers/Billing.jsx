@@ -143,7 +143,8 @@ class Billing extends React.Component {
     for (let i = 0; i < count; i++) {
       const amount = amounts[i]
       const formattedAmount = formatMoney(amount, creditCurrency)
-      const contactCount = amount / organization.pricePerContact
+      const pricePerContact = 10 // FIXME
+      const contactCount = amount / pricePerContact
       choices[amount] = `${formattedAmount} - approx ${contactCount} contacts`
     }
 
@@ -282,7 +283,6 @@ const mapQueriesToProps = ({ ownProps }) => ({
       organization(id: $organizationId) {
         id
         name
-        pricePerContact
         billingDetails {
           creditAmount
           creditCurrency

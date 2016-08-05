@@ -49,51 +49,51 @@ export const resolvers = {
     )
   },
   Campaign: {
-    ...mapFieldsToModel([
-      'id',
-      'title',
-      'description',
-      'dueBy'
-    ], Campaign),
-    organization: async (campaign, _, { loaders }) => (
-      loaders.organization.load(campaign.organization_id)
-    ),
-    isStarted: async (campaign) => {
-      const count = await r.table('campaign_contact')
-        .getAll(campaign.id, { index: 'campaign_id' })
-        .filter(r.row('assignment_id').ne(''))
-        .limit(1)
-        .count()
-      return count === 1
-    },
-    texters: async (campaign) => (
-      r.table('assignment')
-        .getAll(campaign.id, { index: 'campaign_id' })
-        .eqJoin('user_id', r.table('user'))('right')
-    ),
-    assignments: async (campaign) => (
-      r.table('assignment')
-        .getAll(campaign.id, { index: 'campaign_id' })
-    ),
-    interactionSteps: async (campaign) => (
-      r.table('interaction_step')
-        .getAll(campaign.id, { index: 'campaign_id' })
-    ),
-    cannedResponses: async (campaign, { userId }) => {
-      let responses = r.table('canned_response')
-        .getAll(campaign.id, { index: 'campaign_id' })
-      if (userId) {
-        responses = responses.filter({
-          user_id: userId
-        })
-      } else {
-        responses = responses.filter({
-          user_id: ''
-        })
-      }
-      return responses
-    },
-    contacts: async (campaign) => campaign,
-    stats: async (campaign) => campaign
+    // ...mapFieldsToModel([
+    //   'id',
+    //   'title',
+    //   'description',
+    //   'dueBy'
+    // ], Campaign),
+    // organization: async (campaign, _, { loaders }) => (
+    //   loaders.organization.load(campaign.organization_id)
+    // ),
+    // isStarted: async (campaign) => {
+    //   const count = await r.table('campaign_contact')
+    //     .getAll(campaign.id, { index: 'campaign_id' })
+    //     .filter(r.row('assignment_id').ne(''))
+    //     .limit(1)
+    //     .count()
+    //   return count === 1
+    // },
+    // texters: async (campaign) => (
+    //   r.table('assignment')
+    //     .getAll(campaign.id, { index: 'campaign_id' })
+    //     .eqJoin('user_id', r.table('user'))('right')
+    // ),
+    // assignments: async (campaign) => (
+    //   r.table('assignment')
+    //     .getAll(campaign.id, { index: 'campaign_id' })
+    // ),
+    // interactionSteps: async (campaign) => (
+    //   r.table('interaction_step')
+    //     .getAll(campaign.id, { index: 'campaign_id' })
+    // ),
+    // cannedResponses: async (campaign, { userId }) => {
+    //   let responses = r.table('canned_response')
+    //     .getAll(campaign.id, { index: 'campaign_id' })
+    //   if (userId) {
+    //     responses = responses.filter({
+    //       user_id: userId
+    //     })
+    //   } else {
+    //     responses = responses.filter({
+    //       user_id: ''
+    //     })
+    //   }
+    //   return responses
+    // },
+    // contacts: async (campaign) => campaign,
+    // stats: async (campaign) => campaign
   }
 }

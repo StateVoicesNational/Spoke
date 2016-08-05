@@ -22,6 +22,10 @@ import {
   resolvers as organizationResolvers
 } from './organization'
 import {
+  schema as planSchema,
+  resolvers as planResolvers
+} from './plan'
+import {
   schema as campaignSchema,
   resolvers as campaignResolvers
 } from './campaign'
@@ -578,6 +582,7 @@ export const schema = [
   rootSchema,
   userSchema,
   organizationSchema,
+  planSchema,
   dateSchema,
   jsonSchema,
   phoneSchema,
@@ -597,6 +602,7 @@ export const resolvers = {
   ...rootResolvers,
   ...userResolvers,
   ...organizationResolvers,
+  ...planResolvers,
   ...campaignResolvers,
   ...assignmentResolvers,
   ...interactionStepResolvers,

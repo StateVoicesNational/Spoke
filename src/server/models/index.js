@@ -29,6 +29,7 @@ const createLoaders = () => ({
   campaign: createLoader(Campaign),
   invite: createLoader(Invite),
   organization: createLoader(Organization),
+  plan: createLoader(Plan),
   user: createLoader(User),
   interactionStep: createLoader(InteractionStep),
   campaignContact: createLoader(CampaignContact),
