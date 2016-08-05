@@ -35,7 +35,6 @@ class AdminCampaignList extends React.Component {
         script: ''
       }]
     })
-    console.log(newCampaign.errors)
     if (newCampaign.errors) {
       alert('There was an error creating your campaign')
       throw new Error(newCampaign.errors)
@@ -86,7 +85,6 @@ class AdminCampaignList extends React.Component {
   }
 
   render() {
-    console.log(this.props)
     const { campaigns } = this.props.data.organization
 
     return (
