@@ -446,8 +446,16 @@ const rootMutations = {
           message: 'That invitation is no longer valid'
         })
       }
+      const currency = 'usd'
       const newOrganization = await Organization.save({
-        name
+        name,
+        currency,
+        plan_id: await r.table('plan')
+          .filter({
+            currency,
+            is_default: true
+          })
+          .limit(1)(0).id
       })
       await UserOrganization.save({
         user_id: userId,
