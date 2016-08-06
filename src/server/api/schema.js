@@ -493,13 +493,11 @@ const rootMutations = {
       const plan = loaders.plan.load(organization.plan_id)
       const amountPerMessage = plan.amountPerMessage
 
-      if (contact.message_status === 'needsMessage') {
-        if (organization.balance_amount < plan.amountPerMessage) {
-          throw new GraphQLError({
-            status: 400,
-            message: 'Not enough account credit to send message'
-          })
-        }
+      if (organization.balance_amount < amountPerMessage) {
+        throw new GraphQLError({
+          status: 400,
+          message: 'Not enough account credit to send message'
+        })
       }
 
       if (!texter.assigned_cell) {
@@ -527,16 +525,14 @@ const rootMutations = {
 
       const savedMessage = await messageInstance.save()
 
-      if (contact.message_status === 'needsMessage') {
-        organization.balance_amount = organization.balance_amount - amountPerMessage
-        Organization.save(organization, { conflict: 'update' })
-        await new BalanceLineItem({
-          organization_id: organization.id,
-          currency: organization.currency,
-          amount: amountPerMessage,
-          message_id: savedMessage.id
-        }).save()
-      }
+      organization.balance_amount = organization.balance_amount - amountPerMessage
+      Organization.save(organization, { conflict: 'update' })
+      await new BalanceLineItem({
+        organization_id: organization.id,
+        currency: organization.currency,
+        amount: amountPerMessage,
+        message_id: savedMessage.id
+      }).save()
 
       contact.message_status = 'messaged'
       await contact.save()
