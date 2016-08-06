@@ -58,8 +58,8 @@ class Billing extends React.Component {
     this.handleCloseCreditCardDialog()
   }
 
-  handleSubmitAccountCreditForm = async ({ creditAmount }) => {
-    await this.props.mutations.addAccountCredit(creditAmount)
+  handleSubmitAccountCreditForm = async ({ balanceAmount }) => {
+    await this.props.mutations.addAccountCredit(balanceAmount)
     this.handleCloseAddCreditDialog()
   }
 
@@ -129,7 +129,7 @@ class Billing extends React.Component {
     const { creditCurrency } = organization.billingDetails
 
     const formSchema = yup.object({
-      creditAmount: yup.number().required()
+      balanceAmount: yup.number().required()
     })
 
     const amounts = [
@@ -143,8 +143,8 @@ class Billing extends React.Component {
     for (let i = 0; i < count; i++) {
       const amount = amounts[i]
       const formattedAmount = formatMoney(amount, creditCurrency)
-      const pricePerContact = 10 // FIXME
-      const contactCount = amount / pricePerContact
+      const { amountPerContact } = organization.plan
+      const contactCount = amount / amountPerContact
       choices[amount] = `${formattedAmount} - approx ${contactCount} contacts`
     }
 
@@ -173,7 +173,7 @@ class Billing extends React.Component {
           >
             <Form.Field
               label='Credit amount'
-              name='creditAmount'
+              name='balanceAmount'
               type='select'
               fullWidth
               choices={choices}
@@ -188,7 +188,7 @@ class Billing extends React.Component {
 
   render() {
     const { organization } = this.props.data
-    const { creditAmount, creditCurrency, creditCard } = organization.billingDetails
+    const { balanceAmount, creditCurrency, creditCard } = organization.billingDetails
     return (
       <div>
         <Card>
@@ -200,7 +200,7 @@ class Billing extends React.Component {
               <span className={css(styles.sectionLabel)}>
                 Balance:
               </span>
-              {formatMoney(creditAmount, creditCurrency)}
+              {formatMoney(balanceAmount, creditCurrency)}
             </div>
             <div className={css(styles.section)}>
               <span className={css(styles.sectionLabel)}>
@@ -240,19 +240,19 @@ Billing.propTypes = {
 }
 
 const mapMutationsToProps = ({ ownProps }) => ({
-  addAccountCredit: (creditAmount) => ({
+  addAccountCredit: (balanceAmount) => ({
     mutation: gql`
-      mutation addAccountCredit($creditAmount: Int!, $organizationId: String!) {
-        addAccountCredit(creditAmount: $creditAmount, organizationId: $organizationId) {
+      mutation addAccountCredit($balanceAmount: Int!, $organizationId: String!) {
+        addAccountCredit(balanceAmount: $balanceAmount, organizationId: $organizationId) {
           id
           billingDetails {
-            creditAmount
+            balanceAmount
           }
         }
       }`,
     variables: {
       organizationId: ownProps.params.organizationId,
-      creditAmount
+      balanceAmount
     }
   }),
   updateCard: (stripeToken) => ({
@@ -283,8 +283,12 @@ const mapQueriesToProps = ({ ownProps }) => ({
       organization(id: $organizationId) {
         id
         name
+        plan {
+          id
+          amountPerContact
+        }
         billingDetails {
-          creditAmount
+          balanceAmount
           creditCurrency
           creditCard {
             expMonth

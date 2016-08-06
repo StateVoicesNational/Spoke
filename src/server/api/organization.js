@@ -1,6 +1,7 @@
 import { mapFieldsToModel } from './lib/utils'
 import { r, Organization } from '../models'
 import { accessRequired } from './errors'
+import { getDefaultPlan } from '../lib/plans'
 import stripe from 'stripe'
 
 export const schema = `
@@ -11,7 +12,7 @@ export const schema = `
     brand: String
   }
   type BillingDetails {
-    creditAmount: Int
+    balanceAmount: Int
     creditCurrency: String
     creditCard: CreditCard
   }
@@ -36,7 +37,7 @@ export const resolvers = {
     brand: (card) => card.brand
   },
   BillingDetails: {
-    creditAmount: (organization) => organization.credit_amount || 0,
+    balanceAmount: (organization) => organization.balance_amount || 0,
     creditCurrency: (organization) => organization.currency,
     creditCard: async (organization) => {
       if (!organization.stripe_id)
@@ -53,7 +54,7 @@ export const resolvers = {
   Organization: {
     ...mapFieldsToModel([
       'id',
-      'name',
+      'name'
     ], Organization),
     campaigns: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, 'ADMIN')
@@ -77,7 +78,14 @@ export const resolvers = {
         .concatMap((ele) => ele('assignments'))
         .concatMap((ele) => ele('optOuts'))
     },
-    plan: async (organization, _, { loaders }) => await loaders.plan.load(organization.plan_id),
+    plan: async (organization, _, { loaders }) => {
+      //FIXME
+      if (organization.plan_id) {
+        return await loaders.plan.load(organization.plan_id)
+      } else {
+        return await getDefaultPlan('usd')
+      }
+    },
     texters: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, 'ADMIN')
       return r.table('user_organization')
