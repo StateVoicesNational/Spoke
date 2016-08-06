@@ -2,6 +2,7 @@ import lodash from 'lodash'
 import log from '../../lib'
 import { Campaign,
   Assignment,
+  BalanceLineItem,
   CampaignContact,
   CannedResponse,
   Invite,
@@ -153,7 +154,7 @@ const rootSchema = `
     createOrganization(name: String!, userId: String!, inviteId: String!): Organization
     joinOrganization(organizationId: String!): Organization
     updateCard( organizationId: String!, stripeToken: String!): Organization
-    addAccountCredit( organizationId: String!, creditAmount: Int!): Organization
+    addAccountCredit( organizationId: String!, balanceAmount: Int!): Organization
     sendMessage(message:MessageInput!, campaignContactId:String!): CampaignContact,
     createOptOut(optOut:OptOutInput!, campaignContactId:String!):CampaignContact,
     editCampaignContactMessageStatus(messageStatus: String!, campaignContactId:String!): CampaignContact,
@@ -298,14 +299,15 @@ const rootMutations = {
       }
       return loaders.organization.load(organizationId)
     },
-    addAccountCredit: async (_, { organizationId, creditAmount }, { user, loaders }) => {
+    addAccountCredit: async (_, { organizationId, balanceAmount }, { user, loaders }) => {
+      console.log("organizationId", organizationId)
       await accessRequired(user, organizationId, 'ADMIN')
       const organization = await loaders.organization.load(organizationId)
       const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
       try {
         await stripe.charges.create({
           customer: organization.stripe_id,
-          amount: creditAmount,
+          amount: balanceAmount,
           currency: organization.currency
         })
       } catch (e) {
@@ -316,8 +318,16 @@ const rootMutations = {
           })
         }
       }
-      const newCreditAmount = organization.credit_amount + creditAmount
-      return await Organization.get(organizationId).update({ credit_amount: newCreditAmount })
+      const newBalanceAmount = organization.balance_amount + balanceAmount
+
+      await new BalanceLineItem({
+        organization_id: organizationId,
+        currency: organization.currency,
+        amount: balanceAmount,
+      }).save()
+
+      return await Organization.get(organizationId).update({ balance_amount: newBalanceAmount })
+
     },
     updateCard: async(_, { organizationId, stripeToken }, { user, loaders }) => {
       await accessRequired(user, organizationId, 'ADMIN')
@@ -472,11 +482,11 @@ const rootMutations = {
         }))
         .pluck('organization')
       const organization = merged.organization
-      // FIXME
-      const pricePerContact = 10
+      const plan = loaders.plan.load(organization.plan_id)
+      const amountPerContact = plan.amountPerContact
 
       if (contact.message_status === 'needsMessage') {
-        if (organization.credit_amount < pricePerContact) {
+        if (organization.balance_amount < plan.amountPerContact) {
           throw new GraphQLError({
             status: 400,
             message: 'Not enough account credit to send message'
@@ -507,11 +517,17 @@ const rootMutations = {
         is_from_contact: false
       })
 
-      await messageInstance.save()
+      const savedMessage = await messageInstance.save()
 
       if (contact.message_status === 'needsMessage') {
-        organization.credit_amount = organization.credit_amount - pricePerContact
-        Organization.save(organization, { conflict: 'update'})
+        organization.balance_amount = organization.balance_amount - amountPerContact
+        Organization.save(organization, { conflict: 'update' })
+        await new BalanceLineItem({
+          organization_id: organization.id,
+          currency: organization.currency,
+          amount: amountPerContact,
+          message_id: savedMessage.id
+        }).save()
       }
 
       contact.message_status = 'messaged'

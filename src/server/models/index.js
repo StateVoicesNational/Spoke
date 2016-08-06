@@ -1,5 +1,6 @@
 import DataLoader from 'dataloader'
 import Assignment from './assignment'
+import BalanceLineItem from './balance-line-item'
 import Campaign from './campaign'
 import CampaignContact from './campaign-contact'
 import InteractionStep from './interaction-step'
@@ -42,6 +43,7 @@ export {
   createLoaders,
   r,
   Assignment,
+  BalanceLineItem,
   Campaign,
   CampaignContact,
   InteractionStep,

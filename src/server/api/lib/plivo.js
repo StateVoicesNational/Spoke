@@ -1,6 +1,6 @@
 import plivo from 'plivo'
 import { getFormattedPhoneNumber } from '../../../lib/phone-format'
-import { Message, CampaignContact, r } from '../../models'
+import { Message, r } from '../../models'
 
 const plivoAPI = plivo.RestAPI({
   authId: process.env.PLIVO_AUTH_ID,
