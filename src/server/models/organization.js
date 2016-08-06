@@ -10,7 +10,7 @@ const Organization = thinky.createModel('organization', type.object().schema({
   stripe_id: type.string(),
   currency: type.string(), // FIXME make required
   plan_id: type.string(), // FIXME make required
-  balance_amount: type.number().integer().default(STARTING_CREDIT)
+  balance_amount: type.number().integer().default(STARTING_CREDIT) // FIXME make required
 }).allowExtra(false))
 
 export default Organization
