@@ -13,7 +13,6 @@ import wrap from './wrap'
 import { getFormattedPhoneNumber, log } from '../lib'
 import { handleIncomingMessage } from './api/lib/plivo'
 import { seedZipCodes } from './seeds/seed-zip-codes'
-import { seedPlans } from './seeds/seed-plans'
 
 process.on('uncaughtException', (ex) => {
   log.error(ex)
@@ -22,7 +21,6 @@ process.on('uncaughtException', (ex) => {
 const DEBUG = process.env.NODE_ENV === 'development'
 setupAuth0Passport()
 seedZipCodes()
-seedPlans()
 
 const app = express()
 // Heroku requires you to use process.env.PORT

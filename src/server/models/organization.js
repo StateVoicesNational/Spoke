@@ -1,7 +1,6 @@
 import thinky from './thinky'
 const type = thinky.type
 import { requiredString, timestamp } from './custom-types'
-import { getDefaultPlan } from '../lib/plans'
 const STARTING_CREDIT = 300
 
 const Organization = thinky.createModel('organization', type.object().schema({
@@ -9,8 +8,8 @@ const Organization = thinky.createModel('organization', type.object().schema({
   name: requiredString(),
   created_at: timestamp(),
   stripe_id: type.string(),
-  currency: type.string().default('usd'),
-  plan_id: type.string().default(() => getDefaultPlan('usd').id),
+  currency: type.string(), // FIXME make required
+  plan_id: type.string(), // FIXME make required
   balance_amount: type.number().integer().default(STARTING_CREDIT)
 }).allowExtra(false))
 

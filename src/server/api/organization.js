@@ -1,7 +1,6 @@
 import { mapFieldsToModel } from './lib/utils'
 import { r, Organization } from '../models'
 import { accessRequired } from './errors'
-import { getDefaultPlan } from '../lib/plans'
 import stripe from 'stripe'
 
 export const schema = `
@@ -83,7 +82,8 @@ export const resolvers = {
       if (organization.plan_id) {
         return await loaders.plan.load(organization.plan_id)
       } else {
-        return await getDefaultPlan('usd')
+        return await r.table('plan').filter({}).limit(1)(0)
+        // return await getDefaultPlan('usd')
       }
     },
     texters: async (organization, _, { user }) => {
