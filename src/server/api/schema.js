@@ -483,10 +483,10 @@ const rootMutations = {
         .pluck('organization')
       const organization = merged.organization
       const plan = loaders.plan.load(organization.plan_id)
-      const amountPerContact = plan.amountPerContact
+      const amountPerMessage = plan.amountPerMessage
 
       if (contact.message_status === 'needsMessage') {
-        if (organization.balance_amount < plan.amountPerContact) {
+        if (organization.balance_amount < plan.amountPerMessage) {
           throw new GraphQLError({
             status: 400,
             message: 'Not enough account credit to send message'
@@ -520,12 +520,12 @@ const rootMutations = {
       const savedMessage = await messageInstance.save()
 
       if (contact.message_status === 'needsMessage') {
-        organization.balance_amount = organization.balance_amount - amountPerContact
+        organization.balance_amount = organization.balance_amount - amountPerMessage
         Organization.save(organization, { conflict: 'update' })
         await new BalanceLineItem({
           organization_id: organization.id,
           currency: organization.currency,
-          amount: amountPerContact,
+          amount: amountPerMessage,
           message_id: savedMessage.id
         }).save()
       }

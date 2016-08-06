@@ -2,7 +2,7 @@ import { Plan, r } from '../../models'
 
 const PLAN_DEFAULTS = {
   'usd': {
-    amountPerContact: 10
+    amountPerMessage: 10
   }
 
 export SUPPORTED_CURRENCIES = ['usd']
