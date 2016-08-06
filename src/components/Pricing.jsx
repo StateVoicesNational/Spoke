@@ -23,6 +23,17 @@ const styles = StyleSheet.create({
   },
   link: {
     ...theme.text.link
+  },
+  detailItem: {
+
+  },
+  details: {
+    textAlign: 'left',
+    width: '40%',
+    borderTop: '1px solid white',
+    marginLeft: 'auto',
+    marginRight: 'auto',
+    paddingTop: 15
   }
 })
 
@@ -35,14 +46,22 @@ export default () => (
       <div className={css(styles.header)}>
         $0.06 per outbound message.
       </div>
-      <div>
-      No charge for inbound messages.
-      </div>
-      <div>
-      Pay as you go.
-      </div>
-      <div>
-      Try it out with $2 worth of messages to start.
+      <div className={css(styles.details)}>
+        <div>
+        Unlimited texters.
+        </div>
+        <div>
+        No charge for inbound messages.
+        </div>
+        <div>
+        No limit on message length.
+        </div>
+        <div>
+        Pay as you go.
+        </div>
+        <div>
+        Try it out with 50 free messages. No credit card required.
+        </div>
       </div>
     </div>
   </div>
