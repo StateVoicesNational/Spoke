@@ -4,7 +4,7 @@ import { Plan } from '../models'
 export const schema = `
   type Plan {
     id: ID
-    amountPerContact: Int
+    amountPerMessage: Int
     currency: String
   }
 `
@@ -13,7 +13,7 @@ export const resolvers = {
     ...mapFieldsToModel([
       'id',
       'currency',
-      'amountPerContact'
+      'amountPerMessage'
     ], Plan)
   }
 }

@@ -2,7 +2,7 @@ import { r } from '../models'
 
 const PLAN_DEFAULTS = {
   usd: {
-    amountPerContact: 10
+    amountPerMessage: 10
   }
 }
 
