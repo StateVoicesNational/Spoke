@@ -18,6 +18,7 @@ import JoinTeam from './containers/JoinTeam'
 import Home from './containers/Home'
 import Terms from './components/Terms'
 import Privacy from './components/Privacy'
+import Pricing from './components/Pricing'
 
 export default function makeRoutes(requireAuth = () => {}) {
   return (
@@ -72,6 +73,7 @@ export default function makeRoutes(requireAuth = () => {}) {
       <Route path=':organizationId/join' component={JoinTeam} onEnter={requireAuth} />
       <Route path='terms' component={Terms} />
       <Route path='privacy' component={Privacy} />
+      <Route path='pricing' component={Pricing} />
     </Route>
   )
 }
