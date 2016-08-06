@@ -54,9 +54,6 @@ export default () => (
         No charge for inbound messages.
         </div>
         <div>
-        No limit on message length.
-        </div>
-        <div>
         Pay as you go.
         </div>
         <div>
