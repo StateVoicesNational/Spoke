@@ -446,15 +446,16 @@ const rootMutations = {
         })
       }
       const currency = 'usd'
+      const plan = await r.table('plan')
+        .filter({
+          currency,
+          is_default: true
+        })
+        .limit(1)(0)
       const newOrganization = await Organization.save({
         name,
         currency,
-        plan_id: await r.table('plan')
-          .filter({
-            currency,
-            is_default: true
-          })
-          .limit(1)(0).id
+        plan_id: plan.id
       })
       await UserOrganization.save({
         user_id: userId,
