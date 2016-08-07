@@ -56,6 +56,7 @@ app.post('/plivo', (req, res) => {
 app.post('/plivo-message-report', (req, res) => {
   console.log('Message send report', req.body)
 })
+
 app.get('/login-callback',
   passport.authenticate('auth0', {
     failureRedirect: '/login'

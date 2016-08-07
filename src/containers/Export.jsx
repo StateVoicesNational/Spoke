@@ -10,7 +10,6 @@ class Export extends React.Component {
     if (!props.data.loading) {
       props.onParseStart()
       log.debug('Starting to download data...')
-      console.log('here?', props.data)
       const allQuestions = {}
       const questionCount = {}
       props.data.campaign.interactionSteps.forEach((step) => {

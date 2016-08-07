@@ -19,6 +19,7 @@ import Home from './containers/Home'
 import Terms from './components/Terms'
 import Privacy from './components/Privacy'
 import Pricing from './components/Pricing'
+import AdminReplySender from './containers/AdminReplySender'
 
 export default function makeRoutes(requireAuth = () => {}) {
   return (
@@ -33,6 +34,7 @@ export default function makeRoutes(requireAuth = () => {}) {
             <Route path=':campaignId'>
               <IndexRoute component={AdminCampaignStats} />
               <Route path='edit' component={AdminCampaignEdit} />
+              <Route path='send-replies' component={AdminReplySender} />
             </Route>
           </Route>
           <Route path='texters' component={AdminTexterList} />
