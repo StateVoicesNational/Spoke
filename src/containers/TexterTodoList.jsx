@@ -21,6 +21,12 @@ class TexterTodoList extends React.Component {
   }
 
   render() {
+    const { organization } = this.props.data
+    console.log("organization", organization, organization.plan)
+    const balanceAmount = organization.billingDetails.balanceAmount
+    const { amountPerMessage } = organization.plan
+    const accountBalanceIsLow = balanceAmount < amountPerMessage
+
     const todos = this.props.data.currentUser.todos
     const empty = (
       <Empty
@@ -29,7 +35,11 @@ class TexterTodoList extends React.Component {
       />
     )
 
-    return (
+    return accountBalanceIsLow ? (
+      <div>
+        There's not enough credit to send texts. Contact the organizer.
+      </div>
+    ) : (
       <div>
         {todos.length === 0 ?
           empty :
@@ -48,6 +58,15 @@ TexterTodoList.propTypes = {
 const mapQueriesToProps = ({ ownProps }) => ({
   data: {
     query: gql`query getTodos($organizationId: String!, $needsMessageString: String, $needsResponseString: String, $badTimezoneString: String) {
+      organization(id: $organizationId) {
+        id
+        billingDetails {
+          balanceAmount
+        }
+        plan {
+          amountPerMessage
+        }
+      }
       currentUser {
         id
         todos(organizationId: $organizationId) {

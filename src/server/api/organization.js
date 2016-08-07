@@ -82,8 +82,7 @@ export const resolvers = {
       if (organization.plan_id) {
         return await loaders.plan.load(organization.plan_id)
       } else {
-        return await r.table('plan').filter({}).limit(1)(0)
-        // return await getDefaultPlan('usd')
+        return null
       }
     },
     texters: async (organization, _, { user }) => {
