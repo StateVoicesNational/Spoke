@@ -271,6 +271,8 @@ export default class CampaignInteractionStepsForm extends React.Component {
             ref={fieldName}
             autoFocus={this.state.focusedField === fieldName}
             hintText='Answer'
+            // noValidate here otherwise we end up with this bug: https://github.com/AxleFactory/spoke/issues/25
+            noValidate
             onKeyDown={(event) => {
               if (event.keyCode === 13) {
                 this.addAnswer(interactionStep, interactionStepIndex)
@@ -437,7 +439,6 @@ export default class CampaignInteractionStepsForm extends React.Component {
           value={this.sortedValues()}
           onChange={this.onChange}
           onSubmit={this.props.onSubmit}
-          noValidate
         >
           {this.sortedValues().interactionSteps.map((interactionStep, index) => (
             this.renderStep(interactionStep, index)
