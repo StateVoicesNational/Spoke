@@ -6,7 +6,7 @@ const OptOut = thinky.createModel('opt_out', type.object().schema({
   id: type.string(),
   cell: requiredString(),
   assignment_id: requiredString(),
-  organization_id: type.string(),
+  organization_id: requiredString(),
   created_at: timestamp()
 }).allowExtra(false))
 
