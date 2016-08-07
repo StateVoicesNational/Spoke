@@ -473,24 +473,24 @@ class AssignmentTexterContact extends React.Component {
   renderBottomFixedSection() {
     return (
       <div>
-          {this.renderSurveySection()}
-          <div>
-            <div className={css(styles.messageField)}>
-              <TextField
-                autoFocus
-                ref='messageText'
-                name='messageText'
-                floatingLabelText='Your message'
-                fullWidth
-                multiLine
-                onChange={(event) => this.setState({ messageText: event.target.value })}
-                value={this.state.messageText}
-              />
-            </div>
-            {this.renderActionToolbar()}
+        {this.renderSurveySection()}
+        <div>
+          <div className={css(styles.messageField)}>
+            <TextField
+              autoFocus
+              ref='messageText'
+              name='messageText'
+              floatingLabelText='Your message'
+              fullWidth
+              multiLine
+              onChange={(event) => this.setState({ messageText: event.target.value })}
+              value={this.state.messageText}
+            />
           </div>
-          {this.renderOptOutDialog()}
-          {this.renderCannedResponsePopover()}
+          {this.renderActionToolbar()}
+        </div>
+        {this.renderOptOutDialog()}
+        {this.renderCannedResponsePopover()}
       </div>
     )
   }
@@ -521,7 +521,9 @@ AssignmentTexterContact.propTypes = {
   texter: React.PropTypes.object,
   navigationToolbarChildren: React.PropTypes.array,
   onFinishContact: React.PropTypes.func,
-  router: React.PropTypes.object
+  router: React.PropTypes.object,
+  data: React.PropTypes.object,
+  onExitTexter: React.PropTypes.func
 }
 
 const mapQueriesToProps = ({ ownProps }) => ({
