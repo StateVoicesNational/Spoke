@@ -77,14 +77,7 @@ export const resolvers = {
         .concatMap((ele) => ele('assignments'))
         .concatMap((ele) => ele('optOuts'))
     },
-    plan: async (organization, _, { loaders }) => {
-      //FIXME
-      if (organization.plan_id) {
-        return await loaders.plan.load(organization.plan_id)
-      } else {
-        return null
-      }
-    },
+    plan: async (organization, _, { loaders }) => await loaders.plan.load(organization.plan_id),
     texters: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, 'ADMIN')
       return r.table('user_organization')
