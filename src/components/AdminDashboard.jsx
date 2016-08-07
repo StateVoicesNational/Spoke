@@ -52,6 +52,13 @@ class AdminDashboard extends React.Component {
     )
   }
 
+  renderOrganizationAlertBar() {
+    const organizationId = this.props.params.organizationId
+    if (!organizationId) {
+      return ''
+    }
+    return <AlertBar organizationId={organizationId} />
+  }
   render() {
     const sections = [{
       name: 'Campaigns',
@@ -85,9 +92,7 @@ class AdminDashboard extends React.Component {
         <div className={css(styles.container)}>
           {this.renderNavigation(sections)}
           <div className={css(styles.content)}>
-            <AlertBar
-              organizationId={this.props.params.organizationId}
-            />
+            {this.renderOrganizationAlertBar()}
             {children}
           </div>
         </div>
