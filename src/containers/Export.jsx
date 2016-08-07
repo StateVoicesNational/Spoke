@@ -7,12 +7,27 @@ import Papa from 'papaparse'
 
 class Export extends React.Component {
   componentWillReceiveProps(props) {
-    console.log(props)
     if (!props.data.loading) {
       props.onParseStart()
       log.debug('Starting to download data...')
-      const convertedAssignments = props.data.campaign.assignments.map((assignment) => {
-        return assignment.contacts.data.map((contact) => {
+      console.log('here?', props.data)
+      const allQuestions = {}
+      const questionCount = {}
+      props.data.campaign.interactionSteps.forEach((step) => {
+        if (questionCount.hasOwnProperty(step.question.text)) {
+          questionCount[step.question.text] += 1
+        } else {
+          questionCount[step.question.text] = 0
+        }
+        const currentCount = questionCount[step.question.text]
+        if (currentCount > 0) {
+          allQuestions[step.id] = `${step.question.text}_${currentCount}`
+        } else {
+          allQuestions[step.id] = step.question.text
+        }
+      })
+      const convertedAssignments = props.data.campaign.assignments.map((assignment) => (
+        assignment.contacts.data.map((contact) => {
           let contactRow = {
             'texter[firstName]': assignment.texter.firstName,
             'texter[lastName]': assignment.texter.lastName,
@@ -31,12 +46,20 @@ class Export extends React.Component {
           Object.keys(contact.customFields).forEach((fieldName) => {
             contactRow[`contact[${fieldName}]`] = contact.customFields[fieldName]
           })
-          contact.questionResponses.forEach((response) => {
-            contactRow[`question[${response.question.text}]`] = response.value
+          Object.keys(allQuestions).forEach((stepId) => {
+            let value = ''
+            contact.questionResponses.forEach((response) => {
+              if (response.question.interactionStep.id === stepId) {
+                value = response.value
+              }
+            })
+            contactRow[`question[${allQuestions[stepId]}]`] = value
           })
           return contactRow
         })
-      }).reduce((prev, row) => prev.concat(row))
+      )).reduce((prev, row) => prev.concat(row))
+
+      console.log(convertedAssignments)
       log.debug('Converting to csv...')
       const csv = Papa.unparse(convertedAssignments)
       log.debug('Data converted.')
@@ -70,6 +93,12 @@ const mapQueriesToProps = ({ ownProps }) => ({
       campaign(id: $campaignId) {
         id
         title
+        interactionSteps {
+          id
+          question {
+            text
+          }
+        }
         assignments {
           id
           texter {
@@ -92,6 +121,9 @@ const mapQueriesToProps = ({ ownProps }) => ({
                 value
                 question {
                   text
+                  interactionStep {
+                    id
+                  }
                 }
               }
               location {
