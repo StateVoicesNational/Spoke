@@ -300,7 +300,6 @@ const rootMutations = {
       return loaders.organization.load(organizationId)
     },
     addAccountCredit: async (_, { organizationId, balanceAmount }, { user, loaders }) => {
-      console.log("organizationId", organizationId)
       await accessRequired(user, organizationId, 'ADMIN')
       const organization = await loaders.organization.load(organizationId)
       const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
@@ -323,7 +322,7 @@ const rootMutations = {
       await new BalanceLineItem({
         organization_id: organizationId,
         currency: organization.currency,
-        amount: balanceAmount,
+        amount: balanceAmount
       }).save()
 
       return await Organization.get(organizationId).update({ balance_amount: newBalanceAmount })
@@ -490,12 +489,12 @@ const rootMutations = {
         }))
         .pluck('organization')
       const organization = merged.organization
-      const plan = loaders.plan.load(organization.plan_id)
-      const amountPerMessage = plan.amountPerMessage
+      const plan = await loaders.plan.load(organization.plan_id)
+      const amountPerMessage = plan.amount_per_message
 
       if (organization.balance_amount < amountPerMessage) {
         throw new GraphQLError({
-          status: 400,
+          status: 402,
           message: 'Not enough account credit to send message'
         })
       }
