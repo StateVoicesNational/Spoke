@@ -411,8 +411,15 @@ const rootMutations = {
       return await contact.save()
     },
     createOptOut: async(_, { optOut, campaignContactId }, { loaders }) => {
+      let campaign = await r.table('assignment')
+        .get(optOut.assignmentId)
+        .merge((doc) => ({
+          campaign: r.table('campaign')
+            .get(doc('campaign_id'))
+        }))('campaign')
       await new OptOut({
         assignment_id: optOut.assignmentId,
+        organization_id: campaign.organization_id,
         cell: optOut.cell
       }).save()
 
