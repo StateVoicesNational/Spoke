@@ -63,6 +63,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
           balanceAmount
         }
         plan {
+          id
           amountPerMessage
         }
       }
