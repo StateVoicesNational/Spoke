@@ -5,8 +5,11 @@ class TexterStats extends React.Component {
   renderAssignment(assignment) {
     const { contacts, texter } = assignment
     const { unmessagedCount, count } = contacts
+    if (count === 0) {
+      return <div />
+    }
 
-    const percentComplete = ((count - unmessagedCount) * 100) / count
+    const percentComplete = Math.round(((count - unmessagedCount) * 100) / count)
 
     return (
       <div>

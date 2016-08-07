@@ -79,8 +79,9 @@ export const resolvers = {
         .filter(filter)
     },
     count: async(assignment, { contactFilter }) => {
-      if ((contactFilter) === 'badTimezone')
+      if ((contactFilter) === 'badTimezone') {
         return 0
+      }
 
       let filter = {
         opt_out: false
