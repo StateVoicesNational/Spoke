@@ -5,7 +5,6 @@ import loadData from './hoc/load-data'
 
 class DashboardLoader extends React.Component {
   componentWillMount() {
-    console.log('HERE', this.props.data)
     if (this.props.data.currentUser.organizations.length > 0) {
       this.props.router.push(
         `${this.props.path}/${this.props.data.currentUser.organizations[0].id}`

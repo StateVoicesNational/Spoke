@@ -3,6 +3,7 @@ import { StyleSheet, css } from 'aphrodite'
 import theme from '../styles/theme'
 import TopNav from './TopNav'
 import Navigation from './Navigation'
+import AlertBar from '../containers/AlertBar'
 import { ListItem } from 'material-ui/List'
 import { withRouter } from 'react-router'
 
@@ -84,6 +85,9 @@ class AdminDashboard extends React.Component {
         <div className={css(styles.container)}>
           {this.renderNavigation(sections)}
           <div className={css(styles.content)}>
+            <AlertBar
+              organizationId={this.props.params.organizationId}
+            />
             {children}
           </div>
         </div>
