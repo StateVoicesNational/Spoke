@@ -75,6 +75,7 @@ export async function handleIncomingMessage(body) {
   const contactNumber = getFormattedPhoneNumber(From)
   const userNumber = getFormattedPhoneNumber(To)
 
+  console.log(contactNumber, userNumber, Text, MessageUUID)
   const lastMessage = await r.table('message')
     .filter({
       contact_number: contactNumber,
@@ -86,6 +87,7 @@ export async function handleIncomingMessage(body) {
     .pluck('assignment_id')(0)
     .default(null)
 
+  console.log(lastMessage)
   if (lastMessage) {
     const assignmentId = lastMessage.assignment_id
     const messageInstance = new Message({
@@ -96,6 +98,7 @@ export async function handleIncomingMessage(body) {
       assignment_id: assignmentId,
       service_message_id: MessageUUID
     })
+
     await messageInstance.save()
 
     await r.table('campaign_contact')
