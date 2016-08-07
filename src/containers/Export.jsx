@@ -14,6 +14,10 @@ class Export extends React.Component {
       const allQuestions = {}
       const questionCount = {}
       props.data.campaign.interactionSteps.forEach((step) => {
+        if (!step.question.text || step.question.text.trim() === '') {
+          return
+        }
+
         if (questionCount.hasOwnProperty(step.question.text)) {
           questionCount[step.question.text] += 1
         } else {
