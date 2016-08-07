@@ -53,7 +53,7 @@ export const resolvers = {
       'id',
       'title',
       'description',
-      'dueBy'
+      'dueBy',
     ], Campaign),
     organization: async (campaign, _, { loaders }) => (
       loaders.organization.load(campaign.organization_id)

@@ -21,6 +21,9 @@ import GSForm from '../components/forms/GSForm'
 import Form from 'react-formal'
 import GSSubmitButton from '../components/forms/GSSubmitButton'
 import { getChildren, getTopMostParent, interactionStepForId } from '../lib'
+import { withRouter } from 'react-router'
+import wrapMutations from './hoc/wrap-mutations'
+
 const styles = StyleSheet.create({
   container: {
     margin: 0,
@@ -181,10 +184,22 @@ class AssignmentTexterContact extends React.Component {
     const { contact } = this.props.data
     this.setState({ sending: true})
     const message = this.createMessageToContact(this.refs.messageText.getValue().trim())
-    await this.props.mutations.sendMessage(message, contact.id)
+    await this.sendMessage(message, contact.id)
     this.setState({ sending: false})
   }
 
+  sendMessage = async(message, campaignContactId) => {
+    try {
+      await this.props.mutations.sendMessage(message, campaignContactId)
+    } catch (e) {
+      if (e.status === 402) {
+        const { campaign } = this.props
+        this.props.router.push(`/app/${campaign.organization.id}/todos`)
+      } else {
+        throw e
+      }
+    }
+  }
   handleSubmitSurveys = async () => {
     const { contact } = this.props.data
 
@@ -230,7 +245,7 @@ class AssignmentTexterContact extends React.Component {
     const { contact } = this.props.data
     const { assignment } = this.props
     const message = this.createMessageToContact(optOutMessageText)
-    await this.props.mutations.sendMessage(message, contact.id)
+    await this.sendMessage(message, contact.id)
 
     const optOut = {
       cell: contact.cell,
@@ -505,7 +520,8 @@ AssignmentTexterContact.propTypes = {
   assignment: React.PropTypes.object,
   texter: React.PropTypes.object,
   navigationToolbarChildren: React.PropTypes.array,
-  onFinishContact: React.PropTypes.func
+  onFinishContact: React.PropTypes.func,
+  router: React.PropTypes.object
 }
 
 const mapQueriesToProps = ({ ownProps }) => ({
@@ -642,4 +658,8 @@ const mapMutationsToProps = () => ({
   })
 })
 
-export default loadData(AssignmentTexterContact, { mapQueriesToProps, mapMutationsToProps })
+export default loadData(wrapMutations(
+  withRouter(AssignmentTexterContact)), {
+    mapQueriesToProps,
+    mapMutationsToProps
+  })

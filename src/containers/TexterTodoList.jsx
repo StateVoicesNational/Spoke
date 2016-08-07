@@ -22,7 +22,6 @@ class TexterTodoList extends React.Component {
 
   render() {
     const { organization } = this.props.data
-    console.log("organization", organization, organization.plan)
     const balanceAmount = organization.billingDetails.balanceAmount
     const { amountPerMessage } = organization.plan
     const accountBalanceIsLow = balanceAmount < amountPerMessage
