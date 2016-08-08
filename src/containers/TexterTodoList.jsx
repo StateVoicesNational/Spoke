@@ -32,6 +32,8 @@ class TexterTodoList extends React.Component {
     const accountBalanceIsLow = balanceAmount < amountPerMessage
 
     const todos = this.props.data.currentUser.todos
+    const renderedTodos = this.renderTodoList(todos)
+
     const empty = (
       <Empty
         title='You have nothing to do!'
@@ -60,7 +62,7 @@ TexterTodoList.propTypes = {
 
 const mapQueriesToProps = ({ ownProps }) => ({
   data: {
-    query: gql`query getTodos($organizationId: String!, $needsMessageString: String, $needsResponseString: String, $badTimezoneString: String) {
+    query: gql`query getTodos($organizationId: String!, $needsMessageFilter: ContactFilter, $needsResponseFilter: ContactFilter, $badTimezoneFilter: ContactFilter) {
       organization(id: $organizationId) {
         id
         billingDetails {
