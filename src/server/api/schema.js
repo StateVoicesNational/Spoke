@@ -76,7 +76,7 @@ import {
 import { GraphQLError, authRequired, accessRequired } from './errors'
 import { rentNewCell, sendMessage, handleIncomingMessage } from './lib/plivo'
 import { getFormattedPhoneNumber } from '../../lib/phone-format'
-
+import { Notifications, sendUserNotification } from '../notifications'
 const rootSchema = `
   input CampaignContactCollectionInput {
     data: [CampaignContactInput]
@@ -361,6 +361,11 @@ const rootMutations = {
       })
 
       await CampaignContact.save(contactsToSave, { conflict: 'update' })
+
+      sendUserNotification({
+        type: Notifications.CAMPAIGN_STARTED,
+        campaignId: id
+      })
 
       return loaders.campaign.load(id)
     },
