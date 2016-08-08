@@ -79,9 +79,9 @@ import {
   resolvers as inviteResolvers
 } from './invite'
 import { GraphQLError, authRequired, accessRequired } from './errors'
-import { rentNewCell, sendMessage } from './lib/plivo'
+import { rentNewCell, sendMessage, handleIncomingMessage } from './lib/plivo'
 import { getFormattedPhoneNumber } from '../../lib/phone-format'
-
+import { Notifications, sendUserNotification } from '../notifications'
 const rootSchema = `
   input CampaignContactCollectionInput {
     data: [CampaignContactInput]
@@ -160,7 +160,8 @@ const rootSchema = `
     editCampaignContactMessageStatus(messageStatus: String!, campaignContactId:String!): CampaignContact,
     deleteQuestionResponses(interactionStepIds:[String], campaignContactId:String!): CampaignContact,
     updateQuestionResponses(questionResponses:[QuestionResponseInput], campaignContactId:String!): CampaignContact,
-    startCampaign(id:String!): Campaign
+    startCampaign(id:String!): Campaign,
+    sendReply(id: String!, message: String!): CampaignContact
   }
 
   schema {
@@ -282,6 +283,25 @@ async function editCampaign(id, campaign, loaders) {
 
 const rootMutations = {
   RootMutation: {
+    sendReply: async (_, { id, message }, { user, loaders }) => {
+      if (process.env.NODE_ENV !== 'development') {
+        throw new GraphQLError({
+          status: 400,
+          message: 'You cannot send manual replies unless you are in development'
+        })
+      }
+      const contact = await loaders.campaignContact.load(id)
+      const userNumber = await r.table('assignment')
+        .get(contact.assignment_id)
+        .merge((doc) => r.table('user').get(doc('user_id')))('assigned_cell')
+      await handleIncomingMessage({
+        To: userNumber,
+        From: contact.cell,
+        Text: message,
+        MessageUUID: 'mocked_message'
+      })
+      return loaders.campaignContact.load(id)
+    },
     joinOrganization: async (_, { organizationId }, { user, loaders }) => {
       const userOrg = await r.table('user_organization')
         .getAll(user.id, { index: 'user_id' })
@@ -416,6 +436,11 @@ const rootMutations = {
 
       await CampaignContact.save(contactsToSave, { conflict: 'update' })
 
+      await sendUserNotification({
+        type: Notifications.CAMPAIGN_STARTED,
+        campaignId: id
+      })
+
       return loaders.campaign.load(id)
     },
     editCampaign: async (_, { id, campaign }, { user, loaders }) => {
@@ -474,8 +499,15 @@ const rootMutations = {
       return await contact.save()
     },
     createOptOut: async(_, { optOut, campaignContactId }, { loaders }) => {
+      let campaign = await r.table('assignment')
+        .get(optOut.assignmentId)
+        .merge((doc) => ({
+          campaign: r.table('campaign')
+            .get(doc('campaign_id'))
+        }))('campaign')
       await new OptOut({
         assignment_id: optOut.assignmentId,
+        organization_id: campaign.organization_id,
         cell: optOut.cell
       }).save()
     },

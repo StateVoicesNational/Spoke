@@ -13,6 +13,7 @@ import wrap from './wrap'
 import { getFormattedPhoneNumber, log } from '../lib'
 import { handleIncomingMessage } from './api/lib/plivo'
 import { seedZipCodes } from './seeds/seed-zip-codes'
+import { setupUserNotificationObservers } from './notifications'
 
 process.on('uncaughtException', (ex) => {
   log.error(ex)
@@ -21,7 +22,7 @@ process.on('uncaughtException', (ex) => {
 const DEBUG = process.env.NODE_ENV === 'development'
 setupAuth0Passport()
 seedZipCodes()
-
+setupUserNotificationObservers()
 const app = express()
 // Heroku requires you to use process.env.PORT
 const port = process.env.DEV_APP_PORT || process.env.PORT
@@ -56,6 +57,7 @@ app.post('/plivo', (req, res) => {
 app.post('/plivo-message-report', (req, res) => {
   console.log('Message send report', req.body)
 })
+
 app.get('/login-callback',
   passport.authenticate('auth0', {
     failureRedirect: '/login'

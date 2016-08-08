@@ -1,14 +1,10 @@
 import React from 'react'
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group'
-import { ToolbarTitle, ToolbarSeparator } from 'material-ui/Toolbar'
+import { ToolbarTitle } from 'material-ui/Toolbar'
 import IconButton from 'material-ui/IconButton/IconButton'
 import NavigateBeforeIcon from 'material-ui/svg-icons/image/navigate-before'
 import NavigateNextIcon from 'material-ui/svg-icons/image/navigate-next'
 import AssignmentTexterContact from '../containers/AssignmentTexterContact'
-// import { sendMessage } from '../../api/messages/methods'
-// import { updateAnswers } from '../../api/survey_answers/methods'
 import { StyleSheet, css } from 'aphrodite'
-import transitions from '../styles/transitions'
 import { withRouter } from 'react-router'
 
 const styles = StyleSheet.create({
@@ -39,16 +35,28 @@ class AssignmentTexter extends React.Component {
     }
   }
 
+  getContact(contacts, index) {
+    return (contacts.length > index) ? contacts[index] : null
+  }
+
+  incrementCurrentContactIndex = (increment) => {
+    let newIndex = this.state.currentContactIndex
+    newIndex = newIndex + increment
+    this.updateCurrentContactIndex(newIndex)
+  }
+
+  updateCurrentContactIndex(newIndex) {
+    this.setState({
+      currentContactIndex: newIndex
+    })
+  }
+
   hasPrevious() {
     return this.state.currentContactIndex > 0
   }
 
   hasNext() {
     return this.state.currentContactIndex < this.contactCount() - 1
-  }
-
-  handleExitTexter = () => {
-    this.props.router.push('/app')
   }
 
   handleFinishContact = () => {
@@ -63,8 +71,6 @@ class AssignmentTexter extends React.Component {
     if (!this.hasNext()) {
       return
     }
-
-    console.log('trying to navigate next', this.state.currentContactIndex)
 
     this.setState({ direction: 'right' }, () => this.incrementCurrentContactIndex(1))
   }
@@ -84,25 +90,12 @@ class AssignmentTexter extends React.Component {
   handleScriptChange = (script) => {
     this.setState({ script })
   }
-
-  incrementCurrentContactIndex = (increment) => {
-    let newIndex = this.state.currentContactIndex
-    newIndex = newIndex + increment
-    this.updateCurrentContactIndex(newIndex)
-  }
-
-  updateCurrentContactIndex(newIndex) {
-    this.setState({
-      currentContactIndex: newIndex
-    })
-  }
-
-  getContact(contacts, index) {
-    return (contacts.length > index) ? contacts[index] : null
+  handleExitTexter = () => {
+    this.props.router.push('/app')
   }
 
   contactCount() {
-    const { contacts, assignment } = this.props
+    const { contacts } = this.props
     return contacts.length
   }
 
@@ -118,7 +111,8 @@ class AssignmentTexter extends React.Component {
         className={css(styles.navigationToolbarTitle)}
         text={title}
       />,
-      <IconButton onTouchTap={this.handleNavigatePrevious}
+      <IconButton
+        onTouchTap={this.handleNavigatePrevious}
         disabled={!this.hasPrevious()}
         // style={styles.toolbarIconButton}
       >
@@ -138,36 +132,19 @@ class AssignmentTexter extends React.Component {
     const { assignment } = this.props
     const { campaign, texter } = assignment
     const contact = this.currentContact()
-    const cssClassName = (className) => {
-      const base = this.state.direction === 'right' ? 'slideRight' : 'slideLeft'
-      return css(transitions[`${base}${className}`])
-    }
     const navigationToolbarChildren = this.renderNavigationToolbarChildren()
     return (
       <div className={css(styles.container)}>
-        <ReactCSSTransitionGroup
-          transitionName={{
-            enter: cssClassName('Enter'),
-            enterActive: cssClassName('EnterActive'),
-            leave: cssClassName('Leave'),
-            leaveActive: cssClassName('LeaveActive'),
-            appear: cssClassName('Appear'),
-            appearActive: cssClassName('AppearActive')
-          }}
-          transitionEnterTimeout={300}
-          transitionLeaveTimeout={300}
-        >
-          <AssignmentTexterContact
-            key={contact.id}
-            assignment={assignment}
-            campaignContactId={contact.id}
-            texter={texter}
-            campaign={campaign}
-            navigationToolbarChildren={navigationToolbarChildren}
-            onFinishContact={this.handleFinishContact}
-            onExitTexter={this.handleExitTexter}
-          />
-        </ReactCSSTransitionGroup>
+        <AssignmentTexterContact
+          key={contact.id}
+          assignment={assignment}
+          campaignContactId={contact.id}
+          texter={texter}
+          campaign={campaign}
+          navigationToolbarChildren={navigationToolbarChildren}
+          onFinishContact={this.handleFinishContact}
+          onExitTexter={this.handleExitTexter}
+        />
       </div>
     )
   }
@@ -188,7 +165,8 @@ class AssignmentTexter extends React.Component {
 AssignmentTexter.propTypes = {
   currentUser: React.PropTypes.object,
   assignment: React.PropTypes.object,      // current assignment
-  contacts: React.PropTypes.array   // contacts for current assignment
+  contacts: React.PropTypes.array,   // contacts for current assignment
+  router: React.PropTypes.object
 }
 
 export default withRouter(AssignmentTexter)

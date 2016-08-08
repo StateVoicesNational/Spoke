@@ -1,7 +1,6 @@
 import React from 'react'
 import { StyleSheet, css } from 'aphrodite'
 import theme from '../styles/theme'
-import { withRouter } from 'react-router'
 
 const styles = StyleSheet.create({
   container: {
@@ -10,6 +9,9 @@ const styles = StyleSheet.create({
     marginLeft: 'auto',
     marginRight: 'auto',
     fontSize: 14
+  },
+  link: {
+    ...theme.text.link
   },
   subtitle: {
     textAlign: 'center',
@@ -42,7 +44,7 @@ class Terms extends React.Component {
         </div>
         <div className={css(styles.header)}>Description of Service</div>
         <div className={css(styles.paragraph)}>
-          The Service is a manual text only platform that is capable of dialing a phone number and sending a text message if, and only if, an individual user manually chooses to send a text message. “Text message” as used herein refers to an electronic communication sent or received over a cellular network from one cellular phone to another, including without limitation, communication that includes typed characters, pictures, other multimedia characters, and/or voice recordings. The Service does not have the capacity to dial or text phone numbers without human intervention and is expressly not intended to be used to automatically dial or text phone numbers without human intervention. The Service is available only to individuals who are at least 13 years old. In order to use the Service, you must obtain access to the Internet, and you are responsible for obtaining and paying for any equipment or services necessary for such access. You agree only to access and use the Service in ways provided by Axle Factory for accessing and using the Service. Without limiting the foregoing, you agree that you will not alter or otherwise reconfigure the Service in any way, including without limitation, altering, reconfiguring, programming or scripting the Service to permit automatic dialling or automatic texting. Axle Factory reserves the right to modify or discontinue the Service at any time for any reason. Axle Factory shall not be liable to you or to any third party for any modification, price change, suspension or discontinuance of the Service.
+          The Service is a manual text only platform that is capable of sending a text message if, and only if, an individual user manually chooses to send a text message. “Text message” as used herein refers to an electronic communication sent to a cellular phone or received from a cellular phone, including without limitation, communication that includes typed characters, pictures, other multimedia characters, and/or voice recordings. The Service does not have the capacity to dial or text phone numbers without human intervention and is expressly not intended to be used to automatically dial or text phone numbers without human intervention. The Service is available only to individuals who are at least 13 years old. In order to use the Service, you must obtain access to the Internet, and you are responsible for obtaining and paying for any equipment or services necessary for such access. You agree only to access and use the Service in ways provided by Axle Factory for accessing and using the Service. Without limiting the foregoing, you agree that you will not alter or otherwise reconfigure the Service in any way, including without limitation, altering, reconfiguring, programming or scripting the Service to permit automatic dialling or automatic texting. Axle Factory reserves the right to modify or discontinue the Service at any time for any reason. Axle Factory shall not be liable to you or to any third party for any modification, price change, suspension or discontinuance of the Service.
         </div>
         <div className={css(styles.header)}>Accounts</div>
         <div className={css(styles.paragraph)}>
@@ -71,7 +73,13 @@ class Terms extends React.Component {
         <div className={css(styles.header)}>Fees and Payment</div>
         <div className={css(styles.paragraph)}>
           <div className={css(styles.paragraph)}>
-            The fees and billing cycle for the Service are explained in the pricing plan selection form (the “Pricing Form”). By your selection of a particular plan in the Pricing Form, you agree to pay Axle Factory the monthly or annual subscription fees (as applicable) indicated for that plan. The time at which payments will be charged are indicated in the Pricing Form, and in cases where the payment cannot be billed directly from a payment instrument on file, all invoices must be paid in full within 14 days of the date of invoice. Service fees are not refundable.
+            To the extent the Services are made available for a fee, you agree to pay all applicable fees. Our current fee schedule is set forth here: <a href='/pricing' target='_blank' className={css(styles.link)}>https://spoke.gearshift.co/pricing</a>. A "Message" in the pricing guide refers to a single message constructed and sent via the Service and does not refer to the number of corresponding Text Messages required to send the message. For example, if you send a message through the Service that is 200 characters long, it will be charged as one message even though two Text Messages may be required to deliver the message. All fees payable by you are exclusive of applicable taxes and duties, including, without limitation, VAT and applicable sales tax. You will provide such information to us as reasonably required to determine whether we are obligated to collect VAT from you.
+          </div>
+          <div className={css(styles.paragraph)}>
+            We may specify the manner in which you will pay any fees, and any such payment shall be subject to our general accounts receivable policies from time to time in effect. All amounts payable by you under these Terms of Service will be made without setoff or counterclaim and without deduction or withholding. If any deduction or withholding is required by applicable law, You shall notify us and shall pay such additional amounts to us as necessary to ensure that the net amount that we receive, after such deduction and withholding, equals the amount we would have received if no such deduction or withholding had been required. Additionally, You shall provide us with documentation that the withholding and deducted amounts have been paid to the relevant taxing authority.
+          </div>
+          <div className={css(styles.paragraph)}>
+           Axle Factory may allow new accounts to use the service for free ("Free Service") for a given period of time or for a given amount of usage to trial the Service. Free Service is limited to one account per organization or person, and if we find that you have created multiple accounts to gain access to Free Service multiple times, we reserve the right to suspend those accounts and take actions to prevent additional violations.
           </div>
           <div className={css(styles.paragraph)}>
             Axle Factory expressly reserves the right to change or modify its prices and fees at any time with 30 days' notice. Your continued use of the Service after any price change indicates your agreement with the new fees and charges after the effective date of the change.
@@ -128,7 +136,7 @@ class Terms extends React.Component {
           Spoke Terms of Service
         </div>
         <div className={css(styles.subtitle)}>
-          Last modified: July 29, 2016
+          Last modified: August 5, 2016
         </div>
         <div className={css(styles.content)}>
           {this.renderContent()}

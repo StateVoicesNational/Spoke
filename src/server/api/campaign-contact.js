@@ -3,6 +3,12 @@ import { mapFieldsToModel } from './lib/utils'
 import { getTopMostParent } from '../../lib'
 
 export const schema = `
+  input ContactFilter {
+    messageStatus: String
+    optOut: Boolean
+    validTimezone: Boolean
+  }
+
   type CampaignContactCollection {
     data: [CampaignContact]
     checksum: String
@@ -92,13 +98,15 @@ export const resolvers = {
 
       return messages
     },
-    optOut: async(campaignContact) => (
-      await r.table('opt_out')
+    optOut: async (campaignContact, _, { loaders }) => {
+      const campaign = await loaders.campaign.load(campaignContact.campaign_id)
+
+      return r.table('opt_out')
         .getAll(campaignContact.cell, { index: 'cell' })
-        // .filter(filter by organization ID but I only have assignment_id)
+        .filter({ organization_id: campaign.organization_id })
         .limit(1)(0)
         .default(null)
-    ),
+    },
     currentInteractionStepId: async (campaignContact) => {
       const steps = await r.table('interaction_step')
         .getAll(campaignContact.campaign_id, { index: 'campaign_id' })

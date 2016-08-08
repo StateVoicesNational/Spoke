@@ -26,6 +26,23 @@ const text = {
     fontSize: 14,
     fontFamily: defaultFont
   },
+  link: {
+    fontWeight: 400,
+    color: colors.green,
+    textDecoration: 'none',
+    borderBottom: `1px solid ${colors.green}`,
+    cursor: 'pointer',
+    ':hover': {
+      borderBottom: 0,
+      color: colors.orange
+    },
+    'a:visited': {
+      fontWeight: 400,
+      color: colors.darkGray,
+      textDecoration: 'none'
+    },
+    fontFamily: defaultFont
+  },
   header: {
     color: colors.darkGray,
     fontSize: '1.5em',

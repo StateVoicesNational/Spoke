@@ -43,7 +43,7 @@ class Privacy extends React.Component {
         <div className={css(styles.paragraph)}>
           Axle Factory also collects potentially personally-identifying information like Internet Protocol (IP) addresses. Axle Factory does not use such information to identify its visitors, however, and does not disclose such information, other than under the same circumstances that it uses and discloses personally-identifying information, as described below.
         </div>
-        <div className={styles.header}>Information Gathering</div>
+        <div className={css(styles.header)}>Information Gathering</div>
         <div className={css(styles.paragraph)}>
           We ask visitors who sign up for an account to provide a valid e-mail address. Those who engage in transactions with Spoke – by purchasing premium Spoke accounts, for example – are asked to provide additional information, including as necessary the personal and financial information required to process those transactions. In each case, Axle Factory collects such information only insofar as is necessary or appropriate to fulfill the purpose of the visitor’s interaction with Spoke. Axle Factory does not disclose personally-identifying information other than as described below. And visitors can always refuse to supply personally-identifying information, with the caveat that it may prevent them from engaging in certain website-related activities.
         </div>

@@ -36,13 +36,14 @@ export const resolvers = {
       }
       return orgs.eqJoin('organization_id', r.table('organization'))('right')
     },
-    // FIXME - join on organization ID
     todos: async (user, { organizationId }) => (
-      r.table('assignment').getAll(user.id, { index: 'user_id' })
+      r.table('assignment')
+        .getAll(user.id, { index: 'user_id' })
+        .eqJoin('campaign_id', r.table('campaign'))
+        .filter((row) => row('right')('organization_id').eq(organizationId))('left')
     ),
     assignment: async (_, { id }, { loaders, user }) => {
       const assignment = await loaders.assignment.load(id)
-      // FIXME - join
       const campaign = await loaders.campaign.load(assignment.campaign_id)
       await accessRequired(user, campaign.organization_id, 'TEXTER')
       return assignment

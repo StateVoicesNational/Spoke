@@ -19,6 +19,8 @@ import Home from './containers/Home'
 import Terms from './components/Terms'
 import Privacy from './components/Privacy'
 import Billing from './containers/Billing'
+import Pricing from './components/Pricing'
+import AdminReplySender from './containers/AdminReplySender'
 
 export default function makeRoutes(requireAuth = () => {}) {
   return (
@@ -33,6 +35,7 @@ export default function makeRoutes(requireAuth = () => {}) {
             <Route path=':campaignId'>
               <IndexRoute component={AdminCampaignStats} />
               <Route path='edit' component={AdminCampaignEdit} />
+              <Route path='send-replies' component={AdminReplySender} />
             </Route>
           </Route>
           <Route path='texters' component={AdminTexterList} />
@@ -55,13 +58,13 @@ export default function makeRoutes(requireAuth = () => {}) {
               <Route
                 path='text'
                 components={{
-                  fullScreen: (props) => <TexterTodo {...props} contactFilter='needsMessage' />
+                  fullScreen: (props) => <TexterTodo {...props} messageStatus='needsMessage' />
                 }}
               />
               <Route
                 path='reply'
                 components={{
-                  fullScreen: (props) => <TexterTodo {...props} contactFilter='needsResponse' />,
+                  fullScreen: (props) => <TexterTodo {...props} messageStatus='needsResponse' />,
                   topNav: null
                 }}
               />
@@ -74,6 +77,7 @@ export default function makeRoutes(requireAuth = () => {}) {
       <Route path=':organizationId/join' component={JoinTeam} onEnter={requireAuth} />
       <Route path='terms' component={Terms} />
       <Route path='privacy' component={Privacy} />
+      <Route path='pricing' component={Pricing} />
     </Route>
   )
 }

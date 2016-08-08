@@ -118,6 +118,10 @@ export default class CampaignInteractionStepsForm extends React.Component {
     }))
   })
 
+  state = {
+    focusedField: null
+  }
+
   handleNavigateToStep = (interactionStepId) => {
     this.scrollToStep(interactionStepId)
   }
@@ -143,14 +147,16 @@ export default class CampaignInteractionStepsForm extends React.Component {
     })
   }
 
-  addAnswer(interactionStep) {
+  addAnswer(interactionStep, interactionStepIndex) {
     const newQuestion = JSON.parse(JSON.stringify(interactionStep.question))
 
     newQuestion.answerOptions.push({
       value: '',
       nextInteractionStep: null
     })
+    let answerOptionIndex = newQuestion.answerOptions.length - 1
     this.modifyInteractionStep(interactionStep, { question: newQuestion })
+    this.setState({ focusedField: `interactionSteps[${interactionStepIndex}]['question']['answerOptions'][${answerOptionIndex}].value` })
   }
 
   addStep(interactionStep, answer) {
@@ -193,11 +199,12 @@ export default class CampaignInteractionStepsForm extends React.Component {
         }]
       }
     })
-    console.log(newValues)
     this.props.onChange(newValues)
   }
 
   renderAnswer(answer, answerOptionIndex, interactionStep, interactionStepIndex) {
+    let fieldName = `interactionSteps[${interactionStepIndex}]['question']['answerOptions'][${answerOptionIndex}].value`
+
     let deleteAnswerButton = (
       <IconButton
         style={{ width: 42, height: 42, verticalAlign: 'middle' }}
@@ -213,6 +220,9 @@ export default class CampaignInteractionStepsForm extends React.Component {
           }
           if (removeIndex !== null) {
             newQuestion.answerOptions.splice(removeIndex, 1)
+          }
+          if (this.state.focusedField === fieldName) {
+            this.setState({ focusedField: null })
           }
           this.modifyInteractionStep(interactionStep, { question: newQuestion })
         }}
@@ -251,17 +261,21 @@ export default class CampaignInteractionStepsForm extends React.Component {
             }}
           />
           <Form.Field
-            name={`interactionSteps[${interactionStepIndex}]['question']['answerOptions'][${answerOptionIndex}].value`}
+            name={fieldName}
             inputStyle={{
               fontSize: 12
             }}
             hintStyle={{
               fontSize: 12
             }}
+            ref={fieldName}
+            autoFocus={this.state.focusedField === fieldName}
             hintText='Answer'
+            // noValidate here otherwise we end up with this bug: https://github.com/AxleFactory/spoke/issues/25
+            noValidate
             onKeyDown={(event) => {
               if (event.keyCode === 13) {
-                this.addAnswer(interactionStep)
+                this.addAnswer(interactionStep, interactionStepIndex)
                 event.preventDefault()
               }
             }}
@@ -301,7 +315,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
               style={styles.addAnswerButton}
               labelStyle={styles.addAnswerButton}
               label='Add another answer'
-              onTouchTap={() => this.addAnswer(interactionStep)}
+              onTouchTap={() => this.addAnswer(interactionStep, interactionStepIndex)}
             />
           </div>
         ) : ''}
@@ -367,7 +381,8 @@ export default class CampaignInteractionStepsForm extends React.Component {
         return ['Start: ', <span style={styles.stepTitle}>{title}</span>]
       }
       return [
-        parents.map((parentStep) => displayStep(parentStep)), <span style={styles.stepTitle}>{title}</span>
+        parents.map((parentStep) => displayStep(parentStep)),
+        <span style={styles.stepTitle}>{title}</span>
       ]
     }
     return (

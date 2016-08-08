@@ -62,6 +62,7 @@ class AdminCampaignEdit extends React.Component {
   }
 
   onExpandChange = (index, newExpandedState) => {
+    console.log(index, newExpandedState)
     const { expandedSection } = this.state
     if (newExpandedState) {
       this.setState({ expandedSection: index })
@@ -94,7 +95,7 @@ class AdminCampaignEdit extends React.Component {
 
   handleSave = async () => {
     let saveObject = {}
-    this.sections.forEach((section) => {
+    this.sections().forEach((section) => {
       if (!this.checkSectionSaved(section)) {
         saveObject = {
           ...saveObject,
@@ -179,60 +180,62 @@ class AdminCampaignEdit extends React.Component {
     return section.checkCompleted()
   }
 
-  sections = [{
-    title: 'Basics',
-    content: CampaignBasicsForm,
-    keys: ['title', 'description', 'dueBy'],
-    checkCompleted: () => (
-      this.state.campaignFormValues.title !== '' &&
-        this.state.campaignFormValues.description !== '' &&
-        this.state.campaignFormValues.dueBy !== null
-    )
+  sections() {
+    return [
+    {
+      title: 'Basics',
+      content: CampaignBasicsForm,
+      keys: ['title', 'description', 'dueBy'],
+      checkCompleted: () => (
+        this.state.campaignFormValues.title !== '' &&
+          this.state.campaignFormValues.description !== '' &&
+          this.state.campaignFormValues.dueBy !== null
+      )
 
-  }, {
-    title: 'Contacts',
-    content: CampaignContactsForm,
-    keys: ['contacts'],
-    checkCompleted: () => this.state.campaignFormValues.contacts.count > 0,
-    checkSaved: () => {
-      const campaignFormValues = this.state.campaignFormValues
-      const campaign = this.props.campaignData.campaign
-      return campaignFormValues.contacts.checksum === campaign.contacts.checksum
-    },
-    extraProps: {
-      optOuts: this.props.organizationData.organization.optOuts
-    }
-  }, {
-    title: 'Texters',
-    content: CampaignTextersForm,
-    keys: ['texters'],
-    checkCompleted: () => this.state.campaignFormValues.texters.length > 0,
-    extraProps: {
-      orgTexters: this.props.organizationData.organization.texters,
-      organizationId: this.props.params.organizationId
-    }
-  }, {
-    title: 'Interactions',
-    content: CampaignInteractionStepsForm,
-    keys: ['interactionSteps'],
-    checkCompleted: () => this.state.campaignFormValues.interactionSteps.length > 0 && this.state.campaignFormValues.interactionSteps[0].script !== '',
-    extraProps: {
-      customFields: this.props.campaignData.campaign.contacts.customFields
-    }
-  }, {
-    title: 'Canned Responses',
-    content: CampaignCannedResponsesForm,
-    keys: ['cannedResponses'],
-    checkCompleted: () => true,
-    extraProps: {
-      customFields: this.props.campaignData.campaign.contacts.customFields
-    }
-  }]
+    }, {
+      title: 'Contacts',
+      content: CampaignContactsForm,
+      keys: ['contacts'],
+      checkCompleted: () => this.state.campaignFormValues.contacts.count > 0,
+      checkSaved: () => {
+        const campaignFormValues = this.state.campaignFormValues
+        const campaign = this.props.campaignData.campaign
+        return campaignFormValues.contacts.checksum === campaign.contacts.checksum
+      },
+      extraProps: {
+        optOuts: this.props.organizationData.organization.optOuts
+      }
+    }, {
+      title: 'Texters',
+      content: CampaignTextersForm,
+      keys: ['texters'],
+      checkCompleted: () => this.state.campaignFormValues.texters.length > 0,
+      extraProps: {
+        orgTexters: this.props.organizationData.organization.texters,
+        organizationId: this.props.params.organizationId
+      }
+    }, {
+      title: 'Interactions',
+      content: CampaignInteractionStepsForm,
+      keys: ['interactionSteps'],
+      checkCompleted: () => this.state.campaignFormValues.interactionSteps.length > 0 && this.state.campaignFormValues.interactionSteps[0].script !== '',
+      extraProps: {
+        customFields: this.props.campaignData.campaign.contacts.customFields
+      }
+    }, {
+      title: 'Canned Responses',
+      content: CampaignCannedResponsesForm,
+      keys: ['cannedResponses'],
+      checkCompleted: () => true,
+      extraProps:  {
+        customFields: this.props.campaignData.campaign.contacts.customFields
+      }
+    }]
+  }
 
   renderCampaignFormSection(section) {
     const ContentComponent = section.content
     const formValues = this.getSectionState(section)
-
     return (
       <ContentComponent
         onChange={this.handleChange}
@@ -243,7 +246,7 @@ class AdminCampaignEdit extends React.Component {
         onSubmit={async () => {
           await this.handleSave()
           this.setState({
-            expandedSection: this.state.expandedSection >= this.sections.length ||
+            expandedSection: this.state.expandedSection >= this.sections().length ||
               !this.isNew() ?
                 null :
                 this.state.expandedSection + 1
@@ -292,7 +295,7 @@ class AdminCampaignEdit extends React.Component {
 
   renderStartButton() {
     let isCompleted = true
-    this.sections.forEach((section) => {
+    this.sections().forEach((section) => {
       if (!this.checkSectionCompleted(section) || !this.checkSectionSaved(section)) {
         isCompleted = false
       }
@@ -332,11 +335,11 @@ class AdminCampaignEdit extends React.Component {
 
   render() {
     const { expandedSection } = this.state
+    const sections = this.sections()
     return (
       <div>
         {this.renderHeader()}
-        {this.sections.map((section) => {
-          const sectionIndex = this.sections.indexOf(section)
+        {sections.map((section, sectionIndex) => {
           const sectionIsDone = this.checkSectionCompleted(section)
             && this.checkSectionSaved(section)
           const sectionIsExpanded = sectionIndex === expandedSection
