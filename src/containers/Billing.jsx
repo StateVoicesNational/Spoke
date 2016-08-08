@@ -150,8 +150,8 @@ class Billing extends React.Component {
       const amount = amounts[i]
       const formattedAmount = formatMoney(amount, creditCurrency)
       const { amountPerMessage } = organization.plan
-      const contactCount = Math.round(amount / amountPerMessage)
-      choices[amount] = `${formattedAmount} - approx ${contactCount} contacts`
+      const messageCount = Math.round(amount / amountPerMessage)
+      choices[amount] = `${formattedAmount} - approx ${messageCount} messages`
     }
 
     return (
