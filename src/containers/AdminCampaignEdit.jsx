@@ -236,7 +236,6 @@ class AdminCampaignEdit extends React.Component {
   renderCampaignFormSection(section) {
     const ContentComponent = section.content
     const formValues = this.getSectionState(section)
-
     return (
       <ContentComponent
         onChange={this.handleChange}
@@ -336,10 +335,11 @@ class AdminCampaignEdit extends React.Component {
 
   render() {
     const { expandedSection } = this.state
+    const sections = this.sections()
     return (
       <div>
         {this.renderHeader()}
-        {this.sections().map((section, sectionIndex) => {
+        {sections.map((section, sectionIndex) => {
           const sectionIsDone = this.checkSectionCompleted(section)
             && this.checkSectionSaved(section)
           const sectionIsExpanded = sectionIndex === expandedSection
