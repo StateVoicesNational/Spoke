@@ -1,4 +1,4 @@
-import { r, Assignment, Campaign, User } from './models'
+import { r, Assignment, Campaign, User, Organization } from './models'
 import { log } from '../lib'
 
 export const Notifications = {
@@ -22,13 +22,14 @@ const sendEmail = async ({ to, subject, text }) => {
 
 const sendNewAssignmentUserNotification = async (assignment) => {
   const campaign = await Campaign.get(assignment.campaign_id)
+  const organization = await Organization.get(campaign.organization_id)
   const user = await User.get(assignment.user_id)
 
   try {
     await sendEmail({
       to: user.email,
-      subject: `You have a new assignment: ${campaign.title}`,
-      text: `You've just been assigned a new campaign. See your todos here: \n\nhttps://spoke.gearshift.co/app/${campaign.organization_id}/todos`
+      subject: `[${organization.name}] New assignment: ${campaign.title}`,
+      text: `You just got a brand new texting assignment from ${organization.name}. You can start sending texts right away: \n\nhttps://spoke.gearshift.co/app/${campaign.organization_id}/todos`
     })
   } catch (e) {
     log.error(e)
@@ -50,13 +51,14 @@ export const sendUserNotification = async (notification) => {
   } else if (type === Notifications.ASSIGNMENT_MESSAGE_RECEIVED) {
     const assignment = await Assignment.get(notification.assignmentId)
     const campaign = await Campaign.get(assignment.campaign_id)
+    const organization = await Organization.get(campaign.organization_id)
     const user = await User.get(assignment.user_id)
 
     try {
       await sendEmail({
         to: user.email,
-        subject: `New reply received for ${campaign.title}`,
-        text: `Great! Someone sent you a message. Reply here: \n\nhttps://spoke.gearshift.co/app/${campaign.organization_id}/todos/${notification.assignmentId}/reply`
+        subject: `[${organization.name}] [${campaign.title}] New reply`,
+        text: `Someone responded to your message. Reply here: \n\nhttps://spoke.gearshift.co/app/${campaign.organization_id}/todos/${notification.assignmentId}/reply`
       })
     } catch (e) {
       log.error(e)
