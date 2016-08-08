@@ -20,6 +20,8 @@ import yup from 'yup'
 import GSForm from '../components/forms/GSForm'
 import Form from 'react-formal'
 import GSSubmitButton from '../components/forms/GSSubmitButton'
+import CircularProgress from 'material-ui/CircularProgress';
+
 import { getChildren, getTopMostParent, interactionStepForId } from '../lib'
 const styles = StyleSheet.create({
   container: {
@@ -32,6 +34,24 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'column',
     height: '100%'
+  },
+  overlay: {
+    margin: 0,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    opacity: 0.2,
+    backgroundColor: 'black',
+    color: 'white',
+    zIndex: 1000000
+  },
+  loadingIndicator: {
+    maxWidth: '50%',
   },
   navigationToolbarTitle: {
     fontSize: '12px',
@@ -182,7 +202,6 @@ class AssignmentTexterContact extends React.Component {
     this.setState({ sending: true})
     const message = this.createMessageToContact(this.refs.messageText.getValue().trim())
     await this.props.mutations.sendMessage(message, contact.id)
-    this.setState({ sending: false})
   }
 
   handleSubmitSurveys = async () => {
@@ -482,17 +501,26 @@ class AssignmentTexterContact extends React.Component {
 
   render() {
     return (
-      <div className={css(styles.container)}>
-        <div className={css(styles.topFixedSection)}>
-          {this.renderTopFixedSection()}
-        </div>
-        <div
-          className={css(styles.middleScrollingSection)}
-        >
-          {this.renderMiddleScrollingSection()}
-        </div>
-        <div className={css(styles.bottomFixedSection)}>
-          {this.renderBottomFixedSection()}
+      <div>
+        {this.state.sending ? (
+          <div className={css(styles.overlay)}>
+            <CircularProgress size={0.5} />
+            Sending...
+          </div>
+        ) : ''
+        }
+        <div className={css(styles.container)}>
+          <div className={css(styles.topFixedSection)}>
+            {this.renderTopFixedSection()}
+          </div>
+          <div
+            className={css(styles.middleScrollingSection)}
+          >
+            {this.renderMiddleScrollingSection()}
+          </div>
+          <div className={css(styles.bottomFixedSection)}>
+            {this.renderBottomFixedSection()}
+          </div>
         </div>
       </div>
     )
