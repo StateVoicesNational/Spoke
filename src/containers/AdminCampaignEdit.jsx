@@ -62,6 +62,7 @@ class AdminCampaignEdit extends React.Component {
   }
 
   onExpandChange = (index, newExpandedState) => {
+    console.log(index, newExpandedState)
     const { expandedSection } = this.state
     if (newExpandedState) {
       this.setState({ expandedSection: index })
@@ -338,8 +339,7 @@ class AdminCampaignEdit extends React.Component {
     return (
       <div>
         {this.renderHeader()}
-        {this.sections().map((section) => {
-          const sectionIndex = this.sections().indexOf(section)
+        {this.sections().map((section, sectionIndex) => {
           const sectionIsDone = this.checkSectionCompleted(section)
             && this.checkSectionSaved(section)
           const sectionIsExpanded = sectionIndex === expandedSection

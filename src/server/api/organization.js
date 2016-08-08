@@ -26,20 +26,8 @@ export const resolvers = {
     },
     optOuts: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, 'ADMIN')
-      return r.table('campaign')
+      return r.table('opt_out')
         .getAll(organization.id, { index: 'organization_id' })
-        .merge((campaign) => ({
-          assignments: r.table('assignment')
-            .getAll(campaign('id'), { index: 'campaign_id' })
-            .coerceTo('array')
-            .merge((assignment) => ({
-              optOuts: r.table('opt_out')
-                .getAll(assignment('id'), { index: 'assignment_id' })
-                .coerceTo('array')
-            }))
-        }))
-        .concatMap((ele) => ele('assignments'))
-        .concatMap((ele) => ele('optOuts'))
     },
     texters: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, 'ADMIN')
