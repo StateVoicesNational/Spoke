@@ -33,7 +33,6 @@ const getValidZips = async () => {
   return validZips
 }
 
-
 export const resolvers = {
   Assignment: {
     ...mapFieldsToModel([

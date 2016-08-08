@@ -34,7 +34,8 @@ class Billing extends React.Component {
 
   state = {
     addCreditDialogOpen: false,
-    creditCardDialogOpen: false
+    creditCardDialogOpen: false,
+    formIsSubmitting: false
   }
 
   createStripeToken = async (formValues) => (
@@ -53,13 +54,17 @@ class Billing extends React.Component {
   )
 
   handleSubmitCardForm = async (formValues) => {
+    this.setState({formIsSubmitting: true})
     const token = await this.createStripeToken(formValues)
     await this.props.mutations.updateCard(token)
+    this.setState({formIsSubmitting: false})
     this.handleCloseCreditCardDialog()
   }
 
   handleSubmitAccountCreditForm = async ({ balanceAmount }) => {
+    this.setState({formIsSubmitting: true})
     await this.props.mutations.addAccountCredit(balanceAmount)
+    this.setState({formIsSubmitting: false})
     this.handleCloseAddCreditDialog()
   }
 
@@ -93,6 +98,7 @@ class Billing extends React.Component {
               label='Change card'
               style={inlineStyles.dialogButton}
               component={GSSubmitButton}
+              isSubmitting={this.state.formIsSubmitting}
             />
           ]}
           onRequestClose={this.handleCloseCreditCardDialog}
@@ -144,7 +150,7 @@ class Billing extends React.Component {
       const amount = amounts[i]
       const formattedAmount = formatMoney(amount, creditCurrency)
       const { amountPerMessage } = organization.plan
-      const contactCount = amount / amountPerMessage
+      const contactCount = Math.round(amount / amountPerMessage)
       choices[amount] = `${formattedAmount} - approx ${contactCount} contacts`
     }
 
@@ -163,6 +169,7 @@ class Billing extends React.Component {
               style={inlineStyles.dialogButton}
               component={GSSubmitButton}
               label='Add credit'
+              isSubmitting={this.state.formIsSubmitting}
             />
           ]}
           onRequestClose={this.handleCloseAddCreditDialog}
@@ -170,6 +177,9 @@ class Billing extends React.Component {
           <GSForm
             schema={formSchema}
             onSubmit={this.handleSubmitAccountCreditForm}
+            defaultValue={{
+              balanceAmount: '50000'
+            }}
           >
             <Form.Field
               label='Credit amount'
@@ -177,7 +187,6 @@ class Billing extends React.Component {
               type='select'
               fullWidth
               choices={choices}
-              value={50000}
             />
           </GSForm>
 
