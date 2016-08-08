@@ -56,13 +56,13 @@ export default function makeRoutes(requireAuth = () => {}) {
               <Route
                 path='text'
                 components={{
-                  fullScreen: (props) => <TexterTodo {...props} contactFilter='needsMessage' />
+                  fullScreen: (props) => <TexterTodo {...props} messageStatus='needsMessage' />
                 }}
               />
               <Route
                 path='reply'
                 components={{
-                  fullScreen: (props) => <TexterTodo {...props} contactFilter='needsResponse' />,
+                  fullScreen: (props) => <TexterTodo {...props} messageStatus='needsResponse' />,
                   topNav: null
                 }}
               />

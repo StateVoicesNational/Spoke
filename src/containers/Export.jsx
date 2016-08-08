@@ -8,6 +8,7 @@ import Papa from 'papaparse'
 class Export extends React.Component {
   componentWillReceiveProps(props) {
     if (!props.data.loading) {
+      console.log(props)
       props.onParseStart()
       log.debug('Starting to download data...')
       const allQuestions = {}
@@ -29,8 +30,9 @@ class Export extends React.Component {
           allQuestions[step.id] = step.question.text
         }
       })
+      console.log('props', props.data.campaign.assignments)
       const convertedAssignments = props.data.campaign.assignments.map((assignment) => (
-        assignment.contacts.data.map((contact) => {
+        assignment.contacts.map((contact) => {
           let contactRow = {
             'texter[firstName]': assignment.texter.firstName,
             'texter[lastName]': assignment.texter.lastName,
@@ -113,32 +115,30 @@ const mapQueriesToProps = ({ ownProps }) => ({
             assignedCell
           }
           contacts {
-            data {
-              id
-              firstName
-              lastName
-              cell
-              zip
-              customFields
-              questionResponses {
-                value
-                question {
-                  text
-                  interactionStep {
-                    id
-                  }
+            id
+            firstName
+            lastName
+            cell
+            zip
+            customFields
+            questionResponses {
+              value
+              question {
+                text
+                interactionStep {
+                  id
                 }
               }
-              location {
-                city
-                state
-              }
-              optOut {
-                id
-                cell
-              }
-              messageStatus
             }
+            location {
+              city
+              state
+            }
+            optOut {
+              id
+              cell
+            }
+            messageStatus
           }
         }
       }

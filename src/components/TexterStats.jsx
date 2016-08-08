@@ -3,13 +3,13 @@ import LinearProgress from 'material-ui/LinearProgress'
 
 class TexterStats extends React.Component {
   renderAssignment(assignment) {
-    const { contacts, texter } = assignment
-    const { unmessagedCount, count } = contacts
-    if (count === 0) {
+    console.log(assignment)
+    const { contactsCount, unmessagedCount, texter } = assignment
+    if (contactsCount === 0) {
       return <div />
     }
 
-    const percentComplete = Math.round(((count - unmessagedCount) * 100) / count)
+    const percentComplete = Math.round(((contactsCount - unmessagedCount) * 100) / contactsCount)
 
     return (
       <div>
