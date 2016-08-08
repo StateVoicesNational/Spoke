@@ -362,7 +362,7 @@ const rootMutations = {
 
       await CampaignContact.save(contactsToSave, { conflict: 'update' })
 
-      sendUserNotification({
+      await sendUserNotification({
         type: Notifications.CAMPAIGN_STARTED,
         campaignId: id
       })

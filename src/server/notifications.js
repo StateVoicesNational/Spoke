@@ -23,6 +23,7 @@ const sendEmail = async ({ to, subject, text }) => {
 const sendNewAssignmentUserNotification = async (assignment) => {
   const campaign = await Campaign.get(assignment.campaign_id)
   const organization = await Organization.get(campaign.organization_id)
+
   const user = await User.get(assignment.user_id)
 
   try {
@@ -41,12 +42,12 @@ export const sendUserNotification = async (notification) => {
   if (type === Notifications.CAMPAIGN_STARTED) {
     const assignments = await r.table('assignment')
       .getAll(notification.campaignId, { index: 'campaign_id' })
-      .pluck('user_id')
+      .pluck(['user_id', 'campaign_id'])
 
     const count = assignments.length
     for (let i = 0; i < count; i++) {
       const assignment = assignments[i]
-      sendNewAssignmentUserNotification(assignment)
+      await sendNewAssignmentUserNotification(assignment)
     }
   } else if (type === Notifications.ASSIGNMENT_MESSAGE_RECEIVED) {
     const assignment = await Assignment.get(notification.assignmentId)
