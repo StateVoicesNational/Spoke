@@ -21,8 +21,8 @@ class TexterTodoList extends React.Component {
           />
         )
       }
-      return ''
-    })
+      return null
+    }).filter((ele) => ele !== null)
   }
 
   render() {
@@ -34,11 +34,12 @@ class TexterTodoList extends React.Component {
       />
     )
 
+    const renderedTodos = this.renderTodoList(todos)
+    console.log('todos', renderedTodos)
     return (
       <div>
-        {todos.length === 0 ?
-          empty :
-          this.renderTodoList(todos)
+        {renderedTodos.length === 0 ?
+          empty : renderedTodos
         }
       </div>
     )
