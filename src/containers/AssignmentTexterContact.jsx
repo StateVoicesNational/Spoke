@@ -427,7 +427,7 @@ class AssignmentTexterContact extends React.Component {
           firstChild
         >
           <SendButton
-            threeClickEnabled={threeClickEnabled}
+            threeClickEnabled={campaign.organization.threeClickEnabled}
             onFinalTouchTap={this.handleClickSendMessageButton}
             disabled={this.state.sending}
           />

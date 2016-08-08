@@ -49,6 +49,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
             id
             organization {
               id
+              threeClickEnabled
             }
             contacts {
               customFields

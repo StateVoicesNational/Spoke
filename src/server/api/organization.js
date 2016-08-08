@@ -25,6 +25,7 @@ export const schema = `
     optOuts: [OptOut]
     billingDetails: BillingDetails
     plan: Plan
+    threeClickEnabled: Boolean
   }
 `
 
@@ -80,7 +81,8 @@ export const resolvers = {
       .filter((userOrganization) => userOrganization('roles').contains('ADMIN'))
       .eqJoin('user_id', r.table('user'))('right')
     },
-    billingDetails: (organization) => organization
+    billingDetails: (organization) => organization,
+    threeClickEnabled: (organization) => organization.features.indexOf('threeClick') !== -1
   }
 }
 
