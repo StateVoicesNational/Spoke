@@ -416,7 +416,6 @@ class AssignmentTexterContact extends React.Component {
   renderActionToolbar() {
     const { data, campaign, navigationToolbarChildren } = this.props
 
-    const threeClickEnabled = false
     const { contact } = data
 
     return (
