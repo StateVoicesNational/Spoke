@@ -35,6 +35,30 @@ class AssignmentTexter extends React.Component {
     }
   }
 
+  getContact(contacts, index) {
+    return (contacts.length > index) ? contacts[index] : null
+  }
+
+  incrementCurrentContactIndex = (increment) => {
+    let newIndex = this.state.currentContactIndex
+    newIndex = newIndex + increment
+    this.updateCurrentContactIndex(newIndex)
+  }
+
+  updateCurrentContactIndex(newIndex) {
+    this.setState({
+      currentContactIndex: newIndex
+    })
+  }
+
+  hasPrevious() {
+    return this.state.currentContactIndex > 0
+  }
+
+  hasNext() {
+    return this.state.currentContactIndex < this.contactCount() - 1
+  }
+
   handleFinishContact = () => {
     if (this.hasNext()) {
       this.handleNavigateNext()
@@ -66,31 +90,6 @@ class AssignmentTexter extends React.Component {
   handleScriptChange = (script) => {
     this.setState({ script })
   }
-
-  incrementCurrentContactIndex = (increment) => {
-    let newIndex = this.state.currentContactIndex
-    newIndex = newIndex + increment
-    this.updateCurrentContactIndex(newIndex)
-  }
-
-  updateCurrentContactIndex(newIndex) {
-    this.setState({
-      currentContactIndex: newIndex
-    })
-  }
-
-  getContact(contacts, index) {
-    return (contacts.length > index) ? contacts[index] : null
-  }
-
-  hasPrevious() {
-    return this.state.currentContactIndex > 0
-  }
-
-  hasNext() {
-    return this.state.currentContactIndex < this.contactCount() - 1
-  }
-
   handleExitTexter = () => {
     this.props.router.push('/app')
   }
@@ -166,7 +165,8 @@ class AssignmentTexter extends React.Component {
 AssignmentTexter.propTypes = {
   currentUser: React.PropTypes.object,
   assignment: React.PropTypes.object,      // current assignment
-  contacts: React.PropTypes.array   // contacts for current assignment
+  contacts: React.PropTypes.array,   // contacts for current assignment
+  router: React.PropTypes.object
 }
 
 export default withRouter(AssignmentTexter)
