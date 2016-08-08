@@ -112,6 +112,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
   data: {
     query: gql`query adminGetCampaigns($organizationId: String!) {
       organization(id: $organizationId) {
+        id
         campaigns {
           id
           title

@@ -34,6 +34,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
   data: {
     query: gql`query getOptOuts($organizationId: String!) {
       organization(id: $organizationId) {
+        id
         optOuts {
           id
           cell

@@ -3,6 +3,7 @@ import { StyleSheet, css } from 'aphrodite'
 import theme from '../styles/theme'
 import TopNav from './TopNav'
 import Navigation from './Navigation'
+import AlertBar from '../containers/AlertBar'
 import { ListItem } from 'material-ui/List'
 import { withRouter } from 'react-router'
 
@@ -51,6 +52,13 @@ class AdminDashboard extends React.Component {
     )
   }
 
+  renderOrganizationAlertBar() {
+    const organizationId = this.props.params.organizationId
+    if (!organizationId) {
+      return ''
+    }
+    return <AlertBar organizationId={organizationId} />
+  }
   render() {
     const sections = [{
       name: 'Campaigns',
@@ -61,7 +69,10 @@ class AdminDashboard extends React.Component {
     }, {
       name: 'Optouts',
       path: 'optouts'
-    }]
+    }, {
+      name: 'Billing',
+      path: 'billing'
+    } ]
 
     const { location, children } = this.props
     let currentSection = sections.filter(
@@ -81,6 +92,7 @@ class AdminDashboard extends React.Component {
         <div className={css(styles.container)}>
           {this.renderNavigation(sections)}
           <div className={css(styles.content)}>
+            {this.renderOrganizationAlertBar()}
             {children}
           </div>
         </div>

@@ -2,6 +2,7 @@ import lodash from 'lodash'
 import log from '../../lib'
 import { Campaign,
   Assignment,
+  BalanceLineItem,
   CampaignContact,
   CannedResponse,
   Invite,
@@ -21,6 +22,10 @@ import {
   schema as organizationSchema,
   resolvers as organizationResolvers
 } from './organization'
+import {
+  schema as planSchema,
+  resolvers as planResolvers
+} from './plan'
 import {
   schema as campaignSchema,
   resolvers as campaignResolvers
@@ -138,7 +143,8 @@ const rootSchema = `
     organization(id:String!): Organization
     campaign(id:String!): Campaign
     invite(id:String!): Invite
-    contact(id:String!): CampaignContact
+    contact(id:String!): CampaignContact,
+    stripePublishableKey: String
   }
 
   type RootMutation {
@@ -147,6 +153,8 @@ const rootSchema = `
     createCannedResponse(cannedResponse:CannedResponseInput!): CannedResponse
     createOrganization(name: String!, userId: String!, inviteId: String!): Organization
     joinOrganization(organizationId: String!): Organization
+    updateCard( organizationId: String!, stripeToken: String!): Organization
+    addAccountCredit( organizationId: String!, balanceAmount: Int!): Organization
     sendMessage(message:MessageInput!, campaignContactId:String!): CampaignContact,
     createOptOut(optOut:OptOutInput!, campaignContactId:String!):CampaignContact,
     editCampaignContactMessageStatus(messageStatus: String!, campaignContactId:String!): CampaignContact,
@@ -311,6 +319,72 @@ const rootMutations = {
       }
       return loaders.organization.load(organizationId)
     },
+    addAccountCredit: async (_, { organizationId, balanceAmount }, { user, loaders }) => {
+      await accessRequired(user, organizationId, 'ADMIN')
+      const organization = await loaders.organization.load(organizationId)
+      const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
+      try {
+        await stripe.charges.create({
+          customer: organization.stripe_id,
+          amount: balanceAmount,
+          currency: organization.currency
+        })
+      } catch (e) {
+        if (e.type === 'StripeCardError') {
+          throw new GraphQLError({
+            status: 400,
+            message: e.message
+          })
+        }
+      }
+      const newBalanceAmount = organization.balance_amount + balanceAmount
+
+      await new BalanceLineItem({
+        organization_id: organizationId,
+        currency: organization.currency,
+        amount: balanceAmount
+      }).save()
+
+      return await Organization.get(organizationId).update({ balance_amount: newBalanceAmount })
+
+    },
+    updateCard: async(_, { organizationId, stripeToken }, { user, loaders }) => {
+      await accessRequired(user, organizationId, 'ADMIN')
+      const organization =  await loaders.organization.load(organizationId)
+      const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
+
+      try {
+        if (organization.stripe_id) {
+          await stripe.customers.update(organization.stripe_id, {
+            source: stripeToken
+          })
+          return organization
+        } else {
+          const customer = await stripe.customers.create({
+            description: organization.name,
+            email: user.email,
+            metadata: {
+              organizationId
+            },
+            source: stripeToken
+          })
+          return await Organization
+            .get(organizationId)
+            .update({
+              stripe_id: customer.id
+            })
+        }
+      } catch (e) {
+        if (e.type === 'StripeCardError') {
+          throw new GraphQLError({
+            status: 400,
+            message: e.message
+          })
+        }
+        throw e
+      }
+
+    },
     createCampaign: async (_, { campaign }, { user, loaders }) => {
       await accessRequired(user, campaign.organizationId, 'ADMIN')
       const campaignInstance = new Campaign({
@@ -396,8 +470,17 @@ const rootMutations = {
           message: 'That invitation is no longer valid'
         })
       }
+      const currency = 'usd'
+      const plan = await r.table('plan')
+        .filter({
+          currency,
+          is_default: true
+        })
+        .limit(1)(0)
       const newOrganization = await Organization.save({
-        name
+        name,
+        currency,
+        plan_id: plan.id
       })
       await UserOrganization.save({
         user_id: userId,
@@ -427,12 +510,27 @@ const rootMutations = {
         organization_id: campaign.organization_id,
         cell: optOut.cell
       }).save()
-
-      const contact = await loaders.campaignContact.load(campaignContactId)
     },
     sendMessage: async(_, { message, campaignContactId }, { loaders }) => {
       const texter = await loaders.user.load(message.userId)
       const contact = await loaders.campaignContact.load(campaignContactId)
+
+      const merged = await r.table('campaign')
+        .get(contact.campaign_id)
+        .merge((doc) => ({
+          organization: r.table('organization').get(doc('organization_id'))
+        }))
+        .pluck('organization')
+      const organization = merged.organization
+      const plan = await loaders.plan.load(organization.plan_id)
+      const amountPerMessage = plan.amount_per_message
+
+      if (organization.balance_amount < amountPerMessage) {
+        throw new GraphQLError({
+          status: 402,
+          message: 'Not enough account credit to send message'
+        })
+      }
 
       if (!texter.assigned_cell) {
         const newCell = await rentNewCell()
@@ -457,7 +555,16 @@ const rootMutations = {
         is_from_contact: false
       })
 
-      await messageInstance.save()
+      const savedMessage = await messageInstance.save()
+
+      organization.balance_amount = organization.balance_amount - amountPerMessage
+      Organization.save(organization, { conflict: 'update' })
+      await new BalanceLineItem({
+        organization_id: organization.id,
+        currency: organization.currency,
+        amount: amountPerMessage,
+        message_id: savedMessage.id
+      }).save()
 
       contact.message_status = 'messaged'
       await contact.save()
@@ -518,7 +625,8 @@ const rootResolvers = {
       const contact = await loaders.campaignContact.load(id)
       // await accessRequired(user, contact.organization_id, 'TEXTER')
       return contact
-    }
+    },
+    stripePublishableKey: () => process.env.STRIPE_PUBLISHABLE_KEY
   }
 }
 
@@ -526,6 +634,7 @@ export const schema = [
   rootSchema,
   userSchema,
   organizationSchema,
+  planSchema,
   dateSchema,
   jsonSchema,
   phoneSchema,
@@ -545,6 +654,7 @@ export const resolvers = {
   ...rootResolvers,
   ...userResolvers,
   ...organizationResolvers,
+  ...planResolvers,
   ...campaignResolvers,
   ...assignmentResolvers,
   ...interactionStepResolvers,

@@ -9,7 +9,7 @@ export {
   isClient
 } from './is-client'
 export { log } from './log'
-
+export { formatMoney } from './currency'
 import Papa from 'papaparse'
 import _ from 'lodash'
 import { getFormattedPhoneNumber } from '../lib'

@@ -83,6 +83,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
   data: {
     query: gql`query getTexters($organizationId: String!) {
       organization(id: $organizationId) {
+        id
         texters {
           id
           displayName

@@ -47,6 +47,9 @@ const mapQueriesToProps = ({ ownProps }) => ({
           }
           campaign {
             id
+            organization {
+              id
+            }
             contacts {
               customFields
             }

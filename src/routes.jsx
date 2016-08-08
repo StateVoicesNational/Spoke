@@ -18,6 +18,7 @@ import JoinTeam from './containers/JoinTeam'
 import Home from './containers/Home'
 import Terms from './components/Terms'
 import Privacy from './components/Privacy'
+import Billing from './containers/Billing'
 import Pricing from './components/Pricing'
 import AdminReplySender from './containers/AdminReplySender'
 
@@ -39,6 +40,7 @@ export default function makeRoutes(requireAuth = () => {}) {
           </Route>
           <Route path='texters' component={AdminTexterList} />
           <Route path='optouts' component={AdminOptOutList} />
+          <Route path='billing' component={Billing} />
         </Route>
       </Route>
       <Route path='app' component={TexterDashboard} onEnter={requireAuth}>

@@ -23,6 +23,9 @@ import GSSubmitButton from '../components/forms/GSSubmitButton'
 import CircularProgress from 'material-ui/CircularProgress';
 
 import { getChildren, getTopMostParent, interactionStepForId } from '../lib'
+import { withRouter } from 'react-router'
+import wrapMutations from './hoc/wrap-mutations'
+
 const styles = StyleSheet.create({
   container: {
     margin: 0,
@@ -201,9 +204,21 @@ class AssignmentTexterContact extends React.Component {
     const { contact } = this.props.data
     this.setState({ sending: true})
     const message = this.createMessageToContact(this.refs.messageText.getValue().trim())
-    await this.props.mutations.sendMessage(message, contact.id)
+    await this.sendMessage(message, contact.id)
   }
 
+  sendMessage = async(message, campaignContactId) => {
+    try {
+      await this.props.mutations.sendMessage(message, campaignContactId)
+    } catch (e) {
+      if (e.status === 402) {
+        const { campaign } = this.props
+        this.props.router.push(`/app/${campaign.organization.id}/todos`)
+      } else {
+        throw e
+      }
+    }
+  }
   handleSubmitSurveys = async () => {
     const { contact } = this.props.data
 
@@ -249,7 +264,7 @@ class AssignmentTexterContact extends React.Component {
     const { contact } = this.props.data
     const { assignment } = this.props
     const message = this.createMessageToContact(optOutMessageText)
-    await this.props.mutations.sendMessage(message, contact.id)
+    await this.sendMessage(message, contact.id)
 
     const optOut = {
       cell: contact.cell,
@@ -477,24 +492,24 @@ class AssignmentTexterContact extends React.Component {
   renderBottomFixedSection() {
     return (
       <div>
-          {this.renderSurveySection()}
-          <div>
-            <div className={css(styles.messageField)}>
-              <TextField
-                autoFocus
-                ref='messageText'
-                name='messageText'
-                floatingLabelText='Your message'
-                fullWidth
-                multiLine
-                onChange={(event) => this.setState({ messageText: event.target.value })}
-                value={this.state.messageText}
-              />
-            </div>
-            {this.renderActionToolbar()}
+        {this.renderSurveySection()}
+        <div>
+          <div className={css(styles.messageField)}>
+            <TextField
+              autoFocus
+              ref='messageText'
+              name='messageText'
+              floatingLabelText='Your message'
+              fullWidth
+              multiLine
+              onChange={(event) => this.setState({ messageText: event.target.value })}
+              value={this.state.messageText}
+            />
           </div>
-          {this.renderOptOutDialog()}
-          {this.renderCannedResponsePopover()}
+          {this.renderActionToolbar()}
+        </div>
+        {this.renderOptOutDialog()}
+        {this.renderCannedResponsePopover()}
       </div>
     )
   }
@@ -533,7 +548,10 @@ AssignmentTexterContact.propTypes = {
   assignment: React.PropTypes.object,
   texter: React.PropTypes.object,
   navigationToolbarChildren: React.PropTypes.array,
-  onFinishContact: React.PropTypes.func
+  onFinishContact: React.PropTypes.func,
+  router: React.PropTypes.object,
+  data: React.PropTypes.object,
+  onExitTexter: React.PropTypes.func
 }
 
 const mapQueriesToProps = ({ ownProps }) => ({
@@ -670,4 +688,8 @@ const mapMutationsToProps = () => ({
   })
 })
 
-export default loadData(AssignmentTexterContact, { mapQueriesToProps, mapMutationsToProps })
+export default loadData(wrapMutations(
+  withRouter(AssignmentTexterContact)), {
+    mapQueriesToProps,
+    mapMutationsToProps
+  })
