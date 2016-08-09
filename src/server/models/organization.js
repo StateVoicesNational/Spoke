@@ -17,7 +17,13 @@ const Organization = thinky.createModel('organization', type.object().schema({
     .integer()
     .required()
     .default(STARTING_CREDIT),
-  features: type.array().schema(type.string().enum(FEATURES))
+  features: type
+    .array()
+    .schema(
+      type.string().enum(FEATURES)
+    )
+    .required()
+    .default([])
 }).allowExtra(false))
 
 export default Organization

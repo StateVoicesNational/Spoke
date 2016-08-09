@@ -4,6 +4,7 @@ import { Message, r } from '../../models'
 import { log } from '../../../lib'
 
 let nexmo = null
+const MAX_SEND_ATTEMPTS = 5
 if (process.env.NEXMO_API_KEY && process.env.NEXMO_API_SECRET) {
   nexmo = new Nexmo({
     apiKey: process.env.NEXMO_API_KEY,
@@ -49,19 +50,36 @@ export async function sendMessage(message) {
 
   return new Promise((resolve, reject) => {
     // US numbers require that the + be removed when sending via nexmo
-    console.log(message)
     nexmo.message.sendSms(message.user_number.replace(/^\+/, ''),
       message.contact_number,
-      message.text, (err, response) => {
-        console.log(err, response)
+      message.text, {
+        'status-report-req': 1,
+        'client-ref': message.id
+      }, (err, response) => {
+        const messageToSave = {
+          ...message
+        }
+        let hasError = false
         if (err) {
-          reject(err)
+          hasError = true
+        }
+        response.messages.forEach((serviceMessages) => {
+          if (serviceMessages.status !== '0') {
+            hasError = true
+          }
+        })
+        messageToSave.service = 'nexmo'
+        messageToSave.service_messages.push(response)
+        if (hasError) {
+          if (messageToSave.service_messages.length >= MAX_SEND_ATTEMPTS) {
+            messageToSave.send_status = 'ERROR'
+          }
+          Message.save(messageToSave, { conflict: 'update' })
+          reject(err || new Error(JSON.stringify(response)))
         } else {
-          const serviceMessageId = response.messages[0]['message-id']
           Message.save({
-            ...message,
-            service_message_id: serviceMessageId,
-            service: 'nexmo'
+            ...messageToSave,
+            send_status: 'SENT'
           }, { conflict: 'update' })
           .then((saveError, newMessage) => {
             resolve(newMessage)
@@ -70,6 +88,21 @@ export async function sendMessage(message) {
       }
     )
   })
+}
+
+export async function handleDeliveryReport(report) {
+  if (report.hasOwnProperty('client-ref')) {
+    const message = await Message.get(report['client-ref'])
+    message.service_messages.push(report)
+    if (report.status === 'delivered' || report.status === 'accepted') {
+      message.send_status = 'DELIVERED'
+    } else if (report.status === 'expired' ||
+      report.status === 'failed' ||
+      report.status === 'rejected') {
+      message.send_status = 'ERROR'
+    }
+    Message.save(message, { conflict: 'update' })
+  }
 }
 
 export async function handleIncomingMessage(message) {
@@ -103,8 +136,9 @@ export async function handleIncomingMessage(message) {
       is_from_contact: true,
       text,
       assignment_id: assignmentId,
-      service_message_id: messageId,
-      service: 'nexmo'
+      service_messages: [message],
+      service: 'nexmo',
+      send_status: 'DELIVERED'
     })
 
     await messageInstance.save()

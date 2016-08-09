@@ -11,9 +11,10 @@ import cookieSession from 'cookie-session'
 import setupAuth0Passport from './setup-auth0-passport'
 import wrap from './wrap'
 import { log } from '../lib'
-import { handleIncomingMessage } from './api/lib/nexmo'
+import { handleIncomingMessage, handleDeliveryReport } from './api/lib/nexmo'
 import { seedZipCodes } from './seeds/seed-zip-codes'
 import { setupUserNotificationObservers } from './notifications'
+import { Message, r } from './models'
 
 process.on('uncaughtException', (ex) => {
   log.error(ex)
@@ -54,10 +55,11 @@ app.post('/nexmo', (req, res) => {
   res.send(messageId)
 })
 
-app.post('/nexmo-message-report', (req, res) => {
-  log.info('Message send report', req.body)
+app.post('/nexmo-message-report', wrap(async (req, res) => {
+  const body = req.body
+  await handleDeliveryReport(body)
   res.send('done')
-})
+}))
 
 app.get('/login-callback',
   passport.authenticate('auth0', {

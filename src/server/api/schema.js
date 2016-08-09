@@ -545,8 +545,7 @@ const rootMutations = {
         contact_number: contactNumber,
         user_number: texter.assigned_cell,
         assignment_id: message.assignmentId,
-        service_message_id: '',
-        service: '',
+        send_status: 'QUEUED',
         is_from_contact: false
       })
 

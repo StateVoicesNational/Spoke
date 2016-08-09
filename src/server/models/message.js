@@ -15,13 +15,18 @@ const Message = thinky.createModel('message', type.object().schema({
     .allowNull(false),
   text: optionalString(),
   assignment_id: requiredString(),
-  service_message_id: optionalString(),
   service: optionalString(),
+  send_status: requiredString().enum('QUEUED', 'SENT', 'DELIVERED', 'ERROR'),
+  service_messages: type
+    .array()
+    .schema(type.object())
+    .required()
+    .default([]),
   created_at: timestamp()
 }).allowExtra(false))
 
 Message.ensureIndex('assignment_id')
-Message.ensureIndex('service_message_id')
+Message.ensureIndex('send_status')
 
 
 export default Message

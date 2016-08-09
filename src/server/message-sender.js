@@ -1,5 +1,6 @@
 import { sendMessage } from './api/lib/nexmo'
-import { r, Message } from './models'
+import { r } from './models'
+import { log } from '../lib'
 
 async function sleep(ms = 0) {
   return new Promise(fn => setTimeout(fn, ms))
@@ -7,7 +8,7 @@ async function sleep(ms = 0) {
 
 async function sendMessages() {
   const messages = await r.table('message')
-    .getAll('', { index: 'service_message_id' })
+    .getAll('QUEUED', { index: 'send_status' })
     .group('user_number')
     .orderBy('created_at')
     .limit(1)(0)
@@ -18,7 +19,11 @@ async function sendMessages() {
 
 (async () => {
   while (true) {
-    await sendMessages()
-    await sleep(1000)
+    try {
+      await sendMessages()
+      await sleep(1000)
+    } catch (ex) {
+      log.error(ex)
+    }
   }
 })()
