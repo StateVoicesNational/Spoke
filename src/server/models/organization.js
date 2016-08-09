@@ -1,7 +1,9 @@
 import thinky from './thinky'
 const type = thinky.type
 import { requiredString, optionalString, timestamp } from './custom-types'
+
 const STARTING_CREDIT = 300
+const FEATURES = ['threeClick']
 
 const Organization = thinky.createModel('organization', type.object().schema({
   id: type.string(),
@@ -14,7 +16,8 @@ const Organization = thinky.createModel('organization', type.object().schema({
     .number()
     .integer()
     .required()
-    .default(STARTING_CREDIT)
+    .default(STARTING_CREDIT),
+  features: type.array().schema(type.string().enum(FEATURES))
 }).allowExtra(false))
 
 export default Organization

@@ -20,6 +20,7 @@ import yup from 'yup'
 import GSForm from '../components/forms/GSForm'
 import Form from 'react-formal'
 import GSSubmitButton from '../components/forms/GSSubmitButton'
+import SendButton from '../components/SendButton'
 import CircularProgress from 'material-ui/CircularProgress';
 
 import { getChildren, getTopMostParent, interactionStepForId } from '../lib'
@@ -414,11 +415,9 @@ class AssignmentTexterContact extends React.Component {
 
   renderActionToolbar() {
     const { data, campaign, navigationToolbarChildren } = this.props
-    const isMac = (navigator.appVersion.indexOf('Mac') !== -1)
 
     const { contact } = data
 
-    // FIXME
     return (
       <Toolbar
         style={inlineStyles.actionToolbar}
@@ -426,11 +425,10 @@ class AssignmentTexterContact extends React.Component {
         <ToolbarGroup
           firstChild
         >
-          <RaisedButton
-            onTouchTap={this.handleClickSendMessageButton}
+          <SendButton
+            threeClickEnabled={campaign.organization.threeClickEnabled}
+            onFinalTouchTap={this.handleClickSendMessageButton}
             disabled={this.state.sending}
-            label={`Send ${isMac ? '⌘' : 'ctrl'}  \u21b5`}
-            primary
           />
           {this.renderNeedsResponseToggleButton(contact)}
           <ToolbarSeparator />
