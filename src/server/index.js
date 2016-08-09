@@ -51,14 +51,24 @@ app.use(passport.initialize())
 app.use(passport.session())
 
 app.post('/nexmo', (req, res) => {
-  const messageId = handleIncomingMessage(req.body)
-  res.send(messageId)
+  try {
+    const messageId = handleIncomingMessage(req.body)
+    res.send(messageId)
+  } catch (ex) {
+    log.error(ex)
+    res.send('done')
+  }
 })
 
 app.post('/nexmo-message-report', wrap(async (req, res) => {
-  const body = req.body
-  await handleDeliveryReport(body)
-  res.send('done')
+  try {
+    const body = req.body
+    await handleDeliveryReport(body)
+    res.send('done')
+  } catch (ex) {
+    log.error(ex)
+    res.send('done')
+  }
 }))
 
 app.get('/login-callback',
