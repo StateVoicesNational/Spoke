@@ -49,6 +49,14 @@ app.use(cookieSession({
 app.use(passport.initialize())
 app.use(passport.session())
 
+app.post('/nexmo', (req, res) => {
+  console.log(req)
+})
+
+app.post('/nexmo-message-report', (req, res) => {
+  console.log('Message send report', req.body)
+})
+
 app.post('/plivo', (req, res) => {
   const messageId = handleIncomingMessage(req.body)
   res.send(messageId)
