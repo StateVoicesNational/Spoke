@@ -540,14 +540,13 @@ const rootMutations = {
 
       const { contactNumber, text } = message
 
-      const serviceMessageId = await sendMessage(texter.assigned_cell, contactNumber, text)
-
       const messageInstance = new Message({
         text,
         contact_number: contactNumber,
         user_number: texter.assigned_cell,
         assignment_id: message.assignmentId,
-        service_message_id: serviceMessageId,
+        service_message_id: '',
+        service: '',
         is_from_contact: false
       })
 

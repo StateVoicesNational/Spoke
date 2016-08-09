@@ -1,3 +1,4 @@
 server: npm run dev-start
 webpack: ./dev-tools/babel-run ./webpack/server.js
+messageSender: ./dev-tools/babel-run ./src/server/message-sender.js
 rethinkdb: rethinkdb

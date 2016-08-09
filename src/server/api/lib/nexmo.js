@@ -20,7 +20,6 @@ export async function findNewCell() {
       if (err) {
         reject(err)
       } else {
-        console.log(response)
         resolve(response)
       }
     })
@@ -43,21 +42,33 @@ export async function rentNewCell() {
   throw new Error('Did not find any cell')
 }
 
-export async function sendMessage(sender, recipient, message) {
+export async function sendMessage(message) {
   if (!nexmo) {
     return 'test_message_uuid'
   }
 
   return new Promise((resolve, reject) => {
-    // There seems to be a weird bug where if the sender number starts with a +, nexmo borks
-    const transformedSender = sender.replace(/^\+/, '')
-    nexmo.message.sendSms(transformedSender, recipient, message, (err, response) => {
-      if (err) {
-        reject(err)
-      } else {
-        resolve(response.messages[0]['message-id'])
+    // US numbers require that the + be removed when sending via nexmo
+    console.log(message)
+    nexmo.message.sendSms(message.user_number.replace(/^\+/, ''),
+      message.contact_number,
+      message.text, (err, response) => {
+        console.log(err, response)
+        if (err) {
+          reject(err)
+        } else {
+          const serviceMessageId = response.messages[0]['message-id']
+          Message.save({
+            ...message,
+            service_message_id: serviceMessageId,
+            service: 'nexmo'
+          }, { conflict: 'update' })
+          .then((saveError, newMessage) => {
+            resolve(newMessage)
+          })
+        }
       }
-    })
+    )
   })
 }
 
@@ -92,7 +103,8 @@ export async function handleIncomingMessage(message) {
       is_from_contact: true,
       text,
       assignment_id: assignmentId,
-      service_message_id: messageId
+      service_message_id: messageId,
+      service: 'nexmo'
     })
 
     await messageInstance.save()
