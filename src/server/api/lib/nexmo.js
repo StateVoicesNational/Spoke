@@ -63,19 +63,21 @@ export async function sendMessage(message) {
         if (err) {
           hasError = true
         }
-        response.messages.forEach((serviceMessages) => {
-          if (serviceMessages.status !== '0') {
-            hasError = true
-          }
-        })
+        if (response) {
+          response.messages.forEach((serviceMessages) => {
+            if (serviceMessages.status !== '0') {
+              hasError = true
+            }
+          })
+        }
         messageToSave.service = 'nexmo'
-        messageToSave.service_messages.push(response)
+        messageToSave.service_messages.push(response || null)
         if (hasError) {
           if (messageToSave.service_messages.length >= MAX_SEND_ATTEMPTS) {
             messageToSave.send_status = 'ERROR'
           }
           Message.save(messageToSave, { conflict: 'update' })
-          reject(err || new Error(JSON.stringify(response)))
+          reject(err || response ? new Error(JSON.stringify(response)) : new Error('Encountered unknown error'))
         } else {
           Message.save({
             ...messageToSave,
