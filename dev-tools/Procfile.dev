@@ -1,4 +1,4 @@
 server: npm run dev-start
 webpack: ./dev-tools/babel-run ./webpack/server.js
-message-sender: ./dev-tools/babel-run ./src/server/message-sender.js
+messagesender: ./dev-tools/babel-run ./src/server/message-sender.js
 rethinkdb: rethinkdb
