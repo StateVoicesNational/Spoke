@@ -1,7 +1,7 @@
 {
-  "name": "react-apollo-starter-kit",
+  "name": "spoke",
   "version": "1.0.0",
-  "description": "React Apollo starter kit",
+  "description": "Spoke",
   "main": "src/server",
   "engines": {
     "node": "6.2.2",
@@ -23,7 +23,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/saikat/react-apollo-starter-kit.git"
+    "url": "git+https://github.com/saikat/spoke.git"
   },
   "keywords": [
     "spoke",
@@ -39,9 +39,9 @@
   "author": "Axle Factory",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/saikat/react-apollo-starter-kit/issues"
+    "url": "https://github.com/saikat/spoke/issues"
   },
-  "homepage": "https://github.com/saikat/saikat/react-apollo-starter-kit/#readme",
+  "homepage": "https://github.com/saikat/saikat/spoke/#readme",
   "dependencies": {
     "aphrodite": "^0.4.1",
     "apollo-client": "^0.4.7",
@@ -73,10 +73,10 @@
     "material-ui": "^0.15.2",
     "minilog": "^3.0.1",
     "moment": "^2.14.1",
+    "nexmo": "^1.0.0-beta-7",
     "papaparse": "^4.1.2",
     "passport": "^0.3.2",
     "passport-auth0": "^0.5.2",
-    "plivo": "^0.3.3",
     "react": "^15.2.1",
     "react-addons-css-transition-group": "^15.2.1",
     "react-apollo": "^0.3.15",
