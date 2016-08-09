@@ -79,7 +79,7 @@ import {
   resolvers as inviteResolvers
 } from './invite'
 import { GraphQLError, authRequired, accessRequired } from './errors'
-import { rentNewCell, sendMessage, handleIncomingMessage } from './lib/plivo'
+import { rentNewCell, sendMessage, handleIncomingMessage } from './lib/nexmo'
 import { getFormattedPhoneNumber } from '../../lib/phone-format'
 import { Notifications, sendUserNotification } from '../notifications'
 const rootSchema = `
@@ -295,10 +295,10 @@ const rootMutations = {
         .get(contact.assignment_id)
         .merge((doc) => r.table('user').get(doc('user_id')))('assigned_cell')
       await handleIncomingMessage({
-        To: userNumber,
-        From: contact.cell,
-        Text: message,
-        MessageUUID: 'mocked_message'
+        to: userNumber,
+        msisdn: contact.cell,
+        text: message,
+        messageId: 'mocked_message'
       })
       return loaders.campaignContact.load(id)
     },
@@ -540,18 +540,13 @@ const rootMutations = {
 
       const { contactNumber, text } = message
 
-      const serviceMessageId = await sendMessage({
-        text,
-        src: texter.assigned_cell,
-        dst: contactNumber
-      })
-
       const messageInstance = new Message({
         text,
         contact_number: contactNumber,
         user_number: texter.assigned_cell,
         assignment_id: message.assignmentId,
-        service_message_id: serviceMessageId,
+        service_message_id: '',
+        service: '',
         is_from_contact: false
       })
 

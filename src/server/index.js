@@ -10,8 +10,8 @@ import passport from 'passport'
 import cookieSession from 'cookie-session'
 import setupAuth0Passport from './setup-auth0-passport'
 import wrap from './wrap'
-import { getFormattedPhoneNumber, log } from '../lib'
-import { handleIncomingMessage } from './api/lib/plivo'
+import { log } from '../lib'
+import { handleIncomingMessage } from './api/lib/nexmo'
 import { seedZipCodes } from './seeds/seed-zip-codes'
 import { setupUserNotificationObservers } from './notifications'
 
@@ -50,20 +50,13 @@ app.use(passport.initialize())
 app.use(passport.session())
 
 app.post('/nexmo', (req, res) => {
-  console.log(req)
-})
-
-app.post('/nexmo-message-report', (req, res) => {
-  console.log('Message send report', req.body)
-})
-
-app.post('/plivo', (req, res) => {
   const messageId = handleIncomingMessage(req.body)
   res.send(messageId)
 })
 
-app.post('/plivo-message-report', (req, res) => {
-  console.log('Message send report', req.body)
+app.post('/nexmo-message-report', (req, res) => {
+  log.info('Message send report', req.body)
+  res.send('done')
 })
 
 app.get('/login-callback',
