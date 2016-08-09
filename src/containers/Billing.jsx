@@ -21,6 +21,12 @@ const styles = StyleSheet.create({
   sectionLabel: {
     opacity: 0.8,
     marginRight: 5
+  },
+  dialogActions: {
+    marginTop: 20,
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'flex-end'
   }
 })
 
@@ -54,17 +60,13 @@ class Billing extends React.Component {
   )
 
   handleSubmitCardForm = async (formValues) => {
-    this.setState({formIsSubmitting: true})
     const token = await this.createStripeToken(formValues)
     await this.props.mutations.updateCard(token)
-    this.setState({formIsSubmitting: false})
     this.handleCloseCreditCardDialog()
   }
 
   handleSubmitAccountCreditForm = async ({ balanceAmount }) => {
-    this.setState({formIsSubmitting: true})
     await this.props.mutations.addAccountCredit(balanceAmount)
-    this.setState({formIsSubmitting: false})
     this.handleCloseAddCreditDialog()
   }
 
@@ -84,22 +86,9 @@ class Billing extends React.Component {
     })
 
     return (
-      <Form.Context>
         <Dialog
           open={this.state.creditCardDialogOpen}
           actions={[
-            <FlatButton
-              label='Cancel'
-              style={inlineStyles.dialogButton}
-              onTouchTap={this.handleCloseCreditCardDialog}
-            />,
-            <Form.Button
-              type='submit'
-              label='Change card'
-              style={inlineStyles.dialogButton}
-              component={GSSubmitButton}
-              isSubmitting={this.state.formIsSubmitting}
-            />
           ]}
           onRequestClose={this.handleCloseCreditCardDialog}
         >
@@ -124,9 +113,21 @@ class Billing extends React.Component {
               label='Expiration year'
               hintText='2019'
             />
+            <div className={css(styles.dialogActions)}>
+              <FlatButton
+                label='Cancel'
+                style={inlineStyles.dialogButton}
+                onTouchTap={this.handleCloseCreditCardDialog}
+              />,
+              <Form.Button
+                type='submit'
+                label='Change card'
+                style={inlineStyles.dialogButton}
+                component={GSSubmitButton}
+              />
+            </div>
           </GSForm>
         </Dialog>
-      </Form.Context>
     )
   }
 
@@ -139,6 +140,7 @@ class Billing extends React.Component {
     })
 
     const amounts = [
+      1000,
       10000,
       50000,
       100000
@@ -155,23 +157,8 @@ class Billing extends React.Component {
     }
 
     return (
-      <Form.Context>
         <Dialog
           open={this.state.addCreditDialogOpen}
-          actions={[
-            <FlatButton
-              label='Cancel'
-              style={inlineStyles.dialogButton}
-              onTouchTap={this.handleCloseAddCreditDialog}
-            />,
-            <Form.Button
-              type='submit'
-              style={inlineStyles.dialogButton}
-              component={GSSubmitButton}
-              label='Add credit'
-              isSubmitting={this.state.formIsSubmitting}
-            />
-          ]}
           onRequestClose={this.handleCloseAddCreditDialog}
         >
           <GSForm
@@ -188,10 +175,21 @@ class Billing extends React.Component {
               fullWidth
               choices={choices}
             />
+            <div className={css(styles.dialogActions)}>
+              <FlatButton
+                label='Cancel'
+                style={inlineStyles.dialogButton}
+                onTouchTap={this.handleCloseAddCreditDialog}
+              />,
+              <Form.Button
+                type='submit'
+                style={inlineStyles.dialogButton}
+                component={GSSubmitButton}
+                label='Add credit'
+              />
+            </div>
           </GSForm>
-
         </Dialog>
-      </Form.Context>
     )
   }
 
