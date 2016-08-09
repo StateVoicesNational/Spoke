@@ -607,7 +607,7 @@ const rootResolvers = {
       return campaign
     },
     organization: async(_, { id }, { loaders, user }) => {
-      await accessRequired(user, id, 'ADMIN')
+      // await accessRequired(user, id, 'ADMIN')
       return loaders.organization.load(id)
     },
     invite: async (_, { id }, { loaders, user }) => {
