@@ -77,7 +77,7 @@ export async function sendMessage(message) {
             messageToSave.send_status = 'ERROR'
           }
           Message.save(messageToSave, { conflict: 'update' })
-          reject(err || response ? new Error(JSON.stringify(response)) : new Error('Encountered unknown error'))
+          reject(err || (response ? new Error(JSON.stringify(response)) : new Error('Encountered unknown error')))
         } else {
           Message.save({
             ...messageToSave,
