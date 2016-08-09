@@ -55,7 +55,8 @@ app.post('/nexmo', (req, res) => {
 })
 
 app.post('/nexmo-message-report', (req, res) => {
-  console.log('Message send report', req.body)
+  log.info('Message send report', req.body)
+  res.send('done')
 })
 
 app.get('/login-callback',
