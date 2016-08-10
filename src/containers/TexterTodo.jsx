@@ -51,9 +51,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
               id
               threeClickEnabled
             }
-            contacts {
-              customFields
-            }
+            customFields
           }
           contacts(contactFilter: $contactFilter) {
             id

@@ -21,11 +21,8 @@ const campaignInfoFragment = `
   description
   dueBy
   isStarted
-  contacts {
-    customFields
-    count
-    checksum
-  }
+  contactsCount
+  customFields
   texters {
     id
     firstName
@@ -62,7 +59,6 @@ class AdminCampaignEdit extends React.Component {
   }
 
   onExpandChange = (index, newExpandedState) => {
-    console.log(index, newExpandedState)
     const { expandedSection } = this.state
     if (newExpandedState) {
       this.setState({ expandedSection: index })
@@ -108,9 +104,10 @@ class AdminCampaignEdit extends React.Component {
       const newCampaign = {
         ...saveObject
       }
-      if (newCampaign.hasOwnProperty('contacts') && newCampaign.contacts.data) {
-        const checksum = newCampaign.contacts.checksum
-        const contactData = newCampaign.contacts.data.map((contact) => {
+      delete newCampaign.customFields
+      delete newCampaign.contactsCount
+      if (newCampaign.hasOwnProperty('contacts')) {
+        const contactData = newCampaign.contacts.map((contact) => {
           const customFields = {}
           const contactInput = {
             cell: contact.cell,
@@ -126,10 +123,7 @@ class AdminCampaignEdit extends React.Component {
           contactInput.customFields = JSON.stringify(customFields)
           return contactInput
         })
-        newCampaign.contacts = {
-          data: contactData,
-          checksum
-        }
+        newCampaign.contacts = contactData
       } else {
         newCampaign.contacts = null
       }
@@ -181,8 +175,7 @@ class AdminCampaignEdit extends React.Component {
   }
 
   sections() {
-    return [
-    {
+    return [{
       title: 'Basics',
       content: CampaignBasicsForm,
       keys: ['title', 'description', 'dueBy'],
@@ -191,17 +184,12 @@ class AdminCampaignEdit extends React.Component {
           this.state.campaignFormValues.description !== '' &&
           this.state.campaignFormValues.dueBy !== null
       )
-
     }, {
       title: 'Contacts',
       content: CampaignContactsForm,
-      keys: ['contacts'],
-      checkCompleted: () => this.state.campaignFormValues.contacts.count > 0,
-      checkSaved: () => {
-        const campaignFormValues = this.state.campaignFormValues
-        const campaign = this.props.campaignData.campaign
-        return campaignFormValues.contacts.checksum === campaign.contacts.checksum
-      },
+      keys: ['contacts', 'contactsCount', 'customFields'],
+      checkCompleted: () => this.state.campaignFormValues.contactsCount > 0,
+      checkSaved: () => this.state.campaignFormValues.hasOwnProperty('contacts') === false,
       extraProps: {
         optOuts: this.props.organizationData.organization.optOuts
       }
@@ -220,15 +208,15 @@ class AdminCampaignEdit extends React.Component {
       keys: ['interactionSteps'],
       checkCompleted: () => this.state.campaignFormValues.interactionSteps.length > 0 && this.state.campaignFormValues.interactionSteps[0].script !== '',
       extraProps: {
-        customFields: this.props.campaignData.campaign.contacts.customFields
+        customFields: this.props.campaignData.campaign.customFields
       }
     }, {
       title: 'Canned Responses',
       content: CampaignCannedResponsesForm,
       keys: ['cannedResponses'],
       checkCompleted: () => true,
-      extraProps:  {
-        customFields: this.props.campaignData.campaign.contacts.customFields
+      extraProps: {
+        customFields: this.props.campaignData.campaign.customFields
       }
     }]
   }

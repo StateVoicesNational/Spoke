@@ -13,7 +13,6 @@ export { formatMoney } from './currency'
 import Papa from 'papaparse'
 import _ from 'lodash'
 import { getFormattedPhoneNumber } from '../lib'
-import checksum from 'checksum'
 export {
   findParent,
   getInteractionPath,
@@ -60,11 +59,6 @@ const getValidatedData = (data, optOuts) => {
     }
   }
 }
-
-export function checksumCampaignContacts(contacts) {
-  return checksum(JSON.stringify(contacts.sort((a, b) => a.cell < b.cell)))
-}
-
 
 export const parseCSV = (file, optOuts, callback) => {
   Papa.parse(file, {

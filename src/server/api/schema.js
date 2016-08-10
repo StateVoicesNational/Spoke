@@ -83,11 +83,6 @@ import { rentNewCell, sendMessage, handleIncomingMessage } from './lib/nexmo'
 import { getFormattedPhoneNumber } from '../../lib/phone-format'
 import { Notifications, sendUserNotification } from '../notifications'
 const rootSchema = `
-  input CampaignContactCollectionInput {
-    data: [CampaignContactInput]
-    checksum: String
-  }
-
   input CampaignContactInput {
     firstName: String!
     lastName: String!
@@ -123,7 +118,7 @@ const rootSchema = `
     title: String
     description: String
     dueBy: Date
-    contacts: CampaignContactCollectionInput
+    contacts: [CampaignContactInput]
     organizationId: String
     texters: [String]
     interactionSteps: [InteractionStepInput]
@@ -188,7 +183,7 @@ async function editCampaign(id, campaign, loaders) {
   })
 
   if (campaign.hasOwnProperty('contacts')) {
-    const contactsToSave = campaign.contacts.data.map((datum) => {
+    const contactsToSave = campaign.contacts.map((datum) => {
       const modelData = {
         campaign_id: datum.campaignId,
         first_name: datum.firstName,
@@ -206,7 +201,6 @@ async function editCampaign(id, campaign, loaders) {
       .getAll(id, { index: 'campaign_id' })
       .delete()
     await CampaignContact.save(contactsToSave)
-    campaignUpdates.contacts_checksum = campaign.contacts.checksum
   }
 
   if (campaign.hasOwnProperty('texters')) {

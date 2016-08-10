@@ -5,7 +5,7 @@ import Form from 'react-formal'
 import Subheader from 'material-ui/Subheader'
 import Divider from 'material-ui/Divider'
 import { ListItem, List } from 'material-ui/List'
-import { parseCSV, checksumCampaignContacts } from '../lib'
+import { parseCSV } from '../lib'
 import CampaignFormSectionHeading from './CampaignFormSectionHeading'
 import CheckIcon from 'material-ui/svg-icons/action/check-circle'
 import WarningIcon from 'material-ui/svg-icons/alert/warning'
@@ -54,8 +54,8 @@ export default class CampaignContactsForm extends React.Component {
   }
 
   getUploadInputValue(contacts) {
-    return this.props.contacts.count > 0 ?
-      `${this.props.contacts.count} contacts uploaded`
+    return this.props.contactsCount > 0 ?
+      `${this.props.contactsCount} contacts uploaded`
       : ''
   }
 
@@ -63,7 +63,6 @@ export default class CampaignContactsForm extends React.Component {
     event.preventDefault()
     const file = event.target.files[0]
     this.setState({ uploading: true }, () => {
-      const uploading = false
       parseCSV(file, this.props.optOuts, ({ contacts, customFields, validationStats, error }) => {
         if (error) {
           this.handleUploadError(error)
@@ -92,26 +91,24 @@ export default class CampaignContactsForm extends React.Component {
       contactUploadError: null
     })
     const contactCollection = {
-      contacts: {
-        count: contacts.length,
-        customFields,
-        checksum: checksumCampaignContacts(contacts),
-        data: contacts
-      }
+      contactsCount: contacts.length,
+      customFields,
+      contacts
     }
     this.props.onChange(contactCollection)
   }
 
   renderContactStats() {
-    const { customFields, count } = this.props.formValues.contacts
+    const { customFields, contactsCount } = this.props.formValues
 
-    if (count === 0)
+    if (contactsCount === 0) {
       return ''
+    }
     return (
       <List>
         <Subheader>Uploaded</Subheader>
         <ListItem
-          primaryText={`${count} contacts`}
+          primaryText={`${contactsCount} contacts`}
           leftIcon={checkIcon}
           leftIconColor={theme.colors.green}
         />

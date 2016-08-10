@@ -27,10 +27,7 @@ class AdminCampaignList extends React.Component {
       description: '',
       dueBy: null,
       organizationId,
-      contacts: {
-        data: [],
-        checksum: ''
-      },
+      contacts: [],
       interactionSteps: [{
         script: ''
       }]

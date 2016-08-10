@@ -7,7 +7,6 @@ const Campaign = thinky.createModel('campaign', type.object().schema({
   organization_id: requiredString(),
   title: optionalString(),
   description: optionalString(),
-  contacts_checksum: optionalString(),
   due_by: type
     .date()
     .required()

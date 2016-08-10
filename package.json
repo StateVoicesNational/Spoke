@@ -57,7 +57,6 @@
     "body-parser": "^1.15.2",
     "bonzo": "^2.0.0",
     "chart.js": "^1.1.1",
-    "checksum": "^0.1.1",
     "cookie-session": "^2.0.0-alpha.1",
     "dataloader": "^1.2.0",
     "draft-js": "^0.7.0",

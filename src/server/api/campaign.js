@@ -17,7 +17,9 @@ export const schema = `
     texters: [User]
     assignments: [Assignment]
     interactionSteps: [InteractionStep]
-    contacts: CampaignContactCollection
+    contacts: [CampaignContact]
+    contactsCount: Int
+    customFields: [String]
     cannedResponses(userId: String): [CannedResponse]
     stats: CampaignStats
   }
@@ -93,7 +95,24 @@ export const resolvers = {
       }
       return responses
     },
-    contacts: async (campaign) => campaign,
+    contacts: async (campaign) => (
+      r.table('campaign_contact')
+        .getAll(campaign.id, { index: 'campaign_id' })
+    ),
+    contactsCount: async (campaign) => (
+      r.table('campaign_contact')
+        .getAll(campaign.id, { index: 'campaign_id' })
+        .count()
+    ),
+    customFields: async (campaign) => {
+      const campaignContacts = await r.table('campaign_contact')
+        .getAll(campaign.id, { index: 'campaign_id' })
+        .limit(1)
+      if (campaignContacts.length > 0) {
+        return Object.keys(campaignContacts[0].custom_fields)
+      }
+      return []
+    },
     stats: async (campaign) => campaign
   }
 }
