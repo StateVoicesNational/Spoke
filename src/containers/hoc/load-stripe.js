@@ -5,14 +5,14 @@ import { log } from '../../lib'
 import makeAsyncScriptLoader from 'react-async-script'
 import gql from 'graphql-tag'
 
-  const mapQueriesToProps = ({ ownProps }) => {
-    return {
-      data: {
-        query: gql`query getStripePublishableKey {
+const mapQueriesToProps = ({ ownProps }) => {
+  return {
+    data: {
+      query: gql`query getStripePublishableKey {
           stripePublishableKey
-        }`,
-      }
-    }}
+        }`
+    }
+  } }
 
 const loadStripe = (Component) => {
   class LoadStripe extends React.Component {
@@ -28,7 +28,7 @@ const loadStripe = (Component) => {
         />,
         'https://js.stripe.com/v2/',
         {
-          globalName: 'Stripe',
+          globalName: 'Stripe'
         }
       )
       return (

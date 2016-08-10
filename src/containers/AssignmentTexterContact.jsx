@@ -21,7 +21,7 @@ import GSForm from '../components/forms/GSForm'
 import Form from 'react-formal'
 import GSSubmitButton from '../components/forms/GSSubmitButton'
 import SendButton from '../components/SendButton'
-import CircularProgress from 'material-ui/CircularProgress';
+import CircularProgress from 'material-ui/CircularProgress'
 
 import { getChildren, getTopMostParent, interactionStepForId } from '../lib'
 import { withRouter } from 'react-router'
@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
     zIndex: 1000000
   },
   loadingIndicator: {
-    maxWidth: '50%',
+    maxWidth: '50%'
   },
   navigationToolbarTitle: {
     fontSize: '12px',
@@ -203,7 +203,7 @@ class AssignmentTexterContact extends React.Component {
 
   handleSendMessage = async () => {
     const { contact } = this.props.data
-    this.setState({ sending: true})
+    this.setState({ sending: true })
     const message = this.createMessageToContact(this.refs.messageText.getValue().trim())
     await this.sendMessage(message, contact.id)
   }

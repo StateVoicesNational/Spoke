@@ -136,7 +136,7 @@ const mapMutationsToProps = () => ({
   sendReply: (contactId, message) => {
     console.log(contactId, message)
     return {
-    mutation: gql`
+      mutation: gql`
       mutation sendReply($contactId: String!, $message: String!) {
         sendReply(id: $contactId, message: $message) {
           id
@@ -146,8 +146,8 @@ const mapMutationsToProps = () => ({
           }
         }
       }`,
-    variables: { contactId, message }
-  }
+      variables: { contactId, message }
+    }
   }
 })
 

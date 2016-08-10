@@ -62,7 +62,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
     }`,
     variables: {
       contactsFilter: {
-        messageStatus: ownProps.messageStatus,
+        messageStatus: ownProps.messageStatus
       },
       assignmentId: ownProps.params.assignmentId
     },

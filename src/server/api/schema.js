@@ -337,11 +337,10 @@ const rootMutations = {
       }).save()
 
       return await Organization.get(organizationId).update({ balance_amount: newBalanceAmount })
-
     },
     updateCard: async(_, { organizationId, stripeToken }, { user, loaders }) => {
       await accessRequired(user, organizationId, 'ADMIN')
-      const organization =  await loaders.organization.load(organizationId)
+      const organization = await loaders.organization.load(organizationId)
       const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 
       try {

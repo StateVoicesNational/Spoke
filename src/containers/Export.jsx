@@ -8,7 +8,7 @@ import Papa from 'papaparse'
 class Export extends React.Component {
   componentWillReceiveProps(props) {
     console.log(props)
-    debugger;
+    debugger
     if (!props.data.loading) {
       console.log(props)
       props.onParseStart()

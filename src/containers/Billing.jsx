@@ -54,17 +54,17 @@ class Billing extends React.Component {
   )
 
   handleSubmitCardForm = async (formValues) => {
-    this.setState({formIsSubmitting: true})
+    this.setState({ formIsSubmitting: true })
     const token = await this.createStripeToken(formValues)
     await this.props.mutations.updateCard(token)
-    this.setState({formIsSubmitting: false})
+    this.setState({ formIsSubmitting: false })
     this.handleCloseCreditCardDialog()
   }
 
   handleSubmitAccountCreditForm = async ({ balanceAmount }) => {
-    this.setState({formIsSubmitting: true})
+    this.setState({ formIsSubmitting: true })
     await this.props.mutations.addAccountCredit(balanceAmount)
-    this.setState({formIsSubmitting: false})
+    this.setState({ formIsSubmitting: false })
     this.handleCloseAddCreditDialog()
   }
 
