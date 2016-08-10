@@ -1,5 +1,3 @@
-import lodash from 'lodash'
-import log from '../../lib'
 import { Campaign,
   Assignment,
   BalanceLineItem,
@@ -79,9 +77,9 @@ import {
   resolvers as inviteResolvers
 } from './invite'
 import { GraphQLError, authRequired, accessRequired } from './errors'
-import { rentNewCell, sendMessage, handleIncomingMessage } from './lib/nexmo'
+import { rentNewCell, handleIncomingMessage } from './lib/nexmo'
 import { getFormattedPhoneNumber } from '../../lib/phone-format'
-import { Notifications, sendUserNotification } from '../notifications'
+
 const rootSchema = `
   input CampaignContactInput {
     firstName: String!
@@ -377,7 +375,6 @@ const rootMutations = {
         }
         throw e
       }
-
     },
     createCampaign: async (_, { campaign }, { user, loaders }) => {
       await accessRequired(user, campaign.organizationId, 'ADMIN')
@@ -385,57 +382,16 @@ const rootMutations = {
         organization_id: campaign.organizationId,
         title: campaign.title,
         description: campaign.description,
-        due_by: campaign.dueBy
+        due_by: campaign.dueBy,
+        is_started: false
       })
       const newCampaign = await campaignInstance.save()
       return editCampaign(newCampaign.id, campaign, loaders)
     },
     startCampaign: async (_, { id }, { loaders }) => {
-      const availableContacts = await r.table('campaign_contact')
-        .getAll(id, { index: 'campaign_id' })
-        .map((campaignContact) => (
-          campaignContact.merge({ count: r.table('message')
-            .getAll(campaignContact('assignment_id'), { index: 'assignment_id' })
-            .count() })
-        ))
-        .filter({ count: 0 })
-        .without('count')
-      const availableAssignments = await r.table('assignment')
-        .getAll(id, { index: 'campaign_id' })
-      const contactCount = availableContacts.length
-      const assignmentCount = availableAssignments.length
-      const chunkSize = Math.max(Math.floor(contactCount / assignmentCount), 1)
-      const chunked = lodash.chunk(availableContacts, chunkSize)
-
-      if (contactCount > assignmentCount && contactCount % assignmentCount > 0) {
-        const leftovers = chunked.pop()
-        leftovers.forEach((leftover, index) => chunked[index].push(leftover))
-      }
-
-      if (assignmentCount < chunked.length) {
-        log.error('More chunks than there are texters!')
-      }
-
-      const assignedChunks = chunked.map((chunk, index) => (
-        chunk.map((innerChunk) => ({
-          ...innerChunk,
-          assignment_id: availableAssignments[index].id
-        }))
-      ))
-
-      let contactsToSave = []
-      assignedChunks.forEach((chunk) => {
-        contactsToSave = contactsToSave.concat(chunk)
+      return Campaign.get(id).update({
+        is_started: true
       })
-
-      await CampaignContact.save(contactsToSave, { conflict: 'update' })
-
-      await sendUserNotification({
-        type: Notifications.CAMPAIGN_STARTED,
-        campaignId: id
-      })
-
-      return loaders.campaign.load(id)
     },
     editCampaign: async (_, { id, campaign }, { user, loaders }) => {
       if (campaign.organizationId) {

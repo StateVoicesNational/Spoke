@@ -56,18 +56,11 @@ export const resolvers = {
       'title',
       'description',
       'dueBy',
+      'isStarted'
     ], Campaign),
     organization: async (campaign, _, { loaders }) => (
       loaders.organization.load(campaign.organization_id)
     ),
-    isStarted: async (campaign) => {
-      const count = await r.table('campaign_contact')
-        .getAll(campaign.id, { index: 'campaign_id' })
-        .filter(r.row('assignment_id').ne(''))
-        .limit(1)
-        .count()
-      return count === 1
-    },
     texters: async (campaign) => (
       r.table('assignment')
         .getAll(campaign.id, { index: 'campaign_id' })
