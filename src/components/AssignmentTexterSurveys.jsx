@@ -4,7 +4,6 @@ import { Card, CardHeader, CardText } from 'material-ui/Card'
 import MenuItem from 'material-ui/MenuItem'
 import Divider from 'material-ui/Divider'
 import SelectField from 'material-ui/SelectField'
-import { getChildren, getTopMostParent, interactionStepForId } from '../lib'
 
 const styles = {
   root: {
@@ -29,11 +28,15 @@ class AssignmentTexterSurveys extends Component {
     }
   }
 
-  handleNext = () => {
-    const { stepIndex } = this.state
-    this.setState({
-      stepIndex: stepIndex + 1
-    })
+  getNextScript({ interactionStep, answerIndex }) {
+    const answerOption = interactionStep.question.answerOptions[answerIndex]
+
+    const { nextInteractionStep } = answerOption
+    return nextInteractionStep ? nextInteractionStep.script : null
+  }
+
+  handleExpandChange = (newExpandedState) => {
+    this.setState({ showAllQuestions: newExpandedState })
   }
 
   handlePrevious = () => {
@@ -43,15 +46,11 @@ class AssignmentTexterSurveys extends Component {
     })
   }
 
-  handleExpandChange = (newExpandedState) => {
-    this.setState({ showAllQuestions: newExpandedState })
-  }
-
-  getNextScript({ interactionStep, answerIndex }) {
-    const answerOption = interactionStep.question.answerOptions[answerIndex]
-
-    const { nextInteractionStep } = answerOption
-    return nextInteractionStep ? nextInteractionStep.script : null
+  handleNext = () => {
+    const { stepIndex } = this.state
+    this.setState({
+      stepIndex: stepIndex + 1
+    })
   }
 
   handleSelectChange = async (interactionStep, answerIndex, value) => {
@@ -86,7 +85,6 @@ class AssignmentTexterSurveys extends Component {
         key='clear'
         value='clearResponse'
         primaryText='Clear response'
-        // onTouchTap={(event) => this.handleAnswerDelete(event, step.id)}
       />
     )
 
@@ -95,23 +93,23 @@ class AssignmentTexterSurveys extends Component {
 
 
   renderStep(step, isCurrentStep) {
-    const { contact, questionResponses } = this.props
+    const { questionResponses } = this.props
     const responseValue = questionResponses[step.id]
     const { question } = step
 
     return question.text ? (
       <div>
-      <SelectField
-        style={isCurrentStep ? styles.currentStepSelect : styles.previousStepSelect}
-        onChange={(event, index, value) => this.handleSelectChange(step, index, value)}
-        name={question.id}
-        fullWidth
-        value={responseValue}
-        floatingLabelText={question.text}
-        hintText='Choose answer'
-      >
-        {this.renderAnswers(step)}
-      </SelectField>
+        <SelectField
+          style={isCurrentStep ? styles.currentStepSelect : styles.previousStepSelect}
+          onChange={(event, index, value) => this.handleSelectChange(step, index, value)}
+          name={question.id}
+          fullWidth
+          value={responseValue}
+          floatingLabelText={question.text}
+          hintText='Choose answer'
+        >
+          {this.renderAnswers(step)}
+        </SelectField>
       </div>
     ) : ''
   }
@@ -149,9 +147,11 @@ class AssignmentTexterSurveys extends Component {
 }
 
 AssignmentTexterSurveys.propTypes = {
-  contact: React.PropTypes.object,      // current assignment
-  interactionSteps: React.PropTypes.array,   // contacts for current assignment
-  currentInteractionStep: React.PropTypes.object
+  contact: React.PropTypes.object,
+  interactionSteps: React.PropTypes.array,
+  currentInteractionStep: React.PropTypes.object,
+  questionResponses: React.PropTypes.object,
+  onQuestionResponseChange: React.PropTypes.func
 }
 
 export default AssignmentTexterSurveys

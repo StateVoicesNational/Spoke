@@ -18,10 +18,13 @@ async function sendMessages() {
 }
 
 (async () => {
-  while (true) {
+  let shouldContinue = true
+  while (shouldContinue) {
     try {
+      shouldContinue = false
       await sleep(1000)
       await sendMessages()
+      shouldContinue = true
     } catch (ex) {
       log.error(ex)
     }

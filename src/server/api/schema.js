@@ -79,6 +79,7 @@ import {
 import { GraphQLError, authRequired, accessRequired } from './errors'
 import { rentNewCell, handleIncomingMessage } from './lib/nexmo'
 import { getFormattedPhoneNumber } from '../../lib/phone-format'
+import stripeFactory from 'stripe'
 
 const rootSchema = `
   input CampaignContactInput {
@@ -148,7 +149,7 @@ const rootSchema = `
     updateCard( organizationId: String!, stripeToken: String!): Organization
     addAccountCredit( organizationId: String!, balanceAmount: Int!): Organization
     sendMessage(message:MessageInput!, campaignContactId:String!): CampaignContact,
-    createOptOut(optOut:OptOutInput!, campaignContactId:String!):CampaignContact,
+    createOptOut(optOut:OptOutInput!):CampaignContact,
     editCampaignContactMessageStatus(messageStatus: String!, campaignContactId:String!): CampaignContact,
     deleteQuestionResponses(interactionStepIds:[String], campaignContactId:String!): CampaignContact,
     updateQuestionResponses(questionResponses:[QuestionResponseInput], campaignContactId:String!): CampaignContact,
@@ -274,7 +275,7 @@ async function editCampaign(id, campaign, loaders) {
 
 const rootMutations = {
   RootMutation: {
-    sendReply: async (_, { id, message }, { user, loaders }) => {
+    sendReply: async (_, { id, message }, { loaders }) => {
       if (process.env.NODE_ENV !== 'development') {
         throw new GraphQLError({
           status: 400,
@@ -313,7 +314,7 @@ const rootMutations = {
     addAccountCredit: async (_, { organizationId, balanceAmount }, { user, loaders }) => {
       await accessRequired(user, organizationId, 'ADMIN')
       const organization = await loaders.organization.load(organizationId)
-      const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
+      const stripe = stripeFactory(process.env.STRIPE_SECRET_KEY)
       try {
         await stripe.charges.create({
           customer: organization.stripe_id,
@@ -341,7 +342,7 @@ const rootMutations = {
     updateCard: async(_, { organizationId, stripeToken }, { user, loaders }) => {
       await accessRequired(user, organizationId, 'ADMIN')
       const organization = await loaders.organization.load(organizationId)
-      const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
+      const stripe = stripeFactory(process.env.STRIPE_SECRET_KEY)
 
       try {
         if (organization.stripe_id) {
@@ -349,21 +350,20 @@ const rootMutations = {
             source: stripeToken
           })
           return organization
-        } else {
-          const customer = await stripe.customers.create({
-            description: organization.name,
-            email: user.email,
-            metadata: {
-              organizationId
-            },
-            source: stripeToken
-          })
-          return await Organization
-            .get(organizationId)
-            .update({
-              stripe_id: customer.id
-            })
         }
+        const customer = await stripe.customers.create({
+          description: organization.name,
+          email: user.email,
+          metadata: {
+            organizationId
+          },
+          source: stripeToken
+        })
+        return await Organization
+          .get(organizationId)
+          .update({
+            stripe_id: customer.id
+          })
       } catch (e) {
         if (e.type === 'StripeCardError') {
           throw new GraphQLError({
@@ -386,11 +386,9 @@ const rootMutations = {
       const newCampaign = await campaignInstance.save()
       return editCampaign(newCampaign.id, campaign, loaders)
     },
-    startCampaign: async (_, { id }, { loaders }) => {
-      return Campaign.get(id).update({
-        is_started: true
-      })
-    },
+    startCampaign: async (_, { id }) => Campaign.get(id).update({
+      is_started: true
+    }),
     editCampaign: async (_, { id, campaign }, { user, loaders }) => {
       if (campaign.organizationId) {
         await accessRequired(user, campaign.organizationId, 'ADMIN')
@@ -446,8 +444,8 @@ const rootMutations = {
       contact.message_status = messageStatus
       return await contact.save()
     },
-    createOptOut: async(_, { optOut, campaignContactId }, { loaders }) => {
-      let campaign = await r.table('assignment')
+    createOptOut: async(_, { optOut }) => {
+      const campaign = await r.table('assignment')
         .get(optOut.assignmentId)
         .merge((doc) => ({
           campaign: r.table('campaign')
@@ -522,7 +520,7 @@ const rootMutations = {
       const contact = loaders.campaignContact.load(campaignContactId)
       return contact
     },
-    updateQuestionResponses: async(_, { questionResponses, campaignContactId }, { loaders }) => {
+    updateQuestionResponses: async (_, { questionResponses, campaignContactId }, { loaders }) => {
       const count = questionResponses.length
 
       for (let i = 0; i < count; i++) {
@@ -533,7 +531,7 @@ const rootMutations = {
           .filter({ interaction_step_id: interactionStepId })
           .delete()
 
-        const newQuestionResponse = await new QuestionResponse({
+        return await new QuestionResponse({
           campaign_contact_id: campaignContactId,
           interaction_step_id: interactionStepId,
           value
@@ -554,7 +552,7 @@ const rootResolvers = {
       await accessRequired(user, campaign.organization_id, 'ADMIN')
       return campaign
     },
-    organization: async(_, { id }, { loaders, user }) => {
+    organization: async(_, { id }, { loaders }) => {
       // await accessRequired(user, id, 'ADMIN')
       return loaders.organization.load(id)
     },
@@ -563,7 +561,7 @@ const rootResolvers = {
       return loaders.invite.load(id)
     },
     currentUser: async(_, { id }, { user }) => user,
-    contact: async(_, { id }, { loaders, user }) => {
+    contact: async(_, { id }, { loaders }) => {
       const contact = await loaders.campaignContact.load(id)
       // await accessRequired(user, contact.organization_id, 'TEXTER')
       return contact

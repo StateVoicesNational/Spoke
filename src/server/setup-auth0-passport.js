@@ -2,8 +2,6 @@ import passport from 'passport'
 import Auth0Strategy from 'passport-auth0'
 import { User } from './models'
 import wrap from './wrap'
-import thinky from './models/thinky'
-const Errors = thinky.Errors
 
 function setupAuth0Passport() {
   const strategy = new Auth0Strategy({

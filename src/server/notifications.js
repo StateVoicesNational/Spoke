@@ -1,5 +1,6 @@
 import { r, Assignment, Campaign, User, Organization } from './models'
 import { log } from '../lib'
+import mailgunFactory from 'mailgun-js'
 
 export const Notifications = {
   CAMPAIGN_STARTED: 'campaign.started',
@@ -7,7 +8,7 @@ export const Notifications = {
 }
 
 const sendEmail = async ({ to, subject, text }) => {
-  const mailgun = require('mailgun-js')({
+  const mailgun = mailgunFactory({
     apiKey: process.env.MAILGUN_SECRET_KEY,
     domain: process.env.MAILGUN_DOMAIN
   })

@@ -53,8 +53,8 @@ class AssignmentSummary extends Component {
           disabled={disabled}
           label={title}
           onTouchTap={() => this.goToTodos(contactsFilter, assignment.id)}
-          onMouseEnter={() => tooltip ? this.setState({ badTimezoneTooltipOpen: true }) : {}}
-          onMouseLeave={() => tooltip ? this.setState({ badTimezoneTooltipOpen: false }) : {}}
+          onMouseEnter={() => (tooltip ? this.setState({ badTimezoneTooltipOpen: true }) : {})}
+          onMouseLeave={() => (tooltip ? this.setState({ badTimezoneTooltipOpen: false }) : {})}
         />
         {badTimezoneTooltipOpen ? (
           <Tooltip

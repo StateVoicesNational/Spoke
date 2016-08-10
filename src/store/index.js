@@ -21,7 +21,8 @@ export default class Store {
           ApolloClientSingleton.middleware(),
           ReduxThunk.withExtraArgument(ApolloClientSingleton)
         ),
-         typeof window === 'object' && typeof window.devToolsExtension !== 'undefined' ? window.devToolsExtension() : f => f
+         typeof window === 'object' &&
+         typeof window.devToolsExtension !== 'undefined' ? window.devToolsExtension() : f => f
       )
     )
   }

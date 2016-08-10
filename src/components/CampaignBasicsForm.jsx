@@ -86,5 +86,6 @@ CampaignBasicsForm.propTypes = {
   onChange: React.PropTypes.func,
   onSubmit: React.PropTypes.func,
   saveLabel: React.PropTypes.string,
-  saveDisabled: React.PropTypes.bool
+  saveDisabled: React.PropTypes.bool,
+  ensureComplete: React.PropTypes.bool
 }

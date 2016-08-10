@@ -14,7 +14,6 @@ import { log } from '../lib'
 import { handleIncomingMessage, handleDeliveryReport } from './api/lib/nexmo'
 import { seedZipCodes } from './seeds/seed-zip-codes'
 import { setupUserNotificationObservers } from './notifications'
-import { Message, r } from './models'
 
 process.on('uncaughtException', (ex) => {
   log.error(ex)

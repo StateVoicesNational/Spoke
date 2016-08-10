@@ -1,6 +1,6 @@
 import thinky from './thinky'
 const type = thinky.type
-import { requiredString, optionalString, timestamp } from './custom-types'
+import { requiredString, timestamp } from './custom-types'
 
 const OptOut = thinky.createModel('opt_out', type.object().schema({
   id: type.string(),

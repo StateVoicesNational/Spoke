@@ -1,7 +1,7 @@
 import theme from '../styles/theme'
 
 export function login(nextUrl) {
-  const lock = new Auth0Lock(window.AUTH0_CLIENT_ID, 'gearshift.auth0.com', {
+  const lock = new window.Auth0Lock(window.AUTH0_CLIENT_ID, 'gearshift.auth0.com', {
     auth: {
       redirect: true,
       redirectUrl: window.AUTH0_LOGIN_CALLBACK,
@@ -12,7 +12,7 @@ export function login(nextUrl) {
     },
     languageDictionary: {
       title: 'Spoke',
-      signUpTerms: "I agree to the <a href='/terms' target='_new'>terms of service</a> and <a href='/privacy' target='_new'>privacy policy</a>."
+      signUpTerms: 'I agree to the <a href=\'/terms\' target=\'_new\'> terms of service</a> and <a href=\'/privacy\' target=\'_new\'> privacy policy</a>.'
     },
     mustAcceptTerms: true,
     closable: false,
