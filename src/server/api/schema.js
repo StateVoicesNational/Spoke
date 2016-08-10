@@ -130,7 +130,6 @@ const rootSchema = `
     userId: String
   }
 
-
   type RootQuery {
     currentUser: User
     organization(id:String!): Organization

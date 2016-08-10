@@ -62,7 +62,7 @@ TexterTodoList.propTypes = {
 
 const mapQueriesToProps = ({ ownProps }) => ({
   data: {
-    query: gql`query getTodos($organizationId: String!, $needsMessageFilter: ContactFilter, $needsResponseFilter: ContactFilter, $badTimezoneFilter: ContactFilter) {
+    query: gql`query getTodos($organizationId: String!, $needsMessageFilter: ContactsFilter, $needsResponseFilter: ContactsFilter, $badTimezoneFilter: ContactsFilter) {
       organization(id: $organizationId) {
         id
         billingDetails {
@@ -82,9 +82,9 @@ const mapQueriesToProps = ({ ownProps }) => ({
             title
             description
           }
-          unmessagedCount: contactsCount(contactFilter: $needsMessageFilter)
-          unrepliedCount: contactsCount(contactFilter: $needsResponseFilter)
-          badTimezoneCount: contactsCount(contactFilter: $badTimezoneFilter)
+          unmessagedCount: contactsCount(contactsFilter: $needsMessageFilter)
+          unrepliedCount: contactsCount(contactsFilter: $needsResponseFilter)
+          badTimezoneCount: contactsCount(contactsFilter: $badTimezoneFilter)
         }
       }
     }`,

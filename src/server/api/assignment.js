@@ -7,8 +7,8 @@ export const schema = `
     id: ID
     texter: User
     campaign: Campaign
-    contacts(contactFilter: ContactFilter): [CampaignContact]
-    contactsCount(contactFilter: ContactFilter): Int
+    contacts(contactsFilter: ContactsFilter): [CampaignContact]
+    contactsCount(contactsFilter: ContactsFilter): Int
     userCannedResponses: [CannedResponse]
     campaignCannedResponses: [CannedResponse]
   }
@@ -18,7 +18,7 @@ const getValidZips = async () => {
   const offsets = validOffsets()
   let validZips = await r.table('zip_code')
     .filter((doc) => r.expr(offsets)
-                      .contains(doc('timezoneOffset')))
+      .contains(doc('timezoneOffset')))
     .pluck('zip')
 
   validZips = validZips.map(({ zip }) => zip)
@@ -30,17 +30,17 @@ const getValidZips = async () => {
   return validZips
 }
 
-function getContacts(assignment, campaign, contactFilter) {
+function getContacts(assignment, campaign, contactsFilter) {
   const filter = {}
-  if (contactFilter) {
-    if (contactFilter.validTimezone === false) {
+  if (contactsFilter) {
+    if (contactsFilter.validTimezone === false) {
       filter.zip = 'invalid_zip'
     }
-    if (contactFilter.hasOwnProperty('optOut') && contactFilter.optOut !== null) {
-      filter.opt_out = contactFilter.optOut
+    if (contactsFilter.hasOwnProperty('optOut') && contactsFilter.optOut !== null) {
+      filter.opt_out = contactsFilter.optOut
     }
-    if (contactFilter.hasOwnProperty('messageStatus') && contactFilter.messageStatus !== null) {
-      filter.message_status = contactFilter.messageStatus
+    if (contactsFilter.hasOwnProperty('messageStatus') && contactsFilter.messageStatus !== null) {
+      filter.message_status = contactsFilter.messageStatus
     }
   }
 
@@ -66,14 +66,14 @@ export const resolvers = {
     ),
     campaign: async(assignment, _, { loaders }) => loaders.campaign.load(assignment.campaign_id),
 
-    contactsCount: async (assignment, { contactFilter }, { loaders }) => {
+    contactsCount: async (assignment, { contactsFilter }, { loaders }) => {
       const campaign = await loaders.campaign.load(assignment.campaign_id)
-      return getContacts(assignment, campaign, contactFilter).count()
+      return getContacts(assignment, campaign, contactsFilter).count()
     },
 
-    contacts: async (assignment, { contactFilter }, { loaders }) => {
+    contacts: async (assignment, { contactsFilter }, { loaders }) => {
       const campaign = await loaders.campaign.load(assignment.campaign_id)
-      return getContacts(assignment, campaign, contactFilter)
+      return getContacts(assignment, campaign, contactsFilter)
     },
 
     campaignCannedResponses: async(assignment) => (

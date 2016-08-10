@@ -218,7 +218,7 @@ class AdminCampaignStats extends React.Component {
 
 const mapQueriesToProps = ({ ownProps }) => ({
   data: {
-    query: gql`query getCampaign($campaignId: String!, $contactFilter: ContactFilter!) {
+    query: gql`query getCampaign($campaignId: String!, $contactsFilter: ContactsFilter!) {
       campaign(id: $campaignId) {
         id
         title
@@ -229,7 +229,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
             firstName
             lastName
           }
-          unmessagedCount: contactsCount(contactFilter:$contactFilter)
+          unmessagedCount: contactsCount(contactsFilter:$contactsFilter)
           contactsCount
         }
         interactionSteps {
@@ -251,7 +251,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
     }`,
     variables: {
       campaignId: ownProps.params.campaignId,
-      contactFilter: {
+      contactsFilter: {
         messageStatus: 'needsMessage'
       }
     },

@@ -3,7 +3,7 @@ import { mapFieldsToModel } from './lib/utils'
 import { getTopMostParent } from '../../lib'
 
 export const schema = `
-  input ContactFilter {
+  input ContactsFilter {
     messageStatus: String
     optOut: Boolean
     validTimezone: Boolean

@@ -16,13 +16,13 @@ class TexterTodo extends React.Component {
 }
 
 TexterTodo.propTypes = {
-  contactFilter: React.PropTypes.string,
+  contactsFilter: React.PropTypes.string,
   params: React.PropTypes.object
 }
 
 const mapQueriesToProps = ({ ownProps }) => ({
   data: {
-    query: gql`query getContacts($assignmentId: String!, $contactFilter: ContactFilter!) {
+    query: gql`query getContacts($assignmentId: String!, $contactsFilter: ContactsFilter!) {
       currentUser {
         id
         assignment(id: $assignmentId) {
@@ -53,7 +53,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
             }
             customFields
           }
-          contacts(contactFilter: $contactFilter) {
+          contacts(contactsFilter: $contactsFilter) {
             id
             customFields
           }
@@ -61,7 +61,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
       }
     }`,
     variables: {
-      contactFilter: {
+      contactsFilter: {
         messageStatus: ownProps.messageStatus,
       },
       assignmentId: ownProps.params.assignmentId
