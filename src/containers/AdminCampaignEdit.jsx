@@ -26,6 +26,12 @@ const campaignInfoFragment = `
   texters {
     id
     firstName
+    assignment(campaignId:$campaignId) {
+      contactsCount
+      needsResponseCount: contactsCount(contactsFilter:{messageStatus:\"needsResponse\"})
+      messagedCount: contactsCount(contactsFilter:{messageStatus:\"messaged\"})
+      closedCount: contactsCount(contactsFilter:{messageStatus:\"closed\"})
+    }
   }
   interactionSteps {
     id
@@ -196,7 +202,7 @@ class AdminCampaignEdit extends React.Component {
     }, {
       title: 'Texters',
       content: CampaignTextersForm,
-      keys: ['texters'],
+      keys: ['texters', 'contactsCount'],
       checkCompleted: () => this.state.campaignFormValues.texters.length > 0,
       extraProps: {
         orgTexters: this.props.organizationData.organization.texters,

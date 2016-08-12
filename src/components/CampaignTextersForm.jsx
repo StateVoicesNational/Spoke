@@ -1,4 +1,5 @@
-import React, { Component } from 'react'
+import React, { PropTypes as type } from 'react'
+import Slider from './Slider'
 import AutoComplete from 'material-ui/AutoComplete'
 import { MenuItem } from 'material-ui/Menu'
 import GSForm from '../components/forms/GSForm'
@@ -7,10 +8,30 @@ import Form from 'react-formal'
 import Chip from './Chip'
 import OrganizationJoinLink from './OrganizationJoinLink'
 import { RadioButton, RadioButtonGroup } from 'material-ui/RadioButton'
-import Divider from 'material-ui/Divider'
 import CampaignFormSectionHeading from './CampaignFormSectionHeading'
 import ContentClear from 'material-ui/svg-icons/content/clear'
+import GSTextField from '../components/forms/GSTextField'
 import { StyleSheet, css } from 'aphrodite'
+
+const styles = StyleSheet.create({
+  texterRow: {
+    display: 'flex',
+    flexDirection: 'row'
+  },
+  nameColumn: {
+    flex: '1 1 10%',
+    textOverflow: 'ellipsis',
+    paddingRight: 10
+  },
+  slider: {
+    flex: '1 70%',
+    paddingRight: 10
+  },
+  input: {
+    flex: '1 1 20%',
+    display: 'inline-block'
+  }
+})
 
 const inlineStyles = {
   autocomplete: {
@@ -20,7 +41,14 @@ const inlineStyles = {
     marginBottom: 12
   }
 }
-export default class CampaignTextersForm extends Component {
+export default class CampaignTextersForm extends React.Component {
+
+  onChange = (event, value) => {
+    const { orgTexters, onChange } = this.props
+    const texters = (value === 'assignAll') ? orgTexters : []
+    onChange({ texters })
+  }
+
 
   handleNewRequest = (value) => {
     const { formValues } = this.props
@@ -37,16 +65,11 @@ export default class CampaignTextersForm extends Component {
     }
   }
 
-  onChange = (event, value) => {
-    const { orgTexters, onChange } = this.props
-    const texters = (value === 'assignAll') ? orgTexters : []
-    onChange({ texters })
-  }
-
   mapTexterIdToTexter(texterId) {
     return this.props.orgTexters.find((texter) => texter.id === texterId)
   }
 
+/*
   showTexters() {
     const { orgTexters, formValues } = this.props
     const { texters } = formValues
@@ -140,7 +163,7 @@ export default class CampaignTextersForm extends Component {
       </GSForm>
     )
   }
-
+*/
   removeTexter = (texterId) => {
     const { formValues, onChange } = this.props
     const { texters } = formValues
@@ -148,38 +171,57 @@ export default class CampaignTextersForm extends Component {
     onChange({ texters: newTexters })
   }
 
-  dataSourceItem(name, key, image) {
-    return {
-      text: name,
-      value: (
-        <MenuItem
-          key={key}
-          primaryText={name}
-        />
+  showTexters() {
+    // Next step - turn this into a GSForm
+    return this.props.formValues.texters.map((texter) => {
+      const messagedCount = texter.needsResponseCount + texter.messagedCount + texter.closedCount
+      return (
+        <div className={css(styles.texterRow)}>
+          <div className={css(styles.nameColumn)}>
+            {`${texter.firstName}`}
+          </div>
+          <div className={css(styles.slider)}>
+            <Slider
+              minValue={messagedCount}
+              maxValue={this.props.contactsCount}
+              value={texter.assignment.contactsCount}
+            />
+          </div>
+          <div className={css(styles.input)}>
+            <GSTextField />
+          </div>
+        </div>
       )
-    }
+    })
   }
 
   render() {
-    const { orgTexters, ensureComplete, organizationId } = this.props
+    const { organizationId } = this.props
     let subtitle = ''
-    if (ensureComplete) {
-      subtitle = 'This campaign has already started so you cannot modify the texters on it. These are the texters currently assigned:'
-    } else {
-      subtitle = (
-        <div>
-            <OrganizationJoinLink organizationId={organizationId} />
-        </div>
-      )
-    }
+    subtitle = (
+      <div>
+        <OrganizationJoinLink organizationId={organizationId} />
+      </div>
+    )
     return (
       <div>
         <CampaignFormSectionHeading
           title='Who should send the texts?'
           subtitle={subtitle}
         />
+        <div>{`Total contacts to divide: ${this.props.formValues.contactsCount}`}</div>
         {this.showTexters()}
       </div>
     )
   }
 }
+
+CampaignTextersForm.propTypes = {
+  onChange: type.func,
+  orgTexters: type.array,
+  ensureComplete: type.boolean,
+  organizationId: type.string,
+  formValues: type.object,
+  contactsCount: type.number
+}
+

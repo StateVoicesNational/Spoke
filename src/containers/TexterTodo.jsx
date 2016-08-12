@@ -5,7 +5,7 @@ import gql from 'graphql-tag'
 
 class TexterTodo extends React.Component {
   render() {
-    const { assignment } = this.props.data.currentUser
+    const { assignment } = this.props.data
     const contacts = assignment.contacts
 
     return (<AssignmentTexter
@@ -23,40 +23,37 @@ TexterTodo.propTypes = {
 const mapQueriesToProps = ({ ownProps }) => ({
   data: {
     query: gql`query getContacts($assignmentId: String!, $contactsFilter: ContactsFilter!) {
-      currentUser {
+      assignment(id: $assignmentId) {
         id
-        assignment(id: $assignmentId) {
+        userCannedResponses {
           id
-          userCannedResponses {
+          title
+          text
+          isUserCreated
+        }
+        campaignCannedResponses {
+          id
+          title
+          text
+          isUserCreated
+        }
+        texter {
+          id
+          firstName
+          lastName
+          assignedCell
+        }
+        campaign {
+          id
+          organization {
             id
-            title
-            text
-            isUserCreated
+            threeClickEnabled
           }
-          campaignCannedResponses {
-            id
-            title
-            text
-            isUserCreated
-          }
-          texter {
-            id
-            firstName
-            lastName
-            assignedCell
-          }
-          campaign {
-            id
-            organization {
-              id
-              threeClickEnabled
-            }
-            customFields
-          }
-          contacts(contactsFilter: $contactsFilter) {
-            id
-            customFields
-          }
+          customFields
+        }
+        contacts(contactsFilter: $contactsFilter) {
+          id
+          customFields
         }
       }
     }`,

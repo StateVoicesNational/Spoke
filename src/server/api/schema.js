@@ -137,6 +137,7 @@ const rootSchema = `
     campaign(id:String!): Campaign
     invite(id:String!): Invite
     contact(id:String!): CampaignContact,
+    assignment(id:String!): Assignment,
     stripePublishableKey: String
   }
 
@@ -551,6 +552,12 @@ const rootResolvers = {
       const campaign = await loaders.campaign.load(id)
       await accessRequired(user, campaign.organization_id, 'ADMIN')
       return campaign
+    },
+    assignment: async (_, { id }, { loaders, user }) => {
+      const assignment = await loaders.assignment.load(id)
+      const campaign = await loaders.campaign.load(assignment.campaign_id)
+      await accessRequired(user, campaign.organization_id, 'TEXTER')
+      return assignment
     },
     organization: async(_, { id }, { loaders }) => {
       // await accessRequired(user, id, 'ADMIN')
