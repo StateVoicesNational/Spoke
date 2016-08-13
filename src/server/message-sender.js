@@ -20,7 +20,7 @@ async function sendMessages() {
 (async () => {
   while (true) {
     try {
-      await sleep(1500)
+      await sleep(2500)
       await sendMessages()
     } catch (ex) {
       log.error(ex)
