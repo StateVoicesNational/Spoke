@@ -13,6 +13,7 @@ async function sendMessages() {
     .orderBy('created_at')
     .limit(1)(0)
   for (let index = 0; index < messages.length; index++) {
+    log.info('sending message', messages[index].reduction)
     await sendMessage(messages[index].reduction)
   }
 }
