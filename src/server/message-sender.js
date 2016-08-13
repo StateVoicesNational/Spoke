@@ -14,13 +14,13 @@ async function sendMessages() {
     .limit(1)(0)
   for (let index = 0; index < messages.length; index++) {
     await sendMessage(messages[0].reduction)
+    await sleep(1000)
   }
 }
 
 (async () => {
   while (true) {
     try {
-      await sleep(2500)
       await sendMessages()
     } catch (ex) {
       log.error(ex)
