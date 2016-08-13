@@ -14,7 +14,7 @@ if (process.env.NEXMO_API_KEY && process.env.NEXMO_API_SECRET) {
 
 export async function findNewCell() {
   if (!nexmo) {
-    return '+18179994303'
+    return { numbers: [{ msisdn: '+18179994303' }] }
   }
   return new Promise((resolve, reject) => {
     nexmo.number.search('US', { features: 'VOICE,SMS', size: 1 }, (err, response) => {
@@ -28,6 +28,9 @@ export async function findNewCell() {
 }
 
 export async function rentNewCell() {
+  if (!nexmo) {
+    return '+18179994303'
+  }
   const newCell = await findNewCell()
   if (newCell && newCell.numbers && newCell.numbers[0] && newCell.numbers[0].msisdn) {
     return new Promise((resolve, reject) => {
@@ -70,14 +73,18 @@ export async function sendMessage(message) {
             }
           })
         }
+
         messageToSave.service = 'nexmo'
         messageToSave.service_messages.push(response || null)
+
         if (hasError) {
           if (messageToSave.service_messages.length >= MAX_SEND_ATTEMPTS) {
             messageToSave.send_status = 'ERROR'
           }
           Message.save(messageToSave, { conflict: 'update' })
-          reject(err || (response ? new Error(JSON.stringify(response)) : new Error('Encountered unknown error')))
+          .then((_, newMessage) => {
+            reject(err || (response ? new Error(JSON.stringify(response)) : new Error('Encountered unknown error')))
+          })
         } else {
           Message.save({
             ...messageToSave,

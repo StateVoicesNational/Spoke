@@ -13,7 +13,8 @@ async function sendMessages() {
     .orderBy('created_at')
     .limit(1)(0)
   for (let index = 0; index < messages.length; index++) {
-    await sendMessage(messages[0].reduction)
+    log.info('sending message', messages[index].reduction)
+    await sendMessage(messages[index].reduction)
   }
 }
 
@@ -22,7 +23,7 @@ async function sendMessages() {
   while (shouldContinue) {
     try {
       shouldContinue = false
-      await sleep(1000)
+      await sleep(1100)
       await sendMessages()
       shouldContinue = true
     } catch (ex) {
