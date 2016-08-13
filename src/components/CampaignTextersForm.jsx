@@ -219,7 +219,7 @@ export default class CampaignTextersForm extends React.Component {
 CampaignTextersForm.propTypes = {
   onChange: type.func,
   orgTexters: type.array,
-  ensureComplete: type.boolean,
+  ensureComplete: type.bool,
   organizationId: type.string,
   formValues: type.object,
   contactsCount: type.number

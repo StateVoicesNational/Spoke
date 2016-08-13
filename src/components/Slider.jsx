@@ -7,7 +7,7 @@ const styles = StyleSheet.create({
   sliderContainer: {
     height: BarHeight,
     width: '100%',
-    backgroundColor: theme.colors.lightGray,
+    backgroundColor: theme.colors.lightGray
   }
 })
 

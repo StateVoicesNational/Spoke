@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { PropTypes as type } from 'react'
 import RaisedButton from 'material-ui/RaisedButton'
 import GSForm from '../components/forms/GSForm'
 import Form from 'react-formal'
@@ -51,12 +51,6 @@ export default class CampaignContactsForm extends React.Component {
     uploading: false,
     validationStats: null,
     contactUploadError: null
-  }
-
-  getUploadInputValue(contacts) {
-    return this.props.contactsCount > 0 ?
-      `${this.props.contactsCount} contacts uploaded`
-      : ''
   }
 
   handleUpload = (event) => {
@@ -127,8 +121,9 @@ export default class CampaignContactsForm extends React.Component {
   }
 
   renderValidationStats() {
-    if (!this.state.validationStats)
+    if (!this.state.validationStats) {
       return ''
+    }
 
     const { dupeCount, missingCellCount, invalidCellCount, optOutCount } = this.state.validationStats
 
@@ -138,7 +133,9 @@ export default class CampaignContactsForm extends React.Component {
       [invalidCellCount, 'rows with invalid numbers'],
       [optOutCount, 'opt-outs']
     ]
-    stats = stats.filter(([count, text]) => count > 0).map(([count, text]) => `${count} ${text} removed`)
+    stats = stats
+      .filter(([count]) => count > 0)
+      .map(([count, text]) => `${count} ${text} removed`)
     return (
       <List>
         <Divider />
@@ -235,4 +232,14 @@ export default class CampaignContactsForm extends React.Component {
       </div>
     )
   }
+}
+
+CampaignContactsForm.propTypes = {
+  onChange: type.func,
+  optOuts: type.array,
+  formValues: type.object,
+  ensureComplete: type.bool,
+  onSubmit: type.func,
+  saveDisabled: type.bool,
+  saveLabel: type.string
 }

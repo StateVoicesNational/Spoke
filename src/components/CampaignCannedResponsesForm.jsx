@@ -145,7 +145,7 @@ export default class CampaignCannedResponsesForm extends React.Component {
 
 CampaignCannedResponsesForm.propTypes = {
   saveLabel: type.string,
-  saveDisabled: type.boolean,
+  saveDisabled: type.bool,
   onSubmit: type.func,
   onChange: type.func,
   formValues: type.object,

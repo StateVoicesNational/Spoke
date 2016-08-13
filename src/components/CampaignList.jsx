@@ -55,9 +55,9 @@ class CampaignList extends React.Component {
         style={listItemStyle}
         key={campaign.id}
         primaryText={`${campaign.title}`}
-        onTouchTap={() => !isStarted ?
+        onTouchTap={() => (!isStarted ?
           this.props.router.push(`${campaignUrl}/edit`) :
-          this.props.router.push(campaignUrl)}
+          this.props.router.push(campaignUrl))}
         secondaryText={secondaryText}
         leftIcon={leftIcon}
       />

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { PropTypes as type } from 'react'
 import Form from 'react-formal'
 import yup from 'yup'
 import GSForm from './forms/GSForm'
@@ -6,7 +6,6 @@ import GSForm from './forms/GSForm'
 class CannedResponseForm extends React.Component {
   handleSave = (formValues) => {
     const { onSaveCannedResponse } = this.props
-    console.log('saving...', this, formValues)
     onSaveCannedResponse(formValues)
   }
 
@@ -42,6 +41,11 @@ class CannedResponseForm extends React.Component {
       </div>
     )
   }
+}
+
+CannedResponseForm.propTypes = {
+  onSaveCannedResponse: type.func,
+  customFields: type.array
 }
 
 export default CannedResponseForm
