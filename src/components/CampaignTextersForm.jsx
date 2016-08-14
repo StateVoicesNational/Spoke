@@ -1,11 +1,10 @@
 import React, { PropTypes as type } from 'react'
 import Slider from './Slider'
 import AutoComplete from 'material-ui/AutoComplete'
-import { MenuItem } from 'material-ui/Menu'
 import GSForm from '../components/forms/GSForm'
 import yup from 'yup'
 import Form from 'react-formal'
-import Chip from './Chip'
+import { MenuItem } from 'material-ui/Menu'
 import OrganizationJoinLink from './OrganizationJoinLink'
 import { RadioButton, RadioButtonGroup } from 'material-ui/RadioButton'
 import CampaignFormSectionHeading from './CampaignFormSectionHeading'
@@ -43,34 +42,26 @@ const inlineStyles = {
 }
 export default class CampaignTextersForm extends React.Component {
 
-  onChange = (event, value) => {
-    const { orgTexters, onChange } = this.props
-    const texters = (value === 'assignAll') ? orgTexters : []
-    onChange({ texters })
+  removeTexter = (texterId) => {
+    const { formValues, onChange } = this.props
+    const { texters } = formValues
+    const newTexters = texters.filter((texter) => texter.id !== texterId)
+    onChange({ texters: newTexters })
   }
 
-
-  handleNewRequest = (value) => {
-    const { formValues } = this.props
-    const { texters } = formValues
-    // If you're searching but get no match, value is a string
-    // representing your search term, but we only want to handle matches
-    if (typeof(value) === 'object') {
-      const texterId = value.value.key
-      const newTexters = texters.concat([
-        this.mapTexterIdToTexter(texterId)
-      ])
-      const { onChange } = this.props
-      onChange({ texters: newTexters })
+  dataSourceItem(name, key) {
+    return {
+      text: name,
+      value: (
+        <MenuItem
+          key={key}
+          primaryText={name}
+        />
+      )
     }
   }
 
-  mapTexterIdToTexter(texterId) {
-    return this.props.orgTexters.find((texter) => texter.id === texterId)
-  }
-
-/*
-  showTexters() {
+  showSearch() {
     const { orgTexters, formValues } = this.props
     const { texters } = formValues
 
@@ -84,10 +75,9 @@ export default class CampaignTextersForm extends React.Component {
         )
     )
 
-    const filter = (searchText, key) => (key === 'allTexters') ? true : AutoComplete.caseInsensitiveFilter(searchText, key)
+    const filter = (searchText, key) => ((key === 'allTexters') ? true : AutoComplete.caseInsensitiveFilter(searchText, key))
     const valueSelected = assignAll ? 'assignAll' : 'assignIndividual'
 
-    // TODO https://github.com/callemall/material-ui/pull/4193/commits/8e80a35e8d2cdb410c3727333e8518cadc08783b
     const autocomplete = (
       <AutoComplete
         ref='autocomplete'
@@ -97,18 +87,49 @@ export default class CampaignTextersForm extends React.Component {
         filter={filter}
         hintText='Search for texters to assign'
         dataSource={dataSource}
-        onNewRequest={this.handleNewRequest}
+        onNewRequest={(value) => {
+          // If you're searching but get no match, value is a string
+          // representing your search term, but we only want to handle matches
+          if (typeof value === 'object') {
+            const texterId = value.value.key
+            const newTexter = this.props.orgTexters.find((texter) => texter.id === texterId)
+            this.props.onChange({
+              texters: [
+                ...this.props.formValues.texters,
+                {
+                  id: texterId,
+                  firstName: newTexter.firstName,
+                  assignment: {
+                    contactsCount: 0
+                  }
+                }
+              ]
+            })
+          }
+        }}
       />
     )
 
-    const radioButtonGroup = orgTexters.length === 0 ? '' : (
-    [
-      <RadioButtonGroup
-        style={inlineStyles.radioButtonGroup}
-        name='assignment'
-        valueSelected={valueSelected}
-        onChange={this.onChange}
-      >
+    return orgTexters.length === 0 ? '' : (
+      <div>
+        <RadioButtonGroup
+          style={inlineStyles.radioButtonGroup}
+          name='assignment'
+          valueSelected={valueSelected}
+          onChange={(event, value) => {
+            let newTexters = []
+            if (value === 'assignAll') {
+              newTexters = this.props.orgTexters.map((orgTexter) => ({
+                id: orgTexter.id,
+                firstName: orgTexter.firstName,
+                assignment: {
+                  contactsCount: 0
+                }
+              }))
+            }
+            this.props.onChange({ texters: newTexters })
+          }}
+        >
           <RadioButton
             value='assignAll'
             label='Everyone available'
@@ -117,63 +138,14 @@ export default class CampaignTextersForm extends React.Component {
             value='assignIndividual'
             label='Choose individual people to assign'
           />
-        </RadioButtonGroup>,
-      !assignAll ? autocomplete : ''
-    ]
+        </RadioButtonGroup>
+        {!assignAll ? autocomplete : ''}
+      </div>
     )
-    if (this.props.ensureComplete) {
-      return (
-        <div>
-          {texters.map((texter) => {
-            return (
-              <div style={{
-                margin: 10,
-                fontWeight: 600,
-                lineHeight: '1.5em'
-              }}>
-                {`${texter.firstName}`}
-              </div>
-            )
-          })}
-        </div>
-      )
-    }
-    return (
-      <GSForm
-        schema={yup.object({})}
-        onSubmit={this.props.onSubmit}
-      >
-        {radioButtonGroup}
-         <div>
-           {texters.map((texter) => {
-             return (
-                <Chip
-                  text={texter.firstName}
-                  iconRightClass={ContentClear}
-                  onIconRightTouchTap={() => this.removeTexter(texter.id)}
-                />
-              )
-           })}
-        </div>
-        <Form.Button
-          type='submit'
-          disabled={this.props.saveDisabled}
-          label={this.props.saveLabel}
-        />
-      </GSForm>
-    )
-  }
-*/
-  removeTexter = (texterId) => {
-    const { formValues, onChange } = this.props
-    const { texters } = formValues
-    const newTexters = texters.filter((texter) => texter.id !== texterId)
-    onChange({ texters: newTexters })
   }
 
   showTexters() {
-    // Next step - turn this into a GSForm
-    return this.props.formValues.texters.map((texter) => {
+    return this.props.formValues.texters.map((texter, index) => {
       const messagedCount = texter.needsResponseCount + texter.messagedCount + texter.closedCount
       return (
         <div className={css(styles.texterRow)}>
@@ -188,11 +160,37 @@ export default class CampaignTextersForm extends React.Component {
             />
           </div>
           <div className={css(styles.input)}>
-            <GSTextField />
+            <Form.Field
+              name={`texters[${index}].assignment.contactsCount`}
+              label='Contacts'
+              hintText='No. of contacts'
+            />
           </div>
         </div>
       )
     })
+  }
+
+  formSchema = yup.object({
+    texters: yup.array().of(yup.object({
+      id: yup.string(),
+      assignment: yup.object({
+        contactsCount: yup.number()
+      })
+    }))
+  })
+
+  formValues() {
+    return {
+      texters: this.props.formValues.texters.sort((texter1, texter2) => {
+        if (texter1.firstName < texter2.firstName) {
+          return -1
+        } else if (texter1.firstName > texter2.firstName) {
+          return 1
+        }
+        return 0
+      })
+    }
   }
 
   render() {
@@ -203,14 +201,32 @@ export default class CampaignTextersForm extends React.Component {
         <OrganizationJoinLink organizationId={organizationId} />
       </div>
     )
+    const assignedContacts = this.props
+      .formValues
+      .texters
+      .reduce(((prev, texter) => prev + texter.assignment.contactsCount), 0)
+
     return (
       <div>
         <CampaignFormSectionHeading
           title='Who should send the texts?'
           subtitle={subtitle}
         />
-        <div>{`Total contacts to divide: ${this.props.formValues.contactsCount}`}</div>
-        {this.showTexters()}
+        {this.showSearch()}
+        <div>{`Assigned contacts: ${assignedContacts}/${this.props.formValues.contactsCount}`}</div>
+        <GSForm
+          schema={this.formSchema}
+          value={this.formValues()}
+          onChange={this.props.onChange}
+          onSubmit={this.props.onSubmit}
+        >
+          {this.showTexters()}
+          <Form.Button
+            type='submit'
+            label={this.props.saveLabel}
+            disabled={this.props.saveDisabled}
+          />
+        </GSForm>
       </div>
     )
   }
@@ -222,6 +238,9 @@ CampaignTextersForm.propTypes = {
   ensureComplete: type.bool,
   organizationId: type.string,
   formValues: type.object,
-  contactsCount: type.number
+  contactsCount: type.number,
+  onSubmit: type.func,
+  saveLabel: type.string,
+  saveDisabled: type.bool
 }
 

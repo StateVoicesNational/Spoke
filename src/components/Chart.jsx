@@ -14,7 +14,7 @@ const Chart = ({ data }) => {
     label,
     value,
     color: chartColors[index % chartColors.length]
-  })
+  }))
 
   return (
     <div>

@@ -135,7 +135,10 @@ class AdminCampaignEdit extends React.Component {
       }
 
       if (newCampaign.hasOwnProperty('texters')) {
-        newCampaign.texters = newCampaign.texters.map((texter) => texter.id)
+        newCampaign.texters = newCampaign.texters.map((texter) => ({
+          id: texter.id,
+          contactsCount: texter.assignment.contactsCount
+        }))
       }
 
       if (newCampaign.hasOwnProperty('interactionSteps')) {

@@ -113,13 +113,18 @@ const rootSchema = `
     answerOptions: [AnswerOptionInput]
   }
 
+  input TexterInput {
+    id: String!
+    contactsCount: Int!
+  }
+
   input CampaignInput {
     title: String
     description: String
     dueBy: Date
     contacts: [CampaignContactInput]
     organizationId: String
-    texters: [String]
+    texters: [TexterInput]
     interactionSteps: [InteractionStepInput]
     cannedResponses: [CannedResponseInput]
   }
@@ -203,8 +208,8 @@ async function editCampaign(id, campaign, loaders) {
   }
 
   if (campaign.hasOwnProperty('texters')) {
-    const assignments = campaign.texters.map((texterId) => ({
-      user_id: texterId,
+    const assignments = campaign.texters.map((texter) => ({
+      user_id: texter.id,
       campaign_id: id
     }))
     await r.table('assignment')
