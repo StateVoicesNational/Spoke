@@ -15,7 +15,9 @@ import { handleIncomingMessage, handleDeliveryReport } from './api/lib/nexmo'
 import { seedZipCodes } from './seeds/seed-zip-codes'
 import { setupUserNotificationObservers } from './notifications'
 import { Message, r } from './models'
+import { Tracer } from 'apollo-tracer'
 
+const tracer = new Tracer({ TRACER_APP_KEY: process.env.APOLLO_OPTICS_KEY })
 process.on('uncaughtException', (ex) => {
   log.error(ex)
   process.exit(1)
@@ -103,6 +105,7 @@ app.use('/graphql', apolloServer((req) => ({
     loaders: createLoaders(),
     user: req.user
   },
+  tracer,
   printErrors: true,
   allowUndefinedInResolve: false
 })))

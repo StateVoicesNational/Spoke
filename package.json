@@ -46,6 +46,7 @@
     "aphrodite": "^0.4.1",
     "apollo-client": "^0.4.7",
     "apollo-server": "^0.1.5",
+    "apollo-tracer": "^0.1.4",
     "babel-cli": "^6.10.1",
     "babel-core": "^6.10.4",
     "babel-loader": "^6.2.4",
