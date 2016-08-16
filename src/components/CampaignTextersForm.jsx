@@ -4,15 +4,19 @@ import AutoComplete from 'material-ui/AutoComplete'
 import GSForm from '../components/forms/GSForm'
 import yup from 'yup'
 import Form from 'react-formal'
+import Divider from 'material-ui/Divider'
 import { MenuItem } from 'material-ui/Menu'
 import OrganizationJoinLink from './OrganizationJoinLink'
 import { RadioButton, RadioButtonGroup } from 'material-ui/RadioButton'
 import CampaignFormSectionHeading from './CampaignFormSectionHeading'
-import ContentClear from 'material-ui/svg-icons/content/clear'
-import GSTextField from '../components/forms/GSTextField'
 import { StyleSheet, css } from 'aphrodite'
+import theme from '../styles/theme'
 
 const styles = StyleSheet.create({
+  sliderContainer: {
+    border: `1px solid ${theme.colors.lightGray}`,
+    padding: 10
+  },
   texterRow: {
     display: 'flex',
     flexDirection: 'row'
@@ -20,14 +24,20 @@ const styles = StyleSheet.create({
   nameColumn: {
     flex: '1 1 10%',
     textOverflow: 'ellipsis',
+    marginTop: 'auto',
+    marginBottom: 'auto',
     paddingRight: 10
   },
   slider: {
     flex: '1 70%',
+    marginTop: 'auto',
+    marginBottom: 'auto',
     paddingRight: 10
   },
   input: {
     flex: '1 1 20%',
+    marginTop: 'auto',
+    marginBottom: 'auto',
     display: 'inline-block'
   }
 })
@@ -38,6 +48,10 @@ const inlineStyles = {
   },
   radioButtonGroup: {
     marginBottom: 12
+  },
+  header: {
+    ...theme.text.header,
+    marginBottom: 20
   }
 }
 export default class CampaignTextersForm extends React.Component {
@@ -162,8 +176,7 @@ export default class CampaignTextersForm extends React.Component {
           <div className={css(styles.input)}>
             <Form.Field
               name={`texters[${index}].assignment.contactsCount`}
-              label='Contacts'
-              hintText='No. of contacts'
+              hintText='Contacts'
             />
           </div>
         </div>
@@ -206,21 +219,31 @@ export default class CampaignTextersForm extends React.Component {
       .texters
       .reduce(((prev, texter) => prev + texter.assignment.contactsCount), 0)
 
+    const headerColor = assignedContacts === this.props.formValues.contactsCount ? theme.colors.green : theme.colors.orange
     return (
       <div>
         <CampaignFormSectionHeading
           title='Who should send the texts?'
           subtitle={subtitle}
         />
-        {this.showSearch()}
-        <div>{`Assigned contacts: ${assignedContacts}/${this.props.formValues.contactsCount}`}</div>
         <GSForm
           schema={this.formSchema}
           value={this.formValues()}
           onChange={this.props.onChange}
           onSubmit={this.props.onSubmit}
         >
-          {this.showTexters()}
+          {this.showSearch()}
+          <div className={css(styles.sliderContainer)}>
+            <div
+              style={{
+                ...inlineStyles.header,
+                color: headerColor
+              }}
+            >
+              {`Assigned contacts: ${assignedContacts}/${this.props.formValues.contactsCount}`}
+            </div>
+              {this.showTexters()}
+          </div>
           <Form.Button
             type='submit'
             label={this.props.saveLabel}

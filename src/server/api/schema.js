@@ -212,6 +212,10 @@ async function editCampaign(id, campaign, loaders) {
       user_id: texter.id,
       campaign_id: id
     }))
+    const availableContacts = await r.table('campaign_contact')
+      .getAll(id, { index: 'campaign_id' })
+      .filter({ message_status: 'needsMessage' })
+    // Delete all assignments for campaigncontacts that have no contacts left
     await r.table('assignment')
       .getAll(id, { index: 'campaign_id' })
       .delete()
