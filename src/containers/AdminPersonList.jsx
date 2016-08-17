@@ -70,11 +70,13 @@ class AdminPersonList extends React.Component {
         />
       )
     }
+
     return (
       <Table
-        multiSelectable
       >
-          <TableBody>
+          <TableBody
+            displayRowCheckbox={false}
+          >
             {people.map((person) => (
               <TableRow
                 key={person.id}
