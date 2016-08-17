@@ -49,7 +49,7 @@ function getContacts(assignment, campaign, contactFilter) {
     .merge((contact) => ({
       opt_out: r.table('opt_out')
         .getAll(contact('cell'), { index: 'cell' })
-        .filter({ organization_id: campaign.oranization_id })
+        .filter({ organization_id: campaign.organization_id })
         .limit(1)(0)
         .default(false)
     }))
