@@ -10,8 +10,9 @@ export const schema = `
     displayName: String
     email: String
     cell: String
-    organizations(role:String): [Organization]
+    organizations(role: String): [Organization]
     todos(organizationId: String): [Assignment]
+    roles(organizationId: String!): [String]
     assignedCell: Phone
     assignment(id:String!): Assignment
   }
@@ -36,6 +37,13 @@ export const resolvers = {
       }
       return orgs.eqJoin('organization_id', r.table('organization'))('right')
     },
+    roles: async(user, { organizationId }) => (
+      r.table('user_organization')
+        .getAll(organizationId, { index: 'organization_id' })
+        .filter({ user_id: user.id })
+        .limit(1)(0)
+        .pluck('roles')('roles')
+    ),
     todos: async (user, { organizationId }) => (
       r.table('assignment')
         .getAll(user.id, { index: 'user_id' })

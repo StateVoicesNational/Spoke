@@ -20,8 +20,7 @@ export const schema = `
     id: ID
     name: String
     campaigns: [Campaign]
-    texters: [User]
-    admins: [User]
+    people(role: String): [User]
     optOuts: [OptOut]
     billingDetails: BillingDetails
     plan: Plan
@@ -67,18 +66,12 @@ export const resolvers = {
         .getAll(organization.id, { index: 'organization_id' })
     },
     plan: async (organization, _, { loaders }) => await loaders.plan.load(organization.plan_id),
-    texters: async (organization, _, { user }) => {
+    people: async (organization, { role }, { user }) => {
+      const roleFilter = role ? (userOrganization) => userOrganization('roles').contains(role) : {}
       await accessRequired(user, organization.id, 'ADMIN')
       return r.table('user_organization')
       .getAll(organization.id, { index: 'organization_id' })
-      .filter((userOrganization) => userOrganization('roles').contains('TEXTER'))
-      .eqJoin('user_id', r.table('user'))('right')
-    },
-    admins: async (organization, _, { user }) => {
-      await accessRequired(user, organization.id, 'ADMIN')
-      return r.table('user_organization')
-      .getAll(organization.id, { index: 'organization_id' })
-      .filter((userOrganization) => userOrganization('roles').contains('ADMIN'))
+      .filter(roleFilter)
       .eqJoin('user_id', r.table('user'))('right')
     },
     billingDetails: (organization) => organization,

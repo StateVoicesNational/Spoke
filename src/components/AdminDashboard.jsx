@@ -64,8 +64,8 @@ class AdminDashboard extends React.Component {
       name: 'Campaigns',
       path: 'campaigns'
     }, {
-      name: 'Texters',
-      path: 'texters'
+      name: 'People',
+      path: 'people'
     }, {
       name: 'Optouts',
       path: 'optouts'

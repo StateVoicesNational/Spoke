@@ -1,6 +1,6 @@
 import thinky from './thinky'
 const type = thinky.type
-import { requiredString, optionalString, timestamp } from './custom-types'
+import { requiredString } from './custom-types'
 
 const UserOrganization = thinky.createModel('user_organization', type.object().schema({
   id: type.string(),
@@ -10,7 +10,7 @@ const UserOrganization = thinky.createModel('user_organization', type.object().s
     .array()
     .schema(type
         .string()
-        .enum('ADMIN', 'TEXTER')
+        .enum('OWNER', 'ADMIN', 'TEXTER')
       )
     .required()
     .allowNull(false)
