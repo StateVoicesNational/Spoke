@@ -60,7 +60,8 @@ class AdminPersonList extends React.Component {
   }
 
   renderTexters() {
-    const { people } = this.props.data.organization
+    const { people } = this.props.personData.organization
+    console.log("PEOLPE", people)
     if (people.length === 0) {
       return (
         <Empty
@@ -83,6 +84,7 @@ class AdminPersonList extends React.Component {
                 <TableRowColumn>
                   <DropDownMenu
                     value={this.getHighestRole(person.roles)}
+                    disabled={person.id === this.props.userData.currentUser.id}
                     onChange={(event, index, value) => this.handleChange(person.id, value)}
                   >
                     <MenuItem value='OWNER' primaryText='Owner' />
@@ -149,8 +151,8 @@ const mapMutationsToProps = () => ({
 })
 
 const mapQueriesToProps = ({ ownProps }) => ({
-  data: {
-    query: gql`query getTexters($organizationId: String!) {
+  personData: {
+    query: gql`query getPeople($organizationId: String!) {
       organization(id: $organizationId) {
         ${organizationFragment}
       }
@@ -158,6 +160,14 @@ const mapQueriesToProps = ({ ownProps }) => ({
     variables: {
       organizationId: ownProps.params.organizationId,
     },
+    forceFetch: true
+  },
+  userData: {
+    query: gql` query getCurrentUser {
+      currentUser {
+        id
+      }
+    }`,
     forceFetch: true
   }
 })
