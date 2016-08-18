@@ -21,9 +21,9 @@ import GSForm from '../components/forms/GSForm'
 import Form from 'react-formal'
 import GSSubmitButton from '../components/forms/GSSubmitButton'
 import SendButton from '../components/SendButton'
-import CircularProgress from 'material-ui/CircularProgress';
-
-import { getChildren, getTopMostParent, interactionStepForId } from '../lib'
+import CircularProgress from 'material-ui/CircularProgress'
+import Snackbar from 'material-ui/Snackbar'
+import { getChildren, getTopMostParent, interactionStepForId, log } from '../lib'
 import { withRouter } from 'react-router'
 import wrapMutations from './hoc/wrap-mutations'
 
@@ -102,6 +102,7 @@ class AssignmentTexterContact extends React.Component {
     const availableSteps = this.getAvailableInteractionSteps(questionResponses)
 
     this.state = {
+      sendError: null,
       responsePopoverOpen: false,
       messageText: this.getStartingMessageText(),
       sending: false,
@@ -195,31 +196,35 @@ class AssignmentTexterContact extends React.Component {
     }
   }
 
+  handleSendMessageError = (e) => {
+    if (e.status === 402) {
+      const { campaign } = this.props
+      this.props.router.push(`/app/${campaign.organization.id}/todos`)
+    } else {
+      log.error(e)
+      this.setState({
+        sendError: 'Something went wrong!'
+      })
+    }
+  }
+
   handleClickSendMessageButton = async () => {
-    await this.handleSendMessage()
-    await this.handleSubmitSurveys()
-    this.props.onFinishContact()
+    try {
+      await this.handleSendMessage()
+      await this.handleSubmitSurveys()
+      this.props.onFinishContact()
+    } catch (e) {
+      this.handleSendMessageError(e)
+    }
   }
 
   handleSendMessage = async () => {
     const { contact } = this.props.data
-    this.setState({ sending: true})
+    this.setState({ sending: true })
     const message = this.createMessageToContact(this.refs.messageText.getValue().trim())
-    await this.sendMessage(message, contact.id)
+    await this.props.mutations.sendMessage(message, contact.id)
   }
 
-  sendMessage = async(message, campaignContactId) => {
-    try {
-      await this.props.mutations.sendMessage(message, campaignContactId)
-    } catch (e) {
-      if (e.status === 402) {
-        const { campaign } = this.props
-        this.props.router.push(`/app/${campaign.organization.id}/todos`)
-      } else {
-        throw e
-      }
-    }
-  }
   handleSubmitSurveys = async () => {
     const { contact } = this.props.data
 
@@ -243,9 +248,6 @@ class AssignmentTexterContact extends React.Component {
         deletionIds.push(interactionStepId)
       }
     }
-    const questionResponses = {
-
-    }
     await this.props.mutations.updateQuestionResponses(questionResponseObjects, contact.id)
     await this.props.mutations.deleteQuestionResponses(deletionIds, contact.id)
   }
@@ -265,15 +267,18 @@ class AssignmentTexterContact extends React.Component {
     const { contact } = this.props.data
     const { assignment } = this.props
     const message = this.createMessageToContact(optOutMessageText)
-    await this.sendMessage(message, contact.id)
+    try {
+      await this.props.mutations.sendMessage(message, contact.id)
+      const optOut = {
+        cell: contact.cell,
+        assignmentId: assignment.id
+      }
 
-    const optOut = {
-      cell: contact.cell,
-      assignmentId: assignment.id
+      await this.props.mutations.createOptOut(optOut, contact.id)
+      this.props.onFinishContact()
+    } catch (e) {
+      this.handleSendMessageError(e)
     }
-
-    await this.props.mutations.createOptOut(optOut, contact.id)
-    this.props.onFinishContact()
   }
 
   handleOpenDialog = () => {
@@ -535,6 +540,11 @@ class AssignmentTexterContact extends React.Component {
             {this.renderBottomFixedSection()}
           </div>
         </div>
+        <Snackbar
+          open={!!this.state.sendError}
+          message={this.state.sendError}
+          onRequestClose={this.handleRequestClose}
+        />
       </div>
     )
   }
@@ -549,6 +559,7 @@ AssignmentTexterContact.propTypes = {
   onFinishContact: React.PropTypes.func,
   router: React.PropTypes.object,
   data: React.PropTypes.object,
+  mutations: React.PropTypes.object,
   onExitTexter: React.PropTypes.func
 }
 
