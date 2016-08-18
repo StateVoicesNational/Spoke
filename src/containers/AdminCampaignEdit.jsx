@@ -421,13 +421,13 @@ const mapQueriesToProps = ({ ownProps }) => ({
     forceFetch: true
   },
   organizationData: {
-    query: gql`query getOptOuts($organizationId: String!) {
+    query: gql`query getOrganizationData($organizationId: String!, $role: String!) {
       organization(id: $organizationId) {
         id
         optOuts {
           cell
         }
-        texters: people(role: $role)
+        texters: people(role: $role) {
           id
           firstName
           displayName
