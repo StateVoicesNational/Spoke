@@ -311,7 +311,7 @@ const rootMutations = {
 
       const oldRoleIsOwner = userOrganization.roles.indexOf('OWNER') !== -1
       const newRoleIsOwner = roles.indexOf('OWNER') !== -1
-      const roleRequired = (oldRoleIsOwner || newRoleIsOwner) ? 'OWNER' : 'ADMIN'
+      const roleRequired = 'ADMIN'
       await accessRequired(user, organizationId, roleRequired)
 
       userOrganization.roles = roles
@@ -336,7 +336,7 @@ const rootMutations = {
       return loaders.organization.load(organizationId)
     },
     addAccountCredit: async (_, { organizationId, balanceAmount }, { user, loaders }) => {
-      await accessRequired(user, organizationId, 'OWNER')
+      await accessRequired(user, organizationId, 'ADMIN')
       const organization = await loaders.organization.load(organizationId)
       const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
       try {
@@ -365,7 +365,7 @@ const rootMutations = {
 
     },
     updateCard: async(_, { organizationId, stripeToken }, { user, loaders }) => {
-      await accessRequired(user, organizationId, 'OWNER')
+      await accessRequired(user, organizationId, 'ADMIN')
       const organization = await loaders.organization.load(organizationId)
       const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 
