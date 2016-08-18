@@ -17,7 +17,6 @@ import { setupUserNotificationObservers } from './notifications'
 import { Message, r } from './models'
 import { Tracer } from 'apollo-tracer'
 
-const tracer = new Tracer({ TRACER_APP_KEY: process.env.APOLLO_OPTICS_KEY })
 process.on('uncaughtException', (ex) => {
   log.error(ex)
   process.exit(1)
@@ -95,6 +94,11 @@ app.get('/login-callback',
     res.redirect(req.query.state || '/')
   })
 )
+
+let tracer = null
+if (process.env.APOLLO_OPTICS_KEY) {
+  tracer = new Tracer({ TRACER_APP_KEY: process.env.APOLLO_OPTICS_KEY })
+}
 app.use('/graphql', apolloServer((req) => ({
   graphiql: true,
   pretty: true,
