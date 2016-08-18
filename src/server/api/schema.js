@@ -153,6 +153,7 @@ const rootSchema = `
     createCannedResponse(cannedResponse:CannedResponseInput!): CannedResponse
     createOrganization(name: String!, userId: String!, inviteId: String!): Organization
     joinOrganization(organizationId: String!): Organization
+    editOrganizationRoles(organizationId: String!, userId: String!, roles: [String]): Organization
     updateCard( organizationId: String!, stripeToken: String!): Organization
     addAccountCredit( organizationId: String!, balanceAmount: Int!): Organization
     sendMessage(message:MessageInput!, campaignContactId:String!): CampaignContact,
@@ -302,6 +303,21 @@ const rootMutations = {
       })
       return loaders.campaignContact.load(id)
     },
+    editOrganizationRoles: async (_, { userId, organizationId, roles }, { user, loaders }) => {
+      const userOrganization = await r.table('user_organization')
+        .getAll(organizationId, { index: 'organization_id'})
+        .filter({ user_id: userId })
+        .limit(1)(0)
+
+      const oldRoleIsOwner = userOrganization.roles.indexOf('OWNER') !== -1
+      const newRoleIsOwner = roles.indexOf('OWNER') !== -1
+      const roleRequired = 'ADMIN'
+      await accessRequired(user, organizationId, roleRequired)
+
+      userOrganization.roles = roles
+      await UserOrganization.save(userOrganization, { conflict: 'update' })
+      return loaders.organization.load(organizationId)
+    },
     joinOrganization: async (_, { organizationId }, { user, loaders }) => {
       const userOrg = await r.table('user_organization')
         .getAll(user.id, { index: 'user_id' })
@@ -350,7 +366,7 @@ const rootMutations = {
     },
     updateCard: async(_, { organizationId, stripeToken }, { user, loaders }) => {
       await accessRequired(user, organizationId, 'ADMIN')
-      const organization =  await loaders.organization.load(organizationId)
+      const organization = await loaders.organization.load(organizationId)
       const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 
       try {

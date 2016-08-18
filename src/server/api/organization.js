@@ -20,8 +20,7 @@ export const schema = `
     id: ID
     name: String
     campaigns: [Campaign]
-    texters: [User]
-    admins: [User]
+    people(role: String): [User]
     optOuts: [OptOut]
     billingDetails: BillingDetails
     plan: Plan
@@ -39,10 +38,11 @@ export const resolvers = {
   BillingDetails: {
     balanceAmount: (organization) => organization.balance_amount || 0,
     creditCurrency: (organization) => organization.currency,
-    creditCard: async (organization) => {
-      if (!organization.stripe_id)
+    creditCard: async (organization, _, { user }) => {
+      await accessRequired(user, organization.id, 'ADMIN')
+      if (!organization.stripe_id) {
         return null
-      else {
+      } else {
         const stripeAPI = stripe(process.env.STRIPE_SECRET_KEY)
         const result = await stripeAPI.customers.retrieve(organization.stripe_id, {
           expand: ['default_source']
@@ -67,18 +67,13 @@ export const resolvers = {
         .getAll(organization.id, { index: 'organization_id' })
     },
     plan: async (organization, _, { loaders }) => await loaders.plan.load(organization.plan_id),
-    texters: async (organization, _, { user }) => {
+    people: async (organization, { role }, { user }) => {
       await accessRequired(user, organization.id, 'ADMIN')
+
+      const roleFilter = role ? (userOrganization) => userOrganization('roles').contains(role) : {}
       return r.table('user_organization')
       .getAll(organization.id, { index: 'organization_id' })
-      .filter((userOrganization) => userOrganization('roles').contains('TEXTER'))
-      .eqJoin('user_id', r.table('user'))('right')
-    },
-    admins: async (organization, _, { user }) => {
-      await accessRequired(user, organization.id, 'ADMIN')
-      return r.table('user_organization')
-      .getAll(organization.id, { index: 'organization_id' })
-      .filter((userOrganization) => userOrganization('roles').contains('ADMIN'))
+      .filter(roleFilter)
       .eqJoin('user_id', r.table('user'))('right')
     },
     billingDetails: (organization) => organization,

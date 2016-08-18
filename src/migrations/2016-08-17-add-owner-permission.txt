@@ -1,0 +1,7 @@
+This command will update all existing admins to also be owners.
+
+r.db('spoke').table('user_organization')
+    .filter((row) => row('roles').contains('ADMIN'))
+    .update({
+        roles: r.row('roles').append('OWNER')
+    })
