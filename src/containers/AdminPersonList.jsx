@@ -52,7 +52,6 @@ class AdminPersonList extends React.Component {
 
   renderTexters() {
     const { people } = this.props.personData.organization
-    console.log("PEOLPE", people)
     if (people.length === 0) {
       return (
         <Empty
@@ -61,6 +60,14 @@ class AdminPersonList extends React.Component {
         />
       )
     }
+
+    const options = [
+      'TEXTER',
+      'ADMIN',
+      'OWNER'
+    ]
+
+    const currentUser = this.props.userData.currentUser
 
     return (
       <Table
@@ -77,12 +84,16 @@ class AdminPersonList extends React.Component {
                 <TableRowColumn>
                   <DropDownMenu
                     value={getHighestRole(person.roles)}
-                    disabled={person.id === this.props.userData.currentUser.id}
+                    disabled={person.id === currentUser.id || getHighestRole(person.roles) === 'OWNER' && getHighestRole(currentUser.roles) !== 'OWNER'}
                     onChange={(event, index, value) => this.handleChange(person.id, value)}
                   >
-                    <MenuItem value='OWNER' primaryText='Owner' />
-                    <MenuItem value='ADMIN' primaryText='Admin' />
-                    <MenuItem value='TEXTER' primaryText='Texter' />
+                    { options.map((option) => (
+                      <MenuItem
+                        value={option}
+                        disabled={option === 'OWNER' && getHighestRole(currentUser.roles) !== 'OWNER'}
+                        primaryText={`${option.charAt(0).toUpperCase()}${option.substring(1).toLowerCase()}`}
+                      />
+                    ))}
                   </DropDownMenu>
                 </TableRowColumn>
               </TableRow>
@@ -151,16 +162,20 @@ const mapQueriesToProps = ({ ownProps }) => ({
       }
     }`,
     variables: {
-      organizationId: ownProps.params.organizationId,
+      organizationId: ownProps.params.organizationId
     },
     forceFetch: true
   },
   userData: {
-    query: gql` query getCurrentUser {
+    query: gql` query getCurrentUserAndRoles($organizationId: String!) {
       currentUser {
         id
+        roles(organizationId: $organizationId)
       }
     }`,
+    variables: {
+      organizationId: ownProps.params.organizationId
+    },
     forceFetch: true
   }
 })

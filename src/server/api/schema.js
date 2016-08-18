@@ -304,13 +304,15 @@ const rootMutations = {
       return loaders.campaignContact.load(id)
     },
     editOrganizationRoles: async (_, { userId, organizationId, roles }, { user, loaders }) => {
-      const roleRequired = roles.indexOf('OWNER') !== -1 ? 'OWNER' : 'ADMIN'
-      await accessRequired(user, organizationId, roleRequired)
-
       const userOrganization = await r.table('user_organization')
         .getAll(organizationId, { index: 'organization_id'})
         .filter({ user_id: userId })
         .limit(1)(0)
+
+      const oldRoleIsOwner = userOrganization.roles.indexOf('OWNER') !== -1
+      const newRoleIsOwner = roles.indexOf('OWNER') !== -1
+      const roleRequired = (oldRoleIsOwner || newRoleIsOwner) ? 'OWNER' : 'ADMIN'
+      await accessRequired(user, organizationId, roleRequired)
 
       userOrganization.roles = roles
       await UserOrganization.save(userOrganization, { conflict: 'update' })
