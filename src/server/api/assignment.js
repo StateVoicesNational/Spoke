@@ -43,17 +43,21 @@ function getContacts(assignment, campaign, contactFilter) {
       filter.message_status = contactFilter.messageStatus
     }
   }
-
-  return r.table('campaign_contact')
+  let query = r.table('campaign_contact')
     .getAll(assignment.id, { index: 'assignment_id' })
-    .merge((contact) => ({
-      opt_out: r.table('opt_out')
-        .getAll(contact('cell'), { index: 'cell' })
-        .filter({ organization_id: campaign.organization_id })
-        .limit(1)(0)
-        .default(false)
-    }))
-    .filter(filter)
+
+  if (filter.hasOwnProperty('opt_out')) {
+    query = query
+      .merge((contact) => ({
+        opt_out: r.table('opt_out')
+          .getAll(contact('cell'), { index: 'cell' })
+          .filter({ organization_id: campaign.organization_id })
+          .limit(1)(0)
+          .default(false)
+      }))
+  }
+  query = query.filter(filter)
+  return query
 }
 
 export const resolvers = {
@@ -68,12 +72,16 @@ export const resolvers = {
 
     contactsCount: async (assignment, { contactFilter }, { loaders }) => {
       const campaign = await loaders.campaign.load(assignment.campaign_id)
+      let query = await getContacts(assignment, campaign, contactFilter)
+      console.log(query)
       return getContacts(assignment, campaign, contactFilter).count()
     },
 
     contacts: async (assignment, { contactFilter }, { loaders }) => {
       const campaign = await loaders.campaign.load(assignment.campaign_id)
-      return getContacts(assignment, campaign, contactFilter)
+      let query = await getContacts(assignment, campaign, contactFilter)
+      console.log(query)
+      return query
     },
 
     campaignCannedResponses: async(assignment) => (
