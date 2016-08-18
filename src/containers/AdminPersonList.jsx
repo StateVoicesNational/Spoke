@@ -9,6 +9,7 @@ import ContentAdd from 'material-ui/svg-icons/content/add'
 import { Table, TableBody, TableRow, TableRowColumn } from 'material-ui/Table'
 import Dialog from 'material-ui/Dialog'
 import PeopleIcon from 'material-ui/svg-icons/social/people'
+import { getHighestRole } from '../lib'
 import theme from '../styles/theme'
 import loadData from './hoc/load-data'
 import gql from 'graphql-tag'
@@ -49,16 +50,6 @@ class AdminPersonList extends React.Component {
       .editOrganizationRoles(this.props.params.organizationId, userId, roles)
   }
 
-  getHighestRole = (roles) => {
-    if (roles.indexOf('OWNER') !== -1) {
-      return 'OWNER'
-    } else if (roles.indexOf('ADMIN') !== -1) {
-      return 'ADMIN'
-    } else if (roles.indexOf('TEXTER') !== -1) {
-      return 'TEXTER'
-    }
-  }
-
   renderTexters() {
     const { people } = this.props.personData.organization
     console.log("PEOLPE", people)
@@ -85,7 +76,7 @@ class AdminPersonList extends React.Component {
                 <TableRowColumn>{person.email}</TableRowColumn>
                 <TableRowColumn>
                   <DropDownMenu
-                    value={this.getHighestRole(person.roles)}
+                    value={getHighestRole(person.roles)}
                     disabled={person.id === this.props.userData.currentUser.id}
                     onChange={(event, index, value) => this.handleChange(person.id, value)}
                   >

@@ -6,7 +6,7 @@ import Navigation from './Navigation'
 import AlertBar from '../containers/AlertBar'
 import { ListItem } from 'material-ui/List'
 import { withRouter } from 'react-router'
-
+import AdminNavigation from '../containers/AdminNavigation'
 const styles = StyleSheet.create({
   container: {
     ...theme.layouts.multiColumn.container
@@ -31,22 +31,13 @@ class AdminDashboard extends React.Component {
 
   renderNavigation(sections) {
     const organizationId = this.props.params.organizationId
-    if (organizationId === null) {
+    if (!organizationId) {
       return ''
     }
     return (
       <div className={css(styles.sideBar)}>
-        <Navigation
-          sections={sections.map((section) => ({
-            ...section,
-            url: this.urlFromPath(section.path)
-          }))}
-          switchListItem={
-            <ListItem
-              primaryText='Switch to texter'
-              onTouchTap={() => this.props.router.push(`/app/${organizationId}/todos`)}
-            />
-          }
+        <AdminNavigation
+          organizationId={organizationId}
         />
       </div>
     )

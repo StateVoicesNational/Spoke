@@ -38,10 +38,11 @@ export const resolvers = {
   BillingDetails: {
     balanceAmount: (organization) => organization.balance_amount || 0,
     creditCurrency: (organization) => organization.currency,
-    creditCard: async (organization) => {
-      if (!organization.stripe_id)
+    creditCard: async (organization, _, { user }) => {
+      await accessRequired(user, organization.id, 'OWNER')
+      if (!organization.stripe_id) {
         return null
-      else {
+      } else {
         const stripeAPI = stripe(process.env.STRIPE_SECRET_KEY)
         const result = await stripeAPI.customers.retrieve(organization.stripe_id, {
           expand: ['default_source']
@@ -68,13 +69,7 @@ export const resolvers = {
     plan: async (organization, _, { loaders }) => await loaders.plan.load(organization.plan_id),
     people: async (organization, { role }, { user }) => {
       const roleFilter = role ? (userOrganization) => userOrganization('roles').contains(role) : {}
-      console.log("roleFilter", roleFilter)
-      const people = await r.table('user_organization')
-      .getAll(organization.id, { index: 'organization_id' })
-      console.log(people)
-
-      console.log()
-      await accessRequired(user, organization.id, 'ADMIN')
+      await accessRequired(user, organization.id, roleFilter)
       return r.table('user_organization')
       .getAll(organization.id, { index: 'organization_id' })
       .filter(roleFilter)
