@@ -39,7 +39,7 @@ export const resolvers = {
     balanceAmount: (organization) => organization.balance_amount || 0,
     creditCurrency: (organization) => organization.currency,
     creditCard: async (organization, _, { user }) => {
-      await accessRequired(user, organization.id, 'ADMIN')
+      await accessRequired(user, organization.id, 'OWNER')
       if (!organization.stripe_id) {
         return null
       } else {
