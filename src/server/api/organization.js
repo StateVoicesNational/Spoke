@@ -68,8 +68,9 @@ export const resolvers = {
     },
     plan: async (organization, _, { loaders }) => await loaders.plan.load(organization.plan_id),
     people: async (organization, { role }, { user }) => {
+      await accessRequired(user, organization.id, 'ADMIN')
+
       const roleFilter = role ? (userOrganization) => userOrganization('roles').contains(role) : {}
-      await accessRequired(user, organization.id, roleFilter)
       return r.table('user_organization')
       .getAll(organization.id, { index: 'organization_id' })
       .filter(roleFilter)
