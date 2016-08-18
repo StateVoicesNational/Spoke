@@ -6,6 +6,7 @@ import CampaignContact from './campaign-contact'
 import InteractionStep from './interaction-step'
 import Message from './message'
 import OptOut from './opt-out'
+import PendingMessage from './pending-message'
 import Plan from './plan'
 import Organization from './organization'
 import CannedResponse from './canned-response'
@@ -51,6 +52,7 @@ export {
   Message,
   OptOut,
   Organization,
+  PendingMessage,
   Plan,
   CannedResponse,
   QuestionResponse,
