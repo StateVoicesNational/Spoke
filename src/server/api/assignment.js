@@ -72,16 +72,12 @@ export const resolvers = {
 
     contactsCount: async (assignment, { contactFilter }, { loaders }) => {
       const campaign = await loaders.campaign.load(assignment.campaign_id)
-      let query = await getContacts(assignment, campaign, contactFilter)
-      console.log(query)
       return getContacts(assignment, campaign, contactFilter).count()
     },
 
     contacts: async (assignment, { contactFilter }, { loaders }) => {
       const campaign = await loaders.campaign.load(assignment.campaign_id)
-      let query = await getContacts(assignment, campaign, contactFilter)
-      console.log(query)
-      return query
+      return getContacts(assignment, campaign, contactFilter)
     },
 
     campaignCannedResponses: async(assignment) => (
