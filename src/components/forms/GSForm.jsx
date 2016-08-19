@@ -81,9 +81,13 @@ export default class GSForm extends React.Component {
     })
   }
 
+  submit =() => {
+    this.refs.form.submit()
+  }
   render() {
     return (
       <Form
+        ref='form'
         value={this.props.value || this.state.model || this.props.defaultValue}
         onChange={model => {
           this.setState({ model })

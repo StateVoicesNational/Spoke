@@ -95,6 +95,14 @@ const inlineStyles = {
 }
 
 class AssignmentTexterContact extends React.Component {
+  messageSchema = yup.object({
+    messageText: yup.string().required("Can't send empty message")
+  })
+
+  optOutSchema = yup.object({
+    optOutMessageText: yup.string().required()
+  })
+
   constructor(props) {
     super(props)
 
@@ -163,7 +171,7 @@ class AssignmentTexterContact extends React.Component {
   getStartingMessageText() {
     const { contact } = this.props.data
     const { messages } = contact
-    return messages.length > 0 ? null : this.getMessageTextFromScript(contact.currentInteractionStepScript)
+    return messages.length > 0 ? '' : this.getMessageTextFromScript(contact.currentInteractionStepScript)
   }
 
   handleOpenPopover = (event) => {
@@ -208,21 +216,18 @@ class AssignmentTexterContact extends React.Component {
     }
   }
 
-  handleClickSendMessageButton = async () => {
+  handleMessageFormSubmit = async ( { messageText }) => {
     try {
-      await this.handleSendMessage()
+      const { contact } = this.props.data
+      const message = this.createMessageToContact(messageText)
+      this.setState({ sending: true })
+      await this.props.mutations.sendMessage(message, contact.id)
+
       await this.handleSubmitSurveys()
       this.props.onFinishContact()
     } catch (e) {
       this.handleSendMessageError(e)
     }
-  }
-
-  handleSendMessage = async () => {
-    const { contact } = this.props.data
-    this.setState({ sending: true })
-    const message = this.createMessageToContact(this.refs.messageText.getValue().trim())
-    await this.props.mutations.sendMessage(message, contact.id)
   }
 
   handleSubmitSurveys = async () => {
@@ -347,16 +352,12 @@ class AssignmentTexterContact extends React.Component {
       />
     ]
 
-    const schema = yup.object({
-      optOutMessageText: yup.string().required()
-    })
-
     const optOutScript = "I'm opting you out of text-based communication immediately. Have a great day."
 
     return (
       <div>
         <GSForm
-          schema={schema}
+          schema={this.optOutSchema}
           value={{ optOutMessageText: optOutScript }}
           onSubmit={this.handleOptOut}
         >
@@ -377,6 +378,11 @@ class AssignmentTexterContact extends React.Component {
 
       </div>
     )
+  }
+
+  handleClickSendMessageButton = () => {
+    console.log("this.refs.form", this.refs)
+    this.refs.form.submit()
   }
 
   renderSurveySection() {
@@ -492,22 +498,26 @@ class AssignmentTexterContact extends React.Component {
     )
   }
 
+  handleMessageFormChange = ({ messageText }) => this.setState({ messageText })
   renderBottomFixedSection() {
     return (
       <div>
         {this.renderSurveySection()}
         <div>
           <div className={css(styles.messageField)}>
-            <TextField
-              autoFocus
-              ref='messageText'
-              name='messageText'
-              floatingLabelText='Your message'
-              fullWidth
-              multiLine
-              onChange={(event) => this.setState({ messageText: event.target.value })}
-              value={this.state.messageText}
-            />
+            <GSForm
+              ref='form'
+              schema={this.messageSchema}
+              value={{ messageText: this.state.messageText}}
+              onSubmit={this.handleMessageFormSubmit}
+              onChange={this.handleMessageFormChange}
+            >
+              <Form.Field
+                name='messageText'
+                label='Your message'
+                fullWidth
+              />
+            </GSForm>
           </div>
           {this.renderActionToolbar()}
         </div>
