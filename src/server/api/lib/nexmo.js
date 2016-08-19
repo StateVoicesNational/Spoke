@@ -12,7 +12,7 @@ if (process.env.NEXMO_API_KEY && process.env.NEXMO_API_SECRET) {
   })
 }
 
-const getLastMessage = async ({ userNumber, contactNumber }) => {
+export async function getLastMessage ({ userNumber, contactNumber }) {
   const lastMessage = await r.table('message')
     .filter({
       contact_number: contactNumber,
@@ -31,7 +31,7 @@ const getLastMessage = async ({ userNumber, contactNumber }) => {
   return lastMessage
 }
 
-const saveNewIncomingMessage = async (messageInstance) => {
+export async function saveNewIncomingMessage (messageInstance) {
   await messageInstance.save()
 
   await r.table('campaign_contact')
@@ -42,6 +42,7 @@ const saveNewIncomingMessage = async (messageInstance) => {
 }
 
 const handleIncomingMessagePart = async(userNumber, contactNumber, message) => {
+  console.log(`Incoming message part (${message['concat-part']} of ${message['concat-total']} for ref ${message['concat-ref']}) from ${contactNumber} to ${userNumber}`)
   const parentId = message['concat-ref']
 
   const pendingMessagePart = new PendingMessagePart({
@@ -53,57 +54,8 @@ const handleIncomingMessagePart = async(userNumber, contactNumber, message) => {
   })
 
   await pendingMessagePart.save()
-
-  const partCount = await r.table('pending_message_part')
-    .getAll(parentId, { index: 'parent_id' })
-    .filter({
-      service: 'nexmo',
-      user_number: userNumber,
-      contact_number: contactNumber,
-    })
-    .count()
-
-  const concatTotal = parseInt(message['concat-total'])
-  if (partCount === concatTotal) {
-    const parts = await r.table('pending_message_part')
-      .getAll(parentId, { index: 'parent_id' })
-      .filter({
-        service: 'nexmo',
-        user_number: userNumber,
-        contact_number: contactNumber
-      })
-      .orderBy((r.row('service_message')('concat-part')))
-
-    console.log('got parts', parts)
-    const serviceMessages = parts.map((part) => part.service_message)
-    const text = serviceMessages
-      .map((serviceMessage) => serviceMessage.text)
-      .join('')
-
-    console.log("got service messages and text", text)
-    const lastMessage = await getLastMessage({ contactNumber, userNumber })
-    const messageInstance = new Message({
-      contact_number: contactNumber,
-      user_number: userNumber,
-      is_from_contact: false,
-      text,
-      service_messages: serviceMessages,
-      assignment_id: lastMessage.assignment_id,
-      service: 'nexmo',
-      send_status: 'DELIVERED'
-    })
-
-    await saveNewIncomingMessage(messageInstance)
-
-    console.log("saved message")
-    await r.table('pending_message_part')
-      .getAll(parentId, { index: 'parent_id'})
-      .delete()
-    console.log("deleted message parts")
-
-    return messageInstance.id
-  }
 }
+
 export async function findNewCell() {
   if (!nexmo) {
     return { numbers: [{ msisdn: '+18179994303' }] }
@@ -231,6 +183,7 @@ export async function handleIncomingMessage(message) {
     const responseId = await handleIncomingMessagePart(userNumber, contactNumber, message)
     return responseId
   } else {
+    console.log(`Incoming message from ${contactNumber} to ${userNumber}`)
 
     const lastMessage = await getLastMessage({ contactNumber, userNumber })
 
