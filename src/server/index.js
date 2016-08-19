@@ -51,9 +51,9 @@ app.use(cookieSession({
 app.use(passport.initialize())
 app.use(passport.session())
 
-app.post('/nexmo', (req, res) => {
+app.post('/nexmo', async (req, res) => {
   try {
-    const messageId = handleIncomingMessage(req.body)
+    const messageId = await handleIncomingMessage(req.body)
     res.send(messageId)
   } catch (ex) {
     log.error(ex)

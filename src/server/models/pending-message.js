@@ -6,6 +6,11 @@ const PendingMessage = thinky.createModel('pending_message', type.object().schem
   id: type.string(),
   user_number: requiredString(),
   contact_number: requiredString(),
+  assignment_id: requiredString(),
+  is_from_contact: type
+    .boolean()
+    .required()
+    .allowNull(false),
   service: requiredString(),
   parent_id: requiredString(),
   parts: type
