@@ -4,7 +4,6 @@ import AutoComplete from 'material-ui/AutoComplete'
 import GSForm from '../components/forms/GSForm'
 import yup from 'yup'
 import Form from 'react-formal'
-import Divider from 'material-ui/Divider'
 import { MenuItem } from 'material-ui/Menu'
 import OrganizationJoinLink from './OrganizationJoinLink'
 import { RadioButton, RadioButtonGroup } from 'material-ui/RadioButton'
@@ -54,6 +53,7 @@ const inlineStyles = {
     marginBottom: 20
   }
 }
+
 export default class CampaignTextersForm extends React.Component {
 
   removeTexter = (texterId) => {
@@ -160,7 +160,7 @@ export default class CampaignTextersForm extends React.Component {
 
   showTexters() {
     return this.props.formValues.texters.map((texter, index) => {
-      const messagedCount = texter.needsResponseCount + texter.messagedCount + texter.closedCount
+      const messagedCount = texter.contactsCount - texter.needsMessageCount
       return (
         <div className={css(styles.texterRow)}>
           <div className={css(styles.nameColumn)}>
@@ -188,10 +188,34 @@ export default class CampaignTextersForm extends React.Component {
     texters: yup.array().of(yup.object({
       id: yup.string(),
       assignment: yup.object({
-        contactsCount: yup.number()
+        contactsCount: yup.number(),
+        needsMessageCount: yup.number()
       })
     }))
   })
+
+  onChange(formValues) {
+    const existingFormValues = this.formValues()
+    const newFormValues = {
+      ...formValues
+    }
+    newFormValues.texters = newFormValues.texters.map((newTexter) => {
+      const existingTexter = existingFormValues.filter((texter) => (texter.id === newTexter.id ? texter : null))[0]
+
+      if (existingTexter.assignment.contactsCount !== newTexter.assignment.contactsCount) {
+        const diff = existingTexter.assignment.contactsCount - newTexter.assignment.contactsCount
+        const newNeedsMessageCount = newTexter.assignment.needsMessageCount - diff
+        return {
+          ...newTexter,
+          assignment: {
+            ...newTexter.assignment,
+            needsMessageCount: newNeedsMessageCount
+          }
+        }
+      }
+      return newTexter
+    })
+  }
 
   formValues() {
     return {
@@ -229,7 +253,7 @@ export default class CampaignTextersForm extends React.Component {
         <GSForm
           schema={this.formSchema}
           value={this.formValues()}
-          onChange={this.props.onChange}
+          onChange={this.onChange}
           onSubmit={this.props.onSubmit}
         >
           {this.showSearch()}

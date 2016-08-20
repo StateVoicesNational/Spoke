@@ -28,9 +28,7 @@ const campaignInfoFragment = `
     firstName
     assignment(campaignId:$campaignId) {
       contactsCount
-      needsResponseCount: contactsCount(contactsFilter:{messageStatus:\"needsResponse\"})
-      messagedCount: contactsCount(contactsFilter:{messageStatus:\"messaged\"})
-      closedCount: contactsCount(contactsFilter:{messageStatus:\"closed\"})
+      needsMessageCount: contactsCount(contactsFilter:{messageStatus:\"needsMessage\"})
     }
   }
   interactionSteps {

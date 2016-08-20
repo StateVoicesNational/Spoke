@@ -208,18 +208,55 @@ async function editCampaign(id, campaign, loaders) {
   }
 
   if (campaign.hasOwnProperty('texters')) {
-    const assignments = campaign.texters.map((texter) => ({
-      user_id: texter.id,
-      campaign_id: id
-    }))
+    // We use r.branch to make the updates atomic. See https://www.rethinkdb.com/docs/consistency/
+    await r.table('campaign_contact')
+      .getAll(id, { index: 'campaign_id' })
+      .update({
+        assignment: r.branch(
+          r.row('message_status').eq('needsMessage'),
+          '',
+          r.row('assignment')
+        )
+      })
     const availableContacts = await r.table('campaign_contact')
       .getAll(id, { index: 'campaign_id' })
-      .filter({ message_status: 'needsMessage' })
-    // Delete all assignments for campaigncontacts that have no contacts left
+      .filter({ assignment: '' })
+
+/*    const
+
+    const clientCount = campaign.texters.reduce((left, right) => (left + right.contactsCount), 0)
+
+    let assignments = campaign.texters.map((texter) => ({
+      user_id: texter.id,
+      campaign_id: id,
+      contactsCount: texter.contactsCount
+    }))
+
+    if (clientCount < availableContacts) {
+      throw new Error('Client somehow had fewer available contacts than the server. This means something went from not needing a message to needing a message and makes no sense.')
+    } else if (clientCount > availableContacts) {
+      let contactDiff = clientCount - availableContacts
+      let assignmentIndex = 0
+      while (contactDiff > 0) {
+        assignments[assignmentIndex]
+      }
+      assignments = assignments.map((assignment) => {
+        const newContactsCount =
+        ...assignment,
+        contactsCount: assignment.contactsCount - contactDiff
+      })
+    }*/
+
     await r.table('assignment')
       .getAll(id, { index: 'campaign_id' })
-      .delete()
-    await Assignment.save(assignments)
+      .merge((row) => ({
+        hasContacts: r.table('campaign_contact')
+          .getAll(row('id'), { index: 'assignment_id' })
+          .limit(1)(0)
+          .default(false)
+      }))
+//      .filter({ hasContacts: false })
+//      .delete()
   }
 
   if (campaign.hasOwnProperty('interactionSteps')) {
