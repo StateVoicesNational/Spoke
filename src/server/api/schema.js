@@ -247,7 +247,7 @@ async function editCampaign(id, campaign, loaders) {
       })
     }*/
 
-    await r.table('assignment')
+/*    await r.table('assignment')
       .getAll(id, { index: 'campaign_id' })
       .merge((row) => ({
         hasContacts: r.table('campaign_contact')
@@ -257,6 +257,7 @@ async function editCampaign(id, campaign, loaders) {
       }))
 //      .filter({ hasContacts: false })
 //      .delete()
+*/
   }
 
   if (campaign.hasOwnProperty('interactionSteps')) {

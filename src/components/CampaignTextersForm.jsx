@@ -55,14 +55,6 @@ const inlineStyles = {
 }
 
 export default class CampaignTextersForm extends React.Component {
-
-  removeTexter = (texterId) => {
-    const { formValues, onChange } = this.props
-    const { texters } = formValues
-    const newTexters = texters.filter((texter) => texter.id !== texterId)
-    onChange({ texters: newTexters })
-  }
-
   dataSourceItem(name, key) {
     return {
       text: name,
@@ -114,7 +106,8 @@ export default class CampaignTextersForm extends React.Component {
                   id: texterId,
                   firstName: newTexter.firstName,
                   assignment: {
-                    contactsCount: 0
+                    contactsCount: 0,
+                    needsMessageCount: 0
                   }
                 }
               ]
@@ -160,7 +153,7 @@ export default class CampaignTextersForm extends React.Component {
 
   showTexters() {
     return this.props.formValues.texters.map((texter, index) => {
-      const messagedCount = texter.contactsCount - texter.needsMessageCount
+      const messagedCount = texter.assignment.contactsCount - texter.assignment.needsMessageCount
       return (
         <div className={css(styles.texterRow)}>
           <div className={css(styles.nameColumn)}>
@@ -169,7 +162,7 @@ export default class CampaignTextersForm extends React.Component {
           <div className={css(styles.slider)}>
             <Slider
               minValue={messagedCount}
-              maxValue={this.props.contactsCount}
+              maxValue={this.props.formValues.contactsCount}
               value={texter.assignment.contactsCount}
             />
           </div>
@@ -188,8 +181,8 @@ export default class CampaignTextersForm extends React.Component {
     texters: yup.array().of(yup.object({
       id: yup.string(),
       assignment: yup.object({
-        contactsCount: yup.number(),
-        needsMessageCount: yup.number()
+        contactsCount: yup.string(),
+        needsMessageCount: yup.string()
       })
     }))
   })
@@ -200,21 +193,38 @@ export default class CampaignTextersForm extends React.Component {
       ...formValues
     }
     newFormValues.texters = newFormValues.texters.map((newTexter) => {
-      const existingTexter = existingFormValues.filter((texter) => (texter.id === newTexter.id ? texter : null))[0]
+      const existingTexter = existingFormValues.texters.filter((texter) => (texter.id === newTexter.id ? texter : null))[0]
 
+      let convertedContactsCount = parseInt(newTexter.assignment.contactsCount, 10)
+      if (isNaN(convertedContactsCount)) {
+        convertedContactsCount = 0
+      }
+      if (convertedContactsCount > this.props.formValues.contactsCount) {
+        convertedContactsCount = this.props.formValues.contactsCount
+      }
+      let newNeedsMessageCount = newTexter.assignment.needsMessageCount
       if (existingTexter.assignment.contactsCount !== newTexter.assignment.contactsCount) {
-        const diff = existingTexter.assignment.contactsCount - newTexter.assignment.contactsCount
-        const newNeedsMessageCount = newTexter.assignment.needsMessageCount - diff
-        return {
-          ...newTexter,
-          assignment: {
-            ...newTexter.assignment,
-            needsMessageCount: newNeedsMessageCount
-          }
+        const diff = existingTexter.assignment.contactsCount - convertedContactsCount
+        newNeedsMessageCount = newTexter.assignment.needsMessageCount - diff
+      }
+      console.log(newNeedsMessageCount)
+      return {
+        ...newTexter,
+        assignment: {
+          ...newTexter.assignment,
+          contactsCount: convertedContactsCount,
+          needsMessageCount: newNeedsMessageCount
         }
       }
-      return newTexter
     })
+    this.props.onChange(newFormValues)
+  }
+
+  removeTexter = (texterId) => {
+    const formValues = this.formValues()
+    const { texters } = formValues
+    const newTexters = texters.filter((texter) => texter.id !== texterId)
+    this.onChange({ texters: newTexters })
   }
 
   formValues() {
@@ -238,6 +248,7 @@ export default class CampaignTextersForm extends React.Component {
         <OrganizationJoinLink organizationId={organizationId} />
       </div>
     )
+
     const assignedContacts = this.props
       .formValues
       .texters
@@ -253,7 +264,7 @@ export default class CampaignTextersForm extends React.Component {
         <GSForm
           schema={this.formSchema}
           value={this.formValues()}
-          onChange={this.onChange}
+          onChange={(formValues) => this.onChange(formValues)}
           onSubmit={this.props.onSubmit}
         >
           {this.showSearch()}
