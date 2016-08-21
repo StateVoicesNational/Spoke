@@ -12,10 +12,8 @@ const styles = StyleSheet.create({
 })
 
 const Slider = ({ minValue, maxValue, value }) => {
-  console.log(minValue, maxValue, value)
   const minValuePercent = Math.round(minValue / maxValue * 100)
   const valuePercent = Math.round((value - minValue) / maxValue * 100)
-  console.log(minValuePercent)
   return (
     <div className={css(styles.sliderContainer)}>
       <div

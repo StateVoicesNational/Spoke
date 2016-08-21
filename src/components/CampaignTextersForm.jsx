@@ -10,11 +10,13 @@ import { RadioButton, RadioButtonGroup } from 'material-ui/RadioButton'
 import CampaignFormSectionHeading from './CampaignFormSectionHeading'
 import { StyleSheet, css } from 'aphrodite'
 import theme from '../styles/theme'
+import Toggle from 'material-ui/Toggle'
 
 const styles = StyleSheet.create({
   sliderContainer: {
     border: `1px solid ${theme.colors.lightGray}`,
-    padding: 10
+    padding: 10,
+    borderRadius: 8
   },
   texterRow: {
     display: 'flex',
@@ -27,14 +29,23 @@ const styles = StyleSheet.create({
     marginBottom: 'auto',
     paddingRight: 10
   },
+  splitToggle: {
+    ...theme.text.body,
+    flex: '1 1 50%'
+  },
   slider: {
-    flex: '1 70%',
+    flex: '1 1 90%',
     marginTop: 'auto',
     marginBottom: 'auto',
     paddingRight: 10
   },
+  headerContainer: {
+    display: 'flex',
+    borderBottom: `1px solid ${theme.colors.lightGray}`,
+    marginBottom: 20
+  },
   input: {
-    flex: '1 1 20%',
+    flex: '1 1 10%',
     marginTop: 'auto',
     marginBottom: 'auto',
     display: 'inline-block'
@@ -49,12 +60,15 @@ const inlineStyles = {
     marginBottom: 12
   },
   header: {
-    ...theme.text.header,
-    marginBottom: 20
+    ...theme.text.header
   }
 }
 
 export default class CampaignTextersForm extends React.Component {
+  state = {
+    autoSplit: true,
+    focusedTexter: null
+  }
   dataSourceItem(name, key) {
     return {
       text: name,
@@ -68,8 +82,8 @@ export default class CampaignTextersForm extends React.Component {
   }
 
   showSearch() {
-    const { orgTexters, formValues } = this.props
-    const { texters } = formValues
+    const { orgTexters } = this.props
+    const { texters } = this.formValues()
 
     const assignAll = texters.length === orgTexters.length
     const dataSource = orgTexters
@@ -99,9 +113,9 @@ export default class CampaignTextersForm extends React.Component {
           if (typeof value === 'object') {
             const texterId = value.value.key
             const newTexter = this.props.orgTexters.find((texter) => texter.id === texterId)
-            this.props.onChange({
+            this.onChange({
               texters: [
-                ...this.props.formValues.texters,
+                ...this.formValues().texters,
                 {
                   id: texterId,
                   firstName: newTexter.firstName,
@@ -130,11 +144,12 @@ export default class CampaignTextersForm extends React.Component {
                 id: orgTexter.id,
                 firstName: orgTexter.firstName,
                 assignment: {
-                  contactsCount: 0
+                  contactsCount: 0,
+                  needsMessageCount: 0
                 }
               }))
             }
-            this.props.onChange({ texters: newTexters })
+            this.onChange({ texters: newTexters })
           }}
         >
           <RadioButton
@@ -152,8 +167,9 @@ export default class CampaignTextersForm extends React.Component {
   }
 
   showTexters() {
-    return this.props.formValues.texters.map((texter, index) => {
+    return this.formValues().texters.map((texter, index) => {
       const messagedCount = texter.assignment.contactsCount - texter.assignment.needsMessageCount
+
       return (
         <div className={css(styles.texterRow)}>
           <div className={css(styles.nameColumn)}>
@@ -162,7 +178,7 @@ export default class CampaignTextersForm extends React.Component {
           <div className={css(styles.slider)}>
             <Slider
               minValue={messagedCount}
-              maxValue={this.props.formValues.contactsCount}
+              maxValue={this.formValues().contactsCount}
               value={texter.assignment.contactsCount}
             />
           </div>
@@ -170,6 +186,10 @@ export default class CampaignTextersForm extends React.Component {
             <Form.Field
               name={`texters[${index}].assignment.contactsCount`}
               hintText='Contacts'
+              onFocus={() => this.setState({ focusedTexter: texter.id })}
+              onBlur={() => this.setState({
+                focusedTexter: null
+              })}
             />
           </div>
         </div>
@@ -189,9 +209,11 @@ export default class CampaignTextersForm extends React.Component {
 
   onChange(formValues) {
     const existingFormValues = this.formValues()
+    const changedTexter = this.state.focusedTexter
     const newFormValues = {
       ...formValues
     }
+    let totalContacts = 0
     newFormValues.texters = newFormValues.texters.map((newTexter) => {
       const existingTexter = existingFormValues.texters.filter((texter) => (texter.id === newTexter.id ? texter : null))[0]
 
@@ -199,15 +221,24 @@ export default class CampaignTextersForm extends React.Component {
       if (isNaN(convertedContactsCount)) {
         convertedContactsCount = 0
       }
-      if (convertedContactsCount > this.props.formValues.contactsCount) {
-        convertedContactsCount = this.props.formValues.contactsCount
+      if (convertedContactsCount > this.formValues().contactsCount) {
+        convertedContactsCount = this.formValues().contactsCount
       }
+
       let newNeedsMessageCount = newTexter.assignment.needsMessageCount
-      if (existingTexter.assignment.contactsCount !== newTexter.assignment.contactsCount) {
+
+      if (existingTexter && existingTexter.assignment.contactsCount !== convertedContactsCount) {
         const diff = existingTexter.assignment.contactsCount - convertedContactsCount
         newNeedsMessageCount = newTexter.assignment.needsMessageCount - diff
       }
-      console.log(newNeedsMessageCount)
+
+      if (newNeedsMessageCount < 0) {
+        convertedContactsCount = convertedContactsCount - newNeedsMessageCount
+        newNeedsMessageCount = 0
+      }
+
+      totalContacts = totalContacts + convertedContactsCount
+
       return {
         ...newTexter,
         assignment: {
@@ -217,6 +248,27 @@ export default class CampaignTextersForm extends React.Component {
         }
       }
     })
+
+    let extra = totalContacts - this.formValues().contactsCount
+    const factor = extra > 0 ? -1 : 1
+    let index = 0
+    if (extra > 0 || (extra < 0 && this.state.autoSplit)) {
+      while (extra !== 0) {
+        const texter = newFormValues.texters[index]
+        if (!changedTexter || texter.id !== changedTexter) {
+          if (texter.assignment.needsMessageCount + factor >= 0) {
+            texter.assignment.needsMessageCount = texter.assignment.needsMessageCount + factor
+            texter.assignment.contactsCount = texter.assignment.contactsCount + factor
+            extra = extra + factor
+          }
+        }
+        index = index + 1
+        if (index >= newFormValues.texters.length) {
+          index = 0
+        }
+      }
+    }
+
     this.props.onChange(newFormValues)
   }
 
@@ -229,6 +281,7 @@ export default class CampaignTextersForm extends React.Component {
 
   formValues() {
     return {
+      ...this.props.formValues,
       texters: this.props.formValues.texters.sort((texter1, texter2) => {
         if (texter1.firstName < texter2.firstName) {
           return -1
@@ -249,12 +302,11 @@ export default class CampaignTextersForm extends React.Component {
       </div>
     )
 
-    const assignedContacts = this.props
-      .formValues
+    const assignedContacts = this.formValues()
       .texters
       .reduce(((prev, texter) => prev + texter.assignment.contactsCount), 0)
 
-    const headerColor = assignedContacts === this.props.formValues.contactsCount ? theme.colors.green : theme.colors.orange
+    const headerColor = assignedContacts === this.formValues().contactsCount ? theme.colors.green : theme.colors.orange
     return (
       <div>
         <CampaignFormSectionHeading
@@ -265,19 +317,52 @@ export default class CampaignTextersForm extends React.Component {
           schema={this.formSchema}
           value={this.formValues()}
           onChange={(formValues) => this.onChange(formValues)}
+          noValidate
           onSubmit={this.props.onSubmit}
         >
           {this.showSearch()}
           <div className={css(styles.sliderContainer)}>
-            <div
-              style={{
-                ...inlineStyles.header,
-                color: headerColor
-              }}
-            >
-              {`Assigned contacts: ${assignedContacts}/${this.props.formValues.contactsCount}`}
+            <div className={css(styles.headerContainer)}>
+              <div
+                style={{
+                  ...inlineStyles.header,
+                  color: headerColor,
+                  flex: '1 1 50%'
+                }}
+              >
+                {`Assigned contacts: ${assignedContacts}/${this.formValues().contactsCount}`}
+              </div>
+              <div
+                className={css(styles.splitToggle)}
+              >
+                <Toggle
+                  label='Auto-split assignments'
+                  style={{
+                    width: 'auto',
+                    marginLeft: 'auto'
+                  }}
+                  toggled={this.state.autoSplit}
+                  onToggle={() => {
+                    this.setState({ autoSplit: !this.state.autoSplit }, () => {
+                      if (this.state.autoSplit) {
+                        const contactsCount = Math.floor(this.formValues().contactsCount / this.formValues().texters.length)
+                        const newTexters = this.formValues().texters.map((texter) => {
+                          return {
+                            ...texter,
+                            assignment: {
+                              ...texter.assignment,
+                              contactsCount
+                            }
+                          }
+                        })
+                        this.onChange({ ...this.formValues(), texters: newTexters })
+                      }
+                    })
+                  }}
+                />
+              </div>
             </div>
-              {this.showTexters()}
+            {this.showTexters()}
           </div>
           <Form.Button
             type='submit'
