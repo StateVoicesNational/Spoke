@@ -42,7 +42,7 @@ export async function saveNewIncomingMessage (messageInstance) {
 }
 
 const handleIncomingMessagePart = async(userNumber, contactNumber, message) => {
-  console.log(`Incoming message part (${message['concat-part']} of ${message['concat-total']} for ref ${message['concat-ref']}) from ${contactNumber} to ${userNumber}`)
+  log.info(`Incoming message part (${message['concat-part']} of ${message['concat-total']} for ref ${message['concat-ref']}) from ${contactNumber} to ${userNumber}`)
   const parentId = message['concat-ref']
 
   const pendingMessagePart = new PendingMessagePart({
@@ -183,7 +183,7 @@ export async function handleIncomingMessage(message) {
     const responseId = await handleIncomingMessagePart(userNumber, contactNumber, message)
     return responseId
   } else {
-    console.log(`Incoming message from ${contactNumber} to ${userNumber}`)
+    log.info(`Incoming message from ${contactNumber} to ${userNumber}`)
 
     const lastMessage = await getLastMessage({ contactNumber, userNumber })
 
