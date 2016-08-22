@@ -5,7 +5,6 @@ export const getFormattedPhoneNumber = (cell, country = 'US') => {
   const phoneUtil = PhoneNumberUtil.getInstance()
 
   try {
-    console.log('cell', cell)
     const inputNumber = phoneUtil.parse(cell, country)
     const isValid = phoneUtil.isValidNumber(inputNumber)
     if (isValid) {
