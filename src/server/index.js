@@ -50,7 +50,7 @@ app.use(cookieSession({
 app.use(passport.initialize())
 app.use(passport.session())
 
-app.post('/nexmo', async (req, res) => {
+app.post('/nexmo', wrap(async (req, res) => {
   try {
     const messageId = await handleIncomingMessage(req.body)
     res.send(messageId)
@@ -58,7 +58,7 @@ app.post('/nexmo', async (req, res) => {
     log.error(ex)
     res.send('done')
   }
-})
+}))
 
 app.post('/nexmo-message-report', wrap(async (req, res) => {
   try {
