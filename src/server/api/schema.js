@@ -501,7 +501,7 @@ const rootMutations = {
       await UserOrganization.save({
         user_id: userId,
         organization_id: newOrganization.id,
-        roles: ['ADMIN', 'TEXTER']
+        roles: ['OWNER', 'ADMIN', 'TEXTER']
       })
       await Invite.save({
         id: inviteId,
