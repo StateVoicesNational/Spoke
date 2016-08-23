@@ -36,7 +36,7 @@ export async function saveNewIncomingMessage (messageInstance) {
 
   await r.table('campaign_contact')
     .getAll(messageInstance.assignment_id, { index: 'assignment_id' })
-    .filter({ cell: messageInstance.contactNumber })
+    .filter({ cell: messageInstance.contact_number })
     .limit(1)
     .update({ message_status: 'needsResponse' })
 }
