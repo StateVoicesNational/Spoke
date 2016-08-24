@@ -27,6 +27,8 @@ const Message = thinky.createModel('message', type.object().schema({
 
 Message.ensureIndex('assignment_id')
 Message.ensureIndex('send_status')
+Message.ensureIndex('user_number')
+Message.ensureIndex('contact_number')
 
 
 export default Message

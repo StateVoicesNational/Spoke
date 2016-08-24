@@ -12,10 +12,10 @@ if (process.env.NEXMO_API_KEY && process.env.NEXMO_API_SECRET) {
   })
 }
 
-export async function getLastMessage ({ userNumber, contactNumber }) {
+export async function getLastMessage({ userNumber, contactNumber }) {
   const lastMessage = await r.table('message')
+    .getAll(contactNumber, { index: 'contact_number' })
     .filter({
-      contact_number: contactNumber,
       user_number: userNumber,
       is_from_contact: false
     })
