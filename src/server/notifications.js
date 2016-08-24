@@ -12,12 +12,14 @@ const sendEmail = async ({ to, subject, text }) => {
     domain: process.env.MAILGUN_DOMAIN
   })
 
-  return mailgun.messages().send({
+  /*return mailgun.messages().send({
     from: process.env.MAILGUN_FROM_EMAIL,
     to,
     subject,
     text
   })
+  */
+  return {}
 }
 
 const sendNewAssignmentUserNotification = async (assignment) => {
