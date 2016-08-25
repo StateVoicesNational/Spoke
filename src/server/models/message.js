@@ -34,6 +34,6 @@ Message.ensureIndex('assignment_id')
 Message.ensureIndex('send_status')
 Message.ensureIndex('user_number')
 Message.ensureIndex('contact_number')
-Message.ensureIndex('service_message_ids', (doc) => doc('service_message_ids'), { multi: true })
+Message.ensureIndex('service_message_ids', null, { multi: true })
 
 export default Message
