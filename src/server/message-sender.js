@@ -28,12 +28,17 @@ async function handlePendingIncomingMessageParts() {
 
   for (let i = 0; i < allPartsCount; i++) {
     const part = allParts[i]
-    const existingCount = await r.table('message')
-      .getAll(part.service_message.messageId, { index: 'service_message_ids' })
+    const serviceMessageId = part.service_message.messageId
+    const savedCount = await r.table('message')
+      .getAll(serviceMessageId, { index: 'service_message_ids' })
       .count()
 
-    if (existingCount > 0) {
-      log.info(`Found existing message matching part service message ID ${part.service_message.messageId}`)
+    const duplicateMessageToSaveExists = !!messagesToSave.find((message) => message.service_message_ids.indexOf(serviceMessageId) !== -1 )
+    if (savedCount > 0) {
+      log.info(`Found already saved message matching part service message ID ${part.service_message.messageId}`)
+      messagePartsToDelete.push(part)
+    } else if (duplicateMessageToSaveExists) {
+      log.info(`Found duplicate message to be saved matching part service message ID ${part.service_message.messageId}`)
       messagePartsToDelete.push(part)
     } else {
       if (part.parent_id === '') {
@@ -76,13 +81,13 @@ async function handlePendingIncomingMessageParts() {
 
   const messageCount = messagesToSave.length
   for (let i = 0; i < messageCount; i++) {
-    log.info("Saving message", messagesToSave[i])
+    log.info("Saving message with service message IDs", messagesToSave[i].service_message_ids)
     await saveNewIncomingMessage(messagesToSave[i])
   }
 
   const messagePartsToDeleteCount = messagePartsToDelete.length
   for (let i = 0; i < messagePartsToDeleteCount; i++) {
-    log.info("Deleting message part", messagePartsToDelete[i])
+    log.info("Deleting message part", messagePartsToDelete[i].id)
     await r.table('pending_message_part')
       .get(messagePartsToDelete[i].id)
       .delete()
