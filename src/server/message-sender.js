@@ -41,19 +41,19 @@ async function handlePendingIncomingMessageParts() {
       log.info(`Found duplicate message to be saved matching part service message ID ${part.service_message.messageId}`)
       messagePartsToDelete.push(part)
     } else {
-      if (part.parent_id === '') {
+      const parentId = part.parent_id
+      if (parentId === '') {
         messagesToSave.push(await convertMessagePartsToMessage([part]))
         messagePartsToDelete.push(part)
       } else {
-        const parentId = part['concat-ref']
         const groupKey = [parentId, part.contact_number, part.user_number]
 
         if (!concatMessageParts.hasOwnProperty(groupKey)){
-          const partCount = parseInt(part.service_message['concat-total'], 0)
+          const partCount = parseInt(part.service_message['concat-total'], 10)
           concatMessageParts[groupKey] = Array(partCount).fill(null)
         }
 
-        const partIndex = parseInt(part.service_message['concat-part'], 0) - 1
+        const partIndex = parseInt(part.service_message['concat-part'], 10) - 1
         if (concatMessageParts[groupKey][partIndex] !== null) {
           messagePartsToDelete.push(part)
         } else {
