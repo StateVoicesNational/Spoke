@@ -299,7 +299,7 @@ const rootMutations = {
         to: userNumber,
         msisdn: contact.cell,
         text: message,
-        messageId: 'mocked_message'
+        messageId: `mocked_${ Math.random().toString(36).replace(/[^a-zA-Z1-9]+/g, '')}`
       })
       return loaders.campaignContact.load(id)
     },

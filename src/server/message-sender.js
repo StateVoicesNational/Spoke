@@ -1,5 +1,5 @@
-import { sendMessage, getLastMessage, saveNewIncomingMessage } from './api/lib/nexmo'
-import { r, Message } from './models'
+import { sendMessage, saveNewIncomingMessage, convertMessagePartsToMessage } from './api/lib/nexmo'
+import { r } from './models'
 import { log } from '../lib'
 
 async function sleep(ms = 0) {
@@ -19,41 +19,78 @@ async function sendMessages() {
 }
 
 async function handlePendingIncomingMessageParts() {
-  const groupedMessageParts = await r.table('pending_message_part')
-    .group('parent_id', 'user_number', 'contact_number')
-    .orderBy(r.row('service_message')('concat-part'))
-  for (let index = 0; index < groupedMessageParts.length; index++) {
-    const [parentId, userNumber, contactNumber] = groupedMessageParts[index].group
-    const parts = groupedMessageParts[index].reduction
+  const allParts = await r.table('pending_message_part')
+  const messagesToSave = []
+  let messagePartsToDelete = []
+  const concatMessageParts = {}
 
-    const firstPart = parts[0]
+  const allPartsCount = allParts.length
 
-    const totalCount = parseInt(firstPart.service_message['concat-total'], 0)
+  for (let i = 0; i < allPartsCount; i++) {
+    const part = allParts[i]
+    const serviceMessageId = part.service_message.messageId
+    const savedCount = await r.table('message')
+      .getAll(serviceMessageId, { index: 'service_message_ids' })
+      .count()
 
-    if (parts.length === totalCount) {
-      log.info(`All ${totalCount} parts for incoming message with concat-ref ${parentId} have arrived; creating message object and deleting parts`)
-      const serviceMessages = parts.map((part) => part.service_message)
-      const text = serviceMessages
-        .map((serviceMessage) => serviceMessage.text)
-        .join('')
-      const lastMessage = await getLastMessage({ contactNumber, userNumber })
+    const duplicateMessageToSaveExists = !!messagesToSave.find((message) => message.service_message_ids.indexOf(serviceMessageId) !== -1 )
+    if (savedCount > 0) {
+      log.info(`Found already saved message matching part service message ID ${part.service_message.messageId}`)
+      messagePartsToDelete.push(part)
+    } else if (duplicateMessageToSaveExists) {
+      log.info(`Found duplicate message to be saved matching part service message ID ${part.service_message.messageId}`)
+      messagePartsToDelete.push(part)
+    } else {
+      const parentId = part.parent_id
+      if (parentId === '') {
+        messagesToSave.push(await convertMessagePartsToMessage([part]))
+        messagePartsToDelete.push(part)
+      } else {
+        const groupKey = [parentId, part.contact_number, part.user_number]
 
-      const messageInstance = new Message({
-        contact_number: contactNumber,
-        user_number: userNumber,
-        is_from_contact: false,
-        text,
-        service_messages: serviceMessages,
-        assignment_id: lastMessage.assignment_id,
-        service: 'nexmo',
-        send_status: 'DELIVERED'
-      })
+        if (!concatMessageParts.hasOwnProperty(groupKey)){
+          const partCount = parseInt(part.service_message['concat-total'], 10)
+          concatMessageParts[groupKey] = Array(partCount).fill(null)
+        }
 
-      await saveNewIncomingMessage(messageInstance)
-      await r.table('pending_message_part')
-        .getAll(parentId, { index: 'parent_id'})
-        .delete()
+        const partIndex = parseInt(part.service_message['concat-part'], 10) - 1
+        if (concatMessageParts[groupKey][partIndex] !== null) {
+          messagePartsToDelete.push(part)
+        } else {
+          concatMessageParts[groupKey][partIndex] = part
+        }
+      }
     }
+  }
+
+  const keys = Object.keys(concatMessageParts)
+  const keyCount = keys.length
+
+  for (let i = 0; i < keyCount; i++) {
+    const groupKey = keys[i]
+    const messageParts = concatMessageParts[groupKey]
+
+    if (messageParts.filter((part) => part === null).length === 0) {
+      messagePartsToDelete = messagePartsToDelete.concat(messageParts)
+      const message = await convertMessagePartsToMessage(messageParts)
+      messagesToSave.push(message)
+    } else {
+      log.debug("Not all message parts for ${groupKey} have arrived")
+    }
+  }
+
+  const messageCount = messagesToSave.length
+  for (let i = 0; i < messageCount; i++) {
+    log.info("Saving message with service message IDs", messagesToSave[i].service_message_ids)
+    await saveNewIncomingMessage(messagesToSave[i])
+  }
+
+  const messagePartsToDeleteCount = messagePartsToDelete.length
+  for (let i = 0; i < messagePartsToDeleteCount; i++) {
+    log.info("Deleting message part", messagePartsToDelete[i].id)
+    await r.table('pending_message_part')
+      .get(messagePartsToDelete[i].id)
+      .delete()
   }
 }
 (async () => {

@@ -41,19 +41,28 @@ export async function saveNewIncomingMessage (messageInstance) {
     .update({ message_status: 'needsResponse' })
 }
 
-const handleIncomingMessagePart = async(userNumber, contactNumber, message) => {
-  log.info(`Incoming message part (${message['concat-part']} of ${message['concat-total']} for ref ${message['concat-ref']}) from ${contactNumber} to ${userNumber}`)
-  const parentId = message['concat-ref']
+export async function convertMessagePartsToMessage(messageParts) {
+  const firstPart = messageParts[0]
+  const userNumber = firstPart.user_number
+  const contactNumber = firstPart.contact_number
+  const serviceMessages = messageParts.map((part) => part.service_message)
+  const text = serviceMessages
+    .map((serviceMessage) => serviceMessage.text)
+    .join('')
 
-  const pendingMessagePart = new PendingMessagePart({
-    service: 'nexmo',
-    parent_id: parentId,
-    service_message: message,
+  const lastMessage = await getLastMessage({ contactNumber, userNumber })
+
+  return new Message({
+    contact_number: contactNumber,
     user_number: userNumber,
-    contact_number: contactNumber
+    is_from_contact: false,
+    text,
+    service_messages: serviceMessages,
+    service_message_ids: serviceMessages.map((doc) => doc.messageId),
+    assignment_id: lastMessage.assignment_id,
+    service: 'nexmo',
+    send_status: 'DELIVERED'
   })
-
-  await pendingMessagePart.save()
 }
 
 export async function findNewCell() {
@@ -179,27 +188,22 @@ export async function handleIncomingMessage(message) {
   const contactNumber = getFormattedPhoneNumber(msisdn)
   const userNumber = getFormattedPhoneNumber(to)
 
+  let parentId = ''
   if (isConcat) {
-    const responseId = await handleIncomingMessagePart(userNumber, contactNumber, message)
-    return responseId
+    log.info(`Incoming message part (${message['concat-part']} of ${message['concat-total']} for ref ${message['concat-ref']}) from ${contactNumber} to ${userNumber}`)
+    parentId = message['concat-ref']
   } else {
-    log.info(`Incoming message from ${contactNumber} to ${userNumber}`)
-
-    const lastMessage = await getLastMessage({ contactNumber, userNumber })
-
-    const assignmentId = lastMessage.assignment_id
-    const messageInstance = new Message({
-      contact_number: contactNumber,
-      user_number: userNumber,
-      is_from_contact: true,
-      text: message.text,
-      assignment_id: assignmentId,
-      service_messages: [message],
-      service: 'nexmo',
-      send_status: 'DELIVERED'
-    })
-
-    await saveNewIncomingMessage(messageInstance)
-    return messageInstance.id
+    log.info(`Incoming message part from ${contactNumber} to ${userNumber}`)
   }
+
+  const pendingMessagePart = new PendingMessagePart({
+    service: 'nexmo',
+    parent_id: parentId,
+    service_message: message,
+    user_number: userNumber,
+    contact_number: contactNumber
+  })
+
+  const part = await pendingMessagePart.save()
+  return part.id
 }
