@@ -20,7 +20,7 @@ const Message = thinky.createModel('message', type.object().schema({
   service_message_ids: type
     .array()
     .schema(type.string())
-    // .required()
+    .required()
     .default([]),
   service_messages: type
     .array()
