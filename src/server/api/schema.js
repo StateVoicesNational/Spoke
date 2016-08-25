@@ -572,7 +572,7 @@ const rootMutations = {
       await new BalanceLineItem({
         organization_id: organization.id,
         currency: organization.currency,
-        amount: amountPerMessage,
+        amount: -amountPerMessage,
         message_id: savedMessage.id
       }).save()
 
