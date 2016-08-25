@@ -55,7 +55,7 @@ export async function convertMessagePartsToMessage(messageParts) {
   return new Message({
     contact_number: contactNumber,
     user_number: userNumber,
-    is_from_contact: false,
+    is_from_contact: true,
     text,
     service_messages: serviceMessages,
     service_message_ids: serviceMessages.map((doc) => doc.messageId),
