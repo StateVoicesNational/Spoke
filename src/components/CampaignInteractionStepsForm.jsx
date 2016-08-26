@@ -188,6 +188,9 @@ export default class CampaignInteractionStepsForm extends React.Component {
   }
 
   onChange = (formValues) => {
+    if (this.props.ensureComplete) {
+      return
+    }
     const newValues = JSON.parse(JSON.stringify(formValues))
     newValues.interactionSteps.forEach((step) => {
       if (step.question && step.question.text === '') {
@@ -443,11 +446,11 @@ export default class CampaignInteractionStepsForm extends React.Component {
           {this.sortedValues().interactionSteps.map((interactionStep, index) => (
             this.renderStep(interactionStep, index)
           ))}
-          <Form.Button
+          {this.props.ensureComplete ? '' : <Form.Button
             type='submit'
             label={this.props.saveLabel}
             disabled={this.props.saveDisabled}
-          />
+          />}
         </GSForm>
       </div>
     )
