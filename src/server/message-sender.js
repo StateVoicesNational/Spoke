@@ -1,4 +1,4 @@
-import { sendMessage, saveNewIncomingMessage, convertMessagePartsToMessage } from './api/lib/nexmo'
+import { sendMessage, saveNewIncomingMessage, getLastMessage, convertMessagePartsToMessage } from './api/lib/nexmo'
 import { r } from './models'
 import { log } from '../lib'
 
@@ -33,8 +33,13 @@ async function handlePendingIncomingMessageParts() {
       .getAll(serviceMessageId, { index: 'service_message_ids' })
       .count()
 
+    const lastMessage = await getLastMessage({ userNumber: part.user_number, contactNumber: part.contact_number })
+
     const duplicateMessageToSaveExists = !!messagesToSave.find((message) => message.service_message_ids.indexOf(serviceMessageId) !== -1 )
-    if (savedCount > 0) {
+    if (!lastMessage) {
+      log.info('Received message part with no thread to attach to', part)
+      messagePartsToDelete.push(part)
+    } else if (savedCount > 0) {
       log.info(`Found already saved message matching part service message ID ${part.service_message.messageId}`)
       messagePartsToDelete.push(part)
     } else if (duplicateMessageToSaveExists) {

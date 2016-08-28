@@ -24,10 +24,6 @@ export async function getLastMessage({ userNumber, contactNumber }) {
     .pluck('assignment_id')(0)
     .default(null)
 
-  if (!lastMessage) {
-    throw new Error('No message thread to attach incoming message to')
-  }
-
   return lastMessage
 }
 
