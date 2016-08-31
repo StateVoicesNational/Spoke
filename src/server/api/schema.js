@@ -538,6 +538,19 @@ const rootMutations = {
         }))
         .pluck('organization')
       const organization = merged.organization
+
+      const optOut = await r.table('opt_out')
+          .getAll(contact.cell, { index: 'cell' })
+          .filter({ organization_id: organization.id })
+          .limit(1)(0)
+          .default(null)
+      if (optOut) {
+        throw new GraphQLError({
+          status: 400,
+          message: 'Skipped sending last message because the contact was already opted out'
+        })
+      }
+
       const plan = await loaders.plan.load(organization.plan_id)
       const amountPerMessage = plan.amount_per_message
 
