@@ -109,17 +109,27 @@ class AssignmentTexterContact extends React.Component {
     const questionResponses = this.getInitialQuestionResponses(props.data.contact.interactionSteps)
     const availableSteps = this.getAvailableInteractionSteps(questionResponses)
 
+    const optOut = this.props.data.contact.optOut
+    const disabled = !!optOut
+    const disabledText = optOut ? 'Skipping opt-out...' : 'Sending...'
+
     this.state = {
+      disabled,
+      disabledText,
+      questionResponses,
       sendError: null,
       responsePopoverOpen: false,
       messageText: this.getStartingMessageText(),
-      sending: false,
       optOutDialogOpen: false,
-      questionResponses,
       currentInteractionStep: availableSteps.length > 0 ? availableSteps[availableSteps.length - 1] : null
     }
   }
 
+  componentDidMount() {
+    if (this.props.data.contact.optOut) {
+      setTimeout(() => this.props.onFinishContact(), 1500)
+    }
+  }
   getAvailableInteractionSteps(questionResponses) {
     const allInteractionSteps = this.props.data.contact.interactionSteps
 
@@ -208,6 +218,10 @@ class AssignmentTexterContact extends React.Component {
     if (e.status === 402) {
       const { campaign } = this.props
       this.props.router.push(`/app/${campaign.organization.id}/todos`)
+    } else if (e.status === 400) {
+      this.setState({
+        sendError: e.message
+      })
     } else {
       log.error(e)
       this.setState({
@@ -220,7 +234,7 @@ class AssignmentTexterContact extends React.Component {
     try {
       const { contact } = this.props.data
       const message = this.createMessageToContact(messageText)
-      this.setState({ sending: true })
+      this.setState({ disabled: true })
       await this.props.mutations.sendMessage(message, contact.id)
 
       await this.handleSubmitSurveys()
@@ -439,7 +453,7 @@ class AssignmentTexterContact extends React.Component {
           <SendButton
             threeClickEnabled={campaign.organization.threeClickEnabled}
             onFinalTouchTap={this.handleClickSendMessageButton}
-            disabled={this.state.sending}
+            disabled={this.state.disabled}
           />
           {this.renderNeedsResponseToggleButton(contact)}
           <ToolbarSeparator />
@@ -530,10 +544,10 @@ class AssignmentTexterContact extends React.Component {
   render() {
     return (
       <div>
-        {this.state.sending ? (
+        {this.state.disabled ? (
           <div className={css(styles.overlay)}>
             <CircularProgress size={0.5} />
-            Sending...
+            {this.state.disabledText}
           </div>
         ) : ''
         }
