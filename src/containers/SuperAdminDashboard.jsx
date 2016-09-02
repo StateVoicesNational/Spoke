@@ -3,7 +3,7 @@ import { StyleSheet, css } from 'aphrodite'
 import gql from 'graphql-tag'
 import { withRouter } from 'react-router'
 import loadData from './hoc/load-data'
-import { Card, CardActions, CardHeader } from 'material-ui/Card'
+import { Card, CardActions, CardHeader, CardText } from 'material-ui/Card'
 import Dialog from 'material-ui/Dialog'
 import FlatButton from 'material-ui/FlatButton'
 import GSSubmitButton from '../components/forms/GSSubmitButton'
@@ -57,8 +57,9 @@ class SuperAdminDashboard extends React.Component {
           }}
         >
           <Form.Field
-            label='Credit amount'
+            label='Credit amount (in dollars)'
             name='balanceAmount'
+            autoFocus
             fullWidth
           />
           <Form.Field
@@ -87,14 +88,22 @@ class SuperAdminDashboard extends React.Component {
     return (
       <div className={css(styles.container)}>
         { this.props.data.organizations.map((organization) => (
-          <Card>
+          <Card
+            key={organization.id}
+          >
             <CardHeader
               title={organization.name}
               subtitle={formatMoney(organization.billingDetails.balanceAmount, organization.billingDetails.creditCurrency)}
+              actAsExpander
+              showExpandableButton
             />
             <CardActions>
               <FlatButton
                 label="Add credit"
+                onTouchTap={() => this.handleOpenAddCreditDialog(organization.id)}
+              />
+              <FlatButton
+                label="Go to balance history"
                 onTouchTap={() => this.handleOpenAddCreditDialog(organization.id)}
               />
             </CardActions>
@@ -141,6 +150,10 @@ const mapQueriesToProps = () => ({
         billingDetails {
           creditCurrency
           balanceAmount
+          balanceCredits {
+            amount
+            currency
+          }
         }
       }
     }`,

@@ -16,4 +16,6 @@ const BalanceLineItem = thinky.createModel('balance_line_item', type.object().sc
   payment_id: optionalString() // FIXME - make requiredString().enum
 }).allowExtra(false))
 
+BalanceLineItem.ensureIndex('organization_id')
+
 export default BalanceLineItem

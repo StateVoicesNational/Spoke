@@ -79,6 +79,11 @@ import {
   resolvers as inviteResolvers
 } from './invite'
 import {
+  schema as balanceLineItemSchema,
+  resolvers as balanceLineItemResolvers
+} from './balance-line-item'
+
+import {
   GraphQLError,
   authRequired,
   accessRequired,
@@ -700,7 +705,8 @@ export const schema = [
   cannedResponseSchema,
   questionResponseSchema,
   questionSchema,
-  inviteSchema
+  inviteSchema,
+  balanceLineItemSchema
 ]
 
 export const resolvers = {
@@ -721,5 +727,6 @@ export const resolvers = {
   ...jsonResolvers,
   ...phoneResolvers,
   ...questionResolvers,
+  ...balanceLineItemResolvers,
   ...rootMutations
 }
