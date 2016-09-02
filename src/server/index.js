@@ -87,7 +87,8 @@ app.get('/login-callback',
         last_name: req.user._json.user_metadata.family_name,
         cell: req.user._json.user_metadata.cell,
         email: req.user._json.email,
-        assigned_cell: ''
+        assigned_cell: '',
+        is_superadmin: false
       })
     }
     res.redirect(req.query.state || '/')

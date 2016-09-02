@@ -162,6 +162,7 @@ const rootSchema = `
     editOrganizationRoles(organizationId: String!, userId: String!, roles: [String]): Organization
     updateCard( organizationId: String!, stripeToken: String!): Organization
     addAccountCredit( organizationId: String!, balanceAmount: Int!): Organization
+    addManualAccountCredit( organizationId: String!, balanceAmount: Int!, paymentMethod: String!): Organization
     sendMessage(message:MessageInput!, campaignContactId:String!): CampaignContact,
     createOptOut(optOut:OptOutInput!, campaignContactId:String!):CampaignContact,
     editCampaignContactMessageStatus(messageStatus: String!, campaignContactId:String!): CampaignContact,
@@ -341,12 +342,27 @@ const rootMutations = {
       }
       return loaders.organization.load(organizationId)
     },
+    addManualAccountCredit: async(_, { organizationId, balanceAmount, paymentMethod }, { user, loaders }) => {
+      await superAdminRequired(user)
+      const organization = await loaders.organization.load(organizationId)
+      const newBalanceAmount = organization.balance_amount + balanceAmount
+
+      await new BalanceLineItem({
+        organization_id: organizationId,
+        currency: organization.currency,
+        amount: balanceAmount,
+        payment_method: paymentMethod,
+        source: 'SUPERADMIN',
+      }).save()
+
+      return await Organization.get(organizationId).update({ balance_amount: newBalanceAmount })
+    },
     addAccountCredit: async (_, { organizationId, balanceAmount }, { user, loaders }) => {
       await accessRequired(user, organizationId, 'OWNER')
       const organization = await loaders.organization.load(organizationId)
       const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
       try {
-        await stripe.charges.create({
+        const charge = await stripe.charges.create({
           customer: organization.stripe_id,
           amount: balanceAmount,
           currency: organization.currency
@@ -361,10 +377,14 @@ const rootMutations = {
       }
       const newBalanceAmount = organization.balance_amount + balanceAmount
 
+
       await new BalanceLineItem({
         organization_id: organizationId,
         currency: organization.currency,
-        amount: balanceAmount
+        amount: balanceAmount,
+        source: 'USER',
+        payment_id: charge.id,
+        payment_method: 'STRIPE',
       }).save()
 
       return await Organization.get(organizationId).update({ balance_amount: newBalanceAmount })
@@ -658,7 +678,7 @@ const rootResolvers = {
     stripePublishableKey: () => process.env.STRIPE_PUBLISHABLE_KEY,
     organizations: async(_, {}, { user }) => {
       await superAdminRequired(user)
-      return r.table.organization
+      return r.table('organization')
     }
   }
 }
