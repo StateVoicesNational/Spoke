@@ -21,11 +21,14 @@ import Privacy from './components/Privacy'
 import Billing from './containers/Billing'
 import Pricing from './components/Pricing'
 import AdminReplySender from './containers/AdminReplySender'
+import SuperAdminDashboard from './containers/SuperAdminDashboard'
+
 
 export default function makeRoutes(requireAuth = () => {}) {
   return (
     <Route path='/' component={App}>
       <IndexRoute component={Home} />
+      <Route path='superadmin' component={SuperAdminDashboard} />
       <Route path='admin' component={AdminDashboard} onEnter={requireAuth}>
         <IndexRoute component={() => <DashboardLoader path='/admin' />} />
         <Route path=':organizationId'>

@@ -34,3 +34,14 @@ export async function accessRequired(user, orgId, role) {
     })
   }
 }
+
+export function superAdminRequired(user) {
+  authRequired(user)
+
+  if (!user.is_superadmin) {
+    throw new GraphQLError({
+      status: 403,
+      message: 'You are not authorized to access that resource.'
+    })
+  }
+}

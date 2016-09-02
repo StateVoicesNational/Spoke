@@ -78,7 +78,12 @@ import {
   schema as inviteSchema,
   resolvers as inviteResolvers
 } from './invite'
-import { GraphQLError, authRequired, accessRequired } from './errors'
+import {
+  GraphQLError,
+  authRequired,
+  accessRequired,
+  superAdminRequired
+} from './errors'
 import { rentNewCell, sendMessage, handleIncomingMessage } from './lib/nexmo'
 import { getFormattedPhoneNumber } from '../../lib/phone-format'
 import { Notifications, sendUserNotification } from '../notifications'
@@ -144,7 +149,8 @@ const rootSchema = `
     campaign(id:String!): Campaign
     invite(id:String!): Invite
     contact(id:String!): CampaignContact,
-    stripePublishableKey: String
+    stripePublishableKey: String,
+    organizations: [Organization]
   }
 
   type RootMutation {
@@ -649,7 +655,11 @@ const rootResolvers = {
       // await accessRequired(user, contact.organization_id, 'TEXTER')
       return contact
     },
-    stripePublishableKey: () => process.env.STRIPE_PUBLISHABLE_KEY
+    stripePublishableKey: () => process.env.STRIPE_PUBLISHABLE_KEY,
+    organizations: async(_, {}, { user }) => {
+      await superAdminRequired(user)
+      return r.table.organization
+    }
   }
 }
 
