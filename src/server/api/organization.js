@@ -53,6 +53,8 @@ export const resolvers = {
     },
     balanceCredits: async (organization) => r.table('balance_line_item')
       .getAll(organization.id, { index: 'organization_id' })
+      .filter((doc) => doc('amount').gt(0))
+      .orderBy('createdAt')
   },
   Organization: {
     ...mapFieldsToModel([

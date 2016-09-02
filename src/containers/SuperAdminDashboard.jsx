@@ -104,7 +104,7 @@ class SuperAdminDashboard extends React.Component {
               />
               <FlatButton
                 label="Go to balance history"
-                onTouchTap={() => this.handleOpenAddCreditDialog(organization.id)}
+                onTouchTap={() => this.props.router.push(`/superadmin/${organization.id}`)}
               />
             </CardActions>
           </Card>
@@ -150,10 +150,6 @@ const mapQueriesToProps = () => ({
         billingDetails {
           creditCurrency
           balanceAmount
-          balanceCredits {
-            amount
-            currency
-          }
         }
       }
     }`,
