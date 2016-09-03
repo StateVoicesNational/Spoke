@@ -10,12 +10,12 @@ const BalanceLineItem = thinky.createModel('balance_line_item', type.object().sc
   created_at: timestamp(),
   message_id: optionalString(),
   source: type.string()
-    .required()
+    // .required()
     .enum('USER', 'SUPERADMIN'),
   payment_method: type.string() // FIXME - make requiredString().enum
-    .required()
+    // .required()
     .enum('WIRE', 'STRIPE'),
-  payment_id: optionalString()
+  payment_id: type.string()
 }).allowExtra(false))
 
 BalanceLineItem.ensureIndex('organization_id')
