@@ -366,8 +366,9 @@ const rootMutations = {
       await accessRequired(user, organizationId, 'OWNER')
       const organization = await loaders.organization.load(organizationId)
       const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
+      let charge = null
       try {
-        const charge = await stripe.charges.create({
+        charge = await stripe.charges.create({
           customer: organization.stripe_id,
           amount: balanceAmount,
           currency: organization.currency
@@ -381,8 +382,6 @@ const rootMutations = {
         }
       }
       const newBalanceAmount = organization.balance_amount + balanceAmount
-
-
       await new BalanceLineItem({
         organization_id: organizationId,
         currency: organization.currency,
