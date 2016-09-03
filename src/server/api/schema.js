@@ -78,7 +78,17 @@ import {
   schema as inviteSchema,
   resolvers as inviteResolvers
 } from './invite'
-import { GraphQLError, authRequired, accessRequired } from './errors'
+import {
+  schema as balanceLineItemSchema,
+  resolvers as balanceLineItemResolvers
+} from './balance-line-item'
+
+import {
+  GraphQLError,
+  authRequired,
+  accessRequired,
+  superAdminRequired
+} from './errors'
 import { rentNewCell, sendMessage, handleIncomingMessage } from './lib/nexmo'
 import { getFormattedPhoneNumber } from '../../lib/phone-format'
 import { Notifications, sendUserNotification } from '../notifications'
@@ -144,7 +154,8 @@ const rootSchema = `
     campaign(id:String!): Campaign
     invite(id:String!): Invite
     contact(id:String!): CampaignContact,
-    stripePublishableKey: String
+    stripePublishableKey: String,
+    organizations: [Organization]
   }
 
   type RootMutation {
@@ -156,6 +167,7 @@ const rootSchema = `
     editOrganizationRoles(organizationId: String!, userId: String!, roles: [String]): Organization
     updateCard( organizationId: String!, stripeToken: String!): Organization
     addAccountCredit( organizationId: String!, balanceAmount: Int!): Organization
+    addManualAccountCredit( organizationId: String!, balanceAmount: Int!, paymentMethod: String!): Organization
     sendMessage(message:MessageInput!, campaignContactId:String!): CampaignContact,
     createOptOut(optOut:OptOutInput!, campaignContactId:String!):CampaignContact,
     editCampaignContactMessageStatus(messageStatus: String!, campaignContactId:String!): CampaignContact,
@@ -335,12 +347,28 @@ const rootMutations = {
       }
       return loaders.organization.load(organizationId)
     },
+    addManualAccountCredit: async(_, { organizationId, balanceAmount, paymentMethod }, { user, loaders }) => {
+      await superAdminRequired(user)
+      const organization = await loaders.organization.load(organizationId)
+      const newBalanceAmount = organization.balance_amount + balanceAmount
+
+      await new BalanceLineItem({
+        organization_id: organizationId,
+        currency: organization.currency,
+        amount: balanceAmount,
+        payment_method: paymentMethod,
+        source: 'SUPERADMIN',
+      }).save()
+
+      return await Organization.get(organizationId).update({ balance_amount: newBalanceAmount })
+    },
     addAccountCredit: async (_, { organizationId, balanceAmount }, { user, loaders }) => {
       await accessRequired(user, organizationId, 'OWNER')
       const organization = await loaders.organization.load(organizationId)
       const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
+      let charge = null
       try {
-        await stripe.charges.create({
+        charge = await stripe.charges.create({
           customer: organization.stripe_id,
           amount: balanceAmount,
           currency: organization.currency
@@ -354,11 +382,13 @@ const rootMutations = {
         }
       }
       const newBalanceAmount = organization.balance_amount + balanceAmount
-
       await new BalanceLineItem({
         organization_id: organizationId,
         currency: organization.currency,
-        amount: balanceAmount
+        amount: balanceAmount,
+        source: 'USER',
+        payment_id: charge.id,
+        payment_method: 'STRIPE',
       }).save()
 
       return await Organization.get(organizationId).update({ balance_amount: newBalanceAmount })
@@ -649,7 +679,11 @@ const rootResolvers = {
       // await accessRequired(user, contact.organization_id, 'TEXTER')
       return contact
     },
-    stripePublishableKey: () => process.env.STRIPE_PUBLISHABLE_KEY
+    stripePublishableKey: () => process.env.STRIPE_PUBLISHABLE_KEY,
+    organizations: async(_, {}, { user }) => {
+      await superAdminRequired(user)
+      return r.table('organization')
+    }
   }
 }
 
@@ -670,7 +704,8 @@ export const schema = [
   cannedResponseSchema,
   questionResponseSchema,
   questionSchema,
-  inviteSchema
+  inviteSchema,
+  balanceLineItemSchema
 ]
 
 export const resolvers = {
@@ -691,5 +726,6 @@ export const resolvers = {
   ...jsonResolvers,
   ...phoneResolvers,
   ...questionResolvers,
+  ...balanceLineItemResolvers,
   ...rootMutations
 }

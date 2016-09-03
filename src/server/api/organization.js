@@ -14,6 +14,7 @@ export const schema = `
     balanceAmount: Int
     creditCurrency: String
     creditCard: CreditCard
+    balanceCredits: [BalanceLineItem]
   }
 
   type Organization {
@@ -49,7 +50,11 @@ export const resolvers = {
         })
         return result.default_source
       }
-    }
+    },
+    balanceCredits: async (organization) => r.table('balance_line_item')
+      .getAll(organization.id, { index: 'organization_id' })
+      .filter((doc) => doc('amount').gt(0))
+      .orderBy('created_at')
   },
   Organization: {
     ...mapFieldsToModel([
@@ -77,7 +82,7 @@ export const resolvers = {
       .eqJoin('user_id', r.table('user'))('right')
     },
     billingDetails: (organization) => organization,
-    threeClickEnabled: (organization) => organization.features.indexOf('threeClick') !== -1
+    threeClickEnabled: (organization) => organization.features.indexOf('threeClick') !== -1,
   }
 }
 

@@ -19,7 +19,7 @@ export function authRequired(user) {
   }
 }
 
-export async function accessRequired(user, orgId, role) {
+export async function accessRequired(user, orgId, role, allowSuperadmin = false) {
   authRequired(user)
 
   const userOrganization = await r.table('user_organization').filter({
@@ -27,7 +27,19 @@ export async function accessRequired(user, orgId, role) {
     organization_id: orgId
   })
   .filter((roles) => roles('roles').contains(role))
-  if (userOrganization.length === 0) {
+
+  if (userOrganization.length === 0 && (!allowSuperadmin || !user.is_superadmin)) {
+    throw new GraphQLError({
+      status: 403,
+      message: 'You are not authorized to access that resource.'
+    })
+  }
+}
+
+export function superAdminRequired(user) {
+  authRequired(user)
+
+  if (!user.is_superadmin) {
     throw new GraphQLError({
       status: 403,
       message: 'You are not authorized to access that resource.'
