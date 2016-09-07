@@ -43,17 +43,21 @@ function getContacts(assignment, campaign, contactsFilter) {
       filter.message_status = contactsFilter.messageStatus
     }
   }
-
-  return r.table('campaign_contact')
+  let query = r.table('campaign_contact')
     .getAll(assignment.id, { index: 'assignment_id' })
-    .merge((contact) => ({
-      opt_out: r.table('opt_out')
-        .getAll(contact('cell'), { index: 'cell' })
-        .filter({ organization_id: campaign.oranization_id })
-        .limit(1)(0)
-        .default(false)
-    }))
-    .filter(filter)
+
+  if (filter.hasOwnProperty('opt_out')) {
+    query = query
+      .merge((contact) => ({
+        opt_out: r.table('opt_out')
+          .getAll(contact('cell'), { index: 'cell' })
+          .filter({ organization_id: campaign.organization_id })
+          .limit(1)(0)
+          .default(false)
+      }))
+  }
+  query = query.filter(filter)
+  return query
 }
 
 export const resolvers = {

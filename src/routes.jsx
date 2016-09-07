@@ -3,7 +3,7 @@ import App from './components/App'
 import AdminDashboard from './components/AdminDashboard'
 import AdminCampaignList from './containers/AdminCampaignList'
 import AdminCampaignStats from './containers/AdminCampaignStats'
-import AdminTexterList from './containers/AdminTexterList'
+import AdminPersonList from './containers/AdminPersonList'
 import AdminOptOutList from './containers/AdminOptOutList'
 import AdminCampaignEdit from './containers/AdminCampaignEdit'
 import TexterDashboard from './components/TexterDashboard'
@@ -21,11 +21,20 @@ import Privacy from './components/Privacy'
 import Billing from './containers/Billing'
 import Pricing from './components/Pricing'
 import AdminReplySender from './containers/AdminReplySender'
+import SuperAdminDashboard from './containers/SuperAdminDashboard'
+import SuperAdminOrganizationPage from './containers/SuperAdminOrganizationPage'
+
 
 export default function makeRoutes(requireAuth = () => {}) {
   return (
     <Route path='/' component={App}>
       <IndexRoute component={Home} />
+      <Route path='superadmin'>
+        <IndexRoute component={SuperAdminDashboard} />
+        <Route path=':organizationId'>
+          <IndexRoute component={SuperAdminOrganizationPage} />
+        </Route>
+      </Route>
       <Route path='admin' component={AdminDashboard} onEnter={requireAuth}>
         <IndexRoute component={() => <DashboardLoader path='/admin' />} />
         <Route path=':organizationId'>
@@ -38,7 +47,7 @@ export default function makeRoutes(requireAuth = () => {}) {
               <Route path='send-replies' component={AdminReplySender} />
             </Route>
           </Route>
-          <Route path='texters' component={AdminTexterList} />
+          <Route path='people' component={AdminPersonList} />
           <Route path='optouts' component={AdminOptOutList} />
           <Route path='billing' component={Billing} />
         </Route>

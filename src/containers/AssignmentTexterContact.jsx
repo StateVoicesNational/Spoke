@@ -22,8 +22,8 @@ import Form from 'react-formal'
 import GSSubmitButton from '../components/forms/GSSubmitButton'
 import SendButton from '../components/SendButton'
 import CircularProgress from 'material-ui/CircularProgress'
-
-import { getChildren, getTopMostParent, interactionStepForId } from '../lib'
+import Snackbar from 'material-ui/Snackbar'
+import { getChildren, getTopMostParent, interactionStepForId, log } from '../lib'
 import { withRouter } from 'react-router'
 import wrapMutations from './hoc/wrap-mutations'
 
@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
     zIndex: 1000000
   },
   loadingIndicator: {
-    maxWidth: '50%'
+    maxWidth: '50%',
   },
   navigationToolbarTitle: {
     fontSize: '12px',
@@ -95,22 +95,41 @@ const inlineStyles = {
 }
 
 class AssignmentTexterContact extends React.Component {
+  messageSchema = yup.object({
+    messageText: yup.string().required("Can't send empty message")
+  })
+
+  optOutSchema = yup.object({
+    optOutMessageText: yup.string().required()
+  })
+
   constructor(props) {
     super(props)
 
     const questionResponses = this.getInitialQuestionResponses(props.data.contact.interactionSteps)
     const availableSteps = this.getAvailableInteractionSteps(questionResponses)
 
+    const optOut = this.props.data.contact.optOut
+    const disabled = !!optOut
+    const disabledText = optOut ? 'Skipping opt-out...' : 'Sending...'
+
     this.state = {
+      disabled,
+      disabledText,
+      questionResponses,
+      sendError: null,
       responsePopoverOpen: false,
       messageText: this.getStartingMessageText(),
-      sending: false,
       optOutDialogOpen: false,
-      questionResponses,
       currentInteractionStep: availableSteps.length > 0 ? availableSteps[availableSteps.length - 1] : null
     }
   }
 
+  componentDidMount() {
+    if (this.props.data.contact.optOut) {
+      setTimeout(() => this.props.onFinishContact(), 1500)
+    }
+  }
   getAvailableInteractionSteps(questionResponses) {
     const allInteractionSteps = this.props.data.contact.interactionSteps
 
@@ -162,7 +181,7 @@ class AssignmentTexterContact extends React.Component {
   getStartingMessageText() {
     const { contact } = this.props.data
     const { messages } = contact
-    return messages.length > 0 ? null : this.getMessageTextFromScript(contact.currentInteractionStepScript)
+    return messages.length > 0 ? '' : this.getMessageTextFromScript(contact.currentInteractionStepScript)
   }
 
   handleOpenPopover = (event) => {
@@ -195,31 +214,36 @@ class AssignmentTexterContact extends React.Component {
     }
   }
 
-  handleClickSendMessageButton = async () => {
-    await this.handleSendMessage()
-    await this.handleSubmitSurveys()
-    this.props.onFinishContact()
-  }
-
-  handleSendMessage = async () => {
-    const { contact } = this.props.data
-    this.setState({ sending: true })
-    const message = this.createMessageToContact(this.refs.messageText.getValue().trim())
-    await this.sendMessage(message, contact.id)
-  }
-
-  sendMessage = async(message, campaignContactId) => {
-    try {
-      await this.props.mutations.sendMessage(message, campaignContactId)
-    } catch (e) {
-      if (e.status === 402) {
-        const { campaign } = this.props
-        this.props.router.push(`/app/${campaign.organization.id}/todos`)
-      } else {
-        throw e
-      }
+  handleSendMessageError = (e) => {
+    if (e.status === 402) {
+      const { campaign } = this.props
+      this.props.router.push(`/app/${campaign.organization.id}/todos`)
+    } else if (e.status === 400) {
+      this.setState({
+        sendError: e.message
+      })
+    } else {
+      log.error(e)
+      this.setState({
+        sendError: 'Something went wrong!'
+      })
     }
   }
+
+  handleMessageFormSubmit = async ( { messageText }) => {
+    try {
+      const { contact } = this.props.data
+      const message = this.createMessageToContact(messageText)
+      this.setState({ disabled: true })
+      await this.props.mutations.sendMessage(message, contact.id)
+
+      await this.handleSubmitSurveys()
+      this.props.onFinishContact()
+    } catch (e) {
+      this.handleSendMessageError(e)
+    }
+  }
+
   handleSubmitSurveys = async () => {
     const { contact } = this.props.data
 
@@ -243,9 +267,6 @@ class AssignmentTexterContact extends React.Component {
         deletionIds.push(interactionStepId)
       }
     }
-    const questionResponses = {
-
-    }
     await this.props.mutations.updateQuestionResponses(questionResponseObjects, contact.id)
     await this.props.mutations.deleteQuestionResponses(deletionIds, contact.id)
   }
@@ -265,15 +286,18 @@ class AssignmentTexterContact extends React.Component {
     const { contact } = this.props.data
     const { assignment } = this.props
     const message = this.createMessageToContact(optOutMessageText)
-    await this.sendMessage(message, contact.id)
+    try {
+      await this.props.mutations.sendMessage(message, contact.id)
+      const optOut = {
+        cell: contact.cell,
+        assignmentId: assignment.id
+      }
 
-    const optOut = {
-      cell: contact.cell,
-      assignmentId: assignment.id
+      await this.props.mutations.createOptOut(optOut, contact.id)
+      this.props.onFinishContact()
+    } catch (e) {
+      this.handleSendMessageError(e)
     }
-
-    await this.props.mutations.createOptOut(optOut, contact.id)
-    this.props.onFinishContact()
   }
 
   handleOpenDialog = () => {
@@ -342,16 +366,12 @@ class AssignmentTexterContact extends React.Component {
       />
     ]
 
-    const schema = yup.object({
-      optOutMessageText: yup.string().required()
-    })
-
     const optOutScript = "I'm opting you out of text-based communication immediately. Have a great day."
 
     return (
       <div>
         <GSForm
-          schema={schema}
+          schema={this.optOutSchema}
           value={{ optOutMessageText: optOutScript }}
           onSubmit={this.handleOptOut}
         >
@@ -372,6 +392,11 @@ class AssignmentTexterContact extends React.Component {
 
       </div>
     )
+  }
+
+  handleClickSendMessageButton = () => {
+    console.log("this.refs.form", this.refs)
+    this.refs.form.submit()
   }
 
   renderSurveySection() {
@@ -428,7 +453,7 @@ class AssignmentTexterContact extends React.Component {
           <SendButton
             threeClickEnabled={campaign.organization.threeClickEnabled}
             onFinalTouchTap={this.handleClickSendMessageButton}
-            disabled={this.state.sending}
+            disabled={this.state.disabled}
           />
           {this.renderNeedsResponseToggleButton(contact)}
           <ToolbarSeparator />
@@ -487,22 +512,26 @@ class AssignmentTexterContact extends React.Component {
     )
   }
 
+  handleMessageFormChange = ({ messageText }) => this.setState({ messageText })
   renderBottomFixedSection() {
     return (
       <div>
         {this.renderSurveySection()}
         <div>
           <div className={css(styles.messageField)}>
-            <TextField
-              autoFocus
-              ref='messageText'
-              name='messageText'
-              floatingLabelText='Your message'
-              fullWidth
-              multiLine
-              onChange={(event) => this.setState({ messageText: event.target.value })}
-              value={this.state.messageText}
-            />
+            <GSForm
+              ref='form'
+              schema={this.messageSchema}
+              value={{ messageText: this.state.messageText}}
+              onSubmit={this.handleMessageFormSubmit}
+              onChange={this.handleMessageFormChange}
+            >
+              <Form.Field
+                name='messageText'
+                label='Your message'
+                fullWidth
+              />
+            </GSForm>
           </div>
           {this.renderActionToolbar()}
         </div>
@@ -515,10 +544,10 @@ class AssignmentTexterContact extends React.Component {
   render() {
     return (
       <div>
-        {this.state.sending ? (
+        {this.state.disabled ? (
           <div className={css(styles.overlay)}>
             <CircularProgress size={0.5} />
-            Sending...
+            {this.state.disabledText}
           </div>
         ) : ''
         }
@@ -535,6 +564,11 @@ class AssignmentTexterContact extends React.Component {
             {this.renderBottomFixedSection()}
           </div>
         </div>
+        <Snackbar
+          open={!!this.state.sendError}
+          message={this.state.sendError}
+          onRequestClose={this.handleRequestClose}
+        />
       </div>
     )
   }
@@ -549,6 +583,7 @@ AssignmentTexterContact.propTypes = {
   onFinishContact: React.PropTypes.func,
   router: React.PropTypes.object,
   data: React.PropTypes.object,
+  mutations: React.PropTypes.object,
   onExitTexter: React.PropTypes.func
 }
 

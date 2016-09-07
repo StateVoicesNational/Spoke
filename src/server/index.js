@@ -5,7 +5,7 @@ import appRenderer from './middleware/app-renderer'
 import { apolloServer } from 'apollo-server'
 import { schema, resolvers } from './api/schema'
 import mocks from './api/mocks'
-import { createLoaders, User } from './models'
+import { createLoaders, User, Message, r } from './models'
 import passport from 'passport'
 import cookieSession from 'cookie-session'
 import setupAuth0Passport from './setup-auth0-passport'
@@ -14,6 +14,7 @@ import { log } from '../lib'
 import { handleIncomingMessage, handleDeliveryReport } from './api/lib/nexmo'
 import { seedZipCodes } from './seeds/seed-zip-codes'
 import { setupUserNotificationObservers } from './notifications'
+import { Tracer } from 'apollo-tracer'
 
 process.on('uncaughtException', (ex) => {
   log.error(ex)
@@ -49,15 +50,15 @@ app.use(cookieSession({
 app.use(passport.initialize())
 app.use(passport.session())
 
-app.post('/nexmo', (req, res) => {
+app.post('/nexmo', wrap(async (req, res) => {
   try {
-    const messageId = handleIncomingMessage(req.body)
+    const messageId = await handleIncomingMessage(req.body)
     res.send(messageId)
   } catch (ex) {
     log.error(ex)
     res.send('done')
   }
-})
+}))
 
 app.post('/nexmo-message-report', wrap(async (req, res) => {
   try {
@@ -86,12 +87,18 @@ app.get('/login-callback',
         last_name: req.user._json.user_metadata.family_name,
         cell: req.user._json.user_metadata.cell,
         email: req.user._json.email,
-        assigned_cell: ''
+        assigned_cell: '',
+        is_superadmin: false
       })
     }
     res.redirect(req.query.state || '/')
   })
 )
+
+let tracer = null
+if (process.env.APOLLO_OPTICS_KEY) {
+  tracer = new Tracer({ TRACER_APP_KEY: process.env.APOLLO_OPTICS_KEY })
+}
 app.use('/graphql', apolloServer((req) => ({
   graphiql: true,
   pretty: true,
@@ -102,6 +109,7 @@ app.use('/graphql', apolloServer((req) => ({
     loaders: createLoaders(),
     user: req.user
   },
+  tracer,
   printErrors: true,
   allowUndefinedInResolve: false
 })))

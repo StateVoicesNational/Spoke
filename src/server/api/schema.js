@@ -1,3 +1,5 @@
+import lodash from 'lodash'
+import log from '../../lib'
 import { Campaign,
   Assignment,
   BalanceLineItem,
@@ -76,12 +78,26 @@ import {
   schema as inviteSchema,
   resolvers as inviteResolvers
 } from './invite'
-import { GraphQLError, authRequired, accessRequired } from './errors'
-import { rentNewCell, handleIncomingMessage } from './lib/nexmo'
-import { getFormattedPhoneNumber } from '../../lib/phone-format'
-import stripeFactory from 'stripe'
+import {
+  schema as balanceLineItemSchema,
+  resolvers as balanceLineItemResolvers
+} from './balance-line-item'
 
+import {
+  GraphQLError,
+  authRequired,
+  accessRequired,
+  superAdminRequired
+} from './errors'
+import { rentNewCell, sendMessage, handleIncomingMessage } from './lib/nexmo'
+import { getFormattedPhoneNumber } from '../../lib/phone-format'
+import { Notifications, sendUserNotification } from '../notifications'
 const rootSchema = `
+  input CampaignContactCollectionInput {
+    data: [CampaignContactInput]
+    checksum: String
+  }
+
   input CampaignContactInput {
     firstName: String!
     lastName: String!
@@ -113,18 +129,13 @@ const rootSchema = `
     answerOptions: [AnswerOptionInput]
   }
 
-  input TexterInput {
-    id: String!
-    contactsCount: Int!
-  }
-
   input CampaignInput {
     title: String
     description: String
     dueBy: Date
-    contacts: [CampaignContactInput]
+    contacts: CampaignContactCollectionInput
     organizationId: String
-    texters: [TexterInput]
+    texters: [String]
     interactionSteps: [InteractionStepInput]
     cannedResponses: [CannedResponseInput]
   }
@@ -136,14 +147,15 @@ const rootSchema = `
     userId: String
   }
 
+
   type RootQuery {
     currentUser: User
     organization(id:String!): Organization
     campaign(id:String!): Campaign
     invite(id:String!): Invite
     contact(id:String!): CampaignContact,
-    assignment(id:String!): Assignment,
-    stripePublishableKey: String
+    stripePublishableKey: String,
+    organizations: [Organization]
   }
 
   type RootMutation {
@@ -152,10 +164,12 @@ const rootSchema = `
     createCannedResponse(cannedResponse:CannedResponseInput!): CannedResponse
     createOrganization(name: String!, userId: String!, inviteId: String!): Organization
     joinOrganization(organizationId: String!): Organization
+    editOrganizationRoles(organizationId: String!, userId: String!, roles: [String]): Organization
     updateCard( organizationId: String!, stripeToken: String!): Organization
     addAccountCredit( organizationId: String!, balanceAmount: Int!): Organization
+    addManualAccountCredit( organizationId: String!, balanceAmount: Int!, paymentMethod: String!): Organization
     sendMessage(message:MessageInput!, campaignContactId:String!): CampaignContact,
-    createOptOut(optOut:OptOutInput!):CampaignContact,
+    createOptOut(optOut:OptOutInput!, campaignContactId:String!):CampaignContact,
     editCampaignContactMessageStatus(messageStatus: String!, campaignContactId:String!): CampaignContact,
     deleteQuestionResponses(interactionStepIds:[String], campaignContactId:String!): CampaignContact,
     updateQuestionResponses(questionResponses:[QuestionResponseInput], campaignContactId:String!): CampaignContact,
@@ -187,7 +201,7 @@ async function editCampaign(id, campaign, loaders) {
   })
 
   if (campaign.hasOwnProperty('contacts')) {
-    const contactsToSave = campaign.contacts.map((datum) => {
+    const contactsToSave = campaign.contacts.data.map((datum) => {
       const modelData = {
         campaign_id: datum.campaignId,
         first_name: datum.firstName,
@@ -205,59 +219,18 @@ async function editCampaign(id, campaign, loaders) {
       .getAll(id, { index: 'campaign_id' })
       .delete()
     await CampaignContact.save(contactsToSave)
+    campaignUpdates.contacts_checksum = campaign.contacts.checksum
   }
 
   if (campaign.hasOwnProperty('texters')) {
-    // We use r.branch to make the updates atomic. See https://www.rethinkdb.com/docs/consistency/
-    await r.table('campaign_contact')
-      .getAll(id, { index: 'campaign_id' })
-      .update({
-        assignment: r.branch(
-          r.row('message_status').eq('needsMessage'),
-          '',
-          r.row('assignment')
-        )
-      })
-    const availableContacts = await r.table('campaign_contact')
-      .getAll(id, { index: 'campaign_id' })
-      .filter({ assignment: '' })
-
-/*    const
-
-    const clientCount = campaign.texters.reduce((left, right) => (left + right.contactsCount), 0)
-
-    let assignments = campaign.texters.map((texter) => ({
-      user_id: texter.id,
-      campaign_id: id,
-      contactsCount: texter.contactsCount
+    const assignments = campaign.texters.map((texterId) => ({
+      user_id: texterId,
+      campaign_id: id
     }))
-
-    if (clientCount < availableContacts) {
-      throw new Error('Client somehow had fewer available contacts than the server. This means something went from not needing a message to needing a message and makes no sense.')
-    } else if (clientCount > availableContacts) {
-      let contactDiff = clientCount - availableContacts
-      let assignmentIndex = 0
-      while (contactDiff > 0) {
-        assignments[assignmentIndex]
-      }
-      assignments = assignments.map((assignment) => {
-        const newContactsCount =
-        ...assignment,
-        contactsCount: assignment.contactsCount - contactDiff
-      })
-    }*/
-
-/*    await r.table('assignment')
+    await r.table('assignment')
       .getAll(id, { index: 'campaign_id' })
-      .merge((row) => ({
-        hasContacts: r.table('campaign_contact')
-          .getAll(row('id'), { index: 'assignment_id' })
-          .limit(1)(0)
-          .default(false)
-      }))
-//      .filter({ hasContacts: false })
-//      .delete()
-*/
+      .delete()
+    await Assignment.save(assignments)
   }
 
   if (campaign.hasOwnProperty('interactionSteps')) {
@@ -323,7 +296,7 @@ async function editCampaign(id, campaign, loaders) {
 
 const rootMutations = {
   RootMutation: {
-    sendReply: async (_, { id, message }, { loaders }) => {
+    sendReply: async (_, { id, message }, { user, loaders }) => {
       if (process.env.NODE_ENV !== 'development') {
         throw new GraphQLError({
           status: 400,
@@ -338,9 +311,24 @@ const rootMutations = {
         to: userNumber,
         msisdn: contact.cell,
         text: message,
-        messageId: 'mocked_message'
+        messageId: `mocked_${ Math.random().toString(36).replace(/[^a-zA-Z1-9]+/g, '')}`
       })
       return loaders.campaignContact.load(id)
+    },
+    editOrganizationRoles: async (_, { userId, organizationId, roles }, { user, loaders }) => {
+      const userOrganization = await r.table('user_organization')
+        .getAll(organizationId, { index: 'organization_id'})
+        .filter({ user_id: userId })
+        .limit(1)(0)
+
+      const oldRoleIsOwner = userOrganization.roles.indexOf('OWNER') !== -1
+      const newRoleIsOwner = roles.indexOf('OWNER') !== -1
+      const roleRequired = (oldRoleIsOwner || newRoleIsOwner) ? 'OWNER' : 'ADMIN'
+      await accessRequired(user, organizationId, roleRequired)
+
+      userOrganization.roles = roles
+      await UserOrganization.save(userOrganization, { conflict: 'update' })
+      return loaders.organization.load(organizationId)
     },
     joinOrganization: async (_, { organizationId }, { user, loaders }) => {
       const userOrg = await r.table('user_organization')
@@ -359,12 +347,28 @@ const rootMutations = {
       }
       return loaders.organization.load(organizationId)
     },
-    addAccountCredit: async (_, { organizationId, balanceAmount }, { user, loaders }) => {
-      await accessRequired(user, organizationId, 'ADMIN')
+    addManualAccountCredit: async(_, { organizationId, balanceAmount, paymentMethod }, { user, loaders }) => {
+      await superAdminRequired(user)
       const organization = await loaders.organization.load(organizationId)
-      const stripe = stripeFactory(process.env.STRIPE_SECRET_KEY)
+      const newBalanceAmount = organization.balance_amount + balanceAmount
+
+      await new BalanceLineItem({
+        organization_id: organizationId,
+        currency: organization.currency,
+        amount: balanceAmount,
+        payment_method: paymentMethod,
+        source: 'SUPERADMIN',
+      }).save()
+
+      return await Organization.get(organizationId).update({ balance_amount: newBalanceAmount })
+    },
+    addAccountCredit: async (_, { organizationId, balanceAmount }, { user, loaders }) => {
+      await accessRequired(user, organizationId, 'OWNER')
+      const organization = await loaders.organization.load(organizationId)
+      const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
+      let charge = null
       try {
-        await stripe.charges.create({
+        charge = await stripe.charges.create({
           customer: organization.stripe_id,
           amount: balanceAmount,
           currency: organization.currency
@@ -378,19 +382,22 @@ const rootMutations = {
         }
       }
       const newBalanceAmount = organization.balance_amount + balanceAmount
-
       await new BalanceLineItem({
         organization_id: organizationId,
         currency: organization.currency,
-        amount: balanceAmount
+        amount: balanceAmount,
+        source: 'USER',
+        payment_id: charge.id,
+        payment_method: 'STRIPE',
       }).save()
 
       return await Organization.get(organizationId).update({ balance_amount: newBalanceAmount })
+
     },
     updateCard: async(_, { organizationId, stripeToken }, { user, loaders }) => {
-      await accessRequired(user, organizationId, 'ADMIN')
+      await accessRequired(user, organizationId, 'OWNER')
       const organization = await loaders.organization.load(organizationId)
-      const stripe = stripeFactory(process.env.STRIPE_SECRET_KEY)
+      const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 
       try {
         if (organization.stripe_id) {
@@ -398,20 +405,21 @@ const rootMutations = {
             source: stripeToken
           })
           return organization
-        }
-        const customer = await stripe.customers.create({
-          description: organization.name,
-          email: user.email,
-          metadata: {
-            organizationId
-          },
-          source: stripeToken
-        })
-        return await Organization
-          .get(organizationId)
-          .update({
-            stripe_id: customer.id
+        } else {
+          const customer = await stripe.customers.create({
+            description: organization.name,
+            email: user.email,
+            metadata: {
+              organizationId
+            },
+            source: stripeToken
           })
+          return await Organization
+            .get(organizationId)
+            .update({
+              stripe_id: customer.id
+            })
+        }
       } catch (e) {
         if (e.type === 'StripeCardError') {
           throw new GraphQLError({
@@ -421,6 +429,7 @@ const rootMutations = {
         }
         throw e
       }
+
     },
     createCampaign: async (_, { campaign }, { user, loaders }) => {
       await accessRequired(user, campaign.organizationId, 'ADMIN')
@@ -428,15 +437,58 @@ const rootMutations = {
         organization_id: campaign.organizationId,
         title: campaign.title,
         description: campaign.description,
-        due_by: campaign.dueBy,
-        is_started: false
+        due_by: campaign.dueBy
       })
       const newCampaign = await campaignInstance.save()
       return editCampaign(newCampaign.id, campaign, loaders)
     },
-    startCampaign: async (_, { id }) => Campaign.get(id).update({
-      is_started: true
-    }),
+    startCampaign: async (_, { id }, { loaders }) => {
+      const availableContacts = await r.table('campaign_contact')
+        .getAll(id, { index: 'campaign_id' })
+        .map((campaignContact) => (
+          campaignContact.merge({ count: r.table('message')
+            .getAll(campaignContact('assignment_id'), { index: 'assignment_id' })
+            .count() })
+        ))
+        .filter({ count: 0 })
+        .without('count')
+      const availableAssignments = await r.table('assignment')
+        .getAll(id, { index: 'campaign_id' })
+      const contactCount = availableContacts.length
+      const assignmentCount = availableAssignments.length
+      const chunkSize = Math.max(Math.floor(contactCount / assignmentCount), 1)
+      const chunked = lodash.chunk(availableContacts, chunkSize)
+
+      if (contactCount > assignmentCount && contactCount % assignmentCount > 0) {
+        const leftovers = chunked.pop()
+        leftovers.forEach((leftover, index) => chunked[index].push(leftover))
+      }
+
+      if (assignmentCount < chunked.length) {
+        log.error('More chunks than there are texters!')
+      }
+
+      const assignedChunks = chunked.map((chunk, index) => (
+        chunk.map((innerChunk) => ({
+          ...innerChunk,
+          assignment_id: availableAssignments[index].id
+        }))
+      ))
+
+      let contactsToSave = []
+      assignedChunks.forEach((chunk) => {
+        contactsToSave = contactsToSave.concat(chunk)
+      })
+
+      await CampaignContact.save(contactsToSave, { conflict: 'update' })
+
+      await sendUserNotification({
+        type: Notifications.CAMPAIGN_STARTED,
+        campaignId: id
+      })
+
+      return loaders.campaign.load(id)
+    },
     editCampaign: async (_, { id, campaign }, { user, loaders }) => {
       if (campaign.organizationId) {
         await accessRequired(user, campaign.organizationId, 'ADMIN')
@@ -479,7 +531,7 @@ const rootMutations = {
       await UserOrganization.save({
         user_id: userId,
         organization_id: newOrganization.id,
-        roles: ['ADMIN', 'TEXTER']
+        roles: ['OWNER', 'ADMIN', 'TEXTER']
       })
       await Invite.save({
         id: inviteId,
@@ -492,8 +544,8 @@ const rootMutations = {
       contact.message_status = messageStatus
       return await contact.save()
     },
-    createOptOut: async(_, { optOut }) => {
-      const campaign = await r.table('assignment')
+    createOptOut: async(_, { optOut, campaignContactId }, { loaders }) => {
+      let campaign = await r.table('assignment')
         .get(optOut.assignmentId)
         .merge((doc) => ({
           campaign: r.table('campaign')
@@ -516,6 +568,19 @@ const rootMutations = {
         }))
         .pluck('organization')
       const organization = merged.organization
+
+      const optOut = await r.table('opt_out')
+          .getAll(contact.cell, { index: 'cell' })
+          .filter({ organization_id: organization.id })
+          .limit(1)(0)
+          .default(null)
+      if (optOut) {
+        throw new GraphQLError({
+          status: 400,
+          message: 'Skipped sending last message because the contact was already opted out'
+        })
+      }
+
       const plan = await loaders.plan.load(organization.plan_id)
       const amountPerMessage = plan.amount_per_message
 
@@ -550,7 +615,7 @@ const rootMutations = {
       await new BalanceLineItem({
         organization_id: organization.id,
         currency: organization.currency,
-        amount: amountPerMessage,
+        amount: -amountPerMessage,
         message_id: savedMessage.id
       }).save()
 
@@ -568,7 +633,7 @@ const rootMutations = {
       const contact = loaders.campaignContact.load(campaignContactId)
       return contact
     },
-    updateQuestionResponses: async (_, { questionResponses, campaignContactId }, { loaders }) => {
+    updateQuestionResponses: async(_, { questionResponses, campaignContactId }, { loaders }) => {
       const count = questionResponses.length
 
       for (let i = 0; i < count; i++) {
@@ -579,7 +644,7 @@ const rootMutations = {
           .filter({ interaction_step_id: interactionStepId })
           .delete()
 
-        return await new QuestionResponse({
+        const newQuestionResponse = await new QuestionResponse({
           campaign_contact_id: campaignContactId,
           interaction_step_id: interactionStepId,
           value
@@ -600,13 +665,7 @@ const rootResolvers = {
       await accessRequired(user, campaign.organization_id, 'ADMIN')
       return campaign
     },
-    assignment: async (_, { id }, { loaders, user }) => {
-      const assignment = await loaders.assignment.load(id)
-      const campaign = await loaders.campaign.load(assignment.campaign_id)
-      await accessRequired(user, campaign.organization_id, 'TEXTER')
-      return assignment
-    },
-    organization: async(_, { id }, { loaders }) => {
+    organization: async(_, { id }, { loaders, user }) => {
       // await accessRequired(user, id, 'ADMIN')
       return loaders.organization.load(id)
     },
@@ -615,12 +674,16 @@ const rootResolvers = {
       return loaders.invite.load(id)
     },
     currentUser: async(_, { id }, { user }) => user,
-    contact: async(_, { id }, { loaders }) => {
+    contact: async(_, { id }, { loaders, user }) => {
       const contact = await loaders.campaignContact.load(id)
       // await accessRequired(user, contact.organization_id, 'TEXTER')
       return contact
     },
-    stripePublishableKey: () => process.env.STRIPE_PUBLISHABLE_KEY
+    stripePublishableKey: () => process.env.STRIPE_PUBLISHABLE_KEY,
+    organizations: async(_, {}, { user }) => {
+      await superAdminRequired(user)
+      return r.table('organization')
+    }
   }
 }
 
@@ -641,7 +704,8 @@ export const schema = [
   cannedResponseSchema,
   questionResponseSchema,
   questionSchema,
-  inviteSchema
+  inviteSchema,
+  balanceLineItemSchema
 ]
 
 export const resolvers = {
@@ -662,5 +726,6 @@ export const resolvers = {
   ...jsonResolvers,
   ...phoneResolvers,
   ...questionResolvers,
+  ...balanceLineItemResolvers,
   ...rootMutations
 }

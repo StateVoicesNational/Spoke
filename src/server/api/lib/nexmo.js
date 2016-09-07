@@ -1,6 +1,6 @@
 import Nexmo from 'nexmo'
 import { getFormattedPhoneNumber } from '../../../lib/phone-format'
-import { Message, r } from '../../models'
+import { Message, PendingMessagePart, r } from '../../models'
 import { log } from '../../../lib'
 
 let nexmo = null
@@ -9,6 +9,55 @@ if (process.env.NEXMO_API_KEY && process.env.NEXMO_API_SECRET) {
   nexmo = new Nexmo({
     apiKey: process.env.NEXMO_API_KEY,
     apiSecret: process.env.NEXMO_API_SECRET
+  })
+}
+
+export async function getLastMessage({ userNumber, contactNumber }) {
+  const lastMessage = await r.table('message')
+    .getAll(contactNumber, { index: 'contact_number' })
+    .filter({
+      user_number: userNumber,
+      is_from_contact: false
+    })
+    .orderBy(r.desc('created_at'))
+    .limit(1)
+    .pluck('assignment_id')(0)
+    .default(null)
+
+  return lastMessage
+}
+
+export async function saveNewIncomingMessage (messageInstance) {
+  await messageInstance.save()
+
+  await r.table('campaign_contact')
+    .getAll(messageInstance.assignment_id, { index: 'assignment_id' })
+    .filter({ cell: messageInstance.contact_number })
+    .limit(1)
+    .update({ message_status: 'needsResponse' })
+}
+
+export async function convertMessagePartsToMessage(messageParts) {
+  const firstPart = messageParts[0]
+  const userNumber = firstPart.user_number
+  const contactNumber = firstPart.contact_number
+  const serviceMessages = messageParts.map((part) => part.service_message)
+  const text = serviceMessages
+    .map((serviceMessage) => serviceMessage.text)
+    .join('')
+
+  const lastMessage = await getLastMessage({ contactNumber, userNumber })
+
+  return new Message({
+    contact_number: contactNumber,
+    user_number: userNumber,
+    is_from_contact: true,
+    text,
+    service_messages: serviceMessages,
+    service_message_ids: serviceMessages.map((doc) => doc.messageId),
+    assignment_id: lastMessage.assignment_id,
+    service: 'nexmo',
+    send_status: 'DELIVERED'
   })
 }
 
@@ -32,13 +81,21 @@ export async function rentNewCell() {
     return '+18179994303'
   }
   const newCell = await findNewCell()
+
   if (newCell && newCell.numbers && newCell.numbers[0] && newCell.numbers[0].msisdn) {
     return new Promise((resolve, reject) => {
       nexmo.number.buy('US', newCell.numbers[0].msisdn, (err, response) => {
         if (err) {
           reject(err)
         } else {
-          resolve(newCell.numbers[0].msisdn)
+          // It appears we need to check error-code in the response even if response is returned.
+          // This library returns responses that look like { error-code: 401, error-label: 'not authenticated'}
+          // or the bizarrely-named { error-code: 200 } even in the case of success
+          if (response['error-code'] !== '200') {
+            reject(new Error(response['error-label']))
+          } else {
+            resolve(newCell.numbers[0].msisdn)
+          }
         }
       })
     })
@@ -121,44 +178,28 @@ export async function handleIncomingMessage(message) {
     !message.hasOwnProperty('messageId')) {
     log.error(`This is not an incoming message: ${JSON.stringify(message)}`)
   }
-  const { to, msisdn, text, messageId } = message
 
+  const { to, msisdn, concat } = message
+  const isConcat = concat === 'true'
   const contactNumber = getFormattedPhoneNumber(msisdn)
   const userNumber = getFormattedPhoneNumber(to)
 
-  const lastMessage = await r.table('message')
-    .filter({
-      contact_number: contactNumber,
-      user_number: userNumber,
-      is_from_contact: false
-    })
-    .orderBy(r.desc('created_at'))
-    .limit(1)
-    .pluck('assignment_id')(0)
-    .default(null)
-
-  if (lastMessage) {
-    const assignmentId = lastMessage.assignment_id
-    const messageInstance = new Message({
-      contact_number: contactNumber,
-      user_number: userNumber,
-      is_from_contact: true,
-      text,
-      assignment_id: assignmentId,
-      service_messages: [message],
-      service: 'nexmo',
-      send_status: 'DELIVERED'
-    })
-
-    await messageInstance.save()
-
-    await r.table('campaign_contact')
-      .getAll(assignmentId, { index: 'assignment_id' })
-      .filter({ cell: contactNumber })
-      .limit(1)
-      .update({ message_status: 'needsResponse' })
-
-    return messageInstance.id
+  let parentId = ''
+  if (isConcat) {
+    log.info(`Incoming message part (${message['concat-part']} of ${message['concat-total']} for ref ${message['concat-ref']}) from ${contactNumber} to ${userNumber}`)
+    parentId = message['concat-ref']
+  } else {
+    log.info(`Incoming message part from ${contactNumber} to ${userNumber}`)
   }
-  throw new Error('No message thread to attach incoming message to')
+
+  const pendingMessagePart = new PendingMessagePart({
+    service: 'nexmo',
+    parent_id: parentId,
+    service_message: message,
+    user_number: userNumber,
+    contact_number: contactNumber
+  })
+
+  const part = await pendingMessagePart.save()
+  return part.id
 }

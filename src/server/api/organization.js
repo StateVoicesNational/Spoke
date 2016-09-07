@@ -14,14 +14,14 @@ export const schema = `
     balanceAmount: Int
     creditCurrency: String
     creditCard: CreditCard
+    balanceCredits: [BalanceLineItem]
   }
 
   type Organization {
     id: ID
     name: String
     campaigns: [Campaign]
-    texters: [User]
-    admins: [User]
+    people(role: String): [User]
     optOuts: [OptOut]
     billingDetails: BillingDetails
     plan: Plan
@@ -39,17 +39,22 @@ export const resolvers = {
   BillingDetails: {
     balanceAmount: (organization) => organization.balance_amount || 0,
     creditCurrency: (organization) => organization.currency,
-    creditCard: async (organization) => {
-      if (!organization.stripe_id)
+    creditCard: async (organization, _, { user }) => {
+      await accessRequired(user, organization.id, 'OWNER')
+      if (!organization.stripe_id) {
         return null
-      else {
+      } else {
         const stripeAPI = stripe(process.env.STRIPE_SECRET_KEY)
         const result = await stripeAPI.customers.retrieve(organization.stripe_id, {
           expand: ['default_source']
         })
         return result.default_source
       }
-    }
+    },
+    balanceCredits: async (organization) => r.table('balance_line_item')
+      .getAll(organization.id, { index: 'organization_id' })
+      .filter((doc) => doc('amount').gt(0))
+      .orderBy('created_at')
   },
   Organization: {
     ...mapFieldsToModel([
@@ -67,22 +72,17 @@ export const resolvers = {
         .getAll(organization.id, { index: 'organization_id' })
     },
     plan: async (organization, _, { loaders }) => await loaders.plan.load(organization.plan_id),
-    texters: async (organization, _, { user }) => {
+    people: async (organization, { role }, { user }) => {
       await accessRequired(user, organization.id, 'ADMIN')
+
+      const roleFilter = role ? (userOrganization) => userOrganization('roles').contains(role) : {}
       return r.table('user_organization')
       .getAll(organization.id, { index: 'organization_id' })
-      .filter((userOrganization) => userOrganization('roles').contains('TEXTER'))
-      .eqJoin('user_id', r.table('user'))('right')
-    },
-    admins: async (organization, _, { user }) => {
-      await accessRequired(user, organization.id, 'ADMIN')
-      return r.table('user_organization')
-      .getAll(organization.id, { index: 'organization_id' })
-      .filter((userOrganization) => userOrganization('roles').contains('ADMIN'))
+      .filter(roleFilter)
       .eqJoin('user_id', r.table('user'))('right')
     },
     billingDetails: (organization) => organization,
-    threeClickEnabled: (organization) => organization.features.indexOf('threeClick') !== -1
+    threeClickEnabled: (organization) => organization.features.indexOf('threeClick') !== -1,
   }
 }
 

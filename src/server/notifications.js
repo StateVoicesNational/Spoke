@@ -13,6 +13,7 @@ const sendEmail = async ({ to, subject, text }) => {
     domain: process.env.MAILGUN_DOMAIN
   })
 
+  log.info(`Sending e-mail to ${to} with subject ${subject}.`)
   return mailgun.messages().send({
     from: process.env.MAILGUN_FROM_EMAIL,
     to,
