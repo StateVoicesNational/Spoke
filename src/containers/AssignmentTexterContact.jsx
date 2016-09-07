@@ -529,6 +529,7 @@ class AssignmentTexterContact extends React.Component {
               <Form.Field
                 name='messageText'
                 label='Your message'
+                multiLine
                 fullWidth
               />
             </GSForm>
