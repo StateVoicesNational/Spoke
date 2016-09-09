@@ -250,8 +250,6 @@ async function editCampaign(id, campaign, loaders) {
     })
     .filter((ele) => ele !== null)
 
-    console.log(unchangedTexters)
-    console.log(changedAssignments)
     // This atomically updates all the assignments to guard against people sending messages while all this is going on
     const changedAssignmentIds = changedAssignments.map((ele) => ele.id)
     await r.table('campaign_contact')
