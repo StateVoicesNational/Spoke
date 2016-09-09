@@ -73,3 +73,6 @@ CannedResponseForm.propTypes = {
   onSaveCannedResponse: type.func,
   customFields: type.array
 }
+
+
+export default CannedResponseForm
