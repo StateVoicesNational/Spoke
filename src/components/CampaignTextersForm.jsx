@@ -240,7 +240,7 @@ export default class CampaignTextersForm extends React.Component {
     }))
   })
 
-  onChange(formValues) {
+  onChange = (formValues) => {
     const existingFormValues = this.formValues()
     const changedTexter = this.state.focusedTexter
     const newFormValues = {
@@ -355,7 +355,7 @@ export default class CampaignTextersForm extends React.Component {
         <GSForm
           schema={this.formSchema}
           value={this.formValues()}
-          onChange={(formValues) => this.onChange(formValues)}
+          onChange={this.onChange}
           noValidate
           onSubmit={this.props.onSubmit}
         >
