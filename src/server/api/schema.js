@@ -189,6 +189,7 @@ const rootSchema = `
 `
 
 async function editCampaign(id, campaign, loaders) {
+  console.log('got here', campaign)
   const { title, description, dueBy, organizationId } = campaign
 
   const campaignUpdates = {
@@ -247,9 +248,13 @@ async function editCampaign(id, campaign, loaders) {
       unchangedTexters[assignment.user_id] = true
       return null
     })
+    .filter((ele) => ele !== null)
+
+    console.log(unchangedTexters)
+    console.log(changedAssignments)
     // This atomically updates all the assignments to guard against people sending messages while all this is going on
     const changedAssignmentIds = changedAssignments.map((ele) => ele.id)
-    const updateStatus = await r.table('campaign_contact')
+    await r.table('campaign_contact')
       .getAll(...changedAssignmentIds, { index: 'assignment_id' })
       .filter({ message_status: 'needsMessage' })
       .update({
