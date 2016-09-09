@@ -291,7 +291,12 @@ export default class CampaignTextersForm extends React.Component {
     let extra = totalContacts - this.formValues().contactsCount
     const factor = extra > 0 ? -1 : 1
     let index = 0
-    if (newFormValues.texters.length > 1 && (extra > 0 || (extra < 0 && this.state.autoSplit))) {
+    if (newFormValues.texters.length === 1 && this.state.autoSplit) {
+      const messagedCount = newFormValues.texters[0].assignment.contactsCount - newFormValues.texters[0].assignment.needsMessageCount
+      newFormValues.texters[0].assignment.contactsCount = this.formValues().contactsCount
+      newFormValues.texters[0].assignment.needsMessageCount = this.formValues().contactsCount - messagedCount
+    }
+    else if (newFormValues.texters.length > 1 && (extra > 0 || (extra < 0 && this.state.autoSplit))) {
       while (extra !== 0) {
         const texter = newFormValues.texters[index]
         if (!changedTexter || texter.id !== changedTexter) {
