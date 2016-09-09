@@ -185,7 +185,6 @@ const rootSchema = `
 `
 
 async function editCampaign(id, campaign, loaders) {
-  console.log('got here', campaign)
   const { title, description, dueBy, organizationId } = campaign
 
   const campaignUpdates = {
@@ -277,7 +276,6 @@ async function editCampaign(id, campaign, loaders) {
           user_id: texter.id,
           campaign_id: id
         }).save()
-        console.log(assignment)
       }
       await r.table('campaign_contact')
         .getAll('', { index: 'assignment_id' })

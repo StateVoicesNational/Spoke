@@ -356,7 +356,6 @@ export default class CampaignTextersForm extends React.Component {
           schema={this.formSchema}
           value={this.formValues()}
           onChange={this.onChange}
-          noValidate
           onSubmit={this.props.onSubmit}
         >
           {this.showSearch()}
