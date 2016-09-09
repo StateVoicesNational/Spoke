@@ -129,13 +129,18 @@ const rootSchema = `
     answerOptions: [AnswerOptionInput]
   }
 
+  input TexterInput {
+    id: String
+    contactsCount: Int
+  }
+
   input CampaignInput {
     title: String
     description: String
     dueBy: Date
     contacts: CampaignContactCollectionInput
     organizationId: String
-    texters: [String]
+    texters: [TexterInput]
     interactionSteps: [InteractionStepInput]
     cannedResponses: [CannedResponseInput]
   }
@@ -223,14 +228,76 @@ async function editCampaign(id, campaign, loaders) {
   }
 
   if (campaign.hasOwnProperty('texters')) {
-    const assignments = campaign.texters.map((texterId) => ({
-      user_id: texterId,
-      campaign_id: id
-    }))
-    await r.table('assignment')
+    const currentAssignments = await r.table('assignment')
       .getAll(id, { index: 'campaign_id' })
+      .merge((row) => ({
+        count: r.table('campaign_contact')
+          .getAll(row('id'), { index: 'assignment_id' })
+          .count()
+      }))
+
+    const unchangedTexters = {}
+    const changedAssignments = currentAssignments.map((assignment) => {
+      const texter = campaign.texters.filter((ele) => ele.id === assignment.user_id)[0]
+      if (!texter) {
+        return assignment
+      } else if (texter.contactsCount !== assignment.count) {
+        return assignment
+      }
+      unchangedTexters[assignment.user_id] = true
+      return null
+    })
+    // This atomically updates all the assignments to guard against people sending messages while all this is going on
+    const changedAssignmentIds = changedAssignments.map((ele) => ele.id)
+    const updateStatus = await r.table('campaign_contact')
+      .getAll(...changedAssignmentIds, { index: 'assignment_id' })
+      .filter({ message_status: 'needsMessage' })
+      .update({
+        assignment_id: r.branch(r.row('message_status').eq('needsMessage'), '', r.row('assignment_id'))
+      })
+
+    let availableContacts = await r.table('campaign_contact')
+      .getAll('', { index: 'assignment_id' })
+      .filter({ campaign_id: id })
+      .count()
+
+    // Go through all the submitted texters and create assignments
+    const texterCount = campaign.texters.length
+    for (let index = 0; index < texterCount; index++) {
+      const texter = campaign.texters[index]
+      if (unchangedTexters[texter.id]) {
+        continue
+      }
+      const contactsToAssign = availableContacts > texter.contactsCount ? texter.contactsCount : availableContacts
+      availableContacts = availableContacts - contactsToAssign
+      const existingAssignment = changedAssignments.find((ele) => ele.user_id === texter.id)
+      let assignment = null
+      if (existingAssignment) {
+        assignment = existingAssignment
+      } else {
+        assignment = await new Assignment({
+          user_id: texter.id,
+          campaign_id: id
+        }).save()
+        console.log(assignment)
+      }
+      await r.table('campaign_contact')
+        .getAll('', { index: 'assignment_id' })
+        .filter({ campaign_id: id })
+        .limit(contactsToAssign)
+        .update({ assignment_id: assignment.id })
+    }
+    let assignmentsToDelete = await r.table('assignment')
+      .getAll(id, { index: 'campaign_id' })
+      .merge((row) => ({
+        count: r.table('campaign_contact')
+          .getAll(row('id'), { index: 'assignment_id' })
+          .count()
+      }))
+      .filter((row) => row('count').eq(0))
+    await r.table('assignment')
+      .getAll(...assignmentsToDelete.map((ele) => ele.id))
       .delete()
-    await Assignment.save(assignments)
   }
 
   if (campaign.hasOwnProperty('interactionSteps')) {

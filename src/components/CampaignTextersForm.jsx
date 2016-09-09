@@ -142,14 +142,22 @@ export default class CampaignTextersForm extends React.Component {
           onChange={(event, value) => {
             let newTexters = []
             if (value === 'assignAll') {
-              newTexters = this.props.orgTexters.map((orgTexter) => ({
-                id: orgTexter.id,
-                firstName: orgTexter.firstName,
-                assignment: {
-                  contactsCount: 0,
-                  needsMessageCount: 0
-                }
-              }))
+              let unassignedTexters = this.props.orgTexters.filter((texter) =>
+                typeof this.formValues().texters.find((ele) => texter.id === ele.id) === 'undefined'
+              )
+              console.log(unassignedTexters)
+              newTexters = this.formValues()
+                .texters
+                .concat(unassignedTexters
+                  .map((orgTexter) => ({
+                    id: orgTexter.id,
+                    firstName: orgTexter.firstName,
+                    assignment: {
+                      contactsCount: 0,
+                      needsMessageCount: 0
+                    }
+                  }))
+                )
             }
             this.onChange({ texters: newTexters })
           }}
@@ -213,6 +221,7 @@ export default class CampaignTextersForm extends React.Component {
                   }
                 }
               }
+              console.log(newFormValues)
               this.onChange(newFormValues)
             }}
           >
