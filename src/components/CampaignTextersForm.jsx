@@ -1,6 +1,7 @@
 import React, { PropTypes as type } from 'react'
 import Slider from './Slider'
 import AutoComplete from 'material-ui/AutoComplete'
+import IconButton from 'material-ui/IconButton'
 import GSForm from '../components/forms/GSForm'
 import yup from 'yup'
 import Form from 'react-formal'
@@ -11,6 +12,7 @@ import CampaignFormSectionHeading from './CampaignFormSectionHeading'
 import { StyleSheet, css } from 'aphrodite'
 import theme from '../styles/theme'
 import Toggle from 'material-ui/Toggle'
+import DeleteIcon from 'material-ui/svg-icons/action/delete'
 
 const styles = StyleSheet.create({
   sliderContainer: {
@@ -192,6 +194,30 @@ export default class CampaignTextersForm extends React.Component {
               })}
             />
           </div>
+          <IconButton
+            onTouchTap={() => {
+              const currentFormValues = this.formValues()
+              let newFormValues = {
+                ...currentFormValues
+              }
+              let newContactsCount = texter.assignment.contactsCount - texter.assignment.needsMessageCount
+
+              if (newContactsCount === 0) {
+                newFormValues.texters.splice(index, 1)
+              } else {
+                newFormValues.texters[index] = {
+                  ...texter,
+                  assignment: {
+                    contactsCount: newContactsCount,
+                    needsMessageCount: 0
+                  }
+                }
+              }
+              this.onChange(newFormValues)
+            }}
+          >
+            <DeleteIcon />
+          </IconButton>
         </div>
       )
     })
