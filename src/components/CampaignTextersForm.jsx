@@ -239,7 +239,8 @@ export default class CampaignTextersForm extends React.Component {
       }
 
       if (texterCountChanged) {
-        convertedContactsCount = 0
+        convertedContactsCount = convertedContactsCount - newNeedsMessageCount
+        newNeedsMessageCount = 0
       }
 
       totalContacts = totalContacts + convertedContactsCount
