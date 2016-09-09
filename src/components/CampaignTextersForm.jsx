@@ -145,7 +145,6 @@ export default class CampaignTextersForm extends React.Component {
               let unassignedTexters = this.props.orgTexters.filter((texter) =>
                 typeof this.formValues().texters.find((ele) => texter.id === ele.id) === 'undefined'
               )
-              console.log(unassignedTexters)
               newTexters = this.formValues()
                 .texters
                 .concat(unassignedTexters
@@ -221,7 +220,6 @@ export default class CampaignTextersForm extends React.Component {
                   }
                 }
               }
-              console.log(newFormValues)
               this.onChange(newFormValues)
             }}
           >
@@ -293,7 +291,7 @@ export default class CampaignTextersForm extends React.Component {
     let extra = totalContacts - this.formValues().contactsCount
     const factor = extra > 0 ? -1 : 1
     let index = 0
-    if (newFormValues.texters.length > 0 && (extra > 0 || (extra < 0 && this.state.autoSplit))) {
+    if (newFormValues.texters.length > 1 && (extra > 0 || (extra < 0 && this.state.autoSplit))) {
       while (extra !== 0) {
         const texter = newFormValues.texters[index]
         if (!changedTexter || texter.id !== changedTexter) {
