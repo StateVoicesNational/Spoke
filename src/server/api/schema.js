@@ -126,7 +126,7 @@ const rootSchema = `
 
   input TexterInput {
     id: String
-    contactsCount: Int
+    needsMessageCount: Int
   }
 
   input CampaignInput {
@@ -226,8 +226,9 @@ async function editCampaign(id, campaign, loaders) {
     const currentAssignments = await r.table('assignment')
       .getAll(id, { index: 'campaign_id' })
       .merge((row) => ({
-        count: r.table('campaign_contact')
+        needsMessageCount: r.table('campaign_contact')
           .getAll(row('id'), { index: 'assignment_id' })
+          .filter({ message_status: 'needsMessage' })
           .count()
       }))
 
@@ -236,7 +237,7 @@ async function editCampaign(id, campaign, loaders) {
       const texter = campaign.texters.filter((ele) => ele.id === assignment.user_id)[0]
       if (!texter) {
         return assignment
-      } else if (texter.contactsCount !== assignment.count) {
+      } else if (texter.needsMessageCount !== assignment.needsMessageCount) {
         return assignment
       }
       unchangedTexters[assignment.user_id] = true
@@ -265,7 +266,7 @@ async function editCampaign(id, campaign, loaders) {
       if (unchangedTexters[texter.id]) {
         continue
       }
-      const contactsToAssign = availableContacts > texter.contactsCount ? texter.contactsCount : availableContacts
+      const contactsToAssign = availableContacts > texter.needsMessageCount ? texter.needsMessageCount : availableContacts
       availableContacts = availableContacts - contactsToAssign
       const existingAssignment = changedAssignments.find((ele) => ele.user_id === texter.id)
       let assignment = null

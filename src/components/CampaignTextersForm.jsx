@@ -54,6 +54,7 @@ const styles = StyleSheet.create({
   },
   assignedCount: {
     width: 40,
+    fontSize: 16,
     paddingLeft: 5,
     paddingRight: 5,
     textAlign: 'center',
@@ -217,7 +218,7 @@ export default class CampaignTextersForm extends React.Component {
           </div>
           <div className={css(styles.input)}>
             <Form.Field
-              name={`texters[${index}].assignment.contactsCount`}
+              name={`texters[${index}].assignment.needsMessageCount`}
               hintText='Contacts'
               fullWidth
               onFocus={() => this.setState({ focusedTexter: texter.id })}
@@ -229,18 +230,16 @@ export default class CampaignTextersForm extends React.Component {
           <div className={css(styles.slider)}>
             <Slider
               maxValue={this.formValues().contactsCount}
-              value={texter.assignment.contactsCount}
+              value={texter.assignment.needsMessageCount}
               color={theme.colors.green}
               direction={0}
             />
           </div>
           <IconButton
             onTouchTap={() => {
-              const currentFormValues = this.formValues()
-              let newFormValues = {
-                ...currentFormValues
-              }
-              let newContactsCount = texter.assignment.contactsCount - texter.assignment.needsMessageCount
+              /*const currentFormValues = this.formValues()
+
+
 
               if (newContactsCount === 0) {
                 newFormValues.texters = newFormValues.texters.slice()
@@ -249,12 +248,12 @@ export default class CampaignTextersForm extends React.Component {
                 newFormValues.texters[index] = {
                   ...texter,
                   assignment: {
-                    contactsCount: newContactsCount,
                     needsMessageCount: 0
                   }
                 }
               }
               this.onChange(newFormValues)
+              */
             }}
           >
             <DeleteIcon />
@@ -268,7 +267,6 @@ export default class CampaignTextersForm extends React.Component {
     texters: yup.array().of(yup.object({
       id: yup.string(),
       assignment: yup.object({
-        contactsCount: yup.string(),
         needsMessageCount: yup.string()
       })
     }))
@@ -284,40 +282,35 @@ export default class CampaignTextersForm extends React.Component {
     const texterCountChanged = newFormValues.texters.length !== existingFormValues.texters.length
     newFormValues.texters = newFormValues.texters.map((newTexter) => {
       const existingTexter = existingFormValues.texters.filter((texter) => (texter.id === newTexter.id ? texter : null))[0]
-
-      let convertedContactsCount = parseInt(newTexter.assignment.contactsCount, 10)
-      if (isNaN(convertedContactsCount)) {
-        convertedContactsCount = 0
-      }
-      if (convertedContactsCount > this.formValues().contactsCount) {
-        convertedContactsCount = this.formValues().contactsCount
+      let messagedCount = 0
+      if (existingTexter) {
+        messagedCount = existingTexter.assignment.contactsCount - existingTexter.assignment.needsMessageCount
       }
 
-      let newNeedsMessageCount = newTexter.assignment.needsMessageCount
-
-      if (existingTexter && existingTexter.assignment.contactsCount !== convertedContactsCount) {
-        const diff = existingTexter.assignment.contactsCount - convertedContactsCount
-        newNeedsMessageCount = newTexter.assignment.needsMessageCount - diff
+      let convertedNeedsMessageCount = parseInt(newTexter.assignment.needsMessageCount, 10)
+      if (isNaN(convertedNeedsMessageCount)) {
+        convertedNeedsMessageCount = 0
+      }
+      if (convertedNeedsMessageCount + messagedCount > this.formValues().contactsCount) {
+        convertedNeedsMessageCount = this.formValues().contactsCount - messagedCount
       }
 
-      if (newNeedsMessageCount < 0) {
-        convertedContactsCount = convertedContactsCount - newNeedsMessageCount
-        newNeedsMessageCount = 0
+      if (convertedNeedsMessageCount < 0) {
+        convertedNeedsMessageCount = 0
       }
 
       if (texterCountChanged && this.state.autoSplit) {
-        convertedContactsCount = convertedContactsCount - newNeedsMessageCount
-        newNeedsMessageCount = 0
+        convertedNeedsMessageCount = 0
       }
 
-      totalContacts = totalContacts + convertedContactsCount
+      totalContacts = totalContacts + convertedNeedsMessageCount + messagedCount
 
       return {
         ...newTexter,
         assignment: {
           ...newTexter.assignment,
-          contactsCount: convertedContactsCount,
-          needsMessageCount: newNeedsMessageCount
+          contactsCount: convertedNeedsMessageCount + messagedCount,
+          needsMessageCount: convertedNeedsMessageCount
         }
       }
     })
@@ -329,8 +322,7 @@ export default class CampaignTextersForm extends React.Component {
       const messagedCount = newFormValues.texters[0].assignment.contactsCount - newFormValues.texters[0].assignment.needsMessageCount
       newFormValues.texters[0].assignment.contactsCount = this.formValues().contactsCount
       newFormValues.texters[0].assignment.needsMessageCount = this.formValues().contactsCount - messagedCount
-    }
-    else if (newFormValues.texters.length > 1 && (extra > 0 || (extra < 0 && this.state.autoSplit))) {
+    } else if (newFormValues.texters.length > 1 && (extra > 0 || (extra < 0 && this.state.autoSplit))) {
       while (extra !== 0) {
         const texter = newFormValues.texters[index]
         if (!changedTexter || texter.id !== changedTexter) {
@@ -347,6 +339,7 @@ export default class CampaignTextersForm extends React.Component {
       }
     }
 
+    console.log(newFormValues)
     this.props.onChange(newFormValues)
   }
 
