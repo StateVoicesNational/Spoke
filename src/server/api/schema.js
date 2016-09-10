@@ -283,6 +283,15 @@ async function editCampaign(id, campaign, loaders) {
         .filter({ campaign_id: id })
         .limit(contactsToAssign)
         .update({ assignment_id: assignment.id })
+
+      if (existingAssignment) {
+        // We can't rely on an observer because nothing
+        // about the actual assignment object changes
+        await sendUserNotification({
+          type: Notifications.ASSIGNMENT_UPDATED,
+          assignment
+         })
+      }
     }
     let assignmentsToDelete = await r.table('assignment')
       .getAll(id, { index: 'campaign_id' })
@@ -507,9 +516,15 @@ const rootMutations = {
       const newCampaign = await campaignInstance.save()
       return editCampaign(newCampaign.id, campaign, loaders)
     },
-    startCampaign: async (_, { id }) => Campaign.get(id).update({
-      is_started: true
-    }),
+    startCampaign: async (_, { id }) => {
+      await Campaign.get(id).update({
+        is_started: true
+      })
+      await sendUserNotification({
+        type: Notifications.CAMPAIGN_STARTED,
+        campaignId: id
+      })
+    },
     editCampaign: async (_, { id, campaign }, { user, loaders }) => {
       if (campaign.organizationId) {
         await accessRequired(user, campaign.organizationId, 'ADMIN')
