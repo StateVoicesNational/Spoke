@@ -236,15 +236,16 @@ export default class CampaignTextersForm extends React.Component {
             />
           </div>
           <IconButton
-            onTouchTap={() => {
-              /*const currentFormValues = this.formValues()
-
-
-
-              if (newContactsCount === 0) {
-                newFormValues.texters = newFormValues.texters.slice()
+            onTouchTap={async () => {
+              const currentFormValues = this.formValues()
+              const newFormValues = {
+                ...currentFormValues
+              }
+              newFormValues.texters = newFormValues.texters.slice()
+              if (messagedCount === 0) {
                 newFormValues.texters.splice(index, 1)
               } else {
+                await this.setState({ focusedTexter: texter.id })
                 newFormValues.texters[index] = {
                   ...texter,
                   assignment: {
@@ -252,8 +253,8 @@ export default class CampaignTextersForm extends React.Component {
                   }
                 }
               }
+              console.log(newFormValues)
               this.onChange(newFormValues)
-              */
             }}
           >
             <DeleteIcon />
@@ -273,6 +274,7 @@ export default class CampaignTextersForm extends React.Component {
   })
 
   onChange = (formValues) => {
+    console.log(this.state)
     const existingFormValues = this.formValues()
     const changedTexter = this.state.focusedTexter
     const newFormValues = {
