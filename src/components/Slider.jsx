@@ -1,36 +1,26 @@
 import React, { PropTypes as type } from 'react'
-import { StyleSheet, css } from 'aphrodite'
 import theme from '../styles/theme'
 
 const BarHeight = 25
-const styles = StyleSheet.create({
-  sliderContainer: {
-    height: BarHeight,
-    width: '100%',
-    backgroundColor: theme.colors.lightGray
-  }
-})
 
-const Slider = ({ minValue, maxValue, value }) => {
-  const minValuePercent = Math.round(minValue / maxValue * 100)
-  const valuePercent = Math.round((value - minValue) / maxValue * 100)
+const Slider = ({ maxValue, value, color, direction }) => {
+  const valuePercent = Math.round(value / maxValue * 100)
   return (
-    <div className={css(styles.sliderContainer)}>
-      <div
-        style={{
-          width: `${minValuePercent}%`,
-          backgroundColor: theme.colors.darkGray,
-          height: BarHeight,
-          display: 'inline-block'
-        }}
-      >
-      </div>
+    <div
+      style={{
+        height: BarHeight,
+        width: '100%',
+        backgroundColor: theme.colors.white,
+        textAlign: `${direction === 0 ? 'left' : 'right'}`
+      }}
+    >
       <div
         style={{
           width: `${valuePercent}%`,
-          backgroundColor: theme.colors.green,
+          backgroundColor: color,
           height: BarHeight,
-          display: 'inline-block'
+          display: 'inline-block',
+          marginLeft: 'auto'
         }}
       >
       </div>
@@ -39,9 +29,10 @@ const Slider = ({ minValue, maxValue, value }) => {
 }
 
 Slider.propTypes = {
-  minValue: type.number,
+  color: type.string,
   maxValue: type.number,
-  value: type.number
+  value: type.number,
+  direction: type.number
 }
 
 export default Slider

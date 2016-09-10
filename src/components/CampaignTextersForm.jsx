@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row'
   },
   nameColumn: {
-    flex: '1 1 10%',
+    width: 100,
     textOverflow: 'ellipsis',
     marginTop: 'auto',
     marginBottom: 'auto',
@@ -36,7 +36,13 @@ const styles = StyleSheet.create({
     flex: '1 1 50%'
   },
   slider: {
-    flex: '1 1 90%',
+    flex: '1 1 35%',
+    marginTop: 'auto',
+    marginBottom: 'auto',
+    paddingRight: 10
+  },
+  leftSlider: {
+    flex: '1 1 35%',
     marginTop: 'auto',
     marginBottom: 'auto',
     paddingRight: 10
@@ -46,8 +52,22 @@ const styles = StyleSheet.create({
     borderBottom: `1px solid ${theme.colors.lightGray}`,
     marginBottom: 20
   },
+  assignedCount: {
+    width: 40,
+    paddingLeft: 5,
+    paddingRight: 5,
+    textAlign: 'center',
+    marginTop: 'auto',
+    marginBottom: 'auto',
+    marginRight: 10,
+    display: 'inline-block',
+    backgroundColor: theme.colors.lightGray
+  },
   input: {
-    flex: '1 1 10%',
+    width: 50,
+    paddingLeft: 0,
+    paddingRight: 0,
+    marginRight: 10,
     marginTop: 'auto',
     marginBottom: 'auto',
     display: 'inline-block'
@@ -181,24 +201,37 @@ export default class CampaignTextersForm extends React.Component {
 
       return (
         <div className={css(styles.texterRow)}>
+          <div className={css(styles.leftSlider)}>
+            <Slider
+              maxValue={this.formValues().contactsCount}
+              value={messagedCount}
+              color={theme.colors.darkGray}
+              direction={1}
+            />
+          </div>
+          <div className={css(styles.assignedCount)}>
+            {messagedCount}
+          </div>
           <div className={css(styles.nameColumn)}>
             {`${texter.firstName}`}
-          </div>
-          <div className={css(styles.slider)}>
-            <Slider
-              minValue={messagedCount}
-              maxValue={this.formValues().contactsCount}
-              value={texter.assignment.contactsCount}
-            />
           </div>
           <div className={css(styles.input)}>
             <Form.Field
               name={`texters[${index}].assignment.contactsCount`}
               hintText='Contacts'
+              fullWidth
               onFocus={() => this.setState({ focusedTexter: texter.id })}
               onBlur={() => this.setState({
                 focusedTexter: null
               })}
+            />
+          </div>
+          <div className={css(styles.slider)}>
+            <Slider
+              maxValue={this.formValues().contactsCount}
+              value={texter.assignment.contactsCount}
+              color={theme.colors.green}
+              direction={0}
             />
           </div>
           <IconButton
