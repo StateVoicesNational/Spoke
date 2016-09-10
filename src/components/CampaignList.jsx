@@ -5,6 +5,7 @@ import WarningIcon from 'material-ui/svg-icons/alert/warning'
 import HappyIcon from 'material-ui/svg-icons/social/mood'
 import { withRouter } from 'react-router'
 import theme from '../styles/theme'
+import Chip from './Chip'
 
 const inlineStyles = {
   past: {
@@ -21,11 +22,11 @@ const inlineStyles = {
 class CampaignList extends React.Component {
   renderRow(campaign) {
     const isPast = moment(campaign.dueBy).diff(moment()) < 0
-    const isStarted = campaign.isStarted
+    const { isStarted, hasUnassignedContacts } = campaign
 
     let listItemStyle = {}
     let leftIcon = ''
-    if (!isStarted) {
+    if (!isStarted || hasUnassignedContacts) {
       listItemStyle = inlineStyles.warn
       leftIcon = <WarningIcon />
     } else if (isPast) {
@@ -36,8 +37,22 @@ class CampaignList extends React.Component {
     }
 
     const dueByMoment = moment(campaign.dueBy)
-    const secondaryText = !isStarted ?
-      'NOT STARTED: No texters assigned. You need to finish creating this campaign' : (
+    const tags = []
+    if (!isStarted) {
+      tags.push('Not started')
+    }
+
+    if (hasUnassignedContacts) {
+      tags.push('Unassigned contacts')
+    }
+
+    const primaryText = (
+      <div>
+        {campaign.title}
+        {tags.map((tag) => <Chip text={tag} />)}
+      </div>
+    )
+    const secondaryText = (
       <span>
         <span>
           {campaign.description}
@@ -54,7 +69,7 @@ class CampaignList extends React.Component {
       <ListItem
         style={listItemStyle}
         key={campaign.id}
-        primaryText={`${campaign.title}`}
+        primaryText={primaryText}
         onTouchTap={() => (!isStarted ?
           this.props.router.push(`${campaignUrl}/edit`) :
           this.props.router.push(campaignUrl))}

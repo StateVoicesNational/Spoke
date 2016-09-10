@@ -19,6 +19,7 @@ export const schema = `
     interactionSteps: [InteractionStep]
     contacts: [CampaignContact]
     contactsCount: Int
+    hasUnassignedContacts: Boolean
     customFields: [String]
     cannedResponses(userId: String): [CannedResponse]
     stats: CampaignStats
@@ -96,6 +97,13 @@ export const resolvers = {
       r.table('campaign_contact')
         .getAll(campaign.id, { index: 'campaign_id' })
         .count()
+    ),
+    hasUnassignedContacts: async (campaign) => (
+      !!await r.table('campaign_contact')
+        .getAll(campaign.id, { index: 'campaign_id' })
+        .filter({ assignment_id: '' })
+        .limit(1)(0)
+        .default(null)
     ),
     customFields: async (campaign) => {
       const campaignContacts = await r.table('campaign_contact')
