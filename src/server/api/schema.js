@@ -543,6 +543,7 @@ const rootMutations = {
           is_default: true
         })
         .limit(1)(0)
+
       const newOrganization = await Organization.save({
         name,
         currency,
@@ -580,6 +581,13 @@ const rootMutations = {
     sendMessage: async(_, { message, campaignContactId }, { loaders }) => {
       const texter = await loaders.user.load(message.userId)
       const contact = await loaders.campaignContact.load(campaignContactId)
+
+      if (contact.assignment_id !== message.assignmentId) {
+        throw new GraphQLError({
+          status: 400,
+          message: 'Your assignment has changed -- please refresh!'
+        })
+      }
 
       const merged = await r.table('campaign')
         .get(contact.campaign_id)

@@ -36,6 +36,7 @@ export const schema = `
     currentInteractionStepScript: String
     currentInteractionStepId: String
     messageStatus: String
+    assignmentId: String
   }
 `
 
@@ -57,7 +58,8 @@ export const resolvers = {
       'cell',
       'zip',
       'customFields',
-      'messageStatus'
+      'messageStatus',
+      'assignmentId'
     ], CampaignContact),
 
     campaign: async (campaignContact, _, { loaders }) => (
