@@ -123,7 +123,7 @@ class AssignmentTexterContact extends React.Component {
       disabledText = ''
       disabled = true
       snackbarError = 'Your assignment has changed'
-      snackbarOnTouchTap = () => props.router.push(`/app/${props.campaign.organization.id}/todos`)
+      snackbarOnTouchTap = this.goBackToTodos
       snackbarActionTitle = 'Back to Todos'
     } else if (contact.optOut) {
       disabledText = 'Skipping opt-out...'
@@ -233,14 +233,24 @@ class AssignmentTexterContact extends React.Component {
     }
   }
 
+  goBackToTodos = () =>  {
+    const { campaign } = this.props
+    this.props.router.push(`/app/${campaign.organization.id}/todos`)
+  }
+
   handleSendMessageError = (e) => {
     if (e.status === 402) {
-      const { campaign } = this.props
-      this.props.router.push(`/app/${campaign.organization.id}/todos`)
+      this.goBackToTodos()
     } else if (e.status === 400) {
-      this.setState({
+      const newState = {
         snackbarError: e.message
-      })
+      }
+
+      if (e.message === 'Your assignment has changed') {
+        newState.snackbarActionTitle = 'Back to todos'
+        newState.snackbarOnTouchTap = this.goBackToTodos
+      }
+      this.setState(newState)
     } else {
       log.error(e)
       this.setState({

@@ -585,7 +585,7 @@ const rootMutations = {
       if (contact.assignment_id !== message.assignmentId) {
         throw new GraphQLError({
           status: 400,
-          message: 'Your assignment has changed -- please refresh!'
+          message: 'Your assignment has changed'
         })
       }
 
