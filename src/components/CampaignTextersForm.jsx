@@ -163,7 +163,7 @@ export default class CampaignTextersForm extends React.Component {
           onChange={(event, value) => {
             let newTexters = []
             if (value === 'assignAll') {
-              let unassignedTexters = this.props.orgTexters.filter((texter) =>
+              const unassignedTexters = this.props.orgTexters.filter((texter) =>
                 typeof this.formValues().texters.find((ele) => texter.id === ele.id) === 'undefined'
               )
               newTexters = this.formValues()
@@ -178,6 +178,10 @@ export default class CampaignTextersForm extends React.Component {
                     }
                   }))
                 )
+            } else {
+              newTexters = this.formValues().texters.filter((texter) =>
+                texter.assignment.contactsCount !== texter.assignment.needsMessageCount
+              )
             }
             this.onChange({ texters: newTexters })
           }}
