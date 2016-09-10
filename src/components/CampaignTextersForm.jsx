@@ -210,6 +210,7 @@ export default class CampaignTextersForm extends React.Component {
               let newContactsCount = texter.assignment.contactsCount - texter.assignment.needsMessageCount
 
               if (newContactsCount === 0) {
+                newFormValues.texters = newFormValues.texters.slice()
                 newFormValues.texters.splice(index, 1)
               } else {
                 newFormValues.texters[index] = {
@@ -271,7 +272,7 @@ export default class CampaignTextersForm extends React.Component {
         newNeedsMessageCount = 0
       }
 
-      if (texterCountChanged) {
+      if (texterCountChanged && this.state.autoSplit) {
         convertedContactsCount = convertedContactsCount - newNeedsMessageCount
         newNeedsMessageCount = 0
       }
@@ -314,13 +315,6 @@ export default class CampaignTextersForm extends React.Component {
     }
 
     this.props.onChange(newFormValues)
-  }
-
-  removeTexter = (texterId) => {
-    const formValues = this.formValues()
-    const { texters } = formValues
-    const newTexters = texters.filter((texter) => texter.id !== texterId)
-    this.onChange({ texters: newTexters })
   }
 
   formValues() {
