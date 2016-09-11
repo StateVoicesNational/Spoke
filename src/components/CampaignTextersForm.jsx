@@ -20,9 +20,21 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 8
   },
+  removeButton: {
+    width: 50
+  },
   texterRow: {
     display: 'flex',
     flexDirection: 'row'
+  },
+  alreadyTextedHeader: {
+    textAlign: 'right',
+    fontWeight: 600,
+    fontSize: 16
+  },
+  availableHeader: {
+    fontWeight: 600,
+    fontSize: 16
   },
   nameColumn: {
     width: 100,
@@ -239,29 +251,31 @@ export default class CampaignTextersForm extends React.Component {
               direction={0}
             />
           </div>
-          <IconButton
-            onTouchTap={async () => {
-              const currentFormValues = this.formValues()
-              const newFormValues = {
-                ...currentFormValues
-              }
-              newFormValues.texters = newFormValues.texters.slice()
-              if (messagedCount === 0) {
-                newFormValues.texters.splice(index, 1)
-              } else {
-                await this.setState({ focusedTexter: texter.id })
-                newFormValues.texters[index] = {
-                  ...texter,
-                  assignment: {
-                    needsMessageCount: 0
+          <div className={css(styles.removeButton)}>
+            <IconButton
+              onTouchTap={async () => {
+                const currentFormValues = this.formValues()
+                const newFormValues = {
+                  ...currentFormValues
+                }
+                newFormValues.texters = newFormValues.texters.slice()
+                if (messagedCount === 0) {
+                  newFormValues.texters.splice(index, 1)
+                } else {
+                  await this.setState({ focusedTexter: texter.id })
+                  newFormValues.texters[index] = {
+                    ...texter,
+                    assignment: {
+                      needsMessageCount: 0
+                    }
                   }
                 }
-              }
-              this.onChange(newFormValues)
-            }}
-          >
-            <DeleteIcon />
-          </IconButton>
+                this.onChange(newFormValues)
+              }}
+            >
+              <DeleteIcon />
+            </IconButton>
+          </div>
         </div>
       )
     })
@@ -445,6 +459,22 @@ export default class CampaignTextersForm extends React.Component {
                     })
                   }}
                 />
+              </div>
+            </div>
+            <div className={css(styles.texterRow)}>
+              <div className={css(styles.leftSlider, styles.alreadyTextedHeader)}>
+                Already texted
+              </div>
+              <div className={css(styles.assignedCount)}>
+              </div>
+              <div className={css(styles.nameColumn)}>
+              </div>
+              <div className={css(styles.input)}>
+              </div>
+              <div className={css(styles.slider, styles.availableHeader)}>
+                Available to assign
+              </div>
+              <div className={css(styles.removeButton)}>
               </div>
             </div>
             {this.showTexters()}
