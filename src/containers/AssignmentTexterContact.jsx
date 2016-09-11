@@ -76,10 +76,19 @@ const styles = StyleSheet.create({
   },
   messageField: {
     padding: 20
+  },
+  dialogActions: {
+    marginTop: 20,
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'flex-end'
   }
 })
 
 const inlineStyles = {
+  dialogButton: {
+    display: 'inline-block'
+  },
   exitTexterIconButton: {
     float: 'right',
     height: '56px'
@@ -137,6 +146,7 @@ class AssignmentTexterContact extends React.Component {
       snackbarError,
       snackbarActionTitle,
       snackbarOnTouchTap,
+      optOutMessageText: "I'm opting you out of texts immediately. Have a great day.",
       responsePopoverOpen: false,
       messageText: this.getStartingMessageText(),
       optOutDialogOpen: false,
@@ -384,26 +394,11 @@ class AssignmentTexterContact extends React.Component {
     const { contact } = this.props.data
     const isOptedOut = contact.isOptedOut
     const actions = [
-      <FlatButton
-        label='Cancel'
-        onTouchTap={this.handleCloseDialog}
-      />,
-      <Form.Button
-        type='submit'
-        component={GSSubmitButton}
-        label='Send message and opt out user'
-      />
-    ]
 
-    const optOutScript = "I'm opting you out of text-based communication immediately. Have a great day."
+    ]
 
     return (
       <div>
-        <GSForm
-          schema={this.optOutSchema}
-          value={{ optOutMessageText: optOutScript }}
-          onSubmit={this.handleOptOut}
-        >
         <Dialog
           title='Opt out user'
           actions={actions}
@@ -411,13 +406,33 @@ class AssignmentTexterContact extends React.Component {
           open={this.state.optOutDialogOpen}
           onRequestClose={this.handleCloseDialog}
         >
+          <GSForm
+            schema={this.optOutSchema}
+            onChange={ ({ optOutMessageText }) => this.setState({ optOutMessageText })}
+            value={{ optOutMessageText: this.state.optOutMessageText }}
+            onSubmit={this.handleOptOut}
+          >
             <Form.Field
               name='optOutMessageText'
               fullWidth
+              autoFocus
               multiLine
             />
+            <div className={css(styles.dialogActions)}>
+              <FlatButton
+                style={inlineStyles.dialogButton}
+                label='Cancel'
+                onTouchTap={this.handleCloseDialog}
+              />,
+              <Form.Button
+                type='submit'
+                style={inlineStyles.dialogButton}
+                component={GSSubmitButton}
+                label='Send message and opt out user'
+              />
+            </div>
+          </GSForm>
         </Dialog>
-        </GSForm>
 
       </div>
     )
