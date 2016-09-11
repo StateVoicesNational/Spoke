@@ -3,17 +3,10 @@ import { mapFieldsToModel } from './lib/utils'
 import { getTopMostParent } from '../../lib'
 
 export const schema = `
-  input ContactFilter {
+  input ContactsFilter {
     messageStatus: String
     optOut: Boolean
     validTimezone: Boolean
-  }
-
-  type CampaignContactCollection {
-    data: [CampaignContact]
-    checksum: String
-    count: Int
-    customFields: [String]
   }
 
   type Timezone {
@@ -43,6 +36,7 @@ export const schema = `
     currentInteractionStepScript: String
     currentInteractionStepId: String
     messageStatus: String
+    assignmentId: String
   }
 `
 
@@ -64,7 +58,8 @@ export const resolvers = {
       'cell',
       'zip',
       'customFields',
-      'messageStatus'
+      'messageStatus',
+      'assignmentId'
     ], CampaignContact),
 
     campaign: async (campaignContact, _, { loaders }) => (
@@ -73,7 +68,7 @@ export const resolvers = {
     questionResponses: async (campaignContact) => (
       r.table('question_response')
         .getAll(campaignContact.id, { index: 'campaign_contact_id' })
-        .eqJoin('interaction_step_id', r.db('spoke').table('interaction_step'))
+        .eqJoin('interaction_step_id', r.table('interaction_step'))
         .concatMap((row) => (
           row('right')('answer_options')
             .map((option) => option.merge({
@@ -85,7 +80,7 @@ export const resolvers = {
     ),
     location: async (campaignContact, _, { loaders }) => {
       const mainZip = campaignContact.zip.split('-')[0]
-      let loc = await loaders.zipCode.load(mainZip)
+      const loc = await loaders.zipCode.load(mainZip)
       return loc
     },
     messages: async (campaignContact) => {
@@ -120,27 +115,6 @@ export const resolvers = {
     interactionSteps: async (campaignContact) => (
       await r.table('interaction_step')
         .getAll(campaignContact.campaign_id, { index: 'campaign_id' })
-    )
-  },
-  CampaignContactCollection: {
-    data: async (campaign) => (
-      r.table('campaign_contact')
-        .getAll(campaign.id, { index: 'campaign_id' })
-    ),
-    checksum: (campaign) => campaign.contacts_checksum,
-    customFields: async (campaign) => {
-      const campaignContacts = await r.table('campaign_contact')
-        .getAll(campaign.id, { index: 'campaign_id' })
-        .limit(1)
-      if (campaignContacts.length > 0) {
-        return Object.keys(campaignContacts[0].custom_fields)
-      }
-      return []
-    },
-    count: async (campaign) => (
-      r.table('campaign_contact')
-        .getAll(campaign.id, { index: 'campaign_id' })
-        .count()
     )
   }
 }

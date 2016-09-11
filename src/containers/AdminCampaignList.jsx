@@ -27,10 +27,7 @@ class AdminCampaignList extends React.Component {
       description: '',
       dueBy: null,
       organizationId,
-      contacts: {
-        data: [],
-        checksum: ''
-      },
+      contacts: [],
       interactionSteps: [{
         script: ''
       }]
@@ -117,6 +114,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
           id
           title
           isStarted
+          hasUnassignedContacts
           description
           dueBy
           assignments {

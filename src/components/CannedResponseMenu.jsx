@@ -1,6 +1,5 @@
-import React from 'react'
+import React, { PropTypes as type } from 'react'
 import Popover from 'material-ui/Popover'
-// import { insert, update } from '../../api/scripts/methods'
 import { List } from 'material-ui/List'
 import ScriptList from './ScriptList'
 
@@ -66,8 +65,16 @@ class CannedResponseMenu extends React.Component {
 }
 
 CannedResponseMenu.propTypes = {
-  scripts: React.PropTypes.array,
-  onSelectCannedResponse: React.PropTypes.function
+  scripts: type.array,
+  onSelectCannedResponse: type.func,
+  onRequestClose: type.func,
+  customFields: type.array,
+  texterId: type.string,
+  userCannedResponses: type.array,
+  open: type.bool,
+  anchorEl: type.object,
+  campaignId: type.string,
+  campaignCannedResponses: type.array
 }
 
 export default CannedResponseMenu

@@ -1,7 +1,7 @@
-import React from 'react'
+import React, { PropTypes as type } from 'react'
 import { Pie } from 'react-chartjs'
 
-export default ({ data }) => {
+const Chart = ({ data }) => {
   const chartColors = [
     '#F7464A',
     '#46BFBD',
@@ -10,13 +10,11 @@ export default ({ data }) => {
     '#4D5360'
   ]
 
-  const pieData = data.map(([label, value], index) => {
-    return {
-      label,
-      value,
-      color: chartColors[index % chartColors.length]
-    }
-  })
+  const pieData = data.map(([label, value], index) => ({
+    label,
+    value,
+    color: chartColors[index % chartColors.length]
+  }))
 
   return (
     <div>
@@ -39,3 +37,9 @@ export default ({ data }) => {
     </div>
   )
 }
+
+Chart.propTypes = {
+  data: type.array
+}
+
+export default Chart

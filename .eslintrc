@@ -6,6 +6,6 @@
     "comma-dangle": ["error", "never"],
     "no-alert": ["off"],
     "jsx-quotes": ["error", "prefer-single"],
-    "no-confusing-arrow": ["off"]
+    "max-len": ["off"]
   }
 }

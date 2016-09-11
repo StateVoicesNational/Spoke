@@ -836,18 +836,6 @@
       "from": "chart.js@>=1.1.1 <2.0.0",
       "resolved": "https://registry.npmjs.org/chart.js/-/chart.js-1.1.1.tgz"
     },
-    "checksum": {
-      "version": "0.1.1",
-      "from": "checksum@latest",
-      "resolved": "https://registry.npmjs.org/checksum/-/checksum-0.1.1.tgz",
-      "dependencies": {
-        "optimist": {
-          "version": "0.3.7",
-          "from": "optimist@>=0.3.5 <0.4.0",
-          "resolved": "https://registry.npmjs.org/optimist/-/optimist-0.3.7.tgz"
-        }
-      }
-    },
     "chokidar": {
       "version": "1.6.0",
       "from": "chokidar@>=1.0.0 <2.0.0",

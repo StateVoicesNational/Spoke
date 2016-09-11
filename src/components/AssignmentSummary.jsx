@@ -32,14 +32,14 @@ class AssignmentSummary extends Component {
     badTimezoneTooltipOpen: false
   }
 
-  goToTodos(contactFilter, assignmentId) {
+  goToTodos(contactsFilter, assignmentId) {
     const { organizationId, router } = this.props
 
-    if (contactFilter) {
-      router.push(`/app/${organizationId}/todos/${assignmentId}/${contactFilter}`)
+    if (contactsFilter) {
+      router.push(`/app/${organizationId}/todos/${assignmentId}/${contactsFilter}`)
     }
   }
-  renderBadgedButton({ assignment, title, count, primary, disabled, contactFilter, tooltip }) {
+  renderBadgedButton({ assignment, title, count, primary, disabled, contactsFilter, tooltip }) {
     const { badTimezoneTooltipOpen } = this.state
     return (count === 0 ? '' :
       <Badge
@@ -52,9 +52,9 @@ class AssignmentSummary extends Component {
         <FlatButton
           disabled={disabled}
           label={title}
-          onTouchTap={() => this.goToTodos(contactFilter, assignment.id)}
-          onMouseEnter={() => tooltip ? this.setState({ badTimezoneTooltipOpen: true }) : {}}
-          onMouseLeave={() => tooltip ? this.setState({ badTimezoneTooltipOpen: false }) : {}}
+          onTouchTap={() => this.goToTodos(contactsFilter, assignment.id)}
+          onMouseEnter={() => (tooltip ? this.setState({ badTimezoneTooltipOpen: true }) : {})}
+          onMouseLeave={() => (tooltip ? this.setState({ badTimezoneTooltipOpen: false }) : {})}
         />
         {badTimezoneTooltipOpen ? (
           <Tooltip
@@ -88,7 +88,7 @@ class AssignmentSummary extends Component {
               count: unmessagedCount,
               primary: true,
               disabled: false,
-              contactFilter: 'text'
+              contactsFilter: 'text'
             })}
             {this.renderBadgedButton({
               assignment,
@@ -96,7 +96,7 @@ class AssignmentSummary extends Component {
               count: unrepliedCount,
               primary: false,
               disabled: false,
-              contactFilter: 'reply'
+              contactsFilter: 'reply'
             })}
             {this.renderBadgedButton({
               assignment,
@@ -104,7 +104,7 @@ class AssignmentSummary extends Component {
               count: badTimezoneCount,
               primary: false,
               disabled: true,
-              contactFilter: null,
+              contactsFilter: null,
               tooltip: "It's outside texting hours for some contacts. Come back later!"
             })}
           </CardActions>

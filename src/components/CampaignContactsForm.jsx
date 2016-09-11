@@ -1,11 +1,11 @@
-import React from 'react'
+import React, { PropTypes as type } from 'react'
 import RaisedButton from 'material-ui/RaisedButton'
 import GSForm from '../components/forms/GSForm'
 import Form from 'react-formal'
 import Subheader from 'material-ui/Subheader'
 import Divider from 'material-ui/Divider'
 import { ListItem, List } from 'material-ui/List'
-import { parseCSV, checksumCampaignContacts } from '../lib'
+import { parseCSV } from '../lib'
 import CampaignFormSectionHeading from './CampaignFormSectionHeading'
 import CheckIcon from 'material-ui/svg-icons/action/check-circle'
 import WarningIcon from 'material-ui/svg-icons/alert/warning'
@@ -53,17 +53,10 @@ export default class CampaignContactsForm extends React.Component {
     contactUploadError: null
   }
 
-  getUploadInputValue(contacts) {
-    return this.props.contacts.count > 0 ?
-      `${this.props.contacts.count} contacts uploaded`
-      : ''
-  }
-
   handleUpload = (event) => {
     event.preventDefault()
     const file = event.target.files[0]
     this.setState({ uploading: true }, () => {
-      const uploading = false
       parseCSV(file, this.props.optOuts, ({ contacts, customFields, validationStats, error }) => {
         if (error) {
           this.handleUploadError(error)
@@ -92,26 +85,24 @@ export default class CampaignContactsForm extends React.Component {
       contactUploadError: null
     })
     const contactCollection = {
-      contacts: {
-        count: contacts.length,
-        customFields,
-        checksum: checksumCampaignContacts(contacts),
-        data: contacts
-      }
+      contactsCount: contacts.length,
+      customFields,
+      contacts
     }
     this.props.onChange(contactCollection)
   }
 
   renderContactStats() {
-    const { customFields, count } = this.props.formValues.contacts
+    const { customFields, contactsCount } = this.props.formValues
 
-    if (count === 0)
+    if (contactsCount === 0) {
       return ''
+    }
     return (
       <List>
         <Subheader>Uploaded</Subheader>
         <ListItem
-          primaryText={`${count} contacts`}
+          primaryText={`${contactsCount} contacts`}
           leftIcon={checkIcon}
           leftIconColor={theme.colors.green}
         />
@@ -130,8 +121,9 @@ export default class CampaignContactsForm extends React.Component {
   }
 
   renderValidationStats() {
-    if (!this.state.validationStats)
+    if (!this.state.validationStats) {
       return ''
+    }
 
     const { dupeCount, missingCellCount, invalidCellCount, optOutCount } = this.state.validationStats
 
@@ -141,7 +133,9 @@ export default class CampaignContactsForm extends React.Component {
       [invalidCellCount, 'rows with invalid numbers'],
       [optOutCount, 'opt-outs']
     ]
-    stats = stats.filter(([count, text]) => count > 0).map(([count, text]) => `${count} ${text} removed`)
+    stats = stats
+      .filter(([count]) => count > 0)
+      .map(([count, text]) => `${count} ${text} removed`)
     return (
       <List>
         <Divider />
@@ -238,4 +232,14 @@ export default class CampaignContactsForm extends React.Component {
       </div>
     )
   }
+}
+
+CampaignContactsForm.propTypes = {
+  onChange: type.func,
+  optOuts: type.array,
+  formValues: type.object,
+  ensureComplete: type.bool,
+  onSubmit: type.func,
+  saveDisabled: type.bool,
+  saveLabel: type.string
 }

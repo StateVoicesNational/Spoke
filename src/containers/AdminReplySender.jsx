@@ -96,7 +96,7 @@ class AdminReplySender extends React.Component {
     const { data } = this.props
     return (
       <div>
-        {data.campaign.contacts.data.map((contact) => {
+        {data.campaign.contacts.map((contact) => {
           if (contact.messageStatus === 'messaged') {
             return this.renderMessageSendingForm(contact)
           }
@@ -114,16 +114,14 @@ const mapQueriesToProps = ({ ownProps }) => ({
       campaign(id: $campaignId) {
         id
         contacts {
-          data {
-            id
-            firstName
-            lastName
-            cell
-            messageStatus
-            messages {
-              text
-              isFromContact
-            }
+          id
+          firstName
+          lastName
+          cell
+          messageStatus
+          messages {
+            text
+            isFromContact
           }
         }
       }
@@ -138,7 +136,7 @@ const mapMutationsToProps = () => ({
   sendReply: (contactId, message) => {
     console.log(contactId, message)
     return {
-    mutation: gql`
+      mutation: gql`
       mutation sendReply($contactId: String!, $message: String!) {
         sendReply(id: $contactId, message: $message) {
           id
@@ -148,8 +146,8 @@ const mapMutationsToProps = () => ({
           }
         }
       }`,
-    variables: { contactId, message }
-  }
+      variables: { contactId, message }
+    }
   }
 })
 

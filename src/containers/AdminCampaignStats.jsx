@@ -191,7 +191,7 @@ class AdminCampaignStats extends React.Component {
         </div>
         <div className={css(styles.container)}>
           <div className={css(styles.flexColumn, styles.spacer)}>
-            <Stat title='Contacts' count={campaign.contacts.count} />
+            <Stat title='Contacts' count={campaign.contactsCount} />
           </div>
           <div className={css(styles.flexColumn, styles.spacer)}>
             <Stat title='Texters' count={campaign.assignments.length} />
@@ -218,7 +218,7 @@ class AdminCampaignStats extends React.Component {
 
 const mapQueriesToProps = ({ ownProps }) => ({
   data: {
-    query: gql`query getCampaign($campaignId: String!, $contactFilter: ContactFilter!) {
+    query: gql`query getCampaign($campaignId: String!, $contactsFilter: ContactsFilter!) {
       campaign(id: $campaignId) {
         id
         title
@@ -229,7 +229,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
             firstName
             lastName
           }
-          unmessagedCount: contactsCount(contactFilter:$contactFilter)
+          unmessagedCount: contactsCount(contactsFilter:$contactsFilter)
           contactsCount
         }
         interactionSteps {
@@ -242,9 +242,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
             }
           }
         }
-        contacts {
-          count
-        }
+        contactsCount
         stats {
           sentMessagesCount
           receivedMessagesCount
@@ -253,7 +251,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
     }`,
     variables: {
       campaignId: ownProps.params.campaignId,
-      contactFilter: {
+      contactsFilter: {
         messageStatus: 'needsMessage'
       }
     },

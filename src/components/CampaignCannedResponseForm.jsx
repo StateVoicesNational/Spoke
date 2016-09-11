@@ -1,8 +1,17 @@
 import React, { PropTypes as type } from 'react'
-import Form from 'react-formal'
+import { StyleSheet, css } from 'aphrodite'
 import yup from 'yup'
 import GSForm from './forms/GSForm'
+import Form from 'react-formal'
+import FlatButton from 'material-ui/FlatButton'
 
+const styles = StyleSheet.create({
+  buttonRow: {
+    marginTop: 5
+  }
+})
+
+// THIS IS A COPY/PASTE FROM CANNED RESPONSE FORM BECAUSE I CANT MAKE FORM.CONTEXT WORK
 class CannedResponseForm extends React.Component {
   handleSave = (formValues) => {
     const { onSaveCannedResponse } = this.props
@@ -37,6 +46,23 @@ class CannedResponseForm extends React.Component {
             multiLine
             fullWidth
           />
+          <div className={css(styles.buttonRow)}>
+            <Form.Button
+              type='submit'
+              label='Add Response'
+              style={{
+                display: 'inline-block'
+              }}
+            />
+            <FlatButton
+              label='Cancel'
+              onTouchTap={() => this.setState({ showForm: false })}
+              style={{
+                marginLeft: 5,
+                display: 'inline-block'
+              }}
+            />
+          </div>
         </GSForm>
       </div>
     )
@@ -47,5 +73,6 @@ CannedResponseForm.propTypes = {
   onSaveCannedResponse: type.func,
   customFields: type.array
 }
+
 
 export default CannedResponseForm

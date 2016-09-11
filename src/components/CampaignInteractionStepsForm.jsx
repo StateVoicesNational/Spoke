@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { PropTypes as type } from 'react'
 import ReactDOM from 'react-dom'
 import Divider from 'material-ui/Divider'
 import ContentClear from 'material-ui/svg-icons/content/clear'
@@ -456,3 +456,14 @@ export default class CampaignInteractionStepsForm extends React.Component {
     )
   }
 }
+
+CampaignInteractionStepsForm.propTypes = {
+  formValues: type.object,
+  onChange: type.func,
+  ensureComplete: type.bool,
+  onSubmit: type.func,
+  customFields: type.array,
+  saveLabel: type.string,
+  saveDisabled: type.bool
+}
+

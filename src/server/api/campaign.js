@@ -17,7 +17,10 @@ export const schema = `
     texters: [User]
     assignments: [Assignment]
     interactionSteps: [InteractionStep]
-    contacts: CampaignContactCollection
+    contacts: [CampaignContact]
+    contactsCount: Int
+    hasUnassignedContacts: Boolean
+    customFields: [String]
     cannedResponses(userId: String): [CannedResponse]
     stats: CampaignStats
   }
@@ -54,18 +57,11 @@ export const resolvers = {
       'title',
       'description',
       'dueBy',
+      'isStarted'
     ], Campaign),
     organization: async (campaign, _, { loaders }) => (
       loaders.organization.load(campaign.organization_id)
     ),
-    isStarted: async (campaign) => {
-      const count = await r.table('campaign_contact')
-        .getAll(campaign.id, { index: 'campaign_id' })
-        .filter(r.row('assignment_id').ne(''))
-        .limit(1)
-        .count()
-      return count === 1
-    },
     texters: async (campaign) => (
       r.table('assignment')
         .getAll(campaign.id, { index: 'campaign_id' })
@@ -93,7 +89,31 @@ export const resolvers = {
       }
       return responses
     },
-    contacts: async (campaign) => campaign,
+    contacts: async (campaign) => (
+      r.table('campaign_contact')
+        .getAll(campaign.id, { index: 'campaign_id' })
+    ),
+    contactsCount: async (campaign) => (
+      r.table('campaign_contact')
+        .getAll(campaign.id, { index: 'campaign_id' })
+        .count()
+    ),
+    hasUnassignedContacts: async (campaign) => (
+      !!await r.table('campaign_contact')
+        .getAll(campaign.id, { index: 'campaign_id' })
+        .filter({ assignment_id: '' })
+        .limit(1)(0)
+        .default(null)
+    ),
+    customFields: async (campaign) => {
+      const campaignContacts = await r.table('campaign_contact')
+        .getAll(campaign.id, { index: 'campaign_id' })
+        .limit(1)
+      if (campaignContacts.length > 0) {
+        return Object.keys(campaignContacts[0].custom_fields)
+      }
+      return []
+    },
     stats: async (campaign) => campaign
   }
 }

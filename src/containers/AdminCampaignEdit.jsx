@@ -21,14 +21,15 @@ const campaignInfoFragment = `
   description
   dueBy
   isStarted
-  contacts {
-    customFields
-    count
-    checksum
-  }
+  contactsCount
+  customFields
   texters {
     id
     firstName
+    assignment(campaignId:$campaignId) {
+      contactsCount
+      needsMessageCount: contactsCount(contactsFilter:{messageStatus:\"needsMessage\"})
+    }
   }
   interactionSteps {
     id
@@ -62,7 +63,6 @@ class AdminCampaignEdit extends React.Component {
   }
 
   onExpandChange = (index, newExpandedState) => {
-    console.log(index, newExpandedState)
     const { expandedSection } = this.state
     if (newExpandedState) {
       this.setState({ expandedSection: index })
@@ -108,9 +108,10 @@ class AdminCampaignEdit extends React.Component {
       const newCampaign = {
         ...saveObject
       }
-      if (newCampaign.hasOwnProperty('contacts') && newCampaign.contacts.data) {
-        const checksum = newCampaign.contacts.checksum
-        const contactData = newCampaign.contacts.data.map((contact) => {
+      delete newCampaign.customFields
+      delete newCampaign.contactsCount
+      if (newCampaign.hasOwnProperty('contacts')) {
+        const contactData = newCampaign.contacts.map((contact) => {
           const customFields = {}
           const contactInput = {
             cell: contact.cell,
@@ -126,16 +127,16 @@ class AdminCampaignEdit extends React.Component {
           contactInput.customFields = JSON.stringify(customFields)
           return contactInput
         })
-        newCampaign.contacts = {
-          data: contactData,
-          checksum
-        }
+        newCampaign.contacts = contactData
       } else {
         newCampaign.contacts = null
       }
 
       if (newCampaign.hasOwnProperty('texters')) {
-        newCampaign.texters = newCampaign.texters.map((texter) => texter.id)
+        newCampaign.texters = newCampaign.texters.map((texter) => ({
+          id: texter.id,
+          needsMessageCount: texter.assignment.needsMessageCount
+        }))
       }
 
       if (newCampaign.hasOwnProperty('interactionSteps')) {
@@ -170,6 +171,7 @@ class AdminCampaignEdit extends React.Component {
       sectionState[key] = this.state.campaignFormValues[key]
       sectionProps[key] = this.props.campaignData.campaign[key]
     })
+
     if (JSON.stringify(sectionState) !== JSON.stringify(sectionProps)) {
       return false
     }
@@ -181,35 +183,32 @@ class AdminCampaignEdit extends React.Component {
   }
 
   sections() {
-    return [
-    {
+    return [{
       title: 'Basics',
       content: CampaignBasicsForm,
       keys: ['title', 'description', 'dueBy'],
+      blocksStarting: true,
       checkCompleted: () => (
         this.state.campaignFormValues.title !== '' &&
           this.state.campaignFormValues.description !== '' &&
           this.state.campaignFormValues.dueBy !== null
       )
-
     }, {
       title: 'Contacts',
       content: CampaignContactsForm,
-      keys: ['contacts'],
-      checkCompleted: () => this.state.campaignFormValues.contacts.count > 0,
-      checkSaved: () => {
-        const campaignFormValues = this.state.campaignFormValues
-        const campaign = this.props.campaignData.campaign
-        return campaignFormValues.contacts.checksum === campaign.contacts.checksum
-      },
+      keys: ['contacts', 'contactsCount', 'customFields'],
+      checkCompleted: () => this.state.campaignFormValues.contactsCount > 0,
+      checkSaved: () => this.state.campaignFormValues.hasOwnProperty('contacts') === false,
+      blocksStarting: true,
       extraProps: {
         optOuts: this.props.organizationData.organization.optOuts
       }
     }, {
       title: 'Texters',
       content: CampaignTextersForm,
-      keys: ['texters'],
-      checkCompleted: () => this.state.campaignFormValues.texters.length > 0,
+      keys: ['texters', 'contactsCount'],
+      checkCompleted: () => this.state.campaignFormValues.texters.length > 0 && this.state.campaignFormValues.contactsCount === this.state.campaignFormValues.texters.reduce(((left, right) => left + right.assignment.contactsCount), 0),
+      blocksStarting: false,
       extraProps: {
         orgTexters: this.props.organizationData.organization.texters,
         organizationId: this.props.params.organizationId
@@ -219,16 +218,18 @@ class AdminCampaignEdit extends React.Component {
       content: CampaignInteractionStepsForm,
       keys: ['interactionSteps'],
       checkCompleted: () => this.state.campaignFormValues.interactionSteps.length > 0 && this.state.campaignFormValues.interactionSteps[0].script !== '',
+      blocksStarting: true,
       extraProps: {
-        customFields: this.props.campaignData.campaign.contacts.customFields
+        customFields: this.props.campaignData.campaign.customFields
       }
     }, {
       title: 'Canned Responses',
       content: CampaignCannedResponsesForm,
       keys: ['cannedResponses'],
       checkCompleted: () => true,
-      extraProps:  {
-        customFields: this.props.campaignData.campaign.contacts.customFields
+      blocksStarting: true,
+      extraProps: {
+        customFields: this.props.campaignData.campaign.customFields
       }
     }]
   }
@@ -296,7 +297,7 @@ class AdminCampaignEdit extends React.Component {
   renderStartButton() {
     let isCompleted = true
     this.sections().forEach((section) => {
-      if (!this.checkSectionCompleted(section) || !this.checkSectionSaved(section)) {
+      if (section.blocksStarting && !this.checkSectionCompleted(section) || !this.checkSectionSaved(section)) {
         isCompleted = false
       }
     })

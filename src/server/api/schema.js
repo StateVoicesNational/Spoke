@@ -93,11 +93,6 @@ import { rentNewCell, sendMessage, handleIncomingMessage } from './lib/nexmo'
 import { getFormattedPhoneNumber } from '../../lib/phone-format'
 import { Notifications, sendUserNotification } from '../notifications'
 const rootSchema = `
-  input CampaignContactCollectionInput {
-    data: [CampaignContactInput]
-    checksum: String
-  }
-
   input CampaignContactInput {
     firstName: String!
     lastName: String!
@@ -129,13 +124,18 @@ const rootSchema = `
     answerOptions: [AnswerOptionInput]
   }
 
+  input TexterInput {
+    id: String
+    needsMessageCount: Int
+  }
+
   input CampaignInput {
     title: String
     description: String
     dueBy: Date
-    contacts: CampaignContactCollectionInput
+    contacts: [CampaignContactInput]
     organizationId: String
-    texters: [String]
+    texters: [TexterInput]
     interactionSteps: [InteractionStepInput]
     cannedResponses: [CannedResponseInput]
   }
@@ -154,6 +154,7 @@ const rootSchema = `
     campaign(id:String!): Campaign
     invite(id:String!): Invite
     contact(id:String!): CampaignContact,
+    assignment(id:String!): Assignment,
     stripePublishableKey: String,
     organizations: [Organization]
   }
@@ -201,7 +202,7 @@ async function editCampaign(id, campaign, loaders) {
   })
 
   if (campaign.hasOwnProperty('contacts')) {
-    const contactsToSave = campaign.contacts.data.map((datum) => {
+    const contactsToSave = campaign.contacts.map((datum) => {
       const modelData = {
         campaign_id: datum.campaignId,
         first_name: datum.firstName,
@@ -219,18 +220,90 @@ async function editCampaign(id, campaign, loaders) {
       .getAll(id, { index: 'campaign_id' })
       .delete()
     await CampaignContact.save(contactsToSave)
-    campaignUpdates.contacts_checksum = campaign.contacts.checksum
   }
 
   if (campaign.hasOwnProperty('texters')) {
-    const assignments = campaign.texters.map((texterId) => ({
-      user_id: texterId,
-      campaign_id: id
-    }))
-    await r.table('assignment')
+    const currentAssignments = await r.table('assignment')
       .getAll(id, { index: 'campaign_id' })
+      .merge((row) => ({
+        needsMessageCount: r.table('campaign_contact')
+          .getAll(row('id'), { index: 'assignment_id' })
+          .filter({ message_status: 'needsMessage' })
+          .count()
+      }))
+
+    const unchangedTexters = {}
+    const changedAssignments = currentAssignments.map((assignment) => {
+      const texter = campaign.texters.filter((ele) => ele.id === assignment.user_id)[0]
+      if (!texter) {
+        return assignment
+      } else if (texter.needsMessageCount !== assignment.needsMessageCount) {
+        return assignment
+      }
+      unchangedTexters[assignment.user_id] = true
+      return null
+    })
+    .filter((ele) => ele !== null)
+
+    // This atomically updates all the assignments to guard against people sending messages while all this is going on
+    const changedAssignmentIds = changedAssignments.map((ele) => ele.id)
+    await r.table('campaign_contact')
+      .getAll(...changedAssignmentIds, { index: 'assignment_id' })
+      .filter({ message_status: 'needsMessage' })
+      .update({
+        assignment_id: r.branch(r.row('message_status').eq('needsMessage'), '', r.row('assignment_id'))
+      })
+
+    let availableContacts = await r.table('campaign_contact')
+      .getAll('', { index: 'assignment_id' })
+      .filter({ campaign_id: id })
+      .count()
+
+    // Go through all the submitted texters and create assignments
+    const texterCount = campaign.texters.length
+    for (let index = 0; index < texterCount; index++) {
+      const texter = campaign.texters[index]
+      if (unchangedTexters[texter.id]) {
+        continue
+      }
+      const contactsToAssign = availableContacts > texter.needsMessageCount ? texter.needsMessageCount : availableContacts
+      availableContacts = availableContacts - contactsToAssign
+      const existingAssignment = changedAssignments.find((ele) => ele.user_id === texter.id)
+      let assignment = null
+      if (existingAssignment) {
+        assignment = existingAssignment
+      } else {
+        assignment = await new Assignment({
+          user_id: texter.id,
+          campaign_id: id
+        }).save()
+      }
+      await r.table('campaign_contact')
+        .getAll('', { index: 'assignment_id' })
+        .filter({ campaign_id: id })
+        .limit(contactsToAssign)
+        .update({ assignment_id: assignment.id })
+
+      if (existingAssignment) {
+        // We can't rely on an observer because nothing
+        // about the actual assignment object changes
+        await sendUserNotification({
+          type: Notifications.ASSIGNMENT_UPDATED,
+          assignment
+         })
+      }
+    }
+    let assignmentsToDelete = await r.table('assignment')
+      .getAll(id, { index: 'campaign_id' })
+      .merge((row) => ({
+        count: r.table('campaign_contact')
+          .getAll(row('id'), { index: 'assignment_id' })
+          .count()
+      }))
+      .filter((row) => row('count').eq(0))
+    await r.table('assignment')
+      .getAll(...assignmentsToDelete.map((ele) => ele.id))
       .delete()
-    await Assignment.save(assignments)
   }
 
   if (campaign.hasOwnProperty('interactionSteps')) {
@@ -437,57 +510,22 @@ const rootMutations = {
         organization_id: campaign.organizationId,
         title: campaign.title,
         description: campaign.description,
-        due_by: campaign.dueBy
+        due_by: campaign.dueBy,
+        is_started: false
       })
       const newCampaign = await campaignInstance.save()
       return editCampaign(newCampaign.id, campaign, loaders)
     },
-    startCampaign: async (_, { id }, { loaders }) => {
-      const availableContacts = await r.table('campaign_contact')
-        .getAll(id, { index: 'campaign_id' })
-        .map((campaignContact) => (
-          campaignContact.merge({ count: r.table('message')
-            .getAll(campaignContact('assignment_id'), { index: 'assignment_id' })
-            .count() })
-        ))
-        .filter({ count: 0 })
-        .without('count')
-      const availableAssignments = await r.table('assignment')
-        .getAll(id, { index: 'campaign_id' })
-      const contactCount = availableContacts.length
-      const assignmentCount = availableAssignments.length
-      const chunkSize = Math.max(Math.floor(contactCount / assignmentCount), 1)
-      const chunked = lodash.chunk(availableContacts, chunkSize)
-
-      if (contactCount > assignmentCount && contactCount % assignmentCount > 0) {
-        const leftovers = chunked.pop()
-        leftovers.forEach((leftover, index) => chunked[index].push(leftover))
-      }
-
-      if (assignmentCount < chunked.length) {
-        log.error('More chunks than there are texters!')
-      }
-
-      const assignedChunks = chunked.map((chunk, index) => (
-        chunk.map((innerChunk) => ({
-          ...innerChunk,
-          assignment_id: availableAssignments[index].id
-        }))
-      ))
-
-      let contactsToSave = []
-      assignedChunks.forEach((chunk) => {
-        contactsToSave = contactsToSave.concat(chunk)
-      })
-
-      await CampaignContact.save(contactsToSave, { conflict: 'update' })
-
+    startCampaign: async (_, { id }, { user, loaders }) => {
+      const campaign = await loaders.campaign.load(id)
+      await accessRequired(user, campaign.organizationId, 'ADMIN')
+      campaign.is_started = true
+      await campaign.save()
       await sendUserNotification({
         type: Notifications.CAMPAIGN_STARTED,
         campaignId: id
       })
-
-      return loaders.campaign.load(id)
+      return campaign
     },
     editCampaign: async (_, { id, campaign }, { user, loaders }) => {
       if (campaign.organizationId) {
@@ -523,6 +561,7 @@ const rootMutations = {
           is_default: true
         })
         .limit(1)(0)
+
       const newOrganization = await Organization.save({
         name,
         currency,
@@ -560,6 +599,13 @@ const rootMutations = {
     sendMessage: async(_, { message, campaignContactId }, { loaders }) => {
       const texter = await loaders.user.load(message.userId)
       const contact = await loaders.campaignContact.load(campaignContactId)
+
+      if (contact.assignment_id !== message.assignmentId) {
+        throw new GraphQLError({
+          status: 400,
+          message: 'Your assignment has changed'
+        })
+      }
 
       const merged = await r.table('campaign')
         .get(contact.campaign_id)
@@ -664,6 +710,12 @@ const rootResolvers = {
       const campaign = await loaders.campaign.load(id)
       await accessRequired(user, campaign.organization_id, 'ADMIN')
       return campaign
+    },
+    assignment: async (_, { id }, { loaders, user }) => {
+      const assignment = await loaders.assignment.load(id)
+      const campaign = await loaders.campaign.load(assignment.campaign_id)
+      await accessRequired(user, campaign.organization_id, 'TEXTER')
+      return assignment
     },
     organization: async(_, { id }, { loaders, user }) => {
       // await accessRequired(user, id, 'ADMIN')

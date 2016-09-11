@@ -91,6 +91,9 @@ const inlineStyles = {
   },
   actionToolbar: {
     backgroundColor: 'white'
+  },
+  snackbar: {
+    zIndex: 1000001
   }
 }
 
@@ -109,15 +112,31 @@ class AssignmentTexterContact extends React.Component {
     const questionResponses = this.getInitialQuestionResponses(props.data.contact.interactionSteps)
     const availableSteps = this.getAvailableInteractionSteps(questionResponses)
 
-    const optOut = this.props.data.contact.optOut
-    const disabled = !!optOut
-    const disabledText = optOut ? 'Skipping opt-out...' : 'Sending...'
+    const { assignment } = this.props
+    const { contact } = this.props.data
+    let disabled = false
+    let disabledText = 'Sending...'
+    let snackbarOnTouchTap = null
+    let snackbarActionTitle = null
+    let snackbarError = null
+    if (assignment.id !== contact.assignmentId) {
+      disabledText = ''
+      disabled = true
+      snackbarError = 'Your assignment has changed'
+      snackbarOnTouchTap = this.goBackToTodos
+      snackbarActionTitle = 'Back to Todos'
+    } else if (contact.optOut) {
+      disabledText = 'Skipping opt-out...'
+      disabled = true
+    }
 
     this.state = {
       disabled,
       disabledText,
       questionResponses,
-      sendError: null,
+      snackbarError,
+      snackbarActionTitle,
+      snackbarOnTouchTap,
       responsePopoverOpen: false,
       messageText: this.getStartingMessageText(),
       optOutDialogOpen: false,
@@ -214,18 +233,28 @@ class AssignmentTexterContact extends React.Component {
     }
   }
 
+  goBackToTodos = () =>  {
+    const { campaign } = this.props
+    this.props.router.push(`/app/${campaign.organization.id}/todos`)
+  }
+
   handleSendMessageError = (e) => {
     if (e.status === 402) {
-      const { campaign } = this.props
-      this.props.router.push(`/app/${campaign.organization.id}/todos`)
+      this.goBackToTodos()
     } else if (e.status === 400) {
-      this.setState({
-        sendError: e.message
-      })
+      const newState = {
+        snackbarError: e.message
+      }
+
+      if (e.message === 'Your assignment has changed') {
+        newState.snackbarActionTitle = 'Back to todos'
+        newState.snackbarOnTouchTap = this.goBackToTodos
+      }
+      this.setState(newState)
     } else {
       log.error(e)
       this.setState({
-        sendError: 'Something went wrong!'
+        snackbarError: 'Something went wrong!'
       })
     }
   }
@@ -566,9 +595,11 @@ class AssignmentTexterContact extends React.Component {
           </div>
         </div>
         <Snackbar
-          open={!!this.state.sendError}
-          message={this.state.sendError}
-          onRequestClose={this.handleRequestClose}
+          style={inlineStyles.snackbar}
+          open={!!this.state.snackbarError}
+          message={this.state.snackbarError}
+          action={this.state.snackbarActionTitle}
+          onActionTouchTap={this.state.snackbarOnTouchTap}
         />
       </div>
     )
@@ -593,6 +624,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
     query: gql`query getContact($campaignContactId: String!) {
       contact(id: $campaignContactId) {
         id
+        assignmentId
         firstName
         lastName
         cell

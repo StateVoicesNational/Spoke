@@ -7,6 +7,8 @@ import Papa from 'papaparse'
 
 class Export extends React.Component {
   componentWillReceiveProps(props) {
+    console.log(props)
+    debugger
     if (!props.data.loading) {
       console.log(props)
       props.onParseStart()
@@ -64,7 +66,6 @@ class Export extends React.Component {
         })
       )).reduce((prev, row) => prev.concat(row))
 
-      console.log(convertedAssignments)
       log.debug('Converting to csv...')
       const csv = Papa.unparse(convertedAssignments)
       log.debug('Data converted.')

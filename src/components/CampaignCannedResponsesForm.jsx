@@ -1,16 +1,13 @@
-import React from 'react'
+import React, { PropTypes as type } from 'react'
+import CampaignCannedResponseForm from './CampaignCannedResponseForm'
 import FlatButton from 'material-ui/FlatButton'
 import Form from 'react-formal'
 import GSForm from './forms/GSForm'
-import GSSubmitButton from './forms/GSSubmitButton'
 import { List, ListItem } from 'material-ui/List'
 import Divider from 'material-ui/Divider'
 import CampaignFormSectionHeading from './CampaignFormSectionHeading'
-import { Card, CardActions, CardHeader, CardText } from 'material-ui/Card'
 import DeleteIcon from 'material-ui/svg-icons/action/delete'
-import EditIcon from 'material-ui/svg-icons/image/edit'
 import IconButton from 'material-ui/IconButton'
-import ScriptList from './ScriptList'
 import yup from 'yup'
 import CreateIcon from 'material-ui/svg-icons/content/create'
 import theme from '../styles/theme'
@@ -30,72 +27,14 @@ const styles = StyleSheet.create({
   form: {
     backgroundColor: theme.colors.white,
     padding: 10
-  },
-  buttonRow: {
-    marginTop: 5
   }
 })
 
-// THIS IS A COPY/PASTE FROM CANNED RESPONSE FORM BECAUSE I CANT MAKE FORM.CONTEXT WORK
-class CannedResponseForm extends React.Component {
-  handleSave = (formValues) => {
-    const { onSaveCannedResponse } = this.props
-    console.log('saving...', this, formValues)
-    onSaveCannedResponse(formValues)
-  }
-
-  render() {
-    const modelSchema = yup.object({
-      title: yup.string().required(),
-      text: yup.string().required()
-    })
-
-    const { customFields } = this.props
-    return (
-      <div>
-        <GSForm
-          ref='form'
-          schema={modelSchema}
-          onSubmit={this.handleSave}
-        >
-          <Form.Field
-            name='title'
-            autoFocus
-            fullWidth
-            label='Title'
-          />
-          <Form.Field
-            customFields={customFields}
-            name='text'
-            type='script'
-            label='Script'
-            multiLine
-            fullWidth
-          />
-          <div className={css(styles.buttonRow)}>
-            <Form.Button
-              type='submit'
-              label='Add Response'
-              style={{
-                display: 'inline-block'
-              }}
-            />
-            <FlatButton
-              label='Cancel'
-              onTouchTap={() => this.setState({ showForm: false })}
-              style={{
-                marginLeft: 5,
-                display: 'inline-block'
-              }}
-            />
-          </div>
-        </GSForm>
-      </div>
-    )
-  }
-}
-
 export default class CampaignCannedResponsesForm extends React.Component {
+
+  state = {
+    showForm: false
+  }
 
   formSchema = yup.object({
     cannedResponses: yup.array().of(yup.object({
@@ -103,10 +42,6 @@ export default class CampaignCannedResponsesForm extends React.Component {
       text: yup.string()
     }))
   })
-
-  state = {
-    showForm: false
-  }
 
   showAddForm() {
     if (this.state.showForm) {
@@ -117,11 +52,14 @@ export default class CampaignCannedResponsesForm extends React.Component {
           <div
             className={css(styles.form)}
           >
-            <CannedResponseForm
+            <CampaignCannedResponseForm
               onSaveCannedResponse={(ele) => {
-                let newVals = this.props.formValues.cannedResponses.slice(0)
-                ele.id = Math.random().toString(36).replace(/[^a-zA-Z1-9]+/g, '')
-                newVals.push(ele)
+                const newVals = this.props.formValues.cannedResponses.slice(0)
+                const newEle = {
+                  ...ele
+                }
+                newEle.id = Math.random().toString(36).replace(/[^a-zA-Z1-9]+/g, '')
+                newVals.push(newEle)
                 this.props.onChange({
                   cannedResponses: newVals })
                 this.setState({ showForm: false })
@@ -152,7 +90,7 @@ export default class CampaignCannedResponsesForm extends React.Component {
         rightIconButton={(
           <IconButton
             onTouchTap={() => {
-              let newVals = this.props.formValues.cannedResponses.map((responseToDelete) => {
+              const newVals = this.props.formValues.cannedResponses.map((responseToDelete) => {
                 if (responseToDelete.id === response.id) {
                   return null
                 }
@@ -203,4 +141,13 @@ export default class CampaignCannedResponsesForm extends React.Component {
       </GSForm>
     )
   }
+}
+
+CampaignCannedResponsesForm.propTypes = {
+  saveLabel: type.string,
+  saveDisabled: type.bool,
+  onSubmit: type.func,
+  onChange: type.func,
+  formValues: type.object,
+  customFields: type.array
 }
