@@ -648,6 +648,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
         firstName
         lastName
         cell
+        zip
         customFields
         optOut {
           id

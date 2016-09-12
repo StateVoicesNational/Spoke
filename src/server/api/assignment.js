@@ -35,6 +35,7 @@ function getContacts(assignment, campaign, contactsFilter) {
   if (contactsFilter) {
     if (contactsFilter.validTimezone === false) {
       filter.zip = 'invalid_zip'
+      // valid zips contains
     }
     if (contactsFilter.hasOwnProperty('isOptedOut') && contactsFilter.isOptedOut !== null) {
       filter.is_opted_out = contactsFilter.isOptedOut

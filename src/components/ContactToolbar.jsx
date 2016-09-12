@@ -31,6 +31,7 @@ class ContactToolbar extends Component {
     let timezone = null
     let offset = 0
     let hasDST = false
+
     if (location) {
       city = location.city
       state = location.state
@@ -50,31 +51,31 @@ class ContactToolbar extends Component {
     const formattedLocalTime = getLocalTime(offset, hasDST).format('h:mm a')
     return (
       <div>
-      <Toolbar
-        style={inlineStyles.toolbar}
-      >
-        <ToolbarGroup >
-          <ToolbarTitle
-            text={campaignContact.firstName}
-          />
-          <ToolbarTitle
-            text={getDisplayPhoneNumber(campaignContact.cell)}
-            style={inlineStyles.cellToolbarTitle}
-          />
-          {location ? (
+        <Toolbar
+          style={inlineStyles.toolbar}
+        >
+          <ToolbarGroup >
             <ToolbarTitle
-              text={formattedLocalTime}
-              style={inlineStyles.timeToolbarTitle}
-            />) : ''
-          }
-          {location ? (
+              text={campaignContact.firstName}
+            />
             <ToolbarTitle
-              text={formattedLocation}
-              style={inlineStyles.locationToolbarTitle}
-            />) : ''}
-          {rightToolbarIcon}
-        </ToolbarGroup>
-      </Toolbar>
+              text={getDisplayPhoneNumber(campaignContact.cell)}
+              style={inlineStyles.cellToolbarTitle}
+            />
+            {location ? (
+              <ToolbarTitle
+                text={formattedLocalTime}
+                style={inlineStyles.timeToolbarTitle}
+              />) : ''
+            }
+            {location ? (
+              <ToolbarTitle
+                text={formattedLocation}
+                style={inlineStyles.locationToolbarTitle}
+              />) : ''}
+            {rightToolbarIcon}
+          </ToolbarGroup>
+        </Toolbar>
       </div>
     )
   }
