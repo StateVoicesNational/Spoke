@@ -1,5 +1,13 @@
 import theme from '../styles/theme'
 
+export function logout() {
+  const lock = new window.Auth0Lock(window.AUTH0_CLIENT_ID, 'gearshift.auth0.com')
+  lock.logout({
+    returnTo: window.AUTH0_LOGOUT_CALLBACK,
+    client_id: window.AUTH0_CLIENT_ID
+  })
+}
+
 export function login(nextUrl) {
   const lock = new window.Auth0Lock(window.AUTH0_CLIENT_ID, 'gearshift.auth0.com', {
     auth: {

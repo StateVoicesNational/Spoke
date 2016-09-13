@@ -8,12 +8,13 @@ import makeRoutes from '../routes'
 import Store from '../store'
 import { ApolloProvider } from 'react-apollo'
 import ApolloClientSingleton from '../network/apollo-client-singleton'
-import { login } from './auth-service'
+import { login, logout } from './auth-service'
 
 window.onerror = (msg, file, line, col, error) => { errorCatcher(error) }
 window.addEventListener('unhandledrejection', (event) => { errorCatcher(event.reason) })
 window.AuthService = {
-  login
+  login,
+  logout
 }
 
 const store = new Store(browserHistory, window.INITIAL_STATE)

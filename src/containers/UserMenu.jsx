@@ -37,7 +37,7 @@ class UserMenu extends Component {
 
   handleMenuChange = (event, value) => {
     if (value === 'logout') {
-      // Logout
+      window.AuthService.logout()
     } else {
       this.props.router.push(`/admin/${value}`)
     }

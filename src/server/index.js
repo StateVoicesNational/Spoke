@@ -71,6 +71,10 @@ app.post('/nexmo-message-report', wrap(async (req, res) => {
   }
 }))
 
+app.get('/logout-callback', (req, res) => {
+  req.logOut()
+  res.redirect('/login')
+})
 app.get('/login-callback',
   passport.authenticate('auth0', {
     failureRedirect: '/login'
