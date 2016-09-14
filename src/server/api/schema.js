@@ -90,6 +90,7 @@ import {
 } from './errors'
 import { rentNewCell, sendMessage, handleIncomingMessage } from './lib/nexmo'
 import { getFormattedPhoneNumber } from '../../lib/phone-format'
+import { isBetweenTextingHours } from '../../lib/timezones'
 import { Notifications, sendUserNotification } from '../notifications'
 const rootSchema = `
   input CampaignContactInput {
@@ -204,7 +205,12 @@ async function editCampaign(id, campaign, loaders) {
   })
 
   if (campaign.hasOwnProperty('contacts')) {
-    const contactsToSave = campaign.contacts.map((datum) => {
+    const contactsToSave = []
+
+    const count = campaign.contacts.length
+
+    for (let i = 0; i < count; i++) {
+      const datum = campaign.contacts[i]
       const modelData = {
         campaign_id: datum.campaignId,
         first_name: datum.firstName,
@@ -213,11 +219,18 @@ async function editCampaign(id, campaign, loaders) {
         custom_fields: datum.customFields,
         zip: datum.zip
       }
-      modelData.zip = modelData.zip
       modelData.campaign_id = id
       modelData.custom_fields = JSON.parse(modelData.custom_fields)
-      return modelData
-    })
+
+      if (datum.zip) {
+        const zipDatum = await r.table('zip_code').get(datum.zip)
+        if (zipDatum) {
+          modelData.timezone_offset = `${zipDatum.timezone_offset}_${zipDatum.has_dst}`
+        }
+      }
+      contactsToSave.push(modelData)
+
+    }
     await r.table('campaign_contact')
       .getAll(id, { index: 'campaign_id' })
       .delete()
@@ -667,7 +680,18 @@ const rootMutations = {
       if (optOut) {
         throw new GraphQLError({
           status: 400,
-          message: 'Skipped sending last message because the contact was already opted out'
+          message: 'Skipped sending because this contact was already opted out'
+        })
+      }
+
+      const zipData = await r.table('zip_code')
+        .get(contact.zip)
+        .default(null)
+
+      if (!isBetweenTextingHours(zipData ? { offset: zipData.timezone_offset, hasDST: zipData.has_dst } : null )) {
+        throw new GraphQLError({
+          status: 400,
+          message: "Skipped sending because it's now outside texting hours for this contact"
         })
       }
 

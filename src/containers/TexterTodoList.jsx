@@ -8,7 +8,9 @@ import gql from 'graphql-tag'
 class TexterTodoList extends React.Component {
   renderTodoList(assignments) {
     const organizationId = this.props.params.organizationId
-    return assignments.map((assignment) => {
+    return assignments
+      .sort((x, y) => (x.unmessagedCount + x.unrepliedCount) > (y.unmessagedCount + y.unrepliedCount) ? -1 : 1)
+      .map((assignment) => {
       if (assignment.unmessagedCount > 0 || assignment.unrepliedCount > 0 || assignment.badTimezoneCount > 0) {
         return (
           <AssignmentSummary
@@ -92,15 +94,17 @@ const mapQueriesToProps = ({ ownProps }) => ({
       organizationId: ownProps.params.organizationId,
       needsMessageFilter: {
         messageStatus: 'needsMessage',
-        isOptedOut: false
+        isOptedOut: false,
+        validTimezone: true
       },
       needsResponseFilter: {
         messageStatus: 'needsResponse',
-        isOptedOut: false
+        isOptedOut: false,
+        validTimezone: true
       },
       badTimezoneFilter: {
-        validTimezone: false,
-        isOptedOut: false
+        isOptedOut: false,
+        validTimezone: false
       }
     },
     forceFetch: true

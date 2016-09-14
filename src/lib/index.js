@@ -1,9 +1,11 @@
 export { getFormattedPhoneNumber, getDisplayPhoneNumber } from './phone-format'
+export { getFormattedZip } from './zip-format'
 export {
   getLocalTime,
+  isBetweenTextingHours,
   defaultTimezoneIsBetweenTextingHours,
-  validOffsets,
-  isBetweenTextingHours
+  getOffsets,
+  loadZipCodes
 } from './timezones'
 export {
   isClient
@@ -12,7 +14,7 @@ export { log } from './log'
 export { formatMoney } from './currency'
 import Papa from 'papaparse'
 import _ from 'lodash'
-import { getFormattedPhoneNumber } from '../lib'
+import { getFormattedPhoneNumber, getFormattedZip } from '../lib'
 export {
   findParent,
   getInteractionPath,
@@ -50,13 +52,19 @@ const getValidatedData = (data, optOuts) => {
   validatedData = result[0]
   const optOutRows = result[1]
 
+  validatedData = _.map(validatedData, (row) => _.extend(row, {
+    zip: getFormattedZip(row.zip)
+  }))
+  const zipCount = validatedData.filter((row) => !!row.zip).length
+
   return {
     validatedData,
     validationStats: {
       dupeCount,
       optOutCount: optOutRows.length,
       invalidCellCount: invalidCellRows.length,
-      missingCellCount: missingCellRows.length
+      missingCellCount: missingCellRows.length,
+      zipCount
     }
   }
 }

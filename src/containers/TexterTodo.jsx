@@ -20,8 +20,11 @@ class TexterTodo extends React.Component {
     return (<AssignmentTexter
       assignment={assignment}
       contacts={contacts}
+      onRefreshAssignmentContacts={this.refreshAssignmentContacts}
     />)
   }
+
+  refreshAssignmentContacts = () => this.props.data.refetch()
 }
 
 TexterTodo.propTypes = {
@@ -70,7 +73,8 @@ const mapQueriesToProps = ({ ownProps }) => ({
     variables: {
       contactsFilter: {
         messageStatus: ownProps.messageStatus,
-        isOptedOut: false
+        isOptedOut: false,
+        validTimezone: true
       },
       assignmentId: ownProps.params.assignmentId
     },
