@@ -82,7 +82,7 @@ export const sendUserNotification = async (notification) => {
     } catch (e) {
       log.error(e)
     }
-  } else if (type === Notifications.ASSIGNMENT_CREATED || Notifications.ASSIGNMENT_UPDATED) {
+  } else if (type === Notifications.ASSIGNMENT_CREATED) {
     const { assignment } = notification
     await sendAssignmentUserNotification(assignment, type)
   }
