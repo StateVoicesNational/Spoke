@@ -8,17 +8,17 @@ import { withRouter } from 'react-router'
 
 class Export extends React.Component {
   state = {
-    exporting: false
+    exporting: 'Preparing data'
   }
   componentDidMount() {
     const props = this.props
-    this.setState({ exporting: 'Preparing data...' })
 
     if (!props.data.loading) {
       this.setState({ exporting: 'Creating CSV...' })
       log.debug('Starting to download data...')
       const allQuestions = {}
       const questionCount = {}
+      log.debug("Getting props.data.campaign", props.data.campaign)
       props.data.campaign.interactionSteps.forEach((step) => {
         if (!step.question.text || step.question.text.trim() === '') {
           return
