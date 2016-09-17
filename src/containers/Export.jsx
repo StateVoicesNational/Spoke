@@ -18,7 +18,7 @@ class Export extends React.Component {
       log.debug('Starting to download data...')
       const allQuestions = {}
       const questionCount = {}
-      log.debug("Getting props.data.campaign", props.data.campaign)
+      log.debug("Getting props.data", props.data)
       props.data.campaign.interactionSteps.forEach((step) => {
         if (!step.question.text || step.question.text.trim() === '') {
           return
