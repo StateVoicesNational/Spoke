@@ -1,9 +1,7 @@
 import React from 'react'
 import RaisedButton from 'material-ui/RaisedButton'
-import Export from './Export'
 import Chart from '../components/Chart'
 import { Card, CardActions, CardHeader, CardMedia, CardTitle, CardText } from 'material-ui/Card'
-import CircularProgress from 'material-ui/CircularProgress'
 import TexterStats from '../components/TexterStats'
 import { withRouter } from 'react-router'
 import { StyleSheet, css } from 'aphrodite'
@@ -88,10 +86,6 @@ Stat.propTypes = {
 }
 
 class AdminCampaignStats extends React.Component {
-  state = {
-    exporting: false
-  }
-
   renderSurveyStats() {
     const { interactionSteps } = this.props.data.campaign
 
@@ -126,41 +120,6 @@ class AdminCampaignStats extends React.Component {
     })
   }
 
-  renderExport() {
-    const button = (
-      <RaisedButton
-        tooltip='Export a CSV'
-        label={this.state.exporting || 'Export Data'}
-        disabled={this.state.exporting}
-        onTouchTap={() => this.setState({ exporting: 'Preparing data...' })}
-      />
-    )
-    const exporter = (
-      <Export
-        campaign={this.props.data.campaign}
-        onParseStart={() => this.setState({ exporting: 'Creating CSV...' })}
-        onDownloadStart={() => this.setState({ exporting: 'Downloading...' })}
-        onComplete={() => this.setState({ exporting: false })}
-      />
-    )
-    return (
-      <div>
-        <div className={css(styles.inline)}>
-          {this.state.exporting ? (
-            <CircularProgress size={0.4} style={{
-              verticalAlign: 'middle',
-              display: 'inline-block',
-              height: 37,
-              width: 37
-            }} />) : ''}
-        </div>
-        <div className={css(styles.inline)}>
-          {this.state.exporting ? exporter : ''}
-          {button}
-        </div>
-      </div>
-    )
-  }
 
   render() {
     console.log(this.state)
@@ -177,7 +136,10 @@ class AdminCampaignStats extends React.Component {
             <div className={css(styles.rightAlign)}>
               <div className={css(styles.inline)}>
                 <div className={css(styles.inline)}>
-                  {this.renderExport()}
+                  <RaisedButton
+                    onTouchTap={() => this.props.router.push(`/admin/${organizationId}/campaigns/${campaignId}/export`)}
+                    label='Export data'
+                  />
                 </div>
                 <div className={css(styles.inline)}>
                   <RaisedButton

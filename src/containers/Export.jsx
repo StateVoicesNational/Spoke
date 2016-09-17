@@ -1,17 +1,21 @@
 import React from 'react'
 import moment from 'moment'
 import { isClient, log } from '../lib'
-import { connect } from 'react-apollo'
 import gql from 'graphql-tag'
 import Papa from 'papaparse'
+import loadData from './hoc/load-data'
+import { withRouter } from 'react-router'
 
 class Export extends React.Component {
-  componentWillReceiveProps(props) {
-    console.log(props)
-    debugger
+  state = {
+    exporting: false
+  }
+  componentDidMount() {
+    const props = this.props
+    this.setState({ exporting: 'Preparing data...' })
+
     if (!props.data.loading) {
-      console.log(props)
-      props.onParseStart()
+      this.setState({ exporting: 'Creating CSV...' })
       log.debug('Starting to download data...')
       const allQuestions = {}
       const questionCount = {}
@@ -32,7 +36,6 @@ class Export extends React.Component {
           allQuestions[step.id] = step.question.text
         }
       })
-      console.log('props', props.data.campaign.assignments)
       const convertedAssignments = props.data.campaign.assignments.map((assignment) => (
         assignment.contacts.map((contact) => {
           let contactRow = {
@@ -64,17 +67,21 @@ class Export extends React.Component {
           })
           return contactRow
         })
-      )).reduce((prev, row) => prev.concat(row))
-
+      )).reduce((prev, row) => prev.concat(row), [])
+      console.log("GOT HERE", convertedAssignments)
       log.debug('Converting to csv...')
       const csv = Papa.unparse(convertedAssignments)
       log.debug('Data converted.')
       if (isClient()) {
-        props.onDownloadStart()
+        this.setState({ exporting: 'Downloading...' })
         this.downloadCSV(csv, props.data.campaign)
         log.debug('Download complete!')
       }
-      props.onComplete()
+
+      this.setState({ exporting: false })
+      const { organizationId, campaignId } = this.props.params
+
+      this.props.router.push(`/admin/${organizationId}/campaigns/${campaignId}`)
     }
   }
 
@@ -89,7 +96,11 @@ class Export extends React.Component {
   }
 
   render() {
-    return <div style={{ display: 'hidden' }}></div>
+    return (
+      <div>
+        {this.state.exporting || ''}
+      </div>
+    )
   }
 }
 
@@ -144,11 +155,9 @@ const mapQueriesToProps = ({ ownProps }) => ({
         }
       }
     }`,
-    variables: { campaignId: ownProps.campaign.id },
+    variables: { campaignId: ownProps.params.campaignId },
     forceFetch: true
   }
 })
 
-export default connect({
-  mapQueriesToProps
-})(Export)
+export default loadData(withRouter(Export), { mapQueriesToProps })
