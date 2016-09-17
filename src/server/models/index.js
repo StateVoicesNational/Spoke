@@ -15,6 +15,7 @@ import UserOrganization from './user-organization'
 import User from './user'
 import Invite from './invite'
 import ZipCode from './zip-code'
+import JobRequest from './job-request'
 import thinky from './thinky'
 
 function createLoader(model, idKey = 'id') {
@@ -49,6 +50,7 @@ export {
   CampaignContact,
   InteractionStep,
   Invite,
+  JobRequest,
   Message,
   OptOut,
   Organization,

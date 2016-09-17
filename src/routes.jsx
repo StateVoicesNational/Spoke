@@ -22,7 +22,6 @@ import Billing from './containers/Billing'
 import Pricing from './components/Pricing'
 import AdminReplySender from './containers/AdminReplySender'
 import SuperAdminDashboard from './containers/SuperAdminDashboard'
-import Export from './containers/Export'
 import SuperAdminOrganizationPage from './containers/SuperAdminOrganizationPage'
 
 
@@ -46,7 +45,6 @@ export default function makeRoutes(requireAuth = () => {}) {
               <IndexRoute component={AdminCampaignStats} />
               <Route path='edit' component={AdminCampaignEdit} />
               <Route path='send-replies' component={AdminReplySender} />
-              <Route path='export' component={Export} />
             </Route>
           </Route>
           <Route path='people' component={AdminPersonList} />

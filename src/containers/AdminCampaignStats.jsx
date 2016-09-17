@@ -8,6 +8,7 @@ import { StyleSheet, css } from 'aphrodite'
 import loadData from './hoc/load-data'
 import gql from 'graphql-tag'
 import theme from '../styles/theme'
+import wrapMutations from './hoc/wrap-mutations'
 
 const inlineStyles = {
   stat: {
@@ -86,6 +87,10 @@ Stat.propTypes = {
 }
 
 class AdminCampaignStats extends React.Component {
+  createExportRequest() {
+
+  }
+
   renderSurveyStats() {
     const { interactionSteps } = this.props.data.campaign
 
@@ -137,7 +142,8 @@ class AdminCampaignStats extends React.Component {
               <div className={css(styles.inline)}>
                 <div className={css(styles.inline)}>
                   <RaisedButton
-                    onTouchTap={() => this.props.router.push(`/admin/${organizationId}/campaigns/${campaignId}/export`)}
+                    onTouchTap={async () =>
+                      this.props.mutations.exportCampaign(campaignId)}
                     label='Export data'
                   />
                 </div>
@@ -221,4 +227,15 @@ const mapQueriesToProps = ({ ownProps }) => ({
   }
 })
 
-export default loadData(withRouter(AdminCampaignStats), { mapQueriesToProps })
+const mapMutationsToProps = () => ({
+  exportCampaign: (campaignId) => ({
+    mutation: gql`mutation exportCampaign($campaignId: String!) {
+      exportCampaign(id: $campaignId) {
+        id
+      }
+    }`,
+    variables: { campaignId }
+  })
+})
+
+export default loadData(withRouter(wrapMutations(AdminCampaignStats)), { mapQueriesToProps, mapMutationsToProps })
