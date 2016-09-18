@@ -132,8 +132,7 @@ async function exportCampaign(jobId, { id, requester }) {
     params = { Key: messageKey, Expires: 86400 }
     const campaignMessagesExportUrl = await s3bucket.getSignedUrl('getObject', params)
     await sendEmail({
-      to: 'saikat1@gmail.com',
-//      to: user.email,
+      to: user.email,
       subject: `Export ready for ${campaign.title}`,
       text: `Your Spoke exports are ready! These URLs will be valid for 24 hours.
 
