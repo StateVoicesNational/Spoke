@@ -10,7 +10,7 @@ async function sleep(ms = 0) {
 }
 
 async function exportCampaign(jobId, { id, requester }) {
-  const user = User.get(requester)
+  const user = await User.get(requester)
   const allQuestions = {}
   const questionCount = {}
   const interactionSteps = await r.table('interaction_step')
@@ -131,7 +131,6 @@ async function exportCampaign(jobId, { id, requester }) {
     await s3bucket.putObject(params).promise()
     params = { Key: messageKey, Expires: 86400 }
     const campaignMessagesExportUrl = await s3bucket.getSignedUrl('getObject', params)
-    console.log(user)
     await sendEmail({
       to: user.email,
       subject: `Export ready for ${campaign.title}`,
