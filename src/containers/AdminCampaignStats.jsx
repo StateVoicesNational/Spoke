@@ -3,6 +3,7 @@ import RaisedButton from 'material-ui/RaisedButton'
 import Chart from '../components/Chart'
 import { Card, CardActions, CardHeader, CardMedia, CardTitle, CardText } from 'material-ui/Card'
 import TexterStats from '../components/TexterStats'
+import Snackbar from 'material-ui/Snackbar'
 import { withRouter } from 'react-router'
 import { StyleSheet, css } from 'aphrodite'
 import loadData from './hoc/load-data'
@@ -87,6 +88,11 @@ Stat.propTypes = {
 }
 
 class AdminCampaignStats extends React.Component {
+  state = {
+    exportMessageOpen: false,
+    disableExportButton: false
+  }
+
   renderSurveyStats() {
     const { interactionSteps } = this.props.data.campaign
 
@@ -123,10 +129,11 @@ class AdminCampaignStats extends React.Component {
 
 
   render() {
-    console.log(this.state)
     const { data, params } = this.props
     const { organizationId, campaignId } = params
     const campaign = data.campaign
+    const currentExportJob = this.props.data.campaign.currentExportJob
+    const exportLabel = currentExportJob ? `Exporting (${currentExportJob.status}%)` : 'Export Data'
     return (
       <div>
         <div className={css(styles.container)}>
@@ -138,9 +145,15 @@ class AdminCampaignStats extends React.Component {
               <div className={css(styles.inline)}>
                 <div className={css(styles.inline)}>
                   <RaisedButton
-                    onTouchTap={async () =>
-                      this.props.mutations.exportCampaign(campaignId)}
-                    label='Export data'
+                    onTouchTap={async () => {
+                      this.setState({
+                        exportMessageOpen: true,
+                        disableExportButton: true
+                      })
+                      await this.props.mutations.exportCampaign(campaignId)
+                    }}
+                    label={exportLabel}
+                    disabled={this.state.disableExportButton || this.props.data.campaign.currentExportJob ? true : false}
                   />
                 </div>
                 <div className={css(styles.inline)}>
@@ -175,6 +188,14 @@ class AdminCampaignStats extends React.Component {
         <TexterStats
           campaign={campaign}
         />
+        <Snackbar
+          open={this.state.exportMessageOpen}
+          message="Export started - we'll e-mail you when it's done"
+          autoHideDuration={4000}
+          onRequestClose={() => {
+            this.setState({ exportMessageOpen: false })
+          }}
+        />
       </div>
     )
   }
@@ -195,6 +216,10 @@ const mapQueriesToProps = ({ ownProps }) => ({
           }
           unmessagedCount: contactsCount(contactsFilter:$contactsFilter)
           contactsCount
+        }
+        currentExportJob {
+          assigned
+          status
         }
         interactionSteps {
           id

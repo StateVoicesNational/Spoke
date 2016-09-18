@@ -1,4 +1,4 @@
-import { r, Campaign, User } from '../server/models'
+import { r, Campaign, User, JobRequest } from '../server/models'
 import { log } from '../lib'
 import AWS from 'aws-sdk'
 import Baby from 'babyparse'
@@ -9,7 +9,7 @@ async function sleep(ms = 0) {
   return new Promise(fn => setTimeout(fn, ms))
 }
 
-async function exportCampaign({ id, requester }) {
+async function exportCampaign(jobId, { id, requester }) {
   const user = User.get(requester)
   const allQuestions = {}
   const questionCount = {}
@@ -43,6 +43,7 @@ async function exportCampaign({ id, requester }) {
         .get(row('user_id'))
     }))
   const assignmentCount = assignments.length
+
   for (let index = 0; index < assignmentCount; index++) {
     const assignment = assignments[index]
     const optOuts = await r.table('opt_out')
@@ -107,6 +108,11 @@ async function exportCampaign({ id, requester }) {
     })
     convertedContacts = await Promise.all(convertedContacts)
     finalCampaignResults = finalCampaignResults.concat(convertedContacts)
+    await JobRequest.get(jobId).update({
+      status: Math.round(index / assignmentCount * 100),
+      updated_at: new Date()
+    })
+    await sleep(1000)
   }
   const campaignCsv = Baby.unparse(finalCampaignResults)
   const messageCsv = Baby.unparse(finalCampaignMessages)
@@ -131,6 +137,8 @@ async function exportCampaign({ id, requester }) {
       text: `Your Spoke exports are ready! These URLs will be valid for 24 hours.\nCampaign export: ${campaignExportUrl}\n
       Message export: ${campaignMessagesExportUrl}`
     })
+    const jobRequest = await JobRequest.get(jobId)
+    await jobRequest.delete()
     log.info(`Successfully exported ${id}`)
   } else {
     log.debug('Would have saved the following to S3:')
@@ -143,7 +151,7 @@ async function exportCampaign({ id, requester }) {
   while (true) {
     try {
       await sleep(1000)
-      let exportJob = await r.table('job_request')
+      const exportJob = await r.table('job_request')
         .getAll(['export', false], { index: 'unassigned_job' })
         .limit(1)(0)
         .default(null)
@@ -154,8 +162,15 @@ async function exportCampaign({ id, requester }) {
         if (updateResults.replaced !== 1) {
           continue
         }
-        await exportCampaign(exportJob.payload)
+        await exportCampaign(exportJob.id, exportJob.payload)
       }
+      await r.table('job_request')
+        .filter({
+          assigned: true
+        })
+        .filter((row) => row('updated_at')
+          .lt(r.now().sub(60 * 2)))
+        .delete()
     } catch (ex) {
       log.error(ex)
     }

@@ -12,6 +12,11 @@ const JobRequest = thinky.createModel('job_request', type.object().schema({
     .boolean()
     .required()
     .default(false),
+  status: type
+    .number()
+    .integer()
+    .required()
+    .default(0),
   updated_at: timestamp(),
   created_at: timestamp()
 }).allowExtra(false))
