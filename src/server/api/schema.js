@@ -393,7 +393,10 @@ const rootMutations = {
       const organizationId = campaign.organization_id
       await accessRequired(user, organizationId, 'ADMIN')
       await JobRequest.save({
-        payload: { id },
+        payload: {
+          id,
+          requester: user.id
+        },
         job_type: 'export'
       })
       return 1

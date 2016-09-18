@@ -1,21 +1,16 @@
-import { r } from '../server/models'
+import { r, Campaign, User } from '../server/models'
 import { log } from '../lib'
+import AWS from 'aws-sdk'
 import Baby from 'babyparse'
 import moment from 'moment'
+import { sendEmail } from '../server/mail'
 
 async function sleep(ms = 0) {
   return new Promise(fn => setTimeout(fn, ms))
 }
-/*.merge((row) => ({
-      contacts: r.table('campaign_contact')
-        .getAll(row('id'), { index: 'assignment_id' })
-    }))
-    .merge((row) => ({
-      messages: r.table('message')
-        .getAll(row('id'), { index: 'assignment_id' })
-    }))
-    */
-async function exportCampaign(id) {
+
+async function exportCampaign({ id, requester }) {
+  const user = User.get(requester)
   const allQuestions = {}
   const questionCount = {}
   const interactionSteps = await r.table('interaction_step')
@@ -115,6 +110,33 @@ async function exportCampaign(id) {
   }
   const campaignCsv = Baby.unparse(finalCampaignResults)
   const messageCsv = Baby.unparse(finalCampaignMessages)
+
+  if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
+    const s3bucket = new AWS.S3({ params: { Bucket: 'spoke-exports' } })
+    const campaign = await Campaign.get(id)
+    const campaignTitle = campaign.title.replace(/ /g, '_').substring(0, 20)
+    const key = `${campaignTitle}-${moment().format('YYYY-MM-DD-HH-mm-ss')}.csv`
+    const messageKey = `${key}-messages.csv`
+    let params = { Key: key, Body: campaignCsv }
+    await s3bucket.putObject(params).promise()
+    params = { Key: key, Expires: 86400 }
+    const campaignExportUrl = await s3bucket.getSignedUrl('getObject', params)
+    params = { Key: messageKey, Body: messageCsv }
+    await s3bucket.putObject(params).promise()
+    params = { Key: key, Expires: 86400 }
+    const campaignMessagesExportUrl = await s3bucket.getSignedUrl('getObject', params)
+    await sendEmail({
+      to: user.email,
+      subject: `Export ready for ${campaign.title}`,
+      text: `Your Spoke exports are ready! These URLs will be valid for 24 hours.\nCampaign export: ${campaignExportUrl}\n
+      Message export: ${campaignMessagesExportUrl}`
+    })
+    log.info(`Successfully exported ${id}`)
+  } else {
+    log.debug('Would have saved the following to S3:')
+    log.debug(campaignCsv)
+    log.debug(messageCsv)
+  }
 }
 
 (async () => {
@@ -132,7 +154,7 @@ async function exportCampaign(id) {
         if (updateResults.replaced !== 1) {
           continue
         }
-        await exportCampaign(exportJob.payload.id)
+        await exportCampaign(exportJob.payload)
       }
     } catch (ex) {
       log.error(ex)
