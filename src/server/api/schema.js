@@ -1,5 +1,3 @@
-import lodash from 'lodash'
-import log from '../../lib'
 import { Campaign,
   Assignment,
   BalanceLineItem,
@@ -12,6 +10,7 @@ import { Campaign,
   QuestionResponse,
   UserOrganization,
   InteractionStep,
+  JobRequest,
   r
 } from '../models'
 import {
@@ -162,6 +161,7 @@ const rootSchema = `
   type RootMutation {
     createCampaign(campaign:CampaignInput!): Campaign
     editCampaign(id:String!, campaign:CampaignInput!): Campaign
+    exportCampaign(id:String!): Campaign
     createCannedResponse(cannedResponse:CannedResponseInput!): CannedResponse
     createOrganization(name: String!, userId: String!, inviteId: String!): Organization
     joinOrganization(organizationId: String!): Organization
@@ -388,6 +388,19 @@ const rootMutations = {
       })
       return loaders.campaignContact.load(id)
     },
+    exportCampaign: async (_, { id }, { user, loaders }) => {
+      const campaign = loaders.campaign.load(id)
+      const organizationId = campaign.organization_id
+      await accessRequired(user, organizationId, 'ADMIN')
+      await JobRequest.save({
+        payload: {
+          id,
+          requester: user.id
+        },
+        job_type: 'export'
+      })
+      return 1
+    },
     editOrganizationRoles: async (_, { userId, organizationId, roles }, { user, loaders }) => {
       const userOrganization = await r.table('user_organization')
         .getAll(organizationId, { index: 'organization_id'})
@@ -465,7 +478,6 @@ const rootMutations = {
       }).save()
 
       return await Organization.get(organizationId).update({ balance_amount: newBalanceAmount })
-
     },
     updateCard: async(_, { organizationId, stripeToken }, { user, loaders }) => {
       await accessRequired(user, organizationId, 'OWNER')

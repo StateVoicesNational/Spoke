@@ -1,27 +1,12 @@
 import { r, Assignment, Campaign, User, Organization } from './models'
 import { log } from '../lib'
-import mailgunFactory from 'mailgun-js'
+import { sendEmail } from './mail'
 
 export const Notifications = {
   CAMPAIGN_STARTED: 'campaign.started',
   ASSIGNMENT_MESSAGE_RECEIVED: 'assignment.message.received',
   ASSIGNMENT_CREATED: 'assignment.created',
   ASSIGNMENT_UPDATED: 'assignment.updated'
-}
-
-const sendEmail = async ({ to, subject, text }) => {
-  const mailgun = mailgunFactory({
-    apiKey: process.env.MAILGUN_SECRET_KEY,
-    domain: process.env.MAILGUN_DOMAIN
-  })
-
-  log.info(`Sending e-mail to ${to} with subject ${subject}.`)
-  return mailgun.messages().send({
-    from: process.env.MAILGUN_FROM_EMAIL,
-    to,
-    subject,
-    text
-  })
 }
 
 const sendAssignmentUserNotification = async (assignment, notification) => {

@@ -105,6 +105,8 @@ export async function rentNewCell() {
 
 export async function sendMessage(message) {
   if (!nexmo) {
+    await Message.get(message.id)
+      .update({ send_status: 'SENT' })
     return 'test_message_uuid'
   }
 

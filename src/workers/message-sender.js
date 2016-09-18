@@ -1,5 +1,5 @@
-import { sendMessage, saveNewIncomingMessage, getLastMessage, convertMessagePartsToMessage } from './api/lib/nexmo'
-import { r } from './models'
+import { sendMessage, saveNewIncomingMessage, getLastMessage, convertMessagePartsToMessage } from '../server/api/lib/nexmo'
+import { r } from '../server/models'
 import { log } from '../lib'
 
 async function sleep(ms = 0) {
