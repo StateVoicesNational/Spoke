@@ -87,10 +87,6 @@ Stat.propTypes = {
 }
 
 class AdminCampaignStats extends React.Component {
-  createExportRequest() {
-
-  }
-
   renderSurveyStats() {
     const { interactionSteps } = this.props.data.campaign
 
