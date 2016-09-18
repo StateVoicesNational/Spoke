@@ -129,13 +129,16 @@ async function exportCampaign(jobId, { id, requester }) {
     const campaignExportUrl = await s3bucket.getSignedUrl('getObject', params)
     params = { Key: messageKey, Body: messageCsv }
     await s3bucket.putObject(params).promise()
-    params = { Key: key, Expires: 86400 }
+    params = { Key: messageKey, Expires: 86400 }
     const campaignMessagesExportUrl = await s3bucket.getSignedUrl('getObject', params)
     await sendEmail({
       to: 'saikat1@gmail.com',
 //      to: user.email,
       subject: `Export ready for ${campaign.title}`,
-      text: `Your Spoke exports are ready! These URLs will be valid for 24 hours.\nCampaign export: ${campaignExportUrl}\n
+      text: `Your Spoke exports are ready! These URLs will be valid for 24 hours.
+
+      Campaign export: ${campaignExportUrl}
+
       Message export: ${campaignMessagesExportUrl}`
     })
     const jobRequest = await JobRequest.get(jobId)
