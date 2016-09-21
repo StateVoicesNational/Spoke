@@ -79,8 +79,6 @@ async function handlePendingIncomingMessageParts() {
       messagePartsToDelete = messagePartsToDelete.concat(messageParts)
       const message = await convertMessagePartsToMessage(messageParts)
       messagesToSave.push(message)
-    } else {
-      log.debug("Not all message parts for ${groupKey} have arrived")
     }
   }
 
