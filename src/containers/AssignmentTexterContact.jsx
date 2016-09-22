@@ -332,6 +332,7 @@ class AssignmentTexterContact extends React.Component {
         assignmentId: assignment.id
       }
 
+      await this.handleSubmitSurveys()
       await this.props.mutations.createOptOut(optOut, contact.id)
       this.props.onFinishContact()
     } catch (e) {
