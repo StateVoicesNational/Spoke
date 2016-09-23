@@ -94,10 +94,7 @@ CampaignList.propTypes = {
     React.PropTypes.shape({
       dueBy: React.PropTypes.string,
       title: React.PropTypes.string,
-      description: React.PropTypes.string,
-      assignments: React.PropTypes.arrayOf(React.PropTypes.shape({
-        id: React.PropTypes.string
-      }))
+      description: React.PropTypes.string
     })
   ),
   router: React.PropTypes.object,

@@ -117,9 +117,6 @@ const mapQueriesToProps = ({ ownProps }) => ({
           hasUnassignedContacts
           description
           dueBy
-          assignments {
-            id
-          }
         }
       }
     }`,
