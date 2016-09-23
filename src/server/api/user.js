@@ -43,8 +43,7 @@ export const resolvers = {
     },
     roles: async(user, { organizationId }) => (
       r.table('user_organization')
-        .getAll(organizationId, { index: 'organization_id' })
-        .filter({ user_id: user.id })
+        .getAll([organizationId, user.id], { index: 'organization_user' })
         .limit(1)(0)
         .pluck('roles')('roles')
     ),
