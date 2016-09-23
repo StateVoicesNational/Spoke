@@ -28,5 +28,6 @@ const CampaignContact = thinky.createModel('campaign_contact', type.object().sch
 
 CampaignContact.ensureIndex('assignment_id')
 CampaignContact.ensureIndex('campaign_id')
+CampaignContact.ensureIndex('campaign_assignment', (doc) => [doc('campaign_id'), doc('assignment_id')])
 
 export default CampaignContact

@@ -121,13 +121,13 @@ export const resolvers = {
         .getAll(campaign.id, { index: 'campaign_id' })
         .count()
     ),
-    hasUnassignedContacts: async (campaign) => (
-      !!await r.table('campaign_contact')
-        .getAll(campaign.id, { index: 'campaign_id' })
-        .filter({ assignment_id: '' })
+    hasUnassignedContacts: async (campaign) => {
+      const hasContacts = await r.table('campaign_contact')
+        .getAll([campaign.id, ''], { index: 'campaign_assignment' })
         .limit(1)(0)
         .default(null)
-    ),
+      return !!hasContacts
+    },
     customFields: async (campaign) => {
       const campaignContacts = await r.table('campaign_contact')
         .getAll(campaign.id, { index: 'campaign_id' })
