@@ -60,7 +60,8 @@ const config = {
   output: {
     filename: outputFile,
     path: DEBUG ? '/' : assetsDir,
-    publicPath: '/assets/'
+    publicPath: '/assets/',
+    sourceMapFilename: `${outputFile}.map`
   }
 }
 
