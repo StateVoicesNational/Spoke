@@ -255,8 +255,7 @@ async function editCampaign(id, campaign, loaders) {
       })
 
     let availableContacts = await r.table('campaign_contact')
-      .getAll('', { index: 'assignment_id' })
-      .filter({ campaign_id: id })
+      .getAll([id, ''], { index: 'campaign_assignment' })
       .count()
 
     // Go through all the submitted texters and create assignments
@@ -278,9 +277,9 @@ async function editCampaign(id, campaign, loaders) {
           campaign_id: id
         }).save()
       }
+
       await r.table('campaign_contact')
-        .getAll('', { index: 'assignment_id' })
-        .filter({ campaign_id: id })
+        .getAll([id, ''], { index: 'campaign_assignment' })
         .limit(contactsToAssign)
         .update({ assignment_id: assignment.id })
 
