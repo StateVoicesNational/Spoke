@@ -81,13 +81,13 @@ import {
   schema as balanceLineItemSchema,
   resolvers as balanceLineItemResolvers
 } from './balance-line-item'
-
 import {
   GraphQLError,
   authRequired,
   accessRequired,
   superAdminRequired
 } from './errors'
+import { gzip } from '../../lib'
 import { rentNewCell, sendMessage, handleIncomingMessage } from './lib/nexmo'
 import { getFormattedPhoneNumber } from '../../lib/phone-format'
 import { Notifications, sendUserNotification } from '../notifications'
@@ -202,6 +202,9 @@ async function editCampaign(id, campaign, loaders) {
   })
 
   if (campaign.hasOwnProperty('contacts')) {
+    await r.table('campaign_contact')
+      .getAll(id, { index: 'campaign_id' })
+      .delete()
     const contactsToSave = campaign.contacts.map((datum) => {
       const modelData = {
         campaign_id: datum.campaignId,
@@ -216,10 +219,19 @@ async function editCampaign(id, campaign, loaders) {
       modelData.custom_fields = JSON.parse(modelData.custom_fields)
       return modelData
     })
-    await r.table('campaign_contact')
-      .getAll(id, { index: 'campaign_id' })
-      .delete()
-    await CampaignContact.save(contactsToSave)
+    if (contactsToSave.length <= 500) {
+      await CampaignContact.save(contactsToSave)
+    } else {
+      const compressedString = await gzip(JSON.stringify(contactsToSave))
+
+      await JobRequest.save({
+        payload: {
+          id,
+          contacts: compressedString
+        },
+        job_type: 'contact_upload'
+      })
+    }
   }
 
   if (campaign.hasOwnProperty('texters')) {

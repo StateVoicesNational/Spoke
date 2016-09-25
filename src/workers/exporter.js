@@ -1,13 +1,10 @@
 import { r, Campaign, User, JobRequest } from '../server/models'
 import { log } from '../lib'
+import { sleep, getNextJob } from './lib'
 import AWS from 'aws-sdk'
 import Baby from 'babyparse'
 import moment from 'moment'
 import { sendEmail } from '../server/mail'
-
-async function sleep(ms = 0) {
-  return new Promise(fn => setTimeout(fn, ms))
-}
 
 async function exportCampaign(jobId, { id, requester }) {
   const user = await User.get(requester)
@@ -48,11 +45,13 @@ async function exportCampaign(jobId, { id, requester }) {
     const assignment = assignments[index]
     const optOuts = await r.table('opt_out')
       .getAll(assignment.id, { index: 'assignment_id' })
+
     const contacts = await r.table('campaign_contact')
       .getAll(assignment.id, { index: 'assignment_id' })
       .merge((row) => ({
         location: r.table('zip_code').get(row('zip'))
       }))
+
     const messages = await r.table('message')
       .getAll(assignment.id, { index: 'assignment_id' })
     let convertedMessages = messages.map((message) => {
@@ -72,7 +71,7 @@ async function exportCampaign(jobId, { id, requester }) {
     finalCampaignMessages = finalCampaignMessages.concat(convertedMessages)
     let convertedContacts = contacts.map(async (contact) => {
       const contactRow = {
-        'assignmentId': assignment.id,
+        assignmentId: assignment.id,
         'texter[firstName]': assignment.texter.first_name,
         'texter[lastName]': assignment.texter.last_name,
         'texter[email]': assignment.texter.email,
@@ -108,11 +107,11 @@ async function exportCampaign(jobId, { id, requester }) {
     })
     convertedContacts = await Promise.all(convertedContacts)
     finalCampaignResults = finalCampaignResults.concat(convertedContacts)
+
     await JobRequest.get(jobId).update({
       status: Math.round(index / assignmentCount * 100),
       updated_at: new Date()
     })
-    await sleep(1000)
   }
   const campaignCsv = Baby.unparse(finalCampaignResults)
   const messageCsv = Baby.unparse(finalCampaignMessages)
@@ -154,26 +153,10 @@ async function exportCampaign(jobId, { id, requester }) {
   while (true) {
     try {
       await sleep(1000)
-      const exportJob = await r.table('job_request')
-        .getAll(['export', false], { index: 'unassigned_job' })
-        .limit(1)(0)
-        .default(null)
+      const exportJob = await getNextJob('export')
       if (exportJob) {
-        const updateResults = await r.table('job_request')
-          .get(exportJob.id)
-          .update({ assigned: true })
-        if (updateResults.replaced !== 1) {
-          continue
-        }
         await exportCampaign(exportJob.id, exportJob.payload)
       }
-      await r.table('job_request')
-        .filter({
-          assigned: true
-        })
-        .filter((row) => row('updated_at')
-          .lt(r.now().sub(60 * 2)))
-        .delete()
     } catch (ex) {
       log.error(ex)
     }
