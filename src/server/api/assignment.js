@@ -36,9 +36,10 @@ function getContacts(assignment, campaign, contactsFilter) {
     if (contactsFilter.validTimezone === false) {
       filter.zip = 'invalid_zip'
     }
-    if (contactsFilter.hasOwnProperty('optOut') && contactsFilter.optOut !== null) {
-      filter.opt_out = contactsFilter.optOut
+    if (contactsFilter.hasOwnProperty('isOptedOut') && contactsFilter.isOptedOut !== null) {
+      filter.is_opted_out = contactsFilter.isOptedOut
     }
+
     if (contactsFilter.hasOwnProperty('messageStatus') && contactsFilter.messageStatus !== null) {
       filter.message_status = contactsFilter.messageStatus
     }
@@ -46,16 +47,6 @@ function getContacts(assignment, campaign, contactsFilter) {
   let query = r.table('campaign_contact')
     .getAll(assignment.id, { index: 'assignment_id' })
 
-  if (filter.hasOwnProperty('opt_out')) {
-    query = query
-      .merge((contact) => ({
-        opt_out: r.table('opt_out')
-          .getAll(contact('cell'), { index: 'cell' })
-          .filter({ organization_id: campaign.organization_id })
-          .limit(1)(0)
-          .default(false)
-      }))
-  }
   query = query.filter(filter)
   return query
 }
