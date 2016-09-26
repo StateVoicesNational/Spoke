@@ -595,17 +595,32 @@ const rootMutations = {
       return await contact.save()
     },
     createOptOut: async(_, { optOut, campaignContactId }, { loaders }) => {
-      let campaign = await r.table('assignment')
-        .get(optOut.assignmentId)
+      const { assignmentId, cell } = optOut
+      const campaign = await r.table('assignment')
+        .get(assignmentId)
         .merge((doc) => ({
           campaign: r.table('campaign')
             .get(doc('campaign_id'))
         }))('campaign')
       await new OptOut({
-        assignment_id: optOut.assignmentId,
+        assignment_id: assignmentId,
         organization_id: campaign.organization_id,
-        cell: optOut.cell
+        cell
       }).save()
+
+      await r.table('campaign_contact')
+        .getAll(cell, { index: 'cell' })
+        .merge((contact) => ({
+          organization_id: r.table('campaign')
+            .get(contact('campaign_id'))
+            ('organization_id')
+        }))
+        .filter({ organization_id: campaign.organization_id})
+        .forEach((doc) => r.table('campaign_contact')
+            .get(doc('id'))
+            .update({ is_opted_out: true }))
+
+      return loaders.campaignContact.load(campaignContactId)
     },
     sendMessage: async(_, { message, campaignContactId }, { loaders }) => {
       const texter = await loaders.user.load(message.userId)

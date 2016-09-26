@@ -23,11 +23,13 @@ const CampaignContact = thinky.createModel('campaign_contact', type.object().sch
       'messaged',
       'closed'
     ])
-    .default('needsMessage')
+    .default('needsMessage'),
+  is_opted_out: type.boolean().default(false)
 }).allowExtra(false))
 
 CampaignContact.ensureIndex('assignment_id')
 CampaignContact.ensureIndex('campaign_id')
+CampaignContact.ensureIndex('cell')
 CampaignContact.ensureIndex('campaign_assignment', (doc) => [doc('campaign_id'), doc('assignment_id')])
 
 export default CampaignContact
