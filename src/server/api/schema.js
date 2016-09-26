@@ -209,8 +209,7 @@ async function editCampaign(id, campaign, loaders) {
         last_name: datum.lastName,
         cell: datum.cell,
         custom_fields: datum.customFields,
-        zip: datum.zip,
-        is_opted_out: false
+        zip: datum.zip
       }
       modelData.zip = modelData.zip
       modelData.campaign_id = id

@@ -24,7 +24,7 @@ const CampaignContact = thinky.createModel('campaign_contact', type.object().sch
       'closed'
     ])
     .default('needsMessage'),
-  is_opted_out: type.boolean()
+  is_opted_out: type.boolean().default(false)
 }).allowExtra(false))
 
 CampaignContact.ensureIndex('assignment_id')
