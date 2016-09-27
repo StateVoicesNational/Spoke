@@ -671,8 +671,11 @@ const rootMutations = {
 
       const { contactNumber, text } = message
 
+      const replaceCurlyApostrophes = (rawText) => rawText
+        .replace(/[\u2018\u2019]/g, "'")
+
       const messageInstance = new Message({
-        text,
+        text: replaceCurlyApostrophes(text),
         contact_number: contactNumber,
         user_number: texter.assigned_cell,
         assignment_id: message.assignmentId,
