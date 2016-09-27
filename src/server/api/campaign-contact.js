@@ -5,7 +5,7 @@ import { getTopMostParent } from '../../lib'
 export const schema = `
   input ContactsFilter {
     messageStatus: String
-    optOut: Boolean
+    isOptedOut: Boolean
     validTimezone: Boolean
   }
 

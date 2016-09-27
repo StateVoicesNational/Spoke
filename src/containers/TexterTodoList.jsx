@@ -90,9 +90,18 @@ const mapQueriesToProps = ({ ownProps }) => ({
     }`,
     variables: {
       organizationId: ownProps.params.organizationId,
-      needsMessageFilter: { messageStatus: 'needsMessage' },
-      needsResponseFilter: { messageStatus: 'needsResponse' },
-      badTimezoneFilter: { validTimezone: false }
+      needsMessageFilter: {
+        messageStatus: 'needsMessage',
+        isOptedOut: false
+      },
+      needsResponseFilter: {
+        messageStatus: 'needsResponse',
+        isOptedOut: false
+      },
+      badTimezoneFilter: {
+        validTimezone: false,
+        isOptedOut: false
+      }
     },
     forceFetch: true
   }

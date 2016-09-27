@@ -1,4 +1,4 @@
-import { r, Assignment, Campaign, User, Organization } from './models'
+import { r, Assignment, Campaign, CampaignContact, User, Organization } from './models'
 import { log } from '../lib'
 import { sendEmail } from './mail'
 
@@ -55,17 +55,24 @@ export const sendUserNotification = async (notification) => {
   } else if (type === Notifications.ASSIGNMENT_MESSAGE_RECEIVED) {
     const assignment = await Assignment.get(notification.assignmentId)
     const campaign = await Campaign.get(assignment.campaign_id)
-    const organization = await Organization.get(campaign.organization_id)
-    const user = await User.get(assignment.user_id)
+    const campaignContact = await r.table('campaign_contact')
+      .getAll(notification.contactNumber, { index: 'cell' })
+      .filter({ campaign_id: campaign.id })
+      .limit(1)(0)
 
-    try {
-      await sendEmail({
-        to: user.email,
-        subject: `[${organization.name}] [${campaign.title}] New reply`,
-        text: `Someone responded to your message. Reply here: \n\nhttps://spoke.gearshift.co/app/${campaign.organization_id}/todos/${notification.assignmentId}/reply`
-      })
-    } catch (e) {
-      log.error(e)
+    if (!campaignContact.is_opted_out) {
+      const user = await User.get(assignment.user_id)
+      const organization = await Organization.get(campaign.organization_id)
+
+      try {
+        await sendEmail({
+          to: user.email,
+          subject: `[${organization.name}] [${campaign.title}] New reply`,
+          text: `Someone responded to your message. Reply here: \n\nhttps://spoke.gearshift.co/app/${campaign.organization_id}/todos/${notification.assignmentId}/reply`
+        })
+      } catch (e) {
+        log.error(e)
+      }
     }
   } else if (type === Notifications.ASSIGNMENT_CREATED) {
     const { assignment } = notification
@@ -81,7 +88,8 @@ const setupIncomingReplyNotification = () => (
       cursor.each((err, message) => (
         sendUserNotification({
           type: Notifications.ASSIGNMENT_MESSAGE_RECEIVED,
-          assignmentId: message.new_val.assignment_id
+          assignmentId: message.new_val.assignment_id,
+          contactNumber: message.new_val.contact_number
         })
       ))
     ))
