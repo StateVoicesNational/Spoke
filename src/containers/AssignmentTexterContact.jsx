@@ -10,7 +10,6 @@ import FlatButton from 'material-ui/FlatButton'
 import NavigateCloseIcon from 'material-ui/svg-icons/navigation/close'
 import { grey100 } from 'material-ui/styles/colors'
 import IconButton from 'material-ui/IconButton/IconButton'
-import TextField from 'material-ui/TextField'
 import { Toolbar, ToolbarGroup, ToolbarSeparator } from 'material-ui/Toolbar'
 import Dialog from 'material-ui/Dialog'
 import { applyScript } from '../lib/scripts'
@@ -158,7 +157,12 @@ class AssignmentTexterContact extends React.Component {
     if (this.props.data.contact.optOut) {
       setTimeout(() => this.props.onFinishContact(), 1500)
     }
+
+    const node = this.refs.messageScrollContainer
+    // Does not work without this setTimeout
+    setTimeout(() => node.scrollTop = Math.floor(node.scrollHeight), 0)
   }
+
   getAvailableInteractionSteps(questionResponses) {
     const allInteractionSteps = this.props.data.contact.interactionSteps
 
@@ -440,7 +444,6 @@ class AssignmentTexterContact extends React.Component {
   }
 
   handleClickSendMessageButton = () => {
-    console.log("this.refs.form", this.refs)
     this.refs.form.submit()
   }
 
@@ -602,6 +605,7 @@ class AssignmentTexterContact extends React.Component {
             {this.renderTopFixedSection()}
           </div>
           <div
+            ref='messageScrollContainer'
             className={css(styles.middleScrollingSection)}
           >
             {this.renderMiddleScrollingSection()}
