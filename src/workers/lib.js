@@ -1,7 +1,15 @@
-import { r } from '../server/models'
+import { r, JobRequest } from '../server/models'
 
 export const sleep = (ms = 0) => {
   return new Promise(fn => setTimeout(fn, ms))
+}
+
+export async function updateJob(job, percentComplete) {
+  await JobRequest.get(job.id)
+    .update({
+      status: percentComplete,
+      updated_at: new Date()
+    })
 }
 
 export async function getNextJob(jobType) {

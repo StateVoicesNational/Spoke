@@ -1,12 +1,123 @@
-import { r, Campaign, User, JobRequest } from '../server/models'
-import { log } from '../lib'
-import { sleep, getNextJob } from './lib'
+import { r, Campaign, CampaignContact, User, JobRequest } from '../server/models'
+import { log, gunzip } from '../lib'
+import { sleep, getNextJob, updateJob } from './lib'
 import AWS from 'aws-sdk'
 import Baby from 'babyparse'
 import moment from 'moment'
 import { sendEmail } from '../server/mail'
 
-async function exportCampaign(jobId, { id, requester }) {
+async function editCampaign(job) {
+  const payload = job.payload
+  const campaignId = payload.id
+  if (payload.hasOwnProperty('contacts')) {
+    // We do this deletion in schema.js but we do it again here just in case the the queue broke and we had a backlog of contact uploads for one campaign
+    await r.table('campaign_contact')
+      .getAll(campaignId, { index: 'campaign_id' })
+      .delete()
+    const maxPercentage = payload.hasOwnProperty('texters') ? 50 : 100
+    let contacts = await gunzip(payload.contacts)
+    const chunkSize = 1000
+    contacts = JSON.parse(contacts)
+    const numChunks = Math.ceil(contacts.length / chunkSize)
+    for (let index = 0; index < numChunks; index++) {
+      await updateJob(job, Math.round((maxPercentage / numChunks) * index * 100))
+      const savePortion = contacts.slice(index * chunkSize, (index + 1) * chunkSize)
+      await CampaignContact.save(savePortion)
+    }
+  }
+}
+  /*
+  let availableContacts = 0
+    if (campaign.hasOwnProperty('contacts')) {
+      availableContacts = campaign.contacts.length
+    } else {
+      availableContacts = await r.table('campaign_contact')
+        .getAll('', { index: 'assignment_id' })
+        .filter({ campaign_id: id })
+        .count()
+    }
+    const currentAssignments = await r.table('assignment')
+      .getAll(id, { index: 'campaign_id' })
+      .merge((row) => ({
+        needsMessageCount: r.table('campaign_contact')
+          .getAll(row('id'), { index: 'assignment_id' })
+          .filter({ message_status: 'needsMessage' })
+          .count()
+      }))
+
+    const unchangedTexters = {}
+    const changedAssignments = currentAssignments.map((assignment) => {
+      const texter = campaign.texters.filter((ele) => ele.id === assignment.user_id)[0]
+      if (!texter) {
+        return assignment
+      } else if (texter.needsMessageCount !== assignment.needsMessageCount) {
+        return assignment
+      }
+      unchangedTexters[assignment.user_id] = true
+      return null
+    })
+    .filter((ele) => ele !== null)
+
+    // This atomically updates all the assignments to guard against people sending messages while all this is going on
+    const changedAssignmentIds = changedAssignments.map((ele) => ele.id)
+    await r.table('campaign_contact')
+      .getAll(...changedAssignmentIds, { index: 'assignment_id' })
+      .filter({ message_status: 'needsMessage' })
+      .update({
+        assignment_id: r.branch(r.row('message_status').eq('needsMessage'), '', r.row('assignment_id'))
+      })
+
+    // Go through all the submitted texters and create assignments
+    const texterCount = campaign.texters.length
+    for (let index = 0; index < texterCount; index++) {
+      const texter = campaign.texters[index]
+      if (unchangedTexters[texter.id]) {
+        continue
+      }
+      const contactsToAssign = availableContacts > texter.needsMessageCount ? texter.needsMessageCount : availableContacts
+      availableContacts = availableContacts - contactsToAssign
+      const existingAssignment = changedAssignments.find((ele) => ele.user_id === texter.id)
+      let assignment = null
+      if (existingAssignment) {
+        assignment = existingAssignment
+      } else {
+        assignment = await new Assignment({
+          user_id: texter.id,
+          campaign_id: id
+        }).save()
+      }
+      await r.table('campaign_contact')
+        .getAll('', { index: 'assignment_id' })
+        .filter({ campaign_id: id })
+        .limit(contactsToAssign)
+        .update({ assignment_id: assignment.id })
+
+      if (existingAssignment) {
+        // We can't rely on an observer because nothing
+        // about the actual assignment object changes
+        await sendUserNotification({
+          type: Notifications.ASSIGNMENT_UPDATED,
+          assignment
+         })
+      }
+    }
+    const assignmentsToDelete = await r.table('assignment')
+      .getAll(id, { index: 'campaign_id' })
+      .merge((row) => ({
+        count: r.table('campaign_contact')
+          .getAll(row('id'), { index: 'assignment_id' })
+          .count()
+      }))
+      .filter((row) => row('count').eq(0))
+    await r.table('assignment')
+      .getAll(...assignmentsToDelete.map((ele) => ele.id))
+      .delete()
+}
+*/
+async function exportCampaign(job) {
+  const jobId = job.id
+  const id = job.payload.id
+  const requester = job.payload.requester
   const user = await User.get(requester)
   const allQuestions = {}
   const questionCount = {}
@@ -108,10 +219,7 @@ async function exportCampaign(jobId, { id, requester }) {
     convertedContacts = await Promise.all(convertedContacts)
     finalCampaignResults = finalCampaignResults.concat(convertedContacts)
 
-    await JobRequest.get(jobId).update({
-      status: Math.round(index / assignmentCount * 100),
-      updated_at: new Date()
-    })
+    await updateJob(job, Math.round(index / assignmentCount * 100))
   }
   const campaignCsv = Baby.unparse(finalCampaignResults)
   const messageCsv = Baby.unparse(finalCampaignMessages)
@@ -139,8 +247,6 @@ async function exportCampaign(jobId, { id, requester }) {
 
       Message export: ${campaignMessagesExportUrl}`
     })
-    const jobRequest = await JobRequest.get(jobId)
-    await jobRequest.delete()
     log.info(`Successfully exported ${id}`)
   } else {
     log.debug('Would have saved the following to S3:')
@@ -155,8 +261,27 @@ async function exportCampaign(jobId, { id, requester }) {
       await sleep(1000)
       const exportJob = await getNextJob('export')
       if (exportJob) {
-        await exportCampaign(exportJob.id, exportJob.payload)
+        await exportCampaign(exportJob)
+        await r.table('job_request')
+          .get(exportJob.id)
+          .delete()
       }
+
+      const editCampaignJob = await getNextJob('edit_campaign')
+      if (editCampaignJob) {
+        await editCampaign(editCampaignJob)
+        await r.table('job_request')
+          .get(editCampaignJob.id)
+          .delete()
+      }
+
+      await r.table('job_request')
+        .filter({
+          assigned: true
+        })
+        .filter((row) => row('updated_at')
+          .lt(r.now().sub(60 * 2)))
+        .delete()
     } catch (ex) {
       log.error(ex)
     }
