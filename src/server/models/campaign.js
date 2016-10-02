@@ -14,7 +14,11 @@ const Campaign = thinky.createModel('campaign', type.object().schema({
     .date()
     .required()
     .default(null),
-  created_at: timestamp()
+  created_at: timestamp(),
+  is_archived: type
+    .boolean()
+    .required()
+
 }).allowExtra(false))
 
 Campaign.ensureIndex('organization_id')

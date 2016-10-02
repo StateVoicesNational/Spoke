@@ -3,6 +3,7 @@ import RaisedButton from 'material-ui/RaisedButton'
 import Chart from '../components/Chart'
 import { Card, CardActions, CardHeader, CardMedia, CardTitle, CardText } from 'material-ui/Card'
 import TexterStats from '../components/TexterStats'
+import AdminCampaignArchiveControl from './AdminCampaignArchiveControl'
 import Snackbar from 'material-ui/Snackbar'
 import { withRouter } from 'react-router'
 import { StyleSheet, css } from 'aphrodite'
@@ -36,6 +37,15 @@ const styles = StyleSheet.create({
     marginBottom: 40,
     justifyContent: 'space-around',
     flexWrap: 'wrap'
+  },
+  archivedBanner: {
+    backgroundColor: '#FFFBE6',
+    fontSize: '16px',
+    fontWeight: 'bold',
+    width: '100%',
+    padding: '15px',
+    textAlign: 'center',
+    marginBottom: '20px'
   },
   header: {
     ...theme.text.header
@@ -137,6 +147,9 @@ class AdminCampaignStats extends React.Component {
     return (
       <div>
         <div className={css(styles.container)}>
+          {campaign.isArchived ? <div className={css(styles.archivedBanner)}>
+            This campaign is archived.</div> : ''}
+
           <div className={css(styles.header)}>
             {campaign.title}
           </div>
@@ -157,10 +170,15 @@ class AdminCampaignStats extends React.Component {
                   />
                 </div>
                 <div className={css(styles.inline)}>
+                  {campaign.isArchived ? '' : [
+                  <AdminCampaignArchiveControl
+                    campaign={campaign}
+                  />,
                   <RaisedButton
                     onTouchTap={() => this.props.router.push(`/admin/${organizationId}/campaigns/${campaignId}/edit`)}
                     label='Edit'
                   />
+                  ]}
                 </div>
               </div>
             </div>
@@ -207,6 +225,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
       campaign(id: $campaignId) {
         id
         title
+        isArchived
         assignments {
           id
           texter {
