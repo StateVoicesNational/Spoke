@@ -127,12 +127,13 @@ class AdminCampaignStats extends React.Component {
     })
   }
 
-
   render() {
     const { data, params } = this.props
     const { organizationId, campaignId } = params
     const campaign = data.campaign
-    const currentExportJob = this.props.data.campaign.currentExportJob
+    const currentExportJob = this.props.data.campaign.pendingJobs.filter((job) => job.jobType === 'export')[0]
+    const shouldDisableExport = this.state.disableExportButton || currentExportJob
+
     const exportLabel = currentExportJob ? `Exporting (${currentExportJob.status}%)` : 'Export Data'
     return (
       <div>
@@ -149,11 +150,16 @@ class AdminCampaignStats extends React.Component {
                       this.setState({
                         exportMessageOpen: true,
                         disableExportButton: true
+                      }, () => {
+                        this.setState({
+                          exportMessageOpen: true,
+                          disableExportButton: false
+                        })
                       })
                       await this.props.mutations.exportCampaign(campaignId)
                     }}
                     label={exportLabel}
-                    disabled={this.state.disableExportButton || this.props.data.campaign.currentExportJob ? true : false}
+                    disabled={shouldDisableExport}
                   />
                 </div>
                 <div className={css(styles.inline)}>
@@ -217,7 +223,9 @@ const mapQueriesToProps = ({ ownProps }) => ({
           unmessagedCount: contactsCount(contactsFilter:$contactsFilter)
           contactsCount
         }
-        currentExportJob {
+        pendingJobs {
+          id
+          jobType
           assigned
           status
         }
@@ -244,8 +252,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
         messageStatus: 'needsMessage'
       }
     },
-    pollInterval: 1000,
-    forceFetch: true
+    pollInterval: 250
   }
 })
 

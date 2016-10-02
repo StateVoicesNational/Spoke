@@ -161,7 +161,7 @@ const rootSchema = `
   type RootMutation {
     createCampaign(campaign:CampaignInput!): Campaign
     editCampaign(id:String!, campaign:CampaignInput!): Campaign
-    exportCampaign(id:String!): Campaign
+    exportCampaign(id:String!): JobRequest
     createCannedResponse(cannedResponse:CannedResponseInput!): CannedResponse
     createOrganization(name: String!, userId: String!, inviteId: String!): Organization
     joinOrganization(organizationId: String!): Organization
@@ -186,10 +186,6 @@ const rootSchema = `
 
 async function editCampaign(id, campaign, loaders) {
   const { title, description, dueBy, organizationId } = campaign
-  const delayedEdits = {
-    job_type: 'edit_campaign',
-    payload: {}
-  }
 
   const campaignUpdates = {
     id,
@@ -225,11 +221,23 @@ async function editCampaign(id, campaign, loaders) {
     })
     const compressedString = await gzip(JSON.stringify(contactsToSave))
 
-    delayedEdits.payload.contacts = compressedString
+    await JobRequest.save({
+      job_type: 'upload_contacts',
+      payload: {
+        id,
+        contacts: compressedString
+      }
+    })
   }
 
   if (campaign.hasOwnProperty('texters')) {
-    delayedEdits.payload.texters = campaign.texters
+    await JobRequest.save({
+      job_type: 'assign_texters',
+      payload: {
+        id,
+        texters: campaign.texters
+      }
+    })
   }
 
   if (campaign.hasOwnProperty('interactionSteps')) {
@@ -289,11 +297,6 @@ async function editCampaign(id, campaign, loaders) {
     await CannedResponse.save(convertedResponses)
   }
 
-  if (Object.keys(delayedEdits.payload).length > 0) {
-    delayedEdits.payload.id = id
-    await JobRequest.save(delayedEdits)
-  }
-
   const newCampaign = await Campaign.get(id).update(campaignUpdates)
   return newCampaign || loaders.campaign.load(id)
 }
@@ -323,14 +326,14 @@ const rootMutations = {
       const campaign = loaders.campaign.load(id)
       const organizationId = campaign.organization_id
       await accessRequired(user, organizationId, 'ADMIN')
-      await JobRequest.save({
+      const newJob = await JobRequest.save({
         payload: {
           id,
           requester: user.id
         },
         job_type: 'export'
       })
-      return 1
+      return newJob
     },
     editOrganizationRoles: async (_, { userId, organizationId, roles }, { user, loaders }) => {
       const userOrganization = await r.table('user_organization')
