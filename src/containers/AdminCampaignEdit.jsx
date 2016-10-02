@@ -23,6 +23,12 @@ const campaignInfoFragment = `
   isStarted
   contactsCount
   customFields
+  pendingJobs {
+    id
+    jobType
+    assigned
+    status
+  }
   texters {
     id
     firstName
@@ -62,6 +68,12 @@ class AdminCampaignEdit extends React.Component {
     }
   }
 
+  componentWillReceiveProps(newProps) {
+    this.setState({
+      campaignFormValues: newProps.campaignData.campaign
+    })
+  }
+
   onExpandChange = (index, newExpandedState) => {
     const { expandedSection } = this.state
     if (newExpandedState) {
@@ -78,6 +90,11 @@ class AdminCampaignEdit extends React.Component {
       sectionState[key] = this.state.campaignFormValues[key]
     })
     return sectionState
+  }
+
+  currentCampaignJob(jobType) {
+    const currentJob = this.props.campaignData.campaign.pendingJobs.filter((job) => job.jobType === jobType)[0]
+    return currentJob || null
   }
 
   isNew() {
@@ -151,10 +168,11 @@ class AdminCampaignEdit extends React.Component {
         }))
       }
 
-      await this
+      const results = await this
         .props
         .mutations
         .editCampaign(this.props.campaignData.campaign.id, newCampaign)
+
       this.setState({
         campaignFormValues: this.props.campaignData.campaign
       })
@@ -341,6 +359,7 @@ class AdminCampaignEdit extends React.Component {
       <div>
         {this.renderHeader()}
         {sections.map((section, sectionIndex) => {
+          console.log('SECTION IS', section.title)
           const sectionIsDone = this.checkSectionCompleted(section)
             && this.checkSectionSaved(section)
           const sectionIsExpanded = sectionIndex === expandedSection
@@ -419,7 +438,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
     variables: {
       campaignId: ownProps.params.campaignId
     },
-    forceFetch: true
+    pollInterval: 250
   },
   organizationData: {
     query: gql`query getOrganizationData($organizationId: String!, $role: String!) {
@@ -439,7 +458,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
       organizationId: ownProps.params.organizationId,
       role: 'TEXTER'
     },
-    forceFetch: true
+    pollInterval: 250
   }
 })
 

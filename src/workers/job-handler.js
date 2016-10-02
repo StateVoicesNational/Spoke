@@ -6,24 +6,22 @@ import Baby from 'babyparse'
 import moment from 'moment'
 import { sendEmail } from '../server/mail'
 
-async function editCampaign(job) {
+async function uploadContacts(job) {
   const payload = job.payload
   const campaignId = payload.id
-  if (payload.hasOwnProperty('contacts')) {
-    // We do this deletion in schema.js but we do it again here just in case the the queue broke and we had a backlog of contact uploads for one campaign
-    await r.table('campaign_contact')
-      .getAll(campaignId, { index: 'campaign_id' })
-      .delete()
-    const maxPercentage = payload.hasOwnProperty('texters') ? 50 : 100
-    let contacts = await gunzip(payload.contacts)
-    const chunkSize = 1000
-    contacts = JSON.parse(contacts)
-    const numChunks = Math.ceil(contacts.length / chunkSize)
-    for (let index = 0; index < numChunks; index++) {
-      await updateJob(job, Math.round((maxPercentage / numChunks) * index * 100))
-      const savePortion = contacts.slice(index * chunkSize, (index + 1) * chunkSize)
-      await CampaignContact.save(savePortion)
-    }
+  // We do this deletion in schema.js but we do it again here just in case the the queue broke and we had a backlog of contact uploads for one campaign
+  await r.table('campaign_contact')
+    .getAll(campaignId, { index: 'campaign_id' })
+    .delete()
+  const maxPercentage = payload.hasOwnProperty('texters') ? 50 : 100
+  let contacts = await gunzip(payload.contacts)
+  const chunkSize = 1000
+  contacts = JSON.parse(contacts)
+  const numChunks = Math.ceil(contacts.length / chunkSize)
+  for (let index = 0; index < numChunks; index++) {
+    await updateJob(job, Math.round((maxPercentage / numChunks) * index * 100))
+    const savePortion = contacts.slice(index * chunkSize, (index + 1) * chunkSize)
+    await CampaignContact.save(savePortion)
   }
 }
   /*
@@ -267,11 +265,11 @@ async function exportCampaign(job) {
           .delete()
       }
 
-      const editCampaignJob = await getNextJob('edit_campaign')
-      if (editCampaignJob) {
-        await editCampaign(editCampaignJob)
+      const uploadContactsJob = await getNextJob('upload_contacts')
+      if (uploadContactsJob) {
+        await uploadContacts(uploadContactsJob)
         await r.table('job_request')
-          .get(editCampaignJob.id)
+          .get(uploadContactsJob.id)
           .delete()
       }
 
