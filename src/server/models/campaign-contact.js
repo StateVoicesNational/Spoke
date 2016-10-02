@@ -36,10 +36,5 @@ CampaignContact.ensureIndex('assignment_timezone_offset', (doc) => [
   doc('assignment_id'),
   doc('timezone_offset'),
 ])
-CampaignContact.ensureIndex('assignment_timezone_offset_opt_out', (doc) => [
-  doc('assignment_id'),
-  doc('timezone_offset'),
-  doc('is_opted_out'),
-])
 
 export default CampaignContact

@@ -13,7 +13,6 @@ import wrap from './wrap'
 import { log } from '../lib'
 import { handleIncomingMessage, handleDeliveryReport } from './api/lib/nexmo'
 import { seedZipCodes } from './seeds/seed-zip-codes'
-import { loadZipCodes } from './startup'
 import { setupUserNotificationObservers } from './notifications'
 import { Tracer } from 'apollo-tracer'
 
@@ -24,9 +23,6 @@ process.on('uncaughtException', (ex) => {
 const DEBUG = process.env.NODE_ENV === 'development'
 setupAuth0Passport()
 seedZipCodes()
-// Loading zips into memory here is purely a speed enhancement; merging contacts
-// with zip table in rethink is too slow for 1000s of contacts
-loadZipCodes()
 setupUserNotificationObservers()
 const app = express()
 // Heroku requires you to use process.env.PORT

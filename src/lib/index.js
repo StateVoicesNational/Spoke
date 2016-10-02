@@ -5,7 +5,6 @@ export {
   isBetweenTextingHours,
   defaultTimezoneIsBetweenTextingHours,
   getOffsets,
-  loadZipCodes
 } from './timezones'
 export {
   isClient
