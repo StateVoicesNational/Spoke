@@ -5,9 +5,10 @@ import { log } from '../../lib'
 export async function seedZipCodes() {
   log.info('Checking if zip code is needed')
   const hasZip = (await r.table('zip_code')
-    .filter({})
     .limit(1)
     .count()) > 0
+
+  console.log("has zip?", hasZip)
   if (!hasZip) {
     log.info('Starting to seed zip codes')
     const absolutePath = `${__dirname}/data/zip-codes.csv`
