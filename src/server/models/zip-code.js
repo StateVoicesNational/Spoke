@@ -20,6 +20,4 @@ const ZipCode = thinky.createModel('zip_code', type.object().schema({
     .allowNull(false)
 }).allowExtra(false), { pk: 'zip' })
 
-ZipCode.ensureIndex('offset_dst', (doc) => [doc('timezone_offset'), doc('has_dst')])
-
 export default ZipCode
