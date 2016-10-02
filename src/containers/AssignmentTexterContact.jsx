@@ -163,7 +163,6 @@ class AssignmentTexterContact extends React.Component {
       timezoneData = { hasDST, offset }
     }
 
-    console.log("timezoneData", timezoneData)
     return isBetweenTextingHours(timezoneData)
   }
 
@@ -297,7 +296,6 @@ class AssignmentTexterContact extends React.Component {
       }
     } else {
       log.error(e)
-      console.log(e)
       this.setState({
         snackbarError: 'Something went wrong!'
       })
