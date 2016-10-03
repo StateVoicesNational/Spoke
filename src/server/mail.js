@@ -5,17 +5,23 @@ const mailgun = mailgunFactory({
   domain: process.env.MAILGUN_DOMAIN
 })
 
-export const sendEmail = async ({ to, subject, text }) => {
+export const sendEmail = async ({ to, subject, text, replyTo }) => {
   log.info(`Sending e-mail to ${to} with subject ${subject}.`)
   if (process.env.NODE_ENV === 'development') {
     log.debug(`Would send e-mail with subject ${subject} and text ${text}.`)
     return null
   } else {
-    return mailgun.messages().send({
+    const params = {
       from: process.env.MAILGUN_FROM_EMAIL,
       to,
       subject,
       text
-    })
+    }
+
+    if (replyTo) {
+      params['h:Reply-To'] = replyTo
+    }
+
+    return mailgun.messages().send(params)
   }
 }

@@ -9,6 +9,14 @@ export const Notifications = {
   ASSIGNMENT_UPDATED: 'assignment.updated'
 }
 
+async function getOrganizationOwner(organizationId) {
+  return await r.table('user_organization')
+    .getAll(organizationId, { index: 'organization_id' })
+    .filter((doc) => doc('roles').contains('OWNER'))
+    .limit(1)
+    .eqJoin('user_id', r.table('user'))
+      ('right')(0)
+}
 const sendAssignmentUserNotification = async (assignment, notification) => {
   const campaign = await Campaign.get(assignment.campaign_id)
 
@@ -18,6 +26,8 @@ const sendAssignmentUserNotification = async (assignment, notification) => {
 
   const organization = await Organization.get(campaign.organization_id)
   const user = await User.get(assignment.user_id)
+  const orgOwner = await getOrganizationOwner(organization.id)
+
   let subject
   let text
   if (notification === Notifications.ASSIGNMENT_UPDATED) {
@@ -31,6 +41,7 @@ const sendAssignmentUserNotification = async (assignment, notification) => {
   try {
     await sendEmail({
       to: user.email,
+      replyTo: orgOwner.email,
       subject,
       text
     })
@@ -63,12 +74,14 @@ export const sendUserNotification = async (notification) => {
     if (!campaignContact.is_opted_out) {
       const user = await User.get(assignment.user_id)
       const organization = await Organization.get(campaign.organization_id)
+      const orgOwner = await getOrganizationOwner(organization.id)
 
       try {
         await sendEmail({
           to: user.email,
+          replyTo: orgOwner.email,
           subject: `[${organization.name}] [${campaign.title}] New reply`,
-          text: `Someone responded to your message. Reply here: \n\nhttps://spoke.gearshift.co/app/${campaign.organization_id}/todos/${notification.assignmentId}/reply`
+          text: `Someone responded to your message. See all your replies here: \n\nhttps://spoke.gearshift.co/app/${campaign.organization_id}/todos/${notification.assignmentId}/reply`
         })
       } catch (e) {
         log.error(e)
