@@ -175,6 +175,8 @@ const rootSchema = `
     deleteQuestionResponses(interactionStepIds:[String], campaignContactId:String!): CampaignContact,
     updateQuestionResponses(questionResponses:[QuestionResponseInput], campaignContactId:String!): CampaignContact,
     startCampaign(id:String!): Campaign,
+    archiveCampaign(id:String!): Campaign,
+    unarchiveCampaign(id:String!): Campaign,
     sendReply(id: String!, message: String!): CampaignContact
   }
 
@@ -522,10 +524,25 @@ const rootMutations = {
         title: campaign.title,
         description: campaign.description,
         due_by: campaign.dueBy,
-        is_started: false
+        is_started: false,
+        is_archived: false
       })
       const newCampaign = await campaignInstance.save()
       return editCampaign(newCampaign.id, campaign, loaders)
+    },
+    unarchiveCampaign: async (_, { id }, { user, loaders }) => {
+      const campaign = await loaders.campaign.load(id)
+      await accessRequired(user, campaign.organizationId, 'ADMIN')
+      campaign.is_archived = false
+      await campaign.save()
+      return campaign
+    },
+    archiveCampaign: async (_, { id }, { user, loaders }) => {
+      const campaign = await loaders.campaign.load(id)
+      await accessRequired(user, campaign.organizationId, 'ADMIN')
+      campaign.is_archived = true
+      await campaign.save()
+      return campaign
     },
     startCampaign: async (_, { id }, { user, loaders }) => {
       const campaign = await loaders.campaign.load(id)
@@ -625,8 +642,9 @@ const rootMutations = {
     sendMessage: async(_, { message, campaignContactId }, { loaders }) => {
       const texter = await loaders.user.load(message.userId)
       const contact = await loaders.campaignContact.load(campaignContactId)
+      const campaign = await loaders.campaign.load(contact.campaign_id)
 
-      if (contact.assignment_id !== message.assignmentId) {
+      if (contact.assignment_id !== message.assignmentId || campaign.is_archived) {
         throw new GraphQLError({
           status: 400,
           message: 'Your assignment has changed'

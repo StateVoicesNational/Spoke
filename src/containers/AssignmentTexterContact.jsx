@@ -120,14 +120,14 @@ class AssignmentTexterContact extends React.Component {
     const questionResponses = this.getInitialQuestionResponses(props.data.contact.interactionSteps)
     const availableSteps = this.getAvailableInteractionSteps(questionResponses)
 
-    const { assignment } = this.props
+    const { assignment, campaign } = this.props
     const { contact } = this.props.data
     let disabled = false
     let disabledText = 'Sending...'
     let snackbarOnTouchTap = null
     let snackbarActionTitle = null
     let snackbarError = null
-    if (assignment.id !== contact.assignmentId) {
+    if (assignment.id !== contact.assignmentId || campaign.isArchived) {
       disabledText = ''
       disabled = true
       snackbarError = 'Your assignment has changed'

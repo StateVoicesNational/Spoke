@@ -1,0 +1,5 @@
+Run in data explorer:
+
+r.db('spoke')
+  .table('campaign')
+  .update({is_archived: false })

@@ -37,6 +37,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     flexWrap: 'wrap'
   },
+  archivedBanner: {
+    backgroundColor: '#FFFBE6',
+    fontSize: '16px',
+    fontWeight: 'bold',
+    width: '100%',
+    padding: '15px',
+    textAlign: 'center',
+    marginBottom: '20px'
+  },
   header: {
     ...theme.text.header
   },
@@ -137,6 +146,10 @@ class AdminCampaignStats extends React.Component {
     return (
       <div>
         <div className={css(styles.container)}>
+          {campaign.isArchived ? <div className={css(styles.archivedBanner)}>
+            This campaign is archived
+          </div> : ''}
+
           <div className={css(styles.header)}>
             {campaign.title}
           </div>
@@ -157,10 +170,21 @@ class AdminCampaignStats extends React.Component {
                   />
                 </div>
                 <div className={css(styles.inline)}>
+                  {campaign.isArchived ? (
+                    <RaisedButton
+                      onTouchTap={async () => await this.props.mutations.unarchiveCampaign(campaignId)}
+                      label='Unarchive'
+                    />
+                  ) : [
+                  <RaisedButton
+                    onTouchTap={async () => await this.props.mutations.archiveCampaign(campaignId)}
+                    label='Archive'
+                  />,
                   <RaisedButton
                     onTouchTap={() => this.props.router.push(`/admin/${organizationId}/campaigns/${campaignId}/edit`)}
                     label='Edit'
                   />
+                  ]}
                 </div>
               </div>
             </div>
@@ -207,6 +231,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
       campaign(id: $campaignId) {
         id
         title
+        isArchived
         assignments {
           id
           texter {
@@ -249,6 +274,24 @@ const mapQueriesToProps = ({ ownProps }) => ({
 })
 
 const mapMutationsToProps = () => ({
+  archiveCampaign: (campaignId) => ({
+    mutation: gql`mutation archiveCampaign($campaignId: String!) {
+      archiveCampaign(id: $campaignId) {
+        id
+        isArchived
+      }
+    }`,
+    variables: { campaignId }
+  }),
+  unarchiveCampaign: (campaignId) => ({
+    mutation: gql`mutation unarchiveCampaign($campaignId: String!) {
+      unarchiveCampaign(id: $campaignId) {
+        id
+        isArchived
+      }
+    }`,
+    variables: { campaignId }
+  }),
   exportCampaign: (campaignId) => ({
     mutation: gql`mutation exportCampaign($campaignId: String!) {
       exportCampaign(id: $campaignId) {
