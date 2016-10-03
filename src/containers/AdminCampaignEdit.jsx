@@ -3,6 +3,7 @@ import WarningIcon from 'material-ui/svg-icons/alert/warning'
 import DoneIcon from 'material-ui/svg-icons/action/done'
 import Avatar from 'material-ui/Avatar'
 import theme from '../styles/theme'
+import CircularProgress from 'material-ui/CircularProgress'
 import { Card, CardHeader, CardText } from 'material-ui/Card'
 import gql from 'graphql-tag'
 import loadData from './hoc/load-data'
@@ -13,7 +14,6 @@ import CampaignContactsForm from '../components/CampaignContactsForm'
 import CampaignTextersForm from '../components/CampaignTextersForm'
 import CampaignInteractionStepsForm from '../components/CampaignInteractionStepsForm'
 import CampaignCannedResponsesForm from '../components/CampaignCannedResponsesForm'
-import CircularProgress from 'material-ui/CircularProgress'
 
 const campaignInfoFragment = `
   id
@@ -90,11 +90,6 @@ class AdminCampaignEdit extends React.Component {
       sectionState[key] = this.state.campaignFormValues[key]
     })
     return sectionState
-  }
-
-  currentCampaignJob(jobType) {
-    const currentJob = this.props.campaignData.campaign.pendingJobs.filter((job) => job.jobType === jobType)[0]
-    return currentJob || null
   }
 
   isNew() {
@@ -313,12 +308,13 @@ class AdminCampaignEdit extends React.Component {
   }
 
   renderStartButton() {
-    let isCompleted = true
+    let isCompleted = this.props.campaignData.campaign.pendingJobs.length === 0
     this.sections().forEach((section) => {
       if (section.blocksStarting && !this.checkSectionCompleted(section) || !this.checkSectionSaved(section)) {
         isCompleted = false
       }
     })
+
     return (
       <div
         style={{
@@ -355,11 +351,11 @@ class AdminCampaignEdit extends React.Component {
   render() {
     const { expandedSection } = this.state
     const sections = this.sections()
+    const pendingJobs = this.props.campaignData.campaign.pendingJobs
     return (
       <div>
         {this.renderHeader()}
         {sections.map((section, sectionIndex) => {
-          console.log('SECTION IS', section.title)
           const sectionIsDone = this.checkSectionCompleted(section)
             && this.checkSectionSaved(section)
           const sectionIsExpanded = sectionIndex === expandedSection
@@ -371,8 +367,36 @@ class AdminCampaignEdit extends React.Component {
             display: 'inline-block',
             verticalAlign: 'middle'
           }
+          let sectionIsSaving = false
+          let savePercent = 0
+          console.log(pendingJobs)
+          if (pendingJobs.length > 0) {
+            if (section.title === 'Contacts') {
+              const uploadJob = pendingJobs.filter((job) => job.jobType === 'upload_contacts')[0]
+              if (uploadJob) {
+                sectionIsSaving = true
+                savePercent = uploadJob.status
+              }
+            }
+          }
+
           if (sectionIsExpanded) {
             cardHeaderStyle.backgroundColor = theme.colors.lightGray
+          } else if (sectionIsSaving) {
+            avatar = (<CircularProgress
+              size={0.35}
+              style={{
+                verticalAlign: 'top',
+                marginTop: '-13px',
+                marginLeft: '-14px',
+                marginRight: 36,
+                display: 'inline-block',
+                height: 20,
+                width: 20
+              }}
+            />)
+            cardHeaderStyle.background = theme.colors.lightGray
+            cardHeaderStyle.width = `${savePercent}%`
           } else if (sectionIsDone) {
             avatar = (<Avatar
               icon={<DoneIcon style={{ fill: theme.colors.darkGreen }} />}
@@ -402,9 +426,12 @@ class AdminCampaignEdit extends React.Component {
             >
               <CardHeader
                 title={section.title}
+                titleStyle={{
+                  width: '100%'
+                }}
                 style={cardHeaderStyle}
                 actAsExpander
-                showExpandableButton
+                showExpandableButton={!sectionIsSaving}
                 avatar={avatar}
               />
               <CardText
