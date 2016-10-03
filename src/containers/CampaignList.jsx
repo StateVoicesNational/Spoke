@@ -2,7 +2,6 @@ import React from 'react'
 import { List, ListItem } from 'material-ui/List'
 import moment from 'moment'
 import WarningIcon from 'material-ui/svg-icons/alert/warning'
-import HappyIcon from 'material-ui/svg-icons/social/mood'
 import ArchiveIcon from 'material-ui/svg-icons/content/archive'
 import UnarchiveIcon from 'material-ui/svg-icons/content/unarchive'
 import IconButton from 'material-ui/IconButton'
@@ -12,6 +11,9 @@ import Chip from '../components/Chip'
 import loadData from './hoc/load-data'
 import gql from 'graphql-tag'
 import wrapMutations from './hoc/wrap-mutations'
+import SpeakerNotesIcon from 'material-ui/svg-icons/action/speaker-notes'
+import Empty from '../components/Empty'
+
 
 const campaignInfoFragment = `
   id
@@ -111,7 +113,12 @@ class CampaignList extends React.Component {
 
   render() {
     const { campaigns } = this.props.data.organization
-    return campaigns.length === 0 ? '' : (
+    return campaigns.length === 0 ? (
+      <Empty
+        title='No campaigns'
+        icon={<SpeakerNotesIcon />}
+      />
+    ) : (
       <List>
         {campaigns.map((campaign) => this.renderRow(campaign))}
       </List>

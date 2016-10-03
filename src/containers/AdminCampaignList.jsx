@@ -2,14 +2,9 @@ import React from 'react'
 import CampaignList from './CampaignList'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import ContentAdd from 'material-ui/svg-icons/content/add'
-import moment from 'moment'
-import Subheader from 'material-ui/Subheader'
-import SpeakerNotesIcon from 'material-ui/svg-icons/action/speaker-notes'
-import Empty from '../components/Empty'
 import loadData from './hoc/load-data'
 import { withRouter } from 'react-router'
 import gql from 'graphql-tag'
-import _ from 'lodash'
 import theme from '../styles/theme'
 import LoadingIndicator from '../components/LoadingIndicator'
 import wrapMutations from './hoc/wrap-mutations'
@@ -20,7 +15,7 @@ class AdminCampaignList extends React.Component {
   state = {
     isCreating: false,
     campaignsFilter: {
-      isArchived: false,
+      isArchived: false
     }
   }
 
@@ -53,15 +48,6 @@ class AdminCampaignList extends React.Component {
         isArchived: value
       }
     })
-  }
-  // gixwe
-  renderEmpty() {
-    return (
-      <Empty
-        title='No campaigns yet'
-        icon={<SpeakerNotesIcon />}
-      />
-    )
   }
 
   renderFilters() {
