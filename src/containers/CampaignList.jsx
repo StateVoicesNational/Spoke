@@ -112,7 +112,6 @@ class CampaignList extends React.Component {
 
   render() {
     const { campaigns } = this.props.data.organization
-    console.log("data", this.props.data.organization)
     return campaigns.length === 0 ? '' : (
       <List>
         {campaigns.map((campaign) => this.renderRow(campaign))}

@@ -51,7 +51,10 @@ export const resolvers = {
       r.table('assignment')
         .getAll(user.id, { index: 'user_id' })
         .eqJoin('campaign_id', r.table('campaign'))
-        .filter((row) => row('right')('organization_id').eq(organizationId))('left')
+        .filter((row) => row('right')('organization_id')
+          .eq(organizationId)
+            .and(row('right')('is_archived').eq(false)))
+        ('left')
     )
   }
 }

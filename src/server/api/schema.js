@@ -642,8 +642,9 @@ const rootMutations = {
     sendMessage: async(_, { message, campaignContactId }, { loaders }) => {
       const texter = await loaders.user.load(message.userId)
       const contact = await loaders.campaignContact.load(campaignContactId)
+      const campaign = await loaders.campaign.load(contact.campaign_id)
 
-      if (contact.assignment_id !== message.assignmentId) {
+      if (contact.assignment_id !== message.assignmentId || campaign.is_archived) {
         throw new GraphQLError({
           status: 400,
           message: 'Your assignment has changed'
