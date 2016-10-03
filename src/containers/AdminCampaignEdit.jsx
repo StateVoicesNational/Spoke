@@ -369,7 +369,6 @@ class AdminCampaignEdit extends React.Component {
           }
           let sectionIsSaving = false
           let savePercent = 0
-          console.log(pendingJobs)
           if (pendingJobs.length > 0) {
             if (section.title === 'Contacts') {
               const uploadJob = pendingJobs.filter((job) => job.jobType === 'upload_contacts')[0]

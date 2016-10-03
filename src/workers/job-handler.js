@@ -18,8 +18,9 @@ async function uploadContacts(job) {
   const chunkSize = 1000
   contacts = JSON.parse(contacts)
   const numChunks = Math.ceil(contacts.length / chunkSize)
+
   for (let index = 0; index < numChunks; index++) {
-    await updateJob(job, Math.round((maxPercentage / numChunks) * index * 100))
+    await updateJob(job, Math.round((maxPercentage / numChunks) * index))
     const savePortion = contacts.slice(index * chunkSize, (index + 1) * chunkSize)
     await CampaignContact.save(savePortion)
   }

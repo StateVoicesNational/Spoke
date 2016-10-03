@@ -2,7 +2,7 @@ import faker from 'faker'
 import json2csv from 'json2csv'
 
 const fields = ['firstName', 'lastName', 'cell', 'companyName', 'city']
-const numContacts = 100000
+const numContacts = 10000
 
 const data = []
 for (let index = 0; index < numContacts; index++) {
