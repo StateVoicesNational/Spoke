@@ -66,7 +66,6 @@ export const resolvers = {
       let query = r.table('campaign').getAll(organization.id, { index:
         'organization_id' })
 
-      console.log("campaignsFilter", campaignsFilter)
       // if (campaignsFilter && campaignsFilter.hasOwnProperty('isArchived') && campaignsFilter.isArchived !== null) {
       //   query = query.filter({ is_archived: campaignsFilter.isArchived })
       // }

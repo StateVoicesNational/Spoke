@@ -48,7 +48,6 @@ class AdminCampaignList extends React.Component {
   }
 
   handleFilterChange = (event, index, value) => {
-    console.log("value", value)
     this.setState({
       campaignsFilter: {
         isArchived: value
