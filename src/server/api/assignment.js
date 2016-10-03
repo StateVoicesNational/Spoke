@@ -71,12 +71,13 @@ export const resolvers = {
     ),
     campaign: async(assignment, _, { loaders }) => loaders.campaign.load(assignment.campaign_id),
 
-    contactsCount: async (assignment, { contactsFilter }) => {
-      return getContacts(assignment, contactsFilter).count()
+    contactsCount: async (assignment, { contactsFilter }, { organizationId }) => {
+      const organization = r.table('organization').get(organizationId)
+      return getContacts(assignment, contactsFilter, organizationId).count()
     },
 
     contacts: async (assignment, { contactsFilter }) => {
-      return getContacts(assignment, contactsFilter)
+      return getContacts(assignment, contactsFilter, organizationId)
     },
     campaignCannedResponses: async(assignment) => (
       await r.table('canned_response')
