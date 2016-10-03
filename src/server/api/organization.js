@@ -67,9 +67,9 @@ export const resolvers = {
         'organization_id' })
 
       console.log("campaignsFilter", campaignsFilter)
-      if (campaignsFilter && campaignsFilter.hasOwnProperty('isArchived') && campaignsFilter.isArchived !== null) {
-        query = query.filter({ is_archived: campaignsFilter.isArchived })
-      }
+      // if (campaignsFilter && campaignsFilter.hasOwnProperty('isArchived') && campaignsFilter.isArchived !== null) {
+      //   query = query.filter({ is_archived: campaignsFilter.isArchived })
+      // }
 
       return query
     },

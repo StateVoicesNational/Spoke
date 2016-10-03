@@ -54,7 +54,7 @@ export const resolvers = {
         .filter((row) =>
           r.and(
             row('right')('organization_id').eq(organizationId),
-            row('right')('is_archived').eq(false)
+            // row('right')('is_archived').eq(false)
           )
         )('left')
     )
