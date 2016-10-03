@@ -1,9 +1,18 @@
 import React from 'react'
 import AssignmentTexter from '../components/AssignmentTexter'
+import { withRouter } from 'react-router'
 import loadData from './hoc/load-data'
 import gql from 'graphql-tag'
 
 class TexterTodo extends React.Component {
+  componentWillMount() {
+    const { assignment } = this.props.data
+    if (!assignment || assignment.campaign.isArchived) {
+      this.props.router.push(
+        `/app/${this.props.params.organizationId}/todos`
+      )
+    }
+  }
   render() {
     const { assignment } = this.props.data
     const contacts = assignment.contacts
@@ -45,6 +54,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
         }
         campaign {
           id
+          isArchived
           organization {
             id
             threeClickEnabled
@@ -68,4 +78,4 @@ const mapQueriesToProps = ({ ownProps }) => ({
   }
 })
 
-export default loadData(TexterTodo, { mapQueriesToProps })
+export default loadData(withRouter(TexterTodo), { mapQueriesToProps })
