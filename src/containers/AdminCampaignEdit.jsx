@@ -69,8 +69,23 @@ class AdminCampaignEdit extends React.Component {
   }
 
   componentWillReceiveProps(newProps) {
+    const { expandedSection } = this.state
+    let expandedKeys = []
+    if (expandedSection !== null) {
+      expandedKeys = this.sections()[expandedSection].keys
+    }
+    const campaignDataCopy = {
+      ...newProps.campaignData.campaign
+    }
+    expandedKeys.forEach((key) => {
+      delete campaignDataCopy[key]
+    })
+
     this.setState({
-      campaignFormValues: newProps.campaignData.campaign
+      campaignFormValues: {
+        ...this.state.campaignFormValues,
+        ...campaignDataCopy
+      }
     })
   }
 
@@ -163,14 +178,15 @@ class AdminCampaignEdit extends React.Component {
         }))
       }
 
-      const results = await this
+      await this
         .props
         .mutations
         .editCampaign(this.props.campaignData.campaign.id, newCampaign)
-
+      console.log(this.props.campaignData.campaign.title)
       this.setState({
         campaignFormValues: this.props.campaignData.campaign
       })
+      console.log(this.state.campaignFormValues.title)
     }
   }
 
@@ -368,15 +384,19 @@ class AdminCampaignEdit extends React.Component {
             verticalAlign: 'middle'
           }
           let sectionIsSaving = false
+          let relatedJob = null
           let savePercent = 0
           if (pendingJobs.length > 0) {
             if (section.title === 'Contacts') {
-              const uploadJob = pendingJobs.filter((job) => job.jobType === 'upload_contacts')[0]
-              if (uploadJob) {
-                sectionIsSaving = true
-                savePercent = uploadJob.status
-              }
+              relatedJob = pendingJobs.filter((job) => job.jobType === 'upload_contacts')[0]
+            } else if (section.title === 'Texters') {
+              relatedJob = pendingJobs.filter((job) => job.jobType === 'assign_texters')[0]
             }
+          }
+
+          if (relatedJob) {
+            sectionIsSaving = true
+            savePercent = relatedJob.status
           }
 
           if (sectionIsExpanded) {

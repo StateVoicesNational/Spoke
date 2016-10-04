@@ -88,7 +88,7 @@ import {
   superAdminRequired
 } from './errors'
 import { gzip } from '../../lib'
-import { rentNewCell, sendMessage, handleIncomingMessage } from './lib/nexmo'
+import { rentNewCell, handleIncomingMessage } from './lib/nexmo'
 import { getFormattedPhoneNumber } from '../../lib/phone-format'
 import { Notifications, sendUserNotification } from '../notifications'
 const rootSchema = `
