@@ -16,7 +16,6 @@ class TexterTodo extends React.Component {
   render() {
     const { assignment } = this.props.data
     const contacts = assignment.contacts
-
     return (<AssignmentTexter
       assignment={assignment}
       contacts={contacts}
@@ -60,6 +59,9 @@ const mapQueriesToProps = ({ ownProps }) => ({
           isArchived
           organization {
             id
+            textingHoursEnforced
+            textingHoursStart
+            textingHoursEnd
             threeClickEnabled
           }
           customFields

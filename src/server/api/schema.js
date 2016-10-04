@@ -449,7 +449,7 @@ const rootMutations = {
       }
       return loaders.organization.load(organizationId)
     },
-    updateTextingHours: async (_, { organizationId, textingHoursStart, textingHoursEnd }, { user, loaders }) => {
+    updateTextingHours: async (_, { organizationId, textingHoursStart, textingHoursEnd }, { user }) => {
       await accessRequired(user, organizationId, 'OWNER')
 
       await Organization
@@ -462,7 +462,7 @@ const rootMutations = {
 
       return await Organization.get(organizationId)
     },
-    updateTextingHoursEnforcement: async (_, { organizationId, textingHoursEnforced }, { user, loaders }) => {
+    updateTextingHoursEnforcement: async (_, { organizationId, textingHoursEnforced }, { user }) => {
       await accessRequired(user, organizationId, 'OWNER')
 
       await Organization
@@ -703,7 +703,14 @@ const rootMutations = {
         .get(contact.zip)
         .default(null)
 
-      if (!isBetweenTextingHours(zipData ? { offset: zipData.timezone_offset, hasDST: zipData.has_dst } : null )) {
+      const [textingHoursStart, textingHoursEnd] = organization.texting_hours_settings.permitted_hours
+      const config = {
+        textingHoursEnforced: organization.texting_hours_settings.is_enforced,
+        textingHoursStart,
+        textingHoursEnd
+      }
+      const offsetData = zipData ? { offset: zipData.timezone_offset, hasDST: zipData.has_dst } : null
+      if (!isBetweenTextingHours(offsetData, config)) {
         throw new GraphQLError({
           status: 400,
           message: "Skipped sending because it's now outside texting hours for this contact"

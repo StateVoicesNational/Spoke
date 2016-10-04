@@ -7,6 +7,7 @@ import gql from 'graphql-tag'
 
 class TexterTodoList extends React.Component {
   renderTodoList(assignments) {
+
     const organizationId = this.props.params.organizationId
     return assignments
       .sort((x, y) => (x.unmessagedCount + x.unrepliedCount) > (y.unmessagedCount + y.unrepliedCount) ? -1 : 1)
@@ -28,6 +29,7 @@ class TexterTodoList extends React.Component {
   }
 
   render() {
+
     const { organization } = this.props.data
     const balanceAmount = organization.billingDetails.balanceAmount
     const { amountPerMessage } = organization.plan

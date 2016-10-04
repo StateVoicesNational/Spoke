@@ -13,7 +13,7 @@ export const schema = `
     campaignCannedResponses: [CannedResponse]
   }
 `
-function getContacts(assignment, contactsFilter) {
+function getContacts(assignment, contactsFilter, textingHoursEnforced, textingHours) {
   const getIndexValuesWithOffsets = (offsets) => offsets.map(([offset, hasDST]) => ([
     assignment.id,
     `${offset}_${hasDST}`
@@ -22,29 +22,30 @@ function getContacts(assignment, contactsFilter) {
   let index = 'assignment_id'
   let indexValues = assignment.id
 
-  const [validOffsets, invalidOffsets] = getOffsets()
-
+  const [textingHoursStart, textingHoursEnd] = textingHours
+  const config = { textingHoursStart, textingHoursEnd, textingHoursEnforced }
+  const [validOffsets, invalidOffsets] = getOffsets(config)
   const filter = {}
 
   if (contactsFilter) {
     if (contactsFilter.hasOwnProperty('validTimezone') && contactsFilter.validTimezone !== null) {
       index = 'assignment_timezone_offset'
 
+
       if (contactsFilter.validTimezone === true) {
         indexValues = getIndexValuesWithOffsets(validOffsets)
-        if (defaultTimezoneIsBetweenTextingHours()) {
+        if (defaultTimezoneIsBetweenTextingHours(config)) {
           indexValues.push([assignment.id, '']) // missing timezones are ok to text
         }
       } else if (contactsFilter.validTimezone === false ){
         indexValues = getIndexValuesWithOffsets(invalidOffsets)
-        if (!defaultTimezoneIsBetweenTextingHours()) {
+        if (!defaultTimezoneIsBetweenTextingHours(config)) {
           indexValues.push([assignment.id, '']) // missing timezones are not ok to text
         }
       }
 
       indexValues = r.args(indexValues)
     }
-
 
     if (contactsFilter.hasOwnProperty('messageStatus') && contactsFilter.messageStatus !== null) {
       filter.message_status = contactsFilter.messageStatus
@@ -72,12 +73,20 @@ export const resolvers = {
     campaign: async(assignment, _, { loaders }) => loaders.campaign.load(assignment.campaign_id),
 
     contactsCount: async (assignment, { contactsFilter }, { organizationId }) => {
-      const organization = r.table('organization').get(organizationId)
-      return getContacts(assignment, contactsFilter, organizationId).count()
+      const organization = await r.table('organization').get(organizationId)
+      const textingHoursEnforced = organization.texting_hours_settings.is_enforced
+      const textingHours = organization.texting_hours_settings.permitted_hours
+
+
+      return getContacts(assignment, contactsFilter, textingHoursEnforced, textingHours).count()
     },
 
-    contacts: async (assignment, { contactsFilter }) => {
-      return getContacts(assignment, contactsFilter, organizationId)
+    contacts: async (assignment, { contactsFilter }, { organizationId }) => {
+      const organization = await r.table('organization').get(organizationId)
+      const textingHoursEnforced = organization.texting_hours_settings.is_enforced
+      const textingHours = organization.texting_hours_settings.permitted_hours
+
+      return getContacts(assignment, contactsFilter, textingHoursEnforced, textingHours)
     },
     campaignCannedResponses: async(assignment) => (
       await r.table('canned_response')

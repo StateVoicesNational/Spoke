@@ -156,14 +156,24 @@ class AssignmentTexterContact extends React.Component {
   }
 
   isContactBetweenTextingHours (contact) {
+    console.log("campaign", this.props)
+    const { campaign } = this.props
+
     let timezoneData = null
 
     if (contact.location) {
       const { hasDST, offset } = contact.location.timezone
+
       timezoneData = { hasDST, offset }
     }
+    const { textingHoursStart, textingHoursEnd, textingHoursEnforced } = campaign.organization
+    const config = {
+      textingHoursStart,
+      textingHoursEnd,
+      textingHoursEnforced
+    }
+    return isBetweenTextingHours(timezoneData, config)
 
-    return isBetweenTextingHours(timezoneData)
   }
 
   componentDidMount() {

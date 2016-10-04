@@ -2,8 +2,6 @@ import moment from 'moment'
 
 
 const TIMEZONE_CONFIG = {
-  allowedStart: 9,
-  allowedEnd: 21,
   missingTimeZone: {
     offset: -5, // EST
     hasDST: true,
@@ -14,14 +12,17 @@ const TIMEZONE_CONFIG = {
 
 export const getLocalTime = (offset, hasDST) => moment().utc().utcOffset((moment().isDST() && hasDST) ? offset + 1 : offset)
 
-export const isBetweenTextingHours = (offsetData) => {
+export const isBetweenTextingHours = (offsetData, config) => {
+  if (!config.textingHoursEnforced)
+    return true
+
   let offset
   let hasDST
   let allowedStart
   let allowedEnd
   if (offsetData) {
-    allowedStart = TIMEZONE_CONFIG.allowedStart
-    allowedEnd = TIMEZONE_CONFIG.allowedEnd
+    allowedStart = config.textingHoursStart
+    allowedEnd = config.textingHoursEnd
     offset = offsetData.offset
     hasDST = offsetData.hasDST
   } else {
@@ -39,16 +40,18 @@ export const isBetweenTextingHours = (offsetData) => {
 // Currently only USA
 const ALL_OFFSETS = [-4, -5, -6, -7, -8, -9, -10, -11, 10]
 
-export const defaultTimezoneIsBetweenTextingHours = () => isBetweenTextingHours(null)
+export const defaultTimezoneIsBetweenTextingHours = (config) => isBetweenTextingHours(null, config)
 
-export const getOffsets = () => {
+export const getOffsets = (config) => {
+  const offsets = ALL_OFFSETS.slice(0)
+
   const valid = []
   const invalid = []
 
   const dst = [true, false]
   dst.forEach((hasDST) => (
-    ALL_OFFSETS.forEach((offset) => {
-      if (isBetweenTextingHours({ offset, hasDST })) {
+    offsets.forEach((offset) => {
+      if (isBetweenTextingHours({ offset, hasDST }, config)) {
         valid.push([offset, hasDST])
       } else {
         invalid.push([offset, hasDST])
