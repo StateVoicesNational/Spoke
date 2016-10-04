@@ -52,7 +52,7 @@ const getValidatedData = (data, optOuts) => {
   const optOutRows = result[1]
 
   validatedData = _.map(validatedData, (row) => _.extend(row, {
-    zip: getFormattedZip(row.zip)
+    zip: row.zip ? getFormattedZip(row.zip) : null
   }))
   const zipCount = validatedData.filter((row) => !!row.zip).length
 
