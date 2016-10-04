@@ -27,7 +27,7 @@ const Organization = thinky.createModel('organization', type.object().schema({
   texting_hours_settings: type
     .object()
     .schema({
-      check_enabled: type
+      is_enforced: type
         .boolean()
         .required(),
       permitted_hours: type.array()
@@ -40,7 +40,7 @@ const Organization = thinky.createModel('organization', type.object().schema({
         .required()
     })
     .default({
-      check_enabled: false,
+      is_enforced: false,
       permitted_hours: [9, 21]
     })
 }).allowExtra(false))

@@ -169,6 +169,7 @@ const rootSchema = `
     editOrganizationRoles(organizationId: String!, userId: String!, roles: [String]): Organization
     updateCard( organizationId: String!, stripeToken: String!): Organization
     addAccountCredit( organizationId: String!, balanceAmount: Int!): Organization
+    updateTextingHoursEnforcement( organizationId: String!, textingHoursEnforced: Boolean!): Organization
     addManualAccountCredit( organizationId: String!, balanceAmount: Int!, paymentMethod: String!): Organization
     sendMessage(message:MessageInput!, campaignContactId:String!): CampaignContact,
     createOptOut(optOut:OptOutInput!, campaignContactId:String!):CampaignContact,
@@ -447,20 +448,18 @@ const rootMutations = {
       }
       return loaders.organization.load(organizationId)
     },
-    addManualAccountCredit: async(_, { organizationId, balanceAmount, paymentMethod }, { user, loaders }) => {
-      await superAdminRequired(user)
-      const organization = await loaders.organization.load(organizationId)
-      const newBalanceAmount = organization.balance_amount + balanceAmount
+    updateTextingHoursEnforcement: async (_, { organizationId, textingHoursEnforced }, { user, loaders }) => {
+      await accessRequired(user, organizationId, 'OWNER')
 
-      await new BalanceLineItem({
-        organization_id: organizationId,
-        currency: organization.currency,
-        amount: balanceAmount,
-        payment_method: paymentMethod,
-        source: 'SUPERADMIN',
-      }).save()
+      await Organization
+        .get(organizationId)
+        .update({
+          texting_hours_settings: {
+            is_enforced: textingHoursEnforced
+          }
+        })
 
-      return await Organization.get(organizationId).update({ balance_amount: newBalanceAmount })
+      return await Organization.get(organizationId)
     },
     addAccountCredit: async (_, { organizationId, balanceAmount }, { user, loaders }) => {
       await accessRequired(user, organizationId, 'OWNER')

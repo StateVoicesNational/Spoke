@@ -64,8 +64,8 @@ class AdminNavigation extends React.Component {
 
     if (getHighestRole(roles) === 'OWNER') {
       sections.push({
-        name: 'Billing',
-        path: 'billing'
+        name: 'Settings',
+        path: 'settings'
       })
     }
 
