@@ -20,7 +20,7 @@ class TexterTodoList extends React.Component {
             assignment={assignment}
             unmessagedCount={assignment.unmessagedCount}
             unrepliedCount={assignment.unrepliedCount}
-            badTimezoneCount={assignment.badTimezoneCount}
+            // badTimezoneCount={assignment.badTimezoneCount}
           />
         )
       }
@@ -97,16 +97,16 @@ const mapQueriesToProps = ({ ownProps }) => ({
       needsMessageFilter: {
         messageStatus: 'needsMessage',
         isOptedOut: false,
-        validTimezone: true
+        // validTimezone: true
       },
       needsResponseFilter: {
         messageStatus: 'needsResponse',
         isOptedOut: false,
-        validTimezone: true
+        // validTimezone: true
       },
       badTimezoneFilter: {
         isOptedOut: false,
-        validTimezone: false
+        // validTimezone: false
       }
     },
     forceFetch: true
