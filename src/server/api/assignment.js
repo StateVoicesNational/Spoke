@@ -13,7 +13,10 @@ export const schema = `
     campaignCannedResponses: [CannedResponse]
   }
 `
-function getContacts(assignment, contactsFilter, textingHoursEnforced, textingHours) {
+function getContacts(assignment, contactsFilter, organization) {
+  const textingHoursEnforced = organization.texting_hours_settings.is_enforced
+  const textingHours = organization.texting_hours_settings.permitted_hours
+
   const getIndexValuesWithOffsets = (offsets) => offsets.map(([offset, hasDST]) => ([
     assignment.id,
     `${offset}_${hasDST}`
@@ -74,19 +77,15 @@ export const resolvers = {
 
     contactsCount: async (assignment, { contactsFilter }, { organizationId }) => {
       const organization = await r.table('organization').get(organizationId)
-      const textingHoursEnforced = organization.texting_hours_settings.is_enforced
-      const textingHours = organization.texting_hours_settings.permitted_hours
-
-
-      return getContacts(assignment, contactsFilter, textingHoursEnforced, textingHours).count()
+      return getContacts(assignment, contactsFilter, organization).count()
     },
 
-    contacts: async (assignment, { contactsFilter }, { organizationId }) => {
-      const organization = await r.table('organization').get(organizationId)
-      const textingHoursEnforced = organization.texting_hours_settings.is_enforced
-      const textingHours = organization.texting_hours_settings.permitted_hours
-
-      return getContacts(assignment, contactsFilter, textingHoursEnforced, textingHours)
+    contacts: async (assignment, { contactsFilter }) => {
+      const organization = await r.table('campaign')
+        .getAll(assignment.campaign_id)
+        .eqJoin('organization_id', r.table('organization'))
+        ('right')(0)
+      return getContacts(assignment, contactsFilter, organization)
     },
     campaignCannedResponses: async(assignment) => (
       await r.table('canned_response')
