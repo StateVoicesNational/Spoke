@@ -169,6 +169,7 @@ const rootSchema = `
     editOrganizationRoles(organizationId: String!, userId: String!, roles: [String]): Organization
     updateCard( organizationId: String!, stripeToken: String!): Organization
     addAccountCredit( organizationId: String!, balanceAmount: Int!): Organization
+    updateTextingHours( organizationId: String!, textingHoursStart: Int!, textingHoursEnd: Int!): Organization
     updateTextingHoursEnforcement( organizationId: String!, textingHoursEnforced: Boolean!): Organization
     addManualAccountCredit( organizationId: String!, balanceAmount: Int!, paymentMethod: String!): Organization
     sendMessage(message:MessageInput!, campaignContactId:String!): CampaignContact,
@@ -447,6 +448,19 @@ const rootMutations = {
         })
       }
       return loaders.organization.load(organizationId)
+    },
+    updateTextingHours: async (_, { organizationId, textingHoursStart, textingHoursEnd }, { user, loaders }) => {
+      await accessRequired(user, organizationId, 'OWNER')
+
+      await Organization
+        .get(organizationId)
+        .update({
+          texting_hours_settings: {
+            permitted_hours: [textingHoursStart, textingHoursEnd]
+          }
+        })
+
+      return await Organization.get(organizationId)
     },
     updateTextingHoursEnforcement: async (_, { organizationId, textingHoursEnforced }, { user, loaders }) => {
       await accessRequired(user, organizationId, 'OWNER')

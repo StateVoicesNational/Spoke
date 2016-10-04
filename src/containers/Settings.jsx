@@ -14,6 +14,7 @@ import { Card, CardText, CardActions, CardHeader } from 'material-ui/Card'
 import { GraphQLRequestError } from '../network/errors'
 import { StyleSheet, css } from 'aphrodite'
 import Toggle from 'material-ui/Toggle'
+import moment from 'moment'
 const styles = StyleSheet.create({
   section: {
     margin: '10px 0'
@@ -36,6 +37,7 @@ const inlineStyles = {
   }
 }
 
+const formatTextingHours = (hour) =>  moment(hour, 'H').format('h a')
 class Settings extends React.Component {
 
   state = {
@@ -58,6 +60,11 @@ class Settings extends React.Component {
       })
     ))
   )
+
+  handleSubmitTextingHoursForm = async ({ textingHoursStart, textingHoursEnd }) => {
+    await this.props.mutations.updateTextingHours(textingHoursStart, textingHoursEnd)
+    this.handleCloseTextingHoursDialog()
+  }
 
   handleSubmitCardForm = async (formValues) => {
     const token = await this.createStripeToken(formValues)
@@ -122,7 +129,7 @@ class Settings extends React.Component {
                 label='Cancel'
                 style={inlineStyles.dialogButton}
                 onTouchTap={this.handleCloseCreditCardDialog}
-              />,
+              />
               <Form.Button
                 type='submit'
                 label='Change card'
@@ -150,15 +157,16 @@ class Settings extends React.Component {
       100000
     ]
 
-    let choices = {}
-    const count = amounts.length
-    for (let i = 0; i < count; i++) {
-      const amount = amounts[i]
+    const choices = amounts.map((amount) => {
       const formattedAmount = formatMoney(amount, creditCurrency)
       const { amountPerMessage } = organization.plan
       const messageCount = Math.round(amount / amountPerMessage)
-      choices[amount] = `${formattedAmount} - approx ${messageCount} messages`
-    }
+
+      return {
+        value: amount,
+        label: `${formattedAmount} - approx ${messageCount} messages`
+      }
+    })
 
     return (
         <Dialog
@@ -184,7 +192,7 @@ class Settings extends React.Component {
                 label='Cancel'
                 style={inlineStyles.dialogButton}
                 onTouchTap={this.handleCloseAddCreditDialog}
-              />,
+              />
               <Form.Button
                 type='submit'
                 style={inlineStyles.dialogButton}
@@ -206,53 +214,52 @@ class Settings extends React.Component {
       textingHoursEnd: yup.number().required()
     })
 
-    const amounts = [
-      1000,
-      10000,
-      50000,
-      100000
-    ]
+    const hours = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]
+    const hourChoices = hours.map((hour) => ({
+      value: hour,
+      label: formatTextingHours(hour)
+    }))
 
-    let choices = {}
-    const count = amounts.length
-    for (let i = 0; i < count; i++) {
-      const amount = amounts[i]
-      const formattedAmount = formatMoney(amount, creditCurrency)
-      const { amountPerMessage } = organization.plan
-      const messageCount = Math.round(amount / amountPerMessage)
-      choices[amount] = `${formattedAmount} - approx ${messageCount} messages`
+    const defaults = {
+      textingHoursStart,
+      textingHoursEnd
     }
-
     return (
         <Dialog
-          open={this.state.addCreditDialogOpen}
-          onRequestClose={this.handleCloseAddCreditDialog}
+          open={this.state.textingHoursDialogOpen}
+          onRequestClose={this.handleCloseTextingHoursDialog}
         >
           <GSForm
             schema={formSchema}
-            onSubmit={this.handleSubmitAccountCreditForm}
-            defaultValue={{
-              balanceAmount: '50000'
-            }}
+            onSubmit={this.handleSubmitTextingHoursForm}
+            defaultValue={{ textingHoursStart, textingHoursEnd }}
           >
             <Form.Field
-              label='Credit amount'
-              name='balanceAmount'
+              label='Start time'
+              name='textingHoursStart'
               type='select'
               fullWidth
-              choices={choices}
+              choices={hourChoices}
             />
+            <Form.Field
+              label='End time'
+              name='textingHoursEnd'
+              type='select'
+              fullWidth
+              choices={hourChoices}
+            />
+
             <div className={css(styles.dialogActions)}>
               <FlatButton
                 label='Cancel'
                 style={inlineStyles.dialogButton}
-                onTouchTap={this.handleCloseAddCreditDialog}
-              />,
+                onTouchTap={this.handleCloseTextingHoursDialog}
+              />
               <Form.Button
                 type='submit'
                 style={inlineStyles.dialogButton}
                 component={GSSubmitButton}
-                label='Add credit'
+                label='Save'
               />
             </div>
           </GSForm>
@@ -312,10 +319,11 @@ class Settings extends React.Component {
                 onToggle={async (event, isToggled) => await this.props.mutations.updateTextingHoursEnforcement(isToggled)}
               />
             </div>
+
             { organization.textingHoursEnforced ? (
               <div className={css(styles.section)}>
                 <span className={css(styles.sectionLabel)}>
-                  Texting hours: {organization.textingHoursStart} to {organization.textingHoursEnd} in contact's local time
+                  Texting hours: {formatTextingHours(organization.textingHoursStart)} to {formatTextingHours(organization.textingHoursEnd)} in contact's local time
                 </span>
               </div>
             ) : ''}
@@ -324,7 +332,7 @@ class Settings extends React.Component {
             <FlatButton
               label='Change texting hours'
               primary
-              onTouchTap={this.handleOpenChangeTextingHoursDialog}
+              onTouchTap={this.handleOpenTextingHoursDialog}
             />
           </CardActions>
         </Card>
@@ -345,6 +353,22 @@ Settings.propTypes = {
 }
 
 const mapMutationsToProps = ({ ownProps }) => ({
+  updateTextingHours: (textingHoursStart, textingHoursEnd) => ({
+    mutation: gql`
+      mutation updateTextingHours($textingHoursStart: Int!, $textingHoursEnd: Int!, $organizationId: String!) {
+        updateTextingHours(textingHoursStart: $textingHoursStart, textingHoursEnd: $textingHoursEnd, organizationId: $organizationId) {
+          id
+          textingHoursEnforced
+          textingHoursStart
+          textingHoursEnd
+        }
+      }`,
+    variables: {
+      organizationId: ownProps.params.organizationId,
+      textingHoursStart,
+      textingHoursEnd
+    }
+  }),
   updateTextingHoursEnforcement: (textingHoursEnforced) => ({
     mutation: gql`
       mutation updateTextingHoursEnforcement($textingHoursEnforced: Boolean!, $organizationId: String!) {
