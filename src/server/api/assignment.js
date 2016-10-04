@@ -14,9 +14,10 @@ export const schema = `
   }
 `
 function getContacts(assignment, contactsFilter, organization) {
-  const textingHoursEnforced = organization.texting_hours_settings.is_enforced
-  const textingHours = organization.texting_hours_settings.permitted_hours
-
+  // const textingHoursEnforced = organization.texting_hours_settings.is_enforced
+  // const textingHours = organization.texting_hours_settings.permitted_hours
+  const textingHoursEnforced = false
+  const textingHours = [9,21]
   const getIndexValuesWithOffsets = (offsets) => offsets.map(([offset, hasDST]) => ([
     assignment.id,
     `${offset}_${hasDST}`
@@ -31,24 +32,24 @@ function getContacts(assignment, contactsFilter, organization) {
   const filter = {}
 
   if (contactsFilter) {
-    if (contactsFilter.hasOwnProperty('validTimezone') && contactsFilter.validTimezone !== null) {
-      index = 'assignment_timezone_offset'
+    // if (contactsFilter.hasOwnProperty('validTimezone') && contactsFilter.validTimezone !== null) {
+    //   index = 'assignment_timezone_offset'
 
 
-      if (contactsFilter.validTimezone === true) {
-        indexValues = getIndexValuesWithOffsets(validOffsets)
-        if (defaultTimezoneIsBetweenTextingHours(config)) {
-          indexValues.push([assignment.id, '']) // missing timezones are ok to text
-        }
-      } else if (contactsFilter.validTimezone === false ){
-        indexValues = getIndexValuesWithOffsets(invalidOffsets)
-        if (!defaultTimezoneIsBetweenTextingHours(config)) {
-          indexValues.push([assignment.id, '']) // missing timezones are not ok to text
-        }
-      }
+    //   if (contactsFilter.validTimezone === true) {
+    //     indexValues = getIndexValuesWithOffsets(validOffsets)
+    //     if (defaultTimezoneIsBetweenTextingHours(config)) {
+    //       indexValues.push([assignment.id, '']) // missing timezones are ok to text
+    //     }
+    //   } else if (contactsFilter.validTimezone === false ){
+    //     indexValues = getIndexValuesWithOffsets(invalidOffsets)
+    //     if (!defaultTimezoneIsBetweenTextingHours(config)) {
+    //       indexValues.push([assignment.id, '']) // missing timezones are not ok to text
+    //     }
+    //   }
 
-      indexValues = r.args(indexValues)
-    }
+    //   indexValues = r.args(indexValues)
+    // }
 
     if (contactsFilter.hasOwnProperty('messageStatus') && contactsFilter.messageStatus !== null) {
       filter.message_status = contactsFilter.messageStatus
