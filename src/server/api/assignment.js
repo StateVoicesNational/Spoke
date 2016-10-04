@@ -75,8 +75,12 @@ export const resolvers = {
     ),
     campaign: async(assignment, _, { loaders }) => loaders.campaign.load(assignment.campaign_id),
 
-    contactsCount: async (assignment, { contactsFilter }, { organizationId }) => {
-      const organization = await r.table('organization').get(organizationId)
+    contactsCount: async (assignment, { contactsFilter }) => {
+      const organization = await r.table('campaign')
+        .getAll(assignment.campaign_id)
+        .eqJoin('organization_id', r.table('organization'))
+        ('right')(0)
+
       return getContacts(assignment, contactsFilter, organization).count()
     },
 
