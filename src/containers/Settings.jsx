@@ -23,6 +23,9 @@ const styles = StyleSheet.create({
     opacity: 0.8,
     marginRight: 5
   },
+  textingHoursSpan: {
+    fontWeight: 'bold'
+  },
   dialogActions: {
     marginTop: 20,
     display: 'flex',
@@ -323,17 +326,20 @@ class Settings extends React.Component {
             { organization.textingHoursEnforced ? (
               <div className={css(styles.section)}>
                 <span className={css(styles.sectionLabel)}>
-                  Texting hours: {formatTextingHours(organization.textingHoursStart)} to {formatTextingHours(organization.textingHoursEnd)} in contact's local time
+                  Texting hours:
                 </span>
+                <span className={css(styles.textingHoursSpan)}>{formatTextingHours(organization.textingHoursStart)} to {formatTextingHours(organization.textingHoursEnd)}</span> in contact's local time (or 12pm-6pm EST if timezone is unknown)
               </div>
             ) : ''}
           </CardText>
           <CardActions>
-            <FlatButton
-              label='Change texting hours'
-              primary
-              onTouchTap={this.handleOpenTextingHoursDialog}
-            />
+            { organization.textingHoursEnforced ? (
+              <FlatButton
+                label='Change texting hours'
+                primary
+                onTouchTap={this.handleOpenTextingHoursDialog}
+              />
+            ) : ''}
           </CardActions>
         </Card>
         <div>
