@@ -5,54 +5,27 @@ import Baby from 'babyparse'
   async function sleep(ms = 0) {
     return new Promise(fn => setTimeout(fn, ms))
   }
-
-  const cachedTimezoneOffsetStrings = new Map()
-  const zips = await r.table('zip_code')
-      .pluck('zip', 'timezone_offset', 'has_dst')
-      .coerceTo('array')
-  zips.forEach((zip) => cachedTimezoneOffsetStrings.set(zip.zip,`${zip.timezone_offset}_${zip.has_dst}`))
-  const limit = 5000
-  const sleepTime = 1000
-
-  let totalCount = 0
-  let loadMore = true
-
   console.log("Started at ", new Date())
   try {
-    while (loadMore) {
-      const contacts = await r.table('campaign_contact')
-      .filter(r.row.hasFields('timezone_offset').not())
-      .limit(limit)
+    const zips = await r.table('zip_code')
+      .pluck('zip', 'timezone_offset', 'has_dst')
 
-      const count = contacts.length
-      totalCount += count
-      if (count === 0) {
-          console.log("Done migrating at ", new Date())
-          loadMore = false
-      }
-      else {
-        for (let i=0; i < count; i++) {
-          const contact = contacts[i]
-          let cachedTimezoneOffset = ''
-          if (contact.zip) {
-            const regex = /(\d{5})([ \-]\d{4})?/
-            let [, first5] = contact.zip.match(regex) || []
-            if (first5) {
-              const cachedKey = cachedTimezoneOffsetStrings.get(first5)
-              if (cachedKey) {
-                cachedTimezoneOffset = cachedKey
-              }
-            }
-          }
-          await r.table('campaign_contact')
-            .get(contact.id)
-            .update({ timezone_offset: cachedTimezoneOffset })
-        }
+    let totalCount = 0
 
-        console.log(`${new Date()}\tCompleted ${totalCount}\tsleeping 1s`)
-        await sleep(sleepTime)
-      }
+    const count = zips.length
+    for (let i=0; i < count; i++) {
+      const zip = zips[i]
+      const cachedTimezoneOffset = `${zip.timezone_offset}_${zip.has_dst}`
+      const result = await r.table('campaign_contact')
+        .getAll(zip.zip, {index: 'zip'})
+        .update({ timezone_offset: cachedTimezoneOffset })
+      totalCount += result.replaced
+      console.log(`${new Date()}\t${Math.round(i * 100/count)}% zips processed\tUpdated ${result.replaced} contacts for zip\t ${zip.zip}\tTotal  contacts: ${totalCount}`)
+      // await sleep(sleepTime)
     }
+
+    console.log("Done with all zips!")
+
   } catch (ex) {
     console.log(ex)
   }
