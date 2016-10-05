@@ -11,8 +11,8 @@ import Baby from 'babyparse'
       .pluck('zip', 'timezone_offset', 'has_dst')
       .coerceTo('array')
   zips.forEach((zip) => cachedTimezoneOffsetStrings.set(zip.zip,`${zip.timezone_offset}_${zip.has_dst}`))
-  const limit = 100
-  const sleepTime = 5000
+  const limit = 5000
+  const sleepTime = 1000
 
   let totalCount = 0
   let loadMore = true
