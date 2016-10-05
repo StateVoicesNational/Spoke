@@ -38,10 +38,10 @@ export const resolvers = {
   JobRequest: {
     ...mapFieldsToModel([
       'id',
-      'jobType',
       'assigned',
-      'status'
-    ], JobRequest)
+      'status',
+      'jobType'
+    ], JobRequest),
   },
   CampaignStats: {
     sentMessagesCount: async (campaign) => (

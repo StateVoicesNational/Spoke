@@ -257,31 +257,23 @@ async function exportCampaign(job) {
   }
 }
 
+function jobMap() {
+  return {
+    export: exportCampaign,
+    upload_contacts: uploadContacts,
+    assign_texters: assignTexters
+  }
+}
+
 (async () => {
   while (true) {
     try {
       await sleep(1000)
-      const exportJob = await getNextJob('export')
-      if (exportJob) {
-        await exportCampaign(exportJob)
+      const job = await getNextJob()
+      if (job) {
+        await (jobMap()[job.job_type])(job)
         await r.table('job_request')
-          .get(exportJob.id)
-          .delete()
-      }
-
-      const uploadContactsJob = await getNextJob('upload_contacts')
-      if (uploadContactsJob) {
-        await uploadContacts(uploadContactsJob)
-        await r.table('job_request')
-          .get(uploadContactsJob.id)
-          .delete()
-      }
-
-      const assignTextersJob = await getNextJob('assign_texters')
-      if (assignTextersJob) {
-        await assignTexters(assignTextersJob)
-        await r.table('job_request')
-          .get(assignTextersJob.id)
+          .get(job.id)
           .delete()
       }
 

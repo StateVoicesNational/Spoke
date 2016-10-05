@@ -394,6 +394,7 @@ class AdminCampaignEdit extends React.Component {
             }
           }
 
+          console.log(relatedJob, pendingJobs)
           if (relatedJob) {
             sectionIsSaving = true
             savePercent = relatedJob.status
@@ -449,7 +450,7 @@ class AdminCampaignEdit extends React.Component {
                   width: '100%'
                 }}
                 style={cardHeaderStyle}
-                actAsExpander
+                actAsExpander={!sectionIsSaving}
                 showExpandableButton={!sectionIsSaving}
                 avatar={avatar}
               />

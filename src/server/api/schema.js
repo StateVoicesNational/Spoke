@@ -202,9 +202,6 @@ async function editCampaign(id, campaign, loaders) {
   })
 
   if (campaign.hasOwnProperty('contacts')) {
-    await r.table('campaign_contact')
-      .getAll(id, { index: 'campaign_id' })
-      .delete()
     const contactsToSave = campaign.contacts.map((datum) => {
       const modelData = {
         campaign_id: datum.campaignId,
@@ -222,7 +219,9 @@ async function editCampaign(id, campaign, loaders) {
     const compressedString = await gzip(JSON.stringify(contactsToSave))
 
     await JobRequest.save({
+      queue_name: `${id}:edit_campaign`,
       job_type: 'upload_contacts',
+      locks_queue: true,
       payload: {
         id,
         contacts: compressedString
@@ -232,6 +231,8 @@ async function editCampaign(id, campaign, loaders) {
 
   if (campaign.hasOwnProperty('texters')) {
     await JobRequest.save({
+      queue_name: `${id}:edit_campaign`,
+      locks_queue: true,
       job_type: 'assign_texters',
       payload: {
         id,
@@ -327,11 +328,13 @@ const rootMutations = {
       const organizationId = campaign.organization_id
       await accessRequired(user, organizationId, 'ADMIN')
       const newJob = await JobRequest.save({
+        queue_name: `${id}:export`,
+        job_type: 'export',
+        locks_queue: false,
         payload: {
           id,
           requester: user.id
-        },
-        job_type: 'export'
+        }
       })
       return newJob
     },
