@@ -12,7 +12,7 @@ import Baby from 'babyparse'
       .coerceTo('array')
   zips.forEach((zip) => cachedTimezoneOffsetStrings.set(zip.zip,`${zip.timezone_offset}_${zip.has_dst}`))
   const limit = 100
-  const sleepTime = 1000
+  const sleepTime = 5000
 
   let totalCount = 0
   let loadMore = true
@@ -49,7 +49,7 @@ import Baby from 'babyparse'
             .update({ timezone_offset: cachedTimezoneOffset })
         }
 
-        console.log("Sleeping for 1s: completed ", totalCount )
+        console.log(`${new Date()}\tCompleted ${totalCount}\tsleeping 1s`)
         await sleep(sleepTime)
       }
     }
