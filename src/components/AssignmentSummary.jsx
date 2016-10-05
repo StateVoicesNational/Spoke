@@ -86,7 +86,14 @@ class AssignmentSummary extends Component {
               disabled: false,
               contactsFilter: 'reply'
             })}
-
+            {this.renderBadgedButton({
+              assignment,
+              title: "Send later",
+              count: badTimezoneCount,
+              primary: false,
+              disabled: true,
+              contactsFilter: null,
+            })}
           </CardActions>
         </Card>
       </div>

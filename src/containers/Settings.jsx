@@ -308,7 +308,40 @@ class Settings extends React.Component {
             />
           </CardActions>
         </Card>
+        <Card>
+          <CardHeader
+            title='Settings'
+          />
+          <CardText>
+            <div className={css(styles.section)}>
+              <span className={css(styles.sectionLabel)}>
+              </span>
+              <Toggle
+                toggled={organization.textingHoursEnforced}
+                label="Enforce texting hours?"
+                onToggle={async (event, isToggled) => await this.props.mutations.updateTextingHoursEnforcement(isToggled)}
+              />
+            </div>
 
+            { organization.textingHoursEnforced ? (
+              <div className={css(styles.section)}>
+                <span className={css(styles.sectionLabel)}>
+                  Texting hours:
+                </span>
+                <span className={css(styles.textingHoursSpan)}>{formatTextingHours(organization.textingHoursStart)} to {formatTextingHours(organization.textingHoursEnd)}</span> in contact's local time (or 12pm-6pm EST if timezone is unknown)
+              </div>
+            ) : ''}
+          </CardText>
+          <CardActions>
+            { organization.textingHoursEnforced ? (
+              <FlatButton
+                label='Change texting hours'
+                primary
+                onTouchTap={this.handleOpenTextingHoursDialog}
+              />
+            ) : ''}
+          </CardActions>
+        </Card>
         <div>
           {this.renderCreditForm()}
           {this.renderCardForm()}
