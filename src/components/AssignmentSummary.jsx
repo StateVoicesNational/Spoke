@@ -5,7 +5,6 @@ import FlatButton from 'material-ui/FlatButton'
 import Badge from 'material-ui/Badge'
 import moment from 'moment'
 import Divider from 'material-ui/Divider'
-import Tooltip from 'material-ui/internal/Tooltip'
 import { withRouter } from 'react-router'
 
 const inlineStyles = {
@@ -39,31 +38,20 @@ class AssignmentSummary extends Component {
       router.push(`/app/${organizationId}/todos/${assignmentId}/${contactsFilter}`)
     }
   }
-  renderBadgedButton({ assignment, title, count, primary, disabled, contactsFilter, tooltip }) {
-    const { badTimezoneTooltipOpen } = this.state
+  renderBadgedButton({ assignment, title, count, primary, disabled, contactsFilter }) {
     return (count === 0 ? '' :
       <Badge
         key={title}
         badgeStyle={inlineStyles.badge}
         badgeContent={count}
-        primary={primary}
-        secondary={!primary}
+        primary={primary && !disabled}
+        secondary={!primary && !disabled}
       >
         <FlatButton
           disabled={disabled}
           label={title}
           onTouchTap={() => this.goToTodos(contactsFilter, assignment.id)}
-          onMouseEnter={() => (tooltip ? this.setState({ badTimezoneTooltipOpen: true }) : {})}
-          onMouseLeave={() => (tooltip ? this.setState({ badTimezoneTooltipOpen: false }) : {})}
         />
-        {badTimezoneTooltipOpen ? (
-          <Tooltip
-            label={tooltip}
-            horizontalPosition='right'
-            verticalPosition='top'
-            touch
-          />
-        ) : ''}
       </Badge>
     )
   }
@@ -98,15 +86,7 @@ class AssignmentSummary extends Component {
               disabled: false,
               contactsFilter: 'reply'
             })}
-            {this.renderBadgedButton({
-              assignment,
-              title: 'Send later',
-              count: badTimezoneCount,
-              primary: false,
-              disabled: true,
-              contactsFilter: null,
-              tooltip: "It's outside texting hours for some contacts. Come back later!"
-            })}
+
           </CardActions>
         </Card>
       </div>

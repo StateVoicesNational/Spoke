@@ -1,6 +1,6 @@
 import { mapFieldsToModel } from './lib/utils'
 import { Assignment, r } from '../models'
-import { defaultTimezoneIsBetweenTextingHours, validOffsets } from '../../lib/timezones'
+import { getOffsets, defaultTimezoneIsBetweenTextingHours } from '../../lib'
 
 export const schema = `
   type Assignment {
@@ -13,41 +13,56 @@ export const schema = `
     campaignCannedResponses: [CannedResponse]
   }
 `
+function getContacts(assignment, contactsFilter, organization) {
+  // const textingHoursEnforced = organization.texting_hours_settings.is_enforced
+  // const textingHours = organization.texting_hours_settings.permitted_hours
+  const textingHoursEnforced = false
+  const textingHours = [9,21]
+  const getIndexValuesWithOffsets = (offsets) => offsets.map(([offset, hasDST]) => ([
+    assignment.id,
+    `${offset}_${hasDST}`
+  ]))
 
-const getValidZips = async () => {
-  const offsets = validOffsets()
-  let validZips = await r.table('zip_code')
-    .filter((doc) => r.expr(offsets)
-      .contains(doc('timezoneOffset')))
-    .pluck('zip')
+  let index = 'assignment_id'
+  let indexValues = assignment.id
 
-  validZips = validZips.map(({ zip }) => zip)
-
-  if (defaultTimezoneIsBetweenTextingHours()) {
-    validZips.push('')
-  }
-
-  return validZips
-}
-
-function getContacts(assignment, campaign, contactsFilter) {
+  const [textingHoursStart, textingHoursEnd] = textingHours
+  const config = { textingHoursStart, textingHoursEnd, textingHoursEnforced }
+  const [validOffsets, invalidOffsets] = getOffsets(config)
   const filter = {}
+
   if (contactsFilter) {
-    if (contactsFilter.validTimezone === false) {
-      filter.zip = 'invalid_zip'
-    }
-    if (contactsFilter.hasOwnProperty('isOptedOut') && contactsFilter.isOptedOut !== null) {
-      filter.is_opted_out = contactsFilter.isOptedOut
-    }
+    // if (contactsFilter.hasOwnProperty('validTimezone') && contactsFilter.validTimezone !== null) {
+    //   index = 'assignment_timezone_offset'
+
+
+    //   if (contactsFilter.validTimezone === true) {
+    //     indexValues = getIndexValuesWithOffsets(validOffsets)
+    //     if (defaultTimezoneIsBetweenTextingHours(config)) {
+    //       indexValues.push([assignment.id, '']) // missing timezones are ok to text
+    //     }
+    //   } else if (contactsFilter.validTimezone === false ){
+    //     indexValues = getIndexValuesWithOffsets(invalidOffsets)
+    //     if (!defaultTimezoneIsBetweenTextingHours(config)) {
+    //       indexValues.push([assignment.id, '']) // missing timezones are not ok to text
+    //     }
+    //   }
+
+    //   indexValues = r.args(indexValues)
+    // }
 
     if (contactsFilter.hasOwnProperty('messageStatus') && contactsFilter.messageStatus !== null) {
       filter.message_status = contactsFilter.messageStatus
     }
+    if (contactsFilter.hasOwnProperty('isOptedOut') && contactsFilter.isOptedOut !== null) {
+      filter.is_opted_out = contactsFilter.isOptedOut
+    }
   }
   let query = r.table('campaign_contact')
-    .getAll(assignment.id, { index: 'assignment_id' })
+    .getAll(indexValues, { index })
 
   query = query.filter(filter)
+
   return query
 }
 
@@ -61,16 +76,22 @@ export const resolvers = {
     ),
     campaign: async(assignment, _, { loaders }) => loaders.campaign.load(assignment.campaign_id),
 
-    contactsCount: async (assignment, { contactsFilter }, { loaders }) => {
-      const campaign = await loaders.campaign.load(assignment.campaign_id)
-      return getContacts(assignment, campaign, contactsFilter).count()
+    contactsCount: async (assignment, { contactsFilter }) => {
+      const organization = await r.table('campaign')
+        .getAll(assignment.campaign_id)
+        .eqJoin('organization_id', r.table('organization'))
+        ('right')(0)
+
+      return getContacts(assignment, contactsFilter, organization).count()
     },
 
-    contacts: async (assignment, { contactsFilter }, { loaders }) => {
-      const campaign = await loaders.campaign.load(assignment.campaign_id)
-      return getContacts(assignment, campaign, contactsFilter)
+    contacts: async (assignment, { contactsFilter }) => {
+      const organization = await r.table('campaign')
+        .getAll(assignment.campaign_id)
+        .eqJoin('organization_id', r.table('organization'))
+        ('right')(0)
+      return getContacts(assignment, contactsFilter, organization)
     },
-
     campaignCannedResponses: async(assignment) => (
       await r.table('canned_response')
         .getAll(assignment.campaign_id, { index: 'campaign_id' })

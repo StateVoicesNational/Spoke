@@ -48,7 +48,7 @@ export const resolvers = {
   },
   Timezone: {
     offset: (zipCode) => zipCode.timezone_offset,
-    hasDST: (zipCode) => zipCode.has_dst
+    hasDST: (zipCode) => zipCode.has_dst,
   },
   CampaignContact: {
     ...mapFieldsToModel([
@@ -115,6 +115,6 @@ export const resolvers = {
     interactionSteps: async (campaignContact) => (
       await r.table('interaction_step')
         .getAll(campaignContact.campaign_id, { index: 'campaign_id' })
-    )
+    ),
   }
 }

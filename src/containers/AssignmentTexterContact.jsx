@@ -22,10 +22,9 @@ import GSSubmitButton from '../components/forms/GSSubmitButton'
 import SendButton from '../components/SendButton'
 import CircularProgress from 'material-ui/CircularProgress'
 import Snackbar from 'material-ui/Snackbar'
-import { getChildren, getTopMostParent, interactionStepForId, log } from '../lib'
+import { getChildren, getTopMostParent, interactionStepForId, log, isBetweenTextingHours } from '../lib'
 import { withRouter } from 'react-router'
 import wrapMutations from './hoc/wrap-mutations'
-
 const styles = StyleSheet.create({
   container: {
     margin: 0,
@@ -136,6 +135,9 @@ class AssignmentTexterContact extends React.Component {
     } else if (contact.optOut) {
       disabledText = 'Skipping opt-out...'
       disabled = true
+    } else if (!this.isContactBetweenTextingHours(contact)) {
+      disabledText = "Refreshing because it's now out of texting hours for some of your contacts"
+      disabled = true
     }
 
     this.state = {
@@ -153,9 +155,36 @@ class AssignmentTexterContact extends React.Component {
     }
   }
 
+  isContactBetweenTextingHours (contact) {
+    console.log("campaign", this.props)
+    const { campaign } = this.props
+
+    let timezoneData = null
+
+    if (contact.location) {
+      const { hasDST, offset } = contact.location.timezone
+
+      timezoneData = { hasDST, offset }
+    }
+    const { textingHoursStart, textingHoursEnd, textingHoursEnforced } = campaign.organization
+    const config = {
+      textingHoursStart,
+      textingHoursEnd,
+      textingHoursEnforced
+    }
+    return isBetweenTextingHours(timezoneData, config)
+
+  }
+
   componentDidMount() {
-    if (this.props.data.contact.optOut) {
-      setTimeout(() => this.props.onFinishContact(), 1500)
+    const { contact } = this.props.data
+    if (contact.optOut) {
+      this.skipContact()
+    } else if (!this.isContactBetweenTextingHours(contact)) {
+      setTimeout(() => {
+        this.props.onRefreshAssignmentContacts()
+        this.setState({ disabled: false })
+      }, 1500)
     }
 
     const node = this.refs.messageScrollContainer
@@ -163,6 +192,9 @@ class AssignmentTexterContact extends React.Component {
     setTimeout(() => node.scrollTop = Math.floor(node.scrollHeight), 0)
   }
 
+  skipContact = () => {
+    setTimeout(this.props.onFinishContact, 1500)
+  }
   getAvailableInteractionSteps(questionResponses) {
     const allInteractionSteps = this.props.data.contact.interactionSteps
 
@@ -263,8 +295,15 @@ class AssignmentTexterContact extends React.Component {
       if (e.message === 'Your assignment has changed') {
         newState.snackbarActionTitle = 'Back to todos'
         newState.snackbarOnTouchTap = this.goBackToTodos
+        this.setState(newState)
+      } else {
+        // opt out or send message Error
+        this.setState({
+          disabled: true,
+          disabledText: e.message
+        })
+        this.skipContact()
       }
-      this.setState(newState)
     } else {
       log.error(e)
       this.setState({
@@ -648,6 +687,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
         firstName
         lastName
         cell
+        zip
         customFields
         optOut {
           id

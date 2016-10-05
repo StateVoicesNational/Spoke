@@ -90,6 +90,7 @@ import {
 } from './errors'
 import { rentNewCell, sendMessage, handleIncomingMessage } from './lib/nexmo'
 import { getFormattedPhoneNumber } from '../../lib/phone-format'
+import { isBetweenTextingHours } from '../../lib/timezones'
 import { Notifications, sendUserNotification } from '../notifications'
 const rootSchema = `
   input CampaignContactInput {
@@ -168,6 +169,8 @@ const rootSchema = `
     editOrganizationRoles(organizationId: String!, userId: String!, roles: [String]): Organization
     updateCard( organizationId: String!, stripeToken: String!): Organization
     addAccountCredit( organizationId: String!, balanceAmount: Int!): Organization
+    updateTextingHours( organizationId: String!, textingHoursStart: Int!, textingHoursEnd: Int!): Organization
+    updateTextingHoursEnforcement( organizationId: String!, textingHoursEnforced: Boolean!): Organization
     addManualAccountCredit( organizationId: String!, balanceAmount: Int!, paymentMethod: String!): Organization
     sendMessage(message:MessageInput!, campaignContactId:String!): CampaignContact,
     createOptOut(optOut:OptOutInput!, campaignContactId:String!):CampaignContact,
@@ -204,7 +207,12 @@ async function editCampaign(id, campaign, loaders) {
   })
 
   if (campaign.hasOwnProperty('contacts')) {
-    const contactsToSave = campaign.contacts.map((datum) => {
+    const contactsToSave = []
+
+    const count = campaign.contacts.length
+
+    for (let i = 0; i < count; i++) {
+      const datum = campaign.contacts[i]
       const modelData = {
         campaign_id: datum.campaignId,
         first_name: datum.firstName,
@@ -213,11 +221,18 @@ async function editCampaign(id, campaign, loaders) {
         custom_fields: datum.customFields,
         zip: datum.zip
       }
-      modelData.zip = modelData.zip
       modelData.campaign_id = id
       modelData.custom_fields = JSON.parse(modelData.custom_fields)
-      return modelData
-    })
+
+      if (datum.zip) {
+        const zipDatum = await r.table('zip_code').get(datum.zip)
+        if (zipDatum) {
+          modelData.timezone_offset = `${zipDatum.timezone_offset}_${zipDatum.has_dst}`
+        }
+      }
+      contactsToSave.push(modelData)
+
+    }
     await r.table('campaign_contact')
       .getAll(id, { index: 'campaign_id' })
       .delete()
@@ -434,20 +449,31 @@ const rootMutations = {
       }
       return loaders.organization.load(organizationId)
     },
-    addManualAccountCredit: async(_, { organizationId, balanceAmount, paymentMethod }, { user, loaders }) => {
-      await superAdminRequired(user)
-      const organization = await loaders.organization.load(organizationId)
-      const newBalanceAmount = organization.balance_amount + balanceAmount
+    updateTextingHours: async (_, { organizationId, textingHoursStart, textingHoursEnd }, { user }) => {
+      await accessRequired(user, organizationId, 'OWNER')
 
-      await new BalanceLineItem({
-        organization_id: organizationId,
-        currency: organization.currency,
-        amount: balanceAmount,
-        payment_method: paymentMethod,
-        source: 'SUPERADMIN',
-      }).save()
+      await Organization
+        .get(organizationId)
+        .update({
+          texting_hours_settings: {
+            permitted_hours: [textingHoursStart, textingHoursEnd]
+          }
+        })
 
-      return await Organization.get(organizationId).update({ balance_amount: newBalanceAmount })
+      return await Organization.get(organizationId)
+    },
+    updateTextingHoursEnforcement: async (_, { organizationId, textingHoursEnforced }, { user }) => {
+      await accessRequired(user, organizationId, 'OWNER')
+
+      await Organization
+        .get(organizationId)
+        .update({
+          texting_hours_settings: {
+            is_enforced: textingHoursEnforced
+          }
+        })
+
+      return await Organization.get(organizationId)
     },
     addAccountCredit: async (_, { organizationId, balanceAmount }, { user, loaders }) => {
       await accessRequired(user, organizationId, 'OWNER')
@@ -604,6 +630,8 @@ const rootMutations = {
         id: inviteId,
         is_valid: false
       }, { conflict: 'update' })
+
+      console.log("new organization", newOrganization)
       return newOrganization
     },
     editCampaignContactMessageStatus: async(_, { messageStatus, campaignContactId }, { loaders }) => {
@@ -667,7 +695,31 @@ const rootMutations = {
       if (optOut) {
         throw new GraphQLError({
           status: 400,
-          message: 'Skipped sending last message because the contact was already opted out'
+          message: 'Skipped sending because this contact was already opted out'
+        })
+      }
+
+      const zipData = await r.table('zip_code')
+        .get(contact.zip)
+        .default(null)
+
+      const config = {
+        textingHoursEnforced: false,
+        textingHoursStart: 9,
+        textingHoursEnd: 21
+      }
+
+      // const [textingHoursStart, textingHoursEnd] = organization.texting_hours_settings.permitted_hours
+      // const config = {
+      //   textingHoursEnforced: organization.texting_hours_settings.is_enforced,
+      //   textingHoursStart,
+      //   textingHoursEnd
+      // }
+      const offsetData = zipData ? { offset: zipData.timezone_offset, hasDST: zipData.has_dst } : null
+      if (!isBetweenTextingHours(offsetData, config)) {
+        throw new GraphQLError({
+          status: 400,
+          message: "Skipped sending because it's now outside texting hours for this contact"
         })
       }
 

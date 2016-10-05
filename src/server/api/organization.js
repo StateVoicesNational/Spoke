@@ -26,6 +26,9 @@ export const schema = `
     billingDetails: BillingDetails
     plan: Plan
     threeClickEnabled: Boolean
+    textingHoursEnforced: Boolean
+    textingHoursStart: Int
+    textingHoursEnd: Int
   }
 `
 
@@ -89,6 +92,13 @@ export const resolvers = {
     },
     billingDetails: (organization) => organization,
     threeClickEnabled: (organization) => organization.features.indexOf('threeClick') !== -1,
+    textingHoursEnforced: (organization) => false,
+    textingHoursStart: (organization) => 9,
+    textingHoursEnd: (organization) => 21
+
+    // textingHoursEnforced: (organization) => organization.texting_hours_settings.is_enforced,
+    // textingHoursStart: (organization) => organization.texting_hours_settings.permitted_hours[0],
+    // textingHoursEnd: (organization) => organization.texting_hours_settings.permitted_hours[1]
   }
 }
 
