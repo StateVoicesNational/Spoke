@@ -88,7 +88,7 @@ class AssignmentSummary extends Component {
             })}
             {this.renderBadgedButton({
               assignment,
-              title: "Send later",
+              title: "Send later (too early or late for some contacts)",
               count: badTimezoneCount,
               primary: false,
               disabled: true,
