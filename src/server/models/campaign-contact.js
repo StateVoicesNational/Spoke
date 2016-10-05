@@ -28,7 +28,7 @@ const CampaignContact = thinky.createModel('campaign_contact', type.object().sch
   timezone_offset: type
     .string()
     .default('')
-    // .required()
+    .required()
 }).allowExtra(false))
 
 CampaignContact.ensureIndex('assignment_id')

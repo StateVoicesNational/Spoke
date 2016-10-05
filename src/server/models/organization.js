@@ -43,7 +43,7 @@ const Organization = thinky.createModel('organization', type.object().schema({
       is_enforced: false,
       permitted_hours: [9, 21]
     })
-    // .required()
+    .required()
 }).allowExtra(false))
 
 export default Organization
