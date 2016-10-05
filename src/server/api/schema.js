@@ -699,23 +699,23 @@ const rootMutations = {
         })
       }
 
-      const zipData = await r.table('zip_code')
-        .get(contact.zip)
-        .default(null)
+      // const zipData = await r.table('zip_code')
+      //   .get(contact.zip)
+      //   .default(null)
 
-      const [textingHoursStart, textingHoursEnd] = organization.texting_hours_settings.permitted_hours
-      const config = {
-        textingHoursEnforced: organization.texting_hours_settings.is_enforced,
-        textingHoursStart,
-        textingHoursEnd
-      }
-      const offsetData = zipData ? { offset: zipData.timezone_offset, hasDST: zipData.has_dst } : null
-      if (!isBetweenTextingHours(offsetData, config)) {
-        throw new GraphQLError({
-          status: 400,
-          message: "Skipped sending because it's now outside texting hours for this contact"
-        })
-      }
+      // const [textingHoursStart, textingHoursEnd] = organization.texting_hours_settings.permitted_hours
+      // const config = {
+      //   textingHoursEnforced: organization.texting_hours_settings.is_enforced,
+      //   textingHoursStart,
+      //   textingHoursEnd
+      // }
+      // const offsetData = zipData ? { offset: zipData.timezone_offset, hasDST: zipData.has_dst } : null
+      // if (!isBetweenTextingHours(offsetData, config)) {
+      //   throw new GraphQLError({
+      //     status: 400,
+      //     message: "Skipped sending because it's now outside texting hours for this contact"
+      //   })
+      // }
 
       const plan = await loaders.plan.load(organization.plan_id)
       const amountPerMessage = plan.amount_per_message
