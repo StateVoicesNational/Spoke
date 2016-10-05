@@ -703,18 +703,12 @@ const rootMutations = {
         .get(contact.zip)
         .default(null)
 
+      const [textingHoursStart, textingHoursEnd] = organization.texting_hours_settings.permitted_hours
       const config = {
-        textingHoursEnforced: false,
-        textingHoursStart: 9,
-        textingHoursEnd: 21
+        textingHoursEnforced: organization.texting_hours_settings.is_enforced,
+        textingHoursStart,
+        textingHoursEnd
       }
-
-      // const [textingHoursStart, textingHoursEnd] = organization.texting_hours_settings.permitted_hours
-      // const config = {
-      //   textingHoursEnforced: organization.texting_hours_settings.is_enforced,
-      //   textingHoursStart,
-      //   textingHoursEnd
-      // }
       const offsetData = zipData ? { offset: zipData.timezone_offset, hasDST: zipData.has_dst } : null
       if (!isBetweenTextingHours(offsetData, config)) {
         throw new GraphQLError({
