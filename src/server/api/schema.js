@@ -207,12 +207,7 @@ async function editCampaign(id, campaign, loaders) {
   })
 
   if (campaign.hasOwnProperty('contacts')) {
-    const contactsToSave = []
-
-    const count = campaign.contacts.length
-
-    for (let i = 0; i < count; i++) {
-      const datum = campaign.contacts[i]
+    const contactsToSave = campaign.contacts.map((datum) => {
       const modelData = {
         campaign_id: datum.campaignId,
         first_name: datum.firstName,
@@ -225,6 +220,7 @@ async function editCampaign(id, campaign, loaders) {
       modelData.custom_fields = JSON.parse(modelData.custom_fields)
       return modelData
     })
+
     const compressedString = await gzip(JSON.stringify(contactsToSave))
 
     await JobRequest.save({
@@ -445,7 +441,6 @@ const rootMutations = {
         }
         throw e
       }
-
     },
     createCampaign: async (_, { campaign }, { user, loaders }) => {
       await accessRequired(user, campaign.organizationId, 'ADMIN')

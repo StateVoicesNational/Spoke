@@ -25,7 +25,7 @@ async function uploadContacts(job) {
     if (datum.zip) {
       const zipDatum = await r.table('zip_code').get(datum.zip)
       if (zipDatum) {
-        data.timezone_offset = `${zipDatum.timezone_offset}_${zipDatum.has_dst}`
+        datum.timezone_offset = `${zipDatum.timezone_offset}_${zipDatum.has_dst}`
       }
     }
   }
@@ -33,13 +33,6 @@ async function uploadContacts(job) {
   for (let index = 0; index < numChunks; index++) {
     await updateJob(job, Math.round((maxPercentage / numChunks) * index))
     const savePortion = contacts.slice(index * chunkSize, (index + 1) * chunkSize)
-      if (datum.zip) {
-        const zipDatum = await r.table('zip_code').get(datum.zip)
-        if (zipDatum) {
-          modelData.timezone_offset = `${zipDatum.timezone_offset}_${zipDatum.has_dst}`
-        }
-      }
-      contactsToSave.push(modelData)
     await CampaignContact.save(savePortion)
   }
 }
@@ -157,7 +150,7 @@ async function assignTexters(job) {
         assignment
       })
     }
-    await updateJob(job, (75 / texterCount) * (index + 1) + 20)
+    await updateJob(job, Math.floor((75 / texterCount) * (index + 1)) + 20)
   }
   const assignmentsToDelete = await r.table('assignment')
     .getAll(id, { index: 'campaign_id' })
