@@ -30,10 +30,6 @@ async function uploadContacts(job) {
 async function assignTexters(job) {
   const id = job.payload.id
   const texters = job.payload.texters
-  let availableContacts = await r.table('campaign_contact')
-    .getAll('', { index: 'assignment_id' })
-    .filter({ campaign_id: id })
-    .count()
   const currentAssignments = await r.table('assignment')
     .getAll(id, { index: 'campaign_id' })
     .merge((row) => ({
@@ -68,6 +64,10 @@ async function assignTexters(job) {
     })
   await updateJob(job, 20)
 
+  let availableContacts = await r.table('campaign_contact')
+    .getAll('', { index: 'assignment_id' })
+    .filter({ campaign_id: id })
+    .count()
   // Go through all the submitted texters and create assignments
   const texterCount = texters.length
   for (let index = 0; index < texterCount; index++) {
@@ -87,6 +87,7 @@ async function assignTexters(job) {
         campaign_id: id
       }).save()
     }
+    console.log('contacts: ', assignment.id, contactsToAssign)
     await r.table('campaign_contact')
       .getAll('', { index: 'assignment_id' })
       .filter({ campaign_id: id })
@@ -99,7 +100,7 @@ async function assignTexters(job) {
       await sendUserNotification({
         type: Notifications.ASSIGNMENT_UPDATED,
         assignment
-       })
+      })
     }
     await updateJob(job, (75 / texterCount) * (index + 1) + 20)
   }
