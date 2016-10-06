@@ -73,8 +73,13 @@ class AdminCampaignEdit extends React.Component {
     let expandedKeys = []
     if (expandedSection !== null) {
       expandedSection = this.sections()[expandedSection]
-      expandedKeys = expandedSection.keys
+      if (this.sectionSaveStatus(expandedSection).sectionIsSaving) {
+        expandedKeys = []
+      } else {
+        expandedKeys = expandedSection.keys
+      }
     }
+
     const campaignDataCopy = {
       ...newProps.campaignData.campaign
     }
@@ -82,21 +87,13 @@ class AdminCampaignEdit extends React.Component {
       delete campaignDataCopy[key]
     })
 
+
     this.setState({
       campaignFormValues: {
         ...this.state.campaignFormValues,
         ...campaignDataCopy
       }
     })
-
-    if (expandedSection) {
-      const pendingJobs = newProps.campaignData.campaign.pendingJobs
-      pendingJobs.forEach((job) => {
-        if ((job.jobType === 'upload_contacts' && expandedSection.title === 'Contacts') || job.jobType === 'assign_texters' && expandedSection.title === 'Texters') {
-          this.setState({ expandedSection: null })
-        }
-      })
-    }
   }
 
   onExpandChange = (index, newExpandedState) => {
@@ -193,11 +190,9 @@ class AdminCampaignEdit extends React.Component {
         .props
         .mutations
         .editCampaign(this.props.campaignData.campaign.id, newCampaign)
-      console.log(this.props.campaignData.campaign.title)
       this.setState({
         campaignFormValues: this.props.campaignData.campaign
       })
-      console.log(this.state.campaignFormValues.title)
     }
   }
 
@@ -274,15 +269,40 @@ class AdminCampaignEdit extends React.Component {
     }]
   }
 
-  renderCampaignFormSection(section) {
+  sectionSaveStatus(section) {
+    const pendingJobs = this.props.campaignData.campaign.pendingJobs
+    let sectionIsSaving = false
+    let relatedJob = null
+    let savePercent = 0
+    if (pendingJobs.length > 0) {
+      if (section.title === 'Contacts') {
+        relatedJob = pendingJobs.filter((job) => job.jobType === 'upload_contacts')[0]
+      } else if (section.title === 'Texters') {
+        relatedJob = pendingJobs.filter((job) => job.jobType === 'assign_texters')[0]
+      }
+    }
+
+    if (relatedJob) {
+      sectionIsSaving = true
+      savePercent = relatedJob.status
+    }
+    return {
+      sectionIsSaving,
+      savePercent
+    }
+  }
+
+  renderCampaignFormSection(section, forceDisable) {
+    let shouldDisable = forceDisable || (!this.isNew() && this.checkSectionSaved(section))
     const ContentComponent = section.content
     const formValues = this.getSectionState(section)
+
     return (
       <ContentComponent
         onChange={this.handleChange}
         formValues={formValues}
         saveLabel={this.isNew() ? 'Next' : 'Save'}
-        saveDisabled={!this.isNew() && this.checkSectionSaved(section)}
+        saveDisabled={shouldDisable}
         ensureComplete={this.props.campaignData.campaign.isStarted}
         onSubmit={async () => {
           await this.handleSave()
@@ -378,7 +398,6 @@ class AdminCampaignEdit extends React.Component {
   render() {
     const { expandedSection } = this.state
     const sections = this.sections()
-    const pendingJobs = this.props.campaignData.campaign.pendingJobs
     return (
       <div>
         {this.renderHeader()}
@@ -394,26 +413,9 @@ class AdminCampaignEdit extends React.Component {
             display: 'inline-block',
             verticalAlign: 'middle'
           }
-          let sectionIsSaving = false
-          let relatedJob = null
-          let savePercent = 0
-          if (pendingJobs.length > 0) {
-            if (section.title === 'Contacts') {
-              relatedJob = pendingJobs.filter((job) => job.jobType === 'upload_contacts')[0]
-            } else if (section.title === 'Texters') {
-              relatedJob = pendingJobs.filter((job) => job.jobType === 'assign_texters')[0]
-            }
-          }
 
-          console.log(relatedJob, pendingJobs)
-          if (relatedJob) {
-            sectionIsSaving = true
-            savePercent = relatedJob.status
-          }
-
-          if (sectionIsExpanded) {
-            cardHeaderStyle.backgroundColor = theme.colors.lightGray
-          } else if (sectionIsSaving) {
+          const { sectionIsSaving, savePercent } = this.sectionSaveStatus(section)
+          if (sectionIsSaving) {
             avatar = (<CircularProgress
               size={0.35}
               style={{
@@ -428,6 +430,8 @@ class AdminCampaignEdit extends React.Component {
             />)
             cardHeaderStyle.background = theme.colors.lightGray
             cardHeaderStyle.width = `${savePercent}%`
+          } else if (sectionIsExpanded) {
+            cardHeaderStyle.backgroundColor = theme.colors.lightGray
           } else if (sectionIsDone) {
             avatar = (<Avatar
               icon={<DoneIcon style={{ fill: theme.colors.darkGreen }} />}
@@ -461,14 +465,14 @@ class AdminCampaignEdit extends React.Component {
                   width: '100%'
                 }}
                 style={cardHeaderStyle}
-                actAsExpander={!sectionIsSaving}
+                actAsExpander
                 showExpandableButton={!sectionIsSaving}
                 avatar={avatar}
               />
               <CardText
                 expandable
               >
-                 {this.renderCampaignFormSection(section)}
+                 {this.renderCampaignFormSection(section, sectionIsSaving)}
               </CardText>
             </Card>
           )
