@@ -87,7 +87,6 @@ async function assignTexters(job) {
         campaign_id: id
       }).save()
     }
-    console.log('contacts: ', assignment.id, contactsToAssign)
     await r.table('campaign_contact')
       .getAll('', { index: 'assignment_id' })
       .filter({ campaign_id: id })

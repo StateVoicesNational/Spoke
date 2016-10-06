@@ -69,10 +69,11 @@ class AdminCampaignEdit extends React.Component {
   }
 
   componentWillReceiveProps(newProps) {
-    const { expandedSection } = this.state
+    let { expandedSection } = this.state
     let expandedKeys = []
     if (expandedSection !== null) {
-      expandedKeys = this.sections()[expandedSection].keys
+      expandedSection = this.sections()[expandedSection]
+      expandedKeys = expandedSection.keys
     }
     const campaignDataCopy = {
       ...newProps.campaignData.campaign
@@ -87,6 +88,15 @@ class AdminCampaignEdit extends React.Component {
         ...campaignDataCopy
       }
     })
+
+    if (expandedSection) {
+      const pendingJobs = newProps.campaignData.campaign.pendingJobs
+      pendingJobs.forEach((job) => {
+        if ((job.jobType === 'upload_contacts' && expandedSection.title === 'Contacts') || job.jobType === 'assign_texters' && expandedSection.title === 'Texters') {
+          this.setState({ expandedSection: null })
+        }
+      })
+    }
   }
 
   onExpandChange = (index, newExpandedState) => {
@@ -155,6 +165,7 @@ class AdminCampaignEdit extends React.Component {
           return contactInput
         })
         newCampaign.contacts = contactData
+        newCampaign.texters = []
       } else {
         newCampaign.contacts = null
       }
