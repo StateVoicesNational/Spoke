@@ -1,4 +1,4 @@
-import { r, Campaign, CampaignContact, User, Assignment } from '../server/models'
+import { r, Campaign, CampaignContact, User, Assignment, InteractionStep } from '../server/models'
 import { log, gunzip } from '../lib'
 import { sleep, getNextJob, updateJob } from './lib'
 import AWS from 'aws-sdk'
@@ -25,6 +25,45 @@ async function uploadContacts(job) {
     const savePortion = contacts.slice(index * chunkSize, (index + 1) * chunkSize)
     await CampaignContact.save(savePortion)
   }
+}
+
+async function createInteractionSteps(job) {
+  const id = job.payload.id
+  const interactionSteps = []
+  for (let index = 0; index < job.payload.interaction_steps.length; index++) {
+    // We use r.uuid(step.id) so that
+    // any new steps will get a proper
+    // UUID as well.
+    const step = job.payload.interaction_steps[index]
+    const newId = await r.uuid(step.id)
+    const answerOptions = []
+    if (step.answerOptions) {
+      for (let innerIndex = 0; innerIndex < step.answerOptions.length; innerIndex++) {
+        const option = step.answerOptions[innerIndex]
+        let nextStepId = ''
+        if (option.nextInteractionStepId) {
+          nextStepId = await r.uuid(option.nextInteractionStepId)
+        }
+        answerOptions.push({
+          interaction_step_id: nextStepId,
+          value: option.value
+        })
+      }
+    }
+    interactionSteps.push({
+      id: newId,
+      campaign_id: id,
+      question: step.question,
+      script: step.script,
+      answer_options: answerOptions
+    })
+  }
+
+  await r.table('interaction_step')
+    .getAll(id, { index: 'campaign_id' })
+    .delete()
+  await InteractionStep
+    .save(interactionSteps)
 }
 
 async function assignTexters(job) {
@@ -261,7 +300,8 @@ function jobMap() {
   return {
     export: exportCampaign,
     upload_contacts: uploadContacts,
-    assign_texters: assignTexters
+    assign_texters: assignTexters,
+    create_interaction_steps: createInteractionSteps
   }
 }
 

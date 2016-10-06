@@ -26,4 +26,6 @@ const JobRequest = thinky.createModel('job_request', type.object().schema({
   created_at: timestamp()
 }).allowExtra(false))
 
+JobRequest.ensureIndex('queue_name')
+
 export default JobRequest

@@ -242,41 +242,15 @@ async function editCampaign(id, campaign, loaders) {
   }
 
   if (campaign.hasOwnProperty('interactionSteps')) {
-    const interactionSteps = []
-    for (let index = 0; index < campaign.interactionSteps.length; index++) {
-      // We use r.uuid(step.id) so that
-      // any new steps will get a proper
-      // UUID as well.
-      const step = campaign.interactionSteps[index]
-      const newId = await r.uuid(step.id)
-      const answerOptions = []
-      if (step.answerOptions) {
-        for (let innerIndex = 0; innerIndex < step.answerOptions.length; innerIndex++) {
-          const option = step.answerOptions[innerIndex]
-          let nextStepId = ''
-          if (option.nextInteractionStepId) {
-            nextStepId = await r.uuid(option.nextInteractionStepId)
-          }
-          answerOptions.push({
-            interaction_step_id: nextStepId,
-            value: option.value
-          })
-        }
+    await JobRequest.save({
+      queue_name: `${id}:edit_campaign`,
+      locks_queue: true,
+      job_type: 'create_interaction_steps',
+      payload: {
+        id,
+        interaction_steps: campaign.interactionSteps
       }
-      interactionSteps.push({
-        id: newId,
-        campaign_id: id,
-        question: step.question,
-        script: step.script,
-        answer_options: answerOptions
-      })
-    }
-
-    await r.table('interaction_step')
-      .getAll(id, { index: 'campaign_id' })
-      .delete()
-    await InteractionStep
-      .save(interactionSteps)
+    })
   }
 
   if (campaign.hasOwnProperty('cannedResponses')) {

@@ -14,7 +14,7 @@ export async function updateJob(job, percentComplete) {
 
 export async function getNextJob() {
   const lockedQueues = await r.table('job_request')
-   .group('queue_name')
+   .group({index: 'queue_name'})
    .filter({
      assigned: true,
      locks_queue: true
@@ -31,7 +31,7 @@ export async function getNextJob() {
   let nextJob = null
   if (nextQueue) {
     nextJob = await r.table('job_request')
-      .filter({ queue_name: nextQueue})
+      .getAll(nextQueue, { index: 'queue_name' })
       .orderBy('created_at')
       .limit(1)(0)
     if (nextJob) {

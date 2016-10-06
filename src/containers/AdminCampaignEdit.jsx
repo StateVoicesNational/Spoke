@@ -279,6 +279,8 @@ class AdminCampaignEdit extends React.Component {
         relatedJob = pendingJobs.filter((job) => job.jobType === 'upload_contacts')[0]
       } else if (section.title === 'Texters') {
         relatedJob = pendingJobs.filter((job) => job.jobType === 'assign_texters')[0]
+      } else if (section.title === 'Interactions') {
+        relatedJob = pendingJobs.filter((job) => job.jobType === 'create_interaction_steps')[0]
       }
     }
 
