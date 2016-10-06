@@ -90,6 +90,7 @@ import {
 import { gzip } from '../../lib'
 import { rentNewCell, handleIncomingMessage } from './lib/nexmo'
 import { getFormattedPhoneNumber } from '../../lib/phone-format'
+import { isBetweenTextingHours } from '../../lib/timezones'
 import { Notifications, sendUserNotification } from '../notifications'
 const rootSchema = `
   input CampaignContactInput {
@@ -168,6 +169,8 @@ const rootSchema = `
     editOrganizationRoles(organizationId: String!, userId: String!, roles: [String]): Organization
     updateCard( organizationId: String!, stripeToken: String!): Organization
     addAccountCredit( organizationId: String!, balanceAmount: Int!): Organization
+    updateTextingHours( organizationId: String!, textingHoursStart: Int!, textingHoursEnd: Int!): Organization
+    updateTextingHoursEnforcement( organizationId: String!, textingHoursEnforced: Boolean!): Organization
     addManualAccountCredit( organizationId: String!, balanceAmount: Int!, paymentMethod: String!): Organization
     sendMessage(message:MessageInput!, campaignContactId:String!): CampaignContact,
     createOptOut(optOut:OptOutInput!, campaignContactId:String!):CampaignContact,
@@ -175,6 +178,8 @@ const rootSchema = `
     deleteQuestionResponses(interactionStepIds:[String], campaignContactId:String!): CampaignContact,
     updateQuestionResponses(questionResponses:[QuestionResponseInput], campaignContactId:String!): CampaignContact,
     startCampaign(id:String!): Campaign,
+    archiveCampaign(id:String!): Campaign,
+    unarchiveCampaign(id:String!): Campaign,
     sendReply(id: String!, message: String!): CampaignContact
   }
 
@@ -202,7 +207,12 @@ async function editCampaign(id, campaign, loaders) {
   })
 
   if (campaign.hasOwnProperty('contacts')) {
-    const contactsToSave = campaign.contacts.map((datum) => {
+    const contactsToSave = []
+
+    const count = campaign.contacts.length
+
+    for (let i = 0; i < count; i++) {
+      const datum = campaign.contacts[i]
       const modelData = {
         campaign_id: datum.campaignId,
         first_name: datum.firstName,
@@ -211,7 +221,6 @@ async function editCampaign(id, campaign, loaders) {
         custom_fields: datum.customFields,
         zip: datum.zip
       }
-      modelData.zip = modelData.zip
       modelData.campaign_id = id
       modelData.custom_fields = JSON.parse(modelData.custom_fields)
       return modelData
@@ -344,20 +353,31 @@ const rootMutations = {
       }
       return loaders.organization.load(organizationId)
     },
-    addManualAccountCredit: async(_, { organizationId, balanceAmount, paymentMethod }, { user, loaders }) => {
-      await superAdminRequired(user)
-      const organization = await loaders.organization.load(organizationId)
-      const newBalanceAmount = organization.balance_amount + balanceAmount
+    updateTextingHours: async (_, { organizationId, textingHoursStart, textingHoursEnd }, { user }) => {
+      await accessRequired(user, organizationId, 'OWNER')
 
-      await new BalanceLineItem({
-        organization_id: organizationId,
-        currency: organization.currency,
-        amount: balanceAmount,
-        payment_method: paymentMethod,
-        source: 'SUPERADMIN',
-      }).save()
+      await Organization
+        .get(organizationId)
+        .update({
+          texting_hours_settings: {
+            permitted_hours: [textingHoursStart, textingHoursEnd]
+          }
+        })
 
-      return await Organization.get(organizationId).update({ balance_amount: newBalanceAmount })
+      return await Organization.get(organizationId)
+    },
+    updateTextingHoursEnforcement: async (_, { organizationId, textingHoursEnforced }, { user }) => {
+      await accessRequired(user, organizationId, 'OWNER')
+
+      await Organization
+        .get(organizationId)
+        .update({
+          texting_hours_settings: {
+            is_enforced: textingHoursEnforced
+          }
+        })
+
+      return await Organization.get(organizationId)
     },
     addAccountCredit: async (_, { organizationId, balanceAmount }, { user, loaders }) => {
       await accessRequired(user, organizationId, 'OWNER')
@@ -434,10 +454,25 @@ const rootMutations = {
         title: campaign.title,
         description: campaign.description,
         due_by: campaign.dueBy,
-        is_started: false
+        is_started: false,
+        is_archived: false
       })
       const newCampaign = await campaignInstance.save()
       return editCampaign(newCampaign.id, campaign, loaders)
+    },
+    unarchiveCampaign: async (_, { id }, { user, loaders }) => {
+      const campaign = await loaders.campaign.load(id)
+      await accessRequired(user, campaign.organizationId, 'ADMIN')
+      campaign.is_archived = false
+      await campaign.save()
+      return campaign
+    },
+    archiveCampaign: async (_, { id }, { user, loaders }) => {
+      const campaign = await loaders.campaign.load(id)
+      await accessRequired(user, campaign.organizationId, 'ADMIN')
+      campaign.is_archived = true
+      await campaign.save()
+      return campaign
     },
     startCampaign: async (_, { id }, { user, loaders }) => {
       const campaign = await loaders.campaign.load(id)
@@ -499,6 +534,8 @@ const rootMutations = {
         id: inviteId,
         is_valid: false
       }, { conflict: 'update' })
+
+      console.log("new organization", newOrganization)
       return newOrganization
     },
     editCampaignContactMessageStatus: async(_, { messageStatus, campaignContactId }, { loaders }) => {
@@ -507,23 +544,39 @@ const rootMutations = {
       return await contact.save()
     },
     createOptOut: async(_, { optOut, campaignContactId }, { loaders }) => {
-      let campaign = await r.table('assignment')
-        .get(optOut.assignmentId)
+      const { assignmentId, cell } = optOut
+      const campaign = await r.table('assignment')
+        .get(assignmentId)
         .merge((doc) => ({
           campaign: r.table('campaign')
             .get(doc('campaign_id'))
         }))('campaign')
       await new OptOut({
-        assignment_id: optOut.assignmentId,
+        assignment_id: assignmentId,
         organization_id: campaign.organization_id,
-        cell: optOut.cell
+        cell
       }).save()
+
+      await r.table('campaign_contact')
+        .getAll(cell, { index: 'cell' })
+        .merge((contact) => ({
+          organization_id: r.table('campaign')
+            .get(contact('campaign_id'))
+            ('organization_id')
+        }))
+        .filter({ organization_id: campaign.organization_id})
+        .forEach((doc) => r.table('campaign_contact')
+            .get(doc('id'))
+            .update({ is_opted_out: true }))
+
+      return loaders.campaignContact.load(campaignContactId)
     },
     sendMessage: async(_, { message, campaignContactId }, { loaders }) => {
       const texter = await loaders.user.load(message.userId)
       const contact = await loaders.campaignContact.load(campaignContactId)
+      const campaign = await loaders.campaign.load(contact.campaign_id)
 
-      if (contact.assignment_id !== message.assignmentId) {
+      if (contact.assignment_id !== message.assignmentId || campaign.is_archived) {
         throw new GraphQLError({
           status: 400,
           message: 'Your assignment has changed'
@@ -546,9 +599,27 @@ const rootMutations = {
       if (optOut) {
         throw new GraphQLError({
           status: 400,
-          message: 'Skipped sending last message because the contact was already opted out'
+          message: 'Skipped sending because this contact was already opted out'
         })
       }
+
+      // const zipData = await r.table('zip_code')
+      //   .get(contact.zip)
+      //   .default(null)
+
+      // const [textingHoursStart, textingHoursEnd] = organization.texting_hours_settings.permitted_hours
+      // const config = {
+      //   textingHoursEnforced: organization.texting_hours_settings.is_enforced,
+      //   textingHoursStart,
+      //   textingHoursEnd
+      // }
+      // const offsetData = zipData ? { offset: zipData.timezone_offset, hasDST: zipData.has_dst } : null
+      // if (!isBetweenTextingHours(offsetData, config)) {
+      //   throw new GraphQLError({
+      //     status: 400,
+      //     message: "Skipped sending because it's now outside texting hours for this contact"
+      //   })
+      // }
 
       const plan = await loaders.plan.load(organization.plan_id)
       const amountPerMessage = plan.amount_per_message
@@ -568,8 +639,11 @@ const rootMutations = {
 
       const { contactNumber, text } = message
 
+      const replaceCurlyApostrophes = (rawText) => rawText
+        .replace(/[\u2018\u2019]/g, "'")
+
       const messageInstance = new Message({
-        text,
+        text: replaceCurlyApostrophes(text),
         contact_number: contactNumber,
         user_number: texter.assigned_cell,
         assignment_id: message.assignmentId,

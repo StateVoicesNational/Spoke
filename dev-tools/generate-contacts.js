@@ -1,8 +1,8 @@
 import faker from 'faker'
 import json2csv from 'json2csv'
 
-const fields = ['firstName', 'lastName', 'cell', 'companyName', 'city']
-const numContacts = 10000
+const fields = ['firstName', 'lastName', 'cell', 'companyName', 'city', 'zip']
+const numContacts = 1000
 
 const data = []
 for (let index = 0; index < numContacts; index++) {
@@ -11,7 +11,8 @@ for (let index = 0; index < numContacts; index++) {
     lastName: faker.name.lastName(),
     cell: `1-${faker.phone.phoneNumberFormat()}`,
     companyName: faker.company.companyName(),
-    city: faker.address.city()
+    city: faker.address.city(),
+    zip: faker.address.zipCode()
   })
 }
 

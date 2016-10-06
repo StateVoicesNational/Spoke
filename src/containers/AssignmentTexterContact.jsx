@@ -10,7 +10,6 @@ import FlatButton from 'material-ui/FlatButton'
 import NavigateCloseIcon from 'material-ui/svg-icons/navigation/close'
 import { grey100 } from 'material-ui/styles/colors'
 import IconButton from 'material-ui/IconButton/IconButton'
-import TextField from 'material-ui/TextField'
 import { Toolbar, ToolbarGroup, ToolbarSeparator } from 'material-ui/Toolbar'
 import Dialog from 'material-ui/Dialog'
 import { applyScript } from '../lib/scripts'
@@ -23,10 +22,9 @@ import GSSubmitButton from '../components/forms/GSSubmitButton'
 import SendButton from '../components/SendButton'
 import CircularProgress from 'material-ui/CircularProgress'
 import Snackbar from 'material-ui/Snackbar'
-import { getChildren, getTopMostParent, interactionStepForId, log } from '../lib'
+import { getChildren, getTopMostParent, interactionStepForId, log, isBetweenTextingHours } from '../lib'
 import { withRouter } from 'react-router'
 import wrapMutations from './hoc/wrap-mutations'
-
 const styles = StyleSheet.create({
   container: {
     margin: 0,
@@ -121,14 +119,14 @@ class AssignmentTexterContact extends React.Component {
     const questionResponses = this.getInitialQuestionResponses(props.data.contact.interactionSteps)
     const availableSteps = this.getAvailableInteractionSteps(questionResponses)
 
-    const { assignment } = this.props
+    const { assignment, campaign } = this.props
     const { contact } = this.props.data
     let disabled = false
     let disabledText = 'Sending...'
     let snackbarOnTouchTap = null
     let snackbarActionTitle = null
     let snackbarError = null
-    if (assignment.id !== contact.assignmentId) {
+    if (assignment.id !== contact.assignmentId || campaign.isArchived) {
       disabledText = ''
       disabled = true
       snackbarError = 'Your assignment has changed'
@@ -136,6 +134,9 @@ class AssignmentTexterContact extends React.Component {
       snackbarActionTitle = 'Back to Todos'
     } else if (contact.optOut) {
       disabledText = 'Skipping opt-out...'
+      disabled = true
+    } else if (!this.isContactBetweenTextingHours(contact)) {
+      disabledText = "Refreshing because it's now out of texting hours for some of your contacts"
       disabled = true
     }
 
@@ -154,10 +155,45 @@ class AssignmentTexterContact extends React.Component {
     }
   }
 
-  componentDidMount() {
-    if (this.props.data.contact.optOut) {
-      setTimeout(() => this.props.onFinishContact(), 1500)
+  isContactBetweenTextingHours (contact) {
+    console.log("campaign", this.props)
+    const { campaign } = this.props
+
+    let timezoneData = null
+
+    if (contact.location) {
+      const { hasDST, offset } = contact.location.timezone
+
+      timezoneData = { hasDST, offset }
     }
+    const { textingHoursStart, textingHoursEnd, textingHoursEnforced } = campaign.organization
+    const config = {
+      textingHoursStart,
+      textingHoursEnd,
+      textingHoursEnforced
+    }
+    return isBetweenTextingHours(timezoneData, config)
+
+  }
+
+  componentDidMount() {
+    const { contact } = this.props.data
+    if (contact.optOut) {
+      this.skipContact()
+    } else if (!this.isContactBetweenTextingHours(contact)) {
+      setTimeout(() => {
+        this.props.onRefreshAssignmentContacts()
+        this.setState({ disabled: false })
+      }, 1500)
+    }
+
+    const node = this.refs.messageScrollContainer
+    // Does not work without this setTimeout
+    setTimeout(() => node.scrollTop = Math.floor(node.scrollHeight), 0)
+  }
+
+  skipContact = () => {
+    setTimeout(this.props.onFinishContact, 1500)
   }
   getAvailableInteractionSteps(questionResponses) {
     const allInteractionSteps = this.props.data.contact.interactionSteps
@@ -259,8 +295,15 @@ class AssignmentTexterContact extends React.Component {
       if (e.message === 'Your assignment has changed') {
         newState.snackbarActionTitle = 'Back to todos'
         newState.snackbarOnTouchTap = this.goBackToTodos
+        this.setState(newState)
+      } else {
+        // opt out or send message Error
+        this.setState({
+          disabled: true,
+          disabledText: e.message
+        })
+        this.skipContact()
       }
-      this.setState(newState)
     } else {
       log.error(e)
       this.setState({
@@ -440,7 +483,6 @@ class AssignmentTexterContact extends React.Component {
   }
 
   handleClickSendMessageButton = () => {
-    console.log("this.refs.form", this.refs)
     this.refs.form.submit()
   }
 
@@ -602,6 +644,7 @@ class AssignmentTexterContact extends React.Component {
             {this.renderTopFixedSection()}
           </div>
           <div
+            ref='messageScrollContainer'
             className={css(styles.middleScrollingSection)}
           >
             {this.renderMiddleScrollingSection()}
@@ -644,6 +687,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
         firstName
         lastName
         cell
+        zip
         customFields
         optOut {
           id

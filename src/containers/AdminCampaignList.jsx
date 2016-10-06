@@ -1,22 +1,22 @@
 import React from 'react'
-import CampaignList from '../components/CampaignList'
+import CampaignList from './CampaignList'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import ContentAdd from 'material-ui/svg-icons/content/add'
-import moment from 'moment'
-import Subheader from 'material-ui/Subheader'
-import SpeakerNotesIcon from 'material-ui/svg-icons/action/speaker-notes'
-import Empty from '../components/Empty'
 import loadData from './hoc/load-data'
 import { withRouter } from 'react-router'
 import gql from 'graphql-tag'
-import _ from 'lodash'
 import theme from '../styles/theme'
 import LoadingIndicator from '../components/LoadingIndicator'
 import wrapMutations from './hoc/wrap-mutations'
+import DropDownMenu from 'material-ui/DropDownMenu'
+import { MenuItem } from 'material-ui/Menu'
 
 class AdminCampaignList extends React.Component {
   state = {
-    isCreating: false
+    isCreating: false,
+    campaignsFilter: {
+      isArchived: false
+    }
   }
 
   handleClickNewButton = async () => {
@@ -42,51 +42,34 @@ class AdminCampaignList extends React.Component {
     )
   }
 
-  renderEmpty() {
-    return (
-      <Empty
-        title='No campaigns yet'
-        icon={<SpeakerNotesIcon />}
-      />
-    )
+  handleFilterChange = (event, index, value) => {
+    this.setState({
+      campaignsFilter: {
+        isArchived: value
+      }
+    })
   }
 
-  renderList(campaigns) {
-    const groupedCampaigns = _.groupBy(
-      campaigns, (campaign) => moment(campaign.dueBy).diff(moment()) < 0
-    )
-    if (this.state.isCreating) {
-      return <LoadingIndicator />
-    }
-
+  renderFilters() {
     return (
-      <div>
-        {
-          [false, true].map((isPast) => (
-            groupedCampaigns[isPast] ? (
-              <div>
-                <Subheader>{isPast ? 'Past' : 'Current'}</Subheader>
-                <CampaignList
-                  campaigns={groupedCampaigns[isPast]}
-                  organizationId={this.props.params.organizationId}
-                />
-              </div>
-            ) : (
-              ''
-            )
-
-          ))
-        }
-      </div>
+      <DropDownMenu value={this.state.campaignsFilter.isArchived} onChange={this.handleFilterChange}>
+        <MenuItem value={false} primaryText="Current" />
+        <MenuItem value={true} primaryText="Archived" />
+      </DropDownMenu>
     )
   }
-
   render() {
-    const { campaigns } = this.props.data.organization
-
     return (
       <div>
-        {campaigns.length > 0 ? this.renderList(campaigns) : this.renderEmpty()}
+        { this.renderFilters()}
+        { this.state.isCreating ? <LoadingIndicator /> : (
+          <CampaignList
+            campaignsFilter={this.state.campaignsFilter}
+            organizationId={this.props.params.organizationId}
+          />
+
+        ) }
+
         <FloatingActionButton
           style={theme.components.floatingButton}
           onTouchTap={this.handleClickNewButton}
@@ -105,31 +88,6 @@ AdminCampaignList.propTypes = {
   router: React.PropTypes.object
 }
 
-const mapQueriesToProps = ({ ownProps }) => ({
-  data: {
-    query: gql`query adminGetCampaigns($organizationId: String!) {
-      organization(id: $organizationId) {
-        id
-        campaigns {
-          id
-          title
-          isStarted
-          hasUnassignedContacts
-          description
-          dueBy
-          assignments {
-            id
-          }
-        }
-      }
-    }`,
-    variables: {
-      organizationId: ownProps.params.organizationId
-    },
-    forceFetch: true
-  }
-})
-
 const mapMutationsToProps = () => ({
   createCampaign: (campaign) => ({
     mutation: gql`
@@ -145,6 +103,5 @@ const mapMutationsToProps = () => ({
 
 export default loadData(wrapMutations(
   withRouter(AdminCampaignList)), {
-    mapQueriesToProps,
     mapMutationsToProps
   })

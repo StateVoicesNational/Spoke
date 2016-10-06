@@ -2,6 +2,10 @@ import { mapFieldsToModel } from './lib/utils'
 import { Campaign, JobRequest, r } from '../models'
 
 export const schema = `
+  input CampaignsFilter {
+    isArchived: Boolean
+  }
+
   type CampaignStats {
     sentMessagesCount: Int
     receivedMessagesCount: Int
@@ -21,6 +25,7 @@ export const schema = `
     description: String
     dueBy: Date
     isStarted: Boolean
+    isArchived: Boolean
     texters: [User]
     assignments: [Assignment]
     interactionSteps: [InteractionStep]
@@ -73,7 +78,8 @@ export const resolvers = {
       'title',
       'description',
       'dueBy',
-      'isStarted'
+      'isStarted',
+      'isArchived',
     ], Campaign),
     organization: async (campaign, _, { loaders }) => (
       loaders.organization.load(campaign.organization_id)

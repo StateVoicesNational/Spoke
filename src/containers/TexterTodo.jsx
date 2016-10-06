@@ -1,18 +1,29 @@
 import React from 'react'
 import AssignmentTexter from '../components/AssignmentTexter'
+import { withRouter } from 'react-router'
 import loadData from './hoc/load-data'
 import gql from 'graphql-tag'
 
 class TexterTodo extends React.Component {
+  componentWillMount() {
+    const { assignment } = this.props.data
+    if (!assignment || assignment.campaign.isArchived) {
+      this.props.router.push(
+        `/app/${this.props.params.organizationId}/todos`
+      )
+    }
+  }
   render() {
     const { assignment } = this.props.data
     const contacts = assignment.contacts
-
     return (<AssignmentTexter
       assignment={assignment}
       contacts={contacts}
+      onRefreshAssignmentContacts={this.refreshAssignmentContacts}
     />)
   }
+
+  refreshAssignmentContacts = () => this.props.data.refetch()
 }
 
 TexterTodo.propTypes = {
@@ -45,8 +56,12 @@ const mapQueriesToProps = ({ ownProps }) => ({
         }
         campaign {
           id
+          isArchived
           organization {
             id
+            textingHoursEnforced
+            textingHoursStart
+            textingHoursEnd
             threeClickEnabled
           }
           customFields
@@ -59,7 +74,9 @@ const mapQueriesToProps = ({ ownProps }) => ({
     }`,
     variables: {
       contactsFilter: {
-        messageStatus: ownProps.messageStatus
+        messageStatus: ownProps.messageStatus,
+        isOptedOut: false,
+        validTimezone: true
       },
       assignmentId: ownProps.params.assignmentId
     },
@@ -67,4 +84,4 @@ const mapQueriesToProps = ({ ownProps }) => ({
   }
 })
 
-export default loadData(TexterTodo, { mapQueriesToProps })
+export default loadData(withRouter(TexterTodo), { mapQueriesToProps })

@@ -16,7 +16,7 @@ const Message = thinky.createModel('message', type.object().schema({
   text: optionalString(),
   assignment_id: requiredString(),
   service: optionalString(),
-  send_status: requiredString().enum('QUEUED', 'SENT', 'DELIVERED', 'ERROR'),
+  send_status: requiredString().enum('QUEUED', 'SENT', 'DELIVERED', 'ERROR', 'PAUSED', 'NOT_ATTEMPTED'),
   service_message_ids: type
     .array()
     .schema(type.string())

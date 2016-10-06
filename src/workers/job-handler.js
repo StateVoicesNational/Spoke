@@ -20,9 +20,26 @@ async function uploadContacts(job) {
   contacts = JSON.parse(contacts)
   const numChunks = Math.ceil(contacts.length / chunkSize)
 
+  for (let index = 0; index < contacts.length; index++) {
+    const datum = contacts[index]
+    if (datum.zip) {
+      const zipDatum = await r.table('zip_code').get(datum.zip)
+      if (zipDatum) {
+        data.timezone_offset = `${zipDatum.timezone_offset}_${zipDatum.has_dst}`
+      }
+    }
+  }
+
   for (let index = 0; index < numChunks; index++) {
     await updateJob(job, Math.round((maxPercentage / numChunks) * index))
     const savePortion = contacts.slice(index * chunkSize, (index + 1) * chunkSize)
+      if (datum.zip) {
+        const zipDatum = await r.table('zip_code').get(datum.zip)
+        if (zipDatum) {
+          modelData.timezone_offset = `${zipDatum.timezone_offset}_${zipDatum.has_dst}`
+        }
+      }
+      contactsToSave.push(modelData)
     await CampaignContact.save(savePortion)
   }
 }

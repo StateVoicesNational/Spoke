@@ -47,11 +47,16 @@ export const resolvers = {
         .limit(1)(0)
         .pluck('roles')('roles')
     ),
-    todos: async (user, { organizationId }) => (
-      r.table('assignment')
+    todos: async (user, { organizationId }) => {
+      return r.table('assignment')
         .getAll(user.id, { index: 'user_id' })
         .eqJoin('campaign_id', r.table('campaign'))
-        .filter((row) => row('right')('organization_id').eq(organizationId))('left')
-    )
+        .filter((row) =>
+          r.and(
+            row('right')('organization_id').eq(organizationId),
+            row('right')('is_archived').eq(false)
+          )
+        )('left')
+    }
   }
 }

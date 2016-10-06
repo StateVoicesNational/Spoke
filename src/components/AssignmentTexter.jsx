@@ -6,7 +6,9 @@ import NavigateNextIcon from 'material-ui/svg-icons/image/navigate-next'
 import AssignmentTexterContact from '../containers/AssignmentTexterContact'
 import { StyleSheet, css } from 'aphrodite'
 import { withRouter } from 'react-router'
-
+import Check from 'material-ui/svg-icons/action/check-circle'
+import Empty from '../components/Empty'
+import FlatButton from 'material-ui/FlatButton'
 const styles = StyleSheet.create({
   container: {
     position: 'fixed',
@@ -134,7 +136,6 @@ class AssignmentTexter extends React.Component {
     const contact = this.currentContact()
     const navigationToolbarChildren = this.renderNavigationToolbarChildren()
     return (
-      <div className={css(styles.container)}>
         <AssignmentTexterContact
           key={contact.id}
           assignment={assignment}
@@ -143,22 +144,34 @@ class AssignmentTexter extends React.Component {
           campaign={campaign}
           navigationToolbarChildren={navigationToolbarChildren}
           onFinishContact={this.handleFinishContact}
+          onRefreshAssignmentContacts={this.props.onRefreshAssignmentContacts}
           onExitTexter={this.handleExitTexter}
         />
-      </div>
     )
   }
   renderEmpty() {
     return (
       <div>
-        No contacts!
+      <Empty
+        title="You've already messaged or replied to all your assigned contacts for now."
+        icon={<Check />}
+      >
+        <FlatButton
+          label="Go back to todos">
+          primary
+        </FlatButton>
+      </Empty>
       </div>
     )
   }
   render() {
     const { contacts } = this.props.assignment
 
-    return contacts.length === 0 ? this.renderEmpty() : this.renderTexter()
+     return (
+      <div className={css(styles.container)}>
+        { contacts.length === 0 ? this.renderEmpty() : this.renderTexter() }
+      </div>
+    )
   }
 }
 

@@ -13,7 +13,8 @@ import { formatMoney } from '../lib'
 import { Card, CardText, CardActions, CardHeader } from 'material-ui/Card'
 import { GraphQLRequestError } from '../network/errors'
 import { StyleSheet, css } from 'aphrodite'
-
+import Toggle from 'material-ui/Toggle'
+import moment from 'moment'
 const styles = StyleSheet.create({
   section: {
     margin: '10px 0'
@@ -21,6 +22,9 @@ const styles = StyleSheet.create({
   sectionLabel: {
     opacity: 0.8,
     marginRight: 5
+  },
+  textingHoursSpan: {
+    fontWeight: 'bold'
   },
   dialogActions: {
     marginTop: 20,
@@ -36,7 +40,8 @@ const inlineStyles = {
   }
 }
 
-class Billing extends React.Component {
+const formatTextingHours = (hour) =>  moment(hour, 'H').format('h a')
+class Settings extends React.Component {
 
   state = {
     addCreditDialogOpen: false,
@@ -59,6 +64,11 @@ class Billing extends React.Component {
     ))
   )
 
+  handleSubmitTextingHoursForm = async ({ textingHoursStart, textingHoursEnd }) => {
+    await this.props.mutations.updateTextingHours(textingHoursStart, textingHoursEnd)
+    this.handleCloseTextingHoursDialog()
+  }
+
   handleSubmitCardForm = async (formValues) => {
     const token = await this.createStripeToken(formValues)
     await this.props.mutations.updateCard(token)
@@ -77,6 +87,10 @@ class Billing extends React.Component {
   handleOpenAddCreditDialog = () => this.setState({ addCreditDialogOpen: true })
 
   handleCloseAddCreditDialog = () => this.setState({ addCreditDialogOpen: false })
+
+  handleOpenTextingHoursDialog = () => this.setState({ textingHoursDialogOpen: true })
+
+  handleCloseTextingHoursDialog = () => this.setState({ textingHoursDialogOpen: false })
 
   renderCardForm() {
     const cardFormSchema = yup.object({
@@ -118,7 +132,7 @@ class Billing extends React.Component {
                 label='Cancel'
                 style={inlineStyles.dialogButton}
                 onTouchTap={this.handleCloseCreditCardDialog}
-              />,
+              />
               <Form.Button
                 type='submit'
                 label='Change card'
@@ -146,15 +160,16 @@ class Billing extends React.Component {
       100000
     ]
 
-    let choices = {}
-    const count = amounts.length
-    for (let i = 0; i < count; i++) {
-      const amount = amounts[i]
+    const choices = amounts.map((amount) => {
       const formattedAmount = formatMoney(amount, creditCurrency)
       const { amountPerMessage } = organization.plan
       const messageCount = Math.round(amount / amountPerMessage)
-      choices[amount] = `${formattedAmount} - approx ${messageCount} messages`
-    }
+
+      return {
+        value: amount,
+        label: `${formattedAmount} - approx ${messageCount} messages`
+      }
+    })
 
     return (
         <Dialog
@@ -180,12 +195,74 @@ class Billing extends React.Component {
                 label='Cancel'
                 style={inlineStyles.dialogButton}
                 onTouchTap={this.handleCloseAddCreditDialog}
-              />,
+              />
               <Form.Button
                 type='submit'
                 style={inlineStyles.dialogButton}
                 component={GSSubmitButton}
                 label='Add credit'
+              />
+            </div>
+          </GSForm>
+        </Dialog>
+    )
+  }
+
+  renderTextingHoursForm() {
+    const { organization } = this.props.data
+    const { textingHoursStart, textingHoursEnd } = organization
+
+    const formSchema = yup.object({
+      textingHoursStart: yup.number().required(),
+      textingHoursEnd: yup.number().required()
+    })
+
+    const hours = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]
+    const hourChoices = hours.map((hour) => ({
+      value: hour,
+      label: formatTextingHours(hour)
+    }))
+
+    const defaults = {
+      textingHoursStart,
+      textingHoursEnd
+    }
+    return (
+        <Dialog
+          open={this.state.textingHoursDialogOpen}
+          onRequestClose={this.handleCloseTextingHoursDialog}
+        >
+          <GSForm
+            schema={formSchema}
+            onSubmit={this.handleSubmitTextingHoursForm}
+            defaultValue={{ textingHoursStart, textingHoursEnd }}
+          >
+            <Form.Field
+              label='Start time'
+              name='textingHoursStart'
+              type='select'
+              fullWidth
+              choices={hourChoices}
+            />
+            <Form.Field
+              label='End time'
+              name='textingHoursEnd'
+              type='select'
+              fullWidth
+              choices={hourChoices}
+            />
+
+            <div className={css(styles.dialogActions)}>
+              <FlatButton
+                label='Cancel'
+                style={inlineStyles.dialogButton}
+                onTouchTap={this.handleCloseTextingHoursDialog}
+              />
+              <Form.Button
+                type='submit'
+                style={inlineStyles.dialogButton}
+                component={GSSubmitButton}
+                label='Save'
               />
             </div>
           </GSForm>
@@ -200,7 +277,7 @@ class Billing extends React.Component {
       <div>
         <Card>
           <CardHeader
-            title='Account credit'
+            title='Billing'
           />
           <CardText>
             <div className={css(styles.section)}>
@@ -231,22 +308,88 @@ class Billing extends React.Component {
             />
           </CardActions>
         </Card>
+        <Card>
+          <CardHeader
+            title='Settings'
+          />
+          <CardText>
+            <div className={css(styles.section)}>
+              <span className={css(styles.sectionLabel)}>
+              </span>
+              <Toggle
+                toggled={organization.textingHoursEnforced}
+                label="Enforce texting hours?"
+                onToggle={async (event, isToggled) => await this.props.mutations.updateTextingHoursEnforcement(isToggled)}
+              />
+            </div>
+
+            { organization.textingHoursEnforced ? (
+              <div className={css(styles.section)}>
+                <span className={css(styles.sectionLabel)}>
+                  Texting hours:
+                </span>
+                <span className={css(styles.textingHoursSpan)}>{formatTextingHours(organization.textingHoursStart)} to {formatTextingHours(organization.textingHoursEnd)}</span> in contact's local time (or 12pm-6pm EST if timezone is unknown)
+              </div>
+            ) : ''}
+          </CardText>
+          <CardActions>
+            { organization.textingHoursEnforced ? (
+              <FlatButton
+                label='Change texting hours'
+                primary
+                onTouchTap={this.handleOpenTextingHoursDialog}
+              />
+            ) : ''}
+          </CardActions>
+        </Card>
         <div>
           {this.renderCreditForm()}
           {this.renderCardForm()}
+          {this.renderTextingHoursForm()}
         </div>
       </div>
     )
   }
 }
 
-Billing.propTypes = {
+Settings.propTypes = {
   data: React.PropTypes.object,
   params: React.PropTypes.object,
   mutations: React.PropTypes.object
 }
 
 const mapMutationsToProps = ({ ownProps }) => ({
+  updateTextingHours: (textingHoursStart, textingHoursEnd) => ({
+    mutation: gql`
+      mutation updateTextingHours($textingHoursStart: Int!, $textingHoursEnd: Int!, $organizationId: String!) {
+        updateTextingHours(textingHoursStart: $textingHoursStart, textingHoursEnd: $textingHoursEnd, organizationId: $organizationId) {
+          id
+          textingHoursEnforced
+          textingHoursStart
+          textingHoursEnd
+        }
+      }`,
+    variables: {
+      organizationId: ownProps.params.organizationId,
+      textingHoursStart,
+      textingHoursEnd
+    }
+  }),
+  updateTextingHoursEnforcement: (textingHoursEnforced) => ({
+    mutation: gql`
+      mutation updateTextingHoursEnforcement($textingHoursEnforced: Boolean!, $organizationId: String!) {
+        updateTextingHoursEnforcement(textingHoursEnforced: $textingHoursEnforced, organizationId: $organizationId) {
+          id
+          textingHoursEnforced
+          textingHoursStart
+          textingHoursEnd
+        }
+      }`,
+    variables: {
+      organizationId: ownProps.params.organizationId,
+      textingHoursEnforced
+    }
+  }),
   addAccountCredit: (balanceAmount) => ({
     mutation: gql`
       mutation addAccountCredit($balanceAmount: Int!, $organizationId: String!) {
@@ -294,6 +437,9 @@ const mapQueriesToProps = ({ ownProps }) => ({
           id
           amountPerMessage
         }
+        textingHoursEnforced
+        textingHoursStart
+        textingHoursEnd
         billingDetails {
           balanceAmount
           creditCurrency
@@ -315,5 +461,5 @@ const mapQueriesToProps = ({ ownProps }) => ({
 
 export default loadStripe(
   loadData(
-    wrapMutations(Billing),
+    wrapMutations(Settings),
     { mapQueriesToProps, mapMutationsToProps }))

@@ -40,9 +40,10 @@ class SuperAdminDashboard extends React.Component {
       paymentMethod: yup.string().required()
     })
 
-    const paymentSelectChoices = {
-      WIRE: 'Wire'
-    }
+    const paymentSelectChoices = [{
+      value: 'WIRE',
+      label: 'Wire'
+    }]
 
     return (
       <Dialog

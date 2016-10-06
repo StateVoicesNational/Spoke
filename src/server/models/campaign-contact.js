@@ -23,11 +23,21 @@ const CampaignContact = thinky.createModel('campaign_contact', type.object().sch
       'messaged',
       'closed'
     ])
-    .default('needsMessage')
+    .default('needsMessage'),
+  is_opted_out: type.boolean().default(false),
+  timezone_offset: type
+    .string()
+    .default('')
+    .required()
 }).allowExtra(false))
 
 CampaignContact.ensureIndex('assignment_id')
 CampaignContact.ensureIndex('campaign_id')
+CampaignContact.ensureIndex('cell')
 CampaignContact.ensureIndex('campaign_assignment', (doc) => [doc('campaign_id'), doc('assignment_id')])
+CampaignContact.ensureIndex('assignment_timezone_offset', (doc) => [
+  doc('assignment_id'),
+  doc('timezone_offset'),
+])
 
 export default CampaignContact

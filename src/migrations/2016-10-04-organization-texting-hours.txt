@@ -1,0 +1,7 @@
+ r.db('spoke').table('organization')
+   .update({
+     texting_hours_settings: {
+      is_enforced: false,
+      permitted_hours: [9, 21]
+     }
+   })
