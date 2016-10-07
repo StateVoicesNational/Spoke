@@ -475,6 +475,21 @@ const rootMutations = {
 
       return await Organization.get(organizationId)
     },
+    addManualAccountCredit: async(_, { organizationId, balanceAmount, paymentMethod }, { user, loaders }) => {
+      await superAdminRequired(user)
+      const organization = await loaders.organization.load(organizationId)
+      const newBalanceAmount = organization.balance_amount + balanceAmount
+
+      await new BalanceLineItem({
+        organization_id: organizationId,
+        currency: organization.currency,
+        amount: balanceAmount,
+        payment_method: paymentMethod,
+        source: 'SUPERADMIN',
+      }).save()
+
+      return await Organization.get(organizationId).update({ balance_amount: newBalanceAmount })
+    },
     addAccountCredit: async (_, { organizationId, balanceAmount }, { user, loaders }) => {
       await accessRequired(user, organizationId, 'OWNER')
       const organization = await loaders.organization.load(organizationId)
