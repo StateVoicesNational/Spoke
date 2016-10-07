@@ -24,12 +24,6 @@ const campaignInfoFragment = `
   isArchived
   contactsCount
   customFields
-  pendingJobs {
-    id
-    jobType
-    assigned
-    status
-  }
   texters {
     id
     firstName
@@ -271,7 +265,7 @@ class AdminCampaignEdit extends React.Component {
   }
 
   sectionSaveStatus(section) {
-    const pendingJobs = this.props.campaignData.campaign.pendingJobs
+    const pendingJobs = this.props.pendingJobsData.campaign.pendingJobs
     let sectionIsSaving = false
     let relatedJob = null
     let savePercent = 0
@@ -357,7 +351,7 @@ class AdminCampaignEdit extends React.Component {
   }
 
   renderStartButton() {
-    let isCompleted = this.props.campaignData.campaign.pendingJobs.length === 0
+    let isCompleted = this.props.pendingJobsData.campaign.pendingJobs.length === 0
     this.sections().forEach((section) => {
       if (section.blocksStarting && !this.checkSectionCompleted(section) || !this.checkSectionSaved(section)) {
         isCompleted = false
@@ -504,6 +498,23 @@ AdminCampaignEdit.propTypes = {
 }
 
 const mapQueriesToProps = ({ ownProps }) => ({
+  pendingJobsData: {
+    query: gql`query getCampaignJobs($campaignId: String!) {
+      campaign(id: $campaignId) {
+        id
+        pendingJobs {
+          id
+          jobType
+          assigned
+          status
+        }
+      }
+    }`,
+    variables: {
+      campaignId: ownProps.params.campaignId
+    },
+    pollInterval: 1000
+  },
   campaignData: {
     query: gql`query getCampaign($campaignId: String!) {
       campaign(id: $campaignId) {
@@ -513,7 +524,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
     variables: {
       campaignId: ownProps.params.campaignId
     },
-    pollInterval: 1000
+    pollInterval: 2000
   },
   organizationData: {
     query: gql`query getOrganizationData($organizationId: String!, $role: String!) {
@@ -533,7 +544,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
       organizationId: ownProps.params.organizationId,
       role: 'TEXTER'
     },
-    pollInterval: 1000
+    pollInterval: 2500
   }
 })
 
