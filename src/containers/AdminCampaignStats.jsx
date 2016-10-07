@@ -277,7 +277,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
         messageStatus: 'needsMessage'
       }
     },
-    pollInterval: 250
+    pollInterval: 1000
   }
 })
 
