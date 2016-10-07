@@ -1,10 +1,7 @@
 import { sendMessage } from '../server/api/lib/nexmo'
 import { r } from '../server/models'
 import { log } from '../lib'
-
-async function sleep(ms = 0) {
-  return new Promise(fn => setTimeout(fn, ms))
-}
+import { sleep } from './lib'
 
 async function sendMessages() {
   const messages = await r.table('message')
