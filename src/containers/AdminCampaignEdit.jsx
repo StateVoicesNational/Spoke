@@ -310,10 +310,9 @@ class AdminCampaignEdit extends React.Component {
         onSubmit={async () => {
           await this.handleSave()
           this.setState({
-            expandedSection: this.state.expandedSection >= this.sections().length ||
+            expandedSection: this.state.expandedSection >= this.sections().length - 1 ||
               !this.isNew() ?
-                null :
-                this.state.expandedSection + 1
+                null : this.state.expandedSection + 1
           })
         }}
         {...section.extraProps}
