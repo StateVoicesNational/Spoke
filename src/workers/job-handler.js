@@ -281,7 +281,7 @@ async function exportCampaign(job) {
 
   if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
     const s3bucket = new AWS.S3({ params: { Bucket: 'spoke-exports' } })
-    const campaignTitle = campaign.title.replace(/ /g, '_').replace(/\\/g, '_')
+    const campaignTitle = campaign.title.replace(/ /g, '_').replace(/\//g, '_')
     const key = `${campaignTitle}-${moment().format('YYYY-MM-DD-HH-mm-ss')}.csv`
     const messageKey = `${key}-messages.csv`
     let params = { Key: key, Body: campaignCsv }
