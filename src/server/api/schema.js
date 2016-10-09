@@ -764,28 +764,17 @@ const rootMutations = {
         .default(null)
 
       // always use already used cell in a thread with a user.
+      // If the message thread already has a cell,
+      let userCell = await r.table('user_cell')
+        .getAll(texter.id, { index: 'user_id' })
+        .filter({ is_primary: true })
+        .limit(1)(0)
+        .default(null)
+
+
       if (lastMessage) {
         userNumber = lastMessage.user_number
       } else {
-        // If the message thread already has a cell,
-        let userCell = await r.table('user_cell')
-          .getAll(texter.id, { index: 'user_id' })
-          .filter({ is_primary: true })
-          .limit(1)(0)
-          .default(null)
-
-        if (userCell) {
-          const messageCount = await r.table('message')
-            .getAll(userCell.cell, { index: 'user_number' })
-            .count()
-          if (messageCount >= PER_ASSIGNED_NUMBER_MESSAGE_COUNT) {
-            await r.table('user_cell')
-              .get(userCell.id)
-              .update({ is_primary: false })
-            userCell = null
-          }
-        }
-
         if (!userCell) {
           const newCell = await rentNewCell()
 
@@ -799,6 +788,16 @@ const rootMutations = {
           await userCell.save()
         }
         userNumber = userCell.cell
+      }
+
+      // Cycle cell when necessary
+      const messageCount = await r.table('message')
+        .getAll(userCell.cell, { index: 'user_number' })
+        .count()
+      if (messageCount >= PER_ASSIGNED_NUMBER_MESSAGE_COUNT) {
+        await r.table('user_cell')
+          .get(userCell.id)
+          .update({ is_primary: false })
       }
 
       const { contactNumber, text } = message
