@@ -168,6 +168,7 @@ async function assignTexters(job) {
 async function exportCampaign(job) {
   const jobId = job.id
   const id = job.payload.id
+  const campaign = await Campaign.get(id)
   const requester = job.payload.requester
   const user = await User.get(requester)
   const allQuestions = {}
@@ -233,6 +234,7 @@ async function exportCampaign(job) {
     finalCampaignMessages = finalCampaignMessages.concat(convertedMessages)
     let convertedContacts = contacts.map(async (contact) => {
       const contactRow = {
+        campaign: campaign.title,
         assignmentId: assignment.id,
         'texter[firstName]': assignment.texter.first_name,
         'texter[lastName]': assignment.texter.last_name,
@@ -277,7 +279,6 @@ async function exportCampaign(job) {
 
   if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
     const s3bucket = new AWS.S3({ params: { Bucket: 'spoke-exports' } })
-    const campaign = await Campaign.get(id)
     const campaignTitle = campaign.title.replace(/ /g, '_').substring(0, 20)
     const key = `${campaignTitle}-${moment().format('YYYY-MM-DD-HH-mm-ss')}.csv`
     const messageKey = `${key}-messages.csv`
