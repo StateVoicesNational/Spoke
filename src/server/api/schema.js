@@ -9,6 +9,7 @@ import { Campaign,
   Organization,
   QuestionResponse,
   UserOrganization,
+  UserCell,
   InteractionStep,
   JobRequest,
   r
@@ -393,11 +394,20 @@ const rootMutations = {
         })
       }
       const contact = await loaders.campaignContact.load(id)
-      const userNumber = await r.table('assignment')
-        .get(contact.assignment_id)
-        .merge((doc) => r.table('user').get(doc('user_id')))('assigned_cell')
+
+      const lastMessage = await r.table('message')
+        .getAll(contact.assignment_id, { index: 'assignment_id' })
+        .filter({ contact_number: contact.cell })
+        .limit(1)(0)
+
+      if (!lastMessage) {
+        throw new GraphQLError({
+          status: 400,
+          message: 'Cannot fake a reply to a contact that has no existing thread yet'
+        })
+      }
       await handleIncomingMessage({
-        to: userNumber,
+        to: lastMessage.user_number,
         msisdn: contact.cell,
         text: message,
         messageId: `mocked_${ Math.random().toString(36).replace(/[^a-zA-Z1-9]+/g, '')}`
@@ -742,10 +752,25 @@ const rootMutations = {
         })
       }
 
-      if (!texter.assigned_cell) {
+      let userCell = await r.table('user_cell')
+        .getAll(texter.id, { index: 'user_id' })
+        .filter({ is_primary: true })
+        .limit(1)(0)
+        .default(null)
+
+        console.log("user cell is", userCell)
+
+      if (!userCell) {
         const newCell = await rentNewCell()
-        texter.assigned_cell = getFormattedPhoneNumber(newCell)
-        await texter.save()
+
+        userCell = new UserCell({
+          cell: getFormattedPhoneNumber(newCell),
+          user_id: texter.id,
+          service: 'nexmo',
+          is_primary: true
+        })
+
+        await userCell.save()
       }
 
       const { contactNumber, text } = message
@@ -756,7 +781,7 @@ const rootMutations = {
       const messageInstance = new Message({
         text: replaceCurlyApostrophes(text),
         contact_number: contactNumber,
-        user_number: texter.assigned_cell,
+        user_number: userCell.cell,
         assignment_id: message.assignmentId,
         send_status: 'QUEUED',
         is_from_contact: false

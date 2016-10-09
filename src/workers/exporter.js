@@ -77,7 +77,6 @@ async function exportCampaign(jobId, { id, requester }) {
         'texter[lastName]': assignment.texter.last_name,
         'texter[email]': assignment.texter.email,
         'texter[cell]': assignment.texter.cell,
-        'texter[assignedCell]': assignment.texter.assigned_cell,
         'contact[firstName]': contact.first_name,
         'contact[lastName]': contact.last_name,
         'contact[cell]': contact.cell,
