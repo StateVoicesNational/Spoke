@@ -771,22 +771,22 @@ const rootMutations = {
         .limit(1)(0)
         .default(null)
 
+      if (!userCell) {
+        const newCell = await rentNewCell()
+
+        userCell = new UserCell({
+          cell: getFormattedPhoneNumber(newCell),
+          user_id: texter.id,
+          service: 'nexmo',
+          is_primary: true
+        })
+
+        await userCell.save()
+      }
 
       if (lastMessage) {
         userNumber = lastMessage.user_number
       } else {
-        if (!userCell) {
-          const newCell = await rentNewCell()
-
-          userCell = new UserCell({
-            cell: getFormattedPhoneNumber(newCell),
-            user_id: texter.id,
-            service: 'nexmo',
-            is_primary: true
-          })
-
-          await userCell.save()
-        }
         userNumber = userCell.cell
       }
 
@@ -794,6 +794,7 @@ const rootMutations = {
       const messageCount = await r.table('message')
         .getAll(userCell.cell, { index: 'user_number' })
         .count()
+
       if (messageCount >= PER_ASSIGNED_NUMBER_MESSAGE_COUNT) {
         await r.table('user_cell')
           .get(userCell.id)
