@@ -190,6 +190,8 @@ const rootSchema = `
   }
 `
 
+const PER_ASSIGNED_NUMBER_MESSAGE_COUNT = 300
+
 async function editCampaign(id, campaign, loaders) {
   const { title, description, dueBy, organizationId } = campaign
 
@@ -399,6 +401,7 @@ const rootMutations = {
         .getAll(contact.assignment_id, { index: 'assignment_id' })
         .filter({ contact_number: contact.cell })
         .limit(1)(0)
+        .default(null)
 
       if (!lastMessage) {
         throw new GraphQLError({
@@ -752,25 +755,50 @@ const rootMutations = {
         })
       }
 
-      let userCell = await r.table('user_cell')
-        .getAll(texter.id, { index: 'user_id' })
-        .filter({ is_primary: true })
+      let userNumber
+
+      const lastMessage = await r.table('message')
+        .getAll(contact.assignment_id, { index: 'assignment_id'})
+        .filter({ contact_number: contact.cell })
         .limit(1)(0)
         .default(null)
 
-        console.log("user cell is", userCell)
+      // always use already used cell in a thread with a user.
+      if (lastMessage) {
+        userNumber = lastMessage.user_number
+      } else {
+        // If the message thread already has a cell,
+        let userCell = await r.table('user_cell')
+          .getAll(texter.id, { index: 'user_id' })
+          .filter({ is_primary: true })
+          .limit(1)(0)
+          .default(null)
 
-      if (!userCell) {
-        const newCell = await rentNewCell()
+        if (userCell) {
+          const messageCount = await r.table('message')
+            .getAll(userCell.cell, { index: 'user_number' })
+            .count()
+          if (messageCount >= PER_ASSIGNED_NUMBER_MESSAGE_COUNT) {
+            await r.table('user_cell')
+              .get(userCell.id)
+              .update({ is_primary: false })
+            userCell = null
+          }
+        }
 
-        userCell = new UserCell({
-          cell: getFormattedPhoneNumber(newCell),
-          user_id: texter.id,
-          service: 'nexmo',
-          is_primary: true
-        })
+        if (!userCell) {
+          const newCell = await rentNewCell()
 
-        await userCell.save()
+          userCell = new UserCell({
+            cell: getFormattedPhoneNumber(newCell),
+            user_id: texter.id,
+            service: 'nexmo',
+            is_primary: true
+          })
+
+          await userCell.save()
+        }
+        userNumber = userCell.cell
       }
 
       const { contactNumber, text } = message
@@ -781,7 +809,7 @@ const rootMutations = {
       const messageInstance = new Message({
         text: replaceCurlyApostrophes(text),
         contact_number: contactNumber,
-        user_number: userCell.cell,
+        user_number: userNumber,
         assignment_id: message.assignmentId,
         send_status: 'QUEUED',
         is_from_contact: false
