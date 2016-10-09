@@ -220,6 +220,7 @@ async function exportCampaign(job) {
     let convertedMessages = messages.map((message) => {
       const messageRow = {
         assignmentId: message.assignment_id,
+        campaignId: campaign.id,
         userNumber: message.user_number,
         contactNumber: message.contact_number,
         isFromContact: message.is_from_contact,
@@ -234,6 +235,7 @@ async function exportCampaign(job) {
     finalCampaignMessages = finalCampaignMessages.concat(convertedMessages)
     let convertedContacts = contacts.map(async (contact) => {
       const contactRow = {
+        campaignId: campaign.id,
         campaign: campaign.title,
         assignmentId: assignment.id,
         'texter[firstName]': assignment.texter.first_name,
