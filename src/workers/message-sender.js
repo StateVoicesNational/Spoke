@@ -55,7 +55,7 @@ async function assignUserNumbers() {
       userNumber = userCell.cell
     }
 
-    console.log("assigning ", userNumber, " to message ", message.id)
+    log.info("Assigning ", userNumber, " to message ", message.id)
     await r.table('message')
       .get(message.id)
       .update({ user_number: userNumber })
