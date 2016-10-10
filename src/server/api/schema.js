@@ -756,7 +756,7 @@ const rootMutations = {
       const messageInstance = new Message({
         text: replaceCurlyApostrophes(text),
         contact_number: contactNumber,
-        user_number: texter.assigned_cell,
+        user_number: '',
         assignment_id: message.assignmentId,
         send_status: 'QUEUED',
         is_from_contact: false

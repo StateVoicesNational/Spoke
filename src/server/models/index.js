@@ -11,6 +11,7 @@ import Plan from './plan'
 import Organization from './organization'
 import CannedResponse from './canned-response'
 import QuestionResponse from './question-response'
+import UserCell from './user-cell'
 import UserOrganization from './user-organization'
 import User from './user'
 import Invite from './invite'
@@ -58,6 +59,7 @@ export {
   Plan,
   CannedResponse,
   QuestionResponse,
+  UserCell,
   UserOrganization,
   User,
   ZipCode
