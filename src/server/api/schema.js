@@ -9,7 +9,6 @@ import { Campaign,
   Organization,
   QuestionResponse,
   UserOrganization,
-  UserCell,
   InteractionStep,
   JobRequest,
   r
@@ -89,8 +88,6 @@ import {
   accessRequired,
   superAdminRequired
 } from './errors'
-import { rentNewCell, sendMessage, handleIncomingMessage } from './lib/nexmo'
-import { getFormattedPhoneNumber } from '../../lib/phone-format'
 import { isBetweenTextingHours } from '../../lib/timezones'
 import { Notifications, sendUserNotification } from '../notifications'
 const rootSchema = `
@@ -189,8 +186,6 @@ const rootSchema = `
     mutation: RootMutation
   }
 `
-
-const PER_ASSIGNED_NUMBER_MESSAGE_COUNT = 300
 
 async function editCampaign(id, campaign, loaders) {
   const { title, description, dueBy, organizationId } = campaign
@@ -696,7 +691,6 @@ const rootMutations = {
       return loaders.campaignContact.load(campaignContactId)
     },
     sendMessage: async(_, { message, campaignContactId }, { loaders }) => {
-      const texter = await loaders.user.load(message.userId)
       const contact = await loaders.campaignContact.load(campaignContactId)
       const campaign = await loaders.campaign.load(contact.campaign_id)
 
@@ -755,52 +749,6 @@ const rootMutations = {
         })
       }
 
-      let userNumber
-
-      const lastMessage = await r.table('message')
-        .getAll(contact.assignment_id, { index: 'assignment_id'})
-        .filter({ contact_number: contact.cell })
-        .limit(1)(0)
-        .default(null)
-
-      // always use already used cell in a thread with a user.
-      // If the message thread already has a cell,
-      let userCell = await r.table('user_cell')
-        .getAll(texter.id, { index: 'user_id' })
-        .filter({ is_primary: true })
-        .limit(1)(0)
-        .default(null)
-
-      if (!userCell) {
-        const newCell = await rentNewCell()
-
-        userCell = new UserCell({
-          cell: getFormattedPhoneNumber(newCell),
-          user_id: texter.id,
-          service: 'nexmo',
-          is_primary: true
-        })
-
-        await userCell.save()
-      }
-
-      if (lastMessage) {
-        userNumber = lastMessage.user_number
-      } else {
-        userNumber = userCell.cell
-      }
-
-      // Cycle cell when necessary
-      const messageCount = await r.table('message')
-        .getAll(userCell.cell, { index: 'user_number' })
-        .count()
-
-      if (messageCount >= PER_ASSIGNED_NUMBER_MESSAGE_COUNT) {
-        await r.table('user_cell')
-          .get(userCell.id)
-          .update({ is_primary: false })
-      }
-
       const { contactNumber, text } = message
 
       const replaceCurlyApostrophes = (rawText) => rawText
@@ -809,7 +757,7 @@ const rootMutations = {
       const messageInstance = new Message({
         text: replaceCurlyApostrophes(text),
         contact_number: contactNumber,
-        user_number: userNumber,
+        user_number: '',
         assignment_id: message.assignmentId,
         send_status: 'QUEUED',
         is_from_contact: false
