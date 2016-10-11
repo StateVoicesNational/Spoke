@@ -1,0 +1,11 @@
+ r.db('spoke')
+    .table('user')
+    .filter((doc) => doc('assigned_cell').ne(''))
+    .forEach((user) => r.db('spoke')
+        .table('user_cell')
+        .insert({
+            user_id: user('id'),
+            service: 'nexmo',
+            cell: user('assigned_cell'),
+            is_primary: false
+        }))
