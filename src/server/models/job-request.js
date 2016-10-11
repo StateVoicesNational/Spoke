@@ -7,7 +7,12 @@ const JobRequest = thinky.createModel('job_request', type.object().schema({
   payload: type
     .object()
     .required(),
+  queue_name: requiredString(),
   job_type: requiredString(),
+  locks_queue: type
+    .boolean()
+    .required()
+    .default(false),
   assigned: type
     .boolean()
     .required()
@@ -21,6 +26,6 @@ const JobRequest = thinky.createModel('job_request', type.object().schema({
   created_at: timestamp()
 }).allowExtra(false))
 
-JobRequest.ensureIndex('unassigned_job', (doc) => [doc('job_type'), doc('assigned')])
+JobRequest.ensureIndex('queue_name')
 
 export default JobRequest

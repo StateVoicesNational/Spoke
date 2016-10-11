@@ -3,6 +3,7 @@ import WarningIcon from 'material-ui/svg-icons/alert/warning'
 import DoneIcon from 'material-ui/svg-icons/action/done'
 import Avatar from 'material-ui/Avatar'
 import theme from '../styles/theme'
+import CircularProgress from 'material-ui/CircularProgress'
 import { Card, CardHeader, CardText } from 'material-ui/Card'
 import gql from 'graphql-tag'
 import loadData from './hoc/load-data'
@@ -13,7 +14,6 @@ import CampaignContactsForm from '../components/CampaignContactsForm'
 import CampaignTextersForm from '../components/CampaignTextersForm'
 import CampaignInteractionStepsForm from '../components/CampaignInteractionStepsForm'
 import CampaignCannedResponsesForm from '../components/CampaignCannedResponsesForm'
-import CircularProgress from 'material-ui/CircularProgress'
 
 const campaignInfoFragment = `
   id
@@ -61,6 +61,34 @@ class AdminCampaignEdit extends React.Component {
       campaignFormValues: props.campaignData.campaign,
       startingCampaign: false
     }
+  }
+
+  componentWillReceiveProps(newProps) {
+    let { expandedSection } = this.state
+    let expandedKeys = []
+    if (expandedSection !== null) {
+      expandedSection = this.sections()[expandedSection]
+      if (this.sectionSaveStatus(expandedSection).sectionIsSaving) {
+        expandedKeys = []
+      } else {
+        expandedKeys = expandedSection.keys
+      }
+    }
+
+    const campaignDataCopy = {
+      ...newProps.campaignData.campaign
+    }
+    expandedKeys.forEach((key) => {
+      delete campaignDataCopy[key]
+    })
+
+
+    this.setState({
+      campaignFormValues: {
+        ...this.state.campaignFormValues,
+        ...campaignDataCopy
+      }
+    })
   }
 
   onExpandChange = (index, newExpandedState) => {
@@ -129,6 +157,7 @@ class AdminCampaignEdit extends React.Component {
           return contactInput
         })
         newCampaign.contacts = contactData
+        newCampaign.texters = []
       } else {
         newCampaign.contacts = null
       }
@@ -235,23 +264,49 @@ class AdminCampaignEdit extends React.Component {
     }]
   }
 
-  renderCampaignFormSection(section) {
+  sectionSaveStatus(section) {
+    const pendingJobs = this.props.pendingJobsData.campaign.pendingJobs
+    let sectionIsSaving = false
+    let relatedJob = null
+    let savePercent = 0
+    if (pendingJobs.length > 0) {
+      if (section.title === 'Contacts') {
+        relatedJob = pendingJobs.filter((job) => job.jobType === 'upload_contacts')[0]
+      } else if (section.title === 'Texters') {
+        relatedJob = pendingJobs.filter((job) => job.jobType === 'assign_texters')[0]
+      } else if (section.title === 'Interactions') {
+        relatedJob = pendingJobs.filter((job) => job.jobType === 'create_interaction_steps')[0]
+      }
+    }
+
+    if (relatedJob) {
+      sectionIsSaving = true
+      savePercent = relatedJob.status
+    }
+    return {
+      sectionIsSaving,
+      savePercent
+    }
+  }
+
+  renderCampaignFormSection(section, forceDisable) {
+    let shouldDisable = forceDisable || (!this.isNew() && this.checkSectionSaved(section))
     const ContentComponent = section.content
     const formValues = this.getSectionState(section)
+
     return (
       <ContentComponent
         onChange={this.handleChange}
         formValues={formValues}
         saveLabel={this.isNew() ? 'Next' : 'Save'}
-        saveDisabled={!this.isNew() && this.checkSectionSaved(section)}
+        saveDisabled={shouldDisable}
         ensureComplete={this.props.campaignData.campaign.isStarted}
         onSubmit={async () => {
           await this.handleSave()
           this.setState({
-            expandedSection: this.state.expandedSection >= this.sections().length ||
+            expandedSection: this.state.expandedSection >= this.sections().length - 1 ||
               !this.isNew() ?
-                null :
-                this.state.expandedSection + 1
+                null : this.state.expandedSection + 1
           })
         }}
         {...section.extraProps}
@@ -296,12 +351,13 @@ class AdminCampaignEdit extends React.Component {
   }
 
   renderStartButton() {
-    let isCompleted = true
+    let isCompleted = this.props.pendingJobsData.campaign.pendingJobs.length === 0
     this.sections().forEach((section) => {
       if (section.blocksStarting && !this.checkSectionCompleted(section) || !this.checkSectionSaved(section)) {
         isCompleted = false
       }
     })
+
     return (
       <div
         style={{
@@ -364,7 +420,24 @@ class AdminCampaignEdit extends React.Component {
             display: 'inline-block',
             verticalAlign: 'middle'
           }
-          if (sectionIsExpanded) {
+
+          const { sectionIsSaving, savePercent } = this.sectionSaveStatus(section)
+          if (sectionIsSaving) {
+            avatar = (<CircularProgress
+              size={0.35}
+              style={{
+                verticalAlign: 'top',
+                marginTop: '-13px',
+                marginLeft: '-14px',
+                marginRight: 36,
+                display: 'inline-block',
+                height: 20,
+                width: 20
+              }}
+            />)
+            cardHeaderStyle.background = theme.colors.lightGray
+            cardHeaderStyle.width = `${savePercent}%`
+          } else if (sectionIsExpanded) {
             cardHeaderStyle.backgroundColor = theme.colors.lightGray
           } else if (sectionIsDone) {
             avatar = (<Avatar
@@ -395,15 +468,18 @@ class AdminCampaignEdit extends React.Component {
             >
               <CardHeader
                 title={section.title}
+                titleStyle={{
+                  width: '100%'
+                }}
                 style={cardHeaderStyle}
                 actAsExpander
-                showExpandableButton
+                showExpandableButton={!sectionIsSaving}
                 avatar={avatar}
               />
               <CardText
                 expandable
               >
-                 {this.renderCampaignFormSection(section)}
+                 {this.renderCampaignFormSection(section, sectionIsSaving)}
               </CardText>
             </Card>
           )
@@ -422,6 +498,23 @@ AdminCampaignEdit.propTypes = {
 }
 
 const mapQueriesToProps = ({ ownProps }) => ({
+  pendingJobsData: {
+    query: gql`query getCampaignJobs($campaignId: String!) {
+      campaign(id: $campaignId) {
+        id
+        pendingJobs {
+          id
+          jobType
+          assigned
+          status
+        }
+      }
+    }`,
+    variables: {
+      campaignId: ownProps.params.campaignId
+    },
+    pollInterval: 1000
+  },
   campaignData: {
     query: gql`query getCampaign($campaignId: String!) {
       campaign(id: $campaignId) {
@@ -431,7 +524,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
     variables: {
       campaignId: ownProps.params.campaignId
     },
-    forceFetch: true
+    pollInterval: 2000
   },
   organizationData: {
     query: gql`query getOrganizationData($organizationId: String!, $role: String!) {
@@ -451,7 +544,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
       organizationId: ownProps.params.organizationId,
       role: 'TEXTER'
     },
-    forceFetch: true
+    pollInterval: 2500
   }
 })
 

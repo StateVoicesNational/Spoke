@@ -11,7 +11,8 @@ export const schema = `
     receivedMessagesCount: Int
   }
 
-  type ExportJob {
+  type JobRequest {
+    id: String
     jobType: String
     assigned: Boolean
     status: Int
@@ -33,19 +34,19 @@ export const schema = `
     hasUnassignedContacts: Boolean
     customFields: [String]
     cannedResponses(userId: String): [CannedResponse]
-    currentExportJob: ExportJob
     stats: CampaignStats,
-    currentExportJob: ExportJob
+    pendingJobs: [JobRequest]
   }
 `
 
 export const resolvers = {
-  ExportJob: {
+  JobRequest: {
     ...mapFieldsToModel([
-      'jobType',
+      'id',
       'assigned',
-      'status'
-    ], JobRequest)
+      'status',
+      'jobType'
+    ], JobRequest),
   },
   CampaignStats: {
     sentMessagesCount: async (campaign) => (
@@ -83,14 +84,10 @@ export const resolvers = {
     organization: async (campaign, _, { loaders }) => (
       loaders.organization.load(campaign.organization_id)
     ),
-    currentExportJob: async (campaign) => r.table('job_request')
+    pendingJobs: async (campaign) => r.table('job_request')
       .filter({
-        payload: { id: campaign.id },
-        job_type: 'export'
-      })
-      .limit(1)(0)
-      .default(null)
-    ,
+        payload: { id: campaign.id }
+      }),
     texters: async (campaign) => (
       r.table('assignment')
         .getAll(campaign.id, { index: 'campaign_id' })

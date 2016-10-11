@@ -16,4 +16,3 @@ const UserCell = thinky.createModel('user_cell', type.object().schema({
 UserCell.ensureIndex('user_id')
 
 export default UserCell
-

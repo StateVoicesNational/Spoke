@@ -81,7 +81,6 @@ import {
   schema as balanceLineItemSchema,
   resolvers as balanceLineItemResolvers
 } from './balance-line-item'
-
 import {
   GraphQLError,
   authRequired,
@@ -89,6 +88,9 @@ import {
   superAdminRequired
 } from './errors'
 import { handleIncomingMessage } from './lib/nexmo'
+import { gzip } from '../../lib'
+import { getFormattedPhoneNumber } from '../../lib/phone-format'
+import { isBetweenTextingHours } from '../../lib/timezones'
 import { Notifications, sendUserNotification } from '../notifications'
 const rootSchema = `
   input CampaignContactInput {
@@ -160,7 +162,7 @@ const rootSchema = `
   type RootMutation {
     createCampaign(campaign:CampaignInput!): Campaign
     editCampaign(id:String!, campaign:CampaignInput!): Campaign
-    exportCampaign(id:String!): Campaign
+    exportCampaign(id:String!): JobRequest
     createCannedResponse(cannedResponse:CannedResponseInput!): CannedResponse
     createOrganization(name: String!, userId: String!, inviteId: String!): Organization
     joinOrganization(organizationId: String!): Organization
@@ -205,12 +207,7 @@ async function editCampaign(id, campaign, loaders) {
   })
 
   if (campaign.hasOwnProperty('contacts')) {
-    const contactsToSave = []
-
-    const count = campaign.contacts.length
-
-    for (let i = 0; i < count; i++) {
-      const datum = campaign.contacts[i]
+    const contactsToSave = campaign.contacts.map((datum) => {
       const modelData = {
         campaign_id: datum.campaignId,
         first_name: datum.firstName,
@@ -221,141 +218,44 @@ async function editCampaign(id, campaign, loaders) {
       }
       modelData.campaign_id = id
       modelData.custom_fields = JSON.parse(modelData.custom_fields)
+      return modelData
+    })
 
-      if (datum.zip) {
-        const zipDatum = await r.table('zip_code').get(datum.zip)
-        if (zipDatum) {
-          modelData.timezone_offset = `${zipDatum.timezone_offset}_${zipDatum.has_dst}`
-        }
+    const compressedString = await gzip(JSON.stringify(contactsToSave))
+
+    await JobRequest.save({
+      queue_name: `${id}:edit_campaign`,
+      job_type: 'upload_contacts',
+      locks_queue: true,
+      payload: {
+        id,
+        contacts: compressedString
       }
-      contactsToSave.push(modelData)
-
-    }
-    await r.table('campaign_contact')
-      .getAll(id, { index: 'campaign_id' })
-      .delete()
-    await CampaignContact.save(contactsToSave)
+    })
   }
 
   if (campaign.hasOwnProperty('texters')) {
-    const currentAssignments = await r.table('assignment')
-      .getAll(id, { index: 'campaign_id' })
-      .merge((row) => ({
-        needsMessageCount: r.table('campaign_contact')
-          .getAll(row('id'), { index: 'assignment_id' })
-          .filter({ message_status: 'needsMessage' })
-          .count()
-      }))
-
-    const unchangedTexters = {}
-    const changedAssignments = currentAssignments.map((assignment) => {
-      const texter = campaign.texters.filter((ele) => ele.id === assignment.user_id)[0]
-      if (!texter) {
-        return assignment
-      } else if (texter.needsMessageCount !== assignment.needsMessageCount) {
-        return assignment
+    await JobRequest.save({
+      queue_name: `${id}:edit_campaign`,
+      locks_queue: true,
+      job_type: 'assign_texters',
+      payload: {
+        id,
+        texters: campaign.texters
       }
-      unchangedTexters[assignment.user_id] = true
-      return null
     })
-    .filter((ele) => ele !== null)
-
-    // This atomically updates all the assignments to guard against people sending messages while all this is going on
-    const changedAssignmentIds = changedAssignments.map((ele) => ele.id)
-    await r.table('campaign_contact')
-      .getAll(...changedAssignmentIds, { index: 'assignment_id' })
-      .filter({ message_status: 'needsMessage' })
-      .update({
-        assignment_id: r.branch(r.row('message_status').eq('needsMessage'), '', r.row('assignment_id'))
-      })
-
-    let availableContacts = await r.table('campaign_contact')
-      .getAll([id, ''], { index: 'campaign_assignment' })
-      .count()
-
-    // Go through all the submitted texters and create assignments
-    const texterCount = campaign.texters.length
-    for (let index = 0; index < texterCount; index++) {
-      const texter = campaign.texters[index]
-      if (unchangedTexters[texter.id]) {
-        continue
-      }
-      const contactsToAssign = availableContacts > texter.needsMessageCount ? texter.needsMessageCount : availableContacts
-      availableContacts = availableContacts - contactsToAssign
-      const existingAssignment = changedAssignments.find((ele) => ele.user_id === texter.id)
-      let assignment = null
-      if (existingAssignment) {
-        assignment = existingAssignment
-      } else {
-        assignment = await new Assignment({
-          user_id: texter.id,
-          campaign_id: id
-        }).save()
-      }
-
-      await r.table('campaign_contact')
-        .getAll([id, ''], { index: 'campaign_assignment' })
-        .limit(contactsToAssign)
-        .update({ assignment_id: assignment.id })
-
-      if (existingAssignment) {
-        // We can't rely on an observer because nothing
-        // about the actual assignment object changes
-        await sendUserNotification({
-          type: Notifications.ASSIGNMENT_UPDATED,
-          assignment
-         })
-      }
-    }
-    let assignmentsToDelete = await r.table('assignment')
-      .getAll(id, { index: 'campaign_id' })
-      .merge((row) => ({
-        count: r.table('campaign_contact')
-          .getAll(row('id'), { index: 'assignment_id' })
-          .count()
-      }))
-      .filter((row) => row('count').eq(0))
-    await r.table('assignment')
-      .getAll(...assignmentsToDelete.map((ele) => ele.id))
-      .delete()
   }
 
   if (campaign.hasOwnProperty('interactionSteps')) {
-    const interactionSteps = []
-    for (let index = 0; index < campaign.interactionSteps.length; index++) {
-      // We use r.uuid(step.id) so that
-      // any new steps will get a proper
-      // UUID as well.
-      const step = campaign.interactionSteps[index]
-      const newId = await r.uuid(step.id)
-      const answerOptions = []
-      if (step.answerOptions) {
-        for (let innerIndex = 0; innerIndex < step.answerOptions.length; innerIndex++) {
-          const option = step.answerOptions[innerIndex]
-          let nextStepId = ''
-          if (option.nextInteractionStepId) {
-            nextStepId = await r.uuid(option.nextInteractionStepId)
-          }
-          answerOptions.push({
-            interaction_step_id: nextStepId,
-            value: option.value
-          })
-        }
+    await JobRequest.save({
+      queue_name: `${id}:edit_campaign`,
+      locks_queue: true,
+      job_type: 'create_interaction_steps',
+      payload: {
+        id,
+        interaction_steps: campaign.interactionSteps
       }
-      interactionSteps.push({
-        id: newId,
-        campaign_id: id,
-        question: step.question,
-        script: step.script,
-        answer_options: answerOptions
-      })
-    }
-
-    await r.table('interaction_step')
-      .getAll(id, { index: 'campaign_id' })
-      .delete()
-    await InteractionStep
-      .save(interactionSteps)
+    })
   }
 
   if (campaign.hasOwnProperty('cannedResponses')) {
@@ -408,7 +308,7 @@ const rootMutations = {
         to: lastMessage.user_number,
         msisdn: contact.cell,
         text: message,
-        messageId: `mocked_${ Math.random().toString(36).replace(/[^a-zA-Z1-9]+/g, '')}`
+        messageId: `mocked_${Math.random().toString(36).replace(/[^a-zA-Z1-9]+/g, '')}`
       })
       return loaders.campaignContact.load(id)
     },
@@ -416,14 +316,16 @@ const rootMutations = {
       const campaign = loaders.campaign.load(id)
       const organizationId = campaign.organization_id
       await accessRequired(user, organizationId, 'ADMIN')
-      await JobRequest.save({
+      const newJob = await JobRequest.save({
+        queue_name: `${id}:export`,
+        job_type: 'export',
+        locks_queue: false,
         payload: {
           id,
           requester: user.id
-        },
-        job_type: 'export'
+        }
       })
-      return 1
+      return newJob
     },
     editOrganizationRoles: async (_, { userId, organizationId, roles }, { user, loaders }) => {
       const userOrganization = await r.table('user_organization')
@@ -564,7 +466,6 @@ const rootMutations = {
         }
         throw e
       }
-
     },
     createCampaign: async (_, { campaign }, { user, loaders }) => {
       await accessRequired(user, campaign.organizationId, 'ADMIN')
