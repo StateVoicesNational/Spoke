@@ -4,7 +4,7 @@ import { r, UserCell } from '../server/models'
 import { log } from '../lib'
 import { sleep } from './lib'
 
-const PER_ASSIGNED_NUMBER_MESSAGE_COUNT = 350
+const PER_ASSIGNED_NUMBER_MESSAGE_COUNT = 5
 
 async function assignUserNumbers() {
   const unassignedMessages = await r.table('message')
