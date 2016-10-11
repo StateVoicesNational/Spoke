@@ -2,6 +2,7 @@ import Nexmo from 'nexmo'
 import { getFormattedPhoneNumber } from '../../../lib/phone-format'
 import { Message, PendingMessagePart, r } from '../../models'
 import { log } from '../../../lib'
+import faker from 'faker'
 
 let nexmo = null
 const MAX_SEND_ATTEMPTS = 5
@@ -63,7 +64,7 @@ export async function convertMessagePartsToMessage(messageParts) {
 
 export async function findNewCell() {
   if (!nexmo) {
-    return { numbers: [{ msisdn: '+18179994303' }] }
+    return { numbers: [{ msisdn: getFormattedPhoneNumber(faker.phone.phoneNumber()) }] }
   }
   return new Promise((resolve, reject) => {
     nexmo.number.search('US', { features: 'VOICE,SMS', size: 1 }, (err, response) => {
@@ -78,7 +79,7 @@ export async function findNewCell() {
 
 export async function rentNewCell() {
   if (!nexmo) {
-    return '+18179994303'
+    return getFormattedPhoneNumber(faker.phone.phoneNumber())
   }
   const newCell = await findNewCell()
 

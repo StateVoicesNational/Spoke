@@ -7,7 +7,7 @@ const Message = thinky.createModel('message', type.object().schema({
   // theoretically the phone number
   // userNumber should stay constant for a
   // texter, but this is not guaranteed
-  user_number: requiredString(),
+  user_number: optionalString(),
   contact_number: requiredString(),
   is_from_contact: type
     .boolean()

@@ -87,8 +87,8 @@ import {
   accessRequired,
   superAdminRequired
 } from './errors'
+import { handleIncomingMessage } from './lib/nexmo'
 import { gzip } from '../../lib'
-import { rentNewCell, handleIncomingMessage } from './lib/nexmo'
 import { getFormattedPhoneNumber } from '../../lib/phone-format'
 import { isBetweenTextingHours } from '../../lib/timezones'
 import { Notifications, sendUserNotification } from '../notifications'
@@ -291,11 +291,21 @@ const rootMutations = {
         })
       }
       const contact = await loaders.campaignContact.load(id)
-      const userNumber = await r.table('assignment')
-        .get(contact.assignment_id)
-        .merge((doc) => r.table('user').get(doc('user_id')))('assigned_cell')
+
+      const lastMessage = await r.table('message')
+        .getAll(contact.assignment_id, { index: 'assignment_id' })
+        .filter({ contact_number: contact.cell })
+        .limit(1)(0)
+        .default(null)
+
+      if (!lastMessage) {
+        throw new GraphQLError({
+          status: 400,
+          message: 'Cannot fake a reply to a contact that has no existing thread yet'
+        })
+      }
       await handleIncomingMessage({
-        to: userNumber,
+        to: lastMessage.user_number,
         msisdn: contact.cell,
         text: message,
         messageId: `mocked_${Math.random().toString(36).replace(/[^a-zA-Z1-9]+/g, '')}`
@@ -582,7 +592,6 @@ const rootMutations = {
       return loaders.campaignContact.load(campaignContactId)
     },
     sendMessage: async(_, { message, campaignContactId }, { loaders }) => {
-      const texter = await loaders.user.load(message.userId)
       const contact = await loaders.campaignContact.load(campaignContactId)
       const campaign = await loaders.campaign.load(contact.campaign_id)
 
@@ -639,12 +648,6 @@ const rootMutations = {
           status: 402,
           message: 'Not enough account credit to send message'
         })
-      }
-
-      if (!texter.assigned_cell) {
-        const newCell = await rentNewCell()
-        texter.assigned_cell = getFormattedPhoneNumber(newCell)
-        await texter.save()
       }
 
       const { contactNumber, text } = message
