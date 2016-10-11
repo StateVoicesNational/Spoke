@@ -88,7 +88,7 @@ import {
   accessRequired,
   superAdminRequired
 } from './errors'
-import { isBetweenTextingHours } from '../../lib/timezones'
+import { handleIncomingMessage } from './lib/nexmo'
 import { Notifications, sendUserNotification } from '../notifications'
 const rootSchema = `
   input CampaignContactInput {

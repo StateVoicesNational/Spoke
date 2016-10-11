@@ -3,7 +3,7 @@ import { getFormattedPhoneNumber } from '../lib/phone-format'
 import { r, UserCell } from '../server/models'
 import { log } from '../lib'
 
-const PER_ASSIGNED_NUMBER_MESSAGE_COUNT = 300
+const PER_ASSIGNED_NUMBER_MESSAGE_COUNT = 350
 
 async function sleep(ms = 0) {
   return new Promise(fn => setTimeout(fn, ms))
