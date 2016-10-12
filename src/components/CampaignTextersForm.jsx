@@ -120,7 +120,6 @@ export default class CampaignTextersForm extends React.Component {
     const { orgTexters } = this.props
     const { texters } = this.formValues()
 
-    const assignAll = texters.length === orgTexters.length
     const dataSource = orgTexters
       .filter((orgTexter) =>
         !texters.find((texter) => texter.id === orgTexter.id))
@@ -131,7 +130,6 @@ export default class CampaignTextersForm extends React.Component {
     )
 
     const filter = (searchText, key) => ((key === 'allTexters') ? true : AutoComplete.caseInsensitiveFilter(searchText, key))
-    const valueSelected = assignAll ? 'assignAll' : 'assignIndividual'
 
     const autocomplete = (
       <AutoComplete
@@ -166,48 +164,9 @@ export default class CampaignTextersForm extends React.Component {
       />
     )
 
-    return orgTexters.length === 0 ? '' : (
+    return (
       <div>
-        <RadioButtonGroup
-          style={inlineStyles.radioButtonGroup}
-          name='assignment'
-          valueSelected={valueSelected}
-          onChange={(event, value) => {
-            let newTexters = []
-            if (value === 'assignAll') {
-              const unassignedTexters = this.props.orgTexters.filter((texter) =>
-                typeof this.formValues().texters.find((ele) => texter.id === ele.id) === 'undefined'
-              )
-              newTexters = this.formValues()
-                .texters
-                .concat(unassignedTexters
-                  .map((orgTexter) => ({
-                    id: orgTexter.id,
-                    firstName: orgTexter.firstName,
-                    assignment: {
-                      contactsCount: 0,
-                      needsMessageCount: 0
-                    }
-                  }))
-                )
-            } else {
-              newTexters = this.formValues().texters.filter((texter) =>
-                texter.assignment.contactsCount !== texter.assignment.needsMessageCount
-              )
-            }
-            this.onChange({ texters: newTexters })
-          }}
-        >
-          <RadioButton
-            value='assignAll'
-            label='Everyone available'
-          />
-          <RadioButton
-            value='assignIndividual'
-            label='Choose individual people to assign'
-          />
-        </RadioButtonGroup>
-        {!assignAll ? autocomplete : ''}
+        {orgTexters.length > 0 ? autocomplete : ''}
       </div>
     )
   }
