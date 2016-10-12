@@ -1,10 +1,12 @@
 import { sendMessage, rentNewCell } from '../server/api/lib/nexmo'
+import { twilioSendMessage, twilioRentNewCell } from '../server/api/lib/twilio'
 import { getFormattedPhoneNumber } from '../lib/phone-format'
 import { r, UserCell } from '../server/models'
 import { log } from '../lib'
 import { sleep } from './lib'
 
 const PER_ASSIGNED_NUMBER_MESSAGE_COUNT = 300
+const SERVICES = ['nexmo', 'twilio']
 
 async function assignUserNumbers() {
   const unassignedMessages = await r.table('message')
@@ -22,6 +24,15 @@ async function assignUserNumbers() {
       .limit(1)(0)
       .default(null)
 
+    // Assign service
+    let service = null
+    if (lastMessage) {
+      service = lastMessage.service
+    } else {
+      // service = SERVICES[Math.floor(Math.random() * SERVICES.length)]
+      service = 'twilio'
+    }
+
     const assignment = await r.table('assignment')
       .get(message.assignment_id)
 
@@ -29,18 +40,18 @@ async function assignUserNumbers() {
 
     let userCell = await r.table('user_cell')
       .getAll(userId, { index: 'user_id' })
-      .filter({ is_primary: true })
+      .filter({ is_primary: true, service })
       .limit(1)(0)
       .default(null)
 
     if (!userCell) {
-      const newCell = await rentNewCell()
+      const newCell = service === 'nexmo' ? await rentNewCell() : await twilioRentNewCell()
 
       userCell = new UserCell({
         cell: getFormattedPhoneNumber(newCell),
         user_id: userId,
-        service: 'nexmo',
-        is_primary: true
+        is_primary: true,
+        service
       })
 
       await userCell.save()
@@ -55,11 +66,15 @@ async function assignUserNumbers() {
     log.info("Assigning ", userNumber, " to message ", message.id)
     await r.table('message')
       .get(message.id)
-      .update({ user_number: userNumber })
+      .update({
+        user_number: userNumber,
+        service
+      })
 
     // Cycle cell when necessary
     const messageCount = await r.table('message')
       .getAll(userCell.cell, { index: 'user_number' })
+      .filter({ service })
       .count()
 
     if (messageCount >= PER_ASSIGNED_NUMBER_MESSAGE_COUNT) {
@@ -69,16 +84,18 @@ async function assignUserNumbers() {
     }
   }
 }
-async function sendMessages() {
+
+async function sendMessages(service, sendMessageFunction) {
   const messages = await r.table('message')
     .getAll('QUEUED', { index: 'send_status' })
     .filter((doc) => doc('user_number').ne(''))
+    .filter({ service })
     .group('user_number')
     .orderBy('created_at')
     .limit(1)(0)
   for (let index = 0; index < messages.length; index++) {
-    log.info('sending message', messages[index].reduction)
-    await sendMessage(messages[index].reduction)
+    const message = messages[index].reduction
+    await sendMessageFunction(message)
   }
 }
 
@@ -87,8 +104,10 @@ async function sendMessages() {
     try {
       await sleep(1100)
       await assignUserNumbers()
-      await sendMessages()
+      await sendMessages('twilio', twilioSendMessage)
+      await sendMessages('nexmo', sendMessage)
     } catch (ex) {
+      console.log(ex)
       log.error(ex)
     }
   }
