@@ -12,6 +12,7 @@ import setupAuth0Passport from './setup-auth0-passport'
 import wrap from './wrap'
 import { log } from '../lib'
 import { handleIncomingMessage, handleDeliveryReport } from './api/lib/nexmo'
+import { handleTwilioIncomingMessage, handleTwilioDeliveryReport } from './api/lib/twilio'
 import { seedZipCodes } from './seeds/seed-zip-codes'
 import { setupUserNotificationObservers } from './notifications'
 import { Tracer } from 'apollo-tracer'
@@ -60,16 +61,36 @@ app.post('/nexmo', wrap(async (req, res) => {
   }
 }))
 
-app.post('/nexmo-message-report', wrap(async (req, res) => {
+app.post('/twilio', wrap(async (req, res) => {
   try {
-    const body = req.body
-    await handleDeliveryReport(body)
-    res.send('done')
+    const messageId = await handleTwilioIncomingMessage(req.body)
+    res.send(messageId)
   } catch (ex) {
     log.error(ex)
     res.send('done')
   }
 }))
+
+app.post('/nexmo-message-report', wrap(async (req, res) => {
+  try {
+    const body = req.body
+    await handleDeliveryReport(body)
+  } catch (ex) {
+    log.error(ex)
+  }
+  res.send('done')
+}))
+
+app.post('/twilio-message-report', wrap(async (req, res) => {
+  try {
+    const body = req.body
+    await handleTwilioDeliveryReport(body)
+  } catch (ex) {
+    log.error(ex)
+  }
+  res.end()
+}))
+
 
 app.get('/logout-callback', (req, res) => {
   req.logOut()

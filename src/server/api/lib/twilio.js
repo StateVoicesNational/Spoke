@@ -82,7 +82,8 @@ export async function twilioRentNewCell() {
   if (newCell && newCell.availablePhoneNumbers && newCell.availablePhoneNumbers[0] && newCell.availablePhoneNumbers[0].phone_number) {
     return new Promise((resolve, reject) => {
       twilio.incomingPhoneNumbers.create({
-        phoneNumber: newCell.availablePhoneNumbers[0].phone_number
+        phoneNumber: newCell.availablePhoneNumbers[0].phone_number,
+        smsApplicationSid: process.env.TWILIO_APPLICATION_SID
       }, (err, purchasedNumber) => {
         if (err) {
           reject(err)
@@ -111,13 +112,10 @@ export async function twilioSendMessage(message) {
     if (message.service !== 'twilio') {
       reject(new Error('Message not marked as a twilio message'))
     }
-
-    console.log("status callback url", process.env.TWILIO_STATUS_CALLBACK_URL)
     twilio.messages.create({
       to: message.contact_number,
       from: message.user_number,
       body: message.text,
-      statusCallback: process.env.TWILIO_STATUS_CALLBACK_URL
     }, (err, response) => {
       if (err) {
         console.log("ERROR", err)
@@ -155,51 +153,59 @@ export async function twilioSendMessage(message) {
   })
 }
 
-export async function handleDeliveryReport(report) {
-  console.log("report")
-  if (report.hasOwnProperty('client-ref')) {
-    const message = await Message.get(report['client-ref'])
-    message.service_messages.push(report)
-    if (report.status === 'delivered' || report.status === 'accepted') {
-      message.send_status = 'DELIVERED'
-    } else if (report.status === 'expired' ||
-      report.status === 'failed' ||
-      report.status === 'rejected') {
-      message.send_status = 'ERROR'
+export async function handleTwilioDeliveryReport(report) {
+  const messageSid = report.MessageSid
+  if (messageSid) {
+    const messageStatus = report.MessageStatus
+    const message = r.table('message')
+      .getAll(messageSid, { index: 'service_message_ids' })
+      .limit(1)(0)
+      .default(null)
+
+    if (message) {
+      message.service_messages.push(report)
+      if (messageStatus === 'delivered') {
+        message.send_status = 'DELIVERED'
+      } else if (messageStatus === 'failed' ||
+        messageStatus === 'undelivered') {
+        message.send_status = 'ERROR'
+      }
+      Message.save(message, { conflict: 'update' })
     }
-    Message.save(message, { conflict: 'update' })
   }
 }
 
-export async function handleIncomingMessage(message) {
-  if (!message.hasOwnProperty('to') ||
-    !message.hasOwnProperty('msisdn') ||
-    !message.hasOwnProperty('text') ||
-    !message.hasOwnProperty('messageId')) {
-    log.error(`This is not an incoming message: ${JSON.stringify(message)}`)
-  }
+export async function handleTwilioIncomingMessage(message) {
+  console.log("Got message", message)
+  return
+  // if (!message.hasOwnProperty('to') ||
+  //   !message.hasOwnProperty('msisdn') ||
+  //   !message.hasOwnProperty('text') ||
+  //   !message.hasOwnProperty('messageId')) {
+  //   log.error(`This is not an incoming message: ${JSON.stringify(message)}`)
+  // }
 
-  const { to, msisdn, concat } = message
-  const isConcat = concat === 'true'
-  const contactNumber = getFormattedPhoneNumber(msisdn)
-  const userNumber = getFormattedPhoneNumber(to)
+  // const { to, msisdn, concat } = message
+  // const isConcat = concat === 'true'
+  // const contactNumber = getFormattedPhoneNumber(msisdn)
+  // const userNumber = getFormattedPhoneNumber(to)
 
-  let parentId = ''
-  if (isConcat) {
-    log.info(`Incoming message part (${message['concat-part']} of ${message['concat-total']} for ref ${message['concat-ref']}) from ${contactNumber} to ${userNumber}`)
-    parentId = message['concat-ref']
-  } else {
-    log.info(`Incoming message part from ${contactNumber} to ${userNumber}`)
-  }
+  // let parentId = ''
+  // if (isConcat) {
+  //   log.info(`Incoming message part (${message['concat-part']} of ${message['concat-total']} for ref ${message['concat-ref']}) from ${contactNumber} to ${userNumber}`)
+  //   parentId = message['concat-ref']
+  // } else {
+  //   log.info(`Incoming message part from ${contactNumber} to ${userNumber}`)
+  // }
 
-  const pendingMessagePart = new PendingMessagePart({
-    service: 'nexmo',
-    parent_id: parentId,
-    service_message: message,
-    user_number: userNumber,
-    contact_number: contactNumber
-  })
+  // const pendingMessagePart = new PendingMessagePart({
+  //   service: 'nexmo',
+  //   parent_id: parentId,
+  //   service_message: message,
+  //   user_number: userNumber,
+  //   contact_number: contactNumber
+  // })
 
-  const part = await pendingMessagePart.save()
-  return part.id
+  // const part = await pendingMessagePart.save()
+  // return part.id
 }
