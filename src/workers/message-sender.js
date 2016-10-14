@@ -1,12 +1,14 @@
-import { nexmoSendMessage, rentNewCell } from '../server/api/lib/nexmo'
-import { twilioSendMessage, twilioRentNewCell } from '../server/api/lib/twilio'
+import nexmo from '../server/api/lib/nexmo'
+import twilio from '../server/api/lib/twilio'
 import { getFormattedPhoneNumber } from '../lib/phone-format'
 import { r, UserCell } from '../server/models'
 import { log } from '../lib'
 import { sleep } from './lib'
 
-const PER_ASSIGNED_NUMBER_MESSAGE_COUNT = 300
+const PER_ASSIGNED_NUMBER_MESSAGE_COUNT = 250
 const ACTIVE_SMS_SERVICE = 'twilio'
+
+const serviceMap = { nexmo, twilio }
 
 async function assignUserNumbers() {
   const unassignedMessages = await r.table('message')
@@ -47,7 +49,7 @@ async function assignUserNumbers() {
       .default(null)
 
     if (!userCell) {
-      const newCell = service === 'nexmo' ? await rentNewCell() : await twilioRentNewCell()
+      const newCell = await serviceMap[service].rentNewCell()
 
       userCell = new UserCell({
         cell: getFormattedPhoneNumber(newCell),
@@ -65,7 +67,7 @@ async function assignUserNumbers() {
       userNumber = userCell.cell
     }
 
-    log.info("Assigning ", userNumber, " to message ", message.id)
+    log.info(`Assigning ${userNumber} to message ${message.id}`)
     await r.table('message')
       .get(message.id)
       .update({
@@ -87,17 +89,17 @@ async function assignUserNumbers() {
   }
 }
 
-async function sendMessages(service, sendMessageFunction) {
+async function sendMessages() {
   const messages = await r.table('message')
     .getAll('QUEUED', { index: 'send_status' })
     .filter((doc) => doc('user_number').ne(''))
-    .filter({ service })
     .group('user_number')
     .orderBy('created_at')
     .limit(1)(0)
   for (let index = 0; index < messages.length; index++) {
     const message = messages[index].reduction
-    await sendMessageFunction(message)
+    const service = serviceMap[message.service]
+    await service.sendMessage(message)
   }
 }
 
@@ -106,10 +108,8 @@ async function sendMessages(service, sendMessageFunction) {
     try {
       await sleep(1100)
       await assignUserNumbers()
-      await sendMessages('twilio', twilioSendMessage)
-      await sendMessages('nexmo', nexmoSendMessage)
+      await sendMessages()
     } catch (ex) {
-      console.log(ex)
       log.error(ex)
     }
   }

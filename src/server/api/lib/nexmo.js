@@ -1,6 +1,6 @@
 import Nexmo from 'nexmo'
 import { getFormattedPhoneNumber } from '../../../lib/phone-format'
-import { Message, PendingMessagePart, r } from '../../models'
+import { Message, PendingMessagePart } from '../../models'
 import { getLastMessage } from './message-sending'
 import { log } from '../../../lib'
 import faker from 'faker'
@@ -14,7 +14,7 @@ if (process.env.NEXMO_API_KEY && process.env.NEXMO_API_SECRET) {
   })
 }
 
-export async function convertNexmoMessagePartsToMessage(messageParts) {
+async function convertMessagePartsToMessage(messageParts) {
   const firstPart = messageParts[0]
   const userNumber = firstPart.user_number
   const contactNumber = firstPart.contact_number
@@ -42,7 +42,7 @@ export async function convertNexmoMessagePartsToMessage(messageParts) {
   })
 }
 
-export async function findNewCell() {
+async function findNewCell() {
   if (!nexmo) {
     return { numbers: [{ msisdn: getFormattedPhoneNumber(faker.phone.phoneNumber()) }] }
   }
@@ -57,7 +57,7 @@ export async function findNewCell() {
   })
 }
 
-export async function rentNewCell() {
+async function rentNewCell() {
   if (!nexmo) {
     return getFormattedPhoneNumber(faker.phone.phoneNumber())
   }
@@ -84,7 +84,7 @@ export async function rentNewCell() {
   throw new Error('Did not find any cell')
 }
 
-export async function nexmoSendMessage(message) {
+async function sendMessage(message) {
   if (!nexmo) {
     await Message.get(message.id)
       .update({ send_status: 'SENT' })
@@ -139,7 +139,7 @@ export async function nexmoSendMessage(message) {
   })
 }
 
-export async function handleDeliveryReport(report) {
+async function handleDeliveryReport(report) {
   if (report.hasOwnProperty('client-ref')) {
     const message = await Message.get(report['client-ref'])
     message.service_messages.push(report)
@@ -154,7 +154,7 @@ export async function handleDeliveryReport(report) {
   }
 }
 
-export async function handleIncomingMessage(message) {
+async function handleIncomingMessage(message) {
   if (!message.hasOwnProperty('to') ||
     !message.hasOwnProperty('msisdn') ||
     !message.hasOwnProperty('text') ||
@@ -185,4 +185,13 @@ export async function handleIncomingMessage(message) {
 
   const part = await pendingMessagePart.save()
   return part.id
+}
+
+export default {
+  convertMessagePartsToMessage,
+  findNewCell,
+  rentNewCell,
+  sendMessage,
+  handleDeliveryReport,
+  handleIncomingMessage
 }

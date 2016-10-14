@@ -10,8 +10,8 @@ if (process.env.TWILIO_API_KEY && process.env.TWILIO_AUTH_TOKEN) {
   twilio = Twilio(process.env.TWILIO_API_KEY, process.env.TWILIO_AUTH_TOKEN)
 }
 
-export async function convertTwilioMessagePartsToMessage(messageParts) {
-    const firstPart = messageParts[0]
+async function convertMessagePartsToMessage(messageParts) {
+  const firstPart = messageParts[0]
   const userNumber = firstPart.user_number
   const contactNumber = firstPart.contact_number
   const serviceMessages = messageParts.map((part) => part.service_message)
@@ -38,7 +38,7 @@ export async function convertTwilioMessagePartsToMessage(messageParts) {
   })
 }
 
-export async function findNewCell() {
+async function findNewCell() {
 
   if (!twilio) {
     return { availablePhoneNumbers: [{ phone_number: '+15005550006' }] }
@@ -54,11 +54,13 @@ export async function findNewCell() {
   })
 }
 
-export async function twilioRentNewCell() {
+async function rentNewCell() {
   if (!twilio) {
+    console.log('HERERE??')
     return getFormattedPhoneNumber(faker.phone.phoneNumber())
   }
   const newCell = await findNewCell()
+  console.log('new cell is', newCell)
 
   if (newCell && newCell.availablePhoneNumbers && newCell.availablePhoneNumbers[0] && newCell.availablePhoneNumbers[0].phone_number) {
     return new Promise((resolve, reject) => {
@@ -81,8 +83,8 @@ export async function twilioRentNewCell() {
 
 
 
-export async function twilioSendMessage(message) {
-    if (!twilio) {
+async function sendMessage(message) {
+  if (!twilio) {
     await Message.get(message.id)
       .update({ send_status: 'SENT' })
     return 'test_message_uuid'
@@ -132,7 +134,7 @@ export async function twilioSendMessage(message) {
   })
 }
 
-export async function handleTwilioDeliveryReport(report) {
+async function handleDeliveryReport(report) {
   const messageSid = report.MessageSid
   if (messageSid) {
     const messageStatus = report.MessageStatus
@@ -154,7 +156,7 @@ export async function handleTwilioDeliveryReport(report) {
   }
 }
 
-export async function handleTwilioIncomingMessage(message) {
+async function handleIncomingMessage(message) {
   if (!message.hasOwnProperty('From') ||
     !message.hasOwnProperty('To') ||
     !message.hasOwnProperty('Body') ||
@@ -177,4 +179,13 @@ export async function handleTwilioIncomingMessage(message) {
 
   const part = await pendingMessagePart.save()
   return part.id
+}
+
+export default {
+  convertMessagePartsToMessage,
+  findNewCell,
+  rentNewCell,
+  sendMessage,
+  handleDeliveryReport,
+  handleIncomingMessage
 }
