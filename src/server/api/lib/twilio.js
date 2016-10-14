@@ -3,13 +3,11 @@ import { getFormattedPhoneNumber } from '../../../lib/phone-format'
 import { Message, PendingMessagePart, r } from '../../models'
 import { log } from '../../../lib'
 import faker from 'faker'
-import { getLastMessage } from './message-sending'
 
 let twilio = null
 if (process.env.TWILIO_API_KEY && process.env.TWILIO_AUTH_TOKEN) {
   twilio = Twilio(process.env.TWILIO_API_KEY, process.env.TWILIO_AUTH_TOKEN)
 }
-
 
 export async function convertTwilioMessagePartsToMessage(messageParts) {
     const firstPart = messageParts[0]
@@ -20,7 +18,11 @@ export async function convertTwilioMessagePartsToMessage(messageParts) {
     .map((serviceMessage) => serviceMessage.Body)
     .join('')
 
-  const lastMessage = await getLastMessage({ contactNumber, userNumber })
+  const lastMessage = await getLastMessage({
+    contactNumber,
+    userNumber,
+    service: 'twilio'
+  })
 
   return new Message({
     contact_number: contactNumber,

@@ -23,7 +23,11 @@ export async function convertNexmoMessagePartsToMessage(messageParts) {
     .map((serviceMessage) => serviceMessage.text)
     .join('')
 
-  const lastMessage = await getLastMessage({ contactNumber, userNumber })
+  const lastMessage = await getLastMessage({
+    contactNumber,
+    userNumber,
+    service: 'nexmo'
+  })
 
   return new Message({
     contact_number: contactNumber,
