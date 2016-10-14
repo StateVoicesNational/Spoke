@@ -88,6 +88,7 @@ import {
   superAdminRequired
 } from './errors'
 import { handleIncomingMessage } from './lib/nexmo'
+import { handleTwilioIncomingMessage } from './lib/twilio'
 import { gzip } from '../../lib'
 import { getFormattedPhoneNumber } from '../../lib/phone-format'
 import { isBetweenTextingHours } from '../../lib/timezones'
@@ -304,12 +305,25 @@ const rootMutations = {
           message: 'Cannot fake a reply to a contact that has no existing thread yet'
         })
       }
-      await handleIncomingMessage({
-        to: lastMessage.user_number,
-        msisdn: contact.cell,
-        text: message,
-        messageId: `mocked_${Math.random().toString(36).replace(/[^a-zA-Z1-9]+/g, '')}`
-      })
+
+      const userNumber = lastMessage.user_number
+      const contactNumber = contact.cell
+      const mockedId = `mocked_${Math.random().toString(36).replace(/[^a-zA-Z1-9]+/g, '')}`
+      if (lastMessage.service === 'nexmo') {
+        await handleIncomingMessage({
+          to: userNumber,
+          msisdn: contactNumber,
+          text: message,
+          messageId: mockedId
+        })
+      } else {
+        await handleTwilioIncomingMessage({
+          From: contactNumber,
+          To: userNumber,
+          Body: message,
+          MessageSid: `mocked_${Math.random().toString(36).replace(/[^a-zA-Z1-9]+/g, '')}`
+        })
+      }
       return loaders.campaignContact.load(id)
     },
     exportCampaign: async (_, { id }, { user, loaders }) => {

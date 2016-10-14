@@ -8,7 +8,7 @@ const UserCell = thinky.createModel('user_cell', type.object().schema({
   user_id: requiredString(),
   service: type.string()
     .required()
-    .enum('nexmo'),
+    .enum('nexmo', 'twilio'),
   is_primary: type.boolean()
     .required()
 }).allowExtra(false))

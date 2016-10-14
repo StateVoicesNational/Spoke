@@ -1,6 +1,7 @@
 import Nexmo from 'nexmo'
 import { getFormattedPhoneNumber } from '../../../lib/phone-format'
-import { Message, PendingMessagePart, r } from '../../models'
+import { Message, PendingMessagePart } from '../../models'
+import { getLastMessage } from './message-sending'
 import { log } from '../../../lib'
 import faker from 'faker'
 
@@ -13,32 +14,7 @@ if (process.env.NEXMO_API_KEY && process.env.NEXMO_API_SECRET) {
   })
 }
 
-export async function getLastMessage({ userNumber, contactNumber }) {
-  const lastMessage = await r.table('message')
-    .getAll(contactNumber, { index: 'contact_number' })
-    .filter({
-      user_number: userNumber,
-      is_from_contact: false
-    })
-    .orderBy(r.desc('created_at'))
-    .limit(1)
-    .pluck('assignment_id')(0)
-    .default(null)
-
-  return lastMessage
-}
-
-export async function saveNewIncomingMessage (messageInstance) {
-  await messageInstance.save()
-
-  await r.table('campaign_contact')
-    .getAll(messageInstance.assignment_id, { index: 'assignment_id' })
-    .filter({ cell: messageInstance.contact_number })
-    .limit(1)
-    .update({ message_status: 'needsResponse' })
-}
-
-export async function convertMessagePartsToMessage(messageParts) {
+async function convertMessagePartsToMessage(messageParts) {
   const firstPart = messageParts[0]
   const userNumber = firstPart.user_number
   const contactNumber = firstPart.contact_number
@@ -47,7 +23,11 @@ export async function convertMessagePartsToMessage(messageParts) {
     .map((serviceMessage) => serviceMessage.text)
     .join('')
 
-  const lastMessage = await getLastMessage({ contactNumber, userNumber })
+  const lastMessage = await getLastMessage({
+    contactNumber,
+    userNumber,
+    service: 'nexmo'
+  })
 
   return new Message({
     contact_number: contactNumber,
@@ -62,7 +42,7 @@ export async function convertMessagePartsToMessage(messageParts) {
   })
 }
 
-export async function findNewCell() {
+async function findNewCell() {
   if (!nexmo) {
     return { numbers: [{ msisdn: getFormattedPhoneNumber(faker.phone.phoneNumber()) }] }
   }
@@ -77,7 +57,7 @@ export async function findNewCell() {
   })
 }
 
-export async function rentNewCell() {
+async function rentNewCell() {
   if (!nexmo) {
     return getFormattedPhoneNumber(faker.phone.phoneNumber())
   }
@@ -104,7 +84,7 @@ export async function rentNewCell() {
   throw new Error('Did not find any cell')
 }
 
-export async function sendMessage(message) {
+async function sendMessage(message) {
   if (!nexmo) {
     await Message.get(message.id)
       .update({ send_status: 'SENT' })
@@ -159,7 +139,7 @@ export async function sendMessage(message) {
   })
 }
 
-export async function handleDeliveryReport(report) {
+async function handleDeliveryReport(report) {
   if (report.hasOwnProperty('client-ref')) {
     const message = await Message.get(report['client-ref'])
     message.service_messages.push(report)
@@ -174,7 +154,7 @@ export async function handleDeliveryReport(report) {
   }
 }
 
-export async function handleIncomingMessage(message) {
+async function handleIncomingMessage(message) {
   if (!message.hasOwnProperty('to') ||
     !message.hasOwnProperty('msisdn') ||
     !message.hasOwnProperty('text') ||
@@ -205,4 +185,13 @@ export async function handleIncomingMessage(message) {
 
   const part = await pendingMessagePart.save()
   return part.id
+}
+
+export default {
+  convertMessagePartsToMessage,
+  findNewCell,
+  rentNewCell,
+  sendMessage,
+  handleDeliveryReport,
+  handleIncomingMessage
 }

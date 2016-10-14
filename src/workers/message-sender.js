@@ -1,10 +1,14 @@
-import { sendMessage, rentNewCell } from '../server/api/lib/nexmo'
+import nexmo from '../server/api/lib/nexmo'
+import twilio from '../server/api/lib/twilio'
 import { getFormattedPhoneNumber } from '../lib/phone-format'
 import { r, UserCell } from '../server/models'
 import { log } from '../lib'
 import { sleep } from './lib'
 
-const PER_ASSIGNED_NUMBER_MESSAGE_COUNT = 300
+const PER_ASSIGNED_NUMBER_MESSAGE_COUNT = 250
+const ACTIVE_SMS_SERVICE = 'twilio'
+
+const serviceMap = { nexmo, twilio }
 
 async function assignUserNumbers() {
   const unassignedMessages = await r.table('message')
@@ -22,6 +26,14 @@ async function assignUserNumbers() {
       .limit(1)(0)
       .default(null)
 
+    // Assign service
+    let service = null
+    if (lastMessage) {
+      service = lastMessage.service
+    } else {
+      service = ACTIVE_SMS_SERVICE
+    }
+
     const assignment = await r.table('assignment')
       .get(message.assignment_id)
 
@@ -29,18 +41,21 @@ async function assignUserNumbers() {
 
     let userCell = await r.table('user_cell')
       .getAll(userId, { index: 'user_id' })
-      .filter({ is_primary: true })
+      .filter({
+        service,
+        is_primary: true
+      })
       .limit(1)(0)
       .default(null)
 
     if (!userCell) {
-      const newCell = await rentNewCell()
+      const newCell = await serviceMap[service].rentNewCell()
 
       userCell = new UserCell({
         cell: getFormattedPhoneNumber(newCell),
         user_id: userId,
-        service: 'nexmo',
-        is_primary: true
+        is_primary: true,
+        service
       })
 
       await userCell.save()
@@ -52,14 +67,18 @@ async function assignUserNumbers() {
       userNumber = userCell.cell
     }
 
-    log.info("Assigning ", userNumber, " to message ", message.id)
+    log.info(`Assigning ${userNumber} (${service}) to message ${message.id}`)
     await r.table('message')
       .get(message.id)
-      .update({ user_number: userNumber })
+      .update({
+        user_number: userNumber,
+        service
+      })
 
     // Cycle cell when necessary
     const messageCount = await r.table('message')
       .getAll(userCell.cell, { index: 'user_number' })
+      .filter({ service })
       .count()
 
     if (messageCount >= PER_ASSIGNED_NUMBER_MESSAGE_COUNT) {
@@ -69,6 +88,7 @@ async function assignUserNumbers() {
     }
   }
 }
+
 async function sendMessages() {
   const messages = await r.table('message')
     .getAll('QUEUED', { index: 'send_status' })
@@ -77,8 +97,10 @@ async function sendMessages() {
     .orderBy('created_at')
     .limit(1)(0)
   for (let index = 0; index < messages.length; index++) {
-    log.info('sending message', messages[index].reduction)
-    await sendMessage(messages[index].reduction)
+    const message = messages[index].reduction
+    const service = serviceMap[message.service]
+    log.info(`Sending (${message.service}): ${message.user_number} -> ${message.contact_number}\nMessage: ${message.text}`)
+    await service.sendMessage(message)
   }
 }
 

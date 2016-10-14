@@ -38,7 +38,8 @@ if (isClient()) {
         rollbar.reportMessage('Got backend error with no error message')
       }
     }
-    existingErrorLogger(err ? err.stack : err)
+
+    existingErrorLogger(err && err.stack ? err.stack : err)
   }
 }
 

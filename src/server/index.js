@@ -11,7 +11,8 @@ import cookieSession from 'cookie-session'
 import setupAuth0Passport from './setup-auth0-passport'
 import wrap from './wrap'
 import { log } from '../lib'
-import { handleIncomingMessage, handleDeliveryReport } from './api/lib/nexmo'
+import nexmo from './api/lib/nexmo'
+import twilio from './api/lib/twilio'
 import { seedZipCodes } from './seeds/seed-zip-codes'
 import { setupUserNotificationObservers } from './notifications'
 import { Tracer } from 'apollo-tracer'
@@ -52,7 +53,17 @@ app.use(passport.session())
 
 app.post('/nexmo', wrap(async (req, res) => {
   try {
-    const messageId = await handleIncomingMessage(req.body)
+    const messageId = await nexmo.handleIncomingMessage(req.body)
+    res.send(messageId)
+  } catch (ex) {
+    log.error(ex)
+    res.send('done')
+  }
+}))
+
+app.post('/twilio', wrap(async (req, res) => {
+  try {
+    const messageId = await twilio.handleIncomingMessage(req.body)
     res.send(messageId)
   } catch (ex) {
     log.error(ex)
@@ -63,13 +74,23 @@ app.post('/nexmo', wrap(async (req, res) => {
 app.post('/nexmo-message-report', wrap(async (req, res) => {
   try {
     const body = req.body
-    await handleDeliveryReport(body)
-    res.send('done')
+    await nexmo.handleDeliveryReport(body)
   } catch (ex) {
     log.error(ex)
-    res.send('done')
   }
+  res.send('done')
 }))
+
+app.post('/twilio-message-report', wrap(async (req, res) => {
+  try {
+    const body = req.body
+    await twilio.handleDeliveryReport(body)
+  } catch (ex) {
+    log.error(ex)
+  }
+  res.end()
+}))
+
 
 app.get('/logout-callback', (req, res) => {
   req.logOut()
