@@ -67,7 +67,7 @@ async function assignUserNumbers() {
       userNumber = userCell.cell
     }
 
-    log.info(`Assigning ${userNumber} to message ${message.id}`)
+    log.info(`Assigning ${userNumber} (${service}) to message ${message.id}`)
     await r.table('message')
       .get(message.id)
       .update({
