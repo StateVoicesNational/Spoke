@@ -104,7 +104,7 @@ async function sendMessages(service, sendMessageFunction) {
 (async () => {
   while (true) {
     try {
-      await sleep(5000)
+      await sleep(1100)
       await assignUserNumbers()
       await sendMessages('twilio', twilioSendMessage)
       await sendMessages('nexmo', nexmoSendMessage)
