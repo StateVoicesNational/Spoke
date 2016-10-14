@@ -3,63 +3,41 @@ import { getFormattedPhoneNumber } from '../../../lib/phone-format'
 import { Message, PendingMessagePart, r } from '../../models'
 import { log } from '../../../lib'
 import faker from 'faker'
+import { getLastMessage } from './message-sending'
 
 let twilio = null
 if (process.env.TWILIO_API_KEY && process.env.TWILIO_AUTH_TOKEN) {
   twilio = Twilio(process.env.TWILIO_API_KEY, process.env.TWILIO_AUTH_TOKEN)
 }
 
-export async function getLastMessage({ userNumber, contactNumber }) {
-  const lastMessage = await r.table('message')
-    .getAll(contactNumber, { index: 'contact_number' })
-    .filter({
-      user_number: userNumber,
-      is_from_contact: false
-    })
-    .orderBy(r.desc('created_at'))
-    .limit(1)
-    .pluck('assignment_id')(0)
-    .default(null)
 
-  return lastMessage
-}
+export async function convertTwilioMessagePartsToMessage(messageParts) {
+    const firstPart = messageParts[0]
+  const userNumber = firstPart.user_number
+  const contactNumber = firstPart.contact_number
+  const serviceMessages = messageParts.map((part) => part.service_message)
+  const text = serviceMessages
+    .map((serviceMessage) => serviceMessage.Body)
+    .join('')
 
-export async function saveNewIncomingMessage (messageInstance) {
-  await messageInstance.save()
+  const lastMessage = await getLastMessage({ contactNumber, userNumber })
 
-  await r.table('campaign_contact')
-    .getAll(messageInstance.assignment_id, { index: 'assignment_id' })
-    .filter({ cell: messageInstance.contact_number })
-    .limit(1)
-    .update({ message_status: 'needsResponse' })
-}
-
-export async function convertMessagePartsToMessage(messageParts) {
-  // const firstPart = messageParts[0]
-  // const userNumber = firstPart.user_number
-  // const contactNumber = firstPart.contact_number
-  // const serviceMessages = messageParts.map((part) => part.service_message)
-  // const text = serviceMessages
-  //   .map((serviceMessage) => serviceMessage.text)
-  //   .join('')
-
-  // const lastMessage = await getLastMessage({ contactNumber, userNumber })
-
-  // return new Message({
-  //   contact_number: contactNumber,
-  //   user_number: userNumber,
-  //   is_from_contact: true,
-  //   text,
-  //   service_messages: serviceMessages,
-  //   service_message_ids: serviceMessages.map((doc) => doc.messageId),
-  //   assignment_id: lastMessage.assignment_id,
-  //   service: 'nexmo',
-  //   send_status: 'DELIVERED'
-  // })
+  return new Message({
+    contact_number: contactNumber,
+    user_number: userNumber,
+    is_from_contact: true,
+    text,
+    service_messages: serviceMessages,
+    service_message_ids: serviceMessages.map((doc) => doc.MessageSid),
+    assignment_id: lastMessage.assignment_id,
+    service: 'twilio',
+    send_status: 'DELIVERED'
+  })
 }
 
 export async function findNewCell() {
-  if (!twilio || process.env.NODE_ENV === 'development') {
+
+  if (!twilio) {
     return { availablePhoneNumbers: [{ phone_number: '+15005550006' }] }
   }
   return new Promise((resolve, reject) => {
@@ -80,6 +58,7 @@ export async function twilioRentNewCell() {
   const newCell = await findNewCell()
 
   if (newCell && newCell.availablePhoneNumbers && newCell.availablePhoneNumbers[0] && newCell.availablePhoneNumbers[0].phone_number) {
+    console.log("creating ", newCell.availablePhoneNumbers[0].phone_number)
     return new Promise((resolve, reject) => {
       twilio.incomingPhoneNumbers.create({
         phoneNumber: newCell.availablePhoneNumbers[0].phone_number,
@@ -102,7 +81,7 @@ export async function twilioRentNewCell() {
 
 
 export async function twilioSendMessage(message) {
-  if (!twilio) {
+    if (!twilio) {
     await Message.get(message.id)
       .update({ send_status: 'SENT' })
     return 'test_message_uuid'
@@ -116,6 +95,7 @@ export async function twilioSendMessage(message) {
       to: message.contact_number,
       from: message.user_number,
       body: message.text,
+      statusCallback: process.env.TWILIO_STATUS_CALLBACK_URL
     }, (err, response) => {
       if (err) {
         console.log("ERROR", err)
@@ -157,7 +137,7 @@ export async function handleTwilioDeliveryReport(report) {
   const messageSid = report.MessageSid
   if (messageSid) {
     const messageStatus = report.MessageStatus
-    const message = r.table('message')
+    const message = await r.table('message')
       .getAll(messageSid, { index: 'service_message_ids' })
       .limit(1)(0)
       .default(null)
@@ -176,36 +156,26 @@ export async function handleTwilioDeliveryReport(report) {
 }
 
 export async function handleTwilioIncomingMessage(message) {
-  console.log("Got message", message)
-  return
-  // if (!message.hasOwnProperty('to') ||
-  //   !message.hasOwnProperty('msisdn') ||
-  //   !message.hasOwnProperty('text') ||
-  //   !message.hasOwnProperty('messageId')) {
-  //   log.error(`This is not an incoming message: ${JSON.stringify(message)}`)
-  // }
+  if (!message.hasOwnProperty('From') ||
+    !message.hasOwnProperty('To') ||
+    !message.hasOwnProperty('Body') ||
+    !message.hasOwnProperty('MessageSid')) {
+    log.error(`This is not an incoming message: ${JSON.stringify(message)}`)
+  }
 
-  // const { to, msisdn, concat } = message
-  // const isConcat = concat === 'true'
-  // const contactNumber = getFormattedPhoneNumber(msisdn)
-  // const userNumber = getFormattedPhoneNumber(to)
+  const { From, To, Body, MessageSid } = message
 
-  // let parentId = ''
-  // if (isConcat) {
-  //   log.info(`Incoming message part (${message['concat-part']} of ${message['concat-total']} for ref ${message['concat-ref']}) from ${contactNumber} to ${userNumber}`)
-  //   parentId = message['concat-ref']
-  // } else {
-  //   log.info(`Incoming message part from ${contactNumber} to ${userNumber}`)
-  // }
+  const contactNumber = getFormattedPhoneNumber(From)
+  const userNumber = getFormattedPhoneNumber(To)
 
-  // const pendingMessagePart = new PendingMessagePart({
-  //   service: 'nexmo',
-  //   parent_id: parentId,
-  //   service_message: message,
-  //   user_number: userNumber,
-  //   contact_number: contactNumber
-  // })
+  const pendingMessagePart = new PendingMessagePart({
+    service: 'twilio',
+    parent_id: '',
+    service_message: message,
+    user_number: userNumber,
+    contact_number: contactNumber
+  })
 
-  // const part = await pendingMessagePart.save()
-  // return part.id
+  const part = await pendingMessagePart.save()
+  return part.id
 }

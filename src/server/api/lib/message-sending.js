@@ -1,33 +1,29 @@
-import { Message, PendingMessagePart, r } from '../../models'
+import { r } from '../../models'
 
-
-const MAX_SEND_ATTEMPTS = 5
-
-async function saveSentMessage(message, service, response, serviceMessageIds, hasError) {
-  const messageToSave = {
-    ...message
-  }
-
-  messageToSave.service = service
-  messageToSave.service_messages.push(response || null)
-
-
-  if (hasError) {
-    if (messageToSave.service_messages.length >= MAX_SEND_ATTEMPTS) {
-      messageToSave.send_status = 'ERROR'
-    }
-    Message.save(messageToSave, { conflict: 'update' })
-    .then((_, newMessage) => {
-      reject(err || (response ? new Error(JSON.stringify(response)) : new Error('Encountered unknown error')))
+export async function getLastMessage({ userNumber, contactNumber, service }) {
+  const lastMessage = await r.table('message')
+    .getAll(contactNumber, { index: 'contact_number' })
+    .filter({
+      user_number: userNumber,
+      is_from_contact: false,
+      service
     })
-  } else {
-    Message.save({
-      ...messageToSave,
-      send_status: 'SENT'
-    }, { conflict: 'update' })
-    .then((saveError, newMessage) => {
-      resolve(newMessage)
-    })
-  }
+    .orderBy(r.desc('created_at'))
+    .limit(1)
+    .pluck('assignment_id')(0)
+    .default(null)
 
+  return lastMessage
+}
+
+
+
+export async function saveNewIncomingMessage (messageInstance) {
+  await messageInstance.save()
+
+  await r.table('campaign_contact')
+    .getAll(messageInstance.assignment_id, { index: 'assignment_id' })
+    .filter({ cell: messageInstance.contact_number })
+    .limit(1)
+    .update({ message_status: 'needsResponse' })
 }

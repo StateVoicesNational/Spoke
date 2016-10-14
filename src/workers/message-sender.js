@@ -1,4 +1,4 @@
-import { sendMessage, rentNewCell } from '../server/api/lib/nexmo'
+import { nexmoSendMessage, rentNewCell } from '../server/api/lib/nexmo'
 import { twilioSendMessage, twilioRentNewCell } from '../server/api/lib/twilio'
 import { getFormattedPhoneNumber } from '../lib/phone-format'
 import { r, UserCell } from '../server/models'
@@ -6,7 +6,7 @@ import { log } from '../lib'
 import { sleep } from './lib'
 
 const PER_ASSIGNED_NUMBER_MESSAGE_COUNT = 300
-const SERVICES = ['nexmo', 'twilio']
+const ACTIVE_SMS_SERVICE = 'twilio'
 
 async function assignUserNumbers() {
   const unassignedMessages = await r.table('message')
@@ -29,8 +29,7 @@ async function assignUserNumbers() {
     if (lastMessage) {
       service = lastMessage.service
     } else {
-      // service = SERVICES[Math.floor(Math.random() * SERVICES.length)]
-      service = 'twilio'
+      service = ACTIVE_SMS_SERVICE
     }
 
     const assignment = await r.table('assignment')
@@ -40,7 +39,10 @@ async function assignUserNumbers() {
 
     let userCell = await r.table('user_cell')
       .getAll(userId, { index: 'user_id' })
-      .filter({ is_primary: true, service })
+      .filter({
+        service,
+        is_primary: true
+      })
       .limit(1)(0)
       .default(null)
 
@@ -102,10 +104,10 @@ async function sendMessages(service, sendMessageFunction) {
 (async () => {
   while (true) {
     try {
-      await sleep(1100)
+      await sleep(5000)
       await assignUserNumbers()
       await sendMessages('twilio', twilioSendMessage)
-      await sendMessages('nexmo', sendMessage)
+      await sendMessages('nexmo', nexmoSendMessage)
     } catch (ex) {
       console.log(ex)
       log.error(ex)

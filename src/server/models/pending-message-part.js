@@ -13,5 +13,6 @@ const PendingMessagePart = thinky.createModel('pending_message_part', type.objec
 }).allowExtra(false))
 
 PendingMessagePart.ensureIndex('parent_id')
+PendingMessagePart.ensureIndex('service')
 
 export default PendingMessagePart

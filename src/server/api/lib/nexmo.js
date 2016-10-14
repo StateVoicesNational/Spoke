@@ -1,6 +1,7 @@
 import Nexmo from 'nexmo'
 import { getFormattedPhoneNumber } from '../../../lib/phone-format'
 import { Message, PendingMessagePart, r } from '../../models'
+import { getLastMessage } from './message-sending'
 import { log } from '../../../lib'
 import faker from 'faker'
 
@@ -13,32 +14,7 @@ if (process.env.NEXMO_API_KEY && process.env.NEXMO_API_SECRET) {
   })
 }
 
-export async function getLastMessage({ userNumber, contactNumber }) {
-  const lastMessage = await r.table('message')
-    .getAll(contactNumber, { index: 'contact_number' })
-    .filter({
-      user_number: userNumber,
-      is_from_contact: false
-    })
-    .orderBy(r.desc('created_at'))
-    .limit(1)
-    .pluck('assignment_id')(0)
-    .default(null)
-
-  return lastMessage
-}
-
-export async function saveNewIncomingMessage (messageInstance) {
-  await messageInstance.save()
-
-  await r.table('campaign_contact')
-    .getAll(messageInstance.assignment_id, { index: 'assignment_id' })
-    .filter({ cell: messageInstance.contact_number })
-    .limit(1)
-    .update({ message_status: 'needsResponse' })
-}
-
-export async function convertMessagePartsToMessage(messageParts) {
+export async function convertNexmoMessagePartsToMessage(messageParts) {
   const firstPart = messageParts[0]
   const userNumber = firstPart.user_number
   const contactNumber = firstPart.contact_number
@@ -104,7 +80,7 @@ export async function rentNewCell() {
   throw new Error('Did not find any cell')
 }
 
-export async function sendMessage(message) {
+export async function nexmoSendMessage(message) {
   if (!nexmo) {
     await Message.get(message.id)
       .update({ send_status: 'SENT' })
