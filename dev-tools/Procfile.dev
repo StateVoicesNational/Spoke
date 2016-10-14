@@ -3,4 +3,5 @@ webpack: ./dev-tools/babel-run ./webpack/server.js
 messagesender: npm run dev-message-sender
 jobhandler: npm run dev-job-handler
 incomingmessagehandler: npm run dev-incoming-message-handler
+numberassigner: npm run dev-number-assigner
 rethinkdb: rethinkdb

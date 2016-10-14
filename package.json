@@ -22,6 +22,8 @@
     "prod-job-handler": "python tunnel.py && ./dev-tools/babel-run ./src/workers/job-handler",
     "dev-incoming-message-handler": "nodemon -e js,jsx -w ./src --exec ./dev-tools/babel-run -- ./src/workers/incoming-message-handler",
     "prod-incoming-message-handler": "python tunnel.py && ./dev-tools/babel-run ./src/workers/incoming-message-handler.js",
+    "dev-number-assigner": "nodemon -e js,jsx -w ./src --exec ./dev-tools/babel-run -- ./src/workers/number-assigner",
+    "prod-number-assigner": "python tunnel.py && ./dev-tools/babel-run ./src/workers/number-assigner.js",
     "predev-start": "npm run clean",
     "dev-start": "nodemon -e js,jsx,md,mustache -w ./src --exec ./dev-tools/babel-run -- ./src/server",
     "generate-contacts": "./dev-tools/babel-run ./dev-tools/generate-contacts.js",
