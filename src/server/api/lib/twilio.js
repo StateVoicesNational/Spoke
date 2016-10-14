@@ -100,35 +100,39 @@ async function sendMessage(message) {
       body: message.text,
       statusCallback: process.env.TWILIO_STATUS_CALLBACK_URL
     }, (err, response) => {
-      if (err) {
-        reject(err)
-      } else {
-        const serviceMessageIds = [response.sid] // TODO: Multiple message parts?
-        const messageToSave = {
-          ...message
-        }
-        messageToSave.service_message_ids = serviceMessageIds
-        messageToSave.service_messages.push(response || null)
+      const messageToSave = {
+        ...message
+      }
 
-        // TODO: This copies nexmo code nearly exactly
-        const hasError = !!response.error_code
-        if (hasError) {
-          if (messageToSave.service_messages.length >= MAX_SEND_ATTEMPTS) {
-            messageToSave.send_status = 'ERROR'
-          }
-          Message.save(messageToSave, { conflict: 'update' })
-          .then((_, newMessage) => {
-            reject(err || (response ? new Error(JSON.stringify(response)) : new Error('Encountered unknown error')))
-          })
-        } else {
-          Message.save({
-            ...messageToSave,
-            send_status: 'SENT'
-          }, { conflict: 'update' })
-          .then((saveError, newMessage) => {
-            resolve(newMessage)
-          })
+      let hasError = false
+      if (err) {
+        hasError = true
+        log.error(err)
+      }
+      if (response) {
+        const serviceMessageIds = [response.sid] // TODO: Multiple message parts?
+        messageToSave.service_message_ids = serviceMessageIds
+        hasError = !!response.error_code
+      }
+
+      messageToSave.service_messages.push(response || null)
+
+      if (hasError) {
+        if (messageToSave.service_messages.length >= MAX_SEND_ATTEMPTS) {
+          messageToSave.send_status = 'ERROR'
         }
+        Message.save(messageToSave, { conflict: 'update' })
+        .then((_, newMessage) => {
+          reject(err || (response ? new Error(JSON.stringify(response)) : new Error('Encountered unknown error')))
+        })
+      } else {
+        Message.save({
+          ...messageToSave,
+          send_status: 'SENT'
+        }, { conflict: 'update' })
+        .then((saveError, newMessage) => {
+          resolve(newMessage)
+        })
       }
     })
   })
