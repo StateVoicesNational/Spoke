@@ -60,7 +60,6 @@ export async function twilioRentNewCell() {
   const newCell = await findNewCell()
 
   if (newCell && newCell.availablePhoneNumbers && newCell.availablePhoneNumbers[0] && newCell.availablePhoneNumbers[0].phone_number) {
-    console.log("creating ", newCell.availablePhoneNumbers[0].phone_number)
     return new Promise((resolve, reject) => {
       twilio.incomingPhoneNumbers.create({
         phoneNumber: newCell.availablePhoneNumbers[0].phone_number,
@@ -69,7 +68,6 @@ export async function twilioRentNewCell() {
         if (err) {
           reject(err)
         } else {
-          console.log("purchased number", purchasedNumber)
           resolve(purchasedNumber.phone_number)
         }
       })
@@ -100,10 +98,8 @@ export async function twilioSendMessage(message) {
       statusCallback: process.env.TWILIO_STATUS_CALLBACK_URL
     }, (err, response) => {
       if (err) {
-        console.log("ERROR", err)
         reject(err)
       } else {
-        console.log("SUCCESS!", response)
         const serviceMessageIds = [response.sid] // TODO: Multiple message parts?
         const messageToSave = {
           ...message
