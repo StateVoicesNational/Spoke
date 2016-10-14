@@ -44,7 +44,7 @@ async function handleIncomingMessageParts() {
       const lastMessage = await getLastMessage({
         userNumber: part.user_number,
         contactNumber: part.contact_number,
-        service
+        service: service === nexmo ? 'nexmo' : 'twilio'
       })
 
       const duplicateMessageToSaveExists = !!messagesToSave.find((message) => message.service_message_ids.indexOf(serviceMessageId) !== -1)
@@ -68,7 +68,7 @@ async function handleIncomingMessageParts() {
           }
           const groupKey = [parentId, part.contact_number, part.user_number]
 
-          if (!concatMessageParts.hasOwnProperty(groupKey)){
+          if (!concatMessageParts.hasOwnProperty(groupKey)) {
             const partCount = parseInt(part.service_message['concat-total'], 10)
             concatMessageParts[groupKey] = Array(partCount).fill(null)
           }

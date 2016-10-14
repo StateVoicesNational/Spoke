@@ -99,6 +99,7 @@ async function sendMessages() {
   for (let index = 0; index < messages.length; index++) {
     const message = messages[index].reduction
     const service = serviceMap[message.service]
+    log.info(`Sending (${message.service}): ${message.user_number} -> ${message.contact_number}\nMessage: ${message.text}`)
     await service.sendMessage(message)
   }
 }
