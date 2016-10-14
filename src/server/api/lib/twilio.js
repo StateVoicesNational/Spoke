@@ -6,6 +6,8 @@ import { getLastMessage } from './message-sending'
 import faker from 'faker'
 
 let twilio = null
+const MAX_SEND_ATTEMPTS = 5
+
 if (process.env.TWILIO_API_KEY && process.env.TWILIO_AUTH_TOKEN) {
   twilio = Twilio(process.env.TWILIO_API_KEY, process.env.TWILIO_AUTH_TOKEN)
 }
@@ -111,7 +113,7 @@ async function sendMessage(message) {
         messageToSave.service_messages.push(response || null)
 
         // TODO: This copies nexmo code nearly exactly
-        const hasError = !!messageToSave.error_code
+        const hasError = !!response.error_code
         if (hasError) {
           if (messageToSave.service_messages.length >= MAX_SEND_ATTEMPTS) {
             messageToSave.send_status = 'ERROR'
