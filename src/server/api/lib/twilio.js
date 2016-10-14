@@ -58,11 +58,9 @@ async function findNewCell() {
 
 async function rentNewCell() {
   if (!twilio) {
-    console.log('HERERE??')
     return getFormattedPhoneNumber(faker.phone.phoneNumber())
   }
   const newCell = await findNewCell()
-  console.log('new cell is', newCell)
 
   if (newCell && newCell.availablePhoneNumbers && newCell.availablePhoneNumbers[0] && newCell.availablePhoneNumbers[0].phone_number) {
     return new Promise((resolve, reject) => {
