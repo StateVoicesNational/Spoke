@@ -2,6 +2,7 @@ import Twilio from 'twilio'
 import { getFormattedPhoneNumber } from '../../../lib/phone-format'
 import { Message, PendingMessagePart, r } from '../../models'
 import { log } from '../../../lib'
+import { getLastMessage } from './message-sending'
 import faker from 'faker'
 
 let twilio = null
