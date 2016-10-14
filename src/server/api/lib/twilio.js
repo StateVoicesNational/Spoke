@@ -108,14 +108,15 @@ async function sendMessage(message) {
       if (err) {
         hasError = true
         log.error(err)
+        messageToSave.service_messages.push(err)
       }
       if (response) {
         const serviceMessageIds = [response.sid] // TODO: Multiple message parts?
         messageToSave.service_message_ids = serviceMessageIds
         hasError = !!response.error_code
+        messageToSave.service_messages.push(response)
       }
 
-      messageToSave.service_messages.push(response || null)
 
       if (hasError) {
         if (messageToSave.service_messages.length >= MAX_SEND_ATTEMPTS) {
