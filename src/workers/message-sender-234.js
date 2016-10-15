@@ -9,7 +9,7 @@ const serviceMap = { nexmo, twilio }
 async function sendMessages() {
   const messages = await r.table('message')
     .getAll('QUEUED', { index: 'send_status' })
-    .filter((doc) => doc('user_number').ne(''))
+    .filter((doc) => doc('user_number').match('[234]$'))
     .group('user_number')
     .orderBy('created_at')
     .limit(1)(0)
