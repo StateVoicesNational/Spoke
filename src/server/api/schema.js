@@ -681,7 +681,7 @@ const rootMutations = {
       const savedMessage = await messageInstance.save()
 
       organization.balance_amount = organization.balance_amount - amountPerMessage
-      Organization.save(organization, { conflict: 'update' })
+      await Organization.save(organization, { conflict: 'update' })
       await new BalanceLineItem({
         organization_id: organization.id,
         currency: organization.currency,
