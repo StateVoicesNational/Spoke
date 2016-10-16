@@ -16,6 +16,7 @@ import twilio from './api/lib/twilio'
 import { seedZipCodes } from './seeds/seed-zip-codes'
 import { setupUserNotificationObservers } from './notifications'
 import { Tracer } from 'apollo-tracer'
+import { TwimlResponse } from 'twilio'
 
 process.on('uncaughtException', (ex) => {
   log.error(ex)
@@ -64,11 +65,13 @@ app.post('/nexmo', wrap(async (req, res) => {
 app.post('/twilio', wrap(async (req, res) => {
   try {
     const messageId = await twilio.handleIncomingMessage(req.body)
-    res.send(messageId)
   } catch (ex) {
     log.error(ex)
-    res.send('done')
   }
+
+  const resp = new TwimlResponse()
+  res.writeHead(200, { 'Content-Type':'text/xml' })
+  res.end(resp.toString())
 }))
 
 app.post('/nexmo-message-report', wrap(async (req, res) => {
@@ -88,7 +91,10 @@ app.post('/twilio-message-report', wrap(async (req, res) => {
   } catch (ex) {
     log.error(ex)
   }
-  res.end()
+  const resp = new TwimlResponse()
+  res.writeHead(200, { 'Content-Type':'text/xml' })
+  res.end(resp.toString())
+
 }))
 
 
