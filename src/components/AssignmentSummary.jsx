@@ -58,7 +58,7 @@ class AssignmentSummary extends Component {
 
   render() {
     const { assignment, unmessagedCount, unrepliedCount, badTimezoneCount } = this.props
-    const { title, description } = assignment.campaign
+    const { title, description, dueBy } = assignment.campaign
     return (
       <div className={css(styles.container)}>
         <Card
@@ -66,7 +66,7 @@ class AssignmentSummary extends Component {
         >
           <CardTitle
             title={title}
-            subtitle={`${description} - ${moment(assignment.dueBy).format('MMM D YYYY')}`}
+            subtitle={`${description} - ${moment(dueBy).format('MMM D YYYY')}`}
           />
           <Divider />
           <CardActions>
