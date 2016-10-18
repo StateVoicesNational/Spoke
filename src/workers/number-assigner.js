@@ -92,7 +92,7 @@ async function assignUserNumbers() {
 (async () => {
   while (true) {
     try {
-      await sleep(100)
+      await sleep(500)
       await assignUserNumbers()
     } catch (ex) {
       log.error(ex)
