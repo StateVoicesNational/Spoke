@@ -73,6 +73,8 @@ export const resolvers = {
         query = query.filter({ is_archived: campaignsFilter.isArchived })
       }
 
+      query = query.orderBy(r.desc('due_by'))
+
       return query
     },
     optOuts: async (organization, _, { user }) => {
