@@ -54,7 +54,7 @@ export const resolvers = {
         .filter((row) =>
           r.and(
             row('right')('is_started').eq(true),
-            row('right')('due_by').gt(new Date()),
+            r.now().date().lt(row('right')('due_by') + 24 * 60 * 60),
             row('right')('organization_id').eq(organizationId),
             row('right')('is_archived').eq(false)
           )
