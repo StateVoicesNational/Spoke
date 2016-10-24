@@ -1,6 +1,7 @@
 import { mapFieldsToModel } from './lib/utils'
 import { Assignment, r } from '../models'
 import { getOffsets, defaultTimezoneIsBetweenTextingHours } from '../../lib'
+import moment from 'moment'
 
 export const schema = `
   type Assignment {
@@ -13,10 +14,10 @@ export const schema = `
     campaignCannedResponses: [CannedResponse]
   }
 `
-function getContacts(assignment, contactsFilter, organization) {
+function getContacts(assignment, contactsFilter, organization, campaign) {
   const textingHoursEnforced = organization.texting_hours_settings.is_enforced
   const textingHours = organization.texting_hours_settings.permitted_hours
-
+  const pastDue =  moment(campaign.due_by + 24 * 60 * 60).diff(moment()) < 0
   const getIndexValuesWithOffsets = (offsets) => offsets.map(([offset, hasDST]) => ([
     assignment.id,
     `${offset}_${hasDST}`
@@ -29,11 +30,11 @@ function getContacts(assignment, contactsFilter, organization) {
   const config = { textingHoursStart, textingHoursEnd, textingHoursEnforced }
   const [validOffsets, invalidOffsets] = getOffsets(config)
   const filter = {}
+  let secondaryFilter = null
 
   if (contactsFilter) {
     if (contactsFilter.hasOwnProperty('validTimezone') && contactsFilter.validTimezone !== null) {
       index = 'assignment_timezone_offset'
-
 
       if (contactsFilter.validTimezone === true) {
         indexValues = getIndexValuesWithOffsets(validOffsets)
@@ -50,18 +51,34 @@ function getContacts(assignment, contactsFilter, organization) {
       indexValues = r.args(indexValues)
     }
 
+
     if (contactsFilter.hasOwnProperty('messageStatus') && contactsFilter.messageStatus !== null) {
-      filter.message_status = contactsFilter.messageStatus
+      if (pastDue && contactsFilter.messageStatus === 'needsMessage') {
+        filter.message_status = '' // no results
+      } else {
+        filter.message_status = contactsFilter.messageStatus
+      }
+    } else {
+      if (pastDue) {
+        // by default if asking for 'send later' contacts we include only those that need replies
+        filter.message_status = 'needsResponse'
+      } else {
+        // we do not want to return closed/messaged
+        secondaryFilter = (doc) => doc('message_status').eq('needsResponse').or(doc('message_status').eq('needsMessage'))
+      }
     }
     if (contactsFilter.hasOwnProperty('isOptedOut') && contactsFilter.isOptedOut !== null) {
       filter.is_opted_out = contactsFilter.isOptedOut
     }
   }
+
   let query = r.table('campaign_contact')
     .getAll(indexValues, { index })
 
   query = query.filter(filter)
-
+  if (secondaryFilter) {
+    query = query.filter(secondaryFilter)
+  }
   return query
 }
 
@@ -76,20 +93,20 @@ export const resolvers = {
     campaign: async(assignment, _, { loaders }) => loaders.campaign.load(assignment.campaign_id),
 
     contactsCount: async (assignment, { contactsFilter }) => {
-      const organization = await r.table('campaign')
-        .getAll(assignment.campaign_id)
-        .eqJoin('organization_id', r.table('organization'))
-        ('right')(0)
+      const campaign = await r.table('campaign').get(assignment.campaign_id)
 
-      return getContacts(assignment, contactsFilter, organization).count()
+      const organization = await r.table('organization')
+        .get(campaign.organization_id)
+
+      return getContacts(assignment, contactsFilter, organization, campaign).count()
     },
 
     contacts: async (assignment, { contactsFilter }) => {
-      const organization = await r.table('campaign')
-        .getAll(assignment.campaign_id)
-        .eqJoin('organization_id', r.table('organization'))
-        ('right')(0)
-      return getContacts(assignment, contactsFilter, organization)
+      const campaign = await r.table('campaign').get(assignment.campaign_id)
+
+      const organization = await r.table('organization')
+        .get(campaign.organization_id)
+      return getContacts(assignment, contactsFilter, organization, campaign)
     },
     campaignCannedResponses: async(assignment) => (
       await r.table('canned_response')
