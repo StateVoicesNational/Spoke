@@ -33,6 +33,7 @@ async function assignUserNumbers() {
     } else {
       service = ACTIVE_SMS_SERVICE
     }
+    log.info(`Choosing service ${service} for message ID ${message.id}`)
 
     const assignment = await r.table('assignment')
       .get(message.assignment_id)
@@ -49,6 +50,7 @@ async function assignUserNumbers() {
       .default(null)
 
     if (!userCell) {
+      log.info(`Renting new cell for user ID ${userId} from service: ${service}`)
       const newCell = await serviceMap[service].rentNewCell()
 
       userCell = new UserCell({
