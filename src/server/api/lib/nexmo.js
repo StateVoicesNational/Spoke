@@ -73,7 +73,7 @@ async function rentNewCell() {
           // This library returns responses that look like { error-code: 401, error-label: 'not authenticated'}
           // or the bizarrely-named { error-code: 200 } even in the case of success
           if (response['error-code'] !== '200') {
-            reject(new Error(response['error-label']))
+            reject(new Error(response['error-code-label']))
           } else {
             resolve(newCell.numbers[0].msisdn)
           }
