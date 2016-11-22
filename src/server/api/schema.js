@@ -1,6 +1,5 @@
 import { Campaign,
   Assignment,
-  BalanceLineItem,
   CampaignContact,
   CannedResponse,
   Invite,
@@ -21,10 +20,6 @@ import {
   schema as organizationSchema,
   resolvers as organizationResolvers
 } from './organization'
-import {
-  schema as planSchema,
-  resolvers as planResolvers
-} from './plan'
 import {
   schema as campaignSchema,
   resolvers as campaignResolvers
@@ -77,10 +72,6 @@ import {
   schema as inviteSchema,
   resolvers as inviteResolvers
 } from './invite'
-import {
-  schema as balanceLineItemSchema,
-  resolvers as balanceLineItemResolvers
-} from './balance-line-item'
 import {
   GraphQLError,
   authRequired,
@@ -156,7 +147,6 @@ const rootSchema = `
     invite(id:String!): Invite
     contact(id:String!): CampaignContact,
     assignment(id:String!): Assignment,
-    stripePublishableKey: String,
     organizations: [Organization]
   }
 
@@ -168,11 +158,8 @@ const rootSchema = `
     createOrganization(name: String!, userId: String!, inviteId: String!): Organization
     joinOrganization(organizationId: String!): Organization
     editOrganizationRoles(organizationId: String!, userId: String!, roles: [String]): Organization
-    updateCard( organizationId: String!, stripeToken: String!): Organization
-    addAccountCredit( organizationId: String!, balanceAmount: Int!): Organization
     updateTextingHours( organizationId: String!, textingHoursStart: Int!, textingHoursEnd: Int!): Organization
     updateTextingHoursEnforcement( organizationId: String!, textingHoursEnforced: Boolean!): Organization
-    addManualAccountCredit( organizationId: String!, balanceAmount: Int!, paymentMethod: String!): Organization
     sendMessage(message:MessageInput!, campaignContactId:String!): CampaignContact,
     createOptOut(optOut:OptOutInput!, campaignContactId:String!):CampaignContact,
     editCampaignContactMessageStatus(messageStatus: String!, campaignContactId:String!): CampaignContact,
@@ -399,88 +386,7 @@ const rootMutations = {
 
       return await Organization.get(organizationId)
     },
-    addManualAccountCredit: async(_, { organizationId, balanceAmount, paymentMethod }, { user, loaders }) => {
-      await superAdminRequired(user)
-      const organization = await loaders.organization.load(organizationId)
-      const newBalanceAmount = organization.balance_amount + balanceAmount
 
-      await new BalanceLineItem({
-        organization_id: organizationId,
-        currency: organization.currency,
-        amount: balanceAmount,
-        payment_method: paymentMethod,
-        source: 'SUPERADMIN',
-      }).save()
-
-      return await Organization.get(organizationId).update({ balance_amount: newBalanceAmount })
-    },
-    addAccountCredit: async (_, { organizationId, balanceAmount }, { user, loaders }) => {
-      await accessRequired(user, organizationId, 'OWNER')
-      const organization = await loaders.organization.load(organizationId)
-      const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
-      let charge = null
-      try {
-        charge = await stripe.charges.create({
-          customer: organization.stripe_id,
-          amount: balanceAmount,
-          currency: organization.currency
-        })
-      } catch (e) {
-        if (e.type === 'StripeCardError') {
-          throw new GraphQLError({
-            status: 400,
-            message: e.message
-          })
-        }
-      }
-      const newBalanceAmount = organization.balance_amount + balanceAmount
-      await new BalanceLineItem({
-        organization_id: organizationId,
-        currency: organization.currency,
-        amount: balanceAmount,
-        source: 'USER',
-        payment_id: charge.id,
-        payment_method: 'STRIPE',
-      }).save()
-
-      return await Organization.get(organizationId).update({ balance_amount: newBalanceAmount })
-    },
-    updateCard: async(_, { organizationId, stripeToken }, { user, loaders }) => {
-      await accessRequired(user, organizationId, 'OWNER')
-      const organization = await loaders.organization.load(organizationId)
-      const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
-
-      try {
-        if (organization.stripe_id) {
-          await stripe.customers.update(organization.stripe_id, {
-            source: stripeToken
-          })
-          return organization
-        } else {
-          const customer = await stripe.customers.create({
-            description: organization.name,
-            email: user.email,
-            metadata: {
-              organizationId
-            },
-            source: stripeToken
-          })
-          return await Organization
-            .get(organizationId)
-            .update({
-              stripe_id: customer.id
-            })
-        }
-      } catch (e) {
-        if (e.type === 'StripeCardError') {
-          throw new GraphQLError({
-            status: 400,
-            message: e.message
-          })
-        }
-        throw e
-      }
-    },
     createCampaign: async (_, { campaign }, { user, loaders }) => {
       await accessRequired(user, campaign.organizationId, 'ADMIN')
       const campaignInstance = new Campaign({
@@ -546,18 +452,9 @@ const rootMutations = {
           message: 'That invitation is no longer valid'
         })
       }
-      const currency = 'usd'
-      const plan = await r.table('plan')
-        .filter({
-          currency,
-          is_default: true
-        })
-        .limit(1)(0)
 
       const newOrganization = await Organization.save({
-        name,
-        currency,
-        plan_id: plan.id
+        name
       })
       await UserOrganization.save({
         user_id: userId,
@@ -654,16 +551,6 @@ const rootMutations = {
       //   })
       // }
 
-      const plan = await loaders.plan.load(organization.plan_id)
-      const amountPerMessage = plan.amount_per_message
-
-      if (organization.balance_amount < amountPerMessage) {
-        throw new GraphQLError({
-          status: 402,
-          message: 'Not enough account credit to send message'
-        })
-      }
-
       const { contactNumber, text } = message
 
       const replaceCurlyApostrophes = (rawText) => rawText
@@ -678,16 +565,7 @@ const rootMutations = {
         is_from_contact: false
       })
 
-      const savedMessage = await messageInstance.save()
-
-      organization.balance_amount = organization.balance_amount - amountPerMessage
-      await Organization.save(organization, { conflict: 'update' })
-      await new BalanceLineItem({
-        organization_id: organization.id,
-        currency: organization.currency,
-        amount: -amountPerMessage,
-        message_id: savedMessage.id
-      }).save()
+      await messageInstance.save()
 
       contact.message_status = 'messaged'
       await contact.save()
@@ -755,7 +633,6 @@ const rootResolvers = {
       // await accessRequired(user, contact.organization_id, 'TEXTER')
       return contact
     },
-    stripePublishableKey: () => process.env.STRIPE_PUBLISHABLE_KEY,
     organizations: async(_, {}, { user }) => {
       await superAdminRequired(user)
       return r.table('organization')
@@ -767,7 +644,6 @@ export const schema = [
   rootSchema,
   userSchema,
   organizationSchema,
-  planSchema,
   dateSchema,
   jsonSchema,
   phoneSchema,
@@ -781,14 +657,12 @@ export const schema = [
   questionResponseSchema,
   questionSchema,
   inviteSchema,
-  balanceLineItemSchema
 ]
 
 export const resolvers = {
   ...rootResolvers,
   ...userResolvers,
   ...organizationResolvers,
-  ...planResolvers,
   ...campaignResolvers,
   ...assignmentResolvers,
   ...interactionStepResolvers,
@@ -802,6 +676,5 @@ export const resolvers = {
   ...jsonResolvers,
   ...phoneResolvers,
   ...questionResolvers,
-  ...balanceLineItemResolvers,
   ...rootMutations
 }
