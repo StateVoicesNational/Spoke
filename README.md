@@ -6,13 +6,19 @@ This is generated from [react-apollo-starter-kit](https://github.com/saikat/reac
 
 1. [Install RethinkDB](https://www.rethinkdb.com/docs/install/osx/)
 1. `npm install`
+1. `cp .env.example .env`
+1. Thinky can autocreate tables/dbs but you'll prob want to this on startup.
+Start `rethinkdb` and then Run `rethinkdb && ./dev-tools/babel-run-with-env. ./dev-tools/db-startup.js` (You'll see all the tables and indexes at http://localhost:8080/#tables). Then stop rethinkdb (since `npm run dev` will start it)
+1. Create an [Auth0](auth0.com) account. (Note: we'd recommend getting rid of this Auth0 requirement but for now it's necessary.) In your Auth0 account, go to Settings - Clients and grab Client ID, Client Secret, and your Auth0 domain (should look like xxx.auth0.com) for your `.env` file (AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_DOMAIN respectively). Also need domain. Also add the login callback URL (specified in `.env` and defaulting to `http://localhost:3000/login-callback` ) to Allowed Callback URLs in your Auth0 account settings.
+1. Because Spoke was invite-only you need to generate an invite:
+Go to the RethinkDB data explorer at http://localhost:8080/#dataexplorer and run `r.db('spokedev').table('invite').insert({is_valid: true})`
+Use the generated key to visit an invite link, e.g.: http://localhost:3000/invite/e7bcc458-c8e9-4601-8999-a489e04bd45f and you can create an organization and get started.
 1. `npm run dev`
 1. Go to `localhost:3000` to load the app
-1. Go to `localhost:3000/graphql` to mess around with the GraphQL API
-1. Go to `localhost:8080` to use the RethinkDB admin console
 
 ## Helpful Dev Tips
-
+* Go to `localhost:3000/graphql` to mess around with the GraphQL API
+* Go to `localhost:8080` to use the RethinkDB admin console
 * [Set up an ESLint plugin in your code editor so that you catch coding errors and follow code style guidelines more easily!](https://medium.com/planet-arkency/catch-mistakes-before-you-run-you-javascript-code-6e524c36f0c8#.oboqsse48)
 * [Install the redux-devtools-extension](https://github.com/zalmoxisus/redux-devtools-extension) in Chrome to get advanced Redux debugging features.
 * Right now there is a bug in Apollo (https://github.com/apollostack/react-apollo/issues/57) that means in one particular case, errors get swallowed.  If you end up with an app that is silently breaking, console.log(this.props.data) and check the errors property.
@@ -27,4 +33,3 @@ If you need to use Twilio in development but with live keys, do the following to
 1. Set Request URL under "Messaging" to http://<<YOUR_NGROK>>.ngrok.io/twilio
 1. In `.env` set `TWILIO_APPLICATION_ID` to the Twilio Spoke Dev application ID
 1. In `.env` set `TWILIO_STATUS_CALLBACK_URL` to  http://<<YOUR_NGROK>>.ngrok.io/twilio-message-report
-
