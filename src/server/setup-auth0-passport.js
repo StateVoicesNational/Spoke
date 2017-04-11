@@ -5,7 +5,7 @@ import wrap from './wrap'
 
 function setupAuth0Passport() {
   const strategy = new Auth0Strategy({
-    domain: 'gearshift.auth0.com',
+    domain: process.env.AUTH0_DOMAIN,
     clientID: process.env.AUTH0_CLIENT_ID,
     clientSecret: process.env.AUTH0_CLIENT_SECRET,
     callbackURL: process.env.AUTH0_LOGIN_CALLBACK

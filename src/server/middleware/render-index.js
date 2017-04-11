@@ -54,6 +54,7 @@ export default function renderIndex(html, css, assetMap, store) {
       window.INITIAL_STATE=${JSON.stringify(store.getState())}
       window.RENDERED_CLASS_NAMES=${JSON.stringify(css.renderedClassNames)}
       window.AUTH0_CLIENT_ID="${process.env.AUTH0_CLIENT_ID}"
+      window.AUTH0_DOMAIN="${process.env.AUTH0_DOMAIN}"
       window.AUTH0_LOGIN_CALLBACK="${process.env.AUTH0_LOGIN_CALLBACK}"
       window.AUTH0_LOGOUT_CALLBACK="${process.env.AUTH0_LOGOUT_CALLBACK}"
     </script>
