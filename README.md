@@ -8,13 +8,21 @@ This is generated from [react-apollo-starter-kit](https://github.com/saikat/reac
 1. `npm install`
 1. `cp .env.example .env`
 1. Thinky can autocreate tables/dbs but you'll prob want to this on startup.
-Start `rethinkdb` and then Run `rethinkdb && ./dev-tools/babel-run-with-env. ./dev-tools/db-startup.js` (You'll see all the tables and indexes at http://localhost:8080/#tables). Then stop rethinkdb (since `npm run dev` will start it)
+Start `rethinkdb` and then Run `rethinkdb && ./dev-tools/babel-run-with-env. ./dev-tools/db-startup.js` (You'll see all the tables and indexes at http://localhost:8080/#tables). Then stop rethinkdb (since `npm run dev` will also try to start rethinkdb)
 1. Create an [Auth0](auth0.com) account. (Note: we'd recommend getting rid of this Auth0 requirement but for now it's necessary.) In your Auth0 account, go to Settings - Clients and grab Client ID, Client Secret, and your Auth0 domain (should look like xxx.auth0.com) for your `.env` file (AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_DOMAIN respectively). Also need domain. Also add the login callback URL (specified in `.env` and defaulting to `http://localhost:3000/login-callback` ) to Allowed Callback URLs in your Auth0 account settings.
-1. Because Spoke was invite-only you need to generate an invite:
-Go to the RethinkDB data explorer at http://localhost:8080/#dataexplorer and run `r.db('spokedev').table('invite').insert({is_valid: true})`
-Use the generated key to visit an invite link, e.g.: http://localhost:3000/invite/e7bcc458-c8e9-4601-8999-a489e04bd45f and you can create an organization and get started.
-1. `npm run dev`
+1. Run `npm run dev` to start the app
 1. Go to `localhost:3000` to load the app
+1. Because Spoke was invite-only you need to generate an invite:
+Go to the RethinkDB data explorer at http://localhost:8080/#dataexplorer and run:
+ `r.db('spokedev').table('invite').insert({is_valid: true})`
+Use the generated key to visit an invite link, e.g.: http://localhost:3000/invite/e7bcc458-c8e9-4601-8999-a489e04bd45f so you can create an organization and get started.
+
+
+## Important TODOS
+**Because  of issues with numbers getting marked with spam, we adopted aggressive number cycling to limit the number of texts sent from a specific number. We did not implement a corresponding process to unrent the numbers before shutting down the service, so two things are a high priority before putting Spoke back into production:
+1. Decide whether to keep the number cycling, since it might not be necessary on Twilio like it was on Nexmo
+2. If keeping it making sure there's a corresponding process to unrent unused numbers.
+3. Even if not keeping number cycling, there should be a process like this anyway to unrent numbers that haven't been used in X days anyway because volunteers come and go. However, cycling numbers every ~250 texts obviously racks up exponentially higher costs than just assigning a single number per volunteer.  **
 
 ## Helpful Dev Tips
 * Go to `localhost:3000/graphql` to mess around with the GraphQL API
