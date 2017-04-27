@@ -6,7 +6,7 @@ import Baby from 'babyparse'
     const res = await r.table('message')
       .eqJoin('assignment_id', r.table('assignment'))
       .zip()
-      .filter({ campaign_id: '05c84d0d-ed6c-4297-a553-ce64931e1af7' })
+      .filter({ campaign_id: process.env.CAMPAIGN_ID })
     const finalResults = res.map((row) => (
       {
         assignment_id: row['assignment_id'],
