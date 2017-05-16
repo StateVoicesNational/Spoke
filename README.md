@@ -9,17 +9,17 @@ This is generated from [react-apollo-starter-kit](https://github.com/saikat/reac
 ## Getting started
 
 1. [Install RethinkDB](https://www.rethinkdb.com/docs/install/osx/)
-1. `npm install`
-1. `cp .env.example .env`
-1. Thinky can autocreate tables/dbs but you'll prob want to this on startup.
-Start `rethinkdb` and then Run `rethinkdb && ./dev-tools/babel-run-with-env. ./dev-tools/db-startup.js` (You'll see all the tables and indexes at http://localhost:8080/#tables). Then stop rethinkdb (since `npm run dev` will also try to start rethinkdb)
-1. Create an [Auth0](auth0.com) account. (Note: we'd recommend getting rid of this Auth0 requirement but for now it's necessary.) In your Auth0 account, go to Settings - Clients and grab Client ID, Client Secret, and your Auth0 domain (should look like xxx.auth0.com) for your `.env` file (AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_DOMAIN respectively). Also need domain. Also add the login callback URL (specified in `.env` and defaulting to `http://localhost:3000/login-callback` ) to Allowed Callback URLs in your Auth0 account settings.
-1. Run `npm run dev` to start the app
-1. Go to `localhost:3000` to load the app
-1. Because Spoke was invite-only you need to generate an invite:
-Go to the RethinkDB data explorer at http://localhost:8080/#dataexplorer and run:
+2. `npm install`
+3. `cp .env.example .env`
+4. Start `rethinkdb` to check if rethinkdb is properly installed and connecting to `localhost:8080` and then stop the instance and Run `rethinkdb && ./dev-tools/babel-run-with-env. ./dev-tools/db-startup.js` (You'll see all the tables and indexes at http://localhost:8080/#tables). Then stop rethinkdb (since `npm run dev` will also try to start rethinkdb)
+5. Create an [Auth0](auth0.com) account. In your Auth0 account, go to Settings -> Clients -> and then grab your Client ID, Client Secret, and your Auth0 domain (should look like xxx.auth0.com) for place inside your `.env` file (AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_DOMAIN respectively). Also add the login callback URL (specified in `.env` and defaulting to `http://localhost:3000/login-callback` ). This should match an option in your Allowed Callback URLs in your Auth0 account settings.
+6. Run `npm run dev` to start the app
+7. Go to `localhost:3000` to load the app
+8. Because Spoke is invite-only you need to generate an invite:
+Go to the RethinkDB data explorer at `http://localhost:8080/#dataexplorer` and run:
  `r.db('spokedev').table('invite').insert({is_valid: true})`
-Use the generated key to visit an invite link, e.g.: http://localhost:3000/invite/e7bcc458-c8e9-4601-8999-a489e04bd45f so you can create an organization and get started.
+Use the generated key to visit an invite link, e.g.: http://localhost:3000/invite/e7bcc458-c8e9-4601-8999-a489e04bd45f. You should then be prompted to create an account - note that you should sign up versus using google, github, or microsoft auth in order to satisfy authentication schema. 
+9. Create an organization and get started.
 
 
 ## Important TODOS
@@ -40,8 +40,8 @@ Use the generated key to visit an invite link, e.g.: http://localhost:3000/invit
 
 If you need to use Twilio in development but with live keys, do the following to receive incoming replies:
 
-1. Start ngrok
-1. Visit https://www.twilio.com/console/voice/dev-tools/twiml-apps and go to the Spoke Dev app.
-1. Set Request URL under "Messaging" to http://<<YOUR_NGROK>>.ngrok.io/twilio
-1. In `.env` set `TWILIO_APPLICATION_ID` to the Twilio Spoke Dev application ID
-1. In `.env` set `TWILIO_STATUS_CALLBACK_URL` to  http://<<YOUR_NGROK>>.ngrok.io/twilio-message-report
+1. Start [ngrok](https://ngrok.com/docs)
+2. Visit https://www.twilio.com/console/voice/dev-tools/twiml-apps and go to the Spoke Dev app.
+3. Set Request URL under "Messaging" to http://<<YOUR_NGROK>>.ngrok.io/twilio
+4. In `.env` set `TWILIO_APPLICATION_ID` to the Twilio Spoke Dev application ID
+5. In `.env` set `TWILIO_STATUS_CALLBACK_URL` to  http://<<YOUR_NGROK>>.ngrok.io/twilio-message-report
