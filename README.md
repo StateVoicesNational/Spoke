@@ -2,6 +2,8 @@
 
 Spoke is an open source text-distribution tool for organizations to mobilize supporters and members into action. Spoke allows you to upload phone numbers, customize scripts and assign volunteers to communicate with supporters while allowing organizations to manage the process.
 
+Spoke was created by Saikat Chakrabarti and Sheena Pakanati.
+
 ## Note
 
 This is generated from [react-apollo-starter-kit](https://github.com/saikat/react-apollo-starter-kit).  Look at that project's README for info on some of the libraries used.
@@ -45,3 +47,6 @@ If you need to use Twilio in development but with live keys, do the following to
 3. Set Request URL under "Messaging" to http://<<YOUR_NGROK>>.ngrok.io/twilio
 4. In `.env` set `TWILIO_APPLICATION_ID` to the Twilio Spoke Dev application ID
 5. In `.env` set `TWILIO_STATUS_CALLBACK_URL` to  http://<<YOUR_NGROK>>.ngrok.io/twilio-message-report
+
+# License
+Spoke is licensed under the MIT license.
