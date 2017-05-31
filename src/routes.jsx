@@ -5,6 +5,7 @@ import AdminCampaignList from './containers/AdminCampaignList'
 import AdminCampaignStats from './containers/AdminCampaignStats'
 import AdminPersonList from './containers/AdminPersonList'
 import AdminOptOutList from './containers/AdminOptOutList'
+import AdminIncomingMessageList from './containers/AdminIncomingMessageList'
 import AdminCampaignEdit from './containers/AdminCampaignEdit'
 import TexterDashboard from './components/TexterDashboard'
 import TopNav from './components/TopNav'
@@ -41,6 +42,7 @@ export default function makeRoutes(requireAuth = () => {}) {
           </Route>
           <Route path='people' component={AdminPersonList} />
           <Route path='optouts' component={AdminOptOutList} />
+          <Route path='incoming' component={AdminIncomingMessageList} />
           <Route path='settings' component={Settings} />
         </Route>
       </Route>
