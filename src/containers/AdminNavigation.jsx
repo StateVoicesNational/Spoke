@@ -58,6 +58,9 @@ class AdminNavigation extends React.Component {
     }, {
       name: 'Optouts',
       path: 'optouts'
+    }, {
+      name: 'Incoming Messages',
+      path: 'incoming'
     }]
 
     const { roles } = this.props.data.currentUser

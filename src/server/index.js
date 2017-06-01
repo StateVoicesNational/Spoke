@@ -23,6 +23,10 @@ process.on('uncaughtException', (ex) => {
   process.exit(1)
 })
 const DEBUG = process.env.NODE_ENV === 'development'
+var accountSid = process.env.TWILIO_API_KEY;
+var authToken = process.env.TWILIO_AUTH_TOKEN;
+const client = require('twilio')(accountSid, authToken);
+
 setupAuth0Passport()
 seedZipCodes()
 setupUserNotificationObservers()
@@ -97,6 +101,30 @@ app.post('/twilio-message-report', wrap(async (req, res) => {
 
 }))
 
+
+// app.get('/incomingmessages', (req, res) => {
+//   client.sms.messages.list(function(err, data) {
+//     const listOfMessages = data.sms_messages
+//     listOfMessages.forEach(function(message){
+//       if(message.direction == "inbound"){
+//         return console.log(message.body)
+//       }
+//     })
+//   })
+// })
+
+app.get('/allmessages', (req, res) => {
+  client.sms.messages.list((err, data) => {
+    const listOfMessages = data.sms_messages
+      return res.json(listOfMessages)
+  })
+})
+
+app.get('/availablephonenumbers', (req, res) => {
+  client.incomingPhoneNumbers.list((err, data) => {
+      return res.json(data.incomingPhoneNumbers)
+  })
+})
 
 app.get('/logout-callback', (req, res) => {
   req.logOut()
