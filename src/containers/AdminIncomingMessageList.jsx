@@ -1,6 +1,16 @@
 import React, { Component } from 'react'
 // import { CampaignList } from '../components/campaign_list'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
+import {
+  Table,
+  TableBody,
+  TableHeader,
+  TableHeaderColumn,
+  TableRow,
+  TableRowColumn,
+} from 'material-ui/Table';
+
+// import SimpleTable from './Table.jsx'
 import ContentAdd from 'material-ui/svg-icons/content/add'
 import { moment } from 'moment'
 import Subheader from 'material-ui/Subheader'
@@ -27,23 +37,42 @@ export default class AdminIncomingMessageList extends Component {
       incomingmessages: []
     };
   }
-  componentWillMount() {
+  componentDidMount() {
     axios.get(`http://localhost:3000/allmessages`)
-      .then(res => this.setState({ incomingmessages: res.data }))
+      .then(response  => this.setState({ incomingmessages: response .data }))
   }
 
   render(){
     return (
       <div>
         <h3> Incoming Messages </h3>
-        <ul>
-          {this.state.incomingmessages.map( message => {
-            if(message.direction == 'inbound' && message.from !=='+19282491850'){
-              return <li key={message.id}>Date Sent: {message.date_sent} From: {message.from} To: {message.to} "{message.body}"</li>
-            }
-          }
-          )}
-        </ul>
+        <div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHeaderColumn> Date Sent: </TableHeaderColumn>
+                  <TableHeaderColumn> From: </TableHeaderColumn>
+                  <TableHeaderColumn> To: </TableHeaderColumn>
+                  <TableHeaderColumn> Message Body </TableHeaderColumn>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+            {this.state.incomingmessages.map( message => {
+              if(message.direction == 'inbound' && message.from !=='+19282491850'){
+                return (
+                  <TableRow key={message.id}>
+                    <TableRowColumn> {message.date_sent}</TableRowColumn>
+                    <TableRowColumn>{message.from}</TableRowColumn>
+                    <TableRowColumn>{message.to}</TableRowColumn>
+                    <TableRowColumn>{message.body}</TableRowColumn>
+                  </TableRow>
+                  )
+                }
+              }
+            )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     )
   }
