@@ -35,11 +35,11 @@ export default class AdminIncomingMessageList extends Component {
   render(){
     return (
       <div>
-        <h1> Incoming Messages </h1>
+        <h3> Incoming Messages </h3>
         <ul>
           {this.state.incomingmessages.map( message => {
             if(message.direction == 'inbound' && message.from !=='+19282491850'){
-              return <li key={message.id}>{message.date_sent} {message.from } {message.to } {message.body}</li>
+              return <li key={message.id}>Date Sent: {message.date_sent} From: {message.from} To: {message.to} "{message.body}"</li>
             }
           }
           )}
