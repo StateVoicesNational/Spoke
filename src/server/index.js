@@ -102,21 +102,27 @@ app.post('/twilio-message-report', wrap(async (req, res) => {
 }))
 
 
-app.get('/incomingmessages', (req, res) => {
-  client.sms.messages.list(function(err, data) {
+// app.get('/incomingmessages', (req, res) => {
+//   client.sms.messages.list(function(err, data) {
+//     const listOfMessages = data.sms_messages
+//     listOfMessages.forEach(function(message){
+//       if(message.direction == "inbound"){
+//         return console.log(message.body)
+//       }
+//     })
+//   })
+// })
+
+app.get('/allmessages', (req, res) => {
+  client.sms.messages.list((err, data) => {
     const listOfMessages = data.sms_messages
-    listOfMessages.forEach(function(message){
-      if(message.direction == "inbound"){
-        return console.log(message.body)
-      }
-    })
+      return res.json(listOfMessages)
   })
 })
 
-app.get('/allmessages', (req, res) => {
-  client.sms.messages.list(function(err, data) {
-    const listOfMessages = data.sms_messages
-      return res.json(listOfMessages)
+app.get('/availablephonenumbers', (req, res) => {
+  client.incomingPhoneNumbers.list((err, data) => {
+      return res.json(data.incomingPhoneNumbers)
   })
 })
 
