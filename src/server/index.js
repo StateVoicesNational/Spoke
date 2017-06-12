@@ -128,7 +128,7 @@ app.get('/availablephonenumbers', (req, res) => {
 
 app.get('/logout-callback', (req, res) => {
   req.logOut()
-  res.redirect('/login')
+  res.redirect('/')
 })
 app.get('/login-callback',
   passport.authenticate('auth0', {
