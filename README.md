@@ -48,5 +48,11 @@ If you need to use Twilio in development but with live keys, do the following to
 4. In `.env` set `TWILIO_APPLICATION_ID` to the Twilio Spoke Dev application ID
 5. In `.env` set `TWILIO_STATUS_CALLBACK_URL` to  http://<<YOUR_NGROK>>.ngrok.io/twilio-message-report
 
+## Deploying
+
+1. Run `OUTPUT_DIR=./build npm run prod-build-server`
+   This will generate something you can deploy to production in ./build and run nodejs server/server/index.js
+2. Run `npm run prod-build-client` ....
+
 # License
 Spoke is licensed under the MIT license.
