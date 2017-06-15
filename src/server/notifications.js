@@ -12,7 +12,7 @@ export const Notifications = {
 async function getOrganizationOwner(organizationId) {
   return await r.table('user_organization')
     .getAll(organizationId, { index: 'organization_id' })
-    .filter((doc) => doc('roles').contains('OWNER'))
+    .filter({'role': 'OWNER'})
     .limit(1)
     .eqJoin('user_id', r.table('user'))
       ('right')(0)

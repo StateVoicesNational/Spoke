@@ -43,11 +43,13 @@ export const resolvers = {
     people: async (organization, { role }, { user }) => {
       await accessRequired(user, organization.id, 'ADMIN')
 
-      const roleFilter = role ? (userOrganization) => userOrganization('roles').contains(role) : {}
+      const roleFilter = role ? {'role': role} : {}
+
       return r.table('user_organization')
-      .getAll(organization.id, { index: 'organization_id' })
-      .filter(roleFilter)
-      .eqJoin('user_id', r.table('user'))('right')
+        .getAll(organization.id, { index: 'organization_id' })
+        .filter(roleFilter)
+        .eqJoin('user_id', r.table('user'))('right')
+        .distinct()
     },
     threeClickEnabled: (organization) => organization.features.indexOf('threeClick') !== -1,
     textingHoursEnforced: (organization) => organization.texting_hours_enforced,

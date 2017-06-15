@@ -22,13 +22,17 @@ export function authRequired(user) {
 export async function accessRequired(user, orgId, role, allowSuperadmin = false) {
   authRequired(user)
 
+  if (allowSuperadmin && user.is_superadmin) {
+    return
+  }
+
   const userOrganization = await r.table('user_organization').filter({
     user_id: user.id,
-    organization_id: orgId
-  })
-  .filter((roles) => roles('roles').contains(role))
+    organization_id: orgId,
+    role: role
+  }).limit(1)(0).default(null)
 
-  if (userOrganization.length === 0 && (!allowSuperadmin || !user.is_superadmin)) {
+  if (!userOrganization) {
     throw new GraphQLError({
       status: 403,
       message: 'You are not authorized to access that resource.'

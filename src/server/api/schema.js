@@ -329,18 +329,33 @@ const rootMutations = {
       return newJob
     },
     editOrganizationRoles: async (_, { userId, organizationId, roles }, { user, loaders }) => {
-      const userOrganization = await r.table('user_organization')
-        .getAll(organizationId, { index: 'organization_id'})
-        .filter({ user_id: userId })
-        .limit(1)(0)
+      const currentRoles = r.table('user_organization')
+        .getAll([organizationId, user.id], { index: 'organization_user' })
+        .pluck('role')('role')
 
-      const oldRoleIsOwner = userOrganization.roles.indexOf('OWNER') !== -1
+      const oldRoleIsOwner = currentRoles.indexOf('OWNER') !== -1
       const newRoleIsOwner = roles.indexOf('OWNER') !== -1
       const roleRequired = (oldRoleIsOwner || newRoleIsOwner) ? 'OWNER' : 'ADMIN'
       await accessRequired(user, organizationId, roleRequired)
 
-      userOrganization.roles = roles
-      await UserOrganization.save(userOrganization, { conflict: 'update' })
+      currentRoles.forEach(async (curRole) => {
+        if (roles.indexOf(curRole) === -1) {
+          await r.table('user_organization')
+            .getAll([organizationId, user.id], { index: 'organization_user' })
+            .filter({'role': curRole})
+            .delete()
+        }
+      })
+
+      newOrgRoles = roles.filter((newRole) => (currentRoles.indexOf(newRole) === -1))
+        .map((newRole) => ({
+            organization_id: organizationId,
+            user_id: userId,
+            role: newRole
+        }))
+      if (newOrgRoles.length) {
+          await UserOrganization.save(newOrgRoles, { conflict: 'update' })
+      }
       return loaders.organization.load(organizationId)
     },
     joinOrganization: async (_, { organizationId }, { user, loaders }) => {
@@ -355,7 +370,7 @@ const rootMutations = {
         await UserOrganization.save({
           user_id: user.id,
           organization_id: organizationId,
-          roles: ['TEXTER']
+          role: 'TEXTER'
         })
       }
       return loaders.organization.load(organizationId)
@@ -453,11 +468,12 @@ const rootMutations = {
       const newOrganization = await Organization.save({
         name
       })
-      await UserOrganization.save({
-        user_id: userId,
-        organization_id: newOrganization.id,
-        roles: ['OWNER', 'ADMIN', 'TEXTER']
-      })
+      await UserOrganization.save(
+        ['OWNER', 'ADMIN', 'TEXTER'].map((role) => ({
+          user_id: userId,
+          organization_id: newOrganization.id,
+          role: role
+        })))
       await Invite.save({
         id: inviteId,
         is_valid: false
