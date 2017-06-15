@@ -32,7 +32,7 @@ thinky.type
 
 ### .array 
 
- - [ ] organization.js
+ - [X] organization.js
           for permitted_hours, # actually just two values [start, end]
           features: just has 'one feature' = 'threeClick'
              let's make it a string since it's tested vs. filtered
