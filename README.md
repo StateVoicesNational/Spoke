@@ -2,7 +2,7 @@
 
 Spoke is an open source text-distribution tool for organizations to mobilize supporters and members into action. Spoke allows you to upload phone numbers, customize scripts and assign volunteers to communicate with supporters while allowing organizations to manage the process.
 
-Spoke was created by Saikat Chakrabarti and Sheena Pakanati.
+Spoke was created by Saikat Chakrabarti and Sheena Pakanati, and is now maintained by MoveOn.org.
 
 ## Note
 
@@ -10,18 +10,22 @@ This is generated from [react-apollo-starter-kit](https://github.com/saikat/reac
 
 ## Getting started
 
-1. [Install RethinkDB](https://www.rethinkdb.com/docs/install/osx/)
-2. `npm install`
-3. `cp .env.example .env`
-4. Start `rethinkdb` to check if rethinkdb is properly installed and connecting to `localhost:8080` and then stop the instance and Run `rethinkdb && ./dev-tools/babel-run-with-env. ./dev-tools/db-startup.js` (You'll see all the tables and indexes at http://localhost:8080/#tables). Then stop rethinkdb (since `npm run dev` will also try to start rethinkdb)
-5. Create an [Auth0](auth0.com) account. In your Auth0 account, go to Settings -> Clients -> and then grab your Client ID, Client Secret, and your Auth0 domain (should look like xxx.auth0.com) for place inside your `.env` file (AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_DOMAIN respectively). Also add the login callback URL (specified in `.env` and defaulting to `http://localhost:3000/login-callback` ). This should match an option in your Allowed Callback URLs in your Auth0 account settings.
-6. Run `npm run dev` to start the app
-7. Go to `localhost:3000` to load the app
-8. Because Spoke is invite-only you need to generate an invite:
+1. [Install RethinkDB](https://www.rethinkdb.com/docs/install/)
+2. Install the Node version listed under `engines` in `package.json`. [NVM](https://github.com/creationix/nvm) is one way to do this.
+3. `npm install`
+4. `npm install -g foreman`
+5. `cp .env.example .env`
+6. Start `rethinkdb` and load `localhost:8080` to confirm RethinkDB is properly installed. Then stop RethinkDB.
+7. Run `rethinkdb && ./dev-tools/babel-run-with-env.js ./dev-tools/db-startup.js` to restart RethinkDB and populate the tables. Check http://localhost:8080/#tables to confirm the tables were created. Then stop RethinkDB again.
+8. Create an [Auth0](auth0.com) account. In your Auth0 account, go to Settings -> Clients -> and then grab your Client ID, Client Secret, and your Auth0 domain (should look like xxx.auth0.com). Add those inside your `.env` file (AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_DOMAIN respectively).
+9. Add the login callback URL in `.env` (default `http://localhost:3000/login-callback`) to your Auth0 app settings under "Allowed Callback URLs".
+10. Run `npm run dev` to start the app. Wait until you see both "Node app is running ..." and "Webpack dev server is now running ..." before attempting to connect.
+11. Go to `localhost:3000` to load the app.
+12. Because Spoke is invite-only you need to generate an invite:
 Go to the RethinkDB data explorer at `http://localhost:8080/#dataexplorer` and run:
- `r.db('spokedev').table('invite').insert({is_valid: true})`
-Use the generated key to visit an invite link, e.g.: http://localhost:3000/invite/e7bcc458-c8e9-4601-8999-a489e04bd45f. You should then be prompted to create an account - note that you should sign up versus using google, github, or microsoft auth in order to satisfy authentication schema. 
-9. Create an organization and get started.
+ `r.db('spokedev').table('invite').insert({is_valid: true})`. Copy the generated key.
+13. Use the generated key to visit an invite link, e.g.: http://localhost:3000/invite/e7bcc458-c8e9-4601-8999-a489e04bd45f. This should redirect you to the login screen. Use the "Sign Up" option to create your account.
+14. You should then be prompted to create an organization. Create it.
 
 
 ## Important TODOS
@@ -47,6 +51,12 @@ If you need to use Twilio in development but with live keys, do the following to
 3. Set Request URL under "Messaging" to http://<<YOUR_NGROK>>.ngrok.io/twilio
 4. In `.env` set `TWILIO_APPLICATION_ID` to the Twilio Spoke Dev application ID
 5. In `.env` set `TWILIO_STATUS_CALLBACK_URL` to  http://<<YOUR_NGROK>>.ngrok.io/twilio-message-report
+
+## Deploying
+
+1. Run `OUTPUT_DIR=./build npm run prod-build-server`
+   This will generate something you can deploy to production in ./build and run nodejs server/server/index.js
+2. Run `npm run prod-build-client` ....
 
 # License
 Spoke is licensed under the MIT license.
