@@ -41,7 +41,7 @@ thinky.type
                   and service_message_ids
                      #strings
 
- - [ ] user-organization.js for roles
+ - [X] user-organization.js for roles
          # can just be  ['OWNER', 'ADMIN', 'TEXTER']
  - [ ] interaction-step.js for answer_options
          # recursive data structure of interaction_step_id
