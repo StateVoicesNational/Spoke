@@ -50,9 +50,9 @@ export const resolvers = {
       .eqJoin('user_id', r.table('user'))('right')
     },
     threeClickEnabled: (organization) => organization.features.indexOf('threeClick') !== -1,
-    textingHoursEnforced: (organization) => organization.texting_hours_settings.is_enforced,
-    textingHoursStart: (organization) => organization.texting_hours_settings.permitted_hours[0],
-    textingHoursEnd: (organization) => organization.texting_hours_settings.permitted_hours[1]
+    textingHoursEnforced: (organization) => organization.texting_hours_enforced,
+    textingHoursStart: (organization) => organization.texting_hours_start,
+    textingHoursEnd: (organization) => organization.texting_hours_end
   }
 }
 

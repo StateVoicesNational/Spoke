@@ -8,6 +8,7 @@ Plans to swap out rethinkdb with another orm compatible
 ## A plan to migrate:
 
  1. Replace array fields in rethinkdb with something easier to migrate
+ 2. Make 'object' fields just JSON-dumped text fields
  2. Implement used r.table() filters in a knex backend
  3. Just swap out the model schema declarations
 
@@ -16,12 +17,26 @@ Plans to swap out rethinkdb with another orm compatible
 ```
 thinky.createModel
 thinky.type
-  .object().schema() # all for createModel only
+  .object() # mostly for createModel
+     campaign-contact.js: custom_fields
+        current features can just be json -- might be worth allowing jsonb in postgres
+     job-request.js: payload
+        api/campaign.js filters by payload.id: campaign.id
+        so maybe split out id to another field
+        the rest can be JSON
+     organization.js: texting_hours_settings
+        does not need to be separate from org -- no abstraction beyond org
+     pending-message-part.js: service_message
+        see array of same kind of stuff.
+        maybe all of this should be in redis instead?
   .string
   .array ( in 
-     organization.js for permitted_hours, # actually just two values [start, end]
+     organization.js
+         for permitted_hours, # actually just two values [start, end]
+         features: just has 'one feature' = 'threeClick'
+            let's make it a string since it's tested vs. filtered
      message.js for service_messages,
-                   #strings
+                   #strings (or objects?)
                 and service_message_ids
                    #strings
 

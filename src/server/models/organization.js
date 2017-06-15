@@ -8,33 +8,21 @@ const Organization = thinky.createModel('organization', type.object().schema({
   id: type.string(),
   name: requiredString(),
   created_at: timestamp(),
-  features: type
-    .array()
-    .schema(
-      type.string().enum(FEATURES)
-    )
+  features: type.string().required().default(''), //should be restricted by FEATURES
+  texting_hours_enforced: type
+    .boolean()
     .required()
-    .default([]),
-  texting_hours_settings: type
-    .object()
-    .schema({
-      is_enforced: type
-        .boolean()
-        .required(),
-      permitted_hours: type.array()
-        .schema(
-          type.number()
-            .integer()
-            .min(0)
-            .max(24)
-        )
-        .required()
-    })
-    .default({
-      is_enforced: false,
-      permitted_hours: [9, 21]
-    })
+    .default(false),
+  texting_hours_start: type.number()
+    .integer()
     .required()
+    .min(0).max(24)
+    .default(9),
+  texting_hours_end: type.number()
+    .integer()
+    .required()
+    .min(0).max(24)
+    .default(21)
 }).allowExtra(false))
 
 export default Organization
