@@ -1,0 +1,19 @@
+// this is lazy and doesn't create ALL the roles for owners/admins
+// but this should stop the app from breaking.  and then we can add roles
+// by saving the user again
+
+ r.db('spoke').table('user_organization')
+   .filter((row) => row('roles').contains('TEXTER'))
+   .update({
+     role: 'TEXTER'
+   })
+ r.db('spoke').table('user_organization')
+   .filter((row) => row('roles').contains('ADMIN'))
+   .update({
+     role: 'ADMIN'
+   })
+ r.db('spoke').table('user_organization')
+   .filter((row) => row('roles').contains('OWNER'))
+   .update({
+     role: 'OWNER'
+   })
