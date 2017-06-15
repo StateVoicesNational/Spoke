@@ -22,24 +22,35 @@ class AdminCampaignList extends React.Component {
   handleClickNewButton = async () => {
     const { organizationId } = this.props.params
     this.setState({ isCreating: true })
-    const newCampaign = await this.props.mutations.createCampaign({
-      title: 'New Campaign',
-      description: '',
-      dueBy: null,
-      organizationId,
-      contacts: [],
-      interactionSteps: [{
-        script: ''
-      }]
+    // const newCampaign = await this.props.mutations.createCampaign({
+    //   title: 'New Campaign',
+    //   description: '',
+    //   dueBy: null,
+    //   organizationId,
+    //   contacts: [],
+    //   interactionSteps: [{
+    //     script: ''
+    //   }]
+    // })
+    debugger
+    const newInvite = await this.props.mutations.createInvite({
+      id: 'cats',
+      is_valid: true,
+      created_at: Date.now()
     })
-    if (newCampaign.errors) {
-      alert('There was an error creating your campaign')
-      throw new Error(newCampaign.errors)
+    debugger
+    if (newInvite.errors) {
+      alert('There was an error creating your invite')
+      throw new Error(newInvite.errors)
     }
+    // if (newCampaign.errors) {
+    //   alert('There was an error creating your campaign')
+    //   throw new Error(newCampaign.errors)
+    // }
 
-    this.props.router.push(
-      `/admin/${organizationId}/campaigns/${newCampaign.data.createCampaign.id}/edit?new=true`
-    )
+    // this.props.router.push(
+    //   `/admin/${organizationId}/campaigns/${newCampaign.data.createCampaign.id}/edit?new=true`
+    // )
   }
 
   handleFilterChange = (event, index, value) => {
@@ -89,16 +100,25 @@ AdminCampaignList.propTypes = {
 }
 
 const mapMutationsToProps = () => ({
-  createCampaign: (campaign) => ({
-    mutation: gql`
-      mutation createBlankCampaign($campaign: CampaignInput!) {
-        createCampaign(campaign: $campaign) {
-          id
-        }
-      }
-    `,
-    variables: { campaign }
-  })
+  // createCampaign: (campaign) => ({
+  //   mutation: gql`
+  //     mutation createBlankCampaign($campaign: CampaignInput!) {
+  //       createCampaign(campaign: $campaign) {
+  //         id
+  //       }
+  //     }
+  //   `,
+  //   variables: { campaign }
+  // }),
+  createInvite: (invite) => ({
+      mutation: gql`
+        mutation createInvite($invite: InviteInput!) {
+          createInvite(invite: $invite) {
+            id
+          }
+        }`,
+      variables: { invite }
+    })
 })
 
 export default loadData(wrapMutations(
