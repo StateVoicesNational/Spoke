@@ -396,9 +396,7 @@ const rootMutations = {
       const inviteInstance = new Invite({
         is_valid: true
       })
-      console.log(inviteInstance)
       const newInvite = await inviteInstance.save()
-      console.log(newInvite)
       return newInvite
     },
     createCampaign: async (_, { campaign }, { user, loaders }) => {
