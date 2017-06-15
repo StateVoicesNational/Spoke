@@ -14,7 +14,7 @@ This is generated from [react-apollo-starter-kit](https://github.com/saikat/reac
 2. `npm install`
 3. `cp .env.example .env`
 4. Start `rethinkdb` to check if rethinkdb is properly installed and connecting to `localhost:8080` and then stop the instance and Run `rethinkdb && ./dev-tools/babel-run-with-env. ./dev-tools/db-startup.js` (You'll see all the tables and indexes at http://localhost:8080/#tables). Then stop rethinkdb (since `npm run dev` will also try to start rethinkdb)
-5. Create an [Auth0](auth0.com) account. In your Auth0 account, go to Settings -> Clients -> and then grab your Client ID, Client Secret, and your Auth0 domain (should look like xxx.auth0.com) for place inside your `.env` file (AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_DOMAIN respectively). Also add the login callback URL (specified in `.env` and defaulting to `http://localhost:3000/login-callback` ). This should match an option in your Allowed Callback URLs in your Auth0 account settings.
+5. Create an [Auth0](https://auth0.com/) account. In your Auth0 account, go to Settings -> Clients -> Default App -> Settings, and then grab your Client ID, Client Secret, and your Auth0 domain (should look like xxx.auth0.com) for place inside your `.env` file (AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_DOMAIN respectively). Also add the login callback URL (specified in `.env` and defaulting to `http://localhost:3000/login-callback` ). This should match an option in your Allowed Callback URLs in your Auth0 account settings.
 6. Run `npm run dev` to start the app
 7. Go to `localhost:3000` to load the app
 8. Because Spoke is invite-only you need to generate an invite:
