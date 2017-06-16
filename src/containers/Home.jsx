@@ -119,16 +119,6 @@ const mapQueriesToProps = () => ({
 })
 
 const mapMutationsToProps = () => ({
-  // createCampaign: (campaign) => ({
-  //   mutation: gql`
-  //     mutation createBlankCampaign($campaign: CampaignInput!) {
-  //       createCampaign(campaign: $campaign) {
-  //         id
-  //       }
-  //     }
-  //   `,
-  //   variables: { campaign }
-  // }),
   createInvite: (invite) => ({
       mutation: gql`
         mutation createInvite($invite: InviteInput!) {
