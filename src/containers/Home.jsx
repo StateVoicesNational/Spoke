@@ -37,9 +37,7 @@ class Home extends React.Component {
   handleOrgInviteClick = async (e) => {
     e.preventDefault()
     const newInvite = await this.props.mutations.createInvite({
-      id: 'cats',
-      is_valid: true,
-      created_at: Date.now()
+      is_valid: true
     })
     if (newInvite.errors) {
       alert('There was an error creating your invite')
