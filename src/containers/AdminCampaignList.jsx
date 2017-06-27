@@ -67,7 +67,6 @@ class AdminCampaignList extends React.Component {
             campaignsFilter={this.state.campaignsFilter}
             organizationId={this.props.params.organizationId}
           />
-
         ) }
 
         <FloatingActionButton

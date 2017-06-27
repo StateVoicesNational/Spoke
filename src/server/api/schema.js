@@ -139,6 +139,11 @@ const rootSchema = `
     userId: String
   }
 
+  input InviteInput {
+    id: String
+    is_valid: Boolean
+    created_at: Date
+  }
 
   type RootQuery {
     currentUser: User
@@ -151,6 +156,7 @@ const rootSchema = `
   }
 
   type RootMutation {
+    createInvite(invite:InviteInput!): Invite
     createCampaign(campaign:CampaignInput!): Campaign
     editCampaign(id:String!, campaign:CampaignInput!): Campaign
     exportCampaign(id:String!): JobRequest
@@ -386,7 +392,13 @@ const rootMutations = {
 
       return await Organization.get(organizationId)
     },
-
+    createInvite: async (_, { invite }) => {
+      const inviteInstance = new Invite({
+        is_valid: true
+      })
+      const newInvite = await inviteInstance.save()
+      return newInvite
+    },
     createCampaign: async (_, { campaign }, { user, loaders }) => {
       await accessRequired(user, campaign.organizationId, 'ADMIN')
       const campaignInstance = new Campaign({
