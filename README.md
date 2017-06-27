@@ -13,12 +13,12 @@ This is generated from [react-apollo-starter-kit](https://github.com/saikat/reac
 1. [Install RethinkDB](https://www.rethinkdb.com/docs/install/)
 2. Install the Node version listed under `engines` in `package.json`. [NVM](https://github.com/creationix/nvm) is one way to do this.
 3. `npm install`
-4. `npm install -g foreman`
-5. `cp .env.example .env`
-6. Start `rethinkdb` and load `localhost:8080` to confirm RethinkDB is properly installed. Then stop RethinkDB.
-7. Run `rethinkdb && ./dev-tools/babel-run-with-env.js ./dev-tools/db-startup.js` to restart RethinkDB and populate the tables. Check http://localhost:8080/#tables to confirm the tables were created. Then stop RethinkDB again.
-8. Create an [Auth0](auth0.com) account. In your Auth0 account, go to Settings -> Clients -> and then grab your Client ID, Client Secret, and your Auth0 domain (should look like xxx.auth0.com). Add those inside your `.env` file (AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_DOMAIN respectively).
-9. Add the login callback URL in `.env` (default `http://localhost:3000/login-callback`) to your Auth0 app settings under "Allowed Callback URLs".
+4. `cp .spoke-env.example .spoke-env`
+5. Start `rethinkdb` and load `localhost:8080` to confirm RethinkDB is properly installed. Then stop RethinkDB.
+6. Run `rethinkdb && ./dev-tools/babel-run-with-env.js ./dev-tools/db-startup.js` to restart RethinkDB and populate the tables. Check http://localhost:8080/#tables to confirm the tables were created. Then stop RethinkDB again.
+7. Create an [Auth0](auth0.com) account. In your Auth0 account, go to Settings -> Clients -> and then grab your Client ID, Client Secret, and your Auth0 domain (should look like xxx.auth0.com). Add those inside your `.spoke-env` file (AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_DOMAIN respectively).
+8. Add the login callback URL in `.spoke-env` (default `http://localhost:3000/login-callback`) to your Auth0 app settings under "Allowed Callback URLs".
+9. Run `source .spoke-env` to populate your environment variables.
 10. Run `npm run dev` to start the app. Wait until you see both "Node app is running ..." and "Webpack dev server is now running ..." before attempting to connect.
 11. Go to `localhost:3000` to load the app.
 12. Because Spoke is invite-only you need to generate an invite:
