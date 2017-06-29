@@ -40,6 +40,12 @@ async function uploadContacts(job) {
 async function createInteractionSteps(job) {
   const id = job.payload.id
   const interactionSteps = []
+  //TODO:
+  // * set parent_id
+  // * set answer_option
+  // this means going 'backwards' and propagating the options
+  // 1. create dictionary keyed by step.id
+  // 2. back-propagate answers/parents
   for (let index = 0; index < job.payload.interaction_steps.length; index++) {
     // We use r.uuid(step.id) so that
     // any new steps will get a proper
