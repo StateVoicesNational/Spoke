@@ -23,6 +23,8 @@ thinky.type
  - [ ] job-request.js: payload
           api/campaign.js filters by payload.id: campaign.id
           so maybe split out id to another field
+          ../workers/job-handler.js
+          ../workers/lib.js
           the rest can be JSON
  - [X] organization.js: texting_hours_settings
           does not need to be separate from org -- no abstraction beyond org
@@ -30,7 +32,7 @@ thinky.type
           see array of same kind of stuff.
           maybe all of this should be in redis instead?
 
-### .array 
+### .array
 
  - [X] organization.js
           for permitted_hours, # actually just two values [start, end]
