@@ -255,9 +255,9 @@ async function exportCampaign(job) {
         'contact[optOut]': optOuts.find((ele) => ele.cell === contact.cell) ? 'true' : 'false',
         'contact[messageStatus]': contact.message_status
       }
-
-      Object.keys(contact.custom_fields).forEach((fieldName) => {
-        contactRow[`contact[${fieldName}]`] = contact.custom_fields[fieldName]
+      const customFields = JSON.parse(contact.custom_fields)
+      Object.keys(customFields).forEach((fieldName) => {
+        contactRow[`contact[${fieldName}]`] = customFields[fieldName]
       })
 
       const questionResponses = await r.table('question_response')

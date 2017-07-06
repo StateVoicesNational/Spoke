@@ -18,7 +18,7 @@ thinky.type
 
 ###  .object() # mostly for createModel
 
- - [ ] campaign-contact.js: custom_fields
+ - [X] campaign-contact.js: custom_fields
           current features can just be json -- might be worth allowing jsonb in postgres
  - [X] job-request.js: payload
           api/campaign.js filters by payload.id: campaign.id

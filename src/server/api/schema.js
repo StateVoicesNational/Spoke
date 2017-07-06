@@ -211,7 +211,6 @@ async function editCampaign(id, campaign, loaders) {
         zip: datum.zip
       }
       modelData.campaign_id = id
-      modelData.custom_fields = JSON.parse(modelData.custom_fields)
       return modelData
     })
 
