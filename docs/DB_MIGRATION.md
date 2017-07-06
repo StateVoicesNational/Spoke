@@ -20,7 +20,7 @@ thinky.type
 
  - [ ] campaign-contact.js: custom_fields
           current features can just be json -- might be worth allowing jsonb in postgres
- - [ ] job-request.js: payload
+ - [X] job-request.js: payload
           api/campaign.js filters by payload.id: campaign.id
           so maybe split out id to another field
           ../workers/job-handler.js
