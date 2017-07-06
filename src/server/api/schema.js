@@ -372,9 +372,8 @@ const rootMutations = {
       await Organization
         .get(organizationId)
         .update({
-          texting_hours_settings: {
-            permitted_hours: [textingHoursStart, textingHoursEnd]
-          }
+          texting_hours_start: textingHoursStart,
+          texting_hours_end: textingHoursEnd
         })
 
       return await Organization.get(organizationId)
@@ -385,9 +384,7 @@ const rootMutations = {
       await Organization
         .get(organizationId)
         .update({
-          texting_hours_settings: {
-            is_enforced: textingHoursEnforced
-          }
+          texting_hours_enforced: textingHoursEnforced
         })
 
       return await Organization.get(organizationId)
@@ -549,11 +546,10 @@ const rootMutations = {
       //   .get(contact.zip)
       //   .default(null)
 
-      // const [textingHoursStart, textingHoursEnd] = organization.texting_hours_settings.permitted_hours
       // const config = {
-      //   textingHoursEnforced: organization.texting_hours_settings.is_enforced,
-      //   textingHoursStart,
-      //   textingHoursEnd
+      //   textingHoursEnforced: organization.texting_hours_enforced,
+      //   textingHoursStart: organization.texting_hours_start,
+      //   textingHoursEnd: organization.texting_hours_end,
       // }
       // const offsetData = zipData ? { offset: zipData.timezone_offset, hasDST: zipData.has_dst } : null
       // if (!isBetweenTextingHours(offsetData, config)) {
