@@ -134,7 +134,7 @@ export const resolvers = {
         .getAll(campaign.id, { index: 'campaign_id' })
         .limit(1)
       if (campaignContacts.length > 0) {
-        return Object.keys(campaignContacts[0].custom_fields)
+        return Object.keys(JSON.parse(campaignContacts[0].custom_fields))
       }
       return []
     },
