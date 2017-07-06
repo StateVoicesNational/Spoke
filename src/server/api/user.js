@@ -37,15 +37,14 @@ export const resolvers = {
       let orgs = r.table('user_organization')
         .getAll(user.id, { index: 'user_id' })
       if (role) {
-        orgs = orgs.filter((roles) => roles('roles').contains(role))
+        orgs = orgs.filter({'role': role})
       }
-      return orgs.eqJoin('organization_id', r.table('organization'))('right')
+      return orgs.eqJoin('organization_id', r.table('organization'))('right').distinct()
     },
     roles: async(user, { organizationId }) => (
       r.table('user_organization')
         .getAll([organizationId, user.id], { index: 'organization_user' })
-        .limit(1)(0)
-        .pluck('roles')('roles')
+        .pluck('role')('role')
     ),
     todos: async (user, { organizationId }) => {
       return r.table('assignment')

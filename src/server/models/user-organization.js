@@ -6,14 +6,7 @@ const UserOrganization = thinky.createModel('user_organization', type.object().s
   id: type.string(),
   user_id: requiredString(),
   organization_id: requiredString(),
-  roles: type
-    .array()
-    .schema(type
-        .string()
-        .enum('OWNER', 'ADMIN', 'TEXTER')
-      )
-    .required()
-    .allowNull(false)
+  role: requiredString().enum('OWNER', 'ADMIN', 'TEXTER')
 }).allowExtra(false))
 
 UserOrganization.ensureIndex('user_id')
