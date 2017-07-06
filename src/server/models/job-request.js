@@ -4,9 +4,8 @@ import { requiredString, timestamp } from './custom-types'
 
 const JobRequest = thinky.createModel('job_request', type.object().schema({
   id: type.string(),
-  payload: type
-    .object()
-    .required(),
+  campaign_id: requiredString(),
+  payload: requiredString(),
   queue_name: requiredString(),
   job_type: requiredString(),
   locks_queue: type

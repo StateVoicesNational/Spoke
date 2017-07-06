@@ -85,9 +85,7 @@ export const resolvers = {
       loaders.organization.load(campaign.organization_id)
     ),
     pendingJobs: async (campaign) => r.table('job_request')
-      .filter({
-        payload: { id: campaign.id }
-      }),
+      .filter({ campaign_id: campaign.id }),
     texters: async (campaign) => (
       r.table('assignment')
         .getAll(campaign.id, { index: 'campaign_id' })

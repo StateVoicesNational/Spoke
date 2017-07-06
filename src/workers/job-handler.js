@@ -8,14 +8,14 @@ import { sendEmail } from '../server/mail'
 import { Notifications, sendUserNotification } from '../server/notifications'
 
 async function uploadContacts(job) {
-  const payload = job.payload
-  const campaignId = payload.id
+  const campaignId = job.campaign_id
   // We do this deletion in schema.js but we do it again here just in case the the queue broke and we had a backlog of contact uploads for one campaign
   await r.table('campaign_contact')
     .getAll(campaignId, { index: 'campaign_id' })
     .delete()
   const maxPercentage = 100
-  let contacts = await gunzip(payload.contacts)
+  //NOTE: payload is mostly JSON, but double-compress/stringifying seems way overkill
+  let contacts = await gunzip(job.payload)
   const chunkSize = 1000
   contacts = JSON.parse(contacts)
   const numChunks = Math.ceil(contacts.length / chunkSize)
@@ -38,13 +38,14 @@ async function uploadContacts(job) {
 }
 
 async function createInteractionSteps(job) {
-  const id = job.payload.id
+  const payload = JSON.parse(job.payload)
+  const id = job.campaign_id
   const interactionSteps = []
-  for (let index = 0; index < job.payload.interaction_steps.length; index++) {
+  for (let index = 0; index < payload.interaction_steps.length; index++) {
     // We use r.uuid(step.id) so that
     // any new steps will get a proper
     // UUID as well.
-    const step = job.payload.interaction_steps[index]
+    const step = payload.interaction_steps[index]
     const newId = await r.uuid(step.id)
     const answerOptions = []
     if (step.answerOptions) {
@@ -77,8 +78,9 @@ async function createInteractionSteps(job) {
 }
 
 async function assignTexters(job) {
-  const id = job.payload.id
-  const texters = job.payload.texters
+  const payload = JSON.parse(job.payload)
+  const id = job.campaign_id
+  const texters = payload.texters
   const currentAssignments = await r.table('assignment')
     .getAll(id, { index: 'campaign_id' })
     .merge((row) => ({
@@ -166,10 +168,11 @@ async function assignTexters(job) {
 }
 
 async function exportCampaign(job) {
+  const payload = JSON.parse(job.payload)
   const jobId = job.id
-  const id = job.payload.id
+  const id = job.campaign_id
   const campaign = await Campaign.get(id)
-  const requester = job.payload.requester
+  const requester = payload.requester
   const user = await User.get(requester)
   const allQuestions = {}
   const questionCount = {}
