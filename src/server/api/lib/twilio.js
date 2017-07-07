@@ -16,7 +16,7 @@ async function convertMessagePartsToMessage(messageParts) {
   const firstPart = messageParts[0]
   const userNumber = firstPart.user_number
   const contactNumber = firstPart.contact_number
-  const serviceMessages = messageParts.map((part) => part.service_message)
+  const serviceMessages = messageParts.map((part) => JSON.parse(part.service_message))
   const text = serviceMessages
     .map((serviceMessage) => serviceMessage.Body)
     .join('')
@@ -32,8 +32,8 @@ async function convertMessagePartsToMessage(messageParts) {
     user_number: userNumber,
     is_from_contact: true,
     text,
-    service_messages: serviceMessages,
-    service_message_ids: serviceMessages.map((doc) => doc.MessageSid),
+    service_response: JSON.stringify(serviceMessages),
+    service_id: serviceMessages[0].service_id,
     assignment_id: lastMessage.assignment_id,
     service: 'twilio',
     send_status: 'DELIVERED'
@@ -108,18 +108,18 @@ async function sendMessage(message) {
       if (err) {
         hasError = true
         log.error(err)
-        messageToSave.service_messages.push(err)
+        messageToSave.service_response += JSON.stringify(err)
       }
       if (response) {
-        const serviceMessageIds = [response.sid] // TODO: Multiple message parts?
-        messageToSave.service_message_ids = serviceMessageIds
+        messageToSave.service_id = response.sid
         hasError = !!response.error_code
-        messageToSave.service_messages.push(response)
+        messageToSave.service_response += JSON.stringify(response)
       }
 
 
       if (hasError) {
-        if (messageToSave.service_messages.length >= MAX_SEND_ATTEMPTS) {
+        const SENT_STRING = 'error_code' //will appear in responses
+        if (messageToSave.service_response.split(SENT_STRING).length >= MAX_SEND_ATTEMPTS) {
           messageToSave.send_status = 'ERROR'
         }
         Message.save(messageToSave, { conflict: 'update' })
@@ -144,12 +144,12 @@ async function handleDeliveryReport(report) {
   if (messageSid) {
     const messageStatus = report.MessageStatus
     const message = await r.table('message')
-      .getAll(messageSid, { index: 'service_message_ids' })
+      .getAll(messageSid, { index: 'service_id' })
       .limit(1)(0)
       .default(null)
 
     if (message) {
-      message.service_messages.push(report)
+      message.service_response += JSON.stringify(report)
       if (messageStatus === 'delivered') {
         message.send_status = 'DELIVERED'
       } else if (messageStatus === 'failed' ||
@@ -176,8 +176,9 @@ async function handleIncomingMessage(message) {
 
   const pendingMessagePart = new PendingMessagePart({
     service: 'twilio',
+    service_id: MessageSid,
     parent_id: '',
-    service_message: message,
+    service_message: JSON.stringify(message),
     user_number: userNumber,
     contact_number: contactNumber
   })
