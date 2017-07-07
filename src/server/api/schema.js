@@ -199,7 +199,6 @@ async function editCampaign(id, campaign, loaders) {
       delete campaignUpdates[key]
     }
   })
-
   if (campaign.hasOwnProperty('contacts')) {
     const contactsToSave = campaign.contacts.map((datum) => {
       const modelData = {
@@ -213,19 +212,16 @@ async function editCampaign(id, campaign, loaders) {
       modelData.campaign_id = id
       return modelData
     })
-
     const compressedString = await gzip(JSON.stringify(contactsToSave))
-
     await JobRequest.save({
       queue_name: `${id}:edit_campaign`,
       job_type: 'upload_contacts',
       locks_queue: true,
       campaign_id: id,
-      //NOTE: this is mostly JSON, but double-compress/stringifying seems way overkill
-      payload: compressedString
+      //NOTE: need to stringify, since compressedString is a binary buffer
+      payload: JSON.stringify(compressedString)
     })
   }
-
   if (campaign.hasOwnProperty('texters')) {
     await JobRequest.save({
       queue_name: `${id}:edit_campaign`,
@@ -238,7 +234,6 @@ async function editCampaign(id, campaign, loaders) {
       })
     })
   }
-
   if (campaign.hasOwnProperty('interactionSteps')) {
     await JobRequest.save({
       queue_name: `${id}:edit_campaign`,
