@@ -218,8 +218,8 @@ async function editCampaign(id, campaign, loaders) {
       job_type: 'upload_contacts',
       locks_queue: true,
       campaign_id: id,
-      //NOTE: need to stringify, since compressedString is a binary buffer
-      payload: JSON.stringify(compressedString)
+      //NOTE: stringifying because compressedString is a binary buffer
+      payload: compressedString.toString('base64')
     })
   }
   if (campaign.hasOwnProperty('texters')) {
