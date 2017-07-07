@@ -211,7 +211,6 @@ async function editCampaign(id, campaign, loaders) {
         zip: datum.zip
       }
       modelData.campaign_id = id
-      modelData.custom_fields = JSON.parse(modelData.custom_fields)
       return modelData
     })
 
@@ -221,10 +220,9 @@ async function editCampaign(id, campaign, loaders) {
       queue_name: `${id}:edit_campaign`,
       job_type: 'upload_contacts',
       locks_queue: true,
-      payload: {
-        id,
-        contacts: compressedString
-      }
+      campaign_id: id,
+      //NOTE: this is mostly JSON, but double-compress/stringifying seems way overkill
+      payload: compressedString
     })
   }
 
@@ -233,10 +231,11 @@ async function editCampaign(id, campaign, loaders) {
       queue_name: `${id}:edit_campaign`,
       locks_queue: true,
       job_type: 'assign_texters',
-      payload: {
+      campaign_id: id,
+      payload: JSON.stringify({
         id,
         texters: campaign.texters
-      }
+      })
     })
   }
 
@@ -245,10 +244,11 @@ async function editCampaign(id, campaign, loaders) {
       queue_name: `${id}:edit_campaign`,
       locks_queue: true,
       job_type: 'create_interaction_steps',
-      payload: {
+      campaign_id: id,
+      payload: JSON.stringify({
         id,
         interaction_steps: campaign.interactionSteps
-      }
+      })
     })
   }
 
@@ -327,10 +327,11 @@ const rootMutations = {
         queue_name: `${id}:export`,
         job_type: 'export',
         locks_queue: false,
-        payload: {
+        campaign_id: id,
+        payload: JSON.stringify({
           id,
           requester: user.id
-        }
+        })
       })
       return newJob
     },
