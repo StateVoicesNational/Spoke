@@ -8,16 +8,6 @@ async function sleep(ms = 0) {
   return new Promise(fn => setTimeout(fn, ms))
 }
 
-const getMessageId = (part) => {
-  let messageId
-  if (part.service === 'nexmo') {
-    messageId = part.service_message.messageId
-  } else if (part.service === 'twilio') {
-    messageId = part.service_message.MessageSid
-  }
-  return messageId
-}
-
 async function handleIncomingMessageParts() {
   const serviceMap = { nexmo, twilio }
   const messagePartsByService = await r.table('pending_message_part')
@@ -36,9 +26,9 @@ async function handleIncomingMessageParts() {
     for (let i = 0; i < allPartsCount; i++) {
       const part = allParts[i]
 
-      const serviceMessageId = getMessageId(part)
+      const serviceMessageId = part.service_id
       const savedCount = await r.table('message')
-        .getAll(serviceMessageId, { index: 'service_message_ids' })
+        .getAll(serviceMessageId, { index: 'service_id' })
         .count()
 
       const lastMessage = await getLastMessage({
@@ -47,15 +37,15 @@ async function handleIncomingMessageParts() {
         service: service === nexmo ? 'nexmo' : 'twilio'
       })
 
-      const duplicateMessageToSaveExists = !!messagesToSave.find((message) => message.service_message_ids.indexOf(serviceMessageId) !== -1)
+      const duplicateMessageToSaveExists = !!messagesToSave.find((message) => message.service_id == serviceMessageId)
       if (!lastMessage) {
         log.info('Received message part with no thread to attach to', part)
         messagePartsToDelete.push(part)
       } else if (savedCount > 0) {
-        log.info(`Found already saved message matching part service message ID ${getMessageId(part)}`)
+        log.info(`Found already saved message matching part service message ID ${part.service_id}`)
         messagePartsToDelete.push(part)
       } else if (duplicateMessageToSaveExists) {
-        log.info(`Found duplicate message to be saved matching part service message ID ${getMessageId(part)}`)
+        log.info(`Found duplicate message to be saved matching part service message ID ${part.service_id}`)
         messagePartsToDelete.push(part)
       } else {
         const parentId = part.parent_id
@@ -67,13 +57,13 @@ async function handleIncomingMessageParts() {
             throw new Error('should not have a parent ID for twilio')
           }
           const groupKey = [parentId, part.contact_number, part.user_number]
-
+          const serviceMessage = JSON.parse(part.service_message)
           if (!concatMessageParts.hasOwnProperty(groupKey)) {
-            const partCount = parseInt(part.service_message['concat-total'], 10)
+            const partCount = parseInt(serviceMessage['concat-total'], 10)
             concatMessageParts[groupKey] = Array(partCount).fill(null)
           }
 
-          const partIndex = parseInt(part.service_message['concat-part'], 10) - 1
+          const partIndex = parseInt(serviceMessage['concat-part'], 10) - 1
           if (concatMessageParts[groupKey][partIndex] !== null) {
             messagePartsToDelete.push(part)
           } else {
@@ -99,11 +89,12 @@ async function handleIncomingMessageParts() {
 
     const messageCount = messagesToSave.length
     for (let i = 0; i < messageCount; i++) {
-      log.info('Saving message with service message IDs', messagesToSave[i].service_message_ids)
+      log.info('Saving message with service message ID', messagesToSave[i].service_id)
       await saveNewIncomingMessage(messagesToSave[i])
     }
 
     const messagePartsToDeleteCount = messagePartsToDelete.length
+    //POSTMIGRATION TODO: make this efficiently filter(id__in=IDS).delete()
     for (let i = 0; i < messagePartsToDeleteCount; i++) {
       log.info('Deleting message part', messagePartsToDelete[i].id)
       await r.table('pending_message_part')

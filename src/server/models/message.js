@@ -14,19 +14,13 @@ const Message = thinky.createModel('message', type.object().schema({
     .required()
     .allowNull(false),
   text: optionalString(),
+  //for errors,etc returned back by the service
+  // will be several json strings appended together, so JSON.parse will NOT work 
+  service_response: optionalString(),
   assignment_id: requiredString(),
   service: optionalString(),
+  service_id: optionalString(),
   send_status: requiredString().enum('QUEUED', 'SENT', 'DELIVERED', 'ERROR', 'PAUSED', 'NOT_ATTEMPTED'),
-  service_message_ids: type
-    .array()
-    .schema(type.string())
-    .required()
-    .default([]),
-  service_messages: type
-    .array()
-    .schema(type.object())
-    .required()
-    .default([]),
   created_at: timestamp()
 }).allowExtra(false))
 
@@ -34,6 +28,6 @@ Message.ensureIndex('assignment_id')
 Message.ensureIndex('send_status')
 Message.ensureIndex('user_number')
 Message.ensureIndex('contact_number')
-Message.ensureIndex('service_message_ids', undefined, { multi: true })
+Message.ensureIndex('service_id')
 
 export default Message

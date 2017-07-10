@@ -18,7 +18,7 @@ async function convertMessagePartsToMessage(messageParts) {
   const firstPart = messageParts[0]
   const userNumber = firstPart.user_number
   const contactNumber = firstPart.contact_number
-  const serviceMessages = messageParts.map((part) => part.service_message)
+  const serviceMessages = messageParts.map((part) => JSON.parse(part.service_message))
   const text = serviceMessages
     .map((serviceMessage) => serviceMessage.text)
     .join('')
@@ -34,8 +34,8 @@ async function convertMessagePartsToMessage(messageParts) {
     user_number: userNumber,
     is_from_contact: true,
     text,
-    service_messages: serviceMessages,
-    service_message_ids: serviceMessages.map((doc) => doc.messageId),
+    service_response: JSON.stringify(serviceMessages),
+    service_id: serviceMessages[0].service_id,
     assignment_id: lastMessage.assignment_id,
     service: 'nexmo',
     send_status: 'DELIVERED'
@@ -112,10 +112,10 @@ async function sendMessage(message) {
               hasError = true
             }
           })
+          messageToSave.service_response += JSONmessages.push(response)
         }
 
         messageToSave.service = 'nexmo'
-        messageToSave.service_messages.push(response || null)
 
         if (hasError) {
           if (messageToSave.service_messages.length >= MAX_SEND_ATTEMPTS) {
@@ -142,7 +142,7 @@ async function sendMessage(message) {
 async function handleDeliveryReport(report) {
   if (report.hasOwnProperty('client-ref')) {
     const message = await Message.get(report['client-ref'])
-    message.service_messages.push(report)
+    message.service_response += JSON.stringify(report)
     if (report.status === 'delivered' || report.status === 'accepted') {
       message.send_status = 'DELIVERED'
     } else if (report.status === 'expired' ||
@@ -177,8 +177,9 @@ async function handleIncomingMessage(message) {
 
   const pendingMessagePart = new PendingMessagePart({
     service: 'nexmo',
-    parent_id: parentId,
-    service_message: message,
+    service_id: message['concat-ref'] || message.messageId,
+    parent_id: parentId, //do we need this anymore, now we have service_id?
+    service_message: JSON.stringify(message),
     user_number: userNumber,
     contact_number: contactNumber
   })
