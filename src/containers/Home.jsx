@@ -34,6 +34,21 @@ class Home extends React.Component {
     orgLessUser: false
   }
 
+  handleOrgInviteClick = async (e) => {
+    e.preventDefault()
+    const newInvite = await this.props.mutations.createInvite({
+      is_valid: true
+    })
+    if (newInvite.errors) {
+      alert('There was an error creating your invite')
+      throw new Error(newInvite.errors)
+    } else {
+      // alert(newInvite.data.createInvite.id)
+      this.props.router.push(`/invite/${newInvite.data.createInvite.id}`)
+    }
+
+  }
+
   componentWillMount() {
     const user = this.props.data.currentUser
     if (user) {
@@ -65,7 +80,7 @@ class Home extends React.Component {
         Spoke is a new way to run campaigns using text messaging. We are currently in private beta.
         </div>
         <div>
-          <a className={css(styles.link)} href='mailto:help@gearshift.co'>Get in touch if you'd like an invitation.</a>
+          <a className={css(styles.link)} href='#' onClick={this.handleOrgInviteClick}>Login and get started</a>
         </div>
       </div>
     )
@@ -101,5 +116,16 @@ const mapQueriesToProps = () => ({
   }
 })
 
+const mapMutationsToProps = () => ({
+  createInvite: (invite) => ({
+      mutation: gql`
+        mutation createInvite($invite: InviteInput!) {
+          createInvite(invite: $invite) {
+            id
+          }
+        }`,
+      variables: { invite }
+    })
+})
 
-export default loadData(wrapMutations(withRouter(Home)), { mapQueriesToProps })
+export default loadData(wrapMutations(withRouter(Home)), { mapQueriesToProps, mapMutationsToProps })

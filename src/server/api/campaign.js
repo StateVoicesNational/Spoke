@@ -85,9 +85,7 @@ export const resolvers = {
       loaders.organization.load(campaign.organization_id)
     ),
     pendingJobs: async (campaign) => r.table('job_request')
-      .filter({
-        payload: { id: campaign.id }
-      }),
+      .filter({ campaign_id: campaign.id }),
     texters: async (campaign) => (
       r.table('assignment')
         .getAll(campaign.id, { index: 'campaign_id' })
@@ -136,7 +134,7 @@ export const resolvers = {
         .getAll(campaign.id, { index: 'campaign_id' })
         .limit(1)
       if (campaignContacts.length > 0) {
-        return Object.keys(campaignContacts[0].custom_fields)
+        return Object.keys(JSON.parse(campaignContacts[0].custom_fields))
       }
       return []
     },
