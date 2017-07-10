@@ -9,8 +9,10 @@ Plans to swap out rethinkdb with another orm compatible
 
  1. Replace array fields in rethinkdb with something easier to migrate
  2. Make 'object' fields just JSON-dumped text fields
- 2. Implement used r.table() filters in a knex backend
- 3. Just swap out the model schema declarations
+ 3. Add/setup knex backend connection on 'startup'
+ 4. Build models to load/run appropriately (knex-orm or just knex 'createTable', etc)
+ 4. Implement used r.table() filters in a knex backend
+ 5. Just swap out the model schema declarations
 
 ## Custom model options incompatible with RDBMS
 
@@ -38,10 +40,13 @@ thinky.type
           for permitted_hours, # actually just two values [start, end]
           features: just has 'one feature' = 'threeClick'
              let's make it a string since it's tested vs. filtered
- - [ ] message.js for service_messages,
+ - [X] message.js for service_messages,
                      #strings (or objects?)
                   and service_message_ids
                      #strings
+       This is actually over-simplifying PendingMessagePart context
+       anyway, so we are going to re-jigger how these two relate to
+       each other.
 
  - [X] user-organization.js for roles
          # can just be  ['OWNER', 'ADMIN', 'TEXTER']
