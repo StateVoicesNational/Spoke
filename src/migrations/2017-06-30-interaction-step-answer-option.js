@@ -11,7 +11,7 @@ import { r } from '../server/models'
 (async function () {
   console.log('migrating interaction steps to updated schema');
   try {
-    const parentSteps = await r.db('spokedev')
+    const parentSteps = await r.db('spoke')
       .table('interaction_step')
       .filter((step) => step('answer_options')
       .ne([]))
@@ -23,7 +23,7 @@ import { r } from '../server/models'
         const parentId = parentSteps[i]['id']
         const answerOption = parentSteps[i]['answer_options'][j]
         console.log(answerOption)
-        const answerStepUpdate = await r.db('spokedev')
+        const answerStepUpdate = await r.db('spoke')
           .table('interaction_step')
           .get(answerOption.interaction_step_id)
           .update({'answer_option': answerOption.value, 'parent_interaction_id': parentId})
