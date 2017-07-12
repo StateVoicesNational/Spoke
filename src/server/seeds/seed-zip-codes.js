@@ -24,10 +24,8 @@ export async function seedZipCodes() {
         state: row.state,
         timezone_offset: Number(row.timezone_offset),
         has_dst: Boolean(row.has_dst),
-        location: {
-          latitude: Number(row.latitude),
-          longitude: Number(row.longitude)
-        }
+        latitude: Number(row.latitude),
+        longitude: Number(row.longitude)
       }))
 
       log.info(zipCodes.length, 'ZIP CODES')
