@@ -3,9 +3,9 @@ import webpack from 'webpack'
 import config from './config'
 import { log } from '../src/lib'
 
-const webpackPort = 3000
+const webpackPort = process.env.WEBPACK_PORT
 const appPort = process.env.DEV_APP_PORT
-const webpackHost = process.env.JOB_DB_HOST
+const webpackHost = process.env.WEBPACK_HOST
 
 Object.keys(config.entry)
 .forEach((key) => {
