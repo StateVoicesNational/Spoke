@@ -182,14 +182,14 @@ class AdminCampaignStats extends React.Component {
                       label='Unarchive'
                     />
                   ) : [
-                  <RaisedButton
-                    onTouchTap={async () => await this.props.mutations.archiveCampaign(campaignId)}
-                    label='Archive'
-                  />,
-                  <RaisedButton
-                    onTouchTap={() => this.props.router.push(`/admin/${organizationId}/campaigns/${campaignId}/edit`)}
-                    label='Edit'
-                  />
+                    <RaisedButton
+                      onTouchTap={async () => await this.props.mutations.archiveCampaign(campaignId)}
+                      label='Archive'
+                    />,
+                    <RaisedButton
+                      onTouchTap={() => this.props.router.push(`/admin/${organizationId}/campaigns/${campaignId}/edit`)}
+                      label='Edit'
+                    />
                   ]}
                 </div>
               </div>

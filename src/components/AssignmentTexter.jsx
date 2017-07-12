@@ -157,7 +157,8 @@ class AssignmentTexter extends React.Component {
         icon={<Check />}
       >
         <FlatButton
-          label="Go back to todos">
+          label='Go back to todos'
+        >
           primary
         </FlatButton>
       </Empty>
@@ -167,9 +168,9 @@ class AssignmentTexter extends React.Component {
   render() {
     const { contacts } = this.props.assignment
 
-     return (
+    return (
       <div className={css(styles.container)}>
-        { contacts.length === 0 ? this.renderEmpty() : this.renderTexter() }
+        {contacts.length === 0 ? this.renderEmpty() : this.renderTexter()}
       </div>
     )
   }

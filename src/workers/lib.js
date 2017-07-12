@@ -14,7 +14,7 @@ export async function updateJob(job, percentComplete) {
 
 export async function getNextJob() {
   const lockedQueues = await r.table('job_request')
-   .group({index: 'queue_name'})
+   .group({ index: 'queue_name' })
    .filter({
      assigned: true,
      locks_queue: true

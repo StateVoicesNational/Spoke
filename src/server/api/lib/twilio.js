@@ -41,7 +41,6 @@ async function convertMessagePartsToMessage(messageParts) {
 }
 
 async function findNewCell() {
-
   if (!twilio) {
     return { availablePhoneNumbers: [{ phone_number: '+15005550006' }] }
   }
@@ -82,7 +81,6 @@ async function rentNewCell() {
 }
 
 
-
 async function sendMessage(message) {
   if (!twilio) {
     await Message.get(message.id)
@@ -118,7 +116,7 @@ async function sendMessage(message) {
 
 
       if (hasError) {
-        const SENT_STRING = 'error_code' //will appear in responses
+        const SENT_STRING = 'error_code' // will appear in responses
         if (messageToSave.service_response.split(SENT_STRING).length >= MAX_SEND_ATTEMPTS) {
           messageToSave.send_status = 'ERROR'
         }

@@ -38,7 +38,7 @@ const inlineStyles = {
   }
 }
 
-const formatTextingHours = (hour) =>  moment(hour, 'H').format('h a')
+const formatTextingHours = (hour) => moment(hour, 'H').format('h a')
 class Settings extends React.Component {
 
   state = {
@@ -131,12 +131,12 @@ class Settings extends React.Component {
               </span>
               <Toggle
                 toggled={organization.textingHoursEnforced}
-                label="Enforce texting hours?"
+                label='Enforce texting hours?'
                 onToggle={async (event, isToggled) => await this.props.mutations.updateTextingHoursEnforcement(isToggled)}
               />
             </div>
 
-            { organization.textingHoursEnforced ? (
+            {organization.textingHoursEnforced ? (
               <div className={css(styles.section)}>
                 <span className={css(styles.sectionLabel)}>
                   Texting hours:
@@ -146,7 +146,7 @@ class Settings extends React.Component {
             ) : ''}
           </CardText>
           <CardActions>
-            { organization.textingHoursEnforced ? (
+            {organization.textingHoursEnforced ? (
               <FlatButton
                 label='Change texting hours'
                 primary

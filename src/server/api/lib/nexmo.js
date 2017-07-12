@@ -178,7 +178,7 @@ async function handleIncomingMessage(message) {
   const pendingMessagePart = new PendingMessagePart({
     service: 'nexmo',
     service_id: message['concat-ref'] || message.messageId,
-    parent_id: parentId, //do we need this anymore, now we have service_id?
+    parent_id: parentId, // do we need this anymore, now we have service_id?
     service_message: JSON.stringify(message),
     user_number: userNumber,
     contact_number: contactNumber

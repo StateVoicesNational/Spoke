@@ -94,7 +94,7 @@ async function handleIncomingMessageParts() {
     }
 
     const messagePartsToDeleteCount = messagePartsToDelete.length
-    //POSTMIGRATION TODO: make this efficiently filter(id__in=IDS).delete()
+    // POSTMIGRATION TODO: make this efficiently filter(id__in=IDS).delete()
     for (let i = 0; i < messagePartsToDeleteCount; i++) {
       log.info('Deleting message part', messagePartsToDelete[i].id)
       await r.table('pending_message_part')

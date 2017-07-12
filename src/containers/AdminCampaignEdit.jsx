@@ -372,7 +372,7 @@ class AdminCampaignEdit extends React.Component {
           {isCompleted ? 'Your campaign is all good to go! >>>>>>>>>' : 'You need to complete all the sections below before you can start this campaign'}
         </div>
         <div>
-          { this.props.campaignData.campaign.isArchived ? (
+          {this.props.campaignData.campaign.isArchived ? (
             <RaisedButton
               label='Unarchive'
               onTouchTap={async() => await this.props.mutations.unarchiveCampaign(this.props.campaignData.campaign.id)}
@@ -382,7 +382,7 @@ class AdminCampaignEdit extends React.Component {
               label='Archive'
               onTouchTap={async() => await this.props.mutations.archiveCampaign(this.props.campaignData.campaign.id)}
             />
-          ) }
+          )}
           <RaisedButton
             primary
             label='Start This Campaign!'
@@ -551,13 +551,13 @@ const mapQueriesToProps = ({ ownProps }) => ({
 // Right now we are copying the result fields instead of using a fragment because of https://github.com/apollostack/apollo-client/issues/451
 const mapMutationsToProps = () => ({
   archiveCampaign: (campaignId) => ({
-      mutation: gql`mutation archiveCampaign($campaignId: String!) {
+    mutation: gql`mutation archiveCampaign($campaignId: String!) {
           archiveCampaign(id: $campaignId) {
             ${campaignInfoFragment}
           }
         }`,
-      variables: { campaignId }
-    }),
+    variables: { campaignId }
+  }),
   unarchiveCampaign: (campaignId) => ({
     mutation: gql`mutation unarchiveCampaign($campaignId: String!) {
         unarchiveCampaign(id: $campaignId) {

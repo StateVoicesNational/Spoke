@@ -7,13 +7,12 @@ import gql from 'graphql-tag'
 
 class TexterTodoList extends React.Component {
   renderTodoList(assignments) {
-
     const organizationId = this.props.params.organizationId
     return assignments
       .sort((x, y) => (x.unmessagedCount + x.unrepliedCount) > (y.unmessagedCount + y.unrepliedCount) ? -1 : 1)
       .map((assignment) => {
-      if (assignment.unmessagedCount > 0 || assignment.unrepliedCount > 0 || assignment.badTimezoneCount > 0) {
-        return (
+        if (assignment.unmessagedCount > 0 || assignment.unrepliedCount > 0 || assignment.badTimezoneCount > 0) {
+          return (
           <AssignmentSummary
             organizationId={organizationId}
             key={assignment.id}
@@ -23,9 +22,9 @@ class TexterTodoList extends React.Component {
             badTimezoneCount={assignment.badTimezoneCount}
           />
         )
-      }
-      return null
-    }).filter((ele) => ele !== null)
+        }
+        return null
+      }).filter((ele) => ele !== null)
   }
 
   render() {

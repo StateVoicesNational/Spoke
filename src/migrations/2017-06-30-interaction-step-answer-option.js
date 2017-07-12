@@ -9,7 +9,7 @@ import { r } from '../server/models'
 // ./dev-tools/babel-run-with-env.js ./src/migrations/2017-06-30-interaction-step-answer-option.js
 
 (async function () {
-  console.log('migrating interaction steps to updated schema');
+  console.log('migrating interaction steps to updated schema')
   try {
     const parentSteps = await r.db('spoke')
       .table('interaction_step')
@@ -26,7 +26,7 @@ import { r } from '../server/models'
         const answerStepUpdate = await r.db('spoke')
           .table('interaction_step')
           .get(answerOption.interaction_step_id)
-          .update({'answer_option': answerOption.value, 'parent_interaction_id': parentId})
+          .update({ 'answer_option': answerOption.value, 'parent_interaction_id': parentId })
         console.log(answerStepUpdate)
       }
     }

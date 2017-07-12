@@ -48,7 +48,7 @@ export const resolvers = {
   },
   Timezone: {
     offset: (zipCode) => zipCode.timezone_offset,
-    hasDST: (zipCode) => zipCode.has_dst,
+    hasDST: (zipCode) => zipCode.has_dst
   },
   CampaignContact: {
     ...mapFieldsToModel([
@@ -66,7 +66,7 @@ export const resolvers = {
       loaders.campaign.load(campaignContact.campaign_id)
     ),
     questionResponses: async (campaignContact) => (
-      //TODO: what are all the questionresponses
+      // TODO: what are all the questionresponses
       // -- join by value==[child]interactionstep.answer_option
       // -- also join by interaction_step_id==[parent]interactionstep: "parent_interaction_step", "contact_response_value"
       r.table('question_response')
@@ -118,6 +118,6 @@ export const resolvers = {
     interactionSteps: async (campaignContact) => (
       await r.table('interaction_step')
         .getAll(campaignContact.campaign_id, { index: 'campaign_id' })
-    ),
+    )
   }
 }

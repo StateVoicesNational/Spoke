@@ -136,7 +136,7 @@ export default class CampaignTextersForm extends React.Component {
         ref='autocomplete'
         style={inlineStyles.autocomplete}
         autoFocus
-        onFocus={() => this.setState({ searchText: ''})}
+        onFocus={() => this.setState({ searchText: '' })}
         onUpdateInput={(searchText) => this.setState({ searchText })}
         searchText={this.state.searchText}
         filter={filter}

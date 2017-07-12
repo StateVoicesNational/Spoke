@@ -70,8 +70,7 @@ class AdminPersonList extends React.Component {
     const currentUser = this.props.userData.currentUser
 
     return (
-      <Table
-      >
+      <Table >
           <TableBody
             displayRowCheckbox={false}
           >
@@ -87,7 +86,7 @@ class AdminPersonList extends React.Component {
                     disabled={person.id === currentUser.id || getHighestRole(person.roles) === 'OWNER' && getHighestRole(currentUser.roles) !== 'OWNER'}
                     onChange={(event, index, value) => this.handleChange(person.id, value)}
                   >
-                    { options.map((option) => (
+                    {options.map((option) => (
                       <MenuItem
                         value={option}
                         disabled={option === 'OWNER' && getHighestRole(currentUser.roles) !== 'OWNER'}
@@ -180,4 +179,4 @@ const mapQueriesToProps = ({ ownProps }) => ({
   }
 })
 
-export default loadData(AdminPersonList, { mapQueriesToProps, mapMutationsToProps})
+export default loadData(AdminPersonList, { mapQueriesToProps, mapMutationsToProps })

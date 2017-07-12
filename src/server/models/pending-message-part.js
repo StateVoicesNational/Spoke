@@ -2,7 +2,7 @@ import thinky from './thinky'
 const type = thinky.type
 import { requiredString, optionalString, timestamp } from './custom-types'
 
-//this mostly exists because of:
+// this mostly exists because of:
 // https://help.nexmo.com/hc/en-us/articles/205704158-Inbound-SMS-concatenation
 // Recommended handling is here:
 // https://docs.nexmo.com/messaging/sms-api
@@ -13,7 +13,7 @@ const PendingMessagePart = thinky.createModel('pending_message_part', type.objec
   service: requiredString(),
   service_id: requiredString(),
   parent_id: optionalString(),
-  service_message: requiredString(), //JSON
+  service_message: requiredString(), // JSON
   user_number: requiredString(),
   contact_number: requiredString(),
   created_at: timestamp()

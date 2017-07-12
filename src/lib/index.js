@@ -5,7 +5,7 @@ export {
   getLocalTime,
   isBetweenTextingHours,
   defaultTimezoneIsBetweenTextingHours,
-  getOffsets,
+  getOffsets
 } from './timezones'
 export {
   isClient

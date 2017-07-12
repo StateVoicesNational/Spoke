@@ -46,7 +46,6 @@ class Home extends React.Component {
       // alert(newInvite.data.createInvite.id)
       this.props.router.push(`/invite/${newInvite.data.createInvite.id}`)
     }
-
   }
 
   componentWillMount() {
@@ -118,14 +117,14 @@ const mapQueriesToProps = () => ({
 
 const mapMutationsToProps = () => ({
   createInvite: (invite) => ({
-      mutation: gql`
+    mutation: gql`
         mutation createInvite($invite: InviteInput!) {
           createInvite(invite: $invite) {
             id
           }
         }`,
-      variables: { invite }
-    })
+    variables: { invite }
+  })
 })
 
 export default loadData(wrapMutations(withRouter(Home)), { mapQueriesToProps, mapMutationsToProps })

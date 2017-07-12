@@ -218,7 +218,7 @@ async function editCampaign(id, campaign, loaders) {
       job_type: 'upload_contacts',
       locks_queue: true,
       campaign_id: id,
-      //NOTE: stringifying because compressedString is a binary buffer
+      // NOTE: stringifying because compressedString is a binary buffer
       payload: compressedString.toString('base64')
     })
   }
@@ -344,19 +344,19 @@ const rootMutations = {
         if (roles.indexOf(curRole) === -1) {
           await r.table('user_organization')
             .getAll([organizationId, user.id], { index: 'organization_user' })
-            .filter({'role': curRole})
+            .filter({ 'role': curRole })
             .delete()
         }
       })
 
       newOrgRoles = roles.filter((newRole) => (currentRoles.indexOf(newRole) === -1))
         .map((newRole) => ({
-            organization_id: organizationId,
-            user_id: userId,
-            role: newRole
+          organization_id: organizationId,
+          user_id: userId,
+          role: newRole
         }))
       if (newOrgRoles.length) {
-          await UserOrganization.save(newOrgRoles, { conflict: 'update' })
+        await UserOrganization.save(newOrgRoles, { conflict: 'update' })
       }
       return loaders.organization.load(organizationId)
     },
@@ -480,14 +480,14 @@ const rootMutations = {
         ['OWNER', 'ADMIN', 'TEXTER'].map((role) => ({
           user_id: userId,
           organization_id: newOrganization.id,
-          role: role
+          role
         })))
       await Invite.save({
         id: inviteId,
         is_valid: false
       }, { conflict: 'update' })
 
-      console.log("new organization", newOrganization)
+      console.log('new organization', newOrganization)
       return newOrganization
     },
     editCampaignContactMessageStatus: async(_, { messageStatus, campaignContactId }, { loaders }) => {
@@ -513,10 +513,9 @@ const rootMutations = {
         .getAll(cell, { index: 'cell' })
         .merge((contact) => ({
           organization_id: r.table('campaign')
-            .get(contact('campaign_id'))
-            ('organization_id')
+            .get(contact('campaign_id'))('organization_id')
         }))
-        .filter({ organization_id: campaign.organization_id})
+        .filter({ organization_id: campaign.organization_id })
         .forEach((doc) => r.table('campaign_contact')
             .get(doc('id'))
             .update({ is_opted_out: true }))
@@ -676,7 +675,7 @@ export const schema = [
   cannedResponseSchema,
   questionResponseSchema,
   questionSchema,
-  inviteSchema,
+  inviteSchema
 ]
 
 export const resolvers = {

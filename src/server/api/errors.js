@@ -29,7 +29,7 @@ export async function accessRequired(user, orgId, role, allowSuperadmin = false)
   const userOrganization = await r.table('user_organization').filter({
     user_id: user.id,
     organization_id: orgId,
-    role: role
+    role
   }).limit(1)(0).default(null)
 
   if (!userOrganization) {

@@ -10,7 +10,7 @@ import Baby from 'babyparse'
 
     if (!hasZip) {
       console.log('Starting to seed zip codes')
-      const absolutePath = `src/server/seeds/data/zip-codes.csv`
+      const absolutePath = 'src/server/seeds/data/zip-codes.csv'
       const { data, error } = Baby.parseFiles(absolutePath, {
         header: true
       })
@@ -36,10 +36,10 @@ import Baby from 'babyparse'
         console.log(`Done saving ${zipCodes.length} zips!`)
       }
     } else {
-      console.log("Zip codes already exist, done!")
+      console.log('Zip codes already exist, done!')
     }
   } catch (ex) {
-    console.log("Error", ex)
+    console.log('Error', ex)
   }
 })()
 

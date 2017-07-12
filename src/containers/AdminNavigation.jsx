@@ -80,7 +80,7 @@ AdminNavigation.propTypes = {
   data: React.PropTypes.object,
   organizationId: React.PropTypes.string,
   router: React.PropTypes.object,
-  params: React.PropTypes.object,
+  params: React.PropTypes.object
 }
 
 const mapQueriesToProps = ({ ownProps }) => ({

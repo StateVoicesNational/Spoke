@@ -8,7 +8,7 @@ const Organization = thinky.createModel('organization', type.object().schema({
   id: type.string(),
   name: requiredString(),
   created_at: timestamp(),
-  features: type.string().required().default(''), //should be restricted by FEATURES
+  features: type.string().required().default(''), // should be restricted by FEATURES
   texting_hours_enforced: type
     .boolean()
     .required()

@@ -23,9 +23,9 @@ process.on('uncaughtException', (ex) => {
   process.exit(1)
 })
 const DEBUG = process.env.NODE_ENV === 'development'
-var accountSid = process.env.TWILIO_API_KEY;
-var authToken = process.env.TWILIO_AUTH_TOKEN;
-const client = require('twilio')(accountSid, authToken);
+var accountSid = process.env.TWILIO_API_KEY
+var authToken = process.env.TWILIO_AUTH_TOKEN
+const client = require('twilio')(accountSid, authToken)
 
 setupAuth0Passport()
 seedZipCodes()
@@ -74,7 +74,7 @@ app.post('/twilio', wrap(async (req, res) => {
   }
 
   const resp = new TwimlResponse()
-  res.writeHead(200, { 'Content-Type':'text/xml' })
+  res.writeHead(200, { 'Content-Type': 'text/xml' })
   res.end(resp.toString())
 }))
 
@@ -96,9 +96,8 @@ app.post('/twilio-message-report', wrap(async (req, res) => {
     log.error(ex)
   }
   const resp = new TwimlResponse()
-  res.writeHead(200, { 'Content-Type':'text/xml' })
+  res.writeHead(200, { 'Content-Type': 'text/xml' })
   res.end(resp.toString())
-
 }))
 
 
@@ -116,13 +115,13 @@ app.post('/twilio-message-report', wrap(async (req, res) => {
 app.get('/allmessages', (req, res) => {
   client.sms.messages.list((err, data) => {
     const listOfMessages = data.sms_messages
-      return res.json(listOfMessages)
+    return res.json(listOfMessages)
   })
 })
 
 app.get('/availablephonenumbers', (req, res) => {
   client.incomingPhoneNumbers.list((err, data) => {
-      return res.json(data.incomingPhoneNumbers)
+    return res.json(data.incomingPhoneNumbers)
   })
 })
 

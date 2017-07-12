@@ -33,7 +33,7 @@ CampaignContact.ensureIndex('cell')
 CampaignContact.ensureIndex('campaign_assignment', (doc) => [doc('campaign_id'), doc('assignment_id')])
 CampaignContact.ensureIndex('assignment_timezone_offset', (doc) => [
   doc('assignment_id'),
-  doc('timezone_offset'),
+  doc('timezone_offset')
 ])
 
 export default CampaignContact

@@ -14,8 +14,8 @@ const Message = thinky.createModel('message', type.object().schema({
     .required()
     .allowNull(false),
   text: optionalString(),
-  //for errors,etc returned back by the service
-  // will be several json strings appended together, so JSON.parse will NOT work 
+  // for errors,etc returned back by the service
+  // will be several json strings appended together, so JSON.parse will NOT work
   service_response: optionalString(),
   assignment_id: requiredString(),
   service: optionalString(),

@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
     zIndex: 1000000
   },
   loadingIndicator: {
-    maxWidth: '50%',
+    maxWidth: '50%'
   },
   navigationToolbarTitle: {
     fontSize: '12px',
@@ -155,8 +155,8 @@ class AssignmentTexterContact extends React.Component {
     }
   }
 
-  isContactBetweenTextingHours (contact) {
-    console.log("campaign", this.props)
+  isContactBetweenTextingHours(contact) {
+    console.log('campaign', this.props)
     const { campaign } = this.props
 
     let timezoneData = null
@@ -173,7 +173,6 @@ class AssignmentTexterContact extends React.Component {
       textingHoursEnforced
     }
     return isBetweenTextingHours(timezoneData, config)
-
   }
 
   componentDidMount() {
@@ -279,7 +278,7 @@ class AssignmentTexterContact extends React.Component {
     }
   }
 
-  goBackToTodos = () =>  {
+  goBackToTodos = () => {
     const { campaign } = this.props
     this.props.router.push(`/app/${campaign.organization.id}/todos`)
   }
@@ -312,7 +311,7 @@ class AssignmentTexterContact extends React.Component {
     }
   }
 
-  handleMessageFormSubmit = async ( { messageText }) => {
+  handleMessageFormSubmit = async ({ messageText }) => {
     try {
       const { contact } = this.props.data
       const message = this.createMessageToContact(messageText)
@@ -452,7 +451,7 @@ class AssignmentTexterContact extends React.Component {
         >
           <GSForm
             schema={this.optOutSchema}
-            onChange={ ({ optOutMessageText }) => this.setState({ optOutMessageText })}
+            onChange={({ optOutMessageText }) => this.setState({ optOutMessageText })}
             value={{ optOutMessageText: this.state.optOutMessageText }}
             onSubmit={this.handleOptOut}
           >
@@ -609,7 +608,7 @@ class AssignmentTexterContact extends React.Component {
             <GSForm
               ref='form'
               schema={this.messageSchema}
-              value={{ messageText: this.state.messageText}}
+              value={{ messageText: this.state.messageText }}
               onSubmit={this.handleMessageFormSubmit}
               onChange={this.handleMessageFormChange}
             >
