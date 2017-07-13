@@ -161,17 +161,23 @@ export default class CampaignInteractionStepsForm extends React.Component {
 
   addStep(interactionStep, answer) {
     const newId = Math.random().toString(36).replace(/[^a-zA-Z1-9]+/g, '')
-    const newSteps = JSON.parse(JSON.stringify(this.sortedValues())).interactionSteps
-    newSteps.forEach((step) => {
+    let newSteps = JSON.parse(JSON.stringify(this.sortedValues())).interactionSteps
+    newSteps = newSteps.map((step) => {
       if (step.id === interactionStep.id) {
-        step.question.answerOptions.forEach((option) => {
+        const newStep = step
+        newStep.question.answerOptions = newStep.question.answerOptions.map((option) => {
           if (option.value === answer.value) {
-            option.nextInteractionStep = {
+            const newOption = option
+            newOption.nextInteractionStep = {
               id: newId
             }
+            return newOption
           }
+          return option
         })
+        return newStep
       }
+      return step
     })
     newSteps.push({
       id: newId,
@@ -192,15 +198,17 @@ export default class CampaignInteractionStepsForm extends React.Component {
       return
     }
     const newValues = JSON.parse(JSON.stringify(formValues))
-    newValues.interactionSteps.forEach((step) => {
+    newValues.interactionSteps = newValues.interactionSteps.map((step) => {
+      const newStep = step
       if (step.question && step.question.text === '') {
-        step.question.answerOptions = []
+        newStep.question.answerOptions = []
       } else if (step.question && step.question.text !== '' && step.question.answerOptions.length === 0) {
-        step.question.answerOptions = [{
+        newStep.question.answerOptions = [{
           value: '',
           nextInteractionStep: null
         }]
       }
+      return newStep
     })
     this.props.onChange(newValues)
   }
@@ -343,10 +351,12 @@ export default class CampaignInteractionStepsForm extends React.Component {
               const allSteps = this.sortedValues().interactionSteps
               const children = getChildren(interactionStep, allSteps).map((ele) => ele.id)
               const stepParent = JSON.parse(JSON.stringify(findParent(interactionStep, allSteps)))
-              stepParent.question.answerOptions.forEach((option) => {
+              stepParent.question.answerOptions = stepParent.question.answerOptions.map((option) => {
+                const newOption = option
                 if (option.nextInteractionStep && option.nextInteractionStep.id === interactionStep.id) {
-                  option.nextInteractionStep = null
+                  newOption.nextInteractionStep = null
                 }
+                return newOption
               })
 
               allSteps.forEach((step) => {

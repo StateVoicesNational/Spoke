@@ -303,14 +303,16 @@ export default class CampaignTextersForm extends React.Component {
         theTexter = newFormValues.texters.find((ele) => ele.id === changedTexter)
       }
 
-      newFormValues.texters.forEach((texter) => {
+      newFormValues.texters = newFormValues.texters.map((texter) => {
+        const newTexter = texter
         const messagedCount = texter.assignment.contactsCount - texter.assignment.needsMessageCount
         if (texter.id === theTexter.id) {
-          texter.assignment.needsMessageCount = this.formValues().contactsCount - totalMessaged
+          newTexter.assignment.needsMessageCount = this.formValues().contactsCount - totalMessaged
         } else {
-          texter.assignment.needsMessageCount = 0
+          newTexter.assignment.needsMessageCount = 0
         }
-        texter.assignment.contactsCount = texter.assignment.needsMessageCount + messagedCount
+        newTexter.assignment.contactsCount = texter.assignment.needsMessageCount + messagedCount
+        return newTexter
       })
     } else {
       const factor = 1
@@ -462,4 +464,3 @@ CampaignTextersForm.propTypes = {
   saveLabel: type.string,
   saveDisabled: type.bool
 }
-
