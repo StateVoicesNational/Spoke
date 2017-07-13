@@ -18,6 +18,7 @@ const InteractionStep = thinky.createModel('interaction_step', type.object().sch
   parent_interaction_id: optionalString(),
   answer_option: optionalString(), //(was 'value')
   //END NEW
+  /*
   answer_options: type
     .array()
     .schema({
@@ -26,6 +27,7 @@ const InteractionStep = thinky.createModel('interaction_step', type.object().sch
     })
     .required()
     .allowNull(false),
+  */
   created_at: timestamp()
 }).allowExtra(false))
 
