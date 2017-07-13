@@ -6,10 +6,14 @@ const ZipCode = thinky.createModel('zip_code', type.object().schema({
   zip: requiredString(),
   city: requiredString(),
   state: requiredString(),
-  location: type
-    .point()
+  latitude: type
+    .number()
     .required()
     .allowNull(false),
+  longitude: type
+    .number()
+    .required()
+    .allowNull(false)
   timezone_offset: type
     .number()
     .required()
