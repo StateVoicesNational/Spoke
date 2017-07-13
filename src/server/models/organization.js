@@ -16,12 +16,14 @@ const Organization = thinky.createModel('organization', type.object().schema({
   texting_hours_start: type.number()
     .integer()
     .required()
-    .min(0).max(24)
+    .min(0)
+    .max(24)
     .default(9),
   texting_hours_end: type.number()
     .integer()
     .required()
-    .min(0).max(24)
+    .min(0)
+    .max(24)
     .default(21)
 }).allowExtra(false))
 
