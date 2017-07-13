@@ -408,15 +408,15 @@ export default class CampaignTextersForm extends React.Component {
                     this.setState({ autoSplit: !this.state.autoSplit }, () => {
                       if (this.state.autoSplit) {
                         const contactsCount = Math.floor(this.formValues().contactsCount / this.formValues().texters.length)
-                        const newTexters = this.formValues().texters.map((texter) => {
-                          return {
+                        const newTexters = this.formValues().texters.map((texter) =>
+                          {
                             ...texter,
                             assignment: {
                               ...texter.assignment,
                               contactsCount
                             }
                           }
-                        })
+                        )
                         this.onChange({ ...this.formValues(), texters: newTexters })
                       }
                     })

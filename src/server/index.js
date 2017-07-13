@@ -120,9 +120,9 @@ app.get('/allmessages', (req, res) => {
 })
 
 app.get('/availablephonenumbers', (req, res) => {
-  client.incomingPhoneNumbers.list((err, data) => {
-    return res.json(data.incomingPhoneNumbers)
-  })
+  client.incomingPhoneNumbers.list(
+    (err, data) => res.json(data.incomingPhoneNumbers)
+  )
 })
 
 app.get('/logout-callback', (req, res) => {

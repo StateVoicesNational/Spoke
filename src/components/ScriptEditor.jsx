@@ -128,9 +128,7 @@ class ScriptEditor extends React.Component {
       return findWithRegex(regex, contentBlock, callback)
     }
 
-    const unrecognizedFieldStrategy = (contentBlock, callback) => {
-      return findWithRegex(/\{[^{]*\}/g, contentBlock, callback)
-    }
+    const unrecognizedFieldStrategy = (contentBlock, callback) => findWithRegex(/\{[^{]*\}/g, contentBlock, callback)
 
     return new CompositeDecorator([
       {

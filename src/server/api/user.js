@@ -46,8 +46,8 @@ export const resolvers = {
         .getAll([organizationId, user.id], { index: 'organization_user' })
         .pluck('role')('role')
     ),
-    todos: async (user, { organizationId }) => {
-      return r.table('assignment')
+    todos: async (user, { organizationId }) =>
+      r.table('assignment')
         .getAll(user.id, { index: 'user_id' })
         .eqJoin('campaign_id', r.table('campaign'))
         .filter((row) =>
@@ -57,6 +57,5 @@ export const resolvers = {
             row('right')('is_archived').eq(false)
           )
         )('left')
-    }
   }
 }
