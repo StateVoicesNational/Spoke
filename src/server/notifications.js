@@ -12,7 +12,7 @@ export const Notifications = {
 async function getOrganizationOwner(organizationId) {
   return await r.table('user_organization')
     .getAll(organizationId, { index: 'organization_id' })
-    .filter({ 'role': 'OWNER' })
+    .filter({ role: 'OWNER' })
     .limit(1)
     .eqJoin('user_id', r.table('user'))('right')(0)
 }
@@ -125,4 +125,3 @@ export const setupUserNotificationObservers = () => {
   setupIncomingReplyNotification()
   setupNewAssignmentNotification()
 }
-

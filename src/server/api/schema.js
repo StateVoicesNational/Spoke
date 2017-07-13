@@ -344,7 +344,7 @@ const rootMutations = {
         if (roles.indexOf(curRole) === -1) {
           await r.table('user_organization')
             .getAll([organizationId, user.id], { index: 'organization_user' })
-            .filter({ 'role': curRole })
+            .filter({ role: curRole })
             .delete()
         }
       })

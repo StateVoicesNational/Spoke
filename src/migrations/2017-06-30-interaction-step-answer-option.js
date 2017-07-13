@@ -23,7 +23,7 @@ import { r } from '../server/models'
         const answerStepUpdate = await r.db('spoke')
           .table('interaction_step')
           .get(answerOption.interaction_step_id)
-          .update({ 'answer_option': answerOption.value, 'parent_interaction_id': parentId })
+          .update({ answer_option: answerOption.value, parent_interaction_id: parentId })
       }
     }
   } catch (ex) {

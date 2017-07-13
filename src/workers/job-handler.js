@@ -71,8 +71,8 @@ async function createInteractionSteps(job) {
         })
         // store the answers and step id for writing to child steps
         answerOptionStore[nextStepId] = {
-          'value': option.value,
-          'parent': newId
+          value: option.value,
+          parent: newId
         }
       }
     }
