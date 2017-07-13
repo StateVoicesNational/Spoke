@@ -9,28 +9,23 @@ import { r } from '../server/models'
 // ./dev-tools/babel-run-with-env.js ./src/migrations/2017-06-30-interaction-step-answer-option.js
 
 (async function () {
-  console.log('migrating interaction steps to updated schema')
   try {
     const parentSteps = await r.db('spoke')
       .table('interaction_step')
       .filter((step) => step('answer_options')
       .ne([]))
-    console.log(parentSteps)
     const parentCount = parentSteps.length
     for (let i = 0; i < parentCount; i++) {
       const answerCount = parentSteps[i].answer_options.length
       for (let j = 0; j < answerCount; j++) {
         const parentId = parentSteps[i].id
         const answerOption = parentSteps[i].answer_options[j]
-        console.log(answerOption)
         const answerStepUpdate = await r.db('spoke')
           .table('interaction_step')
           .get(answerOption.interaction_step_id)
           .update({ 'answer_option': answerOption.value, 'parent_interaction_id': parentId })
-        console.log(answerStepUpdate)
       }
     }
   } catch (ex) {
-    console.log(ex)
   }
 })()

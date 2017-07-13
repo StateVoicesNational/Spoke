@@ -67,11 +67,9 @@ class ScriptList extends React.Component {
           campaignId,
           userId: texterId
         }
-        console.log('trying to save', saveObject)
         await mutations.createCannedResponse(saveObject)
         this.setState({ dialogOpen: false })
       } catch (err) {
-        console.log(err)
       }
     }
 

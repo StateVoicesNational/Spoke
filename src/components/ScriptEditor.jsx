@@ -100,7 +100,6 @@ class ScriptEditor extends React.Component {
     this.setState({ editorState }, () => {
       const { onChange } = this.props
       if (onChange) {
-        console.log('changing script!')
         onChange(this.getValue())
       }
     })

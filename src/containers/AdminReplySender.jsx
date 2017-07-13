@@ -134,7 +134,6 @@ const mapQueriesToProps = ({ ownProps }) => ({
 
 const mapMutationsToProps = () => ({
   sendReply: (contactId, message) => {
-    console.log(contactId, message)
     return {
       mutation: gql`
       mutation sendReply($contactId: String!, $message: String!) {

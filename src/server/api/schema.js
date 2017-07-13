@@ -487,7 +487,6 @@ const rootMutations = {
         is_valid: false
       }, { conflict: 'update' })
 
-      console.log('new organization', newOrganization)
       return newOrganization
     },
     editCampaignContactMessageStatus: async(_, { messageStatus, campaignContactId }, { loaders }) => {

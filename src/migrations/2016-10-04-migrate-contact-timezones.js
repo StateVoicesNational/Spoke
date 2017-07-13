@@ -5,7 +5,6 @@ import Baby from 'babyparse'
   async function sleep(ms = 0) {
     return new Promise(fn => setTimeout(fn, ms))
   }
-  console.log('Started at ', new Date())
   try {
     const zips = await r.table('zip_code')
       .pluck('zip', 'timezone_offset', 'has_dst')
@@ -20,12 +19,8 @@ import Baby from 'babyparse'
         .getAll(zip.zip, { index: 'zip' })
         .update({ timezone_offset: cachedTimezoneOffset })
       totalCount += result.replaced
-      console.log(`${new Date()}\t${Math.round(i * 100 / count)}% zips processed\tUpdated ${result.replaced} contacts for zip\t ${zip.zip}\tTotal  contacts: ${totalCount}`)
       // await sleep(sleepTime)
     }
-
-    console.log('Done with all zips!')
   } catch (ex) {
-    console.log(ex)
   }
 })()

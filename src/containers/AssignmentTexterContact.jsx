@@ -156,7 +156,6 @@ class AssignmentTexterContact extends React.Component {
   }
 
   isContactBetweenTextingHours(contact) {
-    console.log('campaign', this.props)
     const { campaign } = this.props
 
     let timezoneData = null

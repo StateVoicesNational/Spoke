@@ -10,8 +10,6 @@ import { r } from '../server/models'
 (async function () {
   try {
     const count = await r.table('user').count()
-    console.log(count)
   } catch (ex) {
-    console.log(ex)
   }
 })()
