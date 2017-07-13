@@ -99,6 +99,12 @@ class Home extends React.Component {
   }
 }
 
+Home.propTypes = {
+  mutations: React.PropTypes.object,
+  router: React.PropTypes.object,
+  data: React.PropTypes.object
+}
+
 const mapQueriesToProps = () => ({
   data: {
     query: gql` query getCurrentUser {

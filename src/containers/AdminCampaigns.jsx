@@ -20,8 +20,6 @@ const styles = {
 
 export class AdminCampaigns extends Component {
   handleClickNewButton = () => {
-    const { organizationId } = this.props
-//    FlowRouter.go('campaign.new', { organizationId })
   }
 
   renderEmpty() {
@@ -34,7 +32,7 @@ export class AdminCampaigns extends Component {
   }
 
   renderList() {
-    const { campaigns, loading, organizationId } = this.props
+    const { campaigns, organizationId } = this.props
     const groupedCampaigns = _.groupBy(campaigns, (campaign) => moment(campaign.dueBy).diff(moment()) < 0)
     return (
       <div>
@@ -88,6 +86,11 @@ export class AdminCampaigns extends Component {
       </div>
     )
   }
+}
+
+AdminCampaigns.propTypes = {
+  campaigns: React.PropTypes.array,
+  organizationId: React.PropTypes.number
 }
 
 export default AdminCampaigns

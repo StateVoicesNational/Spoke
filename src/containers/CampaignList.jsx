@@ -135,7 +135,9 @@ CampaignList.propTypes = {
     })
   ),
   router: React.PropTypes.object,
-  organizationId: React.PropTypes.string
+  organizationId: React.PropTypes.string,
+  data: React.PropTypes.object,
+  mutations: React.PropTypes.object
 }
 
 const mapMutationsToProps = () => ({
@@ -180,4 +182,3 @@ export default loadData(wrapMutations(
     mapQueriesToProps,
     mapMutationsToProps
   })
-

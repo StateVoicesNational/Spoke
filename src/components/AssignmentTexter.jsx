@@ -180,8 +180,8 @@ AssignmentTexter.propTypes = {
   currentUser: React.PropTypes.object,
   assignment: React.PropTypes.object,      // current assignment
   contacts: React.PropTypes.array,   // contacts for current assignment
-  router: React.PropTypes.object
+  router: React.PropTypes.object,
+  onRefreshAssignmentContacts: React.PropTypes.func
 }
 
 export default withRouter(AssignmentTexter)
-

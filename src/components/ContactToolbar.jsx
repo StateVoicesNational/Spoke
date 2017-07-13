@@ -82,7 +82,8 @@ class ContactToolbar extends Component {
 }
 
 ContactToolbar.propTypes = {
-  campaignContact: React.PropTypes.object   // contacts for current assignment
+  campaignContact: React.PropTypes.object, // contacts for current assignment
+  rightToolbarIcon: React.PropTypes.element
 }
 
 export default ContactToolbar

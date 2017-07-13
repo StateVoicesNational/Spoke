@@ -50,7 +50,6 @@ class ScriptList extends React.Component {
       subheader,
       scripts,
       onSelectCannedResponse,
-      duplicateCampaignResponses,
       showAddScriptButton,
       customFields,
       campaignId,
@@ -151,6 +150,18 @@ class ScriptList extends React.Component {
       </div>
     )
   }
+}
+
+ScriptList.propTypes = {
+  script: React.PropTypes.object,
+  scripts: React.PropTypes.arrayOf(React.PropTypes.object),
+  subheader: React.PropTypes.element,
+  onSelectCannedResponse: React.PropTypes.func,
+  showAddScriptButton: React.PropTypes.bool,
+  customFields: React.PropTypes.array,
+  campaignId: React.PropTypes.number,
+  mutations: React.PropTypes.object,
+  texterId: React.PropTypes.number
 }
 
 const mapMutationsToProps = () => ({

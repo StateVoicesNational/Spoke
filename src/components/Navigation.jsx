@@ -39,7 +39,8 @@ class Navigation extends Component {
 
 Navigation.propTypes = {
   sections: React.PropTypes.array,
-  switchListItem: React.PropTypes.object
+  switchListItem: React.PropTypes.object,
+  router: React.PropTypes.object
 }
 
 export default withRouter(Navigation)

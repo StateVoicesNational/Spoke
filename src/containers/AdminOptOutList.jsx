@@ -30,6 +30,10 @@ class AdminOptOutList extends React.Component {
   }
 }
 
+AdminOptOutList.propTypes = {
+  data: React.PropTypes.object
+}
+
 const mapQueriesToProps = ({ ownProps }) => ({
   data: {
     query: gql`query getOptOuts($organizationId: String!) {

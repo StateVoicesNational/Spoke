@@ -231,6 +231,13 @@ class AdminCampaignStats extends React.Component {
   }
 }
 
+AdminCampaignStats.propTypes = {
+  mutations: React.PropTypes.object,
+  data: React.PropTypes.object,
+  params: React.PropTypes.object,
+  router: React.PropTypes.object
+}
+
 const mapQueriesToProps = ({ ownProps }) => ({
   data: {
     query: gql`query getCampaign($campaignId: String!, $contactsFilter: ContactsFilter!) {

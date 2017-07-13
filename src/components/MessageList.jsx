@@ -55,4 +55,8 @@ class MessageList extends React.Component {
   }
 }
 
+MessageList.propTypes = {
+  contact: React.PropTypes.object
+}
+
 export default MessageList

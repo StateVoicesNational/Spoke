@@ -24,9 +24,17 @@ const RecognizedField = (props) => (
   <span {...props} style={styles.goodField}>{props.children}</span>
 )
 
+RecognizedField.propTypes = {
+  children: React.PropTypes.arrayOf(React.PropTypes.element)
+}
+
 const UnrecognizedField = (props) => (
   <span {...props} style={styles.badField}>{props.children}</span>
 )
+
+UnrecognizedField.propTypes = {
+  children: React.PropTypes.arrayOf(React.PropTypes.element)
+}
 
 const styles = {
   editor: {
@@ -179,6 +187,13 @@ class ScriptEditor extends React.Component {
       </div>
     )
   }
+}
+
+ScriptEditor.propTypes = {
+  scriptFields: React.PropTypes.array,
+  scriptText: React.PropTypes.string,
+  onChange: React.PropTypes.func,
+  name: React.PropTypes.string
 }
 
 export default ScriptEditor

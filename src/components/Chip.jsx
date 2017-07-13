@@ -27,7 +27,7 @@ const styles = {
   }
 }
 
-export default function Chip({ text, iconRightClass, onIconRightTouchTap, onTouchTap, style = {} }) {
+function Chip({ text, iconRightClass, onIconRightTouchTap, onTouchTap, style = {} }) {
   return (
     <div style={_.extend({}, styles.chip, style)} onTouchTap={onTouchTap}>
       {text}
@@ -35,3 +35,13 @@ export default function Chip({ text, iconRightClass, onIconRightTouchTap, onTouc
     </div>
   )
 }
+
+Chip.propTypes = {
+  text: React.PropTypes.element,
+  iconRightClass: React.PropTypes.string,
+  onIconRightTouchTap: React.PropTypes.func,
+  onTouchTap: React.PropTypes.func,
+  style: React.PropTypes.object
+}
+
+export default Chip

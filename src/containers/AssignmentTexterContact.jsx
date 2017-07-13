@@ -673,7 +673,8 @@ AssignmentTexterContact.propTypes = {
   router: React.PropTypes.object,
   data: React.PropTypes.object,
   mutations: React.PropTypes.object,
-  onExitTexter: React.PropTypes.func
+  onExitTexter: React.PropTypes.func,
+  onRefreshAssignmentContacts: React.PropTypes.func
 }
 
 const mapQueriesToProps = ({ ownProps }) => ({

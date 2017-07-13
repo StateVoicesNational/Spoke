@@ -48,6 +48,11 @@ class JoinTeam extends React.Component {
   }
 }
 
+JoinTeam.propTypes = {
+  mutations: React.PropTypes.object,
+  router: React.PropTypes.object
+}
+
 const mapMutationsToProps = ({ ownProps }) => ({
   joinOrganization: () => ({
     mutation: gql`

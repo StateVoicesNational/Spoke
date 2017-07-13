@@ -107,6 +107,10 @@ class AdminReplySender extends React.Component {
   }
 }
 
+AdminReplySender.propTypes = {
+  mutations: React.PropTypes.object,
+  data: React.PropTypes.object
+}
 
 const mapQueriesToProps = ({ ownProps }) => ({
   data: {

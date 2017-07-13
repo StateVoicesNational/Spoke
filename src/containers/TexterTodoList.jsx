@@ -50,7 +50,8 @@ class TexterTodoList extends React.Component {
 
 TexterTodoList.propTypes = {
   organizationId: React.PropTypes.string,
-  params: React.PropTypes.object
+  params: React.PropTypes.object,
+  data: React.PropTypes.object
 }
 
 const mapQueriesToProps = ({ ownProps }) => ({

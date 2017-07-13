@@ -494,7 +494,8 @@ AdminCampaignEdit.propTypes = {
   mutations: React.PropTypes.object,
   organizationData: React.PropTypes.object,
   params: React.PropTypes.object,
-  location: React.PropTypes.object
+  location: React.PropTypes.object,
+  pendingJobsData: React.PropTypes.object
 }
 
 const mapQueriesToProps = ({ ownProps }) => ({

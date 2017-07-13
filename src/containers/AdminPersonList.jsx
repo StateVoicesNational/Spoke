@@ -136,6 +136,13 @@ class AdminPersonList extends React.Component {
   }
 }
 
+AdminPersonList.propTypes = {
+  mutations: React.PropTypes.object,
+  params: React.PropTypes.object,
+  personData: React.PropTypes.object,
+  userData: React.PropTypes.object
+}
+
 const mapMutationsToProps = () => ({
   editOrganizationRoles: (organizationId, userId, roles) => ({
     mutation: gql`

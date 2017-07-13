@@ -23,4 +23,8 @@ const OrganizationJoinLink = ({ organizationId }) => {
   )
 }
 
+OrganizationJoinLink.propTypes = {
+  organizationId: React.PropTypes.number
+}
+
 export default OrganizationJoinLink

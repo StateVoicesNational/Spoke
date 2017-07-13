@@ -34,19 +34,15 @@ const styles = {
 
 class AssignmentTexterSurveyDropdown extends Component {
   handleAnswerChange = async (event, index, value) => {
-    const { onAnswerChange, step, campaignContactId } = this.props
-    const { question } = step
+    const { step, campaignContactId } = this.props
 
-    if (value === 'clearResponse') {
-      // onAnswerChange(step.id, null, null)
-    } else {
+    if (value !== 'clearResponse') {
       const questionResponse = {
         interactionStepId: step.id,
         campaignContactId,
         value
       }
       await this.props.mutations.editQuestionResponse(questionResponse)
-      // onAnswerChange(step.id, value, nextInteractionStep ? nextInteractionStep.script : null)
     }
   }
 
@@ -102,7 +98,9 @@ class AssignmentTexterSurveyDropdown extends Component {
 AssignmentTexterSurveyDropdown.propTypes = {
   step: React.PropTypes.object,
   answerValue: React.PropTypes.object,
-  isCurrentStep: React.PropTypes.boolean
+  isCurrentStep: React.PropTypes.boolean,
+  campaignContactId: React.PropTypes.number,
+  mutations: React.PropTypes.object
 }
 
 const mapMutationsToProps = () => ({

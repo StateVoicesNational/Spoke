@@ -37,7 +37,10 @@ TexterDashboard.propTypes = {
   router: React.PropTypes.object,
   params: React.PropTypes.object,
   children: React.PropTypes.object,
-  location: React.PropTypes.object
+  location: React.PropTypes.object,
+  main: React.PropTypes.element,
+  topNav: React.PropTypes.element,
+  fullScreen: React.PropTypes.bool
 }
 
 export default withRouter(TexterDashboard)
