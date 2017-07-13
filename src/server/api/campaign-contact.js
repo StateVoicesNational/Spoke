@@ -66,6 +66,9 @@ export const resolvers = {
       loaders.campaign.load(campaignContact.campaign_id)
     ),
     questionResponses: async (campaignContact) => (
+      //TODO: what are all the questionresponses
+      // -- join by value==[child]interactionstep.answer_option
+      // -- also join by interaction_step_id==[parent]interactionstep: "parent_interaction_step", "contact_response_value"
       r.table('question_response')
         .getAll(campaignContact.id, { index: 'campaign_contact_id' })
         .eqJoin('interaction_step_id', r.table('interaction_step'))

@@ -19,6 +19,7 @@ export const schema = `
 export const resolvers = {
   Question: {
     text: async (interactionStep) => interactionStep.question,
+    //TODO: need to just query for parent_id = interactionstep.id
     answerOptions: async (interactionStep) => (
       interactionStep.answer_options.map((answer) => ({
         ...answer,
