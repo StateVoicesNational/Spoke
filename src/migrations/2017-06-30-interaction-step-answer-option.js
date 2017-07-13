@@ -18,10 +18,10 @@ import { r } from '../server/models'
     console.log(parentSteps)
     const parentCount = parentSteps.length
     for (let i = 0; i < parentCount; i++) {
-      const answerCount = parentSteps[i]['answer_options'].length
+      const answerCount = parentSteps[i].answer_options.length
       for (let j = 0; j < answerCount; j++) {
-        const parentId = parentSteps[i]['id']
-        const answerOption = parentSteps[i]['answer_options'][j]
+        const parentId = parentSteps[i].id
+        const answerOption = parentSteps[i].answer_options[j]
         console.log(answerOption)
         const answerStepUpdate = await r.db('spoke')
           .table('interaction_step')

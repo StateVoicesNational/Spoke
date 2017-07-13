@@ -52,8 +52,8 @@ async function createInteractionSteps(job) {
     let answerOption = ''
 
     if (newId in answerOptionStore) {
-      parentId = answerOptionStore[newId]['parent']
-      answerOption = answerOptionStore[newId]['value']
+      parentId = answerOptionStore[newId].parent
+      answerOption = answerOptionStore[newId].value
     }
     // We're formatting data for both the old interaction_step model
     // with array fields and the new model without array fields.
