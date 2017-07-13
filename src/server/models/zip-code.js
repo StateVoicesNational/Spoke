@@ -13,7 +13,7 @@ const ZipCode = thinky.createModel('zip_code', type.object().schema({
   longitude: type
     .number()
     .required()
-    .allowNull(false)
+    .allowNull(false),
   timezone_offset: type
     .number()
     .required()
