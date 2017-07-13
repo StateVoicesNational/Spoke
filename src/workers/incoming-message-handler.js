@@ -37,7 +37,7 @@ async function handleIncomingMessageParts() {
         service: service === nexmo ? 'nexmo' : 'twilio'
       })
 
-      const duplicateMessageToSaveExists = !!messagesToSave.find((message) => message.service_id == serviceMessageId)
+      const duplicateMessageToSaveExists = !!messagesToSave.find((message) => message.service_id === serviceMessageId)
       if (!lastMessage) {
         log.info('Received message part with no thread to attach to', part)
         messagePartsToDelete.push(part)

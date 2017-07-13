@@ -64,7 +64,7 @@ export default class AdminIncomingMessageList extends Component {
             </TableHeader>
             <TableBody>
               {this.state.incomingmessages.map(message => {
-                if (message.direction == 'inbound') {
+                if (message.direction === 'inbound') {
                   return (
                     <TableRow key={message.id}>
                       <TableRowColumn> {message.date_sent}</TableRowColumn>
