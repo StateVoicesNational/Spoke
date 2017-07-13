@@ -53,29 +53,29 @@ export default class AdminIncomingMessageList extends Component {
       <div>
         <h3> All Incoming Messages </h3>
         <div>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHeaderColumn> Date Sent: </TableHeaderColumn>
-                  <TableHeaderColumn> From: </TableHeaderColumn>
-                  <TableHeaderColumn> To: </TableHeaderColumn>
-                  <TableHeaderColumn style={{ width: '40%' }}> Message Body </TableHeaderColumn>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-            {this.state.incomingmessages.map(message => {
-              if (message.direction == 'inbound') {
-                return (
-                  <TableRow key={message.id}>
-                    <TableRowColumn> {message.date_sent}</TableRowColumn>
-                    <TableRowColumn>{message.from}</TableRowColumn>
-                    <TableRowColumn>{message.to}</TableRowColumn>
-                    <TableRowColumn style={{ width: '40%' }}>{message.body}</TableRowColumn>
-                  </TableRow>
-                  )
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHeaderColumn> Date Sent: </TableHeaderColumn>
+                <TableHeaderColumn> From: </TableHeaderColumn>
+                <TableHeaderColumn> To: </TableHeaderColumn>
+                <TableHeaderColumn style={{ width: '40%' }}> Message Body </TableHeaderColumn>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {this.state.incomingmessages.map(message => {
+                if (message.direction == 'inbound') {
+                  return (
+                    <TableRow key={message.id}>
+                      <TableRowColumn> {message.date_sent}</TableRowColumn>
+                      <TableRowColumn>{message.from}</TableRowColumn>
+                      <TableRowColumn>{message.to}</TableRowColumn>
+                      <TableRowColumn style={{ width: '40%' }}>{message.body}</TableRowColumn>
+                    </TableRow>
+                    )
+                }
               }
-            }
-            )}
+              )}
             </TableBody>
           </Table>
         </div>

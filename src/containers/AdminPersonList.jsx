@@ -71,34 +71,34 @@ class AdminPersonList extends React.Component {
 
     return (
       <Table >
-          <TableBody
-            displayRowCheckbox={false}
-          >
-            {people.map((person) => (
-              <TableRow
-                key={person.id}
-              >
-                <TableRowColumn>{person.displayName}</TableRowColumn>
-                <TableRowColumn>{person.email}</TableRowColumn>
-                <TableRowColumn>
-                  <DropDownMenu
-                    value={getHighestRole(person.roles)}
-                    disabled={person.id === currentUser.id || getHighestRole(person.roles) === 'OWNER' && getHighestRole(currentUser.roles) !== 'OWNER'}
-                    onChange={(event, index, value) => this.handleChange(person.id, value)}
-                  >
-                    {options.map((option) => (
-                      <MenuItem
-                        value={option}
-                        disabled={option === 'OWNER' && getHighestRole(currentUser.roles) !== 'OWNER'}
-                        primaryText={`${option.charAt(0).toUpperCase()}${option.substring(1).toLowerCase()}`}
-                      />
-                    ))}
-                  </DropDownMenu>
-                </TableRowColumn>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <TableBody
+          displayRowCheckbox={false}
+        >
+          {people.map((person) => (
+            <TableRow
+              key={person.id}
+            >
+              <TableRowColumn>{person.displayName}</TableRowColumn>
+              <TableRowColumn>{person.email}</TableRowColumn>
+              <TableRowColumn>
+                <DropDownMenu
+                  value={getHighestRole(person.roles)}
+                  disabled={person.id === currentUser.id || getHighestRole(person.roles) === 'OWNER' && getHighestRole(currentUser.roles) !== 'OWNER'}
+                  onChange={(event, index, value) => this.handleChange(person.id, value)}
+                >
+                  {options.map((option) => (
+                    <MenuItem
+                      value={option}
+                      disabled={option === 'OWNER' && getHighestRole(currentUser.roles) !== 'OWNER'}
+                      primaryText={`${option.charAt(0).toUpperCase()}${option.substring(1).toLowerCase()}`}
+                    />
+                  ))}
+                </DropDownMenu>
+              </TableRowColumn>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     )
   }
 

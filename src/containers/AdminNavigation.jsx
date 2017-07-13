@@ -33,18 +33,18 @@ class AdminNavigation extends React.Component {
   renderNavigation(sections) {
     const { organizationId } = this.props
     return (
-        <Navigation
-          sections={sections.map((section) => ({
-            ...section,
-            url: this.urlFromPath(section.path)
-          }))}
-          switchListItem={
-            <ListItem
-              primaryText='Switch to texter'
-              onTouchTap={() => this.props.router.push(`/app/${organizationId}/todos`)}
-            />
-          }
-        />
+      <Navigation
+        sections={sections.map((section) => ({
+          ...section,
+          url: this.urlFromPath(section.path)
+        }))}
+        switchListItem={
+          <ListItem
+            primaryText='Switch to texter'
+            onTouchTap={() => this.props.router.push(`/app/${organizationId}/todos`)}
+          />
+        }
+      />
     )
   }
 

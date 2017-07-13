@@ -100,12 +100,12 @@ class CampaignList extends React.Component {
             <UnarchiveIcon />
           </IconButton>
         ) : (
-            <IconButton
-              tooltip='Archive'
-              onTouchTap={async () => this.props.mutations.archiveCampaign(campaign.id)}
-            >
-              <ArchiveIcon />
-            </IconButton>
+          <IconButton
+            tooltip='Archive'
+            onTouchTap={async () => this.props.mutations.archiveCampaign(campaign.id)}
+          >
+            <ArchiveIcon />
+          </IconButton>
         )}
       />
     )

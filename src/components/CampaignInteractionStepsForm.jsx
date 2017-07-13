@@ -288,14 +288,14 @@ export default class CampaignInteractionStepsForm extends React.Component {
         <div style={{
           display: 'inline-block'
         }}>
-       {answer.nextInteractionStep ? (
+        {answer.nextInteractionStep ? (
           <FlatButton
             label='Next Step'
             secondary
             onTouchTap={() => this.handleNavigateToStep(answer.nextInteractionStep.id)}
             icon={<ForwardIcon />}
           />
-          ) : addNextQuestionButton}
+        ) : addNextQuestionButton}
         </div>
       </div>
     )
@@ -466,4 +466,3 @@ CampaignInteractionStepsForm.propTypes = {
   saveLabel: type.string,
   saveDisabled: type.bool
 }
-

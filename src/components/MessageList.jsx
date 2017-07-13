@@ -42,13 +42,14 @@ class MessageList extends React.Component {
     return (
       <List>
         {messages.map(message => (
-        <ListItem
-          disabled
-          style={message.isFromContact ? styles.received : styles.sent}
-          key={message.id}
-          primaryText={message.text}
-          secondaryText={moment(message.createdAt).fromNow()}
-        />))}
+          <ListItem
+            disabled
+            style={message.isFromContact ? styles.received : styles.sent}
+            key={message.id}
+            primaryText={message.text}
+            secondaryText={moment(message.createdAt).fromNow()}
+          />
+        ))}
         {optOutItem}
       </List>
     )

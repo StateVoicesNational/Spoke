@@ -13,15 +13,15 @@ class TexterTodoList extends React.Component {
       .map((assignment) => {
         if (assignment.unmessagedCount > 0 || assignment.unrepliedCount > 0 || assignment.badTimezoneCount > 0) {
           return (
-          <AssignmentSummary
-            organizationId={organizationId}
-            key={assignment.id}
-            assignment={assignment}
-            unmessagedCount={assignment.unmessagedCount}
-            unrepliedCount={assignment.unrepliedCount}
-            badTimezoneCount={assignment.badTimezoneCount}
-          />
-        )
+            <AssignmentSummary
+              organizationId={organizationId}
+              key={assignment.id}
+              assignment={assignment}
+              unmessagedCount={assignment.unmessagedCount}
+              unrepliedCount={assignment.unrepliedCount}
+              badTimezoneCount={assignment.badTimezoneCount}
+            />
+          )
         }
         return null
       }).filter((ele) => ele !== null)

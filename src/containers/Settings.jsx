@@ -75,45 +75,44 @@ class Settings extends React.Component {
       textingHoursEnd
     }
     return (
-        <Dialog
-          open={this.state.textingHoursDialogOpen}
-          onRequestClose={this.handleCloseTextingHoursDialog}
+      <Dialog
+        open={this.state.textingHoursDialogOpen}
+        onRequestClose={this.handleCloseTextingHoursDialog}
+      >
+        <GSForm
+          schema={formSchema}
+          onSubmit={this.handleSubmitTextingHoursForm}
+          defaultValue={{ textingHoursStart, textingHoursEnd }}
         >
-          <GSForm
-            schema={formSchema}
-            onSubmit={this.handleSubmitTextingHoursForm}
-            defaultValue={{ textingHoursStart, textingHoursEnd }}
-          >
-            <Form.Field
-              label='Start time'
-              name='textingHoursStart'
-              type='select'
-              fullWidth
-              choices={hourChoices}
+          <Form.Field
+            label='Start time'
+            name='textingHoursStart'
+            type='select'
+            fullWidth
+            choices={hourChoices}
+          />
+          <Form.Field
+            label='End time'
+            name='textingHoursEnd'
+            type='select'
+            fullWidth
+            choices={hourChoices}
+          />
+          <div className={css(styles.dialogActions)}>
+            <FlatButton
+              label='Cancel'
+              style={inlineStyles.dialogButton}
+              onTouchTap={this.handleCloseTextingHoursDialog}
             />
-            <Form.Field
-              label='End time'
-              name='textingHoursEnd'
-              type='select'
-              fullWidth
-              choices={hourChoices}
+            <Form.Button
+              type='submit'
+              style={inlineStyles.dialogButton}
+              component={GSSubmitButton}
+              label='Save'
             />
-
-            <div className={css(styles.dialogActions)}>
-              <FlatButton
-                label='Cancel'
-                style={inlineStyles.dialogButton}
-                onTouchTap={this.handleCloseTextingHoursDialog}
-              />
-              <Form.Button
-                type='submit'
-                style={inlineStyles.dialogButton}
-                component={GSSubmitButton}
-                label='Save'
-              />
-            </div>
-          </GSForm>
-        </Dialog>
+          </div>
+        </GSForm>
+      </Dialog>
     )
   }
 

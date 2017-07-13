@@ -136,32 +136,32 @@ class AssignmentTexter extends React.Component {
     const contact = this.currentContact()
     const navigationToolbarChildren = this.renderNavigationToolbarChildren()
     return (
-        <AssignmentTexterContact
-          key={contact.id}
-          assignment={assignment}
-          campaignContactId={contact.id}
-          texter={texter}
-          campaign={campaign}
-          navigationToolbarChildren={navigationToolbarChildren}
-          onFinishContact={this.handleFinishContact}
-          onRefreshAssignmentContacts={this.props.onRefreshAssignmentContacts}
-          onExitTexter={this.handleExitTexter}
-        />
+      <AssignmentTexterContact
+        key={contact.id}
+        assignment={assignment}
+        campaignContactId={contact.id}
+        texter={texter}
+        campaign={campaign}
+        navigationToolbarChildren={navigationToolbarChildren}
+        onFinishContact={this.handleFinishContact}
+        onRefreshAssignmentContacts={this.props.onRefreshAssignmentContacts}
+        onExitTexter={this.handleExitTexter}
+      />
     )
   }
   renderEmpty() {
     return (
       <div>
-      <Empty
-        title="You've already messaged or replied to all your assigned contacts for now."
-        icon={<Check />}
-      >
-        <FlatButton
-          label='Go back to todos'
+        <Empty
+          title="You've already messaged or replied to all your assigned contacts for now."
+          icon={<Check />}
         >
-          primary
-        </FlatButton>
-      </Empty>
+          <FlatButton
+            label='Go back to todos'
+          >
+            primary
+          </FlatButton>
+        </Empty>
       </div>
     )
   }
