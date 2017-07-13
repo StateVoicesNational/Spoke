@@ -17,7 +17,7 @@ export const resolvers = {
       }
 
       // Regex taken from http://stackoverflow.com/questions/6478875/regular-expression-matching-e-164-formatted-phone-numbers
-      var re = /^\+[1-9]\d{1,14}$/
+      const re = /^\+[1-9]\d{1,14}$/
       if (!re.test(ast.value)) {
         throw new GraphQLError('Query error: Not a valid Phone', [ast])
       }
