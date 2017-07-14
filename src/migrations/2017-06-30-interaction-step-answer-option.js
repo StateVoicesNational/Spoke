@@ -9,7 +9,7 @@ import { log } from '../lib'
 // Run this migration on a running dev or prod instance with the following command:
 // ./dev-tools/babel-run-with-env.js ./src/migrations/2017-06-30-interaction-step-answer-option.js
 
-(async function () {
+(async function migrate() {
   try {
     const parentSteps = await r.db('spoke')
       .table('interaction_step')
