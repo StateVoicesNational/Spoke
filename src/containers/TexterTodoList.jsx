@@ -9,7 +9,7 @@ class TexterTodoList extends React.Component {
   renderTodoList(assignments) {
     const organizationId = this.props.params.organizationId
     return assignments
-      .sort((x, y) => (x.unmessagedCount + x.unrepliedCount) > (y.unmessagedCount + y.unrepliedCount) ? -1 : 1)
+      .sort((x, y) => ((x.unmessagedCount + x.unrepliedCount) > (y.unmessagedCount + y.unrepliedCount) ? -1 : 1))
       .map((assignment) => {
         if (assignment.unmessagedCount > 0 || assignment.unrepliedCount > 0 || assignment.badTimezoneCount > 0) {
           return (
