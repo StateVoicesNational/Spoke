@@ -18,9 +18,7 @@ const styles = StyleSheet.create({
 class TexterDashboard extends React.Component {
   render() {
     const { main, topNav, fullScreen } = this.props
-    return fullScreen ? (
-      fullScreen
-    ) : (
+    return fullScreen || (
       <div>
         {topNav}
         <div className={css(styles.container)}>
