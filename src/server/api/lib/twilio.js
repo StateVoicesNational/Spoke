@@ -9,6 +9,7 @@ let twilio = null
 const MAX_SEND_ATTEMPTS = 5
 
 if (process.env.TWILIO_API_KEY && process.env.TWILIO_AUTH_TOKEN) {
+  // eslint-disable-next-line new-cap
   twilio = Twilio(process.env.TWILIO_API_KEY, process.env.TWILIO_AUTH_TOKEN)
 }
 
