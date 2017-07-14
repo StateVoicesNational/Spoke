@@ -112,7 +112,7 @@ async function sendMessage(message) {
               hasError = true
             }
           })
-          messageToSave.service_response += JSONmessages.push(response)
+          messageToSave.service_response += JSON.stringify(response)
         }
 
         messageToSave.service = 'nexmo'

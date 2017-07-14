@@ -334,10 +334,11 @@ const rootMutations = {
       const currentRoles = r.table('user_organization')
         .getAll([organizationId, user.id], { index: 'organization_user' })
         .pluck('role')('role')
-
       const oldRoleIsOwner = currentRoles.indexOf('OWNER') !== -1
       const newRoleIsOwner = roles.indexOf('OWNER') !== -1
       const roleRequired = (oldRoleIsOwner || newRoleIsOwner) ? 'OWNER' : 'ADMIN'
+      let newOrgRoles = []
+
       await accessRequired(user, organizationId, roleRequired)
 
       currentRoles.forEach(async (curRole) => {
