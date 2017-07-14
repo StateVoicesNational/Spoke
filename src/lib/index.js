@@ -96,6 +96,7 @@ export const gunzip = (buf) => (
 export const parseCSV = (file, optOuts, callback) => {
   Papa.parse(file, {
     header: true,
+    // eslint-disable-next-line no-shadow
     complete: ({ data, meta, errors }, file) => {
       const fields = meta.fields
 
