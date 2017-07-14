@@ -14,6 +14,7 @@ import GSSubmitButton from './forms/GSSubmitButton'
 import Form from 'react-formal'
 import { connect } from 'react-apollo'
 import gql from 'graphql-tag'
+import { log } from '../../lib'
 
 // import { insert, update, remove } from '../../api/scripts/methods'
 
@@ -69,6 +70,7 @@ class ScriptList extends React.Component {
         await mutations.createCannedResponse(saveObject)
         this.setState({ dialogOpen: false })
       } catch (err) {
+        log.error(err)
       }
     }
 

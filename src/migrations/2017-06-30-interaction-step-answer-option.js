@@ -1,4 +1,5 @@
 import { r } from '../server/models'
+import { log } from '../lib'
 
 // For each answer_option on interaction steps with question:
 // - Move the value to the answer_option field of the child interaction step
@@ -27,5 +28,6 @@ import { r } from '../server/models'
       }
     }
   } catch (ex) {
+    log.error(ex)
   }
 })()

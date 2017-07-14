@@ -1,5 +1,6 @@
 import { r } from '../server/models'
 import Baby from 'babyparse'
+import { log } from '../lib'
 
 (async function () {
   async function sleep(ms = 0) {
@@ -22,5 +23,6 @@ import Baby from 'babyparse'
       // await sleep(sleepTime)
     }
   } catch (ex) {
+    log.error(ex)
   }
 })()

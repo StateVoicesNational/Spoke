@@ -1,5 +1,6 @@
 import { ZipCode, r } from '../server/models'
 import Baby from 'babyparse'
+import { log } from '../lib'
 
 (async function () {
   try {
@@ -32,5 +33,6 @@ import Baby from 'babyparse'
       }
     }
   } catch (ex) {
+    log.error(ex)
   }
 })()
