@@ -14,7 +14,7 @@ export const resolvers = {
     },
     __parseLiteral(ast) {
       if (ast.kind !== Kind.STRING) {
-        throw new GraphQLError('Query error: Can only parse strings got a: ' + ast.kind, [ast])
+        throw new GraphQLError(`Query error: Can only parse strings got a: ${ast.kind}`, [ast])
       }
 
       // Regex taken from http://stackoverflow.com/questions/6478875/regular-expression-matching-e-164-formatted-phone-numbers
