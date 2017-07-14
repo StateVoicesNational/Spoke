@@ -13,6 +13,9 @@ class TexterTodo extends React.Component {
       )
     }
   }
+
+  refreshAssignmentContacts = () => this.props.data.refetch()
+
   render() {
     const { assignment } = this.props.data
     const contacts = assignment.contacts
@@ -23,7 +26,6 @@ class TexterTodo extends React.Component {
     />)
   }
 
-  refreshAssignmentContacts = () => this.props.data.refetch()
 }
 
 TexterTodo.propTypes = {

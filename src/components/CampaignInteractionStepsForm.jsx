@@ -92,10 +92,9 @@ const styles = {
 }
 
 export default class CampaignInteractionStepsForm extends React.Component {
-  sortedValues() {
-    return {
-      interactionSteps: sortInteractionSteps(this.props.formValues.interactionSteps)
-    }
+
+  state = {
+    focusedField: null
   }
 
   componentDidUpdate() {
@@ -105,46 +104,24 @@ export default class CampaignInteractionStepsForm extends React.Component {
     }
   }
 
-  formSchema = yup.object({
-    interactionSteps: yup.array().of(yup.object({
-      script: yup.string(),
-      question: yup.object({
-        text: yup.string(),
-        answerOptions: yup.array().of(yup.object({
-          value: yup.string(),
-          nextInteractionStep: yup.mixed()
-        }))
-      })
-    }))
-  })
-
-  state = {
-    focusedField: null
-  }
-
-  handleNavigateToStep = (interactionStepId) => {
-    this.scrollToStep(interactionStepId)
-  }
-
-  scrollToStep(interactionStepId) {
-    const node = ReactDOM.findDOMNode(this.refs[interactionStepId])
-    node.scrollIntoView()
-  }
-
-  modifyInteractionStep(interactionStep, newProps) {
-    const newSteps = JSON.parse(JSON.stringify(this.sortedValues().interactionSteps)).map((step) => {
-      if (step.id === interactionStep.id) {
-        return {
-          ...interactionStep,
-          ...newProps
-        }
+  onChange = (formValues) => {
+    if (this.props.ensureComplete) {
+      return
+    }
+    const newValues = JSON.parse(JSON.stringify(formValues))
+    newValues.interactionSteps = newValues.interactionSteps.map((step) => {
+      const newStep = step
+      if (step.question && step.question.text === '') {
+        newStep.question.answerOptions = []
+      } else if (step.question && step.question.text !== '' && step.question.answerOptions.length === 0) {
+        newStep.question.answerOptions = [{
+          value: '',
+          nextInteractionStep: null
+        }]
       }
-      return step
+      return newStep
     })
-
-    this.onChange({
-      interactionSteps: newSteps
-    })
+    this.props.onChange(newValues)
   }
 
   addAnswer(interactionStep, interactionStepIndex) {
@@ -193,24 +170,48 @@ export default class CampaignInteractionStepsForm extends React.Component {
     })
   }
 
-  onChange = (formValues) => {
-    if (this.props.ensureComplete) {
-      return
-    }
-    const newValues = JSON.parse(JSON.stringify(formValues))
-    newValues.interactionSteps = newValues.interactionSteps.map((step) => {
-      const newStep = step
-      if (step.question && step.question.text === '') {
-        newStep.question.answerOptions = []
-      } else if (step.question && step.question.text !== '' && step.question.answerOptions.length === 0) {
-        newStep.question.answerOptions = [{
-          value: '',
-          nextInteractionStep: null
-        }]
+  formSchema = yup.object({
+    interactionSteps: yup.array().of(yup.object({
+      script: yup.string(),
+      question: yup.object({
+        text: yup.string(),
+        answerOptions: yup.array().of(yup.object({
+          value: yup.string(),
+          nextInteractionStep: yup.mixed()
+        }))
+      })
+    }))
+  })
+
+  handleNavigateToStep = (interactionStepId) => {
+    this.scrollToStep(interactionStepId)
+  }
+
+  modifyInteractionStep(interactionStep, newProps) {
+    const newSteps = JSON.parse(JSON.stringify(this.sortedValues().interactionSteps)).map((step) => {
+      if (step.id === interactionStep.id) {
+        return {
+          ...interactionStep,
+          ...newProps
+        }
       }
-      return newStep
+      return step
     })
-    this.props.onChange(newValues)
+
+    this.onChange({
+      interactionSteps: newSteps
+    })
+  }
+
+  scrollToStep(interactionStepId) {
+    const node = ReactDOM.findDOMNode(this.refs[interactionStepId])
+    node.scrollIntoView()
+  }
+
+  sortedValues() {
+    return {
+      interactionSteps: sortInteractionSteps(this.props.formValues.interactionSteps)
+    }
   }
 
   renderAnswer(answer, answerOptionIndex, interactionStep, interactionStepIndex) {

@@ -84,9 +84,22 @@ class ScriptEditor extends React.Component {
     this.addCustomField = this.addCustomField.bind(this)
   }
 
-  getValue() {
+  componentWillReceiveProps() {
+    const { scriptFields } = this.props
     const { editorState } = this.state
-    return editorState.getCurrentContent().getPlainText()
+    const decorator = this.getCompositeDecorator(scriptFields)
+    const newEditorState = EditorState.set(editorState, { decorator })
+
+    // this.setState({ editorState: this.getEditorState() })
+  }
+
+  onChange(editorState) {
+    this.setState({ editorState }, () => {
+      const { onChange } = this.props
+      if (onChange) {
+        onChange(this.getValue())
+      }
+    })
   }
 
   getEditorState() {
@@ -103,22 +116,9 @@ class ScriptEditor extends React.Component {
     return editorState
   }
 
-  onChange(editorState) {
-    this.setState({ editorState }, () => {
-      const { onChange } = this.props
-      if (onChange) {
-        onChange(this.getValue())
-      }
-    })
-  }
-
-  componentWillReceiveProps() {
-    const { scriptFields } = this.props
+  getValue() {
     const { editorState } = this.state
-    const decorator = this.getCompositeDecorator(scriptFields)
-    const newEditorState = EditorState.set(editorState, { decorator })
-
-    // this.setState({ editorState: this.getEditorState() })
+    return editorState.getCurrentContent().getPlainText()
   }
 
   getCompositeDecorator(scriptFields) {

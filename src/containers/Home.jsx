@@ -34,6 +34,19 @@ class Home extends React.Component {
     orgLessUser: false
   }
 
+  componentWillMount() {
+    const user = this.props.data.currentUser
+    if (user) {
+      if (user.adminOrganizations.length > 0) {
+        this.props.router.push(`/admin/${user.adminOrganizations[0].id}`)
+      } else if (user.texterOrganizations.length > 0) {
+        this.props.router.push(`/app/${user.texterOrganizations[0].id}`)
+      } else {
+        this.setState({ orgLessUser: true })
+      }
+    }
+  }
+
   handleOrgInviteClick = async (e) => {
     e.preventDefault()
     const newInvite = await this.props.mutations.createInvite({
@@ -48,18 +61,6 @@ class Home extends React.Component {
     }
   }
 
-  componentWillMount() {
-    const user = this.props.data.currentUser
-    if (user) {
-      if (user.adminOrganizations.length > 0) {
-        this.props.router.push(`/admin/${user.adminOrganizations[0].id}`)
-      } else if (user.texterOrganizations.length > 0) {
-        this.props.router.push(`/app/${user.texterOrganizations[0].id}`)
-      } else {
-        this.setState({ orgLessUser: true })
-      }
-    }
-  }
   renderContent() {
     if (this.state.orgLessUser) {
       return (

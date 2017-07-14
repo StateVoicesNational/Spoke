@@ -105,13 +105,6 @@ const inlineStyles = {
 }
 
 class AssignmentTexterContact extends React.Component {
-  messageSchema = yup.object({
-    messageText: yup.string().required("Can't send empty message")
-  })
-
-  optOutSchema = yup.object({
-    optOutMessageText: yup.string().required()
-  })
 
   constructor(props) {
     super(props)
@@ -155,25 +148,6 @@ class AssignmentTexterContact extends React.Component {
     }
   }
 
-  isContactBetweenTextingHours(contact) {
-    const { campaign } = this.props
-
-    let timezoneData = null
-
-    if (contact.location) {
-      const { hasDST, offset } = contact.location.timezone
-
-      timezoneData = { hasDST, offset }
-    }
-    const { textingHoursStart, textingHoursEnd, textingHoursEnforced } = campaign.organization
-    const config = {
-      textingHoursStart,
-      textingHoursEnd,
-      textingHoursEnforced
-    }
-    return isBetweenTextingHours(timezoneData, config)
-  }
-
   componentDidMount() {
     const { contact } = this.props.data
     if (contact.optOut) {
@@ -190,9 +164,6 @@ class AssignmentTexterContact extends React.Component {
     setTimeout(() => node.scrollTop = Math.floor(node.scrollHeight), 0)
   }
 
-  skipContact = () => {
-    setTimeout(this.props.onFinishContact, 1500)
-  }
   getAvailableInteractionSteps(questionResponses) {
     const allInteractionSteps = this.props.data.contact.interactionSteps
 
@@ -416,72 +387,52 @@ class AssignmentTexterContact extends React.Component {
     })
   }
 
-  renderCannedResponsePopover() {
-    const { campaign, assignment, texter } = this.props
-    const { userCannedResponses, campaignCannedResponses } = assignment
-
-    return (<CannedResponseMenu
-      onRequestClose={this.handleClosePopover}
-      open={this.state.responsePopoverOpen}
-      anchorEl={this.state.responsePopoverAnchorEl}
-      campaignCannedResponses={campaignCannedResponses}
-      userCannedResponses={userCannedResponses}
-      customFields={campaign.customFields}
-      campaignId={campaign.id}
-      texterId={texter.id}
-      onSelectCannedResponse={this.handleCannedResponseChange}
-    />)
-  }
-  renderOptOutDialog() {
-    const { contact } = this.props.data
-    const isOptedOut = contact.isOptedOut
-    const actions = [
-
-    ]
-
-    return (
-      <div>
-        <Dialog
-          title='Opt out user'
-          actions={actions}
-          modal={false}
-          open={this.state.optOutDialogOpen}
-          onRequestClose={this.handleCloseDialog}
-        >
-          <GSForm
-            schema={this.optOutSchema}
-            onChange={({ optOutMessageText }) => this.setState({ optOutMessageText })}
-            value={{ optOutMessageText: this.state.optOutMessageText }}
-            onSubmit={this.handleOptOut}
-          >
-            <Form.Field
-              name='optOutMessageText'
-              fullWidth
-              autoFocus
-              multiLine
-            />
-            <div className={css(styles.dialogActions)}>
-              <FlatButton
-                style={inlineStyles.dialogButton}
-                label='Cancel'
-                onTouchTap={this.handleCloseDialog}
-              />,
-              <Form.Button
-                type='submit'
-                style={inlineStyles.dialogButton}
-                component={GSSubmitButton}
-                label='Send message and opt out user'
-              />
-            </div>
-          </GSForm>
-        </Dialog>
-
-      </div>
-    )
-  }
 
   handleClickSendMessageButton = () => {
     this.refs.form.submit()
+  }
+
+  isContactBetweenTextingHours(contact) {
+    const { campaign } = this.props
+
+    let timezoneData = null
+
+    if (contact.location) {
+      const { hasDST, offset } = contact.location.timezone
+
+      timezoneData = { hasDST, offset }
+    }
+    const { textingHoursStart, textingHoursEnd, textingHoursEnforced } = campaign.organization
+    const config = {
+      textingHoursStart,
+      textingHoursEnd,
+      textingHoursEnforced
+    }
+    return isBetweenTextingHours(timezoneData, config)
+  }
+
+  optOutSchema = yup.object({
+    optOutMessageText: yup.string().required()
+  })
+
+  skipContact = () => {
+    setTimeout(this.props.onFinishContact, 1500)
+  }
+
+  messageSchema = yup.object({
+    messageText: yup.string().required("Can't send empty message")
+  })
+
+  handleMessageFormChange = ({ messageText }) => this.setState({ messageText })
+
+  renderMiddleScrollingSection() {
+    const { contact } = this.props.data
+    return (
+      <MessageList
+        contact={contact}
+        messages={contact.messages}
+      />
+    )
   }
 
   renderSurveySection() {
@@ -587,17 +538,71 @@ class AssignmentTexterContact extends React.Component {
     )
   }
 
-  renderMiddleScrollingSection() {
+  renderCannedResponsePopover() {
+    const { campaign, assignment, texter } = this.props
+    const { userCannedResponses, campaignCannedResponses } = assignment
+
+    return (<CannedResponseMenu
+      onRequestClose={this.handleClosePopover}
+      open={this.state.responsePopoverOpen}
+      anchorEl={this.state.responsePopoverAnchorEl}
+      campaignCannedResponses={campaignCannedResponses}
+      userCannedResponses={userCannedResponses}
+      customFields={campaign.customFields}
+      campaignId={campaign.id}
+      texterId={texter.id}
+      onSelectCannedResponse={this.handleCannedResponseChange}
+    />)
+  }
+
+  renderOptOutDialog() {
     const { contact } = this.props.data
+    const isOptedOut = contact.isOptedOut
+    const actions = [
+
+    ]
+
     return (
-      <MessageList
-        contact={contact}
-        messages={contact.messages}
-      />
+      <div>
+        <Dialog
+          title='Opt out user'
+          actions={actions}
+          modal={false}
+          open={this.state.optOutDialogOpen}
+          onRequestClose={this.handleCloseDialog}
+        >
+          <GSForm
+            schema={this.optOutSchema}
+            onChange={({ optOutMessageText }) => this.setState({ optOutMessageText })}
+            value={{ optOutMessageText: this.state.optOutMessageText }}
+            onSubmit={this.handleOptOut}
+          >
+            <Form.Field
+              name='optOutMessageText'
+              fullWidth
+              autoFocus
+              multiLine
+            />
+            <div className={css(styles.dialogActions)}>
+              <FlatButton
+                style={inlineStyles.dialogButton}
+                label='Cancel'
+                onTouchTap={this.handleCloseDialog}
+              />,
+              <Form.Button
+                type='submit'
+                style={inlineStyles.dialogButton}
+                component={GSSubmitButton}
+                label='Send message and opt out user'
+              />
+            </div>
+          </GSForm>
+        </Dialog>
+
+      </div>
     )
   }
 
-  handleMessageFormChange = ({ messageText }) => this.setState({ messageText })
   renderBottomFixedSection() {
     return (
       <div>
