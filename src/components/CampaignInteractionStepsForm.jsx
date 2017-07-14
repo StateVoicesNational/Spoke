@@ -154,7 +154,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
       value: '',
       nextInteractionStep: null
     })
-    let answerOptionIndex = newQuestion.answerOptions.length - 1
+    const answerOptionIndex = newQuestion.answerOptions.length - 1
     this.modifyInteractionStep(interactionStep, { question: newQuestion })
     this.setState({ focusedField: `interactionSteps[${interactionStepIndex}]['question']['answerOptions'][${answerOptionIndex}].value` })
   }

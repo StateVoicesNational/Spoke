@@ -196,7 +196,7 @@ class AssignmentTexterContact extends React.Component {
   getAvailableInteractionSteps(questionResponses) {
     const allInteractionSteps = this.props.data.contact.interactionSteps
 
-    let availableSteps = []
+    const availableSteps = []
 
     let step = getTopMostParent(allInteractionSteps)
 
@@ -219,8 +219,8 @@ class AssignmentTexterContact extends React.Component {
   }
 
   getInitialQuestionResponses(interactionSteps) {
-    let questionResponses = {}
-    for (let interactionStep of interactionSteps) {
+    const questionResponses = {}
+    for (const interactionStep of interactionSteps) {
       if (interactionStep.question.text !== '') {
         const value = interactionStep.questionResponse ? interactionStep.questionResponse.value : null
         questionResponses[interactionStep.id] = value
@@ -327,8 +327,8 @@ class AssignmentTexterContact extends React.Component {
   handleSubmitSurveys = async () => {
     const { contact } = this.props.data
 
-    let deletionIds = []
-    let questionResponseObjects = []
+    const deletionIds = []
+    const questionResponseObjects = []
 
     const interactionStepIds = Object.keys(this.state.questionResponses)
 
@@ -403,7 +403,7 @@ class AssignmentTexterContact extends React.Component {
     questionResponses[interactionStep.id] = questionResponseValue
 
     const children = getChildren(interactionStep, interactionSteps)
-    for (let childStep of children) {
+    for (const childStep of children) {
       if (childStep.id in questionResponses) {
         questionResponses[childStep.id] = null
       }
