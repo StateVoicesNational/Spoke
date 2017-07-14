@@ -9,32 +9,30 @@ import IconButton from 'material-ui/IconButton'
 import Divider from 'material-ui/Divider'
 import { withRouter } from 'react-router'
 
-class Navigation extends Component {
-  render() {
-    const { sections, switchListItem } = this.props
+const Navigation = function Navigation() {
+  const { sections, switchListItem } = this.props
 
-    return (
-      <Paper
-        rounded={false}
-        zDepth={2}
-        style={{
-          height: '100%'
-        }}
-      >
-        <List>
-          {sections.map((section) => (
-            <ListItem
-              key={section.name}
-              primaryText={section.name}
-              onTouchTap={() => this.props.router.push(section.url)}
-            />
-          ))}
-          <Divider />
-          {switchListItem}
-        </List>
-      </Paper>
-    )
-  }
+  return (
+    <Paper
+      rounded={false}
+      zDepth={2}
+      style={{
+        height: '100%'
+      }}
+    >
+      <List>
+        {sections.map((section) => (
+          <ListItem
+            key={section.name}
+            primaryText={section.name}
+            onTouchTap={() => this.props.router.push(section.url)}
+          />
+        ))}
+        <Divider />
+        {switchListItem}
+      </List>
+    </Paper>
+  )
 }
 
 Navigation.propTypes = {
