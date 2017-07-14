@@ -104,6 +104,7 @@ async function handleIncomingMessageParts() {
   }
 }
 (async () => {
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     try {
       await sleep(100)

@@ -92,6 +92,7 @@ async function assignUserNumbers() {
 }
 
 (async () => {
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     try {
       await sleep(500)
@@ -101,3 +102,5 @@ async function assignUserNumbers() {
     }
   }
 })()
+
+setInterval(assignUserNumbers, 500)
