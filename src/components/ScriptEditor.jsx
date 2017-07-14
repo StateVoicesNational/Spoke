@@ -10,32 +10,6 @@ import { delimit } from '../lib/scripts'
 import Chip from './Chip'
 import { red400, green500, green600, grey100 } from 'material-ui/styles/colors'
 
-function findWithRegex(regex, contentBlock, callback) {
-  const text = contentBlock.getText()
-  let matchArr, start
-  while ((matchArr = regex.exec(text)) !== null) {
-    start = matchArr.index
-    callback(start, start + matchArr[0].length)
-  }
-}
-
-
-const RecognizedField = (props) => (
-  <span {...props} style={styles.goodField}>{props.children}</span>
-)
-
-RecognizedField.propTypes = {
-  children: React.PropTypes.arrayOf(React.PropTypes.element)
-}
-
-const UnrecognizedField = (props) => (
-  <span {...props} style={styles.badField}>{props.children}</span>
-)
-
-UnrecognizedField.propTypes = {
-  children: React.PropTypes.arrayOf(React.PropTypes.element)
-}
-
 const styles = {
   editor: {
     border: '1px solid #ddd',
@@ -70,6 +44,31 @@ const styles = {
   }
 }
 
+function findWithRegex(regex, contentBlock, callback) {
+  const text = contentBlock.getText()
+  let matchArr, start
+  while ((matchArr = regex.exec(text)) !== null) {
+    start = matchArr.index
+    callback(start, start + matchArr[0].length)
+  }
+}
+
+
+const RecognizedField = (props) => (
+  <span {...props} style={styles.goodField}>{props.children}</span>
+)
+
+RecognizedField.propTypes = {
+  children: React.PropTypes.arrayOf(React.PropTypes.element)
+}
+
+const UnrecognizedField = (props) => (
+  <span {...props} style={styles.badField}>{props.children}</span>
+)
+
+UnrecognizedField.propTypes = {
+  children: React.PropTypes.arrayOf(React.PropTypes.element)
+}
 
 class ScriptEditor extends React.Component {
   constructor(props) {
