@@ -324,10 +324,12 @@ class AdminCampaignEdit extends React.Component {
         }}
       >
         {this.state.startingCampaign ? (
-          <div style={{
-            color: theme.colors.gray,
-            fontWeight: 800
-          }}>
+          <div
+            style={{
+              color: theme.colors.gray,
+              fontWeight: 800
+            }}
+          >
             <CircularProgress
               size={0.5}
               style={{
@@ -338,10 +340,12 @@ class AdminCampaignEdit extends React.Component {
             Starting your campaign...
           </div>
         ) : (isStarted ? (
-          <div style={{
-            color: theme.colors.green,
-            fontWeight: 800
-          }}>
+          <div
+            style={{
+              color: theme.colors.green,
+              fontWeight: 800
+            }}
+          >
             This campaign is running!
           </div>
           ) :

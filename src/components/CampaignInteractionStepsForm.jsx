@@ -262,10 +262,12 @@ export default class CampaignInteractionStepsForm extends React.Component {
           marginBottom: 16
         }}
       >
-        <div style={{
-          display: 'inline-block',
-          marginRight: 16
-        }}>
+        <div
+          style={{
+            display: 'inline-block',
+            marginRight: 16
+          }}
+        >
           <RadioButtonUnchecked
             style={{
               height: 14,
@@ -294,9 +296,11 @@ export default class CampaignInteractionStepsForm extends React.Component {
           />
           {deleteAnswerButton}
         </div>
-        <div style={{
-          display: 'inline-block'
-        }}>
+        <div
+          style={{
+            display: 'inline-block'
+          }}
+        >
         {answer.nextInteractionStep ? (
           <FlatButton
             label='Next Step'
