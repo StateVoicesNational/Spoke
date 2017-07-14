@@ -315,7 +315,18 @@ class AdminCampaignEdit extends React.Component {
   }
 
   renderHeader() {
-    const isStarted = this.props.campaignData.campaign.isStarted
+    const notStarting = this.props.campaignData.campaign.isStarted ? (
+      <div
+        style={{
+          color: theme.colors.green,
+          fontWeight: 800
+        }}
+      >
+        This campaign is running!
+      </div>
+      ) :
+      this.renderStartButton()
+
     return (
       <div
         style={{
@@ -323,33 +334,23 @@ class AdminCampaignEdit extends React.Component {
           fontSize: 16
         }}
       >
-        {this.state.startingCampaign ? (
-          <div
-            style={{
-              color: theme.colors.gray,
-              fontWeight: 800
-            }}
-          >
-            <CircularProgress
-              size={0.5}
+          {this.state.startingCampaign ? (
+            <div
               style={{
-                verticalAlign: 'middle',
-                display: 'inline-block'
+                color: theme.colors.gray,
+                fontWeight: 800
               }}
-            />
-            Starting your campaign...
-          </div>
-        ) : (isStarted ? (
-          <div
-            style={{
-              color: theme.colors.green,
-              fontWeight: 800
-            }}
-          >
-            This campaign is running!
-          </div>
-          ) :
-        this.renderStartButton())}
+            >
+              <CircularProgress
+                size={0.5}
+                style={{
+                  verticalAlign: 'middle',
+                  display: 'inline-block'
+                }}
+              />
+              Starting your campaign...
+            </div>
+          ) : notStarting}
       </div>
     )
   }
