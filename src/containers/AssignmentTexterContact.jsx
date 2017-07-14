@@ -161,7 +161,7 @@ class AssignmentTexterContact extends React.Component {
 
     const node = this.refs.messageScrollContainer
     // Does not work without this setTimeout
-    setTimeout(() => node.scrollTop = Math.floor(node.scrollHeight), 0)
+    setTimeout(() => { node.scrollTop = Math.floor(node.scrollHeight) }, 0)
   }
 
   getAvailableInteractionSteps(questionResponses) {
