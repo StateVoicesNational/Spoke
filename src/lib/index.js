@@ -110,8 +110,7 @@ export const parseCSV = (file, optOuts, callback) => {
       if (missingFields.length > 0) {
         const error = `Missing fields: ${missingFields.join(', ')}`
         callback({ error })
-      }
-      else {
+      } else {
         const { validationStats, validatedData } = getValidatedData(data, optOuts)
 
         const customFields = fields.filter((field) => topLevelUploadFields.indexOf(field) === -1)
