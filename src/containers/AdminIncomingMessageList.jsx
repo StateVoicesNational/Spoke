@@ -74,6 +74,7 @@ export default class AdminIncomingMessageList extends Component {
                     </TableRow>
                     )
                 }
+                return ''
               }
               )}
             </TableBody>
