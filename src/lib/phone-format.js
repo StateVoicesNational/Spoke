@@ -9,9 +9,8 @@ export const getFormattedPhoneNumber = (cell, country = 'US') => {
     const isValid = phoneUtil.isValidNumber(inputNumber)
     if (isValid) {
       return phoneUtil.format(inputNumber, PhoneNumberFormat.E164)
-    } else {
-      return null
     }
+    return null
   } catch (e) {
     log.error(e)
     return null

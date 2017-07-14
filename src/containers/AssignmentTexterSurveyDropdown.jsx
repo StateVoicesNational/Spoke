@@ -76,22 +76,22 @@ class AssignmentTexterSurveyDropdown extends Component {
 
     if (!question) {
       return null
-    } else {
-      return (
-        <div>
-          <SelectField
-            style={isCurrentStep ? styles.currentStepSelect : styles.previousStepSelect}
-            onChange={this.handleAnswerChange}
-            name={question.id}
-            value={responseValue}
-            floatingLabelText={question.text}
-            hintText='Choose answer'
-          >
-            {this.renderAnswers()}
-          </SelectField>
-        </div>
-      )
     }
+
+    return (
+      <div>
+        <SelectField
+          style={isCurrentStep ? styles.currentStepSelect : styles.previousStepSelect}
+          onChange={this.handleAnswerChange}
+          name={question.id}
+          value={responseValue}
+          floatingLabelText={question.text}
+          hintText='Choose answer'
+        >
+          {this.renderAnswers()}
+        </SelectField>
+      </div>
+    )
   }
 }
 

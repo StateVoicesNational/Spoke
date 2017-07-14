@@ -10,18 +10,17 @@ export const sendEmail = async ({ to, subject, text, replyTo }) => {
   if (process.env.NODE_ENV === 'development') {
     log.debug(`Would send e-mail with subject ${subject} and text ${text}.`)
     return null
-  } else {
-    const params = {
-      from: process.env.MAILGUN_FROM_EMAIL,
-      to,
-      subject,
-      text
-    }
-
-    if (replyTo) {
-      params['h:Reply-To'] = replyTo
-    }
-
-    return mailgun.messages().send(params)
   }
+  const params = {
+    from: process.env.MAILGUN_FROM_EMAIL,
+    to,
+    subject,
+    text
+  }
+
+  if (replyTo) {
+    params['h:Reply-To'] = replyTo
+  }
+
+  return mailgun.messages().send(params)
 }
