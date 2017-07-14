@@ -141,9 +141,13 @@ app.get('/login-callback',
     if (existingUser.length === 0) {
       await User.save({
         auth0_id: req.user.id,
+        // eslint-disable-next-line no-underscore-dangle
         first_name: req.user._json.user_metadata.given_name,
+        // eslint-disable-next-line no-underscore-dangle
         last_name: req.user._json.user_metadata.family_name,
+        // eslint-disable-next-line no-underscore-dangle
         cell: req.user._json.user_metadata.cell,
+        // eslint-disable-next-line no-underscore-dangle
         email: req.user._json.email,
         is_superadmin: false
       })
