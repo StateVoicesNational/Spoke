@@ -3,8 +3,9 @@ import TextField from 'material-ui/TextField'
 
 const OrganizationJoinLink = ({ organizationId }) => {
   let baseUrl = 'http://base'
-  if (typeof window !== 'undefined')
+  if (typeof window !== 'undefined') {
     baseUrl = window.location.origin
+  }
 
   const joinUrl = `${baseUrl}/${organizationId}/join`
 
