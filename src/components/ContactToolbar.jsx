@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React from 'react'
 import { Toolbar, ToolbarGroup, ToolbarTitle } from 'material-ui/Toolbar'
 import { getDisplayPhoneNumber } from '../lib/phone-format'
 import { getLocalTime } from '../lib/timezones'

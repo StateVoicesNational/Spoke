@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
 // import { CampaignList } from '../components/campaign_list'
-import FloatingActionButton from 'material-ui/FloatingActionButton'
 import {
   Table,
   TableBody,
@@ -11,23 +10,8 @@ import {
 } from 'material-ui/Table'
 
 // import SimpleTable from './Table.jsx'
-import ContentAdd from 'material-ui/svg-icons/content/add'
-import { moment } from 'moment'
-import Subheader from 'material-ui/Subheader'
-import SpeakerNotesIcon from 'material-ui/svg-icons/action/speaker-notes'
 import axios from 'axios'
-import Empty from '../components/Empty'
 
-const styles = {
-  floatingButton: {
-    margin: 0,
-    top: 'auto',
-    right: 20,
-    bottom: 20,
-    left: 'auto',
-    position: 'fixed'
-  }
-}
 
 export default class AdminIncomingMessageList extends Component {
   constructor(props) {

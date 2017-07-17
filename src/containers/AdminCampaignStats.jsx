@@ -1,7 +1,7 @@
 import React from 'react'
 import RaisedButton from 'material-ui/RaisedButton'
 import Chart from '../components/Chart'
-import { Card, CardActions, CardHeader, CardMedia, CardTitle, CardText } from 'material-ui/Card'
+import { Card, CardTitle, CardText } from 'material-ui/Card'
 import TexterStats from '../components/TexterStats'
 import Snackbar from 'material-ui/Snackbar'
 import { withRouter } from 'react-router'

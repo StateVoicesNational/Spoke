@@ -1,4 +1,4 @@
-import { r, Assignment, Campaign, CampaignContact, User, Organization } from './models'
+import { r, Assignment, Campaign, User, Organization } from './models'
 import { log } from '../lib'
 import { sendEmail } from './mail'
 

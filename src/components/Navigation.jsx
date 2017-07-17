@@ -1,11 +1,6 @@
-import React, { Component } from 'react'
+import React from 'react'
 import Paper from 'material-ui/Paper'
-import Subheader from 'material-ui/Subheader'
-import FloatingActionButton from 'material-ui/FloatingActionButton'
 import { List, ListItem } from 'material-ui/List'
-import AppBar from 'material-ui/AppBar'
-import ArrowBackIcon from 'material-ui/svg-icons/navigation/arrow-back'
-import IconButton from 'material-ui/IconButton'
 import Divider from 'material-ui/Divider'
 import { withRouter } from 'react-router'
 

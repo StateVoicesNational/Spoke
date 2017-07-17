@@ -90,7 +90,7 @@ class ScriptEditor extends React.Component {
     const { scriptFields } = this.props
     const { editorState } = this.state
     const decorator = this.getCompositeDecorator(scriptFields)
-    const newEditorState = EditorState.set(editorState, { decorator })
+    EditorState.set(editorState, { decorator })
 
     // this.setState({ editorState: this.getEditorState() })
   }

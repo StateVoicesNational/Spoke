@@ -122,6 +122,7 @@ async function sendMessage(message) {
             messageToSave.send_status = 'ERROR'
           }
           Message.save(messageToSave, { conflict: 'update' })
+          // eslint-disable-next-line no-unused-vars
           .then((_, newMessage) => {
             reject(err || (response ? new Error(JSON.stringify(response)) : new Error('Encountered unknown error')))
           })

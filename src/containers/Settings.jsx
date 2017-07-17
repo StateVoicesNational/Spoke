@@ -9,7 +9,6 @@ import GSSubmitButton from '../components/forms/GSSubmitButton'
 import FlatButton from 'material-ui/FlatButton'
 import yup from 'yup'
 import { Card, CardText, CardActions, CardHeader } from 'material-ui/Card'
-import { GraphQLRequestError } from '../network/errors'
 import { StyleSheet, css } from 'aphrodite'
 import Toggle from 'material-ui/Toggle'
 import moment from 'moment'
@@ -70,10 +69,6 @@ class Settings extends React.Component {
       label: formatTextingHours(hour)
     }))
 
-    const defaults = {
-      textingHoursStart,
-      textingHoursEnd
-    }
     return (
       <Dialog
         open={this.state.textingHoursDialogOpen}

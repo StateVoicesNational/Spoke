@@ -187,7 +187,6 @@ async function assignTexters(job) {
 
 async function exportCampaign(job) {
   const payload = JSON.parse(job.payload)
-  const jobId = job.id
   const id = job.campaign_id
   const campaign = await Campaign.get(id)
   const requester = payload.requester

@@ -5,7 +5,7 @@ import appRenderer from './middleware/app-renderer'
 import { apolloServer } from 'apollo-server'
 import { schema, resolvers } from './api/schema'
 import mocks from './api/mocks'
-import { createLoaders, User, Message, r } from './models'
+import { createLoaders, User } from './models'
 import passport from 'passport'
 import cookieSession from 'cookie-session'
 import setupAuth0Passport from './setup-auth0-passport'
@@ -68,7 +68,7 @@ app.post('/nexmo', wrap(async (req, res) => {
 
 app.post('/twilio', wrap(async (req, res) => {
   try {
-    const messageId = await twilio.handleIncomingMessage(req.body)
+    await twilio.handleIncomingMessage(req.body)
   } catch (ex) {
     log.error(ex)
   }

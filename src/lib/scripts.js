@@ -8,7 +8,7 @@ export const delimit = (text) => {
   return `${startDelimiter}${text}${endDelimiter}`
 }
 
-const REQUIRED_UPLOAD_FIELDS = ['firstName', 'lastName', 'cell']
+// const REQUIRED_UPLOAD_FIELDS = ['firstName', 'lastName', 'cell']
 const TOP_LEVEL_UPLOAD_FIELDS = ['firstName', 'lastName', 'cell', 'zip']
 const TEXTER_SCRIPT_FIELDS = ['texterFirstName', 'texterLastName']
 

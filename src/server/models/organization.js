@@ -1,8 +1,8 @@
 import thinky from './thinky'
 const type = thinky.type
-import { requiredString, optionalString, timestamp } from './custom-types'
+import { requiredString, timestamp } from './custom-types'
 
-const FEATURES = ['threeClick']
+// const FEATURES = ['threeClick']
 
 const Organization = thinky.createModel('organization', type.object().schema({
   id: type.string(),

@@ -1,6 +1,4 @@
 import { Campaign,
-  Assignment,
-  CampaignContact,
   CannedResponse,
   Invite,
   Message,
@@ -8,7 +6,6 @@ import { Campaign,
   Organization,
   QuestionResponse,
   UserOrganization,
-  InteractionStep,
   JobRequest,
   r
 } from '../models'
@@ -81,8 +78,7 @@ import {
 import { handleIncomingMessage } from './lib/nexmo'
 import { handleTwilioIncomingMessage } from './lib/twilio'
 import { gzip } from '../../lib'
-import { getFormattedPhoneNumber } from '../../lib/phone-format'
-import { isBetweenTextingHours } from '../../lib/timezones'
+// import { isBetweenTextingHours } from '../../lib/timezones'
 import { Notifications, sendUserNotification } from '../notifications'
 const rootSchema = `
   input CampaignContactInput {
@@ -272,7 +268,7 @@ async function editCampaign(id, campaign, loaders) {
 
 const rootMutations = {
   RootMutation: {
-    sendReply: async (_, { id, message }, { user, loaders }) => {
+    sendReply: async (_, { id, message }, { loaders }) => {
       if (process.env.NODE_ENV !== 'development') {
         throw new GraphQLError({
           status: 400,
@@ -402,9 +398,7 @@ const rootMutations = {
       return await Organization.get(organizationId)
     },
     createInvite: async (_, { invite }) => {
-      const inviteInstance = new Invite({
-        is_valid: true
-      })
+      const inviteInstance = new Invite(invite)
       const newInvite = await inviteInstance.save()
       return newInvite
     },
@@ -611,7 +605,7 @@ const rootMutations = {
           .filter({ interaction_step_id: interactionStepId })
           .delete()
 
-        const newQuestionResponse = await new QuestionResponse({
+        await new QuestionResponse({
           campaign_contact_id: campaignContactId,
           interaction_step_id: interactionStepId,
           value
@@ -638,14 +632,14 @@ const rootResolvers = {
       await accessRequired(user, campaign.organization_id, 'TEXTER')
       return assignment
     },
-    organization: async(_, { id }, { loaders, user }) =>
+    organization: async(_, { id }, { loaders }) =>
       loaders.organization.load(id),
     invite: async (_, { id }, { loaders, user }) => {
       authRequired(user)
       return loaders.invite.load(id)
     },
     currentUser: async(_, { id }, { user }) => user,
-    contact: async(_, { id }, { loaders, user }) => {
+    contact: async(_, { id }, { loaders }) => {
       const contact = await loaders.campaignContact.load(id)
       // await accessRequired(user, contact.organization_id, 'TEXTER')
       return contact

@@ -21,7 +21,7 @@ async function migrate() {
       for (let j = 0; j < answerCount; j++) {
         const parentId = parentSteps[i].id
         const answerOption = parentSteps[i].answer_options[j]
-        const answerStepUpdate = await r.db('spoke')
+        await r.db('spoke')
           .table('interaction_step')
           .get(answerOption.interaction_step_id)
           .update({ answer_option: answerOption.value, parent_interaction_id: parentId })

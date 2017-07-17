@@ -1,5 +1,5 @@
 import { mapFieldsToModel } from './lib/utils'
-import { Message, r } from '../models'
+import { Message } from '../models'
 
 export const schema = `
   type Message {

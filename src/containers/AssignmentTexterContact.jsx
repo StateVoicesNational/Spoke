@@ -556,8 +556,6 @@ class AssignmentTexterContact extends React.Component {
   }
 
   renderOptOutDialog() {
-    const { contact } = this.props.data
-    const isOptedOut = contact.isOptedOut
     const actions = [
 
     ]

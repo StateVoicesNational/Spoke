@@ -70,7 +70,7 @@ class AdminReplySender extends React.Component {
           <GSForm
             schema={this.formSchema}
             onSubmit={async (formValues) => {
-              const reply = await this.props.mutations.sendReply(contact.id, formValues.message)
+              await this.props.mutations.sendReply(contact.id, formValues.message)
             }}
           >
             <Form.Field

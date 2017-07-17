@@ -1,11 +1,10 @@
 import { r } from '../server/models'
-import Baby from 'babyparse'
 import { log } from '../lib'
 
 async function migrate() {
-  async function sleep(ms = 0) {
-    return new Promise(fn => setTimeout(fn, ms))
-  }
+  // async function sleep(ms = 0) {
+  //   return new Promise(fn => setTimeout(fn, ms))
+  // }
   try {
     const zips = await r.table('zip_code')
       .pluck('zip', 'timezone_offset', 'has_dst')

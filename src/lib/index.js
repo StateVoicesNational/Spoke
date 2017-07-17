@@ -11,7 +11,6 @@ export {
   isClient
 } from './is-client'
 export { log } from './log'
-export { formatMoney } from './currency'
 import Papa from 'papaparse'
 import _ from 'lodash'
 import { getFormattedPhoneNumber, getFormattedZip } from '../lib'
@@ -96,7 +95,7 @@ export const gunzip = (buf) => (
 export const parseCSV = (file, optOuts, callback) => {
   Papa.parse(file, {
     header: true,
-    // eslint-disable-next-line no-shadow
+    // eslint-disable-next-line no-shadow, no-unused-vars
     complete: ({ data, meta, errors }, file) => {
       const fields = meta.fields
 

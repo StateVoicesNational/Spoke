@@ -1,7 +1,6 @@
 import React from 'react'
 import { StyleSheet, css } from 'aphrodite'
 import theme from '../styles/theme'
-import { withRouter } from 'react-router'
 
 const styles = StyleSheet.create({
   container: {

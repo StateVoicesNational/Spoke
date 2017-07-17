@@ -2,8 +2,6 @@ import React from 'react'
 import { StyleSheet, css } from 'aphrodite'
 import theme from '../styles/theme'
 import TopNav from './TopNav'
-import Navigation from './Navigation'
-import { ListItem } from 'material-ui/List'
 import { withRouter } from 'react-router'
 import AdminNavigation from '../containers/AdminNavigation'
 const styles = StyleSheet.create({
@@ -28,7 +26,7 @@ class AdminDashboard extends React.Component {
     return `/admin/${organizationId}/${path}`
   }
 
-  renderNavigation(sections) {
+  renderNavigation() {
     const organizationId = this.props.params.organizationId
     if (!organizationId) {
       return ''
@@ -73,7 +71,7 @@ class AdminDashboard extends React.Component {
       <div>
         <TopNav title={title} backToURL={backToURL} />
         <div className={css(styles.container)}>
-          {this.renderNavigation(sections)}
+          {this.renderNavigation()}
           <div className={css(styles.content)}>
             {children}
           </div>

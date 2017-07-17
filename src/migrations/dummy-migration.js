@@ -11,7 +11,7 @@ import { log } from '../lib'
 */
 async function migrate() {
   try {
-    const count = await r.table('user').count()
+    await r.table('user').count()
   } catch (ex) {
     log.error(ex)
   }
