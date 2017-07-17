@@ -46,11 +46,12 @@ const styles = {
 
 function findWithRegex(regex, contentBlock, callback) {
   const text = contentBlock.getText()
-  let matchArr
+  let matchArr = regex.exec(text)
   let start
-  while ((matchArr = regex.exec(text)) !== null) {
+  while (matchArr !== null) {
     start = matchArr.index
     callback(start, start + matchArr[0].length)
+    matchArr = regex.exec(text)
   }
 }
 
