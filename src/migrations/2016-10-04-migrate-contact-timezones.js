@@ -2,7 +2,7 @@ import { r } from '../server/models'
 import Baby from 'babyparse'
 import { log } from '../lib'
 
-(async function migrate() {
+async function migrate() {
   async function sleep(ms = 0) {
     return new Promise(fn => setTimeout(fn, ms))
   }
@@ -25,4 +25,6 @@ import { log } from '../lib'
   } catch (ex) {
     log.error(ex)
   }
-})()
+}
+
+migrate()

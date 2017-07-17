@@ -9,10 +9,12 @@ import { log } from '../lib'
 5. Close the SSH tunnel with 'killall ssh'
 6. Undo your .env changes
 */
-(async function migrate() {
+async function migrate() {
   try {
     const count = await r.table('user').count()
   } catch (ex) {
     log.error(ex)
   }
-})()
+}
+
+migrate()

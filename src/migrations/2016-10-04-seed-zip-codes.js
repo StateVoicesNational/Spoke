@@ -2,7 +2,7 @@ import { ZipCode, r } from '../server/models'
 import Baby from 'babyparse'
 import { log } from '../lib'
 
-(async function migrate() {
+async function migrate() {
   try {
     const hasZip = (await r.table('zip_code')
       .limit(1)
@@ -35,4 +35,6 @@ import { log } from '../lib'
   } catch (ex) {
     log.error(ex)
   }
-})()
+}
+
+migrate()
