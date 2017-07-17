@@ -4,3 +4,4 @@ npm-debug.log
 .DS_Store
 rethinkdb_data
 .env
+__test__/test_data/*
