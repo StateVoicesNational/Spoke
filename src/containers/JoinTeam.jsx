@@ -16,7 +16,7 @@ class JoinTeam extends React.Component {
   state = {
     errors: null
   }
-  async componentDidMount() {
+  async componentWillMount() {
     let organization = null
     try {
       organization = await this.props.mutations.joinOrganization()
