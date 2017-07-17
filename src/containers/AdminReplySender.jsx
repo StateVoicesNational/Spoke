@@ -138,7 +138,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
 
 const mapMutationsToProps = () => ({
   sendReply: (contactId, message) =>
-    {
+    ({
       mutation: gql`
       mutation sendReply($contactId: String!, $message: String!) {
         sendReply(id: $contactId, message: $message) {
@@ -150,7 +150,7 @@ const mapMutationsToProps = () => ({
         }
       }`,
       variables: { contactId, message }
-    }
+    })
 })
 
 export default loadData(wrapMutations(AdminReplySender), { mapQueriesToProps, mapMutationsToProps })
