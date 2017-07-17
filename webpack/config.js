@@ -23,6 +23,11 @@ if (!DEBUG) {
   jsxLoaders.unshift('react-hot')
 }
 
+webpackConfig.externals = webpackConfig.externals || {};
+webpackConfig.externals['react/lib/ExecutionEnvironment'] = true;
+webpackConfig.externals['react/lib/ReactContext'] = true;
+webpackConfig.externals['react/addons'] = true;
+
 const config = {
   entry: {
     bundle: ['babel-polyfill', './src/client/index.jsx']
@@ -42,7 +47,15 @@ const config = {
         loader: 'transform-loader/cacheable?ejsify'
       },
       {
+        test: /sinon\.js$/,
+        loader: 'imports?define=>false,require=>false'
+      },
+      {
         test: /\.json$/,
+        include: [
+          /node_modules/,
+          path.resolve(__dirname, '..')
+        ],
         loader: 'json-loader'
       },
       { test: /\.css$/, loader: 'style!css' },
@@ -50,6 +63,13 @@ const config = {
         test: /\.jsx?$/,
         loaders: jsxLoaders,
         exclude: /(node_modules|bower_components)/
+      }
+
+    ],
+    rules: [
+      {
+        test: /\.json$/,
+        use: 'json-loader'
       }
     ]
   },
