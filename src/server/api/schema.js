@@ -650,7 +650,7 @@ const rootResolvers = {
       // await accessRequired(user, contact.organization_id, 'TEXTER')
       return contact
     },
-    organizations: async(_, {}, { user }) => {
+    organizations: async(_, { id }, { user }) => {
       await superAdminRequired(user)
       return r.table('organization')
     }
