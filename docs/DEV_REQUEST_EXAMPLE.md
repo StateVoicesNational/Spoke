@@ -6,8 +6,10 @@ The example comes from the 'first' step, which is consuming an invite code, to l
 
 ## Connecting to /invite/abc-123
 
-1. Loaded from `src/index.js` => `src/server/middleware/app-renderer.jsx` => `src/routes.jsx`
-you will see `<Route path='invite/:inviteId'...`
+1. Loaded from [`src/index.js`](../src/index.js) (`app.use(appRenderer)`)
+   => `src/server/middleware/app-renderer.jsx` (`const routes = makeRoutes(authCheck)`)
+   => `src/routes.jsx`
+you will see `<Route path='invite/:inviteId' component={CreateOrganization} ...`
 
 2. This loads `src/containers/CreateOrganization.jsx`
 
