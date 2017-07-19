@@ -13,6 +13,7 @@
     }
 
 * Example mutation result (with id )
+
     {
       "data": {
         "createInvite": {
@@ -98,9 +99,9 @@
     }
 
 
-## Getting stack traces
+## Logging
 
-* To add more informative graphql logging to the console, edit src/server/index.js to add the following option
+* To add graphql stack traces to the console, edit src/server/index.js to add the following option
 
 `formatError: (err) => { console.log(err.stack); return err },`
 
@@ -122,8 +123,7 @@ Like so:
       formatError: (err) => { console.log(err.stack); return err }, 
     })))
 
-
-
+* console.log statements in mutation definitions in src/server/schema.js will show up in the console when the mutations fire 
 
 
 
