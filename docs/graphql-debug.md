@@ -23,6 +23,7 @@
 
 * Example query - requests a specific campaign instance and specific details of subfields (use a campaign id from your own database)
 
+
     {
       campaign(id: "8c429f5b-2627-47b4-9395-5814a27e403f") {
         organization {
@@ -41,7 +42,9 @@
       }
     }
 
+
 * Example query result:
+
 
     {
       "data": {
@@ -94,11 +97,12 @@
       }
     }
 
+
 ## Getting stack traces
 
 * To add more informative graphql logging to the console, edit src/server/index.js to add the following option
 
-    formatError: (err) => { console.log(err.stack); return err },
+`formatError: (err) => { console.log(err.stack); return err },`
 
 Like so:
 
