@@ -94,6 +94,29 @@
       }
     }
 
+## Getting stack traces
+
+* To add more informative graphql logging to the console, edit src/server/index.js to add the following option
+
+    formatError: (err) => { console.log(err.stack); return err },
+
+Like so:
+
+    app.use('/graphql', apolloServer((req) => ({
+      graphiql: true,
+      pretty: true,
+      schema,
+      mocks,
+      resolvers,
+      context: {
+        loaders: createLoaders(),
+        user: req.user
+      },
+      tracer,
+      printErrors: true,
+      allowUndefinedInResolve: false,
+      formatError: (err) => { console.log(err.stack); return err }, 
+    })))
 
 
 
