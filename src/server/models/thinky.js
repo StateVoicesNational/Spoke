@@ -12,5 +12,6 @@ export default dumbThinky({
   client: 'sqlite3',
   connection: {
     filename: "./mydb.sqlite"
-  }
+  },
+  defaultsUnsupported: true
 })
