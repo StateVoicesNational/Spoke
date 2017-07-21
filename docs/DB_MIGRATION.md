@@ -69,13 +69,14 @@ r.table(<tablename>).
   getAll
   filter((row) => r.and()... row('right')('is_started').eq(true)
   delete
-  forEach
   get
   desc # descending
   orderBy
   eqJoin('user_id', r.table('user'))('right')
   limit(1)
+  distinct
 r.and
+XXXXforEachXXXX (not actually a query
 ```
 
 graphql is for api interaction/enforcement
