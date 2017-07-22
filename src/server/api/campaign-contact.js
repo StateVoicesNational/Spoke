@@ -327,9 +327,6 @@ export const resolvers = {
     //     }
     // return formatted
 
-}
-
-
     location: async (campaignContact, _, { loaders }) => {
       const mainZip = campaignContact.zip.split('-')[0]
       const loc = await loaders.zipCode.load(mainZip)
