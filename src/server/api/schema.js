@@ -84,6 +84,8 @@ import { gzip } from '../../lib'
 import { getFormattedPhoneNumber } from '../../lib/phone-format'
 import { isBetweenTextingHours } from '../../lib/timezones'
 import { Notifications, sendUserNotification } from '../notifications'
+import { uploadContacts, createInteractionSteps } from '../../workers/job-handler'
+
 const rootSchema = `
   input CampaignContactInput {
     firstName: String!
@@ -213,7 +215,7 @@ async function editCampaign(id, campaign, loaders) {
       return modelData
     })
     const compressedString = await gzip(JSON.stringify(contactsToSave))
-    await JobRequest.save({
+    let job = await JobRequest.save({
       queue_name: `${id}:edit_campaign`,
       job_type: 'upload_contacts',
       locks_queue: true,
@@ -221,6 +223,8 @@ async function editCampaign(id, campaign, loaders) {
       //NOTE: stringifying because compressedString is a binary buffer
       payload: compressedString.toString('base64')
     })
+    console.log('uploadContacts?', uploadContacts)
+    uploadContacts(job)
   }
   if (campaign.hasOwnProperty('texters')) {
     await JobRequest.save({
@@ -235,7 +239,7 @@ async function editCampaign(id, campaign, loaders) {
     })
   }
   if (campaign.hasOwnProperty('interactionSteps')) {
-    await JobRequest.save({
+    let job = await JobRequest.save({
       queue_name: `${id}:edit_campaign`,
       locks_queue: true,
       job_type: 'create_interaction_steps',
@@ -245,6 +249,7 @@ async function editCampaign(id, campaign, loaders) {
         interaction_steps: campaign.interactionSteps
       })
     })
+    createInteractionSteps(job)
   }
 
   if (campaign.hasOwnProperty('cannedResponses')) {
@@ -267,6 +272,7 @@ async function editCampaign(id, campaign, loaders) {
   }
 
   const newCampaign = await Campaign.get(id).update(campaignUpdates)
+  console.log('NEW CAMPAIGN', newCampaign, campaignUpdates)
   return newCampaign || loaders.campaign.load(id)
 }
 
@@ -429,6 +435,7 @@ const rootMutations = {
     },
     archiveCampaign: async (_, { id }, { user, loaders }) => {
       const campaign = await loaders.campaign.load(id)
+      console.log('ARCHIVE CAMPAIGN', campaign)
       await accessRequired(user, campaign.organizationId, 'ADMIN')
       campaign.is_archived = true
       await campaign.save()

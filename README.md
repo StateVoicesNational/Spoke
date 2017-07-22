@@ -22,8 +22,12 @@ This is generated from [react-apollo-starter-kit](https://github.com/saikat/reac
 10. Run `npm run dev` to start the app. Wait until you see both "Node app is running ..." and "Webpack dev server is now running ..." before attempting to connect.
 11. Go to `localhost:3000` to load the app.
 12. Because Spoke is invite-only you need to generate an invite:
-Go to the RethinkDB data explorer at `http://localhost:8080/#dataexplorer` and run:
- `r.db('spokedev').table('invite').insert({is_valid: true})`. Copy the generated key.
+ <span style="text-decoration: strikethrough">Go to the RethinkDB data explorer at `http://localhost:8080/#dataexplorer` and run:
+ `r.db('spokedev').table('invite').insert({is_valid: true})`. Copy the generated key.</span>
+```
+echo 'INSERT INTO invite (id,is_valid) VALUES (123, 1);' |sqlite3 mydb.sqlite
+```
+
 13. Use the generated key to visit an invite link, e.g.: http://localhost:3000/invite/e7bcc458-c8e9-4601-8999-a489e04bd45f. This should redirect you to the login screen. Use the "Sign Up" option to create your account.
 14. You should then be prompted to create an organization. Create it.
 

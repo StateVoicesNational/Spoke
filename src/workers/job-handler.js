@@ -7,7 +7,8 @@ import moment from 'moment'
 import { sendEmail } from '../server/mail'
 import { Notifications, sendUserNotification } from '../server/notifications'
 
-async function uploadContacts(job) {
+export async function uploadContacts(job) {
+  console.log('JOB TRIGGER, uploadContacts', job.queue_name)
   const campaignId = job.campaign_id
   // We do this deletion in schema.js but we do it again here just in case the the queue broke and we had a backlog of contact uploads for one campaign
   await r.table('campaign_contact')
@@ -36,7 +37,8 @@ async function uploadContacts(job) {
   }
 }
 
-async function createInteractionSteps(job) {
+export async function createInteractionSteps(job) {
+  console.log('JOB TRIGGER, createInteractionSteps', job.queue_name)
   const payload = JSON.parse(job.payload)
   const id = job.campaign_id
   const interactionSteps = []
@@ -82,7 +84,6 @@ async function createInteractionSteps(job) {
       campaign_id: id,
       question: step.question,
       script: step.script,
-      answer_options: answerOptions, // keep both answer fields for now
       answer_option: answerOption,
       parent_interaction_id: parentId
     })
@@ -339,6 +340,11 @@ function jobMap() {
   }
 }
 
+
+// commenting this out, as jobs will be run
+// directly triggered from the request that initiated them
+// instead of a separate process
+/*
 (async () => {
   while (true) {
     try {
@@ -363,3 +369,4 @@ function jobMap() {
     }
   }
 })()
+*/
