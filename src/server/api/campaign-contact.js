@@ -65,22 +65,6 @@ export const resolvers = {
     campaign: async (campaignContact, _, { loaders }) => (
       loaders.campaign.load(campaignContact.campaign_id)
     ),
-    questionResponses: async (campaignContact) => (
-      //TODO: what are all the questionresponses
-      // -- join by value==[child]interactionstep.answer_option
-      // -- also join by interaction_step_id==[parent]interactionstep: "parent_interaction_step", "contact_response_value"
-      r.table('question_response')
-        .getAll(campaignContact.id, { index: 'campaign_contact_id' })
-        .eqJoin('interaction_step_id', r.table('interaction_step'))
-        .concatMap((row) => (
-          row('right')('answer_options')
-            .map((option) => option.merge({
-              parent_interaction_step: row('right'),
-              contact_response_value: row('left')('value')
-            }))
-        ))
-        .filter((row) => row('value').eq(row('contact_response_value')))
-    ),
     //
     // QuestionResponses for the new regime. Original code returns data like these: 
     // {
@@ -283,50 +267,70 @@ export const resolvers = {
     // To get that result to look like what the original code returned 
     // without using the outgoing answer_options array field, try this:
     //
-    // let formatted = {}
-    // for (let i = 0, i < results.length, i++) {
-    //     responseId = results[i].left.id
-    //     if (responseId in formatted) {
-    //       responseValue = results[i].left.value
-    //       interactionStepId = results[i].right.id
-    //       formatted.responseId.parent_interaction_step.answer_options.push({
-    //         "value": responseValue,
-    //         "interaction_step_id": interactionStepId
-    //       })
-    //     } else {
-    //       responseValue = results[i].left.value
-    //       interactionStepId = results[i].right.id
-    //       answerOption = ''
-    //       answerOptions = []
-    //       answerOptions.push({
-    //         "value": responseValue, 
-    //         "interaction_step_id": interactionStepId
-    //       })
-    //       campaignId = results[i].left.campaign_id
-    //       createdAt = results[i].left.created_at
-    //       questionStepId = results[i].left.interaction_step_id
-    //       questionStepParentInteractionId = ''
-    //       question = results[i].left.question
-    //       script = results[i].left.script
+    questionResponses: async (campaignContact, _, { loaders }) => {
 
-    //       formatted[responseId] = {
-    //         "contact_response_value": responseValue,
-    //         "interaction_step_id": interactionStepId,
-    //         "parent_interaction_step": {
-    //             "answer_option": answerOption,
-    //             "answer_options": answerOptions,
-    //             "campaign_id": campaignId,
-    //             "created_at": createdAt,
-    //             "id": responseId,
-    //             "parent_interaction_id": questionStepParentInteractionId,
-    //             "question": question,
-    //             "script": script
-    //         },
-    //         "value":  "Well"
-    //       } 
-    //     }
-    // return formatted
+      const results = await r.table('question_response')
+        .getAll(campaignContact.id, { index: 'campaign_contact_id'})
+        .eqJoin('interaction_step_id', r.table('interaction_step'))
+        .zip()
+        .innerJoin(r.table('interaction_step'), function(left, right) {
+          return left('interaction_step_id').eq(right( 'parent_interaction_id'))
+        })
+      
+      let formatted = {}
 
+      for (let i = 0; i < results.length; i++) {
+
+        const responseId = results[i]['left']['id']
+        const responseValue = results[i].left.value
+        const answerValue = results[i].right.answer_option
+        const interactionStepId = results[i].right.id
+
+        if (responseId in formatted) {
+          formatted[responseId]['parent_interaction_step']['answer_options'].push({
+            "value": answerValue,
+            "interaction_step_id": interactionStepId
+          })
+          if (responseValue === answerValue) {
+            formatted[responseId]['interaction_step_id'] = interactionStepId
+          }
+        } else {
+          const answerOption = ""
+          const answerOptions = []
+          answerOptions.push({
+            "value": answerValue, 
+            "interaction_step_id": interactionStepId
+          })
+          const campaignId = results[i].left.campaign_id
+          const createdAt = results[i].left.created_at
+          const questionStepId = results[i].left.interaction_step_id
+          const questionStepParentInteractionId = results[i].right.parent_interaction_id
+          const question = results[i].left.question
+          const script = results[i].left.script
+
+          formatted[responseId] = {
+            "contact_response_value": responseValue,
+            "interaction_step_id": interactionStepId,
+            "parent_interaction_step": {
+                "answer_option": answerOption,
+                "answer_options": answerOptions,
+                "campaign_id": campaignId,
+                "created_at": createdAt,
+                "id": responseId,
+                "parent_interaction_id": questionStepParentInteractionId,
+                "question": question,
+                "script": script
+            },
+            "value":  responseValue
+          }
+        }
+      }
+      let responses = []
+      for (var key in formatted) {
+        responses.push(formatted[key])
+      }
+      return responses
+    },
     location: async (campaignContact, _, { loaders }) => {
       const mainZip = campaignContact.zip.split('-')[0]
       const loc = await loaders.zipCode.load(mainZip)
