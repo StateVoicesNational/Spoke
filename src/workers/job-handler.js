@@ -55,34 +55,12 @@ async function createInteractionSteps(job) {
       parentId = answerOptionStore[newId]['parent']
       answerOption = answerOptionStore[newId]['value']
     }
-    // We're formatting data for both the old interaction_step model 
-    // with array fields and the new model without array fields.
-    const answerOptions = []
-    if (step.answerOptions) {
-      for (let innerIndex = 0; innerIndex < step.answerOptions.length; innerIndex++) {
-        const option = step.answerOptions[innerIndex]
-        let nextStepId = ''
-        if (option.nextInteractionStepId) {
-          nextStepId = await r.uuid(option.nextInteractionStepId)
-        }
-        answerOptions.push({
-          interaction_step_id: nextStepId,
-          value: option.value
-        })
-        // store the answers and step id for writing to child steps
-        answerOptionStore[nextStepId] = {
-          'value': option.value,
-          'parent': newId
-        }
-      }
-    }
 
     interactionSteps.push({
       id: newId,
       campaign_id: id,
       question: step.question,
       script: step.script,
-      answer_options: answerOptions, // keep both answer fields for now
       answer_option: answerOption,
       parent_interaction_id: parentId
     })
