@@ -13,19 +13,21 @@ This is generated from [react-apollo-starter-kit](https://github.com/saikat/reac
 1. [Install RethinkDB](https://www.rethinkdb.com/docs/install/)
 2. Install the Node version listed under `engines` in `package.json`. [NVM](https://github.com/creationix/nvm) is one way to do this.
 3. `npm install`
-4. `npm install -g foreman`
-5. `cp .env.example .env`
-6. Start `rethinkdb` and load `localhost:8080` to confirm RethinkDB is properly installed. Then stop RethinkDB.
-7. Run `rethinkdb && ./dev-tools/babel-run-with-env.js ./dev-tools/db-startup.js` to restart RethinkDB and populate the tables. Check http://localhost:8080/#tables to confirm the tables were created. Then stop RethinkDB again.
-8. Create an [Auth0](auth0.com) account. In your Auth0 account, go to Settings -> Clients -> and then grab your Client ID, Client Secret, and your Auth0 domain (should look like xxx.auth0.com). Add those inside your `.env` file (AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_DOMAIN respectively).
-9. Add the login callback and logout callback URL in `.env` (default `http://localhost:3000/login-callback` and `http://localhost:3000/logout-callback`) to your Auth0 app settings under "Allowed Callback URLs" and "Allowed Logout URLs" respectively.
-10. Run `npm run dev` to start the app. Wait until you see both "Node app is running ..." and "Webpack dev server is now running ..." before attempting to connect.
-11. Go to `localhost:3000` to load the app.
-12. Because Spoke is invite-only you need to generate an invite:
+4. `npm install -g pm2`
+5. `cp spoke.config.js.template spoke.config.js`
+6. Start `rethinkdb` and load `localhost:8080` to confirm RethinkDB is properly installed.
+7. Run `./dev-tools/babel-run-with-env.js ./dev-tools/db-startup.js` to populate the tables. Check http://localhost:8080/#tables to confirm the tables were created.
+8. Create an [Auth0](auth0.com) account. In your Auth0 account, go to Settings -> Clients -> and then grab your Client ID, Client Secret, and your Auth0 domain (should look like xxx.auth0.com). Add those inside your `spoke.config.js` file (AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_DOMAIN respectively).
+9. Add the login callback and logout callback URL in `spoke.config.js` (default `http://localhost:3000/login-callback` and `http://localhost:3000/logout-callback`) to your Auth0 app settings under "Allowed Callback URLs" and "Allowed Logout URLs" respectively.
+10. Start compiling client code with `screen -S webpack npm run dev-build-client`. Then use `ctrl-a, d` to exit the screen.
+11. Start compiling server code with `screen -S webpack npm run dev-build-server`. Then use `ctrl-a, d` to exit the screen.
+12. Start server processes with `pm2 start spoke-pm2.config.js --watch`.
+13. Go to `localhost:3000` to load the app.
+14. Because Spoke is invite-only you need to generate an invite:
 Go to the RethinkDB data explorer at `http://localhost:8080/#dataexplorer` and run:
  `r.db('spokedev').table('invite').insert({is_valid: true})`. Copy the generated key.
-13. Use the generated key to visit an invite link, e.g.: http://localhost:3000/invite/e7bcc458-c8e9-4601-8999-a489e04bd45f. This should redirect you to the login screen. Use the "Sign Up" option to create your account.
-14. You should then be prompted to create an organization. Create it.
+15. Use the generated key to visit an invite link, e.g.: http://localhost:3000/invite/e7bcc458-c8e9-4601-8999-a489e04bd45f. This should redirect you to the login screen. Use the "Sign Up" option to create your account.
+16. You should then be prompted to create an organization. Create it.
 
 
 ## Important TODOS

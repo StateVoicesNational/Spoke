@@ -4,3 +4,4 @@ npm-debug.log
 .DS_Store
 rethinkdb_data
 .env
+spoke.config.js
