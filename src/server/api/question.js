@@ -21,10 +21,7 @@ export const resolvers = {
     text: async (interactionStep) => interactionStep.question,
     answerOptions: async (interactionStep) => (
       r.table('interaction_step')
-      .filter({parent_interaction_id: interactionStep.id})
-        .eqJoin('parent_interaction_id', r.table('interaction_step'))
-        .pluck({'left': ['answer_option', 'id', 'parent_interaction_id']})
-        .zip()
+        .filter({parent_interaction_id: interactionStep.id})
         .map({
           value: r.row('answer_option'),
           interaction_step_id: r.row('id'),
