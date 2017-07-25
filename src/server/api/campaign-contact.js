@@ -126,11 +126,7 @@ export const resolvers = {
           }
         }
       }
-      let responses = []
-      for (var key in formatted) {
-        responses.push(formatted[key])
-      }
-      return responses
+      return Object.values(formatted)
     },
     location: async (campaignContact, _, { loaders }) => {
       const mainZip = campaignContact.zip.split('-')[0]
