@@ -50,7 +50,7 @@ thinky.type
 
  - [X] user-organization.js for roles
          # can just be  ['OWNER', 'ADMIN', 'TEXTER']
- - [ ] interaction-step.js for answer_options
+ - [X] interaction-step.js for answer_options
          # recursive data structure of interaction_step_id
          # used for questionResponses in api/campaign-contact.js
          #      and answerOptions in api/question.js
