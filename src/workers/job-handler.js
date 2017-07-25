@@ -62,7 +62,7 @@ async function createInteractionSteps(job) {
       answerOption = answerOptionStore[newId]['value']
     }
 
-    dbInteractionStep = await InteractionStep
+    const dbInteractionStep = await InteractionStep
       .save({
         campaign_id: id,
         question: step.question,
