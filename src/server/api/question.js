@@ -19,19 +19,20 @@ export const schema = `
 export const resolvers = {
   Question: {
     text: async (interactionStep) => interactionStep.question,
-    //TODO: need to just query for parent_id = interactionstep.id
     answerOptions: async (interactionStep) => (
-      interactionStep.answer_options.map((answer) => ({
-        ...answer,
-        parent_interaction_step: interactionStep
-      }))
+      r.table('interaction_step')
+        .filter({parent_interaction_id: interactionStep.id})
+        .map({
+          value: r.row('answer_option'),
+          interaction_step_id: r.row('id'),
+          parent_interaction_step: r.row('parent_interaction_id')
+        })
     ),
     interactionStep: async (interactionStep) => interactionStep
   },
   AnswerOption: {
     value: (answer) => answer.value,
-    nextInteractionStep: async (answer, _, { loaders }) => (loaders.interactionStep.load(answer.interaction_step_id)
-    ),
+    nextInteractionStep: async (answer) => r.table('interaction_step').get(answer.interaction_step_id),
     responders: async (answer) => r.table('question_response')
         .getAll(answer.parent_interaction_step.id, { index: 'interaction_step_id' })
         .filter({
