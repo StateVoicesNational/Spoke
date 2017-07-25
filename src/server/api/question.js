@@ -35,20 +35,15 @@ export const resolvers = {
   },
   AnswerOption: {
     value: (answer) => answer.value,
-    nextInteractionStep: async (answer, _, { loaders }) => (loaders.interactionStep.load(answer.interaction_step_id)
-    ),
-    // get the interaction step where answer.value matches and the parent interaction id is the same as the current interaction step
-    // nextInteractionStep: async (answer) => (
-    //   r.table('interaction_step').filter({answer_option: answer.value, id: answer.interaction_step_id})
-    // ),
+    nextInteractionStep: async (answer) => r.table('interaction_step').get(answer.interaction_step_id),
     responders: async (answer) => r.table('question_response')
-        .getAll(answer.parent_interaction_step.id, { index: 'interaction_step_id' })
+        .getAll(answer.parent_interaction_step, { index: 'interaction_step_id' })
         .filter({
           value: answer.value
         })
         .eqJoin('campaign_contact_id', r.table('campaign_contact'))('right'),
     responderCount: async (answer) => r.table('question_response')
-        .getAll(answer.parent_interaction_step.id, { index: 'interaction_step_id' })
+        .getAll(answer.parent_interaction_step, { index: 'interaction_step_id' })
         .filter({
           value: answer.value
         })
