@@ -23,6 +23,8 @@ export async function uploadContacts(job) {
   for (let index = 0; index < contacts.length; index++) {
     const datum = contacts[index]
     if (datum.zip) {
+      // TODO: PERFORMANCE BOTTLENECK on zip
+      // Should memoize, at least
       const zipDatum = await r.table('zip_code').get(datum.zip)
       if (zipDatum) {
         datum.timezone_offset = `${zipDatum.timezone_offset}_${zipDatum.has_dst}`
@@ -35,21 +37,25 @@ export async function uploadContacts(job) {
     const savePortion = contacts.slice(index * chunkSize, (index + 1) * chunkSize)
     await CampaignContact.save(savePortion)
   }
+
+  if (process.env.SYNC_JOBS) {
+    await r.table('job_request').get(job.id).delete()
+  }
 }
 
 export async function createInteractionSteps(job) {
   console.log('JOB TRIGGER, createInteractionSteps', job.queue_name)
   const payload = JSON.parse(job.payload)
   const id = job.campaign_id
-  const interactionSteps = []
   const answerOptionStore = {}
 
+  await r.table('interaction_step')
+    .getAll(id, { index: 'campaign_id' })
+    .delete()
+
   for (let index = 0; index < payload.interaction_steps.length; index++) {
-    // We use r.uuid(step.id) so that
-    // any new steps will get a proper
-    // UUID as well.
     const step = payload.interaction_steps[index]
-    const newId = await r.uuid(step.id)
+    const newId = step.id
     let parentId = ''
     let answerOption = ''
 
@@ -58,21 +64,34 @@ export async function createInteractionSteps(job) {
       answerOption = answerOptionStore[newId]['value']
     }
 
-    interactionSteps.push({
-      id: newId,
-      campaign_id: id,
-      question: step.question,
-      script: step.script,
-      answer_option: answerOption,
-      parent_interaction_id: parentId
-    })
+    const dbInteractionStep = await InteractionStep
+      .save({
+        campaign_id: id,
+        question: step.question,
+        script: step.script,
+        answer_option: answerOption,
+        parent_interaction_id: parentId
+      })
+
+    if (step.answerOptions) {
+       for (let innerIndex = 0; innerIndex < step.answerOptions.length; innerIndex++) {
+         const option = step.answerOptions[innerIndex]
+         let nextStepId = ''
+         if (option.nextInteractionStepId) {
+           nextStepId = option.nextInteractionStepId
+         }
+         // store the answers and step id for writing to child steps
+         answerOptionStore[nextStepId] = {
+           'value': option.value,
+           'parent': dbInteractionStep.id
+         }
+       }
+    }
   }
 
-  await r.table('interaction_step')
-    .getAll(id, { index: 'campaign_id' })
-    .delete()
-  await InteractionStep
-    .save(interactionSteps)
+  if (process.env.SYNC_JOBS) {
+    await r.table('job_request').get(job.id).delete()
+  }
 }
 
 async function assignTexters(job) {
