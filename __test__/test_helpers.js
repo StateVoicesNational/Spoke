@@ -40,7 +40,7 @@ async function setupTest() {
 // This doesn't work yet
 export function getContext(context) {
   return {
-    ...context, 
+    ...context,
     req: {},
     loaders: createLoaders(),
   };
