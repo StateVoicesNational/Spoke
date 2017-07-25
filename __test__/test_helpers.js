@@ -1,12 +1,7 @@
 import { createLoaders } from '../src/server/models/';
 import thinky from 'thinky';
 
-// create test database manually by running 
-// rethinkdb && ./dev-tools/babel-run-with-env.js ./dev-tools/db-startup.js
-// but with database name set to 'test'
-
 // TODO: Load these values from env for real
-
 const testDB = 'testy'
 const mainDB = 'spokedev'
 
@@ -20,8 +15,6 @@ const thinkyTest = thinky({
 const testR = thinkyTest.r
 
 async function populateTestDatabaseModels() {
-  console.log("mainDB: " + mainDB)
-  console.log("testDB: " + testDB)
   await testR.db(mainDB).tableList().forEach(testR.db(testDB).tableCreate(testR.row));
 }
 
@@ -37,7 +30,6 @@ async function setupTest() {
   await clearTestDatabase();
 }
 
-// This doesn't work yet
 export function getContext(context) {
   return {
     ...context,

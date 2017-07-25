@@ -1,11 +1,3 @@
-// manually load the test db at the command line by running: 
-// rethinkdb
-// rethinkdb restore ./test_data/test_db.tar.gz
-
-// delete the test database by running `r.dbDrop('test')` in the data explorer
-// (http://localhost:8080)
-
-// import { altSchema } from '../src/server/api/schema';
 import { schema, resolvers } from '../src/server/api/schema';
 import { graphql } from 'graphql';
 import { User, r } from '../src/server/models/';
@@ -63,9 +55,17 @@ it('should return the current user when user is logged in', async () => {
 
   const result = await graphql(mySchema, query, rootValue, context);
   console.log(result);
-  const { data } = result;
+  const data = result;
 
   expect(data.currentUser.email).toBe('testuser@example.com')
 });
 
 // moar tests: create invite, create organization with invite id
+
+// it('should create an invite and return an invitation id', async () => {});
+
+// it('should create an invite, create an organization with that invite, and return an organization instance', async () => {});
+
+
+
+// }
