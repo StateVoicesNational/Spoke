@@ -55,7 +55,7 @@ it('should return the current user when user is logged in', async () => {
 
   const result = await graphql(mySchema, query, rootValue, context);
   console.log(result);
-  const data = result;
+  const { data }  = result;
 
   expect(data.currentUser.email).toBe('testuser@example.com')
 });
