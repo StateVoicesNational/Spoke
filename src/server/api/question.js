@@ -20,10 +20,16 @@ export const resolvers = {
   Question: {
     text: async (interactionStep) => interactionStep.question,
     answerOptions: async (interactionStep) => (
-      interactionStep.answer_options.map((answer) => ({
-        ...answer,
-        parent_interaction_step: interactionStep
-      }))
+      r.table('interaction_step')
+      .filter({parent_interaction_id: interactionStep.id})
+        .eqJoin('parent_interaction_id', r.table('interaction_step'))
+        .pluck({'left': ['answer_option', 'id', 'parent_interaction_id']})
+        .zip()
+        .map({
+          value: r.row('answer_option'),
+          interaction_step_id: r.row('id'),
+          parent_interaction_step: r.row('parent_interaction_id')
+        })
     ),
     interactionStep: async (interactionStep) => interactionStep
   },
@@ -31,6 +37,10 @@ export const resolvers = {
     value: (answer) => answer.value,
     nextInteractionStep: async (answer, _, { loaders }) => (loaders.interactionStep.load(answer.interaction_step_id)
     ),
+    // get the interaction step where answer.value matches and the parent interaction id is the same as the current interaction step
+    // nextInteractionStep: async (answer) => (
+    //   r.table('interaction_step').filter({answer_option: answer.value, id: answer.interaction_step_id})
+    // ),
     responders: async (answer) => r.table('question_response')
         .getAll(answer.parent_interaction_step.id, { index: 'interaction_step_id' })
         .filter({
