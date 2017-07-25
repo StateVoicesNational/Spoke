@@ -342,7 +342,7 @@ function jobMap() {
 // commenting this out, as jobs will be run
 // directly triggered from the request that initiated them
 // instead of a separate process
-/*
+
 (async () => {
   while (true) {
     try {
@@ -353,6 +353,8 @@ function jobMap() {
         await r.table('job_request')
           .get(job.id)
           .delete()
+      } else if (process.env.SYNC_JOBS) {
+        break
       }
 
       await r.table('job_request')
@@ -367,4 +369,4 @@ function jobMap() {
     }
   }
 })()
-*/
+
