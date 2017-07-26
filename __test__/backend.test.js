@@ -1,7 +1,12 @@
 import { schema, resolvers } from '../src/server/api/schema';
 import { graphql } from 'graphql';
 import { User, r } from '../src/server/models/';
-import { getContext, thinkyTest, testR, setupTest } from './test_helpers';
+import { getContext, 
+  thinkyTest, 
+  testR, 
+  setupTest, 
+  cleanupTest, 
+  testDB } from './test_helpers';
 import { makeExecutableSchema } from 'graphql-tools';
 
 const mySchema = makeExecutableSchema({
@@ -10,9 +15,9 @@ const mySchema = makeExecutableSchema({
   allowUndefinedInResolve: true,
 });
 
-const testDB = 'testy'
-
 beforeEach(async () => await setupTest());
+
+// afterEach(async () => await cleanupTest());
 
 test('test database exists', async () => {
   const databaseList = await testR.dbList();
@@ -21,7 +26,7 @@ test('test database exists', async () => {
 
 // graphQL tests!!!!
 
-it('should be undefined when user is not logged in', async () => {
+it('should be undefined when user not logged in', async () => {
   const query = `{
     currentUser {
       id
@@ -68,4 +73,4 @@ it('should return the current user when user is logged in', async () => {
 
 
 
-// }
+
