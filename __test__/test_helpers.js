@@ -35,12 +35,12 @@ async function clearTestData() {
 
 async function setupTest() {
   // await createTestDatabase();
-  await clearTestDatabase();
+  await clearTestData();
 }
 
 // customize 
 async function cleanupTest() {
-  await clearTestDatabase();
+  await clearTestData();
 }
 
 export function getContext(context) {
