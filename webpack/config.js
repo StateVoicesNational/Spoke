@@ -1,16 +1,17 @@
 const webpack = require('webpack')
 const ManifestPlugin = require('webpack-manifest-plugin')
+const spokeConfig = require('../spoke.config')
 
-const DEBUG = process.env.NODE_ENV !== 'production'
+const DEBUG = spokeConfig.NODE_ENV !== 'production'
 
 const plugins = [
   new webpack.DefinePlugin({
-    'process.env.NODE_ENV': `"${process.env.NODE_ENV}"`
+    'spokeConfig.NODE_ENV': `"${spokeConfig.NODE_ENV}"`
   })
 ]
 const jsxLoaders = ['babel-loader']
-const assetsDir = process.env.ASSETS_DIR
-const assetMapFile = process.env.ASSETS_MAP_FILE
+const assetsDir = spokeConfig.ASSETS_DIR
+const assetMapFile = spokeConfig.ASSETS_MAP_FILE
 const outputFile = DEBUG ? '[name].js' : '[name].[chunkhash].js'
 
 if (!DEBUG) {
@@ -59,7 +60,7 @@ const config = {
   plugins,
   output: {
     filename: outputFile,
-    path: DEBUG ? '/' : assetsDir,
+    path: assetsDir,
     publicPath: '/assets/',
     sourceMapFilename: `${outputFile}.map`
   }
@@ -67,7 +68,7 @@ const config = {
 
 if (DEBUG) {
   config.devtool = '#inline-source-map'
-} else if (process.env.NODE_ENV === 'production') {
+} else if (spokeConfig.NODE_ENV === 'production') {
   config.devtool = 'source-map'
 }
 
