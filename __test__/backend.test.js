@@ -65,12 +65,29 @@ it('should return the current user when user is logged in', async () => {
   expect(data.currentUser.email).toBe('testuser@example.com')
 });
 
-// moar tests: create invite, create organization with invite id
+
+// TEST STUBS: CAMPAIGN CREATION
 
 // it('should create an invite and return an invitation id', async () => {});
 
 // it('should create an invite, create an organization with that invite, and return an organization instance', async () => {});
 
+// it('should create an test campaign', async () => {});
 
+// it('should create campaign contacts', async () => {});
+
+// it('should add texters to a organization', async () => {});
+
+// it('should assign texters to campaign contacts', async () => {});
+
+// it('should save a campaign script composed of interaction steps', async() => {});
+
+// it('should save some canned responses for texters', async() => {});
+
+// it('should start the campaign', async() => {});
+
+// TEST STUBS: MESSAGING
+
+// it('should send an inital message to test contacts', async() => {});
 
 
