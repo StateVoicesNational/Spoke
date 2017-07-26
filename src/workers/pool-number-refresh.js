@@ -1,4 +1,4 @@
-import Twilio from 'twilio'
+const Twilio = require('twilio')
 // import { r } from '../server/models'
 
 /**
@@ -6,13 +6,13 @@ import Twilio from 'twilio'
  */
 const getRecentContactNumbers = () => {
   // TODO: replace this with database call after thinky to knex switch
-  return ['+13037171543', '+14145201377', '+14145348245']
+  return ['+17205555555', '+14145201377', '+14145348245']
 }
 
 /**
  * Get just the area code from a given number.
  */
-const getAreaCodeForNumber = (number) => number.replace(/[^0-9]/g, '').substring(0, 3)
+const getAreaCodeForNumber = (number) => number.replace(/[^0-9]/g, '').substring(1, 4)
 
 /**
  * Put array of numbers in object keyed by area code.
@@ -29,10 +29,17 @@ const groupNumbersByAreaCode = (numbers) => numbers.reduce((byAreaCode, number) 
 /**
  * Get numbers for Twilio poool from API.
  */
-const getCurrentTwilioPoolNumbers = (twilio, sid) => {
-  const service = twilio.messaging
-    .services(sid)
-    .fetch()
+const getCurrentTwilioPoolNumbers = async (twilio, sid) => {
+  // TODO: get numbers via API
+  // const service = twilio.messaging
+  //   .services(sid)
+  //   .fetch()
+  const service = new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve(['+14145201377', '+14145348245', '+15555555555', '+17201555555']);
+    }, 500);
+  });
+
   return service
 }
 
@@ -40,42 +47,46 @@ const getCurrentTwilioPoolNumbers = (twilio, sid) => {
  * Drop any numbers with area codes not recently used.
  */
 const getNumbersToDrop = (currentNumbers, recentAreaCodes) => {
-
+  const currentAreaCodes = groupNumbersByAreaCode(currentNumbers)
+  const dropAreaCodes = Object.keys(currentAreaCodes).filter((areaCode) => {
+    return !(areaCode in recentAreaCodes)
+  })
+  return dropAreaCodes.reduce((numbers, areaCode) => {
+    return [...numbers, ...currentAreaCodes[areaCode]]
+  }, [])
 }
 
 /**
  * Get available numbers from Twilio API.
  */
-const getAvailableTwilioNumbers = (twilio, sid) => {
-
-}
-
-/**
- * Determine which current numbers have a newer version in same area code.
- */
-const getNumbersToUpdate = (currentNumbers, availableNumbers) => {
-
+const getAvailableTwilioNumbersByAreaCode = async (twilio, areaCode) => {
+  const data = await twilio.availablePhoneNumbers('US').local
+    .list({areaCode: areaCode})
+  return data.availablePhoneNumbers.map(number => number.phone_number)
 }
 
 /**
  * Tell Twilio API to drop some numbers.
  */
 const dropNumbersFromTwilioPool = (twilio, sid, numbersToDrop) => {
-
+  // TODO: drop numbers via API
+  console.log(numbersToDrop, 'numbersToDrop')
 }
 
 /**
  * Tell Twilio API to add some numbers.
  */
 const addNumbersToTwilioPool = (twilio, sid, numbersToAdd) => {
-
+  // TODO: add numbers via API
+  console.log(numbersToAdd, 'numbersToAdd')
 }
 
 /**
  * Tell Twilio API to drop old numbers, add new numbers.
  */
-const updateNumbersInTwilioPool = (twilio, sid, numbersToUpdate) => {
-
+const updateNumbersInTwilioPool = (twilio, sid, oldNumber, newNumber) => {
+  dropNumbersFromTwilioPool(twilio, sid, [oldNumber])
+  addNumbersToTwilioPool(twilio, sid, [newNumber])
 }
 
 
@@ -83,12 +94,19 @@ const env = process.env
 const sid = env.TWILIO_MESSAGING_SERVICE_SID
 const twilio = Twilio(env.TWILIO_API_KEY, env.TWILIO_AUTH_TOKEN)
 const recentAreaCodes = groupNumbersByAreaCode(getRecentContactNumbers())
-const currentNumbers = getCurrentTwilioPoolNumbers(twilio, sid)
-const numbersToDrop = getNumbersToDrop(currentNumbers, recentAreaCodes)
-const availableNumbers = getAvailableTwilioNumbers(twilio, sid)
-const numbersToUpdate = getNumbersToUpdate()
 
-dropNumbersFromTwilioPool(twilio, sid, numbersToDrop)
-updateNumbersInTwilioPool(twilio, sid, numbersToUpdate)
+getCurrentTwilioPoolNumbers(twilio, sid)
+  .then((currentNumbers) => {
+    const numbersToDrop = getNumbersToDrop(currentNumbers, recentAreaCodes)
 
-console.log(currentNumbers)
+    dropNumbersFromTwilioPool(twilio, sid, numbersToDrop)
+
+    Object.keys(recentAreaCodes).map((areaCode) => {
+      getAvailableTwilioNumbersByAreaCode(twilio, areaCode)
+        .then((availableNumbers) => {
+          if (availableNumbers.length) {
+            updateNumbersInTwilioPool(twilio, sid, recentAreaCodes[areaCode][0], availableNumbers[0])
+          }
+        })
+    })
+  })
