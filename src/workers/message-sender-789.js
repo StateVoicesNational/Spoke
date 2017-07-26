@@ -7,6 +7,12 @@ import { sleep } from './lib'
 const serviceMap = { nexmo, twilio }
 
 async function sendMessages() {
+  /* knex-style approach to the below:
+  const foo = await r.k.table('message')
+    .where('user_number', 'LIKE', '%7')
+    .where('user_number', 'LIKE', '%8')
+    .where('user_number', 'LIKE', '%9')
+  */
   const messages = await r.table('message')
     .getAll('QUEUED', { index: 'send_status' })
     .filter((doc) => doc('user_number').match('[789]$'))

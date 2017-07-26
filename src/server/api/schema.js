@@ -84,7 +84,7 @@ import { gzip } from '../../lib'
 import { getFormattedPhoneNumber } from '../../lib/phone-format'
 import { isBetweenTextingHours } from '../../lib/timezones'
 import { Notifications, sendUserNotification } from '../notifications'
-import { uploadContacts, createInteractionSteps } from '../../workers/job-handler'
+import { uploadContacts, createInteractionSteps } from '../../workers/jobs'
 
 const rootSchema = `
   input CampaignContactInput {
@@ -219,12 +219,13 @@ async function editCampaign(id, campaign, loaders) {
       queue_name: `${id}:edit_campaign`,
       job_type: 'upload_contacts',
       locks_queue: true,
+      assigned: true, // will get called immediately, below
       campaign_id: id,
       //NOTE: stringifying because compressedString is a binary buffer
       payload: compressedString.toString('base64')
     })
-    console.log('uploadContacts?', uploadContacts)
-    uploadContacts(job)
+    console.log('uploadContacts?')
+    uploadContacts(job).then()
   }
   if (campaign.hasOwnProperty('texters')) {
     await JobRequest.save({
@@ -242,6 +243,7 @@ async function editCampaign(id, campaign, loaders) {
     let job = await JobRequest.save({
       queue_name: `${id}:edit_campaign`,
       locks_queue: true,
+      assigned: true, // will be sent immediately on this thread
       job_type: 'create_interaction_steps',
       campaign_id: id,
       payload: JSON.stringify({
@@ -249,7 +251,7 @@ async function editCampaign(id, campaign, loaders) {
         interaction_steps: campaign.interactionSteps
       })
     })
-    createInteractionSteps(job)
+    createInteractionSteps(job).then()
   }
 
   if (campaign.hasOwnProperty('cannedResponses')) {
