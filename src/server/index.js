@@ -169,6 +169,7 @@ app.use('/graphql', apolloServer((req) => ({
   },
   tracer,
   printErrors: true,
+  formatError: (err) => { console.log(err.stack); return err },
   allowUndefinedInResolve: false
 })))
 

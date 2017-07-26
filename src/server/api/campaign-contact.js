@@ -65,6 +65,9 @@ export const resolvers = {
     campaign: async (campaignContact, _, { loaders }) => (
       loaders.campaign.load(campaignContact.campaign_id)
     ),
+    // To get that result to look like what the original code returned 
+    // without using the outgoing answer_options array field, try this:
+    //
     questionResponses: async (campaignContact, _, { loaders }) => {
 
       const results = await r.table('question_response')

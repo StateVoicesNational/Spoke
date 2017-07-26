@@ -1,10 +1,10 @@
 server: npm run dev-start
 webpack: ./dev-tools/babel-run ./webpack/server.js
-messagesender01: npm run dev-message-sender-01
-messagesender234: npm run dev-message-sender-234
-messagesender56: npm run dev-message-sender-56
-messagesender789: npm run dev-message-sender-789
-jobhandler: npm run dev-job-handler
-incomingmessagehandler: npm run dev-incoming-message-handler
-numberassigner: npm run dev-number-assigner
+#messagesender01: npm run dev-message-sender-01
+#messagesender234: npm run dev-message-sender-234
+#messagesender56: npm run dev-message-sender-56
+#messagesender789: npm run dev-message-sender-789
+#jobhandler: npm run dev-job-handler
+#incomingmessagehandler: npm run dev-incoming-message-handler
+#numberassigner: npm run dev-number-assigner
 rethinkdb: rethinkdb
