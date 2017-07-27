@@ -591,7 +591,7 @@ const rootMutations = {
     deleteQuestionResponses: async(_, { interactionStepIds, campaignContactId }, { loaders }) => {
       await r.table('question_response')
         .getAll(campaignContactId, { index: 'campaign_contact_id' })
-        .filter((doc) => r.expr(interactionStepIds).contains(doc('interaction_step_id')))
+        .getAll(...interactionStepIds, { index: 'interaction_step_id' })
         .delete()
 
       const contact = loaders.campaignContact.load(campaignContactId)
