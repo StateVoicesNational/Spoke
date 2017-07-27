@@ -1,10 +1,13 @@
 # Manual graphql testing (with rethinkdb)
 
+## Testing queries and mutations in graphiql
+
 * Every query and mutation in src/server/schema.js can be tested in the graphiql interface.
-* Open (graphiql)[localhost:3000/graphql] in one browser tab and (Rethink data explorer)[localhost:8080/#dataexplorer] in another
+* Open (graphiql)[localhost:3000/graphql] in one browser tab and (Rethink data explorer)[localhost:8080/#dataexplorer] in another. You can use the Data Explorer to verify specific data changes after a query or mutation.
   * If you're not using RethinkDB, open a query interface for the current database.
-* Enter a valid graphQL query or mutation. Inspect src/server/schema or the tree in the graphiql docs to see available queries and mutations. 
-* Example mutation - takes an input object, creates a valid invitation object and requests id of the newly created invitation in response:
+* Enter a valid graphQL query or mutation. Inspect src/server/schema or the tree in the graphiql Docs tab to see available queries and mutations. 
+
+### Example mutation - takes an input object, creates a valid invitation object and requests id of the newly created invitation in response:
 
 ```
 mutation {
@@ -14,7 +17,7 @@ mutation {
 }
 ```
 
-* Example mutation result
+#### Example mutation result
 
 ```
 {
@@ -26,7 +29,7 @@ mutation {
 }
 ```
 
-* Example mutation 2 - takes query variables, creates a valid organization object and requests id of the newly created organization in response:
+### Example mutation 2 - takes query variables, creates a valid organization object and requests id of the newly created organization in response:
 
 ```
 mutation createOrganization($name: String!, $userId: String!, $inviteId: String!) {
@@ -45,7 +48,7 @@ mutation createOrganization($name: String!, $userId: String!, $inviteId: String!
 }
 ```
 
-* Example mutation 2 result
+#### Example mutation 2 result
 
 ```
 {
@@ -57,7 +60,7 @@ mutation createOrganization($name: String!, $userId: String!, $inviteId: String!
 }
 ```
 
-* Example query - requests a specific campaign instance and specific details of subfields (use a campaign id from your own database)
+### Example query - requests a specific campaign instance and specific details of subfields (use a campaign id from your own database)
 
 ```
 {
@@ -79,7 +82,7 @@ mutation createOrganization($name: String!, $userId: String!, $inviteId: String!
 }
 ```
 
-* Example query result:
+#### Example query result:
 
 ```
 {
