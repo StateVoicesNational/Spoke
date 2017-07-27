@@ -24,8 +24,8 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     color: theme.colors.white
   },
-  link: {
-    ...theme.text.link
+  link_dark_bg: {
+    ...theme.text.link_dark_bg
   }
 })
 
@@ -80,7 +80,7 @@ class Home extends React.Component {
         Spoke is a new way to run campaigns using text messaging. We are currently in private beta.
         </div>
         <div>
-          <a className={css(styles.link)} href='#' onClick={this.handleOrgInviteClick}>Login and get started</a>
+          <a className={css(styles.link_dark_bg)} href='#' onClick={this.handleOrgInviteClick}>Login and get started</a>
         </div>
       </div>
     )
