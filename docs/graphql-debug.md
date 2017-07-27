@@ -4,7 +4,7 @@
 * Open (graphiql)[localhost:3000/graphql] in one browser tab and (Rethink data explorer)[localhost:8080/#dataexplorer] in another
   * If you're not using RethinkDB, open a query interface for the current database.
 * Enter a valid graphQL query or mutation. Inspect src/server/schema or the tree in the graphiql docs to see available queries and mutations. 
-* Example mutation - creates a valid invitation object and requests id of the newly created invitation in response:
+* Example mutation - takes an input object, creates a valid invitation object and requests id of the newly created invitation in response:
 
     mutation {
       createInvite(invite: {is_valid: true}) {
@@ -12,12 +12,37 @@
       }
     }
 
-* Example mutation result (with id )
+* Example mutation result
 
     {
       "data": {
         "createInvite": {
-          "id": "a string of numbers and letters"
+          "id": "d9691319-1106-4c4d-9efc-7765029fc140"
+        }
+      }
+    }
+
+* Example mutation 2 - takes query variables, creates a valid organization object and requests id of the newly created organization in response:
+
+    mutation createOrganization($name: String!, $userId: String!, $inviteId: String!) {
+      createOrganization(name: $name, userId: $userId, inviteId: $inviteId) {
+        id
+      }
+    }
+
+(in query variables window)
+
+    {"userId": "749bd1dd-63a1-4696-a1a8-137bbcecb5d0",
+      "name": "Testy test organization",
+      "inviteId": "d9691319-1106-4c4d-9efc-7765029fc140"
+    }
+
+* Example mutation 2 result
+
+    {
+      "data": {
+        "createOrganization": {
+          "id": "7f5155dd-5e12-4234-93f3-7ba419ca6c4f"
         }
       }
     }
