@@ -508,10 +508,7 @@ const rootMutations = {
       const { assignmentId, cell } = optOut
       const campaign = await r.table('assignment')
         .get(assignmentId)
-        .merge((doc) => ({
-          campaign: r.table('campaign')
-            .get(doc('campaign_id'))
-        }))('campaign')
+        .eqJoin('campaign_id', r.table('campaign'))('right')
       await new OptOut({
         assignment_id: assignmentId,
         organization_id: campaign.organization_id,
@@ -520,15 +517,9 @@ const rootMutations = {
 
       await r.table('campaign_contact')
         .getAll(cell, { index: 'cell' })
-        .merge((contact) => ({
-          organization_id: r.table('campaign')
-            .get(contact('campaign_id'))
-            ('organization_id')
-        }))
+        .eqJoin('campaign_id', r.table('campaign'))
         .filter({ organization_id: campaign.organization_id})
-        .forEach((doc) => r.table('campaign_contact')
-            .get(doc('id'))
-            .update({ is_opted_out: true }))
+        .update({ is_opted_out: true }))
 
       return loaders.campaignContact.load(campaignContactId)
     },
@@ -543,13 +534,9 @@ const rootMutations = {
         })
       }
 
-      const merged = await r.table('campaign')
+      const organization = await r.table('campaign')
         .get(contact.campaign_id)
-        .merge((doc) => ({
-          organization: r.table('organization').get(doc('organization_id'))
-        }))
-        .pluck('organization')
-      const organization = merged.organization
+        .eqJoin('organization_id', r.table('organization'))('right')
 
       const optOut = await r.table('opt_out')
           .getAll(contact.cell, { index: 'cell' })
