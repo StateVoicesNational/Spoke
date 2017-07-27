@@ -15,6 +15,8 @@ const mySchema = makeExecutableSchema({
   allowUndefinedInResolve: true,
 });
 
+const rootValue = {};
+
 beforeEach(async () => await setupTest());
 
 // afterEach(async () => await cleanupTest());
@@ -26,21 +28,7 @@ test('test database exists', async () => {
 
 // graphQL tests!!!!
 
-it('should be undefined when user not logged in', async () => {
-  const query = `{
-    currentUser {
-      id
-    }
-  }`;
-  const rootValue = {};
-  const context = getContext();
-  const result = await graphql(mySchema, query, rootValue, context);
-  console.log(result)
-  const data = result;
-  expect(typeof data.currentUser).toBe('undefined')
-});
-
-it('should return the current user when user is logged in', async () => {
+async function createUser() {
   const user = new User({
     auth0_id: 'test123',
     first_name: 'TestUserFirst',
@@ -48,29 +36,110 @@ it('should return the current user when user is logged in', async () => {
     cell: '555-555-5555',
     email: 'testuser@example.com',
   });
-  await user.save();
+  try {
+    await user.save();
+    console.log("created user")
+    console.log(user)
+    return user
+  } catch(err) {
+    console.error('Error saving user');
+    return false
+  }
+}
 
+async function createInvite() {
+  const inviteQuery = `mutation {
+    createInvite(invite: {is_valid: true}) {
+      id
+    }
+  }`;
+  const context = getContext();
+  try {
+    const invite = await graphql(mySchema, inviteQuery, rootValue, context)
+    return invite
+  } catch(err) {
+    console.error('Error creating invite')
+    return false
+  }
+}
+
+it('should be undefined when user not logged in', async () => {
+  const query = `{
+    currentUser {
+      id
+    }
+  }`;
+  const context = getContext();
+  const result = await graphql(mySchema, query, rootValue, context)
+  const data = result
+
+  expect(typeof data.currentUser).toBeUndefined
+});
+
+it('should return the current user when user is logged in', async () => {
+  const user = await createUser()
   const query = `{
     currentUser {
       email
     }
   }`;
-  const rootValue = {};
-  const context = getContext({ user });
-
-  const result = await graphql(mySchema, query, rootValue, context);
-  console.log(result);
-  const { data }  = result;
+  const context = getContext({ user })
+  const result = await graphql(mySchema, query, rootValue, context)
+  const { data } = result
 
   expect(data.currentUser.email).toBe('testuser@example.com')
 });
 
+// TESTING CAMPAIGN CREATION FROM END TO END
 
-// TEST STUBS: CAMPAIGN CREATION
+it('should create an invite', async () => {
+  const invite = await createInvite()
 
-// it('should create an invite and return an invitation id', async () => {});
+  expect (invite.data.createInvite.id).toBeTruthy()
+});
 
-// it('should create an invite, create an organization with that invite, and return an organization instance', async () => {});
+it('should convert an invitation and user into a valid organization instance', async () => {
+
+  const [user, invite] = await Promise.all([createUser(), createInvite()])
+
+  if (invite && user) {
+    console.log("user and invite for org")
+    console.log([user,invite.data])
+
+    const userQuery = `{
+      currentUser {
+        id
+      }
+    }`;
+
+    const context = getContext({ user });
+    const result = await graphql(mySchema, userQuery, rootValue, context)
+
+    const orgQuery = `mutation createOrganization($name: String!, $userId: String!, $inviteId: String!) {
+      createOrganization(name: $name, userId: $userId, inviteId: $inviteId) {
+        id
+        name
+        threeClickEnabled
+        textingHoursEnforced
+        textingHoursStart
+        textingHoursEnd
+      }
+    }`
+
+    console.log(orgQuery);
+    const variables = {
+      "userId": invite.data.createInvite.id,
+      "name": "Testy test organization",
+      "inviteId": invite.data.createInvite.id
+    }
+    const org = await graphql(mySchema, orgQuery, rootValue, context, variables)
+    expect(org.data.createOrganization.name).toBe('Testy test organization')
+  } else {
+    console.log("Failed to create invite and/or user for organization test")
+    return false
+  }
+});
+
 
 // it('should create an test campaign', async () => {});
 
