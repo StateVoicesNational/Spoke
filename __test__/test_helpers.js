@@ -14,20 +14,33 @@ const thinkyTest = thinky({
 
 const testR = thinkyTest.r
 
-async function populateTestDatabaseModels() {
-  await testR.db(mainDB).tableList().forEach(testR.db(testDB).tableCreate(testR.row));
-}
+async function createTestDatabase() {
+  const dbList = await testR.dbList();
+  if (dbList.indexOf(testDB) > -1) {
+    console.log("Test database " + testDB + " already exists.");
+  } else {
+    await testR.dbCreate(testDB);
+    await testR.db(mainDB).tableList().forEach(testR.db(testDB).tableCreate(testR.row));
+    console.log("created test database " + testDB + " and populated with models from main database " + mainDB)
+  }
+}  
 
-async function clearTestDatabase() {
+async function clearTestData() {
   const tableList = await testR.db(testDB).tableList();
   tableList.forEach(async function(tableName) {
     await testR.db(testDB).table(tableName).delete()
   });
+  console.log('truncated test database tables')
 }
 
 async function setupTest() {
-  // await populateTestDatabaseModels();
-  await clearTestDatabase();
+  // await createTestDatabase();
+  await clearTestData();
+}
+
+// customize 
+async function cleanupTest() {
+  await clearTestData();
 }
 
 export function getContext(context) {
@@ -38,5 +51,5 @@ export function getContext(context) {
   };
 }
 
-export { thinkyTest, testR, setupTest, getContext }
+export { thinkyTest, testR, setupTest, cleanupTest, createTestDatabase, getContext }
 
