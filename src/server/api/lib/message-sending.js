@@ -1,6 +1,6 @@
 import { r } from '../../models'
 
-export async function getLastMessage({ userId, contactNumber, service }) {
+export async function getLastMessage({ contactNumber, service }) {
   const lastMessage = await r.table('message')
     .getAll(contactNumber, { index: 'contact_number' })
     .filter({
@@ -8,11 +8,6 @@ export async function getLastMessage({ userId, contactNumber, service }) {
       service: service
     })
     .orderBy(r.desc('created_at'))
-    .eqJoin("assignment_id", r.table("assignment"))('right')
-    .filter({
-      user_id: userId
-    })
-    .eqJoin("id", r.table("message"), {index: "assignment_id"})('right')
     .limit(1)
     .pluck('assignment_id')(0)
     .default(null)

@@ -33,7 +33,6 @@ async function handleIncomingMessageParts() {
 
       const lastMessage = await getLastMessage({
         userNumber: part.user_number,
-        contactNumber: part.contact_number,
         service: service === nexmo ? 'nexmo' : 'twilio'
       })
 
