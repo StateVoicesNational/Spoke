@@ -1,6 +1,6 @@
 import { schema, resolvers } from '../src/server/api/schema';
 import { graphql } from 'graphql';
-import { User, r } from '../src/server/models/';
+import { User, CampaignContact, r } from '../src/server/models/';
 import { getContext, 
   thinkyTest, 
   testR, 
@@ -47,6 +47,26 @@ async function createUser() {
   }
 }
 
+async function createContact(campaignId) {
+  const contact = new CampaignContact({
+    first_name: "Ann", 
+    last_name: "Lewis",
+    cell: "5555555555",
+    zip: "12345",
+    campaign_id: campaignId
+  });
+  try {
+    await contact.save();
+    console.log("created contact")
+    console.log(contact)
+    return contact
+  } catch(err) {
+    console.error('Error saving contact: ', err);
+    return false
+  }
+}
+
+
 async function createInvite() {
   const inviteQuery = `mutation {
     createInvite(invite: {is_valid: true}) {
@@ -92,20 +112,25 @@ async function createOrganization(user, name, userId, inviteId) {
   }
 }
 
-async function createCampaign(user, title, description, organizationId) {
+async function createCampaign(user, title, description, organizationId, contacts = []) {
   const context = getContext({user});
 
   const campaignQuery = `mutation createCampaign($input: CampaignInput!) {
     createCampaign(campaign: $input) {
       id
       title
+      contacts {
+        firstName
+        lastName
+      } 
     }
   }`;
   const variables = {
     "input": {
         "title": title,
         "description": description,
-        "organizationId": organizationId  
+        "organizationId": organizationId,
+        "contacts": contacts
     }
   }
 
@@ -180,8 +205,7 @@ it('should convert an invitation and user into a valid organization instance', a
 it('should create a test campaign', async () => {
 
   const [user, invite] = await Promise.all([createUser(), createInvite()])
-  const organizationTitle = "test org"
-  const organization = await createOrganization(user, organizationTitle, user.id, invite.data.createInvite.id)
+  const organization = await createOrganization(user, "test org", user.id, invite.data.createInvite.id)
 
   const campaignTitle = "test campaign"
   const campaign = await createCampaign(user, campaignTitle, "test description", organization.data.createOrganization.id)
@@ -190,7 +214,19 @@ it('should create a test campaign', async () => {
 });
 
 
-// it('should create campaign contacts', async () => {});
+it('should create campaign contacts', async () => {
+  const [user, invite] = await Promise.all([createUser(), createInvite()])
+  const organization = await createOrganization(user, "test org", user.id, invite.data.createInvite.id)
+
+  const campaign = await createCampaign(user, "test campaign", "test description", organization.data.createOrganization.id);
+
+  const contact = await createContact(campaign.data.createCampaign.id)
+
+  expect (contact.campaign_id).toBe(campaign.data.createCampaign.id)
+
+});
+
+
 
 // it('should add texters to a organization', async () => {});
 
