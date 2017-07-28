@@ -14,7 +14,7 @@ const PendingMessagePart = thinky.createModel('pending_message_part', type.objec
   service_id: requiredString(),
   parent_id: optionalString(),
   service_message: requiredString(), //JSON
-  user_number: requiredString(),
+  user_number: optionalString(),
   contact_number: requiredString(),
   created_at: timestamp()
 }).allowExtra(false))
