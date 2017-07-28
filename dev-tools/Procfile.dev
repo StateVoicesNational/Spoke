@@ -6,5 +6,4 @@ messagesender56: npm run dev-message-sender-56
 messagesender789: npm run dev-message-sender-789
 jobhandler: npm run dev-job-handler
 incomingmessagehandler: npm run dev-incoming-message-handler
-numberassigner: npm run dev-number-assigner
 rethinkdb: rethinkdb
