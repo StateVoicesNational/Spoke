@@ -63,6 +63,61 @@ async function createInvite() {
   }
 }
 
+async function createOrganization(user, name, userId, inviteId) {
+  const context = getContext({ user });
+
+  const orgQuery = `mutation createOrganization($name: String!, $userId: String!, $inviteId: String!) {
+    createOrganization(name: $name, userId: $userId, inviteId: $inviteId) {
+      id
+      name
+      threeClickEnabled
+      textingHoursEnforced
+      textingHoursStart
+      textingHoursEnd
+    }
+  }`
+
+  const variables = {
+    "userId": userId,
+    "name": name,
+    "inviteId": inviteId
+  }
+
+  try {
+    const org = await graphql(mySchema, orgQuery, rootValue, context, variables)
+    return org
+  } catch(err) {
+    console.error('Error creating organization')
+    return false
+  }
+}
+
+async function createCampaign(user, title, description, organizationId) {
+  const context = getContext({user});
+
+  const campaignQuery = `mutation createCampaign($input: CampaignInput!) {
+    createCampaign(campaign: $input) {
+      id
+      title
+    }
+  }`;
+  const variables = {
+    "input": {
+        "title": title,
+        "description": description,
+        "organizationId": organizationId  
+    }
+  }
+
+  try {
+    const campaign = await graphql(mySchema, campaignQuery, rootValue, context, variables)
+    return campaign
+  } catch(err) {
+    console.error('Error creating campaign')
+    return false
+  }
+}
+
 it('should be undefined when user not logged in', async () => {
   const query = `{
     currentUser {
@@ -112,27 +167,8 @@ it('should convert an invitation and user into a valid organization instance', a
       }
     }`;
 
-    const context = getContext({ user });
-    const result = await graphql(mySchema, userQuery, rootValue, context)
+    const org = await createOrganization(user, "Testy test organization", invite.data.createInvite.id, invite.data.createInvite.id)
 
-    const orgQuery = `mutation createOrganization($name: String!, $userId: String!, $inviteId: String!) {
-      createOrganization(name: $name, userId: $userId, inviteId: $inviteId) {
-        id
-        name
-        threeClickEnabled
-        textingHoursEnforced
-        textingHoursStart
-        textingHoursEnd
-      }
-    }`
-
-    console.log(orgQuery);
-    const variables = {
-      "userId": invite.data.createInvite.id,
-      "name": "Testy test organization",
-      "inviteId": invite.data.createInvite.id
-    }
-    const org = await graphql(mySchema, orgQuery, rootValue, context, variables)
     expect(org.data.createOrganization.name).toBe('Testy test organization')
   } else {
     console.log("Failed to create invite and/or user for organization test")
@@ -141,7 +177,18 @@ it('should convert an invitation and user into a valid organization instance', a
 });
 
 
-// it('should create an test campaign', async () => {});
+it('should create a test campaign', async () => {
+
+  const [user, invite] = await Promise.all([createUser(), createInvite()])
+  const organizationTitle = "test org"
+  const organization = await createOrganization(user, organizationTitle, user.id, invite.data.createInvite.id)
+
+  const campaignTitle = "test campaign"
+  const campaign = await createCampaign(user, campaignTitle, "test description", organization.data.createOrganization.id)
+  expect (campaign.data.createCampaign.title).toBe(campaignTitle)
+
+});
+
 
 // it('should create campaign contacts', async () => {});
 
