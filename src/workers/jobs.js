@@ -96,7 +96,7 @@ export async function assignTexters(job) {
   const payload = JSON.parse(job.payload)
   const id = job.campaign_id
   const texters = payload.texters
-  const currentAssignments = await r.knex.table('assignment')
+  const currentAssignments = await r.knex.from('assignment')
     .where('campaign_id', id)
     .join('campaign_contact', 'id', 'assignment_id')
     .filter({message_status: 'needsMessage'})
@@ -168,7 +168,7 @@ export async function assignTexters(job) {
     }
     await updateJob(job, Math.floor((75 / texterCount) * (index + 1)) + 20)
   }
-  const assignmentsToDelete = await r.knex.table('assignment')
+  const assignmentsToDelete = await r.knex.from('assignment')
     .where('campaign_id', id)
     .join('campaign_contact', 'id', 'assignment_id')
     .groupBy('assignment_id')

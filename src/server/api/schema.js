@@ -519,7 +519,7 @@ const rootMutations = {
         .getAll(cell, { index: 'cell' })
         .eqJoin('campaign_id', r.table('campaign'))
         .filter({ organization_id: campaign.organization_id})
-        .update({ is_opted_out: true }))
+        .update({ is_opted_out: true })
 
       return loaders.campaignContact.load(campaignContactId)
     },
