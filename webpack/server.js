@@ -41,7 +41,7 @@ const app = new WebpackDevServer(compiler, {
     source: false,
     errors: false,
     errorDetails: false,
-    warnings: false,
+    warnings: true,
     publicPath: false
   }
 })
