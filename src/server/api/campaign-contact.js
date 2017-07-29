@@ -1,6 +1,6 @@
 import { CampaignContact, r } from '../models'
 import { mapFieldsToModel } from './lib/utils'
-import { getTopMostParent } from '../../lib'
+import { log, getTopMostParent } from '../../lib'
 
 export const schema = `
   input ContactsFilter {
@@ -70,7 +70,7 @@ export const resolvers = {
     //
     questionResponses: async (campaignContact, _, { loaders }) => {
 
-      const results = await r.knex.from('question_response as qres')
+      const results = await r.knex('question_response as qres')
         .where('question_response.campaign_contact', campaignContact.id)
         .join('interaction_step', 'qres.interaction_step_id', 'id')
         .join('interaction_step as child',
@@ -88,6 +88,7 @@ export const resolvers = {
                 'qres.value',
                 'qres.created_at',
                 'qres.interaction_step_id')
+        .catch(log.error)
       
       let formatted = {}
 

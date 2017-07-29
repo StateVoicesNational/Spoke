@@ -96,14 +96,13 @@ export async function assignTexters(job) {
   const payload = JSON.parse(job.payload)
   const id = job.campaign_id
   const texters = payload.texters
-  const currentAssignments = await r.knex.from('assignment')
-    .where('campaign_id', id)
-    .join('campaign_contact', 'id', 'assignment_id')
-    .filter({message_status: 'needsMessage'})
+  const currentAssignments = await r.knex('assignment')
+    .where('assignment.campaign_id', id)
+    .join('campaign_contact', 'campaign_contact.id', 'assignment_id')
+    .where({message_status: 'needsMessage'})
     .groupBy('user_id', 'assignment_id')
     .select('user_id', 'assignment_id', r.knex.raw('COUNT(campaign_contact.id) as needsMessageCount'))
-
-  console.log('CURRENT ASSIGNMENTS', currentAssignments)
+    .catch(log.error)
 
   const unchangedTexters = {}
   const changedAssignments = currentAssignments.map((assignment) => {
@@ -168,12 +167,13 @@ export async function assignTexters(job) {
     }
     await updateJob(job, Math.floor((75 / texterCount) * (index + 1)) + 20)
   }
-  const assignmentsToDelete = await r.knex.from('assignment')
+  const assignmentsToDelete = await r.knex('assignment')
     .where('campaign_id', id)
     .join('campaign_contact', 'id', 'assignment_id')
     .groupBy('assignment_id')
     .select('assignment_id')
     .havingRaw('COUNT(campaign_contact.id) = 0')
+    .catch(log.error)
 
   await r.table('assignment')
     .getAll(...assignmentsToDelete.map((ele) => ele.assignment_id))

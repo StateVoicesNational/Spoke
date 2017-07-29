@@ -84,7 +84,7 @@ import { gzip } from '../../lib'
 import { getFormattedPhoneNumber } from '../../lib/phone-format'
 import { isBetweenTextingHours } from '../../lib/timezones'
 import { Notifications, sendUserNotification } from '../notifications'
-import { uploadContacts, createInteractionSteps } from '../../workers/jobs'
+import { uploadContacts, createInteractionSteps, assignTexters } from '../../workers/jobs'
 
 const rootSchema = `
   input CampaignContactInput {
@@ -224,13 +224,13 @@ async function editCampaign(id, campaign, loaders) {
       //NOTE: stringifying because compressedString is a binary buffer
       payload: compressedString.toString('base64')
     })
-    console.log('uploadContacts?')
     uploadContacts(job).then()
   }
   if (campaign.hasOwnProperty('texters')) {
-    await JobRequest.save({
+    let job = await JobRequest.save({
       queue_name: `${id}:edit_campaign`,
       locks_queue: true,
+      assigned: true, // will get called immediately, below
       job_type: 'assign_texters',
       campaign_id: id,
       payload: JSON.stringify({
@@ -238,6 +238,7 @@ async function editCampaign(id, campaign, loaders) {
         texters: campaign.texters
       })
     })
+    assignTexters(job).then()
   }
   if (campaign.hasOwnProperty('interactionSteps')) {
     let job = await JobRequest.save({
@@ -274,7 +275,7 @@ async function editCampaign(id, campaign, loaders) {
   }
 
   const newCampaign = await Campaign.get(id).update(campaignUpdates)
-  console.log('NEW CAMPAIGN', newCampaign, campaignUpdates)
+  console.log('FINAL CAMPAIGN', newCampaign, campaignUpdates)
   return newCampaign || loaders.campaign.load(id)
 }
 
