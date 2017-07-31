@@ -79,11 +79,6 @@ module.exports = {
       name      : 'message-sender-789',
       script    : './build/server/workers/message-sender-789.js',
       env_production : env_production
-    },
-    {
-      name      : 'number-assigner',
-      script    : './build/server/workers/number-assigner.js',
-      env_production : env_production
     }
   ]
 };
