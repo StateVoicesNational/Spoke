@@ -72,7 +72,7 @@ export const resolvers = {
 
       const results = await r.knex('question_response as qres')
         .where('question_response.campaign_contact', campaignContact.id)
-        .join('interaction_step', 'qres.interaction_step_id', 'id')
+        .join('interaction_step', 'qres.interaction_step_id', 'interaction_step.id')
         .join('interaction_step as child',
               'qres.interaction_step_id',
               'child.parent_interaction_id')
@@ -118,7 +118,7 @@ export const resolvers = {
                                     "interaction_step_id": interactionStepId
                                    }],
                 "campaign_id": res['interaction_step.campaign_id'],
-                "created_at": res['child.created_id'],
+                "created_at": res['interaction_step.created_at'],
                 "id": responseId,
                 "parent_interaction_id": res['child.parent_interaction_id'],
                 "question": res['interaction_step.question'],
