@@ -118,9 +118,9 @@ export const resolvers = {
                                     "interaction_step_id": interactionStepId
                                    }],
                 "campaign_id": res['interaction_step.campaign_id'],
-                "created_at": res['interaction_step.created_at'],
+                "created_at": res['child.created_at'],
                 "id": responseId,
-                "parent_interaction_id": res['child.parent_interaction_id'],
+                "parent_interaction_id": res['interaction_step.parent_interaction_id'],
                 "question": res['interaction_step.question'],
                 "script": res['interaction_step.script']
             },
