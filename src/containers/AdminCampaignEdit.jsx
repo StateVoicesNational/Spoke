@@ -62,8 +62,12 @@ class AdminCampaignEdit extends React.Component {
       startingCampaign: false
     }
   }
+  componentDidMount() {
+    console.log('admin campaign edit mounted!')
+  }
 
   componentWillReceiveProps(newProps) {
+    console.log('admin campaign edit will receive props', newProps)
     let { expandedSection } = this.state
     let expandedKeys = []
     if (expandedSection !== null) {
@@ -82,13 +86,14 @@ class AdminCampaignEdit extends React.Component {
       delete campaignDataCopy[key]
     })
 
-
+    console.log('setstate in willreceivenewprops')
     this.setState({
       campaignFormValues: {
         ...this.state.campaignFormValues,
         ...campaignDataCopy
       }
     })
+    console.log('after setstate in willreceivenewprops')
   }
 
   onExpandChange = (index, newExpandedState) => {
@@ -114,6 +119,7 @@ class AdminCampaignEdit extends React.Component {
   }
 
   handleChange = (formValues) => {
+    console.log('handle change! (admin campaign edit)', formValues)
     this.setState({
       campaignFormValues: {
         ...this.state.campaignFormValues,
@@ -123,6 +129,7 @@ class AdminCampaignEdit extends React.Component {
   }
 
   handleSave = async () => {
+    console.log('handle save! (admin campaign edit)')
     let saveObject = {}
     this.sections().forEach((section) => {
       if (!this.checkSectionSaved(section)) {
@@ -180,6 +187,7 @@ class AdminCampaignEdit extends React.Component {
           })) : []
         }))
       }
+      console.log('saving campaign data', newCampaign, this.props.campaignData.campaign)
 
       await this
         .props
@@ -513,7 +521,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
     variables: {
       campaignId: ownProps.params.campaignId
     },
-    pollInterval: 1000
+    pollInterval: 100000
   },
   campaignData: {
     query: gql`query getCampaign($campaignId: String!) {
@@ -524,7 +532,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
     variables: {
       campaignId: ownProps.params.campaignId
     },
-    pollInterval: 2000
+    pollInterval: 200000
   },
   organizationData: {
     query: gql`query getOrganizationData($organizationId: String!, $role: String!) {
@@ -544,7 +552,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
       organizationId: ownProps.params.organizationId,
       role: 'TEXTER'
     },
-    pollInterval: 2500
+    pollInterval: 250000
   }
 })
 
@@ -574,7 +582,9 @@ const mapMutationsToProps = () => ({
       }`,
     variables: { campaignId }
   }),
-  editCampaign: (campaignId, campaign) => ({
+  editCampaign: function(campaignId, campaign) {
+    console.log('mutating campaign', campaign)
+    return ({
     mutation: gql`
       mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {
         editCampaign(id: $campaignId, campaign: $campaign) {
@@ -586,7 +596,8 @@ const mapMutationsToProps = () => ({
       campaignId,
       campaign
     }
-  })
+    })
+  }
 })
 
 export default loadData(wrapMutations(AdminCampaignEdit), {
