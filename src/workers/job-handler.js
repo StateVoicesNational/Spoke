@@ -1,6 +1,7 @@
 import { r } from '../server/models'
 import { sleep, getNextJob, updateJob } from './lib'
 import { exportCampaign, uploadContacts, assignTexters, createInteractionSteps } from './jobs'
+import { setupUserNotificationObservers } from '../server/notifications'
 
 function jobMap() {
   return {
