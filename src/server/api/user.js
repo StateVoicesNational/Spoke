@@ -50,13 +50,11 @@ export const resolvers = {
       return r.table('assignment')
         .getAll(user.id, { index: 'user_id' })
         .eqJoin('campaign_id', r.table('campaign'))
-        .filter((row) =>
-          r.and(
-            row('right')('is_started').eq(true),
-            row('right')('organization_id').eq(organizationId),
-            row('right')('is_archived').eq(false)
-          )
-        )('left')
+        .filter({'is_started': true,
+                 'organization_id': organizationId,
+                 'is_archived': false}
+               )('left')
+
     }
   }
 }
