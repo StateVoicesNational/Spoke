@@ -96,14 +96,14 @@ export async function assignTexters(job) {
   const payload = JSON.parse(job.payload)
   const id = job.campaign_id
   const texters = payload.texters
-  const currentAssignments = await r.table('assignment')
-    .getAll(id, { index: 'campaign_id' })
-    .merge((row) => ({
-      needsMessageCount: r.table('campaign_contact')
-        .getAll(row('id'), { index: 'assignment_id' })
-        .filter({ message_status: 'needsMessage' })
-        .count()
-    }))
+  const currentAssignments = await r.knex.from('assignment')
+    .where('campaign_id', id)
+    .join('campaign_contact', 'id', 'assignment_id')
+    .filter({message_status: 'needsMessage'})
+    .groupBy('user_id', 'assignment_id')
+    .select('user_id', 'assignment_id', r.knex.raw('COUNT(campaign_contact.id) as needsMessageCount'))
+
+  console.log('CURRENT ASSIGNMENTS', currentAssignments)
 
   const unchangedTexters = {}
   const changedAssignments = currentAssignments.map((assignment) => {
@@ -125,9 +125,8 @@ export async function assignTexters(job) {
   await r.table('campaign_contact')
     .getAll(...changedAssignmentIds, { index: 'assignment_id' })
     .filter({ message_status: 'needsMessage' })
-    .update({
-      assignment_id: r.branch(r.row('message_status').eq('needsMessage'), '', r.row('assignment_id'))
-    })
+    .update({ message_status: '' })
+
   await updateJob(job, 20)
 
   let availableContacts = await r.table('campaign_contact')
@@ -169,16 +168,15 @@ export async function assignTexters(job) {
     }
     await updateJob(job, Math.floor((75 / texterCount) * (index + 1)) + 20)
   }
-  const assignmentsToDelete = await r.table('assignment')
-    .getAll(id, { index: 'campaign_id' })
-    .merge((row) => ({
-      count: r.table('campaign_contact')
-        .getAll(row('id'), { index: 'assignment_id' })
-        .count()
-    }))
-    .filter((row) => row('count').eq(0))
+  const assignmentsToDelete = await r.knex.from('assignment')
+    .where('campaign_id', id)
+    .join('campaign_contact', 'id', 'assignment_id')
+    .groupBy('assignment_id')
+    .select('assignment_id')
+    .havingRaw('COUNT(campaign_contact.id) = 0')
+
   await r.table('assignment')
-    .getAll(...assignmentsToDelete.map((ele) => ele.id))
+    .getAll(...assignmentsToDelete.map((ele) => ele.assignment_id))
     .delete()
 }
 
@@ -229,9 +227,8 @@ export async function exportCampaign(job) {
 
     const contacts = await r.table('campaign_contact')
       .getAll(assignment.id, { index: 'assignment_id' })
-      .merge((row) => ({
-        location: r.table('zip_code').get(row('zip'))
-      }))
+      .eqJoin('zip', r.table('zip_code'))
+      .zip()
 
     const messages = await r.table('message')
       .getAll(assignment.id, { index: 'assignment_id' })
@@ -265,8 +262,8 @@ export async function exportCampaign(job) {
         'contact[lastName]': contact.last_name,
         'contact[cell]': contact.cell,
         'contact[zip]': contact.zip,
-        'contact[city]': contact.location ? contact.location.city : null,
-        'contact[state]': contact.location ? contact.location.state : null,
+        'contact[city]': contact.city ? contact.city : null,
+        'contact[state]': contact.state ? contact.state : null,
         'contact[optOut]': optOuts.find((ele) => ele.cell === contact.cell) ? 'true' : 'false',
         'contact[messageStatus]': contact.message_status
       }
