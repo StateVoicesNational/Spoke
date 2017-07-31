@@ -15,8 +15,8 @@ async function sendMessages() {
   */
   const messages = await r.table('message')
     .getAll('QUEUED', { index: 'send_status' })
-    .filter((doc) => doc('user_number').match('[789]$'))
-    .group('user_number')
+    .filter((doc) => doc('contact_number').match('[789]$'))
+    .group('contact_number')
     .orderBy('created_at')
     .limit(1)(0)
   for (let index = 0; index < messages.length; index++) {

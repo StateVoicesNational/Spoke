@@ -1,12 +1,11 @@
 import { r } from '../../models'
 
-export async function getLastMessage({ userNumber, contactNumber, service }) {
+export async function getLastMessage({ contactNumber, service }) {
   const lastMessage = await r.table('message')
     .getAll(contactNumber, { index: 'contact_number' })
     .filter({
-      user_number: userNumber,
       is_from_contact: false,
-      service
+      service: service
     })
     .orderBy(r.desc('created_at'))
     .limit(1)
