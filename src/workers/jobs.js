@@ -168,16 +168,18 @@ export async function assignTexters(job) {
     await updateJob(job, Math.floor((75 / texterCount) * (index + 1)) + 20)
   }
   const assignmentsToDelete = await r.knex('assignment')
-    .where('campaign_id', id)
-    .join('campaign_contact', 'id', 'assignment_id')
+    .where('assignment.campaign_id', id)
+    .join('campaign_contact', 'assignment.id', 'assignment_id')
     .groupBy('assignment_id')
     .select('assignment_id')
     .havingRaw('COUNT(campaign_contact.id) = 0')
     .catch(log.error)
 
-  await r.table('assignment')
-    .getAll(...assignmentsToDelete.map((ele) => ele.assignment_id))
-    .delete()
+  if (assignmentsToDelete.length) {
+    await r.table('assignment')
+      .getAll(...assignmentsToDelete.map((ele) => ele.assignment_id))
+      .delete()
+  }
 }
 
 export async function exportCampaign(job) {
