@@ -4,7 +4,6 @@ const env_production = {
   AWS_SECRET_ACCESS_KEY:'',
   APOLLO_OPTICS_KEY:'',
   DEV_APP_PORT:8090,
-  OUTPUT_DIR:'./build',
   PUBLIC_DIR:'./build/client',
   ASSETS_DIR:'./build/client/assets',
   ASSETS_MAP_FILE:'assets.json',
@@ -49,92 +48,42 @@ module.exports = {
     {
       name      : 'spoke-server',
       script    : './build/server/server',
-      env: {
-        COMMON_VARIABLE: 'true'
-      },
       env_production : env_production
     },
     {
       name      : 'job-handler',
       script    : './build/server/workers/job-handler.js',
-      env: {
-        COMMON_VARIABLE: 'true'
-      },
       env_production : env_production
     },
     {
       name      : 'incoming-message-handler',
       script    : './build/server/workers/incoming-message-handler.js',
-      env: {
-        COMMON_VARIABLE: 'true'
-      },
       env_production : env_production
     },
     {
       name      : 'message-sender-01',
       script    : './build/server/workers/message-sender-01.js',
-      env: {
-        COMMON_VARIABLE: 'true'
-      },
       env_production : env_production
     },
     {
       name      : 'message-sender-234',
       script    : './build/server/workers/message-sender-234.js',
-      env: {
-        COMMON_VARIABLE: 'true'
-      },
       env_production : env_production
     },
     {
       name      : 'message-sender-56',
       script    : './build/server/workers/message-sender-56.js',
-      env: {
-        COMMON_VARIABLE: 'true'
-      },
       env_production : env_production
     },
     {
       name      : 'message-sender-789',
       script    : './build/server/workers/message-sender-789.js',
-      env: {
-        COMMON_VARIABLE: 'true'
-      },
       env_production : env_production
     },
     {
       name      : 'number-assigner',
       script    : './build/server/workers/number-assigner.js',
-      env: {
-        COMMON_VARIABLE: 'true'
-      },
       env_production : env_production
     }
-  ],
-
-  /**
-   * Deployment section
-   * http://pm2.keymetrics.io/docs/usage/deployment/
-   */
-  deploy : {
-    production : {
-      user : 'node',
-      host : '212.83.163.1',
-      ref  : 'origin/master',
-      repo : 'git@github.com:repo.git',
-      path : '/var/www/production',
-      'post-deploy' : 'npm install && pm2 reload ecosystem.config.js --env production'
-    },
-    dev : {
-      user : 'node',
-      host : '212.83.163.1',
-      ref  : 'origin/master',
-      repo : 'git@github.com:repo.git',
-      path : '/var/www/development',
-      'post-deploy' : 'npm install && pm2 reload ecosystem.config.js --env dev',
-      env  : {
-        NODE_ENV: 'dev'
-      }
-    }
-  }
+  ]
 };
