@@ -63,7 +63,7 @@ function getContacts(assignment, contactsFilter, organization, campaign) {
         filter.message_status = 'needsResponse'
       } else {
         // we do not want to return closed/messaged
-        secondaryFilter = (doc) => doc('message_status').eq('needsResponse').or(doc('message_status').eq('needsMessage'))
+        secondaryFilter = ['needsResponse', 'needsMessage', {index: 'message_status'}]
       }
     }
     if (contactsFilter.hasOwnProperty('isOptedOut') && contactsFilter.isOptedOut !== null) {
@@ -76,7 +76,7 @@ function getContacts(assignment, contactsFilter, organization, campaign) {
 
   query = query.filter(filter)
   if (secondaryFilter) {
-    query = query.filter(secondaryFilter)
+    query = query.getAll(...secondaryFilter)
   }
   return query
 }
@@ -92,7 +92,7 @@ export const resolvers = {
     campaign: async(assignment, _, { loaders }) => loaders.campaign.load(assignment.campaign_id),
 
     contactsCount: async (assignment, { contactsFilter }) => {
-      console.log('CONTACTSCOUNT', assignment)
+      console.log('CONTACTSCOUNT', assignment, contactsFilter)
       const campaign = await r.table('campaign').get(assignment.campaign_id)
 
       const organization = await r.table('organization')
