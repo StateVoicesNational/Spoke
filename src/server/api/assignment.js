@@ -48,7 +48,6 @@ function getContacts(assignment, contactsFilter, organization, campaign) {
         }
       }
 
-      indexValues = r.args(indexValues)
     }
 
 
@@ -73,7 +72,7 @@ function getContacts(assignment, contactsFilter, organization, campaign) {
   }
 
   let query = r.table('campaign_contact')
-    .getAll(indexValues, { index })
+    .getAll(...indexValues, { index })
 
   query = query.filter(filter)
   if (secondaryFilter) {

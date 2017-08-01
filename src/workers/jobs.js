@@ -129,7 +129,7 @@ export async function assignTexters(job) {
   await updateJob(job, 20)
 
   let availableContacts = await r.table('campaign_contact')
-    .getAll('', { index: 'assignment_id' })
+    .getAll(null, { index: 'assignment_id' })
     .filter({ campaign_id: id })
     .count()
   // Go through all the submitted texters and create assignments
@@ -151,8 +151,9 @@ export async function assignTexters(job) {
         campaign_id: id
       }).save()
     }
+
     await r.table('campaign_contact')
-      .getAll('', { index: 'assignment_id' })
+      .getAll(null, { index: 'assignment_id' })
       .filter({ campaign_id: id })
       .limit(contactsToAssign)
       .update({ assignment_id: assignment.id })
