@@ -56,7 +56,8 @@ If you need to use Twilio in development but with live keys, do the following to
 
 1. Run `OUTPUT_DIR=./build npm run prod-build-server`
    This will generate something you can deploy to production in ./build and run nodejs server/server/index.js
-2. Run `npm run prod-build-client` ....
+2. Run `npm run prod-build-client`
+3. Make a copy of `spoke-pm2.config.js.template`, e.g. `spoke-pm2.config.js`, add missing environment variables, and run it with [pm2](https://www.npmjs.com/package/pm2), e.g. `pm2 start spoke-pm2.config.js --env production`
 
 # License
 Spoke is licensed under the MIT license.
