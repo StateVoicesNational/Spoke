@@ -144,7 +144,9 @@
     "webpack-dev-server": "^1.14.1"
   },
   "xxxtransform": {
-    ".*.js": "<rootDir>/node_modules/babel-jest"
+    "forJest": "transform in the jest key might benefit from one or the other of these",
+    ".*.js": "<rootDir>/node_modules/babel-jest",
+    ".*.js": "<rootDir>/dev-tools/jest.transform.js"
   },
   "jest": {
     "testEnvironment": "node",
@@ -153,7 +155,7 @@
       "jsx"
     ],
     "transform": {
-      ".*.js": "<rootDir>/dev-tools/jest.transform.js"
+      ".*.js": "<rootDir>/node_modules/babel-jest"
     },
     "moduleDirectories": [
       "node_modules"
