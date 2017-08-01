@@ -93,6 +93,7 @@ export const resolvers = {
     campaign: async(assignment, _, { loaders }) => loaders.campaign.load(assignment.campaign_id),
 
     contactsCount: async (assignment, { contactsFilter }) => {
+      console.log('CONTACTSCOUNT', assignment)
       const campaign = await r.table('campaign').get(assignment.campaign_id)
 
       const organization = await r.table('organization')
@@ -102,6 +103,7 @@ export const resolvers = {
     },
 
     contacts: async (assignment, { contactsFilter }) => {
+      console.log('CONTACTS', assignment.campaign_id)
       const campaign = await r.table('campaign').get(assignment.campaign_id)
 
       const organization = await r.table('organization')

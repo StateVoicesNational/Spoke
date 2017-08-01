@@ -96,30 +96,28 @@ export const sendUserNotification = async (notification) => {
 const setupIncomingReplyNotification = () => (
   r.table('message')
     .changes()
-    .filter(r.and(r.row('new_val')('is_from_contact'), r.row('old_val').eq(null)))
-    .then((cursor) => (
-      cursor.each((err, message) => (
+    .then(function(message) {
+      if (!message.old_val && message.new_val.is_from_contact) {
         sendUserNotification({
           type: Notifications.ASSIGNMENT_MESSAGE_RECEIVED,
           assignmentId: message.new_val.assignment_id,
           contactNumber: message.new_val.contact_number
         })
-      ))
-    ))
+      }
+    })
 )
 
 const setupNewAssignmentNotification = () => (
   r.table('assignment')
     .changes()
-    .filter(r.row('old_val').eq(null))
-    .then((cursor) => (
-      cursor.each((err, assignment) => (
+    .then(function(assignment) {
+      if (!assignment.old_val) {
         sendUserNotification({
           type: Notifications.ASSIGNMENT_CREATED,
           assignment: assignment.new_val
         })
-      ))
-    ))
+      }
+    })
 )
 
 export const setupUserNotificationObservers = () => {

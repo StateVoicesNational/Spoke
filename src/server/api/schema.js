@@ -506,6 +506,7 @@ const rootMutations = {
     },
     createOptOut: async(_, { optOut, campaignContactId }, { loaders }) => {
       const { assignmentId, cell } = optOut
+      console.log('CREATE OPTOUT', assignmentId)
       const campaign = await r.table('assignment')
         .get(assignmentId)
         .eqJoin('campaign_id', r.table('campaign'))('right')
@@ -533,7 +534,7 @@ const rootMutations = {
           message: 'Your assignment has changed'
         })
       }
-
+      console.log('SEND MESSAGE', contact)
       const organization = await r.table('campaign')
         .get(contact.campaign_id)
         .eqJoin('organization_id', r.table('organization'))('right')
