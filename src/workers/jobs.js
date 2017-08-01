@@ -180,6 +180,10 @@ export async function assignTexters(job) {
       .getAll(...assignmentsToDelete.map((ele) => ele.assignment_id))
       .delete()
   }
+
+  if (process.env.SYNC_JOBS) {
+    await r.table('job_request').get(job.id).delete()
+  }
 }
 
 export async function exportCampaign(job) {
@@ -216,10 +220,10 @@ export async function exportCampaign(job) {
   let finalCampaignMessages = []
   const assignments = await r.table('assignment')
     .getAll(id, { index: 'campaign_id' })
-    .merge((row) => ({
-      texter: r.table('user')
-        .get(row('user_id'))
-    }))
+    .eqJoin('user_id', r.table('user'))
+    .select('assignment.id as id',
+            //user fields
+            'first_name', 'last_name', 'email', 'cell', 'assigned_cell')
   const assignmentCount = assignments.length
 
   for (let index = 0; index < assignmentCount; index++) {
@@ -255,11 +259,11 @@ export async function exportCampaign(job) {
         campaignId: campaign.id,
         campaign: campaign.title,
         assignmentId: assignment.id,
-        'texter[firstName]': assignment.texter.first_name,
-        'texter[lastName]': assignment.texter.last_name,
-        'texter[email]': assignment.texter.email,
-        'texter[cell]': assignment.texter.cell,
-        'texter[assignedCell]': assignment.texter.assigned_cell,
+        'texter[firstName]': assignment.first_name,
+        'texter[lastName]': assignment.last_name,
+        'texter[email]': assignment.email,
+        'texter[cell]': assignment.cell,
+        'texter[assignedCell]': assignment.assigned_cell,
         'contact[firstName]': contact.first_name,
         'contact[lastName]': contact.last_name,
         'contact[cell]': contact.cell,
