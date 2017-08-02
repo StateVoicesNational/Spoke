@@ -14,6 +14,10 @@ if (process.env.TWILIO_API_KEY && process.env.TWILIO_AUTH_TOKEN) {
   log.warn('NO TWILIO CONNECTION')
 }
 
+if (!process.env.TWILIO_MESSAGE_SERVICE_SID) {
+  log.warn('Twilio will not be able to send without TWILIO_MESSAGE_SERVICE_SID set')
+}
+
 async function convertMessagePartsToMessage(messageParts) {
   const firstPart = messageParts[0]
   const userNumber = firstPart.user_number
