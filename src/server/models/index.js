@@ -20,7 +20,6 @@ import thinky from './thinky'
 function createLoader(model, idKey = 'id') {
   return new DataLoader(async (keys) => {
     const docs = await model.getAll(...keys, { index: idKey })
-    console.log("LOADER", keys, docs)
     return keys.map((key) => (
       docs.find((doc) => doc[idKey].toString() === key.toString())
     ))
