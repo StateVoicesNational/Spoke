@@ -115,8 +115,12 @@ app.post('/twilio-message-report', wrap(async (req, res) => {
 
 app.get('/allmessages', (req, res) => {
   client.sms.messages.list((err, data) => {
-    const listOfMessages = data.sms_messages
+    if (err) {
+      log.error(err)
+    } else {
+      const listOfMessages = data.sms_messages
       return res.json(listOfMessages)
+    }
   })
 })
 
@@ -169,6 +173,7 @@ app.use('/graphql', apolloServer((req) => ({
   },
   tracer,
   printErrors: true,
+  formatError: (err) => { console.log(err.stack); return err },
   allowUndefinedInResolve: false
 })))
 

@@ -25,6 +25,10 @@ export default class CampaignBasicsForm extends React.Component {
     }
   }
 
+  componentDidMount() {
+    console.log('campaign basics form mounted!')
+  }
+
   formSchema() {
     if (!this.props.ensureComplete) {
       return yup.object(FormSchema)
