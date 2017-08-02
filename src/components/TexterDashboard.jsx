@@ -18,9 +18,7 @@ const styles = StyleSheet.create({
 class TexterDashboard extends React.Component {
   render() {
     const { main, topNav, fullScreen } = this.props
-    return fullScreen ? (
-      fullScreen
-    ) : (
+    return fullScreen || (
       <div>
         {topNav}
         <div className={css(styles.container)}>
@@ -37,7 +35,10 @@ TexterDashboard.propTypes = {
   router: React.PropTypes.object,
   params: React.PropTypes.object,
   children: React.PropTypes.object,
-  location: React.PropTypes.object
+  location: React.PropTypes.object,
+  main: React.PropTypes.element,
+  topNav: React.PropTypes.element,
+  fullScreen: React.PropTypes.bool
 }
 
 export default withRouter(TexterDashboard)

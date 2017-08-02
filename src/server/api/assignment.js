@@ -18,7 +18,7 @@ function getContacts(assignment, contactsFilter, organization, campaign) {
   const textingHoursEnforced = organization.texting_hours_enforced
   const textingHoursStart = organization.texting_hours_start
   const textingHoursEnd = organization.texting_hours_end
-  const pastDue =  moment(campaign.due_by + 24 * 60 * 60).diff(moment()) < 0
+  const pastDue = moment(campaign.due_by + 24 * 60 * 60).diff(moment()) < 0
   const getIndexValuesWithOffsets = (offsets) => offsets.map(([offset, hasDST]) => ([
     assignment.id,
     `${offset}_${hasDST}`
@@ -41,7 +41,7 @@ function getContacts(assignment, contactsFilter, organization, campaign) {
         if (defaultTimezoneIsBetweenTextingHours(config)) {
           indexValues.push([assignment.id, '']) // missing timezones are ok to text
         }
-      } else if (contactsFilter.validTimezone === false ){
+      } else if (contactsFilter.validTimezone === false) {
         indexValues = getIndexValuesWithOffsets(invalidOffsets)
         if (!defaultTimezoneIsBetweenTextingHours(config)) {
           indexValues.push([assignment.id, '']) // missing timezones are not ok to text

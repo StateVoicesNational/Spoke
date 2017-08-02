@@ -7,25 +7,24 @@ import gql from 'graphql-tag'
 
 class TexterTodoList extends React.Component {
   renderTodoList(assignments) {
-
     const organizationId = this.props.params.organizationId
     return assignments
-      .sort((x, y) => (x.unmessagedCount + x.unrepliedCount) > (y.unmessagedCount + y.unrepliedCount) ? -1 : 1)
+      .sort((x, y) => ((x.unmessagedCount + x.unrepliedCount) > (y.unmessagedCount + y.unrepliedCount) ? -1 : 1))
       .map((assignment) => {
-      if (assignment.unmessagedCount > 0 || assignment.unrepliedCount > 0 || assignment.badTimezoneCount > 0) {
-        return (
-          <AssignmentSummary
-            organizationId={organizationId}
-            key={assignment.id}
-            assignment={assignment}
-            unmessagedCount={assignment.unmessagedCount}
-            unrepliedCount={assignment.unrepliedCount}
-            badTimezoneCount={assignment.badTimezoneCount}
-          />
-        )
-      }
-      return null
-    }).filter((ele) => ele !== null)
+        if (assignment.unmessagedCount > 0 || assignment.unrepliedCount > 0 || assignment.badTimezoneCount > 0) {
+          return (
+            <AssignmentSummary
+              organizationId={organizationId}
+              key={assignment.id}
+              assignment={assignment}
+              unmessagedCount={assignment.unmessagedCount}
+              unrepliedCount={assignment.unrepliedCount}
+              badTimezoneCount={assignment.badTimezoneCount}
+            />
+          )
+        }
+        return null
+      }).filter((ele) => ele !== null)
   }
 
   render() {
@@ -51,7 +50,8 @@ class TexterTodoList extends React.Component {
 
 TexterTodoList.propTypes = {
   organizationId: React.PropTypes.string,
-  params: React.PropTypes.object
+  params: React.PropTypes.object,
+  data: React.PropTypes.object
 }
 
 const mapQueriesToProps = ({ ownProps }) => ({

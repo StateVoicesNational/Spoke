@@ -36,7 +36,7 @@ async function handleIncomingMessageParts() {
         service: service === nexmo ? 'nexmo' : 'twilio'
       })
 
-      const duplicateMessageToSaveExists = !!messagesToSave.find((message) => message.service_id == serviceMessageId)
+      const duplicateMessageToSaveExists = !!messagesToSave.find((message) => message.service_id === serviceMessageId)
       if (!lastMessage) {
         log.info('Received message part with no thread to attach to', part)
         messagePartsToDelete.push(part)
@@ -93,7 +93,7 @@ async function handleIncomingMessageParts() {
     }
 
     const messagePartsToDeleteCount = messagePartsToDelete.length
-    //POSTMIGRATION TODO: make this efficiently filter(id__in=IDS).delete()
+    // POSTMIGRATION TODO: make this efficiently filter(id__in=IDS).delete()
     for (let i = 0; i < messagePartsToDeleteCount; i++) {
       log.info('Deleting message part', messagePartsToDelete[i].id)
       await r.table('pending_message_part')
@@ -103,6 +103,7 @@ async function handleIncomingMessageParts() {
   }
 }
 (async () => {
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     try {
       await sleep(100)

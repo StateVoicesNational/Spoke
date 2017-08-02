@@ -15,7 +15,7 @@ class SendButton extends Component {
     clickStepIndex: 0
   }
 
-  clickStepLabels = () => this.props.threeClickEnabled ? ['Recipient ok?', 'Message ok?', 'Send message'] : ['Send']
+  clickStepLabels = () => (this.props.threeClickEnabled ? ['Recipient ok?', 'Message ok?', 'Send message'] : ['Send'])
 
   handleTouchTap = () => {
     const { clickStepIndex } = this.state

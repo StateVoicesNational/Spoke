@@ -1,6 +1,4 @@
 import { Campaign,
-  Assignment,
-  CampaignContact,
   CannedResponse,
   Invite,
   Message,
@@ -8,7 +6,6 @@ import { Campaign,
   Organization,
   QuestionResponse,
   UserOrganization,
-  InteractionStep,
   JobRequest,
   r
 } from '../models'
@@ -81,8 +78,7 @@ import {
 import { handleIncomingMessage } from './lib/nexmo'
 import { handleTwilioIncomingMessage } from './lib/twilio'
 import { gzip } from '../../lib'
-import { getFormattedPhoneNumber } from '../../lib/phone-format'
-import { isBetweenTextingHours } from '../../lib/timezones'
+// import { isBetweenTextingHours } from '../../lib/timezones'
 import { Notifications, sendUserNotification } from '../notifications'
 import { uploadContacts, createInteractionSteps, assignTexters } from '../../workers/jobs'
 
@@ -221,7 +217,7 @@ async function editCampaign(id, campaign, loaders) {
       locks_queue: true,
       assigned: true, // will get called immediately, below
       campaign_id: id,
-      //NOTE: stringifying because compressedString is a binary buffer
+      // NOTE: stringifying because compressedString is a binary buffer
       payload: compressedString.toString('base64')
     })
     uploadContacts(job).then()
@@ -281,7 +277,7 @@ async function editCampaign(id, campaign, loaders) {
 
 const rootMutations = {
   RootMutation: {
-    sendReply: async (_, { id, message }, { user, loaders }) => {
+    sendReply: async (_, { id, message }, { loaders }) => {
       if (process.env.NODE_ENV !== 'development') {
         throw new GraphQLError({
           status: 400,
@@ -343,29 +339,30 @@ const rootMutations = {
       const currentRoles = r.table('user_organization')
         .getAll([organizationId, user.id], { index: 'organization_user' })
         .pluck('role')('role')
-
       const oldRoleIsOwner = currentRoles.indexOf('OWNER') !== -1
       const newRoleIsOwner = roles.indexOf('OWNER') !== -1
       const roleRequired = (oldRoleIsOwner || newRoleIsOwner) ? 'OWNER' : 'ADMIN'
+      let newOrgRoles = []
+
       await accessRequired(user, organizationId, roleRequired)
 
       currentRoles.forEach(async (curRole) => {
         if (roles.indexOf(curRole) === -1) {
           await r.table('user_organization')
             .getAll([organizationId, user.id], { index: 'organization_user' })
-            .filter({'role': curRole})
+            .filter({ role: curRole })
             .delete()
         }
       })
 
       newOrgRoles = roles.filter((newRole) => (currentRoles.indexOf(newRole) === -1))
         .map((newRole) => ({
-            organization_id: organizationId,
-            user_id: userId,
-            role: newRole
+          organization_id: organizationId,
+          user_id: userId,
+          role: newRole
         }))
       if (newOrgRoles.length) {
-          await UserOrganization.save(newOrgRoles, { conflict: 'update' })
+        await UserOrganization.save(newOrgRoles, { conflict: 'update' })
       }
       return loaders.organization.load(organizationId)
     },
@@ -410,9 +407,7 @@ const rootMutations = {
       return await Organization.get(organizationId)
     },
     createInvite: async (_, { invite }) => {
-      const inviteInstance = new Invite({
-        is_valid: true
-      })
+      const inviteInstance = new Invite(invite)
       const newInvite = await inviteInstance.save()
       return newInvite
     },
@@ -490,7 +485,7 @@ const rootMutations = {
         ['OWNER', 'ADMIN', 'TEXTER'].map((role) => ({
           user_id: userId,
           organization_id: newOrganization.id,
-          role: role
+          role
         })))
       await Invite.save({
         id: inviteId,
@@ -609,7 +604,7 @@ const rootMutations = {
           .filter({ interaction_step_id: interactionStepId })
           .delete()
 
-        const newQuestionResponse = await new QuestionResponse({
+        await new QuestionResponse({
           campaign_contact_id: campaignContactId,
           interaction_step_id: interactionStepId,
           value
@@ -636,21 +631,19 @@ const rootResolvers = {
       await accessRequired(user, campaign.organization_id, 'TEXTER')
       return assignment
     },
-    organization: async(_, { id }, { loaders, user }) => {
-      // await accessRequired(user, id, 'ADMIN')
-      return loaders.organization.load(id)
-    },
+    organization: async(_, { id }, { loaders }) =>
+      loaders.organization.load(id),
     invite: async (_, { id }, { loaders, user }) => {
       authRequired(user)
       return loaders.invite.load(id)
     },
     currentUser: async(_, { id }, { user }) => user,
-    contact: async(_, { id }, { loaders, user }) => {
+    contact: async(_, { id }, { loaders }) => {
       const contact = await loaders.campaignContact.load(id)
       // await accessRequired(user, contact.organization_id, 'TEXTER')
       return contact
     },
-    organizations: async(_, {}, { user }) => {
+    organizations: async(_, { id }, { user }) => {
       await superAdminRequired(user)
       return r.table('organization')
     }
@@ -673,7 +666,7 @@ export const schema = [
   cannedResponseSchema,
   questionResponseSchema,
   questionSchema,
-  inviteSchema,
+  inviteSchema
 ]
 
 export const resolvers = {

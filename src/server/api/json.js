@@ -4,15 +4,6 @@ import { Kind } from 'graphql/language'
 export const schema = `
   scalar JSON
 `
-
-export const resolvers = {
-  JSON: {
-    __serialize: identity,
-    __parseValue: identity,
-    __parseLiteral: parseLiteral
-  }
-}
-
 function identity(value) {
   return value
 }
@@ -36,5 +27,13 @@ function parseLiteral(ast) {
       return ast.values.map(parseLiteral)
     default:
       return null
+  }
+}
+
+export const resolvers = {
+  JSON: {
+    __serialize: identity,
+    __parseValue: identity,
+    __parseLiteral: parseLiteral
   }
 }

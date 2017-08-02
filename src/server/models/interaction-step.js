@@ -5,7 +5,7 @@ import { requiredString, optionalString, timestamp } from './custom-types'
 const InteractionStep = thinky.createModel('interaction_step', type.object().schema({
   id: type.string(),
   campaign_id: requiredString(),
-  //PROMPTS:
+  // PROMPTS:
   question: optionalString(),
   script: optionalString(),
   created_at: timestamp(),
@@ -15,6 +15,7 @@ const InteractionStep = thinky.createModel('interaction_step', type.object().sch
   // since you could have many paths that led into a unified
   // path.  However, the UI didn't allow it, so we are going
   // to squash that dream, at least until after the db migration
+
   // FIELDS FOR SUB-INTERACTIONS (only):
   parent_interaction_id: optionalString().foreign('interaction_step'),
   answer_option: optionalString() //(was 'value')

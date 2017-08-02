@@ -46,7 +46,7 @@ export const resolvers = {
       'assigned',
       'status',
       'jobType'
-    ], JobRequest),
+    ], JobRequest)
   },
   CampaignStats: {
     sentMessagesCount: async (campaign) => (
@@ -83,7 +83,7 @@ export const resolvers = {
       'description',
       'dueBy',
       'isStarted',
-      'isArchived',
+      'isArchived'
     ], Campaign),
     organization: async (campaign, _, { loaders }) => (
       loaders.organization.load(campaign.organization_id)

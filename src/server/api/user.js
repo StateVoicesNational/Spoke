@@ -37,7 +37,7 @@ export const resolvers = {
       let orgs = r.table('user_organization')
         .getAll(user.id, { index: 'user_id' })
       if (role) {
-        orgs = orgs.filter({'role': role})
+        orgs = orgs.filter({ role })
       }
       return orgs.eqJoin('organization_id', r.table('organization'))('right').distinct()
     },
@@ -46,8 +46,8 @@ export const resolvers = {
         .getAll([organizationId, user.id], { index: 'organization_user' })
         .pluck('role')('role')
     ),
-    todos: async (user, { organizationId }) => {
-      return r.table('assignment')
+    todos: async (user, { organizationId }) =>
+      r.table('assignment')
         .getAll(user.id, { index: 'user_id' })
         .eqJoin('campaign_id', r.table('campaign'))
         .filter({'is_started': true,
@@ -55,6 +55,5 @@ export const resolvers = {
                  'is_archived': false}
                )('left')
 
-    }
   }
 }

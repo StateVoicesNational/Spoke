@@ -1,6 +1,6 @@
 import minilog from 'minilog'
 import { isClient } from './is-client'
-
+const rollbar = require('rollbar')
 let logInstance = null
 
 if (isClient()) {
@@ -13,7 +13,6 @@ if (isClient()) {
     existingErrorLogger.call(...errObj)
   }
 } else {
-  const rollbar = require('rollbar')
   let enableRollbar = false
   if (process.env.NODE_ENV === 'production') {
     enableRollbar = true

@@ -9,7 +9,6 @@ import GSSubmitButton from '../components/forms/GSSubmitButton'
 import FlatButton from 'material-ui/FlatButton'
 import yup from 'yup'
 import { Card, CardText, CardActions, CardHeader } from 'material-ui/Card'
-import { GraphQLRequestError } from '../network/errors'
 import { StyleSheet, css } from 'aphrodite'
 import Toggle from 'material-ui/Toggle'
 import moment from 'moment'
@@ -38,7 +37,7 @@ const inlineStyles = {
   }
 }
 
-const formatTextingHours = (hour) =>  moment(hour, 'H').format('h a')
+const formatTextingHours = (hour) => moment(hour, 'H').format('h a')
 class Settings extends React.Component {
 
   state = {
@@ -70,50 +69,45 @@ class Settings extends React.Component {
       label: formatTextingHours(hour)
     }))
 
-    const defaults = {
-      textingHoursStart,
-      textingHoursEnd
-    }
     return (
-        <Dialog
-          open={this.state.textingHoursDialogOpen}
-          onRequestClose={this.handleCloseTextingHoursDialog}
+      <Dialog
+        open={this.state.textingHoursDialogOpen}
+        onRequestClose={this.handleCloseTextingHoursDialog}
+      >
+        <GSForm
+          schema={formSchema}
+          onSubmit={this.handleSubmitTextingHoursForm}
+          defaultValue={{ textingHoursStart, textingHoursEnd }}
         >
-          <GSForm
-            schema={formSchema}
-            onSubmit={this.handleSubmitTextingHoursForm}
-            defaultValue={{ textingHoursStart, textingHoursEnd }}
-          >
-            <Form.Field
-              label='Start time'
-              name='textingHoursStart'
-              type='select'
-              fullWidth
-              choices={hourChoices}
+          <Form.Field
+            label='Start time'
+            name='textingHoursStart'
+            type='select'
+            fullWidth
+            choices={hourChoices}
+          />
+          <Form.Field
+            label='End time'
+            name='textingHoursEnd'
+            type='select'
+            fullWidth
+            choices={hourChoices}
+          />
+          <div className={css(styles.dialogActions)}>
+            <FlatButton
+              label='Cancel'
+              style={inlineStyles.dialogButton}
+              onTouchTap={this.handleCloseTextingHoursDialog}
             />
-            <Form.Field
-              label='End time'
-              name='textingHoursEnd'
-              type='select'
-              fullWidth
-              choices={hourChoices}
+            <Form.Button
+              type='submit'
+              style={inlineStyles.dialogButton}
+              component={GSSubmitButton}
+              label='Save'
             />
-
-            <div className={css(styles.dialogActions)}>
-              <FlatButton
-                label='Cancel'
-                style={inlineStyles.dialogButton}
-                onTouchTap={this.handleCloseTextingHoursDialog}
-              />
-              <Form.Button
-                type='submit'
-                style={inlineStyles.dialogButton}
-                component={GSSubmitButton}
-                label='Save'
-              />
-            </div>
-          </GSForm>
-        </Dialog>
+          </div>
+        </GSForm>
+      </Dialog>
     )
   }
 
@@ -131,12 +125,12 @@ class Settings extends React.Component {
               </span>
               <Toggle
                 toggled={organization.textingHoursEnforced}
-                label="Enforce texting hours?"
+                label='Enforce texting hours?'
                 onToggle={async (event, isToggled) => await this.props.mutations.updateTextingHoursEnforcement(isToggled)}
               />
             </div>
 
-            { organization.textingHoursEnforced ? (
+            {organization.textingHoursEnforced ? (
               <div className={css(styles.section)}>
                 <span className={css(styles.sectionLabel)}>
                   Texting hours:
@@ -146,7 +140,7 @@ class Settings extends React.Component {
             ) : ''}
           </CardText>
           <CardActions>
-            { organization.textingHoursEnforced ? (
+            {organization.textingHoursEnforced ? (
               <FlatButton
                 label='Change texting hours'
                 primary

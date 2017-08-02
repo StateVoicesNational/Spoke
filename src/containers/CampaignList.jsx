@@ -97,15 +97,15 @@ class CampaignList extends React.Component {
             tooltip='Unarchive'
             onTouchTap={async () => this.props.mutations.unarchiveCampaign(campaign.id)}
           >
-            <UnarchiveIcon/>
+            <UnarchiveIcon />
           </IconButton>
         ) : (
-            <IconButton
-              tooltip='Archive'
-              onTouchTap={async () => this.props.mutations.archiveCampaign(campaign.id)}
-            >
-              <ArchiveIcon/>
-            </IconButton>
+          <IconButton
+            tooltip='Archive'
+            onTouchTap={async () => this.props.mutations.archiveCampaign(campaign.id)}
+          >
+            <ArchiveIcon />
+          </IconButton>
         )}
       />
     )
@@ -135,18 +135,20 @@ CampaignList.propTypes = {
     })
   ),
   router: React.PropTypes.object,
-  organizationId: React.PropTypes.string
+  organizationId: React.PropTypes.string,
+  data: React.PropTypes.object,
+  mutations: React.PropTypes.object
 }
 
 const mapMutationsToProps = () => ({
   archiveCampaign: (campaignId) => ({
-      mutation: gql`mutation archiveCampaign($campaignId: String!) {
+    mutation: gql`mutation archiveCampaign($campaignId: String!) {
           archiveCampaign(id: $campaignId) {
             ${campaignInfoFragment}
           }
         }`,
-      variables: { campaignId }
-    }),
+    variables: { campaignId }
+  }),
   unarchiveCampaign: (campaignId) => ({
     mutation: gql`mutation unarchiveCampaign($campaignId: String!) {
         unarchiveCampaign(id: $campaignId) {
@@ -154,7 +156,7 @@ const mapMutationsToProps = () => ({
         }
       }`,
     variables: { campaignId }
-  }),
+  })
 })
 
 const mapQueriesToProps = ({ ownProps }) => ({
@@ -180,4 +182,3 @@ export default loadData(wrapMutations(
     mapQueriesToProps,
     mapMutationsToProps
   })
-

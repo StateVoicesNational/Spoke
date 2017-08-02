@@ -5,7 +5,7 @@ import appRenderer from './middleware/app-renderer'
 import { apolloServer } from 'apollo-server'
 import { schema, resolvers } from './api/schema'
 import mocks from './api/mocks'
-import { createLoaders, User, Message, r } from './models'
+import { createLoaders, User } from './models'
 import passport from 'passport'
 import cookieSession from 'cookie-session'
 import setupAuth0Passport from './setup-auth0-passport'
@@ -23,9 +23,9 @@ process.on('uncaughtException', (ex) => {
   process.exit(1)
 })
 const DEBUG = process.env.NODE_ENV === 'development'
-var accountSid = process.env.TWILIO_API_KEY;
-var authToken = process.env.TWILIO_AUTH_TOKEN;
-const client = require('twilio')(accountSid, authToken);
+const accountSid = process.env.TWILIO_API_KEY
+const authToken = process.env.TWILIO_AUTH_TOKEN
+const client = require('twilio')(accountSid, authToken)
 
 setupAuth0Passport()
 seedZipCodes()
@@ -68,13 +68,13 @@ app.post('/nexmo', wrap(async (req, res) => {
 
 app.post('/twilio', wrap(async (req, res) => {
   try {
-    const messageId = await twilio.handleIncomingMessage(req.body)
+    await twilio.handleIncomingMessage(req.body)
   } catch (ex) {
     log.error(ex)
   }
 
   const resp = new TwimlResponse()
-  res.writeHead(200, { 'Content-Type':'text/xml' })
+  res.writeHead(200, { 'Content-Type': 'text/xml' })
   res.end(resp.toString())
 }))
 
@@ -96,9 +96,8 @@ app.post('/twilio-message-report', wrap(async (req, res) => {
     log.error(ex)
   }
   const resp = new TwimlResponse()
-  res.writeHead(200, { 'Content-Type':'text/xml' })
+  res.writeHead(200, { 'Content-Type': 'text/xml' })
   res.end(resp.toString())
-
 }))
 
 
@@ -125,9 +124,9 @@ app.get('/allmessages', (req, res) => {
 })
 
 app.get('/availablephonenumbers', (req, res) => {
-  client.incomingPhoneNumbers.list((err, data) => {
-      return res.json(data.incomingPhoneNumbers)
-  })
+  client.incomingPhoneNumbers.list(
+    (err, data) => res.json(data.incomingPhoneNumbers)
+  )
 })
 
 app.get('/logout-callback', (req, res) => {
@@ -146,9 +145,13 @@ app.get('/login-callback',
     if (existingUser.length === 0) {
       await User.save({
         auth0_id: req.user.id,
+        // eslint-disable-next-line no-underscore-dangle
         first_name: req.user._json.user_metadata.given_name,
+        // eslint-disable-next-line no-underscore-dangle
         last_name: req.user._json.user_metadata.family_name,
+        // eslint-disable-next-line no-underscore-dangle
         cell: req.user._json.user_metadata.cell,
+        // eslint-disable-next-line no-underscore-dangle
         email: req.user._json.email,
         is_superadmin: false
       })

@@ -38,16 +38,8 @@ export default class GSForm extends React.Component {
     }
   }
 
-  renderGlobalErrorMessage() {
-    if (!this.state.globalErrorMessage) {
-      return ''
-    }
-
-    return (
-      <div className={css(styles.errorMessage)}>
-        {this.state.globalErrorMessage}
-      </div>
-    )
+  submit =() => {
+    this.refs.form.submit()
   }
 
   renderChildren(children) {
@@ -81,9 +73,18 @@ export default class GSForm extends React.Component {
     })
   }
 
-  submit =() => {
-    this.refs.form.submit()
+  renderGlobalErrorMessage() {
+    if (!this.state.globalErrorMessage) {
+      return ''
+    }
+
+    return (
+      <div className={css(styles.errorMessage)}>
+        {this.state.globalErrorMessage}
+      </div>
+    )
   }
+
   render() {
     return (
       <Form

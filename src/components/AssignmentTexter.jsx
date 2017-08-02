@@ -136,40 +136,41 @@ class AssignmentTexter extends React.Component {
     const contact = this.currentContact()
     const navigationToolbarChildren = this.renderNavigationToolbarChildren()
     return (
-        <AssignmentTexterContact
-          key={contact.id}
-          assignment={assignment}
-          campaignContactId={contact.id}
-          texter={texter}
-          campaign={campaign}
-          navigationToolbarChildren={navigationToolbarChildren}
-          onFinishContact={this.handleFinishContact}
-          onRefreshAssignmentContacts={this.props.onRefreshAssignmentContacts}
-          onExitTexter={this.handleExitTexter}
-        />
+      <AssignmentTexterContact
+        key={contact.id}
+        assignment={assignment}
+        campaignContactId={contact.id}
+        texter={texter}
+        campaign={campaign}
+        navigationToolbarChildren={navigationToolbarChildren}
+        onFinishContact={this.handleFinishContact}
+        onRefreshAssignmentContacts={this.props.onRefreshAssignmentContacts}
+        onExitTexter={this.handleExitTexter}
+      />
     )
   }
   renderEmpty() {
     return (
       <div>
-      <Empty
-        title="You've already messaged or replied to all your assigned contacts for now."
-        icon={<Check />}
-      >
-        <FlatButton
-          label="Go back to todos">
-          primary
-        </FlatButton>
-      </Empty>
+        <Empty
+          title="You've already messaged or replied to all your assigned contacts for now."
+          icon={<Check />}
+        >
+          <FlatButton
+            label='Go back to todos'
+          >
+            primary
+          </FlatButton>
+        </Empty>
       </div>
     )
   }
   render() {
     const { contacts } = this.props.assignment
 
-     return (
+    return (
       <div className={css(styles.container)}>
-        { contacts.length === 0 ? this.renderEmpty() : this.renderTexter() }
+        {contacts.length === 0 ? this.renderEmpty() : this.renderTexter()}
       </div>
     )
   }
@@ -179,8 +180,8 @@ AssignmentTexter.propTypes = {
   currentUser: React.PropTypes.object,
   assignment: React.PropTypes.object,      // current assignment
   contacts: React.PropTypes.array,   // contacts for current assignment
-  router: React.PropTypes.object
+  router: React.PropTypes.object,
+  onRefreshAssignmentContacts: React.PropTypes.func
 }
 
 export default withRouter(AssignmentTexter)
-

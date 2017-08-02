@@ -15,7 +15,7 @@ export async function getLastMessage({ contactNumber, service }) {
   return lastMessage
 }
 
-export async function saveNewIncomingMessage (messageInstance) {
+export async function saveNewIncomingMessage(messageInstance) {
   await messageInstance.save()
 
   await r.table('campaign_contact')

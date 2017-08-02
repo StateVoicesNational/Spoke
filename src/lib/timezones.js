@@ -13,8 +13,9 @@ const TIMEZONE_CONFIG = {
 export const getLocalTime = (offset, hasDST) => moment().utc().utcOffset((moment().isDST() && hasDST) ? offset + 1 : offset)
 
 export const isBetweenTextingHours = (offsetData, config) => {
-  if (!config.textingHoursEnforced)
+  if (!config.textingHoursEnforced) {
     return true
+  }
 
   let offset
   let hasDST

@@ -1,4 +1,4 @@
-import { r, Assignment, Campaign, CampaignContact, User, Organization } from './models'
+import { r, Assignment, Campaign, User, Organization } from './models'
 import { log } from '../lib'
 import { sendEmail } from './mail'
 
@@ -12,10 +12,9 @@ export const Notifications = {
 async function getOrganizationOwner(organizationId) {
   return await r.table('user_organization')
     .getAll(organizationId, { index: 'organization_id' })
-    .filter({'role': 'OWNER'})
+    .filter({ role: 'OWNER' })
     .limit(1)
-    .eqJoin('user_id', r.table('user'))
-      ('right')(0)
+    .eqJoin('user_id', r.table('user'))('right')(0)
 }
 const sendAssignmentUserNotification = async (assignment, notification) => {
   const campaign = await Campaign.get(assignment.campaign_id)
@@ -124,4 +123,3 @@ export const setupUserNotificationObservers = () => {
   setupIncomingReplyNotification()
   setupNewAssignmentNotification()
 }
-

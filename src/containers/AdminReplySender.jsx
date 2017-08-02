@@ -70,7 +70,7 @@ class AdminReplySender extends React.Component {
           <GSForm
             schema={this.formSchema}
             onSubmit={async (formValues) => {
-              const reply = await this.props.mutations.sendReply(contact.id, formValues.message)
+              await this.props.mutations.sendReply(contact.id, formValues.message)
             }}
           >
             <Form.Field
@@ -107,6 +107,10 @@ class AdminReplySender extends React.Component {
   }
 }
 
+AdminReplySender.propTypes = {
+  mutations: React.PropTypes.object,
+  data: React.PropTypes.object
+}
 
 const mapQueriesToProps = ({ ownProps }) => ({
   data: {
@@ -133,9 +137,8 @@ const mapQueriesToProps = ({ ownProps }) => ({
 })
 
 const mapMutationsToProps = () => ({
-  sendReply: (contactId, message) => {
-    console.log(contactId, message)
-    return {
+  sendReply: (contactId, message) =>
+    ({
       mutation: gql`
       mutation sendReply($contactId: String!, $message: String!) {
         sendReply(id: $contactId, message: $message) {
@@ -147,8 +150,7 @@ const mapMutationsToProps = () => ({
         }
       }`,
       variables: { contactId, message }
-    }
-  }
+    })
 })
 
 export default loadData(wrapMutations(AdminReplySender), { mapQueriesToProps, mapMutationsToProps })

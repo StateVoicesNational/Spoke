@@ -2,7 +2,7 @@ import thinky from './thinky'
 const type = thinky.type
 import { requiredString, optionalString, timestamp } from './custom-types'
 
-//this mostly exists because of:
+// this mostly exists because of:
 // https://help.nexmo.com/hc/en-us/articles/205704158-Inbound-SMS-concatenation
 // Recommended handling is here:
 // https://docs.nexmo.com/messaging/sms-api

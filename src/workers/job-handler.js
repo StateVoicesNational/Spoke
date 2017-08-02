@@ -14,6 +14,7 @@ function jobMap() {
 
 
 (async () => {
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     try {
       await sleep(1000)
