@@ -53,21 +53,21 @@ class AdminCampaignList extends React.Component {
   renderFilters() {
     return (
       <DropDownMenu value={this.state.campaignsFilter.isArchived} onChange={this.handleFilterChange}>
-        <MenuItem value={false} primaryText="Current" />
-        <MenuItem value={true} primaryText="Archived" />
+        <MenuItem value={false} primaryText='Current' />
+        <MenuItem value primaryText='Archived' />
       </DropDownMenu>
     )
   }
   render() {
     return (
       <div>
-        { this.renderFilters()}
-        { this.state.isCreating ? <LoadingIndicator /> : (
+        {this.renderFilters()}
+        {this.state.isCreating ? <LoadingIndicator /> : (
           <CampaignList
             campaignsFilter={this.state.campaignsFilter}
             organizationId={this.props.params.organizationId}
           />
-        ) }
+        )}
 
         <FloatingActionButton
           style={theme.components.floatingButton}

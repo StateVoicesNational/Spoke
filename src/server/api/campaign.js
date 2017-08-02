@@ -46,30 +46,34 @@ export const resolvers = {
       'assigned',
       'status',
       'jobType'
-    ], JobRequest),
+    ], JobRequest)
   },
   CampaignStats: {
     sentMessagesCount: async (campaign) => (
       r.table('assignment')
         .getAll(campaign.id, { index: 'campaign_id' })
-        .map((assignment) => (
-          r.table('message')
-            .getAll(assignment('id'), { index: 'assignment_id' })
-            .filter({ is_from_contact: false })
-            .count()
-        ))
-        .sum()
+        .eqJoin('id', r.table('message'), { index: 'assignment_id' })
+        .filter({ is_from_contact: false })
+        .count()
+        // TODO: NEEDS TESTING 
+        // this is a change to avoid very weird map(...).sum() pattern
+        // that will work better with RDBMs
+        // main question is will/should filter work, or do we need to specify,
+        // e.g. 'right_is_from_contact': false, or something
+        // .map((assignment) => (
+        //   r.table('message')
+        //     .getAll(assignment('id'), { index: 'assignment_id' })
+        //     .filter({ is_from_contact: false })
+        //     .count()
+        // )).sum()
     ),
     receivedMessagesCount: async (campaign) => (
       r.table('assignment')
         .getAll(campaign.id, { index: 'campaign_id' })
-        .map((assignment) => (
-          r.table('message')
-            .getAll(assignment('id'), { index: 'assignment_id' })
-            .filter({ is_from_contact: true })
-            .count()
-        ))
-        .sum()
+        //TODO: NEEDSTESTING -- see above setMessagesCount()
+        .eqJoin('id', r.table('message'), { index: 'assignment_id' })
+        .filter({ is_from_contact: true })
+        .count()
     )
   },
   Campaign: {
@@ -79,7 +83,7 @@ export const resolvers = {
       'description',
       'dueBy',
       'isStarted',
-      'isArchived',
+      'isArchived'
     ], Campaign),
     organization: async (campaign, _, { loaders }) => (
       loaders.organization.load(campaign.organization_id)

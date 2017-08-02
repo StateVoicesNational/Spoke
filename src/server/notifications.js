@@ -1,4 +1,4 @@
-import { r, Assignment, Campaign, CampaignContact, User, Organization } from './models'
+import { r, Assignment, Campaign, User, Organization } from './models'
 import { log } from '../lib'
 import { sendEmail } from './mail'
 
@@ -12,10 +12,9 @@ export const Notifications = {
 async function getOrganizationOwner(organizationId) {
   return await r.table('user_organization')
     .getAll(organizationId, { index: 'organization_id' })
-    .filter({'role': 'OWNER'})
+    .filter({ role: 'OWNER' })
     .limit(1)
-    .eqJoin('user_id', r.table('user'))
-      ('right')(0)
+    .eqJoin('user_id', r.table('user'))('right')(0)
 }
 const sendAssignmentUserNotification = async (assignment, notification) => {
   const campaign = await Campaign.get(assignment.campaign_id)
@@ -96,34 +95,31 @@ export const sendUserNotification = async (notification) => {
 const setupIncomingReplyNotification = () => (
   r.table('message')
     .changes()
-    .filter(r.and(r.row('new_val')('is_from_contact'), r.row('old_val').eq(null)))
-    .then((cursor) => (
-      cursor.each((err, message) => (
+    .then(function(message) {
+      if (!message.old_val && message.new_val.is_from_contact) {
         sendUserNotification({
           type: Notifications.ASSIGNMENT_MESSAGE_RECEIVED,
           assignmentId: message.new_val.assignment_id,
           contactNumber: message.new_val.contact_number
         })
-      ))
-    ))
+      }
+    })
 )
 
 const setupNewAssignmentNotification = () => (
   r.table('assignment')
     .changes()
-    .filter(r.row('old_val').eq(null))
-    .then((cursor) => (
-      cursor.each((err, assignment) => (
+    .then(function(assignment) {
+      if (!assignment.old_val) {
         sendUserNotification({
           type: Notifications.ASSIGNMENT_CREATED,
           assignment: assignment.new_val
         })
-      ))
-    ))
+      }
+    })
 )
 
 export const setupUserNotificationObservers = () => {
   setupIncomingReplyNotification()
   setupNewAssignmentNotification()
 }
-

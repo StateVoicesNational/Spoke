@@ -1,4 +1,7 @@
+import { r } from '../server/models'
+import { sleep, getNextJob, updateJob } from './lib'
 import { exportCampaign, uploadContacts, assignTexters, createInteractionSteps } from './jobs'
+import { setupUserNotificationObservers } from '../server/notifications'
 
 function jobMap() {
   return {
@@ -9,7 +12,9 @@ function jobMap() {
   }
 }
 
+
 (async () => {
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     try {
       await sleep(1000)
@@ -19,14 +24,16 @@ function jobMap() {
         await r.table('job_request')
           .get(job.id)
           .delete()
+      } else if (process.env.SYNC_JOBS) {
+        break
       }
 
-      await r.table('job_request')
-        .filter({
-          assigned: true
-        })
-        .filter((row) => row('updated_at')
-          .lt(r.now().sub(60 * 2)))
+      var twoMinutesAgo = new Date(new Date() - 1000 * 60 * 2)
+      // delete jobs that are older than 2 minutes
+      // to clear out stuck jobs
+      await r.knex('job_request')
+        .where({ assigned: true })
+        .where('updated_at', '<', twoMinutesAgo)
         .delete()
     } catch (ex) {
       log.error(ex)

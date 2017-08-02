@@ -22,8 +22,12 @@ This is generated from [react-apollo-starter-kit](https://github.com/saikat/reac
 10. Run `npm run dev` to start the app. Wait until you see both "Node app is running ..." and "Webpack dev server is now running ..." before attempting to connect.
 11. Go to `localhost:3000` to load the app.
 12. Because Spoke is invite-only you need to generate an invite:
-Go to the RethinkDB data explorer at `http://localhost:8080/#dataexplorer` and run:
- `r.db('spokedev').table('invite').insert({is_valid: true})`. Copy the generated key.
+ <span style="text-decoration: strikethrough">Go to the RethinkDB data explorer at `http://localhost:8080/#dataexplorer` and run:
+ `r.db('spokedev').table('invite').insert({is_valid: true})`. Copy the generated key.</span>
+```
+echo 'INSERT INTO invite (id,is_valid) VALUES (123, 1);' |sqlite3 mydb.sqlite
+```
+
 13. Use the generated key to visit an invite link, e.g.: http://localhost:3000/invite/e7bcc458-c8e9-4601-8999-a489e04bd45f. This should redirect you to the login screen. Use the "Sign Up" option to create your account.
 14. You should then be prompted to create an organization. Create it.
 
@@ -58,6 +62,8 @@ If you need to use Twilio in development but with live keys, do the following to
    This will generate something you can deploy to production in ./build and run nodejs server/server/index.js
 2. Run `npm run prod-build-client`
 3. Make a copy of `spoke-pm2.config.js.template`, e.g. `spoke-pm2.config.js`, add missing environment variables, and run it with [pm2](https://www.npmjs.com/package/pm2), e.g. `pm2 start spoke-pm2.config.js --env production`
+4. [Install PostgreSQL](https://wiki.postgresql.org/wiki/Detailed_installation_guides)
+5. Start PostgreSQL (e.g. `sudo /etc/init.d/postgresql start`), connect (e.g. `sudo -u postgres psql`), create a user and database (e.g. `create user spoke password 'spoke'; create database spoke owner spoke;`), disconnect (e.g. `\q`) and add credentials to `DB_` variables in spoke-pm2.config.js
 
 # License
 Spoke is licensed under the MIT license.

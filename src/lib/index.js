@@ -1,17 +1,16 @@
 import zlib from 'zlib'
 export { getFormattedPhoneNumber, getDisplayPhoneNumber } from './phone-format'
-export { getFormattedZip } from './zip-format'
+export { getFormattedZip, zipToTimeZone, findZipRanges } from './zip-format'
 export {
   getLocalTime,
   isBetweenTextingHours,
   defaultTimezoneIsBetweenTextingHours,
-  getOffsets,
+  getOffsets
 } from './timezones'
 export {
   isClient
 } from './is-client'
 export { log } from './log'
-export { formatMoney } from './currency'
 import Papa from 'papaparse'
 import _ from 'lodash'
 import { getFormattedPhoneNumber, getFormattedZip } from '../lib'
@@ -96,6 +95,7 @@ export const gunzip = (buf) => (
 export const parseCSV = (file, optOuts, callback) => {
   Papa.parse(file, {
     header: true,
+    // eslint-disable-next-line no-shadow, no-unused-vars
     complete: ({ data, meta, errors }, file) => {
       const fields = meta.fields
 
@@ -110,8 +110,7 @@ export const parseCSV = (file, optOuts, callback) => {
       if (missingFields.length > 0) {
         const error = `Missing fields: ${missingFields.join(', ')}`
         callback({ error })
-      }
-      else {
+      } else {
         const { validationStats, validatedData } = getValidatedData(data, optOuts)
 
         const customFields = fields.filter((field) => topLevelUploadFields.indexOf(field) === -1)

@@ -9,7 +9,14 @@ let twilio = null
 const MAX_SEND_ATTEMPTS = 5
 
 if (process.env.TWILIO_API_KEY && process.env.TWILIO_AUTH_TOKEN) {
+  // eslint-disable-next-line new-cap
   twilio = Twilio(process.env.TWILIO_API_KEY, process.env.TWILIO_AUTH_TOKEN)
+} else {
+  log.warn('NO TWILIO CONNECTION')
+}
+
+if (!process.env.TWILIO_MESSAGE_SERVICE_SID) {
+  log.warn('Twilio will not be able to send without TWILIO_MESSAGE_SERVICE_SID set')
 }
 
 async function convertMessagePartsToMessage(messageParts) {
@@ -40,7 +47,6 @@ async function convertMessagePartsToMessage(messageParts) {
 }
 
 async function findNewCell() {
-
   if (!twilio) {
     return { availablePhoneNumbers: [{ phone_number: '+15005550006' }] }
   }
@@ -81,7 +87,6 @@ async function rentNewCell() {
 }
 
 
-
 async function sendMessage(message) {
   if (!twilio) {
     await Message.get(message.id)
@@ -117,11 +122,12 @@ async function sendMessage(message) {
 
 
       if (hasError) {
-        const SENT_STRING = 'error_code' //will appear in responses
+        const SENT_STRING = 'error_code' // will appear in responses
         if (messageToSave.service_response.split(SENT_STRING).length >= MAX_SEND_ATTEMPTS) {
           messageToSave.send_status = 'ERROR'
         }
         Message.save(messageToSave, { conflict: 'update' })
+        // eslint-disable-next-line no-unused-vars
         .then((_, newMessage) => {
           reject(err || (response ? new Error(JSON.stringify(response)) : new Error('Encountered unknown error')))
         })
@@ -168,7 +174,7 @@ async function handleIncomingMessage(message) {
     log.error(`This is not an incoming message: ${JSON.stringify(message)}`)
   }
 
-  const { From, To, Body, MessageSid } = message
+  const { From, To, MessageSid } = message
 
   const contactNumber = getFormattedPhoneNumber(From)
   const userNumber = getFormattedPhoneNumber(To)

@@ -7,7 +7,6 @@ import yup from 'yup'
 import Form from 'react-formal'
 import { MenuItem } from 'material-ui/Menu'
 import OrganizationJoinLink from './OrganizationJoinLink'
-import { RadioButton, RadioButtonGroup } from 'material-ui/RadioButton'
 import CampaignFormSectionHeading from './CampaignFormSectionHeading'
 import { StyleSheet, css } from 'aphrodite'
 import theme from '../styles/theme'
@@ -104,6 +103,98 @@ export default class CampaignTextersForm extends React.Component {
     autoSplit: true,
     focusedTexter: null
   }
+
+  onChange = (formValues) => {
+    const existingFormValues = this.formValues()
+    const changedTexter = this.state.focusedTexter
+    const newFormValues = {
+      ...formValues
+    }
+    let totalNeedsMessage = 0
+    let totalMessaged = 0
+    const texterCountChanged = newFormValues.texters.length !== existingFormValues.texters.length
+    newFormValues.texters = newFormValues.texters.map((newTexter) => {
+      const existingTexter = existingFormValues.texters.filter((texter) => (texter.id === newTexter.id ? texter : null))[0]
+      let messagedCount = 0
+      if (existingTexter) {
+        messagedCount = existingTexter.assignment.contactsCount - existingTexter.assignment.needsMessageCount
+        totalMessaged += messagedCount
+      }
+
+      let convertedNeedsMessageCount = parseInt(newTexter.assignment.needsMessageCount, 10)
+      if (isNaN(convertedNeedsMessageCount)) {
+        convertedNeedsMessageCount = 0
+      }
+      if (convertedNeedsMessageCount + messagedCount > this.formValues().contactsCount) {
+        convertedNeedsMessageCount = this.formValues().contactsCount - messagedCount
+      }
+
+      if (convertedNeedsMessageCount < 0) {
+        convertedNeedsMessageCount = 0
+      }
+
+      if (texterCountChanged && this.state.autoSplit) {
+        convertedNeedsMessageCount = 0
+      }
+
+      totalNeedsMessage = totalNeedsMessage + convertedNeedsMessageCount
+
+      return {
+        ...newTexter,
+        assignment: {
+          ...newTexter.assignment,
+          contactsCount: convertedNeedsMessageCount + messagedCount,
+          needsMessageCount: convertedNeedsMessageCount
+        }
+      }
+    })
+
+    let extra = totalNeedsMessage + totalMessaged - this.formValues().contactsCount
+    if (extra > 0) {
+      let theTexter = newFormValues.texters[0]
+      if (changedTexter) {
+        theTexter = newFormValues.texters.find((ele) => ele.id === changedTexter)
+      }
+
+      newFormValues.texters = newFormValues.texters.map((texter) => {
+        const newTexter = texter
+        const messagedCount = texter.assignment.contactsCount - texter.assignment.needsMessageCount
+        if (texter.id === theTexter.id) {
+          newTexter.assignment.needsMessageCount = this.formValues().contactsCount - totalMessaged
+        } else {
+          newTexter.assignment.needsMessageCount = 0
+        }
+        newTexter.assignment.contactsCount = texter.assignment.needsMessageCount + messagedCount
+        return newTexter
+      })
+    } else {
+      const factor = 1
+      let index = 0
+      if (newFormValues.texters.length === 1 && this.state.autoSplit) {
+        const messagedCount = newFormValues.texters[0].assignment.contactsCount - newFormValues.texters[0].assignment.needsMessageCount
+        newFormValues.texters[0].assignment.contactsCount = this.formValues().contactsCount
+        newFormValues.texters[0].assignment.needsMessageCount = this.formValues().contactsCount - messagedCount
+      } else if (newFormValues.texters.length > 1 && (extra > 0 || (extra < 0 && this.state.autoSplit))) {
+        while (extra !== 0) {
+          const texter = newFormValues.texters[index]
+          if (!changedTexter || texter.id !== changedTexter) {
+            if (texter.assignment.needsMessageCount + factor >= 0) {
+              texter.assignment.needsMessageCount = texter.assignment.needsMessageCount + factor
+              texter.assignment.contactsCount = texter.assignment.contactsCount + factor
+              extra = extra + factor
+            }
+          }
+          index = index + 1
+          if (index >= newFormValues.texters.length) {
+            index = 0
+          }
+        }
+      }
+    }
+
+    this.props.onChange(newFormValues)
+  }
+
   dataSourceItem(name, key) {
     return {
       text: name,
@@ -113,6 +204,29 @@ export default class CampaignTextersForm extends React.Component {
           primaryText={name}
         />
       )
+    }
+  }
+
+  formSchema = yup.object({
+    texters: yup.array().of(yup.object({
+      id: yup.string(),
+      assignment: yup.object({
+        needsMessageCount: yup.string()
+      })
+    }))
+  })
+
+  formValues() {
+    return {
+      ...this.props.formValues,
+      texters: this.props.formValues.texters.sort((texter1, texter2) => {
+        if (texter1.firstName < texter2.firstName) {
+          return -1
+        } else if (texter1.firstName > texter2.firstName) {
+          return 1
+        }
+        return 0
+      })
     }
   }
 
@@ -136,7 +250,7 @@ export default class CampaignTextersForm extends React.Component {
         ref='autocomplete'
         style={inlineStyles.autocomplete}
         autoFocus
-        onFocus={() => this.setState({ searchText: ''})}
+        onFocus={() => this.setState({ searchText: '' })}
         onUpdateInput={(searchText) => this.setState({ searchText })}
         searchText={this.state.searchText}
         filter={filter}
@@ -242,118 +356,6 @@ export default class CampaignTextersForm extends React.Component {
     })
   }
 
-  formSchema = yup.object({
-    texters: yup.array().of(yup.object({
-      id: yup.string(),
-      assignment: yup.object({
-        needsMessageCount: yup.string()
-      })
-    }))
-  })
-
-  onChange = (formValues) => {
-    const existingFormValues = this.formValues()
-    const changedTexter = this.state.focusedTexter
-    const newFormValues = {
-      ...formValues
-    }
-    let totalNeedsMessage = 0
-    let totalMessaged = 0
-    const texterCountChanged = newFormValues.texters.length !== existingFormValues.texters.length
-    newFormValues.texters = newFormValues.texters.map((newTexter) => {
-      const existingTexter = existingFormValues.texters.filter((texter) => (texter.id === newTexter.id ? texter : null))[0]
-      let messagedCount = 0
-      if (existingTexter) {
-        messagedCount = existingTexter.assignment.contactsCount - existingTexter.assignment.needsMessageCount
-        totalMessaged += messagedCount
-      }
-
-      let convertedNeedsMessageCount = parseInt(newTexter.assignment.needsMessageCount, 10)
-      if (isNaN(convertedNeedsMessageCount)) {
-        convertedNeedsMessageCount = 0
-      }
-      if (convertedNeedsMessageCount + messagedCount > this.formValues().contactsCount) {
-        convertedNeedsMessageCount = this.formValues().contactsCount - messagedCount
-      }
-
-      if (convertedNeedsMessageCount < 0) {
-        convertedNeedsMessageCount = 0
-      }
-
-      if (texterCountChanged && this.state.autoSplit) {
-        convertedNeedsMessageCount = 0
-      }
-
-      totalNeedsMessage = totalNeedsMessage + convertedNeedsMessageCount
-
-      return {
-        ...newTexter,
-        assignment: {
-          ...newTexter.assignment,
-          contactsCount: convertedNeedsMessageCount + messagedCount,
-          needsMessageCount: convertedNeedsMessageCount
-        }
-      }
-    })
-
-    let extra = totalNeedsMessage + totalMessaged - this.formValues().contactsCount
-    if (extra > 0) {
-      let theTexter = newFormValues.texters[0]
-      if (changedTexter) {
-        theTexter = newFormValues.texters.find((ele) => ele.id === changedTexter)
-      }
-
-      newFormValues.texters.forEach((texter) => {
-        const messagedCount = texter.assignment.contactsCount - texter.assignment.needsMessageCount
-        if (texter.id === theTexter.id) {
-          texter.assignment.needsMessageCount = this.formValues().contactsCount - totalMessaged
-        } else {
-          texter.assignment.needsMessageCount = 0
-        }
-        texter.assignment.contactsCount = texter.assignment.needsMessageCount + messagedCount
-      })
-    } else {
-      const factor = 1
-      let index = 0
-      if (newFormValues.texters.length === 1 && this.state.autoSplit) {
-        const messagedCount = newFormValues.texters[0].assignment.contactsCount - newFormValues.texters[0].assignment.needsMessageCount
-        newFormValues.texters[0].assignment.contactsCount = this.formValues().contactsCount
-        newFormValues.texters[0].assignment.needsMessageCount = this.formValues().contactsCount - messagedCount
-      } else if (newFormValues.texters.length > 1 && (extra > 0 || (extra < 0 && this.state.autoSplit))) {
-        while (extra !== 0) {
-          const texter = newFormValues.texters[index]
-          if (!changedTexter || texter.id !== changedTexter) {
-            if (texter.assignment.needsMessageCount + factor >= 0) {
-              texter.assignment.needsMessageCount = texter.assignment.needsMessageCount + factor
-              texter.assignment.contactsCount = texter.assignment.contactsCount + factor
-              extra = extra + factor
-            }
-          }
-          index = index + 1
-          if (index >= newFormValues.texters.length) {
-            index = 0
-          }
-        }
-      }
-    }
-
-    this.props.onChange(newFormValues)
-  }
-
-  formValues() {
-    return {
-      ...this.props.formValues,
-      texters: this.props.formValues.texters.sort((texter1, texter2) => {
-        if (texter1.firstName < texter2.firstName) {
-          return -1
-        } else if (texter1.firstName > texter2.firstName) {
-          return 1
-        }
-        return 0
-      })
-    }
-  }
-
   render() {
     const { organizationId } = this.props
     let subtitle = ''
@@ -406,15 +408,15 @@ export default class CampaignTextersForm extends React.Component {
                     this.setState({ autoSplit: !this.state.autoSplit }, () => {
                       if (this.state.autoSplit) {
                         const contactsCount = Math.floor(this.formValues().contactsCount / this.formValues().texters.length)
-                        const newTexters = this.formValues().texters.map((texter) => {
-                          return {
+                        const newTexters = this.formValues().texters.map((texter) =>
+                          ({
                             ...texter,
                             assignment: {
                               ...texter.assignment,
                               contactsCount
                             }
-                          }
-                        })
+                          })
+                        )
                         this.onChange({ ...this.formValues(), texters: newTexters })
                       }
                     })
@@ -462,4 +464,3 @@ CampaignTextersForm.propTypes = {
   saveLabel: type.string,
   saveDisabled: type.bool
 }
-

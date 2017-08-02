@@ -1,7 +1,7 @@
 import React from 'react'
 import RaisedButton from 'material-ui/RaisedButton'
 import Chart from '../components/Chart'
-import { Card, CardActions, CardHeader, CardMedia, CardTitle, CardText } from 'material-ui/Card'
+import { Card, CardTitle, CardText } from 'material-ui/Card'
 import TexterStats from '../components/TexterStats'
 import Snackbar from 'material-ui/Snackbar'
 import { withRouter } from 'react-router'
@@ -182,14 +182,14 @@ class AdminCampaignStats extends React.Component {
                       label='Unarchive'
                     />
                   ) : [
-                  <RaisedButton
-                    onTouchTap={async () => await this.props.mutations.archiveCampaign(campaignId)}
-                    label='Archive'
-                  />,
-                  <RaisedButton
-                    onTouchTap={() => this.props.router.push(`/admin/${organizationId}/campaigns/${campaignId}/edit`)}
-                    label='Edit'
-                  />
+                    <RaisedButton
+                      onTouchTap={async () => await this.props.mutations.archiveCampaign(campaignId)}
+                      label='Archive'
+                    />,
+                    <RaisedButton
+                      onTouchTap={() => this.props.router.push(`/admin/${organizationId}/campaigns/${campaignId}/edit`)}
+                      label='Edit'
+                    />
                   ]}
                 </div>
               </div>
@@ -229,6 +229,13 @@ class AdminCampaignStats extends React.Component {
       </div>
     )
   }
+}
+
+AdminCampaignStats.propTypes = {
+  mutations: React.PropTypes.object,
+  data: React.PropTypes.object,
+  params: React.PropTypes.object,
+  router: React.PropTypes.object
 }
 
 const mapQueriesToProps = ({ ownProps }) => ({

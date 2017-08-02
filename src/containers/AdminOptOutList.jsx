@@ -5,29 +5,31 @@ import Empty from '../components/Empty'
 import loadData from './hoc/load-data'
 import gql from 'graphql-tag'
 
-class AdminOptOutList extends React.Component {
-  render() {
-    const { data } = this.props
-    const { optOuts } = data.organization
-    return (
-      <div>
-        {optOuts.length === 0 ?
-          <Empty
-            title='Yay, no one has opted out!'
-            icon={<ProhibitedIcon />}
-          /> :
-          <List>
-            {optOuts.map((optOut) => (
-              <ListItem
-                key={optOut.id}
-                primaryText={optOut.cell}
-              />
-            ))}
-          </List>
-        }
-      </div>
-    )
-  }
+const AdminOptOutList = function AdminOptOutList() {
+  const { data } = this.props
+  const { optOuts } = data.organization
+  return (
+    <div>
+      {optOuts.length === 0 ?
+        <Empty
+          title='Yay, no one has opted out!'
+          icon={<ProhibitedIcon />}
+        /> :
+        <List>
+          {optOuts.map((optOut) => (
+            <ListItem
+              key={optOut.id}
+              primaryText={optOut.cell}
+            />
+          ))}
+        </List>
+      }
+    </div>
+  )
+}
+
+AdminOptOutList.propTypes = {
+  data: React.PropTypes.object
 }
 
 const mapQueriesToProps = ({ ownProps }) => ({

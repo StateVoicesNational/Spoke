@@ -3,7 +3,6 @@ import LinearProgress from 'material-ui/LinearProgress'
 
 class TexterStats extends React.Component {
   renderAssignment(assignment) {
-    console.log(assignment)
     const { contactsCount, unmessagedCount, texter } = assignment
     if (contactsCount === 0) {
       return <div />

@@ -19,7 +19,6 @@ responseMiddlewareNetworkInterface.use({
       } else if (parsedError.status === 404) {
         window.location = '/404'
       } else {
-        console.log(response)
         log.error(`GraphQL request resulted in error:\nRequest:${JSON.stringify(response.data)}\nError:${JSON.stringify(response.errors)}`)
       }
     }

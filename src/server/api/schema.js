@@ -1,6 +1,4 @@
 import { Campaign,
-  Assignment,
-  CampaignContact,
   CannedResponse,
   Invite,
   Message,
@@ -8,7 +6,6 @@ import { Campaign,
   Organization,
   QuestionResponse,
   UserOrganization,
-  InteractionStep,
   JobRequest,
   r
 } from '../models'
@@ -81,9 +78,10 @@ import {
 import { handleIncomingMessage } from './lib/nexmo'
 import { handleTwilioIncomingMessage } from './lib/twilio'
 import { gzip } from '../../lib'
-import { getFormattedPhoneNumber } from '../../lib/phone-format'
-import { isBetweenTextingHours } from '../../lib/timezones'
+// import { isBetweenTextingHours } from '../../lib/timezones'
 import { Notifications, sendUserNotification } from '../notifications'
+import { uploadContacts, createInteractionSteps, assignTexters } from '../../workers/jobs'
+
 const rootSchema = `
   input CampaignContactInput {
     firstName: String!
@@ -213,19 +211,22 @@ async function editCampaign(id, campaign, loaders) {
       return modelData
     })
     const compressedString = await gzip(JSON.stringify(contactsToSave))
-    await JobRequest.save({
+    let job = await JobRequest.save({
       queue_name: `${id}:edit_campaign`,
       job_type: 'upload_contacts',
       locks_queue: true,
+      assigned: true, // will get called immediately, below
       campaign_id: id,
-      //NOTE: stringifying because compressedString is a binary buffer
+      // NOTE: stringifying because compressedString is a binary buffer
       payload: compressedString.toString('base64')
     })
+    uploadContacts(job).then()
   }
   if (campaign.hasOwnProperty('texters')) {
-    await JobRequest.save({
+    let job = await JobRequest.save({
       queue_name: `${id}:edit_campaign`,
       locks_queue: true,
+      assigned: true, // will get called immediately, below
       job_type: 'assign_texters',
       campaign_id: id,
       payload: JSON.stringify({
@@ -233,11 +234,13 @@ async function editCampaign(id, campaign, loaders) {
         texters: campaign.texters
       })
     })
+    assignTexters(job).then()
   }
   if (campaign.hasOwnProperty('interactionSteps')) {
-    await JobRequest.save({
+    let job = await JobRequest.save({
       queue_name: `${id}:edit_campaign`,
       locks_queue: true,
+      assigned: true, // will be sent immediately on this thread
       job_type: 'create_interaction_steps',
       campaign_id: id,
       payload: JSON.stringify({
@@ -245,6 +248,7 @@ async function editCampaign(id, campaign, loaders) {
         interaction_steps: campaign.interactionSteps
       })
     })
+    createInteractionSteps(job).then()
   }
 
   if (campaign.hasOwnProperty('cannedResponses')) {
@@ -267,12 +271,13 @@ async function editCampaign(id, campaign, loaders) {
   }
 
   const newCampaign = await Campaign.get(id).update(campaignUpdates)
+  console.log('FINAL CAMPAIGN', newCampaign, campaignUpdates)
   return newCampaign || loaders.campaign.load(id)
 }
 
 const rootMutations = {
   RootMutation: {
-    sendReply: async (_, { id, message }, { user, loaders }) => {
+    sendReply: async (_, { id, message }, { loaders }) => {
       if (process.env.NODE_ENV !== 'development') {
         throw new GraphQLError({
           status: 400,
@@ -334,29 +339,30 @@ const rootMutations = {
       const currentRoles = r.table('user_organization')
         .getAll([organizationId, user.id], { index: 'organization_user' })
         .pluck('role')('role')
-
       const oldRoleIsOwner = currentRoles.indexOf('OWNER') !== -1
       const newRoleIsOwner = roles.indexOf('OWNER') !== -1
       const roleRequired = (oldRoleIsOwner || newRoleIsOwner) ? 'OWNER' : 'ADMIN'
+      let newOrgRoles = []
+
       await accessRequired(user, organizationId, roleRequired)
 
       currentRoles.forEach(async (curRole) => {
         if (roles.indexOf(curRole) === -1) {
           await r.table('user_organization')
             .getAll([organizationId, user.id], { index: 'organization_user' })
-            .filter({'role': curRole})
+            .filter({ role: curRole })
             .delete()
         }
       })
 
       newOrgRoles = roles.filter((newRole) => (currentRoles.indexOf(newRole) === -1))
         .map((newRole) => ({
-            organization_id: organizationId,
-            user_id: userId,
-            role: newRole
+          organization_id: organizationId,
+          user_id: userId,
+          role: newRole
         }))
       if (newOrgRoles.length) {
-          await UserOrganization.save(newOrgRoles, { conflict: 'update' })
+        await UserOrganization.save(newOrgRoles, { conflict: 'update' })
       }
       return loaders.organization.load(organizationId)
     },
@@ -401,9 +407,7 @@ const rootMutations = {
       return await Organization.get(organizationId)
     },
     createInvite: async (_, { invite }) => {
-      const inviteInstance = new Invite({
-        is_valid: true
-      })
+      const inviteInstance = new Invite(invite)
       const newInvite = await inviteInstance.save()
       return newInvite
     },
@@ -429,6 +433,7 @@ const rootMutations = {
     },
     archiveCampaign: async (_, { id }, { user, loaders }) => {
       const campaign = await loaders.campaign.load(id)
+      console.log('ARCHIVE CAMPAIGN', campaign)
       await accessRequired(user, campaign.organizationId, 'ADMIN')
       campaign.is_archived = true
       await campaign.save()
@@ -480,14 +485,13 @@ const rootMutations = {
         ['OWNER', 'ADMIN', 'TEXTER'].map((role) => ({
           user_id: userId,
           organization_id: newOrganization.id,
-          role: role
+          role
         })))
       await Invite.save({
         id: inviteId,
         is_valid: false
       }, { conflict: 'update' })
 
-      console.log("new organization", newOrganization)
       return newOrganization
     },
     editCampaignContactMessageStatus: async(_, { messageStatus, campaignContactId }, { loaders }) => {
@@ -497,12 +501,10 @@ const rootMutations = {
     },
     createOptOut: async(_, { optOut, campaignContactId }, { loaders }) => {
       const { assignmentId, cell } = optOut
+      console.log('CREATE OPTOUT', assignmentId)
       const campaign = await r.table('assignment')
         .get(assignmentId)
-        .merge((doc) => ({
-          campaign: r.table('campaign')
-            .get(doc('campaign_id'))
-        }))('campaign')
+        .eqJoin('campaign_id', r.table('campaign'))('right')
       await new OptOut({
         assignment_id: assignmentId,
         organization_id: campaign.organization_id,
@@ -511,36 +513,26 @@ const rootMutations = {
 
       await r.table('campaign_contact')
         .getAll(cell, { index: 'cell' })
-        .merge((contact) => ({
-          organization_id: r.table('campaign')
-            .get(contact('campaign_id'))
-            ('organization_id')
-        }))
+        .eqJoin('campaign_id', r.table('campaign'))
         .filter({ organization_id: campaign.organization_id})
-        .forEach((doc) => r.table('campaign_contact')
-            .get(doc('id'))
-            .update({ is_opted_out: true }))
+        .update({ is_opted_out: true })
 
       return loaders.campaignContact.load(campaignContactId)
     },
     sendMessage: async(_, { message, campaignContactId }, { loaders }) => {
       const contact = await loaders.campaignContact.load(campaignContactId)
       const campaign = await loaders.campaign.load(contact.campaign_id)
-
-      if (contact.assignment_id !== message.assignmentId || campaign.is_archived) {
+      console.log('SEND MESSAGE', contact, 'XXX', message)
+      if (contact.assignment_id !== parseInt(message.assignmentId) || campaign.is_archived) {
         throw new GraphQLError({
           status: 400,
           message: 'Your assignment has changed'
         })
       }
-
-      const merged = await r.table('campaign')
+      console.log('SEND MESSAGE', contact)
+      const organization = await r.table('campaign')
         .get(contact.campaign_id)
-        .merge((doc) => ({
-          organization: r.table('organization').get(doc('organization_id'))
-        }))
-        .pluck('organization')
-      const organization = merged.organization
+        .eqJoin('organization_id', r.table('organization'))('right')
 
       const optOut = await r.table('opt_out')
           .getAll(contact.cell, { index: 'cell' })
@@ -595,7 +587,7 @@ const rootMutations = {
     deleteQuestionResponses: async(_, { interactionStepIds, campaignContactId }, { loaders }) => {
       await r.table('question_response')
         .getAll(campaignContactId, { index: 'campaign_contact_id' })
-        .filter((doc) => r.expr(interactionStepIds).contains(doc('interaction_step_id')))
+        .getAll(...interactionStepIds, { index: 'interaction_step_id' })
         .delete()
 
       const contact = loaders.campaignContact.load(campaignContactId)
@@ -612,7 +604,7 @@ const rootMutations = {
           .filter({ interaction_step_id: interactionStepId })
           .delete()
 
-        const newQuestionResponse = await new QuestionResponse({
+        await new QuestionResponse({
           campaign_contact_id: campaignContactId,
           interaction_step_id: interactionStepId,
           value
@@ -639,21 +631,19 @@ const rootResolvers = {
       await accessRequired(user, campaign.organization_id, 'TEXTER')
       return assignment
     },
-    organization: async(_, { id }, { loaders, user }) => {
-      // await accessRequired(user, id, 'ADMIN')
-      return loaders.organization.load(id)
-    },
+    organization: async(_, { id }, { loaders }) =>
+      loaders.organization.load(id),
     invite: async (_, { id }, { loaders, user }) => {
       authRequired(user)
       return loaders.invite.load(id)
     },
     currentUser: async(_, { id }, { user }) => user,
-    contact: async(_, { id }, { loaders, user }) => {
+    contact: async(_, { id }, { loaders }) => {
       const contact = await loaders.campaignContact.load(id)
       // await accessRequired(user, contact.organization_id, 'TEXTER')
       return contact
     },
-    organizations: async(_, {}, { user }) => {
+    organizations: async(_, { id }, { user }) => {
       await superAdminRequired(user)
       return r.table('organization')
     }
@@ -676,7 +666,7 @@ export const schema = [
   cannedResponseSchema,
   questionResponseSchema,
   questionSchema,
-  inviteSchema,
+  inviteSchema
 ]
 
 export const resolvers = {

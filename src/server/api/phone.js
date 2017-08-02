@@ -1,4 +1,5 @@
 import { Kind } from 'graphql/language'
+import { GraphQLError } from './errors'
 
 export const schema = `
   scalar Phone
@@ -13,11 +14,11 @@ export const resolvers = {
     },
     __parseLiteral(ast) {
       if (ast.kind !== Kind.STRING) {
-        throw new GraphQLError('Query error: Can only parse strings got a: ' + ast.kind, [ast])
+        throw new GraphQLError(`Query error: Can only parse strings got a: ${ast.kind}`, [ast])
       }
 
       // Regex taken from http://stackoverflow.com/questions/6478875/regular-expression-matching-e-164-formatted-phone-numbers
-      var re = /^\+[1-9]\d{1,14}$/
+      const re = /^\+[1-9]\d{1,14}$/
       if (!re.test(ast.value)) {
         throw new GraphQLError('Query error: Not a valid Phone', [ast])
       }

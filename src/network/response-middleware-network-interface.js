@@ -23,6 +23,7 @@ class ResponseMiddlewareNetworkInterface {
   }
 
   async applyResponseMiddlewares(response) {
+    // eslint-disable-next-line no-unused-vars
     return new Promise((resolve, reject) => {
       const queue = async (funcs) => {
         const next = async () => {

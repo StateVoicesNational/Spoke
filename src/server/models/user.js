@@ -1,10 +1,10 @@
 import thinky from './thinky'
 const type = thinky.type
-import { requiredString, timestamp, optionalString } from './custom-types'
+import { requiredString, timestamp } from './custom-types'
 
 const User = thinky.createModel('user', type.object().schema({
   id: type.string(),
-  auth0_id: requiredString(),
+  auth0_id: requiredString().stopReference(),
   first_name: requiredString(),
   last_name: requiredString(),
   cell: requiredString(),

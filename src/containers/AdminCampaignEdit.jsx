@@ -62,8 +62,12 @@ class AdminCampaignEdit extends React.Component {
       startingCampaign: false
     }
   }
+  componentDidMount() {
+    console.log('admin campaign edit mounted!')
+  }
 
   componentWillReceiveProps(newProps) {
+    console.log('admin campaign edit will receive props', newProps)
     let { expandedSection } = this.state
     let expandedKeys = []
     if (expandedSection !== null) {
@@ -82,13 +86,14 @@ class AdminCampaignEdit extends React.Component {
       delete campaignDataCopy[key]
     })
 
-
+    console.log('setstate in willreceivenewprops')
     this.setState({
       campaignFormValues: {
         ...this.state.campaignFormValues,
         ...campaignDataCopy
       }
     })
+    console.log('after setstate in willreceivenewprops')
   }
 
   onExpandChange = (index, newExpandedState) => {
@@ -114,6 +119,7 @@ class AdminCampaignEdit extends React.Component {
   }
 
   handleChange = (formValues) => {
+    console.log('handle change! (admin campaign edit)', formValues)
     this.setState({
       campaignFormValues: {
         ...this.state.campaignFormValues,
@@ -123,6 +129,7 @@ class AdminCampaignEdit extends React.Component {
   }
 
   handleSave = async () => {
+    console.log('handle save! (admin campaign edit)')
     let saveObject = {}
     this.sections().forEach((section) => {
       if (!this.checkSectionSaved(section)) {
@@ -180,6 +187,7 @@ class AdminCampaignEdit extends React.Component {
           })) : []
         }))
       }
+      console.log('saving campaign data', newCampaign, this.props.campaignData.campaign)
 
       await this
         .props
@@ -315,7 +323,18 @@ class AdminCampaignEdit extends React.Component {
   }
 
   renderHeader() {
-    const isStarted = this.props.campaignData.campaign.isStarted
+    const notStarting = this.props.campaignData.campaign.isStarted ? (
+      <div
+        style={{
+          color: theme.colors.green,
+          fontWeight: 800
+        }}
+      >
+        This campaign is running!
+      </div>
+      ) :
+      this.renderStartButton()
+
     return (
       <div
         style={{
@@ -323,29 +342,23 @@ class AdminCampaignEdit extends React.Component {
           fontSize: 16
         }}
       >
-        {this.state.startingCampaign ? (
-          <div style={{
-            color: theme.colors.gray,
-            fontWeight: 800
-          }}>
-            <CircularProgress
-              size={0.5}
+          {this.state.startingCampaign ? (
+            <div
               style={{
-                verticalAlign: 'middle',
-                display: 'inline-block'
+                color: theme.colors.gray,
+                fontWeight: 800
               }}
-            />
-            Starting your campaign...
-          </div>
-        ) : (isStarted ? (
-          <div style={{
-            color: theme.colors.green,
-            fontWeight: 800
-          }}>
-            This campaign is running!
-          </div>
-          ) :
-        this.renderStartButton())}
+            >
+              <CircularProgress
+                size={0.5}
+                style={{
+                  verticalAlign: 'middle',
+                  display: 'inline-block'
+                }}
+              />
+              Starting your campaign...
+            </div>
+          ) : notStarting}
       </div>
     )
   }
@@ -372,7 +385,7 @@ class AdminCampaignEdit extends React.Component {
           {isCompleted ? 'Your campaign is all good to go! >>>>>>>>>' : 'You need to complete all the sections below before you can start this campaign'}
         </div>
         <div>
-          { this.props.campaignData.campaign.isArchived ? (
+          {this.props.campaignData.campaign.isArchived ? (
             <RaisedButton
               label='Unarchive'
               onTouchTap={async() => await this.props.mutations.unarchiveCampaign(this.props.campaignData.campaign.id)}
@@ -382,7 +395,7 @@ class AdminCampaignEdit extends React.Component {
               label='Archive'
               onTouchTap={async() => await this.props.mutations.archiveCampaign(this.props.campaignData.campaign.id)}
             />
-          ) }
+          )}
           <RaisedButton
             primary
             label='Start This Campaign!'
@@ -494,7 +507,8 @@ AdminCampaignEdit.propTypes = {
   mutations: React.PropTypes.object,
   organizationData: React.PropTypes.object,
   params: React.PropTypes.object,
-  location: React.PropTypes.object
+  location: React.PropTypes.object,
+  pendingJobsData: React.PropTypes.object
 }
 
 const mapQueriesToProps = ({ ownProps }) => ({
@@ -513,7 +527,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
     variables: {
       campaignId: ownProps.params.campaignId
     },
-    pollInterval: 1000
+    pollInterval: 100000
   },
   campaignData: {
     query: gql`query getCampaign($campaignId: String!) {
@@ -524,7 +538,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
     variables: {
       campaignId: ownProps.params.campaignId
     },
-    pollInterval: 2000
+    pollInterval: 200000
   },
   organizationData: {
     query: gql`query getOrganizationData($organizationId: String!, $role: String!) {
@@ -544,20 +558,20 @@ const mapQueriesToProps = ({ ownProps }) => ({
       organizationId: ownProps.params.organizationId,
       role: 'TEXTER'
     },
-    pollInterval: 2500
+    pollInterval: 250000
   }
 })
 
 // Right now we are copying the result fields instead of using a fragment because of https://github.com/apollostack/apollo-client/issues/451
 const mapMutationsToProps = () => ({
   archiveCampaign: (campaignId) => ({
-      mutation: gql`mutation archiveCampaign($campaignId: String!) {
+    mutation: gql`mutation archiveCampaign($campaignId: String!) {
           archiveCampaign(id: $campaignId) {
             ${campaignInfoFragment}
           }
         }`,
-      variables: { campaignId }
-    }),
+    variables: { campaignId }
+  }),
   unarchiveCampaign: (campaignId) => ({
     mutation: gql`mutation unarchiveCampaign($campaignId: String!) {
         unarchiveCampaign(id: $campaignId) {
@@ -574,7 +588,9 @@ const mapMutationsToProps = () => ({
       }`,
     variables: { campaignId }
   }),
-  editCampaign: (campaignId, campaign) => ({
+  editCampaign: function(campaignId, campaign) {
+    console.log('mutating campaign', campaign)
+    return ({
     mutation: gql`
       mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {
         editCampaign(id: $campaignId, campaign: $campaign) {
@@ -586,7 +602,8 @@ const mapMutationsToProps = () => ({
       campaignId,
       campaign
     }
-  })
+    })
+  }
 })
 
 export default loadData(wrapMutations(AdminCampaignEdit), {

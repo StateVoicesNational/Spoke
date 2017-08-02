@@ -16,7 +16,7 @@ class JoinTeam extends React.Component {
   state = {
     errors: null
   }
-  async componentDidMount() {
+  async componentWillMount() {
     let organization = null
     try {
       organization = await this.props.mutations.joinOrganization()
@@ -46,6 +46,11 @@ class JoinTeam extends React.Component {
       </div>
     )
   }
+}
+
+JoinTeam.propTypes = {
+  mutations: React.PropTypes.object,
+  router: React.PropTypes.object
 }
 
 const mapMutationsToProps = ({ ownProps }) => ({

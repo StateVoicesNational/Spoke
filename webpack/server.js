@@ -5,7 +5,7 @@ import { log } from '../src/lib'
 
 const webpackPort = process.env.WEBPACK_PORT || 3000
 const appPort = process.env.DEV_APP_PORT
-const webpackHost = process.env.WEBPACK_HOST || 'localhost'
+const webpackHost = process.env.WEBPACK_HOST || '127.0.0.1'
 
 Object.keys(config.entry)
 .forEach((key) => {
@@ -41,7 +41,7 @@ const app = new WebpackDevServer(compiler, {
     source: false,
     errors: false,
     errorDetails: false,
-    warnings: false,
+    warnings: true,
     publicPath: false
   }
 })

@@ -1,31 +1,20 @@
-import nexmo from '../server/api/lib/nexmo'
-import twilio from '../server/api/lib/twilio'
 import { r } from '../server/models'
 import { log } from '../lib'
 import { sleep } from './lib'
+import { sendMessages } from './jobs'
 
-const serviceMap = { nexmo, twilio }
-
-async function sendMessages() {
-  const messages = await r.table('message')
-    .getAll('QUEUED', { index: 'send_status' })
-    .filter((doc) => doc('contact_number').match('[789]$'))
-    .group('contact_number')
-    .orderBy('created_at')
-    .limit(1)(0)
-  for (let index = 0; index < messages.length; index++) {
-    const message = messages[index].reduction
-    const service = serviceMap[message.service]
-    log.info(`Sending (${message.service}): ${message.user_number} -> ${message.contact_number}\nMessage: ${message.text}`)
-    await service.sendMessage(message)
-  }
+async function sendMyMessages() {
+  return sendMessages(function(mQuery) {
+    return mQuery.where(r.knex.raw("(contact_number LIKE '%7' OR contact_number LIKE '%8' or contact_number LIKE '%9')"))
+  })
 }
 
 (async () => {
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     try {
       await sleep(1100)
-      await sendMessages()
+      await sendMyMessages()
     } catch (ex) {
       log.error(ex)
     }

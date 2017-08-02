@@ -1,11 +1,11 @@
 import React from 'react'
 import FlatButton from 'material-ui/FlatButton'
 import { List, ListItem } from 'material-ui/List'
-import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert'
+// import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert'
 import CreateIcon from 'material-ui/svg-icons/content/create'
-import IconButton from 'material-ui/IconButton'
-import IconMenu from 'material-ui/IconMenu'
-import MenuItem from 'material-ui/MenuItem'
+// import IconButton from 'material-ui/IconButton'
+// import IconMenu from 'material-ui/IconMenu'
+// import MenuItem from 'material-ui/MenuItem'
 import Subheader from 'material-ui/Subheader'
 import Divider from 'material-ui/Divider'
 import Dialog from 'material-ui/Dialog'
@@ -14,6 +14,7 @@ import GSSubmitButton from './forms/GSSubmitButton'
 import Form from 'react-formal'
 import { connect } from 'react-apollo'
 import gql from 'graphql-tag'
+import { log } from '../lib'
 
 // import { insert, update, remove } from '../../api/scripts/methods'
 
@@ -50,7 +51,6 @@ class ScriptList extends React.Component {
       subheader,
       scripts,
       onSelectCannedResponse,
-      duplicateCampaignResponses,
       showAddScriptButton,
       customFields,
       campaignId,
@@ -67,11 +67,10 @@ class ScriptList extends React.Component {
           campaignId,
           userId: texterId
         }
-        console.log('trying to save', saveObject)
         await mutations.createCannedResponse(saveObject)
         this.setState({ dialogOpen: false })
       } catch (err) {
-        console.log(err)
+        log.error(err)
       }
     }
 
@@ -153,6 +152,18 @@ class ScriptList extends React.Component {
       </div>
     )
   }
+}
+
+ScriptList.propTypes = {
+  script: React.PropTypes.object,
+  scripts: React.PropTypes.arrayOf(React.PropTypes.object),
+  subheader: React.PropTypes.element,
+  onSelectCannedResponse: React.PropTypes.func,
+  showAddScriptButton: React.PropTypes.bool,
+  customFields: React.PropTypes.array,
+  campaignId: React.PropTypes.number,
+  mutations: React.PropTypes.object,
+  texterId: React.PropTypes.number
 }
 
 const mapMutationsToProps = () => ({

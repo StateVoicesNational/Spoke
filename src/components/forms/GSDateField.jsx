@@ -18,8 +18,8 @@ export default class GCDateField extends GSFormField {
     const propCopy = {
       ...this.props
     }
-    delete propCopy['value']
-    delete propCopy['type']
+    delete propCopy.value
+    delete propCopy.type
 
     return (
       <DatePicker

@@ -34,21 +34,6 @@ class Home extends React.Component {
     orgLessUser: false
   }
 
-  handleOrgInviteClick = async (e) => {
-    e.preventDefault()
-    const newInvite = await this.props.mutations.createInvite({
-      is_valid: true
-    })
-    if (newInvite.errors) {
-      alert('There was an error creating your invite')
-      throw new Error(newInvite.errors)
-    } else {
-      // alert(newInvite.data.createInvite.id)
-      this.props.router.push(`/invite/${newInvite.data.createInvite.id}`)
-    }
-
-  }
-
   componentWillMount() {
     const user = this.props.data.currentUser
     if (user) {
@@ -61,6 +46,21 @@ class Home extends React.Component {
       }
     }
   }
+
+  handleOrgInviteClick = async (e) => {
+    e.preventDefault()
+    const newInvite = await this.props.mutations.createInvite({
+      is_valid: true
+    })
+    if (newInvite.errors) {
+      alert('There was an error creating your invite')
+      throw new Error(newInvite.errors)
+    } else {
+      // alert(newInvite.data.createInvite.id)
+      this.props.router.push(`/invite/${newInvite.data.createInvite.id}`)
+    }
+  }
+
   renderContent() {
     if (this.state.orgLessUser) {
       return (
@@ -100,6 +100,12 @@ class Home extends React.Component {
   }
 }
 
+Home.propTypes = {
+  mutations: React.PropTypes.object,
+  router: React.PropTypes.object,
+  data: React.PropTypes.object
+}
+
 const mapQueriesToProps = () => ({
   data: {
     query: gql` query getCurrentUser {
@@ -118,14 +124,14 @@ const mapQueriesToProps = () => ({
 
 const mapMutationsToProps = () => ({
   createInvite: (invite) => ({
-      mutation: gql`
+    mutation: gql`
         mutation createInvite($invite: InviteInput!) {
           createInvite(invite: $invite) {
             id
           }
         }`,
-      variables: { invite }
-    })
+    variables: { invite }
+  })
 })
 
 export default loadData(wrapMutations(withRouter(Home)), { mapQueriesToProps, mapMutationsToProps })

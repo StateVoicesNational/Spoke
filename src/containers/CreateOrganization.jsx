@@ -127,6 +127,13 @@ const mapQueriesToProps = ({ ownProps }) => ({
   }
 })
 
+CreateOrganization.propTypes = {
+  mutations: React.PropTypes.object,
+  router: React.PropTypes.object,
+  userData: React.PropTypes.object,
+  inviteData: React.PropTypes.object
+}
+
 const mapMutationsToProps = () => ({
   createOrganization: (name, userId, inviteId) => ({
     mutation: gql`

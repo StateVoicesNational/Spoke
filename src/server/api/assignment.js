@@ -18,7 +18,7 @@ function getContacts(assignment, contactsFilter, organization, campaign) {
   const textingHoursEnforced = organization.texting_hours_enforced
   const textingHoursStart = organization.texting_hours_start
   const textingHoursEnd = organization.texting_hours_end
-  const pastDue =  moment(campaign.due_by + 24 * 60 * 60).diff(moment()) < 0
+  const pastDue = moment(campaign.due_by + 24 * 60 * 60).diff(moment()) < 0
   const getIndexValuesWithOffsets = (offsets) => offsets.map(([offset, hasDST]) => ([
     assignment.id,
     `${offset}_${hasDST}`
@@ -41,14 +41,13 @@ function getContacts(assignment, contactsFilter, organization, campaign) {
         if (defaultTimezoneIsBetweenTextingHours(config)) {
           indexValues.push([assignment.id, '']) // missing timezones are ok to text
         }
-      } else if (contactsFilter.validTimezone === false ){
+      } else if (contactsFilter.validTimezone === false) {
         indexValues = getIndexValuesWithOffsets(invalidOffsets)
         if (!defaultTimezoneIsBetweenTextingHours(config)) {
           indexValues.push([assignment.id, '']) // missing timezones are not ok to text
         }
       }
 
-      indexValues = r.args(indexValues)
     }
 
 
@@ -64,7 +63,7 @@ function getContacts(assignment, contactsFilter, organization, campaign) {
         filter.message_status = 'needsResponse'
       } else {
         // we do not want to return closed/messaged
-        secondaryFilter = (doc) => doc('message_status').eq('needsResponse').or(doc('message_status').eq('needsMessage'))
+        secondaryFilter = ['needsResponse', 'needsMessage', {index: 'message_status'}]
       }
     }
     if (contactsFilter.hasOwnProperty('isOptedOut') && contactsFilter.isOptedOut !== null) {
@@ -73,11 +72,11 @@ function getContacts(assignment, contactsFilter, organization, campaign) {
   }
 
   let query = r.table('campaign_contact')
-    .getAll(indexValues, { index })
+    .getAll(...indexValues, { index })
 
   query = query.filter(filter)
   if (secondaryFilter) {
-    query = query.filter(secondaryFilter)
+    query = query.getAll(...secondaryFilter)
   }
   return query
 }
@@ -93,6 +92,7 @@ export const resolvers = {
     campaign: async(assignment, _, { loaders }) => loaders.campaign.load(assignment.campaign_id),
 
     contactsCount: async (assignment, { contactsFilter }) => {
+      console.log('CONTACTSCOUNT', assignment, contactsFilter)
       const campaign = await r.table('campaign').get(assignment.campaign_id)
 
       const organization = await r.table('organization')
@@ -102,6 +102,7 @@ export const resolvers = {
     },
 
     contacts: async (assignment, { contactsFilter }) => {
+      console.log('CONTACTS', assignment.campaign_id)
       const campaign = await r.table('campaign').get(assignment.campaign_id)
 
       const organization = await r.table('organization')

@@ -10,24 +10,6 @@ import { delimit } from '../lib/scripts'
 import Chip from './Chip'
 import { red400, green500, green600, grey100 } from 'material-ui/styles/colors'
 
-function findWithRegex(regex, contentBlock, callback) {
-  const text = contentBlock.getText()
-  let matchArr, start
-  while ((matchArr = regex.exec(text)) !== null) {
-    start = matchArr.index
-    callback(start, start + matchArr[0].length)
-  }
-}
-
-
-const RecognizedField = (props) => (
-  <span {...props} style={styles.goodField}>{props.children}</span>
-)
-
-const UnrecognizedField = (props) => (
-  <span {...props} style={styles.badField}>{props.children}</span>
-)
-
 const styles = {
   editor: {
     border: '1px solid #ddd',
@@ -62,6 +44,33 @@ const styles = {
   }
 }
 
+function findWithRegex(regex, contentBlock, callback) {
+  const text = contentBlock.getText()
+  let matchArr = regex.exec(text)
+  let start
+  while (matchArr !== null) {
+    start = matchArr.index
+    callback(start, start + matchArr[0].length)
+    matchArr = regex.exec(text)
+  }
+}
+
+
+const RecognizedField = (props) => (
+  <span {...props} style={styles.goodField}>{props.children}</span>
+)
+
+RecognizedField.propTypes = {
+  children: React.PropTypes.arrayOf(React.PropTypes.element)
+}
+
+const UnrecognizedField = (props) => (
+  <span {...props} style={styles.badField}>{props.children}</span>
+)
+
+UnrecognizedField.propTypes = {
+  children: React.PropTypes.arrayOf(React.PropTypes.element)
+}
 
 class ScriptEditor extends React.Component {
   constructor(props) {
@@ -77,9 +86,22 @@ class ScriptEditor extends React.Component {
     this.addCustomField = this.addCustomField.bind(this)
   }
 
-  getValue() {
+  componentWillReceiveProps() {
+    const { scriptFields } = this.props
     const { editorState } = this.state
-    return editorState.getCurrentContent().getPlainText()
+    const decorator = this.getCompositeDecorator(scriptFields)
+    EditorState.set(editorState, { decorator })
+
+    // this.setState({ editorState: this.getEditorState() })
+  }
+
+  onChange(editorState) {
+    this.setState({ editorState }, () => {
+      const { onChange } = this.props
+      if (onChange) {
+        onChange(this.getValue())
+      }
+    })
   }
 
   getEditorState() {
@@ -96,23 +118,9 @@ class ScriptEditor extends React.Component {
     return editorState
   }
 
-  onChange(editorState) {
-    this.setState({ editorState }, () => {
-      const { onChange } = this.props
-      if (onChange) {
-        console.log('changing script!')
-        onChange(this.getValue())
-      }
-    })
-  }
-
-  componentWillReceiveProps() {
-    const { scriptFields } = this.props
+  getValue() {
     const { editorState } = this.state
-    const decorator = this.getCompositeDecorator(scriptFields)
-    const newEditorState = EditorState.set(editorState, { decorator })
-
-    // this.setState({ editorState: this.getEditorState() })
+    return editorState.getCurrentContent().getPlainText()
   }
 
   getCompositeDecorator(scriptFields) {
@@ -121,9 +129,7 @@ class ScriptEditor extends React.Component {
       return findWithRegex(regex, contentBlock, callback)
     }
 
-    const unrecognizedFieldStrategy = (contentBlock, callback) => {
-      return findWithRegex(/\{[^{]*\}/g, contentBlock, callback)
-    }
+    const unrecognizedFieldStrategy = (contentBlock, callback) => findWithRegex(/\{[^{]*\}/g, contentBlock, callback)
 
     return new CompositeDecorator([
       {
@@ -180,6 +186,13 @@ class ScriptEditor extends React.Component {
       </div>
     )
   }
+}
+
+ScriptEditor.propTypes = {
+  scriptFields: React.PropTypes.array,
+  scriptText: React.PropTypes.string,
+  onChange: React.PropTypes.func,
+  name: React.PropTypes.string
 }
 
 export default ScriptEditor

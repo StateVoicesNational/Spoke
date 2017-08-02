@@ -43,7 +43,7 @@ export const resolvers = {
     people: async (organization, { role }, { user }) => {
       await accessRequired(user, organization.id, 'ADMIN')
 
-      const roleFilter = role ? {'role': role} : {}
+      const roleFilter = role ? { role } : {}
 
       return r.table('user_organization')
         .getAll(organization.id, { index: 'organization_id' })
