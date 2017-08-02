@@ -219,9 +219,9 @@ export async function exportCampaign(job) {
 
   let finalCampaignResults = []
   let finalCampaignMessages = []
-  const assignments = await r.table('assignment')
-    .getAll(id, { index: 'campaign_id' })
-    .eqJoin('user_id', r.table('user'))
+  const assignments = await r.knex('assignment')
+    .where('campaign_id', id)
+    .join('user', 'user_id', 'user.id')
     .select('assignment.id as id',
             //user fields
             'first_name', 'last_name', 'email', 'cell', 'assigned_cell')
