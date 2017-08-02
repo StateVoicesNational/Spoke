@@ -37,7 +37,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/saikat/spoke.git"
+    "url": "git+https://github.com/MoveOnOrg/spoke.git"
   },
   "keywords": [
     "spoke",
@@ -53,9 +53,9 @@
   "author": "Axle Factory",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/saikat/spoke/issues"
+    "url": "https://github.com/MoveOnOrg/Spoke/issues"
   },
-  "homepage": "https://github.com/saikat/saikat/spoke/#readme",
+  "homepage": "https://github.com/MoveOnOrg/Spoke/#readme",
   "dependencies": {
     "aphrodite": "^0.4.1",
     "apollo-client": "^0.4.7",

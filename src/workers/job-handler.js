@@ -13,10 +13,6 @@ function jobMap() {
 }
 
 
-// commenting this out, as jobs will be run
-// directly triggered from the request that initiated them
-// instead of a separate process
-
 (async () => {
   while (true) {
     try {
@@ -43,4 +39,3 @@ function jobMap() {
     }
   }
 })()
-

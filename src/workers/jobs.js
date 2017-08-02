@@ -1,11 +1,16 @@
 import { r, Campaign, CampaignContact, User, Assignment, InteractionStep } from '../server/models'
-import { log, gunzip } from '../lib'
+import { log, gunzip, zipToTimeZone } from '../lib'
 import { sleep, getNextJob, updateJob } from './lib'
+import nexmo from '../server/api/lib/nexmo'
+import twilio from '../server/api/lib/twilio'
+
 import AWS from 'aws-sdk'
 import Baby from 'babyparse'
 import moment from 'moment'
 import { sendEmail } from '../server/mail'
 import { Notifications, sendUserNotification } from '../server/notifications'
+
+var zipMemoization = {}
 
 export async function uploadContacts(job) {
   const campaignId = job.campaign_id
@@ -22,11 +27,20 @@ export async function uploadContacts(job) {
   for (let index = 0; index < contacts.length; index++) {
     const datum = contacts[index]
     if (datum.zip) {
-      // TODO: PERFORMANCE BOTTLENECK on zip
-      // Should memoize, at least
-      const zipDatum = await r.table('zip_code').get(datum.zip)
-      if (zipDatum) {
-        datum.timezone_offset = `${zipDatum.timezone_offset}_${zipDatum.has_dst}`
+      // using memoization and large ranges of homogenous zips
+      if (datum.zip in  zipMemoization) {
+        datum.timezone_offset = zipMemoization[datum.zip]
+      } else {
+        const rangeZip = zipToTimeZone(datum.zip)
+        if (rangeZip) {
+          datum.timezone_offset = `${rangeZip[2]}_${rangeZip[3]}`
+        } else {
+          const zipDatum = await r.table('zip_code').get(datum.zip)
+          if (zipDatum) {
+            datum.timezone_offset = `${zipDatum.timezone_offset}_${zipDatum.has_dst}`
+          }
+          zipMemoization[datum.zip] = datum.timezone_offset
+        }
       }
     }
   }
@@ -328,5 +342,24 @@ export async function exportCampaign(job) {
     log.debug('Would have saved the following to S3:')
     log.debug(campaignCsv)
     log.debug(messageCsv)
+  }
+}
+
+const serviceMap = { nexmo, twilio }
+
+export async function sendMessages(queryFunc) {
+  let messages = r.knex('message')
+    .where({'send_status': 'QUEUED'})
+
+  if (queryFunc) {
+    messages = queryFunc(messages)
+  }
+  messages = await messages.orderBy('created_at')
+
+  for (let index = 0; index < messages.length; index++) {
+    const message = messages[index]
+    const service = serviceMap[message.service || process.env.DEFAULT_SERVICE]
+    log.info(`Sending (${message.service}): ${message.user_number} -> ${message.contact_number}\nMessage: ${message.text}`)
+    await service.sendMessage(message)
   }
 }
