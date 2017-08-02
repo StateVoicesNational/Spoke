@@ -2,14 +2,12 @@ export function findParent(interactionStep, allInteractionSteps, isModel) {
   let parent = null
   allInteractionSteps.forEach((step) => {
     if (isModel) {
-      step.answer_options.forEach((option) => {
-        if (option.interaction_step_id === interactionStep.id) {
-          parent = {
-            ...step,
-            answerLink: option.value
-          }
+      if (step.id == interactionStep.parent_interaction_id) {
+        parent = {
+          ...step,
+          answerLink: interactionStep.answer_option
         }
-      })
+      }
     } else {
       if (isModel || step.question && step.question.answerOptions) {
         step.question.answerOptions.forEach((answer) => {

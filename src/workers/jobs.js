@@ -129,7 +129,7 @@ export async function assignTexters(job) {
   await updateJob(job, 20)
 
   let availableContacts = await r.table('campaign_contact')
-    .getAll('', { index: 'assignment_id' })
+    .getAll(null, { index: 'assignment_id' })
     .filter({ campaign_id: id })
     .count()
   // Go through all the submitted texters and create assignments
@@ -151,8 +151,9 @@ export async function assignTexters(job) {
         campaign_id: id
       }).save()
     }
+
     await r.table('campaign_contact')
-      .getAll('', { index: 'assignment_id' })
+      .getAll(null, { index: 'assignment_id' })
       .filter({ campaign_id: id })
       .limit(contactsToAssign)
       .update({ assignment_id: assignment.id })
@@ -179,6 +180,10 @@ export async function assignTexters(job) {
     await r.table('assignment')
       .getAll(...assignmentsToDelete.map((ele) => ele.assignment_id))
       .delete()
+  }
+
+  if (process.env.SYNC_JOBS) {
+    await r.table('job_request').get(job.id).delete()
   }
 }
 
@@ -214,12 +219,12 @@ export async function exportCampaign(job) {
 
   let finalCampaignResults = []
   let finalCampaignMessages = []
-  const assignments = await r.table('assignment')
-    .getAll(id, { index: 'campaign_id' })
-    .merge((row) => ({
-      texter: r.table('user')
-        .get(row('user_id'))
-    }))
+  const assignments = await r.knex('assignment')
+    .where('campaign_id', id)
+    .join('user', 'user_id', 'user.id')
+    .select('assignment.id as id',
+            //user fields
+            'first_name', 'last_name', 'email', 'cell', 'assigned_cell')
   const assignmentCount = assignments.length
 
   for (let index = 0; index < assignmentCount; index++) {
@@ -255,11 +260,11 @@ export async function exportCampaign(job) {
         campaignId: campaign.id,
         campaign: campaign.title,
         assignmentId: assignment.id,
-        'texter[firstName]': assignment.texter.first_name,
-        'texter[lastName]': assignment.texter.last_name,
-        'texter[email]': assignment.texter.email,
-        'texter[cell]': assignment.texter.cell,
-        'texter[assignedCell]': assignment.texter.assigned_cell,
+        'texter[firstName]': assignment.first_name,
+        'texter[lastName]': assignment.last_name,
+        'texter[email]': assignment.email,
+        'texter[cell]': assignment.cell,
+        'texter[assignedCell]': assignment.assigned_cell,
         'contact[firstName]': contact.first_name,
         'contact[lastName]': contact.last_name,
         'contact[cell]': contact.cell,
