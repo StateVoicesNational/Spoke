@@ -345,14 +345,16 @@ export async function exportCampaign(job) {
   }
 }
 
+const serviceMap = { nexmo, twilio }
+
 export async function sendMessages(queryFunc) {
-  let messages = await r.knex('message')
+  let messages = r.knex('message')
     .where({'send_status': 'QUEUED'})
-    .orderBy('created_at')
 
   if (queryFunc) {
     messages = queryFunc(messages)
   }
+  messages = await messages.orderBy('created_at')
 
   for (let index = 0; index < messages.length; index++) {
     const message = messages[index]
