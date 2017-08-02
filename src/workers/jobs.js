@@ -1,6 +1,9 @@
 import { r, Campaign, CampaignContact, User, Assignment, InteractionStep } from '../server/models'
 import { log, gunzip } from '../lib'
 import { sleep, getNextJob, updateJob } from './lib'
+import nexmo from '../server/api/lib/nexmo'
+import twilio from '../server/api/lib/twilio'
+
 import AWS from 'aws-sdk'
 import Baby from 'babyparse'
 import moment from 'moment'
@@ -328,5 +331,22 @@ export async function exportCampaign(job) {
     log.debug('Would have saved the following to S3:')
     log.debug(campaignCsv)
     log.debug(messageCsv)
+  }
+}
+
+export async function sendMessages(queryFunc) {
+  let messages = await r.knex('message')
+    .where({'send_status': 'QUEUED'})
+    .orderBy('created_at')
+
+  if (queryFunc) {
+    messages = queryFunc(messages)
+  }
+
+  for (let index = 0; index < messages.length; index++) {
+    const message = messages[index]
+    const service = serviceMap[message.service || process.env.DEFAULT_SERVICE]
+    log.info(`Sending (${message.service}): ${message.user_number} -> ${message.contact_number}\nMessage: ${message.text}`)
+    await service.sendMessage(message)
   }
 }

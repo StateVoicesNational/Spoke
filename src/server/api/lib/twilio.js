@@ -10,6 +10,8 @@ const MAX_SEND_ATTEMPTS = 5
 
 if (process.env.TWILIO_API_KEY && process.env.TWILIO_AUTH_TOKEN) {
   twilio = Twilio(process.env.TWILIO_API_KEY, process.env.TWILIO_AUTH_TOKEN)
+} else {
+  log.warn('NO TWILIO CONNECTION')
 }
 
 async function convertMessagePartsToMessage(messageParts) {
