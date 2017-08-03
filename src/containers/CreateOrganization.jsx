@@ -107,7 +107,7 @@ class CreateOrganization extends React.Component {
 const mapQueriesToProps = ({ ownProps }) => ({
   inviteData: {
     query: gql`query getInvite($inviteId: String!) {
-      invite(id: $inviteId) {
+      inviteByHash(hash: $inviteId) {
         id
         isValid
       }
