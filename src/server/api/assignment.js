@@ -18,7 +18,8 @@ function getContacts(assignment, contactsFilter, organization, campaign) {
   const textingHoursEnforced = organization.texting_hours_enforced
   const textingHoursStart = organization.texting_hours_start
   const textingHoursEnd = organization.texting_hours_end
-  const pastDue = moment(campaign.due_by + 24 * 60 * 60).diff(moment()) < 0
+  // 24-hours past due
+  const pastDue = ((campaign.due_by + 24 * 60 * 60 * 1000) > Number(new Date()))
   const getIndexValuesWithOffsets = (offsets) => offsets.map(([offset, hasDST]) => ([
     assignment.id,
     `${offset}_${hasDST}`

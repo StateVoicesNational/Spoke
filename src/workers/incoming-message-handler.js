@@ -10,18 +10,28 @@ async function sleep(ms = 0) {
 
 async function handleIncomingMessageParts() {
   const serviceMap = { nexmo, twilio }
-  const messagePartsByService = await r.table('pending_message_part')
-    .group({ index: 'service' })
+  const messageParts = await r.table('pending_message_part')
+  const messagePartsByService = [
+    {'group': 'nexmo',
+     'reduction': messageParts.filter((m) => (m.service == 'nexmo'))
+    },
+    {'group': 'twilio',
+     'reduction': messageParts.filter((m) => (m.service == 'twilio'))
+    },
+  ]
   const serviceLength = messagePartsByService.length
   for (let index = 0; index < serviceLength; index++) {
     const serviceParts = messagePartsByService[index]
     const allParts = serviceParts.reduction
+    const allPartsCount = allParts.length
+    if (allPartsCount == 0) {
+      continue
+    }
     const service = serviceMap[serviceParts.group]
     const convertMessageParts = service.convertMessagePartsToMessage
     const messagesToSave = []
     let messagePartsToDelete = []
     const concatMessageParts = {}
-    const allPartsCount = allParts.length
 
     for (let i = 0; i < allPartsCount; i++) {
       const part = allParts[i]
@@ -92,14 +102,10 @@ async function handleIncomingMessageParts() {
       await saveNewIncomingMessage(messagesToSave[i])
     }
 
-    const messagePartsToDeleteCount = messagePartsToDelete.length
-    // POSTMIGRATION TODO: make this efficiently filter(id__in=IDS).delete()
-    for (let i = 0; i < messagePartsToDeleteCount; i++) {
-      log.info('Deleting message part', messagePartsToDelete[i].id)
-      await r.table('pending_message_part')
-        .get(messagePartsToDelete[i].id)
-        .delete()
-    }
+    log.info('Deleting message parts', messagePartsToDelete.map((m) => m.id))
+    await r.table('pending_message_part')
+      .getAll(...messagePartsToDelete)
+      .delete()
   }
 }
 (async () => {
