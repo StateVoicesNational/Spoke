@@ -113,20 +113,28 @@ app.post('/twilio-message-report', wrap(async (req, res) => {
 // })
 
 app.get('/allmessages', (req, res) => {
-  client.sms.messages.list((err, data) => {
-    if (err) {
-      log.error(err)
-    } else {
-      const listOfMessages = data.sms_messages
-      return res.json(listOfMessages)
-    }
-  })
+  if (req.user && req.user.is_superadmin) {
+    client.sms.messages.list((err, data) => {
+      if (err) {
+        log.error(err)
+      } else {
+        const listOfMessages = data.sms_messages
+        return res.json(listOfMessages)
+      }
+    })
+  } else {
+    res.json([])
+  }
 })
 
 app.get('/availablephonenumbers', (req, res) => {
-  client.incomingPhoneNumbers.list(
-    (err, data) => res.json(data.incomingPhoneNumbers)
-  )
+  if (req.user && req.user.is_superadmin) {
+    client.incomingPhoneNumbers.list(
+      (err, data) => res.json(data.incomingPhoneNumbers)
+    )
+  } else {
+    return res.json([])
+  }
 })
 
 app.get('/logout-callback', (req, res) => {
