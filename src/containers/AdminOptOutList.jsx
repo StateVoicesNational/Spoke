@@ -5,8 +5,8 @@ import Empty from '../components/Empty'
 import loadData from './hoc/load-data'
 import gql from 'graphql-tag'
 
-const AdminOptOutList = function AdminOptOutList() {
-  const { data } = this.props
+const AdminOptOutList = function AdminOptOutList(props) {
+  const { data } = props
   const { optOuts } = data.organization
   return (
     <div>

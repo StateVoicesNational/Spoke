@@ -26,7 +26,7 @@ class AdminDashboard extends React.Component {
     return `/admin/${organizationId}/${path}`
   }
 
-  renderNavigation() {
+  renderNavigation(sections) {
     const organizationId = this.props.params.organizationId
     if (!organizationId) {
       return ''
@@ -35,6 +35,7 @@ class AdminDashboard extends React.Component {
       <div className={css(styles.sideBar)}>
         <AdminNavigation
           organizationId={organizationId}
+          sections={sections}
         />
       </div>
     )
@@ -71,7 +72,7 @@ class AdminDashboard extends React.Component {
       <div>
         <TopNav title={title} backToURL={backToURL} />
         <div className={css(styles.container)}>
-          {this.renderNavigation()}
+          {this.renderNavigation(sections)}
           <div className={css(styles.content)}>
             {children}
           </div>
