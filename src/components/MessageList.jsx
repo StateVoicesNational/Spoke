@@ -21,8 +21,8 @@ const styles = {
   }
 }
 
-const MessageList = function MessageList() {
-  const { contact } = this.props
+const MessageList = function MessageList(props) {
+  const { contact } = props
   const { optOut, messages } = contact
 
   const optOutItem = optOut ? (

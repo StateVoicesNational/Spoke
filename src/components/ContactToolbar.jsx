@@ -20,8 +20,8 @@ const inlineStyles = {
 }
 
 
-const ContactToolbar = function ContactToolbar() {
-  const { campaignContact, rightToolbarIcon } = this.props
+const ContactToolbar = function ContactToolbar(props) {
+  const { campaignContact, rightToolbarIcon } = props
 
   const { location } = campaignContact
 
