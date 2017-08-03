@@ -37,6 +37,7 @@ echo 'INSERT INTO invite (id,is_valid) VALUES (123, 1);' |sqlite3 mydb.sqlite
 
 ## Helpful Dev Tips
 * Go to `localhost:3000/graphql` to mess around with the GraphQL API
+* Set `JOBS_SAME_PROCESS=1` and then you can run only `npm run dev-start` without all the extra processes
 * Run `sqlite3 mydb.sqlite` to connect to a SQL shell for the dev database
 * [Set up an ESLint plugin in your code editor so that you catch coding errors and follow code style guidelines more easily!](https://medium.com/planet-arkency/catch-mistakes-before-you-run-you-javascript-code-6e524c36f0c8#.oboqsse48)
 * [Install the redux-devtools-extension](https://github.com/zalmoxisus/redux-devtools-extension) in Chrome to get advanced Redux debugging features.
