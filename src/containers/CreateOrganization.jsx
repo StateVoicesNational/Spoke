@@ -97,7 +97,7 @@ class CreateOrganization extends React.Component {
           Spoke
         </div>
         <div className={css(styles.formContainer)}>
-          {this.props.inviteData.invite && this.props.inviteData.invite.isValid ? this.renderForm() : this.renderInvalid()}
+          {this.props.inviteData.inviteByHash && this.props.inviteData.inviteByHash[0].isValid ? this.renderForm() : this.renderInvalid()}
         </div>
       </div>
     )

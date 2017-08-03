@@ -142,6 +142,7 @@ const rootSchema = `
   input InviteInput {
     id: String
     is_valid: Boolean
+    hash: String
     created_at: Date
   }
 
@@ -150,9 +151,9 @@ const rootSchema = `
     organization(id:String!): Organization
     campaign(id:String!): Campaign
     invite(id:String!): Invite
-    inviteByHash(hash:String!): Invite
-    contact(id:String!): CampaignContact,
-    assignment(id:String!): Assignment,
+    inviteByHash(hash:String!): [Invite]
+    contact(id:String!): CampaignContact
+    assignment(id:String!): Assignment
     organizations: [Organization]
   }
 
