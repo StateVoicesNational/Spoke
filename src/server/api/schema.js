@@ -82,7 +82,8 @@ import { gzip } from '../../lib'
 import { Notifications, sendUserNotification } from '../notifications'
 import { uploadContacts, createInteractionSteps, assignTexters } from '../../workers/jobs'
 
-const JOBS_SAME_PROCESS = !!process.env.JOBS_SAME_PROCESSa
+const JOBS_SAME_PROCESS = !!process.env.JOBS_SAME_PROCESS
+const serviceMap = { nexmo, twilio }
 
 const rootSchema = `
   input CampaignContactInput {
