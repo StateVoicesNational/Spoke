@@ -12,6 +12,9 @@ import { Notifications, sendUserNotification } from '../server/notifications'
 
 var zipMemoization = {}
 
+const JOBS_SAME_PROCESS = !!process.env.JOBS_SAME_PROCESS
+const serviceMap = { nexmo, twilio }
+
 export async function uploadContacts(job) {
   const campaignId = job.campaign_id
   // We do this deletion in schema.js but we do it again here just in case the the queue broke and we had a backlog of contact uploads for one campaign
@@ -51,7 +54,7 @@ export async function uploadContacts(job) {
     await CampaignContact.save(savePortion)
   }
 
-  if (process.env.SYNC_JOBS) {
+  if (JOBS_SAME_PROCESS) {
     await r.table('job_request').get(job.id).delete()
   }
 }
@@ -101,7 +104,7 @@ export async function createInteractionSteps(job) {
     }
   }
 
-  if (process.env.SYNC_JOBS) {
+  if (JOBS_SAME_PROCESS) {
     await r.table('job_request').get(job.id).delete()
   }
 }
@@ -196,7 +199,7 @@ export async function assignTexters(job) {
       .delete()
   }
 
-  if (process.env.SYNC_JOBS) {
+  if (JOBS_SAME_PROCESS) {
     await r.table('job_request').get(job.id).delete()
   }
 }
@@ -344,8 +347,6 @@ export async function exportCampaign(job) {
     log.debug(messageCsv)
   }
 }
-
-const serviceMap = { nexmo, twilio }
 
 export async function sendMessages(queryFunc) {
   let messages = r.knex('message')

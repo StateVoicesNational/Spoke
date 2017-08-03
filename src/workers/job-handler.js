@@ -1,6 +1,6 @@
 import { r } from '../server/models'
 import { sleep, getNextJob, updateJob } from './lib'
-import { exportCampaign, uploadContacts, assignTexters, createInteractionSteps } from './jobs'
+import { exportCampaign, uploadContacts, assignTexters, createInteractionSteps, sendMessages } from './jobs'
 import { setupUserNotificationObservers } from '../server/notifications'
 
 function jobMap() {
@@ -8,24 +8,31 @@ function jobMap() {
     export: exportCampaign,
     upload_contacts: uploadContacts,
     assign_texters: assignTexters,
-    create_interaction_steps: createInteractionSteps
+    create_interaction_steps: createInteractionSteps,
+    // usually dispatched in three separate processes, not here
+    send_messages: sendMessages
   }
 }
 
+const JOBS_SAME_PROCESS = !!process.env.JOBS_SAME_PROCESS
 
 (async () => {
   // eslint-disable-next-line no-constant-condition
   while (true) {
     try {
-      await sleep(1000)
+      if (!JOBS_SAME_PROCESS) {
+        // if this is running as a 'cron-like' task to finish all jobs
+        // and then close, then no need to wait around for the next
+        await sleep(1000)
+      }
       const job = await getNextJob()
       if (job) {
         await (jobMap()[job.job_type])(job)
         await r.table('job_request')
           .get(job.id)
           .delete()
-      } else if (process.env.SYNC_JOBS) {
-        break
+      } else if (JOBS_SAME_PROCESS) {
+        break // all finished, so just complete
       }
 
       var twoMinutesAgo = new Date(new Date() - 1000 * 60 * 2)

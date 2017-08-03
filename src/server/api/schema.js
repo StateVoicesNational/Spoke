@@ -75,12 +75,15 @@ import {
   accessRequired,
   superAdminRequired
 } from './errors'
-import { handleIncomingMessage } from './lib/nexmo'
-import { handleTwilioIncomingMessage } from './lib/twilio'
+import nexmo from './lib/nexmo'
+import twilio from './lib/twilio'
 import { gzip } from '../../lib'
 // import { isBetweenTextingHours } from '../../lib/timezones'
 import { Notifications, sendUserNotification } from '../notifications'
 import { uploadContacts, createInteractionSteps, assignTexters } from '../../workers/jobs'
+
+const JOBS_SAME_PROCESS = !!process.env.JOBS_SAME_PROCESS
+const serviceMap = { nexmo, twilio }
 
 const rootSchema = `
   input CampaignContactInput {
@@ -215,18 +218,20 @@ async function editCampaign(id, campaign, loaders) {
       queue_name: `${id}:edit_campaign`,
       job_type: 'upload_contacts',
       locks_queue: true,
-      assigned: true, // will get called immediately, below
+      assigned: JOBS_SAME_PROCESS, // can get called immediately, below
       campaign_id: id,
       // NOTE: stringifying because compressedString is a binary buffer
       payload: compressedString.toString('base64')
     })
-    uploadContacts(job).then()
+    if (JOBS_SAME_PROCESS) {
+      uploadContacts(job).then()
+    }
   }
   if (campaign.hasOwnProperty('texters')) {
     let job = await JobRequest.save({
       queue_name: `${id}:edit_campaign`,
       locks_queue: true,
-      assigned: true, // will get called immediately, below
+      assigned: JOBS_SAME_PROCESS, // can get called immediately, below
       job_type: 'assign_texters',
       campaign_id: id,
       payload: JSON.stringify({
@@ -234,13 +239,16 @@ async function editCampaign(id, campaign, loaders) {
         texters: campaign.texters
       })
     })
-    assignTexters(job).then()
+
+    if (JOBS_SAME_PROCESS) {
+      assignTexters(job).then()
+    }
   }
   if (campaign.hasOwnProperty('interactionSteps')) {
     let job = await JobRequest.save({
       queue_name: `${id}:edit_campaign`,
       locks_queue: true,
-      assigned: true, // will be sent immediately on this thread
+      assigned: JOBS_SAME_PROCESS, // can get called immediately, below
       job_type: 'create_interaction_steps',
       campaign_id: id,
       payload: JSON.stringify({
@@ -248,7 +256,10 @@ async function editCampaign(id, campaign, loaders) {
         interaction_steps: campaign.interactionSteps
       })
     })
-    createInteractionSteps(job).then()
+
+    if (JOBS_SAME_PROCESS) {
+      createInteractionSteps(job).then()
+    }
   }
 
   if (campaign.hasOwnProperty('cannedResponses')) {
@@ -302,14 +313,14 @@ const rootMutations = {
       const contactNumber = contact.cell
       const mockedId = `mocked_${Math.random().toString(36).replace(/[^a-zA-Z1-9]+/g, '')}`
       if (lastMessage.service === 'nexmo') {
-        await handleIncomingMessage({
+        await nexmo.handleIncomingMessage({
           to: userNumber,
           msisdn: contactNumber,
           text: message,
           messageId: mockedId
         })
       } else {
-        await handleTwilioIncomingMessage({
+        await twilio.handleTwilioIncomingMessage({
           From: contactNumber,
           To: userNumber,
           Body: message,
@@ -568,7 +579,7 @@ const rootMutations = {
         contact_number: contactNumber,
         user_number: '',
         assignment_id: message.assignmentId,
-        send_status: 'QUEUED',
+        send_status: (JOBS_SAME_PROCESS ? 'SENDING' : 'QUEUED'),
         is_from_contact: false
       })
 
@@ -576,6 +587,12 @@ const rootMutations = {
 
       contact.message_status = 'messaged'
       await contact.save()
+
+      if (JOBS_SAME_PROCESS) {
+        const service = serviceMap[messageInstance.service || process.env.DEFAULT_SERVICE]
+        log.info(`Sending (${service}): ${messageInstance.user_number} -> ${messageInstance.contact_number}\nMessage: ${messageInstance.text}`)
+        service.sendMessage(messageInstance).then()
+      }
 
       return contact
     },
