@@ -77,7 +77,7 @@ import {
 } from './errors'
 import nexmo from './lib/nexmo'
 import twilio from './lib/twilio'
-import { gzip } from '../../lib'
+import { gzip, log } from '../../lib'
 // import { isBetweenTextingHours } from '../../lib/timezones'
 import { Notifications, sendUserNotification } from '../notifications'
 import { uploadContacts, createInteractionSteps, assignTexters } from '../../workers/jobs'

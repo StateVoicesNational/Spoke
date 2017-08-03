@@ -86,7 +86,7 @@ export async function createInteractionSteps(job) {
         script: step.script,
         answer_option: answerOption,
         parent_interaction_id: parentId
-      })
+      }).catch(log.error)
 
     if (step.answerOptions) {
        for (let innerIndex = 0; innerIndex < step.answerOptions.length; innerIndex++) {
@@ -348,6 +348,9 @@ export async function exportCampaign(job) {
   }
 }
 
+// add an in-memory guard that the same messages are being sent again and again
+let pastMessages = []
+
 export async function sendMessages(queryFunc) {
   let messages = r.knex('message')
     .where({'send_status': 'QUEUED'})
@@ -358,9 +361,16 @@ export async function sendMessages(queryFunc) {
   messages = await messages.orderBy('created_at')
 
   for (let index = 0; index < messages.length; index++) {
-    const message = messages[index]
-    const service = serviceMap[message.service || process.env.DEFAULT_SERVICE]
+    let message = messages[index]
+    if (pastMessages.indexOf(message.id) != -1) {
+      throw new Error("Encountered send message request of the same message."
+                      + " This is scary!  If ok, just restart process. Message ID: " + message.id)
+    }
+    message.service = message.service || process.env.DEFAULT_SERVICE
+    const service = serviceMap[message.service]
     log.info(`Sending (${message.service}): ${message.user_number} -> ${message.contact_number}\nMessage: ${message.text}`)
     await service.sendMessage(message)
+    pastMessages.push(message.id)
+    pastMessages = pastMessages.slice(-100) //keep the last 100
   }
 }

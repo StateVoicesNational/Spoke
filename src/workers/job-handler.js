@@ -14,7 +14,7 @@ function jobMap() {
   }
 }
 
-const JOBS_SAME_PROCESS = !!process.env.JOBS_SAME_PROCESS
+const JOBS_SAME_PROCESS = !!process.env.JOBS_SAME_PROCESS; //keep semi
 
 (async () => {
   // eslint-disable-next-line no-constant-condition

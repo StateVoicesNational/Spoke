@@ -11,7 +11,7 @@ import { requiredString, optionalString, timestamp } from './custom-types'
 const PendingMessagePart = thinky.createModel('pending_message_part', type.object().schema({
   id: type.string(),
   service: requiredString(),
-  service_id: requiredString(),
+  service_id: requiredString().stopReference(),
   parent_id: optionalString(),
   service_message: requiredString(), //JSON
   user_number: optionalString(),
