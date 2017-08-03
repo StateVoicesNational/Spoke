@@ -1,3 +1,4 @@
+import { log } from '../../lib'
 import { Campaign,
   CannedResponse,
   Invite,
@@ -81,6 +82,7 @@ import { gzip } from '../../lib'
 // import { isBetweenTextingHours } from '../../lib/timezones'
 import { Notifications, sendUserNotification } from '../notifications'
 import { uploadContacts, createInteractionSteps, assignTexters } from '../../workers/jobs'
+const uuidv4 = require('uuid/v4')
 
 const rootSchema = `
   input CampaignContactInput {
@@ -148,6 +150,7 @@ const rootSchema = `
     organization(id:String!): Organization
     campaign(id:String!): Campaign
     invite(id:String!): Invite
+    inviteByHash(hash:String!): Invite
     contact(id:String!): CampaignContact,
     assignment(id:String!): Assignment,
     organizations: [Organization]
@@ -405,8 +408,11 @@ const rootMutations = {
 
       return await Organization.get(organizationId)
     },
-    createInvite: async (_, { invite }) => {
-      const inviteInstance = new Invite(invite)
+    createInvite: async (_, {}) => {
+      const inviteInstance = new Invite({
+        is_valid: true,
+        hash: uuidv4(),
+      })
       const newInvite = await inviteInstance.save()
       return newInvite
     },
@@ -631,6 +637,10 @@ const rootResolvers = {
     invite: async (_, { id }, { loaders, user }) => {
       authRequired(user)
       return loaders.invite.load(id)
+    },
+    inviteByHash: async (_, { hash }, { loaders, user }) => {
+      authRequired(user)
+      return r.table('invite').filter({"hash": hash})
     },
     currentUser: async(_, { id }, { user }) => user,
     contact: async(_, { id }, { loaders }) => {
