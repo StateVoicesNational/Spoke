@@ -5,6 +5,7 @@ export const schema = `
   type Invite {
     id: ID
     isValid: Boolean
+    hash: String
   }
 `
 
@@ -12,7 +13,8 @@ export const resolvers = {
   Invite: {
     ...mapFieldsToModel([
       'id',
-      'isValid'
+      'isValid',
+      'hash'
     ], Invite)
   }
 }
