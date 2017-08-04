@@ -57,7 +57,7 @@ class Home extends React.Component {
       throw new Error(newInvite.errors)
     } else {
       // alert(newInvite.data.createInvite.id)
-      this.props.router.push(`/invite/${newInvite.data.createInvite.id}`)
+      this.props.router.push(`/invite/${newInvite.data.createInvite.hash}`)
     }
   }
 
@@ -127,7 +127,7 @@ const mapMutationsToProps = () => ({
     mutation: gql`
         mutation createInvite($invite: InviteInput!) {
           createInvite(invite: $invite) {
-            id
+            hash
           }
         }`,
     variables: { invite }

@@ -8,6 +8,7 @@ const Invite = thinky.createModel('invite', type.object().schema({
     .boolean()
     .required()
     .allowNull(false),
+  hash: type.string(),
   created_at: timestamp()
 }).allowExtra(false))
 

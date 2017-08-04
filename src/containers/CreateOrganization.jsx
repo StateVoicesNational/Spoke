@@ -63,7 +63,7 @@ class CreateOrganization extends React.Component {
                 const newOrganization = await this.props.mutations.createOrganization(
                     formValues.name,
                     this.props.userData.currentUser.id,
-                    this.props.inviteData.invite.id
+                    this.props.inviteData.inviteByHash[0].id
                   )
                 this.props.router.push(`/admin/${newOrganization.data.createOrganization.id}`)
               }}
@@ -97,7 +97,7 @@ class CreateOrganization extends React.Component {
           Spoke
         </div>
         <div className={css(styles.formContainer)}>
-          {this.props.inviteData.invite && this.props.inviteData.invite.isValid ? this.renderForm() : this.renderInvalid()}
+          {this.props.inviteData.inviteByHash && this.props.inviteData.inviteByHash[0].isValid ? this.renderForm() : this.renderInvalid()}
         </div>
       </div>
     )
@@ -107,7 +107,7 @@ class CreateOrganization extends React.Component {
 const mapQueriesToProps = ({ ownProps }) => ({
   inviteData: {
     query: gql`query getInvite($inviteId: String!) {
-      invite(id: $inviteId) {
+      inviteByHash(hash: $inviteId) {
         id
         isValid
       }
