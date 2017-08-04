@@ -1,4 +1,3 @@
-import { log } from '../../lib'
 import { Campaign,
   CannedResponse,
   Invite,
