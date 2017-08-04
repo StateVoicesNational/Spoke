@@ -63,7 +63,7 @@ class CreateOrganization extends React.Component {
                 const newOrganization = await this.props.mutations.createOrganization(
                     formValues.name,
                     this.props.userData.currentUser.id,
-                    this.props.inviteData.invite.id
+                    this.props.inviteData.inviteByHash[0].id
                   )
                 this.props.router.push(`/admin/${newOrganization.data.createOrganization.id}`)
               }}
