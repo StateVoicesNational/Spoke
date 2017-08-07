@@ -21,7 +21,6 @@ async function handleIncomingMessageParts() {
     },
   ]
   const serviceLength = messagePartsByService.length
-  console.log('whats the length here', serviceLength);
   for (let index = 0; index < serviceLength; index++) {
     const serviceParts = messagePartsByService[index]
     const allParts = serviceParts.reduction
@@ -30,7 +29,7 @@ async function handleIncomingMessageParts() {
       continue
     }
     const service = serviceMap[serviceParts.group]
-    console.log('service', service);
+    console.log('is service being defined?:', service);
     const convertMessageParts = service.convertMessagePartsToMessage
     console.log('message parts to message', convertMessageParts);
     const messagesToSave = []
@@ -45,14 +44,19 @@ async function handleIncomingMessageParts() {
         .getAll(serviceMessageId, { index: 'service_id' })
         .count()
 
+      console.log('what is the service:', part.service);
+      console.log('what is the contact number:', part.contact_number);
+
       const lastMessage = await getLastMessage({
         contactNumber: part.contact_number,
         service: serviceDefault
       })
 
       console.log('last message', lastMessage);
+      console.log('what is message', messagesToSave)
 
       const duplicateMessageToSaveExists = !!messagesToSave.find((message) => message.service_id === serviceMessageId)
+      console.log('what does this become:', duplicateMessageToSaveExists);
       if (!lastMessage) {
         log.info('Received message part with no thread to attach to', part)
         messagePartsToDelete.push(part)
