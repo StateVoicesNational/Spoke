@@ -18,18 +18,12 @@ export default class AdminIncomingMessageList extends Component {
     super(props)
 
     this.state = {
-      incomingmessages: [],
-      availablephonenumbers: []
+      incomingmessages: []
     }
   }
   componentDidMount() {
     axios.get('http://localhost:3000/allmessages')
       .then(response => this.setState({ incomingmessages: response.data }))
-  }
-
-  getAvailablePhoneNumbers() {
-    axios.get('http://localhost:3000/availablephonenumbers')
-      .then(response => response.data)
   }
 
   render() {

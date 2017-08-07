@@ -127,16 +127,6 @@ app.get('/allmessages', (req, res) => {
   }
 })
 
-app.get('/availablephonenumbers', (req, res) => {
-  if (req.user && req.user.is_superadmin) {
-    client.incomingPhoneNumbers.list(
-      (err, data) => res.json(data.incomingPhoneNumbers)
-    )
-  } else {
-    return res.json([])
-  }
-})
-
 app.get('/logout-callback', (req, res) => {
   req.logOut()
   res.redirect('/')
