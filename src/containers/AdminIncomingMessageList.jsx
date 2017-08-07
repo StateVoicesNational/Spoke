@@ -22,7 +22,7 @@ export default class AdminIncomingMessageList extends Component {
     }
   }
   componentDidMount() {
-    axios.get('http://localhost:3000/allmessages')
+    axios.get('/allmessages')
       .then(response => this.setState({ incomingmessages: response.data }))
   }
 
