@@ -383,8 +383,7 @@ const rootMutations = {
       const userOrg = await r.table('user_organization')
         .getAll(user.id, { index: 'user_id' })
         .filter({ organization_id: organizationId })
-        .limit(1)
-        .nth(0)
+        .limit(1)(0)
         .default(null)
 
       if (!userOrg) {
