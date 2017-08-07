@@ -4,6 +4,7 @@ import { saveNewIncomingMessage, getLastMessage } from '../server/api/lib/messag
 import { r } from '../server/models'
 import { log } from '../lib'
 
+const serviceDefault = 'twilio'
 async function sleep(ms = 0) {
   return new Promise(fn => setTimeout(fn, ms))
 }
@@ -20,6 +21,7 @@ async function handleIncomingMessageParts() {
     },
   ]
   const serviceLength = messagePartsByService.length
+  console.log('whats the length here', serviceLength);
   for (let index = 0; index < serviceLength; index++) {
     const serviceParts = messagePartsByService[index]
     const allParts = serviceParts.reduction
@@ -28,11 +30,13 @@ async function handleIncomingMessageParts() {
       continue
     }
     const service = serviceMap[serviceParts.group]
+    console.log('service', service);
     const convertMessageParts = service.convertMessagePartsToMessage
+    console.log('message parts to message', convertMessageParts);
     const messagesToSave = []
     let messagePartsToDelete = []
     const concatMessageParts = {}
-
+    console.log('allPartsCount', allPartsCount);
     for (let i = 0; i < allPartsCount; i++) {
       const part = allParts[i]
 
@@ -43,8 +47,10 @@ async function handleIncomingMessageParts() {
 
       const lastMessage = await getLastMessage({
         contactNumber: part.contact_number,
-        service: service === nexmo ? 'nexmo' : 'twilio'
+        service: serviceDefault
       })
+
+      console.log('last message', lastMessage);
 
       const duplicateMessageToSaveExists = !!messagesToSave.find((message) => message.service_id === serviceMessageId)
       if (!lastMessage) {
@@ -93,6 +99,7 @@ async function handleIncomingMessageParts() {
         messagePartsToDelete = messagePartsToDelete.concat(messageParts)
         const message = await convertMessageParts(messageParts)
         messagesToSave.push(message)
+        console.log('messagesToSave', messageToSave);
       }
     }
 
