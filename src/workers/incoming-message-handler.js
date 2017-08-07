@@ -12,7 +12,6 @@ async function sleep(ms = 0) {
 async function handleIncomingMessageParts() {
   const serviceMap = { nexmo, twilio }
   const messageParts = await r.table('pending_message_part')
-  console.log("messageParts: " + messageParts)
   const messagePartsByService = [
     {'group': 'nexmo',
      'reduction': messageParts.filter((m) => (m.service == 'nexmo'))
@@ -21,46 +20,30 @@ async function handleIncomingMessageParts() {
      'reduction': messageParts.filter((m) => (m.service == 'twilio'))
     },
   ]
-  console.log("messagePartsByService: "+ messagePartsByService)
   const serviceLength = messagePartsByService.length
   for (let index = 0; index < serviceLength; index++) {
     const serviceParts = messagePartsByService[index]
     const allParts = serviceParts.reduction
-    console.log("allParts: " + allParts)
     const allPartsCount = allParts.length
     if (allPartsCount == 0) {
       continue
     }
     const service = serviceMap[serviceParts.group]
-    console.log('is service being defined?:', service);
     const convertMessageParts = service.convertMessagePartsToMessage
-    console.log('message parts to message', convertMessageParts);
     const messagesToSave = []
     let messagePartsToDelete = []
     const concatMessageParts = {}
-    console.log('allPartsCount', allPartsCount);
     for (let i = 0; i < allPartsCount; i++) {
       const part = allParts[i]
-      console.log("part.service_id " + part.service_id)
       const serviceMessageId = part.service_id
       const savedCount = await r.table('message')
         .getAll(serviceMessageId, { index: 'service_id' })
         .count()
-
-      console.log('what is the service:', part.service);
-      console.log('what is the contact number:', part.contact_number);
-
       const lastMessage = await getLastMessage({
         contactNumber: part.contact_number,
         service: serviceDefault
       })
-
-      console.log('last message', lastMessage);
-      console.log('what is message', messagesToSave)
-
       const duplicateMessageToSaveExists = !!messagesToSave.find((message) => message.service_id === serviceMessageId)
-      console.log('what does this become:', duplicateMessageToSaveExists)
-      console.log('savedCount ' + savedCount)
       if (!lastMessage) {
         log.info('Received message part with no thread to attach to', part)
         messagePartsToDelete.push(part)
@@ -72,11 +55,9 @@ async function handleIncomingMessageParts() {
         messagePartsToDelete.push(part)
       } else {
         const parentId = part.parent_id
-        console.log("parentId: " + parentId)
         if (!parentId) {
           messagesToSave.push(await convertMessageParts([part]))
           messagePartsToDelete.push(part)
-          console.log("messagesToSave" + messagesToSave)
         } else {
           if (part.service !== 'nexmo') {
             throw new Error('should not have a parent ID for twilio')
@@ -109,7 +90,6 @@ async function handleIncomingMessageParts() {
         messagePartsToDelete = messagePartsToDelete.concat(messageParts)
         const message = await convertMessageParts(messageParts)
         messagesToSave.push(message)
-        console.log('messagesToSave', messageToSave);
       }
     }
 
