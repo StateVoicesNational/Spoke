@@ -12,6 +12,7 @@ async function sleep(ms = 0) {
 async function handleIncomingMessageParts() {
   const serviceMap = { nexmo, twilio }
   const messageParts = await r.table('pending_message_part')
+  console.log("messageParts: " + messageParts)
   const messagePartsByService = [
     {'group': 'nexmo',
      'reduction': messageParts.filter((m) => (m.service == 'nexmo'))
@@ -20,10 +21,12 @@ async function handleIncomingMessageParts() {
      'reduction': messageParts.filter((m) => (m.service == 'twilio'))
     },
   ]
+  console.log("messagePartsByService: "+ messagePartsByService)
   const serviceLength = messagePartsByService.length
   for (let index = 0; index < serviceLength; index++) {
     const serviceParts = messagePartsByService[index]
     const allParts = serviceParts.reduction
+    console.log("allParts: " + allParts)
     const allPartsCount = allParts.length
     if (allPartsCount == 0) {
       continue
@@ -38,7 +41,7 @@ async function handleIncomingMessageParts() {
     console.log('allPartsCount', allPartsCount);
     for (let i = 0; i < allPartsCount; i++) {
       const part = allParts[i]
-
+      console.log("part.service_id " + part.service_id)
       const serviceMessageId = part.service_id
       const savedCount = await r.table('message')
         .getAll(serviceMessageId, { index: 'service_id' })
@@ -56,7 +59,8 @@ async function handleIncomingMessageParts() {
       console.log('what is message', messagesToSave)
 
       const duplicateMessageToSaveExists = !!messagesToSave.find((message) => message.service_id === serviceMessageId)
-      console.log('what does this become:', duplicateMessageToSaveExists);
+      console.log('what does this become:', duplicateMessageToSaveExists)
+      console.log('savedCount ' + savedCount)
       if (!lastMessage) {
         log.info('Received message part with no thread to attach to', part)
         messagePartsToDelete.push(part)
@@ -68,9 +72,11 @@ async function handleIncomingMessageParts() {
         messagePartsToDelete.push(part)
       } else {
         const parentId = part.parent_id
-        if (parentId === '') {
+        console.log("parentId: " + parentId)
+        if (!parentId) {
           messagesToSave.push(await convertMessageParts([part]))
           messagePartsToDelete.push(part)
+          console.log("messagesToSave" + messagesToSave)
         } else {
           if (part.service !== 'nexmo') {
             throw new Error('should not have a parent ID for twilio')
@@ -113,14 +119,18 @@ async function handleIncomingMessageParts() {
       await saveNewIncomingMessage(messagesToSave[i])
     }
 
-    log.info('Deleting message parts', messagePartsToDelete.map((m) => m.id))
+    const messageIdsToDelete = messagePartsToDelete.map((m) => m.id)
+    log.info('Deleting message parts', messageIdsToDelete)
     await r.table('pending_message_part')
-      .getAll(...messagePartsToDelete)
+      .getAll(...messageIdsToDelete)
       .delete()
   }
 }
 (async () => {
   // eslint-disable-next-line no-constant-condition
+  // TODO: querying the db every 100 ms seems like a bad idea.
+  // We should trigger handleIncomingMessageParts whenever we write to
+  // pending_message_parts
   while (true) {
     try {
       await sleep(100)
