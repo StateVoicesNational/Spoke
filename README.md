@@ -22,7 +22,7 @@ This is generated from [react-apollo-starter-kit](https://github.com/saikat/reac
 10. Go to `localhost:3000` to load the app.
 11. Because Spoke is invite-only you need to generate an invite. Run:
 ```
-echo 'INSERT INTO invite (id,is_valid) VALUES (123, 1);' |sqlite3 mydb.sqlite
+echo "INSERT INTO invite \(hash,is_valid\) VALUES \('abc-123', true\)\;" |sqlite3 mydb.sqlite
 ```
 
 13. Use the generated key to visit an invite link, e.g.: http://localhost:3000/invite/123. This should redirect you to the login screen. Use the "Sign Up" option to create your account.
