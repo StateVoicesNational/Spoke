@@ -44,7 +44,7 @@ const MessageList = function MessageList(props) {
         <ListItem
           disabled
           style={message.isFromContact ? styles.received : styles.sent}
-          key={message.service_id}
+          key={message.text}
           primaryText={message.text}
           secondaryText={moment(message.createdAt).fromNow()}
         />
