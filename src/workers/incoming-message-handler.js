@@ -29,34 +29,21 @@ async function handleIncomingMessageParts() {
       continue
     }
     const service = serviceMap[serviceParts.group]
-    console.log('is service being defined?:', service);
     const convertMessageParts = service.convertMessagePartsToMessage
-    console.log('message parts to message', convertMessageParts);
     const messagesToSave = []
     let messagePartsToDelete = []
     const concatMessageParts = {}
-    console.log('allPartsCount', allPartsCount);
     for (let i = 0; i < allPartsCount; i++) {
       const part = allParts[i]
-
       const serviceMessageId = part.service_id
       const savedCount = await r.table('message')
         .getAll(serviceMessageId, { index: 'service_id' })
         .count()
-
-      console.log('what is the service:', part.service);
-      console.log('what is the contact number:', part.contact_number);
-
       const lastMessage = await getLastMessage({
         contactNumber: part.contact_number,
         service: serviceDefault
       })
-
-      console.log('last message', lastMessage);
-      console.log('what is message', messagesToSave)
-
       const duplicateMessageToSaveExists = !!messagesToSave.find((message) => message.service_id === serviceMessageId)
-      console.log('what does this become:', duplicateMessageToSaveExists);
       if (!lastMessage) {
         log.info('Received message part with no thread to attach to', part)
         messagePartsToDelete.push(part)
@@ -68,7 +55,7 @@ async function handleIncomingMessageParts() {
         messagePartsToDelete.push(part)
       } else {
         const parentId = part.parent_id
-        if (parentId === '') {
+        if (!parentId) {
           messagesToSave.push(await convertMessageParts([part]))
           messagePartsToDelete.push(part)
         } else {
@@ -103,7 +90,6 @@ async function handleIncomingMessageParts() {
         messagePartsToDelete = messagePartsToDelete.concat(messageParts)
         const message = await convertMessageParts(messageParts)
         messagesToSave.push(message)
-        console.log('messagesToSave', messageToSave);
       }
     }
 
@@ -113,14 +99,18 @@ async function handleIncomingMessageParts() {
       await saveNewIncomingMessage(messagesToSave[i])
     }
 
-    log.info('Deleting message parts', messagePartsToDelete.map((m) => m.id))
+    const messageIdsToDelete = messagePartsToDelete.map((m) => m.id)
+    log.info('Deleting message parts', messageIdsToDelete)
     await r.table('pending_message_part')
-      .getAll(...messagePartsToDelete)
+      .getAll(...messageIdsToDelete)
       .delete()
   }
 }
 (async () => {
   // eslint-disable-next-line no-constant-condition
+  // TODO: querying the db every 100 ms seems like a bad idea.
+  // We should trigger handleIncomingMessageParts whenever we write to
+  // pending_message_parts
   while (true) {
     try {
       await sleep(100)
