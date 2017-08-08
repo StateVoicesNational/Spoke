@@ -107,14 +107,19 @@ async function handleIncomingMessageParts() {
   }
 }
 (async () => {
-  // eslint-disable-next-line no-constant-condition
-  // TODO: querying the db every 100 ms seems like a bad idea.
-  // We should trigger handleIncomingMessageParts whenever we write to
-  // pending_message_parts
   while (true) {
     try {
-      await sleep(100)
-      await handleIncomingMessageParts()
+      const countPendingMessagePart = await r.knex('pending_message_part')
+      .count('id AS total').then( total => {
+        let totalCount = 0
+        totalCount = total[0].total
+        return totalCount
+      })
+
+      await sleep(500)
+      if(countPendingMessagePart > 0) {
+        await handleIncomingMessageParts()
+      }
     } catch (ex) {
       log.error(ex)
     }
