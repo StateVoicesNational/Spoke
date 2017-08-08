@@ -110,13 +110,21 @@ export async function createInteractionSteps(job) {
 }
 
 export async function assignTexters(job) {
+  // 1. get currentAssignments = all current assignments
+  //       .needsMessageCount = contacts that haven't been contacted yet
+  // 2. changedAssignments = assignments where texter wasn't listed before or needsMessageCount different
+  //                  needsMessageCount differ possibilities:
+  //                  a. they started texting folks, so needsMessageCount is less
+  //                  b. they were assigned a different number by the admin
+  // 3. update assignments 
   const payload = JSON.parse(job.payload)
   const id = job.campaign_id
   const texters = payload.texters
   const currentAssignments = await r.knex('assignment')
     .where('assignment.campaign_id', id)
-    .join('campaign_contact', 'campaign_contact.id', 'assignment_id')
-    .where({message_status: 'needsMessage'})
+    .joinRaw("left join campaign_contact "
+             +"ON (campaign_contact.assignment_id = assignment.id "
+             +    "AND campaign_contact.message_status = 'needsMessage')")
     .groupBy('user_id', 'assignment_id')
     .select('user_id', 'assignment_id', r.knex.raw('COUNT(campaign_contact.id) as needsMessageCount'))
     .catch(log.error)
@@ -135,13 +143,16 @@ export async function assignTexters(job) {
   .filter((ele) => ele !== null)
 
   // This atomically updates all the assignments to guard against people sending messages while all this is going on
-  const changedAssignmentIds = changedAssignments.map((ele) => ele.id)
+  const changedAssignmentIds = changedAssignments.map((ele) => ele.assignment_id)
 
   await updateJob(job, 10)
-  await r.table('campaign_contact')
-    .getAll(...changedAssignmentIds, { index: 'assignment_id' })
-    .filter({ message_status: 'needsMessage' })
-    .update({ message_status: '' })
+  if (changedAssignmentIds.length) {
+    await r.table('campaign_contact')
+      .getAll(...changedAssignmentIds, { index: 'assignment_id' })
+      .filter({ message_status: 'needsMessage' })
+      .update({ message_status: '' })
+      .catch(log.error)
+  }
 
   await updateJob(job, 20)
 
@@ -174,6 +185,7 @@ export async function assignTexters(job) {
       .filter({ campaign_id: id })
       .limit(contactsToAssign)
       .update({ assignment_id: assignment.id })
+      .catch(log.error)
 
     if (existingAssignment) {
       // We can't rely on an observer because nothing
@@ -197,6 +209,7 @@ export async function assignTexters(job) {
     await r.table('assignment')
       .getAll(...assignmentsToDelete.map((ele) => ele.assignment_id))
       .delete()
+      .catch(log.error)
   }
 
   if (JOBS_SAME_PROCESS) {

@@ -10,11 +10,14 @@ export const schema = `
     campaign: Campaign
     contacts(contactsFilter: ContactsFilter): [CampaignContact]
     contactsCount(contactsFilter: ContactsFilter): Int
+    contactedCount(contactsFilter: ContactsFilter): Int
+    newContactsCount(contactsFilter: ContactsFilter): Int
     userCannedResponses: [CannedResponse]
     campaignCannedResponses: [CannedResponse]
   }
 `
 function getContacts(assignment, contactsFilter, organization, campaign) {
+  /// returns list of contacts eligible for contacting _now_ by a particular assignment
   const textingHoursEnforced = organization.texting_hours_enforced
   const textingHoursStart = organization.texting_hours_start
   const textingHoursEnd = organization.texting_hours_end
@@ -34,6 +37,8 @@ function getContacts(assignment, contactsFilter, organization, campaign) {
   let secondaryFilter = null
 
   if (contactsFilter) {
+    // TODO: indexValues is assuming too-subtle implementation of rethink
+    //       so probably need to change to a knex query directly
     if (contactsFilter.hasOwnProperty('validTimezone') && contactsFilter.validTimezone !== null) {
       index = 'assignment_timezone_offset'
 
@@ -99,6 +104,18 @@ export const resolvers = {
         .get(campaign.organization_id)
 
       return getContacts(assignment, contactsFilter, organization, campaign).count()
+    },
+
+    newContactsCount: async (assignment, { contactsFilter }) => {
+      // NOTE: does not filter by contactsFilter yet
+      return r.table('campaign_contact').filter({ 'assignment_id': assignment.id }).count()
+    },
+
+    contactedCount: async (assignment, { contactsFilter }) => {
+      // does
+      return r.table('campaign_contact')
+        .getAll('messaged', 'closed', 'needsResponse', { index: 'message_status' })
+        .filter({ 'assignment_id': assignment.id }).count()
     },
 
     contacts: async (assignment, { contactsFilter }) => {
