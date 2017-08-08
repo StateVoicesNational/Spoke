@@ -22,7 +22,7 @@ export default class AdminIncomingMessageList extends Component {
     }
   }
   componentDidMount() {
-    axios.get('/allmessages')
+    axios.get(`/allmessages/${this.props.params.organizationId}`)
       .then(response => this.setState({ incomingmessages: response.data }))
   }
 
@@ -42,17 +42,14 @@ export default class AdminIncomingMessageList extends Component {
             </TableHeader>
             <TableBody>
               {this.state.incomingmessages.map(message => {
-                if (message.direction === 'inbound') {
-                  return (
-                    <TableRow key={message.id}>
-                      <TableRowColumn> {message.date_sent}</TableRowColumn>
-                      <TableRowColumn>{message.from}</TableRowColumn>
-                      <TableRowColumn>{message.to}</TableRowColumn>
-                      <TableRowColumn style={{ width: '40%' }}>{message.body}</TableRowColumn>
-                    </TableRow>
-                    )
-                }
-                return ''
+                return (
+                  <TableRow key={message.id}>
+                    <TableRowColumn> {message.created_at}</TableRowColumn>
+                    <TableRowColumn>{message.user_number}</TableRowColumn>
+                    <TableRowColumn>{message.contact_number}</TableRowColumn>
+                    <TableRowColumn style={{ width: '40%' }}>{message.text}</TableRowColumn>
+                  </TableRow>
+                  )
               }
               )}
             </TableBody>
