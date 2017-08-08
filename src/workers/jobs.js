@@ -110,9 +110,9 @@ export async function createInteractionSteps(job) {
 }
 
 export async function assignTexters(job) {
-  // CURRENTLY:
-  // assigns UNassigned campaign contacts to texters
-  // it does NOT re-assign contacts to other texters
+  // Assigns UNassigned campaign contacts to texters
+  // It does NOT re-assign contacts to other texters
+  // STEPS:
   // 1. get currentAssignments = all current assignments
   //       .needsMessageCount = contacts that haven't been contacted yet
   // 2. changedAssignments = assignments where texter was removed or needsMessageCount different
@@ -138,7 +138,7 @@ export async function assignTexters(job) {
 
   const unchangedTexters = {}
   const demotedTexters = {}
-  console.log('CURRENT ASSIGNMENTS', currentAssignments)
+
   const changedAssignments = currentAssignments.map((assignment) => {
     const texter = texters.filter((ele) => parseInt(ele.id) === assignment.user_id)[0]
     if (texter && texter.needsMessageCount === assignment.needs_message_count) {
@@ -148,26 +148,34 @@ export async function assignTexters(job) {
       const numToUnassign = Math.max(0, assignment.needs_message_count - (texter && texter.needsMessageCount || 0))
       if (numToUnassign) {
         demotedTexters[assignment.id] = numToUnassign
+        return null //not changed, just demoted
+      } else {
+        return assignment
       }
-      return assignment
     }
   }).filter((ele) => ele !== null)
 
   for (let a_id in demotedTexters) {
     await r.knex('campaign_contact')
-      .where('assignment_id', a_id)
-      .limit(numToUnassign)
+      .where('id', 'in',
+             r.knex('campaign_contact')
+             .where('assignment_id', a_id)
+             .where('message_status', 'needsMessage')
+             .limit(demotedTexters[a_id])
+             .select('id')
+             .forUpdate()
+            )
       .update({assignment_id: null})
       .catch(log.error)
   }
 
-  console.log('CHANGED', changedAssignments)
   // This atomically updates all the assignments to guard against people sending messages while all this is going on
   const changedAssignmentIds = changedAssignments.map((ele) => ele.id)
 
   await updateJob(job, 10)
   if (changedAssignmentIds.length) {
     // TODO: we need to reverse this below!!
+    // ^^^actually this seems to get updated, but where/how?
     await r.table('campaign_contact')
       .getAll(...changedAssignmentIds, { index: 'assignment_id' })
       .filter({ message_status: 'needsMessage' })
@@ -203,13 +211,25 @@ export async function assignTexters(job) {
         campaign_id: cid
       }).save()
     }
-    console.log('WORKING ASSIGNMENT', assignment)
-    await r.table('campaign_contact')
+
+    let currentEmpties = await r.table('campaign_contact')
       .getAll(null, { index: 'assignment_id' })
       .filter({ campaign_id: cid })
-      .limit(contactsToAssign)
-      .update({ assignment_id: assignment.id })
-      .catch(log.error)
+
+    if (contactsToAssign) {
+      await r.knex('campaign_contact')
+        .where('id', 'in',
+               r.knex('campaign_contact')
+               .where({ assignment_id: null,
+                        campaign_id: cid
+                      })
+               .limit(contactsToAssign)
+               .select('id')
+               .forUpdate())
+        .update({ assignment_id: assignment.id })
+        .catch(log.error)
+        .then(log.info)
+    }
 
     if (existingAssignment) {
       // We can't rely on an observer because nothing
@@ -219,6 +239,7 @@ export async function assignTexters(job) {
         assignment
       })
     }
+
     await updateJob(job, Math.floor((75 / texterCount) * (index + 1)) + 20)
   }
   const assignmentsToDelete = await r.knex('assignment')
