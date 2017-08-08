@@ -9,9 +9,9 @@ export const schema = `
     texter: User
     campaign: Campaign
     contacts(contactsFilter: ContactsFilter): [CampaignContact]
-    contactsCount(contactsFilter: ContactsFilter): Int
+    OLDcontactsCount(contactsFilter: ContactsFilter): Int
     contactedCount(contactsFilter: ContactsFilter): Int
-    newContactsCount(contactsFilter: ContactsFilter): Int
+    contactsCount(contactsFilter: ContactsFilter): Int
     userCannedResponses: [CannedResponse]
     campaignCannedResponses: [CannedResponse]
   }
@@ -97,7 +97,7 @@ export const resolvers = {
     ),
     campaign: async(assignment, _, { loaders }) => loaders.campaign.load(assignment.campaign_id),
 
-    contactsCount: async (assignment, { contactsFilter }) => {
+    OLDcontactsCount: async (assignment, { contactsFilter }) => {
       const campaign = await r.table('campaign').get(assignment.campaign_id)
 
       const organization = await r.table('organization')
@@ -106,7 +106,7 @@ export const resolvers = {
       return getContacts(assignment, contactsFilter, organization, campaign).count()
     },
 
-    newContactsCount: async (assignment, { contactsFilter }) => {
+    contactsCount: async (assignment, { contactsFilter }) => {
       // NOTE: does not filter by contactsFilter yet
       return r.table('campaign_contact').filter({ 'assignment_id': assignment.id }).count()
     },
