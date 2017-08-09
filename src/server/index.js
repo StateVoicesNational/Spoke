@@ -17,6 +17,7 @@ import { seedZipCodes } from './seeds/seed-zip-codes'
 import { setupUserNotificationObservers } from './notifications'
 import { Tracer } from 'apollo-tracer'
 import { TwimlResponse } from 'twilio'
+import { r } from './models'
 
 process.on('uncaughtException', (ex) => {
   log.error(ex)
@@ -112,20 +113,38 @@ app.post('/twilio-message-report', wrap(async (req, res) => {
 //   })
 // })
 
-app.get('/allmessages', (req, res) => {
-  if (req.user && req.user.is_superadmin) {
-    client.sms.messages.list((err, data) => {
-      if (err) {
-        log.error(err)
-      } else {
-        const listOfMessages = data.sms_messages
-        return res.json(listOfMessages)
-      }
+app.get('/allmessages/:organizationId', wrap(async (req, res) => {
+  const orgId = req.params.organizationId
+  const membership = await r.knex('user_organization')
+    .where({
+      user_id: req.user.id,
+      organization_id: orgId,
+      role: 'ADMIN'
     })
-  } else {
+    .first()
+
+  if (typeof membership === 'undefined') {
+    // Current user is not admin of the requested org, can't access messages.
     res.json([])
   }
-})
+  else {
+    const messages = await r.knex('message')
+      .select(
+          'message.id',
+          'message.text',
+          'message.user_number',
+          'message.contact_number',
+          'message.created_at'
+      )
+      .join('assignment', 'message.assignment_id', 'assignment.id')
+      .join('campaign', 'assignment.campaign_id', 'campaign.id')
+      .where('campaign.organization_id', orgId)
+      .where('message.is_from_contact', true)
+      .orderBy('message.created_at', 'desc')
+    return res.json(messages)
+  }
+
+}))
 
 app.get('/logout-callback', (req, res) => {
   req.logOut()
