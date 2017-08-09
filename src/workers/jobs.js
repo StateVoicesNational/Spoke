@@ -249,11 +249,10 @@ export async function exportCampaign(job) {
     const optOuts = await r.table('opt_out')
       .getAll(assignment.id, { index: 'assignment_id' })
 
-    const contacts = await r.table('campaign_contact')
-      .getAll(assignment.id, { index: 'assignment_id' })
-      .eqJoin('zip', r.table('zip_code'))
-      .zip()
-
+    const contacts = await r.knex('campaign_contact')
+      .leftJoin('zip_code', 'zip_code.zip', 'campaign_contact.zip')
+      .select()
+      .where('assignment_id', assignment.id)
     const messages = await r.table('message')
       .getAll(assignment.id, { index: 'assignment_id' })
     let convertedMessages = messages.map((message) => {
@@ -312,14 +311,13 @@ export async function exportCampaign(job) {
     })
     convertedContacts = await Promise.all(convertedContacts)
     finalCampaignResults = finalCampaignResults.concat(convertedContacts)
-
     await updateJob(job, Math.round(index / assignmentCount * 100))
   }
   const campaignCsv = Baby.unparse(finalCampaignResults)
   const messageCsv = Baby.unparse(finalCampaignMessages)
 
   if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
-    const s3bucket = new AWS.S3({ params: { Bucket: 'spoke-exports' } })
+    const s3bucket = new AWS.S3({ params: { Bucket: process.env.AWS_S3_BUCKET_NAME } })
     const campaignTitle = campaign.title.replace(/ /g, '_').replace(/\//g, '_')
     const key = `${campaignTitle}-${moment().format('YYYY-MM-DD-HH-mm-ss')}.csv`
     const messageKey = `${key}-messages.csv`
