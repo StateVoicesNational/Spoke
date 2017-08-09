@@ -35,13 +35,10 @@ function getContacts(assignment, contactsFilter, organization, campaign) {
     `${offset}_${hasDST}`
   ]))
 
-  console.log("getIndexValuesWithOffsets " + getIndexValuesWithOffsets)
-
   let index = 'assignment_id'
   let indexValues = []
   const aid = assignment.user_id
   const cid = campaign.id
-  console.log("aid and cid: " + aid + " " + cid)
 
   const config = { textingHoursStart, textingHoursEnd, textingHoursEnforced }
   console.log("config - start, end, enforced " + JSON.stringify(config))
@@ -70,15 +67,15 @@ function getContacts(assignment, contactsFilter, organization, campaign) {
       const index = 'timezone_offset'
 
       if (contactsFilter.validTimezone === true) {
-        newQuery = newQuery.whereIn('campaign_contact.timezone_offset', validOffsets)
+        newQuery = newQuery.whereIn('timezone_offset', validOffsets)
         console.log("validTimezone = true " + newQuery)
         if (defaultTimezoneIsBetweenTextingHours(config)) {
           // missing timezone ok
-          newQuery = newQuery.orWhere('campaign_contact.timezone_offset', '')
-          console.log("validTimezone = true and blank timezone ok")
+          newQuery = newQuery.orWhere('timezone_offset', '')
+          console.log("validTimezone = true and blank timezone ok" + newQuery)
         }
       } else if (contactsFilter.validTimezone === false) {
-        newQuery = newQuery.whereIn('campaign_contact.timezone_offset', invalidOffsets)
+        newQuery = newQuery.whereIn('timezone_offset', invalidOffsets)
         console.log("validTimezone false " + newQuery)
         if (!defaultTimezoneIsBetweenTextingHours(config)) {
           // missing timezones are not ok to text
@@ -113,13 +110,6 @@ function getContacts(assignment, contactsFilter, organization, campaign) {
     }
   }
 
-  // let query = r.table('campaign_contact')
-  //   .getAll(...indexValues, { index })
-
-  // query = query.filter(filter)
-  // if (secondaryFilter) {
-  //   query = query.getAll(...secondaryFilter)
-  // }
   console.log("final query " + newQuery)
   return newQuery
 }
