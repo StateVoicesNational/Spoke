@@ -34,6 +34,9 @@ export const isBetweenTextingHours = (offsetData, config) => {
   }
 
   const localTime = getLocalTime(offset, hasDST)
+  console.log("offsetData " + offsetData)
+  console.log("localTime.hours" + localTime.hours())
+  console.log("allowedStart and allowedEnd " + allowedStart + " " + allowedEnd)
   return (localTime.hours() >= allowedStart && localTime.hours() < allowedEnd)
 }
 

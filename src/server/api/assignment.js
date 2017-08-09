@@ -18,20 +18,29 @@ export const schema = `
 `
 function getContacts(assignment, contactsFilter, organization, campaign) {
   /// returns list of contacts eligible for contacting _now_ by a particular assignment
+  console.log("assignment " + JSON.stringify(assignment))
+  console.log("contactsFilter " + JSON.stringify(contactsFilter))
+  console.log("organization " + JSON.stringify(organization))
+  console.log("campaign " + JSON.stringify(campaign))
+
   const textingHoursEnforced = organization.texting_hours_enforced
   const textingHoursStart = organization.texting_hours_start
   const textingHoursEnd = organization.texting_hours_end
-  // 24-hours past due
+  
+  // 24-hours past due - why is this 24 hours offset?
   const pastDue = ((campaign.due_by + 24 * 60 * 60 * 1000) > Number(new Date()))
   const getIndexValuesWithOffsets = (offsets) => offsets.map(([offset, hasDST]) => ([
     assignment.id,
     `${offset}_${hasDST}`
   ]))
 
+  console.log("getIndexValuesWithOffsets " + getIndexValuesWithOffsets)
+
   let index = 'assignment_id'
   let indexValues = assignment.id
 
   const config = { textingHoursStart, textingHoursEnd, textingHoursEnforced }
+  console.log("config - start, end, enforced " + JSON.stringify(config))
   const [validOffsets, invalidOffsets] = getOffsets(config)
   const filter = {}
   let secondaryFilter = null
@@ -120,6 +129,8 @@ export const resolvers = {
 
     contacts: async (assignment, { contactsFilter }) => {
       const campaign = await r.table('campaign').get(assignment.campaign_id)
+      console.log("you're in assignment contacts")
+      console.log("contactsFilter " + contactsFilter)
 
       const organization = await r.table('organization')
         .get(campaign.organization_id)
