@@ -1,5 +1,5 @@
 import { r } from '../server/models'
-import { sleep, getNextJob, updateJob } from './lib'
+import { sleep, getNextJob, updateJob, log } from './lib'
 import { exportCampaign, uploadContacts, assignTexters, createInteractionSteps, sendMessages } from './jobs'
 import { setupUserNotificationObservers } from '../server/notifications'
 
