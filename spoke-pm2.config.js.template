@@ -2,6 +2,7 @@ const env_production = {
   NODE_ENV:'production',
   AWS_ACCESS_KEY_ID:'',
   AWS_SECRET_ACCESS_KEY:'',
+  AWS_S3_BUCKET_NAME: '',
   APOLLO_OPTICS_KEY:'',
   DEV_APP_PORT:8090,
   PUBLIC_DIR:'./build/client',
