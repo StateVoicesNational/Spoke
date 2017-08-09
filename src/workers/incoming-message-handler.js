@@ -4,6 +4,7 @@ import { saveNewIncomingMessage, getLastMessage } from '../server/api/lib/messag
 import { r } from '../server/models'
 import { log } from '../lib'
 
+const serviceDefault = 'twilio'
 async function sleep(ms = 0) {
   return new Promise(fn => setTimeout(fn, ms))
 }
@@ -32,20 +33,16 @@ async function handleIncomingMessageParts() {
     const messagesToSave = []
     let messagePartsToDelete = []
     const concatMessageParts = {}
-
     for (let i = 0; i < allPartsCount; i++) {
       const part = allParts[i]
-
       const serviceMessageId = part.service_id
       const savedCount = await r.table('message')
         .getAll(serviceMessageId, { index: 'service_id' })
         .count()
-
       const lastMessage = await getLastMessage({
         contactNumber: part.contact_number,
-        service: service === nexmo ? 'nexmo' : 'twilio'
+        service: serviceDefault
       })
-
       const duplicateMessageToSaveExists = !!messagesToSave.find((message) => message.service_id === serviceMessageId)
       if (!lastMessage) {
         log.info('Received message part with no thread to attach to', part)
@@ -58,7 +55,7 @@ async function handleIncomingMessageParts() {
         messagePartsToDelete.push(part)
       } else {
         const parentId = part.parent_id
-        if (parentId === '') {
+        if (!parentId) {
           messagesToSave.push(await convertMessageParts([part]))
           messagePartsToDelete.push(part)
         } else {
@@ -102,18 +99,27 @@ async function handleIncomingMessageParts() {
       await saveNewIncomingMessage(messagesToSave[i])
     }
 
-    log.info('Deleting message parts', messagePartsToDelete.map((m) => m.id))
+    const messageIdsToDelete = messagePartsToDelete.map((m) => m.id)
+    log.info('Deleting message parts', messageIdsToDelete)
     await r.table('pending_message_part')
-      .getAll(...messagePartsToDelete)
+      .getAll(...messageIdsToDelete)
       .delete()
   }
 }
 (async () => {
-  // eslint-disable-next-line no-constant-condition
   while (true) {
     try {
-      await sleep(100)
-      await handleIncomingMessageParts()
+      const countPendingMessagePart = await r.knex('pending_message_part')
+      .count('id AS total').then( total => {
+        let totalCount = 0
+        totalCount = total[0].total
+        return totalCount
+      })
+
+      await sleep(500)
+      if(countPendingMessagePart > 0) {
+        await handleIncomingMessageParts()
+      }
     } catch (ex) {
       log.error(ex)
     }
