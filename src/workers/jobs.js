@@ -123,7 +123,21 @@ export async function assignTexters(job) {
   // 4. availableContacts: count of contacts without an assignment
   // 5. forEach texter:
   //        * skip if 'unchanged'
-  //        * 
+  //        * if new texter, create assignment record
+  //        * update X needsMessage campaign_contacts with texter's assignment record
+  //             (min of needsMessageCount,availableContacts)
+  // 6. delete assignments with a 0 assignment count
+  // SCENARIOS:
+  // * deleted texter:
+  //   ends up in currentAssignments and changedAssignments
+  //   marked as demoted texter, so all contacts are set assignment_id=null
+  // * texter with fewer count:
+  //   ends up in currentAssignments and changedAssignments
+  //   marked as demoted texter: all current contacts are removed
+  //   iterating over texter, the currentAssignment re-assigns needsMessageCount more texters
+  // * new texter
+  //   no current/changed assignment
+  //   iterating over texter, assignment is created, then apportioned needsMessageCount texters
   const payload = JSON.parse(job.payload)
   const cid = job.campaign_id
   const texters = payload.texters
@@ -141,29 +155,27 @@ export async function assignTexters(job) {
 
   const changedAssignments = currentAssignments.map((assignment) => {
     const texter = texters.filter((ele) => parseInt(ele.id) === assignment.user_id)[0]
-    if (texter && texter.needsMessageCount === assignment.needs_message_count) {
+    if (texter && texter.needsMessageCount === parseInt(assignment.needs_message_count)) {
       unchangedTexters[assignment.user_id] = true
       return null
     } else {
       const numToUnassign = Math.max(0, assignment.needs_message_count - (texter && texter.needsMessageCount || 0))
       if (numToUnassign) {
         demotedTexters[assignment.id] = numToUnassign
-        return null //not changed, just demoted
-      } else {
-        return assignment
       }
+      return assignment
     }
   }).filter((ele) => ele !== null)
 
   for (let a_id in demotedTexters) {
+    // Here we demote ALL the demotedTexters contacts (not just the demotion count)
+    // because they will get reapportioned below
     await r.knex('campaign_contact')
       .where('id', 'in',
              r.knex('campaign_contact')
              .where('assignment_id', a_id)
              .where('message_status', 'needsMessage')
-             .limit(demotedTexters[a_id])
              .select('id')
-             .forUpdate()
             )
       .update({assignment_id: null})
       .catch(log.error)
@@ -171,17 +183,6 @@ export async function assignTexters(job) {
 
   // This atomically updates all the assignments to guard against people sending messages while all this is going on
   const changedAssignmentIds = changedAssignments.map((ele) => ele.id)
-
-  await updateJob(job, 10)
-  if (changedAssignmentIds.length) {
-    // TODO: we need to reverse this below!!
-    // ^^^actually this seems to get updated, but where/how?
-    await r.table('campaign_contact')
-      .getAll(...changedAssignmentIds, { index: 'assignment_id' })
-      .filter({ message_status: 'needsMessage' })
-      .update({ message_status: 'UPDATING' })
-      .catch(log.error)
-  }
 
   await updateJob(job, 20)
 
@@ -191,6 +192,7 @@ export async function assignTexters(job) {
     .count()
   // Go through all the submitted texters and create assignments
   const texterCount = texters.length
+
   for (let index = 0; index < texterCount; index++) {
     const texter = texters[index]
     const texterId = parseInt(texter.id)
@@ -198,8 +200,12 @@ export async function assignTexters(job) {
       continue
     }
     const contactsToAssign = Math.min(availableContacts, texter.needsMessageCount)
+    if (contactsToAssign === 0) {
+      // avoid creating a new assignment when the texter should get 0
+      continue
+    }
     availableContacts = availableContacts - contactsToAssign
-    const existingAssignment = changedAssignments.find((ele) => ele.user_id === texterId)
+    const existingAssignment = currentAssignments.find((ele) => ele.user_id === texterId)
     let assignment = null
     if (existingAssignment) {
       assignment = new Assignment({id: existingAssignment.id,
@@ -212,24 +218,16 @@ export async function assignTexters(job) {
       }).save()
     }
 
-    let currentEmpties = await r.table('campaign_contact')
-      .getAll(null, { index: 'assignment_id' })
-      .filter({ campaign_id: cid })
-
-    if (contactsToAssign) {
-      await r.knex('campaign_contact')
-        .where('id', 'in',
-               r.knex('campaign_contact')
-               .where({ assignment_id: null,
-                        campaign_id: cid
-                      })
-               .limit(contactsToAssign)
-               .select('id')
-               .forUpdate())
-        .update({ assignment_id: assignment.id })
-        .catch(log.error)
-        .then(log.info)
-    }
+    await r.knex('campaign_contact')
+      .where('id', 'in',
+             r.knex('campaign_contact')
+             .where({ assignment_id: null,
+                      campaign_id: cid
+                    })
+             .limit(contactsToAssign)
+             .select('id'))
+      .update({ assignment_id: assignment.id })
+      .catch(log.error)
 
     if (existingAssignment) {
       // We can't rely on an observer because nothing
@@ -242,20 +240,17 @@ export async function assignTexters(job) {
 
     await updateJob(job, Math.floor((75 / texterCount) * (index + 1)) + 20)
   }
-  const assignmentsToDelete = await r.knex('assignment')
+  const assignmentsToDelete = r.knex('assignment')
     .where('assignment.campaign_id', cid)
-    .join('campaign_contact', 'assignment.id', 'campaign_contact.assignment_id')
-    .groupBy('assignment_id')
-    .select('assignment_id')
+    .leftJoin('campaign_contact', 'assignment.id', 'campaign_contact.assignment_id')
+    .groupBy('assignment.id')
     .havingRaw('COUNT(campaign_contact.id) = 0')
-    .catch(log.error)
+    .select('assignment.id as id')
 
-  if (assignmentsToDelete.length) {
-    await r.table('assignment')
-      .getAll(...assignmentsToDelete.map((ele) => ele.assignment_id))
-      .delete()
-      .catch(log.error)
-  }
+  await r.knex('assignment')
+    .where('id', 'in', assignmentsToDelete)
+    .delete()
+    .catch(log.error)
 
   if (JOBS_SAME_PROCESS) {
     await r.table('job_request').get(job.id).delete()
