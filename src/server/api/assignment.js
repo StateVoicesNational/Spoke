@@ -9,7 +9,6 @@ export const schema = `
     texter: User
     campaign: Campaign
     contacts(contactsFilter: ContactsFilter): [CampaignContact]
-    OLDcontactsCount(contactsFilter: ContactsFilter): Int
     contactedCount(contactsFilter: ContactsFilter): Int
     contactsCount(contactsFilter: ContactsFilter): Int
     userCannedResponses: [CannedResponse]
@@ -17,73 +16,70 @@ export const schema = `
   }
 `
 function getContacts(assignment, contactsFilter, organization, campaign) {
-  /// returns list of contacts eligible for contacting _now_ by a particular assignment
+  /// returns list of contacts eligible for contacting _now_ by a particular user
+
   const textingHoursEnforced = organization.texting_hours_enforced
   const textingHoursStart = organization.texting_hours_start
   const textingHoursEnd = organization.texting_hours_end
-  // 24-hours past due
-  const pastDue = ((campaign.due_by + 24 * 60 * 60 * 1000) > Number(new Date()))
-  const getIndexValuesWithOffsets = (offsets) => offsets.map(([offset, hasDST]) => ([
-    assignment.id,
-    `${offset}_${hasDST}`
-  ]))
 
-  let index = 'assignment_id'
-  let indexValues = assignment.id
+  // 24-hours past due - why is this 24 hours offset?
+  const pastDue = ((Number(campaign.due_by) + 24 * 60 * 60 * 1000) < Number(new Date()))
+
+  const aid = assignment.user_id
+  const cid = campaign.id
 
   const config = { textingHoursStart, textingHoursEnd, textingHoursEnforced }
   const [validOffsets, invalidOffsets] = getOffsets(config)
-  const filter = {}
-  let secondaryFilter = null
+
+  let query = r.knex('campaign_contact')
+    .where('assignment_id', 'in',
+      r.knex('assignment')
+        .where({
+          user_id: aid,
+          campaign_id: cid
+        })
+        .select('id')
+      )
 
   if (contactsFilter) {
-    // TODO: indexValues is assuming too-subtle implementation of rethink
-    //       so probably need to change to a knex query directly
+
     if (contactsFilter.hasOwnProperty('validTimezone') && contactsFilter.validTimezone !== null) {
-      index = 'assignment_timezone_offset'
-
       if (contactsFilter.validTimezone === true) {
-        indexValues = getIndexValuesWithOffsets(validOffsets)
         if (defaultTimezoneIsBetweenTextingHours(config)) {
-          indexValues.push([assignment.id, '']) // missing timezones are ok to text
+          // missing timezone ok
+          validOffsets.push('')
         }
+        query = query.whereIn('timezone_offset', validOffsets)
       } else if (contactsFilter.validTimezone === false) {
-        indexValues = getIndexValuesWithOffsets(invalidOffsets)
         if (!defaultTimezoneIsBetweenTextingHours(config)) {
-          indexValues.push([assignment.id, '']) // missing timezones are not ok to text
+          // missing timezones are not ok to text
+          invalidOffsets.push('')
         }
+        query = query.whereIn('timezone_offset', invalidOffsets)
       }
-
     }
-
 
     if (contactsFilter.hasOwnProperty('messageStatus') && contactsFilter.messageStatus !== null) {
       if (pastDue && contactsFilter.messageStatus === 'needsMessage') {
-        filter.message_status = '' // no results
+        query = query.where('message_status', '')
       } else {
-        filter.message_status = contactsFilter.messageStatus
+        query = query.where('message_status', contactsFilter.messageStatus)
       }
     } else {
       if (pastDue) {
         // by default if asking for 'send later' contacts we include only those that need replies
-        filter.message_status = 'needsResponse'
+        query = query.where('message_status', 'needsResponse')
       } else {
         // we do not want to return closed/messaged
-        secondaryFilter = ['needsResponse', 'needsMessage', {index: 'message_status'}]
+        query = query.whereIn('message_status', ['needsResponse', 'needsMessage'])
       }
     }
+
     if (contactsFilter.hasOwnProperty('isOptedOut') && contactsFilter.isOptedOut !== null) {
-      filter.is_opted_out = contactsFilter.isOptedOut
+      query = query.where('is_opted_out', contactsFilter.isOptedOut)
     }
   }
 
-  let query = r.table('campaign_contact')
-    .getAll(...indexValues, { index })
-
-  query = query.filter(filter)
-  if (secondaryFilter) {
-    query = query.getAll(...secondaryFilter)
-  }
   return query
 }
 
@@ -97,18 +93,14 @@ export const resolvers = {
     ),
     campaign: async(assignment, _, { loaders }) => loaders.campaign.load(assignment.campaign_id),
 
-    OLDcontactsCount: async (assignment, { contactsFilter }) => {
+    contactsCount: async (assignment, { contactsFilter }) => {
       const campaign = await r.table('campaign').get(assignment.campaign_id)
 
       const organization = await r.table('organization')
         .get(campaign.organization_id)
 
-      return getContacts(assignment, contactsFilter, organization, campaign).count()
-    },
-
-    contactsCount: async (assignment, { contactsFilter }) => {
-      // NOTE: does not filter by contactsFilter yet
-      return r.table('campaign_contact').filter({ 'assignment_id': assignment.id }).count()
+      const result = await getContacts(assignment, contactsFilter, organization, campaign).count()
+      return result[0].count
     },
 
     contactedCount: async (assignment, { contactsFilter }) => {
