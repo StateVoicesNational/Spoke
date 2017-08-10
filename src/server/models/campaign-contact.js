@@ -17,7 +17,8 @@ const CampaignContact = thinky.createModel('campaign_contact', type.object().sch
       'needsMessage',
       'needsResponse',
       'messaged',
-      'closed'
+      'closed',
+      'UPDATING'
     ])
     .default('needsMessage'),
   is_opted_out: type.boolean().default(false),

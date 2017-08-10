@@ -110,70 +110,124 @@ export async function createInteractionSteps(job) {
 }
 
 export async function assignTexters(job) {
+  // Assigns UNassigned campaign contacts to texters
+  // It does NOT re-assign contacts to other texters
+  // STEPS:
+  // 1. get currentAssignments = all current assignments
+  //       .needsMessageCount = contacts that haven't been contacted yet
+  // 2. changedAssignments = assignments where texter was removed or needsMessageCount different
+  //                  needsMessageCount differ possibilities:
+  //                  a. they started texting folks, so needsMessageCount is less
+  //                  b. they were assigned a different number by the admin
+  // 3. update changed assignments (temporarily) not to be in needsMessage status
+  // 4. availableContacts: count of contacts without an assignment
+  // 5. forEach texter:
+  //        * skip if 'unchanged'
+  //        * if new texter, create assignment record
+  //        * update X needsMessage campaign_contacts with texter's assignment record
+  //             (min of needsMessageCount,availableContacts)
+  // 6. delete assignments with a 0 assignment count
+  // SCENARIOS:
+  // * deleted texter:
+  //   ends up in currentAssignments and changedAssignments
+  //   marked as demoted texter, so all contacts are set assignment_id=null
+  // * texter with fewer count:
+  //   ends up in currentAssignments and changedAssignments
+  //   marked as demoted texter: all current contacts are removed
+  //   iterating over texter, the currentAssignment re-assigns needsMessageCount more texters
+  // * new texter
+  //   no current/changed assignment
+  //   iterating over texter, assignment is created, then apportioned needsMessageCount texters
   const payload = JSON.parse(job.payload)
-  const id = job.campaign_id
+  const cid = job.campaign_id
   const texters = payload.texters
   const currentAssignments = await r.knex('assignment')
-    .where('assignment.campaign_id', id)
-    .join('campaign_contact', 'campaign_contact.id', 'assignment_id')
-    .where({message_status: 'needsMessage'})
-    .groupBy('user_id', 'assignment_id')
-    .select('user_id', 'assignment_id', r.knex.raw('COUNT(campaign_contact.id) as needsMessageCount'))
+    .where('assignment.campaign_id', cid)
+    .joinRaw("left join campaign_contact "
+             +"ON (campaign_contact.assignment_id = assignment.id "
+             +    "AND campaign_contact.message_status = 'needsMessage')")
+    .groupBy('user_id', 'assignment.id')
+    .select('user_id', 'assignment.id as id', r.knex.raw('COUNT(campaign_contact.id) as needs_message_count'))
     .catch(log.error)
 
   const unchangedTexters = {}
+  const demotedTexters = {}
+
   const changedAssignments = currentAssignments.map((assignment) => {
-    const texter = texters.filter((ele) => ele.id === assignment.user_id)[0]
-    if (!texter) {
-      return assignment
-    } else if (texter.needsMessageCount !== assignment.needsMessageCount) {
+    const texter = texters.filter((ele) => parseInt(ele.id) === assignment.user_id)[0]
+    if (texter && texter.needsMessageCount === parseInt(assignment.needs_message_count)) {
+      unchangedTexters[assignment.user_id] = true
+      return null
+    } else {
+      const numToUnassign = Math.max(0, assignment.needs_message_count - (texter && texter.needsMessageCount || 0))
+      if (numToUnassign) {
+        demotedTexters[assignment.id] = numToUnassign
+      }
       return assignment
     }
-    unchangedTexters[assignment.user_id] = true
-    return null
-  })
-  .filter((ele) => ele !== null)
+  }).filter((ele) => ele !== null)
+
+  for (let a_id in demotedTexters) {
+    // Here we demote ALL the demotedTexters contacts (not just the demotion count)
+    // because they will get reapportioned below
+    await r.knex('campaign_contact')
+      .where('id', 'in',
+             r.knex('campaign_contact')
+             .where('assignment_id', a_id)
+             .where('message_status', 'needsMessage')
+             .select('id')
+            )
+      .update({assignment_id: null})
+      .catch(log.error)
+  }
 
   // This atomically updates all the assignments to guard against people sending messages while all this is going on
   const changedAssignmentIds = changedAssignments.map((ele) => ele.id)
-
-  await updateJob(job, 10)
-  await r.table('campaign_contact')
-    .getAll(...changedAssignmentIds, { index: 'assignment_id' })
-    .filter({ message_status: 'needsMessage' })
-    .update({ message_status: '' })
 
   await updateJob(job, 20)
 
   let availableContacts = await r.table('campaign_contact')
     .getAll(null, { index: 'assignment_id' })
-    .filter({ campaign_id: id })
+    .filter({ campaign_id: cid })
     .count()
   // Go through all the submitted texters and create assignments
   const texterCount = texters.length
+
   for (let index = 0; index < texterCount; index++) {
     const texter = texters[index]
-    if (unchangedTexters[texter.id]) {
+    const texterId = parseInt(texter.id)
+    if (unchangedTexters[texterId]) {
       continue
     }
-    const contactsToAssign = availableContacts > texter.needsMessageCount ? texter.needsMessageCount : availableContacts
+    const contactsToAssign = Math.min(availableContacts, texter.needsMessageCount)
+    if (contactsToAssign === 0) {
+      // avoid creating a new assignment when the texter should get 0
+      continue
+    }
     availableContacts = availableContacts - contactsToAssign
-    const existingAssignment = changedAssignments.find((ele) => ele.user_id === texter.id)
+    const existingAssignment = currentAssignments.find((ele) => ele.user_id === texterId)
     let assignment = null
     if (existingAssignment) {
-      assignment = existingAssignment
+      assignment = new Assignment({id: existingAssignment.id,
+                                   user_id: existingAssignment.user_id,
+                                   campaign_id: cid})
     } else {
       assignment = await new Assignment({
-        user_id: texter.id,
-        campaign_id: id
+        user_id: texterId,
+        campaign_id: cid
       }).save()
     }
 
-    await r.table('campaign_contact')
-      .getAll(null, { index: 'assignment_id' })
-      .filter({ campaign_id: id })
-      .limit(contactsToAssign)
+    await r.knex('campaign_contact')
+      .where('id', 'in',
+             r.knex('campaign_contact')
+             .where({ assignment_id: null,
+                      campaign_id: cid
+                    })
+             .limit(contactsToAssign)
+             .select('id'))
       .update({ assignment_id: assignment.id })
+      .catch(log.error)
 
     if (existingAssignment) {
       // We can't rely on an observer because nothing
@@ -183,21 +237,20 @@ export async function assignTexters(job) {
         assignment
       })
     }
+
     await updateJob(job, Math.floor((75 / texterCount) * (index + 1)) + 20)
   }
-  const assignmentsToDelete = await r.knex('assignment')
-    .where('assignment.campaign_id', id)
-    .join('campaign_contact', 'assignment.id', 'assignment_id')
-    .groupBy('assignment_id')
-    .select('assignment_id')
+  const assignmentsToDelete = r.knex('assignment')
+    .where('assignment.campaign_id', cid)
+    .leftJoin('campaign_contact', 'assignment.id', 'campaign_contact.assignment_id')
+    .groupBy('assignment.id')
     .havingRaw('COUNT(campaign_contact.id) = 0')
-    .catch(log.error)
+    .select('assignment.id as id')
 
-  if (assignmentsToDelete.length) {
-    await r.table('assignment')
-      .getAll(...assignmentsToDelete.map((ele) => ele.assignment_id))
-      .delete()
-  }
+  await r.knex('assignment')
+    .where('id', 'in', assignmentsToDelete)
+    .delete()
+    .catch(log.error)
 
   if (JOBS_SAME_PROCESS) {
     await r.table('job_request').get(job.id).delete()

@@ -9,12 +9,15 @@ export const schema = `
     texter: User
     campaign: Campaign
     contacts(contactsFilter: ContactsFilter): [CampaignContact]
+    OLDcontactsCount(contactsFilter: ContactsFilter): Int
+    contactedCount(contactsFilter: ContactsFilter): Int
     contactsCount(contactsFilter: ContactsFilter): Int
     userCannedResponses: [CannedResponse]
     campaignCannedResponses: [CannedResponse]
   }
 `
 function getContacts(assignment, contactsFilter, organization, campaign) {
+  /// returns list of contacts eligible for contacting _now_ by a particular assignment
   const textingHoursEnforced = organization.texting_hours_enforced
   const textingHoursStart = organization.texting_hours_start
   const textingHoursEnd = organization.texting_hours_end
@@ -34,6 +37,8 @@ function getContacts(assignment, contactsFilter, organization, campaign) {
   let secondaryFilter = null
 
   if (contactsFilter) {
+    // TODO: indexValues is assuming too-subtle implementation of rethink
+    //       so probably need to change to a knex query directly
     if (contactsFilter.hasOwnProperty('validTimezone') && contactsFilter.validTimezone !== null) {
       index = 'assignment_timezone_offset'
 
@@ -92,13 +97,25 @@ export const resolvers = {
     ),
     campaign: async(assignment, _, { loaders }) => loaders.campaign.load(assignment.campaign_id),
 
-    contactsCount: async (assignment, { contactsFilter }) => {
+    OLDcontactsCount: async (assignment, { contactsFilter }) => {
       const campaign = await r.table('campaign').get(assignment.campaign_id)
 
       const organization = await r.table('organization')
         .get(campaign.organization_id)
 
       return getContacts(assignment, contactsFilter, organization, campaign).count()
+    },
+
+    contactsCount: async (assignment, { contactsFilter }) => {
+      // NOTE: does not filter by contactsFilter yet
+      return r.table('campaign_contact').filter({ 'assignment_id': assignment.id }).count()
+    },
+
+    contactedCount: async (assignment, { contactsFilter }) => {
+      // does
+      return r.table('campaign_contact')
+        .getAll('messaged', 'closed', 'needsResponse', { index: 'message_status' })
+        .filter({ 'assignment_id': assignment.id }).count()
     },
 
     contacts: async (assignment, { contactsFilter }) => {
