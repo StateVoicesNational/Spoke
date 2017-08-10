@@ -33,18 +33,22 @@ export const resolvers = {
   AnswerOption: {
     value: (answer) => answer.value,
     nextInteractionStep: async (answer) => r.table('interaction_step').get(answer.interaction_step_id),
-    responders: async (answer) => r.table('question_response')
-        .getAll(answer.parent_interaction_step.id, { index: 'interaction_step_id' })
+    responders: async (answer) => (
+      r.table('question_response')
+        .getAll(answer.parent_interaction_step, { index: 'interaction_step_id' })
         .filter({
           value: answer.value
         })
-        .eqJoin('campaign_contact_id', r.table('campaign_contact'))('right'),
-    responderCount: async (answer) => r.table('question_response')
-        .getAll(answer.parent_interaction_step.id, { index: 'interaction_step_id' })
+        .eqJoin('campaign_contact_id', r.table('campaign_contact'))('right')
+    ),
+    responderCount: async (answer) => (
+      r.table('question_response')
+        .getAll(answer.parent_interaction_step, { index: 'interaction_step_id' })
         .filter({
           value: answer.value
         })
-        .count(),
+        .count()
+    ),
     question: async (answer) => answer.parent_interaction_step
   }
 }
