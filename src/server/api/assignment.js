@@ -30,21 +30,14 @@ function getContacts(assignment, contactsFilter, organization, campaign) {
   // 24-hours past due - why is this 24 hours offset?
   const pastDue = ((Number(campaign.due_by) + 24 * 60 * 60 * 1000) < Number(new Date()))
   console.log("pastDue " + pastDue)
-  const getIndexValuesWithOffsets = (offsets) => offsets.map(([offset, hasDST]) => ([
-    assignment.id,
-    `${offset}_${hasDST}`
-  ]))
 
-  let index = 'assignment_id'
-  let indexValues = []
   const aid = assignment.user_id
   const cid = campaign.id
 
   const config = { textingHoursStart, textingHoursEnd, textingHoursEnforced }
-  console.log("config - start, end, enforced " + JSON.stringify(config))
   const [validOffsets, invalidOffsets] = getOffsets(config)
-  const filter = {}
-  let secondaryFilter = null
+  console.log('validOffsets ' + validOffsets)
+  console.log('invalidOffsets ' + invalidOffsets)
 
   let newQuery = r.knex('campaign_contact')
     .where('assignment_id', 'in',
@@ -55,16 +48,12 @@ function getContacts(assignment, contactsFilter, organization, campaign) {
         })
         .select('id')
       )
-    .select('*')
   console.log("newQuery " + newQuery)
-
-  let textableContactsNow = [] 
 
   if (contactsFilter) {
     // TODO: indexValues is assuming too-subtle implementation of rethink
     //       so probably need to change to a knex query directly
     if (contactsFilter.hasOwnProperty('validTimezone') && contactsFilter.validTimezone !== null) {
-      const index = 'timezone_offset'
 
       if (contactsFilter.validTimezone === true) {
         newQuery = newQuery.whereIn('timezone_offset', validOffsets)
@@ -130,7 +119,8 @@ export const resolvers = {
       const organization = await r.table('organization')
         .get(campaign.organization_id)
 
-      return getContacts(assignment, contactsFilter, organization, campaign).count()
+      const result = await getContacts(assignment, contactsFilter, organization, campaign).count()
+      return result[0].count
     },
 
     OLDcontactsCount: async (assignment, { contactsFilter }) => {
