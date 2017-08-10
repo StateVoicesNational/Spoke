@@ -13,6 +13,7 @@ import wrap from './wrap'
 import { log } from '../lib'
 import nexmo from './api/lib/nexmo'
 import twilio from './api/lib/twilio'
+const Twilio = require('twilio')
 import { seedZipCodes } from './seeds/seed-zip-codes'
 import { setupUserNotificationObservers } from './notifications'
 import { Tracer } from 'apollo-tracer'
@@ -67,7 +68,7 @@ app.post('/nexmo', wrap(async (req, res) => {
   }
 }))
 
-app.post('/twilio', wrap(async (req, res) => {
+app.post('/twilio', Twilio.webhook(), wrap(async (req, res) => {
   try {
     await twilio.handleIncomingMessage(req.body)
   } catch (ex) {
