@@ -58,7 +58,6 @@ const ContactToolbar = function ContactToolbar(props) {
             text={campaignContact.firstName}
           />
           <ToolbarTitle
-            text={getDisplayPhoneNumber(campaignContact.cell)}
             style={inlineStyles.cellToolbarTitle}
           />
           {location ? (

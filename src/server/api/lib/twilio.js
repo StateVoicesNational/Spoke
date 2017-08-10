@@ -5,6 +5,8 @@ import { log } from '../../../lib'
 import { getLastMessage } from './message-sending'
 import faker from 'faker'
 
+const defaultService = process.env.DEFAULT_SERVICE
+
 let twilio = null
 const MAX_SEND_ATTEMPTS = 5
 
@@ -30,7 +32,7 @@ async function convertMessagePartsToMessage(messageParts) {
 
   const lastMessage = await getLastMessage({
     contactNumber,
-    service: 'twilio'
+    service: defaultService
   })
 
   return new Message({
@@ -41,7 +43,7 @@ async function convertMessagePartsToMessage(messageParts) {
     service_response: JSON.stringify(serviceMessages),
     service_id: serviceMessages[0].service_id,
     assignment_id: lastMessage.assignment_id,
-    service: 'twilio',
+    service: defaultService,
     send_status: 'DELIVERED'
   })
 }
@@ -134,7 +136,8 @@ async function sendMessage(message) {
       } else {
         Message.save({
           ...messageToSave,
-          send_status: 'SENT'
+          send_status: 'SENT',
+          service: defaultService
         }, { conflict: 'update' })
         .then((saveError, newMessage) => {
           resolve(newMessage)
@@ -180,7 +183,7 @@ async function handleIncomingMessage(message) {
   const userNumber = getFormattedPhoneNumber(To)
 
   const pendingMessagePart = new PendingMessagePart({
-    service: 'twilio',
+    service: defaultService,
     service_id: MessageSid,
     parent_id: '',
     service_message: JSON.stringify(message),
