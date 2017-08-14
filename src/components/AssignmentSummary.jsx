@@ -9,7 +9,7 @@ import { withRouter } from 'react-router'
 
 const inlineStyles = {
   badge: {
-    fontSize: 9,
+    fontSize: 12,
     top: 20,
     right: 20,
     padding: '4px 2px 0px 2px',
