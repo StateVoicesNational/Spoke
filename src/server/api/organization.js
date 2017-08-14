@@ -5,6 +5,7 @@ import { accessRequired } from './errors'
 export const schema = `
   type Organization {
     id: ID
+    uuid: String
     name: String
     campaigns(campaignsFilter: CampaignsFilter): [Campaign]
     people(role: String): [User]
@@ -35,6 +36,13 @@ export const resolvers = {
 
       return query
     },
+    uuid: async (organization, _, { user }) => {
+      await accessRequired(user, organization.id, 'ADMIN')
+      const result = await r.knex('organization')
+        .column('uuid')
+        .where('id', organization.id)
+      return result[0].uuid
+    },
     optOuts: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, 'ADMIN')
       return r.table('opt_out')
@@ -57,4 +65,3 @@ export const resolvers = {
     textingHoursEnd: (organization) => organization.texting_hours_end
   }
 }
-
