@@ -357,11 +357,11 @@ export default class CampaignTextersForm extends React.Component {
   }
 
   render() {
-    const { organizationId } = this.props
+    const { organizationUuid } = this.props
     let subtitle = ''
     subtitle = (
       <div>
-        <OrganizationJoinLink organizationId={organizationId} />
+        <OrganizationJoinLink organizationUuid={organizationUuid} />
       </div>
     )
 
