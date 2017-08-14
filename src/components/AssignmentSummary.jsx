@@ -9,7 +9,7 @@ import { withRouter } from 'react-router'
 
 const inlineStyles = {
   badge: {
-    fontSize: 9,
+    fontSize: 12,
     top: 20,
     right: 20,
     padding: '4px 2px 0px 2px',
@@ -88,7 +88,7 @@ class AssignmentSummary extends Component {
             })}
             {this.renderBadgedButton({
               assignment,
-              title: 'Send later (too early or late for some contacts)',
+              title: 'Send later',
               count: badTimezoneCount,
               primary: false,
               disabled: true,
