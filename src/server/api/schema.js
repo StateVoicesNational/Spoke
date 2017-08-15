@@ -270,7 +270,7 @@ async function editCampaign(id, campaign, loaders) {
     const convertedResponses = []
     for (let index = 0; index < cannedResponses.length; index++) {
       const response = cannedResponses[index]
-      const newId = await r.uuid(response.id)
+      const newId = await Math.floor(Math.random()*10000000)
       convertedResponses.push({
         ...response,
         campaign_id: id,
@@ -480,7 +480,7 @@ const rootMutations = {
         title: cannedResponse.title,
         text: cannedResponse.text
       })
-      return cannedResponseInstance.save()
+      return await cannedResponseInstance.save()
     },
     createOrganization: async (_, { name, userId, inviteId }, { loaders, user }) => {
       authRequired(user)
