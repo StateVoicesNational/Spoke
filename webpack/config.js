@@ -17,7 +17,12 @@ if (!DEBUG) {
   plugins.push(new ManifestPlugin({
     fileName: assetMapFile
   }))
-  plugins.push(new webpack.optimize.UglifyJsPlugin({ minimize: true }))
+  plugins.push(new webpack.optimize.UglifyJsPlugin({
+    compress: {
+        warnings: false
+    },
+    minimize: true
+  }))
 } else {
   plugins.push(new webpack.HotModuleReplacementPlugin())
   jsxLoaders.unshift('react-hot')
@@ -60,15 +65,13 @@ const config = {
   output: {
     filename: outputFile,
     path: DEBUG ? '/' : assetsDir,
-    publicPath: '/assets/',
-    sourceMapFilename: `${outputFile}.map`
+    publicPath: '/assets/'
   }
 }
 
 if (DEBUG) {
   config.devtool = '#inline-source-map'
-} else if (process.env.NODE_ENV === 'production') {
-  config.devtool = 'source-map'
+  config.output.sourceMapFilename = `${outputFile}.map`
 }
 
 module.exports = config

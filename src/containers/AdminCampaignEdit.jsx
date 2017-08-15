@@ -240,7 +240,7 @@ class AdminCampaignEdit extends React.Component {
       blocksStarting: false,
       extraProps: {
         orgTexters: this.props.organizationData.organization.texters,
-        organizationId: this.props.params.organizationId
+        organizationUuid: this.props.organizationData.organization.uuid
       }
     }, {
       title: 'Interactions',
@@ -535,6 +535,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
     query: gql`query getOrganizationData($organizationId: String!, $role: String!) {
       organization(id: $organizationId) {
         id
+        uuid
         optOuts {
           cell
         }

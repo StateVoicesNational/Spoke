@@ -1,13 +1,13 @@
 import React from 'react'
 import TextField from 'material-ui/TextField'
 
-const OrganizationJoinLink = ({ organizationId }) => {
+const OrganizationJoinLink = ({ organizationUuid }) => {
   let baseUrl = 'http://base'
   if (typeof window !== 'undefined') {
     baseUrl = window.location.origin
   }
 
-  const joinUrl = `${baseUrl}/${organizationId}/join`
+  const joinUrl = `${baseUrl}/${organizationUuid}/join`
 
   return (
     <div>
@@ -25,7 +25,7 @@ const OrganizationJoinLink = ({ organizationId }) => {
 }
 
 OrganizationJoinLink.propTypes = {
-  organizationId: React.PropTypes.number
+  organizationUuid: React.PropTypes.string
 }
 
 export default OrganizationJoinLink
