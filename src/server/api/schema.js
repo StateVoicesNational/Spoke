@@ -473,7 +473,9 @@ const rootMutations = {
       }
       return editCampaign(id, campaign, loaders)
     },
-    createCannedResponse: async (_, { cannedResponse }) => {
+    createCannedResponse: async (_, { cannedResponse }, { user }) => {
+      authRequired(user)
+
       const cannedResponseInstance = new CannedResponse({
         campaign_id: cannedResponse.campaignId,
         user_id: cannedResponse.userId,
