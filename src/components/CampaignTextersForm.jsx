@@ -421,7 +421,6 @@ export default class CampaignTextersForm extends React.Component {
                             }
                           })
                         )
-                        console.log(newTexters)
                         this.onChange({ ...this.formValues(), texters: newTexters })
                       }
                     })
