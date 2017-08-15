@@ -166,7 +166,7 @@ const rootSchema = `
     exportCampaign(id:String!): JobRequest
     createCannedResponse(cannedResponse:CannedResponseInput!): CannedResponse
     createOrganization(name: String!, userId: String!, inviteId: String!): Organization
-    joinOrganization(organizationId: String!): Organization
+    joinOrganization(organizationUuid: String!): Organization
     editOrganizationRoles(organizationId: String!, userId: String!, roles: [String]): Organization
     updateTextingHours( organizationId: String!, textingHoursStart: Int!, textingHoursEnd: Int!): Organization
     updateTextingHoursEnforcement( organizationId: String!, textingHoursEnforced: Boolean!): Organization
@@ -379,21 +379,26 @@ const rootMutations = {
       }
       return loaders.organization.load(organizationId)
     },
-    joinOrganization: async (_, { organizationId }, { user, loaders }) => {
-      const userOrg = await r.table('user_organization')
-        .getAll(user.id, { index: 'user_id' })
-        .filter({ organization_id: organizationId })
-        .limit(1)(0)
-        .default(null)
+    joinOrganization: async (_, { organizationUuid }, { user, loaders }) => {
+      let organization
+      [organization] = await r.knex('organization')
+        .where('uuid', organizationUuid)
+      if (organization) {
+        const userOrg = await r.table('user_organization')
+          .getAll(user.id, { index: 'user_id' })
+          .filter({ organization_id: organization.id })
+          .limit(1)(0)
+          .default(null)
 
-      if (!userOrg) {
-        await UserOrganization.save({
-          user_id: user.id,
-          organization_id: organizationId,
-          role: 'TEXTER'
-        })
+        if (!userOrg) {
+          await UserOrganization.save({
+            user_id: user.id,
+            organization_id: organization.id,
+            role: 'TEXTER'
+          })
+        }
       }
-      return loaders.organization.load(organizationId)
+      return organization
     },
     updateTextingHours: async (_, { organizationId, textingHoursStart, textingHoursEnd }, { user }) => {
       await accessRequired(user, organizationId, 'OWNER')
@@ -493,7 +498,8 @@ const rootMutations = {
       }
 
       const newOrganization = await Organization.save({
-        name
+        name: name,
+        uuid: uuidv4()
       })
       await UserOrganization.save(
         ['OWNER', 'ADMIN', 'TEXTER'].map((role) => ({
