@@ -660,9 +660,12 @@ const rootResolvers = {
     },
     currentUser: async(_, { id }, { user }) => user,
     contact: async(_, { id }, { loaders, user }) => {
-      authRequired(user)
       const contact = await loaders.campaignContact.load(id)
-      // await accessRequired(user, contact.organization_id, 'TEXTER')
+      // const assignments = await loaders.assignment.load(contact.assignment_id)
+      const campaign = await loaders.campaign.load(contact.campaign_id)
+      const organization = await loaders.organization.load(campaign.organization_id)
+      const roles = ['ADMIN', 'OWNER']
+      await accessRequired(user, organization.id, null, roles)
       return contact
     },
     organizations: async(_, { id }, { user }) => {
