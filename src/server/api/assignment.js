@@ -9,7 +9,6 @@ export const schema = `
     texter: User
     campaign: Campaign
     contacts(contactsFilter: ContactsFilter): [CampaignContact]
-    contactedCount(contactsFilter: ContactsFilter): Int
     contactsCount(contactsFilter: ContactsFilter): Int
     userCannedResponses: [CannedResponse]
     campaignCannedResponses: [CannedResponse]
@@ -92,7 +91,6 @@ export const resolvers = {
       loaders.user.load(assignment.user_id)
     ),
     campaign: async(assignment, _, { loaders }) => loaders.campaign.load(assignment.campaign_id),
-
     contactsCount: async (assignment, { contactsFilter }) => {
       const campaign = await r.table('campaign').get(assignment.campaign_id)
 
@@ -102,14 +100,6 @@ export const resolvers = {
       const result = await getContacts(assignment, contactsFilter, organization, campaign).count()
       return result[0].count
     },
-
-    contactedCount: async (assignment, { contactsFilter }) => {
-      // does
-      return r.table('campaign_contact')
-        .getAll('messaged', 'closed', 'needsResponse', { index: 'message_status' })
-        .filter({ 'assignment_id': assignment.id }).count()
-    },
-
     contacts: async (assignment, { contactsFilter }) => {
       const campaign = await r.table('campaign').get(assignment.campaign_id)
 
