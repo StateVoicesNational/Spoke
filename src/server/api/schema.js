@@ -478,14 +478,27 @@ const rootMutations = {
       }
       return editCampaign(id, campaign, loaders)
     },
-    createCannedResponse: async (_, { cannedResponse }) => {
+    createCannedResponse: async (_, { cannedResponse }, { user, loaders }) => {
+      authRequired(user)
+
       const cannedResponseInstance = new CannedResponse({
         campaign_id: cannedResponse.campaignId,
         user_id: cannedResponse.userId,
         title: cannedResponse.title,
         text: cannedResponse.text
-      })
-      return await cannedResponseInstance.save()
+      }).save()
+      //deletes duplicate created canned_responses
+      let query = r.knex('canned_response')
+        .where('text', 'in',
+          r.knex('canned_response')
+            .where({
+              text: cannedResponse.text,
+              campaign_id: cannedResponse.campaignId
+            })
+            .select('text')
+        ).andWhere({ user_id: cannedResponse.userId })
+        .del()
+      await query
     },
     createOrganization: async (_, { name, userId, inviteId }, { loaders, user }) => {
       authRequired(user)
