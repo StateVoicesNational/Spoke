@@ -73,6 +73,7 @@ import {
   GraphQLError,
   authRequired,
   accessRequired,
+  assignmentRequired,
   superAdminRequired
 } from './errors'
 import nexmo from './lib/nexmo'
@@ -526,8 +527,9 @@ const rootMutations = {
 
       return newOrganization
     },
-    editCampaignContactMessageStatus: async(_, { messageStatus, campaignContactId }, { loaders }) => {
+    editCampaignContactMessageStatus: async(_, { messageStatus, campaignContactId }, { loaders, user }) => {
       const contact = await loaders.campaignContact.load(campaignContactId)
+      await assignmentRequired(user, contact.assignment_id)
       contact.message_status = messageStatus
       return await contact.save()
     },
