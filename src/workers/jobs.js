@@ -369,7 +369,7 @@ export async function exportCampaign(job) {
   const campaignCsv = Baby.unparse(finalCampaignResults)
   const messageCsv = Baby.unparse(finalCampaignMessages)
 
-  if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
+  if (process.env.AWS_ACCESS_AVAILABLE || (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY)) {
     const s3bucket = new AWS.S3({ params: { Bucket: process.env.AWS_S3_BUCKET_NAME } })
     const campaignTitle = campaign.title.replace(/ /g, '_').replace(/\//g, '_')
     const key = `${campaignTitle}-${moment().format('YYYY-MM-DD-HH-mm-ss')}.csv`

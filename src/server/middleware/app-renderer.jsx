@@ -13,14 +13,18 @@ import fs from 'fs'
 import path from 'path'
 
 let assetMap = {
-  'bundle.js': 'bundle.js'
+  'bundle.js': '/assets/bundle.js'
 }
 if (process.env.NODE_ENV === 'production') {
-  assetMap = JSON.parse(
+  const assetMapData = JSON.parse(
     fs.readFileSync(
       path.join(process.env.ASSETS_DIR, process.env.ASSETS_MAP_FILE)
     )
   )
+  const staticBase = process.env.STATIC_BASE_URL || '/assets/'
+  for (var a in assetMapData) {
+    assetMap[a] = staticBase + assetMapData[a]
+  }
 }
 
 export default wrap(async (req, res) => {
