@@ -152,7 +152,6 @@ const rootSchema = `
     currentUser: User
     organization(id:String!): Organization
     campaign(id:String!): Campaign
-    invite(id:String!): Invite
     inviteByHash(hash:String!): [Invite]
     contact(id:String!): CampaignContact
     assignment(id:String!): Assignment
@@ -669,10 +668,6 @@ const rootResolvers = {
     },
     organization: async(_, { id }, { loaders }) =>
       loaders.organization.load(id),
-    invite: async (_, { id }, { loaders, user }) => {
-      authRequired(user)
-      return loaders.invite.load(id)
-    },
     inviteByHash: async (_, { hash }, { loaders, user }) => {
       authRequired(user)
       return r.table('invite').filter({"hash": hash})
