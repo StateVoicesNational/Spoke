@@ -19,6 +19,16 @@ export function authRequired(user) {
   }
 }
 
+async function hasRole(userId, orgId, role) {
+  const userHasRole = await r.table('user_organization').filter({
+    user_id: userId,
+    organization_id: orgId,
+    role: role
+  }).limit(1)(0).default(null)
+  return userHasRole
+}
+
+
 export async function accessRequired(user, orgId, role, roles = [], allowSuperadmin = false) {
   // pass a single role OR an array of roles
   
@@ -32,22 +42,13 @@ export async function accessRequired(user, orgId, role, roles = [], allowSuperad
 
   if (role) {
     console.log("one role")
-    userOrganization = await r.table('user_organization').filter({
-      user_id: user.id,
-      organization_id: orgId,
-      role
-    }).limit(1)(0).default(null)
+    userOrganization = await hasRole(user.id, orgId, role)
   }
 
   if (roles && roles.length > 0) {
     console.log("multiple roles")
     roles.forEach(async (role) => {
-      const userHasRole = await r.table('user_organization').filter({
-        user_id: user.id,
-        organization_id: orgId,
-        role: role
-      }).limit(1)(0).default(null)
-      console.log("userHasRole " + JSON.stringify(userHasRole))
+      const userHasRole = await hasRole(user.id, orgId, role)
       if (userHasRole) {
         console.log("user has role " + String(user.id) + " " + role)
       }
@@ -56,18 +57,18 @@ export async function accessRequired(user, orgId, role, roles = [], allowSuperad
          // debug
         userOrganization = true
       }
+      console.log(userOrganization)
     })
   }
   
   console.log("userOrganization " + userOrganization)
-  
+
   if (!userOrganization) {
+    console.log("somehow we got here first")
     throw new GraphQLError({
       status: 403,
       message: 'You are not authorized to access that resource.'
     })
-  } else {
-    return
   }
 }
 
