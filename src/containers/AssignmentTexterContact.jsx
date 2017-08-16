@@ -96,6 +96,10 @@ const inlineStyles = {
     top: 4
     // without this the toolbar icons are not centered vertically
   },
+  optOutIconButton: {
+    position: 'relative',
+    marginRight: '20px'
+  },
   actionToolbar: {
     backgroundColor: 'white'
   },
@@ -500,7 +504,7 @@ class AssignmentTexterContact extends React.Component {
           <ToolbarSeparator />
           <IconButton
             secondary
-            style={inlineStyles.toolbarIconButton}
+            style={inlineStyles.optOutIconButton}
             label='Opt out'
             onTouchTap={this.handleOpenDialog}
             tooltip='Opt out this contact'
