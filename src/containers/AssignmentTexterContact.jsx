@@ -2,7 +2,6 @@ import React from 'react'
 import { StyleSheet, css } from 'aphrodite'
 import ContactToolbar from '../components/ContactToolbar'
 import MessageList from '../components/MessageList'
-import ProhibitedIcon from 'material-ui/svg-icons/av/not-interested'
 import CannedResponseMenu from '../components/CannedResponseMenu'
 import AssignmentTexterSurveys from '../components/AssignmentTexterSurveys'
 import RaisedButton from 'material-ui/RaisedButton'
@@ -95,10 +94,6 @@ const inlineStyles = {
     position: 'absolute',
     top: 4
     // without this the toolbar icons are not centered vertically
-  },
-  optOutIconButton: {
-    position: 'relative',
-    marginRight: '20px'
   },
   actionToolbar: {
     backgroundColor: 'white'
@@ -496,22 +491,19 @@ class AssignmentTexterContact extends React.Component {
             disabled={this.state.disabled}
           />
           {this.renderNeedsResponseToggleButton(contact)}
-          <ToolbarSeparator />
           <RaisedButton
             label='Canned responses'
             onTouchTap={this.handleOpenPopover}
           />
-          <ToolbarSeparator />
-          <IconButton
+          <RaisedButton
             secondary
-            style={inlineStyles.optOutIconButton}
             label='Opt out'
             onTouchTap={this.handleOpenDialog}
             tooltip='Opt out this contact'
             tooltipPosition='top-center'
           >
-            <ProhibitedIcon />
-          </IconButton>
+
+          </RaisedButton>
           <div
             style={{ float: 'right', marginLeft: 20 }}
           >
