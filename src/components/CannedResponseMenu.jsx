@@ -5,7 +5,7 @@ import ScriptList from './ScriptList'
 
 const styles = {
   popover: {
-    width: 500
+    width: 300
   }
 }
 
