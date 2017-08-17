@@ -51,12 +51,15 @@ const styles = StyleSheet.create({
     color: 'white',
     zIndex: 1000000
   },
+  messageForm: {
+    backgroundColor: 'red'
+  },
   loadingIndicator: {
     maxWidth: '50%'
   },
   navigationToolbarTitle: {
     fontSize: '12px',
-    position: 'absolute',
+    position: 'relative',
     top: 5
 
   },
@@ -72,7 +75,7 @@ const styles = StyleSheet.create({
     flex: '0 0 auto'
   },
   messageField: {
-    padding: 20
+    padding: 10
   },
   dialogActions: {
     marginTop: 20,
@@ -88,11 +91,15 @@ const inlineStyles = {
   },
   exitTexterIconButton: {
     float: 'right',
-    height: '56px'
+    height: '50px',
+    zIndex: 100,
+    position: 'absolute',
+    top: 0,
+    right: '-30'
   },
   toolbarIconButton: {
     position: 'absolute',
-    top: 4
+    top: 0
     // without this the toolbar icons are not centered vertically
   },
   actionToolbar: {

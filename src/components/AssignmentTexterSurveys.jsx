@@ -9,8 +9,10 @@ const styles = {
   root: {
   },
   card: {
+    marginTop: 10,
+    marginBottom: 10,
     backgroundColor: grey50,
-    padding: 20
+    padding: 10
   },
   cardHeader: {
     padding: 0
