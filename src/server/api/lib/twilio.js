@@ -91,8 +91,11 @@ async function rentNewCell() {
 
 async function sendMessage(message) {
   if (!twilio) {
-    await Message.get(message.id)
-      .update({ send_status: 'SENT' })
+    log.warn('cannot actually send SMS message -- twilio is not fully configured:', message.id)
+    if (message.id) {
+      await Message.get(message.id)
+        .update({ send_status: 'SENT' })
+    }
     return 'test_message_uuid'
   }
 

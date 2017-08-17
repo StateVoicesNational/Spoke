@@ -54,7 +54,7 @@ export async function uploadContacts(job) {
     await CampaignContact.save(savePortion)
   }
 
-  if (JOBS_SAME_PROCESS) {
+  if (JOBS_SAME_PROCESS && job.id) {
     await r.table('job_request').get(job.id).delete()
   }
 }
@@ -104,7 +104,7 @@ export async function createInteractionSteps(job) {
     }
   }
 
-  if (JOBS_SAME_PROCESS) {
+  if (JOBS_SAME_PROCESS && job.id) {
     await r.table('job_request').get(job.id).delete()
   }
 }
@@ -252,14 +252,13 @@ export async function assignTexters(job) {
     .delete()
     .catch(log.error)
 
-  if (JOBS_SAME_PROCESS) {
+  if (JOBS_SAME_PROCESS && job.id) {
     await r.table('job_request').get(job.id).delete()
   }
 }
 
 export async function exportCampaign(job) {
   const payload = JSON.parse(job.payload)
-  const jobId = job.id
   const id = job.campaign_id
   const campaign = await Campaign.get(id)
   const requester = payload.requester
@@ -397,14 +396,18 @@ export async function exportCampaign(job) {
     log.debug(campaignCsv)
     log.debug(messageCsv)
   }
+
+  if (JOBS_SAME_PROCESS && job.id) {
+    await r.table('job_request').get(job.id).delete()
+  }
 }
 
 // add an in-memory guard that the same messages are being sent again and again
 let pastMessages = []
 
-export async function sendMessages(queryFunc) {
+export async function sendMessages(queryFunc, defaultStatus) {
   let messages = r.knex('message')
-    .where({'send_status': 'QUEUED'})
+    .where({'send_status': defaultStatus || 'QUEUED'})
 
   if (queryFunc) {
     messages = queryFunc(messages)
@@ -424,4 +427,10 @@ export async function sendMessages(queryFunc) {
     pastMessages.push(message.id)
     pastMessages = pastMessages.slice(-100) //keep the last 100
   }
+}
+
+export async function processJobsAndMessages(eventData) {
+  // TODO
+  // run through jobs like job-handler with getNextJob
+  // separate process?  cycle through messages and dispatch
 }

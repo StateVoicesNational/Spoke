@@ -8,16 +8,9 @@ The easiest way to deploy to Lambda is with Claudia.js detailed below.
    `nvm install 6.10; nvm use 6.10`
 2. Install Claudia js: `npm install -g claudia`
 
-## Steps you will need to do to update code
-
-You might not need to run this -- in theory, `postinstall` in package.json triggers this
-
-3. `OUTPUT_DIR=./build npm run prod-build-server`
-4. `NODE_ENV=production ASSETS_DIR=./build/client/assets ASSETS_MAP_FILE=assets.json npm run prod-build-client`
-
 ## Creating an environment variables file
 
-Create a file called something like `./production-json-env.json` locally (whatever you call it, replace the path in the commands below with it) in the form:
+3. Create a file based on the template in `./deploy/lambda-env.json`, called something like `./production-env.json` locally (whatever you call it, replace the path in the commands below with it) in the form:
 
 ```
 {
@@ -41,17 +34,33 @@ The main variables you will require set in a lambda environment beyond the regul
    * `"JOBS_SAME_PROCESS": "1",`: This makes jobs get called semi-synchronously (as async in code, but triggered directly from the same Lambda instance as the originating web request
    * `"AWS_ACCESS_AVAILABLE": "1",`: This replaces the AWS_ key variables for S3 bucket support
    * `STATIC_BASE_URL`: You will need to upload your ASSETS_DIR to an S3 bucket (or other static file site) and then set this to something like: `"https://s3.amazonaws.com/YOUR_BUCKET_AND_PATH/"` (don't forget the trailing '/')
-   * `S3_STATIC_PATH`: This will be the s3cmd upload path that corresponds to STATIC_BASE_URL.  So if `STATIC_BASE_URL=https://s3.amazon.com/spoke.example.com/static/` then `S3_STATIC_PATH=s3://spoke.example.com/static/`
+   * `S3_STATIC_PATH`: This will be the s3cmd upload path that corresponds to STATIC_BASE_URL.  So if `STATIC_BASE_URL=https://s3.amazon.com/spoke.example.com/static/` then `S3_STATIC_PATH=s3://spoke.example.com/static/`  You will also need a ~/.s3cfg file that has the s3 upload credentials.  See `package.json`'s postinstall script and more specifically `prod-static-upload`.
 
 ## Just the first time
 
-5. `claudia create --handler lambda.handler --deploy-proxy-api --set-env-from-json ./production-json-env.json <other options!>`
+4. `claudia create --handler lambda.handler --deploy-proxy-api --set-env-from-json ./production-env.json <other options!>`
    We recommend running behind a VPC (this takes additional configuration within AWS), and therefore the following options are likely needed:
-   `--region <region> --security-group-ids <vpc security id> --subnet-ids <vpc subnet> --role <lambda role> --use-s3-bucket <private s3 bucket for better deployment> --memory 512 --timeout 60`
+   `--region <region> --security-group-ids <vpc security id> --subnet-ids <vpc subnet> --role <lambda role> --use-s3-bucket <private s3 bucket for better deployment> --memory 512 --timeout 300`
+
+NOTES:
+ * You'll want a timeout that corresponds with the scheduled jobs -- this is 5 minutes which should be the same as below
+ * The memory requirement can probably be lower, but that will affect the maximum contact upload file you can send in and process.
 
 ## Steps you will need to do to update code or environment variables
 
-(Load in production environment variables first )
+`claudia update --use-s3-bucket ceventroller-lambda-west1 --set-env-from-json ./production-env.json`
 
-claudia update --use-s3-bucket ceventroller-lambda-west1 --set-env-from-json ./production-json-env.json
+## Setting up scheduled jobs:
+
+```
+claudia add-scheduled-event --name spoke-job-runner --schedule 'rate(5 minutes)' --event ./deploy/lambda-scheduled-event.json
+
+```
+
+## How this works
+
+After Claudia.js does an 'npm install' essentially of your directory (which will filter out files in `.gitignore`, etc),
+It runs package.json's postinstall script which does the building necessary for production.  The environment variables included
+in your env-from-json file will also be set during build.
+
 

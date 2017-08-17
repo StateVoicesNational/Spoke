@@ -16,7 +16,7 @@ function jobMap() {
 
 const JOBS_SAME_PROCESS = !!process.env.JOBS_SAME_PROCESS; //keep semi
 
-(async () => {
+export const processJobs = async () => {
   // eslint-disable-next-line no-constant-condition
   while (true) {
     try {
@@ -46,4 +46,9 @@ const JOBS_SAME_PROCESS = !!process.env.JOBS_SAME_PROCESS; //keep semi
       log.error(ex)
     }
   }
-})()
+}
+
+if (require.main === module) {
+  processJobs()
+}
+
