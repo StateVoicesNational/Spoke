@@ -6,19 +6,18 @@ import { grey100 } from 'material-ui/styles/colors'
 
 const inlineStyles = {
   toolbar: {
-    backgroundColor: grey100
+    backgroundColor: grey100,
   },
   cellToolbarTitle: {
-    fontSize: 14
+    fontSize: '1em'
   },
   locationToolbarTitle: {
-    fontSize: 14
+    fontSize: '1em'
   },
   timeToolbarTitle: {
-    fontSize: 14
+    fontSize: '1em'
   }
 }
-
 
 const ContactToolbar = function ContactToolbar(props) {
   const { campaignContact, rightToolbarIcon } = props
