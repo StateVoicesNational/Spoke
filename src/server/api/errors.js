@@ -20,14 +20,37 @@ export function authRequired(user) {
 }
 
 async function hasRole(userId, orgId, role) {
-  const userHasRole = await r.table('user_organization').filter({
-    user_id: userId,
-    organization_id: orgId,
-    role: role
-  }).limit(1)(0).default(null)
-  return userHasRole
+  if (role) {
+    const hasRole = await r.table('user_organization').filter({
+      user_id: userId,
+      organization_id: orgId,
+      role: role
+    }).limit(1)(0).default(null)
+    if (hasRole) {
+      return true
+    }
+  } else {
+    return null
+  }
 }
 
+async function hasARole(userId, orgId, roles) {
+  // returns true if user has any role in roles array
+  let answer = false
+  if (roles && roles.length > 0) {
+    const results = await Promise.all(roles.map(async (role) => {
+      return await hasRole(userId, orgId, role)
+    }))
+    .then(results => {
+      results.forEach((result) => {
+        if (result) {
+          answer = true
+        }
+      })
+    })
+    return answer
+  }
+}
 
 export async function accessRequired(user, orgId, role, roles = [], allowSuperadmin = false) {
   // pass a single role OR an array of roles
@@ -38,41 +61,29 @@ export async function accessRequired(user, orgId, role, roles = [], allowSuperad
     return
   }
 
-  let userOrganization = false
+  const data = await Promise.all(
+    [hasRole(user.id, orgId, role), hasARole(user.id, orgId, roles)]
+  )      
 
-  if (role) {
-    console.log("one role")
-    userOrganization = await hasRole(user.id, orgId, role)
-  }
-
-  if (roles && roles.length > 0) {
-    console.log("multiple roles")
-    roles.forEach(async (role) => {
-      const userHasRole = await hasRole(user.id, orgId, role)
-      if (userHasRole) {
-        console.log("user has role " + String(user.id) + " " + role)
-      }
-      if (!userOrganization && userHasRole) {
-        console.log("!userOrganization && userHasRole")
-         // debug
-        userOrganization = true
-      }
-      console.log(userOrganization)
-    })
-  }
-  
-  console.log("userOrganization " + userOrganization)
-
-  if (!userOrganization) {
-    console.log("somehow we got here first")
+  console.log(data)
+  if (!(data[0] || data[1])) {
+    console.log("in the error logic now")
     throw new GraphQLError({
       status: 403,
       message: 'You are not authorized to access that resource.'
     })
   }
+  
 }
 
-export async function assignmentRequired(user, assignment) {
+export async function assignmentRequired(user, assignmentId, contactId, campaignId) {
+  // checks to see if texter is assigned contact in current campaign
+  // select * 
+  // from assignment 
+  // join campaign_contact on assignment.id = campaign_contact.assignment_id
+  // where assignment.user_id = user.id
+  // and assignment.campaign_id = campaignId
+
   return true
 }
 
