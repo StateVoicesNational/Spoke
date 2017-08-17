@@ -587,7 +587,7 @@ class AssignmentTexterContact extends React.Component {
                 type='submit'
                 style={inlineStyles.dialogButton}
                 component={GSSubmitButton}
-                label='Send message and opt out user'
+                label='Send'
               />
             </div>
           </GSForm>
