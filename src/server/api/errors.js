@@ -36,7 +36,7 @@ async function hasRole(userId, orgId, role) {
 
 async function hasARole(userId, orgId, roles) {
   // returns true if user has any role in roles array
-  let answer = false
+  let userHasRole = false
   if (roles && roles.length > 0) {
     const results = await Promise.all(roles.map(async (role) => {
       return await hasRole(userId, orgId, role)
@@ -44,30 +44,27 @@ async function hasARole(userId, orgId, roles) {
     .then(results => {
       results.forEach((result) => {
         if (result) {
-          answer = true
+          userHasRole = true
         }
       })
     })
-    return answer
+    return userHasRole
   }
 }
 
 export async function accessRequired(user, orgId, role, roles = [], allowSuperadmin = false) {
   // pass a single role OR an array of roles
-  
+
   authRequired(user)
 
   if (allowSuperadmin && user.is_superadmin) {
     return
   }
 
-  const data = await Promise.all(
+  const [userHasRole, userHasRoles] = await Promise.all(
     [hasRole(user.id, orgId, role), hasARole(user.id, orgId, roles)]
   )      
-
-  console.log(data)
-  if (!(data[0] || data[1])) {
-    console.log("in the error logic now")
+  if (!(userHasRole || userHasRoles)) {
     throw new GraphQLError({
       status: 403,
       message: 'You are not authorized to access that resource.'
