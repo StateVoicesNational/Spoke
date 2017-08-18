@@ -57,6 +57,7 @@ export default function renderIndex(html, css, assetMap, store) {
       window.AUTH0_DOMAIN="${process.env.AUTH0_DOMAIN}"
       window.AUTH0_LOGIN_CALLBACK="${process.env.AUTH0_LOGIN_CALLBACK}"
       window.AUTH0_LOGOUT_CALLBACK="${process.env.AUTH0_LOGOUT_CALLBACK}"
+      window.SUPPRESS_SELF_INVITE="${process.env.SUPPRESS_SELF_INVITE}"
     </script>
     <script src="/assets/${assetMap['bundle.js']}"></script>
   </body>
