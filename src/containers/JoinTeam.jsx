@@ -56,12 +56,12 @@ JoinTeam.propTypes = {
 const mapMutationsToProps = ({ ownProps }) => ({
   joinOrganization: () => ({
     mutation: gql`
-      mutation joinOrganization($organizationId: String!) {
-        joinOrganization(organizationId: $organizationId) {
+      mutation joinOrganization($organizationUuid: String!) {
+        joinOrganization(organizationUuid: $organizationUuid) {
           id
         }
       }`,
-    variables: { organizationId: ownProps.params.organizationId }
+    variables: { organizationUuid: ownProps.params.organizationUuid }
   })
 })
 

@@ -170,6 +170,7 @@ export default class CampaignTextersForm extends React.Component {
     } else {
       const factor = 1
       let index = 0
+      let skipsByIndex = new Array(newFormValues.texters.length).fill(0)
       if (newFormValues.texters.length === 1 && this.state.autoSplit) {
         const messagedCount = newFormValues.texters[0].assignment.contactsCount - newFormValues.texters[0].assignment.needsMessageCount
         newFormValues.texters[0].assignment.contactsCount = this.formValues().contactsCount
@@ -177,11 +178,15 @@ export default class CampaignTextersForm extends React.Component {
       } else if (newFormValues.texters.length > 1 && (extra > 0 || (extra < 0 && this.state.autoSplit))) {
         while (extra !== 0) {
           const texter = newFormValues.texters[index]
-          if (!changedTexter || texter.id !== changedTexter) {
-            if (texter.assignment.needsMessageCount + factor >= 0) {
-              texter.assignment.needsMessageCount = texter.assignment.needsMessageCount + factor
-              texter.assignment.contactsCount = texter.assignment.contactsCount + factor
-              extra = extra + factor
+          if (skipsByIndex[index] < texter.assignment.contactsCount - texter.assignment.needsMessageCount) {
+            skipsByIndex[index]++
+          } else {
+            if (!changedTexter || texter.id !== changedTexter) {
+              if (texter.assignment.needsMessageCount + factor >= 0) {
+                texter.assignment.needsMessageCount = texter.assignment.needsMessageCount + factor
+                texter.assignment.contactsCount = texter.assignment.contactsCount + factor
+                extra = extra + factor
+              }
             }
           }
           index = index + 1
@@ -290,7 +295,6 @@ export default class CampaignTextersForm extends React.Component {
   showTexters() {
     return this.formValues().texters.map((texter, index) => {
       const messagedCount = texter.assignment.contactsCount - texter.assignment.needsMessageCount
-
       return (
         <div className={css(styles.texterRow)}>
           <div className={css(styles.leftSlider)}>
@@ -357,11 +361,11 @@ export default class CampaignTextersForm extends React.Component {
   }
 
   render() {
-    const { organizationId } = this.props
+    const { organizationUuid } = this.props
     let subtitle = ''
     subtitle = (
       <div>
-        <OrganizationJoinLink organizationId={organizationId} />
+        <OrganizationJoinLink organizationUuid={organizationUuid} />
       </div>
     )
 

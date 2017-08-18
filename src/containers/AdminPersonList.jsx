@@ -103,7 +103,7 @@ class AdminPersonList extends React.Component {
   }
 
   render() {
-    const { params } = this.props
+    const { params, organizationData } = this.props
 
     return (
       <div>
@@ -128,7 +128,7 @@ class AdminPersonList extends React.Component {
           onRequestClose={this.handleClose}
         >
           <OrganizationJoinLink
-            organizationId={params.organizationId}
+            organizationUuid={organizationData.organization.uuid}
           />
         </Dialog>
       </div>
@@ -140,7 +140,8 @@ AdminPersonList.propTypes = {
   mutations: React.PropTypes.object,
   params: React.PropTypes.object,
   personData: React.PropTypes.object,
-  userData: React.PropTypes.object
+  userData: React.PropTypes.object,
+  organizationData: React.PropTypes.object
 }
 
 const mapMutationsToProps = () => ({
@@ -177,6 +178,18 @@ const mapQueriesToProps = ({ ownProps }) => ({
       currentUser {
         id
         roles(organizationId: $organizationId)
+      }
+    }`,
+    variables: {
+      organizationId: ownProps.params.organizationId
+    },
+    forceFetch: true
+  },
+  organizationData: {
+    query: gql`query getOrganizationData($organizationId: String!) {
+      organization(id: $organizationId) {
+        id
+        uuid
       }
     }`,
     variables: {
