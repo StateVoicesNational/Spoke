@@ -49,16 +49,18 @@ class Home extends React.Component {
 
   // not sure if we need this anymore -- only for new organizations
   handleOrgInviteClick = async (e) => {
-    e.preventDefault()
-    const newInvite = await this.props.mutations.createInvite({
-      is_valid: true
-    })
-    if (newInvite.errors) {
-      alert('There was an error creating your invite')
-      throw new Error(newInvite.errors)
-    } else {
-      // alert(newInvite.data.createInvite.id)
-      this.props.router.push(`/invite/${newInvite.data.createInvite.hash}`)
+    if(!window.SUPPRESS_SELF_INVITE){
+      e.preventDefault()
+      const newInvite = await this.props.mutations.createInvite({
+        is_valid: true
+      })
+      if (newInvite.errors) {
+        alert('There was an error creating your invite')
+        throw new Error(newInvite.errors)
+      } else {
+        // alert(newInvite.data.createInvite.id)
+        this.props.router.push(`/invite/${newInvite.data.createInvite.hash}`)
+      }
     }
   }
 
@@ -81,7 +83,7 @@ class Home extends React.Component {
         Spoke is a new way to run campaigns using text messaging. We are currently in private beta.
         </div>
         <div>
-          <a className={css(styles.link_darg_bg)} href='/login'> Login or Sign Up </a>
+          <a className={css(styles.link_dark_bg)} href='/login' onClick={this.handleOrgInviteClick}>Login and get started</a>
         </div>
       </div>
     )

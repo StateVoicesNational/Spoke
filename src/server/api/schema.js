@@ -423,13 +423,15 @@ const rootMutations = {
 
       return await Organization.get(organizationId)
     },
-    createInvite: async (_, {}) => {
-      const inviteInstance = new Invite({
-        is_valid: true,
-        hash: uuidv4(),
-      })
-      const newInvite = await inviteInstance.save()
-      return newInvite
+    createInvite: async (_, { user }) => {
+      if(user.is_superadmin || !process.env.SUPPRESS_SELF_INVITE){
+        const inviteInstance = new Invite({
+          is_valid: true,
+          hash: uuidv4(),
+        })
+        const newInvite = await inviteInstance.save()
+        return newInvite
+      }
     },
     createCampaign: async (_, { campaign }, { user, loaders }) => {
       await accessRequired(user, campaign.organizationId, 'ADMIN')
