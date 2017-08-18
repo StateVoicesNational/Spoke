@@ -678,15 +678,19 @@ const rootResolvers = {
     contact: async(_, { id }, { loaders, user }) => {
       const contact = await loaders.campaignContact.load(id)
       const campaign = await loaders.campaign.load(contact.campaign_id)
-      const roles = ['OWNER', 'ADMIN', 'TEXTER']
-      const [isOwner, isAdmin, isTexter] = await Promise.all(roles.map(async (role) => {
-        return await hasRole(user.id, campaign.organization_id, role)
-      }))
-
-      if (isOwner || isAdmin ) {
+      const roles = []
+      const userRoles = await r.knex('user_organization').where({
+        user_id: user.id,
+        organization_id: campaign.organization_id
+      }).select('role')
+      userRoles.forEach(role => {
+        roles.push(role['role'])
+      })
+      console.log(roles)
+      if ('OWNER' in roles || 'ADMIN' in roles || user.is_superadmin ) {
         authRequired(user)
         return contact
-      } else if (isTexter) {
+      } else if ('TEXTER' in roles) {
         const assignment = await loaders.assignment.load(contact.assignment_id)
         await assignmentRequired(user, assignment.id)
         return contact
