@@ -40,6 +40,27 @@ export async function accessRequired(user, orgId, role, allowSuperadmin = false)
   }
 }
 
+export async function assignmentRequired(user, assignmentId) {
+  authRequired(user)
+
+  if (user.is_superadmin) {
+    return
+  }
+
+  const [assignment] = await r.knex('assignment')
+  .where({
+    user_id: user.id,
+    id: assignmentId
+  }).limit(1)
+
+  if (typeof assignment === 'undefined') {
+    throw new GraphQLError({
+      status: 403,
+      message: 'You are not authorized to access that resource.'
+    })
+  }
+}
+
 export function superAdminRequired(user) {
   authRequired(user)
 

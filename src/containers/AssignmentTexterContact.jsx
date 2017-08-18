@@ -2,7 +2,6 @@ import React from 'react'
 import { StyleSheet, css } from 'aphrodite'
 import ContactToolbar from '../components/ContactToolbar'
 import MessageList from '../components/MessageList'
-import ProhibitedIcon from 'material-ui/svg-icons/av/not-interested'
 import CannedResponseMenu from '../components/CannedResponseMenu'
 import AssignmentTexterSurveys from '../components/AssignmentTexterSurveys'
 import RaisedButton from 'material-ui/RaisedButton'
@@ -52,12 +51,15 @@ const styles = StyleSheet.create({
     color: 'white',
     zIndex: 1000000
   },
+  messageForm: {
+    backgroundColor: 'red'
+  },
   loadingIndicator: {
     maxWidth: '50%'
   },
   navigationToolbarTitle: {
     fontSize: '12px',
-    position: 'absolute',
+    position: 'relative',
     top: 5
 
   },
@@ -73,7 +75,7 @@ const styles = StyleSheet.create({
     flex: '0 0 auto'
   },
   messageField: {
-    padding: 20
+    padding: 10
   },
   dialogActions: {
     marginTop: 20,
@@ -89,11 +91,15 @@ const inlineStyles = {
   },
   exitTexterIconButton: {
     float: 'right',
-    height: '56px'
+    height: '50px',
+    zIndex: 100,
+    position: 'absolute',
+    top: 0,
+    right: '-30'
   },
   toolbarIconButton: {
     position: 'absolute',
-    top: 4
+    top: 0
     // without this the toolbar icons are not centered vertically
   },
   actionToolbar: {
@@ -492,22 +498,19 @@ class AssignmentTexterContact extends React.Component {
             disabled={this.state.disabled}
           />
           {this.renderNeedsResponseToggleButton(contact)}
-          <ToolbarSeparator />
           <RaisedButton
             label='Canned responses'
             onTouchTap={this.handleOpenPopover}
           />
-          <ToolbarSeparator />
-          <IconButton
+          <RaisedButton
             secondary
-            style={inlineStyles.toolbarIconButton}
             label='Opt out'
             onTouchTap={this.handleOpenDialog}
             tooltip='Opt out this contact'
             tooltipPosition='top-center'
           >
-            <ProhibitedIcon />
-          </IconButton>
+
+          </RaisedButton>
           <div
             style={{ float: 'right', marginLeft: 20 }}
           >
@@ -591,7 +594,7 @@ class AssignmentTexterContact extends React.Component {
                 type='submit'
                 style={inlineStyles.dialogButton}
                 component={GSSubmitButton}
-                label='Send message and opt out user'
+                label='Send'
               />
             </div>
           </GSForm>

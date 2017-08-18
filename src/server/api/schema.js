@@ -73,6 +73,7 @@ import {
   GraphQLError,
   authRequired,
   accessRequired,
+  assignmentRequired,
   superAdminRequired
 } from './errors'
 import nexmo from './lib/nexmo'
@@ -152,7 +153,6 @@ const rootSchema = `
     currentUser: User
     organization(id:String!): Organization
     campaign(id:String!): Campaign
-    invite(id:String!): Invite
     inviteByHash(hash:String!): [Invite]
     contact(id:String!): CampaignContact
     assignment(id:String!): Assignment
@@ -478,14 +478,27 @@ const rootMutations = {
       }
       return editCampaign(id, campaign, loaders)
     },
-    createCannedResponse: async (_, { cannedResponse }) => {
+    createCannedResponse: async (_, { cannedResponse }, { user, loaders }) => {
+      authRequired(user)
+
       const cannedResponseInstance = new CannedResponse({
         campaign_id: cannedResponse.campaignId,
         user_id: cannedResponse.userId,
         title: cannedResponse.title,
         text: cannedResponse.text
-      })
-      return await cannedResponseInstance.save()
+      }).save()
+      //deletes duplicate created canned_responses
+      let query = r.knex('canned_response')
+        .where('text', 'in',
+          r.knex('canned_response')
+            .where({
+              text: cannedResponse.text,
+              campaign_id: cannedResponse.campaignId
+            })
+            .select('text')
+        ).andWhere({ user_id: cannedResponse.userId })
+        .del()
+      await query
     },
     createOrganization: async (_, { name, userId, inviteId }, { loaders, user }) => {
       authRequired(user)
@@ -514,8 +527,9 @@ const rootMutations = {
 
       return newOrganization
     },
-    editCampaignContactMessageStatus: async(_, { messageStatus, campaignContactId }, { loaders }) => {
+    editCampaignContactMessageStatus: async(_, { messageStatus, campaignContactId }, { loaders, user }) => {
       const contact = await loaders.campaignContact.load(campaignContactId)
+      await assignmentRequired(user, contact.assignment_id)
       contact.message_status = messageStatus
       return await contact.save()
     },
@@ -656,10 +670,6 @@ const rootResolvers = {
     },
     organization: async(_, { id }, { loaders }) =>
       loaders.organization.load(id),
-    invite: async (_, { id }, { loaders, user }) => {
-      authRequired(user)
-      return loaders.invite.load(id)
-    },
     inviteByHash: async (_, { hash }, { loaders, user }) => {
       authRequired(user)
       return r.table('invite').filter({"hash": hash})
