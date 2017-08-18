@@ -538,7 +538,6 @@ const rootMutations = {
       const campaign = await r.table('assignment')
         .get(assignmentId)
         .eqJoin('campaign_id', r.table('campaign'))('right')
-      console.log('campaign:', campaign);
       await new OptOut({
         assignment_id: assignmentId,
         organization_id: campaign.organization_id,
