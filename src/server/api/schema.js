@@ -538,17 +538,20 @@ const rootMutations = {
       const campaign = await r.table('assignment')
         .get(assignmentId)
         .eqJoin('campaign_id', r.table('campaign'))('right')
+      console.log('campaign:', campaign);
       await new OptOut({
         assignment_id: assignmentId,
         organization_id: campaign.organization_id,
         cell
       }).save()
 
-      await r.table('campaign_contact')
-        .getAll(cell, { index: 'cell' })
-        .eqJoin('campaign_id', r.table('campaign'))
-        .filter({ organization_id: campaign.organization_id})
-        .update({ is_opted_out: true })
+      await r.knex('campaign_contact')
+        .whereIn('cell', function() {
+          this.select('cell').from('opt_out')
+        })
+        .update({
+          is_opted_out: true
+        })
 
       return loaders.campaignContact.load(campaignContactId)
     },
