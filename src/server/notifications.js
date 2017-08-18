@@ -31,10 +31,10 @@ const sendAssignmentUserNotification = async (assignment, notification) => {
   let text
   if (notification === Notifications.ASSIGNMENT_UPDATED) {
     subject = `[${organization.name}] Updated assignment: ${campaign.title}`
-    text = `Your assignment changed: \n\nhttps://spoke.gearshift.co/app/${campaign.organization_id}/todos`
+    text = `Your assignment changed: \n\n${process.env.BASE_URL}/app/${campaign.organization_id}/todos`
   } else if (notification === Notifications.ASSIGNMENT_CREATED) {
     subject = `[${organization.name}] New assignment: ${campaign.title}`
-    text = `You just got a new texting assignment from ${organization.name}. You can start sending texts right away: \n\nhttps://spoke.gearshift.co/app/${campaign.organization_id}/todos`
+    text = `You just got a new texting assignment from ${organization.name}. You can start sending texts right away: \n\n${process.env.BASE_URL}/app/${campaign.organization_id}/todos`
   }
 
   try {
@@ -80,7 +80,7 @@ export const sendUserNotification = async (notification) => {
           to: user.email,
           replyTo: orgOwner.email,
           subject: `[${organization.name}] [${campaign.title}] New reply`,
-          text: `Someone responded to your message. See all your replies here: \n\nhttps://spoke.gearshift.co/app/${campaign.organization_id}/todos/${notification.assignmentId}/reply`
+          text: `Someone responded to your message. See all your replies here: \n\n${process.env.BASE_URL}/app/${campaign.organization_id}/todos/${notification.assignmentId}/reply`
         })
       } catch (e) {
         log.error(e)

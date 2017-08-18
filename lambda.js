@@ -17,7 +17,7 @@ exports.handler = (event, context) => {
       // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Lambda.html#invoke-property
       job(event,
           function dispatcher(dataToSend, callback) {
-            const lambda = AWS.Lambda()
+            const lambda = new AWS.Lambda()
             return lambda.invoke({
               FunctionName: functionName,
               InvocationType: "Event", //asynchronous

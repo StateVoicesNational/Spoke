@@ -21,7 +21,7 @@ class JoinTeam extends React.Component {
     try {
       organization = await this.props.mutations.joinOrganization()
     } catch (ex) {
-      this.setState({ errors: 'Something went wrong trying to join this organization. Email the link to us at help@gearshift.co' })
+      this.setState({ errors: 'Something went wrong trying to join this organization. Please contact your administrator.' })
     }
     if (organization) {
       this.props.router.push(`/app/${organization.data.joinOrganization.id}`)

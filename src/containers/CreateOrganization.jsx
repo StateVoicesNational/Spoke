@@ -44,7 +44,7 @@ class CreateOrganization extends React.Component {
   renderInvalid() {
     return (
       <div>
-        That invite is no longer valid.  This probably means it already got used!  E-mail <a href='help@gearshift.co'>help@gearshift.co</a> for a new invite.
+        That invite is no longer valid.  This probably means it already got used!
       </div>
     )
   }

@@ -1,6 +1,0 @@
- r.db('spoke').table('organization')
-   .update({
-     texting_hours_enforce: false,
-     texting_hours_start: 9,
-     texting_hours_end: 21
-   })
