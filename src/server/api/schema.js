@@ -668,6 +668,7 @@ const rootResolvers = {
       const assignment = await loaders.assignment.load(id)
       const campaign = await loaders.campaign.load(assignment.campaign_id)
       await accessRequired(user, campaign.organization_id, 'TEXTER')
+      await assignmentRequired(user, id)
       return assignment
     },
     organization: async(_, { id }, { loaders }) =>
