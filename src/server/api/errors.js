@@ -31,8 +31,7 @@ export async function hasRole(userId, orgId, role) {
 }
 
 export async function accessRequired(user, orgId, role, allowSuperadmin = false) {
-  // pass a single role OR an array of roles
-
+  
   authRequired(user)
 
   if (allowSuperadmin && user.is_superadmin) {
