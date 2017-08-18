@@ -82,7 +82,7 @@ import { gzip, log } from '../../lib'
 // import { isBetweenTextingHours } from '../../lib/timezones'
 import { Notifications, sendUserNotification } from '../notifications'
 import { uploadContacts, createInteractionSteps, assignTexters } from '../../workers/jobs'
-const uuidv4 = require('uuid/v4')
+const uuidv4 = require('uuid').v4
 
 const JOBS_SAME_PROCESS = !!process.env.JOBS_SAME_PROCESS
 const serviceMap = { nexmo, twilio }

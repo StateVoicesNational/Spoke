@@ -30,7 +30,9 @@ const authToken = process.env.TWILIO_AUTH_TOKEN
 const client = require('twilio')(accountSid, authToken)
 
 setupAuth0Passport()
-seedZipCodes()
+if (!process.env.SUPPRESS_SEED_CALLS) {
+  seedZipCodes()
+}
 setupUserNotificationObservers()
 const app = express()
 // Heroku requires you to use process.env.PORT
@@ -201,6 +203,12 @@ app.use('/graphql', apolloServer((req) => ({
 
 // This middleware should be last. Return the React app only if no other route is hit.
 app.use(appRenderer)
-app.listen(port, () => {
-  log.info(`Node app is running on port ${port}`)
-})
+
+
+if (port) {
+  app.listen(port, () => {
+    log.info(`Node app is running on port ${port}`)
+  })
+}
+
+export default app

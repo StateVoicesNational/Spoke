@@ -59,7 +59,7 @@ export default function renderIndex(html, css, assetMap, store) {
       window.AUTH0_LOGOUT_CALLBACK="${process.env.AUTH0_LOGOUT_CALLBACK}"
       window.SUPPRESS_SELF_INVITE="${process.env.SUPPRESS_SELF_INVITE}"
     </script>
-    <script src="/assets/${assetMap['bundle.js']}"></script>
+    <script src="${assetMap['bundle.js']}"></script>
   </body>
 </html>
 `

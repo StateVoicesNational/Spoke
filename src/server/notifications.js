@@ -119,7 +119,12 @@ const setupNewAssignmentNotification = () => (
     })
 )
 
+let notificationObserversSetup = false
+
 export const setupUserNotificationObservers = () => {
-  setupIncomingReplyNotification()
-  setupNewAssignmentNotification()
+  if (!notificationObserversSetup) {
+    notificationObserversSetup = true
+    setupIncomingReplyNotification()
+    setupNewAssignmentNotification()
+  }
 }

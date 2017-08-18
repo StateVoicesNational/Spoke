@@ -54,7 +54,7 @@ export async function uploadContacts(job) {
     await CampaignContact.save(savePortion)
   }
 
-  if (JOBS_SAME_PROCESS) {
+  if (JOBS_SAME_PROCESS && job.id) {
     await r.table('job_request').get(job.id).delete()
   }
 }
@@ -104,7 +104,7 @@ export async function createInteractionSteps(job) {
     }
   }
 
-  if (JOBS_SAME_PROCESS) {
+  if (JOBS_SAME_PROCESS && job.id) {
     await r.table('job_request').get(job.id).delete()
   }
 }
@@ -252,14 +252,13 @@ export async function assignTexters(job) {
     .delete()
     .catch(log.error)
 
-  if (JOBS_SAME_PROCESS) {
+  if (JOBS_SAME_PROCESS && job.id) {
     await r.table('job_request').get(job.id).delete()
   }
 }
 
 export async function exportCampaign(job) {
   const payload = JSON.parse(job.payload)
-  const jobId = job.id
   const id = job.campaign_id
   const campaign = await Campaign.get(id)
   const requester = payload.requester
@@ -369,7 +368,7 @@ export async function exportCampaign(job) {
   const campaignCsv = Baby.unparse(finalCampaignResults)
   const messageCsv = Baby.unparse(finalCampaignMessages)
 
-  if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
+  if (process.env.AWS_ACCESS_AVAILABLE || (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY)) {
     const s3bucket = new AWS.S3({ params: { Bucket: process.env.AWS_S3_BUCKET_NAME } })
     const campaignTitle = campaign.title.replace(/ /g, '_').replace(/\//g, '_')
     const key = `${campaignTitle}-${moment().format('YYYY-MM-DD-HH-mm-ss')}.csv`
@@ -397,14 +396,18 @@ export async function exportCampaign(job) {
     log.debug(campaignCsv)
     log.debug(messageCsv)
   }
+
+  if (JOBS_SAME_PROCESS && job.id) {
+    await r.table('job_request').get(job.id).delete()
+  }
 }
 
 // add an in-memory guard that the same messages are being sent again and again
 let pastMessages = []
 
-export async function sendMessages(queryFunc) {
+export async function sendMessages(queryFunc, defaultStatus) {
   let messages = r.knex('message')
-    .where({'send_status': 'QUEUED'})
+    .where({'send_status': defaultStatus || 'QUEUED'})
 
   if (queryFunc) {
     messages = queryFunc(messages)
@@ -423,5 +426,102 @@ export async function sendMessages(queryFunc) {
     await service.sendMessage(message)
     pastMessages.push(message.id)
     pastMessages = pastMessages.slice(-100) //keep the last 100
+  }
+}
+
+export async function handleIncomingMessageParts() {
+  const messageParts = await r.table('pending_message_part')
+  const messagePartsByService = [
+    {'group': 'nexmo',
+     'reduction': messageParts.filter((m) => (m.service == 'nexmo'))
+    },
+    {'group': 'twilio',
+     'reduction': messageParts.filter((m) => (m.service == 'twilio'))
+    },
+  ]
+  const serviceLength = messagePartsByService.length
+  for (let index = 0; index < serviceLength; index++) {
+    const serviceParts = messagePartsByService[index]
+    const allParts = serviceParts.reduction
+    const allPartsCount = allParts.length
+    if (allPartsCount == 0) {
+      continue
+    }
+    const service = serviceMap[serviceParts.group]
+    const convertMessageParts = service.convertMessagePartsToMessage
+    const messagesToSave = []
+    let messagePartsToDelete = []
+    const concatMessageParts = {}
+    for (let i = 0; i < allPartsCount; i++) {
+      const part = allParts[i]
+      const serviceMessageId = part.service_id
+      const savedCount = await r.table('message')
+        .getAll(serviceMessageId, { index: 'service_id' })
+        .count()
+      const lastMessage = await getLastMessage({
+        contactNumber: part.contact_number,
+        service: process.env.DEFAULT_SERVICE || 'twilio'
+      })
+      const duplicateMessageToSaveExists = !!messagesToSave.find((message) => message.service_id === serviceMessageId)
+      if (!lastMessage) {
+        log.info('Received message part with no thread to attach to', part)
+        messagePartsToDelete.push(part)
+      } else if (savedCount > 0) {
+        log.info(`Found already saved message matching part service message ID ${part.service_id}`)
+        messagePartsToDelete.push(part)
+      } else if (duplicateMessageToSaveExists) {
+        log.info(`Found duplicate message to be saved matching part service message ID ${part.service_id}`)
+        messagePartsToDelete.push(part)
+      } else {
+        const parentId = part.parent_id
+        if (!parentId) {
+          messagesToSave.push(await convertMessageParts([part]))
+          messagePartsToDelete.push(part)
+        } else {
+          if (part.service !== 'nexmo') {
+            throw new Error('should not have a parent ID for twilio')
+          }
+          const groupKey = [parentId, part.contact_number, part.user_number]
+          const serviceMessage = JSON.parse(part.service_message)
+          if (!concatMessageParts.hasOwnProperty(groupKey)) {
+            const partCount = parseInt(serviceMessage['concat-total'], 10)
+            concatMessageParts[groupKey] = Array(partCount).fill(null)
+          }
+
+          const partIndex = parseInt(serviceMessage['concat-part'], 10) - 1
+          if (concatMessageParts[groupKey][partIndex] !== null) {
+            messagePartsToDelete.push(part)
+          } else {
+            concatMessageParts[groupKey][partIndex] = part
+          }
+        }
+      }
+    }
+
+    const keys = Object.keys(concatMessageParts)
+    const keyCount = keys.length
+
+    for (let i = 0; i < keyCount; i++) {
+      const groupKey = keys[i]
+      const messageParts = concatMessageParts[groupKey]
+
+      if (messageParts.filter((part) => part === null).length === 0) {
+        messagePartsToDelete = messagePartsToDelete.concat(messageParts)
+        const message = await convertMessageParts(messageParts)
+        messagesToSave.push(message)
+      }
+    }
+
+    const messageCount = messagesToSave.length
+    for (let i = 0; i < messageCount; i++) {
+      log.info('Saving message with service message ID', messagesToSave[i].service_id)
+      await saveNewIncomingMessage(messagesToSave[i])
+    }
+
+    const messageIdsToDelete = messagePartsToDelete.map((m) => m.id)
+    log.info('Deleting message parts', messageIdsToDelete)
+    await r.table('pending_message_part')
+      .getAll(...messageIdsToDelete)
+      .delete()
   }
 }
