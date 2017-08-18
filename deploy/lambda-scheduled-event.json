@@ -1,4 +1,4 @@
 {
-  "command": "processJobsAndMessages",
+  "command": "dispatchProcesses",
   "description": "see docs/DEPLOYING_AWS_LAMBDA.md"
 }

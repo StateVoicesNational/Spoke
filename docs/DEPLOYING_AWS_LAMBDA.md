@@ -54,7 +54,6 @@ NOTES:
 
 ```
 claudia add-scheduled-event --name spoke-job-runner --schedule 'rate(5 minutes)' --event ./deploy/lambda-scheduled-event.json
-
 ```
 
 ## How this works
