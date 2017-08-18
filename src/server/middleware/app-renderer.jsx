@@ -18,7 +18,17 @@ let assetMap = {
 if (process.env.NODE_ENV === 'production') {
   const assetMapData = JSON.parse(
     fs.readFileSync(
-      path.join(process.env.ASSETS_DIR, process.env.ASSETS_MAP_FILE)
+      // this is a bit overly complicated for the use case
+      // of it being run from the build directory BY claudia.js
+      // we need to make it REALLY relative, but not by the
+      // starting process or the 'local' directory (which are both wrong then)
+      ( (process.env.ASSETS_DIR||'').startsWith('.')
+        ? path.join(__dirname,
+                    '../../../../',
+                    process.env.ASSETS_DIR,
+                    process.env.ASSETS_MAP_FILE)
+        :  path.join(process.env.ASSETS_DIR,
+                     process.env.ASSETS_MAP_FILE) )
     )
   )
   const staticBase = process.env.STATIC_BASE_URL || '/assets/'
