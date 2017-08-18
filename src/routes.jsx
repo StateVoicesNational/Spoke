@@ -17,7 +17,6 @@ import React from 'react'
 import CreateOrganization from './containers/CreateOrganization'
 import JoinTeam from './containers/JoinTeam'
 import Home from './containers/Home'
-import Privacy from './components/Privacy'
 import Settings from './containers/Settings'
 import AdminReplySender from './containers/AdminReplySender'
 
@@ -76,7 +75,6 @@ export default function makeRoutes(requireAuth = () => {}) {
       <Route path='login' component={Login} />
       <Route path='invite/:inviteId' component={CreateOrganization} onEnter={requireAuth} />
       <Route path=':organizationUuid/join' component={JoinTeam} onEnter={requireAuth} />
-      <Route path='privacy' component={Privacy} />
     </Route>
   )
 }

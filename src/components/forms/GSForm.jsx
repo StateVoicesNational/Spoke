@@ -34,7 +34,7 @@ export default class GSForm extends React.Component {
       this.setState({ globalErrorMessage: err.message })
     } else {
       log.error(err)
-      this.setState({ globalErrorMessage: 'Oops! Your form submission did not work. E-mail help@gearshift.co to let us know.' })
+      this.setState({ globalErrorMessage: 'Oops! Your form submission did not work. Contact your administrator.' })
     }
   }
 

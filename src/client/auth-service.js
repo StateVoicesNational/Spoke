@@ -21,7 +21,7 @@ export function login(nextUrl) {
     allowedConnections: ['Username-Password-Authentication'],
     languageDictionary: {
       title: 'Spoke',
-      signUpTerms: 'I agree to the <a href=\'/terms\' target=\'_new\'> terms of service</a> and <a href=\'/privacy\' target=\'_new\'> privacy policy</a>.'
+      signUpTerms: 'I agree to the <a href="'+window.PRIVACY_URL+'" target="_new">terms of service and privacy policy</a>.'
     },
     mustAcceptTerms: true,
     closable: false,

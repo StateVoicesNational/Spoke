@@ -285,7 +285,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
             ref={fieldName}
             autoFocus={this.state.focusedField === fieldName}
             hintText='Answer'
-            // noValidate here otherwise we end up with this bug: https://github.com/AxleFactory/spoke/issues/25
+            // noValidate here otherwise we end up with this bug
             noValidate
             onKeyDown={(event) => {
               if (event.keyCode === 13) {
