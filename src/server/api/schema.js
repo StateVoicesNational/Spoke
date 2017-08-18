@@ -73,6 +73,7 @@ import {
   GraphQLError,
   authRequired,
   accessRequired,
+  hasRole,
   assignmentRequired,
   superAdminRequired
 } from './errors'
@@ -648,7 +649,6 @@ const rootMutations = {
         }).save()
       }
 
-
       const contact = loaders.campaignContact.load(campaignContactId)
       return contact
     }
@@ -677,12 +677,25 @@ const rootResolvers = {
     currentUser: async(_, { id }, { user }) => user,
     contact: async(_, { id }, { loaders, user }) => {
       const contact = await loaders.campaignContact.load(id)
-      // const assignments = await loaders.assignment.load(contact.assignment_id)
       const campaign = await loaders.campaign.load(contact.campaign_id)
-      const organization = await loaders.organization.load(campaign.organization_id)
-      const roles = ['ADMIN', 'OWNER']
-      await accessRequired(user, organization.id, null, roles)
-      return contact
+      const roles = ['OWNER', 'ADMIN', 'TEXTER']
+      const [isOwner, isAdmin, isTexter] = await Promise.all(roles.map(async (role) => {
+        return await hasRole(user.id, campaign.organization_id, role)
+      }))
+
+      if (isOwner || isAdmin ) {
+        authRequired(user)
+        return contact
+      } else if (isTexter) {
+        const assignment = await loaders.assignment.load(contact.assignment_id)
+        await assignmentRequired(user, assignment.id)
+        return contact
+      } else {
+        throw new GraphQLError({
+          status: 403,
+          message: 'You are not authorized to access that resource.'
+        })
+      }
     },
     organizations: async(_, { id }, { user }) => {
       await superAdminRequired(user)

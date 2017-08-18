@@ -19,40 +19,18 @@ export function authRequired(user) {
   }
 }
 
-async function hasRole(userId, orgId, role) {
+export async function hasRole(userId, orgId, role) {  
   if (role) {
-    const hasRole = await r.table('user_organization').filter({
+    const userHasRole = await r.table('user_organization').filter({
       user_id: userId,
       organization_id: orgId,
-      role: role
+      role
     }).limit(1)(0).default(null)
-    if (hasRole) {
-      return true
-    }
-  } else {
-    return null
-  }
-}
-
-async function hasARole(userId, orgId, roles) {
-  // returns true if user has any role in roles array
-  let userHasRole = false
-  if (roles && roles.length > 0) {
-    const results = await Promise.all(roles.map(async (role) => {
-      return await hasRole(userId, orgId, role)
-    }))
-    .then(results => {
-      results.forEach((result) => {
-        if (result) {
-          userHasRole = true
-        }
-      })
-    })
     return userHasRole
   }
 }
 
-export async function accessRequired(user, orgId, role, roles = [], allowSuperadmin = false) {
+export async function accessRequired(user, orgId, role, allowSuperadmin = false) {
   // pass a single role OR an array of roles
 
   authRequired(user)
@@ -61,27 +39,15 @@ export async function accessRequired(user, orgId, role, roles = [], allowSuperad
     return
   }
 
-  const [userHasRole, userHasRoles] = await Promise.all(
-    [hasRole(user.id, orgId, role), hasARole(user.id, orgId, roles)]
-  )      
-  if (!(userHasRole || userHasRoles)) {
+  const userHasRole = await hasRole(user.id, orgId, role)
+
+  if (!userHasRole) {
     throw new GraphQLError({
       status: 403,
       message: 'You are not authorized to access that resource.'
     })
   }
   
-}
-
-export async function assignmentRequired(user, assignmentId, contactId, campaignId) {
-  // checks to see if texter is assigned contact in current campaign
-  // select * 
-  // from assignment 
-  // join campaign_contact on assignment.id = campaign_contact.assignment_id
-  // where assignment.user_id = user.id
-  // and assignment.campaign_id = campaignId
-
-  return true
 }
 
 export async function assignmentRequired(user, assignmentId) {
