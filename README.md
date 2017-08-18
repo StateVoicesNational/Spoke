@@ -28,6 +28,7 @@ echo "INSERT INTO invite \(hash,is_valid\) VALUES \('abc-123', true\)\;" |sqlite
 13. Use the generated key to visit an invite link, e.g.: http://localhost:3000/invite/123. This should redirect you to the login screen. Use the "Sign Up" option to create your account.
 14. You should then be prompted to create an organization. Create it.
 
+If you want to create an invite via the home page "Login and get started" link, make sure your `SUPPRESS_SELF_INVITE` variable is not set.
 
 ## Important TODOS
 **Because  of issues with numbers getting marked with spam, we adopted aggressive number cycling to limit the number of texts sent from a specific number. We did not implement a corresponding process to unrent the numbers before shutting down the service, so two things are a high priority before putting Spoke back into production:
