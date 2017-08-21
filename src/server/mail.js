@@ -1,9 +1,15 @@
 import { log } from '../lib'
-import mailgunFactory from 'mailgun-js'
-const mailgun = mailgunFactory({
-  apiKey: process.env.MAILGUN_SECRET_KEY,
-  domain: process.env.MAILGUN_DOMAIN
-})
+import nodemailer from 'nodemailer'
+
+let transporter = nodemailer.createTransport({
+    host: process.env.EMAIL_HOST,
+    port: process.env.EMAIL_HOST_PORT,
+    secure: true,
+    auth: {
+        user: process.env.EMAIL_HOST_USER,
+        pass: process.env.EMAIL_HOST_PASSWORD
+    }
+});
 
 export const sendEmail = async ({ to, subject, text, replyTo }) => {
   log.info(`Sending e-mail to ${to} with subject ${subject}.`)
@@ -12,15 +18,14 @@ export const sendEmail = async ({ to, subject, text, replyTo }) => {
     return null
   }
   const params = {
-    from: process.env.MAILGUN_FROM_EMAIL,
+    from: process.env.EMAIL_FROM,
     to,
     subject,
     text
   }
 
   if (replyTo) {
-    params['h:Reply-To'] = replyTo
+    params['replyTo'] = replyTo
   }
-
-  return mailgun.messages().send(params)
+  return transporter.sendMail(params)
 }
