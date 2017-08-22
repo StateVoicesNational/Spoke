@@ -708,13 +708,7 @@ const rootResolvers = {
       userRoles.forEach(role => {
         roles[role['role']] = 1
       })
-<<<<<<< HEAD
-      console.log(roles)
       if ('OWNER' in roles || user.is_superadmin) {
-=======
-      if ('OWNER' in roles || 'ADMIN' in roles || user.is_superadmin ) {
-        authRequired(user)
->>>>>>> master
         return contact
       } else if ('TEXTER' in roles) {
         const assignment = await loaders.assignment.load(contact.assignment_id)
