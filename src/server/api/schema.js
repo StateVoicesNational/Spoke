@@ -425,7 +425,7 @@ const rootMutations = {
       return await Organization.get(organizationId)
     },
     createInvite: async (_, { user }) => {
-      if(user.is_superadmin || !process.env.SUPPRESS_SELF_INVITE){
+      if( (user && user.is_superadmin) || !process.env.SUPPRESS_SELF_INVITE ){
         const inviteInstance = new Invite({
           is_valid: true,
           hash: uuidv4(),
