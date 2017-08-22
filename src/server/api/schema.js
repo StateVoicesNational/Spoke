@@ -73,6 +73,7 @@ import {
   GraphQLError,
   authRequired,
   accessRequired,
+  hasRole,
   assignmentRequired,
   superAdminRequired
 } from './errors'
@@ -546,11 +547,13 @@ const rootMutations = {
         cell
       }).save()
 
-      await r.table('campaign_contact')
-        .getAll(cell, { index: 'cell' })
-        .eqJoin('campaign_id', r.table('campaign'))
-        .filter({ organization_id: campaign.organization_id})
-        .update({ is_opted_out: true })
+      await r.knex('campaign_contact')
+        .whereIn('cell', function() {
+          this.select('cell').from('opt_out')
+        })
+        .update({
+          is_opted_out: true
+        })
 
       return loaders.campaignContact.load(campaignContactId)
     },
@@ -650,7 +653,6 @@ const rootMutations = {
         }).save()
       }
 
-
       const contact = loaders.campaignContact.load(campaignContactId)
       return contact
     }
@@ -678,10 +680,31 @@ const rootResolvers = {
       return r.table('invite').filter({"hash": hash})
     },
     currentUser: async(_, { id }, { user }) => user,
-    contact: async(_, { id }, { loaders }) => {
+    contact: async(_, { id }, { loaders, user }) => {
       const contact = await loaders.campaignContact.load(id)
-      // await accessRequired(user, contact.organization_id, 'TEXTER')
-      return contact
+      const campaign = await loaders.campaign.load(contact.campaign_id)
+      const roles = []
+      const userRoles = await r.knex('user_organization').where({
+        user_id: user.id,
+        organization_id: campaign.organization_id
+      }).select('role')
+      userRoles.forEach(role => {
+        roles.push(role['role'])
+      })
+      console.log(roles)
+      if ('OWNER' in roles || 'ADMIN' in roles || user.is_superadmin ) {
+        authRequired(user)
+        return contact
+      } else if ('TEXTER' in roles) {
+        const assignment = await loaders.assignment.load(contact.assignment_id)
+        await assignmentRequired(user, assignment.id)
+        return contact
+      } else {
+        throw new GraphQLError({
+          status: 403,
+          message: 'You are not authorized to access that resource.'
+        })
+      }
     },
     organizations: async(_, { id }, { user }) => {
       await superAdminRequired(user)
