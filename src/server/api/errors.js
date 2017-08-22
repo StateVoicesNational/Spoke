@@ -19,25 +19,34 @@ export function authRequired(user) {
   }
 }
 
+export async function hasRole(userId, orgId, role) {  
+  if (role) {
+    const userHasRole = await r.table('user_organization').filter({
+      user_id: userId,
+      organization_id: orgId,
+      role
+    }).limit(1)(0).default(null)
+    return userHasRole
+  }
+}
+
 export async function accessRequired(user, orgId, role, allowSuperadmin = false) {
+  
   authRequired(user)
 
   if (allowSuperadmin && user.is_superadmin) {
     return
   }
 
-  const userOrganization = await r.table('user_organization').filter({
-    user_id: user.id,
-    organization_id: orgId,
-    role
-  }).limit(1)(0).default(null)
+  const userHasRole = await hasRole(user.id, orgId, role)
 
-  if (!userOrganization) {
+  if (!userHasRole) {
     throw new GraphQLError({
       status: 403,
       message: 'You are not authorized to access that resource.'
     })
   }
+  
 }
 
 export async function assignmentRequired(user, assignmentId) {
