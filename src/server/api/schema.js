@@ -682,15 +682,14 @@ const rootResolvers = {
     contact: async(_, { id }, { loaders, user }) => {
       const contact = await loaders.campaignContact.load(id)
       const campaign = await loaders.campaign.load(contact.campaign_id)
-      const roles = []
+      const roles = {}
       const userRoles = await r.knex('user_organization').where({
         user_id: user.id,
         organization_id: campaign.organization_id
       }).select('role')
       userRoles.forEach(role => {
-        roles.push(role['role'])
+        roles[role['role']] = 1
       })
-      console.log(roles)
       if ('OWNER' in roles || 'ADMIN' in roles || user.is_superadmin ) {
         authRequired(user)
         return contact
@@ -699,6 +698,7 @@ const rootResolvers = {
         await assignmentRequired(user, assignment.id)
         return contact
       } else {
+        console.error('NOT Authorized: contact', user, roles)
         throw new GraphQLError({
           status: 403,
           message: 'You are not authorized to access that resource.'
