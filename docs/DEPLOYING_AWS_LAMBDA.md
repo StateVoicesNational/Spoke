@@ -48,6 +48,8 @@ NOTES:
 
 ## Steps you will need to do to update code or environment variables
 
+(if you are using nvm, make sure to run `nvm use 6.10` first)
+
 `claudia update --use-s3-bucket ceventroller-lambda-west1 --set-env-from-json ./production-env.json`
 
 ## Setting up scheduled jobs:
@@ -63,3 +65,12 @@ It runs package.json's postinstall script which does the building necessary for 
 in your env-from-json file will also be set during build.
 
 
+## Debugging
+
+Lambda seems to output sparse messages without full stacks, so it's definitely harder to debug.
+Generally dumping `console.log` in places that aren't working helps (a little).
+
+There are a few 'common' errors you will see that imply specific issues:
+
+* (ignore) `Error: Network error: fetch is not defined`: you can safely ignore this.  This stems from some client libraries being imported into the server, but the thread isn't necessary and the promise failing is ok.
+* `TypeError: Cannot read property 'error' of undefined`: This appears when you have run `await func()` and `func` does not exist (typo or not imported correctly).

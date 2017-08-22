@@ -9,7 +9,7 @@ let transporter = nodemailer.createTransport({
         user: process.env.EMAIL_HOST_USER,
         pass: process.env.EMAIL_HOST_PASSWORD
     }
-});
+})
 
 export const sendEmail = async ({ to, subject, text, replyTo }) => {
   log.info(`Sending e-mail to ${to} with subject ${subject}.`)
