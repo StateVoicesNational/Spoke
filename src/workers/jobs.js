@@ -3,6 +3,7 @@ import { log, gunzip, zipToTimeZone } from '../lib'
 import { sleep, getNextJob, updateJob } from './lib'
 import nexmo from '../server/api/lib/nexmo'
 import twilio from '../server/api/lib/twilio'
+import { getLastMessage, saveNewIncomingMessage } from '../server/api/lib/message-sending'
 
 import AWS from 'aws-sdk'
 import Baby from 'babyparse'
@@ -460,7 +461,7 @@ export async function handleIncomingMessageParts() {
         .count()
       const lastMessage = await getLastMessage({
         contactNumber: part.contact_number,
-        service: process.env.DEFAULT_SERVICE || 'twilio'
+        service: serviceParts.group
       })
       const duplicateMessageToSaveExists = !!messagesToSave.find((message) => message.service_id === serviceMessageId)
       if (!lastMessage) {
@@ -497,7 +498,6 @@ export async function handleIncomingMessageParts() {
         }
       }
     }
-
     const keys = Object.keys(concatMessageParts)
     const keyCount = keys.length
 

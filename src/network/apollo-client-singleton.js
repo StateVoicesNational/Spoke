@@ -1,6 +1,7 @@
 import ApolloClient, { addQueryMerging } from 'apollo-client'
 import ResponseMiddlewareNetworkInterface from './response-middleware-network-interface'
 import { log } from '../lib'
+import fetch from 'isomorphic-fetch'
 import { graphQLErrorParser } from './errors'
 
 const responseMiddlewareNetworkInterface = new ResponseMiddlewareNetworkInterface(
