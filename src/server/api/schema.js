@@ -82,7 +82,7 @@ import twilio from './lib/twilio'
 import { gzip, log } from '../../lib'
 // import { isBetweenTextingHours } from '../../lib/timezones'
 import { Notifications, sendUserNotification } from '../notifications'
-import { uploadContacts, createInteractionSteps, assignTexters } from '../../workers/jobs'
+import { uploadContacts, createInteractionSteps, assignTexters, exportCampaign } from '../../workers/jobs'
 const uuidv4 = require('uuid').v4
 
 const JOBS_SAME_PROCESS = !!process.env.JOBS_SAME_PROCESS
@@ -341,12 +341,16 @@ const rootMutations = {
         queue_name: `${id}:export`,
         job_type: 'export',
         locks_queue: false,
+        assigned: JOBS_SAME_PROCESS, // can get called immediately, below
         campaign_id: id,
         payload: JSON.stringify({
           id,
           requester: user.id
         })
       })
+      if (JOBS_SAME_PROCESS) {
+        exportCampaign(newJob).then()
+      }
       return newJob
     },
     editOrganizationRoles: async (_, { userId, organizationId, roles }, { user, loaders }) => {
@@ -610,6 +614,7 @@ const rootMutations = {
         user_number: '',
         assignment_id: message.assignmentId,
         send_status: (JOBS_SAME_PROCESS ? 'SENDING' : 'QUEUED'),
+        service: process.env.DEFAULT_SERVICE || '',
         is_from_contact: false
       })
 

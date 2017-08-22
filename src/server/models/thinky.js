@@ -11,7 +11,6 @@ import dumbThinky from 'rethink-knex-adapter'
 // })
 
 let config
-let thinkyConn
 
 if (process.env.DB_JSON) {
   config = JSON.parse(process.env.DB_JSON)
@@ -36,4 +35,6 @@ if (process.env.DB_JSON) {
   }
 }
 
-export default dumbThinky(config)
+const thinkyConn = dumbThinky(config)
+
+export default thinkyConn

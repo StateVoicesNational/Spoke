@@ -18,12 +18,11 @@ const jobMap = {
   "upload_contacts": uploadContacts,
   "assign_texters": assignTexters,
   "create_interaction_steps": createInteractionSteps,
-  // usually dispatched in three separate processes, not here
-  "send_messages": sendMessages
 }
 
 export async function processJobs() {
   setupUserNotificationObservers()
+  console.log('Running processJobs')
   // eslint-disable-next-line no-constant-condition
   while (true) {
     try {
@@ -49,14 +48,15 @@ export async function processJobs() {
   }
 }
 
-const messageSenderCreator = (subQuery) => {
+const messageSenderCreator = (subQuery, defaultStatus) => {
   return async () => {
+    console.log('Running a message sender')
     setupUserNotificationObservers()
     // eslint-disable-next-line no-constant-condition
     while (true) {
       try {
         await sleep(1100)
-        await sendMessages(subQuery)
+        await sendMessages(subQuery, defaultStatus)
       } catch (ex) {
         log.error(ex)
       }
@@ -80,8 +80,20 @@ export const messageSender789 = messageSenderCreator(function(mQuery) {
   return mQuery.where(r.knex.raw("(contact_number LIKE '%7' OR contact_number LIKE '%8' or contact_number LIKE '%9')"))
 })
 
+export const failedMessageSender = messageSenderCreator(function(mQuery) {
+  // messages that were attempted to be sent five minutes ago in status=SENDING
+  // when JOBS_SAME_PROCESS is enabled, the send attempt is done immediately.
+  // However, if it's still marked SENDING, then it must have failed to go out.
+  // This is dangerous to run in a scheduled event because if there is
+  // any failure path that stops the status from updating, then users might keep getting
+  // texts over and over
+  var fiveMinutesAgo = new Date(new Date() - 1000 * 60 * 5)
+  return mQuery.where('created_at', '>', fiveMinutesAgo)
+}, 'SENDING')
+
 export async function handleIncomingMessages() {
   setupUserNotificationObservers()
+  console.log('Running handleIncomingMessages')
   // eslint-disable-next-line no-constant-condition
   while (true) {
     try {
@@ -112,11 +124,24 @@ const processMap = {
   'handleIncomingMessages': handleIncomingMessages
 }
 
+// if process.env.JOBS_SAME_PROCESS then we don't need to run
+// the others and messageSender should just pick up the stragglers
+const syncProcessMap = {
+  //'failedMessageSender': failedMessageSender, //see method for danger
+  'handleIncomingMessages': handleIncomingMessages
+}
+
+const JOBS_SAME_PROCESS = !!process.env.JOBS_SAME_PROCESS
+
 export async function dispatchProcesses(event, dispatcher) {
-  const toDispatch = event.processes || processMap
+  const toDispatch = event.processes || (JOBS_SAME_PROCESS ? syncProcessMap : processMap)
   for (let p in toDispatch) {
     if (p in processMap) {
-      dispatcher(p)
+      /// not using dispatcher, but another interesting model would be
+      /// to dispatch processes to other lambda invocations
+      // dispatcher({'command': p})
+      console.log('process', p)
+      toDispatch[p]().then()
     }
   }
 }
