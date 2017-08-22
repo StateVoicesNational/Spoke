@@ -547,11 +547,13 @@ const rootMutations = {
         cell
       }).save()
 
-      await r.table('campaign_contact')
-        .getAll(cell, { index: 'cell' })
-        .eqJoin('campaign_id', r.table('campaign'))
-        .filter({ organization_id: campaign.organization_id})
-        .update({ is_opted_out: true })
+      await r.knex('campaign_contact')
+        .whereIn('cell', function() {
+          this.select('cell').from('opt_out')
+        })
+        .update({
+          is_opted_out: true
+        })
 
       return loaders.campaignContact.load(campaignContactId)
     },
