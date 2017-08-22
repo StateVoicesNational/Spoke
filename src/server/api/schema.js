@@ -425,7 +425,7 @@ const rootMutations = {
       return await Organization.get(organizationId)
     },
     createInvite: async (_, { user }) => {
-      if(user.is_superadmin || !process.env.SUPPRESS_SELF_INVITE){
+      if( user.is_superadmin || !process.env.SUPPRESS_SELF_INVITE ){
         const inviteInstance = new Invite({
           is_valid: true,
           hash: uuidv4(),
@@ -667,11 +667,27 @@ const rootResolvers = {
       return campaign
     },
     assignment: async (_, { id }, { loaders, user }) => {
+      authRequired(user)
       const assignment = await loaders.assignment.load(id)
       const campaign = await loaders.campaign.load(assignment.campaign_id)
-      await accessRequired(user, campaign.organization_id, 'TEXTER')
-      await assignmentRequired(user, id)
-      return assignment
+      const roles = {}
+      const userRoles = await r.knex('user_organization').where({
+        user_id: user.id,
+        organization_id: campaign.organization_id
+      }).select('role')
+      userRoles.forEach(role => {
+        roles[role['role']] = 1
+      })
+      if ('OWNER' in roles 
+        || user.is_superadmin 
+        || 'TEXTER' in roles && assignment.user_id == user.id) {
+        return assignment
+      } else {
+        throw new GraphQLError({
+          status: 403,
+          message: 'You are not authorized to access that resource.'
+        })
+      }
     },
     organization: async(_, { id }, { loaders }) =>
       loaders.organization.load(id),
@@ -681,23 +697,22 @@ const rootResolvers = {
     },
     currentUser: async(_, { id }, { user }) => user,
     contact: async(_, { id }, { loaders, user }) => {
+      authRequired(user)
       const contact = await loaders.campaignContact.load(id)
       const campaign = await loaders.campaign.load(contact.campaign_id)
-      const roles = []
+      const roles = {}
       const userRoles = await r.knex('user_organization').where({
         user_id: user.id,
         organization_id: campaign.organization_id
       }).select('role')
       userRoles.forEach(role => {
-        roles.push(role['role'])
+        roles[role['role']] = 1
       })
       console.log(roles)
-      if ('OWNER' in roles || 'ADMIN' in roles || user.is_superadmin ) {
-        authRequired(user)
+      if ('OWNER' in roles || user.is_superadmin) {
         return contact
       } else if ('TEXTER' in roles) {
         const assignment = await loaders.assignment.load(contact.assignment_id)
-        await assignmentRequired(user, assignment.id)
         return contact
       } else {
         throw new GraphQLError({
