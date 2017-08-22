@@ -50,7 +50,6 @@ class Home extends React.Component {
   // not sure if we need this anymore -- only for new organizations
   handleOrgInviteClick = async (e) => {
     if(!window.SUPPRESS_SELF_INVITE || window.SUPPRESS_SELF_INVITE === 'undefined'){
-      console.log("not suppressing self invite")
       e.preventDefault()
       const newInvite = await this.props.mutations.createInvite({
         is_valid: true
