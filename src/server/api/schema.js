@@ -196,7 +196,6 @@ const rootSchema = `
 
 async function editCampaign(id, campaign, loaders) {
   const { title, description, dueBy, organizationId } = campaign
-  log.info(campaign, 'campaign')
   const campaignUpdates = {
     id,
     title,
@@ -255,7 +254,6 @@ async function editCampaign(id, campaign, loaders) {
     }
   }
   if (campaign.hasOwnProperty('interactionSteps')) {
-    log.info(campaign.interactionSteps, 'campaign.interactionSteps')
     let job = await JobRequest.save({
       queue_name: `${id}:edit_campaign`,
       locks_queue: true,
