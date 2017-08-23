@@ -108,6 +108,7 @@ const rootSchema = `
   }
 
   input AnswerOptionInput {
+    action: String
     value: String!
     nextInteractionStepId: String
   }
@@ -149,6 +150,11 @@ const rootSchema = `
     created_at: Date
   }
 
+  type Action {
+    name: String
+    display_name: String
+  }
+
   type RootQuery {
     currentUser: User
     organization(id:String!): Organization
@@ -157,6 +163,7 @@ const rootSchema = `
     contact(id:String!): CampaignContact
     assignment(id:String!): Assignment
     organizations: [Organization]
+    availableActions: [Action]
   }
 
   type RootMutation {
@@ -189,7 +196,7 @@ const rootSchema = `
 
 async function editCampaign(id, campaign, loaders) {
   const { title, description, dueBy, organizationId } = campaign
-
+  log.info(campaign, 'campaign')
   const campaignUpdates = {
     id,
     title,
@@ -248,6 +255,7 @@ async function editCampaign(id, campaign, loaders) {
     }
   }
   if (campaign.hasOwnProperty('interactionSteps')) {
+    log.info(campaign.interactionSteps, 'campaign.interactionSteps')
     let job = await JobRequest.save({
       queue_name: `${id}:edit_campaign`,
       locks_queue: true,
@@ -685,6 +693,20 @@ const rootResolvers = {
     organizations: async(_, { id }, { user }) => {
       await superAdminRequired(user)
       return r.table('organization')
+    },
+    availableActions: (_, __, { user }) => {
+      const allHandlers = process.env.ACTION_HANDLERS.split(',')
+      const availableHandlers = allHandlers.filter(handler => {
+        return require(`../action_handlers/${handler}.js`).available()
+      })
+      const availableHandlerObjects = availableHandlers.map(handler => {
+        const handlerPath = `../action_handlers/${handler}.js`
+        return {
+          'name': handler,
+          'display_name': require(handlerPath).displayName()
+        }
+      })
+      return availableHandlerObjects
     }
   }
 }
