@@ -737,23 +737,27 @@ const rootResolvers = {
       return r.table('organization')
     },
     availableActions: (_, __, { user }) => {
-      const allHandlers = process.env.ACTION_HANDLERS.split(',')
-      const availableHandlers = allHandlers.filter(handler => {
-        try {
-          return require(`../action_handlers/${handler}.js`).available()
-        }
-        catch (_) {
-          return false
-        }
-      })
-      const availableHandlerObjects = availableHandlers.map(handler => {
-        const handlerPath = `../action_handlers/${handler}.js`
-        return {
-          'name': handler,
-          'display_name': require(handlerPath).displayName()
-        }
-      })
-      return availableHandlerObjects
+      if(!process.env.ACTION_HANDLERS){
+        return
+      } else {
+        const allHandlers = process.env.ACTION_HANDLERS.split(',')
+        const availableHandlers = allHandlers.filter(handler => {
+          try {
+            return require(`../action_handlers/${handler}.js`).available()
+          }
+          catch (_) {
+            return false
+          }
+        })
+        const availableHandlerObjects = availableHandlers.map(handler => {
+          const handlerPath = `../action_handlers/${handler}.js`
+          return {
+            'name': handler,
+            'display_name': require(handlerPath).displayName()
+          }
+        })
+        return availableHandlerObjects
+      }
     }
   }
 }
