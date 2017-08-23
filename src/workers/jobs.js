@@ -64,7 +64,6 @@ export async function createInteractionSteps(job) {
   const payload = JSON.parse(job.payload)
   const id = job.campaign_id
   const answerOptionStore = {}
-
   await r.table('interaction_step')
     .getAll(id, { index: 'campaign_id' })
     .delete()
@@ -74,18 +73,20 @@ export async function createInteractionSteps(job) {
     const newId = step.id
     let parentId = ''
     let answerOption = ''
+    let answerAction = ''
 
     if (newId in answerOptionStore) {
       parentId = answerOptionStore[newId]['parent']
       answerOption = answerOptionStore[newId]['value']
+      answerAction = answerOptionStore[newId]['action']
     }
-
     const dbInteractionStep = await InteractionStep
       .save({
         campaign_id: id,
         question: step.question,
         script: step.script,
         answer_option: answerOption,
+        answer_actions: answerAction,
         parent_interaction_id: parentId
       }).catch(log.error)
 
@@ -98,6 +99,7 @@ export async function createInteractionSteps(job) {
          }
          // store the answers and step id for writing to child steps
          answerOptionStore[nextStepId] = {
+           'action': option.action,
            'value': option.value,
            'parent': dbInteractionStep.id
          }

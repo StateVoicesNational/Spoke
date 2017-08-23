@@ -109,6 +109,7 @@ const rootSchema = `
   }
 
   input AnswerOptionInput {
+    action: String
     value: String!
     nextInteractionStepId: String
   }
@@ -150,6 +151,11 @@ const rootSchema = `
     created_at: Date
   }
 
+  type Action {
+    name: String
+    display_name: String
+  }
+
   type RootQuery {
     currentUser: User
     organization(id:String!): Organization
@@ -158,6 +164,7 @@ const rootSchema = `
     contact(id:String!): CampaignContact
     assignment(id:String!): Assignment
     organizations: [Organization]
+    availableActions: [Action]
   }
 
   type RootMutation {
@@ -190,7 +197,6 @@ const rootSchema = `
 
 async function editCampaign(id, campaign, loaders) {
   const { title, description, dueBy, organizationId } = campaign
-
   const campaignUpdates = {
     id,
     title,
@@ -713,6 +719,25 @@ const rootResolvers = {
     organizations: async(_, { id }, { user }) => {
       await superAdminRequired(user)
       return r.table('organization')
+    },
+    availableActions: (_, __, { user }) => {
+      const allHandlers = process.env.ACTION_HANDLERS.split(',')
+      const availableHandlers = allHandlers.filter(handler => {
+        try {
+          return require(`../action_handlers/${handler}.js`).available()
+        }
+        catch (_) {
+          return false
+        }
+      })
+      const availableHandlerObjects = availableHandlers.map(handler => {
+        const handlerPath = `../action_handlers/${handler}.js`
+        return {
+          'name': handler,
+          'display_name': require(handlerPath).displayName()
+        }
+      })
+      return availableHandlerObjects
     }
   }
 }

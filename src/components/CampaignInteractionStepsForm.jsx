@@ -116,6 +116,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
       } else if (step.question && step.question.text !== '' && step.question.answerOptions.length === 0) {
         newStep.question.answerOptions = [{
           value: '',
+          action: '',
           nextInteractionStep: null
         }]
       }
@@ -128,6 +129,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
     const newQuestion = JSON.parse(JSON.stringify(interactionStep.question))
 
     newQuestion.answerOptions.push({
+      action: '',
       value: '',
       nextInteractionStep: null
     })
@@ -177,6 +179,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
         text: yup.string(),
         answerOptions: yup.array().of(yup.object({
           value: yup.string(),
+          action: yup.string(),
           nextInteractionStep: yup.mixed()
         }))
       })
@@ -215,9 +218,11 @@ export default class CampaignInteractionStepsForm extends React.Component {
   }
 
   renderAnswer(answer, answerOptionIndex, interactionStep, interactionStepIndex) {
-    let fieldName = `interactionSteps[${interactionStepIndex}]['question']['answerOptions'][${answerOptionIndex}].value`
+    const fieldNameBase = `interactionSteps[${interactionStepIndex}]['question']['answerOptions'][${answerOptionIndex}]`
+    const fieldName = `${fieldNameBase}.value`
+    const actionFieldname = `${fieldNameBase}.action`
 
-    let deleteAnswerButton = (
+    const deleteAnswerButton = this.props.ensureComplete ? '' : (
       <IconButton
         style={{ width: 42, height: 42, verticalAlign: 'middle' }}
         iconStyle={{ width: 20, height: 20 }}
@@ -243,17 +248,12 @@ export default class CampaignInteractionStepsForm extends React.Component {
       </IconButton>
     )
 
-    let addNextQuestionButton = (
+    const addNextQuestionButton = this.props.ensureComplete ? '' : (
       <RaisedButton
         label='Link to next step'
         onTouchTap={() => this.addStep(interactionStep, answer)}
       />
     )
-
-    if (this.props.ensureComplete) {
-      deleteAnswerButton = ''
-      addNextQuestionButton = ''
-    }
 
     return (
       <div
@@ -301,14 +301,30 @@ export default class CampaignInteractionStepsForm extends React.Component {
             display: 'inline-block'
           }}
         >
-        {answer.nextInteractionStep ? (
-          <FlatButton
-            label='Next Step'
-            secondary
-            onTouchTap={() => this.handleNavigateToStep(answer.nextInteractionStep.id)}
-            icon={<ForwardIcon />}
+          <Form.Field
+            name={actionFieldname}
+            type='select'
+            choices={[
+              {'value': '', 'label': 'Action...'},
+              ...this.props.availableActions.map(
+                action => ({'value': action.name, 'label': action.display_name})
+              )
+            ]}
           />
-        ) : addNextQuestionButton}
+        </div>
+        <div
+          style={{
+            display: 'inline-block'
+          }}
+        >
+          {answer.nextInteractionStep ? (
+            <FlatButton
+              label='Next Step'
+              secondary
+              onTouchTap={() => this.handleNavigateToStep(answer.nextInteractionStep.id)}
+              icon={<ForwardIcon />}
+            />
+          ) : addNextQuestionButton}
         </div>
       </div>
     )
@@ -479,5 +495,6 @@ CampaignInteractionStepsForm.propTypes = {
   onSubmit: type.func,
   customFields: type.array,
   saveLabel: type.string,
-  saveDisabled: type.bool
+  saveDisabled: type.bool,
+  availableActions: type.array
 }
