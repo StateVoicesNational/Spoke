@@ -35,6 +35,7 @@ The main variables you will require set in a lambda environment beyond the regul
    * `"AWS_ACCESS_AVAILABLE": "1",`: This replaces the AWS_ key variables for S3 bucket support
    * `STATIC_BASE_URL`: You will need to upload your ASSETS_DIR to an S3 bucket (or other static file site) and then set this to something like: `"https://s3.amazonaws.com/YOUR_BUCKET_AND_PATH/"` (don't forget the trailing '/')
    * `S3_STATIC_PATH`: This will be the s3cmd upload path that corresponds to STATIC_BASE_URL.  So if `STATIC_BASE_URL=https://s3.amazon.com/spoke.example.com/static/` then `S3_STATIC_PATH=s3://spoke.example.com/static/`  You will also need a ~/.s3cfg file that has the s3 upload credentials.  See `package.json`'s postinstall script and more specifically `prod-static-upload`.
+   * `"LAMBDA_DEBUG_LOG": "1",`: (ONLY FOR DEBUGGING) This will send more details of requests to the CloudWatch log. However, it will include the full request details, e.g. so do not use this in production.
 
 ## Just the first time
 

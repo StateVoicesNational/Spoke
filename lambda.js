@@ -5,12 +5,16 @@ const app = require('./build/server/server/index')
 const jobs = require('./build/server/workers/job-processes')
 const server = awsServerlessExpress.createServer(app.default)
 exports.handler = (event, context) => {
+  if (process.env.LAMBDA_DEBUG_LOG) {
+    console.log('LAMBDA EVENT', event)
+  }
   if (!event.command) {
     // default web server stuff
     return awsServerlessExpress.proxy(server, event, context)
   } else {
     // handle a custom command sent as an event
     const functionName = context.functionName
+    console.log('Running ' + event.command)
     if (event.command in jobs) {
       const job = jobs[event.command]
       // behavior and arguments documented here:

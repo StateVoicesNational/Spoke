@@ -5,8 +5,6 @@ import { log } from '../../../lib'
 import { getLastMessage } from './message-sending'
 import faker from 'faker'
 
-const defaultService = process.env.DEFAULT_SERVICE
-
 let twilio = null
 const MAX_SEND_ATTEMPTS = 5
 
@@ -22,6 +20,7 @@ if (!process.env.TWILIO_MESSAGE_SERVICE_SID) {
 }
 
 async function convertMessagePartsToMessage(messageParts) {
+  console.log('TWILIO convertMessagePartsToMessage(messageParts) START', messageParts, 'xx')
   const firstPart = messageParts[0]
   const userNumber = firstPart.user_number
   const contactNumber = firstPart.contact_number
@@ -31,10 +30,9 @@ async function convertMessagePartsToMessage(messageParts) {
     .join('')
 
   const lastMessage = await getLastMessage({
-    contactNumber,
-    service: defaultService
+    contactNumber
   })
-
+  console.log('TWILIO convertMessagePartsToMessage(messageParts) BEFORE SAVE')
   return new Message({
     contact_number: contactNumber,
     user_number: userNumber,
@@ -43,7 +41,7 @@ async function convertMessagePartsToMessage(messageParts) {
     service_response: JSON.stringify(serviceMessages),
     service_id: serviceMessages[0].service_id,
     assignment_id: lastMessage.assignment_id,
-    service: defaultService,
+    service: 'twilio',
     send_status: 'DELIVERED'
   })
 }
@@ -101,7 +99,7 @@ async function sendMessage(message) {
 
   return new Promise((resolve, reject) => {
     if (message.service !== 'twilio') {
-      reject(new Error('Message not marked as a twilio message'))
+      log.warn('Message not marked as a twilio message', message.id)
     }
     twilio.messages.create({
       to: message.contact_number,
@@ -112,7 +110,7 @@ async function sendMessage(message) {
       const messageToSave = {
         ...message
       }
-
+      log.info('messageToSave', messageToSave)
       let hasError = false
       if (err) {
         hasError = true
@@ -140,7 +138,7 @@ async function sendMessage(message) {
         Message.save({
           ...messageToSave,
           send_status: 'SENT',
-          service: defaultService
+          service: 'twilio'
         }, { conflict: 'update' })
         .then((saveError, newMessage) => {
           resolve(newMessage)
@@ -186,7 +184,7 @@ async function handleIncomingMessage(message) {
   const userNumber = getFormattedPhoneNumber(To)
 
   const pendingMessagePart = new PendingMessagePart({
-    service: defaultService,
+    service: 'twilio',
     service_id: MessageSid,
     parent_id: '',
     service_message: JSON.stringify(message),

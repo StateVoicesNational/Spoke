@@ -42,5 +42,5 @@ if (isClient()) {
   }
 }
 
-const log = logInstance
+const log = (process.env.LAMBDA_DEBUG_LOG ? console : logInstance)
 export { log }
