@@ -762,6 +762,9 @@ const rootResolvers = {
       return r.table('organization')
     },
     availableActions: (_, __, { user }) => {
+      if (!process.env.ACTION_HANDLERS) {
+        return []
+      }
       const allHandlers = process.env.ACTION_HANDLERS.split(',')
       const availableHandlers = allHandlers.filter(handler => {
         try {
