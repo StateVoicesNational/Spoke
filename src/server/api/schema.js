@@ -695,7 +695,12 @@ const rootResolvers = {
     availableActions: (_, __, { user }) => {
       const allHandlers = process.env.ACTION_HANDLERS.split(',')
       const availableHandlers = allHandlers.filter(handler => {
-        return require(`../action_handlers/${handler}.js`).available()
+        try {
+          return require(`../action_handlers/${handler}.js`).available()
+        }
+        catch (_) {
+          return false
+        }
       })
       const availableHandlerObjects = availableHandlers.map(handler => {
         const handlerPath = `../action_handlers/${handler}.js`
