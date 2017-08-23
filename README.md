@@ -18,7 +18,7 @@ This is generated from [react-apollo-starter-kit](https://github.com/saikat/reac
 6. Run `npm run dev` to create and populate the tables.
 7. Create an [Auth0](https://auth0.com) account. In your Auth0 account, go to Settings -> Clients -> and then grab your Client ID, Client Secret, and your Auth0 domain (should look like xxx.auth0.com). Add those inside your `.env` file (AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_DOMAIN respectively).
 8. Add the login callback and logout callback URL in `.env` (default `http://localhost:3000/login-callback` and `http://localhost:3000/logout-callback`) to your Auth0 app settings under "Allowed Callback URLs" and "Allowed Logout URLs" respectively.
-9. Run `npm run dev` to start the app. Wait until you see both "Node app is running ..." and "Webpack dev server is now running ..." before attempting to connect.
+9. Run `npm run dev` to start the app. Wait until you see both "Node app is running ..." and "Webpack dev server is now running ..." before attempting to connect. (make sure environment variable JOBS_SAME_PROCESS=1)
 10. Go to `localhost:3000` to load the app.
 11. Because Spoke is invite-only you need to generate an invite. Run:
 ```
@@ -38,7 +38,6 @@ If you want to create an invite via the home page "Login and get started" link, 
 
 ## Helpful Dev Tips
 * Go to `localhost:3000/graphql` to mess around with the GraphQL API
-* Set `JOBS_SAME_PROCESS=1` and then you can run only `npm run dev-start` without all the extra processes
 * Run `sqlite3 mydb.sqlite` to connect to a SQL shell for the dev database
 * [Set up an ESLint plugin in your code editor so that you catch coding errors and follow code style guidelines more easily!](https://medium.com/planet-arkency/catch-mistakes-before-you-run-you-javascript-code-6e524c36f0c8#.oboqsse48)
 * [Install the redux-devtools-extension](https://github.com/zalmoxisus/redux-devtools-extension) in Chrome to get advanced Redux debugging features.
