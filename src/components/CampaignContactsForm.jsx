@@ -173,7 +173,6 @@ export default class CampaignContactsForm extends React.Component {
 
   renderForm() {
     const { contactUploadError } = this.state
-
     return (
       <div>
         <GSForm
@@ -237,6 +236,7 @@ export default class CampaignContactsForm extends React.Component {
 }
 
 CampaignContactsForm.propTypes = {
+  datawarehouseAvailable: type.bool,
   onChange: type.func,
   optOuts: type.array,
   formValues: type.object,

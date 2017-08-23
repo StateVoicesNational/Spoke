@@ -23,6 +23,7 @@ const campaignInfoFragment = `
   isStarted
   isArchived
   contactsCount
+  datawarehouseAvailable
   customFields
   texters {
     id
@@ -231,7 +232,8 @@ class AdminCampaignEdit extends React.Component {
       checkSaved: () => this.state.campaignFormValues.hasOwnProperty('contacts') === false,
       blocksStarting: true,
       extraProps: {
-        optOuts: this.props.organizationData.organization.optOuts
+        optOuts: this.props.organizationData.organization.optOuts,
+        datawarehouseAvailable: this.props.campaignData.campaign.datawarehouseAvailable
       }
     }, {
       title: 'Texters',

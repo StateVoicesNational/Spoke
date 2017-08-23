@@ -36,6 +36,7 @@ export const schema = `
     cannedResponses(userId: String): [CannedResponse]
     stats: CampaignStats,
     pendingJobs: [JobRequest]
+    datawarehouseAvailable: Boolean
   }
 `
 
@@ -87,6 +88,9 @@ export const resolvers = {
     ], Campaign),
     organization: async (campaign, _, { loaders }) => (
       loaders.organization.load(campaign.organization_id)
+    ),
+    datawarehouseAvailable: (campaign, _, { user }) => (
+      user.is_superadmin && process.env.WAREHOUSE_DB_HOST
     ),
     pendingJobs: async (campaign) => r.table('job_request')
       .filter({ campaign_id: campaign.id }),
