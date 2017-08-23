@@ -9,7 +9,7 @@ export const delimit = (text) => {
 }
 
 // const REQUIRED_UPLOAD_FIELDS = ['firstName', 'lastName', 'cell']
-const TOP_LEVEL_UPLOAD_FIELDS = ['firstName', 'lastName', 'cell', 'zip']
+const TOP_LEVEL_UPLOAD_FIELDS = ['firstName', 'lastName', 'cell', 'zip', 'external_id']
 const TEXTER_SCRIPT_FIELDS = ['texterFirstName', 'texterLastName']
 
 // TODO: This will include zipCode even if you ddin't upload it

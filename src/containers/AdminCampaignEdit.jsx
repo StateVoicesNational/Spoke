@@ -145,7 +145,8 @@ class AdminCampaignEdit extends React.Component {
             cell: contact.cell,
             firstName: contact.firstName,
             lastName: contact.lastName,
-            zip: contact.zip
+            zip: contact.zip,
+            external_id: contact.zip
           }
           Object.keys(contact).forEach((key) => {
             if (!contactInput.hasOwnProperty(key)) {

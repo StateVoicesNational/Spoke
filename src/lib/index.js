@@ -24,7 +24,7 @@ export {
   getChildren
 } from './interaction-step-helpers'
 const requiredUploadFields = ['firstName', 'lastName', 'cell']
-const topLevelUploadFields = ['firstName', 'lastName', 'cell', 'zip']
+const topLevelUploadFields = ['firstName', 'lastName', 'cell', 'zip', 'external_id']
 
 export { isRoleGreater, getHighestRole } from './permissions'
 

@@ -1,4 +1,4 @@
-import { r, Campaign, CampaignContact, User, Assignment, InteractionStep } from '../server/models'
+import { r, datawarehouse, Campaign, CampaignContact, User, Assignment, InteractionStep } from '../server/models'
 import { log, gunzip, zipToTimeZone } from '../lib'
 import { sleep, getNextJob, updateJob } from './lib'
 import nexmo from '../server/api/lib/nexmo'
@@ -16,6 +16,23 @@ var zipMemoization = {}
 const JOBS_SAME_PROCESS = !!process.env.JOBS_SAME_PROCESS
 const serviceMap = { nexmo, twilio }
 
+async function getTimezoneByZip(zip) {
+  if (zip in zipMemoization) {
+    return zipMemoization[zip]
+  } else {
+    const rangeZip = zipToTimeZone(zip)
+    if (rangeZip) {
+      return `${rangeZip[2]}_${rangeZip[3]}`
+    } else {
+      const zipDatum = await r.table('zip_code').get(zip)
+      if (zipDatum) {
+        zipMemoization[zip] = `${zipDatum.timezone_offset}_${zipDatum.has_dst}`
+        return zipMemoization[zip]
+      }
+    }
+  }
+}
+
 export async function uploadContacts(job) {
   const campaignId = job.campaign_id
   // We do this deletion in schema.js but we do it again here just in case the the queue broke and we had a backlog of contact uploads for one campaign
@@ -32,20 +49,7 @@ export async function uploadContacts(job) {
     const datum = contacts[index]
     if (datum.zip) {
       // using memoization and large ranges of homogenous zips
-      if (datum.zip in  zipMemoization) {
-        datum.timezone_offset = zipMemoization[datum.zip]
-      } else {
-        const rangeZip = zipToTimeZone(datum.zip)
-        if (rangeZip) {
-          datum.timezone_offset = `${rangeZip[2]}_${rangeZip[3]}`
-        } else {
-          const zipDatum = await r.table('zip_code').get(datum.zip)
-          if (zipDatum) {
-            datum.timezone_offset = `${zipDatum.timezone_offset}_${zipDatum.has_dst}`
-          }
-          zipMemoization[datum.zip] = datum.timezone_offset
-        }
-      }
+      datum.timezone_offset = await getTimezoneByZip(datum.zip)
     }
   }
 
@@ -55,6 +59,62 @@ export async function uploadContacts(job) {
     await CampaignContact.save(savePortion)
   }
 
+  if (JOBS_SAME_PROCESS && job.id) {
+    await r.table('job_request').get(job.id).delete()
+  }
+}
+
+
+export async function loadContactsFromDataWarehouse(job) {
+  let sql_query = job.payload
+  if (!sql_query.startsWith('SELECT') || sql_query.indexOf(';') >= 0) {
+    log.error('Malformed SQL statement.  Must begin with SELECT and not have any semicolons: ', sql_query)
+    return
+  }
+  if (!datawarehouse) {
+    log.error('No data warehouse connection, so cannot load contacts', job)
+    return
+  }
+
+  knexResult = await datawarehouse.raw(sql_query)
+  let fields = {}
+  let customFields = {}
+  const contactFields = {
+    first_name: 1,
+    last_name: 1,
+    cell: 1,
+    zip: 1
+  }
+  knexResult.fields.forEach((f) => {
+    fields[f.name] = 1
+    if (! (f.name in contactFields)) {
+      customFields[f.name] = 1
+    }
+  })
+  if (! ('first_name' in fields && 'last_name' in fields && 'cell' in fields)) {
+    log.error('SQL statement does not return first_name, last_name, and cell: ', sql_query, fields)
+    return
+  }
+  //TODO break up result and save in portions, dispatched
+  const savePortion = knexResult.rows.map((row) => {
+    let contact = {
+      'first_name': row.first_name,
+      'last_name': row.last_name,
+      'cell': row.cell,
+      'zip': row.zip,
+    }
+    let contactCustomFields = {}
+    for (let f in customFields) {
+      contactCustomFields[f] = row[f]
+    }
+    contact.custom_fields = JSON.stringify(contactCustomFields)
+    if (contact.zip) {
+      contact.timezone_offset = getTimezoneByZip(contact.zip)
+    }
+    return contact
+  })
+  await CampaignContact.save(savePortion)
+  // dispatch something that tests completion?
   if (JOBS_SAME_PROCESS && job.id) {
     await r.table('job_request').get(job.id).delete()
   }
@@ -341,7 +401,8 @@ export async function exportCampaign(job) {
         'contact[city]': contact.city ? contact.city : null,
         'contact[state]': contact.state ? contact.state : null,
         'contact[optOut]': optOuts.find((ele) => ele.cell === contact.cell) ? 'true' : 'false',
-        'contact[messageStatus]': contact.message_status
+        'contact[messageStatus]': contact.message_status,
+        'contact[external_id]': contact.external_id
       }
       const customFields = JSON.parse(contact.custom_fields)
       Object.keys(customFields).forEach((fieldName) => {

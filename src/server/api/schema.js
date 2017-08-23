@@ -7,7 +7,8 @@ import { Campaign,
   QuestionResponse,
   UserOrganization,
   JobRequest,
-  r
+  r,
+  datawarehouse
 } from '../models'
 import {
   schema as userSchema,
@@ -82,7 +83,12 @@ import twilio from './lib/twilio'
 import { gzip, log } from '../../lib'
 // import { isBetweenTextingHours } from '../../lib/timezones'
 import { Notifications, sendUserNotification } from '../notifications'
-import { uploadContacts, createInteractionSteps, assignTexters, exportCampaign } from '../../workers/jobs'
+import { uploadContacts,
+         loadContactsFromDataWarehouse,
+         createInteractionSteps,
+         assignTexters,
+         exportCampaign
+       } from '../../workers/jobs'
 const uuidv4 = require('uuid').v4
 
 const JOBS_SAME_PROCESS = !!process.env.JOBS_SAME_PROCESS
@@ -94,6 +100,7 @@ const rootSchema = `
     lastName: String!
     cell: String!
     zip: String
+    external_id: String
     customFields: String
   }
 
@@ -188,7 +195,7 @@ const rootSchema = `
   }
 `
 
-async function editCampaign(id, campaign, loaders) {
+async function editCampaign(id, campaign, loaders, user) {
   const { title, description, dueBy, organizationId } = campaign
 
   const campaignUpdates = {
@@ -211,6 +218,7 @@ async function editCampaign(id, campaign, loaders) {
         first_name: datum.firstName,
         last_name: datum.lastName,
         cell: datum.cell,
+        external_id: datum.external_id,
         custom_fields: datum.customFields,
         zip: datum.zip
       }
@@ -229,6 +237,23 @@ async function editCampaign(id, campaign, loaders) {
     })
     if (JOBS_SAME_PROCESS) {
       uploadContacts(job).then()
+    }
+  }
+  if (campaign.hasOwnProperty('contact_sql')
+      && datawarehouse
+      && user.is_superadmin) {
+    const compressedString = await gzip(JSON.stringify(contactsToSave))
+    let job = await JobRequest.save({
+      queue_name: `${id}:edit_campaign`,
+      job_type: 'upload_contacts_sql',
+      locks_queue: true,
+      assigned: JOBS_SAME_PROCESS, // can get called immediately, below
+      campaign_id: id,
+      // NOTE: stringifying because compressedString is a binary buffer
+      payload: campaign.contact_sql
+    })
+    if (JOBS_SAME_PROCESS) {
+      loadContactsFromDataWarehouse(job).then()
     }
   }
   if (campaign.hasOwnProperty('texters')) {
