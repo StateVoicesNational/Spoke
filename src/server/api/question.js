@@ -9,6 +9,7 @@ export const schema = `
 
   type AnswerOption {
     value: String
+    action: String
     nextInteractionStep: InteractionStep
     responders: [CampaignContact]
     responderCount: Int
@@ -24,6 +25,7 @@ export const resolvers = {
         .filter({parent_interaction_id: interactionStep.id})
         .map({
           value: r.row('answer_option'),
+          action: r.row('answer_actions'),
           interaction_step_id: r.row('id'),
           parent_interaction_step: r.row('parent_interaction_id')
         })
