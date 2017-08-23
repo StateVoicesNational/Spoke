@@ -109,6 +109,7 @@ const rootSchema = `
   }
 
   input AnswerOptionInput {
+    action: String
     value: String!
     nextInteractionStepId: String
   }
@@ -150,6 +151,11 @@ const rootSchema = `
     created_at: Date
   }
 
+  type Action {
+    name: String
+    display_name: String
+  }
+
   type RootQuery {
     currentUser: User
     organization(id:String!): Organization
@@ -158,6 +164,7 @@ const rootSchema = `
     contact(id:String!): CampaignContact
     assignment(id:String!): Assignment
     organizations: [Organization]
+    availableActions: [Action]
   }
 
   type RootMutation {
@@ -190,7 +197,6 @@ const rootSchema = `
 
 async function editCampaign(id, campaign, loaders) {
   const { title, description, dueBy, organizationId } = campaign
-
   const campaignUpdates = {
     id,
     title,
@@ -672,10 +678,27 @@ const rootResolvers = {
       return campaign
     },
     assignment: async (_, { id }, { loaders, user }) => {
+      authRequired(user)
       const assignment = await loaders.assignment.load(id)
       const campaign = await loaders.campaign.load(assignment.campaign_id)
-      await accessRequired(user, campaign.organization_id, 'TEXTER')
-      return assignment
+      const roles = {}
+      const userRoles = await r.knex('user_organization').where({
+        user_id: user.id,
+        organization_id: campaign.organization_id
+      }).select('role')
+      userRoles.forEach(role => {
+        roles[role['role']] = 1
+      })
+      if ('OWNER' in roles 
+        || user.is_superadmin 
+        || 'TEXTER' in roles && assignment.user_id == user.id) {
+        return assignment
+      } else {
+        throw new GraphQLError({
+          status: 403,
+          message: 'You are not authorized to access that resource.'
+        })
+      }
     },
     organization: async(_, { id }, { loaders }) =>
       loaders.organization.load(id),
@@ -685,6 +708,7 @@ const rootResolvers = {
     },
     currentUser: async(_, { id }, { user }) => user,
     contact: async(_, { id }, { loaders, user }) => {
+      authRequired(user)
       const contact = await loaders.campaignContact.load(id)
       const campaign = await loaders.campaign.load(contact.campaign_id)
       const roles = {}
@@ -695,12 +719,10 @@ const rootResolvers = {
       userRoles.forEach(role => {
         roles[role['role']] = 1
       })
-      if ('OWNER' in roles || 'ADMIN' in roles || user.is_superadmin ) {
-        authRequired(user)
+      if ('OWNER' in roles || user.is_superadmin) {
         return contact
       } else if ('TEXTER' in roles) {
         const assignment = await loaders.assignment.load(contact.assignment_id)
-        await assignmentRequired(user, assignment.id)
         return contact
       } else {
         console.error('NOT Authorized: contact', user, roles)
@@ -713,6 +735,25 @@ const rootResolvers = {
     organizations: async(_, { id }, { user }) => {
       await superAdminRequired(user)
       return r.table('organization')
+    },
+    availableActions: (_, __, { user }) => {
+      const allHandlers = process.env.ACTION_HANDLERS.split(',')
+      const availableHandlers = allHandlers.filter(handler => {
+        try {
+          return require(`../action_handlers/${handler}.js`).available()
+        }
+        catch (_) {
+          return false
+        }
+      })
+      const availableHandlerObjects = availableHandlers.map(handler => {
+        const handlerPath = `../action_handlers/${handler}.js`
+        return {
+          'name': handler,
+          'display_name': require(handlerPath).displayName()
+        }
+      })
+      return availableHandlerObjects
     }
   }
 }
