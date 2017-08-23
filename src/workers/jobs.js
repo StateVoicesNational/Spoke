@@ -102,7 +102,6 @@ export async function createInteractionSteps(job) {
           }
         } else {
           // when answer but no link to next step
-          console.log("no answers linked")
           const answerStep = await InteractionStep
             .save({
               campaign_id: id,
