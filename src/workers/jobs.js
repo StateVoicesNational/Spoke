@@ -165,19 +165,28 @@ export async function createInteractionSteps(job) {
       }).catch(log.error)
 
     if (step.answerOptions) {
-       for (let innerIndex = 0; innerIndex < step.answerOptions.length; innerIndex++) {
-         const option = step.answerOptions[innerIndex]
-         let nextStepId = ''
-         if (option.nextInteractionStepId) {
-           nextStepId = option.nextInteractionStepId
-         }
-         // store the answers and step id for writing to child steps
-         answerOptionStore[nextStepId] = {
-           'action': option.action,
-           'value': option.value,
-           'parent': dbInteractionStep.id
-         }
-       }
+      for (let innerIndex = 0; innerIndex < step.answerOptions.length; innerIndex++) {
+        const option = step.answerOptions[innerIndex]
+        let nextStepId = ''
+        if (option.nextInteractionStepId) {
+          nextStepId = option.nextInteractionStepId
+          // store the answers and step id for writing to child steps
+          answerOptionStore[nextStepId] = {
+            'value': option.value,
+            'parent': dbInteractionStep.id
+          }
+        } else {
+          // when answer but no link to next step
+          const answerStep = await InteractionStep
+            .save({
+              campaign_id: id,
+              question: '',
+              script: '',
+              answer_option: option.value,
+              parent_interaction_id: dbInteractionStep.id
+            }).catch(log.error)
+        }
+      }
     }
   }
 
