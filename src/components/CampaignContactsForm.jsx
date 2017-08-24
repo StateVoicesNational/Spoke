@@ -218,7 +218,7 @@ export default class CampaignContactsForm extends React.Component {
               data warehouse that will load in contacts.  The SQL requires some constraints:
               <ul>
                 <li>Start the query with "SELECT"</li>
-                <li>Do not include a trailing ';'</li>
+                <li>Do not include a trailing (or any) semicolon</li>
                 <li>Three columns are necessary:
                     <span className={css(styles.csvHeader)}>first_name</span>,
                     <span className={css(styles.csvHeader)}>last_name</span>,
