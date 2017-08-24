@@ -15,6 +15,7 @@ import User from './user'
 import Invite from './invite'
 import ZipCode from './zip-code'
 import JobRequest from './job-request'
+import Migrations from './migrations'
 import thinky from './thinky'
 import datawarehouse from './datawarehouse'
 
@@ -44,6 +45,7 @@ export {
   createLoaders,
   r,
   datawarehouse,
+  Migrations,
   Assignment,
   Campaign,
   CampaignContact,
