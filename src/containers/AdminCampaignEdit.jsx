@@ -140,7 +140,7 @@ class AdminCampaignEdit extends React.Component {
       }
       delete newCampaign.customFields
       delete newCampaign.contactsCount
-      if (newCampaign.hasOwnProperty('contacts')) {
+      if (newCampaign.hasOwnProperty('contacts') && newCampaign.contacts) {
         const contactData = newCampaign.contacts.map((contact) => {
           const customFields = {}
           const contactInput = {
@@ -204,7 +204,6 @@ class AdminCampaignEdit extends React.Component {
       sectionState[key] = this.state.campaignFormValues[key]
       sectionProps[key] = this.props.campaignData.campaign[key]
     })
-
     if (JSON.stringify(sectionState) !== JSON.stringify(sectionProps)) {
       return false
     }
@@ -229,9 +228,12 @@ class AdminCampaignEdit extends React.Component {
     }, {
       title: 'Contacts',
       content: CampaignContactsForm,
-      keys: ['contacts', 'contactsCount', 'customFields'],
+      keys: ['contacts', 'contactsCount', 'customFields', 'contactSql'],
       checkCompleted: () => this.state.campaignFormValues.contactsCount > 0,
-      checkSaved: () => this.state.campaignFormValues.hasOwnProperty('contacts') === false,
+      checkSaved: () => (
+        // should we go and try to save contacts now?
+        this.state.campaignFormValues.hasOwnProperty('contacts') === false
+        && this.state.campaignFormValues.hasOwnProperty('contactSql') === false),
       blocksStarting: true,
       extraProps: {
         optOuts: this.props.organizationData.organization.optOuts,
@@ -276,7 +278,7 @@ class AdminCampaignEdit extends React.Component {
     let savePercent = 0
     if (pendingJobs.length > 0) {
       if (section.title === 'Contacts') {
-        relatedJob = pendingJobs.filter((job) => job.jobType === 'upload_contacts')[0]
+        relatedJob = pendingJobs.filter((job) => (job.jobType === 'upload_contacts' || job.jobType === 'contact_sql'))[0]
       } else if (section.title === 'Texters') {
         relatedJob = pendingJobs.filter((job) => job.jobType === 'assign_texters')[0]
       } else if (section.title === 'Interactions') {
