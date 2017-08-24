@@ -622,6 +622,12 @@ class AssignmentTexterContact extends React.Component {
                 label='Your message'
                 multiLine
                 fullWidth
+                onKeyUp={(event) => {
+                  if (event.keyCode === 13) {
+                    // pressing the Enter key submits
+                    this.handleMessageFormSubmit()
+                  }
+                }}
               />
             </GSForm>
           </div>
