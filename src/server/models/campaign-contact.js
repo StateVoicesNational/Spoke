@@ -6,6 +6,7 @@ const CampaignContact = thinky.createModel('campaign_contact', type.object().sch
   id: type.string(),
   campaign_id: requiredString(),
   assignment_id: optionalString(),
+  external_id: optionalString().stopReference(),
   first_name: optionalString(),
   last_name: optionalString(),
   cell: requiredString(),

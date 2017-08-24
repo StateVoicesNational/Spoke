@@ -23,6 +23,7 @@ const campaignInfoFragment = `
   isStarted
   isArchived
   contactsCount
+  datawarehouseAvailable
   customFields
   texters {
     id
@@ -146,7 +147,8 @@ class AdminCampaignEdit extends React.Component {
             cell: contact.cell,
             firstName: contact.firstName,
             lastName: contact.lastName,
-            zip: contact.zip
+            zip: contact.zip,
+            external_id: contact.zip
           }
           Object.keys(contact).forEach((key) => {
             if (!contactInput.hasOwnProperty(key)) {
@@ -232,7 +234,8 @@ class AdminCampaignEdit extends React.Component {
       checkSaved: () => this.state.campaignFormValues.hasOwnProperty('contacts') === false,
       blocksStarting: true,
       extraProps: {
-        optOuts: this.props.organizationData.organization.optOuts
+        optOuts: this.props.organizationData.organization.optOuts,
+        datawarehouseAvailable: this.props.campaignData.campaign.datawarehouseAvailable
       }
     }, {
       title: 'Texters',

@@ -16,6 +16,7 @@ import Invite from './invite'
 import ZipCode from './zip-code'
 import JobRequest from './job-request'
 import thinky from './thinky'
+import datawarehouse from './datawarehouse'
 
 function createLoader(model, idKey = 'id') {
   return new DataLoader(async (keys) => {
@@ -42,6 +43,7 @@ const r = thinky.r
 export {
   createLoaders,
   r,
+  datawarehouse,
   Assignment,
   Campaign,
   CampaignContact,

@@ -26,6 +26,7 @@ export const schema = `
     lastName: String
     cell: Phone
     zip: String
+    external_id: String
     customFields: JSON
     messages: [Message]
     location: Location
@@ -59,7 +60,8 @@ export const resolvers = {
       'zip',
       'customFields',
       'messageStatus',
-      'assignmentId'
+      'assignmentId',
+      'external_id'
     ], CampaignContact),
 
     campaign: async (campaignContact, _, { loaders }) => (
