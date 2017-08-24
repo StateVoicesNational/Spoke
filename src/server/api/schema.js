@@ -138,6 +138,7 @@ const rootSchema = `
     description: String
     dueBy: Date
     contacts: [CampaignContactInput]
+    contactSql: String
     organizationId: String
     texters: [TexterInput]
     interactionSteps: [InteractionStepInput]
@@ -217,7 +218,7 @@ async function editCampaign(id, campaign, loaders, user) {
       delete campaignUpdates[key]
     }
   })
-  if (campaign.hasOwnProperty('contacts')) {
+  if (campaign.hasOwnProperty('contacts') && campaign.contacts) {
     const contactsToSave = campaign.contacts.map((datum) => {
       const modelData = {
         campaign_id: datum.campaignId,
@@ -245,18 +246,16 @@ async function editCampaign(id, campaign, loaders, user) {
       uploadContacts(job).then()
     }
   }
-  if (campaign.hasOwnProperty('contact_sql')
+  if (campaign.hasOwnProperty('contactSql')
       && datawarehouse
       && user.is_superadmin) {
-    const compressedString = await gzip(JSON.stringify(contactsToSave))
     let job = await JobRequest.save({
       queue_name: `${id}:edit_campaign`,
       job_type: 'upload_contacts_sql',
       locks_queue: true,
       assigned: JOBS_SAME_PROCESS, // can get called immediately, below
       campaign_id: id,
-      // NOTE: stringifying because compressedString is a binary buffer
-      payload: campaign.contact_sql
+      payload: campaign.contactSql
     })
     if (JOBS_SAME_PROCESS) {
       loadContactsFromDataWarehouse(job).then()
@@ -514,7 +513,7 @@ const rootMutations = {
         const campaignCheck = await Campaign.get(id)
         await accessRequired(user, campaignCheck.organization_id, 'ADMIN')
       }
-      return editCampaign(id, campaign, loaders)
+      return editCampaign(id, campaign, loaders, user)
     },
     createCannedResponse: async (_, { cannedResponse }, { user, loaders }) => {
       authRequired(user)

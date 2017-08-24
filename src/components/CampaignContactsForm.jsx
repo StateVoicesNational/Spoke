@@ -53,6 +53,27 @@ export default class CampaignContactsForm extends React.Component {
     contactUploadError: null
   }
 
+  validateSql = (sql) => {
+    let errors = []
+    if (!sql.startsWith('SELECT')) {
+      errors.push('Must start with "SELECT"')
+    }
+    const requiredFields = ['first_name', 'last_name', 'cell']
+    requiredFields.forEach((f) => {
+      if (sql.indexOf(f) == -1) {
+        errors.push('"' + f + '" is a required column')
+      }
+    })
+    if (sql.indexOf(';') >= 0) {
+      errors.push('Do not include a trailing (or any) ";"')
+    }
+    if (!errors.length) {
+      this.setState({contactSqlError: null})
+    } else {
+      this.setState({contactSqlError: errors.join(', ')})
+    }
+  }
+
   handleUpload = (event) => {
     event.preventDefault()
     const file = event.target.files[0]
@@ -86,6 +107,7 @@ export default class CampaignContactsForm extends React.Component {
     })
     const contactCollection = {
       contactsCount: contacts.length,
+      contactSql: null,
       customFields,
       contacts
     }
@@ -172,14 +194,63 @@ export default class CampaignContactsForm extends React.Component {
   }
 
   renderForm() {
-    const { contactUploadError } = this.state
+    const { contactUploadError, contactSqlError } = this.state
     return (
       <div>
         <GSForm
-          schema={yup.object({})}
-          onSubmit={this.props.onSubmit}
+          schema={yup.object({
+            contactSql: yup.string()
+          })}
+          onSubmit={(formValues) => {
+            // sets values locally
+            this.setState({...formValues})
+            // triggers the parent to update values
+            this.props.onChange({...formValues})
+            // and now do whatever happens when clicking 'Next'
+            this.props.onSubmit()
+          }}
         >
           {this.renderUploadButton()}
+          {!this.props.datawarehouseAvailable ? '' : (
+            <div>
+              <div>
+              Instead of uploading contacts, as a super-admin, you can also create a SQL query directly from the
+              data warehouse that will load in contacts.  The SQL requires some constraints:
+              <ul>
+                <li>Start the query with "SELECT"</li>
+                <li>Do not include a trailing ';'</li>
+                <li>Three columns are necessary:
+                    <span className={css(styles.csvHeader)}>first_name</span>,
+                    <span className={css(styles.csvHeader)}>last_name</span>,
+                    <span className={css(styles.csvHeader)}>cell</span>,
+                </li>
+                <li>Optional fields are:
+                    <span className={css(styles.csvHeader)}>zip</span>,
+                    <span className={css(styles.csvHeader)}>external_id</span>
+                </li>
+                <li>Make sure you make those names exactly possibly requiring an
+                    <span className={css(styles.csvHeader)}>as field_name</span> sometimes.
+                </li>
+                <li>Other columns will be added to the customFields</li>
+              </ul>
+              </div>
+              <Form.Field
+                name='contactSql'
+                type='textarea'
+                rows='5'
+                onChange={this.validateSql}
+              />
+              {contactSqlError ? (
+                <List>
+                  <ListItem
+                    primaryText={contactSqlError}
+                    leftIcon={errorIcon}
+                  />
+                </List>
+               ) : ''}
+
+            </div>
+          )}
           {this.renderContactStats()}
           {this.renderValidationStats()}
           {contactUploadError ? (

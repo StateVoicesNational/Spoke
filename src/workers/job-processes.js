@@ -1,6 +1,7 @@
 import { r } from '../server/models'
 import { sleep, getNextJob, updateJob, log } from './lib'
 import { exportCampaign, uploadContacts, assignTexters, createInteractionSteps, sendMessages, handleIncomingMessageParts } from './jobs'
+import { runMigrations } from '../migrations'
 import { setupUserNotificationObservers } from '../server/notifications'
 
 
@@ -114,6 +115,9 @@ export async function handleIncomingMessages() {
   }
 }
 
+export async function runDatabaseMigrations(event, dispatcher) {
+  runMigrations(event.migrationStart)
+}
 
 const processMap = {
   'processJobs': processJobs,

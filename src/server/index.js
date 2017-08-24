@@ -15,6 +15,7 @@ import nexmo from './api/lib/nexmo'
 import twilio from './api/lib/twilio'
 const Twilio = require('twilio')
 import { seedZipCodes } from './seeds/seed-zip-codes'
+import { runMigrations } from '../migrations'
 import { setupUserNotificationObservers } from './notifications'
 import { Tracer } from 'apollo-tracer'
 import { TwimlResponse } from 'twilio'
@@ -32,6 +33,9 @@ const client = require('twilio')(accountSid, authToken)
 setupAuth0Passport()
 if (!process.env.SUPPRESS_SEED_CALLS) {
   seedZipCodes()
+}
+if (!process.env.SUPPRESS_MIGRATIONS) {
+  runMigrations()
 }
 setupUserNotificationObservers()
 const app = express()
