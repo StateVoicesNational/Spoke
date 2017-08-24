@@ -66,24 +66,31 @@ export async function uploadContacts(job) {
 
 
 export async function loadContactsFromDataWarehouse(job) {
-  let sql_query = job.payload
-  if (!sql_query.startsWith('SELECT') || sql_query.indexOf(';') >= 0) {
-    log.error('Malformed SQL statement.  Must begin with SELECT and not have any semicolons: ', sql_query)
+  let sqlQuery = job.payload
+  if (!sqlQuery.startsWith('SELECT') || sqlQuery.indexOf(';') >= 0) {
+    log.error('Malformed SQL statement.  Must begin with SELECT and not have any semicolons: ', sqlQuery)
     return
   }
   if (!datawarehouse) {
     log.error('No data warehouse connection, so cannot load contacts', job)
     return
   }
-
-  knexResult = await datawarehouse.raw(sql_query)
+  let knexResult
+  try {
+    knexResult = await datawarehouse.raw(sqlQuery)
+  } catch(err) {
+    // query failed
+    log.error('Data warehouse query failed: ', err)
+    //TODO: send feedback about job
+  }
   let fields = {}
   let customFields = {}
   const contactFields = {
     first_name: 1,
     last_name: 1,
     cell: 1,
-    zip: 1
+    zip: 1,
+    external_id: 1
   }
   knexResult.fields.forEach((f) => {
     fields[f.name] = 1
@@ -92,27 +99,29 @@ export async function loadContactsFromDataWarehouse(job) {
     }
   })
   if (! ('first_name' in fields && 'last_name' in fields && 'cell' in fields)) {
-    log.error('SQL statement does not return first_name, last_name, and cell: ', sql_query, fields)
+    log.error('SQL statement does not return first_name, last_name, and cell: ', sqlQuery, fields)
     return
   }
   //TODO break up result and save in portions, dispatched
-  const savePortion = knexResult.rows.map((row) => {
+  const savePortion = await Promise.all(knexResult.rows.map(async (row) => {
     let contact = {
+      'campaign_id': job.campaign_id,
       'first_name': row.first_name,
       'last_name': row.last_name,
       'cell': row.cell,
       'zip': row.zip,
+      'external_id': row.external_id,
     }
     let contactCustomFields = {}
     for (let f in customFields) {
       contactCustomFields[f] = row[f]
     }
-    contact.custom_fields = JSON.stringify(contactCustomFields)
+    contact['custom_fields'] = JSON.stringify(contactCustomFields)
     if (contact.zip) {
-      contact.timezone_offset = getTimezoneByZip(contact.zip)
+      contact['timezone_offset'] = await getTimezoneByZip(contact.zip)
     }
     return contact
-  })
+  }))
   await CampaignContact.save(savePortion)
   // dispatch something that tests completion?
   if (JOBS_SAME_PROCESS && job.id) {
