@@ -122,6 +122,11 @@ export async function loadContactsFromDataWarehouse(job) {
     }
     return contact
   }))
+
+  await r.table('campaign_contact')
+    .getAll(job.campaign_id, { index: 'campaign_id' })
+    .delete()
+
   await CampaignContact.save(savePortion)
   // dispatch something that tests completion?
   if (JOBS_SAME_PROCESS && job.id) {
