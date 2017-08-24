@@ -124,6 +124,7 @@ class AdminCampaignEdit extends React.Component {
   }
 
   handleSave = async () => {
+    console.log("handleSave")
     let saveObject = {}
     this.sections().forEach((section) => {
       if (!this.checkSectionSaved(section)) {
@@ -133,6 +134,7 @@ class AdminCampaignEdit extends React.Component {
         }
       }
     })
+    debugger
     if (Object.keys(saveObject).length > 0) {
       // Transform the campaign into an input understood by the server
       const newCampaign = {
@@ -195,6 +197,7 @@ class AdminCampaignEdit extends React.Component {
   }
 
   checkSectionSaved(section) {
+    console.log("checkSectionSaved ", section)
     if (section.hasOwnProperty('checkSaved')) {
       return section.checkSaved()
     }

@@ -105,6 +105,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
   }
 
   onChange = (formValues) => {
+    console.log("onChange ", formValues)
     if (this.props.ensureComplete) {
       return
     }
@@ -122,7 +123,9 @@ export default class CampaignInteractionStepsForm extends React.Component {
       }
       return newStep
     })
+    console.log("pre-props.onChange ", newValues)
     this.props.onChange(newValues)
+    console.log("end onChange ", newValues)
   }
 
   addAnswer(interactionStep, interactionStepIndex) {
@@ -212,8 +215,11 @@ export default class CampaignInteractionStepsForm extends React.Component {
   }
 
   sortedValues() {
+    console.log("sortedValues " , this.props.formValues)
+    const tempVariable = sortInteractionSteps(this.props.formValues.interactionSteps)
+    console.log("sortInteractionSteps results ", tempVariable)
     return {
-      interactionSteps: sortInteractionSteps(this.props.formValues.interactionSteps)
+      interactionSteps: tempVariable
     }
   }
 
@@ -301,16 +307,18 @@ export default class CampaignInteractionStepsForm extends React.Component {
             display: 'inline-block'
           }}
         >
-          <Form.Field
-            name={actionFieldname}
-            type='select'
-            choices={[
-              {'value': '', 'label': 'Action...'},
-              ...this.props.availableActions.map(
-                action => ({'value': action.name, 'label': action.display_name})
-              )
-            ]}
-          />
+          { this.props.availableActions && this.props.availableActions.length ?
+            (<Form.Field
+              name={actionFieldname}
+              type='select'
+              choices={[
+                {'value': '', 'label': 'Action...'},
+                ...this.props.availableActions.map(
+                  action => ({'value': action.name, 'label': action.display_name})
+                )
+              ]}
+            />)
+          : '' }
         </div>
         <div
           style={{
@@ -472,7 +480,12 @@ export default class CampaignInteractionStepsForm extends React.Component {
           schema={this.formSchema}
           value={this.sortedValues()}
           onChange={this.onChange}
-          onSubmit={this.props.onSubmit}
+          onSubmit={(e) => {
+            console.log("onSubmit ", e)
+            this.props.onSubmit()
+            console.log("after onSubmit")
+            }
+          }
         >
           {this.sortedValues().interactionSteps.map((interactionStep, index) => (
             this.renderStep(interactionStep, index)
