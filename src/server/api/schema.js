@@ -570,8 +570,12 @@ const rootMutations = {
       contact.message_status = messageStatus
       return await contact.save()
     },
-    createOptOut: async(_, { optOut, campaignContactId }, { loaders }) => {
+    createOptOut: async(_, { optOut, campaignContactId }, { loaders, user }) => {
+      const contact = await loaders.campaignContact.load(campaignContactId)
+      await assignmentRequired(user, contact.assignment_id)
+
       const { assignmentId, cell } = optOut
+
       const campaign = await r.table('assignment')
         .get(assignmentId)
         .eqJoin('campaign_id', r.table('campaign'))('right')
