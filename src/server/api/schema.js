@@ -738,7 +738,7 @@ const rootResolvers = {
     },
     availableActions: (_, __, { user }) => {
       if(!process.env.ACTION_HANDLERS){
-        return
+        return []
       } else {
         const allHandlers = process.env.ACTION_HANDLERS.split(',')
         const availableHandlers = allHandlers.filter(handler => {
