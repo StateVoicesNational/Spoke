@@ -123,6 +123,17 @@ class AdminCampaignEdit extends React.Component {
     })
   }
 
+  handleSubmit = async () => {
+    console.log("onSubmit")
+    await this.handleSave()
+    this.setState({
+      expandedSection: this.state.expandedSection >= this.sections().length - 1 ||
+        !this.isNew() ?
+          null : this.state.expandedSection + 1
+    }) // currently throws an error in the console
+    console.log("end of handleSubmit")
+  }
+         
   handleSave = async () => {
     console.log("handleSave")
     let saveObject = {}
@@ -313,15 +324,7 @@ class AdminCampaignEdit extends React.Component {
         saveLabel={this.isNew() ? 'Next' : 'Save'}
         saveDisabled={shouldDisable}
         ensureComplete={this.props.campaignData.campaign.isStarted}
-        onSubmit={async () => {
-          console.log("onSubmit")
-          await this.handleSave()
-          this.setState({
-            expandedSection: this.state.expandedSection >= this.sections().length - 1 ||
-              !this.isNew() ?
-                null : this.state.expandedSection + 1
-          }) // currently throws an error in the console
-        }}
+        onSubmit={this.handleSubmit}
         {...section.extraProps}
       />
     )
