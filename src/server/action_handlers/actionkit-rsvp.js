@@ -9,10 +9,10 @@ export const available = () => {
 
 const authenticated_base_url = `https://${process.env.AK_USER}:${process.env.AK_PASSWORD}@${process.env.AK_HOSTNAME}/rest/v1/`
 
-let questionRSVPlist = r.knex('question_response')
+const questionRSVPlist = r.knex('question_response')
   .join('campaign_contact', 'question_response.campaign_contact_id', '=', 'campaign_contact.id')
-  .select('campaign_contact.custom_fields.page_id', 'campaign_contact.custom_fields.external_id', 'campaign_contact.event_id')
   .where('question_response.value', 'yes')
+  .select('campaign_contact.custom_fields.page_id', 'campaign_contact.custom_fields.external_id', 'campaign_contact.event_id')
 
 export const processAction = rsvpList => {
   console.log('question response:', rsvpList);
@@ -35,7 +35,12 @@ export const processAction = rsvpList => {
 }
 
 
-export const akSync = () => {
-  console.log('this is being hit!');
-  processAction(questionRSVPlist)
+export async function akSync(){
+  console.log('this is being hit');
+  try {
+    var list = await questionRSVPlist
+    processAction(list)
+  } catch(error) {
+    console.error(error);
+  }
 }
