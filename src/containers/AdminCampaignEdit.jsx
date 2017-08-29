@@ -528,7 +528,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
     variables: {
       campaignId: ownProps.params.campaignId
     },
-    pollInterval: 1000
+    pollInterval: 10000
   },
   campaignData: {
     query: gql`query getCampaign($campaignId: String!) {
@@ -539,7 +539,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
     variables: {
       campaignId: ownProps.params.campaignId
     },
-    pollInterval: 1000
+    pollInterval: 10000
   },
   organizationData: {
     query: gql`query getOrganizationData($organizationId: String!, $role: String!) {
@@ -560,7 +560,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
       organizationId: ownProps.params.organizationId,
       role: 'TEXTER'
     },
-    pollInterval: 1000
+    pollInterval: 10000
   },
   availableActionsData: {
     query: gql`query getAction {
