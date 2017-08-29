@@ -232,7 +232,6 @@ async function editCampaign(id, campaign, loaders, user) {
       modelData.campaign_id = id
       return modelData
     })
-    console.log("saving contacts ", contactsToSave)
     const compressedString = await gzip(JSON.stringify(contactsToSave))
     let job = await JobRequest.save({
       queue_name: `${id}:edit_campaign`,
@@ -250,7 +249,6 @@ async function editCampaign(id, campaign, loaders, user) {
   if (campaign.hasOwnProperty('contactSql')
       && datawarehouse
       && user.is_superadmin) {
-    console.log("campaign has contactSql && datawarehouse && user.is_superadmin")
     let job = await JobRequest.save({
       queue_name: `${id}:edit_campaign`,
       job_type: 'upload_contacts_sql',
