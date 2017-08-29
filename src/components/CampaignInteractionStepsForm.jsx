@@ -443,7 +443,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
               fullWidth
               customFields={this.props.customFields}
               label='Script'
-              multiline
+              multiLine
               hintText="This is what your texters will send to your contacts. E.g. Hi, {firstName}. It's {texterFirstName} here."
             />
             <Form.Field
