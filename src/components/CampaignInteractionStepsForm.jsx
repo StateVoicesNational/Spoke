@@ -476,12 +476,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
           schema={this.formSchema}
           value={this.sortedValues()}
           onChange={this.onChange}
-          onSubmit={(e) => {
-            console.log("onSubmit ", e)
-            this.props.onSubmit()
-            console.log("after onSubmit")
-            }
-          }
+          onSubmit={this.props.onSubmit}
         >
           {this.sortedValues().interactionSteps.map((interactionStep, index) => (
             this.renderStep(interactionStep, index)
