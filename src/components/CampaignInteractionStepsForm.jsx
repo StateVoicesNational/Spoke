@@ -105,7 +105,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
   }
 
   onChange = (formValues) => {
-    console.log("onChange ", formValues)
+    console.log("onChange interactions")
     if (this.props.ensureComplete) {
       return
     }
@@ -123,9 +123,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
       }
       return newStep
     })
-    console.log("pre-props.onChange ", newValues)
     this.props.onChange(newValues)
-    console.log("end onChange ", newValues)
   }
 
   addAnswer(interactionStep, interactionStepIndex) {
@@ -215,9 +213,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
   }
 
   sortedValues() {
-    console.log("sortedValues " , this.props.formValues)
     const tempVariable = sortInteractionSteps(this.props.formValues.interactionSteps)
-    console.log("sortInteractionSteps results ", tempVariable)
     return {
       interactionSteps: tempVariable
     }
