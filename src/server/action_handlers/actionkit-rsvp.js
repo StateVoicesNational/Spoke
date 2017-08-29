@@ -4,6 +4,8 @@ export const available = () => {
   return true
 }
 
+const authenticated_base_url = `https://${process.env.AK_USER}:${process.env.AK_PASSWORD}@${process.env.AK_HOSTNAME}/rest/v1/`
+
 const questionRSVPlist = r.knex('question_response')
   .join('campaign_contact', 'question_response.campaign_contact_id', '=', 'campaign_contact.id')
   .select('campaign_contact.page_id', 'campaign_contact.external_id', 'campaign_contact.event_id')
