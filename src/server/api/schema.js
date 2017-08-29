@@ -666,6 +666,8 @@ const rootMutations = {
       return contact
     },
     deleteQuestionResponses: async(_, { interactionStepIds, campaignContactId }, { loaders }) => {
+      const contact = await loaders.campaignContact.load(campaignContactId)
+      await assignmentRequired(user, contact.assignment_id)
       await r.table('question_response')
         .getAll(campaignContactId, { index: 'campaign_contact_id' })
         .getAll(...interactionStepIds, { index: 'interaction_step_id' })
@@ -717,8 +719,8 @@ const rootResolvers = {
       userRoles.forEach(role => {
         roles[role['role']] = 1
       })
-      if ('OWNER' in roles 
-        || user.is_superadmin 
+      if ('OWNER' in roles
+        || user.is_superadmin
         || 'TEXTER' in roles && assignment.user_id == user.id) {
         return assignment
       } else {
