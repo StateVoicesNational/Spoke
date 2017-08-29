@@ -123,6 +123,15 @@ class AdminCampaignEdit extends React.Component {
     })
   }
 
+  handleSubmit = async () => {
+    await this.handleSave()
+    this.setState({
+      expandedSection: this.state.expandedSection >= this.sections().length - 1 ||
+        !this.isNew() ?
+          null : this.state.expandedSection + 1
+    }) // currently throws an unmounted component error in the console
+  }
+         
   handleSave = async () => {
     let saveObject = {}
     this.sections().forEach((section) => {
@@ -307,14 +316,7 @@ class AdminCampaignEdit extends React.Component {
         saveLabel={this.isNew() ? 'Next' : 'Save'}
         saveDisabled={shouldDisable}
         ensureComplete={this.props.campaignData.campaign.isStarted}
-        onSubmit={async () => {
-          await this.handleSave()
-          this.setState({
-            expandedSection: this.state.expandedSection >= this.sections().length - 1 ||
-              !this.isNew() ?
-                null : this.state.expandedSection + 1
-          })
-        }}
+        onSubmit={this.handleSubmit}
         {...section.extraProps}
       />
     )
@@ -526,7 +528,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
     variables: {
       campaignId: ownProps.params.campaignId
     },
-    pollInterval: 100000
+    pollInterval: 1000
   },
   campaignData: {
     query: gql`query getCampaign($campaignId: String!) {
@@ -537,7 +539,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
     variables: {
       campaignId: ownProps.params.campaignId
     },
-    pollInterval: 200000
+    pollInterval: 1000
   },
   organizationData: {
     query: gql`query getOrganizationData($organizationId: String!, $role: String!) {
@@ -558,7 +560,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
       organizationId: ownProps.params.organizationId,
       role: 'TEXTER'
     },
-    pollInterval: 250000
+    pollInterval: 1000
   },
   availableActionsData: {
     query: gql`query getAction {
