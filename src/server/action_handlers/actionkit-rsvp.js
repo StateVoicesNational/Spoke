@@ -1,3 +1,5 @@
+import request from 'request'
+
 export const displayName = () => 'ActionKit Event RSVP'
 
 export const available = () => {
@@ -14,12 +16,24 @@ const questionRSVPlist = r.knex('question_response')
 export const processAction = questionResponse => {
   let user = questionResponse.campaign_contact
   const userData = {
-    event: `/rest/v1/event/%s%${user.event_id}`,
-    page: `/rest/v1/eventsignuppage/%s/%${user.page_id}`,
+    event: `${authenticated_base_url}/event/%s%${user.event_id}`,
+    page: `${authenticated_base_url}/eventsignuppage/%s/%${user.page_id}`,
     role: 'attendee',
     status: 'active',
-    user: `/rest/v1/user/%s/$${user.external_id}`
+    user: `${authenticated_base_url}/user/%s/$${user.external_id}`
   }
   console.log('user data:', userData );
-  return userData
+
+  return request.post({url:`${authenticated_base_url}/eventsignup`, formData: userData},  function optionalCallback(err, httpResponse, body) {
+  if (err) {
+    return console.error('event sign up failed:', err);
+  }
+  console.log('event sign up successful', body);
+})
+}
+
+
+export const akSync = () => {
+  processAction(questionRSVPlist)
+
 }
