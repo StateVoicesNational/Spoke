@@ -193,6 +193,7 @@ export async function createInteractionSteps(job) {
   if (JOBS_SAME_PROCESS && job.id) {
     await r.table('job_request').get(job.id).delete()
   }
+  console.log("interaction_steps saved")
 }
 
 export async function assignTexters(job) {

@@ -193,6 +193,8 @@ class AdminCampaignEdit extends React.Component {
       this.setState({
         campaignFormValues: this.props.campaignData.campaign
       })
+      console.log("end of handleSave()")
+      console.log("this.props.campaignData.campaign " + this.props.campaignData.campaign)
     }
   }
 
@@ -301,6 +303,7 @@ class AdminCampaignEdit extends React.Component {
 
   renderCampaignFormSection(section, forceDisable) {
     let shouldDisable = forceDisable || (!this.isNew() && this.checkSectionSaved(section))
+    console.log("shouldDisable ", shouldDisable, " section " , section)
     const ContentComponent = section.content
     const formValues = this.getSectionState(section)
     return (
@@ -311,12 +314,13 @@ class AdminCampaignEdit extends React.Component {
         saveDisabled={shouldDisable}
         ensureComplete={this.props.campaignData.campaign.isStarted}
         onSubmit={async () => {
+          console.log("onSubmit")
           await this.handleSave()
           this.setState({
             expandedSection: this.state.expandedSection >= this.sections().length - 1 ||
               !this.isNew() ?
                 null : this.state.expandedSection + 1
-          })
+          }) // currently throws an error in the console
         }}
         {...section.extraProps}
       />
