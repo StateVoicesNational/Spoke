@@ -36,9 +36,10 @@ export const processAction = rsvpList => {
 
 
 export async function akSync(){
-  console.log('this is being hit');
+  console.log('this is being hit:');
   try {
     var list = await questionRSVPlist
+    console.log('rsvp list:', list);
     processAction(list)
   } catch(error) {
     console.error(error);
