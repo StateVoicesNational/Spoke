@@ -105,7 +105,6 @@ export default class CampaignInteractionStepsForm extends React.Component {
   }
 
   onChange = (formValues) => {
-    console.log("onChange interactions")
     if (this.props.ensureComplete) {
       return
     }

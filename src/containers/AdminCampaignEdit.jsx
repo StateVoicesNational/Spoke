@@ -124,18 +124,15 @@ class AdminCampaignEdit extends React.Component {
   }
 
   handleSubmit = async () => {
-    console.log("onSubmit")
     await this.handleSave()
     this.setState({
       expandedSection: this.state.expandedSection >= this.sections().length - 1 ||
         !this.isNew() ?
           null : this.state.expandedSection + 1
-    }) // currently throws an error in the console
-    console.log("end of handleSubmit")
+    }) // currently throws an unmounted component error in the console
   }
          
   handleSave = async () => {
-    console.log("handleSave")
     let saveObject = {}
     this.sections().forEach((section) => {
       if (!this.checkSectionSaved(section)) {
@@ -203,8 +200,6 @@ class AdminCampaignEdit extends React.Component {
       this.setState({
         campaignFormValues: this.props.campaignData.campaign
       })
-      console.log("end of handleSave()")
-      console.log("this.props.campaignData.campaign ", this.props.campaignData.campaign)
     }
   }
 
