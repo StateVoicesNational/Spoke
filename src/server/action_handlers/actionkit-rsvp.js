@@ -1,4 +1,5 @@
 import request from 'request'
+import { r } from '../models'
 
 export const displayName = () => 'ActionKit Event RSVP'
 
@@ -8,16 +9,17 @@ export const available = () => {
 
 const authenticated_base_url = `https://${process.env.AK_USER}:${process.env.AK_PASSWORD}@${process.env.AK_HOSTNAME}/rest/v1/`
 
-const questionRSVPlist = r.knex('question_response')
+let questionRSVPlist = r.knex('question_response')
   .join('campaign_contact', 'question_response.campaign_contact_id', '=', 'campaign_contact.id')
-  .select('campaign_contact.page_id', 'campaign_contact.external_id', 'campaign_contact.event_id')
-  .where('question_response.value' = 'yes')
+  .select('campaign_contact.custom_fields.page_id', 'campaign_contact.custom_fields.external_id', 'campaign_contact.event_id')
+  .where('question_response.value', 'yes')
 
-export const processAction = questionResponse => {
-  let user = questionResponse.campaign_contact
+export const processAction = rsvpList => {
+  console.log('question response:', rsvpList);
+  let user = rsvpList.campaign_contact
   const userData = {
-    event: `${authenticated_base_url}/event/%s%${user.event_id}`,
-    page: `${authenticated_base_url}/eventsignuppage/%s/%${user.page_id}`,
+    event: `${authenticated_base_url}/event/%s%${user.custom_field.event_id}`,
+    page: `${authenticated_base_url}/eventsignuppage/%s/%${user.custom_field.page_id}`,
     role: 'attendee',
     status: 'active',
     user: `${authenticated_base_url}/user/%s/$${user.external_id}`
@@ -25,15 +27,15 @@ export const processAction = questionResponse => {
   console.log('user data:', userData );
 
   return request.post({url:`${authenticated_base_url}/eventsignup`, formData: userData},  function optionalCallback(err, httpResponse, body) {
-  if (err) {
-    return console.error('event sign up failed:', err);
-  }
-  console.log('event sign up successful', body);
-})
+    if (err) {
+      return console.error('event sign up failed:', err);
+    }
+    console.log('event sign up successful', body);
+  })
 }
 
 
 export const akSync = () => {
+  console.log('this is being hit!');
   processAction(questionRSVPlist)
-
 }
