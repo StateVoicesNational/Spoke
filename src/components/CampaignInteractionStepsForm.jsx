@@ -180,7 +180,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
         text: yup.string(),
         answerOptions: yup.array().of(yup.object({
           value: yup.string(),
-          action: yup.string(),
+          action: yup.string().nullable(true),
           nextInteractionStep: yup.mixed()
         }))
       })
