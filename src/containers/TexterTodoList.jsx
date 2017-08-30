@@ -89,7 +89,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
         validTimezone: false
       }
     },
-    forceFetch: true
+    pollInterval: 10000
   }
 })
 

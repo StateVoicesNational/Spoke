@@ -179,7 +179,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
         text: yup.string(),
         answerOptions: yup.array().of(yup.object({
           value: yup.string(),
-          action: yup.string(),
+          action: yup.string().nullable(true),
           nextInteractionStep: yup.mixed()
         }))
       })
@@ -301,16 +301,18 @@ export default class CampaignInteractionStepsForm extends React.Component {
             display: 'inline-block'
           }}
         >
-          <Form.Field
-            name={actionFieldname}
-            type='select'
-            choices={[
-              {'value': '', 'label': 'Action...'},
-              ...this.props.availableActions.map(
-                action => ({'value': action.name, 'label': action.display_name})
-              )
-            ]}
-          />
+          { this.props.availableActions && this.props.availableActions.length ?
+            (<Form.Field
+              name={actionFieldname}
+              type='select'
+              choices={[
+                {'value': '', 'label': 'Action...'},
+                ...this.props.availableActions.map(
+                  action => ({'value': action.name, 'label': action.display_name})
+                )
+              ]}
+            />)
+          : '' }
         </div>
         <div
           style={{
@@ -439,7 +441,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
               fullWidth
               customFields={this.props.customFields}
               label='Script'
-              multiline
+              multiLine
               hintText="This is what your texters will send to your contacts. E.g. Hi, {firstName}. It's {texterFirstName} here."
             />
             <Form.Field
