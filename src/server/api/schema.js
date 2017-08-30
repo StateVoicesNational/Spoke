@@ -665,7 +665,7 @@ const rootMutations = {
 
       return contact
     },
-    deleteQuestionResponses: async(_, { interactionStepIds, campaignContactId }, { loaders }) => {
+    deleteQuestionResponses: async(_, { interactionStepIds, campaignContactId }, { loaders, user }) => {
       const contact = await loaders.campaignContact.load(campaignContactId)
       await assignmentRequired(user, contact.assignment_id)
       await r.table('question_response')
