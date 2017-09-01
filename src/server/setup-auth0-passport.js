@@ -20,7 +20,7 @@ function setupAuth0Passport() {
 
   passport.deserializeUser(wrap(async (id, done) => {
     const user = await User.filter({ auth0_id: id })
-    done(null, user[0])
+    done(null, user[0] || false)
   }))
 }
 
