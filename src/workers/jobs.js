@@ -1,5 +1,5 @@
 import { r, datawarehouse, Campaign, CampaignContact, User, Assignment, InteractionStep } from '../server/models'
-import { akSync } from '../server/action_handlers/actionkit-rsvp.js'
+import { dataSync } from '../server/action_handlers/actionkit-rsvp.js'
 import { log, gunzip, zipToTimeZone } from '../lib'
 import { sleep, getNextJob, updateJob } from './lib'
 import nexmo from '../server/api/lib/nexmo'
@@ -18,7 +18,7 @@ const JOBS_SAME_PROCESS = !!process.env.JOBS_SAME_PROCESS
 const serviceMap = { nexmo, twilio }
 
 if(process.env.ACTION_HANDLERS = 'actionkit-rsvp'){
-  akSync()
+  dataSync()
 }
 
 async function getTimezoneByZip(zip) {
