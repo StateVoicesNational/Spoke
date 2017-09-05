@@ -7,6 +7,7 @@ const env_production = {
   AK_USER: '',
   AK_PASSWORD: '',
   AK_HOSTNAME: '',
+  ACTION_HANDLERS: '',
   APOLLO_OPTICS_KEY:'',
   DEV_APP_PORT:8090,
   PUBLIC_DIR:'./build/client',
