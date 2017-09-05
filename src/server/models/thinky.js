@@ -22,7 +22,8 @@ if (process.env.DB_JSON) {
       port: process.env.DB_PORT,
       database: process.env.DB_NAME,
       password: process.env.DB_PASSWORD,
-      user: process.env.DB_USER
+      user: process.env.DB_USER,
+      ssl: process.env.DB_USE_SSL || false
     }
   }
 } else {
