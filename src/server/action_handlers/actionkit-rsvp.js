@@ -35,7 +35,7 @@ export const processAction = rsvpList => {
 }
 
 
-export async function dataSync(){
+export async function rsvpSync(){
   console.log('this is being hit:');
   try {
     var list = await questionRSVPlist

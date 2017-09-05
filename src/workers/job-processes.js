@@ -1,6 +1,6 @@
 import { r } from '../server/models'
 import { sleep, getNextJob, updateJob, log } from './lib'
-import { exportCampaign, uploadContacts, assignTexters, createInteractionSteps, sendMessages, handleIncomingMessageParts, akSync } from './jobs'
+import { exportCampaign, uploadContacts, assignTexters, createInteractionSteps, sendMessages, handleIncomingMessageParts, rsvpSync } from './jobs'
 import { runMigrations } from '../migrations'
 import { setupUserNotificationObservers } from '../server/notifications'
 
@@ -19,7 +19,7 @@ const jobMap = {
   "upload_contacts": uploadContacts,
   "assign_texters": assignTexters,
   "create_interaction_steps": createInteractionSteps,
-  "ak_sync": akSync
+  "rsvp_sync": rsvpSync
 }
 
 export async function processJobs() {
