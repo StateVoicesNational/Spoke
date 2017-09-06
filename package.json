@@ -4,8 +4,8 @@
   "description": "Spoke",
   "main": "src/server",
   "engines": {
-    "node": "6.2.2",
-    "npm": "3.7.3"
+    "node": "6.10.3",
+    "npm": "3.10.10"
   },
   "scripts": {
     "test": "npm run lint",
