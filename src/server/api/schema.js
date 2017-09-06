@@ -101,7 +101,7 @@ const rootSchema = `
     cell: String!
     zip: String
     external_id: String
-    customFields: String
+    customFields: JSON
   }
 
   input OptOutInput {
