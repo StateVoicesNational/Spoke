@@ -221,6 +221,7 @@ class AssignmentTexterContact extends React.Component {
   getStartingMessageText() {
     const { contact } = this.props.data
     const { messages } = contact
+    console.log('contact:', { messages } );
     return messages.length > 0 ? '' : this.getMessageTextFromScript(contact.currentInteractionStepScript)
   }
 
