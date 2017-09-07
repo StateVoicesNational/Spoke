@@ -24,7 +24,8 @@ const getScriptFieldValue = (contact, texter, fieldName) => {
   } else if (TOP_LEVEL_UPLOAD_FIELDS.indexOf(fieldName) !== -1) {
     result = contact[fieldName]
   } else {
-    result = contact.customFields[fieldName]
+    const customFieldNames = JSON.parse(contact.customFields)
+    result = customFieldNames[fieldName]
   }
   return result
 }
