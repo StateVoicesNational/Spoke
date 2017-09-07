@@ -1,5 +1,3 @@
-import _ from 'lodash'
-
 export const delimiters = {
   startDelimiter: '{',
   endDelimiter: '}'
@@ -15,11 +13,7 @@ const TOP_LEVEL_UPLOAD_FIELDS = ['firstName', 'lastName', 'cell', 'zip', 'extern
 const TEXTER_SCRIPT_FIELDS = ['texterFirstName', 'texterLastName']
 
 // TODO: This will include zipCode even if you ddin't upload it
-export const allScriptFields = (customFields) => {
-  const message = TOP_LEVEL_UPLOAD_FIELDS.concat(TEXTER_SCRIPT_FIELDS).concat(customFields)
-  return message
-}
-
+export const allScriptFields = (customFields) => TOP_LEVEL_UPLOAD_FIELDS.concat(TEXTER_SCRIPT_FIELDS).concat(customFields)
 
 const getScriptFieldValue = (contact, texter, fieldName) => {
   let result
