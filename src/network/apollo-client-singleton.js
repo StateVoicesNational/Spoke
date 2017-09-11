@@ -5,7 +5,7 @@ import fetch from 'isomorphic-fetch'
 import { graphQLErrorParser } from './errors'
 
 const responseMiddlewareNetworkInterface = new ResponseMiddlewareNetworkInterface(
-    '/graphql', { credentials: 'same-origin' }
+    process.env.GRAPHQL_URL, { credentials: 'same-origin' }
   )
 
 responseMiddlewareNetworkInterface.use({
