@@ -4,8 +4,12 @@ import { log } from '../lib'
 import fetch from 'isomorphic-fetch'
 import { graphQLErrorParser } from './errors'
 
+const graphqlURL = process.env.NODE_ENV === 'development' 
+  ? process.env.GRAPHQL_URL || (process.env.BASE_URL + '/graphql') 
+  : '/graphql'
+console.log('graphqlURL ', graphqlURL)
 const responseMiddlewareNetworkInterface = new ResponseMiddlewareNetworkInterface(
-    process.env.GRAPHQL_URL, { credentials: 'same-origin' }
+    graphqlURL, { credentials: 'same-origin' }
   )
 
 responseMiddlewareNetworkInterface.use({
