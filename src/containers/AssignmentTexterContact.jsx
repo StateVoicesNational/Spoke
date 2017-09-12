@@ -26,6 +26,18 @@ import { getChildren, getTopMostParent, interactionStepForId, log, isBetweenText
 import { withRouter } from 'react-router'
 import wrapMutations from './hoc/wrap-mutations'
 const styles = StyleSheet.create({
+  mobile: {
+    '@media(min-width: 600px)':{
+      display: 'none !important'
+    }
+  },
+
+  desktop: {
+    '@media(max-width: 600px)':{
+      display: 'none !important'
+    }
+  },
+
   container: {
     margin: 0,
     position: 'absolute',
@@ -59,7 +71,8 @@ const styles = StyleSheet.create({
     maxWidth: '50%'
   },
   navigationToolbarTitle: {
-    fontSize: '12px',
+    fontSize: '14px',
+    fontWeight: 'bold',
     position: 'relative',
     top: 5
 
@@ -76,7 +89,8 @@ const styles = StyleSheet.create({
     flex: '0 0 auto'
   },
   messageField: {
-    padding: 10
+    padding: 8,
+    marginBottom: 25
   },
   dialogActions: {
     marginTop: 20,
@@ -89,18 +103,14 @@ const styles = StyleSheet.create({
 })
 
 const inlineStyles = {
-  // media queries
-
-  desktop: {
-    '@media(max-width: 600px)':{
-      display: 'none !important'
-    }
+  mobileToolBar: {
+    position: 'absolute',
+    bottom: '-5',
   },
-
-  mobile: {
-    '@media(min-width: 450px)':{
-      display: 'none !important'
-    }
+  mobileCannedReplies: {
+    position: 'absolute',
+    left: 0,
+    bottom: '5'
   },
 
   dialogButton: {
@@ -490,7 +500,7 @@ class AssignmentTexterContact extends React.Component {
     } else if (messageStatus === 'needsResponse') {
       button = (<RaisedButton
         onTouchTap={this.handleClickCloseContactButton}
-        label='Close without responding'
+        label='Skip Reply'
       />)
     }
 
@@ -503,38 +513,69 @@ class AssignmentTexterContact extends React.Component {
     const { contact } = data
 
     return (
-      <Toolbar
-        style={inlineStyles.actionToolbar}
-      >
-        <ToolbarGroup
-          firstChild
+      <div>
+        <Toolbar
+          style={inlineStyles.actionToolbar}
+          className={css(styles.desktop)}
         >
-          <SendButton
-            threeClickEnabled={campaign.organization.threeClickEnabled}
-            onFinalTouchTap={this.handleClickSendMessageButton}
-            disabled={this.state.disabled}
-          />
-          {this.renderNeedsResponseToggleButton(contact)}
-          <RaisedButton
-            label='Canned replies'
-            onTouchTap={this.handleOpenPopover}
-          />
+          <ToolbarGroup
+            firstChild
+          >
+            <SendButton
+              threeClickEnabled={campaign.organization.threeClickEnabled}
+              onFinalTouchTap={this.handleClickSendMessageButton}
+              disabled={this.state.disabled}
+            />
+            {this.renderNeedsResponseToggleButton(contact)}
+            <RaisedButton
+              label='Canned replies'
+              onTouchTap={this.handleOpenPopover}
+            />
+            <RaisedButton
+              secondary
+              label='Opt out'
+              onTouchTap={this.handleOpenDialog}
+              tooltip='Opt out this contact'
+              tooltipPosition='top-center'
+            >
+
+            </RaisedButton>
+            <div
+              style={{ float: 'right', marginLeft: 5 }}
+            >
+              {navigationToolbarChildren}
+            </div>
+          </ToolbarGroup>
+        </Toolbar>
+        <Toolbar
+          style={inlineStyles.actionToolbar}
+          className={css(styles.mobile)}
+        >
+          <ToolbarGroup
+            style={inlineStyles.mobileToolBar}
+            firstChild
+          >
           <RaisedButton
             secondary
             label='Opt out'
             onTouchTap={this.handleOpenDialog}
             tooltip='Opt out this contact'
-            tooltipPosition='top-center'
-          >
-
+            >
           </RaisedButton>
-          <div
-            style={{ float: 'right', marginLeft: 20 }}
-          >
-            {navigationToolbarChildren}
-          </div>
-        </ToolbarGroup>
-      </Toolbar>
+          <RaisedButton
+            style={inlineStyles.mobileCannedReplies}
+            label='Canned replies'
+            onTouchTap={this.handleOpenPopover}
+          />
+            {this.renderNeedsResponseToggleButton(contact)}
+            <div
+              style={{ float: 'right', marginLeft:'-30px' }}
+            >
+              {navigationToolbarChildren}
+            </div>
+          </ToolbarGroup>
+        </Toolbar>
+    </div>
     )
   }
 
