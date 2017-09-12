@@ -393,7 +393,6 @@ class AssignmentTexterContact extends React.Component {
     })
   }
 
-
   handleClickSendMessageButton = () => {
     this.refs.form.submit()
   }
@@ -625,7 +624,7 @@ class AssignmentTexterContact extends React.Component {
                 onKeyUp={(event) => {
                   if (event.keyCode === 13) {
                     // pressing the Enter key submits
-                    this.handleMessageFormSubmit()
+                    this.handleClickSendMessageButton()
                   }
                 }}
               />
