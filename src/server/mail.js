@@ -4,7 +4,7 @@ import nodemailer from 'nodemailer'
 let transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST,
     port: process.env.EMAIL_HOST_PORT,
-    secure: process.env.EMAIL_HOST_SECURE || true,
+    secure: typeof process.env.EMAIL_HOST_SECURE !== 'undefined' ? process.env.EMAIL_HOST_SECURE : true,
     auth: {
         user: process.env.EMAIL_HOST_USER,
         pass: process.env.EMAIL_HOST_PASSWORD
