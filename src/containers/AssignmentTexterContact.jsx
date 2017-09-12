@@ -19,6 +19,7 @@ import GSForm from '../components/forms/GSForm'
 import Form from 'react-formal'
 import GSSubmitButton from '../components/forms/GSSubmitButton'
 import SendButton from '../components/SendButton'
+import SendButtonArrow from '../components/SendButtonArrow'
 import CircularProgress from 'material-ui/CircularProgress'
 import Snackbar from 'material-ui/Snackbar'
 import { getChildren, getTopMostParent, interactionStepForId, log, isBetweenTextingHours } from '../lib'
@@ -509,7 +510,6 @@ class AssignmentTexterContact extends React.Component {
           firstChild
         >
           <SendButton
-            style={inlineStyles.desktop}
             threeClickEnabled={campaign.organization.threeClickEnabled}
             onFinalTouchTap={this.handleClickSendMessageButton}
             disabled={this.state.disabled}
@@ -646,6 +646,9 @@ class AssignmentTexterContact extends React.Component {
                   }
                 }}
               />
+              <SendButtonArrow
+               onFinalTouchTap={this.handleClickSendMessageButton}
+               />
             </GSForm>
           </div>
           {this.renderActionToolbar()}
