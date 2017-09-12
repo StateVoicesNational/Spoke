@@ -82,10 +82,26 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'flex-end'
-  }
+  },
+
+
 })
 
 const inlineStyles = {
+  // media queries
+
+  desktop: {
+    '@media(max-width: 600px)':{
+      display: 'none !important'
+    }
+  },
+
+  mobile: {
+    '@media(min-width: 450px)':{
+      display: 'none !important'
+    }
+  },
+
   dialogButton: {
     display: 'inline-block'
   },
@@ -493,13 +509,14 @@ class AssignmentTexterContact extends React.Component {
           firstChild
         >
           <SendButton
+            style={inlineStyles.desktop}
             threeClickEnabled={campaign.organization.threeClickEnabled}
             onFinalTouchTap={this.handleClickSendMessageButton}
             disabled={this.state.disabled}
           />
           {this.renderNeedsResponseToggleButton(contact)}
           <RaisedButton
-            label='Canned responses'
+            label='Canned replies'
             onTouchTap={this.handleOpenPopover}
           />
           <RaisedButton
