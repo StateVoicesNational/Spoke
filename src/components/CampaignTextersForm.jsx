@@ -101,7 +101,7 @@ const inlineStyles = {
 
 export default class CampaignTextersForm extends React.Component {
   state = {
-    autoSplit: true,
+    autoSplit: false,
     focusedTexter: null
   }
 
