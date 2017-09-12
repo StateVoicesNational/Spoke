@@ -27,17 +27,15 @@ import { withRouter } from 'react-router'
 import wrapMutations from './hoc/wrap-mutations'
 const styles = StyleSheet.create({
   mobile: {
-    '@media(min-width: 600px)':{
+    '@media(min-width: 425px)':{
       display: 'none !important'
     }
   },
-
   desktop: {
-    '@media(max-width: 600px)':{
+    '@media(max-width: 450px)':{
       display: 'none !important'
     }
   },
-
   container: {
     margin: 0,
     position: 'absolute',
@@ -86,11 +84,12 @@ const styles = StyleSheet.create({
   },
   bottomFixedSection: {
     borderTop: `1px solid ${grey100}`,
-    flex: '0 0 auto'
+    flex: '0 0 auto',
+    marginBottom: 'none'
   },
   messageField: {
-    padding: 8,
-    marginBottom: 25
+    padding: '0px 8px',
+    marginBottom: 35
   },
   dialogActions: {
     marginTop: 20,
@@ -98,8 +97,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end'
   },
-
-
+  lgMobileToolBar: {
+    '@media(max-width: 449px) and (min-width: 410px)':{
+      bottom: '0 !important',
+      marginLeft: '0px !important'
+    }
+  }
 })
 
 const inlineStyles = {
@@ -130,7 +133,8 @@ const inlineStyles = {
     // without this the toolbar icons are not centered vertically
   },
   actionToolbar: {
-    backgroundColor: 'white'
+    backgroundColor: 'white',
+    marginBottom: 50
   },
   snackbar: {
     zIndex: 1000001
@@ -553,6 +557,7 @@ class AssignmentTexterContact extends React.Component {
         >
           <ToolbarGroup
             style={inlineStyles.mobileToolBar}
+            className={css(styles.lgMobileToolBar)}
             firstChild
           >
           <RaisedButton
