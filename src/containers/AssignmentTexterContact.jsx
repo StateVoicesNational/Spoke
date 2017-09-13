@@ -515,73 +515,87 @@ class AssignmentTexterContact extends React.Component {
     const { data, campaign, navigationToolbarChildren } = this.props
 
     const { contact } = data
+    const { messageStatus } = contact
 
-    return (
-      <div>
-        <Toolbar
-          style={inlineStyles.actionToolbar}
-          className={css(styles.desktop)}
-        >
-          <ToolbarGroup
-            firstChild
+    let toolBar = null
+    if(messageStatus === 'needsMessage'){
+      console.log('messageStatus:', messageStatus);
+      toolBar = (<div>
+          <Toolbar
+            style={inlineStyles.actionToolbar}
           >
-            <SendButton
-              threeClickEnabled={campaign.organization.threeClickEnabled}
-              onFinalTouchTap={this.handleClickSendMessageButton}
-              disabled={this.state.disabled}
-            />
-            {this.renderNeedsResponseToggleButton(contact)}
-            <RaisedButton
-              label='Canned replies'
-              onTouchTap={this.handleOpenPopover}
-            />
-            <RaisedButton
-              secondary
-              label='Opt out'
-              onTouchTap={this.handleOpenDialog}
-              tooltip='Opt out this contact'
-              tooltipPosition='top-center'
+            <ToolbarGroup
+              firstChild
             >
+              <SendButton
+                threeClickEnabled={campaign.organization.threeClickEnabled}
+                onFinalTouchTap={this.handleClickSendMessageButton}
+                disabled={this.state.disabled}
+              />
+              {this.renderNeedsResponseToggleButton(contact)}
+              <RaisedButton
+                label='Canned replies'
+                onTouchTap={this.handleOpenPopover}
+              />
+              <RaisedButton
+                secondary
+                label='Opt out'
+                onTouchTap={this.handleOpenDialog}
+                tooltip='Opt out this contact'
+                tooltipPosition='top-center'
+              >
 
-            </RaisedButton>
-            <div
-              style={{ float: 'right', marginLeft: 5 }}
-            >
-              {navigationToolbarChildren}
-            </div>
-          </ToolbarGroup>
-        </Toolbar>
-        <Toolbar
+              </RaisedButton>
+              <div
+                style={{ float: 'right', marginLeft: 5 }}
+              >
+                {navigationToolbarChildren}
+              </div>
+            </ToolbarGroup>
+          </Toolbar>
+        </div>)
+
+        return toolBar
+
+    } else if (messageStatus === 'needsResponse'){
+      console.log('messageStatus:', messageStatus);
+      toolBar =
+        (<div>
+          <Toolbar
           style={inlineStyles.actionToolbar}
           className={css(styles.mobile)}
-        >
-          <ToolbarGroup
+          >
+            <ToolbarGroup
             style={inlineStyles.mobileToolBar}
             className={css(styles.lgMobileToolBar)}
             firstChild
-          >
-          <RaisedButton
+            >
+            <RaisedButton
             secondary
             label='Opt out'
             onTouchTap={this.handleOpenDialog}
             tooltip='Opt out this contact'
             >
-          </RaisedButton>
-          <RaisedButton
+            </RaisedButton>
+            <RaisedButton
             style={inlineStyles.mobileCannedReplies}
             label='Canned replies'
             onTouchTap={this.handleOpenPopover}
-          />
+            />
             {this.renderNeedsResponseToggleButton(contact)}
             <div
-              style={{ float: 'right', marginLeft:'-30px' }}
+            style={{ float: 'right', marginLeft:'-30px' }}
             >
               {navigationToolbarChildren}
             </div>
           </ToolbarGroup>
-        </Toolbar>
-    </div>
-    )
+          </Toolbar>
+        </div> )
+
+        return toolBar
+    }
+
+    return toolBar
   }
 
   renderTopFixedSection() {

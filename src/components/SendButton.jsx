@@ -8,12 +8,6 @@ const styles = StyleSheet.create({
   container: {
     display: 'inline-block',
     marginLeft: 20
-  },
-
-  desktop: {
-    '@media(max-width: 450px)':{
-      display: 'none !important'
-    }
   }
 })
 class SendButton extends Component {
@@ -40,7 +34,6 @@ class SendButton extends Component {
     return (
       <div className={css(styles.container)}>
         <RaisedButton
-          className={css(styles.desktop)}
           onTouchTap={this.handleTouchTap}
           disabled={this.props.disabled}
           label={this.clickStepLabels()[this.state.clickStepIndex]}
