@@ -1,4 +1,5 @@
 import React from 'react'
+import $ from 'jquery'
 import { StyleSheet, css } from 'aphrodite'
 import ContactToolbar from '../components/ContactToolbar'
 import MessageList from '../components/MessageList'
@@ -89,7 +90,9 @@ const styles = StyleSheet.create({
   },
   messageField: {
     padding: '0px 8px',
-    marginBottom: 35
+    '@media(max-width: 450px)': {
+      marginBottom: 50
+    }
   },
   dialogActions: {
     marginTop: 20,
@@ -134,8 +137,18 @@ const inlineStyles = {
   },
   actionToolbar: {
     backgroundColor: 'white',
-    marginBottom: 50
+    '@media(min-width: 450px)':{
+      marginBottom: 5
+    },
+    '@media(max-width: 450px)':{
+      marginBottom: 50
+    }
   },
+
+  actionToolbarFirst: {
+    backgroundColor: 'white',
+  },
+
   snackbar: {
     zIndex: 1000001
   }
@@ -513,57 +526,18 @@ class AssignmentTexterContact extends React.Component {
 
   renderActionToolbar() {
     const { data, campaign, navigationToolbarChildren } = this.props
-
     const { contact } = data
     const { messageStatus } = contact
 
+    const size = $(window).width()
     let toolBar = null
-    if(messageStatus === 'needsMessage'){
-      console.log('messageStatus:', messageStatus);
-      toolBar = (<div>
-          <Toolbar
-            style={inlineStyles.actionToolbar}
-          >
-            <ToolbarGroup
-              firstChild
-            >
-              <SendButton
-                threeClickEnabled={campaign.organization.threeClickEnabled}
-                onFinalTouchTap={this.handleClickSendMessageButton}
-                disabled={this.state.disabled}
-              />
-              {this.renderNeedsResponseToggleButton(contact)}
-              <RaisedButton
-                label='Canned replies'
-                onTouchTap={this.handleOpenPopover}
-              />
-              <RaisedButton
-                secondary
-                label='Opt out'
-                onTouchTap={this.handleOpenDialog}
-                tooltip='Opt out this contact'
-                tooltipPosition='top-center'
-              >
 
-              </RaisedButton>
-              <div
-                style={{ float: 'right', marginLeft: 5 }}
-              >
-                {navigationToolbarChildren}
-              </div>
-            </ToolbarGroup>
-          </Toolbar>
-        </div>)
-
-        return toolBar
-
-    } else if (messageStatus === 'needsResponse'){
-      console.log('messageStatus:', messageStatus);
+   if (messageStatus === 'needsResponse' &&  size < 450 ){
       toolBar =
         (<div>
           <Toolbar
-          style={inlineStyles.actionToolbar}
           className={css(styles.mobile)}
+          style={inlineStyles.actionToolbar}
           >
             <ToolbarGroup
             style={inlineStyles.mobileToolBar}
@@ -593,8 +567,43 @@ class AssignmentTexterContact extends React.Component {
         </div> )
 
         return toolBar
-    }
+    } else {
+      console.log('messageStatus:', messageStatus);
+        toolBar = (
+          <div>
+            <Toolbar style={inlineStyles.actionToolbarFirst}>
+              <ToolbarGroup
+                firstChild
+              >
+                <SendButton
+                  threeClickEnabled={campaign.organization.threeClickEnabled}
+                  onFinalTouchTap={this.handleClickSendMessageButton}
+                  disabled={this.state.disabled}
+                />
+                {this.renderNeedsResponseToggleButton(contact)}
+                <RaisedButton
+                  label='Canned responses'
+                  onTouchTap={this.handleOpenPopover}
+                />
+                <RaisedButton
+                  secondary
+                  label='Opt out'
+                  onTouchTap={this.handleOpenDialog}
+                  tooltip='Opt out this contact'
+                  tooltipPosition='top-center'
+                >
+                </RaisedButton>
+                <div
+                  style={{ float: 'right', marginLeft: 20 }}
+                >
+                  {navigationToolbarChildren}
+                </div>
+              </ToolbarGroup>
+            </Toolbar>
+          </div>)
 
+      return toolBar
+    }
     return toolBar
   }
 
@@ -682,6 +691,7 @@ class AssignmentTexterContact extends React.Component {
   }
 
   renderBottomFixedSection() {
+
     return (
       <div>
         {this.renderSurveySection()}
