@@ -17,6 +17,8 @@ const env_production = {
   DB_PASSWORD:'spoke',
   DB_KEY:'',
   DB_TYPE:'',
+  DB_MIN_POOL: 2,
+  DB_MAX_POOL: 10,
   DB_USE_SSL: false,
   DEFAULT_SERVICE:'twilio',
   JOB_DB_HOST:'127.0.0.1',

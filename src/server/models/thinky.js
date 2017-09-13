@@ -24,6 +24,10 @@ if (process.env.DB_JSON) {
       password: process.env.DB_PASSWORD,
       user: process.env.DB_USER,
       ssl: process.env.DB_USE_SSL || false
+    },
+    pool: {
+      min: process.env.DB_MIN_POOL || 2,
+      max: process.env.DB_MAX_POOL || 10
     }
   }
 } else {
