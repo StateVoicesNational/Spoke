@@ -2,6 +2,7 @@ import React, { PropTypes as type } from 'react'
 import Slider from './Slider'
 import AutoComplete from 'material-ui/AutoComplete'
 import IconButton from 'material-ui/IconButton'
+import RaisedButton from 'material-ui/RaisedButton'
 import GSForm from '../components/forms/GSForm'
 import yup from 'yup'
 import Form from 'react-formal'
@@ -100,7 +101,7 @@ const inlineStyles = {
 
 export default class CampaignTextersForm extends React.Component {
   state = {
-    autoSplit: true,
+    autoSplit: false,
     focusedTexter: null
   }
 
@@ -292,6 +293,26 @@ export default class CampaignTextersForm extends React.Component {
     )
   }
 
+  addAllTexters() {
+    const { orgTexters } = this.props
+
+    const textersToAdd = orgTexters
+      .map((orgTexter) => {
+        const id = orgTexter.id
+        const firstName = orgTexter.firstName
+        return {
+          id,
+          firstName,
+          assignment: {
+            contactsCount: 0,
+            needsMessageCount: 0
+          }
+        }
+      })
+
+    this.onChange({ texters: textersToAdd })
+  }
+
   showTexters() {
     return this.formValues().texters.map((texter, index) => {
       const messagedCount = texter.assignment.contactsCount - texter.assignment.needsMessageCount
@@ -386,7 +407,15 @@ export default class CampaignTextersForm extends React.Component {
           onChange={this.onChange}
           onSubmit={this.props.onSubmit}
         >
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           {this.showSearch()}
+            <div>
+              <RaisedButton
+                label='Add All'
+                onTouchTap={(() => this.addAllTexters())}
+              />
+            </div>
+          </div>
           <div className={css(styles.sliderContainer)}>
             <div className={css(styles.headerContainer)}>
               <div
