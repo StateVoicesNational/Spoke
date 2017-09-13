@@ -37,8 +37,6 @@ const env_production = {
   TWILIO_AUTH_TOKEN:'',
   TWILIO_STATUS_CALLBACK_URL:'http://example.com:3000/twilio',
   PHONE_NUMBER_COUNTRY: 'US',
-  SSH_TUNNEL_TARGET:'exampleuser@example.com',
-  SSH_TUNNEL_FORWARDS:'3000:127.0.0.1:6379',
   EMAIL_HOST: "",
   EMAIL_HOST_PASSWORD: "",
   EMAIL_HOST_USER: "",
