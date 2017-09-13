@@ -8,8 +8,7 @@
     "npm": "3.10.10"
   },
   "scripts": {
-    "test": "npm run lint",
-    "jest": "jest",
+    "test": "jest",
     "clean": "rm -rf $OUTPUT_DIR",
     "lint": "eslint --fix --ext js --ext jsx src; exit 0",
     "prod-build-client": "webpack --config ./webpack/config.js",
