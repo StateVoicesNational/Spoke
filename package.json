@@ -92,7 +92,6 @@
     "graphql-type-json": "^0.1.2",
     "humps": "^1.1.0",
     "isomorphic-fetch": "^2.2.1",
-    "jquery": "^3.2.1",
     "json-loader": "^0.5.4",
     "knex": "^0.13.0",
     "lodash": "^4.13.1",

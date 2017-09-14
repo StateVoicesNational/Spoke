@@ -1,5 +1,4 @@
 import React from 'react'
-import $ from 'jquery'
 import { StyleSheet, css } from 'aphrodite'
 import ContactToolbar from '../components/ContactToolbar'
 import MessageList from '../components/MessageList'
@@ -530,7 +529,7 @@ class AssignmentTexterContact extends React.Component {
     const { contact } = data
     const { messageStatus } = contact
 
-    const size = $(window).width()
+    const size = document.documentElement.clientWidth
     let toolBar = null
 
    if (messageStatus === 'needsResponse' &&  size < 450 || messageStatus === 'messaged' && size < 450 ){
