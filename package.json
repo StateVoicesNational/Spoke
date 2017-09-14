@@ -116,7 +116,7 @@
     "react-tap-event-plugin": "^2.0.0",
     "redux": "^3.7.2",
     "redux-thunk": "^2.1.0",
-    "rethink-knex-adapter": "^0.4.1",
+    "rethink-knex-adapter": "^0.4.2",
     "rollbar": "^0.6.2",
     "stripe": "^4.9.0",
     "thinky": "^2.3.3",
@@ -144,10 +144,6 @@
     "regenerator-runtime": "^0.10.5",
     "sqlite3": "^3.1.9",
     "webpack-dev-server": "^1.14.1"
-  },
-  "xxxtransform": {
-    "forJest": "transform in the jest key might benefit from one or the other of these",
-    ".*.js": "<rootDir>/dev-tools/jest.transform.js"
   },
   "jest": {
     "testEnvironment": "node",
