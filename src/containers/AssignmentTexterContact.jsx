@@ -81,7 +81,8 @@ const styles = StyleSheet.create({
   },
   middleScrollingSection: {
     flex: '1 1 auto',
-    overflowY: 'scroll'
+    overflowY: 'scroll',
+    overflow: '-moz-scrollbars-vertical'
   },
   bottomFixedSection: {
     borderTop: `1px solid ${grey100}`,
@@ -567,8 +568,7 @@ class AssignmentTexterContact extends React.Component {
         </div> )
 
         return toolBar
-    } else {
-      console.log('messageStatus:', messageStatus);
+    } else if( size > 768 || messageStatus === 'needsMessage'){
         toolBar = (
           <div>
             <Toolbar style={inlineStyles.actionToolbarFirst}>
@@ -711,8 +711,6 @@ class AssignmentTexterContact extends React.Component {
   renderBottomFixedSection() {
     const { assignment, campaign } = this.props
     const { contact } = this.props.data
-
-    console.log('contact:', { contact });
 
     return (
       <div>
