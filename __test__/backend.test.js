@@ -214,7 +214,7 @@ it('should create campaign contacts', async () => {
 
   const contact = await createContact(campaign.data.createCampaign.id)
 
-  expect (parseInt(contact.campaign_id)).toBe(campaign.data.createCampaign.id)
+  expect (contact.campaign_id).toBe(parseInt(campaign.data.createCampaign.id))
 
 });
 
