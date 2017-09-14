@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
   messageField: {
     padding: '0px 8px',
     '@media(max-width: 450px)': {
-      marginBottom: 50
+      marginBottom: 40
     }
   },
   dialogActions: {
@@ -690,7 +690,29 @@ class AssignmentTexterContact extends React.Component {
     )
   }
 
+  renderCorrectSendButton(){
+    const { campaign, assignment, texter } = this.props
+    const { contact } = this.props.data
+    let button = null
+    if(contact.messageStatus === 'needsResponse') {
+      button =
+        <SendButtonArrow
+          threeClickEnabled={campaign.organization.threeClickEnabled}
+          onFinalTouchTap={this.handleClickSendMessageButton}
+          disabled={this.state.disabled}
+        />
+      return button
+    } else if (contact.messageStatus === 'needsMessage') {
+      return button
+    }
+    return button
+  }
+
   renderBottomFixedSection() {
+    const { assignment, campaign } = this.props
+    const { contact } = this.props.data
+
+    console.log('contact:', { contact });
 
     return (
       <div>
@@ -716,9 +738,7 @@ class AssignmentTexterContact extends React.Component {
                   }
                 }}
               />
-              <SendButtonArrow
-               onFinalTouchTap={this.handleClickSendMessageButton}
-               />
+              {this.renderCorrectSendButton()}
             </GSForm>
           </div>
           {this.renderActionToolbar()}
