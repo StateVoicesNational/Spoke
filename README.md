@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/MoveOnOrg/Spoke.svg?branch=master)](https://travis-ci.org/MoveOnOrg/Spoke)
+
 # Spoke
 
 Spoke is an open source text-distribution tool for organizations to mobilize supporters and members into action. Spoke allows you to upload phone numbers, customize scripts and assign volunteers to communicate with supporters while allowing organizations to manage the process.
