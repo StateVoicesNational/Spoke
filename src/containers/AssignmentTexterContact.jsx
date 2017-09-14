@@ -514,7 +514,7 @@ class AssignmentTexterContact extends React.Component {
         onTouchTap={() => this.handleEditMessageStatus('needsResponse')}
         label='Reopen'
       />)
-    } else if (messageStatus === 'needsResponse') {
+    } else if (messageStatus === 'needsResponse' || messageStatus === 'messaged') {
       button = (<RaisedButton
         onTouchTap={this.handleClickCloseContactButton}
         label='Skip Reply'
@@ -532,7 +532,7 @@ class AssignmentTexterContact extends React.Component {
     const size = $(window).width()
     let toolBar = null
 
-   if (messageStatus === 'needsResponse' &&  size < 450 ){
+   if (messageStatus === 'needsResponse' &&  size < 450 || messageStatus === 'messaged' && size < 450 ){
       toolBar =
         (<div>
           <Toolbar
@@ -694,7 +694,7 @@ class AssignmentTexterContact extends React.Component {
     const { campaign, assignment, texter } = this.props
     const { contact } = this.props.data
     let button = null
-    if(contact.messageStatus === 'needsResponse') {
+    if(contact.messageStatus === 'needsResponse' || contact.messageStatus === 'messaged') {
       button =
         <SendButtonArrow
           threeClickEnabled={campaign.organization.threeClickEnabled}
