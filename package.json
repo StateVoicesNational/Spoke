@@ -152,6 +152,9 @@
   },
   "jest": {
     "testEnvironment": "node",
+    "globals": {
+      "DB_JSON": "{\"client\":\"sqlite3\",\"connection\":{\"filename\":\"./test.sqlite\"},\"defaultsUnsupported\":true}"
+    },
     "moduleFileExtensions": [
       "js",
       "jsx"

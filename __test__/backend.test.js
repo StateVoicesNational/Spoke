@@ -2,11 +2,8 @@ import { schema, resolvers } from '../src/server/api/schema';
 import { graphql } from 'graphql';
 import { User, CampaignContact, r } from '../src/server/models/';
 import { getContext, 
-  thinkyTest, 
-  testR, 
   setupTest, 
-  cleanupTest, 
-  testDB } from './test_helpers';
+  cleanupTest } from './test_helpers';
 import { makeExecutableSchema } from 'graphql-tools';
 
 const mySchema = makeExecutableSchema({
@@ -20,11 +17,6 @@ const rootValue = {};
 beforeEach(async () => await setupTest());
 
 // afterEach(async () => await cleanupTest());
-
-test('test database exists', async () => {
-  const databaseList = await testR.dbList();
-  return testDB in databaseList;
-});
 
 // graphQL tests!!!!
 
@@ -222,7 +214,7 @@ it('should create campaign contacts', async () => {
 
   const contact = await createContact(campaign.data.createCampaign.id)
 
-  expect (contact.campaign_id).toBe(campaign.data.createCampaign.id)
+  expect (parseInt(contact.campaign_id)).toBe(campaign.data.createCampaign.id)
 
 });
 
