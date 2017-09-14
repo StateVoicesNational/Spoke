@@ -12,8 +12,8 @@ import dumbThinky from 'rethink-knex-adapter'
 
 let config
 
-if (process.env.DB_JSON) {
-  config = JSON.parse(process.env.DB_JSON)
+if (process.env.DB_JSON || global.DB_JSON) {
+  config = JSON.parse(process.env.DB_JSON || global.DB_JSON)
 } else if (process.env.DB_TYPE) {
   config = {
     client: 'pg',
