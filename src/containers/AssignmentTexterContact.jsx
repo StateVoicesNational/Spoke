@@ -12,9 +12,6 @@ import IconButton from 'material-ui/IconButton/IconButton'
 import { Toolbar, ToolbarGroup, ToolbarSeparator } from 'material-ui/Toolbar'
 import { Card, CardActions, CardTitle } from 'material-ui/Card'
 import Divider from 'material-ui/Divider'
-
-
-import Dialog from 'material-ui/Dialog'
 import { applyScript } from '../lib/scripts'
 import gql from 'graphql-tag'
 import loadData from './hoc/load-data'
