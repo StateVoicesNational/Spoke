@@ -10,7 +10,8 @@ import NavigateCloseIcon from 'material-ui/svg-icons/navigation/close'
 import { grey100 } from 'material-ui/styles/colors'
 import IconButton from 'material-ui/IconButton/IconButton'
 import { Toolbar, ToolbarGroup, ToolbarSeparator } from 'material-ui/Toolbar'
-import Dialog from 'material-ui/Dialog'
+import { Card, CardActions, CardTitle } from 'material-ui/Card'
+import Divider from 'material-ui/Divider'
 import { applyScript } from '../lib/scripts'
 import gql from 'graphql-tag'
 import loadData from './hoc/load-data'
@@ -558,19 +559,17 @@ class AssignmentTexterContact extends React.Component {
   }
 
   renderOptOutDialog() {
-    const actions = [
 
-    ]
-
+    if (!this.state.optOutDialogOpen) {
+      return ''
+    }
     return (
-      <div>
-        <Dialog
-          title='Opt out user'
-          actions={actions}
-          modal={false}
-          open={this.state.optOutDialogOpen}
-          onRequestClose={this.handleCloseDialog}
-        >
+      <Card>
+        <CardTitle
+          title="Opt out user"
+        />
+        <Divider />
+        <CardActions>
           <GSForm
             schema={this.optOutSchema}
             onChange={({ optOutMessageText }) => this.setState({ optOutMessageText })}
@@ -588,7 +587,7 @@ class AssignmentTexterContact extends React.Component {
                 style={inlineStyles.dialogButton}
                 label='Cancel'
                 onTouchTap={this.handleCloseDialog}
-              />,
+              />
               <Form.Button
                 type='submit'
                 style={inlineStyles.dialogButton}
@@ -597,9 +596,8 @@ class AssignmentTexterContact extends React.Component {
               />
             </div>
           </GSForm>
-        </Dialog>
-
-      </div>
+        </CardActions>
+      </Card>
     )
   }
 
