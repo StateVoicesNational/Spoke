@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
   messageField: {
     padding: '0px 8px',
     '@media(max-width: 450px)': {
-      marginBottom: 40
+      marginBottom: '8%'
     }
   },
   dialogActions: {

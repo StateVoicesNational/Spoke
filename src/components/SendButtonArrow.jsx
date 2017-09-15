@@ -10,8 +10,10 @@ const styles = StyleSheet.create({
     display: 'inline-block',
     marginLeft: 20
   },
-  green: {
-    color: 'rgb(83, 180, 119)'
+  icon: {
+    color: 'rgb(83, 180, 119)',
+    width: 40,
+    height: 40,
   },
   arrowButton: {
     '@media(min-width: 450px)':{
@@ -42,7 +44,7 @@ class SendButtonArrow extends Component {
           disabled={this.props.disabled}
           primary
         >
-          <NavigationArrowForward className={css(styles.green)}/>
+          <NavigationArrowForward className={css(styles.icon)}/>
         </IconButton>
       </div>
     )
