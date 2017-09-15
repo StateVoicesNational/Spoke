@@ -46,7 +46,8 @@ const env_production = {
   EMAIL_FROM: "help@example.com",
   ROLLBAR_CLIENT_TOKEN:'',
   ROLLBAR_ACCESS_TOKEN:'',
-  ROLLBAR_ENDPOINT:'https://api.rollbar.com/api/1/item/'
+  ROLLBAR_ENDPOINT:'https://api.rollbar.com/api/1/item/',
+  ALLOW_SEND_ALL: false
 }
 
 module.exports = {
