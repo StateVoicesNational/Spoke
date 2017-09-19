@@ -64,6 +64,9 @@ const styles = StyleSheet.create({
     zIndex: 1000000
   },
   optOutCard: {
+    '@media(max-width: 320px)': {
+      padding: '2px 10px !important'
+    },
     zIndex: 2000,
     backgroundColor: 'white'
   },
