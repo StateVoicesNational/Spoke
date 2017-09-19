@@ -63,6 +63,10 @@ const styles = StyleSheet.create({
     color: 'white',
     zIndex: 1000000
   },
+  optOutCard: {
+    zIndex: 2000,
+    backgroundColor: 'white'
+  },
   messageForm: {
     backgroundColor: 'red'
   },
@@ -651,11 +655,13 @@ class AssignmentTexterContact extends React.Component {
     return (
       <Card>
         <CardTitle
+          className={css(styles.optOutCard)}
           title="Opt out user"
         />
         <Divider />
-        <CardActions>
+        <CardActions className={css(styles.optOutCard)}>
           <GSForm
+            className={css(styles.optOutCard)}
             schema={this.optOutSchema}
             onChange={({ optOutMessageText }) => this.setState({ optOutMessageText })}
             value={{ optOutMessageText: this.state.optOutMessageText }}
