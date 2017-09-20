@@ -10,7 +10,8 @@ import NavigateCloseIcon from 'material-ui/svg-icons/navigation/close'
 import { grey100 } from 'material-ui/styles/colors'
 import IconButton from 'material-ui/IconButton/IconButton'
 import { Toolbar, ToolbarGroup, ToolbarSeparator } from 'material-ui/Toolbar'
-import Dialog from 'material-ui/Dialog'
+import { Card, CardActions, CardTitle } from 'material-ui/Card'
+import Divider from 'material-ui/Divider'
 import { applyScript } from '../lib/scripts'
 import gql from 'graphql-tag'
 import loadData from './hoc/load-data'
@@ -19,12 +20,23 @@ import GSForm from '../components/forms/GSForm'
 import Form from 'react-formal'
 import GSSubmitButton from '../components/forms/GSSubmitButton'
 import SendButton from '../components/SendButton'
+import SendButtonArrow from '../components/SendButtonArrow'
 import CircularProgress from 'material-ui/CircularProgress'
 import Snackbar from 'material-ui/Snackbar'
 import { getChildren, getTopMostParent, interactionStepForId, log, isBetweenTextingHours } from '../lib'
 import { withRouter } from 'react-router'
 import wrapMutations from './hoc/wrap-mutations'
 const styles = StyleSheet.create({
+  mobile: {
+    '@media(min-width: 425px)':{
+      display: 'none !important'
+    }
+  },
+  desktop: {
+    '@media(max-width: 450px)':{
+      display: 'none !important'
+    }
+  },
   container: {
     margin: 0,
     position: 'absolute',
@@ -58,7 +70,8 @@ const styles = StyleSheet.create({
     maxWidth: '50%'
   },
   navigationToolbarTitle: {
-    fontSize: '12px',
+    fontSize: '14px',
+    fontWeight: 'bold',
     position: 'relative',
     top: 5
 
@@ -68,24 +81,45 @@ const styles = StyleSheet.create({
   },
   middleScrollingSection: {
     flex: '1 1 auto',
-    overflowY: 'scroll'
+    overflowY: 'scroll',
+    overflow: '-moz-scrollbars-vertical'
   },
   bottomFixedSection: {
     borderTop: `1px solid ${grey100}`,
-    flex: '0 0 auto'
+    flex: '0 0 auto',
+    marginBottom: 'none'
   },
   messageField: {
-    padding: 10
+    padding: '0px 8px',
+    '@media(max-width: 450px)': {
+      marginBottom: '8%'
+    }
   },
   dialogActions: {
     marginTop: 20,
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'flex-end'
+  },
+  lgMobileToolBar: {
+    '@media(max-width: 449px) and (min-width: 410px)':{
+      bottom: '0 !important',
+      marginLeft: '0px !important'
+    }
   }
 })
 
 const inlineStyles = {
+  mobileToolBar: {
+    position: 'absolute',
+    bottom: '-5',
+  },
+  mobileCannedReplies: {
+    position: 'absolute',
+    left: 0,
+    bottom: '5'
+  },
+
   dialogButton: {
     display: 'inline-block'
   },
@@ -103,8 +137,19 @@ const inlineStyles = {
     // without this the toolbar icons are not centered vertically
   },
   actionToolbar: {
-    backgroundColor: 'white'
+    backgroundColor: 'white',
+    '@media(min-width: 450px)':{
+      marginBottom: 5
+    },
+    '@media(max-width: 450px)':{
+      marginBottom: 50
+    }
   },
+
+  actionToolbarFirst: {
+    backgroundColor: 'white',
+  },
+
   snackbar: {
     zIndex: 1000001
   }
@@ -393,7 +438,6 @@ class AssignmentTexterContact extends React.Component {
     })
   }
 
-
   handleClickSendMessageButton = () => {
     this.refs.form.submit()
   }
@@ -470,10 +514,10 @@ class AssignmentTexterContact extends React.Component {
         onTouchTap={() => this.handleEditMessageStatus('needsResponse')}
         label='Reopen'
       />)
-    } else if (messageStatus === 'needsResponse') {
+    } else if (messageStatus === 'needsResponse' || messageStatus === 'messaged') {
       button = (<RaisedButton
         onTouchTap={this.handleClickCloseContactButton}
-        label='Close without responding'
+        label='Skip Reply'
       />)
     }
 
@@ -482,43 +526,84 @@ class AssignmentTexterContact extends React.Component {
 
   renderActionToolbar() {
     const { data, campaign, navigationToolbarChildren } = this.props
-
     const { contact } = data
+    const { messageStatus } = contact
 
-    return (
-      <Toolbar
-        style={inlineStyles.actionToolbar}
-      >
-        <ToolbarGroup
-          firstChild
-        >
-          <SendButton
-            threeClickEnabled={campaign.organization.threeClickEnabled}
-            onFinalTouchTap={this.handleClickSendMessageButton}
-            disabled={this.state.disabled}
-          />
-          {this.renderNeedsResponseToggleButton(contact)}
-          <RaisedButton
-            label='Canned responses'
-            onTouchTap={this.handleOpenPopover}
-          />
-          <RaisedButton
+    const size = document.documentElement.clientWidth
+    let toolBar = null
+
+   if (messageStatus === 'needsResponse' &&  size < 450 || messageStatus === 'messaged' && size < 450 ){
+      toolBar =
+        (<div>
+          <Toolbar
+          className={css(styles.mobile)}
+          style={inlineStyles.actionToolbar}
+          >
+            <ToolbarGroup
+            style={inlineStyles.mobileToolBar}
+            className={css(styles.lgMobileToolBar)}
+            firstChild
+            >
+            <RaisedButton
             secondary
             label='Opt out'
             onTouchTap={this.handleOpenDialog}
             tooltip='Opt out this contact'
-            tooltipPosition='top-center'
-          >
+            >
+            </RaisedButton>
+            <RaisedButton
+            style={inlineStyles.mobileCannedReplies}
+            label='Canned replies'
+            onTouchTap={this.handleOpenPopover}
+            />
+            {this.renderNeedsResponseToggleButton(contact)}
+            <div
+            style={{ float: 'right', marginLeft:'-30px' }}
+            >
+              {navigationToolbarChildren}
+            </div>
+          </ToolbarGroup>
+          </Toolbar>
+        </div> )
 
-          </RaisedButton>
-          <div
-            style={{ float: 'right', marginLeft: 20 }}
-          >
-            {navigationToolbarChildren}
-          </div>
-        </ToolbarGroup>
-      </Toolbar>
-    )
+        return toolBar
+    } else if( size > 768 || messageStatus === 'needsMessage'){
+        toolBar = (
+          <div>
+            <Toolbar style={inlineStyles.actionToolbarFirst}>
+              <ToolbarGroup
+                firstChild
+              >
+                <SendButton
+                  threeClickEnabled={campaign.organization.threeClickEnabled}
+                  onFinalTouchTap={this.handleClickSendMessageButton}
+                  disabled={this.state.disabled}
+                />
+                {this.renderNeedsResponseToggleButton(contact)}
+                <RaisedButton
+                  label='Canned responses'
+                  onTouchTap={this.handleOpenPopover}
+                />
+                <RaisedButton
+                  secondary
+                  label='Opt out'
+                  onTouchTap={this.handleOpenDialog}
+                  tooltip='Opt out this contact'
+                  tooltipPosition='top-center'
+                >
+                </RaisedButton>
+                <div
+                  style={{ float: 'right', marginLeft: 20 }}
+                >
+                  {navigationToolbarChildren}
+                </div>
+              </ToolbarGroup>
+            </Toolbar>
+          </div>)
+
+      return toolBar
+    }
+    return toolBar
   }
 
   renderTopFixedSection() {
@@ -559,19 +644,17 @@ class AssignmentTexterContact extends React.Component {
   }
 
   renderOptOutDialog() {
-    const actions = [
 
-    ]
-
+    if (!this.state.optOutDialogOpen) {
+      return ''
+    }
     return (
-      <div>
-        <Dialog
-          title='Opt out user'
-          actions={actions}
-          modal={false}
-          open={this.state.optOutDialogOpen}
-          onRequestClose={this.handleCloseDialog}
-        >
+      <Card>
+        <CardTitle
+          title="Opt out user"
+        />
+        <Divider />
+        <CardActions>
           <GSForm
             schema={this.optOutSchema}
             onChange={({ optOutMessageText }) => this.setState({ optOutMessageText })}
@@ -589,7 +672,7 @@ class AssignmentTexterContact extends React.Component {
                 style={inlineStyles.dialogButton}
                 label='Cancel'
                 onTouchTap={this.handleCloseDialog}
-              />,
+              />
               <Form.Button
                 type='submit'
                 style={inlineStyles.dialogButton}
@@ -598,13 +681,33 @@ class AssignmentTexterContact extends React.Component {
               />
             </div>
           </GSForm>
-        </Dialog>
-
-      </div>
+        </CardActions>
+      </Card>
     )
   }
 
+  renderCorrectSendButton(){
+    const { campaign, assignment, texter } = this.props
+    const { contact } = this.props.data
+    let button = null
+    if(contact.messageStatus === 'needsResponse' || contact.messageStatus === 'messaged') {
+      button =
+        <SendButtonArrow
+          threeClickEnabled={campaign.organization.threeClickEnabled}
+          onFinalTouchTap={this.handleClickSendMessageButton}
+          disabled={this.state.disabled}
+        />
+      return button
+    } else if (contact.messageStatus === 'needsMessage') {
+      return button
+    }
+    return button
+  }
+
   renderBottomFixedSection() {
+    const { assignment, campaign } = this.props
+    const { contact } = this.props.data
+
     return (
       <div>
         {this.renderSurveySection()}
@@ -625,10 +728,11 @@ class AssignmentTexterContact extends React.Component {
                 onKeyUp={(event) => {
                   if (event.keyCode === 13) {
                     // pressing the Enter key submits
-                    this.handleMessageFormSubmit()
+                    this.handleClickSendMessageButton()
                   }
                 }}
               />
+              {this.renderCorrectSendButton()}
             </GSForm>
           </div>
           {this.renderActionToolbar()}

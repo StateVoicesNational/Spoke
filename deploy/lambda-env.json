@@ -20,7 +20,6 @@
   "DB_PASSWORD": "XXXXXXXXXXXXXXXXX",
   "DB_TYPE": "pg",
   "DB_KEY": "",
-  "DEFAULT_SERVICE": "twilio",
   "AUTH0_LOGIN_CALLBACK": "https://spoke.example.com/login-callback",
   "AUTH0_LOGOUT_CALLBACK": "https://spoke.example.com/logout-callback",
   "AUTH0_DOMAIN": "spokeexamplecomXXXXX.auth0.com",

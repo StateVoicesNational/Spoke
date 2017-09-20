@@ -38,7 +38,7 @@ const getValidatedData = (data, optOuts) => {
   const missingCellRows = result[1]
 
   validatedData = _.map(validatedData, (row) => _.extend(row, {
-    cell: getFormattedPhoneNumber(row.cell) }))
+    cell: getFormattedPhoneNumber(row.cell, process.env.PHONE_NUMBER_COUNTRY || 'US') }))
   result = _.partition(validatedData, (row) => !!row.cell)
   validatedData = result[0]
   const invalidCellRows = result[1]

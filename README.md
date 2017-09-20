@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/MoveOnOrg/Spoke.svg?branch=master)](https://travis-ci.org/MoveOnOrg/Spoke)
+
 # Spoke
 
 Spoke is an open source text-distribution tool for organizations to mobilize supporters and members into action. Spoke allows you to upload phone numbers, customize scripts and assign volunteers to communicate with supporters while allowing organizations to manage the process.
@@ -8,6 +10,11 @@ Spoke was created by Saikat Chakrabarti and Sheena Pakanati, and is now maintain
 
 This is generated from [react-apollo-starter-kit](https://github.com/saikat/react-apollo-starter-kit).  Look at that project's README for info on some of the libraries used.
 
+## Deploy to Heroku
+[![Deploy](https://herokucdn.com/deploy/button.png)](https://heroku.com/deploy?template=https://github.com/MoveOnOrg/Spoke)
+
+Follow up instructions located [here](https://github.com/MoveOnOrg/Spoke/blob/master/docs/HEROKU_DEPLOY.md)
+
 ## Getting started
 
 1. Install either sqlite (or another [knex](http://knexjs.org/#Installation-client)-supported database)
@@ -17,7 +24,7 @@ This is generated from [react-apollo-starter-kit](https://github.com/saikat/reac
 5. `cp .env.example .env`
 6. Run `npm run dev` to create and populate the tables.
 7. Create an [Auth0](https://auth0.com) account. In your Auth0 account, go to Settings -> Clients -> and then grab your Client ID, Client Secret, and your Auth0 domain (should look like xxx.auth0.com). Add those inside your `.env` file (AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_DOMAIN respectively).
-8. Add the login callback and logout callback URL in `.env` (default `http://localhost:3000/login-callback` and `http://localhost:3000/logout-callback`) to your Auth0 app settings under "Allowed Callback URLs" and "Allowed Logout URLs" respectively.
+8. Add the login callback and logout callback URL in `.env` (default `http://localhost:3000/login-callback` and `http://localhost:3000/logout-callback`) to your Auth0 app settings under "Allowed Callback URLs" and "Allowed Logout URLs" respectively. (If you get an error when logging in later about "OIDC", go to Advanced Settings section, and then OAuth, and turn off 'OIDC Conformant')
 9. Run `npm run dev` to start the app. Wait until you see both "Node app is running ..." and "Webpack dev server is now running ..." before attempting to connect. (make sure environment variable JOBS_SAME_PROCESS=1)
 10. Go to `localhost:3000` to load the app.
 11. Because Spoke is invite-only you need to generate an invite. Run:

@@ -23,6 +23,7 @@ class TexterTodo extends React.Component {
       assignment={assignment}
       contacts={contacts}
       onRefreshAssignmentContacts={this.refreshAssignmentContacts}
+      organizationId={this.props.params.organizationId}
     />)
   }
 
