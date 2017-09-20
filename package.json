@@ -16,7 +16,7 @@
     "prod-build": "npm run clean && npm run prod-build-client && npm run prod-build-server",
     "prod-static-upload": "if [ \"$S3_STATIC_PATH\" != \"\" ] ; then s3cmd sync --acl-public --guess-mime-type ./build/client/assets/ $S3_STATIC_PATH ; fi",
     "postinstall": "if [ \"$NODE_ENV\" = production ] ; then npm run prod-build && npm run prod-static-upload; fi",
-    "start": "node $BUILDSERVER",
+    "start": "node ./build/server/server",
     "dev-message-sender-01": "nodemon -e js,jsx -w ./src --exec ./dev-tools/babel-run -- ./src/workers/message-sender-01",
     "prod-message-sender-01": "./dev-tools/babel-run ./src/workers/message-sender-01.js",
     "dev-message-sender-234": "nodemon -e js,jsx -w ./src --exec ./dev-tools/babel-run -- ./src/workers/message-sender-234",
