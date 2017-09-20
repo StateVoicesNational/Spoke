@@ -1,0 +1,12 @@
+{
+  "name": "spoke",
+  "description": "Spoke",
+  "repository":"https://github.com/moveonorg/spoke",
+  "success_url":"/setup.html",
+  "env": {
+    "PGSSLMODE": {
+      "description": "Require SSL for Postgres",
+      "value": "require"
+    }
+  }
+}
