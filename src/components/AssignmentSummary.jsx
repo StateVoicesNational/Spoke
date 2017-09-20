@@ -57,12 +57,14 @@ class AssignmentSummary extends Component {
     const assignmentData = this.props.data.assignment
     const contacts = assignmentData.contacts
     const texter = assignmentData.texter
+    const customFields = assignmentData.campaign.customFields
     const contactMessages = contacts.map(contact => {
       const script = contact.currentInteractionStepScript
       const text = applyScript({
         contact,
         texter,
-        script
+        script,
+        customFields
       })
       return {
         campaignContactId: contact.id,
@@ -223,6 +225,14 @@ const mapQueriesToProps = ({ ownProps }) => ({
         campaign {
           id
           isArchived
+          customFields
+          organization {
+            id
+            textingHoursEnforced
+            textingHoursStart
+            textingHoursEnd
+            threeClickEnabled
+          }
         }
         contacts(contactsFilter: $contactsFilter) {
           id
