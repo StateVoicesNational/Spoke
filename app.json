@@ -94,7 +94,7 @@
     "DB_HOST": {
       "description": "to connect to postgres database",
       "required": true,
-      "value": "127.0.0.1"
+      "value": "https://<changeme>.herokuapp.com"
     },
 
     "DB_PORT": {
