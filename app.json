@@ -54,13 +54,7 @@
       "required": false,
       "value": ""
     },
-
-    "DEV_APP_PORT": {
-      "description": "node port",
-      "required": true,
-      "value": "8090"
-    },
-
+    
     "OUTPUT_DIR": {
       "description": "for production build placement",
       "required": true,
