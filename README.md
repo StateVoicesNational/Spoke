@@ -11,7 +11,11 @@ Spoke was created by Saikat Chakrabarti and Sheena Pakanati, and is now maintain
 This is generated from [react-apollo-starter-kit](https://github.com/saikat/react-apollo-starter-kit).  Look at that project's README for info on some of the libraries used.
 
 ## Deploy to Heroku
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/shakalee/Spoke)
+
+<a href="https://heroku.com/deploy?template=https://github.com/shakalee14/Spoke">
+  <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy">
+</a>
+
 
 Follow up instructions located [here](https://github.com/MoveOnOrg/Spoke/blob/master/docs/HEROKU_DEPLOY.md)
 

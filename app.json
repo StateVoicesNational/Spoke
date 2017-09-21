@@ -1,8 +1,8 @@
 {
   "name": "spoke",
-  "description": "Spoke",
+  "description": "Mass peer to peer texting tool",
   "repository":"https://github.com/moveonorg/spoke",
-  "success_url":"/setup.html",
+  "success_url":"/",
   "buildpacks": [
       { "url": "https://github.com/heroku/heroku-buildpack-nodejs"}
   ],
@@ -94,7 +94,7 @@
     "DB_HOST": {
       "description": "to connect to postgres database",
       "required": true,
-      "value": "https://<changeme>.herokuapp.com"
+      "value": "<changeme - from heroku>"
     },
 
     "DB_PORT": {
@@ -106,7 +106,7 @@
     "DB_NAME": {
       "description": "database name created in heroku addon",
       "required": true,
-      "value": "spokeproduction"
+      "value": "<changeme - from heroku>"
     },
 
     "DB_TYPE": {
@@ -118,19 +118,19 @@
     "DB_MIN_POOL": {
       "description": "for postgres pool on heroku",
       "required": true,
-      "value": 0
+      "value": "0"
     },
 
     "DB_MAX_POOL": {
       "description": "for postgres pool on heroku",
       "required": true,
-      "value": 15
+      "value": "15"
     },
 
     "DB_USER": {
       "description": "database user name --> can be anything",
       "required": true,
-      "value": "spokeadmin"
+      "value": "<changme>"
     },
 
     "AUTH0_LOGIN_CALLBACK": {
@@ -167,12 +167,6 @@
       "description": "based on your herokuapp name or domain name",
       "required": true,
       "value": "https://<changeme>.herokuapp.com"
-    },
-
-    "GRAPHQL_URL": {
-      "description": "based on your herokuapp name or domain name",
-      "required": false,
-      "value": "https://<changeme>.herokuapp.com/graphql"
     },
 
     "SESSION_SECRET": {
@@ -243,31 +237,31 @@
 
     "EMAIL_HOST": {
       "description": "for email notification integration",
-      "required": true,
+      "required": false,
       "value": "<changeme>"
     },
 
     "EMAIL_HOST_PASSWORD": {
       "description": "for email notification integration",
-      "required": true,
+      "required": false,
       "value": "<changeme>"
     },
 
     "EMAIL_HOST_USER": {
       "description": "for email notification integration",
-      "required": true,
+      "required": false,
       "value": "<changeme>"
     },
 
     "EMAIL_HOST_PORT": {
       "description": "for email notification integration",
-      "required": true,
+      "required": false,
       "value": "<changeme>"
     },
 
     "EMAIL_FROM": {
       "description": "for email notification integration",
-      "required": true,
+      "required": false,
       "value": "<changeme>"
     }
 
