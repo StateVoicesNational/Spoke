@@ -40,7 +40,7 @@ if (!process.env.SUPPRESS_MIGRATIONS) {
 setupUserNotificationObservers()
 const app = express()
 // Heroku requires you to use process.env.PORT
-const port = 8090
+const port = process.env.DEV_APP_PORT || process.env.PORT
 
 // Don't rate limit heroku
 app.enable('trust proxy')
