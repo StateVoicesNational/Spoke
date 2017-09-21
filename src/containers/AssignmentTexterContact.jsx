@@ -533,7 +533,6 @@ class AssignmentTexterContact extends React.Component {
 
   renderActionToolbar() {
     const { data, campaign, navigationToolbarChildren } = this.props
-    const { optOutDialogOpen } = this.state
     const { contact } = data
     const { messageStatus } = contact
 
@@ -572,10 +571,7 @@ class AssignmentTexterContact extends React.Component {
           </Toolbar>
         </div>
       )
-    } else if (
-      (size > 768 || messageStatus === 'needsMessage') &&
-      !optOutDialogOpen
-    ) {
+    } else if (size > 768 || messageStatus === 'needsMessage') {
       return (
         <div>
           <Toolbar style={inlineStyles.actionToolbarFirst}>
@@ -742,7 +738,7 @@ class AssignmentTexterContact extends React.Component {
         {this.renderSurveySection()}
         <div>
           {message}
-          {this.renderActionToolbar()}
+          {optOutDialogOpen ? '' : this.renderActionToolbar()}
         </div>
         {this.renderOptOutDialog()}
         {this.renderCannedResponsePopover()}
