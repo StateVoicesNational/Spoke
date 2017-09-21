@@ -92,7 +92,7 @@
     },
 
     "DB_HOST": {
-      "description": "to connect to postgres database",
+      "description": "to connect to postgres database - located in heroku postgres credentials",
       "required": true,
       "value": "<changeme - from heroku>"
     },
@@ -104,7 +104,7 @@
     },
 
     "DB_NAME": {
-      "description": "database name created in heroku addon",
+      "description": "database name created in heroku addon - - located in heroku postgres credentials",
       "required": true,
       "value": "<changeme - from heroku>"
     },
@@ -128,9 +128,15 @@
     },
 
     "DB_USER": {
-      "description": "database user name --> can be anything",
+      "description": "database user name --> located in heroku postgres credentials",
       "required": true,
       "value": "<changme>"
+    },
+
+    "DB_PASSWORD": {
+      "description": "database user name --> located in heroku postgres credentials",
+      "required": true,
+      "value": "<changeme>"
     },
 
     "AUTH0_LOGIN_CALLBACK": {
