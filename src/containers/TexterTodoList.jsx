@@ -29,7 +29,7 @@ class TexterTodoList extends React.Component {
   componentDidMount() {
     this.props.data.refetch()
     // re-asserts polling after manual refresh
-    this.props.data.startPolling(5000)
+    // this.props.data.startPolling(5000)
   }
 
   render() {
