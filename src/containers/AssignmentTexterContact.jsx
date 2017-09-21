@@ -9,7 +9,7 @@ import FlatButton from 'material-ui/FlatButton'
 import NavigateCloseIcon from 'material-ui/svg-icons/navigation/close'
 import { grey100 } from 'material-ui/styles/colors'
 import IconButton from 'material-ui/IconButton/IconButton'
-import { Toolbar, ToolbarGroup, ToolbarSeparator } from 'material-ui/Toolbar'
+import { Toolbar, ToolbarGroup } from 'material-ui/Toolbar'
 import { Card, CardActions, CardTitle } from 'material-ui/Card'
 import Divider from 'material-ui/Divider'
 import { applyScript } from '../lib/scripts'
@@ -28,12 +28,12 @@ import { withRouter } from 'react-router'
 import wrapMutations from './hoc/wrap-mutations'
 const styles = StyleSheet.create({
   mobile: {
-    '@media(min-width: 425px)':{
+    '@media(min-width: 425px)': {
       display: 'none !important'
     }
   },
   desktop: {
-    '@media(max-width: 450px)':{
+    '@media(max-width: 450px)': {
       display: 'none !important'
     }
   },
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end'
   },
   lgMobileToolBar: {
-    '@media(max-width: 449px) and (min-width: 410px)':{
+    '@media(max-width: 449px) and (min-width: 410px)': {
       bottom: '0 !important',
       marginLeft: '0px !important'
     }
@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
 const inlineStyles = {
   mobileToolBar: {
     position: 'absolute',
-    bottom: '-5',
+    bottom: '-5'
   },
   mobileCannedReplies: {
     position: 'absolute',
@@ -145,16 +145,16 @@ const inlineStyles = {
   },
   actionToolbar: {
     backgroundColor: 'white',
-    '@media(min-width: 450px)':{
+    '@media(min-width: 450px)': {
       marginBottom: 5
     },
-    '@media(max-width: 450px)':{
+    '@media(max-width: 450px)': {
       marginBottom: 50
     }
   },
 
   actionToolbarFirst: {
-    backgroundColor: 'white',
+    backgroundColor: 'white'
   },
 
   snackbar: {
@@ -537,80 +537,75 @@ class AssignmentTexterContact extends React.Component {
     const { messageStatus } = contact
 
     const size = document.documentElement.clientWidth
-    let toolBar = null
 
-   if (messageStatus === 'needsResponse' &&  size < 450 || messageStatus === 'messaged' && size < 450 ){
-      toolBar =
-        (<div>
+    if (messageStatus === 'needsResponse' && size < 450 || messageStatus === 'messaged' && size < 450) {
+      return (
+        <div>
           <Toolbar
-          className={css(styles.mobile)}
-          style={inlineStyles.actionToolbar}
+            className={css(styles.mobile)}
+            style={inlineStyles.actionToolbar}
           >
             <ToolbarGroup
-            style={inlineStyles.mobileToolBar}
-            className={css(styles.lgMobileToolBar)}
-            firstChild
+              style={inlineStyles.mobileToolBar}
+              className={css(styles.lgMobileToolBar)}
+              firstChild
             >
-            <RaisedButton
-            secondary
-            label='Opt out'
-            onTouchTap={this.handleOpenDialog}
-            tooltip='Opt out this contact'
-            >
-            </RaisedButton>
-            <RaisedButton
-            style={inlineStyles.mobileCannedReplies}
-            label='Canned replies'
-            onTouchTap={this.handleOpenPopover}
-            />
-            {this.renderNeedsResponseToggleButton(contact)}
-            <div
-            style={{ float: 'right', marginLeft:'-30px' }}
-            >
-              {navigationToolbarChildren}
-            </div>
-          </ToolbarGroup>
-          </Toolbar>
-        </div> )
-
-        return toolBar
-    } else if( size > 768 || messageStatus === 'needsMessage'){
-        toolBar = (
-          <div>
-            <Toolbar style={inlineStyles.actionToolbarFirst}>
-              <ToolbarGroup
-                firstChild
+              <RaisedButton
+                secondary
+                label='Opt out'
+                onTouchTap={this.handleOpenDialog}
+                tooltip='Opt out this contact'
+              />
+              <RaisedButton
+                style={inlineStyles.mobileCannedReplies}
+                label='Canned replies'
+                onTouchTap={this.handleOpenPopover}
+              />
+              {this.renderNeedsResponseToggleButton(contact)}
+              <div
+                style={{ float: 'right', marginLeft: '-30px' }}
               >
-                <SendButton
-                  threeClickEnabled={campaign.organization.threeClickEnabled}
-                  onFinalTouchTap={this.handleClickSendMessageButton}
-                  disabled={this.state.disabled}
-                />
-                {this.renderNeedsResponseToggleButton(contact)}
-                <RaisedButton
-                  label='Canned responses'
-                  onTouchTap={this.handleOpenPopover}
-                />
-                <RaisedButton
-                  secondary
-                  label='Opt out'
-                  onTouchTap={this.handleOpenDialog}
-                  tooltip='Opt out this contact'
-                  tooltipPosition='top-center'
-                >
-                </RaisedButton>
-                <div
-                  style={{ float: 'right', marginLeft: 20 }}
-                >
-                  {navigationToolbarChildren}
-                </div>
-              </ToolbarGroup>
-            </Toolbar>
-          </div>)
-
-      return toolBar
+                {navigationToolbarChildren}
+              </div>
+            </ToolbarGroup>
+          </Toolbar>
+        </div>
+      )
+    } else if (size > 768 || messageStatus === 'needsMessage') {
+      return (
+        <div>
+          <Toolbar style={inlineStyles.actionToolbarFirst}>
+            <ToolbarGroup
+              firstChild
+            >
+              <SendButton
+                threeClickEnabled={campaign.organization.threeClickEnabled}
+                onFinalTouchTap={this.handleClickSendMessageButton}
+                disabled={this.state.disabled}
+              />
+              {this.renderNeedsResponseToggleButton(contact)}
+              <RaisedButton
+                label='Canned responses'
+                onTouchTap={this.handleOpenPopover}
+              />
+              <RaisedButton
+                secondary
+                label='Opt out'
+                onTouchTap={this.handleOpenDialog}
+                tooltip='Opt out this contact'
+                tooltipPosition='top-center'
+              />
+              <div
+                style={{ float: 'right', marginLeft: 20 }}
+              >
+                {navigationToolbarChildren}
+              </div>
+            </ToolbarGroup>
+          </Toolbar>
+        </div>
+      )
     }
-    return toolBar
+    return ''
   }
 
   renderTopFixedSection() {
@@ -651,7 +646,6 @@ class AssignmentTexterContact extends React.Component {
   }
 
   renderOptOutDialog() {
-
     if (!this.state.optOutDialogOpen) {
       return ''
     }
@@ -659,7 +653,7 @@ class AssignmentTexterContact extends React.Component {
       <Card>
         <CardTitle
           className={css(styles.optOutCard)}
-          title="Opt out user"
+          title='Opt out user'
         />
         <Divider />
         <CardActions className={css(styles.optOutCard)}>
@@ -695,56 +689,56 @@ class AssignmentTexterContact extends React.Component {
     )
   }
 
-  renderCorrectSendButton(){
-    const { campaign, assignment, texter } = this.props
+  renderCorrectSendButton() {
+    const { campaign } = this.props
     const { contact } = this.props.data
-    let button = null
-    if(contact.messageStatus === 'needsResponse' || contact.messageStatus === 'messaged') {
-      button =
+    if (contact.messageStatus === 'needsResponse' || contact.messageStatus === 'messaged') {
+      return (
         <SendButtonArrow
           threeClickEnabled={campaign.organization.threeClickEnabled}
           onFinalTouchTap={this.handleClickSendMessageButton}
           disabled={this.state.disabled}
         />
-      return button
-    } else if (contact.messageStatus === 'needsMessage') {
-      return button
+      )
     }
-    return button
+    return null
   }
 
   renderBottomFixedSection() {
-    const { assignment, campaign } = this.props
-    const { contact } = this.props.data
+    const { optOutDialogOpen } = this.state
+
+    const message = (optOutDialogOpen) ? '' : (
+      <div className={css(styles.messageField)}>
+        <GSForm
+          ref='form'
+          schema={this.messageSchema}
+          value={{ messageText: this.state.messageText }}
+          onSubmit={this.handleMessageFormSubmit}
+          onChange={this.handleMessageFormChange}
+        >
+          <Form.Field
+            name='messageText'
+            label='Your message'
+            multiLine
+            fullWidth
+            onKeyUp={(event) => {
+              if (event.keyCode === 13) {
+                // pressing the Enter key submits
+                this.handleClickSendMessageButton()
+              }
+            }}
+          />
+          {this.renderCorrectSendButton()}
+        </GSForm>
+      </div>
+    )
 
     return (
       <div>
         {this.renderSurveySection()}
         <div>
-          <div className={css(styles.messageField)}>
-            <GSForm
-              ref='form'
-              schema={this.messageSchema}
-              value={{ messageText: this.state.messageText }}
-              onSubmit={this.handleMessageFormSubmit}
-              onChange={this.handleMessageFormChange}
-            >
-              <Form.Field
-                name='messageText'
-                label='Your message'
-                multiLine
-                fullWidth
-                onKeyUp={(event) => {
-                  if (event.keyCode === 13) {
-                    // pressing the Enter key submits
-                    this.handleClickSendMessageButton()
-                  }
-                }}
-              />
-              {this.renderCorrectSendButton()}
-            </GSForm>
-          </div>
-          {this.renderActionToolbar()}
+          {message}
+          {optOutDialogOpen ? '' : this.renderActionToolbar()}
         </div>
         {this.renderOptOutDialog()}
         {this.renderCannedResponsePopover()}
