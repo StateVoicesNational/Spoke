@@ -4,7 +4,7 @@ import config from './config'
 import { log } from '../src/lib'
 
 const webpackPort = process.env.WEBPACK_PORT || 3000
-const appPort = process.env.DEV_APP_PORT || 8090
+const appPort = process.env.DEV_APP_PORT
 const webpackHost = process.env.WEBPACK_HOST || '127.0.0.1'
 
 Object.keys(config.entry)
@@ -46,6 +46,6 @@ const app = new WebpackDevServer(compiler, {
   }
 })
 
-app.listen(webpackPort, () => {
+app.listen(webpackPort || 8090, () => {
   log.info(`Webpack dev server is now running on http://${webpackHost}:${webpackPort}`)
 })
