@@ -119,8 +119,6 @@ class AdminCampaignEdit extends React.Component {
 
   onExpandChange = (index, newExpandedState) => {
     const { expandedSection } = this.state
-    //do this before, so we capture current expandedSection
-    this.handleSave()
 
     if (newExpandedState) {
       this.setState({ expandedSection: index })
@@ -362,7 +360,7 @@ class AdminCampaignEdit extends React.Component {
       <ContentComponent
         onChange={this.handleChange}
         formValues={formValues}
-        saveLabel={this.isNew() ? 'Next' : 'Save'}
+        saveLabel={this.isNew() ? 'Save and goto next section' : 'Save'}
         saveDisabled={shouldDisable}
         ensureComplete={this.props.campaignData.campaign.isStarted}
         onSubmit={this.handleSubmit}
