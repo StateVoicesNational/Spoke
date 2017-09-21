@@ -12,7 +12,11 @@ This is generated from [react-apollo-starter-kit](https://github.com/saikat/reac
 
 ## Deploy to Heroku
 
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/shakalee14/Spoke)
+<a href="https://heroku.com/deploy?template=https://github.com/shakalee14/Spoke">
+  <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy">
+</a>
+
+
 
 Follow up instructions located [here](https://github.com/MoveOnOrg/Spoke/blob/master/docs/HEROKU_DEPLOY.md)
 
