@@ -19,6 +19,8 @@ This is generated from [react-apollo-starter-kit](https://github.com/saikat/reac
 
 Follow up instructions located [here](https://github.com/shakalee14/Spoke/blob/master/docs/HOWTO_HEROKU_DEPLOY.md)
 
+
+
 ## Getting started
 
 1. Install either sqlite (or another [knex](http://knexjs.org/#Installation-client)-supported database)
