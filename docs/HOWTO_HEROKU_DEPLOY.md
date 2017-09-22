@@ -35,6 +35,10 @@
 - Scroll to `Allowed Logout URLs` section and update it with (your heroku_app_url):
   - `https://<YOUR_HEROKU_APP_URL>/login-callback, http://<YOUR_HEROKU_APP_URL>/login-callback`
 
+  - `http://<YOUR_HEROKU_APP_URL>/login-callback` = AUTH0_LOGIN_CALLBACK
+  - `http://<YOUR_HEROKU_APP_URL>/logout-callback` = AUTH0_LOGOUT_CALLBACK
+- Scroll to `Allowed Origin (CORS)` add:
+  - ` http://*.herokuapp.com`, ` https://*.herokuapp.com`
 - Scroll to bottom and click on `Advanced Settings`
 - Click on `OAuth` - make sure `OIDC Conformant` is turned off.
 
