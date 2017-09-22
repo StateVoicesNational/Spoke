@@ -39,6 +39,22 @@
 - Click on `OAuth` - make sure `OIDC Conformant` is turned off.
 
 ## Notes about twilio environment variable setup
+- Create twilio account
+- Click on `Programmable SMS` on the side panel
+- Click on `Messaging Services`, and click the plus
+- Create a friendly name
+- Under `Properties`
+  - SERVICE SID = TWILIO_MESSAGE_SERVICE_SID
+- Under `Inbound Settings`
+  - Make sure `PROCESS INBOUND MESSAGES` is selected
+  - `REQUEST URL` is `https://<YOUR_HEROKU_APP_URL>/twilio`
+- Under Outbound Settings
+  - `STATUS CALLBACK URL` is `https://<YOUR_HEROKU_APP_URL>/twilio-message-report`
+  - TWILIO_STATUS_CALLBACK_URL = `https://<YOUR_HEROKU_APP_URL>/twilio-message-report`
+- Visit the [dashboard](https://www.twilio.com/console)
+- Under `Account Summary`
+  - TWILIO_API_KEY = ACCOUNT SID
+  - TWILIO_APPLICATION_SID = TWILIO_MESSAGE_SERVICE_SID
+  - TWILIO_AUTH_TOKEN = AUTH TOKEN
 
-
--
+Visit [here](https://www.twilio.com/docs/api/messaging/services-and-copilot) to configure messaging service features
