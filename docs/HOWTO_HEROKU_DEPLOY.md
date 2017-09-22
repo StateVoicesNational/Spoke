@@ -3,7 +3,7 @@
 - Fill out environment variables in form --> instructions about that below
 
 
-## Heroku Database Installation-client
+## Heroku Database Installation-client (incase your db variables don't load initially)
 - Database variables come from heroku database created for project located in database credentials. This app will create a heroku postgres database after you click deploy in the github repo. To get credentials:
   - Visit https://dashboard.heroku.com/apps/<YOUR_APP_NAME>
   - Find `Installed add-ons` section and click on `Heroku Postgres`
@@ -35,6 +35,10 @@
 - Scroll to `Allowed Logout URLs` section and update it with (your heroku_app_url):
   - `https://<YOUR_HEROKU_APP_URL>/login-callback, http://<YOUR_HEROKU_APP_URL>/login-callback`
 
+  - `http://<YOUR_HEROKU_APP_URL>/login-callback` = AUTH0_LOGIN_CALLBACK
+  - `http://<YOUR_HEROKU_APP_URL>/logout-callback` = AUTH0_LOGOUT_CALLBACK
+- Scroll to `Allowed Origin (CORS)` add:
+  - ` http://*.herokuapp.com`, ` https://*.herokuapp.com`
 - Scroll to bottom and click on `Advanced Settings`
 - Click on `OAuth` - make sure `OIDC Conformant` is turned off.
 

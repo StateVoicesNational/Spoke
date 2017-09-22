@@ -28,7 +28,7 @@
     "JOBS_SAME_PROCESS": {
       "description": "",
       "required": true,
-      "value": 1
+      "value": ""
     },
 
     "AWS_ACCESS_KEY_ID": {
@@ -49,12 +49,6 @@
       "value": ""
     },
 
-    "APOLLO_OPTICS_KEY": {
-      "description": "for apollo optics integrat",
-      "required": false,
-      "value": ""
-    },
-    
     "OUTPUT_DIR": {
       "description": "for production build placement",
       "required": true,
@@ -88,7 +82,7 @@
     "DB_HOST": {
       "description": "to connect to postgres database - located in heroku postgres credentials",
       "required": true,
-      "value": "<changeme - from heroku>"
+      "value": "process.env.DB_HOST"
     },
 
     "DB_PORT": {
@@ -100,7 +94,7 @@
     "DB_NAME": {
       "description": "database name created in heroku addon - - located in heroku postgres credentials",
       "required": true,
-      "value": "<changeme - from heroku>"
+      "value": "process.env.DB_NAME"
     },
 
     "DB_TYPE": {
@@ -124,25 +118,25 @@
     "DB_USER": {
       "description": "database user name --> located in heroku postgres credentials",
       "required": true,
-      "value": "<changme>"
+      "value": "process.env.DB_USER"
     },
 
     "DB_PASSWORD": {
       "description": "database user name --> located in heroku postgres credentials",
       "required": true,
-      "value": "<changeme>"
+      "value": "process.env.DB_PASSWORD"
     },
 
     "AUTH0_LOGIN_CALLBACK": {
       "description": "auth0 login callback url --> this should be filled with your app name and match your auth0 configuration",
       "required": true,
-      "value": "https://<changeme>.herokuapp.com/login-callback"
+      "value": "http://<changeme>.herokuapp.com/login-callback"
     },
 
     "AUTH0_LOGOUT_CALLBACK": {
       "description": "auth0 logout callback url",
       "required": true,
-      "value": "https://<changeme>.herokuapp.com/logout-callback"
+      "value": "http://<changeme>.herokuapp.com/logout-callback"
     },
 
     "AUTH0_DOMAIN": {
@@ -215,24 +209,6 @@
       "description": "for international integration (when not us)",
       "required": true,
       "value": "US"
-    },
-
-    "ROLLBAR_CLIENT_TOKEN": {
-      "description": "rollbar api integration",
-      "required": false,
-      "value": ""
-    },
-
-    "ROLLBAR_ACCESS_TOKEN": {
-      "description": "rollbar api integration",
-      "required": false,
-      "value": ""
-    },
-
-    "ROLLBAR_ENDPOINT": {
-      "description": "rollbar api integration",
-      "required": false,
-      "value": "https://api.rollbar.com/api/1/item/"
     },
 
     "EMAIL_HOST": {
