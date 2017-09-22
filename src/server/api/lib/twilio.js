@@ -19,6 +19,16 @@ if (!process.env.TWILIO_MESSAGE_SERVICE_SID) {
   log.warn('Twilio will not be able to send without TWILIO_MESSAGE_SERVICE_SID set')
 }
 
+function webhook() {
+  log.warn('twilio webhook call') //sky: doesn't run this
+  if (twilio) {
+    return Twilio.webhook()
+  } else {
+    log.warn('NO TWILIO WEB VALIDATION')
+    return function (req, res, next) { next() }
+  }
+}
+
 async function convertMessagePartsToMessage(messageParts) {
   console.log('TWILIO convertMessagePartsToMessage(messageParts) START', messageParts, 'xx')
   const firstPart = messageParts[0]
@@ -179,9 +189,8 @@ async function handleIncomingMessage(message) {
   }
 
   const { From, To, MessageSid } = message
-
   const contactNumber = getFormattedPhoneNumber(From)
-  const userNumber = getFormattedPhoneNumber(To)
+  const userNumber = (To ? getFormattedPhoneNumber(To) : '')
 
   const pendingMessagePart = new PendingMessagePart({
     service: 'twilio',
@@ -197,6 +206,7 @@ async function handleIncomingMessage(message) {
 }
 
 export default {
+  webhook,
   convertMessagePartsToMessage,
   findNewCell,
   rentNewCell,
