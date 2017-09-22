@@ -28,7 +28,7 @@ EMAIL_HOST                        | Email server host. _Required_.
 EMAIL_HOST_PASSWORD               | Email server password. _Required_.
 EMAIL_HOST_PORT                   | Email server port. _Required_.
 EMAIL_HOST_USER                   | Email server user. _Required_.
-GRAPHQL_URL                       | URL for GraphQL API requests. Should end with `/graphql`, e.g. `https://example.org/graphql`.
+GRAPHQL_URL                       | Optional URL for pointing GraphQL API requests. Should end with `/graphql`, e.g. `https://example.org/graphql`. _Default_: "/graphql"
 JOBS_SAME_PROCESS                 | Boolean value indicating whether jobs should be executed in the same process in which they are created (vs. processing asyncronously via worker processes). _Default_: false.
 NEXMO_API_KEY                     | Nexmo API key. Required if using Nexmo.
 NEXMO_API_SECRET                  | Nexmo API secret. Required if using Nexmo.
