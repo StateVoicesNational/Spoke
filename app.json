@@ -82,7 +82,7 @@
     "DB_HOST": {
       "description": "to connect to postgres database - located in heroku postgres credentials",
       "required": true,
-      "value": "<changeme - from heroku>"
+      "value": "process.env.DB_HOST"
     },
 
     "DB_PORT": {
@@ -94,7 +94,7 @@
     "DB_NAME": {
       "description": "database name created in heroku addon - - located in heroku postgres credentials",
       "required": true,
-      "value": "<changeme - from heroku>"
+      "value": "process.env.DB_NAME"
     },
 
     "DB_TYPE": {
@@ -118,13 +118,13 @@
     "DB_USER": {
       "description": "database user name --> located in heroku postgres credentials",
       "required": true,
-      "value": "<changme>"
+      "value": "process.env.DB_USER"
     },
 
     "DB_PASSWORD": {
       "description": "database user name --> located in heroku postgres credentials",
       "required": true,
-      "value": "<changeme>"
+      "value": "process.env.DB_PASSWORD"
     },
 
     "AUTH0_LOGIN_CALLBACK": {
