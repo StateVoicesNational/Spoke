@@ -59,13 +59,20 @@ export default wrap(async (req, res) => {
     } else if (redirectLocation) {
       res.redirect(302, redirectLocation.pathname + redirectLocation.search)
     } else if (renderProps) {
+      // this is really cool 'hyrdration' type tech which renders the html
+      // on the server for each call.  However, using the ApolloClientSingleton
+      // is problematic on the server, since its a little odd to require a network
+      // connection with 'itself' to send /graphql requests.  And why bother anyway?
+      /*
       const { html, css } = StyleSheetServer.renderStatic(() => renderToString(
         <ApolloProvider store={store.data} client={ApolloClientSingleton}>
           <RouterContext {...renderProps} />
         </ApolloProvider>
         )
       )
-
+      */
+      const html = ''
+      const css = ''
       res.send(renderIndex(html, css, assetMap, store.data))
     } else {
       res.status(404).send('Not found')
