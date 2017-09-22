@@ -23,5 +23,6 @@ const InteractionStep = thinky.createModel('interaction_step', type.object().sch
 }).allowExtra(false))
 
 InteractionStep.ensureIndex('campaign_id')
+InteractionStep.ensureIndex('parent_interaction_id')
 
 export default InteractionStep
