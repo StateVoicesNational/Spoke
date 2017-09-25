@@ -37,6 +37,7 @@ export const schema = `
     stats: CampaignStats,
     pendingJobs: [JobRequest]
     datawarehouseAvailable: Boolean
+    useDynamicAssignment: Boolean
   }
 `
 
@@ -84,7 +85,8 @@ export const resolvers = {
       'description',
       'dueBy',
       'isStarted',
-      'isArchived'
+      'isArchived',
+      'useDynamicAssignment'
     ], Campaign),
     organization: async (campaign, _, { loaders }) => (
       loaders.organization.load(campaign.organization_id)

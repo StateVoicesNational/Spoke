@@ -17,6 +17,9 @@ const Campaign = thinky.createModel('campaign', type.object().schema({
   created_at: timestamp(),
   is_archived: type
     .boolean()
+    .required(),
+  use_dynamic_assignment: type
+    .boolean()
     .required()
 
 }).allowExtra(false))

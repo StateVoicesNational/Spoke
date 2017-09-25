@@ -11,7 +11,7 @@ class TexterTodoList extends React.Component {
     return assignments
       .sort((x, y) => ((x.unmessagedCount + x.unrepliedCount) > (y.unmessagedCount + y.unrepliedCount) ? -1 : 1))
       .map((assignment) => {
-        if (assignment.unmessagedCount > 0 || assignment.unrepliedCount > 0 || assignment.badTimezoneCount > 0) {
+        if (assignment.unmessagedCount > 0 || assignment.unrepliedCount > 0 || assignment.badTimezoneCount > 0 || assignment.campaign.useDynamicAssignment) {
           return (
             <AssignmentSummary
               organizationId={organizationId}
@@ -68,6 +68,8 @@ const mapQueriesToProps = ({ ownProps }) => ({
             id
             title
             description
+            useDynamicAssignment
+            hasUnassignedContacts
           }
           unmessagedCount: contactsCount(contactsFilter: $needsMessageFilter)
           unrepliedCount: contactsCount(contactsFilter: $needsResponseFilter)

@@ -31,6 +31,18 @@ const migrations = [
       })
       console.log('added external_id column to campaign_contact table')
     }
+  },
+  { auto: true, //3
+    date: '2017-09-22',
+    migrate: async function migrate() {
+      await r.knex.schema.alterTable('campaign', (table) => {
+        table.boolean('use_dynamic_assignment').notNullable().default(false);
+      })
+      await r.knex.schema.alterTable('assignment', (table) => {
+        table.integer('max_contacts');
+      })
+      console.log('added dynamic_assigment column to campaign table and max_contacts to assignments')
+    }
   }
   /* migration template
      {auto: true, //if auto is false, then it will block the migration running automatically
@@ -62,6 +74,7 @@ export async function runMigrations(migrationIndex) {
         if (!migration || !migration.auto) {
           break // stop all until the non-auto migration is run
         } else {
+          console.log('migrating...')
           await migration.migrate()
           exists.completed = i+1 //length, not index
           await exists.save()

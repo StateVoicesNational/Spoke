@@ -65,7 +65,8 @@ class AssignmentTexter extends React.Component {
     if (this.hasNext()) {
       this.handleNavigateNext()
     } else {
-      this.handleExitTexter()
+      // Will look async and then redirect to todo page if not
+      this.props.assignContactsIfNeeded(true)
     }
   }
 
@@ -91,9 +92,6 @@ class AssignmentTexter extends React.Component {
 
   handleScriptChange = (script) => {
     this.setState({ script })
-  }
-  handleExitTexter = () => {
-    this.props.router.push('/app')
   }
 
   contactCount() {

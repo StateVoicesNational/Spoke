@@ -88,7 +88,6 @@ class AssignmentSummary extends Component {
     this.setState({ open: true })
   }
 
-
   renderBadgedButton({ assignment, title, count, primary, disabled, contactsFilter }) {
     return (count === 0 ? '' :
       <Badge
@@ -162,11 +161,17 @@ class AssignmentSummary extends Component {
               disabled: false,
               contactsFilter: 'text'
             })}
+            {assignment.campaign.useDynamicAssignment && unmessagedCount == 0 && unrepliedCount == 0 ? <FlatButton
+              disabled={false}
+              label="Send first texts"
+              onTouchTap={() => this.goToTodos('text', assignment.id)}
+              primary={true}
+            /> : ''}
             {this.renderTextAllButton({
               title: 'Send All first texts',
               count: unmessagedCount,
               primary: true,
-              disabled: false,
+              disabled: false,  
               contactsFilter: 'text-all'
             })}
             {this.renderBadgedButton({
@@ -226,6 +231,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
           id
           isArchived
           customFields
+          useDynamicAssignment
           organization {
             id
             textingHoursEnforced

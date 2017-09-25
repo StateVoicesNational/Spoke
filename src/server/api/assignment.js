@@ -12,10 +12,11 @@ export const schema = `
     contactsCount(contactsFilter: ContactsFilter): Int
     userCannedResponses: [CannedResponse]
     campaignCannedResponses: [CannedResponse]
+    maxContacts: Int
   }
 `
+
 function getContacts(assignment, contactsFilter, organization, campaign) {
-  /// returns list of contacts eligible for contacting _now_ by a particular user
 
   const textingHoursEnforced = organization.texting_hours_enforced
   const textingHoursStart = organization.texting_hours_start
@@ -78,7 +79,7 @@ function getContacts(assignment, contactsFilter, organization, campaign) {
       query = query.where('is_opted_out', contactsFilter.isOptedOut)
     }
   }
-
+  
   return query
 }
 

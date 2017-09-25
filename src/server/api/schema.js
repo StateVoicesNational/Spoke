@@ -1,4 +1,6 @@
-import { Campaign,
+import { 
+  Assignment,
+  Campaign,
   CannedResponse,
   Invite,
   Message,
@@ -201,6 +203,7 @@ const rootSchema = `
     archiveCampaign(id:String!): Campaign,
     unarchiveCampaign(id:String!): Campaign,
     sendReply(id: String!, message: String!): CampaignContact
+    findNewCampaignContact(assignmentId: String!): CampaignContact
   }
 
   schema {
@@ -576,6 +579,39 @@ const rootMutations = {
       contact.message_status = messageStatus
       return await contact.save()
     },
+
+    findNewCampaignContact: async(_, { assignmentId }, { loaders, user } ) => {
+      /* This attempts to find a new contact for the assignment, in the case that useDynamicAssigment == true */
+      console.log("I'm having a testipop")
+      const assignment = await Assignment.get(assignmentId)
+      const campaign = await Campaign.get(assignment.campaign_id)
+
+      if (!campaign.use_dynamic_assignment) {
+        return false
+      }
+
+      if (!assignment.max_contacts || assignment.contacts.length < assignment.max_contacts ) {
+        const result = await r.knex.raw(`UPDATE campaign_contact
+          SET assignment_id = :assignment_id
+          WHERE id IN (
+            SELECT id
+            FROM campaign_contact cc
+            WHERE campaign_id = :campaign_id
+            AND assignment_id IS null
+            LIMIT 1
+          )
+          RETURNING *
+          `, {assignment_id: assignmentId, campaign_id: campaign.id})
+        if (result.rowCount > 0){
+          return true
+        } else {  
+          return false
+        }
+      } else {
+        return false
+      }
+    },
+
     createOptOut: async(_, { optOut, campaignContactId }, { loaders, user }) => {
       const contact = await loaders.campaignContact.load(campaignContactId)
       await assignmentRequired(user, contact.assignment_id)
