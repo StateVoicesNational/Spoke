@@ -1,8 +1,7 @@
 import { r, datawarehouse, Campaign, CampaignContact, User, Assignment, InteractionStep } from '../server/models'
 import { log, gunzip, zipToTimeZone } from '../lib'
 import { sleep, getNextJob, updateJob } from './lib'
-import nexmo from '../server/api/lib/nexmo'
-import twilio from '../server/api/lib/twilio'
+import serviceMap from '../server/api/lib/services'
 import { getLastMessage, saveNewIncomingMessage } from '../server/api/lib/message-sending'
 
 import AWS from 'aws-sdk'
@@ -14,7 +13,6 @@ import { Notifications, sendUserNotification } from '../server/notifications'
 var zipMemoization = {}
 
 const JOBS_SAME_PROCESS = !!process.env.JOBS_SAME_PROCESS
-const serviceMap = { nexmo, twilio }
 
 async function getTimezoneByZip(zip) {
   if (zip in zipMemoization) {
