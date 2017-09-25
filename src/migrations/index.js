@@ -31,6 +31,17 @@ const migrations = [
       })
       console.log('added external_id column to campaign_contact table')
     }
+  },
+  {auto: true, //3
+   date: '2017-09-24',
+   migrate: async function() {
+     await r.knex.schema.alterTable('job_request', (table) => {
+       table.string('result_message').nullable().default('');
+     })
+     await r.knex.schema.alterTable('opt_out', (table) => {
+       table.string('reason_code').nullable().default('');
+     })
+   }
   }
   /* migration template
      {auto: true, //if auto is false, then it will block the migration running automatically
@@ -50,21 +61,20 @@ const migrations = [
 export async function runMigrations(migrationIndex) {
   const exists = await Migrations.getAll().limit(1)(0).default(null)
   if (!exists) {
-    // set the record for what is the current status-quo
+    // set the record for what is the current status-quo upon original installation
     const migrationRecord = await Migrations.save({completed: migrations.length})
     log.info('created Migration record for reference going forward', migrationRecord)
   } else {
     migrationIndex = migrationIndex || exists.completed
     if (migrationIndex < migrations.length) {
-      log.info('Migrating database from ', migrationIndex, 'to', migrations.length-1)
+      log.info('Migrating database from ', migrationIndex, 'to', migrations.length)
       for (let i=migrationIndex,l=migrations.length; i<=l; i++) {
         const migration = migrations[i]
         if (!migration || !migration.auto) {
           break // stop all until the non-auto migration is run
         } else {
           await migration.migrate()
-          exists.completed = i+1 //length, not index
-          await exists.save()
+          await r.knex('migrations').update({completed: i+1}) //length, not index so +1
         }
       }
     }
