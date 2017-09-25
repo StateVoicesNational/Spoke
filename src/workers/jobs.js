@@ -517,7 +517,7 @@ export async function sendMessages(queryFunc, defaultStatus) {
 }
 
 export async function handleIncomingMessageParts() {
-  const messageParts = await r.table('pending_message_part')
+  const messageParts = await r.table('pending_message_part').limit(100)
   const messagePartsByService = [
     {'group': 'nexmo',
      'reduction': messageParts.filter((m) => (m.service == 'nexmo'))

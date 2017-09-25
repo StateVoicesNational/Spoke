@@ -78,8 +78,7 @@ import {
   assignmentRequired,
   superAdminRequired
 } from './errors'
-import nexmo from './lib/nexmo'
-import twilio from './lib/twilio'
+import serviceMap from './lib/services'
 import { gzip, log } from '../../lib'
 // import { isBetweenTextingHours } from '../../lib/timezones'
 import { Notifications, sendUserNotification } from '../notifications'
@@ -92,7 +91,6 @@ import { uploadContacts,
 const uuidv4 = require('uuid').v4
 
 const JOBS_SAME_PROCESS = !!process.env.JOBS_SAME_PROCESS
-const serviceMap = { nexmo, twilio }
 
 const rootSchema = `
   input CampaignContactInput {
@@ -343,22 +341,23 @@ const rootMutations = {
         })
       }
 
+      console.log('lastMessage', lastMessage)
       const userNumber = lastMessage.user_number
       const contactNumber = contact.cell
       const mockedId = `mocked_${Math.random().toString(36).replace(/[^a-zA-Z1-9]+/g, '')}`
       if (lastMessage.service === 'nexmo') {
-        await nexmo.handleIncomingMessage({
+        await serviceMap.nexmo.handleIncomingMessage({
           to: userNumber,
           msisdn: contactNumber,
           text: message,
           messageId: mockedId
         })
-      } else {
-        await twilio.handleTwilioIncomingMessage({
+      } else if (lastMessage.service === 'twilio') {
+        await serviceMap.twilio.handleIncomingMessage({
           From: contactNumber,
           To: userNumber,
           Body: message,
-          MessageSid: `mocked_${Math.random().toString(36).replace(/[^a-zA-Z1-9]+/g, '')}`
+          MessageSid: mockedId
         })
       }
       return loaders.campaignContact.load(id)

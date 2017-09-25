@@ -96,27 +96,30 @@ export async function handleIncomingMessages() {
   setupUserNotificationObservers()
   console.log('Running handleIncomingMessages')
   // eslint-disable-next-line no-constant-condition
+  let i = 0
   while (true) {
     try {
+      console.log('entering handleIncomingMessages. round: ', ++i)
       const countPendingMessagePart = await r.knex('pending_message_part')
       .count('id AS total').then( total => {
         let totalCount = 0
         totalCount = total[0].total
         return totalCount
       })
-
+      console.log('counting handleIncomingMessages. count: ', countPendingMessagePart)
       await sleep(500)
       if(countPendingMessagePart > 0) {
+        console.log('running handleIncomingMessages')
         await handleIncomingMessageParts()
       }
     } catch (ex) {
-      log.error(ex)
+      log.error('error at handleIncomingMessages', ex)
     }
   }
 }
 
 export async function runDatabaseMigrations(event, dispatcher) {
-  runMigrations(event.migrationStart)
+  await runMigrations(event.migrationStart)
 }
 
 const processMap = {
