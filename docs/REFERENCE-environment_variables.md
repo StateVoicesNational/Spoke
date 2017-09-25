@@ -32,6 +32,7 @@ GRAPHQL_URL                       | Optional URL for pointing GraphQL API reques
 JOBS_SAME_PROCESS                 | Boolean value indicating whether jobs should be executed in the same process in which they are created (vs. processing asyncronously via worker processes). _Default_: false.
 NEXMO_API_KEY                     | Nexmo API key. Required if using Nexmo.
 NEXMO_API_SECRET                  | Nexmo API secret. Required if using Nexmo.
+NO_EXTERNAL_LINKS                 | Removes google fonts and auth0 login script -- good for development offline when you already have an auth0 session
 NODE_ENV                          | Node environment type. _Options_: development, production.
 OUTPUT_DIR                        | Directory path for packaged files should be saved to. _Required_.
 PHONE_NUMBER_COUNTRY              | Country code for phone number formatting. _Default_: US.
