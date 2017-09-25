@@ -1,6 +1,6 @@
 import { r } from '../server/models'
 import { sleep, getNextJob, updateJob, log } from './lib'
-import { exportCampaign, uploadContacts, assignTexters, createInteractionSteps, sendMessages, handleIncomingMessageParts } from './jobs'
+import { exportCampaign, uploadContacts, assignTexters, createInteractionSteps, sendMessages, handleIncomingMessageParts, clearOldJobs } from './jobs'
 import { runMigrations } from '../migrations'
 import { setupUserNotificationObservers } from '../server/notifications'
 
@@ -31,18 +31,11 @@ export async function processJobs() {
       const job = await getNextJob()
       if (job) {
         await (jobMap[job.job_type])(job)
-        await r.table('job_request')
-          .get(job.id)
-          .delete()
       }
 
       var twoMinutesAgo = new Date(new Date() - 1000 * 60 * 2)
-      // delete jobs that are older than 2 minutes
-      // to clear out stuck jobs
-      await r.knex('job_request')
-        .where({ assigned: true })
-        .where('updated_at', '<', twoMinutesAgo)
-        .delete()
+      // clear out stuck jobs
+      await clearOldJobs(twoMinutesAgo)
     } catch (ex) {
       log.error(ex)
     }
@@ -94,22 +87,30 @@ export const failedMessageSender = messageSenderCreator(function(mQuery) {
 
 export async function handleIncomingMessages() {
   setupUserNotificationObservers()
-  console.log('Running handleIncomingMessages')
+  if (process.env.DEBUG_INCOMING_MESSAGES) {
+    console.log('Running handleIncomingMessages')
+  }
   // eslint-disable-next-line no-constant-condition
   let i = 0
   while (true) {
     try {
-      console.log('entering handleIncomingMessages. round: ', ++i)
+      if (process.env.DEBUG_INCOMING_MESSAGES) {
+        console.log('entering handleIncomingMessages. round: ', ++i)
+      }
       const countPendingMessagePart = await r.knex('pending_message_part')
       .count('id AS total').then( total => {
         let totalCount = 0
         totalCount = total[0].total
         return totalCount
       })
-      console.log('counting handleIncomingMessages. count: ', countPendingMessagePart)
+      if (process.env.DEBUG_INCOMING_MESSAGES) {
+        console.log('counting handleIncomingMessages. count: ', countPendingMessagePart)
+      }
       await sleep(500)
       if(countPendingMessagePart > 0) {
-        console.log('running handleIncomingMessages')
+        if (process.env.DEBUG_INCOMING_MESSAGES) {
+          console.log('running handleIncomingMessages')
+        }
         await handleIncomingMessageParts()
       }
     } catch (ex) {
@@ -135,7 +136,8 @@ const processMap = {
 // the others and messageSender should just pick up the stragglers
 const syncProcessMap = {
   //'failedMessageSender': failedMessageSender, //see method for danger
-  'handleIncomingMessages': handleIncomingMessages
+  'handleIncomingMessages': handleIncomingMessages,
+  'clearOldJobs': clearOldJobs
 }
 
 const JOBS_SAME_PROCESS = !!process.env.JOBS_SAME_PROCESS
