@@ -204,6 +204,7 @@ class AssignmentTexterContact extends React.Component {
       optOutDialogOpen: false,
       currentInteractionStep: availableSteps.length > 0 ? availableSteps[availableSteps.length - 1] : null
     }
+    this.onEnter = this.onEnter.bind(this)
   }
 
   componentDidMount() {
@@ -220,6 +221,25 @@ class AssignmentTexterContact extends React.Component {
     const node = this.refs.messageScrollContainer
     // Does not work without this setTimeout
     setTimeout(() => { node.scrollTop = Math.floor(node.scrollHeight) }, 0)
+
+    // note: key*down* is necessary to stop propagation of keyup for the textarea element
+    document.body.addEventListener('keydown', this.onEnter)
+  }
+
+  componentWillUnmount() {
+    document.body.removeEventListener('keydown', this.onEnter)
+  }
+
+  onEnter(evt) {
+    if (evt.keyCode === 13) {
+      evt.preventDefault()
+      // pressing the Enter key submits
+      if (this.state.optOutDialogOpen) {
+        this.handleOptOut()
+      } else {
+        this.handleClickSendMessageButton()
+      }
+    }
   }
 
   getAvailableInteractionSteps(questionResponses) {
@@ -391,7 +411,8 @@ class AssignmentTexterContact extends React.Component {
     await this.props.mutations.editCampaignContactMessageStatus(messageStatus, contact.id)
   }
 
-  handleOptOut = async ({ optOutMessageText }) => {
+  handleOptOut = async () => {
+    const optOutMessageText = this.state.optOutMessageText
     const { contact } = this.props.data
     const { assignment } = this.props
     const message = this.createMessageToContact(optOutMessageText)
@@ -721,12 +742,6 @@ class AssignmentTexterContact extends React.Component {
             label='Your message'
             multiLine
             fullWidth
-            onKeyUp={(event) => {
-              if (event.keyCode === 13) {
-                // pressing the Enter key submits
-                this.handleClickSendMessageButton()
-              }
-            }}
           />
           {this.renderCorrectSendButton()}
         </GSForm>
