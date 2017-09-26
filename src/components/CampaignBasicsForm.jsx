@@ -4,20 +4,27 @@ import moment from 'moment'
 import CampaignFormSectionHeading from './CampaignFormSectionHeading'
 import GSForm from './forms/GSForm'
 import yup from 'yup'
+import Toggle from 'material-ui/Toggle'
 
 const FormSchema = {
   title: yup.string(),
   description: yup.string(),
-  dueBy: yup.mixed()
+  dueBy: yup.mixed(),
+  useDynamicAssignment: yup.bool()
 }
 
 const EnsureCompletedFormSchema = {
   title: yup.string().required(),
   description: yup.string().required(),
-  dueBy: yup.mixed().required()
+  dueBy: yup.mixed().required(),
+  useDynamicAssignment: yup.bool()
 }
 
 export default class CampaignBasicsForm extends React.Component {
+  state = {
+    useDynamicAssignment: this.formValues().useDynamicAssignment
+  }
+
   formValues() {
     return {
       ...this.props.formValues,
@@ -30,6 +37,13 @@ export default class CampaignBasicsForm extends React.Component {
       return yup.object(FormSchema)
     }
     return yup.object(EnsureCompletedFormSchema)
+  }
+
+  handleToggleChange(){
+    this.setState({
+      useDynamicAssignment: !this.state.useDynamicAssignment
+    })
+    this.props.onChange()
   }
 
   render() {
@@ -58,7 +72,7 @@ export default class CampaignBasicsForm extends React.Component {
           />
           <Form.Field
             name='dueBy'
-            label='Due date'
+            label='Due date'            
             type='date'
             locale='en-US'
             shouldDisableDate={(date) => moment(date).diff(moment()) < 0}
@@ -66,6 +80,14 @@ export default class CampaignBasicsForm extends React.Component {
             fullWidth
             utcOffset={0}
           />
+          <Form.Field type="checkbox" checked={this.state.useDynamicAssignment} name="useDynamicAssignment" />
+          <div>
+            <Toggle
+              label='Dynamically assign contacts'
+              toggled={this.state.useDynamicAssignment}
+              onToggle={this.handleToggleChange.bind(this)}
+            />
+          </div>
           <Form.Button
             type='submit'
             label={this.props.saveLabel}
@@ -81,7 +103,8 @@ CampaignBasicsForm.propTypes = {
   formValues: React.PropTypes.shape({
     title: React.PropTypes.string,
     description: React.PropTypes.string,
-    dueBy: React.PropTypes.any
+    dueBy: React.PropTypes.any,
+    useDynamicAssignment: React.PropTypes.bool
   }),
   onChange: React.PropTypes.func,
   onSubmit: React.PropTypes.func,

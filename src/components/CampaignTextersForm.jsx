@@ -431,7 +431,7 @@ export default class CampaignTextersForm extends React.Component {
                 className={css(styles.splitToggle)}
               >
                 <Toggle
-                  label='Auto-split assignments'
+                  label='Split assignments'
                   style={{
                     width: 'auto',
                     marginLeft: 'auto'

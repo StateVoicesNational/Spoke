@@ -139,6 +139,7 @@ const rootSchema = `
     title: String
     description: String
     dueBy: Date
+    useDynamicAssignment: Boolean
     contacts: [CampaignContactInput]
     contactSql: String
     organizationId: String
@@ -213,13 +214,14 @@ const rootSchema = `
 `
 
 async function editCampaign(id, campaign, loaders, user) {
-  const { title, description, dueBy, organizationId } = campaign
+  const { title, description, dueBy, organizationId, useDynamicAssignment } = campaign
   const campaignUpdates = {
     id,
     title,
     description,
     due_by: dueBy,
-    organization_id: organizationId
+    organization_id: organizationId,
+    use_dynamic_assignment: useDynamicAssignment
   }
 
   Object.keys(campaignUpdates).forEach((key) => {
@@ -227,6 +229,7 @@ async function editCampaign(id, campaign, loaders, user) {
       delete campaignUpdates[key]
     }
   })
+
   if (campaign.hasOwnProperty('contacts') && campaign.contacts) {
     const contactsToSave = campaign.contacts.map((datum) => {
       const modelData = {

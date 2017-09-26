@@ -25,6 +25,7 @@ const campaignInfoFragment = `
   contactsCount
   datawarehouseAvailable
   customFields
+  useDynamicAssignment
   texters {
     id
     firstName
@@ -227,7 +228,7 @@ class AdminCampaignEdit extends React.Component {
     return [{
       title: 'Basics',
       content: CampaignBasicsForm,
-      keys: ['title', 'description', 'dueBy'],
+      keys: ['title', 'description', 'dueBy', 'useDynamicAssignment'],
       blocksStarting: true,
       checkCompleted: () => (
         this.state.campaignFormValues.title !== '' &&
