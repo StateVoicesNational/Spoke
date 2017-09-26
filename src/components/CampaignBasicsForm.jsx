@@ -43,7 +43,7 @@ export default class CampaignBasicsForm extends React.Component {
     this.setState({
       useDynamicAssignment: !this.state.useDynamicAssignment
     })
-    this.props.onChange()
+    this.props.onChange({useDynamicAssignment: !this.state.useDynamicAssignment})
   }
 
   render() {
@@ -80,7 +80,6 @@ export default class CampaignBasicsForm extends React.Component {
             fullWidth
             utcOffset={0}
           />
-          <Form.Field type="checkbox" checked={this.state.useDynamicAssignment} name="useDynamicAssignment" />
           <div>
             <Toggle
               label='Dynamically assign contacts'
