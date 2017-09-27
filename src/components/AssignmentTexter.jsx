@@ -50,7 +50,7 @@ class AssignmentTexter extends React.Component {
 
   updateCurrentContactIndex(newIndex) {
     this.setState({
-      currentContactIndex: newIndex
+      currentContactIndex: 0
     })
   }
 
@@ -118,27 +118,7 @@ class AssignmentTexter extends React.Component {
   }
 
   renderNavigationToolbarChildren() {
-    const title = `${this.state.currentContactIndex + 1} of ${this.contactCount()}`
-    return [
-      <ToolbarTitle
-        className={css(styles.navigationToolbarTitle)}
-        text={title}
-      />,
-      <IconButton
-        onTouchTap={this.handleNavigatePrevious}
-        disabled={!this.hasPrevious()}
-        // style={styles.toolbarIconButton}
-      >
-        <NavigateBeforeIcon />
-      </IconButton>,
-      <IconButton
-        onTouchTap={this.handleNavigateNext}
-        disabled={!this.hasNext()}
-        // style={styles.toolbarIconButton}
-      >
-        <NavigateNextIcon />
-      </IconButton>
-    ]
+    return ''
   }
 
   renderTexter() {
