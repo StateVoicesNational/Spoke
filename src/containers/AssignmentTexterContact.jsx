@@ -128,6 +128,7 @@ class AssignmentTexterContact extends React.Component {
     let snackbarOnTouchTap = null
     let snackbarActionTitle = null
     let snackbarError = null
+    
     if (assignment.id !== contact.assignmentId || campaign.isArchived) {
       disabledText = ''
       disabled = true

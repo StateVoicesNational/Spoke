@@ -619,7 +619,7 @@ const rootMutations = {
       console.log({assignmentId: assignmentId, numberContacts: numberContacts})
       const assignment = await Assignment.get(assignmentId)
       const campaign = await Campaign.get(assignment.campaign_id)
-      const contactsCount = (await r.knex('campaign_contact').where({assignment_id: assignmentId}).select(r.knex.raw('count(*) as count')))[0].count
+      const contactsCount = Number((await r.knex('campaign_contact').where({assignment_id: assignmentId}).select(r.knex.raw('count(*) as count')))[0].count)
 
       if (!campaign.use_dynamic_assignment) {
         return false
@@ -629,9 +629,15 @@ const rootMutations = {
 
       if (assignment.max_contacts && (contactsCount + numberContacts > assignment.max_contacts)){
         numberContacts = assignment.max_contacts - contactsCount
-      }      
+      }
 
-      const result = await r.knex.raw(`UPDATE campaign_contact
+      // Don't add them if they already have them
+      const result = await r.knex.raw(`SELECT COUNT(*) as count FROM campaign_contact WHERE assignment_id = :assignment_id AND message_status = 'needsMessage'`, {assignment_id: assignmentId})
+      if (result.rows[0].count > 0){
+        return false
+      } 
+
+      const result2 = await r.knex.raw(`UPDATE campaign_contact
         SET assignment_id = :assignment_id
         WHERE id IN (
           SELECT id
@@ -642,7 +648,8 @@ const rootMutations = {
         )
         RETURNING *
         `, {assignment_id: assignmentId, campaign_id: campaign.id, number_contacts: numberContacts})
-      if (result.rowCount > 0){
+      
+      if (result2.rowCount > 0){
         return true
       } else {  
         return false
