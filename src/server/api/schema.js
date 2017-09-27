@@ -205,7 +205,8 @@ const rootSchema = `
     archiveCampaign(id:String!): Campaign,
     unarchiveCampaign(id:String!): Campaign,
     sendReply(id: String!, message: String!): CampaignContact
-    findNewCampaignContact(assignmentId: String!, numberContacts: Int!): CampaignContact
+    findNewCampaignContact(assignmentId: String!, numberContacts: Int!): CampaignContact,
+    assignUserToCampaign(campaignId: String!): Campaign
   }
 
   schema {
@@ -456,6 +457,26 @@ const rootMutations = {
         }
       }
       return organization
+    },
+    assignUserToCampaign: async (_, { campaignId }, { user, loaders }) => {
+      let campaign
+      [campaign] = await r.knex('campaign')
+        .where('id', campaignId)
+      if (campaign) {
+        const assignment = await r.table('assignment')
+          .getAll(user.id, { index: 'user_id' })
+          .filter({ campaign_id: campaign.id })
+          .limit(1)(0)
+          .default(null)
+        if (!assignment) {
+          await Assignment.save({
+            user_id: user.id,
+            campaign_id: campaign.id,
+            max_contacts: 1
+          })
+        }
+      }
+      return campaign
     },
     updateTextingHours: async (_, { organizationId, textingHoursStart, textingHoursEnd }, { user }) => {
       await accessRequired(user, organizationId, 'OWNER')

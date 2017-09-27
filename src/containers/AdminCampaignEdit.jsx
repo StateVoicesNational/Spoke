@@ -259,7 +259,8 @@ class AdminCampaignEdit extends React.Component {
       blocksStarting: false,
       extraProps: {
         orgTexters: this.props.organizationData.organization.texters,
-        organizationUuid: this.props.organizationData.organization.uuid
+        organizationUuid: this.props.organizationData.organization.uuid,
+        campaignId: this.props.campaignData.campaign.id
       }
     }, {
       title: 'Interactions',

@@ -81,7 +81,7 @@ export default function makeRoutes(requireAuth = () => {}) {
       </Route>
       <Route path='login' component={Login} />
       <Route path='invite/:inviteId' component={CreateOrganization} onEnter={requireAuth} />
-      <Route path=':organizationUuid/join' component={JoinTeam} onEnter={requireAuth} />
+      <Route path=':organizationUuid/join/:campaignId' component={JoinTeam} onEnter={requireAuth} />
     </Route>
   )
 }
