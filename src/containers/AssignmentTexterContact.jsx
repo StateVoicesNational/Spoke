@@ -24,6 +24,9 @@ import Snackbar from 'material-ui/Snackbar'
 import { getChildren, getTopMostParent, interactionStepForId, log, isBetweenTextingHours } from '../lib'
 import { withRouter } from 'react-router'
 import wrapMutations from './hoc/wrap-mutations'
+import Empty from '../components/Empty'
+import CreateIcon from 'material-ui/svg-icons/content/create'
+
 const styles = StyleSheet.create({
   container: {
     margin: 0,
@@ -448,7 +451,10 @@ class AssignmentTexterContact extends React.Component {
 
     const availableInteractionSteps = this.getAvailableInteractionSteps(questionResponses)
 
-    return messages.length === 0 ? '' : (
+    return messages.length === 0 ? (<Empty
+          title={"This is your first message to " + contact.firstName}
+          icon={<CreateIcon color='rgb(83, 180, 119)' />}
+        > </Empty>) : (
       <div>
         <AssignmentTexterSurveys
           contact={contact}
@@ -640,7 +646,7 @@ class AssignmentTexterContact extends React.Component {
 
   render() {
     return (
-      <div>
+      <div >
         {this.state.disabled ? (
           <div className={css(styles.overlay)}>
             <CircularProgress size={0.5} />
@@ -648,7 +654,7 @@ class AssignmentTexterContact extends React.Component {
           </div>
         ) : ''
         }
-        <div className={css(styles.container)}>
+        <div className={css(styles.container)} style={ this.props.data.contact.messageStatus === 'needsResponse' ? {backgroundColor: 'rgba(83, 180, 119, 0.25)'} : {}}>
           <div className={css(styles.topFixedSection)}>
             {this.renderTopFixedSection()}
           </div>

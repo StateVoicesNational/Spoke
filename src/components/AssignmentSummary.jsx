@@ -53,7 +53,8 @@ class AssignmentSummary extends Component {
     }
   }
 
-  sendMessages = () => {
+  sendMessages = async () => {
+
     const assignmentData = this.props.data.assignment
     const contacts = assignmentData.contacts
     const texter = assignmentData.texter
@@ -78,6 +79,7 @@ class AssignmentSummary extends Component {
     })
     this.props.mutations.sendMessages(contactMessages)
     this.setState({ open: false })
+    this.props.data.refetch()
   }
 
   handleClose = () => {
@@ -88,9 +90,17 @@ class AssignmentSummary extends Component {
     this.setState({ open: true })
   }
 
-  renderBadgedButton({ assignment, title, count, primary, disabled, contactsFilter }) {
-    return (count === 0 ? '' :
-      <Badge
+  renderBadgedButton({ assignment, title, count, primary, disabled, contactsFilter, hideIfZero }) {
+    if (count === 0 && hideIfZero) { return '' }
+    if (count === 0){
+      return (
+        <FlatButton
+          disabled={disabled}
+          label={title}
+          onTouchTap={() => this.goToTodos(contactsFilter, assignment.id)}
+        />)
+    } else {
+      return (<Badge
         key={title}
         badgeStyle={inlineStyles.badge}
         badgeContent={count}
@@ -102,8 +112,8 @@ class AssignmentSummary extends Component {
           label={title}
           onTouchTap={() => this.goToTodos(contactsFilter, assignment.id)}
         />
-      </Badge>
-    )
+      </Badge>)
+    }
   }
 
   renderTextAllButton({ title, count, primary, disabled }) {
@@ -155,32 +165,11 @@ class AssignmentSummary extends Component {
           <CardActions>
             {this.renderBadgedButton({
               assignment,
-              title: 'Send first texts',
-              count: unmessagedCount,
-              primary: true,
-              disabled: false,
-              contactsFilter: 'text'
-            })}
-            {assignment.campaign.useDynamicAssignment && unmessagedCount == 0 && unrepliedCount == 0 ? <FlatButton
-              disabled={false}
-              label="Send first texts"
-              onTouchTap={() => this.goToTodos('text', assignment.id)}
-              primary={true}
-            /> : ''}
-            {this.renderTextAllButton({
-              title: 'Send All first texts',
-              count: unmessagedCount,
-              primary: true,
-              disabled: false,  
-              contactsFilter: 'text-all'
-            })}
-            {this.renderBadgedButton({
-              assignment,
-              title: 'Send replies',
+              title: 'Send texts',
               count: unrepliedCount,
               primary: false,
               disabled: false,
-              contactsFilter: 'reply'
+              contactsFilter: 'all'
             })}
             {this.renderBadgedButton({
               assignment,
@@ -188,7 +177,8 @@ class AssignmentSummary extends Component {
               count: badTimezoneCount,
               primary: false,
               disabled: true,
-              contactsFilter: null
+              contactsFilter: null,
+              hideIfZero: true
             })}
           </CardActions>
         </Card>

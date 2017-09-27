@@ -43,6 +43,15 @@ const migrations = [
       })
       console.log('added dynamic_assigment column to campaign table and max_contacts to assignments')
     }
+  },
+  { auto: true, //4
+    date: '2017-09-25',
+    migrate: async function migrate() {
+      await r.knex.schema.alterTable('campaign_contact', (table) => {
+        table.timestamp('updated_at').default('now()');
+      })
+      console.log('added updated_at column to campaign_contact')
+    }
   }
   /* migration template
      {auto: true, //if auto is false, then it will block the migration running automatically

@@ -32,6 +32,7 @@ const campaignInfoFragment = `
     assignment(campaignId:$campaignId) {
       contactsCount
       needsMessageCount: contactsCount(contactsFilter:{messageStatus:\"needsMessage\"})
+      maxContacts
     }
   }
   interactionSteps {
@@ -177,7 +178,8 @@ class AdminCampaignEdit extends React.Component {
       if (newCampaign.hasOwnProperty('texters')) {
         newCampaign.texters = newCampaign.texters.map((texter) => ({
           id: texter.id,
-          needsMessageCount: texter.assignment.needsMessageCount
+          needsMessageCount: texter.assignment.needsMessageCount,
+          maxContacts: texter.assignment.maxContacts
         }))
       }
 
@@ -228,7 +230,7 @@ class AdminCampaignEdit extends React.Component {
     return [{
       title: 'Basics',
       content: CampaignBasicsForm,
-      keys: ['title', 'description', 'dueBy', 'useDynamicAssignment'],
+      keys: ['title', 'description', 'dueBy'],
       blocksStarting: true,
       checkCompleted: () => (
         this.state.campaignFormValues.title !== '' &&
@@ -252,7 +254,7 @@ class AdminCampaignEdit extends React.Component {
     }, {
       title: 'Texters',
       content: CampaignTextersForm,
-      keys: ['texters', 'contactsCount'],
+      keys: ['texters', 'contactsCount', 'useDynamicAssignment'],
       checkCompleted: () => this.state.campaignFormValues.texters.length > 0 && this.state.campaignFormValues.contactsCount === this.state.campaignFormValues.texters.reduce(((left, right) => left + right.assignment.contactsCount), 0),
       blocksStarting: false,
       extraProps: {
@@ -602,17 +604,17 @@ const mapMutationsToProps = () => ({
   }),
   editCampaign: function(campaignId, campaign) {
     return ({
-    mutation: gql`
-      mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {
-        editCampaign(id: $campaignId, campaign: $campaign) {
-          ${campaignInfoFragment}
-        }
-      },
-    `,
-    variables: {
-      campaignId,
-      campaign
-    }
+      mutation: gql`
+        mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {
+          editCampaign(id: $campaignId, campaign: $campaign) {
+            ${campaignInfoFragment}
+          }
+        },
+      `,
+      variables: {
+        campaignId,
+        campaign
+      }
     })
   }
 })

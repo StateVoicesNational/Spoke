@@ -60,6 +60,7 @@ export default function renderIndex(html, css, assetMap, store) {
       window.SUPPRESS_SELF_INVITE="${process.env.SUPPRESS_SELF_INVITE}"
       window.PRIVACY_URL="${process.env.PRIVACY_URL}"
       window.ALLOW_SEND_ALL=${process.env.ALLOW_SEND_ALL}
+      window.SEND_ALL_CHUNK_SIZE=${process.env.SEND_ALL_CHUNK_SIZE}
     </script>
     <script src="${assetMap['bundle.js']}"></script>
   </body>

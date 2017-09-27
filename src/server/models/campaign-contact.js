@@ -13,6 +13,7 @@ const CampaignContact = thinky.createModel('campaign_contact', type.object().sch
   zip: optionalString(),
   custom_fields: requiredString().default('{}'),
   created_at: timestamp(),
+  updated_at: timestamp(),
   message_status: requiredString()
     .enum([
       'needsMessage',

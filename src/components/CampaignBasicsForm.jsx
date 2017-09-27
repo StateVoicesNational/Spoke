@@ -10,21 +10,15 @@ const FormSchema = {
   title: yup.string(),
   description: yup.string(),
   dueBy: yup.mixed(),
-  useDynamicAssignment: yup.bool()
 }
 
 const EnsureCompletedFormSchema = {
   title: yup.string().required(),
   description: yup.string().required(),
-  dueBy: yup.mixed().required(),
-  useDynamicAssignment: yup.bool()
+  dueBy: yup.mixed().required()
 }
 
 export default class CampaignBasicsForm extends React.Component {
-  state = {
-    useDynamicAssignment: this.formValues().useDynamicAssignment
-  }
-
   formValues() {
     return {
       ...this.props.formValues,
@@ -37,13 +31,6 @@ export default class CampaignBasicsForm extends React.Component {
       return yup.object(FormSchema)
     }
     return yup.object(EnsureCompletedFormSchema)
-  }
-
-  handleToggleChange(){
-    this.setState({
-      useDynamicAssignment: !this.state.useDynamicAssignment
-    })
-    this.props.onChange({useDynamicAssignment: !this.state.useDynamicAssignment})
   }
 
   render() {
@@ -80,13 +67,6 @@ export default class CampaignBasicsForm extends React.Component {
             fullWidth
             utcOffset={0}
           />
-          <div>
-            <Toggle
-              label='Dynamically assign contacts'
-              toggled={this.state.useDynamicAssignment}
-              onToggle={this.handleToggleChange.bind(this)}
-            />
-          </div>
           <Form.Button
             type='submit'
             label={this.props.saveLabel}
@@ -102,8 +82,7 @@ CampaignBasicsForm.propTypes = {
   formValues: React.PropTypes.shape({
     title: React.PropTypes.string,
     description: React.PropTypes.string,
-    dueBy: React.PropTypes.any,
-    useDynamicAssignment: React.PropTypes.bool
+    dueBy: React.PropTypes.any
   }),
   onChange: React.PropTypes.func,
   onSubmit: React.PropTypes.func,

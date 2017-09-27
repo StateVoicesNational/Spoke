@@ -19,7 +19,7 @@ class TexterTodo extends React.Component {
     const { assignment } = this.props.data
     if ((assignment.contacts.length == 0 || checkServer) && assignment.campaign.useDynamicAssignment) {
       
-      const didAddContacts = await this.props.mutations.findNewCampaignContact(assignment.id)
+      const didAddContacts = await this.props.mutations.findNewCampaignContact(assignment.id, 1)
 
       if (didAddContacts){
         this.props.data.refetch()
@@ -28,11 +28,11 @@ class TexterTodo extends React.Component {
           `/app/${this.props.params.organizationId}/todos`
         )   
       }
-    } else {
-      this.props.router.push(
-        `/app/${this.props.params.organizationId}/todos`
-      )         
-    }
+    } 
+  }
+
+  refreshData = () => {
+    this.props.data.refetch()
   }
 
   render() {
@@ -42,6 +42,7 @@ class TexterTodo extends React.Component {
       assignment={assignment}
       contacts={contacts}
       assignContactsIfNeeded={this.assignContactsIfNeeded.bind(this)}
+      refreshData={this.refreshData.bind(this)}
     />)
   }
 }
@@ -108,16 +109,17 @@ const mapQueriesToProps = ({ ownProps }) => ({
 })
 
 const mapMutationsToProps = () => ({
-  findNewCampaignContact: (assignmentId) => ({
+  findNewCampaignContact: (assignmentId, numberContacts = 1) => ({
     mutation: gql`
-      mutation findNewCampaignContact($assignmentId: String!) {
-        findNewCampaignContact(assignmentId: $assignmentId) {
+      mutation findNewCampaignContact($assignmentId: String!, $numberContacts: Int!) {
+        findNewCampaignContact(assignmentId: $assignmentId, numberContacts: $numberContacts) {
           id
         }
       }
     `,
     variables: {
-      assignmentId
+      assignmentId,
+      numberContacts
     }
   })
 })

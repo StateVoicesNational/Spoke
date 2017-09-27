@@ -133,6 +133,7 @@ const rootSchema = `
   input TexterInput {
     id: String
     needsMessageCount: Int
+    maxContacts: Int
   }
 
   input CampaignInput {
@@ -204,7 +205,7 @@ const rootSchema = `
     archiveCampaign(id:String!): Campaign,
     unarchiveCampaign(id:String!): Campaign,
     sendReply(id: String!, message: String!): CampaignContact
-    findNewCampaignContact(assignmentId: String!): CampaignContact
+    findNewCampaignContact(assignmentId: String!, numberContacts: Int!): CampaignContact
   }
 
   schema {
@@ -289,6 +290,15 @@ async function editCampaign(id, campaign, loaders, user) {
     if (JOBS_SAME_PROCESS) {
       assignTexters(job).then()
     }
+
+    // assign the maxContacts
+    campaign.texters.forEach(async (texter) => {
+      const dog = r.knex('campaign').where({id: id}).select('useDynamicAssignment')
+      console.log({user_id: texter.id, campaign_id: id, maxContacts: texter.maxContacts})
+      await r.knex('assignment')
+        .where({user_id: texter.id, campaign_id: id})
+        .update({max_contacts: texter.maxContacts ? texter.maxContacts : null})
+    });
   }
   if (campaign.hasOwnProperty('interactionSteps')) {
     let job = await JobRequest.save({
@@ -583,36 +593,40 @@ const rootMutations = {
       return await contact.save()
     },
 
-    findNewCampaignContact: async(_, { assignmentId }, { loaders, user } ) => {
+    findNewCampaignContact: async(_, { assignmentId, numberContacts }, { loaders, user } ) => {
       /* This attempts to find a new contact for the assignment, in the case that useDynamicAssigment == true */
-      console.log("I'm having a testipop")
+      console.log({assignmentId: assignmentId, numberContacts: numberContacts})
       const assignment = await Assignment.get(assignmentId)
       const campaign = await Campaign.get(assignment.campaign_id)
+      const contactsCount = (await r.knex('campaign_contact').where({assignment_id: assignmentId}).select(r.knex.raw('count(*) as count')))[0].count
 
       if (!campaign.use_dynamic_assignment) {
         return false
       }
 
-      if (!assignment.max_contacts || assignment.contacts.length < assignment.max_contacts ) {
-        const result = await r.knex.raw(`UPDATE campaign_contact
-          SET assignment_id = :assignment_id
-          WHERE id IN (
-            SELECT id
-            FROM campaign_contact cc
-            WHERE campaign_id = :campaign_id
-            AND assignment_id IS null
-            LIMIT 1
-          )
-          RETURNING *
-          `, {assignment_id: assignmentId, campaign_id: campaign.id})
-        if (result.rowCount > 0){
-          return true
-        } else {  
-          return false
-        }
-      } else {
+      numberContacts = numberContacts || 1
+
+      if (assignment.max_contacts && (contactsCount + numberContacts > assignment.max_contacts)){
+        numberContacts = assignment.max_contacts - contactsCount
+      }      
+
+      const result = await r.knex.raw(`UPDATE campaign_contact
+        SET assignment_id = :assignment_id
+        WHERE id IN (
+          SELECT id
+          FROM campaign_contact cc
+          WHERE campaign_id = :campaign_id
+          AND assignment_id IS null
+          LIMIT :number_contacts
+        )
+        RETURNING *
+        `, {assignment_id: assignmentId, campaign_id: campaign.id, number_contacts: numberContacts})
+      if (result.rowCount > 0){
+        return true
+      } else {  
         return false
       }
+
     },
 
     createOptOut: async(_, { optOut, campaignContactId }, { loaders, user }) => {
@@ -713,6 +727,7 @@ const rootMutations = {
       await messageInstance.save()
 
       contact.message_status = 'messaged'
+      contact.updated_at = 'now()'
       await contact.save()
 
       if (JOBS_SAME_PROCESS) {

@@ -226,6 +226,7 @@ export async function assignTexters(job) {
   //   iterating over texter, assignment is created, then apportioned needsMessageCount texters
   const payload = JSON.parse(job.payload)
   const cid = job.campaign_id
+  const campaign = (await r.knex('campaign').where({id: cid}))[0]
   const texters = payload.texters
   const currentAssignments = await r.knex('assignment')
     .where('assignment.campaign_id', cid)
@@ -282,13 +283,17 @@ export async function assignTexters(job) {
   for (let index = 0; index < texterCount; index++) {
     const texter = texters[index]
     const texterId = parseInt(texter.id)
+    const maxContacts = parseInt(texter.maxContacts)
+
     if (unchangedTexters[texterId]) {
       continue
     }
     const contactsToAssign = Math.min(availableContacts, texter.needsMessageCount)
     if (contactsToAssign === 0) {
       // avoid creating a new assignment when the texter should get 0
-      continue
+      if (!campaign.use_dynamic_assignment){
+        continue
+      }
     }
     availableContacts = availableContacts - contactsToAssign
     const existingAssignment = currentAssignments.find((ele) => ele.user_id === texterId)
@@ -296,11 +301,13 @@ export async function assignTexters(job) {
     if (existingAssignment) {
       assignment = new Assignment({id: existingAssignment.id,
                                    user_id: existingAssignment.user_id,
-                                   campaign_id: cid})
+                                   campaign_id: cid
+                                 })
     } else {
       assignment = await new Assignment({
         user_id: texterId,
-        campaign_id: cid
+        campaign_id: cid,
+        max_contacts: maxContacts || process.env.DEFAULT_MAX_CONTACTS
       }).save()
     }
 
@@ -326,17 +333,21 @@ export async function assignTexters(job) {
 
     await updateJob(job, Math.floor((75 / texterCount) * (index + 1)) + 20)
   }
-  const assignmentsToDelete = r.knex('assignment')
-    .where('assignment.campaign_id', cid)
-    .leftJoin('campaign_contact', 'assignment.id', 'campaign_contact.assignment_id')
-    .groupBy('assignment.id')
-    .havingRaw('COUNT(campaign_contact.id) = 0')
-    .select('assignment.id as id')
 
-  await r.knex('assignment')
-    .where('id', 'in', assignmentsToDelete)
-    .delete()
-    .catch(log.error)
+  if (!campaign.use_dynamic_assignment){
+    const assignmentsToDelete = r.knex('assignment')
+      .where('assignment.campaign_id', cid)
+      .leftJoin('campaign_contact', 'assignment.id', 'campaign_contact.assignment_id')
+      .groupBy('assignment.id')
+      .havingRaw('COUNT(campaign_contact.id) = 0')
+      .select('assignment.id as id')
+
+    await r.knex('assignment')
+      .where('id', 'in', assignmentsToDelete)
+      .delete()
+      .catch(log.error)
+  }
+
 
   if (JOBS_SAME_PROCESS && job.id) {
     await r.table('job_request').get(job.id).delete()

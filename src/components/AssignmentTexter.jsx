@@ -8,7 +8,8 @@ import { StyleSheet, css } from 'aphrodite'
 import { withRouter } from 'react-router'
 import Check from 'material-ui/svg-icons/action/check-circle'
 import Empty from '../components/Empty'
-import FlatButton from 'material-ui/FlatButton'
+import RaisedButton from 'material-ui/RaisedButton'
+
 const styles = StyleSheet.create({
   container: {
     position: 'fixed',
@@ -75,6 +76,7 @@ class AssignmentTexter extends React.Component {
       return
     }
 
+    this.props.refreshData()
     this.setState({ direction: 'right' }, () => this.incrementCurrentContactIndex(1))
   }
 
@@ -83,6 +85,10 @@ class AssignmentTexter extends React.Component {
       return
     }
     this.setState({ direction: 'left' }, () => this.incrementCurrentContactIndex(-1))
+  }
+
+  handleExitTexter = () => {
+    this.props.router.push('/app')
   }
 
   handleCannedResponseChange = (script) => {
@@ -101,7 +107,14 @@ class AssignmentTexter extends React.Component {
 
   currentContact() {
     const { contacts } = this.props
-    return this.getContact(contacts, this.state.currentContactIndex)
+
+    // If the index has got out of sync with the contacts available, then rewind to the start
+    if(this.getContact(contacts, this.state.currentContactIndex)){
+      return this.getContact(contacts, this.state.currentContactIndex)
+    } else {
+      this.updateCurrentContactIndex(0)
+      return this.getContact(contacts, 0)
+    }
   }
 
   renderNavigationToolbarChildren() {
@@ -153,19 +166,19 @@ class AssignmentTexter extends React.Component {
         <Empty
           title="You've already messaged or replied to all your assigned contacts for now."
           icon={<Check />}
-        >
-          <FlatButton
-            label='Go back to todos'
+          content={(<RaisedButton
+            label='Back To Todos'
+            onClick={this.handleExitTexter}
           >
-            primary
-          </FlatButton>
+          </RaisedButton>)}
+        >
+          
         </Empty>
       </div>
     )
   }
   render() {
     const { contacts } = this.props.assignment
-
     return (
       <div className={css(styles.container)}>
         {contacts.length === 0 ? this.renderEmpty() : this.renderTexter()}

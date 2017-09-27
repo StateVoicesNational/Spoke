@@ -62,6 +62,10 @@ function getContacts(assignment, contactsFilter, organization, campaign) {
     if (contactsFilter.hasOwnProperty('messageStatus') && contactsFilter.messageStatus !== null) {
       if (pastDue && contactsFilter.messageStatus === 'needsMessage') {
         query = query.where('message_status', '')
+      } else if (contactsFilter.messageStatus === 'needsMessageOrResponse') {
+        query = query
+          .whereIn('message_status', ['needsResponse', 'needsMessage'])
+          .orderByRaw("message_status DESC, updated_at")
       } else {
         query = query.where('message_status', contactsFilter.messageStatus)
       }
@@ -86,7 +90,8 @@ function getContacts(assignment, contactsFilter, organization, campaign) {
 export const resolvers = {
   Assignment: {
     ...mapFieldsToModel([
-      'id'
+      'id',
+      'maxContacts'
     ], Assignment),
     texter: async (assignment, _, { loaders }) => (
       loaders.user.load(assignment.user_id)
