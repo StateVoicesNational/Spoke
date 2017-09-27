@@ -450,7 +450,7 @@ export async function exportCampaign(job) {
       Object.keys(allQuestions).forEach((stepId) => {
         let value = ''
         questionResponses.forEach((response) => {
-          if (response.interaction_step_id === stepId) {
+          if (response.interaction_step_id === Number(stepId)) {
             value = response.value
           }
         })
