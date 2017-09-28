@@ -700,12 +700,12 @@ const rootMutations = {
       const assignment = await Assignment.get(assignmentId)
       const campaign = await Campaign.get(assignment.campaign_id)
       // Assign some contacts
-      await rootMutations.RootMutation.findNewCampaignContact(_, { assignmentId: assignmentId, numberContacts: process.env.BULK_MESSAGE_CHUNK_SIZE } , loaders)
+      await rootMutations.RootMutation.findNewCampaignContact(_, { assignmentId: assignmentId, numberContacts: process.env.BULK_SEND_CHUNK_SIZE } , loaders)
 
       const contacts = await r.knex('campaign_contact')
         .where({message_status: 'needsMessage'})
         .where({assignment_id: assignmentId})
-        .limit(process.env.BULK_MESSAGE_CHUNK_SIZE)
+        .limit(process.env.BULK_SEND_CHUNK_SIZE)
 
       const texter = camelCaseKeys(await User.get(assignment.user_id))
       const customFields = Object.keys(JSON.parse(contacts[0].custom_fields))
