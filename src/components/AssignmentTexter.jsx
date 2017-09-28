@@ -135,7 +135,7 @@ class AssignmentTexter extends React.Component {
         campaign={campaign}
         navigationToolbarChildren={navigationToolbarChildren}
         onFinishContact={this.handleFinishContact}
-        onRefreshAssignmentContacts={this.props.onRefreshAssignmentContacts}
+        refreshData={this.props.refreshData}
         onExitTexter={this.handleExitTexter}
       />
     )
@@ -172,7 +172,7 @@ AssignmentTexter.propTypes = {
   assignment: React.PropTypes.object,      // current assignment
   contacts: React.PropTypes.array,   // contacts for current assignment
   router: React.PropTypes.object,
-  onRefreshAssignmentContacts: React.PropTypes.func
+  refreshData: React.PropTypes.func
 }
 
 export default withRouter(AssignmentTexter)

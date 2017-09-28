@@ -1,3 +1,6 @@
+import { applyScript } from '../../lib/scripts'
+import camelCaseKeys from 'camelcase-keys'
+
 import { 
   Assignment,
   Campaign,
@@ -9,6 +12,7 @@ import {
   QuestionResponse,
   UserOrganization,
   JobRequest,
+  User,
   r,
   datawarehouse
 } from '../models'
@@ -195,7 +199,7 @@ const rootSchema = `
     editOrganizationRoles(organizationId: String!, userId: String!, roles: [String]): Organization
     updateTextingHours( organizationId: String!, textingHoursStart: Int!, textingHoursEnd: Int!): Organization
     updateTextingHoursEnforcement( organizationId: String!, textingHoursEnforced: Boolean!): Organization
-    sendMessages(contactMessages: [ContactMessage]): [CampaignContact]
+    bulkSendMessages(assignmentId: Int!): [CampaignContact]
     sendMessage(message:MessageInput!, campaignContactId:String!): CampaignContact,
     createOptOut(optOut:OptOutInput!, campaignContactId:String!):CampaignContact,
     editCampaignContactMessageStatus(messageStatus: String!, campaignContactId:String!): CampaignContact,
@@ -633,7 +637,7 @@ const rootMutations = {
 
       // Don't add them if they already have them
       const result = await r.knex.raw(`SELECT COUNT(*) as count FROM campaign_contact WHERE assignment_id = :assignment_id AND message_status = 'needsMessage'`, {assignment_id: assignmentId})
-      if (result.rows[0].count > 0){
+      if (result.rows[0].count >= numberContacts){
         return false
       } 
 
@@ -682,18 +686,47 @@ const rootMutations = {
 
       return loaders.campaignContact.load(campaignContactId)
     },
-    sendMessages: async(_, { contactMessages }, loaders) => {
-      if (process.env.ALLOW_SEND_ALL) {
-        const contacts = contactMessages.map(contactMessage => {
-          return rootMutations.RootMutation.sendMessage(_, contactMessage, loaders)
+    bulkSendMessages: async(_, { assignmentId }, loaders) => {
+      if (!process.env.ALLOW_SEND_ALL) {
+        log.error('Not allowed to send all messages at once')
+        throw new GraphQLError({
+          status: 403,
+          message: 'Not allowed to send all messages at once'
         })
-        return contacts
       }
-      log.error('Not allowed to send all messages at once')
-      throw new GraphQLError({
-        status: 403,
-        message: 'Not allowed to send all messages at once'
+
+      const assignment = await Assignment.get(assignmentId)
+      const campaign = await Campaign.get(assignment.campaign_id)
+      // Assign some contacts
+      await rootMutations.RootMutation.findNewCampaignContact(_, { assignmentId: assignmentId, numberContacts: process.env.BULK_MESSAGE_CHUNK_SIZE } , loaders)
+
+      const contacts = await r.knex('campaign_contact')
+        .where({message_status: 'needsMessage'})
+        .where({assignment_id: assignmentId})
+        .limit(process.env.BULK_MESSAGE_CHUNK_SIZE)
+
+      const texter = camelCaseKeys(await User.get(assignment.user_id))
+      const customFields = Object.keys(JSON.parse(contacts[0].custom_fields))
+
+      const contactMessages = await contacts.map( async (contact) => {
+        const script = await campaignContactResolvers.CampaignContact.currentInteractionStepScript(contact)
+        contact.customFields = contact.custom_fields
+        const text = applyScript({
+          contact: camelCaseKeys(contact),
+          texter,
+          script,
+          customFields
+        })
+        const contactMessage = {
+          contactNumber: contact.cell,
+          userId: assignment.user_id,
+          text,
+          assignmentId
+        }
+        await rootMutations.RootMutation.sendMessage(_, {message: contactMessage, campaignContactId: contact.id}, loaders)
       })
+
+      return []
     },
     sendMessage: async(_, { message, campaignContactId }, { loaders }) => {
       const contact = await loaders.campaignContact.load(campaignContactId)

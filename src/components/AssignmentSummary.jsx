@@ -265,26 +265,4 @@ const mapQueriesToProps = ({ ownProps }) => ({
   }
 })
 
-const mapMutationsToProps = () => ({
-  sendMessages: (contactMessages) => ({
-    mutation: gql`
-      mutation sendMessages($contactMessages: [ContactMessage]) {
-        sendMessages(contactMessages: $contactMessages) {
-          id
-          messageStatus
-          messages {
-            id
-            createdAt
-            text
-            isFromContact
-          }
-        }
-      }
-    `,
-    variables: {
-      contactMessages
-    }
-  })
-})
-
-export default loadData(withRouter(AssignmentSummary), { mapQueriesToProps, mapMutationsToProps })
+export default loadData(withRouter(AssignmentSummary), { mapQueriesToProps })

@@ -19,6 +19,7 @@ import GSForm from '../components/forms/GSForm'
 import Form from 'react-formal'
 import GSSubmitButton from '../components/forms/GSSubmitButton'
 import SendButton from '../components/SendButton'
+import BulkSendButton from '../components/BulkSendButton'
 import CircularProgress from 'material-ui/CircularProgress'
 import Snackbar from 'material-ui/Snackbar'
 import { getChildren, getTopMostParent, interactionStepForId, log, isBetweenTextingHours } from '../lib'
@@ -128,7 +129,7 @@ class AssignmentTexterContact extends React.Component {
     let snackbarOnTouchTap = null
     let snackbarActionTitle = null
     let snackbarError = null
-    
+
     if (assignment.id !== contact.assignmentId || campaign.isArchived) {
       disabledText = ''
       disabled = true
@@ -164,7 +165,7 @@ class AssignmentTexterContact extends React.Component {
       this.skipContact()
     } else if (!this.isContactBetweenTextingHours(contact)) {
       setTimeout(() => {
-        this.props.onRefreshAssignmentContacts()
+        this.props.refreshData()
         this.setState({ disabled: false })
       }, 1500)
     }
@@ -428,6 +429,12 @@ class AssignmentTexterContact extends React.Component {
     setTimeout(this.props.onFinishContact, 1500)
   }
 
+  bulkSendMessages = async (assignmentId) => {
+    console.log("Assignmnet ID", assignmentId)
+    await this.props.mutations.bulkSendMessages(assignmentId)
+    this.props.refreshData()
+  }
+
   messageSchema = yup.object({
     messageText: yup.string().required("Can't send empty message")
   })
@@ -487,7 +494,7 @@ class AssignmentTexterContact extends React.Component {
   }
 
   renderActionToolbar() {
-    const { data, campaign, navigationToolbarChildren } = this.props
+    const { data, campaign, assignment, navigationToolbarChildren, onFinishContact } = this.props
 
     const { contact } = data
 
@@ -503,6 +510,11 @@ class AssignmentTexterContact extends React.Component {
             onFinalTouchTap={this.handleClickSendMessageButton}
             disabled={this.state.disabled}
           />
+          { window.BULK_SEND_CHUNK_SIZE && contact.messageStatus === 'needsMessage' ? <BulkSendButton
+            assignment={assignment}
+            onFinishContact={onFinishContact}
+            bulkSendMessages={this.bulkSendMessages}
+          /> : ''}
           {this.renderNeedsResponseToggleButton(contact)}
           <RaisedButton
             label='Canned responses'
@@ -827,6 +839,18 @@ const mapMutationsToProps = () => ({
     variables: {
       message,
       campaignContactId
+    }
+  }),
+  bulkSendMessages: (assignmentId) => ({
+    mutation: gql`
+      mutation bulkSendMessages($assignmentId: Int!) {
+        bulkSendMessages(assignmentId: $assignmentId) {
+          id
+        }
+      }
+    `,
+    variables: {
+      assignmentId
     }
   })
 })
