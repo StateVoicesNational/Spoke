@@ -411,9 +411,10 @@ const rootMutations = {
       return newJob
     },
     editOrganizationRoles: async (_, { userId, organizationId, roles }, { user, loaders }) => {
-      const currentRoles = r.table('user_organization')
-        .getAll([organizationId, user.id], { index: 'organization_user' })
+      const currentRoles = await r.table('user_organization')
+        .getAll([organizationId, userId], { index: 'organization_user' })
         .pluck('role')('role')
+
       const oldRoleIsOwner = currentRoles.indexOf('OWNER') !== -1
       const newRoleIsOwner = roles.indexOf('OWNER') !== -1
       const roleRequired = (oldRoleIsOwner || newRoleIsOwner) ? 'OWNER' : 'ADMIN'
@@ -424,7 +425,7 @@ const rootMutations = {
       currentRoles.forEach(async (curRole) => {
         if (roles.indexOf(curRole) === -1) {
           await r.table('user_organization')
-            .getAll([organizationId, user.id], { index: 'organization_user' })
+            .getAll([organizationId, userId], { index: 'organization_user' })
             .filter({ role: curRole })
             .delete()
         }
@@ -435,7 +436,8 @@ const rootMutations = {
           organization_id: organizationId,
           user_id: userId,
           role: newRole
-        }))
+        }))      
+
       if (newOrgRoles.length) {
         await UserOrganization.save(newOrgRoles, { conflict: 'update' })
       }
