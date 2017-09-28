@@ -34,8 +34,6 @@ export const applyScript = ({ script, contact, customFields, texter }) => {
   const scriptFields = allScriptFields(customFields)
   let appliedScript = script
 
-  console.log("All data in applyScript:", script, contact, customFields, texter)
-
   for (const field of scriptFields) {
     const re = new RegExp(`${delimit(field)}`, 'g')
     appliedScript = appliedScript.replace(re, getScriptFieldValue(contact, texter, field))
