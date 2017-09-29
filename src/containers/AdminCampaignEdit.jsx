@@ -611,12 +611,16 @@ const mapQueriesToProps = ({ ownProps }) => ({
     pollInterval: 20000
   },
   availableActionsData: {
-    query: gql`query getAction {
-      availableActions {
+    query: gql`query getActions($organizationId: String!) {
+      availableActions(organizationId: $organizationId) {
         name
         display_name
+        instructions
       }
     }`,
+    variables: {
+      organizationId: ownProps.params.organizationId
+    },
     forceFetch: true
   }
 })

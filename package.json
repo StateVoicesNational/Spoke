@@ -116,6 +116,7 @@
     "react-tap-event-plugin": "^2.0.0",
     "redux": "^3.7.2",
     "redux-thunk": "^2.1.0",
+    "request": "^2.81.0",
     "rethink-knex-adapter": "^0.4.10",
     "rollbar": "^0.6.2",
     "stripe": "^4.9.0",
