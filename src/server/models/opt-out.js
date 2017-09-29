@@ -1,12 +1,13 @@
 import thinky from './thinky'
 const type = thinky.type
-import { requiredString, timestamp } from './custom-types'
+import { optionalString, requiredString, timestamp } from './custom-types'
 
 const OptOut = thinky.createModel('opt_out', type.object().schema({
   id: type.string(),
   cell: requiredString(),
   assignment_id: requiredString(),
   organization_id: requiredString(),
+  reason_code: optionalString(),
   created_at: timestamp()
 }).allowExtra(false))
 

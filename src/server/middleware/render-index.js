@@ -20,6 +20,12 @@ const rollbarScript = process.env.ROLLBAR_CLIENT_TOKEN ?
     // End Rollbar Snippet
   </script>` : ''
 
+// the site is not very useful without auth0, unless you have a session cookie already
+// good for doing dev offline
+const externalLinks = (process.env.NO_EXTERNAL_LINKS ? '' :
+  `<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Poppins">
+  <script src="https://cdn.auth0.com/js/lock/10.0.0-rc.2/lock.min.js"></script>`)
+
 export default function renderIndex(html, css, assetMap, store) {
   return `
 <!DOCTYPE html>
@@ -28,7 +34,7 @@ export default function renderIndex(html, css, assetMap, store) {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
     <title>Spoke</title>
-    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Poppins">
+    ${externalLinks}
     <style>
       /* CSS declarations go here */
       body {
@@ -48,7 +54,6 @@ export default function renderIndex(html, css, assetMap, store) {
       /**/
     </style>
     <style data-aphrodite>${css.content}</style>
-    <script src="https://cdn.auth0.com/js/lock/10.0.0-rc.2/lock.min.js"></script>
     ${rollbarScript}
   </head>
   <body>
