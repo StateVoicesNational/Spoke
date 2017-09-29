@@ -16,6 +16,7 @@ export const schema = `
     jobType: String
     assigned: Boolean
     status: Int
+    result_message: String
   }
 
   type Campaign {
@@ -93,7 +94,7 @@ export const resolvers = {
       user.is_superadmin && process.env.WAREHOUSE_DB_HOST
     ),
     pendingJobs: async (campaign) => r.table('job_request')
-      .filter({ campaign_id: campaign.id }),
+      .filter({ campaign_id: campaign.id }).orderBy('updated_at', 'desc'),
     texters: async (campaign) => (
       r.table('assignment')
         .getAll(campaign.id, { index: 'campaign_id' })

@@ -1,8 +1,7 @@
 import { r, datawarehouse, Campaign, CampaignContact, User, Assignment, InteractionStep } from '../server/models'
 import { log, gunzip, zipToTimeZone } from '../lib'
 import { sleep, getNextJob, updateJob } from './lib'
-import nexmo from '../server/api/lib/nexmo'
-import twilio from '../server/api/lib/twilio'
+import serviceMap from '../server/api/lib/services'
 import { getLastMessage, saveNewIncomingMessage } from '../server/api/lib/message-sending'
 
 import AWS from 'aws-sdk'
@@ -14,7 +13,6 @@ import { Notifications, sendUserNotification } from '../server/notifications'
 var zipMemoization = {}
 
 const JOBS_SAME_PROCESS = !!process.env.JOBS_SAME_PROCESS
-const serviceMap = { nexmo, twilio }
 
 async function getTimezoneByZip(zip) {
   if (zip in zipMemoization) {
@@ -36,6 +34,9 @@ async function getTimezoneByZip(zip) {
 export async function uploadContacts(job) {
   const campaignId = job.campaign_id
   // We do this deletion in schema.js but we do it again here just in case the the queue broke and we had a backlog of contact uploads for one campaign
+  const campaign = await Campaign.get(campaignId)
+  let jobMessages = []
+
   await r.table('campaign_contact')
     .getAll(campaignId, { index: 'campaign_id' })
     .delete()
@@ -59,8 +60,24 @@ export async function uploadContacts(job) {
     await CampaignContact.save(savePortion)
   }
 
-  if (JOBS_SAME_PROCESS && job.id) {
-    await r.table('job_request').get(job.id).delete()
+  const optOutCellCount = await r.knex('campaign_contact')
+    .whereIn('cell', function() {
+      this.select('cell').from('opt_out').where('organization_id', campaign.organization_id)
+    })
+    .where('campaign_id', campaignId)
+    .delete()
+
+  if (optOutCellCount) {
+    jobMessages.push(`Number of contacts excluded due to their opt-out status: ${optOutCellCount}`)
+  }
+
+  if (job.id) {
+    if (jobMessages.length) {
+      await r.knex('job_request').where('id', job.id)
+        .update({'result_message': jobMessages.join("\n")})
+    } else {
+      await r.table('job_request').get(job.id).delete()
+    }
   }
 }
 
@@ -102,7 +119,9 @@ export async function loadContactsFromDataWarehouse(job) {
     log.error('SQL statement does not return first_name, last_name, and cell: ', sqlQuery, fields)
     return
   }
+
   //TODO break up result and save in portions, dispatched
+  let jobMessages = []
   const savePortion = await Promise.all(knexResult.rows.map(async (row) => {
     let contact = {
       'campaign_id': job.campaign_id,
@@ -128,9 +147,27 @@ export async function loadContactsFromDataWarehouse(job) {
     .delete()
 
   await CampaignContact.save(savePortion)
+
+  // now that we've saved them all, we delete everyone that is opted out locally
+  // doing this in one go so that we can get the DB to do the indexed cell matching
+  const campaign = await Campaign.get(job.campaign_id)
+  const optOutCellCount = await r.knex('campaign_contact')
+    .whereIn('cell', function() {
+      this.select('cell').from('opt_out').where('organization_id', campaign.organization_id)
+    })
+    .where('campaign_id', campaign_id)
+    .delete()
+
+  console.log('OPTOUT CELL COUNT', optOutCellCount)
+
   // dispatch something that tests completion?
-  if (JOBS_SAME_PROCESS && job.id) {
-    await r.table('job_request').get(job.id).delete()
+  if (job.id) {
+    if (jobMessages.length) {
+      await r.knex('job_request').where('id', job.id)
+        .update({'result_message': jobMessages.join("\n")})
+    } else {
+      await r.table('job_request').get(job.id).delete()
+    }
   }
 }
 
@@ -191,7 +228,7 @@ export async function createInteractionSteps(job) {
     }
   }
 
-  if (JOBS_SAME_PROCESS && job.id) {
+  if (job.id) {
     await r.table('job_request').get(job.id).delete()
   }
 }
@@ -339,7 +376,7 @@ export async function assignTexters(job) {
     .delete()
     .catch(log.error)
 
-  if (JOBS_SAME_PROCESS && job.id) {
+  if (job.id) {
     await r.table('job_request').get(job.id).delete()
   }
 }
@@ -485,7 +522,7 @@ export async function exportCampaign(job) {
     log.debug(messageCsv)
   }
 
-  if (JOBS_SAME_PROCESS && job.id) {
+  if (job.id) {
     await r.table('job_request').get(job.id).delete()
   }
 }
@@ -611,4 +648,14 @@ export async function handleIncomingMessageParts() {
       .getAll(...messageIdsToDelete)
       .delete()
   }
+}
+
+export async function clearOldJobs(delay) {
+  // to clear out old stuck jobs
+  const twoHoursAgo = new Date(new Date() - 1000 * 60 * 60 * 2)
+  delay = delay || twoHoursAgo
+  return await r.knex('job_request')
+    .where({ assigned: true })
+    .where('updated_at', '<', delay)
+    .delete()
 }

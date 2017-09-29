@@ -106,6 +106,7 @@ const rootSchema = `
   input OptOutInput {
     assignmentId: String!
     cell: Phone!
+    reason: String
   }
 
   input QuestionResponseInput {
@@ -575,7 +576,7 @@ const rootMutations = {
       const contact = await loaders.campaignContact.load(campaignContactId)
       await assignmentRequired(user, contact.assignment_id)
 
-      const { assignmentId, cell } = optOut
+      const { assignmentId, cell, reason } = optOut
 
       const campaign = await r.table('assignment')
         .get(assignmentId)
@@ -583,6 +584,7 @@ const rootMutations = {
       await new OptOut({
         assignment_id: assignmentId,
         organization_id: campaign.organization_id,
+        reason_code: reason,
         cell
       }).save()
 

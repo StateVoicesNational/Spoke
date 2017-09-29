@@ -292,8 +292,9 @@ class AdminCampaignEdit extends React.Component {
         && this.state.campaignFormValues.hasOwnProperty('contactSql') === false),
       blocksStarting: true,
       extraProps: {
-        optOuts: this.props.organizationData.organization.optOuts,
-        datawarehouseAvailable: this.props.campaignData.campaign.datawarehouseAvailable
+        optOuts: [], //this.props.organizationData.organization.optOuts, // <= doesn't scale
+        datawarehouseAvailable: this.props.campaignData.campaign.datawarehouseAvailable,
+        jobResultMessage: ((this.props.pendingJobsData.campaign.pendingJobs.filter((job) => (/contacts/.test(job.jobType)))[0]||{}).result_message || '')
       }
     }, {
       title: 'Texters',
@@ -332,6 +333,7 @@ class AdminCampaignEdit extends React.Component {
     let sectionIsSaving = false
     let relatedJob = null
     let savePercent = 0
+    let jobMessage = null
     if (pendingJobs.length > 0) {
       if (section.title === 'Contacts') {
         relatedJob = pendingJobs.filter((job) => (job.jobType === 'upload_contacts' || job.jobType === 'contact_sql'))[0]
@@ -343,12 +345,14 @@ class AdminCampaignEdit extends React.Component {
     }
 
     if (relatedJob) {
-      sectionIsSaving = true
+      sectionIsSaving = !relatedJob.result_message
       savePercent = relatedJob.status
+      jobMessage = relatedJob.result_message
     }
     return {
       sectionIsSaving,
-      savePercent
+      savePercent,
+      jobMessage
     }
   }
 
@@ -411,7 +415,8 @@ class AdminCampaignEdit extends React.Component {
   }
 
   renderStartButton() {
-    let isCompleted = this.props.pendingJobsData.campaign.pendingJobs.length === 0
+    let isCompleted = this.props.pendingJobsData.campaign
+      .pendingJobs.filter((job) => !/Error/.test(job.result_message||'')).length === 0
     this.sections().forEach((section) => {
       if (section.blocksStarting && !this.checkSectionCompleted(section) || !this.checkSectionSaved(section)) {
         isCompleted = false
@@ -569,6 +574,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
           jobType
           assigned
           status
+          result_message
         }
       }
     }`,
@@ -589,14 +595,10 @@ const mapQueriesToProps = ({ ownProps }) => ({
     pollInterval: 60000
   },
   organizationData: {
-    // TOOD: optOuts list on client side doesn't scale
     query: gql`query getOrganizationData($organizationId: String!, $role: String!) {
       organization(id: $organizationId) {
         id
         uuid
-        optOuts {
-          cell
-        }
         texters: people(role: $role) {
           id
           firstName

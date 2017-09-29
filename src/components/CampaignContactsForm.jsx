@@ -197,6 +197,12 @@ export default class CampaignContactsForm extends React.Component {
     const { contactUploadError, contactSqlError } = this.state
     return (
       <div>
+        {!this.props.jobResultMessage ? '' : (
+            <div>
+              <CampaignFormSectionHeading title='Job Outcome' />
+              <div>{this.props.jobResultMessage}</div>
+            </div>
+        )}
         <GSForm
           schema={yup.object({
             contactSql: yup.string()
@@ -314,5 +320,6 @@ CampaignContactsForm.propTypes = {
   ensureComplete: type.bool,
   onSubmit: type.func,
   saveDisabled: type.bool,
-  saveLabel: type.string
+  saveLabel: type.string,
+  jobResultMessage: type.string
 }
