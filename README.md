@@ -12,7 +12,7 @@ This is generated from [react-apollo-starter-kit](https://github.com/saikat/reac
 
 ## Deploy to Heroku
 
-<a href="https://heroku.com/deploy?template=https://github.com/MoveOnOrg/Spoke">
+<a href="https://heroku.com/deploy?template=https://github.com/shakalee14/Spoke">
   <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy">
 </a>
 
