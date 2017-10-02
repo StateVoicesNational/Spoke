@@ -94,7 +94,7 @@ export async function handleIncomingMessages() {
   let i = 0
   while (true) {
     try {
-      if (process.env.DEBUG_INCOMING_MESSAGES) {
+      if (process.env.DEBUG_SCALING) {
         console.log('entering handleIncomingMessages. round: ', ++i)
       }
       const countPendingMessagePart = await r.knex('pending_message_part')
@@ -103,12 +103,12 @@ export async function handleIncomingMessages() {
         totalCount = total[0].total
         return totalCount
       })
-      if (process.env.DEBUG_INCOMING_MESSAGES) {
+      if (process.env.DEBUG_SCALING) {
         console.log('counting handleIncomingMessages. count: ', countPendingMessagePart)
       }
       await sleep(500)
       if(countPendingMessagePart > 0) {
-        if (process.env.DEBUG_INCOMING_MESSAGES) {
+        if (process.env.DEBUG_SCALING) {
           console.log('running handleIncomingMessages')
         }
         await handleIncomingMessageParts()

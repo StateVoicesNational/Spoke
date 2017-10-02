@@ -44,6 +44,11 @@ export async function uploadContacts(job) {
   let contacts = await gunzip(new Buffer(job.payload, 'base64'))
   const chunkSize = 1000
   contacts = JSON.parse(contacts)
+
+  if (process.env.MAX_CONTACTS) {
+    contacts = contacts.slice(0, parseInt(process.env.MAX_CONTACTS))
+  }
+
   const numChunks = Math.ceil(contacts.length / chunkSize)
 
   for (let index = 0; index < contacts.length; index++) {
