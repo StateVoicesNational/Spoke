@@ -21,6 +21,7 @@ DB_NAME                           | Database connection name. _Required_.
 DB_PORT                           | Database connection port. _Required_.
 DB_TYPE                           | Database connection type for [Knex](http://knexjs.org/#Installation-client). _Options_: mysql, pg, sqlite3. _Default_: sqlite3.
 DB_USE_SSL                        | Boolean value to determine whether database connections should use SSL. _Default_: false.
+DEBUG_SCALING                     | Emit console.log on events related to scaling issues. _Default_: false.
 DEFAULT_SERVICE                   | Default SMS service. _Options_: twilio, nexmo.
 DEV_APP_PORT                      | Port for development Webpack server. Required for development.
 EMAIL_FROM                        | Email from address. _Required_.
@@ -30,6 +31,7 @@ EMAIL_HOST_PORT                   | Email server port. _Required_.
 EMAIL_HOST_USER                   | Email server user. _Required_.
 GRAPHQL_URL                       | Optional URL for pointing GraphQL API requests. Should end with `/graphql`, e.g. `https://example.org/graphql`. _Default_: "/graphql"
 JOBS_SAME_PROCESS                 | Boolean value indicating whether jobs should be executed in the same process in which they are created (vs. processing asyncronously via worker processes). _Default_: false.
+MAX_CONTACTS                      | If set each campaign can only have a maximum of the value (an integer). This is good for staging/QA/evaluation instances.  _Default_: false (i.e. there is no maximum)
 NEXMO_API_KEY                     | Nexmo API key. Required if using Nexmo.
 NEXMO_API_SECRET                  | Nexmo API secret. Required if using Nexmo.
 NO_EXTERNAL_LINKS                 | Removes google fonts and auth0 login script -- good for development offline when you already have an auth0 session
