@@ -13,7 +13,6 @@
   - You will be redirected to a page that includes `Datastores > <name of your postgresql instance` at the top
   - Click on `Settings`
   - Find `Database Credentials` section and click on `View Credentials ...`
-    - Host = DB_HOST
     - Database = DB_NAME
     - User = DB_USER
     - Port = DB_PORT
