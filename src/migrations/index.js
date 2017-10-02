@@ -52,6 +52,15 @@ const migrations = [
       })
       console.log('added updated_at column to campaign_contact')
     }
+  },
+  { auto: true, //5
+    date: '2017-09-28',
+    migrate: async function migrate() {
+      await r.knex.schema.alterTable('user', (table) => {
+        table.boolean('terms').default(false);
+      })
+      console.log('added terms column to user')
+    }
   }
   /* migration template
      {auto: true, //if auto is false, then it will block the migration running automatically

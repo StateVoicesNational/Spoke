@@ -13,6 +13,7 @@ import DashboardLoader from './containers/DashboardLoader'
 import TexterTodoList from './containers/TexterTodoList'
 import TexterTodo from './containers/TexterTodo'
 import Login from './components/Login'
+import Terms from './containers/Terms'
 import React from 'react'
 import CreateOrganization from './containers/CreateOrganization'
 import JoinTeam from './containers/JoinTeam'
@@ -80,6 +81,7 @@ export default function makeRoutes(requireAuth = () => {}) {
         </Route>
       </Route>
       <Route path='login' component={Login} />
+      <Route path='terms' component={Terms} />
       <Route path='invite/:inviteId' component={CreateOrganization} onEnter={requireAuth} />
       <Route path=':organizationUuid/join/:campaignId' component={JoinTeam} onEnter={requireAuth} />
     </Route>
