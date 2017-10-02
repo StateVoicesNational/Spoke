@@ -97,12 +97,6 @@
       "value": "<changeme>"
     },
 
-    "DB_KEY": {
-      "description": "database uri name created in heroku addon --> located in heroku postgres credentials",
-      "required": true,
-      "value": "<changeme>"
-    },
-
     "DB_TYPE": {
       "description": "to specify postgres database vs sqlite3",
       "required": true,

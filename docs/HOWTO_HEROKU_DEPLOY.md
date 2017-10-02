@@ -1,5 +1,6 @@
 # Instructions for one click deployment to heroku
 - Create a heroku account (if you don't have an account)- you will need to connect a CC to your account
+- WARNING - this template will incur costs.
 - Fill out environment variables in form --> instructions about that below
 - Currently works when dyno settings for worker processes are set at `standard` --> for more information about dynos, visit [here](https://devcenter.heroku.com/articles/dynos)
 - Currently works when Heroku Postgres add on is set at the `basic` level
@@ -17,7 +18,6 @@
     - User = DB_USER
     - Port = DB_PORT
     - Password = DB_PASSWORD
-    - URI = DB_KEY
   - These variables should be placed in your Heroku environment variables form
 
 ## Notes about auth0 environment variable setup
