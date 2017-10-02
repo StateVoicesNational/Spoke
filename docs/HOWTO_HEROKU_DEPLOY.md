@@ -1,6 +1,8 @@
 # Instructions for one click deployment to heroku
 - Create a heroku account (if you don't have an account)- you will need to connect a CC to your account
 - Fill out environment variables in form --> instructions about that below
+- Currently works when dyno settings for worker processes are set at `standard` --> for more information about dynos, visit [here](https://devcenter.heroku.com/articles/dynos)
+- Currently works when Heroku Postgres add on is set at the `basic` level
 
 
 ## Heroku Database Installation-client (incase your db variables don't load initially)
@@ -15,6 +17,7 @@
     - User = DB_USER
     - Port = DB_PORT
     - Password = DB_PASSWORD
+    - URI = DB_KEY
   - These variables should be placed in your Heroku environment variables form
 
 ## Notes about auth0 environment variable setup
@@ -35,8 +38,8 @@
 - Scroll to `Allowed Logout URLs` section and update it with (your heroku_app_url):
   - `https://<YOUR_HEROKU_APP_URL>/login-callback, http://<YOUR_HEROKU_APP_URL>/login-callback`
 
-  - `http://<YOUR_HEROKU_APP_URL>/login-callback` = AUTH0_LOGIN_CALLBACK
-  - `http://<YOUR_HEROKU_APP_URL>/logout-callback` = AUTH0_LOGOUT_CALLBACK
+  - `https://<YOUR_HEROKU_APP_URL>/login-callback` = AUTH0_LOGIN_CALLBACK
+  - `https://<YOUR_HEROKU_APP_URL>/logout-callback` = AUTH0_LOGOUT_CALLBACK
 - Scroll to `Allowed Origin (CORS)` add:
   - ` http://*.herokuapp.com`, ` https://*.herokuapp.com`
 - Scroll to bottom and click on `Advanced Settings`
