@@ -215,7 +215,8 @@ export async function createInteractionSteps(job) {
           // store the answers and step id for writing to child steps
           answerOptionStore[nextStepId] = {
             'value': option.value,
-            'parent': dbInteractionStep.id
+            'parent': dbInteractionStep.id,
+            'action': option.action
           }
         } else {
           // when answer but no link to next step
