@@ -79,12 +79,6 @@
       "value": "campaign-id-hash"
     },
 
-    "DB_HOST": {
-      "description": "to connect to postgres database - located in heroku postgres credentials",
-      "required": true,
-      "value": "process.env.DB_HOST"
-    },
-
     "DB_PORT": {
       "description": "to connect to postgres database",
       "required": true,
@@ -93,12 +87,6 @@
 
     "DB_NAME": {
       "description": "database name created in heroku addon --> located in heroku postgres credentials",
-      "required": true,
-      "value": "<changeme>"
-    },
-
-    "DB_KEY": {
-      "description": "database uri name created in heroku addon --> located in heroku postgres credentials",
       "required": true,
       "value": "<changeme>"
     },
