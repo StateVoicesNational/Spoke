@@ -12,13 +12,13 @@ This is generated from [react-apollo-starter-kit](https://github.com/saikat/reac
 
 ## Deploy to Heroku
 
-<a href="https://heroku.com/deploy?template=https://github.com/shakalee14/Spoke">
+<a href="https://heroku.com/deploy?template=https://github.com/MoveOnOrg/Spoke">
   <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy">
 </a>
 
 WARNING --> this template will incur costs
 
-Follow up instructions located [here](https://github.com/shakalee14/Spoke/blob/master/docs/HOWTO_HEROKU_DEPLOY.md)
+Follow up instructions located [here](https://github.com/MoveOnOrg/Spoke/blob/master/docs/HOWTO_HEROKU_DEPLOY.md)
 
 
 ## Getting started
