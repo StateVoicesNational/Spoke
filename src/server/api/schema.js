@@ -300,7 +300,7 @@ async function editCampaign(id, campaign, loaders, user) {
     const convertedResponses = []
     for (let index = 0; index < cannedResponses.length; index++) {
       const response = cannedResponses[index]
-      const newId = await Math.floor(Math.random()*10000000)
+      const newId = await Math.floor(Math.random() * 10000000)
       convertedResponses.push({
         ...response,
         campaign_id: id,
@@ -459,10 +459,10 @@ const rootMutations = {
       return await Organization.get(organizationId)
     },
     createInvite: async (_, { user }) => {
-      if( (user && user.is_superadmin) || !process.env.SUPPRESS_SELF_INVITE ){
+      if ((user && user.is_superadmin) || !process.env.SUPPRESS_SELF_INVITE) {
         const inviteInstance = new Invite({
           is_valid: true,
-          hash: uuidv4(),
+          hash: uuidv4()
         })
         const newInvite = await inviteInstance.save()
         return newInvite
@@ -524,7 +524,7 @@ const rootMutations = {
         title: cannedResponse.title,
         text: cannedResponse.text
       }).save()
-      //deletes duplicate created canned_responses
+      // deletes duplicate created canned_responses
       let query = r.knex('canned_response')
         .where('text', 'in',
           r.knex('canned_response')
@@ -548,7 +548,7 @@ const rootMutations = {
       }
 
       const newOrganization = await Organization.save({
-        name: name,
+        name,
         uuid: uuidv4()
       })
       await UserOrganization.save(
@@ -587,7 +587,7 @@ const rootMutations = {
       }).save()
 
       await r.knex('campaign_contact')
-        .whereIn('cell', function() {
+        .whereIn('cell', function () {
           this.select('cell').from('opt_out')
         })
         .update({
@@ -733,7 +733,7 @@ const rootResolvers = {
       loaders.organization.load(id),
     inviteByHash: async (_, { hash }, { loaders, user }) => {
       authRequired(user)
-      return r.table('invite').filter({"hash": hash})
+      return r.table('invite').filter({ hash })
     },
     currentUser: async(_, { id }, { user }) => user,
     contact: async(_, { id }, { loaders, user }) => {

@@ -97,8 +97,8 @@ class AdminCampaignEdit extends React.Component {
     // expandedKey pointers will remain the same object as before
     // so setState passes on those subsections should1 not refresh
     let pushToFormValues = {
-        ...this.state.campaignFormValues,
-        ...campaignDataCopy
+      ...this.state.campaignFormValues,
+      ...campaignDataCopy
     }
     // contacts and contactSql need to be *deleted*
     // when contacts are done on backend so that Contacts section
@@ -167,10 +167,10 @@ class AdminCampaignEdit extends React.Component {
     const section = this.sections()[expandedSection]
     let newCampaign = {}
     if (this.checkSectionSaved(section)) {
-      return //already saved and no data changes
+      return // already saved and no data changes
     } else {
       newCampaign = {
-          ...this.getSectionState(section)
+        ...this.getSectionState(section)
       }
     }
 
@@ -232,7 +232,7 @@ class AdminCampaignEdit extends React.Component {
     const pendingJobs = await this.props.pendingJobsData.refetch()
     if (pendingJobs.length && !noMore) {
       const self = this
-      setTimeout(function() {
+      setTimeout(function () {
         // run it once more after there are no more jobs
         self.pollDuringActiveJobs(true)
       }, 1000)
@@ -292,9 +292,9 @@ class AdminCampaignEdit extends React.Component {
         && this.state.campaignFormValues.hasOwnProperty('contactSql') === false),
       blocksStarting: true,
       extraProps: {
-        optOuts: [], //this.props.organizationData.organization.optOuts, // <= doesn't scale
+        optOuts: [], // this.props.organizationData.organization.optOuts, // <= doesn't scale
         datawarehouseAvailable: this.props.campaignData.campaign.datawarehouseAvailable,
-        jobResultMessage: ((this.props.pendingJobsData.campaign.pendingJobs.filter((job) => (/contacts/.test(job.jobType)))[0]||{}).result_message || '')
+        jobResultMessage: ((this.props.pendingJobsData.campaign.pendingJobs.filter((job) => (/contacts/.test(job.jobType)))[0] || {}).result_message || '')
       }
     }, {
       title: 'Texters',
@@ -416,7 +416,7 @@ class AdminCampaignEdit extends React.Component {
 
   renderStartButton() {
     let isCompleted = this.props.pendingJobsData.campaign
-      .pendingJobs.filter((job) => !/Error/.test(job.result_message||'')).length === 0
+      .pendingJobs.filter((job) => !/Error/.test(job.result_message || '')).length === 0
     this.sections().forEach((section) => {
       if (section.blocksStarting && !this.checkSectionCompleted(section) || !this.checkSectionSaved(section)) {
         isCompleted = false
@@ -649,19 +649,19 @@ const mapMutationsToProps = () => ({
       }`,
     variables: { campaignId }
   }),
-  editCampaign: function(campaignId, campaign) {
+  editCampaign(campaignId, campaign) {
     return ({
-    mutation: gql`
+      mutation: gql`
       mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {
         editCampaign(id: $campaignId, campaign: $campaign) {
           ${campaignInfoFragment}
         }
       },
     `,
-    variables: {
-      campaignId,
-      campaign
-    }
+      variables: {
+        campaignId,
+        campaign
+      }
     })
   }
 })

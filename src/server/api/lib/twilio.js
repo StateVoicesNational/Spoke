@@ -20,7 +20,7 @@ if (!process.env.TWILIO_MESSAGE_SERVICE_SID) {
 }
 
 function webhook() {
-  log.warn('twilio webhook call') //sky: doesn't run this
+  log.warn('twilio webhook call') // sky: doesn't run this
   if (twilio) {
     return Twilio.webhook()
   } else {
