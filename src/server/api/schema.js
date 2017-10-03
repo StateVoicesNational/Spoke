@@ -1,5 +1,6 @@
 import { Campaign,
   CannedResponse,
+  InteractionStep,
   Invite,
   Message,
   OptOut,
@@ -161,6 +162,7 @@ const rootSchema = `
   type Action {
     name: String
     display_name: String
+    instructions: String
   }
 
   type RootQuery {
@@ -171,7 +173,7 @@ const rootSchema = `
     contact(id:String!): CampaignContact
     assignment(id:String!): Assignment
     organizations: [Organization]
-    availableActions: [Action]
+    availableActions(organizationId:String!): [Action]
   }
 
   type RootMutation {
@@ -669,6 +671,7 @@ const rootMutations = {
     deleteQuestionResponses: async(_, { interactionStepIds, campaignContactId }, { loaders, user }) => {
       const contact = await loaders.campaignContact.load(campaignContactId)
       await assignmentRequired(user, contact.assignment_id)
+      // TODO: maybe undo action_handler
       await r.table('question_response')
         .getAll(campaignContactId, { index: 'campaign_contact_id' })
         .getAll(...interactionStepIds, { index: 'interaction_step_id' })
@@ -685,12 +688,31 @@ const rootMutations = {
           .getAll(campaignContactId, { index: 'campaign_contact_id' })
           .filter({ interaction_step_id: interactionStepId })
           .delete()
+        // TODO: maybe undo action_handler if updated answer
 
-        await new QuestionResponse({
+        const qr = await new QuestionResponse({
           campaign_contact_id: campaignContactId,
           interaction_step_id: interactionStepId,
           value
         }).save()
+        const interactionStepResult = await r.knex('interaction_step')
+        //TODO: is this really parent_interaction_id or just interaction_id?
+          .where({'parent_interaction_id': interactionStepId,
+                  'answer_option': value })
+          .whereNot('answer_actions','')
+          .whereNotNull('answer_actions')
+
+        interactionStepAction = (interactionStepResult.length && interactionStepResult[0].answer_actions)
+        if (interactionStepAction) {
+          // run interaction step handler
+          try {
+            const handler = require(`../action_handlers/${interactionStepAction}.js`)
+            handler.processAction(qr, interactionStepResult[0], campaignContactId)
+          } catch(err) {
+            console.error('Handler for InteractionStep', interactionStepId,
+                          'Does Not Exist:', interactionStepAction)
+          }
+        }
       }
 
       const contact = loaders.campaignContact.load(campaignContactId)
@@ -765,24 +787,23 @@ const rootResolvers = {
       await superAdminRequired(user)
       return r.table('organization')
     },
-    availableActions: (_, __, { user }) => {
+    availableActions: (_, { organizationId }, { user }) => {
       if (!process.env.ACTION_HANDLERS) {
         return []
       }
       const allHandlers = process.env.ACTION_HANDLERS.split(',')
-      const availableHandlers = allHandlers.filter(handler => {
-        try {
-          return require(`../action_handlers/${handler}.js`).available()
-        }
-        catch (_) {
-          return false
-        }
-      })
+
+      const availableHandlers = allHandlers.map(handler => {
+        return {'name': handler,
+                'handler': require(`../action_handlers/${handler}.js`)
+               }
+      }).filter( async (h) => (h && (await h.handler.available(organizationId))) )
+
       const availableHandlerObjects = availableHandlers.map(handler => {
-        const handlerPath = `../action_handlers/${handler}.js`
         return {
-          'name': handler,
-          'display_name': require(handlerPath).displayName()
+          'name': handler.name,
+          'display_name': handler.handler.displayName(),
+          'instructions': handler.handler.instructions()
         }
       })
       return availableHandlerObjects
