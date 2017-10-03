@@ -311,24 +311,26 @@ export async function assignTexters(job) {
       }).save()
     }
 
-    await r.knex('campaign_contact')
-      .where('id', 'in',
-             r.knex('campaign_contact')
-             .where({ assignment_id: null,
-                      campaign_id: cid
-                    })
-             .limit(contactsToAssign)
-             .select('id'))
-      .update({ assignment_id: assignment.id })
-      .catch(log.error)
+    if (!campaign.use_dynamic_assignment){
+      await r.knex('campaign_contact')
+        .where('id', 'in',
+               r.knex('campaign_contact')
+               .where({ assignment_id: null,
+                        campaign_id: cid
+                      })
+               .limit(contactsToAssign)
+               .select('id'))
+        .update({ assignment_id: assignment.id })
+        .catch(log.error)
 
-    if (existingAssignment) {
-      // We can't rely on an observer because nothing
-      // about the actual assignment object changes
-      await sendUserNotification({
-        type: Notifications.ASSIGNMENT_UPDATED,
-        assignment
-      })
+      if (existingAssignment) {
+        // We can't rely on an observer because nothing
+        // about the actual assignment object changes
+        await sendUserNotification({
+          type: Notifications.ASSIGNMENT_UPDATED,
+          assignment
+        })
+      }
     }
 
     await updateJob(job, Math.floor((75 / texterCount) * (index + 1)) + 20)
