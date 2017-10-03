@@ -646,6 +646,8 @@ const rootMutations = {
       const campaign = await Campaign.get(assignment.campaign_id)
       const contactsCount = Number((await r.knex('campaign_contact').where({assignment_id: assignmentId}).select(r.knex.raw('count(*) as count')))[0].count)
 
+      console.log({assignmentId: assignmentId, numberContacts: numberContacts})
+
       if (!campaign.use_dynamic_assignment) {
         return false
       }
@@ -655,6 +657,8 @@ const rootMutations = {
       if (assignment.max_contacts && (contactsCount + numberContacts > assignment.max_contacts)){
         numberContacts = assignment.max_contacts - contactsCount
       }
+
+      console.log({assignmentId: assignmentId, numberContacts: numberContacts})
 
       // Don't add them if they already have them
       const result = await r.knex.raw(`SELECT COUNT(*) as count FROM campaign_contact WHERE assignment_id = :assignment_id AND message_status = 'needsMessage'`, {assignment_id: assignmentId})
@@ -719,7 +723,7 @@ const rootMutations = {
       const assignment = await Assignment.get(assignmentId)
       const campaign = await Campaign.get(assignment.campaign_id)
       // Assign some contacts
-      await rootMutations.RootMutation.findNewCampaignContact(_, { assignmentId: assignmentId, numberContacts: process.env.BULK_SEND_CHUNK_SIZE } , loaders)
+      await rootMutations.RootMutation.findNewCampaignContact(_, { assignmentId: assignmentId, numberContacts: Number(process.env.BULK_SEND_CHUNK_SIZE) - 1 } , loaders)
 
       const contacts = await r.knex('campaign_contact')
         .where({message_status: 'needsMessage'})

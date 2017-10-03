@@ -293,11 +293,15 @@ class AssignmentTexterContact extends React.Component {
     }
   }
 
+  setDisabled = async () => {
+    this.setState({ disabled: true })
+  }
+
   handleMessageFormSubmit = async ({ messageText }) => {
     try {
       const { contact } = this.props.data
       const message = this.createMessageToContact(messageText)
-      this.setState({ disabled: true })
+      this.setDisabled()
       await this.props.mutations.sendMessage(message, contact.id)
 
       await this.handleSubmitSurveys()
@@ -515,6 +519,7 @@ class AssignmentTexterContact extends React.Component {
             assignment={assignment}
             onFinishContact={onFinishContact}
             bulkSendMessages={this.bulkSendMessages}
+            setDisabled={this.setDisabled.bind(this)}
           /> : ''}
           {this.renderNeedsResponseToggleButton(contact)}
           <RaisedButton
