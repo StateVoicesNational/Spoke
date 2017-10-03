@@ -15,7 +15,7 @@ export const schema = `
   }
 `
 function getContacts(assignment, contactsFilter, organization, campaign) {
-  /// returns list of contacts eligible for contacting _now_ by a particular user
+  // / returns list of contacts eligible for contacting _now_ by a particular user
 
   const textingHoursEnforced = organization.texting_hours_enforced
   const textingHoursStart = organization.texting_hours_start
@@ -30,7 +30,6 @@ function getContacts(assignment, contactsFilter, organization, campaign) {
   let query = r.knex('campaign_contact').where('assignment_id', assignment.id)
 
   if (contactsFilter) {
-
     if (contactsFilter.hasOwnProperty('validTimezone') && contactsFilter.validTimezone !== null) {
       if (contactsFilter.validTimezone === true) {
         if (defaultTimezoneIsBetweenTextingHours(config)) {

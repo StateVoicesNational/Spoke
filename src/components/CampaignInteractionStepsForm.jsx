@@ -303,15 +303,15 @@ export default class CampaignInteractionStepsForm extends React.Component {
             display: 'inline-block'
           }}
         >
-          { this.props.availableActions && this.props.availableActions.length ?
+          {this.props.availableActions && this.props.availableActions.length ?
             (<div>
              <Form.Field
               name={actionFieldname}
               type='select'
               choices={[
-                {'value': '', 'label': 'Action...'},
+                { 'value': '', 'label': 'Action...' },
                 ...this.props.availableActions.map(
-                  action => ({'value': action.name, 'label': action.display_name})
+                  action => ({ 'value': action.name, 'label': action.display_name })
                 )
               ]}
             />
@@ -322,7 +322,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
              { answer.action ? <HelpIcon /> : <HelpIconOutline /> }
              </IconButton>
              </div>)
-          : '' }
+          : ''}
         </div>
         <div
           style={{

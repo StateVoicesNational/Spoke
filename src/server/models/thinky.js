@@ -2,7 +2,7 @@ import thinky from 'thinky'
 
 import dumbThinky from 'rethink-knex-adapter'
 
-//// This was how to connect to rethinkdb:
+// // This was how to connect to rethinkdb:
 // export default thinky({
 //   host: process.env.DB_HOST,
 //   port: process.env.DB_PORT,
@@ -34,7 +34,7 @@ if (process.env.DB_JSON || global.DB_JSON) {
   config = {
     client: 'sqlite3',
     connection: {
-      filename: "./mydb.sqlite"
+      filename: './mydb.sqlite'
     },
     defaultsUnsupported: true
   }

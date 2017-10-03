@@ -148,7 +148,6 @@ app.get('/allmessages/:organizationId', wrap(async (req, res) => {
       .orderBy('message.created_at', 'desc')
     return res.json(messages)
   }
-
 }))
 
 app.get('/logout-callback', (req, res) => {
