@@ -124,7 +124,6 @@ class AssignmentTexter extends React.Component {
   renderTexter() {
     const { assignment } = this.props
     const { campaign, texter } = assignment
-    console.log('~~~~~~~', texter)
     const contact = this.currentContact()
     const navigationToolbarChildren = this.renderNavigationToolbarChildren()
     return (

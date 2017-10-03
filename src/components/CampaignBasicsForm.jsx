@@ -34,7 +34,6 @@ export default class CampaignBasicsForm extends React.Component {
   }
 
   render() {
-    console.log(moment().format('LTS'))
     return (
       <div>
         <CampaignFormSectionHeading
