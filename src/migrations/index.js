@@ -7,7 +7,8 @@ import { log } from '../lib'
 const migrations = [
   { auto: true, // 0
     date: '2017-08-10',
-    *migratection() {
+    // eslint-disable-next-line
+    migrate: async function() {
       await r.knex.schema.alterTable('organization', (table) => {
         table.string('uuid')
       })
@@ -16,7 +17,8 @@ const migrations = [
   },
   { auto: true, // 1
     date: '2017-08-22',
-    *migratection() {
+    // eslint-disable-next-line
+    migrate: async function() {
       await r.knex.schema.alterTable('interaction_step', (table) => {
         table.text('answer_actions')
       })
@@ -25,7 +27,8 @@ const migrations = [
   },
   { auto: true, // 2
     date: '2017-08-23',
-    migrate: async function migrate() {
+    // eslint-disable-next-line
+    migrate: async function() {
       await r.knex.schema.alterTable('campaign_contact', (table) => {
         table.string('external_id').nullable().default(null)
       })
@@ -34,7 +37,8 @@ const migrations = [
   },
   { auto: true, // 3
    date: '2017-09-24',
-   *migratection() {
+   // eslint-disable-next-line
+   migrate: async function() {
      await r.knex.schema.alterTable('job_request', (table) => {
        table.string('result_message').nullable().default('')
      })
@@ -46,6 +50,7 @@ const migrations = [
   /* migration template
      {auto: true, //if auto is false, then it will block the migration running automatically
       date: '2017-08-23',
+      // eslint-disable-next-line
       migrate: async function() {
         // it is ok if this function fails if run again, but
         // it should be ok to be run twice.  If not, then make auto=false
