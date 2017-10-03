@@ -12,8 +12,16 @@ exports.handler = (event, context) => {
     // default web server stuff
     const app = require('./build/server/server/index')
     const server = awsServerlessExpress.createServer(app.default)
+    const startTime = (context.getRemainingTimeInMillis ? context.getRemainingTimeInMillis() : 0)
+    const webResponse = awsServerlessExpress.proxy(server, event, context)
+    if (process.env.DEBUG_SCALING) {
+      const endTime = (context.getRemainingTimeInMillis ? context.getRemainingTimeInMillis() : 0)
+      if ((endTime - startTime) > 3000) { //3 seconds
+        console.log('SLOW_RESPONSE milliseconds:', endTime-startTime, event)
+      }
+    }
 
-    return awsServerlessExpress.proxy(server, event, context)
+    return webResponse
   } else {
     // handle a custom command sent as an event
     const functionName = context.functionName
