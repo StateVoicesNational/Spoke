@@ -61,7 +61,7 @@
     "apollo-client": "^0.4.7",
     "apollo-server": "^0.1.5",
     "apollo-tracer": "^0.1.4",
-    "aws-sdk": "^2.6.3",
+    "aws-sdk": "https://registry.npmjs.org/aws-sdk/-/aws-sdk-2.6.4.tgz",
     "aws-serverless-express": "https://registry.npmjs.org/aws-serverless-express/-/aws-serverless-express-3.0.2.tgz",
     "axios": "^0.16.1",
     "babel-cli": "^6.10.1",
