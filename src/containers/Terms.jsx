@@ -13,16 +13,10 @@ import { withRouter } from 'react-router'
 
 class Terms extends React.Component {
 
-  componentWillMount() {
-    const user = this.props.data.currentUser
-    console.log('~~~~~~~~', user)
-  }
-
-  handleTermsAgree = () => {
-    console.log('!!!!!!', this.props.data.currentUser.id)
-    this.props
-      .mutations
-      .userAgreeTerms(this.props.data.currentUser.id)
+  handleTermsAgree = async () => {
+    const { data, router, mutations, location } = this.props
+    const userData = await mutations.userAgreeTerms(data.currentUser.id)
+    if (userData.data.userAgreeTerms.terms) { router.push(location.query.next) }
   }
 
   render() {
@@ -78,6 +72,7 @@ const mapMutationsToProps = (ownProps) => ({
         mutation userAgreeTerms($userId: String!) {
           userAgreeTerms(userId: $userId) {
             id
+            terms
           }
         }`,
     variables: {

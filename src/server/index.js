@@ -179,6 +179,7 @@ app.get('/login-callback',
         email: req.user._json.email,
         is_superadmin: false
       })
+      res.redirect(req.query.state || 'terms')
     }
     res.redirect(req.query.state || '/')
   })

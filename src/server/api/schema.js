@@ -350,8 +350,8 @@ async function editCampaign(id, campaign, loaders, user) {
 const rootMutations = {
   RootMutation: {
     userAgreeTerms: async (_, { userId }, { user, loaders }) => {
-      const currentUser = await User
-        .get(id)
+      const currentUser = await r.table('user')
+        .get(userId)
         .update({
           terms: true
         })
