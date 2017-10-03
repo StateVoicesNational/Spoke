@@ -793,6 +793,13 @@ const rootMutations = {
 
       const { contactNumber, text } = message
 
+      if (text.length > (process.env.MAX_MESSAGE_LENGTH || 280)) {
+        throw new GraphQLError({
+          status: 400,
+          message: 'Message was longer than the limit'
+        })
+      }
+
       const replaceCurlyApostrophes = (rawText) => rawText
         .replace(/[\u2018\u2019]/g, "'")
 

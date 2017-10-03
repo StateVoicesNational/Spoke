@@ -61,6 +61,7 @@ export default function renderIndex(html, css, assetMap, store) {
       window.PRIVACY_URL="${process.env.PRIVACY_URL}"
       window.ALLOW_SEND_ALL=${process.env.ALLOW_SEND_ALL}
       window.BULK_SEND_CHUNK_SIZE=${process.env.BULK_SEND_CHUNK_SIZE}
+      window.MAX_MESSAGE_LENGTH=${process.env.MAX_MESSAGE_LENGTH || 280}
     </script>
     <script src="${assetMap['bundle.js']}"></script>
   </body>
