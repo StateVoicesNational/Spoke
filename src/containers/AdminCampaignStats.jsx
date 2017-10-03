@@ -245,6 +245,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
         id
         title
         isArchived
+        useDynamicAssignment
         assignments {
           id
           texter {
