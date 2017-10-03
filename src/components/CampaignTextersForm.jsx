@@ -152,9 +152,9 @@ export default class CampaignTextersForm extends React.Component {
       }
     })
 
-    let extra = totalNeedsMessage + totalMessaged - this.formValues().contactsCount
-    if (extra > 0) {
-      // 2. With extra texter capacity beyond contacts, remove contact counts from the top
+    let extraTexterCapacity = totalNeedsMessage + totalMessaged - this.formValues().contactsCount
+    if (extraTexterCapacity > 0) {
+      // 2. With extraTexterCapacity beyond contacts, remove contact counts from the top texters
       let theTexter = newFormValues.texters[0]
       if (changedTexter) {
         theTexter = newFormValues.texters.find((ele) => ele.id === changedTexter)
@@ -172,7 +172,7 @@ export default class CampaignTextersForm extends React.Component {
         return newTexter
       })
     } else if (this.state.autoSplit) {
-      // 3. if we don't have extras and auto-split is on, then fill the texters with assignments
+      // 3. if we don't have extraTexterCapacity and auto-split is on, then fill the texters with assignments
       const factor = 1
       let index = 0
       let skipsByIndex = new Array(newFormValues.texters.length).fill(0)
@@ -181,7 +181,7 @@ export default class CampaignTextersForm extends React.Component {
         newFormValues.texters[0].assignment.contactsCount = this.formValues().contactsCount
         newFormValues.texters[0].assignment.needsMessageCount = this.formValues().contactsCount - messagedCount
       } else if (newFormValues.texters.length > 1) {
-        while (extra < 0) {
+        while (extraTexterCapacity < 0) {
           const texter = newFormValues.texters[index]
           if (skipsByIndex[index] < texter.assignment.contactsCount - texter.assignment.needsMessageCount) {
             skipsByIndex[index]++
@@ -190,7 +190,7 @@ export default class CampaignTextersForm extends React.Component {
               if (texter.assignment.needsMessageCount + factor >= 0) {
                 texter.assignment.needsMessageCount = texter.assignment.needsMessageCount + factor
                 texter.assignment.contactsCount = texter.assignment.contactsCount + factor
-                extra = extra + factor
+                extraTexterCapacity = extraTexterCapacity + factor
               }
             }
           }
