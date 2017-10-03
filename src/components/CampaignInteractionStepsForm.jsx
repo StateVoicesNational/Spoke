@@ -22,421 +22,123 @@ import {
 } from '../lib'
 
 const styles = {
-  icon: {
-    width: 18,
-    height: 18
+  pullRight: {
+    float: 'right',
+    position: 'relative',
+    top: '10px',
+    icon: 'pointer'
   },
-  button: {
-    width: 22,
-    height: 18
+
+  cardHeader: {
+    backgroundColor: theme.colors.veryLightGray
   },
-  scriptRow: {
-    borderLeft: `5px solid ${theme.colors.green}`
-  },
-  scriptTitle: {
-    fontWeight: 'medium'
-  },
-  scriptSection: {
-    marginBottom: 46
-  },
-  scriptSectionSubtitle: {
-    color: 'gray',
-    fontWeight: 'light',
-    marginTop: 0,
-    marginBottom: 36,
-    fontSize: 12
-  },
-  scriptSectionTitle: {
-    marginBottom: 0
-  },
+
   interactionStep: {
     borderLeft: `5px solid ${theme.colors.green}`,
     marginBottom: 24
   },
-  followUp: {
-    borderLeft: `5px solid ${theme.colors.orange}`,
-    marginLeft: 24,
-    marginBottom: 24
-  },
-  radioButtonIcon: {
-    height: '14px',
-    verticalAlign: 'middle'
-  },
-  addAnswerButton: {
-    textTransform: 'none',
-    paddingLeft: 0,
-    fontSize: 12
-  },
-  scriptInput: {
-    fontSize: 12
-  },
-  cardHeader: {
-    backgroundColor: theme.colors.veryLightGray
-  },
-  cardText: {
-    marginBottom: 48
-  },
-  questionSpan: {
-    fontWeight: 'normal',
-    opacity: 0.8
-  },
-  answerSpan: {
-    fontWeight: 'normal',
-    opacity: 0.8
-  },
-  stepTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: 'black'
+
+  answerContainer: {
+    marginLeft: '35px', 
+    marginTop: '10px', 
+    borderLeft: `3px dashed ${theme.colors.veryLightGray}`
   }
 }
 
 export default class CampaignInteractionStepsForm extends React.Component {
 
   state = {
-    focusedField: null
+    focusedField: null,
+    interactionSteps: this.props.formValues.interactionSteps[0] ? this.props.formValues.interactionSteps : [{id: 'newId', parentInteractionId: null, questionText: '', answerOption: '', script: '', isDeleted: false}]
   }
 
-  componentDidUpdate() {
-    if (this.scrollStepId) {
-      this.scrollToStep(this.scrollStepId)
-      this.scrollStepId = null
+  onSave = async () => {
+    await this.props.onChange({interactionSteps: this.makeTree(this.state.interactionSteps)})
+    this.props.onSubmit()
+  }
+
+  makeTree(interactionSteps, id = null) {
+    const root = interactionSteps.filter((is) => id ? is.id === id : is.parentInteractionId === null)[0]
+    const children = interactionSteps.filter((is) => is.parentInteractionId === root.id)
+    return {
+      ...root,
+      interactionSteps: children.map((c) => {
+        return this.makeTree(interactionSteps, c.id)
+      })
     }
   }
 
-  onChange = (formValues) => {
-    if (this.props.ensureComplete) {
-      return
-    }
-    const newValues = JSON.parse(JSON.stringify(formValues))
-    newValues.interactionSteps = newValues.interactionSteps.map((step) => {
-      const newStep = step
-      if (step.question && step.question.text === '') {
-        newStep.question.answerOptions = []
-      } else if (step.question && step.question.text !== '' && step.question.answerOptions.length === 0) {
-        newStep.question.answerOptions = [{
-          value: '',
-          action: '',
-          nextInteractionStep: null
-        }]
-      }
-      return newStep
+  addStep(parentInteractionId) {
+    const newId = "new" + Math.random().toString(36).replace(/[^a-zA-Z1-9]+/g, '')
+    this.setState({
+      interactionSteps: [
+        ...this.state.interactionSteps,
+        {id: newId, parentInteractionId: parentInteractionId, questionText: '', script: '', answerOption: '', isDeleted: false}
+      ]
     })
-    this.props.onChange(newValues)
   }
 
-  addAnswer(interactionStep, interactionStepIndex) {
-    const newQuestion = JSON.parse(JSON.stringify(interactionStep.question))
-
-    newQuestion.answerOptions.push({
-      action: '',
-      value: '',
-      nextInteractionStep: null
+  deleteStep(id){
+    this.setState({
+      interactionSteps: this.state.interactionSteps.map((is) => {
+        if (is.id == id){
+          is.isDeleted = true
+          this.state.interactionSteps.filter((isp) => isp.parentInteractionId === is.id).map((isp) => {
+            this.deleteStep(isp.id)
+          })
+        }
+        return is
+      })
     })
-    const answerOptionIndex = newQuestion.answerOptions.length - 1
-    this.modifyInteractionStep(interactionStep, { question: newQuestion })
-    this.setState({ focusedField: `interactionSteps[${interactionStepIndex}]['question']['answerOptions'][${answerOptionIndex}].value` })
   }
 
-  addStep(interactionStep, answer) {
-    const newId = Math.random().toString(36).replace(/[^a-zA-Z1-9]+/g, '')
-    let newSteps = JSON.parse(JSON.stringify(this.sortedValues())).interactionSteps
-    newSteps = newSteps.map((step) => {
-      if (step.id === interactionStep.id) {
-        const newStep = step
-        newStep.question.answerOptions = newStep.question.answerOptions.map((option) => {
-          if (option.value === answer.value) {
-            const newOption = option
-            newOption.nextInteractionStep = {
-              id: newId
-            }
-            return newOption
-          }
-          return option
-        })
-        return newStep
-      }
-      return step
-    })
-    newSteps.push({
-      id: newId,
-      script: '',
-      question: {
-        text: '',
-        answerOptions: []
-      }
-    })
-
-    this.onChange({
-      interactionSteps: newSteps
+  handleFormChange(event){
+    this.setState({
+      interactionSteps: this.state.interactionSteps.map((is) => {
+        if (is.id == event.id){
+          delete event.interactionSteps
+          return event;
+        } else {
+          delete event.interactionSteps
+          return is;
+        }
+      })
     })
   }
 
   formSchema = yup.object({
-    interactionSteps: yup.array().of(yup.object({
-      script: yup.string(),
-      question: yup.object({
-        text: yup.string(),
-        answerOptions: yup.array().of(yup.object({
-          value: yup.string(),
-          action: yup.string().nullable(true),
-          nextInteractionStep: yup.mixed()
-        }))
-      })
-    }))
+    script: yup.string(),
+    questionText: yup.string(),
+    answerOption: yup.string()
   })
 
-  handleNavigateToStep = (interactionStepId) => {
-    this.scrollToStep(interactionStepId)
-  }
-
-  modifyInteractionStep(interactionStep, newProps) {
-    const newSteps = JSON.parse(JSON.stringify(this.sortedValues().interactionSteps)).map((step) => {
-      if (step.id === interactionStep.id) {
-        return {
-          ...interactionStep,
-          ...newProps
-        }
-      }
-      return step
-    })
-
-    this.onChange({
-      interactionSteps: newSteps
-    })
-  }
-
-  scrollToStep(interactionStepId) {
-    const node = ReactDOM.findDOMNode(this.refs[interactionStepId])
-    node.scrollIntoView()
-  }
-
-  sortedValues() {
-    return {
-      interactionSteps: sortInteractionSteps(this.props.formValues.interactionSteps)
-    }
-  }
-
-  renderAnswer(answer, answerOptionIndex, interactionStep, interactionStepIndex) {
-    const fieldNameBase = `interactionSteps[${interactionStepIndex}]['question']['answerOptions'][${answerOptionIndex}]`
-    const fieldName = `${fieldNameBase}.value`
-    const actionFieldname = `${fieldNameBase}.action`
-
-    const deleteAnswerButton = this.props.ensureComplete ? '' : (
-      <IconButton
-        style={{ width: 42, height: 42, verticalAlign: 'middle' }}
-        iconStyle={{ width: 20, height: 20 }}
-        onTouchTap={() => {
-          const newQuestion = JSON.parse(JSON.stringify(interactionStep.question))
-          let removeIndex = null
-          for (let index = 0; index < newQuestion.answerOptions.length; index++) {
-            if (newQuestion.answerOptions[index].value === answer.value) {
-              removeIndex = index
-              break
-            }
-          }
-          if (removeIndex !== null) {
-            newQuestion.answerOptions.splice(removeIndex, 1)
-          }
-          if (this.state.focusedField === fieldName) {
-            this.setState({ focusedField: null })
-          }
-          this.modifyInteractionStep(interactionStep, { question: newQuestion })
-        }}
-      >
-        <ContentClear />
-      </IconButton>
-    )
-
-    const addNextQuestionButton = this.props.ensureComplete ? '' : (
-      <RaisedButton
-        label='Link to next step'
-        onTouchTap={() => this.addStep(interactionStep, answer)}
-      />
-    )
-
-    return (
-      <div
-        style={{
-          marginTop: 16,
-          marginBottom: 16
-        }}
-      >
-        <div
-          style={{
-            display: 'inline-block',
-            marginRight: 16
-          }}
-        >
-          <RadioButtonUnchecked
-            style={{
-              height: 14,
-              verticalAlign: 'middle'
-            }}
-          />
-          <Form.Field
-            name={fieldName}
-            inputStyle={{
-              fontSize: 12
-            }}
-            hintStyle={{
-              fontSize: 12
-            }}
-            ref={fieldName}
-            autoFocus={this.state.focusedField === fieldName}
-            hintText='Answer'
-            // noValidate here otherwise we end up with this bug
-            noValidate
-            onKeyDown={(event) => {
-              if (event.keyCode === 13) {
-                this.addAnswer(interactionStep, interactionStepIndex)
-                event.preventDefault()
-              }
-            }}
-          />
-          {deleteAnswerButton}
-        </div>
-        <div
-          style={{
-            display: 'inline-block'
-          }}
-        >
-          { this.props.availableActions && this.props.availableActions.length ?
-            (<Form.Field
-              name={actionFieldname}
-              type='select'
-              choices={[
-                {'value': '', 'label': 'Action...'},
-                ...this.props.availableActions.map(
-                  action => ({'value': action.name, 'label': action.display_name})
-                )
-              ]}
-            />)
-          : '' }
-        </div>
-        <div
-          style={{
-            display: 'inline-block'
-          }}
-        >
-          {answer.nextInteractionStep ? (
-            <FlatButton
-              label='Next Step'
-              secondary
-              onTouchTap={() => this.handleNavigateToStep(answer.nextInteractionStep.id)}
-              icon={<ForwardIcon />}
-            />
-          ) : addNextQuestionButton}
-        </div>
-      </div>
-    )
-  }
-
-  renderAnswers(interactionStep, interactionStepIndex) {
-    return (
-      <div>
-        {
-          interactionStep.question
-            .answerOptions
-            .map((answer, index) => this.renderAnswer(answer, index, interactionStep, interactionStepIndex))
-        }
-        {!this.props.ensureComplete ? (
-          <div>
-            <RadioButtonUnchecked
-              style={styles.radioButtonIcon}
-            />
-            <FlatButton
-              style={styles.addAnswerButton}
-              labelStyle={styles.addAnswerButton}
-              label='Add another answer'
-              onTouchTap={() => this.addAnswer(interactionStep, interactionStepIndex)}
-            />
-          </div>
-        ) : ''}
-      </div>
-    )
-  }
-
-  renderStep(interactionStep, index) {
-    const parents = getInteractionPath(interactionStep, this.sortedValues().interactionSteps)
-    const isTopLevel = parents.length === 0
-    const cardActions = isTopLevel ? '' : (
-      <div>
-        <Divider />
-        <CardActions
-          style={{ textAlign: 'right' }}
-        >
-          <IconButton
-            iconStyle={styles.icon}
-            style={styles.icon}
-            onTouchTap={() => {
-              const newSteps = []
-              const allSteps = this.sortedValues().interactionSteps
-              const children = getChildren(interactionStep, allSteps).map((ele) => ele.id)
-              const stepParent = JSON.parse(JSON.stringify(findParent(interactionStep, allSteps)))
-              stepParent.question.answerOptions = stepParent.question.answerOptions.map((option) => {
-                const newOption = option
-                if (option.nextInteractionStep && option.nextInteractionStep.id === interactionStep.id) {
-                  newOption.nextInteractionStep = null
-                }
-                return newOption
-              })
-
-              allSteps.forEach((step) => {
-                if (children.indexOf(step.id) === -1 && interactionStep.id !== step.id) {
-                  if (step.id === stepParent.id) {
-                    newSteps.push(stepParent)
-                  } else {
-                    newSteps.push(step)
-                  }
-                }
-              })
-
-              this.onChange({
-                interactionSteps: newSteps
-              })
-            }}
-          >
-            <DeleteIcon />
-          </IconButton>
-        </CardActions>
-      </div>
-    )
-
-    const displayStep = (step) => (
-      <span
-        style={step.question && step.question.text ? styles.questionSpan : styles.answerSpan}
-      >
-        {step.question && step.question.text ? `${step.question.text}>${step.answerLink}` : ''}>
-      </span>
-    )
-
-    const stepTitle = (step) => {
-      const title = step.question && step.question.text ? step.question.text : 'This step'
-      if (isTopLevel) {
-        return ['Start: ', <span style={styles.stepTitle}>{title}</span>]
-      }
-      return [
-        parents.map((parentStep) => displayStep(parentStep)),
-        <span style={styles.stepTitle}>{title}</span>
-      ]
-    }
-    return (
+  renderInteractionStep(interactionStep){
+    return (<div>
       <Card
         style={styles.interactionStep}
         ref={interactionStep.id}
         key={interactionStep.id}
       >
-        <CardHeader
+        {interactionStep.parentInteractionId ? '' : <CardHeader
           style={styles.cardHeader}
-          title={stepTitle(interactionStep)}
-          subtitle={isTopLevel ? 'Enter a script for your texter along with the question you want the texter be able to answer on behalf of the contact.' : ''}
-        />
-        <Divider />
-        <CardText style={styles.cardText}>
-          <div>
+          title={'Start'}
+          subtitle='Enter a script for your texter along with the question you want the texter be able to answer on behalf of the contact.'
+        /> }
+        <CardText>
+          <GSForm
+            schema={this.formSchema}
+            value={interactionStep}
+            onChange={this.handleFormChange.bind(this)}
+          >
+            {interactionStep.parentInteractionId ? <DeleteIcon style={styles.pullRight} onTouchTap={() => this.deleteStep(interactionStep.id).bind(this)} /> : ''}
+            {interactionStep.parentInteractionId ? <Form.Field
+              name='answerOption'
+              label='Answer'
+              fullWidth
+              hintText='Answer to the previous question'
+            /> : ''}
             <Form.Field
-              name={`interactionSteps[${index}].script`}
+              name='script'
               type='script'
               fullWidth
               customFields={this.props.customFields}
@@ -445,49 +147,53 @@ export default class CampaignInteractionStepsForm extends React.Component {
               hintText="This is what your texters will send to your contacts. E.g. Hi, {firstName}. It's {texterFirstName} here."
             />
             <Form.Field
-              name={`interactionSteps[${index}]['question'].text`}
+              name='questionText'
               label='Question'
               fullWidth
               hintText='A question for texters to answer. E.g. Can this person attend the event?'
             />
-            {interactionStep.question && interactionStep.question.text ? this.renderAnswers(interactionStep, index) : ''}
-          </div>
+          </GSForm>
         </CardText>
-        <Divider />
-        {cardActions}
       </Card>
-    )
+      <div style={styles.answerContainer}>
+        { interactionStep.questionText && interactionStep.script && (!interactionStep.parentInteractionId || interactionStep.answerOption) ? <div>
+          <RaisedButton
+            label='+ Add a response'
+            onTouchTap={() => this.addStep(interactionStep.id).bind(this)}
+            style={{marginBottom: '10px'}}
+          /> 
+        </div> : '' }
+        {interactionStep.interactionSteps.filter((is) => !is.isDeleted).map((is) => {
+          return (  
+            <div>
+              {this.renderInteractionStep(is)}
+            </div>
+          )
+        })}
+      </div>
+      
+    </div>)
   }
 
-  render() {
-    let subtitle = 'You can add scripts and questions and your texters can indicate responses from your contacts. For example, you might want to collect RSVPs to an event or find out whether to follow up about a different volunteer activity.'
-    if (this.props.ensureComplete) {
-      subtitle = 'This campaign has already started, so you won\'t be able to modify the survey questions. You can still modify the scripts, though.'
-    }
+  render (){
+    const tree = this.makeTree(this.state.interactionSteps)
+    
     return (
       <div>
         <CampaignFormSectionHeading
           title='What do you want to discuss?'
-          subtitle={subtitle}
+          subtitle='You can add scripts and questions and your texters can indicate responses from your contacts. For example, you might want to collect RSVPs to an event or find out whether to follow up about a different volunteer activity.'
         />
-        <GSForm
-          schema={this.formSchema}
-          value={this.sortedValues()}
-          onChange={this.onChange}
-          onSubmit={this.props.onSubmit}
-        >
-          {this.sortedValues().interactionSteps.map((interactionStep, index) => (
-            this.renderStep(interactionStep, index)
-          ))}
-          {this.props.ensureComplete ? '' : <Form.Button
-            type='submit'
-            label={this.props.saveLabel}
-            disabled={this.props.saveDisabled}
-          />}
-        </GSForm>
+        {this.renderInteractionStep(tree)}
+        <RaisedButton
+          primary
+          label={this.props.saveLabel}
+          onTouchTap={this.onSave.bind(this)}
+        />
       </div>
     )
   }
+
 }
 
 CampaignInteractionStepsForm.propTypes = {
@@ -497,6 +203,5 @@ CampaignInteractionStepsForm.propTypes = {
   onSubmit: type.func,
   customFields: type.array,
   saveLabel: type.string,
-  saveDisabled: type.bool,
-  availableActions: type.array
+  errors: type.array
 }

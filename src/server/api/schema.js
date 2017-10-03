@@ -13,6 +13,7 @@ import {
   UserOrganization,
   JobRequest,
   User,
+  InteractionStep,
   r,
   datawarehouse
 } from '../models'
@@ -129,9 +130,12 @@ const rootSchema = `
 
   input InteractionStepInput {
     id: String
-    question: String
+    questionText: String
     script: String
-    answerOptions: [AnswerOptionInput]
+    answerOption: String
+    parentInteractionId: String
+    isDeleted: Boolean
+    interactionSteps: [InteractionStepInput]
   }
 
   input TexterInput {
@@ -299,28 +303,14 @@ async function editCampaign(id, campaign, loaders, user) {
     // assign the maxContacts
     campaign.texters.forEach(async (texter) => {
       const dog = r.knex('campaign').where({id: id}).select('useDynamicAssignment')
-      console.log({user_id: texter.id, campaign_id: id, maxContacts: texter.maxContacts})
       await r.knex('assignment')
         .where({user_id: texter.id, campaign_id: id})
         .update({max_contacts: texter.maxContacts ? texter.maxContacts : null})
     });
   }
-  if (campaign.hasOwnProperty('interactionSteps')) {
-    let job = await JobRequest.save({
-      queue_name: `${id}:edit_campaign`,
-      locks_queue: true,
-      assigned: JOBS_SAME_PROCESS, // can get called immediately, below
-      job_type: 'create_interaction_steps',
-      campaign_id: id,
-      payload: JSON.stringify({
-        id,
-        interaction_steps: campaign.interactionSteps
-      })
-    })
 
-    if (JOBS_SAME_PROCESS) {
-      createInteractionSteps(job).then()
-    }
+  if (campaign.hasOwnProperty('interactionSteps')) {
+    await updateInteractionSteps(id, campaign.interactionSteps)
   }
 
   if (campaign.hasOwnProperty('cannedResponses')) {
@@ -344,6 +334,36 @@ async function editCampaign(id, campaign, loaders, user) {
 
   const newCampaign = await Campaign.get(id).update(campaignUpdates)
   return newCampaign || loaders.campaign.load(id)
+}
+
+async function updateInteractionSteps(campaignId, interactionSteps, idMap = {}){
+  await interactionSteps.forEach(async (is) => {
+    // map the interaction step ids for new ones
+    if (idMap[is.parentInteractionId]){ 
+      is.parentInteractionId = idMap[is.parentInteractionId]
+    }
+    if (is.id.indexOf('new') !== -1){
+      const newId = await r.knex('interaction_step')
+        .insert({
+          parent_interaction_id: is.parentInteractionId,
+          question: is.questionText,
+          script: is.script,
+          answer_option: is.answerOption,
+          campaign_id: campaignId
+        }).returning('id')
+      idMap[is.id] = newId[0]
+    } else {
+      await r.knex('interaction_step')
+        .where({id: is.id})
+        .update({
+          question: is.questionText,
+          script: is.script,
+          answer_option: is.answerOption,
+          is_deleted: is.isDeleted
+        })
+    }
+    await updateInteractionSteps(campaignId, is.interactionSteps, idMap)
+  })
 }
 
 const rootMutations = {
@@ -622,7 +642,6 @@ const rootMutations = {
 
     findNewCampaignContact: async(_, { assignmentId, numberContacts }, { loaders, user } ) => {
       /* This attempts to find a new contact for the assignment, in the case that useDynamicAssigment == true */
-      console.log({assignmentId: assignmentId, numberContacts: numberContacts})
       const assignment = await Assignment.get(assignmentId)
       const campaign = await Campaign.get(assignment.campaign_id)
       const contactsCount = Number((await r.knex('campaign_contact').where({assignment_id: assignmentId}).select(r.knex.raw('count(*) as count')))[0].count)

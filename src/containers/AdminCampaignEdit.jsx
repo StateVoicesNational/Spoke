@@ -37,17 +37,11 @@ const campaignInfoFragment = `
   }
   interactionSteps {
     id
+    questionText
     script
-    question {
-      text
-      answerOptions {
-        value
-        action
-        nextInteractionStep {
-          id
-        }
-      }
-    }
+    answerOption
+    parentInteractionId
+    isDeleted
   }
   cannedResponses {
     id
@@ -132,6 +126,7 @@ class AdminCampaignEdit extends React.Component {
         !this.isNew() ?
           null : this.state.expandedSection + 1
     }) // currently throws an unmounted component error in the console
+    this.props.campaignData.refetch()
   }
          
   handleSave = async () => {
@@ -144,6 +139,7 @@ class AdminCampaignEdit extends React.Component {
         }
       }
     })
+
     if (Object.keys(saveObject).length > 0) {
       // Transform the campaign into an input understood by the server
       const newCampaign = {
@@ -180,19 +176,6 @@ class AdminCampaignEdit extends React.Component {
           id: texter.id,
           needsMessageCount: texter.assignment.needsMessageCount,
           maxContacts: texter.assignment.maxContacts
-        }))
-      }
-
-      if (newCampaign.hasOwnProperty('interactionSteps')) {
-        newCampaign.interactionSteps = newCampaign.interactionSteps.map((step) => ({
-          id: step.id,
-          question: step.question ? step.question.text : null,
-          script: step.script,
-          answerOptions: step.question ? step.question.answerOptions.map((answer) => ({
-            value: answer.value,
-            action: answer.action,
-            nextInteractionStepId: answer.nextInteractionStep ? answer.nextInteractionStep.id : null
-          })) : []
         }))
       }
 
@@ -255,7 +238,7 @@ class AdminCampaignEdit extends React.Component {
       title: 'Texters',
       content: CampaignTextersForm,
       keys: ['texters', 'contactsCount', 'useDynamicAssignment'],
-      checkCompleted: () => this.state.campaignFormValues.texters.length > 0 && this.state.campaignFormValues.contactsCount === this.state.campaignFormValues.texters.reduce(((left, right) => left + right.assignment.contactsCount), 0),
+      checkCompleted: () => (this.state.campaignFormValues.texters.length > 0 && this.state.campaignFormValues.contactsCount === this.state.campaignFormValues.texters.reduce(((left, right) => left + right.assignment.contactsCount), 0)) || this.state.campaignFormValues.useDynamicAssignment === true,
       blocksStarting: false,
       extraProps: {
         orgTexters: this.props.organizationData.organization.texters,
@@ -266,7 +249,8 @@ class AdminCampaignEdit extends React.Component {
       title: 'Interactions',
       content: CampaignInteractionStepsForm,
       keys: ['interactionSteps'],
-      checkCompleted: () => this.state.campaignFormValues.interactionSteps.length > 0 && this.state.campaignFormValues.interactionSteps[0].script !== '',
+      checkCompleted: () => this.state.campaignFormValues.interactionSteps.length > 0,
+      // checkSaved: () => false,
       blocksStarting: true,
       extraProps: {
         customFields: this.props.campaignData.campaign.customFields,

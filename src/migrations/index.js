@@ -52,6 +52,15 @@ const migrations = [
       })
       console.log('added updated_at column to campaign_contact')
     }
+  },
+  { auto: true, //5
+    date: '2017-10-03',
+    migrate: async function migrate() {
+      await r.knex.schema.alterTable('interaction_step', (table) => {
+        table.timestamp('is_deleted').notNullable().default(false);
+      })
+      console.log('added is_deleted column to interaction_step')
+    }
   }
   /* migration template
      {auto: true, //if auto is false, then it will block the migration running automatically
