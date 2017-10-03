@@ -112,18 +112,18 @@ export default class CampaignInteractionStepsForm extends React.Component {
     answerOption: yup.string()
   })
 
-  renderInteractionStep(interactionStep){
+  renderInteractionStep(interactionStep, title = 'Start'){
     return (<div>
       <Card
         style={styles.interactionStep}
         ref={interactionStep.id}
         key={interactionStep.id}
       >
-        {interactionStep.parentInteractionId ? '' : <CardHeader
+        <CardHeader
           style={styles.cardHeader}
-          title={'Start'}
-          subtitle='Enter a script for your texter along with the question you want the texter be able to answer on behalf of the contact.'
-        /> }
+          title={title}
+          subtitle={interactionStep.parentInteractionId ? '' : 'Enter a script for your texter along with the question you want the texter be able to answer on behalf of the contact.'}
+        />
         <CardText>
           <GSForm
             schema={this.formSchema}
@@ -166,7 +166,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
         {interactionStep.interactionSteps.filter((is) => !is.isDeleted).map((is) => {
           return (  
             <div>
-              {this.renderInteractionStep(is)}
+              {this.renderInteractionStep(is, `Question: ${interactionStep.questionText}`)}
             </div>
           )
         })}

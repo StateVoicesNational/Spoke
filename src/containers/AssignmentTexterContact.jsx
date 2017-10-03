@@ -20,6 +20,7 @@ import Form from 'react-formal'
 import GSSubmitButton from '../components/forms/GSSubmitButton'
 import SendButton from '../components/SendButton'
 import BulkSendButton from '../components/BulkSendButton'
+import ConfirmButton from '../components/ConfirmButton'
 import CircularProgress from 'material-ui/CircularProgress'
 import Snackbar from 'material-ui/Snackbar'
 import { getChildren, getTopMostParent, interactionStepForId, log, isBetweenTextingHours } from '../lib'
@@ -484,8 +485,8 @@ class AssignmentTexterContact extends React.Component {
         label='Reopen'
       />)
     } else if (messageStatus === 'needsResponse') {
-      button = (<RaisedButton
-        onTouchTap={this.handleClickCloseContactButton}
+      button = (<ConfirmButton
+        onConfirm={this.handleClickCloseContactButton.bind(this)}
         label='Close without responding'
       />)
     }
