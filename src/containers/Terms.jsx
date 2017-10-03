@@ -1,13 +1,16 @@
 import React from 'react';
 import loadData from './hoc/load-data'
 import gql from 'graphql-tag'
+import Paper from 'material-ui/Paper';
 import {
-  Card,
-  CardTitle,
-  CardActions,
-  CardText,
-} from 'material-ui/Card';
+  Step,
+  Stepper,
+  StepLabel,
+  StepContent,
+} from 'material-ui/Stepper';
+import FlatButton from 'material-ui/FlatButton';
 import RaisedButton from 'material-ui/RaisedButton';
+import Divider from 'material-ui/Divider';
 import wrapMutations from './hoc/wrap-mutations'
 import { withRouter } from 'react-router'
 
@@ -19,33 +22,102 @@ class Terms extends React.Component {
     if (userData.data.userAgreeTerms.terms) { router.push(location.query.next) }
   }
 
-  render() {
+  state = {
+    finished: false,
+    stepIndex: 0,
+  };
+
+  handleNext = () => {
+    const {stepIndex} = this.state;
+    this.setState({
+      stepIndex: stepIndex + 1,
+      finished: stepIndex >= 2,
+    });
+    if (stepIndex >= 2) this.handleTermsAgree()
+  };
+
+  handlePrev = () => {
+    const {stepIndex} = this.state;
+    if (stepIndex > 0) {
+      this.setState({stepIndex: stepIndex - 1});
+    }
+  };
+
+  renderStepActions(step) {
+    const {stepIndex} = this.state;
+
     return (
-      <div styles={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-        <Card>
-          <CardTitle title="Code Of Conduct" subtitle="What to expect" />
-          <CardText>
-            <h3><u>Inappropriate Behaviour</u></h3>
-              <p styles={{padding: '20px 0'}}>
-                Occasionally someone might be rude or use inappropriate language to you — please don’t engage or respond in kind. We will make sure that person isn’t contacted again. 
-              </p>
-            <h3><u>Commit to Reply</u></h3>
-              <p styles={{padding: '20px 0'}}>Please commit to responding to people who reply to you. We're attempting to grow trust and understanding in our community and maintaining an open dialogue is key.</p>
-            <h3><u>Retention</u></h3>
-              <p styles={{padding: '20px 0'}}>
-                GetUp maintains a record of all conversations on this Spoke account.
-              </p>
-          </CardText>
-          <CardActions>
-          <RaisedButton
-            primary={true}
-            label="Agree"
-            onClick={this.handleTermsAgree}
+      <div style={{margin: '12px 0'}}>
+        <RaisedButton
+          label={stepIndex === 2 ? 'Agree' : 'Next'}
+          disableTouchRipple={true}
+          disableFocusRipple={true}
+          primary={true}
+          onClick={this.handleNext}
+          style={{marginRight: 12}}
+        />
+        {step > 0 && (
+          <FlatButton
+            label="Back"
+            disabled={stepIndex === 0}
+            disableTouchRipple={true}
+            disableFocusRipple={true}
+            onClick={this.handlePrev}
           />
-          </CardActions>
-        </Card>
+        )}
       </div>
-    )
+    );
+  }
+
+  render() {
+    const {finished, stepIndex} = this.state;
+
+    return (
+      <div style={{maxWidth: 380, maxHeight: 400, margin: 'auto'}}>
+        <Paper style={{padding:20,margin:20}}>
+          <h2>Code Of Conduct</h2>
+          <Divider/>
+          <Stepper activeStep={stepIndex} orientation="vertical">
+            <Step>
+              <StepLabel>
+                <div style={{marginLeft: '25px',paddingLeft: '21px', marginTop: '-46px'}}><u>Inappropriate Behaviour</u></div>
+              </StepLabel>
+              <StepContent>
+                <p>
+                  Occasionally someone might be rude or use inappropriate language to you — please don’t engage or respond in kind. We will make sure that person isn’t contacted again.
+                </p>
+                {this.renderStepActions(0)}
+              </StepContent>
+            </Step>
+            <Step>
+              <StepLabel>
+                <div style={{marginLeft: '25px',paddingLeft: '21px', marginTop: '-46px'}}><u>Commit to Reply</u></div>
+              </StepLabel>
+              <StepContent>
+                <p>Please commit to responding to people who reply to you. We're attempting to grow trust and understanding in our community and maintaining an open dialogue is key.</p>
+                {this.renderStepActions(1)}
+              </StepContent>
+            </Step>
+            <Step>
+              <StepLabel>
+                <div style={{marginLeft: '25px',paddingLeft: '21px', marginTop: '-46px'}}><u>Retention</u></div>
+              </StepLabel>
+              <StepContent>
+                <p>
+                  GetUp maintains a record of all conversations on this Spoke account.
+                </p>
+                {this.renderStepActions(2)}
+              </StepContent>
+            </Step>
+          </Stepper>
+          {finished && (
+            <p style={{margin: '20px 0', textAlign: 'center'}}>
+              Thanks!
+            </p>
+          )}
+        </Paper>
+      </div>
+    );
   }
 }
 
