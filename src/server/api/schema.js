@@ -696,10 +696,10 @@ const rootMutations = {
           value
         }).save()
         const interactionStepResult = await r.knex('interaction_step')
-        //TODO: is this really parent_interaction_id or just interaction_id?
-          .where({'parent_interaction_id': interactionStepId,
+        // TODO: is this really parent_interaction_id or just interaction_id?
+          .where({ 'parent_interaction_id': interactionStepId,
                   'answer_option': value })
-          .whereNot('answer_actions','')
+          .whereNot('answer_actions', '')
           .whereNotNull('answer_actions')
 
         interactionStepAction = (interactionStepResult.length && interactionStepResult[0].answer_actions)
@@ -708,7 +708,7 @@ const rootMutations = {
           try {
             const handler = require(`../action_handlers/${interactionStepAction}.js`)
             handler.processAction(qr, interactionStepResult[0], campaignContactId)
-          } catch(err) {
+          } catch (err) {
             console.error('Handler for InteractionStep', interactionStepId,
                           'Does Not Exist:', interactionStepAction)
           }
@@ -794,10 +794,10 @@ const rootResolvers = {
       const allHandlers = process.env.ACTION_HANDLERS.split(',')
 
       const availableHandlers = allHandlers.map(handler => {
-        return {'name': handler,
+        return { 'name': handler,
                 'handler': require(`../action_handlers/${handler}.js`)
                }
-      }).filter( async (h) => (h && (await h.handler.available(organizationId))) )
+      }).filter(async (h) => (h && (await h.handler.available(organizationId))))
 
       const availableHandlerObjects = availableHandlers.map(handler => {
         return {

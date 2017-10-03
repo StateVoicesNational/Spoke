@@ -33,10 +33,10 @@ export async function available(organizationId) {
   return !!(needed.length)
 }
 
-export const akidGenerate = function(ak_secret, cleartext) {
+export const akidGenerate = function (ak_secret, cleartext) {
   const shaHash = crypto.createHash()
   shaHash.write(`${ak_secret}.${cleartext}`)
-  const shortHash = shahash.digest('base64').slice(0,6)
+  const shortHash = shahash.digest('base64').slice(0, 6)
   return `${cleartext}.${shortHash}`
 }
 
@@ -84,7 +84,7 @@ export async function processAction(questionResponse, interactionStep, campaignC
           }
         })
       }
-    } catch(err) {
+    } catch (err) {
       console.error('Processing Actionkit RSVP action failed on custom field parsing', campaignContactId, err)
     }
   }

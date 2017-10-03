@@ -107,7 +107,7 @@ export async function handleIncomingMessages() {
         console.log('counting handleIncomingMessages. count: ', countPendingMessagePart)
       }
       await sleep(500)
-      if(countPendingMessagePart > 0) {
+      if (countPendingMessagePart > 0) {
         if (process.env.DEBUG_SCALING) {
           console.log('running handleIncomingMessages')
         }
