@@ -5,17 +5,24 @@ import CampaignFormSectionHeading from './CampaignFormSectionHeading'
 import GSForm from './forms/GSForm'
 import yup from 'yup'
 import Toggle from 'material-ui/Toggle'
+import ColorPicker from 'material-ui-color-picker'
 
 const FormSchema = {
   title: yup.string(),
   description: yup.string(),
   dueBy: yup.mixed(),
+  logoImageUrl: yup.string().url(),
+  primaryColor: yup.string(),
+  introHtml: yup.string()
 }
 
 const EnsureCompletedFormSchema = {
   title: yup.string().required(),
   description: yup.string().required(),
-  dueBy: yup.mixed().required()
+  dueBy: yup.mixed().required(),
+  logoImageUrl: yup.string().transform(value => !value ? null : value).url().nullable(),
+  primaryColor: yup.string(),
+  introHtml: yup.string()
 }
 
 export default class CampaignBasicsForm extends React.Component {
@@ -67,6 +74,25 @@ export default class CampaignBasicsForm extends React.Component {
             fullWidth
             utcOffset={0}
           />
+          <Form.Field
+            name='introHtml'
+            label='Intro HTML'
+            multiLine
+            fullWidth
+          />
+          <Form.Field
+            name='logoImageUrl'
+            label='Logo Image URL'
+            hintText='https://www.mysite.com/images/logo.png'
+            fullWidth
+          />
+          <label>Primary color</label>
+          <Form.Field
+            name='primaryColor'
+            label='Primary color'
+            defaultValue={this.props.formValues.primaryColor}
+            type={ColorPicker}
+          />
           <Form.Button
             type='submit'
             label={this.props.saveLabel}
@@ -82,7 +108,10 @@ CampaignBasicsForm.propTypes = {
   formValues: React.PropTypes.shape({
     title: React.PropTypes.string,
     description: React.PropTypes.string,
-    dueBy: React.PropTypes.any
+    dueBy: React.PropTypes.any,
+    logoImageUrl: React.PropTypes.string,
+    primaryColor: React.PropTypes.string,
+    introHtml: React.PropTypes.string
   }),
   onChange: React.PropTypes.func,
   onSubmit: React.PropTypes.func,

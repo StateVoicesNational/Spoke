@@ -61,6 +61,17 @@ const migrations = [
       })
       console.log('added is_deleted column to interaction_step')
     }
+  },
+  { auto: true, //6
+    date: '2017-10-04',
+    migrate: async function migrate() {
+      await r.knex.schema.alterTable('campaign', (table) => {
+        table.text('intro_html');
+        table.text('logo_image_url');
+        table.string('primary_color');
+      })
+      console.log('added is_deleted column to interaction_step')
+    }
   }
   /* migration template
      {auto: true, //if auto is false, then it will block the migration running automatically

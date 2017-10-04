@@ -26,6 +26,9 @@ const campaignInfoFragment = `
   datawarehouseAvailable
   customFields
   useDynamicAssignment
+  logoImageUrl
+  introHtml
+  primaryColor
   texters {
     id
     firstName
@@ -213,7 +216,7 @@ class AdminCampaignEdit extends React.Component {
     return [{
       title: 'Basics',
       content: CampaignBasicsForm,
-      keys: ['title', 'description', 'dueBy'],
+      keys: ['title', 'description', 'dueBy', 'logoImageUrl', 'primaryColor', 'introHtml'],
       blocksStarting: true,
       checkCompleted: () => (
         this.state.campaignFormValues.title !== '' &&

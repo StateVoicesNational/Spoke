@@ -1,5 +1,6 @@
 import { applyScript } from '../../lib/scripts'
 import camelCaseKeys from 'camelcase-keys'
+import isUrl from 'is-url'
 
 import { 
   Assignment,
@@ -148,6 +149,9 @@ const rootSchema = `
     title: String
     description: String
     dueBy: Date
+    logoImageUrl: String
+    primaryColor: String
+    introHtml: String
     useDynamicAssignment: Boolean
     contacts: [CampaignContactInput]
     contactSql: String
@@ -224,14 +228,17 @@ const rootSchema = `
 `
 
 async function editCampaign(id, campaign, loaders, user) {
-  const { title, description, dueBy, organizationId, useDynamicAssignment } = campaign
+  const { title, description, dueBy, organizationId, useDynamicAssignment, logoImageUrl, introHtml, primaryColor } = campaign
   const campaignUpdates = {
     id,
     title,
     description,
     due_by: dueBy,
     organization_id: organizationId,
-    use_dynamic_assignment: useDynamicAssignment
+    use_dynamic_assignment: useDynamicAssignment,
+    logo_image_url: isUrl(logoImageUrl) ? logoImageUrl : '',
+    primary_color: primaryColor,
+    intro_html: introHtml
   }
 
   Object.keys(campaignUpdates).forEach((key) => {

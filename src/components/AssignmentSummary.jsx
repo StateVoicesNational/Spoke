@@ -5,6 +5,7 @@ import loadData from '../containers/hoc/load-data'
 import { applyScript } from '../lib/scripts'
 import gql from 'graphql-tag'
 import FlatButton from 'material-ui/FlatButton'
+import RaisedButton from 'material-ui/RaisedButton'
 import Dialog from 'material-ui/Dialog'
 import Badge from 'material-ui/Badge'
 import moment from 'moment'
@@ -27,6 +28,12 @@ const inlineStyles = {
 const styles = StyleSheet.create({
   container: {
     margin: '20px 0'
+  },
+  image: {
+    position: 'absolute', 
+    height: '70%', 
+    top: '20px', 
+    right: '20px'
   }
 })
 
@@ -44,59 +51,14 @@ class AssignmentSummary extends Component {
     }
   }
 
-  createMessage(text, texterId, assignmentId, contactCell) {
-    return {
-      contactNumber: contactCell,
-      userId: texterId,
-      text,
-      assignmentId
-    }
-  }
-
-  sendMessages = async () => {
-
-    const assignmentData = this.props.data.assignment
-    const contacts = assignmentData.contacts
-    const texter = assignmentData.texter
-    const customFields = assignmentData.campaign.customFields
-    const contactMessages = contacts.map(contact => {
-      const script = contact.currentInteractionStepScript
-      const text = applyScript({
-        contact,
-        texter,
-        script,
-        customFields
-      })
-      return {
-        campaignContactId: contact.id,
-        message: this.createMessage(
-          text,
-          texter.id,
-          assignmentData.id,
-          contact.cell
-        )
-      }
-    })
-    this.props.mutations.sendMessages(contactMessages)
-    this.setState({ open: false })
-    this.props.data.refetch()
-  }
-
-  handleClose = () => {
-    this.setState({ open: false })
-  }
-
-  showConfirmationDialog = () => {
-    this.setState({ open: true })
-  }
-
   renderBadgedButton({ assignment, title, count, primary, disabled, contactsFilter, hideIfZero }) {
     if (count === 0 && hideIfZero) { return '' }
     if (count === 0){
       return (
-        <FlatButton
+        <RaisedButton
           disabled={disabled}
           label={title}
+          primary={primary && !disabled}
           onTouchTap={() => this.goToTodos(contactsFilter, assignment.id)}
         />)
     } else {
@@ -107,7 +69,7 @@ class AssignmentSummary extends Component {
         primary={primary && !disabled}
         secondary={!primary && !disabled}
       >
-        <FlatButton
+        <RaisedButton
           disabled={disabled}
           label={title}
           onTouchTap={() => this.goToTodos(contactsFilter, assignment.id)}
@@ -116,30 +78,10 @@ class AssignmentSummary extends Component {
     }
   }
 
-  renderTextAllButton({ title, count, primary, disabled }) {
-    if (window.ALLOW_SEND_ALL) {
-      return (count === 0 ? '' :
-        <Badge
-          key={title}
-          badgeStyle={inlineStyles.badge}
-          badgeContent={count}
-          primary={primary && !disabled}
-          secondary={!primary && !disabled}
-        >
-          <FlatButton
-            disabled={disabled}
-            label={title}
-            onTouchTap={this.showConfirmationDialog}
-          />
-        </Badge>
-      )
-    }
-    return ''
-  }
-
   render() {
     const { assignment, unmessagedCount, unrepliedCount, badTimezoneCount } = this.props
-    const { title, description, dueBy } = assignment.campaign
+    const { title, description, dueBy, primaryColor, logoImageUrl, introHtml } = assignment.campaign
+    console.log("ASS", assignment.campaign)
     const actions = [
       <FlatButton
         label='No'
@@ -160,14 +102,20 @@ class AssignmentSummary extends Component {
           <CardTitle
             title={title}
             subtitle={`${description} - ${moment(dueBy).format('MMM D YYYY')}`}
-          />
+            style={{backgroundColor: primaryColor}}
+            children={logoImageUrl ? <img src={logoImageUrl} className={css(styles.image)} /> : ''}
+          >             
+          </CardTitle>
           <Divider />
-          <CardActions>
+          <div style={{margin: '20px'}}>
+            <div dangerouslySetInnerHTML={{ __html: introHtml }} />
+          </div>
+          <CardActions style={{textAlign: 'center'}}>
             {this.renderBadgedButton({
               assignment,
-              title: 'Send texts',
+              title: 'Send messages',
               count: unrepliedCount,
-              primary: false,
+              primary: true,
               disabled: false,
               contactsFilter: 'all'
             })}

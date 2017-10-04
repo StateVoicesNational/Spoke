@@ -38,6 +38,9 @@ export const schema = `
     pendingJobs: [JobRequest]
     datawarehouseAvailable: Boolean
     useDynamicAssignment: Boolean
+    introHtml: String
+    primaryColor: String
+    logoImageUrl: String
   }
 `
 
@@ -86,7 +89,10 @@ export const resolvers = {
       'dueBy',
       'isStarted',
       'isArchived',
-      'useDynamicAssignment'
+      'useDynamicAssignment',
+      'introHtml',
+      'primaryColor',
+      'logoImageUrl'
     ], Campaign),
     organization: async (campaign, _, { loaders }) => (
       loaders.organization.load(campaign.organization_id)

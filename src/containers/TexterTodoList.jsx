@@ -70,6 +70,9 @@ const mapQueriesToProps = ({ ownProps }) => ({
             description
             useDynamicAssignment
             hasUnassignedContacts
+            introHtml
+            primaryColor
+            logoImageUrl
           }
           unmessagedCount: contactsCount(contactsFilter: $needsMessageFilter)
           unrepliedCount: contactsCount(contactsFilter: $needsResponseFilter)
