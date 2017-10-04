@@ -21,7 +21,7 @@ const EnsureCompletedFormSchema = {
   description: yup.string().required(),
   dueBy: yup.mixed().required(),
   logoImageUrl: yup.string().transform(value => !value ? null : value).url().nullable(),
-  primaryColor: yup.string(),
+  primaryColor: yup.string().transform(value => !value ? null : value).nullable(),
   introHtml: yup.string().transform(value => !value ? null : value).nullable()
 }
 
