@@ -702,7 +702,7 @@ const rootMutations = {
           .whereNot('answer_actions', '')
           .whereNotNull('answer_actions')
 
-        interactionStepAction = (interactionStepResult.length && interactionStepResult[0].answer_actions)
+        const interactionStepAction = (interactionStepResult.length && interactionStepResult[0].answer_actions)
         if (interactionStepAction) {
           // run interaction step handler
           try {
