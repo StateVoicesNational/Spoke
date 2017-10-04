@@ -22,7 +22,7 @@ const EnsureCompletedFormSchema = {
   dueBy: yup.mixed().required(),
   logoImageUrl: yup.string().transform(value => !value ? null : value).url().nullable(),
   primaryColor: yup.string(),
-  introHtml: yup.string()
+  introHtml: yup.string().transform(value => !value ? null : value).nullable()
 }
 
 export default class CampaignBasicsForm extends React.Component {
