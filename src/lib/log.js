@@ -9,12 +9,14 @@ if (isClient()) {
   const existingErrorLogger = logInstance.error
   logInstance.error = (...err) => {
     const errObj = err
-    window.Rollbar.error(...errObj)
+    if (window.Rollbar) {
+      window.Rollbar.error(...errObj)
+    }
     existingErrorLogger.call(...errObj)
   }
 } else {
   let enableRollbar = false
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === 'production' && process.env.ROLLBAR_ACCESS_TOKEN) {
     enableRollbar = true
     rollbar.init(process.env.ROLLBAR_ACCESS_TOKEN)
   }
