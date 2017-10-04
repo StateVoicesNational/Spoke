@@ -288,9 +288,11 @@ export async function assignTexters(job) {
       unchangedTexters[assignment.user_id] = true
       return null
     } else {
-      const numToUnassign = Math.max(0, assignment.needs_message_count - (texter && texter.needsMessageCount || 0))
-      if (numToUnassign) {
-        demotedTexters[assignment.id] = numToUnassign
+      const numDifferent = assignment.needs_message_count - (texter && texter.needsMessageCount || 0)
+      if (numDifferent > 0) { // got less than before
+        demotedTexters[assignment.id] = numDifferent
+      } else { //got more than before: assign the difference
+        texter.needsMessageCount = -numDifferent
       }
       return assignment
     }
