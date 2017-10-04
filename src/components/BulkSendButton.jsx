@@ -21,9 +21,10 @@ export default class BulkSendButton extends Component {
 
   sendMessages = async () => {
     this.setState({ isSending: true })
-    this.props.setDisabled()
+    this.props.setDisabled(true)
     await this.props.bulkSendMessages(this.props.assignment.id)
     this.setState({ isSending: false })
+    this.props.setDisabled(false)
     this.props.onFinishContact()
   }
 

@@ -293,8 +293,8 @@ class AssignmentTexterContact extends React.Component {
     }
   }
 
-  setDisabled = async () => {
-    this.setState({ disabled: true })
+  setDisabled = async (disabled = true) => {
+    this.setState({ disabled: disabled })
   }
 
   handleMessageFormSubmit = async ({ messageText }) => {
