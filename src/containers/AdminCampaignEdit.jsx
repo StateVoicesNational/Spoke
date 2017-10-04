@@ -242,8 +242,8 @@ class AdminCampaignEdit extends React.Component {
 
   checkSectionSaved(section) {
     // Tests section's keys of campaignFormValues against props.campaignData
-    // * Determines greyness of button
-    // * Determine if section is marked done (in green)
+    // * Determines greyness of section button
+    // * Determine if section is marked done (in green) along with checkSectionCompleted()
     // * Must be false for a section to save!!
     // Only Contacts section implements checkSaved()
     if (section.hasOwnProperty('checkSaved')) {
@@ -416,7 +416,7 @@ class AdminCampaignEdit extends React.Component {
 
   renderStartButton() {
     let isCompleted = this.props.pendingJobsData.campaign
-      .pendingJobs.filter((job) => !/Error/.test(job.result_message || '')).length === 0
+      .pendingJobs.filter((job) => /Error/.test(job.result_message || '')).length === 0
     this.sections().forEach((section) => {
       if (section.blocksStarting && !this.checkSectionCompleted(section) || !this.checkSectionSaved(section)) {
         isCompleted = false
