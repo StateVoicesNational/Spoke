@@ -261,6 +261,7 @@ async function editCampaign(id, campaign, loaders, user) {
       modelData.campaign_id = id
       return modelData
     })
+    console.log("contactsToSave", contactsToSave)
     const compressedString = await gzip(JSON.stringify(contactsToSave))
     let job = await JobRequest.save({
       queue_name: `${id}:edit_campaign`,

@@ -174,9 +174,6 @@ export default class CampaignContactsForm extends React.Component {
 
   renderUploadButton() {
     const { uploading } = this.state
-    if (this.props.ensureComplete) {
-      return <div></div>
-    }
     return (
       <RaisedButton
         style={innerStyles.button}
@@ -261,13 +258,11 @@ export default class CampaignContactsForm extends React.Component {
               />
             </List>
           ) : ''}
-          {this.props.ensureComplete ? '' : (
-            <Form.Button
-              type='submit'
-              disabled={this.props.saveDisabled}
-              label={this.props.saveLabel}
-            />
-          )}
+          <Form.Button
+            type='submit'
+            disabled={this.props.saveDisabled}
+            label={this.props.saveLabel}
+          />
         </GSForm>
       </div>
     )
@@ -286,13 +281,6 @@ export default class CampaignContactsForm extends React.Component {
         Any additional columns in your file will be available as custom fields to use in your texting scripts.
       </span>
     )
-    if (this.props.ensureComplete) {
-      subtitle = (
-        <span>
-          This campaign has already started, so you won't be able to modify the contacts you've already uploaded to this campaign.
-        </span>
-      )
-    }
 
     return (
       <div>

@@ -35,10 +35,6 @@ async function getTimezoneByZip(zip) {
 
 export async function uploadContacts(job) {
   const campaignId = job.campaign_id
-  // We do this deletion in schema.js but we do it again here just in case the the queue broke and we had a backlog of contact uploads for one campaign
-  await r.table('campaign_contact')
-    .getAll(campaignId, { index: 'campaign_id' })
-    .delete()
   const maxPercentage = 100
   let contacts = await gunzip(new Buffer(job.payload, 'base64'))
   const chunkSize = 1000

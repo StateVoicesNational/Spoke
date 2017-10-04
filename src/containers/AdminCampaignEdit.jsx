@@ -230,7 +230,7 @@ class AdminCampaignEdit extends React.Component {
       checkCompleted: () => this.state.campaignFormValues.contactsCount > 0,
       checkSaved: () => (
         // should we go and try to save contacts now?
-        this.state.campaignFormValues.hasOwnProperty('contacts') === false
+        (this.state.campaignFormValues.contacts && this.state.campaignFormValues.contacts.length > 0)
         && this.state.campaignFormValues.hasOwnProperty('contactSql') === false),
       blocksStarting: true,
       extraProps: {
