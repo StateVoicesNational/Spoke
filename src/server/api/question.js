@@ -22,7 +22,7 @@ export const resolvers = {
     text: async (interactionStep) => interactionStep.question,
     answerOptions: async (interactionStep) => (
       r.table('interaction_step')
-        .filter({parent_interaction_id: interactionStep.id})
+        .filter({ parent_interaction_id: interactionStep.id })
         .map({
           value: r.row('answer_option'),
           action: r.row('answer_actions'),

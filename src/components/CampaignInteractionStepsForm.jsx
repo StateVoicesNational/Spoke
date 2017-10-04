@@ -303,26 +303,26 @@ export default class CampaignInteractionStepsForm extends React.Component {
             display: 'inline-block'
           }}
         >
-          { this.props.availableActions && this.props.availableActions.length ?
+          {this.props.availableActions && this.props.availableActions.length ?
             (<div>
              <Form.Field
-              name={actionFieldname}
-              type='select'
-              choices={[
-                {'value': '', 'label': 'Action...'},
-                ...this.props.availableActions.map(
-                  action => ({'value': action.name, 'label': action.display_name})
+               name={actionFieldname}
+               type='select'
+               choices={[
+                { 'value': '', 'label': 'Action...' },
+                 ...this.props.availableActions.map(
+                  action => ({ 'value': action.name, 'label': action.display_name })
                 )
-              ]}
-            />
+               ]}
+             />
              <IconButton tooltip={
                answer.action
                  ? this.props.availableActions.filter((a) => a.name === answer.action)[0].instructions
-                 : "An action is something that is triggered by this answer being chosen, often in an outside system"}>
-             { answer.action ? <HelpIcon /> : <HelpIconOutline /> }
+                 : 'An action is something that is triggered by this answer being chosen, often in an outside system'}>
+             {answer.action ? <HelpIcon /> : <HelpIconOutline />}
              </IconButton>
              </div>)
-          : '' }
+          : ''}
         </div>
         <div
           style={{

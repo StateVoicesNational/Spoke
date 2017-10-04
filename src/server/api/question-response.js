@@ -13,9 +13,9 @@ export const resolvers = {
   QuestionResponse: {
     ...mapFieldsToModel([
       'id',
-      'value',
+      'value'
     ], QuestionResponse),
-    question: async (question, _, { loaders }) => 
+    question: async (question, _, { loaders }) =>
       (loaders.question.load(question.id))
   }
 }

@@ -13,19 +13,19 @@ const styles = StyleSheet.create({
   icon: {
     color: 'rgb(83, 180, 119)',
     width: 40,
-    height: 40,
+    height: 40
   },
   arrowButton: {
-    '@media(min-width: 450px)':{
+    '@media(min-width: 450px)': {
       display: 'none !important'
     },
-    '@media(max-width: 450px)':{
+    '@media(max-width: 450px)': {
       display: 'block !important'
     },
     position: 'absolute',
     right: 2,
     bottom: 125,
-    zIndex: 100,
+    zIndex: 100
   }
 })
 class SendButtonArrow extends Component {
@@ -44,7 +44,7 @@ class SendButtonArrow extends Component {
           disabled={this.props.disabled}
           primary
         >
-          <NavigationArrowForward className={css(styles.icon)}/>
+          <NavigationArrowForward className={css(styles.icon)} />
         </IconButton>
       </div>
     )

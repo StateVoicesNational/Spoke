@@ -19,7 +19,7 @@ export function authRequired(user) {
   }
 }
 
-export async function hasRole(userId, orgId, role) {  
+export async function hasRole(userId, orgId, role) {
   if (role) {
     const userHasRole = await r.table('user_organization').filter({
       user_id: userId,
@@ -31,7 +31,6 @@ export async function hasRole(userId, orgId, role) {
 }
 
 export async function accessRequired(user, orgId, role, allowSuperadmin = false) {
-  
   authRequired(user)
 
   if (allowSuperadmin && user.is_superadmin) {
@@ -46,7 +45,6 @@ export async function accessRequired(user, orgId, role, allowSuperadmin = false)
       message: 'You are not authorized to access that resource.'
     })
   }
-  
 }
 
 export async function assignmentRequired(user, assignmentId) {

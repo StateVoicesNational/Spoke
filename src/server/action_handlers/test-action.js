@@ -30,9 +30,9 @@ export async function processAction(questionResponse, interactionStep, campaignC
     .where('campaign_contact_id', campaignContactId)
   const customFields = JSON.parse(contact.custom_fields || '{}')
   if (customFields) {
-    customFields['processed_test_action'] = "completed"
+    customFields['processed_test_action'] = 'completed'
   }
-  
+
   await r.knex('campaign_contact')
     .where('campaign_contact_id', campaignContactId)
     .update('custom_fields', JSON.stringify(customFields))

@@ -10,6 +10,17 @@ Spoke was created by Saikat Chakrabarti and Sheena Pakanati, and is now maintain
 
 This is generated from [react-apollo-starter-kit](https://github.com/saikat/react-apollo-starter-kit).  Look at that project's README for info on some of the libraries used.
 
+## Deploy to Heroku
+
+<a href="https://heroku.com/deploy?template=https://github.com/MoveOnOrg/Spoke">
+  <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy">
+</a>
+
+WARNING --> this template will incur costs
+
+Follow up instructions located [here](https://github.com/MoveOnOrg/Spoke/blob/master/docs/HOWTO_HEROKU_DEPLOY.md)
+
+
 ## Getting started
 
 1. Install either sqlite (or another [knex](http://knexjs.org/#Installation-client)-supported database)

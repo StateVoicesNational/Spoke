@@ -66,7 +66,7 @@ export async function uploadContacts(job) {
   }
 
   const optOutCellCount = await r.knex('campaign_contact')
-    .whereIn('cell', function() {
+    .whereIn('cell', function () {
       this.select('cell').from('opt_out').where('organization_id', campaign.organization_id)
     })
     .where('campaign_id', campaignId)
@@ -79,7 +79,7 @@ export async function uploadContacts(job) {
   if (job.id) {
     if (jobMessages.length) {
       await r.knex('job_request').where('id', job.id)
-        .update({'result_message': jobMessages.join("\n")})
+        .update({ 'result_message': jobMessages.join('\n') })
     } else {
       await r.table('job_request').get(job.id).delete()
     }
@@ -100,10 +100,10 @@ export async function loadContactsFromDataWarehouse(job) {
   let knexResult
   try {
     knexResult = await datawarehouse.raw(sqlQuery)
-  } catch(err) {
+  } catch (err) {
     // query failed
     log.error('Data warehouse query failed: ', err)
-    //TODO: send feedback about job
+    // TODO: send feedback about job
   }
   let fields = {}
   let customFields = {}
@@ -125,7 +125,7 @@ export async function loadContactsFromDataWarehouse(job) {
     return
   }
 
-  //TODO break up result and save in portions, dispatched
+  // TODO break up result and save in portions, dispatched
   let jobMessages = []
   const savePortion = await Promise.all(knexResult.rows.map(async (row) => {
     let contact = {
@@ -134,7 +134,7 @@ export async function loadContactsFromDataWarehouse(job) {
       'last_name': row.last_name,
       'cell': row.cell,
       'zip': row.zip,
-      'external_id': row.external_id,
+      'external_id': row.external_id
     }
     let contactCustomFields = {}
     for (let f in customFields) {
@@ -157,7 +157,7 @@ export async function loadContactsFromDataWarehouse(job) {
   // doing this in one go so that we can get the DB to do the indexed cell matching
   const campaign = await Campaign.get(job.campaign_id)
   const optOutCellCount = await r.knex('campaign_contact')
-    .whereIn('cell', function() {
+    .whereIn('cell', function () {
       this.select('cell').from('opt_out').where('organization_id', campaign.organization_id)
     })
     .where('campaign_id', campaign_id)
@@ -169,7 +169,7 @@ export async function loadContactsFromDataWarehouse(job) {
   if (job.id) {
     if (jobMessages.length) {
       await r.knex('job_request').where('id', job.id)
-        .update({'result_message': jobMessages.join("\n")})
+        .update({ 'result_message': jobMessages.join('\n') })
     } else {
       await r.table('job_request').get(job.id).delete()
     }
@@ -272,9 +272,9 @@ export async function assignTexters(job) {
   const texters = payload.texters
   const currentAssignments = await r.knex('assignment')
     .where('assignment.campaign_id', cid)
-    .joinRaw("left join campaign_contact "
-             +"ON (campaign_contact.assignment_id = assignment.id "
-             +    "AND campaign_contact.message_status = 'needsMessage')")
+    .joinRaw('left join campaign_contact '
+             + 'ON (campaign_contact.assignment_id = assignment.id '
+             + "AND campaign_contact.message_status = 'needsMessage')")
     .groupBy('user_id', 'assignment.id')
     .select('user_id', 'assignment.id as id', r.knex.raw('COUNT(campaign_contact.id) as needs_message_count'))
     .catch(log.error)
@@ -306,7 +306,7 @@ export async function assignTexters(job) {
              .where('message_status', 'needsMessage')
              .select('id')
             )
-      .update({assignment_id: null})
+      .update({ assignment_id: null })
       .catch(log.error)
   }
 
@@ -337,9 +337,9 @@ export async function assignTexters(job) {
     const existingAssignment = currentAssignments.find((ele) => ele.user_id === texterId)
     let assignment = null
     if (existingAssignment) {
-      assignment = new Assignment({id: existingAssignment.id,
+      assignment = new Assignment({ id: existingAssignment.id,
                                    user_id: existingAssignment.user_id,
-                                   campaign_id: cid})
+                                   campaign_id: cid })
     } else {
       assignment = await new Assignment({
         user_id: texterId,
@@ -421,7 +421,7 @@ export async function exportCampaign(job) {
     .where('campaign_id', id)
     .join('user', 'user_id', 'user.id')
     .select('assignment.id as id',
-            //user fields
+            // user fields
             'first_name', 'last_name', 'email', 'cell', 'assigned_cell')
   const assignmentCount = assignments.length
 
@@ -537,7 +537,7 @@ let pastMessages = []
 
 export async function sendMessages(queryFunc, defaultStatus) {
   let messages = r.knex('message')
-    .where({'send_status': defaultStatus || 'QUEUED'})
+    .where({ 'send_status': defaultStatus || 'QUEUED' })
 
   if (queryFunc) {
     messages = queryFunc(messages)
@@ -547,27 +547,27 @@ export async function sendMessages(queryFunc, defaultStatus) {
   for (let index = 0; index < messages.length; index++) {
     let message = messages[index]
     if (pastMessages.indexOf(message.id) != -1) {
-      throw new Error("Encountered send message request of the same message."
-                      + " This is scary!  If ok, just restart process. Message ID: " + message.id)
+      throw new Error('Encountered send message request of the same message.'
+                      + ' This is scary!  If ok, just restart process. Message ID: ' + message.id)
     }
     message.service = message.service || process.env.DEFAULT_SERVICE
     const service = serviceMap[message.service]
     log.info(`Sending (${message.service}): ${message.user_number} -> ${message.contact_number}\nMessage: ${message.text}`)
     await service.sendMessage(message)
     pastMessages.push(message.id)
-    pastMessages = pastMessages.slice(-100) //keep the last 100
+    pastMessages = pastMessages.slice(-100) // keep the last 100
   }
 }
 
 export async function handleIncomingMessageParts() {
   const messageParts = await r.table('pending_message_part').limit(100)
   const messagePartsByService = [
-    {'group': 'nexmo',
+    { 'group': 'nexmo',
      'reduction': messageParts.filter((m) => (m.service == 'nexmo'))
     },
-    {'group': 'twilio',
+    { 'group': 'twilio',
      'reduction': messageParts.filter((m) => (m.service == 'twilio'))
-    },
+    }
   ]
   const serviceLength = messagePartsByService.length
   for (let index = 0; index < serviceLength; index++) {
