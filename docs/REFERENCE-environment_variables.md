@@ -44,6 +44,7 @@ ROLLBAR_CLIENT_TOKEN              | Client token for Rollbar error tracking.
 ROLLBAR_ACCESS_TOKEN              | Access token for Rollbar error tracking.
 ROLLBAR_ENDPOINT                  | Endpoint URL for Rollbar error tracking.
 SESSION_SECRET                    | Unique key used to encrypt sessions. _Required_.
+SLACK_NOTIFY_URL                  | If set, then on post-install (often from deploying) a message will be posted to a slack channel's `#spoke` channel
 SUPPRESS_SELF_INVITE              | Boolean value to prevent self-invitations. Recommend setting before making sites available to public. _Default_: false.
 TWILIO_API_KEY                    | Twilio API key. Required if using Twilio.
 TWILIO_APPLICATION_SID            | Twilio application ID. Required if using Twilio.

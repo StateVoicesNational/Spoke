@@ -363,6 +363,9 @@ class AssignmentTexterContact extends React.Component {
     try {
       const { contact } = this.props.data
       const message = this.createMessageToContact(messageText)
+      if (this.state.disabled) {
+        return // stops from multi-send
+      }
       this.setState({ disabled: true })
       await this.props.mutations.sendMessage(message, contact.id)
 
@@ -416,6 +419,10 @@ class AssignmentTexterContact extends React.Component {
     const { contact } = this.props.data
     const { assignment } = this.props
     const message = this.createMessageToContact(optOutMessageText)
+    if (this.state.disabled) {
+      return // stops from multi-send
+    }
+    this.setState({ disabled: true })
     try {
       await this.props.mutations.sendMessage(message, contact.id)
       const optOut = {
