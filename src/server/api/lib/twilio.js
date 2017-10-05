@@ -123,10 +123,9 @@ async function sendMessage(message) {
         messageToSave.service_response += JSON.stringify(response)
       }
 
-
       if (hasError) {
-        const SENT_STRING = 'error_code' // will appear in responses
-        if (messageToSave.service_response.split(SENT_STRING).length >= MAX_SEND_ATTEMPTS) {
+        const SENT_STRING = '"status"' // will appear in responses
+        if (messageToSave.service_response.split(SENT_STRING).length >= MAX_SEND_ATTEMPTS+1) {
           messageToSave.send_status = 'ERROR'
         }
         Message.save(messageToSave, { conflict: 'update' })

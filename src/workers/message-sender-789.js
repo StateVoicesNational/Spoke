@@ -1,3 +1,3 @@
 import { messageSender789 } from './job-processes'
 
-messageSender789()
+messageSender789().catch((err) => {console.log(err)})

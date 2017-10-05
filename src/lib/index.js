@@ -10,7 +10,8 @@ export {
 export {
   isClient
 } from './is-client'
-export { log } from './log'
+import { log } from './log'
+export { log }
 import Papa from 'papaparse'
 import _ from 'lodash'
 import { getFormattedPhoneNumber, getFormattedZip } from '../lib'
