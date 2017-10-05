@@ -59,6 +59,19 @@ NOTES:
 claudia add-scheduled-event --name spoke-job-runner --schedule 'rate(5 minutes)' --event ./deploy/lambda-scheduled-event.json
 ```
 
+## Migrating the database:
+
+New migrations are added to `src/migrations/index.js`.  You can trigger migration updates with the following
+command:
+
+```
+claudia test-lambda --event ./deploy/lambda-migrate-database.js
+```
+
+(Note: the migration will probably take much less than the 5 minutes or whatever your lambda timeout is,
+however it will look like `test-lambda` is still running/doing something.  If you've confirmed on the
+db side that the migration completed, it's safe to Ctrl-C)
+
 ## How this works
 
 After Claudia.js does an 'npm install' essentially of your directory (which will filter out files in `.gitignore`, etc),
