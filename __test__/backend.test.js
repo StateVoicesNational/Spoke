@@ -1,6 +1,7 @@
 import { schema, resolvers } from '../src/server/api/schema'
 import { graphql } from 'graphql'
 import { User, CampaignContact, r } from '../src/server/models/'
+import { sleep } from '../src/workers/lib'
 import { getContext,
   setupTest,
   cleanupTest } from './test_helpers'
@@ -13,6 +14,16 @@ const mySchema = makeExecutableSchema({
 })
 
 const rootValue = {}
+
+beforeAll(async () => {
+  let testDbExists = false
+  while (!testDbExists) {
+    testDbExists = await r.knex.schema.hasTable('job_request')
+    if (!testDbExists) {
+      const waitUntilDbCreated = await sleep(1000)
+    }
+  }
+});
 
 afterAll(async () => await cleanupTest())
 
