@@ -736,6 +736,7 @@ const rootMutations = {
       const contacts = await r.knex('campaign_contact')
         .where({message_status: 'needsMessage'})
         .where({assignment_id: assignmentId})
+        .orderByRaw("updated_at")
         .limit(process.env.BULK_SEND_CHUNK_SIZE)
 
       const texter = camelCaseKeys(await User.get(assignment.user_id))
