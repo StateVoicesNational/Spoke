@@ -611,6 +611,8 @@ const rootMutations = {
         .get(contact.campaign_id)
         .eqJoin('organization_id', r.table('organization'))('right')
 
+      const orgFeatures = JSON.parse(organization.features || '{}')
+
       const optOut = await r.table('opt_out')
           .getAll(contact.cell, { index: 'cell' })
           .filter({ organization_id: organization.id })
@@ -651,7 +653,7 @@ const rootMutations = {
         user_number: '',
         assignment_id: message.assignmentId,
         send_status: (JOBS_SAME_PROCESS ? 'SENDING' : 'QUEUED'),
-        service: process.env.DEFAULT_SERVICE || '',
+        service: orgFeatures.service || process.env.DEFAULT_SERVICE || '',
         is_from_contact: false
       })
 
