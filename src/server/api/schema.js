@@ -669,7 +669,7 @@ const rootMutations = {
       console.log({assignmentId: assignmentId, numberContacts: numberContacts})
 
       // Don't add them if they already have them
-      const result = await r.knex.raw(`SELECT COUNT(*) as count FROM campaign_contact WHERE assignment_id = :assignment_id AND message_status = 'needsMessage'`, {assignment_id: assignmentId})
+      const result = await r.knex.raw(`SELECT COUNT(*) as count FROM campaign_contact WHERE assignment_id = :assignment_id AND message_status = 'needsMessage' AND is_opted_out = false`, {assignment_id: assignmentId})
       if (result.rows[0].count >= numberContacts){
         return false
       } 
