@@ -219,6 +219,7 @@ const rootSchema = `
     sendReply(id: String!, message: String!): CampaignContact
     findNewCampaignContact(assignmentId: String!, numberContacts: Int!): CampaignContact,
     assignUserToCampaign(campaignId: String!): Campaign
+    userAgreeTerms(userId: String!): User
   }
 
   schema {
@@ -376,6 +377,15 @@ async function updateInteractionSteps(campaignId, interactionSteps, idMap = {}){
 
 const rootMutations = {
   RootMutation: {
+    userAgreeTerms: async (_, { userId }, { user, loaders }) => {
+      const currentUser = await r.table('user')
+        .get(userId)
+        .update({
+          terms: true
+        })
+      return currentUser
+    },
+
     sendReply: async (_, { id, message }, { loaders }) => {
       if (process.env.NODE_ENV !== 'development') {
         throw new GraphQLError({

@@ -72,6 +72,15 @@ const migrations = [
       })
       console.log('added is_deleted column to interaction_step')
     }
+  },
+  { auto: true, //7
+    date: '2017-09-28',
+    migrate: async function migrate() {
+      await r.knex.schema.alterTable('user', (table) => {
+        table.boolean('terms').default(false);
+      })
+      console.log('added terms column to user')
+    }
   }
   /* migration template
      {auto: true, //if auto is false, then it will block the migration running automatically
