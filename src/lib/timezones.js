@@ -18,8 +18,8 @@ export const isBetweenTextingHours = (offsetData, config) => {
   }
   if (process.env.TZ) {
     const today = moment.tz(process.env.TZ).format('YYYY-MM-DD')
-    const start = moment.tz(`${today} ${config.textingHoursStart}`, process.env.TZ)
-    const stop = moment.tz(`${today} ${config.textingHoursStart}`, process.env.TZ)
+    const start = moment.tz(`${today}`, process.env.TZ).add(config.textingHoursStart, 'hours')
+    const stop = moment.tz(`${today}`, process.env.TZ).add(config.textingHoursEnd, 'hours')
     return moment.tz(process.env.TZ).isBetween(start, stop, null, '[]')
   }
   let offset
