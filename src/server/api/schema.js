@@ -80,7 +80,7 @@ import {
   superAdminRequired
 } from './errors'
 import serviceMap from './lib/services'
-import saveNewIncomingMessage from './lib/message-sending'
+import { saveNewIncomingMessage } from './lib/message-sending'
 import { gzip, log } from '../../lib'
 // import { isBetweenTextingHours } from '../../lib/timezones'
 import { Notifications, sendUserNotification } from '../notifications'
@@ -345,7 +345,6 @@ const rootMutations = {
         })
       }
 
-      console.log('lastMessage', lastMessage)
       const userNumber = lastMessage.user_number
       const contactNumber = contact.cell
       const mockId = `mocked_${Math.random().toString(36).replace(/[^a-zA-Z1-9]+/g, '')}`
