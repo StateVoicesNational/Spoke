@@ -80,6 +80,7 @@ import {
   superAdminRequired
 } from './errors'
 import serviceMap from './lib/services'
+import saveNewIncomingMessage from './lib/message-sending'
 import { gzip, log } from '../../lib'
 // import { isBetweenTextingHours } from '../../lib/timezones'
 import { Notifications, sendUserNotification } from '../notifications'
@@ -322,7 +323,7 @@ async function editCampaign(id, campaign, loaders, user) {
 
 const rootMutations = {
   RootMutation: {
-    sendReply: async (_, { id, message }, { loaders }) => {
+    sendReply: async (_, { id, message }, { user, loaders }) => {
       if (process.env.NODE_ENV !== 'development') {
         throw new GraphQLError({
           status: 400,
@@ -347,22 +348,20 @@ const rootMutations = {
       console.log('lastMessage', lastMessage)
       const userNumber = lastMessage.user_number
       const contactNumber = contact.cell
-      const mockedId = `mocked_${Math.random().toString(36).replace(/[^a-zA-Z1-9]+/g, '')}`
-      if (lastMessage.service === 'nexmo') {
-        await serviceMap.nexmo.handleIncomingMessage({
-          to: userNumber,
-          msisdn: contactNumber,
-          text: message,
-          messageId: mockedId
-        })
-      } else if (lastMessage.service === 'twilio') {
-        await serviceMap.twilio.handleIncomingMessage({
-          From: contactNumber,
-          To: userNumber,
-          Body: message,
-          MessageSid: mockedId
-        })
-      }
+      const mockId = `mocked_${Math.random().toString(36).replace(/[^a-zA-Z1-9]+/g, '')}`
+      await saveNewIncomingMessage(new Message({
+        contact_number: contactNumber,
+        user_number: userNumber,
+        is_from_contact: true,
+        text: message,
+        service_response: JSON.stringify({'fakeMessage': true,
+                                          'userId': user.id,
+                                          'userFirstName': user.first_name}),
+        service_id: mockId,
+        assignment_id: lastMessage.assignment_id,
+        service: lastMessage.service,
+        send_status: 'DELIVERED'
+      }))
       return loaders.campaignContact.load(id)
     },
     exportCampaign: async (_, { id }, { user, loaders }) => {
