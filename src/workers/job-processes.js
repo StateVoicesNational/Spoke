@@ -1,6 +1,6 @@
 import { r } from '../server/models'
 import { sleep, getNextJob, updateJob, log } from './lib'
-import { exportCampaign, uploadContacts, assignTexters, createInteractionSteps, sendMessages, handleIncomingMessageParts, clearOldJobs } from './jobs'
+import { exportCampaign, processSqsMessages, uploadContacts, assignTexters, createInteractionSteps, sendMessages, handleIncomingMessageParts, clearOldJobs } from './jobs'
 import { runMigrations } from '../migrations'
 import { setupUserNotificationObservers } from '../server/notifications'
 
@@ -137,6 +137,7 @@ const processMap = {
 const syncProcessMap = {
   // 'failedMessageSender': failedMessageSender, //see method for danger
   handleIncomingMessages,
+  processSqsMessages,
   clearOldJobs
 }
 
