@@ -18,3 +18,4 @@ highlights for this release:
 * Migrated from a RethinkDB backend to a Knex.js backend (we recommend use with postgresql database)
 * Improved Spoke's security
 
+Thanks go to to all our contributors including: [anasauce](https://github.com/anasauce), [hiemanshu](https://github.com/hiemanshu), [mathemagica](https://github.com/mathemagica), [sandramchung](https://github.com/sandramchung), [schuyler1d](https://github.com/schuyler1d), [shakalee14](https://github.com/shakalee14), [sreynen](https://github.com/sreynen)!
