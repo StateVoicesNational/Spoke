@@ -180,8 +180,10 @@ app.get('/login-callback',
         is_superadmin: false
       })
       res.redirect(req.query.state || 'terms')
+      return
     }
     res.redirect(req.query.state || '/')
+    return
   })
 )
 
