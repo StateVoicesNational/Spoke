@@ -15,19 +15,15 @@ const mySchema = makeExecutableSchema({
 
 const rootValue = {}
 
-beforeAll(async () => {
-  let testDbExists = false
-  while (!testDbExists) {
-    testDbExists = await r.knex.schema.hasTable('job_request')
-    if (!testDbExists) {
-      const waitUntilDbCreated = await sleep(1000)
-    }
-  }
-});
+// data items used across tests
 
-afterAll(async () => await cleanupTest())
+let testAdminUser
+let testInvite
+let testOrganization
+let testCampaign
+let testTexterUser
 
-// graphQL tests!!!!
+// data creation functions
 
 async function createUser() {
   const user = new User({
@@ -66,7 +62,6 @@ async function createContact(campaignId) {
     return false
   }
 }
-
 
 async function createInvite() {
   const inviteQuery = `mutation {
@@ -144,6 +139,20 @@ async function createCampaign(user, title, description, organizationId, contacts
   }
 }
 
+// graphQL tests
+
+beforeAll(async () => {
+  let testDbExists = false
+  while (!testDbExists) {
+    testDbExists = await r.knex.schema.hasTable('job_request')
+    if (!testDbExists) {
+      const waitUntilDbCreated = await sleep(1000)
+    }
+  }
+})
+
+afterAll(async () => await cleanupTest())
+
 it('should be undefined when user not logged in', async () => {
   const query = `{
     currentUser {
@@ -158,13 +167,13 @@ it('should be undefined when user not logged in', async () => {
 })
 
 it('should return the current user when user is logged in', async () => {
-  const user = await createUser()
+  testAdminUser = await createUser()
   const query = `{
     currentUser {
       email
     }
   }`
-  const context = getContext({ user })
+  const context = getContext({ user: testAdminUser })
   const result = await graphql(mySchema, query, rootValue, context)
   const { data } = result
 
@@ -174,18 +183,16 @@ it('should return the current user when user is logged in', async () => {
 // TESTING CAMPAIGN CREATION FROM END TO END
 
 it('should create an invite', async () => {
-  const invite = await createInvite()
+  testInvite = await createInvite()
 
-  expect (invite.data.createInvite.id).toBeTruthy()
+  expect (testInvite.data.createInvite.id).toBeTruthy()
 })
 
 it('should convert an invitation and user into a valid organization instance', async () => {
 
-  const [user, invite] = await Promise.all([createUser(), createInvite()])
-
-  if (invite && user) {
+  if (testInvite && testAdminUser) {
     console.log("user and invite for org")
-    console.log([user,invite.data])
+    console.log([testAdminUser,testInvite.data])
 
     const userQuery = `{
       currentUser {
@@ -193,9 +200,9 @@ it('should convert an invitation and user into a valid organization instance', a
       }
     }`
 
-    const org = await createOrganization(user, "Testy test organization", invite.data.createInvite.id, invite.data.createInvite.id)
+    testOrganization = await createOrganization(testAdminUser, "Testy test organization", testInvite.data.createInvite.id, testInvite.data.createInvite.id)
 
-    expect(org.data.createOrganization.name).toBe('Testy test organization')
+    expect(testOrganization.data.createOrganization.name).toBe('Testy test organization')
   } else {
     console.log("Failed to create invite and/or user for organization test")
     return false
@@ -204,27 +211,16 @@ it('should convert an invitation and user into a valid organization instance', a
 
 
 it('should create a test campaign', async () => {
-
-  const [user, invite] = await Promise.all([createUser(), createInvite()])
-  const organization = await createOrganization(user, "test org", user.id, invite.data.createInvite.id)
-
   const campaignTitle = "test campaign"
-  const campaign = await createCampaign(user, campaignTitle, "test description", organization.data.createOrganization.id)
-  expect (campaign.data.createCampaign.title).toBe(campaignTitle)
+  testCampaign = await createCampaign(testAdminUser, campaignTitle, "test description", testOrganization.data.createOrganization.id)
 
+  expect (testCampaign.data.createCampaign.title).toBe(campaignTitle)
 })
 
-
 it('should create campaign contacts', async () => {
-  const [user, invite] = await Promise.all([createUser(), createInvite()])
-  const organization = await createOrganization(user, "test org", user.id, invite.data.createInvite.id)
+  const contact = await createContact(testCampaign.data.createCampaign.id)
 
-  const campaign = await createCampaign(user, "test campaign", "test description", organization.data.createOrganization.id)
-
-  const contact = await createContact(campaign.data.createCampaign.id)
-
-  expect (contact.campaign_id).toBe(parseInt(campaign.data.createCampaign.id))
-
+  expect (contact.campaign_id).toBe(parseInt(testCampaign.data.createCampaign.id))
 })
 
 // it('should add texters to a organization', async () => {
