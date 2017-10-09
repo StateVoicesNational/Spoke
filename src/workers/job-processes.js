@@ -42,6 +42,18 @@ export async function processJobs() {
   }
 }
 
+export async function checkMessageQueue() {
+  console.log('checking if messages are in message queue');
+  while (true) {
+    try {
+      await sleep(10000)
+      processSqsMessages()
+    } catch (ex) {
+      log.error(ex)
+    }
+  }
+}
+
 const messageSenderCreator = (subQuery, defaultStatus) => {
   return async () => {
     console.log('Running a message sender')
