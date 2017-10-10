@@ -1,4 +1,4 @@
-import { r, datawarehouse, Campaign, CampaignContact, User, Assignment, InteractionStep } from '../server/models'
+import { r, datawarehouse, Assignment, Campaign, CampaignContact, InteractionStep, Organization, User } from '../server/models'
 import { log, gunzip, zipToTimeZone } from '../lib'
 import { sleep, getNextJob, updateJob } from './lib'
 import serviceMap from '../server/api/lib/services'
@@ -35,6 +35,9 @@ export async function uploadContacts(job) {
   const campaignId = job.campaign_id
   // We do this deletion in schema.js but we do it again here just in case the the queue broke and we had a backlog of contact uploads for one campaign
   const campaign = await Campaign.get(campaignId)
+  const organization = await Organization.get(campaign.organization_id)
+  const orgFeatures = JSON.parse(organization.features || '{}')
+
   let jobMessages = []
 
   await r.table('campaign_contact')
@@ -45,8 +48,12 @@ export async function uploadContacts(job) {
   const chunkSize = 1000
   contacts = JSON.parse(contacts)
 
-  if (process.env.MAX_CONTACTS) {
-    contacts = contacts.slice(0, parseInt(process.env.MAX_CONTACTS))
+  const maxContacts = parseInt(orgFeatures.hasOwnProperty('maxContacts')
+                                ? orgFeatures.maxContacts
+                                : process.env.MAX_CONTACTS || 0)
+
+  if (maxContacts) { // note: maxContacts == 0 means no maximum
+    contacts = contacts.slice(0, maxContacts)
   }
 
   const numChunks = Math.ceil(contacts.length / chunkSize)
@@ -291,7 +298,7 @@ export async function assignTexters(job) {
       const numDifferent = assignment.needs_message_count - (texter && texter.needsMessageCount || 0)
       if (numDifferent > 0) { // got less than before
         demotedTexters[assignment.id] = numDifferent
-      } else { //got more than before: assign the difference
+      } else { // got more than before: assign the difference
         texter.needsMessageCount = -numDifferent
       }
       return assignment
@@ -563,23 +570,23 @@ export async function sendMessages(queryFunc, defaultStatus) {
 
 export async function handleIncomingMessageParts() {
   const messageParts = await r.table('pending_message_part').limit(100)
-  const messagePartsByService = [
-    { 'group': 'nexmo',
-     'reduction': messageParts.filter((m) => (m.service == 'nexmo'))
-    },
-    { 'group': 'twilio',
-     'reduction': messageParts.filter((m) => (m.service == 'twilio'))
+  const messagePartsByService = {}
+  messageParts.forEach((m) => {
+    if (m.service in serviceMap) {
+      if (!(m.service in messagePartsByService)) {
+        messagePartsByService[m.service] = []
+      }
+      messagePartsByService[m.service].push(m)
     }
-  ]
+  })
   const serviceLength = messagePartsByService.length
-  for (let index = 0; index < serviceLength; index++) {
-    const serviceParts = messagePartsByService[index]
-    const allParts = serviceParts.reduction
+  for (let serviceKey in messagePartsByService) {
+    const allParts = messagePartsByService[serviceKey]
     const allPartsCount = allParts.length
     if (allPartsCount == 0) {
       continue
     }
-    const service = serviceMap[serviceParts.group]
+    const service = serviceMap[serviceKey]
     const convertMessageParts = service.convertMessagePartsToMessage
     const messagesToSave = []
     let messagePartsToDelete = []
@@ -592,7 +599,7 @@ export async function handleIncomingMessageParts() {
         .count()
       const lastMessage = await getLastMessage({
         contactNumber: part.contact_number,
-        service: serviceParts.group
+        service: serviceKey
       })
       const duplicateMessageToSaveExists = !!messagesToSave.find((message) => message.service_id === serviceMessageId)
       if (!lastMessage) {
