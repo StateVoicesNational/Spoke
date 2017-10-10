@@ -277,16 +277,10 @@ async function editCampaign(id, campaign, loaders, user) {
     })
 
     if (JOBS_SAME_PROCESS) {
-      console.log('JOBS_SYNC')
-      console.log(JOBS_SYNC)
-      console.log('global.JOBS_SYNC')
-      console.log(global.JOBS_SYNC)
       if (JOBS_SYNC) {
-        console.log('assignTexters sync')
         await assignTexters(job)
       }
       else {
-        console.log('assignTexters async')
         assignTexters(job)
       }
     }
