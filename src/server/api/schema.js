@@ -324,13 +324,9 @@ async function editCampaign(id, campaign, loaders, user) {
 const rootMutations = {
   RootMutation: {
     sendReply: async (_, { id, message }, { user, loaders }) => {
-      if (process.env.NODE_ENV !== 'development') {
-        throw new GraphQLError({
-          status: 400,
-          message: 'You cannot send manual replies unless you are in development'
-        })
-      }
       const contact = await loaders.campaignContact.load(id)
+
+      await accessRequired(user, contact.organization_id, 'ADMIN')
 
       const lastMessage = await r.table('message')
         .getAll(contact.assignment_id, { index: 'assignment_id' })
