@@ -43,6 +43,10 @@ export async function processJobs() {
 }
 
 export async function checkMessageQueue() {
+  if(!process.env.TWILIO_SQS_QUEUE_URL) {
+   return
+  }
+  
   console.log('checking if messages are in message queue');
   while (true) {
     try {
@@ -149,7 +153,7 @@ const processMap = {
 const syncProcessMap = {
   // 'failedMessageSender': failedMessageSender, //see method for danger
   handleIncomingMessages,
-  processSqsMessages,
+  checkMessageQueue,
   clearOldJobs
 }
 
