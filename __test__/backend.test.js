@@ -25,14 +25,14 @@ let testTexterUser
 
 // data creation functions
 
-async function createUser() {
-  const user = new User({
-    auth0_id: 'test123',
-    first_name: 'TestUserFirst',
-    last_name: 'TestUserLast',
-    cell: '555-555-5555',
-    email: 'testuser@example.com',
-  })
+async function createUser(userInfo = {
+  auth0_id: 'test123',
+  first_name: 'TestUserFirst',
+  last_name: 'TestUserLast',
+  cell: '555-555-5555',
+  email: 'testuser@example.com',
+}) {
+  const user = new User(userInfo)
   try {
     await user.save()
     console.log("created user")
@@ -85,6 +85,7 @@ async function createOrganization(user, name, userId, inviteId) {
   const orgQuery = `mutation createOrganization($name: String!, $userId: String!, $inviteId: String!) {
     createOrganization(name: $name, userId: $userId, inviteId: $inviteId) {
       id
+      uuid
       name
       threeClickEnabled
       textingHoursEnforced
@@ -185,7 +186,7 @@ it('should return the current user when user is logged in', async () => {
 it('should create an invite', async () => {
   testInvite = await createInvite()
 
-  expect (testInvite.data.createInvite.id).toBeTruthy()
+  expect(testInvite.data.createInvite.id).toBeTruthy()
 })
 
 it('should convert an invitation and user into a valid organization instance', async () => {
@@ -193,12 +194,6 @@ it('should convert an invitation and user into a valid organization instance', a
   if (testInvite && testAdminUser) {
     console.log("user and invite for org")
     console.log([testAdminUser,testInvite.data])
-
-    const userQuery = `{
-      currentUser {
-        id
-      }
-    }`
 
     testOrganization = await createOrganization(testAdminUser, "Testy test organization", testInvite.data.createInvite.id, testInvite.data.createInvite.id)
 
@@ -223,11 +218,27 @@ it('should create campaign contacts', async () => {
   expect (contact.campaign_id).toBe(parseInt(testCampaign.data.createCampaign.id))
 })
 
-// it('should add texters to a organization', async () => {
-//
-//
-//
-// })
+it('should add texters to a organization', async () => {
+  testTexterUser = await createUser({
+    auth0_id: 'test456',
+    first_name: 'TestTexterFirst',
+    last_name: 'TestTexterLast',
+    cell: '555-555-6666',
+    email: 'testtexter@example.com',
+  })
+  const joinQuery = `
+  mutation joinOrganization($organizationUuid: String!) {
+    joinOrganization(organizationUuid: $organizationUuid) {
+      id
+    }
+  }`
+  const variables = {
+    organizationUuid: testOrganization.data.createOrganization.uuid
+  }
+  const context = getContext({user: testTexterUser})
+  const result = await graphql(mySchema, joinQuery, rootValue, context, variables)
+  expect(result.data.joinOrganization.id).toBeTruthy()
+})
 
 // it('should assign texters to campaign contacts', async () => {})
 
