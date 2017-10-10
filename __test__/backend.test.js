@@ -294,6 +294,8 @@ it('should assign texters to campaign contacts', async () => {
     campaign: updateCampaign
   }
   const result = await graphql(mySchema, campaignEditQuery, rootValue, context, variables)
+  console.log(result.data.editCampaign.texters)
+  console.log(result.data.editCampaign.texters[0])
   expect(result.data.editCampaign.texters.length).toBe(1)
   expect(result.data.editCampaign.texters[0].assignment.contactsCount).toBe(1)
 })
