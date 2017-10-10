@@ -91,7 +91,7 @@ import { uploadContacts,
        } from '../../workers/jobs'
 const uuidv4 = require('uuid').v4
 
-const JOBS_SAME_PROCESS = !!process.env.JOBS_SAME_PROCESS
+const JOBS_SAME_PROCESS = !!(process.env.JOBS_SAME_PROCESS || global.JOBS_SAME_PROCESS)
 const JOBS_SYNC = !!(process.env.JOBS_SYNC || global.JOBS_SYNC)
 
 const rootSchema = `
