@@ -2,7 +2,8 @@ module.exports = {
   testEnvironment: "node",
   globals: {
     DB_JSON: "{\"client\":\"pg\",\"connection\":{\"host\":\"127.0.0.1\",\"port\":\"5432\",\"database\":\"spoke_test\",\"password\":\"spoke_test\",\"user\":\"spoke_test\"}}",
-    JOBS_SYNC: true
+    JOBS_SYNC: true,
+    JOBS_SAME_PROCESS: true
   },
   moduleFileExtensions: [
     "js",

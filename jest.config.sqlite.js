@@ -2,7 +2,8 @@ module.exports = {
   testEnvironment: "node",
   globals: {
     DB_JSON: "{\"client\":\"sqlite3\",\"connection\":{\"filename\":\"./test.sqlite\"},\"defaultsUnsupported\":true}",
-    JOBS_SYNC: true
+    JOBS_SYNC: true,
+    JOBS_SAME_PROCESS: true
   },
   moduleFileExtensions: [
     "js",
