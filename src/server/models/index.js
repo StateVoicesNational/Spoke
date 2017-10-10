@@ -1,9 +1,9 @@
 import DataLoader from 'dataloader'
 // Import models in order that creates referenced tables before foreign keys
 import User from './user'
-import Assignment from './assignment'
 import Organization from './organization'
 import Campaign from './campaign'
+import Assignment from './assignment'
 import CampaignContact from './campaign-contact'
 import InteractionStep from './interaction-step'
 import Message from './message'

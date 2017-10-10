@@ -10,15 +10,15 @@ async function clearTestData() {
   await r.knex.schema.dropTable('message')
   await r.knex.schema.dropTable('migrations')
   await r.knex.schema.dropTable('opt_out')
-  await r.knex.schema.dropTable('organization')
-  await r.knex.schema.dropTable('pending_message_part')
   await r.knex.schema.dropTable('question_response')
-  await r.knex.schema.dropTable('user_cell')
-  await r.knex.schema.dropTable('user')
-  await r.knex.schema.dropTable('campaign_contact')
   await r.knex.schema.dropTable('interaction_step')
+  await r.knex.schema.dropTable('campaign_contact')
   await r.knex.schema.dropTable('assignment')
   await r.knex.schema.dropTable('campaign')
+  await r.knex.schema.dropTable('organization')
+  await r.knex.schema.dropTable('pending_message_part')
+  await r.knex.schema.dropTable('user_cell')
+  await r.knex.schema.dropTable('user')
 }
 
 async function setupTest() {
