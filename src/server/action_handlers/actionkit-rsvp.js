@@ -89,7 +89,7 @@ export async function processAction(questionResponse, interactionStep, campaignC
                 //save the action id of the rsvp back to the contact record
                 customFields['processed_event_action'] = actionId[1]
                 await r.knex('campaign_contact')
-                  .where('campaign_contact_id', campaignContactId)
+                  .where('campaign_contact.id', campaignContactId)
                   .update('custom_fields', JSON.stringify(customFields))
               }
             }
