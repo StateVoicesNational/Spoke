@@ -232,6 +232,7 @@ export async function createInteractionSteps(job) {
               campaign_id: id,
               question: '',
               script: '',
+              answer_actions: option.action,
               answer_option: option.value,
               parent_interaction_id: dbInteractionStep.id
             }).catch(log.error)
