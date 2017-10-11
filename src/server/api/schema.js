@@ -160,6 +160,11 @@ const rootSchema = `
     created_at: Date
   }
 
+  input ContactMessage {
+    message: MessageInput!,
+    campaignContactId: String!
+  }
+
   type Action {
     name: String
     display_name: String
@@ -188,6 +193,7 @@ const rootSchema = `
     editOrganizationRoles(organizationId: String!, userId: String!, roles: [String]): Organization
     updateTextingHours( organizationId: String!, textingHoursStart: Int!, textingHoursEnd: Int!): Organization
     updateTextingHoursEnforcement( organizationId: String!, textingHoursEnforced: Boolean!): Organization
+    sendMessages(contactMessages: [ContactMessage]): [CampaignContact]
     sendMessage(message:MessageInput!, campaignContactId:String!): CampaignContact,
     createOptOut(optOut:OptOutInput!, campaignContactId:String!):CampaignContact,
     editCampaignContactMessageStatus(messageStatus: String!, campaignContactId:String!): CampaignContact,
@@ -591,6 +597,19 @@ const rootMutations = {
         })
 
       return loaders.campaignContact.load(campaignContactId)
+    },
+    sendMessages: async(_, { contactMessages }, loaders) => {
+      if (process.env.ALLOW_SEND_ALL) {
+        const contacts = contactMessages.map(contactMessage => {
+          return rootMutations.RootMutation.sendMessage(_, contactMessage, loaders)
+        })
+        return contacts
+      }
+      log.error('Not allowed to send all messages at once')
+      throw new GraphQLError({
+        status: 403,
+        message: 'Not allowed to send all messages at once'
+      })
     },
     sendMessage: async(_, { message, campaignContactId }, { loaders }) => {
       const contact = await loaders.campaignContact.load(campaignContactId)
