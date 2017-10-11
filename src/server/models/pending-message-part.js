@@ -12,7 +12,7 @@ const PendingMessagePart = thinky.createModel('pending_message_part', type.objec
   id: type.string(),
   service: requiredString(),
   service_id: requiredString().stopReference(),
-  parent_id: optionalString().stopReference(),
+  parent_id: optionalString().allowNull(true).stopReference(),
   service_message: requiredString(), // JSON
   user_number: optionalString(),
   contact_number: requiredString(),

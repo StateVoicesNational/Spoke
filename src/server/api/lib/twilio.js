@@ -193,7 +193,7 @@ async function handleIncomingMessage(message) {
   const pendingMessagePart = new PendingMessagePart({
     service: 'twilio',
     service_id: MessageSid,
-    parent_id: '',
+    parent_id: null,
     service_message: JSON.stringify(message),
     user_number: userNumber,
     contact_number: contactNumber
