@@ -44,7 +44,7 @@ async function handleIncomingMessage(message) {
   const pendingMessagePart = new PendingMessagePart({
     service: 'fakeservice',
     service_id,
-    parent_id: '',
+    parent_id: null,
     service_message: text,
     user_number,
     contact_number
