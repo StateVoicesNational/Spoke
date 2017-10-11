@@ -93,7 +93,7 @@ class AssignmentTexter extends React.Component {
     this.setState({ script })
   }
   handleExitTexter = () => {
-    this.props.router.push('/app')
+    this.props.router.push('/app/' + (this.props.organizationId || ''))
   }
 
   contactCount() {
@@ -181,6 +181,7 @@ AssignmentTexter.propTypes = {
   assignment: React.PropTypes.object,      // current assignment
   contacts: React.PropTypes.array,   // contacts for current assignment
   router: React.PropTypes.object,
+  organizationId: React.PropTypes.string,
   onRefreshAssignmentContacts: React.PropTypes.func
 }
 

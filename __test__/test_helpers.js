@@ -1,46 +1,31 @@
-import { createLoaders } from '../src/server/models/';
-import thinky from 'thinky';
-
-// TODO: Load these values from env for real
-const testDB = 'testy'
-const mainDB = 'spokedev'
-
-const thinkyTest = thinky({
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  db: testDB,
-  authKey: process.env.DB_KEY
-});
-
-const testR = thinkyTest.r
-
-async function createTestDatabase() {
-  const dbList = await testR.dbList();
-  if (dbList.indexOf(testDB) > -1) {
-    console.log("Test database " + testDB + " already exists.");
-  } else {
-    await testR.dbCreate(testDB);
-    await testR.db(mainDB).tableList().forEach(testR.db(testDB).tableCreate(testR.row));
-    console.log("created test database " + testDB + " and populated with models from main database " + mainDB)
-  }
-}  
+import { createLoaders, r } from '../src/server/models/'
 
 async function clearTestData() {
-  const tableList = await testR.db(testDB).tableList();
-  tableList.forEach(async function(tableName) {
-    await testR.db(testDB).table(tableName).delete()
-  });
-  console.log('truncated test database tables')
+  // Drop tables in an order that drops foreign keys before dependencies
+  await r.knex.schema.dropTable('zip_code')
+  await r.knex.schema.dropTable('user_organization')
+  await r.knex.schema.dropTable('canned_response')
+  await r.knex.schema.dropTable('invite')
+  await r.knex.schema.dropTable('job_request')
+  await r.knex.schema.dropTable('message')
+  await r.knex.schema.dropTable('migrations')
+  await r.knex.schema.dropTable('opt_out')
+  await r.knex.schema.dropTable('question_response')
+  await r.knex.schema.dropTable('interaction_step')
+  await r.knex.schema.dropTable('campaign_contact')
+  await r.knex.schema.dropTable('assignment')
+  await r.knex.schema.dropTable('campaign')
+  await r.knex.schema.dropTable('organization')
+  await r.knex.schema.dropTable('pending_message_part')
+  await r.knex.schema.dropTable('user_cell')
+  await r.knex.schema.dropTable('user')
 }
 
 async function setupTest() {
-  // await createTestDatabase();
-  await clearTestData();
 }
 
-// customize 
 async function cleanupTest() {
-  await clearTestData();
+  await clearTestData()
 }
 
 export function getContext(context) {
@@ -48,8 +33,7 @@ export function getContext(context) {
     ...context,
     req: {},
     loaders: createLoaders(),
-  };
+  }
 }
 
-export { thinkyTest, testR, setupTest, cleanupTest, createTestDatabase, getContext }
-
+export { setupTest, cleanupTest, getContext }

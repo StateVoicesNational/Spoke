@@ -2,7 +2,7 @@ import thinky from 'thinky'
 
 import dumbThinky from 'rethink-knex-adapter'
 
-//// This was how to connect to rethinkdb:
+// // This was how to connect to rethinkdb:
 // export default thinky({
 //   host: process.env.DB_HOST,
 //   port: process.env.DB_PORT,
@@ -12,8 +12,8 @@ import dumbThinky from 'rethink-knex-adapter'
 
 let config
 
-if (process.env.DB_JSON) {
-  config = JSON.parse(process.env.DB_JSON)
+if (process.env.DB_JSON || global.DB_JSON) {
+  config = JSON.parse(process.env.DB_JSON || global.DB_JSON)
 } else if (process.env.DB_TYPE) {
   config = {
     client: 'pg',
@@ -22,14 +22,19 @@ if (process.env.DB_JSON) {
       port: process.env.DB_PORT,
       database: process.env.DB_NAME,
       password: process.env.DB_PASSWORD,
-      user: process.env.DB_USER
+      user: process.env.DB_USER,
+      ssl: process.env.DB_USE_SSL || false
+    },
+    pool: {
+      min: process.env.DB_MIN_POOL || 2,
+      max: process.env.DB_MAX_POOL || 10
     }
   }
 } else {
   config = {
     client: 'sqlite3',
     connection: {
-      filename: "./mydb.sqlite"
+      filename: './mydb.sqlite'
     },
     defaultsUnsupported: true
   }

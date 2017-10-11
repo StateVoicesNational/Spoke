@@ -13,7 +13,6 @@ import wrap from './wrap'
 import { log } from '../lib'
 import nexmo from './api/lib/nexmo'
 import twilio from './api/lib/twilio'
-const Twilio = require('twilio')
 import { seedZipCodes } from './seeds/seed-zip-codes'
 import { runMigrations } from '../migrations'
 import { setupUserNotificationObservers } from './notifications'
@@ -26,9 +25,6 @@ process.on('uncaughtException', (ex) => {
   process.exit(1)
 })
 const DEBUG = process.env.NODE_ENV === 'development'
-const accountSid = process.env.TWILIO_API_KEY
-const authToken = process.env.TWILIO_AUTH_TOKEN
-const client = require('twilio')(accountSid, authToken)
 
 setupAuth0Passport()
 if (!process.env.SUPPRESS_SEED_CALLS) {
@@ -74,7 +70,7 @@ app.post('/nexmo', wrap(async (req, res) => {
   }
 }))
 
-app.post('/twilio', Twilio.webhook(), wrap(async (req, res) => {
+app.post('/twilio', twilio.webhook(), wrap(async (req, res) => {
   try {
     await twilio.handleIncomingMessage(req.body)
   } catch (ex) {
@@ -108,7 +104,9 @@ app.post('/twilio-message-report', wrap(async (req, res) => {
   res.end(resp.toString())
 }))
 
-
+// const accountSid = process.env.TWILIO_API_KEY
+// const authToken = process.env.TWILIO_AUTH_TOKEN
+// const client = require('twilio')(accountSid, authToken)
 // app.get('/incomingmessages', (req, res) => {
 //   client.sms.messages.list(function(err, data) {
 //     const listOfMessages = data.sms_messages
@@ -150,7 +148,6 @@ app.get('/allmessages/:organizationId', wrap(async (req, res) => {
       .orderBy('message.created_at', 'desc')
     return res.json(messages)
   }
-
 }))
 
 app.get('/logout-callback', (req, res) => {

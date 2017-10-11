@@ -11,6 +11,8 @@ import { Card, CardActions, CardHeader, CardText } from 'material-ui/Card'
 import theme from '../styles/theme'
 import CampaignFormSectionHeading from './CampaignFormSectionHeading'
 import ForwardIcon from 'material-ui/svg-icons/navigation/arrow-forward'
+import HelpIcon from 'material-ui/svg-icons/action/help'
+import HelpIconOutline from 'material-ui/svg-icons/action/help-outline'
 import Form from 'react-formal'
 import GSForm from './forms/GSForm'
 import yup from 'yup'
@@ -301,18 +303,26 @@ export default class CampaignInteractionStepsForm extends React.Component {
             display: 'inline-block'
           }}
         >
-          { this.props.availableActions && this.props.availableActions.length ?
-            (<Form.Field
-              name={actionFieldname}
-              type='select'
-              choices={[
-                {'value': '', 'label': 'Action...'},
-                ...this.props.availableActions.map(
-                  action => ({'value': action.name, 'label': action.display_name})
+          {this.props.availableActions && this.props.availableActions.length ?
+            (<div>
+             <Form.Field
+               name={actionFieldname}
+               type='select'
+               choices={[
+                { 'value': '', 'label': 'Action...' },
+                 ...this.props.availableActions.map(
+                  action => ({ 'value': action.name, 'label': action.display_name })
                 )
-              ]}
-            />)
-          : '' }
+               ]}
+             />
+             <IconButton tooltip={
+               answer.action
+                 ? this.props.availableActions.filter((a) => a.name === answer.action)[0].instructions
+                 : 'An action is something that is triggered by this answer being chosen, often in an outside system'}>
+             {answer.action ? <HelpIcon /> : <HelpIconOutline />}
+             </IconButton>
+             </div>)
+          : ''}
         </div>
         <div
           style={{

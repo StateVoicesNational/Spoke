@@ -1,79 +1,75 @@
-import { schema, resolvers } from '../src/server/api/schema';
-import { graphql } from 'graphql';
-import { User, CampaignContact, r } from '../src/server/models/';
-import { getContext, 
-  thinkyTest, 
-  testR, 
-  setupTest, 
-  cleanupTest, 
-  testDB } from './test_helpers';
-import { makeExecutableSchema } from 'graphql-tools';
+import { schema, resolvers } from '../src/server/api/schema'
+import { graphql } from 'graphql'
+import { User, CampaignContact, r } from '../src/server/models/'
+import { sleep } from '../src/workers/lib'
+import { getContext,
+  setupTest,
+  cleanupTest } from './test_helpers'
+import { makeExecutableSchema } from 'graphql-tools'
 
 const mySchema = makeExecutableSchema({
   typeDefs: schema,
   resolvers: resolvers,
   allowUndefinedInResolve: true,
-});
+})
 
-const rootValue = {};
+const rootValue = {}
 
-beforeEach(async () => await setupTest());
+// data items used across tests
 
-// afterEach(async () => await cleanupTest());
+let testAdminUser
+let testInvite
+let testOrganization
+let testCampaign
+let testTexterUser
 
-test('test database exists', async () => {
-  const databaseList = await testR.dbList();
-  return testDB in databaseList;
-});
+// data creation functions
 
-// graphQL tests!!!!
-
-async function createUser() {
-  const user = new User({
-    auth0_id: 'test123',
-    first_name: 'TestUserFirst',
-    last_name: 'TestUserLast',
-    cell: '555-555-5555',
-    email: 'testuser@example.com',
-  });
+async function createUser(userInfo = {
+  auth0_id: 'test123',
+  first_name: 'TestUserFirst',
+  last_name: 'TestUserLast',
+  cell: '555-555-5555',
+  email: 'testuser@example.com',
+}) {
+  const user = new User(userInfo)
   try {
-    await user.save();
+    await user.save()
     console.log("created user")
     console.log(user)
     return user
   } catch(err) {
-    console.error('Error saving user');
+    console.error('Error saving user')
     return false
   }
 }
 
 async function createContact(campaignId) {
   const contact = new CampaignContact({
-    first_name: "Ann", 
+    first_name: "Ann",
     last_name: "Lewis",
     cell: "5555555555",
     zip: "12345",
     campaign_id: campaignId
-  });
+  })
   try {
-    await contact.save();
+    await contact.save()
     console.log("created contact")
     console.log(contact)
     return contact
   } catch(err) {
-    console.error('Error saving contact: ', err);
+    console.error('Error saving contact: ', err)
     return false
   }
 }
-
 
 async function createInvite() {
   const inviteQuery = `mutation {
     createInvite(invite: {is_valid: true}) {
       id
     }
-  }`;
-  const context = getContext();
+  }`
+  const context = getContext()
   try {
     const invite = await graphql(mySchema, inviteQuery, rootValue, context)
     return invite
@@ -84,11 +80,12 @@ async function createInvite() {
 }
 
 async function createOrganization(user, name, userId, inviteId) {
-  const context = getContext({ user });
+  const context = getContext({ user })
 
   const orgQuery = `mutation createOrganization($name: String!, $userId: String!, $inviteId: String!) {
     createOrganization(name: $name, userId: $userId, inviteId: $inviteId) {
       id
+      uuid
       name
       threeClickEnabled
       textingHoursEnforced
@@ -113,7 +110,7 @@ async function createOrganization(user, name, userId, inviteId) {
 }
 
 async function createCampaign(user, title, description, organizationId, contacts = []) {
-  const context = getContext({user});
+  const context = getContext({user})
 
   const campaignQuery = `mutation createCampaign($input: CampaignInput!) {
     createCampaign(campaign: $input) {
@@ -122,9 +119,9 @@ async function createCampaign(user, title, description, organizationId, contacts
       contacts {
         firstName
         lastName
-      } 
+      }
     }
-  }`;
+  }`
   const variables = {
     "input": {
         "title": title,
@@ -143,103 +140,114 @@ async function createCampaign(user, title, description, organizationId, contacts
   }
 }
 
+// graphQL tests
+
+beforeAll(async () => {
+  let testDbExists = false
+  while (!testDbExists) {
+    testDbExists = await r.knex.schema.hasTable('job_request')
+    if (!testDbExists) {
+      const waitUntilDbCreated = await sleep(1000)
+    }
+  }
+})
+
+afterAll(async () => await cleanupTest())
+
 it('should be undefined when user not logged in', async () => {
   const query = `{
     currentUser {
       id
     }
-  }`;
-  const context = getContext();
+  }`
+  const context = getContext()
   const result = await graphql(mySchema, query, rootValue, context)
   const data = result
 
   expect(typeof data.currentUser).toBeUndefined
-});
+})
 
 it('should return the current user when user is logged in', async () => {
-  const user = await createUser()
+  testAdminUser = await createUser()
   const query = `{
     currentUser {
       email
     }
-  }`;
-  const context = getContext({ user })
+  }`
+  const context = getContext({ user: testAdminUser })
   const result = await graphql(mySchema, query, rootValue, context)
   const { data } = result
 
   expect(data.currentUser.email).toBe('testuser@example.com')
-});
+})
 
 // TESTING CAMPAIGN CREATION FROM END TO END
 
 it('should create an invite', async () => {
-  const invite = await createInvite()
+  testInvite = await createInvite()
 
-  expect (invite.data.createInvite.id).toBeTruthy()
-});
+  expect(testInvite.data.createInvite.id).toBeTruthy()
+})
 
 it('should convert an invitation and user into a valid organization instance', async () => {
 
-  const [user, invite] = await Promise.all([createUser(), createInvite()])
-
-  if (invite && user) {
+  if (testInvite && testAdminUser) {
     console.log("user and invite for org")
-    console.log([user,invite.data])
+    console.log([testAdminUser,testInvite.data])
 
-    const userQuery = `{
-      currentUser {
-        id
-      }
-    }`;
+    testOrganization = await createOrganization(testAdminUser, "Testy test organization", testInvite.data.createInvite.id, testInvite.data.createInvite.id)
 
-    const org = await createOrganization(user, "Testy test organization", invite.data.createInvite.id, invite.data.createInvite.id)
-
-    expect(org.data.createOrganization.name).toBe('Testy test organization')
+    expect(testOrganization.data.createOrganization.name).toBe('Testy test organization')
   } else {
     console.log("Failed to create invite and/or user for organization test")
     return false
   }
-});
+})
 
 
 it('should create a test campaign', async () => {
-
-  const [user, invite] = await Promise.all([createUser(), createInvite()])
-  const organization = await createOrganization(user, "test org", user.id, invite.data.createInvite.id)
-
   const campaignTitle = "test campaign"
-  const campaign = await createCampaign(user, campaignTitle, "test description", organization.data.createOrganization.id)
-  expect (campaign.data.createCampaign.title).toBe(campaignTitle)
+  testCampaign = await createCampaign(testAdminUser, campaignTitle, "test description", testOrganization.data.createOrganization.id)
 
-});
-
+  expect (testCampaign.data.createCampaign.title).toBe(campaignTitle)
+})
 
 it('should create campaign contacts', async () => {
-  const [user, invite] = await Promise.all([createUser(), createInvite()])
-  const organization = await createOrganization(user, "test org", user.id, invite.data.createInvite.id)
+  const contact = await createContact(testCampaign.data.createCampaign.id)
 
-  const campaign = await createCampaign(user, "test campaign", "test description", organization.data.createOrganization.id);
+  expect (contact.campaign_id).toBe(parseInt(testCampaign.data.createCampaign.id))
+})
 
-  const contact = await createContact(campaign.data.createCampaign.id)
+it('should add texters to a organization', async () => {
+  testTexterUser = await createUser({
+    auth0_id: 'test456',
+    first_name: 'TestTexterFirst',
+    last_name: 'TestTexterLast',
+    cell: '555-555-6666',
+    email: 'testtexter@example.com',
+  })
+  const joinQuery = `
+  mutation joinOrganization($organizationUuid: String!) {
+    joinOrganization(organizationUuid: $organizationUuid) {
+      id
+    }
+  }`
+  const variables = {
+    organizationUuid: testOrganization.data.createOrganization.uuid
+  }
+  const context = getContext({user: testTexterUser})
+  const result = await graphql(mySchema, joinQuery, rootValue, context, variables)
+  expect(result.data.joinOrganization.id).toBeTruthy()
+})
 
-  expect (contact.campaign_id).toBe(campaign.data.createCampaign.id)
+// it('should assign texters to campaign contacts', async () => {})
 
-});
+// it('should save a campaign script composed of interaction steps', async() => {})
 
+// it('should save some canned responses for texters', async() => {})
 
-
-// it('should add texters to a organization', async () => {});
-
-// it('should assign texters to campaign contacts', async () => {});
-
-// it('should save a campaign script composed of interaction steps', async() => {});
-
-// it('should save some canned responses for texters', async() => {});
-
-// it('should start the campaign', async() => {});
+// it('should start the campaign', async() => {})
 
 // TEST STUBS: MESSAGING
 
-// it('should send an inital message to test contacts', async() => {});
-
-
+// it('should send an inital message to test contacts', async() => {})

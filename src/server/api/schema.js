@@ -1,5 +1,6 @@
 import { Campaign,
   CannedResponse,
+  InteractionStep,
   Invite,
   Message,
   OptOut,
@@ -78,8 +79,8 @@ import {
   assignmentRequired,
   superAdminRequired
 } from './errors'
-import nexmo from './lib/nexmo'
-import twilio from './lib/twilio'
+import serviceMap from './lib/services'
+import { saveNewIncomingMessage } from './lib/message-sending'
 import { gzip, log } from '../../lib'
 // import { isBetweenTextingHours } from '../../lib/timezones'
 import { Notifications, sendUserNotification } from '../notifications'
@@ -92,7 +93,6 @@ import { uploadContacts,
 const uuidv4 = require('uuid').v4
 
 const JOBS_SAME_PROCESS = !!process.env.JOBS_SAME_PROCESS
-const serviceMap = { nexmo, twilio }
 
 const rootSchema = `
   input CampaignContactInput {
@@ -107,6 +107,7 @@ const rootSchema = `
   input OptOutInput {
     assignmentId: String!
     cell: Phone!
+    reason: String
   }
 
   input QuestionResponseInput {
@@ -167,6 +168,7 @@ const rootSchema = `
   type Action {
     name: String
     display_name: String
+    instructions: String
   }
 
   type RootQuery {
@@ -177,7 +179,7 @@ const rootSchema = `
     contact(id:String!): CampaignContact
     assignment(id:String!): Assignment
     organizations: [Organization]
-    availableActions: [Action]
+    availableActions(organizationId:String!): [Action]
   }
 
   type RootMutation {
@@ -307,7 +309,7 @@ async function editCampaign(id, campaign, loaders, user) {
     const convertedResponses = []
     for (let index = 0; index < cannedResponses.length; index++) {
       const response = cannedResponses[index]
-      const newId = await Math.floor(Math.random()*10000000)
+      const newId = await Math.floor(Math.random() * 10000000)
       convertedResponses.push({
         ...response,
         campaign_id: id,
@@ -327,14 +329,10 @@ async function editCampaign(id, campaign, loaders, user) {
 
 const rootMutations = {
   RootMutation: {
-    sendReply: async (_, { id, message }, { loaders }) => {
-      if (process.env.NODE_ENV !== 'development') {
-        throw new GraphQLError({
-          status: 400,
-          message: 'You cannot send manual replies unless you are in development'
-        })
-      }
+    sendReply: async (_, { id, message }, { user, loaders }) => {
       const contact = await loaders.campaignContact.load(id)
+
+      await accessRequired(user, contact.organization_id, 'ADMIN')
 
       const lastMessage = await r.table('message')
         .getAll(contact.assignment_id, { index: 'assignment_id' })
@@ -351,22 +349,20 @@ const rootMutations = {
 
       const userNumber = lastMessage.user_number
       const contactNumber = contact.cell
-      const mockedId = `mocked_${Math.random().toString(36).replace(/[^a-zA-Z1-9]+/g, '')}`
-      if (lastMessage.service === 'nexmo') {
-        await nexmo.handleIncomingMessage({
-          to: userNumber,
-          msisdn: contactNumber,
-          text: message,
-          messageId: mockedId
-        })
-      } else {
-        await twilio.handleTwilioIncomingMessage({
-          From: contactNumber,
-          To: userNumber,
-          Body: message,
-          MessageSid: `mocked_${Math.random().toString(36).replace(/[^a-zA-Z1-9]+/g, '')}`
-        })
-      }
+      const mockId = `mocked_${Math.random().toString(36).replace(/[^a-zA-Z1-9]+/g, '')}`
+      await saveNewIncomingMessage(new Message({
+        contact_number: contactNumber,
+        user_number: userNumber,
+        is_from_contact: true,
+        text: message,
+        service_response: JSON.stringify({ 'fakeMessage': true,
+                                          'userId': user.id,
+                                          'userFirstName': user.first_name }),
+        service_id: mockId,
+        assignment_id: lastMessage.assignment_id,
+        service: lastMessage.service,
+        send_status: 'DELIVERED'
+      }))
       return loaders.campaignContact.load(id)
     },
     exportCampaign: async (_, { id }, { user, loaders }) => {
@@ -465,10 +461,10 @@ const rootMutations = {
       return await Organization.get(organizationId)
     },
     createInvite: async (_, { user }) => {
-      if( (user && user.is_superadmin) || !process.env.SUPPRESS_SELF_INVITE ){
+      if ((user && user.is_superadmin) || !process.env.SUPPRESS_SELF_INVITE) {
         const inviteInstance = new Invite({
           is_valid: true,
-          hash: uuidv4(),
+          hash: uuidv4()
         })
         const newInvite = await inviteInstance.save()
         return newInvite
@@ -530,7 +526,7 @@ const rootMutations = {
         title: cannedResponse.title,
         text: cannedResponse.text
       }).save()
-      //deletes duplicate created canned_responses
+      // deletes duplicate created canned_responses
       let query = r.knex('canned_response')
         .where('text', 'in',
           r.knex('canned_response')
@@ -554,7 +550,7 @@ const rootMutations = {
       }
 
       const newOrganization = await Organization.save({
-        name: name,
+        name,
         uuid: uuidv4()
       })
       await UserOrganization.save(
@@ -580,7 +576,7 @@ const rootMutations = {
       const contact = await loaders.campaignContact.load(campaignContactId)
       await assignmentRequired(user, contact.assignment_id)
 
-      const { assignmentId, cell } = optOut
+      const { assignmentId, cell, reason } = optOut
 
       const campaign = await r.table('assignment')
         .get(assignmentId)
@@ -588,11 +584,12 @@ const rootMutations = {
       await new OptOut({
         assignment_id: assignmentId,
         organization_id: campaign.organization_id,
+        reason_code: reason,
         cell
       }).save()
 
       await r.knex('campaign_contact')
-        .whereIn('cell', function() {
+        .whereIn('cell', function () {
           this.select('cell').from('opt_out')
         })
         .update({
@@ -626,6 +623,8 @@ const rootMutations = {
       const organization = await r.table('campaign')
         .get(contact.campaign_id)
         .eqJoin('organization_id', r.table('organization'))('right')
+
+      const orgFeatures = JSON.parse(organization.features || '{}')
 
       const optOut = await r.table('opt_out')
           .getAll(contact.cell, { index: 'cell' })
@@ -667,7 +666,7 @@ const rootMutations = {
         user_number: '',
         assignment_id: message.assignmentId,
         send_status: (JOBS_SAME_PROCESS ? 'SENDING' : 'QUEUED'),
-        service: process.env.DEFAULT_SERVICE || '',
+        service: orgFeatures.service || process.env.DEFAULT_SERVICE || '',
         is_from_contact: false
       })
 
@@ -687,6 +686,7 @@ const rootMutations = {
     deleteQuestionResponses: async(_, { interactionStepIds, campaignContactId }, { loaders, user }) => {
       const contact = await loaders.campaignContact.load(campaignContactId)
       await assignmentRequired(user, contact.assignment_id)
+      // TODO: maybe undo action_handler
       await r.table('question_response')
         .getAll(campaignContactId, { index: 'campaign_contact_id' })
         .getAll(...interactionStepIds, { index: 'interaction_step_id' })
@@ -703,12 +703,31 @@ const rootMutations = {
           .getAll(campaignContactId, { index: 'campaign_contact_id' })
           .filter({ interaction_step_id: interactionStepId })
           .delete()
+        // TODO: maybe undo action_handler if updated answer
 
-        await new QuestionResponse({
+        const qr = await new QuestionResponse({
           campaign_contact_id: campaignContactId,
           interaction_step_id: interactionStepId,
           value
         }).save()
+        const interactionStepResult = await r.knex('interaction_step')
+        // TODO: is this really parent_interaction_id or just interaction_id?
+          .where({ 'parent_interaction_id': interactionStepId,
+                  'answer_option': value })
+          .whereNot('answer_actions', '')
+          .whereNotNull('answer_actions')
+
+        const interactionStepAction = (interactionStepResult.length && interactionStepResult[0].answer_actions)
+        if (interactionStepAction) {
+          // run interaction step handler
+          try {
+            const handler = require(`../action_handlers/${interactionStepAction}.js`)
+            handler.processAction(qr, interactionStepResult[0], campaignContactId)
+          } catch (err) {
+            console.error('Handler for InteractionStep', interactionStepId,
+                          'Does Not Exist:', interactionStepAction)
+          }
+        }
       }
 
       const contact = loaders.campaignContact.load(campaignContactId)
@@ -751,7 +770,7 @@ const rootResolvers = {
       loaders.organization.load(id),
     inviteByHash: async (_, { hash }, { loaders, user }) => {
       authRequired(user)
-      return r.table('invite').filter({"hash": hash})
+      return r.table('invite').filter({ hash })
     },
     currentUser: async(_, { id }, { user }) => user,
     contact: async(_, { id }, { loaders, user }) => {
@@ -783,24 +802,23 @@ const rootResolvers = {
       await superAdminRequired(user)
       return r.table('organization')
     },
-    availableActions: (_, __, { user }) => {
+    availableActions: (_, { organizationId }, { user }) => {
       if (!process.env.ACTION_HANDLERS) {
         return []
       }
       const allHandlers = process.env.ACTION_HANDLERS.split(',')
-      const availableHandlers = allHandlers.filter(handler => {
-        try {
-          return require(`../action_handlers/${handler}.js`).available()
-        }
-        catch (_) {
-          return false
-        }
-      })
+
+      const availableHandlers = allHandlers.map(handler => {
+        return { 'name': handler,
+                'handler': require(`../action_handlers/${handler}.js`)
+               }
+      }).filter(async (h) => (h && (await h.handler.available(organizationId))))
+
       const availableHandlerObjects = availableHandlers.map(handler => {
-        const handlerPath = `../action_handlers/${handler}.js`
         return {
-          'name': handler,
-          'display_name': require(handlerPath).displayName()
+          'name': handler.name,
+          'display_name': handler.handler.displayName(),
+          'instructions': handler.handler.instructions()
         }
       })
       return availableHandlerObjects

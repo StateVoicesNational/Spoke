@@ -1,0 +1,243 @@
+{
+  "name": "spoke",
+  "description": "Mass peer to peer texting tool",
+  "repository":"https://github.com/moveonorg/spoke",
+  "success_url":"/",
+  "buildpacks": [
+      { "url": "https://github.com/heroku/heroku-buildpack-nodejs"}
+  ],
+  "env": {
+    "NODE_ENV": {
+      "description": "node environment determines the application build/start process",
+      "required": true,
+      "value": "production"
+    },
+
+    "SUPPRESS_SELF_INVITE": {
+      "description": "if you want to suppress an organizational invite creation when logging in, set this environment to 1",
+      "required": true,
+      "value": ""
+    },
+
+    "SUPPRESS_MIGRATIONS": {
+      "description": "to suppress table migration on server start up",
+      "required": false,
+      "value": ""
+    },
+
+    "JOBS_SAME_PROCESS": {
+      "description": "",
+      "required": true,
+      "value": "1"
+    },
+
+    "AWS_ACCESS_KEY_ID": {
+      "description": "in order to export data to an s3 bucket",
+      "required": true,
+      "value": ""
+    },
+
+    "AWS_SECRET_ACCESS_KEY": {
+      "description": "in order to export data to an s3 bucket",
+      "required": true,
+      "value": ""
+    },
+
+    "AWS_S3_BUCKET_NAME": {
+      "description": "in order to export data to an s3 bucket",
+      "required": true,
+      "value": ""
+    },
+
+    "OUTPUT_DIR": {
+      "description": "for production build placement",
+      "required": true,
+      "value": "./build"
+    },
+
+    "PUBLIC_DIR": {
+      "description": "for production build placement",
+      "required": true,
+      "value": "./build/client"
+    },
+
+    "ASSETS_DIR": {
+      "description": "for assets directory in production build placement",
+      "required": true,
+      "value": "./build/client/assets"
+    },
+
+    "ASSETS_MAP_FILE": {
+      "description": "for assets directory placement",
+      "required": true,
+      "value": "assets.json"
+    },
+
+    "CAMPAIGN_ID": {
+      "description": "",
+      "required": false,
+      "value": "campaign-id-hash"
+    },
+
+    "DB_PORT": {
+      "description": "to connect to postgres database",
+      "required": true,
+      "value": "5432"
+    },
+
+    "DB_NAME": {
+      "description": "database name created in heroku addon --> located in heroku postgres credentials",
+      "required": true,
+      "value": "<changeme>"
+    },
+
+    "DB_TYPE": {
+      "description": "to specify postgres database vs sqlite3",
+      "required": true,
+      "value": "pg"
+    },
+
+    "DB_MIN_POOL": {
+      "description": "for postgres pool on heroku",
+      "required": true,
+      "value": "0"
+    },
+
+    "DB_MAX_POOL": {
+      "description": "for postgres pool on heroku",
+      "required": true,
+      "value": "15"
+    },
+
+    "DB_USER": {
+      "description": "database user name --> located in heroku postgres credentials",
+      "required": true,
+      "value": "<changeme>"
+    },
+
+    "DB_PASSWORD": {
+      "description": "database user name --> located in heroku postgres credentials",
+      "required": true,
+      "value": "<changeme>"
+    },
+
+    "AUTH0_LOGIN_CALLBACK": {
+      "description": "auth0 login callback url --> this should be filled with your app name and match your auth0 configuration",
+      "required": true,
+      "value": "https://<changeme>.herokuapp.com/login-callback"
+    },
+
+    "AUTH0_LOGOUT_CALLBACK": {
+      "description": "auth0 logout callback url",
+      "required": true,
+      "value": "https://<changeme>.herokuapp.com/logout-callback"
+    },
+
+    "AUTH0_DOMAIN": {
+      "description": "auth0 domain attached to auth0 account",
+      "required": true,
+      "value": "<changeme>.auth0.com"
+    },
+
+    "AUTH0_CLIENT_ID": {
+      "description": "auth0 client id attached to auth0 account",
+      "required": true,
+      "value": "<changeme>"
+    },
+
+    "AUTH0_CLIENT_SECRET": {
+      "description": "auth0 client secret attached to auth0 account",
+      "required": true,
+      "value": "<changeme>"
+    },
+
+    "BASE_URL": {
+      "description": "based on your herokuapp name or domain name",
+      "required": true,
+      "value": "https://<changeme>.herokuapp.com"
+    },
+
+    "SESSION_SECRET": {
+      "description": "session secret",
+      "required": true,
+      "value": "<changeme>"
+    },
+
+    "DEFAULT_SERVICE": {
+      "description": "specifies using twilio api ",
+      "required": true,
+      "value": "twilio"
+    },
+
+    "TWILIO_API_KEY": {
+      "description": "for twilio integration and connected to twilio account",
+      "required": true,
+      "value": "<changeme>"
+    },
+
+    "TWILIO_APPLICATION_SID": {
+      "description": "for twilio integration and connected to twilio account",
+      "required": true,
+      "value": "<changeme>"
+    },
+
+    "TWILIO_AUTH_TOKEN": {
+      "description": "for twilio integration and connected to twilio account",
+      "required": true,
+      "value": "<changeme>"
+    },
+
+    "TWILIO_MESSAGE_SERVICE_SID": {
+      "description": "for twilio integration and connected to twilio account",
+      "required": true,
+      "value": "<changeme>"
+    },
+
+    "TWILIO_STATUS_CALLBACK_URL": {
+      "description": "for twilio integration and connected to twilio account",
+      "required": true,
+      "value": "https://<changeme>.herokuapp.com/twilio-message-report"
+    },
+
+    "PHONE_NUMBER_COUNTRY": {
+      "description": "for international integration (when not us)",
+      "required": true,
+      "value": "US"
+    },
+
+    "EMAIL_HOST": {
+      "description": "for email notification integration",
+      "required": false,
+      "value": "<changeme>"
+    },
+
+    "EMAIL_HOST_PASSWORD": {
+      "description": "for email notification integration",
+      "required": false,
+      "value": "<changeme>"
+    },
+
+    "EMAIL_HOST_USER": {
+      "description": "for email notification integration",
+      "required": false,
+      "value": "<changeme>"
+    },
+
+    "EMAIL_HOST_PORT": {
+      "description": "for email notification integration",
+      "required": false,
+      "value": "<changeme>"
+    },
+
+    "EMAIL_FROM": {
+      "description": "for email notification integration",
+      "required": false,
+      "value": "<changeme>"
+    }
+
+  },
+
+  "addons": [
+    "heroku-postgresql:hobby-basic"
+  ]
+}

@@ -26,6 +26,11 @@ class TexterTodoList extends React.Component {
         return null
       }).filter((ele) => ele !== null)
   }
+  componentDidMount() {
+    this.props.data.refetch()
+    // re-asserts polling after manual refresh
+    // this.props.data.startPolling(5000)
+  }
 
   render() {
     const todos = this.props.data.currentUser.todos
@@ -88,8 +93,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
         isOptedOut: false,
         validTimezone: false
       }
-    },
-    pollInterval: 10000
+    }
   }
 })
 

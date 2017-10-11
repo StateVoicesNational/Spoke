@@ -5,7 +5,7 @@ export async function getLastMessage({ contactNumber, service }) {
     .getAll(contactNumber, { index: 'contact_number' })
     .filter({
       is_from_contact: false,
-      service: service
+      service
     })
     .orderBy(r.desc('created_at'))
     .limit(1)
