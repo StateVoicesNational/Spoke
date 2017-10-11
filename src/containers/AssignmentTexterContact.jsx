@@ -243,6 +243,7 @@ class AssignmentTexterContact extends React.Component {
   }
 
   getAvailableInteractionSteps(questionResponses) {
+    console.log('getAvailableInteractionSteps evoked');
     const allInteractionSteps = this.props.data.contact.interactionSteps
 
     const availableSteps = []
@@ -268,6 +269,7 @@ class AssignmentTexterContact extends React.Component {
   }
 
   getInitialQuestionResponses(interactionSteps) {
+    console.log('getInitialQuestionResponses evoked');
     const questionResponses = {}
     for (const interactionStep of interactionSteps) {
       if (interactionStep.question.text !== '') {
@@ -281,6 +283,7 @@ class AssignmentTexterContact extends React.Component {
   getMessageTextFromScript(script) {
     const { data, campaign, texter } = this.props
     const { contact } = data
+    console.log('getMessageTextFromScript evoked', data);
 
     return script ? applyScript({
       contact,
@@ -291,6 +294,7 @@ class AssignmentTexterContact extends React.Component {
   }
 
   getStartingMessageText() {
+    console.log('getStartingMessageText evoked');
     const { contact } = this.props.data
     const { messages } = contact
     return messages.length > 0 ? '' : this.getMessageTextFromScript(contact.currentInteractionStepScript)
@@ -317,6 +321,7 @@ class AssignmentTexterContact extends React.Component {
   createMessageToContact(text) {
     const { texter, assignment } = this.props
     const { contact } = this.props.data
+    console.log('createMessageToContact evoked:', contact)
 
     return {
       contactNumber: contact.cell,
@@ -478,6 +483,7 @@ class AssignmentTexterContact extends React.Component {
   }
 
   isContactBetweenTextingHours(contact) {
+    console.log('isContactBetweenTextingHours evoked');
     const { campaign } = this.props
 
     let timezoneData = null
@@ -523,6 +529,7 @@ class AssignmentTexterContact extends React.Component {
   renderSurveySection() {
     const { contact } = this.props.data
     const { messages } = contact
+    console.log('renderSurveySection evoked', contact);
 
     const { questionResponses } = this.state
 
@@ -543,6 +550,7 @@ class AssignmentTexterContact extends React.Component {
 
   renderNeedsResponseToggleButton(contact) {
     const { messageStatus } = contact
+    console.log('renderNeedsResponseToggleButton evoked:', contact )
     let button = null
     if (messageStatus === 'closed') {
       button = (<RaisedButton
@@ -563,6 +571,7 @@ class AssignmentTexterContact extends React.Component {
     const { data, campaign, navigationToolbarChildren } = this.props
     const { contact } = data
     const { messageStatus } = contact
+    console.log('renderActionToolbar evoked for contact:', data);
 
     const size = document.documentElement.clientWidth
 
@@ -638,6 +647,7 @@ class AssignmentTexterContact extends React.Component {
 
   renderTopFixedSection() {
     const { contact } = this.props.data
+    console.log('renderTopFixedSection evoked', contact);
     return (
       <ContactToolbar
         campaignContact={contact}
@@ -659,6 +669,7 @@ class AssignmentTexterContact extends React.Component {
   renderCannedResponsePopover() {
     const { campaign, assignment, texter } = this.props
     const { userCannedResponses, campaignCannedResponses } = assignment
+    console.log('renderCannedResponsePopover for ', assignment);
 
     return (<CannedResponseMenu
       onRequestClose={this.handleClosePopover}
@@ -720,6 +731,7 @@ class AssignmentTexterContact extends React.Component {
   renderCorrectSendButton() {
     const { campaign } = this.props
     const { contact } = this.props.data
+    console.log('renderCorrectSendButton evoked:' + '' + contact );
     if (contact.messageStatus === 'needsResponse' || contact.messageStatus === 'messaged') {
       return (
         <SendButtonArrow
@@ -734,6 +746,7 @@ class AssignmentTexterContact extends React.Component {
 
   renderBottomFixedSection() {
     const { optOutDialogOpen } = this.state
+    console.log('renderBottomFixedSection evoked');
 
     const message = (optOutDialogOpen) ? '' : (
       <div className={css(styles.messageField)}>

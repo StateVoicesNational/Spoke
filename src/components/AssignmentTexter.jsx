@@ -38,6 +38,7 @@ class AssignmentTexter extends React.Component {
   }
 
   getContact(contacts, index) {
+    console.log( 'current contact index:'+ ' ' + this.state.currentContactIndex )
     return (contacts.length > index) ? contacts[index] : null
   }
 
@@ -102,6 +103,7 @@ class AssignmentTexter extends React.Component {
   }
 
   currentContact() {
+    console.log('getting current contact');
     const { contacts } = this.props
     return this.getContact(contacts, this.state.currentContactIndex)
   }
