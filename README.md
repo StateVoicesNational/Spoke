@@ -6,6 +6,8 @@ Spoke is an open source text-distribution tool for organizations to mobilize sup
 
 Spoke was created by Saikat Chakrabarti and Sheena Pakanati, and is now maintained by MoveOn.org.
 
+The latest version is [1.1.0](https://github.com/MoveOnOrg/Spoke/tree/v1.1) (see [release notes](https://github.com/MoveOnOrg/Spoke/blob/master/docs/RELEASE_NOTES.md#v11)) which we recommend for production use, while our `master` branch is where features still in development and testing will be available.
+
 ## Note
 
 This is generated from [react-apollo-starter-kit](https://github.com/saikat/react-apollo-starter-kit).  Look at that project's README for info on some of the libraries used.
@@ -43,11 +45,15 @@ echo "INSERT INTO invite \(hash,is_valid\) VALUES \('abc-123', true\)\;" |sqlite
 
 If you want to create an invite via the home page "Login and get started" link, make sure your `SUPPRESS_SELF_INVITE` variable is not set.
 
+## Running Tests
+
+See https://github.com/MoveOnOrg/Spoke/blob/master/docs/HOWTO-run_tests.md
+
 ## Important TODOS
-**Because  of issues with numbers getting marked with spam, we adopted aggressive number cycling to limit the number of texts sent from a specific number. We did not implement a corresponding process to unrent the numbers before shutting down the service, so two things are a high priority before putting Spoke back into production:
+Because  of issues with numbers getting marked with spam, we adopted aggressive number cycling to limit the number of texts sent from a specific number. We did not implement a corresponding process to unrent the numbers before shutting down the service, so two things are a high priority before putting Spoke back into production:
 1. Decide whether to keep the number cycling, since it might not be necessary on Twilio like it was on Nexmo
 2. If keeping it making sure there's a corresponding process to unrent unused numbers.
-3. Even if not keeping number cycling, there should be a process like this anyway to unrent numbers that haven't been used in X days anyway because volunteers come and go. However, cycling numbers every ~250 texts obviously racks up exponentially higher costs than just assigning a single number per volunteer.  **
+3. Even if not keeping number cycling, there should be a process like this anyway to unrent numbers that haven't been used in X days anyway because volunteers come and go. However, cycling numbers every ~250 texts obviously racks up exponentially higher costs than just assigning a single number per volunteer.
 
 ## Helpful Dev Tips
 * Go to `localhost:3000/graphql` to mess around with the GraphQL API

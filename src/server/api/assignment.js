@@ -47,11 +47,7 @@ function getContacts(assignment, contactsFilter, organization, campaign) {
     }
 
     if (contactsFilter.hasOwnProperty('messageStatus') && contactsFilter.messageStatus !== null) {
-      if (pastDue && contactsFilter.messageStatus === 'needsMessage') {
-        query = query.where('message_status', '')
-      } else {
-        query = query.where('message_status', contactsFilter.messageStatus)
-      }
+      query = query.where('message_status', contactsFilter.messageStatus)
     } else {
       if (pastDue) {
         // by default if asking for 'send later' contacts we include only those that need replies

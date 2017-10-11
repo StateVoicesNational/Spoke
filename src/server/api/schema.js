@@ -80,6 +80,7 @@ import {
   superAdminRequired
 } from './errors'
 import serviceMap from './lib/services'
+import { saveNewIncomingMessage } from './lib/message-sending'
 import { gzip, log } from '../../lib'
 // import { isBetweenTextingHours } from '../../lib/timezones'
 import { Notifications, sendUserNotification } from '../notifications'
@@ -159,6 +160,11 @@ const rootSchema = `
     created_at: Date
   }
 
+  input ContactMessage {
+    message: MessageInput!,
+    campaignContactId: String!
+  }
+
   type Action {
     name: String
     display_name: String
@@ -187,6 +193,7 @@ const rootSchema = `
     editOrganizationRoles(organizationId: String!, userId: String!, roles: [String]): Organization
     updateTextingHours( organizationId: String!, textingHoursStart: Int!, textingHoursEnd: Int!): Organization
     updateTextingHoursEnforcement( organizationId: String!, textingHoursEnforced: Boolean!): Organization
+    sendMessages(contactMessages: [ContactMessage]): [CampaignContact]
     sendMessage(message:MessageInput!, campaignContactId:String!): CampaignContact,
     createOptOut(optOut:OptOutInput!, campaignContactId:String!):CampaignContact,
     editCampaignContactMessageStatus(messageStatus: String!, campaignContactId:String!): CampaignContact,
@@ -322,14 +329,10 @@ async function editCampaign(id, campaign, loaders, user) {
 
 const rootMutations = {
   RootMutation: {
-    sendReply: async (_, { id, message }, { loaders }) => {
-      if (process.env.NODE_ENV !== 'development') {
-        throw new GraphQLError({
-          status: 400,
-          message: 'You cannot send manual replies unless you are in development'
-        })
-      }
+    sendReply: async (_, { id, message }, { user, loaders }) => {
       const contact = await loaders.campaignContact.load(id)
+
+      await accessRequired(user, contact.organization_id, 'ADMIN')
 
       const lastMessage = await r.table('message')
         .getAll(contact.assignment_id, { index: 'assignment_id' })
@@ -344,25 +347,22 @@ const rootMutations = {
         })
       }
 
-      console.log('lastMessage', lastMessage)
       const userNumber = lastMessage.user_number
       const contactNumber = contact.cell
-      const mockedId = `mocked_${Math.random().toString(36).replace(/[^a-zA-Z1-9]+/g, '')}`
-      if (lastMessage.service === 'nexmo') {
-        await serviceMap.nexmo.handleIncomingMessage({
-          to: userNumber,
-          msisdn: contactNumber,
-          text: message,
-          messageId: mockedId
-        })
-      } else if (lastMessage.service === 'twilio') {
-        await serviceMap.twilio.handleIncomingMessage({
-          From: contactNumber,
-          To: userNumber,
-          Body: message,
-          MessageSid: mockedId
-        })
-      }
+      const mockId = `mocked_${Math.random().toString(36).replace(/[^a-zA-Z1-9]+/g, '')}`
+      await saveNewIncomingMessage(new Message({
+        contact_number: contactNumber,
+        user_number: userNumber,
+        is_from_contact: true,
+        text: message,
+        service_response: JSON.stringify({ 'fakeMessage': true,
+                                          'userId': user.id,
+                                          'userFirstName': user.first_name }),
+        service_id: mockId,
+        assignment_id: lastMessage.assignment_id,
+        service: lastMessage.service,
+        send_status: 'DELIVERED'
+      }))
       return loaders.campaignContact.load(id)
     },
     exportCampaign: async (_, { id }, { user, loaders }) => {
@@ -598,6 +598,19 @@ const rootMutations = {
 
       return loaders.campaignContact.load(campaignContactId)
     },
+    sendMessages: async(_, { contactMessages }, loaders) => {
+      if (process.env.ALLOW_SEND_ALL) {
+        const contacts = contactMessages.map(contactMessage => {
+          return rootMutations.RootMutation.sendMessage(_, contactMessage, loaders)
+        })
+        return contacts
+      }
+      log.error('Not allowed to send all messages at once')
+      throw new GraphQLError({
+        status: 403,
+        message: 'Not allowed to send all messages at once'
+      })
+    },
     sendMessage: async(_, { message, campaignContactId }, { loaders }) => {
       const contact = await loaders.campaignContact.load(campaignContactId)
       const campaign = await loaders.campaign.load(contact.campaign_id)
@@ -610,6 +623,8 @@ const rootMutations = {
       const organization = await r.table('campaign')
         .get(contact.campaign_id)
         .eqJoin('organization_id', r.table('organization'))('right')
+
+      const orgFeatures = JSON.parse(organization.features || '{}')
 
       const optOut = await r.table('opt_out')
           .getAll(contact.cell, { index: 'cell' })
@@ -651,7 +666,7 @@ const rootMutations = {
         user_number: '',
         assignment_id: message.assignmentId,
         send_status: (JOBS_SAME_PROCESS ? 'SENDING' : 'QUEUED'),
-        service: process.env.DEFAULT_SERVICE || '',
+        service: orgFeatures.service || process.env.DEFAULT_SERVICE || '',
         is_from_contact: false
       })
 

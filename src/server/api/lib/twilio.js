@@ -30,7 +30,6 @@ function webhook() {
 }
 
 async function convertMessagePartsToMessage(messageParts) {
-  console.log('TWILIO convertMessagePartsToMessage(messageParts) START', messageParts, 'xx')
   const firstPart = messageParts[0]
   const userNumber = firstPart.user_number
   const contactNumber = firstPart.contact_number
@@ -42,7 +41,6 @@ async function convertMessagePartsToMessage(messageParts) {
   const lastMessage = await getLastMessage({
     contactNumber
   })
-  console.log('TWILIO convertMessagePartsToMessage(messageParts) BEFORE SAVE')
   return new Message({
     contact_number: contactNumber,
     user_number: userNumber,
