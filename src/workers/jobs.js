@@ -279,11 +279,14 @@ export async function assignTexters(job) {
   const texters = payload.texters
   const currentAssignments = await r.knex('assignment')
     .where('assignment.campaign_id', cid)
-    .joinRaw('left join campaign_contact '
-             + 'ON (campaign_contact.assignment_id = assignment.id '
-             + "AND campaign_contact.message_status = 'needsMessage')")
+    .joinRaw('left join campaign_contact allcontacts'
+             + ' ON (allcontacts.assignment_id = assignment.id)')
     .groupBy('user_id', 'assignment.id')
-    .select('user_id', 'assignment.id as id', r.knex.raw('COUNT(campaign_contact.id) as needs_message_count'))
+    .select('user_id',
+            'assignment.id as id',
+            r.knex.raw("SUM(CASE WHEN allcontacts.message_status = 'needsMessage' THEN 1 ELSE 0 END) as needs_message_count"),
+            r.knex.raw('COUNT(allcontacts.id) as full_contact_count')
+           )
     .catch(log.error)
 
   const unchangedTexters = {}
@@ -294,13 +297,22 @@ export async function assignTexters(job) {
     if (texter && texter.needsMessageCount === parseInt(assignment.needs_message_count)) {
       unchangedTexters[assignment.user_id] = true
       return null
-    } else {
-      const numDifferent = assignment.needs_message_count - (texter && texter.needsMessageCount || 0)
-      if (numDifferent > 0) { // got less than before
-        demotedTexters[assignment.id] = numDifferent
+    } else if (texter) { //assignment change
+      // If there is a delta between client and server, then accomodate delta (See #322)
+      const clientMessagedCount = texter.contactsCount - texter.needsMessageCount
+      const serverMessagedCount = assignment.full_contact_count - assignment.needs_message_count
+
+      const numDifferent = ((texter.needsMessageCount || 0)
+                            - assignment.needs_message_count
+                            - Math.max(0, serverMessagedCount - clientMessagedCount))
+
+      if (numDifferent < 0) { // got less than before
+        demotedTexters[assignment.id] = -numDifferent
       } else { // got more than before: assign the difference
-        texter.needsMessageCount = -numDifferent
+        texter.needsMessageCount = numDifferent
       }
+      return assignment
+    } else { // new texter
       return assignment
     }
   }).filter((ele) => ele !== null)

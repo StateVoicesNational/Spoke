@@ -132,6 +132,7 @@ const rootSchema = `
   input TexterInput {
     id: String
     needsMessageCount: Int
+    contactsCount: Int
   }
 
   input CampaignInput {
