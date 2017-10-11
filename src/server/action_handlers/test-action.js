@@ -34,6 +34,6 @@ export async function processAction(questionResponse, interactionStep, campaignC
   }
 
   await r.knex('campaign_contact')
-    .where('campaign_contact_id', campaignContactId)
+    .where('campaign_contact.id', campaignContactId)
     .update('custom_fields', JSON.stringify(customFields))
 }

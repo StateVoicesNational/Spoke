@@ -34,20 +34,23 @@ export async function available(organizationId) {
 }
 
 export const akidGenerate = function (ak_secret, cleartext) {
-  const shaHash = crypto.createHash()
+  const shaHash = crypto.createHash('sha256')
   shaHash.write(`${ak_secret}.${cleartext}`)
-  const shortHash = shahash.digest('base64').slice(0, 6)
+  const shortHash = shaHash.digest('base64').slice(0, 6)
   return `${cleartext}.${shortHash}`
 }
 
 export async function processAction(questionResponse, interactionStep, campaignContactId) {
-  const contact = await r.knex('campaign_contact')
-    .where('campaign_contact_id', campaignContactId)
+  const contactRes = await r.knex('campaign_contact')
+    .where('campaign_contact.id', campaignContactId)
     .leftJoin('campaign', 'campaign_contact.campaign_id', 'campaign.id')
     .leftJoin('organization', 'campaign.organization_id', 'organization.id')
     .select('campaign_contact.custom_fields as custom_fields',
             'campaign_contact.external_id as external_id',
-            'organization.features as features')
+            'organization.features as features',
+            'organization.id as organization_id')
+  const contact = (contactRes.length ? contactRes[0] : {})
+
   if (contact.external_id && contact.custom_fields != '{}') {
     try {
       const customFields = JSON.parse(contact.custom_fields || '{}')
@@ -61,7 +64,7 @@ export async function processAction(questionResponse, interactionStep, campaignC
           page: customFields.event_page,
           role: 'attendee',
           status: 'active',
-          akid: akidGenerate(akSecret, contact.external_id),
+          akid: akidGenerate(akSecret, '.' + contact.external_id),
           event_signup_ground_rules: '1',
           source: customFields.event_source || 'spoke'
         }
@@ -73,13 +76,23 @@ export async function processAction(questionResponse, interactionStep, campaignC
           }
         }
         request.post({
-          'url': `${actionkitBaseUrl}/rest/v1/act/`,
+          'url': `${actionkitBaseUrl}/act/`,
           'form': userData
         }, function (err, httpResponse, body) {
           // TODO: should we save the action id somewhere?
-          if (err) {
-            console.error('actionkit event sign up failed', err, userData)
+          if (err || (body && body.error)) {
+            console.error('error: actionkit event sign up failed', err, userData, body)
           } else {
+            if (httpResponse.headers && httpResponse.headers.location) {
+              const actionId = httpResponse.headers.location.match(/action_id=([^&]+)/)
+              if (actionId) {
+                //save the action id of the rsvp back to the contact record
+                customFields['processed_event_action'] = actionId[1]
+                await r.knex('campaign_contact')
+                  .where('campaign_contact.id', campaignContactId)
+                  .update('custom_fields', JSON.stringify(customFields))
+              }
+            }
             console.info('actionkit event sign up SUCCESS!', userData, httpResponse, body)
           }
         })
