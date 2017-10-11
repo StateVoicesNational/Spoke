@@ -78,7 +78,7 @@ export async function processAction(questionResponse, interactionStep, campaignC
         request.post({
           'url': `${actionkitBaseUrl}/act/`,
           'form': userData
-        }, function (err, httpResponse, body) {
+        }, async function (err, httpResponse, body) {
           // TODO: should we save the action id somewhere?
           if (err || (body && body.error)) {
             console.error('error: actionkit event sign up failed', err, userData, body)
