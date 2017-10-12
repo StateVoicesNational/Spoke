@@ -387,9 +387,8 @@ const rootMutations = {
     },
     editOrganizationRoles: async (_, { userId, organizationId, roles }, { user, loaders }) => {
       const currentRoles = (await r.knex('user_organization')
-        .where({organization_id: organizationId,
-                user_id: userId}).select('role')).map((res) => (res.role))
-      console.log(currentRoles)
+        .where({ organization_id: organizationId,
+                user_id: userId }).select('role')).map((res) => (res.role))
       const oldRoleIsOwner = currentRoles.indexOf('OWNER') !== -1
       const newRoleIsOwner = roles.indexOf('OWNER') !== -1
       const roleRequired = (oldRoleIsOwner || newRoleIsOwner) ? 'OWNER' : 'ADMIN'
