@@ -16,8 +16,10 @@ exports.handler = (event, context) => {
     const webResponse = awsServerlessExpress.proxy(server, event, context)
     if (process.env.DEBUG_SCALING) {
       const endTime = (context.getRemainingTimeInMillis ? context.getRemainingTimeInMillis() : 0)
-      if ((endTime - startTime) > 3000) { //3 seconds
-        console.log('SLOW_RESPONSE milliseconds:', endTime-startTime, event)
+      // confusingly, we do start - end, instead of the reverse,
+      // because it's *remaining* time which counts down
+      if ((startTime - endTime) > 3000) { //3 seconds
+        console.log('SLOW_RESPONSE milliseconds:', startTime-endTime, event)
       }
     }
 
