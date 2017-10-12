@@ -160,6 +160,14 @@ const rootSchema = `
     created_at: Date
   }
 
+  input UserInput {
+    id: String!
+    first_name: String!
+    last_name: String!
+    email: String!
+    cell: String!
+  }
+
   input ContactMessage {
     message: MessageInput!,
     campaignContactId: String!
@@ -191,6 +199,7 @@ const rootSchema = `
     createOrganization(name: String!, userId: String!, inviteId: String!): Organization
     joinOrganization(organizationUuid: String!): Organization
     editOrganizationRoles(organizationId: String!, userId: String!, roles: [String]): Organization
+    editUser(organizationId: String!, userId: String!, userData:UserInput): UserInput
     updateTextingHours( organizationId: String!, textingHoursStart: Int!, textingHoursEnd: Int!): Organization
     updateTextingHoursEnforcement( organizationId: String!, textingHoursEnforced: Boolean!): Organization
     sendMessages(contactMessages: [ContactMessage]): [CampaignContact]
@@ -416,6 +425,37 @@ const rootMutations = {
         await UserOrganization.save(newOrgRoles, { conflict: 'update' })
       }
       return loaders.organization.load(organizationId)
+    },
+    editUser: async (_, { userId, organizationId, userData }, { user, loaders }) => {
+      await accessRequired(user, organizationId, 'ADMIN')
+      const userRes = await r.knex('user')
+        .rightJoin('user_organization', 'user.id', 'user_organization.user_id')
+        .where({'user_organization.organization_id': organizationId,
+                'user.id': userId}).limit(1)
+      if (!userRes || !userRes.length) {
+        return null
+      } else {
+        const member = userRes[0]
+        if (userData) {
+          const userRes = await r.knex('user')
+            .where('id', userId)
+            .update({first_name: userData.first_name,
+                     last_name: userData.last_name,
+                     email: userData.email,
+                     cell: userData.cell
+                    })
+        } else {
+          userData = member
+        }
+
+        return {
+          id: member.id,
+          firstName: userData.first_name,
+          lastName: userData.last_name,
+          email: userData.email,
+          cell: userData.cell
+        }
+      }
     },
     joinOrganization: async (_, { organizationUuid }, { user, loaders }) => {
       let organization
