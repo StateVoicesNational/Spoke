@@ -92,7 +92,8 @@ import { uploadContacts,
        } from '../../workers/jobs'
 const uuidv4 = require('uuid').v4
 
-const JOBS_SAME_PROCESS = !!process.env.JOBS_SAME_PROCESS
+const JOBS_SAME_PROCESS = !!(process.env.JOBS_SAME_PROCESS || global.JOBS_SAME_PROCESS)
+const JOBS_SYNC = !!(process.env.JOBS_SYNC || global.JOBS_SYNC)
 
 const rootSchema = `
   input CampaignContactInput {
@@ -252,7 +253,7 @@ async function editCampaign(id, campaign, loaders, user) {
       payload: compressedString.toString('base64')
     })
     if (JOBS_SAME_PROCESS) {
-      uploadContacts(job).then()
+      uploadContacts(job)
     }
   }
   if (campaign.hasOwnProperty('contactSql')
@@ -267,7 +268,7 @@ async function editCampaign(id, campaign, loaders, user) {
       payload: campaign.contactSql
     })
     if (JOBS_SAME_PROCESS) {
-      loadContactsFromDataWarehouse(job).then()
+      loadContactsFromDataWarehouse(job)
     }
   }
   if (campaign.hasOwnProperty('texters')) {
@@ -284,7 +285,12 @@ async function editCampaign(id, campaign, loaders, user) {
     })
 
     if (JOBS_SAME_PROCESS) {
-      assignTexters(job).then()
+      if (JOBS_SYNC) {
+        await assignTexters(job)
+      }
+      else {
+        assignTexters(job)
+      }
     }
   }
   if (campaign.hasOwnProperty('interactionSteps')) {
@@ -301,7 +307,7 @@ async function editCampaign(id, campaign, loaders, user) {
     })
 
     if (JOBS_SAME_PROCESS) {
-      createInteractionSteps(job).then()
+      createInteractionSteps(job)
     }
   }
 
@@ -382,7 +388,7 @@ const rootMutations = {
         })
       })
       if (JOBS_SAME_PROCESS) {
-        exportCampaign(newJob).then()
+        exportCampaign(newJob)
       }
       return newJob
     },
@@ -679,7 +685,7 @@ const rootMutations = {
       if (JOBS_SAME_PROCESS) {
         const service = serviceMap[messageInstance.service || process.env.DEFAULT_SERVICE]
         log.info(`Sending (${service}): ${messageInstance.user_number} -> ${messageInstance.contact_number}\nMessage: ${messageInstance.text}`)
-        service.sendMessage(messageInstance).then()
+        service.sendMessage(messageInstance)
       }
 
       return contact
