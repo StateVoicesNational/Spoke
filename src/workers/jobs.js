@@ -31,6 +31,56 @@ async function getTimezoneByZip(zip) {
   }
 }
 
+export async function processSqsMessages() {
+
+  // hit endpoint on SQS
+  // ask for a list of messages from SQS (with quantity tied to it)
+  // if SQS has messages, process messages into pending_message_part and dequeue messages (mark them as handled)
+  // if SQS doesnt have messages, exit
+
+  if(!process.env.TWILIO_SQS_QUEUE_URL){
+    return
+  }
+
+  const sqs = new AWS.SQS()
+
+  const params = {
+    QueueUrl: process.env.TWILIO_SQS_QUEUE_URL,
+    AttributeNames: ['All'],
+    MessageAttributeNames: ['string'],
+    MaxNumberOfMessages: 10,
+    VisibilityTimeout: 60,
+    WaitTimeSeconds: 10,
+    ReceiveRequestAttemptId: 'string'
+  }
+
+  const p = new Promise
+
+  sqs.receiveMessage( params, async ( err, data ) => {
+    if( err ){
+      console.log( err, err.stack )
+      p.reject( err )
+    } else if ( data.Messages ){
+      console.log( data )
+      for( let i = 0; i < data.Messages.length; i ++) {
+        const body = message.Body
+        console.log( 'processing sqs queue:', body );
+        const twilioMessage = JSON.parse( body )
+
+        await serviceMap.twilio.handleIncomingMessage( twilioMessage )
+
+        sqs.deleteMessage({ QueueUrl: process.env.TWILIO_SQS_QUEUE_URL, ReceiptHandle:      message.ReceiptHandle }, ( err, data ) => {
+          if (err) console.log( err, err.stack ) // an error occurred
+          else     console.log( data )           // successful response
+        })
+      }
+      p.resolve()
+    }
+  })
+
+  return p
+}
+
 export async function uploadContacts(job) {
   const campaignId = job.campaign_id
   // We do this deletion in schema.js but we do it again here just in case the the queue broke and we had a backlog of contact uploads for one campaign

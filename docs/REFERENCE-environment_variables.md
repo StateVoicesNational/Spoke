@@ -51,5 +51,6 @@ TWILIO_APPLICATION_SID            | Twilio application ID. Required if using Twi
 TWILIO_AUTH_TOKEN                 | Twilio auth token. Required if using Twilio.
 TWILIO_MESSAGE_SERVICE_SID        | Twilio message service ID. Required if using Twilio.
 TWILIO_STATUS_CALLBACK_URL        | URL for Twilio status callbacks. Should end with `/twilio-message-report`, e.g. `https://example.org/twilio-message-report`. Required if using Twilio.
+TWILIO_SQS_QUEUE_URL              | AWS SQS URL to handle incoming messages when app isn't connected to twilio
 WEBPACK_HOST                      | Host domain or IP for Webpack development server. _Default_: 127.0.0.1.
 WEBPACK_PORT                      | Port for Webpack development server. _Defaut_: 3000.
