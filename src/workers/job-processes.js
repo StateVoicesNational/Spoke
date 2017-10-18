@@ -1,6 +1,6 @@
 import { r } from '../server/models'
 import { sleep, getNextJob, updateJob, log } from './lib'
-import { exportCampaign, uploadContacts, assignTexters, createInteractionSteps, sendMessages, handleIncomingMessageParts, clearOldJobs } from './jobs'
+import { exportCampaign, processSqsMessages, uploadContacts, assignTexters, createInteractionSteps, sendMessages, handleIncomingMessageParts, clearOldJobs } from './jobs'
 import { runMigrations } from '../migrations'
 import { setupUserNotificationObservers } from '../server/notifications'
 
@@ -36,6 +36,22 @@ export async function processJobs() {
       var twoMinutesAgo = new Date(new Date() - 1000 * 60 * 2)
       // clear out stuck jobs
       await clearOldJobs(twoMinutesAgo)
+    } catch (ex) {
+      log.error(ex)
+    }
+  }
+}
+
+export async function checkMessageQueue() {
+  if(!process.env.TWILIO_SQS_QUEUE_URL) {
+   return
+  }
+  
+  console.log('checking if messages are in message queue');
+  while (true) {
+    try {
+      await sleep(10000)
+      processSqsMessages()
     } catch (ex) {
       log.error(ex)
     }
@@ -137,6 +153,7 @@ const processMap = {
 const syncProcessMap = {
   // 'failedMessageSender': failedMessageSender, //see method for danger
   handleIncomingMessages,
+  checkMessageQueue,
   clearOldJobs
 }
 
