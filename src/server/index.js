@@ -1,4 +1,3 @@
-import 'babel-polyfill'
 import bodyParser from 'body-parser'
 import express from 'express'
 import appRenderer from './middleware/app-renderer'
