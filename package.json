@@ -120,7 +120,6 @@
     "request": "^2.81.0",
     "rethink-knex-adapter": "^0.4.10",
     "rollbar": "^0.6.2",
-    "stripe": "^4.9.0",
     "thinky": "^2.3.3",
     "transform-loader": "^0.2.3",
     "twilio": "^2.11.0",
