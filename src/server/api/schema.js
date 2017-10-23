@@ -834,7 +834,7 @@ const rootMutations = {
         send_status: (JOBS_SAME_PROCESS ? 'SENDING' : 'QUEUED'),
         service: process.env.DEFAULT_SERVICE || '',
         is_from_contact: false,
-        queued_at: Date.now()
+        queued_at: new Date()
       })
 
       await messageInstance.save()
