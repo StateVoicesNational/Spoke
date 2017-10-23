@@ -555,17 +555,13 @@ export async function exportCampaign(job) {
       Object.keys(allQuestions).forEach((stepId) => {
         let value = ''
         questionResponses.forEach((response) => {
-          if (response.interaction_step_id == stepId) {
+          if (response.interaction_step_id === parseInt(stepId)) {
             value = response.value
           }
         })
 
-        // console.log('value before:', value);
-        // console.log('all questions:', allQuestions);
         contactRow[`question[${allQuestions[stepId]}]`] = value
-        const question_field_name = `question[${allQuestions[stepId]}]`
-        // console.log('question field name:', question_field_name );
-        // console.log('value after:', value);
+        
       })
 
       return contactRow
