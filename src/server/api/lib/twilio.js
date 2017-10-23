@@ -1,6 +1,6 @@
 import Twilio from 'twilio'
 import { getFormattedPhoneNumber } from '../../../lib/phone-format'
-import { Message, PendingMessagePart, r } from '../../models'
+import { Log, Message, PendingMessagePart, r } from '../../models'
 import { log } from '../../../lib'
 import { getLastMessage } from './message-sending'
 import faker from 'faker'
@@ -155,7 +155,7 @@ async function sendMessage(message) {
 async function handleDeliveryReport(report) {
   const messageSid = report.MessageSid
   if (messageSid) {
-    await r.table('log').insert({ message_sid: report.MessageSid, body: report })
+    await Log.save({ message_sid: report.MessageSid, body: report })
     const messageStatus = report.MessageStatus
     const message = await r.table('message')
       .getAll(messageSid, { index: 'service_id' })
