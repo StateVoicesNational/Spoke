@@ -141,7 +141,8 @@ async function sendMessage(message) {
         Message.save({
           ...messageToSave,
           send_status: 'SENT',
-          service: 'twilio'
+          service: 'twilio',
+          sent_at: new Date()
         }, { conflict: 'update' })
         .then((saveError, newMessage) => {
           resolve(newMessage)
@@ -154,7 +155,7 @@ async function sendMessage(message) {
 async function handleDeliveryReport(report) {
   const messageSid = report.MessageSid
   if (messageSid) {
-    await r.table('log').insert({ message_id: report.MessageSid, body: report })
+    await r.table('log').insert({ message_sid: report.MessageSid, body: report })
     const messageStatus = report.MessageStatus
     const message = await r.table('message')
       .getAll(messageSid, { index: 'service_id' })
