@@ -551,14 +551,21 @@ export async function exportCampaign(job) {
 
       const questionResponses = await r.table('question_response')
         .getAll(contact.id, { index: 'campaign_contact_id' })
+
       Object.keys(allQuestions).forEach((stepId) => {
         let value = ''
         questionResponses.forEach((response) => {
-          if (response.interaction_step_id === stepId) {
+          if (response.interaction_step_id == stepId) {
             value = response.value
           }
         })
+
+        // console.log('value before:', value);
+        // console.log('all questions:', allQuestions);
         contactRow[`question[${allQuestions[stepId]}]`] = value
+        const question_field_name = `question[${allQuestions[stepId]}]`
+        // console.log('question field name:', question_field_name );
+        // console.log('value after:', value);
       })
 
       return contactRow
