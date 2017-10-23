@@ -18,6 +18,7 @@ import JobRequest from './job-request'
 import Migrations from './migrations'
 import thinky from './thinky'
 import datawarehouse from './datawarehouse'
+import Log from './log'
 
 function createLoader(model, idKey = 'id') {
   return new DataLoader(async (keys) => {
@@ -61,5 +62,6 @@ export {
   UserCell,
   UserOrganization,
   User,
-  ZipCode
+  ZipCode,
+  Log
 }
