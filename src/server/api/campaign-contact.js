@@ -166,6 +166,7 @@ export const resolvers = {
       const steps = await r.table('interaction_step')
         .getAll(campaignContact.campaign_id, { index: 'campaign_id' })
         .filter({ is_deleted: false })
+      console.log(campaignContact.campaign_id, steps)
       return getTopMostParent(steps, true).script
     },
     interactionSteps: async (campaignContact) => (

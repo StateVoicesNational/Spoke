@@ -178,7 +178,6 @@ class AssignmentTexterContact extends React.Component {
 
   getAvailableInteractionSteps(questionResponses) {
     const allInteractionSteps = this.props.data.contact.interactionSteps
-
     const availableSteps = []
 
     let step = getTopMostParent(allInteractionSteps)
