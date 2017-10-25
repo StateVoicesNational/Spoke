@@ -551,14 +551,17 @@ export async function exportCampaign(job) {
 
       const questionResponses = await r.table('question_response')
         .getAll(contact.id, { index: 'campaign_contact_id' })
+
       Object.keys(allQuestions).forEach((stepId) => {
         let value = ''
         questionResponses.forEach((response) => {
-          if (response.interaction_step_id === stepId) {
+          if (response.interaction_step_id === parseInt(stepId)) {
             value = response.value
           }
         })
+
         contactRow[`question[${allQuestions[stepId]}]`] = value
+        
       })
 
       return contactRow
