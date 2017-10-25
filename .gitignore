@@ -7,4 +7,6 @@ rethinkdb_data
 __test__/test_data/*
 production-env.json
 claudia.json
+stage.json
+stage-env.json
 test.sqlite
