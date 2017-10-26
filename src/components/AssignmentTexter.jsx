@@ -54,6 +54,12 @@ class AssignmentTexter extends React.Component {
     })
   }
 
+  componentWillUpdate(nextProps, nextState) {
+    if (this.contactCount() === 0) {
+      setTimeout(() => window.location.reload(), 5000)
+    }
+  }
+
   hasPrevious() {
     return this.state.currentContactIndex > 0
   }
