@@ -88,6 +88,7 @@ class AdminPersonList extends React.Component {
                 >
                   {options.map((option) => (
                     <MenuItem
+                      key={person.id + '_' + option}
                       value={option}
                       disabled={option === 'OWNER' && getHighestRole(currentUser.roles) !== 'OWNER'}
                       primaryText={`${option.charAt(0).toUpperCase()}${option.substring(1).toLowerCase()}`}

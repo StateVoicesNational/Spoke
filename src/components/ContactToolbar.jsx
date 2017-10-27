@@ -6,7 +6,7 @@ import { grey100 } from 'material-ui/styles/colors'
 
 const inlineStyles = {
   toolbar: {
-    backgroundColor: grey100,
+    backgroundColor: grey100
   },
   cellToolbarTitle: {
     fontSize: '1em'

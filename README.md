@@ -6,9 +6,22 @@ Spoke is an open source text-distribution tool for organizations to mobilize sup
 
 Spoke was created by Saikat Chakrabarti and Sheena Pakanati, and is now maintained by MoveOn.org.
 
+The latest version is [1.1.0](https://github.com/MoveOnOrg/Spoke/tree/v1.1) (see [release notes](https://github.com/MoveOnOrg/Spoke/blob/master/docs/RELEASE_NOTES.md#v11)) which we recommend for production use, while our `master` branch is where features still in development and testing will be available.
+
 ## Note
 
 This is generated from [react-apollo-starter-kit](https://github.com/saikat/react-apollo-starter-kit).  Look at that project's README for info on some of the libraries used.
+
+## Deploy to Heroku
+
+<a href="https://heroku.com/deploy?template=https://github.com/MoveOnOrg/Spoke">
+  <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy">
+</a>
+
+WARNING --> this template will incur costs
+
+Follow up instructions located [here](https://github.com/MoveOnOrg/Spoke/blob/master/docs/HOWTO_HEROKU_DEPLOY.md)
+
 
 ## Getting started
 
@@ -19,7 +32,7 @@ This is generated from [react-apollo-starter-kit](https://github.com/saikat/reac
 5. `cp .env.example .env`
 6. Run `npm run dev` to create and populate the tables.
 7. Create an [Auth0](https://auth0.com) account. In your Auth0 account, go to Settings -> Clients -> and then grab your Client ID, Client Secret, and your Auth0 domain (should look like xxx.auth0.com). Add those inside your `.env` file (AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_DOMAIN respectively).
-8. Add the login callback and logout callback URL in `.env` (default `http://localhost:3000/login-callback` and `http://localhost:3000/logout-callback`) to your Auth0 app settings under "Allowed Callback URLs" and "Allowed Logout URLs" respectively.
+8. Add the login callback and logout callback URL in `.env` (default `http://localhost:3000/login-callback` and `http://localhost:3000/logout-callback`) to your Auth0 app settings under "Allowed Callback URLs" and "Allowed Logout URLs" respectively. (If you get an error when logging in later about "OIDC", go to Advanced Settings section, and then OAuth, and turn off 'OIDC Conformant')
 9. Run `npm run dev` to start the app. Wait until you see both "Node app is running ..." and "Webpack dev server is now running ..." before attempting to connect. (make sure environment variable JOBS_SAME_PROCESS=1)
 10. Go to `localhost:3000` to load the app.
 11. Because Spoke is invite-only you need to generate an invite. Run:
@@ -32,11 +45,15 @@ echo "INSERT INTO invite \(hash,is_valid\) VALUES \('abc-123', true\)\;" |sqlite
 
 If you want to create an invite via the home page "Login and get started" link, make sure your `SUPPRESS_SELF_INVITE` variable is not set.
 
+## Running Tests
+
+See https://github.com/MoveOnOrg/Spoke/blob/master/docs/HOWTO-run_tests.md
+
 ## Important TODOS
-**Because  of issues with numbers getting marked with spam, we adopted aggressive number cycling to limit the number of texts sent from a specific number. We did not implement a corresponding process to unrent the numbers before shutting down the service, so two things are a high priority before putting Spoke back into production:
+Because  of issues with numbers getting marked with spam, we adopted aggressive number cycling to limit the number of texts sent from a specific number. We did not implement a corresponding process to unrent the numbers before shutting down the service, so two things are a high priority before putting Spoke back into production:
 1. Decide whether to keep the number cycling, since it might not be necessary on Twilio like it was on Nexmo
 2. If keeping it making sure there's a corresponding process to unrent unused numbers.
-3. Even if not keeping number cycling, there should be a process like this anyway to unrent numbers that haven't been used in X days anyway because volunteers come and go. However, cycling numbers every ~250 texts obviously racks up exponentially higher costs than just assigning a single number per volunteer.  **
+3. Even if not keeping number cycling, there should be a process like this anyway to unrent numbers that haven't been used in X days anyway because volunteers come and go. However, cycling numbers every ~250 texts obviously racks up exponentially higher costs than just assigning a single number per volunteer.
 
 ## Helpful Dev Tips
 * Go to `localhost:3000/graphql` to mess around with the GraphQL API

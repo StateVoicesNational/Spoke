@@ -13,7 +13,7 @@ const loadData = (Component, connectArgs) => {
     // indicator only shows on the first
     // load and not when refetch is called
     componentWillReceiveProps(props) {
-      if (!this.isLoading(props)) {
+      if (!this.isLoading(props) || this.state.data !== null) {
         this.setState({
           data: this.dataProps(props)
         })
@@ -58,7 +58,6 @@ const loadData = (Component, connectArgs) => {
       if (this.isLoading(this.props) && this.state.data === null) {
         return <LoadingIndicator />
       }
-
       return <Component {...this.props} {...this.state.data} />
     }
   }

@@ -17,6 +17,7 @@ export const schema = `
     jobType: String
     assigned: Boolean
     status: Int
+    result_message: String
   }
 
   type Campaign {
@@ -61,7 +62,7 @@ export const resolvers = {
         .eqJoin('id', r.table('message'), { index: 'assignment_id' })
         .filter({ is_from_contact: false })
         .count()
-        // TODO: NEEDS TESTING 
+        // TODO: NEEDS TESTING
         // this is a change to avoid very weird map(...).sum() pattern
         // that will work better with RDBMs
         // main question is will/should filter work, or do we need to specify,
@@ -76,7 +77,7 @@ export const resolvers = {
     receivedMessagesCount: async (campaign) => (
       r.table('assignment')
         .getAll(campaign.id, { index: 'campaign_id' })
-        //TODO: NEEDSTESTING -- see above setMessagesCount()
+        // TODO: NEEDSTESTING -- see above setMessagesCount()
         .eqJoin('id', r.table('message'), { index: 'assignment_id' })
         .filter({ is_from_contact: true })
         .count()
@@ -109,7 +110,7 @@ export const resolvers = {
       user.is_superadmin && process.env.WAREHOUSE_DB_HOST
     ),
     pendingJobs: async (campaign) => r.table('job_request')
-      .filter({ campaign_id: campaign.id }),
+      .filter({ campaign_id: campaign.id }).orderBy('updated_at', 'desc'),
     texters: async (campaign) => (
       r.table('assignment')
         .getAll(campaign.id, { index: 'campaign_id' })

@@ -7,5 +7,4 @@ export default (error) => {
   }
 
   log.error(error)
-
 }

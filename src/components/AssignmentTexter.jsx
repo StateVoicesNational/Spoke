@@ -93,10 +93,6 @@ class AssignmentTexter extends React.Component {
     this.setState({ direction: 'left' }, () => this.incrementCurrentContactIndex(-1))
   }
 
-  handleExitTexter = () => {
-    this.props.router.push('/app')
-  }
-
   handleCannedResponseChange = (script) => {
     this.handleScriptChange(script)
     this.handleClosePopover()
@@ -104,6 +100,10 @@ class AssignmentTexter extends React.Component {
 
   handleScriptChange = (script) => {
     this.setState({ script })
+  }
+
+  handleExitTexter = () => {
+    this.props.router.push('/app/' + (this.props.organizationId || ''))
   }
 
   contactCount() {
@@ -178,7 +178,8 @@ AssignmentTexter.propTypes = {
   assignment: React.PropTypes.object,      // current assignment
   contacts: React.PropTypes.array,   // contacts for current assignment
   router: React.PropTypes.object,
-  refreshData: React.PropTypes.func
+  refreshData: React.PropTypes.func,
+  organizationId: React.PropTypes.string
 }
 
 export default withRouter(AssignmentTexter)

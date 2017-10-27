@@ -65,40 +65,65 @@ class AdminCampaignEdit extends React.Component {
   }
 
   componentWillReceiveProps(newProps) {
+    // This should only update the campaignFormValues sections that
+    // are NOT expanded so the form data doesn't compete with the user
+    // The basic flow of data:
+    // 1. User adds data to a section -> this.state.campaignFormValues
+    // 2. User saves -> (handleSave) mutations.editCampaign ->
+    // 3. Refetch/poll updates data in loadData component wrapper
+    //    and triggers *this* method => this.props.campaignData => this.state.campaignFormValues
+    // So campaignFormValues should always be the diffs between server and client form data
     let { expandedSection } = this.state
     let expandedKeys = []
     if (expandedSection !== null) {
       expandedSection = this.sections()[expandedSection]
-      if (this.sectionSaveStatus(expandedSection).sectionIsSaving) {
-        expandedKeys = []
-      } else {
-        expandedKeys = expandedSection.keys
-      }
+      expandedKeys = expandedSection.keys
     }
 
     const campaignDataCopy = {
       ...newProps.campaignData.campaign
     }
     expandedKeys.forEach((key) => {
+      // contactsCount is in two sections
+      // That means it won't get updated if *either* is opened
+      // but we want it to update in either
+      if (key === 'contactsCount') {
+        return
+      }
       delete campaignDataCopy[key]
     })
+    // NOTE: Since this does not _deep_ copy the values the
+    // expandedKey pointers will remain the same object as before
+    // so setState passes on those subsections should1 not refresh
+    let pushToFormValues = {
+      ...this.state.campaignFormValues,
+      ...campaignDataCopy
+    }
+    // contacts and contactSql need to be *deleted*
+    // when contacts are done on backend so that Contacts section
+    // can be marked saved, but only when user is NOT editing Contacts
+    if (campaignDataCopy.contactsCount > 0) {
+      const specialCases = ['contacts', 'contactSql']
+      specialCases.forEach((key) => {
+        if (expandedKeys.indexOf(key) === -1) {
+          delete pushToFormValues[key]
+        }
+      })
+    }
 
     this.setState({
-      campaignFormValues: {
-        ...this.state.campaignFormValues,
-        ...campaignDataCopy
-      }
+      campaignFormValues: pushToFormValues
     })
   }
 
   onExpandChange = (index, newExpandedState) => {
     const { expandedSection } = this.state
+
     if (newExpandedState) {
       this.setState({ expandedSection: index })
     } else if (index === expandedSection) {
       this.setState({ expandedSection: null })
     }
-    this.handleSave()
   }
 
   getSectionState(section) {
@@ -131,23 +156,26 @@ class AdminCampaignEdit extends React.Component {
     }) // currently throws an unmounted component error in the console
     this.props.campaignData.refetch()
   }
-         
-  handleSave = async () => {
-    let saveObject = {}
-    this.sections().forEach((section) => {
-      if (!this.checkSectionSaved(section)) {
-        saveObject = {
-          ...saveObject,
-          ...this.getSectionState(section)
-        }
-      }
-    })
 
-    if (Object.keys(saveObject).length > 0) {
-      // Transform the campaign into an input understood by the server
-      const newCampaign = {
-        ...saveObject
+  handleSave = async () => {
+    // only save the current expanded section
+    const { expandedSection } = this.state
+    if (expandedSection === null) {
+      return
+    }
+
+    const section = this.sections()[expandedSection]
+    let newCampaign = {}
+    if (this.checkSectionSaved(section)) {
+      return // already saved and no data changes
+    } else {
+      newCampaign = {
+        ...this.getSectionState(section)
       }
+    }
+
+    if (Object.keys(newCampaign).length > 0) {
+      // Transform the campaign into an input understood by the server
       delete newCampaign.customFields
       delete newCampaign.contactsCount
       if (newCampaign.hasOwnProperty('contacts') && newCampaign.contacts) {
@@ -158,7 +186,7 @@ class AdminCampaignEdit extends React.Component {
             firstName: contact.firstName,
             lastName: contact.lastName,
             zip: contact.zip,
-            external_id: contact.zip
+            external_id: contact.external_id || ''
           }
           Object.keys(contact).forEach((key) => {
             if (!contactInput.hasOwnProperty(key)) {
@@ -173,26 +201,53 @@ class AdminCampaignEdit extends React.Component {
       } else {
         newCampaign.contacts = null
       }
-
       if (newCampaign.hasOwnProperty('texters')) {
         newCampaign.texters = newCampaign.texters.map((texter) => ({
           id: texter.id,
           needsMessageCount: texter.assignment.needsMessageCount,
           maxContacts: texter.assignment.maxContacts
+          contactsCount: texter.assignment.contactsCount
         }))
       }
-
+      if (newCampaign.hasOwnProperty('interactionSteps')) {
+        newCampaign.interactionSteps = newCampaign.interactionSteps.map((step) => ({
+          id: step.id,
+          question: step.question ? step.question.text : null,
+          script: step.script,
+          answerOptions: step.question ? step.question.answerOptions.map((answer) => ({
+            value: answer.value,
+            action: answer.action,
+            nextInteractionStepId: answer.nextInteractionStep ? answer.nextInteractionStep.id : null
+          })) : []
+        }))
+      }
       await this
         .props
         .mutations
         .editCampaign(this.props.campaignData.campaign.id, newCampaign)
-      this.setState({
-        campaignFormValues: this.props.campaignData.campaign
-      })
+
+      this.pollDuringActiveJobs()
     }
   }
 
+  async pollDuringActiveJobs(noMore) {
+    const pendingJobs = await this.props.pendingJobsData.refetch()
+    if (pendingJobs.length && !noMore) {
+      const self = this
+      setTimeout(function () {
+        // run it once more after there are no more jobs
+        self.pollDuringActiveJobs(true)
+      }, 1000)
+    }
+    this.props.campaignData.refetch()
+  }
+
   checkSectionSaved(section) {
+    // Tests section's keys of campaignFormValues against props.campaignData
+    // * Determines greyness of section button
+    // * Determine if section is marked done (in green) along with checkSectionCompleted()
+    // * Must be false for a section to save!!
+    // Only Contacts section implements checkSaved()
     if (section.hasOwnProperty('checkSaved')) {
       return section.checkSaved()
     }
@@ -229,13 +284,19 @@ class AdminCampaignEdit extends React.Component {
       keys: ['contacts', 'contactsCount', 'customFields', 'contactSql'],
       checkCompleted: () => this.state.campaignFormValues.contactsCount > 0,
       checkSaved: () => (
-        // should we go and try to save contacts now?
-        (this.state.campaignFormValues.contacts && this.state.campaignFormValues.contacts.length > 0)
+        // Must be false for save to be tried
+        // Must be true for green bar, etc.
+        // This is a little awkward because neither of these fields are 'updated'
+        //   from the campaignData query, so we must delete them after save/update
+        //   at the right moment (see componentWillReceiveProps)
+        this.state.campaignFormValues.contactsCount > 0
+        && this.state.campaignFormValues.hasOwnProperty('contacts') === false
         && this.state.campaignFormValues.hasOwnProperty('contactSql') === false),
       blocksStarting: true,
       extraProps: {
-        optOuts: this.props.organizationData.organization.optOuts,
-        datawarehouseAvailable: this.props.campaignData.campaign.datawarehouseAvailable
+        optOuts: [], // this.props.organizationData.organization.optOuts, // <= doesn't scale
+        datawarehouseAvailable: this.props.campaignData.campaign.datawarehouseAvailable,
+        jobResultMessage: ((this.props.pendingJobsData.campaign.pendingJobs.filter((job) => (/contacts/.test(job.jobType)))[0] || {}).result_message || '')
       }
     }, {
       title: 'Texters',
@@ -276,6 +337,7 @@ class AdminCampaignEdit extends React.Component {
     let sectionIsSaving = false
     let relatedJob = null
     let savePercent = 0
+    let jobMessage = null
     if (pendingJobs.length > 0) {
       if (section.title === 'Contacts') {
         relatedJob = pendingJobs.filter((job) => (job.jobType === 'upload_contacts' || job.jobType === 'contact_sql'))[0]
@@ -287,12 +349,14 @@ class AdminCampaignEdit extends React.Component {
     }
 
     if (relatedJob) {
-      sectionIsSaving = true
+      sectionIsSaving = !relatedJob.result_message
       savePercent = relatedJob.status
+      jobMessage = relatedJob.result_message
     }
     return {
       sectionIsSaving,
-      savePercent
+      savePercent,
+      jobMessage
     }
   }
 
@@ -304,7 +368,7 @@ class AdminCampaignEdit extends React.Component {
       <ContentComponent
         onChange={this.handleChange}
         formValues={formValues}
-        saveLabel={this.isNew() ? 'Next' : 'Save'}
+        saveLabel={this.isNew() ? 'Save and goto next section' : 'Save'}
         saveDisabled={shouldDisable}
         ensureComplete={this.props.campaignData.campaign.isStarted}
         onSubmit={this.handleSubmit}
@@ -355,7 +419,8 @@ class AdminCampaignEdit extends React.Component {
   }
 
   renderStartButton() {
-    let isCompleted = this.props.pendingJobsData.campaign.pendingJobs.length === 0
+    let isCompleted = this.props.pendingJobsData.campaign
+      .pendingJobs.filter((job) => /Error/.test(job.result_message || '')).length === 0
     this.sections().forEach((section) => {
       if (section.blocksStarting && !this.checkSectionCompleted(section) || !this.checkSectionSaved(section)) {
         isCompleted = false
@@ -407,8 +472,8 @@ class AdminCampaignEdit extends React.Component {
   }
 
   render() {
-    const { expandedSection } = this.state
     const sections = this.sections()
+    const { expandedSection } = this.state
     return (
       <div>
         {this.renderHeader()}
@@ -513,13 +578,14 @@ const mapQueriesToProps = ({ ownProps }) => ({
           jobType
           assigned
           status
+          result_message
         }
       }
     }`,
     variables: {
       campaignId: ownProps.params.campaignId
     },
-    pollInterval: 10000
+    pollInterval: 60000
   },
   campaignData: {
     query: gql`query getCampaign($campaignId: String!) {
@@ -530,16 +596,13 @@ const mapQueriesToProps = ({ ownProps }) => ({
     variables: {
       campaignId: ownProps.params.campaignId
     },
-    pollInterval: 10000
+    pollInterval: 60000
   },
   organizationData: {
     query: gql`query getOrganizationData($organizationId: String!, $role: String!) {
       organization(id: $organizationId) {
         id
         uuid
-        optOuts {
-          cell
-        }
         texters: people(role: $role) {
           id
           firstName
@@ -551,15 +614,19 @@ const mapQueriesToProps = ({ ownProps }) => ({
       organizationId: ownProps.params.organizationId,
       role: 'TEXTER'
     },
-    pollInterval: 10000
+    pollInterval: 20000
   },
   availableActionsData: {
-    query: gql`query getAction {
-      availableActions {
+    query: gql`query getActions($organizationId: String!) {
+      availableActions(organizationId: $organizationId) {
         name
         display_name
+        instructions
       }
     }`,
+    variables: {
+      organizationId: ownProps.params.organizationId
+    },
     forceFetch: true
   }
 })
@@ -590,7 +657,7 @@ const mapMutationsToProps = () => ({
       }`,
     variables: { campaignId }
   }),
-  editCampaign: function(campaignId, campaign) {
+  editCampaign(campaignId, campaign) {
     return ({
       mutation: gql`
         mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {

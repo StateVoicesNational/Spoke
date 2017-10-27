@@ -10,7 +10,7 @@ const InteractionStep = thinky.createModel('interaction_step', type.object().sch
   script: optionalString(),
   created_at: timestamp(),
 
-  //Previously there were answer options, and no such thing as
+  // Previously there were answer options, and no such thing as
   // parents/ancestors.  This was pretty cool, in-theory
   // since you could have many paths that led into a unified
   // path.  However, the UI didn't allow it, so we are going
@@ -24,5 +24,6 @@ const InteractionStep = thinky.createModel('interaction_step', type.object().sch
 }).allowExtra(false))
 
 InteractionStep.ensureIndex('campaign_id')
+InteractionStep.ensureIndex('parent_interaction_id')
 
 export default InteractionStep

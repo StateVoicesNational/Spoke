@@ -28,7 +28,9 @@ class TexterTodoList extends React.Component {
       }).filter((ele) => ele !== null)
   }
   componentDidMount() {
-    this.props.data.refetch();
+    this.props.data.refetch()
+    // re-asserts polling after manual refresh
+    // this.props.data.startPolling(5000)
   }
 
   termsAgreed() {
@@ -104,8 +106,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
         isOptedOut: false,
         validTimezone: false
       }
-    },
-    pollInterval: 5000
+    }
   }
 })
 

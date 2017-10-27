@@ -68,9 +68,9 @@ export default class CampaignContactsForm extends React.Component {
       errors.push('Do not include a trailing (or any) ";"')
     }
     if (!errors.length) {
-      this.setState({contactSqlError: null})
+      this.setState({ contactSqlError: null })
     } else {
-      this.setState({contactSqlError: errors.join(', ')})
+      this.setState({ contactSqlError: errors.join(', ') })
     }
   }
 
@@ -194,15 +194,21 @@ export default class CampaignContactsForm extends React.Component {
     const { contactUploadError, contactSqlError } = this.state
     return (
       <div>
+        {!this.props.jobResultMessage ? '' : (
+            <div>
+              <CampaignFormSectionHeading title='Job Outcome' />
+              <div>{this.props.jobResultMessage}</div>
+            </div>
+        )}
         <GSForm
           schema={yup.object({
             contactSql: yup.string()
           })}
           onSubmit={(formValues) => {
             // sets values locally
-            this.setState({...formValues})
+            this.setState({ ...formValues })
             // triggers the parent to update values
-            this.props.onChange({...formValues})
+            this.props.onChange({ ...formValues })
             // and now do whatever happens when clicking 'Next'
             this.props.onSubmit()
           }}
@@ -302,5 +308,6 @@ CampaignContactsForm.propTypes = {
   ensureComplete: type.bool,
   onSubmit: type.func,
   saveDisabled: type.bool,
-  saveLabel: type.string
+  saveLabel: type.string,
+  jobResultMessage: type.string
 }

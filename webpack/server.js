@@ -46,6 +46,6 @@ const app = new WebpackDevServer(compiler, {
   }
 })
 
-app.listen(webpackPort, () => {
+app.listen(webpackPort || process.env.PORT, () => {
   log.info(`Webpack dev server is now running on http://${webpackHost}:${webpackPort}`)
 })

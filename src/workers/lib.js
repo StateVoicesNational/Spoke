@@ -14,16 +14,16 @@ export async function updateJob(job, percentComplete) {
 
 export async function getNextJob() {
   let nextJob = await r.table('job_request')
-      .filter({'assigned': false})
+      .filter({ 'assigned': false })
       .orderBy('created_at')
       .limit(1)(0)
   if (nextJob) {
-      const updateResults = await r.table('job_request')
+    const updateResults = await r.table('job_request')
         .get(nextJob.id)
         .update({ assigned: true })
-      if (updateResults.replaced !== 1) {
-        nextJob = null
-      }
+    if (updateResults.replaced !== 1) {
+      nextJob = null
+    }
   }
   return nextJob
 }
