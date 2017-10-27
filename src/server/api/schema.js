@@ -92,7 +92,8 @@ import { uploadContacts,
        } from '../../workers/jobs'
 const uuidv4 = require('uuid').v4
 
-const JOBS_SAME_PROCESS = !!process.env.JOBS_SAME_PROCESS
+const JOBS_SAME_PROCESS = !!(process.env.JOBS_SAME_PROCESS || global.JOBS_SAME_PROCESS)
+const JOBS_SYNC = !!(process.env.JOBS_SYNC || global.JOBS_SYNC)
 
 const rootSchema = `
   input CampaignContactInput {
@@ -132,6 +133,7 @@ const rootSchema = `
   input TexterInput {
     id: String
     needsMessageCount: Int
+    contactsCount: Int
   }
 
   input CampaignInput {
@@ -251,7 +253,7 @@ async function editCampaign(id, campaign, loaders, user) {
       payload: compressedString.toString('base64')
     })
     if (JOBS_SAME_PROCESS) {
-      uploadContacts(job).then()
+      uploadContacts(job)
     }
   }
   if (campaign.hasOwnProperty('contactSql')
@@ -266,7 +268,7 @@ async function editCampaign(id, campaign, loaders, user) {
       payload: campaign.contactSql
     })
     if (JOBS_SAME_PROCESS) {
-      loadContactsFromDataWarehouse(job).then()
+      loadContactsFromDataWarehouse(job)
     }
   }
   if (campaign.hasOwnProperty('texters')) {
@@ -283,7 +285,12 @@ async function editCampaign(id, campaign, loaders, user) {
     })
 
     if (JOBS_SAME_PROCESS) {
-      assignTexters(job).then()
+      if (JOBS_SYNC) {
+        await assignTexters(job)
+      }
+      else {
+        assignTexters(job)
+      }
     }
   }
   if (campaign.hasOwnProperty('interactionSteps')) {
@@ -300,7 +307,7 @@ async function editCampaign(id, campaign, loaders, user) {
     })
 
     if (JOBS_SAME_PROCESS) {
-      createInteractionSteps(job).then()
+      createInteractionSteps(job)
     }
   }
 
@@ -381,14 +388,14 @@ const rootMutations = {
         })
       })
       if (JOBS_SAME_PROCESS) {
-        exportCampaign(newJob).then()
+        exportCampaign(newJob)
       }
       return newJob
     },
     editOrganizationRoles: async (_, { userId, organizationId, roles }, { user, loaders }) => {
-      const currentRoles = r.table('user_organization')
-        .getAll([organizationId, user.id], { index: 'organization_user' })
-        .pluck('role')('role')
+      const currentRoles = (await r.knex('user_organization')
+        .where({ organization_id: organizationId,
+                user_id: userId }).select('role')).map((res) => (res.role))
       const oldRoleIsOwner = currentRoles.indexOf('OWNER') !== -1
       const newRoleIsOwner = roles.indexOf('OWNER') !== -1
       const roleRequired = (oldRoleIsOwner || newRoleIsOwner) ? 'OWNER' : 'ADMIN'
@@ -399,7 +406,7 @@ const rootMutations = {
       currentRoles.forEach(async (curRole) => {
         if (roles.indexOf(curRole) === -1) {
           await r.table('user_organization')
-            .getAll([organizationId, user.id], { index: 'organization_user' })
+            .getAll([organizationId, userId], { index: 'organization_user' })
             .filter({ role: curRole })
             .delete()
         }
@@ -678,7 +685,7 @@ const rootMutations = {
       if (JOBS_SAME_PROCESS) {
         const service = serviceMap[messageInstance.service || process.env.DEFAULT_SERVICE]
         log.info(`Sending (${service}): ${messageInstance.user_number} -> ${messageInstance.contact_number}\nMessage: ${messageInstance.text}`)
-        service.sendMessage(messageInstance).then()
+        service.sendMessage(messageInstance)
       }
 
       return contact

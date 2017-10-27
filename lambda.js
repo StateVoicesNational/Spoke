@@ -1,8 +1,15 @@
 'use strict'
 const AWS = require('aws-sdk')
 const awsServerlessExpress = require('aws-serverless-express')
+const app = require('./build/server/server/index')
+const server = awsServerlessExpress.createServer(app.default)
+const jobs = require('./build/server/workers/job-processes')
 
-// NOTE we lazy-load the modules, so that we can possibly add environment variables that affect the load earlier
+// NOTE: the downside of loading above is environment variables are initially loaded immediately,
+//       so changing them means that the code must test environment variable inline (rather than use a const set on-load)
+// We should NOT load app and server inside the handler, or all connection pools and state are re-instantiated per-request:
+// See: http://docs.aws.amazon.com/lambda/latest/dg/best-practices.html#function-code
+// "Separate the Lambda handler (entry point) from your core logic"
 
 exports.handler = (event, context) => {
   if (process.env.LAMBDA_DEBUG_LOG) {
@@ -10,8 +17,6 @@ exports.handler = (event, context) => {
   }
   if (!event.command) {
     // default web server stuff
-    const app = require('./build/server/server/index')
-    const server = awsServerlessExpress.createServer(app.default)
     const startTime = (context.getRemainingTimeInMillis ? context.getRemainingTimeInMillis() : 0)
     const webResponse = awsServerlessExpress.proxy(server, event, context)
     if (process.env.DEBUG_SCALING) {
@@ -30,7 +35,6 @@ exports.handler = (event, context) => {
         process.env[a] = event.env[a]
       }
     }
-    const jobs = require('./build/server/workers/job-processes')
     console.log('Running ' + event.command)
     if (event.command in jobs) {
       const job = jobs[event.command]

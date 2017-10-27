@@ -209,13 +209,12 @@ it('should create a test campaign', async () => {
   const campaignTitle = "test campaign"
   testCampaign = await createCampaign(testAdminUser, campaignTitle, "test description", testOrganization.data.createOrganization.id)
 
-  expect (testCampaign.data.createCampaign.title).toBe(campaignTitle)
+  expect(testCampaign.data.createCampaign.title).toBe(campaignTitle)
 })
 
 it('should create campaign contacts', async () => {
   const contact = await createContact(testCampaign.data.createCampaign.id)
-
-  expect (contact.campaign_id).toBe(parseInt(testCampaign.data.createCampaign.id))
+  expect(contact.campaign_id).toBe(parseInt(testCampaign.data.createCampaign.id))
 })
 
 it('should add texters to a organization', async () => {
@@ -240,7 +239,64 @@ it('should add texters to a organization', async () => {
   expect(result.data.joinOrganization.id).toBeTruthy()
 })
 
-// it('should assign texters to campaign contacts', async () => {})
+it('should assign texters to campaign contacts', async () => {
+  const campaignEditQuery = `
+  mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {
+    editCampaign(id: $campaignId, campaign: $campaign) {
+      id
+      title
+      description
+      dueBy
+      isStarted
+      isArchived
+      contactsCount
+      datawarehouseAvailable
+      customFields
+      texters {
+        id
+        firstName
+        assignment(campaignId:$campaignId) {
+          contactsCount
+          needsMessageCount: contactsCount(contactsFilter:{messageStatus:\"needsMessage\"})
+        }
+      }
+      interactionSteps {
+        id
+        script
+        question {
+          text
+          answerOptions {
+            value
+            action
+            nextInteractionStep {
+              id
+            }
+          }
+        }
+      }
+      cannedResponses {
+        id
+        title
+        text
+      }
+    }
+  }`
+  const context = getContext({user: testAdminUser})
+  const updateCampaign = Object.assign({}, testCampaign.data.createCampaign)
+  const campaignId = updateCampaign.id
+  updateCampaign.texters = [{
+    id: testTexterUser.id
+  }]
+  delete(updateCampaign.id)
+  delete(updateCampaign.contacts)
+  const variables = {
+    campaignId: campaignId,
+    campaign: updateCampaign
+  }
+  const result = await graphql(mySchema, campaignEditQuery, rootValue, context, variables)
+  expect(result.data.editCampaign.texters.length).toBe(1)
+  expect(result.data.editCampaign.texters[0].assignment.contactsCount).toBe(1)
+})
 
 // it('should save a campaign script composed of interaction steps', async() => {})
 

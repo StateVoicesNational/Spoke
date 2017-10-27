@@ -31,6 +31,56 @@ async function getTimezoneByZip(zip) {
   }
 }
 
+export async function processSqsMessages() {
+
+  // hit endpoint on SQS
+  // ask for a list of messages from SQS (with quantity tied to it)
+  // if SQS has messages, process messages into pending_message_part and dequeue messages (mark them as handled)
+  // if SQS doesnt have messages, exit
+
+  if(!process.env.TWILIO_SQS_QUEUE_URL){
+    return
+  }
+
+  const sqs = new AWS.SQS()
+
+  const params = {
+    QueueUrl: process.env.TWILIO_SQS_QUEUE_URL,
+    AttributeNames: ['All'],
+    MessageAttributeNames: ['string'],
+    MaxNumberOfMessages: 10,
+    VisibilityTimeout: 60,
+    WaitTimeSeconds: 10,
+    ReceiveRequestAttemptId: 'string'
+  }
+
+  const p = new Promise
+
+  sqs.receiveMessage( params, async ( err, data ) => {
+    if( err ){
+      console.log( err, err.stack )
+      p.reject( err )
+    } else if ( data.Messages ){
+      console.log( data )
+      for( let i = 0; i < data.Messages.length; i ++) {
+        const body = message.Body
+        console.log( 'processing sqs queue:', body );
+        const twilioMessage = JSON.parse( body )
+
+        await serviceMap.twilio.handleIncomingMessage( twilioMessage )
+
+        sqs.deleteMessage({ QueueUrl: process.env.TWILIO_SQS_QUEUE_URL, ReceiptHandle:      message.ReceiptHandle }, ( err, data ) => {
+          if (err) console.log( err, err.stack ) // an error occurred
+          else     console.log( data )           // successful response
+        })
+      }
+      p.resolve()
+    }
+  })
+
+  return p
+}
+
 export async function uploadContacts(job) {
   const campaignId = job.campaign_id
   // We do this deletion in schema.js but we do it again here just in case the the queue broke and we had a backlog of contact uploads for one campaign
@@ -232,6 +282,7 @@ export async function createInteractionSteps(job) {
               campaign_id: id,
               question: '',
               script: '',
+              answer_actions: option.action,
               answer_option: option.value,
               parent_interaction_id: dbInteractionStep.id
             }).catch(log.error)
@@ -279,11 +330,14 @@ export async function assignTexters(job) {
   const texters = payload.texters
   const currentAssignments = await r.knex('assignment')
     .where('assignment.campaign_id', cid)
-    .joinRaw('left join campaign_contact '
-             + 'ON (campaign_contact.assignment_id = assignment.id '
-             + "AND campaign_contact.message_status = 'needsMessage')")
+    .joinRaw('left join campaign_contact allcontacts'
+             + ' ON (allcontacts.assignment_id = assignment.id)')
     .groupBy('user_id', 'assignment.id')
-    .select('user_id', 'assignment.id as id', r.knex.raw('COUNT(campaign_contact.id) as needs_message_count'))
+    .select('user_id',
+            'assignment.id as id',
+            r.knex.raw("SUM(CASE WHEN allcontacts.message_status = 'needsMessage' THEN 1 ELSE 0 END) as needs_message_count"),
+            r.knex.raw('COUNT(allcontacts.id) as full_contact_count')
+           )
     .catch(log.error)
 
   const unchangedTexters = {}
@@ -294,13 +348,22 @@ export async function assignTexters(job) {
     if (texter && texter.needsMessageCount === parseInt(assignment.needs_message_count)) {
       unchangedTexters[assignment.user_id] = true
       return null
-    } else {
-      const numDifferent = assignment.needs_message_count - (texter && texter.needsMessageCount || 0)
-      if (numDifferent > 0) { // got less than before
-        demotedTexters[assignment.id] = numDifferent
+    } else if (texter) { //assignment change
+      // If there is a delta between client and server, then accomodate delta (See #322)
+      const clientMessagedCount = texter.contactsCount - texter.needsMessageCount
+      const serverMessagedCount = assignment.full_contact_count - assignment.needs_message_count
+
+      const numDifferent = ((texter.needsMessageCount || 0)
+                            - assignment.needs_message_count
+                            - Math.max(0, serverMessagedCount - clientMessagedCount))
+
+      if (numDifferent < 0) { // got less than before
+        demotedTexters[assignment.id] = -numDifferent
       } else { // got more than before: assign the difference
-        texter.needsMessageCount = -numDifferent
+        texter.needsMessageCount = numDifferent
       }
+      return assignment
+    } else { // new texter
       return assignment
     }
   }).filter((ele) => ele !== null)
@@ -488,14 +551,17 @@ export async function exportCampaign(job) {
 
       const questionResponses = await r.table('question_response')
         .getAll(contact.id, { index: 'campaign_contact_id' })
+
       Object.keys(allQuestions).forEach((stepId) => {
         let value = ''
         questionResponses.forEach((response) => {
-          if (response.interaction_step_id === stepId) {
+          if (response.interaction_step_id === parseInt(stepId)) {
             value = response.value
           }
         })
+
         contactRow[`question[${allQuestions[stepId]}]`] = value
+        
       })
 
       return contactRow
