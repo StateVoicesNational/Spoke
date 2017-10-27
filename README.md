@@ -18,9 +18,14 @@ This is generated from [react-apollo-starter-kit](https://github.com/saikat/reac
   <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy">
 </a>
 
-WARNING --> this template will incur costs
+WARNING --> this template will [incur costs](https://elements.heroku.com/addons/heroku-postgresql#pricing)
 
 Follow up instructions located [here](https://github.com/MoveOnOrg/Spoke/blob/master/docs/HOWTO_HEROKU_DEPLOY.md)
+
+Here is a link to a free version (but has a maximum total message (and contact) limit of 10,000:
+<a href="https://heroku.com/deploy?template=https://github.com/schuyler1d/Spoke/tree/wip-1process-heroku-friendly">
+  <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy">
+</a>
 
 
 ## Getting started
