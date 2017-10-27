@@ -133,6 +133,26 @@ export default class CampaignInteractionStepsForm extends React.Component {
             onChange={this.handleFormChange.bind(this)}
           >
             {interactionStep.parentInteractionId ? <DeleteIcon style={styles.pullRight} onTouchTap={() => this.deleteStep(interactionStep.id).bind(this)} /> : ''}
+            { this.props.availableActions && this.props.availableActions.length ?
+              (<div>
+               <Form.Field
+                name={actionFieldname}
+                type='select'
+                choices={[
+                  {'value': '', 'label': 'Action...'},
+                  ...this.props.availableActions.map(
+                    action => ({'value': action.name, 'label': action.display_name})
+                  )
+                ]}
+              />
+               <IconButton tooltip={
+                 answer.action
+                   ? this.props.availableActions.filter((a) => a.name === answer.action)[0].instructions
+                   : "An action is something that is triggered by this answer being chosen, often in an outside system"}>
+               { answer.action ? <HelpIcon /> : <HelpIconOutline /> }
+               </IconButton>
+               </div>)
+            : '' }
             {interactionStep.parentInteractionId ? <Form.Field
               name='answerOption'
               label='Answer'
@@ -154,6 +174,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
               fullWidth
               hintText='A question for texters to answer. E.g. Can this person attend the event?'
             />
+
           </GSForm>
         </CardText>
       </Card>
@@ -205,5 +226,6 @@ CampaignInteractionStepsForm.propTypes = {
   onSubmit: type.func,
   customFields: type.array,
   saveLabel: type.string,
-  errors: type.array
+  errors: type.array,
+  availableActions: type.array
 }

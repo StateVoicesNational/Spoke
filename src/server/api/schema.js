@@ -15,7 +15,6 @@ import {
   UserOrganization,
   JobRequest,
   User,
-  InteractionStep,
   r,
   datawarehouse
 } from '../models'

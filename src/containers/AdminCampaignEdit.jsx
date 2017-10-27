@@ -205,7 +205,7 @@ class AdminCampaignEdit extends React.Component {
         newCampaign.texters = newCampaign.texters.map((texter) => ({
           id: texter.id,
           needsMessageCount: texter.assignment.needsMessageCount,
-          maxContacts: texter.assignment.maxContacts
+          maxContacts: texter.assignment.maxContacts,
           contactsCount: texter.assignment.contactsCount
         }))
       }
