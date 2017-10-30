@@ -102,7 +102,15 @@ const inlineStyles = {
 export default class CampaignTextersForm extends React.Component {
   state = {
     autoSplit: false,
-    focusedTexter: null
+    focusedTexter: null,
+    useDynamicAssignment: this.formValues().useDynamicAssignment
+  }
+
+  handleToggleChange(){
+    this.setState({
+      useDynamicAssignment: !this.state.useDynamicAssignment
+    })
+    this.props.onChange({useDynamicAssignment: !this.state.useDynamicAssignment})
   }
 
   onChange = (formValues) => {
@@ -125,6 +133,8 @@ export default class CampaignTextersForm extends React.Component {
       }
 
       let convertedNeedsMessageCount = parseInt(newTexter.assignment.needsMessageCount, 10)
+      let convertedMaxContacts = (!!newTexter.assignment.maxContacts ? parseInt(newTexter.assignment.maxContacts) : null)
+
       if (isNaN(convertedNeedsMessageCount)) {
         convertedNeedsMessageCount = 0
       }
@@ -147,7 +157,8 @@ export default class CampaignTextersForm extends React.Component {
         assignment: {
           ...newTexter.assignment,
           contactsCount: convertedNeedsMessageCount + messagedCount,
-          needsMessageCount: convertedNeedsMessageCount
+          needsMessageCount: convertedNeedsMessageCount,
+          maxContacts: convertedMaxContacts
         }
       }
     })
@@ -221,7 +232,8 @@ export default class CampaignTextersForm extends React.Component {
     texters: yup.array().of(yup.object({
       id: yup.string(),
       assignment: yup.object({
-        needsMessageCount: yup.string()
+        needsMessageCount: yup.string(),
+        maxContacts: yup.string().nullable()
       })
     }))
   })
@@ -355,6 +367,17 @@ export default class CampaignTextersForm extends React.Component {
               direction={0}
             />
           </div>
+          <div className={css(styles.input)}>
+            <Form.Field
+              name={`texters[${index}].assignment.maxContacts`}
+              hintText='Max'
+              fullWidth
+              onFocus={() => this.setState({ focusedTexter: texter.id })}
+              onBlur={() => this.setState({
+                focusedTexter: null
+              })}
+            />
+          </div>
           <div className={css(styles.removeButton)}>
             <IconButton
               onTouchTap={async () => {
@@ -386,11 +409,11 @@ export default class CampaignTextersForm extends React.Component {
   }
 
   render() {
-    const { organizationUuid } = this.props
+    const { organizationUuid, campaignId } = this.props
     let subtitle = ''
     subtitle = (
       <div>
-        <OrganizationJoinLink organizationUuid={organizationUuid} />
+        <OrganizationJoinLink organizationUuid={organizationUuid} campaignId={campaignId} />
       </div>
     )
 
@@ -405,6 +428,13 @@ export default class CampaignTextersForm extends React.Component {
           title='Who should send the texts?'
           subtitle={subtitle}
         />
+        <div>
+          <Toggle
+            label='Dynamically assign contacts'
+            toggled={this.state.useDynamicAssignment}
+            onToggle={this.handleToggleChange.bind(this)}
+          />
+        </div>
         <GSForm
           schema={this.formSchema}
           value={this.formValues()}
@@ -435,7 +465,7 @@ export default class CampaignTextersForm extends React.Component {
                 className={css(styles.splitToggle)}
               >
                 <Toggle
-                  label='Auto-split assignments'
+                  label='Split assignments'
                   style={{
                     width: 'auto',
                     marginLeft: 'auto'

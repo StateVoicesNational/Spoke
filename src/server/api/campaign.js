@@ -9,6 +9,7 @@ export const schema = `
   type CampaignStats {
     sentMessagesCount: Int
     receivedMessagesCount: Int
+    optOutsCount: Int
   }
 
   type JobRequest {
@@ -38,6 +39,10 @@ export const schema = `
     stats: CampaignStats,
     pendingJobs: [JobRequest]
     datawarehouseAvailable: Boolean
+    useDynamicAssignment: Boolean
+    introHtml: String
+    primaryColor: String
+    logoImageUrl: String
   }
 `
 
@@ -76,6 +81,13 @@ export const resolvers = {
         .eqJoin('id', r.table('message'), { index: 'assignment_id' })
         .filter({ is_from_contact: true })
         .count()
+    ),
+    optOutsCount: async (campaign) => (
+      r.table('campaign_contact')
+        .getAll(campaign.id, { index: 'campaign_id' })
+        //TODO: NEEDSTESTING -- see above setMessagesCount()
+        .filter({ is_opted_out: true })
+        .count()
     )
   },
   Campaign: {
@@ -85,7 +97,11 @@ export const resolvers = {
       'description',
       'dueBy',
       'isStarted',
-      'isArchived'
+      'isArchived',
+      'useDynamicAssignment',
+      'introHtml',
+      'primaryColor',
+      'logoImageUrl'
     ], Campaign),
     organization: async (campaign, _, { loaders }) => (
       loaders.organization.load(campaign.organization_id)

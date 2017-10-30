@@ -5,6 +5,7 @@ import loadData from '../containers/hoc/load-data'
 import { applyScript } from '../lib/scripts'
 import gql from 'graphql-tag'
 import FlatButton from 'material-ui/FlatButton'
+import RaisedButton from 'material-ui/RaisedButton'
 import Dialog from 'material-ui/Dialog'
 import Badge from 'material-ui/Badge'
 import moment from 'moment'
@@ -27,6 +28,12 @@ const inlineStyles = {
 const styles = StyleSheet.create({
   container: {
     margin: '20px 0'
+  },
+  image: {
+    position: 'absolute', 
+    height: '70%', 
+    top: '20px', 
+    right: '20px'
   }
 })
 
@@ -44,91 +51,37 @@ class AssignmentSummary extends Component {
     }
   }
 
-  createMessage(text, texterId, assignmentId, contactCell) {
-    return {
-      contactNumber: contactCell,
-      userId: texterId,
-      text,
-      assignmentId
-    }
-  }
-
-  sendMessages = () => {
-    const assignmentData = this.props.data.assignment
-    const contacts = assignmentData.contacts
-    const texter = assignmentData.texter
-    const contactMessages = contacts.map(contact => {
-      const script = contact.currentInteractionStepScript
-      const text = applyScript({
-        contact,
-        texter,
-        script
-      })
-      return {
-        campaignContactId: contact.id,
-        message: this.createMessage(
-          text,
-          texter.id,
-          assignmentData.id,
-          contact.cell
-        )
-      }
-    })
-    this.props.mutations.sendMessages(contactMessages)
-    this.setState({ open: false })
-  }
-
-  handleClose = () => {
-    this.setState({ open: false })
-  }
-
-  showConfirmationDialog = () => {
-    this.setState({ open: true })
-  }
-
-
-  renderBadgedButton({ assignment, title, count, primary, disabled, contactsFilter }) {
-    return (count === 0 ? '' :
-      <Badge
+  renderBadgedButton({ assignment, title, count, primary, disabled, contactsFilter, hideIfZero }) {
+    if (count === 0 && hideIfZero) { return '' }
+    if (count === 0){
+      return (
+        <RaisedButton
+          disabled={disabled}
+          label={title}
+          primary={primary && !disabled}
+          onTouchTap={() => this.goToTodos(contactsFilter, assignment.id)}
+        />)
+    } else {
+      return (<Badge
         key={title}
         badgeStyle={inlineStyles.badge}
         badgeContent={count}
         primary={primary && !disabled}
         secondary={!primary && !disabled}
       >
-        <FlatButton
+        <RaisedButton
           disabled={disabled}
           label={title}
           onTouchTap={() => this.goToTodos(contactsFilter, assignment.id)}
         />
-      </Badge>
-    )
-  }
-
-  renderTextAllButton({ title, count, primary, disabled }) {
-    if (window.ALLOW_SEND_ALL) {
-      return (count === 0 ? '' :
-        <Badge
-          key={title}
-          badgeStyle={inlineStyles.badge}
-          badgeContent={count}
-          primary={primary && !disabled}
-          secondary={!primary && !disabled}
-        >
-          <FlatButton
-            disabled={disabled}
-            label={title}
-            onTouchTap={this.showConfirmationDialog}
-          />
-        </Badge>
-      )
+      </Badge>)
     }
-    return ''
   }
 
   render() {
     const { assignment, unmessagedCount, unrepliedCount, badTimezoneCount } = this.props
-    const { title, description, dueBy } = assignment.campaign
+    const { title, description, dueBy, primaryColor, logoImageUrl, introHtml } = assignment.campaign
+    console.log("ASS", assignment.campaign)
     const actions = [
       <FlatButton
         label='No'
@@ -149,31 +102,22 @@ class AssignmentSummary extends Component {
           <CardTitle
             title={title}
             subtitle={`${description} - ${moment(dueBy).format('MMM D YYYY')}`}
-          />
+            style={{backgroundColor: primaryColor}}
+            children={logoImageUrl ? <img src={logoImageUrl} className={css(styles.image)} /> : ''}
+          >             
+          </CardTitle>
           <Divider />
-          <CardActions>
+          <div style={{margin: '20px'}}>
+            <div dangerouslySetInnerHTML={{ __html: introHtml }} />
+          </div>
+          <CardActions style={{textAlign: 'center'}}>
             {this.renderBadgedButton({
               assignment,
-              title: 'Send first texts',
-              count: unmessagedCount,
-              primary: true,
-              disabled: false,
-              contactsFilter: 'text'
-            })}
-            {this.renderTextAllButton({
-              title: 'Send All first texts',
-              count: unmessagedCount,
-              primary: true,
-              disabled: false,
-              contactsFilter: 'text-all'
-            })}
-            {this.renderBadgedButton({
-              assignment,
-              title: 'Send replies',
+              title: 'Send messages',
               count: unrepliedCount,
-              primary: false,
+              primary: true,
               disabled: false,
-              contactsFilter: 'reply'
+              contactsFilter: 'all'
             })}
             {this.renderBadgedButton({
               assignment,
@@ -181,7 +125,8 @@ class AssignmentSummary extends Component {
               count: badTimezoneCount,
               primary: false,
               disabled: true,
-              contactsFilter: null
+              contactsFilter: null,
+              hideIfZero: true
             })}
           </CardActions>
         </Card>
@@ -223,6 +168,15 @@ const mapQueriesToProps = ({ ownProps }) => ({
         campaign {
           id
           isArchived
+          customFields
+          useDynamicAssignment
+          organization {
+            id
+            textingHoursEnforced
+            textingHoursStart
+            textingHoursEnd
+            threeClickEnabled
+          }
         }
         contacts(contactsFilter: $contactsFilter) {
           id
@@ -259,26 +213,4 @@ const mapQueriesToProps = ({ ownProps }) => ({
   }
 })
 
-const mapMutationsToProps = () => ({
-  sendMessages: (contactMessages) => ({
-    mutation: gql`
-      mutation sendMessages($contactMessages: [ContactMessage]) {
-        sendMessages(contactMessages: $contactMessages) {
-          id
-          messageStatus
-          messages {
-            id
-            createdAt
-            text
-            isFromContact
-          }
-        }
-      }
-    `,
-    variables: {
-      contactMessages
-    }
-  })
-})
-
-export default loadData(withRouter(AssignmentSummary), { mapQueriesToProps, mapMutationsToProps })
+export default loadData(withRouter(AssignmentSummary), { mapQueriesToProps })

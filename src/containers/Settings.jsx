@@ -135,7 +135,11 @@ class Settings extends React.Component {
                 <span className={css(styles.sectionLabel)}>
                   Texting hours:
                 </span>
-                <span className={css(styles.textingHoursSpan)}>{formatTextingHours(organization.textingHoursStart)} to {formatTextingHours(organization.textingHoursEnd)}</span> in contact's local time (or 12pm-6pm EST if timezone is unknown)
+                <span className={css(styles.textingHoursSpan)}>
+                  {formatTextingHours(organization.textingHoursStart)} to {formatTextingHours(organization.textingHoursEnd)}</span>
+                  {window.TZ ? (
+                    ` in your organisations local time. Timezone ${window.TZ}`
+                  ) : ' in contacts local time (or 12pm-6pm EST if timezone is unknown)'}
               </div>
             ) : ''}
           </CardText>

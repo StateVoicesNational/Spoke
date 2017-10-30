@@ -1,5 +1,4 @@
-import moment from 'moment'
-
+import moment from 'moment-timezone'
 
 const TIMEZONE_CONFIG = {
   missingTimeZone: {
@@ -10,13 +9,19 @@ const TIMEZONE_CONFIG = {
   }
 }
 
+
 export const getLocalTime = (offset, hasDST) => moment().utc().utcOffset((moment().isDST() && hasDST) ? offset + 1 : offset)
 
 export const isBetweenTextingHours = (offsetData, config) => {
   if (!config.textingHoursEnforced) {
     return true
   }
-
+  if (process.env.TZ) {
+    const today = moment.tz(process.env.TZ).format('YYYY-MM-DD')
+    const start = moment.tz(`${today}`, process.env.TZ).add(config.textingHoursStart, 'hours')
+    const stop = moment.tz(`${today}`, process.env.TZ).add(config.textingHoursEnd, 'hours')
+    return moment.tz(process.env.TZ).isBetween(start, stop, null, '[]')
+  }
   let offset
   let hasDST
   let allowedStart

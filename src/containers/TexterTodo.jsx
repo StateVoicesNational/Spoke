@@ -7,6 +7,7 @@ import gql from 'graphql-tag'
 class TexterTodo extends React.Component {
   componentWillMount() {
     const { assignment } = this.props.data
+    this.assignContactsIfNeeded()
     if (!assignment || assignment.campaign.isArchived) {
       this.props.router.push(
         `/app/${this.props.params.organizationId}/todos`
@@ -14,7 +15,25 @@ class TexterTodo extends React.Component {
     }
   }
 
-  refreshAssignmentContacts = () => this.props.data.refetch()
+  assignContactsIfNeeded = async (checkServer = false) => {
+    const { assignment } = this.props.data
+    if ((assignment.contacts.length == 0 || checkServer) && assignment.campaign.useDynamicAssignment) {
+      
+      const didAddContacts = await this.props.mutations.findNewCampaignContact(assignment.id, 1)
+
+      if (didAddContacts){
+        this.props.data.refetch()
+      } else {
+        this.props.router.push(
+          `/app/${this.props.params.organizationId}/todos`
+        )   
+      }
+    } 
+  }
+
+  refreshData = () => {
+    this.props.data.refetch()
+  }
 
   render() {
     const { assignment } = this.props.data
@@ -22,11 +41,12 @@ class TexterTodo extends React.Component {
     return (<AssignmentTexter
       assignment={assignment}
       contacts={contacts}
+      assignContactsIfNeeded={this.assignContactsIfNeeded.bind(this)}
+      refreshData={this.refreshData.bind(this)}
       onRefreshAssignmentContacts={this.refreshAssignmentContacts}
       organizationId={this.props.params.organizationId}
     />)
   }
-
 }
 
 TexterTodo.propTypes = {
@@ -62,6 +82,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
         campaign {
           id
           isArchived
+          useDynamicAssignment
           organization {
             id
             textingHoursEnforced
@@ -89,4 +110,20 @@ const mapQueriesToProps = ({ ownProps }) => ({
   }
 })
 
-export default loadData(withRouter(TexterTodo), { mapQueriesToProps })
+const mapMutationsToProps = () => ({
+  findNewCampaignContact: (assignmentId, numberContacts = 1) => ({
+    mutation: gql`
+      mutation findNewCampaignContact($assignmentId: String!, $numberContacts: Int!) {
+        findNewCampaignContact(assignmentId: $assignmentId, numberContacts: $numberContacts) {
+          id
+        }
+      }
+    `,
+    variables: {
+      assignmentId,
+      numberContacts
+    }
+  })
+})
+
+export default loadData(withRouter(TexterTodo), { mapQueriesToProps, mapMutationsToProps })

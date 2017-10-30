@@ -53,6 +53,10 @@ class CannedResponseMenu extends React.Component {
           anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
           targetOrigin={{ horizontal: 'left', vertical: 'bottom' }}
           onRequestClose={onRequestClose}
+          style={{
+            overflowY: 'scroll',
+            width: '75%'
+          }}
         >
           <List>
             {this.renderCannedResponses({ scripts: campaignCannedResponses, subheader: 'Suggested', showAddScriptButton: false })}

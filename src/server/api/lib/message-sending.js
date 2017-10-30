@@ -22,5 +22,5 @@ export async function saveNewIncomingMessage(messageInstance) {
     .getAll(messageInstance.assignment_id, { index: 'assignment_id' })
     .filter({ cell: messageInstance.contact_number })
     .limit(1)
-    .update({ message_status: 'needsResponse' })
+    .update({ message_status: 'needsResponse', updated_at: 'now()' })
 }
