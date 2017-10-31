@@ -23,9 +23,11 @@ async function getTimezoneByZip(zip) {
       return `${rangeZip[2]}_${rangeZip[3]}`
     } else {
       const zipDatum = await r.table('zip_code').get(zip)
-      if (zipDatum) {
+      if (zipDatum && zipDatum.timezone_offset && zipDatum.has_dst) {
         zipMemoization[zip] = `${zipDatum.timezone_offset}_${zipDatum.has_dst}`
         return zipMemoization[zip]
+      } else {
+        return ''
       }
     }
   }

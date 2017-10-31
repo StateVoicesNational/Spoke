@@ -4,6 +4,7 @@ import { exportCampaign, processSqsMessages, uploadContacts, assignTexters, crea
 import { runMigrations } from '../migrations'
 import { setupUserNotificationObservers } from '../server/notifications'
 
+export { seedZipCodes } from '../server/seeds/seed-zip-codes'
 
 /* Two process models are supported in this file.
    The main in both cases is to process jobs and send/receive messages
