@@ -105,6 +105,11 @@ const styles = StyleSheet.create({
       height: '280px'
     }
   },
+  textField: {
+    '@media(max-width: 350px)': {
+      overflowY: 'scroll !important'
+    }
+  },
   dialogActions: {
     marginTop: 20,
     display: 'flex',
@@ -748,6 +753,7 @@ class AssignmentTexterContact extends React.Component {
           onChange={this.handleMessageFormChange}
         >
           <Form.Field
+            className={css(styles.textField)}
             name='messageText'
             label='Your message'
             multiLine
