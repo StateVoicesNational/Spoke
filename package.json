@@ -34,7 +34,8 @@
     "dev-start": "nodemon -e js,jsx,md,mustache -w ./src --exec ./dev-tools/babel-run -- ./src/server",
     "generate-contacts": "./dev-tools/babel-run ./dev-tools/generate-contacts.js",
     "jest-test": "jest __test__/backend.test.js",
-    "dev": "nf start -w --procfile ./dev-tools/Procfile.dev"
+    "dev": "npm run tunnel | nf start -w --procfile ./dev-tools/Procfile.dev",
+    "tunnel": "node ./tunnel.js"
   },
   "repository": {
     "type": "git",
@@ -130,6 +131,7 @@
   "devDependencies": {
     "babel-eslint": "^6.1.2",
     "babel-jest": "^20.0.3",
+    "dotenv": "https://registry.npmjs.org/dotenv/-/dotenv-2.0.0.tgz",
     "eslint": "^2.9.0",
     "eslint-config-airbnb": "^9.0.1",
     "eslint-plugin-import": "^1.10.2",
@@ -139,6 +141,7 @@
     "jest": "^20.0.4",
     "jest-cli": "^20.0.4",
     "json2csv": "^3.6.2",
+    "ngrok": "^2.2.23",
     "nodemon": "^1.9.2",
     "react-hot-loader": "^1.3.0",
     "regenerator-runtime": "^0.10.5",
