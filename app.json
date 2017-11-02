@@ -52,7 +52,7 @@
     "SESSION_SECRET": {
       "description": "session secret",
       "required": true,
-      "value": "<changeme>"
+      "generator": "secret"
     },
 
     "DEFAULT_SERVICE": {
@@ -94,31 +94,31 @@
     "EMAIL_HOST": {
       "description": "for email notification integration",
       "required": false,
-      "value": "<changeme>"
+      "value": ""
     },
 
     "EMAIL_HOST_PASSWORD": {
       "description": "for email notification integration",
       "required": false,
-      "value": "<changeme>"
+      "value": ""
     },
 
     "EMAIL_HOST_USER": {
       "description": "for email notification integration",
       "required": false,
-      "value": "<changeme>"
+      "value": ""
     },
 
     "EMAIL_HOST_PORT": {
       "description": "for email notification integration",
       "required": false,
-      "value": "<changeme>"
+      "value": ""
     },
 
     "EMAIL_FROM": {
-      "description": "for email notification integration",
+      "description": "for email notification integration, the from email address",
       "required": false,
-      "value": "<changeme>"
+      "value": ""
     },
 
     "PHONE_NUMBER_COUNTRY": {

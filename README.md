@@ -18,15 +18,7 @@ This is generated from [react-apollo-starter-kit](https://github.com/saikat/reac
   <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy">
 </a>
 
-WARNING --> this template will [incur costs](https://elements.heroku.com/addons/heroku-postgresql#pricing)
-
 Follow up instructions located [here](https://github.com/MoveOnOrg/Spoke/blob/master/docs/HOWTO_HEROKU_DEPLOY.md)
-
-Here is a link to a free version (but has a maximum total message (and contact) limit of 10,000:
-<a href="https://heroku.com/deploy?template=https://github.com/schuyler1d/Spoke/tree/wip-1process-heroku-friendly">
-  <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy">
-</a>
-
 
 ## Getting started
 
@@ -54,11 +46,6 @@ If you want to create an invite via the home page "Login and get started" link, 
 
 See https://github.com/MoveOnOrg/Spoke/blob/master/docs/HOWTO-run_tests.md
 
-## Important TODOS
-Because  of issues with numbers getting marked with spam, we adopted aggressive number cycling to limit the number of texts sent from a specific number. We did not implement a corresponding process to unrent the numbers before shutting down the service, so two things are a high priority before putting Spoke back into production:
-1. Decide whether to keep the number cycling, since it might not be necessary on Twilio like it was on Nexmo
-2. If keeping it making sure there's a corresponding process to unrent unused numbers.
-3. Even if not keeping number cycling, there should be a process like this anyway to unrent numbers that haven't been used in X days anyway because volunteers come and go. However, cycling numbers every ~250 texts obviously racks up exponentially higher costs than just assigning a single number per volunteer.
 
 ## Helpful Dev Tips
 * Go to `localhost:3000/graphql` to mess around with the GraphQL API
