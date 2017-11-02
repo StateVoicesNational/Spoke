@@ -7,118 +7,10 @@
       { "url": "https://github.com/heroku/heroku-buildpack-nodejs"}
   ],
   "env": {
-    "NODE_ENV": {
-      "description": "node environment determines the application build/start process",
-      "required": true,
-      "value": "production"
-    },
-
     "SUPPRESS_SELF_INVITE": {
-      "description": "if you want to suppress an organizational invite creation when logging in, set this environment to 1",
-      "required": true,
-      "value": ""
-    },
-
-    "SUPPRESS_MIGRATIONS": {
-      "description": "to suppress table migration on server start up",
+      "description": "Should anonymous visitors be able to create new organizations from the home page? You will probably want to start the app with this off, and then after creating your own organization, come back here and set it to 1",
       "required": false,
       "value": ""
-    },
-
-    "JOBS_SAME_PROCESS": {
-      "description": "",
-      "required": true,
-      "value": "1"
-    },
-
-    "AWS_ACCESS_KEY_ID": {
-      "description": "in order to export data to an s3 bucket",
-      "required": true,
-      "value": ""
-    },
-
-    "AWS_SECRET_ACCESS_KEY": {
-      "description": "in order to export data to an s3 bucket",
-      "required": true,
-      "value": ""
-    },
-
-    "AWS_S3_BUCKET_NAME": {
-      "description": "in order to export data to an s3 bucket",
-      "required": true,
-      "value": ""
-    },
-
-    "OUTPUT_DIR": {
-      "description": "for production build placement",
-      "required": true,
-      "value": "./build"
-    },
-
-    "PUBLIC_DIR": {
-      "description": "for production build placement",
-      "required": true,
-      "value": "./build/client"
-    },
-
-    "ASSETS_DIR": {
-      "description": "for assets directory in production build placement",
-      "required": true,
-      "value": "./build/client/assets"
-    },
-
-    "ASSETS_MAP_FILE": {
-      "description": "for assets directory placement",
-      "required": true,
-      "value": "assets.json"
-    },
-
-    "CAMPAIGN_ID": {
-      "description": "",
-      "required": false,
-      "value": "campaign-id-hash"
-    },
-
-    "DB_PORT": {
-      "description": "to connect to postgres database",
-      "required": true,
-      "value": "5432"
-    },
-
-    "DB_NAME": {
-      "description": "database name created in heroku addon --> located in heroku postgres credentials",
-      "required": true,
-      "value": "<changeme>"
-    },
-
-    "DB_TYPE": {
-      "description": "to specify postgres database vs sqlite3",
-      "required": true,
-      "value": "pg"
-    },
-
-    "DB_MIN_POOL": {
-      "description": "for postgres pool on heroku",
-      "required": true,
-      "value": "0"
-    },
-
-    "DB_MAX_POOL": {
-      "description": "for postgres pool on heroku",
-      "required": true,
-      "value": "15"
-    },
-
-    "DB_USER": {
-      "description": "database user name --> located in heroku postgres credentials",
-      "required": true,
-      "value": "<changeme>"
-    },
-
-    "DB_PASSWORD": {
-      "description": "database user name --> located in heroku postgres credentials",
-      "required": true,
-      "value": "<changeme>"
     },
 
     "AUTH0_LOGIN_CALLBACK": {
@@ -160,7 +52,7 @@
     "SESSION_SECRET": {
       "description": "session secret",
       "required": true,
-      "value": "<changeme>"
+      "generator": "secret"
     },
 
     "DEFAULT_SERVICE": {
@@ -199,45 +91,110 @@
       "value": "https://<changeme>.herokuapp.com/twilio-message-report"
     },
 
+    "EMAIL_HOST": {
+      "description": "for email notification integration",
+      "required": false,
+      "value": ""
+    },
+
+    "EMAIL_HOST_PASSWORD": {
+      "description": "for email notification integration",
+      "required": false,
+      "value": ""
+    },
+
+    "EMAIL_HOST_USER": {
+      "description": "for email notification integration",
+      "required": false,
+      "value": ""
+    },
+
+    "EMAIL_HOST_PORT": {
+      "description": "for email notification integration",
+      "required": false,
+      "value": ""
+    },
+
+    "EMAIL_FROM": {
+      "description": "for email notification integration, the from email address",
+      "required": false,
+      "value": ""
+    },
+
     "PHONE_NUMBER_COUNTRY": {
       "description": "for international integration (when not us)",
       "required": true,
       "value": "US"
     },
 
-    "EMAIL_HOST": {
-      "description": "for email notification integration",
+    "AWS_ACCESS_KEY_ID": {
+      "description": "in order to export data to an s3 bucket",
       "required": false,
-      "value": "<changeme>"
+      "value": ""
     },
 
-    "EMAIL_HOST_PASSWORD": {
-      "description": "for email notification integration",
+    "AWS_SECRET_ACCESS_KEY": {
+      "description": "in order to export data to an s3 bucket",
       "required": false,
-      "value": "<changeme>"
+      "value": ""
     },
 
-    "EMAIL_HOST_USER": {
-      "description": "for email notification integration",
+    "AWS_S3_BUCKET_NAME": {
+      "description": "in order to export data to an s3 bucket",
       "required": false,
-      "value": "<changeme>"
+      "value": ""
     },
 
-    "EMAIL_HOST_PORT": {
-      "description": "for email notification integration",
+    "ADVANCED_OPTIONS": {
+      "description": "Everything below here you should probably leave alone",
       "required": false,
-      "value": "<changeme>"
+      "value": ""
     },
 
-    "EMAIL_FROM": {
-      "description": "for email notification integration",
+    "NODE_ENV": {
+      "description": "node environment determines the application build/start process",
+      "required": true,
+      "value": "production"
+    },
+
+    "JOBS_SAME_PROCESS": {
+      "description": "recommended setting which means that the same node process that runs the web app processes applications.",
+      "required": true,
+      "value": "1"
+    },
+
+    "OUTPUT_DIR": {
+      "description": "for production build placement",
+      "required": true,
+      "value": "./build"
+    },
+
+    "PUBLIC_DIR": {
+      "description": "for production build placement",
+      "required": true,
+      "value": "./build/client"
+    },
+
+    "ASSETS_DIR": {
+      "description": "for assets directory in production build placement",
+      "required": true,
+      "value": "./build/client/assets"
+    },
+
+    "ASSETS_MAP_FILE": {
+      "description": "for assets directory placement",
+      "required": true,
+      "value": "assets.json"
+    },
+
+    "SUPPRESS_MIGRATIONS": {
+      "description": "When updating code, do you want to disable auto-database migrations?",
       "required": false,
-      "value": "<changeme>"
+      "value": ""
     }
-
   },
 
   "addons": [
-    "heroku-postgresql:hobby-basic"
+    "heroku-postgresql:hobby-dev"
   ]
 }

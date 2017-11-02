@@ -30,6 +30,16 @@ if (process.env.DB_JSON || global.DB_JSON) {
       max: process.env.DB_MAX_POOL || 10
     }
   }
+} else if (process.env.DATABASE_URL) {
+  var databaseType = process.env.DATABASE_URL.match(/^\w+/)[0]
+  config = {
+    client: (/postgres/.test(databaseType) ? 'pg' : databaseType),
+    connection: process.env.DATABASE_URL,
+    pool: {
+      min: process.env.DB_MIN_POOL || 2,
+      max: process.env.DB_MAX_POOL || 10
+    }
+  }
 } else {
   config = {
     client: 'sqlite3',
