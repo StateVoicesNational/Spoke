@@ -649,12 +649,18 @@ export async function handleIncomingMessageParts() {
   })
   const serviceLength = messagePartsByService.length
   for (let serviceKey in messagePartsByService) {
-    const allParts = messagePartsByService[serviceKey]
+    let allParts = messagePartsByService[serviceKey]
+    const service = serviceMap[serviceKey]
+    if (service.syncMessagePartProcessing) {
+      // filter for anything older than ten minutes ago
+      const tenMinutesAgo = new Date(new Date() - 1000 * 60 * 10)
+      allParts = allParts.filter((part) => (part.created_at < tenMinutesAgo))
+    }
     const allPartsCount = allParts.length
     if (allPartsCount == 0) {
       continue
     }
-    const service = serviceMap[serviceKey]
+
     const convertMessageParts = service.convertMessagePartsToMessage
     const messagesToSave = []
     let messagePartsToDelete = []

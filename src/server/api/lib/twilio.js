@@ -2,7 +2,7 @@ import Twilio from 'twilio'
 import { getFormattedPhoneNumber } from '../../../lib/phone-format'
 import { Message, PendingMessagePart, r } from '../../models'
 import { log } from '../../../lib'
-import { getLastMessage } from './message-sending'
+import { getLastMessage, saveNewIncomingMessage } from './message-sending'
 import faker from 'faker'
 
 let twilio = null
@@ -200,10 +200,17 @@ async function handleIncomingMessage(message) {
   })
 
   const part = await pendingMessagePart.save()
+  if (process.env.JOBS_SAME_PROCESS) {
+    convertMessagePartsToMessage([part]).then(async function(message) {
+      await saveNewIncomingMessage(message)
+      await part.delete()
+    })
+  }
   return part.id
 }
 
 export default {
+  syncMessagePartProcessing: !!process.env.JOBS_SAME_PROCESS,
   webhook,
   convertMessagePartsToMessage,
   findNewCell,
