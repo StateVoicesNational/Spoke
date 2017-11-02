@@ -1,7 +1,7 @@
 # Instructions for one click deployment to heroku
 - Create a heroku account (if you don't have an account)- you will need to connect a credit card to your account
 - Fill out environment variables in form --> instructions about that below
-- Unless you change the `JOBS_SAME_PROCESS` environment variable, do not start any of the processes besides `web`
+- Do not start any of the processes/dynos besides `web` (see below for non-Twilio uses)
 - The default setup is a free tier for processing and the database. See below for scaling and production requirements
 
 
@@ -71,3 +71,10 @@ follow these steps:
 4. Then, in the 'Add-ons' search box (where it says 'Quickly add add-ons from Elements'), type "postgres"
 5. Choose the "Heroku Postgres" option and then choose the tier you desire (see Heroku Postgres tier documentation for details)
 6. At the very top of the page for your app, in the upper right click the 'More' button and choose 'Restart all dynos'
+
+
+## Non-Twilio Processes/Dynos
+
+When using Twilio we recommend keeping the environment variable `JOBS_SAME_PROCESS` enabled and only running the `web` process/dyno.
+There is another mode mostly for non-Twilio backends, where you may need to run the additional processes to process messages and sending.  Most times, even at high scale, you will want to keep `JOBS_SAME_PROCESS` on and increase or upgrade the dynos for the `web` process.
+
