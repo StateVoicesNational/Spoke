@@ -14,6 +14,8 @@ import { ListItem, List } from 'material-ui/List'
 import { Card, CardActions, CardHeader, CardText } from 'material-ui/Card'
 import FlatButton from 'material-ui/FlatButton'
 import Divider from 'material-ui/Divider'
+import TextField from 'material-ui/TextField'
+import RaisedButton from 'material-ui/RaisedButton'
 
 const styles = StyleSheet.create({
   container: {
@@ -44,7 +46,19 @@ const styles = StyleSheet.create({
 
 export default class TexterProfile extends React.Component {
 
-  editFirstName(){
+  constructor(props) {
+    super(props)
+
+    this.state = {
+      value: 'Property Value'
+    }
+  }
+
+  handleEdit = event => {
+    console.log('event:', event.target.value );
+    this.setState({
+      value: event.target.value
+    })
 
   }
 
@@ -65,23 +79,27 @@ export default class TexterProfile extends React.Component {
             showExpandableButton={true}
           />
           <CardText expandable={true}>
-            User Information Form Here
+            <h4> Edit Profile </h4>
+            <TextField
+              id="text-field-controled"
+              name="firstName"
+              hintText="First Name"
+              floatingLabelText="First Name"
+              defaultValue={currentUser.firstName}
+              onChange={this.handleEdit}
+              underlineShow={false}
+            />
+            <Divider />
+            <TextField
+              id="text-field-controled"
+              name="lastName"
+              floatingLabelText="Last Name"
+              hintText="Last Name"
+              defaultValue={currentUser.lastName}
+              onChange={this.handleEdit}
+              underlineShow={false}
+            />
           </CardText>
-        </Card>
-        <Divider />
-        <Card>
-          <CardHeader
-            title='Organizations'
-          />
-          <List>
-            {currentUser.organizations.map((organization) => (
-              <ListItem
-                key={organization.id}
-                primaryText={organization.name}
-                value={organization.id}
-              />
-            ))}
-          </List>
         </Card>
       </div>
     )
