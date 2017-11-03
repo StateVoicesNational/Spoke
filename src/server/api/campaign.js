@@ -9,6 +9,7 @@ export const schema = `
   type CampaignStats {
     sentMessagesCount: Int
     receivedMessagesCount: Int
+    optOutsCount: Int
   }
 
   type JobRequest {
@@ -76,6 +77,11 @@ export const resolvers = {
         .eqJoin('id', r.table('message'), { index: 'assignment_id' })
         .filter({ is_from_contact: true })
         .count()
+    ),
+    optOutsCount: async (campaign) => (
+      r.knex('campaign_contact')
+      .where({ is_opted_out: true, campaign_id: campaign.id })
+      .count()
     )
   },
   Campaign: {

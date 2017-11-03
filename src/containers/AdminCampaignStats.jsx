@@ -206,8 +206,11 @@ class AdminCampaignStats extends React.Component {
           <div className={css(styles.flexColumn, styles.spacer)}>
             <Stat title='Sent' count={campaign.stats.sentMessagesCount} />
           </div>
-          <div className={css(styles.flexColumn)}>
+          <div className={css(styles.flexColumn, styles.spacer)}>
             <Stat title='Replies' count={campaign.stats.receivedMessagesCount} />
+          </div>
+          <div className={css(styles.flexColumn)}>
+            <Stat title='Opt-outs' count={campaign.stats.optOutsCount} />
           </div>
         </div>
         <div className={css(styles.header)}>Survey Questions</div>
@@ -274,7 +277,8 @@ const mapQueriesToProps = ({ ownProps }) => ({
         contactsCount
         stats {
           sentMessagesCount
-          receivedMessagesCount
+          receivedMessagesCount,
+          optOutsCount
         }
       }
     }`,
