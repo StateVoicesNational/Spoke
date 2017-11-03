@@ -18,29 +18,8 @@ import TextField from 'material-ui/TextField'
 import RaisedButton from 'material-ui/RaisedButton'
 
 const styles = StyleSheet.create({
-  container: {
-    marginTop: '5vh',
-    textAlign: 'center',
-    color: theme.colors.white
-  },
-  formContainer: {
-    ...theme.layouts.greenBox
-  },
-  bigHeader: {
-    ...theme.text.header,
-    fontSize: 40
-  },
-  header: {
-    ...theme.text.header,
-    marginRight: 'auto',
-    marginLeft: 'auto',
-    maxWidth: '80%'
-  },
-  form: {
-    marginTop: 40,
-    maxWidth: '80%',
-    marginRight: 'auto',
-    marginLeft: 'auto'
+  homeButton: {
+    marginTop: '20px'
   }
 })
 
@@ -101,6 +80,10 @@ export default class TexterProfile extends React.Component {
             />
           </CardText>
         </Card>
+        <RaisedButton
+          className={css(styles.homeButton)}
+          label="Back to Campaigns"
+        />
       </div>
     )
   }
