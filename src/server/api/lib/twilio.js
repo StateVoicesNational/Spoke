@@ -1,6 +1,6 @@
 import Twilio from 'twilio'
 import { getFormattedPhoneNumber } from '../../../lib/phone-format'
-import { Message, PendingMessagePart, r } from '../../models'
+import { Message, PendingMessagePart, Log, r } from '../../models'
 import { log } from '../../../lib'
 import { getLastMessage, saveNewIncomingMessage } from './message-sending'
 import faker from 'faker'
@@ -100,7 +100,7 @@ async function sendMessage(message) {
     log.warn('cannot actually send SMS message -- twilio is not fully configured:', message.id)
     if (message.id) {
       await Message.get(message.id)
-        .update({ send_status: 'SENT' })
+        .update({ send_status: 'SENT', sent_at: new Date() })
     }
     return 'test_message_uuid'
   }
@@ -146,7 +146,8 @@ async function sendMessage(message) {
         Message.save({
           ...messageToSave,
           send_status: 'SENT',
-          service: 'twilio'
+          service: 'twilio',
+          sent_at: new Date()
         }, { conflict: 'update' })
         .then((saveError, newMessage) => {
           resolve(newMessage)
@@ -159,6 +160,7 @@ async function sendMessage(message) {
 async function handleDeliveryReport(report) {
   const messageSid = report.MessageSid
   if (messageSid) {
+    await Log.save({ message_sid: report.MessageSid, body: report })
     const messageStatus = report.MessageStatus
     const message = await r.table('message')
       .getAll(messageSid, { index: 'service_id' })
@@ -166,7 +168,7 @@ async function handleDeliveryReport(report) {
       .default(null)
 
     if (message) {
-      message.service_response += JSON.stringify(report)
+      message.service_response_at = new Date()
       if (messageStatus === 'delivered') {
         message.send_status = 'DELIVERED'
       } else if (messageStatus === 'failed' ||
