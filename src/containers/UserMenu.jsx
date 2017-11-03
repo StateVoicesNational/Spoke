@@ -58,6 +58,7 @@ class UserMenu extends Component {
       return <div />
     }
 
+    console.log('current user data:', currentUser);
     return (
       <div>
         <IconButton
@@ -77,6 +78,11 @@ class UserMenu extends Component {
             primaryText={currentUser.displayName}
             secondaryText={currentUser.email}
             leftAvatar={this.renderAvatar(currentUser, 40)}
+          />
+          <MenuItem
+            primaryText='My Profile'
+            value='texterprofile'
+            onTouchTap={() => this.props.router.push(`/app/profile/${currentUser.id}`)}
           />
           <Divider />
           <Menu onChange={this.handleMenuChange}>
@@ -125,4 +131,3 @@ const mapQueriesToProps = () => ({
 export default connect({
   mapQueriesToProps
 })(withRouter(UserMenu))
-
