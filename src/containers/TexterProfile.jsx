@@ -110,7 +110,15 @@ const mapQueriesToProps = () => ({
       }
     }`,
     forceFetch: true
-  }
+  },
+  // editUserFirstName: (userId) => ({
+  //   mutation: gql`mutation editUserFirstName($userId: String!) {
+  //     editUserFirstName(id: $userId){
+  //       ${userFirstName}
+  //     }
+  //   }`,
+  //   variables: { userId }
+  // })
 })
 
 export default connect({
