@@ -9,6 +9,11 @@ import theme from '../styles/theme'
 import Paper from 'material-ui/Paper'
 import { withRouter } from 'react-router'
 import GSForm from '../components/forms/GSForm'
+import { connect } from 'react-apollo'
+import { ListItem, List } from 'material-ui/List'
+import { Card, CardActions, CardHeader, CardText } from 'material-ui/Card'
+import FlatButton from 'material-ui/FlatButton'
+import Divider from 'material-ui/Divider'
 
 const styles = StyleSheet.create({
   container: {
@@ -38,11 +43,76 @@ const styles = StyleSheet.create({
 })
 
 export default class TexterProfile extends React.Component {
+
+  editFirstName(){
+
+  }
+
   render() {
+    const { currentUser } = this.props.data
+    if (!currentUser) {
+      return <div />
+    }
+
+    console.log('current user data:', currentUser);
     return (
       <div>
-        <h1>My Profile</h1>
+        <Card>
+          <CardHeader
+            title={currentUser.displayName}
+            subtitle={currentUser.email}
+            actAsExpander={true}
+            showExpandableButton={true}
+          />
+          <CardText expandable={true}>
+            User Information Form Here
+          </CardText>
+        </Card>
+        <Divider />
+        <Card>
+          <CardHeader
+            title='Organizations'
+          />
+          <List>
+            {currentUser.organizations.map((organization) => (
+              <ListItem
+                key={organization.id}
+                primaryText={organization.name}
+                value={organization.id}
+              />
+            ))}
+          </List>
+        </Card>
       </div>
-    );
+    )
   }
 }
+
+TexterProfile.propTypes = {
+  data: React.PropTypes.object,
+  router: React.PropTypes.object
+}
+
+
+const mapQueriesToProps = () => ({
+  data: {
+    query: gql`query getCurrentUserForMenu {
+      currentUser {
+        id
+        displayName
+        firstName
+        lastName
+        email
+        organizations {
+          id
+          name
+        }
+      }
+    }`,
+    forceFetch: true
+  }
+})
+
+export default connect({
+  mapQueriesToProps
+})(withRouter(TexterProfile))
