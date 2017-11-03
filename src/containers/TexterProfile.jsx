@@ -38,56 +38,11 @@ const styles = StyleSheet.create({
 })
 
 export default class TexterProfile extends React.Component {
-
   render() {
     return (
       <div>
-        <h1> Texter Profile </h1>
+        <h1>My Profile</h1>
       </div>
-    )
+    );
   }
 }
-
-// const mapQueriesToProps = ({ ownProps }) => ({
-//   inviteData: {
-//     query: gql`query getInvite($inviteId: String!) {
-//       inviteByHash(hash: $inviteId) {
-//         id
-//         isValid
-//       }
-//     }`,
-//     variables: {
-//       inviteId: ownProps.params.inviteId
-//     },
-//     forceFetch: true
-//   },
-//   userData: {
-//     query: gql` query getCurrentUser {
-//       currentUser {
-//         id
-//       }
-//     }`,
-//     forceFetch: true
-//   }
-// })
-
-TexterProfile.propTypes = {
-  mutations: React.PropTypes.object,
-  router: React.PropTypes.object,
-  userData: React.PropTypes.object,
-  inviteData: React.PropTypes.object
-}
-//
-// const mapMutationsToProps = () => ({
-//   createOrganization: (name, userId, inviteId) => ({
-//     mutation: gql`
-//       mutation createOrganization($name: String!, $userId: String!, $inviteId: String!) {
-//         createOrganization(name: $name, userId: $userId, inviteId: $inviteId) {
-//           id
-//         }
-//       }`,
-//     variables: { name, userId, inviteId }
-//   })
-// })
-//
-// export default loadData(wrapMutations(withRouter(CreateOrganization)), { mapQueriesToProps, mapMutationsToProps })
