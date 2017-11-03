@@ -513,7 +513,7 @@ class AssignmentTexterContact extends React.Component {
   }
 
   messageSchema = yup.object({
-    messageText: yup.string().required("Can't send empty message")
+    messageText: yup.string().required("Can't send empty message").max(window.MAX_MESSAGE_LENGTH)
   })
 
   handleMessageFormChange = ({ messageText }) => this.setState({ messageText })
