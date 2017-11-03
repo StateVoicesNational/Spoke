@@ -1,3 +1,4 @@
+import isUrl from 'is-url'
 import { Campaign,
   CannedResponse,
   InteractionStep,
@@ -214,13 +215,16 @@ const rootSchema = `
 `
 
 async function editCampaign(id, campaign, loaders, user) {
-  const { title, description, dueBy, organizationId } = campaign
+  const { title, description, dueBy, organizationId, logoImageUrl, introHtml, primaryColor } = campaign
   const campaignUpdates = {
     id,
     title,
     description,
     due_by: dueBy,
-    organization_id: organizationId
+    organization_id: organizationId,
+    logo_image_url: isUrl(logoImageUrl) ? logoImageUrl : '',
+    primary_color: primaryColor,
+    intro_html: introHtml
   }
 
   Object.keys(campaignUpdates).forEach((key) => {
