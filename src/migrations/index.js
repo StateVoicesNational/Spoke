@@ -68,6 +68,7 @@ const migrations = [
       })
       console.log('added log table')
     }
+  }
   /* migration template
      {auto: true, //if auto is false, then it will block the migration running automatically
       date: '2017-08-23',
