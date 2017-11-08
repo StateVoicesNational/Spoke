@@ -5,7 +5,7 @@ import ScriptList from './ScriptList'
 
 const styles = {
   popover: {
-    width: '75%'
+    width: '75%',
     overflowY: 'scroll'
   }
 }
