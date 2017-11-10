@@ -100,9 +100,6 @@ const styles = StyleSheet.create({
     padding: '0px 8px',
     '@media(max-width: 450px)': {
       marginBottom: '8%'
-    },
-    '@media(max-width: 350px)': {
-      height: '280px'
     }
   },
   textField: {
