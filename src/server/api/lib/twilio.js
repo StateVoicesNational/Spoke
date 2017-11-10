@@ -208,7 +208,7 @@ async function handleIncomingMessage(message) {
   if (process.env.JOBS_SAME_PROCESS) {
     const finalMessage = await convertMessagePartsToMessage([part])
     await saveNewIncomingMessage(finalMessage)
-    await part.delete()
+    await r.knex('pending_message_part').where('id', partId).delete()
   }
   return partId
 }
