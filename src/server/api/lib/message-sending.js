@@ -16,6 +16,12 @@ export async function getLastMessage({ contactNumber, service }) {
 }
 
 export async function saveNewIncomingMessage(messageInstance) {
+  if (messageInstance.service_id) {
+    const countResult = await r.knex('message').where('service_id', messageInstance.service_id).count().first()
+    if (countResult.count) {
+      console.error('DUPLICATE MESSAGE SAVED', messageInstance)
+    }
+  }
   await messageInstance.save()
 
   await r.table('campaign_contact')
