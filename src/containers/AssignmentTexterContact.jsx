@@ -100,9 +100,6 @@ const styles = StyleSheet.create({
     padding: '0px 8px',
     '@media(max-width: 450px)': {
       marginBottom: '8%'
-    },
-    '@media(max-width: 350px)': {
-      height: '280px'
     }
   },
   textField: {
@@ -758,7 +755,7 @@ class AssignmentTexterContact extends React.Component {
             label='Your message'
             multiLine
             fullWidth
-            rowsMax={10}
+            rowsMax={6}
           />
           {this.renderCorrectSendButton()}
         </GSForm>
