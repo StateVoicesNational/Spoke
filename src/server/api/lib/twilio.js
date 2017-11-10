@@ -206,8 +206,8 @@ async function handleIncomingMessage(message) {
   const part = await pendingMessagePart.save()
   const partId = part.id
   if (process.env.JOBS_SAME_PROCESS) {
-    await message = convertMessagePartsToMessage([part])
-    await saveNewIncomingMessage(message)
+    const finalMessage = await convertMessagePartsToMessage([part])
+    await saveNewIncomingMessage(finalMessage)
     await part.delete()
   }
   return partId
