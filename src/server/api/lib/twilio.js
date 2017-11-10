@@ -204,13 +204,13 @@ async function handleIncomingMessage(message) {
   })
 
   const part = await pendingMessagePart.save()
+  const partId = part.id
   if (process.env.JOBS_SAME_PROCESS) {
-    convertMessagePartsToMessage([part]).then(async function(message) {
-      await saveNewIncomingMessage(message)
-      await part.delete()
-    })
+    await message = convertMessagePartsToMessage([part])
+    await saveNewIncomingMessage(message)
+    await part.delete()
   }
-  return part.id
+  return partId
 }
 
 export default {
