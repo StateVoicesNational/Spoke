@@ -17,6 +17,7 @@ export default class GSTextField extends GSFormField {
         onChange={(event) => {
           this.props.onChange(event.target.value)
         }}
+        type='text'
       />
     )
   }
