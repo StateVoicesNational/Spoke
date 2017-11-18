@@ -1,6 +1,6 @@
 import { r, datawarehouse, Assignment, Campaign, CampaignContact, InteractionStep, Organization, User } from '../server/models'
 import { log, gunzip, zipToTimeZone } from '../lib'
-import { sleep, getNextJob, updateJob } from './lib'
+import { updateJob } from './lib'
 import serviceMap from '../server/api/lib/services'
 import { getLastMessage, saveNewIncomingMessage } from '../server/api/lib/message-sending'
 
@@ -10,37 +10,31 @@ import moment from 'moment'
 import { sendEmail } from '../server/mail'
 import { Notifications, sendUserNotification } from '../server/notifications'
 
-var zipMemoization = {}
-
-const JOBS_SAME_PROCESS = !!process.env.JOBS_SAME_PROCESS
+const zipMemoization = {}
 
 async function getTimezoneByZip(zip) {
   if (zip in zipMemoization) {
     return zipMemoization[zip]
-  } else {
-    const rangeZip = zipToTimeZone(zip)
-    if (rangeZip) {
-      return `${rangeZip[2]}_${rangeZip[3]}`
-    } else {
-      const zipDatum = await r.table('zip_code').get(zip)
-      if (zipDatum && zipDatum.timezone_offset && zipDatum.has_dst) {
-        zipMemoization[zip] = `${zipDatum.timezone_offset}_${zipDatum.has_dst}`
-        return zipMemoization[zip]
-      } else {
-        return ''
-      }
-    }
   }
+  const rangeZip = zipToTimeZone(zip)
+  if (rangeZip) {
+    return `${rangeZip[2]}_${rangeZip[3]}`
+  }
+  const zipDatum = await r.table('zip_code').get(zip)
+  if (zipDatum && zipDatum.timezone_offset && zipDatum.has_dst) {
+    zipMemoization[zip] = `${zipDatum.timezone_offset}_${zipDatum.has_dst}`
+    return zipMemoization[zip]
+  }
+  return ''
 }
 
 export async function processSqsMessages() {
-
   // hit endpoint on SQS
   // ask for a list of messages from SQS (with quantity tied to it)
   // if SQS has messages, process messages into pending_message_part and dequeue messages (mark them as handled)
   // if SQS doesnt have messages, exit
 
-  if(!process.env.TWILIO_SQS_QUEUE_URL){
+  if (!process.env.TWILIO_SQS_QUEUE_URL) {
     return
   }
 
@@ -58,22 +52,22 @@ export async function processSqsMessages() {
 
   const p = new Promise
 
-  sqs.receiveMessage( params, async ( err, data ) => {
-    if( err ){
-      console.log( err, err.stack )
-      p.reject( err )
-    } else if ( data.Messages ){
-      console.log( data )
-      for( let i = 0; i < data.Messages.length; i ++) {
-        const body = message.Body
-        console.log( 'processing sqs queue:', body );
-        const twilioMessage = JSON.parse( body )
+  sqs.receiveMessage(params, async (err, data) => {
+    if (err) {
+      console.log(err, err.stack)
+      p.reject(err)
+    } else if (data.Messages) {
+      console.log(data)
+      for (let i = 0; i < data.Messages.length; i ++) {
+        const body = data.Messages[i].Body
+        console.log('processing sqs queue:', body)
+        const twilioMessage = JSON.parse(body)
 
-        await serviceMap.twilio.handleIncomingMessage( twilioMessage )
+        await serviceMap.twilio.handleIncomingMessage(twilioMessage)
 
-        sqs.deleteMessage({ QueueUrl: process.env.TWILIO_SQS_QUEUE_URL, ReceiptHandle:      message.ReceiptHandle }, ( err, data ) => {
-          if (err) console.log( err, err.stack ) // an error occurred
-          else     console.log( data )           // successful response
+        sqs.deleteMessage({ QueueUrl: process.env.TWILIO_SQS_QUEUE_URL, ReceiptHandle: twilioMessage.ReceiptHandle }, (err, data) => {
+          if (err) console.log(err, err.stack) // an error occurred
+          else console.log(data)           // successful response
         })
       }
       p.resolve()
@@ -90,7 +84,7 @@ export async function uploadContacts(job) {
   const organization = await Organization.get(campaign.organization_id)
   const orgFeatures = JSON.parse(organization.features || '{}')
 
-  let jobMessages = []
+  const jobMessages = []
 
   await r.table('campaign_contact')
     .getAll(campaignId, { index: 'campaign_id' })
@@ -102,7 +96,7 @@ export async function uploadContacts(job) {
 
   const maxContacts = parseInt(orgFeatures.hasOwnProperty('maxContacts')
                                 ? orgFeatures.maxContacts
-                                : process.env.MAX_CONTACTS || 0)
+                                : process.env.MAX_CONTACTS || 0, 10)
 
   if (maxContacts) { // note: maxContacts == 0 means no maximum
     contacts = contacts.slice(0, maxContacts)
@@ -138,7 +132,7 @@ export async function uploadContacts(job) {
   if (job.id) {
     if (jobMessages.length) {
       await r.knex('job_request').where('id', job.id)
-        .update({ 'result_message': jobMessages.join('\n') })
+        .update({ result_message: jobMessages.join('\n') })
     } else {
       await r.table('job_request').get(job.id).delete()
     }
@@ -147,7 +141,7 @@ export async function uploadContacts(job) {
 
 
 export async function loadContactsFromDataWarehouse(job) {
-  let sqlQuery = job.payload
+  const sqlQuery = job.payload
   if (!sqlQuery.startsWith('SELECT') || sqlQuery.indexOf(';') >= 0) {
     log.error('Malformed SQL statement.  Must begin with SELECT and not have any semicolons: ', sqlQuery)
     return
@@ -164,8 +158,8 @@ export async function loadContactsFromDataWarehouse(job) {
     log.error('Data warehouse query failed: ', err)
     // TODO: send feedback about job
   }
-  let fields = {}
-  let customFields = {}
+  const fields = {}
+  const customFields = {}
   const contactFields = {
     first_name: 1,
     last_name: 1,
@@ -185,23 +179,23 @@ export async function loadContactsFromDataWarehouse(job) {
   }
 
   // TODO break up result and save in portions, dispatched
-  let jobMessages = []
+  const jobMessages = []
   const savePortion = await Promise.all(knexResult.rows.map(async (row) => {
-    let contact = {
-      'campaign_id': job.campaign_id,
-      'first_name': row.first_name,
-      'last_name': row.last_name,
-      'cell': row.cell,
-      'zip': row.zip,
-      'external_id': row.external_id
+    const contact = {
+      campaign_id: job.campaign_id,
+      first_name: row.first_name,
+      last_name: row.last_name,
+      cell: row.cell,
+      zip: row.zip,
+      external_id: row.external_id
     }
-    let contactCustomFields = {}
+    const contactCustomFields = {}
     for (let f in customFields) {
       contactCustomFields[f] = row[f]
     }
-    contact['custom_fields'] = JSON.stringify(contactCustomFields)
+    contact.custom_fields = JSON.stringify(contactCustomFields)
     if (contact.zip) {
-      contact['timezone_offset'] = await getTimezoneByZip(contact.zip)
+      contact.timezone_offset = await getTimezoneByZip(contact.zip)
     }
     return contact
   }))
@@ -219,7 +213,7 @@ export async function loadContactsFromDataWarehouse(job) {
     .whereIn('cell', function () {
       this.select('cell').from('opt_out').where('organization_id', campaign.organization_id)
     })
-    .where('campaign_id', campaign_id)
+    .where('campaign_id', job.campaign_id)
     .delete()
 
   console.log('OPTOUT CELL COUNT', optOutCellCount)
@@ -228,7 +222,7 @@ export async function loadContactsFromDataWarehouse(job) {
   if (job.id) {
     if (jobMessages.length) {
       await r.knex('job_request').where('id', job.id)
-        .update({ 'result_message': jobMessages.join('\n') })
+        .update({ result_message: jobMessages.join('\n') })
     } else {
       await r.table('job_request').get(job.id).delete()
     }
@@ -251,9 +245,9 @@ export async function createInteractionSteps(job) {
     let answerAction = ''
 
     if (newId in answerOptionStore) {
-      parentId = answerOptionStore[newId]['parent']
-      answerOption = answerOptionStore[newId]['value']
-      answerAction = answerOptionStore[newId]['action']
+      parentId = answerOptionStore[newId].parent
+      answerOption = answerOptionStore[newId].value
+      answerAction = answerOptionStore[newId].action
     }
     const dbInteractionStep = await InteractionStep
       .save({
@@ -273,13 +267,13 @@ export async function createInteractionSteps(job) {
           nextStepId = option.nextInteractionStepId
           // store the answers and step id for writing to child steps
           answerOptionStore[nextStepId] = {
-            'value': option.value,
-            'parent': dbInteractionStep.id,
-            'action': option.action
+            value: option.value,
+            parent: dbInteractionStep.id,
+            action: option.action
           }
         } else {
           // when answer but no link to next step
-          const answerStep = await InteractionStep
+          await InteractionStep
             .save({
               campaign_id: id,
               question: '',
@@ -345,30 +339,29 @@ export async function assignTexters(job) {
   const unchangedTexters = {}
   const demotedTexters = {}
 
-  const changedAssignments = currentAssignments.map((assignment) => {
-    const texter = texters.filter((ele) => parseInt(ele.id) === assignment.user_id)[0]
-    if (texter && texter.needsMessageCount === parseInt(assignment.needs_message_count)) {
-      unchangedTexters[assignment.user_id] = true
-      return null
-    } else if (texter) { //assignment change
-      // If there is a delta between client and server, then accomodate delta (See #322)
-      const clientMessagedCount = texter.contactsCount - texter.needsMessageCount
-      const serverMessagedCount = assignment.full_contact_count - assignment.needs_message_count
+  // const changedAssignments = currentAssignments.map((assignment) => {
+  //   const texter = texters.filter((ele) => parseInt(ele.id, 10) === assignment.user_id)[0]
+  //   if (texter && texter.needsMessageCount === parseInt(assignment.needs_message_count, 10)) {
+  //     unchangedTexters[assignment.user_id] = true
+  //     return null
+  //   } else if (texter) { // assignment change
+  //     // If there is a delta between client and server, then accomodate delta (See #322)
+  //     const clientMessagedCount = texter.contactsCount - texter.needsMessageCount
+  //     const serverMessagedCount = assignment.full_contact_count - assignment.needs_message_count
 
-      const numDifferent = ((texter.needsMessageCount || 0)
-                            - assignment.needs_message_count
-                            - Math.max(0, serverMessagedCount - clientMessagedCount))
+  //     const numDifferent = ((texter.needsMessageCount || 0)
+  //                           - assignment.needs_message_count
+  //                           - Math.max(0, serverMessagedCount - clientMessagedCount))
 
-      if (numDifferent < 0) { // got less than before
-        demotedTexters[assignment.id] = -numDifferent
-      } else { // got more than before: assign the difference
-        texter.needsMessageCount = numDifferent
-      }
-      return assignment
-    } else { // new texter
-      return assignment
-    }
-  }).filter((ele) => ele !== null)
+  //     if (numDifferent < 0) { // got less than before
+  //       demotedTexters[assignment.id] = -numDifferent
+  //     } else { // got more than before: assign the difference
+  //       texter.needsMessageCount = numDifferent
+  //     }
+  //     return assignment
+  //   }
+  //   return assignment
+  // }).filter((ele) => ele !== null)
 
   for (let a_id in demotedTexters) {
     // Here we demote ALL the demotedTexters contacts (not just the demotion count)
@@ -384,9 +377,6 @@ export async function assignTexters(job) {
       .catch(log.error)
   }
 
-  // This atomically updates all the assignments to guard against people sending messages while all this is going on
-  const changedAssignmentIds = changedAssignments.map((ele) => ele.id)
-
   await updateJob(job, 20)
 
   let availableContacts = await r.table('campaign_contact')
@@ -398,7 +388,7 @@ export async function assignTexters(job) {
 
   for (let index = 0; index < texterCount; index++) {
     const texter = texters[index]
-    const texterId = parseInt(texter.id)
+    const texterId = parseInt(texter.id, 10)
     if (unchangedTexters[texterId]) {
       continue
     }
@@ -557,13 +547,12 @@ export async function exportCampaign(job) {
       Object.keys(allQuestions).forEach((stepId) => {
         let value = ''
         questionResponses.forEach((response) => {
-          if (response.interaction_step_id === parseInt(stepId)) {
+          if (response.interaction_step_id === parseInt(stepId, 10)) {
             value = response.value
           }
         })
 
         contactRow[`question[${allQuestions[stepId]}]`] = value
-        
       })
 
       return contactRow
@@ -614,7 +603,7 @@ let pastMessages = []
 
 export async function sendMessages(queryFunc, defaultStatus) {
   let messages = r.knex('message')
-    .where({ 'send_status': defaultStatus || 'QUEUED' })
+    .where({ send_status: defaultStatus || 'QUEUED' })
 
   if (queryFunc) {
     messages = queryFunc(messages)
@@ -623,7 +612,7 @@ export async function sendMessages(queryFunc, defaultStatus) {
 
   for (let index = 0; index < messages.length; index++) {
     let message = messages[index]
-    if (pastMessages.indexOf(message.id) != -1) {
+    if (pastMessages.indexOf(message.id) !== -1) {
       throw new Error('Encountered send message request of the same message.'
                       + ' This is scary!  If ok, just restart process. Message ID: ' + message.id)
     }
@@ -647,8 +636,7 @@ export async function handleIncomingMessageParts() {
       messagePartsByService[m.service].push(m)
     }
   })
-  const serviceLength = messagePartsByService.length
-  for (let serviceKey in messagePartsByService) {
+  for (const serviceKey in messagePartsByService) {
     let allParts = messagePartsByService[serviceKey]
     const service = serviceMap[serviceKey]
     if (service.syncMessagePartProcessing) {
@@ -657,7 +645,7 @@ export async function handleIncomingMessageParts() {
       allParts = allParts.filter((part) => (part.created_at < tenMinutesAgo))
     }
     const allPartsCount = allParts.length
-    if (allPartsCount == 0) {
+    if (allPartsCount === 0) {
       continue
     }
 

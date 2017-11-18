@@ -10,7 +10,7 @@
   "scripts": {
     "test": "jest",
     "clean": "rm -rf $OUTPUT_DIR",
-    "lint": "eslint --fix --ext js --ext jsx src; exit 0",
+    "lint": "eslint --fix --ext js --ext jsx src",
     "prod-build-client": "webpack --config ./webpack/config.js",
     "prod-build-server": "babel ./src -d ./build/server --source-maps",
     "prod-build": "npm run clean && npm run prod-build-client && npm run prod-build-server",

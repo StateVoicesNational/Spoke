@@ -1,10 +1,11 @@
 {
-  "extends" : "airbnb",
+  "extends": "airbnb",
   "parser": "babel-eslint",
   "rules": {
     "semi": ["error", "never"],
     "comma-dangle": ["error", "never"],
     "no-alert": ["off"],
+    "no-console": ["off"],
     "jsx-quotes": ["error", "prefer-single"],
     "max-len": ["off"]
   }
