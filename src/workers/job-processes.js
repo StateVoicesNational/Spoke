@@ -44,11 +44,11 @@ export async function processJobs() {
 }
 
 export async function checkMessageQueue() {
-  if(!process.env.TWILIO_SQS_QUEUE_URL) {
-   return
+  if (!process.env.TWILIO_SQS_QUEUE_URL) {
+    return
   }
-  
-  console.log('checking if messages are in message queue');
+
+  console.log('checking if messages are in message queue')
   while (true) {
     try {
       await sleep(10000)
