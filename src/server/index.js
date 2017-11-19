@@ -2,7 +2,8 @@ import 'babel-polyfill'
 import bodyParser from 'body-parser'
 import express from 'express'
 import appRenderer from './middleware/app-renderer'
-import { apolloServer } from 'apollo-server'
+import { graphqlExpress, graphiqlExpress } from 'apollo-server-express'
+import { makeExecutableSchema, addMockFunctionsToSchema } from 'graphql-tools'
 import { schema, resolvers } from './api/schema'
 import mocks from './api/mocks'
 import { createLoaders, User } from './models'
@@ -16,7 +17,6 @@ import twilio from './api/lib/twilio'
 import { seedZipCodes } from './seeds/seed-zip-codes'
 import { runMigrations } from '../migrations'
 import { setupUserNotificationObservers } from './notifications'
-import { Tracer } from 'apollo-tracer'
 import { TwimlResponse } from 'twilio'
 import { r } from './models'
 
@@ -181,25 +181,27 @@ app.get('/login-callback',
   })
 )
 
-let tracer = null
-if (process.env.APOLLO_OPTICS_KEY) {
-  tracer = new Tracer({ TRACER_APP_KEY: process.env.APOLLO_OPTICS_KEY })
-}
-app.use('/graphql', apolloServer((req) => ({
-  graphiql: true,
-  pretty: true,
-  schema,
-  mocks,
+const executableSchema = makeExecutableSchema({
+  typeDefs: schema,
   resolvers,
+  allowUndefinedInResolve: false
+})
+addMockFunctionsToSchema({
+  schema: executableSchema,
+  mocks,
+  preserveResolvers: true
+})
+
+app.use('/graphql', graphqlExpress((request) => ({
+  schema: executableSchema,
   context: {
     loaders: createLoaders(),
-    user: req.user
-  },
-  tracer,
-  printErrors: true,
-  formatError: (err) => { console.log(err.stack); return err },
-  allowUndefinedInResolve: false
+    user: request.user
+  }
 })))
+app.get('/graphiql', graphiqlExpress({
+  endpointURL: '/graphql'
+}))
 
 
 // This middleware should be last. Return the React app only if no other route is hit.
