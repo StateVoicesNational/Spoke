@@ -98,7 +98,7 @@ export const resolvers = {
       loaders.organization.load(campaign.organization_id)
     ),
     datawarehouseAvailable: (campaign, _, { user }) => (
-      user.is_superadmin && process.env.WAREHOUSE_DB_HOST
+      user.is_superadmin && !!process.env.WAREHOUSE_DB_HOST
     ),
     pendingJobs: async (campaign) => r.table('job_request')
       .filter({ campaign_id: campaign.id }).orderBy('updated_at', 'desc'),
@@ -115,20 +115,11 @@ export const resolvers = {
       r.table('interaction_step')
         .getAll(campaign.id, { index: 'campaign_id' })
     ),
-    cannedResponses: async (campaign, { userId }) => {
-      let responses = r.table('canned_response')
+    cannedResponses: async (campaign, { userId }) => (
+      r.table('canned_response')
         .getAll(campaign.id, { index: 'campaign_id' })
-      if (userId) {
-        responses = responses.filter({
-          user_id: userId
-        })
-      } else {
-        responses = responses.filter({
-          user_id: ''
-        })
-      }
-      return responses
-    },
+        .filter({ user_id: userId || '' })
+    ),
     contacts: async (campaign) => (
       r.table('campaign_contact')
         .getAll(campaign.id, { index: 'campaign_id' })
