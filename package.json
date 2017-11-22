@@ -9,6 +9,7 @@
   },
   "scripts": {
     "test": "jest",
+    "test-coverage": "jest --coverage",
     "clean": "rm -rf $OUTPUT_DIR",
     "lint": "eslint --fix --ext js --ext jsx src; exit 0",
     "prod-build-client": "webpack --config ./webpack/config.js",
