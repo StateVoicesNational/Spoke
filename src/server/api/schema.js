@@ -820,7 +820,7 @@ const rootMutations = {
 
       const { contactNumber, text } = message
 
-      if (text.length > (process.env.MAX_MESSAGE_LENGTH || 280)) {
+      if (text.length > (process.env.MAX_MESSAGE_LENGTH || 99999)) {
         throw new GraphQLError({
           status: 400,
           message: 'Message was longer than the limit'
