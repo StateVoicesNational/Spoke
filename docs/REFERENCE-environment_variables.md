@@ -32,6 +32,7 @@ EMAIL_HOST_USER                   | Email server user. _Required_.
 GRAPHQL_URL                       | Optional URL for pointing GraphQL API requests. Should end with `/graphql`, e.g. `https://example.org/graphql`. _Default_: "/graphql"
 JOBS_SAME_PROCESS                 | Boolean value indicating whether jobs should be executed in the same process in which they are created (vs. processing asyncronously via worker processes). _Default_: false.
 MAX_CONTACTS                      | If set each campaign can only have a maximum of the value (an integer). This is good for staging/QA/evaluation instances.  _Default_: false (i.e. there is no maximum)
+MAX_MESSAGE_LENGTH                | The maximum size for a message that a texter can send. When you send a SMS message over 160 characters the message will be split, so you might want to set this as 160 or less if you have a high SMS-only target demographic. _Default_: 99999
 NEXMO_API_KEY                     | Nexmo API key. Required if using Nexmo.
 NEXMO_API_SECRET                  | Nexmo API secret. Required if using Nexmo.
 NO_EXTERNAL_LINKS                 | Removes google fonts and auth0 login script -- good for development offline when you already have an auth0 session
