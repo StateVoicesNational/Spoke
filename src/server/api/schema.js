@@ -39,10 +39,7 @@ import {
   schema as questionResponseSchema,
   resolvers as questionResponseResolvers
 } from './question-response'
-import {
-  schema as phoneSchema,
-  resolvers as phoneResolvers
-} from './phone'
+import { GraphQLPhone } from './phone'
 import {
   schema as optOutSchema,
   resolvers as optOutResolvers
@@ -833,7 +830,7 @@ export const schema = [
   organizationSchema,
   "scalar Date",
   "scalar JSON",
-  phoneSchema,
+  "scalar Phone",
   campaignSchema,
   assignmentSchema,
   interactionStepSchema,
@@ -861,7 +858,7 @@ export const resolvers = {
   ...inviteResolvers,
   ...{Date: GraphQLDate},
   ...{JSON: GraphQLJSON},
-  ...phoneResolvers,
+  ...{Phone: GraphQLPhone},
   ...questionResolvers,
   ...rootMutations
 }
