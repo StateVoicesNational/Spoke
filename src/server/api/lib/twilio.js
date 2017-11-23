@@ -164,7 +164,7 @@ async function sendMessage(message) {
 async function handleDeliveryReport(report) {
   const messageSid = report.MessageSid
   if (messageSid) {
-    await Log.save({ message_sid: report.MessageSid, body: report })
+    await Log.save({ message_sid: report.MessageSid, body: JSON.stringify(report) })
     const messageStatus = report.MessageStatus
     const message = await r.table('message')
       .getAll(messageSid, { index: 'service_id' })
