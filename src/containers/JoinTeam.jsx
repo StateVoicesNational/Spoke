@@ -18,14 +18,25 @@ class JoinTeam extends React.Component {
   }
   async componentWillMount() {
     let organization = null
+    let campaign = null
     try {
       organization = await this.props.mutations.joinOrganization()
     } catch (ex) {
       this.setState({ errors: 'Something went wrong trying to join this organization. Please contact your administrator.' })
     }
-    if (organization) {
-      this.props.router.push(`/app/${organization.data.joinOrganization.id}`)
+
+    try {
+      campaign = await this.props.mutations.assignUserToCampaign()
+    } catch (ex) {
+      this.setState({ errors: 'Something went wrong trying to join this campaign. Please contact your administrator.' })
     }
+
+    if (organization && campaign) {
+      this.props.router.push(`/app/${organization.data.joinOrganization.id}`)
+    } else if (organization) {
+       this.props.router.push(`/app/${organization.data.joinOrganization.id}`)
+    }
+
   }
 
   renderErrors() {
@@ -62,6 +73,15 @@ const mapMutationsToProps = ({ ownProps }) => ({
         }
       }`,
     variables: { organizationUuid: ownProps.params.organizationUuid }
+  }),
+  assignUserToCampaign: () => ({
+    mutation: gql`
+      mutation assignUserToCampaign($campaignId: String!) {
+        assignUserToCampaign(campaignId: $campaignId) {
+          id
+        }
+      }`,
+    variables: { campaignId: ownProps.params.campaignId }
   })
 })
 

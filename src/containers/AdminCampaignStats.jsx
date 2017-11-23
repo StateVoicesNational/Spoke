@@ -248,6 +248,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
         id
         title
         isArchived
+        useDynamicAssignment
         assignments {
           id
           texter {
@@ -277,7 +278,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
         contactsCount
         stats {
           sentMessagesCount
-          receivedMessagesCount,
+          receivedMessagesCount
           optOutsCount
         }
       }
