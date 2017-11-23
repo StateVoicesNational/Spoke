@@ -86,6 +86,7 @@
     "faker": "^3.1.0",
     "google-libphonenumber": "^1.0.25",
     "graphql": "^0.6.1",
+    "graphql-date": "^1.0.3",
     "graphql-tag": "^0.1.9",
     "graphql-tools": "^2.8.0",
     "graphql-type-json": "^0.1.4",
