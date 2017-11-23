@@ -25,27 +25,26 @@ const campaignInfoFragment = `
   contactsCount
   datawarehouseAvailable
   customFields
+  useDynamicAssignment
+  logoImageUrl
+  introHtml
+  primaryColor
   texters {
     id
     firstName
     assignment(campaignId:$campaignId) {
       contactsCount
       needsMessageCount: contactsCount(contactsFilter:{messageStatus:\"needsMessage\"})
+      maxContacts
     }
   }
   interactionSteps {
     id
+    questionText
     script
-    question {
-      text
-      answerOptions {
-        value
-        action
-        nextInteractionStep {
-          id
-        }
-      }
-    }
+    answerOption
+    parentInteractionId
+    isDeleted
   }
   cannedResponses {
     id
@@ -155,6 +154,7 @@ class AdminCampaignEdit extends React.Component {
         !this.isNew() ?
           null : this.state.expandedSection + 1
     }) // currently throws an unmounted component error in the console
+    this.props.campaignData.refetch()
   }
 
   handleSave = async () => {
@@ -205,6 +205,7 @@ class AdminCampaignEdit extends React.Component {
         newCampaign.texters = newCampaign.texters.map((texter) => ({
           id: texter.id,
           needsMessageCount: texter.assignment.needsMessageCount,
+          maxContacts: texter.assignment.maxContacts,
           contactsCount: texter.assignment.contactsCount
         }))
       }
@@ -270,7 +271,7 @@ class AdminCampaignEdit extends React.Component {
     return [{
       title: 'Basics',
       content: CampaignBasicsForm,
-      keys: ['title', 'description', 'dueBy'],
+      keys: ['title', 'description', 'dueBy', 'logoImageUrl', 'primaryColor', 'introHtml'],
       blocksStarting: true,
       checkCompleted: () => (
         this.state.campaignFormValues.title !== '' &&
@@ -300,18 +301,20 @@ class AdminCampaignEdit extends React.Component {
     }, {
       title: 'Texters',
       content: CampaignTextersForm,
-      keys: ['texters', 'contactsCount'],
-      checkCompleted: () => this.state.campaignFormValues.texters.length > 0 && this.state.campaignFormValues.contactsCount === this.state.campaignFormValues.texters.reduce(((left, right) => left + right.assignment.contactsCount), 0),
+      keys: ['texters', 'contactsCount', 'useDynamicAssignment'],
+      checkCompleted: () => (this.state.campaignFormValues.texters.length > 0 && this.state.campaignFormValues.contactsCount === this.state.campaignFormValues.texters.reduce(((left, right) => left + right.assignment.contactsCount), 0)) || this.state.campaignFormValues.useDynamicAssignment === true,
       blocksStarting: false,
       extraProps: {
         orgTexters: this.props.organizationData.organization.texters,
-        organizationUuid: this.props.organizationData.organization.uuid
+        organizationUuid: this.props.organizationData.organization.uuid,
+        campaignId: this.props.campaignData.campaign.id
       }
     }, {
       title: 'Interactions',
       content: CampaignInteractionStepsForm,
       keys: ['interactionSteps'],
-      checkCompleted: () => this.state.campaignFormValues.interactionSteps.length > 0 && this.state.campaignFormValues.interactionSteps[0].script !== '',
+      checkCompleted: () => this.state.campaignFormValues.interactionSteps.length > 0,
+      // checkSaved: () => false,
       blocksStarting: true,
       extraProps: {
         customFields: this.props.campaignData.campaign.customFields,
@@ -657,12 +660,12 @@ const mapMutationsToProps = () => ({
   editCampaign(campaignId, campaign) {
     return ({
       mutation: gql`
-      mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {
-        editCampaign(id: $campaignId, campaign: $campaign) {
-          ${campaignInfoFragment}
-        }
-      },
-    `,
+        mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {
+          editCampaign(id: $campaignId, campaign: $campaign) {
+            ${campaignInfoFragment}
+          }
+        },
+      `,
       variables: {
         campaignId,
         campaign

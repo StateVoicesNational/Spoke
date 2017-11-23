@@ -4,6 +4,7 @@ import Empty from '../components/Empty'
 import AssignmentSummary from '../components/AssignmentSummary'
 import loadData from './hoc/load-data'
 import gql from 'graphql-tag'
+import { withRouter } from 'react-router'
 
 class TexterTodoList extends React.Component {
   renderTodoList(assignments) {
@@ -11,7 +12,7 @@ class TexterTodoList extends React.Component {
     return assignments
       .sort((x, y) => ((x.unmessagedCount + x.unrepliedCount) > (y.unmessagedCount + y.unrepliedCount) ? -1 : 1))
       .map((assignment) => {
-        if (assignment.unmessagedCount > 0 || assignment.unrepliedCount > 0 || assignment.badTimezoneCount > 0) {
+        if (assignment.unmessagedCount > 0 || assignment.unrepliedCount > 0 || assignment.badTimezoneCount > 0 || assignment.campaign.useDynamicAssignment) {
           return (
             <AssignmentSummary
               organizationId={organizationId}
@@ -32,7 +33,13 @@ class TexterTodoList extends React.Component {
     // this.props.data.startPolling(5000)
   }
 
+  termsAgreed() {
+    const { data, router } = this.props
+    if (!data.currentUser.terms) { router.push(`/terms?next=${this.props.location.pathname}`) }
+  }
+
   render() {
+    this.termsAgreed()
     const todos = this.props.data.currentUser.todos
     const renderedTodos = this.renderTodoList(todos)
 
@@ -64,12 +71,18 @@ const mapQueriesToProps = ({ ownProps }) => ({
     query: gql`query getTodos($organizationId: String!, $needsMessageFilter: ContactsFilter, $needsResponseFilter: ContactsFilter, $badTimezoneFilter: ContactsFilter) {
       currentUser {
         id
+        terms
         todos(organizationId: $organizationId) {
           id
           campaign {
             id
             title
             description
+            useDynamicAssignment
+            hasUnassignedContacts
+            introHtml
+            primaryColor
+            logoImageUrl
           }
           unmessagedCount: contactsCount(contactsFilter: $needsMessageFilter)
           unrepliedCount: contactsCount(contactsFilter: $needsResponseFilter)
@@ -97,4 +110,4 @@ const mapQueriesToProps = ({ ownProps }) => ({
   }
 })
 
-export default loadData(TexterTodoList, { mapQueriesToProps })
+export default loadData(withRouter(TexterTodoList), { mapQueriesToProps })

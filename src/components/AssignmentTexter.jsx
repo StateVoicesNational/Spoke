@@ -8,7 +8,8 @@ import { StyleSheet, css } from 'aphrodite'
 import { withRouter } from 'react-router'
 import Check from 'material-ui/svg-icons/action/check-circle'
 import Empty from '../components/Empty'
-import FlatButton from 'material-ui/FlatButton'
+import RaisedButton from 'material-ui/RaisedButton'
+
 const styles = StyleSheet.create({
   container: {
     position: 'fixed',
@@ -49,8 +50,14 @@ class AssignmentTexter extends React.Component {
 
   updateCurrentContactIndex(newIndex) {
     this.setState({
-      currentContactIndex: newIndex
+      currentContactIndex: 0
     })
+  }
+
+  componentWillUpdate(nextProps, nextState) {
+    if (this.contactCount() === 0) {
+      setTimeout(() => window.location.reload(), 5000)
+    }
   }
 
   hasPrevious() {
@@ -65,7 +72,8 @@ class AssignmentTexter extends React.Component {
     if (this.hasNext()) {
       this.handleNavigateNext()
     } else {
-      this.handleExitTexter()
+      // Will look async and then redirect to todo page if not
+      this.props.assignContactsIfNeeded(true)
     }
   }
 
@@ -74,6 +82,7 @@ class AssignmentTexter extends React.Component {
       return
     }
 
+    this.props.refreshData()
     this.setState({ direction: 'right' }, () => this.incrementCurrentContactIndex(1))
   }
 
@@ -92,6 +101,7 @@ class AssignmentTexter extends React.Component {
   handleScriptChange = (script) => {
     this.setState({ script })
   }
+
   handleExitTexter = () => {
     this.props.router.push('/app/' + (this.props.organizationId || ''))
   }
@@ -103,31 +113,18 @@ class AssignmentTexter extends React.Component {
 
   currentContact() {
     const { contacts } = this.props
-    return this.getContact(contacts, this.state.currentContactIndex)
+
+    // If the index has got out of sync with the contacts available, then rewind to the start
+    if(this.getContact(contacts, this.state.currentContactIndex)){
+      return this.getContact(contacts, this.state.currentContactIndex)
+    } else {
+      this.updateCurrentContactIndex(0)
+      return this.getContact(contacts, 0)
+    }
   }
 
   renderNavigationToolbarChildren() {
-    const title = `${this.state.currentContactIndex + 1} of ${this.contactCount()}`
-    return [
-      <ToolbarTitle
-        className={css(styles.navigationToolbarTitle)}
-        text={title}
-      />,
-      <IconButton
-        onTouchTap={this.handleNavigatePrevious}
-        disabled={!this.hasPrevious()}
-        // style={styles.toolbarIconButton}
-      >
-        <NavigateBeforeIcon />
-      </IconButton>,
-      <IconButton
-        onTouchTap={this.handleNavigateNext}
-        disabled={!this.hasNext()}
-        // style={styles.toolbarIconButton}
-      >
-        <NavigateNextIcon />
-      </IconButton>
-    ]
+    return ''
   }
 
   renderTexter() {
@@ -144,7 +141,7 @@ class AssignmentTexter extends React.Component {
         campaign={campaign}
         navigationToolbarChildren={navigationToolbarChildren}
         onFinishContact={this.handleFinishContact}
-        onRefreshAssignmentContacts={this.props.onRefreshAssignmentContacts}
+        refreshData={this.props.refreshData}
         onExitTexter={this.handleExitTexter}
       />
     )
@@ -155,19 +152,19 @@ class AssignmentTexter extends React.Component {
         <Empty
           title="You've already messaged or replied to all your assigned contacts for now."
           icon={<Check />}
-        >
-          <FlatButton
-            label='Go back to todos'
+          content={(<RaisedButton
+            label='Back To Todos'
+            onClick={this.handleExitTexter}
           >
-            primary
-          </FlatButton>
+          </RaisedButton>)}
+        >
+          
         </Empty>
       </div>
     )
   }
   render() {
     const { contacts } = this.props.assignment
-
     return (
       <div className={css(styles.container)}>
         {contacts.length === 0 ? this.renderEmpty() : this.renderTexter()}
@@ -181,8 +178,8 @@ AssignmentTexter.propTypes = {
   assignment: React.PropTypes.object,      // current assignment
   contacts: React.PropTypes.array,   // contacts for current assignment
   router: React.PropTypes.object,
-  organizationId: React.PropTypes.string,
-  onRefreshAssignmentContacts: React.PropTypes.func
+  refreshData: React.PropTypes.func,
+  organizationId: React.PropTypes.string
 }
 
 export default withRouter(AssignmentTexter)

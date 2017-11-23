@@ -1,4 +1,10 @@
-import { Campaign,
+import { applyScript } from '../../lib/scripts'
+import camelCaseKeys from 'camelcase-keys'
+import isUrl from 'is-url'
+
+import { 
+  Assignment,
+  Campaign,
   CannedResponse,
   InteractionStep,
   Invite,
@@ -8,6 +14,7 @@ import { Campaign,
   QuestionResponse,
   UserOrganization,
   JobRequest,
+  User,
   r,
   datawarehouse
 } from '../models'
@@ -125,14 +132,18 @@ const rootSchema = `
 
   input InteractionStepInput {
     id: String
-    question: String
+    questionText: String
     script: String
-    answerOptions: [AnswerOptionInput]
+    answerOption: String
+    parentInteractionId: String
+    isDeleted: Boolean
+    interactionSteps: [InteractionStepInput]
   }
 
   input TexterInput {
     id: String
     needsMessageCount: Int
+    maxContacts: Int
     contactsCount: Int
   }
 
@@ -140,6 +151,10 @@ const rootSchema = `
     title: String
     description: String
     dueBy: Date
+    logoImageUrl: String
+    primaryColor: String
+    introHtml: String
+    useDynamicAssignment: Boolean
     contacts: [CampaignContactInput]
     contactSql: String
     organizationId: String
@@ -195,7 +210,7 @@ const rootSchema = `
     editOrganizationRoles(organizationId: String!, userId: String!, roles: [String]): Organization
     updateTextingHours( organizationId: String!, textingHoursStart: Int!, textingHoursEnd: Int!): Organization
     updateTextingHoursEnforcement( organizationId: String!, textingHoursEnforced: Boolean!): Organization
-    sendMessages(contactMessages: [ContactMessage]): [CampaignContact]
+    bulkSendMessages(assignmentId: Int!): [CampaignContact]
     sendMessage(message:MessageInput!, campaignContactId:String!): CampaignContact,
     createOptOut(optOut:OptOutInput!, campaignContactId:String!):CampaignContact,
     editCampaignContactMessageStatus(messageStatus: String!, campaignContactId:String!): CampaignContact,
@@ -205,6 +220,9 @@ const rootSchema = `
     archiveCampaign(id:String!): Campaign,
     unarchiveCampaign(id:String!): Campaign,
     sendReply(id: String!, message: String!): CampaignContact
+    findNewCampaignContact(assignmentId: String!, numberContacts: Int!): CampaignContact,
+    assignUserToCampaign(campaignId: String!): Campaign
+    userAgreeTerms(userId: String!): User
   }
 
   schema {
@@ -214,13 +232,17 @@ const rootSchema = `
 `
 
 async function editCampaign(id, campaign, loaders, user) {
-  const { title, description, dueBy, organizationId } = campaign
+  const { title, description, dueBy, organizationId, useDynamicAssignment, logoImageUrl, introHtml, primaryColor } = campaign
   const campaignUpdates = {
     id,
     title,
     description,
     due_by: dueBy,
-    organization_id: organizationId
+    organization_id: organizationId,
+    use_dynamic_assignment: useDynamicAssignment,
+    logo_image_url: isUrl(logoImageUrl) ? logoImageUrl : '',
+    primary_color: primaryColor,
+    intro_html: introHtml
   }
 
   Object.keys(campaignUpdates).forEach((key) => {
@@ -228,6 +250,7 @@ async function editCampaign(id, campaign, loaders, user) {
       delete campaignUpdates[key]
     }
   })
+
   if (campaign.hasOwnProperty('contacts') && campaign.contacts) {
     const contactsToSave = campaign.contacts.map((datum) => {
       const modelData = {
@@ -242,6 +265,7 @@ async function editCampaign(id, campaign, loaders, user) {
       modelData.campaign_id = id
       return modelData
     })
+    console.log("contactsToSave", contactsToSave)
     const compressedString = await gzip(JSON.stringify(contactsToSave))
     let job = await JobRequest.save({
       queue_name: `${id}:edit_campaign`,
@@ -292,23 +316,18 @@ async function editCampaign(id, campaign, loaders, user) {
         assignTexters(job)
       }
     }
-  }
-  if (campaign.hasOwnProperty('interactionSteps')) {
-    let job = await JobRequest.save({
-      queue_name: `${id}:edit_campaign`,
-      locks_queue: true,
-      assigned: JOBS_SAME_PROCESS, // can get called immediately, below
-      job_type: 'create_interaction_steps',
-      campaign_id: id,
-      payload: JSON.stringify({
-        id,
-        interaction_steps: campaign.interactionSteps
-      })
-    })
 
-    if (JOBS_SAME_PROCESS) {
-      createInteractionSteps(job)
-    }
+    // assign the maxContacts
+    campaign.texters.forEach(async (texter) => {
+      const dog = r.knex('campaign').where({id: id}).select('useDynamicAssignment')
+      await r.knex('assignment')
+        .where({user_id: texter.id, campaign_id: id})
+        .update({max_contacts: texter.maxContacts ? texter.maxContacts : null})
+    });
+  }
+
+  if (campaign.hasOwnProperty('interactionSteps')) {
+    await updateInteractionSteps(id, campaign.interactionSteps)
   }
 
   if (campaign.hasOwnProperty('cannedResponses')) {
@@ -334,8 +353,47 @@ async function editCampaign(id, campaign, loaders, user) {
   return newCampaign || loaders.campaign.load(id)
 }
 
+async function updateInteractionSteps(campaignId, interactionSteps, idMap = {}){
+  await interactionSteps.forEach(async (is) => {
+    // map the interaction step ids for new ones
+    if (idMap[is.parentInteractionId]){ 
+      is.parentInteractionId = idMap[is.parentInteractionId]
+    }
+    if (is.id.indexOf('new') !== -1){
+      const newId = await r.knex('interaction_step')
+        .insert({
+          parent_interaction_id: is.parentInteractionId,
+          question: is.questionText,
+          script: is.script,
+          answer_option: is.answerOption,
+          campaign_id: campaignId
+        }).returning('id')
+      idMap[is.id] = newId[0]
+    } else {
+      await r.knex('interaction_step')
+        .where({id: is.id})
+        .update({
+          question: is.questionText,
+          script: is.script,
+          answer_option: is.answerOption,
+          is_deleted: is.isDeleted
+        })
+    }
+    await updateInteractionSteps(campaignId, is.interactionSteps, idMap)
+  })
+}
+
 const rootMutations = {
   RootMutation: {
+    userAgreeTerms: async (_, { userId }, { user, loaders }) => {
+      const currentUser = await r.table('user')
+        .get(userId)
+        .update({
+          terms: true
+        })
+      return currentUser
+    },
+
     sendReply: async (_, { id, message }, { user, loaders }) => {
       const contact = await loaders.campaignContact.load(id)
 
@@ -417,7 +475,8 @@ const rootMutations = {
           organization_id: organizationId,
           user_id: userId,
           role: newRole
-        }))
+        }))      
+
       if (newOrgRoles.length) {
         await UserOrganization.save(newOrgRoles, { conflict: 'update' })
       }
@@ -443,6 +502,26 @@ const rootMutations = {
         }
       }
       return organization
+    },
+    assignUserToCampaign: async (_, { campaignId }, { user, loaders }) => {
+      let campaign
+      [campaign] = await r.knex('campaign')
+        .where('id', campaignId)
+      if (campaign) {
+        const assignment = await r.table('assignment')
+          .getAll(user.id, { index: 'user_id' })
+          .filter({ campaign_id: campaign.id })
+          .limit(1)(0)
+          .default(null)
+        if (!assignment) {
+          await Assignment.save({
+            user_id: user.id,
+            campaign_id: campaign.id,
+            max_contacts: (process.env.DEFAULT_MAX_CONTACTS || 1)
+          })
+        }
+      }
+      return campaign
     },
     updateTextingHours: async (_, { organizationId, textingHoursStart, textingHoursEnd }, { user }) => {
       await accessRequired(user, organizationId, 'OWNER')
@@ -579,6 +658,53 @@ const rootMutations = {
       contact.message_status = messageStatus
       return await contact.save()
     },
+
+    findNewCampaignContact: async(_, { assignmentId, numberContacts }, { loaders, user } ) => {
+      /* This attempts to find a new contact for the assignment, in the case that useDynamicAssigment == true */
+      const assignment = await Assignment.get(assignmentId)
+      const campaign = await Campaign.get(assignment.campaign_id)
+      const contactsCount = Number((await r.knex('campaign_contact').where({assignment_id: assignmentId}).select(r.knex.raw('count(*) as count')))[0].count)
+
+      console.log({assignmentId: assignmentId, numberContacts: numberContacts})
+
+      if (!campaign.use_dynamic_assignment) {
+        return false
+      }
+
+      numberContacts = numberContacts || 1
+
+      if (assignment.max_contacts && (contactsCount + numberContacts > assignment.max_contacts)){
+        numberContacts = assignment.max_contacts - contactsCount
+      }
+
+      console.log({assignmentId: assignmentId, numberContacts: numberContacts})
+
+      // Don't add them if they already have them
+      const result = await r.knex.raw(`SELECT COUNT(*) as count FROM campaign_contact WHERE assignment_id = :assignment_id AND message_status = 'needsMessage' AND is_opted_out = false`, {assignment_id: assignmentId})
+      if (result.rows[0].count >= numberContacts){
+        return false
+      } 
+
+      const result2 = await r.knex.raw(`UPDATE campaign_contact
+        SET assignment_id = :assignment_id
+        WHERE id IN (
+          SELECT id
+          FROM campaign_contact cc
+          WHERE campaign_id = :campaign_id
+          AND assignment_id IS null
+          LIMIT :number_contacts
+        )
+        RETURNING *
+        `, {assignment_id: assignmentId, campaign_id: campaign.id, number_contacts: numberContacts})
+      
+      if (result2.rowCount > 0){
+        return true
+      } else {  
+        return false
+      }
+
+    },
+
     createOptOut: async(_, { optOut, campaignContactId }, { loaders, user }) => {
       const contact = await loaders.campaignContact.load(campaignContactId)
       await assignmentRequired(user, contact.assignment_id)
@@ -605,18 +731,48 @@ const rootMutations = {
 
       return loaders.campaignContact.load(campaignContactId)
     },
-    sendMessages: async(_, { contactMessages }, loaders) => {
-      if (process.env.ALLOW_SEND_ALL) {
-        const contacts = contactMessages.map(contactMessage => {
-          return rootMutations.RootMutation.sendMessage(_, contactMessage, loaders)
+    bulkSendMessages: async(_, { assignmentId }, loaders) => {
+      if (!process.env.ALLOW_SEND_ALL) {
+        log.error('Not allowed to send all messages at once')
+        throw new GraphQLError({
+          status: 403,
+          message: 'Not allowed to send all messages at once'
         })
-        return contacts
       }
-      log.error('Not allowed to send all messages at once')
-      throw new GraphQLError({
-        status: 403,
-        message: 'Not allowed to send all messages at once'
+
+      const assignment = await Assignment.get(assignmentId)
+      const campaign = await Campaign.get(assignment.campaign_id)
+      // Assign some contacts
+      await rootMutations.RootMutation.findNewCampaignContact(_, { assignmentId: assignmentId, numberContacts: Number(process.env.BULK_SEND_CHUNK_SIZE) - 1 } , loaders)
+
+      const contacts = await r.knex('campaign_contact')
+        .where({message_status: 'needsMessage'})
+        .where({assignment_id: assignmentId})
+        .orderByRaw("updated_at")
+        .limit(process.env.BULK_SEND_CHUNK_SIZE)
+
+      const texter = camelCaseKeys(await User.get(assignment.user_id))
+      const customFields = Object.keys(JSON.parse(contacts[0].custom_fields))
+
+      const contactMessages = await contacts.map( async (contact) => {
+        const script = await campaignContactResolvers.CampaignContact.currentInteractionStepScript(contact)
+        contact.customFields = contact.custom_fields
+        const text = applyScript({
+          contact: camelCaseKeys(contact),
+          texter,
+          script,
+          customFields
+        })
+        const contactMessage = {
+          contactNumber: contact.cell,
+          userId: assignment.user_id,
+          text,
+          assignmentId
+        }
+        await rootMutations.RootMutation.sendMessage(_, {message: contactMessage, campaignContactId: contact.id}, loaders)
       })
+
+      return []
     },
     sendMessage: async(_, { message, campaignContactId }, { loaders }) => {
       const contact = await loaders.campaignContact.load(campaignContactId)
@@ -664,6 +820,13 @@ const rootMutations = {
 
       const { contactNumber, text } = message
 
+      if (text.length > (process.env.MAX_MESSAGE_LENGTH || 280)) {
+        throw new GraphQLError({
+          status: 400,
+          message: 'Message was longer than the limit'
+        })
+      }
+
       const replaceCurlyApostrophes = (rawText) => rawText
         .replace(/[\u2018\u2019]/g, "'")
 
@@ -674,12 +837,14 @@ const rootMutations = {
         assignment_id: message.assignmentId,
         send_status: (JOBS_SAME_PROCESS ? 'SENDING' : 'QUEUED'),
         service: orgFeatures.service || process.env.DEFAULT_SERVICE || '',
-        is_from_contact: false
+        is_from_contact: false,
+        queued_at: new Date()
       })
 
       await messageInstance.save()
 
       contact.message_status = 'messaged'
+      contact.updated_at = 'now()'
       await contact.save()
 
       if (JOBS_SAME_PROCESS) {

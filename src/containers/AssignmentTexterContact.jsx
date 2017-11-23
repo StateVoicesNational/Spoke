@@ -20,12 +20,16 @@ import GSForm from '../components/forms/GSForm'
 import Form from 'react-formal'
 import GSSubmitButton from '../components/forms/GSSubmitButton'
 import SendButton from '../components/SendButton'
+import BulkSendButton from '../components/BulkSendButton'
 import SendButtonArrow from '../components/SendButtonArrow'
 import CircularProgress from 'material-ui/CircularProgress'
 import Snackbar from 'material-ui/Snackbar'
 import { getChildren, getTopMostParent, interactionStepForId, log, isBetweenTextingHours } from '../lib'
 import { withRouter } from 'react-router'
 import wrapMutations from './hoc/wrap-mutations'
+import Empty from '../components/Empty'
+import CreateIcon from 'material-ui/svg-icons/content/create'
+
 const styles = StyleSheet.create({
   mobile: {
     '@media(min-width: 425px)': {
@@ -182,6 +186,7 @@ class AssignmentTexterContact extends React.Component {
     let snackbarOnTouchTap = null
     let snackbarActionTitle = null
     let snackbarError = null
+
     if (assignment.id !== contact.assignmentId || campaign.isArchived) {
       disabledText = ''
       disabled = true
@@ -218,7 +223,7 @@ class AssignmentTexterContact extends React.Component {
       this.skipContact()
     } else if (!this.isContactBetweenTextingHours(contact)) {
       setTimeout(() => {
-        this.props.onRefreshAssignmentContacts()
+        this.props.refreshData()
         this.setState({ disabled: false })
       }, 1500)
     }
@@ -249,7 +254,6 @@ class AssignmentTexterContact extends React.Component {
 
   getAvailableInteractionSteps(questionResponses) {
     const allInteractionSteps = this.props.data.contact.interactionSteps
-
     const availableSteps = []
 
     let step = getTopMostParent(allInteractionSteps)
@@ -362,6 +366,10 @@ class AssignmentTexterContact extends React.Component {
         snackbarError: 'Something went wrong!'
       })
     }
+  }
+
+  setDisabled = async (disabled = true) => {
+    this.setState({ disabled: disabled })
   }
 
   handleMessageFormSubmit = async ({ messageText }) => {
@@ -509,8 +517,14 @@ class AssignmentTexterContact extends React.Component {
     setTimeout(this.props.onFinishContact, 1500)
   }
 
+  bulkSendMessages = async (assignmentId) => {
+    console.log("Assignmnet ID", assignmentId)
+    await this.props.mutations.bulkSendMessages(assignmentId)
+    this.props.refreshData()
+  }
+
   messageSchema = yup.object({
-    messageText: yup.string().required("Can't send empty message")
+    messageText: yup.string().required("Can't send empty message").max(window.MAX_MESSAGE_LENGTH)
   })
 
   handleMessageFormChange = ({ messageText }) => this.setState({ messageText })
@@ -533,7 +547,10 @@ class AssignmentTexterContact extends React.Component {
 
     const availableInteractionSteps = this.getAvailableInteractionSteps(questionResponses)
 
-    return messages.length === 0 ? '' : (
+    return messages.length === 0 ? (<Empty
+          title={"This is your first message to " + contact.firstName}
+          icon={<CreateIcon color='rgb(83, 180, 119)' />}
+        > </Empty>) : (
       <div>
         <AssignmentTexterSurveys
           contact={contact}
@@ -565,7 +582,7 @@ class AssignmentTexterContact extends React.Component {
   }
 
   renderActionToolbar() {
-    const { data, campaign, navigationToolbarChildren } = this.props
+    const { data, campaign, assignment, navigationToolbarChildren, onFinishContact } = this.props
     const { contact } = data
     const { messageStatus } = contact
 
@@ -616,6 +633,12 @@ class AssignmentTexterContact extends React.Component {
                 onFinalTouchTap={this.handleClickSendMessageButton}
                 disabled={this.state.disabled}
               />
+              { window.BULK_SEND_CHUNK_SIZE && contact.messageStatus === 'needsMessage' ? <BulkSendButton
+                assignment={assignment}
+                onFinishContact={onFinishContact}
+                bulkSendMessages={this.bulkSendMessages}
+                setDisabled={this.setDisabled.bind(this)}
+              /> : ''}
               {this.renderNeedsResponseToggleButton(contact)}
               <RaisedButton
                 label='Canned responses'
@@ -777,7 +800,7 @@ class AssignmentTexterContact extends React.Component {
 
   render() {
     return (
-      <div>
+      <div >
         {this.state.disabled ? (
           <div className={css(styles.overlay)}>
             <CircularProgress size={0.5} />
@@ -785,7 +808,7 @@ class AssignmentTexterContact extends React.Component {
           </div>
         ) : ''
         }
-        <div className={css(styles.container)}>
+        <div className={css(styles.container)} style={ this.props.data.contact.messageStatus === 'needsResponse' ? {backgroundColor: 'rgba(83, 180, 119, 0.25)'} : {}}>
           <div className={css(styles.topFixedSection)}>
             {this.renderTopFixedSection()}
           </div>
@@ -957,6 +980,18 @@ const mapMutationsToProps = () => ({
     variables: {
       message,
       campaignContactId
+    }
+  }),
+  bulkSendMessages: (assignmentId) => ({
+    mutation: gql`
+      mutation bulkSendMessages($assignmentId: Int!) {
+        bulkSendMessages(assignmentId: $assignmentId) {
+          id
+        }
+      }
+    `,
+    variables: {
+      assignmentId
     }
   })
 })
