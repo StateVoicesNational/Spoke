@@ -44,10 +44,6 @@ import {
   resolvers as dateResolvers
 } from './date'
 import {
-  schema as jsonSchema,
-  resolvers as jsonResolvers
-} from './json'
-import {
   schema as phoneSchema,
   resolvers as phoneResolvers
 } from './phone'
@@ -91,6 +87,7 @@ import { uploadContacts,
          exportCampaign
        } from '../../workers/jobs'
 const uuidv4 = require('uuid').v4
+import GraphQLJSON from 'graphql-type-json'
 
 const JOBS_SAME_PROCESS = !!(process.env.JOBS_SAME_PROCESS || global.JOBS_SAME_PROCESS)
 const JOBS_SYNC = !!(process.env.JOBS_SYNC || global.JOBS_SYNC)
@@ -838,7 +835,7 @@ export const schema = [
   userSchema,
   organizationSchema,
   dateSchema,
-  jsonSchema,
+  "scalar JSON",
   phoneSchema,
   campaignSchema,
   assignmentSchema,
@@ -866,7 +863,7 @@ export const resolvers = {
   ...questionResponseResolvers,
   ...inviteResolvers,
   ...dateResolvers,
-  ...jsonResolvers,
+  ...{JSON: GraphQLJSON},
   ...phoneResolvers,
   ...questionResolvers,
   ...rootMutations
