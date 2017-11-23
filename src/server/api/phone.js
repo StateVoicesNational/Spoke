@@ -1,5 +1,5 @@
 import { Kind } from 'graphql/language'
-import { GraphQLError } from './errors'
+import { GraphQLError } from 'graphql/error'
 
 export const schema = `
   scalar Phone
