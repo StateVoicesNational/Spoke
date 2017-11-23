@@ -111,7 +111,7 @@ const migrations = [
   { auto: true, //10
     date: '2017-10-23',
     migrate: async function migrate() {
-      await r.knex.schema.createTable('log', (table) => {
+      await r.knex.schema.createTableIfNotExists('log', (table) => {
         table.string('message_sid');
         table.json('body');
         table.timestamp('created_at').default('now()');

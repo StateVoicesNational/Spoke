@@ -9,7 +9,8 @@ import { log } from '../../../lib'
 async function sendMessage(message) {
   return Message.save({ ...message,
                         send_status: 'SENT',
-                        service: 'fakeservice'
+                        service: 'fakeservice',
+                        sent_at: new Date(),
                       }, { conflict: 'update' })
     .then((saveError, newMessage) => newMessage)
 }
