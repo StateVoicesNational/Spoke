@@ -86,7 +86,7 @@ export const resolvers = {
       r.knex('campaign_contact')
       .where({ is_opted_out: true, campaign_id: campaign.id })
       .count()
-      .then((result) => { return result[0].count})
+      .then((result) => { return result[0].count })
     )
   },
   Campaign: {

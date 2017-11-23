@@ -369,7 +369,7 @@ class AssignmentTexterContact extends React.Component {
   }
 
   setDisabled = async (disabled = true) => {
-    this.setState({ disabled: disabled })
+    this.setState({ disabled })
   }
 
   handleMessageFormSubmit = async ({ messageText }) => {
@@ -518,7 +518,7 @@ class AssignmentTexterContact extends React.Component {
   }
 
   bulkSendMessages = async (assignmentId) => {
-    console.log("Assignmnet ID", assignmentId)
+    console.log('Assignmnet ID', assignmentId)
     await this.props.mutations.bulkSendMessages(assignmentId)
     this.props.refreshData()
   }
@@ -548,9 +548,9 @@ class AssignmentTexterContact extends React.Component {
     const availableInteractionSteps = this.getAvailableInteractionSteps(questionResponses)
 
     return messages.length === 0 ? (<Empty
-          title={"This is your first message to " + contact.firstName}
-          icon={<CreateIcon color='rgb(83, 180, 119)' />}
-        > </Empty>) : (
+      title={'This is your first message to ' + contact.firstName}
+      icon={<CreateIcon color='rgb(83, 180, 119)' />}
+    > </Empty>) : (
       <div>
         <AssignmentTexterSurveys
           contact={contact}
@@ -633,7 +633,7 @@ class AssignmentTexterContact extends React.Component {
                 onFinalTouchTap={this.handleClickSendMessageButton}
                 disabled={this.state.disabled}
               />
-              { window.BULK_SEND_CHUNK_SIZE && contact.messageStatus === 'needsMessage' ? <BulkSendButton
+              {window.BULK_SEND_CHUNK_SIZE && contact.messageStatus === 'needsMessage' ? <BulkSendButton
                 assignment={assignment}
                 onFinishContact={onFinishContact}
                 bulkSendMessages={this.bulkSendMessages}
@@ -808,7 +808,7 @@ class AssignmentTexterContact extends React.Component {
           </div>
         ) : ''
         }
-        <div className={css(styles.container)} style={ this.props.data.contact.messageStatus === 'needsResponse' ? {backgroundColor: 'rgba(83, 180, 119, 0.25)'} : {}}>
+        <div className={css(styles.container)} style={this.props.data.contact.messageStatus === 'needsResponse' ? { backgroundColor: 'rgba(83, 180, 119, 0.25)' } : {}}>
           <div className={css(styles.topFixedSection)}>
             {this.renderTopFixedSection()}
           </div>

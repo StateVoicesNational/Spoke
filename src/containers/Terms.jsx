@@ -1,16 +1,16 @@
-import React from 'react';
+import React from 'react'
 import loadData from './hoc/load-data'
 import gql from 'graphql-tag'
-import Paper from 'material-ui/Paper';
+import Paper from 'material-ui/Paper'
 import {
   Step,
   Stepper,
   StepLabel,
-  StepContent,
-} from 'material-ui/Stepper';
-import FlatButton from 'material-ui/FlatButton';
-import RaisedButton from 'material-ui/RaisedButton';
-import Divider from 'material-ui/Divider';
+  StepContent
+} from 'material-ui/Stepper'
+import FlatButton from 'material-ui/FlatButton'
+import RaisedButton from 'material-ui/RaisedButton'
+import Divider from 'material-ui/Divider'
 import wrapMutations from './hoc/wrap-mutations'
 import { withRouter } from 'react-router'
 
@@ -24,63 +24,63 @@ class Terms extends React.Component {
 
   state = {
     finished: false,
-    stepIndex: 0,
+    stepIndex: 0
   };
 
   handleNext = () => {
-    const {stepIndex} = this.state;
+    const { stepIndex } = this.state
     this.setState({
       stepIndex: stepIndex + 1,
-      finished: stepIndex >= 2,
-    });
+      finished: stepIndex >= 2
+    })
     if (stepIndex >= 2) this.handleTermsAgree()
   };
 
   handlePrev = () => {
-    const {stepIndex} = this.state;
+    const { stepIndex } = this.state
     if (stepIndex > 0) {
-      this.setState({stepIndex: stepIndex - 1});
+      this.setState({ stepIndex: stepIndex - 1 })
     }
   };
 
   renderStepActions(step) {
-    const {stepIndex} = this.state;
+    const { stepIndex } = this.state
 
     return (
-      <div style={{margin: '12px 0'}}>
+      <div style={{ margin: '12px 0' }}>
         <RaisedButton
           label={stepIndex === 2 ? 'Agree' : 'Next'}
-          disableTouchRipple={true}
-          disableFocusRipple={true}
-          primary={true}
+          disableTouchRipple
+          disableFocusRipple
+          primary
           onClick={this.handleNext}
-          style={{marginRight: 12}}
+          style={{ marginRight: 12 }}
         />
         {step > 0 && (
           <FlatButton
-            label="Back"
+            label='Back'
             disabled={stepIndex === 0}
-            disableTouchRipple={true}
-            disableFocusRipple={true}
+            disableTouchRipple
+            disableFocusRipple
             onClick={this.handlePrev}
           />
         )}
       </div>
-    );
+    )
   }
 
   render() {
-    const {finished, stepIndex} = this.state;
+    const { finished, stepIndex } = this.state
 
     return (
-      <div style={{maxWidth: 380, maxHeight: 400, margin: 'auto'}}>
-        <Paper style={{padding:20,margin:20}}>
+      <div style={{ maxWidth: 380, maxHeight: 400, margin: 'auto' }}>
+        <Paper style={{ padding: 20, margin: 20 }}>
           <h2>Code Of Conduct</h2>
-          <Divider/>
-          <Stepper activeStep={stepIndex} orientation="vertical">
+          <Divider />
+          <Stepper activeStep={stepIndex} orientation='vertical'>
             <Step>
               <StepLabel>
-                <div style={{marginLeft: '25px',paddingLeft: '21px', marginTop: '-46px'}}><u>Inappropriate Behaviour</u></div>
+                <div style={{ marginLeft: '25px', paddingLeft: '21px', marginTop: '-46px' }}><u>Inappropriate Behaviour</u></div>
               </StepLabel>
               <StepContent>
                 <p>
@@ -91,7 +91,7 @@ class Terms extends React.Component {
             </Step>
             <Step>
               <StepLabel>
-                <div style={{marginLeft: '25px',paddingLeft: '21px', marginTop: '-46px'}}><u>Commit to Reply</u></div>
+                <div style={{ marginLeft: '25px', paddingLeft: '21px', marginTop: '-46px' }}><u>Commit to Reply</u></div>
               </StepLabel>
               <StepContent>
                 <p>Please commit to responding to people who reply to you. We're attempting to grow trust and understanding in our community and maintaining an open dialogue is key.</p>
@@ -100,7 +100,7 @@ class Terms extends React.Component {
             </Step>
             <Step>
               <StepLabel>
-                <div style={{marginLeft: '25px',paddingLeft: '21px', marginTop: '-46px'}}><u>Retention</u></div>
+                <div style={{ marginLeft: '25px', paddingLeft: '21px', marginTop: '-46px' }}><u>Retention</u></div>
               </StepLabel>
               <StepContent>
                 <p>
@@ -111,13 +111,13 @@ class Terms extends React.Component {
             </Step>
           </Stepper>
           {finished && (
-            <p style={{margin: '20px 0', textAlign: 'center'}}>
+            <p style={{ margin: '20px 0', textAlign: 'center' }}>
               Thanks!
             </p>
           )}
         </Paper>
       </div>
-    );
+    )
   }
 }
 

@@ -137,7 +137,7 @@ async function sendMessage(message) {
 
       if (hasError) {
         const SENT_STRING = '"status"' // will appear in responses
-        if (messageToSave.service_response.split(SENT_STRING).length >= MAX_SEND_ATTEMPTS+1) {
+        if (messageToSave.service_response.split(SENT_STRING).length >= MAX_SEND_ATTEMPTS + 1) {
           messageToSave.send_status = 'ERROR'
         }
         Message.save(messageToSave, { conflict: 'update' })

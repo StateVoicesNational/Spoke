@@ -30,9 +30,9 @@ const styles = StyleSheet.create({
     margin: '20px 0'
   },
   image: {
-    position: 'absolute', 
-    height: '70%', 
-    top: '20px', 
+    position: 'absolute',
+    height: '70%',
+    top: '20px',
     right: '20px'
   }
 })
@@ -53,7 +53,7 @@ class AssignmentSummary extends Component {
 
   renderBadgedButton({ assignment, title, count, primary, disabled, contactsFilter, hideIfZero }) {
     if (count === 0 && hideIfZero) { return '' }
-    if (count === 0){
+    if (count === 0) {
       return (
         <RaisedButton
           disabled={disabled}
@@ -81,7 +81,7 @@ class AssignmentSummary extends Component {
   render() {
     const { assignment, unmessagedCount, unrepliedCount, badTimezoneCount } = this.props
     const { title, description, dueBy, primaryColor, logoImageUrl, introHtml } = assignment.campaign
-    console.log("ASS", assignment.campaign)
+    console.log('ASS', assignment.campaign)
     const actions = [
       <FlatButton
         label='No'
@@ -102,15 +102,15 @@ class AssignmentSummary extends Component {
           <CardTitle
             title={title}
             subtitle={`${description} - ${moment(dueBy).format('MMM D YYYY')}`}
-            style={{backgroundColor: primaryColor}}
+            style={{ backgroundColor: primaryColor }}
             children={logoImageUrl ? <img src={logoImageUrl} className={css(styles.image)} /> : ''}
-          >             
+          >
           </CardTitle>
           <Divider />
-          <div style={{margin: '20px'}}>
+          <div style={{ margin: '20px' }}>
             <div dangerouslySetInnerHTML={{ __html: introHtml }} />
           </div>
-          <CardActions style={{textAlign: 'center'}}>
+          <CardActions style={{ textAlign: 'center' }}>
             {this.renderBadgedButton({
               assignment,
               title: 'Send messages',

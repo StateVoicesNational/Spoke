@@ -34,9 +34,8 @@ class JoinTeam extends React.Component {
     if (organization && campaign) {
       this.props.router.push(`/app/${organization.data.joinOrganization.id}`)
     } else if (organization) {
-       this.props.router.push(`/app/${organization.data.joinOrganization.id}`)
+      this.props.router.push(`/app/${organization.data.joinOrganization.id}`)
     }
-
   }
 
   renderErrors() {
