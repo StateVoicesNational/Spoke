@@ -106,11 +106,11 @@ export default class CampaignTextersForm extends React.Component {
     useDynamicAssignment: this.formValues().useDynamicAssignment
   }
 
-  handleToggleChange(){
+  handleToggleChange() {
     this.setState({
       useDynamicAssignment: !this.state.useDynamicAssignment
     })
-    this.props.onChange({useDynamicAssignment: !this.state.useDynamicAssignment})
+    this.props.onChange({ useDynamicAssignment: !this.state.useDynamicAssignment })
   }
 
   onChange = (formValues) => {

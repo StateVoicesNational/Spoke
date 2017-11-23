@@ -63,7 +63,7 @@ function getContacts(assignment, contactsFilter, organization, campaign) {
       query = query.where('is_opted_out', contactsFilter.isOptedOut)
     }
   }
-  
+
   return query
 }
 

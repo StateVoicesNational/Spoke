@@ -115,7 +115,7 @@ class AssignmentTexter extends React.Component {
     const { contacts } = this.props
 
     // If the index has got out of sync with the contacts available, then rewind to the start
-    if(this.getContact(contacts, this.state.currentContactIndex)){
+    if (this.getContact(contacts, this.state.currentContactIndex)) {
       return this.getContact(contacts, this.state.currentContactIndex)
     } else {
       this.updateCurrentContactIndex(0)
@@ -158,7 +158,7 @@ class AssignmentTexter extends React.Component {
           >
           </RaisedButton>)}
         >
-          
+
         </Empty>
       </div>
     )

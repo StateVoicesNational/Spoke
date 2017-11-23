@@ -39,7 +39,7 @@ const migrations = [
     date: '2017-09-24',
     // eslint-disable-next-line
     migrate: async function() {
-       await r.knex.schema.alterTable('job_request', (table) => {
+      await r.knex.schema.alterTable('job_request', (table) => {
         table.string('result_message').nullable().default('')
       })
       await r.knex.schema.alterTable('opt_out', (table) => {
@@ -47,74 +47,74 @@ const migrations = [
       })
     }
   },
-  { auto: true, //4
+  { auto: true, // 4
     date: '2017-09-22',
     migrate: async function migrate() {
       await r.knex.schema.alterTable('campaign', (table) => {
-        table.boolean('use_dynamic_assignment').notNullable().default(false);
+        table.boolean('use_dynamic_assignment').notNullable().default(false)
       })
       await r.knex.schema.alterTable('assignment', (table) => {
-        table.integer('max_contacts');
+        table.integer('max_contacts')
       })
       console.log('added dynamic_assigment column to campaign table and max_contacts to assignments')
     }
   },
-  { auto: true, //5
+  { auto: true, // 5
     date: '2017-09-25',
     migrate: async function migrate() {
       await r.knex.schema.alterTable('campaign_contact', (table) => {
-        table.timestamp('updated_at').default('now()');
+        table.timestamp('updated_at').default('now()')
       })
       console.log('added updated_at column to campaign_contact')
     }
   },
-  { auto: true, //6
+  { auto: true, // 6
     date: '2017-10-03',
     migrate: async function migrate() {
       await r.knex.schema.alterTable('interaction_step', (table) => {
-        table.timestamp('is_deleted').notNullable().default(false);
+        table.boolean('is_deleted').notNullable().default(false)
       })
       console.log('added is_deleted column to interaction_step')
     }
   },
-  { auto: true, //7
+  { auto: true, // 7
     date: '2017-10-04',
     migrate: async function migrate() {
       await r.knex.schema.alterTable('campaign', (table) => {
-        table.text('intro_html');
-        table.text('logo_image_url');
-        table.string('primary_color');
+        table.text('intro_html')
+        table.text('logo_image_url')
+        table.string('primary_color')
       })
       console.log('added is_deleted column to interaction_step')
     }
   },
-  { auto: true, //8
+  { auto: true, // 8
     date: '2017-09-28',
     migrate: async function migrate() {
       await r.knex.schema.alterTable('user', (table) => {
-        table.boolean('terms').default(false);
+        table.boolean('terms').default(false)
       })
       console.log('added terms column to user')
     }
   },
-  { auto: true, //9
+  { auto: true, // 9
     date: '2017-10-23',
     migrate: async function migrate() {
       await r.knex.schema.alterTable('message', (table) => {
-        table.timestamp('queued_at');
-        table.timestamp('sent_at');
-        table.timestamp('service_response_at');
+        table.timestamp('queued_at')
+        table.timestamp('sent_at')
+        table.timestamp('service_response_at')
       })
       console.log('added action timestamp columns to message')
     }
   },
-  { auto: true, //10
+  { auto: true, // 10
     date: '2017-10-23',
     migrate: async function migrate() {
       await r.knex.schema.createTableIfNotExists('log', (table) => {
-        table.string('message_sid');
-        table.json('body');
-        table.timestamp('created_at').default('now()');
+        table.string('message_sid')
+        table.json('body')
+        table.timestamp('created_at').default('now()')
       })
       console.log('added log table')
     }

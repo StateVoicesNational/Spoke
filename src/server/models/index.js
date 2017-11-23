@@ -20,7 +20,6 @@ import Log from './log'
 import Migrations from './migrations'
 import thinky from './thinky'
 import datawarehouse from './datawarehouse'
-import Log from './log'
 
 function createLoader(model, idKey = 'id') {
   return new DataLoader(async (keys) => {

@@ -66,7 +66,7 @@ export default class CampaignBasicsForm extends React.Component {
           />
           <Form.Field
             name='dueBy'
-            label='Due date'            
+            label='Due date'
             type='date'
             locale='en-US'
             shouldDisableDate={(date) => moment(date).diff(moment()) < 0}

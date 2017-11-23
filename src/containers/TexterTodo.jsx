@@ -18,17 +18,16 @@ class TexterTodo extends React.Component {
   assignContactsIfNeeded = async (checkServer = false) => {
     const { assignment } = this.props.data
     if ((assignment.contacts.length == 0 || checkServer) && assignment.campaign.useDynamicAssignment) {
-      
       const didAddContacts = await this.props.mutations.findNewCampaignContact(assignment.id, 1)
 
-      if (didAddContacts){
+      if (didAddContacts) {
         this.props.data.refetch()
       } else {
         this.props.router.push(
           `/app/${this.props.params.organizationId}/todos`
-        )   
+        )
       }
-    } 
+    }
   }
 
   refreshData = () => {

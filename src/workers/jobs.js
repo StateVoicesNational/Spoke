@@ -34,13 +34,12 @@ async function getTimezoneByZip(zip) {
 }
 
 export async function processSqsMessages() {
-
   // hit endpoint on SQS
   // ask for a list of messages from SQS (with quantity tied to it)
   // if SQS has messages, process messages into pending_message_part and dequeue messages (mark them as handled)
   // if SQS doesnt have messages, exit
 
-  if(!process.env.TWILIO_SQS_QUEUE_URL){
+  if (!process.env.TWILIO_SQS_QUEUE_URL) {
     return
   }
 
@@ -58,22 +57,22 @@ export async function processSqsMessages() {
 
   const p = new Promise
 
-  sqs.receiveMessage( params, async ( err, data ) => {
-    if( err ){
-      console.log( err, err.stack )
-      p.reject( err )
-    } else if ( data.Messages ){
-      console.log( data )
-      for( let i = 0; i < data.Messages.length; i ++) {
+  sqs.receiveMessage(params, async (err, data) => {
+    if (err) {
+      console.log(err, err.stack)
+      p.reject(err)
+    } else if (data.Messages) {
+      console.log(data)
+      for (let i = 0; i < data.Messages.length; i ++) {
         const body = message.Body
-        console.log( 'processing sqs queue:', body );
-        const twilioMessage = JSON.parse( body )
+        console.log('processing sqs queue:', body)
+        const twilioMessage = JSON.parse(body)
 
-        await serviceMap.twilio.handleIncomingMessage( twilioMessage )
+        await serviceMap.twilio.handleIncomingMessage(twilioMessage)
 
-        sqs.deleteMessage({ QueueUrl: process.env.TWILIO_SQS_QUEUE_URL, ReceiptHandle:      message.ReceiptHandle }, ( err, data ) => {
-          if (err) console.log( err, err.stack ) // an error occurred
-          else     console.log( data )           // successful response
+        sqs.deleteMessage({ QueueUrl: process.env.TWILIO_SQS_QUEUE_URL, ReceiptHandle: message.ReceiptHandle }, (err, data) => {
+          if (err) console.log(err, err.stack) // an error occurred
+          else console.log(data)           // successful response
         })
       }
       p.resolve()
@@ -329,7 +328,7 @@ export async function assignTexters(job) {
   //   iterating over texter, assignment is created, then apportioned needsMessageCount texters
   const payload = JSON.parse(job.payload)
   const cid = job.campaign_id
-  const campaign = (await r.knex('campaign').where({id: cid}))[0]
+  const campaign = (await r.knex('campaign').where({ id: cid }))[0]
   const texters = payload.texters
   const currentAssignments = await r.knex('assignment')
     .where('assignment.campaign_id', cid)
@@ -351,7 +350,7 @@ export async function assignTexters(job) {
     if (texter && texter.needsMessageCount === parseInt(assignment.needs_message_count)) {
       unchangedTexters[assignment.user_id] = true
       return null
-    } else if (texter) { //assignment change
+    } else if (texter) { // assignment change
       // If there is a delta between client and server, then accomodate delta (See #322)
       const clientMessagedCount = texter.contactsCount - texter.needsMessageCount
       const serverMessagedCount = assignment.full_contact_count - assignment.needs_message_count
@@ -408,7 +407,7 @@ export async function assignTexters(job) {
     const contactsToAssign = Math.min(availableContacts, texter.needsMessageCount)
     if (contactsToAssign === 0) {
       // avoid creating a new assignment when the texter should get 0
-      if (!campaign.use_dynamic_assignment){
+      if (!campaign.use_dynamic_assignment) {
         continue
       }
     }
@@ -427,7 +426,7 @@ export async function assignTexters(job) {
       }).save()
     }
 
-    if (!campaign.use_dynamic_assignment){
+    if (!campaign.use_dynamic_assignment) {
       await r.knex('campaign_contact')
         .where('id', 'in',
                r.knex('campaign_contact')
@@ -452,7 +451,7 @@ export async function assignTexters(job) {
     await updateJob(job, Math.floor((75 / texterCount) * (index + 1)) + 20)
   }
 
-  if (!campaign.use_dynamic_assignment){
+  if (!campaign.use_dynamic_assignment) {
     const assignmentsToDelete = r.knex('assignment')
       .where('assignment.campaign_id', cid)
       .leftJoin('campaign_contact', 'assignment.id', 'campaign_contact.assignment_id')
@@ -575,7 +574,6 @@ export async function exportCampaign(job) {
         })
 
         contactRow[`question[${allQuestions[stepId]}]`] = value
-        
       })
 
       return contactRow
