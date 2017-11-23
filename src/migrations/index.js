@@ -46,6 +46,28 @@ const migrations = [
        table.string('reason_code').nullable().default('')
      })
    }
+  },
+  { auto: true, //4
+    date: '2017-10-23',
+    migrate: async function migrate() {
+      await r.knex.schema.alterTable('message', (table) => {
+        table.timestamp('queued_at');
+        table.timestamp('sent_at');
+        table.timestamp('service_response_at');
+      })
+      console.log('added action timestamp columns to message')
+    }
+  },
+  { auto: true, //5
+    date: '2017-10-23',
+    migrate: async function migrate() {
+      await r.knex.schema.createTable('log', (table) => {
+        table.string('message_sid');
+        table.json('body');
+        table.timestamp('created_at').default('now()');
+      })
+      console.log('added log table')
+    }
   }
   /* migration template
      {auto: true, //if auto is false, then it will block the migration running automatically

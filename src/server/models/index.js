@@ -16,6 +16,7 @@ import UserOrganization from './user-organization'
 import Invite from './invite'
 import ZipCode from './zip-code'
 import JobRequest from './job-request'
+import Log from './log'
 import Migrations from './migrations'
 import thinky from './thinky'
 import datawarehouse from './datawarehouse'
@@ -62,5 +63,6 @@ export {
   UserCell,
   UserOrganization,
   User,
-  ZipCode
+  ZipCode,
+  Log
 }
