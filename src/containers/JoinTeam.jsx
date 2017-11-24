@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react'
 import loadData from './hoc/load-data'
 import gql from 'graphql-tag'
@@ -49,8 +50,8 @@ class JoinTeam extends React.Component {
 }
 
 JoinTeam.propTypes = {
-  mutations: React.PropTypes.object,
-  router: React.PropTypes.object
+  mutations: PropTypes.object,
+  router: PropTypes.object
 }
 
 const mapMutationsToProps = ({ ownProps }) => ({

@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react'
 import { StyleSheet, css } from 'aphrodite'
 import theme from '../styles/theme'
@@ -18,8 +19,8 @@ const CampaignFormSectionHeading = ({ title, subtitle }) => (
 )
 
 CampaignFormSectionHeading.propTypes = {
-  title: React.PropTypes.string,
-  subtitle: React.PropTypes.any
+  title: PropTypes.string,
+  subtitle: PropTypes.any
 }
 
 export default CampaignFormSectionHeading

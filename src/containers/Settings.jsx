@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react'
 import loadData from './hoc/load-data'
 import gql from 'graphql-tag'
@@ -158,9 +159,9 @@ class Settings extends React.Component {
 }
 
 Settings.propTypes = {
-  data: React.PropTypes.object,
-  params: React.PropTypes.object,
-  mutations: React.PropTypes.object
+  data: PropTypes.object,
+  params: PropTypes.object,
+  mutations: PropTypes.object
 }
 
 const mapMutationsToProps = ({ ownProps }) => ({

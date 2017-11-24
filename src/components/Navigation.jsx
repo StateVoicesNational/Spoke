@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react'
 import Paper from 'material-ui/Paper'
 import { List, ListItem } from 'material-ui/List'
@@ -31,9 +32,9 @@ const Navigation = function Navigation(props) {
 }
 
 Navigation.propTypes = {
-  sections: React.PropTypes.array,
-  switchListItem: React.PropTypes.object,
-  router: React.PropTypes.object
+  sections: PropTypes.array,
+  switchListItem: PropTypes.object,
+  router: PropTypes.object
 }
 
 export default withRouter(Navigation)

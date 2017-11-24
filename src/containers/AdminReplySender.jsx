@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react'
 import loadData from './hoc/load-data'
 import gql from 'graphql-tag'
@@ -108,8 +109,8 @@ class AdminReplySender extends React.Component {
 }
 
 AdminReplySender.propTypes = {
-  mutations: React.PropTypes.object,
-  data: React.PropTypes.object
+  mutations: PropTypes.object,
+  data: PropTypes.object
 }
 
 const mapQueriesToProps = ({ ownProps }) => ({
