@@ -142,7 +142,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
             /> : ''}
             {interactionStep.parentInteractionId ? <DeleteIcon style={styles.pullRight} onTouchTap={() => this.deleteStep(interactionStep.id).bind(this)} /> : ''}
             {interactionStep.parentInteractionId && this.props.availableActions && this.props.availableActions.length ?
-              (<div key={`answeractions-${interactionStep.id}` }>
+              (<div key={`answeractions-${interactionStep.id}`}>
                  <Form.Field
                    name='answerActions'
                    type='select'
@@ -155,7 +155,8 @@ export default class CampaignInteractionStepsForm extends React.Component {
                    ]}
                  />
                  <IconButton
-                    tooltip='An action is something that is triggered by this answer being chosen, often in an outside system'>
+                   tooltip='An action is something that is triggered by this answer being chosen, often in an outside system'
+                 >
                     <HelpIconOutline />
                  </IconButton>
                  <div>
