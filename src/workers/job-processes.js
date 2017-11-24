@@ -1,6 +1,6 @@
 import { r } from '../server/models'
 import { sleep, getNextJob, updateJob, log } from './lib'
-import { exportCampaign, processSqsMessages, uploadContacts, assignTexters, createInteractionSteps, sendMessages, handleIncomingMessageParts, clearOldJobs } from './jobs'
+import { exportCampaign, processSqsMessages, uploadContacts, assignTexters, sendMessages, handleIncomingMessageParts, clearOldJobs } from './jobs'
 import { runMigrations } from '../migrations'
 import { setupUserNotificationObservers } from '../server/notifications'
 
@@ -18,8 +18,7 @@ export { seedZipCodes } from '../server/seeds/seed-zip-codes'
 const jobMap = {
   'export': exportCampaign,
   'upload_contacts': uploadContacts,
-  'assign_texters': assignTexters,
-  'create_interaction_steps': createInteractionSteps
+  'assign_texters': assignTexters
 }
 
 export async function processJobs() {

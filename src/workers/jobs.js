@@ -234,69 +234,6 @@ export async function loadContactsFromDataWarehouse(job) {
   }
 }
 
-export async function createInteractionSteps(job) {
-  const payload = JSON.parse(job.payload)
-  const id = job.campaign_id
-  const answerOptionStore = {}
-  await r.table('interaction_step')
-    .getAll(id, { index: 'campaign_id' })
-    .delete()
-
-  for (let index = 0; index < payload.interaction_steps.length; index++) {
-    const step = payload.interaction_steps[index]
-    const newId = step.id
-    let parentId = ''
-    let answerOption = ''
-    let answerAction = ''
-
-    if (newId in answerOptionStore) {
-      parentId = answerOptionStore[newId]['parent']
-      answerOption = answerOptionStore[newId]['value']
-      answerAction = answerOptionStore[newId]['action']
-    }
-    const dbInteractionStep = await InteractionStep
-      .save({
-        campaign_id: id,
-        question: step.question,
-        script: step.script,
-        answer_option: answerOption,
-        answer_actions: answerAction,
-        parent_interaction_id: parentId
-      }).catch(log.error)
-
-    if (step.answerOptions) {
-      for (let innerIndex = 0; innerIndex < step.answerOptions.length; innerIndex++) {
-        const option = step.answerOptions[innerIndex]
-        let nextStepId = ''
-        if (option.nextInteractionStepId) {
-          nextStepId = option.nextInteractionStepId
-          // store the answers and step id for writing to child steps
-          answerOptionStore[nextStepId] = {
-            'value': option.value,
-            'parent': dbInteractionStep.id,
-            'action': option.action
-          }
-        } else {
-          // when answer but no link to next step
-          const answerStep = await InteractionStep
-            .save({
-              campaign_id: id,
-              question: '',
-              script: '',
-              answer_actions: option.action,
-              answer_option: option.value,
-              parent_interaction_id: dbInteractionStep.id
-            }).catch(log.error)
-        }
-      }
-    }
-  }
-
-  if (job.id) {
-    await r.table('job_request').get(job.id).delete()
-  }
-}
-
 export async function assignTexters(job) {
   // Assigns UNassigned campaign contacts to texters
   // It does NOT re-assign contacts to other texters
