@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react'
 import {
   EditorState,
@@ -61,7 +62,7 @@ const RecognizedField = (props) => (
 )
 
 RecognizedField.propTypes = {
-  children: React.PropTypes.arrayOf(React.PropTypes.element)
+  children: PropTypes.arrayOf(PropTypes.element)
 }
 
 const UnrecognizedField = (props) => (
@@ -69,7 +70,7 @@ const UnrecognizedField = (props) => (
 )
 
 UnrecognizedField.propTypes = {
-  children: React.PropTypes.arrayOf(React.PropTypes.element)
+  children: PropTypes.arrayOf(PropTypes.element)
 }
 
 class ScriptEditor extends React.Component {
@@ -189,10 +190,10 @@ class ScriptEditor extends React.Component {
 }
 
 ScriptEditor.propTypes = {
-  scriptFields: React.PropTypes.array,
-  scriptText: React.PropTypes.string,
-  onChange: React.PropTypes.func,
-  name: React.PropTypes.string
+  scriptFields: PropTypes.array,
+  scriptText: PropTypes.string,
+  onChange: PropTypes.func,
+  name: PropTypes.string
 }
 
 export default ScriptEditor

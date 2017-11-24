@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react'
 import WarningIcon from 'material-ui/svg-icons/alert/warning'
 import DoneIcon from 'material-ui/svg-icons/action/done'
@@ -556,13 +557,13 @@ class AdminCampaignEdit extends React.Component {
 }
 
 AdminCampaignEdit.propTypes = {
-  campaignData: React.PropTypes.object,
-  mutations: React.PropTypes.object,
-  organizationData: React.PropTypes.object,
-  params: React.PropTypes.object,
-  location: React.PropTypes.object,
-  pendingJobsData: React.PropTypes.object,
-  availableActionsData: React.PropTypes.object
+  campaignData: PropTypes.object,
+  mutations: PropTypes.object,
+  organizationData: PropTypes.object,
+  params: PropTypes.object,
+  location: PropTypes.object,
+  pendingJobsData: PropTypes.object,
+  availableActionsData: PropTypes.object
 }
 
 const mapQueriesToProps = ({ ownProps }) => ({

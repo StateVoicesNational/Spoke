@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react'
 import RaisedButton from 'material-ui/RaisedButton'
 import CircularProgress from 'material-ui/CircularProgress'
@@ -39,7 +40,7 @@ const GSSubmitButton = (props) => {
 }
 
 GSSubmitButton.propTypes = {
-  isSubmitting: React.PropTypes.bool
+  isSubmitting: PropTypes.bool
 }
 
 export default GSSubmitButton
