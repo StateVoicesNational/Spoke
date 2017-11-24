@@ -10,6 +10,7 @@ export const schema = `
     answerOption: String
     parentInteractionId: String
     isDeleted: Boolean
+    answerActions: String
     questionResponse(campaignContactId: String): QuestionResponse
   }
 `
@@ -20,6 +21,7 @@ export const resolvers = {
       'id',
       'script',
       'answerOption',
+      'answerActions',
       'parentInteractionId',
       'question',
       'isDeleted'

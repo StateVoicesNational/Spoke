@@ -43,6 +43,7 @@ const campaignInfoFragment = `
     questionText
     script
     answerOption
+    answerActions
     parentInteractionId
     isDeleted
   }
@@ -210,7 +211,10 @@ class AdminCampaignEdit extends React.Component {
         }))
       }
       if (newCampaign.hasOwnProperty('interactionSteps')) {
-        newCampaign.interactionSteps = newCampaign.interactionSteps.map((step) => ({
+        console.log('newCampaign.interactionSteps', newCampaign.interactionSteps)
+        newCampaign.interactionSteps = Object.assign({}, newCampaign.interactionSteps)
+        /*
+          newCampaign.interactionSteps.map((step) => ({
           id: step.id,
           question: step.question ? step.question.text : null,
           script: step.script,
@@ -220,6 +224,7 @@ class AdminCampaignEdit extends React.Component {
             nextInteractionStepId: answer.nextInteractionStep ? answer.nextInteractionStep.id : null
           })) : []
         }))
+        */
       }
       await this
         .props

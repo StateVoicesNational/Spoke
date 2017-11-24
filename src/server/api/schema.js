@@ -135,6 +135,7 @@ const rootSchema = `
     questionText: String
     script: String
     answerOption: String
+    answerActions: String
     parentInteractionId: String
     isDeleted: Boolean
     interactionSteps: [InteractionStepInput]
@@ -159,7 +160,7 @@ const rootSchema = `
     contactSql: String
     organizationId: String
     texters: [TexterInput]
-    interactionSteps: [InteractionStepInput]
+    interactionSteps: InteractionStepInput
     cannedResponses: [CannedResponseInput]
   }
 
@@ -231,7 +232,7 @@ const rootSchema = `
   }
 `
 
-async function editCampaign(id, campaign, loaders, user) {
+async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
   const { title, description, dueBy, organizationId, useDynamicAssignment, logoImageUrl, introHtml, primaryColor } = campaign
   const campaignUpdates = {
     id,
@@ -327,7 +328,7 @@ async function editCampaign(id, campaign, loaders, user) {
   }
 
   if (campaign.hasOwnProperty('interactionSteps')) {
-    await updateInteractionSteps(id, campaign.interactionSteps)
+    await updateInteractionSteps(id, [campaign.interactionSteps], origCampaignRecord)
   }
 
   if (campaign.hasOwnProperty('cannedResponses')) {
@@ -353,7 +354,7 @@ async function editCampaign(id, campaign, loaders, user) {
   return newCampaign || loaders.campaign.load(id)
 }
 
-async function updateInteractionSteps(campaignId, interactionSteps, idMap = {}) {
+async function updateInteractionSteps(campaignId, interactionSteps, origCampaignRecord, idMap = {}) {
   await interactionSteps.forEach(async (is) => {
     // map the interaction step ids for new ones
     if (idMap[is.parentInteractionId]) {
@@ -366,20 +367,28 @@ async function updateInteractionSteps(campaignId, interactionSteps, idMap = {}) 
           question: is.questionText,
           script: is.script,
           answer_option: is.answerOption,
+          answer_actions: is.answerActions,
           campaign_id: campaignId
         }).returning('id')
       idMap[is.id] = newId[0]
     } else {
-      await r.knex('interaction_step')
-        .where({ id: is.id })
-        .update({
-          question: is.questionText,
-          script: is.script,
-          answer_option: is.answerOption,
-          is_deleted: is.isDeleted
-        })
+      if (!origCampaignRecord.is_started && is.isDeleted) {
+        await r.knex('interaction_step')
+          .where({ id: is.id })
+          .delete()
+      } else {
+        await r.knex('interaction_step')
+          .where({ id: is.id })
+          .update({
+            question: is.questionText,
+            script: is.script,
+            answer_option: is.answerOption,
+            answer_actions: is.answerActions,
+            is_deleted: is.isDeleted
+          })
+      }
     }
-    await updateInteractionSteps(campaignId, is.interactionSteps, idMap)
+    await updateInteractionSteps(campaignId, is.interactionSteps, origCampaignRecord, idMap)
   })
 }
 
@@ -595,13 +604,13 @@ const rootMutations = {
       return campaign
     },
     editCampaign: async (_, { id, campaign }, { user, loaders }) => {
+      const origCampaign = await Campaign.get(id)
       if (campaign.organizationId) {
         await accessRequired(user, campaign.organizationId, 'ADMIN')
       } else {
-        const campaignCheck = await Campaign.get(id)
-        await accessRequired(user, campaignCheck.organization_id, 'ADMIN')
+        await accessRequired(user, origCampaign.organization_id, 'ADMIN')
       }
-      return editCampaign(id, campaign, loaders, user)
+      return editCampaign(id, campaign, loaders, user, origCampaign)
     },
     createCannedResponse: async (_, { cannedResponse }, { user, loaders }) => {
       authRequired(user)
