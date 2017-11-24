@@ -93,7 +93,6 @@ import { gzip, log } from '../../lib'
 import { Notifications, sendUserNotification } from '../notifications'
 import { uploadContacts,
          loadContactsFromDataWarehouse,
-         createInteractionSteps,
          assignTexters,
          exportCampaign
        } from '../../workers/jobs'
