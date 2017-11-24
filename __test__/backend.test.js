@@ -262,17 +262,12 @@ it('should assign texters to campaign contacts', async () => {
       }
       interactionSteps {
         id
+        questionText
         script
-        question {
-          text
-          answerOptions {
-            value
-            action
-            nextInteractionStep {
-              id
-            }
-          }
-        }
+        answerOption
+        answerActions
+        parentInteractionId
+        isDeleted
       }
       cannedResponses {
         id

@@ -11,9 +11,9 @@ const FormSchema = {
   title: yup.string(),
   description: yup.string(),
   dueBy: yup.mixed(),
-  logoImageUrl: yup.string().url(),
-  primaryColor: yup.string(),
-  introHtml: yup.string()
+  logoImageUrl: yup.string().url().transform(value => !value ? null : value).nullable(),
+  primaryColor: yup.string().nullable(),
+  introHtml: yup.string().nullable()
 }
 
 const EnsureCompletedFormSchema = {
@@ -90,7 +90,7 @@ export default class CampaignBasicsForm extends React.Component {
           <Form.Field
             name='primaryColor'
             label='Primary color'
-            defaultValue={this.props.formValues.primaryColor}
+            defaultValue={this.props.formValues.primaryColor || '#00B477'}
             type={ColorPicker}
           />
           <Form.Button
