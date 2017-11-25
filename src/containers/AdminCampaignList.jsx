@@ -28,9 +28,9 @@ class AdminCampaignList extends React.Component {
       dueBy: null,
       organizationId,
       contacts: [],
-      interactionSteps: [{
+      interactionSteps: {
         script: ''
-      }]
+      }
     })
     if (newCampaign.errors) {
       alert('There was an error creating your campaign')

@@ -65,7 +65,7 @@ class CampaignList extends React.Component {
     const primaryText = (
       <div>
         {campaign.title}
-        {tags.map((tag) => <Chip text={tag} />)}
+        {tags.map((tag) => <Chip key={tag} text={tag} />)}
       </div>
     )
     const secondaryText = (
