@@ -104,7 +104,7 @@ class Terms extends React.Component {
               </StepLabel>
               <StepContent>
                 <p>
-                  GetUp maintains a record of all conversations on this Spoke account.
+                  We maintain a record of all conversations with this account.
                 </p>
                 {this.renderStepActions(2)}
               </StepContent>
