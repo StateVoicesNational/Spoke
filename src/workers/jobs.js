@@ -336,7 +336,7 @@ export async function assignTexters(job) {
   for (let index = 0; index < texterCount; index++) {
     const texter = texters[index]
     const texterId = parseInt(texter.id)
-    const maxContacts = parseInt(texter.maxContacts)
+    const maxContacts = parseInt(texter.maxContacts || 0)
 
     if (unchangedTexters[texterId]) {
       continue
@@ -359,7 +359,7 @@ export async function assignTexters(job) {
       assignment = await new Assignment({
         user_id: texterId,
         campaign_id: cid,
-        max_contacts: maxContacts || process.env.DEFAULT_MAX_CONTACTS
+        max_contacts: parseInt(maxContacts || process.env.MAX_CONTACTS_PER_TEXTER || 0, 10)
       }).save()
     }
 
@@ -389,6 +389,7 @@ export async function assignTexters(job) {
   }
 
   if (!campaign.use_dynamic_assignment) {
+    // dynamic assignments, having zero initially initially is ok
     const assignmentsToDelete = r.knex('assignment')
       .where('assignment.campaign_id', cid)
       .leftJoin('campaign_contact', 'assignment.id', 'campaign_contact.assignment_id')
