@@ -800,7 +800,7 @@ class AssignmentTexterContact extends React.Component {
 
   render() {
     return (
-      <div >
+      <div>
         {this.state.disabled ? (
           <div className={css(styles.overlay)}>
             <CircularProgress size={0.5} />
