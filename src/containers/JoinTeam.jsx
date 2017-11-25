@@ -75,12 +75,14 @@ const mapMutationsToProps = ({ ownProps }) => ({
   }),
   assignUserToCampaign: () => ({
     mutation: gql`
-      mutation assignUserToCampaign($campaignId: String!) {
-        assignUserToCampaign(campaignId: $campaignId) {
+      mutation assignUserToCampaign($organizationUuid: String!, $campaignId: String!) {
+        assignUserToCampaign(organizationUuid: $organizationUuid, campaignId: $campaignId) {
           id
         }
       }`,
-    variables: { campaignId: ownProps.params.campaignId }
+    variables: { campaignId: ownProps.params.campaignId,
+                 organizationUuid: ownProps.params.organizationUuid
+               }
   })
 })
 

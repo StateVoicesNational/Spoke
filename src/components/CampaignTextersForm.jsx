@@ -367,7 +367,8 @@ export default class CampaignTextersForm extends React.Component {
               direction={0}
             />
           </div>
-          <div className={css(styles.input)}>
+          {this.state.useDynamicAssignment ?
+           <div className={css(styles.input)}>
             <Form.Field
               name={`texters[${index}].assignment.maxContacts`}
               hintText='Max'
@@ -377,7 +378,8 @@ export default class CampaignTextersForm extends React.Component {
                 focusedTexter: null
               })}
             />
-          </div>
+           </div>
+           : ''}
           <div className={css(styles.removeButton)}>
             <IconButton
               onTouchTap={async () => {
@@ -410,12 +412,12 @@ export default class CampaignTextersForm extends React.Component {
 
   render() {
     const { organizationUuid, campaignId } = this.props
-    let subtitle = ''
-    subtitle = (
-      <div>
-        <OrganizationJoinLink organizationUuid={organizationUuid} campaignId={campaignId} />
-      </div>
-    )
+    const subtitle = (
+      this.state.useDynamicAssignment ?
+        <div>
+          <OrganizationJoinLink organizationUuid={organizationUuid} campaignId={campaignId} />
+        </div>
+        : '')
 
     const assignedContacts = this.formValues()
       .texters

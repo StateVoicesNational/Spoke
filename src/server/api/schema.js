@@ -221,7 +221,7 @@ const rootSchema = `
     unarchiveCampaign(id:String!): Campaign,
     sendReply(id: String!, message: String!): CampaignContact
     findNewCampaignContact(assignmentId: String!, numberContacts: Int!): CampaignContact,
-    assignUserToCampaign(campaignId: String!): Campaign
+    assignUserToCampaign(organizationUuid: String!, campaignId: String!): Campaign
     userAgreeTerms(userId: String!): User
   }
 
@@ -511,25 +511,31 @@ const rootMutations = {
       }
       return organization
     },
-    assignUserToCampaign: async (_, { campaignId }, { user, loaders }) => {
-      let campaign
-      [campaign] = await r.knex('campaign')
-        .where('id', campaignId)
-      if (campaign) {
-        const assignment = await r.table('assignment')
-          .getAll(user.id, { index: 'user_id' })
-          .filter({ campaign_id: campaign.id })
-          .limit(1)(0)
-          .default(null)
-        if (!assignment) {
-          await Assignment.save({
-            user_id: user.id,
-            campaign_id: campaign.id,
-            max_contacts: (process.env.DEFAULT_MAX_CONTACTS || 1)
-          })
-        }
+    assignUserToCampaign: async (_, { organizationUuid, campaignId }, { user, loaders }) => {
+      const campaings = await r.knex('campaign')
+        .leftJoin('organization', 'campaign.organization_id', 'organization.id')
+        .where({'campaign.id': campaignId,
+                'campaign.use_dynamic_assignment': true,
+                'organization.uuid': organizationUuid}).select('campaign.*')
+      if (!campaigns.length) {
+        throw new GraphQLError({
+          status: 403,
+          message: 'Invalid join request'
+        })
       }
-      return campaign
+      const assignment = await r.table('assignment')
+        .getAll(user.id, { index: 'user_id' })
+        .filter({ campaign_id: campaign.id })
+        .limit(1)(0)
+        .default(null)
+      if (!assignment) {
+        await Assignment.save({
+          user_id: user.id,
+          campaign_id: campaign.id,
+          max_contacts: parseInt(process.env.MAX_CONTACTS_PER_TEXTER || 0, 10)
+        })
+      }
+      return campaigns[0]
     },
     updateTextingHours: async (_, { organizationId, textingHoursStart, textingHoursEnd }, { user }) => {
       await accessRequired(user, organizationId, 'OWNER')
@@ -670,42 +676,41 @@ const rootMutations = {
     findNewCampaignContact: async(_, { assignmentId, numberContacts }, { loaders, user }) => {
       /* This attempts to find a new contact for the assignment, in the case that useDynamicAssigment == true */
       const assignment = await Assignment.get(assignmentId)
+      if (assignment.user_id != user.id) {
+        throw new GraphQLError({
+          status: 400,
+          message: 'Invalid assignment'
+        })
+      }
       const campaign = await Campaign.get(assignment.campaign_id)
-      const contactsCount = Number((await r.knex('campaign_contact').where({ assignment_id: assignmentId }).select(r.knex.raw('count(*) as count')))[0].count)
-
-      console.log({ assignmentId, numberContacts })
-
       if (!campaign.use_dynamic_assignment) {
         return false
       }
 
-      numberContacts = numberContacts || 1
+      const contactsCount = (await r.knex('campaign_contact').where('assignment_id', assignmentId).count())[0].count
 
+      numberContacts = numberContacts || 1
       if (assignment.max_contacts && (contactsCount + numberContacts > assignment.max_contacts)) {
         numberContacts = assignment.max_contacts - contactsCount
       }
 
-      console.log({ assignmentId, numberContacts })
-
-      // Don't add them if they already have them
-      const result = await r.knex.raw('SELECT COUNT(*) as count FROM campaign_contact WHERE assignment_id = :assignment_id AND message_status = \'needsMessage\' AND is_opted_out = false', { assignment_id: assignmentId })
-      if (result.rows[0].count >= numberContacts) {
+      // Don't add more if they already have that many
+      const result = await r.knex('campaign_contact').where({assignment_id: assignmentId, message_status: 'needsMessage', is_opted_out: false}).count()
+      if (result[0].count >= numberContacts) {
         return false
       }
+      const updatedCount = await r.knex('campaign_contact')
+        .where('id', 'in',
+               r.knex('campaign_contact')
+               .where({ assignment_id: null,
+                        campaign_id: campaign.id
+                      })
+               .limit(numberContacts)
+               .select('id'))
+        .update({ assignment_id: assignmentId })
+        .catch(log.error)
 
-      const result2 = await r.knex.raw(`UPDATE campaign_contact
-        SET assignment_id = :assignment_id
-        WHERE id IN (
-          SELECT id
-          FROM campaign_contact cc
-          WHERE campaign_id = :campaign_id
-          AND assignment_id IS null
-          LIMIT :number_contacts
-        )
-        RETURNING *
-        `, { assignment_id: assignmentId, campaign_id: campaign.id, number_contacts: numberContacts })
-
-      if (result2.rowCount > 0) {
+      if (updatedCount > 0) {
         return true
       } else {
         return false
