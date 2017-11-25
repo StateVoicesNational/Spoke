@@ -70,6 +70,7 @@ export default function renderIndex(html, css, assetMap, store) {
       window.ALLOW_SEND_ALL=${process.env.ALLOW_SEND_ALL}
       window.BULK_SEND_CHUNK_SIZE=${process.env.BULK_SEND_CHUNK_SIZE || 0}
       window.MAX_MESSAGE_LENGTH=${process.env.MAX_MESSAGE_LENGTH || 99999}
+      window.TERMS_REQUIRE="${process.env.TERMS_REQUIRE || ''}"
       window.TZ="${process.env.TZ}"
     </script>
     <script src="${assetMap['bundle.js']}"></script>

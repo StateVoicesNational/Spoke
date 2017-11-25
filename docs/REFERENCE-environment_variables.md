@@ -48,6 +48,7 @@ ROLLBAR_ENDPOINT                  | Endpoint URL for Rollbar error tracking.
 SESSION_SECRET                    | Unique key used to encrypt sessions. _Required_.
 SLACK_NOTIFY_URL                  | If set, then on post-install (often from deploying) a message will be posted to a slack channel's `#spoke` channel
 SUPPRESS_SELF_INVITE              | Boolean value to prevent self-invitations. Recommend setting before making sites available to public. _Default_: false.
+TERMS_REQUIRE                     | Require texters to accept the [Terms page](../src/containers/Terms.jsx#L85) before they can start texting. _Default_: false
 TWILIO_API_KEY                    | Twilio API key. Required if using Twilio.
 TWILIO_APPLICATION_SID            | Twilio application ID. Required if using Twilio.
 TWILIO_AUTH_TOKEN                 | Twilio auth token. Required if using Twilio.
