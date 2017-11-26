@@ -306,7 +306,6 @@ class AdminCampaignEdit extends React.Component {
       content: CampaignInteractionStepsForm,
       keys: ['interactionSteps'],
       checkCompleted: () => this.state.campaignFormValues.interactionSteps.length > 0,
-      // checkSaved: () => false,
       blocksStarting: true,
       extraProps: {
         customFields: this.props.campaignData.campaign.customFields,
