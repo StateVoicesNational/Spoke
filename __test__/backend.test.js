@@ -1,7 +1,8 @@
 import { schema, resolvers } from '../src/server/api/schema'
 import { graphql } from 'graphql'
-import { User, CampaignContact, r } from '../src/server/models/'
+import { User, Organization, Campaign, CampaignContact, r } from '../src/server/models/'
 import { sleep } from '../src/workers/lib'
+import { resolvers as campaignResolvers } from '../src/server/api/campaign'
 import { getContext,
   setupTest,
   cleanupTest } from './test_helpers'
@@ -307,3 +308,63 @@ it('should assign texters to campaign contacts', async () => {
 // TEST STUBS: MESSAGING
 
 // it('should send an inital message to test contacts', async() => {})
+
+describe('Campaign', () => {
+  let organization
+  let campaigns
+  let contacts
+
+  beforeEach(async () => {
+    organization = await (new Organization({
+      name: 'organization',
+      texting_hours_start: 0,
+      texting_hours_end: 0
+    })).save()
+
+    campaigns = await Promise.all([
+      new Campaign({
+        organization_id: organization.id,
+        is_started: false,
+        is_archived: false,
+        due_by: new Date()
+      }),
+      new Campaign({
+        organization_id: organization.id,
+        is_started: false,
+        is_archived: false,
+        due_by: new Date()
+      })
+    ].map(async (each) => (
+      each.save()
+    )))
+
+    contacts = await Promise.all([
+      new CampaignContact({campaign_id: campaigns[0].id, cell: '', message_status: 'closed'}),
+      new CampaignContact({campaign_id: campaigns[1].id, cell: '', message_status: 'closed'})
+    ].map(async (each) => (
+      each.save()
+    )))
+  })
+
+  test('resolves contacts', async () => {
+    const results = await campaignResolvers.Campaign.contacts(campaigns[0])
+    expect(results).toHaveLength(1)
+    expect(results[0].campaign_id).toEqual(campaigns[0].id)
+  })
+
+  test('resolves contacts count', async () => {
+    const results = await campaignResolvers.Campaign.contactsCount(campaigns[0])
+    expect(results).toEqual(1)
+  })
+
+  test('resolves contacts count when empty', async () => {
+    const campaign = await (new Campaign({
+      organization_id: organization.id,
+      is_started: false,
+      is_archived: false,
+      due_by: new Date()
+    })).save()
+    const results = await campaignResolvers.Campaign.contactsCount(campaign)
+    expect(results).toEqual(0)
+  })
+})
