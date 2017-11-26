@@ -48,7 +48,7 @@ const ALL_OFFSETS = [-4, -5, -6, -7, -8, -9, -10, -11, 10]
 
 export const defaultTimezoneIsBetweenTextingHours = (config) => isBetweenTextingHours(null, config)
 
-function convertOffsetsToStrings(offsetArray) {
+export function convertOffsetsToStrings(offsetArray) {
   const result = []
   offsetArray.forEach((offset) => {
     result.push((offset[0].toString() + '_' + (offset[1] === true ? '1' : '0')))

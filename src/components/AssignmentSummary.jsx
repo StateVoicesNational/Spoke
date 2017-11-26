@@ -39,8 +39,7 @@ const styles = StyleSheet.create({
 
 class AssignmentSummary extends Component {
   state = {
-    badTimezoneTooltipOpen: false,
-    open: false
+    badTimezoneTooltipOpen: false
   }
 
   goToTodos(contactsFilter, assignmentId) {
@@ -81,7 +80,6 @@ class AssignmentSummary extends Component {
   render() {
     const { assignment, unmessagedCount, unrepliedCount, badTimezoneCount } = this.props
     const { title, description, dueBy, primaryColor, logoImageUrl, introHtml } = assignment.campaign
-    console.log('ASS', assignment.campaign)
     const actions = [
       <FlatButton
         label='No'
@@ -110,14 +108,23 @@ class AssignmentSummary extends Component {
           <div style={{ margin: '20px' }}>
             <div dangerouslySetInnerHTML={{ __html: introHtml }} />
           </div>
-          <CardActions style={{ textAlign: 'center' }}>
+          <CardActions>
             {this.renderBadgedButton({
               assignment,
-              title: 'Send messages',
-              count: unrepliedCount,
+              title: 'Send first texts',
+              count: unmessagedCount,
               primary: true,
               disabled: false,
               contactsFilter: 'all'
+            })}
+            {this.renderBadgedButton({
+              assignment,
+              title: 'Send replies',
+              count: unrepliedCount,
+              primary: false,
+              disabled: false,
+              contactsFilter: 'reply',
+              hideIfZero: true
             })}
             {this.renderBadgedButton({
               assignment,
@@ -130,14 +137,6 @@ class AssignmentSummary extends Component {
             })}
           </CardActions>
         </Card>
-        <Dialog
-          title='Are you sure?'
-          actions={actions}
-          open={this.state.open}
-          modal
-        >
-          Are you sure you want to send messages?
-        </Dialog>
       </div>
     )
   }

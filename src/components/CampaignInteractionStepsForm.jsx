@@ -116,7 +116,6 @@ export default class CampaignInteractionStepsForm extends React.Component {
   })
 
   renderInteractionStep(interactionStep, title = 'Start') {
-    console.log('interactionstep', this.props, interactionStep)
     return (<div>
       <Card
         style={styles.interactionStep}
