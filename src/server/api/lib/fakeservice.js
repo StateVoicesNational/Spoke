@@ -27,13 +27,16 @@ async function convertMessagePartsToMessage(messageParts) {
   const lastMessage = await getLastMessage({
     contactNumber
   })
+
+  const service_id = (firstPart.service_id
+                      || `fakeservice_${Math.random().toString(36).replace(/[^a-zA-Z1-9]+/g, '')}`)
   return new Message({
     contact_number: contactNumber,
     user_number: userNumber,
     is_from_contact: true,
     text,
     service_response: JSON.stringify(messageParts),
-    service_id: firstPart.service_id,
+    service_id,
     assignment_id: lastMessage.assignment_id,
     service: 'fakeservice',
     send_status: 'DELIVERED'
