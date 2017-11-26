@@ -121,14 +121,16 @@ export const resolvers = {
         .filter({ user_id: userId || '' })
     ),
     contacts: async (campaign) => (
-      r.table('campaign_contact')
-        .getAll(campaign.id, { index: 'campaign_id' })
+      r.knex('campaign_contact')
+        .where({campaign_id: campaign.id})
     ),
-    contactsCount: async (campaign) => (
-      r.table('campaign_contact')
-        .getAll(campaign.id, { index: 'campaign_id' })
-        .count()
-    ),
+    contactsCount: async (campaign) => {
+      const counts = await r.knex('campaign_contact')
+        .where({campaign_id: campaign.id})
+        .count('*')
+      const count = counts[0]
+      return Number(Object.values(count)[0])
+    },
     hasUnassignedContacts: async (campaign) => {
       const hasContacts = await r.table('campaign_contact')
         .getAll([campaign.id, ''], { index: 'campaign_assignment' })
