@@ -513,9 +513,9 @@ const rootMutations = {
     assignUserToCampaign: async (_, { organizationUuid, campaignId }, { user, loaders }) => {
       const campaings = await r.knex('campaign')
         .leftJoin('organization', 'campaign.organization_id', 'organization.id')
-        .where({'campaign.id': campaignId,
+        .where({ 'campaign.id': campaignId,
                 'campaign.use_dynamic_assignment': true,
-                'organization.uuid': organizationUuid}).select('campaign.*')
+                'organization.uuid': organizationUuid }).select('campaign.*')
       if (!campaigns.length) {
         throw new GraphQLError({
           status: 403,
@@ -693,7 +693,7 @@ const rootMutations = {
         numberContacts = assignment.max_contacts - contactsCount
       }
       // Don't add more if they already have that many
-      const result = await r.knex('campaign_contact').where({assignment_id: assignmentId, message_status: 'needsMessage', is_opted_out: false}).count()
+      const result = await r.knex('campaign_contact').where({ assignment_id: assignmentId, message_status: 'needsMessage', is_opted_out: false }).count()
       if (result[0].count >= numberContacts) {
         return false
       }
@@ -742,7 +742,7 @@ const rootMutations = {
       return loaders.campaignContact.load(campaignContactId)
     },
     bulkSendMessages: async(_, { assignmentId }, loaders) => {
-      if (!process.env.ALLOW_SEND_ALL) {
+      if (!process.env.ALLOW_SEND_ALL || !process.env.NOT_IN_USA) {
         log.error('Not allowed to send all messages at once')
         throw new GraphQLError({
           status: 403,

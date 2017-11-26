@@ -37,7 +37,6 @@ function getContacts(assignment, contactsFilter, organization, campaign) {
           // missing timezone ok
           validOffsets.push('')
         }
-        console.log('validOffsets', validOffsets)
         query = query.whereIn('timezone_offset', validOffsets)
       } else if (contactsFilter.validTimezone === false) {
         if (!defaultTimezoneIsBetweenTextingHours(config)) {

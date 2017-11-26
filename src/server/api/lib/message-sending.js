@@ -19,7 +19,7 @@ export async function saveNewIncomingMessage(messageInstance) {
   if (messageInstance.service_id) {
     const countResult = await r.knex('message').where('service_id', messageInstance.service_id).count().first()
     if (countResult.count) {
-      console.error('DUPLICATE MESSAGE SAVED', messageInstance)
+      console.error('DUPLICATE MESSAGE SAVED', countResult.count, messageInstance)
     }
   }
   await messageInstance.save()

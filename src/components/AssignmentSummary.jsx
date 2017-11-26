@@ -79,7 +79,9 @@ class AssignmentSummary extends Component {
 
   render() {
     const { assignment, unmessagedCount, unrepliedCount, badTimezoneCount } = this.props
-    const { title, description, dueBy, primaryColor, logoImageUrl, introHtml } = assignment.campaign
+    const { title, description, dueBy,
+            primaryColor, logoImageUrl, introHtml,
+            useDynamicAssignment } = assignment.campaign
     const actions = [
       <FlatButton
         label='No'
@@ -115,7 +117,8 @@ class AssignmentSummary extends Component {
               count: unmessagedCount,
               primary: true,
               disabled: false,
-              contactsFilter: 'all'
+              contactsFilter: 'text',
+              hideIfZero: !useDynamicAssignment
             })}
             {this.renderBadgedButton({
               assignment,

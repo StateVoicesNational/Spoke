@@ -73,7 +73,7 @@ class AssignmentTexter extends React.Component {
       this.handleNavigateNext()
     } else {
       // Will look async and then redirect to todo page if not
-      this.props.assignContactsIfNeeded(true)
+      this.props.assignContactsIfNeeded(/* checkServer*/true)
     }
   }
 

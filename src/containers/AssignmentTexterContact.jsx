@@ -412,8 +412,12 @@ class AssignmentTexterContact extends React.Component {
         deletionIds.push(interactionStepId)
       }
     }
-    await this.props.mutations.updateQuestionResponses(questionResponseObjects, contact.id)
-    await this.props.mutations.deleteQuestionResponses(deletionIds, contact.id)
+    if (questionResponseObjects.length) {
+      await this.props.mutations.updateQuestionResponses(questionResponseObjects, contact.id)
+    }
+    if (deletionIds.length) {
+      await this.props.mutations.deleteQuestionResponses(deletionIds, contact.id)
+    }
   }
 
   handleClickCloseContactButton = async () => {
@@ -633,7 +637,7 @@ class AssignmentTexterContact extends React.Component {
                 onFinalTouchTap={this.handleClickSendMessageButton}
                 disabled={this.state.disabled}
               />
-              {window.BULK_SEND_CHUNK_SIZE && contact.messageStatus === 'needsMessage' ? <BulkSendButton
+              {window.NOT_IN_USA && window.ALLOW_SEND_ALL && window.BULK_SEND_CHUNK_SIZE && contact.messageStatus === 'needsMessage' ? <BulkSendButton
                 assignment={assignment}
                 onFinishContact={onFinishContact}
                 bulkSendMessages={this.bulkSendMessages}
