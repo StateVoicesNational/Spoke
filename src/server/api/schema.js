@@ -265,7 +265,6 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
       modelData.campaign_id = id
       return modelData
     })
-    console.log('contactsToSave', contactsToSave)
     const compressedString = await gzip(JSON.stringify(contactsToSave))
     let job = await JobRequest.save({
       queue_name: `${id}:edit_campaign`,
@@ -693,7 +692,6 @@ const rootMutations = {
       if (assignment.max_contacts && (contactsCount + numberContacts > assignment.max_contacts)) {
         numberContacts = assignment.max_contacts - contactsCount
       }
-
       // Don't add more if they already have that many
       const result = await r.knex('campaign_contact').where({assignment_id: assignmentId, message_status: 'needsMessage', is_opted_out: false}).count()
       if (result[0].count >= numberContacts) {

@@ -2,6 +2,7 @@ import zlib from 'zlib'
 export { getFormattedPhoneNumber, getDisplayPhoneNumber } from './phone-format'
 export { getFormattedZip, zipToTimeZone, findZipRanges } from './zip-format'
 export {
+  convertOffsetsToStrings,
   getLocalTime,
   isBetweenTextingHours,
   defaultTimezoneIsBetweenTextingHours,

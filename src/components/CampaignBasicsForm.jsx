@@ -90,7 +90,7 @@ export default class CampaignBasicsForm extends React.Component {
           <Form.Field
             name='primaryColor'
             label='Primary color'
-            defaultValue={this.props.formValues.primaryColor || '#00B477'}
+            defaultValue={this.props.formValues.primaryColor || '#ffffff'}
             type={ColorPicker}
           />
           <Form.Button

@@ -518,7 +518,7 @@ class AssignmentTexterContact extends React.Component {
   }
 
   bulkSendMessages = async (assignmentId) => {
-    console.log('Assignmnet ID', assignmentId)
+    console.log('Bulk Sending for Assignmnet ID', assignmentId)
     await this.props.mutations.bulkSendMessages(assignmentId)
     this.props.refreshData()
   }

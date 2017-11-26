@@ -1,5 +1,5 @@
 import { r, datawarehouse, Assignment, Campaign, CampaignContact, InteractionStep, Organization, User } from '../server/models'
-import { log, gunzip, zipToTimeZone } from '../lib'
+import { log, gunzip, zipToTimeZone, convertOffsetsToStrings } from '../lib'
 import { sleep, getNextJob, updateJob } from './lib'
 import serviceMap from '../server/api/lib/services'
 import { getLastMessage, saveNewIncomingMessage } from '../server/api/lib/message-sending'
@@ -24,7 +24,7 @@ async function getTimezoneByZip(zip) {
     } else {
       const zipDatum = await r.table('zip_code').get(zip)
       if (zipDatum && zipDatum.timezone_offset && zipDatum.has_dst) {
-        zipMemoization[zip] = `${zipDatum.timezone_offset}_${zipDatum.has_dst}`
+        zipMemoization[zip] = convertOffsetsToStrings([[zipDatum.timezone_offset, zipDatum.has_dst]])[0]
         return zipMemoization[zip]
       } else {
         return ''
