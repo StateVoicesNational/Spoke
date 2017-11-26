@@ -32,7 +32,7 @@ Generally, the first steps are:
 
 ### Submitting your Pull Request
 
-* Push your changes to your forked version, and create a Pull Request on github for your change
+* Push your changes to your forked version, and create a Pull Request on GitHub for your change
 * In the description or title of the pull request, include a reference to the issue that the pull request relates to
 * If you are a junior developer, please don't be concerned about the code quality -- we will work with you if there are issues. We are super-excited to help junior developers submit and merge a first pull request.  If you have done some work and tests aren't passing, you can still feel free to submit it, and just comment on the issue that you are having trouble, and we'll work together to fix it.
 * Pull Requests sometimes take a bit of time to review or comment on. We will try to respond within 1-3 business days (sometimes we are busy fighting the good fight!)
