@@ -26,7 +26,8 @@ export const resolvers = {
       'lastName',
       'email',
       'cell',
-      'assignedCell'
+      'assignedCell',
+      'terms'
     ], User),
     displayName: (user) => `${user.first_name} ${user.last_name}`,
     assignment: async (user, { campaignId }) => r.table('assignment')

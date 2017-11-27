@@ -289,7 +289,7 @@ class AdminCampaignEdit extends React.Component {
       extraProps: {
         optOuts: [], // this.props.organizationData.organization.optOuts, // <= doesn't scale
         datawarehouseAvailable: this.props.campaignData.campaign.datawarehouseAvailable,
-        jobResultMessage: ((this.props.pendingJobsData.campaign.pendingJobs.filter((job) => (/contacts/.test(job.jobType)))[0] || {}).result_message || '')
+        jobResultMessage: ((this.props.pendingJobsData.campaign.pendingJobs.filter((job) => (/contacts/.test(job.jobType)))[0] || {}).resultMessage || '')
       }
     }, {
       title: 'Texters',
@@ -341,9 +341,9 @@ class AdminCampaignEdit extends React.Component {
     }
 
     if (relatedJob) {
-      sectionIsSaving = !relatedJob.result_message
+      sectionIsSaving = !relatedJob.resultMessage
       savePercent = relatedJob.status
-      jobMessage = relatedJob.result_message
+      jobMessage = relatedJob.resultMessage
     }
     return {
       sectionIsSaving,
@@ -412,7 +412,7 @@ class AdminCampaignEdit extends React.Component {
 
   renderStartButton() {
     let isCompleted = this.props.pendingJobsData.campaign
-      .pendingJobs.filter((job) => /Error/.test(job.result_message || '')).length === 0
+      .pendingJobs.filter((job) => /Error/.test(job.resultMessage || '')).length === 0
     this.sections().forEach((section) => {
       if (section.blocksStarting && !this.checkSectionCompleted(section) || !this.checkSectionSaved(section)) {
         isCompleted = false
@@ -570,7 +570,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
           jobType
           assigned
           status
-          result_message
+          resultMessage
         }
       }
     }`,

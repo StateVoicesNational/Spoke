@@ -11,8 +11,8 @@ const User = thinky.createModel('user', type.object().schema({
   email: requiredString(),
   created_at: timestamp(),
   assigned_cell: type.string(),
-  is_superadmin: type.boolean()
-    // .required()
+  is_superadmin: type.boolean(),
+  terms: type.boolean().default(false)
 }).allowExtra(false))
 
 export default User
