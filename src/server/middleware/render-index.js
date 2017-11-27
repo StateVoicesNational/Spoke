@@ -64,11 +64,11 @@ export default function renderIndex(html, css, assetMap, store) {
       window.AUTH0_CLIENT_ID="${process.env.AUTH0_CLIENT_ID}"
       window.AUTH0_DOMAIN="${process.env.AUTH0_DOMAIN}"
       window.AUTH0_LOGIN_CALLBACK="${process.env.AUTH0_LOGIN_CALLBACK}"
-      window.AUTH0_LOGOUT_CALLBACK="${process.env.AUTH0_LOGOUT_CALLBACK}"
-      window.SUPPRESS_SELF_INVITE="${process.env.SUPPRESS_SELF_INVITE}"
-      window.PRIVACY_URL="${process.env.PRIVACY_URL}"
-      window.NOT_IN_USA=${process.env.NOT_IN_USA}
-      window.ALLOW_SEND_ALL=${process.env.ALLOW_SEND_ALL}
+      window.AUTH0_LOGOUT_CALLBACK="${process.env.AUTH0_LOGOUT_CALLBACK || ''}"
+      window.SUPPRESS_SELF_INVITE="${process.env.SUPPRESS_SELF_INVITE || ''}"
+      window.PRIVACY_URL="${process.env.PRIVACY_URL || ''}"
+      window.NOT_IN_USA=${process.env.NOT_IN_USA || 0}
+      window.ALLOW_SEND_ALL=${process.env.ALLOW_SEND_ALL || 0}
       window.BULK_SEND_CHUNK_SIZE=${process.env.BULK_SEND_CHUNK_SIZE || 0}
       window.MAX_MESSAGE_LENGTH=${process.env.MAX_MESSAGE_LENGTH || 99999}
       window.TERMS_REQUIRE="${process.env.TERMS_REQUIRE || ''}"
