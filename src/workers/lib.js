@@ -14,7 +14,7 @@ export async function updateJob(job, percentComplete) {
 
 export async function getNextJob() {
   let nextJob = await r.table('job_request')
-      .filter({ 'assigned': false })
+      .filter({ assigned: false })
       .orderBy('created_at')
       .limit(1)(0)
   if (nextJob) {
