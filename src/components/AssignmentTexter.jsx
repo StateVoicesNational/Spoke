@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react'
 import { ToolbarTitle } from 'material-ui/Toolbar'
 import IconButton from 'material-ui/IconButton/IconButton'
@@ -174,12 +175,12 @@ class AssignmentTexter extends React.Component {
 }
 
 AssignmentTexter.propTypes = {
-  currentUser: React.PropTypes.object,
-  assignment: React.PropTypes.object,      // current assignment
-  contacts: React.PropTypes.array,   // contacts for current assignment
-  router: React.PropTypes.object,
-  refreshData: React.PropTypes.func,
-  organizationId: React.PropTypes.string
+  currentUser: PropTypes.object,
+  assignment: PropTypes.object,      // current assignment
+  contacts: PropTypes.array,   // contacts for current assignment
+  router: PropTypes.object,
+  refreshData: PropTypes.func,
+  organizationId: PropTypes.string
 }
 
 export default withRouter(AssignmentTexter)

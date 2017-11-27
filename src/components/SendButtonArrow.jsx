@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React, { Component } from 'react'
 import IconButton from 'material-ui/IconButton'
 import NavigationArrowForward from 'material-ui/svg-icons/navigation/arrow-forward'
@@ -52,9 +53,9 @@ class SendButtonArrow extends Component {
 }
 
 SendButtonArrow.propTypes = {
-  threeClickEnabled: React.PropTypes.boolean,
-  onClick: React.PropTypes.function,
-  disabled: React.PropTypes.boolean
+  threeClickEnabled: PropTypes.boolean,
+  onClick: PropTypes.function,
+  disabled: PropTypes.boolean
 }
 
 export default SendButtonArrow

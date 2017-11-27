@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react'
 import loadData from './hoc/load-data'
 import gql from 'graphql-tag'
@@ -104,9 +105,9 @@ class Home extends React.Component {
 }
 
 Home.propTypes = {
-  mutations: React.PropTypes.object,
-  router: React.PropTypes.object,
-  data: React.PropTypes.object
+  mutations: PropTypes.object,
+  router: PropTypes.object,
+  data: PropTypes.object
 }
 
 const mapQueriesToProps = () => ({

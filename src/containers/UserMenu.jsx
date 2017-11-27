@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React, { Component } from 'react'
 import Popover from 'material-ui/Popover'
 import Menu from 'material-ui/Menu'
@@ -101,8 +102,8 @@ class UserMenu extends Component {
 }
 
 UserMenu.propTypes = {
-  data: React.PropTypes.object,
-  router: React.PropTypes.object
+  data: PropTypes.object,
+  router: PropTypes.object
 }
 
 const mapQueriesToProps = () => ({

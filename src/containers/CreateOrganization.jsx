@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react'
 import loadData from './hoc/load-data'
 import gql from 'graphql-tag'
@@ -128,10 +129,10 @@ const mapQueriesToProps = ({ ownProps }) => ({
 })
 
 CreateOrganization.propTypes = {
-  mutations: React.PropTypes.object,
-  router: React.PropTypes.object,
-  userData: React.PropTypes.object,
-  inviteData: React.PropTypes.object
+  mutations: PropTypes.object,
+  router: PropTypes.object,
+  userData: PropTypes.object,
+  inviteData: PropTypes.object
 }
 
 const mapMutationsToProps = () => ({

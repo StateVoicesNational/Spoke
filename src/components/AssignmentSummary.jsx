@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React, { Component } from 'react'
 import { Card, CardActions, CardTitle } from 'material-ui/Card'
 import { StyleSheet, css } from 'aphrodite'
@@ -146,14 +147,14 @@ class AssignmentSummary extends Component {
 }
 
 AssignmentSummary.propTypes = {
-  organizationId: React.PropTypes.string,
-  router: React.PropTypes.object,
-  assignment: React.PropTypes.object,
-  unmessagedCount: React.PropTypes.number,
-  unrepliedCount: React.PropTypes.number,
-  badTimezoneCount: React.PropTypes.number,
-  data: React.PropTypes.object,
-  mutations: React.PropTypes.object
+  organizationId: PropTypes.string,
+  router: PropTypes.object,
+  assignment: PropTypes.object,
+  unmessagedCount: PropTypes.number,
+  unrepliedCount: PropTypes.number,
+  badTimezoneCount: PropTypes.number,
+  data: PropTypes.object,
+  mutations: PropTypes.object
 }
 
 const mapQueriesToProps = ({ ownProps }) => ({

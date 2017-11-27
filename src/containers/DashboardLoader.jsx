@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react'
 import gql from 'graphql-tag'
 import { withRouter } from 'react-router'
@@ -20,9 +21,9 @@ class DashboardLoader extends React.Component {
 }
 
 DashboardLoader.propTypes = {
-  data: React.PropTypes.object,
-  router: React.PropTypes.object,
-  path: React.PropTypes.string
+  data: PropTypes.object,
+  router: PropTypes.object,
+  path: PropTypes.string
 }
 
 const mapQueriesToProps = () => ({

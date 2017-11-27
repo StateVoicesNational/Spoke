@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react'
 
 class GSFormField extends React.Component {
@@ -7,8 +8,8 @@ class GSFormField extends React.Component {
 }
 
 GSFormField.propTypes = {
-  floatingLabelText: React.PropTypes.string,
-  label: React.PropTypes.string
+  floatingLabelText: PropTypes.string,
+  label: PropTypes.string
 }
 
 

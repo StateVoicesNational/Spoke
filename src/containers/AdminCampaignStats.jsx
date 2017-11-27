@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react'
 import RaisedButton from 'material-ui/RaisedButton'
 import Chart from '../components/Chart'
@@ -92,8 +93,8 @@ const Stat = ({ title, count }) => (
 )
 
 Stat.propTypes = {
-  title: React.PropTypes.string,
-  count: React.PropTypes.number
+  title: PropTypes.string,
+  count: PropTypes.number
 }
 
 class AdminCampaignStats extends React.Component {
@@ -235,10 +236,10 @@ class AdminCampaignStats extends React.Component {
 }
 
 AdminCampaignStats.propTypes = {
-  mutations: React.PropTypes.object,
-  data: React.PropTypes.object,
-  params: React.PropTypes.object,
-  router: React.PropTypes.object
+  mutations: PropTypes.object,
+  data: PropTypes.object,
+  params: PropTypes.object,
+  router: PropTypes.object
 }
 
 const mapQueriesToProps = ({ ownProps }) => ({

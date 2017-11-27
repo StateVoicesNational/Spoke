@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react'
 import { StyleSheet, css } from 'aphrodite'
 import theme from '../styles/theme'
@@ -32,13 +33,13 @@ class TexterDashboard extends React.Component {
 }
 
 TexterDashboard.propTypes = {
-  router: React.PropTypes.object,
-  params: React.PropTypes.object,
-  children: React.PropTypes.object,
-  location: React.PropTypes.object,
-  main: React.PropTypes.element,
-  topNav: React.PropTypes.element,
-  fullScreen: React.PropTypes.bool
+  router: PropTypes.object,
+  params: PropTypes.object,
+  children: PropTypes.object,
+  location: PropTypes.object,
+  main: PropTypes.element,
+  topNav: PropTypes.element,
+  fullScreen: PropTypes.bool
 }
 
 export default withRouter(TexterDashboard)
