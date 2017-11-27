@@ -1,5 +1,5 @@
 import { r } from '../server/models'
-import { sleep, getNextJob, updateJob, log } from './lib'
+import { sleep, getNextJob, log } from './lib'
 import { exportCampaign, processSqsMessages, uploadContacts, assignTexters, sendMessages, handleIncomingMessageParts, clearOldJobs } from './jobs'
 import { runMigrations } from '../migrations'
 import { setupUserNotificationObservers } from '../server/notifications'
@@ -33,7 +33,7 @@ export async function processJobs() {
         await (jobMap[job.job_type])(job)
       }
 
-      var twoMinutesAgo = new Date(new Date() - 1000 * 60 * 2)
+      const twoMinutesAgo = new Date(new Date() - 1000 * 60 * 2)
       // clear out stuck jobs
       await clearOldJobs(twoMinutesAgo)
     } catch (ex) {
@@ -97,7 +97,7 @@ export const failedMessageSender = messageSenderCreator(function (mQuery) {
   // This is dangerous to run in a scheduled event because if there is
   // any failure path that stops the status from updating, then users might keep getting
   // texts over and over
-  var fiveMinutesAgo = new Date(new Date() - 1000 * 60 * 5)
+  const fiveMinutesAgo = new Date(new Date() - 1000 * 60 * 5)
   return mQuery.where('created_at', '>', fiveMinutesAgo)
 }, 'SENDING')
 

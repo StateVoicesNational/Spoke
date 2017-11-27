@@ -1,5 +1,3 @@
-import thinky from 'thinky'
-
 import dumbThinky from 'rethink-knex-adapter'
 
 // // This was how to connect to rethinkdb:
@@ -31,7 +29,7 @@ if (process.env.DB_JSON || global.DB_JSON) {
     }
   }
 } else if (process.env.DATABASE_URL) {
-  var databaseType = process.env.DATABASE_URL.match(/^\w+/)[0]
+  const databaseType = process.env.DATABASE_URL.match(/^\w+/)[0]
   config = {
     client: (/postgres/.test(databaseType) ? 'pg' : databaseType),
     connection: process.env.DATABASE_URL,

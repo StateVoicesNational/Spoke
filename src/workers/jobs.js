@@ -1,4 +1,4 @@
-import { r, datawarehouse, Assignment, Campaign, CampaignContact, InteractionStep, Organization, User } from '../server/models'
+import { r, datawarehouse, Assignment, Campaign, CampaignContact, Organization, User } from '../server/models'
 import { log, gunzip, zipToTimeZone, convertOffsetsToStrings } from '../lib'
 import { updateJob } from './lib'
 import serviceMap from '../server/api/lib/services'
@@ -66,10 +66,14 @@ export async function processSqsMessages() {
 
         await serviceMap.twilio.handleIncomingMessage(twilioMessage)
 
-        sqs.deleteMessage({ QueueUrl: process.env.TWILIO_SQS_QUEUE_URL, ReceiptHandle: message.ReceiptHandle }, (err, data) => {
-          if (err) console.log(err, err.stack) // an error occurred
-          else console.log(data)           // successful response
-        })
+        sqs.deleteMessage({ QueueUrl: process.env.TWILIO_SQS_QUEUE_URL, ReceiptHandle: message.ReceiptHandle },
+                          (err, data) => {
+                            if (err) {
+                              console.log(err, err.stack) // an error occurred
+                            } else {
+                              console.log(data) // successful response
+                            }
+                          })
       }
       p.resolve()
     }
@@ -191,7 +195,7 @@ export async function loadContactsFromDataWarehouse(job) {
       external_id: row.external_id
     }
     const contactCustomFields = {}
-    for (let f in customFields) {
+    for (const f in customFields) {
       contactCustomFields[f] = row[f]
     }
     contact.custom_fields = JSON.stringify(contactCustomFields)
@@ -280,8 +284,8 @@ export async function assignTexters(job) {
 
   // changedAssignments:
   currentAssignments.map((assignment) => {
-    const texter = texters.filter((ele) => parseInt(ele.id) === assignment.user_id)[0]
-    if (texter && texter.needsMessageCount === parseInt(assignment.needs_message_count)) {
+    const texter = texters.filter((ele) => parseInt(ele.id, 10) === assignment.user_id)[0]
+    if (texter && texter.needsMessageCount === parseInt(assignment.needs_message_count, 10)) {
       unchangedTexters[assignment.user_id] = true
       return null
     } else if (texter) { // assignment change
@@ -304,13 +308,13 @@ export async function assignTexters(job) {
     }
   }).filter((ele) => ele !== null)
 
-  for (let a_id in demotedTexters) {
+  for (const assignId in demotedTexters) {
     // Here we demote ALL the demotedTexters contacts (not just the demotion count)
     // because they will get reapportioned below
     await r.knex('campaign_contact')
       .where('id', 'in',
              r.knex('campaign_contact')
-             .where('assignment_id', a_id)
+             .where('assignment_id', assignId)
              .where('message_status', 'needsMessage')
              .select('id')
             )
@@ -330,7 +334,7 @@ export async function assignTexters(job) {
   for (let index = 0; index < texterCount; index++) {
     const texter = texters[index]
     const texterId = parseInt(texter.id, 10)
-    const maxContacts = parseInt(texter.maxContacts || 0)
+    const maxContacts = parseInt(texter.maxContacts || 0, 10)
     if (unchangedTexters[texterId]) {
       continue
     }
