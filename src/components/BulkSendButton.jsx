@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import React, { Component } from 'react'
 import RaisedButton from 'material-ui/RaisedButton'
 import FlatButton from 'material-ui/FlatButton'
@@ -43,8 +44,8 @@ export default class BulkSendButton extends Component {
 }
 
 BulkSendButton.propTypes = {
-  assignment: React.PropTypes.object,
-  onFinishContact: React.PropTypes.function,
-  bulkSendMessages: React.PropTypes.function,
-  setDisabled: React.PropTypes.function
+  assignment: PropTypes.object,
+  onFinishContact: PropTypes.function,
+  bulkSendMessages: PropTypes.function,
+  setDisabled: PropTypes.function
 }

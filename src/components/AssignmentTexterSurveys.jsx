@@ -1,4 +1,4 @@
-import PropTypes from 'prop-types';
+import PropTypes from 'prop-types'
 import React, { Component } from 'react'
 import { grey50 } from 'material-ui/styles/colors'
 import { Card, CardHeader, CardText } from 'material-ui/Card'

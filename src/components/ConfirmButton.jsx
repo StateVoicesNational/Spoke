@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import React, { Component } from 'react'
 import RaisedButton from 'material-ui/RaisedButton'
 import FlatButton from 'material-ui/FlatButton'
@@ -62,6 +63,6 @@ export default class ConfirmButton extends Component {
 }
 
 ConfirmButton.propTypes = {
-  onConfirm: React.PropTypes.function,
-  label: React.PropTypes.string
+  onConfirm: PropTypes.function,
+  label: PropTypes.string
 }

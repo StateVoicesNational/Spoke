@@ -1,4 +1,4 @@
-import PropTypes from 'prop-types';
+import PropTypes from 'prop-types'
 import React, { Component } from 'react'
 import CampaignList from './CampaignList'
 // import FloatingActionButton from 'material-ui/FloatingActionButton'

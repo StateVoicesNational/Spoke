@@ -1,5 +1,5 @@
-import type from 'prop-types';
-import React from 'react';
+import type from 'prop-types'
+import React from 'react'
 import { Pie } from 'react-chartjs'
 
 const Chart = ({ data }) => {

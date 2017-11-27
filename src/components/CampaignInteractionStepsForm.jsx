@@ -1,5 +1,5 @@
-import type from 'prop-types';
-import React from 'react';
+import type from 'prop-types'
+import React from 'react'
 import ReactDOM from 'react-dom'
 import Divider from 'material-ui/Divider'
 import ContentClear from 'material-ui/svg-icons/content/clear'
