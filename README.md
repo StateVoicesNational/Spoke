@@ -33,14 +33,14 @@ Follow up instructions located [here](https://github.com/MoveOnOrg/Spoke/blob/ma
 9. Run `npm run dev` to start the app. Wait until you see both "Node app is running ..." and "Webpack dev server is now running ..." before attempting to connect. (make sure environment variable `JOBS_SAME_PROCESS=1`)
 10. Go to `http://localhost:3000` to load the app.
 11. As long as you leave `SUPPRESS_SELF_INVITE=` blank and unset in your `.env` you should be able to invite yourself from the homepage.
-If you set that variable, then spoke will be invite-only and you'll need to generate an invite. Run:
+  - If you DO set that variable, then spoke will be invite-only and you'll need to generate an invite. Run:
 ```
 echo "INSERT INTO invite (hash,is_valid) VALUES ('abc', 1);" |sqlite3 mydb.sqlite
+# Note: When doing this with PostgreSQL, you would replace the `1` with `true`
 ```
-(Note: When doing this with PostgreSQL, you would replace the `1` with `true`)
+  - Then use the generated key to visit an invite link, e.g.: http://localhost:3000/invite/abc. This should redirect you to the login screen. Use the "Sign Up" option to create your account.
 
-12. Use the generated key to visit an invite link, e.g.: http://localhost:3000/invite/abc. This should redirect you to the login screen. Use the "Sign Up" option to create your account.
-13. You should then be prompted to create an organization. Create it.
+12. You should then be prompted to create an organization. Create it.
 
 If you want to create an invite via the home page "Login and get started" link, make sure your `SUPPRESS_SELF_INVITE` variable is not set.
 
