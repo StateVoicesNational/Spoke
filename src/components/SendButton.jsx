@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React, { Component } from 'react'
 import RaisedButton from 'material-ui/RaisedButton'
 import { StyleSheet, css } from 'aphrodite'
@@ -45,9 +46,9 @@ class SendButton extends Component {
 }
 
 SendButton.propTypes = {
-  threeClickEnabled: React.PropTypes.boolean,
-  onFinalTouchTap: React.PropTypes.function,
-  disabled: React.PropTypes.boolean
+  threeClickEnabled: PropTypes.boolean,
+  onFinalTouchTap: PropTypes.function,
+  disabled: PropTypes.boolean
 }
 
 export default SendButton

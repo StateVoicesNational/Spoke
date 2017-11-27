@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React, { Component } from 'react'
 import SelectField from 'material-ui/SelectField'
 import MenuItem from 'material-ui/MenuItem'
@@ -96,11 +97,11 @@ class AssignmentTexterSurveyDropdown extends Component {
 }
 
 AssignmentTexterSurveyDropdown.propTypes = {
-  step: React.PropTypes.object,
-  answerValue: React.PropTypes.object,
-  isCurrentStep: React.PropTypes.boolean,
-  campaignContactId: React.PropTypes.number,
-  mutations: React.PropTypes.object
+  step: PropTypes.object,
+  answerValue: PropTypes.object,
+  isCurrentStep: PropTypes.boolean,
+  campaignContactId: PropTypes.number,
+  mutations: PropTypes.object
 }
 
 const mapMutationsToProps = () => ({

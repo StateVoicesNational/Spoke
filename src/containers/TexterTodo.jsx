@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react'
 import AssignmentTexter from '../components/AssignmentTexter'
 import { withRouter } from 'react-router'
@@ -51,10 +52,10 @@ class TexterTodo extends React.Component {
 }
 
 TexterTodo.propTypes = {
-  contactsFilter: React.PropTypes.string,
-  params: React.PropTypes.object,
-  data: React.PropTypes.object,
-  router: React.PropTypes.object
+  contactsFilter: PropTypes.string,
+  params: PropTypes.object,
+  data: PropTypes.object,
+  router: PropTypes.object
 }
 
 const mapQueriesToProps = ({ ownProps }) => ({

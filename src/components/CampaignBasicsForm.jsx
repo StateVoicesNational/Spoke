@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react'
 import Form from 'react-formal'
 import moment from 'moment'
@@ -105,17 +106,17 @@ export default class CampaignBasicsForm extends React.Component {
 }
 
 CampaignBasicsForm.propTypes = {
-  formValues: React.PropTypes.shape({
-    title: React.PropTypes.string,
-    description: React.PropTypes.string,
-    dueBy: React.PropTypes.any,
-    logoImageUrl: React.PropTypes.string,
-    primaryColor: React.PropTypes.string,
-    introHtml: React.PropTypes.string
+  formValues: PropTypes.shape({
+    title: PropTypes.string,
+    description: PropTypes.string,
+    dueBy: PropTypes.any,
+    logoImageUrl: PropTypes.string,
+    primaryColor: PropTypes.string,
+    introHtml: PropTypes.string
   }),
-  onChange: React.PropTypes.func,
-  onSubmit: React.PropTypes.func,
-  saveLabel: React.PropTypes.string,
-  saveDisabled: React.PropTypes.bool,
-  ensureComplete: React.PropTypes.bool
+  onChange: PropTypes.func,
+  onSubmit: PropTypes.func,
+  saveLabel: PropTypes.string,
+  saveDisabled: PropTypes.bool,
+  ensureComplete: PropTypes.bool
 }

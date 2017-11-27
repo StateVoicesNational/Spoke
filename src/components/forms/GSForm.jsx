@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react'
 import Form from 'react-formal'
 import GSSubmitButton from './GSSubmitButton'
@@ -16,10 +17,10 @@ const styles = StyleSheet.create({
 })
 export default class GSForm extends React.Component {
   static propTypes = {
-    value: React.PropTypes.object,
-    defaultValue: React.PropTypes.object,
-    onChange: React.PropTypes.func,
-    children: React.PropTypes.array
+    value: PropTypes.object,
+    defaultValue: PropTypes.object,
+    onChange: PropTypes.func,
+    children: PropTypes.array
   }
 
   state = {
@@ -123,5 +124,5 @@ export default class GSForm extends React.Component {
 }
 
 GSForm.propTypes = {
-  onSubmit: React.PropTypes.func
+  onSubmit: PropTypes.func
 }

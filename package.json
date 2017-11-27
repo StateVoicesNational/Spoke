@@ -107,6 +107,7 @@
     "passport": "^0.3.2",
     "passport-auth0": "^0.5.2",
     "pg": "^6.4.2",
+    "prop-types": "^15.6.0",
     "query-string": "^4.1.0",
     "react": "^15.6.1",
     "react-addons-css-transition-group": "^15.2.1",

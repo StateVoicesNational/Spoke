@@ -1,4 +1,5 @@
-import React, { PropTypes as type } from 'react'
+import type from 'prop-types';
+import React from 'react';
 import RaisedButton from 'material-ui/RaisedButton'
 import GSForm from '../components/forms/GSForm'
 import Form from 'react-formal'
