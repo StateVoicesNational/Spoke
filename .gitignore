@@ -10,3 +10,4 @@ claudia.json
 stage.json
 stage-env.json
 test.sqlite
+coverage/
