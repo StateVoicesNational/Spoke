@@ -38,6 +38,7 @@ If you set that variable, then spoke will be invite-only and you'll need to gene
 echo "INSERT INTO invite (hash,is_valid) VALUES ('abc', 1);" |sqlite3 mydb.sqlite
 ```
 (Note: When doing this with PostgreSQL, you would replace the `1` with `true`)
+
 12. Use the generated key to visit an invite link, e.g.: http://localhost:3000/invite/abc. This should redirect you to the login screen. Use the "Sign Up" option to create your account.
 13. You should then be prompted to create an organization. Create it.
 
