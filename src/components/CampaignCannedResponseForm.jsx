@@ -1,5 +1,5 @@
-import type from 'prop-types';
-import React from 'react';
+import type from 'prop-types'
+import React from 'react'
 import { StyleSheet, css } from 'aphrodite'
 import yup from 'yup'
 import GSForm from './forms/GSForm'

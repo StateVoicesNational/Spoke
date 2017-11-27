@@ -1,4 +1,4 @@
-import PropTypes from 'prop-types';
+import PropTypes from 'prop-types'
 import React from 'react'
 import Paper from 'material-ui/Paper'
 import { List, ListItem } from 'material-ui/List'

@@ -1,5 +1,5 @@
-import type from 'prop-types';
-import React from 'react';
+import type from 'prop-types'
+import React from 'react'
 import Slider from './Slider'
 import AutoComplete from 'material-ui/AutoComplete'
 import IconButton from 'material-ui/IconButton'

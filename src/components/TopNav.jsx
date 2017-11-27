@@ -1,4 +1,4 @@
-import PropTypes from 'prop-types';
+import PropTypes from 'prop-types'
 import React from 'react'
 import IconButton from 'material-ui/IconButton'
 import ArrowBackIcon from 'material-ui/svg-icons/navigation/arrow-back'

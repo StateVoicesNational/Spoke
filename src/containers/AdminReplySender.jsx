@@ -1,4 +1,4 @@
-import PropTypes from 'prop-types';
+import PropTypes from 'prop-types'
 import React from 'react'
 import loadData from './hoc/load-data'
 import gql from 'graphql-tag'
