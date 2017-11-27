@@ -910,6 +910,11 @@ const rootMutations = {
 }
 
 const rootResolvers = {
+  Action: {
+    name: (o) => o.name,
+    display_name: (o) => o.display_name,
+    instructions: (o) => o.instructions,
+  },
   RootQuery: {
     campaign: async (_, { id }, { loaders, user }) => {
       const campaign = await loaders.campaign.load(id)

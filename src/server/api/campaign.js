@@ -17,7 +17,7 @@ export const schema = `
     jobType: String
     assigned: Boolean
     status: Int
-    result_message: String
+    resultMessage: String
   }
 
   type Campaign {
@@ -52,7 +52,8 @@ export const resolvers = {
       'id',
       'assigned',
       'status',
-      'jobType'
+      'jobType',
+      'resultMessage'
     ], JobRequest)
   },
   CampaignStats: {
