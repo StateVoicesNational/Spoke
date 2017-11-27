@@ -46,18 +46,7 @@ import {
   schema as questionResponseSchema,
   resolvers as questionResponseResolvers
 } from './question-response'
-import {
-  schema as dateSchema,
-  resolvers as dateResolvers
-} from './date'
-import {
-  schema as jsonSchema,
-  resolvers as jsonResolvers
-} from './json'
-import {
-  schema as phoneSchema,
-  resolvers as phoneResolvers
-} from './phone'
+import { GraphQLPhone } from './phone'
 import {
   schema as optOutSchema,
   resolvers as optOutResolvers
@@ -79,7 +68,6 @@ import {
   resolvers as inviteResolvers
 } from './invite'
 import {
-  GraphQLError,
   authRequired,
   accessRequired,
   hasRole,
@@ -97,6 +85,9 @@ import { uploadContacts,
          exportCampaign
        } from '../../workers/jobs'
 const uuidv4 = require('uuid').v4
+import GraphQLDate from 'graphql-date'
+import GraphQLJSON from 'graphql-type-json'
+import GraphQLError from 'graphql/error'
 
 const JOBS_SAME_PROCESS = !!(process.env.JOBS_SAME_PROCESS || global.JOBS_SAME_PROCESS)
 const JOBS_SYNC = !!(process.env.JOBS_SYNC || global.JOBS_SYNC)
@@ -1012,9 +1003,9 @@ export const schema = [
   rootSchema,
   userSchema,
   organizationSchema,
-  dateSchema,
-  jsonSchema,
-  phoneSchema,
+  "scalar Date",
+  "scalar JSON",
+  "scalar Phone",
   campaignSchema,
   assignmentSchema,
   interactionStepSchema,
@@ -1040,9 +1031,9 @@ export const resolvers = {
   ...cannedResponseResolvers,
   ...questionResponseResolvers,
   ...inviteResolvers,
-  ...dateResolvers,
-  ...jsonResolvers,
-  ...phoneResolvers,
+  ...{Date: GraphQLDate},
+  ...{JSON: GraphQLJSON},
+  ...{Phone: GraphQLPhone},
   ...questionResolvers,
   ...rootMutations
 }
