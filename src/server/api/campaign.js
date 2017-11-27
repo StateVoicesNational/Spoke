@@ -129,7 +129,8 @@ export const resolvers = {
         .where({campaign_id: campaign.id})
         .count('*')
       const count = counts[0]
-      return Number(Object.values(count)[0])
+      const key = Object.keys(count)[0]
+      return Number(count[key])
     },
     hasUnassignedContacts: async (campaign) => {
       const contacts = await r.knex('campaign_contact')
