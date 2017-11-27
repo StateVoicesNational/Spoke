@@ -1,14 +1,6 @@
+import { GraphQLError } from 'graphql/error'
+
 import { r } from '../models'
-
-export function GraphQLError(errorObject) {
-  const message = JSON.stringify(errorObject)
-  this.name = this.constructor.name
-  this.message = message
-  this.stack = (new Error()).stack
-}
-
-GraphQLError.prototype = Object.create(Error.prototype)
-GraphQLError.prototype.constructor = GraphQLError
 
 export function authRequired(user) {
   if (!user) {
