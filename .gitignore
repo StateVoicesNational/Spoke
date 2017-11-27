@@ -12,3 +12,4 @@ stage-env.json
 test.sqlite
 *~
 *#
+coverage/
