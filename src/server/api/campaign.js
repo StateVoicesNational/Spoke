@@ -132,11 +132,11 @@ export const resolvers = {
       return Number(Object.values(count)[0])
     },
     hasUnassignedContacts: async (campaign) => {
-      const hasContacts = await r.table('campaign_contact')
-        .getAll([campaign.id, ''], { index: 'campaign_assignment' })
-        .limit(1)(0)
-        .default(null)
-      return !!hasContacts
+      const contacts = await r.knex('campaign_contact')
+        .select('id')
+        .where({campaign_id: campaign.id, assignment_id: null})
+        .limit(1)
+      return contacts.length > 0
     },
     customFields: async (campaign) => {
       const campaignContacts = await r.table('campaign_contact')

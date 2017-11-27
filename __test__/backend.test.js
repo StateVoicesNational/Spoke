@@ -1,6 +1,6 @@
 import { schema, resolvers } from '../src/server/api/schema'
 import { graphql } from 'graphql'
-import { User, Organization, Campaign, CampaignContact, r } from '../src/server/models/'
+import { User, Organization, Campaign, CampaignContact, Assignment, r } from '../src/server/models/'
 import { sleep } from '../src/workers/lib'
 import { resolvers as campaignResolvers } from '../src/server/api/campaign'
 import { getContext,
@@ -366,5 +366,53 @@ describe('Campaign', () => {
     })).save()
     const results = await campaignResolvers.Campaign.contactsCount(campaign)
     expect(results).toEqual(0)
+  })
+
+  test('resolves unassigned contacts when true', async () => {
+    const results = await campaignResolvers.Campaign.hasUnassignedContacts(campaigns[0])
+    expect(results).toEqual(true)
+  })
+
+  test('resolves unassigned contacts when false with assigned contacts', async () => {
+    const campaign = await (new Campaign({
+      organization_id: organization.id,
+      is_started: false,
+      is_archived: false,
+      due_by: new Date()
+    })).save()
+
+    const user = await (new User({
+      auth0_id: 'test123',
+      first_name: 'TestUserFirst',
+      last_name: 'TestUserLast',
+      cell: '555-555-5555',
+      email: 'testuser@example.com',
+    })).save()
+
+    const assignment = await (new Assignment({
+      user_id: user.id,
+      campaign_id: campaign.id,
+    })).save()
+
+    const contact = await (new CampaignContact({
+      campaign_id: campaign.id,
+      assignment_id: assignment.id,
+      cell: '',
+      message_status: 'closed',
+    })).save()
+
+    const results = await campaignResolvers.Campaign.hasUnassignedContacts(campaign)
+    expect(results).toEqual(false)
+  })
+
+  test('resolves unassigned contacts when false with no contacts', async () => {
+    const campaign = await (new Campaign({
+      organization_id: organization.id,
+      is_started: false,
+      is_archived: false,
+      due_by: new Date()
+    })).save()
+    const results = await campaignResolvers.Campaign.hasUnassignedContacts(campaign)
+    expect(results).toEqual(false)
   })
 })
