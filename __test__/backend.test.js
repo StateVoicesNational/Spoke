@@ -311,8 +311,6 @@ it('should assign texters to campaign contacts', async () => {
 
 describe('Campaign', () => {
   let organization
-  let campaigns
-  let contacts
 
   beforeEach(async () => {
     organization = await (new Organization({
@@ -320,99 +318,112 @@ describe('Campaign', () => {
       texting_hours_start: 0,
       texting_hours_end: 0
     })).save()
+  })
 
-    campaigns = await Promise.all([
-      new Campaign({
+  describe('contacts', async () => {
+    let campaigns
+    let contacts
+
+    beforeEach(async () => {
+      campaigns = await Promise.all([
+        new Campaign({
+          organization_id: organization.id,
+          is_started: false,
+          is_archived: false,
+          due_by: new Date()
+        }),
+        new Campaign({
+          organization_id: organization.id,
+          is_started: false,
+          is_archived: false,
+          due_by: new Date()
+        })
+      ].map(async (each) => (
+        each.save()
+      )))
+
+      contacts = await Promise.all([
+        new CampaignContact({campaign_id: campaigns[0].id, cell: '', message_status: 'closed'}),
+        new CampaignContact({campaign_id: campaigns[1].id, cell: '', message_status: 'closed'})
+      ].map(async (each) => (
+        each.save()
+      )))
+    })
+
+    test('resolves contacts', async () => {
+      const results = await campaignResolvers.Campaign.contacts(campaigns[0])
+      expect(results).toHaveLength(1)
+      expect(results[0].campaign_id).toEqual(campaigns[0].id)
+    })
+
+    test('resolves contacts count', async () => {
+      const results = await campaignResolvers.Campaign.contactsCount(campaigns[0])
+      expect(results).toEqual(1)
+    })
+
+    test('resolves contacts count when empty', async () => {
+      const campaign = await (new Campaign({
         organization_id: organization.id,
         is_started: false,
         is_archived: false,
         due_by: new Date()
-      }),
-      new Campaign({
+      })).save()
+      const results = await campaignResolvers.Campaign.contactsCount(campaign)
+      expect(results).toEqual(0)
+    })
+  })
+
+  describe('unassigned contacts', () => {
+    let campaign
+
+    beforeEach(async () => {
+      campaign = await (new Campaign({
         organization_id: organization.id,
         is_started: false,
         is_archived: false,
         due_by: new Date()
-      })
-    ].map(async (each) => (
-      each.save()
-    )))
+      })).save()
+    })
 
-    contacts = await Promise.all([
-      new CampaignContact({campaign_id: campaigns[0].id, cell: '', message_status: 'closed'}),
-      new CampaignContact({campaign_id: campaigns[1].id, cell: '', message_status: 'closed'})
-    ].map(async (each) => (
-      each.save()
-    )))
-  })
+    test('resolves unassigned contacts when true', async () => {
+      const contact = await (new CampaignContact({
+        campaign_id: campaign.id,
+        message_status: 'closed',
+        cell: '',
+      })).save()
 
-  test('resolves contacts', async () => {
-    const results = await campaignResolvers.Campaign.contacts(campaigns[0])
-    expect(results).toHaveLength(1)
-    expect(results[0].campaign_id).toEqual(campaigns[0].id)
-  })
+      const results = await campaignResolvers.Campaign.hasUnassignedContacts(campaign)
+      expect(results).toEqual(true)
+    })
 
-  test('resolves contacts count', async () => {
-    const results = await campaignResolvers.Campaign.contactsCount(campaigns[0])
-    expect(results).toEqual(1)
-  })
+    test('resolves unassigned contacts when false with assigned contacts', async () => {
+      const user = await (new User({
+        auth0_id: 'test123',
+        first_name: 'TestUserFirst',
+        last_name: 'TestUserLast',
+        cell: '555-555-5555',
+        email: 'testuser@example.com',
+      })).save()
 
-  test('resolves contacts count when empty', async () => {
-    const campaign = await (new Campaign({
-      organization_id: organization.id,
-      is_started: false,
-      is_archived: false,
-      due_by: new Date()
-    })).save()
-    const results = await campaignResolvers.Campaign.contactsCount(campaign)
-    expect(results).toEqual(0)
-  })
+      const assignment = await (new Assignment({
+        user_id: user.id,
+        campaign_id: campaign.id,
+      })).save()
 
-  test('resolves unassigned contacts when true', async () => {
-    const results = await campaignResolvers.Campaign.hasUnassignedContacts(campaigns[0])
-    expect(results).toEqual(true)
-  })
+      const contact = await (new CampaignContact({
+        campaign_id: campaign.id,
+        assignment_id: assignment.id,
+        message_status: 'closed',
+        cell: '',
+      })).save()
 
-  test('resolves unassigned contacts when false with assigned contacts', async () => {
-    const campaign = await (new Campaign({
-      organization_id: organization.id,
-      is_started: false,
-      is_archived: false,
-      due_by: new Date()
-    })).save()
+      const results = await campaignResolvers.Campaign.hasUnassignedContacts(campaign)
+      expect(results).toEqual(false)
+    })
 
-    const user = await (new User({
-      auth0_id: 'test123',
-      first_name: 'TestUserFirst',
-      last_name: 'TestUserLast',
-      cell: '555-555-5555',
-      email: 'testuser@example.com',
-    })).save()
-
-    const assignment = await (new Assignment({
-      user_id: user.id,
-      campaign_id: campaign.id,
-    })).save()
-
-    const contact = await (new CampaignContact({
-      campaign_id: campaign.id,
-      assignment_id: assignment.id,
-      cell: '',
-      message_status: 'closed',
-    })).save()
-
-    const results = await campaignResolvers.Campaign.hasUnassignedContacts(campaign)
-    expect(results).toEqual(false)
-  })
-
-  test('resolves unassigned contacts when false with no contacts', async () => {
-    const campaign = await (new Campaign({
-      organization_id: organization.id,
-      is_started: false,
-      is_archived: false,
-      due_by: new Date()
-    })).save()
-    const results = await campaignResolvers.Campaign.hasUnassignedContacts(campaign)
-    expect(results).toEqual(false)
+    test('resolves unassigned contacts when false with no contacts', async () => {
+      const results = await campaignResolvers.Campaign.hasUnassignedContacts(campaign)
+      expect(results).toEqual(false)
+    })
   })
 })
