@@ -5,7 +5,7 @@ import serviceMap from '../server/api/lib/services'
 import { getLastMessage, saveNewIncomingMessage } from '../server/api/lib/message-sending'
 
 import AWS from 'aws-sdk'
-import Baby from 'babyparse'
+import Papa from 'papaparse'
 import moment from 'moment'
 import { sendEmail } from '../server/mail'
 import { Notifications, sendUserNotification } from '../server/notifications'
@@ -520,8 +520,8 @@ export async function exportCampaign(job) {
     finalCampaignResults = finalCampaignResults.concat(convertedContacts)
     await updateJob(job, Math.round(index / assignmentCount * 100))
   }
-  const campaignCsv = Baby.unparse(finalCampaignResults)
-  const messageCsv = Baby.unparse(finalCampaignMessages)
+  const campaignCsv = Papa.unparse(finalCampaignResults)
+  const messageCsv = Papa.unparse(finalCampaignMessages)
 
   if (process.env.AWS_ACCESS_AVAILABLE || (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY)) {
     const s3bucket = new AWS.S3({ params: { Bucket: process.env.AWS_S3_BUCKET_NAME } })
