@@ -5,7 +5,7 @@ services:
   - postgresql
 env:
   global:
-  - secure: TODO
+  - secure: "TKqpO0HaI0LV/Tfm/VLqXXTPbUB25lcykq9AmA2uegw8dhfHKT9SgiVvQTkWWZzCP83XvWd8rQZT8IH7BH6ksxq9Cjy5fR6jM+i7InfUCjgbfbbr/8h6eyYjA4SbV2k/LC1WVYn3JkOqvVKXyBcQejdh7d0k5HWQy4/OcSnoY/nxeeKmW7ZTijG35pCzRHPUnlvf4qZvCDu0rWFr5FJUmG2l7nA7rOXeGHqy3WK9RUapuFCdjqV/AP7irLMQZTCH8Ne4j8vgByt5oVrXm3cg73XMOHkBiHbUbSJlJF6Ky+GhcUSshmjMtaGojUUDC0xajceTx5psPKSCr8iDMWbf2+BQRBNpr/SfeDOVyZLSggX3BTjUdGz9lhm8sI54cBTsdf1D4HyDjMtlRux0z7urlAGqYeXDY1U9ByLVZsecHTUerR1oxKE59NfqsOAhH8TmxfodkFlCm0+e8fFUhbq6RsiZdQZcwN9gBQ0YLOgly0OSJrUTOF/y4lUTN7o/YKaB1XfwmKFp8lroYZbu+KUO18whhiO/dTtsOlxAjo0sgW7XTjFKsukoAMbNYsP3J3KcYBjTKzDSNqnvgNnJmULQo4ND8r+1Q0i+Qtg0+uwtqJPVNxWX8Rx62ghWBpNnZYs2gJxqPorpLSjHJdB6YTdkgR8YIZS60mZ4maE5W2XoHjM="
 before_script:
   - psql -c 'CREATE DATABASE spoke_test;' -U postgres
   - psql -c "CREATE USER spoke_test WITH PASSWORD 'spoke_test';" -U postgres
