@@ -1,3 +1,11 @@
+# Development Guidelines
+
+This document describes current gotchas in our code base an explains the context
+for parts that are evolving in a certain direction (or we *want* to evolve in a certain direction).
+
+See [CONTRIBUTING.md](../CONTRIBUTING.md) and the [README](../README.md) for setup
+instructions and an overview about how to help and join in development.
+
 ## Documentation Organization
 
 We try to organize documentation in the spirit of this blog post:
