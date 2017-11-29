@@ -179,6 +179,10 @@ const rootSchema = `
     instructions: String
   }
 
+  type FoundContact {
+    found: Boolean
+  }
+
   type RootQuery {
     currentUser: User
     organization(id:String!): Organization
@@ -211,7 +215,7 @@ const rootSchema = `
     archiveCampaign(id:String!): Campaign,
     unarchiveCampaign(id:String!): Campaign,
     sendReply(id: String!, message: String!): CampaignContact
-    findNewCampaignContact(assignmentId: String!, numberContacts: Int!): CampaignContact,
+    findNewCampaignContact(assignmentId: String!, numberContacts: Int!): FoundContact,
     assignUserToCampaign(organizationUuid: String!, campaignId: String!): Campaign
     userAgreeTerms(userId: String!): User
   }
@@ -674,7 +678,7 @@ const rootMutations = {
       }
       const campaign = await Campaign.get(assignment.campaign_id)
       if (!campaign.use_dynamic_assignment) {
-        return false
+        return {found: false}
       }
 
       const contactsCount = (await r.knex('campaign_contact').where('assignment_id', assignmentId).count())[0].count
@@ -686,7 +690,7 @@ const rootMutations = {
       // Don't add more if they already have that many
       const result = await r.knex('campaign_contact').where({ assignment_id: assignmentId, message_status: 'needsMessage', is_opted_out: false }).count()
       if (result[0].count >= numberContacts) {
-        return false
+        return {found: false}
       }
       const updatedCount = await r.knex('campaign_contact')
         .where('id', 'in',
@@ -700,9 +704,9 @@ const rootMutations = {
         .catch(log.error)
 
       if (updatedCount > 0) {
-        return true
+        return {found: true}
       } else {
-        return false
+        return {found: false}
       }
     },
 
@@ -914,6 +918,9 @@ const rootResolvers = {
     name: (o) => o.name,
     display_name: (o) => o.display_name,
     instructions: (o) => o.instructions,
+  },
+  FoundContact: {
+    found: (o) => o.found
   },
   RootQuery: {
     campaign: async (_, { id }, { loaders, user }) => {
