@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react'
 import FlatButton from 'material-ui/FlatButton'
 import { List, ListItem } from 'material-ui/List'
@@ -155,15 +156,15 @@ class ScriptList extends React.Component {
 }
 
 ScriptList.propTypes = {
-  script: React.PropTypes.object,
-  scripts: React.PropTypes.arrayOf(React.PropTypes.object),
-  subheader: React.PropTypes.element,
-  onSelectCannedResponse: React.PropTypes.func,
-  showAddScriptButton: React.PropTypes.bool,
-  customFields: React.PropTypes.array,
-  campaignId: React.PropTypes.number,
-  mutations: React.PropTypes.object,
-  texterId: React.PropTypes.number
+  script: PropTypes.object,
+  scripts: PropTypes.arrayOf(PropTypes.object),
+  subheader: PropTypes.element,
+  onSelectCannedResponse: PropTypes.func,
+  showAddScriptButton: PropTypes.bool,
+  customFields: PropTypes.array,
+  campaignId: PropTypes.number,
+  mutations: PropTypes.object,
+  texterId: PropTypes.number
 }
 
 const mapMutationsToProps = () => ({

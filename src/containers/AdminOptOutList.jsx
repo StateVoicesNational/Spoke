@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react'
 import { List, ListItem } from 'material-ui/List'
 import ProhibitedIcon from 'material-ui/svg-icons/av/not-interested'
@@ -29,7 +30,7 @@ const AdminOptOutList = function AdminOptOutList(props) {
 }
 
 AdminOptOutList.propTypes = {
-  data: React.PropTypes.object
+  data: PropTypes.object
 }
 
 const mapQueriesToProps = ({ ownProps }) => ({

@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react'
 import { List, ListItem } from 'material-ui/List'
 import moment from 'moment'
@@ -127,17 +128,17 @@ class CampaignList extends React.Component {
 }
 
 CampaignList.propTypes = {
-  campaigns: React.PropTypes.arrayOf(
-    React.PropTypes.shape({
-      dueBy: React.PropTypes.string,
-      title: React.PropTypes.string,
-      description: React.PropTypes.string
+  campaigns: PropTypes.arrayOf(
+    PropTypes.shape({
+      dueBy: PropTypes.string,
+      title: PropTypes.string,
+      description: PropTypes.string
     })
   ),
-  router: React.PropTypes.object,
-  organizationId: React.PropTypes.string,
-  data: React.PropTypes.object,
-  mutations: React.PropTypes.object
+  router: PropTypes.object,
+  organizationId: PropTypes.string,
+  data: PropTypes.object,
+  mutations: PropTypes.object
 }
 
 const mapMutationsToProps = () => ({

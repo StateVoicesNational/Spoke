@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react'
 import Check from 'material-ui/svg-icons/action/check-circle'
 import Empty from '../components/Empty'
@@ -54,9 +55,9 @@ class TexterTodoList extends React.Component {
 }
 
 TexterTodoList.propTypes = {
-  organizationId: React.PropTypes.string,
-  params: React.PropTypes.object,
-  data: React.PropTypes.object
+  organizationId: PropTypes.string,
+  params: PropTypes.object,
+  data: PropTypes.object
 }
 
 const mapQueriesToProps = ({ ownProps }) => ({

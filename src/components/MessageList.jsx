@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react'
 import { List, ListItem } from 'material-ui/List'
 import moment from 'moment'
@@ -55,7 +56,7 @@ const MessageList = function MessageList(props) {
 }
 
 MessageList.propTypes = {
-  contact: React.PropTypes.object
+  contact: PropTypes.object
 }
 
 export default MessageList

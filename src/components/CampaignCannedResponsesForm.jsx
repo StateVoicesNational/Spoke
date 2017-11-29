@@ -1,4 +1,5 @@
-import React, { PropTypes as type } from 'react'
+import type from 'prop-types';
+import React from 'react';
 import CampaignCannedResponseForm from './CampaignCannedResponseForm'
 import FlatButton from 'material-ui/FlatButton'
 import Form from 'react-formal'

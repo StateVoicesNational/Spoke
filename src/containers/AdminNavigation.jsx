@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react'
 import Navigation from '../components/Navigation'
 import { ListItem } from 'material-ui/List'
@@ -59,10 +60,10 @@ class AdminNavigation extends React.Component {
 }
 
 AdminNavigation.propTypes = {
-  data: React.PropTypes.object,
-  organizationId: React.PropTypes.string,
-  router: React.PropTypes.object,
-  params: React.PropTypes.object
+  data: PropTypes.object,
+  organizationId: PropTypes.string,
+  router: PropTypes.object,
+  params: PropTypes.object
 }
 
 const mapQueriesToProps = ({ ownProps }) => ({

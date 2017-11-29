@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react'
 import Empty from '../components/Empty'
 import OrganizationJoinLink from '../components/OrganizationJoinLink'
@@ -138,11 +139,11 @@ class AdminPersonList extends React.Component {
 }
 
 AdminPersonList.propTypes = {
-  mutations: React.PropTypes.object,
-  params: React.PropTypes.object,
-  personData: React.PropTypes.object,
-  userData: React.PropTypes.object,
-  organizationData: React.PropTypes.object
+  mutations: PropTypes.object,
+  params: PropTypes.object,
+  personData: PropTypes.object,
+  userData: PropTypes.object,
+  organizationData: PropTypes.object
 }
 
 const mapMutationsToProps = () => ({

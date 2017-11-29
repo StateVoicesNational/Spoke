@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react'
 import { StyleSheet, css } from 'aphrodite'
 import theme from '../styles/theme'
@@ -34,8 +35,8 @@ const Empty = ({ title, icon }) => (
 )
 
 Empty.propTypes = {
-  title: React.PropTypes.string,
-  icon: React.PropTypes.object
+  title: PropTypes.string,
+  icon: PropTypes.object
 }
 
 export default Empty

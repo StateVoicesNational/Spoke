@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react'
 import TextField from 'material-ui/TextField'
 
@@ -25,7 +26,7 @@ const OrganizationJoinLink = ({ organizationUuid }) => {
 }
 
 OrganizationJoinLink.propTypes = {
-  organizationUuid: React.PropTypes.string
+  organizationUuid: PropTypes.string
 }
 
 export default OrganizationJoinLink

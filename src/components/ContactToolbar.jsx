@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react'
 import { Toolbar, ToolbarGroup, ToolbarTitle } from 'material-ui/Toolbar'
 import { getDisplayPhoneNumber } from '../lib/phone-format'
@@ -78,8 +79,8 @@ const ContactToolbar = function ContactToolbar(props) {
 }
 
 ContactToolbar.propTypes = {
-  campaignContact: React.PropTypes.object, // contacts for current assignment
-  rightToolbarIcon: React.PropTypes.element
+  campaignContact: PropTypes.object, // contacts for current assignment
+  rightToolbarIcon: PropTypes.element
 }
 
 export default ContactToolbar
