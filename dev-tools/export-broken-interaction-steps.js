@@ -1,5 +1,5 @@
 import { r } from '../src/server/models'
-import Baby from 'babyparse'
+import Papa from 'papaparse'
 
 (async function () {
   try {
@@ -36,7 +36,7 @@ import Baby from 'babyparse'
     )).reduce((left, right) => left.concat(right), [])
 
     console.log(finalResults[0])
-    const csvResults = Baby.unparse(finalResults)
+    const csvResults = Papa.unparse(finalResults)
     console.log(csvResults)
   } catch (ex) {
     console.log(ex)
