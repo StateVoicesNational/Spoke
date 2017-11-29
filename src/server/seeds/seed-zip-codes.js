@@ -1,5 +1,5 @@
 import { ZipCode, r } from '../models'
-import Baby from 'babyparse'
+import Papa from 'papaparse'
 import { log } from '../../lib'
 
 export async function seedZipCodes() {
@@ -11,7 +11,7 @@ export async function seedZipCodes() {
   if (!hasZip) {
     log.info('Starting to seed zip codes')
     const absolutePath = `${__dirname}/data/zip-codes.csv`
-    const { data, error } = Baby.parseFiles(absolutePath, {
+    const { data, error } = Papa.parseFiles(absolutePath, {
       header: true
     })
     if (error) {
