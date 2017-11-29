@@ -188,6 +188,7 @@ const rootSchema = `
     createInvite(invite:InviteInput!): Invite
     createCampaign(campaign:CampaignInput!): Campaign
     editCampaign(id:String!, campaign:CampaignInput!): Campaign
+    editUserFirstName(userId:String!): User
     exportCampaign(id:String!): JobRequest
     createCannedResponse(cannedResponse:CannedResponseInput!): CannedResponse
     createOrganization(name: String!, userId: String!, inviteId: String!): Organization
@@ -391,6 +392,15 @@ const rootMutations = {
         exportCampaign(newJob)
       }
       return newJob
+    },
+    editUserFirstName: async(_, { userId, organizationId }, { user, loaders }) => {
+      const userInfo = ( await r.knex('users')
+        .where({ user_id: userId })
+        .select('first_name')
+        .then((result) => {
+          console.log('first name:', result);
+        })
+      )
     },
     editOrganizationRoles: async (_, { userId, organizationId, roles }, { user, loaders }) => {
       const currentRoles = (await r.knex('user_organization')

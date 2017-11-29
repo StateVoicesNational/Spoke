@@ -15,6 +15,7 @@ import TexterTodo from './containers/TexterTodo'
 import Login from './components/Login'
 import React from 'react'
 import CreateOrganization from './containers/CreateOrganization'
+import TexterProfile from './containers/TexterProfile'
 import JoinTeam from './containers/JoinTeam'
 import Home from './containers/Home'
 import Settings from './containers/Settings'
@@ -45,6 +46,9 @@ export default function makeRoutes(requireAuth = () => {}) {
       </Route>
       <Route path='app' component={TexterDashboard} onEnter={requireAuth}>
         <IndexRoute components={{ main: () => <DashboardLoader path='/app' />, topNav: () => <TopNav title='Spoke Texting' /> }} />
+        <Route path ='profile'>
+          <Route path =':userId' component={{ fullScreen: (props) => <TexterProfile/> }} />
+        </Route>
         <Route path=':organizationId'>
           <IndexRedirect to='todos' />
           <Route path='todos'>
