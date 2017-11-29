@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react'
 import LinearProgress from 'material-ui/LinearProgress'
 
@@ -34,6 +35,6 @@ class TexterStats extends React.Component {
 }
 
 TexterStats.propTypes = {
-  campaign: React.PropTypes.object
+  campaign: PropTypes.object
 }
 export default TexterStats

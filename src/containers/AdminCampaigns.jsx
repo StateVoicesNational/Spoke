@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React, { Component } from 'react'
 import CampaignList from './CampaignList'
 // import FloatingActionButton from 'material-ui/FloatingActionButton'
@@ -80,8 +81,8 @@ export class AdminCampaigns extends Component {
 }
 
 AdminCampaigns.propTypes = {
-  campaigns: React.PropTypes.array,
-  organizationId: React.PropTypes.number
+  campaigns: PropTypes.array,
+  organizationId: PropTypes.number
 }
 
 export default AdminCampaigns

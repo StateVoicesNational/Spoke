@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react'
 import { isClient } from '../lib'
 
@@ -8,7 +9,7 @@ const Login = ({ location }) => (
 )
 
 Login.propTypes = {
-  location: React.PropTypes.object
+  location: PropTypes.object
 }
 
 export default Login

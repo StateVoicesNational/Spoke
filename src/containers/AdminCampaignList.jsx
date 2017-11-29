@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react'
 import CampaignList from './CampaignList'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
@@ -81,10 +82,10 @@ class AdminCampaignList extends React.Component {
 }
 
 AdminCampaignList.propTypes = {
-  data: React.PropTypes.object,
-  params: React.PropTypes.object,
-  mutations: React.PropTypes.object,
-  router: React.PropTypes.object
+  data: PropTypes.object,
+  params: PropTypes.object,
+  mutations: PropTypes.object,
+  router: PropTypes.object
 }
 
 const mapMutationsToProps = () => ({

@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react'
 import { StyleSheet, css } from 'aphrodite'
 import ContactToolbar from '../components/ContactToolbar'
@@ -812,17 +813,17 @@ class AssignmentTexterContact extends React.Component {
 }
 
 AssignmentTexterContact.propTypes = {
-  contact: React.PropTypes.object,
-  campaign: React.PropTypes.object,
-  assignment: React.PropTypes.object,
-  texter: React.PropTypes.object,
-  navigationToolbarChildren: React.PropTypes.array,
-  onFinishContact: React.PropTypes.func,
-  router: React.PropTypes.object,
-  data: React.PropTypes.object,
-  mutations: React.PropTypes.object,
-  onExitTexter: React.PropTypes.func,
-  onRefreshAssignmentContacts: React.PropTypes.func
+  contact: PropTypes.object,
+  campaign: PropTypes.object,
+  assignment: PropTypes.object,
+  texter: PropTypes.object,
+  navigationToolbarChildren: PropTypes.array,
+  onFinishContact: PropTypes.func,
+  router: PropTypes.object,
+  data: PropTypes.object,
+  mutations: PropTypes.object,
+  onExitTexter: PropTypes.func,
+  onRefreshAssignmentContacts: PropTypes.func
 }
 
 const mapQueriesToProps = ({ ownProps }) => ({

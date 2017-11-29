@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React, { Component } from 'react'
 import { grey50 } from 'material-ui/styles/colors'
 import { Card, CardHeader, CardText } from 'material-ui/Card'
@@ -149,11 +150,11 @@ class AssignmentTexterSurveys extends Component {
 }
 
 AssignmentTexterSurveys.propTypes = {
-  contact: React.PropTypes.object,
-  interactionSteps: React.PropTypes.array,
-  currentInteractionStep: React.PropTypes.object,
-  questionResponses: React.PropTypes.object,
-  onQuestionResponseChange: React.PropTypes.func
+  contact: PropTypes.object,
+  interactionSteps: PropTypes.array,
+  currentInteractionStep: PropTypes.object,
+  questionResponses: PropTypes.object,
+  onQuestionResponseChange: PropTypes.func
 }
 
 export default AssignmentTexterSurveys

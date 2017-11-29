@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react'
 import _ from 'lodash'
 
@@ -38,11 +39,11 @@ function Chip({ text, iconRightClass, onIconRightTouchTap, onTouchTap, style = {
 }
 
 Chip.propTypes = {
-  text: React.PropTypes.element,
-  iconRightClass: React.PropTypes.string,
-  onIconRightTouchTap: React.PropTypes.func,
-  onTouchTap: React.PropTypes.func,
-  style: React.PropTypes.object
+  text: PropTypes.element,
+  iconRightClass: PropTypes.string,
+  onIconRightTouchTap: PropTypes.func,
+  onTouchTap: PropTypes.func,
+  style: PropTypes.object
 }
 
 export default Chip
