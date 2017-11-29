@@ -48,6 +48,15 @@ If you want to create an invite via the home page "Login and get started" link, 
 
 See https://github.com/MoveOnOrg/Spoke/blob/master/docs/HOWTO-run_tests.md
 
+## Test Coverage on Code Climate
+
+This project is integrated with code climate. Visit [here](https://codeclimate.com/github/MoveOnOrg/Spoke) to visit the Code Climate coverage page.
+
+### Badges on Code Climate
+
+[![Test Coverage](https://api.codeclimate.com/v1/badges/2e7933fc040be42e2ce1/test_coverage)](https://codeclimate.com/github/MoveOnOrg/Spoke/test_coverage)
+
+[![Maintainability](https://api.codeclimate.com/v1/badges/2e7933fc040be42e2ce1/maintainability)](https://codeclimate.com/github/MoveOnOrg/Spoke/maintainability)
 
 ## Helpful Dev Tips
 * Run `sqlite3 mydb.sqlite` to connect to a SQL shell for the dev database
