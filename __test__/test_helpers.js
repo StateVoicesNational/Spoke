@@ -36,4 +36,4 @@ export function getContext(context) {
   }
 }
 
-export { setupTest, cleanupTest }
+export { setupTest, cleanupTest, getContext }
