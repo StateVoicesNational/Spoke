@@ -511,12 +511,12 @@ const rootMutations = {
       return organization
     },
     assignUserToCampaign: async (_, { organizationUuid, campaignId }, { user, loaders }) => {
-      const campaings = await r.knex('campaign')
+      const campaign = await r.knex('campaign')
         .leftJoin('organization', 'campaign.organization_id', 'organization.id')
         .where({ 'campaign.id': campaignId,
                 'campaign.use_dynamic_assignment': true,
-                'organization.uuid': organizationUuid }).select('campaign.*')
-      if (!campaigns.length) {
+                'organization.uuid': organizationUuid }).select('campaign.*').first()
+      if (!campaign) {
         throw new GraphQLError({
           status: 403,
           message: 'Invalid join request'
@@ -534,7 +534,7 @@ const rootMutations = {
           max_contacts: parseInt(process.env.MAX_CONTACTS_PER_TEXTER || 0, 10)
         })
       }
-      return campaigns[0]
+      return campaign
     },
     updateTextingHours: async (_, { organizationId, textingHoursStart, textingHoursEnd }, { user }) => {
       await accessRequired(user, organizationId, 'OWNER')
