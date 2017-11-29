@@ -121,20 +121,23 @@ export const resolvers = {
         .filter({ user_id: userId || '' })
     ),
     contacts: async (campaign) => (
-      r.table('campaign_contact')
-        .getAll(campaign.id, { index: 'campaign_id' })
+      r.knex('campaign_contact')
+        .where({campaign_id: campaign.id})
     ),
-    contactsCount: async (campaign) => (
-      r.table('campaign_contact')
-        .getAll(campaign.id, { index: 'campaign_id' })
-        .count()
-    ),
+    contactsCount: async (campaign) => {
+      const counts = await r.knex('campaign_contact')
+        .where({campaign_id: campaign.id})
+        .count('*')
+      const count = counts[0]
+      const key = Object.keys(count)[0]
+      return Number(count[key])
+    },
     hasUnassignedContacts: async (campaign) => {
-      const hasContacts = await r.table('campaign_contact')
-        .getAll([campaign.id, ''], { index: 'campaign_assignment' })
-        .limit(1)(0)
-        .default(null)
-      return !!hasContacts
+      const contacts = await r.knex('campaign_contact')
+        .select('id')
+        .where({campaign_id: campaign.id, assignment_id: null})
+        .limit(1)
+      return contacts.length > 0
     },
     customFields: async (campaign) => {
       const campaignContacts = await r.table('campaign_contact')
