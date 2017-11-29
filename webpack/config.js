@@ -1,3 +1,4 @@
+const path = require('path')
 const webpack = require('webpack')
 const ManifestPlugin = require('webpack-manifest-plugin')
 
@@ -8,7 +9,7 @@ const plugins = [
     'process.env.NODE_ENV': `"${process.env.NODE_ENV}"`
   })
 ]
-const jsxLoaders = ['babel-loader']
+const jsxLoaders = [{loader: 'babel-loader'}]
 const assetsDir = process.env.ASSETS_DIR
 const assetMapFile = process.env.ASSETS_MAP_FILE
 const outputFile = DEBUG ? '[name].js' : '[name].[chunkhash].js'
@@ -18,14 +19,14 @@ if (!DEBUG) {
     fileName: assetMapFile
   }))
   plugins.push(new webpack.optimize.UglifyJsPlugin({
-    compress: {
-        warnings: false
-    },
+    sourceMap: true
+  }))
+  plugins.push(new webpack.LoaderOptionsPlugin({
     minimize: true
   }))
 } else {
   plugins.push(new webpack.HotModuleReplacementPlugin())
-  jsxLoaders.unshift('react-hot')
+  jsxLoaders.unshift({loader: 'react-hot-loader'})
 }
 
 const config = {
@@ -33,38 +34,28 @@ const config = {
     bundle: ['babel-polyfill', './src/client/index.jsx']
   },
   module: {
-    noParse: [],
-    loaders: [
+    rules: [
       {
-        test: /node_modules[\\\/]auth0-lock[\\\/].*\.js$/,
-        loaders: [
-          'transform-loader/cacheable?brfs',
-          'transform-loader/cacheable?packageify'
+        test: /\.css$/,
+        use: [
+          {loader: 'style-loader'},
+          {loader: 'css-loader'}
         ]
       },
       {
-        test: /node_modules[\\\/]auth0-lock[\\\/].*\.ejs$/,
-        loader: 'transform-loader/cacheable?ejsify'
-      },
-      {
-        test: /\.json$/,
-        loader: 'json-loader'
-      },
-      { test: /\.css$/, loader: 'style!css' },
-      {
         test: /\.jsx?$/,
-        loaders: jsxLoaders,
+        use: jsxLoaders,
         exclude: /(node_modules|bower_components)/
       }
     ]
   },
   resolve: {
-    extensions: ['', '.js', '.jsx']
+    extensions: ['.js', '.jsx']
   },
   plugins,
   output: {
     filename: outputFile,
-    path: DEBUG ? '/' : assetsDir,
+    path: DEBUG ? path.resolve(__dirname) : assetsDir,
     publicPath: '/assets/'
   }
 }
