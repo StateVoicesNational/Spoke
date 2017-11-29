@@ -27,6 +27,12 @@ const inlineStyles = {
 const styles = StyleSheet.create({
   container: {
     margin: '20px 0'
+  },
+  image: {
+    position: 'absolute',
+    height: '70%',
+    top: '20px',
+    right: '20px'
   }
 })
 
@@ -149,8 +155,14 @@ class AssignmentSummary extends Component {
           <CardTitle
             title={title}
             subtitle={`${description} - ${moment(dueBy).format('MMM D YYYY')}`}
-          />
+            style={{backgroundColor: primaryColor}}
+            children={logoImageUrl ? <img src={logoImageUrl} className={css(styles.image)} /> : ''}
+          >
+          </CardTitle>
           <Divider />
+          <div style={{margin: '20px'}}>
+            <div dangerouslySetInnerHTML={{ __html: introHtml }} />
+          </div
           <CardActions>
             {this.renderBadgedButton({
               assignment,

@@ -17,7 +17,10 @@ const Campaign = thinky.createModel('campaign', type.object().schema({
   created_at: timestamp(),
   is_archived: type
     .boolean()
-    .required()
+    .required(),
+  logo_image_url: type.string(),
+  intro_html: type.string(),
+  primary_color: type.string()
 
 }).allowExtra(false))
 
