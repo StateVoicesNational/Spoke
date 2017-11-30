@@ -941,6 +941,7 @@ const rootResolvers = {
         roles[role['role']] = 1
       })
       if ('OWNER' in roles
+        || 'ADMIN' in roles
         || user.is_superadmin
         || 'TEXTER' in roles && assignment.user_id == user.id) {
         return assignment
