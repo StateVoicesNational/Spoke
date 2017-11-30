@@ -689,9 +689,10 @@ const rootMutations = {
       }
       // Don't add more if they already have that many
       const result = await r.knex('campaign_contact').where({ assignment_id: assignmentId, message_status: 'needsMessage', is_opted_out: false }).count()
-      if (result[0].count >= numberContacts) {
+      if (Number(result[0].count) >= numberContacts) {
         return {found: false}
       }
+
       const updatedCount = await r.knex('campaign_contact')
         .where('id', 'in',
                r.knex('campaign_contact')
