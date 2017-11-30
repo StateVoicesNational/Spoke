@@ -20,8 +20,7 @@ class TexterTodo extends React.Component {
     const { assignment } = this.props.data
     if (assignment.contacts.length == 0 || checkServer) {
       if (assignment.campaign.useDynamicAssignment) {
-        const didAddContacts = (await this.props.mutations.findNewCampaignContact(assignment.id, 1)).found
-
+        const didAddContacts = (await this.props.mutations.findNewCampaignContact(assignment.id, 1)).data.findNewCampaignContact.found
         if (didAddContacts) {
           this.props.data.refetch()
           return
