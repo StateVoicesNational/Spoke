@@ -125,7 +125,7 @@ class AssignmentTexter extends React.Component {
   }
 
   renderNavigationToolbarChildren() {
-    return ''
+    return []
   }
 
   renderTexter() {
