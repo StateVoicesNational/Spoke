@@ -112,7 +112,7 @@ class AssignmentSummary extends Component {
             <div dangerouslySetInnerHTML={{ __html: introHtml }} />
           </div>
           <CardActions>
-            {this.renderBadgedButton({
+            { assignment.campaign.useDynamicAssignment ? '' : this.renderBadgedButton({
               assignment,
               title: 'Send first texts',
               count: unmessagedCount,
@@ -121,7 +121,7 @@ class AssignmentSummary extends Component {
               contactsFilter: 'text',
               hideIfZero: !useDynamicAssignment
             })}
-            {this.renderBadgedButton({
+            { assignment.campaign.useDynamicAssignment ? '' : this.renderBadgedButton({
               assignment,
               title: 'Send replies',
               count: unrepliedCount,
@@ -130,6 +130,15 @@ class AssignmentSummary extends Component {
               contactsFilter: 'reply',
               hideIfZero: true
             })}
+            { assignment.campaign.useDynamicAssignment ? this.renderBadgedButton({
+              assignment,
+              title: 'Send messages',
+              primary: true,
+              disabled: false,
+              contactsFilter: 'all',
+              count: 0,
+              hideIfZero: false
+            }) : ''}
             {this.renderBadgedButton({
               assignment,
               title: 'Send later',
