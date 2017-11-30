@@ -55,7 +55,7 @@ const config = {
   plugins,
   output: {
     filename: outputFile,
-    path: DEBUG ? path.resolve(__dirname) : assetsDir,
+    path: path.resolve(DEBUG ? __dirname: assetsDir),
     publicPath: '/assets/'
   }
 }
