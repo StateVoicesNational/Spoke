@@ -47,7 +47,7 @@ const ContactToolbar = function ContactToolbar(props) {
   }
   formattedLocation = `${formattedLocation} ${state}`
 
-  const formattedLocalTime = getLocalTime(offset, hasDST).format('h:mm a')
+  const formattedLocalTime = getLocalTime(offset, hasDST) // .format('h:mm a')
   return (
     <div>
       <Toolbar
