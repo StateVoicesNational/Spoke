@@ -6,4 +6,4 @@ const ROLE_LEVELS = {
 
 export const isRoleGreater = (role1, role2) => ROLE_LEVELS[role1] > ROLE_LEVELS[role2]
 
-export const getHighestRole = (roles) => roles.sort(isRoleGreater)[roles.length - 1]
+export const getHighestRole = (roles) => roles.slice().sort(isRoleGreater)[roles.length - 1]

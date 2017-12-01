@@ -13,7 +13,7 @@ import Dialog from 'material-ui/Dialog'
 import CannedResponseForm from './CannedResponseForm'
 import GSSubmitButton from './forms/GSSubmitButton'
 import Form from 'react-formal'
-import { connect } from 'react-apollo'
+import { graphql } from 'react-apollo'
 import gql from 'graphql-tag'
 import { log } from '../lib'
 
@@ -167,19 +167,25 @@ ScriptList.propTypes = {
   texterId: PropTypes.number
 }
 
-const mapMutationsToProps = () => ({
-  createCannedResponse: (cannedResponse) => ({
-    mutation: gql`
-      mutation createCannedResponse($cannedResponse: CannedResponseInput!) {
-        createCannedResponse(cannedResponse: $cannedResponse) {
-          id
-        }
-      }
-    `,
-    variables: { cannedResponse }
-  })
-})
+// const mapMutationsToProps = () => ({
+//   createCannedResponse: (cannedResponse) => ({
+//     mutation: gql`
+//       mutation createCannedResponse($cannedResponse: CannedResponseInput!) {
+//         createCannedResponse(cannedResponse: $cannedResponse) {
+//           id
+//         }
+//       }
+//     `,
+//     variables: { cannedResponse }
+//   })
+// })
 
-export default connect({
-  mapMutationsToProps
-})(ScriptList)
+const mutation = gql`
+  mutation createCannedResponse($cannedResponse: CannedResponseInput!) {
+    createCannedResponse(cannedResponse: $cannedResponse) {
+      id
+    }
+  }
+`
+
+export default graphql(mutation)(ScriptList)

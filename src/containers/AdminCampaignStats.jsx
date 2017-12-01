@@ -11,6 +11,8 @@ import loadData from './hoc/load-data'
 import gql from 'graphql-tag'
 import theme from '../styles/theme'
 import wrapMutations from './hoc/wrap-mutations'
+import { compose } from 'recompose'
+import { graphql } from 'react-apollo'
 
 const inlineStyles = {
   stat: {
@@ -322,4 +324,5 @@ const mapMutationsToProps = () => ({
   })
 })
 
-export default loadData(withRouter(wrapMutations(AdminCampaignStats)), { mapQueriesToProps, mapMutationsToProps })
+export default compose(withRouter)(AdminCampaignStats)
+// export default loadData(withRouter(wrapMutations(AdminCampaignStats)), { mapQueriesToProps, mapMutationsToProps })

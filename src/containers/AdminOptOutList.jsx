@@ -5,6 +5,8 @@ import ProhibitedIcon from 'material-ui/svg-icons/av/not-interested'
 import Empty from '../components/Empty'
 import loadData from './hoc/load-data'
 import gql from 'graphql-tag'
+import { compose } from 'recompose'
+import { graphql } from 'react-apollo'
 
 const AdminOptOutList = function AdminOptOutList(props) {
   const { data } = props
@@ -33,22 +35,18 @@ AdminOptOutList.propTypes = {
   data: PropTypes.object
 }
 
-const mapQueriesToProps = ({ ownProps }) => ({
-  data: {
-    query: gql`query getOptOuts($organizationId: String!) {
-      organization(id: $organizationId) {
+const query = graphql(gql`
+  query getOptOuts($organizationId: String!) {
+    organization(id: $organizationId) {
+      id
+      optOuts {
         id
-        optOuts {
-          id
-          cell
-        }
+        cell
       }
-    }`,
-    variables: {
-      organizationId: ownProps.params.organizationId
-    },
-    forceFetch: true
+    }
   }
+`, {
+  options: ({ params: { organizationId } }) => ({ variables: { organizationId } })
 })
 
-export default loadData(AdminOptOutList, { mapQueriesToProps })
+export default compose(query, loadData)(AdminOptOutList)

@@ -13,6 +13,9 @@ import { Card, CardText, CardActions, CardHeader } from 'material-ui/Card'
 import { StyleSheet, css } from 'aphrodite'
 import Toggle from 'material-ui/Toggle'
 import moment from 'moment'
+import { compose } from 'recompose'
+import { graphql } from 'react-apollo'
+
 const styles = StyleSheet.create({
   section: {
     margin: '10px 0'
@@ -164,58 +167,41 @@ Settings.propTypes = {
   mutations: PropTypes.object
 }
 
-const mapMutationsToProps = ({ ownProps }) => ({
-  updateTextingHours: (textingHoursStart, textingHoursEnd) => ({
-    mutation: gql`
-      mutation updateTextingHours($textingHoursStart: Int!, $textingHoursEnd: Int!, $organizationId: String!) {
-        updateTextingHours(textingHoursStart: $textingHoursStart, textingHoursEnd: $textingHoursEnd, organizationId: $organizationId) {
-          id
-          textingHoursEnforced
-          textingHoursStart
-          textingHoursEnd
-        }
-      }`,
-    variables: {
-      organizationId: ownProps.params.organizationId,
-      textingHoursStart,
-      textingHoursEnd
-    }
-  }),
-  updateTextingHoursEnforcement: (textingHoursEnforced) => ({
-    mutation: gql`
-      mutation updateTextingHoursEnforcement($textingHoursEnforced: Boolean!, $organizationId: String!) {
-        updateTextingHoursEnforcement(textingHoursEnforced: $textingHoursEnforced, organizationId: $organizationId) {
-          id
-          textingHoursEnforced
-          textingHoursStart
-          textingHoursEnd
-        }
-      }`,
-    variables: {
-      organizationId: ownProps.params.organizationId,
-      textingHoursEnforced
-    }
-  })
-})
-
-const mapQueriesToProps = ({ ownProps }) => ({
-  data: {
-    query: gql`query adminGetCampaigns($organizationId: String!) {
-      organization(id: $organizationId) {
+const updateTextingHours = graphql(gql`
+  mutation updateTextingHours($textingHoursStart: Int!, $textingHoursEnd: Int!, $organizationId: String!) {
+      updateTextingHours(textingHoursStart: $textingHoursStart, textingHoursEnd: $textingHoursEnd, organizationId: $organizationId) {
         id
-        name
         textingHoursEnforced
         textingHoursStart
         textingHoursEnd
       }
-    }`,
-    variables: {
-      organizationId: ownProps.params.organizationId
-    },
-    forceFetch: true
   }
-})
+`)
 
-export default loadData(
-    wrapMutations(Settings),
-    { mapQueriesToProps, mapMutationsToProps })
+const updateTextingHoursEnforcement = graphql(gql`
+  mutation updateTextingHoursEnforcement($textingHoursEnforced: Boolean!, $organizationId: String!) {
+    updateTextingHoursEnforcement(textingHoursEnforced: $textingHoursEnforced, organizationId: $organizationId) {
+      id
+      textingHoursEnforced
+      textingHoursStart
+      textingHoursEnd
+    }
+  }
+`)
+
+const query = graphql(
+  gql`query adminGetCampaigns($organizationId: String!) {
+    organization(id: $organizationId) {
+      id
+      name
+      textingHoursEnforced
+      textingHoursStart
+      textingHoursEnd
+    }
+  }`,
+  {
+    options: ({ params: { organizationId } }) => ({ variables: { organizationId } })
+  }
+)
+
+export default compose(query, updateTextingHours, updateTextingHoursEnforcement, loadData)(Settings)

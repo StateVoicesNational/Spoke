@@ -11,6 +11,8 @@ import LoadingIndicator from '../components/LoadingIndicator'
 import wrapMutations from './hoc/wrap-mutations'
 import DropDownMenu from 'material-ui/DropDownMenu'
 import { MenuItem } from 'material-ui/Menu'
+import { compose } from 'recompose'
+import { graphql } from 'react-apollo'
 
 class AdminCampaignList extends React.Component {
   state = {
@@ -23,15 +25,19 @@ class AdminCampaignList extends React.Component {
   handleClickNewButton = async () => {
     const { organizationId } = this.props.params
     this.setState({ isCreating: true })
-    const newCampaign = await this.props.mutations.createCampaign({
-      title: 'New Campaign',
-      description: '',
-      dueBy: null,
-      organizationId,
-      contacts: [],
-      interactionSteps: [{
-        script: ''
-      }]
+    const newCampaign = await this.props.mutate({
+      variables: {
+        campaign: {
+          title: 'New Campaign',
+          description: '',
+          dueBy: null,
+          organizationId,
+          contacts: [],
+          interactionSteps: [{
+            script: ''
+          }]
+        }
+      }
     })
     if (newCampaign.errors) {
       alert('There was an error creating your campaign')
@@ -88,20 +94,12 @@ AdminCampaignList.propTypes = {
   router: PropTypes.object
 }
 
-const mapMutationsToProps = () => ({
-  createCampaign: (campaign) => ({
-    mutation: gql`
-      mutation createBlankCampaign($campaign: CampaignInput!) {
-        createCampaign(campaign: $campaign) {
-          id
-        }
-      }
-    `,
-    variables: { campaign }
-  })
-})
+const mutation = graphql(gql`
+  mutation createBlankCampaign($campaign: CampaignInput!) {
+    createCampaign(campaign: $campaign) {
+      id
+    }
+  }
+`)
 
-export default loadData(wrapMutations(
-  withRouter(AdminCampaignList)), {
-    mapMutationsToProps
-  })
+export default compose(mutation, withRouter)(AdminCampaignList)

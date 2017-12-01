@@ -2,6 +2,8 @@ import PropTypes from 'prop-types';
 import React from 'react'
 import gql from 'graphql-tag'
 import { withRouter } from 'react-router'
+import { compose } from 'recompose'
+import { graphql } from 'react-apollo'
 import loadData from './hoc/load-data'
 
 class DashboardLoader extends React.Component {
@@ -26,18 +28,15 @@ DashboardLoader.propTypes = {
   path: PropTypes.string
 }
 
-const mapQueriesToProps = () => ({
-  data: {
-    query: gql`query getCurrentUserForLoader {
-      currentUser {
+const query = graphql(gql`
+  query getCurrentUserForLoader {
+    currentUser {
+      id
+      organizations {
         id
-        organizations {
-          id
-        }
       }
-    }`,
-    forceFetch: true
+    }
   }
-})
+`)
 
-export default loadData(withRouter(DashboardLoader), { mapQueriesToProps })
+export default compose(query, loadData, withRouter)(DashboardLoader)

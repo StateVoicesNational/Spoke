@@ -14,6 +14,8 @@ import { getHighestRole } from '../lib'
 import theme from '../styles/theme'
 import loadData from './hoc/load-data'
 import gql from 'graphql-tag'
+import { compose } from 'recompose'
+import { graphql } from 'react-apollo'
 
 const organizationFragment = `
   id
@@ -52,7 +54,7 @@ class AdminPersonList extends React.Component {
   }
 
   renderTexters() {
-    const { people } = this.props.personData.organization
+    const { people } = this.props.data.organization
     if (people.length === 0) {
       return (
         <Empty
@@ -68,7 +70,7 @@ class AdminPersonList extends React.Component {
       'OWNER'
     ]
 
-    const currentUser = this.props.userData.currentUser
+    const currentUser = this.props.data.currentUser
 
     return (
       <Table >
@@ -105,7 +107,7 @@ class AdminPersonList extends React.Component {
   }
 
   render() {
-    const { params, organizationData } = this.props
+    const { params, organization } = this.props.data
 
     return (
       <div>
@@ -130,7 +132,7 @@ class AdminPersonList extends React.Component {
           onRequestClose={this.handleClose}
         >
           <OrganizationJoinLink
-            organizationUuid={organizationData.organization.uuid}
+            organizationUuid={organization.uuid}
           />
         </Dialog>
       </div>
@@ -146,59 +148,35 @@ AdminPersonList.propTypes = {
   organizationData: PropTypes.object
 }
 
-const mapMutationsToProps = () => ({
-  editOrganizationRoles: (organizationId, userId, roles) => ({
-    mutation: gql`
-      mutation editOrganizationRoles($organizationId: String!, $userId: String!, $roles: [String]) {
-        editOrganizationRoles(organizationId: $organizationId, userId: $userId, roles: $roles) {
-          ${organizationFragment}
-        }
-      }
-    `,
-    variables: {
-      organizationId,
-      userId,
-      roles
+const mutation = graphql(gql`
+  mutation editOrganizationRoles($organizationId: String!, $userId: String!, $roles: [String]) {
+    editOrganizationRoles(organizationId: $organizationId, userId: $userId, roles: $roles) {
+      ${organizationFragment}
     }
+  }
+`)
+
+const query = graphql(gql`
+  query people($organizationId: String!) {
+    organization(id: $organizationId) {
+      id
+      uuid
+      people {
+        id
+        displayName
+        email
+        roles(organizationId: $organizationId)
+      }
+    }
+    currentUser {
+      id
+      roles(organizationId: $organizationId)
+    }
+  }
+`, {
+  options: ({ params: { organizationId } }) => ({
+    variables: { organizationId }
   })
 })
 
-const mapQueriesToProps = ({ ownProps }) => ({
-  personData: {
-    query: gql`query getPeople($organizationId: String!) {
-      organization(id: $organizationId) {
-        ${organizationFragment}
-      }
-    }`,
-    variables: {
-      organizationId: ownProps.params.organizationId
-    },
-    forceFetch: true
-  },
-  userData: {
-    query: gql` query getCurrentUserAndRoles($organizationId: String!) {
-      currentUser {
-        id
-        roles(organizationId: $organizationId)
-      }
-    }`,
-    variables: {
-      organizationId: ownProps.params.organizationId
-    },
-    forceFetch: true
-  },
-  organizationData: {
-    query: gql`query getOrganizationData($organizationId: String!) {
-      organization(id: $organizationId) {
-        id
-        uuid
-      }
-    }`,
-    variables: {
-      organizationId: ownProps.params.organizationId
-    },
-    forceFetch: true
-  }
-})
-
-export default loadData(AdminPersonList, { mapQueriesToProps, mapMutationsToProps })
+export default compose(query, mutation, loadData)(AdminPersonList)

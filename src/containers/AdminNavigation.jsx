@@ -6,6 +6,8 @@ import gql from 'graphql-tag'
 import { withRouter } from 'react-router'
 import loadData from './hoc/load-data'
 import { getHighestRole } from '../lib'
+import { compose } from 'recompose'
+import { graphql } from 'react-apollo'
 
 class AdminNavigation extends React.Component {
   urlFromPath(path) {
@@ -66,19 +68,28 @@ AdminNavigation.propTypes = {
   params: PropTypes.object
 }
 
-const mapQueriesToProps = ({ ownProps }) => ({
-  data: {
-    query: gql`query getCurrentUserRoles($organizationId: String!) {
-      currentUser {
-        id
-        roles(organizationId: $organizationId)
-      }
-    }`,
-    variables: {
-      organizationId: ownProps.organizationId
-    },
-    forceFetch: true
+// const mapQueriesToProps = ({ ownProps }) => ({
+//   data: {
+//     variables: {
+//       organizationId: ownProps.organizationId
+//     },
+//     forceFetch: true
+//   }
+// })
+
+const getCurrentUserRoles = graphql(gql`
+  query getCurrentUserRoles($organizationId: String!) {
+    currentUser {
+      id
+      roles(organizationId: $organizationId)
+    }
   }
+`, {
+  options: ({ organizationId }) => ({
+    variables: { organizationId }
+  })
 })
 
-export default loadData(withRouter(AdminNavigation), { mapQueriesToProps })
+export default compose(getCurrentUserRoles, loadData, withRouter)(AdminNavigation)
+// export default compose(getCurrentUserRoles, loadData, withRouter)(AdminNavigation)
+// export default loadData(withRouter(AdminNavigation), { mapQueriesToProps })

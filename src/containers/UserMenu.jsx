@@ -8,8 +8,9 @@ import Subheader from 'material-ui/Subheader'
 import IconButton from 'material-ui/IconButton'
 import Avatar from 'material-ui/Avatar'
 import { ListItem } from 'material-ui/List'
-import { connect } from 'react-apollo'
 import { withRouter } from 'react-router'
+import { compose } from 'recompose'
+import { graphql } from 'react-apollo'
 import gql from 'graphql-tag'
 
 const avatarSize = 28
@@ -106,24 +107,35 @@ UserMenu.propTypes = {
   router: PropTypes.object
 }
 
-const mapQueriesToProps = () => ({
-  data: {
-    query: gql`query getCurrentUserForMenu {
-      currentUser {
+// const mapQueriesToProps = () => ({
+//   data: {
+//     query: gql`query getCurrentUserForMenu {
+//       currentUser {
+//         id
+//         displayName
+//         email
+//         organizations {
+//           id
+//           name
+//         }
+//       }
+//     }`,
+//     forceFetch: true
+//   }
+// })
+
+const query = graphql(gql`
+  query getCurrentUserForMenu {
+    currentUser {
+      id
+      displayName
+      email
+      organizations {
         id
-        displayName
-        email
-        organizations {
-          id
-          name
-        }
+        name
       }
-    }`,
-    forceFetch: true
+    }
   }
-})
+`)
 
-export default connect({
-  mapQueriesToProps
-})(withRouter(UserMenu))
-
+export default compose(query, withRouter)(UserMenu)

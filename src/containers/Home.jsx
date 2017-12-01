@@ -6,6 +6,8 @@ import { StyleSheet, css } from 'aphrodite'
 import wrapMutations from './hoc/wrap-mutations'
 import theme from '../styles/theme'
 import { withRouter } from 'react-router'
+import { compose } from 'recompose'
+import { graphql } from 'react-apollo'
 
 const styles = StyleSheet.create({
   container: {
@@ -110,21 +112,35 @@ Home.propTypes = {
   data: PropTypes.object
 }
 
-const mapQueriesToProps = () => ({
-  data: {
-    query: gql` query getCurrentUser {
-      currentUser {
+// const mapQueriesToProps = () => ({
+//   data: {
+//     query: gql` query getCurrentUser {
+//       currentUser {
+//         id
+//         adminOrganizations:organizations(role:"ADMIN") {
+//           id
+//         }
+//         texterOrganizations:organizations(role:"TEXTER") {
+//           id
+//         }
+//       }
+//     }`
+//   }
+// })
+
+const query = graphql(gql`
+  query getCurrentUser {
+    currentUser {
+      id
+      adminOrganizations:organizations(role:"ADMIN") {
         id
-        adminOrganizations:organizations(role:"ADMIN") {
-          id
-        }
-        texterOrganizations:organizations(role:"TEXTER") {
-          id
-        }
       }
-    }`
+      texterOrganizations:organizations(role:"TEXTER") {
+        id
+      }
+    }
   }
-})
+`)
 
 const mapMutationsToProps = () => ({
   createInvite: (invite) => ({
@@ -138,4 +154,12 @@ const mapMutationsToProps = () => ({
   })
 })
 
-export default loadData(wrapMutations(withRouter(Home)), { mapQueriesToProps, mapMutationsToProps })
+const mutations = graphql(gql`
+  mutation createInvite($invite: InviteInput!) {
+    createInvite(invite: $invite) {
+      hash
+    }
+  }
+`)
+
+export default compose(query, mutations, loadData, withRouter)(Home)

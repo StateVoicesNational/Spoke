@@ -15,6 +15,8 @@ import CampaignContactsForm from '../components/CampaignContactsForm'
 import CampaignTextersForm from '../components/CampaignTextersForm'
 import CampaignInteractionStepsForm from '../components/CampaignInteractionStepsForm'
 import CampaignCannedResponsesForm from '../components/CampaignCannedResponsesForm'
+import { compose } from 'recompose'
+import { graphql } from 'react-apollo'
 
 const campaignInfoFragment = `
   id
@@ -672,7 +674,8 @@ const mapMutationsToProps = () => ({
   }
 })
 
-export default loadData(wrapMutations(AdminCampaignEdit), {
-  mapQueriesToProps,
-  mapMutationsToProps
-})
+export default compose()(AdminCampaignEdit)
+// export default loadData(wrapMutations(AdminCampaignEdit), {
+//   mapQueriesToProps,
+//   mapMutationsToProps
+// })

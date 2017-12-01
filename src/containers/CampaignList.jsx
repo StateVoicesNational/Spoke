@@ -11,6 +11,8 @@ import theme from '../styles/theme'
 import Chip from '../components/Chip'
 import loadData from './hoc/load-data'
 import gql from 'graphql-tag'
+import { compose } from 'recompose'
+import { graphql } from 'react-apollo'
 import wrapMutations from './hoc/wrap-mutations'
 import SpeakerNotesIcon from 'material-ui/svg-icons/action/speaker-notes'
 import Empty from '../components/Empty'
@@ -160,26 +162,34 @@ const mapMutationsToProps = () => ({
   })
 })
 
-const mapQueriesToProps = ({ ownProps }) => ({
-  data: {
-    query: gql`query adminGetCampaigns($organizationId: String!, $campaignsFilter: CampaignsFilter) {
-      organization(id: $organizationId) {
-        id
-        campaigns(campaignsFilter: $campaignsFilter) {
-          ${campaignInfoFragment}
-        }
-      }
-    }`,
-    variables: {
-      organizationId: ownProps.organizationId,
-      campaignsFilter: ownProps.campaignsFilter
-    },
-    forceFetch: true
+const archiveCampaign = graphql(gql`
+  mutation archiveCampaign($campaignId: String!) {
+    archiveCampaign(id: $campaignId) {
+      ${campaignInfoFragment}
+    }
   }
+`)
+const unarchiveCampaign = graphql(gql`
+  mutation unarchiveCampaign($campaignId: String!) {
+    unarchiveCampaign(id: $campaignId) {
+      ${campaignInfoFragment}
+    }
+  }
+`)
+
+const query = graphql(gql`
+  query adminGetCampaigns($organizationId: String!, $campaignsFilter: CampaignsFilter) {
+    organization(id: $organizationId) {
+      id
+      campaigns(campaignsFilter: $campaignsFilter) {
+        ${campaignInfoFragment}
+      }
+    }
+  }
+`, {
+  options: ({ organizationId, campaignsFilter }) => ({
+    variables: { organizationId, campaignsFilter }
+  })
 })
 
-export default loadData(wrapMutations(
-  withRouter(CampaignList)), {
-    mapQueriesToProps,
-    mapMutationsToProps
-  })
+export default compose(query, archiveCampaign, unarchiveCampaign, loadData, withRouter)(CampaignList)

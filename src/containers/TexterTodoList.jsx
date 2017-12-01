@@ -5,6 +5,8 @@ import Empty from '../components/Empty'
 import AssignmentSummary from '../components/AssignmentSummary'
 import loadData from './hoc/load-data'
 import gql from 'graphql-tag'
+import { compose } from 'recompose'
+import { graphql } from 'react-apollo'
 
 class TexterTodoList extends React.Component {
   renderTodoList(assignments) {
@@ -60,26 +62,27 @@ TexterTodoList.propTypes = {
   data: PropTypes.object
 }
 
-const mapQueriesToProps = ({ ownProps }) => ({
-  data: {
-    query: gql`query getTodos($organizationId: String!, $needsMessageFilter: ContactsFilter, $needsResponseFilter: ContactsFilter, $badTimezoneFilter: ContactsFilter) {
-      currentUser {
+const query = graphql(gql`
+  query getTodos($organizationId: String!, $needsMessageFilter: ContactsFilter, $needsResponseFilter: ContactsFilter, $badTimezoneFilter: ContactsFilter) {
+    currentUser {
+      id
+      todos(organizationId: $organizationId) {
         id
-        todos(organizationId: $organizationId) {
+        campaign {
           id
-          campaign {
-            id
-            title
-            description
-          }
-          unmessagedCount: contactsCount(contactsFilter: $needsMessageFilter)
-          unrepliedCount: contactsCount(contactsFilter: $needsResponseFilter)
-          badTimezoneCount: contactsCount(contactsFilter: $badTimezoneFilter)
+          title
+          description
         }
+        unmessagedCount: contactsCount(contactsFilter: $needsMessageFilter)
+        unrepliedCount: contactsCount(contactsFilter: $needsResponseFilter)
+        badTimezoneCount: contactsCount(contactsFilter: $badTimezoneFilter)
       }
-    }`,
+    }
+  }
+`, {
+  options: ({ params: { organizationId } }) => ({
     variables: {
-      organizationId: ownProps.params.organizationId,
+      organizationId,
       needsMessageFilter: {
         messageStatus: 'needsMessage',
         isOptedOut: false,
@@ -95,7 +98,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
         validTimezone: false
       }
     }
-  }
+  })
 })
 
-export default loadData(TexterTodoList, { mapQueriesToProps })
+export default compose(query, loadData)(TexterTodoList)
