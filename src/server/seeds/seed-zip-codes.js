@@ -1,6 +1,7 @@
 import { ZipCode, r } from '../models'
 import Papa from 'papaparse'
 import { log } from '../../lib'
+import fs from 'fs'
 
 export async function seedZipCodes() {
   log.info('Checking if zip code is needed')
@@ -11,9 +12,8 @@ export async function seedZipCodes() {
   if (!hasZip) {
     log.info('Starting to seed zip codes')
     const absolutePath = `${__dirname}/data/zip-codes.csv`
-    const { data, error } = Papa.parseFiles(absolutePath, {
-      header: true
-    })
+    const content = fs.readFileSync(absolutePath, { encoding: 'binary' })
+    const { data, error } = Papa.parse(content, { header: true })
     if (error) {
       throw new Error('Failed to seed zip codes')
     } else {
