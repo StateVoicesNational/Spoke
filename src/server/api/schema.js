@@ -689,9 +689,10 @@ const rootMutations = {
       }
       // Don't add more if they already have that many
       const result = await r.knex('campaign_contact').where({ assignment_id: assignmentId, message_status: 'needsMessage', is_opted_out: false }).count()
-      if (result[0].count >= numberContacts) {
+      if (Number(result[0].count) >= numberContacts) {
         return {found: false}
       }
+
       const updatedCount = await r.knex('campaign_contact')
         .where('id', 'in',
                r.knex('campaign_contact')
@@ -941,6 +942,7 @@ const rootResolvers = {
         roles[role['role']] = 1
       })
       if ('OWNER' in roles
+        || 'ADMIN' in roles
         || user.is_superadmin
         || 'TEXTER' in roles && assignment.user_id == user.id) {
         return assignment
@@ -970,7 +972,7 @@ const rootResolvers = {
       userRoles.forEach(role => {
         roles[role['role']] = 1
       })
-      if ('OWNER' in roles || user.is_superadmin) {
+      if ('OWNER' in roles || 'ADMIN' in roles || user.is_superadmin) {
         return contact
       } else if ('TEXTER' in roles) {
         const assignment = await loaders.assignment.load(contact.assignment_id)
