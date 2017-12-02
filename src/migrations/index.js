@@ -50,6 +50,7 @@ const migrations = [
   { auto: true, // 4
     date: '2017-09-22',
     migrate: async function migrate() {
+      console.log('updating for dynamic assignment (tables campaign, assignment)')
       await r.knex.schema.alterTable('campaign', (table) => {
         table.boolean('use_dynamic_assignment').notNullable().default(false)
       })
@@ -72,6 +73,7 @@ const migrations = [
     date: '2017-10-03',
     migrate: async function migrate() {
       await r.knex.schema.alterTable('interaction_step', (table) => {
+        console.log('updating interaction_step table')
         table.boolean('is_deleted').notNullable().default(false)
       })
       console.log('added is_deleted column to interaction_step')
@@ -81,16 +83,18 @@ const migrations = [
     date: '2017-10-04',
     migrate: async function migrate() {
       await r.knex.schema.alterTable('campaign', (table) => {
+      console.log('updating campaign table')
         table.text('intro_html')
         table.text('logo_image_url')
         table.string('primary_color')
       })
-      console.log('added is_deleted column to interaction_step')
+      console.log('added intro_html, logo_image_url, primary_color to campaign')
     }
   },
   { auto: true, // 8
     date: '2017-09-28',
     migrate: async function migrate() {
+      console.log('updating user table')
       await r.knex.schema.alterTable('user', (table) => {
         table.boolean('terms').default(false)
       })
@@ -100,6 +104,7 @@ const migrations = [
   { auto: true, // 9
     date: '2017-10-23',
     migrate: async function migrate() {
+      console.log('updating message table')
       await r.knex.schema.alterTable('message', (table) => {
         table.timestamp('queued_at')
         table.timestamp('sent_at')
@@ -111,6 +116,7 @@ const migrations = [
   { auto: true, // 10
     date: '2017-10-23',
     migrate: async function migrate() {
+      console.log('adding log table')
       await r.knex.schema.createTableIfNotExists('log', (table) => {
         table.string('message_sid')
         table.json('body')
