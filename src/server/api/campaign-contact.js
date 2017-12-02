@@ -43,13 +43,13 @@ export const schema = `
 
 export const resolvers = {
   Location: {
-    timezone: (zipCode) => zipCode,
-    city: (zipCode) => zipCode.city,
-    state: (zipCode) => zipCode.state
+    timezone: (zipCode) => zipCode || null,
+    city: (zipCode) => zipCode.city || null,
+    state: (zipCode) => zipCode.state || null
   },
   Timezone: {
-    offset: (zipCode) => zipCode.timezone_offset,
-    hasDST: (zipCode) => zipCode.has_dst
+    offset: (zipCode) => zipCode.timezone_offset || null,
+    hasDST: (zipCode) => zipCode.has_dst || null
   },
   CampaignContact: {
     ...mapFieldsToModel([
