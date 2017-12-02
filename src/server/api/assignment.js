@@ -49,7 +49,7 @@ function getContacts(assignment, contactsFilter, organization, campaign) {
 
     if (contactsFilter.hasOwnProperty('messageStatus') && contactsFilter.messageStatus !== null) {
       if (pastDue && contactsFilter.messageStatus === 'needsMessage') {
-        query = query.where('message_status', '')
+        query = query.where('message_status', '') // stops finding anything after pastDue
       } else if (contactsFilter.messageStatus === 'needsMessageOrResponse') {
         query = query
           .whereIn('message_status', ['needsResponse', 'needsMessage'])
