@@ -678,7 +678,7 @@ const rootMutations = {
       }
       const campaign = await Campaign.get(assignment.campaign_id)
       if (!campaign.use_dynamic_assignment) {
-        return {found: false}
+        return { found: false }
       }
 
       const contactsCount = (await r.knex('campaign_contact').where('assignment_id', assignmentId).count())[0].count
@@ -690,7 +690,7 @@ const rootMutations = {
       // Don't add more if they already have that many
       const result = await r.knex('campaign_contact').where({ assignment_id: assignmentId, message_status: 'needsMessage', is_opted_out: false }).count()
       if (Number(result[0].count) >= numberContacts) {
-        return {found: false}
+        return { found: false }
       }
 
       const updatedCount = await r.knex('campaign_contact')
@@ -705,9 +705,9 @@ const rootMutations = {
         .catch(log.error)
 
       if (updatedCount > 0) {
-        return {found: true}
+        return { found: true }
       } else {
-        return {found: false}
+        return { found: false }
       }
     },
 
@@ -918,7 +918,7 @@ const rootResolvers = {
   Action: {
     name: (o) => o.name,
     display_name: (o) => o.display_name,
-    instructions: (o) => o.instructions,
+    instructions: (o) => o.instructions
   },
   FoundContact: {
     found: (o) => o.found

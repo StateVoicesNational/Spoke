@@ -131,11 +131,11 @@ export const resolvers = {
     ),
     contacts: async (campaign) => (
       r.knex('campaign_contact')
-        .where({campaign_id: campaign.id})
+        .where({ campaign_id: campaign.id })
     ),
     contactsCount: async (campaign) => {
       const counts = await r.knex('campaign_contact')
-        .where({campaign_id: campaign.id})
+        .where({ campaign_id: campaign.id })
         .count('*')
       const count = counts[0]
       const key = Object.keys(count)[0]
@@ -144,7 +144,7 @@ export const resolvers = {
     hasUnassignedContacts: async (campaign) => {
       const contacts = await r.knex('campaign_contact')
         .select('id')
-        .where({campaign_id: campaign.id, assignment_id: null})
+        .where({ campaign_id: campaign.id, assignment_id: null })
         .limit(1)
       return contacts.length > 0
     },
