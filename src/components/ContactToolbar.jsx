@@ -54,23 +54,19 @@ const ContactToolbar = function ContactToolbar(props) {
         style={inlineStyles.toolbar}
       >
         <ToolbarGroup >
-          <ToolbarTitle
-            text={campaignContact.firstName}
-          />
+          <ToolbarTitle>{campaignContact.firstName}</ToolbarTitle>
           <ToolbarTitle
             style={inlineStyles.cellToolbarTitle}
           />
           {location ? (
             <ToolbarTitle
-              text={formattedLocalTime}
               style={inlineStyles.timeToolbarTitle}
-            />) : ''
+            >{formattedLocalTime}</ToolbarTitle>) : ''
           }
           {location ? (
             <ToolbarTitle
-              text={formattedLocation}
               style={inlineStyles.locationToolbarTitle}
-            />) : ''}
+            >{formattedLocation}</ToolbarTitle>) : ''}
           {rightToolbarIcon}
         </ToolbarGroup>
       </Toolbar>
