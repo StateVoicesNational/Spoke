@@ -53,7 +53,7 @@ function getContacts(assignment, contactsFilter, organization, campaign) {
       } else if (contactsFilter.messageStatus === 'needsMessageOrResponse') {
         query = query
           .whereIn('message_status', ['needsResponse', 'needsMessage'])
-          .orderByRaw("message_status DESC, updated_at")
+          .orderByRaw('message_status DESC, updated_at')
       } else {
         query = query.where('message_status', contactsFilter.messageStatus)
       }

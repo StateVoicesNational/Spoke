@@ -112,7 +112,7 @@ class AssignmentSummary extends Component {
             <div dangerouslySetInnerHTML={{ __html: introHtml }} />
           </div>
           <CardActions>
-            { (window.NOT_IN_USA && window.ALLOW_SEND_ALL) ? '' : this.renderBadgedButton({
+            {(window.NOT_IN_USA && window.ALLOW_SEND_ALL) ? '' : this.renderBadgedButton({
               assignment,
               title: 'Send first texts',
               count: unmessagedCount,
@@ -121,7 +121,7 @@ class AssignmentSummary extends Component {
               contactsFilter: 'text',
               hideIfZero: !useDynamicAssignment
             })}
-            { (window.NOT_IN_USA && window.ALLOW_SEND_ALL) ? '' : this.renderBadgedButton({
+            {(window.NOT_IN_USA && window.ALLOW_SEND_ALL) ? '' : this.renderBadgedButton({
               assignment,
               title: 'Send replies',
               count: unrepliedCount,
@@ -130,7 +130,7 @@ class AssignmentSummary extends Component {
               contactsFilter: 'reply',
               hideIfZero: true
             })}
-            { (window.NOT_IN_USA && window.ALLOW_SEND_ALL) ? this.renderBadgedButton({
+            {(window.NOT_IN_USA && window.ALLOW_SEND_ALL) ? this.renderBadgedButton({
               assignment,
               title: 'Send messages',
               primary: true,

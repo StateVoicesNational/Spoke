@@ -83,7 +83,7 @@ const migrations = [
     date: '2017-10-04',
     migrate: async function migrate() {
       await r.knex.schema.alterTable('campaign', (table) => {
-      console.log('updating campaign table')
+        console.log('updating campaign table')
         table.text('intro_html')
         table.text('logo_image_url')
         table.string('primary_color')
