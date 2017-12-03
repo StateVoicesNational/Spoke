@@ -111,11 +111,11 @@ async function sendMessage(message) {
     }
 
     // Image extraction
-    const extractor = new RegExp(/\[.*http(.*)\]/)
+    const extractor = new RegExp(/\[\s*(http[^\]\s]*)\s*\]/)
     let mediaUrl
     if (message.text.match(extractor)) {
       const results = extractor.exec(message.text)
-      mediaUrl = `http${results[1].trim()}`
+      mediaUrl = results[1]
     }
 
     const messageParams = Object.assign({
