@@ -79,11 +79,6 @@ You will need to create a Twilio account in order to test outgoing and incoming 
   - TWILIO_APPLICATION_SID is `TWILIO_MESSAGE_SERVICE_SID` (these are the same values)
   - TWILIO_AUTH_TOKEN is `AUTH TOKEN`
 
-2. Visit https://www.twilio.com/console/voice/dev-tools/twiml-apps and go to the Spoke Dev app.
-3. Set Request URL under "Messaging" to http://<<YOUR_NGROK>>.ngrok.io/twilio
-4. In `.env` set `TWILIO_APPLICATION_ID` to the Twilio Spoke Dev application ID
-5. In `.env` set `TWILIO_STATUS_CALLBACK_URL` to  http://<<YOUR_NGROK>>.ngrok.io/twilio-message-report
-
 ## Deploying
 
 1. Run `OUTPUT_DIR=./build npm run prod-build-server`
