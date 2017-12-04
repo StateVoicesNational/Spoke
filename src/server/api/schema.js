@@ -361,7 +361,8 @@ async function updateInteractionSteps(campaignId, interactionSteps, origCampaign
           script: is.script,
           answer_option: is.answerOption,
           answer_actions: is.answerActions,
-          campaign_id: campaignId
+          campaign_id: campaignId,
+          is_deleted: false
         }).returning('id')
       idMap[is.id] = newId[0]
     } else {
