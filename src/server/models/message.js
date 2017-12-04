@@ -21,7 +21,8 @@ const Message = thinky.createModel('message', type.object().schema({
   service: optionalString(),
   service_id: optionalString().stopReference(),
   send_status: requiredString().enum('QUEUED', 'SENDING', 'SENT', 'DELIVERED', 'ERROR', 'PAUSED', 'NOT_ATTEMPTED'),
-  created_at: timestamp()
+  created_at: timestamp(),
+  queued_at: timestamp()
 }).allowExtra(false))
 
 Message.ensureIndex('assignment_id')
