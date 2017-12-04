@@ -154,6 +154,8 @@ class AdminCampaignStats extends React.Component {
 
           <div className={css(styles.header)}>
             {campaign.title}
+            <br />
+            Campaign ID: {campaign.id}
           </div>
           <div className={css(styles.flexColumn)}>
             <div className={css(styles.rightAlign)}>
