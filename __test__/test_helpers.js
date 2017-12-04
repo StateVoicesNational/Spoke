@@ -21,10 +21,10 @@ async function clearTestData() {
   await r.knex.schema.dropTable('user')
 }
 
-async function setupTest() {
+export async function setupTest() {
 }
 
-async function cleanupTest() {
+export async function cleanupTest() {
   await clearTestData()
 }
 
@@ -35,5 +35,3 @@ export function getContext(context) {
     loaders: createLoaders(),
   }
 }
-
-export { setupTest, cleanupTest, getContext }
