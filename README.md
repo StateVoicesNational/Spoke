@@ -56,28 +56,10 @@ See https://github.com/MoveOnOrg/Spoke/blob/master/docs/HOWTO-run_tests.md
 * Right now there is a bug in Apollo (https://github.com/apollostack/react-apollo/issues/57) that means in one particular case, errors get swallowed.  If you end up with an app that is silently breaking, console.log(this.props.data) and check the errors property.
 
 
+
 ## Testing Twilio
 
-You will need to create a Twilio account in order to test outgoing and incoming replies. If you need to use Twilio in development but with live keys, do the following to receive incoming replies:
-
-1. Start [ngrok](https://ngrok.com/docs) --> you will use the url created for the `TWILIO_STATUS_CALLBACK_URL` in your .env file and `STATUS CALLBACK URL` in Twilio
-2. Create a Twilio acccount: https://www.twilio.com/
-3. Click on `Programmable SMS` on the side panel
-4. Click on `Messaging Services`, and click the plus
-5. Create a friendly name
-6. Under `Properties`
-  - `SERVICE SID` is `TWILIO_MESSAGE_SERVICE_SID`
-7. Under `Inbound Settings`
-  - Make sure `PROCESS INBOUND MESSAGES` is selected
-  - `REQUEST URL` is `https://<YOUR_HEROKU_APP_URL>/twilio`
-8. Under Outbound Settings
-  - `STATUS CALLBACK URL` is `https://[ngrok-generated-url]/twilio-message-report`
-  - TWILIO_STATUS_CALLBACK_URL = `https://[ngrok-generated-url]/twilio-message-report`
-9. Visit the [dashboard](https://www.twilio.com/console)
-10. Under `Account Summary`
-  - TWILIO_API_KEY is `ACCOUNT SID`
-  - TWILIO_APPLICATION_SID is `TWILIO_MESSAGE_SERVICE_SID` (these are the same values)
-  - TWILIO_AUTH_TOKEN is `AUTH TOKEN`
+If you need to use Twilio in development but with live keys, click [here](https://github.com/MoveOnOrg/Spoke/blob/master/docs/HOWTO_INTEGRATE_TWILIO.md) for instructions.
 
 ## Deploying
 
