@@ -56,15 +56,10 @@ See https://github.com/MoveOnOrg/Spoke/blob/master/docs/HOWTO-run_tests.md
 * Right now there is a bug in Apollo (https://github.com/apollostack/react-apollo/issues/57) that means in one particular case, errors get swallowed.  If you end up with an app that is silently breaking, console.log(this.props.data) and check the errors property.
 
 
+
 ## Testing Twilio
 
-If you need to use Twilio in development but with live keys, do the following to receive incoming replies:
-
-1. Start [ngrok](https://ngrok.com/docs)
-2. Visit https://www.twilio.com/console/voice/dev-tools/twiml-apps and go to the Spoke Dev app.
-3. Set Request URL under "Messaging" to http://<<YOUR_NGROK>>.ngrok.io/twilio
-4. In `.env` set `TWILIO_APPLICATION_ID` to the Twilio Spoke Dev application ID
-5. In `.env` set `TWILIO_STATUS_CALLBACK_URL` to  http://<<YOUR_NGROK>>.ngrok.io/twilio-message-report
+If you need to use Twilio in development but with live keys, click [here](https://github.com/MoveOnOrg/Spoke/blob/master/docs/HOWTO_INTEGRATE_TWILIO.md) for instructions.
 
 ## Deploying
 
