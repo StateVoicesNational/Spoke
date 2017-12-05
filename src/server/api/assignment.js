@@ -91,8 +91,7 @@ export const resolvers = {
       const organization = await r.table('organization')
         .get(campaign.organization_id)
 
-      const result = await getContacts(assignment, contactsFilter, organization, campaign).count()
-      return result[0].count
+      return await r.getCount(getContacts(assignment, contactsFilter, organization, campaign))
     },
     contacts: async (assignment, { contactsFilter }) => {
       const campaign = await r.table('campaign').get(assignment.campaign_id)

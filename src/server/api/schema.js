@@ -682,15 +682,15 @@ const rootMutations = {
         return { found: false }
       }
 
-      const contactsCount = (await r.knex('campaign_contact').where('assignment_id', assignmentId).count())[0].count
+      const contactsCount = await r.getCount(r.knex('campaign_contact').where('assignment_id', assignmentId))
 
       numberContacts = numberContacts || 1
       if (assignment.max_contacts && (contactsCount + numberContacts > assignment.max_contacts)) {
         numberContacts = assignment.max_contacts - contactsCount
       }
       // Don't add more if they already have that many
-      const result = await r.knex('campaign_contact').where({ assignment_id: assignmentId, message_status: 'needsMessage', is_opted_out: false }).count()
-      if (Number(result[0].count) >= numberContacts) {
+      const result = await r.getCount(r.knex('campaign_contact').where({ assignment_id: assignmentId, message_status: 'needsMessage', is_opted_out: false }))
+      if (result >= numberContacts) {
         return { found: false }
       }
 
