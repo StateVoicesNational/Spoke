@@ -84,10 +84,10 @@ export const resolvers = {
         .count()
     ),
     optOutsCount: async (campaign) => (
-      r.knex('campaign_contact')
-      .where({ is_opted_out: true, campaign_id: campaign.id })
-      .count()
-      .then((result) => { return result[0].count })
+      await r.getCount(
+        r.knex('campaign_contact')
+          .where({ is_opted_out: true, campaign_id: campaign.id })
+      )
     )
   },
   Campaign: {
@@ -133,14 +133,12 @@ export const resolvers = {
       r.knex('campaign_contact')
         .where({ campaign_id: campaign.id })
     ),
-    contactsCount: async (campaign) => {
-      const counts = await r.knex('campaign_contact')
-        .where({ campaign_id: campaign.id })
-        .count('*')
-      const count = counts[0]
-      const key = Object.keys(count)[0]
-      return Number(count[key])
-    },
+    contactsCount: async (campaign) => (
+      await r.getCount(
+        r.knex('campaign_contact')
+          .where({ campaign_id: campaign.id })
+      )
+    ),
     hasUnassignedContacts: async (campaign) => {
       const contacts = await r.knex('campaign_contact')
         .select('id')

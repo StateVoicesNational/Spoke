@@ -12,7 +12,8 @@ module.exports = {
       },
     }),
     JOBS_SYNC: true,
-    JOBS_SAME_PROCESS: true
+    JOBS_SAME_PROCESS: true,
+    DEFAULT_SERVICE: 'fakeservice'
   },
   moduleFileExtensions: [
     "js",

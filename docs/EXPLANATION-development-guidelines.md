@@ -71,9 +71,11 @@ current layout:
 * When switching between the legacy and knex, be careful about query results meant to get back a single record/value.
   In knex, a good pattern is to use `.first()`
   to make sure you get the first object immediately, instead of needing to access the first result as `queryResult[0]`.
-  This is especially unintuitive, when getting a `.count()` -- you still need to
-  run `const countResult = r.knex(....).where(...).count().first()`, and then the counted value will actually
-  be in `countResult.count`.
+* This is especially unintuitive and error-prone with count. So much so, we ask that you use
+  a custom helper method `r.getCount` which will look like this:
+  `const actualCountResult = await r.getCount(r.knex(<table>).where(.....))`
+  The reason, is that different databases return the key differently in knex (so e.g. in postgres,
+  it's 'count' but in sqlite it's 'count(*)'.
 * Make sure you make queries and code that supports, at least, PostgreSQL and Sqlite.  For *Date queries* this
   can be tricky.  One successful pattern is to calculate the javascript Date object locally, and then
   query with a greater/less-than, like so:

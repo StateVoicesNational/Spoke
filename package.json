@@ -10,6 +10,7 @@
   "scripts": {
     "test": "jest",
     "test-coverage": "jest --coverage",
+    "test-coverage-bothbackends": "jest --config just.config.sqlite.js &&  jest --coverage",
     "clean": "rm -rf $OUTPUT_DIR",
     "lint": "eslint --fix --ext js --ext jsx src",
     "prod-build-client": "webpack --config ./webpack/config.js",
