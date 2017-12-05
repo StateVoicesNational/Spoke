@@ -72,6 +72,8 @@ class CampaignList extends React.Component {
     const secondaryText = (
       <span>
         <span>
+          Campaign ID: {campaign.id}
+          <br />
           {campaign.description}
           <br />
           {dueByMoment.isValid() ?
