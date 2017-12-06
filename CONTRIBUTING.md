@@ -65,6 +65,6 @@ The actual process:
 * By EOD Tuesday, we should have reviewed and merged the PRs to stage-master that contain changes we would like to test on staging and roll to prod Wednesday.
 * On Wednesday morning, the whole team then piles onto regression testing staging
 * After the tech team tests staging, we get at least one member of the Mobile team to signoff on the state of staging.
-* If we fix all issues, regression test staging, and tech and mobile have signed off on staging, we roll to prod, as early as signoff is possible and at latest Thursday morning.
+* If we fix all issues, regression test staging, and tech and mobile have signed off on staging, we merge stage-master back into master, roll to prod, as early as signoff is possible and at latest Thursday morning. This way, we know that the master branch is stable and is what we're running in our prod env.
 * After we roll to prod, at least one member of the Tech and Mobile team verify that prod is up and working.
 * We never roll code directly to prod without first testing on staging.
