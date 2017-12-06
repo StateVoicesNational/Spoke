@@ -49,18 +49,18 @@ We're a small team, practice agile software development, and plan weekly sprints
 
 The actual process:
 * On Tuesday, we delete the old stage-master branch, and cut a new one from master: 
- * git checkout master
- * git branch -D stage-master
- * git push origin :stage-master
- * git checkout -b stage-master
- * git push origin stage-master
+  * git checkout master
+  * git branch -D stage-master
+  * git push origin :stage-master
+  * git checkout -b stage-master
+  * git push origin stage-master
 * On Tuesday we will test each PR and only merge it to stage-master and NOT master. We wait to merge to master only after Wednesday's regression 'testing party'
- * This ensures that PRs will not contain anything that breaks deployment and also will allow us to see if any PRs negatively interact with each other before they end up merged to master.  Why bother with this step? it's helpful to have a separate "release candidate" on the stage-master branch because in earlier testing rounds people weren't sure what had been deployed to staging and having a separate branch makes this explicit and clear. 
- * When you have tested a PR branch locally and approve its merge (you do NOT click the 'merge' button in github -- that would merge to master (BAD!)). Instead:
+  * This ensures that PRs will not contain anything that breaks deployment and also will allow us to see if any PRs negatively interact with each other before they end up merged to master.  Why bother with this step? it's helpful to have a separate "release candidate" on the stage-master branch because in earlier testing rounds people weren't sure what had been deployed to staging and having a separate branch makes this explicit and clear. 
+  * When you have tested a PR branch locally and approve its merge (you do NOT click the 'merge' button in github -- that would merge to master (BAD!)). Instead:
   * if this is a different person that created stage-master above, they should run:
-   * git fetch
-   * git checkout stage-master
-   * git reset --hard origin/stage-master
+    * git fetch
+    * git checkout stage-master
+    * git reset --hard origin/stage-master
   * Then deploy the stage-master branch to our staging environment
 * By EOD Tuesday, we should have reviewed and merged the PRs to stage-master that contain changes we would like to test on staging and roll to prod Wednesday.
 * On Wednesday morning, the whole team then piles onto regression testing staging
