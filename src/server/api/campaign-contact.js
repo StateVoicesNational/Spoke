@@ -43,9 +43,9 @@ export const schema = `
 
 export const resolvers = {
   Location: {
-    timezone: (zipCode) => zipCode || null,
-    city: (zipCode) => zipCode.city || null,
-    state: (zipCode) => zipCode.state || null
+    timezone: (zipCode) => zipCode || {},
+    city: (zipCode) => zipCode.city || '',
+    state: (zipCode) => zipCode.state || ''
   },
   Timezone: {
     offset: (zipCode) => zipCode.timezone_offset || null,
@@ -134,6 +134,15 @@ export const resolvers = {
     location: async (campaignContact, _, { loaders }) => {
       const mainZip = campaignContact.zip.split('-')[0]
       const loc = await loaders.zipCode.load(mainZip)
+      if (!loc && campaignContact.timezone_offset) {
+        // couldn't look up the timezone by zip record, so we load it
+        // from the campaign_contact directly if it's there
+        const [offset, hasDst] = campaignContact.timezone_offset.split('_')
+        return {
+          timezone_offset: parseInt(offset, 10),
+          has_dst: (hasDst === '1')
+        }
+      }
       return loc
     },
     messages: async (campaignContact) => {

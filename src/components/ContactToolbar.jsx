@@ -36,8 +36,8 @@ const ContactToolbar = function ContactToolbar(props) {
     state = location.state
     timezone = location.timezone
     if (timezone) {
-      offset = timezone.offset
-      hasDST = timezone.hasDST
+      offset = timezone.offset || offset
+      hasDST = timezone.hasDST || hasDST
     }
   }
 
