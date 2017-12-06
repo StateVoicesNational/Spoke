@@ -47,26 +47,29 @@ const ContactToolbar = function ContactToolbar(props) {
   }
   formattedLocation = `${formattedLocation} ${state}`
 
-  const formattedLocalTime = getLocalTime(offset, hasDST) // .format('h:mm a')
+  const formattedLocalTime = getLocalTime(offset, hasDST).format('LT') // format('h:mm a')
   return (
     <div>
       <Toolbar
         style={inlineStyles.toolbar}
       >
         <ToolbarGroup >
-          <ToolbarTitle>{campaignContact.firstName}</ToolbarTitle>
+          <ToolbarTitle text={campaignContact.firstName} />
           <ToolbarTitle
             style={inlineStyles.cellToolbarTitle}
           />
           {location ? (
             <ToolbarTitle
               style={inlineStyles.timeToolbarTitle}
-            >{formattedLocalTime}</ToolbarTitle>) : ''
+              text={formattedLocalTime}
+            />) : ''
           }
           {location ? (
             <ToolbarTitle
               style={inlineStyles.locationToolbarTitle}
-            >{formattedLocation}</ToolbarTitle>) : ''}
+              text={formattedLocation}
+            />) : ''
+          }
           {rightToolbarIcon}
         </ToolbarGroup>
       </Toolbar>
