@@ -125,7 +125,33 @@ class AssignmentTexter extends React.Component {
   }
 
   renderNavigationToolbarChildren() {
-    return []
+    const currentIndex = this.state.currentContactIndex + 1
+    let ofHowMany = this.contactCount()
+    if (ofHowMany === currentIndex
+        && this.props.assignment.campaign.useDynamicAssignment) {
+      ofHowMany = '?'
+    }
+    const title = `${currentIndex} of ${ofHowMany}`
+    return [
+        <ToolbarTitle
+      className={css(styles.navigationToolbarTitle)}
+      text={title}
+        />,
+        <IconButton
+      onTouchTap={this.handleNavigatePrevious}
+      disabled={!this.hasPrevious()}
+      // style={styles.toolbarIconButton}
+        >
+        <NavigateBeforeIcon />
+        </IconButton>,
+        <IconButton
+      onTouchTap={this.handleNavigateNext}
+      disabled={!this.hasNext()}
+      // style={styles.toolbarIconButton}
+        >
+        <NavigateNextIcon />
+        </IconButton>
+    ]
   }
 
   renderTexter() {
