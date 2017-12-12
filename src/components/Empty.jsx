@@ -16,7 +16,10 @@ const styles = StyleSheet.create({
     marginTop: '56px',
     width: 200,
     marginLeft: 'auto',
-    marginRight: 'auto'
+    marginRight: 'auto',
+    '@media(max-width: 370px)': {
+      display: 'none'
+    }
   },
   title: {
     ...theme.text.header,
