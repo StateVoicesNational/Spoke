@@ -8,7 +8,8 @@ import { StyleSheet, css } from 'aphrodite'
 const styles = StyleSheet.create({
   container: {
     display: 'inline-block',
-    marginLeft: 20
+    marginLeft: 24,
+    marginBottom: 10
   }
 })
 class SendButton extends Component {
