@@ -13,7 +13,7 @@ let config
 if (process.env.DB_JSON || global.DB_JSON) {
   config = JSON.parse(process.env.DB_JSON || global.DB_JSON)
 } else if (process.env.DB_TYPE) {
-  const use_ssl = process.env.DB_USE_SSL && (process.env.DB_USE_SSL.toLowerCase() === 'true' process.env.DB_USE_SSL === '1')
+  const use_ssl = process.env.DB_USE_SSL && (process.env.DB_USE_SSL.toLowerCase() === 'true' || process.env.DB_USE_SSL === '1')
   config = {
     client: 'pg',
     connection: {
