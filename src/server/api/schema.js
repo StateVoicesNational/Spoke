@@ -595,10 +595,17 @@ const rootMutations = {
         cell
       }).save()
 
+      // update all organization's active campaigns as well
       await r.knex('campaign_contact')
-        .whereIn('cell', function () {
-          this.select('cell').from('opt_out')
-        })
+        .where('id', 'in',
+               r.knex('campaign_contact')
+               .leftJoin('campaign', 'campaign_contact.campaign_id', 'campaign.id')
+               .where({
+                 'campaign_contact.cell': cell,
+                 'campaign.organization_id': campaign.organization_id,
+                 'campaign.is_archived': false
+               })
+               .select('campaign_contact.id'))
         .update({
           is_opted_out: true
         })
