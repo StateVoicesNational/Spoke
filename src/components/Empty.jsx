@@ -11,12 +11,17 @@ const inlineStyles = {
   }
 }
 
+// marginTop size will push down text field for texters
+
 const styles = StyleSheet.create({
   container: {
-    marginTop: '56px',
+    marginTop: '10px',
     width: 200,
     marginLeft: 'auto',
-    marginRight: 'auto'
+    marginRight: 'auto',
+    '@media(max-width: 370px)': {
+      display: 'none'
+    }
   },
   title: {
     ...theme.text.header,

@@ -626,7 +626,7 @@ class AssignmentTexterContact extends React.Component {
           </Toolbar>
         </div>
       )
-    } else if (size > 768 || messageStatus === 'needsMessage') {
+    } else if (size >= 768 || messageStatus === 'needsMessage') {
       return (
         <div>
           <Toolbar style={inlineStyles.actionToolbarFirst}>
@@ -783,7 +783,7 @@ class AssignmentTexterContact extends React.Component {
             label='Your message'
             multiLine
             fullWidth
-            rowsMax={6}
+            rowsMax={3}
           />
           {this.renderCorrectSendButton()}
         </GSForm>
