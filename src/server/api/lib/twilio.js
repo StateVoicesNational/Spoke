@@ -139,7 +139,7 @@ async function sendMessage(message) {
       let hasError = false
       if (err) {
         hasError = true
-        log.error(err)
+        log.error('Error sending message', err)
         messageToSave.service_response += JSON.stringify(err)
       }
       if (response) {

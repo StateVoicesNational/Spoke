@@ -59,7 +59,7 @@ export async function checkMessageQueue() {
 }
 
 const messageSenderCreator = (subQuery, defaultStatus) => {
-  return async () => {
+  return async (event) => {
     console.log('Running a message sender')
     setupUserNotificationObservers()
     // eslint-disable-next-line no-constant-condition
@@ -99,6 +99,17 @@ export const failedMessageSender = messageSenderCreator(function (mQuery) {
   // texts over and over
   const fiveMinutesAgo = new Date(new Date() - 1000 * 60 * 5)
   return mQuery.where('created_at', '>', fiveMinutesAgo)
+}, 'SENDING')
+
+export const failedDayMessageSender = messageSenderCreator(function (mQuery) {
+  // messages that were attempted to be sent five minutes ago in status=SENDING
+  // when JOBS_SAME_PROCESS is enabled, the send attempt is done immediately.
+  // However, if it's still marked SENDING, then it must have failed to go out.
+  // This is dangerous to run in a scheduled event because if there is
+  // any failure path that stops the status from updating, then users might keep getting
+  // texts over and over
+  const oneDayAgo = new Date(new Date() - 1000 * 60 * 60 * 24)
+  return mQuery.where('created_at', '>', oneDayAgo)
 }, 'SENDING')
 
 export async function handleIncomingMessages() {
