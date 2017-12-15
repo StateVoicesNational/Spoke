@@ -16,9 +16,9 @@ export { seedZipCodes } from '../server/seeds/seed-zip-codes'
  */
 
 const jobMap = {
-  'export': exportCampaign,
-  'upload_contacts': uploadContacts,
-  'assign_texters': assignTexters
+  export: exportCampaign,
+  upload_contacts: uploadContacts,
+  assign_texters: assignTexters
 }
 
 export async function processJobs() {
@@ -135,7 +135,7 @@ export async function handleIncomingMessages() {
   }
 }
 
-export async function runDatabaseMigrations(event, dispatcher) {
+export async function runDatabaseMigrations(event) {
   await runMigrations(event.migrationStart)
 }
 
@@ -159,7 +159,7 @@ const syncProcessMap = {
 
 const JOBS_SAME_PROCESS = !!process.env.JOBS_SAME_PROCESS
 
-export async function dispatchProcesses(event, dispatcher) {
+export async function dispatchProcesses(event) {
   const toDispatch = event.processes || (JOBS_SAME_PROCESS ? syncProcessMap : processMap)
   for (let p in toDispatch) {
     if (p in processMap) {

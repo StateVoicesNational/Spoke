@@ -33,9 +33,9 @@ export async function available(organizationId) {
   return !!(needed.length)
 }
 
-export const akidGenerate = function (ak_secret, cleartext) {
+export const akidGenerate = function (akSecret, cleartext) {
   const shaHash = crypto.createHash('sha256')
-  shaHash.write(`${ak_secret}.${cleartext}`)
+  shaHash.write(`${akSecret}.${cleartext}`)
   const shortHash = shaHash.digest('base64').slice(0, 6)
   return `${cleartext}.${shortHash}`
 }
@@ -51,7 +51,7 @@ export async function processAction(questionResponse, interactionStep, campaignC
             'organization.id as organization_id')
   const contact = (contactRes.length ? contactRes[0] : {})
 
-  if (contact.external_id && contact.custom_fields != '{}') {
+  if (contact.external_id && contact.custom_fields !== '{}') {
     try {
       const customFields = JSON.parse(contact.custom_fields || '{}')
       const features = JSON.parse(contact.features || '{}')
@@ -76,8 +76,8 @@ export async function processAction(questionResponse, interactionStep, campaignC
           }
         }
         request.post({
-          'url': `${actionkitBaseUrl}/act/`,
-          'form': userData
+          url: `${actionkitBaseUrl}/act/`,
+          form: userData
         }, async function (err, httpResponse, body) {
           // TODO: should we save the action id somewhere?
           if (err || (body && body.error)) {

@@ -39,6 +39,12 @@ class AssignmentTexter extends React.Component {
     }
   }
 
+  componentWillUpdate() {
+    if (this.contactCount() === 0) {
+      setTimeout(() => window.location.reload(), 5000)
+    }
+  }
+
   getContact(contacts, index) {
     return (contacts.length > index) ? contacts[index] : null
   }
@@ -51,14 +57,8 @@ class AssignmentTexter extends React.Component {
 
   updateCurrentContactIndex(newIndex) {
     this.setState({
-      currentContactIndex: 0
+      currentContactIndex: newIndex
     })
-  }
-
-  componentWillUpdate(nextProps, nextState) {
-    if (this.contactCount() === 0) {
-      setTimeout(() => window.location.reload(), 5000)
-    }
   }
 
   hasPrevious() {
@@ -118,10 +118,9 @@ class AssignmentTexter extends React.Component {
     // If the index has got out of sync with the contacts available, then rewind to the start
     if (this.getContact(contacts, this.state.currentContactIndex)) {
       return this.getContact(contacts, this.state.currentContactIndex)
-    } else {
-      this.updateCurrentContactIndex(0)
-      return this.getContact(contacts, 0)
     }
+    this.updateCurrentContactIndex(0)
+    return this.getContact(contacts, 0)
   }
 
   renderNavigationToolbarChildren() {
@@ -142,13 +141,13 @@ class AssignmentTexter extends React.Component {
         disabled={!this.hasPrevious()}
       >
         <NavigateBeforeIcon />
-        </IconButton>,
+      </IconButton>,
       <IconButton
         onTouchTap={this.handleNavigateNext}
         disabled={!this.hasNext()}
       >
         <NavigateNextIcon />
-        </IconButton>
+      </IconButton>
     ]
   }
 
@@ -180,11 +179,8 @@ class AssignmentTexter extends React.Component {
           content={(<RaisedButton
             label='Back To Todos'
             onClick={this.handleExitTexter}
-          >
-          </RaisedButton>)}
-        >
-
-        </Empty>
+          />)}
+        />
       </div>
     )
   }
@@ -204,7 +200,8 @@ AssignmentTexter.propTypes = {
   contacts: PropTypes.array,   // contacts for current assignment
   router: PropTypes.object,
   refreshData: PropTypes.func,
-  organizationId: PropTypes.string
+  organizationId: PropTypes.string,
+  assignContactsIfNeeded: PropTypes.func
 }
 
 export default withRouter(AssignmentTexter)

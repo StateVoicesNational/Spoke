@@ -70,7 +70,6 @@ import {
 import {
   authRequired,
   accessRequired,
-  hasRole,
   assignmentRequired,
   superAdminRequired
 } from './errors'
@@ -261,7 +260,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
       return modelData
     })
     const compressedString = await gzip(JSON.stringify(contactsToSave))
-    let job = await JobRequest.save({
+    await JobRequest.save({
       queue_name: `${id}:edit_campaign`,
       job_type: 'upload_contacts',
       locks_queue: true,
@@ -277,7 +276,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
   if (campaign.hasOwnProperty('contactSql')
       && datawarehouse
       && user.is_superadmin) {
-    let job = await JobRequest.save({
+    await JobRequest.save({
       queue_name: `${id}:edit_campaign`,
       job_type: 'upload_contacts_sql',
       locks_queue: true,
@@ -290,7 +289,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     }
   }
   if (campaign.hasOwnProperty('texters')) {
-    let job = await JobRequest.save({
+    await JobRequest.save({
       queue_name: `${id}:edit_campaign`,
       locks_queue: true,
       assigned: JOBS_SAME_PROCESS, // can get called immediately, below
@@ -313,7 +312,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
 
     // assign the maxContacts
     campaign.texters.forEach(async (texter) => {
-      const dog = r.knex('campaign').where({ id }).select('useDynamicAssignment')
+      r.knex('campaign').where({ id }).select('useDynamicAssignment')
       await r.knex('assignment')
         .where({ user_id: texter.id, campaign_id: id })
         .update({ max_contacts: texter.maxContacts ? texter.maxContacts : null })
@@ -671,7 +670,7 @@ const rootMutations = {
     findNewCampaignContact: async(_, { assignmentId, numberContacts }, { loaders, user }) => {
       /* This attempts to find a new contact for the assignment, in the case that useDynamicAssigment == true */
       const assignment = await Assignment.get(assignmentId)
-      if (assignment.user_id != user.id) {
+      if (assignment.user_id !== user.id) {
         throw new GraphQLError({
           status: 400,
           message: 'Invalid assignment'
@@ -755,7 +754,7 @@ const rootMutations = {
       }
 
       const assignment = await Assignment.get(assignmentId)
-      const campaign = await Campaign.get(assignment.campaign_id)
+      await Campaign.get(assignment.campaign_id)
       // Assign some contacts
       await rootMutations.RootMutation.findNewCampaignContact(_, { assignmentId, numberContacts: Number(process.env.BULK_SEND_CHUNK_SIZE) - 1 }, loaders)
 
@@ -768,7 +767,7 @@ const rootMutations = {
       const texter = camelCaseKeys(await User.get(assignment.user_id))
       const customFields = Object.keys(JSON.parse(contacts[0].custom_fields))
 
-      const contactMessages = await contacts.map(async (contact) => {
+      await contacts.map(async (contact) => {
         const script = await campaignContactResolvers.CampaignContact.currentInteractionStepScript(contact)
         contact.customFields = contact.custom_fields
         const text = applyScript({
@@ -791,7 +790,7 @@ const rootMutations = {
     sendMessage: async(_, { message, campaignContactId }, { loaders }) => {
       const contact = await loaders.campaignContact.load(campaignContactId)
       const campaign = await loaders.campaign.load(contact.campaign_id)
-      if (contact.assignment_id !== parseInt(message.assignmentId) || campaign.is_archived) {
+      if (contact.assignment_id !== parseInt(message.assignmentId, 10) || campaign.is_archived) {
         throw new GraphQLError({
           status: 400,
           message: 'Your assignment has changed'
@@ -898,8 +897,8 @@ const rootMutations = {
         }).save()
         const interactionStepResult = await r.knex('interaction_step')
         // TODO: is this really parent_interaction_id or just interaction_id?
-          .where({ 'parent_interaction_id': interactionStepId,
-                  'answer_option': value })
+          .where({ parent_interaction_id: interactionStepId,
+                  answer_option: value })
           .whereNot('answer_actions', '')
           .whereNotNull('answer_actions')
 
@@ -952,7 +951,7 @@ const rootResolvers = {
       if ('OWNER' in roles
         || 'ADMIN' in roles
         || user.is_superadmin
-        || 'TEXTER' in roles && assignment.user_id == user.id) {
+        || 'TEXTER' in roles && assignment.user_id === user.id) {
         return assignment
       } else {
         throw new GraphQLError({
@@ -963,7 +962,7 @@ const rootResolvers = {
     },
     organization: async(_, { id }, { loaders }) =>
       loaders.organization.load(id),
-    inviteByHash: async (_, { hash }, { loaders, user }) => {
+    inviteByHash: async (_, { hash }, { user }) => {
       authRequired(user)
       return r.table('invite').filter({ hash })
     },
@@ -978,42 +977,40 @@ const rootResolvers = {
         organization_id: campaign.organization_id
       }).select('role')
       userRoles.forEach(role => {
-        roles[role['role']] = 1
+        roles[role.role] = 1
       })
       if ('OWNER' in roles || 'ADMIN' in roles || user.is_superadmin) {
         return contact
       } else if ('TEXTER' in roles) {
-        const assignment = await loaders.assignment.load(contact.assignment_id)
+        await loaders.assignment.load(contact.assignment_id)
         return contact
-      } else {
-        console.error('NOT Authorized: contact', user, roles)
-        throw new GraphQLError({
-          status: 403,
-          message: 'You are not authorized to access that resource.'
-        })
       }
+      console.error('NOT Authorized: contact', user, roles)
+      throw new GraphQLError({
+        status: 403,
+        message: 'You are not authorized to access that resource.'
+      })
     },
     organizations: async(_, { id }, { user }) => {
       await superAdminRequired(user)
       return r.table('organization')
     },
-    availableActions: (_, { organizationId }, { user }) => {
+    availableActions: (_, { organizationId }) => {
       if (!process.env.ACTION_HANDLERS) {
         return []
       }
       const allHandlers = process.env.ACTION_HANDLERS.split(',')
-
       const availableHandlers = allHandlers.map(handler => {
-        return { 'name': handler,
-                'handler': require(`../action_handlers/${handler}.js`)
+        return { name: handler,
+                handler: require(`../action_handlers/${handler}.js`)
                }
       }).filter(async (h) => (h && (await h.handler.available(organizationId))))
 
       const availableHandlerObjects = availableHandlers.map(handler => {
         return {
-          'name': handler.name,
-          'display_name': handler.handler.displayName(),
-          'instructions': handler.handler.instructions()
+          name: handler.name,
+          display_name: handler.handler.displayName(),
+          instructions: handler.handler.instructions()
         }
       })
       return availableHandlerObjects

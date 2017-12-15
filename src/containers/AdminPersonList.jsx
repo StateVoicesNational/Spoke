@@ -105,7 +105,7 @@ class AdminPersonList extends React.Component {
   }
 
   render() {
-    const { params, organizationData } = this.props
+    const { organizationData } = this.props
 
     return (
       <div>

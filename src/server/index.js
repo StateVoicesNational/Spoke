@@ -6,7 +6,7 @@ import { graphqlExpress, graphiqlExpress } from 'apollo-server-express'
 import { makeExecutableSchema, addMockFunctionsToSchema } from 'graphql-tools'
 import { schema, resolvers } from './api/schema'
 import mocks from './api/mocks'
-import { createLoaders, User } from './models'
+import { createLoaders, User, r } from './models'
 import passport from 'passport'
 import cookieSession from 'cookie-session'
 import setupAuth0Passport from './setup-auth0-passport'
@@ -18,7 +18,6 @@ import { seedZipCodes } from './seeds/seed-zip-codes'
 import { runMigrations } from '../migrations'
 import { setupUserNotificationObservers } from './notifications'
 import { TwimlResponse } from 'twilio'
-import { r } from './models'
 
 process.on('uncaughtException', (ex) => {
   log.error(ex)

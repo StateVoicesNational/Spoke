@@ -303,9 +303,9 @@ export async function assignTexters(job) {
         texter.needsMessageCount = numDifferent
       }
       return assignment
-    } else { // new texter
-      return assignment
     }
+    // new texter
+    return assignment
   }).filter((ele) => ele !== null)
 
   for (const assignId in demotedTexters) {
