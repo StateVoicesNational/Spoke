@@ -94,6 +94,20 @@ async function rentNewCell() {
   throw new Error('Did not find any cell')
 }
 
+const mediaExtractor = new RegExp(/\[\s*(http[^\]\s]*)\s*\]/)
+
+function parseMessageText(message) {
+  const text = message.text || ''
+  const params = {
+    body: text.replace(mediaExtractor, '')
+  }
+  // Image extraction
+  const results = text.match(mediaExtractor)
+  if (results) {
+    params.mediaUrl = results[1]
+  }
+  return params
+}
 
 async function sendMessage(message) {
   if (!twilio) {
@@ -110,27 +124,17 @@ async function sendMessage(message) {
       log.warn('Message not marked as a twilio message', message.id)
     }
 
-    /*
-    // Image extraction
-    const extractor = new RegExp(/\[\s*(http[^\]\s]*)\s*\]/)
-    let mediaUrl
-    if (message.text.match(extractor)) {
-      const results = extractor.exec(message.text)
-      mediaUrl = results[1]
-    }
-    */
     const messageParams = Object.assign({
       to: message.contact_number,
+      body: message.text,
       messagingServiceSid: process.env.TWILIO_MESSAGE_SERVICE_SID,
-      body: message.text, //.replace(extractor, ''), // replace extractor so user doesn't get an img url
       statusCallback: process.env.TWILIO_STATUS_CALLBACK_URL
-    })//, mediaUrl ? { mediaUrl } : {})
+    }, parseMessageText(message))
 
     if (process.env.TWILIO_MESSAGE_VALIDITY_PERIOD) {
       messageParams.validityPeriod = process.env.TWILIO_MESSAGE_VALIDITY_PERIOD
     }
 
-    console.log('sending message', message.id)
     twilio.messages.create(messageParams, (err, response) => {
       const messageToSave = {
         ...message
@@ -140,6 +144,7 @@ async function sendMessage(message) {
       if (err) {
         hasError = true
         log.error('Error sending message', err)
+        console.log('Error sending message', err)
         messageToSave.service_response += JSON.stringify(err)
       }
       if (response) {
@@ -234,5 +239,6 @@ export default {
   rentNewCell,
   sendMessage,
   handleDeliveryReport,
-  handleIncomingMessage
+  handleIncomingMessage,
+  parseMessageText
 }
