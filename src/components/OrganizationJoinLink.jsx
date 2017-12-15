@@ -8,7 +8,9 @@ const OrganizationJoinLink = ({ organizationUuid, campaignId }) => {
     baseUrl = window.location.origin
   }
 
-  const joinUrl = `${baseUrl}/${organizationUuid}/join/${campaignId}`
+  const joinUrl = ((campaignId)
+                   ? `${baseUrl}/${organizationUuid}/join${campaignId}`
+                   : `${baseUrl}/${organizationUuid}/join`)
 
   return (
     <div>
