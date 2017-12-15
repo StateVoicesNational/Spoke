@@ -122,7 +122,7 @@ async function sendMessage(message) {
     const messageParams = Object.assign({
       to: message.contact_number,
       messagingServiceSid: process.env.TWILIO_MESSAGE_SERVICE_SID,
-      body: message.text.replace(extractor, ''), // replace extractor so user doesn't get an img url
+      body: message.text, //.replace(extractor, ''), // replace extractor so user doesn't get an img url
       statusCallback: process.env.TWILIO_STATUS_CALLBACK_URL
     })//, mediaUrl ? { mediaUrl } : {})
 
