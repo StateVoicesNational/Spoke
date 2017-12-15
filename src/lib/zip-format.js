@@ -56,11 +56,12 @@ const commonZipRanges = [
 
 commonZipRanges.sort((a, b) => (a[0] - b[0]))
 
-export const zipToTimeZone = (zip, r) => {
+export const zipToTimeZone = (zip) => {
   // will search common zip ranges -- won't necessarily find something
   // so fallback on looking it up in db
   if (typeof zip === 'number' || zip.length >= 5) {
-    zip = parseInt(zip)
-    return commonZipRanges.find((g) => (zip >= g[0] && zip < g[1]))
+    const parsed = parseInt(zip, 10)
+    return commonZipRanges.find((g) => (parsed >= g[0] && parsed < g[1]))
   }
+  return null
 }

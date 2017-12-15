@@ -4,10 +4,15 @@
   "rules": {
     "comma-dangle": ["error", "never"],
     "jsx-quotes": ["error", "prefer-single"],
+    "react/jsx-no-bind": ["off"],
+    "react/prop-types": ["off"],
     "max-len": ["off"],
     "no-alert": ["off"],
     "no-console": ["off"],
     "prefer-template": ["off"],
     "semi": ["error", "never"],
+    "no-param-reassign": ["off"],
+    "consistent-return": ["off"],
+    "global-require": ["off"]
   }
 }

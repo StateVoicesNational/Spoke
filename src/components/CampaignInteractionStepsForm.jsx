@@ -48,13 +48,13 @@ export default class CampaignInteractionStepsForm extends React.Component {
   }
 
   makeTree(interactionSteps, id = null) {
-    const root = interactionSteps.filter((is) => { id ? is.id === id : is.parentInteractionId === null })[0]
+    const root = interactionSteps.filter((is) => (id ? is.id === id : is.parentInteractionId === null))[0]
     const children = interactionSteps.filter((is) => is.parentInteractionId === root.id)
     return {
       ...root,
-      interactionSteps: children.map((c) => {
-        return this.makeTree(interactionSteps, c.id)
-      })
+      interactionSteps: children.map((c) => (
+        this.makeTree(interactionSteps, c.id)
+      ))
     }
   }
 
@@ -73,9 +73,11 @@ export default class CampaignInteractionStepsForm extends React.Component {
       interactionSteps: this.state.interactionSteps.map((is) => {
         if (is.id === id) {
           is.isDeleted = true
-          this.state.interactionSteps.filter((isp) => isp.parentInteractionId === is.id).map((isp) => {
-            this.deleteStep(isp.id)
-          })
+          this.state.interactionSteps
+            .filter((isp) => isp.parentInteractionId === is.id)
+            .forEach((isp) => {
+              this.deleteStep(isp.id)
+            })
         }
         return is
       })
@@ -86,10 +88,10 @@ export default class CampaignInteractionStepsForm extends React.Component {
     this.setState({
       interactionSteps: this.state.interactionSteps.map((is) => {
         if (is.id === event.id) {
-          delete event.interactionSteps
-          return event
+          const newEvent = Object.assign({}, event)
+          delete newEvent.interactionSteps
+          return newEvent
         }
-        delete event.interactionSteps
         return is
       })
     })
@@ -143,7 +145,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
                 <IconButton
                   tooltip='An action is something that is triggered by this answer being chosen, often in an outside system'
                 >
-                   <HelpIconOutline />
+                  <HelpIconOutline />
                 </IconButton>
                 <div>
                 {
@@ -151,7 +153,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
                     ? this.props.availableActions.filter((a) => a.name === interactionStep.answerActions)[0].instructions
                     : ''}
                 </div>
-               </div>)
+              </div>)
             : ''}
             <Form.Field
               name='script'
@@ -180,13 +182,13 @@ export default class CampaignInteractionStepsForm extends React.Component {
             style={{ marginBottom: '10px' }}
           />
         </div> : ''}
-        {interactionStep.interactionSteps.filter((is) => { !is.isDeleted }).map((is) => {
-          return (
+        {interactionStep.interactionSteps
+          .filter((is) => (!is.isDeleted))
+          .map((is) => (
             <div>
               {this.renderInteractionStep(is, `Question: ${interactionStep.questionText}`)}
             </div>
-          )
-        })}
+          ))}
       </div>
 
     </div>)

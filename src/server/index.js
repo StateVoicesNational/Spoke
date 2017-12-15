@@ -130,8 +130,7 @@ app.get('/allmessages/:organizationId', wrap(async (req, res) => {
   if (typeof membership === 'undefined') {
     // Current user is not admin of the requested org, can't access messages.
     res.json([])
-  }
-  else {
+  } else {
     const messages = await r.knex('message')
       .select(
           'message.id',
@@ -145,7 +144,7 @@ app.get('/allmessages/:organizationId', wrap(async (req, res) => {
       .where('campaign.organization_id', orgId)
       .where('message.is_from_contact', true)
       .orderBy('message.created_at', 'desc')
-    return res.json(messages)
+    res.json(messages)
   }
 }))
 

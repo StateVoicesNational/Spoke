@@ -127,7 +127,7 @@ export default class CampaignTextersForm extends React.Component {
       }
 
       let convertedNeedsMessageCount = parseInt(newTexter.assignment.needsMessageCount, 10)
-      let convertedMaxContacts = (!!newTexter.assignment.maxContacts ? parseInt(newTexter.assignment.maxContacts, 10) : null)
+      const convertedMaxContacts = (!!newTexter.assignment.maxContacts ? parseInt(newTexter.assignment.maxContacts, 10) : null)
 
       if (isNaN(convertedNeedsMessageCount)) {
         convertedNeedsMessageCount = 0

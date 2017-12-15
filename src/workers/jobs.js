@@ -34,8 +34,10 @@ export async function processSqsMessages() {
   // if SQS has messages, process messages into pending_message_part and dequeue messages (mark them as handled)
   // if SQS doesnt have messages, exit
 
+  const p = new Promise
+
   if (!process.env.TWILIO_SQS_QUEUE_URL) {
-    return
+    return p
   }
 
   const sqs = new AWS.SQS()
@@ -49,8 +51,6 @@ export async function processSqsMessages() {
     WaitTimeSeconds: 10,
     ReceiveRequestAttemptId: 'string'
   }
-
-  const p = new Promise
 
   sqs.receiveMessage(params, async (err, data) => {
     if (err) {
@@ -67,11 +67,11 @@ export async function processSqsMessages() {
         await serviceMap.twilio.handleIncomingMessage(twilioMessage)
 
         sqs.deleteMessage({ QueueUrl: process.env.TWILIO_SQS_QUEUE_URL, ReceiptHandle: message.ReceiptHandle },
-                          (err, data) => {
+                          (deleteErr, resp) => {
                             if (err) {
-                              console.log(err, err.stack) // an error occurred
+                              console.log(deleteErr, deleteErr.stack) // an error occurred
                             } else {
-                              console.log(data) // successful response
+                              console.log(resp) // successful response
                             }
                           })
       }
@@ -124,7 +124,7 @@ export async function uploadContacts(job) {
   }
 
   const optOutCellCount = await r.knex('campaign_contact')
-    .whereIn('cell', function () {
+    .whereIn('cell', () => {
       this.select('cell').from('opt_out').where('organization_id', campaign.organization_id)
     })
     .where('campaign_id', campaignId)
@@ -194,10 +194,12 @@ export async function loadContactsFromDataWarehouse(job) {
       zip: row.zip,
       external_id: row.external_id
     }
+
     const contactCustomFields = {}
-    for (const f in customFields) {
-      contactCustomFields[f] = row[f]
-    }
+    Object.keys(customFields).forEach((field) => {
+      contactCustomFields[field] = row[field]
+    })
+
     contact.custom_fields = JSON.stringify(contactCustomFields)
     if (contact.zip) {
       contact.timezone_offset = await getTimezoneByZip(contact.zip)
@@ -215,7 +217,7 @@ export async function loadContactsFromDataWarehouse(job) {
   // doing this in one go so that we can get the DB to do the indexed cell matching
   const campaign = await Campaign.get(job.campaign_id)
   const optOutCellCount = await r.knex('campaign_contact')
-    .whereIn('cell', function () {
+    .whereIn('cell', () => {
       this.select('cell').from('opt_out').where('organization_id', campaign.organization_id)
     })
     .where('campaign_id', job.campaign_id)
@@ -308,7 +310,7 @@ export async function assignTexters(job) {
     return assignment
   }).filter((ele) => ele !== null)
 
-  for (const assignId in demotedTexters) {
+  Object.keys(demotedTexters).forEach(async(assignId) => {
     // Here we demote ALL the demotedTexters contacts (not just the demotion count)
     // because they will get reapportioned below
     await r.knex('campaign_contact')
@@ -320,7 +322,7 @@ export async function assignTexters(job) {
             )
       .update({ assignment_id: null })
       .catch(log.error)
-  }
+  })
 
   await updateJob(job, 20)
 
@@ -567,7 +569,7 @@ export async function sendMessages(queryFunc, defaultStatus) {
   messages = await messages.orderBy('created_at')
 
   for (let index = 0; index < messages.length; index++) {
-    let message = messages[index]
+    const message = messages[index]
     if (pastMessages.indexOf(message.id) !== -1) {
       throw new Error('Encountered send message request of the same message.'
                       + ' This is scary!  If ok, just restart process. Message ID: ' + message.id)
@@ -592,7 +594,7 @@ export async function handleIncomingMessageParts() {
       messagePartsByService[m.service].push(m)
     }
   })
-  for (const serviceKey in messagePartsByService) {
+  Object.keys(messagePartsByService).forEach(async (serviceKey) => {
     let allParts = messagePartsByService[serviceKey]
     const service = serviceMap[serviceKey]
     if (service.syncMessagePartProcessing) {
@@ -602,7 +604,7 @@ export async function handleIncomingMessageParts() {
     }
     const allPartsCount = allParts.length
     if (allPartsCount === 0) {
-      continue
+      return
     }
 
     const convertMessageParts = service.convertMessagePartsToMessage
@@ -654,19 +656,16 @@ export async function handleIncomingMessageParts() {
         }
       }
     }
-    const keys = Object.keys(concatMessageParts)
-    const keyCount = keys.length
 
-    for (let i = 0; i < keyCount; i++) {
-      const groupKey = keys[i]
-      const messageParts = concatMessageParts[groupKey]
+    Object.keys(concatMessageParts).forEach(async (groupKey) => {
+      const parts = concatMessageParts[groupKey]
 
-      if (messageParts.filter((part) => part === null).length === 0) {
-        messagePartsToDelete = messagePartsToDelete.concat(messageParts)
-        const message = await convertMessageParts(messageParts)
+      if (parts.filter((part) => part === null).length === 0) {
+        messagePartsToDelete = messagePartsToDelete.concat(parts)
+        const message = await convertMessageParts(parts)
         messagesToSave.push(message)
       }
-    }
+    })
 
     const messageCount = messagesToSave.length
     for (let i = 0; i < messageCount; i++) {
@@ -679,15 +678,14 @@ export async function handleIncomingMessageParts() {
     await r.table('pending_message_part')
       .getAll(...messageIdsToDelete)
       .delete()
-  }
+  })
 }
 
 export async function clearOldJobs(delay) {
   // to clear out old stuck jobs
   const twoHoursAgo = new Date(new Date() - 1000 * 60 * 60 * 2)
-  delay = delay || twoHoursAgo
   return await r.knex('job_request')
     .where({ assigned: true })
-    .where('updated_at', '<', delay)
+    .where('updated_at', '<', delay || twoHoursAgo)
     .delete()
 }

@@ -27,9 +27,9 @@ if (process.env.NODE_ENV === 'production') {
     )
   )
   const staticBase = process.env.STATIC_BASE_URL || '/assets/'
-  for (var a in assetMapData) {
-    assetMap[a] = staticBase + assetMapData[a]
-  }
+  Object.keys(assetMapData).forEach((key) => {
+    assetMap[key] = staticBase + assetMapData[key]
+  })
 }
 
 export default wrap(async (req, res) => {

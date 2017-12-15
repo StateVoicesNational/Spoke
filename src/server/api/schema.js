@@ -6,7 +6,6 @@ import {
   Assignment,
   Campaign,
   CannedResponse,
-  InteractionStep,
   Invite,
   Message,
   OptOut,
@@ -225,6 +224,45 @@ const rootSchema = `
   }
 `
 
+async function updateInteractionSteps(campaignId, interactionSteps, origCampaignRecord, idMap = {}) {
+  await interactionSteps.forEach(async (is) => {
+    // map the interaction step ids for new ones
+    if (idMap[is.parentInteractionId]) {
+      is.parentInteractionId = idMap[is.parentInteractionId]
+    }
+    if (is.id.indexOf('new') !== -1) {
+      const newId = await r.knex('interaction_step')
+        .insert({
+          parent_interaction_id: is.parentInteractionId,
+          question: is.questionText,
+          script: is.script,
+          answer_option: is.answerOption,
+          answer_actions: is.answerActions,
+          campaign_id: campaignId,
+          is_deleted: false
+        }).returning('id')
+      idMap[is.id] = newId[0]
+    } else {
+      if (!origCampaignRecord.is_started && is.isDeleted) {
+        await r.knex('interaction_step')
+          .where({ id: is.id })
+          .delete()
+      } else {
+        await r.knex('interaction_step')
+          .where({ id: is.id })
+          .update({
+            question: is.questionText,
+            script: is.script,
+            answer_option: is.answerOption,
+            answer_actions: is.answerActions,
+            is_deleted: is.isDeleted
+          })
+      }
+    }
+    await updateInteractionSteps(campaignId, is.interactionSteps, origCampaignRecord, idMap)
+  })
+}
+
 async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
   const { title, description, dueBy, organizationId, useDynamicAssignment, logoImageUrl, introHtml, primaryColor } = campaign
   const campaignUpdates = {
@@ -260,7 +298,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
       return modelData
     })
     const compressedString = await gzip(JSON.stringify(contactsToSave))
-    await JobRequest.save({
+    const job = await JobRequest.save({
       queue_name: `${id}:edit_campaign`,
       job_type: 'upload_contacts',
       locks_queue: true,
@@ -276,7 +314,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
   if (campaign.hasOwnProperty('contactSql')
       && datawarehouse
       && user.is_superadmin) {
-    await JobRequest.save({
+    const job = await JobRequest.save({
       queue_name: `${id}:edit_campaign`,
       job_type: 'upload_contacts_sql',
       locks_queue: true,
@@ -289,7 +327,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     }
   }
   if (campaign.hasOwnProperty('texters')) {
-    await JobRequest.save({
+    const job = await JobRequest.save({
       queue_name: `${id}:edit_campaign`,
       locks_queue: true,
       assigned: JOBS_SAME_PROCESS, // can get called immediately, below
@@ -304,8 +342,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     if (JOBS_SAME_PROCESS) {
       if (JOBS_SYNC) {
         await assignTexters(job)
-      }
-      else {
+      } else {
         assignTexters(job)
       }
     }
@@ -346,48 +383,9 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
   return newCampaign || loaders.campaign.load(id)
 }
 
-async function updateInteractionSteps(campaignId, interactionSteps, origCampaignRecord, idMap = {}) {
-  await interactionSteps.forEach(async (is) => {
-    // map the interaction step ids for new ones
-    if (idMap[is.parentInteractionId]) {
-      is.parentInteractionId = idMap[is.parentInteractionId]
-    }
-    if (is.id.indexOf('new') !== -1) {
-      const newId = await r.knex('interaction_step')
-        .insert({
-          parent_interaction_id: is.parentInteractionId,
-          question: is.questionText,
-          script: is.script,
-          answer_option: is.answerOption,
-          answer_actions: is.answerActions,
-          campaign_id: campaignId,
-          is_deleted: false
-        }).returning('id')
-      idMap[is.id] = newId[0]
-    } else {
-      if (!origCampaignRecord.is_started && is.isDeleted) {
-        await r.knex('interaction_step')
-          .where({ id: is.id })
-          .delete()
-      } else {
-        await r.knex('interaction_step')
-          .where({ id: is.id })
-          .update({
-            question: is.questionText,
-            script: is.script,
-            answer_option: is.answerOption,
-            answer_actions: is.answerActions,
-            is_deleted: is.isDeleted
-          })
-      }
-    }
-    await updateInteractionSteps(campaignId, is.interactionSteps, origCampaignRecord, idMap)
-  })
-}
-
 const rootMutations = {
   RootMutation: {
-    userAgreeTerms: async (_, { userId }, { user, loaders }) => {
+    userAgreeTerms: async (_, { userId }) => {
       const currentUser = await r.table('user')
         .get(userId)
         .update({
@@ -422,9 +420,9 @@ const rootMutations = {
         user_number: userNumber,
         is_from_contact: true,
         text: message,
-        service_response: JSON.stringify({ 'fakeMessage': true,
-                                          'userId': user.id,
-                                          'userFirstName': user.first_name }),
+        service_response: JSON.stringify({ fakeMessage: true,
+                                          userId: user.id,
+                                          userFirstName: user.first_name }),
         service_id: mockId,
         assignment_id: lastMessage.assignment_id,
         service: lastMessage.service,
@@ -484,9 +482,8 @@ const rootMutations = {
       }
       return loaders.organization.load(organizationId)
     },
-    joinOrganization: async (_, { organizationUuid }, { user, loaders }) => {
-      let organization
-      [organization] = await r.knex('organization')
+    joinOrganization: async (_, { organizationUuid }, { user }) => {
+      const [organization] = await r.knex('organization')
         .where('uuid', organizationUuid)
       if (organization) {
         const userOrg = await r.table('user_organization')
@@ -505,12 +502,14 @@ const rootMutations = {
       }
       return organization
     },
-    assignUserToCampaign: async (_, { organizationUuid, campaignId }, { user, loaders }) => {
+    assignUserToCampaign: async (_, { organizationUuid, campaignId }, { user }) => {
       const campaign = await r.knex('campaign')
         .leftJoin('organization', 'campaign.organization_id', 'organization.id')
         .where({ 'campaign.id': campaignId,
                 'campaign.use_dynamic_assignment': true,
-                'organization.uuid': organizationUuid }).select('campaign.*').first()
+                'organization.uuid': organizationUuid })
+        .select('campaign.*')
+        .first()
       if (!campaign) {
         throw new GraphQLError({
           status: 403,
@@ -611,17 +610,17 @@ const rootMutations = {
       }
       return editCampaign(id, campaign, loaders, user, origCampaign)
     },
-    createCannedResponse: async (_, { cannedResponse }, { user, loaders }) => {
+    createCannedResponse: async (_, { cannedResponse }, { user }) => {
       authRequired(user)
 
-      const cannedResponseInstance = new CannedResponse({
+      new CannedResponse({
         campaign_id: cannedResponse.campaignId,
         user_id: cannedResponse.userId,
         title: cannedResponse.title,
         text: cannedResponse.text
       }).save()
       // deletes duplicate created canned_responses
-      let query = r.knex('canned_response')
+      const query = r.knex('canned_response')
         .where('text', 'in',
           r.knex('canned_response')
             .where({
@@ -667,7 +666,7 @@ const rootMutations = {
       return await contact.save()
     },
 
-    findNewCampaignContact: async(_, { assignmentId, numberContacts }, { loaders, user }) => {
+    findNewCampaignContact: async(_, { assignmentId, numberContacts }, { user }) => {
       /* This attempts to find a new contact for the assignment, in the case that useDynamicAssigment == true */
       const assignment = await Assignment.get(assignmentId)
       if (assignment.user_id !== user.id) {
@@ -706,9 +705,8 @@ const rootMutations = {
 
       if (updatedCount > 0) {
         return { found: true }
-      } else {
-        return { found: false }
       }
+      return { found: false }
     },
 
     createOptOut: async(_, { optOut, campaignContactId }, { loaders, user }) => {
@@ -767,7 +765,7 @@ const rootMutations = {
       const texter = camelCaseKeys(await User.get(assignment.user_id))
       const customFields = Object.keys(JSON.parse(contacts[0].custom_fields))
 
-      await contacts.map(async (contact) => {
+      await contacts.forEach(async (contact) => {
         const script = await campaignContactResolvers.CampaignContact.currentInteractionStepScript(contact)
         contact.customFields = contact.custom_fields
         const text = applyScript({
@@ -946,19 +944,18 @@ const rootResolvers = {
         organization_id: campaign.organization_id
       }).select('role')
       userRoles.forEach(role => {
-        roles[role['role']] = 1
+        roles[role.role] = 1
       })
       if ('OWNER' in roles
         || 'ADMIN' in roles
         || user.is_superadmin
         || 'TEXTER' in roles && assignment.user_id === user.id) {
         return assignment
-      } else {
-        throw new GraphQLError({
-          status: 403,
-          message: 'You are not authorized to access that resource.'
-        })
       }
+      throw new GraphQLError({
+        status: 403,
+        message: 'You are not authorized to access that resource.'
+      })
     },
     organization: async(_, { id }, { loaders }) =>
       loaders.organization.load(id),
@@ -1000,20 +997,16 @@ const rootResolvers = {
         return []
       }
       const allHandlers = process.env.ACTION_HANDLERS.split(',')
-      const availableHandlers = allHandlers.map(handler => {
-        return { name: handler,
-                handler: require(`../action_handlers/${handler}.js`)
-               }
-      }).filter(async (h) => (h && (await h.handler.available(organizationId))))
+      const availableHandlers = allHandlers.map(handler => ({
+        name: handler,
+        handler: require(`../action_handlers/${handler}.js`)
+      })).filter(async (h) => (h && (await h.handler.available(organizationId))))
 
-      const availableHandlerObjects = availableHandlers.map(handler => {
-        return {
-          name: handler.name,
-          display_name: handler.handler.displayName(),
-          instructions: handler.handler.instructions()
-        }
-      })
-      return availableHandlerObjects
+      return availableHandlers.map((handler) => ({
+        name: handler.name,
+        display_name: handler.handler.displayName(),
+        instructions: handler.handler.instructions()
+      }))
     }
   }
 }

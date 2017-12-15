@@ -2,19 +2,20 @@ language: node_js
 node_js:
 - "6.10.3"
 services:
-  - postgresql
+- postgresql
 env:
   global:
   - secure: TODO
 before_script:
-  - psql -c 'CREATE DATABASE spoke_test;' -U postgres
-  - psql -c "CREATE USER spoke_test WITH PASSWORD 'spoke_test';" -U postgres
-  - psql -c 'GRANT ALL PRIVILEGES ON DATABASE spoke_test TO spoke_test;' -U postgres
+- psql -c 'CREATE DATABASE spoke_test;' -U postgres
+- psql -c "CREATE USER spoke_test WITH PASSWORD 'spoke_test';" -U postgres
+- psql -c 'GRANT ALL PRIVILEGES ON DATABASE spoke_test TO spoke_test;' -U postgres
 
-  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-  - chmod +x ./cc-test-reporter
-  - ./cc-test-reporter before-build
+- curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+- chmod +x ./cc-test-reporter
+- ./cc-test-reporter before-build
 script:
+- npm run lint
 - npm run test-coverage
 after_script:
 - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT

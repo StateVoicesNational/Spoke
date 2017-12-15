@@ -51,12 +51,12 @@ if (process.env.DB_JSON || global.DB_JSON) {
 
 const thinkyConn = dumbThinky(config)
 
-thinkyConn.r.getCount = async (query) => {
+thinkyConn.r.getCount = async (query) => (
   // helper method to get a count result
   // with fewer bugs.  Using knex's .count()
   // results in a 'count' key on postgres, but a 'count(*)' key
   // on sqlite -- ridiculous.  This smooths that out
-  return Number((await query.count('* as count').first()).count)
-}
+  Number((await query.count('* as count').first()).count)
+)
 
 export default thinkyConn

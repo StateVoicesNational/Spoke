@@ -148,10 +148,10 @@ export async function runMigrations(migrationIndex) {
     const migrationRecord = await Migrations.save({ completed: migrations.length })
     log.info('created Migration record for reference going forward', migrationRecord)
   } else {
-    migrationIndex = migrationIndex || exists.completed
-    if (migrationIndex < migrations.length) {
-      log.info('Migrating database from ', migrationIndex, 'to', migrations.length)
-      for (let i = migrationIndex, l = migrations.length; i <= l; i++) {
+    const index = migrationIndex || exists.completed
+    if (index < migrations.length) {
+      log.info('Migrating database from ', index, 'to', migrations.length)
+      for (let i = index, l = migrations.length; i <= l; i++) {
         const migration = migrations[i]
         if (!migration || !migration.auto) {
           break // stop all until the non-auto migration is run

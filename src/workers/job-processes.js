@@ -58,8 +58,8 @@ export async function checkMessageQueue() {
   }
 }
 
-const messageSenderCreator = (subQuery, defaultStatus) => {
-  return async () => {
+const messageSenderCreator = (subQuery, defaultStatus) => (
+  async () => {
     console.log('Running a message sender')
     setupUserNotificationObservers()
     // eslint-disable-next-line no-constant-condition
@@ -72,25 +72,25 @@ const messageSenderCreator = (subQuery, defaultStatus) => {
       }
     }
   }
-}
+)
 
-export const messageSender01 = messageSenderCreator(function (mQuery) {
-  return mQuery.where(r.knex.raw("(contact_number LIKE '%0' OR contact_number LIKE '%1')"))
-})
+export const messageSender01 = messageSenderCreator((mQuery) => (
+  mQuery.where(r.knex.raw("(contact_number LIKE '%0' OR contact_number LIKE '%1')"))
+))
 
-export const messageSender234 = messageSenderCreator(function (mQuery) {
-  return mQuery.where(r.knex.raw("(contact_number LIKE '%2' OR contact_number LIKE '%3' or contact_number LIKE '%4')"))
-})
+export const messageSender234 = messageSenderCreator((mQuery) => (
+  mQuery.where(r.knex.raw("(contact_number LIKE '%2' OR contact_number LIKE '%3' or contact_number LIKE '%4')"))
+))
 
-export const messageSender56 = messageSenderCreator(function (mQuery) {
-  return mQuery.where(r.knex.raw("(contact_number LIKE '%5' OR contact_number LIKE '%6')"))
-})
+export const messageSender56 = messageSenderCreator((mQuery) => (
+  mQuery.where(r.knex.raw("(contact_number LIKE '%5' OR contact_number LIKE '%6')"))
+))
 
-export const messageSender789 = messageSenderCreator(function (mQuery) {
-  return mQuery.where(r.knex.raw("(contact_number LIKE '%7' OR contact_number LIKE '%8' or contact_number LIKE '%9')"))
-})
+export const messageSender789 = messageSenderCreator((mQuery) => (
+  mQuery.where(r.knex.raw("(contact_number LIKE '%7' OR contact_number LIKE '%8' or contact_number LIKE '%9')"))
+))
 
-export const failedMessageSender = messageSenderCreator(function (mQuery) {
+export const failedMessageSender = messageSenderCreator((mQuery) => {
   // messages that were attempted to be sent five minutes ago in status=SENDING
   // when JOBS_SAME_PROCESS is enabled, the send attempt is done immediately.
   // However, if it's still marked SENDING, then it must have failed to go out.
@@ -161,7 +161,7 @@ const JOBS_SAME_PROCESS = !!process.env.JOBS_SAME_PROCESS
 
 export async function dispatchProcesses(event) {
   const toDispatch = event.processes || (JOBS_SAME_PROCESS ? syncProcessMap : processMap)
-  for (let p in toDispatch) {
+  Object.keys(toDispatch).forEach((p) => {
     if (p in processMap) {
       // / not using dispatcher, but another interesting model would be
       // / to dispatch processes to other lambda invocations
@@ -169,5 +169,5 @@ export async function dispatchProcesses(event) {
       console.log('process', p)
       toDispatch[p]().then()
     }
-  }
+  })
 }

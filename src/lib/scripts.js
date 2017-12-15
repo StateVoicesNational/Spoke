@@ -15,7 +15,7 @@ const TEXTER_SCRIPT_FIELDS = ['texterFirstName', 'texterLastName']
 // TODO: This will include zipCode even if you ddin't upload it
 export const allScriptFields = (customFields) => TOP_LEVEL_UPLOAD_FIELDS.concat(TEXTER_SCRIPT_FIELDS).concat(customFields)
 
-const capitalize = str => { return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() }
+const capitalize = str => (str.charAt(0).toUpperCase() + str.slice(1).toLowerCase())
 
 const getScriptFieldValue = (contact, texter, fieldName) => {
   let result

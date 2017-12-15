@@ -1,6 +1,5 @@
 import { getLastMessage } from './message-sending'
-import { Message, PendingMessagePart, r } from '../../models'
-import { log } from '../../../lib'
+import { Message, PendingMessagePart } from '../../models'
 
 // This 'fakeservice' allows for fake-sending messages
 // that end up just in the db appropriately and then using sendReply() graphql
@@ -28,7 +27,7 @@ async function convertMessagePartsToMessage(messageParts) {
     contactNumber
   })
 
-  const service_id = (firstPart.service_id
+  const serviceId = (firstPart.service_id
                       || `fakeservice_${Math.random().toString(36).replace(/[^a-zA-Z1-9]+/g, '')}`)
   return new Message({
     contact_number: contactNumber,
@@ -36,7 +35,7 @@ async function convertMessagePartsToMessage(messageParts) {
     is_from_contact: true,
     text,
     service_response: JSON.stringify(messageParts),
-    service_id,
+    serviceId,
     assignment_id: lastMessage.assignment_id,
     service: 'fakeservice',
     send_status: 'DELIVERED'
