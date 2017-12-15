@@ -110,6 +110,7 @@ async function sendMessage(message) {
       log.warn('Message not marked as a twilio message', message.id)
     }
 
+    /*
     // Image extraction
     const extractor = new RegExp(/\[\s*(http[^\]\s]*)\s*\]/)
     let mediaUrl
@@ -117,18 +118,19 @@ async function sendMessage(message) {
       const results = extractor.exec(message.text)
       mediaUrl = results[1]
     }
-
+    */
     const messageParams = Object.assign({
       to: message.contact_number,
       messagingServiceSid: process.env.TWILIO_MESSAGE_SERVICE_SID,
       body: message.text.replace(extractor, ''), // replace extractor so user doesn't get an img url
       statusCallback: process.env.TWILIO_STATUS_CALLBACK_URL
-    }, mediaUrl ? { mediaUrl } : {})
+    })//, mediaUrl ? { mediaUrl } : {})
 
     if (process.env.TWILIO_MESSAGE_VALIDITY_PERIOD) {
       messageParams.validityPeriod = process.env.TWILIO_MESSAGE_VALIDITY_PERIOD
     }
 
+    console.log('sending message', message.id)
     twilio.messages.create(messageParams, (err, response) => {
       const messageToSave = {
         ...message
