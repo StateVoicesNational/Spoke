@@ -11,7 +11,7 @@ const inlineStyles = {
   }
 }
 
-// removing pencil image for mobile widths smaller than 460px
+// removing pencil image for mobile widths smaller than 450px
 
 const styles = StyleSheet.create({
   container: {
@@ -19,7 +19,7 @@ const styles = StyleSheet.create({
     width: 200,
     marginLeft: 'auto',
     marginRight: 'auto',
-    '@media(max-width: 459px)': {
+    '@media(max-width: 450px)': {
       display: 'none'
     }
   },
