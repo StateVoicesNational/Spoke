@@ -18,7 +18,9 @@ const styles = StyleSheet.create({
     marginTop: '10px',
     width: 200,
     marginLeft: 'auto',
-    marginRight: 'auto',
+    marginRight: 'auto'
+  },
+  onlyDesktop: {
     '@media(max-width: 450px)': {
       display: 'none'
     }
@@ -34,8 +36,8 @@ const styles = StyleSheet.create({
   }
 })
 
-const Empty = ({ title, icon, content }) => (
-  <div className={css(styles.container)}>
+const Empty = ({ title, icon, content, displayAll }) => (
+  <div className={ displayAll ? css(styles.container) : css(styles.onlyDesktop) }>
     {React.cloneElement(icon, { style: inlineStyles.icon })}
     <div className={css(styles.title)}>
      {title}
@@ -49,7 +51,8 @@ const Empty = ({ title, icon, content }) => (
 Empty.propTypes = {
   title: PropTypes.string,
   icon: PropTypes.object,
-  content: PropTypes.object
+  content: PropTypes.object,
+  displayAll: PropTypes.string
 }
 
 export default Empty
