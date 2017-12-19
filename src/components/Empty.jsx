@@ -21,6 +21,10 @@ const styles = StyleSheet.create({
     marginRight: 'auto'
   },
   onlyDesktop: {
+    marginTop: '10px',
+    width: 200,
+    marginLeft: 'auto',
+    marginRight: 'auto',
     '@media(max-width: 450px)': {
       display: 'none'
     }
