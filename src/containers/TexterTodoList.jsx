@@ -48,6 +48,7 @@ class TexterTodoList extends React.Component {
 
     const empty = (
       <Empty
+        displayAll='displayAll'
         title='You have nothing to do!'
         icon={<Check />}
       />
