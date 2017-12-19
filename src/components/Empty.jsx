@@ -20,7 +20,7 @@ const styles = StyleSheet.create({
     marginLeft: 'auto',
     marginRight: 'auto'
   },
-  onlyDesktop: {
+  hideMobile: {
     marginTop: '10px',
     width: 200,
     marginLeft: 'auto',
@@ -40,8 +40,8 @@ const styles = StyleSheet.create({
   }
 })
 
-const Empty = ({ title, icon, content, displayAll }) => (
-  <div className={ displayAll ? css(styles.container) : css(styles.onlyDesktop) }>
+const Empty = ({ title, icon, content, hideMobile }) => (
+  <div className={ hideMobile ? css(styles.hideMobile) : css(styles.container) }>
     {React.cloneElement(icon, { style: inlineStyles.icon })}
     <div className={css(styles.title)}>
      {title}
@@ -56,7 +56,7 @@ Empty.propTypes = {
   title: PropTypes.string,
   icon: PropTypes.object,
   content: PropTypes.object,
-  displayAll: PropTypes.string
+  hideMobile: PropTypes.bool
 }
 
 export default Empty
