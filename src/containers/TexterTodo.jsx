@@ -39,14 +39,19 @@ class TexterTodo extends React.Component {
   render() {
     const { assignment } = this.props.data
     const contacts = assignment.contacts
-    return (<AssignmentTexter
-      assignment={assignment}
-      contacts={contacts}
-      assignContactsIfNeeded={this.assignContactsIfNeeded.bind(this)}
-      refreshData={this.refreshData.bind(this)}
-      onRefreshAssignmentContacts={this.refreshAssignmentContacts}
-      organizationId={this.props.params.organizationId}
-    />)
+    const allContacts = assignment.allContacts
+    console.log(contacts)
+    return (
+      <AssignmentTexter
+        assignment={assignment}
+        contacts={contacts}
+        allContacts={allContacts}
+        assignContactsIfNeeded={this.assignContactsIfNeeded.bind(this)}
+        refreshData={this.refreshData.bind(this)}
+        onRefreshAssignmentContacts={this.refreshAssignmentContacts}
+        organizationId={this.props.params.organizationId}
+      />
+    )
   }
 }
 
@@ -96,6 +101,9 @@ const mapQueriesToProps = ({ ownProps }) => ({
         contacts(contactsFilter: $contactsFilter) {
           id
           customFields
+        }
+        allContacts: contacts {
+          id
         }
       }
     }`,
