@@ -18,6 +18,12 @@ const styles = StyleSheet.create({
     marginTop: '10px',
     width: 200,
     marginLeft: 'auto',
+    marginRight: 'auto'
+  },
+  hideMobile: {
+    marginTop: '10px',
+    width: 200,
+    marginLeft: 'auto',
     marginRight: 'auto',
     '@media(max-width: 450px)': {
       display: 'none'
@@ -34,8 +40,8 @@ const styles = StyleSheet.create({
   }
 })
 
-const Empty = ({ title, icon, content }) => (
-  <div className={css(styles.container)}>
+const Empty = ({ title, icon, content, hideMobile }) => (
+  <div className={ hideMobile ? css(styles.hideMobile) : css(styles.container) }>
     {React.cloneElement(icon, { style: inlineStyles.icon })}
     <div className={css(styles.title)}>
      {title}
@@ -49,7 +55,8 @@ const Empty = ({ title, icon, content }) => (
 Empty.propTypes = {
   title: PropTypes.string,
   icon: PropTypes.object,
-  content: PropTypes.object
+  content: PropTypes.object,
+  hideMobile: PropTypes.bool
 }
 
 export default Empty
