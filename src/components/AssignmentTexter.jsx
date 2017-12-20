@@ -132,7 +132,6 @@ class AssignmentTexter extends React.Component {
 
     const currentIndex = this.state.currentContactIndex + 1 + messagedContacts
     let ofHowMany = allContactsCount
-    console.log(this.props)
     if (ofHowMany === currentIndex
         && this.props.assignment.campaign.useDynamicAssignment) {
       ofHowMany = '?'

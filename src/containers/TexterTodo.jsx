@@ -40,7 +40,6 @@ class TexterTodo extends React.Component {
     const { assignment } = this.props.data
     const contacts = assignment.contacts
     const allContacts = assignment.allContacts
-    console.log(contacts)
     return (
       <AssignmentTexter
         assignment={assignment}
