@@ -125,8 +125,13 @@ class AssignmentTexter extends React.Component {
   }
 
   renderNavigationToolbarChildren() {
-    const currentIndex = this.state.currentContactIndex + 1
-    let ofHowMany = this.contactCount()
+    const { allContacts } = this.props
+    const allContactsCount = allContacts.length
+    const remainingContacts = this.contactCount()
+    const messagedContacts = allContactsCount - remainingContacts
+
+    const currentIndex = this.state.currentContactIndex + 1 + messagedContacts
+    let ofHowMany = allContactsCount
     if (ofHowMany === currentIndex
         && this.props.assignment.campaign.useDynamicAssignment) {
       ofHowMany = '?'
@@ -202,6 +207,7 @@ AssignmentTexter.propTypes = {
   currentUser: PropTypes.object,
   assignment: PropTypes.object,      // current assignment
   contacts: PropTypes.array,   // contacts for current assignment
+  allContacts: PropTypes.array,
   router: PropTypes.object,
   refreshData: PropTypes.func,
   organizationId: PropTypes.string
