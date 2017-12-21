@@ -51,7 +51,7 @@ class AssignmentTexter extends React.Component {
 
   updateCurrentContactIndex(newIndex) {
     this.setState({
-      currentContactIndex: 0
+      currentContactIndex: newIndex
     })
   }
 
