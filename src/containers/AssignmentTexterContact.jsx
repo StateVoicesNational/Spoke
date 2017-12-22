@@ -555,6 +555,7 @@ class AssignmentTexterContact extends React.Component {
     return messages.length === 0 ? (<Empty
       title={'This is your first message to ' + contact.firstName}
       icon={<CreateIcon color='rgb(83, 180, 119)' />}
+      hideMobile={true}
     > </Empty>) : (
       <div>
         <AssignmentTexterSurveys
@@ -783,7 +784,7 @@ class AssignmentTexterContact extends React.Component {
             label='Your message'
             multiLine
             fullWidth
-            rowsMax={3}
+            rowsMax={6}
           />
           {this.renderCorrectSendButton()}
         </GSForm>
