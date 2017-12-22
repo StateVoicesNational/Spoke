@@ -62,7 +62,10 @@ const messageSenderCreator = (subQuery, defaultStatus) => {
   return async (event) => {
     console.log('Running a message sender')
     setupUserNotificationObservers()
-    const delay = ((event && event.delay) ? parseInt(event.delay, 10) : 1100)
+    let delay = 1100
+    if (event && event.delay) {
+      delay = parseInt(event.delay, 10)
+    }
     // eslint-disable-next-line no-constant-condition
     while (true) {
       try {
