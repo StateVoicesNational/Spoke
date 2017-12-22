@@ -19,22 +19,21 @@ class JoinTeam extends React.Component {
   }
   async componentWillMount() {
     let organization = null
-    let campaign = null
     try {
       organization = await this.props.mutations.joinOrganization()
     } catch (ex) {
       this.setState({ errors: 'Something went wrong trying to join this organization. Please contact your administrator.' })
     }
 
-    try {
-      campaign = await this.props.mutations.assignUserToCampaign()
-    } catch (ex) {
-      this.setState({ errors: 'Something went wrong trying to join this campaign. Please contact your administrator.' })
+    if (this.props.campaignId) {
+      try {
+        await this.props.mutations.assignUserToCampaign()
+      } catch (ex) {
+        this.setState({ errors: 'Something went wrong trying to join this campaign. Please contact your administrator.' })
+      }
     }
 
-    if (organization && campaign) {
-      this.props.router.push(`/app/${organization.data.joinOrganization.id}`)
-    } else if (organization) {
+    if (organization) {
       this.props.router.push(`/app/${organization.data.joinOrganization.id}`)
     }
   }
