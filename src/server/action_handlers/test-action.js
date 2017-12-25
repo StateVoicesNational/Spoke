@@ -15,7 +15,7 @@ export const instructions = () => (
 // either in environment variables or organization.features json data
 // Besides this returning true, "test-action" will also need to be added to
 // process.env.ACTION_HANDLERS
-export async function available() {
+export async function available(organizationId) { // eslint-disable-line no-unused-vars
   return true
 }
 

@@ -65,3 +65,24 @@ export const zipToTimeZone = (zip) => {
   }
   return null
 }
+
+// export const findZipRanges = function (r) {
+//   var zipchanges = []
+//   return r.knex('zip_code').select('zip', 'timezone_offset', 'has_dst')
+//     .orderBy('zip').then(function (zips) {
+//       var front = -1
+//       var curTz = -4
+//       var curHasDst = -1
+//       zips.forEach((zipRec) => {
+//         if (zipRec.timezone_offset != curTz || zipRec.has_dst != curHasDst) {
+//           zipchanges.push([front, parseInt(zipRec.zip), curTz, curHasDst, parseInt(zipRec.zip) - front])
+//           curTz = zipRec.timezone_offset
+//           curHasDst = zipRec.has_dst
+//           front = parseInt(zipRec.zip)
+//         }
+//       })
+//       zipchanges.sort(function (a, b) { return b[4] - a[4] })
+//       console.log(zipchanges)
+//     })
+//   return zipchanges
+// }

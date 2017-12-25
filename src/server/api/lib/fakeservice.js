@@ -35,7 +35,7 @@ async function convertMessagePartsToMessage(messageParts) {
     is_from_contact: true,
     text,
     service_response: JSON.stringify(messageParts),
-    serviceId,
+    service_id: serviceId,
     assignment_id: lastMessage.assignment_id,
     service: 'fakeservice',
     send_status: 'DELIVERED'
