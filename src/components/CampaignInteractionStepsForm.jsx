@@ -48,7 +48,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
   }
 
   makeTree(interactionSteps, id = null) {
-    const root = interactionSteps.filter((is) => (id ? is.id === id : is.parentInteractionId === null))[0]
+    const root = interactionSteps.filter((is) => (id ? is.id == id : is.parentInteractionId === null))[0] // eslint-disable-line eqeqeq
     const children = interactionSteps.filter((is) => is.parentInteractionId === root.id)
     return {
       ...root,
@@ -87,7 +87,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
   handleFormChange(event) {
     this.setState({
       interactionSteps: this.state.interactionSteps.map((is) => {
-        if (is.id === event.id) {
+        if (is.id == event.id) { // eslint-disable-line eqeqeq
           const newEvent = Object.assign({}, event)
           delete newEvent.interactionSteps
           return newEvent
