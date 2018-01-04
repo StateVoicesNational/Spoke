@@ -71,14 +71,23 @@ class AssignmentTexter extends React.Component {
 
   handleFinishContact = () => {
     if (this.hasNext()) {
-      this.handleNavigateNext()
+      this.handleNavigateNextforSend()
     } else {
       // Will look async and then redirect to todo page if not
       this.props.assignContactsIfNeeded(/* checkServer*/true)
     }
   }
 
-  handleNavigateNext = () => {
+  handleNavigateNextforSend = () => {
+    if (!this.hasNext()) {
+      return
+    }
+
+    this.props.refreshData()
+    this.setState({ direction: 'right' }, () => this.incrementCurrentContactIndex(0))
+  }
+
+  handleNavigateNextforSkip = () => {
     if (!this.hasNext()) {
       return
     }
@@ -149,7 +158,7 @@ class AssignmentTexter extends React.Component {
         <NavigateBeforeIcon />
         </IconButton>,
       <IconButton
-        onTouchTap={this.handleNavigateNext}
+        onTouchTap={this.handleNavigateNextforSkip}
         disabled={!this.hasNext()}
       >
         <NavigateNextIcon />
