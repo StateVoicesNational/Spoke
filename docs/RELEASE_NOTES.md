@@ -20,15 +20,17 @@ highlights for this release:
 
 ## v1.2
 
-Version 1.2 is our second release since MoveOn has been using Spoke in production. We are committed to fixing bugs, adding new features and making this project as nimble as possible. For this release, we've included changes from GetUp[], updated certain dependencies, and continued to add outside integration points with outside CRMs. Please continue to add and work on our growing [issues list](https://github.com/MoveOnOrg/Spoke/issues).
+Version 1.2 is our second release since MoveOn has been using Spoke in production. We are committed to fixing bugs, adding new features and making this project as nimble as possible. For this release, we've included changes from GetUp[https://www.getup.org.au/], updated certain dependencies, and continued to add outside integration points with outside CRMs. Please continue to add and work on our growing [issues list](https://github.com/MoveOnOrg/Spoke/issues).
 
 We've worked on a lot, but some critical developments to highlight include:
-* Dynamic Assignment for texters
-* Customized styling for campaigns
-* ActionKit integration for event sign up
-* Support for multi media images in outgoing texts
-* Campaign script editing on live campaigns
-* Moving to prop-types library, upgrading Webpack and other development dependencies
-* Adding Code Climate test integration to monitor test coverage
+* Adds Dynamic Assignment for texters
+* Adds support for customized styling for campaigns
+* Adds actionKit integration for event sign up and documentation
+* Adds support for multi media images in outgoing texts
+* Adds support for campaign script editing on live campaigns
+* Moved to prop-types library, upgraded Webpack and other development dependencies
+* Adds Code Climate test integration to monitor test coverage
+* Adds opt out count for a campaign to admin dashboard stats
+* Adds free Heroku deployment setup
 
-Thanks go to to all our contributors including: [anasauce](https://github.com/anasauce), [hiemanshu](https://github.com/hiemanshu), [mathemagica](https://github.com/mathemagica), [sandramchung](https://github.com/sandramchung), [schuyler1d](https://github.com/schuyler1d), [shakalee14](https://github.com/shakalee14), [sreynen](https://github.com/sreynen)!
+Thanks go to to all our contributors including: [anasauce](https://github.com/anasauce), [hiemanshu](https://github.com/hiemanshu), [mathemagica](https://github.com/mathemagica), [sandramchung](https://github.com/sandramchung), [schuyler1d](https://github.com/schuyler1d), [shakalee14](https://github.com/shakalee14), [sreynen](https://github.com/sreynen), [jamesr2323](https://github.com/jamesr2323), [benmort](https://github.com/benmort) [jmcarp](https://github.com/jmcarp), [ben-pr-p](https://github.com/ben-pr-p), [lady3bean](https://github.com/lady3bean), [laveshaparker](https://github.com/laveshaparker)!
