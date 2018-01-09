@@ -2,15 +2,15 @@
 
 ## v1.2
 
-Version 1.2 is our second release since MoveOn has been using Spoke in production. We are committed to fixing bugs, adding new features and making this project as nimble as possible. For this release, we've included changes from GetUp[https://www.getup.org.au/], updated certain dependencies, and continued to add outside integration points with outside CRMs. Please continue to add and work on our growing [issues list](https://github.com/MoveOnOrg/Spoke/issues).
+Version 1.2 is our second release since MoveOn has adopted Spoke. We are committed to fixing bugs, adding new features and making this project as nimble as possible. For this release, we've included changes from [GetUp](https://www.getup.org.au/), updated certain dependencies, and continued to add outside integration points with outside CRMs. Please continue to add and work on our growing [issues list](https://github.com/MoveOnOrg/Spoke/issues).
 
 We've worked on a lot, but some critical developments to highlight include:
-* Adds Dynamic Assignment for texters
+* Adds dynamic assignment functionality for texters
 * Adds support for customized styling for campaigns
-* Adds actionKit integration for event sign up and documentation
-* Adds support for multi media images in outgoing texts
+* Adds ActionKit integration for event sign up and documentation
+* Adds support for multi-media images in outgoing texts (mms)
 * Adds support for campaign script editing on live campaigns
-* Moved to prop-types library, upgraded Webpack and other development dependencies
+* Moved to Prop-Types library, upgraded Webpack and other development dependencies
 * Adds Code Climate test integration to monitor test coverage
 * Adds opt out count for a campaign to admin dashboard stats
 * Adds free Heroku deployment setup
