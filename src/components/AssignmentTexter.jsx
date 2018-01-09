@@ -78,6 +78,8 @@ class AssignmentTexter extends React.Component {
     }
   }
 
+  // handleNavigateNext was previously handled in one function but is separated to protect against behavior found in issue:
+  // https://github.com/MoveOnOrg/Spoke/issues/452
   handleNavigateNextforSend = () => {
     if (!this.hasNext()) {
       return
