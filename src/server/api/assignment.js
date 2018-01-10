@@ -1,7 +1,6 @@
 import { mapFieldsToModel } from './lib/utils'
 import { Assignment, r } from '../models'
 import { getOffsets, defaultTimezoneIsBetweenTextingHours } from '../../lib'
-import moment from 'moment'
 
 export const schema = `
   type Assignment {

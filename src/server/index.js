@@ -6,7 +6,7 @@ import { graphqlExpress, graphiqlExpress } from 'apollo-server-express'
 import { makeExecutableSchema, addMockFunctionsToSchema } from 'graphql-tools'
 import { schema, resolvers } from './api/schema'
 import mocks from './api/mocks'
-import { createLoaders, User } from './models'
+import { createLoaders, User, r } from './models'
 import passport from 'passport'
 import cookieSession from 'cookie-session'
 import setupAuth0Passport from './setup-auth0-passport'
@@ -18,7 +18,6 @@ import { seedZipCodes } from './seeds/seed-zip-codes'
 import { runMigrations } from '../migrations'
 import { setupUserNotificationObservers } from './notifications'
 import { TwimlResponse } from 'twilio'
-import { r } from './models'
 
 process.on('uncaughtException', (ex) => {
   log.error(ex)
@@ -131,8 +130,7 @@ app.get('/allmessages/:organizationId', wrap(async (req, res) => {
   if (typeof membership === 'undefined') {
     // Current user is not admin of the requested org, can't access messages.
     res.json([])
-  }
-  else {
+  } else {
     const messages = await r.knex('message')
       .select(
           'message.id',
@@ -146,7 +144,7 @@ app.get('/allmessages/:organizationId', wrap(async (req, res) => {
       .where('campaign.organization_id', orgId)
       .where('message.is_from_contact', true)
       .orderBy('message.created_at', 'desc')
-    return res.json(messages)
+    res.json(messages)
   }
 }))
 

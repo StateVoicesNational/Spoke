@@ -97,7 +97,7 @@ class AdminCampaignEdit extends React.Component {
     // NOTE: Since this does not _deep_ copy the values the
     // expandedKey pointers will remain the same object as before
     // so setState passes on those subsections should1 not refresh
-    let pushToFormValues = {
+    const pushToFormValues = {
       ...this.state.campaignFormValues,
       ...campaignDataCopy
     }
@@ -170,11 +170,8 @@ class AdminCampaignEdit extends React.Component {
     let newCampaign = {}
     if (this.checkSectionSaved(section)) {
       return // already saved and no data changes
-    } else {
-      newCampaign = {
-        ...this.getSectionState(section)
-      }
     }
+    newCampaign = { ...this.getSectionState(section) }
 
     if (Object.keys(newCampaign).length > 0) {
       // Transform the campaign into an input understood by the server
@@ -226,10 +223,9 @@ class AdminCampaignEdit extends React.Component {
   async pollDuringActiveJobs(noMore) {
     const pendingJobs = await this.props.pendingJobsData.refetch()
     if (pendingJobs.length && !noMore) {
-      const self = this
-      setTimeout(function () {
+      setTimeout(() => {
         // run it once more after there are no more jobs
-        self.pollDuringActiveJobs(true)
+        this.pollDuringActiveJobs(true)
       }, 1000)
     }
     this.props.campaignData.refetch()

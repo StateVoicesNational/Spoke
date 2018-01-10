@@ -107,13 +107,6 @@ export default class CampaignTextersForm extends React.Component {
     useDynamicAssignment: this.formValues().useDynamicAssignment
   }
 
-  handleToggleChange() {
-    this.setState({
-      useDynamicAssignment: !this.state.useDynamicAssignment
-    })
-    this.props.onChange({ useDynamicAssignment: !this.state.useDynamicAssignment })
-  }
-
   onChange = (formValues) => {
     const existingFormValues = this.formValues()
     const changedTexter = this.state.focusedTexter
@@ -134,7 +127,7 @@ export default class CampaignTextersForm extends React.Component {
       }
 
       let convertedNeedsMessageCount = parseInt(newTexter.assignment.needsMessageCount, 10)
-      let convertedMaxContacts = (!!newTexter.assignment.maxContacts ? parseInt(newTexter.assignment.maxContacts) : null)
+      const convertedMaxContacts = (!!newTexter.assignment.maxContacts ? parseInt(newTexter.assignment.maxContacts, 10) : null)
 
       if (isNaN(convertedNeedsMessageCount)) {
         convertedNeedsMessageCount = 0
@@ -187,7 +180,7 @@ export default class CampaignTextersForm extends React.Component {
       // 3. if we don't have extraTexterCapacity and auto-split is on, then fill the texters with assignments
       const factor = 1
       let index = 0
-      let skipsByIndex = new Array(newFormValues.texters.length).fill(0)
+      const skipsByIndex = new Array(newFormValues.texters.length).fill(0)
       if (newFormValues.texters.length === 1) {
         const messagedCount = newFormValues.texters[0].assignment.contactsCount - newFormValues.texters[0].assignment.needsMessageCount
         newFormValues.texters[0].assignment.contactsCount = this.formValues().contactsCount
@@ -215,6 +208,13 @@ export default class CampaignTextersForm extends React.Component {
     }
 
     this.props.onChange(newFormValues)
+  }
+
+  handleToggleChange() {
+    this.setState({
+      useDynamicAssignment: !this.state.useDynamicAssignment
+    })
+    this.props.onChange({ useDynamicAssignment: !this.state.useDynamicAssignment })
   }
 
   dataSourceItem(name, key) {
@@ -369,17 +369,17 @@ export default class CampaignTextersForm extends React.Component {
             />
           </div>
           {this.state.useDynamicAssignment ?
-           <div className={css(styles.input)}>
-            <Form.Field
-              name={`texters[${index}].assignment.maxContacts`}
-              hintText='Max'
-              fullWidth
-              onFocus={() => this.setState({ focusedTexter: texter.id })}
-              onBlur={() => this.setState({
-                focusedTexter: null
-              })}
-            />
-           </div>
+            <div className={css(styles.input)}>
+              <Form.Field
+                name={`texters[${index}].assignment.maxContacts`}
+                hintText='Max'
+                fullWidth
+                onFocus={() => this.setState({ focusedTexter: texter.id })}
+                onBlur={() => this.setState({
+                  focusedTexter: null
+                })}
+              />
+            </div>
            : ''}
           <div className={css(styles.removeButton)}>
             <IconButton

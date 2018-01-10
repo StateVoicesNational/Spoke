@@ -1,7 +1,7 @@
 import { log } from '../lib'
 import nodemailer from 'nodemailer'
 
-let transporter = nodemailer.createTransport({
+const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
   port: process.env.EMAIL_HOST_PORT,
   secure: typeof process.env.EMAIL_HOST_SECURE !== 'undefined' ? process.env.EMAIL_HOST_SECURE : true,
@@ -25,7 +25,7 @@ export const sendEmail = async ({ to, subject, text, replyTo }) => {
   }
 
   if (replyTo) {
-    params['replyTo'] = replyTo
+    params.replyTo = replyTo
   }
   return transporter.sendMail(params)
 }

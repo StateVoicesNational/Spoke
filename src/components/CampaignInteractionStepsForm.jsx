@@ -1,28 +1,15 @@
 import type from 'prop-types'
 import React from 'react'
-import ReactDOM from 'react-dom'
-import Divider from 'material-ui/Divider'
-import ContentClear from 'material-ui/svg-icons/content/clear'
-import FlatButton from 'material-ui/FlatButton'
 import RaisedButton from 'material-ui/RaisedButton'
-import RadioButtonUnchecked from 'material-ui/svg-icons/toggle/radio-button-unchecked'
 import IconButton from 'material-ui/IconButton'
 import DeleteIcon from 'material-ui/svg-icons/action/delete'
-import { Card, CardActions, CardHeader, CardText } from 'material-ui/Card'
+import { Card, CardHeader, CardText } from 'material-ui/Card'
 import theme from '../styles/theme'
 import CampaignFormSectionHeading from './CampaignFormSectionHeading'
-import ForwardIcon from 'material-ui/svg-icons/navigation/arrow-forward'
-import HelpIcon from 'material-ui/svg-icons/action/help'
 import HelpIconOutline from 'material-ui/svg-icons/action/help-outline'
 import Form from 'react-formal'
 import GSForm from './forms/GSForm'
 import yup from 'yup'
-import {
-  sortInteractionSteps,
-  getInteractionPath,
-  getChildren,
-  findParent
-} from '../lib'
 
 const styles = {
   pullRight: {
@@ -61,13 +48,13 @@ export default class CampaignInteractionStepsForm extends React.Component {
   }
 
   makeTree(interactionSteps, id = null) {
-    const root = interactionSteps.filter((is) => id ? is.id === id : is.parentInteractionId === null)[0]
+    const root = interactionSteps.filter((is) => (id ? is.id == id : is.parentInteractionId === null))[0] // eslint-disable-line eqeqeq
     const children = interactionSteps.filter((is) => is.parentInteractionId === root.id)
     return {
       ...root,
-      interactionSteps: children.map((c) => {
-        return this.makeTree(interactionSteps, c.id)
-      })
+      interactionSteps: children.map((c) => (
+        this.makeTree(interactionSteps, c.id)
+      ))
     }
   }
 
@@ -84,11 +71,13 @@ export default class CampaignInteractionStepsForm extends React.Component {
   deleteStep(id) {
     this.setState({
       interactionSteps: this.state.interactionSteps.map((is) => {
-        if (is.id == id) {
+        if (is.id === id) {
           is.isDeleted = true
-          this.state.interactionSteps.filter((isp) => isp.parentInteractionId === is.id).map((isp) => {
-            this.deleteStep(isp.id)
-          })
+          this.state.interactionSteps
+            .filter((isp) => isp.parentInteractionId === is.id)
+            .forEach((isp) => {
+              this.deleteStep(isp.id)
+            })
         }
         return is
       })
@@ -98,13 +87,12 @@ export default class CampaignInteractionStepsForm extends React.Component {
   handleFormChange(event) {
     this.setState({
       interactionSteps: this.state.interactionSteps.map((is) => {
-        if (is.id == event.id) {
-          delete event.interactionSteps
-          return event
-        } else {
-          delete event.interactionSteps
-          return is
+        if (is.id == event.id) { // eslint-disable-line eqeqeq
+          const newEvent = Object.assign({}, event)
+          delete newEvent.interactionSteps
+          return newEvent
         }
+        return is
       })
     })
   }
@@ -143,29 +131,29 @@ export default class CampaignInteractionStepsForm extends React.Component {
             {interactionStep.parentInteractionId ? <DeleteIcon style={styles.pullRight} onTouchTap={() => this.deleteStep(interactionStep.id).bind(this)} /> : ''}
             {interactionStep.parentInteractionId && this.props.availableActions && this.props.availableActions.length ?
               (<div key={`answeractions-${interactionStep.id}`}>
-                 <Form.Field
-                   name='answerActions'
-                   type='select'
-                   default=''
-                   choices={[
-                    { 'value': '', 'label': 'Action...' },
-                     ...this.props.availableActions.map(
-                      action => ({ 'value': action.name, 'label': action.display_name })
-                    )
-                   ]}
-                 />
-                 <IconButton
-                   tooltip='An action is something that is triggered by this answer being chosen, often in an outside system'
-                 >
-                    <HelpIconOutline />
-                 </IconButton>
-                 <div>
-                 {
-                   interactionStep.answerActions
-                     ? this.props.availableActions.filter((a) => a.name === interactionStep.answerActions)[0].instructions
-                     : ''}
-                 </div>
-               </div>)
+                <Form.Field
+                  name='answerActions'
+                  type='select'
+                  default=''
+                  choices={[
+                   { value: '', label: 'Action...' },
+                    ...this.props.availableActions.map(
+                     action => ({ value: action.name, label: action.display_name })
+                   )
+                  ]}
+                />
+                <IconButton
+                  tooltip='An action is something that is triggered by this answer being chosen, often in an outside system'
+                >
+                  <HelpIconOutline />
+                </IconButton>
+                <div>
+                {
+                  interactionStep.answerActions
+                    ? this.props.availableActions.filter((a) => a.name === interactionStep.answerActions)[0].instructions
+                    : ''}
+                </div>
+              </div>)
             : ''}
             <Form.Field
               name='script'
@@ -194,13 +182,13 @@ export default class CampaignInteractionStepsForm extends React.Component {
             style={{ marginBottom: '10px' }}
           />
         </div> : ''}
-        {interactionStep.interactionSteps.filter((is) => !is.isDeleted).map((is) => {
-          return (
+        {interactionStep.interactionSteps
+          .filter((is) => (!is.isDeleted))
+          .map((is) => (
             <div>
               {this.renderInteractionStep(is, `Question: ${interactionStep.questionText}`)}
             </div>
-          )
-        })}
+          ))}
       </div>
 
     </div>)

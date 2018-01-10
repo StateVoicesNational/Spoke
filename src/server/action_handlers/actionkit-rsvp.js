@@ -18,7 +18,7 @@ export async function available(organizationId) {
   }
   const org = await r.knex('organization').where('id', organizationId).select('features')
   const features = JSON.parse(org.features || '{}')
-  let needed = []
+  const needed = []
   if (!process.env.AK_BASEURL && !features.AK_BASEURL) {
     needed.push('AK_BASEURL')
   }
@@ -33,9 +33,9 @@ export async function available(organizationId) {
   return !!(needed.length)
 }
 
-export const akidGenerate = function (ak_secret, cleartext) {
+export const akidGenerate = (akSecret, cleartext) => {
   const shaHash = crypto.createHash('sha256')
-  shaHash.write(`${ak_secret}.${cleartext}`)
+  shaHash.write(`${akSecret}.${cleartext}`)
   const shortHash = shaHash.digest('base64').slice(0, 6)
   return `${cleartext}.${shortHash}`
 }
@@ -51,7 +51,7 @@ export async function processAction(questionResponse, interactionStep, campaignC
             'organization.id as organization_id')
   const contact = (contactRes.length ? contactRes[0] : {})
 
-  if (contact.external_id && contact.custom_fields != '{}') {
+  if (contact.external_id && contact.custom_fields !== '{}') {
     try {
       const customFields = JSON.parse(contact.custom_fields || '{}')
       const features = JSON.parse(contact.features || '{}')
@@ -68,17 +68,17 @@ export async function processAction(questionResponse, interactionStep, campaignC
           event_signup_ground_rules: '1',
           source: customFields.event_source || 'spoke'
         }
-        for (let field in customFields) {
+        Object.keys(customFields).forEach((field) => {
           if (field.startsWith('event_field_')) {
             userData['event_' + field.slice('event_field_'.length)] = customFields[field]
           } else if (field.startsWith('event_action_')) {
             userData[field.slice('event_'.length)] = customFields[field]
           }
-        }
+        })
         request.post({
-          'url': `${actionkitBaseUrl}/act/`,
-          'form': userData
-        }, async function (err, httpResponse, body) {
+          url: `${actionkitBaseUrl}/act/`,
+          form: userData
+        }, async (err, httpResponse, body) => {
           // TODO: should we save the action id somewhere?
           if (err || (body && body.error)) {
             console.error('error: actionkit event sign up failed', err, userData, body)
@@ -87,7 +87,7 @@ export async function processAction(questionResponse, interactionStep, campaignC
               const actionId = httpResponse.headers.location.match(/action_id=([^&]+)/)
               if (actionId) {
                 // save the action id of the rsvp back to the contact record
-                customFields['processed_event_action'] = actionId[1]
+                customFields.processed_event_action = actionId[1]
                 await r.knex('campaign_contact')
                   .where('campaign_contact.id', campaignContactId)
                   .update('custom_fields', JSON.stringify(customFields))

@@ -1,7 +1,6 @@
 import knex from 'knex'
 
 let config
-let warehouseConn
 
 if (process.env.WAREHOUSE_DB_TYPE) {
   config = {

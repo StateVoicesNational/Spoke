@@ -19,7 +19,6 @@ class JoinTeam extends React.Component {
   }
   async componentWillMount() {
     let organization = null
-    let campaign = null
     try {
       organization = await this.props.mutations.joinOrganization()
     } catch (ex) {
@@ -28,7 +27,7 @@ class JoinTeam extends React.Component {
 
     if (this.props.campaignId) {
       try {
-        campaign = await this.props.mutations.assignUserToCampaign()
+        await this.props.mutations.assignUserToCampaign()
       } catch (ex) {
         this.setState({ errors: 'Something went wrong trying to join this campaign. Please contact your administrator.' })
       }

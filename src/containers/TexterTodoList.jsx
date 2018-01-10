@@ -8,6 +8,19 @@ import gql from 'graphql-tag'
 import { withRouter } from 'react-router'
 
 class TexterTodoList extends React.Component {
+  componentDidMount() {
+    this.props.data.refetch()
+    // re-asserts polling after manual refresh
+    // this.props.data.startPolling(5000)
+  }
+
+  termsAgreed() {
+    const { data, router } = this.props
+    if (window.TERMS_REQUIRE && !data.currentUser.terms) {
+      router.push(`/terms?next=${this.props.location.pathname}`)
+    }
+  }
+
   renderTodoList(assignments) {
     const organizationId = this.props.params.organizationId
     return assignments
@@ -27,18 +40,6 @@ class TexterTodoList extends React.Component {
         }
         return null
       }).filter((ele) => ele !== null)
-  }
-  componentDidMount() {
-    this.props.data.refetch()
-    // re-asserts polling after manual refresh
-    // this.props.data.startPolling(5000)
-  }
-
-  termsAgreed() {
-    const { data, router } = this.props
-    if (window.TERMS_REQUIRE && !data.currentUser.terms) {
-      router.push(`/terms?next=${this.props.location.pathname}`)
-    }
   }
 
   render() {

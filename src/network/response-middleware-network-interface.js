@@ -1,5 +1,5 @@
 import { createNetworkInterface } from 'apollo-client'
-import fetch from 'isomorphic-fetch'
+import fetch from 'isomorphic-fetch' // eslint-disable-line no-unused-vars
 
 class ResponseMiddlewareNetworkInterface {
   constructor(endpoint = '/graphql', options = {}) {

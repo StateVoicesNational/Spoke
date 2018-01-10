@@ -95,7 +95,7 @@ export const sendUserNotification = async (notification) => {
 const setupIncomingReplyNotification = () => (
   r.table('message')
     .changes()
-    .then(function (message) {
+    .then((message) => {
       if (!message.old_val && message.new_val.is_from_contact) {
         sendUserNotification({
           type: Notifications.ASSIGNMENT_MESSAGE_RECEIVED,
@@ -109,7 +109,7 @@ const setupIncomingReplyNotification = () => (
 const setupNewAssignmentNotification = () => (
   r.table('assignment')
     .changes()
-    .then(function (assignment) {
+    .then((assignment) => {
       if (!assignment.old_val) {
         sendUserNotification({
           type: Notifications.ASSIGNMENT_CREATED,

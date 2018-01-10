@@ -4,12 +4,11 @@ export const getFormattedZip = (zip, country = 'US') => {
     const [, first5] = zip.match(regex) || []
 
     return first5
-  } else {
-    throw new Error(`Do not know how to format zip for country: ${country}`)
   }
+  throw new Error(`Do not know how to format zip for country: ${country}`)
 }
 
-var commonZipRanges = [
+const commonZipRanges = [
   // list of zip ranges. [<firstZip>, <lastZip>, <timezone>, <hasDst>, <zipCount>]
   [1001, 32401, -5, 1, 31400],
   [70000, 79821, -6, 1, 9821],
@@ -57,32 +56,33 @@ var commonZipRanges = [
 
 commonZipRanges.sort((a, b) => (a[0] - b[0]))
 
-export const zipToTimeZone = function (zip, r) {
+export const zipToTimeZone = (zip) => {
   // will search common zip ranges -- won't necessarily find something
   // so fallback on looking it up in db
-  if (typeof zip == 'number' || zip.length >= 5) {
-    zip = parseInt(zip)
-    return commonZipRanges.find((g) => (zip >= g[0] && zip < g[1]))
+  if (typeof zip === 'number' || zip.length >= 5) {
+    const parsed = parseInt(zip, 10)
+    return commonZipRanges.find((g) => (parsed >= g[0] && parsed < g[1]))
   }
+  return null
 }
 
-export const findZipRanges = function (r) {
-  var zipchanges = []
-  return r.knex('zip_code').select('zip', 'timezone_offset', 'has_dst')
-    .orderBy('zip').then(function (zips) {
-      var front = -1
-      var curTz = -4
-      var curHasDst = -1
-      zips.forEach((zipRec) => {
-        if (zipRec.timezone_offset != curTz || zipRec.has_dst != curHasDst) {
-          zipchanges.push([front, parseInt(zipRec.zip), curTz, curHasDst, parseInt(zipRec.zip) - front])
-          curTz = zipRec.timezone_offset
-          curHasDst = zipRec.has_dst
-          front = parseInt(zipRec.zip)
-        }
-      })
-      zipchanges.sort(function (a, b) { return b[4] - a[4] })
-      console.log(zipchanges)
-    })
-  return zipchanges
-}
+// export const findZipRanges = function (r) {
+//   var zipchanges = []
+//   return r.knex('zip_code').select('zip', 'timezone_offset', 'has_dst')
+//     .orderBy('zip').then(function (zips) {
+//       var front = -1
+//       var curTz = -4
+//       var curHasDst = -1
+//       zips.forEach((zipRec) => {
+//         if (zipRec.timezone_offset != curTz || zipRec.has_dst != curHasDst) {
+//           zipchanges.push([front, parseInt(zipRec.zip), curTz, curHasDst, parseInt(zipRec.zip) - front])
+//           curTz = zipRec.timezone_offset
+//           curHasDst = zipRec.has_dst
+//           front = parseInt(zipRec.zip)
+//         }
+//       })
+//       zipchanges.sort(function (a, b) { return b[4] - a[4] })
+//       console.log(zipchanges)
+//     })
+//   return zipchanges
+// }
