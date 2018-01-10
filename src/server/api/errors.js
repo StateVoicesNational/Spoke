@@ -12,14 +12,12 @@ export function authRequired(user) {
 }
 
 export async function hasRole(userId, orgId, role) {
-  if (role) {
-    const userHasRole = await r.table('user_organization').filter({
-      user_id: userId,
-      organization_id: orgId,
-      role
-    }).limit(1)(0).default(null)
-    return userHasRole
-  }
+  const userHasRole = await r.table('user_organization').filter({
+    user_id: userId,
+    organization_id: orgId,
+    role
+  }).limit(1)(0).default(null)
+  return userHasRole
 }
 
 export async function accessRequired(user, orgId, role, allowSuperadmin = false) {

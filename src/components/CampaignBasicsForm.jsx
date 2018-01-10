@@ -5,14 +5,14 @@ import moment from 'moment'
 import CampaignFormSectionHeading from './CampaignFormSectionHeading'
 import GSForm from './forms/GSForm'
 import yup from 'yup'
-import Toggle from 'material-ui/Toggle'
 import ColorPicker from 'material-ui-color-picker'
 
 const FormSchema = {
   title: yup.string(),
   description: yup.string(),
   dueBy: yup.mixed(),
-  logoImageUrl: yup.string().url().transform(value => !value ? null : value).nullable(),
+  logoImageUrl: yup.string().url().transform(value => (value || null))
+    .nullable(),
   primaryColor: yup.string().nullable(),
   introHtml: yup.string().nullable()
 }
@@ -21,9 +21,10 @@ const EnsureCompletedFormSchema = {
   title: yup.string().required(),
   description: yup.string().required(),
   dueBy: yup.mixed().required(),
-  logoImageUrl: yup.string().transform(value => !value ? null : value).url().nullable(),
-  primaryColor: yup.string().transform(value => !value ? null : value).nullable(),
-  introHtml: yup.string().transform(value => !value ? null : value).nullable()
+  logoImageUrl: yup.string().transform(value => (value || null)).url()
+    .nullable(),
+  primaryColor: yup.string().transform(value => (value || null)).nullable(),
+  introHtml: yup.string().transform(value => (value || null)).nullable()
 }
 
 export default class CampaignBasicsForm extends React.Component {

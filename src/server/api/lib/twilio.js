@@ -23,10 +23,9 @@ function webhook() {
   log.warn('twilio webhook call') // sky: doesn't run this
   if (twilio) {
     return Twilio.webhook()
-  } else {
-    log.warn('NO TWILIO WEB VALIDATION')
-    return function (req, res, next) { next() }
   }
+  log.warn('NO TWILIO WEB VALIDATION')
+  return (req, res, next) => { next() }
 }
 
 async function convertMessagePartsToMessage(messageParts) {

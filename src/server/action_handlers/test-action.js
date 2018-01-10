@@ -1,4 +1,3 @@
-import request from 'request'
 import { r } from '../models'
 
 // What the user sees as the option
@@ -16,7 +15,7 @@ export const instructions = () => (
 // either in environment variables or organization.features json data
 // Besides this returning true, "test-action" will also need to be added to
 // process.env.ACTION_HANDLERS
-export async function available(organizationId) {
+export async function available(organizationId) { // eslint-disable-line no-unused-vars
   return true
 }
 
@@ -30,7 +29,7 @@ export async function processAction(questionResponse, interactionStep, campaignC
     .where('campaign_contact_id', campaignContactId)
   const customFields = JSON.parse(contact.custom_fields || '{}')
   if (customFields) {
-    customFields['processed_test_action'] = 'completed'
+    customFields.processed_test_action = 'completed'
   }
 
   await r.knex('campaign_contact')

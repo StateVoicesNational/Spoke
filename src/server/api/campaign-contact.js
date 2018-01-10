@@ -70,7 +70,7 @@ export const resolvers = {
     // To get that result to look like what the original code returned
     // without using the outgoing answer_options array field, try this:
     //
-    questionResponses: async (campaignContact, _, { loaders }) => {
+    questionResponses: async (campaignContact) => {
       const results = await r.knex('question_response as qres')
         .where('question_response.campaign_contact', campaignContact.id)
         .join('interaction_step', 'qres.interaction_step_id', 'interaction_step.id')
@@ -91,7 +91,7 @@ export const resolvers = {
                 'qres.interaction_step_id')
         .catch(log.error)
 
-      let formatted = {}
+      const formatted = {}
 
       for (let i = 0; i < results.length; i++) {
         const res = results[i]
@@ -102,30 +102,30 @@ export const resolvers = {
         const interactionStepId = res['child.id']
 
         if (responseId in formatted) {
-          formatted[responseId]['parent_interaction_step']['answer_options'].push({
-            'value': answerValue,
-            'interaction_step_id': interactionStepId
+          formatted[responseId].parent_interaction_step.answer_options.push({
+            value: answerValue,
+            interaction_step_id: interactionStepId
           })
           if (responseValue === answerValue) {
-            formatted[responseId]['interaction_step_id'] = interactionStepId
+            formatted[responseId].interaction_step_id = interactionStepId
           }
         } else {
           formatted[responseId] = {
-            'contact_response_value': responseValue,
-            'interaction_step_id': interactionStepId,
-            'parent_interaction_step': {
-              'answer_option': '',
-              'answer_options': [{ 'value': answerValue,
-                                    'interaction_step_id': interactionStepId
-                                   }],
-              'campaign_id': res['interaction_step.campaign_id'],
-              'created_at': res['child.created_at'],
-              'id': responseId,
-              'parent_interaction_id': res['interaction_step.parent_interaction_id'],
-              'question': res['interaction_step.question'],
-              'script': res['interaction_step.script']
+            contact_response_value: responseValue,
+            interaction_step_id: interactionStepId,
+            parent_interaction_step: {
+              answer_option: '',
+              answer_options: [{ value: answerValue,
+                                   interaction_step_id: interactionStepId
+                                  }],
+              campaign_id: res['interaction_step.campaign_id'],
+              created_at: res['child.created_at'],
+              id: responseId,
+              parent_interaction_id: res['interaction_step.parent_interaction_id'],
+              question: res['interaction_step.question'],
+              script: res['interaction_step.script']
             },
-            'value': responseValue
+            value: responseValue
           }
         }
       }

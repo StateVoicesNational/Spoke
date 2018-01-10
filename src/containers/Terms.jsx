@@ -17,16 +17,16 @@ import { withRouter } from 'react-router'
 
 class Terms extends React.Component {
 
+  state = {
+    finished: false,
+    stepIndex: 0
+  }
+
   handleTermsAgree = async () => {
     const { data, router, mutations, location } = this.props
     const userData = await mutations.userAgreeTerms(data.currentUser.id)
     if (userData.data.userAgreeTerms.terms) { router.push(location.query.next) }
   }
-
-  state = {
-    finished: false,
-    stepIndex: 0
-  };
 
   handleNext = () => {
     const { stepIndex } = this.state
@@ -139,15 +139,15 @@ const mapQueriesToProps = () => ({
   }
 })
 
-const mapMutationsToProps = (ownProps) => ({
+const mapMutationsToProps = () => ({
   userAgreeTerms: (userId) => ({
     mutation: gql`
-        mutation userAgreeTerms($userId: String!) {
-          userAgreeTerms(userId: $userId) {
-            id
-            terms
-          }
-        }`,
+      mutation userAgreeTerms($userId: String!) {
+        userAgreeTerms(userId: $userId) {
+          id
+          terms
+        }
+      }`,
     variables: {
       userId
     }

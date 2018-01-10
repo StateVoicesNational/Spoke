@@ -306,39 +306,8 @@ class AssignmentTexterContact extends React.Component {
     return messages.length > 0 ? '' : this.getMessageTextFromScript(contact.currentInteractionStepScript)
   }
 
-  handleOpenPopover = (event) => {
-    event.preventDefault()
-    this.setState({
-      responsePopoverAnchorEl: event.currentTarget,
-      responsePopoverOpen: true
-    })
-  }
-
-  handleClosePopover = () => {
-    this.setState({
-      responsePopoverOpen: false
-    })
-  }
-
-  handleCannedResponseChange = (cannedResponseScript) => {
-    this.handleChangeScript(cannedResponseScript)
-  }
-
-  createMessageToContact(text) {
-    const { texter, assignment } = this.props
-    const { contact } = this.props.data
-
-    return {
-      contactNumber: contact.cell,
-      userId: texter.id,
-      text,
-      assignmentId: assignment.id
-    }
-  }
-
-  goBackToTodos = () => {
-    const { campaign } = this.props
-    this.props.router.push(`/app/${campaign.organization.id}/todos`)
+  setDisabled = async (disabled = true) => {
+    this.setState({ disabled })
   }
 
   handleSendMessageError = (e) => {
@@ -369,9 +338,41 @@ class AssignmentTexterContact extends React.Component {
     }
   }
 
-  setDisabled = async (disabled = true) => {
-    this.setState({ disabled })
+  goBackToTodos = () => {
+    const { campaign } = this.props
+    this.props.router.push(`/app/${campaign.organization.id}/todos`)
   }
+
+  createMessageToContact(text) {
+    const { texter, assignment } = this.props
+    const { contact } = this.props.data
+
+    return {
+      contactNumber: contact.cell,
+      userId: texter.id,
+      text,
+      assignmentId: assignment.id
+    }
+  }
+
+  handleCannedResponseChange = (cannedResponseScript) => {
+    this.handleChangeScript(cannedResponseScript)
+  }
+
+  handleOpenPopover = (event) => {
+    event.preventDefault()
+    this.setState({
+      responsePopoverAnchorEl: event.currentTarget,
+      responsePopoverOpen: true
+    })
+  }
+
+  handleClosePopover = () => {
+    this.setState({
+      responsePopoverOpen: false
+    })
+  }
+
 
   handleMessageFormSubmit = async ({ messageText }) => {
     try {
@@ -555,8 +556,8 @@ class AssignmentTexterContact extends React.Component {
     return messages.length === 0 ? (<Empty
       title={'This is your first message to ' + contact.firstName}
       icon={<CreateIcon color='rgb(83, 180, 119)' />}
-      hideMobile={true}
-    > </Empty>) : (
+      hideMobile
+    />) : (
       <div>
         <AssignmentTexterSurveys
           contact={contact}

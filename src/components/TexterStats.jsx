@@ -42,7 +42,7 @@ class TexterStats extends React.Component {
     const { assignments } = campaign
     return (
       <div>
-        {assignments.map((assignment) => campaign.useDynamicAssignment ? this.renderAssignmentDynamic(assignment) : this.renderAssignment(assignment))}
+        {assignments.map((assignment) => (campaign.useDynamicAssignment ? this.renderAssignmentDynamic(assignment) : this.renderAssignment(assignment)))}
       </div>
     )
   }

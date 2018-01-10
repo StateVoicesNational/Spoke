@@ -41,17 +41,14 @@ export default class AdminIncomingMessageList extends Component {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {this.state.incomingmessages.map(message => {
-                return (
-                  <TableRow key={message.id}>
-                    <TableRowColumn> {message.created_at}</TableRowColumn>
-                    <TableRowColumn>{message.user_number}</TableRowColumn>
-                    <TableRowColumn>{message.contact_number}</TableRowColumn>
-                    <TableRowColumn style={{ width: '40%' }}>{message.text}</TableRowColumn>
-                  </TableRow>
-                  )
-              }
-              )}
+              {this.state.incomingmessages.map(message => (
+                <TableRow key={message.id}>
+                  <TableRowColumn> {message.created_at}</TableRowColumn>
+                  <TableRowColumn>{message.user_number}</TableRowColumn>
+                  <TableRowColumn>{message.contact_number}</TableRowColumn>
+                  <TableRowColumn style={{ width: '40%' }}>{message.text}</TableRowColumn>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
         </div>

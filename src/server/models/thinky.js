@@ -13,7 +13,7 @@ let config
 if (process.env.DB_JSON || global.DB_JSON) {
   config = JSON.parse(process.env.DB_JSON || global.DB_JSON)
 } else if (process.env.DB_TYPE) {
-  const use_ssl = process.env.DB_USE_SSL && (process.env.DB_USE_SSL.toLowerCase() === 'true' || process.env.DB_USE_SSL === '1')
+  const useSsl = process.env.DB_USE_SSL && (process.env.DB_USE_SSL.toLowerCase() === 'true' || process.env.DB_USE_SSL === '1')
   config = {
     client: 'pg',
     connection: {
@@ -22,7 +22,7 @@ if (process.env.DB_JSON || global.DB_JSON) {
       database: process.env.DB_NAME,
       password: process.env.DB_PASSWORD,
       user: process.env.DB_USER,
-      ssl: use_ssl
+      ssl: useSsl
     },
     pool: {
       min: process.env.DB_MIN_POOL || 2,
@@ -51,12 +51,12 @@ if (process.env.DB_JSON || global.DB_JSON) {
 
 const thinkyConn = dumbThinky(config)
 
-thinkyConn.r.getCount = async (query) => {
+thinkyConn.r.getCount = async (query) => (
   // helper method to get a count result
   // with fewer bugs.  Using knex's .count()
   // results in a 'count' key on postgres, but a 'count(*)' key
   // on sqlite -- ridiculous.  This smooths that out
-  return Number((await query.count('* as count').first()).count)
-}
+  Number((await query.count('* as count').first()).count)
+)
 
 export default thinkyConn

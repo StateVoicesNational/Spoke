@@ -16,9 +16,9 @@ export { seedZipCodes } from '../server/seeds/seed-zip-codes'
  */
 
 const jobMap = {
-  'export': exportCampaign,
-  'upload_contacts': uploadContacts,
-  'assign_texters': assignTexters
+  export: exportCampaign,
+  upload_contacts: uploadContacts,
+  assign_texters: assignTexters
 }
 
 export async function processJobs() {
@@ -58,8 +58,9 @@ export async function checkMessageQueue() {
   }
 }
 
-const messageSenderCreator = (subQuery, defaultStatus) => {
-  return async (event) => {
+
+const messageSenderCreator = (subQuery, defaultStatus) => (
+  async () => {
     console.log('Running a message sender')
     setupUserNotificationObservers()
     let delay = 1100
@@ -76,25 +77,25 @@ const messageSenderCreator = (subQuery, defaultStatus) => {
       }
     }
   }
-}
+)
 
-export const messageSender01 = messageSenderCreator(function (mQuery) {
-  return mQuery.where(r.knex.raw("(contact_number LIKE '%0' OR contact_number LIKE '%1')"))
-})
+export const messageSender01 = messageSenderCreator((mQuery) => (
+  mQuery.where(r.knex.raw("(contact_number LIKE '%0' OR contact_number LIKE '%1')"))
+))
 
-export const messageSender234 = messageSenderCreator(function (mQuery) {
-  return mQuery.where(r.knex.raw("(contact_number LIKE '%2' OR contact_number LIKE '%3' or contact_number LIKE '%4')"))
-})
+export const messageSender234 = messageSenderCreator((mQuery) => (
+  mQuery.where(r.knex.raw("(contact_number LIKE '%2' OR contact_number LIKE '%3' or contact_number LIKE '%4')"))
+))
 
-export const messageSender56 = messageSenderCreator(function (mQuery) {
-  return mQuery.where(r.knex.raw("(contact_number LIKE '%5' OR contact_number LIKE '%6')"))
-})
+export const messageSender56 = messageSenderCreator((mQuery) => (
+  mQuery.where(r.knex.raw("(contact_number LIKE '%5' OR contact_number LIKE '%6')"))
+))
 
-export const messageSender789 = messageSenderCreator(function (mQuery) {
-  return mQuery.where(r.knex.raw("(contact_number LIKE '%7' OR contact_number LIKE '%8' or contact_number LIKE '%9')"))
-})
+export const messageSender789 = messageSenderCreator((mQuery) => (
+  mQuery.where(r.knex.raw("(contact_number LIKE '%7' OR contact_number LIKE '%8' or contact_number LIKE '%9')"))
+))
 
-export const failedMessageSender = messageSenderCreator(function (mQuery) {
+export const failedMessageSender = messageSenderCreator((mQuery) => {
   // messages that were attempted to be sent five minutes ago in status=SENDING
   // when JOBS_SAME_PROCESS is enabled, the send attempt is done immediately.
   // However, if it's still marked SENDING, then it must have failed to go out.
@@ -150,7 +151,7 @@ export async function handleIncomingMessages() {
   }
 }
 
-export async function runDatabaseMigrations(event, dispatcher) {
+export async function runDatabaseMigrations(event) {
   await runMigrations(event.migrationStart)
 }
 
@@ -174,9 +175,9 @@ const syncProcessMap = {
 
 const JOBS_SAME_PROCESS = !!process.env.JOBS_SAME_PROCESS
 
-export async function dispatchProcesses(event, dispatcher) {
+export async function dispatchProcesses(event) {
   const toDispatch = event.processes || (JOBS_SAME_PROCESS ? syncProcessMap : processMap)
-  for (let p in toDispatch) {
+  Object.keys(toDispatch).forEach((p) => {
     if (p in processMap) {
       // / not using dispatcher, but another interesting model would be
       // / to dispatch processes to other lambda invocations
@@ -184,5 +185,5 @@ export async function dispatchProcesses(event, dispatcher) {
       console.log('process', p)
       toDispatch[p]().then()
     }
-  }
+  })
 }

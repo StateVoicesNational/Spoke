@@ -3,11 +3,8 @@ import React, { Component } from 'react'
 import { Card, CardActions, CardTitle } from 'material-ui/Card'
 import { StyleSheet, css } from 'aphrodite'
 import loadData from '../containers/hoc/load-data'
-import { applyScript } from '../lib/scripts'
 import gql from 'graphql-tag'
-import FlatButton from 'material-ui/FlatButton'
 import RaisedButton from 'material-ui/RaisedButton'
-import Dialog from 'material-ui/Dialog'
 import Badge from 'material-ui/Badge'
 import moment from 'moment'
 import Divider from 'material-ui/Divider'
@@ -61,21 +58,20 @@ class AssignmentSummary extends Component {
           primary={primary && !disabled}
           onTouchTap={() => this.goToTodos(contactsFilter, assignment.id)}
         />)
-    } else {
-      return (<Badge
-        key={title}
-        badgeStyle={inlineStyles.badge}
-        badgeContent={count}
-        primary={primary && !disabled}
-        secondary={!primary && !disabled}
-      >
-        <RaisedButton
-          disabled={disabled}
-          label={title}
-          onTouchTap={() => this.goToTodos(contactsFilter, assignment.id)}
-        />
-      </Badge>)
     }
+    return (<Badge
+      key={title}
+      badgeStyle={inlineStyles.badge}
+      badgeContent={count}
+      primary={primary && !disabled}
+      secondary={!primary && !disabled}
+    >
+      <RaisedButton
+        disabled={disabled}
+        label={title}
+        onTouchTap={() => this.goToTodos(contactsFilter, assignment.id)}
+      />
+    </Badge>)
   }
 
   render() {
@@ -83,18 +79,6 @@ class AssignmentSummary extends Component {
     const { title, description, dueBy,
             primaryColor, logoImageUrl, introHtml,
             useDynamicAssignment } = assignment.campaign
-    const actions = [
-      <FlatButton
-        label='No'
-        primary
-        onClick={this.handleClose}
-      />,
-      <FlatButton
-        label='Yes'
-        primary
-        onClick={this.sendMessages}
-      />
-    ]
     return (
       <div className={css(styles.container)}>
         <Card
@@ -104,9 +88,8 @@ class AssignmentSummary extends Component {
             title={title}
             subtitle={`${description} - ${moment(dueBy).format('MMM D YYYY')}`}
             style={{ backgroundColor: primaryColor }}
-            children={logoImageUrl ? <img src={logoImageUrl} className={css(styles.image)} /> : ''}
-          >
-          </CardTitle>
+            children={logoImageUrl ? <img src={logoImageUrl} className={css(styles.image)} alt='logo' /> : ''}
+          />
           <Divider />
           <div style={{ margin: '20px' }}>
             <div dangerouslySetInnerHTML={{ __html: introHtml }} />

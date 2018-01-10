@@ -1,18 +1,13 @@
-import { renderToString } from 'react-dom/server'
-import { createMemoryHistory, match, RouterContext } from 'react-router'
+import { createMemoryHistory, match } from 'react-router'
 import { syncHistoryWithStore } from 'react-router-redux'
-import { StyleSheetServer } from 'aphrodite'
 import makeRoutes from '../../routes'
-import { ApolloProvider } from 'react-apollo'
-import ApolloClientSingleton from '../../network/apollo-client-singleton'
-import React from 'react'
 import renderIndex from './render-index'
 import Store from '../../store'
 import wrap from '../wrap'
 import fs from 'fs'
 import path from 'path'
 
-let assetMap = {
+const assetMap = {
   'bundle.js': '/assets/bundle.js'
 }
 if (process.env.NODE_ENV === 'production') {
@@ -32,9 +27,9 @@ if (process.env.NODE_ENV === 'production') {
     )
   )
   const staticBase = process.env.STATIC_BASE_URL || '/assets/'
-  for (var a in assetMapData) {
-    assetMap[a] = staticBase + assetMapData[a]
-  }
+  Object.keys(assetMapData).forEach((key) => {
+    assetMap[key] = staticBase + assetMapData[key]
+  })
 }
 
 export default wrap(async (req, res) => {

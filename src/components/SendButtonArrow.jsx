@@ -55,6 +55,7 @@ class SendButtonArrow extends Component {
 SendButtonArrow.propTypes = {
   threeClickEnabled: PropTypes.boolean,
   onClick: PropTypes.function,
+  onFinalTouchTap: PropTypes.function,
   disabled: PropTypes.boolean
 }
 
