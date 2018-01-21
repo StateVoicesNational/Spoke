@@ -30,9 +30,10 @@ Follow up instructions located [here](https://github.com/MoveOnOrg/Spoke/blob/ma
 6. Create an [Auth0](https://auth0.com) account. In your Auth0 account, go to Settings -> Clients -> and then grab your Client ID, Client Secret, and your Auth0 domain (should look like xxx.auth0.com). Add those inside your `.env` file (AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_DOMAIN respectively).
 7. Run `npm run dev` to create and populate the tables.
 8. Add the login callback and logout callback URL in `.env` (default `http://localhost:3000/login-callback` and `http://localhost:3000/logout-callback`) to your Auth0 app settings under "Allowed Callback URLs" and "Allowed Logout URLs" respectively. (If you get an error when logging in later about "OIDC", go to Advanced Settings section, and then OAuth, and turn off 'OIDC Conformant')
-9. Run `npm run dev` to start the app. Wait until you see both "Node app is running ..." and "Webpack dev server is now running ..." before attempting to connect. (make sure environment variable `JOBS_SAME_PROCESS=1`)
-10. Go to `http://localhost:3000` to load the app.
-11. As long as you leave `SUPPRESS_SELF_INVITE=` blank and unset in your `.env` you should be able to invite yourself from the homepage.
+9. If you want to use Postgres, set DB_TYPE=pg.  Otherwise, you will use sqlite.
+10. Run `npm run dev` to start the app. Wait until you see both "Node app is running ..." and "Webpack dev server is now running ..." before attempting to connect. (make sure environment variable `JOBS_SAME_PROCESS=1`)
+11. Go to `http://localhost:3000` to load the app.
+12. As long as you leave `SUPPRESS_SELF_INVITE=` blank and unset in your `.env` you should be able to invite yourself from the homepage.
   - If you DO set that variable, then spoke will be invite-only and you'll need to generate an invite. Run:
 ```
 echo "INSERT INTO invite (hash,is_valid) VALUES ('abc', 1);" |sqlite3 mydb.sqlite
@@ -60,8 +61,8 @@ See https://github.com/MoveOnOrg/Spoke/blob/master/docs/HOWTO-run_tests.md
 
 If you need to use Twilio in development but with live keys, do the following to receive incoming replies:
 
-1. Start [ngrok](https://ngrok.com/docs)
-2. Visit https://www.twilio.com/console/voice/dev-tools/twiml-apps and go to the Spoke Dev app.
+1. Start [ngrok](https://ngrok.com/docs) with the the command line `ngrok http -subdomain=<<UNIQUE_NAME>> 3000` (Replace <<UNIQUE_NAME>> with something likely to be globally unique. Use the same <<UNIQUE_NAME>> each time you start ngrok. If you use a different <<UNIQUE_NAME>> it will be necessary to change the configuration in Twilio.)
+2. Visit https://www.twilio.com/console/voice/dev-tools/twiml-apps and go to the Spoke Dev app. (If you create your own Twilio account, please follow Twilio's instructions for creating a new project. If you want to send live text messages as part of your testing, don't forget to buy a phone number and attach it to your project.)
 3. Set Request URL under "Messaging" to http://<<YOUR_NGROK>>.ngrok.io/twilio
 4. In `.env` set `TWILIO_APPLICATION_ID` to the Twilio Spoke Dev application ID
 5. In `.env` set `TWILIO_STATUS_CALLBACK_URL` to  http://<<YOUR_NGROK>>.ngrok.io/twilio-message-report
