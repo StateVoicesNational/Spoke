@@ -107,7 +107,7 @@ class AdminPersonList extends React.Component {
                     />
                   ))}
                 </DropDownMenu>
-                <FlatButton label="Edit" onTouchTap={() => { this.editUser(person.id) }} />
+                <FlatButton label='Edit' onTouchTap={() => { this.editUser(person.id) }} />
               </TableRowColumn>
             </TableRow>
           ))}
@@ -132,7 +132,7 @@ class AdminPersonList extends React.Component {
           title='Edit user'
           modal={false}
           open={Boolean(this.state.userEdit)}
-          onRequestClose={() => { this.setState({ userEdit: false })}}
+          onRequestClose={() => { this.setState({ userEdit: false }) }}
         >
           <UserEdit
             organizationId={organizationData.organization.id}

@@ -22,7 +22,6 @@ export function setupAuth0Passport() {
   })
 
   passport.deserializeUser(wrap(async (id, done) => {
-    console.log('DESERIALIZING', id)
     const user = await User.filter({ auth0_id: id })
     done(null, user[0] || false)
   }))
@@ -30,12 +29,10 @@ export function setupAuth0Passport() {
   return [passport.authenticate('auth0', {
     failureRedirect: '/login'
   }), wrap(async (req, res) => {
-    console.log('req.user', req.user)
     if (!req.user || !req.user.id) {
       throw new Error('Null user in login callback')
     }
     const existingUser = await User.filter({ auth0_id: req.user.id })
-    console.log('EXISTING USER', existingUser, req.user)
     if (existingUser.length === 0) {
       await User.save({
         auth0_id: req.user.id,
@@ -59,40 +56,39 @@ export function setupAuth0Passport() {
 
 export function setupLocalAuthPassport() {
   const strategy = new LocalStrategy({
-      usernameField: 'email',
-      passwordField: 'auth0_id' // using the legacy fieldname for password
-    }, function(username, password, done) {
-      User.filter({ email: username }, function (err, user) {
-        if (err) { return done(err); }
-        if (!user) { return done(null, false); }
+    usernameField: 'email',
+    passwordField: 'auth0_id' // using the legacy fieldname for password
+  }, function (username, password, done) {
+    User.filter({ email: username }, function (err, user) {
+      if (err) { return done(err) }
+      if (!user) { return done(null, false) }
 
-        //AuthHasher.hash(password, function(err, hashed) {
-        //const passwordToSave = `${hashed.salt}|${hashed.hash}`
+        // AuthHasher.hash(password, function(err, hashed) {
+        // const passwordToSave = `${hashed.salt}|${hashed.hash}`
         // .salt and .hash
         // });
-        const pwFieldSplit = user.auth0_id.split('|')
-        const hashed = {
-          salt: pwFieldSplit[0],
-          hash: pwFieldSplit[1]
+      const pwFieldSplit = user.auth0_id.split('|')
+      const hashed = {
+        salt: pwFieldSplit[0],
+        hash: pwFieldSplit[1]
+      }
+      AuthHasher.verify(password, hashed, function (err, verified) {
+        if (verified) {
+          return done(null, false)
+        } else {
+          done(null, user)
         }
-        AuthHasher.verify(password, hashed, function(err, verified) {
-          if (verified) {
-            return done(null, false)
-          } else {
-            done(null, user)
-          }
-        });
-      });
-    }
-  );
+      })
+    })
+  }
+  )
   passport.use(strategy)
 
   passport.serializeUser((user, done) => {
     done(null, user.id)
   })
   passport.deserializeUser(wrap(async (id, done) => {
-    console.log('DESERIALIZING', id)
-    const user = await User.filter({ id: id })
+    const user = await User.filter({ id })
     done(null, user[0] || false)
   }))
 

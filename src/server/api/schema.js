@@ -497,14 +497,13 @@ const rootMutations = {
       return loaders.organization.load(organizationId)
     },
     editUser: async (_, { organizationId, userId, userData }, { user }) => {
-      console.log('EDITUSER', organizationId, userId, user && user.id, userData)
       if (user.id !== userId) { // User can edit themselves
         await accessRequired(user, organizationId, 'ADMIN', true)
       }
       const userRes = await r.knex('user')
         .rightJoin('user_organization', 'user.id', 'user_organization.user_id')
-        .where({'user_organization.organization_id': organizationId,
-                'user.id': userId}).limit(1)
+        .where({ 'user_organization.organization_id': organizationId,
+                'user.id': userId }).limit(1)
       if (!userRes || !userRes.length) {
         return null
       } else {
@@ -512,7 +511,7 @@ const rootMutations = {
         if (userData) {
           const userRes = await r.knex('user')
             .where('id', userId)
-            .update({first_name: userData.firstName,
+            .update({ first_name: userData.firstName,
                      last_name: userData.lastName,
                      email: userData.email,
                      cell: userData.cell
