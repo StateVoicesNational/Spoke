@@ -48,7 +48,7 @@ class UserEdit extends React.Component {
         schema={formSchema}
         onSubmit={this.handleSave}
         defaultValue={user}
-        >
+      >
         <Form.Field label='First name' name='firstName' />
         <Form.Field label='Last name' name='lastName' />
         <Form.Field label='Email' name='email' />
@@ -88,7 +88,7 @@ const mapMutationsToProps = ({ ownProps }) => ({
       organizationId: ownProps.organizationId,
       userData
     }
-  }),
+  })
 })
 
 export default loadData(wrapMutations(UserEdit), { mapMutationsToProps })
