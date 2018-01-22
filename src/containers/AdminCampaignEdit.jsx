@@ -266,6 +266,7 @@ class AdminCampaignEdit extends React.Component {
       content: CampaignBasicsForm,
       keys: ['title', 'description', 'dueBy', 'logoImageUrl', 'primaryColor', 'introHtml'],
       blocksStarting: true,
+      expandAfterCampaignStarts: true,
       checkCompleted: () => (
         this.state.campaignFormValues.title !== '' &&
           this.state.campaignFormValues.description !== '' &&
@@ -286,6 +287,7 @@ class AdminCampaignEdit extends React.Component {
         && this.state.campaignFormValues.hasOwnProperty('contacts') === false
         && this.state.campaignFormValues.hasOwnProperty('contactSql') === false),
       blocksStarting: true,
+      expandAfterCampaignStarts: false,
       extraProps: {
         optOuts: [], // this.props.organizationData.organization.optOuts, // <= doesn't scale
         datawarehouseAvailable: this.props.campaignData.campaign.datawarehouseAvailable,
@@ -297,6 +299,7 @@ class AdminCampaignEdit extends React.Component {
       keys: ['texters', 'contactsCount', 'useDynamicAssignment'],
       checkCompleted: () => (this.state.campaignFormValues.texters.length > 0 && this.state.campaignFormValues.contactsCount === this.state.campaignFormValues.texters.reduce(((left, right) => left + right.assignment.contactsCount), 0)) || this.state.campaignFormValues.useDynamicAssignment === true,
       blocksStarting: false,
+      expandAfterCampaignStarts: true,
       extraProps: {
         orgTexters: this.props.organizationData.organization.texters,
         organizationUuid: this.props.organizationData.organization.uuid,
@@ -308,6 +311,7 @@ class AdminCampaignEdit extends React.Component {
       keys: ['interactionSteps'],
       checkCompleted: () => this.state.campaignFormValues.interactionSteps.length > 0,
       blocksStarting: true,
+      expandAfterCampaignStarts: true,
       extraProps: {
         customFields: this.props.campaignData.campaign.customFields,
         availableActions: this.props.availableActionsData.availableActions
@@ -318,6 +322,7 @@ class AdminCampaignEdit extends React.Component {
       keys: ['cannedResponses'],
       checkCompleted: () => true,
       blocksStarting: true,
+      expandAfterCampaignStarts: true,
       extraProps: {
         customFields: this.props.campaignData.campaign.customFields
       }
@@ -482,7 +487,9 @@ class AdminCampaignEdit extends React.Component {
             verticalAlign: 'middle'
           }
 
-          const { sectionIsSaving, savePercent } = this.sectionSaveStatus(section)
+          const { sectionIsSaving, savePercent } = this.sectionSaveStatus(section);
+          const sectionCanExpandOrCollapse = section.expandAfterCampaignStarts
+            || !this.props.campaignData.campaign.isStarted
           if (sectionIsSaving) {
             avatar = (<CircularProgress
               size={0.35}
@@ -498,7 +505,7 @@ class AdminCampaignEdit extends React.Component {
             />)
             cardHeaderStyle.background = theme.colors.lightGray
             cardHeaderStyle.width = `${savePercent}%`
-          } else if (sectionIsExpanded) {
+          } else if (sectionIsExpanded && sectionCanExpandOrCollapse) {
             cardHeaderStyle.backgroundColor = theme.colors.lightGray
           } else if (sectionIsDone) {
             avatar = (<Avatar
@@ -519,7 +526,8 @@ class AdminCampaignEdit extends React.Component {
           return (
             <Card
               key={section.title}
-              expanded={sectionIsExpanded}
+              expanded={sectionIsExpanded && sectionCanExpandOrCollapse}
+              expandable={sectionCanExpandOrCollapse}
               onExpandChange={(newExpandedState) =>
                 this.onExpandChange(sectionIndex, newExpandedState)
               }
@@ -533,8 +541,8 @@ class AdminCampaignEdit extends React.Component {
                   width: '100%'
                 }}
                 style={cardHeaderStyle}
-                actAsExpander
-                showExpandableButton={!sectionIsSaving}
+                actAsExpander={!sectionIsSaving && sectionCanExpandOrCollapse}
+                showExpandableButton={!sectionIsSaving && sectionCanExpandOrCollapse}
                 avatar={avatar}
               />
               <CardText
