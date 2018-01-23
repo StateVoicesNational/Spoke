@@ -31,9 +31,16 @@ Follow up instructions located [here](https://github.com/MoveOnOrg/Spoke/blob/ma
 7. Run `npm run dev` to create and populate the tables.
 8. Add the login callback and logout callback URL in `.env` (default `http://localhost:3000/login-callback` and `http://localhost:3000/logout-callback`) to your Auth0 app settings under "Allowed Callback URLs" and "Allowed Logout URLs" respectively. (If you get an error when logging in later about "OIDC", go to Advanced Settings section, and then OAuth, and turn off 'OIDC Conformant')
 9. Add the domain name for your app to "Allowed Web Origins" in the Auth0 Settings. It should be the same as the login/logout callback URLs without the callback path. So for localhost it would look like "http://localhost:3000"
-10. Run `npm run dev` to start the app. Wait until you see both "Node app is running ..." and "Webpack dev server is now running ..." before attempting to connect. (make sure environment variable `JOBS_SAME_PROCESS=1`)
-11. Go to `http://localhost:3000` to load the app.
-12. As long as you leave `SUPPRESS_SELF_INVITE=` blank and unset in your `.env` you should be able to invite yourself from the homepage.
+10. Add a new [rule](https://manage.auth0.com/#/rules/create) in Auth0: 
+```javascript
+function (user, context, callback) {
+context.idToken["https://spoke/user_metadata"] = user.user_metadata;
+callback(null, user, context);
+}
+```
+11. Run `npm run dev` to start the app. Wait until you see both "Node app is running ..." and "Webpack dev server is now running ..." before attempting to connect. (make sure environment variable `JOBS_SAME_PROCESS=1`)
+12. Go to `http://localhost:3000` to load the app.
+13. As long as you leave `SUPPRESS_SELF_INVITE=` blank and unset in your `.env` you should be able to invite yourself from the homepage.
   - If you DO set that variable, then spoke will be invite-only and you'll need to generate an invite. Run:
 ```
 echo "INSERT INTO invite (hash,is_valid) VALUES ('abc', 1);" |sqlite3 mydb.sqlite

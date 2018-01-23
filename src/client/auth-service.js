@@ -15,7 +15,8 @@ export function login(nextUrl) {
       redirectUrl: window.AUTH0_LOGIN_CALLBACK,
       responseType: 'code',
       params: {
-        state: nextUrl
+        state: nextUrl,
+        scope: 'openid profile email'
       }
     },
     allowedConnections: ['Username-Password-Authentication'],
