@@ -15,7 +15,8 @@ function setupAuth0Passport() {
   passport.use(strategy)
 
   passport.serializeUser((user, done) => {
-    done(null, user.id)
+    const auth0Id = (user.id || user._json.sub)
+    done(null, auth0Id)
   })
 
   passport.deserializeUser(wrap(async (id, done) => {
