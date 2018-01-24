@@ -178,7 +178,7 @@ app.get('/login-callback',
         first_name: userMetadata.given_name || '',
         // eslint-disable-next-line no-underscore-dangle
         last_name: userMetadata.last_name || '',
-        cell: userMetadata.cell,
+        cell: userMetadata.cell || '',
         // eslint-disable-next-line no-underscore-dangle
         email: req.user._json.email,
         is_superadmin: false
