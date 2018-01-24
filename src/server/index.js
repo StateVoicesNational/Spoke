@@ -164,16 +164,20 @@ app.get('/login-callback',
     const existingUser = await User.filter({ auth0_id: req.user.id })
 
     if (existingUser.length === 0) {
+      const userMetadata = (
+        // eslint-disable-next-line no-underscore-dangle
+        req.user._json['https://spoke/user_metadata']
+        // eslint-disable-next-line no-underscore-dangle
+        || req.user._json._metadata
+        || {})
       await User.save({
         auth0_id: req.user.id,
         // eslint-disable-next-line no-underscore-dangle
-        first_name: req.user._json['https://spoke/user_metadata']['given_name'],
+        first_name: userMetadata.given_name,
         // eslint-disable-next-line no-underscore-dangle
-        last_name: req.user._json['https://spoke/user_metadata']['family_name'],
-        // eslint-disable-next-line no-underscore-dangle
-        cell: req.user._json['https://spoke/user_metadata']['cell'],
-        // eslint-disable-next-line no-underscore-dangle
-        email: req.user._json.email,
+        last_name: userMetadata.last_name,
+        cell: userMetadata.cell,
+        email: userMetadata.cell,
         is_superadmin: false
       })
       res.redirect(req.query.state || 'terms')
