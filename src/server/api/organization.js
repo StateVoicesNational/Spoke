@@ -24,7 +24,7 @@ export const resolvers = {
       'name'
     ], Organization),
     campaigns: async (organization, { campaignsFilter }, { user }) => {
-      await accessRequired(user, organization.id, 'ADMIN')
+      await accessRequired(user, organization.id, 'SUPERVOLUNTEER')
       let query = r.table('campaign').getAll(organization.id, { index:
         'organization_id' })
 

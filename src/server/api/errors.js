@@ -2,6 +2,8 @@ import { GraphQLError } from 'graphql/error'
 
 import { r } from '../models'
 
+const accessHierarchy = ['TEXTER', 'SUPERVOLUNTEER', 'ADMIN', 'OWNER']
+
 export function authRequired(user) {
   if (!user) {
     throw new GraphQLError({
@@ -29,9 +31,14 @@ export async function accessRequired(user, orgId, role, allowSuperadmin = false)
     return
   }
 
-  const userHasRole = await hasRole(user.id, orgId, role)
+  const userHasRole = await r.knex('user_organization')
+    .where({ user_id: user.id,
+             organization_id: orgId })
+    // require a permission at-or-higher than the permission requested
+    .whereIn('role', accessHierarchy.slice(accessHierarchy.indexOf(role)))
+    .limit(1)
 
-  if (!userHasRole) {
+  if (!userHasRole.length) {
     throw new GraphQLError({
       status: 403,
       message: 'You are not authorized to access that resource.'

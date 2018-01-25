@@ -555,7 +555,7 @@ class AssignmentTexterContact extends React.Component {
     return messages.length === 0 ? (<Empty
       title={'This is your first message to ' + contact.firstName}
       icon={<CreateIcon color='rgb(83, 180, 119)' />}
-      hideMobile={true}
+      hideMobile
     > </Empty>) : (
       <div>
         <AssignmentTexterSurveys
