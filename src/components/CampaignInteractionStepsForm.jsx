@@ -72,27 +72,31 @@ export default class CampaignInteractionStepsForm extends React.Component {
   }
 
   addStep(parentInteractionId) {
-    const newId = 'new' + Math.random().toString(36).replace(/[^a-zA-Z1-9]+/g, '')
-    this.setState({
-      interactionSteps: [
-        ...this.state.interactionSteps,
-        { id: newId, parentInteractionId, questionText: '', script: '', answerOption: '', answerActions: '', isDeleted: false }
-      ]
-    })
+    return () => {
+      const newId = 'new' + Math.random().toString(36).replace(/[^a-zA-Z1-9]+/g, '')
+      this.setState({
+        interactionSteps: [
+          ...this.state.interactionSteps,
+          { id: newId, parentInteractionId, questionText: '', script: '', answerOption: '', answerActions: '', isDeleted: false }
+        ]
+      })
+    }
   }
 
   deleteStep(id) {
-    this.setState({
-      interactionSteps: this.state.interactionSteps.map((is) => {
-        if (is.id == id) {
-          is.isDeleted = true
-          this.state.interactionSteps.filter((isp) => isp.parentInteractionId === is.id).map((isp) => {
-            this.deleteStep(isp.id)
-          })
-        }
-        return is
+    return () => {
+      this.setState({
+        interactionSteps: this.state.interactionSteps.map((is) => {
+          if (is.id == id) {
+            is.isDeleted = true
+            this.state.interactionSteps.filter((isp) => isp.parentInteractionId === is.id).map((isp) => {
+              this.deleteStep(isp.id)
+            })
+          }
+          return is
+        })
       })
-    })
+    }
   }
 
   handleFormChange(event) {
@@ -140,7 +144,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
               fullWidth
               hintText='Answer to the previous question'
             /> : ''}
-            {interactionStep.parentInteractionId ? <DeleteIcon style={styles.pullRight} onTouchTap={() => this.deleteStep(interactionStep.id).bind(this)} /> : ''}
+            {interactionStep.parentInteractionId ? <DeleteIcon style={styles.pullRight} onTouchTap={this.deleteStep(interactionStep.id).bind(this)} /> : ''}
             {interactionStep.parentInteractionId && this.props.availableActions && this.props.availableActions.length ?
               (<div key={`answeractions-${interactionStep.id}`}>
                  <Form.Field
@@ -190,7 +194,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
         {interactionStep.questionText && interactionStep.script && (!interactionStep.parentInteractionId || interactionStep.answerOption) ? <div>
           <RaisedButton
             label='+ Add a response'
-            onTouchTap={() => this.addStep(interactionStep.id).bind(this)}
+            onTouchTap={this.addStep(interactionStep.id).bind(this)}
             style={{ marginBottom: '10px' }}
           />
         </div> : ''}
