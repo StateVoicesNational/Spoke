@@ -37,12 +37,18 @@ class UserMenu extends Component {
   }
 
   handleMenuChange = (event, value) => {
+    this.handleRequestClose()
     if (value === 'logout') {
       window.AuthService.logout()
+    } else if (value === 'account') {
+      const { orgId } = this.props
+      const { currentUser } = this.props.data
+      if (orgId) {
+        this.props.router.push(`/app/${orgId}/account/${currentUser.id}`)
+      }
     } else {
       this.props.router.push(`/admin/${value}`)
     }
-    this.handleRequestClose()
   }
 
   renderAvatar(user, size) {
@@ -73,14 +79,16 @@ class UserMenu extends Component {
           targetOrigin={{ horizontal: 'left', vertical: 'top' }}
           onRequestClose={this.handleRequestClose}
         >
-          <ListItem
-            disabled
-            primaryText={currentUser.displayName}
-            secondaryText={currentUser.email}
-            leftAvatar={this.renderAvatar(currentUser, 40)}
-          />
-          <Divider />
           <Menu onChange={this.handleMenuChange}>
+            <MenuItem
+              primaryText={currentUser.displayName}
+              leftIcon={this.renderAvatar(currentUser, 40)}
+              disabled={!this.props.orgId}
+              value={'account'}
+            >
+              {currentUser.email}
+            </MenuItem>
+            <Divider />
             <Subheader>Teams</Subheader>
             {currentUser.organizations.map((organization) => (
               <MenuItem
@@ -103,6 +111,7 @@ class UserMenu extends Component {
 
 UserMenu.propTypes = {
   data: PropTypes.object,
+  orgId: PropTypes.string,
   router: PropTypes.object
 }
 

@@ -58,7 +58,7 @@ class TopNav extends React.Component {
   }
 
   render() {
-    const { backToURL, title } = this.props
+    const { backToURL, orgId, title } = this.props
     return (
       <div className={css(styles.container)}>
         <div className={css(styles.flexColumn)}>
@@ -70,7 +70,7 @@ class TopNav extends React.Component {
           </div>
         </div>
         <div className={css(styles.userMenu)}>
-          <UserMenu />
+          <UserMenu orgId={orgId} />
         </div>
       </div>
     )
@@ -79,7 +79,8 @@ class TopNav extends React.Component {
 
 TopNav.propTypes = {
   backToURL: PropTypes.string,
-  title: PropTypes.string.isRequired
+  title: PropTypes.string.isRequired,
+  orgId: PropTypes.string
 }
 
 export default TopNav

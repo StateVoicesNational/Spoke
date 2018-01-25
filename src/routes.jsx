@@ -7,6 +7,7 @@ import AdminPersonList from './containers/AdminPersonList'
 import AdminOptOutList from './containers/AdminOptOutList'
 import AdminIncomingMessageList from './containers/AdminIncomingMessageList'
 import AdminCampaignEdit from './containers/AdminCampaignEdit'
+import AdminReplySender from './containers/AdminReplySender'
 import TexterDashboard from './components/TexterDashboard'
 import TopNav from './components/TopNav'
 import DashboardLoader from './containers/DashboardLoader'
@@ -19,7 +20,7 @@ import CreateOrganization from './containers/CreateOrganization'
 import JoinTeam from './containers/JoinTeam'
 import Home from './containers/Home'
 import Settings from './containers/Settings'
-import AdminReplySender from './containers/AdminReplySender'
+import UserEdit from './containers/UserEdit'
 
 
 export default function makeRoutes(requireAuth = () => {}) {
@@ -45,14 +46,18 @@ export default function makeRoutes(requireAuth = () => {}) {
         </Route>
       </Route>
       <Route path='app' component={TexterDashboard} onEnter={requireAuth}>
-        <IndexRoute components={{ main: () => <DashboardLoader path='/app' />, topNav: () => <TopNav title='Spoke Texting' /> }} />
+        <IndexRoute components={{ main: () => <DashboardLoader path='/app' />,
+                                  topNav: (p) => <TopNav title='Spoke Texting' orgId={p.params.organizationId} /> }} />
         <Route path=':organizationId'>
           <IndexRedirect to='todos' />
+          <Route path='account/:userId' components={{
+            main: (p) => <UserEdit userId={p.params.userId} organizationId={p.params.organizationId} />,
+            topNav: (p) => <TopNav title='Account' orgId={p.params.organizationId} /> }} />
           <Route path='todos'>
             <IndexRoute
               components={{
                 main: TexterTodoList,
-                topNav: () => <TopNav title='Spoke Texting' />
+                topNav: (p) => <TopNav title='Spoke Texting' orgId={p.params.organizationId} />
               }}
             />
             <Route path=':assignmentId'>
