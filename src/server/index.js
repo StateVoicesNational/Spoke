@@ -5,6 +5,7 @@ import appRenderer from './middleware/app-renderer'
 import { graphqlExpress, graphiqlExpress } from 'apollo-server-express'
 import { makeExecutableSchema, addMockFunctionsToSchema } from 'graphql-tools'
 import { schema, resolvers } from './api/schema'
+import { accessRequired } from './api/errors'
 import mocks from './api/mocks'
 import { createLoaders, User } from './models'
 import passport from 'passport'
@@ -120,34 +121,21 @@ app.post('/twilio-message-report', wrap(async (req, res) => {
 
 app.get('/allmessages/:organizationId', wrap(async (req, res) => {
   const orgId = req.params.organizationId
-  const membership = await r.knex('user_organization')
-    .where({
-      user_id: req.user.id,
-      organization_id: orgId,
-      role: 'ADMIN'
-    })
-    .first()
-
-  if (typeof membership === 'undefined') {
-    // Current user is not admin of the requested org, can't access messages.
-    res.json([])
-  }
-  else {
-    const messages = await r.knex('message')
-      .select(
-          'message.id',
-          'message.text',
-          'message.user_number',
-          'message.contact_number',
-          'message.created_at'
-      )
-      .join('assignment', 'message.assignment_id', 'assignment.id')
-      .join('campaign', 'assignment.campaign_id', 'campaign.id')
-      .where('campaign.organization_id', orgId)
-      .where('message.is_from_contact', true)
-      .orderBy('message.created_at', 'desc')
-    return res.json(messages)
-  }
+  await accessRequired(req.user, orgId, 'SUPERVOLUNTEER', /* superadmin*/true)
+  const messages = await r.knex('message')
+    .select(
+      'message.id',
+      'message.text',
+      'message.user_number',
+      'message.contact_number',
+      'message.created_at'
+    )
+    .join('assignment', 'message.assignment_id', 'assignment.id')
+    .join('campaign', 'assignment.campaign_id', 'campaign.id')
+    .where('campaign.organization_id', orgId)
+    .where('message.is_from_contact', true)
+    .orderBy('message.created_at', 'desc')
+  return res.json(messages)
 }))
 
 app.get('/logout-callback', (req, res) => {

@@ -5,7 +5,7 @@ import { ListItem } from 'material-ui/List'
 import gql from 'graphql-tag'
 import { withRouter } from 'react-router'
 import loadData from './hoc/load-data'
-import { getHighestRole } from '../lib'
+import { hasRole } from '../lib'
 
 class AdminNavigation extends React.Component {
   urlFromPath(path) {
@@ -32,30 +32,31 @@ class AdminNavigation extends React.Component {
   }
 
   render() {
-    const sections = [{
-      name: 'Campaigns',
-      path: 'campaigns'
-    }, {
-      name: 'People',
-      path: 'people'
-    }, {
-      name: 'Optouts',
-      path: 'optouts'
-    }, {
-      name: 'Incoming Messages',
-      path: 'incoming'
-    }]
-
     const { roles } = this.props.data.currentUser
 
-    if (getHighestRole(roles) === 'OWNER') {
-      sections.push({
-        name: 'Settings',
-        path: 'settings'
-      })
-    }
+    const sections = [{
+      name: 'Campaigns',
+      path: 'campaigns',
+      role: 'SUPERVOLUNTEER'
+    }, {
+      name: 'People',
+      path: 'people',
+      role: 'ADMIN'
+    }, {
+      name: 'Optouts',
+      path: 'optouts',
+      role: 'ADMIN'
+    }, {
+      name: 'Incoming Messages',
+      path: 'incoming',
+      role: 'SUPERVOLUNTEER'
+    }, {
+      name: 'Settings',
+      path: 'settings',
+      role: 'SUPERVOLUNTEER'
+    }]
 
-    return this.renderNavigation(sections)
+    return this.renderNavigation(sections.filter((s) => hasRole(s.role, roles)))
   }
 }
 
