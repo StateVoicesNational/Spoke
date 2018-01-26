@@ -3,6 +3,7 @@ import { shallow } from 'enzyme'
 import TexterStats from '../src/components/TexterStats'
 
 const campaign = {
+  useDynamicAssignment: false,
   assignments: [
     {
       id: '1',
@@ -27,7 +28,34 @@ const campaign = {
   ]
 }
 
-describe('TexterStats', () => {
+const campaignDynamic = {
+  useDynamicAssignment: true,
+  assignments: [
+    {
+      id: '1',
+      texter: {
+        id: '1',
+        firstName: 'Test',
+        lastName: 'Tester'
+      },
+      unmessagedCount: 193,
+      contactsCount: 238
+    },
+    {
+      id: '1',
+      texter: {
+        id: '1',
+        firstName: 'Someone',
+        lastName: 'Else',
+      },
+      unmessagedCount: 4,
+      contactsCount: 545
+    }
+  ]
+}
+
+
+describe('TexterStats (Non-dynamic campaign)', () => {
   it('contains the right text', () => {
     const stats = shallow(<TexterStats campaign={campaign} />)
     expect(stats.text()).toEqual(
@@ -46,5 +74,15 @@ describe('TexterStats', () => {
       mode: 'determinate',
       value: 19
     })
+  })
+})
+
+
+describe('TexterStats (Dynamic campaign)', () => {
+  it('contains the right text', () => {
+    const stats = shallow(<TexterStats campaign={campaignDynamic} />)
+    expect(stats.text()).toEqual(
+      'Test45 initial messages sentSomeone541 initial messages sent'
+    )
   })
 })
