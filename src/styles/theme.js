@@ -106,7 +106,8 @@ const components = {
     right: 20,
     bottom: 20,
     left: 'auto',
-    position: 'fixed'
+    position: 'fixed',
+    zIndex: 100
   }
 }
 

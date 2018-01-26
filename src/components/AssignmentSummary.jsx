@@ -22,7 +22,8 @@ const inlineStyles = {
     width: 20,
     textAlign: 'center',
     verticalAlign: 'middle',
-    height: 20
+    height: 20,
+    zIndex: 10
   }
 }
 
