@@ -16,7 +16,7 @@ const GSSubmitButton = (props) => {
     extraProps.disabled = true
     icon = (
       <CircularProgress
-        size={0.5}
+        size={30}
         style={{
           verticalAlign: 'middle',
           display: 'inline-block'

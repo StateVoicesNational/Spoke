@@ -809,7 +809,7 @@ class AssignmentTexterContact extends React.Component {
       <div>
         {this.state.disabled ? (
           <div className={css(styles.overlay)}>
-            <CircularProgress size={0.5} />
+            <CircularProgress size={30} />
             {this.state.disabledText}
           </div>
         ) : ''

@@ -397,7 +397,7 @@ class AdminCampaignEdit extends React.Component {
               }}
             >
               <CircularProgress
-                size={0.5}
+                size={30}
                 style={{
                   verticalAlign: 'middle',
                   display: 'inline-block'
@@ -485,7 +485,7 @@ class AdminCampaignEdit extends React.Component {
           const { sectionIsSaving, savePercent } = this.sectionSaveStatus(section)
           if (sectionIsSaving) {
             avatar = (<CircularProgress
-              size={0.35}
+              size={20}
               style={{
                 verticalAlign: 'top',
                 marginTop: '-13px',
