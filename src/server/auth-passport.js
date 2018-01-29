@@ -18,7 +18,8 @@ export function setupAuth0Passport() {
 
   passport.serializeUser((user, done) => {
     // This is the Auth0 user object, not the db one
-    done(null, user.id)
+    const auth0Id = (user.id || user._json.sub)
+    done(null, auth0Id)
   })
 
   passport.deserializeUser(wrap(async (id, done) => {
@@ -29,23 +30,32 @@ export function setupAuth0Passport() {
   return [passport.authenticate('auth0', {
     failureRedirect: '/login'
   }), wrap(async (req, res) => {
-    if (!req.user || !req.user.id) {
+    const auth0Id = (req.user && (req.user.id
+                                  || req.user._json.sub))
+    if (!auth0Id) {
       throw new Error('Null user in login callback')
     }
-    const existingUser = await User.filter({ auth0_id: req.user.id })
+    const existingUser = await User.filter({ auth0_id: auth0Id })
+
     if (existingUser.length === 0) {
-      await User.save({
-        auth0_id: req.user.id,
+      const userMetadata = (
         // eslint-disable-next-line no-underscore-dangle
-        first_name: req.user._json.user_metadata.given_name,
+        req.user._json['https://spoke/user_metadata']
         // eslint-disable-next-line no-underscore-dangle
-        last_name: req.user._json.user_metadata.family_name,
+        || req.user._json._metadata
+        || {})
+      const userData = {
+        auth0_id: auth0Id,
         // eslint-disable-next-line no-underscore-dangle
-        cell: req.user._json.user_metadata.cell,
+        first_name: userMetadata.given_name || '',
+        // eslint-disable-next-line no-underscore-dangle
+        last_name: userMetadata.family_name || '',
+        cell: userMetadata.cell || '',
         // eslint-disable-next-line no-underscore-dangle
         email: req.user._json.email,
         is_superadmin: false
-      })
+      }
+      await User.save(userData)
       res.redirect(req.query.state || 'terms')
       return
     }

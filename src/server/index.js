@@ -160,6 +160,7 @@ app.get('/logout-callback', (req, res) => {
   req.logOut()
   res.redirect('/')
 })
+
 if (loginCallbacks) {
   app.get('/login-callback', ...loginCallbacks)
 }

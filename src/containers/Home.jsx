@@ -60,7 +60,7 @@ class Home extends React.Component {
         throw new Error(newInvite.errors)
       } else {
         // alert(newInvite.data.createInvite.id)
-        this.props.router.push(`/invite/${newInvite.data.createInvite.hash}`)
+        this.props.router.push(`/login?nextUrl=/invite/${newInvite.data.createInvite.hash}`)
       }
     }
   }
