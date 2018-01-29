@@ -9,6 +9,8 @@ You will need to create a Twilio account in order to test outgoing and incoming 
 If you are using these instructions for an Heroku instance or AWS Lambda instance, replace references to <YOUR_NGROK_APP_URL> with your actual app url (i.e. examplespokeapp.herokuapp.com )
 
 1. If you are using these instructions for development, start [ngrok](https://ngrok.com/docs).
+  - A reasonable command line for `ngrok` is `ngrok http -subdomain=<UNIQUE_NAME> 3000` (Replace <UNIQUE_NAME> with something likely to be globally unique. Use the same <UNIQUE_NAME> each time you start ngrok. If you use a different <UNIQUE_NAME> it will be necessary to change the configuration in Twilio.)
+  - When you start `ngrok`, it will display the external-facing app URL. Use that below to replace <YOUR_NGROK_APP_URL>
 2. Create a Twilio acccount: https://www.twilio.com/
 3. Click on `Programmable SMS` on the side panel
 4. Click on `Messaging Services`, and click the plus
@@ -26,3 +28,4 @@ If you are using these instructions for an Heroku instance or AWS Lambda instanc
   - `TWILIO_API_KEY` in your .env file is `ACCOUNT SID` in your Twilio console
   - `TWILIO_APPLICATION_SID` is `TWILIO_MESSAGE_SERVICE_SID` (these are the same values)
   - `TWILIO_AUTH_TOKEN` in your .env file is `AUTH TOKEN` in your Twilio console
+11. If you want to send live text messages as part of your testing, you must buy a phone number and attach it to your project.
