@@ -26,7 +26,6 @@ Generally, the first steps are:
 
 ### Working on an issue
 
-* Depending on the part of the codebase you are working on read relevant parts of [EXPLANATION-development-guidelines.md](./EXPLANATION-development-guidelines.md) for some context and common gotchas.
 * While working on an issue, run existing tests to make sure they still work (`npm test`)
 * Please try adding a test, at least for backend changes (We have an [open issue to wire up frontend React testing](https://github.com/MoveOnOrg/Spoke/issues/292))
 * Before committing changes, please run `npm run lint` to standardize formatting
