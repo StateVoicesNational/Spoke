@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
   }
 })
 
-class AssignmentSummary extends Component {
+export class AssignmentSummary extends Component {
   state = {
     badTimezoneTooltipOpen: false
   }
