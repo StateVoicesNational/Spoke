@@ -87,7 +87,7 @@ import { uploadContacts,
 const uuidv4 = require('uuid').v4
 import GraphQLDate from 'graphql-date'
 import GraphQLJSON from 'graphql-type-json'
-import GraphQLError from 'graphql/error'
+import { GraphQLError } from 'graphql/error'
 
 const JOBS_SAME_PROCESS = !!(process.env.JOBS_SAME_PROCESS || global.JOBS_SAME_PROCESS)
 const JOBS_SYNC = !!(process.env.JOBS_SYNC || global.JOBS_SYNC)
@@ -653,6 +653,12 @@ const rootMutations = {
         await accessRequired(user, campaign.organizationId, 'ADMIN')
       } else {
         await accessRequired(user, origCampaign.organization_id, 'ADMIN')
+      }
+      if (origCampaign.is_started && campaign.hasOwnProperty('contacts') && campaign.contacts) {
+          throw new GraphQLError({
+              status: 400,
+              message: 'Not allowed to add contacts after the campaign starts'
+          })
       }
       return editCampaign(id, campaign, loaders, user, origCampaign)
     },
