@@ -34,9 +34,17 @@ Follow up instructions located [here](https://github.com/MoveOnOrg/Spoke/blob/ma
 7. Create an [Auth0](https://auth0.com) account. In your Auth0 account, go to Settings -> Clients -> and then grab your Client ID, Client Secret, and your Auth0 domain (should look like xxx.auth0.com). Add those inside your `.env` file (AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_DOMAIN respectively).
 8. Run `npm run dev` to create and populate the tables.
 9. Add the login callback and logout callback URL in `.env` (default `http://localhost:3000/login-callback` and `http://localhost:3000/logout-callback`) to your Auth0 app settings under "Allowed Callback URLs" and "Allowed Logout URLs" respectively. (If you get an error when logging in later about "OIDC", go to Advanced Settings section, and then OAuth, and turn off 'OIDC Conformant')
-10. Run `npm run dev` to start the app. Wait until you see both "Node app is running ..." and "Webpack dev server is now running ..." before attempting to connect. (make sure environment variable `JOBS_SAME_PROCESS=1`)
-11. Go to `http://localhost:3000` to load the app.
-12. As long as you leave `SUPPRESS_SELF_INVITE=` blank and unset in your `.env` you should be able to invite yourself from the homepage.
+10. Add the domain name for your app to "Allowed Web Origins" in the Auth0 Settings. It should be the same as the login/logout callback URLs without the callback path. So for localhost it would look like "http://localhost:3000"
+11. Add a new [rule](https://manage.auth0.com/#/rules/create) in Auth0: 
+```javascript
+function (user, context, callback) {
+context.idToken["https://spoke/user_metadata"] = user.user_metadata;
+callback(null, user, context);
+}
+```
+12. Run `npm run dev` to start the app. Wait until you see both "Node app is running ..." and "Webpack dev server is now running ..." before attempting to connect. (make sure environment variable `JOBS_SAME_PROCESS=1`)
+13. Go to `http://localhost:3000` to load the app.
+14. As long as you leave `SUPPRESS_SELF_INVITE=` blank and unset in your `.env` you should be able to invite yourself from the homepage.
     - If you DO set that variable, then spoke will be invite-only and you'll need to generate an invite. Run:
 ```
 echo "INSERT INTO invite (hash,is_valid) VALUES ('abc', 1);" |sqlite3 mydb.sqlite
@@ -44,7 +52,7 @@ echo "INSERT INTO invite (hash,is_valid) VALUES ('abc', 1);" |sqlite3 mydb.sqlit
 ```
   - Then use the generated key to visit an invite link, e.g.: http://localhost:3000/invite/abc. This should redirect you to the login screen. Use the "Sign Up" option to create your account.
 
-12. You should then be prompted to create an organization. Create it.
+15. You should then be prompted to create an organization. Create it.
 
 If you want to create an invite via the home page "Login and get started" link, make sure your `SUPPRESS_SELF_INVITE` variable is not set.
 
