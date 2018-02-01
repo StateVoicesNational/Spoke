@@ -9,7 +9,7 @@ const OrganizationJoinLink = ({ organizationUuid, campaignId }) => {
   }
 
   const joinUrl = ((campaignId)
-                   ? `${baseUrl}/${organizationUuid}/join${campaignId}`
+                   ? `${baseUrl}/${organizationUuid}/join/${campaignId}`
                    : `${baseUrl}/${organizationUuid}/join`)
 
   return (
