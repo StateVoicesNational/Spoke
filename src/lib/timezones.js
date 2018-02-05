@@ -1,5 +1,5 @@
 import moment from 'moment-timezone'
-import {TzHelpers} from '../lib/tz-helpers'
+import {getProcessEnvTz} from '../lib/tz-helpers'
 
 const TIMEZONE_CONFIG = {
   missingTimeZone: {
@@ -16,12 +16,11 @@ export const isBetweenTextingHours = (offsetData, config) => {
   if (!config.textingHoursEnforced) {
     return true
   }
-  const tzHelpers = new TzHelpers();
-  if (tzHelpers.getProcessEnvTz()) {
-    const today = moment.tz(tzHelpers.getProcessEnvTz()).format('YYYY-MM-DD')
-    const start = moment.tz(`${today}`, tzHelpers.getProcessEnvTz()).add(config.textingHoursStart, 'hours')
-    const stop = moment.tz(`${today}`, tzHelpers.getProcessEnvTz()).add(config.textingHoursEnd, 'hours')
-    return moment.tz(tzHelpers.getProcessEnvTz()).isBetween(start, stop, null, '[]')
+  if (getProcessEnvTz()) {
+    const today = moment.tz(getProcessEnvTz()).format('YYYY-MM-DD')
+    const start = moment.tz(`${today}`, getProcessEnvTz()).add(config.textingHoursStart, 'hours')
+    const stop = moment.tz(`${today}`, getProcessEnvTz()).add(config.textingHoursEnd, 'hours')
+    return moment.tz(getProcessEnvTz()).isBetween(start, stop, null, '[]')
   }
   let offset
   let hasDST

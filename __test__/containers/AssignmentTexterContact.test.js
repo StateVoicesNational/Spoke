@@ -4,6 +4,7 @@ import {AssignmentTexterContact} from "../../src/containers/AssignmentTexterCont
 import sinon from 'sinon'
 
 jest.mock('../../src/lib/timezones')
+jest.unmock('../../src/lib/tz-helpers')
 
 const campaign = {
   id: 9,
