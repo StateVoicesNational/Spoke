@@ -6,8 +6,11 @@ export {
   getLocalTime,
   isBetweenTextingHours,
   defaultTimezoneIsBetweenTextingHours,
-  getOffsets
+  getOffsets,
 } from './timezones'
+export {
+  TzHelpers
+} from './tz-helpers'
 export {
   isClient
 } from './is-client'
