@@ -1,4 +1,2 @@
-export class TzHelpers {
-  getProcessEnvTz() { return process.env.TZ; }
-}
+export function getProcessEnvTz() { return process.env.TZ; }
 

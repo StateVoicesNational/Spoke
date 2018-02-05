@@ -9,7 +9,7 @@ export {
   getOffsets,
 } from './timezones'
 export {
-  TzHelpers
+  getProcessEnvTz
 } from './tz-helpers'
 export {
   isClient
