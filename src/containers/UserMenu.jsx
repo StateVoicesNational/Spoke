@@ -59,6 +59,14 @@ class UserMenu extends Component {
     }
     return <Avatar style={inlineStyles} size={size}>{user.displayName.charAt(0)}</Avatar>
   }
+
+  handleReturn = (e) => {
+    const { orgId } = this.props
+    const { currentUser } = this.props.data
+    this.props.router.push(`/app/${orgId}/todos`)
+    e.preventDefault()
+  }
+
   render() {
     const { currentUser } = this.props.data
     if (!currentUser) {
@@ -97,6 +105,11 @@ class UserMenu extends Component {
                 value={organization.id}
               />
             ))}
+            <Divider />
+            <MenuItem
+              primaryText='Home'
+              onClick={this.handleReturn.bind(this)}
+            />
             <Divider />
             <MenuItem
               primaryText='Log out'
