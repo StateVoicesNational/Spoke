@@ -76,7 +76,7 @@ export class AssignmentSummary extends Component {
   }
 
   render() {
-    const { assignment, unmessagedCount, unrepliedCount, badTimezoneCount } = this.props
+    const { assignment, unmessagedCount, unrepliedCount, badTimezoneCount, totalMessagedCount } = this.props
     const { title, description, dueBy,
             primaryColor, logoImageUrl, introHtml,
             useDynamicAssignment } = assignment.campaign
@@ -115,6 +115,15 @@ export class AssignmentSummary extends Component {
               contactsFilter: 'reply',
               hideIfZero: true
             })}
+            {(window.NOT_IN_USA && window.ALLOW_SEND_ALL) ? '' : this.renderBadgedButton({
+              assignment,
+              title: 'Revisit convos',
+              primary: false,
+              count: totalMessagedCount,
+              disabled: false,
+              contactsFilter: 'stale',
+              hideIfZero: false
+            })}
             {(window.NOT_IN_USA && window.ALLOW_SEND_ALL) ? this.renderBadgedButton({
               assignment,
               title: 'Send messages',
@@ -147,6 +156,7 @@ AssignmentSummary.propTypes = {
   unmessagedCount: PropTypes.number,
   unrepliedCount: PropTypes.number,
   badTimezoneCount: PropTypes.number,
+  totalMessagedCount: PropTypes.number,
   data: PropTypes.object,
   mutations: PropTypes.object
 }
