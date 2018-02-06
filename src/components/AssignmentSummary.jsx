@@ -115,7 +115,7 @@ export class AssignmentSummary extends Component {
               contactsFilter: 'reply',
               hideIfZero: true
             })}
-            {(window.NOT_IN_USA && window.ALLOW_SEND_ALL) ? '' : this.renderBadgedButton({
+            {this.renderBadgedButton({
               assignment,
               title: 'Revisit convos',
               primary: false,
