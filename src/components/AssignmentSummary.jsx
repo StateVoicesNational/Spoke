@@ -4,7 +4,6 @@ import { Card, CardActions, CardTitle } from 'material-ui/Card'
 import { StyleSheet, css } from 'aphrodite'
 import loadData from '../containers/hoc/load-data'
 import gql from 'graphql-tag'
-import FlatButton from 'material-ui/FlatButton'
 import RaisedButton from 'material-ui/RaisedButton'
 import Badge from 'material-ui/Badge'
 import moment from 'moment'
@@ -36,7 +35,7 @@ const styles = StyleSheet.create({
   }
 })
 
-class AssignmentSummary extends Component {
+export class AssignmentSummary extends Component {
   state = {
     badTimezoneTooltipOpen: false
   }
@@ -81,18 +80,7 @@ class AssignmentSummary extends Component {
     const { title, description, dueBy,
             primaryColor, logoImageUrl, introHtml,
             useDynamicAssignment } = assignment.campaign
-    const actions = [
-      <FlatButton
-        label='No'
-        primary
-        onClick={this.handleClose}
-      />,
-      <FlatButton
-        label='Yes'
-        primary
-        onClick={this.sendMessages}
-      />
-    ]
+
     return (
       <div className={css(styles.container)}>
         <Card
@@ -103,8 +91,7 @@ class AssignmentSummary extends Component {
             subtitle={`${description} - ${moment(dueBy).format('MMM D YYYY')}`}
             style={{ backgroundColor: primaryColor }}
             children={logoImageUrl ? <img src={logoImageUrl} className={css(styles.image)} /> : ''}
-          >
-          </CardTitle>
+          />
           <Divider />
           <div style={{ margin: '20px' }}>
             <div dangerouslySetInnerHTML={{ __html: introHtml }} />
