@@ -3,11 +3,9 @@ import React, { Component } from 'react'
 import { Card, CardActions, CardTitle } from 'material-ui/Card'
 import { StyleSheet, css } from 'aphrodite'
 import loadData from '../containers/hoc/load-data'
-import { applyScript } from '../lib/scripts'
 import gql from 'graphql-tag'
 import FlatButton from 'material-ui/FlatButton'
 import RaisedButton from 'material-ui/RaisedButton'
-import Dialog from 'material-ui/Dialog'
 import Badge from 'material-ui/Badge'
 import moment from 'moment'
 import Divider from 'material-ui/Divider'
@@ -130,7 +128,7 @@ class AssignmentSummary extends Component {
               contactsFilter: 'reply',
               hideIfZero: true
             })}
-            {(window.NOT_IN_USA && window.ALLOW_SEND_ALL) ? '' : this.renderBadgedButton({
+            {this.renderBadgedButton({
               assignment,
               title: 'Revisit convos',
               primary: false,
