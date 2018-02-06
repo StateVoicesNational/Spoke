@@ -55,9 +55,9 @@ class UserMenu extends Component {
   }
 
   handleReturn = (e) => {
+    e.preventDefault()
     const { orgId } = this.props
     this.props.router.push(`/app/${orgId}/todos`)
-    e.preventDefault()
   }
 
 
