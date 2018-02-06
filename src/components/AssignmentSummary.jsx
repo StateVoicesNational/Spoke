@@ -137,7 +137,7 @@ class AssignmentSummary extends Component {
               count: totalMessagedCount,
               disabled: false,
               contactsFilter: 'stale',
-              hideIfZero: false
+              hideIfZero: true
             })}
             {(window.NOT_IN_USA && window.ALLOW_SEND_ALL) ? this.renderBadgedButton({
               assignment,
