@@ -3,11 +3,8 @@ import React, { Component } from 'react'
 import { Card, CardActions, CardTitle } from 'material-ui/Card'
 import { StyleSheet, css } from 'aphrodite'
 import loadData from '../containers/hoc/load-data'
-import { applyScript } from '../lib/scripts'
 import gql from 'graphql-tag'
-import FlatButton from 'material-ui/FlatButton'
 import RaisedButton from 'material-ui/RaisedButton'
-import Dialog from 'material-ui/Dialog'
 import Badge from 'material-ui/Badge'
 import moment from 'moment'
 import Divider from 'material-ui/Divider'
@@ -38,7 +35,7 @@ const styles = StyleSheet.create({
   }
 })
 
-class AssignmentSummary extends Component {
+export class AssignmentSummary extends Component {
   state = {
     badTimezoneTooltipOpen: false
   }
@@ -79,22 +76,11 @@ class AssignmentSummary extends Component {
   }
 
   render() {
-    const { assignment, unmessagedCount, unrepliedCount, badTimezoneCount } = this.props
+    const { assignment, unmessagedCount, unrepliedCount, badTimezoneCount, totalMessagedCount } = this.props
     const { title, description, dueBy,
             primaryColor, logoImageUrl, introHtml,
             useDynamicAssignment } = assignment.campaign
-    const actions = [
-      <FlatButton
-        label='No'
-        primary
-        onClick={this.handleClose}
-      />,
-      <FlatButton
-        label='Yes'
-        primary
-        onClick={this.sendMessages}
-      />
-    ]
+
     return (
       <div className={css(styles.container)}>
         <Card
@@ -105,8 +91,7 @@ class AssignmentSummary extends Component {
             subtitle={`${description} - ${moment(dueBy).format('MMM D YYYY')}`}
             style={{ backgroundColor: primaryColor }}
             children={logoImageUrl ? <img src={logoImageUrl} className={css(styles.image)} /> : ''}
-          >
-          </CardTitle>
+          />
           <Divider />
           <div style={{ margin: '20px' }}>
             <div dangerouslySetInnerHTML={{ __html: introHtml }} />
@@ -128,6 +113,15 @@ class AssignmentSummary extends Component {
               primary: false,
               disabled: false,
               contactsFilter: 'reply',
+              hideIfZero: true
+            })}
+            {this.renderBadgedButton({
+              assignment,
+              title: 'Revisit convos',
+              primary: false,
+              count: totalMessagedCount,
+              disabled: false,
+              contactsFilter: 'stale',
               hideIfZero: true
             })}
             {(window.NOT_IN_USA && window.ALLOW_SEND_ALL) ? this.renderBadgedButton({
@@ -162,6 +156,7 @@ AssignmentSummary.propTypes = {
   unmessagedCount: PropTypes.number,
   unrepliedCount: PropTypes.number,
   badTimezoneCount: PropTypes.number,
+  totalMessagedCount: PropTypes.number,
   data: PropTypes.object,
   mutations: PropTypes.object
 }
