@@ -64,8 +64,10 @@ class UserMenu extends Component {
   renderAvatar(user, size) {
     // Material-UI seems to not be handling this correctly when doing serverside rendering
     const inlineStyles = {
-      lineHeight: 2,
-      textAlign: 'center'
+      lineHeight: '1.25',
+      textAlign: 'center',
+      color: 'white',
+      padding: '5px'
     }
     return <Avatar style={inlineStyles} size={size}>{user.displayName.charAt(0)}</Avatar>
   }
