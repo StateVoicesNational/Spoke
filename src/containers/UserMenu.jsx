@@ -7,7 +7,6 @@ import Divider from 'material-ui/Divider'
 import Subheader from 'material-ui/Subheader'
 import IconButton from 'material-ui/IconButton'
 import Avatar from 'material-ui/Avatar'
-import { ListItem } from 'material-ui/List'
 import { connect } from 'react-apollo'
 import { withRouter } from 'react-router'
 import gql from 'graphql-tag'
@@ -15,9 +14,13 @@ import gql from 'graphql-tag'
 const avatarSize = 28
 
 class UserMenu extends Component {
-  state = {
-    open: false,
-    anchorEl: null
+  constructor(props) {
+    super(props)
+    this.state = {
+      open: false,
+      anchorEl: null
+    }
+    this.handleReturn = this.handleReturn.bind(this)
   }
 
   handleTouchTap = (event) => {
@@ -51,14 +54,24 @@ class UserMenu extends Component {
     }
   }
 
+  handleReturn = (e) => {
+    e.preventDefault()
+    const { orgId } = this.props
+    this.props.router.push(`/app/${orgId}/todos`)
+  }
+
+
   renderAvatar(user, size) {
     // Material-UI seems to not be handling this correctly when doing serverside rendering
     const inlineStyles = {
-      lineHeight: 2,
-      textAlign: 'center'
+      lineHeight: '1.25',
+      textAlign: 'center',
+      color: 'white',
+      padding: '5px'
     }
     return <Avatar style={inlineStyles} size={size}>{user.displayName.charAt(0)}</Avatar>
   }
+
   render() {
     const { currentUser } = this.props.data
     if (!currentUser) {
@@ -99,6 +112,11 @@ class UserMenu extends Component {
             ))}
             <Divider />
             <MenuItem
+              primaryText='Home'
+              onClick={this.handleReturn}
+            />
+            <Divider />
+            <MenuItem
               primaryText='Log out'
               value='logout'
             />
@@ -135,4 +153,3 @@ const mapQueriesToProps = () => ({
 export default connect({
   mapQueriesToProps
 })(withRouter(UserMenu))
-

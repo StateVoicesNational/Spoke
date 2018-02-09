@@ -32,7 +32,7 @@
 
 
 ## Notes about Twilio environment variable setup
-If you need to use Twilio in development but with live keys, click [here](https://github.com/MoveOnOrg/Spoke/blob/master/docs/HOWTO_INTEGRATE_TWILIO.md) for instructions.
+If you need to use Twilio in development but with live keys, click [here](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_INTEGRATE_TWILIO.md) for instructions.
 
 Visit [here](https://www.twilio.com/docs/api/messaging/services-and-copilot) to configure messaging service features
 
