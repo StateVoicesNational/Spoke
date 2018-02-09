@@ -1,5 +1,5 @@
 {
-  "extends" : "airbnb",
+  "extends": "airbnb",
   "parser": "babel-eslint",
   "rules": {
     "comma-dangle": ["error", "never"],
@@ -8,6 +8,7 @@
     "no-alert": ["off"],
     "no-console": ["off"],
     "prefer-template": ["off"],
-    "semi": ["error", "never"],
-  }
+    "semi": ["error", "never"]
+  },
+  "env": { "jest": true, "node": true, "browser": true }
 }
