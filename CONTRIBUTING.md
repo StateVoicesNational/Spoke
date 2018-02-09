@@ -14,7 +14,7 @@ many important organizations!
 
 Generally, the first steps are:
 
-* Fork this repository and clone it locally
+* Fork this repository and clone it locally. Note that unlike the git default, our main branch is called `main`.
 * Get a working development environment (see the [README](https://github.com/MoveOnOrg/Spoke/#spoke) and [docs/](https://github.com/MoveOnOrg/Spoke/tree/main/docs))-- reach out through our communication channels (above) if you have issues.
 
 ### Picking an issue
