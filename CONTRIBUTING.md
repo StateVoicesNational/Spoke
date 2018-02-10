@@ -14,8 +14,8 @@ many important organizations!
 
 Generally, the first steps are:
 
-* Fork this repository and clone it locally
-* Get a working development environment (see the [README](https://github.com/MoveOnOrg/Spoke/#spoke) and [docs/](https://github.com/MoveOnOrg/Spoke/tree/master/docs))-- reach out through our communication channels (above) if you have issues.
+* Fork this repository and clone it locally. Note that unlike the git default, our main branch is called `main`.
+* Get a working development environment (see the [README](https://github.com/MoveOnOrg/Spoke/#spoke) and [docs/](https://github.com/MoveOnOrg/Spoke/tree/main/docs))-- reach out through our communication channels (above) if you have issues.
 
 ### Picking an issue
 
@@ -26,7 +26,7 @@ Generally, the first steps are:
 
 ### Working on an issue
 
-* Depending on the part of the codebase you are working on read relevant parts of [EXPLANATION-development-guidelines.md](./EXPLANATION-development-guidelines.md) for some context and common gotchas.
+* Depending on the part of the codebase you are working on read relevant parts of [EXPLANATION-development-guidelines.md](./docs/EXPLANATION-development-guidelines.md) for some context and common gotchas.
 * While working on an issue, run existing tests to make sure they still work (`npm test`)
 * Please try adding a test, at least for backend changes (We have an [open issue to wire up frontend React testing](https://github.com/MoveOnOrg/Spoke/issues/292))
 * Before committing changes, please run `npm run lint` to standardize formatting
@@ -41,30 +41,30 @@ Generally, the first steps are:
 
 ### Release Process
 
-This describes MoveOn's internal regression testing and release process, and can be used as an example of how another organization could set up a release process for Spoke. 
+This describes MoveOn's internal regression testing and release process, and can be used as an example of how another organization could set up a release process for Spoke.
 
-As an organization starts using complex software at scale, it becomes increasingly important to avoid production outages and scaling issues when possible. As MoveOn transitioned into a production software development stage with Spoke, instead of just rolling out changes when they became ready, we decided to adopt a more formal and careful process. 
+As an organization starts using complex software at scale, it becomes increasingly important to avoid production outages and scaling issues when possible. As MoveOn transitioned into a production software development stage with Spoke, instead of just rolling out changes when they became ready, we decided to adopt a more formal and careful process.
 
 We're a small team, practice agile software development, and plan weekly sprints starting every Monday. For us, it makes sense to do weekly releases of production software. We deploy changes every Wednesday afternoon.
 
 The actual process:
-* On Tuesday, we delete the old stage-master branch, and cut a new one from master: 
-  * git checkout master
-  * git branch -D stage-master
-  * git push origin :stage-master
-  * git checkout -b stage-master
-  * git push origin stage-master
-* On Tuesday we will test each PR and only merge it to stage-master and NOT master. We wait to merge to master only after Wednesday's regression 'testing party'
-  * This ensures that PRs will not contain anything that breaks deployment and also will allow us to see if any PRs negatively interact with each other before they end up merged to master.  Why bother with this step? it's helpful to have a separate "release candidate" on the stage-master branch because in earlier testing rounds people weren't sure what had been deployed to staging and having a separate branch makes this explicit and clear. 
-  * When you have tested a PR branch locally and approve its merge (you do NOT click the 'merge' button in github -- that would merge to master (BAD!)). Instead:
-  * if this is a different person that created stage-master above, they should run:
+* On Tuesday, we delete the old stage-main branch, and cut a new one from main: 
+  * git checkout main
+  * git branch -D stage-main
+  * git push origin :stage-main
+  * git checkout -b stage-main
+  * git push origin stage-main
+* On Tuesday we will test each PR and only merge it to stage-main and NOT main. We wait to merge to main only after Wednesday's regression 'testing party'
+  * This ensures that PRs will not contain anything that breaks deployment and also will allow us to see if any PRs negatively interact with each other before they end up merged to main.  Why bother with this step? it's helpful to have a separate "release candidate" on the stage-main branch because in earlier testing rounds people weren't sure what had been deployed to staging and having a separate branch makes this explicit and clear.
+  * When you have tested a PR branch locally and approve its merge (you do NOT click the 'merge' button in github -- that would merge to main (BAD!)). Instead:
+  * if this is a different person that created stage-main above, they should run:
     * git fetch
-    * git checkout stage-master
-    * git reset --hard origin/stage-master
-  * Then deploy the stage-master branch to our staging environment
-* By EOD Tuesday, we should have reviewed and merged the PRs to stage-master that contain changes we would like to test on staging and roll to prod Wednesday.
+    * git checkout stage-main
+    * git reset --hard origin/stage-main
+  * Then deploy the stage-main branch to our staging environment
+* By EOD Tuesday, we should have reviewed and merged the PRs to stage-main that contain changes we would like to test on staging and roll to prod Wednesday.
 * On Wednesday morning, the whole team then piles onto regression testing staging
 * After the tech team tests staging, we get at least one member of the Mobile team to signoff on the state of staging.
-* If we fix all issues, regression test staging, and tech and mobile have signed off on staging, we merge stage-master back into master, roll to prod, as early as signoff is possible and at latest Thursday morning. This way, we know that the master branch is stable and is what we're running in our prod env.
+* If we fix all issues, regression test staging, and tech and mobile have signed off on staging, we merge stage-main back into main, roll to prod, as early as signoff is possible and at latest Thursday morning. This way, we know that the main branch is stable and is what we're running in our prod env.
 * After we roll to prod, at least one member of the Tech and Mobile team verify that prod is up and working.
 * We never roll code directly to prod without first testing on staging.

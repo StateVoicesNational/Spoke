@@ -4,15 +4,15 @@ import LinearProgress from 'material-ui/LinearProgress'
 
 class TexterStats extends React.Component {
   renderAssignment(assignment) {
-    const { contactsCount, unmessagedCount, texter } = assignment
+    const { contactsCount, unmessagedCount, texter, id } = assignment
     if (contactsCount === 0) {
-      return <div />
+      return <div key={id} />
     }
 
     const percentComplete = Math.round(((contactsCount - unmessagedCount) * 100) / contactsCount)
 
     return (
-      <div>
+      <div key={id}>
         {texter.firstName}
         <div>{percentComplete}%</div>
         <LinearProgress
@@ -24,13 +24,13 @@ class TexterStats extends React.Component {
   }
 
   renderAssignmentDynamic(assignment) {
-    const { contactsCount, unmessagedCount, texter } = assignment
+    const { contactsCount, unmessagedCount, texter, id } = assignment
     if (contactsCount === 0) {
-      return <div />
+      return <div key={id} />
     }
 
     return (
-      <div>
+      <div key={id}>
         {texter.firstName}
         <div>{contactsCount - unmessagedCount} initial messages sent</div>
       </div>

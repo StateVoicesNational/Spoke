@@ -7,10 +7,10 @@ import { makeExecutableSchema, addMockFunctionsToSchema } from 'graphql-tools'
 import { schema, resolvers } from './api/schema'
 import { accessRequired } from './api/errors'
 import mocks from './api/mocks'
-import { createLoaders, User } from './models'
+import { createLoaders } from './models'
 import passport from 'passport'
 import cookieSession from 'cookie-session'
-import setupAuth0Passport from './setup-auth0-passport'
+import { setupAuth0Passport } from './auth-passport'
 import wrap from './wrap'
 import { log } from '../lib'
 import nexmo from './api/lib/nexmo'
@@ -27,7 +27,13 @@ process.on('uncaughtException', (ex) => {
 })
 const DEBUG = process.env.NODE_ENV === 'development'
 
-setupAuth0Passport()
+const loginCallbacks = setupAuth0Passport()
+if (!process.env.PASSPORT_STRATEGY) {
+  // default to legacy Auth0 choice
+
+} else {
+
+}
 if (!process.env.SUPPRESS_SEED_CALLS) {
   seedZipCodes()
 }
@@ -142,35 +148,10 @@ app.get('/logout-callback', (req, res) => {
   req.logOut()
   res.redirect('/')
 })
-app.get('/login-callback',
-  passport.authenticate('auth0', {
-    failureRedirect: '/login'
-  }), wrap(async (req, res) => {
-    if (!req.user || !req.user.id) {
-      throw new Error('Null user in login callback')
-    }
-    const existingUser = await User.filter({ auth0_id: req.user.id })
 
-    if (existingUser.length === 0) {
-      await User.save({
-        auth0_id: req.user.id,
-        // eslint-disable-next-line no-underscore-dangle
-        first_name: req.user._json.user_metadata.given_name,
-        // eslint-disable-next-line no-underscore-dangle
-        last_name: req.user._json.user_metadata.family_name,
-        // eslint-disable-next-line no-underscore-dangle
-        cell: req.user._json.user_metadata.cell,
-        // eslint-disable-next-line no-underscore-dangle
-        email: req.user._json.email,
-        is_superadmin: false
-      })
-      res.redirect(req.query.state || 'terms')
-      return
-    }
-    res.redirect(req.query.state || '/')
-    return
-  })
-)
+if (loginCallbacks) {
+  app.get('/login-callback', ...loginCallbacks)
+}
 
 const executableSchema = makeExecutableSchema({
   typeDefs: schema,

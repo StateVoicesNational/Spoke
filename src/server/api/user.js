@@ -36,6 +36,9 @@ export const resolvers = {
       .limit(1)(0)
       .default(null),
     organizations: async (user, { role }) => {
+      if (!user || !user.id) {
+        return []
+      }
       let orgs = r.table('user_organization')
         .getAll(user.id, { index: 'user_id' })
       if (role) {

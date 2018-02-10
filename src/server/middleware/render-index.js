@@ -24,7 +24,7 @@ const rollbarScript = process.env.ROLLBAR_CLIENT_TOKEN ?
 // good for doing dev offline
 const externalLinks = (process.env.NO_EXTERNAL_LINKS ? '' :
   `<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Poppins">
-  <script src="https://cdn.auth0.com/js/lock/10.0.0-rc.2/lock.min.js"></script>`)
+  <script src="https://cdn.auth0.com/js/lock/11.0.1/lock.min.js"></script>`)
 
 export default function renderIndex(html, css, assetMap, store) {
   return `
