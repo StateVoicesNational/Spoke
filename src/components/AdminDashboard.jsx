@@ -57,7 +57,7 @@ class AdminDashboard extends React.Component {
       path: 'billing'
     }]
 
-    const { location, children } = this.props
+    const { location, children, params } = this.props
     let currentSection = sections.filter(
       (section) => location.pathname.match(`/${section.path}`)
     )
@@ -71,7 +71,7 @@ class AdminDashboard extends React.Component {
 
     return (
       <div>
-        <TopNav title={title} backToURL={backToURL} />
+        <TopNav title={title} backToURL={backToURL} orgId={params.organizationId} />
         <div className={css(styles.container)}>
           {this.renderNavigation(sections)}
           <div className={css(styles.content)}>

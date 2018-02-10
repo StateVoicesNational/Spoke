@@ -4,6 +4,7 @@ import { requiredString, timestamp } from './custom-types'
 
 const User = thinky.createModel('user', type.object().schema({
   id: type.string(),
+  // LEGACY name, but contains the auth0_id OR the auth secret/token
   auth0_id: requiredString().stopReference(),
   first_name: requiredString(),
   last_name: requiredString(),

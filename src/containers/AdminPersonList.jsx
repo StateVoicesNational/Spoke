@@ -2,6 +2,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import Empty from '../components/Empty'
 import OrganizationJoinLink from '../components/OrganizationJoinLink'
+import UserEdit from './UserEdit'
 import FlatButton from 'material-ui/FlatButton'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import DropDownMenu from 'material-ui/DropDownMenu'
@@ -25,15 +26,25 @@ const organizationFragment = `
   }
 `
 class AdminPersonList extends React.Component {
-  state = {
-    open: false
+
+  constructor(props) {
+    super(props)
+    this.handleOpen = this.handleOpen.bind(this)
+    this.handleClose = this.handleClose.bind(this)
+    this.handleChange = this.handleChange.bind(this)
+    this.updateUser = this.updateUser.bind(this)
   }
 
-  handleOpen = () => {
+  state = {
+    open: false,
+    userEdit: false
+  }
+
+  handleOpen() {
     this.setState({ open: true })
   }
 
-  handleClose = () => {
+  handleClose() {
     this.setState({ open: false })
   }
 
@@ -49,6 +60,15 @@ class AdminPersonList extends React.Component {
       .props
       .mutations
       .editOrganizationRoles(this.props.params.organizationId, userId, roles)
+  }
+
+  editUser(userId) {
+    this.setState({ userEdit: userId })
+  }
+
+  updateUser() {
+    this.setState({ userEdit: false })
+    this.props.personData.refetch()
   }
 
   renderTexters() {
@@ -96,6 +116,7 @@ class AdminPersonList extends React.Component {
                     />
                   ))}
                 </DropDownMenu>
+                <FlatButton label='Edit' onTouchTap={() => { this.editUser(person.id) }} />
               </TableRowColumn>
             </TableRow>
           ))}
@@ -116,6 +137,18 @@ class AdminPersonList extends React.Component {
         >
           <ContentAdd />
         </FloatingActionButton>
+        <Dialog
+          title='Edit user'
+          modal={false}
+          open={Boolean(this.state.userEdit)}
+          onRequestClose={() => { this.setState({ userEdit: false }) }}
+        >
+          <UserEdit
+            organizationId={organizationData.organization.id}
+            userId={this.state.userEdit}
+            onRequestClose={this.updateUser}
+          />
+        </Dialog>
         <Dialog
           title='Invite new texters'
           actions={[
