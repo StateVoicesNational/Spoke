@@ -26,19 +26,18 @@ export async function hasRole(userId, orgId, role) {
 
 export async function accessRequired(user, orgId, role, allowSuperadmin = false) {
   authRequired(user)
-
   if (allowSuperadmin && user.is_superadmin) {
     return
   }
-
-  const userHasRole = await r.knex('user_organization')
-    .where({ user_id: user.id,
-             organization_id: orgId })
-    // require a permission at-or-higher than the permission requested
-    .whereIn('role', accessHierarchy.slice(accessHierarchy.indexOf(role)))
-    .limit(1)
-
-  if (!userHasRole.length) {
+  const userHasRole = await r.getCount(
+    r.knex('user_organization')
+      .where({ user_id: user.id,
+               organization_id: orgId })
+      .whereIn('role',
+               // require a permission at-or-higher than the permission requested
+               accessHierarchy.slice(accessHierarchy.indexOf(role)))
+  )
+  if (!userHasRole) {
     throw new GraphQLError({
       status: 403,
       message: 'You are not authorized to access that resource.'
