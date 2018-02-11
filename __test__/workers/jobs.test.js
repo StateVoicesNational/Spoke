@@ -6,10 +6,6 @@ var zipFormat = require('../../src/lib/zip-format')
 
 describe('test getTimezoneByZip', () => {
 
-  afterEach(() => {
-    //zipFormat.zipToTimeZone.mockRestore()
-  })
-
   it('returns timezone data from the common zipcode/timezone mappings', async () => {
     zipFormat.zipToTimeZone.mockReturnValueOnce([0, 0, 3, 1])
 
@@ -60,8 +56,7 @@ describe('test getTimezoneByZip', () => {
       expect(future).toEqual('7_1')
     }
     finally {
-      future = await r.table('zip_code').getAll().delete()
-      expect(future).resolves
+      return await r.table('zip_code').getAll().delete()
     }
 
 
