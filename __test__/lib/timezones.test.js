@@ -4,7 +4,6 @@ import {
   getLocalTime,
   getOffsets,
   isBetweenTextingHours,
-  getProcessEnvTz
 } from '../../src/lib/index'
 import sinon from 'sinon'
 
