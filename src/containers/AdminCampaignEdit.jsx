@@ -487,7 +487,7 @@ class AdminCampaignEdit extends React.Component {
             verticalAlign: 'middle'
           }
 
-          const { sectionIsSaving, savePercent } = this.sectionSaveStatus(section);
+          const { sectionIsSaving, savePercent } = this.sectionSaveStatus(section)
           const sectionCanExpandOrCollapse = section.expandAfterCampaignStarts
             || !this.props.campaignData.campaign.isStarted
           if (sectionIsSaving) {

@@ -42,7 +42,7 @@ export function setupAuth0Passport() {
         // eslint-disable-next-line no-underscore-dangle
         req.user._json['https://spoke/user_metadata']
         // eslint-disable-next-line no-underscore-dangle
-        || req.user._json._metadata
+        || req.user._json.user_metadata
         || {})
       const userData = {
         auth0_id: auth0Id,

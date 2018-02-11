@@ -7,7 +7,7 @@ import CannedResponseMenu from '../components/CannedResponseMenu'
 import AssignmentTexterSurveys from '../components/AssignmentTexterSurveys'
 import RaisedButton from 'material-ui/RaisedButton'
 import FlatButton from 'material-ui/FlatButton'
-import NavigateCloseIcon from 'material-ui/svg-icons/navigation/close'
+import NavigateHomeIcon from 'material-ui/svg-icons/action/home'
 import { grey100 } from 'material-ui/styles/colors'
 import IconButton from 'material-ui/IconButton/IconButton'
 import { Toolbar, ToolbarGroup } from 'material-ui/Toolbar'
@@ -680,10 +680,10 @@ export class AssignmentTexterContact extends React.Component {
           <IconButton
             onTouchTap={this.props.onExitTexter}
             style={inlineStyles.exitTexterIconButton}
-            tooltip='Exit assignment'
+            tooltip='Return Home'
             tooltipPosition='bottom-center'
           >
-            <NavigateCloseIcon />
+            <NavigateHomeIcon />
           </IconButton>
         )}
       />

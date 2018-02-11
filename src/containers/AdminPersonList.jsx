@@ -26,6 +26,15 @@ const organizationFragment = `
   }
 `
 class AdminPersonList extends React.Component {
+
+  constructor(props) {
+    super(props)
+    this.handleOpen = this.handleOpen.bind(this)
+    this.handleClose = this.handleClose.bind(this)
+    this.handleChange = this.handleChange.bind(this)
+    this.updateUser = this.updateUser.bind(this)
+  }
+
   state = {
     open: false,
     userEdit: false
@@ -137,7 +146,7 @@ class AdminPersonList extends React.Component {
           <UserEdit
             organizationId={organizationData.organization.id}
             userId={this.state.userEdit}
-            onRequestClose={this.updateUser.bind(this)}
+            onRequestClose={this.updateUser}
           />
         </Dialog>
         <Dialog
