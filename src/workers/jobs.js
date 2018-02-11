@@ -12,7 +12,7 @@ import { Notifications, sendUserNotification } from '../server/notifications'
 
 const zipMemoization = {}
 
-async function getTimezoneByZip(zip) {
+export async function getTimezoneByZip(zip) {
   if (zip in zipMemoization) {
     return zipMemoization[zip]
   }
