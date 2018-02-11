@@ -240,8 +240,7 @@ const rootSchema = `
 async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
   const { title, description, dueBy, organizationId, useDynamicAssignment, logoImageUrl, introHtml, primaryColor } = campaign
   // some changes require ADMIN and we recheck below
-  await accessRequired(user, organizationId, 'SUPERVOLUNTEER', /* superadmin*/true)
-
+  await accessRequired(user, organizationId || origCampaignRecord.organization_id, 'SUPERVOLUNTEER', /* superadmin*/true)
   const campaignUpdates = {
     id,
     title,
@@ -616,7 +615,7 @@ const rootMutations = {
       }
     },
     createCampaign: async (_, { campaign }, { user, loaders }) => {
-      await accessRequired(user, campaign.organizationId, 'ADMIN')
+      await accessRequired(user, campaign.organizationId, 'ADMIN', /*allowSuperadmin=*/true)
       const campaignInstance = new Campaign({
         organization_id: campaign.organizationId,
         title: campaign.title,
@@ -626,7 +625,7 @@ const rootMutations = {
         is_archived: false
       })
       const newCampaign = await campaignInstance.save()
-      return editCampaign(newCampaign.id, campaign, loaders)
+      return editCampaign(newCampaign.id, campaign, loaders, user)
     },
     unarchiveCampaign: async (_, { id }, { user, loaders }) => {
       const campaign = await loaders.campaign.load(id)
