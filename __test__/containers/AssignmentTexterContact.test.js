@@ -1,10 +1,17 @@
 import React from 'react'
+import moment from 'moment-timezone'
+import { mount } from "enzyme";
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider'
 import {StyleSheetTestUtils} from 'aphrodite'
 import {AssignmentTexterContact} from "../../src/containers/AssignmentTexterContact";
 import sinon from 'sinon'
 
 jest.mock('../../src/lib/timezones')
 jest.unmock('../../src/lib/tz-helpers')
+jest.useFakeTimers()
+
+var timezones = require('../../src/lib/timezones')
+timezones.getLocalTime.mockReturnValue(moment().utc().utcOffset((moment().isDST() && true) ? -4 : -5))
 
 const campaign = {
   id: 9,
@@ -58,6 +65,7 @@ const propsWithEnforcedTextingHoursCampaign = {
       }
     ],
   },
+  refreshData: jest.fn(),
   data: {
     loading: false,
     contact: {
@@ -94,10 +102,79 @@ const propsWithEnforcedTextingHoursCampaign = {
   }
 }
 
+describe('when contact is not within texting hours...', () => {
+  var component
+  beforeEach(() => {
+    timezones.isBetweenTextingHours.mockReturnValue(false)
+    StyleSheetTestUtils.suppressStyleInjection();
+    component = mount(
+      <MuiThemeProvider>
+        <AssignmentTexterContact
+          texter={propsWithEnforcedTextingHoursCampaign.texter}
+          campaign={campaign}
+          assignment={propsWithEnforcedTextingHoursCampaign.assignment}
+          refreshData={propsWithEnforcedTextingHoursCampaign.refreshData}
+          data={propsWithEnforcedTextingHoursCampaign.data}
+        />
+      </MuiThemeProvider>
+    )
+  })
+  afterEach(() => {
+    propsWithEnforcedTextingHoursCampaign.refreshData.mockReset()
+  })
+  it('it refreshes data in componentDidMount', () => {
+    jest.runOnlyPendingTimers()
+    expect(propsWithEnforcedTextingHoursCampaign.refreshData.mock.calls).toHaveLength(1)
+  })
+})
+
+
+describe('when contact is within texting hours...', () => {
+  var component
+  beforeEach(() => {
+    timezones.isBetweenTextingHours.mockReturnValue(true)
+    StyleSheetTestUtils.suppressStyleInjection();
+    component = mount(
+      <MuiThemeProvider>
+        <AssignmentTexterContact
+          texter={propsWithEnforcedTextingHoursCampaign.texter}
+          campaign={campaign}
+          assignment={propsWithEnforcedTextingHoursCampaign.assignment}
+          refreshData={propsWithEnforcedTextingHoursCampaign.refreshData}
+          data={propsWithEnforcedTextingHoursCampaign.data}
+        />
+      </MuiThemeProvider>
+    )
+  })
+  afterEach(() => {
+    propsWithEnforcedTextingHoursCampaign.refreshData.mockReset()
+  })
+  it('it does NOT refresh data in componentDidMount', () => {
+    jest.runOnlyPendingTimers()
+    expect(propsWithEnforcedTextingHoursCampaign.refreshData.mock.calls).toHaveLength(0)
+  })
+})
+
+describe('AssignmentTextContact has the proper enabled/disabled state when created', () => {
+
+  it('is enabled if the contact is inside texting hours', () => {
+    timezones.isBetweenTextingHours.mockReturnValueOnce(true)
+    var assignmentTexterContact = new AssignmentTexterContact(propsWithEnforcedTextingHoursCampaign)
+    expect(assignmentTexterContact.state.disabled).toBeFalsy()
+    expect(assignmentTexterContact.state.disabledText).toEqual('Sending...')
+  })
+
+  it('is disabled if the contact is inside texting hours', () => {
+    timezones.isBetweenTextingHours.mockReturnValueOnce(false)
+    var assignmentTexterContact = new AssignmentTexterContact(propsWithEnforcedTextingHoursCampaign)
+    expect(assignmentTexterContact.state.disabled).toBeTruthy()
+    expect(assignmentTexterContact.state.disabledText).toEqual('Refreshing because it\'s now out of texting hours for some of your contacts')
+  })
+})
+
 describe('test isContactBetweenTextingHours', () => {
     var nowStub
     var assignmentTexterContact
-    var timezones = require('../../src/lib/timezones')
     beforeAll(() => {
       assignmentTexterContact = new AssignmentTexterContact(propsWithEnforcedTextingHoursCampaign)
       timezones.isBetweenTextingHours.mockImplementation((o, c) => false)
@@ -106,7 +183,6 @@ describe('test isContactBetweenTextingHours', () => {
     })
 
     afterAll(() => {
-      timezones.isBetweenTextingHours.mockRestore()
       nowStub.restore()
     })
 
