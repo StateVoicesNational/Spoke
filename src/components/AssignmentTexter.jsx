@@ -173,9 +173,15 @@ class AssignmentTexter extends React.Component {
     const { campaign, texter } = assignment
     const contact = this.currentContact()
     const navigationToolbarChildren = this.renderNavigationToolbarChildren()
+    //console.log('rendering texter', contactData, this.props.contacts)
+    // TODO: below will be a promise, but we need to update/resync
+    // when it completes -- maybe that is state in this component?
+    const contactData = this.props.getContactData(contact.id)
+
     return (
       <AssignmentTexterContact
         key={contact.id}
+        contact={contactData}
         assignment={assignment}
         campaignContactId={contact.id}
         texter={texter}
@@ -188,6 +194,7 @@ class AssignmentTexter extends React.Component {
     )
   }
   renderEmpty() {
+    console.log('render empty')
     return (
       <div>
         <Empty
@@ -221,7 +228,8 @@ AssignmentTexter.propTypes = {
   allContacts: PropTypes.array,
   router: PropTypes.object,
   refreshData: PropTypes.func,
-  organizationId: PropTypes.string
+  organizationId: PropTypes.string,
+  getContactData: PropTypes.func
 }
 
 export default withRouter(AssignmentTexter)
