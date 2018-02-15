@@ -685,16 +685,15 @@ const mapMutationsToProps = () => ({
     })
   },
   copyCampaign(campaignId, campaign) {
-    console.log(' campaign? ');
-    // return({
-    //   mutation: gql`
-    //     mutation editCampaign($campaignId: String!, $campaign: CampaignInput!){
-    //       eidtCampaign(id: $campaignId, campaign: $campaign){
-    //         ${campaignInfoFragment}
-    //       }
-    //     }
-    //   `
-    // })
+    return({
+      mutation: gql`
+        mutation copyCampaign($campaignId: String!, $campaign: CampaignInput!){
+          copyCampaign(id: $campaignId, campaign: $campaign){
+            ${campaignInfoFragment}
+          }
+        }
+      `
+    })
   }
 })
 
