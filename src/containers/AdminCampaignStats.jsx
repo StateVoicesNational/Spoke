@@ -137,6 +137,15 @@ class AdminCampaignStats extends React.Component {
     })
   }
 
+  renderCopyButton(){
+    return(
+      <RaisedButton
+        label='Copy Campaign'
+        onTouchTap={async() => await this.props.mutations.copyCampaign(this.props.params.campaignId, this.props.data.campaign)}
+      />
+    )
+  }
+
   render() {
     const { data, params } = this.props
     const { organizationId, campaignId } = params
@@ -177,6 +186,7 @@ class AdminCampaignStats extends React.Component {
                     label={exportLabel}
                     disabled={shouldDisableExport}
                   />
+
                 </div>
                 <div className={css(styles.inline)}>
                   {campaign.isArchived ? (
@@ -195,6 +205,7 @@ class AdminCampaignStats extends React.Component {
                     />
                   ]}
                 </div>
+                {this.renderCopyButton()}
               </div>
             </div>
           </div>
@@ -322,6 +333,14 @@ const mapMutationsToProps = () => ({
       }
     }`,
     variables: { campaignId }
+  }),
+  copyCampaign: (campaignId, campaign) => ({
+    mutation: gql`mutation copyCampaign($campaignId: String!, $campaign: CampaignInput!){
+      copyCampaign(id: $campaignId, campaign: $campaign){
+       ${id}
+      }
+    }`,
+    variables: { campaignId, campaign }
   })
 })
 

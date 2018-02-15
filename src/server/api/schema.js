@@ -623,10 +623,21 @@ const rootMutations = {
       const newCampaign = await campaignInstance.save()
       return editCampaign(newCampaign.id, campaign, loaders)
     },
-    copyCampaign: async (_, { campaign }, { user, loaders }) => {
+    copyCampaign: async (_, { id, campaign }, { user, loaders }) => {
+      console.log('getting here-->', id);
+      
       await accessRequired(user, campaign.organizationId, 'ADMIN')
+      // const campaignInstance = new Campaign({
+      //   organization_id: campaign.organizationId,
+      //   title: campaign.title,
+      //   description: campaign.description,
+      //   due_by: campaign.dueBy,
+      //   is_started: false,
+      //   is_archived: false
+      // })
+      // const newCampaign = await campaignInstance.save()
 
-      console.log('campaign:', campaign.id);
+      console.log('campaign getting here? in schema:', campaign + ' ' + id);
     },
     unarchiveCampaign: async (_, { id }, { user, loaders }) => {
       const campaign = await loaders.campaign.load(id)
@@ -667,19 +678,6 @@ const rootMutations = {
           })
       }
       return editCampaign(id, campaign, loaders, user, origCampaign)
-    },
-    copyCampaign: async (_, { id, campaign }, { user, loaders }) => {
-      if(campaign.organizationId) {
-        await accessRequired(user, campaign.organizationId, 'ADMIN')
-        console.log(' getting here!');
-      }
-      // if (!campaign.contacts) {
-      //     throw new GraphQLError({
-      //         status: 400,
-      //         message: 'Not allowed to add contacts after the campaign starts'
-      //     })
-      // }
-      // return editCampaign(id, campaign, loaders, user, origCampaign)
     },
     createCannedResponse: async (_, { cannedResponse }, { user, loaders }) => {
       authRequired(user)
