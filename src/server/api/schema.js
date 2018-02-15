@@ -626,7 +626,7 @@ const rootMutations = {
     copyCampaign: async (_, { campaign }, { user, loaders }) => {
       await accessRequired(user, campaign.organizationId, 'ADMIN')
 
-      console.log('campaign');
+      console.log('campaign:', campaign.id);
     },
     unarchiveCampaign: async (_, { id }, { user, loaders }) => {
       const campaign = await loaders.campaign.load(id)
