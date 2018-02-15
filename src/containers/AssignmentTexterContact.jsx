@@ -175,19 +175,19 @@ const inlineStyles = {
 class AssignmentTexterContact extends React.Component {
 
   constructor(props) {
+    console.log('constructor TOP')
     super(props)
 
-    const questionResponses = this.getInitialQuestionResponses(props.data.contact.interactionSteps)
+    const { assignment, campaign, contact } = this.props
+    const questionResponses = this.getInitialQuestionResponses(campaign.interactionSteps)
     const availableSteps = this.getAvailableInteractionSteps(questionResponses)
 
-    const { assignment, campaign } = this.props
-    const { contact } = this.props.data
     let disabled = false
     let disabledText = 'Sending...'
     let snackbarOnTouchTap = null
     let snackbarActionTitle = null
     let snackbarError = null
-
+    console.log('hi from constructor', contact)
     if (assignment.id !== contact.assignmentId || campaign.isArchived) {
       disabledText = ''
       disabled = true
@@ -216,10 +216,12 @@ class AssignmentTexterContact extends React.Component {
       currentInteractionStep: availableSteps.length > 0 ? availableSteps[availableSteps.length - 1] : null
     }
     this.onEnter = this.onEnter.bind(this)
+    console.log('hi from constructor END')
   }
 
   componentDidMount() {
-    const { contact } = this.props.data
+    console.log('componentdidmount TOP')
+    const { contact } = this.props
     if (contact.optOut) {
       this.skipContact()
     } else if (!this.isContactBetweenTextingHours(contact)) {
@@ -254,7 +256,7 @@ class AssignmentTexterContact extends React.Component {
   }
 
   getAvailableInteractionSteps(questionResponses) {
-    const allInteractionSteps = this.props.data.contact.interactionSteps
+    const allInteractionSteps = this.props.campaign.interactionSteps
     const availableSteps = []
 
     let step = getTopMostParent(allInteractionSteps)
@@ -301,7 +303,7 @@ class AssignmentTexterContact extends React.Component {
   }
 
   getStartingMessageText() {
-    const { contact } = this.props.data
+    const { contact } = this.props
     const { messages } = contact
     return messages.length > 0 ? '' : this.getMessageTextFromScript(contact.currentInteractionStepScript)
   }
@@ -326,7 +328,7 @@ class AssignmentTexterContact extends React.Component {
 
   createMessageToContact(text) {
     const { texter, assignment } = this.props
-    const { contact } = this.props.data
+    const { contact } = this.props
 
     return {
       contactNumber: contact.cell,
@@ -375,7 +377,7 @@ class AssignmentTexterContact extends React.Component {
 
   handleMessageFormSubmit = async ({ messageText }) => {
     try {
-      const { contact } = this.props.data
+      const { contact } = this.props
       const message = this.createMessageToContact(messageText)
       if (this.state.disabled) {
         return // stops from multi-send
@@ -391,7 +393,7 @@ class AssignmentTexterContact extends React.Component {
   }
 
   handleSubmitSurveys = async () => {
-    const { contact } = this.props.data
+    const { contact } = this.props
 
     const deletionIds = []
     const questionResponseObjects = []
@@ -428,13 +430,13 @@ class AssignmentTexterContact extends React.Component {
   }
 
   handleEditMessageStatus = async (messageStatus) => {
-    const { contact } = this.props.data
+    const { contact } = this.props
     await this.props.mutations.editCampaignContactMessageStatus(messageStatus, contact.id)
   }
 
   handleOptOut = async () => {
     const optOutMessageText = this.state.optOutMessageText
-    const { contact } = this.props.data
+    const { contact } = this.props
     const { assignment } = this.props
     const message = this.createMessageToContact(optOutMessageText)
     if (this.state.disabled) {
@@ -474,7 +476,7 @@ class AssignmentTexterContact extends React.Component {
 
   handleQuestionResponseChange = ({ interactionStep, questionResponseValue, nextScript }) => {
     const { questionResponses } = this.state
-    const { interactionSteps } = this.props.data.contact
+    const { interactionSteps } = this.props.campaign
     questionResponses[interactionStep.id] = questionResponseValue
 
     const children = getChildren(interactionStep, interactionSteps)
@@ -496,6 +498,7 @@ class AssignmentTexterContact extends React.Component {
   }
 
   isContactBetweenTextingHours(contact) {
+    console.log('textinghours', contact)
     const { campaign } = this.props
 
     let timezoneData = null
@@ -535,7 +538,7 @@ class AssignmentTexterContact extends React.Component {
   handleMessageFormChange = ({ messageText }) => this.setState({ messageText })
 
   renderMiddleScrollingSection() {
-    const { contact } = this.props.data
+    const { contact } = this.props
     return (
       <MessageList
         contact={contact}
@@ -545,7 +548,7 @@ class AssignmentTexterContact extends React.Component {
   }
 
   renderSurveySection() {
-    const { contact } = this.props.data
+    const { contact } = this.props
     const { messages } = contact
 
     const { questionResponses } = this.state
@@ -671,7 +674,7 @@ class AssignmentTexterContact extends React.Component {
   }
 
   renderTopFixedSection() {
-    const { contact } = this.props.data
+    const { contact } = this.props
     return (
       <ContactToolbar
         campaignContact={contact}
@@ -752,8 +755,7 @@ class AssignmentTexterContact extends React.Component {
   }
 
   renderCorrectSendButton() {
-    const { campaign } = this.props
-    const { contact } = this.props.data
+    const { campaign, contact } = this.props
     if (contact.messageStatus === 'needsResponse' || contact.messageStatus === 'messaged') {
       return (
         <SendButtonArrow
@@ -805,6 +807,7 @@ class AssignmentTexterContact extends React.Component {
   }
 
   render() {
+    console.log('rendering assignmentextercontact')
     return (
       <div>
         {this.state.disabled ? (
@@ -853,62 +856,6 @@ AssignmentTexterContact.propTypes = {
   onExitTexter: PropTypes.func,
   onRefreshAssignmentContacts: PropTypes.func
 }
-
-const mapQueriesToProps = ({ ownProps }) => ({
-  data: {
-    query: gql`query getContact($campaignContactId: String!) {
-      contact(id: $campaignContactId) {
-        id
-        assignmentId
-        firstName
-        lastName
-        cell
-        zip
-        customFields
-        optOut {
-          id
-          createdAt
-        }
-        currentInteractionStepScript
-        interactionSteps {
-          id
-          questionResponse(campaignContactId: $campaignContactId) {
-            value
-          }
-          question {
-            text
-            answerOptions {
-              value
-              nextInteractionStep {
-                id
-                script
-              }
-            }
-          }
-        }
-        location {
-          city
-          state
-          timezone {
-            offset
-            hasDST
-          }
-        }
-        messageStatus
-        messages {
-          id
-          createdAt
-          text
-          isFromContact
-        }
-      }
-    }`,
-    variables: {
-      campaignContactId: ownProps.campaignContactId
-    },
-    forceFetch: true
-  }
-})
 
 const mapMutationsToProps = () => ({
   createOptOut: (optOut, campaignContactId) => ({
@@ -1004,6 +951,5 @@ const mapMutationsToProps = () => ({
 
 export default loadData(wrapMutations(
   withRouter(AssignmentTexterContact)), {
-    mapQueriesToProps,
     mapMutationsToProps
   })

@@ -123,6 +123,7 @@ export const resolvers = {
     interactionSteps: async (campaign) => (
       r.table('interaction_step')
         .getAll(campaign.id, { index: 'campaign_id' })
+        .filter({ is_deleted: false })
     ),
     cannedResponses: async (campaign, { userId }) => (
       r.table('canned_response')
