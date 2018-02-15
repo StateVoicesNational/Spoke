@@ -383,6 +383,9 @@ class AdminCampaignEdit extends React.Component {
         }}
       >
         This campaign is running!
+        <div>
+        {this.renderCopyButton()}
+        </div>
       </div>
       ) :
       this.renderStartButton()
@@ -412,6 +415,15 @@ class AdminCampaignEdit extends React.Component {
             </div>
           ) : notStarting}
       </div>
+    )
+  }
+
+  renderCopyButton(){
+    return(
+      <RaisedButton
+        label='Copy Campaign'
+        onTouchTap={async() => await this.props.mutations.copyCampaign(this.props.campaignData.campaign.id)}
+      />
     )
   }
 
@@ -671,6 +683,18 @@ const mapMutationsToProps = () => ({
         campaign
       }
     })
+  },
+  copyCampaign(campaignId, campaign) {
+    console.log(' campaign? ');
+    // return({
+    //   mutation: gql`
+    //     mutation editCampaign($campaignId: String!, $campaign: CampaignInput!){
+    //       eidtCampaign(id: $campaignId, campaign: $campaign){
+    //         ${campaignInfoFragment}
+    //       }
+    //     }
+    //   `
+    // })
   }
 })
 
