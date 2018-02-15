@@ -208,6 +208,7 @@ const rootSchema = `
     createInvite(invite:InviteInput!): Invite
     createCampaign(campaign:CampaignInput!): Campaign
     editCampaign(id:String!, campaign:CampaignInput!): Campaign
+    copyCampaign(id: String!, campaign:CampaignInput!): Campaign
     exportCampaign(id:String!): JobRequest
     createCannedResponse(cannedResponse:CannedResponseInput!): CannedResponse
     createOrganization(name: String!, userId: String!, inviteId: String!): Organization
@@ -622,6 +623,11 @@ const rootMutations = {
       const newCampaign = await campaignInstance.save()
       return editCampaign(newCampaign.id, campaign, loaders)
     },
+    copyCampaign: async (_, { campaign }, { user, loaders }) => {
+      await accessRequired(user, campaign.organizationId, 'ADMIN')
+
+      console.log('campaign');
+    },
     unarchiveCampaign: async (_, { id }, { user, loaders }) => {
       const campaign = await loaders.campaign.load(id)
       await accessRequired(user, campaign.organizationId, 'ADMIN')
@@ -661,6 +667,19 @@ const rootMutations = {
           })
       }
       return editCampaign(id, campaign, loaders, user, origCampaign)
+    },
+    copyCampaign: async (_, { id, campaign }, { user, loaders }) => {
+      if(campaign.organizationId) {
+        await accessRequired(user, campaign.organizationId, 'ADMIN')
+        console.log(' getting here!');
+      }
+      // if (!campaign.contacts) {
+      //     throw new GraphQLError({
+      //         status: 400,
+      //         message: 'Not allowed to add contacts after the campaign starts'
+      //     })
+      // }
+      // return editCampaign(id, campaign, loaders, user, origCampaign)
     },
     createCannedResponse: async (_, { cannedResponse }, { user, loaders }) => {
       authRequired(user)
