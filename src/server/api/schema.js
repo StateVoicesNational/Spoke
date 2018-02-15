@@ -208,7 +208,7 @@ const rootSchema = `
     createInvite(invite:InviteInput!): Invite
     createCampaign(campaign:CampaignInput!): Campaign
     editCampaign(id:String!, campaign:CampaignInput!): Campaign
-    copyCampaign(id: String!, campaign:CampaignInput!): Campaign
+    copyCampaign(id: String!): Campaign
     exportCampaign(id:String!): JobRequest
     createCannedResponse(cannedResponse:CannedResponseInput!): CannedResponse
     createOrganization(name: String!, userId: String!, inviteId: String!): Organization
@@ -623,9 +623,10 @@ const rootMutations = {
       const newCampaign = await campaignInstance.save()
       return editCampaign(newCampaign.id, campaign, loaders)
     },
-    copyCampaign: async (_, { id, campaign }, { user, loaders }) => {
+    copyCampaign: async (_, { id }, { user, loaders }) => {
       console.log('getting here-->', id);
-      
+      const campaign = await loaders.campaign.load(id)
+
       await accessRequired(user, campaign.organizationId, 'ADMIN')
       // const campaignInstance = new Campaign({
       //   organization_id: campaign.organizationId,
@@ -638,6 +639,7 @@ const rootMutations = {
       // const newCampaign = await campaignInstance.save()
 
       console.log('campaign getting here? in schema:', campaign + ' ' + id);
+      return campaign
     },
     unarchiveCampaign: async (_, { id }, { user, loaders }) => {
       const campaign = await loaders.campaign.load(id)
