@@ -141,7 +141,7 @@ class AdminCampaignStats extends React.Component {
     return(
       <RaisedButton
         label='Copy Campaign'
-        onTouchTap={async() => await this.props.mutations.copyCampaign(this.props.params.campaignId, this.props.data.campaign)}
+        onTouchTap={async() => await this.props.mutations.copyCampaign(this.props.params.campaignId)}
       />
     )
   }
@@ -334,13 +334,13 @@ const mapMutationsToProps = () => ({
     }`,
     variables: { campaignId }
   }),
-  copyCampaign: (campaignId, campaign) => ({
-    mutation: gql`mutation copyCampaign($campaignId: String!, $campaign: CampaignInput!){
-      copyCampaign(id: $campaignId, campaign: $campaign){
-       ${id}
+  copyCampaign: (campaignId) => ({
+    mutation: gql`mutation copyCampaign($campaignId: String!){
+      copyCampaign(id: $campaignId){
+       id
       }
     }`,
-    variables: { campaignId, campaign }
+    variables: { campaignId }
   })
 })
 
