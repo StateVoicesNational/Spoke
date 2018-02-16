@@ -636,7 +636,13 @@ const rootMutations = {
         is_archived: false
       })
       const newCampaign = await campaignInstance.save()
-      
+
+      const cannedResponseInstance = new CannedResponse({
+        campaign_id: newCampaign.id,
+        title: 'copy canned response',
+        text: 'copy text'
+      }).save()
+
       return newCampaign
     },
     unarchiveCampaign: async (_, { id }, { user, loaders }) => {
