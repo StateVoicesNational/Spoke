@@ -38,6 +38,7 @@ class TexterTodo extends React.Component {
 
   render() {
     const { assignment } = this.props.data
+    console.log('assignment', contacts)
     const contacts = assignment.contacts
     const allContacts = assignment.allContacts
     return (
@@ -96,6 +97,19 @@ const mapQueriesToProps = ({ ownProps }) => ({
             threeClickEnabled
           }
           customFields
+          interactionSteps {
+            id
+            question {
+              text
+              answerOptions {
+                value
+                nextInteractionStep {
+                  id
+                  script
+                }
+              }
+            }
+          }
         }
         contacts(contactsFilter: $contactsFilter) {
           id
