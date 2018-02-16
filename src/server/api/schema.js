@@ -637,8 +637,6 @@ const rootMutations = {
       })
       const newCampaign = await campaignInstance.save()
 
-      // TODO: get interaction steps associated with campaign id, and make new ones with other campaign id and other interaction ids
-
       let interactions = await r.knex('interaction_step')
         .where({campaign_id: id })
 
@@ -655,11 +653,17 @@ const rootMutations = {
           }).save()
       })
 
-
-      // return editCampaign(id, newCampaign, loaders, user, origCampaign)
+      let newParentInteractionId = await r.knex('interaction_step')
+        .where({campaign_id: newCampaign.id})
+        .whereNull('parent_interaction_id')
+        .then(function(result) {
+          console.log(result);
+          return result
+        })
 
       let cannedResponses = await r.knex('canned_response')
         .where({campaign_id: id })
+
 
       cannedResponses.forEach((response, index) => {
         const copiedCannedResponse =
