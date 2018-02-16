@@ -653,17 +653,23 @@ const rootMutations = {
           }).save()
       })
 
-      let newParentInteractionId = await r.knex('interaction_step')
-        .where({campaign_id: newCampaign.id})
+      let query = r.knex.select('id')
+        .from('interaction_step')
         .whereNull('parent_interaction_id')
-        .then(function(result) {
-          console.log(result);
-          return result
+        .andWhere({campaign_id: newCampaign.id})
+        .then(function(res) {
+          return r.knex('interaction_step')
+            .where({campaign_id: newCampaign.id})
+            .whereNotNull('parent_interaction_id')
+            .update({
+              parent_interaction_id: res[0].id,
+            })
         })
+
+      await query
 
       let cannedResponses = await r.knex('canned_response')
         .where({campaign_id: id })
-
 
       cannedResponses.forEach((response, index) => {
         const copiedCannedResponse =
