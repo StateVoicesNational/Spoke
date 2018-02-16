@@ -624,22 +624,20 @@ const rootMutations = {
       return editCampaign(newCampaign.id, campaign, loaders)
     },
     copyCampaign: async (_, { id }, { user, loaders }) => {
-      console.log('getting here-->', id);
       const campaign = await loaders.campaign.load(id)
+      await accessRequired(user, campaign.organization_id, 'ADMIN')
 
-      await accessRequired(user, campaign.organizationId, 'ADMIN')
-      // const campaignInstance = new Campaign({
-      //   organization_id: campaign.organizationId,
-      //   title: campaign.title,
-      //   description: campaign.description,
-      //   due_by: campaign.dueBy,
-      //   is_started: false,
-      //   is_archived: false
-      // })
-      // const newCampaign = await campaignInstance.save()
-
-      console.log('campaign getting here? in schema:', campaign + ' ' + id);
-      return campaign
+      const campaignInstance = new Campaign({
+        organization_id: campaign.organization_id,
+        title: 'COPY - ' + campaign.title,
+        description: campaign.description,
+        due_by: campaign.dueBy,
+        is_started: false,
+        is_archived: false
+      })
+      const newCampaign = await campaignInstance.save()
+      
+      return newCampaign
     },
     unarchiveCampaign: async (_, { id }, { user, loaders }) => {
       const campaign = await loaders.campaign.load(id)
