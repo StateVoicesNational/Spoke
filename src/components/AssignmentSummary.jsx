@@ -146,68 +146,7 @@ AssignmentSummary.propTypes = {
   assignment: PropTypes.object,
   unmessagedCount: PropTypes.number,
   unrepliedCount: PropTypes.number,
-  badTimezoneCount: PropTypes.number,
-  data: PropTypes.object,
-  mutations: PropTypes.object
+  badTimezoneCount: PropTypes.number
 }
 
-const mapQueriesToProps = ({ ownProps }) => ({
-  data: {
-    query: gql`query getContacts($assignmentId: String!, $contactsFilter: ContactsFilter!) {
-      assignment(id: $assignmentId) {
-        id
-        texter {
-          id
-          firstName
-          lastName
-          assignedCell
-        }
-        campaign {
-          id
-          isArchived
-          customFields
-          useDynamicAssignment
-          organization {
-            id
-            textingHoursEnforced
-            textingHoursStart
-            textingHoursEnd
-            threeClickEnabled
-          }
-        }
-        contacts(contactsFilter: $contactsFilter) {
-          id
-          firstName
-          lastName
-          cell
-          zip
-          customFields
-          optOut {
-            id
-            createdAt
-          }
-          currentInteractionStepScript
-          location {
-            city
-            state
-            timezone {
-              offset
-              hasDST
-            }
-          }
-        }
-      }
-    }`,
-    variables: {
-      contactsFilter: {
-        messageStatus: 'needsMessage',
-        isOptedOut: false,
-        validTimezone: true
-      },
-      assignmentId: ownProps.assignment.id
-    },
-    forceFetch: true
-  }
-})
-
-export default loadData(withRouter(AssignmentSummary), { mapQueriesToProps })
+export default withRouter(AssignmentSummary)

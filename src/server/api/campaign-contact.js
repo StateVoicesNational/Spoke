@@ -32,6 +32,7 @@ export const schema = `
     location: Location
     optOut: OptOut
     campaign: Campaign
+    questionResponseValues: [AnswerOption]
     questionResponses: [AnswerOption]
     interactionSteps: [InteractionStep]
     currentInteractionStepScript: String
@@ -70,9 +71,14 @@ export const resolvers = {
     // To get that result to look like what the original code returned
     // without using the outgoing answer_options array field, try this:
     //
+    questionResponseValues: async (campaignContact, _, { loaders }) => (
+      await r.knex('question_response')
+        .where('question_response.campaign_contact_id', campaignContact.id)
+        .select('value', 'interaction_step_id')
+    ),
     questionResponses: async (campaignContact, _, { loaders }) => {
       const results = await r.knex('question_response as qres')
-        .where('question_response.campaign_contact', campaignContact.id)
+        .where('qres.campaign_contact_id', campaignContact.id)
         .join('interaction_step', 'qres.interaction_step_id', 'interaction_step.id')
         .join('interaction_step as child',
               'qres.interaction_step_id',
@@ -175,11 +181,6 @@ export const resolvers = {
         .getAll(campaignContact.campaign_id, { index: 'campaign_id' })
         .filter({ is_deleted: false })
       return getTopMostParent(steps, true).script
-    },
-    interactionSteps: async (campaignContact) => (
-      await r.table('interaction_step')
-        .getAll(campaignContact.campaign_id, { index: 'campaign_id' })
-        .filter({ is_deleted: false })
-    )
+    }
   }
 }
