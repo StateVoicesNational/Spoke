@@ -642,10 +642,8 @@ const rootMutations = {
       let interactions = await r.knex('interaction_step')
         .where({campaign_id: id })
 
-      console.log('interaction', interactions);
-
       interactions.forEach((interaction, index) => {
-        const copiedIteraction =
+        const copiedInteraction =
           new InteractionStep({
             question: interaction.question,
             script: interaction.script,
@@ -660,14 +658,18 @@ const rootMutations = {
 
       // return editCampaign(id, newCampaign, loaders, user, origCampaign)
 
-      // todo: create new canned responses
+      let cannedResponses = await r.knex('canned_response')
+        .where({campaign_id: id })
 
-      const cannedResponseInstance = new CannedResponse({
-        campaign_id: newCampaign.id,
-        title: 'copy canned response',
-        text: 'copy text'
-      }).save()
-
+      cannedResponses.forEach((response, index) => {
+        const copiedCannedResponse =
+          new CannedResponse({
+            campaign_id: newCampaign.id,
+            title: response.title,
+            text: response.text
+          }).save()
+      })
+      
       return newCampaign
     },
     unarchiveCampaign: async (_, { id }, { user, loaders }) => {
