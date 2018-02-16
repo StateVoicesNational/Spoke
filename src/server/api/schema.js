@@ -637,6 +637,31 @@ const rootMutations = {
       })
       const newCampaign = await campaignInstance.save()
 
+      // TODO: get interaction steps associated with campaign id, and make new ones with other campaign id and other interaction ids
+
+      let interactions = await r.knex('interaction_step')
+        .where({campaign_id: id })
+
+      console.log('interaction', interactions);
+
+      interactions.forEach((interaction, index) => {
+        const copiedIteraction =
+          new InteractionStep({
+            question: interaction.question,
+            script: interaction.script,
+            answer_option: interaction.answer_option,
+            answer_actions: interaction.answer_actions,
+            is_deleted: interaction.is_deleted,
+            campaign_id: newCampaign.id,
+            parent_interaction_id: interaction.parent_interaction_id
+          }).save()
+      })
+
+
+      // return editCampaign(id, newCampaign, loaders, user, origCampaign)
+
+      // todo: create new canned responses
+
       const cannedResponseInstance = new CannedResponse({
         campaign_id: newCampaign.id,
         title: 'copy canned response',
