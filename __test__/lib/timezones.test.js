@@ -5,7 +5,7 @@ import {
   getOffsets,
   isBetweenTextingHours,
 } from '../../src/lib/index'
-import sinon from 'sinon'
+import {DateMocker, RealDate} from '../test_helpers'
 
 const makeConfig = (textingHoursStart, textingHoursEnd, textingHoursEnforced) => {
   return {
@@ -19,55 +19,47 @@ jest.unmock('../../src/lib/timezones')
 jest.mock('../../src/lib/tz-helpers')
 
 describe('test getLocalTime winter (standard time)', () => {
-  var nowStub = null
   beforeAll(() => {
-    nowStub = sinon.stub(Date, 'now')
-    nowStub.returns(new Date('2018-02-01T15:00:00.000Z'))
+    DateMocker.mockDate('2018-02-01T15:00:00.000Z')
   })
 
   afterAll(() => {
-    nowStub.restore()
-    nowStub = null
+    DateMocker.unmockDate()
   })
 
   it('returns correct local time UTC-5 standard time', () => {
     let localTime = getLocalTime(-5, true)
     expect(localTime.hours()).toEqual(10)
-    expect(new Date(localTime)).toEqual(new Date('2018-02-01T10:00:00.000-05:00'))
+    expect(new RealDate(localTime)).toEqual(new RealDate('2018-02-01T10:00:00.000-05:00'))
   })
 })
 
 describe('test getLocalTime summer (DST)', () => {
-  var nowStub = null
   beforeEach(() => {
-    nowStub = sinon.stub(Date, 'now')
-    nowStub.returns(new Date('2018-07-21T15:00:00.000Z'))
+    DateMocker.mockDate('2018-07-21T15:00:00.000Z')
   })
 
   afterEach(() => {
-    nowStub.restore()
-    nowStub = null
+    DateMocker.unmockDate()
   })
 
   it('returns correct local time UTC-5 DST', () => {
     let localTime = getLocalTime(-5, true)
     expect(localTime.hours()).toEqual(11)
-    expect(new Date(localTime)).toEqual(new Date('2018-07-21T10:00:00.000-05:00'))
+    expect(new RealDate(localTime)).toEqual(new RealDate('2018-07-21T10:00:00.000-05:00'))
   })
 })
 
 describe('testing isBetweenTextingHours with env.TZ set', () => {
-  var nowStub = null
   var tzHelpers = require('../../src/lib/tz-helpers')
   beforeAll(() => {
     tzHelpers.getProcessEnvTz.mockImplementation(() => 'America/Los_Angeles')
-    nowStub = sinon.stub(Date, 'now')
-    nowStub.returns(new Date('2018-02-01T15:00:00.000-05:00'))
+    DateMocker.mockDate('2018-02-01T15:00:00.000-05:00')
   })
 
   afterAll(() => {
     jest.restoreAllMocks();
-    nowStub.restore()
+    DateMocker.unmockDate()
   })
 
   it('returns true if texting hours are not enforced', () => {
@@ -99,20 +91,17 @@ describe('testing isBetweenTextingHours with env.TZ set', () => {
 
 
 describe('test isBetweenTextingHours with offset data supplied', () => {
-    var nowStub = null
     var offsetData = {offset: -8, hasDST: true}
     var tzHelpers = require('../../src/lib/tz-helpers')
     beforeAll(() => {
       jest.doMock('../../src/lib/tz-helpers')
       tzHelpers.getProcessEnvTz.mockImplementation(() => null)
-      nowStub = sinon.stub(Date, 'now')
-      nowStub.returns(new Date('2018-02-01T12:00:00.000-08:00'))
+      DateMocker.mockDate('2018-02-01T12:00:00.000-08:00')
     })
 
     afterAll(() => {
       jest.restoreAllMocks();
-      nowStub.restore()
-      nowStub = null
+      DateMocker.unmockDate()
     })
 
     it('returns true if texting hours are not enforced', () => {
@@ -148,18 +137,13 @@ describe('test isBetweenTextingHours with offset data supplied', () => {
 )
 
 describe('test isBetweenTextingHours with offset data NOT supplied', () => {
-    var nowStub = null
     var tzHelpers = require('../../src/lib/tz-helpers')
     beforeAll(() => {
       tzHelpers.getProcessEnvTz.mockImplementation(() => null)
     })
 
-    beforeEach(()=>{
-      nowStub = sinon.stub(Date, 'now')
-    })
-
     afterEach(() => {
-      nowStub.restore()
+      DateMocker.unmockDate()
     })
 
     afterAll(() => {
@@ -171,25 +155,25 @@ describe('test isBetweenTextingHours with offset data NOT supplied', () => {
     })
 
     it('returns false if texting hours are for MISSING TIME ZONE and time is 12:00 EST', () => {
-        nowStub.returns(new Date('2018-02-01T12:00:00.000-05:00'))
+        DateMocker.mockDate('2018-02-01T12:00:00.000-05:00')
         expect(isBetweenTextingHours(null, makeConfig(null, null, true))).toBeTruthy()
       }
     )
 
     it('returns false if texting hours are for MISSING TIME ZONE and time is 11:00 EST', () => {
-        nowStub.returns(new Date('2018-02-01T11:00:00.000-05:00'))
+        DateMocker.mockDate('2018-02-01T11:00:00.000-05:00')
         expect(isBetweenTextingHours(null, makeConfig(null, null, true))).toBeFalsy()
       }
     )
 
     it('returns false if texting hours are for MISSING TIME ZONE and time is 20:00 EST', () => {
-        nowStub.returns(new Date('2018-02-01T20:00:00.000-05:00'))
+        DateMocker.mockDate('2018-02-01T20:00:00.000-05:00')
         expect(isBetweenTextingHours(null, makeConfig(null, null, true))).toBeTruthy()
       }
     )
 
     it('returns false if texting hours are for MISSING TIME ZONE and time is 21:00 EST', () => {
-        nowStub.returns(new Date('2018-02-01T21:00:00.000-05:00'))
+        DateMocker.mockDate('2018-02-01T21:00:00.000-05:00')
         expect(isBetweenTextingHours(null, makeConfig(null, null, true))).toBeFalsy()
       }
     )
@@ -198,19 +182,14 @@ describe('test isBetweenTextingHours with offset data NOT supplied', () => {
 
 
 describe('test defaultTimezoneIsBetweenTextingHours', () => {
-    var nowStub = null
     var tzHelpers = require('../../src/lib/tz-helpers')
     beforeAll(() => {
       tzHelpers.getProcessEnvTz.mockImplementation(() => null)
       jest.doMock('../../src/lib/tz-helpers')
     })
 
-    beforeEach(()=> {
-      nowStub = sinon.stub(Date, 'now')
-    })
-
     afterEach(() => {
-        nowStub.restore()
+      DateMocker.unmockDate()
     })
 
     afterAll(() => {
@@ -222,25 +201,25 @@ describe('test defaultTimezoneIsBetweenTextingHours', () => {
     })
 
     it('returns false if time is 12:00 EST', () => {
-        nowStub.returns(new Date('2018-02-01T12:00:00.000-05:00'))
+        DateMocker.mockDate('2018-02-01T12:00:00.000-05:00')
         expect(defaultTimezoneIsBetweenTextingHours(makeConfig(null, null, true))).toBeTruthy()
       }
     )
 
     it('returns false if time is 11:00 EST', () => {
-        nowStub.returns(new Date('2018-02-01T11:00:00.000-05:00'))
+        DateMocker.mockDate('2018-02-01T11:00:00.000-05:00')
         expect(defaultTimezoneIsBetweenTextingHours(makeConfig(null, null, true))).toBeFalsy()
       }
     )
 
     it('returns false if time is 20:00 EST', () => {
-        nowStub.returns(new Date('2018-02-01T20:00:00.000-05:00'))
+        DateMocker.mockDate('2018-02-01T20:00:00.000-05:00')
         expect(defaultTimezoneIsBetweenTextingHours(makeConfig(null, null, true))).toBeTruthy()
       }
     )
 
     it('returns false if time is 21:00 EST', () => {
-        nowStub.returns(new Date('2018-02-01T21:00:00.000-05:00'))
+        DateMocker.mockDate('2018-02-01T21:00:00.000-05:00')
         expect(defaultTimezoneIsBetweenTextingHours(makeConfig(null, null, true))).toBeFalsy()
       }
     )
@@ -260,19 +239,12 @@ describe('test convertOffsetsToStrings', () => {
 })
 
 describe('test getOffsets', () => {
-  var nowStub = null
-
-  beforeEach(() => {
-    nowStub = sinon.stub(Date, 'now')
-  })
-
   afterEach(() => {
-    nowStub.restore()
-    nowStub = null
+    DateMocker.unmockDate()
   })
 
   it('works during daylight-savings time', () => {
-    nowStub.returns(new Date('2018-07-21T17:00:00.000Z'))
+    DateMocker.mockDate('2018-07-21T17:00:00.000Z')
     let offsets_returned = getOffsets(makeConfig(10, 12, true))
     expect(offsets_returned).toHaveLength(2)
 
@@ -302,7 +274,7 @@ describe('test getOffsets', () => {
   })
 
   it('works during standard time', () => {
-    nowStub.returns(new Date('2018-02-01T17:00:00.000Z'))
+    DateMocker.mockDate('2018-02-01T17:00:00.000Z')
     let offsets_returned = getOffsets(makeConfig(10, 12, true))
     expect(offsets_returned).toHaveLength(2)
 
