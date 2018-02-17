@@ -5,7 +5,8 @@ import {
   getOffsets,
   isBetweenTextingHours,
 } from '../../src/lib/index'
-import {DateMocker, RealDate} from '../test_helpers'
+
+var MockDate = require('mockdate');
 
 const makeConfig = (textingHoursStart, textingHoursEnd, textingHoursEnforced) => {
   return {
@@ -20,33 +21,33 @@ jest.mock('../../src/lib/tz-helpers')
 
 describe('test getLocalTime winter (standard time)', () => {
   beforeAll(() => {
-    DateMocker.mockDate('2018-02-01T15:00:00.000Z')
+    MockDate.set('2018-02-01T15:00:00Z')
   })
 
   afterAll(() => {
-    DateMocker.unmockDate()
+    MockDate.reset()
   })
 
   it('returns correct local time UTC-5 standard time', () => {
     let localTime = getLocalTime(-5, true)
     expect(localTime.hours()).toEqual(10)
-    expect(new RealDate(localTime)).toEqual(new RealDate('2018-02-01T10:00:00.000-05:00'))
+    expect(new Date(localTime)).toEqual(new Date('2018-02-01T10:00:00.000-05:00'))
   })
 })
 
 describe('test getLocalTime summer (DST)', () => {
   beforeEach(() => {
-    DateMocker.mockDate('2018-07-21T15:00:00.000Z')
+    MockDate.set('2018-07-21T15:00:00Z')
   })
 
   afterEach(() => {
-    DateMocker.unmockDate()
+    MockDate.reset()
   })
 
   it('returns correct local time UTC-5 DST', () => {
     let localTime = getLocalTime(-5, true)
     expect(localTime.hours()).toEqual(11)
-    expect(new RealDate(localTime)).toEqual(new RealDate('2018-07-21T10:00:00.000-05:00'))
+    expect(new Date(localTime)).toEqual(new Date('2018-07-21T10:00:00.000-05:00'))
   })
 })
 
@@ -54,12 +55,12 @@ describe('testing isBetweenTextingHours with env.TZ set', () => {
   var tzHelpers = require('../../src/lib/tz-helpers')
   beforeAll(() => {
     tzHelpers.getProcessEnvTz.mockImplementation(() => 'America/Los_Angeles')
-    DateMocker.mockDate('2018-02-01T15:00:00.000-05:00')
+    MockDate.set('2018-02-01T15:00:00.000-05:00')
   })
 
   afterAll(() => {
     jest.restoreAllMocks();
-    DateMocker.unmockDate()
+    MockDate.reset()
   })
 
   it('returns true if texting hours are not enforced', () => {
@@ -96,12 +97,12 @@ describe('test isBetweenTextingHours with offset data supplied', () => {
     beforeAll(() => {
       jest.doMock('../../src/lib/tz-helpers')
       tzHelpers.getProcessEnvTz.mockImplementation(() => null)
-      DateMocker.mockDate('2018-02-01T12:00:00.000-08:00')
+      MockDate.set('2018-02-01T12:00:00.000-08:00')
     })
 
     afterAll(() => {
       jest.restoreAllMocks();
-      DateMocker.unmockDate()
+      MockDate.reset()
     })
 
     it('returns true if texting hours are not enforced', () => {
@@ -143,7 +144,7 @@ describe('test isBetweenTextingHours with offset data NOT supplied', () => {
     })
 
     afterEach(() => {
-      DateMocker.unmockDate()
+      MockDate.reset()
     })
 
     afterAll(() => {
@@ -155,25 +156,25 @@ describe('test isBetweenTextingHours with offset data NOT supplied', () => {
     })
 
     it('returns false if texting hours are for MISSING TIME ZONE and time is 12:00 EST', () => {
-        DateMocker.mockDate('2018-02-01T12:00:00.000-05:00')
+        MockDate.set('2018-02-01T12:00:00.000-05:00')
         expect(isBetweenTextingHours(null, makeConfig(null, null, true))).toBeTruthy()
       }
     )
 
     it('returns false if texting hours are for MISSING TIME ZONE and time is 11:00 EST', () => {
-        DateMocker.mockDate('2018-02-01T11:00:00.000-05:00')
+        MockDate.set('2018-02-01T11:00:00.000-05:00')
         expect(isBetweenTextingHours(null, makeConfig(null, null, true))).toBeFalsy()
       }
     )
 
     it('returns false if texting hours are for MISSING TIME ZONE and time is 20:00 EST', () => {
-        DateMocker.mockDate('2018-02-01T20:00:00.000-05:00')
+        MockDate.set('2018-02-01T20:00:00.000-05:00')
         expect(isBetweenTextingHours(null, makeConfig(null, null, true))).toBeTruthy()
       }
     )
 
     it('returns false if texting hours are for MISSING TIME ZONE and time is 21:00 EST', () => {
-        DateMocker.mockDate('2018-02-01T21:00:00.000-05:00')
+        MockDate.set('2018-02-01T21:00:00.000-05:00')
         expect(isBetweenTextingHours(null, makeConfig(null, null, true))).toBeFalsy()
       }
     )
@@ -189,7 +190,7 @@ describe('test defaultTimezoneIsBetweenTextingHours', () => {
     })
 
     afterEach(() => {
-      DateMocker.unmockDate()
+      MockDate.reset()
     })
 
     afterAll(() => {
@@ -201,25 +202,25 @@ describe('test defaultTimezoneIsBetweenTextingHours', () => {
     })
 
     it('returns false if time is 12:00 EST', () => {
-        DateMocker.mockDate('2018-02-01T12:00:00.000-05:00')
+        MockDate.set('2018-02-01T12:00:00.000-05:00')
         expect(defaultTimezoneIsBetweenTextingHours(makeConfig(null, null, true))).toBeTruthy()
       }
     )
 
     it('returns false if time is 11:00 EST', () => {
-        DateMocker.mockDate('2018-02-01T11:00:00.000-05:00')
+        MockDate.set('2018-02-01T11:00:00.000-05:00')
         expect(defaultTimezoneIsBetweenTextingHours(makeConfig(null, null, true))).toBeFalsy()
       }
     )
 
     it('returns false if time is 20:00 EST', () => {
-        DateMocker.mockDate('2018-02-01T20:00:00.000-05:00')
+        MockDate.set('2018-02-01T20:00:00.000-05:00')
         expect(defaultTimezoneIsBetweenTextingHours(makeConfig(null, null, true))).toBeTruthy()
       }
     )
 
     it('returns false if time is 21:00 EST', () => {
-        DateMocker.mockDate('2018-02-01T21:00:00.000-05:00')
+        MockDate.set('2018-02-01T21:00:00.000-05:00')
         expect(defaultTimezoneIsBetweenTextingHours(makeConfig(null, null, true))).toBeFalsy()
       }
     )
@@ -240,11 +241,11 @@ describe('test convertOffsetsToStrings', () => {
 
 describe('test getOffsets', () => {
   afterEach(() => {
-    DateMocker.unmockDate()
+    MockDate.reset()
   })
 
   it('works during daylight-savings time', () => {
-    DateMocker.mockDate('2018-07-21T17:00:00.000Z')
+    MockDate.set('2018-07-21T17:00:00.000Z')
     let offsets_returned = getOffsets(makeConfig(10, 12, true))
     expect(offsets_returned).toHaveLength(2)
 
@@ -274,7 +275,7 @@ describe('test getOffsets', () => {
   })
 
   it('works during standard time', () => {
-    DateMocker.mockDate('2018-02-01T17:00:00.000Z')
+    MockDate.set('2018-02-01T17:00:00.000Z')
     let offsets_returned = getOffsets(makeConfig(10, 12, true))
     expect(offsets_returned).toHaveLength(2)
 
