@@ -39,12 +39,12 @@ describe('test getLocalTime winter (standard time)', () => {
 
 describe('test getLocalTime summer (DST)', () => {
   var nowStub = null
-  beforeAll(() => {
+  beforeEach(() => {
     nowStub = sinon.stub(Date, 'now')
     nowStub.returns(new Date('2018-07-21T15:00:00.000Z'))
   })
 
-  afterAll(() => {
+  afterEach(() => {
     nowStub.restore()
     nowStub = null
   })
