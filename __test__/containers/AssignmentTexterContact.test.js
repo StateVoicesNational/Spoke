@@ -1,10 +1,10 @@
 import React from 'react'
 import moment from 'moment-timezone'
-import { mount } from "enzyme";
+import {mount} from "enzyme";
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider'
 import {StyleSheetTestUtils} from 'aphrodite'
 import {AssignmentTexterContact} from "../../src/containers/AssignmentTexterContact";
-import sinon from 'sinon'
+import {DateMocker} from '../test_helpers'
 
 jest.mock('../../src/lib/timezones')
 jest.unmock('../../src/lib/tz-helpers')
@@ -173,17 +173,16 @@ describe('AssignmentTextContact has the proper enabled/disabled state when creat
 })
 
 describe('test isContactBetweenTextingHours', () => {
-    var nowStub
     var assignmentTexterContact
+
     beforeAll(() => {
       assignmentTexterContact = new AssignmentTexterContact(propsWithEnforcedTextingHoursCampaign)
       timezones.isBetweenTextingHours.mockImplementation((o, c) => false)
-      nowStub = sinon.stub(Date, 'now')
-      nowStub.returns(new Date('2018-02-01T15:00:00.000Z'))
+      DateMocker.mockDate('2018-02-01T15:00:00.000Z')
     })
 
     afterAll(() => {
-      nowStub.restore()
+      DateMocker.unmockDate()
     })
 
     beforeEach(() => {
