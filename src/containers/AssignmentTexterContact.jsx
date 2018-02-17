@@ -219,7 +219,7 @@ export class AssignmentTexterContact extends React.Component {
   }
 
   componentDidMount() {
-    const { contact } = this.props.data;
+    const { contact } = this.props.data
     if (contact.optOut) {
       this.skipContact()
     } else if (!this.isContactBetweenTextingHours(contact)) {

@@ -4,7 +4,8 @@ import {mount} from "enzyme";
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider'
 import {StyleSheetTestUtils} from 'aphrodite'
 import {AssignmentTexterContact} from "../../src/containers/AssignmentTexterContact";
-import {DateMocker} from '../test_helpers'
+
+var MockDate = require('mockdate');
 
 jest.mock('../../src/lib/timezones')
 jest.unmock('../../src/lib/tz-helpers')
@@ -178,11 +179,11 @@ describe('test isContactBetweenTextingHours', () => {
     beforeAll(() => {
       assignmentTexterContact = new AssignmentTexterContact(propsWithEnforcedTextingHoursCampaign)
       timezones.isBetweenTextingHours.mockImplementation((o, c) => false)
-      DateMocker.mockDate('2018-02-01T15:00:00.000Z')
+      MockDate.set('2018-02-01T15:00:00.000Z')
     })
 
     afterAll(() => {
-      DateMocker.unmockDate()
+      MockDate.reset()
     })
 
     beforeEach(() => {
