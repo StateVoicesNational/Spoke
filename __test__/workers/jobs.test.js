@@ -20,7 +20,7 @@ describe('test getTimezoneByZip', () => {
     expect(future).toEqual('4_1')
   })
 
-  it('does not find a zipcode in the database', async () => {
+  it('does not find a zipcode in the database!', async () => {
     zipFormat.zipToTimeZone.mockReturnValueOnce(undefined)
 
     var future = await getTimezoneByZip('11790')

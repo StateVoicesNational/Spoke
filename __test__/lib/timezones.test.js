@@ -152,13 +152,18 @@ describe('test isBetweenTextingHours with offset data NOT supplied', () => {
     var tzHelpers = require('../../src/lib/tz-helpers')
     beforeAll(() => {
       tzHelpers.getProcessEnvTz.mockImplementation(() => null)
+    })
+
+    beforeEach(()=>{
       nowStub = sinon.stub(Date, 'now')
+    })
+
+    afterEach(() => {
+      nowStub.restore()
     })
 
     afterAll(() => {
       jest.restoreAllMocks();
-      nowStub.restore()
-      nowStub = null
     })
 
     it('returns true if texting hours are not enforced', () => {
@@ -198,13 +203,18 @@ describe('test defaultTimezoneIsBetweenTextingHours', () => {
     beforeAll(() => {
       tzHelpers.getProcessEnvTz.mockImplementation(() => null)
       jest.doMock('../../src/lib/tz-helpers')
+    })
+
+    beforeEach(()=> {
       nowStub = sinon.stub(Date, 'now')
+    })
+
+    afterEach(() => {
+        nowStub.restore()
     })
 
     afterAll(() => {
       jest.restoreAllMocks();
-      nowStub.restore()
-      nowStub = null
     })
 
     it('returns true if texting hours are not enforced', () => {
@@ -251,11 +261,12 @@ describe('test convertOffsetsToStrings', () => {
 
 describe('test getOffsets', () => {
   var nowStub = null
-  beforeAll(() => {
+
+  beforeEach(() => {
     nowStub = sinon.stub(Date, 'now')
   })
 
-  afterAll(() => {
+  afterEach(() => {
     nowStub.restore()
     nowStub = null
   })
