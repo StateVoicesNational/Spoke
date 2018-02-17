@@ -8,6 +8,7 @@ import {
 
 var MockDate = require('mockdate');
 
+
 const makeConfig = (textingHoursStart, textingHoursEnd, textingHoursEnforced) => {
   return {
     textingHoursStart,
