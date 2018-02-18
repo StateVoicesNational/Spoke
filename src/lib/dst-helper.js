@@ -25,7 +25,8 @@ export class DstHelper {
       }
     }
 
-    // if the offset from GMT passed into this function is the same as the timezone's
+    // if this timezone has DST (meaning, january and july offsets were different)
+    // and the offset from GMT passed into this function is the same as the timezone's
     // offset from GMT during DST, we return true.
     return _timezoneDstOffsets[timezone] && _timezoneDstOffsets[timezone] == offset
   }
