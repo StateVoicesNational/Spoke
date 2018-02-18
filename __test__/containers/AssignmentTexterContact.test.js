@@ -12,7 +12,6 @@ jest.unmock('../../src/lib/tz-helpers')
 jest.useFakeTimers()
 
 var timezones = require('../../src/lib/timezones')
-timezones.getLocalTime.mockReturnValue(moment().utc().utcOffset((moment().isDST() && true) ? -4 : -5))
 
 const campaign = {
   id: 9,
@@ -107,6 +106,7 @@ describe('when contact is not within texting hours...', () => {
   var component
   beforeEach(() => {
     timezones.isBetweenTextingHours.mockReturnValue(false)
+    timezones.getLocalTime.mockReturnValue(moment().utc().utcOffset(-5))
     StyleSheetTestUtils.suppressStyleInjection();
     component = mount(
       <MuiThemeProvider>
@@ -134,6 +134,7 @@ describe('when contact is within texting hours...', () => {
   var component
   beforeEach(() => {
     timezones.isBetweenTextingHours.mockReturnValue(true)
+    timezones.getLocalTime.mockReturnValue(moment().utc().utcOffset(-5))
     StyleSheetTestUtils.suppressStyleInjection();
     component = mount(
       <MuiThemeProvider>
@@ -180,6 +181,7 @@ describe('test isContactBetweenTextingHours', () => {
       assignmentTexterContact = new AssignmentTexterContact(propsWithEnforcedTextingHoursCampaign)
       timezones.isBetweenTextingHours.mockImplementation((o, c) => false)
       MockDate.set('2018-02-01T15:00:00.000Z')
+      timezones.getLocalTime.mockReturnValue(moment().utc().utcOffset(-5))
     })
 
     afterAll(() => {
