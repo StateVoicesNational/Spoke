@@ -103,12 +103,15 @@ const propsWithEnforcedTextingHoursCampaign = {
 }
 
 describe('when contact is not within texting hours...', () => {
-  var component
-  beforeEach(() => {
+  afterEach(() => {
+    propsWithEnforcedTextingHoursCampaign.refreshData.mockReset()
+  })
+
+  it('it refreshes data in componentDidMount', () => {
     timezones.isBetweenTextingHours.mockReturnValue(false)
     timezones.getLocalTime.mockReturnValue(moment().utc().utcOffset(-5))
     StyleSheetTestUtils.suppressStyleInjection();
-    component = mount(
+    let component = mount(
       <MuiThemeProvider>
         <AssignmentTexterContact
           texter={propsWithEnforcedTextingHoursCampaign.texter}
@@ -119,11 +122,6 @@ describe('when contact is not within texting hours...', () => {
         />
       </MuiThemeProvider>
     )
-  })
-  afterEach(() => {
-    propsWithEnforcedTextingHoursCampaign.refreshData.mockReset()
-  })
-  it('it refreshes data in componentDidMount', () => {
     jest.runOnlyPendingTimers()
     expect(propsWithEnforcedTextingHoursCampaign.refreshData.mock.calls).toHaveLength(1)
   })
