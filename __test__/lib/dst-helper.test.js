@@ -39,4 +39,20 @@ describe('test DstHelper', () => {
     expect(DstHelper.isDateTimeDst(d, 'Australia/Sydney')).toBeFalsy()
     expect(DstHelper.isDateDst(new Date(), 'Australia/Sydney')).toBeFalsy()
   })
+
+  it('helps us figure out if we\'re in DST in February in Kathmandu', () => {
+    MockDate.set('2018-02-01T15:00:00Z')
+    let d = new tc.DateTime(new Date(), tc.DateFunctions.Get, tc.zone('Asia/Kathmandu'))
+    expect(DstHelper.isOffsetDst(d.offset(), 'Asia/Kathmandu')).toBeFalsy()
+    expect(DstHelper.isDateTimeDst(d, 'Asia/Kathmandu')).toBeFalsy()
+    expect(DstHelper.isDateDst(new Date(), 'Asia/Kathmandu')).toBeFalsy()
+  })
+
+  it('helps us figure out if we\'re in DST in July in Kathmandu', () => {
+    MockDate.set('2018-07-01T15:00:00Z')
+    let d = new tc.DateTime(new Date(), tc.DateFunctions.Get, tc.zone('Asia/Kathmandu'))
+    expect(DstHelper.isOffsetDst(d.offset(), 'Asia/Kathmandu')).toBeFalsy()
+    expect(DstHelper.isDateTimeDst(d, 'Asia/Kathmandu')).toBeFalsy()
+    expect(DstHelper.isDateDst(new Date(), 'Asia/Kathmandu')).toBeFalsy()
+  })
 })
