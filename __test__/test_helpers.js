@@ -36,15 +36,3 @@ export function getContext(context) {
   }
 }
 
-export const RealDate = global.Date
-
-export class DateMocker {
-  static mockDate(isoDate) {
-    global.Date.now = () => {return new Date(isoDate)}
-  }
-
-  static unmockDate() {
-    global.Date.now = RealDate.now
-  }
-}
-

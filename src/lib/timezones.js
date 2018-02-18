@@ -1,5 +1,8 @@
 import moment from 'moment-timezone'
+
+var tc = require('timezonecomplete')
 import {getProcessEnvTz, getProcessEnvDstReferenceTimezone} from '../lib/tz-helpers'
+import {DstHelper} from "./dst-helper";
 
 const TIMEZONE_CONFIG = {
   missingTimeZone: {
@@ -10,7 +13,9 @@ const TIMEZONE_CONFIG = {
   }
 }
 
-export const getLocalTime = (offset, hasDST) => moment(getProcessEnvDstReferenceTimezone()).utc().utcOffset((moment(getProcessEnvDstReferenceTimezone()).isDST() && hasDST) ? offset + 1 : offset)
+export const getLocalTime = (offset, hasDST) => {
+  return moment().utc().utcOffset(DstHelper.isDateDst(new Date(), getProcessEnvDstReferenceTimezone()) && hasDST ? offset + 1 : offset)
+}
 
 export const isBetweenTextingHours = (offsetData, config) => {
   if (!config.textingHoursEnforced) {
