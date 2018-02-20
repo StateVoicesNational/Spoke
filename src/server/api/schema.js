@@ -646,11 +646,11 @@ const rootMutations = {
         if(interaction.parent_interaction_id){
           let is = {
             id: 'new'+interaction.id,
-            question: interaction.question,
+            questionText: interaction.question,
             script: interaction.script,
-            answer_option: interaction.answer_option,
-            answer_actions: interaction.answer_actions,
-            is_deleted: interaction.is_deleted,
+            answerOption: interaction.answer_option,
+            answerActions: interaction.answer_actions,
+            isDeleted: interaction.is_deleted,
             campaign_id: newCampaignId,
             parentInteractionId: 'new'+interaction.parent_interaction_id
           }
@@ -658,19 +658,17 @@ const rootMutations = {
         } else if (!interaction.parent_interaction_id){
           let is = {
             id: 'new'+interaction.id,
-            question: interaction.question,
+            questionText: interaction.question,
             script: interaction.script,
-            answer_option: interaction.answer_option,
-            answer_actions: interaction.answer_actions,
-            is_deleted: interaction.is_deleted,
+            answerOption: interaction.answer_option,
+            answerActions: interaction.answer_actions,
+            isDeleted: interaction.is_deleted,
             campaign_id: newCampaignId,
             parentInteractionId: interaction.parent_interaction_id
           }
           interactionsArr.push(is)
         }
       })
-
-      // todo --> fix camelcasing for front end 
 
       let createSteps = updateInteractionSteps(newCampaignId, [makeTree(interactionsArr, id = null)], campaign, {})
 
