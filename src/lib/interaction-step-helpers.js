@@ -80,3 +80,14 @@ export function sortInteractionSteps(interactionSteps) {
 export function getTopMostParent(interactionSteps, isModel) {
   return getInteractionTree(interactionSteps, isModel)[0][0].interactionStep
 }
+
+export function makeTree(interactionSteps, id = null) {
+  const root = interactionSteps.filter((is) => id ? is.id === id : is.parentInteractionId === null)[0]
+  const children = interactionSteps.filter((is) => is.parentInteractionId === root.id)
+  return {
+    ...root,
+    interactionSteps: children.map((c) => {
+      return makeTree(interactionSteps, c.id)
+    })
+  }
+}
