@@ -38,7 +38,6 @@ class TexterTodo extends React.Component {
 
   render() {
     const { assignment } = this.props.data
-    console.log('assignment', contacts)
     const contacts = assignment.contacts
     const allContacts = assignment.allContacts
     return (
@@ -57,6 +56,7 @@ class TexterTodo extends React.Component {
 
 TexterTodo.propTypes = {
   contactsFilter: PropTypes.string,
+  messageStatus: PropTypes.string,
   params: PropTypes.object,
   data: PropTypes.object,
   router: PropTypes.object
