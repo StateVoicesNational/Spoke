@@ -48,7 +48,7 @@ export const isBetweenTextingHours = (offsetData, config) => {
 }
 
 
-// Currently only USA
+// Currently USA (-4 through -11) and Australia (10)
 const ALL_OFFSETS = [-4, -5, -6, -7, -8, -9, -10, -11, 10]
 
 export const defaultTimezoneIsBetweenTextingHours = (config) => isBetweenTextingHours(null, config)
