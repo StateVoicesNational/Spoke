@@ -76,7 +76,7 @@ import {
 } from './errors'
 import serviceMap from './lib/services'
 import { saveNewIncomingMessage } from './lib/message-sending'
-import { gzip, log } from '../../lib'
+import { gzip, log, makeTree } from '../../lib'
 // import { isBetweenTextingHours } from '../../lib/timezones'
 import { Notifications, sendUserNotification } from '../notifications'
 import { uploadContacts,
@@ -636,37 +636,45 @@ const rootMutations = {
         is_archived: false
       })
       const newCampaign = await campaignInstance.save()
+      const newCampaignId = newCampaign.id
 
       let interactions = await r.knex('interaction_step')
         .where({campaign_id: id })
 
+      const interactionsArr = []
       interactions.forEach((interaction, index) => {
-        const copiedInteraction =
-          new InteractionStep({
+        if(interaction.parent_interaction_id){
+          let is = {
+            id: 'new'+interaction.id,
             question: interaction.question,
             script: interaction.script,
             answer_option: interaction.answer_option,
             answer_actions: interaction.answer_actions,
             is_deleted: interaction.is_deleted,
-            campaign_id: newCampaign.id,
-            parent_interaction_id: interaction.parent_interaction_id
-          }).save()
+            campaign_id: newCampaignId,
+            parentInteractionId: 'new'+interaction.parent_interaction_id
+          }
+          interactionsArr.push(is)
+        } else if (!interaction.parent_interaction_id){
+          let is = {
+            id: 'new'+interaction.id,
+            question: interaction.question,
+            script: interaction.script,
+            answer_option: interaction.answer_option,
+            answer_actions: interaction.answer_actions,
+            is_deleted: interaction.is_deleted,
+            campaign_id: newCampaignId,
+            parentInteractionId: interaction.parent_interaction_id
+          }
+          interactionsArr.push(is)
+        }
       })
 
-      let query = r.knex.select('id')
-        .from('interaction_step')
-        .whereNull('parent_interaction_id')
-        .andWhere({campaign_id: newCampaign.id})
-        .then(function(res) {
-          return r.knex('interaction_step')
-            .where({campaign_id: newCampaign.id})
-            .whereNotNull('parent_interaction_id')
-            .update({
-              parent_interaction_id: res[0].id,
-            })
-        })
+      // todo --> fix camelcasing for front end 
 
-      await query
+      let createSteps = updateInteractionSteps(newCampaignId, [makeTree(interactionsArr, id = null)], campaign, {})
+
+      await createSteps
 
       let cannedResponses = await r.knex('canned_response')
         .where({campaign_id: id })
@@ -674,13 +682,14 @@ const rootMutations = {
       cannedResponses.forEach((response, index) => {
         const copiedCannedResponse =
           new CannedResponse({
-            campaign_id: newCampaign.id,
+            campaign_id: newCampaignId,
             title: response.title,
             text: response.text
           }).save()
       })
-      
+
       return newCampaign
+
     },
     unarchiveCampaign: async (_, { id }, { user, loaders }) => {
       const campaign = await loaders.campaign.load(id)
@@ -999,6 +1008,7 @@ const rootMutations = {
           .getAll(campaignContactId, { index: 'campaign_contact_id' })
           .filter({ interaction_step_id: interactionStepId })
           .delete()
+
         // TODO: maybe undo action_handler if updated answer
 
         const qr = await new QuestionResponse({
