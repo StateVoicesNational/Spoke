@@ -27,7 +27,16 @@ const campaign = {
     textingHoursEnd: 21,
     threeClickEnabled: false
   },
-  customFields: []
+  customFields: [],
+  interactionSteps: [
+    {
+      id: 11,
+      question: {
+        text: "",
+        answerOptions: []
+      }
+    }
+  ]
 }
 
 const propsWithEnforcedTextingHoursCampaign = {
@@ -81,16 +90,7 @@ const propsWithEnforcedTextingHoursCampaign = {
       customFields: "{}",
       optOut: null,
       currentInteractionStepScript: "{firstName}",
-      interactionSteps: [
-        {
-          id: 11,
-          questionResponse: null,
-          question: {
-            text: "",
-            answerOptions: []
-          }
-        }
-      ],
+      questionResponseValues: [],
       location: {
         city: "New York",
         state: "NY",
