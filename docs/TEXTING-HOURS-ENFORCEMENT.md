@@ -1,14 +1,12 @@
 # Texting Hours Enforcement
 
-Spoke can be configured to prevent volunteers from sending texts earlier or later than configurable start and end times. 
+Spoke can be configured to prevent volunteers from sending texts earlier or later than configurable start and end times.
 
 Texting hours configuration applies at the **organization** level. All of the organization's campaigns have the same configuration.
 
-## Configuring Spoke 
+## Configuring Spoke
 
 Spoke will present the following page during organization creation.  It is also accessible from the Settings link on the left menu when logged in as an Admin.
-
-![a relative link](images/spoke_options.png "Spoke Texting Hours Configuration")
 
 Toggle "Enforce texting hours?" to turn enforcement on and off.  Click "Change Texting Hours" to adjust the start and end times.
 
@@ -32,6 +30,6 @@ If a contact does not have a ZIP code, Spoke will assume the contact is in New Y
 
 ## Is it Daylight Savings Time?
 
-If spoke is using ZIP codes to infer a contact's time zone, by default it will assume Daylight Savings Time is in effect in that time zone if Daylight Savings Time is in effect in New York City.  To use a different location to determine whether Daylight Savings Time is, or is not, in effect, change the environment variable `DST_REFERENCE_TIMEZONE`. 
+If spoke is using ZIP codes to infer a contact's time zone, by default it will assume Daylight Savings Time is in effect in that time zone if Daylight Savings Time is in effect in New York City.  To use a different location to determine whether Daylight Savings Time is, or is not, in effect, change the environment variable `DST_REFERENCE_TIMEZONE`.
 
 Note: The default configuration is suitable for all locations in the United States that use Daylight Savings Time.  `DST_REFERENCE_TIMEZONE` may need to change if a Spoke deployment is being used outside the United States because other countries may change their clocks on different schedules. Daylight Savings Time is in effect during the summer, so it is especially important to change `DST_REFERENCE_TIMEZONE` if a Spoke deployment is being used in the southern hemisphere.

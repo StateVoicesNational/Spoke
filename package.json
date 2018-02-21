@@ -131,6 +131,7 @@
     "rethink-knex-adapter": "^0.4.10",
     "rollbar": "^0.6.2",
     "thinky": "^2.3.3",
+    "timezonecomplete": "^5.5.0",
     "twilio": "^2.11.0",
     "uuid": "^3.1.0",
     "webpack": "^3.8.1",
