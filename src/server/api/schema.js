@@ -637,9 +637,10 @@ const rootMutations = {
       })
       const newCampaign = await campaignInstance.save()
       const newCampaignId = newCampaign.id
+      const oldCampaignId = campaign.id
 
       let interactions = await r.knex('interaction_step')
-        .where({campaign_id: id })
+        .where({campaign_id: oldCampaignId })
 
       const interactionsArr = []
       interactions.forEach((interaction, index) => {
@@ -674,17 +675,21 @@ const rootMutations = {
 
       await createSteps
 
-      let cannedResponses = await r.knex('canned_response')
-        .where({campaign_id: id })
+      let createCannedResponses = r.knex('canned_response')
+        .where({campaign_id: oldCampaignId })
+        .then(function(res){
+          res.forEach((response, index) => {
+            const copiedCannedResponse =
+              new CannedResponse({
+                campaign_id: newCampaignId,
+                title: response.title,
+                text: response.text
+              }).save()
+            }
+          )
+        })
 
-      cannedResponses.forEach((response, index) => {
-        const copiedCannedResponse =
-          new CannedResponse({
-            campaign_id: newCampaignId,
-            title: response.title,
-            text: response.text
-          }).save()
-      })
+      await createCannedResponses
 
       return newCampaign
 
