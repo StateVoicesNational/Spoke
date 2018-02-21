@@ -1,4 +1,4 @@
-import { createLoaders, r } from '../src/server/models/'
+import {createLoaders, r} from '../src/server/models/'
 
 async function clearTestData() {
   // Drop tables in an order that drops foreign keys before dependencies
@@ -35,3 +35,4 @@ export function getContext(context) {
     loaders: createLoaders(),
   }
 }
+
