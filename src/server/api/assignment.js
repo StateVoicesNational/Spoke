@@ -1,7 +1,6 @@
 import { mapFieldsToModel } from './lib/utils'
 import { Assignment, r } from '../models'
 import { getOffsets, defaultTimezoneIsBetweenTextingHours } from '../../lib'
-import moment from 'moment'
 
 export const schema = `
   type Assignment {
@@ -16,7 +15,7 @@ export const schema = `
   }
 `
 
-function getContacts(assignment, contactsFilter, organization, campaign) {
+export function getContacts(assignment, contactsFilter, organization, campaign) {
   // / returns list of contacts eligible for contacting _now_ by a particular user
   const textingHoursEnforced = organization.texting_hours_enforced
   const textingHoursStart = organization.texting_hours_start

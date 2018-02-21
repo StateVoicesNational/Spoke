@@ -191,7 +191,14 @@
       "description": "When updating code, do you want to disable auto-database migrations?",
       "required": false,
       "value": ""
+    },
+
+    "DST_REFERENCE_TIMEZONE": {
+      "description": "Timezone to use to determine whether DST is in effect for a date",
+      "required": true,
+      "value": "America/New_York"
     }
+
   },
 
   "addons": [
