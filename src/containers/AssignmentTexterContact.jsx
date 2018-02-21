@@ -172,7 +172,7 @@ const inlineStyles = {
   }
 }
 
-class AssignmentTexterContact extends React.Component {
+export class AssignmentTexterContact extends React.Component {
 
   constructor(props) {
     super(props)
