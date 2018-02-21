@@ -24,6 +24,7 @@ DB_USE_SSL                        | Boolean value to determine whether database 
 DEBUG_SCALING                     | Emit console.log on events related to scaling issues. _Default_: false.
 DEFAULT_SERVICE                   | Default SMS service. _Options_: twilio, nexmo.
 DEV_APP_PORT                      | Port for development Webpack server. Required for development.
+DST_REFERENCE_TIMEZONE            | Timezone to use to determine whether DST is in effect. If it's DST in this timezone, we assume it's DST everywhere.  _Default_: "America/New_York". (The default will work for any campaign in the US. For example, if the campaign is in Australia, use "Australia/Sydney" or some other timezone in Australia.  Note that DST is opposite in the northern and souther hemispheres.)
 EMAIL_FROM                        | Email from address. _Required_.
 EMAIL_HOST                        | Email server host. _Required_.
 EMAIL_HOST_PASSWORD               | Email server password. _Required_.
