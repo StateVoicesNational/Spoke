@@ -1,6 +1,5 @@
 import moment from 'moment-timezone'
 
-var tc = require('timezonecomplete')
 import {getProcessEnvTz, getProcessEnvDstReferenceTimezone} from '../lib/tz-helpers'
 import {DstHelper} from "./dst-helper";
 
