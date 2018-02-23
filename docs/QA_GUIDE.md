@@ -31,17 +31,31 @@ Suggested steps for testing Spoke. These steps allow us to see if Spoke's 'basic
 5. As a texter (in a different browser window or chrome incognito window) load up the invite link
 6. As test admin user, proceed with campaign steps above
 
-### Editing names and email as an admin or a texter
+### Editing names and email as an admin or a texter:
 1. As an admin, visit the people tab and click on `Edit` next to your logged in user's name
 2. Edit the name, click save and return to the people's menu. Make sure your edits saved.
 3. As an admin, click on the corner menu (should be a circle with the first letter of the first name of a user). Click on the name/email and edit.
 4. Edit the name, click save and return to the previous screen. Make sure your edits saved.
 5. As a texter, click on the corner menu (should be a circle with the first letter of the first name of a user). Click on the name/email and edit.
 
-### Texting people in different Timezones
+### Creating New Users:
+1. As an admin, visit the people tab and click on the `+` button in the lower right hand corner. A modal titled `Invite new texters` should pop up. Copy the join link and then open it in a different browser (if using chrome, you can use an incognito window). Paste the link and try to signup a new user (from list of fake emails). Return to admin account (in the other browser or login again) and visit the people tab. Make sure the new user shows up with their role as texter.
 
-### Copying Campaigns
+### Copying Campaigns:
+1. Click on a live campaign by visiting the `Campaigns` tab.
+2. Click on the `Copy` button.
+3. Revisit the `Campaigns`. You should see a new (not live) campaign (highlighted yellow).
+4. Click on the campaign. The interactions tab and Canned Response tab should already be green.
+5. Click on basics. You should see the `COPY + (your campaign title)` and the description filled out - these should be identical to the original campaign.
+6. Contacts should not be loaded.
+7. Texters should not be loaded.
+8. Interactions should be loaded with the same script, answers and tree structure.
+9. Canned responses should be loaded with the same canned responses from the original campaign.
 
-### Editing Campaigns
+### Editing Campaigns:
+1. Click on a live campaign by visiting the `Campaigns` tab.
+2. Click on the `Edit` button and change something in the basic info, script or in canned response. Make sure you press save in the corresponding tab.
+3. Revisit tab and verify that the change has saved.
 
-### Creating New Users
+### Texting people in different Timezones:
+Coming soon...
