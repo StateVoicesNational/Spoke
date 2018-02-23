@@ -21,7 +21,8 @@ import {
   sortInteractionSteps,
   getInteractionPath,
   getChildren,
-  findParent
+  findParent,
+  makeTree
 } from '../lib'
 
 const styles = {
@@ -56,19 +57,8 @@ export default class CampaignInteractionStepsForm extends React.Component {
   }
 
   onSave = async () => {
-    await this.props.onChange({ interactionSteps: this.makeTree(this.state.interactionSteps) })
+    await this.props.onChange({ interactionSteps: makeTree(this.state.interactionSteps) })
     this.props.onSubmit()
-  }
-
-  makeTree(interactionSteps, id = null) {
-    const root = interactionSteps.filter((is) => id ? is.id === id : is.parentInteractionId === null)[0]
-    const children = interactionSteps.filter((is) => is.parentInteractionId === root.id)
-    return {
-      ...root,
-      interactionSteps: children.map((c) => {
-        return this.makeTree(interactionSteps, c.id)
-      })
-    }
   }
 
   addStep(parentInteractionId) {
@@ -211,7 +201,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
   }
 
   render() {
-    const tree = this.makeTree(this.state.interactionSteps)
+    const tree = makeTree(this.state.interactionSteps)
 
     return (
       <div>

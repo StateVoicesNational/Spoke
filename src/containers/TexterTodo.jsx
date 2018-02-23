@@ -56,6 +56,7 @@ class TexterTodo extends React.Component {
 
 TexterTodo.propTypes = {
   contactsFilter: PropTypes.string,
+  messageStatus: PropTypes.string,
   params: PropTypes.object,
   data: PropTypes.object,
   router: PropTypes.object
@@ -96,6 +97,19 @@ const mapQueriesToProps = ({ ownProps }) => ({
             threeClickEnabled
           }
           customFields
+          interactionSteps {
+            id
+            question {
+              text
+              answerOptions {
+                value
+                nextInteractionStep {
+                  id
+                  script
+                }
+              }
+            }
+          }
         }
         contacts(contactsFilter: $contactsFilter) {
           id

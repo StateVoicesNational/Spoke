@@ -1,6 +1,6 @@
 import { CampaignContact, r } from '../models'
 import { mapFieldsToModel } from './lib/utils'
-import { log, getTopMostParent } from '../../lib'
+import { log, getTopMostParent, zipToTimeZone } from '../../lib'
 
 export const schema = `
   input ContactsFilter {
@@ -32,6 +32,7 @@ export const schema = `
     location: Location
     optOut: OptOut
     campaign: Campaign
+    questionResponseValues: [AnswerOption]
     questionResponses: [AnswerOption]
     interactionSteps: [InteractionStep]
     currentInteractionStepScript: String
@@ -70,9 +71,17 @@ export const resolvers = {
     // To get that result to look like what the original code returned
     // without using the outgoing answer_options array field, try this:
     //
+    questionResponseValues: async (campaignContact, _, { loaders }) => {
+      if (campaignContact.message_status === 'needsMessage') {
+        return [] // it's the beginning, so there won't be any
+      }
+      return await r.knex('question_response')
+        .where('question_response.campaign_contact_id', campaignContact.id)
+        .select('value', 'interaction_step_id')
+    },
     questionResponses: async (campaignContact, _, { loaders }) => {
       const results = await r.knex('question_response as qres')
-        .where('question_response.campaign_contact', campaignContact.id)
+        .where('qres.campaign_contact_id', campaignContact.id)
         .join('interaction_step', 'qres.interaction_step_id', 'interaction_step.id')
         .join('interaction_step as child',
               'qres.interaction_step_id',
@@ -132,9 +141,7 @@ export const resolvers = {
       return Object.values(formatted)
     },
     location: async (campaignContact, _, { loaders }) => {
-      const mainZip = campaignContact.zip.split('-')[0]
-      const loc = await loaders.zipCode.load(mainZip)
-      if (!loc && campaignContact.timezone_offset) {
+      if (campaignContact.timezone_offset) {
         // couldn't look up the timezone by zip record, so we load it
         // from the campaign_contact directly if it's there
         const [offset, hasDst] = campaignContact.timezone_offset.split('_')
@@ -143,9 +150,20 @@ export const resolvers = {
           has_dst: (hasDst === '1')
         }
       }
-      return loc
+      const mainZip = campaignContact.zip.split('-')[0]
+      const calculated = zipToTimeZone(mainZip)
+      if (calculated) {
+        return {
+          timezone_offset: calculated[2],
+          has_dst: (calculated[3] === 1)
+        }
+      }
+      return await loaders.zipCode.load(mainZip)
     },
     messages: async (campaignContact) => {
+      if (campaignContact.message_status === 'needsMessage') {
+        return [] // it's the beginning, so there won't be any
+      }
       const messages = await r.table('message')
         .getAll(campaignContact.assignment_id, { index: 'assignment_id' })
         .filter({
@@ -175,11 +193,6 @@ export const resolvers = {
         .getAll(campaignContact.campaign_id, { index: 'campaign_id' })
         .filter({ is_deleted: false })
       return getTopMostParent(steps, true).script
-    },
-    interactionSteps: async (campaignContact) => (
-      await r.table('interaction_step')
-        .getAll(campaignContact.campaign_id, { index: 'campaign_id' })
-        .filter({ is_deleted: false })
-    )
+    }
   }
 }
