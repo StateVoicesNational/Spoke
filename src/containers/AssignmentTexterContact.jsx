@@ -179,7 +179,7 @@ class AssignmentTexterContact extends React.Component {
     super(props)
 
     const { assignment, campaign, contact } = this.props
-    const questionResponses = this.getInitialQuestionResponses(campaign.interactionSteps)
+    const questionResponses = this.getInitialQuestionResponses(contact.questionResponseValues)
     const availableSteps = this.getAvailableInteractionSteps(questionResponses)
 
     let disabled = false
@@ -205,6 +205,8 @@ class AssignmentTexterContact extends React.Component {
     this.state = {
       disabled,
       disabledText,
+      // this prevents jitter by not showing the optout/skip buttons right after sending
+      justSentNew: false,
       questionResponses,
       snackbarError,
       snackbarActionTitle,
@@ -279,14 +281,11 @@ class AssignmentTexterContact extends React.Component {
     return availableSteps
   }
 
-  getInitialQuestionResponses(interactionSteps) {
+  getInitialQuestionResponses(questionResponseValues) {
     const questionResponses = {}
-    for (const interactionStep of interactionSteps) {
-      if (interactionStep.question.text !== '') {
-        const value = interactionStep.questionResponse ? interactionStep.questionResponse.value : null
-        questionResponses[interactionStep.id] = value
-      }
-    }
+    questionResponseValues.forEach((questionResponse) => {
+      questionResponses[questionResponse.interactionStepId] = questionResponse.value
+    })
 
     return questionResponses
   }
@@ -495,6 +494,9 @@ class AssignmentTexterContact extends React.Component {
 
   handleClickSendMessageButton = () => {
     this.refs.form.submit()
+    if (this.props.data.contact.messageStatus === 'needsMessage') {
+      this.setState({ justSentNew: true })
+    }
   }
 
   isContactBetweenTextingHours(contact) {
@@ -526,7 +528,6 @@ class AssignmentTexterContact extends React.Component {
   }
 
   bulkSendMessages = async (assignmentId) => {
-    console.log('Bulk Sending for Assignmnet ID', assignmentId)
     await this.props.mutations.bulkSendMessages(assignmentId)
     this.props.refreshData()
   }
@@ -592,12 +593,39 @@ class AssignmentTexterContact extends React.Component {
 
   renderActionToolbar() {
     const { data, campaign, assignment, navigationToolbarChildren, onFinishContact } = this.props
+    const { justSentNew } = this.state
     const { contact } = data
     const { messageStatus } = contact
-
     const size = document.documentElement.clientWidth
 
-    if (messageStatus === 'needsResponse' && size < 450 || messageStatus === 'messaged' && size < 450) {
+    if (messageStatus === 'needsMessage' || justSentNew) {
+      return (
+        <div>
+          <Toolbar style={inlineStyles.actionToolbarFirst}>
+            <ToolbarGroup
+              firstChild
+            >
+              <SendButton
+                threeClickEnabled={campaign.organization.threeClickEnabled}
+                onFinalTouchTap={this.handleClickSendMessageButton}
+                disabled={this.state.disabled}
+              />
+              {window.NOT_IN_USA && window.ALLOW_SEND_ALL && window.BULK_SEND_CHUNK_SIZE ? <BulkSendButton
+                assignment={assignment}
+                onFinishContact={onFinishContact}
+                bulkSendMessages={this.bulkSendMessages}
+                setDisabled={this.setDisabled.bind(this)}
+              /> : ''}
+              <div
+                style={{ float: 'right', marginLeft: 20 }}
+              >
+                {navigationToolbarChildren}
+              </div>
+            </ToolbarGroup>
+          </Toolbar>
+        </div>
+      )
+    } else if (size < 450) { // for needsResponse or messaged
       return (
         <div>
           <Toolbar
@@ -630,7 +658,7 @@ class AssignmentTexterContact extends React.Component {
           </Toolbar>
         </div>
       )
-    } else if (size >= 768 || messageStatus === 'needsMessage') {
+    } else if (size >= 768) { // for needsResponse or messaged
       return (
         <div>
           <Toolbar style={inlineStyles.actionToolbarFirst}>
@@ -642,12 +670,6 @@ class AssignmentTexterContact extends React.Component {
                 onFinalTouchTap={this.handleClickSendMessageButton}
                 disabled={this.state.disabled}
               />
-              {window.NOT_IN_USA && window.ALLOW_SEND_ALL && window.BULK_SEND_CHUNK_SIZE && contact.messageStatus === 'needsMessage' ? <BulkSendButton
-                assignment={assignment}
-                onFinishContact={onFinishContact}
-                bulkSendMessages={this.bulkSendMessages}
-                setDisabled={this.setDisabled.bind(this)}
-              /> : ''}
               {this.renderNeedsResponseToggleButton(contact)}
               <RaisedButton
                 label='Canned responses'

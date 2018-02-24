@@ -107,6 +107,17 @@ const components = {
     bottom: 20,
     left: 'auto',
     position: 'fixed'
+  },
+  logoDiv: {
+    margin: '0 auto',
+    height: 200,
+    width: 450,
+    overflow: 'hidden'
+  },
+  'logoImg': {
+    height: 700,
+    width: 700,
+    margin: '-50% 0 0 -30%'
   }
 }
 
