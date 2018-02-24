@@ -8,6 +8,7 @@ export const schema = `
   }
 
   type AnswerOption {
+    interactionStepId: Int
     value: String
     action: String
     nextInteractionStep: InteractionStep
@@ -35,6 +36,7 @@ export const resolvers = {
   },
   AnswerOption: {
     value: (answer) => answer.value,
+    interactionStepId: (answer) => answer.interaction_step_id,
     nextInteractionStep: async (answer) => r.table('interaction_step').get(answer.interaction_step_id),
     responders: async (answer) => (
       r.table('question_response')
