@@ -88,7 +88,7 @@ Here is the (proposed) structure of data in Redis to support the above data need
 
 * Access Control
 
-  1. load from `texterinfo-<texter-id>`
+  1. Load from `texterinfo-<texter-id>`
 
 * getNew (needsMessage)
 
