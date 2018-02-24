@@ -88,39 +88,39 @@ Here is the (proposed) structure of data in Redis to support the above data need
 
 * Access Control
 
-  # load from `texterinfo-<texter-id>`
+  1. load from `texterinfo-<texter-id>`
 
 * getNew (needsMessage)
 
-  # Load (and LPOP) from `newassignments-<texter_id>`
+  1. Load (and LPOP) from `newassignments-<texter_id>`
 
 * getReplies (needsRepsonse)
 
-  # Load from `replies-<texter_id>`
-  # For each contact, load `contactinfo-<contact_cell>`
+  1. Load from `replies-<texter_id>`
+  2. For each contact, load `contactinfo-<contact_cell>`
 
 * incomingMessage
 
-  # Load `contactinfo-<contact_cell>` to lookup the texter id assigned the contact
-  # LPUSH `conversation-<contact_cell>`
-  # LPUSH `message-write-queue`
-  # HSET `replies-<texter_id>` (using lookup)
+  1. Load `contactinfo-<contact_cell>` to lookup the texter id assigned the contact
+  2. LPUSH `conversation-<contact_cell>`
+  3. LPUSH `message-write-queue`
+  4. HSET `replies-<texter_id>` (using lookup)
 
 * sendMessage
 
-  # LPUSH `conversation-<contact_cell>`
-  # LPUSH `message-write-queue`
+  1. LPUSH `conversation-<contact_cell>`
+  2. LPUSH `message-write-queue`
 
 * updateQuestionResponses
 
-  # HSET `contactinfo-<contact_id>`
+  1. HSET `contactinfo-<contact_id>`
 
 * updateAssignments
 
-  # Either LPUSH `newassignments-<texter_id>` OR `dynamicassignments-<campaign_id>`
+  1. Either LPUSH `newassignments-<texter_id>` OR `dynamicassignments-<campaign_id>`
 
 * dynamicAssignment (when the texter requests more assignments)
 
-  # LPOP `dynamicassignments-<campaign_id>`
-  # HSET `contactinfo-<contact_cell>`
+  1. LPOP `dynamicassignments-<campaign_id>`
+  2. HSET `contactinfo-<contact_cell>`
 
