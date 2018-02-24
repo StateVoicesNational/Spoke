@@ -22,21 +22,9 @@ const getContactData = async (component, contactId) => {
           createdAt
         }
         currentInteractionStepScript
-        interactionSteps {
-          id
-          questionResponse(campaignContactId: $campaignContactId) {
-            value
-          }
-          question {
-            text
-            answerOptions {
-              value
-              nextInteractionStep {
-                id
-                script
-              }
-            }
-          }
+        questionResponseValues {
+          interactionStepId
+          value
         }
         location {
           city
