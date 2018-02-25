@@ -30,7 +30,7 @@ texters and 10s of millions of contacts.
 ## Optimizing the Message-Response Cycle
 
 The message-response cycle is the most important thing to optimize -- texters sending out
-messages initially, and then 
+messages initially, and then handling replies and knowing when there are new replies to handle.
 
 
 ### Client-side optimization
@@ -64,7 +64,7 @@ Here is the (proposed) structure of data in Redis to support the above data need
 
 * HASH: `texterinfo-<texter_id>` (access
 
-  Keys: {auth0_id, [roles] (?one key per-assumable-role?), is_superadmin, [orgs] (?one key per-org?)}
+  Keys: {auth0_id, `<org_id>`=`<role>`, is_superadmin}
 
 * HASH: `replies-<texter_id>`
 
