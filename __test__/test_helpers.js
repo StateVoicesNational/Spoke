@@ -2,7 +2,6 @@ import {createLoaders, r} from '../src/server/models/'
 import { sleep } from '../src/workers/lib'
 
 export async function setupTest() {
-  await cleanupTest()
   createLoaders()
   let i = 0
   while (i++ < 4) {
@@ -36,7 +35,7 @@ export async function setupTest() {
 
 export async function cleanupTest() {
   // Drop tables in an order that drops foreign keys before dependencies
-  await r.knex.schema.dropTableIfExists('log'),
+  await r.knex.schema.dropTableIfExists('log')
   await r.knex.schema.dropTableIfExists('zip_code')
   await r.knex.schema.dropTableIfExists('message')
   await r.knex.schema.dropTableIfExists('user_cell')
