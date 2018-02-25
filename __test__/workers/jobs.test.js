@@ -1,10 +1,14 @@
 import {getTimezoneByZip} from '../../src/workers/jobs'
 import {r, ZipCode} from '../../src/server/models'
+import {setupTest} from "../test_helpers";
 
 jest.mock('../../src/lib/zip-format')
 var zipFormat = require('../../src/lib/zip-format')
 
 describe('test getTimezoneByZip', () => {
+
+  beforeAll(async () => await setupTest(), global.DATABASE_SETUP_TEARDOWN_TIMEOUT)
+  afterAll(async () => await cleanupTest(), global.DATABASE_SETUP_TEARDOWN_TIMEOUT)
 
   it('returns timezone data from the common zipcode/timezone mappings', async () => {
     zipFormat.zipToTimeZone.mockReturnValueOnce([0, 0, 3, 1])
