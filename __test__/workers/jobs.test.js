@@ -1,6 +1,6 @@
 import {getTimezoneByZip} from '../../src/workers/jobs'
 import {r, ZipCode} from '../../src/server/models'
-import {setupTest} from "../test_helpers";
+import {setupTest, cleanupTest} from "../test_helpers";
 
 jest.mock('../../src/lib/zip-format')
 var zipFormat = require('../../src/lib/zip-format')
