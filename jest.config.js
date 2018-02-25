@@ -15,7 +15,7 @@ module.exports = {
     JOBS_SAME_PROCESS: true,
     DEFAULT_SERVICE: 'fakeservice',
     DST_REFERENCE_TIMEZONE: 'America/New_York',
-    DATABASE_SETUP_TEARDOWN_TIMEOUT: 15000,
+    DATABASE_SETUP_TEARDOWN_TIMEOUT: 20000,
   },
   moduleFileExtensions: [
     "js",
