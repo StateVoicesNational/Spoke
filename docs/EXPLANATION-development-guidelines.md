@@ -87,13 +87,17 @@ await r.knex('job_request').where({ assigned: true }).where('updated_at', '<', t
 
 ### Schema changes
 
-Schema changes should include an addition to `src/migrations/index.js`.  If you create a table, make sure you use
-`r.knex.schema.createTableIfNotExists` (see knex documentation and existing examples).
+Checklist: 
 
-In order to support PostgreSQL and Sqlite, you can define a field as `.json()` when defining it in the
+* Schema changes should include an addition to `src/migrations/index.js`.  
+* If you create a table, make sure you use `r.knex.schema.createTableIfNotExists` (see knex documentation and existing examples) and add your new table to the functions in `test/__test_helpers.js`.
+* Add new models every place the old models are referenced in `src/server/models/index.js` 
+
+Notes:
+
+* In order to support PostgreSQL and Sqlite, you can define a field as `.json()` when defining it in the
 migration, but it should be `type.string()` in its `src/server/models/` definition.
-
-Production instances can disable automatic migrations on startup with environment variable `SUPPRESS_MIGRATIONS`.
+* Production instances can disable automatic migrations on startup with environment variable `SUPPRESS_MIGRATIONS`.
 
 
 ## Apollo/GraphQL structure and gotchas
@@ -138,6 +142,27 @@ code in `src/workers`.  `src/workers/job-processes.js` is generally what starts 
 run from either `lambda.js` or e.g. `src/workers/message-sender-01.js`.  The actual process that does the
 work should be defined in `src/workers/jobs.js`.
 
+## Best practices for writing tests
+
+### Test database setup and teardown
+
+All tests that use the test database should implement async beforeAll and afterAll methods that call setupTest and cleanupTest, as follows.  If the test has beforeAll or afterAll that do other things, add these calls to them.
+
+`__test__/workers/jobs.test.js` has an example of this.
+
+```
+import {setupTest, cleanupTest} from "../test_helpers";
+
+describe('some feature', () => {
+    afterAll(async () => {
+        await setupTest(), global.DATABASE_SETUP_TEARDOWN_TIMEOUT)
+    })
+
+    beforeEach(async () => {
+        await cleanupTest(), global.DATABASE_SETUP_TEARDOWN_TIMEOUT)
+    })
+})
+```
 
 ## Scaling concerns and focus
 
