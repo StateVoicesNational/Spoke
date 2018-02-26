@@ -5,26 +5,20 @@ import mailgunConstructor from 'mailgun-js'
 const mailgun =
   process.env.MAILGUN_API_KEY &&
   process.env.MAILGUN_DOMAIN &&
-  mailgunConstructor({
-    apiKey: process.env.MAILGUN_API_KEY,
-    domain: process.env.MAILGUN_DOMAIN
-  })
+  mailgunConstructor({ apiKey: process.env.MAILGUN_API_KEY, domain: process.env.MAILGUN_DOMAIN }) 
 
 const sender =
   process.env.MAILGUN_API_KEY && process.env.MAILGUN_DOMAIN
     ? {
-      sendMail: ({ from, to, subject, replyTo, text }) =>
-          new Promise((resolve, reject) =>
-            mailgun.messages.send(
+      sendMail: ({ from, to, subject, replyTo, text }) => 
+            mailgun.messages().send(
               {
-                from: `${from} <${replyTo}>`,
+                from: from,
+                'h:Reply-To': replyTo,
                 to,
                 subject,
                 text
-              },
-              (err, resp) => (err ? reject(err) : resolve(resp))
-            )
-          )
+              })
     }
     : nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
@@ -58,5 +52,5 @@ export const sendEmail = async ({ to, subject, text, replyTo }) => {
     params['replyTo'] = replyTo
   }
 
-  return transporter.sendMail(params)
+  return sender.sendMail(params)
 }
