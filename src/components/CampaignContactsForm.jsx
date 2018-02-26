@@ -189,6 +189,7 @@ export default class CampaignContactsForm extends React.Component {
           type='file'
           className={css(styles.exampleImageInput)}
           onChange={this.handleUpload}
+          style={{display: 'none'}}
         />
       </div>
     )
