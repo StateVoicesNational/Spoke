@@ -1,4 +1,4 @@
-var tc = require('timezonecomplete')
+import {DateTime, zone, DateFunctions} from 'timezonecomplete'
 
 
 // a cache number of hours offset from GMT during DST per timezone
@@ -14,8 +14,8 @@ export class DstHelper {
       // be different.  The greater of the two is the DST offset.  For our check, we
       // don't care when DST is (March-October in the northern hemisphere, October-March
       // in the southern hemisphere).  We only care about the offset during DST.
-      let januaryDate = new tc.DateTime(new Date().getFullYear(), 1, 1, 0, 0, 0, 0, tc.zone(timezone))
-      let julyDate = new tc.DateTime(new Date().getFullYear(), 7, 1, 0, 0, 0, 0, tc.zone(timezone))
+      let januaryDate = new DateTime(new Date().getFullYear(), 1, 1, 0, 0, 0, 0, zone(timezone))
+      let julyDate = new DateTime(new Date().getFullYear(), 7, 1, 0, 0, 0, 0, zone(timezone))
       if (januaryDate.offset() == julyDate.offset()) {
         // there is no DTC in this timezone
         _timezoneDstOffsets[timezone] = undefined
@@ -32,11 +32,11 @@ export class DstHelper {
   }
 
   static isDateDst(date: Date, timezone: string): boolean {
-    let d = new tc.DateTime(date, tc.DateFunctions.Get, tc.zone(timezone))
+    let d = new DateTime(date, DateFunctions.Get, zone(timezone))
     return DstHelper.isOffsetDst(d.offset(), timezone)
   }
 
-  static isDateTimeDst(date: tc.DateTime, timezone: string): boolean {
+  static isDateTimeDst(date: DateTime, timezone: string): boolean {
     return DstHelper.isOffsetDst(date.offset(), timezone)
   }
 }
