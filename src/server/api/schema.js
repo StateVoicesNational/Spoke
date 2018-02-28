@@ -76,7 +76,7 @@ import {
 } from './errors'
 import serviceMap from './lib/services'
 import { saveNewIncomingMessage } from './lib/message-sending'
-import { gzip, log } from '../../lib'
+import { gzip, log, makeTree } from '../../lib'
 // import { isBetweenTextingHours } from '../../lib/timezones'
 import { Notifications, sendUserNotification } from '../notifications'
 import { uploadContacts,
@@ -208,6 +208,7 @@ const rootSchema = `
     createInvite(invite:InviteInput!): Invite
     createCampaign(campaign:CampaignInput!): Campaign
     editCampaign(id:String!, campaign:CampaignInput!): Campaign
+    copyCampaign(id: String!): Campaign
     exportCampaign(id:String!): JobRequest
     createCannedResponse(cannedResponse:CannedResponseInput!): CannedResponse
     createOrganization(name: String!, userId: String!, inviteId: String!): Organization
@@ -627,6 +628,77 @@ const rootMutations = {
       const newCampaign = await campaignInstance.save()
       return editCampaign(newCampaign.id, campaign, loaders, user)
     },
+    copyCampaign: async (_, { id }, { user, loaders }) => {
+      const campaign = await loaders.campaign.load(id)
+      await accessRequired(user, campaign.organization_id, 'ADMIN')
+
+      const campaignInstance = new Campaign({
+        organization_id: campaign.organization_id,
+        title: 'COPY - ' + campaign.title,
+        description: campaign.description,
+        due_by: campaign.dueBy,
+        is_started: false,
+        is_archived: false
+      })
+      const newCampaign = await campaignInstance.save()
+      const newCampaignId = newCampaign.id
+      const oldCampaignId = campaign.id
+
+      let interactions = await r.knex('interaction_step')
+        .where({campaign_id: oldCampaignId })
+
+      const interactionsArr = []
+      interactions.forEach((interaction, index) => {
+        if(interaction.parent_interaction_id){
+          let is = {
+            id: 'new'+interaction.id,
+            questionText: interaction.question,
+            script: interaction.script,
+            answerOption: interaction.answer_option,
+            answerActions: interaction.answer_actions,
+            isDeleted: interaction.is_deleted,
+            campaign_id: newCampaignId,
+            parentInteractionId: 'new'+interaction.parent_interaction_id
+          }
+          interactionsArr.push(is)
+        } else if (!interaction.parent_interaction_id){
+          let is = {
+            id: 'new'+interaction.id,
+            questionText: interaction.question,
+            script: interaction.script,
+            answerOption: interaction.answer_option,
+            answerActions: interaction.answer_actions,
+            isDeleted: interaction.is_deleted,
+            campaign_id: newCampaignId,
+            parentInteractionId: interaction.parent_interaction_id
+          }
+          interactionsArr.push(is)
+        }
+      })
+
+      let createSteps = updateInteractionSteps(newCampaignId, [makeTree(interactionsArr, id = null)], campaign, {})
+
+      await createSteps
+
+      let createCannedResponses = r.knex('canned_response')
+        .where({campaign_id: oldCampaignId })
+        .then(function(res){
+          res.forEach((response, index) => {
+            const copiedCannedResponse =
+              new CannedResponse({
+                campaign_id: newCampaignId,
+                title: response.title,
+                text: response.text
+              }).save()
+            }
+          )
+        })
+
+      await createCannedResponses
+
+      return newCampaign
+
+    },
     unarchiveCampaign: async (_, { id }, { user, loaders }) => {
       const campaign = await loaders.campaign.load(id)
       await accessRequired(user, campaign.organizationId, 'ADMIN')
@@ -944,6 +1016,7 @@ const rootMutations = {
           .getAll(campaignContactId, { index: 'campaign_contact_id' })
           .filter({ interaction_step_id: interactionStepId })
           .delete()
+
         // TODO: maybe undo action_handler if updated answer
 
         const qr = await new QuestionResponse({

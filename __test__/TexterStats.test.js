@@ -59,7 +59,7 @@ describe('TexterStats (Non-dynamic campaign)', () => {
   it('contains the right text', () => {
     const stats = shallow(<TexterStats campaign={campaign} />)
     expect(stats.text()).toEqual(
-      'Test19%<LinearProgress />Someone99%<LinearProgress />'
+      'Test Tester19%<LinearProgress />Someone Else99%<LinearProgress />'
     )
   })
 

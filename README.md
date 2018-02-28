@@ -29,7 +29,7 @@ Follow up instructions located [here](https://github.com/MoveOnOrg/Spoke/blob/ma
 5. `cp .env.example .env`
 6. If you want to use Postgres:
     - In `.env` set `DB_TYPE=pg`. (Otherwise, you will use sqlite.)
-    - Set `DB_PORT=5432`, which is the default port for Postgres.  
+    - Set `DB_PORT=5432`, which is the default port for Postgres.
     - Create the spokedev database:  `psql -c "create database spokedev;"`
 7. Create an [Auth0](https://auth0.com) account. In your Auth0 account, go to Settings -> Clients -> and then grab your Client ID, Client Secret, and your Auth0 domain (should look like xxx.auth0.com). Add those inside your `.env` file (AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_DOMAIN respectively).
 8. Run `npm run dev` to create and populate the tables.
@@ -42,7 +42,7 @@ context.idToken["https://spoke/user_metadata"] = user.user_metadata;
 callback(null, user, context);
 }
 ```
-12. Run `npm run dev` to start the app. Wait until you see both "Node app is running ..." and "Webpack dev server is now running ..." before attempting to connect. (make sure environment variable `JOBS_SAME_PROCESS=1`)
+12. Run `npm run dev` to start the app. Wait until you see both "Node app is running ..." and "webpack: Compiled successfully." before attempting to connect. (make sure environment variable `JOBS_SAME_PROCESS=1`)
 13. Go to `http://localhost:3000` to load the app.
 14. As long as you leave `SUPPRESS_SELF_INVITE=` blank and unset in your `.env` you should be able to invite yourself from the homepage.
     - If you DO set that variable, then spoke will be invite-only and you'll need to generate an invite. Run:
