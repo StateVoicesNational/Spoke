@@ -74,7 +74,7 @@ Here is the (proposed) structure of data in Redis to support the above data need
 
 * HASH: `contactinfo-<contact_cell>`
 
-  Keys with values include {assigned texter_id, assignment_id, org_id, [contact info including, e.g. city/state]}
+  Keys with values include {assigned texter_id, assignment_id, org_id, questionResponseValues, [contact info including, e.g. city/state]}
 
 * QUEUE: `newassignments-<texter_id>` -- full contact info for all new assignments (status=needsMessage)
 
