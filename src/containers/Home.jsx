@@ -20,6 +20,12 @@ const styles = StyleSheet.create({
     ...theme.text.header,
     fontSize: 40
   },
+  logoDiv: {
+    ...theme.components.logoDiv
+  },
+  logoImg: {
+    ...theme.components.logoImg
+  },
   header: {
     ...theme.text.header,
     marginBottom: 15,
@@ -81,7 +87,7 @@ class Home extends React.Component {
     return (
       <div>
         <div className={css(styles.header)}>
-        Spoke is a new way to run campaigns using text messaging. We are currently in private beta.
+        Spoke is a new way to run campaigns using text messaging.
         </div>
         <div>
           <a className={css(styles.link_dark_bg)} href='/login' onClick={this.handleOrgInviteClick}>Login and get started</a>
@@ -93,8 +99,11 @@ class Home extends React.Component {
   render() {
     return (
       <div className={css(styles.container)}>
-        <div className={css(styles.bigHeader)}>
-          Spoke
+        <div className={css(styles.logoDiv)}>
+          <img
+            src='https://user-images.githubusercontent.com/16676323/36105008-8b4fef00-0fe1-11e8-893c-a58786d1970c.png'
+            className={css(styles.logoImg)}
+          />
         </div>
         <div className={css(styles.content)}>
           {this.renderContent()}
