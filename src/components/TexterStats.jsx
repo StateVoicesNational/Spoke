@@ -13,7 +13,7 @@ class TexterStats extends React.Component {
 
     return (
       <div key={id}>
-        {texter.firstName}
+        {texter.firstName} {texter.lastName}
         <div>{percentComplete}%</div>
         <LinearProgress
           mode='determinate'
