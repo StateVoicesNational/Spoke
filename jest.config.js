@@ -13,7 +13,8 @@ module.exports = {
     }),
     JOBS_SYNC: true,
     JOBS_SAME_PROCESS: true,
-    DEFAULT_SERVICE: 'fakeservice'
+    DEFAULT_SERVICE: 'fakeservice',
+    DST_REFERENCE_TIMEZONE: 'America/New_York'
   },
   moduleFileExtensions: [
     "js",
