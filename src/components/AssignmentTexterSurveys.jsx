@@ -135,7 +135,7 @@ class AssignmentTexterSurveys extends Component {
           style={styles.cardText}
         >
           {showAllQuestions ? '' : this.renderStep(currentInteractionStep, true)}
-        </CardText>q
+        </CardText>
         <CardText
           style={styles.cardText}
           expandable
