@@ -176,18 +176,22 @@ export default class CampaignContactsForm extends React.Component {
   renderUploadButton() {
     const { uploading } = this.state
     return (
-      <RaisedButton
-        style={innerStyles.button}
-        label={uploading ? 'Uploading...' : 'Upload contacts'}
-        labelPosition='before'
-        disabled={uploading}
-      >
+      <div>
+        <RaisedButton
+          style={innerStyles.button}
+          label={uploading ? 'Uploading...' : 'Upload contacts'}
+          labelPosition='before'
+          disabled={uploading}
+          onClick={() => document.querySelector('#contact-upload').click()}
+        />
         <input
+          id='contact-upload'
           type='file'
           className={css(styles.exampleImageInput)}
           onChange={this.handleUpload}
+          style={{display: 'none'}}
         />
-      </RaisedButton>
+      </div>
     )
   }
 
