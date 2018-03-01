@@ -30,7 +30,7 @@ export const isBetweenTextingHours = (offsetData, config) => {
   let hasDST
   let allowedStart
   let allowedEnd
-  if (offsetData) {
+  if (offsetData && offsetData.offset) {
     allowedStart = config.textingHoursStart
     allowedEnd = config.textingHoursEnd
     offset = offsetData.offset
