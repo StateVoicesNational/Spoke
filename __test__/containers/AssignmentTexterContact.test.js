@@ -193,6 +193,27 @@ describe('test isContactBetweenTextingHours', () => {
       jest.resetAllMocks()
     })
 
+    it('works when the contact has location data with empty timezone', () => {
+
+      let contact = {
+        location: {
+          city: "New York",
+          state: "NY",
+          timezone: {
+            offset: null,
+            hasDST: null
+          }
+        }
+      }
+
+      expect(assignmentTexterContact.isContactBetweenTextingHours(contact)).toBeFalsy()
+      expect(timezones.isBetweenTextingHours.mock.calls).toHaveLength(1)
+
+      let theCall = timezones.isBetweenTextingHours.mock.calls[0]
+      expect(theCall[0]).toBeFalsy()
+      expect(theCall[1]).toEqual({textingHoursStart: 8, textingHoursEnd: 21, textingHoursEnforced: true})
+    })
+
     it('works when the contact has location data', () => {
 
       let contact = {
