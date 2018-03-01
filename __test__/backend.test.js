@@ -1,7 +1,6 @@
 import { schema, resolvers } from '../src/server/api/schema'
 import { graphql } from 'graphql'
 import { User, Organization, Campaign, CampaignContact, Assignment, r } from '../src/server/models/'
-import { sleep } from '../src/workers/lib'
 import { resolvers as campaignResolvers } from '../src/server/api/campaign'
 import { getContext,
   setupTest,
@@ -143,17 +142,8 @@ async function createCampaign(user, title, description, organizationId, contacts
 
 // graphQL tests
 
-beforeAll(async () => {
-  let testDbExists = false
-  while (!testDbExists) {
-    testDbExists = await r.knex.schema.hasTable('job_request')
-    if (!testDbExists) {
-      const waitUntilDbCreated = await sleep(1000)
-    }
-  }
-})
-
-afterAll(async () => await cleanupTest())
+beforeAll(async () => await setupTest(), global.DATABASE_SETUP_TEARDOWN_TIMEOUT)
+afterAll(async () => await cleanupTest(), global.DATABASE_SETUP_TEARDOWN_TIMEOUT)
 
 it('should be undefined when user not logged in', async () => {
   const query = `{
