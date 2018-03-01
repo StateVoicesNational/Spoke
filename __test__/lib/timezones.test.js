@@ -138,6 +138,51 @@ describe('test isBetweenTextingHours with offset data supplied', () => {
   }
 )
 
+describe('test isBetweenTextingHours with offset data empty', () => {
+    var offsetData = {offset: null, hasDST: null}
+    var tzHelpers = require('../../src/lib/tz-helpers')
+    beforeAll(() => {
+      tzHelpers.getProcessEnvTz.mockImplementation(() => null)
+    })
+
+    afterEach(() => {
+      MockDate.reset()
+    })
+
+    afterAll(() => {
+      jest.restoreAllMocks();
+    })
+
+    it('returns true if texting hours are not enforced', () => {
+      expect(isBetweenTextingHours(offsetData, makeConfig(null, null, false))).toBeTruthy()
+    })
+
+    it('returns false if texting hours are for MISSING TIME ZONE and time is 12:00 EST', () => {
+        MockDate.set('2018-02-01T12:00:00.000-05:00')
+        expect(isBetweenTextingHours(offsetData, makeConfig(null, null, true))).toBeTruthy()
+      }
+    )
+
+    it('returns false if texting hours are for MISSING TIME ZONE and time is 11:00 EST', () => {
+        MockDate.set('2018-02-01T11:00:00.000-05:00')
+        expect(isBetweenTextingHours(offsetData, makeConfig(null, null, true))).toBeFalsy()
+      }
+    )
+
+    it('returns false if texting hours are for MISSING TIME ZONE and time is 20:00 EST', () => {
+        MockDate.set('2018-02-01T20:00:00.000-05:00')
+        expect(isBetweenTextingHours(offsetData, makeConfig(null, null, true))).toBeTruthy()
+      }
+    )
+
+    it('returns false if texting hours are for MISSING TIME ZONE and time is 21:00 EST', () => {
+        MockDate.set('2018-02-01T21:00:00.000-05:00')
+        expect(isBetweenTextingHours(offsetData, makeConfig(null, null, true))).toBeFalsy()
+      }
+    )
+  }
+)
+
 describe('test isBetweenTextingHours with offset data NOT supplied', () => {
     var tzHelpers = require('../../src/lib/tz-helpers')
     beforeAll(() => {
