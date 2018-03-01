@@ -500,7 +500,7 @@ export class AssignmentTexterContact extends React.Component {
 
     let timezoneData = null
 
-    if (contact.location) {
+    if (contact.location && contact.location.timezone && contact.location.timezone.offset) {
       const { hasDST, offset } = contact.location.timezone
 
       timezoneData = { hasDST, offset }
