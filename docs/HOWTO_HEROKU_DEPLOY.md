@@ -1,7 +1,6 @@
 # Instructions for one click deployment to Heroku
 - Create a Heroku account (if you don't have an account)- you do not need to connect a credit card to your account to enable initial deployment. For more questions on Heroku and what it does, please visit [here](https://www.heroku.com/what)
-- Fill out environment variables in form --> instructions about that below
-- The form you fill out in Heroku have a lot of values. These are configuration values. Each value is essentially a setting. Some are necessary for deployment and others customize the experience in your instance of Spoke. For more questions about configuration values in this application visit: [here](https://github.com/MoveOnOrg/Spoke/blob/main/docs/REFERENCE-environment_variables.md). For more questions in general about configuration variables in Heroku, visit [here](https://devcenter.heroku.com/articles/config-vars)
+- The form you fill out in Heroku have a lot of values. These are configuration values (also known as environment variables). Each value is essentially a setting. Some are necessary for deployment and others customize the experience in your instance of Spoke. For more questions about configuration values in this application visit: [here](https://github.com/MoveOnOrg/Spoke/blob/main/docs/REFERENCE-environment_variables.md). For more questions in general about configuration variables in Heroku, visit [here](https://devcenter.heroku.com/articles/config-vars)
 - Do not start any of the processes/dynos besides `web` (see below for non-Twilio uses)
 - The default setup is a free tier for processing and the database. See below for scaling and production requirements
 
@@ -9,7 +8,7 @@
 - There is a variable named `SUPPRESS_SELF_INVITE` in your configuration variables in Heroku. When this is set to nothing, anyone can visit your app and create an organization. When is set to 'true', then when a person signs up and visits your app, they will not create an organization. On first deployment, it should be set to nothing to ensure that the you have the ability to create an organization and view the full functionality of the application.
 
 
-## Notes about auth0 environment variable setup
+## Notes about auth0 configuration variable setup
 - Create an auth0 account
 - Click on `Clients`
 - Click on `+Create Client`
@@ -20,17 +19,17 @@
   - Domain name = AUTH0_DOMAIN
   - Client ID = AUTH0_CLIENT_ID
   - Client Secret = AUTH0_CLIENT_SECRET
-- These variables should be placed in your heroku environment variables form
-- Scroll to `Allowed Callback URLs` section and update it with (your heroku_app_url):
+- These variables should be placed in your Heroku configuration variables form
+- Scroll to `Allowed Callback URLs` section and update it with (your HEROKU_APP_URL):
   - `https://<YOUR_HEROKU_APP_URL>/login-callback, http://<YOUR_HEROKU_APP_URL>/login-callback`
 
-- Scroll to `Allowed Logout URLs` section and update it with (your heroku_app_url):
+- Scroll to `Allowed Logout URLs` section and update it with (your HEROKU_APP_URL):
   - `https://<YOUR_HEROKU_APP_URL>/logout-callback, http://<YOUR_HEROKU_APP_URL>/logout-callback`
 - As a note:
   - AUTH0_LOGIN_CALLBACK in your config variables is the same as `https://<YOUR_HEROKU_APP_URL>/login-callback`
   - AUTH0_LOGOUT_CALLBACK in your config variables is the same as `https://<YOUR_HEROKU_APP_URL>/logout-callback`
 - Scroll to `Allowed Origin (CORS)` add:
-  - ` http://*.herokuapp.com`, ` https://*.herokuapp.com`
+  - ` http://*.<YOUR_HEROKU_APP_URL>.com`, ` https://*.<YOUR_HEROKU_APP_URL>.com`
 - Scroll to bottom and click on `Advanced Settings`
 - Click on `OAuth` - make sure `OIDC Conformant` is turned off.
 - Create a rule in Auth0 by:
@@ -45,9 +44,9 @@
   - Click save
 
 
-## Notes about Twilio environment variable setup
+## Notes about Twilio configuration variable setup
 If you need to use Twilio in development but with live keys, click [here](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_INTEGRATE_TWILIO.md) for instructions.
-When using instructions, please remember that references to NGROK urls should change to your heroku app url.
+When using instructions, please remember that references to NGROK urls should change to your Heroku app url.
 
 Visit [here](https://www.twilio.com/docs/api/messaging/services-and-copilot) to configure messaging service features
 
@@ -74,7 +73,7 @@ follow these steps:
 
 ## Non-Twilio Processes/Dynos
 
-When using Twilio we recommend keeping the environment variable `JOBS_SAME_PROCESS` enabled and only running the `web` process/dyno.
+When using Twilio we recommend keeping the configuration variable `JOBS_SAME_PROCESS` enabled and only running the `web` process/dyno.
 There is another mode mostly for non-Twilio backends, where you may need to run the additional processes to process messages and sending.  Most times, even at high scale, you will want to keep `JOBS_SAME_PROCESS` on and increase or upgrade the dynos for the `web` process.
 
 ## Setting Up Mailgun
