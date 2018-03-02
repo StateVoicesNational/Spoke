@@ -1,15 +1,14 @@
 # Instructions for one click deployment to Heroku
-- Create a Heroku account (if you don't have an account)- you do not need to connect a credit card to your account to enable initial deployment. For more questions on Heroku and what it does, please visit [here](https://www.heroku.com/what)
+- Create a Heroku account (if you don't have an account). For more questions on Heroku and what it does, please visit [here](https://www.heroku.com/what)
 - The form you fill out in Heroku have a lot of values. These are configuration values (also known as environment variables). Each value is essentially a setting. Some are necessary for deployment and others customize the experience in your instance of Spoke. For more questions about configuration values in this application visit: [here](https://github.com/MoveOnOrg/Spoke/blob/main/docs/REFERENCE-environment_variables.md). For more questions in general about configuration variables in Heroku, visit [here](https://devcenter.heroku.com/articles/config-vars)
 - Do not start any of the processes/dynos besides `web` (see below for non-Twilio uses)
 - The default setup is a free tier for processing and the database. See below for scaling and production requirements
 
 ## Important Note for First Time Deployers:
-- There is a variable named `SUPPRESS_SELF_INVITE` in your configuration variables in Heroku. When this is set to nothing, anyone can visit your app and create an organization. When is set to 'true', then when a person signs up and visits your app, they will not create an organization. On first deployment, it should be set to nothing to ensure that the you have the ability to create an organization and view the full functionality of the application.
+- There is a variable named `SUPPRESS_SELF_INVITE` in your configuration variables in Heroku. When this is set to nothing, anyone can visit your app and create an organization. When it is set to `true`, this changes login/signup behavior - when a person signs up and visits your app, they will not create an organization. On first deployment, it should be set to nothing to ensure that you have the ability to create an organization and view the full functionality of the application.
 
-
-## Notes about auth0 configuration variable setup
-- Create an auth0 account
+## Instructions for Auth0 configuration variable setup
+- Create an auth0 account - click [here](https://auth0.com/signup) to sign up.
 - Click on `Clients`
 - Click on `+Create Client`
 - Create a name and click on click on `Single Page App` - click create
@@ -32,7 +31,7 @@
   - ` http://*.<YOUR_HEROKU_APP_URL>.com`, ` https://*.<YOUR_HEROKU_APP_URL>.com`
 - Scroll to bottom and click on `Advanced Settings`
 - Click on `OAuth` - make sure `OIDC Conformant` is turned off.
-- Create a rule in Auth0 by:
+- Then create a rule in Auth0:
   - Click here [rule](https://manage.auth0.com/#/rules/create) when logged into Auth0
   - Name of rule can be anything.
   - Paste the following code in the box where it says `function`:
@@ -41,7 +40,7 @@
     context.idToken["https://spoke/user_metadata"] = user.user_metadata;
     callback(null, user, context);
     }
-  - Click save
+  - Now, it should only say the pasted code in the box. Click save.
 
 
 ## Notes about Twilio configuration variable setup
