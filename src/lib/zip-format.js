@@ -38,7 +38,7 @@ var commonZipRanges = [
   [210, 601, -5, 1, 391],
   [42001, 42253, -6, 1, 252],
   [42254, 42501, -6, 1, 247],
-  [-1, 210, -4, -1, 211],
+  [-1, 210, -4, 1, 211],
   [83801, 84001, -8, 1, 200],
   [83601, 83801, -7, 1, 200],
   [47765, 47922, -5, 1, 157],
@@ -57,15 +57,20 @@ var commonZipRanges = [
 
 commonZipRanges.sort((a, b) => (a[0] - b[0]))
 
-export const zipToTimeZone = function (zip, r) {
+export function getCommonZipRanges() {
+  return commonZipRanges
+}
+
+export const zipToTimeZone = function (zip) {
   // will search common zip ranges -- won't necessarily find something
   // so fallback on looking it up in db
   if (typeof zip == 'number' || zip.length >= 5) {
     zip = parseInt(zip)
-    return commonZipRanges.find((g) => (zip >= g[0] && zip < g[1]))
+    return getCommonZipRanges().find((g) => (zip >= g[0] && zip < g[1]))
   }
 }
 
+// lperson 2018.02.10 this is dead code
 export const findZipRanges = function (r) {
   var zipchanges = []
   return r.knex('zip_code').select('zip', 'timezone_offset', 'has_dst')
@@ -81,7 +86,9 @@ export const findZipRanges = function (r) {
           front = parseInt(zipRec.zip)
         }
       })
-      zipchanges.sort(function (a, b) { return b[4] - a[4] })
+      zipchanges.sort(function (a, b) {
+        return b[4] - a[4]
+      })
       console.log(zipchanges)
     })
   return zipchanges
