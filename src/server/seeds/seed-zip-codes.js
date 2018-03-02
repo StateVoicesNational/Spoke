@@ -1,6 +1,6 @@
 import { ZipCode, r } from '../models'
 import Papa from 'papaparse'
-import { log } from '../../lib'
+import { log, zipToTimeZone } from '../../lib'
 import fs from 'fs'
 
 export async function seedZipCodes() {
@@ -18,15 +18,17 @@ export async function seedZipCodes() {
       throw new Error('Failed to seed zip codes')
     } else {
       log.info('Parsed a CSV with ', data.length, ' zip codes')
-      const zipCodes = data.map((row) => ({
-        zip: row.zip,
-        city: row.city,
-        state: row.state,
-        timezone_offset: Number(row.timezone_offset),
-        has_dst: Boolean(row.has_dst),
-        latitude: Number(row.latitude),
-        longitude: Number(row.longitude)
-      }))
+      const zipCodes = data
+        .filter((row) => (!zipToTimeZone(row.zip)))
+        .map((row) => ({
+          zip: row.zip,
+          city: row.city,
+          state: row.state,
+          timezone_offset: Number(row.timezone_offset),
+          has_dst: Boolean(row.has_dst),
+          latitude: Number(row.latitude),
+          longitude: Number(row.longitude)
+        }))
 
       log.info(zipCodes.length, 'ZIP CODES')
       ZipCode.save(zipCodes)
