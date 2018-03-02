@@ -1,7 +1,7 @@
-# Instructions for one click deployment to heroku
-- Create a heroku account (if you don't have an account)- you will need to connect a credit card to your account
+# Instructions for one click deployment to Heroku
+- Create a Heroku account (if you don't have an account)- you do not need to connect a credit card to your account to enable initial deployment. For more questions on Heroku and what it does, please visit [here](https://www.heroku.com/what)
 - Fill out environment variables in form --> instructions about that below
-- For more context on variables/settings, please visit [here](https://github.com/MoveOnOrg/Spoke/blob/main/docs/REFERENCE-environment_variables.md)
+- The form you fill out in Heroku have a lot of values. These are configuration values. Each value is essentially a setting. Some are necessary for deployment and others customize the experience in your instance of Spoke. For more questions about configuration values in this application visit: [here](https://github.com/MoveOnOrg/Spoke/blob/main/docs/REFERENCE-environment_variables.md). For more questions in general about configuration variables in Heroku, visit [here](https://devcenter.heroku.com/articles/config-vars)
 - Do not start any of the processes/dynos besides `web` (see below for non-Twilio uses)
 - The default setup is a free tier for processing and the database. See below for scaling and production requirements
 
