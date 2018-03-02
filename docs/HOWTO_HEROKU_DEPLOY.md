@@ -1,8 +1,12 @@
 # Instructions for one click deployment to heroku
 - Create a heroku account (if you don't have an account)- you will need to connect a credit card to your account
 - Fill out environment variables in form --> instructions about that below
+- For more context on variables/settings, please visit [here](https://github.com/MoveOnOrg/Spoke/blob/main/docs/REFERENCE-environment_variables.md)
 - Do not start any of the processes/dynos besides `web` (see below for non-Twilio uses)
 - The default setup is a free tier for processing and the database. See below for scaling and production requirements
+
+## Important Note for First Time Deployers:
+- There is a variable named `SUPPRESS_SELF_INVITE` in your configuration variables in Heroku. When this is set to nothing, anyone can visit your app and create an organization. When is set to 'true', then when a person signs up and visits your app, they will not create an organization. On first deployment, it should be set to nothing to ensure that the you have the ability to create an organization and view the full functionality of the application.
 
 
 ## Notes about auth0 environment variable setup
@@ -21,18 +25,29 @@
   - `https://<YOUR_HEROKU_APP_URL>/login-callback, http://<YOUR_HEROKU_APP_URL>/login-callback`
 
 - Scroll to `Allowed Logout URLs` section and update it with (your heroku_app_url):
-  - `https://<YOUR_HEROKU_APP_URL>/login-callback, http://<YOUR_HEROKU_APP_URL>/login-callback`
-
-  - `https://<YOUR_HEROKU_APP_URL>/login-callback` = AUTH0_LOGIN_CALLBACK
-  - `https://<YOUR_HEROKU_APP_URL>/logout-callback` = AUTH0_LOGOUT_CALLBACK
+  - `https://<YOUR_HEROKU_APP_URL>/logout-callback, http://<YOUR_HEROKU_APP_URL>/logout-callback`
+- As a note:
+  - AUTH0_LOGIN_CALLBACK in your config variables is the same as `https://<YOUR_HEROKU_APP_URL>/login-callback`
+  - AUTH0_LOGOUT_CALLBACK in your config variables is the same as `https://<YOUR_HEROKU_APP_URL>/logout-callback`
 - Scroll to `Allowed Origin (CORS)` add:
   - ` http://*.herokuapp.com`, ` https://*.herokuapp.com`
 - Scroll to bottom and click on `Advanced Settings`
 - Click on `OAuth` - make sure `OIDC Conformant` is turned off.
+- Create a rule in Auth0 by:
+  - Click here [rule](https://manage.auth0.com/#/rules/create) when logged into Auth0
+  - Name of rule can be anything.
+  - Paste the following code in the box where it says `function`:
+    ```javascript
+    function (user, context, callback) {
+    context.idToken["https://spoke/user_metadata"] = user.user_metadata;
+    callback(null, user, context);
+    }
+  - Click save
 
 
 ## Notes about Twilio environment variable setup
 If you need to use Twilio in development but with live keys, click [here](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_INTEGRATE_TWILIO.md) for instructions.
+When using instructions, please remember that references to NGROK urls should change to your heroku app url.
 
 Visit [here](https://www.twilio.com/docs/api/messaging/services-and-copilot) to configure messaging service features
 
@@ -46,7 +61,7 @@ the database and possibly the `web` 'dyno' instance (to [Hobby or Standard](http
 For production scale, the best time to upgrade the database is before you start using the app, because the easiest path erases all
 previous data.  If you have existing data, please refer to Heroku docs on [how to upgrade a database](https://devcenter.heroku.com/articles/upgrading-heroku-postgres-databases) (it's complicated).
 
-If you haven't used the app, after you've created the instance (filled out the variables, and 'deployed' it)
+If you have not used the app, after you've created the instance (filled out the variables, and 'deployed' it)
 follow these steps:
 
 1. Go to the 'Resources' tab for your app and scroll to the bottom

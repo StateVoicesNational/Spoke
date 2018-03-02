@@ -19,13 +19,13 @@ If you are using these instructions for an Heroku instance or AWS Lambda instanc
   - `SERVICE SID` is `TWILIO_MESSAGE_SERVICE_SID`
 7. Under `Inbound Settings`
   - Make sure `PROCESS INBOUND MESSAGES` is selected
-  - `REQUEST URL` is `https://<YOUR_NGROK_APP_URL>/twilio`
+  - `REQUEST URL` is `https://<YOUR_NGROK_APP_URL>/twilio` (or for heroku instructions, `https://<YOUR_HEROKU_APP_URL>/twilio`)
 8. Under Outbound Settings
-  - `STATUS CALLBACK URL` in your Twilio console is `https://<YOUR_NGROK_APP_URL>/twilio-message-report`
-  - TWILIO_STATUS_CALLBACK_URL in your .env file is `https://<YOUR_NGROK_APP_URL>/twilio-message-report`
+  - `STATUS CALLBACK URL` in your Twilio console is `https://<YOUR_NGROK_APP_URL>/twilio-message-report` (or for heroku instructions, `https://<YOUR_HEROKU_APP_URL>/twilio-message-report`)
+  - TWILIO_STATUS_CALLBACK_URL in your .env file is `https://<YOUR_NGROK_APP_URL>/twilio-message-report` (or for heroku instructions, `https://<YOUR_HEROKU_APP_URL>/twilio-message-report`)
 9. Visit the [dashboard](https://www.twilio.com/console)
 10. Under `Account Summary`
-  - `TWILIO_API_KEY` in your .env file is `ACCOUNT SID` in your Twilio console
+  - `TWILIO_API_KEY` in your .env file (or heroku config variable) is `ACCOUNT SID` in your Twilio console
   - `TWILIO_APPLICATION_SID` is `TWILIO_MESSAGE_SERVICE_SID` (these are the same values)
-  - `TWILIO_AUTH_TOKEN` in your .env file is `AUTH TOKEN` in your Twilio console
+  - `TWILIO_AUTH_TOKEN` in your .env file (or heroku config variable) is `AUTH TOKEN` in your Twilio console
 11. If you want to send live text messages as part of your testing, you must buy a phone number and attach it to your project.
