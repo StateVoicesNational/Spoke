@@ -13,7 +13,9 @@ module.exports = {
     }),
     JOBS_SYNC: true,
     JOBS_SAME_PROCESS: true,
-    DEFAULT_SERVICE: 'fakeservice'
+    DEFAULT_SERVICE: 'fakeservice',
+    DST_REFERENCE_TIMEZONE: 'America/New_York',
+    DATABASE_SETUP_TEARDOWN_TIMEOUT: 20000,
   },
   moduleFileExtensions: [
     "js",
@@ -30,5 +32,5 @@ module.exports = {
     "\\.(css|less)$": "<rootDir>/__mocks__/styleMock.js"
   },
   collectCoverageFrom : ["**/*.{js,jsx}", "!**/node_modules/**", "!**/__test__/**", "!**/deploy/**", "!**/coverage/**"],
-  setupTestFrameworkScriptFile: "<rootDir>/__test__/setup.js"
+  setupTestFrameworkScriptFile: "<rootDir>/__test__/setup.js",
 };
