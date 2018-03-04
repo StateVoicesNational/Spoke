@@ -12,7 +12,7 @@
 - Click on `Clients`
 - Click on `+Create Client`
 - Create a name and click on click on `Single Page App` - click create
-- If it asks for `What technology are you using?` - click ReactJS
+- If it asks for `What technology are you using?` - click React
 - Click on `Settings` in the tabs
 - You should see 3 variables at the top you need for your Heroku app.
   - Domain name = AUTH0_DOMAIN
@@ -30,7 +30,7 @@
 - Scroll to `Allowed Origin (CORS)` add:
   - ` http://*.<YOUR_HEROKU_APP_URL>.com`, ` https://*.<YOUR_HEROKU_APP_URL>.com`
 - Scroll to bottom and click on `Advanced Settings`
-- Click on `OAuth` - make sure `OIDC Conformant` is turned off.
+  - Click on `OAuth` - make sure `OIDC Conformant` is turned off.
 - Then create a rule in Auth0:
   - Click here [rule](https://manage.auth0.com/#/rules/create) when logged into Auth0
   - Name of rule can be anything.
