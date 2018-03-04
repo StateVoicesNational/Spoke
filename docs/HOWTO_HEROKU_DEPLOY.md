@@ -1,6 +1,6 @@
 # Instructions for one click deployment to Heroku
 - Create a Heroku account (if you don't have an account). For more questions on Heroku and what it does, please visit [here](https://www.heroku.com/what)
-- The form you fill out in Heroku have a lot of values. These are configuration values (also known as environment variables). Each value is essentially a setting. Some are necessary for deployment and others customize the experience in your instance of Spoke. For more questions about configuration values in this application visit [our documentation on environment variables and what they do](https://github.com/MoveOnOrg/Spoke/blob/main/docs/REFERENCE-environment_variables.md). For more questions in general about configuration variables in Heroku, visit [Heroku's config variable explanation page](https://devcenter.heroku.com/articles/config-vars)
+- The form you fill out in Heroku has a lot of values. These are configuration values (also known as environment variables). Each value is essentially a setting. Some are necessary for deployment and others customize the experience in your instance of Spoke. For more questions about configuration values in this application visit [our documentation on environment variables and what they do](https://github.com/MoveOnOrg/Spoke/blob/main/docs/REFERENCE-environment_variables.md). For more questions in general about configuration variables in Heroku, visit [Heroku's config variable explanation page](https://devcenter.heroku.com/articles/config-vars)
 - Do not start any of the processes/dynos besides `web` (see below for non-Twilio uses)
 - The default setup is a free tier for processing and the database. See below for scaling and production requirements
 
@@ -8,7 +8,7 @@
 - There is a variable named `SUPPRESS_SELF_INVITE` in your configuration variables in Heroku. When this is set to nothing, anyone can visit your app and create an organization. When it is set to `true`, this changes login/signup behavior - when a person signs up and visits your app, they will not create an organization. On first deployment, it should be set to nothing to ensure that you have the ability to create an organization and view the full functionality of the application.
 
 ## Instructions for Auth0 configuration variable setup
-- Create an Auth0 account - click [here to visit Auth0's website to signup](https://auth0.com/signup) to sign up.
+- Create an Auth0 account - click [here to visit Auth0's website to signup](https://auth0.com/signup)
 - After logging in to account, click on `Clients`
 - Click on `+Create Client`
 - Create a name and click on click on `Single Page App` - click create
@@ -26,12 +26,12 @@
   - `https://<YOUR_HEROKU_APP_URL>/logout-callback, http://<YOUR_HEROKU_APP_URL>/logout-callback`
 
 - Notice that:
-  - AUTH0_LOGIN_CALLBACK in your config variables is the same as `https://<YOUR_HEROKU_APP_URL>/login-callback`
-  - AUTH0_LOGOUT_CALLBACK in your config variables is the same as `https://<YOUR_HEROKU_APP_URL>/logout-callback`
+  - `AUTH0_LOGIN_CALLBACK` in your config variables is the same as `https://<YOUR_HEROKU_APP_URL>/login-callback`
+  - `AUTH0_LOGOUT_CALLBACK` in your config variables is the same as `https://<YOUR_HEROKU_APP_URL>/logout-callback`
 - Scroll to `Allowed Origin (CORS)` add:
-  - ` http://*.<YOUR_HEROKU_APP_URL>.com`, ` https://*.<YOUR_HEROKU_APP_URL>.com`
+  - `http://*.<YOUR_HEROKU_APP_URL>.com`, ` https://*.<YOUR_HEROKU_APP_URL>.com`
 - Scroll to `Allowed Web Origins` add:
-  - ` http://*.<YOUR_HEROKU_APP_URL>.com`, ` https://*.<YOUR_HEROKU_APP_URL>.com`
+  - `http://<YOUR_HEROKU_APP_URL>.com`, ` https://<YOUR_HEROKU_APP_URL>.com`
 - Scroll to bottom and click on `Advanced Settings`
   - Click on `OAuth` - make sure `OIDC Conformant` is turned off
 - Then create a rule in Auth0:
