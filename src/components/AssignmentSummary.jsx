@@ -117,10 +117,10 @@ export class AssignmentSummary extends Component {
             })}
             {this.renderBadgedButton({
               assignment,
-              title: 'Revisit convos',
+              title: 'Convo History',
               primary: false,
               count: totalMessagedCount,
-              disabled: false,
+              disabled: true,
               contactsFilter: 'stale',
               hideIfZero: true
             })}

@@ -96,7 +96,7 @@ describe('AssignmentSummary actions inUSA and NOT AllowSendAll', () => {
     expect(actions.find(RaisedButton).at(0).prop('label')).toBe('Send first texts')
   })
 
-  it('renders a "revisit convos" badge after messaged contacts', () => {
+  it('renders a "convo history" badge after messaged contacts', () => {
     const actions = create(0, 0, 0, false)
     expect(actions.find(Badge).length).toBe(1)
     expect(actions.find(RaisedButton).length).toBe(1)
@@ -108,10 +108,10 @@ describe('AssignmentSummary actions inUSA and NOT AllowSendAll', () => {
     expect(actions.find(RaisedButton).length).toBe(3)
   })
 
-  it('renders "revisit convos (n)" with messaged', () => {
+  it('renders "convo history (n)" with messaged', () => {
     const actions = create(0, 9, 0)
     expect(actions.find(Badge).at(0).prop('badgeContent')).toBe(9)
-    expect(actions.find(RaisedButton).at(1).prop('label')).toBe('Revisit convos')
+    expect(actions.find(RaisedButton).at(1).prop('label')).toBe('Convo History')
   })
 })
 
@@ -133,12 +133,12 @@ describe('AssignmentSummary NOT inUSA and AllowSendAll', () => {
 
   it('renders "Send message" with unmessaged', () => {
     const actions = create(1, 0, 0)
-    expect(actions.find(RaisedButton).at(0).prop('label')).toBe('Revisit convos')
+    expect(actions.find(RaisedButton).at(0).prop('label')).toBe('Convo History')
   })
 
   it('renders "Send messages" with unreplied', () => {
     const actions = create(0, 1, 0)
-    expect(actions.find(RaisedButton).at(0).prop('label')).toBe('Revisit convos')
+    expect(actions.find(RaisedButton).at(0).prop('label')).toBe('Convo History')
   })
 })
 
@@ -154,7 +154,7 @@ it('renders "Send later" when there is a badTimezoneCount', () => {
     </MuiThemeProvider>
   ).find(CardActions)
   expect(actions.find(Badge).at(1).prop('badgeContent')).toBe(4)
-  expect(actions.find(RaisedButton).at(0).prop('label')).toBe('Revisit convos')
+  expect(actions.find(RaisedButton).at(0).prop('label')).toBe('Convo History')
   expect(actions.find(RaisedButton).at(1).prop('label')).toBe('Send messages')
 })
 
@@ -188,7 +188,7 @@ describe('contacts filters', () => {
     expect(sendReplies.contactsFilter).toBe('reply')
 
     const sendLater = mockRender.mock.calls[2][0]
-    expect(sendLater.title).toBe('Revisit convos')
+    expect(sendLater.title).toBe('Convo History')
     expect(sendLater.contactsFilter).toBe('stale')
   })
   it('filters correctly out of USA', () => {
@@ -207,7 +207,7 @@ describe('contacts filters', () => {
       </MuiThemeProvider>
     )
     const sendMessages = mockRender.mock.calls[0][0]
-    expect(sendMessages.title).toBe('Revisit convos')
+    expect(sendMessages.title).toBe('Convo History')
     expect(sendMessages.contactsFilter).toBe('stale')
 
     const sendFirstTexts = mockRender.mock.calls[1][0]
