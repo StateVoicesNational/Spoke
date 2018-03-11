@@ -55,32 +55,53 @@ are part of the Message-Response Cycle.  That includes:
 * updateAssignments -- changes from the campaign admins to assign texters
 * dynamicAssignment -- for dyanmic assignment-enabled campaigns, allowing a texter to 'take' a queue of contacts for assignment and begin sending.
 
+#### DB write queue
+
+While the Redis cache layer will suffice for the real-time read/write
+interface during high traffic, we still want to ensure that the DB is
+eventually synchronized.  This should be done with a message queue
+that synchronizes the database (eventually).  Making this separate
+from Redis will allow for fault tolerance, but also adds an additional
+technology to be integrated and maintained.  This work may align with
+other interest in making the existing Spoke job queue (to handle,
+e.g. texter assignment, contact uploads) -- but might not?
+
+Some technologies that could support this:
+* Amazon SQS
+* Heroku AMQP: https://elements.heroku.com/addons/cloudamqp
+* Should we have a 'backup option' that is 'pure redis' so folks can use that optionally?
+
+
+
 #### Redis Data-structures
 
 Besides satisfying the above data needs/write-workflows, keys should expire
 naturally when texters disengage (or go to bed :-)
 
-Here is the (proposed) structure of data in Redis to support the above data needs (c_id is "contact id"):
+Here is the (proposed) structure of data in Redis to support the above data needs (c_id is "contact id" and `message_service_id` is probably global, but maybe related to the organization in a multi-tenant configuration):
 
 * HASH: `texterinfo-<texter_id>` (access
 
   Keys: {auth0_id, `<org_id>`=`<role>`, is_superadmin}
 
-* HASH: `replies-<texter_id>`
+* HASH: `replies-<texter_id>-<campaign_id>`
 
   Keys are the incoming message_id, with values with serialized (?JSON) content: {contact_cell, c_id}
 
-* QUEUE: `conversation-<contact_cell>` -- the list of messages for a contact, both sent and received
+* QUEUE: `conversation-<contact_cell>-<message_service_id>` -- the list of messages for a contact, both sent and received
 
-* HASH: `contactinfo-<contact_cell>`
+* HASH: `contactinfo-<contact_cell>-<message_service_id>`
 
   Keys with values include {assigned texter_id, assignment_id, org_id, questionResponseValues, [contact info including, e.g. city/state]}
 
-* QUEUE: `newassignments-<texter_id>` -- full contact info for all new assignments (status=needsMessage)
+* QUEUE: `newassignments-<texter_id>-<campaign_id>` -- full contact info for all new assignments (status=needsMessage)
+
+* HASH: `unsentassigned-<texter_id>-<campaign_id>`
+
+  Keys are `<contact_cell>`; values are full contact info and assignment id/status
+  (same as values in `newassignments-<texter_id>-<campaign_id>` above)
 
 * QUEUE: `dynamicassignments-<campaign_id>` -- full contact info for all contacts ready for dynamic assignment in a campaign
-
-* QUEUE: `message-write-queue` -- central queue for message data (in `conversation` keys above) written to Redis to be synced with the database
 
 * KEY (regular `SET` call): `campaign-<campaign_id>` -- campaign data that is loaded in TexterTodo and TexterTodoList components
 
@@ -92,35 +113,39 @@ Here is the (proposed) structure of data in Redis to support the above data need
 
 * getNew (needsMessage)
 
-  1. Load (and LPOP) from `newassignments-<texter_id>`
+  1. Load (and LPOP) from `newassignments-<texter_id>-<campaign_id>`
+  2. If newassignments is empty, we check `unsentassigned-<texter_id>-<campaign_id>` for content.  If it does, we ?resend that data with an additional setting in the API getNew so the client knows that the 'original queue' is empty.
+  3. (if not empty) HSET `unsentassigned-<texter_id>-<campaign_id>` `<contact_cell>` [the assignment data]
+
 
 * getReplies (needsRepsonse)
 
   1. Load from `replies-<texter_id>`
-  2. For each contact, load `contactinfo-<contact_cell>`
+  2. For each contact, load `contactinfo-<contact_cell>-<message_service_id>`
 
 * incomingMessage
 
-  1. Load `contactinfo-<contact_cell>` to lookup the texter id assigned the contact
-  2. LPUSH `conversation-<contact_cell>`
+  1. Load `contactinfo-<contact_cell>-<message_service_id>` to lookup the texter id assigned the contact
+  2. LPUSH `conversation-<contact_cell>-<message_service_id>`
   3. LPUSH `message-write-queue`
   4. HSET `replies-<texter_id>` (using lookup)
 
 * sendMessage
 
-  1. LPUSH `conversation-<contact_cell>`
-  2. LPUSH `message-write-queue`
+  1. If status is needsMessage then confirm that it's the first item in `conversation-<contact_cell>-<message_service_id>`, otherwise, do not (re)send message.
+  2. LPUSH `conversation-<contact_cell>-<message_service_id>`
+  3. LPUSH `message-write-queue`
 
 * updateQuestionResponses
 
-  1. HSET `contactinfo-<contact_id>`
+  1. HSET `contactinfo-<contact_cell>-<message_service_id>`
 
 * updateAssignments
 
-  1. Either LPUSH `newassignments-<texter_id>` OR `dynamicassignments-<campaign_id>`
+  1. Either LPUSH `newassignments-<texter_id>-<campaign_id>` OR `dynamicassignments-<campaign_id>`
 
 * dynamicAssignment (when the texter requests more assignments)
 
   1. LPOP `dynamicassignments-<campaign_id>`
-  2. HSET `contactinfo-<contact_cell>`
+  2. HSET `contactinfo-<contact_cell>-<message_service_id>`
 
