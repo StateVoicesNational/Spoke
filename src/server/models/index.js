@@ -1,23 +1,25 @@
 import DataLoader from 'dataloader'
+
 // Import models in order that creates referenced tables before foreign keys
 import User from './user'
+import PendingMessagePart from './pending-message-part'
 import Organization from './organization'
 import Campaign from './campaign'
 import Assignment from './assignment'
 import CampaignContact from './campaign-contact'
 import InteractionStep from './interaction-step'
-import Message from './message'
-import OptOut from './opt-out'
-import PendingMessagePart from './pending-message-part'
-import CannedResponse from './canned-response'
 import QuestionResponse from './question-response'
-import UserCell from './user-cell'
-import UserOrganization from './user-organization'
-import Invite from './invite'
-import ZipCode from './zip-code'
-import JobRequest from './job-request'
-import Log from './log'
+import OptOut from './opt-out'
 import Migrations from './migrations'
+import JobRequest from './job-request'
+import Invite from './invite'
+import CannedResponse from './canned-response'
+import UserOrganization from './user-organization'
+import UserCell from './user-cell'
+import Message from './message'
+import ZipCode from './zip-code'
+import Log from './log'
+
 import thinky from './thinky'
 import datawarehouse from './datawarehouse'
 
@@ -38,7 +40,17 @@ const createLoaders = () => ({
   user: createLoader(User),
   interactionStep: createLoader(InteractionStep),
   campaignContact: createLoader(CampaignContact),
-  zipCode: createLoader(ZipCode, 'zip')
+  zipCode: createLoader(ZipCode, 'zip'),
+  log: createLoader(Log),
+  cannedResponse: createLoader(CannedResponse),
+  jobRequest: createLoader(JobRequest),
+  message: createLoader(Message),
+  migrations: createLoader(Migrations),
+  optOut: createLoader(OptOut),
+  pendingMessagePart: createLoader(PendingMessagePart),
+  questionResponse: createLoader(QuestionResponse),
+  userCell: createLoader(UserCell),
+  userOrganization: createLoader(UserOrganization)
 })
 
 const r = thinky.r

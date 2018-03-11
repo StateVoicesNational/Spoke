@@ -80,38 +80,38 @@ describe('AssignmentSummary actions inUSA and NOT AllowSendAll', () => {
 
   it('renders "send first texts (1)" with unmessaged (dynamic assignment)', () => {
     const actions = create(5, 0, 0, true)
-    expect(actions.find(Badge).prop('badgeContent')).toBe(5)
-    expect(actions.find(RaisedButton).prop('label')).toBe('Send first texts')
+    expect(actions.find(Badge).at(0).prop('badgeContent')).toBe(5)
+    expect(actions.find(RaisedButton).at(0).prop('label')).toBe('Send first texts')
   })
 
   it('renders "send first texts (1)" with unmessaged (non-dynamic)', () => {
-    const actions = create(3, 0, 0, false)
-    expect(actions.find(Badge).prop('badgeContent')).toBe(3)
-    expect(actions.find(RaisedButton).prop('label')).toBe('Send first texts')
+    const actions = create(1, 0, 0, false)
+    expect(actions.find(Badge).at(0).prop('badgeContent')).toBe(1)
+    expect(actions.find(RaisedButton).at(0).prop('label')).toBe('Send first texts')
   })
 
   it('renders "send first texts" with no unmessaged (dynamic assignment)', () => {
     const actions = create(0, 0, 0, true)
-    expect(actions.find(Badge).length).toBe(0)
-    expect(actions.find(RaisedButton).prop('label')).toBe('Send first texts')
+    expect(actions.find(Badge).length).toBe(1)
+    expect(actions.find(RaisedButton).at(0).prop('label')).toBe('Send first texts')
   })
 
-  it('renders nothing with no unmessaged and no unreplied (non-dynamic)', () => {
+  it('renders a "revisit convos" badge after messaged contacts', () => {
     const actions = create(0, 0, 0, false)
-    expect(actions.find(Badge).length).toBe(0)
-    expect(actions.find(RaisedButton).length).toBe(0)
+    expect(actions.find(Badge).length).toBe(1)
+    expect(actions.find(RaisedButton).length).toBe(1)
   })
 
 
-  it('renders two buttons with unmessaged and unreplied', () => {
+  it('renders three buttons with unmessaged and unreplied', () => {
     const actions = create(3, 9, 0)
-    expect(actions.find(RaisedButton).length).toBe(2)
+    expect(actions.find(RaisedButton).length).toBe(3)
   })
 
-  it('renders "Send replies (n)" with unreplied', () => {
+  it('renders "revisit convos (n)" with messaged', () => {
     const actions = create(0, 9, 0)
-    expect(actions.find(Badge).prop('badgeContent')).toBe(9)
-    expect(actions.find(RaisedButton).prop('label')).toBe('Send replies')
+    expect(actions.find(Badge).at(0).prop('badgeContent')).toBe(9)
+    expect(actions.find(RaisedButton).at(1).prop('label')).toBe('Revisit convos')
   })
 })
 
@@ -133,12 +133,12 @@ describe('AssignmentSummary NOT inUSA and AllowSendAll', () => {
 
   it('renders "Send message" with unmessaged', () => {
     const actions = create(1, 0, 0)
-    expect(actions.find(RaisedButton).prop('label')).toBe('Send messages')
+    expect(actions.find(RaisedButton).at(0).prop('label')).toBe('Revisit convos')
   })
 
   it('renders "Send messages" with unreplied', () => {
     const actions = create(0, 1, 0)
-    expect(actions.find(RaisedButton).prop('label')).toBe('Send messages')
+    expect(actions.find(RaisedButton).at(0).prop('label')).toBe('Revisit convos')
   })
 })
 
@@ -153,9 +153,9 @@ it('renders "Send later" when there is a badTimezoneCount', () => {
       />
     </MuiThemeProvider>
   ).find(CardActions)
-  expect(actions.find(Badge).prop('badgeContent')).toBe(4)
-  expect(actions.find(RaisedButton).at(0).prop('label')).toBe('Send messages')
-  expect(actions.find(RaisedButton).at(1).prop('label')).toBe('Send later')
+  expect(actions.find(Badge).at(1).prop('badgeContent')).toBe(4)
+  expect(actions.find(RaisedButton).at(0).prop('label')).toBe('Revisit convos')
+  expect(actions.find(RaisedButton).at(1).prop('label')).toBe('Send messages')
 })
 
 describe('contacts filters', () => {
@@ -188,8 +188,8 @@ describe('contacts filters', () => {
     expect(sendReplies.contactsFilter).toBe('reply')
 
     const sendLater = mockRender.mock.calls[2][0]
-    expect(sendLater.title).toBe('Send later')
-    expect(sendLater.contactsFilter).toBe(null)
+    expect(sendLater.title).toBe('Revisit convos')
+    expect(sendLater.contactsFilter).toBe('stale')
   })
   it('filters correctly out of USA', () => {
     window.NOT_IN_USA = 1
@@ -206,13 +206,13 @@ describe('contacts filters', () => {
         />
       </MuiThemeProvider>
     )
-    const sendFirstTexts = mockRender.mock.calls[0][0]
+    const sendMessages = mockRender.mock.calls[0][0]
+    expect(sendMessages.title).toBe('Revisit convos')
+    expect(sendMessages.contactsFilter).toBe('stale')
+
+    const sendFirstTexts = mockRender.mock.calls[1][0]
     expect(sendFirstTexts.title).toBe('Send messages')
     expect(sendFirstTexts.contactsFilter).toBe('all')
-
-    const sendLater = mockRender.mock.calls[1][0]
-    expect(sendLater.title).toBe('Send later')
-    expect(sendLater.contactsFilter).toBe(null)
   })
 })
 
