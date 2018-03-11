@@ -11,7 +11,7 @@ import ContentAdd from 'material-ui/svg-icons/content/add'
 import { Table, TableBody, TableRow, TableRowColumn } from 'material-ui/Table'
 import Dialog from 'material-ui/Dialog'
 import PeopleIcon from 'material-ui/svg-icons/social/people'
-import { getHighestRole } from '../lib'
+import { getHighestRole, ROLE_HIERARCHY } from '../lib'
 import theme from '../styles/theme'
 import loadData from './hoc/load-data'
 import gql from 'graphql-tag'
@@ -82,12 +82,6 @@ class AdminPersonList extends React.Component {
       )
     }
 
-    const options = [
-      'TEXTER',
-      'ADMIN',
-      'OWNER'
-    ]
-
     const currentUser = this.props.userData.currentUser
 
     return (
@@ -107,7 +101,7 @@ class AdminPersonList extends React.Component {
                   disabled={person.id === currentUser.id || getHighestRole(person.roles) === 'OWNER' && getHighestRole(currentUser.roles) !== 'OWNER'}
                   onChange={(event, index, value) => this.handleChange(person.id, value)}
                 >
-                  {options.map((option) => (
+                  {ROLE_HIERARCHY.map((option) => (
                     <MenuItem
                       key={person.id + '_' + option}
                       value={option}
