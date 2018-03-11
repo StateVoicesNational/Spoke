@@ -1,4 +1,4 @@
-const ROLE_HIERARCHY = ['TEXTER', 'SUPERVOLUNTEER', 'ADMIN', 'OWNER']
+export const ROLE_HIERARCHY = ['TEXTER', 'SUPERVOLUNTEER', 'ADMIN', 'OWNER']
 
 export const isRoleGreater = (role1, role2) => (ROLE_HIERARCHY.indexOf(role1) > ROLE_HIERARCHY.indexOf(role2))
 

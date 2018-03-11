@@ -33,7 +33,7 @@ AdminNavigation.propTypes = {
   data: PropTypes.object,
   organizationId: PropTypes.string,
   router: PropTypes.object,
-  sections: PropTypes.object,
+  sections: PropTypes.array,
   params: PropTypes.object
 }
 
