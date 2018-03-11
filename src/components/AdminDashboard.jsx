@@ -46,7 +46,11 @@ class AdminDashboard extends React.Component {
   }
 
   render() {
+    const { location, children, params } = this.props
     const { roles } = this.props.data.currentUser
+
+    // HACK: Setting params.adminPerms helps us hide non-supervolunteer functionality
+    params.adminPerms = hasRole('ADMIN', roles || [])
 
     const sections = [{
       name: 'Campaigns',
@@ -70,7 +74,6 @@ class AdminDashboard extends React.Component {
       role: 'SUPERVOLUNTEER'
     }]
 
-    const { location, children, params } = this.props
     let currentSection = sections.filter(
       (section) => location.pathname.match(`/${section.path}`)
     )
