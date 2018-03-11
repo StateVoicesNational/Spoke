@@ -5,15 +5,15 @@ import mailgunConstructor from 'mailgun-js'
 const mailgun =
   process.env.MAILGUN_API_KEY &&
   process.env.MAILGUN_DOMAIN &&
-  mailgunConstructor({ apiKey: process.env.MAILGUN_API_KEY, domain: process.env.MAILGUN_DOMAIN }) 
+  mailgunConstructor({ apiKey: process.env.MAILGUN_API_KEY, domain: process.env.MAILGUN_DOMAIN })
 
 const sender =
   process.env.MAILGUN_API_KEY && process.env.MAILGUN_DOMAIN
     ? {
-      sendMail: ({ from, to, subject, replyTo, text }) => 
+      sendMail: ({ from, to, subject, replyTo, text }) =>
             mailgun.messages().send(
               {
-                from: from,
+                from,
                 'h:Reply-To': replyTo,
                 to,
                 subject,
