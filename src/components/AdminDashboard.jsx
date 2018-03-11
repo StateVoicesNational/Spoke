@@ -2,8 +2,11 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import { StyleSheet, css } from 'aphrodite'
 import theme from '../styles/theme'
+import { hasRole } from '../lib'
 import TopNav from './TopNav'
+import gql from 'graphql-tag'
 import { withRouter } from 'react-router'
+import loadData from '../containers/hoc/load-data'
 import AdminNavigation from '../containers/AdminNavigation'
 const styles = StyleSheet.create({
   container: {
@@ -43,18 +46,28 @@ class AdminDashboard extends React.Component {
   }
 
   render() {
+    const { roles } = this.props.data.currentUser
+
     const sections = [{
       name: 'Campaigns',
-      path: 'campaigns'
+      path: 'campaigns',
+      role: 'SUPERVOLUNTEER'
     }, {
       name: 'People',
-      path: 'people'
+      path: 'people',
+      role: 'ADMIN'
     }, {
       name: 'Optouts',
-      path: 'optouts'
+      path: 'optouts',
+      role: 'ADMIN'
     }, {
-      name: 'Billing',
-      path: 'billing'
+      name: 'Incoming Messages',
+      path: 'incoming',
+      role: 'SUPERVOLUNTEER'
+    }, {
+      name: 'Settings',
+      path: 'settings',
+      role: 'SUPERVOLUNTEER'
     }]
 
     const { location, children, params } = this.props
@@ -73,7 +86,7 @@ class AdminDashboard extends React.Component {
       <div>
         <TopNav title={title} backToURL={backToURL} orgId={params.organizationId} />
         <div className={css(styles.container)}>
-          {this.renderNavigation(sections)}
+          {this.renderNavigation(sections.filter((s) => hasRole(s.role, roles)))}
           <div className={css(styles.content)}>
             {children}
           </div>
@@ -90,4 +103,18 @@ AdminDashboard.propTypes = {
   location: PropTypes.object
 }
 
-export default withRouter(AdminDashboard)
+const mapQueriesToProps = ({ ownProps }) => ({
+  data: {
+    query: gql`query getCurrentUserRoles($organizationId: String!) {
+      currentUser {
+        id
+        roles(organizationId: $organizationId)
+      }
+    }`,
+    variables: {
+      organizationId: ownProps.params.organizationId
+    }
+  }
+})
+
+export default loadData(withRouter(AdminDashboard), { mapQueriesToProps })
