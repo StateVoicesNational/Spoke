@@ -1,7 +1,7 @@
 import moment from 'moment-timezone'
 
-import {getProcessEnvTz, getProcessEnvDstReferenceTimezone} from '../lib/tz-helpers'
-import {DstHelper} from "./dst-helper";
+import { getProcessEnvTz, getProcessEnvDstReferenceTimezone } from '../lib/tz-helpers'
+import { DstHelper } from './dst-helper'
 
 const TIMEZONE_CONFIG = {
   missingTimeZone: {
@@ -69,7 +69,7 @@ export const getOffsets = (config) => {
   const dst = [true, false]
   dst.forEach((hasDST) => (
     offsets.forEach((offset) => {
-      if (isBetweenTextingHours({offset, hasDST}, config)) {
+      if (isBetweenTextingHours({ offset, hasDST }, config)) {
         valid.push([offset, hasDST])
       } else {
         invalid.push([offset, hasDST])

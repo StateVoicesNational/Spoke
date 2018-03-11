@@ -6,7 +6,7 @@ export {
   getLocalTime,
   isBetweenTextingHours,
   defaultTimezoneIsBetweenTextingHours,
-  getOffsets,
+  getOffsets
 } from './timezones'
 export {
   getProcessEnvTz
