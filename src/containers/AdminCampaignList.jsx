@@ -4,6 +4,7 @@ import CampaignList from './CampaignList'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import ContentAdd from 'material-ui/svg-icons/content/add'
 import loadData from './hoc/load-data'
+import { hasRole } from '../lib'
 import { withRouter } from 'react-router'
 import gql from 'graphql-tag'
 import theme from '../styles/theme'
@@ -60,6 +61,7 @@ class AdminCampaignList extends React.Component {
     )
   }
   render() {
+    const { roles } = this.props.data.currentUser
     return (
       <div>
         {this.renderFilters()}
@@ -70,12 +72,14 @@ class AdminCampaignList extends React.Component {
           />
         )}
 
-        <FloatingActionButton
-          style={theme.components.floatingButton}
-          onTouchTap={this.handleClickNewButton}
-        >
-          <ContentAdd />
-        </FloatingActionButton>
+        {hasRole('ADMIN', roles) ?
+         (<FloatingActionButton
+           style={theme.components.floatingButton}
+           onTouchTap={this.handleClickNewButton}
+         >
+           <ContentAdd />
+         </FloatingActionButton>
+         ) : null}
       </div>
     )
   }
@@ -87,6 +91,20 @@ AdminCampaignList.propTypes = {
   mutations: PropTypes.object,
   router: PropTypes.object
 }
+
+const mapQueriesToProps = ({ ownProps }) => ({
+  data: {
+    query: gql`query getCurrentUserRoles($organizationId: String!) {
+      currentUser {
+        id
+        roles(organizationId: $organizationId)
+      }
+    }`,
+    variables: {
+      organizationId: ownProps.params.organizationId
+    }
+  }
+})
 
 const mapMutationsToProps = () => ({
   createCampaign: (campaign) => ({
@@ -103,5 +121,6 @@ const mapMutationsToProps = () => ({
 
 export default loadData(wrapMutations(
   withRouter(AdminCampaignList)), {
+    mapQueriesToProps,
     mapMutationsToProps
   })
