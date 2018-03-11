@@ -61,7 +61,7 @@ class AdminCampaignList extends React.Component {
     )
   }
   render() {
-    const { roles } = this.props.data.currentUser
+    const { adminPerms } = this.props.params
     return (
       <div>
         {this.renderFilters()}
@@ -69,10 +69,11 @@ class AdminCampaignList extends React.Component {
           <CampaignList
             campaignsFilter={this.state.campaignsFilter}
             organizationId={this.props.params.organizationId}
+            adminPerms={adminPerms}
           />
         )}
 
-        {hasRole('ADMIN', roles) ?
+        {adminPerms ?
          (<FloatingActionButton
            style={theme.components.floatingButton}
            onTouchTap={this.handleClickNewButton}
@@ -86,25 +87,10 @@ class AdminCampaignList extends React.Component {
 }
 
 AdminCampaignList.propTypes = {
-  data: PropTypes.object,
   params: PropTypes.object,
   mutations: PropTypes.object,
   router: PropTypes.object
 }
-
-const mapQueriesToProps = ({ ownProps }) => ({
-  data: {
-    query: gql`query getCurrentUserRoles($organizationId: String!) {
-      currentUser {
-        id
-        roles(organizationId: $organizationId)
-      }
-    }`,
-    variables: {
-      organizationId: ownProps.params.organizationId
-    }
-  }
-})
 
 const mapMutationsToProps = () => ({
   createCampaign: (campaign) => ({
@@ -121,6 +107,5 @@ const mapMutationsToProps = () => ({
 
 export default loadData(wrapMutations(
   withRouter(AdminCampaignList)), {
-    mapQueriesToProps,
     mapMutationsToProps
   })
