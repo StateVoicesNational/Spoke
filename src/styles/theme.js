@@ -15,7 +15,8 @@ const colors = {
   veryLightGray: 'rgb(240, 242, 240)',
   lightGray: 'rgb(225, 228, 224)',
   white: 'rgb(255,255,255)',
-  yellow: 'rgb(250,190,40)'
+  yellow: 'rgb(250,190,40)',
+  lightYellow: 'rgb(252, 214, 120)'
 }
 
 const defaultFont = 'Poppins'
