@@ -68,6 +68,9 @@ import {
   resolvers as inviteResolvers
 } from './invite'
 import {
+  schema as osdiListSchema
+} from './osdi-list'
+import {
   authRequired,
   accessRequired,
   hasRole,
@@ -217,6 +220,7 @@ const rootSchema = `
     editUser(organizationId: String!, userId: Int!, userData:UserInput): User
     updateTextingHours( organizationId: String!, textingHoursStart: Int!, textingHoursEnd: Int!): Organization
     updateTextingHoursEnforcement( organizationId: String!, textingHoursEnforced: Boolean!): Organization
+    updateOrganizationFeatures( organizationId: String!, osdiEnabled: Boolean, osdiApiUrl: String, osdiApiToken: String ) : Organization
     bulkSendMessages(assignmentId: Int!): [CampaignContact]
     sendMessage(message:MessageInput!, campaignContactId:String!): CampaignContact,
     createOptOut(optOut:OptOutInput!, campaignContactId:String!):CampaignContact,
@@ -604,6 +608,31 @@ const rootMutations = {
         .update({
           texting_hours_enforced: textingHoursEnforced
         })
+
+      return await Organization.get(organizationId)
+    },
+    updateOrganizationFeatures: async(_, { organizationId, osdiEnabled, osdiApiUrl, osdiApiToken }, { user}) => {
+      await accessRequired(user, organizationId, 'ADMIN')
+    
+      const org = await Organization.get(organizationId)
+      const updates = { osdiEnabled, osdiApiUrl, osdiApiToken }
+      Object.keys(updates).forEach(key => {
+        if (updates[key] === undefined) {
+          delete updates[key]
+        }
+      })
+
+      let features
+      try {
+        const existing_features = JSON.parse(org.features)
+        features = Object.assign(existing_features, updates)
+      } catch (ex) {
+        features = updates
+      }
+
+      await Organization
+        .get(organizationId)
+        .update({features: features})
 
       return await Organization.get(organizationId)
     },
@@ -1149,7 +1178,8 @@ export const schema = [
   cannedResponseSchema,
   questionResponseSchema,
   questionSchema,
-  inviteSchema
+  inviteSchema,
+  osdiListSchema
 ]
 
 export const resolvers = {

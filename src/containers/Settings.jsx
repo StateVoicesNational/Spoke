@@ -50,6 +50,10 @@ class Settings extends React.Component {
     this.handleCloseTextingHoursDialog()
   }
 
+  handleSubmitOsdiForm = async ({ osdiApiUrl, osdiApiToken }) => {
+    await this.props.mutations.updateOrganizationFeatures({ osdiApiUrl, osdiApiToken })
+  }
+
   handleOpenTextingHoursDialog = () => this.setState({ textingHoursDialogOpen: true })
 
   handleCloseTextingHoursDialog = () => this.setState({ textingHoursDialogOpen: false })
@@ -114,6 +118,12 @@ class Settings extends React.Component {
 
   render() {
     const { organization } = this.props.data
+
+    const osdiFormSchema = yup.object({
+      osdiApiUrl: yup.string().required(),
+      osdiApiToken: yup.string().required()
+    })
+
     return (
       <div>
         <Card>
@@ -123,12 +133,54 @@ class Settings extends React.Component {
           <CardText>
             <div className={css(styles.section)}>
               <span className={css(styles.sectionLabel)}>
+                OSDI Integration
+              </span>
+              <Toggle
+                toggled={organization.osdiEnabled}
+                label='Use OSDI integration?'
+                onToggle={async (event, isToggled) => await this.props.mutations.updateOrganizationFeatures({osdiEnabled: isToggled})}
+              />
+              {organization.osdiEnabled &&
+                <GSForm
+                  schema={osdiFormSchema}
+                  onSubmit={this.handleSubmitOsdiForm}
+                  defaultValue={{ 
+                    osdiApiUrl: organization.osdiApiUrl,
+                    osdiApiToken: organization.osdiApiToken
+                  }}
+                >
+                  <Form.Field
+                    label='OSDI API Url'
+                    name='osdiApiUrl'
+                    fullWidth
+                  />
+                  <Form.Field
+                    label='OSDI API Token'
+                    name='osdiApiToken'
+                    fullWidth
+                  />
+                  <Form.Button
+                    type='submit'
+                    style={inlineStyles.dialogButton}
+                    component={GSSubmitButton}
+                    label='Save'
+                  />
+                </GSForm>
+              }
+            </div>
+
+            <br/>
+
+            <div className={css(styles.section)}>
+              <span className={css(styles.sectionLabel)}>
+                Texting Hours
               </span>
               <Toggle
                 toggled={organization.textingHoursEnforced}
                 label='Enforce texting hours?'
                 onToggle={async (event, isToggled) => await this.props.mutations.updateTextingHoursEnforcement(isToggled)}
               />
+
             </div>
 
             {organization.textingHoursEnforced ? (
@@ -199,6 +251,21 @@ const mapMutationsToProps = ({ ownProps }) => ({
       organizationId: ownProps.params.organizationId,
       textingHoursEnforced
     }
+  }),
+  updateOrganizationFeatures: (updates) => ({
+    mutation: gql`
+      mutation updateOrganizationFeatures($organizationId: String!, $osdiEnabled: Boolean, $osdiApiToken: String, $osdiApiUrl: String) {
+        updateOrganizationFeatures(organizationId: $organizationId, osdiEnabled: $osdiEnabled, osdiApiToken: $osdiApiToken, osdiApiUrl: $osdiApiUrl) {
+          id
+          osdiEnabled
+          osdiApiToken
+          osdiApiUrl
+        }
+      }`,
+    variables: {
+      organizationId: ownProps.params.organizationId,
+      ...updates
+    }
   })
 })
 
@@ -211,6 +278,9 @@ const mapQueriesToProps = ({ ownProps }) => ({
         textingHoursEnforced
         textingHoursStart
         textingHoursEnd
+        osdiEnabled
+        osdiApiToken
+        osdiApiUrl
       }
     }`,
     variables: {
