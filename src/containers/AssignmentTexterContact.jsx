@@ -495,9 +495,11 @@ export class AssignmentTexterContact extends React.Component {
     if (this.props.data.contact.messageStatus === 'needsMessage') {
       this.setState({ justSentNew: true })
     } else if (this.props.data.contact.messageStatus === 'needsResponse') {
-
+      console.log('change it message status history for' + this.props.data.contact + 'to convo');
+      this.handleEditMessageStatus('convo')
     }
   }
+
 
   isContactBetweenTextingHours(contact) {
     const { campaign } = this.props
@@ -590,24 +592,6 @@ export class AssignmentTexterContact extends React.Component {
     return button
   }
 
-  renderConvoToggleButton(contact) {
-    const { messageStatus } = contact
-    let button = null
-    if (messageStatus === 'needsResponse') {
-      button = (<RaisedButton
-        onTouchTap={() => this.handleEditMessageStatus('convo')}
-        label='SEND'
-      />)
-    } else if (messageStatus === 'needsResponse' || messageStatus === 'messaged') {
-      button = (<RaisedButton
-        onTouchTap={this.handleClickCloseContactButton}
-        label='Skip Reply'
-      />)
-    }
-
-    return button
-  }
-
   renderActionToolbar() {
     const { data, campaign, assignment, navigationToolbarChildren, onFinishContact } = this.props
     const { justSentNew } = this.state
@@ -636,34 +620,6 @@ export class AssignmentTexterContact extends React.Component {
               <div
                 style={{ float: 'right', marginLeft: 20 }}
               >
-                {navigationToolbarChildren}
-              </div>
-            </ToolbarGroup>
-          </Toolbar>
-        </div>
-      )
-    } else if (messageStatus === 'needsResponse') {
-      (
-        <div>
-          <Toolbar style={inlineStyles.actionToolbarFirst}>
-            <ToolbarGroup
-              firstChild
-            >
-              <SendButton
-                threeClickEnabled={campaign.organization.threeClickEnabled}
-                onFinalTouchTap={this.handleClickSendMessageButton}
-                disabled={this.state.disabled}
-              />
-              {window.NOT_IN_USA && window.ALLOW_SEND_ALL && window.BULK_SEND_CHUNK_SIZE ? <BulkSendButton
-                assignment={assignment}
-                onFinishContact={onFinishContact}
-                bulkSendMessages={this.bulkSendMessages}
-                setDisabled={this.setDisabled.bind(this)}
-              /> : ''}
-              <div
-                style={{ float: 'right', marginLeft: 20 }}
-              >
-                {this.renderConvoToggleButton(contact)}
                 {navigationToolbarChildren}
               </div>
             </ToolbarGroup>
