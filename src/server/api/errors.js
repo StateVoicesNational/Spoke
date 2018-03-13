@@ -29,13 +29,13 @@ export async function accessRequired(user, orgId, role, allowSuperadmin = false)
   if (allowSuperadmin && user.is_superadmin) {
     return
   }
+  // require a permission at-or-higher than the permission requested
+  const acceptableRoles = accessHierarchy.slice(accessHierarchy.indexOf(role))
   const userHasRole = await r.getCount(
     r.knex('user_organization')
       .where({ user_id: user.id,
                organization_id: orgId })
-      .whereIn('role',
-               // require a permission at-or-higher than the permission requested
-               accessHierarchy.slice(accessHierarchy.indexOf(role)))
+      .whereIn('role', acceptableRoles)
   )
   if (!userHasRole) {
     throw new GraphQLError({
