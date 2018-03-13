@@ -76,7 +76,7 @@ export class AssignmentSummary extends Component {
   }
 
   render() {
-    const { assignment, unmessagedCount, unrepliedCount, badTimezoneCount, totalMessagedCount } = this.props
+    const { assignment, unmessagedCount, unrepliedCount, badTimezoneCount, totalMessagedCount, convoHistoryCount } = this.props
     const { title, description, dueBy,
             primaryColor, logoImageUrl, introHtml,
             useDynamicAssignment } = assignment.campaign
@@ -119,8 +119,8 @@ export class AssignmentSummary extends Component {
               assignment,
               title: 'Convo History',
               primary: false,
-              count: totalMessagedCount,
-              disabled: true,
+              count: convoHistoryCount,
+              disabled: false,
               contactsFilter: 'stale',
               hideIfZero: true
             })}
@@ -157,6 +157,7 @@ AssignmentSummary.propTypes = {
   unrepliedCount: PropTypes.number,
   badTimezoneCount: PropTypes.number,
   totalMessagedCount: PropTypes.number,
+  convoHistoryCount: PropTypes.number,
   data: PropTypes.object,
   mutations: PropTypes.object
 }
