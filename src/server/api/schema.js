@@ -701,21 +701,21 @@ const rootMutations = {
     },
     unarchiveCampaign: async (_, { id }, { user, loaders }) => {
       const campaign = await loaders.campaign.load(id)
-      await accessRequired(user, campaign.organizationId, 'ADMIN')
+      await accessRequired(user, campaign.organization_id, 'ADMIN')
       campaign.is_archived = false
       await campaign.save()
       return campaign
     },
     archiveCampaign: async (_, { id }, { user, loaders }) => {
       const campaign = await loaders.campaign.load(id)
-      await accessRequired(user, campaign.organizationId, 'ADMIN')
+      await accessRequired(user, campaign.organization_id, 'ADMIN')
       campaign.is_archived = true
       await campaign.save()
       return campaign
     },
     startCampaign: async (_, { id }, { user, loaders }) => {
       const campaign = await loaders.campaign.load(id)
-      await accessRequired(user, campaign.organizationId, 'ADMIN')
+      await accessRequired(user, campaign.organization_id, 'ADMIN')
       campaign.is_started = true
       await campaign.save()
       await sendUserNotification({
