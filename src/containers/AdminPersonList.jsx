@@ -49,17 +49,10 @@ class AdminPersonList extends React.Component {
   }
 
   handleChange = async (userId, value) => {
-    let roles = ['TEXTER']
-    if (value === 'OWNER') {
-      roles = roles.concat(['OWNER', 'ADMIN'])
-    } else if (value === 'ADMIN') {
-      roles = roles.concat('ADMIN')
-    }
-
     await this
       .props
       .mutations
-      .editOrganizationRoles(this.props.params.organizationId, userId, roles)
+      .editOrganizationRoles(this.props.params.organizationId, userId, [value])
   }
 
   editUser(userId) {
@@ -85,9 +78,10 @@ class AdminPersonList extends React.Component {
     const currentUser = this.props.userData.currentUser
 
     return (
-      <Table >
+      <Table selectable={false}>
         <TableBody
           displayRowCheckbox={false}
+          showRowHover={true}
         >
           {people.map((person) => (
             <TableRow
