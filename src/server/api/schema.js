@@ -729,7 +729,7 @@ const rootMutations = {
       if (campaign.organizationId) {
         await accessRequired(user, campaign.organizationId, 'ADMIN')
       } else {
-        await accessRequired(user, origCampaign.organization_id, 'ADMIN')
+        await accessRequired(user, origCampaign.organization_id, 'SUPERVOLUNTEER')
       }
       if (origCampaign.is_started && campaign.hasOwnProperty('contacts') && campaign.contacts) {
           throw new GraphQLError({
@@ -1062,7 +1062,7 @@ const rootResolvers = {
   RootQuery: {
     campaign: async (_, { id }, { loaders, user }) => {
       const campaign = await loaders.campaign.load(id)
-      await accessRequired(user, campaign.organization_id, 'ADMIN')
+      await accessRequired(user, campaign.organization_id, 'SUPERVOLUNTEER')
       return campaign
     },
     assignment: async (_, { id }, { loaders, user }) => {
@@ -1072,7 +1072,7 @@ const rootResolvers = {
       if (assignment.user_id == user.id) {
         await accessRequired(user, campaign.organization_id, 'TEXTER', /* allowSuperadmin=*/true)
       } else {
-        await accessRequired(user, campaign.organization_id, 'ADMIN', /* allowSuperadmin=*/true)
+        await accessRequired(user, campaign.organization_id, 'SUPERVOLUNTEER', /* allowSuperadmin=*/true)
       }
       return assignment
     },
