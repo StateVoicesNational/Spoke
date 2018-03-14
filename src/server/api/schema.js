@@ -640,25 +640,25 @@ const rootMutations = {
       const oldCampaignId = campaign.id
 
       let interactions = await r.knex('interaction_step')
-        .where({campaign_id: oldCampaignId })
+        .where({ campaign_id: oldCampaignId })
 
       const interactionsArr = []
       interactions.forEach((interaction, index) => {
-        if(interaction.parent_interaction_id){
+        if (interaction.parent_interaction_id) {
           let is = {
-            id: 'new'+interaction.id,
+            id: 'new' + interaction.id,
             questionText: interaction.question,
             script: interaction.script,
             answerOption: interaction.answer_option,
             answerActions: interaction.answer_actions,
             isDeleted: interaction.is_deleted,
             campaign_id: newCampaignId,
-            parentInteractionId: 'new'+interaction.parent_interaction_id
+            parentInteractionId: 'new' + interaction.parent_interaction_id
           }
           interactionsArr.push(is)
-        } else if (!interaction.parent_interaction_id){
+        } else if (!interaction.parent_interaction_id) {
           let is = {
-            id: 'new'+interaction.id,
+            id: 'new' + interaction.id,
             questionText: interaction.question,
             script: interaction.script,
             answerOption: interaction.answer_option,
@@ -676,8 +676,8 @@ const rootMutations = {
       await createSteps
 
       let createCannedResponses = r.knex('canned_response')
-        .where({campaign_id: oldCampaignId })
-        .then(function(res){
+        .where({ campaign_id: oldCampaignId })
+        .then(function (res) {
           res.forEach((response, index) => {
             const copiedCannedResponse =
               new CannedResponse({
@@ -685,14 +685,13 @@ const rootMutations = {
                 title: response.title,
                 text: response.text
               }).save()
-            }
+          }
           )
         })
 
       await createCannedResponses
 
       return newCampaign
-
     },
     unarchiveCampaign: async (_, { id }, { user, loaders }) => {
       const campaign = await loaders.campaign.load(id)
@@ -727,10 +726,10 @@ const rootMutations = {
         await accessRequired(user, origCampaign.organization_id, 'ADMIN')
       }
       if (origCampaign.is_started && campaign.hasOwnProperty('contacts') && campaign.contacts) {
-          throw new GraphQLError({
-              status: 400,
-              message: 'Not allowed to add contacts after the campaign starts'
-          })
+        throw new GraphQLError({
+          status: 400,
+          message: 'Not allowed to add contacts after the campaign starts'
+        })
       }
       return editCampaign(id, campaign, loaders, user, origCampaign)
     },

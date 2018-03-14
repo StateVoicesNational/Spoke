@@ -137,8 +137,8 @@ class AdminCampaignStats extends React.Component {
     })
   }
 
-  renderCopyButton(){
-    return(
+  renderCopyButton() {
+    return (
       <RaisedButton
         label='Copy Campaign'
         onTouchTap={async() => await this.props.mutations.copyCampaign(this.props.params.campaignId)}
