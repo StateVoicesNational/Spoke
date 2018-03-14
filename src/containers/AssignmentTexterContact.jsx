@@ -491,15 +491,11 @@ export class AssignmentTexterContact extends React.Component {
   }
 
   handleClickSendMessageButton = () => {
-    this.refs.form.submit()
-    if (this.props.data.contact.messageStatus === 'needsMessage') {
-      this.setState({ justSentNew: true })
-    } else if (this.props.data.contact.messageStatus === 'needsResponse') {
-      console.log('change it message status history for' + this.props.data.contact + 'to convo');
-      this.handleEditMessageStatus('convo')
-    }
-  }
-
+     this.refs.form.submit()
+     if (this.props.data.contact.messageStatus === 'needsMessage') {
+       this.setState({ justSentNew: true })
+     }
+   }
 
   isContactBetweenTextingHours(contact) {
     const { campaign } = this.props
@@ -780,7 +776,7 @@ export class AssignmentTexterContact extends React.Component {
   renderCorrectSendButton() {
     const { campaign } = this.props
     const { contact } = this.props.data
-    if (contact.messageStatus === 'needsResponse' || contact.messageStatus === 'messaged' || contact.messageStatus === 'convo') {
+    if (contact.messageStatus === 'messaged' || contact.messageStatus === 'convo' || contact.messageStatus === 'messaged') {
       return (
         <SendButtonArrow
           threeClickEnabled={campaign.organization.threeClickEnabled}

@@ -157,7 +157,7 @@ AssignmentSummary.propTypes = {
   unrepliedCount: PropTypes.number,
   badTimezoneCount: PropTypes.number,
   totalMessagedCount: PropTypes.number,
-  convoHistoryCount: PropTypes.number,
+  pastConvosCount: PropTypes.number,
   data: PropTypes.object,
   mutations: PropTypes.object
 }

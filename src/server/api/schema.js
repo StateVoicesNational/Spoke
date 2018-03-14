@@ -979,9 +979,17 @@ const rootMutations = {
 
       await messageInstance.save()
 
-      contact.message_status = 'messaged'
-      contact.updated_at = 'now()'
-      await contact.save()
+      if(contact.message_status === 'needsResponse' || contact.message_status === 'convo'){
+        console.log('getting server side?', contact.message_status);
+        contact.message_status = 'convo'
+        contact.updated_at = 'now()'
+        await contact.save()
+      } else {
+        console.log('server side--> ', contact.message_status);
+        contact.message_status = 'messaged'
+        contact.updated_at = 'now()'
+        await contact.save()
+      }
 
       if (JOBS_SAME_PROCESS) {
         const service = serviceMap[messageInstance.service || process.env.DEFAULT_SERVICE]
