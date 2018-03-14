@@ -26,6 +26,9 @@ export async function hasRole(userId, orgId, role) {
 
 export async function accessRequired(user, orgId, role, allowSuperadmin = false) {
   authRequired(user)
+  if (!orgId) {
+    throw new Error('orgId not passed correctly to accessRequired')
+  }
   if (allowSuperadmin && user.is_superadmin) {
     return
   }
