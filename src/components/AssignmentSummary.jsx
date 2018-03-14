@@ -76,7 +76,7 @@ export class AssignmentSummary extends Component {
   }
 
   render() {
-    const { assignment, unmessagedCount, unrepliedCount, badTimezoneCount, totalMessagedCount, convoHistoryCount } = this.props
+    const { assignment, unmessagedCount, unrepliedCount, badTimezoneCount, totalMessagedCount, pastMessagesCount } = this.props
     const { title, description, dueBy,
             primaryColor, logoImageUrl, introHtml,
             useDynamicAssignment } = assignment.campaign
@@ -117,9 +117,9 @@ export class AssignmentSummary extends Component {
             })}
             {this.renderBadgedButton({
               assignment,
-              title: 'Convo History',
+              title: 'Past Messages',
               primary: false,
-              count: convoHistoryCount,
+              count: pastMessagesCount,
               disabled: false,
               contactsFilter: 'stale',
               hideIfZero: true
@@ -157,7 +157,7 @@ AssignmentSummary.propTypes = {
   unrepliedCount: PropTypes.number,
   badTimezoneCount: PropTypes.number,
   totalMessagedCount: PropTypes.number,
-  pastConvosCount: PropTypes.number,
+  pastMessagesCount: PropTypes.number,
   data: PropTypes.object,
   mutations: PropTypes.object
 }

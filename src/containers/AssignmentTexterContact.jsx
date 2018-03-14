@@ -491,11 +491,11 @@ export class AssignmentTexterContact extends React.Component {
   }
 
   handleClickSendMessageButton = () => {
-     this.refs.form.submit()
-     if (this.props.data.contact.messageStatus === 'needsMessage') {
-       this.setState({ justSentNew: true })
-     }
-   }
+    this.refs.form.submit()
+    if (this.props.data.contact.messageStatus === 'needsMessage') {
+      this.setState({ justSentNew: true })
+    }
+  }
 
   isContactBetweenTextingHours(contact) {
     const { campaign } = this.props
