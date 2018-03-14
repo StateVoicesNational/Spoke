@@ -41,6 +41,7 @@ const inlineStyles = {
 class CampaignList extends React.Component {
   renderRow(campaign) {
     const { isStarted, isArchived, hasUnassignedContacts } = campaign
+    const { adminPerms } = this.props
 
     let listItemStyle = {}
     let leftIcon = ''
@@ -95,7 +96,8 @@ class CampaignList extends React.Component {
           this.props.router.push(campaignUrl))}
         secondaryText={secondaryText}
         leftIcon={leftIcon}
-        rightIconButton={campaign.isArchived ? (
+        rightIconButton={adminPerms ?
+                         (campaign.isArchived ? (
           <IconButton
             tooltip='Unarchive'
             onTouchTap={async () => this.props.mutations.unarchiveCampaign(campaign.id)}
@@ -109,7 +111,7 @@ class CampaignList extends React.Component {
           >
             <ArchiveIcon />
           </IconButton>
-        )}
+        )) : null}
       />
     )
   }
@@ -138,6 +140,7 @@ CampaignList.propTypes = {
     })
   ),
   router: PropTypes.object,
+  adminPerms: PropTypes.bool,
   organizationId: PropTypes.string,
   data: PropTypes.object,
   mutations: PropTypes.object

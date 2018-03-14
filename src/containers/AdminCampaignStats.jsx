@@ -150,10 +150,12 @@ class AdminCampaignStats extends React.Component {
     const { data, params } = this.props
     const { organizationId, campaignId } = params
     const campaign = data.campaign
+    const { adminPerms } = this.props.params
     const currentExportJob = this.props.data.campaign.pendingJobs.filter((job) => job.jobType === 'export')[0]
     const shouldDisableExport = this.state.disableExportButton || currentExportJob
 
     const exportLabel = currentExportJob ? `Exporting (${currentExportJob.status}%)` : 'Export Data'
+
     return (
       <div>
         <div className={css(styles.container)}>
@@ -170,45 +172,55 @@ class AdminCampaignStats extends React.Component {
             <div className={css(styles.rightAlign)}>
               <div className={css(styles.inline)}>
                 <div className={css(styles.inline)}>
-                  <RaisedButton
-                    onTouchTap={async () => {
-                      this.setState({
-                        exportMessageOpen: true,
-                        disableExportButton: true
-                      }, () => {
-                        this.setState({
-                          exportMessageOpen: true,
-                          disableExportButton: false
-                        })
-                      })
-                      await this.props.mutations.exportCampaign(campaignId)
-                    }}
-                    label={exportLabel}
-                    disabled={shouldDisableExport}
-                  />
-
-                </div>
-                <div className={css(styles.inline)}>
-                  {campaign.isArchived ? (
-                    <RaisedButton
-                      onTouchTap={async () => await this.props.mutations.unarchiveCampaign(campaignId)}
-                      label='Unarchive'
-                    />
-                  ) : [
-                    <RaisedButton
-                      onTouchTap={async () => await this.props.mutations.archiveCampaign(campaignId)}
-                      label='Archive'
-                    />,
+                  {!campaign.isArchived ?
+                    ( // edit
                     <RaisedButton
                       onTouchTap={() => this.props.router.push(`/admin/${organizationId}/campaigns/${campaignId}/edit`)}
                       label='Edit'
                     />
-                  ]}
+                  ) : null}
+                  {adminPerms ?
+                    [ // Buttons for Admins (and not Supervolunteers)
+                      ( // export
+                      <RaisedButton
+                        onTouchTap={async () => {
+                          this.setState({
+                            exportMessageOpen: true,
+                            disableExportButton: true
+                          }, () => {
+                            this.setState({
+                              exportMessageOpen: true,
+                              disableExportButton: false
+                            })
+                          })
+                          await this.props.mutations.exportCampaign(campaignId)
+                        }}
+                        label={exportLabel}
+                        disabled={shouldDisableExport}
+                      />),
+                      ( // unarchive
+                      campaign.isArchived ?
+                        <RaisedButton
+                          onTouchTap={async () => await this.props.mutations.unarchiveCampaign(campaignId)}
+                          label='Unarchive'
+                        /> : null),
+                      ( // archive
+                      !campaign.isArchived ?
+                        <RaisedButton
+                          onTouchTap={async () => await this.props.mutations.archiveCampaign(campaignId)}
+                          label='Archive'
+                        /> : null),
+                      ( // copy
+                      <RaisedButton
+                        label='Copy Campaign'
+                        onTouchTap={async() => await this.props.mutations.copyCampaign(this.props.params.campaignId)}
+                      />)
+                    ] : null}
                 </div>
-                {this.renderCopyButton()}
               </div>
             </div>
           </div>
+
         </div>
         <div className={css(styles.container)}>
           <div className={css(styles.flexColumn, styles.spacer)}>
