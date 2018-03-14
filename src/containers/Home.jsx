@@ -24,6 +24,7 @@ const styles = StyleSheet.create({
     ...theme.components.logoDiv
   },
   logoImg: {
+    width: 120,
     ...theme.components.logoImg
   },
   header: {
@@ -101,7 +102,7 @@ class Home extends React.Component {
       <div className={css(styles.container)}>
         <div className={css(styles.logoDiv)}>
           <img
-            src='https://user-images.githubusercontent.com/16676323/36105008-8b4fef00-0fe1-11e8-893c-a58786d1970c.png'
+            src="https://s3-us-west-1.amazonaws.com/spoke-public/spoke_logo.svg"
             className={css(styles.logoImg)}
           />
         </div>
