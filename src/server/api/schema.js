@@ -978,9 +978,23 @@ const rootMutations = {
 
       await messageInstance.save()
 
-      contact.message_status = 'messaged'
-      contact.updated_at = 'now()'
-      await contact.save()
+      if (contact.message_status === 'needsResponse' || contact.message_status === 'convo') {
+        const service = serviceMap[messageInstance.service || process.env.DEFAULT_SERVICE]
+        contact.message_status = 'convo'
+        contact.updated_at = 'now()'
+        await contact.save()
+
+        service.sendMessage(messageInstance)
+        return contact
+      } else {
+        const service = serviceMap[messageInstance.service || process.env.DEFAULT_SERVICE]
+        contact.message_status = 'messaged'
+        contact.updated_at = 'now()'
+        await contact.save()
+
+        service.sendMessage(messageInstance)
+        return contact
+      }
 
       if (JOBS_SAME_PROCESS) {
         const service = serviceMap[messageInstance.service || process.env.DEFAULT_SERVICE]

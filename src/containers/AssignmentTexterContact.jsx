@@ -622,7 +622,7 @@ export class AssignmentTexterContact extends React.Component {
           </Toolbar>
         </div>
       )
-    } else if (size < 450) { // for needsResponse or messaged
+    } else if (size < 450) { // for needsResponse or messaged or convo
       return (
         <div>
           <Toolbar
@@ -776,7 +776,7 @@ export class AssignmentTexterContact extends React.Component {
   renderCorrectSendButton() {
     const { campaign } = this.props
     const { contact } = this.props.data
-    if (contact.messageStatus === 'needsResponse' || contact.messageStatus === 'messaged') {
+    if (contact.messageStatus === 'messaged' || contact.messageStatus === 'convo' || contact.messageStatus === 'messaged') {
       return (
         <SendButtonArrow
           threeClickEnabled={campaign.organization.threeClickEnabled}
