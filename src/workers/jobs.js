@@ -555,6 +555,7 @@ export async function exportCampaign(job) {
 }
 
 // add an in-memory guard that the same messages are being sent again and again
+// not related to stale filter
 let pastMessages = []
 
 export async function sendMessages(queryFunc, defaultStatus) {
