@@ -13,7 +13,7 @@ class TexterTodoList extends React.Component {
     return assignments
       .sort((x, y) => ((x.unmessagedCount + x.unrepliedCount) > (y.unmessagedCount + y.unrepliedCount) ? -1 : 1))
       .map((assignment) => {
-        if (assignment.unmessagedCount > 0 || assignment.totalMessagedCount > 0 || assignment.unrepliedCount > 0 || assignment.badTimezoneCount > 0 || assignment.campaign.useDynamicAssignment || assignment.convoHistoryCount > 0) {
+        if (assignment.unmessagedCount > 0 || assignment.totalMessagedCount > 0 || assignment.unrepliedCount > 0 || assignment.badTimezoneCount > 0 || assignment.campaign.useDynamicAssignment || assignment.pastMessagesCount > 0) {
           return (
             <AssignmentSummary
               organizationId={organizationId}
@@ -23,7 +23,7 @@ class TexterTodoList extends React.Component {
               unrepliedCount={assignment.unrepliedCount}
               badTimezoneCount={assignment.badTimezoneCount}
               totalMessagedCount={assignment.totalMessagedCount}
-              convoHistoryCount={assignment.convoHistoryCount}
+              pastMessagesCount={assignment.pastMessagesCount}
             />
           )
         }
@@ -73,7 +73,7 @@ TexterTodoList.propTypes = {
 
 const mapQueriesToProps = ({ ownProps }) => ({
   data: {
-    query: gql`query getTodos($organizationId: String!, $needsMessageFilter: ContactsFilter, $needsResponseFilter: ContactsFilter, $badTimezoneFilter: ContactsFilter, $completedConvosFilter: ContactsFilter, $convoHistoryFilter: ContactsFilter) {
+    query: gql`query getTodos($organizationId: String!, $needsMessageFilter: ContactsFilter, $needsResponseFilter: ContactsFilter, $badTimezoneFilter: ContactsFilter, $completedConvosFilter: ContactsFilter, $pastMessagesFilter: ContactsFilter) {
       currentUser {
         id
         terms
@@ -93,7 +93,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
           unrepliedCount: contactsCount(contactsFilter: $needsResponseFilter)
           badTimezoneCount: contactsCount(contactsFilter: $badTimezoneFilter)
           totalMessagedCount: contactsCount(contactsFilter: $completedConvosFilter)
-          convoHistoryCount: contactsCount(contactsFilter: $convoHistoryFilter)
+          pastMessagesCount: contactsCount(contactsFilter: $pastMessagesFilter)
         }
       }
     }`,
@@ -118,7 +118,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
         validTimezone: true,
         messageStatus: 'messaged'
       },
-      convoHistoryFilter: {
+      pastMessagesFilter: {
         messageStatus: 'convo',
         isOptedOut: false,
         validTimezone: true
