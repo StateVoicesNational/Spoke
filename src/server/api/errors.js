@@ -2,6 +2,8 @@ import { GraphQLError } from 'graphql/error'
 
 import { r } from '../models'
 
+const accessHierarchy = ['TEXTER', 'SUPERVOLUNTEER', 'ADMIN', 'OWNER']
+
 export function authRequired(user) {
   if (!user) {
     throw new GraphQLError({
@@ -24,13 +26,20 @@ export async function hasRole(userId, orgId, role) {
 
 export async function accessRequired(user, orgId, role, allowSuperadmin = false) {
   authRequired(user)
-
+  if (!orgId) {
+    throw new Error('orgId not passed correctly to accessRequired')
+  }
   if (allowSuperadmin && user.is_superadmin) {
     return
   }
-
-  const userHasRole = await hasRole(user.id, orgId, role)
-
+  // require a permission at-or-higher than the permission requested
+  const acceptableRoles = accessHierarchy.slice(accessHierarchy.indexOf(role))
+  const userHasRole = await r.getCount(
+    r.knex('user_organization')
+      .where({ user_id: user.id,
+               organization_id: orgId })
+      .whereIn('role', acceptableRoles)
+  )
   if (!userHasRole) {
     throw new GraphQLError({
       status: 403,
