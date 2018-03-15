@@ -18,6 +18,7 @@ const CampaignContact = thinky.createModel('campaign_contact', type.object().sch
     .enum([
       'needsMessage',
       'needsResponse',
+      'convo',
       'messaged',
       'closed',
       'UPDATING'
