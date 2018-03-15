@@ -984,7 +984,7 @@ const rootMutations = {
 
       await messageInstance.save()
 
-      if (contact.message_status === 'needsResponse' || contact.message_status === 'convo') {
+      if (contact.message_status === 'needsResponse') {
         const service = serviceMap[messageInstance.service || process.env.DEFAULT_SERVICE]
         contact.message_status = 'convo'
         contact.updated_at = 'now()'
