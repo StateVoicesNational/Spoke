@@ -578,7 +578,7 @@ export class AssignmentTexterContact extends React.Component {
         onTouchTap={() => this.handleEditMessageStatus('needsResponse')}
         label='Reopen'
       />)
-    } else if (messageStatus === 'needsResponse' || messageStatus === 'messaged') {
+    } else if (messageStatus === 'needsResponse' || messageStatus === 'messaged' || messageStatus === 'convo') {
       button = (<RaisedButton
         onTouchTap={this.handleClickCloseContactButton}
         label='Skip Reply'
@@ -776,7 +776,7 @@ export class AssignmentTexterContact extends React.Component {
   renderCorrectSendButton() {
     const { campaign } = this.props
     const { contact } = this.props.data
-    if (contact.messageStatus === 'messaged' || contact.messageStatus === 'convo' || contact.messageStatus === 'messaged') {
+    if (contact.messageStatus === 'messaged' || contact.messageStatus === 'convo' || contact.messageStatus === 'needsResponse') {
       return (
         <SendButtonArrow
           threeClickEnabled={campaign.organization.threeClickEnabled}
