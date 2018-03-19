@@ -182,7 +182,7 @@ const rootSchema = `
     message: MessageInput!
     campaignContactId: String!
   }
-  
+
   input IncomingMessagesFilter {
     organizationId: String!
     campaignId: String
