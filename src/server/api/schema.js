@@ -183,11 +183,6 @@ const rootSchema = `
     campaignContactId: String!
   }
 
-  input IncomingMessagesFilter {
-    organizationId: String!
-    campaignId: String
-  }
-
   type Action {
     name: String
     display_name: String
