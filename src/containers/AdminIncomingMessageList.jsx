@@ -1,4 +1,5 @@
 import React, {Component} from 'react'
+import {Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn} from 'material-ui/Table'
 import loadData from './hoc/load-data'
 import wrapMutations from './hoc/wrap-mutations'
 import {withRouter} from 'react-router'
@@ -6,11 +7,6 @@ import gql from 'graphql-tag'
 import IncomingMessageFilter from '../components/IncomingMessageFilter'
 import IncomingMessageList from '../components/IncomingMessageList.jsx'
 
-
-
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
 
 
 export class AdminIncomingMessageList extends Component {
@@ -59,7 +55,7 @@ const mapQueriesToProps = ({ownProps}) => ({
         campaigns {
           id
           title
-        } 
+        }
       }
     }`,
     variables: {
@@ -71,5 +67,3 @@ const mapQueriesToProps = ({ownProps}) => ({
 
 
 export default loadData(withRouter(AdminIncomingMessageList), { mapQueriesToProps })
-
-

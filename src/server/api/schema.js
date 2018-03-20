@@ -202,7 +202,7 @@ const rootSchema = `
     assignment(id:String!): Assignment
     organizations: [Organization]
     availableActions(organizationId:String!): [Action]
-    incomingMessages(filter:IncomingMessagesFilter!): [Message]
+    incomingMessages: [Message]
   }
 
   type RootMutation {
