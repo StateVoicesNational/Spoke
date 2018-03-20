@@ -452,7 +452,7 @@ const rootMutations = {
       return loaders.campaignContact.load(id)
     },
     exportCampaign: async (_, { id }, { user, loaders }) => {
-      const campaign = loaders.campaign.load(id)
+      const campaign = await loaders.campaign.load(id)
       const organizationId = campaign.organization_id
       await accessRequired(user, organizationId, 'ADMIN')
       const newJob = await JobRequest.save({
