@@ -149,3 +149,24 @@ Here is the (proposed) structure of data in Redis to support the above data need
   1. LPOP `dynamicassignments-<campaign_id>`
   2. HSET `contactinfo-<contact_cell>-<message_service_id>`
 
+
+#### Initial loading into cache
+
+Starting from t0, when everything is in the database, how does data end up
+in the cache, and when can we confidently use it?
+
+* Initial assignments in a redis-enabled context should all load into
+  redis at the moment of *starting the campaign* along with contactinfo.  Campaign keys should
+  expire when the campaign is set to expire.
+* Texter info should load on login and expire after ?2 days (with another login
+  pushing expiration out)
+* Conversations/Replies should expire in X days
+  (maybe when campaign ends, or maybe just 2 days and reset on update)
+
+#### Multi-tenant considerations
+
+For instances with multiple organizations, it's worth imagining how we should
+scale across larger instances.  The main thing that needs to be 'known' for, e.g.
+sharding is the instance for an organization and most-importantly a twilio account
+(so that the application can lookup the right info per-twilio account).
+
