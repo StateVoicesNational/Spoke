@@ -417,8 +417,9 @@ const rootMutations = {
 
     sendReply: async (_, { id, message }, { user, loaders }) => {
       const contact = await loaders.campaignContact.load(id)
+      const campaign = await loaders.campaign.load(contact.campaign_id)
 
-      await accessRequired(user, contact.organization_id, 'ADMIN')
+      await accessRequired(user, campaign.organization_id, 'ADMIN')
 
       const lastMessage = await r.table('message')
         .getAll(contact.assignment_id, { index: 'assignment_id' })
