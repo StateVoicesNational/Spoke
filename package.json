@@ -8,7 +8,7 @@
     "npm": "3.10.10"
   },
   "scripts": {
-    "test": "jest",
+    "test": "jest --env=jsdom",
     "test-coverage": "jest --coverage",
     "test-coverage-bothbackends": "jest --config just.config.sqlite.js &&  jest --coverage",
     "clean": "rm -rf $OUTPUT_DIR",
@@ -95,6 +95,7 @@
     "humps": "^1.1.0",
     "is-url": "^1.2.2",
     "isomorphic-fetch": "^2.2.1",
+    "jest-cli": "~20.0.4",
     "jest-each": "^0.3.1",
     "json-loader": "^0.5.4",
     "knex": "^0.13.0",
@@ -140,7 +141,7 @@
   },
   "devDependencies": {
     "babel-eslint": "^6.1.2",
-    "babel-jest": "^22.1.0",
+    "babel-jest": "~20.0.3",
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-es2017": "^6.24.1",
     "enzyme": "^3.3.0",
@@ -151,7 +152,7 @@
     "eslint-plugin-jsx-a11y": "^1.5.5",
     "eslint-plugin-react": "^5.2.2",
     "foreman": "^1.4.1",
-    "jest": "^22.1.4",
+    "jest": "~20.0.4",
     "json2csv": "^3.6.2",
     "mockdate": "^2.0.2",
     "nodemon": "^1.9.2",
