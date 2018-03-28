@@ -14,7 +14,6 @@ import DashboardLoader from './containers/DashboardLoader'
 import TexterTodoList from './containers/TexterTodoList'
 import TexterTodo from './containers/TexterTodo'
 import Login from './components/Login'
-import FAQs from './components/TexterFAQs'
 import Terms from './containers/Terms'
 import React from 'react'
 import CreateOrganization from './containers/CreateOrganization'
@@ -22,7 +21,8 @@ import JoinTeam from './containers/JoinTeam'
 import Home from './containers/Home'
 import Settings from './containers/Settings'
 import UserEdit from './containers/UserEdit'
-
+import TexterFaqs from './components/TexterFaqs'
+import FAQs from './lib/faqs'
 
 export default function makeRoutes(requireAuth = () => {}) {
   return (
@@ -52,7 +52,7 @@ export default function makeRoutes(requireAuth = () => {}) {
         <Route path=':organizationId'>
           <IndexRedirect to='todos' />
           <Route path='faqs' components={{
-            main: () => <FAQs />,
+            main: () => <TexterFaqs faqs={FAQs} />,
             topNav: (p) => <TopNav title='Account' orgId={p.params.organizationId} /> }} />
           <Route path='account/:userId' components={{
             main: (p) => <UserEdit userId={p.params.userId} organizationId={p.params.organizationId} />,
