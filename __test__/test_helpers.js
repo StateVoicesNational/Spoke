@@ -40,7 +40,6 @@ export async function cleanupTest() {
   // Drop tables in an order that drops foreign keys before dependencies
   await r.knex.schema.dropTableIfExists('log')
   await r.knex.schema.dropTableIfExists('zip_code')
-  await r.knex.schema.dropTableIfExists('message')
   await r.knex.schema.dropTableIfExists('user_cell')
   await r.knex.schema.dropTableIfExists('user_organization')
   await r.knex.schema.dropTableIfExists('canned_response')
@@ -48,6 +47,7 @@ export async function cleanupTest() {
   await r.knex.schema.dropTableIfExists('job_request')
   await r.knex.schema.dropTableIfExists('migrations')
   await r.knex.schema.dropTableIfExists('opt_out')
+  await r.knex.schema.dropTableIfExists('message')
   await r.knex.schema.dropTableIfExists('question_response')
   await r.knex.schema.dropTableIfExists('interaction_step')
   await r.knex.schema.dropTableIfExists('campaign_contact')
