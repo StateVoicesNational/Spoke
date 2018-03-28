@@ -14,6 +14,7 @@ import DashboardLoader from './containers/DashboardLoader'
 import TexterTodoList from './containers/TexterTodoList'
 import TexterTodo from './containers/TexterTodo'
 import Login from './components/Login'
+import FAQs from './components/TexterFAQs'
 import Terms from './containers/Terms'
 import React from 'react'
 import CreateOrganization from './containers/CreateOrganization'
@@ -50,6 +51,9 @@ export default function makeRoutes(requireAuth = () => {}) {
                                   topNav: (p) => <TopNav title='Spoke Texting' orgId={p.params.organizationId} /> }} />
         <Route path=':organizationId'>
           <IndexRedirect to='todos' />
+          <Route path='faqs' components={{
+            main: () => <FAQs />,
+            topNav: (p) => <TopNav title='Account' orgId={p.params.organizationId} /> }} />
           <Route path='account/:userId' components={{
             main: (p) => <UserEdit userId={p.params.userId} organizationId={p.params.organizationId} />,
             topNav: (p) => <TopNav title='Account' orgId={p.params.organizationId} /> }} />
