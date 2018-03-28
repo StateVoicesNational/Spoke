@@ -250,7 +250,7 @@ class AdminCampaignStats extends React.Component {
         <Snackbar
           open={this.state.exportMessageOpen}
           message="Export started - we'll e-mail you when it's done"
-          autoHideDuration={4000}
+          autoHideDuration={5000}
           onRequestClose={() => {
             this.setState({ exportMessageOpen: false })
           }}
