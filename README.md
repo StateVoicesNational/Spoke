@@ -46,7 +46,7 @@ callback(null, user, context);
 ```
 12. Run `npm run dev` to start the app. Wait until you see both "Node app is running ..." and "webpack: Compiled successfully." before attempting to connect. (make sure environment variable `JOBS_SAME_PROCESS=1`)
 13. Go to `http://localhost:3000` to load the app.
-14. As long as you leave `SUPPRESS_SELF_INVITE=` blank and unset in your `.env` you should be able to invite yourself from the homepage.
+14. As long as you leave `SUPPRESS_SELF_INVITE=` blank and unset in your `.env` you should be able to invite yourself from the homepage. (Currently broken- generate the invite manually)
     - If you DO set that variable, then spoke will be invite-only and you'll need to generate an invite. Run:
 ```
 echo "INSERT INTO invite (hash,is_valid) VALUES ('abc', 1);" |sqlite3 mydb.sqlite
