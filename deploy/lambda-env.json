@@ -20,8 +20,6 @@
   "DB_PASSWORD": "XXXXXXXXXXXXXXXXX",
   "DB_TYPE": "pg",
   "DB_KEY": "",
-  "AUTH0_LOGIN_CALLBACK": "https://spoke.example.com/login-callback",
-  "AUTH0_LOGOUT_CALLBACK": "https://spoke.example.com/logout-callback",
   "AUTH0_DOMAIN": "spokeexamplecomXXXXX.auth0.com",
   "AUTH0_CLIENT_ID": "XXXXXXXXXXXXXXXXXXXXXXXXXXX",
   "AUTH0_CLIENT_SECRET": "XXXXXXXXXXXXXXXXXXXXXXXXX",

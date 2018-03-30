@@ -3,8 +3,6 @@ Variable                          | Purpose
 APOLLO_OPTICS_KEY                 | A key for Apollo tracer.
 ASSETS_DIR                        | Directory path where front-end packaged JavaScript is saved and loaded. _Required_.
 ASSETS_MAP_FILE                   | File name of map file, within ASSETS_DIR, containing map of general file names to unique build-specific file names.
-AUTH0_LOGIN_CALLBACK              | URL Auth0 service should redirect to after login. Should end with `/login-callback`, e.g. `https://example.org/login-callback` _Required_.
-AUTH0_LOGOUT_CALLBACK             | URL Auth0 service should redirect to after logout. Should end with `/logout-callback`, e.g. `https://example.org/logout-callback`. _Required_.
 AUTH0_DOMAIN                      | Domain name on Auth0 account, should end in `.auth0.com`, e.g. `example.auth0.com`. _Required_.
 AUTH0_CLIENT_ID                   | Client ID from Auth0 app. _Required_.
 AUTH0_CLIENT_SECRET               | Client secret from Auth0 app. _Required_.
