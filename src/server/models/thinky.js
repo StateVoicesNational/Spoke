@@ -37,7 +37,8 @@ if (process.env.DB_JSON || global.DB_JSON) {
     pool: {
       min: process.env.DB_MIN_POOL || 2,
       max: process.env.DB_MAX_POOL || 10
-    }
+    },
+    ssl: use_ssl
   }
 } else {
   config = {
