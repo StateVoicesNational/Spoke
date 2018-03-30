@@ -45,7 +45,7 @@ export async function processAction(questionResponse, interactionStep, campaignC
         'Authorization': process.env.REVERE_MOBILE_API_KEY
       },
       body: {
-        msisdns: [`01${contact.cell}`],
+        msisdns: [`${contactCell}`],
         modules: [
           {
             type: 'SUBSCRIPTION',
