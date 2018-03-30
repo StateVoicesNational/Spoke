@@ -13,3 +13,4 @@ test.sqlite
 *~
 *#
 coverage/
+.idea/
