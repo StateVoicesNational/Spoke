@@ -4,6 +4,8 @@ import { r } from '../models'
 // What the user sees as the option
 export const displayName = () => 'Revere Signup'
 
+const listId = process.env.REVERE_LIST_ID
+
 // The Help text for the user after selecting the action
 export const instructions = () => (
   'If a user double opt ins, you can create a new user upload request to Revere.'
@@ -15,7 +17,7 @@ export const instructions = () => (
 // Besides this returning true, "test-action" will also need to be added to
 // process.env.ACTION_HANDLERS
 export async function available(organizationId) {
-  if (process.env.REVERE_LIST_ID && process.env.REVERE_MOBILE_API_KEY) {
+  if (listId && process.env.REVERE_MOBILE_API_KEY) {
     return true
   }
 }
@@ -44,28 +46,30 @@ export async function processAction(questionResponse, interactionStep, campaignC
         'content-type': 'application/json',
         'Authorization': process.env.REVERE_MOBILE_API_KEY
       },
-      body: {
-        msisdns: [`${contactCell}`],
-        modules: [
-          {
-            type: 'SUBSCRIPTION',
-            params:
-            {
-              listId: process.env.REVERE_LIST_ID,
-              optInType: 'doubleOptIn',
-              optInMessage: 'Would you like to join my mobile list? Text STOP to end, HELP for info. 4 msg/mo. Msg&Data Rates May Apply.',
-              confirmMessage: 'Thanks for joining my list!',
-              subscribedMessage: 'Thanks for your support, you\'re already subscribed!'
-            }
-          },
-          {
-            type: 'spoke',
-            params: {
-              `${process.env.REVERE_LIST_ID}`: 'spoke'
-            }
-          }
-        ]
-      },
+      modules: [
+       {
+         type: 'SUBSCRIPTION',
+         params:
+         {
+           listId: process.env.REVERE_LIST_ID,
+           optInType: 'singleOptIn',
+           confirmMessage: 'Thanks for joining my list!',
+           subscribedMessage: 'Thanks for your support, you\'re already subscribed!'
+         }
+       },
+       {
+         type: 'TAGMETADATA',
+         params: {
+           listId : 'My Tag'
+         }
+       }
+     ],
+      // body: {
+      //   msisdns: [`${contactCell}`],
+      //   mobileFlow: process.env.REVERE_NEW_SUBSCRIBER_MOBILE_FLOW,
+      //   list: listId
+      // },
+
       json: true
     }
 
