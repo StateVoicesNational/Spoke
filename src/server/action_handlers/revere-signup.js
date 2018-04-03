@@ -7,7 +7,7 @@ export const displayName = () => 'Revere Signup'
 const listId = process.env.REVERE_LIST_ID
 const mobileFlowId = process.env.REVERE_NEW_SUBSCRIBER_MOBILE_FLOW
 const mobileApiKey = process.env.REVERE_MOBILE_API_KEY
-const akAddUserUrl = process.env.AK_ADD_USER_URL
+const actionkitBaseUrl = process.env.AK_BASEURL
 
 // The Help text for the user after selecting the action
 export const instructions = () => (
@@ -56,18 +56,14 @@ export async function processAction(questionResponse, interactionStep, campaignC
           'sms_subscribed': true,
           'action_mobilesubscribe': true,
           'suppress_subscribe': true,
-          'phones': [contactCell],
+          'phone': contactCell,
           'phone_type': 'mobile',
           'source': 'spoke-signup'
         }
         console.log('user data:', userData);
 
         request.post({
-          'url': akAddUserUrl,
-          headers: {
-            accept: 'application/json',
-            'content-type': 'application/json'
-          },
+          'url': `${actionkitBaseUrl}/act/`,
           'form': userData
         }, (error, response, body) => {
           if (error) throw new Error(error)
