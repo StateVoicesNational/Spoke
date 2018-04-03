@@ -5,29 +5,21 @@ import { r } from '../models'
 export const displayName = () => 'Revere Signup'
 
 const listId = process.env.REVERE_LIST_ID
+const mobileFlowId = process.env.REVERE_NEW_SUBSCRIBER_MOBILE_FLOW
+const mobileApiKey = process.env.REVERE_MOBILE_API_KEY
 
 // The Help text for the user after selecting the action
 export const instructions = () => (
-  'If a user double opt ins, you can create a new user upload request to Revere.'
+  'This option triggers a new user request to Revere when selected.'
 )
 
-// return true, if the action is usable and available for the organizationId
-// Sometimes this means certain variables/credentials must be setup
-// either in environment variables or organization.features json data
-// Besides this returning true, "test-action" will also need to be added to
-// process.env.ACTION_HANDLERS
 export async function available(organizationId) {
   if (listId && process.env.REVERE_MOBILE_API_KEY) {
     return true
   }
 }
 
-// What happens when a texter saves the answer that triggers the action
-// This is presumably the meat of the action
 export async function processAction(questionResponse, interactionStep, campaignContactId) {
-  // This is a meta action that updates a variable in the contact record itself.
-  // Generally, you want to send action data to the outside world, so you
-  // might want the request library loaded above
 
    const contactRes = await r.knex('campaign_contact')
       .where('campaign_contact.id', campaignContactId)
@@ -35,48 +27,29 @@ export async function processAction(questionResponse, interactionStep, campaignC
       .leftJoin('organization', 'campaign.organization_id', 'organization.id')
       .select('campaign_contact.cell', 'campaign_contact.first_name', 'campaign_contact.last_name')
     const contact = (contactRes.length ? contactRes[0] : {})
-    const contactCell = contact.cell
-    console.log('contact', contactCell.replace("+", "0"))
-    
+    const contactCell = contact.cell.substring(1)
+
     let options = {
       method: 'POST',
       url: 'https://mobile.reverehq.com/api/v1/messaging/sendContent',
       headers: {
         accept: 'application/json',
         'content-type': 'application/json',
-        'Authorization': process.env.REVERE_MOBILE_API_KEY
+        'Authorization': mobileApiKey
       },
-      modules: [
-       {
-         type: 'SUBSCRIPTION',
-         params:
-         {
-           listId: process.env.REVERE_LIST_ID,
-           optInType: 'singleOptIn',
-           confirmMessage: 'Thanks for joining my list!',
-           subscribedMessage: 'Thanks for your support, you\'re already subscribed!'
-         }
-       },
-       {
-         type: 'TAGMETADATA',
-         params: {
-           listId : 'My Tag'
-         }
-       }
-     ],
-      // body: {
-      //   msisdns: [`${contactCell}`],
-      //   mobileFlow: process.env.REVERE_NEW_SUBSCRIBER_MOBILE_FLOW,
-      //   list: listId
-      // },
-
+      body: {
+        msisdns: [`${contactCell}`],
+        mobileFlow: `${mobileFlowId}`,
+        list: listId
+      },
       json: true
     }
 
-    request(options, function (error, response, body) {
+    request(options, (error, response, body) => {
       if (error) throw new Error(error);
 
-      console.log(body)
-    });
-
+      if(response.statusCode == 204){
+        console.log('user successfully sent to revere api')
+      }
+    })
 }
