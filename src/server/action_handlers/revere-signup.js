@@ -7,6 +7,7 @@ export const displayName = () => 'Revere Signup'
 const listId = process.env.REVERE_LIST_ID
 const mobileFlowId = process.env.REVERE_NEW_SUBSCRIBER_MOBILE_FLOW
 const mobileApiKey = process.env.REVERE_MOBILE_API_KEY
+const akAddUserUrl = process.env.AK_ADD_USER_URL
 
 // The Help text for the user after selecting the action
 export const instructions = () => (
@@ -46,10 +47,36 @@ export async function processAction(questionResponse, interactionStep, campaignC
     }
 
     request(options, (error, response, body) => {
-      if (error) throw new Error(error);
+      if (error) throw new Error(error)
+      if(response.statusCode == 204 && process.env.AK_ADD_USER_URL){
+        const userData = {
+          'email': contactCell +  '-smssubscriber@example.com',
+          'first_name': contact.first_name,
+          'last_name': contact.last_name,
+          'sms_subscribed': true,
+          'action_mobilesubscribe': true,
+          'suppress_subscribe': true,
+          'phones': [contactCell],
+          'phone_type': 'mobile',
+          'source': 'spoke-signup'
+        }
+        console.log('user data:', userData);
 
-      if(response.statusCode == 204){
-        console.log('user successfully sent to revere api')
+        request.post({
+          'url': akAddUserUrl,
+          headers: {
+            accept: 'application/json',
+            'content-type': 'application/json'
+          },
+          'form': userData
+        }, (error, response, body) => {
+          if (error) throw new Error(error)
+          console.log('body:', body);
+          console.log('response:', response);
+        })
+      } else {
+        return
       }
+
     })
 }
