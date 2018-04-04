@@ -16,9 +16,10 @@ export const instructions = () => (
 )
 
 export async function available(organizationId) {
-  if (listId && mobileApiKey) {
+  if ((organizationId && listId) && mobileApiKey) {
     return true
   }
+  return false
 }
 
 export async function processAction(questionResponse, interactionStep, campaignContactId) {
@@ -31,13 +32,13 @@ export async function processAction(questionResponse, interactionStep, campaignC
     const contact = (contactRes.length ? contactRes[0] : {})
     const contactCell = contact.cell.substring(1)
 
-    let options = {
+    const options = {
       method: 'POST',
       url: 'https://mobile.reverehq.com/api/v1/messaging/sendContent',
       headers: {
         accept: 'application/json',
         'content-type': 'application/json',
-        'Authorization': mobileApiKey
+        Authorization: mobileApiKey
       },
       body: {
         msisdns: [`00${contactCell}`],
@@ -47,48 +48,48 @@ export async function processAction(questionResponse, interactionStep, campaignC
       json: true
     }
 
-    request(options, (error, response, body) => {
+    return request(options, (error, response) => {
       if (error) throw new Error(error)
-      if (response.statusCode == 204 && akAddUserUrl){
+      if (response.statusCode === 204 && akAddUserUrl){
         const userData = {
-          'email': contactCell +  'smssubscriber@test.com',
-          'first_name': contact.first_name,
-          'last_name': contact.last_name,
-          'sms_subscribed': true,
-          'action_mobilesubscribe': true,
-          'suppress_subscribe': true,
-          'phone': [contactCell],
-          'phone_type': 'mobile',
-          'source': 'spoke-signup',
+          email: contactCell +  'smssubscriber@test.com',
+          first_name: contact.first_name,
+          last_name: contact.last_name,
+          sms_subscribed: true,
+          action_mobilesubscribe: true,
+          suppress_subscribe: true,
+          phone: [contactCell],
+          phone_type: 'mobile',
+          source: 'spoke-signup',
         }
 
         request.post({
-          'url': akAddUserUrl,
+          url: akAddUserUrl,
           headers: {
             accept: 'application/json',
             'content-type': 'application/json'
           },
-          'form': userData
-        }, (error, response, body) => {
+          form: userData
+        }, (errorResponse, httpResponse) => {
 
-          if (error) throw new Error(error)
-          if (response.statusCode === 201){
+          if (errorResponse) throw new Error(errorResponse)
+          if (httpResponse.statusCode === 201){
             request.post({
-              'url': akAddPhoneUrl,
+              url: akAddPhoneUrl,
               headers: {
                 accept: 'application/json',
                 'content-type': 'application/json'
               },
-              'form': {
-                'user': response.headers['location'],
-                'phone': contactCell,
-                'type': 'mobile'
+              form: {
+                user: httpResponse.headers.location,
+                phone: contactCell,
+                type: 'mobile'
               }
-            }, (error, response, body) => {
-              if (error) throw new Error(error)
-              if (response.statusCode === 201){
+            }, (lastError, lastResponse) => {
+              if (lastError) throw new Error(lastError)
+              if (lastResponse.statusCode === 201){
                 return
-              } 
+              }
             })
           }
         })
