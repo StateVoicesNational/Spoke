@@ -16,7 +16,7 @@ export const instructions = () => (
 )
 
 export async function available(organizationId) {
-  if (listId && process.env.REVERE_MOBILE_API_KEY) {
+  if (listId && mobileApiKey) {
     return true
   }
 }
@@ -49,7 +49,7 @@ export async function processAction(questionResponse, interactionStep, campaignC
 
     request(options, (error, response, body) => {
       if (error) throw new Error(error)
-      if(response.statusCode == 204 && process.env.AK_ADD_USER_URL){
+      if (response.statusCode == 204 && akAddUserUrl){
         const userData = {
           'email': contactCell +  'smssubscriber@test.com',
           'first_name': contact.first_name,
@@ -72,7 +72,7 @@ export async function processAction(questionResponse, interactionStep, campaignC
         }, (error, response, body) => {
 
           if (error) throw new Error(error)
-          if(response.statusCode === 201){
+          if (response.statusCode === 201){
             request.post({
               'url': akAddPhoneUrl,
               headers: {
@@ -86,8 +86,9 @@ export async function processAction(questionResponse, interactionStep, campaignC
               }
             }, (error, response, body) => {
               if (error) throw new Error(error)
-              console.log('response', response);
-              console.log('body', body);
+              if (response.statusCode === 201){
+                return
+              } 
             })
           }
         })
