@@ -42,8 +42,7 @@ export async function processAction(questionResponse, interactionStep, campaignC
       },
       body: {
         msisdns: [`00${contactCell}`],
-        mobileFlow: `${mobileFlowId}`,
-        list: listId
+        mobileFlow: `${mobileFlowId}`
       },
       json: true
     }
@@ -52,7 +51,7 @@ export async function processAction(questionResponse, interactionStep, campaignC
       if (error) throw new Error(error)
       if (response.statusCode === 204 && akAddUserUrl){
         const userData = {
-          email: contactCell +  'smssubscriber@test.com',
+          email: contactCell +  '-smssubscriber@example.com',
           first_name: contact.first_name,
           last_name: contact.last_name,
           sms_subscribed: true,
