@@ -1,4 +1,6 @@
 import dumbThinky from 'rethink-knex-adapter'
+import redisStore from 'connect-redis'
+import fakeredis from 'fakeredis'
 
 // // This was how to connect to rethinkdb:
 // export default thinky({
@@ -57,6 +59,12 @@ thinkyConn.r.getCount = async (query) => {
   // results in a 'count' key on postgres, but a 'count(*)' key
   // on sqlite -- ridiculous.  This smooths that out
   return Number((await query.count('* as count').first()).count)
+}
+
+if(process.env.REDIS_URL){
+  thinkyConn.r.redis = redisStore({url: process.env.REDIS_URL})
+} else if (process.env.REDIS_FAKE){
+  thinkyConn.r.redis = fakeredis.createClient()
 }
 
 export default thinkyConn
