@@ -1,6 +1,9 @@
 import dumbThinky from 'rethink-knex-adapter'
-import redisStore from 'connect-redis'
-import fakeredis from 'fakeredis'
+import redis from 'redis'
+import bluebird from 'bluebird'
+
+bluebird.promisifyAll(redis.RedisClient.prototype);
+bluebird.promisifyAll(redis.Multi.prototype);
 
 // // This was how to connect to rethinkdb:
 // export default thinky({
@@ -62,8 +65,12 @@ thinkyConn.r.getCount = async (query) => {
 }
 
 if(process.env.REDIS_URL){
-  thinkyConn.r.redis = redisStore({url: process.env.REDIS_URL})
+  thinkyConn.r.redis = redis({url: process.env.REDIS_URL})
 } else if (process.env.REDIS_FAKE){
+  const fakeredis = require('fakeredis')
+  bluebird.promisifyAll(fakeredis.RedisClient.prototype);
+  bluebird.promisifyAll(fakeredis.Multi.prototype);
+
   thinkyConn.r.redis = fakeredis.createClient()
 }
 
