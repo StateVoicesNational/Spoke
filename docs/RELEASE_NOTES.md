@@ -1,5 +1,44 @@
 # Release Notes
 
+## v1.3
+
+* Getting more use
+* Further work
+  * Scaling
+  * Integration with outside systems (especially with [OSDI](http://opensupporter.org/) )
+  * Profanity filters -- allowing admins to manage profane responses
+  
+
+*April 2018:* Version 1.3 
+* A 'Past Messages' section for Texters to allow access to previous conversations before a reply comes back.
+  This feature helps cases where someone accidentally clicked a button or wants to follow-up with requested information.
+* Texters can update their name, email and other information from the menu. 
+  Admins can update texter info from the console
+* A new SuperVolunteer role, which allows a non-admin to update assignments, and [some other tasks](https://github.com/MoveOnOrg/Spoke/issues/455)
+* Added [MailGun support](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_HEROKU_DEPLOY.md#setting-up-mailgun)
+* Frontend React tests!
+* Fixed some bugs:
+  - The texter menu now has a home button
+  - The zipcode table was too big to fit in a free Heroku database
+  - Some login issues were fixed and documentation was improved
+  - Improved contact load times for 
+
+Thanks go to all our contributors for this release including: 
+[ben-pr-p](https://github.com/ben-pr-p), 
+[harpojaeger](https://github.com/harpojaeger), 
+[lperson](https://github.com/lperson), 
+[sandramchung](https://github.com/sandramchung), 
+[schuyler1d](https://github.com/schuyler1d), 
+[shakalee14](https://github.com/shakalee14), 
+[sreynen](https://github.com/sreynen), 
+[mathemagica](https://github.com/mathemagica), 
+[zluo16](https://github.com/zluo16), 
+[jparkrr](https://github.com/jparkrr), 
+[jparkrr](https://github.com/JeremyParker), 
+[hiemanshu](https://github.com/hiemanshu),
+
+
+
 ## v1.2
 
 Version 1.2 is our second release since MoveOn has adopted Spoke. We are committed to fixing bugs, adding new features and making this project as nimble as possible. For this release, we've included changes from [GetUp](https://www.getup.org.au/), updated certain dependencies, updated Auth0 integration, added user editing capabilities for texters and admins and continued to add outside integration points with outside CRMs. Please continue to add and work on our growing [issues list](https://github.com/MoveOnOrg/Spoke/issues). We have also switched from `master` => `main` as a new naming convention for the most stable/default branch.
