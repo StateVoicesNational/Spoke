@@ -13,18 +13,6 @@
       "value": ""
     },
 
-    "AUTH0_LOGIN_CALLBACK": {
-      "description": "auth0 login callback url --> this should be filled with your app name and match your auth0 configuration",
-      "required": true,
-      "value": "https://<changeme>.herokuapp.com/login-callback"
-    },
-
-    "AUTH0_LOGOUT_CALLBACK": {
-      "description": "auth0 logout callback url",
-      "required": true,
-      "value": "https://<changeme>.herokuapp.com/logout-callback"
-    },
-
     "AUTH0_DOMAIN": {
       "description": "auth0 domain attached to auth0 account",
       "required": true,
