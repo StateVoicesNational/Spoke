@@ -24,10 +24,7 @@
 
 - Scroll to `Allowed Logout URLs` section and update it with (your HEROKU_APP_URL):
   - `https://<YOUR_HEROKU_APP_URL>/logout-callback, http://<YOUR_HEROKU_APP_URL>/logout-callback`
-
-- Notice that:
-  - `AUTH0_LOGIN_CALLBACK` in your config variables is the same as `https://<YOUR_HEROKU_APP_URL>/login-callback`
-  - `AUTH0_LOGOUT_CALLBACK` in your config variables is the same as `https://<YOUR_HEROKU_APP_URL>/logout-callback`
+  
 - Scroll to `Allowed Origin (CORS)` add:
   - `http://*.<YOUR_HEROKU_APP_URL>.com`, ` https://*.<YOUR_HEROKU_APP_URL>.com`
 - Scroll to `Allowed Web Origins` add:
