@@ -330,6 +330,11 @@ export default class CampaignTextersForm extends React.Component {
     this.onChange({ texters: textersToAdd })
   }
 
+  getDisplayName(texterId) {
+    let texterObj = this.props.orgTexters.find(o => o.id === texterId)
+    return texterObj.displayName
+  }
+
   showTexters() {
     return this.formValues().texters.map((texter, index) => {
       const messagedCount = texter.assignment.contactsCount - texter.assignment.needsMessageCount
@@ -347,7 +352,7 @@ export default class CampaignTextersForm extends React.Component {
             {messagedCount}
           </div>
           <div className={css(styles.nameColumn)}>
-            {`${texter.firstName}`}
+            {this.getDisplayName(texter.id)}
           </div>
           <div className={css(styles.input)}>
             <Form.Field
