@@ -41,6 +41,7 @@ Thanks go to all our contributors for this release including:
 [JeremyParker](https://github.com/JeremyParker),
 [hiemanshu](https://github.com/hiemanshu),
 [Dayologic](https://github.com/Dayologic),
+[hi0ctane](https://github.com/hi0ctane),
 [sandramchung](https://github.com/sandramchung),
 [sreynen](https://github.com/sreynen),
 [mathemagica](https://github.com/mathemagica)
