@@ -11,6 +11,10 @@ texters to update their own information.
 Over the next couple months, we intend to integrate with more outside
 systems leading that work) and we will also be adding significant work
 around scaling the system to support much larger volumes and participants.
+We will also be continuing to add more automated tests to scale participation.
+All of that is to make sure that the growing community can keep adding
+enhancements yourself -- please jump in on our issues page to either
+implement something or file an issue on something you want Spoke to do!
 
 Please upgrade your instance and let us know if you encounter any issues!
 
@@ -28,7 +32,7 @@ Please upgrade your instance and let us know if you encounter any issues!
   - The texter menu now has a home button
   - The zipcode table was too big to fit in a free Heroku database
   - Some login issues were fixed and documentation was improved
-  - Improved contact load times for 
+  - Improved contact load times for texter screen
 
 Thanks go to all our contributors for this release including: 
 [ben-pr-p](https://github.com/ben-pr-p),
