@@ -2,12 +2,17 @@
 
 ## v1.3
 
-* Getting more use
-* Further work
-  * Scaling
-  * Integration with outside systems (especially with [OSDI](http://opensupporter.org/) )
-  * Profanity filters -- allowing admins to manage profane responses
-  
+Two major themes that we are focusing on this year is improving
+integrations and scaling.  This release begins that work with support
+for MailGun notifications and Revere subscriptions.  In order to scale
+work-flows, we have added a new SuperVolunteer position and allow
+texters to update their own information.
+
+Over the next couple months, we intend to integrate with more outside
+systems leading that work) and we will also be adding significant work
+around scaling the system to support much larger volumes and participants.
+
+Please upgrade your instance and let us know if you encounter any issues!
 
 *April 2018:* Version 1.3 
 * A 'Past Messages' section for Texters to allow access to previous conversations before a reply comes back.
@@ -17,6 +22,8 @@
 * A new SuperVolunteer role, which allows a non-admin to update assignments, and [some other tasks](https://github.com/MoveOnOrg/Spoke/issues/455)
 * Added [MailGun support](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_HEROKU_DEPLOY.md#setting-up-mailgun)
 * Frontend React tests!
+* Added an action handler to automatically subscribe to a [Revere](https://reverehq.com/)
+  SMS list -- see [Revere integration instructions](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_INTEGRATE_WITH_REVERE.md)
 * Fixed some bugs:
   - The texter menu now has a home button
   - The zipcode table was too big to fit in a free Heroku database
