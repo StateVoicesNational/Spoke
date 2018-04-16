@@ -40,6 +40,7 @@ Thanks go to all our contributors for this release including:
 [jparkrr](https://github.com/jparkrr),
 [JeremyParker](https://github.com/JeremyParker),
 [hiemanshu](https://github.com/hiemanshu),
+[Dayologic](https://github.com/Dayologic),
 [sandramchung](https://github.com/sandramchung),
 [sreynen](https://github.com/sreynen),
 [mathemagica](https://github.com/mathemagica)
