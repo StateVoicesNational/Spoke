@@ -31,18 +31,18 @@ Please upgrade your instance and let us know if you encounter any issues!
   - Improved contact load times for 
 
 Thanks go to all our contributors for this release including: 
-[ben-pr-p](https://github.com/ben-pr-p), 
-[harpojaeger](https://github.com/harpojaeger), 
-[lperson](https://github.com/lperson), 
-[sandramchung](https://github.com/sandramchung), 
-[schuyler1d](https://github.com/schuyler1d), 
-[shakalee14](https://github.com/shakalee14), 
-[sreynen](https://github.com/sreynen), 
-[mathemagica](https://github.com/mathemagica), 
-[zluo16](https://github.com/zluo16), 
-[jparkrr](https://github.com/jparkrr), 
-[jparkrr](https://github.com/JeremyParker), 
+[ben-pr-p](https://github.com/ben-pr-p),
+[harpojaeger](https://github.com/harpojaeger),
+[lperson](https://github.com/lperson),
+[shakalee14](https://github.com/shakalee14),
+[schuyler1d](https://github.com/schuyler1d),
+[zluo16](https://github.com/zluo16),
+[jparkrr](https://github.com/jparkrr),
+[JeremyParker](https://github.com/JeremyParker),
 [hiemanshu](https://github.com/hiemanshu),
+[sandramchung](https://github.com/sandramchung),
+[sreynen](https://github.com/sreynen),
+[mathemagica](https://github.com/mathemagica)
 
 
 
