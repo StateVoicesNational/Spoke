@@ -54,7 +54,7 @@ Thanks go to all our contributors for this release including:
 
 ## v1.2
 
-Version 1.2 is our second release since MoveOn has adopted Spoke. We are committed to fixing bugs, adding new features and making this project as nimble as possible. For this release, we've included changes from [GetUp](https://www.getup.org.au/), updated certain dependencies, updated Auth0 integration, added user editing capabilities for texters and admins and continued to add outside integration points with outside CRMs. Please continue to add and work on our growing [issues list](https://github.com/MoveOnOrg/Spoke/issues). We have also switched from `master` => `main` as a new naming convention for the most stable/default branch.
+*January 2018:* Version 1.2 is our second release since MoveOn has adopted Spoke. We are committed to fixing bugs, adding new features and making this project as nimble as possible. For this release, we've included changes from [GetUp](https://www.getup.org.au/), updated certain dependencies, updated Auth0 integration, added user editing capabilities for texters and admins and continued to add outside integration points with outside CRMs. Please continue to add and work on our growing [issues list](https://github.com/MoveOnOrg/Spoke/issues). We have also switched from `master` => `main` as a new naming convention for the most stable/default branch.
 
 We've worked on a lot, but some critical developments to highlight include:
 * Adds dynamic assignment functionality for texters
@@ -73,7 +73,7 @@ Thanks go to to all our contributors for this release including: [jmcarp](https:
 
 ## v1.1
 
-Version 1.1 is our first release since MoveOn has been using Spoke successfully in production. We are committed to
+*October 2017:* Version 1.1 is our first release since MoveOn has been using Spoke successfully in production. We are committed to
 making this an open-source project used and developed by the wider progressive tech community to advance our
 political goals.  Part of our work has been to make that transparent.  Besides this public repository, please help
 with our growing [issues list](https://github.com/MoveOnOrg/Spoke/issues), including those marked `easy`.
