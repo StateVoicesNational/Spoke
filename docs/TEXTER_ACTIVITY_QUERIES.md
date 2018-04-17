@@ -65,3 +65,8 @@ ON  m.assignment_id = a.id
 WHERE m.CREATED_AT > current_timestamp - interval '1 hour';
 `
 
+*TO DO wish list of some useful queries for redash dashboard reports:
+
+* survey question response counts and percentage of total responses to survey question
+
+* count of contacts, texters, sent, count (and as percent of total sent) of replies, optouts and wrong numbers, for all campaigns 
