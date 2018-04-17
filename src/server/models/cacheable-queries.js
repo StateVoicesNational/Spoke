@@ -31,3 +31,24 @@ export async function userHasRole(userId, orgId, acceptableRoles) {
     return userHasRole
   }
 }
+
+export async function userLoggedIn(authId) {
+  const authKey = `texterauth-${authId}`
+
+  if(r.redis) {
+    const cachedAuth = await r.redis.getAsync(authKey)
+    if(cachedAuth){
+      return JSON.parse(cachedAuth)
+    }
+  }
+
+  const userAuth = await r.knex('user')
+    .where('auth0_id', authId )
+    .select('*')
+    .first()
+
+  if(r.redis && userAuth){
+    await r.redis.set(authKey, JSON.stringify(userAuth), 86400)
+  }
+  return userAuth
+}
