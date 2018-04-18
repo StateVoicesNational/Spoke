@@ -2,14 +2,14 @@
 
 ## v1.3
 
-Two major themes that we are focusing on this year is improving
+Two major themes that we are focusing on this year are improving
 integrations and scaling.  This release begins that work with support
 for MailGun notifications and Revere subscriptions.  In order to scale
-work-flows, we have added a new SuperVolunteer position and allow
+work-flows, we have added a new SuperVolunteer position and now allow
 texters to update their own information.
 
 Over the next couple months, we intend to integrate with more outside
-systems leading that work) and we will also be adding significant work
+systems and we will also be adding significant work
 around scaling the system to support much larger volumes and participants.
 We will also be continuing to add more automated tests to scale participation.
 All of that is to make sure that the growing community can keep adding
