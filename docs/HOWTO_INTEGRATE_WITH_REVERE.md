@@ -1,4 +1,4 @@
-# How to Integrate with Revere for Broadcast SMS Signup
+# How to Integrate with [Revere](https://reverehq.com/) for Broadcast SMS Signup
 - Purpose of this documentation is for organizations who have a Revere Mobile Account. The intended workflow is that you have folks on your peer to peer list who you want to subscribe to your broadcast sms list.
 - We advise you to get some language/workflow approved with your legal team and Revere before using this feature.
 
