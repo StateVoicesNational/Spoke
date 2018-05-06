@@ -7,8 +7,6 @@ import gql from 'graphql-tag'
 import IncomingMessageFilter from '../components/IncomingMessageFilter'
 import IncomingMessageList from '../components/IncomingMessageList.jsx'
 
-
-
 export class AdminIncomingMessageList extends Component {
   constructor(props) {
     super(props)
