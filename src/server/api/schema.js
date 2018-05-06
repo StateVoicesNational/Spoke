@@ -182,6 +182,11 @@ const rootSchema = `
     message: MessageInput!
     campaignContactId: String!
   }
+  
+  input IncomingMessagesFilter {
+    organizationId: String!
+    campaignId: String
+  }
 
   type Action {
     name: String
@@ -202,7 +207,7 @@ const rootSchema = `
     assignment(id:String!): Assignment
     organizations: [Organization]
     availableActions(organizationId:String!): [Action]
-    incomingMessages: [Message]
+    incomingMessages(filter:IncomingMessagesFilter!): [Message]
   }
 
   type RootMutation {
