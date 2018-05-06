@@ -1,5 +1,8 @@
 import React, {Component} from 'react'
+<<<<<<< HEAD
 import type from 'prop-types'
+=======
+>>>>>>> 6e74219... filter by campaign id
 
 import {Card, CardHeader, CardText} from 'material-ui/Card'
 import SelectField from 'material-ui/SelectField'
@@ -44,7 +47,10 @@ class IncomingMessageFilter extends Component {
             value={this.state.campaignFilter}
             onChange={(event, index, value) => {
               this.setState({campaignFilter: value})
+<<<<<<< HEAD
               this.props.onCampaignChanged(value)
+=======
+>>>>>>> 6e74219... filter by campaign id
             }
             }
           >
@@ -62,10 +68,13 @@ class IncomingMessageFilter extends Component {
   }
 }
 
+<<<<<<< HEAD
 IncomingMessageFilter.propTypes = {
   onCampaignChanged: type.func,
   campaigns: type.array,
   messages_filter:  type.object
 }
 
+=======
+>>>>>>> 6e74219... filter by campaign id
 export default IncomingMessageFilter
