@@ -21,6 +21,7 @@ class UserMenu extends Component {
       anchorEl: null
     }
     this.handleReturn = this.handleReturn.bind(this)
+    this.handleRequestFaqs = this.handleRequestFaqs.bind(this)
   }
 
   handleTouchTap = (event) => {
@@ -58,6 +59,12 @@ class UserMenu extends Component {
     e.preventDefault()
     const { orgId } = this.props
     this.props.router.push(`/app/${orgId}/todos`)
+  }
+
+  handleRequestFaqs = (e) => {
+    e.preventDefault()
+    const { orgId } = this.props
+    this.props.router.push(`/app/${orgId}/faqs`)
   }
 
 
@@ -115,6 +122,10 @@ class UserMenu extends Component {
             <MenuItem
               primaryText='Home'
               onClick={this.handleReturn}
+            />
+            <MenuItem
+              primaryText='FAQs'
+              onClick={this.handleRequestFaqs}
             />
             <Divider />
             <MenuItem
