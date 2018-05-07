@@ -10,7 +10,7 @@
   "scripts": {
     "test": "jest",
     "test-coverage": "jest --coverage",
-    "test-coverage-bothbackends": "jest --config just.config.sqlite.js &&  jest --coverage",
+    "test-coverage-bothbackends": "jest --config jest.config.sqlite.js &&  jest --coverage",
     "clean": "rm -rf $OUTPUT_DIR",
     "lint": "eslint --fix --ext js --ext jsx src",
     "prod-build-client": "webpack --config ./webpack/config.js",
@@ -130,7 +130,7 @@
     "redux": "^3.7.2",
     "redux-thunk": "^2.1.0",
     "request": "^2.81.0",
-    "rethink-knex-adapter": "^0.4.10",
+    "rethink-knex-adapter": "^0.4.11",
     "rollbar": "^0.6.2",
     "thinky": "^2.3.3",
     "timezonecomplete": "^5.5.0",
