@@ -853,7 +853,7 @@ export class AssignmentTexterContact extends React.Component {
         <Snackbar
           style={inlineStyles.snackbar}
           open={!!this.state.snackbarError}
-          message={this.state.snackbarError}
+          message={this.state.snackbarError || ''}
           action={this.state.snackbarActionTitle}
           onActionTouchTap={this.state.snackbarOnTouchTap}
         />
