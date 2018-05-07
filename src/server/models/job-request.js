@@ -2,6 +2,8 @@ import thinky from './thinky'
 const type = thinky.type
 import { optionalString, requiredString, timestamp } from './custom-types'
 
+import Campaign from './campaign'
+
 const JobRequest = thinky.createModel('job_request', type.object().schema({
   id: type.string(),
   campaign_id: requiredString(),
