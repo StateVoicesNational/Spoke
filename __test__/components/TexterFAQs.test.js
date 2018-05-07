@@ -21,7 +21,7 @@ describe('FAQs component', () => {
     const answer = wrapper.find('CardText p')
 
     // then
-    expect(question.prop('title')).toBe('0. q1')
+    expect(question.prop('title')).toBe('1. q1')
     expect(answer.text()).toBe('a2')
   })
 })
