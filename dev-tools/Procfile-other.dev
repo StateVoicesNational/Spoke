@@ -1,0 +1,9 @@
+webpack: ./dev-tools/babel-run ./webpack/server.js
+## These are only useful if you don't have JOBS_SAME_PROCESS environment variable set
+#messagesender01: npm run dev-message-sender-01
+#messagesender234: npm run dev-message-sender-234
+#messagesender56: npm run dev-message-sender-56
+#messagesender789: npm run dev-message-sender-789
+#jobhandler: npm run dev-job-handler
+incomingmessagehandler: npm run dev-incoming-message-handler
+
