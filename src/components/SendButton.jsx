@@ -47,9 +47,9 @@ class SendButton extends Component {
 }
 
 SendButton.propTypes = {
-  threeClickEnabled: PropTypes.boolean,
-  onFinalTouchTap: PropTypes.function,
-  disabled: PropTypes.boolean
+  threeClickEnabled: PropTypes.bool,
+  onFinalTouchTap: PropTypes.func,
+  disabled: PropTypes.bool
 }
 
 export default SendButton

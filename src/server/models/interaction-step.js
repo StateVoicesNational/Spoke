@@ -2,6 +2,8 @@ import thinky from './thinky'
 const type = thinky.type
 import { requiredString, optionalString, timestamp } from './custom-types'
 
+import Campaign from './campaign'
+
 const InteractionStep = thinky.createModel('interaction_step', type.object().schema({
   id: type.string(),
   campaign_id: requiredString(),

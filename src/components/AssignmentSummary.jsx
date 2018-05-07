@@ -73,7 +73,7 @@ export class AssignmentSummary extends Component {
       return (<Badge
         key={title}
         badgeStyle={style || inlineStyles.badge}
-        badgeContent={count}
+        badgeContent={count || ''}
         primary={primary && !disabled}
         secondary={!primary && !disabled}
       >
