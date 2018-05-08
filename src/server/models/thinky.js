@@ -1,4 +1,9 @@
 import dumbThinky from 'rethink-knex-adapter'
+import redis from 'redis'
+import bluebird from 'bluebird'
+
+bluebird.promisifyAll(redis.RedisClient.prototype)
+bluebird.promisifyAll(redis.Multi.prototype)
 
 // // This was how to connect to rethinkdb:
 // export default thinky({
@@ -59,6 +64,16 @@ thinkyConn.r.getCount = async (query) => {
   // results in a 'count' key on postgres, but a 'count(*)' key
   // on sqlite -- ridiculous.  This smooths that out
   return Number((await query.count('* as count').first()).count)
+}
+
+if (process.env.REDIS_URL) {
+  thinkyConn.r.redis = redis({ url: process.env.REDIS_URL })
+} else if (process.env.REDIS_FAKE) {
+  const fakeredis = require('fakeredis')
+  bluebird.promisifyAll(fakeredis.RedisClient.prototype)
+  bluebird.promisifyAll(fakeredis.Multi.prototype)
+
+  thinkyConn.r.redis = fakeredis.createClient()
 }
 
 export default thinkyConn
