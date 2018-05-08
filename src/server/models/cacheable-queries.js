@@ -24,7 +24,7 @@ export async function userHasRole(userId, orgId, acceptableRoles) {
     // regular DB approach
     const userHasRole = await r.getCount(
       r.knex('user_organization')
-        .where({ user_id: user.id,
+        .where({ user_id: userId,
                  organization_id: orgId })
         .whereIn('role', acceptableRoles)
     )
@@ -35,19 +35,19 @@ export async function userHasRole(userId, orgId, acceptableRoles) {
 export async function userLoggedIn(authId) {
   const authKey = `texterauth-${authId}`
 
-  if(r.redis) {
+  if (r.redis) {
     const cachedAuth = await r.redis.getAsync(authKey)
-    if(cachedAuth){
+    if (cachedAuth) {
       return JSON.parse(cachedAuth)
     }
   }
 
   const userAuth = await r.knex('user')
-    .where('auth0_id', authId )
+    .where('auth0_id', authId)
     .select('*')
     .first()
 
-  if(r.redis && userAuth){
+  if (r.redis && userAuth) {
     await r.redis.set(authKey, JSON.stringify(userAuth), 86400)
   }
   return userAuth
