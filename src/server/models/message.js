@@ -2,6 +2,8 @@ import thinky from './thinky'
 const type = thinky.type
 import { requiredString, optionalString, timestamp } from './custom-types'
 
+import Assignment from './assignment'
+
 const Message = thinky.createModel('message', type.object().schema({
   id: type.string(),
   // theoretically the phone number
@@ -25,6 +27,8 @@ const Message = thinky.createModel('message', type.object().schema({
   queued_at: timestamp(),
   sent_at: timestamp(),
   service_response_at: timestamp()
+}, {
+  dependencies: [Assignment]
 }).allowExtra(false))
 
 Message.ensureIndex('assignment_id')

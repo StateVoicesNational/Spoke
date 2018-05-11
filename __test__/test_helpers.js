@@ -4,7 +4,7 @@ import { sleep } from '../src/workers/lib'
 export async function setupTest() {
   createLoaders()
   let i = 0
-  while (i++ < 4) {
+  while (i++ < 10) {
     const results = [await r.knex.schema.hasTable('assignment'),
       await r.knex.schema.hasTable('campaign'),
       await r.knex.schema.hasTable('campaign_contact'),
@@ -25,7 +25,7 @@ export async function setupTest() {
       await r.knex.schema.hasTable('zip_code')]
 
     if (results.some((element) => !element)) {
-      await sleep(i * 1000)
+      await sleep(1000)
     }
     else {
       break

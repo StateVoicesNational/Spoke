@@ -81,7 +81,7 @@ class AdminPersonList extends React.Component {
       <Table selectable={false}>
         <TableBody
           displayRowCheckbox={false}
-          showRowHover={true}
+          showRowHover
         >
           {people.map((person) => (
             <TableRow

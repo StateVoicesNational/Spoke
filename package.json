@@ -10,7 +10,7 @@
   "scripts": {
     "test": "jest",
     "test-coverage": "jest --coverage",
-    "test-coverage-bothbackends": "jest --config just.config.sqlite.js &&  jest --coverage",
+    "test-coverage-bothbackends": "jest --config jest.config.sqlite.js &&  jest --coverage",
     "clean": "rm -rf $OUTPUT_DIR",
     "lint": "eslint --fix --ext js --ext jsx src",
     "prod-build-client": "webpack --config ./webpack/config.js",
@@ -36,7 +36,9 @@
     "dev-start": "nodemon -e js,jsx,md,mustache -w ./src --exec ./dev-tools/babel-run -- ./src/server",
     "generate-contacts": "./dev-tools/babel-run ./dev-tools/generate-contacts.js",
     "jest-test": "jest __test__/backend.test.js",
-    "dev": "nf start -w --procfile ./dev-tools/Procfile.dev"
+    "dev": "nf start -w --procfile ./dev-tools/Procfile.dev",
+    "debug-server": "nf start -w --procfile ./dev-tools/Procfile-debug-server.dev",
+    "dev-other": "nf start -w --procfile ./dev-tools/Procfile-other.dev"
   },
   "repository": {
     "type": "git",
@@ -125,10 +127,11 @@
     "react-router": "^2.5.2",
     "react-router-redux": "^4.0.5",
     "react-tap-event-plugin": "^2.0.0",
+    "redis": "^2.8.0",
     "redux": "^3.7.2",
     "redux-thunk": "^2.1.0",
     "request": "^2.81.0",
-    "rethink-knex-adapter": "^0.4.10",
+    "rethink-knex-adapter": "^0.4.11",
     "rollbar": "^0.6.2",
     "thinky": "^2.3.3",
     "timezonecomplete": "^5.5.0",
@@ -150,6 +153,7 @@
     "eslint-plugin-import": "^1.10.2",
     "eslint-plugin-jsx-a11y": "^1.5.5",
     "eslint-plugin-react": "^5.2.2",
+    "fakeredis": "^2.0.0",
     "foreman": "^1.4.1",
     "jest": "^22.1.4",
     "json2csv": "^3.6.2",
