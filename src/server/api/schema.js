@@ -618,7 +618,7 @@ const rootMutations = {
       }
     },
     createCampaign: async (_, { campaign }, { user, loaders }) => {
-      await accessRequired(user, campaign.organizationId, 'ADMIN', /*allowSuperadmin=*/true)
+      await accessRequired(user, campaign.organizationId, 'ADMIN', /* allowSuperadmin=*/true)
       const campaignInstance = new Campaign({
         organization_id: campaign.organizationId,
         title: campaign.title,

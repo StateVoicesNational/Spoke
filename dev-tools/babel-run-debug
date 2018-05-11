@@ -1,0 +1,5 @@
+#!/bin/sh
+":" //# comment; exec /usr/bin/env node --inspect "$0" "$@"
+require('babel-register')
+require('babel-polyfill')
+require('../' + process.argv[2])
