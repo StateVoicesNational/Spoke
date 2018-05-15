@@ -2,10 +2,10 @@
 
 * count of messages sent or received in the past hour
 
-`SELECT count(*) 
-FROM message 
+`SELECT count(*)
+FROM message
 WHERE created_at > current_timestamp - interval '1 hour';
-` 
+`
 
 * count of unique senders and receivers in the past hour
 
@@ -64,10 +64,21 @@ JOIN assignment a
 ON  m.assignment_id = a.id
 WHERE m.CREATED_AT > current_timestamp - interval '1 hour';
 `
+* query that pulls the total text message count (for all campaigns) for each texter's name
+
+`
+SELECT a.user_id, u.first_name, u.last_name, u.email, count(cc.id)
+FROM spoke.assignment a
+JOIN spoke.campaign_contact cc ON a.id=cc.assignment_id
+LEFT JOIN spoke.user u ON a.user_id = u.id
+WHERE cc.message_status != 'needsMessage'
+GROUP BY a.user_id, u.first_name, u.last_name, u.email
+ORDER BY count(cc.id) DESC;
+`
 *TO DO (wish list) of some useful SQL query examples, for creating redash dashboard reports:
 
 * survey question response counts and percentage of total responses to survey question
 
 * count of contacts, texters, sent, count (and as percent of total sent) of replies, optouts and wrong numbers, for all campaigns
 
-* count by each texter name, plus how many they've sent either from all campaigns or from a particular one, for a 'leaderboard' of texters
+* text count by each texter name for a particular campaign, for a 'leaderboard' of texters
