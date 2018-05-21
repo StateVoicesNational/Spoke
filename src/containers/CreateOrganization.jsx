@@ -95,7 +95,7 @@ class CreateOrganization extends React.Component {
     return (
       <div className={css(styles.container)}>
         <div className={css(styles.bigHeader)}>
-          Spoke
+          Bolster
         </div>
         <div className={css(styles.formContainer)}>
           {this.props.inviteData.inviteByHash && this.props.inviteData.inviteByHash[0].isValid ? this.renderForm() : this.renderInvalid()}
