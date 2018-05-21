@@ -88,7 +88,7 @@ class Home extends React.Component {
     return (
       <div>
         <div className={css(styles.header)}>
-        Spoke is a new way to run campaigns using text messaging.
+        Bolster is a new way to run campaigns using text messaging.
         </div>
         <div>
           <a className={css(styles.link_dark_bg)} href='/login' onClick={this.handleOrgInviteClick}>Login and get started</a>
@@ -102,7 +102,7 @@ class Home extends React.Component {
       <div className={css(styles.container)}>
         <div className={css(styles.logoDiv)}>
           <img
-            src='https://s3-us-west-1.amazonaws.com/spoke-public/spoke_logo.svg'
+            src='https://s3-us-west-1.amazonaws.com/spoke-public/shttps://www.dropbox.com/s/sx39rwo9mlull99/ramio-logo.png'
             className={css(styles.logoImg)}
           />
         </div>
