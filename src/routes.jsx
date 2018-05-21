@@ -61,7 +61,7 @@ export default function makeRoutes(requireAuth = () => {}) {
             <IndexRoute
               components={{
                 main: TexterTodoList,
-                topNav: (p) => <TopNav title='Spoke Texting' orgId={p.params.organizationId} />
+                topNav: (p) => <TopNav title='Bolster' orgId={p.params.organizationId} />
               }}
             />
             <Route path=':assignmentId'>
