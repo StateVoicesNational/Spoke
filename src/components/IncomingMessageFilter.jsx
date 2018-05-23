@@ -1,4 +1,5 @@
 import React, {Component} from 'react'
+import type from 'prop-types'
 
 import {Card, CardHeader, CardText} from 'material-ui/Card'
 import SelectField from 'material-ui/SelectField'
@@ -43,6 +44,7 @@ class IncomingMessageFilter extends Component {
             value={this.state.campaignFilter}
             onChange={(event, index, value) => {
               this.setState({campaignFilter: value})
+              this.props.onCampaignChanged(value)
             }
             }
           >
@@ -58,6 +60,12 @@ class IncomingMessageFilter extends Component {
       </Card>
     )
   }
+}
+
+IncomingMessageFilter.propTypes = {
+  onCampaignChanged: type.func,
+  campaigns: type.array,
+  messages_filter:  type.object
 }
 
 export default IncomingMessageFilter
