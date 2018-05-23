@@ -16,6 +16,7 @@ export class AdminIncomingMessageList extends Component {
   async componentWillMount() {
   }
 
+
   render() {
     return (
       <div>
