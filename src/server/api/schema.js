@@ -202,6 +202,7 @@ const rootSchema = `
     assignment(id:String!): Assignment
     organizations: [Organization]
     availableActions(organizationId:String!): [Action]
+    messages: [Message]
   }
 
   type RootMutation {
