@@ -1,61 +1,75 @@
-import React, { Component } from 'react'
-// import { CampaignList } from '../components/campaign_list'
-import {
-  Table,
-  TableBody,
-  TableHeader,
-  TableHeaderColumn,
-  TableRow,
-  TableRowColumn
-} from 'material-ui/Table'
-
-// import SimpleTable from './Table.jsx'
-import axios from 'axios'
+import React, {Component} from 'react'
+import loadData from './hoc/load-data'
+import wrapMutations from './hoc/wrap-mutations'
+import {withRouter} from 'react-router'
+import gql from 'graphql-tag'
+import IncomingMessageFilter from '../components/IncomingMessageFilter'
+import IncomingMessageList from '../components/IncomingMessageList.jsx'
 
 
-export default class AdminIncomingMessageList extends Component {
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+
+export class AdminIncomingMessageList extends Component {
   constructor(props) {
     super(props)
-
-    this.state = {
-      incomingmessages: []
-    }
+    this.state = {"contactsFilter":{}, "campaignsFilter":{}}
   }
-  componentDidMount() {
-    axios.get(`/allmessages/${this.props.params.organizationId}`)
-      .then(response => this.setState({ incomingmessages: response.data }))
+
+  async componentWillMount() {
   }
 
   render() {
     return (
       <div>
         <h3> All Incoming Messages </h3>
-        <div>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHeaderColumn> Date Sent: </TableHeaderColumn>
-                <TableHeaderColumn> From: </TableHeaderColumn>
-                <TableHeaderColumn> To: </TableHeaderColumn>
-                <TableHeaderColumn style={{ width: '40%' }}> Message Body </TableHeaderColumn>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {this.state.incomingmessages.map(message => {
-                return (
-                  <TableRow key={message.id}>
-                    <TableRowColumn> {message.created_at}</TableRowColumn>
-                    <TableRowColumn>{message.user_number}</TableRowColumn>
-                    <TableRowColumn>{message.contact_number}</TableRowColumn>
-                    <TableRowColumn style={{ width: '40%' }}>{message.text}</TableRowColumn>
-                  </TableRow>
-                  )
-              }
-              )}
-            </TableBody>
-          </Table>
-        </div>
+        {
+          console.log(this.props)
+        }
+        {
+          console.log(this.props.organization)
+        }
+        {
+          console.log(this.props.organization.campaigns)
+        }
+        <IncomingMessageFilter campaigns={
+          this.props.organization.organization.campaigns
+        } onCampaignChanged={async (campaignId) => {
+          await this.setState({
+            "campaignsFilter": {"campaignId": campaignId}
+          })
+        }}/>
+        <IncomingMessageList organizationId={this.props.params.organizationId}
+                             contactsFilter={this.state.contactsFilter}
+                             campaignsFilter={this.state.campaignsFilter}
+        />
       </div>
     )
   }
 }
+
+const mapQueriesToProps = ({ownProps}) => ({
+  organization: {
+    query: gql `query Q($organizationId: String!) {
+      organization(id: $organizationId) {
+        id
+        campaigns {
+          id
+          title
+        } 
+      }
+    }`,
+    variables: {
+      'organizationId': ownProps.params.organizationId
+    },
+    forceFetch: true
+  }
+})
+
+
+export default loadData(withRouter(AdminIncomingMessageList), { mapQueriesToProps })
+
+

@@ -7,6 +7,8 @@ export const schema = `
   type Message {
     id: ID
     text: String
+    userNumber: String
+    contactNumber: String
     createdAt: Date
     isFromContact: Boolean
     assignment: Assignment
@@ -19,6 +21,8 @@ export const resolvers = {
     ...mapFieldsToModel([
       'id',
       'text',
+      'userNumber',
+      'contactNumber',
       'createdAt',
       'isFromContact',
     ], Message),
