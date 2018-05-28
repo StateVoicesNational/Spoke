@@ -46,8 +46,7 @@ class IncomingMessageFilter extends Component {
               this.setState({campaignFilter: value})
               this.props.onCampaignChanged(value)
               this.props.onCampaignChanged(value)
-            }
-          >
+            }}>
             <MenuItem key={this.ALL_CAMPAIGNS} value={this.ALL_CAMPAIGNS} primaryText={this.ALL_CAMPAIGNS}/>
 
             {this.props.campaigns.map(campaign => {
@@ -65,7 +64,7 @@ class IncomingMessageFilter extends Component {
 IncomingMessageFilter.propTypes = {
   onCampaignChanged: type.func,
   campaigns: type.array,
-  messages_filter:  type.object
+  messages_filter: type.object
 }
 
 export default IncomingMessageFilter
