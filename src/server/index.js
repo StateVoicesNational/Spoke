@@ -115,25 +115,6 @@ app.post('/twilio-message-report', wrap(async (req, res) => {
 // const authToken = process.env.TWILIO_AUTH_TOKEN
 // const client = require('twilio')(accountSid, authToken)
 
-app.get('/allmessages/:organizationId', wrap(async (req, res) => {
-  const orgId = req.params.organizationId
-  await accessRequired(req.user, orgId, 'SUPERVOLUNTEER', /* superadmin*/true)
-  const messages = await r.knex('message')
-    .select(
-      'message.id',
-      'message.text',
-      'message.user_number',
-      'message.contact_number',
-      'message.created_at'
-    )
-    .join('assignment', 'message.assignment_id', 'assignment.id')
-    .join('campaign', 'assignment.campaign_id', 'campaign.id')
-    .where('campaign.organization_id', orgId)
-    .where('message.is_from_contact', true)
-    .orderBy('message.created_at', 'desc')
-  return res.json(messages)
-}))
-
 app.get('/logout-callback', (req, res) => {
   req.logOut()
   res.redirect('/')
