@@ -183,11 +183,6 @@ const rootSchema = `
     campaignContactId: String!
   }
 
-  input IncomingMessagesFilter {
-    organizationId: String!
-    campaignId: String
-  }
-
   type Action {
     name: String
     display_name: String
@@ -207,7 +202,6 @@ const rootSchema = `
     assignment(id:String!): Assignment
     organizations: [Organization]
     availableActions(organizationId:String!): [Action]
-    incomingMessages(filter:IncomingMessagesFilter!): [Message]
   }
 
   type RootMutation {
@@ -1136,50 +1130,6 @@ const rootResolvers = {
       })
       return availableHandlerObjects
     },
-    incomingMessages: async(_, {filter} ,{loaders, user} ) => {
-      authRequired(user)
-      const userRoles = await r.knex('user_organization').where({
-        user_id: user.id,
-        organization_id: filter.organizationId
-      }).select('role')
-      const roles = {}
-      userRoles.forEach(role => {
-        roles[role['role']] = 1
-      })
-      if ('OWNER' in roles
-        || 'ADMIN' in roles
-        || user.is_superadmin) {
-
-        let query = r.knex('message')
-          .select(
-            'message.id',
-            'message.text',
-            'message.user_number',
-            'message.contact_number',
-            'message.created_at',
-            'message.is_from_contact',
-            'assignment.campaign_id'
-          )
-          .join('assignment', 'message.assignment_id', 'assignment.id')
-          .join('campaign', 'assignment.campaign_id', 'campaign.id')
-          .where('campaign.organization_id', filter.organizationId)
-          .where('message.is_from_contact', true)
-
-          if (filter.hasOwnProperty('campaignId')) {
-            query = query.where('campaign_id', filter.campaignId)
-          }
-
-          query = query.orderBy('message.created_at', 'desc')
-
-        return await query
-
-      } else {
-        throw new GraphQLError({
-          status: 403,
-          message: 'You are not authorized to access that resource.'
-        })
-      }
-    }
   }
 }
 
