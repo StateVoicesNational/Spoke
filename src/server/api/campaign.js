@@ -4,6 +4,7 @@ import { Campaign, JobRequest, r } from '../models'
 export const schema = `
   input CampaignsFilter {
     isArchived: Boolean
+    campaignId: Int
   }
 
   type CampaignStats {
