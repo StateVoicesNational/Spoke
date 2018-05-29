@@ -5,6 +5,7 @@
 - ACTION_HANDLERS should equal "actionkit-rsvp"
 - AK_BASEURL should be your base url from your ActionKit account
 - AK_SECRET should be your secret from your ActionKit account
+    + Refer to ActionKit's [Hashing documentation](https://docs.actionkit.com/docs/manual/developer/hashing.html#actionkit-s-hashing-system) for instructions on where to find your secret
 
 ## Step Two - making sure you have the correct data in your contacts list
 
