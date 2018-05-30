@@ -13,4 +13,4 @@ GRANT ALL PRIVILEGES ON DATABASE spoke_test TO spoke_test;
 
 ## SQLite Testing (simpler)
 
-1) Run `npm test -- --config jest.config.sqlite.js`
+1) Run `npm run test-sqlite`

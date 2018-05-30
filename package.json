@@ -9,6 +9,7 @@
   },
   "scripts": {
     "test": "jest",
+    "test-sqlite": "jest --config jest.config.sqlite.js",
     "test-coverage": "jest --coverage",
     "test-coverage-bothbackends": "jest --config jest.config.sqlite.js &&  jest --coverage",
     "clean": "rm -rf $OUTPUT_DIR",
