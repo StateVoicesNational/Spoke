@@ -66,7 +66,8 @@ export async function processAction(questionResponse, interactionStep, campaignC
           status: 'active',
           akid: akidGenerate(akSecret, '.' + contact.external_id),
           event_signup_ground_rules: '1',
-          source: customFields.event_source || 'spoke'
+          source: customFields.event_source || 'spoke',
+          suppress_subscribe: customFields.suppress_subscribe || '1'
         }
         for (let field in customFields) {
           if (field.startsWith('event_field_')) {
@@ -102,4 +103,3 @@ export async function processAction(questionResponse, interactionStep, campaignC
     }
   }
 }
-
