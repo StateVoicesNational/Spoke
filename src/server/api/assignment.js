@@ -18,12 +18,16 @@ export const schema = `
   }
 `
 
-function addWhereClauseForNeedsMessageOrResponse(query) {
-  return query.whereIn('message_status', ['needsResponse', 'needsMessage'])
+function addWhereClauseForMessageStatus(query, messageStatus) {
+  if (messageStatus.includes(',')) {
+    const messageStatuses = messageStatus.split(',')
+    return query.whereIn('message_status', messageStatuses)
+  }
+  return query.where('message_status', messageStatus)
 }
 
-function addWhereClauseForMessageStatus(query, messageStatus) {
-  return query.where('message_status', messageStatus)
+function addWhereClauseForNeedsMessageOrResponse(query) {
+  return addWhereClauseForMessageStatus(query, 'needsResponse,needsMessage')
 }
 
 export function getContacts(assignment, contactsFilter, organization, campaign) {
@@ -67,7 +71,7 @@ export function getContacts(assignment, contactsFilter, organization, campaign) 
         query = addWhereClauseForNeedsMessageOrResponse(query)
       }
       else {
-        query = addWhereClauseForMessageStatus(contactsFilter.messageStatus)
+        query = addWhereClauseForMessageStatus(query, contactsFilter.messageStatus)
       }
 
     } else {
