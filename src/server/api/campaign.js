@@ -30,7 +30,7 @@ export const schema = `
     isStarted: Boolean
     isArchived: Boolean
     texters: [User]
-    assignments: [Assignment]
+    assignments(assignmentsFilter: AssignmentsFilter): [Assignment]
     interactionSteps: [InteractionStep]
     contacts: [CampaignContact]
     contactsCount: Int
@@ -117,10 +117,16 @@ export const resolvers = {
         .getAll(campaign.id, { index: 'campaign_id' })
         .eqJoin('user_id', r.table('user'))('right')
     ),
-    assignments: async (campaign) => (
-      r.table('assignment')
+    assignments: async (campaign, {assignmentsFilter} ) => {
+      let query = r.table('assignment')
         .getAll(campaign.id, { index: 'campaign_id' })
-    ),
+
+      if (assignmentsFilter && assignmentsFilter.hasOwnProperty('texterId') && assignmentsFilter.textId !== null) {
+        query = query.filter({user_id: assignmentsFilter.texterId})
+      }
+
+      return query
+    },
     interactionSteps: async (campaign) => (
       r.table('interaction_step')
         .getAll(campaign.id, { index: 'campaign_id' })
