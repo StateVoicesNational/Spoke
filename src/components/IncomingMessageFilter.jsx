@@ -29,7 +29,7 @@ class IncomingMessageFilter extends Component {
   render() {
     return (
       <Card>
-        <CardHeader title={'All Incoming Messages'} actAsExpander showExpandableButton />
+        <CardHeader title={'Message Filter'} actAsExpander showExpandableButton />
         <CardText expandable>
           <SelectField
             multiple
