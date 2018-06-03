@@ -25,6 +25,7 @@ describe('test assignment query', async () => {
     expect(testAdminUser.id).toBeDefined()
     const invite = await createInvite()
     expect(invite.data.createInvite).toBeDefined()
+    const invite = await createInvite()
     const organization = await createOrganization(testAdminUser, 'Impeachment', testAdminUser.id, invite.data.createInvite.id)
     const campaign = await createCampaign(testAdminUser, 'Impeachment', 'Impeachment', organization.data.createOrganization.id)
     let _ = await createUserOrganization(testAdminUser.id, organization.data.createOrganization.id, 'TEXTER')
