@@ -1,12 +1,17 @@
-import React, {Component} from 'react'
+import React, { Component } from 'react'
 import type from 'prop-types'
-import {Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn} from 'material-ui/Table'
+import {
+  Table,
+  TableBody,
+  TableHeader,
+  TableHeaderColumn,
+  TableRow,
+  TableRowColumn
+} from 'material-ui/Table'
 import loadData from '../containers/hoc/load-data'
-import wrapMutations from '../containers/hoc/wrap-mutations'
-import {withRouter} from 'react-router'
+import { withRouter } from 'react-router'
 import gql from 'graphql-tag'
 import LoadingIndicator from '../components/LoadingIndicator'
-
 
 function getMessagesFromOrganization(organization) {
   const messages = []
@@ -32,31 +37,30 @@ export class IncomingMessageList extends Component {
   render() {
     return (
       <div>
-        {
-          this.props.organization.loading ? <LoadingIndicator/> :
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHeaderColumn> Date Sent: </TableHeaderColumn>
-                  <TableHeaderColumn> From: </TableHeaderColumn>
-                  <TableHeaderColumn> To: </TableHeaderColumn>
-                  <TableHeaderColumn style={{width: '40%'}}> Message Body </TableHeaderColumn>
+        {this.props.organization.loading ? (
+          <LoadingIndicator />
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHeaderColumn> Date Sent: </TableHeaderColumn>
+                <TableHeaderColumn> From: </TableHeaderColumn>
+                <TableHeaderColumn> To: </TableHeaderColumn>
+                <TableHeaderColumn style={{ width: '40%' }}> Message Body </TableHeaderColumn>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {getMessagesFromOrganization(this.props.organization.organization).map(message => (
+                <TableRow key={message.id}>
+                  <TableRowColumn> {message.createdAt}</TableRowColumn>
+                  <TableRowColumn>{message.userNumber}</TableRowColumn>
+                  <TableRowColumn>{message.contactNumber}</TableRowColumn>
+                  <TableRowColumn style={{ width: '40%' }}>{message.text}</TableRowColumn>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {getMessagesFromOrganization(this.props.organization.organization).map(message => (
-                    < TableRow key={message.id}>
-                      <TableRowColumn> {message.createdAt}</TableRowColumn>
-                      <TableRowColumn>{message.userNumber}</TableRowColumn>
-                      <TableRowColumn>{message.contactNumber}</TableRowColumn>
-                      <TableRowColumn style={{width: '40%'}}>{message.text}</TableRowColumn>
-                    </TableRow>
-                  )
-                )
-                }
-              </TableBody>
-            </Table>
-        }
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </div>
     )
   }
@@ -71,41 +75,45 @@ IncomingMessageList.propTypes = {
   messages_filter: type.object
 }
 
-const mapQueriesToProps = ({ownProps}) => ({
+const mapQueriesToProps = ({ ownProps }) => ({
   organization: {
-    query: gql `query Q($organizationId: String!, $contactsFilter: ContactsFilter, $campaignsFilter: CampaignsFilter) {
-      organization(id: $organizationId) {
-        id
-        campaigns(campaignsFilter: $campaignsFilter) {
+    query: gql`
+      query Q(
+        $organizationId: String!
+        $contactsFilter: ContactsFilter
+        $campaignsFilter: CampaignsFilter
+      ) {
+        organization(id: $organizationId) {
           id
-          title
-          assignments {
-            contacts(contactsFilter: $contactsFilter) {
-              id
-              cell
-              messageStatus
-              messages {
+          campaigns(campaignsFilter: $campaignsFilter) {
+            id
+            title
+            assignments {
+              contacts(contactsFilter: $contactsFilter) {
                 id
-                createdAt
-                userNumber
-                contactNumber
-                text
-                isFromContact
+                cell
+                messageStatus
+                messages {
+                  id
+                  createdAt
+                  userNumber
+                  contactNumber
+                  text
+                  isFromContact
+                }
               }
             }
           }
-        } 
+        }
       }
-    }`,
+    `,
     variables: {
-      'organizationId': ownProps.organizationId,
-      "contactsFilter": ownProps.contactsFilter,
-      "campaignsFilter": ownProps.campaignsFilter
+      organizationId: ownProps.organizationId,
+      contactsFilter: ownProps.contactsFilter,
+      campaignsFilter: ownProps.campaignsFilter
     },
     forceFetch: true
   }
 })
 
-
-export default loadData(withRouter(IncomingMessageList), {mapQueriesToProps})
-
+export default loadData(withRouter(IncomingMessageList), { mapQueriesToProps })
