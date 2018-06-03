@@ -14,7 +14,7 @@ export class AdminIncomingMessageList extends Component {
   render() {
     return (
       <div>
-        <h3> All Incoming Messages </h3>
+        <h3> Message Review </h3>
         {console.log(this.props)}
         {console.log(this.props.organization)}
         {console.log(this.props.organization.campaigns)}
