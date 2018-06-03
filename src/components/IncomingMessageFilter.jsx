@@ -1,60 +1,102 @@
-import React, {Component} from 'react'
+import React, { Component } from 'react'
 import type from 'prop-types'
 
-import {Card, CardHeader, CardText} from 'material-ui/Card'
+import { Card, CardHeader, CardText } from 'material-ui/Card'
 import SelectField from 'material-ui/SelectField'
 import MenuItem from 'material-ui/MenuItem'
 
 class IncomingMessageFilter extends Component {
-  ALL_MESSAGES = 'All Messages'
-  ALL_INCOMING_MESSAGES = 'All Incoming Messages'
-  UNRESPONDED_INCOMING_MESSAGES = 'Unresponded'
+  messageStatuses = [
+    ['All', 'all'],
+    ['Needs Response', 'needsResponse'],
+    ['Needs Message', 'needsMessage'],
+    ['Conversation', 'convo'],
+    ['Message Sent', 'messaged']
+  ]
+
+  messageStatusExpansions = {
+    all: ['needsResponse', 'needsMessage', 'convo', 'messaged']
+  }
 
   ALL_CAMPAIGNS = 'All Active Campaigns'
 
   constructor(props) {
     super(props)
 
-    this.state = {
-      messageDirectionFilter: this.ALL_MESSAGES,
-      campaignFilter: this.ALL_CAMPAIGNS
-
-    }
+    this.state = {}
   }
-
 
   render() {
     return (
       <Card>
-        <CardHeader title={'All Incoming Messages'} actAsExpander={true} showExpandableButton={true}/>
-        <CardText expandable={true}>
-
+        <CardHeader title={'All Incoming Messages'} actAsExpander showExpandableButton />
+        <CardText expandable>
           <SelectField
-            value={this.state.messageDirectionFilter}
-            onChange={(event, index, value) => {
-              this.setState({messageDirectionFilter: value})
-            }
-            }
+            multiple
+            value={this.state.messageFilter}
+            hintText={'Which messages'}
+            floatingLabelText={'Contact message status'}
+            floatingLabelFixed
+            onChange={(event, index, values) => {
+              this.setState({ messageFilter: values })
+              const messageStatuses = new Set(
+                values.map(value => {
+                  if (value in this.messageStatusExpansions) {
+                    return this.messageStatusExpansions[value]
+                  }
+                  return value
+                })
+              )
+              const messageStatusesString = Array.from(messageStatuses).join(',')
+              if (
+                this.props.onMessageFilterChanged !== null &&
+                typeof this.props.onMessageFilterChanged === 'function'
+              ) {
+                this.props.onMessageFilterChanged(messageStatusesString)
+              }
+            }}
           >
-            <MenuItem value={this.ALL_MESSAGES} primaryText={this.ALL_MESSAGES}/>
-            <MenuItem value={this.ALL_INCOMING_MESSAGES} primaryText={this.INCOMING_MESSAGES}/>
+            {this.messageStatuses.map(messageStatus => {
+              return (
+                <MenuItem
+                  key={messageStatus[1]}
+                  value={messageStatus[1]}
+                  primaryText={messageStatus[0]}
+                  insetChildren
+                  checked={
+                    this.state.messageFilter &&
+                    this.state.messageFilter.indexOf(messageStatus[1]) > -1
+                  }
+                />
+              )
+            })}
           </SelectField>
 
           <SelectField
             value={this.state.campaignFilter}
+            hintText={'Pick a campaign'}
+            floatingLabelText={'Campaign'}
+            floatingLabelFixed
             onChange={(event, index, value) => {
-              this.setState({campaignFilter: value})
-              this.props.onCampaignChanged(value)
-              this.props.onCampaignChanged(value)
-            }}>
-            <MenuItem key={this.ALL_CAMPAIGNS} value={this.ALL_CAMPAIGNS} primaryText={this.ALL_CAMPAIGNS}/>
+              this.setState({ campaignFilter: value })
+              if (
+                this.props.onCampaignChanged !== null &&
+                typeof this.props.onCampaignChanged === 'function'
+              ) {
+                this.props.onCampaignChanged(value)
+              }
+            }}
+          >
+            <MenuItem
+              key={this.ALL_CAMPAIGNS}
+              value={this.ALL_CAMPAIGNS}
+              primaryText={this.ALL_CAMPAIGNS}
+            />
 
             {this.props.campaigns.map(campaign => {
-              return (<MenuItem key={campaign.id} value={campaign.id} primaryText={campaign.title}/>)
+              return <MenuItem key={campaign.id} value={campaign.id} primaryText={campaign.title} />
             })}
-
           </SelectField>
-
         </CardText>
       </Card>
     )
@@ -64,7 +106,7 @@ class IncomingMessageFilter extends Component {
 IncomingMessageFilter.propTypes = {
   onCampaignChanged: type.func,
   campaigns: type.array,
-  messages_filter: type.object
+  onMessageFilterChanged: type.func
 }
 
 export default IncomingMessageFilter
