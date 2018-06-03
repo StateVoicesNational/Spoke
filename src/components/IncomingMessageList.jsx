@@ -8,25 +8,20 @@ import {
   TableRow,
   TableRowColumn
 } from 'material-ui/Table'
+import { Card, CardHeader, CardText } from 'material-ui/Card'
 import loadData from '../containers/hoc/load-data'
 import { withRouter } from 'react-router'
 import gql from 'graphql-tag'
 import LoadingIndicator from '../components/LoadingIndicator'
 
-function getMessagesFromOrganization(organization) {
-  const messages = []
+function getAssignmentsFromOrganization(organization) {
+  const assignments = []
   for (const campaign of organization.campaigns) {
     for (const assignment of campaign.assignments) {
-      for (const contact of assignment.contacts) {
-        for (const message of contact.messages) {
-          if (message.isFromContact) {
-            messages.push(message)
-          }
-        }
-      }
+      assignments.push(assignment)
     }
   }
-  return messages
+  return assignments
 }
 
 export class IncomingMessageList extends Component {
@@ -43,21 +38,44 @@ export class IncomingMessageList extends Component {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHeaderColumn> Date Sent: </TableHeaderColumn>
-                <TableHeaderColumn> From: </TableHeaderColumn>
-                <TableHeaderColumn> To: </TableHeaderColumn>
-                <TableHeaderColumn style={{ width: '40%' }}> Message Body </TableHeaderColumn>
+                <TableHeaderColumn> Texter </TableHeaderColumn>
+                <TableHeaderColumn> To </TableHeaderColumn>
+                <TableHeaderColumn> Conversation Status </TableHeaderColumn>
+                <TableHeaderColumn style={{ width: '40%' }}> Messages </TableHeaderColumn>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {getMessagesFromOrganization(this.props.organization.organization).map(message => (
-                <TableRow key={message.id}>
-                  <TableRowColumn> {message.createdAt}</TableRowColumn>
-                  <TableRowColumn>{message.userNumber}</TableRowColumn>
-                  <TableRowColumn>{message.contactNumber}</TableRowColumn>
-                  <TableRowColumn style={{ width: '40%' }}>{message.text}</TableRowColumn>
-                </TableRow>
-              ))}
+              {getAssignmentsFromOrganization(this.props.organization.organization).map(
+                assignment => {
+                  return assignment.contacts.map(contact => (
+                    <TableRow key={contact.id}>
+                      <TableRowColumn> {assignment.texter.displayName} </TableRowColumn>
+                      <TableRowColumn> {contact.cell} </TableRowColumn>
+                      <TableRowColumn> {contact.messageStatus} </TableRowColumn>
+                      <TableRowColumn style={{ width: '40%' }}>
+                        <Card>
+                          <CardHeader title={'Messages'} actAsExpander showExpandableButton />
+                          <CardText expandable>
+                            <div>
+                              {contact.messages.map(message => (
+                                <p
+                                  style={
+                                    message.isFromContact
+                                      ? { 'color': 'red' }
+                                      : { 'color': 'black' }
+                                  }
+                                >
+                                  {message.text}
+                                </p>
+                              ))}
+                            </div>
+                          </CardText>
+                        </Card>
+                      </TableRowColumn>
+                    </TableRow>
+                  ))
+                }
+              )}
             </TableBody>
           </Table>
         )}
@@ -89,6 +107,10 @@ const mapQueriesToProps = ({ ownProps }) => ({
             id
             title
             assignments {
+              texter {
+                id
+                displayName
+              }
               contacts(contactsFilter: $contactsFilter) {
                 id
                 cell
