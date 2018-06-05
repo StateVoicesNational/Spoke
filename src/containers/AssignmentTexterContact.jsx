@@ -211,7 +211,7 @@ export class AssignmentTexterContact extends React.Component {
       snackbarError,
       snackbarActionTitle,
       snackbarOnTouchTap,
-      optOutMessageText: "I'm opting you out of texts immediately. Have a great day.",
+      optOutMessageText: "I'm opting you out of texts immediately. Have a great day." || "",
       responsePopoverOpen: false,
       messageText: this.getStartingMessageText(),
       optOutDialogOpen: false,
@@ -440,18 +440,29 @@ export class AssignmentTexterContact extends React.Component {
       return // stops from multi-send
     }
     this.setState({ disabled: true })
-    try {
-      await this.props.mutations.sendMessage(message, contact.id)
-      const optOut = {
+
+    if(optOutMessageText.length > 0){
+      try {
+        await this.props.mutations.sendMessage(message, contact.id)
+        const optOut = {
+          cell: contact.cell,
+          assignmentId: assignment.id
+        }
+
+        await this.handleSubmitSurveys()
+        await this.props.mutations.createOptOut(optOut, contact.id)
+        this.props.onFinishContact()
+      } catch (e) {
+        this.handleSendMessageError(e)
+      }
+    }
+    if(optOutMessageText.length == 0) {
+      await this.handleSubmitSurveys()
+      await this.props.mutations.createOptOut({
         cell: contact.cell,
         assignmentId: assignment.id
-      }
-
-      await this.handleSubmitSurveys()
-      await this.props.mutations.createOptOut(optOut, contact.id)
+      }, contact.id)
       this.props.onFinishContact()
-    } catch (e) {
-      this.handleSendMessageError(e)
     }
   }
 
