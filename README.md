@@ -43,7 +43,7 @@ context.idToken["https://spoke/user_metadata"] = user.user_metadata;
 callback(null, user, context);
 }
 ```
-11. Run `npm run dev` to start the app. Wait until you see both "Node app is running ..." and "webpack: Compiled successfully." before attempting to connect. (make sure environment variable `JOBS_SAME_PROCESS=1`)
+11. If the application is still running from step 8, kill the process and re-run `npm run dev` to restart the app. Wait until you see both "Node app is running ..." and "webpack: Compiled successfully." before attempting to connect. (make sure environment variable `JOBS_SAME_PROCESS=1`)
 12. Go to `http://localhost:3000` to load the app.
 13. As long as you leave `SUPPRESS_SELF_INVITE=` blank and unset in your `.env` you should be able to invite yourself from the homepage.
     - If you DO set that variable, then spoke will be invite-only and you'll need to generate an invite. Run:
