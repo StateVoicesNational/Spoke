@@ -50,15 +50,20 @@ function prepareTableColumns() {
       //},
       render: (columnKey, row) => {
         return (
-          <Card>
-            <CardHeader title={'Messages'} actAsExpander showExpandableButton />
-            <CardText expandable>
+          <Card onClick={(event) => event.stopPropagation()}>
+            <CardHeader title={'Messages'} actAsExpander={true} showExpandableButton={true} />
+            <CardText expandable={true}>
               <div>
-                {row.messages.map(message => (
-                  <p style={message.isFromContact ? { color: 'red' } : { color: 'black' }}>
-                    {message.text}
-                  </p>
-                ))}
+                {row.messages.map((message, index) => {
+                  const style = message.isFromContact ?
+                      {'color': 'blue', 'textAlign': 'left'} :
+                      {'color': 'black', 'textAlign': 'right'};
+                  return (
+                    <p key={index} style={style}>
+                      {message.text}
+                    </p>
+                  );
+                })}
               </div>
             </CardText>
           </Card>
@@ -152,16 +157,16 @@ export class IncomingMessageList extends Component {
   }
 
   render() {
+    const sliceStart = (this.state.page - 1) * this.state.rowSize,
+          sliceEnd = (this.state.page - 1) * this.state.rowSize + this.state.rowSize;
+    const tableData = this.state.data.slice(sliceStart, sliceEnd);
     return (
       <div>
         {this.props.organization.loading ? (
           <LoadingIndicator />
         ) : (
           <DataTables
-            data={this.state.data.slice(
-              (this.state.page - 1) * this.state.rowSize,
-              (this.state.page - 1) * this.state.rowSize + this.state.rowSize
-            )}
+            data={tableData}
             columns={prepareTableColumns()}
             multiSelectable
             selectable
