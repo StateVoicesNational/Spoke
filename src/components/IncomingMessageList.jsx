@@ -252,6 +252,7 @@ export class IncomingMessageList extends Component {
           title="Messages"
           open={this.state.activeConversation !== undefined}
           modal={false}
+          autoScrollBodyContent={true}
           onRequestClose={this.handleCloseConversation}
         >
           {this.state.activeConversation !== undefined &&
