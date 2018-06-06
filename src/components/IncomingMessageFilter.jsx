@@ -104,7 +104,7 @@ class IncomingMessageFilter extends Component {
               );
             })}
           </SelectField>
-
+          &nbsp;
           <SelectField
             value={this.state.campaignFilter}
             hintText='Pick a campaign'
