@@ -9,6 +9,7 @@ import LoadingIndicator from '../components/LoadingIndicator'
 import wrapMutations from './hoc/wrap-mutations'
 
 export class AdminIncomingMessageList extends Component {
+
   constructor(props) {
     super(props)
 
@@ -114,6 +115,7 @@ export class AdminIncomingMessageList extends Component {
     }
     return (
       <div>
+<<<<<<< HEAD
         <h3> Message Review </h3>
         {this.props.organization.loading ? (
           <LoadingIndicator />
@@ -143,8 +145,35 @@ export class AdminIncomingMessageList extends Component {
             />
           </div>
         )}
+=======
+        <h3> All Incoming Messages </h3>
+        <div>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell> Date Sent: </TableCell>
+                <TableCell> From: </TableCell>
+                <TableCell> To: </TableCell>
+                <TableCell style={{ width: '40%' }}> Message Body </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {this.state.incomingmessages.map(message => {
+                return (
+                  <TableRow key={message.id}>
+                    <TableCell> {message.created_at}</TableCell>
+                    <TableCell>{message.user_number}</TableCell>
+                    <TableCell>{message.contact_number}</TableCell>
+                    <TableCell style={{ width: '40%' }}>{message.text}</TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
+>>>>>>> First pass at updating material-ui to 1.2.0.
       </div>
-    )
+    );
   }
 }
 

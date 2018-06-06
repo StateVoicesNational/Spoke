@@ -1,11 +1,17 @@
 import React, { Component } from 'react'
 import type from 'prop-types'
 
-import { Card, CardHeader, CardText } from 'material-ui/Card'
-import SelectField from 'material-ui/SelectField'
-import MenuItem from 'material-ui/MenuItem'
+import Card from '@material-ui/core/Card'
+import CardHeader from '@material-ui/core/CardHeader'
+import CardContent from '@material-ui/core/CardContent'
+import FormControl from '@material-ui/core/FormControl'
+import InputLabel from '@material-ui/core/InputLabel'
+import Select from '@material-ui/core/Select'
+import MenuItem from '@material-ui/core/MenuItem'
+import FormHelperText from '@material-ui/core/FormHelperText'
+import Button from '@material-ui/core/Button'
+
 import { getHighestRole } from '../lib/permissions'
-import FlatButton from 'material-ui/FlatButton'
 
 class IncomingMessageActions extends Component {
   constructor(props) {
@@ -18,30 +24,32 @@ class IncomingMessageActions extends Component {
     return (
       <Card>
         <CardHeader title={' Message Actions '} actAsExpander showExpandableButton />
-        <CardText expandable>
-          <SelectField
-            value={this.state.reassignTo}
-            hintText={'Pick a texter'}
-            floatingLabelText={'Reassign to ...'}
-            floatingLabelFixed
-            onChange={(event, index, value) => {
-              this.setState({ reassignTo: value })
-            }}
-          >
-            <MenuItem />
-            {this.props.people.map(person => {
-              return (
-                <MenuItem
-                  key={person.id}
-                  value={person.id}
-                  primaryText={person.displayName + ' ' + getHighestRole(person.roles)}
-                />
-              )
-            })}
-          </SelectField>
+        <CardContent expandable>
+          <FormControl>
+            <InputLabel htmlFor="reassign-texter">Reassign to ...</InputLabel>
+            <Select
+              value={this.state.reassignTo}
+              onChange={(event, index, value) => {
+                this.setState({ reassignTo: value })
+              }}
+              inputProps={{
+                name: 'reassign',
+                id: 'reassign-texter',
+              }}
+            >
+              <MenuItem />
+              {this.props.people.map(person => {
+                return (
+                  <MenuItem key={person.id} value={person.id}>
+                    {person.displayName + ' ' + getHighestRole(person.roles)}
+                  </MenuItem>
+                )
+              })}
+            </Select>
+            <FormHelperText>Pick a texter</FormHelperText>
+          </FormControl>
 
-          <FlatButton
-            label='Reassign'
+          <Button
             onClick={() => {
               if (
                 this.props.onReassignRequested !== null &&
@@ -50,8 +58,10 @@ class IncomingMessageActions extends Component {
                 this.props.onReassignRequested(this.state.reassignTo)
               }
             }}
-          />
-        </CardText>
+          >
+            Reassign
+          </Button>
+        </CardContent>
       </Card>
     )
   }

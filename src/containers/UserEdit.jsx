@@ -9,9 +9,6 @@ import GSSubmitButton from '../components/forms/GSSubmitButton'
 import Form from 'react-formal'
 import yup from 'yup'
 
-import FlatButton from 'material-ui/FlatButton'
-import RaisedButton from 'material-ui/RaisedButton'
-
 class UserEdit extends React.Component {
 
   constructor(props) {

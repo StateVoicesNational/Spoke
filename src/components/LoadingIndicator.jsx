@@ -1,6 +1,6 @@
-import React from 'react'
-import { StyleSheet, css } from 'aphrodite'
-import CircularProgress from 'material-ui/CircularProgress'
+import React from 'react';
+import { StyleSheet, css } from 'aphrodite';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 const styles = StyleSheet.create({
   loader: {

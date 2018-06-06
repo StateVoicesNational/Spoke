@@ -4,7 +4,7 @@ import { StyleSheet, css } from 'aphrodite'
 import yup from 'yup'
 import GSForm from './forms/GSForm'
 import Form from 'react-formal'
-import FlatButton from 'material-ui/FlatButton'
+import Button from '@material-ui/core/Button'
 import { dataTest } from '../lib/attributes'
 
 const styles = StyleSheet.create({
@@ -59,14 +59,15 @@ class CannedResponseForm extends React.Component {
                 display: 'inline-block'
               }}
             />
-            <FlatButton
-              label='Cancel'
+            <Button
               onClick={() => this.setState({ showForm: false })}
               style={{
                 marginLeft: 5,
                 display: 'inline-block'
               }}
-            />
+            >
+              Cancel
+            </Button>
           </div>
         </GSForm>
       </div>

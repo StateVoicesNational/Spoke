@@ -5,14 +5,16 @@ import ContactToolbar from '../components/ContactToolbar'
 import MessageList from '../components/MessageList'
 import CannedResponseMenu from '../components/CannedResponseMenu'
 import AssignmentTexterSurveys from '../components/AssignmentTexterSurveys'
-import RaisedButton from 'material-ui/RaisedButton'
-import FlatButton from 'material-ui/FlatButton'
-import NavigateHomeIcon from 'material-ui/svg-icons/action/home'
-import { grey100 } from 'material-ui/styles/colors'
-import IconButton from 'material-ui/IconButton/IconButton'
+import Button from '@material-ui/core/Button'
+import HomeIcon from '@material-ui/icons/Home'
+import grey from '@material-ui/core/colors/grey'
+import IconButton from '@material-ui/core/IconButton'
+// TODO: material-ui
 import { Toolbar, ToolbarGroup } from 'material-ui/Toolbar'
-import { Card, CardActions, CardTitle } from 'material-ui/Card'
-import Divider from 'material-ui/Divider'
+import Card from '@material-ui/core/Card'
+import CardHeader from '@material-ui/core/CardHeader'
+import CardActions from '@material-ui/core/CardActions'
+import Divider from '@material-ui/core/Divider'
 import { applyScript } from '../lib/scripts'
 import gql from 'graphql-tag'
 import loadData from './hoc/load-data'
@@ -23,13 +25,13 @@ import GSSubmitButton from '../components/forms/GSSubmitButton'
 import SendButton from '../components/SendButton'
 import BulkSendButton from '../components/BulkSendButton'
 import SendButtonArrow from '../components/SendButtonArrow'
-import CircularProgress from 'material-ui/CircularProgress'
-import Snackbar from 'material-ui/Snackbar'
+import CircularProgress from '@material-ui/core/CircularProgress'
+import Snackbar from '@material-ui/core/Snackbar'
 import { getChildren, getTopMostParent, interactionStepForId, log, isBetweenTextingHours } from '../lib'
 import { withRouter } from 'react-router'
 import wrapMutations from './hoc/wrap-mutations'
 import Empty from '../components/Empty'
-import CreateIcon from 'material-ui/svg-icons/content/create'
+import CreateIcon from '@material-ui/icons/Create'
 import { getContactTimezone } from '../lib/timezones'
 
 const styles = StyleSheet.create({
@@ -98,7 +100,7 @@ const styles = StyleSheet.create({
     overflow: '-moz-scrollbars-vertical'
   },
   bottomFixedSection: {
-    borderTop: `1px solid ${grey100}`,
+    borderTop: `1px solid ${grey[100]}`,
     flex: '0 0 auto',
     marginBottom: 'none'
   },
@@ -586,15 +588,23 @@ export class AssignmentTexterContact extends React.Component {
     const { messageStatus } = contact
     let button = null
     if (messageStatus === 'closed') {
-      button = (<RaisedButton
-        onClick={() => this.handleEditMessageStatus('needsResponse')}
-        label='Reopen'
-      />)
+      button = (
+        <Button
+          varient='contained'
+          onClick={() => this.handleEditMessageStatus('needsResponse')}
+        >
+          Reopen
+        </Button>
+      )
     } else if (messageStatus === 'needsResponse') {
-      button = (<RaisedButton
-        onClick={this.handleClickCloseContactButton}
-        label='Skip Reply'
-      />)
+      button = (
+        <Button
+          varient='contained'
+          onClick={this.handleClickCloseContactButton}
+        >
+          Skip Reply
+        </Button>
+      )
     }
 
     return button
@@ -646,17 +656,20 @@ export class AssignmentTexterContact extends React.Component {
               className={css(styles.lgMobileToolBar)}
               firstChild
             >
-              <RaisedButton
+              <Button
                 secondary
-                label='Opt out'
                 onClick={this.handleOpenDialog}
                 tooltip='Opt out this contact'
-              />
-              <RaisedButton
+              >
+                Opt out
+              </Button>
+              <Button
+                varient='contained'
                 style={inlineStyles.mobileCannedReplies}
-                label='Canned replies'
                 onClick={this.handleOpenPopover}
-              />
+              >
+                Canned replies
+              </Button>
               {this.renderNeedsResponseToggleButton(contact)}
               <div
                 style={{ float: 'right', marginLeft: '-30px' }}
@@ -680,17 +693,17 @@ export class AssignmentTexterContact extends React.Component {
                 disabled={this.state.disabled}
               />
               {this.renderNeedsResponseToggleButton(contact)}
-              <RaisedButton
-                label='Canned responses'
-                onClick={this.handleOpenPopover}
-              />
-              <RaisedButton
+              <Button varient='contained' onClick={this.handleOpenPopover}>
+                Canned responses
+              </Button>
+              <Button
                 secondary
-                label='Opt out'
                 onClick={this.handleOpenDialog}
                 tooltip='Opt out this contact'
                 tooltipPosition='top-center'
-              />
+              >
+                Opt out
+              </Button>
               <div
                 style={{ float: 'right', marginLeft: 20 }}
               >
@@ -717,7 +730,7 @@ export class AssignmentTexterContact extends React.Component {
             tooltip='Return Home'
             tooltipPosition='bottom-center'
           >
-            <NavigateHomeIcon />
+            <HomeIcon />
           </IconButton>
         )}
       />
@@ -747,7 +760,7 @@ export class AssignmentTexterContact extends React.Component {
     }
     return (
       <Card>
-        <CardTitle
+        <CardHeader
           className={css(styles.optOutCard)}
           title='Opt out user'
         />
@@ -767,11 +780,12 @@ export class AssignmentTexterContact extends React.Component {
               multiLine
             />
             <div className={css(styles.dialogActions)}>
-              <FlatButton
+              <Button
                 style={inlineStyles.dialogButton}
-                label='Cancel'
                 onClick={this.handleCloseDialog}
-              />
+              >
+                Cancel
+              </Button>
               <Form.Button
                 type='submit'
                 style={inlineStyles.dialogButton}
@@ -862,6 +876,7 @@ export class AssignmentTexterContact extends React.Component {
             {this.renderBottomFixedSection()}
           </div>
         </div>
+        {/* TODO: material-ui */}
         <Snackbar
           style={inlineStyles.snackbar}
           open={!!this.state.snackbarError}

@@ -7,9 +7,12 @@ import {
   Editor,
   Modifier
 } from 'draft-js'
-import { delimit } from '../lib/scripts'
-import Chip from './Chip'
-import { red400, green500, green600, grey100 } from 'material-ui/styles/colors'
+import red from '@material-ui/core/colors/red';
+import green from '@material-ui/core/colors/green';
+import grey from '@material-ui/core/colors/grey';
+
+import { delimit } from '../lib/scripts';
+import Chip from './Chip';
 
 const styles = {
   editor: {
@@ -23,27 +26,25 @@ const styles = {
     textAlign: 'center'
   },
   goodField: {
-    color: green500,
+    color: green[500],
     direction: 'ltr',
     unicodeBidi: 'bidi-override'
   },
   badField: {
-    color: red400
+    color: red[400]
   },
   scriptFieldButton: {
     fontSize: '11px',
-    color: green600,
+    color: green[600],
     textTransform: 'none',
-    backgroundColor: grey100,
-    // margin: '5px 10px',
+    backgroundColor: grey[100],
     cursor: 'pointer'
-    // display: 'inline-block',
   },
   scriptFieldButtonSection: {
     marginTop: 10,
     padding: 5
   }
-}
+};
 
 function findWithRegex(regex, contentBlock, callback) {
   const text = contentBlock.getText()

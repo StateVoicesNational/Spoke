@@ -1,13 +1,14 @@
 import PropTypes from 'prop-types'
 import React from 'react'
+// TODO: material-ui
 import { Toolbar, ToolbarGroup, ToolbarTitle } from 'material-ui/Toolbar'
 import { getDisplayPhoneNumber } from '../lib/phone-format'
 import { getLocalTime , getContactTimezone } from '../lib/timezones'
-import { grey100 } from 'material-ui/styles/colors'
+import grey from '@material-ui/core/colors/grey'
 
 const inlineStyles = {
   toolbar: {
-    backgroundColor: grey100
+    backgroundColor: grey[100],
   },
   cellToolbarTitle: {
     fontSize: '1em'

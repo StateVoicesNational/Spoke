@@ -3,14 +3,19 @@ import React from 'react'
 import Empty from '../components/Empty'
 import OrganizationJoinLink from '../components/OrganizationJoinLink'
 import UserEdit from './UserEdit'
-import FlatButton from 'material-ui/FlatButton'
-import FloatingActionButton from 'material-ui/FloatingActionButton'
+import Button from '@material-ui/core/Button'
+// TODO: material-ui
 import DropDownMenu from 'material-ui/DropDownMenu'
-import MenuItem from 'material-ui/MenuItem'
-import ContentAdd from 'material-ui/svg-icons/content/add'
-import { Table, TableBody, TableRow, TableRowColumn } from 'material-ui/Table'
-import Dialog from 'material-ui/Dialog'
-import PeopleIcon from 'material-ui/svg-icons/social/people'
+import MenuItem from '@material-ui/core/MenuItem'
+import AddIcon from '@material-ui/icons/Add'
+import Table from '@material-ui/core/Table'
+import TableBody from '@material-ui/core/TableBody'
+import TableRow from '@material-ui/core/TableRow'
+import TableCell from '@material-ui/core/TableCell'
+import DialogTitle from '@material-ui/core/DialogTitle'
+import DialogContent from '@material-ui/core/DialogContent'
+import DialogActions from '@material-ui/core/DialogActions'
+import PeopleIcon from '@material-ui/icons/People'
 import { getHighestRole, ROLE_HIERARCHY } from '../lib'
 import theme from '../styles/theme'
 import loadData from './hoc/load-data'
@@ -88,9 +93,9 @@ class AdminPersonList extends React.Component {
             <TableRow
               key={person.id}
             >
-              <TableRowColumn>{person.displayName}</TableRowColumn>
-              <TableRowColumn>{person.email}</TableRowColumn>
-              <TableRowColumn>
+              <TableCell>{person.displayName}</TableCell>
+              <TableCell>{person.email}</TableCell>
+              <TableCell>
                 <DropDownMenu
                   value={getHighestRole(person.roles)}
                   disabled={person.id === currentUser.id || getHighestRole(person.roles) === 'OWNER' && getHighestRole(currentUser.roles) !== 'OWNER'}
@@ -99,18 +104,19 @@ class AdminPersonList extends React.Component {
                   {ROLE_HIERARCHY.map((option) => (
                     <MenuItem
                       key={person.id + '_' + option}
-                      value={option}
                       disabled={option === 'OWNER' && getHighestRole(currentUser.roles) !== 'OWNER'}
-                      primaryText={`${option.charAt(0).toUpperCase()}${option.substring(1).toLowerCase()}`}
-                    />
+                    >
+                      {`${option.charAt(0).toUpperCase()}${option.substring(1).toLowerCase()}`}
+                    </MenuItem>
                   ))}
                 </DropDownMenu>
-                <FlatButton
+                <Button
                   {...dataTest('editPerson')}
-                  label='Edit'
                   onClick={() => { this.editUser(person.id) }}
-                />
-              </TableRowColumn>
+                >
+                  Edit
+                </Button>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -124,43 +130,49 @@ class AdminPersonList extends React.Component {
     return (
       <div>
         {this.renderTexters()}
-        <FloatingActionButton
+        <Button
           {...dataTest('addPerson')}
+          variant='fab'
           style={theme.components.floatingButton}
           onClick={this.handleOpen}
         >
-          <ContentAdd />
-        </FloatingActionButton>
+          <AddIcon />
+        </Button>
         <Dialog
           {...dataTest('editPersonDialog')}
-          title='Edit user'
           modal={false}
           open={Boolean(this.state.userEdit)}
           onRequestClose={() => { this.setState({ userEdit: false }) }}
         >
-          <UserEdit
-            organizationId={organizationData.organization.id}
-            userId={this.state.userEdit}
-            onRequestClose={this.updateUser}
-          />
+          <DialogTitle>Edit user</DialogTitle>
+          <DialogContent>
+            <UserEdit
+              organizationId={organizationData.organization.id}
+              userId={this.state.userEdit}
+              onRequestClose={this.updateUser}
+            />
+          </DialogContent>
         </Dialog>
         <Dialog
-          title='Invite new texters'
-          actions={[
-            <FlatButton
-              {...dataTest('inviteOk')}
-              label='OK'
-              primary
-              onClick={this.handleClose}
-            />
-          ]}
           modal={false}
           open={this.state.open}
           onRequestClose={this.handleClose}
         >
-          <OrganizationJoinLink
-            organizationUuid={organizationData.organization.uuid}
-          />
+          <DialogTitle>Invite new texters</DialogTitle>
+          <DialogContent>
+            <OrganizationJoinLink
+              organizationUuid={organizationData.organization.uuid}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button
+              {...dataTest('inviteOk')}
+              primary
+              onClick={this.handleClose}
+            >
+              OK
+            </Button>
+          </DialogActions>
         </Dialog>
       </div>
     )

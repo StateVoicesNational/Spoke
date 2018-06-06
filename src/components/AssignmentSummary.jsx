@@ -1,13 +1,15 @@
 import PropTypes from 'prop-types'
 import React, { Component } from 'react'
-import { Card, CardActions, CardTitle } from 'material-ui/Card'
+import Card from '@material-ui/core/Card';
+import CardActions from '@material-ui/core/CardActions';
+import CardHeader from '@material-ui/core/CardHeader';
 import { StyleSheet, css } from 'aphrodite'
 import loadData from '../containers/hoc/load-data'
 import gql from 'graphql-tag'
-import RaisedButton from 'material-ui/RaisedButton'
-import Badge from 'material-ui/Badge'
+import Button from '@material-ui/core/Button';
+import Badge from '@material-ui/core/Badge';
+import Divider from '@material-ui/core/Divider';
 import moment from 'moment'
-import Divider from 'material-ui/Divider'
 import { withRouter } from 'react-router'
 
 const inlineStyles = {
@@ -63,12 +65,15 @@ export class AssignmentSummary extends Component {
     if (count === 0 && hideIfZero) { return '' }
     if (count === 0) {
       return (
-        <RaisedButton
+        <Button
+          variant='contained'
           disabled={disabled}
-          label={title}
           primary={primary && !disabled}
           onClick={() => this.goToTodos(contactsFilter, assignment.id)}
-        />)
+        >
+          {title}
+        </Button>
+      )
     } else {
       return (<Badge
         key={title}
@@ -77,11 +82,13 @@ export class AssignmentSummary extends Component {
         primary={primary && !disabled}
         secondary={!primary && !disabled}
       >
-        <RaisedButton
+        <Button
+          variant='contained'
           disabled={disabled}
-          label={title}
           onClick={() => this.goToTodos(contactsFilter, assignment.id)}
-        />
+        >
+          {title}
+        </Button>
       </Badge>)
     }
   }
@@ -98,7 +105,7 @@ export class AssignmentSummary extends Component {
         <Card
           key={assignment.id}
         >
-          <CardTitle
+          <CardHeader
             title={title}
             subtitle={`${description} - ${moment(dueBy).format('MMM D YYYY')}`}
             style={{ backgroundColor: primaryColor }}

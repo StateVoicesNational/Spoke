@@ -1,6 +1,7 @@
-import React from 'react'
-import TextField from 'material-ui/TextField'
-import GSFormField from './GSFormField'
+import React from 'react';
+import TextField from '@material-ui/core/TextField';
+
+import GSFormField from './GSFormField';
 
 export default class GSTextField extends GSFormField {
   render() {
@@ -19,6 +20,6 @@ export default class GSTextField extends GSFormField {
         }}
         type='text'
       />
-    )
+    );
   }
 }
