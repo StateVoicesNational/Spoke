@@ -33,7 +33,7 @@ Please let us know if you deployed by filling out this form [here](https://act.m
     - In `.env` set `DB_TYPE=pg`. (Otherwise, you will use sqlite.)
     - Set `DB_PORT=5432`, which is the default port for Postgres.
     - Create the spokedev database:  `psql -c "create database spokedev;"`
-7. Create an [Auth0](https://auth0.com) account. In your Auth0 account, go to Applications, click on `Default App` and then grab your Client ID, Client Secret, and your Auth0 domain (should look like xxx.auth0.com). Add those inside your `.env` file (AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_DOMAIN respectively).
+7. Create an [Auth0](https://auth0.com) account. In your Auth0 account, go to [Applications](https://manage.auth0.com/#/applications/), click on `Default App` and then grab your Client ID, Client Secret, and your Auth0 domain (should look like xxx.auth0.com). Add those inside your `.env` file (AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_DOMAIN respectively).
 8. Run `npm run dev` to create and populate the tables.
 9. In your Auth0 app settings, add `http://localhost:3000/login-callback` , `http://localhost:3000` and `http://localhost:3000/logout-callback` to "Allowed Callback URLs", "Allowed Web Origins" and  "Allowed Logout URLs" respectively. (If you get an error when logging in later about "OIDC", go to Advanced Settings section, and then OAuth, and turn off 'OIDC Conformant')
 10. Add a new [rule](https://manage.auth0.com/#/rules/create) in Auth0:
