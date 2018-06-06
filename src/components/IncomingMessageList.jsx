@@ -1,6 +1,9 @@
 import React, { Component } from 'react'
 import type from 'prop-types'
 import { Card, CardHeader, CardText } from 'material-ui/Card'
+import Dialog from 'material-ui/Dialog';
+import FlatButton from 'material-ui/FlatButton';
+import ActionOpenInNew from 'material-ui/svg-icons/action/open-in-new';
 import loadData from '../containers/hoc/load-data'
 import { withRouter } from 'react-router'
 import gql from 'graphql-tag'
@@ -44,6 +47,41 @@ function prepareTableColumns() {
       key: 'status',
       label: 'Conversation Status',
       render: (columnKey, row) => MESSAGE_STATUSES[row.messageStatus].name
+    },
+    {
+      key: 'latestMessage',
+      label: 'Latest Message',
+      render: (columnKey, row) => {
+        let lastMessage = null;
+        let lastMessageEl = <p>No Messages</p>
+        if (row.messages.length > 0) {
+          lastMessage = contact.messages[contact.messages.length - 1]
+          lastMessageEl = (
+            <p>
+              <span style={{'color': lastMessage.isFromContact ? 'blue' : 'black'}}>
+                <b>{lastMessage.isFromContact ? 'Contact:' : 'Texter:'} </b>
+              </span>
+              {lastMessage.text}
+            </p>
+          );
+        }
+        return lastMessageEl;
+      }
+    },
+    {
+      key: 'viewConversation',
+      label: 'View Conversation',
+      render: (columnKey, row) => {
+        if (row.messages.length > 0) {
+          return (
+            <FlatButton
+              onClick={() => this.handleOpenConversation(row)}
+              icon={<ActionOpenInNew />}
+            />
+          );
+        }
+        return '';
+      }
     },
     {
       key: 'messages',
@@ -127,11 +165,19 @@ function prepareSelectedRowsData(organization, rowsSelected) {
 export class IncomingMessageList extends Component {
   constructor(props) {
     super(props)
-    this.state = { data: [], page: 1, rowSize: 10 }
+    this.state = {
+      data: [],
+      page: 1,
+      rowSize: 10,
+      activeConversation: undefined,
+    }
 
     this.handleNextPageClick = this.handleNextPageClick.bind(this)
     this.handlePreviousPageClick = this.handlePreviousPageClick.bind(this)
     this.handleRowSizeChanged = this.handleRowSizeChanged.bind(this)
+    
+    this.handleOpenConversation = this.handleOpenConversation.bind(this);
+    this.handleCloseConversation = this.handleCloseConversation.bind(this);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -158,6 +204,14 @@ export class IncomingMessageList extends Component {
   handleRowSizeChanged(index, value) {
     this.setState({ rowSize: value })
   }
+
+  handleOpenConversation(contact) {
+    this.setState({activeConversation: contact});
+  };
+
+  handleCloseConversation() {
+    this.setState({activeConversation: undefined});
+  };
 
   render() {
     const sliceStart = (this.state.page - 1) * this.state.rowSize,
@@ -194,6 +248,30 @@ export class IncomingMessageList extends Component {
             }}
           />
         )}
+        <Dialog
+          title="Messages"
+          open={this.state.activeConversation !== undefined}
+          modal={false}
+          onRequestClose={this.handleCloseConversation}
+        >
+          {this.state.activeConversation !== undefined &&
+            <div>
+              {this.state.activeConversation.messages.map((message, index) => {
+                const isFromContact = message.isFromContact;
+                const style = {
+                  'color': isFromContact ? 'blue' : 'black',
+                  'textAlign': isFromContact ? 'left' : 'right',
+                };
+
+                return (
+                  <p key={index} style={style}>
+                    {message.text}
+                  </p>
+                );
+              })}
+            </div>
+          }
+        </Dialog>
       </div>
     )
   }
