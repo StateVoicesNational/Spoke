@@ -1,18 +1,20 @@
 import type from 'prop-types'
 import React from 'react'
-import CampaignCannedResponseForm from './CampaignCannedResponseForm'
-import FlatButton from 'material-ui/FlatButton'
 import Form from 'react-formal'
-import GSForm from './forms/GSForm'
-import { List, ListItem } from 'material-ui/List'
-import Divider from 'material-ui/Divider'
-import CampaignFormSectionHeading from './CampaignFormSectionHeading'
-import DeleteIcon from 'material-ui/svg-icons/action/delete'
-import IconButton from 'material-ui/IconButton'
 import yup from 'yup'
-import CreateIcon from 'material-ui/svg-icons/content/create'
-import theme from '../styles/theme'
 import { StyleSheet, css } from 'aphrodite'
+import Button from '@material-ui/core/Button';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import Divider from '@material-ui/core/Divider';
+import IconButton from '@material-ui/core/IconButton';
+import DeleteIcon from '@material-ui/icons/Delete';
+import CreateIcon from '@material-ui/icons/Create';
+
+import theme from '../styles/theme'
+import GSForm from './forms/GSForm'
+import CampaignCannedResponseForm from './CampaignCannedResponseForm'
+import CampaignFormSectionHeading from './CampaignFormSectionHeading'
 
 const styles = StyleSheet.create({
   formContainer: {
@@ -72,7 +74,7 @@ export default class CampaignCannedResponsesForm extends React.Component {
       )
     }
     return (
-      <FlatButton
+      <Button
         secondary
         label='Add new canned response'
         icon={<CreateIcon />}

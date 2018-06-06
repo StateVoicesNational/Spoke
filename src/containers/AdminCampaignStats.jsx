@@ -1,16 +1,19 @@
-import PropTypes from 'prop-types'
-import React from 'react'
-import RaisedButton from 'material-ui/RaisedButton'
-import Chart from '../components/Chart'
-import { Card, CardTitle, CardText } from 'material-ui/Card'
-import TexterStats from '../components/TexterStats'
-import Snackbar from 'material-ui/Snackbar'
-import { withRouter } from 'react-router'
-import { StyleSheet, css } from 'aphrodite'
-import loadData from './hoc/load-data'
-import gql from 'graphql-tag'
-import theme from '../styles/theme'
-import wrapMutations from './hoc/wrap-mutations'
+import PropTypes from 'prop-types';
+import React from 'react';
+import { withRouter } from 'react-router';
+import gql from 'graphql-tag';
+import { StyleSheet, css } from 'aphrodite';
+import Button from '@material-ui/core/Button';
+import Card from '@material-ui/core/Card';
+import CardHeader from '@material-ui/core/CardHeader';
+import CardContent from '@material-ui/core/CardContent';
+import Snackbar from '@material-ui/core/Snackbar';
+
+import loadData from './hoc/load-data';
+import wrapMutations from './hoc/wrap-mutations';
+import theme from '../styles/theme';
+import Chart from '../components/Chart';
+import TexterStats from '../components/TexterStats';
 
 const inlineStyles = {
   stat: {
@@ -80,15 +83,15 @@ const Stat = ({ title, count }) => (
     key={title}
     style={inlineStyles.stat}
   >
-    <CardTitle
+    <CardHeader
       title={count}
       titleStyle={inlineStyles.count}
     />
-    <CardText
+    <CardContent
       style={inlineStyles.title}
     >
       {title}
-    </CardText>
+    </CardContent>
   </Card>
 )
 
@@ -139,7 +142,8 @@ class AdminCampaignStats extends React.Component {
 
   renderCopyButton() {
     return (
-      <RaisedButton
+      <Button
+        variant="contained"
         label='Copy Campaign'
         onTouchTap={async() => await this.props.mutations.copyCampaign(this.props.params.campaignId)}
       />
@@ -174,7 +178,8 @@ class AdminCampaignStats extends React.Component {
                 <div className={css(styles.inline)}>
                   {!campaign.isArchived ?
                     ( // edit
-                    <RaisedButton
+                    <Button
+                      variant="contained"
                       onTouchTap={() => this.props.router.push(`/admin/${organizationId}/campaigns/${campaignId}/edit`)}
                       label='Edit'
                     />
@@ -182,7 +187,8 @@ class AdminCampaignStats extends React.Component {
                   {adminPerms ?
                     [ // Buttons for Admins (and not Supervolunteers)
                       ( // export
-                      <RaisedButton
+                      <Button
+                        variant="contained"
                         onTouchTap={async () => {
                           this.setState({
                             exportMessageOpen: true,
@@ -200,18 +206,21 @@ class AdminCampaignStats extends React.Component {
                       />),
                       ( // unarchive
                       campaign.isArchived ?
-                        <RaisedButton
+                        <Button
+                          variant="contained"
                           onTouchTap={async () => await this.props.mutations.unarchiveCampaign(campaignId)}
                           label='Unarchive'
                         /> : null),
                       ( // archive
                       !campaign.isArchived ?
-                        <RaisedButton
+                        <Button
+                          variant="contained"
                           onTouchTap={async () => await this.props.mutations.archiveCampaign(campaignId)}
                           label='Archive'
                         /> : null),
                       ( // copy
-                      <RaisedButton
+                      <Button
+                        variant="contained"
                         label='Copy Campaign'
                         onTouchTap={async() => await this.props.mutations.copyCampaign(this.props.params.campaignId)}
                       />)
@@ -251,7 +260,7 @@ class AdminCampaignStats extends React.Component {
           open={this.state.exportMessageOpen}
           message="Export started - we'll e-mail you when it's done"
           autoHideDuration={5000}
-          onRequestClose={() => {
+          onClose={() => {
             this.setState({ exportMessageOpen: false })
           }}
         />

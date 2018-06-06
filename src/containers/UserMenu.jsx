@@ -1,15 +1,18 @@
-import PropTypes from 'prop-types'
-import React, { Component } from 'react'
-import Popover from 'material-ui/Popover'
-import Menu from 'material-ui/Menu'
-import MenuItem from 'material-ui/MenuItem'
-import Divider from 'material-ui/Divider'
-import Subheader from 'material-ui/Subheader'
-import IconButton from 'material-ui/IconButton'
-import Avatar from 'material-ui/Avatar'
-import { connect } from 'react-apollo'
-import { withRouter } from 'react-router'
-import gql from 'graphql-tag'
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-apollo';
+import { withRouter } from 'react-router';
+import gql from 'graphql-tag';
+
+import Popover from '@material-ui/core/Popover';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+import ListSubheader from '@material-ui/core/ListSubheader';
+import Divider from '@material-ui/core/Divider';
+import IconButton from '@material-ui/core/IconButton';
+import Avatar from '@material-ui/core/Avatar';
 
 const avatarSize = 28
 
@@ -40,6 +43,8 @@ class UserMenu extends Component {
     })
   }
 
+  // TODO: material-ui
+  // These should be moved inline per MenuItem
   handleMenuChange = (event, value) => {
     this.handleRequestClose()
     if (value === 'logout') {
@@ -97,36 +102,33 @@ class UserMenu extends Component {
           open={this.state.open}
           anchorEl={this.state.anchorEl}
           anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
-          targetOrigin={{ horizontal: 'left', vertical: 'top' }}
-          onRequestClose={this.handleRequestClose}
+          transformOrigin={{ horizontal: 'left', vertical: 'top' }}
+          onClose={this.handleRequestClose}
         >
-          <Menu onChange={this.handleMenuChange}>
+          <Menu onChange={this.handleMenuChange} subheader={<li />}>
             <MenuItem
-              primaryText={currentUser.displayName}
-              leftIcon={this.renderAvatar(currentUser, 40)}
               disabled={!this.props.orgId}
-              value={'account'}
+              value="account"
             >
-              {currentUser.email}
+              <ListItemIcon>
+                {this.renderAvatar(currentUser, 40)}
+              </ListItemIcon>
+              <ListItemText
+                inset={true}
+                primary={currentUser.displayName}
+                secondary={currentUser.email}
+              />
             </MenuItem>
             <Divider />
-            <Subheader>Teams</Subheader>
+            <ListSubheader>Teams</ListSubheader>
             {currentUser.organizations.map((organization) => (
-              <MenuItem
-                key={organization.id}
-                primaryText={organization.name}
-                value={organization.id}
-              />
+              <MenuItem key={organization.id}>
+                {organization.name}
+              </MenuItem>
             ))}
             <Divider />
-            <MenuItem
-              primaryText='Home'
-              onClick={this.handleReturn}
-            />
-            <MenuItem
-              primaryText='FAQs'
-              onClick={this.handleRequestFaqs}
-            />
+            <MenuItem onClick={this.handleReturn}>Home</MenuItem>
+            <MenuItem onClick={this.handleRequestFaqs}>FAQs</MenuItem>
             <Divider />
             <MenuItem
               primaryText='Log out'

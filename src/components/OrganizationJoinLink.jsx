@@ -1,9 +1,9 @@
-import PropTypes from 'prop-types'
-import React from 'react'
-import TextField from 'material-ui/TextField'
+import PropTypes from 'prop-types';
+import React from 'react';
+import TextField from '@material-ui/core/TextField';
 
 const OrganizationJoinLink = ({ organizationUuid, campaignId }) => {
-  let baseUrl = 'http://base'
+  let baseUrl = 'http://base';
   if (typeof window !== 'undefined') {
     baseUrl = window.location.origin
   }
@@ -24,12 +24,12 @@ const OrganizationJoinLink = ({ organizationUuid, campaignId }) => {
         fullWidth
       />
     </div>
-  )
+  );
 }
 
 OrganizationJoinLink.propTypes = {
   organizationUuid: PropTypes.string,
   campaignId: PropTypes.string
-}
+};
 
-export default OrganizationJoinLink
+export default OrganizationJoinLink;

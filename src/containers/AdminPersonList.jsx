@@ -1,20 +1,29 @@
-import PropTypes from 'prop-types'
-import React from 'react'
-import Empty from '../components/Empty'
-import OrganizationJoinLink from '../components/OrganizationJoinLink'
-import UserEdit from './UserEdit'
-import FlatButton from 'material-ui/FlatButton'
-import FloatingActionButton from 'material-ui/FloatingActionButton'
-import DropDownMenu from 'material-ui/DropDownMenu'
-import MenuItem from 'material-ui/MenuItem'
-import ContentAdd from 'material-ui/svg-icons/content/add'
-import { Table, TableBody, TableRow, TableRowColumn } from 'material-ui/Table'
-import Dialog from 'material-ui/Dialog'
-import PeopleIcon from 'material-ui/svg-icons/social/people'
-import { getHighestRole, ROLE_HIERARCHY } from '../lib'
-import theme from '../styles/theme'
-import loadData from './hoc/load-data'
-import gql from 'graphql-tag'
+import PropTypes from 'prop-types';
+import React from 'react';
+import gql from 'graphql-tag';
+
+import Button from '@material-ui/core/Button';
+// TODO: material-ui
+import DropDownMenu from 'material-ui/DropDownMenu';
+import MenuItem from '@material-ui/core/MenuItem';
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableRow from '@material-ui/core/TableRow';
+import TableCell from '@material-ui/core/TableCell';
+import Dialog from '@material-ui/core/Dialog';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogActions from '@material-ui/core/DialogActions';
+import AddIcon from '@material-ui/icons/Add';
+import PeopleIcon from '@material-ui/icons/People';
+
+import { getHighestRole, ROLE_HIERARCHY } from '../lib';
+import loadData from './hoc/load-data';
+import theme from '../styles/theme';
+import Empty from '../components/Empty';
+import OrganizationJoinLink from '../components/OrganizationJoinLink';
+import UserEdit from './UserEdit';
+
 
 const organizationFragment = `
   id
@@ -81,15 +90,15 @@ class AdminPersonList extends React.Component {
       <Table selectable={false}>
         <TableBody
           displayRowCheckbox={false}
-          showRowHover
+          showRowHover={true}
         >
           {people.map((person) => (
             <TableRow
               key={person.id}
             >
-              <TableRowColumn>{person.displayName}</TableRowColumn>
-              <TableRowColumn>{person.email}</TableRowColumn>
-              <TableRowColumn>
+              <TableCell>{person.displayName}</TableCell>
+              <TableCell>{person.email}</TableCell>
+              <TableCell>
                 <DropDownMenu
                   value={getHighestRole(person.roles)}
                   disabled={person.id === currentUser.id || getHighestRole(person.roles) === 'OWNER' && getHighestRole(currentUser.roles) !== 'OWNER'}
@@ -98,14 +107,14 @@ class AdminPersonList extends React.Component {
                   {ROLE_HIERARCHY.map((option) => (
                     <MenuItem
                       key={person.id + '_' + option}
-                      value={option}
                       disabled={option === 'OWNER' && getHighestRole(currentUser.roles) !== 'OWNER'}
-                      primaryText={`${option.charAt(0).toUpperCase()}${option.substring(1).toLowerCase()}`}
-                    />
+                    >
+                      {`${option.charAt(0).toUpperCase()}${option.substring(1).toLowerCase()}`}
+                    </MenuItem>
                   ))}
                 </DropDownMenu>
-                <FlatButton label='Edit' onTouchTap={() => { this.editUser(person.id) }} />
-              </TableRowColumn>
+                <Button label='Edit' onTouchTap={() => { this.editUser(person.id) }} />
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -119,40 +128,45 @@ class AdminPersonList extends React.Component {
     return (
       <div>
         {this.renderTexters()}
-        <FloatingActionButton
+        <Button
+          variant="fab"
           style={theme.components.floatingButton}
           onTouchTap={this.handleOpen}
         >
-          <ContentAdd />
-        </FloatingActionButton>
+          <AddIcon />
+        </Button>
         <Dialog
-          title='Edit user'
           modal={false}
           open={Boolean(this.state.userEdit)}
           onRequestClose={() => { this.setState({ userEdit: false }) }}
         >
-          <UserEdit
-            organizationId={organizationData.organization.id}
-            userId={this.state.userEdit}
-            onRequestClose={this.updateUser}
-          />
+          <DialogTitle>Edit user</DialogTitle>
+          <DialogContent>
+            <UserEdit
+              organizationId={organizationData.organization.id}
+              userId={this.state.userEdit}
+              onRequestClose={this.updateUser}
+            />
+          </DialogContent>
         </Dialog>
         <Dialog
-          title='Invite new texters'
-          actions={[
-            <FlatButton
-              label='OK'
-              primary
-              onTouchTap={this.handleClose}
-            />
-          ]}
           modal={false}
           open={this.state.open}
           onRequestClose={this.handleClose}
         >
-          <OrganizationJoinLink
-            organizationUuid={organizationData.organization.uuid}
-          />
+          <DialogTitle>Invite new texters</DialogTitle>
+          <DialogContent>
+            <OrganizationJoinLink
+              organizationUuid={organizationData.organization.uuid}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button
+              label='OK'
+              primary
+              onTouchTap={this.handleClose}
+            />
+          </DialogActions>
         </Dialog>
       </div>
     )

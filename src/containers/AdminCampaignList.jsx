@@ -1,17 +1,19 @@
-import PropTypes from 'prop-types'
-import React from 'react'
-import CampaignList from './CampaignList'
-import FloatingActionButton from 'material-ui/FloatingActionButton'
-import ContentAdd from 'material-ui/svg-icons/content/add'
-import loadData from './hoc/load-data'
-import { hasRole } from '../lib'
-import { withRouter } from 'react-router'
-import gql from 'graphql-tag'
-import theme from '../styles/theme'
-import LoadingIndicator from '../components/LoadingIndicator'
-import wrapMutations from './hoc/wrap-mutations'
-import DropDownMenu from 'material-ui/DropDownMenu'
-import { MenuItem } from 'material-ui/Menu'
+import PropTypes from 'prop-types';
+import React from 'react';
+import { withRouter } from 'react-router';
+import gql from 'graphql-tag';
+import Button from '@material-ui/core/Button';
+// TODO: material-ui
+import DropDownMenu from 'material-ui/DropDownMenu';
+import MenuItem from '@material-ui/core/MenuItem';
+import AddIcon from '@material-ui/icons/Add';
+
+import { hasRole } from '../lib';
+import loadData from './hoc/load-data';
+import wrapMutations from './hoc/wrap-mutations';
+import theme from '../styles/theme';
+import LoadingIndicator from '../components/LoadingIndicator';
+import CampaignList from './CampaignList';
 
 class AdminCampaignList extends React.Component {
   state = {
@@ -55,8 +57,8 @@ class AdminCampaignList extends React.Component {
   renderFilters() {
     return (
       <DropDownMenu value={this.state.campaignsFilter.isArchived} onChange={this.handleFilterChange}>
-        <MenuItem value={false} primaryText='Current' />
-        <MenuItem value primaryText='Archived' />
+        <MenuItem selected={false}>Current</MenuItem>
+        <MenuItem selected={true}>Archived</MenuItem>
       </DropDownMenu>
     )
   }
@@ -74,12 +76,13 @@ class AdminCampaignList extends React.Component {
         )}
 
         {adminPerms ?
-         (<FloatingActionButton
+         (<Button
+          variant="fab"
            style={theme.components.floatingButton}
            onTouchTap={this.handleClickNewButton}
          >
-           <ContentAdd />
-         </FloatingActionButton>
+           <AddIcon />
+         </Button>
          ) : null}
       </div>
     )

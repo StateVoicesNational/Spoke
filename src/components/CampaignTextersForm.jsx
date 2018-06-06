@@ -1,19 +1,22 @@
 import type from 'prop-types'
 import React from 'react'
-import Slider from './Slider'
-import AutoComplete from 'material-ui/AutoComplete'
-import IconButton from 'material-ui/IconButton'
-import RaisedButton from 'material-ui/RaisedButton'
-import GSForm from '../components/forms/GSForm'
-import yup from 'yup'
 import Form from 'react-formal'
-import { MenuItem } from 'material-ui/Menu'
+import yup from 'yup'
+import { StyleSheet, css } from 'aphrodite'
+// TODO: material-ui
+import AutoComplete from 'material-ui/AutoComplete'
+import IconButton from '@material-ui/core/IconButton';
+import Button from '@material-ui/core/Button';
+import MenuItem from '@material-ui/core/MenuItem';
+// TODO: material-ui
+import Toggle from 'material-ui/Toggle'
+import DeleteIcon from '@material-ui/icons/Delete';
+
+import theme from '../styles/theme'
+import GSForm from '../components/forms/GSForm'
+import Slider from './Slider'
 import OrganizationJoinLink from './OrganizationJoinLink'
 import CampaignFormSectionHeading from './CampaignFormSectionHeading'
-import { StyleSheet, css } from 'aphrodite'
-import theme from '../styles/theme'
-import Toggle from 'material-ui/Toggle'
-import DeleteIcon from 'material-ui/svg-icons/action/delete'
 
 const styles = StyleSheet.create({
   sliderContainer: {
@@ -452,7 +455,8 @@ export default class CampaignTextersForm extends React.Component {
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           {this.showSearch()}
             <div>
-              <RaisedButton
+              <Button
+                variant="contained"
                 label='Add All'
                 onTouchTap={(() => this.addAllTexters())}
               />

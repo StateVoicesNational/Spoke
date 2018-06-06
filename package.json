@@ -64,6 +64,8 @@
   },
   "homepage": "https://github.com/MoveOnOrg/Spoke/#readme",
   "dependencies": {
+    "@material-ui/core": "^1.2.0",
+    "@material-ui/icons": "^1.1.0",
     "aphrodite": "^0.4.1",
     "apollo-client": "^0.4.7",
     "apollo-server-express": "^1.2.0",
@@ -104,7 +106,6 @@
     "knex": "^0.13.0",
     "lodash": "^4.13.1",
     "mailgun-js": "^0.16.0",
-    "material-ui": "^0.15.2",
     "material-ui-color-picker": "^1.0.1",
     "minilog": "^3.0.1",
     "moment": "^2.14.1",

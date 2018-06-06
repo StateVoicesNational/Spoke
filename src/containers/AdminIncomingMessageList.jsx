@@ -1,17 +1,11 @@
-import React, { Component } from 'react'
-// import { CampaignList } from '../components/campaign_list'
-import {
-  Table,
-  TableBody,
-  TableHeader,
-  TableHeaderColumn,
-  TableRow,
-  TableRowColumn
-} from 'material-ui/Table'
+import React, { Component } from 'react';
+import axios from 'axios';
 
-// import SimpleTable from './Table.jsx'
-import axios from 'axios'
-
+import Table from '@material-ui/core/Table';
+import TableHead from '@material-ui/core/TableHead';
+import TableBody from '@material-ui/core/TableBody';
+import TableRow from '@material-ui/core/TableRow';
+import TableCell from '@material-ui/core/TableCell';
 
 export default class AdminIncomingMessageList extends Component {
   constructor(props) {
@@ -32,30 +26,29 @@ export default class AdminIncomingMessageList extends Component {
         <h3> All Incoming Messages </h3>
         <div>
           <Table>
-            <TableHeader>
+            <TableHead>
               <TableRow>
-                <TableHeaderColumn> Date Sent: </TableHeaderColumn>
-                <TableHeaderColumn> From: </TableHeaderColumn>
-                <TableHeaderColumn> To: </TableHeaderColumn>
-                <TableHeaderColumn style={{ width: '40%' }}> Message Body </TableHeaderColumn>
+                <TableCell> Date Sent: </TableCell>
+                <TableCell> From: </TableCell>
+                <TableCell> To: </TableCell>
+                <TableCell style={{ width: '40%' }}> Message Body </TableCell>
               </TableRow>
-            </TableHeader>
+            </TableHead>
             <TableBody>
               {this.state.incomingmessages.map(message => {
                 return (
                   <TableRow key={message.id}>
-                    <TableRowColumn> {message.created_at}</TableRowColumn>
-                    <TableRowColumn>{message.user_number}</TableRowColumn>
-                    <TableRowColumn>{message.contact_number}</TableRowColumn>
-                    <TableRowColumn style={{ width: '40%' }}>{message.text}</TableRowColumn>
+                    <TableCell> {message.created_at}</TableCell>
+                    <TableCell>{message.user_number}</TableCell>
+                    <TableCell>{message.contact_number}</TableCell>
+                    <TableCell style={{ width: '40%' }}>{message.text}</TableCell>
                   </TableRow>
-                  )
-              }
-              )}
+                );
+              })}
             </TableBody>
           </Table>
         </div>
       </div>
-    )
+    );
   }
 }

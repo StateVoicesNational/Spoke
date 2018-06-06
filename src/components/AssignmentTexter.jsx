@@ -1,23 +1,22 @@
-import PropTypes from 'prop-types'
 import React from 'react'
-import { ToolbarTitle } from 'material-ui/Toolbar'
-import IconButton from 'material-ui/IconButton/IconButton'
-import NavigateBeforeIcon from 'material-ui/svg-icons/image/navigate-before'
-import NavigateNextIcon from 'material-ui/svg-icons/image/navigate-next'
-import AssignmentTexterContact from '../containers/AssignmentTexterContact'
-import { StyleSheet, css } from 'aphrodite'
+import PropTypes from 'prop-types'
 import { withRouter } from 'react-router'
-import Check from 'material-ui/svg-icons/action/check-circle'
+import { StyleSheet, css } from 'aphrodite'
+import Typography from '@material-ui/core/Typography';
+import Button from '@material-ui/core/Button';
+import IconButton from '@material-ui/core/IconButton';
+import NavigateBeforeIcon from '@material-ui/icons/NavigateBeforeIcon'
+import NavigateNextIcon from '@material-ui/icons/NavigateNextIcon'
+import Check from '@material-ui/icons/Check'
+
+import AssignmentTexterContact from '../containers/AssignmentTexterContact'
 import Empty from '../components/Empty'
-import RaisedButton from 'material-ui/RaisedButton'
 
 const styles = StyleSheet.create({
   container: {
     position: 'fixed',
     top: 0,
     left: 0,
-    // right: 0,
-    // bottom: 0
     width: '100%',
     height: '100%',
     zIndex: 1002,
@@ -149,10 +148,9 @@ class AssignmentTexter extends React.Component {
     }
     const title = `${currentIndex} of ${ofHowMany}`
     return [
-      <ToolbarTitle
-        className={css(styles.navigationToolbarTitle)}
-        text={title}
-      />,
+      <Typography variant="title" className={css(styles.navigationToolbarTitle)}>
+        {title}
+      </Typography>,
       <IconButton
         onTouchTap={this.handleNavigatePrevious}
         disabled={!this.hasPrevious()}
@@ -193,11 +191,11 @@ class AssignmentTexter extends React.Component {
         <Empty
           title="You've already messaged or replied to all your assigned contacts for now."
           icon={<Check />}
-          content={(<RaisedButton
+          content={(<Button
+            variant="contained"
             label='Back To Todos'
             onClick={this.handleExitTexter}
-          >
-          </RaisedButton>)}
+          />)}
         >
 
         </Empty>

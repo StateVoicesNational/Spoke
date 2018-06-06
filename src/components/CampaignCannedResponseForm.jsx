@@ -2,9 +2,10 @@ import type from 'prop-types'
 import React from 'react'
 import { StyleSheet, css } from 'aphrodite'
 import yup from 'yup'
-import GSForm from './forms/GSForm'
 import Form from 'react-formal'
-import FlatButton from 'material-ui/FlatButton'
+import Button from '@material-ui/core/Button';
+
+import GSForm from './forms/GSForm'
 
 const styles = StyleSheet.create({
   buttonRow: {
@@ -55,7 +56,7 @@ class CannedResponseForm extends React.Component {
                 display: 'inline-block'
               }}
             />
-            <FlatButton
+            <Button
               label='Cancel'
               onTouchTap={() => this.setState({ showForm: false })}
               style={{
