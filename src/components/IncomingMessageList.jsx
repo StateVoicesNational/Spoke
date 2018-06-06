@@ -1,14 +1,15 @@
 import React, { Component } from 'react'
-import type from 'prop-types'
-import Dialog from 'material-ui/Dialog'
-import FlatButton from 'material-ui/FlatButton'
-import ActionOpenInNew from 'material-ui/svg-icons/action/open-in-new'
-import loadData from '../containers/hoc/load-data'
 import { withRouter } from 'react-router'
+import type from 'prop-types'
 import gql from 'graphql-tag'
-import LoadingIndicator from '../components/LoadingIndicator'
 import DataTables from 'material-ui-datatables'
 
+import Dialog from '@material-ui/core/Dialog'
+import Button from '@material-ui/core/Button'
+import OpenInNewIcon from '@material-ui/icons/OpenInNew'
+
+import loadData from '../containers/hoc/load-data'
+import LoadingIndicator from '../components/LoadingIndicator'
 import { MESSAGE_STATUSES } from '../components/IncomingMessageFilter'
 
 function prepareDataTableData(conversations) {
@@ -108,13 +109,14 @@ export class IncomingMessageList extends Component {
         render: (columnKey, row) => {
           if (row.messages && row.messages.length > 0) {
             return (
-              <FlatButton
+              <Button
                 onClick={event => {
                   event.stopPropagation()
                   this.handleOpenConversation(row)
                 }}
-                icon={<ActionOpenInNew />}
-              />
+              >
+                <OpenInNewIcon />
+              </Button>
             )
           }
           return ''

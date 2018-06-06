@@ -2,10 +2,11 @@ import React from 'react'
 import GSFormField from './GSFormField'
 import { allScriptFields } from '../../lib/scripts'
 import ScriptEditor from '../ScriptEditor'
-import Dialog from 'material-ui/Dialog'
-import FlatButton from 'material-ui/FlatButton'
-import RaisedButton from 'material-ui/RaisedButton'
-import TextField from 'material-ui/TextField'
+import Dialog from '@material-ui/core/Dialog'
+import DialogContent from '@material-ui/core/DialogContent'
+import DialogActions from '@material-ui/core/DialogActions'
+import Button from '@material-ui/core/Button'
+import TextField from '@material-ui/core/TextField'
 import { dataTest } from '../../lib/attributes'
 
 const styles = {
@@ -52,31 +53,36 @@ export default class GSScriptField extends GSFormField {
     return (
       <Dialog
         style={styles.dialog}
-        actions={[
-          <FlatButton
-            {...dataTest('scriptCancel')}
-            label='Cancel'
-            onClick={this.handleCloseDialog}
-          />,
-          <RaisedButton
-            {...dataTest('scriptDone')}
-            label='Done'
-            onClick={this.handleSaveScript}
-            primary
-          />
-        ]}
-        modal
+        modal={true}
         open={open}
         onRequestClose={this.handleCloseDialog}
       >
-        <ScriptEditor
-          expandable
-          ref='dialogScriptInput'
-          scriptText={this.state.script}
-          sampleContact={sampleContact}
-          scriptFields={scriptFields}
-          onChange={(val) => this.setState({ script: val })}
-        />
+        <DialogContent>
+          <ScriptEditor
+            expandable
+            ref='dialogScriptInput'
+            scriptText={this.state.script}
+            sampleContact={sampleContact}
+            scriptFields={scriptFields}
+            onChange={(val) => this.setState({ script: val })}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button
+            {...dataTest('scriptCancel')}
+            onClick={this.handleCloseDialog}
+          >
+            Cancel
+          </Button>,
+          <Button
+            {...dataTest('scriptDone')}
+            variant='contained'
+            onClick={this.handleSaveScript}
+            primary
+          >
+            Done
+          </Button>
+        </DialogActions>
       </Dialog>
     )
   }

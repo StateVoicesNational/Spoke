@@ -1,8 +1,8 @@
-import PropTypes from 'prop-types'
-import React, { Component } from 'react'
-import IconButton from 'material-ui/IconButton'
-import NavigationArrowForward from 'material-ui/svg-icons/navigation/arrow-forward'
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 import { StyleSheet, css } from 'aphrodite'
+import IconButton from '@material-ui/core/IconButton';
+import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
 
 // This is because the Toolbar from material-ui seems to only apply the correct margins if the
 // immediate child is a Button or other type it recognizes. Can get rid of this if we remove material-ui
@@ -45,7 +45,7 @@ class SendButtonArrow extends Component {
           disabled={this.props.disabled}
           primary
         >
-          <NavigationArrowForward className={css(styles.icon)} />
+          <ArrowForwardIcon className={css(styles.icon)} />
         </IconButton>
       </div>
     )

@@ -2,20 +2,22 @@ import type from 'prop-types'
 import React from 'react'
 import orderBy from 'lodash/orderBy'
 import Slider from './Slider'
+// TODO: material-ui
 import AutoComplete from 'material-ui/AutoComplete'
-import IconButton from 'material-ui/IconButton'
-import RaisedButton from 'material-ui/RaisedButton'
-import Snackbar from 'material-ui/Snackbar'
+import IconButton from '@material-ui/core/IconButton'
+import Button from '@material-ui/core/Button'
+import Snackbar from '@material-ui/core/Snackbar'
 import GSForm from '../components/forms/GSForm'
 import yup from 'yup'
 import Form from 'react-formal'
-import { MenuItem } from 'material-ui/Menu'
+import MenuItem from '@material-ui/core/MenuItem'
 import OrganizationJoinLink from './OrganizationJoinLink'
 import CampaignFormSectionHeading from './CampaignFormSectionHeading'
 import { StyleSheet, css } from 'aphrodite'
 import theme from '../styles/theme'
+// TODO: material-ui
 import Toggle from 'material-ui/Toggle'
-import DeleteIcon from 'material-ui/svg-icons/action/delete'
+import DeleteIcon from '@material-ui/icons/Delete'
 import { dataTest } from '../lib/attributes'
 
 const styles = StyleSheet.create({
@@ -465,11 +467,13 @@ export default class CampaignTextersForm extends React.Component {
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           {this.showSearch()}
             <div>
-              <RaisedButton
+              <Button
                 {...dataTest('addAll')}
-                label='Add All'
+                variant='contained'
                 onClick={(() => this.addAllTexters())}
-              />
+              >
+                Add All
+              </Button>
             </div>
           </div>
           <div className={css(styles.sliderContainer)}>
@@ -542,7 +546,7 @@ export default class CampaignTextersForm extends React.Component {
           open={this.state.snackbarOpen}
           message={this.state.snackbarMessage}
           autoHideDuration={3000}
-          onRequestClose={this.handleSnackbarClose}
+          onClose={this.handleSnackbarClose}
         />
       </div>
     )

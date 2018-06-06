@@ -1,9 +1,14 @@
 import React, { Component } from 'react'
 import type from 'prop-types'
 
-import { Card, CardHeader, CardText } from 'material-ui/Card'
-import SelectField from 'material-ui/SelectField'
-import MenuItem from 'material-ui/MenuItem'
+import Card from '@material-ui/core/Card'
+import CardHeader from '@material-ui/core/CardHeader'
+import CardContent from '@material-ui/core/CardContent'
+import FormControl from '@material-ui/core/FormControl'
+import InputLabel from '@material-ui/core/InputLabel'
+import Select from '@material-ui/core/Select'
+import FormHelperText from '@material-ui/core/FormHelperText'
+import MenuItem from '@material-ui/core/MenuItem'
 
 export const MESSAGE_STATUSES = {
   'all': {
@@ -77,52 +82,59 @@ class IncomingMessageFilter extends Component {
     return (
       <Card>
         <CardHeader title='Message Filter' actAsExpander showExpandableButton />
-        <CardText expandable>
-          <SelectField
-            multiple
-            value={this.state.messageFilter}
-            hintText={'Which messages'}
-            floatingLabelText={'Contact message status'}
-            floatingLabelFixed
-            onChange={this.onMessageFilterSelectChanged}
-          >
-            {Object.keys(MESSAGE_STATUSES).map(messageStatus => {
-              const displayText = MESSAGE_STATUSES[messageStatus].name
-              const isChecked = this.state.messageFilter &&
-                  this.state.messageFilter.indexOf(messageStatus) > -1
-              return (
-                <MenuItem
-                  key={messageStatus}
-                  value={messageStatus}
-                  primaryText={displayText}
-                  insetChildren
-                  checked={isChecked}
-                />
-              )
-            })}
-          </SelectField>
+        <CardContent expandable>
+          <FormControl>
+            <InputLabel htmlFor="message-status">Which messages</InputLabel>
+            <Select
+              multiple
+              value={this.state.messageFilter}
+              hintText={''}
+              onChange={this.onMessageFilterSelectChanged}
+              inputProps={{
+                name: 'message-status',
+                id: 'message-status',
+              }}
+            >
+              {Object.keys(MESSAGE_STATUSES).map(messageStatus => {
+                const displayText = MESSAGE_STATUSES[messageStatus].name
+                const isChecked = this.state.messageFilter &&
+                    this.state.messageFilter.indexOf(messageStatus) > -1
+                return (
+                  <MenuItem key={messageStatus} value={messageStatus}>
+                    {displayText}
+                  </MenuItem>
+                )
+              })}
+            </Select>
+            <FormHelperText>Contact message status</FormHelperText>
+          </FormControl>
           &nbsp;
-          <SelectField
-            value={this.state.campaignFilter}
-            hintText='Pick a campaign'
-            floatingLabelText='Campaign'
-            floatingLabelFixed
-            onChange={this.onCampaignSelectChanged}
-          >
-            {CAMPAIGN_TYPE_FILTERS.map(campaignTypeFilter => {
-              return (
-                <MenuItem
-                  key={campaignTypeFilter[0]}
-                  value={campaignTypeFilter[0]}
-                  primaryText={campaignTypeFilter[1]}
-                />
-              )
-            })}
-            {this.props.campaigns.map(campaign => {
-              return <MenuItem key={campaign.id} value={campaign.id} primaryText={campaign.title} />
-            })}
-          </SelectField>
-        </CardText>
+          <FormControl>
+            <InputLabel htmlFor="campaign-status">Campaign</InputLabel>
+            <Select
+              value={this.state.campaignFilter}
+              onChange={this.onCampaignSelectChanged}
+              inputProps={{
+                name: 'campaign-status',
+                id: 'campaign-status',
+              }}
+            >
+              {CAMPAIGN_TYPE_FILTERS.map(campaignTypeFilter => {
+                return (
+                  <MenuItem
+                    key={campaignTypeFilter[0]}
+                    value={campaignTypeFilter[0]}
+                    primaryText={campaignTypeFilter[1]}
+                  />
+                )
+              })}
+              {this.props.campaigns.map(campaign => {
+                return <MenuItem key={campaign.id} value={campaign.id} primaryText={campaign.title} />
+              })}
+            </Select>
+            <FormHelperText>Pick a campaign</FormHelperText>
+          </FormControl>
+        </CardContent>
       </Card>
     )
   }

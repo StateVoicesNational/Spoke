@@ -1,10 +1,13 @@
-import PropTypes from 'prop-types'
-import React from 'react'
-import { List, ListItem } from 'material-ui/List'
-import ProhibitedIcon from 'material-ui/svg-icons/av/not-interested'
-import Empty from '../components/Empty'
-import loadData from './hoc/load-data'
-import gql from 'graphql-tag'
+import PropTypes from 'prop-types';
+import React from 'react';
+import gql from 'graphql-tag';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
+import NotInterestedIcon from '@material-ui/icons/NotInterested';
+
+import loadData from './hoc/load-data';
+import Empty from '../components/Empty';
 
 const AdminOptOutList = function AdminOptOutList(props) {
   const { data } = props
@@ -14,14 +17,13 @@ const AdminOptOutList = function AdminOptOutList(props) {
       {optOuts.length === 0 ?
         <Empty
           title='Yay, no one has opted out!'
-          icon={<ProhibitedIcon />}
+          icon={<NotInterestedIcon />}
         /> :
         <List>
           {optOuts.map((optOut) => (
-            <ListItem
-              key={optOut.id}
-              primaryText={optOut.cell}
-            />
+            <ListItem key={optOut.id}>
+              <ListItemText primary={optOut.cell} />
+            </ListItem>
           ))}
         </List>
       }

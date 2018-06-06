@@ -1,6 +1,6 @@
-import PropTypes from 'prop-types'
-import React from 'react'
-import LinearProgress from 'material-ui/LinearProgress'
+import PropTypes from 'prop-types';
+import React from 'react';
+import LinearProgress from '@material-ui/core/LinearProgress';
 
 class TexterStats extends React.Component {
   renderAssignment(assignment) {
@@ -16,7 +16,7 @@ class TexterStats extends React.Component {
         {texter.firstName} {texter.lastName}
         <div>{percentComplete}%</div>
         <LinearProgress
-          mode='determinate'
+          variant="determinate"
           value={percentComplete}
         />
       </div>

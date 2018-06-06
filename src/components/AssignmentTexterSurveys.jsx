@@ -1,10 +1,13 @@
-import PropTypes from 'prop-types'
 import React, { Component } from 'react'
-import { grey50 } from 'material-ui/styles/colors'
-import { Card, CardHeader, CardText } from 'material-ui/Card'
-import MenuItem from 'material-ui/MenuItem'
-import Divider from 'material-ui/Divider'
-import SelectField from 'material-ui/SelectField'
+import PropTypes from 'prop-types'
+
+import grey from '@material-ui/core/colors/grey';
+import Card from '@material-ui/core/Card';
+import CardHeader from '@material-ui/core/CardHeader';
+import CardContent from '@material-ui/core/CardContent';
+import MenuItem from '@material-ui/core/MenuItem';
+import Divider from '@material-ui/core/Divider';
+import Select from '@material-ui/core/Select';
 
 const styles = {
   root: {
@@ -12,7 +15,7 @@ const styles = {
   card: {
     marginTop: 10,
     marginBottom: 10,
-    backgroundColor: grey50,
+    backgroundColor: grey[50],
     padding: 10
   },
   cardHeader: {
@@ -102,17 +105,17 @@ class AssignmentTexterSurveys extends Component {
 
     return question.text ? (
       <div>
-        <SelectField
+        <Select
           style={isCurrentStep ? styles.currentStepSelect : styles.previousStepSelect}
           onChange={(event, index, value) => this.handleSelectChange(step, index, value)}
           name={question.id}
-          fullWidth
+          fullWidth={true}
           value={responseValue}
           floatingLabelText={question.text}
           hintText='Choose answer'
         >
           {this.renderAnswers(step)}
-        </SelectField>
+        </Select>
       </div>
     ) : ''
   }
@@ -131,19 +134,19 @@ class AssignmentTexterSurveys extends Component {
           title={showAllQuestions ? 'All questions' : 'Current question'}
           showExpandableButton={interactionSteps.length > 1}
         />
-        <CardText
+        <CardContent
           style={styles.cardText}
         >
           {showAllQuestions ? '' : this.renderStep(currentInteractionStep, true)}
-        </CardText>
-        <CardText
+        </CardContent>
+        <CardContent
           style={styles.cardText}
           expandable
         >
           {interactionSteps.map((step) => (
             this.renderStep(step, step.id === currentInteractionStep.id)
           ))}
-        </CardText>
+        </CardContent>
       </Card>
     )
   }

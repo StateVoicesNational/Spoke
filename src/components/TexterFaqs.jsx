@@ -1,6 +1,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Card, CardTitle, CardText } from 'material-ui/Card'
+import Card from '@material-ui/core/Card'
+import CardHeader from '@material-ui/core/CardHeader'
+import CardContent from '@material-ui/core/CardContent'
 
 const TexterFaqs = ({ faqs }) => {
   return (
@@ -8,12 +10,12 @@ const TexterFaqs = ({ faqs }) => {
       <h1>Frequently Asked Questions</h1>
       {faqs.map((faq, idx) => (
         <Card>
-          <CardTitle
+          <CardHeader
             title={`${idx + 1}. ${faq.question}`}
           />
-          <CardText>
+          <CardContent>
             <p>{faq.answer}</p>
-          </CardText>
+          </CardContent>
         </Card>
       ))}
     </div>

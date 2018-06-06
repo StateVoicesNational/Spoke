@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import CampaignList from './CampaignList'
-import FloatingActionButton from 'material-ui/FloatingActionButton'
-import ContentAdd from 'material-ui/svg-icons/content/add'
+import Button from '@material-ui/core/Button'
+import AddIcon from '@material-ui/icons/Add'
 import loadData from './hoc/load-data'
 import { hasRole } from '../lib'
 import { withRouter } from 'react-router'
@@ -10,8 +10,9 @@ import gql from 'graphql-tag'
 import theme from '../styles/theme'
 import LoadingIndicator from '../components/LoadingIndicator'
 import wrapMutations from './hoc/wrap-mutations'
+// TODO: material-ui
 import DropDownMenu from 'material-ui/DropDownMenu'
-import { MenuItem } from 'material-ui/Menu'
+import MenuItem from '@material-ui/core/MenuItem'
 import { dataTest } from '../lib/attributes'
 
 class AdminCampaignList extends React.Component {
@@ -56,8 +57,8 @@ class AdminCampaignList extends React.Component {
   renderFilters() {
     return (
       <DropDownMenu value={this.state.campaignsFilter.isArchived} onChange={this.handleFilterChange}>
-        <MenuItem value={false} primaryText='Current' />
-        <MenuItem value primaryText='Archived' />
+        <MenuItem>Current</MenuItem>
+        <MenuItem selected>Archived</MenuItem>
       </DropDownMenu>
     )
   }
@@ -75,14 +76,15 @@ class AdminCampaignList extends React.Component {
         )}
 
         {adminPerms ?
-          (<FloatingActionButton
-            {...dataTest('addCampaign')}
-            style={theme.components.floatingButton}
-            onClick={this.handleClickNewButton}
-          >
-            <ContentAdd />
-          </FloatingActionButton>
-          ) : null}
+         (<Button
+           {...dataTest('addCampaign')}
+           variant='fab'
+           style={theme.components.floatingButton}
+           onClick={this.handleClickNewButton}
+         >
+           <AddIcon />
+         </Button>
+         ) : null}
       </div>
     )
   }
