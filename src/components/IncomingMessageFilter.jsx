@@ -5,40 +5,40 @@ import { Card, CardHeader, CardText } from 'material-ui/Card'
 import SelectField from 'material-ui/SelectField'
 import MenuItem from 'material-ui/MenuItem'
 
+export const MESSAGE_STATUSES = {
+  'all': {
+    name: 'All',
+    children: ['needsResponse', 'needsMessage', 'convo', 'messaged'],
+  },
+  'needsResponse': {
+    name: 'Needs Texter Response',
+    children: [],
+  },
+  'needsMessage': {
+    name: 'Needs First Message',
+    children: [],
+  },
+  'convo': {
+    name: 'Active Conversation',
+    children: [],
+  },
+  'messaged': {
+    name: 'First Message Sent',
+    children: [],
+  },
+};
+
+export const ALL_CAMPAIGNS = -1;
+export const ACTIVE_CAMPAIGNS = -2;
+export const ARCHIVED_CAMPAIGNS = -3;
+
+export const CAMPAIGN_TYPE_FILTERS = [
+  [ALL_CAMPAIGNS, 'All Campaigns'],
+  [ACTIVE_CAMPAIGNS, 'Active Campaigns'],
+  [ARCHIVED_CAMPAIGNS, 'Archived Campaigns']
+];
+
 class IncomingMessageFilter extends Component {
-  messageStatuses = {
-    'all': {
-      name: 'All',
-      children: ['needsResponse', 'needsMessage', 'convo', 'messaged'],
-    },
-    'needsResponse': {
-      name: 'Needs Response',
-      children: [],
-    },
-    'needsMessage': {
-      name: 'Needs Message',
-      children: [],
-    },
-    'convo': {
-      name: 'Conversation',
-      children: [],
-    },
-    'messaged': {
-      name: 'Message Sent',
-      children: [],
-    },
-  };
-
-  ALL_CAMPAIGNS = -1
-  ACTIVE_CAMPAIGNS = -2
-  ARCHIVED_CAMPAIGNS = -3
-
-  CAMPAIGN_TYPE_FILTERS = [
-    [this.ALL_CAMPAIGNS, 'All Campaigns'],
-    [this.ACTIVE_CAMPAIGNS, 'Active Campaigns'],
-    [this.ARCHIVED_CAMPAIGNS, 'Archived Campaigns']
-  ]
-
   constructor(props) {
     super(props)
 
@@ -52,7 +52,7 @@ class IncomingMessageFilter extends Component {
     this.setState({ messageFilter: values })
     const messageStatuses = new Set();
     values.forEach(value => {
-      const children = this.messageStatuses[value].children;
+      const children = MESSAGE_STATUSES[value].children;
       if (children.length > 0) {
         children.forEach(child => messageStatuses.add(child));
       } else {
@@ -89,8 +89,8 @@ class IncomingMessageFilter extends Component {
             floatingLabelFixed={true}
             onChange={this.onMessageFilterSelectChanged}
           >
-            {Object.keys(this.messageStatuses).map(messageStatus => {
-              const displayText = this.messageStatuses[messageStatus].name;
+            {Object.keys(MESSAGE_STATUSES).map(messageStatus => {
+              const displayText = MESSAGE_STATUSES[messageStatus].name;
               const isChecked = this.state.messageFilter &&
                   this.state.messageFilter.indexOf(messageStatus) > -1
               return (
@@ -112,7 +112,7 @@ class IncomingMessageFilter extends Component {
             floatingLabelFixed={true}
             onChange={this.onCampaignSelectChanged}
           >
-            {this.CAMPAIGN_TYPE_FILTERS.map(campaignTypeFilter => {
+            {CAMPAIGN_TYPE_FILTERS.map(campaignTypeFilter => {
               return (
                 <MenuItem
                   key={campaignTypeFilter[0]}
@@ -121,7 +121,6 @@ class IncomingMessageFilter extends Component {
                 />
               )
             })}
-
             {this.props.campaigns.map(campaign => {
               return <MenuItem key={campaign.id} value={campaign.id} primaryText={campaign.title} />
             })}

@@ -7,6 +7,8 @@ import gql from 'graphql-tag'
 import LoadingIndicator from '../components/LoadingIndicator'
 import DataTables from 'material-ui-datatables'
 
+import { MESSAGE_STATUSES } from '../components/IncomingMessageFilter';
+
 function prepareDataTableData(organization) {
   const assignments = getAssignmentsFromOrganization(organization)
   const tableData = []
@@ -40,7 +42,8 @@ function prepareTableColumns() {
     },
     {
       key: 'status',
-      label: 'Conversation Status'
+      label: 'Conversation Status',
+      render: (columnKey, row) => MESSAGE_STATUSES[row.messageStatus].name
     },
     {
       key: 'messages',
