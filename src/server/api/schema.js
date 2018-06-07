@@ -374,7 +374,7 @@ async function updateInteractionSteps(campaignId, interactionSteps, origCampaign
     if (is.id.indexOf('new') !== -1) {
       const newId = await r.knex('interaction_step')
         .insert({
-          parent_interaction_id: is.parentInteractionId,
+          parent_interaction_id: is.parentInteractionId || null,
           question: is.questionText,
           script: is.script,
           answer_option: is.answerOption,
