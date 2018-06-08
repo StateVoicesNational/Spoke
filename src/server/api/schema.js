@@ -230,6 +230,7 @@ const rootSchema = `
     findNewCampaignContact(assignmentId: String!, numberContacts: Int!): FoundContact,
     assignUserToCampaign(organizationUuid: String!, campaignId: String!): Campaign
     userAgreeTerms(userId: String!): User
+    reassignCampaignContacts(campaignContactIds:[String]!, newTexterUserId:String!): CampaignContact
   }
 
   schema {
@@ -1061,6 +1062,52 @@ const rootMutations = {
 
       const contact = loaders.campaignContact.load(campaignContactId)
       return contact
+    },
+    reassignCampaignContacts: async(_, {campaignContactIds, newTexterUserId}, {loaders, user}) => {
+      // verify permissions
+
+      // ensure existence of assignment
+
+      const assignment = await r.table('assignment')
+        .getAll(user.id, { index: 'user_id' })
+        .filter({ campaign_id: campaign.id })
+        .limit(1)(0)
+        .default(null)
+      if (!assignment) {
+        await Assignment.save({
+          user_id: user.id,
+          campaign_id: campaign.id,
+          max_contacts: parseInt(process.env.MAX_CONTACTS_PER_TEXTER || 0, 10)
+        })
+      }
+      return campaign
+    },
+    updateTextingHours: async (_, { organizationId, textingHoursStart, textingHoursEnd }, { user }) => {
+      await accessRequired(user, organizationId, 'OWNER')
+
+      await Organization
+        .get(organizationId)
+        .update({
+          texting_hours_start: textingHoursStart,
+          texting_hours_end: textingHoursEnd
+        })
+
+      return await Organization.get(organizationId)
+    },
+    updateTextingHoursEnforcement: async (_, { organizationId, textingHoursEnforced }, { user }) => {
+      await accessRequired(user, organizationId, 'SUPERVOLUNTEER')
+
+      await Organization
+        .get(organizationId)
+        .update({
+          texting_hours_enforced: textingHoursEnforced
+        })
+
+      return await Organization.get(organizationId)
+    },
+    createInvite: async (_, { user }) => {
+      // reassign
+
     }
   }
 }
