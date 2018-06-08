@@ -1,7 +1,6 @@
 import { createMuiTheme } from '@material-ui/core/styles';
 import grey from '@material-ui/core/colors/grey';
-// TODO: material-ui
-import { fade } from 'material-ui/utils/colorManipulator'
+import { fade } from '@material-ui/core/styles/colorManipulator';
 
 import theme from './theme'
 

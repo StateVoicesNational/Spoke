@@ -9,7 +9,7 @@ const TexterFaqs = ({ faqs }) => {
     <div>
       <h1>Frequently Asked Questions</h1>
       {faqs.map((faq, idx) => (
-        <Card>
+        <Card key={idx}>
           <CardHeader
             title={`${idx + 1}. ${faq.question}`}
           />
