@@ -15,8 +15,9 @@ import OrganizationJoinLink from './OrganizationJoinLink'
 import CampaignFormSectionHeading from './CampaignFormSectionHeading'
 import { StyleSheet, css } from 'aphrodite'
 import theme from '../styles/theme'
-// TODO: material-ui
-import Toggle from 'material-ui/Toggle'
+import FormGroup from '@material-ui/core/FormGroup'
+import FormControlLabel from '@material-ui/core/FormControlLabel'
+import Switch from '@material-ui/core/Switch'
 import DeleteIcon from '@material-ui/icons/Delete'
 import { dataTest } from '../lib/attributes'
 
@@ -112,6 +113,12 @@ export default class CampaignTextersForm extends React.Component {
     useDynamicAssignment: this.formValues().useDynamicAssignment,
     snackbarOpen: false,
     snackbarMessage: ''
+  }
+
+  constructor(props) {
+    super(props)
+
+    this.handleToggleChange = this.handleToggleChange.bind(this)
   }
 
   handleToggleChange() {
@@ -450,14 +457,18 @@ export default class CampaignTextersForm extends React.Component {
           title='Who should send the texts?'
           subtitle={subtitle}
         />
-        <div>
-          <Toggle
-            {...dataTest('useDynamicAssignment')}
+        <FormGroup row>
+          <FormControlLabel
+            control={
+              <Switch
+                {...dataTest('useDynamicAssignment')}
+                checked={this.state.useDynamicAssignment}
+                onChange={this.handleToggleChange}
+              />
+            }
             label='Dynamically assign contacts'
-            toggled={this.state.useDynamicAssignment}
-            onToggle={this.handleToggleChange.bind(this)}
           />
-        </div>
+        </FormGroup>
         <GSForm
           schema={this.formSchema}
           value={this.formValues()}
