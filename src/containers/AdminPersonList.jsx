@@ -3,8 +3,10 @@ import React from 'react';
 import gql from 'graphql-tag';
 
 import Button from '@material-ui/core/Button';
-// TODO: material-ui
-import DropDownMenu from 'material-ui/DropDownMenu';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
+import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -23,6 +25,86 @@ import theme from '../styles/theme';
 import Empty from '../components/Empty';
 import OrganizationJoinLink from '../components/OrganizationJoinLink';
 import UserEdit from './UserEdit';
+
+
+class SelectRoleDropdown extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      anchorEl: null,
+      personRole: getHighestRole(props.person.roles),
+    };
+
+    this.handleClickRoles = this.handleClickRoles.bind(this);
+    this.handleRoleChange = this.handleRoleChange.bind(this);
+    this.handleCloseRoles = this.handleCloseRoles.bind(this);
+  }
+
+  handleClickRoles(event) {
+    this.setState({ anchorEl: event.currentTarget });
+  };
+
+  handleRoleChange(newRole) {
+    this.props.handleChange(newRole);
+    this.setState({
+      anchorEl: null,
+      personRole: newRole,
+    });
+  };
+
+  handleCloseRoles() {
+    this.setState({ anchorEl: null });
+  };
+
+  render() {
+    const { anchorEl, personRole } = this.state;
+    const { person, currentUser } = this.props;
+    const isCurrentUser = person.id === currentUser.id,
+          isOwner = personRole === 'OWNER' && getHighestRole(currentUser.roles) !== 'OWNER';
+    const isDisabled = isCurrentUser || isOwner;
+    return (
+      <div>
+        <List component="nav">
+          <ListItem
+            button={!isDisabled}
+            aria-haspopup="true"
+            aria-controls={`${person.id}-roles-menu`}
+            aria-label="Contact Roles"
+            onClick={isDisabled ? null : this.handleClickRoles}
+          >
+            <ListItemText
+              primary={personRole}
+            />
+          </ListItem>
+        </List>
+        <Menu
+          id={`${person.id}-roles-menu`}
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={this.handleCloseRoles}
+        >
+          {ROLE_HIERARCHY.map((role) => (
+            <MenuItem
+              key={person.id + '_' + role}
+              disabled={role === 'OWNER' && getHighestRole(currentUser.roles) !== 'OWNER'}
+              selected={personRole === role}
+              onClick={this.handleRoleChange(role)}
+            >
+              {`${role.charAt(0).toUpperCase()}${role.substring(1).toLowerCase()}`}
+            </MenuItem>
+          ))}
+        </Menu>
+      </div>
+    );
+  }
+}
+
+SelectRoleDropdown.propTypes = {
+  currentUser: PropTypes.object,
+  person: PropTypes.object,
+  handleChange: PropTypes.func,
+}
 
 
 const organizationFragment = `
@@ -99,20 +181,11 @@ class AdminPersonList extends React.Component {
               <TableCell>{person.displayName}</TableCell>
               <TableCell>{person.email}</TableCell>
               <TableCell>
-                <DropDownMenu
-                  value={getHighestRole(person.roles)}
-                  disabled={person.id === currentUser.id || getHighestRole(person.roles) === 'OWNER' && getHighestRole(currentUser.roles) !== 'OWNER'}
-                  onChange={(event, index, value) => this.handleChange(person.id, value)}
-                >
-                  {ROLE_HIERARCHY.map((option) => (
-                    <MenuItem
-                      key={person.id + '_' + option}
-                      disabled={option === 'OWNER' && getHighestRole(currentUser.roles) !== 'OWNER'}
-                    >
-                      {`${option.charAt(0).toUpperCase()}${option.substring(1).toLowerCase()}`}
-                    </MenuItem>
-                  ))}
-                </DropDownMenu>
+                <SelectRoleDropdown
+                  person={person}
+                  currentUser={currentUser}
+                  handleChange={(newRole) => this.handleChange(person.id, newRole)}
+                />
                 <Button label='Edit' onTouchTap={() => { this.editUser(person.id) }} />
               </TableCell>
             </TableRow>
