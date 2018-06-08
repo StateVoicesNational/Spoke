@@ -19,7 +19,6 @@ import grey from '@material-ui/core/colors/grey';
 import HomeIcon from '@material-ui/icons/Home';
 import CreateIcon from '@material-ui/icons/Create';
 
-
 import { getChildren, getTopMostParent, interactionStepForId, log, isBetweenTextingHours } from '../lib'
 import { applyScript } from '../lib/scripts';
 import loadData from './hoc/load-data';

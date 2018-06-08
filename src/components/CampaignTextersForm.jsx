@@ -8,8 +8,9 @@ import AutoComplete from 'material-ui/AutoComplete'
 import IconButton from '@material-ui/core/IconButton';
 import Button from '@material-ui/core/Button';
 import MenuItem from '@material-ui/core/MenuItem';
-// TODO: material-ui
-import Toggle from 'material-ui/Toggle'
+import FormGroup from '@material-ui/core/FormGroup';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Switch from '@material-ui/core/Switch';
 import DeleteIcon from '@material-ui/icons/Delete';
 
 import theme from '../styles/theme'
@@ -108,6 +109,12 @@ export default class CampaignTextersForm extends React.Component {
     autoSplit: false,
     focusedTexter: null,
     useDynamicAssignment: this.formValues().useDynamicAssignment
+  }
+
+  constructor(props) {
+    super(props);
+
+    this.handleToggleChange = this.handleToggleChange.bind(this);
   }
 
   handleToggleChange() {
@@ -439,13 +446,17 @@ export default class CampaignTextersForm extends React.Component {
           title='Who should send the texts?'
           subtitle={subtitle}
         />
-        <div>
-          <Toggle
-            label='Dynamically assign contacts'
-            toggled={this.state.useDynamicAssignment}
-            onToggle={this.handleToggleChange.bind(this)}
+        <FormGroup row>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={this.state.useDynamicAssignment}
+                onChange={this.handleToggleChange}
+              />
+            }
+            label="Dynamically assign contacts"
           />
-        </div>
+        </FormGroup>
         <GSForm
           schema={this.formSchema}
           value={this.formValues()}
