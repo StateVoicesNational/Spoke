@@ -35,8 +35,8 @@ export class IncomingMessageList extends Component {
         {this.props.organization.loading ? (
           <LoadingIndicator />
         ) : (
-          <Table>
-            <TableHeader>
+          <Table multiSelectable>
+            <TableHeader enableSelectAll>
               <TableRow>
                 <TableHeaderColumn> Texter </TableHeaderColumn>
                 <TableHeaderColumn> To </TableHeaderColumn>

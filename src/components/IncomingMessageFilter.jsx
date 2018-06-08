@@ -18,7 +18,15 @@ class IncomingMessageFilter extends Component {
     all: ['needsResponse', 'needsMessage', 'convo', 'messaged']
   }
 
-  ALL_CAMPAIGNS = 'All Active Campaigns'
+  ALL_CAMPAIGNS = -1
+  ACTIVE_CAMPAIGNS = -2
+  ARCHIVED_CAMPAIGNS = -3
+
+  CAMPAIGN_TYPE_FILTERS = [
+    [this.ALL_CAMPAIGNS, 'All Campaigns'],
+    [this.ACTIVE_CAMPAIGNS, 'Active Campaigns'],
+    [this.ARCHIVED_CAMPAIGNS, 'Archived Campaigns']
+  ]
 
   constructor(props) {
     super(props)
@@ -87,11 +95,15 @@ class IncomingMessageFilter extends Component {
               }
             }}
           >
-            <MenuItem
-              key={this.ALL_CAMPAIGNS}
-              value={this.ALL_CAMPAIGNS}
-              primaryText={this.ALL_CAMPAIGNS}
-            />
+            {this.CAMPAIGN_TYPE_FILTERS.map(campaignTypeFilter => {
+              return (
+                <MenuItem
+                  key={campaignTypeFilter[0]}
+                  value={campaignTypeFilter[0]}
+                  primaryText={campaignTypeFilter[1]}
+                />
+              )
+            })}
 
             {this.props.campaigns.map(campaign => {
               return <MenuItem key={campaign.id} value={campaign.id} primaryText={campaign.title} />

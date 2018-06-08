@@ -3,6 +3,7 @@ import loadData from './hoc/load-data'
 import { withRouter } from 'react-router'
 import gql from 'graphql-tag'
 import IncomingMessageFilter from '../components/IncomingMessageFilter'
+import IncomingMessageActions from '../components/IncomingMessageActions'
 import IncomingMessageList from '../components/IncomingMessageList.jsx'
 
 export class AdminIncomingMessageList extends Component {
@@ -21,8 +22,21 @@ export class AdminIncomingMessageList extends Component {
         <IncomingMessageFilter
           campaigns={this.props.organization.organization.campaigns}
           onCampaignChanged={async campaignId => {
+            let campaignsFilter = {}
+            switch (campaignId) {
+              case -1:
+                break
+              case -2:
+                campaignsFilter = { isArchived: false }
+                break
+              case -3:
+                campaignsFilter = { isArchived: true }
+                break
+              default:
+                campaignsFilter = { campaignId }
+            }
             await this.setState({
-              campaignsFilter: { campaignId: campaignId }
+              campaignsFilter
             })
           }}
           onMessageFilterChanged={async messagesFilter => {
@@ -30,6 +44,9 @@ export class AdminIncomingMessageList extends Component {
               contactsFilter: { messageStatus: messagesFilter }
             })
           }}
+        />
+        <IncomingMessageActions
+          people={this.props.organization.organization.people}
         />
         <IncomingMessageList
           organizationId={this.props.params.organizationId}
@@ -47,6 +64,11 @@ const mapQueriesToProps = ({ ownProps }) => ({
       query Q($organizationId: String!) {
         organization(id: $organizationId) {
           id
+          people {
+            id
+            displayName
+            roles(organizationId: $organizationId)
+          }
           campaigns {
             id
             title
