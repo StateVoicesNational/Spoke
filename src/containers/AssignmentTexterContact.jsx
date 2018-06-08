@@ -8,8 +8,7 @@ import { StyleSheet, css } from 'aphrodite';
 
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
-// TODO: material-ui
-import { Toolbar, ToolbarGroup } from 'material-ui/Toolbar'
+import Toolbar from '@material-ui/core/Toolbar';
 import Card from '@material-ui/core/Card';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardActions from '@material-ui/core/CardActions';
@@ -604,26 +603,20 @@ export class AssignmentTexterContact extends React.Component {
       return (
         <div>
           <Toolbar style={inlineStyles.actionToolbarFirst}>
-            <ToolbarGroup
-              firstChild
-            >
-              <SendButton
-                threeClickEnabled={campaign.organization.threeClickEnabled}
-                onFinalTouchTap={this.handleClickSendMessageButton}
-                disabled={this.state.disabled}
-              />
-              {window.NOT_IN_USA && window.ALLOW_SEND_ALL && window.BULK_SEND_CHUNK_SIZE ? <BulkSendButton
-                assignment={assignment}
-                onFinishContact={onFinishContact}
-                bulkSendMessages={this.bulkSendMessages}
-                setDisabled={this.setDisabled.bind(this)}
-              /> : ''}
-              <div
-                style={{ float: 'right', marginLeft: 20 }}
-              >
-                {navigationToolbarChildren}
-              </div>
-            </ToolbarGroup>
+            <SendButton
+              threeClickEnabled={campaign.organization.threeClickEnabled}
+              onFinalTouchTap={this.handleClickSendMessageButton}
+              disabled={this.state.disabled}
+            />
+            {window.NOT_IN_USA && window.ALLOW_SEND_ALL && window.BULK_SEND_CHUNK_SIZE ? <BulkSendButton
+              assignment={assignment}
+              onFinishContact={onFinishContact}
+              bulkSendMessages={this.bulkSendMessages}
+              setDisabled={this.setDisabled.bind(this)}
+            /> : ''}
+            <div style={{ float: 'right', marginLeft: 20 }}>
+              {navigationToolbarChildren}
+            </div>
           </Toolbar>
         </div>
       )
@@ -634,7 +627,7 @@ export class AssignmentTexterContact extends React.Component {
             className={css(styles.mobile)}
             style={inlineStyles.actionToolbar}
           >
-            <ToolbarGroup
+            <div
               style={inlineStyles.mobileToolBar}
               className={css(styles.lgMobileToolBar)}
               firstChild
@@ -656,7 +649,7 @@ export class AssignmentTexterContact extends React.Component {
               >
                 {navigationToolbarChildren}
               </div>
-            </ToolbarGroup>
+            </div>
           </Toolbar>
         </div>
       )
@@ -664,9 +657,7 @@ export class AssignmentTexterContact extends React.Component {
       return (
         <div>
           <Toolbar style={inlineStyles.actionToolbarFirst}>
-            <ToolbarGroup
-              firstChild
-            >
+            <div firstChild={true}>
               <SendButton
                 threeClickEnabled={campaign.organization.threeClickEnabled}
                 onFinalTouchTap={this.handleClickSendMessageButton}
@@ -689,7 +680,7 @@ export class AssignmentTexterContact extends React.Component {
               >
                 {navigationToolbarChildren}
               </div>
-            </ToolbarGroup>
+            </div>
           </Toolbar>
         </div>
       )

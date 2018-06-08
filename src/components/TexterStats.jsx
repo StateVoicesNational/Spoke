@@ -16,6 +16,8 @@ class TexterStats extends React.Component {
         {texter.firstName} {texter.lastName}
         <div>{percentComplete}%</div>
         <LinearProgress
+          min={0}
+          max={100}
           variant="determinate"
           value={percentComplete}
         />
