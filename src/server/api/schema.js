@@ -182,7 +182,7 @@ const rootSchema = `
 
   type RootQuery {
     currentUser: User
-    organization(id:String!): Organization
+    organization(id:String!, utc:String): Organization
     campaign(id:String!): Campaign
     inviteByHash(hash:String!): [Invite]
     contact(id:String!): CampaignContact
