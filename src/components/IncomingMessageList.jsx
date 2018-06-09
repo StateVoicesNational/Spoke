@@ -24,6 +24,20 @@ function getAssignmentsFromOrganization(organization) {
   return assignments
 }
 
+function prepareTableData(organization) {
+  const assignments = getAssignmentsFromOrganization(organization)
+  const tableData = []
+  for (const assignment of assignments) {
+    for (const contact of assignment.contacts) {
+      tableData.push({
+        campaignId: assignment.campaign.id,
+        campaignContactId: contact.id
+      })
+    }
+  }
+  return tableData
+}
+
 export class IncomingMessageList extends Component {
   constructor(props) {
     super(props)
@@ -35,49 +49,62 @@ export class IncomingMessageList extends Component {
         {this.props.organization.loading ? (
           <LoadingIndicator />
         ) : (
-          <Table multiSelectable>
-            <TableHeader enableSelectAll>
-              <TableRow>
-                <TableHeaderColumn> Texter </TableHeaderColumn>
-                <TableHeaderColumn> To </TableHeaderColumn>
-                <TableHeaderColumn> Conversation Status </TableHeaderColumn>
-                <TableHeaderColumn style={{ width: '40%' }}> Messages </TableHeaderColumn>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {getAssignmentsFromOrganization(this.props.organization.organization).map(
-                assignment => {
-                  return assignment.contacts.map(contact => (
-                    <TableRow key={contact.id} value={[assignment.campaign.id, contact.id]}>
-                      <TableRowColumn> {assignment.texter.displayName} </TableRowColumn>
-                      <TableRowColumn> {contact.cell} </TableRowColumn>
-                      <TableRowColumn> {contact.messageStatus} </TableRowColumn>
-                      <TableRowColumn style={{ width: '40%' }}>
-                        <Card>
-                          <CardHeader title={'Messages'} actAsExpander showExpandableButton />
-                          <CardText expandable>
-                            <div>
-                              {contact.messages.map(message => (
-                                <p
-                                  style={
-                                    message.isFromContact
-                                      ? { 'color': 'red' }
-                                      : { 'color': 'black' }
-                                  }
-                                >
-                                  {message.text}
-                                </p>
-                              ))}
-                            </div>
-                          </CardText>
-                        </Card>
-                      </TableRowColumn>
-                    </TableRow>
-                  ))
+          <div>
+            <Table
+              multiSelectable
+              onRowSelection={(rowsSelected) => {
+                if (
+                  this.props.onConversationSelected != null &&
+                  typeof this.props.onConversationSelected === 'function'
+                ) {
+                  this.props.onConversationSelected(
+                    rowsSelected,
+                    prepareTableData(this.props.organization.organization)
+                  )
                 }
-              )}
-            </TableBody>
-          </Table>
+              }}
+            >
+              <TableHeader enableSelectAll>
+                <TableRow>
+                  <TableHeaderColumn> Texter </TableHeaderColumn>
+                  <TableHeaderColumn> To </TableHeaderColumn>
+                  <TableHeaderColumn> Conversation Status </TableHeaderColumn>
+                  <TableHeaderColumn style={{ width: '40%' }}> Messages </TableHeaderColumn>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {getAssignmentsFromOrganization(this.props.organization.organization).map(
+                  assignment => {
+                    return assignment.contacts.map(contact => (
+                      <TableRow key={contact.id} value={[assignment.campaign.id, contact.id]}>
+                        <TableRowColumn> {assignment.texter.displayName} </TableRowColumn>
+                        <TableRowColumn> {contact.cell} </TableRowColumn>
+                        <TableRowColumn> {contact.messageStatus} </TableRowColumn>
+                        <TableRowColumn style={{ width: '40%' }}>
+                          <Card>
+                            <CardHeader title={'Messages'} actAsExpander showExpandableButton />
+                            <CardText expandable>
+                              <div>
+                                {contact.messages.map(message => (
+                                  <p
+                                    style={
+                                      message.isFromContact ? { color: 'red' } : { color: 'black' }
+                                    }
+                                  >
+                                    {message.text}
+                                  </p>
+                                ))}
+                              </div>
+                            </CardText>
+                          </Card>
+                        </TableRowColumn>
+                      </TableRow>
+                    ))
+                  }
+                )}
+              </TableBody>
+            </Table>
+          </div>
         )}
       </div>
     )
@@ -85,12 +112,11 @@ export class IncomingMessageList extends Component {
 }
 
 IncomingMessageList.propTypes = {
-  messages: type.array,
   organizationId: type.string,
   contactsFilter: type.object,
-  onCampaignChanged: type.func,
-  campaigns: type.array,
-  messages_filter: type.object
+  campaignsFilter: type.object,
+  onConversationSelected: type.func,
+  utc: type.number
 }
 
 const mapQueriesToProps = ({ ownProps }) => ({
@@ -100,8 +126,9 @@ const mapQueriesToProps = ({ ownProps }) => ({
         $organizationId: String!
         $contactsFilter: ContactsFilter
         $campaignsFilter: CampaignsFilter
+        $utc: String
       ) {
-        organization(id: $organizationId) {
+        organization(id: $organizationId, utc:$utc) {
           id
           campaigns(campaignsFilter: $campaignsFilter) {
             id
@@ -135,7 +162,8 @@ const mapQueriesToProps = ({ ownProps }) => ({
     variables: {
       organizationId: ownProps.organizationId,
       contactsFilter: ownProps.contactsFilter,
-      campaignsFilter: ownProps.campaignsFilter
+      campaignsFilter: ownProps.campaignsFilter,
+      utc: ownProps.utc
     },
     forceFetch: true
   }
