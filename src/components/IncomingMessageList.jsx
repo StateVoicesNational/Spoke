@@ -48,7 +48,7 @@ export class IncomingMessageList extends Component {
               {getAssignmentsFromOrganization(this.props.organization.organization).map(
                 assignment => {
                   return assignment.contacts.map(contact => (
-                    <TableRow key={contact.id}>
+                    <TableRow key={contact.id} value={[assignment.campaign.id, contact.id]}>
                       <TableRowColumn> {assignment.texter.displayName} </TableRowColumn>
                       <TableRowColumn> {contact.cell} </TableRowColumn>
                       <TableRowColumn> {contact.messageStatus} </TableRowColumn>
@@ -107,6 +107,9 @@ const mapQueriesToProps = ({ ownProps }) => ({
             id
             title
             assignments {
+              campaign {
+                id
+              }
               texter {
                 id
                 displayName

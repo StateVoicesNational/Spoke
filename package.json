@@ -90,7 +90,7 @@
     "faker": "^3.1.0",
     "fs": "^0.0.2",
     "google-libphonenumber": "^1.0.25",
-    "graphql": "^0.6.1",
+    "graphql": "^0.13.2",
     "graphql-date": "^1.0.3",
     "graphql-tag": "^0.1.9",
     "graphql-tools": "^2.8.0",
