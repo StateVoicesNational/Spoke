@@ -1165,8 +1165,11 @@ const rootMutations = {
       const contact = loaders.campaignContact.load(campaignContactId)
       return contact
     },
-    reassignCampaignContacts: async (_, { organizationId, campaignIdsContactIds, newTexterUserId }, {user}) => {
-
+    reassignCampaignContacts: async (
+      _,
+      { organizationId, campaignIdsContactIds, newTexterUserId },
+      { user }
+    ) => {
       // verify permissions
       await accessRequired(user, organizationId, 'ADMIN', /* superadmin*/ true)
 
@@ -1203,22 +1206,35 @@ const rootMutations = {
 
       // do the reassignment
       const returnCampaignIdAssignmentIds = []
-      for (const [campaignId, campaignContactIds] of campaignIdContactIdsMap) {
-        const assignmentId = campaignIdAssignmentIdMap.get(campaignId)
 
-        try {
-          await r
-            .knex('campaign_contact')
-            .whereIn('id', campaignContactIds)
-            .update({
-              assignment_id: assignmentId
-            })
-        } catch (error) {
-          log.error(error)
-          continue
-        }
-        returnCampaignIdAssignmentIds.push({ campaignId, assignmentId: assignmentId.toString() })
+      try {
+        await r.knex.transaction(async trx => {
+          try {
+            for (const [campaignId, campaignContactIds] of campaignIdContactIdsMap) {
+              const assignmentId = campaignIdAssignmentIdMap.get(campaignId)
+
+              await r.knex('campaign_contact')
+                .transacting(trx)
+                .whereIn('id', campaignContactIds)
+                .update({
+                  assignment_id: assignmentId
+                })
+
+              returnCampaignIdAssignmentIds.push({
+                campaignId,
+                assignmentId: assignmentId.toString()
+              })
+            }
+
+          } catch (error) {
+            trx.rollback()
+            log(error)
+          }
+        })
+      } catch (error) {
+        log.error(error)
       }
+
       return returnCampaignIdAssignmentIds
     }
   }

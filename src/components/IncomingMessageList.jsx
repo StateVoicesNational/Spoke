@@ -1,13 +1,5 @@
 import React, { Component } from 'react'
 import type from 'prop-types'
-import {
-  Table,
-  TableBody,
-  TableHeader,
-  TableHeaderColumn,
-  TableRow,
-  TableRowColumn
-} from 'material-ui/Table'
 import { Card, CardHeader, CardText } from 'material-ui/Card'
 import loadData from '../containers/hoc/load-data'
 import { withRouter } from 'react-router'
@@ -53,9 +45,9 @@ function prepareTableColumns() {
     {
       key: 'messages',
       label: 'Messages',
-      style: {
-        width: '30%'
-      },
+      //style: {
+      //  width: '30%'
+      //},
       render: (columnKey, row) => {
         return (
           <Card>
