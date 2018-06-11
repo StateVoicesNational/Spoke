@@ -48,7 +48,10 @@ export async function userLoggedIn(authId) {
     .first()
 
   if (r.redis && userAuth) {
-    await r.redis.set(authKey, JSON.stringify(userAuth), 86400)
+    await r.redis.multi()
+      .set(authKey, JSON.stringify(userAuth))
+      .expire(authKey, 86400)
+      .exec()
   }
   return userAuth
 }
