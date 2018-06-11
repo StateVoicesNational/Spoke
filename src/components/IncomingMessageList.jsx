@@ -29,91 +29,6 @@ function prepareDataTableData(organization) {
   return tableData
 }
 
-function prepareTableColumns() {
-  return [
-    {
-      key: 'campaignTitle',
-      label: 'Campaign'
-    },
-    {
-      key: 'texter',
-      label: 'Texter'
-    },
-    {
-      key: 'to',
-      label: 'To'
-    },
-    {
-      key: 'status',
-      label: 'Conversation Status',
-      render: (columnKey, row) => MESSAGE_STATUSES[row.messageStatus].name
-    },
-    {
-      key: 'latestMessage',
-      label: 'Latest Message',
-      render: (columnKey, row) => {
-        let lastMessage = null;
-        let lastMessageEl = <p>No Messages</p>
-        if (row.messages.length > 0) {
-          lastMessage = contact.messages[contact.messages.length - 1]
-          lastMessageEl = (
-            <p>
-              <span style={{'color': lastMessage.isFromContact ? 'blue' : 'black'}}>
-                <b>{lastMessage.isFromContact ? 'Contact:' : 'Texter:'} </b>
-              </span>
-              {lastMessage.text}
-            </p>
-          );
-        }
-        return lastMessageEl;
-      }
-    },
-    {
-      key: 'viewConversation',
-      label: 'View Conversation',
-      render: (columnKey, row) => {
-        if (row.messages.length > 0) {
-          return (
-            <FlatButton
-              onClick={() => this.handleOpenConversation(row)}
-              icon={<ActionOpenInNew />}
-            />
-          );
-        }
-        return '';
-      }
-    },
-    {
-      key: 'messages',
-      label: 'Messages',
-      //style: {
-      //  width: '30%'
-      //},
-      render: (columnKey, row) => {
-        return (
-          <Card onClick={(event) => event.stopPropagation()}>
-            <CardHeader title={'Messages'} actAsExpander={true} showExpandableButton={true} />
-            <CardText expandable={true}>
-              <div>
-                {row.messages.map((message, index) => {
-                  const style = message.isFromContact ?
-                      {'color': 'blue', 'textAlign': 'left'} :
-                      {'color': 'black', 'textAlign': 'right'};
-                  return (
-                    <p key={index} style={style}>
-                      {message.text}
-                    </p>
-                  );
-                })}
-              </div>
-            </CardText>
-          </Card>
-        )
-      }
-    }
-  ]
-}
-
 function getAssignmentsFromOrganization(organization) {
   const assignments = []
   for (const campaign of organization.campaigns) {
@@ -172,6 +87,7 @@ export class IncomingMessageList extends Component {
       activeConversation: undefined,
     }
 
+    this.prepareTableColumns = this.prepareTableColumns.bind(this);
     this.handleNextPageClick = this.handleNextPageClick.bind(this)
     this.handlePreviousPageClick = this.handlePreviousPageClick.bind(this)
     this.handleRowSizeChanged = this.handleRowSizeChanged.bind(this)
@@ -187,6 +103,66 @@ export class IncomingMessageList extends Component {
       const assignments = prepareDataTableData(nextProps.organization.organization)
       this.setState({ data: assignments, count: assignments.length, page: 1 })
     }
+  }
+
+  prepareTableColumns() {
+    return [
+      {
+        key: 'campaignTitle',
+        label: 'Campaign'
+      },
+      {
+        key: 'texter',
+        label: 'Texter'
+      },
+      {
+        key: 'to',
+        label: 'To'
+      },
+      {
+        key: 'status',
+        label: 'Conversation Status',
+        render: (columnKey, row) => MESSAGE_STATUSES[row.status].name
+      },
+      {
+        key: 'latestMessage',
+        label: 'Latest Message',
+        render: (columnKey, row) => {
+          let lastMessage = null;
+          let lastMessageEl = <p>No Messages</p>
+          if (row.messages.length > 0) {
+            lastMessage = row.messages[row.messages.length - 1]
+            lastMessageEl = (
+              <p>
+                <span style={{'color': lastMessage.isFromContact ? 'blue' : 'black'}}>
+                  <b>{lastMessage.isFromContact ? 'Contact:' : 'Texter:'} </b>
+                </span>
+                {lastMessage.text}
+              </p>
+            );
+          }
+          return lastMessageEl;
+        }
+      },
+      {
+        key: 'viewConversation',
+        label: 'View Conversation',
+        render: (columnKey, row) => {
+          if (row.messages.length > 0) {
+            return (
+              <FlatButton
+                onClick={event => {
+                  event.stopPropagation();
+                  this.handleOpenConversation(row);
+                }}
+                icon={<ActionOpenInNew />}
+              />
+            );
+          }
+          return '';
+        }
+      }
+    ]
   }
 
   handleNextPageClick() {
@@ -224,7 +200,7 @@ export class IncomingMessageList extends Component {
         ) : (
           <DataTables
             data={tableData}
-            columns={prepareTableColumns()}
+            columns={this.prepareTableColumns()}
             multiSelectable
             selectable
             enableSelectAll
