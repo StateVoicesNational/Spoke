@@ -64,6 +64,7 @@ export class AdminIncomingMessageList extends Component {
                 })
               }}
             />
+            <br />
             <IncomingMessageActions
               people={this.props.organization.organization.people}
               onReassignRequested={async newTexterUserId => {
@@ -75,6 +76,7 @@ export class AdminIncomingMessageList extends Component {
                 this.setState({ needsRender: true, utc: Date.now().toString() })
               }}
             />
+            <br />
             <IncomingMessageList
               organizationId={this.props.params.organizationId}
               contactsFilter={this.state.contactsFilter}
