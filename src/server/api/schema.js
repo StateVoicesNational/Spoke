@@ -379,7 +379,7 @@ async function updateInteractionSteps(
       const newId = await r
         .knex('interaction_step')
         .insert({
-          parent_interaction_id: is.parentInteractionId,
+          parent_interaction_id: is.parentInteractionId || null,
           question: is.questionText,
           script: is.script,
           answer_option: is.answerOption,
