@@ -14,3 +14,20 @@ GRANT ALL PRIVILEGES ON DATABASE spoke_test TO spoke_test;
 ## SQLite Testing (simpler)
 
 1) Run `npm run test-sqlite`
+
+## End-To-End (Interactive Browser) Testing
+
+1. Setup DB
+1. Start Server
+1. Install browser drivers
+    http://seleniumhq.github.io/selenium/docs/api/javascript/
+    * Installing chromedriver on MacOS
+        ```
+        brew tap homebrew/cask
+        brew cask install chromedriver
+        ```
+        https://github.com/Homebrew/homebrew-cask/blob/master/Casks/chromedriver.rb
+1. Run
+    ```
+    npm test-e2e
+    ```
