@@ -85,7 +85,8 @@ function prepareTableData(organization) {
     for (const contact of assignment.contacts) {
       tableData.push({
         campaignId: assignment.campaign.id,
-        campaignContactId: contact.id
+        campaignContactId: contact.id,
+        messageIds: contact.messages.map(message => {return message.id})
       })
     }
   }

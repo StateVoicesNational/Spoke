@@ -162,7 +162,8 @@ const rootSchema = `
   
   input CampaignIdContactId {
     campaignId: String!
-    campaignContactId: String!
+    campaignContactId: Int!
+    messageIds: [Int]!
   }
   
   type CampaignIdAssignmentId {
@@ -1174,15 +1175,23 @@ const rootMutations = {
       await accessRequired(user, organizationId, 'ADMIN', /* superadmin*/ true)
 
       // group contactIds by campaign
+      // group messages by campaign
       const campaignIdContactIdsMap = new Map()
+      const campaignIdMessagesIdsMap = new Map()
       for (const campaignIdContactId of campaignIdsContactIds) {
-        const { campaignId, campaignContactId } = campaignIdContactId
+        const { campaignId, campaignContactId, messageIds } = campaignIdContactId
 
         if (!campaignIdContactIdsMap.has(campaignId)) {
           campaignIdContactIdsMap.set(campaignId, [])
         }
 
         campaignIdContactIdsMap.get(campaignId).push(campaignContactId)
+
+        if (!campaignIdMessagesIdsMap.has(campaignId)) {
+          campaignIdMessagesIdsMap.set(campaignId, [])
+        }
+
+        campaignIdMessagesIdsMap.get(campaignId).push(...messageIds)
       }
 
       // ensure existence of assignments
@@ -1207,30 +1216,34 @@ const rootMutations = {
       // do the reassignment
       const returnCampaignIdAssignmentIds = []
 
+      // TODO(larry) do this in a transaction!
       try {
-        await r.knex.transaction(async trx => {
-          try {
-            for (const [campaignId, campaignContactIds] of campaignIdContactIdsMap) {
-              const assignmentId = campaignIdAssignmentIdMap.get(campaignId)
+        for (const [campaignId, campaignContactIds] of campaignIdContactIdsMap) {
+          const assignmentId = campaignIdAssignmentIdMap.get(campaignId)
 
-              await r.knex('campaign_contact')
-                .transacting(trx)
-                .whereIn('id', campaignContactIds)
-                .update({
-                  assignment_id: assignmentId
-                })
+          await r
+            .knex('campaign_contact')
+            .whereIn('id', campaignContactIds)
+            .update({
+              assignment_id: assignmentId
+            })
 
-              returnCampaignIdAssignmentIds.push({
-                campaignId,
-                assignmentId: assignmentId.toString()
-              })
-            }
+          returnCampaignIdAssignmentIds.push({
+            campaignId,
+            assignmentId: assignmentId.toString()
+          })
+        }
+        for (const [campaignId, messageIds] of campaignIdMessagesIdsMap) {
+          const assignmentId = campaignIdAssignmentIdMap.get(campaignId)
 
-          } catch (error) {
-            trx.rollback()
-            log(error)
-          }
-        })
+          await r
+            .knex('message')
+            .whereIn('id', messageIds.map(messageId => {return messageId, 10}))
+            .update({
+              assignment_id: assignmentId
+            })
+
+        }
       } catch (error) {
         log.error(error)
       }

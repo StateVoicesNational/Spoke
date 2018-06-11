@@ -30,6 +30,10 @@ function addWhereClauseForNeedsMessageOrResponse(query) {
   return addWhereClauseForMessageStatus(query, 'needsResponse,needsMessage')
 }
 
+function hasOwnProperty(obj, propname){
+  return Object.prototype.hasOwnProperty.call(obj, propname)
+}
+
 export function getContacts(assignment, contactsFilter, organization, campaign) {
   // / returns list of contacts eligible for contacting _now_ by a particular user
   const textingHoursEnforced = organization.texting_hours_enforced
@@ -45,7 +49,7 @@ export function getContacts(assignment, contactsFilter, organization, campaign) 
   let query = r.knex('campaign_contact').where('assignment_id', assignment.id)
 
   if (contactsFilter) {
-    if (contactsFilter.hasOwnProperty('validTimezone') && contactsFilter.validTimezone !== null) {
+    if (hasOwnProperty(contactsFilter,'validTimezone') && contactsFilter.validTimezone !== null) {
       if (contactsFilter.validTimezone === true) {
         if (defaultTimezoneIsBetweenTextingHours(config)) {
           // missing timezone ok
@@ -62,11 +66,11 @@ export function getContacts(assignment, contactsFilter, organization, campaign) 
     }
 
     let includePastDue = false
-    if (contactsFilter.hasOwnProperty('includePastDue') && contactsFilter.includePastDue != null) {
+    if (hasOwnProperty(contactsFilter,'includePastDue') && contactsFilter.includePastDue != null) {
       includePastDue = contactsFilter.includePastDue
     }
 
-    if (includePastDue && contactsFilter.hasOwnProperty('messageStatus') && contactsFilter.messageStatus !== null) {
+    if (includePastDue && hasOwnProperty(contactsFilter,'messageStatus') && contactsFilter.messageStatus !== null) {
       if (contactsFilter.messageStatus === 'needsMessageOrResponse') {
         query = addWhereClauseForNeedsMessageOrResponse(query)
       }
@@ -75,7 +79,7 @@ export function getContacts(assignment, contactsFilter, organization, campaign) 
       }
 
     } else {
-      if (contactsFilter.hasOwnProperty('messageStatus') && contactsFilter.messageStatus !== null) {
+      if (hasOwnProperty(contactsFilter,'messageStatus') && contactsFilter.messageStatus !== null) {
         if (pastDue && contactsFilter.messageStatus === 'needsMessage') {
           query = addWhereClauseForMessageStatus(query, '') // stops finding anything after pastDue
         } else if (contactsFilter.messageStatus === 'needsMessageOrResponse') {
@@ -95,7 +99,7 @@ export function getContacts(assignment, contactsFilter, organization, campaign) 
       }
     }
 
-    if (contactsFilter.hasOwnProperty('isOptedOut') && contactsFilter.isOptedOut !== null) {
+    if (hasOwnProperty(contactsFilter,'isOptedOut') && contactsFilter.isOptedOut !== null) {
       query = query.where('is_opted_out', contactsFilter.isOptedOut)
     }
   }
