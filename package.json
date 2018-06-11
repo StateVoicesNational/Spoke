@@ -9,7 +9,7 @@
   },
   "scripts": {
     "test": "jest",
-    "test-e2e": "babel-node ./__test__/e2e/hello_spoke.js",
+    "test-e2e": "jest hello_spoke",
     "test-sqlite": "jest --config jest.config.sqlite.js",
     "test-coverage": "jest --coverage",
     "test-coverage-bothbackends": "jest --config jest.config.sqlite.js &&  jest --coverage",
