@@ -11,7 +11,12 @@ import wrapMutations from './hoc/wrap-mutations'
 export class AdminIncomingMessageList extends Component {
   constructor(props) {
     super(props)
-    this.state = { contactsFilter: {}, campaignsFilter: {}, needsRender: false, utc:Date.now().toString() }
+    this.state = {
+      contactsFilter: {},
+      campaignsFilter: {},
+      needsRender: false,
+      utc: Date.now().toString()
+    }
   }
 
   shouldComponentUpdate(_, nextState) {
@@ -67,8 +72,7 @@ export class AdminIncomingMessageList extends Component {
                   this.state.campaignIdsContactIds,
                   newTexterUserId
                 )
-                this.setState({needsRender: true, utc:Date.now().toString()})
-
+                this.setState({ needsRender: true, utc: Date.now().toString() })
               }}
             />
             <IncomingMessageList
@@ -84,17 +88,9 @@ export class AdminIncomingMessageList extends Component {
                     needsRender: false
                   })
                 } else {
-                  let campaignIdsContactIds = null
-                  if (selectedRows === 'all') {
-                    campaignIdsContactIds = data
-                  } else {
-                    campaignIdsContactIds = selectedRows.map(rowIndex => {
-                      return data[rowIndex]
-                    })
-                  }
                   this.setState({
                     previousSelectedRows: selectedRows,
-                    campaignIdsContactIds,
+                    campaignIdsContactIds: data,
                     needsRender: false
                   })
                 }
@@ -157,7 +153,7 @@ const mapMutationsToProps = () => ({
       }
     `,
     variables: { organizationId, campaignIdsContactIds, newTexterUserId }
-  } )
+  })
 })
 
 export default loadData(withRouter(wrapMutations(AdminIncomingMessageList)), {

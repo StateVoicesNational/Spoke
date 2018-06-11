@@ -15,7 +15,7 @@ function prepareDataTableData(organization) {
       tableData.push({
         campaignTitle: assignment.campaign.title,
         texter: assignment.texter.displayName,
-        to: contact.cell,
+        to: contact.firstName + ' ' + contact.lastName,
         status: contact.messageStatus,
         messages: contact.messages
       })
@@ -78,19 +78,42 @@ function getAssignmentsFromOrganization(organization) {
   return assignments
 }
 
-function prepareTableData(organization) {
+function getContactsFromOrganization(organization) {
   const assignments = getAssignmentsFromOrganization(organization)
-  const tableData = []
-  for (const assignment of assignments) {
-    for (const contact of assignment.contacts) {
-      tableData.push({
-        campaignId: assignment.campaign.id,
-        campaignContactId: contact.id,
-        messageIds: contact.messages.map(message => {return message.id})
-      })
+  return assignments.reduce((accumulator, assignment) => {
+    if (!assignment.contacts) {
+      return accumulator
     }
+    return assignment.contacts.reduce((contactAccumulator, contact) => {
+      contactAccumulator.push(contact)
+      return contactAccumulator
+    }, accumulator)
+  }, [])
+}
+
+function prepareSelectedRowsData(organization, rowsSelected) {
+  const contacts = getContactsFromOrganization(organization)
+  let thingToIterate = []
+  if (rowsSelected === 'all') {
+    thingToIterate = []
+    for (let i = 0; i < contacts.length; i++) {
+      thingToIterate.push(i)
+    }
+  } else if (rowsSelected !== 'none') {
+    thingToIterate = rowsSelected
   }
-  return tableData
+
+  return thingToIterate.reduce((returnData, index) => {
+    const contact = contacts[index]
+    returnData.push({
+      campaignId: contact.campaign.id,
+      campaignContactId: contact.id,
+      messageIds: contact.messages.map(message => {
+        return message.id
+      })
+    })
+    return returnData
+  }, [])
 }
 
 export class IncomingMessageList extends Component {
@@ -157,7 +180,7 @@ export class IncomingMessageList extends Component {
               ) {
                 this.props.onConversationSelected(
                   rowsSelected,
-                  prepareTableData(this.props.organization.organization)
+                  prepareSelectedRowsData(this.props.organization.organization, rowsSelected)
                 )
               }
             }}
@@ -201,7 +224,11 @@ const mapQueriesToProps = ({ ownProps }) => ({
               }
               contacts(contactsFilter: $contactsFilter) {
                 id
-                cell
+                campaign {
+                  id
+                }
+                firstName
+                lastName
                 messageStatus
                 messages {
                   id

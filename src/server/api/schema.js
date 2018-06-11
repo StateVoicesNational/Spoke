@@ -1238,7 +1238,7 @@ const rootMutations = {
 
           await r
             .knex('message')
-            .whereIn('id', messageIds.map(messageId => {return messageId, 10}))
+            .whereIn('id', messageIds.map(messageId => {return messageId}))
             .update({
               assignment_id: assignmentId
             })
