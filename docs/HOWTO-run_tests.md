@@ -17,8 +17,9 @@ GRANT ALL PRIVILEGES ON DATABASE spoke_test TO spoke_test;
 
 ## End-To-End (Interactive Browser) Testing
 
+1. Remember to set `NODE_ENV=dev` 
 1. Setup DB
-1. Start Server
+1. Start Spoke Server
 1. Install browser drivers
     http://seleniumhq.github.io/selenium/docs/api/javascript/
     * Installing chromedriver on MacOS
@@ -29,5 +30,5 @@ GRANT ALL PRIVILEGES ON DATABASE spoke_test TO spoke_test;
         https://github.com/Homebrew/homebrew-cask/blob/master/Casks/chromedriver.rb
 1. Run
     ```
-    npm test-e2e
+    npm run test-e2e
     ```
