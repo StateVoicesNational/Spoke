@@ -34,5 +34,5 @@ module.exports = {
   },
   collectCoverageFrom : ["**/*.{js,jsx}", "!**/node_modules/**", "!**/__test__/**", "!**/deploy/**", "!**/coverage/**"],
   setupTestFrameworkScriptFile: "<rootDir>/__test__/setup.js",
-  testPathIgnorePatterns: ["<rootDir>/node_modules/", "<rootDir>/__tests__/e2e/"]
+  testPathIgnorePatterns: ["<rootDir>/node_modules/", "<rootDir>/__test__/e2e/"]
 };
