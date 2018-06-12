@@ -17,7 +17,7 @@
     "lint": "eslint --fix --ext js --ext jsx src",
     "prod-build-client": "webpack --config ./webpack/config.js",
     "prod-build-server": "babel ./src -d ./build/server --source-maps --copy-files",
-    "prod-build": npm run clean-node-modules && npm run clean && npm run prod-build-client && npm run prod-build-server",
+    "prod-build": "npm run clean-node-modules && npm run clean && npm run prod-build-client && npm run prod-build-server",
     "prod-static-upload": "if [ \"$S3_STATIC_PATH\" != \"\" ] ; then s3cmd sync --acl-public --guess-mime-type ./build/client/assets/ $S3_STATIC_PATH ; fi",
     "postinstall": "if [ \"$NODE_ENV\" = production ] ; then npm run prod-build && npm run prod-static-upload && npm run notify-slack; fi",
     "notify-slack": "if [ \"$SLACK_NOTIFY_URL\" != \"\" ] ; then echo notifying slack && curl -XPOST -d '{\"channel\": \"#spoke\", \"text\":\"'\"$(whoami) building spoke $(git log -1 --pretty=%h) for $AWS_S3_BUCKET_NAME\"'\"}' $SLACK_NOTIFY_URL; fi",
