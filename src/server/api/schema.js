@@ -19,6 +19,7 @@ import {
   datawarehouse
 } from '../models'
 import { schema as userSchema, resolvers as userResolvers } from './user'
+import { schema as conversationSchema, resolvers as conversationsResolver } from './conversations';
 import { schema as organizationSchema, resolvers as organizationResolvers } from './organization'
 import { schema as campaignSchema, resolvers as campaignResolvers } from './campaign'
 import { schema as assignmentSchema, resolvers as assignmentResolvers } from './assignment'
@@ -1344,8 +1345,9 @@ export const schema = [
   cannedResponseSchema,
   questionResponseSchema,
   questionSchema,
-  inviteSchema
-]
+  inviteSchema,
+  conversationSchema,
+];
 
 export const resolvers = {
   ...rootResolvers,
@@ -1364,5 +1366,6 @@ export const resolvers = {
   ...{ JSON: GraphQLJSON },
   ...{ Phone: GraphQLPhone },
   ...questionResolvers,
-  ...rootMutations
+  ...conversationsResolver,
+  ...rootMutations,
 }
