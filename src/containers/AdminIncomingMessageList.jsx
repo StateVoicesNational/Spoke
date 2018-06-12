@@ -4,7 +4,7 @@ import { withRouter } from 'react-router'
 import gql from 'graphql-tag'
 import IncomingMessageFilter from '../components/IncomingMessageFilter'
 import IncomingMessageActions from '../components/IncomingMessageActions'
-import IncomingMessageList from '../components/IncomingMessageList.jsx'
+import IncomingMessageList from '../components/IncomingMessageList'
 import LoadingIndicator from '../components/LoadingIndicator'
 import wrapMutations from './hoc/wrap-mutations'
 
