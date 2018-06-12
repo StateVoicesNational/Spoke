@@ -13,7 +13,7 @@
     "test-coverage": "jest --coverage",
     "test-coverage-bothbackends": "jest --config jest.config.sqlite.js &&  jest --coverage",
     "clean": "rm -rf $OUTPUT_DIR",
-    "clean-node-modules": "rm -rf ./node_modules"
+    "clean-node-modules": "rm -rf ./node_modules",
     "lint": "eslint --fix --ext js --ext jsx src",
     "prod-build-client": "webpack --config ./webpack/config.js",
     "prod-build-server": "babel ./src -d ./build/server --source-maps --copy-files",
