@@ -19,7 +19,7 @@ import {
   datawarehouse
 } from '../models'
 import { schema as userSchema, resolvers as userResolvers } from './user'
-import { schema as conversationSchema, resolvers as conversationsResolver } from './conversations';
+import { schema as conversationSchema, resolvers as conversationsResolver } from './conversations'
 import { schema as organizationSchema, resolvers as organizationResolvers } from './organization'
 import { schema as campaignSchema, resolvers as campaignResolvers } from './campaign'
 import { schema as assignmentSchema, resolvers as assignmentResolvers } from './assignment'
@@ -191,6 +191,7 @@ const rootSchema = `
     assignment(id:String!): Assignment
     organizations: [Organization]
     availableActions(organizationId:String!): [Action]
+    conversations(organizationId:String!): [Conversation]
   }
 
   type RootMutation {
@@ -1239,11 +1240,15 @@ const rootMutations = {
 
           await r
             .knex('message')
-            .whereIn('id', messageIds.map(messageId => {return messageId}))
+            .whereIn(
+              'id',
+              messageIds.map(messageId => {
+                return messageId
+              })
+            )
             .update({
               assignment_id: assignmentId
             })
-
         }
       } catch (error) {
         log.error(error)
@@ -1325,6 +1330,30 @@ const rootResolvers = {
         }
       })
       return availableHandlerObjects
+    },
+    conversations: async (_, { organizationId }, { user }) => {
+      await accessRequired(user, organizationId, 'SUPERVOLUNTEER', true)
+
+      return r.knex
+        .select(
+          'campaign_contact.id as cc_id',
+          'campaign_contact.first_name as cc_first_name',
+          'campaign_contact.last_name as cc_last_name',
+          'campaign_contact.message_status',
+          'campaign_contact.is_opted_out',
+          'campaign_contact.updated_at',
+          'user.id as u_id',
+          'user.first_name as u_first_name',
+          'user.last_name as u_last_name',
+          'campaign.id as cmp_id',
+          'campaign.title',
+          'assignment.id as ass_id'
+        )
+        .from('campaign')
+        .leftJoin('campaign_contact', 'campaign.id', 'campaign_contact.campaign_id')
+        .leftJoin('assignment', 'campaign_contact.assignment_id', 'assignment.id')
+        .leftJoin('user', 'assignment.user_id', 'user.id')
+        .where({ 'campaign.organization_id': organizationId })
     }
   }
 }
@@ -1346,8 +1375,8 @@ export const schema = [
   questionResponseSchema,
   questionSchema,
   inviteSchema,
-  conversationSchema,
-];
+  conversationSchema
+]
 
 export const resolvers = {
   ...rootResolvers,
@@ -1367,5 +1396,5 @@ export const resolvers = {
   ...{ Phone: GraphQLPhone },
   ...questionResolvers,
   ...conversationsResolver,
-  ...rootMutations,
+  ...rootMutations
 }
