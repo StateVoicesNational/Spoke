@@ -22,7 +22,11 @@ import { schema as userSchema, resolvers as userResolvers } from './user'
 import { schema as conversationSchema, resolvers as conversationsResolver } from './conversations'
 import { schema as organizationSchema, resolvers as organizationResolvers } from './organization'
 import { schema as campaignSchema, resolvers as campaignResolvers } from './campaign'
-import { schema as assignmentSchema, resolvers as assignmentResolvers } from './assignment'
+import {
+  schema as assignmentSchema,
+  resolvers as assignmentResolvers,
+  addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue
+} from './assignment'
 import {
   schema as interactionStepSchema,
   resolvers as interactionStepResolvers
@@ -1346,11 +1350,14 @@ const rootResolvers = {
           'campaign_contact.message_status',
           'campaign_contact.is_opted_out',
           'campaign_contact.updated_at',
+          'campaign_contact.cell',
+          'campaign_contact.assignment_id',
           'user.id as u_id',
           'user.first_name as u_first_name',
           'user.last_name as u_last_name',
           'campaign.id as cmp_id',
           'campaign.title',
+          'campaign.due_by',
           'assignment.id as ass_id'
         )
         .from('campaign')
@@ -1373,11 +1380,7 @@ const rootResolvers = {
           query = query.where({ 'assignment.user_id': assignmentsFilter.texterId })
       }
 
-      if (contactsFilter) {
-
-      }
-
-      return query
+      return addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue(query, contactsFilter)
     }
   }
 }
