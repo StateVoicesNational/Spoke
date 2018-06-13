@@ -1,25 +1,16 @@
 import type from 'prop-types'
 import React from 'react'
-import ReactDOM from 'react-dom'
 import Form from 'react-formal'
 import yup from 'yup'
-import Divider from '@material-ui/core/Divider';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Card from '@material-ui/core/Card';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
-import CardActions from '@material-ui/core/CardActions';
 import DeleteIcon from '@material-ui/icons/Delete';
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 
-import {
-  sortInteractionSteps,
-  getInteractionPath,
-  getChildren,
-  findParent,
-  makeTree
-} from '../lib'
+import { makeTree } from '../lib'
 import theme from '../styles/theme'
 import GSForm from './forms/GSForm'
 import CampaignFormSectionHeading from './CampaignFormSectionHeading'
@@ -133,7 +124,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
               fullWidth
               hintText='Answer to the previous question'
             /> : ''}
-            {interactionStep.parentInteractionId ? <DeleteIcon style={styles.pullRight} onTouchTap={this.deleteStep(interactionStep.id).bind(this)} /> : ''}
+            {interactionStep.parentInteractionId ? <DeleteIcon style={styles.pullRight} onClick={this.deleteStep(interactionStep.id).bind(this)} /> : ''}
             {interactionStep.parentInteractionId && this.props.availableActions && this.props.availableActions.length ?
               (<div key={`answeractions-${interactionStep.id}`}>
                  <Form.Field
@@ -184,7 +175,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
           <Button
             variant="contained"
             label='+ Add a response'
-            onTouchTap={this.addStep(interactionStep.id).bind(this)}
+            onClick={this.addStep(interactionStep.id).bind(this)}
             style={{ marginBottom: '10px' }}
           />
         </div> : ''}
@@ -214,7 +205,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
           variant="raised"
           primary
           label={this.props.saveLabel}
-          onTouchTap={this.onSave.bind(this)}
+          onClick={this.onSave.bind(this)}
         />
       </div>
     )

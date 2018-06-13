@@ -49,7 +49,7 @@ export default class ConfirmButton extends Component {
       <div className={css(styles.container)}>
         <Button
           variant="contained"
-          onTouchTap={this.toggleConfirmationDialog}
+          onClick={this.toggleConfirmationDialog}
           label={this.props.label}
         />
         <Dialog

@@ -37,7 +37,7 @@ class SendButton extends Component {
       <div className={css(styles.container)}>
         <Button
           variant="contained"
-          onTouchTap={this.handleTouchTap}
+          onClick={this.handleTouchTap}
           disabled={this.props.disabled}
           label={this.clickStepLabels()[this.state.clickStepIndex]}
           primary

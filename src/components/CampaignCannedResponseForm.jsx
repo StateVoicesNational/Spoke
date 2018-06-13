@@ -58,7 +58,7 @@ class CannedResponseForm extends React.Component {
             />
             <Button
               label='Cancel'
-              onTouchTap={() => this.setState({ showForm: false })}
+              onClick={() => this.setState({ showForm: false })}
               style={{
                 marginLeft: 5,
                 display: 'inline-block'

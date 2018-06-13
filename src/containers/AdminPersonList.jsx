@@ -186,7 +186,7 @@ class AdminPersonList extends React.Component {
                   currentUser={currentUser}
                   handleChange={(newRole) => this.handleChange(person.id, newRole)}
                 />
-                <Button label='Edit' onTouchTap={() => { this.editUser(person.id) }} />
+                <Button label='Edit' onClick={() => { this.editUser(person.id) }} />
               </TableCell>
             </TableRow>
           ))}
@@ -204,7 +204,7 @@ class AdminPersonList extends React.Component {
         <Button
           variant="fab"
           style={theme.components.floatingButton}
-          onTouchTap={this.handleOpen}
+          onClick={this.handleOpen}
         >
           <AddIcon />
         </Button>
@@ -237,7 +237,7 @@ class AdminPersonList extends React.Component {
             <Button
               label='OK'
               primary
-              onTouchTap={this.handleClose}
+              onClick={this.handleClose}
             />
           </DialogActions>
         </Dialog>

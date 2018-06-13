@@ -128,7 +128,7 @@ class AdminCampaignList extends React.Component {
          (<Button
           variant="fab"
            style={theme.components.floatingButton}
-           onTouchTap={this.handleClickNewButton}
+           onClick={this.handleClickNewButton}
          >
            <AddIcon />
          </Button>

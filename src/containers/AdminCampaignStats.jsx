@@ -145,7 +145,7 @@ class AdminCampaignStats extends React.Component {
       <Button
         variant="contained"
         label='Copy Campaign'
-        onTouchTap={async() => await this.props.mutations.copyCampaign(this.props.params.campaignId)}
+        onClick={async() => await this.props.mutations.copyCampaign(this.props.params.campaignId)}
       />
     )
   }
@@ -180,7 +180,7 @@ class AdminCampaignStats extends React.Component {
                     ( // edit
                     <Button
                       variant="contained"
-                      onTouchTap={() => this.props.router.push(`/admin/${organizationId}/campaigns/${campaignId}/edit`)}
+                      onClick={() => this.props.router.push(`/admin/${organizationId}/campaigns/${campaignId}/edit`)}
                       label='Edit'
                     />
                   ) : null}
@@ -189,7 +189,7 @@ class AdminCampaignStats extends React.Component {
                       ( // export
                       <Button
                         variant="contained"
-                        onTouchTap={async () => {
+                        onClick={async () => {
                           this.setState({
                             exportMessageOpen: true,
                             disableExportButton: true
@@ -208,21 +208,21 @@ class AdminCampaignStats extends React.Component {
                       campaign.isArchived ?
                         <Button
                           variant="contained"
-                          onTouchTap={async () => await this.props.mutations.unarchiveCampaign(campaignId)}
+                          onClick={async () => await this.props.mutations.unarchiveCampaign(campaignId)}
                           label='Unarchive'
                         /> : null),
                       ( // archive
                       !campaign.isArchived ?
                         <Button
                           variant="contained"
-                          onTouchTap={async () => await this.props.mutations.archiveCampaign(campaignId)}
+                          onClick={async () => await this.props.mutations.archiveCampaign(campaignId)}
                           label='Archive'
                         /> : null),
                       ( // copy
                       <Button
                         variant="contained"
                         label='Copy Campaign'
-                        onTouchTap={async() => await this.props.mutations.copyCampaign(this.props.params.campaignId)}
+                        onClick={async() => await this.props.mutations.copyCampaign(this.props.params.campaignId)}
                       />)
                     ] : null}
                 </div>

@@ -96,7 +96,7 @@ class CampaignList extends React.Component {
       <ListItem
         style={listItemStyle}
         key={campaign.id}
-        onTouchTap={() => (!isStarted ?
+        onClick={() => (!isStarted ?
           this.props.router.push(`${campaignUrl}/edit`) :
           this.props.router.push(campaignUrl))}
       >
@@ -109,14 +109,14 @@ class CampaignList extends React.Component {
             campaign.isArchived ? (
               <IconButton
                 tooltip='Unarchive'
-                onTouchTap={async () => this.props.mutations.unarchiveCampaign(campaign.id)}
+                onClick={async () => this.props.mutations.unarchiveCampaign(campaign.id)}
               >
                 <UnarchiveIcon />
               </IconButton>
             ) : (
               <IconButton
                 tooltip='Archive'
-                onTouchTap={async () => this.props.mutations.archiveCampaign(campaign.id)}
+                onClick={async () => this.props.mutations.archiveCampaign(campaign.id)}
               >
                 <ArchiveIcon />
               </IconButton>

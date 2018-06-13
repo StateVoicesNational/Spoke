@@ -70,7 +70,7 @@ export class AssignmentSummary extends Component {
           disabled={disabled}
           label={title}
           primary={primary && !disabled}
-          onTouchTap={() => this.goToTodos(contactsFilter, assignment.id)}
+          onClick={() => this.goToTodos(contactsFilter, assignment.id)}
         />)
     } else {
       return (<Badge
@@ -84,7 +84,7 @@ export class AssignmentSummary extends Component {
           variant="contained"
           disabled={disabled}
           label={title}
-          onTouchTap={() => this.goToTodos(contactsFilter, assignment.id)}
+          onClick={() => this.goToTodos(contactsFilter, assignment.id)}
         />
       </Badge>)
     }

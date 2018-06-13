@@ -70,12 +70,12 @@ export default class GSScriptField extends GSFormField {
         <DialogActions>
           <Button
             label='Cancel'
-            onTouchTap={this.handleCloseDialog}
+            onClick={this.handleCloseDialog}
           />,
           <Button
             variant="contained"
             label='Done'
-            onTouchTap={this.handleSaveScript}
+            onClick={this.handleSaveScript}
             primary
           />
         </DialogActions>
@@ -89,7 +89,7 @@ export default class GSScriptField extends GSFormField {
         <TextField
           multiLine
           onFocus={this.handleOpenDialog}
-          onTouchTap={(event) => {
+          onClick={(event) => {
             event.stopPropagation()
           }}
           floatingLabelText={this.floatingLabelText()}
