@@ -1,17 +1,16 @@
 import { createStore, combineReducers, compose, applyMiddleware } from 'redux'
-import { routerReducer, routerMiddleware } from 'react-router-redux'
+import { connectRouter, routerMiddleware } from 'connected-react-router'
 import ReduxThunk from 'redux-thunk'
 import ApolloClientSingleton from '../network/apollo-client-singleton'
 
 export default class Store {
   constructor(history, initialState = {}) {
-    const reducer = combineReducers({
+    const rootReducer = combineReducers({
       apollo: ApolloClientSingleton.reducer(),
-      routing: routerReducer
     })
 
     this.data = createStore(
-      reducer,
+      connectRouter(history)(rootReducer),
       initialState,
       compose(
         applyMiddleware(
