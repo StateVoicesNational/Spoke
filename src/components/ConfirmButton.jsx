@@ -46,7 +46,7 @@ export default class ConfirmButton extends Component {
     return (
       <div className={css(styles.container)}>
         <RaisedButton
-          onTouchTap={this.toggleConfirmationDialog}
+          onClick={this.toggleConfirmationDialog}
           label={this.props.label}
         />
         <Dialog

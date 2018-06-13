@@ -154,13 +154,13 @@ class AssignmentTexter extends React.Component {
         text={title}
       />,
       <IconButton
-        onTouchTap={this.handleNavigatePrevious}
+        onClick={this.handleNavigatePrevious}
         disabled={!this.hasPrevious()}
       >
         <NavigateBeforeIcon />
         </IconButton>,
       <IconButton
-        onTouchTap={this.handleNavigateNextforSkip}
+        onClick={this.handleNavigateNextforSkip}
         disabled={!this.hasNext()}
       >
         <NavigateNextIcon />

@@ -36,7 +36,7 @@ class SendButton extends Component {
     return (
       <div className={css(styles.container)}>
         <RaisedButton
-          onTouchTap={this.handleTouchTap}
+          onClick={this.handleTouchTap}
           disabled={this.props.disabled}
           label={this.clickStepLabels()[this.state.clickStepIndex]}
           primary
