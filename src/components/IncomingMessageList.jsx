@@ -1,63 +1,35 @@
 import React, { Component } from 'react'
 import type from 'prop-types'
 import { Card, CardHeader, CardText } from 'material-ui/Card'
-import Dialog from 'material-ui/Dialog';
-import FlatButton from 'material-ui/FlatButton';
-import ActionOpenInNew from 'material-ui/svg-icons/action/open-in-new';
+import Dialog from 'material-ui/Dialog'
+import FlatButton from 'material-ui/FlatButton'
+import ActionOpenInNew from 'material-ui/svg-icons/action/open-in-new'
 import loadData from '../containers/hoc/load-data'
 import { withRouter } from 'react-router'
 import gql from 'graphql-tag'
 import LoadingIndicator from '../components/LoadingIndicator'
 import DataTables from 'material-ui-datatables'
 
-import { MESSAGE_STATUSES } from '../components/IncomingMessageFilter';
+import { MESSAGE_STATUSES } from '../components/IncomingMessageFilter'
 
-function prepareDataTableData(organization) {
-  const assignments = getAssignmentsFromOrganization(organization)
-  const tableData = []
-  for (const assignment of assignments) {
-    for (const contact of assignment.contacts) {
-      tableData.push({
-        campaignTitle: assignment.campaign.title,
-        texter: assignment.texter.displayName,
-        to: contact.firstName + ' ' + contact.lastName,
-        status: contact.messageStatus,
-        messages: contact.messages
-      })
+function prepareDataTableData(conversations) {
+  const tableData = conversations.map(conversation => {
+    return {
+      campaignTitle: conversation.campaign.title,
+      texter: conversation.texter.displayName,
+      to: conversation.contact.firstName + ' ' + conversation.contact.lastName,
+      status: conversation.contact.messageStatus,
+      messages: conversation.contact.messages
     }
-  }
+  })
   return tableData
 }
 
-function getAssignmentsFromOrganization(organization) {
-  const assignments = []
-  for (const campaign of organization.campaigns) {
-    for (const assignment of campaign.assignments) {
-      assignments.push(assignment)
-    }
-  }
-  return assignments
-}
-
-function getContactsFromOrganization(organization) {
-  const assignments = getAssignmentsFromOrganization(organization)
-  return assignments.reduce((accumulator, assignment) => {
-    if (!assignment.contacts) {
-      return accumulator
-    }
-    return assignment.contacts.reduce((contactAccumulator, contact) => {
-      contactAccumulator.push(contact)
-      return contactAccumulator
-    }, accumulator)
-  }, [])
-}
-
-function prepareSelectedRowsData(organization, rowsSelected) {
-  const contacts = getContactsFromOrganization(organization)
+function prepareSelectedRowsData(conversations, rowsSelected) {
   let thingToIterate = []
   if (rowsSelected === 'all') {
     thingToIterate = []
-    for (let i = 0; i < contacts.length; i++) {
+    for (let i = 0; i < conversations.length; i++) {
       thingToIterate.push(i)
     }
   } else if (rowsSelected !== 'none') {
@@ -65,13 +37,10 @@ function prepareSelectedRowsData(organization, rowsSelected) {
   }
 
   return thingToIterate.reduce((returnData, index) => {
-    const contact = contacts[index]
+    const conversation= conversations[index]
     returnData.push({
-      campaignId: contact.campaign.id,
-      campaignContactId: contact.id,
-      messageIds: contact.messages.map(message => {
-        return message.id
-      })
+      campaignId: conversation.campaign.id,
+      campaignContactId: conversation.contact.id,
     })
     return returnData
   }, [])
@@ -84,23 +53,23 @@ export class IncomingMessageList extends Component {
       data: [],
       page: 1,
       rowSize: 10,
-      activeConversation: undefined,
+      activeConversation: undefined
     }
 
-    this.prepareTableColumns = this.prepareTableColumns.bind(this);
+    this.prepareTableColumns = this.prepareTableColumns.bind(this)
     this.handleNextPageClick = this.handleNextPageClick.bind(this)
     this.handlePreviousPageClick = this.handlePreviousPageClick.bind(this)
     this.handleRowSizeChanged = this.handleRowSizeChanged.bind(this)
-    
-    this.handleOpenConversation = this.handleOpenConversation.bind(this);
-    this.handleCloseConversation = this.handleCloseConversation.bind(this);
+
+    this.handleOpenConversation = this.handleOpenConversation.bind(this)
+    this.handleCloseConversation = this.handleCloseConversation.bind(this)
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.organization.loading) {
+    if (nextProps.conversations.loading) {
       this.setState({ data: [], count: 0, page: 1 })
     } else {
-      const assignments = prepareDataTableData(nextProps.organization.organization)
+      const assignments = prepareDataTableData(nextProps.conversations.conversations)
       this.setState({ data: assignments, count: assignments.length, page: 1 })
     }
   }
@@ -128,38 +97,38 @@ export class IncomingMessageList extends Component {
         key: 'latestMessage',
         label: 'Latest Message',
         render: (columnKey, row) => {
-          let lastMessage = null;
+          let lastMessage = null
           let lastMessageEl = <p>No Messages</p>
-          if (row.messages.length > 0) {
+          if (row.messages && row.messages.length > 0) {
             lastMessage = row.messages[row.messages.length - 1]
             lastMessageEl = (
               <p>
-                <span style={{'color': lastMessage.isFromContact ? 'blue' : 'black'}}>
+                <span style={{ color: lastMessage.isFromContact ? 'blue' : 'black' }}>
                   <b>{lastMessage.isFromContact ? 'Contact:' : 'Texter:'} </b>
                 </span>
                 {lastMessage.text}
               </p>
-            );
+            )
           }
-          return lastMessageEl;
+          return lastMessageEl
         }
       },
       {
         key: 'viewConversation',
         label: 'View Conversation',
         render: (columnKey, row) => {
-          if (row.messages.length > 0) {
+          if (row.messages && row.messages.length > 0) {
             return (
               <FlatButton
                 onClick={event => {
-                  event.stopPropagation();
-                  this.handleOpenConversation(row);
+                  event.stopPropagation()
+                  this.handleOpenConversation(row)
                 }}
                 icon={<ActionOpenInNew />}
               />
-            );
+            )
           }
-          return '';
+          return ''
         }
       }
     ]
@@ -182,20 +151,20 @@ export class IncomingMessageList extends Component {
   }
 
   handleOpenConversation(contact) {
-    this.setState({activeConversation: contact});
-  };
+    this.setState({ activeConversation: contact })
+  }
 
   handleCloseConversation() {
-    this.setState({activeConversation: undefined});
-  };
+    this.setState({ activeConversation: undefined })
+  }
 
   render() {
     const sliceStart = (this.state.page - 1) * this.state.rowSize,
-          sliceEnd = (this.state.page - 1) * this.state.rowSize + this.state.rowSize;
-    const tableData = this.state.data.slice(sliceStart, sliceEnd);
+      sliceEnd = (this.state.page - 1) * this.state.rowSize + this.state.rowSize
+    const tableData = this.state.data.slice(sliceStart, sliceEnd)
     return (
       <div>
-        {this.props.organization.loading ? (
+        {this.props.conversations.loading ? (
           <LoadingIndicator />
         ) : (
           <DataTables
@@ -218,7 +187,7 @@ export class IncomingMessageList extends Component {
               ) {
                 this.props.onConversationSelected(
                   rowsSelected,
-                  prepareSelectedRowsData(this.props.organization.organization, rowsSelected)
+                  prepareSelectedRowsData(this.props.conversations.conversations, rowsSelected)
                 )
               }
             }}
@@ -231,23 +200,23 @@ export class IncomingMessageList extends Component {
           autoScrollBodyContent={true}
           onRequestClose={this.handleCloseConversation}
         >
-          {this.state.activeConversation !== undefined &&
+          {this.state.activeConversation !== undefined && (
             <div>
               {this.state.activeConversation.messages.map((message, index) => {
-                const isFromContact = message.isFromContact;
+                const isFromContact = message.isFromContact
                 const style = {
-                  'color': isFromContact ? 'blue' : 'black',
-                  'textAlign': isFromContact ? 'left' : 'right',
-                };
+                  color: isFromContact ? 'blue' : 'black',
+                  textAlign: isFromContact ? 'left' : 'right'
+                }
 
                 return (
                   <p key={index} style={style}>
                     {message.text}
                   </p>
-                );
+                )
               })}
             </div>
-          }
+          )}
         </Dialog>
       </div>
     )
@@ -263,7 +232,7 @@ IncomingMessageList.propTypes = {
 }
 
 const mapQueriesToProps = ({ ownProps }) => ({
-  organization: {
+  conversations: {
     query: gql`
       query Q(
         $organizationId: String!
@@ -271,38 +240,28 @@ const mapQueriesToProps = ({ ownProps }) => ({
         $campaignsFilter: CampaignsFilter
         $utc: String
       ) {
-        organization(id: $organizationId, utc: $utc) {
-          id
-          campaigns(campaignsFilter: $campaignsFilter) {
+        conversations(
+          organizationId: $organizationId
+          campaignsFilter: $campaignsFilter
+          contactsFilter: $contactsFilter
+          utc: $utc
+        ) {
+          texter {
+            id
+            displayName
+          }
+          contact {
+            id
+            firstName
+            lastName
+            messageStatus
+          }
+          campaign {
             id
             title
-            assignments {
-              campaign {
-                id
-                title
-              }
-              texter {
-                id
-                displayName
-              }
-              contacts(contactsFilter: $contactsFilter) {
-                id
-                campaign {
-                  id
-                }
-                firstName
-                lastName
-                messageStatus
-                messages {
-                  id
-                  createdAt
-                  userNumber
-                  contactNumber
-                  text
-                  isFromContact
-                }
-              }
-            }
+          }
+          assignment {
+            id
           }
         }
       }

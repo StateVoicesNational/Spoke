@@ -191,7 +191,7 @@ const rootSchema = `
     assignment(id:String!): Assignment
     organizations: [Organization]
     availableActions(organizationId:String!): [Action]
-    conversations(organizationId:String!): [Conversation]
+    conversations(organizationId:String!, campaignsFilter:CampaignsFilter, assignmentsFilter:AssignmentsFilter, contactsFilter:ContactsFilter, utc:String): [Conversation]
   }
 
   type RootMutation {
@@ -1331,10 +1331,14 @@ const rootResolvers = {
       })
       return availableHandlerObjects
     },
-    conversations: async (_, { organizationId }, { user }) => {
+    conversations: async (
+      _,
+      { organizationId, campaignsFilter, assignmentsFilter, contactsFilter, utc },
+      { user }
+    ) => {
       await accessRequired(user, organizationId, 'SUPERVOLUNTEER', true)
 
-      return r.knex
+      let query = r.knex
         .select(
           'campaign_contact.id as cc_id',
           'campaign_contact.first_name as cc_first_name',
@@ -1354,6 +1358,26 @@ const rootResolvers = {
         .leftJoin('assignment', 'campaign_contact.assignment_id', 'assignment.id')
         .leftJoin('user', 'assignment.user_id', 'user.id')
         .where({ 'campaign.organization_id': organizationId })
+
+      if (campaignsFilter) {
+        if ('isArchived' in campaignsFilter && campaignsFilter.isArchived !== null) {
+          query = query.where({ 'campaign.is_archived': campaignsFilter.isArchived })
+        }
+        if ('campaignId' in campaignsFilter && campaignsFilter.campaignId !== null) {
+          query = query.where({ 'campaign.id': parseInt(campaignsFilter.campaignId) })
+        }
+      }
+
+      if (assignmentsFilter) {
+        if ('texterId' in assignmentsFilter && assignmentsFilter.texterId !== null)
+          query = query.where({ 'assignment.user_id': assignmentsFilter.texterId })
+      }
+
+      if (contactsFilter) {
+
+      }
+
+      return query
     }
   }
 }
