@@ -41,6 +41,9 @@ function prepareSelectedRowsData(conversations, rowsSelected) {
     returnData.push({
       campaignId: conversation.campaign.id,
       campaignContactId: conversation.contact.id,
+      messageIds: conversation.contact.messages.map(message => {
+        return message.id
+      })
     })
     return returnData
   }, [])
@@ -255,6 +258,11 @@ const mapQueriesToProps = ({ ownProps }) => ({
             firstName
             lastName
             messageStatus
+            messages {
+              id
+              text
+              isFromContact
+            }
           }
           campaign {
             id
