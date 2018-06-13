@@ -141,7 +141,7 @@ class AdminCampaignStats extends React.Component {
     return (
       <RaisedButton
         label='Copy Campaign'
-        onTouchTap={async() => await this.props.mutations.copyCampaign(this.props.params.campaignId)}
+        onClick={async() => await this.props.mutations.copyCampaign(this.props.params.campaignId)}
       />
     )
   }
@@ -175,7 +175,7 @@ class AdminCampaignStats extends React.Component {
                   {!campaign.isArchived ?
                     ( // edit
                     <RaisedButton
-                      onTouchTap={() => this.props.router.push(`/admin/${organizationId}/campaigns/${campaignId}/edit`)}
+                      onClick={() => this.props.router.push(`/admin/${organizationId}/campaigns/${campaignId}/edit`)}
                       label='Edit'
                     />
                   ) : null}
@@ -183,7 +183,7 @@ class AdminCampaignStats extends React.Component {
                     [ // Buttons for Admins (and not Supervolunteers)
                       ( // export
                       <RaisedButton
-                        onTouchTap={async () => {
+                        onClick={async () => {
                           this.setState({
                             exportMessageOpen: true,
                             disableExportButton: true
@@ -201,19 +201,19 @@ class AdminCampaignStats extends React.Component {
                       ( // unarchive
                       campaign.isArchived ?
                         <RaisedButton
-                          onTouchTap={async () => await this.props.mutations.unarchiveCampaign(campaignId)}
+                          onClick={async () => await this.props.mutations.unarchiveCampaign(campaignId)}
                           label='Unarchive'
                         /> : null),
                       ( // archive
                       !campaign.isArchived ?
                         <RaisedButton
-                          onTouchTap={async () => await this.props.mutations.archiveCampaign(campaignId)}
+                          onClick={async () => await this.props.mutations.archiveCampaign(campaignId)}
                           label='Archive'
                         /> : null),
                       ( // copy
                       <RaisedButton
                         label='Copy Campaign'
-                        onTouchTap={async() => await this.props.mutations.copyCampaign(this.props.params.campaignId)}
+                        onClick={async() => await this.props.mutations.copyCampaign(this.props.params.campaignId)}
                       />)
                     ] : null}
                 </div>

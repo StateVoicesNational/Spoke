@@ -135,7 +135,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
               fullWidth
               hintText='Answer to the previous question'
             /> : ''}
-            {interactionStep.parentInteractionId ? <DeleteIcon style={styles.pullRight} onTouchTap={this.deleteStep(interactionStep.id).bind(this)} /> : ''}
+            {interactionStep.parentInteractionId ? <DeleteIcon style={styles.pullRight} onClick={this.deleteStep(interactionStep.id).bind(this)} /> : ''}
             {interactionStep.parentInteractionId && this.props.availableActions && this.props.availableActions.length ?
               (<div key={`answeractions-${interactionStep.id}`}>
                  <Form.Field
@@ -187,7 +187,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
         {interactionStep.questionText && interactionStep.script && (!interactionStep.parentInteractionId || interactionStep.answerOption) ? <div>
           <RaisedButton
             label='+ Add a response'
-            onTouchTap={this.addStep(interactionStep.id).bind(this)}
+            onClick={this.addStep(interactionStep.id).bind(this)}
             style={{ marginBottom: '10px' }}
           />
         </div> : ''}
@@ -217,7 +217,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
           {...dataTest('interactionSubmit')}
           primary
           label={this.props.saveLabel}
-          onTouchTap={this.onSave.bind(this)}
+          onClick={this.onSave.bind(this)}
         />
       </div>
     )

@@ -88,7 +88,7 @@ class UserMenu extends Component {
     return (
       <div>
         <IconButton
-          onTouchTap={this.handleTouchTap}
+          onClick={this.handleTouchTap}
           iconStyle={{ fontSize: '18px' }}
         >
           {this.renderAvatar(currentUser, avatarSize)}

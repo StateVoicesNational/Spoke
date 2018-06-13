@@ -63,7 +63,7 @@ class AssignmentTexterSurveyDropdown extends Component {
         key='clear'
         value='clearResponse'
         primaryText='Clear response'
-        // onTouchTap={(event) => this.handleAnswerDelete(event, step.id)}
+        // onClick={(event) => this.handleAnswerDelete(event, step.id)}
       />
     )
 

@@ -78,7 +78,7 @@ class AdminCampaignList extends React.Component {
           (<FloatingActionButton
             {...dataTest('addCampaign')}
             style={theme.components.floatingButton}
-            onTouchTap={this.handleClickNewButton}
+            onClick={this.handleClickNewButton}
           >
             <ContentAdd />
           </FloatingActionButton>

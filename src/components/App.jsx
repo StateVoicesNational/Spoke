@@ -4,15 +4,11 @@ import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider'
 import muiTheme from '../styles/mui-theme'
 import theme from '../styles/theme'
 import { StyleSheet, css } from 'aphrodite'
-import injectTapEventPlugin from 'react-tap-event-plugin'
 import Form from 'react-formal'
 import GSTextField from './forms/GSTextField'
 import GSDateField from './forms/GSDateField'
 import GSScriptField from './forms/GSScriptField'
 import GSSelectField from './forms/GSSelectField'
-
-// Needed for MaterialUI
-injectTapEventPlugin()
 
 Form.addInputTypes({
   string: GSTextField,

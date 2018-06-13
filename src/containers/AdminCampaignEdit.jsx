@@ -453,12 +453,12 @@ class AdminCampaignEdit extends React.Component {
           {this.props.campaignData.campaign.isArchived ? (
             <RaisedButton
               label='Unarchive'
-              onTouchTap={async() => await this.props.mutations.unarchiveCampaign(this.props.campaignData.campaign.id)}
+              onClick={async() => await this.props.mutations.unarchiveCampaign(this.props.campaignData.campaign.id)}
             />
           ) : (
             <RaisedButton
               label='Archive'
-              onTouchTap={async() => await this.props.mutations.archiveCampaign(this.props.campaignData.campaign.id)}
+              onClick={async() => await this.props.mutations.archiveCampaign(this.props.campaignData.campaign.id)}
             />
           )}
           <RaisedButton
@@ -466,7 +466,7 @@ class AdminCampaignEdit extends React.Component {
             primary
             label='Start This Campaign!'
             disabled={!isCompleted}
-            onTouchTap={async () => {
+            onClick={async () => {
               this.setState({
                 startingCampaign: true
               })
