@@ -1422,8 +1422,12 @@ const rootResolvers = {
 
       const conversations = await query
 
-      const countQuery = r.knex.count('*')
-      const conversationsCountArray = await getConversationsJoinsAndWhereClause(countQuery, organizationId, campaignsFilter, assignmentsFilter, contactsFilter)
+      let countQuery = null
+      let conversationsCountArray = null
+      if (cursor) {
+        countQuery = r.knex.count('*')
+        conversationsCountArray = await getConversationsJoinsAndWhereClause(countQuery, organizationId, campaignsFilter, assignmentsFilter, contactsFilter)
+      }
 
       let pageInfo = null
       if (cursor) {
