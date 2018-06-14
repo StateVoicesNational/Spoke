@@ -62,10 +62,8 @@ export class AdminIncomingMessageList extends Component {
   }
 
   async handleMessageFilterChange(messagesFilter) {
-    const contactsFilter = this.state.contactsFilter;
-    contactsFilter.messageStatus = messagesFilter
     await this.setState({
-      contactsFilter,
+      contactsFilter: { messageStatus: messagesFilter },
       needsRender: true
     })
   }
