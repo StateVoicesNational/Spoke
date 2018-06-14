@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
 import type from 'prop-types'
-import { Card, CardHeader, CardText } from 'material-ui/Card'
 import Dialog from 'material-ui/Dialog'
 import FlatButton from 'material-ui/FlatButton'
 import ActionOpenInNew from 'material-ui/svg-icons/action/open-in-new'
@@ -55,6 +54,7 @@ export class IncomingMessageList extends Component {
     this.state = {
       data: [],
       page: 1,
+      offset: 0,
       rowSize: 10,
       activeConversation: undefined
     }
@@ -72,8 +72,9 @@ export class IncomingMessageList extends Component {
     if (nextProps.conversations.loading) {
       this.setState({ data: [], count: 0, page: 1 })
     } else {
-      const assignments = prepareDataTableData(nextProps.conversations.conversations)
-      this.setState({ data: assignments, count: assignments.length, page: 1 })
+      const data = prepareDataTableData(nextProps.conversations.conversations)
+      const count = _.get(nextProps, 'conversations.pageInfo.total', 0) || data.length
+      this.setState({ data, count })
     }
   }
 
@@ -238,17 +239,22 @@ const mapQueriesToProps = ({ ownProps }) => ({
   conversations: {
     query: gql`
       query Q(
+        $cursor: OffsetLimitCursor,
         $organizationId: String!
         $contactsFilter: ContactsFilter
         $campaignsFilter: CampaignsFilter
         $utc: String
       ) {
         conversations(
+          cursor: $cursor
           organizationId: $organizationId
           campaignsFilter: $campaignsFilter
           contactsFilter: $contactsFilter
           utc: $utc
         ) {
+          pageInfo {
+            total
+          }
           conversations {
             texter {
               id
@@ -277,6 +283,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
       }
     `,
     variables: {
+      cursor: {offset:1, limit:10 },
       organizationId: ownProps.organizationId,
       contactsFilter: ownProps.contactsFilter,
       campaignsFilter: ownProps.campaignsFilter,

@@ -35,7 +35,11 @@ export const resolvers = {
       return instance.conversations
     },
     pageInfo: instance => {
-      return instance.pageInfo
+      if ('pageInfo' in instance) {
+        return instance.pageInfo
+      } else {
+        return null
+      }
     }
   },
   Conversation: {
