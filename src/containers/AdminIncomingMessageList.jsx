@@ -11,12 +11,23 @@ import wrapMutations from './hoc/wrap-mutations'
 export class AdminIncomingMessageList extends Component {
   constructor(props) {
     super(props)
+
     this.state = {
+      page: 0,
+      pageSize: 10,
       contactsFilter: {},
       campaignsFilter: {},
+      assignmentsFilter: {},
       needsRender: false,
       utc: Date.now().toString()
     }
+
+    this.handleCampaignChange = this.handleCampaignChange.bind(this)
+    this.handleMessageFilterChange = this.handleMessageFilterChange.bind(this)
+    this.handleReassignRequested = this.handleReassignRequested.bind(this)
+    this.handlePageChange = this.handlePageChange.bind(this)
+    this.handlePageSizeChange = this.handlePageSizeChange.bind(this)
+    this.handleRowSelection = this.handleRowSelection.bind(this)
   }
 
   shouldComponentUpdate(_, nextState) {
@@ -30,7 +41,79 @@ export class AdminIncomingMessageList extends Component {
     return true
   }
 
+  async handleCampaignChange(campaignId) {
+    let campaignsFilter = {}
+    switch (campaignId) {
+      case -1:
+        break
+      case -2:
+        campaignsFilter = { isArchived: false }
+        break
+      case -3:
+        campaignsFilter = { isArchived: true }
+        break
+      default:
+        campaignsFilter = { campaignId }
+    }
+    await this.setState({
+      campaignsFilter,
+      needsRender: true
+    })
+  }
+
+  async handleMessageFilterChange(messagesFilter) {
+    const contactsFilter = this.state.contactsFilter;
+    contactsFilter.messageStatus = messagesFilter
+    await this.setState({
+      contactsFilter,
+      needsRender: true
+    })
+  }
+
+  async handleReassignRequested(newTexterUserId) {
+    await this.props.mutations.reassignCampaignContacts(
+      this.props.params.organizationId,
+      this.state.campaignIdsContactIds,
+      newTexterUserId
+    )
+    this.setState({
+      utc: Date.now().toString(),
+      needsRender: true
+    })
+  }
+
+  async handlePageChange(page) {
+    await this.setState({
+      page,
+      needsRender: true,
+    })
+  }
+
+  async handlePageSizeChange(pageSize) {
+    await this.setState({ needsRender: true, pageSize })
+  }
+  
+  async handleRowSelection(selectedRows, data) {
+    if (this.state.previousSelectedRows === 'all' && selectedRows !== 'all') {
+      await this.setState({
+        previousSelectedRows: [],
+        campaignIdsContactIds: [],
+        needsRender: false
+      })
+    } else {
+      await this.setState({
+        previousSelectedRows: selectedRows,
+        campaignIdsContactIds: data,
+        needsRender: false
+      })
+    }
+  }
+
   render() {
+    const cursor = {
+      offset: this.state.page * this.state.pageSize,
+      limit: this.state.pageSize
+    }
     return (
       <div>
         <h3> Message Review </h3>
@@ -40,63 +123,25 @@ export class AdminIncomingMessageList extends Component {
           <div>
             <IncomingMessageFilter
               campaigns={this.props.organization.organization.campaigns}
-              onCampaignChanged={async campaignId => {
-                let campaignsFilter = {}
-                switch (campaignId) {
-                  case -1:
-                    break
-                  case -2:
-                    campaignsFilter = { isArchived: false }
-                    break
-                  case -3:
-                    campaignsFilter = { isArchived: true }
-                    break
-                  default:
-                    campaignsFilter = { campaignId }
-                }
-                await this.setState({
-                  campaignsFilter
-                })
-              }}
-              onMessageFilterChanged={async messagesFilter => {
-                await this.setState({
-                  contactsFilter: { messageStatus: messagesFilter }
-                })
-              }}
+              onCampaignChanged={this.handleCampaignChange}
+              onMessageFilterChanged={this.handleMessageFilterChange}
             />
             <br />
             <IncomingMessageActions
               people={this.props.organization.organization.people}
-              onReassignRequested={async newTexterUserId => {
-                await this.props.mutations.reassignCampaignContacts(
-                  this.props.params.organizationId,
-                  this.state.campaignIdsContactIds,
-                  newTexterUserId
-                )
-                this.setState({ needsRender: true, utc: Date.now().toString() })
-              }}
+              onReassignRequested={this.handleReassignRequested}
             />
             <br />
             <IncomingMessageList
               organizationId={this.props.params.organizationId}
+              cursor={cursor}
               contactsFilter={this.state.contactsFilter}
               campaignsFilter={this.state.campaignsFilter}
+              assignmentsFilter={this.state.assignmentsFilter}
               utc={this.state.utc}
-              onConversationSelected={(selectedRows, data) => {
-                if (this.state.previousSelectedRows === 'all' && selectedRows !== 'all') {
-                  this.setState({
-                    previousSelectedRows: [],
-                    campaignIdsContactIds: [],
-                    needsRender: false
-                  })
-                } else {
-                  this.setState({
-                    previousSelectedRows: selectedRows,
-                    campaignIdsContactIds: data,
-                    needsRender: false
-                  })
-                }
-              }}
+              onPageChanged={this.handlePageChange}
+              onPageSizeChanged={this.handlePageSizeChange}
+              onConversationSelected={this.handleRowSelection}
             />
           </div>
         )}

@@ -12,7 +12,7 @@ import DataTables from 'material-ui-datatables'
 import { MESSAGE_STATUSES } from '../components/IncomingMessageFilter'
 
 function prepareDataTableData(conversations) {
-  const tableData = conversations.conversations.map(conversation => {
+  const tableData = conversations.map(conversation => {
     return {
       campaignTitle: conversation.campaign.title,
       texter: conversation.texter.displayName,
@@ -25,57 +25,37 @@ function prepareDataTableData(conversations) {
 }
 
 function prepareSelectedRowsData(conversations, rowsSelected) {
-  let thingToIterate = []
+  let selection = rowsSelected
   if (rowsSelected === 'all') {
-    thingToIterate = []
-    for (let i = 0; i < conversations.length; i++) {
-      thingToIterate.push(i)
-    }
-  } else if (rowsSelected !== 'none') {
-    thingToIterate = rowsSelected
+    selection = Array.from(Array(conversations.length).keys())
+  } else if (rowsSelected === 'none') {
+    selection = []
   }
 
-  return thingToIterate.reduce((returnData, index) => {
-    const conversation = conversations[index]
-    returnData.push({
+  return selection.map(selectedIndex => {
+    const conversation = conversations[selectedIndex]
+    return {
       campaignId: conversation.campaign.id,
       campaignContactId: conversation.contact.id,
-      messageIds: conversation.contact.messages.map(message => {
-        return message.id
-      })
-    })
-    return returnData
-  }, [])
+      messageIds: conversation.contact.messages.map(message => message.id)
+    }
+  })
 }
 
 export class IncomingMessageList extends Component {
   constructor(props) {
     super(props)
-    this.state = {
-      data: [],
-      page: 1,
-      offset: 0,
-      rowSize: 10,
-      activeConversation: undefined
-    }
+
+    this.state = { activeConversation: undefined }
 
     this.prepareTableColumns = this.prepareTableColumns.bind(this)
     this.handleNextPageClick = this.handleNextPageClick.bind(this)
     this.handlePreviousPageClick = this.handlePreviousPageClick.bind(this)
     this.handleRowSizeChanged = this.handleRowSizeChanged.bind(this)
+    this.handleRowsSelected = this.handleRowsSelected.bind(this)
 
     this.handleOpenConversation = this.handleOpenConversation.bind(this)
     this.handleCloseConversation = this.handleCloseConversation.bind(this)
-  }
-
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.conversations.loading) {
-      this.setState({ data: [], count: 0, page: 1 })
-    } else {
-      const data = prepareDataTableData(nextProps.conversations.conversations)
-      const count = _.get(nextProps, 'conversations.pageInfo.total', 0) || data.length
-      this.setState({ data, count })
-    }
   }
 
   prepareTableColumns() {
@@ -106,7 +86,7 @@ export class IncomingMessageList extends Component {
           if (row.messages && row.messages.length > 0) {
             lastMessage = row.messages[row.messages.length - 1]
             lastMessageEl = (
-              <p>
+              <p style={{textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap'}}>
                 <span style={{ color: lastMessage.isFromContact ? 'blue' : 'black' }}>
                   <b>{lastMessage.isFromContact ? 'Contact:' : 'Texter:'} </b>
                 </span>
@@ -139,19 +119,28 @@ export class IncomingMessageList extends Component {
   }
 
   handleNextPageClick() {
-    this.setState({
-      page: this.state.page + 1
-    })
+    const { limit, offset, total } = this.props.conversations.conversations.pageInfo
+    const currentPage = Math.floor(offset / limit)
+    const maxPage = Math.floor(total / limit)
+    const newPage = Math.min(maxPage, currentPage + 1)
+    this.props.onPageChanged(newPage)
   }
 
   handlePreviousPageClick() {
-    this.setState({
-      page: this.state.page - 1
-    })
+    const { limit, offset } = this.props.conversations.conversations.pageInfo
+    const currentPage = Math.floor(offset / limit)
+    const newPage = Math.max(0, currentPage - 1)
+    this.props.onPageChanged(newPage)
   }
 
   handleRowSizeChanged(index, value) {
-    this.setState({ rowSize: value })
+    this.props.onPageSizeChanged(value)
+  }
+
+  handleRowsSelected(rowsSelected) {
+    const conversations = this.props.conversations.conversations.conversations
+    const selectedConversations = prepareSelectedRowsData(conversations, rowsSelected)
+    this.props.onConversationSelected(rowsSelected, selectedConversations)
   }
 
   handleOpenConversation(contact) {
@@ -163,40 +152,31 @@ export class IncomingMessageList extends Component {
   }
 
   render() {
-    const sliceStart = (this.state.page - 1) * this.state.rowSize,
-      sliceEnd = (this.state.page - 1) * this.state.rowSize + this.state.rowSize
-    const tableData = this.state.data.slice(sliceStart, sliceEnd)
+    if (this.props.conversations.loading) {
+      return <LoadingIndicator />
+    }
+
+    const { conversations, pageInfo } = this.props.conversations.conversations
+    const { limit, offset, total } = pageInfo
+    const displayPage = Math.floor(offset / limit) + 1
+    const tableData = prepareDataTableData(conversations)
     return (
       <div>
-        {this.props.conversations.loading ? (
-          <LoadingIndicator />
-        ) : (
-          <DataTables
-            data={tableData}
-            columns={this.prepareTableColumns()}
-            multiSelectable
-            selectable
-            enableSelectAll
-            showCheckboxes
-            page={this.state.page}
-            rowSize={this.state.rowSize}
-            count={this.state.count}
-            onNextPageClick={this.handleNextPageClick}
-            onPreviousPageClick={this.handlePreviousPageClick}
-            onRowSizeChange={this.handleRowSizeChanged}
-            onRowSelection={rowsSelected => {
-              if (
-                this.props.onConversationSelected != null &&
-                typeof this.props.onConversationSelected === 'function'
-              ) {
-                this.props.onConversationSelected(
-                  rowsSelected,
-                  prepareSelectedRowsData(this.props.conversations.conversations, rowsSelected)
-                )
-              }
-            }}
-          />
-        )}
+        <DataTables
+          data={tableData}
+          columns={this.prepareTableColumns()}
+          multiSelectable={true}
+          selectable={true}
+          enableSelectAll={true}
+          showCheckboxes={true}
+          page={displayPage}
+          rowSize={limit}
+          count={total}
+          onNextPageClick={this.handleNextPageClick}
+          onPreviousPageClick={this.handlePreviousPageClick}
+          onRowSizeChange={this.handleRowSizeChanged}
+          onRowSelection={this.handleRowsSelected}
+        />
         <Dialog
           title="Messages"
           open={this.state.activeConversation !== undefined}
@@ -229,8 +209,12 @@ export class IncomingMessageList extends Component {
 
 IncomingMessageList.propTypes = {
   organizationId: type.string,
+  cursor: type.object,
   contactsFilter: type.object,
   campaignsFilter: type.object,
+  assignmentsFilter: type.object,
+  onPageChanged: type.func,
+  onPageSizeChanged: type.func,
   onConversationSelected: type.func,
   utc: type.string
 }
@@ -239,10 +223,11 @@ const mapQueriesToProps = ({ ownProps }) => ({
   conversations: {
     query: gql`
       query Q(
-        $cursor: OffsetLimitCursor,
         $organizationId: String!
+        $cursor: OffsetLimitCursor!
         $contactsFilter: ContactsFilter
         $campaignsFilter: CampaignsFilter
+        $assignmentsFilter: AssignmentsFilter
         $utc: String
       ) {
         conversations(
@@ -250,9 +235,12 @@ const mapQueriesToProps = ({ ownProps }) => ({
           organizationId: $organizationId
           campaignsFilter: $campaignsFilter
           contactsFilter: $contactsFilter
+          assignmentsFilter: $assignmentsFilter
           utc: $utc
         ) {
           pageInfo {
+            limit
+            offset
             total
           }
           conversations {
@@ -285,8 +273,10 @@ const mapQueriesToProps = ({ ownProps }) => ({
     variables: {
       cursor: {offset:1, limit:10 },
       organizationId: ownProps.organizationId,
+      cursor: ownProps.cursor,
       contactsFilter: ownProps.contactsFilter,
       campaignsFilter: ownProps.campaignsFilter,
+      assignmentsFilter: ownProps.assignmentsFilter,
       utc: ownProps.utc
     },
     forceFetch: true
