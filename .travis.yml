@@ -3,6 +3,10 @@ node_js:
 - "6.10.3"
 services:
   - postgresql
+addons:
+  sauce_connect:
+    username: "cp4r3zsl"
+    access_key: "d00a6baf-4b34-4790-a9cb-ed0bdf1303ff"
 env:
   global:
   - secure: TODO
@@ -16,5 +20,6 @@ before_script:
   - ./cc-test-reporter before-build
 script:
 - npm run test-coverage
+- npm run test-e2e
 after_script:
 - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
