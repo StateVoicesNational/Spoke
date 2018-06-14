@@ -199,7 +199,6 @@ const rootSchema = `
     total: Int!
   }
 
-
   type RootQuery {
     currentUser: User
     organization(id:String!, utc:String): Organization
@@ -209,7 +208,7 @@ const rootSchema = `
     assignment(id:String!): Assignment
     organizations: [Organization]
     availableActions(organizationId:String!): [Action]
-    conversations(cursor:OffsetLimitCursor, organizationId:String!, campaignsFilter:CampaignsFilter, assignmentsFilter:AssignmentsFilter, contactsFilter:ContactsFilter, utc:String): PaginatedConversations
+    conversations(cursor:OffsetLimitCursor!, organizationId:String!, campaignsFilter:CampaignsFilter, assignmentsFilter:AssignmentsFilter, contactsFilter:ContactsFilter, utc:String): PaginatedConversations
   }
 
   type RootMutation {
