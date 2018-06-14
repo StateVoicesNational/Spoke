@@ -8,63 +8,63 @@ import MenuItem from 'material-ui/MenuItem'
 export const MESSAGE_STATUSES = {
   'all': {
     name: 'All',
-    children: ['needsResponse', 'needsMessage', 'convo', 'messaged'],
+    children: ['needsResponse', 'needsMessage', 'convo', 'messaged']
   },
   'needsResponse': {
     name: 'Needs Texter Response',
-    children: [],
+    children: []
   },
   'needsMessage': {
     name: 'Needs First Message',
-    children: [],
+    children: []
   },
   'convo': {
     name: 'Active Conversation',
-    children: [],
+    children: []
   },
   'messaged': {
     name: 'First Message Sent',
-    children: [],
+    children: []
   },
   'closed': {
     name: 'Closed',
-    children: [],
-  },
-};
+    children: []
+  }
+}
 
-export const ALL_CAMPAIGNS = -1;
-export const ACTIVE_CAMPAIGNS = -2;
-export const ARCHIVED_CAMPAIGNS = -3;
+export const ALL_CAMPAIGNS = -1
+export const ACTIVE_CAMPAIGNS = -2
+export const ARCHIVED_CAMPAIGNS = -3
 
 export const CAMPAIGN_TYPE_FILTERS = [
   [ALL_CAMPAIGNS, 'All Campaigns'],
   [ACTIVE_CAMPAIGNS, 'Active Campaigns'],
   [ARCHIVED_CAMPAIGNS, 'Archived Campaigns']
-];
+]
 
 class IncomingMessageFilter extends Component {
   constructor(props) {
     super(props)
 
-    this.state = {};
+    this.state = {}
 
-    this.onMessageFilterSelectChanged = this.onMessageFilterSelectChanged.bind(this);
-    this.onCampaignSelectChanged = this.onCampaignSelectChanged.bind(this);
+    this.onMessageFilterSelectChanged = this.onMessageFilterSelectChanged.bind(this)
+    this.onCampaignSelectChanged = this.onCampaignSelectChanged.bind(this)
   }
 
   onMessageFilterSelectChanged(event, index, values) {
     this.setState({ messageFilter: values })
-    const messageStatuses = new Set();
+    const messageStatuses = new Set()
     values.forEach(value => {
-      const children = MESSAGE_STATUSES[value].children;
+      const children = MESSAGE_STATUSES[value].children
       if (children.length > 0) {
-        children.forEach(child => messageStatuses.add(child));
+        children.forEach(child => messageStatuses.add(child))
       } else {
-        messageStatuses.add(value);
+        messageStatuses.add(value)
       }
-    });
+    })
 
-    const messageStatusesString = Array.from(messageStatuses).join(',');
+    const messageStatusesString = Array.from(messageStatuses).join(',')
     if (this.props.onMessageFilterChanged !== undefined &&
         typeof this.props.onMessageFilterChanged === 'function') {
       this.props.onMessageFilterChanged(messageStatusesString)
@@ -72,29 +72,29 @@ class IncomingMessageFilter extends Component {
   }
 
   onCampaignSelectChanged(event, index, value) {
-    this.setState({ campaignFilter: value });
+    this.setState({ campaignFilter: value })
 
     if (this.props.onCampaignChanged !== undefined &&
         typeof this.props.onCampaignChanged === 'function') {
-      this.props.onCampaignChanged(value);
+      this.props.onCampaignChanged(value)
     }
   }
 
   render() {
     return (
       <Card>
-        <CardHeader title='Message Filter' actAsExpander={true} showExpandableButton={true} />
+        <CardHeader title='Message Filter' actAsExpander showExpandableButton />
         <CardText expandable>
           <SelectField
-            multiple={true}
+            multiple
             value={this.state.messageFilter}
             hintText={'Which messages'}
             floatingLabelText={'Contact message status'}
-            floatingLabelFixed={true}
+            floatingLabelFixed
             onChange={this.onMessageFilterSelectChanged}
           >
             {Object.keys(MESSAGE_STATUSES).map(messageStatus => {
-              const displayText = MESSAGE_STATUSES[messageStatus].name;
+              const displayText = MESSAGE_STATUSES[messageStatus].name
               const isChecked = this.state.messageFilter &&
                   this.state.messageFilter.indexOf(messageStatus) > -1
               return (
@@ -102,10 +102,10 @@ class IncomingMessageFilter extends Component {
                   key={messageStatus}
                   value={messageStatus}
                   primaryText={displayText}
-                  insetChildren={true}
+                  insetChildren
                   checked={isChecked}
                 />
-              );
+              )
             })}
           </SelectField>
           &nbsp;
@@ -113,7 +113,7 @@ class IncomingMessageFilter extends Component {
             value={this.state.campaignFilter}
             hintText='Pick a campaign'
             floatingLabelText='Campaign'
-            floatingLabelFixed={true}
+            floatingLabelFixed
             onChange={this.onCampaignSelectChanged}
           >
             {CAMPAIGN_TYPE_FILTERS.map(campaignTypeFilter => {
@@ -131,7 +131,7 @@ class IncomingMessageFilter extends Component {
           </SelectField>
         </CardText>
       </Card>
-    );
+    )
   }
 }
 
