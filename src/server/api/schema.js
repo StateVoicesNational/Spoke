@@ -1413,30 +1413,18 @@ const rootResolvers = {
       )
 
       query = query.orderBy('campaign_contact.updated_at').orderBy('cc_id')
-
-      if (cursor) {
-        query = query.limit(cursor.limit).offset(cursor.offset)
-
-      }
+      query = query.limit(cursor.limit).offset(cursor.offset)
 
       const conversations = await query
 
-      let countQuery = null
-      let conversationsCountArray = null
-      if (cursor) {
-        countQuery = r.knex.count('*')
-        conversationsCountArray = await getConversationsJoinsAndWhereClause(countQuery, organizationId, campaignsFilter, assignmentsFilter, contactsFilter)
-      }
-
-      let pageInfo = null
-      if (cursor) {
-        pageInfo = {
-          limit: cursor.limit,
-          offset: cursor.offset,
-          //next: offsetLimitCursor.next,
-          //previous: offsetLimitCursor.previous,
-          total: conversationsCountArray[0].count
-        }
+      const countQuery = r.knex.count('*')
+      const conversationsCountArray = await getConversationsJoinsAndWhereClause(countQuery, organizationId, campaignsFilter, assignmentsFilter, contactsFilter)
+      const pageInfo = {
+        limit: cursor.limit,
+        offset: cursor.offset,
+        //next: offsetLimitCursor.next,
+        //previous: offsetLimitCursor.previous,
+        total: conversationsCountArray[0].count
       }
 
       return {
