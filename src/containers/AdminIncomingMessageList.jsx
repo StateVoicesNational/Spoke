@@ -83,14 +83,14 @@ export class AdminIncomingMessageList extends Component {
   async handlePageChange(page) {
     await this.setState({
       page,
-      needsRender: true,
+      needsRender: true
     })
   }
 
   async handlePageSizeChange(pageSize) {
     await this.setState({ needsRender: true, pageSize })
   }
-  
+
   async handleRowSelection(selectedRows, data) {
     if (this.state.previousSelectedRows === 'all' && selectedRows !== 'all') {
       await this.setState({
