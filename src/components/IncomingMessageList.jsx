@@ -271,7 +271,6 @@ const mapQueriesToProps = ({ ownProps }) => ({
       }
     `,
     variables: {
-      cursor: {offset:1, limit:10 },
       organizationId: ownProps.organizationId,
       cursor: ownProps.cursor,
       contactsFilter: ownProps.contactsFilter,
