@@ -86,7 +86,7 @@ export class IncomingMessageList extends Component {
           if (row.messages && row.messages.length > 0) {
             lastMessage = row.messages[row.messages.length - 1]
             lastMessageEl = (
-              <p stlye={{textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap'}}>
+              <p style={{textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap'}}>
                 <span style={{ color: lastMessage.isFromContact ? 'blue' : 'black' }}>
                   <b>{lastMessage.isFromContact ? 'Contact:' : 'Texter:'} </b>
                 </span>
