@@ -41,7 +41,7 @@ class IncomingMessageActions extends Component {
           </SelectField>
 
           <FlatButton
-            label="Reassign"
+            label='Reassign'
             onClick={() => {
               if (
                 this.props.onReassignRequested !== null &&

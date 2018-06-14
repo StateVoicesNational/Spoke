@@ -86,7 +86,7 @@ export class IncomingMessageList extends Component {
           if (row.messages && row.messages.length > 0) {
             lastMessage = row.messages[row.messages.length - 1]
             lastMessageEl = (
-              <p style={{textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap'}}>
+              <p style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
                 <span style={{ color: lastMessage.isFromContact ? 'blue' : 'black' }}>
                   <b>{lastMessage.isFromContact ? 'Contact:' : 'Texter:'} </b>
                 </span>
@@ -165,10 +165,10 @@ export class IncomingMessageList extends Component {
         <DataTables
           data={tableData}
           columns={this.prepareTableColumns()}
-          multiSelectable={true}
-          selectable={true}
-          enableSelectAll={true}
-          showCheckboxes={true}
+          multiSelectable
+          selectable
+          enableSelectAll
+          showCheckboxes
           page={displayPage}
           rowSize={limit}
           count={total}
@@ -178,10 +178,10 @@ export class IncomingMessageList extends Component {
           onRowSelection={this.handleRowsSelected}
         />
         <Dialog
-          title="Messages"
+          title='Messages'
           open={this.state.activeConversation !== undefined}
           modal={false}
-          autoScrollBodyContent={true}
+          autoScrollBodyContent
           onRequestClose={this.handleCloseConversation}
         >
           {this.state.activeConversation !== undefined && (
