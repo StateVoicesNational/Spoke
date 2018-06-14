@@ -26,6 +26,10 @@ export const MESSAGE_STATUSES = {
     name: 'First Message Sent',
     children: [],
   },
+  'closed': {
+    name: 'Closed',
+    children: [],
+  },
 };
 
 export const ALL_CAMPAIGNS = -1;
