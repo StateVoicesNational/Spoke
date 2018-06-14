@@ -159,18 +159,18 @@ const rootSchema = `
     message: MessageInput!
     campaignContactId: String!
   }
-  
+
   input CampaignIdContactId {
     campaignId: String!
     campaignContactId: Int!
     messageIds: [Int]!
   }
-  
+
   type CampaignIdAssignmentId {
     campaignId: String!
     assignmentId: String!
   }
-  
+
   type Action {
     name: String
     display_name: String
@@ -1324,6 +1324,54 @@ const rootResolvers = {
         }
       })
       return availableHandlerObjects
+    },
+    conversations: async (
+      _,
+      { organizationId, campaignsFilter, assignmentsFilter, contactsFilter, utc },
+      { user }
+    ) => {
+      await accessRequired(user, organizationId, 'SUPERVOLUNTEER', true)
+
+      let query = r.knex
+        .select(
+          'campaign_contact.id as cc_id',
+          'campaign_contact.first_name as cc_first_name',
+          'campaign_contact.last_name as cc_last_name',
+          'campaign_contact.message_status',
+          'campaign_contact.is_opted_out',
+          'campaign_contact.updated_at',
+          'campaign_contact.cell',
+          'campaign_contact.assignment_id',
+          'user.id as u_id',
+          'user.first_name as u_first_name',
+          'user.last_name as u_last_name',
+          'campaign.id as cmp_id',
+          'campaign.title',
+          'campaign.due_by',
+          'assignment.id as ass_id'
+        )
+        .from('campaign')
+        .leftJoin('campaign_contact', 'campaign.id', 'campaign_contact.campaign_id')
+        .leftJoin('assignment', 'campaign_contact.assignment_id', 'assignment.id')
+        .leftJoin('user', 'assignment.user_id', 'user.id')
+        .where({ 'campaign.organization_id': organizationId })
+
+      if (campaignsFilter) {
+        if ('isArchived' in campaignsFilter && campaignsFilter.isArchived !== null) {
+          query = query.where({ 'campaign.is_archived': campaignsFilter.isArchived })
+        }
+        if ('campaignId' in campaignsFilter && campaignsFilter.campaignId !== null) {
+          query = query.where({ 'campaign.id': parseInt(campaignsFilter.campaignId) })
+        }
+      }
+
+      if (assignmentsFilter) {
+        if ('texterId' in assignmentsFilter && assignmentsFilter.texterId !== null)
+          query = query.where({ 'assignment.user_id': assignmentsFilter.texterId })
+      }
+
+      query = addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue(query, contactsFilter)
+      return query.orderBy('campaign.contact.updated_at')
     }
   }
 }
