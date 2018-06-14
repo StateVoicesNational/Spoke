@@ -172,7 +172,7 @@ const inlineStyles = {
   }
 }
 
-class AssignmentTexterContact extends React.Component {
+export class AssignmentTexterContact extends React.Component {
 
   constructor(props) {
     console.log('constructor TOP')
@@ -505,7 +505,7 @@ class AssignmentTexterContact extends React.Component {
 
     let timezoneData = null
 
-    if (contact.location) {
+    if (contact.location && contact.location.timezone && contact.location.timezone.offset) {
       const { hasDST, offset } = contact.location.timezone
 
       timezoneData = { hasDST, offset }
@@ -581,7 +581,7 @@ class AssignmentTexterContact extends React.Component {
         onTouchTap={() => this.handleEditMessageStatus('needsResponse')}
         label='Reopen'
       />)
-    } else if (messageStatus === 'needsResponse' || messageStatus === 'messaged') {
+    } else if (messageStatus === 'needsResponse' || messageStatus === 'messaged' || messageStatus === 'convo') {
       button = (<RaisedButton
         onTouchTap={this.handleClickCloseContactButton}
         label='Skip Reply'
@@ -625,7 +625,7 @@ class AssignmentTexterContact extends React.Component {
           </Toolbar>
         </div>
       )
-    } else if (size < 450) { // for needsResponse or messaged
+    } else if (size < 450) { // for needsResponse or messaged or convo
       return (
         <div>
           <Toolbar
@@ -778,7 +778,7 @@ class AssignmentTexterContact extends React.Component {
 
   renderCorrectSendButton() {
     const { campaign, contact } = this.props
-    if (contact.messageStatus === 'needsResponse' || contact.messageStatus === 'messaged') {
+    if (contact.messageStatus === 'messaged' || contact.messageStatus === 'convo' || contact.messageStatus === 'needsResponse') {
       return (
         <SendButtonArrow
           threeClickEnabled={campaign.organization.threeClickEnabled}
@@ -856,7 +856,7 @@ class AssignmentTexterContact extends React.Component {
         <Snackbar
           style={inlineStyles.snackbar}
           open={!!this.state.snackbarError}
-          message={this.state.snackbarError}
+          message={this.state.snackbarError || ''}
           action={this.state.snackbarActionTitle}
           onActionTouchTap={this.state.snackbarOnTouchTap}
         />

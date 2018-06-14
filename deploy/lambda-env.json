@@ -20,8 +20,6 @@
   "DB_PASSWORD": "XXXXXXXXXXXXXXXXX",
   "DB_TYPE": "pg",
   "DB_KEY": "",
-  "AUTH0_LOGIN_CALLBACK": "https://spoke.example.com/login-callback",
-  "AUTH0_LOGOUT_CALLBACK": "https://spoke.example.com/logout-callback",
   "AUTH0_DOMAIN": "spokeexamplecomXXXXX.auth0.com",
   "AUTH0_CLIENT_ID": "XXXXXXXXXXXXXXXXXXXXXXXXXXX",
   "AUTH0_CLIENT_SECRET": "XXXXXXXXXXXXXXXXXXXXXXXXX",
@@ -41,5 +39,6 @@
   "EMAIL_FROM": "help@example.com",
   "ROLLBAR_CLIENT_TOKEN": "set_this_in_production",
   "ROLLBAR_ACCESS_TOKEN": "set_this_in_production",
-  "ROLLBAR_ENDPOINT": "https://api.rollbar.com/api/1/item/"
+  "ROLLBAR_ENDPOINT": "https://api.rollbar.com/api/1/item/",
+  "DST_REFERENCE_TIMEZONE": "America/New_York"
 }

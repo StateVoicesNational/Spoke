@@ -26,7 +26,7 @@ class JoinTeam extends React.Component {
       this.setState({ errors: 'Something went wrong trying to join this organization. Please contact your administrator.' })
     }
 
-    if (this.props.campaignId) {
+    if (this.props.params.campaignId) {
       try {
         campaign = await this.props.mutations.assignUserToCampaign()
       } catch (ex) {

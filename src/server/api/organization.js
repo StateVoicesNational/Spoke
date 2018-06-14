@@ -24,7 +24,7 @@ export const resolvers = {
       'name'
     ], Organization),
     campaigns: async (organization, { campaignsFilter }, { user }) => {
-      await accessRequired(user, organization.id, 'ADMIN')
+      await accessRequired(user, organization.id, 'SUPERVOLUNTEER')
       let query = r.table('campaign').getAll(organization.id, { index:
         'organization_id' })
 
@@ -37,7 +37,7 @@ export const resolvers = {
       return query
     },
     uuid: async (organization, _, { user }) => {
-      await accessRequired(user, organization.id, 'ADMIN')
+      await accessRequired(user, organization.id, 'SUPERVOLUNTEER')
       const result = await r.knex('organization')
         .column('uuid')
         .where('id', organization.id)
@@ -49,7 +49,7 @@ export const resolvers = {
         .getAll(organization.id, { index: 'organization_id' })
     },
     people: async (organization, { role }, { user }) => {
-      await accessRequired(user, organization.id, 'ADMIN')
+      await accessRequired(user, organization.id, 'SUPERVOLUNTEER')
 
       const roleFilter = role ? { role } : {}
 

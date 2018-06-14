@@ -239,7 +239,10 @@ const rootSchema = `
 `
 
 async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
-  const { title, description, dueBy, organizationId, useDynamicAssignment, logoImageUrl, introHtml, primaryColor } = campaign
+  const { title, description, dueBy, useDynamicAssignment, logoImageUrl, introHtml, primaryColor } = campaign
+  // some changes require ADMIN and we recheck below
+  const organizationId = campaign.organizationId || origCampaignRecord.organization_id
+  await accessRequired(user, organizationId, 'SUPERVOLUNTEER', /* superadmin*/true)
   const campaignUpdates = {
     id,
     title,
@@ -259,6 +262,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
   })
 
   if (campaign.hasOwnProperty('contacts') && campaign.contacts) {
+    await accessRequired(user, organizationId, 'ADMIN', /* superadmin*/true)
     const contactsToSave = campaign.contacts.map((datum) => {
       const modelData = {
         campaign_id: datum.campaignId,
@@ -289,6 +293,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
   if (campaign.hasOwnProperty('contactSql')
       && datawarehouse
       && user.is_superadmin) {
+    await accessRequired(user, organizationId, 'ADMIN', /* superadmin*/true)
     let job = await JobRequest.save({
       queue_name: `${id}:edit_campaign`,
       job_type: 'upload_contacts_sql',
@@ -333,6 +338,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
   }
 
   if (campaign.hasOwnProperty('interactionSteps')) {
+    await accessRequired(user, organizationId, 'ADMIN', /* superadmin*/true)
     await updateInteractionSteps(id, [campaign.interactionSteps], origCampaignRecord)
   }
 
@@ -368,7 +374,7 @@ async function updateInteractionSteps(campaignId, interactionSteps, origCampaign
     if (is.id.indexOf('new') !== -1) {
       const newId = await r.knex('interaction_step')
         .insert({
-          parent_interaction_id: is.parentInteractionId,
+          parent_interaction_id: is.parentInteractionId || null,
           question: is.questionText,
           script: is.script,
           answer_option: is.answerOption,
@@ -411,8 +417,9 @@ const rootMutations = {
 
     sendReply: async (_, { id, message }, { user, loaders }) => {
       const contact = await loaders.campaignContact.load(id)
+      const campaign = await loaders.campaign.load(contact.campaign_id)
 
-      await accessRequired(user, contact.organization_id, 'ADMIN')
+      await accessRequired(user, campaign.organization_id, 'ADMIN')
 
       const lastMessage = await r.table('message')
         .getAll(contact.assignment_id, { index: 'assignment_id' })
@@ -446,7 +453,7 @@ const rootMutations = {
       return loaders.campaignContact.load(id)
     },
     exportCampaign: async (_, { id }, { user, loaders }) => {
-      const campaign = loaders.campaign.load(id)
+      const campaign = await loaders.campaign.load(id)
       const organizationId = campaign.organization_id
       await accessRequired(user, organizationId, 'ADMIN')
       const newJob = await JobRequest.save({
@@ -590,7 +597,7 @@ const rootMutations = {
       return await Organization.get(organizationId)
     },
     updateTextingHoursEnforcement: async (_, { organizationId, textingHoursEnforced }, { user }) => {
-      await accessRequired(user, organizationId, 'OWNER')
+      await accessRequired(user, organizationId, 'SUPERVOLUNTEER')
 
       await Organization
         .get(organizationId)
@@ -611,7 +618,7 @@ const rootMutations = {
       }
     },
     createCampaign: async (_, { campaign }, { user, loaders }) => {
-      await accessRequired(user, campaign.organizationId, 'ADMIN')
+      await accessRequired(user, campaign.organizationId, 'ADMIN', /* allowSuperadmin=*/true)
       const campaignInstance = new Campaign({
         organization_id: campaign.organizationId,
         title: campaign.title,
@@ -621,7 +628,7 @@ const rootMutations = {
         is_archived: false
       })
       const newCampaign = await campaignInstance.save()
-      return editCampaign(newCampaign.id, campaign, loaders)
+      return editCampaign(newCampaign.id, campaign, loaders, user)
     },
     copyCampaign: async (_, { id }, { user, loaders }) => {
       const campaign = await loaders.campaign.load(id)
@@ -640,25 +647,25 @@ const rootMutations = {
       const oldCampaignId = campaign.id
 
       let interactions = await r.knex('interaction_step')
-        .where({campaign_id: oldCampaignId })
+        .where({ campaign_id: oldCampaignId })
 
       const interactionsArr = []
       interactions.forEach((interaction, index) => {
-        if(interaction.parent_interaction_id){
+        if (interaction.parent_interaction_id) {
           let is = {
-            id: 'new'+interaction.id,
+            id: 'new' + interaction.id,
             questionText: interaction.question,
             script: interaction.script,
             answerOption: interaction.answer_option,
             answerActions: interaction.answer_actions,
             isDeleted: interaction.is_deleted,
             campaign_id: newCampaignId,
-            parentInteractionId: 'new'+interaction.parent_interaction_id
+            parentInteractionId: 'new' + interaction.parent_interaction_id
           }
           interactionsArr.push(is)
-        } else if (!interaction.parent_interaction_id){
+        } else if (!interaction.parent_interaction_id) {
           let is = {
-            id: 'new'+interaction.id,
+            id: 'new' + interaction.id,
             questionText: interaction.question,
             script: interaction.script,
             answerOption: interaction.answer_option,
@@ -676,8 +683,8 @@ const rootMutations = {
       await createSteps
 
       let createCannedResponses = r.knex('canned_response')
-        .where({campaign_id: oldCampaignId })
-        .then(function(res){
+        .where({ campaign_id: oldCampaignId })
+        .then(function (res) {
           res.forEach((response, index) => {
             const copiedCannedResponse =
               new CannedResponse({
@@ -685,32 +692,31 @@ const rootMutations = {
                 title: response.title,
                 text: response.text
               }).save()
-            }
+          }
           )
         })
 
       await createCannedResponses
 
       return newCampaign
-
     },
     unarchiveCampaign: async (_, { id }, { user, loaders }) => {
       const campaign = await loaders.campaign.load(id)
-      await accessRequired(user, campaign.organizationId, 'ADMIN')
+      await accessRequired(user, campaign.organization_id, 'ADMIN')
       campaign.is_archived = false
       await campaign.save()
       return campaign
     },
     archiveCampaign: async (_, { id }, { user, loaders }) => {
       const campaign = await loaders.campaign.load(id)
-      await accessRequired(user, campaign.organizationId, 'ADMIN')
+      await accessRequired(user, campaign.organization_id, 'ADMIN')
       campaign.is_archived = true
       await campaign.save()
       return campaign
     },
     startCampaign: async (_, { id }, { user, loaders }) => {
       const campaign = await loaders.campaign.load(id)
-      await accessRequired(user, campaign.organizationId, 'ADMIN')
+      await accessRequired(user, campaign.organization_id, 'ADMIN')
       campaign.is_started = true
       await campaign.save()
       await sendUserNotification({
@@ -724,13 +730,13 @@ const rootMutations = {
       if (campaign.organizationId) {
         await accessRequired(user, campaign.organizationId, 'ADMIN')
       } else {
-        await accessRequired(user, origCampaign.organization_id, 'ADMIN')
+        await accessRequired(user, origCampaign.organization_id, 'SUPERVOLUNTEER')
       }
       if (origCampaign.is_started && campaign.hasOwnProperty('contacts') && campaign.contacts) {
-          throw new GraphQLError({
-              status: 400,
-              message: 'Not allowed to add contacts after the campaign starts'
-          })
+        throw new GraphQLError({
+          status: 400,
+          message: 'Not allowed to add contacts after the campaign starts'
+        })
       }
       return editCampaign(id, campaign, loaders, user, origCampaign)
     },
@@ -979,9 +985,23 @@ const rootMutations = {
 
       await messageInstance.save()
 
-      contact.message_status = 'messaged'
-      contact.updated_at = 'now()'
-      await contact.save()
+      if (contact.message_status === 'needsResponse') {
+        const service = serviceMap[messageInstance.service || process.env.DEFAULT_SERVICE]
+        contact.message_status = 'convo'
+        contact.updated_at = 'now()'
+        await contact.save()
+
+        service.sendMessage(messageInstance)
+        return contact
+      } else {
+        const service = serviceMap[messageInstance.service || process.env.DEFAULT_SERVICE]
+        contact.message_status = 'messaged'
+        contact.updated_at = 'now()'
+        await contact.save()
+
+        service.sendMessage(messageInstance)
+        return contact
+      }
 
       if (JOBS_SAME_PROCESS) {
         const service = serviceMap[messageInstance.service || process.env.DEFAULT_SERVICE]
@@ -1057,32 +1077,19 @@ const rootResolvers = {
   RootQuery: {
     campaign: async (_, { id }, { loaders, user }) => {
       const campaign = await loaders.campaign.load(id)
-      await accessRequired(user, campaign.organization_id, 'ADMIN')
+      await accessRequired(user, campaign.organization_id, 'SUPERVOLUNTEER')
       return campaign
     },
     assignment: async (_, { id }, { loaders, user }) => {
       authRequired(user)
       const assignment = await loaders.assignment.load(id)
       const campaign = await loaders.campaign.load(assignment.campaign_id)
-      const roles = {}
-      const userRoles = await r.knex('user_organization').where({
-        user_id: user.id,
-        organization_id: campaign.organization_id
-      }).select('role')
-      userRoles.forEach(role => {
-        roles[role['role']] = 1
-      })
-      if ('OWNER' in roles
-        || 'ADMIN' in roles
-        || user.is_superadmin
-        || 'TEXTER' in roles && assignment.user_id == user.id) {
-        return assignment
+      if (assignment.user_id == user.id) {
+        await accessRequired(user, campaign.organization_id, 'TEXTER', /* allowSuperadmin=*/true)
       } else {
-        throw new GraphQLError({
-          status: 403,
-          message: 'You are not authorized to access that resource.'
-        })
+        await accessRequired(user, campaign.organization_id, 'SUPERVOLUNTEER', /* allowSuperadmin=*/true)
       }
+      return assignment
     },
     organization: async(_, { id }, { loaders }) =>
       loaders.organization.load(id),
@@ -1095,26 +1102,8 @@ const rootResolvers = {
       authRequired(user)
       const contact = await loaders.campaignContact.load(id)
       const campaign = await loaders.campaign.load(contact.campaign_id)
-      const roles = {}
-      const userRoles = await r.knex('user_organization').where({
-        user_id: user.id,
-        organization_id: campaign.organization_id
-      }).select('role')
-      userRoles.forEach(role => {
-        roles[role['role']] = 1
-      })
-      if ('OWNER' in roles || 'ADMIN' in roles || user.is_superadmin) {
-        return contact
-      } else if ('TEXTER' in roles) {
-        const assignment = await loaders.assignment.load(contact.assignment_id)
-        return contact
-      } else {
-        console.error('NOT Authorized: contact', user, roles)
-        throw new GraphQLError({
-          status: 403,
-          message: 'You are not authorized to access that resource.'
-        })
-      }
+      await accessRequired(user, campaign.organization_id, 'TEXTER', /* allowSuperadmin=*/true)
+      return contact
     },
     organizations: async(_, { id }, { user }) => {
       await superAdminRequired(user)

@@ -1,6 +1,8 @@
 import thinky from './thinky'
 import { requiredString, timestamp } from './custom-types'
-import CampaignContact from './campaign-contact'
+
+import Campaign from './campaign'
+import User from './user'
 
 const type = thinky.type
 
