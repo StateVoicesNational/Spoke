@@ -21,6 +21,7 @@ class UserMenu extends Component {
       anchorEl: null
     }
     this.handleReturn = this.handleReturn.bind(this)
+    this.handleRequestFaqs = this.handleRequestFaqs.bind(this)
   }
 
   handleTouchTap = (event) => {
@@ -60,6 +61,12 @@ class UserMenu extends Component {
     this.props.router.push(`/app/${orgId}/todos`)
   }
 
+  handleRequestFaqs = (e) => {
+    e.preventDefault()
+    const { orgId } = this.props
+    this.props.router.push(`/app/${orgId}/faqs`)
+  }
+
 
   renderAvatar(user, size) {
     // Material-UI seems to not be handling this correctly when doing serverside rendering
@@ -82,6 +89,7 @@ class UserMenu extends Component {
       <div>
         <IconButton
           onTouchTap={this.handleTouchTap}
+          iconStyle={{ fontSize: '18px' }}
         >
           {this.renderAvatar(currentUser, avatarSize)}
         </IconButton>
@@ -114,6 +122,10 @@ class UserMenu extends Component {
             <MenuItem
               primaryText='Home'
               onClick={this.handleReturn}
+            />
+            <MenuItem
+              primaryText='FAQs'
+              onClick={this.handleRequestFaqs}
             />
             <Divider />
             <MenuItem

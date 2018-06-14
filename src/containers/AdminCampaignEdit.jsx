@@ -267,6 +267,7 @@ class AdminCampaignEdit extends React.Component {
       keys: ['title', 'description', 'dueBy', 'logoImageUrl', 'primaryColor', 'introHtml'],
       blocksStarting: true,
       expandAfterCampaignStarts: true,
+      expandableBySuperVolunteers: true,
       checkCompleted: () => (
         this.state.campaignFormValues.title !== '' &&
           this.state.campaignFormValues.description !== '' &&
@@ -288,6 +289,7 @@ class AdminCampaignEdit extends React.Component {
         && this.state.campaignFormValues.hasOwnProperty('contactSql') === false),
       blocksStarting: true,
       expandAfterCampaignStarts: false,
+      expandableBySuperVolunteers: false,
       extraProps: {
         optOuts: [], // this.props.organizationData.organization.optOuts, // <= doesn't scale
         datawarehouseAvailable: this.props.campaignData.campaign.datawarehouseAvailable,
@@ -300,6 +302,7 @@ class AdminCampaignEdit extends React.Component {
       checkCompleted: () => (this.state.campaignFormValues.texters.length > 0 && this.state.campaignFormValues.contactsCount === this.state.campaignFormValues.texters.reduce(((left, right) => left + right.assignment.contactsCount), 0)) || this.state.campaignFormValues.useDynamicAssignment === true,
       blocksStarting: false,
       expandAfterCampaignStarts: true,
+      expandableBySuperVolunteers: true,
       extraProps: {
         orgTexters: this.props.organizationData.organization.texters,
         organizationUuid: this.props.organizationData.organization.uuid,
@@ -312,6 +315,7 @@ class AdminCampaignEdit extends React.Component {
       checkCompleted: () => this.state.campaignFormValues.interactionSteps.length > 0,
       blocksStarting: true,
       expandAfterCampaignStarts: true,
+      expandableBySuperVolunteers: false,
       extraProps: {
         customFields: this.props.campaignData.campaign.customFields,
         availableActions: this.props.availableActionsData.availableActions
@@ -323,6 +327,7 @@ class AdminCampaignEdit extends React.Component {
       checkCompleted: () => true,
       blocksStarting: true,
       expandAfterCampaignStarts: true,
+      expandableBySuperVolunteers: true,
       extraProps: {
         customFields: this.props.campaignData.campaign.customFields
       }
@@ -416,6 +421,10 @@ class AdminCampaignEdit extends React.Component {
   }
 
   renderStartButton() {
+    if (!this.props.params.adminPerms) {
+      // Supervolunteers don't have access to start the campaign or un/archive it
+      return null
+    }
     let isCompleted = this.props.pendingJobsData.campaign
       .pendingJobs.filter((job) => /Error/.test(job.resultMessage || '')).length === 0
     this.sections().forEach((section) => {
@@ -471,6 +480,7 @@ class AdminCampaignEdit extends React.Component {
   render() {
     const sections = this.sections()
     const { expandedSection } = this.state
+    const { adminPerms } = this.props.params
     return (
       <div>
         {this.renderHeader()}
@@ -488,8 +498,11 @@ class AdminCampaignEdit extends React.Component {
           }
 
           const { sectionIsSaving, savePercent } = this.sectionSaveStatus(section)
-          const sectionCanExpandOrCollapse = section.expandAfterCampaignStarts
-            || !this.props.campaignData.campaign.isStarted
+          const sectionCanExpandOrCollapse = (
+            (section.expandAfterCampaignStarts
+             || !this.props.campaignData.campaign.isStarted)
+            && (adminPerms || section.expandableBySuperVolunteers))
+
           if (sectionIsSaving) {
             avatar = (<CircularProgress
               size={0.35}
@@ -506,6 +519,8 @@ class AdminCampaignEdit extends React.Component {
             cardHeaderStyle.background = theme.colors.lightGray
             cardHeaderStyle.width = `${savePercent}%`
           } else if (sectionIsExpanded && sectionCanExpandOrCollapse) {
+            cardHeaderStyle.backgroundColor = theme.colors.lightYellow
+          } else if (!sectionCanExpandOrCollapse) {
             cardHeaderStyle.backgroundColor = theme.colors.lightGray
           } else if (sectionIsDone) {
             avatar = (<Avatar
@@ -599,11 +614,11 @@ const mapQueriesToProps = ({ ownProps }) => ({
     pollInterval: 60000
   },
   organizationData: {
-    query: gql`query getOrganizationData($organizationId: String!, $role: String!) {
+    query: gql`query getOrganizationData($organizationId: String!) {
       organization(id: $organizationId) {
         id
         uuid
-        texters: people(role: $role) {
+        texters: people {
           id
           firstName
           displayName
@@ -611,8 +626,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
       }
     }`,
     variables: {
-      organizationId: ownProps.params.organizationId,
-      role: 'TEXTER'
+      organizationId: ownProps.params.organizationId
     },
     pollInterval: 20000
   },

@@ -4,6 +4,7 @@ import CampaignList from './CampaignList'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import ContentAdd from 'material-ui/svg-icons/content/add'
 import loadData from './hoc/load-data'
+import { hasRole } from '../lib'
 import { withRouter } from 'react-router'
 import gql from 'graphql-tag'
 import theme from '../styles/theme'
@@ -60,6 +61,7 @@ class AdminCampaignList extends React.Component {
     )
   }
   render() {
+    const { adminPerms } = this.props.params
     return (
       <div>
         {this.renderFilters()}
@@ -67,22 +69,24 @@ class AdminCampaignList extends React.Component {
           <CampaignList
             campaignsFilter={this.state.campaignsFilter}
             organizationId={this.props.params.organizationId}
+            adminPerms={adminPerms}
           />
         )}
 
-        <FloatingActionButton
-          style={theme.components.floatingButton}
-          onTouchTap={this.handleClickNewButton}
-        >
-          <ContentAdd />
-        </FloatingActionButton>
+        {adminPerms ?
+         (<FloatingActionButton
+           style={theme.components.floatingButton}
+           onTouchTap={this.handleClickNewButton}
+         >
+           <ContentAdd />
+         </FloatingActionButton>
+         ) : null}
       </div>
     )
   }
 }
 
 AdminCampaignList.propTypes = {
-  data: PropTypes.object,
   params: PropTypes.object,
   mutations: PropTypes.object,
   router: PropTypes.object

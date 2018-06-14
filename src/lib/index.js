@@ -1,6 +1,6 @@
 import zlib from 'zlib'
 export { getFormattedPhoneNumber, getDisplayPhoneNumber } from './phone-format'
-export { getFormattedZip, zipToTimeZone, findZipRanges } from './zip-format'
+export { getFormattedZip, zipToTimeZone, findZipRanges, getCommonZipRanges } from './zip-format'
 export {
   convertOffsetsToStrings,
   getLocalTime,
@@ -8,6 +8,12 @@ export {
   defaultTimezoneIsBetweenTextingHours,
   getOffsets
 } from './timezones'
+export {
+  getProcessEnvTz
+} from './tz-helpers'
+export {
+  DstHelper
+} from './dst-helper'
 export {
   isClient
 } from './is-client'
@@ -29,7 +35,7 @@ export {
 const requiredUploadFields = ['firstName', 'lastName', 'cell']
 const topLevelUploadFields = ['firstName', 'lastName', 'cell', 'zip', 'external_id']
 
-export { isRoleGreater, getHighestRole } from './permissions'
+export { ROLE_HIERARCHY, getHighestRole, hasRole, isRoleGreater } from './permissions'
 
 const getValidatedData = (data, optOuts) => {
   const optOutCells = optOuts.map((optOut) => optOut.cell)

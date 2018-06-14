@@ -65,3 +65,44 @@ ON  m.assignment_id = a.id
 WHERE m.CREATED_AT > current_timestamp - interval '1 hour';
 `
 
+* count of all texts sent by all users in all campaigns
+
+SELECT 
+  "user".id AS user_id, "user".last_name,"user".first_name,COUNT (message.id) AS message_sent_count
+FROM 
+  public.assignment,public."user",public.message
+WHERE 
+  assignment.user_id = "user".id AND
+  assignment.id = message.assignment_id AND
+  message.is_from_contact = 'f' 
+GROUP BY
+"user".id
+ORDER BY
+  message_sent_count DESC;
+  
+  
+  * count of all texts sent by all users in one campaign
+  
+  
+  SELECT 
+  "user".id AS user_id, "user".last_name,"user".first_name, COUNT (message.id) AS message_sent_count
+FROM 
+  public.assignment, 
+  public."user", 
+  public.message
+WHERE 
+  assignment.user_id = "user".id AND
+  assignment.id = message.assignment_id AND
+  assignment.campaign_id = 30 AND 
+  message.is_from_contact = 'f'
+GROUP BY
+"user".id
+ORDER BY
+  message_sent_count DESC;
+
+
+*TO DO (wish list) of some useful SQL query examples, for creating redash dashboard reports:
+
+* survey question response counts and percentage of total responses to survey question
+
+* count of contacts, texters, sent, count (and as percent of total sent) of replies, optouts and wrong numbers, for all campaigns

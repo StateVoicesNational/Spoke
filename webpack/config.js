@@ -6,8 +6,16 @@ const DEBUG = process.env.NODE_ENV !== 'production'
 
 const plugins = [
   new webpack.DefinePlugin({
-    'process.env.NODE_ENV': `"${process.env.NODE_ENV}"`
-  })
+    'process.env.NODE_ENV': `"${process.env.NODE_ENV}"`,
+    'process.env.PHONE_NUMBER_COUNTRY': `"${process.env.PHONE_NUMBER_COUNTRY}"`
+  }),
+  new webpack.ContextReplacementPlugin(
+    /[\/\\]node_modules[\/\\]timezonecomplete[\/\\]/,
+    path.resolve("tz-database-context"),
+    {
+      "tzdata": "tzdata",
+    }
+  )
 ]
 const jsxLoaders = [{loader: 'babel-loader'}]
 const assetsDir = process.env.ASSETS_DIR
@@ -55,7 +63,7 @@ const config = {
   plugins,
   output: {
     filename: outputFile,
-    path: path.resolve(DEBUG ? __dirname: assetsDir),
+    path: path.resolve(DEBUG ? __dirname : assetsDir),
     publicPath: '/assets/'
   }
 }

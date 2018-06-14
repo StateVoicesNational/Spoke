@@ -20,6 +20,17 @@ const inlineStyles = {
     textAlign: 'center',
     verticalAlign: 'middle',
     height: 20
+  },
+  pastMsgStyle: {
+    backgroundColor: '#FFD700',
+    fontSize: 12,
+    top: 20,
+    right: 20,
+    padding: '4px 2px 0px 2px',
+    width: 20,
+    textAlign: 'center',
+    verticalAlign: 'middle',
+    height: 20
   }
 }
 
@@ -48,7 +59,7 @@ export class AssignmentSummary extends Component {
     }
   }
 
-  renderBadgedButton({ assignment, title, count, primary, disabled, contactsFilter, hideIfZero }) {
+  renderBadgedButton({ assignment, title, count, primary, disabled, contactsFilter, hideIfZero, style }) {
     if (count === 0 && hideIfZero) { return '' }
     if (count === 0) {
       return (
@@ -61,8 +72,8 @@ export class AssignmentSummary extends Component {
     } else {
       return (<Badge
         key={title}
-        badgeStyle={inlineStyles.badge}
-        badgeContent={count}
+        badgeStyle={style || inlineStyles.badge}
+        badgeContent={count || ''}
         primary={primary && !disabled}
         secondary={!primary && !disabled}
       >
@@ -76,7 +87,7 @@ export class AssignmentSummary extends Component {
   }
 
   render() {
-    const { assignment, unmessagedCount, unrepliedCount, badTimezoneCount } = this.props
+    const { assignment, unmessagedCount, unrepliedCount, badTimezoneCount, totalMessagedCount, pastMessagesCount } = this.props
     const { title, description, dueBy,
             primaryColor, logoImageUrl, introHtml,
             useDynamicAssignment } = assignment.campaign
@@ -115,6 +126,16 @@ export class AssignmentSummary extends Component {
               contactsFilter: 'reply',
               hideIfZero: true
             })}
+            {this.renderBadgedButton({
+              assignment,
+              title: 'Past Messages',
+              count: pastMessagesCount,
+              style: inlineStyles.pastMsgStyle,
+              primary: false,
+              disabled: false,
+              contactsFilter: 'stale',
+              hideIfZero: true
+            })}
             {(window.NOT_IN_USA && window.ALLOW_SEND_ALL) ? this.renderBadgedButton({
               assignment,
               title: 'Send messages',
@@ -146,7 +167,11 @@ AssignmentSummary.propTypes = {
   assignment: PropTypes.object,
   unmessagedCount: PropTypes.number,
   unrepliedCount: PropTypes.number,
-  badTimezoneCount: PropTypes.number
+  badTimezoneCount: PropTypes.number,
+  totalMessagedCount: PropTypes.number,
+  pastMessagesCount: PropTypes.number,
+  data: PropTypes.object,
+  mutations: PropTypes.object
 }
 
 export default withRouter(AssignmentSummary)

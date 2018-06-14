@@ -25,12 +25,9 @@ const env_production = {
   JOB_DB_PORT:6379,
   BASE_URL:'https://spoke.example.com',
   PRIVACY_URL:'https://www.example.com/privacy',
-  AUTH0_LOGIN_CALLBACK:'https://example.com:8090/login-callback',
-  AUTH0_LOGOUT_CALLBACK:'http://example.com:8090/logout-callback',
   AUTH0_DOMAIN:'example.auth0.com',
   AUTH0_CLIENT_ID:'',
   AUTH0_CLIENT_SECRET:'',
-  AUTH0_LOGOUT_CALLBACK:'',
   SESSION_SECRET:'',
   NEXMO_API_KEY:'',
   NEXMO_API_SECRET:'',
@@ -47,7 +44,8 @@ const env_production = {
   ROLLBAR_CLIENT_TOKEN:'',
   ROLLBAR_ACCESS_TOKEN:'',
   ROLLBAR_ENDPOINT:'https://api.rollbar.com/api/1/item/',
-  ALLOW_SEND_ALL: false
+  ALLOW_SEND_ALL: false,
+  DST_REFERENCE_TIMEZONE: 'America/New_York'
 }
 
 module.exports = {

@@ -15,7 +15,8 @@ const colors = {
   veryLightGray: 'rgb(240, 242, 240)',
   lightGray: 'rgb(225, 228, 224)',
   white: 'rgb(255,255,255)',
-  yellow: 'rgb(250,190,40)'
+  yellow: 'rgb(250,190,40)',
+  lightYellow: 'rgb(252, 214, 120)'
 }
 
 const defaultFont = 'Poppins'
@@ -109,15 +110,10 @@ const components = {
     position: 'fixed'
   },
   logoDiv: {
-    margin: '0 auto',
-    height: 200,
-    width: 450,
+    margin: '50 auto',
     overflow: 'hidden'
   },
   'logoImg': {
-    height: 700,
-    width: 700,
-    margin: '-50% 0 0 -30%'
   }
 }
 
