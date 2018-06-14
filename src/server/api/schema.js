@@ -19,9 +19,14 @@ import {
   datawarehouse
 } from '../models'
 import { schema as userSchema, resolvers as userResolvers } from './user'
+import { schema as conversationSchema, resolvers as conversationsResolver } from './conversations'
 import { schema as organizationSchema, resolvers as organizationResolvers } from './organization'
 import { schema as campaignSchema, resolvers as campaignResolvers } from './campaign'
-import { schema as assignmentSchema, resolvers as assignmentResolvers } from './assignment'
+import {
+  schema as assignmentSchema,
+  resolvers as assignmentResolvers,
+  addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue
+} from './assignment'
 import {
   schema as interactionStepSchema,
   resolvers as interactionStepResolvers
@@ -190,6 +195,7 @@ const rootSchema = `
     assignment(id:String!): Assignment
     organizations: [Organization]
     availableActions(organizationId:String!): [Action]
+    conversations(organizationId:String!, campaignsFilter:CampaignsFilter, assignmentsFilter:AssignmentsFilter, contactsFilter:ContactsFilter, utc:String): [Conversation]
   }
 
   type RootMutation {
@@ -1238,11 +1244,15 @@ const rootMutations = {
 
           await r
             .knex('message')
-            .whereIn('id', messageIds.map(messageId => {return messageId}))
+            .whereIn(
+              'id',
+              messageIds.map(messageId => {
+                return messageId
+              })
+            )
             .update({
               assignment_id: assignmentId
             })
-
         }
       } catch (error) {
         log.error(error)
@@ -1392,7 +1402,8 @@ export const schema = [
   cannedResponseSchema,
   questionResponseSchema,
   questionSchema,
-  inviteSchema
+  inviteSchema,
+  conversationSchema
 ]
 
 export const resolvers = {
@@ -1412,5 +1423,6 @@ export const resolvers = {
   ...{ JSON: GraphQLJSON },
   ...{ Phone: GraphQLPhone },
   ...questionResolvers,
+  ...conversationsResolver,
   ...rootMutations
 }
