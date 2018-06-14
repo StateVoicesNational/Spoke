@@ -15,16 +15,29 @@ export const schema = `
     campaign: Campaign!
     assignment: Assignment
   }
+  
+  type PaginatedConversations {
+    conversations: [Conversation]!
+    pageInfo: PageInfo
+  }
 `
 
 function coerceQueryFieldsToResolverFields(instance, fieldsToRemove) {
   const fields = _.remove(Object.keys(instance), el => {
-    return !(fieldsToRemove.includes(el))
+    return !fieldsToRemove.includes(el)
   })
   return _.pick(instance, fields)
 }
 
 export const resolvers = {
+  PaginatedConversations: {
+    conversations: instance => {
+      return instance.conversations
+    },
+    pageInfo: instance => {
+      return instance.pageInfo
+    }
+  },
   Conversation: {
     texter: instance => {
       const texterFields = coerceQueryFieldsToResolverFields(instance, [

@@ -13,7 +13,7 @@ import DataTables from 'material-ui-datatables'
 import { MESSAGE_STATUSES } from '../components/IncomingMessageFilter'
 
 function prepareDataTableData(conversations) {
-  const tableData = conversations.map(conversation => {
+  const tableData = conversations.conversations.map(conversation => {
     return {
       campaignTitle: conversation.campaign.title,
       texter: conversation.texter.displayName,
@@ -37,7 +37,7 @@ function prepareSelectedRowsData(conversations, rowsSelected) {
   }
 
   return thingToIterate.reduce((returnData, index) => {
-    const conversation= conversations[index]
+    const conversation = conversations[index]
     returnData.push({
       campaignId: conversation.campaign.id,
       campaignContactId: conversation.contact.id,
@@ -249,27 +249,29 @@ const mapQueriesToProps = ({ ownProps }) => ({
           contactsFilter: $contactsFilter
           utc: $utc
         ) {
-          texter {
-            id
-            displayName
-          }
-          contact {
-            id
-            firstName
-            lastName
-            messageStatus
-            messages {
+          conversations {
+            texter {
               id
-              text
-              isFromContact
+              displayName
             }
-          }
-          campaign {
-            id
-            title
-          }
-          assignment {
-            id
+            contact {
+              id
+              firstName
+              lastName
+              messageStatus
+              messages {
+                id
+                text
+                isFromContact
+              }
+            }
+            campaign {
+              id
+              title
+            }
+            assignment {
+              id
+            }
           }
         }
       }
