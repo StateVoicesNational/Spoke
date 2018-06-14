@@ -27,6 +27,9 @@ const getScriptFieldValue = (contact, texter, fieldName) => {
     result = formatLastName
   } else if (TOP_LEVEL_UPLOAD_FIELDS.indexOf(fieldName) !== -1) {
     result = contact[fieldName]
+    if (fieldName === 'firstName' || fieldName === 'lastName') {
+      result = capitalize(result)
+    }
   } else {
     const customFieldNames = JSON.parse(contact.customFields)
     result = customFieldNames[fieldName]
