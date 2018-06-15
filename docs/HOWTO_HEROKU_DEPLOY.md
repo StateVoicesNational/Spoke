@@ -76,7 +76,7 @@ When using Twilio we recommend keeping the configuration variable `JOBS_SAME_PRO
 There is another mode mostly for non-Twilio backends, where you may need to run the additional processes to process messages and sending.  Most times, even at high scale, you will want to keep `JOBS_SAME_PROCESS` on and increase or upgrade the dynos for the `web` process.
 
 ## Email configuration
-See [this guide](EMAIL_CONFIGURATION.md#heroku-auto-deploy) for instructions.
+See [this guide](EMAIL_CONFIGURATION.md) for instructions.
 
-## Configuring data exporting
+## Data exporting
 In order to export data from campaigns (such as contacts' responses to questions), you need to configure S3 or Bucketeer. See [this guide](DATA_EXPORTING.md) for instructions.

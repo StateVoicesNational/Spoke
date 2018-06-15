@@ -9,10 +9,14 @@ To enable data exporting, you will need:
 2. access to an AWS account, and
 3. a S3 bucket in that account.
 
-## Alternate: Bucketeer
+## S3 vs. Bucketeer
 If you have deployed Spoke to Heroku, you can use the [Bucketeer add-on](https://elements.heroku.com/addons/bucketeer) instead of configuring your own S3 bucket. Bucketeer automatically provisions S3 storage for you, enabling you to skip the numbered steps below. The tradeoff is that Bucketeer charges you a minimum of $5/month. Depending on your [usage](https://aws.amazon.com/s3/pricing/), this may well be more than you'd pay for your own S3 bucket, especially if you're new to AWS and taking advantage of the [free tier](https://aws.amazon.com/free/).
 
 To use Bucketeer, [skip to the end of this document](#bucketeer-setup).
+
+## S3 setup
+
+__[Skip this section](#bucketeer-setup)__ if you are using Bucketeer.
 
 ### 1. Configure Spoke to send emails
 If you have already configured Spoke to send emails, skip this step. Otherwise, see [this guide](EMAIL_CONFIGURATION.MD).
@@ -35,16 +39,20 @@ In order for Spoke to connect to S3, the following environment variables must be
 If you've reached this point in application setup, you've probably configured environment variables already. Here are [Heroku](https://devcenter.heroku.com/articles/config-vars#managing-config-vars) and [AWS Lambda](https://docs.aws.amazon.com/lambda/latest/dg/env_variables.html) instructions. Locally, you can use a `.env` file or the like.
 
 ## Bucketeer setup
+__Skip this section__ if you have set up your own S3 bucket.
+
 ### 1. Provision the Bucketeer add-on
 Use the Heroku CLI (instructions [here](https://devcenter.heroku.com/articles/bucketeer#provisioning-the-add-on)) or the Heroku dashboard. You can [migrate](https://devcenter.heroku.com/articles/bucketeer#migrating-between-plans) between plans at any time with no downtime.
 
 ### 2. Modify the default environment variables
-Bucketeer creates the following environment variables upon provisioning:
+Bucketeer sets the following environment variables:
   - `BUCKETEER_AWS_ACCESS_KEY_ID`
   - `BUCKETEER_AWS_SECRET_ACCESS_KEY`
   - `BUCKETEER_BUCKET_NAME`
+
 Spoke, however, expects these names:
 - `AWS_ACCESS_KEY_ID`
 - `AWS_S3_BUCKET_NAME`
 - `AWS_SECRET_ACCESS_KEY`
+
 You can change the names in the [dashboard](https://devcenter.heroku.com/articles/config-vars#using-the-heroku-dashboard) or via the [CLI](https://devcenter.heroku.com/articles/config-vars#using-the-heroku-cli). `heroku config:edit` will open all environment variables in an interactive editor.
