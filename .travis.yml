@@ -5,8 +5,9 @@ services:
   - postgresql
 addons:
   sauce_connect:
-    username: "cp4r3zsl"
-    access_key: "d00a6baf-4b34-4790-a9cb-ed0bdf1303ff"
+    username: "cp4r3z"
+  jwt:
+    secure: "2tzR86uAkIV8DHxHaUvLHO5FROpyAr7ZSTLkucNBGEzQ0rqpdJq2uJJt4nfUc1Bm+m0xTid9/84R3HgioeqSifmBEyW7V8m6HwFyECWwNZAjoBU2tTQRIP/aezTCPHj/w/mL6Ke/ExdS26OxqKp/xLOxvI3YLPM0RLhyRb9ua7FSlWStmqQo6SrCXBRUndUIoWOS2iCFGE2w2rro2n55LEtzhXUamqfbzRh/HAKyeh+erwUhKHGnE9msWjWy/QFZjpsTXHtEC41vC35/sWh7NUYv9SFbX6As7DAdFwQv4igRFtbhbmb5dcyYlTq7qt0H5qxqSYD9XgmXRNeHA9eXQLXBi+IaTWQH8i7WNAH63H6JhIvscl9OGFylrGkt6Vdj0YQCKDhH/cshTXHVPw1YcY9gjq0aldW6jUhJeW1aTak3Omh1H8Cdd1jt/oz3IrfSuWCpNAL+Xsc5FGmrG26Mq/1IEbZ9775DaVYlM9kqSUenXu7lQUVntLda4YUzJHxzhUsSlqfTsqiwnZ488FMCvLINPeDxXZR3f0cqZj0b5UA39jph7aBSrHMFydnKaE8N5opuOfDt6wWRRWurOArvF6ueDGQuIhMpUksvna1MlzVbdeV+2LmcfNYwL+oogzEGJXlOV2Ax/CK7Zy6aIH/+2kHQJkmml7qMIIqLBhorAAg="
 env:
   global:
   - secure: TODO
@@ -18,8 +19,12 @@ before_script:
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
   - chmod +x ./cc-test-reporter
   - ./cc-test-reporter before-build
+  - cp .env.e2e .env
+  - npm run dev-nowrap &
+  - sleep 120 # TODO: Grep stdout or something to determine that the server is active. Or do this in the test setup.
 script:
 - npm run test-coverage
 - npm run test-e2e
 after_script:
 - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
+#- curl -X PUT -s -d '{"passed": true}' -u cp4r3zsl:d00a6baf-4b34-4790-a9cb-ed0bdf1303ff https://saucelabs.com/rest/v1/cp4r3zsl/jobs/$SELENIUM_ID

@@ -16,6 +16,7 @@ describe('Signing up a new user to Spoke', () => {
 
   afterAll(async () => {
     // Maybe this needs to be on teardown?
+    // https://facebook.github.io/jest/docs/en/configuration.html#globalteardown-string
     // https://wiki.saucelabs.com/display/DOCS/Outputting+the+Bamboo+Session+ID+to+stdout
     await driver.getSession()
       .then(session => {
