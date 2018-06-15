@@ -5,7 +5,6 @@ import { createBrowserHistory } from 'history'
 import { StyleSheet } from 'aphrodite'
 import errorCatcher from './error-catcher'
 import makeRoutes from '../routes'
-import Store from '../store'
 import { ApolloProvider } from 'react-apollo'
 import ApolloClientSingleton from '../network/apollo-client-singleton'
 import { login, logout } from './auth-service'
@@ -17,12 +16,11 @@ window.AuthService = {
   logout
 }
 const history = createBrowserHistory()
-const store = new Store(history, window.INITIAL_STATE)
 
 StyleSheet.rehydrate(window.RENDERED_CLASS_NAMES)
 
 ReactDOM.render(
-  <ApolloProvider store={store.data} client={ApolloClientSingleton}>
+  <ApolloProvider client={ApolloClientSingleton}>
     <ConnectedRouter history={history} routes={makeRoutes()} />
   </ApolloProvider>,
   document.getElementById('mount')

@@ -1,8 +1,6 @@
-import { createMemoryHistory } from 'react-router'
-import { syncHistoryWithStore } from 'connected-react-router'
+import { createBrowserHistory } from 'history'
 import makeRoutes from '../../routes'
 import renderIndex from './render-index'
-import Store from '../../store'
 import wrap from '../wrap'
 import fs from 'fs'
 import path from 'path'
@@ -33,9 +31,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 export default wrap(async (req, res) => {
-  const memoryHistory = createMemoryHistory(req.url)
-  const store = new Store(memoryHistory)
-  const history = syncHistoryWithStore(memoryHistory, store.data)
+  const history = createBrowserHistory()
   const authCheck = (nextState, replace) => {
     if (!req.isAuthenticated()) {
       replace({
@@ -68,7 +64,7 @@ export default wrap(async (req, res) => {
       */
       const html = ''
       const css = ''
-      res.send(renderIndex(html, css, assetMap, store.data))
+      res.send(renderIndex(html, css, assetMap))
     } else {
       res.status(404).send('Not found')
     }
