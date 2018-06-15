@@ -87,7 +87,9 @@ export class AssignmentSummary extends Component {
   }
 
   render() {
-    const { assignment, unmessagedCount, unrepliedCount, badTimezoneCount, totalMessagedCount, pastMessagesCount } = this.props
+    const { assignment, unmessagedCount, unrepliedCount,
+            badTimezoneCount, totalMessagedCount,
+            pastMessagesCount, skippedMessagesCount } = this.props
     const { title, description, dueBy,
             primaryColor, logoImageUrl, introHtml,
             useDynamicAssignment } = assignment.campaign
@@ -136,6 +138,16 @@ export class AssignmentSummary extends Component {
               contactsFilter: 'stale',
               hideIfZero: true
             })}
+            {this.renderBadgedButton({
+              assignment,
+              title: 'Skipped Messages',
+              count: skippedMessagesCount,
+              style: inlineStyles.pastMsgStyle,
+              primary: false,
+              disabled: false,
+              contactsFilter: 'skipped',
+              hideIfZero: true
+            })}
             {(window.NOT_IN_USA && window.ALLOW_SEND_ALL) ? this.renderBadgedButton({
               assignment,
               title: 'Send messages',
@@ -170,6 +182,7 @@ AssignmentSummary.propTypes = {
   badTimezoneCount: PropTypes.number,
   totalMessagedCount: PropTypes.number,
   pastMessagesCount: PropTypes.number,
+  skippedMessagesCount: PropTypes.number,
   data: PropTypes.object,
   mutations: PropTypes.object
 }
