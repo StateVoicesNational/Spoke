@@ -30,7 +30,7 @@ EMAIL_HOST_PORT                   | Email server port. _Required_.
 EMAIL_HOST_USER                   | Email server user. _Required_.
 GRAPHQL_URL                       | Optional URL for pointing GraphQL API requests. Should end with `/graphql`, e.g. `https://example.org/graphql`. _Default_: "/graphql"
 JOBS_SAME_PROCESS                 | Boolean value indicating whether jobs should be executed in the same process in which they are created (vs. processing asyncronously via worker processes). _Default_: false.
-MAILGUN_DOMAIN                    | The domain you set up in Mailgun. _Required for Mailgun usage._
+MAILGUN_DOMAIN                    | The domain you set up in Mailgun, e.g. `email.bartletforamerica.com`. _Required for Mailgun usage._
 MAILGUN_PUBLIC_KEY                | Should be automatically set during Heroku auto-deploy. Do not modify. _Required for Mailgun usage._
 MAILGUN_SMTP_LOGIN                | 'Default SMTP Login' in Mailgun. _Required for Mailgun usage._
 MAILGUN_SMTP_PASSWORD             | 'Default Password' in Mailgun. _Required for Mailgun usage._
