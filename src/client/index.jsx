@@ -23,7 +23,7 @@ const history = syncHistoryWithStore(browserHistory, store.data)
 StyleSheet.rehydrate(window.RENDERED_CLASS_NAMES)
 
 ReactDOM.render(
-  <ApolloProvider store={store.data} client={ApolloClientSingleton}>
+  <ApolloProvider client={ApolloClientSingleton}>
     <Router history={history} routes={makeRoutes()} />
   </ApolloProvider>,
   document.getElementById('mount')
