@@ -17,7 +17,7 @@ To use Bucketeer, [skip to the end of this document](#bucketeer-setup).
 ## S3 setup
 
 __Skip this section__ if you are using Bucketeer.
-  1. __[Configure Spoke to send emails](EMAIL_CONFIGURATION.MD).__
+  1. __[Configure Spoke to send emails](EMAIL_CONFIGURATION.md).__
   2. __Create an AWS account.__ If you already have an AWS account, skip this step. Otherwise, see [Amazon's documentation](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/) to create an AWS account.
   3. __Sign up for S3.__ If you already have S3, skip this step. Otherwise, see [Amazon's documentation](https://docs.aws.amazon.com/AmazonS3/latest/gsg/SigningUpforS3.html) to sign up for S3 using your AWS account.
   4. __Create a S3 bucket.__ If you already have an S3 bucket, skip this step. Otherwise, see [Amazon's documentation](https://docs.aws.amazon.com/AmazonS3/latest/user-guide/create-bucket.html) to create an S3 bucket. You __don't__ need to enable public access to the bucket.
