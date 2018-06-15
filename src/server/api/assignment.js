@@ -54,7 +54,12 @@ export function getContacts(assignment, contactsFilter, organization, campaign) 
           .whereIn('message_status', ['needsResponse', 'needsMessage'])
           .orderByRaw('message_status DESC, updated_at')
       } else {
-        query = query.where('message_status', contactsFilter.messageStatus)
+        const parts = contactsFilter.messageStatus.split(',')
+        if (parts.length === 1) {
+          query = query.where('message_status', contactsFilter.messageStatus)
+        } else {
+          query = query.whereIn('message_status', parts)
+        }
       }
     } else {
       if (pastDue) {

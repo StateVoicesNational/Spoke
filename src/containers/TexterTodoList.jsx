@@ -24,6 +24,7 @@ class TexterTodoList extends React.Component {
               badTimezoneCount={assignment.badTimezoneCount}
               totalMessagedCount={assignment.totalMessagedCount}
               pastMessagesCount={assignment.pastMessagesCount}
+              skippedMessagesCount={assignment.skippedMessagesCount}
             />
           )
         }
@@ -73,7 +74,7 @@ TexterTodoList.propTypes = {
 
 const mapQueriesToProps = ({ ownProps }) => ({
   data: {
-    query: gql`query getTodos($organizationId: String!, $needsMessageFilter: ContactsFilter, $needsResponseFilter: ContactsFilter, $badTimezoneFilter: ContactsFilter, $completedConvosFilter: ContactsFilter, $pastMessagesFilter: ContactsFilter) {
+    query: gql`query getTodos($organizationId: String!, $needsMessageFilter: ContactsFilter, $needsResponseFilter: ContactsFilter, $badTimezoneFilter: ContactsFilter, $completedConvosFilter: ContactsFilter, $pastMessagesFilter: ContactsFilter, $skippedMessagesFilter: ContactsFilter) {
       currentUser {
         id
         terms
@@ -94,6 +95,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
           badTimezoneCount: contactsCount(contactsFilter: $badTimezoneFilter)
           totalMessagedCount: contactsCount(contactsFilter: $completedConvosFilter)
           pastMessagesCount: contactsCount(contactsFilter: $pastMessagesFilter)
+          skippedMessagesCount: contactsCount(contactsFilter: $skippedMessagesFilter)
         }
       }
     }`,
@@ -120,6 +122,11 @@ const mapQueriesToProps = ({ ownProps }) => ({
       },
       pastMessagesFilter: {
         messageStatus: 'convo',
+        isOptedOut: false,
+        validTimezone: true
+      },
+      skippedMessagesFilter: {
+        messageStatus: 'closed',
         isOptedOut: false,
         validTimezone: true
       }
