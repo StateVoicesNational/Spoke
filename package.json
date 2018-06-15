@@ -128,6 +128,7 @@
     "react-chartjs": "^0.7.3",
     "react-dom": "^16.4.1",
     "react-formal": "^0.28.4",
+    "react-redux": "^5.0.7",
     "react-router": "^4.3.1",
     "redis": "^2.8.0",
     "redux": "^3.7.2",
