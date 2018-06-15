@@ -22,7 +22,7 @@ When you auto-deploy to Heroku, the Mailgun add-on is automatically provisioned 
   - `MAILGUN_SMTP_PORT`
   - `MAILGUN_SMTP_SERVER`
 
-See the [environment variables reference document](REFERENCE-environment_variables.md) for more information. Some of these variables are set during Heroku auto-deploy, some are not. Confusingly, some of the ones that are automatically set are _set incorrectly_ with values for the Mailgun sandbox domain. The environment variables reference document specifies the correct, production value for each variable.
+See the [environment variables reference document](REFERENCE-environment_variables.md) for more information. Some of these variables are set during Heroku auto-deploy, some are not. Confusingly, some of those that are set automatically are set with values for the sandbox domain and __must be changed for production__. The environment variables reference document specifies the correct value for each variable.
 
 5. Set the `EMAIL_FROM` environment variable. This is the email address users will see when they receive emails.
 
