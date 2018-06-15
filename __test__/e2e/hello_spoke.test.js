@@ -15,6 +15,14 @@ describe('Signing up a new user to Spoke', () => {
   })
 
   afterAll(async () => {
+    // Maybe this needs to be on teardown?
+    // https://wiki.saucelabs.com/display/DOCS/Outputting+the+Bamboo+Session+ID+to+stdout
+    await driver.getSession()
+      .then(session => {
+        const sessionId = session.getId()
+        process.env.SELENIUM_ID = sessionId
+        console.log(`SauceOnDemandSessionID=${sessionId} job-name=${process.env.TRAVIS_JOB_NUMBER}`)
+      })
     await driver.quit()
   })
 
@@ -22,7 +30,7 @@ describe('Signing up a new user to Spoke', () => {
     await driver.get('http://saucelabs.com/test/guinea-pig')
   })
 
-  xit('gets the landing page', async () => {
+  it('gets the landing page', async () => {
     await driver.get(config.baseUrl)
   })
 
