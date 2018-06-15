@@ -16,36 +16,23 @@ To use Bucketeer, [skip to the end of this document](#bucketeer-setup).
 
 ## S3 setup
 
-__[Skip this section](#bucketeer-setup)__ if you are using Bucketeer.
-
-### 1. Configure Spoke to send emails
-If you have already configured Spoke to send emails, skip this step. Otherwise, see [this guide](EMAIL_CONFIGURATION.MD).
-
-### 2. Create an AWS account
-If you already have an AWS account, skip this step. Otherwise, see [Amazon's documentation](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/) to create an AWS account.
-
-### 3. Sign up for S3
-If you already have S3, skip this step. Otherwise, see [Amazon's documentation](https://docs.aws.amazon.com/AmazonS3/latest/gsg/SigningUpforS3.html) to sign up for S3 using your AWS account.
-
-### 4. Create a S3 bucket
-If you already have an S3 bucket, skip this step. Otherwise, see [Amazon's documentation](https://docs.aws.amazon.com/AmazonS3/latest/user-guide/create-bucket.html) to create an S3 bucket. __You don't need to enable public access to the bucket.__
-
-### 5. Configure Spoke environment variables
-In order for Spoke to connect to S3, the following environment variables must be set:
-  - `AWS_ACCESS_KEY_ID`
-  - `AWS_S3_BUCKET_NAME`
-  - `AWS_SECRET_ACCESS_KEY`
+__Skip this section__ if you are using Bucketeer.
+  1. __[Configure Spoke to send emails](EMAIL_CONFIGURATION.MD).__
+  2. __Create an AWS account.__ If you already have an AWS account, skip this step. Otherwise, see [Amazon's documentation](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/) to create an AWS account.
+  3. __Sign up for S3.__ If you already have S3, skip this step. Otherwise, see [Amazon's documentation](https://docs.aws.amazon.com/AmazonS3/latest/gsg/SigningUpforS3.html) to sign up for S3 using your AWS account.
+  4. __Create a S3 bucket.__ If you already have an S3 bucket, skip this step. Otherwise, see [Amazon's documentation](https://docs.aws.amazon.com/AmazonS3/latest/user-guide/create-bucket.html) to create an S3 bucket. You __don't__ need to enable public access to the bucket.
+  5. __Configure Spoke environment variables.__ In order for Spoke to connect to S3, the following environment variables must be set:
+    - `AWS_ACCESS_KEY_ID`
+    - `AWS_S3_BUCKET_NAME`
+    - `AWS_SECRET_ACCESS_KEY`
 
 If you've reached this point in application setup, you've probably configured environment variables already. Here are [Heroku](https://devcenter.heroku.com/articles/config-vars#managing-config-vars) and [AWS Lambda](https://docs.aws.amazon.com/lambda/latest/dg/env_variables.html) instructions. Locally, you can use a `.env` file or the like.
 
 ## Bucketeer setup
 __Skip this section__ if you have set up your own S3 bucket.
 
-### 1. Provision the Bucketeer add-on
-Use the Heroku CLI (instructions [here](https://devcenter.heroku.com/articles/bucketeer#provisioning-the-add-on)) or the Heroku dashboard. You can [migrate](https://devcenter.heroku.com/articles/bucketeer#migrating-between-plans) between plans at any time with no downtime.
-
-### 2. Modify the default environment variables
-Bucketeer sets the following environment variables:
+1. __Provision the Bucketeer add-on.__ Use the Heroku CLI (instructions [here](https://devcenter.heroku.com/articles/bucketeer#provisioning-the-add-on)) or the Heroku dashboard. You can [migrate](https://devcenter.heroku.com/articles/bucketeer#migrating-between-plans) between plans at any time with no downtime.
+2. __Modify the default environment variables.__ Bucketeer sets the following environment variables:
   - `BUCKETEER_AWS_ACCESS_KEY_ID`
   - `BUCKETEER_AWS_SECRET_ACCESS_KEY`
   - `BUCKETEER_BUCKET_NAME`
