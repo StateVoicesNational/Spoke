@@ -18,10 +18,12 @@ module.exports = {
     username: sauceLabs.username,
     accessKey: sauceLabs.accessKey,
     capabilities: {
+      name: 'Travis-CI - Chrome E2E Tests',
       browserName: 'chrome',
       'tunnel-identifier': process.env.TRAVIS_JOB_NUMBER,
       username: sauceLabs.username,
-      accessKey: sauceLabs.accessKey
+      accessKey: sauceLabs.accessKey,
+      build: process.env.TRAVIS_BUILD_NUMBER
     },
     server: `http://${sauceLabs.username}:${sauceLabs.accessKey}@ondemand.saucelabs.com:80/wd/hub`,
     host: 'localhost',

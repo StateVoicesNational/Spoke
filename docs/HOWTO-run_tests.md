@@ -19,6 +19,7 @@ GRANT ALL PRIVILEGES ON DATABASE spoke_test TO spoke_test;
 
 1. Remember to set `NODE_ENV=dev` 
 1. Setup DB
+    ! TODO: Describe the setup exactly.
 1. Start Spoke Server
 1. Install browser drivers
     http://seleniumhq.github.io/selenium/docs/api/javascript/
