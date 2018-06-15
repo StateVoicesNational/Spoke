@@ -37,6 +37,7 @@ describe('AssignmentSummary text', function t() {
           unmessagedCount={1}
           unrepliedCount={0}
           badTimezoneCount={0}
+          pastMessagesCount={0}
           skippedMessagesCount={0}
         />
       </MuiThemeProvider>
@@ -64,7 +65,7 @@ describe('AssignmentSummary text', function t() {
 
 describe('AssignmentSummary actions inUSA and NOT AllowSendAll', () => {
   injectTapEventPlugin()  // prevents warning
-  function create(unmessaged, unreplied, badTimezone, skipped, isDynamic) {
+  function create(unmessaged, unreplied, badTimezone, past, skipped, isDynamic) {
     window.NOT_IN_USA = 0
     window.ALLOW_SEND_ALL = false
     return mount(
@@ -74,6 +75,7 @@ describe('AssignmentSummary actions inUSA and NOT AllowSendAll', () => {
           unmessagedCount={unmessaged}
           unrepliedCount={unreplied}
           badTimezoneCount={badTimezone}
+          pastMessagesCount={past}
           skippedMessagesCount={skipped}
         />
       </MuiThemeProvider>
@@ -81,43 +83,41 @@ describe('AssignmentSummary actions inUSA and NOT AllowSendAll', () => {
   }
 
   it('renders "send first texts (1)" with unmessaged (dynamic assignment)', () => {
-    const actions = create(5, 0, 0, 0, true)
+    const actions = create(5, 0, 0, 0, 0, true)
     expect(actions.find(Badge).at(0).prop('badgeContent')).toBe(5)
     expect(actions.find(RaisedButton).at(0).prop('label')).toBe('Send first texts')
   })
 
   it('renders "send first texts (1)" with unmessaged (non-dynamic)', () => {
-    const actions = create(1, 0, 0, 0, false)
+    const actions = create(1, 0, 0, 0, 0, false)
     expect(actions.find(Badge).at(0).prop('badgeContent')).toBe(1)
     expect(actions.find(RaisedButton).at(0).prop('label')).toBe('Send first texts')
   })
 
   it('renders "send first texts" with no unmessaged (dynamic assignment)', () => {
-    const actions = create(0, 0, 0, 0, true)
-    expect(actions.find(Badge).length).toBe(1)
+    const actions = create(0, 0, 0, 0, 0, true)
     expect(actions.find(RaisedButton).at(0).prop('label')).toBe('Send first texts')
   })
 
   it('renders a "past messages" badge after messaged contacts', () => {
-    const actions = create(0, 0, 0, 0, false)
-    expect(actions.find(Badge).length).toBe(1)
+    const actions = create(0, 0, 0, 1, 0, false)
     expect(actions.find(RaisedButton).length).toBe(1)
   })
 
-  it('renders three buttons with unmessaged and unreplied', () => {
-    const actions = create(3, 9, 0, 0, false)
-    expect(actions.find(RaisedButton).length).toBe(3)
+  it('renders two buttons with unmessaged and unreplied', () => {
+    const actions = create(3, 9, 0, 0, 0, false)
+    expect(actions.find(RaisedButton).length).toBe(2)
   })
 
   it('renders "past messages (n)" with messaged', () => {
-    const actions = create(0, 9, 0, 0, false)
+    const actions = create(0, 0, 0, 9, 0, false)
     expect(actions.find(Badge).at(0).prop('badgeContent')).toBe(9)
-    expect(actions.find(RaisedButton).at(1).prop('label')).toBe('Past Messages')
+    expect(actions.find(RaisedButton).at(0).prop('label')).toBe('Past Messages')
   })
 })
 
 describe('AssignmentSummary NOT inUSA and AllowSendAll', () => {
-  function create(unmessaged, unreplied, badTimezone, skipped, isDynamic) {
+  function create(unmessaged, unreplied, badTimezone, past, skipped, isDynamic) {
     window.NOT_IN_USA = 1
     window.ALLOW_SEND_ALL = true
     return mount(
@@ -127,6 +127,7 @@ describe('AssignmentSummary NOT inUSA and AllowSendAll', () => {
           unmessagedCount={unmessaged}
           unrepliedCount={unreplied}
           badTimezoneCount={badTimezone}
+          pastMessagesCount={past}
           skippedMessagesCount={skipped}
         />
       </MuiThemeProvider>
@@ -134,13 +135,13 @@ describe('AssignmentSummary NOT inUSA and AllowSendAll', () => {
   }
 
   it('renders "Send message" with unmessaged', () => {
-    const actions = create(1, 0, 0, 0, false)
-    expect(actions.find(RaisedButton).at(0).prop('label')).toBe('Past Messages')
+    const actions = create(1, 0, 0, 0, 0, false)
+    expect(actions.find(RaisedButton).at(0).prop('label')).toBe('Send messages')
   })
 
   it('renders "Send messages" with unreplied', () => {
-    const actions = create(0, 1, 0, 0, false)
-    expect(actions.find(RaisedButton).at(0).prop('label')).toBe('Past Messages')
+    const actions = create(0, 1, 0, 0, 0, false)
+    expect(actions.find(RaisedButton).at(0).prop('label')).toBe('Send messages')
   })
 })
 
