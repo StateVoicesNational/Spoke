@@ -1,7 +1,32 @@
 import React from 'react'
-import { connect } from 'react-apollo'
-import LoadingIndicator from '../../components/LoadingIndicator'
+import { connect, compose } from 'react-apollo'
+
 import { log } from '../../lib'
+import { wrapQueries, newWrapMutations } from '../hoc/wrap-mutations'
+import LoadingIndicator from '../../components/LoadingIndicator'
+
+export const renderWhileLoading = (propNames = []) =>
+  branch(
+    props => {
+      let loading = false
+      propNames.forEach(propName => {
+        loading = loading || (props[propName] && props[propName].loading)
+      })
+      return loading
+    },
+    renderComponent(<LoadingIndicator />),
+  )
+
+export const newLoadData = ({ queries = {}, mutations = {} } = {}) => {
+  const queryNames = Object.keys(queries)
+  const wrappedQueries = wrapQueries(queries)
+  const wrappedMutations = newWrapMutations(mutations)
+  return compose(
+    ...wrappedQueries,
+    ...wrappedMutations,
+    renderWhileLoading(queryNames)
+  )
+}
 
 const loadData = (Component, connectArgs) => {
   class LoadData extends React.Component {

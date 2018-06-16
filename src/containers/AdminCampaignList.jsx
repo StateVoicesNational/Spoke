@@ -3,10 +3,11 @@ import React from 'react'
 import CampaignList from './CampaignList'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import ContentAdd from 'material-ui/svg-icons/content/add'
-import loadData from './hoc/load-data'
+import { newLoadData } from '../containers/hoc/load-data'
 import { hasRole } from '../lib'
 import { withRouter } from 'react-router'
 import gql from 'graphql-tag'
+import { compose } from 'react-apollo'
 import theme from '../styles/theme'
 import LoadingIndicator from '../components/LoadingIndicator'
 import wrapMutations from './hoc/wrap-mutations'
@@ -25,7 +26,7 @@ class AdminCampaignList extends React.Component {
   handleClickNewButton = async () => {
     const { organizationId } = this.props.params
     this.setState({ isCreating: true })
-    const newCampaign = await this.props.mutations.createCampaign({
+    const campaign = {
       title: 'New Campaign',
       description: '',
       dueBy: null,
@@ -34,7 +35,9 @@ class AdminCampaignList extends React.Component {
       interactionSteps: {
         script: ''
       }
-    })
+    }
+    // Not sure if you can actually get the mutation results like this in the new version
+    const newCampaign = await this.props.mutations.createCampaign({ campaign })
     if (newCampaign.errors) {
       alert('There was an error creating your campaign')
       throw new Error(newCampaign.errors)
@@ -94,20 +97,19 @@ AdminCampaignList.propTypes = {
   router: PropTypes.object
 }
 
-const mapMutationsToProps = () => ({
-  createCampaign: (campaign) => ({
-    mutation: gql`
+const mutations = {
+  createCampaign: {
+    gql: gql`
       mutation createBlankCampaign($campaign: CampaignInput!) {
         createCampaign(campaign: $campaign) {
           id
         }
       }
-    `,
-    variables: { campaign }
-  })
-})
+    `
+  }
+}
 
-export default loadData(wrapMutations(
-  withRouter(AdminCampaignList)), {
-    mapMutationsToProps
-  })
+export default compose(
+  newLoadData({ mutations }),
+  withRouter
+)(AdminCampaignList)

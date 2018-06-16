@@ -13,7 +13,7 @@ import Dialog from 'material-ui/Dialog'
 import PeopleIcon from 'material-ui/svg-icons/social/people'
 import { getHighestRole, ROLE_HIERARCHY } from '../lib'
 import theme from '../styles/theme'
-import loadData from './hoc/load-data'
+import { newLoadData } from './hoc/load-data'
 import gql from 'graphql-tag'
 import { dataTest } from '../lib/attributes'
 
@@ -168,66 +168,67 @@ class AdminPersonList extends React.Component {
 }
 
 AdminPersonList.propTypes = {
-  mutations: PropTypes.object,
   params: PropTypes.object,
   personData: PropTypes.object,
   userData: PropTypes.object,
-  organizationData: PropTypes.object
+  organizationData: PropTypes.object,
+  mutations: PropTypes.object
 }
 
-const mapMutationsToProps = () => ({
-  editOrganizationRoles: (organizationId, userId, roles) => ({
-    mutation: gql`
+const queries = {
+  personData: {
+    gql: gql`
+      query getPeople($organizationId: String!) {
+        organization(id: $organizationId) {
+          ${organizationFragment}
+        }
+      }
+    `,
+    options: (props) => ({
+      variables: { organizationId: props.params.organizationId },
+      forceFetch: true
+    })
+  },
+  userData: {
+    gql: gql`
+      query getCurrentUserAndRoles($organizationId: String!) {
+        currentUser {
+          id
+          roles(organizationId: $organizationId)
+        }
+      }
+    `,
+    options: (props) => ({
+      variables: { organizationId: props.params.organizationId },
+      forceFetch: true
+    })
+  },
+  organizationData: {
+    gql: gql`
+      query getOrganizationData($organizationId: String!) {
+        organization(id: $organizationId) {
+          id
+          uuid
+        }
+      }
+    `,
+    options: (props) => ({
+      variables: { organizationId: props.params.organizationId },
+      forceFetch: true
+    })
+  }
+}
+
+const mutations = {
+  editOrganizationRoles: {
+    gql: gql`
       mutation editOrganizationRoles($organizationId: String!, $userId: String!, $roles: [String]) {
         editOrganizationRoles(organizationId: $organizationId, userId: $userId, roles: $roles) {
           ${organizationFragment}
         }
       }
-    `,
-    variables: {
-      organizationId,
-      userId,
-      roles
-    }
-  })
-})
-
-const mapQueriesToProps = ({ ownProps }) => ({
-  personData: {
-    query: gql`query getPeople($organizationId: String!) {
-      organization(id: $organizationId) {
-        ${organizationFragment}
-      }
-    }`,
-    variables: {
-      organizationId: ownProps.params.organizationId
-    },
-    forceFetch: true
-  },
-  userData: {
-    query: gql` query getCurrentUserAndRoles($organizationId: String!) {
-      currentUser {
-        id
-        roles(organizationId: $organizationId)
-      }
-    }`,
-    variables: {
-      organizationId: ownProps.params.organizationId
-    },
-    forceFetch: true
-  },
-  organizationData: {
-    query: gql`query getOrganizationData($organizationId: String!) {
-      organization(id: $organizationId) {
-        id
-        uuid
-      }
-    }`,
-    variables: {
-      organizationId: ownProps.params.organizationId
-    },
-    forceFetch: true
+    `
   }
-})
+}
 
-export default loadData(AdminPersonList, { mapQueriesToProps, mapMutationsToProps })
+export default newLoadData({ queries, mutations })(AdminPersonList)

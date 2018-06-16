@@ -7,8 +7,9 @@ import TexterStats from '../components/TexterStats'
 import Snackbar from 'material-ui/Snackbar'
 import { withRouter } from 'react-router'
 import { StyleSheet, css } from 'aphrodite'
-import loadData from './hoc/load-data'
+import { newLoadData } from './hoc/load-data';
 import gql from 'graphql-tag'
+import { compose } from 'react-apollo'
 import theme from '../styles/theme'
 import wrapMutations from './hoc/wrap-mutations'
 
@@ -261,99 +262,110 @@ class AdminCampaignStats extends React.Component {
 }
 
 AdminCampaignStats.propTypes = {
-  mutations: PropTypes.object,
-  data: PropTypes.object,
   params: PropTypes.object,
-  router: PropTypes.object
+  router: PropTypes.object,
+  getCampaign: PropTypes.object,
+  mutations: PropTypes.object
 }
 
-const mapQueriesToProps = ({ ownProps }) => ({
-  data: {
-    query: gql`query getCampaign($campaignId: String!, $contactsFilter: ContactsFilter!) {
-      campaign(id: $campaignId) {
-        id
-        title
-        isArchived
-        useDynamicAssignment
-        assignments {
+const queries = {
+  getCampaign: {
+    gql: gql`
+      query getCampaign($campaignId: String!, $contactsFilter: ContactsFilter!) {
+        campaign(id: $campaignId) {
           id
-          texter {
+          title
+          isArchived
+          useDynamicAssignment
+          assignments {
             id
-            firstName
-            lastName
+            texter {
+              id
+              firstName
+              lastName
+            }
+            unmessagedCount: contactsCount(contactsFilter:$contactsFilter)
+            contactsCount
           }
-          unmessagedCount: contactsCount(contactsFilter:$contactsFilter)
-          contactsCount
-        }
-        pendingJobs {
-          id
-          jobType
-          assigned
-          status
-        }
-        interactionSteps {
-          id
-          question {
-            text
-            answerOptions {
-              value
-              responderCount
+          pendingJobs {
+            id
+            jobType
+            assigned
+            status
+          }
+          interactionSteps {
+            id
+            question {
+              text
+              answerOptions {
+                value
+                responderCount
+              }
             }
           }
-        }
-        contactsCount
-        stats {
-          sentMessagesCount
-          receivedMessagesCount
-          optOutsCount
+          contactsCount
+          stats {
+            sentMessagesCount
+            receivedMessagesCount
+            optOutsCount
+          }
         }
       }
-    }`,
-    variables: {
-      campaignId: ownProps.params.campaignId,
-      contactsFilter: {
-        messageStatus: 'needsMessage'
-      }
-    },
-    pollInterval: 5000
+    `,
+    options: (props) => ({
+      variables: {
+        campaignId: props.params.campaignId,
+        contactsFilter: {
+          messageStatus: 'needsMessage'
+        }
+      },
+      pollInterval: 5000
+    })
   }
-})
+}
 
-const mapMutationsToProps = () => ({
-  archiveCampaign: (campaignId) => ({
-    mutation: gql`mutation archiveCampaign($campaignId: String!) {
-      archiveCampaign(id: $campaignId) {
-        id
-        isArchived
+const mutations = {
+  archiveCampaign: {
+    gql: gql`
+      mutation archiveCampaign($campaignId: String!) {
+        archiveCampaign(id: $campaignId) {
+          id
+          isArchived
+        }
       }
-    }`,
-    variables: { campaignId }
-  }),
-  unarchiveCampaign: (campaignId) => ({
-    mutation: gql`mutation unarchiveCampaign($campaignId: String!) {
-      unarchiveCampaign(id: $campaignId) {
-        id
-        isArchived
+    `
+  },
+  unarchiveCampaign: {
+    gql: gql`
+      mutation unarchiveCampaign($campaignId: String!) {
+        unarchiveCampaign(id: $campaignId) {
+          id
+          isArchived
+        }
       }
-    }`,
-    variables: { campaignId }
-  }),
-  exportCampaign: (campaignId) => ({
-    mutation: gql`mutation exportCampaign($campaignId: String!) {
-      exportCampaign(id: $campaignId) {
-        id
+    `
+  },
+  exportCampaign: {
+    gql: gql`
+      mutation exportCampaign($campaignId: String!) {
+        exportCampaign(id: $campaignId) {
+          id
+        }
       }
-    }`,
-    variables: { campaignId }
-  }),
-  copyCampaign: (campaignId) => ({
-    mutation: gql`mutation copyCampaign($campaignId: String!){
-      copyCampaign(id: $campaignId){
-       id
+    `
+  },
+  copyCampaign: {
+    gql: gql`
+      mutation copyCampaign($campaignId: String!) {
+        copyCampaign(id: $campaignId) {
+          id
+        }
       }
-    }`,
-    variables: { campaignId }
-  })
-})
+    `
+  }
+}
 
-export default loadData(withRouter(wrapMutations(AdminCampaignStats)), { mapQueriesToProps, mapMutationsToProps })
+export default compose(
+  newLoadData({ queries, mutations }),
+  withRouter
+)(AdminCampaignStats)
