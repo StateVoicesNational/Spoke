@@ -1,13 +1,16 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import { StyleSheet, css } from 'aphrodite'
-import theme from '../styles/theme'
-import { hasRole } from '../lib'
-import TopNav from './TopNav'
-import gql from 'graphql-tag'
 import { withRouter } from 'react-router'
-import loadData from '../containers/hoc/load-data'
+import gql from 'graphql-tag'
+import { Query } from "react-apollo";
+import { StyleSheet, css } from 'aphrodite'
+
+import { hasRole } from '../lib'
+import LoadingIndicator from '../components/LoadingIndicator'
+import TopNav from './TopNav'
 import AdminNavigation from '../containers/AdminNavigation'
+import theme from '../styles/theme'
+
 const styles = StyleSheet.create({
   container: {
     ...theme.layouts.multiColumn.container
@@ -23,6 +26,15 @@ const styles = StyleSheet.create({
     margin: '24px auto'
   }
 })
+
+const GET_USER_ROLES = gql`
+  query getCurrentUserRoles($organizationId: String!) {
+    currentUser {
+      id
+      roles(organizationId: $organizationId)
+    }
+  }
+`
 
 class AdminDashboard extends React.Component {
   urlFromPath(path) {
@@ -46,55 +58,65 @@ class AdminDashboard extends React.Component {
   }
 
   render() {
-    const { location, children, params } = this.props
-    const { roles } = this.props.data.currentUser
-
-    // HACK: Setting params.adminPerms helps us hide non-supervolunteer functionality
-    params.adminPerms = hasRole('ADMIN', roles || [])
-
-    const sections = [{
-      name: 'Campaigns',
-      path: 'campaigns',
-      role: 'SUPERVOLUNTEER'
-    }, {
-      name: 'People',
-      path: 'people',
-      role: 'ADMIN'
-    }, {
-      name: 'Optouts',
-      path: 'optouts',
-      role: 'ADMIN'
-    }, {
-      name: 'Message Review',
-      path: 'incoming',
-      role: 'SUPERVOLUNTEER'
-    }, {
-      name: 'Settings',
-      path: 'settings',
-      role: 'SUPERVOLUNTEER'
-    }]
-
-    let currentSection = sections.filter(
-      (section) => location.pathname.match(`/${section.path}`)
-    )
-
-    currentSection = currentSection.length > 0 ? currentSection.shift() : null
-    const title = currentSection ? currentSection.name : 'Admin'
-    const backToURL = currentSection &&
-      location.pathname.split('/').pop() !== currentSection.path ?
-      this.urlFromPath(currentSection.path) :
-      null
+    const organizationId = this.props.params.organizationId
 
     return (
-      <div>
-        <TopNav title={title} backToURL={backToURL} orgId={params.organizationId} />
-        <div className={css(styles.container)}>
-          {this.renderNavigation(sections.filter((s) => hasRole(s.role, roles)))}
-          <div className={css(styles.content)}>
-            {children}
-          </div>
-        </div>
-      </div>
+      <Query query={GET_USER_ROLES} variables={{organizationId}}>
+        {({ loading, error, data }) => {
+          if (loading) return <LoadingIndicator />
+
+          const { location, children, params } = this.props
+          const { roles } = data.currentUser
+
+          // HACK: Setting params.adminPerms helps us hide non-supervolunteer functionality
+          params.adminPerms = hasRole('ADMIN', roles || [])
+
+          const sections = [{
+            name: 'Campaigns',
+            path: 'campaigns',
+            role: 'SUPERVOLUNTEER'
+          }, {
+            name: 'People',
+            path: 'people',
+            role: 'ADMIN'
+          }, {
+            name: 'Optouts',
+            path: 'optouts',
+            role: 'ADMIN'
+          }, {
+            name: 'Incoming Messages',
+            path: 'incoming',
+            role: 'SUPERVOLUNTEER'
+          }, {
+            name: 'Settings',
+            path: 'settings',
+            role: 'SUPERVOLUNTEER'
+          }]
+
+          let currentSection = sections.filter(section => {
+            return location.pathname.match(`/${section.path}`)
+          })
+
+          currentSection = currentSection.length > 0 ? currentSection.shift() : null
+          const title = currentSection ? currentSection.name : 'Admin'
+          const backToURL = currentSection &&
+              location.pathname.split('/').pop() !== currentSection.path ?
+                  this.urlFromPath(currentSection.path) :
+                  null
+
+          return (
+            <div>
+              <TopNav title={title} backToURL={backToURL} orgId={params.organizationId} />
+              <div className={css(styles.container)}>
+                {this.renderNavigation(sections.filter((s) => hasRole(s.role, roles)))}
+                <div className={css(styles.content)}>
+                  {children}
+                </div>
+              </div>
+            </div>
+          )
+        }}
+      </Query>
     )
   }
 }
@@ -106,18 +128,4 @@ AdminDashboard.propTypes = {
   location: PropTypes.object
 }
 
-const mapQueriesToProps = ({ ownProps }) => ({
-  data: {
-    query: gql`query getCurrentUserRoles($organizationId: String!) {
-      currentUser {
-        id
-        roles(organizationId: $organizationId)
-      }
-    }`,
-    variables: {
-      organizationId: ownProps.params.organizationId
-    }
-  }
-})
-
-export default loadData(withRouter(AdminDashboard), { mapQueriesToProps })
+export default withRouter(AdminDashboard)
