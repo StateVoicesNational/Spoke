@@ -1,5 +1,51 @@
 import React from 'react'
+import _ from 'lodash'
+
 import { GraphQLRequestError, graphQLErrorParser } from '../../network/errors'
+
+/*
+Reference:
+
+graphql(createBlankCampaign, {
+  name: 'createBlankCampaign',
+  // options: (props) => ({
+  //   variables: { campaign: props.campaign }
+  // }),
+  // props: (props) => {
+  //   const mutations = props.mutations || {}
+  //   mutations['createBlankCampaign'] = (campaign) => props['createBlankCampaign']({
+  //     variables: { campaign }
+  //   })
+  // }
+})
+*/
+
+export const wrapQueries = (queries) => {
+  const queryKeys = Object.keys(queries)
+  const result = queryKeys.map(queryKey => {
+    const query = queries[queryKey]
+    const config = _.omit(query, ['gql'])
+    config.name = config.name || queryKey
+    return graphql(query.gql, config)
+  })
+  return result
+}
+
+export const newWrapMutations = (mutations) => {
+  const mutationKeys = Object.keys(mutations)
+  const result = mutationKeys.map(mutationKey => {
+    const { gql } = mutations[mutationKey]
+    return graphql(gql, {
+      props: (props) => {
+        const mutations = props.mutations || {}
+        mutations[mutationKey] = (variables) => props[mutationKey]({ variables })
+        props.mutations = mutations
+        return props
+      }
+    })
+  })
+  return result
+}
 
 const wrapMutations = (Component) => (props) => {
   const newProps = { ...props }

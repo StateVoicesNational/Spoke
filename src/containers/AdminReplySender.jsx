@@ -1,11 +1,10 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import loadData from './hoc/load-data'
+import { newLoadData } from './hoc/load-data'
 import gql from 'graphql-tag'
 import { StyleSheet, css } from 'aphrodite'
 import theme from '../styles/theme'
 import GSForm from '../components/forms/GSForm'
-import wrapMutations from './hoc/wrap-mutations'
 import Form from 'react-formal'
 import yup from 'yup'
 
@@ -94,10 +93,10 @@ class AdminReplySender extends React.Component {
   }
 
   render() {
-    const { data } = this.props
+    const { getCampaignMessages } = this.props
     return (
       <div>
-        {data.campaign.contacts.map((contact) => {
+        {getCampaignMessages.campaign.contacts.map((contact) => {
           if (contact.messageStatus === 'messaged') {
             return this.renderMessageSendingForm(contact)
           }
@@ -109,13 +108,13 @@ class AdminReplySender extends React.Component {
 }
 
 AdminReplySender.propTypes = {
-  mutations: PropTypes.object,
-  data: PropTypes.object
+  getCampaignMessages: PropTypes.object,
+  mutations: PropTypes.object
 }
 
-const mapQueriesToProps = ({ ownProps }) => ({
-  data: {
-    query: gql`query getCampaignMessages($campaignId: String!) {
+const queries = {
+  getCampaignMessages: {
+    gql: gql`query getCampaignMessages($campaignId: String!) {
       campaign(id: $campaignId) {
         id
         contacts {
@@ -131,16 +130,15 @@ const mapQueriesToProps = ({ ownProps }) => ({
         }
       }
     }`,
-    variables: {
-      campaignId: ownProps.params.campaignId
-    }
+    options: (props) => ({
+      variables: { campaignId: props.params.campaignId }
+    })
   }
-})
+}
 
-const mapMutationsToProps = () => ({
-  sendReply: (contactId, message) =>
-    ({
-      mutation: gql`
+const mutations = {
+  sendReply: {
+    gql: gql`
       mutation sendReply($contactId: String!, $message: String!) {
         sendReply(id: $contactId, message: $message) {
           id
@@ -149,9 +147,9 @@ const mapMutationsToProps = () => ({
             isFromContact
           }
         }
-      }`,
-      variables: { contactId, message }
-    })
-})
+      }
+    `
+  }
+}
 
-export default loadData(wrapMutations(AdminReplySender), { mapQueriesToProps, mapMutationsToProps })
+export default newLoadData({ queries, mutations })(AdminReplySender)

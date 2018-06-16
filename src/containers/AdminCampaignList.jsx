@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import { withRouter } from 'react-router';
 import gql from 'graphql-tag';
+import { compose } from 'react-apollo'
 import Button from '@material-ui/core/Button';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -10,10 +11,8 @@ import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import AddIcon from '@material-ui/icons/Add';
 
-import { hasRole } from '../lib';
-import loadData from './hoc/load-data';
-import wrapMutations from './hoc/wrap-mutations';
 import theme from '../styles/theme';
+import { newLoadData } from '../containers/hoc/load-data'
 import LoadingIndicator from '../components/LoadingIndicator';
 import CampaignList from './CampaignList';
 
@@ -29,7 +28,7 @@ class AdminCampaignList extends React.Component {
   handleClickNewButton = async () => {
     const { organizationId } = this.props.params
     this.setState({ isCreating: true })
-    const newCampaign = await this.props.mutations.createCampaign({
+    const campaign = {
       title: 'New Campaign',
       description: '',
       dueBy: null,
@@ -38,7 +37,9 @@ class AdminCampaignList extends React.Component {
       interactionSteps: {
         script: ''
       }
-    })
+    }
+    // Not sure if you can actually get the mutation results like this in the new version
+    const newCampaign = await this.props.mutations.createCampaign({ campaign })
     if (newCampaign.errors) {
       alert('There was an error creating your campaign')
       throw new Error(newCampaign.errors)
@@ -144,20 +145,19 @@ AdminCampaignList.propTypes = {
   router: PropTypes.object
 }
 
-const mapMutationsToProps = () => ({
-  createCampaign: (campaign) => ({
-    mutation: gql`
+const mutations = {
+  createCampaign: {
+    gql: gql`
       mutation createBlankCampaign($campaign: CampaignInput!) {
         createCampaign(campaign: $campaign) {
           id
         }
       }
-    `,
-    variables: { campaign }
-  })
-})
+    `
+  }
+}
 
-export default loadData(wrapMutations(
-  withRouter(AdminCampaignList)), {
-    mapMutationsToProps
-  })
+export default compose(
+  newLoadData({ mutations }),
+  withRouter
+)(AdminCampaignList)

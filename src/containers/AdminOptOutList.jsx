@@ -6,12 +6,12 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import NotInterestedIcon from '@material-ui/icons/NotInterested';
 
-import loadData from './hoc/load-data';
+import { newLoadData } from './hoc/load-data'
 import Empty from '../components/Empty';
 
 const AdminOptOutList = function AdminOptOutList(props) {
-  const { data } = props
-  const { optOuts } = data.organization
+  const { getOptOuts } = props
+  const { optOuts } = getOptOuts.organization
   return (
     <div>
       {optOuts.length === 0 ?
@@ -32,25 +32,27 @@ const AdminOptOutList = function AdminOptOutList(props) {
 }
 
 AdminOptOutList.propTypes = {
-  data: PropTypes.object
+  getOptOuts: PropTypes.object
 }
 
-const mapQueriesToProps = ({ ownProps }) => ({
-  data: {
-    query: gql`query getOptOuts($organizationId: String!) {
-      organization(id: $organizationId) {
-        id
-        optOuts {
+const queries = {
+  getOptOuts: {
+    gql: gql`
+      query getOptOuts($organizationId: String!) {
+        organization(id: $organizationId) {
           id
-          cell
+          optOuts {
+            id
+            cell
+          }
         }
       }
-    }`,
-    variables: {
-      organizationId: ownProps.params.organizationId
-    },
-    forceFetch: true
+    `,
+    options: (props) => ({
+      variables: { organizationId: props.params.organizationId },
+      forceFetch: true
+    })
   }
-})
+}
 
-export default loadData(AdminOptOutList, { mapQueriesToProps })
+export default newLoadData({ queries })(AdminOptOutList)
