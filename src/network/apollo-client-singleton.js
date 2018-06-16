@@ -4,10 +4,6 @@ import { createHttpLink } from 'apollo-link-http';
 import { onError } from 'apollo-link-error'
 import { log } from '../lib'
 
-const responseMiddlewareNetworkInterface = new ResponseMiddlewareNetworkInterface(
-  process.env.GRAPHQL_URL || '/graphql', { credentials: 'same-origin' }
-)
-
 const httpLink = createHttpLink({
   uri: process.env.GRAPHQL_URL || '/graphql',
   credentials: 'same-origin'
@@ -26,11 +22,13 @@ const errorLink = onError(({ networkError, graphQLErrors }) => {
 })
 
 // TODO: query merging
-const networkInterface = addQueryMerging(responseMiddlewareNetworkInterface)
+// const networkInterface = addQueryMerging(responseMiddlewareNetworkInterface)
 
-// TODO: {shouldBatch: true, dataIdFromObject: (result) => result.id}
+// TODO: {shouldBatch: true}
 const ApolloClientSingleton = new ApolloClient({
   link: errorLink.concat(httpLink),
-  cache: new InMemoryCache()
+  cache: new InMemoryCache({
+    dataIdFromObject: (result) => result.id
+  })
 })
 export default ApolloClientSingleton
