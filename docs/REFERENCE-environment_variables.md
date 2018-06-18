@@ -23,13 +23,19 @@ DEBUG_SCALING                     | Emit console.log on events related to scalin
 DEFAULT_SERVICE                   | Default SMS service. _Options_: twilio, nexmo, fakeservice.
 DEV_APP_PORT                      | Port for development Webpack server. Required for development.
 DST_REFERENCE_TIMEZONE            | Timezone to use to determine whether DST is in effect. If it's DST in this timezone, we assume it's DST everywhere.  _Default_: "America/New_York". (The default will work for any campaign in the US. For example, if the campaign is in Australia, use "Australia/Sydney" or some other timezone in Australia.  Note that DST is opposite in the northern and souther hemispheres.)
-EMAIL_FROM                        | Email from address. _Required_.
-EMAIL_HOST                        | Email server host. _Required_.
-EMAIL_HOST_PASSWORD               | Email server password. _Required_.
-EMAIL_HOST_PORT                   | Email server port. _Required_.
-EMAIL_HOST_USER                   | Email server user. _Required_.
+EMAIL_FROM                        | Email from address. _Required to send email from either Mailgun **or** a custom SMTP server_.
+EMAIL_HOST                        | Email server host. _Required for custom SMTP server usage_.
+EMAIL_HOST_PASSWORD               | Email server password. _Required for custom SMTP server usage_.
+EMAIL_HOST_PORT                   | Email server port. _Required for custom SMTP server usage_.
+EMAIL_HOST_USER                   | Email server user. _Required for custom SMTP server usage_.
 GRAPHQL_URL                       | Optional URL for pointing GraphQL API requests. Should end with `/graphql`, e.g. `https://example.org/graphql`. _Default_: "/graphql"
 JOBS_SAME_PROCESS                 | Boolean value indicating whether jobs should be executed in the same process in which they are created (vs. processing asyncronously via worker processes). _Default_: false.
+MAILGUN_DOMAIN                    | The domain you set up in Mailgun, e.g. `email.bartletforamerica.com`. _Required for Mailgun usage._
+MAILGUN_PUBLIC_KEY                | Should be automatically set during Heroku auto-deploy. Do not modify. _Required for Mailgun usage._
+MAILGUN_SMTP_LOGIN                | 'Default SMTP Login' in Mailgun. _Required for Mailgun usage._
+MAILGUN_SMTP_PASSWORD             | 'Default Password' in Mailgun. _Required for Mailgun usage._
+MAILGUN_SMTP_PORT                 | _Default_: 587. Do not modify. _Required for Mailgun usage._
+MAILGUN_SMTP_SERVER               | _Default_: smtp.mailgun.org. Do not modify. _Required for Mailgun usage._
 MAX_CONTACTS                      | If set each campaign can only have a maximum of the value (an integer). This is good for staging/QA/evaluation instances.  _Default_: false (i.e. there is no maximum)
 MAX_CONTACTS_PER_TEXTER           | Maximum contacts that a texter can receive. This is particularly useful for dynamic assignment. If it's zero, then there is no maximum. _Default_: 0
 MAX_MESSAGE_LENGTH                | The maximum size for a message that a texter can send. When you send a SMS message over 160 characters the message will be split, so you might want to set this as 160 or less if you have a high SMS-only target demographic. _Default_: 99999
