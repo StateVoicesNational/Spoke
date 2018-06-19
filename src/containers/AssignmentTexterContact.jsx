@@ -441,7 +441,11 @@ export class AssignmentTexterContact extends React.Component {
     }
     this.setState({ disabled: true })
     try {
-      await this.props.mutations.sendMessage(message, contact.id)
+
+      if(optOutMessageText.length){
+        await this.props.mutations.sendMessage(message, contact.id)
+      }
+
       const optOut = {
         cell: contact.cell,
         assignmentId: assignment.id
@@ -517,7 +521,7 @@ export class AssignmentTexterContact extends React.Component {
   }
 
   optOutSchema = yup.object({
-    optOutMessageText: yup.string().required()
+    optOutMessageText: yup.string()
   })
 
   skipContact = () => {
@@ -764,7 +768,7 @@ export class AssignmentTexterContact extends React.Component {
                 type='submit'
                 style={inlineStyles.dialogButton}
                 component={GSSubmitButton}
-                label='Send'
+                label={this.state.optOutMessageText.length ? 'Send' : 'Opt Out without Text'}
               />
             </div>
           </GSForm>
