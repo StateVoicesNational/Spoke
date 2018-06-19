@@ -121,7 +121,10 @@ const styles = StyleSheet.create({
   lgMobileToolBar: {
     '@media(max-width: 449px) and (min-width: 410px)': {
       bottom: '0 !important',
-      marginLeft: '0px !important'
+      marginLeft: '0px !important',
+    },
+    '@media(max-width: 600px)': {
+      display: 'block !important'
     }
   }
 })
@@ -580,7 +583,7 @@ export class AssignmentTexterContact extends React.Component {
     if (messageStatus === 'closed') {
       button = (<RaisedButton
         onTouchTap={() => this.handleEditMessageStatus('needsResponse')}
-        label='Reopen'
+        label='Reopen Message'
       />)
     } else if (messageStatus === 'needsResponse' || messageStatus === 'messaged' || messageStatus === 'convo') {
       button = (<RaisedButton
@@ -780,7 +783,7 @@ export class AssignmentTexterContact extends React.Component {
   renderCorrectSendButton() {
     const { campaign } = this.props
     const { contact } = this.props.data
-    if (contact.messageStatus === 'messaged' || contact.messageStatus === 'convo' || contact.messageStatus === 'needsResponse') {
+    if (contact.messageStatus === 'messaged' || contact.messageStatus === 'convo' || contact.messageStatus === 'needsResponse' || contact.messageStatus === 'closed') {
       return (
         <SendButtonArrow
           threeClickEnabled={campaign.organization.threeClickEnabled}

@@ -32,7 +32,7 @@ const FAQs = [
   },
   {
     question: 'What does the "SKIPPED MESSAGES" Button do?',
-    answer: 'This button takes you to the contacts where you previously selected "skip reply". This allows you to reopen the conversation by clicking "reopen". Once you click "reopen", that contact will repopulate into your "send replies" queue.'
+    answer: 'This button takes you to the contacts where you previously selected "skip reply". This allows you to reopen the conversation by clicking "REOPEN MESSAGE". Once you click "reopen", that contact will repopulate into your "send replies" queue.'
   }
 ]
 
