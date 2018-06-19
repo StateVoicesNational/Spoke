@@ -10,7 +10,7 @@ import mocks from './api/mocks'
 import { createLoaders } from './models'
 import passport from 'passport'
 import cookieSession from 'cookie-session'
-import { setupAuth0Passport } from './auth-passport'
+import passportSetup from './auth-passport'
 import wrap from './wrap'
 import { log } from '../lib'
 import nexmo from './api/lib/nexmo'
@@ -27,13 +27,8 @@ process.on('uncaughtException', (ex) => {
 })
 const DEBUG = process.env.NODE_ENV === 'development'
 
-const loginCallbacks = setupAuth0Passport()
-if (!process.env.PASSPORT_STRATEGY) {
-  // default to legacy Auth0 choice
+const loginCallbacks = passportSetup[process.env.PASSPORT_STRATEGY || 'auth0']()
 
-} else {
-
-}
 if (!process.env.SUPPRESS_SEED_CALLS) {
   seedZipCodes()
 }
@@ -148,9 +143,9 @@ app.get('/logout-callback', (req, res) => {
   req.logOut()
   res.redirect('/')
 })
-
 if (loginCallbacks) {
-  app.get('/login-callback', ...loginCallbacks)
+  app.get('/login-callback', ...loginCallbacks.loginCallback)
+  app.post('/login-callback', ...loginCallbacks.loginCallback)
 }
 
 const executableSchema = makeExecutableSchema({
