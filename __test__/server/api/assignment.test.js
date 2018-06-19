@@ -47,7 +47,7 @@ describe('test assignment query', async () => {
     const context = getContext({user: testAdminUser})
     const result = await graphql(executableSchema, query, rootValue, context, {id: assignment.id})
     const {data} = result
-    expect(data.assignment.id).toBe(assignment.id.toString())
+    expect(data.assignment.id).toBe(testAdminUser.id.toString())
     expect(data.assignment.campaign.id).toBe(campaign.data.createCampaign.id.toString())
   })
 })
