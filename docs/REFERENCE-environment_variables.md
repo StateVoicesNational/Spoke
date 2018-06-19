@@ -20,7 +20,7 @@ DB_PORT                           | Database connection port. _Required_.
 DB_TYPE                           | Database connection type for [Knex](http://knexjs.org/#Installation-client). _Options_: mysql, pg, sqlite3. _Default_: sqlite3.
 DB_USE_SSL                        | Boolean value to determine whether database connections should use SSL. _Default_: false.
 DEBUG_SCALING                     | Emit console.log on events related to scaling issues. _Default_: false.
-DEFAULT_SERVICE                   | Default SMS service. _Options_: twilio, nexmo.
+DEFAULT_SERVICE                   | Default SMS service. _Options_: twilio, nexmo, fakeservice.
 DEV_APP_PORT                      | Port for development Webpack server. Required for development.
 DST_REFERENCE_TIMEZONE            | Timezone to use to determine whether DST is in effect. If it's DST in this timezone, we assume it's DST everywhere.  _Default_: "America/New_York". (The default will work for any campaign in the US. For example, if the campaign is in Australia, use "Australia/Sydney" or some other timezone in Australia.  Note that DST is opposite in the northern and souther hemispheres.)
 EMAIL_FROM                        | Email from address. _Required_.
