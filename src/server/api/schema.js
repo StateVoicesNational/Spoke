@@ -509,7 +509,7 @@ const rootMutations = {
         await accessRequired(user, organizationId, 'ADMIN', true)
       }
       const userRes = await r.knex('user')
-        .rightJoin('user_organization', 'user.id', 'user_organization.user_id')
+        .join('user_organization', 'user.id', 'user_organization.user_id')
         .where({ 'user_organization.organization_id': organizationId,
                 'user.id': userId }).limit(1)
       if (!userRes || !userRes.length) {

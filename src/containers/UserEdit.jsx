@@ -5,12 +5,8 @@ import wrapMutations from './hoc/wrap-mutations'
 import gql from 'graphql-tag'
 
 import GSForm from '../components/forms/GSForm'
-import GSSubmitButton from '../components/forms/GSSubmitButton'
 import Form from 'react-formal'
 import yup from 'yup'
-
-import FlatButton from 'material-ui/FlatButton'
-import RaisedButton from 'material-ui/RaisedButton'
 
 class UserEdit extends React.Component {
 
@@ -25,11 +21,11 @@ class UserEdit extends React.Component {
   };
 
   async componentWillMount() {
-    const user = await this.props.mutations.editUser(null)
+    await this.props.mutations.editUser(null)
   }
 
   async handleSave(formData) {
-    const result = await this.props.mutations.editUser(formData)
+    await this.props.mutations.editUser(formData)
     if (this.props.onRequestClose) {
       this.props.onRequestClose()
     }
@@ -53,6 +49,12 @@ class UserEdit extends React.Component {
         <Form.Field label='Last name' name='lastName' />
         <Form.Field label='Email' name='email' />
         <Form.Field label='Cell Number' name='cell' />
+        {(this.props.allowSetPassword
+          ? <div>
+            <Form.Field label='Password' name='password' />
+            <Form.Field label='Confirm Password' name='passwordConfirm' />
+          </div>
+         : null)}
         <Form.Button
           type='submit'
           label={this.props.saveLabel || 'Save'}
@@ -65,10 +67,12 @@ class UserEdit extends React.Component {
 UserEdit.propTypes = {
   mutations: PropTypes.object,
   router: PropTypes.object,
+  editUser: PropTypes.object,
   userId: PropTypes.string,
   organizationId: PropTypes.string,
   onRequestClose: PropTypes.func,
-  saveLabel: PropTypes.string
+  saveLabel: PropTypes.string,
+  allowSetPassword: PropTypes.bool
 }
 
 const mapMutationsToProps = ({ ownProps }) => ({
