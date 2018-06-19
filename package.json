@@ -9,6 +9,7 @@
   },
   "scripts": {
     "test": "jest",
+    "test-sqlite": "jest --config jest.config.sqlite.js",
     "test-coverage": "jest --coverage",
     "test-coverage-bothbackends": "jest --config jest.config.sqlite.js &&  jest --coverage",
     "clean": "rm -rf $OUTPUT_DIR",
@@ -34,6 +35,7 @@
     "prod-incoming-message-handler": "./dev-tools/babel-run ./src/workers/incoming-message-handler.js",
     "predev-start": "npm run clean",
     "dev-start": "nodemon -e js,jsx,md,mustache -w ./src --exec ./dev-tools/babel-run -- ./src/server",
+    "dev-start-debug": "nodemon -e js,jsx,md,mustache -w ./src --exec ./dev-tools/babel-run-debug  -- ./src/server",
     "generate-contacts": "./dev-tools/babel-run ./dev-tools/generate-contacts.js",
     "jest-test": "jest __test__/backend.test.js",
     "dev": "nf start -w --procfile ./dev-tools/Procfile.dev",

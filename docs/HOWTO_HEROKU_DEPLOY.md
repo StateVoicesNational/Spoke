@@ -1,6 +1,6 @@
 # Instructions for one click deployment to Heroku
 - Create a Heroku account (if you don't have an account). For more questions on Heroku and what it does, please visit [here](https://www.heroku.com/what)
-- The form you fill out in Heroku has a lot of values. These are configuration values (also known as environment variables). Each value is essentially a setting. Some are necessary for deployment and others customize the experience in your instance of Spoke. For more questions about configuration values in this application visit [our documentation on environment variables and what they do](https://github.com/MoveOnOrg/Spoke/blob/main/docs/REFERENCE-environment_variables.md). For more questions in general about configuration variables in Heroku, visit [Heroku's config variable explanation page](https://devcenter.heroku.com/articles/config-vars)
+- The form you fill out in Heroku has a lot of values. These are configuration values (also known as environment variables). Each value is essentially a setting. Some are necessary for deployment and others customize the experience in your instance of Spoke. For more questions about configuration values in this application visit [our documentation on environment variables and what they do](REFERENCE-environment_variables.md). For more questions in general about configuration variables in Heroku, visit [Heroku's config variable explanation page](https://devcenter.heroku.com/articles/config-vars)
 - Do not start any of the processes/dynos besides `web` (see below for non-Twilio uses)
 - The default setup is a free tier for processing and the database. See below for scaling and production requirements
 
@@ -24,7 +24,7 @@
 
 - Scroll to `Allowed Logout URLs` section and update it with (your HEROKU_APP_URL):
   - `https://<YOUR_HEROKU_APP_URL>/logout-callback, http://<YOUR_HEROKU_APP_URL>/logout-callback`
-  
+
 - Scroll to `Allowed Origin (CORS)` add:
   - `http://*.<YOUR_HEROKU_APP_URL>.com`, ` https://*.<YOUR_HEROKU_APP_URL>.com`
 - Scroll to `Allowed Web Origins` add:
@@ -44,7 +44,7 @@
 
 
 ## Notes about Twilio configuration variable setup
-If you need to use Twilio in development but with live keys, click [here](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_INTEGRATE_TWILIO.md) for instructions.
+If you need to use Twilio in development but with live keys, click [here](HOWTO_INTEGRATE_TWILIO.md) for instructions.
 When using instructions, please remember that references to NGROK urls should change to your Heroku app url.
 
 Visit [here](https://www.twilio.com/docs/api/messaging/services-and-copilot) to configure messaging service features
@@ -75,8 +75,8 @@ follow these steps:
 When using Twilio we recommend keeping the configuration variable `JOBS_SAME_PROCESS` enabled and only running the `web` process/dyno.
 There is another mode mostly for non-Twilio backends, where you may need to run the additional processes to process messages and sending.  Most times, even at high scale, you will want to keep `JOBS_SAME_PROCESS` on and increase or upgrade the dynos for the `web` process.
 
-## Setting Up Mailgun
-In order to configure Mailgun to actually send emails, you'll need to configure a domain for it. To do so, navigate
-to Add-Ons in your Heroku app, click on Mailgun, and then click on Domains. You'll need to go to your DNS provider, add
-those TXT and MX records, wait a few minutes, and click the button to check for changes in DNS. After it says your domain
-is set up, you should be good to go.
+## Email configuration
+See [this guide](EMAIL_CONFIGURATION.md) for instructions.
+
+## Data exporting
+In order to export data from campaigns (such as contacts' responses to questions), you need to configure S3 or Bucketeer. See [this guide](DATA_EXPORTING.md) for instructions.

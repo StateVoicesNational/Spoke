@@ -24,10 +24,10 @@ Please upgrade your instance and let us know if you encounter any issues!
 * Texters can update their name, email and other information from the menu. 
   Admins can update texter info from the console
 * A new SuperVolunteer role, which allows a non-admin to update assignments, and [some other tasks](https://github.com/MoveOnOrg/Spoke/issues/455)
-* Added [MailGun support](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_HEROKU_DEPLOY.md#setting-up-mailgun)
+* Added [MailGun support](HOWTO_HEROKU_DEPLOY.md#setting-up-mailgun)
 * Frontend React tests!
 * Added an action handler to automatically subscribe to a [Revere](https://reverehq.com/)
-  SMS list -- see [Revere integration instructions](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_INTEGRATE_WITH_REVERE.md)
+  SMS list -- see [Revere integration instructions](HOWTO_INTEGRATE_WITH_REVERE.md)
 * Fixed some bugs:
   - The texter menu now has a home button
   - The zipcode table was too big to fit in a free Heroku database
@@ -85,7 +85,7 @@ highlights for this release:
 * Resolves many bugs related to saving and updating a Campaign for admins
 * Improves the Texter interface (better reply visibility, especially on mobile) along with sending on `<Enter>`
 * Adds a [Deploy to Heroku](https://github.com/MoveOnOrg/Spoke#deploy-to-heroku) button for easier first-time deployments
-* Documented [how to deploy on Amazon AWS Lambda](https://github.com/MoveOnOrg/Spoke/blob/main/docs/DEPLOYING_AWS_LAMBDA.md)
+* Documented [how to deploy on Amazon AWS Lambda](DEPLOYING_AWS_LAMBDA.md)
 * Migrated from a RethinkDB backend to a Knex.js backend (we recommend use with postgresql database)
 * Improved Spoke's security
 
