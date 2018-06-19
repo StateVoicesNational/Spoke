@@ -1,13 +1,6 @@
-import { renderToString } from 'react-dom/server'
-import { createMemoryHistory, match, RouterContext } from 'react-router'
-import { syncHistoryWithStore } from 'react-router-redux'
-import { StyleSheetServer } from 'aphrodite'
+import { createBrowserHistory } from 'history'
 import makeRoutes from '../../routes'
-import { ApolloProvider } from 'react-apollo'
-import ApolloClientSingleton from '../../network/apollo-client-singleton'
-import React from 'react'
 import renderIndex from './render-index'
-import Store from '../../store'
 import wrap from '../wrap'
 import fs from 'fs'
 import path from 'path'
@@ -38,9 +31,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 export default wrap(async (req, res) => {
-  const memoryHistory = createMemoryHistory(req.url)
-  const store = new Store(memoryHistory)
-  const history = syncHistoryWithStore(memoryHistory, store.data)
+  const history = createBrowserHistory()
   const authCheck = (nextState, replace) => {
     if (!req.isAuthenticated()) {
       replace({
@@ -73,7 +64,7 @@ export default wrap(async (req, res) => {
       */
       const html = ''
       const css = ''
-      res.send(renderIndex(html, css, assetMap, store.data))
+      res.send(renderIndex(html, css, assetMap))
     } else {
       res.status(404).send('Not found')
     }

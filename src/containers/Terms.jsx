@@ -1,19 +1,18 @@
-import PropTypes from 'prop-types'
-import React from 'react'
-import loadData from './hoc/load-data'
-import gql from 'graphql-tag'
-import Paper from 'material-ui/Paper'
-import {
-  Step,
-  Stepper,
-  StepLabel,
-  StepContent
-} from 'material-ui/Stepper'
-import FlatButton from 'material-ui/FlatButton'
-import RaisedButton from 'material-ui/RaisedButton'
-import Divider from 'material-ui/Divider'
-import wrapMutations from './hoc/wrap-mutations'
-import { withRouter } from 'react-router'
+import PropTypes from 'prop-types';
+import React from 'react';
+import { withRouter } from 'react-router';
+import gql from 'graphql-tag';
+
+import Paper from '@material-ui/core/Paper';
+import Stepper from '@material-ui/core/Stepper';
+import Step from '@material-ui/core/Step';
+import StepLabel from '@material-ui/core/StepLabel';
+import StepContent from '@material-ui/core/StepContent';
+import Button from '@material-ui/core/Button';
+import Divider from '@material-ui/core/Divider';
+
+import loadData from './hoc/load-data';
+import wrapMutations from './hoc/wrap-mutations';
 
 class Terms extends React.Component {
 
@@ -49,7 +48,8 @@ class Terms extends React.Component {
 
     return (
       <div style={{ margin: '12px 0' }}>
-        <RaisedButton
+        <Button
+          variant="contained"
           label={stepIndex === 2 ? 'Agree' : 'Next'}
           disableTouchRipple
           disableFocusRipple
@@ -58,7 +58,7 @@ class Terms extends React.Component {
           style={{ marginRight: 12 }}
         />
         {step > 0 && (
-          <FlatButton
+          <Button
             label='Back'
             disabled={stepIndex === 0}
             disableTouchRipple

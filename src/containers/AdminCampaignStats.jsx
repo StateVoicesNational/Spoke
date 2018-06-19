@@ -1,16 +1,19 @@
-import PropTypes from 'prop-types'
-import React from 'react'
-import RaisedButton from 'material-ui/RaisedButton'
-import Chart from '../components/Chart'
-import { Card, CardTitle, CardText } from 'material-ui/Card'
-import TexterStats from '../components/TexterStats'
-import Snackbar from 'material-ui/Snackbar'
-import { withRouter } from 'react-router'
-import { StyleSheet, css } from 'aphrodite'
-import loadData from './hoc/load-data'
-import gql from 'graphql-tag'
-import theme from '../styles/theme'
-import wrapMutations from './hoc/wrap-mutations'
+import PropTypes from 'prop-types';
+import React from 'react';
+import { withRouter } from 'react-router';
+import gql from 'graphql-tag';
+import { compose } from 'react-apollo'
+import { StyleSheet, css } from 'aphrodite';
+import Button from '@material-ui/core/Button';
+import Card from '@material-ui/core/Card';
+import CardHeader from '@material-ui/core/CardHeader';
+import CardContent from '@material-ui/core/CardContent';
+import Snackbar from '@material-ui/core/Snackbar';
+
+import { newLoadData } from './hoc/load-data';
+import theme from '../styles/theme';
+import Chart from '../components/Chart';
+import TexterStats from '../components/TexterStats';
 
 const inlineStyles = {
   stat: {
@@ -80,15 +83,15 @@ const Stat = ({ title, count }) => (
     key={title}
     style={inlineStyles.stat}
   >
-    <CardTitle
+    <CardHeader
       title={count}
       titleStyle={inlineStyles.count}
     />
-    <CardText
+    <CardContent
       style={inlineStyles.title}
     >
       {title}
-    </CardText>
+    </CardContent>
   </Card>
 )
 
@@ -139,9 +142,10 @@ class AdminCampaignStats extends React.Component {
 
   renderCopyButton() {
     return (
-      <RaisedButton
+      <Button
+        variant="contained"
         label='Copy Campaign'
-        onTouchTap={async() => await this.props.mutations.copyCampaign(this.props.params.campaignId)}
+        onClick={async() => await this.props.mutations.copyCampaign(this.props.params.campaignId)}
       />
     )
   }
@@ -174,16 +178,18 @@ class AdminCampaignStats extends React.Component {
                 <div className={css(styles.inline)}>
                   {!campaign.isArchived ?
                     ( // edit
-                    <RaisedButton
-                      onTouchTap={() => this.props.router.push(`/admin/${organizationId}/campaigns/${campaignId}/edit`)}
+                    <Button
+                      variant="contained"
+                      onClick={() => this.props.router.push(`/admin/${organizationId}/campaigns/${campaignId}/edit`)}
                       label='Edit'
                     />
                   ) : null}
                   {adminPerms ?
                     [ // Buttons for Admins (and not Supervolunteers)
                       ( // export
-                      <RaisedButton
-                        onTouchTap={async () => {
+                      <Button
+                        variant="contained"
+                        onClick={async () => {
                           this.setState({
                             exportMessageOpen: true,
                             disableExportButton: true
@@ -200,20 +206,23 @@ class AdminCampaignStats extends React.Component {
                       />),
                       ( // unarchive
                       campaign.isArchived ?
-                        <RaisedButton
-                          onTouchTap={async () => await this.props.mutations.unarchiveCampaign(campaignId)}
+                        <Button
+                          variant="contained"
+                          onClick={async () => await this.props.mutations.unarchiveCampaign(campaignId)}
                           label='Unarchive'
                         /> : null),
                       ( // archive
                       !campaign.isArchived ?
-                        <RaisedButton
-                          onTouchTap={async () => await this.props.mutations.archiveCampaign(campaignId)}
+                        <Button
+                          variant="contained"
+                          onClick={async () => await this.props.mutations.archiveCampaign(campaignId)}
                           label='Archive'
                         /> : null),
                       ( // copy
-                      <RaisedButton
+                      <Button
+                        variant="contained"
                         label='Copy Campaign'
-                        onTouchTap={async() => await this.props.mutations.copyCampaign(this.props.params.campaignId)}
+                        onClick={async() => await this.props.mutations.copyCampaign(this.props.params.campaignId)}
                       />)
                     ] : null}
                 </div>
@@ -251,7 +260,7 @@ class AdminCampaignStats extends React.Component {
           open={this.state.exportMessageOpen}
           message="Export started - we'll e-mail you when it's done"
           autoHideDuration={5000}
-          onRequestClose={() => {
+          onClose={() => {
             this.setState({ exportMessageOpen: false })
           }}
         />
@@ -261,99 +270,110 @@ class AdminCampaignStats extends React.Component {
 }
 
 AdminCampaignStats.propTypes = {
-  mutations: PropTypes.object,
-  data: PropTypes.object,
   params: PropTypes.object,
-  router: PropTypes.object
+  router: PropTypes.object,
+  getCampaign: PropTypes.object,
+  mutations: PropTypes.object
 }
 
-const mapQueriesToProps = ({ ownProps }) => ({
-  data: {
-    query: gql`query getCampaign($campaignId: String!, $contactsFilter: ContactsFilter!) {
-      campaign(id: $campaignId) {
-        id
-        title
-        isArchived
-        useDynamicAssignment
-        assignments {
+const queries = {
+  getCampaign: {
+    gql: gql`
+      query getCampaign($campaignId: String!, $contactsFilter: ContactsFilter!) {
+        campaign(id: $campaignId) {
           id
-          texter {
+          title
+          isArchived
+          useDynamicAssignment
+          assignments {
             id
-            firstName
-            lastName
+            texter {
+              id
+              firstName
+              lastName
+            }
+            unmessagedCount: contactsCount(contactsFilter:$contactsFilter)
+            contactsCount
           }
-          unmessagedCount: contactsCount(contactsFilter:$contactsFilter)
-          contactsCount
-        }
-        pendingJobs {
-          id
-          jobType
-          assigned
-          status
-        }
-        interactionSteps {
-          id
-          question {
-            text
-            answerOptions {
-              value
-              responderCount
+          pendingJobs {
+            id
+            jobType
+            assigned
+            status
+          }
+          interactionSteps {
+            id
+            question {
+              text
+              answerOptions {
+                value
+                responderCount
+              }
             }
           }
-        }
-        contactsCount
-        stats {
-          sentMessagesCount
-          receivedMessagesCount
-          optOutsCount
+          contactsCount
+          stats {
+            sentMessagesCount
+            receivedMessagesCount
+            optOutsCount
+          }
         }
       }
-    }`,
-    variables: {
-      campaignId: ownProps.params.campaignId,
-      contactsFilter: {
-        messageStatus: 'needsMessage'
-      }
-    },
-    pollInterval: 5000
+    `,
+    options: (props) => ({
+      variables: {
+        campaignId: props.params.campaignId,
+        contactsFilter: {
+          messageStatus: 'needsMessage'
+        }
+      },
+      pollInterval: 5000
+    })
   }
-})
+}
 
-const mapMutationsToProps = () => ({
-  archiveCampaign: (campaignId) => ({
-    mutation: gql`mutation archiveCampaign($campaignId: String!) {
-      archiveCampaign(id: $campaignId) {
-        id
-        isArchived
+const mutations = {
+  archiveCampaign: {
+    gql: gql`
+      mutation archiveCampaign($campaignId: String!) {
+        archiveCampaign(id: $campaignId) {
+          id
+          isArchived
+        }
       }
-    }`,
-    variables: { campaignId }
-  }),
-  unarchiveCampaign: (campaignId) => ({
-    mutation: gql`mutation unarchiveCampaign($campaignId: String!) {
-      unarchiveCampaign(id: $campaignId) {
-        id
-        isArchived
+    `
+  },
+  unarchiveCampaign: {
+    gql: gql`
+      mutation unarchiveCampaign($campaignId: String!) {
+        unarchiveCampaign(id: $campaignId) {
+          id
+          isArchived
+        }
       }
-    }`,
-    variables: { campaignId }
-  }),
-  exportCampaign: (campaignId) => ({
-    mutation: gql`mutation exportCampaign($campaignId: String!) {
-      exportCampaign(id: $campaignId) {
-        id
+    `
+  },
+  exportCampaign: {
+    gql: gql`
+      mutation exportCampaign($campaignId: String!) {
+        exportCampaign(id: $campaignId) {
+          id
+        }
       }
-    }`,
-    variables: { campaignId }
-  }),
-  copyCampaign: (campaignId) => ({
-    mutation: gql`mutation copyCampaign($campaignId: String!){
-      copyCampaign(id: $campaignId){
-       id
+    `
+  },
+  copyCampaign: {
+    gql: gql`
+      mutation copyCampaign($campaignId: String!) {
+        copyCampaign(id: $campaignId) {
+          id
+        }
       }
-    }`,
-    variables: { campaignId }
-  })
-})
+    `
+  }
+}
 
-export default loadData(withRouter(wrapMutations(AdminCampaignStats)), { mapQueriesToProps, mapMutationsToProps })
+export default compose(
+  newLoadData({ queries, mutations }),
+  withRouter
+)(AdminCampaignStats)

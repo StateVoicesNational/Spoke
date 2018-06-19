@@ -18,7 +18,7 @@ describe('TopNav', () => {
     ).find('Link')
     expect(link.length).toBe(1)
     expect(link.prop('to')).toBe('/admin/1/campaigns')
-    expect(link.find('IconButton').length).toBe(1)
+    expect(link.find('WithStyles(IconButton)').length).toBe(1)
   })
 
   it('renders UserMenu', () => {

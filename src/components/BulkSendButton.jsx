@@ -1,9 +1,7 @@
-import PropTypes from 'prop-types'
 import React, { Component } from 'react'
-import RaisedButton from 'material-ui/RaisedButton'
-import FlatButton from 'material-ui/FlatButton'
+import PropTypes from 'prop-types'
 import { StyleSheet, css } from 'aphrodite'
-import Dialog from 'material-ui/Dialog'
+import Button from '@material-ui/core/Button';
 
 // This is because the Toolbar from material-ui seems to only apply the correct margins if the
 // immediate child is a Button or other type it recognizes. Can get rid of this if we remove material-ui
@@ -32,8 +30,9 @@ export default class BulkSendButton extends Component {
   render() {
     return (
       <div className={css(styles.container)}>
-        <RaisedButton
-          onTouchTap={this.sendMessages}
+        <Button
+          variant="contained"
+          onClick={this.sendMessages}
           label={this.state.isSending ? 'Sending...' : `Send Bulk (${window.BULK_SEND_CHUNK_SIZE})`}
           disabled={this.state.isSending}
           primary

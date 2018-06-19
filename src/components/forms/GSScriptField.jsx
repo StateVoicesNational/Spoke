@@ -1,11 +1,13 @@
 import React from 'react'
-import GSFormField from './GSFormField'
+import Button from '@material-ui/core/Button';
+import Dialog from '@material-ui/core/Dialog';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogActions from '@material-ui/core/DialogActions';
+import TextField from '@material-ui/core/TextField';
+
 import { allScriptFields } from '../../lib/scripts'
 import ScriptEditor from '../ScriptEditor'
-import Dialog from 'material-ui/Dialog'
-import FlatButton from 'material-ui/FlatButton'
-import RaisedButton from 'material-ui/RaisedButton'
-import TextField from 'material-ui/TextField'
+import GSFormField from './GSFormField'
 
 const styles = {
   dialog: {
@@ -51,29 +53,32 @@ export default class GSScriptField extends GSFormField {
     return (
       <Dialog
         style={styles.dialog}
-        actions={[
-          <FlatButton
-            label='Cancel'
-            onTouchTap={this.handleCloseDialog}
-          />,
-          <RaisedButton
-            label='Done'
-            onTouchTap={this.handleSaveScript}
-            primary
-          />
-        ]}
-        modal
+        modal={true}
         open={open}
         onRequestClose={this.handleCloseDialog}
       >
-        <ScriptEditor
-          expandable
-          ref='dialogScriptInput'
-          scriptText={this.state.script}
-          sampleContact={sampleContact}
-          scriptFields={scriptFields}
-          onChange={(val) => this.setState({ script: val })}
-        />
+        <DialogContent>
+          <ScriptEditor
+            expandable
+            ref='dialogScriptInput'
+            scriptText={this.state.script}
+            sampleContact={sampleContact}
+            scriptFields={scriptFields}
+            onChange={(val) => this.setState({ script: val })}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button
+            label='Cancel'
+            onClick={this.handleCloseDialog}
+          />,
+          <Button
+            variant="contained"
+            label='Done'
+            onClick={this.handleSaveScript}
+            primary
+          />
+        </DialogActions>
       </Dialog>
     )
   }
@@ -84,7 +89,7 @@ export default class GSScriptField extends GSFormField {
         <TextField
           multiLine
           onFocus={this.handleOpenDialog}
-          onTouchTap={(event) => {
+          onClick={(event) => {
             event.stopPropagation()
           }}
           floatingLabelText={this.floatingLabelText()}

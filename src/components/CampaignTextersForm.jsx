@@ -1,19 +1,23 @@
 import type from 'prop-types'
 import React from 'react'
-import Slider from './Slider'
-import AutoComplete from 'material-ui/AutoComplete'
-import IconButton from 'material-ui/IconButton'
-import RaisedButton from 'material-ui/RaisedButton'
-import GSForm from '../components/forms/GSForm'
-import yup from 'yup'
 import Form from 'react-formal'
-import { MenuItem } from 'material-ui/Menu'
+import yup from 'yup'
+import { StyleSheet, css } from 'aphrodite'
+// TODO: material-ui
+import AutoComplete from 'material-ui/AutoComplete'
+import IconButton from '@material-ui/core/IconButton';
+import Button from '@material-ui/core/Button';
+import MenuItem from '@material-ui/core/MenuItem';
+import FormGroup from '@material-ui/core/FormGroup';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Switch from '@material-ui/core/Switch';
+import DeleteIcon from '@material-ui/icons/Delete';
+
+import theme from '../styles/theme'
+import GSForm from '../components/forms/GSForm'
+import Slider from './Slider'
 import OrganizationJoinLink from './OrganizationJoinLink'
 import CampaignFormSectionHeading from './CampaignFormSectionHeading'
-import { StyleSheet, css } from 'aphrodite'
-import theme from '../styles/theme'
-import Toggle from 'material-ui/Toggle'
-import DeleteIcon from 'material-ui/svg-icons/action/delete'
 
 const styles = StyleSheet.create({
   sliderContainer: {
@@ -105,6 +109,12 @@ export default class CampaignTextersForm extends React.Component {
     autoSplit: false,
     focusedTexter: null,
     useDynamicAssignment: this.formValues().useDynamicAssignment
+  }
+
+  constructor(props) {
+    super(props);
+
+    this.handleToggleChange = this.handleToggleChange.bind(this);
   }
 
   handleToggleChange() {
@@ -388,7 +398,7 @@ export default class CampaignTextersForm extends React.Component {
            : ''}
           <div className={css(styles.removeButton)}>
             <IconButton
-              onTouchTap={async () => {
+              onClick={async () => {
                 const currentFormValues = this.formValues()
                 const newFormValues = {
                   ...currentFormValues
@@ -436,13 +446,17 @@ export default class CampaignTextersForm extends React.Component {
           title='Who should send the texts?'
           subtitle={subtitle}
         />
-        <div>
-          <Toggle
-            label='Dynamically assign contacts'
-            toggled={this.state.useDynamicAssignment}
-            onToggle={this.handleToggleChange.bind(this)}
+        <FormGroup row>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={this.state.useDynamicAssignment}
+                onChange={this.handleToggleChange}
+              />
+            }
+            label="Dynamically assign contacts"
           />
-        </div>
+        </FormGroup>
         <GSForm
           schema={this.formSchema}
           value={this.formValues()}
@@ -452,9 +466,10 @@ export default class CampaignTextersForm extends React.Component {
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           {this.showSearch()}
             <div>
-              <RaisedButton
+              <Button
+                variant="contained"
                 label='Add All'
-                onTouchTap={(() => this.addAllTexters())}
+                onClick={(() => this.addAllTexters())}
               />
             </div>
           </div>

@@ -59,19 +59,19 @@ describe('TexterStats (Non-dynamic campaign)', () => {
   it('contains the right text', () => {
     const stats = shallow(<TexterStats campaign={campaign} />)
     expect(stats.text()).toEqual(
-      'Test Tester19%<LinearProgress />Someone Else99%<LinearProgress />'
+      'Test Tester19%<WithStyles(LinearProgress) />Someone Else99%<WithStyles(LinearProgress) />'
     )
   })
 
   it('creates linear progress correctly', () => {
     const linearProgress = shallow(<TexterStats campaign={campaign} />).find(
-      'LinearProgress'
+      'WithStyles(LinearProgress)'
     )
     expect(linearProgress.length).toBe(2)
     expect(linearProgress.first().props()).toEqual({
       max: 100,
       min: 0,
-      mode: 'determinate',
+      variant: 'determinate',
       value: 19
     })
   })

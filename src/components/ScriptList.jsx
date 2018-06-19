@@ -1,23 +1,22 @@
-import PropTypes from 'prop-types'
-import React from 'react'
-import FlatButton from 'material-ui/FlatButton'
-import { List, ListItem } from 'material-ui/List'
-// import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert'
-import CreateIcon from 'material-ui/svg-icons/content/create'
-// import IconButton from 'material-ui/IconButton'
-// import IconMenu from 'material-ui/IconMenu'
-// import MenuItem from 'material-ui/MenuItem'
-import Subheader from 'material-ui/Subheader'
-import Divider from 'material-ui/Divider'
-import Dialog from 'material-ui/Dialog'
-import CannedResponseForm from './CannedResponseForm'
-import GSSubmitButton from './forms/GSSubmitButton'
-import Form from 'react-formal'
-import { connect } from 'react-apollo'
-import gql from 'graphql-tag'
-import { log } from '../lib'
+import PropTypes from 'prop-types';
+import React from 'react';
+import Form from 'react-formal';
+import { connect } from 'react-apollo';
+import gql from 'graphql-tag';
 
-// import { insert, update, remove } from '../../api/scripts/methods'
+import Button from '@material-ui/core/Button';
+import List from '@material-ui/core/List';
+import ListSubheader from '@material-ui/core/ListSubheader';
+import ListItem from '@material-ui/core/ListItem';
+import Divider from '@material-ui/core/Divider';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import CreateIcon from '@material-ui/icons/Create';
+
+import { log } from '../lib';
+import CannedResponseForm from './CannedResponseForm';
+import GSSubmitButton from './forms/GSSubmitButton';
 
 const styles = {
   dialog: {
@@ -82,12 +81,12 @@ class ScriptList extends React.Component {
     //     targetOrigin={{horizontal: 'left', vertical: 'bottom'}}
     //   >
     //     <MenuItem primaryText={duplicateCampaignResponses && !script.isUserCreated ? "Duplicate and edit" : "Edit"}
-    //       onTouchTap={() => this.handleEditScript(script)}
+    //       onClick={() => this.handleEditScript(script)}
     //     />
     //     {
     //       script.isUserCreated ? (
     //         <MenuItem primaryText="Delete"
-    //           onTouchTap={() => this.handleDeleteScript(script.id)}
+    //           onClick={() => this.handleDeleteScript(script.id)}
     //         />
     //       ) : ''
     //     }
@@ -98,7 +97,7 @@ class ScriptList extends React.Component {
     const listItems = scripts.map((script) => (
       <ListItem
         value={script.text}
-        onTouchTap={() => onSelectCannedResponse(script)}
+        onClick={() => onSelectCannedResponse(script)}
         key={script.id}
         primaryText={script.title}
         secondaryText={script.text}
@@ -110,8 +109,8 @@ class ScriptList extends React.Component {
 
     const list = scripts.length === 0 ? null : (
       <List>
-        <Subheader>{subheader}</Subheader>,
-        {listItems}
+        <ListSubheader>{subheader}</ListSubheader>,
+          {listItems}
         <Divider />
       </List>
     )
@@ -120,34 +119,36 @@ class ScriptList extends React.Component {
       <div>
         {list}
         {showAddScriptButton ? (
-          <FlatButton
+          <Button
             label='Add new canned response'
             icon={<CreateIcon />}
-            onTouchTap={this.handleOpenDialog}
+            onClick={this.handleOpenDialog}
           />
         ) : ''}
         <Form.Context>
           <Dialog
             style={styles.dialog}
             open={dialogOpen}
-            actions={[
-              <FlatButton
+            onRequestClose={this.handleCloseDialog}
+          >
+            <DialogContent>
+              <CannedResponseForm
+                onSaveCannedResponse={onSaveCannedResponse}
+                customFields={customFields}
+                script={this.state.script}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button
                 label='Cancel'
-                onTouchTap={this.handleCloseDialog}
+                onClick={this.handleCloseDialog}
               />,
               <Form.Button
                 type='submit'
                 component={GSSubmitButton}
                 label='Save'
               />
-            ]}
-            onRequestClose={this.handleCloseDialog}
-          >
-            <CannedResponseForm
-              onSaveCannedResponse={onSaveCannedResponse}
-              customFields={customFields}
-              script={this.state.script}
-            />
+            </DialogActions>
           </Dialog>
         </Form.Context>
       </div>

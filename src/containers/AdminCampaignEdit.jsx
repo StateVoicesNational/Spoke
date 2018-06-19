@@ -1,59 +1,22 @@
-import PropTypes from 'prop-types'
-import React from 'react'
-import WarningIcon from 'material-ui/svg-icons/alert/warning'
-import DoneIcon from 'material-ui/svg-icons/action/done'
-import Avatar from 'material-ui/Avatar'
-import theme from '../styles/theme'
-import CircularProgress from 'material-ui/CircularProgress'
-import { Card, CardHeader, CardText } from 'material-ui/Card'
-import gql from 'graphql-tag'
-import loadData from './hoc/load-data'
-import wrapMutations from './hoc/wrap-mutations'
-import RaisedButton from 'material-ui/RaisedButton'
-import CampaignBasicsForm from '../components/CampaignBasicsForm'
-import CampaignContactsForm from '../components/CampaignContactsForm'
-import CampaignTextersForm from '../components/CampaignTextersForm'
-import CampaignInteractionStepsForm from '../components/CampaignInteractionStepsForm'
-import CampaignCannedResponsesForm from '../components/CampaignCannedResponsesForm'
+import PropTypes from 'prop-types';
+import React from 'react';
+import gql from 'graphql-tag';
+import Button from '@material-ui/core/Button';
+import Avatar from '@material-ui/core/Avatar';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import Card from '@material-ui/core/Card';
+import CardHeader from '@material-ui/core/CardHeader';
+import CardContent from '@material-ui/core/CardContent';
+import WarningIcon from '@material-ui/icons/Warning';
+import DoneIcon from '@material-ui/icons/Done';
 
-const campaignInfoFragment = `
-  id
-  title
-  description
-  dueBy
-  isStarted
-  isArchived
-  contactsCount
-  datawarehouseAvailable
-  customFields
-  useDynamicAssignment
-  logoImageUrl
-  introHtml
-  primaryColor
-  texters {
-    id
-    firstName
-    assignment(campaignId:$campaignId) {
-      contactsCount
-      needsMessageCount: contactsCount(contactsFilter:{messageStatus:\"needsMessage\"})
-      maxContacts
-    }
-  }
-  interactionSteps {
-    id
-    questionText
-    script
-    answerOption
-    answerActions
-    parentInteractionId
-    isDeleted
-  }
-  cannedResponses {
-    id
-    title
-    text
-  }
-`
+import theme from '../styles/theme';
+import { newLoadData } from '../containers/hoc/load-data'
+import CampaignBasicsForm from '../components/CampaignBasicsForm';
+import CampaignContactsForm from '../components/CampaignContactsForm';
+import CampaignTextersForm from '../components/CampaignTextersForm';
+import CampaignInteractionStepsForm from '../components/CampaignInteractionStepsForm';
+import CampaignCannedResponsesForm from '../components/CampaignCannedResponsesForm';
 
 class AdminCampaignEdit extends React.Component {
   constructor(props) {
@@ -292,8 +255,8 @@ class AdminCampaignEdit extends React.Component {
       expandableBySuperVolunteers: false,
       extraProps: {
         optOuts: [], // this.props.organizationData.organization.optOuts, // <= doesn't scale
-        datawarehouseAvailable: this.props.campaignData.campaign.datawarehouseAvailable,
-        jobResultMessage: ((this.props.pendingJobsData.campaign.pendingJobs.filter((job) => (/contacts/.test(job.jobType)))[0] || {}).resultMessage || '')
+        datawarehouseAvailable: this.props.getCampaignData.campaign.datawarehouseAvailable,
+        jobResultMessage: ((this.props.getPendingJobsData.campaign.pendingJobs.filter((job) => (/contacts/.test(job.jobType)))[0] || {}).resultMessage || '')
       }
     }, {
       title: 'Texters',
@@ -304,9 +267,9 @@ class AdminCampaignEdit extends React.Component {
       expandAfterCampaignStarts: true,
       expandableBySuperVolunteers: true,
       extraProps: {
-        orgTexters: this.props.organizationData.organization.texters,
-        organizationUuid: this.props.organizationData.organization.uuid,
-        campaignId: this.props.campaignData.campaign.id
+        orgTexters: this.props.getOrganizationData.organization.texters,
+        organizationUuid: this.props.getOrganizationData.organization.uuid,
+        campaignId: this.props.getCampaignData.campaign.id
       }
     }, {
       title: 'Interactions',
@@ -317,8 +280,8 @@ class AdminCampaignEdit extends React.Component {
       expandAfterCampaignStarts: true,
       expandableBySuperVolunteers: false,
       extraProps: {
-        customFields: this.props.campaignData.campaign.customFields,
-        availableActions: this.props.availableActionsData.availableActions
+        customFields: this.props.getCampaignData.campaign.customFields,
+        availableActions: this.props.getActions.availableActions
       }
     }, {
       title: 'Canned Responses',
@@ -329,13 +292,13 @@ class AdminCampaignEdit extends React.Component {
       expandAfterCampaignStarts: true,
       expandableBySuperVolunteers: true,
       extraProps: {
-        customFields: this.props.campaignData.campaign.customFields
+        customFields: this.props.getCampaignData.campaign.customFields
       }
     }]
   }
 
   sectionSaveStatus(section) {
-    const pendingJobs = this.props.pendingJobsData.campaign.pendingJobs
+    const pendingJobs = this.props.getPendingJobsData.campaign.pendingJobs
     let sectionIsSaving = false
     let relatedJob = null
     let savePercent = 0
@@ -372,7 +335,7 @@ class AdminCampaignEdit extends React.Component {
         formValues={formValues}
         saveLabel={this.isNew() ? 'Save and goto next section' : 'Save'}
         saveDisabled={shouldDisable}
-        ensureComplete={this.props.campaignData.campaign.isStarted}
+        ensureComplete={this.props.getCampaignData.campaign.isStarted}
         onSubmit={this.handleSubmit}
         {...section.extraProps}
       />
@@ -380,7 +343,7 @@ class AdminCampaignEdit extends React.Component {
   }
 
   renderHeader() {
-    const notStarting = this.props.campaignData.campaign.isStarted ? (
+    const notStarting = this.props.getCampaignData.campaign.isStarted ? (
       <div
         style={{
           color: theme.colors.green,
@@ -448,21 +411,24 @@ class AdminCampaignEdit extends React.Component {
         </div>
         <div>
           {this.props.campaignData.campaign.isArchived ? (
-            <RaisedButton
+            <Button
+              variant="contained"
               label='Unarchive'
-              onTouchTap={async() => await this.props.mutations.unarchiveCampaign(this.props.campaignData.campaign.id)}
+              onClick={async() => await this.props.mutations.unarchiveCampaign(this.props.campaignData.campaign.id)}
             />
           ) : (
-            <RaisedButton
+            <Button
+              variant="contained"
               label='Archive'
-              onTouchTap={async() => await this.props.mutations.archiveCampaign(this.props.campaignData.campaign.id)}
+              onClick={async() => await this.props.mutations.archiveCampaign(this.props.campaignData.campaign.id)}
             />
           )}
-          <RaisedButton
-            primary
+          <Button
+            variant="contained"
+            primary={true}
             label='Start This Campaign!'
             disabled={!isCompleted}
-            onTouchTap={async () => {
+            onClick={async () => {
               this.setState({
                 startingCampaign: true
               })
@@ -523,18 +489,24 @@ class AdminCampaignEdit extends React.Component {
           } else if (!sectionCanExpandOrCollapse) {
             cardHeaderStyle.backgroundColor = theme.colors.lightGray
           } else if (sectionIsDone) {
-            avatar = (<Avatar
-              icon={<DoneIcon style={{ fill: theme.colors.darkGreen }} />}
-              style={avatarStyle}
-              size={25}
-            />)
+            avatar = (
+              <Avatar
+                style={avatarStyle}
+                size={25}
+              >
+                <DoneIcon style={{ fill: theme.colors.darkGreen }} />
+              </Avatar>
+            );
             cardHeaderStyle.backgroundColor = theme.colors.green
           } else if (!sectionIsDone) {
-            avatar = (<Avatar
-              icon={<WarningIcon style={{ fill: theme.colors.orange }} />}
-              style={avatarStyle}
-              size={25}
-            />)
+            avatar = (
+              <Avatar
+                style={avatarStyle}
+                size={25}
+              >
+                <WarningIcon style={{ fill: theme.colors.orange }} />
+              </Avatar>
+            );
             cardHeaderStyle.backgroundColor = theme.colors.yellow
           }
 
@@ -560,11 +532,11 @@ class AdminCampaignEdit extends React.Component {
                 showExpandableButton={!sectionIsSaving && sectionCanExpandOrCollapse}
                 avatar={avatar}
               />
-              <CardText
+              <CardContent
                 expandable
               >
                  {this.renderCampaignFormSection(section, sectionIsSaving)}
-              </CardText>
+              </CardContent>
             </Card>
           )
         })}
@@ -574,121 +546,162 @@ class AdminCampaignEdit extends React.Component {
 }
 
 AdminCampaignEdit.propTypes = {
-  campaignData: PropTypes.object,
-  mutations: PropTypes.object,
-  organizationData: PropTypes.object,
   params: PropTypes.object,
   location: PropTypes.object,
-  pendingJobsData: PropTypes.object,
-  availableActionsData: PropTypes.object
+  getCampaignData: PropTypes.object,
+  getOrganizationData: PropTypes.object,
+  getPendingJobsData: PropTypes.object,
+  getActions: PropTypes.object,
+  mutations: PropTypes.object
 }
 
-const mapQueriesToProps = ({ ownProps }) => ({
-  pendingJobsData: {
-    query: gql`query getCampaignJobs($campaignId: String!) {
-      campaign(id: $campaignId) {
-        id
-        pendingJobs {
-          id
-          jobType
-          assigned
-          status
-          resultMessage
-        }
-      }
-    }`,
-    variables: {
-      campaignId: ownProps.params.campaignId
-    },
-    pollInterval: 60000
-  },
-  campaignData: {
-    query: gql`query getCampaign($campaignId: String!) {
-      campaign(id: $campaignId) {
-        ${campaignInfoFragment}
-      }
-    }`,
-    variables: {
-      campaignId: ownProps.params.campaignId
-    },
-    pollInterval: 60000
-  },
-  organizationData: {
-    query: gql`query getOrganizationData($organizationId: String!) {
-      organization(id: $organizationId) {
-        id
-        uuid
-        texters: people {
-          id
-          firstName
-          displayName
-        }
-      }
-    }`,
-    variables: {
-      organizationId: ownProps.params.organizationId
-    },
-    pollInterval: 20000
-  },
-  availableActionsData: {
-    query: gql`query getActions($organizationId: String!) {
-      availableActions(organizationId: $organizationId) {
-        name
-        display_name
-        instructions
-      }
-    }`,
-    variables: {
-      organizationId: ownProps.params.organizationId
-    },
-    forceFetch: true
+const campaignInfoFragment = `
+  id
+  title
+  description
+  dueBy
+  isStarted
+  isArchived
+  contactsCount
+  datawarehouseAvailable
+  customFields
+  useDynamicAssignment
+  logoImageUrl
+  introHtml
+  primaryColor
+  texters {
+    id
+    firstName
+    assignment(campaignId:$campaignId) {
+      contactsCount
+      needsMessageCount: contactsCount(contactsFilter:{messageStatus:\"needsMessage\"})
+      maxContacts
+    }
   }
-})
+  interactionSteps {
+    id
+    questionText
+    script
+    answerOption
+    answerActions
+    parentInteractionId
+    isDeleted
+  }
+  cannedResponses {
+    id
+    title
+    text
+  }
+`
 
-// Right now we are copying the result fields instead of using a fragment because of https://github.com/apollostack/apollo-client/issues/451
-const mapMutationsToProps = () => ({
-  archiveCampaign: (campaignId) => ({
-    mutation: gql`mutation archiveCampaign($campaignId: String!) {
-          archiveCampaign(id: $campaignId) {
-            ${campaignInfoFragment}
+const queries = {
+  getCampaignData: {
+    gql: gql`
+      query getCampaign($campaignId: String!) {
+        campaign(id: $campaignId) {
+          ${campaignInfoFragment}
+        }
+      }
+    `,
+    options: (props) => ({
+      variables: { campaignId: props.params.campaignId },
+      pollInterval: 60000
+    })
+  },
+  getPendingJobsData: {
+    gql: gql`
+      query getCampaignJobs($campaignId: String!) {
+        campaign(id: $campaignId) {
+          id
+          pendingJobs {
+            id
+            jobType
+            assigned
+            status
+            resultMessage
           }
-        }`,
-    variables: { campaignId }
-  }),
-  unarchiveCampaign: (campaignId) => ({
-    mutation: gql`mutation unarchiveCampaign($campaignId: String!) {
+        }
+      }
+    `,
+    options: (props) => ({
+      variables: { campaignId: props.params.campaignId },
+      pollInterval: 60000
+    })
+  },
+  getOrganizationData: {
+    gql: gql`
+      query getOrganizationData($organizationId: String!) {
+        organization(id: $organizationId) {
+          id
+          uuid
+          texters: people {
+            id
+            firstName
+            displayName
+          }
+        }
+      }
+    `,
+    options: (props) => ({
+      variables: { organizationId: props.params.organizationId },
+      pollInterval: 20000
+    })
+  },
+  getActions: {
+    gql: gql`
+      query getActions($organizationId: String!) {
+        availableActions(organizationId: $organizationId) {
+          name
+          display_name
+          instructions
+        }
+      }
+    `,
+    options: (props) => ({
+      variables: { organizationId: props.params.organizationId },
+      forceFetch: true
+    })
+  }
+}
+
+const mutations = {
+  // Right now we are copying the result fields instead of using a fragment because of https://github.com/apollostack/apollo-client/issues/451
+  archiveCampaign: {
+    gql: gql`
+      mutation archiveCampaign($campaignId: String!) {
+        archiveCampaign(id: $campaignId) {
+          ${campaignInfoFragment}
+        }
+      }
+    `
+  },
+  unarchiveCampaign: {
+    gql: gql`
+      mutation unarchiveCampaign($campaignId: String!) {
         unarchiveCampaign(id: $campaignId) {
           ${campaignInfoFragment}
         }
-      }`,
-    variables: { campaignId }
-  }),
-  startCampaign: (campaignId) => ({
-    mutation: gql`mutation startCampaign($campaignId: String!) {
+      }
+    `
+  },
+  startCampaign: {
+    gql: gql`
+      mutation startCampaign($campaignId: String!) {
         startCampaign(id: $campaignId) {
           ${campaignInfoFragment}
         }
-      }`,
-    variables: { campaignId }
-  }),
-  editCampaign(campaignId, campaign) {
-    return ({
-      mutation: gql`
-        mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {
-          editCampaign(id: $campaignId, campaign: $campaign) {
-            ${campaignInfoFragment}
-          }
-        },
-      `,
-      variables: {
-        campaignId,
-        campaign
       }
-    })
+    `
+  },
+  editCampaign: {
+    gql: gql`
+      mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {
+        editCampaign(id: $campaignId, campaign: $campaign) {
+          ${campaignInfoFragment}
+        }
+      }
+    `
   }
-})
+}
 
-export default loadData(wrapMutations(AdminCampaignEdit), {
-  mapQueriesToProps,
-  mapMutationsToProps
-})
+export default newLoadData({ queries, mutations })(AdminCampaignEdit)

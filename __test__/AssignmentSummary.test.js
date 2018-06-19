@@ -1,16 +1,18 @@
 /**
  * @jest-environment jsdom
  */
-import React from 'react'
-import { mount } from 'enzyme'
-import { StyleSheetTestUtils } from 'aphrodite'
-import injectTapEventPlugin from 'react-tap-event-plugin'
-import each from 'jest-each'
-import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider'
-import { CardActions, CardTitle } from 'material-ui/Card'
+import React from 'react';
+import { mount } from 'enzyme';
+import { StyleSheetTestUtils } from 'aphrodite';
+import each from 'jest-each';
+import { MuiThemeProvider } from '@material-ui/core/styles';
+import CardActions from '@material-ui/core/CardActions';
+import CardHeader from '@material-ui/core/CardHeader';
 import { AssignmentSummary } from '../src/components/AssignmentSummary.jsx'
-import Badge from 'material-ui/Badge/Badge'
-import RaisedButton from 'material-ui/RaisedButton/RaisedButton'
+import Badge from '@material-ui/core/Badge';
+import Button from '@material-ui/core/Button';
+
+import muiTheme from '../src/styles/mui-theme';
 
 function getAssignment(isDynamic = false) {
   return {
@@ -31,7 +33,7 @@ function getAssignment(isDynamic = false) {
 describe('AssignmentSummary text', function t() {
   beforeEach(() => {
     this.summary = mount(
-      <MuiThemeProvider>
+      <MuiThemeProvider theme={muiTheme}>
         <AssignmentSummary
           assignment={getAssignment()}
           unmessagedCount={1}
@@ -47,9 +49,9 @@ describe('AssignmentSummary text', function t() {
     (notInUSA, allowSendAll) => {
       window.NOT_IN_USA = notInUSA
       window.ALLOW_SEND_ALL = allowSendAll
-      const title = this.summary.find(CardTitle)
+      const title = this.summary.find(CardHeader)
       expect(title.prop('title')).toBe('New Campaign')
-      // expect(title.find(CardTitle).prop('subtitle')).toBe('asdf - Jan 31 2018')
+      // expect(title.find(CardHeader).prop('subtitle')).toBe('asdf - Jan 31 2018')
 
       const htmlWrapper = this.summary.findWhere(
         d => d.length && d.type() === 'div' && d.prop('dangerouslySetInnerHTML')
@@ -62,7 +64,6 @@ describe('AssignmentSummary text', function t() {
 })
 
 describe('AssignmentSummary actions inUSA and NOT AllowSendAll', () => {
-  injectTapEventPlugin()  // prevents warning
   function create(unmessaged, unreplied, badTimezone, isDynamic) {
     window.NOT_IN_USA = 0
     window.ALLOW_SEND_ALL = false
@@ -81,37 +82,37 @@ describe('AssignmentSummary actions inUSA and NOT AllowSendAll', () => {
   it('renders "send first texts (1)" with unmessaged (dynamic assignment)', () => {
     const actions = create(5, 0, 0, true)
     expect(actions.find(Badge).at(0).prop('badgeContent')).toBe(5)
-    expect(actions.find(RaisedButton).at(0).prop('label')).toBe('Send first texts')
+    expect(actions.find(Button).at(0).prop('label')).toBe('Send first texts')
   })
 
   it('renders "send first texts (1)" with unmessaged (non-dynamic)', () => {
     const actions = create(1, 0, 0, false)
     expect(actions.find(Badge).at(0).prop('badgeContent')).toBe(1)
-    expect(actions.find(RaisedButton).at(0).prop('label')).toBe('Send first texts')
+    expect(actions.find(Button).at(0).prop('label')).toBe('Send first texts')
   })
 
   it('renders "send first texts" with no unmessaged (dynamic assignment)', () => {
     const actions = create(0, 0, 0, true)
     expect(actions.find(Badge).length).toBe(1)
-    expect(actions.find(RaisedButton).at(0).prop('label')).toBe('Send first texts')
+    expect(actions.find(Button).at(0).prop('label')).toBe('Send first texts')
   })
 
   it('renders a "past messages" badge after messaged contacts', () => {
     const actions = create(0, 0, 0, false)
     expect(actions.find(Badge).length).toBe(1)
-    expect(actions.find(RaisedButton).length).toBe(1)
+    expect(actions.find(Button).length).toBe(1)
   })
 
 
   it('renders three buttons with unmessaged and unreplied', () => {
     const actions = create(3, 9, 0)
-    expect(actions.find(RaisedButton).length).toBe(3)
+    expect(actions.find(Button).length).toBe(3)
   })
 
   it('renders "past messages (n)" with messaged', () => {
     const actions = create(0, 9, 0)
     expect(actions.find(Badge).at(0).prop('badgeContent')).toBe(9)
-    expect(actions.find(RaisedButton).at(1).prop('label')).toBe('Past Messages')
+    expect(actions.find(Button).at(1).prop('label')).toBe('Past Messages')
   })
 })
 
@@ -133,12 +134,12 @@ describe('AssignmentSummary NOT inUSA and AllowSendAll', () => {
 
   it('renders "Send message" with unmessaged', () => {
     const actions = create(1, 0, 0)
-    expect(actions.find(RaisedButton).at(0).prop('label')).toBe('Past Messages')
+    expect(actions.find(Button).at(0).prop('label')).toBe('Past Messages')
   })
 
   it('renders "Send messages" with unreplied', () => {
     const actions = create(0, 1, 0)
-    expect(actions.find(RaisedButton).at(0).prop('label')).toBe('Past Messages')
+    expect(actions.find(Button).at(0).prop('label')).toBe('Past Messages')
   })
 })
 
@@ -154,15 +155,12 @@ it('renders "Send later" when there is a badTimezoneCount', () => {
     </MuiThemeProvider>
   ).find(CardActions)
   expect(actions.find(Badge).at(1).prop('badgeContent')).toBe(4)
-  expect(actions.find(RaisedButton).at(0).prop('label')).toBe('Past Messages')
-  expect(actions.find(RaisedButton).at(1).prop('label')).toBe('Send messages')
+  expect(actions.find(Button).at(0).prop('label')).toBe('Past Messages')
+  expect(actions.find(Button).at(1).prop('label')).toBe('Send messages')
 })
 
 describe('contacts filters', () => {
-  // These are an attempt to confirm that the buttons will work.
-  // It would be better to simulate clicking them, but I can't
-  // get it to work right now because of 'react-tap-event-plugin'
-  // some hints are here https://github.com/mui-org/material-ui/issues/4200#issuecomment-217738345
+  // TODO: material-ui switch test to clicks
 
   it('filters correctly in USA', () => {
     window.NOT_IN_USA = 0

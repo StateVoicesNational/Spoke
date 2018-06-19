@@ -1,19 +1,25 @@
-import PropTypes from 'prop-types'
-import React from 'react'
-import { List, ListItem } from 'material-ui/List'
-import moment from 'moment'
-import WarningIcon from 'material-ui/svg-icons/alert/warning'
-import ArchiveIcon from 'material-ui/svg-icons/content/archive'
-import UnarchiveIcon from 'material-ui/svg-icons/content/unarchive'
-import IconButton from 'material-ui/IconButton'
-import { withRouter } from 'react-router'
-import theme from '../styles/theme'
-import Chip from '../components/Chip'
-import loadData from './hoc/load-data'
-import gql from 'graphql-tag'
-import wrapMutations from './hoc/wrap-mutations'
-import SpeakerNotesIcon from 'material-ui/svg-icons/action/speaker-notes'
-import Empty from '../components/Empty'
+import PropTypes from 'prop-types';
+import React from 'react';
+import { withRouter } from 'react-router';
+import moment from 'moment';
+import gql from 'graphql-tag';
+
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+import IconButton from '@material-ui/core/IconButton';
+import WarningIcon from '@material-ui/icons/Warning';
+import ArchiveIcon from '@material-ui/icons/Archive';
+import UnarchiveIcon from '@material-ui/icons/Unarchive';
+import SpeakerNotesIcon from '@material-ui/icons/SpeakerNotes';
+
+import loadData from './hoc/load-data';
+import wrapMutations from './hoc/wrap-mutations';
+import theme from '../styles/theme';
+import Chip from '../components/Chip';
+import Empty from '../components/Empty';
 
 
 const campaignInfoFragment = `
@@ -90,29 +96,34 @@ class CampaignList extends React.Component {
       <ListItem
         style={listItemStyle}
         key={campaign.id}
-        primaryText={primaryText}
-        onTouchTap={() => (!isStarted ?
+        onClick={() => (!isStarted ?
           this.props.router.push(`${campaignUrl}/edit`) :
           this.props.router.push(campaignUrl))}
-        secondaryText={secondaryText}
-        leftIcon={leftIcon}
-        rightIconButton={adminPerms ?
-                         (campaign.isArchived ? (
-          <IconButton
-            tooltip='Unarchive'
-            onTouchTap={async () => this.props.mutations.unarchiveCampaign(campaign.id)}
-          >
-            <UnarchiveIcon />
-          </IconButton>
-        ) : (
-          <IconButton
-            tooltip='Archive'
-            onTouchTap={async () => this.props.mutations.archiveCampaign(campaign.id)}
-          >
-            <ArchiveIcon />
-          </IconButton>
-        )) : null}
-      />
+      >
+        <ListItemIcon>
+          {leftIcon}
+        </ListItemIcon>
+        <ListItemText primary={primaryText} secondary={secondaryText} />
+        <ListItemSecondaryAction>
+          {adminPerms ? (
+            campaign.isArchived ? (
+              <IconButton
+                tooltip='Unarchive'
+                onClick={async () => this.props.mutations.unarchiveCampaign(campaign.id)}
+              >
+                <UnarchiveIcon />
+              </IconButton>
+            ) : (
+              <IconButton
+                tooltip='Archive'
+                onClick={async () => this.props.mutations.archiveCampaign(campaign.id)}
+              >
+                <ArchiveIcon />
+              </IconButton>
+            )
+          ) : null}
+        </ListItemSecondaryAction>
+      </ListItem>
     )
   }
 

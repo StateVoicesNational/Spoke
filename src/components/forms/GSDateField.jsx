@@ -1,7 +1,9 @@
-import React from 'react'
-import DatePicker from 'material-ui/DatePicker'
-import moment from 'moment'
-import GSFormField from './GSFormField'
+import React from 'react';
+import moment from 'moment';
+// TODO: material-ui
+import DatePicker from 'material-ui/DatePicker';
+
+import GSFormField from './GSFormField';
 
 export default class GCDateField extends GSFormField {
   render() {
