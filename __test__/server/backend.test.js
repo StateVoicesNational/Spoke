@@ -62,7 +62,6 @@ describe('graphQL tests', async () => {
   it('should create an invite', async () => {
     testInvite = await createInvite()
 
-    expect(testInvite.data.createInvite).toBeDefined()
     expect(testInvite.data.createInvite.id).toBeTruthy()
   })
 
@@ -74,7 +73,6 @@ describe('graphQL tests', async () => {
 
       testOrganization = await createOrganization(testAdminUser, "Testy test organization", testInvite.data.createInvite.id, testInvite.data.createInvite.id)
 
-      expect(testOrganization.data.createOrganization.id).toBeDefined()
       expect(testOrganization.data.createOrganization.name).toBe('Testy test organization')
     } else {
       console.log("Failed to create invite and/or user for organization test")
