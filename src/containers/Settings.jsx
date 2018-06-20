@@ -50,8 +50,11 @@ class Settings extends React.Component {
     this.handleCloseTextingHoursDialog()
   }
 
-  handleSubmitOsdiForm = async ({ osdiApiUrl, osdiApiToken }) => {
-    await this.props.mutations.updateOrganizationFeatures({ osdiApiUrl, osdiApiToken })
+  handleUpdateOrganizationFeatures = async newOSDIOptions => {
+    const { osdiEnabled, osdiApiUrl, osdiApiToken } = this.props.data.organization
+    const options = Object.assign({}, { osdiEnabled, osdiApiUrl, osdiApiToken }, newOSDIOptions)
+    console.log('new options are', options)
+    await this.props.mutations.updateOrganizationFeatures(options)
   }
 
   handleOpenTextingHoursDialog = () => this.setState({ textingHoursDialogOpen: true })
@@ -70,7 +73,7 @@ class Settings extends React.Component {
     return (
       <GSForm
         schema={osdiFormSchema}
-        onSubmit={this.handleSubmitOsdiForm}
+        onSubmit={this.handleUpdateOrganizationFeatures}
         defaultValue={{
           osdiApiUrl,
           osdiApiToken
@@ -170,7 +173,7 @@ class Settings extends React.Component {
               <Toggle
                 toggled={organization.osdiEnabled}
                 label='Use OSDI integrations?'
-                onToggle={async (event, isToggled) => await this.props.mutations.updateOrganizationFeatures({ osdiEnabled: isToggled })}
+                onToggle={async (event, isToggled) => await this.handleUpdateOrganizationFeatures({ osdiEnabled: isToggled })}
               />
               {organization.osdiEnabled && this.renderOSDIOptionsForm()}
             </div>
