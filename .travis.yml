@@ -22,6 +22,6 @@ script:
 - npm run test-coverage
 - npm run dev-nowrap &
 - sleep 120 # TODO: Grep stdout or something to determine that the server is active. Or do this in the test setup.
-- npm run test-e2e
+- npm run test-e2e --saucelabs
 after_script:
 - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
