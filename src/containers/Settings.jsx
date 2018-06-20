@@ -6,22 +6,22 @@ import yup from 'yup'
 import moment from 'moment'
 import { StyleSheet, css } from 'aphrodite'
 
-import Dialog from '@material-ui/core/Dialog';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogActions from '@material-ui/core/DialogActions';
-import Button from '@material-ui/core/Button';
-import Card from '@material-ui/core/Card';
-import CardHeader from '@material-ui/core/CardHeader';
-import CardContent from '@material-ui/core/CardContent';
-import CardActions from '@material-ui/core/CardActions';
-import FormGroup from '@material-ui/core/FormGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Switch from '@material-ui/core/Switch';
+import Dialog from '@material-ui/core/Dialog'
+import DialogContent from '@material-ui/core/DialogContent'
+import DialogActions from '@material-ui/core/DialogActions'
+import Button from '@material-ui/core/Button'
+import Card from '@material-ui/core/Card'
+import CardHeader from '@material-ui/core/CardHeader'
+import CardContent from '@material-ui/core/CardContent'
+import CardActions from '@material-ui/core/CardActions'
+import FormGroup from '@material-ui/core/FormGroup'
+import FormControlLabel from '@material-ui/core/FormControlLabel'
+import Switch from '@material-ui/core/Switch'
 
-import loadData from './hoc/load-data';
-import wrapMutations from './hoc/wrap-mutations';
-import GSForm from '../components/forms/GSForm';
-import GSSubmitButton from '../components/forms/GSSubmitButton';
+import loadData from './hoc/load-data'
+import wrapMutations from './hoc/wrap-mutations'
+import GSForm from '../components/forms/GSForm'
+import GSSubmitButton from '../components/forms/GSSubmitButton'
 
 const styles = StyleSheet.create({
   section: {
@@ -124,7 +124,7 @@ class Settings extends React.Component {
           </DialogActions>
         </GSForm>
       </Dialog>
-    );
+    )
   }
 
   render() {
@@ -143,11 +143,11 @@ class Settings extends React.Component {
                     <Switch
                       checked={organization.textingHoursEnforced}
                       onChange={async (event, isToggled) => {
-                        await this.props.mutations.updateTextingHoursEnforcement(isToggled);
+                        await this.props.mutations.updateTextingHoursEnforcement(isToggled)
                       }}
                     />
                   }
-                  label="Enforce texting hours?"
+                  label='Enforce texting hours?'
                 />
               </FormGroup>
             </div>
@@ -180,7 +180,7 @@ class Settings extends React.Component {
           {this.renderTextingHoursForm()}
         </div>
       </div>
-    );
+    )
   }
 }
 

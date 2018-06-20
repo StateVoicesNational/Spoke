@@ -1,14 +1,14 @@
 import PropTypes from 'prop-types'
 import React, { Component } from 'react'
-import Card from '@material-ui/core/Card';
-import CardActions from '@material-ui/core/CardActions';
-import CardHeader from '@material-ui/core/CardHeader';
+import Card from '@material-ui/core/Card'
+import CardActions from '@material-ui/core/CardActions'
+import CardHeader from '@material-ui/core/CardHeader'
 import { StyleSheet, css } from 'aphrodite'
 import loadData from '../containers/hoc/load-data'
 import gql from 'graphql-tag'
-import Button from '@material-ui/core/Button';
-import Badge from '@material-ui/core/Badge';
-import Divider from '@material-ui/core/Divider';
+import Button from '@material-ui/core/Button'
+import Badge from '@material-ui/core/Badge'
+import Divider from '@material-ui/core/Divider'
 import moment from 'moment'
 import { withRouter } from 'react-router'
 

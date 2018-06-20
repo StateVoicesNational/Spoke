@@ -1,25 +1,25 @@
-import PropTypes from 'prop-types';
-import React from 'react';
-import { withRouter } from 'react-router';
-import moment from 'moment';
-import gql from 'graphql-tag';
+import PropTypes from 'prop-types'
+import React from 'react'
+import { withRouter } from 'react-router'
+import moment from 'moment'
+import gql from 'graphql-tag'
 
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import IconButton from '@material-ui/core/IconButton';
-import WarningIcon from '@material-ui/icons/Warning';
-import ArchiveIcon from '@material-ui/icons/Archive';
-import UnarchiveIcon from '@material-ui/icons/Unarchive';
-import SpeakerNotesIcon from '@material-ui/icons/SpeakerNotes';
+import List from '@material-ui/core/List'
+import ListItem from '@material-ui/core/ListItem'
+import ListItemIcon from '@material-ui/core/ListItemIcon'
+import ListItemText from '@material-ui/core/ListItemText'
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction'
+import IconButton from '@material-ui/core/IconButton'
+import WarningIcon from '@material-ui/icons/Warning'
+import ArchiveIcon from '@material-ui/icons/Archive'
+import UnarchiveIcon from '@material-ui/icons/Unarchive'
+import SpeakerNotesIcon from '@material-ui/icons/SpeakerNotes'
 
-import loadData from './hoc/load-data';
-import wrapMutations from './hoc/wrap-mutations';
-import theme from '../styles/theme';
-import Chip from '../components/Chip';
-import Empty from '../components/Empty';
+import loadData from './hoc/load-data'
+import wrapMutations from './hoc/wrap-mutations'
+import theme from '../styles/theme'
+import Chip from '../components/Chip'
+import Empty from '../components/Empty'
 
 
 const campaignInfoFragment = `

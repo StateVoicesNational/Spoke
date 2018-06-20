@@ -183,6 +183,7 @@ export default class CampaignContactsForm extends React.Component {
       <div>
         <Button
           {...dataTest('uploadButton')}
+          variant='contained'
           style={innerStyles.button}
           labelPosition='before'
           disabled={uploading}

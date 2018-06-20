@@ -23,7 +23,6 @@ class AdminNavigation extends React.Component {
         switchListItem={
           <ListItem
             {...dataTest('navSwitchToTexter')}
-            primaryText='Switch to texter'
             onClick={() => this.props.router.push(`/app/${organizationId}/todos`)}
           >
             <ListItemText primary='Switch to texter' />

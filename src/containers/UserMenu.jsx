@@ -1,18 +1,18 @@
-import PropTypes from 'prop-types';
-import React, { Component } from 'react';
-import { connect } from 'react-apollo';
-import { withRouter } from 'react-router';
-import gql from 'graphql-tag';
+import PropTypes from 'prop-types'
+import React, { Component } from 'react'
+import { connect } from 'react-apollo'
+import { withRouter } from 'react-router'
+import gql from 'graphql-tag'
 
-import Popover from '@material-ui/core/Popover';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListSubheader from '@material-ui/core/ListSubheader';
-import Divider from '@material-ui/core/Divider';
-import IconButton from '@material-ui/core/IconButton';
-import Avatar from '@material-ui/core/Avatar';
+import Popover from '@material-ui/core/Popover'
+import Menu from '@material-ui/core/Menu'
+import MenuItem from '@material-ui/core/MenuItem'
+import ListItemIcon from '@material-ui/core/ListItemIcon'
+import ListItemText from '@material-ui/core/ListItemText'
+import ListSubheader from '@material-ui/core/ListSubheader'
+import Divider from '@material-ui/core/Divider'
+import IconButton from '@material-ui/core/IconButton'
+import Avatar from '@material-ui/core/Avatar'
 
 const avatarSize = 28
 
@@ -108,13 +108,13 @@ class UserMenu extends Component {
           <Menu onChange={this.handleMenuChange} subheader={<li />}>
             <MenuItem
               disabled={!this.props.orgId}
-              value="account"
+              value='account'
             >
               <ListItemIcon>
                 {this.renderAvatar(currentUser, 40)}
               </ListItemIcon>
               <ListItemText
-                inset={true}
+                inset
                 primary={currentUser.displayName}
                 secondary={currentUser.email}
               />

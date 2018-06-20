@@ -1,12 +1,12 @@
-import PropTypes from 'prop-types';
-import React from 'react';
-import moment from 'moment';
+import PropTypes from 'prop-types'
+import React from 'react'
+import moment from 'moment'
 
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import Divider from '@material-ui/core/Divider';
-import red from '@material-ui/core/colors/red';
-import NotInterestedIcon from '@material-ui/icons/NotInterested';
+import List from '@material-ui/core/List'
+import ListItem from '@material-ui/core/ListItem'
+import Divider from '@material-ui/core/Divider'
+import red from '@material-ui/core/colors/red'
+import NotInterestedIcon from '@material-ui/icons/NotInterested'
 
 const styles = {
   optOut: {
@@ -34,7 +34,7 @@ const MessageList = function MessageList(props) {
       <ListItem
         style={styles.optOut}
         leftIcon={<NotInterestedIcon style={{ fill: red[300] }} />}
-        disabled={true}
+        disabled
         primaryText={`${contact.firstName} opted out of texts`}
         secondaryText={moment(optOut.createdAt).fromNow()}
       />

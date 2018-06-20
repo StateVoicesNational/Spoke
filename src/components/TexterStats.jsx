@@ -1,6 +1,6 @@
-import PropTypes from 'prop-types';
-import React from 'react';
-import LinearProgress from '@material-ui/core/LinearProgress';
+import PropTypes from 'prop-types'
+import React from 'react'
+import LinearProgress from '@material-ui/core/LinearProgress'
 
 class TexterStats extends React.Component {
   renderAssignment(assignment) {
@@ -18,7 +18,7 @@ class TexterStats extends React.Component {
         <LinearProgress
           min={0}
           max={100}
-          variant="determinate"
+          variant='determinate'
           value={percentComplete}
         />
       </div>

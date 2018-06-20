@@ -1,19 +1,19 @@
-import PropTypes from 'prop-types';
-import React from 'react';
-import { withRouter } from 'react-router';
-import gql from 'graphql-tag';
-import { StyleSheet, css } from 'aphrodite';
-import Button from '@material-ui/core/Button';
-import Card from '@material-ui/core/Card';
-import CardHeader from '@material-ui/core/CardHeader';
-import CardContent from '@material-ui/core/CardContent';
-import Snackbar from '@material-ui/core/Snackbar';
+import PropTypes from 'prop-types'
+import React from 'react'
+import { withRouter } from 'react-router'
+import gql from 'graphql-tag'
+import { StyleSheet, css } from 'aphrodite'
+import Button from '@material-ui/core/Button'
+import Card from '@material-ui/core/Card'
+import CardHeader from '@material-ui/core/CardHeader'
+import CardContent from '@material-ui/core/CardContent'
+import Snackbar from '@material-ui/core/Snackbar'
 
-import loadData from './hoc/load-data';
-import wrapMutations from './hoc/wrap-mutations';
-import theme from '../styles/theme';
-import Chart from '../components/Chart';
-import TexterStats from '../components/TexterStats';
+import loadData from './hoc/load-data'
+import wrapMutations from './hoc/wrap-mutations'
+import theme from '../styles/theme'
+import Chart from '../components/Chart'
+import TexterStats from '../components/TexterStats'
 
 const inlineStyles = {
   stat: {

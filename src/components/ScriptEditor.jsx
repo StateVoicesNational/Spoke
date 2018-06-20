@@ -7,12 +7,12 @@ import {
   Editor,
   Modifier
 } from 'draft-js'
-import red from '@material-ui/core/colors/red';
-import green from '@material-ui/core/colors/green';
-import grey from '@material-ui/core/colors/grey';
+import red from '@material-ui/core/colors/red'
+import green from '@material-ui/core/colors/green'
+import grey from '@material-ui/core/colors/grey'
 
-import { delimit } from '../lib/scripts';
-import Chip from './Chip';
+import { delimit } from '../lib/scripts'
+import Chip from './Chip'
 
 const styles = {
   editor: {
@@ -44,7 +44,7 @@ const styles = {
     marginTop: 10,
     padding: 5
   }
-};
+}
 
 function findWithRegex(regex, contentBlock, callback) {
   const text = contentBlock.getText()
