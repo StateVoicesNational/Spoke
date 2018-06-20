@@ -1,11 +1,11 @@
-import PropTypes from 'prop-types';
-import React, { Component } from 'react';
-import gql from 'graphql-tag';
-import Select from '@material-ui/core/Select';
-import MenuItem from '@material-ui/core/MenuItem';
-import Divider from '@material-ui/core/Divider';
+import PropTypes from 'prop-types'
+import React, { Component } from 'react'
+import gql from 'graphql-tag'
+import Select from '@material-ui/core/Select'
+import MenuItem from '@material-ui/core/MenuItem'
+import Divider from '@material-ui/core/Divider'
 
-import loadData from './hoc/load-data';
+import loadData from './hoc/load-data'
 
 const styles = {
   previousStep: {
@@ -59,7 +59,7 @@ class AssignmentTexterSurveyDropdown extends Component {
     )
 
     menuItems.push(<Divider />)
-    menuItems.push(<MenuItem key='clear'>Clear response</MenuItem>);
+    menuItems.push(<MenuItem key='clear'>Clear response</MenuItem>)
 
     return menuItems
   }

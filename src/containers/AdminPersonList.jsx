@@ -58,16 +58,16 @@ class SelectRoleDropdown extends React.Component {
     const { anchorEl, personRole } = this.state
     const { person, currentUser } = this.props
     const isCurrentUser = person.id === currentUser.id,
-          isOwner = personRole === 'OWNER' && getHighestRole(currentUser.roles) !== 'OWNER'
+      isOwner = personRole === 'OWNER' && getHighestRole(currentUser.roles) !== 'OWNER'
     const isDisabled = isCurrentUser || isOwner
     return (
       <div>
-        <List component="nav">
+        <List component='nav'>
           <ListItem
             button={!isDisabled}
-            aria-haspopup="true"
+            aria-haspopup='true'
             aria-controls={`${person.id}-roles-menu`}
-            aria-label="Contact Roles"
+            aria-label='Contact Roles'
             onClick={isDisabled ? null : this.handleClickRoles}
           >
             <ListItemText
@@ -100,7 +100,7 @@ class SelectRoleDropdown extends React.Component {
 SelectRoleDropdown.propTypes = {
   currentUser: PropTypes.object,
   person: PropTypes.object,
-  handleChange: PropTypes.func,
+  handleChange: PropTypes.func
 }
 
 

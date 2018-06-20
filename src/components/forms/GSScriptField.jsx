@@ -53,7 +53,7 @@ export default class GSScriptField extends GSFormField {
     return (
       <Dialog
         style={styles.dialog}
-        modal={true}
+        modal
         open={open}
         onRequestClose={this.handleCloseDialog}
       >

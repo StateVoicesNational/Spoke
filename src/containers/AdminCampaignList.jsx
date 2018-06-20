@@ -108,7 +108,7 @@ class AdminCampaignList extends React.Component {
           </MenuItem>
         </Menu>
       </div>
-    );
+    )
   }
 
   render() {

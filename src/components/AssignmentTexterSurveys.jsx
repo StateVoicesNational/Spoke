@@ -1,13 +1,13 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 
-import grey from '@material-ui/core/colors/grey';
-import Card from '@material-ui/core/Card';
-import CardHeader from '@material-ui/core/CardHeader';
-import CardContent from '@material-ui/core/CardContent';
-import MenuItem from '@material-ui/core/MenuItem';
-import Divider from '@material-ui/core/Divider';
-import Select from '@material-ui/core/Select';
+import grey from '@material-ui/core/colors/grey'
+import Card from '@material-ui/core/Card'
+import CardHeader from '@material-ui/core/CardHeader'
+import CardContent from '@material-ui/core/CardContent'
+import MenuItem from '@material-ui/core/MenuItem'
+import Divider from '@material-ui/core/Divider'
+import Select from '@material-ui/core/Select'
 
 const styles = {
   root: {
@@ -109,7 +109,7 @@ class AssignmentTexterSurveys extends Component {
           style={isCurrentStep ? styles.currentStepSelect : styles.previousStepSelect}
           onChange={(event, index, value) => this.handleSelectChange(step, index, value)}
           name={question.id}
-          fullWidth={true}
+          fullWidth
           value={responseValue}
           floatingLabelText={question.text}
           hintText='Choose answer'

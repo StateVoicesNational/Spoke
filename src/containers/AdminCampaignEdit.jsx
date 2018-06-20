@@ -542,7 +542,7 @@ class AdminCampaignEdit extends React.Component {
               >
                 <DoneIcon style={{ fill: theme.colors.darkGreen }} />
               </Avatar>
-            );
+            )
             cardHeaderStyle.backgroundColor = theme.colors.green
           } else if (!sectionIsDone) {
             avatar = (
@@ -552,7 +552,7 @@ class AdminCampaignEdit extends React.Component {
               >
                 <WarningIcon style={{ fill: theme.colors.orange }} />
               </Avatar>
-            );
+            )
             cardHeaderStyle.backgroundColor = theme.colors.yellow
           }
 

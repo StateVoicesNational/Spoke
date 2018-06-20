@@ -1,22 +1,22 @@
-import PropTypes from 'prop-types';
-import React from 'react';
-import Form from 'react-formal';
-import { connect } from 'react-apollo';
-import gql from 'graphql-tag';
+import PropTypes from 'prop-types'
+import React from 'react'
+import Form from 'react-formal'
+import { connect } from 'react-apollo'
+import gql from 'graphql-tag'
 
-import Button from '@material-ui/core/Button';
-import List from '@material-ui/core/List';
-import ListSubheader from '@material-ui/core/ListSubheader';
-import ListItem from '@material-ui/core/ListItem';
-import Divider from '@material-ui/core/Divider';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import CreateIcon from '@material-ui/icons/Create';
+import Button from '@material-ui/core/Button'
+import List from '@material-ui/core/List'
+import ListSubheader from '@material-ui/core/ListSubheader'
+import ListItem from '@material-ui/core/ListItem'
+import Divider from '@material-ui/core/Divider'
+import Dialog from '@material-ui/core/Dialog'
+import DialogActions from '@material-ui/core/DialogActions'
+import DialogContent from '@material-ui/core/DialogContent'
+import CreateIcon from '@material-ui/icons/Create'
 
-import { log } from '../lib';
-import CannedResponseForm from './CannedResponseForm';
-import GSSubmitButton from './forms/GSSubmitButton';
+import { log } from '../lib'
+import CannedResponseForm from './CannedResponseForm'
+import GSSubmitButton from './forms/GSSubmitButton'
 
 const styles = {
   dialog: {

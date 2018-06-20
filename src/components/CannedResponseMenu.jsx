@@ -1,7 +1,7 @@
 import type from 'prop-types'
 import React from 'react'
-import Popover from '@material-ui/core/Popover';
-import List from '@material-ui/core/List';
+import Popover from '@material-ui/core/Popover'
+import List from '@material-ui/core/List'
 
 import ScriptList from './ScriptList'
 

@@ -1,12 +1,12 @@
-import PropTypes from 'prop-types';
-import React from 'react';
-import { Link } from 'react-router';
-import { StyleSheet, css } from 'aphrodite';
-import IconButton from '@material-ui/core/IconButton';
-import ArrowBackIcon from '@material-ui/icons/ArrowBack';
+import PropTypes from 'prop-types'
+import React from 'react'
+import { Link } from 'react-router'
+import { StyleSheet, css } from 'aphrodite'
+import IconButton from '@material-ui/core/IconButton'
+import ArrowBackIcon from '@material-ui/icons/ArrowBack'
 
-import UserMenu from '../containers/UserMenu';
-import theme from '../styles/theme';
+import UserMenu from '../containers/UserMenu'
+import theme from '../styles/theme'
 
 const styles = StyleSheet.create({
   container: {

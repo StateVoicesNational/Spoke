@@ -1,12 +1,12 @@
-import { createMuiTheme } from '@material-ui/core/styles';
-import grey from '@material-ui/core/colors/grey';
-import { fade } from '@material-ui/core/styles/colorManipulator';
+import { createMuiTheme } from '@material-ui/core/styles'
+import grey from '@material-ui/core/colors/grey'
+import { fade } from '@material-ui/core/styles/colorManipulator'
 
 import theme from './theme'
 
 const muiTheme = createMuiTheme({
   typography: {
-    fontFamily: 'Poppins',
+    fontFamily: 'Poppins'
   },
   palette: {
     primary1Color: theme.colors.green,

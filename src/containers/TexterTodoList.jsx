@@ -1,8 +1,8 @@
-import PropTypes from 'prop-types';
-import React from 'react';
-import { withRouter } from 'react-router';
-import gql from 'graphql-tag';
-import CheckCircleIcon from '@material-ui/icons/CheckCircle';
+import PropTypes from 'prop-types'
+import React from 'react'
+import { withRouter } from 'react-router'
+import gql from 'graphql-tag'
+import CheckCircleIcon from '@material-ui/icons/CheckCircle'
 
 import loadData from './hoc/load-data'
 import Empty from '../components/Empty'

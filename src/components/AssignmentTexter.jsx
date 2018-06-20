@@ -2,9 +2,9 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { withRouter } from 'react-router'
 import { StyleSheet, css } from 'aphrodite'
-import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
-import IconButton from '@material-ui/core/IconButton';
+import Typography from '@material-ui/core/Typography'
+import Button from '@material-ui/core/Button'
+import IconButton from '@material-ui/core/IconButton'
 import NavigateBeforeIcon from '@material-ui/icons/NavigateBeforeIcon'
 import NavigateNextIcon from '@material-ui/icons/NavigateNextIcon'
 import Check from '@material-ui/icons/Check'
@@ -148,7 +148,7 @@ class AssignmentTexter extends React.Component {
     }
     const title = `${currentIndex} of ${ofHowMany}`
     return [
-      <Typography variant="title" className={css(styles.navigationToolbarTitle)}>
+      <Typography variant='title' className={css(styles.navigationToolbarTitle)}>
         {title}
       </Typography>,
       <IconButton
