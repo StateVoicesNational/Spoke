@@ -58,6 +58,43 @@ class Settings extends React.Component {
 
   handleCloseTextingHoursDialog = () => this.setState({ textingHoursDialogOpen: false })
 
+  renderOSDIOptionsForm() {
+    const { organization } = this.props.data
+    const { osdiApiUrl, osdiApiToken } = organization
+
+    const osdiFormSchema = yup.object({
+      osdiApiUrl: yup.string().required(),
+      osdiApiToken: yup.string().required()
+    })
+
+    return (
+      <GSForm
+        schema={osdiFormSchema}
+        onSubmit={this.handleSubmitOsdiForm}
+        defaultValue={{
+          osdiApiUrl,
+          osdiApiToken
+        }}
+      >
+        <Form.Field
+          label='OSDI API URL'
+          name='osdiApiUrl'
+          fullWidth
+        />
+        <Form.Field
+          label='OSDI API Token'
+          name='osdiApiToken'
+          fullWidth
+        />
+        <Form.Button
+          type='submit'
+          style={inlineStyles.dialogButton}
+          component={GSSubmitButton}
+          label='Save'
+        />
+      </GSForm>
+    )
+  }
 
   renderTextingHoursForm() {
     const { organization } = this.props.data
@@ -119,11 +156,6 @@ class Settings extends React.Component {
   render() {
     const { organization } = this.props.data
 
-    const osdiFormSchema = yup.object({
-      osdiApiUrl: yup.string().required(),
-      osdiApiToken: yup.string().required()
-    })
-
     return (
       <div>
         <Card>
@@ -133,44 +165,15 @@ class Settings extends React.Component {
           <CardText>
             <div className={css(styles.section)}>
               <span className={css(styles.sectionLabel)}>
-                OSDI Integration
+                OSDI Integration {organization.osdiEnabled}
               </span>
               <Toggle
                 toggled={organization.osdiEnabled}
-                label='Use OSDI integration?'
-                onToggle={async (event, isToggled) => await this.props.mutations.updateOrganizationFeatures({osdiEnabled: isToggled})}
+                label='Use OSDI integrations?'
+                onToggle={async (event, isToggled) => await this.props.mutations.updateOrganizationFeatures({ osdiEnabled: isToggled })}
               />
-              {organization.osdiEnabled &&
-                <GSForm
-                  schema={osdiFormSchema}
-                  onSubmit={this.handleSubmitOsdiForm}
-                  defaultValue={{ 
-                    osdiApiUrl: organization.osdiApiUrl,
-                    osdiApiToken: organization.osdiApiToken
-                  }}
-                >
-                  <Form.Field
-                    label='OSDI API Url'
-                    name='osdiApiUrl'
-                    fullWidth
-                  />
-                  <Form.Field
-                    label='OSDI API Token'
-                    name='osdiApiToken'
-                    fullWidth
-                  />
-                  <Form.Button
-                    type='submit'
-                    style={inlineStyles.dialogButton}
-                    component={GSSubmitButton}
-                    label='Save'
-                  />
-                </GSForm>
-              }
+              {organization.osdiEnabled && this.renderOSDIOptionsForm()}
             </div>
-
-            <br/>
-
             <div className={css(styles.section)}>
               <span className={css(styles.sectionLabel)}>
                 Texting Hours
@@ -190,9 +193,9 @@ class Settings extends React.Component {
                 </span>
                 <span className={css(styles.textingHoursSpan)}>
                   {formatTextingHours(organization.textingHoursStart)} to {formatTextingHours(organization.textingHoursEnd)}</span>
-                  {window.TZ ? (
+                {window.TZ ? (
                     ` in your organisations local time. Timezone ${window.TZ}`
-                  ) : ' in contacts local time (or 12pm-6pm EST if timezone is unknown)'}
+                ) : ' in contacts local time (or 12pm-6pm EST if timezone is unknown)'}
               </div>
             ) : ''}
           </CardText>

@@ -611,9 +611,9 @@ const rootMutations = {
 
       return await Organization.get(organizationId)
     },
-    updateOrganizationFeatures: async(_, { organizationId, osdiEnabled, osdiApiUrl, osdiApiToken }, { user}) => {
+    updateOrganizationFeatures: async(_, { organizationId, osdiEnabled, osdiApiUrl, osdiApiToken }, { user }) => {
       await accessRequired(user, organizationId, 'ADMIN')
-    
+
       const org = await Organization.get(organizationId)
       const updates = { osdiEnabled, osdiApiUrl, osdiApiToken }
       Object.keys(updates).forEach(key => {
@@ -632,7 +632,7 @@ const rootMutations = {
 
       await Organization
         .get(organizationId)
-        .update({features: features})
+        .update({ features })
 
       return await Organization.get(organizationId)
     },
