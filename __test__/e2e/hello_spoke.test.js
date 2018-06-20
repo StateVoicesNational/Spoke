@@ -7,11 +7,12 @@ describe('Signing up a new user to Spoke', () => {
   let driver
 
   beforeAll(async () => {
-    // driver = await new Builder().forBrowser('chrome').build()
-    driver = await new Builder()
-      .withCapabilities(config.sauceLabs.capabilities)
-      .usingServer(config.sauceLabs.server)
-      .build()
+    driver = process.env.npm_config_saucelabs ?
+      await new Builder()
+        .withCapabilities(config.sauceLabs.capabilities)
+        .usingServer(config.sauceLabs.server)
+        .build() :
+      await new Builder().forBrowser('chrome').build()
   })
 
   afterAll(async () => {
