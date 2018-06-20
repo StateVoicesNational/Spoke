@@ -8,7 +8,7 @@ import injectTapEventPlugin from 'react-tap-event-plugin'
 import each from 'jest-each'
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider'
 import { CardActions, CardTitle } from 'material-ui/Card'
-import { AssignmentSummary } from '../src/components/AssignmentSummary.jsx'
+import { AssignmentSummary } from '../src/components/AssignmentSummary'
 import Badge from 'material-ui/Badge/Badge'
 import RaisedButton from 'material-ui/RaisedButton/RaisedButton'
 
