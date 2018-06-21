@@ -32,7 +32,8 @@ export async function saveNewIncomingMessage(messageInstance) {
   })
   if (mediaUrls.length > 0) {
     const warningText = 'This message contains multimedia attachments. Open the following attachments AT YOUR OWN RISK.'
-    const mediaText = mediaUrls.unshift(warningText).join('\n\n')
+    mediaUrls.unshift(warningText)
+    const mediaText = mediaUrls.join('\n\n')
 
     if (messageInstance.text === '') {
       messageInstance.text = mediaText
