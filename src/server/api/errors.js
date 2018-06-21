@@ -65,8 +65,9 @@ export function superAdminRequired(user) {
   }
 }
 
-export function hasOsdiConfigured(organization) {
-  if (!(organization.features.osdi_api_url && organization.features.osdi_api_token)) {
+export function hasOsdiConfigured({features}) {
+  const { osdiEnabled, osdiApiUrl, osdiApiToken } = JSON.parse(features)
+  if (!(osdiEnabled && osdiApiUrl && osdiApiToken)) {
     throw new GraphQLError({
       status: 400,
       message: 'Your organization is not configured with OSDI. Please contact your administrator for help.'

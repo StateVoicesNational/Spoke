@@ -276,6 +276,17 @@ const mapMutationsToProps = ({ ownProps }) => ({
 })
 
 const mapQueriesToProps = ({ ownProps }) => ({
+  questions: {
+    query: gql`query getLists($organizationId: String!) {
+      organization(id: $organizationId) {
+        osdiQuestions
+      }
+    }`,
+    variables: {
+      organizationId: ownProps.params.organizationId
+    },
+    forceFetch: true
+  },
   data: {
     query: gql`query adminGetCampaigns($organizationId: String!) {
       organization(id: $organizationId) {

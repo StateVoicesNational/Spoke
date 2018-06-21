@@ -70,6 +70,7 @@ import {
 import {
   schema as osdiListSchema
 } from './osdi-list'
+import { schema as osdiQuestionsSchema } from './osdi-questions'
 import {
   authRequired,
   accessRequired,
@@ -1179,7 +1180,8 @@ export const schema = [
   questionResponseSchema,
   questionSchema,
   inviteSchema,
-  osdiListSchema
+  osdiListSchema,
+  osdiQuestionsSchema
 ]
 
 export const resolvers = {
