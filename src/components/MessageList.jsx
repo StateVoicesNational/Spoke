@@ -5,6 +5,7 @@ import moment from 'moment'
 import ProhibitedIcon from 'material-ui/svg-icons/av/not-interested'
 import Divider from 'material-ui/Divider'
 import { red300 } from 'material-ui/styles/colors'
+import Linkify from 'react-linkify'
 
 const styles = {
   optOut: {
@@ -48,7 +49,7 @@ const MessageList = function MessageList(props) {
           disabled
           style={message.isFromContact ? styles.received : styles.sent}
           key={message.id}
-          primaryText={message.text}
+          primaryText={<Linkify>{message.text}</Linkify>}
           secondaryText={moment(message.createdAt).fromNow()}
         />
       ))}
