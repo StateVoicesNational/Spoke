@@ -3,13 +3,13 @@ const config = require('./config')
 
 module.exports = {
   selenium: {
-    async buildDriver() {
+    buildDriver() {
       return process.env.npm_config_saucelabs ?
-        await new Builder()
+        new Builder()
           .withCapabilities(config.sauceLabs.capabilities)
           .usingServer(config.sauceLabs.server)
           .build() :
-        await new Builder().forBrowser('chrome').build()
+        new Builder().forBrowser('chrome').build()
     },
     async quitDriver(driver) {
       await driver.getSession()
