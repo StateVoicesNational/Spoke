@@ -14,11 +14,13 @@ const styles = {
   sent: {
     fontSize: '13px',
     textAlign: 'right',
-    marginLeft: '24px'
+    marginLeft: '24px',
+    whiteSpace: 'pre-wrap'
   },
   received: {
     fontSize: '13px',
-    marginRight: '24px'
+    marginRight: '24px',
+    whiteSpace: 'pre-wrap'
   }
 }
 
