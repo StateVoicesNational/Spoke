@@ -318,7 +318,8 @@ class AdminCampaignEdit extends React.Component {
       expandableBySuperVolunteers: false,
       extraProps: {
         customFields: this.props.campaignData.campaign.customFields,
-        availableActions: this.props.availableActionsData.availableActions
+        availableActions: this.props.availableActionsData.availableActions,
+        organizationId: this.props.organizationData.organization.id
       }
     }, {
       title: 'Canned Responses',

@@ -170,6 +170,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
               multiLine
               hintText="This is what your texters will send to your contacts. E.g. Hi, {firstName}. It's {texterFirstName} here."
             />
+            question mapping form goes here?
             <Form.Field
               name='questionText'
               label='Question'
@@ -229,5 +230,6 @@ CampaignInteractionStepsForm.propTypes = {
   customFields: type.array,
   saveLabel: type.string,
   errors: type.array,
-  availableActions: type.array
+  availableActions: type.array,
+  organizationId: type.string.isRequired
 }
