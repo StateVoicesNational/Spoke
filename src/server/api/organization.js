@@ -62,16 +62,25 @@ export const resolvers = {
       return lists
     },
     osdiQuestions: async (organization, args, context, info) => {
+      // TODO pagination!
       await hasOsdiConfigured(organization)
       const { osdiApiUrl, osdiApiToken } = JSON.parse(organization.features)
       const client = axios.create({
         baseURL: osdiApiUrl,
         headers: { 'OSDI-Api-Token': osdiApiToken }
       })
-      const res = await client.get('/questions')
-      console.log('res.data is', res.data._embedded['osdi:questions'])
+      client.get('/questions')
+      .then(res => {
+        const questions = []
+        res.data._embedded['osdi:questions'].forEach(q => questions.push(JSON.stringify(q)))
+        return questions
+      })
+      .catch(err => {
+        console.error('There was an error connecting to the OSDI service', err)
+        return []
+      })
+      // console.log('res.data is', res.data._embedded['osdi:questions'])
       // console.log('type of questions is', typeof res.questions)
-      return ['hello', 'world']
     },
     uuid: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, 'SUPERVOLUNTEER')

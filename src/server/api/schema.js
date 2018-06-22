@@ -386,6 +386,7 @@ async function updateInteractionSteps(campaignId, interactionSteps, origCampaign
           answer_actions: is.answerActions,
           campaign_id: campaignId,
           is_deleted: false
+          // TODO add OSDI fields in here
         }).returning('id')
       idMap[is.id] = newId[0]
     } else {
