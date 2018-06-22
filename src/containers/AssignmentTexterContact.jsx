@@ -119,9 +119,10 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end'
   },
   lgMobileToolBar: {
-    '@media(max-width: 449px) and (min-width: 410px)': {
+    '@media(max-width: 449px) and (min-width: 320px)': {
       bottom: '0 !important',
-      marginLeft: '0px !important'
+      marginLeft: '0px !important',
+      display: 'block !important'
     }
   }
 })
