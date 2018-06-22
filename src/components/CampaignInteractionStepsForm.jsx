@@ -11,6 +11,7 @@ import DeleteIcon from 'material-ui/svg-icons/action/delete'
 import { Card, CardActions, CardHeader, CardText } from 'material-ui/Card'
 import theme from '../styles/theme'
 import CampaignFormSectionHeading from './CampaignFormSectionHeading'
+import CampaignOSDIQuestionFetcher from './CampaignOSDIQuestionFetcher'
 import ForwardIcon from 'material-ui/svg-icons/navigation/arrow-forward'
 import HelpIcon from 'material-ui/svg-icons/action/help'
 import HelpIconOutline from 'material-ui/svg-icons/action/help-outline'
@@ -170,7 +171,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
               multiLine
               hintText="This is what your texters will send to your contacts. E.g. Hi, {firstName}. It's {texterFirstName} here."
             />
-            question mapping form goes here?
+            <CampaignOSDIQuestionFetcher organizationId={this.props.organizationId} />
             <Form.Field
               name='questionText'
               label='Question'
