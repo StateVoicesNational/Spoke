@@ -133,33 +133,33 @@ export default class CampaignInteractionStepsForm extends React.Component {
               label='Answer'
               fullWidth
               hintText='Answer to the previous question'
-            /> : ''}
+                                                   /> : ''}
             {interactionStep.parentInteractionId ? <DeleteIcon style={styles.pullRight} onTouchTap={this.deleteStep(interactionStep.id).bind(this)} /> : ''}
             {interactionStep.parentInteractionId && this.props.availableActions && this.props.availableActions.length ?
               (<div key={`answeractions-${interactionStep.id}`}>
-                 <Form.Field
-                   name='answerActions'
-                   type='select'
-                   default=''
-                   choices={[
+                <Form.Field
+                  name='answerActions'
+                  type='select'
+                  default=''
+                  choices={[
                     { 'value': '', 'label': 'Action...' },
-                     ...this.props.availableActions.map(
+                    ...this.props.availableActions.map(
                       action => ({ 'value': action.name, 'label': action.display_name })
                     )
-                   ]}
-                 />
-                 <IconButton
-                   tooltip='An action is something that is triggered by this answer being chosen, often in an outside system'
-                 >
-                    <HelpIconOutline />
-                 </IconButton>
-                 <div>
-                 {
-                   interactionStep.answerActions
-                     ? this.props.availableActions.filter((a) => a.name === interactionStep.answerActions)[0].instructions
-                     : ''}
-                 </div>
-               </div>)
+                  ]}
+                />
+                <IconButton
+                  tooltip='An action is something that is triggered by this answer being chosen, often in an outside system'
+                >
+                  <HelpIconOutline />
+                </IconButton>
+                <div>
+                  {
+                    interactionStep.answerActions
+                      ? this.props.availableActions.filter((a) => a.name === interactionStep.answerActions)[0].instructions
+                      : ''}
+                </div>
+              </div>)
             : ''}
             <Form.Field
               name='script'
