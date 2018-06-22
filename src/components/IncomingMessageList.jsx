@@ -62,7 +62,12 @@ export class IncomingMessageList extends Component {
     return [
       {
         key: 'campaignTitle',
-        label: 'Campaign'
+        label: 'Campaign',
+        style: {
+          textOverflow: 'ellipsis',
+          overflow: 'hidden',
+          whiteSpace: 'nowrap'
+        }
       },
       {
         key: 'texter',
