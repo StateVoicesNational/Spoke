@@ -1,13 +1,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-// import gql from 'graphql-tag'
-import { ApolloConsumer } from 'react-apollo'
+import gql from 'graphql-tag'
+import loadData from '../containers/hoc/load-data'
 
-// const OSDI_QUESTIONS_QUERY = gql`query getLists($organizationId: String!) {
-//   organization(id: $organizationId) {
-//     osdiQuestions
-//   }
-// }`
 
 class CampaignOSDIQuestionFetcher extends React.Component {
   constructor(props) {
@@ -20,26 +15,14 @@ class CampaignOSDIQuestionFetcher extends React.Component {
   }
 
   render() {
-    const { organizationId } = this.props
+    const { osdiQuestions } = this.props.osdiQuestions.organization
     return (
-      <ApolloConsumer>
-        {client => (
           <div>
-            <div>hello world, I'm the OSDI question fetcher</div>
-            {/* <button
-              onClick={async () => {
-                const { data } = await client.query({
-              query: OSDI_QUESTIONS_QUERY,
-              variables: { organizationId }
-                })
-                this.setState({ questions: data })
-              }}
-              >
-              Load questions
-            </button> */}
+            <div>hello world, I'm the OSDI question fetcher, and I have {osdiQuestions.length} questions to share with you today.</div>
+            <ul>
+              {osdiQuestions.forEach((q, i) => <li key={i}>q</li>)}
+            </ul>
           </div>
-        )}
-      </ApolloConsumer>
     )
   }
 }
@@ -48,4 +31,18 @@ CampaignOSDIQuestionFetcher.propTypes = {
   organizationId: PropTypes.string.isRequired
 }
 
-export default CampaignOSDIQuestionFetcher
+const mapQueriesToProps = ({ ownProps }) => ({
+  osdiQuestions: {
+    query: gql`query getLists($organizationId: String!) {
+      organization(id: $organizationId) {
+        osdiQuestions
+        id
+      }
+    }`,
+    variables: {
+      organizationId: ownProps.organizationId
+    }
+  }
+})
+
+export default loadData(CampaignOSDIQuestionFetcher, {mapQueriesToProps})

@@ -66,11 +66,13 @@ export function superAdminRequired(user) {
 }
 
 export function hasOsdiConfigured({features}) {
+  const err = new GraphQLError({
+    status: 400,
+    message: 'Your organization is not configured with OSDI. Please contact your administrator for help.'
+  })
+  if (!features) throw err
   const { osdiEnabled, osdiApiUrl, osdiApiToken } = JSON.parse(features)
   if (!(osdiEnabled && osdiApiUrl && osdiApiToken)) {
-    throw new GraphQLError({
-      status: 400,
-      message: 'Your organization is not configured with OSDI. Please contact your administrator for help.'
-    })
+    throw err
   }
 }

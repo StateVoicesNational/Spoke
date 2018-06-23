@@ -72,7 +72,12 @@ export const resolvers = {
       client.get('/questions')
       .then(res => {
         const questions = []
-        res.data._embedded['osdi:questions'].forEach(q => questions.push(JSON.stringify(q)))
+        res.data._embedded['osdi:questions'].forEach((q, i) => {
+          const s = JSON.stringify(q)
+          console.log('q', i, s)
+          questions.push(q.description)
+        })
+        console.log('going to return this:', questions)
         return questions
       })
       .catch(err => {
