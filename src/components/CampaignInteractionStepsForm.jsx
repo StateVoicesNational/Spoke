@@ -171,14 +171,14 @@ export default class CampaignInteractionStepsForm extends React.Component {
               multiLine
               hintText="This is what your texters will send to your contacts. E.g. Hi, {firstName}. It's {texterFirstName} here."
             />
-            <CampaignOSDIQuestionFetcher organizationId={this.props.organizationId} />
             <Form.Field
               name='questionText'
               label='Question'
               fullWidth
               hintText='A question for texters to answer. E.g. Can this person attend the event?'
             />
-
+            You may also map a question from your connected OSDI system.
+            <CampaignOSDIQuestionFetcher organizationId={this.props.organizationId} />
           </GSForm>
         </CardText>
       </Card>

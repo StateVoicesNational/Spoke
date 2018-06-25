@@ -69,23 +69,16 @@ export const resolvers = {
         baseURL: osdiApiUrl,
         headers: { 'OSDI-Api-Token': osdiApiToken }
       })
-      client.get('/questions')
-      .then(res => {
-        const questions = []
-        res.data._embedded['osdi:questions'].forEach((q, i) => {
-          const s = JSON.stringify(q)
-          console.log('q', i, s)
-          questions.push(q.description)
-        })
-        console.log('going to return this:', questions)
-        return questions
+      const { data } = await client.get('/questions')
+      const questions = []
+      data._embedded['osdi:questions'].forEach((q, i) => {
+        const s = JSON.stringify(q)
+        console.log('q', i, s)
+        questions.push(q.description)
       })
-      .catch(err => {
-        console.error('There was an error connecting to the OSDI service', err)
-        return []
-      })
-      // console.log('res.data is', res.data._embedded['osdi:questions'])
-      // console.log('type of questions is', typeof res.questions)
+      console.log('going to return this:', questions)
+      return questions
+      // TODO figure out how to do async/await error handling
     },
     uuid: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, 'SUPERVOLUNTEER')
