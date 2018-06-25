@@ -385,8 +385,11 @@ async function updateInteractionSteps(campaignId, interactionSteps, origCampaign
           answer_option: is.answerOption,
           answer_actions: is.answerActions,
           campaign_id: campaignId,
-          is_deleted: false
-          // TODO add OSDI fields in here
+          is_deleted: false,
+          source: is.source,
+          external_question_id: is.externalQuestionId,
+          external_answer_id: is.externalAnswerId
+          // TODO verify that interaction steps correctly insert themselves in the DB
         }).returning('id')
       idMap[is.id] = newId[0]
     } else {
@@ -402,7 +405,11 @@ async function updateInteractionSteps(campaignId, interactionSteps, origCampaign
             script: is.script,
             answer_option: is.answerOption,
             answer_actions: is.answerActions,
-            is_deleted: is.isDeleted
+            is_deleted: is.isDeleted,
+            source: is.source,
+            external_question_id: is.externalQuestionId,
+            external_answer_id: is.externalAnswerId
+            // TODO verify that interaction steps correctly update themselves in the DB
           })
       }
     }

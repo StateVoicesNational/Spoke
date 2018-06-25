@@ -215,6 +215,7 @@ class AdminCampaignEdit extends React.Component {
         }))
       }
       if (newCampaign.hasOwnProperty('interactionSteps')) {
+        console.log('AdminCampaignEdit handleSave received interaction steps:', newCampaign.interactionSteps)
         newCampaign.interactionSteps = Object.assign({}, newCampaign.interactionSteps)
       }
       await this
