@@ -14,7 +14,10 @@ module.exports = {
       cell: By.css('div.auth0-lock-input-cell > div > input'),
       agreement: By.css('span.auth0-lock-sign-up-terms-agreement > label > input'), // Checkbox
       submit: By.css('button.auth0-lock-submit')
+    },
+    authorize: {
+      allow: By.css('#allow')
     }
   },
-  login: By.css('#login')
+  loginGetStarted: By.css('#login')
 }
