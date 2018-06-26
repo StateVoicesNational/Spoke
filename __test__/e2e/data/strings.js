@@ -1,9 +1,10 @@
 module.exports = {
   admin: {
-    email: 'testuser@example.com',
-    password: 'SpokeTest!',
-    given_name: 'TestUserFirst',
-    family_name: 'TestUserLast',
+    email: 'spokeadmin0222@moveon.org',
+    password: 'SpokeAdmin0!',
+    given_name: 'TestAdminFirst',
+    family_name: 'TestAdminLast',
     cell: '555-555-5555'
-  }
+  },
+  org: 'SpokeTestOrg'
 }
