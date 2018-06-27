@@ -5,12 +5,12 @@ import { r } from '../models'
 export const displayName = () => 'OSDI survey response'
 
 // The Help text for the user after selecting the action
-export const instructions = () => 'Map script question responses to survey question responses in an OSDI compliant system.'
+export const instructions = () => 'Map script question responses to survey question responses in an OSDI-compliant system.'
 
 // return true, if the action is usable and available for the organizationId
 // Sometimes this means certain variables/credentials must be setup
 // either in environment variables or organization.features json data
-// Besides this returning true, "test-action" will also need to be added to
+// Besides this returning true, "osdi-survey-question" will also need to be added to
 // process.env.ACTION_HANDLERS
 export async function available(organizationId) {
   // TODO query for osdiEnabled, osdiApiUrl and osdiApiToken here – using graphQL or straight from the db?
@@ -20,18 +20,23 @@ export async function available(organizationId) {
 // What happens when a texter saves the answer that triggers the action
 // This is presumably the meat of the action
 export async function processAction(questionResponse, interactionStep, campaignContactId) {
-  console.log(questionResponse, interactionStep, campaignContactId)
-  // This is a meta action that updates a variable in the contact record itself.
+  console.log('processAction called with', questionResponse, interactionStep, campaignContactId)
   // Generally, you want to send action data to the outside world, so you
   // might want the request library loaded above
-  // const contact = await r.knex('campaign_contact')
-  //   .where('campaign_contact_id', campaignContactId)
-  // const customFields = JSON.parse(contact.custom_fields || '{}')
-  // if (customFields) {
-  //   customFields['processed_test_action'] = 'completed'
-  // }
-  //
+  const [contact] = await r.knex('campaign_contact')
+    .select('*')
+    .where('id', campaignContactId)
+  console.log('contact is', contact)
+  const { custom_fields = {} } = contact
+  const customFields = JSON.parse(custom_fields)
+  console.log('contact custom fields are', customFields)
+  if (customFields) {
+    customFields.processed_test_action = 'completed'
+  }
+
+  // interactionStep has the 
+
   // await r.knex('campaign_contact')
-  //   .where('campaign_contact.id', campaignContactId)
-  //   .update('custom_fields', JSON.stringify(customFields))
+  //   .where('id', campaignContactId)
+  //   .update('custom_fields', ...customFields)
 }
