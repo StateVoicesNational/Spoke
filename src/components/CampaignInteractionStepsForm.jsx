@@ -199,6 +199,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
               name='answerOption'
               label='Answer'
               fullWidth
+              disabled={interactionStep.source === 'OSDI'}
               hintText='Answer to the previous question'
                                                    /> : ''}
             {interactionStep.parentInteractionId ? <DeleteIcon style={styles.pullRight} onTouchTap={this.deleteStep(interactionStep.id).bind(this)} /> : ''}
@@ -208,6 +209,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
                   name='answerActions'
                   type='select'
                   default=''
+                  disabled={interactionStep.source === 'OSDI'}
                   choices={[
                     { 'value': '', 'label': 'Action...' },
                     ...this.props.availableActions.map(
@@ -247,10 +249,11 @@ export default class CampaignInteractionStepsForm extends React.Component {
               name='questionText'
               label='Question'
               fullWidth
+              disabled={interactionStep.externalQuestionId}
               hintText='A question for texters to answer. E.g. Can this person attend the event?'
             />
             You may also map a question from your connected OSDI system.
-            <CampaignOSDIQuestionFetcher organizationId={this.props.organizationId} mapQuestion={responses => this.mapOSDIQuestion(interactionStep.id, responses)}/>
+            <CampaignOSDIQuestionFetcher organizationId={this.props.organizationId} mapQuestion={responses => this.mapOSDIQuestion(interactionStep.id, responses)} />
           </GSForm>
         </CardText>
       </Card>
