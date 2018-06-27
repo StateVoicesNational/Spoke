@@ -25,6 +25,7 @@ export const resolvers = {
       r.table('interaction_step')
         .filter({ parent_interaction_id: interactionStep.id })
         .filter({ is_deleted: false })
+        .orderBy('answer_option')
         .map({
           value: r.row('answer_option'),
           action: r.row('answer_actions'),
