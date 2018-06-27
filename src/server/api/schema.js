@@ -132,6 +132,9 @@ const rootSchema = `
     answerActions: String
     parentInteractionId: String
     isDeleted: Boolean
+    source: String
+    externalQuestionId: String
+    externalResponseId: String
     interactionSteps: [InteractionStepInput]
   }
 
@@ -371,6 +374,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
 }
 
 async function updateInteractionSteps(campaignId, interactionSteps, origCampaignRecord, idMap = {}) {
+  console.log('updateInteractionSteps called with steps', interactionSteps)
   await interactionSteps.forEach(async (is) => {
     // map the interaction step ids for new ones
     if (idMap[is.parentInteractionId]) {
@@ -388,7 +392,7 @@ async function updateInteractionSteps(campaignId, interactionSteps, origCampaign
           is_deleted: false,
           source: is.source,
           external_question_id: is.externalQuestionId,
-          external_answer_id: is.externalAnswerId
+          external_response_id: is.externalResponseId
           // TODO verify that interaction steps correctly insert themselves in the DB
         }).returning('id')
       idMap[is.id] = newId[0]
