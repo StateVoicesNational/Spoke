@@ -62,16 +62,52 @@ export default class CampaignInteractionStepsForm extends React.Component {
     this.props.onSubmit()
   }
 
-  addStep(parentInteractionId) {
-    return () => {
-      const newId = 'new' + Math.random().toString(36).replace(/[^a-zA-Z1-9]+/g, '')
-      this.setState({
+  addStep(parentInteractionId, options = {}) {
+    // Set up interaction step attributes, including defaults.
+    const {
+      answerActions = '',
+      answerOption = '',
+      id = 'new' + Math.random().toString(36).replace(/[^a-zA-Z1-9]+/g, ''),
+      isDeleted = false,
+      questionText = '',
+      script = '',
+      source = '',
+      externalQuestionId = '',
+      externalResponseId = ''
+    } = options
+    console.log('add step with parent', parentInteractionId, 'and computed options', {
+      parentInteractionId,
+      answerActions,
+      answerOption,
+      id,
+      isDeleted,
+      questionText,
+      script,
+      source,
+      externalQuestionId,
+      externalResponseId
+    })
+    // return () => {
+      // const newId = 'new' + Math.random().toString(36).replace(/[^a-zA-Z1-9]+/g, '')
+      this.setState(prevState => ({
         interactionSteps: [
-          ...this.state.interactionSteps,
-          { id: newId, parentInteractionId, questionText: '', script: '', answerOption: '', answerActions: '', isDeleted: false }
+          ...prevState.interactionSteps,
+          // { id: newId, parentInteractionId, questionText: '', script: '', answerOption: '', answerActions: '', isDeleted: false }
+          {
+            parentInteractionId,
+            answerActions,
+            answerOption,
+            id,
+            isDeleted,
+            questionText,
+            script,
+            source,
+            externalQuestionId,
+            externalResponseId
+          }
         ]
-      })
-    }
+      }))
+    // }
   }
 
   deleteStep(id) {
@@ -186,7 +222,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
         {interactionStep.questionText && interactionStep.script && (!interactionStep.parentInteractionId || interactionStep.answerOption) ? <div>
           <RaisedButton
             label='+ Add a response'
-            onTouchTap={this.addStep(interactionStep.id).bind(this)}
+            onTouchTap={this.addStep.bind(this, interactionStep.id)}
             style={{ marginBottom: '10px' }}
           />
         </div> : ''}

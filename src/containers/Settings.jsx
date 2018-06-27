@@ -166,6 +166,9 @@ class Settings extends React.Component {
             title='Settings'
           />
           <CardText>
+            {/*
+              TODO figure out the logic for conditionally rendering these options. See discussion on https://github.com/MoveOnOrg/Spoke/issues/597
+            */}
             <div className={css(styles.section)}>
               <span className={css(styles.sectionLabel)}>
                 OSDI Integration {organization.osdiEnabled}
