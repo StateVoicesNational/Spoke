@@ -13,6 +13,7 @@ class CampaignOSDIQuestionFetcher extends React.Component {
       selectedQuestionIndex: -1,
       selectedQuestion: { description: '', responses: '' }
     }
+    this.handleMapQuestion = this.handleMapQuestion.bind(this)
   }
 
   selectQuestion = (e, i, v) => {
@@ -22,6 +23,18 @@ class CampaignOSDIQuestionFetcher extends React.Component {
       selectedQuestionIndex: v,
       selectedQuestion
     })
+  }
+
+  handleMapQuestion() {
+    const { description: questionText, responses, _links: { self: { href: questionId } } } = this.state.selectedQuestion
+    const options = {
+      questionText,
+      questionId,
+      source: 'OSDI',
+      responses
+    }
+    console.log('calling question mapper with', options)
+    this.props.mapQuestion(options)
   }
 
   render() {
@@ -54,7 +67,7 @@ class CampaignOSDIQuestionFetcher extends React.Component {
                     {responses.map(r => <li>{r.title}</li>)}
                   </ul>
                 </p>
-                <RaisedButton primary label='Map' />
+                <RaisedButton primary label='Map' onTouchTap={this.handleMapQuestion} />
               </div>
             }
           </div>
@@ -68,7 +81,8 @@ class CampaignOSDIQuestionFetcher extends React.Component {
 
 CampaignOSDIQuestionFetcher.propTypes = {
   organizationId: PropTypes.string.isRequired,
-  osdiQuestions: PropTypes.object.isRequired
+  osdiQuestions: PropTypes.object.isRequired,
+  mapQuestion: PropTypes.func.isRequired
 }
 
 const mapQueriesToProps = ({ ownProps }) => ({

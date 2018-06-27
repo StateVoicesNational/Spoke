@@ -73,10 +73,8 @@ export const resolvers = {
       const questions = []
       data._embedded['osdi:questions'].forEach((q, i) => {
         const s = JSON.stringify(q)
-        console.log('q', i, s)
         questions.push(s)
       })
-      console.log('going to return this:', questions)
       return questions
       // TODO figure out how to do async/await error handling
     },

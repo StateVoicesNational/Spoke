@@ -62,6 +62,36 @@ export default class CampaignInteractionStepsForm extends React.Component {
     this.props.onSubmit()
   }
 
+  mapOSDIQuestion(interactionStepId, { questionText, questionId, source, responses }) {
+    console.log('mapOSDIQuestion called on interaction step id', interactionStepId, 'with responses', responses)
+    /*
+    interactionStepId is the ID of the interaction step whose Question field should be set to the text of the mapped OSDI question. Second argument is an object describing the OSDI question to be mapped.
+    */
+    // First, set some attributes on the base interaction step
+    this.setState(prevState => {
+      const newInteractionSteps = prevState.interactionSteps.map(iS => Object.assign({}, iS))
+      const targetInteractionStepIndex = newInteractionSteps.findIndex(is => is.id === interactionStepId)
+      console.log('computed index', targetInteractionStepIndex, 'for base interaction step')
+      const targetInteractionStep = newInteractionSteps[targetInteractionStepIndex]
+      targetInteractionStep.questionText = questionText
+      targetInteractionStep.source = source
+      targetInteractionStep.externalQuestionId = questionId
+      return { interactionSteps: newInteractionSteps }
+    })
+    // Add interaction steps for each of the provided responses
+    responses.forEach(response => {
+      console.log('adding response', response, 'to question', interactionStepId)
+      const { key, title } = response
+      const interactionStepOptions = {
+        answerActions: 'osdi-survey-question',
+        externalResponseId: key,
+        answerOption: title,
+        source: 'OSDI'
+      }
+      this.addStep(interactionStepId, interactionStepOptions)
+    })
+  }
+
   addStep(parentInteractionId, options = {}) {
     // Set up interaction step attributes, including defaults.
     const {
@@ -198,6 +228,12 @@ export default class CampaignInteractionStepsForm extends React.Component {
                 </div>
               </div>)
             : ''}
+            <div>
+              some extra info about this interaction step:
+              <p>source: {interactionStep.source}</p>
+              <p>external question ID: {interactionStep.externalQuestionId}</p>
+              <p>external response id: {interactionStep.externalResponseId}</p>
+            </div>
             <Form.Field
               name='script'
               type='script'
@@ -214,7 +250,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
               hintText='A question for texters to answer. E.g. Can this person attend the event?'
             />
             You may also map a question from your connected OSDI system.
-            <CampaignOSDIQuestionFetcher organizationId={this.props.organizationId} />
+            <CampaignOSDIQuestionFetcher organizationId={this.props.organizationId} mapQuestion={responses => this.mapOSDIQuestion(interactionStep.id, responses)}/>
           </GSForm>
         </CardText>
       </Card>
