@@ -7,7 +7,18 @@ export const displayName = () => 'OSDI survey response'
 export const instructions = () => 'Map script question responses to survey question responses in an OSDI-compliant system. Contacts must be uploaded with an external_id custom field for this action handler to work.'
 
 export async function available(organizationId) {
-  // TODO query for osdiEnabled, osdiApiUrl and osdiApiToken here – using graphQL or straight from the db?
+  const [{ features }] = await r.knex('organization')
+  .where({ id: organizationId })
+  .select('features')
+  const { osdiEnabled, osdiApiUrl, osdiApiToken } = JSON.parse(features)
+  const missing = []
+  if (!osdiEnabled) missing.push('osdiEnabled')
+  if (!osdiApiUrl) missing.push('osdiApiUrl')
+  if (!osdiApiToken) missing.push('osdiApiToken')
+  if (missing.length > 0) {
+    console.log(`osdi-survey-question action handler unavailable because the following fields are false or unset: ${missing.join(', ')}`)
+    return false
+  }
   return true
 }
 
@@ -17,11 +28,14 @@ The following hash table and function provide a caching mechanism for looking up
 const externalQuestionIdMap = {} // TODO I think this may need to live in a different context.
 const getExternalQuestionIdByInteractionStepId = async interactionStepId => {
   const mappedId = externalQuestionIdMap[interactionStepId]
-  if (mappedId) return mappedId
+  if (mappedId) {
+    console.log('parent interaction step external question id', mappedId, 'found in map')
+    return mappedId
+  }
   const [{ external_question_id }] = await r.knex('interaction_step')
   .select('external_question_id')
   .where({ id: interactionStepId })
-  console.log('found parent external question id in db', external_question_id)
+  console.log('parent interaction step external question id', external_question_id, 'found in db and added to map', external_question_id)
   if (external_question_id) externalQuestionIdMap[interactionStepId] = external_question_id
   return external_question_id
 }
