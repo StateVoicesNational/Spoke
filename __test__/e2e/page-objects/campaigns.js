@@ -12,10 +12,14 @@ module.exports = {
       logoImageUrl: By.css('[data-test=logoImageUrl]'),
       primaryColor: By.css('[data-test=primaryColor]')
     },
+    datePickerDialog: {
+      // TODO: This selector is fragile and alternate means of finding an enabled date should be investigated.
+      enabledDate: By.css('body > div:nth-child(5) > div > div:nth-child(1) > div > div > div > div > div:nth-child(2) > div:nth-child(1) > div:nth-child(3) > div > div button[tabindex="0"]')
+    },
     contacts: {
       uploadButton: By.css('[data-test=uploadButton]'),
       input: By.css('#contact-upload')
     },
-    submit: By.css('[type=submit]')
+    save: By.css('[type=submit]')
   }
 }
