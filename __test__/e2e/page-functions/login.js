@@ -16,7 +16,7 @@ module.exports = {
 
     it('clicks the login link', async () => {
       // Click on the login button
-      const el = await driver.wait(until.elementLocated(pom.login.loginGetStarted, 10000))
+      const el = await driver.wait(until.elementLocated(pom.login.loginGetStarted, 20000))
       await driver.wait(until.elementIsVisible(el))
       await el.click()
 
@@ -28,7 +28,7 @@ module.exports = {
     })
 
     it('opens the Sign Up tab', async () => {
-      const el = await driver.wait(until.elementLocated(auth0.tabs.signIn, 10000))
+      const el = await driver.wait(until.elementLocated(auth0.tabs.signIn, 20000))
       await driver.wait(until.elementIsVisible(el))
       await el.click()
     })
