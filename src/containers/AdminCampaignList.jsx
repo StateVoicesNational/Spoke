@@ -74,13 +74,14 @@ class AdminCampaignList extends React.Component {
         )}
 
         {adminPerms ?
-         (<FloatingActionButton
-           style={theme.components.floatingButton}
-           onTouchTap={this.handleClickNewButton}
-         >
-           <ContentAdd />
-         </FloatingActionButton>
-         ) : null}
+          (<FloatingActionButton
+            data-test={process.env.NODE_ENV !== 'production' && 'add-campaign'}
+            style={theme.components.floatingButton}
+            onTouchTap={this.handleClickNewButton}
+          >
+            <ContentAdd />
+          </FloatingActionButton>
+          ) : null}
       </div>
     )
   }

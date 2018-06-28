@@ -178,6 +178,7 @@ export default class CampaignContactsForm extends React.Component {
     return (
       <div>
         <RaisedButton
+          data-test={process.env.NODE_ENV !== 'production' && 'uploadButton'}
           style={innerStyles.button}
           label={uploading ? 'Uploading...' : 'Upload contacts'}
           labelPosition='before'
