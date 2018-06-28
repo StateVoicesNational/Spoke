@@ -1149,26 +1149,31 @@ const rootResolvers = {
       await superAdminRequired(user)
       return r.table('organization')
     },
-    availableActions: (_, { organizationId }, { user }) => {
+    availableActions: async(_, { organizationId }, { user }) => {
       if (!process.env.ACTION_HANDLERS) {
         return []
       }
       const allHandlers = process.env.ACTION_HANDLERS.split(',')
-
-      const availableHandlers = allHandlers.map(handler => {
-        return { 'name': handler,
-                'handler': require(`../action_handlers/${handler}.js`)
-               }
-      }).filter(async (h) => (h && (await h.handler.available(organizationId))))
-
-      const availableHandlerObjects = availableHandlers.map(handler => {
-        return {
-          'name': handler.name,
-          'display_name': handler.handler.displayName(),
-          'instructions': handler.handler.instructions()
+      const availableHandlers = []
+      for (let i = 0; i < allHandlers.length; i++) {
+        const name = allHandlers[i]
+        try {
+          const handler = require(`../action_handlers/${name}.js`)
+          const isAvailable = await handler.available(organizationId)
+          console.log('action handler', name, `is ${!isAvailable ? 'un' : ''}available`)
+          if (isAvailable) {
+            availableHandlers.push({
+              name,
+              display_name: handler.displayName(),
+              instructions: handler.instructions()
+            })
+          }
+        } catch (e) {
+          console.error(`Error processing action handler ${name}. This could be because the ACTION_HANDLERS env was set incorrectly and a module could not be loaded.`, e)
+          continue
         }
-      })
-      return availableHandlerObjects
+      }
+      return availableHandlers
     }
   }
 }
