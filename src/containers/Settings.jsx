@@ -51,10 +51,8 @@ class Settings extends React.Component {
   }
 
   handleUpdateOrganizationFeatures = async newOSDIOptions => {
-    const { osdiEnabled, osdiApiUrl, osdiApiToken } = this.props.data.organization
-    const options = Object.assign({}, { osdiEnabled, osdiApiUrl, osdiApiToken }, newOSDIOptions)
-    console.log('new options are', options)
-    await this.props.mutations.updateOrganizationFeatures(options)
+    await this.props.mutations.updateOrganizationFeatures(newOSDIOptions)
+    this.props.data.refetch()
   }
 
   handleOpenTextingHoursDialog = () => this.setState({ textingHoursDialogOpen: true })
@@ -62,9 +60,6 @@ class Settings extends React.Component {
   handleCloseTextingHoursDialog = () => this.setState({ textingHoursDialogOpen: false })
 
   renderOSDIOptionsForm() {
-    const { organization } = this.props.data
-    const { osdiApiUrl, osdiApiToken } = organization
-
     const osdiFormSchema = yup.object({
       osdiApiUrl: yup.string().required(),
       osdiApiToken: yup.string().required()
@@ -74,14 +69,10 @@ class Settings extends React.Component {
       <GSForm
         schema={osdiFormSchema}
         onSubmit={this.handleUpdateOrganizationFeatures}
-        defaultValue={{
-          osdiApiUrl,
-          osdiApiToken
-        }}
       >
         <Form.Field
-          label='OSDI API URL'
           name='osdiApiUrl'
+          label='OSDI API URL'
           fullWidth
         />
         <Form.Field
@@ -89,6 +80,9 @@ class Settings extends React.Component {
           name='osdiApiToken'
           fullWidth
         />
+        <div>
+          Previously-entered URL and token values are not displayed here for security reasons.
+        </div>
         <Form.Button
           type='submit'
           style={inlineStyles.dialogButton}
@@ -267,8 +261,6 @@ const mapMutationsToProps = ({ ownProps }) => ({
         updateOrganizationFeatures(organizationId: $organizationId, osdiEnabled: $osdiEnabled, osdiApiToken: $osdiApiToken, osdiApiUrl: $osdiApiUrl) {
           id
           osdiEnabled
-          osdiApiToken
-          osdiApiUrl
         }
       }`,
     variables: {
@@ -288,8 +280,6 @@ const mapQueriesToProps = ({ ownProps }) => ({
         textingHoursStart
         textingHoursEnd
         osdiEnabled
-        osdiApiToken
-        osdiApiUrl
       }
     }`,
     variables: {

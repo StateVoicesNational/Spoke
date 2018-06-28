@@ -230,12 +230,6 @@ export default class CampaignInteractionStepsForm extends React.Component {
                 </div>
               </div>)
             : ''}
-            <div>
-              some extra info about this interaction step:
-              <p>source: {interactionStep.source}</p>
-              <p>external question ID: {interactionStep.externalQuestionId}</p>
-              <p>external response id: {interactionStep.externalResponseId}</p>
-            </div>
             <Form.Field
               name='script'
               type='script'
