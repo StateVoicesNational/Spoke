@@ -7,21 +7,28 @@ const strings = require('./data/strings')
 const driver = helpers.selenium.buildDriver()
 const login = require('./page-functions/login')
 const invite = require('./page-functions/invite')
+const campaigns = require('./page-functions/campaigns')
 
 describe('Basic text manager workflow', () => {
   afterAll(async () => {
     await helpers.selenium.quitDriver(driver)
   })
-
-  describe('Sign Up a new admin to Spoke', () => {
+  // Skip in CI tests, but useful for setting up existing admin
+  xdescribe('Sign Up a new admin to Spoke', () => {
     login.signUp(driver, strings.admin)
   })
-  // Skip in production tests, but useful for debugging?
-  xdescribe('Log In an existing admin to Spoke', () => {
+
+  describe('Log In an existing admin to Spoke', () => {
     login.logIn(driver, strings.admin)
   })
 
   describe('Create a New Organization / Team', () => {
     invite.createOrg(driver, strings.org)
+  })
+
+  // TODO : Invite a new texter
+
+  describe('Create a New Campaign', () => {
+    campaigns.startCampaign(driver, strings.campaign)
   })
 })
