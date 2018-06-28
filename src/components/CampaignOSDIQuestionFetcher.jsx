@@ -43,7 +43,6 @@ class CampaignOSDIQuestionFetcher extends React.Component {
     const { description, responses } = this.state.selectedQuestion
     return (
       <div>
-        <div>hello world, I'm the OSDI question fetcher, and I have {osdiQuestions.length} questions to share with you today.</div>
         {questionsAvailable ?
           <div>
             <SelectField
