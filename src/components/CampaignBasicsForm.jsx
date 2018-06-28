@@ -54,18 +54,21 @@ export default class CampaignBasicsForm extends React.Component {
           onSubmit={this.props.onSubmit}
         >
           <Form.Field
+            data-test={process.env.NODE_ENV !== 'production' && 'title'}
             name='title'
             label='Title'
             hintText='e.g. Election Day 2016'
             fullWidth
           />
           <Form.Field
+            data-test={process.env.NODE_ENV !== 'production' && 'description'}
             name='description'
             label='Description'
             hintText='Get out the vote'
             fullWidth
           />
           <Form.Field
+            data-test={process.env.NODE_ENV !== 'production' && 'dueBy'}
             name='dueBy'
             label='Due date'
             type='date'
@@ -76,12 +79,14 @@ export default class CampaignBasicsForm extends React.Component {
             utcOffset={0}
           />
           <Form.Field
+            data-test={process.env.NODE_ENV !== 'production' && 'introHtml'}
             name='introHtml'
             label='Intro HTML'
             multiLine
             fullWidth
           />
           <Form.Field
+            data-test={process.env.NODE_ENV !== 'production' && 'logoImageUrl'}
             name='logoImageUrl'
             label='Logo Image URL'
             hintText='https://www.mysite.com/images/logo.png'
@@ -89,6 +94,7 @@ export default class CampaignBasicsForm extends React.Component {
           />
           <label>Primary color</label>
           <Form.Field
+            data-test={process.env.NODE_ENV !== 'production' && 'primaryColor'}
             name='primaryColor'
             label='Primary color'
             defaultValue={this.props.formValues.primaryColor || '#ffffff'}

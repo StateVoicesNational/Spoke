@@ -20,6 +20,7 @@ class AdminNavigation extends React.Component {
         }))}
         switchListItem={
           <ListItem
+            data-test={process.env.NODE_ENV !== 'production' && 'switchToTexter'}
             primaryText='Switch to texter'
             onTouchTap={() => this.props.router.push(`/app/${organizationId}/todos`)}
           />
