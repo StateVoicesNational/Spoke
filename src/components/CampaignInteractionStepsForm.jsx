@@ -252,8 +252,13 @@ export default class CampaignInteractionStepsForm extends React.Component {
               disabled={interactionStep.externalQuestionId}
               hintText='A question for texters to answer. E.g. Can this person attend the event?'
             />
-            You may also map a question from your connected OSDI system.
-            <CampaignOSDIQuestionFetcher organizationId={this.props.organizationId} mapQuestion={responses => this.mapOSDIQuestion(interactionStep.id, responses)} />
+            {
+              this.props.osdiEnabled &&
+              <div>
+                You may also map a question from your connected OSDI system.
+                <CampaignOSDIQuestionFetcher organizationId={this.props.organizationId} mapQuestion={responses => this.mapOSDIQuestion(interactionStep.id, responses)} />
+              </div>
+            }
           </GSForm>
         </CardText>
       </Card>
@@ -307,5 +312,6 @@ CampaignInteractionStepsForm.propTypes = {
   saveLabel: type.string,
   errors: type.array,
   availableActions: type.array,
-  organizationId: type.string.isRequired
+  organizationId: type.string.isRequired,
+  osdiEnabled: type.bool.isRequired
 }

@@ -323,7 +323,8 @@ class AdminCampaignEdit extends React.Component {
       extraProps: {
         customFields: this.props.campaignData.campaign.customFields,
         availableActions: this.props.availableActionsData.availableActions,
-        organizationId: this.props.organizationData.organization.id
+        organizationId: this.props.organizationData.organization.id,
+        osdiEnabled: this.props.organizationData.organization.osdiEnabled
       }
     }, {
       title: 'Canned Responses',
@@ -623,6 +624,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
       organization(id: $organizationId) {
         id
         uuid
+        osdiEnabled
         texters: people {
           id
           firstName
