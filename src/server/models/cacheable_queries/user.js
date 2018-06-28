@@ -55,3 +55,28 @@ export async function userLoggedIn(authId) {
   }
   return userAuth
 }
+
+export async function updateAssignments(campaignInfo) {
+  const campaignId = campaignInfo.id
+  const dynamicAssignment = campaignInfo.use_dynamic_assignment
+  if (r.redis) {
+    const texters = await r.knex('assignment')
+      .select('user_id')
+      .where('campaign_id', campaignId)
+
+    if (dynamicAssignment) {
+      for (let i = 0; i < texters.length; i++) {
+        let dynamicAssignment = `dynamicassignments-${campaignId}`
+        await r.redis.lpush(dynamicAssignment)
+      }
+    }
+
+    if (!dynamicAssignment) {
+      for (let i = 0; i < texters.length; i++) {
+        let texterId = texters[i].user_id
+        let texterAssignment = `newassignments-${texterId}-${campaignId}`
+        await r.redis.lpush(texterAssignment)
+      }
+    }
+  }
+}
