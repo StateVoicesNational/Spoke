@@ -14,7 +14,7 @@ export async function available(organizationId) {
 /*
 The following hash table and function provide a caching mechanism for looking up the OSDI question ID associated with a particular interaction step.¹
 */
-const externalQuestionIdMap = {}
+const externalQuestionIdMap = {} // TODO I think this may need to live in a different context.
 const getExternalQuestionIdByInteractionStepId = async interactionStepId => {
   const mappedId = externalQuestionIdMap[interactionStepId]
   if (mappedId) return mappedId
@@ -28,7 +28,7 @@ const getExternalQuestionIdByInteractionStepId = async interactionStepId => {
 
 export async function processAction(questionResponse, interactionStep, campaignContactId) {
   try {
-    const [{ features: { osdiApiUrl, osdiApiToken }, external_id }] = await r.knex('campaign_contact')
+    const [{ features, external_id }] = await r.knex('campaign_contact')
       .where('campaign_contact.id', campaignContactId)
       .leftJoin('campaign', 'campaign_contact.campaign_id', 'campaign.id')
       .leftJoin('organization', 'campaign.organization_id', 'organization.id')
@@ -37,13 +37,15 @@ export async function processAction(questionResponse, interactionStep, campaignC
         'organization.features as features'
       )
     const missing = []
+    const { osdiApiUrl, osdiApiToken } = JSON.parse(features)
     if (!osdiApiUrl) missing.push('osdiApiUrl')
     if (!osdiApiToken) missing.push('osdiApiToken')
     if (!external_id) missing.push('external_id')
     if (missing.length > 0) throw new Error(`Error processing osdi-survey-question handler for campaign contact ${campaignContactId}: fields ${missing.join(', ')} required.`)
 
     // interactionStep has the response ID, but we need to retrieve the question ID
-    const question = getExternalQuestionIdByInteractionStepId(interactionStep.parent_interaction_id)
+    const question = await getExternalQuestionIdByInteractionStepId(interactionStep.parent_interaction_id)
+    if (!question) throw new Error('Could not retrieve the mapped OSDI question id.')
     const body = {
       canvass: {
         action_date: (new Date()).toISOString(),
@@ -57,12 +59,16 @@ export async function processAction(questionResponse, interactionStep, campaignC
         }
       ]
     }
-    console.log('request body is', body)
+    console.log('request body is', JSON.stringify(body))
     const client = axios.create({
       baseURL: osdiApiUrl,
       headers: { 'OSDI-Api-Token': osdiApiToken }
     })
     client.post(`/people/${external_id}/record_canvass_helper/`, body)
+    .then(res => {
+      console.log(res)
+    })
+    .catch(console.error)
 
     // await r.knex('campaign_contact')
     //   .where('id', campaignContactId)
