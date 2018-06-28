@@ -61,21 +61,30 @@ export async function updateAssignments(campaignInfo) {
   const dynamicAssignment = campaignInfo.use_dynamic_assignment
   if (r.redis) {
     const texters = await r.knex('assignment')
-      .select('user_id')
+      .select('user_id', 'id')
       .where('campaign_id', campaignId)
 
     if (dynamicAssignment) {
       for (let i = 0; i < texters.length; i++) {
-        let dynamicAssignment = `dynamicassignments-${campaignId}`
-        await r.redis.lpush(dynamicAssignment)
+        // value is the actual assignments available for this campaign
+        let availableAssignments = ``
+        let dynamicAssignmentKey = `dynamicassignments-${campaignId}`
+        await r.redis.lpush(dynamicAssignmentKey, availableAssignments)
       }
     }
 
     if (!dynamicAssignment) {
       for (let i = 0; i < texters.length; i++) {
         let texterId = texters[i].user_id
-        let texterAssignment = `newassignments-${texterId}-${campaignId}`
-        await r.redis.lpush(texterAssignment)
+        let assignmentId = texters[i].id
+        let texterAssignmentKey = `newassignments-${texterId}-${campaignId}`
+        let texterAssignment = `textercontactslist`
+        const assignments = await r.knex('campaign_contact')
+          .where('assignment_id', assignmentId)
+
+        console.log('assignments for this texter:', JSON.stringify(assignments));
+        // value is the acutal assignment for a specific texter
+        await r.redis.lpush(texterAssignmentKey, texterAssignment)
       }
     }
   }
