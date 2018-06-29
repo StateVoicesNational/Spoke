@@ -9,3 +9,10 @@ Example of a validation statement:
 const url = await driver.getCurrentUrl()
 expect(url).toContain('www.example.com')
 ```
+
+Example of a jasmine block:
+```
+it('step description', async () => {
+  // Operations
+})
+```

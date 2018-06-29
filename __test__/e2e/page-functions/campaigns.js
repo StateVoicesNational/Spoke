@@ -1,4 +1,6 @@
 const { until } = require('selenium-webdriver')
+const path = require('path')
+const remote = require('selenium-webdriver/remote')
 // const helpers = require('./util/helpers')
 const pom = {}
 pom.campaign = require('../page-objects/campaigns')
@@ -38,6 +40,22 @@ module.exports = {
       const el = await driver.wait(until.elementLocated(pom.campaign.form.save), 10000)
       await driver.wait(until.elementIsVisible(el))
       await el.click()
+      // This should switch to the Contacts section
+    })
+
+    it('uploads Contacts csv', async () => {
+      await driver.setFileDetector(new remote.FileDetector()) // TODO: maybe this belongs earlier?
+      const el = await driver.wait(until.elementLocated(pom.campaign.form.contacts.input), 10000)
+      await el.sendKeys(path.resolve(__dirname, '../data/people.csv'))
+      await driver.sleep(5000) // TODO: Wait for upload confirmation / summary
+    })
+
+    it('clicks the save button', async () => {
+      const el = await driver.wait(until.elementLocated(pom.campaign.form.save), 10000)
+      await driver.wait(until.elementIsVisible(el))
+      await el.click()
+      // This should switch to the Texters section
+      await driver.sleep(5000)
     })
   }
 }
