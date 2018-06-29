@@ -4,6 +4,36 @@ import { Organization, Assignment, Campaign } from '../../../src/server/models'
 jest.mock('../../../src/lib/timezones.js')
 var timezones = require('../../../src/lib/timezones.js')
 
+describe('test getContacts builds queries correctly', () => {
+  var organization = new Organization({
+    texting_hours_enforced: false,
+    texting_hours_start: 9,
+    texting_hours_end: 14
+  })
+
+  var campaign = new Campaign({
+    due_by: new Date()
+  })
+
+  var assignment = new Assignment({
+    id: 1
+  })
+
+  beforeEach(() => {
+    timezones.getOffsets.mockReturnValueOnce([['-5_1'], ['-4_1']])
+  })
+
+  afterAll(() => {
+    jest.restoreAllMocks()
+  })
+
+  it('works with: no contacts filter', () => {
+    const query = getContacts(assignment, undefined, organization, campaign)
+  }) // it
+}) // describe
+
+// select * from "campaign_contact" where "assignment_id" = 1
+
 describe('test getContacts timezone stuff only', () => {
   var organization = new Organization({
     texting_hours_enforced: true,
