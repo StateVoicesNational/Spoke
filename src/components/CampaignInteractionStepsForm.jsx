@@ -247,7 +247,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
               hintText='A question for texters to answer. E.g. Can this person attend the event?'
             />
             {
-              this.props.osdiEnabled &&
+              this.props.availableActions.some(({ name }) => name === 'osdi-survey-question') &&
               <div>
                 You may also map a question from your connected OSDI system.
                 <CampaignOSDIQuestionFetcher organizationId={this.props.organizationId} mapQuestion={responses => this.mapOSDIQuestion(interactionStep.id, responses)} />
@@ -306,6 +306,5 @@ CampaignInteractionStepsForm.propTypes = {
   saveLabel: type.string,
   errors: type.array,
   availableActions: type.array,
-  organizationId: type.string.isRequired,
-  osdiEnabled: type.bool.isRequired
+  organizationId: type.string.isRequired
 }
