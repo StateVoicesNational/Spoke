@@ -10,6 +10,9 @@ const invite = require('./page-functions/invite')
 const campaigns = require('./page-functions/campaigns')
 
 describe('Basic text manager workflow', () => {
+  beforeAll(() => {
+    global.e2e = {}
+  })
   afterAll(async () => {
     await helpers.selenium.quitDriver(driver)
   })

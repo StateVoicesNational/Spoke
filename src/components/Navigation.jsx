@@ -20,7 +20,7 @@ const Navigation = function Navigation(props) {
         {sections.map((section) => (
           <ListItem
             key={section.name}
-            data-test={process.env.NODE_ENV !== 'production' && section.path}
+            {...(process.env.NODE_ENV !== 'production' && { 'data-test': section.path })}
             primaryText={section.name}
             onTouchTap={() => props.router.push(section.url)}
           />

@@ -73,6 +73,7 @@ export default class CampaignCannedResponsesForm extends React.Component {
     }
     return (
       <FlatButton
+        {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'newCannedResponse' })}
         secondary
         label='Add new canned response'
         icon={<CreateIcon />}

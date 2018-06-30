@@ -34,12 +34,14 @@ class CannedResponseForm extends React.Component {
           onSubmit={this.handleSave}
         >
           <Form.Field
+            {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'title' })}
             name='title'
             autoFocus
             fullWidth
             label='Title'
           />
           <Form.Field
+            {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'editorResponse' })}
             customFields={customFields}
             name='text'
             type='script'
@@ -49,6 +51,7 @@ class CannedResponseForm extends React.Component {
           />
           <div className={css(styles.buttonRow)}>
             <Form.Button
+              {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'addResponse' })}
               type='submit'
               label='Add Response'
               style={{
