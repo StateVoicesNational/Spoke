@@ -70,7 +70,7 @@ class CreateOrganization extends React.Component {
               }}
             >
               <Form.Field
-                id ='organization'
+                {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'organization' })}
                 name='name'
                 label='Your organization'
                 hintText='Bartlet Campaign'

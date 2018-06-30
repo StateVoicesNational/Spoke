@@ -54,21 +54,21 @@ export default class CampaignBasicsForm extends React.Component {
           onSubmit={this.props.onSubmit}
         >
           <Form.Field
-            data-test={process.env.NODE_ENV !== 'production' && 'title'}
+            {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'title' })}
             name='title'
             label='Title'
             hintText='e.g. Election Day 2016'
             fullWidth
           />
           <Form.Field
-            data-test={process.env.NODE_ENV !== 'production' && 'description'}
+            {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'description' })}
             name='description'
             label='Description'
             hintText='Get out the vote'
             fullWidth
           />
           <Form.Field
-            data-test={process.env.NODE_ENV !== 'production' && 'dueBy'}
+            {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'dueBy' })}
             name='dueBy'
             label='Due date'
             type='date'
@@ -79,14 +79,14 @@ export default class CampaignBasicsForm extends React.Component {
             utcOffset={0}
           />
           <Form.Field
-            data-test={process.env.NODE_ENV !== 'production' && 'introHtml'}
+            {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'introHtml' })}
             name='introHtml'
             label='Intro HTML'
             multiLine
             fullWidth
           />
           <Form.Field
-            data-test={process.env.NODE_ENV !== 'production' && 'logoImageUrl'}
+            {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'logoImageUrl' })}
             name='logoImageUrl'
             label='Logo Image URL'
             hintText='https://www.mysite.com/images/logo.png'
@@ -94,7 +94,7 @@ export default class CampaignBasicsForm extends React.Component {
           />
           <label>Primary color</label>
           <Form.Field
-            data-test={process.env.NODE_ENV !== 'production' && 'primaryColor'}
+            {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'primaryColor' })}
             name='primaryColor'
             label='Primary color'
             defaultValue={this.props.formValues.primaryColor || '#ffffff'}

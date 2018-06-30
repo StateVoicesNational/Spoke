@@ -18,6 +18,7 @@ const OrganizationJoinLink = ({ organizationUuid, campaignId }) => {
         Send your texting volunteers this link! Once they sign up, they'll be automatically assigned to this campaign.
       </div>
       <TextField
+        {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'joinUrl' })}
         value={joinUrl}
         autoFocus
         onFocus={(event) => event.target.select()}

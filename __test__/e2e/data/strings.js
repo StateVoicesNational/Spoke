@@ -17,6 +17,16 @@ module.exports = {
       introHtml: '', // TODO
       logoImageUrl: '', // TODO
       primaryColor: '' // TODO
-    }
+    },
+    interaction: {
+      script: 'Test First {firstName} Last {lastName}!',
+      question: 'Test Question?'
+    },
+    cannedResponses: [
+      {
+        title: 'Test CR0',
+        script: 'Test CR First {firstName} Last {lastName}.'
+      }
+    ]
   }
 }

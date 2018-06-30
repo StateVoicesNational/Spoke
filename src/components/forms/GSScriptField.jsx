@@ -53,10 +53,12 @@ export default class GSScriptField extends GSFormField {
         style={styles.dialog}
         actions={[
           <FlatButton
+            {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'scriptCancel' })}
             label='Cancel'
             onTouchTap={this.handleCloseDialog}
           />,
           <RaisedButton
+            {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'scriptDone' })}
             label='Done'
             onTouchTap={this.handleSaveScript}
             primary
@@ -67,6 +69,7 @@ export default class GSScriptField extends GSFormField {
         onRequestClose={this.handleCloseDialog}
       >
         <ScriptEditor
+          {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'editor' })} // TODO: Remove?
           expandable
           ref='dialogScriptInput'
           scriptText={this.state.script}

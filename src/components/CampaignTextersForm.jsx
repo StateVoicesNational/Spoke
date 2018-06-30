@@ -438,6 +438,7 @@ export default class CampaignTextersForm extends React.Component {
         />
         <div>
           <Toggle
+            {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'useDynamicAssignment' })}
             label='Dynamically assign contacts'
             toggled={this.state.useDynamicAssignment}
             onToggle={this.handleToggleChange.bind(this)}
