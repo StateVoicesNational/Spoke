@@ -1424,7 +1424,8 @@ const rootResolvers = {
         offset: cursor.offset,
         //next: offsetLimitCursor.next,
         //previous: offsetLimitCursor.previous,
-        total: conversationsCountArray[0].count
+        // total: conversationsCountArray[0].count,
+        total: conversationsCountArray[0]['count(*)']
       }
 
       return {
