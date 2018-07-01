@@ -15,6 +15,10 @@ describe('test getContacts builds queries correctly', () => {
     due_by: new Date()
   })
 
+  const past_due_campaign = new Campaign({
+    due_by: new Date().setFullYear(new Date().getFullYear() - 1)
+  })
+
   var assignment = new Assignment({
     id: 1
   })
@@ -29,10 +33,82 @@ describe('test getContacts builds queries correctly', () => {
 
   it('works with: no contacts filter', () => {
     const query = getContacts(assignment, undefined, organization, campaign)
+    expect(query.toString()).toBe(
+      'select * from "campaign_contact" where "assignment_id" = 1 order by message_status DESC, updated_at'
+    )
+  }) // it
+
+  it('works with: contacts filter, include past due, message status', () => {
+    const query = getContacts(assignment, { includePastDue: true }, organization, campaign)
+    expect(query.toString()).toBe(
+      'select * from "campaign_contact" where "assignment_id" = 1 and "message_status" in (\'needsResponse\', \'needsMessage\') order by message_status DESC, updated_at'
+    )
+  }) // it
+
+  it('works with: contacts filter, exclude past due, message status needsMessageOrResponse', () => {
+    const query = getContacts(
+      assignment,
+      { messageStatus: 'needsMessageOrResponse' },
+      organization,
+      campaign
+    )
+    expect(query.toString()).toBe(
+      'select * from "campaign_contact" where "assignment_id" = 1 and "message_status" in (\'needsResponse\', \'needsMessage\') order by message_status DESC, updated_at'
+    )
+  }) // it
+
+  it('works with: contacts filter, exclude past due, campaign is past due, message status needsMessage', () => {
+    const query = getContacts(
+      assignment,
+      { messageStatus: 'needsMessage' },
+      organization,
+      past_due_campaign
+    )
+    expect(query.toString()).toBe(
+      'select * from "campaign_contact" where "assignment_id" = 1 and "message_status" = \'\' order by message_status DESC, updated_at'
+    )
+  }) // it
+
+  it('works with: contacts filter, exclude past due, message status one other', () => {
+    const query = getContacts(assignment, { messageStatus: 'convo' }, organization, campaign)
+    expect(query.toString()).toBe(
+      'select * from "campaign_contact" where "assignment_id" = 1 and "message_status" = \'convo\' order by message_status DESC, updated_at'
+    )
+  }) // it
+
+  it('works with: contacts filter, exclude past due, message status multiple other', () => {
+    const query = getContacts(
+      assignment,
+      { messageStatus: 'convo,messageReceived' },
+      organization,
+      campaign
+    )
+    expect(query.toString()).toBe(
+      'select * from "campaign_contact" where "assignment_id" = 1 and "message_status" in (\'convo\', \'messageReceived\') order by message_status DESC, updated_at'
+    )
+  }) // it
+
+  it('works with: contacts filter, exclude past due, no message status, campaign is past due', () => {
+    const query = getContacts(assignment, {}, organization, past_due_campaign)
+    expect(query.toString()).toBe(
+      'select * from "campaign_contact" where "assignment_id" = 1 and "message_status" = \'needsResponse\' order by message_status DESC, updated_at'
+    )
+  }) // it
+
+  it('works with: contacts filter, exclude past due, no message status, campaign not past due', () => {
+    const query = getContacts(assignment, {}, organization, campaign)
+    expect(query.toString()).toBe(
+      'select * from "campaign_contact" where "assignment_id" = 1 and "message_status" in (\'needsResponse\', \'needsMessage\') order by message_status DESC, updated_at'
+    )
+  }) // it
+
+  it('works with: forCount, contacts filter, exclude past due, no message status, campaign not past due', () => {
+    const query = getContacts(assignment, {}, organization, campaign, true)
+    expect(query.toString()).toBe(
+      'select * from "campaign_contact" where "assignment_id" = 1 and "message_status" in (\'needsResponse\', \'needsMessage\')'
+    )
   }) // it
 }) // describe
-
-// select * from "campaign_contact" where "assignment_id" = 1
 
 describe('test getContacts timezone stuff only', () => {
   var organization = new Organization({

@@ -36,8 +36,7 @@ export default class GCDateField extends GSFormField {
               newDate.minutes = oldDate.minutes
               newDate.seconds = oldDate.seconds
             }
-            newDate = moment(newDate)
-              .add(moment().utcOffset() - this.props.utcOffset, 'minutes')
+            newDate = moment(newDate).add(moment().utcOffset() - this.props.utcOffset, 'minutes')
             this.props.onChange(newDate.toDate())
           }
         }}
