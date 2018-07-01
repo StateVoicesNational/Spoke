@@ -459,6 +459,7 @@ class AdminCampaignEdit extends React.Component {
             />
           )}
           <RaisedButton
+            {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'startCampaign' })}
             primary
             label='Start This Campaign!'
             disabled={!isCompleted}
