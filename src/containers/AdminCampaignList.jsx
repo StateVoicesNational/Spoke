@@ -75,7 +75,7 @@ class AdminCampaignList extends React.Component {
 
         {adminPerms ?
           (<FloatingActionButton
-            {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'add-campaign' })}
+            {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'addCampaign' })}
             style={theme.components.floatingButton}
             onTouchTap={this.handleClickNewButton}
           >

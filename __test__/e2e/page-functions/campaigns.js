@@ -126,6 +126,7 @@ module.exports = {
       el = await driver.wait(until.elementLocated(pom.campaign.form.cannedResponse.cancel), 10000)
       await driver.wait(until.elementIsVisible(el))
       await el.click()
+      await driver.sleep(3000) // Wait for script dialog to transition away
       // Submit Response
       el = await driver.wait(until.elementLocated(pom.campaign.form.cannedResponse.submit), 10000)
       await driver.wait(until.elementIsVisible(el))
@@ -135,8 +136,11 @@ module.exports = {
       await el.click()
     })
 
-    it('clicks start campaign', async () => {
-      // TODO
+    it('clicks Start Campaign', async () => {
+      const el = await driver.wait(until.elementLocated(pom.campaign.start), 10000)
+      await driver.wait(until.elementIsVisible(el))
+      await el.click()
+      // TODO: Verify using the confirmation message?
     })
   }
 }

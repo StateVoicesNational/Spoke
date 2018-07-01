@@ -1,7 +1,8 @@
 const { By } = require('selenium-webdriver')
 
 module.exports = {
-  add: By.css('[data-test=add-campaign]'),
+  add: By.css('[data-test=addCampaign]'),
+  start: By.css('[data-test=startCampaign]'),
   form: {
     basics: {
       // TODO: These have 'name' attributes
