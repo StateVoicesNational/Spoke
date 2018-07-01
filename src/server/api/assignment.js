@@ -51,7 +51,7 @@ export function addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDu
   return query
 }
 
-export function getContacts(assignment, contactsFilter, organization, campaign) {
+export function getContacts(assignment, contactsFilter, organization, campaign, forCount = false) {
   // / returns list of contacts eligible for contacting _now_ by a particular user
   const textingHoursEnforced = organization.texting_hours_enforced
   const textingHoursStart = organization.texting_hours_start
@@ -104,9 +104,7 @@ export function getContacts(assignment, contactsFilter, organization, campaign) 
         if (pastDue && contactsFilter.messageStatus === 'needsMessage') {
           query = addWhereClauseForMessageStatus(query, '') // stops finding anything after pastDue
         } else if (contactsFilter.messageStatus === 'needsMessageOrResponse') {
-          query = addWhereClauseForNeedsMessageOrResponse(query).orderByRaw(
-            'message_status DESC, updated_at'
-          )
+          query = addWhereClauseForNeedsMessageOrResponse(query)
         } else {
           query = addWhereClauseForMessageStatus(query, contactsFilter.messageStatus)
         }
@@ -126,6 +124,12 @@ export function getContacts(assignment, contactsFilter, organization, campaign) 
     }
   }
 
+  if (!forCount) {
+    query = query.orderByRaw(
+      'message_status DESC, updated_at'
+    )
+  }
+
   return query
 }
 
@@ -139,7 +143,7 @@ export const resolvers = {
 
       const organization = await r.table('organization').get(campaign.organization_id)
 
-      return await r.getCount(getContacts(assignment, contactsFilter, organization, campaign))
+      return await r.getCount(getContacts(assignment, contactsFilter, organization, campaign, true))
     },
     contacts: async (assignment, { contactsFilter }) => {
       const campaign = await r.table('campaign').get(assignment.campaign_id)
