@@ -65,19 +65,12 @@ class IncomingMessageFilter extends Component {
     })
 
     const messageStatusesString = Array.from(messageStatuses).join(',')
-    if (this.props.onMessageFilterChanged !== undefined &&
-        typeof this.props.onMessageFilterChanged === 'function') {
-      this.props.onMessageFilterChanged(messageStatusesString)
-    }
+    this.props.onMessageFilterChanged(messageStatusesString)
   }
 
   onCampaignSelectChanged(event, index, value) {
     this.setState({ campaignFilter: value })
-
-    if (this.props.onCampaignChanged !== undefined &&
-        typeof this.props.onCampaignChanged === 'function') {
-      this.props.onCampaignChanged(value)
-    }
+    this.props.onCampaignChanged(value)
   }
 
   render() {
@@ -136,9 +129,9 @@ class IncomingMessageFilter extends Component {
 }
 
 IncomingMessageFilter.propTypes = {
-  onCampaignChanged: type.func,
-  campaigns: type.array,
-  onMessageFilterChanged: type.func
+  onCampaignChanged: type.func.isRequired,
+  campaigns: type.array.isRequired,
+  onMessageFilterChanged: type.func.isRequired
 }
 
 export default IncomingMessageFilter
