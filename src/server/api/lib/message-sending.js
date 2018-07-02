@@ -25,13 +25,16 @@ export async function saveNewIncomingMessage(messageInstance) {
 
   // Handle MMS
   const mediaUrls = []
-  const serviceResponses = JSON.parse(messageInstance.service_response)
+  let serviceResponses = JSON.parse(messageInstance.service_response)
+  if (!Array.isArray(serviceResponses)) {
+    serviceResponses = [serviceResponses]
+  }
   serviceResponses.forEach(response => {
     const mediaUrlKeys = Object.keys(response).filter(key => key.startsWith('MediaUrl'))
     mediaUrlKeys.forEach(key => mediaUrls.push(response[key]))
   })
   if (mediaUrls.length > 0) {
-    const warningText = 'This message contains multimedia attachments. Open the following attachments AT YOUR OWN RISK.'
+    const warningText = 'This message contains multimedia attachments:'
     mediaUrls.unshift(warningText)
     const mediaText = mediaUrls.join('\n\n')
 

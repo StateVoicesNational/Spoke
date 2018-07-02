@@ -146,3 +146,22 @@ export const convertRowToContact = (row) => {
   contact.customFields = customFields
   return contact
 }
+
+// From: https://stackoverflow.com/a/23945027
+export const extractHostname = (url) => {
+  let hostname = ''
+
+  // Find and remove protocol (http, ftp, etc.) and get hostname
+  if (url.indexOf('://') > -1) {
+    hostname = url.split('/')[2]
+  } else {
+    hostname = url.split('/')[0]
+  }
+
+  // Find and remove port number
+  hostname = hostname.split(':')[0]
+  // Find and remove "?"
+  hostname = hostname.split('?')[0]
+
+  return hostname
+}
