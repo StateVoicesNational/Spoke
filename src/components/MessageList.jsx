@@ -39,7 +39,6 @@ class MessageList extends React.Component {
 
     this.handleOpenLink = this.handleOpenLink.bind(this)
     this.handleCloseLink = this.handleCloseLink.bind(this)
-    this.textDecorator = this.textDecorator.bind(this)
     this.componentDecorator = this.componentDecorator.bind(this)
   }
 
@@ -53,16 +52,11 @@ class MessageList extends React.Component {
     this.setState({ activeLink: null })
   }
 
-  textDecorator(href) {
-    return extractHostname(href)
-  }
-
   componentDecorator(decoratedHref, decoratedText, key) {
-    console.log('DECORATOR')
     return (
       <span key={key}>
         [Link:
-        <a href={decoratedHref} onClick={this.handleOpenLink} target='blank'>
+        <a href={decoratedHref} onClick={this.handleOpenLink}>
           {decoratedText}
         </a>]
       </span>
@@ -93,10 +87,10 @@ class MessageList extends React.Component {
         onClick={this.handleCloseLink}
       />,
       <FlatButton
+        href={this.state.activeLink || ''}
+        target='_blank'
         label='Open Link'
-        primary
-        disabled
-        onClick={this.handleCloseLink}
+        secondary
       />
     ]
 
@@ -110,8 +104,8 @@ class MessageList extends React.Component {
               key={message.id}
               primaryText={message.isFromContact ? (
                 <Linkify
+                  textDecorator={href => extractHostname(href)}
                   componentDecorator={this.componentDecorator}
-                  textDecorator={this.extractHostname}
                 >
                   {message.text}
                 </Linkify>
@@ -128,7 +122,7 @@ class MessageList extends React.Component {
           open={this.state.activeLink !== null}
         >
           You have clicked an external link sent by the contact, {contact.firstName}. Please check the URL below and open <b>AT YOUR OWN RISK</b>.
-          <br />
+          <br /><br />
           {this.state.activeLink}
         </Dialog>
       </div>
