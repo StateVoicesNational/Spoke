@@ -29,6 +29,29 @@ function webhook() {
   }
 }
 
+async function includeMMS(messageInstance) {
+  const mediaUrls = []
+  let serviceResponses = JSON.parse(messageInstance.service_response)
+  if (!Array.isArray(serviceResponses)) {
+    serviceResponses = [serviceResponses]
+  }
+  serviceResponses.forEach(response => {
+    const mediaUrlKeys = Object.keys(response).filter(key => key.startsWith('MediaUrl'))
+    mediaUrlKeys.forEach(key => mediaUrls.push(response[key]))
+  })
+  if (mediaUrls.length > 0) {
+    const warningText = 'This message contains multimedia attachments:'
+    mediaUrls.unshift(warningText)
+    const mediaText = mediaUrls.join('\n\n')
+
+    if (messageInstance.text === '') {
+      messageInstance.text = mediaText
+    } else {
+      messageInstance.text = `${messageInstance.text}\n\n${mediaText}`
+    }
+  }
+}
+
 async function convertMessagePartsToMessage(messageParts) {
   const firstPart = messageParts[0]
   const userNumber = firstPart.user_number
@@ -41,7 +64,7 @@ async function convertMessagePartsToMessage(messageParts) {
   const lastMessage = await getLastMessage({
     contactNumber
   })
-  return new Message({
+  let message = new Message({
     contact_number: contactNumber,
     user_number: userNumber,
     is_from_contact: true,
@@ -52,6 +75,8 @@ async function convertMessagePartsToMessage(messageParts) {
     service: 'twilio',
     send_status: 'DELIVERED'
   })
+  message = await includeMMS(message)
+  return message
 }
 
 async function findNewCell() {

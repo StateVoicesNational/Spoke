@@ -23,28 +23,6 @@ export async function saveNewIncomingMessage(messageInstance) {
     }
   }
 
-  // Handle MMS
-  const mediaUrls = []
-  let serviceResponses = JSON.parse(messageInstance.service_response)
-  if (!Array.isArray(serviceResponses)) {
-    serviceResponses = [serviceResponses]
-  }
-  serviceResponses.forEach(response => {
-    const mediaUrlKeys = Object.keys(response).filter(key => key.startsWith('MediaUrl'))
-    mediaUrlKeys.forEach(key => mediaUrls.push(response[key]))
-  })
-  if (mediaUrls.length > 0) {
-    const warningText = 'This message contains multimedia attachments:'
-    mediaUrls.unshift(warningText)
-    const mediaText = mediaUrls.join('\n\n')
-
-    if (messageInstance.text === '') {
-      messageInstance.text = mediaText
-    } else {
-      messageInstance.text = `${messageInstance.text}\n\n${mediaText}`
-    }
-  }
-
   await messageInstance.save()
 
   await r.table('campaign_contact')
