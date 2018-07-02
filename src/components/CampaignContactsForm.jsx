@@ -131,8 +131,9 @@ export default class CampaignContactsForm extends React.Component {
         <ListItem
           primaryText={`${customFields.length} custom fields`}
           leftIcon={checkIcon}
-          nestedItems={customFields.map((field) => (
+          nestedItems={customFields.map((field, index) => (
             <ListItem
+              key={index}
               innerDivStyle={innerStyles.nestedItem}
               primaryText={field}
             />
@@ -161,8 +162,9 @@ export default class CampaignContactsForm extends React.Component {
     return (
       <List>
         <Divider />
-        {stats.map((stat) => (
+        {stats.map((stat, index) => (
           <ListItem
+            key={index}
             leftIcon={warningIcon}
             innerDivStyle={innerStyles.nestedItem}
             primaryText={stat}
