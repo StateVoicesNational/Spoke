@@ -104,7 +104,11 @@ class AdminPersonList extends React.Component {
                     />
                   ))}
                 </DropDownMenu>
-                <FlatButton label='Edit' onTouchTap={() => { this.editUser(person.id) }} />
+                <FlatButton
+                  label='Edit'
+                  {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'editPerson' })}
+                  onTouchTap={() => { this.editUser(person.id) }}
+                />
               </TableRowColumn>
             </TableRow>
           ))}
@@ -120,12 +124,14 @@ class AdminPersonList extends React.Component {
       <div>
         {this.renderTexters()}
         <FloatingActionButton
+          {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'addPerson' })}
           style={theme.components.floatingButton}
           onTouchTap={this.handleOpen}
         >
           <ContentAdd />
         </FloatingActionButton>
         <Dialog
+          {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'editPersonDialog' })}
           title='Edit user'
           modal={false}
           open={Boolean(this.state.userEdit)}
@@ -141,6 +147,7 @@ class AdminPersonList extends React.Component {
           title='Invite new texters'
           actions={[
             <FlatButton
+              {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'inviteOk' })}
               label='OK'
               primary
               onTouchTap={this.handleClose}
