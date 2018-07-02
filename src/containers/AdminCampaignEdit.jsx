@@ -187,7 +187,7 @@ class AdminCampaignEdit extends React.Component {
             cell: contact.cell,
             firstName: contact.firstName,
             lastName: contact.lastName,
-            zip: contact.zip,
+            zip: contact.zip || '',
             external_id: contact.external_id || ''
           }
           Object.keys(contact).forEach((key) => {
