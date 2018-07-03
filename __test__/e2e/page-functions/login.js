@@ -1,14 +1,32 @@
 const { until } = require('selenium-webdriver')
 const config = require('../util/config')
-// const helpers = require('./util/helpers')
+import { wait } from '../util/helpers'
 
-// Place the page objects into a parent objectÍ
+// Place the page objects into a parent object
 const pom = {}
 pom.login = require('../page-objects/login')
 // For legibility
 const auth0 = pom.login.auth0
 
 module.exports = {
+  landing(driver) {
+    it('gets the landing page', async () => {
+      await driver.get(config.baseUrl)
+    })
+
+    it('clicks the login link', async () => {
+      // Click on the login button
+      wait.untilLocated(driver, pom.login.loginGetStarted, 30000)
+      await driver.sleep(2000) // Wait for the transition, which is sometimes a problem.
+      wait.andClick(driver, pom.login.loginGetStarted)
+
+      // Wait until the Auth0 login page loads
+      const loginUrl = `${config.baseUrl}/login`
+      await driver.wait(until.urlContains(loginUrl))
+      const url = await driver.getCurrentUrl()
+      expect(url).toContain(loginUrl)
+    })
+  },
   signUp(driver, user) {
     it('gets the landing page', async () => {
       await driver.get(config.baseUrl)
@@ -16,9 +34,7 @@ module.exports = {
 
     it('clicks the login link', async () => {
       // Click on the login button
-      const el = await driver.wait(until.elementLocated(pom.login.loginGetStarted, 20000))
-      await driver.wait(until.elementIsVisible(el))
-      await el.click()
+      wait.andClick(driver, pom.login.loginGetStarted)
 
       // Wait until the Auth0 login page loads
       const loginUrl = `${config.baseUrl}/login`
@@ -28,9 +44,7 @@ module.exports = {
     })
 
     it('opens the Sign Up tab', async () => {
-      const el = await driver.wait(until.elementLocated(auth0.tabs.signIn, 20000))
-      await driver.wait(until.elementIsVisible(el))
-      await el.click()
+      wait.andClick(driver, auth0.tabs.signIn, 20000)
     })
 
     it('fills in the new user details', async () => {
@@ -70,43 +84,19 @@ module.exports = {
     })
   },
   logIn(driver, user) {
-    it('gets the landing page', async () => {
-      await driver.get(config.baseUrl)
-    })
-
-    it('clicks the login link', async () => {
-      // Click on the login button
-      const el = await driver.wait(until.elementLocated(pom.login.loginGetStarted, 10000))
-      await driver.wait(until.elementIsVisible(el))
-      await el.click()
-
-      // Wait until the Auth0 login page loads
-      const loginUrl = `${config.baseUrl}/login`
-      await driver.wait(until.urlContains(loginUrl))
-      const url = await driver.getCurrentUrl()
-      expect(url).toContain(loginUrl)
-    })
+    this.landing(driver)
 
     it('opens the Log In tab', async () => {
-      const el = await driver.wait(until.elementLocated(auth0.tabs.logIn, 10000))
-      await driver.wait(until.elementIsVisible(el))
-      await el.click()
+      await wait.andClick(driver, auth0.tabs.logIn, 20000)
     })
 
     it('fills in the existing user details', async () => {
-      let el
-      el = await driver.wait(until.elementLocated(auth0.form.email))
-      await driver.wait(until.elementIsVisible(el))
-      await el.clear()
-      await el.sendKeys(user.email)
-      el = await driver.findElement(auth0.form.password)
-      await el.clear()
-      await el.sendKeys(user.password)
+      await wait.andType(driver, auth0.form.email, user.email)
+      await wait.andType(driver, auth0.form.password, user.password)
     })
 
     it('clicks the submit button', async () => {
-      const el = await driver.findElement(auth0.form.submit)
-      await el.click()
+      await wait.andClick(driver, auth0.form.submit)
     })
   }
 }

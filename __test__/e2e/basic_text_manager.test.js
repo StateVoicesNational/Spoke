@@ -1,10 +1,10 @@
 // const { until } = require('selenium-webdriver')
 // const config = require('./util/config')
-const helpers = require('./util/helpers')
+import { selenium } from './util/helpers'
 // const pom = require('./pom/login')
 const strings = require('./data/strings')
 
-const driver = helpers.selenium.buildDriver()
+const driver = selenium.buildDriver()
 const login = require('./page-functions/login')
 const invite = require('./page-functions/invite')
 const campaigns = require('./page-functions/campaigns')
@@ -14,7 +14,7 @@ describe('Basic text manager workflow', () => {
     global.e2e = {}
   })
   afterAll(async () => {
-    await helpers.selenium.quitDriver(driver)
+    await selenium.quitDriver(driver)
   })
   // Skip in CI tests, but useful for setting up existing admin
   xdescribe('Sign Up a new admin to Spoke', () => {

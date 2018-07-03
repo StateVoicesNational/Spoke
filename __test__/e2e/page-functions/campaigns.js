@@ -1,28 +1,21 @@
 const { until } = require('selenium-webdriver')
 const path = require('path')
 const remote = require('selenium-webdriver/remote')
-// const helpers = require('./util/helpers')
+import { wait } from '../util/helpers'
 const pom = {}
 pom.campaign = require('../page-objects/campaigns')
 
 module.exports = {
   startCampaign(driver, campaign) {
     it('clicks the + button to add a new campaign', async () => {
-      const el = await driver.wait(until.elementLocated(pom.campaign.add), 10000)
-      await driver.wait(until.elementIsVisible(el))
-      await el.click()
+      await wait.andClick(driver, pom.campaign.add)
     })
 
     it('completes the Basics section', async () => {
       // Title
-      let el = await driver.wait(until.elementLocated(pom.campaign.form.basics.title), 10000)
-      await driver.wait(until.elementIsVisible(el))
-      await el.clear()
-      await el.sendKeys(campaign.basics.title)
+      await wait.andType(driver, pom.campaign.form.basics.title, campaign.basics.title)
       // Description
-      el = await driver.findElement(pom.campaign.form.basics.description)
-      await el.clear()
-      await el.sendKeys(campaign.basics.description)
+      await wait.andType(driver, pom.campaign.form.basics.description, campaign.basics.description)
       // Select a Due Date using the Date Picker
       /**
        * Date Picker Notes:
@@ -30,31 +23,23 @@ module.exports = {
        * await driver.executeScript('document.getElementsByName("dueBy")[0].setAttribute("value","10 Jan 2019")')
        * Similarly, a sleep is added because it's difficult to know when the picker dialog is gone.
        */
-      el = await driver.findElement(pom.campaign.form.basics.dueBy)
-      await el.click()
-      el = await driver.wait(until.elementLocated(pom.campaign.form.datePickerDialog.nextMonth), 10000)
-      await driver.wait(until.elementIsVisible(el))
-      await el.click()
-      el = await driver.wait(until.elementLocated(pom.campaign.form.datePickerDialog.enabledDate), 10000)
-      await driver.wait(until.elementIsVisible(el))
-      await el.click()
+      await wait.andClick(driver, pom.campaign.form.basics.dueBy)
+      await wait.andClick(driver, pom.campaign.form.datePickerDialog.nextMonth)
+      await driver.sleep(1000) // Transition
+      await wait.andClick(driver, pom.campaign.form.datePickerDialog.enabledDate)
       await driver.sleep(3000)
       // Save
-      el = await driver.wait(until.elementLocated(pom.campaign.form.save), 10000)
-      await driver.wait(until.elementIsVisible(el))
-      await el.click()
+      await wait.andClick(driver, pom.campaign.form.save)
       // This should switch to the Contacts section
     })
 
     it('completes the Contacts section', async () => {
       await driver.setFileDetector(new remote.FileDetector()) // TODO: maybe this belongs earlier?
-      let el = await driver.wait(until.elementLocated(pom.campaign.form.contacts.input), 10000)
-      await el.sendKeys(path.resolve(__dirname, '../data/people.csv'))
+      const el = await driver.wait(until.elementLocated(pom.campaign.form.contacts.input), 10000)
+      await el.sendKeys(path.resolve(__dirname, '../data/people.csv')) // TODO: Belongs in campaign strings
       // TODO: Wait for upload confirmation / summary
       // Save
-      el = await driver.wait(until.elementLocated(pom.campaign.form.save), 10000)
-      await driver.wait(until.elementIsVisible(el))
-      await el.click()
+      await wait.andClick(driver, pom.campaign.form.save)
       // This should switch to the Texters section
     })
 
@@ -67,79 +52,51 @@ module.exports = {
       await driver.wait(until.elementIsVisible(el))
       global.e2e.joinUrl = await el.getAttribute('value')
       // Save
-      el = await driver.wait(until.elementLocated(pom.campaign.form.save), 10000)
-      await driver.wait(until.elementIsVisible(el))
-      await el.click()
+      await wait.andClick(driver, pom.campaign.form.save)
       // This should switch to the Interactions section
     })
 
     it('completes the Interactions section', async () => {
       // Script
-      let el = await driver.wait(until.elementLocated(pom.campaign.form.interactions.editorLaunch), 10000)
-      await driver.wait(until.elementIsVisible(el))
-      await el.click()
-      el = await driver.wait(until.elementLocated(pom.campaign.form.interactions.editor), 10000)
+      await wait.andClick(driver, pom.campaign.form.interactions.editorLaunch)
+      const el = await driver.wait(until.elementLocated(pom.campaign.form.interactions.editor), 10000)
       await driver.wait(until.elementIsVisible(el))
       await el.click()
       await el.sendKeys(campaign.interaction.script)
-      el = await driver.wait(until.elementLocated(pom.campaign.form.interactions.done), 10000)
-      await driver.wait(until.elementIsVisible(el))
-      await el.click()
+      await wait.andClick(driver, pom.campaign.form.interactions.done)
       // Question
-      el = await driver.wait(until.elementLocated(pom.campaign.form.interactions.questionText), 10000)
-      await driver.wait(until.elementIsVisible(el))
-      await el.clear()
-      await el.sendKeys(campaign.interaction.question)
+      await wait.andType(driver, pom.campaign.form.interactions.questionText, campaign.interaction.question)
       // Save
-      el = await driver.wait(until.elementLocated(pom.campaign.form.interactions.submit), 10000)
-      await driver.wait(until.elementIsVisible(el))
-      await el.click()
+      await wait.andClick(driver, pom.campaign.form.interactions.submit)
       // This should switch to the Canned Responses section
     })
 
     it('completes the Canned Responses section', async () => {
       // Add New
-      let el = await driver.wait(until.elementLocated(pom.campaign.form.cannedResponse.addNew), 10000)
-      await driver.wait(until.elementIsVisible(el))
-      await el.click()
+      await wait.andClick(driver, pom.campaign.form.cannedResponse.addNew)
       // Title
-      el = await driver.wait(until.elementLocated(pom.campaign.form.cannedResponse.title), 10000)
-      await driver.wait(until.elementIsVisible(el))
-      await el.clear()
-      await el.sendKeys(campaign.cannedResponses[0].title)
+      await wait.andType(driver, pom.campaign.form.cannedResponse.title, campaign.cannedResponses[0].title)
       // Script
-      el = await driver.wait(until.elementLocated(pom.campaign.form.cannedResponse.editorLaunch), 10000)
-      await driver.wait(until.elementIsVisible(el))
-      await el.click()
-      el = await driver.wait(until.elementLocated(pom.campaign.form.cannedResponse.editor), 10000)
+      await wait.andClick(driver, pom.campaign.form.cannedResponse.editorLaunch)
+      const el = await driver.wait(until.elementLocated(pom.campaign.form.cannedResponse.editor), 10000)
       await driver.wait(until.elementIsVisible(el))
       await el.click()
       await el.sendKeys(campaign.cannedResponses[0].script)
-      el = await driver.wait(until.elementLocated(pom.campaign.form.cannedResponse.done), 10000)
-      await driver.wait(until.elementIsVisible(el))
-      await el.click()
+      await wait.andClick(driver, pom.campaign.form.cannedResponse.done)
       // Script - Relaunch and cancel (bug?)
       await driver.sleep(3000) // Wait for script dialog to transition away
-      el = await driver.wait(until.elementLocated(pom.campaign.form.cannedResponse.editorLaunch), 10000)
-      await driver.wait(until.elementIsVisible(el))
-      await el.click()
-      el = await driver.wait(until.elementLocated(pom.campaign.form.cannedResponse.cancel), 10000)
-      await driver.wait(until.elementIsVisible(el))
-      await el.click()
+      await wait.andClick(driver, pom.campaign.form.cannedResponse.editorLaunch)
+      await wait.andClick(driver, pom.campaign.form.cannedResponse.cancel)
       await driver.sleep(3000) // Wait for script dialog to transition away
       // Submit Response
-      el = await driver.wait(until.elementLocated(pom.campaign.form.cannedResponse.submit), 10000)
-      await driver.wait(until.elementIsVisible(el))
+      await wait.andClick(driver, pom.campaign.form.cannedResponse.submit)
       // Save
-      el = await driver.wait(until.elementLocated(pom.campaign.form.save), 10000)
-      await driver.wait(until.elementIsVisible(el))
-      await el.click()
+      await wait.andClick(driver, pom.campaign.form.save)
     })
 
     it('clicks Start Campaign', async () => {
-      const el = await driver.wait(until.elementLocated(pom.campaign.start), 10000)
-      await driver.wait(until.elementIsVisible(el))
-      await el.click()
+      await wait.andClick(driver, pom.campaign.start)
+      await driver.sleep(5000)
       // TODO: Verify using the confirmation message?
     })
   }
