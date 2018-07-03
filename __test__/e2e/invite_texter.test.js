@@ -1,12 +1,12 @@
 const { until } = require('selenium-webdriver')
 // const config = require('./util/config')
-const helpers = require('./util/helpers')
+import { selenium, wait } from './util/helpers'
 const strings = require('./data/strings')
 const pom = {}
 pom.navigation = require('./page-objects/navigation')
 pom.people = require('./page-objects/people')
 
-const driver = helpers.selenium.buildDriver()
+const driver = selenium.buildDriver()
 let driverTexter
 const login = require('./page-functions/login')
 const invite = require('./page-functions/invite')
@@ -17,7 +17,7 @@ describe('Basic text manager workflow', () => {
     global.e2e = {}
   })
   afterAll(async () => {
-    await helpers.selenium.quitDriver(driver)
+    await selenium.quitDriver(driver)
   })
   // Skip in CI tests, but useful for setting up existing admin
   xdescribe('Sign Up a new admin to Spoke', () => {
@@ -34,9 +34,7 @@ describe('Basic text manager workflow', () => {
 
   describe('Invite a new User', () => {
     it('opens the People tab', async () => {
-      const el = await driver.wait(until.elementLocated(pom.navigation.sections.people), 10000)
-      await driver.wait(until.elementIsVisible(el))
-      await el.click()
+      await wait.andClick(driver, pom.navigation.sections.people)
     })
 
     it('clicks on the + button to Invite a User', async () => {
@@ -59,11 +57,11 @@ describe('Basic text manager workflow', () => {
 
   describe('Follow the Invite URL', () => {
     beforeAll(() => {
-      driverTexter = helpers.selenium.buildDriver()
+      driverTexter = selenium.buildDriver()
     })
 
     afterAll(async () => {
-      await helpers.selenium.quitDriver(driverTexter)
+      await selenium.quitDriver(driverTexter)
     })
 
     it('should follow the link to the invite', async () => {
