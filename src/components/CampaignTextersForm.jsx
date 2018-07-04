@@ -351,11 +351,15 @@ export default class CampaignTextersForm extends React.Component {
           <div className={css(styles.assignedCount)}>
             {messagedCount}
           </div>
-          <div className={css(styles.nameColumn)}>
+          <div
+            {...(process.env.NODE_ENV !== 'production' && { 'data-test': `texters[${index}].name` })}
+            className={css(styles.nameColumn)}
+          >
             {this.getDisplayName(texter.id)}
           </div>
           <div className={css(styles.input)}>
             <Form.Field
+              {...(process.env.NODE_ENV !== 'production' && { 'data-test': `texters[${index}].assignment` })}
               name={`texters[${index}].assignment.needsMessageCount`}
               hintText='Contacts'
               fullWidth
@@ -454,6 +458,7 @@ export default class CampaignTextersForm extends React.Component {
           {this.showSearch()}
             <div>
               <RaisedButton
+                {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'addAll' })}
                 label='Add All'
                 onTouchTap={(() => this.addAllTexters())}
               />
@@ -474,6 +479,7 @@ export default class CampaignTextersForm extends React.Component {
                 className={css(styles.splitToggle)}
               >
                 <Toggle
+                  {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'autoSplit' })}
                   label='Split assignments'
                   style={{
                     width: 'auto',
