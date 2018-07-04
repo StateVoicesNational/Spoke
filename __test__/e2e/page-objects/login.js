@@ -13,7 +13,8 @@ module.exports = {
       family_name: By.css('div.auth0-lock-input-family_name > div > input'),
       cell: By.css('div.auth0-lock-input-cell > div > input'),
       agreement: By.css('span.auth0-lock-sign-up-terms-agreement > label > input'), // Checkbox
-      submit: By.css('button.auth0-lock-submit')
+      submit: By.css('button.auth0-lock-submit'),
+      error: By.css('div.auth0-global-message-error')
     },
     authorize: {
       allow: By.css('#allow')
