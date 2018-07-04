@@ -4,9 +4,14 @@ const remote = require('selenium-webdriver/remote')
 import { wait } from '../util/helpers'
 const pom = {}
 pom.campaign = require('../page-objects/campaigns')
+pom.navigation = require('../page-objects/navigation')
 
 module.exports = {
   startCampaign(driver, campaign) {
+    it('opens the Campaigns tab', async () => {
+      await wait.andClick(driver, pom.navigation.sections.campaigns)
+    })
+
     it('clicks the + button to add a new campaign', async () => {
       await wait.andClick(driver, pom.campaign.add)
     })
