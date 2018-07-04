@@ -18,11 +18,11 @@ describe('Basic text manager workflow', () => {
   })
   // Skip in CI tests, but useful for setting up existing admin
   xdescribe('Sign Up a new admin to Spoke', () => {
-    login.signUp(driver, strings.admin)
+    login.signUp(driver, strings.admins.admin0)
   })
 
   describe('Log In an existing admin to Spoke', () => {
-    login.logIn(driver, strings.admin)
+    login.tryLoginThenSignUp(driver, strings.admins.admin0)
   })
 
   describe('Create a New Organization / Team', () => {

@@ -21,11 +21,15 @@ describe('Basic text manager workflow', () => {
   })
   // Skip in CI tests, but useful for setting up existing admin
   xdescribe('Sign Up a new admin to Spoke', () => {
-    login.signUp(driver, strings.admin)
+    login.signUp(driver, strings.admins.admin0)
   })
 
-  describe('Log In an existing admin to Spoke', () => {
-    login.logIn(driver, strings.admin)
+  xdescribe('Log In an existing admin to Spoke', () => {
+    login.logIn(driver, strings.admins.admin0)
+  })
+
+  describe('Log In or Sign Up an admin to Spoke', () => {
+    login.tryLoginThenSignUp(driver, strings.admins.admin0)
   })
 
   describe('Create a New Organization / Team', () => {
@@ -65,8 +69,8 @@ describe('Basic text manager workflow', () => {
     })
 
     it('should follow the link to the invite', async () => {
-      await driver.get(global.e2e.joinUrl)
-      await driver.sleep(5000)
+      await driverTexter.get(global.e2e.joinUrl)
+      await driverTexter.sleep(5000)
     })
   })
 })
