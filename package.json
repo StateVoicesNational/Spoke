@@ -130,6 +130,7 @@
     "react-formal": "^0.28.4",
     "react-router": "^2.5.2",
     "react-router-redux": "^4.0.5",
+    "react-select": "^1.2.1",
     "redis": "^2.8.0",
     "redux": "^3.7.2",
     "redux-thunk": "^2.1.0",
