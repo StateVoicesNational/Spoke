@@ -268,9 +268,6 @@ const mapQueriesToProps = ({ ownProps }) => ({
               id
               title
             }
-            assignment {
-              id
-            }
           }
         }
       }
