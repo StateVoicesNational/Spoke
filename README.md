@@ -61,6 +61,9 @@ If you want to create an invite via the home page "Login and get started" link, 
 
 See https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO-run_tests.md
 
+## Big Thanks
+Cross-browser Testing Platform and Open Source <3 Provided by [Sauce Labs](https://saucelabs.com).
+
 ## Helpful Dev Tips
 * Run `sqlite3 mydb.sqlite` to connect to a SQL shell for the dev database
 * [Set up an ESLint plugin in your code editor so that you catch coding errors and follow code style guidelines more easily!](https://medium.com/planet-arkency/catch-mistakes-before-you-run-you-javascript-code-6e524c36f0c8#.oboqsse48)
