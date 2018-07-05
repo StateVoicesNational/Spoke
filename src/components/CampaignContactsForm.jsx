@@ -15,9 +15,9 @@ import theme from '../styles/theme'
 import { StyleSheet, css } from 'aphrodite'
 import yup from 'yup'
 
-const checkIcon = <CheckIcon style={{ fill: theme.colors.darkGreen }} />
-const warningIcon = <WarningIcon style={{ fill: theme.colors.orange }} />
-const errorIcon = <ErrorIcon style={{ fill: theme.colors.red }} />
+const checkIcon = <CheckIcon color={theme.colors.green} />
+const warningIcon = <WarningIcon color={theme.colors.orange} />
+const errorIcon = <ErrorIcon color={theme.colors.red} />
 
 const innerStyles = {
   button: {
@@ -127,13 +127,13 @@ export default class CampaignContactsForm extends React.Component {
         <ListItem
           primaryText={`${contactsCount} contacts`}
           leftIcon={checkIcon}
-          leftIconColor={theme.colors.green}
         />
         <ListItem
           primaryText={`${customFields.length} custom fields`}
           leftIcon={checkIcon}
-          nestedItems={customFields.map((field) => (
+          nestedItems={customFields.map((field, index) => (
             <ListItem
+              key={index}
               innerDivStyle={innerStyles.nestedItem}
               primaryText={field}
             />
@@ -162,8 +162,9 @@ export default class CampaignContactsForm extends React.Component {
     return (
       <List>
         <Divider />
-        {stats.map((stat) => (
+        {stats.map((stat, index) => (
           <ListItem
+            key={index}
             leftIcon={warningIcon}
             innerDivStyle={innerStyles.nestedItem}
             primaryText={stat}
