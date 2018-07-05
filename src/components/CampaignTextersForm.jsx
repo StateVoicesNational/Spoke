@@ -260,9 +260,10 @@ export default class CampaignTextersForm extends React.Component {
 
   formValues() {
     const unorderedTexters = this.props.formValues.texters
+    const texters = orderBy(unorderedTexters, ['firstName', 'lastName'], ['asc', 'asc'])
     return {
       ...this.props.formValues,
-      texters: orderBy(unorderedTexters, ['firstName', 'lastName'], ['asc', 'asc'])
+      texters
     }
   }
 
@@ -270,16 +271,10 @@ export default class CampaignTextersForm extends React.Component {
     const { orgTexters } = this.props
     const { texters } = this.formValues()
 
-    const dataSource = orgTexters
+    const options = orgTexters
       .filter((orgTexter) =>
         !texters.find((texter) => texter.id === orgTexter.id))
-      .map((orgTexter) =>
-          this.dataSourceItem(orgTexter.displayName,
-          orgTexter.id
-        )
-    )
-
-    const filter = (searchText, key) => ((key === 'allTexters') ? true : AutoComplete.caseInsensitiveFilter(searchText, key))
+      .map((orgTexter) => ({ value: orgTexter.id, label: orgTexter.displayName }))
 
     const autocomplete = (
       <AutoComplete
@@ -287,31 +282,23 @@ export default class CampaignTextersForm extends React.Component {
         style={inlineStyles.autocomplete}
         autoFocus
         onFocus={() => this.setState({ searchText: '' })}
-        onUpdateInput={(searchText) => this.setState({ searchText })}
-        searchText={this.state.searchText}
-        filter={filter}
-        hintText='Search for texters to assign'
-        dataSource={dataSource}
-        onNewRequest={(value) => {
-          // If you're searching but get no match, value is a string
-          // representing your search term, but we only want to handle matches
-          if (typeof value === 'object') {
-            const texterId = value.value.key
-            const newTexter = this.props.orgTexters.find((texter) => texter.id === texterId)
-            this.onChange({
-              texters: [
-                ...this.formValues().texters,
-                {
-                  id: texterId,
-                  firstName: newTexter.firstName,
-                  assignment: {
-                    contactsCount: 0,
-                    needsMessageCount: 0
-                  }
+        placeholder='Search for texters to assign'
+        options={options}
+        handleChange={(value) => {
+          const newTexter = this.props.orgTexters.find((texter) => texter.id === value)
+          this.onChange({
+            texters: [
+              ...this.formValues().texters,
+              {
+                id: texterId,
+                firstName: newTexter.firstName,
+                assignment: {
+                  contactsCount: 0,
+                  needsMessageCount: 0
                 }
-              ]
-            })
-          }
+              }
+            ]
+          })
         }}
       />
     )

@@ -175,12 +175,7 @@ class IntegrationReactSelect extends React.Component {
   }
 
   render() {
-    const { classes, placeholder, suggestions, fullWidth, handleChange } = this.props;
-
-    const options = suggestions.map(suggestion => ({
-      value: suggestion,
-      label: suggestion
-    }))
+    const { classes, placeholder, options, fullWidth, handleChange } = this.props;
 
     return (
       <div className={classes.root}>
@@ -207,7 +202,7 @@ class IntegrationReactSelect extends React.Component {
 IntegrationReactSelect.propTypes = {
   classes: types.object.isRequired,
   placeholder: types.string,
-  suggestions: types.array.isRequired,
+  options: types.array.isRequired,
   fullWidth: types.boolean,
   handleChange: types.func
 };
