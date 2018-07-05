@@ -1,7 +1,6 @@
 import React from 'react'
 import moment from 'moment'
-// TODO: material-ui
-import DatePicker from 'material-ui/DatePicker'
+import DatePicker from 'material-ui-pickers/DatePicker'
 
 import GSFormField from './GSFormField'
 

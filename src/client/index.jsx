@@ -2,6 +2,8 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import { Router, browserHistory } from 'react-router'
 import { syncHistoryWithStore } from 'react-router-redux'
+import MomentUtils from 'material-ui-pickers/utils/moment-utils'
+import MuiPickersUtilsProvider from 'material-ui-pickers/utils/MuiPickersUtilsProvider'
 import { StyleSheet } from 'aphrodite'
 import errorCatcher from './error-catcher'
 import makeRoutes from '../routes'
@@ -24,7 +26,9 @@ StyleSheet.rehydrate(window.RENDERED_CLASS_NAMES)
 
 ReactDOM.render(
   <ApolloProvider store={store.data} client={ApolloClientSingleton}>
-    <Router history={history} routes={makeRoutes()} />
+    <MuiPickersUtilsProvider utils={MomentUtils}>
+      <Router history={history} routes={makeRoutes()} />
+    </MuiPickersUtilsProvider>
   </ApolloProvider>,
   document.getElementById('mount')
 )
