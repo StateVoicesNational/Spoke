@@ -34,12 +34,16 @@ if (!DEBUG) {
   }))
 } else {
   plugins.push(new webpack.HotModuleReplacementPlugin())
-  jsxLoaders.unshift({loader: 'react-hot-loader'})
 }
 
 const config = {
   entry: {
-    bundle: ['babel-polyfill', './src/client/index.jsx']
+    bundle: [
+      'webpack-dev-server/client?http://127.0.0.1:3000',
+      'webpack/hot/only-dev-server',
+      'babel-polyfill',
+      './src/client/index.jsx'
+    ]
   },
   module: {
     rules: [

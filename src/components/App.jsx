@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types'
 import React from 'react'
+import { hot } from 'react-hot-loader'
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider'
 import muiTheme from '../styles/mui-theme'
 import theme from '../styles/theme'
@@ -38,4 +39,4 @@ App.propTypes = {
   children: PropTypes.object
 }
 
-export default App
+export default hot(module)(App)
