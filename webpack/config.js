@@ -26,8 +26,20 @@ if (!DEBUG) {
   plugins.push(new ManifestPlugin({
     fileName: assetMapFile
   }))
+  plugins.push(new webpack.optimize.OccurrenceOrderPlugin())
+  plugins.push(new webpack.optimize.DedupePlugin())
   plugins.push(new webpack.optimize.UglifyJsPlugin({
-    sourceMap: true
+    sourceMap: true,
+    compress: {
+      // warnings: false, // Suppress uglification warnings
+      pure_getters: true,
+      // unsafe: true,
+      // unsafe_comps: true,
+      screw_ie8: true
+    },
+    output: {
+      comments: false,
+    }
   }))
   plugins.push(new webpack.LoaderOptionsPlugin({
     minimize: true
