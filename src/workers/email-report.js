@@ -23,9 +23,7 @@ const SQL = (strings, ...values) => {
   try {
     const yesterday = moment().subtract(1, 'day').format('dddd, MMM Do')
     const allowedRoles = [
-      'OWNER',
-      'ADMIN',
-      'SUPERVOLUNTEER'
+      'OWNER'
     ]
 
     const users = await r.knex('user_organization')
@@ -52,7 +50,7 @@ const SQL = (strings, ...values) => {
         replies::int,
         total_texts::int,
         opt_outs::int,
-        ROUND((((texters * 1) / 30)  + (total_texts * .0075)), 2) AS cost,
+        ROUND((((texters * 1) / 30)  + ((total_texts) * .0075)), 2) AS cost,
         (SELECT array_to_json(array_agg(row_to_json(t))) FROM (
           SELECT campaign_id,
             question,
@@ -68,9 +66,13 @@ const SQL = (strings, ...values) => {
         INNER JOIN (
           SELECT campaign_id,
             COUNT(DISTINCT user_id) AS texters,
-            SUM(CASE WHEN is_from_contact = 'f' THEN 1 ELSE 0 END) AS texts_sent,
-            SUM(CASE WHEN is_from_contact = 't' THEN 1 ELSE 0 END) AS replies,
-            COUNT(*) AS total_texts,
+            COUNT(DISTINCT (
+              CASE WHEN m.is_from_contact = 'f' THEN m.id END
+            )) AS texts_sent,
+            COUNT(DISTINCT (
+              CASE WHEN m.is_from_contact = 't' THEN m.id END
+            )) AS replies,
+            COUNT(DISTINCT m.id) AS total_texts,
             COUNT(DISTINCT o.id) AS opt_outs
           FROM assignment AS a
           INNER JOIN message AS m ON m.assignment_id = a.id
@@ -80,13 +82,13 @@ const SQL = (strings, ...values) => {
           GROUP BY 1
         ) AS m ON m.campaign_id = c.id
         WHERE c.organization_id = ${orgId}
+        AND texts_sent::int > 0
       `))
 
       const userGroup = orgUserGroups[orgId]
       const orgName = userGroup[0].organization_name
 
-      let html = `<p>Hi ${userGroup[0].user_first_name},`
-        + 'there are no Spoke results to report for yesterday...</p>'
+      let html = `<p>There were no Spoke results to report for ${orgName} from ${yesterday}.</p>`
 
       if (campaignResults.length) {
         const campaignTables = campaignResults.map(({
@@ -96,7 +98,7 @@ const SQL = (strings, ...values) => {
           if (responses && responses.length) {
             const questionGroup = groupBy(responses, 'question')
             responseHTML = Object.keys(questionGroup).map((question) => (`
-              <div style="overflow-x:auto;width:100%">
+              <div style="width:100%;">
                 <div><b>Question:</b> ${question}</div>
                 <table style="font-size:11px">
                   <tr>
@@ -117,11 +119,11 @@ const SQL = (strings, ...values) => {
           }
 
           return (`
-            <div style="border: 2px solid #888;padding: 10px;border-radius: 3px">
+            <div style="margin-right:15px;padding:10px;border:2px solid #888;border-radius:3px;min-width:420px;max-width:700px">
               <div><b>${campaign}</b></div>
               <div><em>${description}</em></div>
               <br>
-              <table style="width:600px">
+              <table style="width:100%;">
                 <tr>
                   <th>Texters</th>
                   <th>Texts Sent</th>
@@ -159,7 +161,7 @@ const SQL = (strings, ...values) => {
 
         html = `
           <p>
-            Hi all, here are the Spoke texting results from ${yesterday} by campaign:
+            Hi all, here are the Spoke texting results by campaign for ${orgName} from ${yesterday}:
           </p>
           <br>
           <p>${campaignTables.join('<br><br><br>')}</p>
@@ -167,7 +169,7 @@ const SQL = (strings, ...values) => {
       }
 
       return sendEmail({
-        to: userGroup.map(u => `${u.user_first_name} ${u.user_email}`).join(', '),
+        to: userGroup.map(u => u.user_email).join(', '),
         subject: `Results for ${orgName} – ${yesterday}`,
         html
       })
