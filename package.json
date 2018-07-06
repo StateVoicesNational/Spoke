@@ -41,7 +41,8 @@
     "jest-test": "jest __test__/backend.test.js",
     "dev": "nf start -w --procfile ./dev-tools/Procfile.dev",
     "debug-server": "nf start -w --procfile ./dev-tools/Procfile-debug-server.dev",
-    "dev-other": "nf start -w --procfile ./dev-tools/Procfile-other.dev"
+    "dev-other": "nf start -w --procfile ./dev-tools/Procfile-other.dev",
+    "email-report": "babel-node src/workers/email-report.js ./dev-tools/babel-run"
   },
   "repository": {
     "type": "git",
