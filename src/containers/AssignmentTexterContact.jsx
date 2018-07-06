@@ -14,6 +14,7 @@ import Card from '@material-ui/core/Card'
 import CardHeader from '@material-ui/core/CardHeader'
 import CardActions from '@material-ui/core/CardActions'
 import Divider from '@material-ui/core/Divider'
+import CloseIcon from '@material-ui/icons/Close'
 import { applyScript } from '../lib/scripts'
 import gql from 'graphql-tag'
 import loadData from './hoc/load-data'
@@ -867,13 +868,29 @@ export class AssignmentTexterContact extends React.Component {
             {this.renderBottomFixedSection()}
           </div>
         </div>
-        {/* TODO: material-ui */}
         <Snackbar
           style={inlineStyles.snackbar}
           open={!!this.state.snackbarError}
           message={this.state.snackbarError || ''}
-          action={this.state.snackbarActionTitle}
-          onActionClick={this.state.snackbarOnClick}
+          action={[
+            <Button
+              key="snackbar-action"
+              color="secondary"
+              size="small"
+              onClick={this.state.snackbarOnClick}
+            >
+              {this.state.snackbarActionTitle}
+            </Button>,
+            <IconButton
+              key="close"
+              aria-label="Close"
+              color="inherit"
+              className={classes.close}
+              onClick={this.handleClose}
+            >
+              <CloseIcon />
+            </IconButton>
+          ]}
         />
       </div>
     )

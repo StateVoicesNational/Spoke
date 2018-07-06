@@ -43,9 +43,7 @@ class UserMenu extends Component {
     })
   }
 
-  // TODO: material-ui
-  // These should be moved inline per MenuItem
-  handleMenuChange = (event, value) => {
+  handleMenuChange = value => event => {
     this.handleRequestClose()
     if (value === 'logout') {
       window.AuthService.logout()
@@ -108,7 +106,7 @@ class UserMenu extends Component {
           <Menu onChange={this.handleMenuChange} subheader={<li />}>
             <MenuItem
               disabled={!this.props.orgId}
-              value='account'
+              onClick={this.handleMenuChange('account')}
             >
               <ListItemIcon>
                 {this.renderAvatar(currentUser, 40)}
@@ -122,7 +120,10 @@ class UserMenu extends Component {
             <Divider />
             <ListSubheader>Teams</ListSubheader>
             {currentUser.organizations.map((organization) => (
-              <MenuItem key={organization.id}>
+              <MenuItem
+                key={organization.id}
+                onClick={this.handleMenuChange(organization.id)}
+              >
                 {organization.name}
               </MenuItem>
             ))}
@@ -132,7 +133,7 @@ class UserMenu extends Component {
             <Divider />
             <MenuItem
               primaryText='Log out'
-              value='logout'
+              onClick={this.handleMenuChange('logout')}
             />
           </Menu>
         </Popover>
