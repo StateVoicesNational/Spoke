@@ -166,7 +166,6 @@ it('renders "Send later" when there is a badTimezoneCount', () => {
 })
 
 describe('contacts filters', () => {
-  // TODO: material-ui switch test to clicks
 
   it('filters correctly in USA', () => {
     window.NOT_IN_USA = 0
