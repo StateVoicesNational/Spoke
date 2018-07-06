@@ -18,17 +18,26 @@ GRANT ALL PRIVILEGES ON DATABASE spoke_test TO spoke_test;
 ## End-To-End (Interactive Browser) Testing
 
 1. Remember to set `NODE_ENV=dev` 
-1. Setup DB
-1. Start Spoke Server
-1. Install browser drivers
-    http://seleniumhq.github.io/selenium/docs/api/javascript/
+1. **Start DB** and **Start Spoke Server** as described in the [Getting Started](
+https://github.com/MoveOnOrg/Spoke/blob/main/README.md#getting-started) section. 
+1. Install browser driver(s)
+    
     * Installing chromedriver on MacOS
         ```
         brew tap homebrew/cask
         brew cask install chromedriver
         ```
-        https://github.com/Homebrew/homebrew-cask/blob/master/Casks/chromedriver.rb
-1. Run
-    ```
-    npm run test-e2e
-    ```
+    * References
+        * [Selenium HQ - JavaScript Docs](http://seleniumhq.github.io/selenium/docs/api/javascript/)
+        * [Homebrew - Casks - chromedriver](https://github.com/Homebrew/homebrew-cask/blob/master/Casks/chromedriver.rb)
+1. Running tests...
+    * ... using your local browser
+      ```
+      npm run test-e2e
+      ```
+    * ... using Sauce Labs
+      ```
+      export SAUCE_USERNAME=<Sauce Labs user name>
+      export SAUCE_ACCESS_KEY=<Sauce Labs access key>
+      npm run test-e2e --saucelabs
+      ```
