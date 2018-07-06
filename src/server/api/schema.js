@@ -437,7 +437,7 @@ async function updateInteractionSteps(
             is_deleted: is.isDeleted,
             source: is.source,
             external_question_id: is.externalQuestionId,
-            external_answer_id: is.externalAnswerId
+            external_response_id: is.externalResponseId
             // TODO verify that interaction steps correctly update themselves in the DB
           })
       }

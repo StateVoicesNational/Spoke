@@ -117,27 +117,23 @@ export default class CampaignInteractionStepsForm extends React.Component {
       externalQuestionId,
       externalResponseId
     })
-    // return () => {
-      // const newId = 'new' + Math.random().toString(36).replace(/[^a-zA-Z1-9]+/g, '')
-      this.setState(prevState => ({
-        interactionSteps: [
-          ...prevState.interactionSteps,
-          // { id: newId, parentInteractionId, questionText: '', script: '', answerOption: '', answerActions: '', isDeleted: false }
-          {
-            parentInteractionId,
-            answerActions,
-            answerOption,
-            id,
-            isDeleted,
-            questionText,
-            script,
-            source,
-            externalQuestionId,
-            externalResponseId
-          }
-        ]
-      }))
-    // }
+    this.setState(prevState => ({
+      interactionSteps: [
+        ...prevState.interactionSteps,
+        {
+          parentInteractionId,
+          answerActions,
+          answerOption,
+          id,
+          isDeleted,
+          questionText,
+          script,
+          source,
+          externalQuestionId,
+          externalResponseId
+        }
+      ]
+    }))
   }
 
   deleteStep(id) {
