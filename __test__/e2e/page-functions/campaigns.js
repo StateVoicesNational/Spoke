@@ -1,5 +1,5 @@
 const { until } = require('selenium-webdriver')
-const path = require('path')
+
 const remote = require('selenium-webdriver/remote')
 import { wait } from '../util/helpers'
 const pom = {}
@@ -41,21 +41,37 @@ module.exports = {
     it('completes the Contacts section', async () => {
       await driver.setFileDetector(new remote.FileDetector()) // TODO: maybe this belongs earlier?
       const el = await driver.wait(until.elementLocated(pom.campaign.form.contacts.input), 10000)
-      await el.sendKeys(path.resolve(__dirname, '../data/people.csv')) // TODO: Belongs in campaign strings
-      // TODO: Wait for upload confirmation / summary
+      await el.sendKeys(campaign.contacts.csv)
+      await wait.andGetEl(driver, pom.campaign.form.contacts.uploadedContacts)
+      expect(await wait.andGetEl(driver, pom.campaign.form.contacts.uploadedContacts)).toBeDefined()
       // Save
       await wait.andClick(driver, pom.campaign.form.save)
       // This should switch to the Texters section
     })
 
     it('completes the Texters section (Dynamic assignment)', async () => {
-      let el = await driver.wait(until.elementLocated(pom.campaign.form.texters.useDynamicAssignment), 10000)
-      await el.click()
-
-      // Store the invite (join) URL into a global for future use.
-      el = await driver.wait(until.elementLocated(pom.campaign.form.texters.joinUrl), 20000)
-      await driver.wait(until.elementIsVisible(el))
-      global.e2e.joinUrl = await el.getAttribute('value')
+      if (campaign.existingTexter) {
+        // Add All
+        await wait.andClick(driver, pom.campaign.form.texters.addAll)
+        // Assign (Split)
+        await wait.justLocateandClick(driver, pom.campaign.form.texters.autoSplit)
+        // Validate Assignment
+        expect(await wait.andGetValue(driver, pom.campaign.form.texters.texterAssignmentByIndex(0)) > 0).toBeTruthy()
+        expect(await wait.andGetValue(driver, pom.campaign.form.texters.texterAssignmentByIndex(1)) > 0).toBeTruthy()
+        // Assign (All to Texter)
+        await wait.justLocateandClick(driver, pom.campaign.form.texters.autoSplit)
+        await wait.andType(driver, pom.campaign.form.texters.texterAssignmentByIndex(1), campaign.texters.contactLength)
+        // Bug?
+        await wait.andType(driver, pom.campaign.form.texters.texterAssignmentByIndex(1), campaign.texters.contactLength)
+        // Validate Assignment
+        expect(await wait.andGetValue(driver, pom.campaign.form.texters.texterAssignmentByIndex(0))).toBe('0')
+      }
+      if (campaign.dynamicAssignment) {
+        // Dynamically Assign
+        await wait.justLocateandClick(driver, pom.campaign.form.texters.useDynamicAssignment)
+        // Store the invite (join) URL into a global for future use.
+        global.e2e.joinUrl = await wait.andGetValue(driver, pom.campaign.form.texters.joinUrl)
+      }
       // Save
       await wait.andClick(driver, pom.campaign.form.save)
       // This should switch to the Interactions section
@@ -101,8 +117,8 @@ module.exports = {
 
     it('clicks Start Campaign', async () => {
       await wait.andClick(driver, pom.campaign.start)
-      await driver.sleep(5000)
-      // TODO: Verify using the confirmation message?
+      // Validate Started
+      await wait.andGetEl(driver, pom.campaign.isStarted)
     })
   }
 }

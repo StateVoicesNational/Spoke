@@ -20,11 +20,16 @@ module.exports = {
     },
     contacts: {
       uploadButton: By.css('[data-test=uploadButton]'),
-      input: By.css('#contact-upload')
+      input: By.css('#contact-upload'),
+      uploadedContacts: By.css('[data-test=uploadedContacts]')
     },
     texters: {
       useDynamicAssignment: By.css('[data-test=useDynamicAssignment]'),
-      joinUrl: By.css('[data-test=joinUrl]')
+      joinUrl: By.css('[data-test=joinUrl]'),
+      addAll: By.css('[data-test=addAll]'),
+      autoSplit: By.css('[data-test=autoSplit]'),
+      texterAssignmentByIndex(index) { return By.css(`[data-test=texter${index}Assignment]`) },
+      texterNameByIndex(index) { return By.css(`[data-test=texter${index}Name]`) }
     },
     interactions: {
       questionText: By.css('[data-test=questionText]'),
@@ -43,5 +48,6 @@ module.exports = {
       submit: By.css('[data-test=addResponse]')
     },
     save: By.css('[type=submit]')
-  }
+  },
+  isStarted: By.css('[data-test=campaignIsStarted]')
 }

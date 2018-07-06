@@ -9,7 +9,7 @@ pom.navigation = require('./page-objects/navigation')
 pom.people = require('./page-objects/people')
 
 // Strings for data entry
-const strings = require('./data/strings')
+import * as STRINGS from './data/strings'
 
 // Reusable test functions
 const login = require('./page-functions/login')
@@ -21,6 +21,7 @@ const driver = selenium.buildDriver()
 const driverTexter = selenium.buildDriver()
 
 describe('Basic text manager workflow', () => {
+  const CAMPAIGN = STRINGS.campaigns.existingTexter
   beforeAll(() => {
     global.e2e = {}
   })
@@ -30,15 +31,15 @@ describe('Basic text manager workflow', () => {
   })
   // Skip in CI tests, but useful for setting up existing admin
   xdescribe('Sign Up a new admin to Spoke', () => {
-    login.signUp(driver, strings.admins.admin0)
+    login.signUp(driver, CAMPAIGN.admin)
   })
 
   describe('(As Admin) Log In an existing admin to Spoke', () => {
-    login.tryLoginThenSignUp(driver, strings.admins.admin0)
+    login.tryLoginThenSignUp(driver, CAMPAIGN.admin)
   })
 
   describe('(As Admin) Create a New Organization / Team', () => {
-    invite.createOrg(driver, strings.org)
+    invite.createOrg(driver, STRINGS.org)
   })
 
   describe('(As Admin) Invite a new User', () => {
@@ -65,24 +66,19 @@ describe('Basic text manager workflow', () => {
   })
 
   describe('(As Texter) Follow the Invite URL', () => {
-    afterAll(async () => {
-      await selenium.quitDriver(driverTexter)
-    })
-
     describe('Create New Texter in Spoke', () => {
-      login.tryLoginThenSignUp(driverTexter, strings.admins.texter0)
+      login.tryLoginThenSignUp(driverTexter, CAMPAIGN.texter)
     })
 
     describe('should follow the link to the invite', async () => {
       it('should follow the link to the invite', async () => {
-        console.log(`global: ${global.e2e.joinUrl}`)
+        // console.log(`global: ${global.e2e.joinUrl}`)
         await driverTexter.get(global.e2e.joinUrl)
-        await driverTexter.sleep(5000)
       })
     })
   })
 
   describe('(As Admin) Create a New Campaign', () => {
-    campaigns.startCampaign(driver, strings.campaign)
+    campaigns.startCampaign(driver, CAMPAIGN)
   })
 })

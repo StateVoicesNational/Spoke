@@ -382,6 +382,7 @@ class AdminCampaignEdit extends React.Component {
   renderHeader() {
     const notStarting = this.props.campaignData.campaign.isStarted ? (
       <div
+        {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'campaignIsStarted' })}
         style={{
           color: theme.colors.green,
           fontWeight: 800

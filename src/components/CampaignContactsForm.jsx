@@ -125,6 +125,7 @@ export default class CampaignContactsForm extends React.Component {
       <List>
         <Subheader>Uploaded</Subheader>
         <ListItem
+          {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'uploadedContacts' })}
           primaryText={`${contactsCount} contacts`}
           leftIcon={checkIcon}
           leftIconColor={theme.colors.green}

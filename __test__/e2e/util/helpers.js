@@ -25,12 +25,16 @@ const selenium = {
 const wait = {
   async andGetEl(driver, locator, msWait) {
     const el = await driver.wait(until.elementLocated(locator, msWait || defaultWait))
-    await driver.wait(until.elementIsVisible(el))
-    return el
+    return await driver.wait(until.elementIsVisible(el))
   },
   async andClick(driver, locator, msWait) {
     const el = await driver.wait(until.elementLocated(locator, msWait || defaultWait))
     await driver.wait(until.elementIsVisible(el))
+    await el.click()
+  },
+  async justLocateandClick(driver, locator, msWait) {
+    // Useful for items (like some checkbox inputs) that don't work with isVisible
+    const el = await driver.wait(until.elementLocated(locator, msWait || defaultWait))
     await el.click()
   },
   async andType(driver, locator, keys, msWait) {
@@ -38,6 +42,11 @@ const wait = {
     await driver.wait(until.elementIsVisible(el))
     await el.clear()
     await el.sendKeys(keys)
+  },
+  async andGetValue(driver, locator, msWait) {
+    const el = await driver.wait(until.elementLocated(locator, msWait || defaultWait))
+    await driver.wait(until.elementIsVisible(el))
+    return await el.getAttribute('value')
   },
   async untilLocated(driver, locator, msWait) {
     await driver.wait(until.elementLocated(locator, msWait || defaultWait))
