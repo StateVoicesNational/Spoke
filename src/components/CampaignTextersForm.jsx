@@ -352,14 +352,14 @@ export default class CampaignTextersForm extends React.Component {
             {messagedCount}
           </div>
           <div
-            {...(process.env.NODE_ENV !== 'production' && { 'data-test': `texters[${index}].name` })}
+            {...(process.env.NODE_ENV !== 'production' && { 'data-test': `texter${index}Name` })}
             className={css(styles.nameColumn)}
           >
             {this.getDisplayName(texter.id)}
           </div>
           <div className={css(styles.input)}>
             <Form.Field
-              {...(process.env.NODE_ENV !== 'production' && { 'data-test': `texters[${index}].assignment` })}
+              {...(process.env.NODE_ENV !== 'production' && { 'data-test': `texter${index}Assignment` })}
               name={`texters[${index}].assignment.needsMessageCount`}
               hintText='Contacts'
               fullWidth

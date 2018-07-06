@@ -1,7 +1,10 @@
 const { until } = require('selenium-webdriver')
 // const config = require('./util/config')
 import { selenium, wait } from './util/helpers'
-const strings = require('./data/strings')
+
+// Strings for data entry
+import * as STRINGS from './data/strings'
+
 const pom = {}
 pom.navigation = require('./page-objects/navigation')
 pom.people = require('./page-objects/people')
@@ -19,20 +22,20 @@ describe('Invite Texter workflow', () => {
   })
   // Skip in CI tests, but useful for setting up admin
   xdescribe('Sign Up a new admin to Spoke', () => {
-    login.signUp(driver, strings.admins.admin0)
+    login.signUp(driver, STRINGS.campaigns.existingTexter.admin)
   })
 
   // Skip in CI tests, but useful for logging in existing admin
   xdescribe('Log In an existing admin to Spoke', () => {
-    login.logIn(driver, strings.admins.admin0)
+    login.logIn(driver, STRINGS.campaigns.existingTexter.admin)
   })
 
   describe('Log In or Sign Up an admin to Spoke', () => {
-    login.tryLoginThenSignUp(driver, strings.admins.admin0)
+    login.tryLoginThenSignUp(driver, STRINGS.campaigns.existingTexter.admin)
   })
 
   describe('Create a New Organization / Team', () => {
-    invite.createOrg(driver, strings.org)
+    invite.createOrg(driver, STRINGS.org)
   })
 
   describe('Invite a new User', () => {
@@ -64,7 +67,7 @@ describe('Invite Texter workflow', () => {
     })
 
     describe('Create New Texter in Spoke', () => {
-      login.tryLoginThenSignUp(driverTexter, strings.admins.texter0)
+      login.tryLoginThenSignUp(driverTexter, STRINGS.campaigns.existingTexter.texter)
     })
 
     describe('should follow the link to the invite', async () => {
