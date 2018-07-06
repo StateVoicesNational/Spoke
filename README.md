@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/MoveOnOrg/Spoke.svg?branch=main)](https://travis-ci.org/MoveOnOrg/Spoke)
 
-[![Sauce Test Status](https://saucelabs.com/buildstatus/cp4r3zsl)](https://saucelabs.com/u/cp4r3zsl)
+[![Sauce Test Status](https://saucelabs.com/buildstatus/opensourcemoveon)](https://saucelabs.com/u/opensourcemoveon)
 # Spoke
 
 Spoke is an open source text-distribution tool for organizations to mobilize supporters and members into action. Spoke allows you to upload phone numbers, customize scripts and assign volunteers to communicate with supporters while allowing organizations to manage the process.
