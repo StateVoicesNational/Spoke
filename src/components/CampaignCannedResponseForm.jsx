@@ -5,6 +5,7 @@ import yup from 'yup'
 import GSForm from './forms/GSForm'
 import Form from 'react-formal'
 import FlatButton from 'material-ui/FlatButton'
+import { dataTest } from '../lib/attributes'
 
 const styles = StyleSheet.create({
   buttonRow: {
@@ -34,14 +35,14 @@ class CannedResponseForm extends React.Component {
           onSubmit={this.handleSave}
         >
           <Form.Field
-            {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'title' })}
+            {...dataTest('title')}
             name='title'
             autoFocus
             fullWidth
             label='Title'
           />
           <Form.Field
-            {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'editorResponse' })}
+            {...dataTest('editorResponse')}
             customFields={customFields}
             name='text'
             type='script'
@@ -51,7 +52,7 @@ class CannedResponseForm extends React.Component {
           />
           <div className={css(styles.buttonRow)}>
             <Form.Button
-              {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'addResponse' })}
+              {...dataTest('addResponse')}
               type='submit'
               label='Add Response'
               style={{

@@ -45,8 +45,9 @@ expect(url).toContain('www.example.com')
 
 Example of an attribute for end to end selectors:
 ```
+import { dataTest } from '../lib/attributes'
 <Control
-  {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'someString' })}
+  {...dataTest('someValue')}
   ...
 />
 ```

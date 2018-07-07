@@ -7,6 +7,7 @@ import GSForm from './forms/GSForm'
 import yup from 'yup'
 import Toggle from 'material-ui/Toggle'
 import ColorPicker from 'material-ui-color-picker'
+import { dataTest } from '../lib/attributes'
 
 const FormSchema = {
   title: yup.string(),
@@ -54,21 +55,21 @@ export default class CampaignBasicsForm extends React.Component {
           onSubmit={this.props.onSubmit}
         >
           <Form.Field
-            {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'title' })}
+            {...dataTest('title')}
             name='title'
             label='Title'
             hintText='e.g. Election Day 2016'
             fullWidth
           />
           <Form.Field
-            {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'description' })}
+            {...dataTest('description')}
             name='description'
             label='Description'
             hintText='Get out the vote'
             fullWidth
           />
           <Form.Field
-            {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'dueBy' })}
+            {...dataTest('dueBy')}
             name='dueBy'
             label='Due date'
             type='date'
@@ -79,14 +80,12 @@ export default class CampaignBasicsForm extends React.Component {
             utcOffset={0}
           />
           <Form.Field
-            {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'introHtml' })}
             name='introHtml'
             label='Intro HTML'
             multiLine
             fullWidth
           />
           <Form.Field
-            {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'logoImageUrl' })}
             name='logoImageUrl'
             label='Logo Image URL'
             hintText='https://www.mysite.com/images/logo.png'
@@ -94,7 +93,6 @@ export default class CampaignBasicsForm extends React.Component {
           />
           <label>Primary color</label>
           <Form.Field
-            {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'primaryColor' })}
             name='primaryColor'
             label='Primary color'
             defaultValue={this.props.formValues.primaryColor || '#ffffff'}

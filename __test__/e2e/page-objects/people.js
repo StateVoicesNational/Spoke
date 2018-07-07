@@ -1,6 +1,6 @@
-const { By } = require('selenium-webdriver')
+import { By } from 'selenium-webdriver'
 
-module.exports = {
+export const people = {
   add: By.css('[data-test=addPerson]'),
   invite: {
     joinUrl: By.css('[data-test=joinUrl]'),

@@ -15,6 +15,7 @@ import { getHighestRole, ROLE_HIERARCHY } from '../lib'
 import theme from '../styles/theme'
 import loadData from './hoc/load-data'
 import gql from 'graphql-tag'
+import { dataTest } from '../lib/attributes'
 
 const organizationFragment = `
   id
@@ -105,8 +106,8 @@ class AdminPersonList extends React.Component {
                   ))}
                 </DropDownMenu>
                 <FlatButton
+                  {...dataTest('editPerson')}
                   label='Edit'
-                  {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'editPerson' })}
                   onTouchTap={() => { this.editUser(person.id) }}
                 />
               </TableRowColumn>
@@ -124,14 +125,14 @@ class AdminPersonList extends React.Component {
       <div>
         {this.renderTexters()}
         <FloatingActionButton
-          {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'addPerson' })}
+          {...dataTest('addPerson')}
           style={theme.components.floatingButton}
           onTouchTap={this.handleOpen}
         >
           <ContentAdd />
         </FloatingActionButton>
         <Dialog
-          {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'editPersonDialog' })}
+          {...dataTest('editPersonDialog')}
           title='Edit user'
           modal={false}
           open={Boolean(this.state.userEdit)}
@@ -147,7 +148,7 @@ class AdminPersonList extends React.Component {
           title='Invite new texters'
           actions={[
             <FlatButton
-              {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'inviteOk' })}
+              {...dataTest('inviteOk')}
               label='OK'
               primary
               onTouchTap={this.handleClose}

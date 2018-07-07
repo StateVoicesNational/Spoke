@@ -14,6 +14,7 @@ import ErrorIcon from 'material-ui/svg-icons/alert/error'
 import theme from '../styles/theme'
 import { StyleSheet, css } from 'aphrodite'
 import yup from 'yup'
+import { dataTest } from '../lib/attributes'
 
 const checkIcon = <CheckIcon style={{ fill: theme.colors.darkGreen }} />
 const warningIcon = <WarningIcon style={{ fill: theme.colors.orange }} />
@@ -125,7 +126,7 @@ export default class CampaignContactsForm extends React.Component {
       <List>
         <Subheader>Uploaded</Subheader>
         <ListItem
-          {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'uploadedContacts' })}
+          {...dataTest('uploadedContacts')}
           primaryText={`${contactsCount} contacts`}
           leftIcon={checkIcon}
           leftIconColor={theme.colors.green}
@@ -179,7 +180,7 @@ export default class CampaignContactsForm extends React.Component {
     return (
       <div>
         <RaisedButton
-          {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'uploadButton' })}
+          {...dataTest('uploadButton')}
           style={innerStyles.button}
           label={uploading ? 'Uploading...' : 'Upload contacts'}
           labelPosition='before'

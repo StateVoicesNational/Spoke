@@ -1,6 +1,6 @@
-const { By } = require('selenium-webdriver')
+import { By } from 'selenium-webdriver'
 
-module.exports = {
+export const navigation = {
   sections: {
     campaigns: By.css('[data-test=navCampaigns]'),
     people: By.css('[data-test=navPeople]'),

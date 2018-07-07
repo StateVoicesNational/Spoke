@@ -24,6 +24,7 @@ import {
   findParent,
   makeTree
 } from '../lib'
+import { dataTest } from '../lib/attributes'
 
 const styles = {
   pullRight: {
@@ -162,7 +163,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
                </div>)
             : ''}
             <Form.Field
-              {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'editorInteraction' })}
+              {...dataTest('editorInteraction')}
               name='script'
               type='script'
               fullWidth
@@ -172,7 +173,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
               hintText="This is what your texters will send to your contacts. E.g. Hi, {firstName}. It's {texterFirstName} here."
             />
             <Form.Field
-              {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'questionText' })}
+              {...dataTest('questionText')}
               name='questionText'
               label='Question'
               fullWidth
@@ -213,7 +214,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
         />
         {this.renderInteractionStep(tree)}
         <RaisedButton
-          {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'interactionSubmit' })}
+          {...dataTest('interactionSubmit')}
           primary
           label={this.props.saveLabel}
           onTouchTap={this.onSave.bind(this)}

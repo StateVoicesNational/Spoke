@@ -1,15 +1,20 @@
-const { Builder, until } = require('selenium-webdriver')
-const config = require('./config')
+import { Builder, until } from 'selenium-webdriver'
+import remote from 'selenium-webdriver/remote'
+import config from './config'
+import _ from 'lodash'
+
 const defaultWait = 10000
 
 const selenium = {
   buildDriver() {
-    return process.env.npm_config_saucelabs ?
+    const driver = process.env.npm_config_saucelabs ?
       new Builder()
         .withCapabilities(config.sauceLabs.capabilities)
         .usingServer(config.sauceLabs.server)
         .build() :
       new Builder().forBrowser('chrome').build()
+    driver.setFileDetector(new remote.FileDetector())
+    return driver
   },
   async quitDriver(driver) {
     await driver.getSession()
@@ -22,34 +27,35 @@ const selenium = {
   }
 }
 
+const waitAnd = async (driver, locator, options) => {
+  const el = await driver.wait(until.elementLocated(locator, options.msWait || defaultWait))
+  if (options.elementIsVisible !== false) await driver.wait(until.elementIsVisible(el))
+  if (options.click) await el.click()
+  if (options.clear) await el.clear()
+  if (options.keys) await el.sendKeys(options.keys)
+  return el
+}
+
 const wait = {
-  async andGetEl(driver, locator, msWait) {
-    const el = await driver.wait(until.elementLocated(locator, msWait || defaultWait))
-    return await driver.wait(until.elementIsVisible(el))
+  async untilLocated(driver, locator, options) {
+    return await waitAnd(driver, locator, _.assign({}, options))
   },
-  async andClick(driver, locator, msWait) {
-    const el = await driver.wait(until.elementLocated(locator, msWait || defaultWait))
-    await driver.wait(until.elementIsVisible(el))
-    await el.click()
+  async andGetEl(driver, locator, options) {
+    return await waitAnd(driver, locator, _.assign({}, options))
   },
-  async justLocateandClick(driver, locator, msWait) {
-    // Useful for items (like some checkbox inputs) that don't work with isVisible
-    const el = await driver.wait(until.elementLocated(locator, msWait || defaultWait))
-    await el.click()
+  async andClick(driver, locator, options) {
+    return await waitAnd(driver, locator, _.assign({ click: true }, options))
   },
-  async andType(driver, locator, keys, msWait) {
-    const el = await driver.wait(until.elementLocated(locator, msWait || defaultWait))
-    await driver.wait(until.elementIsVisible(el))
-    await el.clear()
-    await el.sendKeys(keys)
+  async andType(driver, locator, keys, options) {
+    return await waitAnd(driver, locator, _.assign({ keys, clear: true }, options))
   },
-  async andGetValue(driver, locator, msWait) {
-    const el = await driver.wait(until.elementLocated(locator, msWait || defaultWait))
-    await driver.wait(until.elementIsVisible(el))
+  async andGetValue(driver, locator, options) {
+    const el = await waitAnd(driver, locator, _.assign({}, options))
     return await el.getAttribute('value')
   },
-  async untilLocated(driver, locator, msWait) {
-    await driver.wait(until.elementLocated(locator, msWait || defaultWait))
+  async andIsEnabled(driver, locator, options) {
+    const el = await waitAnd(driver, locator, _.assign({}, options))
+    return await el.isEnabled()
   }
 }
 
