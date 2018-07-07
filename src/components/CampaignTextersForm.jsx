@@ -124,6 +124,13 @@ export default class CampaignTextersForm extends React.Component {
     let totalMessaged = 0
     const texterCountChanged = newFormValues.texters.length !== existingFormValues.texters.length
 
+    const alreadyAssignedContactsCount = existingFormValues.texters.reduce((contactsCountAccumulator, texter) => {
+      if (texter.id !== changedTexter) {
+        contactsCountAccumulator = (texter.assignment.contactsCount || 0) + contactsCountAccumulator
+      }
+      return contactsCountAccumulator
+    }, 0)
+
     // 1. map form texters to existing texters. with needsMessageCount tweaked to minimums when invalid or useless
     newFormValues.texters = newFormValues.texters.map((newTexter) => {
       const existingTexter = existingFormValues.texters.filter((texter) => (texter.id === newTexter.id ? texter : null))[0]
@@ -165,22 +172,14 @@ export default class CampaignTextersForm extends React.Component {
     })
 
     let extraTexterCapacity = totalNeedsMessage + totalMessaged - this.formValues().contactsCount
-    if (extraTexterCapacity > 0) {
-      // 2. With extraTexterCapacity beyond contacts, remove contact counts from the top texters
-      let theTexter = newFormValues.texters[0]
-      if (changedTexter) {
-        theTexter = newFormValues.texters.find((ele) => ele.id === changedTexter)
-      }
 
-      newFormValues.texters = newFormValues.texters.map((texter) => {
-        const newTexter = texter
-        const messagedCount = texter.assignment.contactsCount - texter.assignment.needsMessageCount
-        if (texter.id === theTexter.id) {
-          newTexter.assignment.needsMessageCount = this.formValues().contactsCount - totalMessaged
-        } else {
-          newTexter.assignment.needsMessageCount = 0
+    if (extraTexterCapacity > 0) {
+      newFormValues.texters = newFormValues.texters.map((newTexter) => {
+        if (newTexter.id === changedTexter) {
+          const numberAssignable = existingFormValues.contactsCount - alreadyAssignedContactsCount
+          newTexter.assignment.needsMessageCount = numberAssignable
+          newTexter.assignment.contactsCount = numberAssignable + (newTexter.assignment.messagedCount || 0)
         }
-        newTexter.assignment.contactsCount = texter.assignment.needsMessageCount + messagedCount
         return newTexter
       })
     } else if (this.state.autoSplit) {
