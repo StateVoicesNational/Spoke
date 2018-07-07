@@ -26,8 +26,6 @@ if (!DEBUG) {
   plugins.push(new ManifestPlugin({
     fileName: assetMapFile
   }))
-  plugins.push(new webpack.optimize.OccurrenceOrderPlugin())
-  plugins.push(new webpack.optimize.DedupePlugin())
   plugins.push(new webpack.optimize.UglifyJsPlugin({
     sourceMap: true,
     compress: {
@@ -51,9 +49,13 @@ if (!DEBUG) {
 const config = {
   entry: {
     bundle: [
-      'webpack-dev-server/client?http://127.0.0.1:3000',
-      'webpack/hot/only-dev-server',
       'babel-polyfill',
+      'webpack-dev-server/client?http://0.0.0.0:3000',
+      // Documentation is very confusing.
+      // https://stackoverflow.com/a/43875921
+      // https://github.com/webpack/webpack-dev-server/issues/703
+      // https://github.com/webpack/webpack-dev-server/issues/615
+      // 'webpack/hot/only-dev-server',
       './src/client/index.jsx'
     ]
   },
