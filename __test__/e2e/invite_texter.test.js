@@ -1,80 +1,41 @@
-const { until } = require('selenium-webdriver')
-// const config = require('./util/config')
-import { selenium, wait } from './util/helpers'
+import { selenium } from './util/helpers'
+import STRINGS from './data/strings'
+import { login, invite, people } from './page-functions/index'
 
-// Strings for data entry
-import * as STRINGS from './data/strings'
-
-const pom = {}
-pom.navigation = require('./page-objects/navigation')
-pom.people = require('./page-objects/people')
-
+// Instantiate browser(s)
 const driver = selenium.buildDriver()
 const driverTexter = selenium.buildDriver()
 
-const login = require('./page-functions/login')
-const invite = require('./page-functions/invite')
-// const campaigns = require('./page-functions/campaigns')
-
 describe('Invite Texter workflow', () => {
+  const CAMPAIGN = STRINGS.campaigns.existingTexter
+  beforeAll(() => {
+    global.e2e = {}
+  })
   afterAll(async () => {
     await selenium.quitDriver(driver)
-  })
-  // Skip in CI tests, but useful for setting up admin
-  xdescribe('Sign Up a new admin to Spoke', () => {
-    login.signUp(driver, STRINGS.campaigns.existingTexter.admin)
+    await selenium.quitDriver(driverTexter)
   })
 
-  // Skip in CI tests, but useful for logging in existing admin
-  xdescribe('Log In an existing admin to Spoke', () => {
-    login.logIn(driver, STRINGS.campaigns.existingTexter.admin)
+  describe('(As Admin) Log In an admin to Spoke', () => {
+    login.tryLoginThenSignUp(driver, CAMPAIGN.admin)
   })
 
-  describe('Log In or Sign Up an admin to Spoke', () => {
-    login.tryLoginThenSignUp(driver, STRINGS.campaigns.existingTexter.admin)
-  })
-
-  describe('Create a New Organization / Team', () => {
+  describe('(As Admin) Create a New Organization / Team', () => {
     invite.createOrg(driver, STRINGS.org)
   })
 
-  describe('Invite a new User', () => {
-    it('opens the People tab', async () => {
-      await wait.andClick(driver, pom.navigation.sections.people)
-    })
-
-    it('clicks on the + button to Invite a User', async () => {
-      const el = await driver.wait(until.elementLocated(pom.people.add), 10000)
-      await driver.wait(until.elementIsVisible(el))
-      await el.click()
-    })
-
-    it('views the invitation link', async () => {
-      // Store Invite
-      let el = await driver.wait(until.elementLocated(pom.people.invite.joinUrl), 10000)
-      await driver.wait(until.elementIsVisible(el))
-      global.e2e.joinUrl = await el.getAttribute('value')
-      // OK
-      el = await driver.wait(until.elementLocated(pom.people.invite.ok), 10000)
-      await driver.wait(until.elementIsVisible(el))
-      await el.click()
-    })
+  describe('(As Admin) Invite a new User', () => {
+    people.invite(driver)
   })
 
-  describe('Follow the Invite URL', () => {
-    afterAll(async () => {
-      await selenium.quitDriver(driverTexter)
-    })
-
+  describe('(As Texter) Follow the Invite URL', () => {
     describe('Create New Texter in Spoke', () => {
-      login.tryLoginThenSignUp(driverTexter, STRINGS.campaigns.existingTexter.texter)
+      login.tryLoginThenSignUp(driverTexter, CAMPAIGN.texter)
     })
 
     describe('should follow the link to the invite', async () => {
       it('should follow the link to the invite', async () => {
-        console.log(`global: ${global.e2e.joinUrl}`)
         await driverTexter.get(global.e2e.joinUrl)
-        await driverTexter.sleep(5000)
       })
     })
   })

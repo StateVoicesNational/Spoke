@@ -1,14 +1,12 @@
-const { until } = require('selenium-webdriver')
-const config = require('../util/config')
+import { until } from 'selenium-webdriver'
+import config from '../util/config'
 import { wait } from '../util/helpers'
+import pom from '../page-objects/index'
 
-// Place the page objects into a parent object
-const pom = {}
-pom.login = require('../page-objects/login')
 // For legibility
 const auth0 = pom.login.auth0
 
-module.exports = {
+export const login = {
   landing(driver) {
     it('gets the landing page', async () => {
       await driver.get(config.baseUrl)
@@ -16,8 +14,8 @@ module.exports = {
 
     it('clicks the login link', async () => {
       // Click on the login button
-      wait.untilLocated(driver, pom.login.loginGetStarted, 30000)
-      await driver.sleep(2000) // Wait for the transition, which is sometimes a problem.
+      wait.untilLocated(driver, pom.login.loginGetStarted, { msWait: 30000 })
+      await driver.sleep(2000) // Transition
       wait.andClick(driver, pom.login.loginGetStarted)
 
       // Wait until the Auth0 login page loads
@@ -31,9 +29,8 @@ module.exports = {
     let skip = false // Assume that these tests will proceed
     it('opens the Sign Up tab', async () => {
       skip = !!global.e2e[user.name].loginSucceeded // Skip tests if the login succeeded
-      // console.log(`skip: ${skip}`)
       if (!skip) {
-        wait.andClick(driver, auth0.tabs.signIn, 20000)
+        wait.andClick(driver, auth0.tabs.signIn, { msWait: 20000 })
       }
     })
 
@@ -78,7 +75,7 @@ module.exports = {
     this.landing(driver)
 
     it('opens the Log In tab', async () => {
-      await wait.andClick(driver, auth0.tabs.logIn, 20000)
+      await wait.andClick(driver, auth0.tabs.logIn, { msWait: 20000 })
     })
 
     it('fills in the existing user details', async () => {
@@ -97,7 +94,6 @@ module.exports = {
       await driver.sleep(5000) // Wait for login attempt to return. Takes about 1 sec
       const errors = await driver.findElements(auth0.form.error)
       global.e2e[user.name].loginSucceeded = errors.length === 0
-      // console.log(`errors.length=${errors.length}`)
     })
     describe('Sign Up if Login Fails', () => {
       /**

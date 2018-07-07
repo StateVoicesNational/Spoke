@@ -14,6 +14,7 @@ import { StyleSheet, css } from 'aphrodite'
 import theme from '../styles/theme'
 import Toggle from 'material-ui/Toggle'
 import DeleteIcon from 'material-ui/svg-icons/action/delete'
+import { dataTest } from '../lib/attributes'
 
 const styles = StyleSheet.create({
   sliderContainer: {
@@ -352,14 +353,14 @@ export default class CampaignTextersForm extends React.Component {
             {messagedCount}
           </div>
           <div
-            {...(process.env.NODE_ENV !== 'production' && { 'data-test': `texter${index}Name` })}
+            {...dataTest(`texter${index}Name`)}
             className={css(styles.nameColumn)}
           >
             {this.getDisplayName(texter.id)}
           </div>
           <div className={css(styles.input)}>
             <Form.Field
-              {...(process.env.NODE_ENV !== 'production' && { 'data-test': `texter${index}Assignment` })}
+              {...dataTest(`texter${index}Assignment`)}
               name={`texters[${index}].assignment.needsMessageCount`}
               hintText='Contacts'
               fullWidth
@@ -442,7 +443,7 @@ export default class CampaignTextersForm extends React.Component {
         />
         <div>
           <Toggle
-            {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'useDynamicAssignment' })}
+            {...dataTest('useDynamicAssignment')}
             label='Dynamically assign contacts'
             toggled={this.state.useDynamicAssignment}
             onToggle={this.handleToggleChange.bind(this)}
@@ -458,7 +459,7 @@ export default class CampaignTextersForm extends React.Component {
           {this.showSearch()}
             <div>
               <RaisedButton
-                {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'addAll' })}
+                {...dataTest('addAll')}
                 label='Add All'
                 onTouchTap={(() => this.addAllTexters())}
               />
@@ -479,7 +480,7 @@ export default class CampaignTextersForm extends React.Component {
                 className={css(styles.splitToggle)}
               >
                 <Toggle
-                  {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'autoSplit' })}
+                  {...dataTest('autoSplit')}
                   label='Split assignments'
                   style={{
                     width: 'auto',

@@ -1,20 +1,14 @@
-const { until } = require('selenium-webdriver')
-// const helpers = require('./util/helpers')
-const pom = {}
-pom.invite = require('../page-objects/invite')
+import { wait } from '../util/helpers'
+import pom from '../page-objects/index'
 
-module.exports = {
+export const invite = {
   createOrg(driver, name) {
     it('fills in the organization name', async () => {
-      const el = await driver.wait(until.elementLocated(pom.invite.organization.name), 20000)
-      await driver.wait(until.elementIsVisible(el))
-      await el.clear()
-      await el.sendKeys(name)
+      await wait.andType(driver, pom.invite.organization.name, name)
     })
 
     it('clicks the submit button', async () => {
-      const el = await driver.findElement(pom.invite.organization.submit)
-      await el.click()
+      await wait.andClick(driver, pom.invite.organization.submit)
     })
   }
 }

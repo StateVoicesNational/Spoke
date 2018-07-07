@@ -38,11 +38,7 @@ const campaigns = {
     dynamicAssignment: false,
     basics: {
       title: 'Test Campaign Title',
-      description: 'Test Campaign Description',
-      dueBy: '', // TODO: Not used, but should be dynamically assigned
-      introHtml: '', // TODO
-      logoImageUrl: '', // TODO
-      primaryColor: '' // TODO
+      description: 'Test Campaign Description'
     },
     contacts: {
       csv: path.resolve(__dirname, './people.csv')
@@ -63,4 +59,8 @@ const campaigns = {
   }
 }
 
-export { org, users, campaigns }
+export default {
+  campaigns,
+  org,
+  users
+}

@@ -1,6 +1,6 @@
-const { By } = require('selenium-webdriver')
+import { By } from 'selenium-webdriver'
 
-module.exports = {
+export const login = {
   auth0: {
     tabs: {
       logIn: By.css('.auth0-lock-tabs>li:nth-child(1)'),

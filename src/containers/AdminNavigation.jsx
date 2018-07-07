@@ -3,6 +3,7 @@ import React from 'react'
 import Navigation from '../components/Navigation'
 import { ListItem } from 'material-ui/List'
 import { withRouter } from 'react-router'
+import { dataTest } from '../lib/attributes'
 
 class AdminNavigation extends React.Component {
   urlFromPath(path) {
@@ -20,7 +21,7 @@ class AdminNavigation extends React.Component {
         }))}
         switchListItem={
           <ListItem
-            {...(process.env.NODE_ENV !== 'production' && { 'data-test': 'navSwitchToTexter' })}
+            {...dataTest('navSwitchToTexter')}
             primaryText='Switch to texter'
             onTouchTap={() => this.props.router.push(`/app/${organizationId}/todos`)}
           />
