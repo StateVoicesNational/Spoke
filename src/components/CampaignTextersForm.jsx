@@ -4,6 +4,7 @@ import Slider from './Slider'
 import AutoComplete from 'material-ui/AutoComplete'
 import IconButton from 'material-ui/IconButton'
 import RaisedButton from 'material-ui/RaisedButton'
+import Snackbar from 'material-ui/Snackbar'
 import GSForm from '../components/forms/GSForm'
 import yup from 'yup'
 import Form from 'react-formal'
@@ -104,7 +105,9 @@ export default class CampaignTextersForm extends React.Component {
   state = {
     autoSplit: false,
     focusedTexter: null,
-    useDynamicAssignment: this.formValues().useDynamicAssignment
+    useDynamicAssignment: this.formValues().useDynamicAssignment,
+    snackbarOpen: false,
+    snackbarMessage: ''
   }
 
   handleToggleChange() {
@@ -126,7 +129,7 @@ export default class CampaignTextersForm extends React.Component {
 
     const alreadyAssignedContactsCount = existingFormValues.texters.reduce((contactsCountAccumulator, texter) => {
       if (texter.id !== changedTexter) {
-        contactsCountAccumulator = (texter.assignment.contactsCount || 0) + contactsCountAccumulator
+        return (texter.assignment.contactsCount || 0) + contactsCountAccumulator
       }
       return contactsCountAccumulator
     }, 0)
@@ -174,13 +177,15 @@ export default class CampaignTextersForm extends React.Component {
     let extraTexterCapacity = totalNeedsMessage + totalMessaged - this.formValues().contactsCount
 
     if (extraTexterCapacity > 0) {
+      this.setState({ snackbarOpen: true, snackbarMessage: 'All remaining contacts assigned to this texter' })
       newFormValues.texters = newFormValues.texters.map((newTexter) => {
+        const returnTexter = newTexter
         if (newTexter.id === changedTexter) {
           const numberAssignable = existingFormValues.contactsCount - alreadyAssignedContactsCount
-          newTexter.assignment.needsMessageCount = numberAssignable
-          newTexter.assignment.contactsCount = numberAssignable + (newTexter.assignment.messagedCount || 0)
+          returnTexter.assignment.needsMessageCount = numberAssignable
+          returnTexter.assignment.contactsCount = numberAssignable + (newTexter.assignment.messagedCount || 0)
         }
-        return newTexter
+        return returnTexter
       })
     } else if (this.state.autoSplit) {
       // 3. if we don't have extraTexterCapacity and auto-split is on, then fill the texters with assignments
@@ -415,6 +420,10 @@ export default class CampaignTextersForm extends React.Component {
     })
   }
 
+  handleSnackbarClose = () => {
+    this.setState({ snackbarOpen: false, snackbarMessage: '' })
+  }
+
   render() {
     const { organizationUuid, campaignId } = this.props
     const subtitle = (
@@ -522,6 +531,12 @@ export default class CampaignTextersForm extends React.Component {
             disabled={this.props.saveDisabled}
           />
         </GSForm>
+        <Snackbar
+          open={this.state.snackbarOpen}
+          message={this.state.snackbarMessage}
+          autoHideDuration={3000}
+          onRequestClose={this.handleSnackbarClose}
+        />
       </div>
     )
   }
