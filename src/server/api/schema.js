@@ -115,8 +115,8 @@ const rootSchema = `
     parentInteractionId: String
     isDeleted: Boolean
     source: String
-    externalQuestionId: String
-    externalResponseId: String
+    externalQuestion: String
+    externalResponse: String
     interactionSteps: [InteractionStepInput]
   }
 
@@ -415,8 +415,8 @@ async function updateInteractionSteps(
           campaign_id: campaignId,
           is_deleted: false,
           source: is.source,
-          external_question_id: is.externalQuestionId,
-          external_response_id: is.externalResponseId
+          external_question: is.externalQuestion,
+          external_response: is.externalResponse
         }).returning('id')
       idMap[is.id] = newId[0]
     } else {
@@ -436,8 +436,8 @@ async function updateInteractionSteps(
             answer_actions: is.answerActions,
             is_deleted: is.isDeleted,
             source: is.source,
-            external_question_id: is.externalQuestionId,
-            external_response_id: is.externalResponseId
+            external_question: is.externalQuestion,
+            external_response: is.externalResponse
             // TODO verify that interaction steps correctly update themselves in the DB
           })
       }

@@ -48,8 +48,8 @@ const campaignInfoFragment = `
     parentInteractionId
     isDeleted
     source
-    externalQuestionId
-    externalResponseId
+    externalQuestion
+    externalResponse
   }
   cannedResponses {
     id

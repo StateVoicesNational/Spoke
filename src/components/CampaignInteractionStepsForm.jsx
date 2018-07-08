@@ -75,7 +75,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
       const targetInteractionStep = newInteractionSteps[targetInteractionStepIndex]
       targetInteractionStep.questionText = questionText
       targetInteractionStep.source = source
-      targetInteractionStep.externalQuestionId = questionId
+      targetInteractionStep.externalQuestion = questionId
       return { interactionSteps: newInteractionSteps }
     })
     // Add interaction steps for each of the provided responses
@@ -84,7 +84,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
       const { key, title } = response
       const interactionStepOptions = {
         answerActions: 'osdi-survey-question',
-        externalResponseId: key,
+        externalResponse: key,
         answerOption: title,
         source: 'OSDI'
       }
@@ -102,8 +102,8 @@ export default class CampaignInteractionStepsForm extends React.Component {
       questionText = '',
       script = '',
       source = '',
-      externalQuestionId = '',
-      externalResponseId = ''
+      externalQuestion = '',
+      externalResponse = ''
     } = options
     console.log('add step with parent', parentInteractionId, 'and computed options', {
       parentInteractionId,
@@ -114,8 +114,8 @@ export default class CampaignInteractionStepsForm extends React.Component {
       questionText,
       script,
       source,
-      externalQuestionId,
-      externalResponseId
+      externalQuestion,
+      externalResponse
     })
     this.setState(prevState => ({
       interactionSteps: [
@@ -129,8 +129,8 @@ export default class CampaignInteractionStepsForm extends React.Component {
           questionText,
           script,
           source,
-          externalQuestionId,
-          externalResponseId
+          externalQuestion,
+          externalResponse
         }
       ]
     }))
@@ -239,7 +239,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
               name='questionText'
               label='Question'
               fullWidth
-              disabled={interactionStep.externalQuestionId}
+              disabled={interactionStep.externalQuestion}
               hintText='A question for texters to answer. E.g. Can this person attend the event?'
             />
             {

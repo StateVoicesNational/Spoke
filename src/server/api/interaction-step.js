@@ -13,8 +13,8 @@ export const schema = `
     answerActions: String
     questionResponse(campaignContactId: String): QuestionResponse
     source: String
-    externalQuestionId: String
-    externalResponseId: String
+    externalQuestion: String
+    externalResponse: String
   }
 `
 
@@ -29,8 +29,8 @@ export const resolvers = {
       'question',
       'isDeleted',
       'source',
-      'externalQuestionId',
-      'externalResponseId'
+      'externalQuestion',
+      'externalResponse'
     ], InteractionStep),
     questionText: async(interactionStep) => {
       const interaction = await r.table('interaction_step')
