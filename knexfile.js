@@ -43,11 +43,21 @@ if (DB_JSON) {
   }
 }
 
+const test = {
+  client: 'pg',
+  connection: {
+    host: DB_HOST,
+    port: DB_PORT,
+    database: 'spoke_test',
+    password: 'spoke_test',
+    user: 'spoke_test',
+    ssl: useSSL
+  }
+}
+
 export default {
   development: config,
   staging: config,
   production: config,
-  test: {
-
-  }
+  test
 }
