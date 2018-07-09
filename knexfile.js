@@ -1,10 +1,21 @@
-const { DB_USE_SSL = 'false', DB_TYPE, DB_JSON = global.DB_JSON, DB_HOST = '127.0.0.1', DB_PORT = '5432', DB_NAME, DB_PASSWORD, DB_USER, DB_MIN_POOL = 2, DB_MAX_POOL = 10, DATABASE_URL } = process.env
+const {
+  DB_USE_SSL = 'false',
+  DB_JSON = global.DB_JSON,
+  DB_HOST = '127.0.0.1',
+  DB_PORT = '5432',
+  DB_MIN_POOL = 2,
+  DB_MAX_POOL = 10,
+  DB_TYPE,
+  DB_NAME,
+  DB_PASSWORD,
+  DB_USER,
+  DATABASE_URL
+} = process.env
+
 const pg = require('pg')
 
 const useSSL = DB_USE_SSL === '1' || DB_USE_SSL.toLowerCase() === 'true'
 if (useSSL) pg.defaults.ssl = true
-
-// TODO if useSSL then pg.defaults.ssl = true (figure out whether pg should be imported here)
 // see https://github.com/tgriesser/knex/issues/852
 
 let config
