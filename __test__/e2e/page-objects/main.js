@@ -1,12 +1,12 @@
 import { By } from 'selenium-webdriver'
 
-export const people = {
-  add: By.css('[data-test=addPerson]'),
-  invite: {
-    joinUrl: By.css('[data-test=joinUrl]'),
-    ok: By.css('[data-test=inviteOk]')
+export const main = {
+  organization: {
+    name: By.css('[data-test=organization]'),
+    submit: By.css('button[name="submit"]')
   },
-  getRowByName(name) { return By.xpath(`//td[contains(text(),'${name}')]/ancestor::tr`) },
+  userMenuButton: By.css('[data-test=userMenuButton]'),
+  userMenuDisplayName: By.css('[data-test=userMenuDisplayName]'),
   edit: {
     editButton: By.css('[data-test=editPerson]'),
     firstName: By.css('[data-test=firstName]'),
@@ -14,5 +14,6 @@ export const people = {
     email: By.css('[data-test=email]'),
     cell: By.css('[data-test=cell]'),
     save: By.css('[type=submit]')
-  }
+  },
+  home: By.css('[data-test=home]')
 }

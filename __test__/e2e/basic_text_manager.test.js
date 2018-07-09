@@ -1,6 +1,6 @@
 import { selenium } from './util/helpers'
 import STRINGS from './data/strings'
-import { login, invite, campaigns, people } from './page-functions/index'
+import { campaigns, login, main, people } from './page-functions/index'
 
 // Instantiate browser(s)
 const driver = selenium.buildDriver()
@@ -21,7 +21,7 @@ describe('Basic text manager workflow', () => {
   })
 
   describe('(As Admin) Create a New Organization / Team', () => {
-    invite.createOrg(driver, STRINGS.org)
+    main.createOrg(driver, STRINGS.org)
   })
 
   describe('(As Admin) Invite a new User', () => {

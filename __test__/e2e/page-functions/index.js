@@ -1,4 +1,4 @@
 export * from './campaigns'
-export * from './invite'
 export * from './login'
+export * from './main'
 export * from './people'

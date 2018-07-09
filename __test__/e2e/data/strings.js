@@ -14,10 +14,14 @@ const users = {
   admin1: {
     name: 'admin1',
     email: 'spokeadmin1@moveon.org',
+    email_changed: 'spokeadmin1b@moveon.org',
     password: 'SpokeAdmin1!',
     given_name: 'Adminonefirst',
+    given_name_changed: 'Adminonefirstb',
     family_name: 'Adminonelast',
-    cell: '4145550001'
+    family_name_changed: 'Adminonelastb',
+    cell: '4145550001',
+    cell_changed: '6085550001'
   },
   texter0: {
     name: 'texter0',
@@ -26,6 +30,18 @@ const users = {
     given_name: 'Texterzerofirst',
     family_name: 'Texterzerolast',
     cell: '4146660000'
+  },
+  texter1: {
+    name: 'texter1',
+    email: 'spoketexter1@moveon.org',
+    email_changed: 'spoketexter1b@moveon.org',
+    password: 'SpokeTexter1!',
+    given_name: 'Texteronefirst',
+    given_name_changed: 'Texteronefirstb',
+    family_name: 'Texteronelast',
+    family_name_changed: 'Texteronelastb',
+    cell: '4146660001',
+    cell_changed: '6086660001'
   }
 }
 
@@ -56,6 +72,11 @@ const campaigns = {
         script: 'Test CR First {firstName} Last {lastName}.'
       }
     ]
+  },
+  userManagement: {
+    name: 'userManagement',
+    admin: users.admin1,
+    texter: users.texter1
   }
 }
 
