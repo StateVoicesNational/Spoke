@@ -1,8 +1,11 @@
-const { DB_USE_SSL, DB_TYPE, DB_JSON = global.DB_JSON, DB_HOST, DB_PORT, DB_NAME, DB_PASSWORD, DB_USER, DB_MIN_POOL = 2, DB_MAX_POOL = 10, DATABASE_URL } = process.env
+const { DB_USE_SSL = 'false', DB_TYPE, DB_JSON = global.DB_JSON, DB_HOST = '127.0.0.1', DB_PORT = '5432', DB_NAME, DB_PASSWORD, DB_USER, DB_MIN_POOL = 2, DB_MAX_POOL = 10, DATABASE_URL } = process.env
+import pg from 'pg'
 
-const useSSL = DB_USE_SSL && (DB_USE_SSL.toLowerCase() === 'true' || DB_USE_SSL === '1')
+const useSSL = DB_USE_SSL === '1' || DB_USE_SSL.toLowerCase() === 'true'
+if (useSSL) pg.defaults.ssl = true
 
 // TODO if useSSL then pg.defaults.ssl = true (figure out whether pg should be imported here)
+// see https://github.com/tgriesser/knex/issues/852
 
 let config
 
@@ -51,11 +54,12 @@ const test = {
     database: 'spoke_test',
     password: 'spoke_test',
     user: 'spoke_test',
-    ssl: useSSL
+    ssl: useSSL,
+    multipleStatements: true // according to https://github.com/tgriesser/knex/issues/944#issuecomment-244346847, this is necessary to use SQL batch files
   }
 }
 
-export default {
+module.exports = {
   development: config,
   staging: config,
   production: config,
