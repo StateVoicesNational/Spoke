@@ -7,8 +7,18 @@ many important organizations!
 
 * We generally hang out in the [Progressive Coder Network slack](https://www.progcode.org/) in the `#spoke` channel
   * Please fill out the Join form there, and once you are on-boarded, we can chat live!
+  * ProgCode has community guidelines
 * Feel free to [create an issue or comment on an existing issue](https://github.com/MoveOnOrg/Spoke/issues) -- Every time we hear from the outside progressive developer community, we do a little dance.
 * We also welcome reaching out on our [MoveOn Spoke interest form](https://act.moveon.org/survey/spoke-project/) with questions, etc.
+
+In all forums we affirm the [Progressive Coder Community Guidelines](https://docs.google.com/document/d/1coMHvuGf6x6Qn_73SEhOXi_QaoRBM__3Zj6_5TyrmWs/edit#heading=h.ab96v3qhdgk9)
+
+We are a community of campaigns, staffed organizations, and
+volunteers. We affirm our love and support for our volunteers and
+recognize that they are carving out valuable time from their friends,
+families and paid work to help this project. Just like all open-source
+projects, we should come to this project without demands or anger, but
+gratitude and appreciation of everyone's time and work.
 
 ## Your first code contribution
 

@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.org/MoveOnOrg/Spoke.svg?branch=main)](https://travis-ci.org/MoveOnOrg/Spoke)
 
+[![Sauce Test Status](https://saucelabs.com/buildstatus/opensourcemoveon)](https://saucelabs.com/u/opensourcemoveon)
 # Spoke
 
 Spoke is an open source text-distribution tool for organizations to mobilize supporters and members into action. Spoke allows you to upload phone numbers, customize scripts and assign volunteers to communicate with supporters while allowing organizations to manage the process.
@@ -60,6 +61,9 @@ If you want to create an invite via the home page "Login and get started" link, 
 ## Running Tests
 
 See https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO-run_tests.md
+
+## Big Thanks
+Cross-browser Testing Platform and Open Source <3 Provided by [Sauce Labs](https://saucelabs.com).
 
 ## Helpful Dev Tips
 * Run `sqlite3 mydb.sqlite` to connect to a SQL shell for the dev database
