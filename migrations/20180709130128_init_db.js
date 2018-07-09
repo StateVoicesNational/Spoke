@@ -13,7 +13,7 @@ Steps taken to obtain this sql dump file:
 
 module.exports = {
   up: (knex, Promise) => {
-    knex.raw(initQuery)
+    return knex.raw(initQuery)
     .then(res => {
       console.log('init query complete', res)
       Promise.resolve()
