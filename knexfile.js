@@ -1,5 +1,5 @@
 const { DB_USE_SSL = 'false', DB_TYPE, DB_JSON = global.DB_JSON, DB_HOST = '127.0.0.1', DB_PORT = '5432', DB_NAME, DB_PASSWORD, DB_USER, DB_MIN_POOL = 2, DB_MAX_POOL = 10, DATABASE_URL } = process.env
-import pg from 'pg'
+const pg = require('pg')
 
 const useSSL = DB_USE_SSL === '1' || DB_USE_SSL.toLowerCase() === 'true'
 if (useSSL) pg.defaults.ssl = true
