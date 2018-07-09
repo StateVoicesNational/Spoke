@@ -1,13 +1,13 @@
 import { selenium } from './util/helpers'
 import STRINGS from './data/strings'
-import { login, invite, people } from './page-functions/index'
+import { login, main, people } from './page-functions/index'
 
 // Instantiate browser(s)
 const driver = selenium.buildDriver()
 const driverTexter = selenium.buildDriver()
 
 describe('Invite Texter workflow', () => {
-  const CAMPAIGN = STRINGS.campaigns.existingTexter
+  const CAMPAIGN = STRINGS.campaigns.userManagement
   beforeAll(() => {
     global.e2e = {}
   })
@@ -21,7 +21,7 @@ describe('Invite Texter workflow', () => {
   })
 
   describe('(As Admin) Create a New Organization / Team', () => {
-    invite.createOrg(driver, STRINGS.org)
+    main.createOrg(driver, STRINGS.org)
   })
 
   describe('(As Admin) Invite a new User', () => {
@@ -38,5 +38,12 @@ describe('Invite Texter workflow', () => {
         await driverTexter.get(global.e2e.joinUrl)
       })
     })
+  })
+  describe('(As Admin) Edit User', () => {
+    people.editUser(driver, CAMPAIGN.admin)
+  })
+
+  describe('(As Texter) Edit User', () => {
+    main.editUser(driverTexter, CAMPAIGN.texter)
   })
 })

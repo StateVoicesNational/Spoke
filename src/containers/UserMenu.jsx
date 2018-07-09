@@ -10,6 +10,7 @@ import Avatar from 'material-ui/Avatar'
 import { connect } from 'react-apollo'
 import { withRouter } from 'react-router'
 import gql from 'graphql-tag'
+import { dataTest } from '../lib/attributes'
 
 const avatarSize = 28
 
@@ -88,6 +89,7 @@ class UserMenu extends Component {
     return (
       <div>
         <IconButton
+          {...dataTest('userMenuButton')}
           onTouchTap={this.handleTouchTap}
           iconStyle={{ fontSize: '18px' }}
         >
@@ -102,6 +104,7 @@ class UserMenu extends Component {
         >
           <Menu onChange={this.handleMenuChange}>
             <MenuItem
+              {...dataTest('userMenuDisplayName')}
               primaryText={currentUser.displayName}
               leftIcon={this.renderAvatar(currentUser, 40)}
               disabled={!this.props.orgId}
@@ -120,6 +123,7 @@ class UserMenu extends Component {
             ))}
             <Divider />
             <MenuItem
+              {...dataTest('home')}
               primaryText='Home'
               onClick={this.handleReturn}
             />
