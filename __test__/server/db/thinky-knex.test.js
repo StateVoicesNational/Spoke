@@ -7,7 +7,7 @@ describe('The knexfile', () => {
   beforeEach(async () => await knex.migrate.latest())
   afterEach(async () => await knex.raw('DROP OWNED BY spoke_test;'))
 
-  it('returns the same interaction_step schema as the thinky adapter', async () => {
+  it('provides an up-to-date interaction_step schema', async () => {
     const interactionStepSchema = await knex('interaction_step').columnInfo()
     console.log('interaction_step', interactionStepSchema)
     expect(1).toEqual(1)

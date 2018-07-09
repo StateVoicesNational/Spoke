@@ -12,19 +12,19 @@ Steps taken to obtain this sql dump file:
 */
 
 module.exports = {
-  up: async (knex, Promise) => {
-    return knex.raw(initQuery)
+  up: (knex, Promise) => {
+    knex.raw(initQuery)
     .then(res => {
       console.log('init query complete', res)
+      Promise.resolve()
     })
     .catch(err => {
       console.error(err)
-      return Promise.reject()
+      Promise.reject()
     })
     // see https://stackoverflow.com/questions/30880537/can-pg-dump-be-instructed-to-create-tables-with-if-not-exists to add IF NOT EXISTS in so this migration won't throw a billion errors when run in non-test environments
   },
   down: (knex, Promise) => {
     Promise.resolve()
-  },
-  config: { transaction: false }
+  }
 }
