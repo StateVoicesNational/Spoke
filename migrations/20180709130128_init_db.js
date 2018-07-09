@@ -14,6 +14,9 @@ Steps taken to obtain this sql dump file:
 module.exports = {
   up: (knex, Promise) => {
     return knex.raw(initQuery)
+    /*
+    Still getting annoying errors in this migration. Something about the raw transaction seems to be preventing Knex from creating the knex_migrations table, so it fails there. When this was replaced with functional knex calls (i.e. createTableIfNotExists('blah')), the migration worked fine in the test environment! Another argument for scrapping the batch file and doing this all manually.
+    */
     .then(res => {
       console.log('init query complete', res)
       Promise.resolve()
