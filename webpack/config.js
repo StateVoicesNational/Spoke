@@ -47,6 +47,7 @@ if (!DEBUG) {
 }
 
 const config = {
+  mode: (process.env.NODE_ENV || 'production'),
   entry: {
     bundle: [
       'babel-polyfill',
