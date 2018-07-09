@@ -1,12 +1,14 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
+import { ApolloProvider } from 'react-apollo'
+import { Provider } from 'react-redux'
 import { ConnectedRouter } from 'connected-react-router'
 import { createBrowserHistory } from 'history'
+
 import { StyleSheet } from 'aphrodite'
 import errorCatcher from './error-catcher'
 import makeRoutes from '../routes'
 import Store from '../store'
-import { ApolloProvider } from 'react-apollo'
 import ApolloClientSingleton from '../network/apollo-client-singleton'
 import { login, logout } from './auth-service'
 
@@ -23,7 +25,11 @@ StyleSheet.rehydrate(window.RENDERED_CLASS_NAMES)
 
 ReactDOM.render(
   <ApolloProvider store={store.data} client={ApolloClientSingleton}>
-    <ConnectedRouter history={history} routes={makeRoutes()} />
+    <Provider store={store}>
+      <ConnectedRouter history={history}>
+        {makeRoutes()}
+      </ConnectedRouter>
+    </Provider>
   </ApolloProvider>,
   document.getElementById('mount')
 )

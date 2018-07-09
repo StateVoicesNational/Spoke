@@ -1,4 +1,5 @@
-import { IndexRoute, IndexRedirect, Route } from 'react-router'
+import React from 'react'
+import { IndexRedirect, Route } from 'react-router-dom'
 import App from './components/App'
 import AdminDashboard from './components/AdminDashboard'
 import AdminCampaignList from './containers/AdminCampaignList'
@@ -15,7 +16,6 @@ import TexterTodoList from './containers/TexterTodoList'
 import TexterTodo from './containers/TexterTodo'
 import Login from './components/Login'
 import Terms from './containers/Terms'
-import React from 'react'
 import CreateOrganization from './containers/CreateOrganization'
 import JoinTeam from './containers/JoinTeam'
 import Home from './containers/Home'
@@ -26,8 +26,8 @@ import FAQs from './lib/faqs'
 
 export default function makeRoutes(requireAuth = () => {}) {
   return (
-    <Route path='/' component={App}>
-      <IndexRoute component={Home} />
+    <App>
+      <Route path='/' exact component={Home} />
       <Route path='admin' component={AdminDashboard} onEnter={requireAuth}>
         <IndexRoute component={() => <DashboardLoader path='/admin' />} />
         <Route path=':organizationId'>
@@ -108,6 +108,6 @@ export default function makeRoutes(requireAuth = () => {}) {
       <Route path='invite/:inviteId' component={CreateOrganization} onEnter={requireAuth} />
       <Route path=':organizationUuid/join/:campaignId' component={JoinTeam} onEnter={requireAuth} />
       <Route path=':organizationUuid/join' component={JoinTeam} onEnter={requireAuth} />
-    </Route>
+    </App>
   )
 }
