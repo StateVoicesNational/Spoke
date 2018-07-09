@@ -19,6 +19,7 @@ DB_NAME                           | Database connection name. _Required_.
 DB_PORT                           | Database connection port. _Required_.
 DB_TYPE                           | Database connection type for [Knex](http://knexjs.org/#Installation-client). _Options_: mysql, pg, sqlite3. _Default_: sqlite3.
 DB_USE_SSL                        | Boolean value to determine whether database connections should use SSL. _Default_: false.
+PGSSLMODE                         | Postgres SSL mode. Due to a [Knex bug](https://github.com/tgriesser/knex/issues/852), this environment variable must be used in order to specify the SSL mode directly in the driver. This must be set to `PGSSLMODE=require` to work with Heroku databases above the free tier (see [Heroku Postgres & SSL](https://devcenter.heroku.com/articles/heroku-postgresql#heroku-postgres-ssl)).
 DEBUG_SCALING                     | Emit console.log on events related to scaling issues. _Default_: false.
 DEFAULT_SERVICE                   | Default SMS service. _Options_: twilio, nexmo, fakeservice.
 DEV_APP_PORT                      | Port for development Webpack server. Required for development.
