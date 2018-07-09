@@ -56,6 +56,7 @@ const test = {
     user: 'spoke_test',
     ssl: useSSL,
     multipleStatements: true // according to https://github.com/tgriesser/knex/issues/944#issuecomment-244346847, this is necessary to use SQL batch files
+    // This is a bit dodgy and also possibly a security risk. Worth considering whether scrapping the .sql file and recreating the schema by hand with Knex commands is the way to go, despite being a lot of extra work.
   }
 }
 
