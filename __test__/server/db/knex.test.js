@@ -1,6 +1,5 @@
 const config = require('../../../knexfile.js')
 const knex = require('knex')(config)
-console.log('knex config is', knex.client.config.connection)
 
 describe('The knexfile', () => {
   beforeEach(() => knex.migrate.latest())
