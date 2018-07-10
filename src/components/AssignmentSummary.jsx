@@ -67,7 +67,7 @@ export class AssignmentSummary extends Component {
           disabled={disabled}
           label={title}
           primary={primary && !disabled}
-          onTouchTap={() => this.goToTodos(contactsFilter, assignment.id)}
+          onClick={() => this.goToTodos(contactsFilter, assignment.id)}
         />)
     } else {
       return (<Badge
@@ -80,17 +80,16 @@ export class AssignmentSummary extends Component {
         <RaisedButton
           disabled={disabled}
           label={title}
-          onTouchTap={() => this.goToTodos(contactsFilter, assignment.id)}
+          onClick={() => this.goToTodos(contactsFilter, assignment.id)}
         />
       </Badge>)
     }
   }
 
   render() {
-    const { assignment, unmessagedCount, unrepliedCount,
-            badTimezoneCount, totalMessagedCount,
-            pastMessagesCount, skippedMessagesCount } = this.props
-    const { title, description, dueBy,
+
+    const { assignment, unmessagedCount, unrepliedCount, badTimezoneCount, totalMessagedCount, pastMessagesCount, skippedMessagesCount } = this.props
+    const { title, description, hasUnassignedContacts, dueBy,
             primaryColor, logoImageUrl, introHtml,
             useDynamicAssignment } = assignment.campaign
 
@@ -115,7 +114,7 @@ export class AssignmentSummary extends Component {
               title: 'Send first texts',
               count: unmessagedCount,
               primary: true,
-              disabled: false,
+              disabled: (useDynamicAssignment && !hasUnassignedContacts && unmessagedCount == 0) ? true : false,
               contactsFilter: 'text',
               hideIfZero: !useDynamicAssignment
             })}
