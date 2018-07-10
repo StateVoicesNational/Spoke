@@ -5,6 +5,7 @@
  * Similarly, a sleep is added because it's difficult to know when the picker dialog is gone.
  */
 
+import _ from 'lodash'
 import { wait } from '../util/helpers'
 import pom from '../page-objects/index'
 
@@ -95,7 +96,6 @@ export const campaigns = {
       await wait.andClick(driver, pom.campaigns.form.cannedResponse.editorLaunch)
       await wait.andClick(driver, pom.scriptEditor.editor)
       await wait.andType(driver, pom.scriptEditor.editor, campaign.cannedResponses[0].script, { clear: false })
-      await driver.sleep(5000) // TODO
       await wait.andClick(driver, pom.scriptEditor.done)
       // Script - Relaunch and cancel (bug?)
       await driver.sleep(3000) // Transition
@@ -105,7 +105,6 @@ export const campaigns = {
       await driver.sleep(3000) // Transition
       // Submit Response
       await wait.andClick(driver, pom.campaigns.form.cannedResponse.submit)
-      await driver.sleep(5000) // TODO
       // Save
       await wait.andClick(driver, pom.campaigns.form.save)
       // Should be able to start campaign
@@ -113,6 +112,8 @@ export const campaigns = {
     })
 
     it('clicks Start Campaign', async () => {
+      // Store the new campaign URL into a global for future use.
+      global.e2e.newCampaignUrl = await driver.getCurrentUrl()
       await wait.andClick(driver, pom.campaigns.start)
       // Validate Started
       expect(await wait.andGetEl(driver, pom.campaigns.isStarted)).toBeTruthy()
@@ -194,6 +195,20 @@ export const campaigns = {
       await wait.andClick(driver, pom.campaigns.form.basics.section)
       // Verify Title
       expect(await wait.andGetValue(driver, pom.campaigns.form.basics.title)).toBe(campaign.basics.title_changed)
+    })
+  },
+  sendReplies(driver, campaign) {
+    it('sends Replies', async () => {
+      const sendRepliesUrl = global.e2e.newCampaignUrl.substring(0, global.e2e.newCampaignUrl.indexOf('edit?new=true')) + 'send-replies'
+      await driver.get(sendRepliesUrl)
+    })
+    describe('works though the list of assigned contacts', () => {
+      _.times(campaign.texters.contactLength, n => {
+        it(`sends reply ${n}`, async () => {
+          await wait.andType(driver, pom.campaigns.replyByIndex(n), campaign.standardReply)
+          await wait.andClick(driver, pom.campaigns.sendByIndex(n))
+        })
+      })
     })
   }
 }

@@ -21,6 +21,8 @@ const cannedResponses = [
   }
 ]
 
+const standardReply = 'Test Reply'
+
 // Exported
 const org = 'SpokeTestOrg'
 
@@ -81,7 +83,8 @@ const campaigns = {
     contacts,
     texters,
     interaction,
-    cannedResponses
+    cannedResponses,
+    standardReply
   },
   copyCampaign: {
     name: 'copyCampaign',

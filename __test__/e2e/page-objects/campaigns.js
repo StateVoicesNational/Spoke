@@ -5,6 +5,8 @@ export const campaigns = {
   start: By.css('[data-test=startCampaign]:not([disabled])'),
   campaignRowByText(text) { return By.xpath(`//*[contains(text(),'${text}')]/ancestor::*[@data-test='campaignRow']`) },
   warningIcon: By.css('[data-test=warningIcon]'),
+  replyByIndex(index) { return By.xpath(`(//input[@data-test='reply'])[${index + 1}]`) },
+  sendByIndex(index) { return By.xpath(`(//button[@data-test='send'])[${index + 1}]`) },
   form: {
     basics: {
       section: By.css('[data-test=basics]'),

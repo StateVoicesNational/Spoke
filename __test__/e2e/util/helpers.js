@@ -27,13 +27,6 @@ export const selenium = {
   }
 }
 
-// export const find = {
-//   async elements(driver, locator) {
-//     return await driver.findElements(locator)
-//   }
-// }
-//todo
-
 const waitAnd = async (driver, locator, options) => {
   const el = await driver.wait(until.elementLocated(locator, options.msWait || defaultWait))
   if (options.elementIsVisible !== false) await driver.wait(until.elementIsVisible(el))
