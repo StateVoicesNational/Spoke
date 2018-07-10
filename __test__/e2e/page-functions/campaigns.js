@@ -99,6 +99,7 @@ export const campaigns = {
       // Script - Relaunch and cancel (bug?)
       await driver.sleep(3000) // Transition
       await wait.andClick(driver, pom.campaigns.form.cannedResponse.editorLaunch)
+      await driver.sleep(3000) // Transition
       await wait.andClick(driver, pom.scriptEditor.cancel)
       await driver.sleep(3000) // Transition
       // Submit Response
@@ -113,6 +114,35 @@ export const campaigns = {
       await wait.andClick(driver, pom.campaigns.start)
       // Validate Started
       expect(await wait.andGetEl(driver, pom.campaigns.isStarted)).toBeTruthy()
+    })
+  },
+  editCampaign(driver, campaign) {
+    it('opens the Campaigns tab', async () => {
+      await wait.andClick(driver, pom.navigation.sections.campaigns)
+    })
+
+    it('clicks on an existing campaign', async () => {
+      await wait.andClick(driver, pom.campaigns.campaignRowByText(campaign.basics.title))
+    })
+
+    it('clicks edit in Stats', async () => {
+      await wait.andClick(driver, pom.campaigns.stats.edit)
+    })
+
+    it('changes the title in the Basics section', async () => {
+      // Expand Basics section
+      await wait.andClick(driver, pom.campaigns.form.basics.section)
+      // Change Title
+      await wait.andType(driver, pom.campaigns.form.basics.title, campaign.basics.title_changed, { click: true, clear: false })
+      // Save
+      await wait.andClick(driver, pom.campaigns.form.save)
+    })
+
+    it('reopens the Basics section to verify title', async () => {
+      // Expand Basics section
+      await wait.andClick(driver, pom.campaigns.form.basics.section)
+      // Verify Title
+      expect(await wait.andGetValue(driver, pom.campaigns.form.basics.title)).toBe(campaign.basics.title_changed)
     })
   }
 }

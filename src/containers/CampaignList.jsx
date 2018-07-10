@@ -14,7 +14,7 @@ import gql from 'graphql-tag'
 import wrapMutations from './hoc/wrap-mutations'
 import SpeakerNotesIcon from 'material-ui/svg-icons/action/speaker-notes'
 import Empty from '../components/Empty'
-
+import { dataTest } from '../lib/attributes'
 
 const campaignInfoFragment = `
   id
@@ -88,6 +88,7 @@ class CampaignList extends React.Component {
     const campaignUrl = `/admin/${this.props.organizationId}/campaigns/${campaign.id}`
     return (
       <ListItem
+        {...dataTest('campaignRow')}
         style={listItemStyle}
         key={campaign.id}
         primaryText={primaryText}
