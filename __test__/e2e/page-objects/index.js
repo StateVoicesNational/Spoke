@@ -4,6 +4,7 @@ import { login } from './login'
 import { navigation } from './navigation'
 import { people } from './people'
 import { scriptEditor } from './scriptEditor'
+import { texter } from './texter'
 
 export default {
   campaigns,
@@ -11,5 +12,6 @@ export default {
   main,
   navigation,
   people,
-  scriptEditor
+  scriptEditor,
+  texter
 }

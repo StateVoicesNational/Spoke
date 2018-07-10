@@ -1,6 +1,6 @@
 import { selenium } from './util/helpers'
 import STRINGS from './data/strings'
-import { campaigns, login, main, people } from './page-functions/index'
+import { campaigns, login, main, people, texter } from './page-functions/index'
 
 // Instantiate browser(s)
 const driver = selenium.buildDriver()
@@ -42,5 +42,17 @@ describe('Basic text manager workflow', () => {
 
   describe('(As Admin) Create a New Campaign', () => {
     campaigns.startCampaign(driver, CAMPAIGN)
+  })
+
+  describe('(As Texter) Send Texts', () => {
+    texter.sendTexts(driverTexter, CAMPAIGN)
+  })
+
+  describe('(As Admin) Send Replies', () => {
+    campaigns.sendReplies(driver, CAMPAIGN)
+  })
+
+  describe('(As Texter) View Responses', () => {
+
   })
 })
