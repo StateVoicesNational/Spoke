@@ -77,6 +77,8 @@ export async function getConversations(
   utc
 ) {
 
+  /* Query #1 == get campaign_contact.id for all the conversations matching
+  * the criteria with offset and limit. */
   let offsetLimitQuery = r.knex.select('campaign_contact.id as cc_id')
 
   offsetLimitQuery = getConversationsJoinsAndWhereClause(
@@ -97,6 +99,8 @@ export async function getConversations(
     return ccIdRow.cc_id
   })
 
+  /* Query #2 -- get all the columns we need, including messages, using the
+  * cc_ids from Query #1 to scope the results to limit, offset */
   let query = r.knex.select(
     'campaign_contact.id as cc_id',
     'campaign_contact.first_name as cc_first_name',
@@ -144,6 +148,9 @@ export async function getConversations(
 
   const conversationRows = await query
 
+  /* collapse the rows to produce an array of objects, with each object
+  * containing the fields for one conversation, each having an array of
+  * message objects */
   const messageFields = [
     'mess_id',
     'text',
@@ -168,6 +175,8 @@ export async function getConversations(
     )
   }
 
+  /* Query #3 -- get the count of all conversations matching the criteria.
+  * We need this to show total number of conversations to support paging */
   const countQuery = r.knex.count('*')
   const conversationsCountArray = await getConversationsJoinsAndWhereClause(
     countQuery,
