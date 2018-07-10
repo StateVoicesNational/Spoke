@@ -133,6 +133,7 @@ class UserMenu extends Component {
             />
             <Divider />
             <MenuItem
+              {...dataTest('userMenuLogOut')}
               primaryText='Log out'
               value='logout'
             />

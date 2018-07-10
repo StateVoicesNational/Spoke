@@ -340,7 +340,10 @@ export default class CampaignTextersForm extends React.Component {
     return this.formValues().texters.map((texter, index) => {
       const messagedCount = texter.assignment.contactsCount - texter.assignment.needsMessageCount
       return (
-        <div className={css(styles.texterRow)}>
+        <div
+          {...dataTest('texterRow')}
+          className={css(styles.texterRow)}
+        >
           <div className={css(styles.leftSlider)}>
             <Slider
               maxValue={this.formValues().contactsCount}
@@ -353,14 +356,14 @@ export default class CampaignTextersForm extends React.Component {
             {messagedCount}
           </div>
           <div
-            {...dataTest(`texter${index}Name`)}
+            {...dataTest('texterName')}
             className={css(styles.nameColumn)}
           >
             {this.getDisplayName(texter.id)}
           </div>
           <div className={css(styles.input)}>
             <Form.Field
-              {...dataTest(`texter${index}Assignment`)}
+              {...dataTest('texterAssignment')}
               name={`texters[${index}].assignment.needsMessageCount`}
               hintText='Contacts'
               fullWidth

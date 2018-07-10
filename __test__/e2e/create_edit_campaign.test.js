@@ -2,14 +2,15 @@ import { selenium } from './util/helpers'
 import STRINGS from './data/strings'
 import { campaigns, login, main } from './page-functions/index'
 
-// Instantiate browser(s)
-const driver = selenium.buildDriver()
-
 describe('Create and Edit Campaign', () => {
+  // Instantiate browser(s)
+  const driver = selenium.buildDriver()
   const CAMPAIGN = STRINGS.campaigns.editCampaign
+
   beforeAll(() => {
     global.e2e = {}
   })
+
   afterAll(async () => {
     await selenium.quitDriver(driver)
   })

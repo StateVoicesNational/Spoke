@@ -1,4 +1,6 @@
+import { until } from 'selenium-webdriver'
 import { wait } from '../util/helpers'
+import config from '../util/config'
 import pom from '../page-objects/index'
 
 export const main = {
@@ -9,6 +11,10 @@ export const main = {
 
     it('clicks the submit button', async () => {
       await wait.andClick(driver, pom.main.organization.submit)
+      await driver.wait(until.urlContains('admin'))
+      const url = await driver.getCurrentUrl()
+      const re = /\/admin\/(\d+)\//g
+      global.e2e.organization = await re.exec(url)[1]
     })
   },
   editUser(driver, user) {
@@ -44,6 +50,19 @@ export const main = {
       expect(await wait.andGetValue(driver, pom.people.edit.firstName)).toBe(user.given_name)
       expect(await wait.andGetValue(driver, pom.people.edit.lastName)).toBe(user.family_name)
       expect(await wait.andGetValue(driver, pom.people.edit.email)).toBe(user.email)
+    })
+  },
+  logOutUser(driver) {
+    it('gets the landing page', async () => {
+      await driver.get(config.baseUrl)
+    })
+
+    it('opens the User menu', async () => {
+      await wait.andClick(driver, pom.main.userMenuButton)
+    })
+
+    it('click on the user name', async () => {
+      await wait.andClick(driver, pom.main.logOut)
     })
   }
 }

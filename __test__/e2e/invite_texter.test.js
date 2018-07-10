@@ -2,30 +2,31 @@ import { selenium } from './util/helpers'
 import STRINGS from './data/strings'
 import { login, main, people } from './page-functions/index'
 
-// Instantiate browser(s)
-const driver = selenium.buildDriver()
-const driverTexter = selenium.buildDriver()
-
 describe('Invite Texter workflow', () => {
+  // Instantiate browser(s)
+  const driverAdmin = selenium.buildDriver()
+  const driverTexter = selenium.buildDriver()
   const CAMPAIGN = STRINGS.campaigns.userManagement
+
   beforeAll(() => {
     global.e2e = {}
   })
+
   afterAll(async () => {
-    await selenium.quitDriver(driver)
+    await selenium.quitDriver(driverAdmin)
     await selenium.quitDriver(driverTexter)
   })
 
   describe('(As Admin) Log In an admin to Spoke', () => {
-    login.tryLoginThenSignUp(driver, CAMPAIGN.admin)
+    login.tryLoginThenSignUp(driverAdmin, CAMPAIGN.admin)
   })
 
   describe('(As Admin) Create a New Organization / Team', () => {
-    main.createOrg(driver, STRINGS.org)
+    main.createOrg(driverAdmin, STRINGS.org)
   })
 
   describe('(As Admin) Invite a new User', () => {
-    people.invite(driver)
+    people.invite(driverAdmin)
   })
 
   describe('(As Texter) Follow the Invite URL', () => {
@@ -40,7 +41,7 @@ describe('Invite Texter workflow', () => {
     })
   })
   describe('(As Admin) Edit User', () => {
-    people.editUser(driver, CAMPAIGN.admin)
+    people.editUser(driverAdmin, CAMPAIGN.admin)
   })
 
   describe('(As Texter) Edit User', () => {

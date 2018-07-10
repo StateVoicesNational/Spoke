@@ -27,6 +27,16 @@ export const selenium = {
   }
 }
 
+export const urlBuilder = {
+  login: `${config.baseUrl}/login`,
+  admin: {
+    root() { return `${config.baseUrl}/admin/${global.e2e.organization}` }
+  },
+  app: {
+    todos() { return `${config.baseUrl}/app/${global.e2e.organization}/todos` }
+  }
+}
+
 const waitAnd = async (driver, locator, options) => {
   const el = await driver.wait(until.elementLocated(locator, options.msWait || defaultWait))
   if (options.elementIsVisible !== false) await driver.wait(until.elementIsVisible(el))

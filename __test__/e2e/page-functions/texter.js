@@ -1,10 +1,11 @@
 import _ from 'lodash'
-import { wait } from '../util/helpers'
+import { wait, urlBuilder } from '../util/helpers'
 import pom from '../page-objects/index'
 
 export const texter = {
   sendTexts(driver, campaign) {
     it('refreshes Dashboard', async () => {
+      await driver.get(urlBuilder.app.todos())
       await driver.navigate().refresh()
       await wait.andClick(driver, pom.texter.sendFirstTexts)
     })
@@ -15,9 +16,40 @@ export const texter = {
         })
       })
       it('should have an empty todo list', async () => {
-        await driver.sleep(1000)
+        await driver.get(urlBuilder.app.todos())
+        await driver.navigate().refresh()
         expect(await wait.andGetEl(driver, pom.texter.emptyTodo)).toBeDefined()
       })
+    })
+  },
+  optOutContact(driver) {
+    it('clicks the Opt Out button', async () => {
+      await wait.andClick(driver, pom.texter.optOut.button)
+    })
+    it('clicks Send', async () => {
+      await wait.andClick(driver, pom.texter.optOut.send)
+    })
+  },
+  viewInvite(driver) {
+    it('follows the link to the invite', async () => {
+      await driver.get(global.e2e.joinUrl)
+    })
+  },
+  viewReplies(driver, campaign) {
+    it('refreshes Dashboard', async () => {
+      await driver.get(urlBuilder.app.todos())
+      await driver.navigate().refresh()
+      await wait.andClick(driver, pom.texter.sendReplies)
+    })
+    it('verifies reply', async () => {
+      expect(await wait.andGetEl(driver, pom.texter.replyByText(campaign.standardReply))).toBeDefined()
+    })
+  },
+  viewSendFirstTexts(driver) {
+    it('verifies that Send First Texts button is present', async () => {
+      await driver.get(urlBuilder.app.todos())
+      await driver.navigate().refresh()
+      expect(await wait.andGetEl(driver, pom.texter.sendFirstTexts)).toBeDefined()
     })
   }
 }

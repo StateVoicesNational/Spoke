@@ -122,6 +122,7 @@ export class AssignmentSummary extends Component {
               hideIfZero: !useDynamicAssignment
             })}
             {(window.NOT_IN_USA && window.ALLOW_SEND_ALL) ? '' : this.renderBadgedButton({
+              dataTestText: 'sendReplies',
               assignment,
               title: 'Send replies',
               count: unrepliedCount,
