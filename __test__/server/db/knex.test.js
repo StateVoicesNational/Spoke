@@ -1,11 +1,10 @@
-const { NODE_ENV = 'development' } = process.env
-// console.log('using env', NODE_ENV)
-const knex = require('knex')(require('../../../knexfile.js')[NODE_ENV])
+const config = require('../../../knexfile.js')
+const knex = require('knex')(config)
 console.log('knex config is', knex.client.config.connection)
 
 describe('The knexfile', () => {
   beforeEach(() => knex.migrate.latest())
-  afterEach(() => knex.raw('DROP OWNED BY spoke_test;'))
+  afterEach(() => knex.raw('DROP OWNED BY spoke_test;')) // make this more db-agnostic
 
   it('provides an up-to-date interaction_step schema', () => {
     return knex('interaction_step').columnInfo()
