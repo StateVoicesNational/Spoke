@@ -54,6 +54,34 @@ const campaigns = {
     dynamicAssignment: false,
     basics: {
       title: 'Test Campaign Title',
+      title_changed: 'Test Campaign Title Changed',
+      description: 'Test Campaign Description'
+    },
+    contacts: {
+      csv: path.resolve(__dirname, './people.csv')
+    },
+    texters: {
+      contactLength: 2
+    },
+    interaction: {
+      script: 'Test First {firstName} Last {lastName}!',
+      question: 'Test Question?'
+    },
+    cannedResponses: [
+      {
+        title: 'Test CR0',
+        script: 'Test CR First {firstName} Last {lastName}.'
+      }
+    ]
+  },
+  editCampaign: {
+    name: 'editCampaign',
+    admin: users.admin1,
+    existingTexter: false,
+    dynamicAssignment: true,
+    basics: {
+      title: 'Test Campaign Title',
+      title_changed: 'Test Campaign Title Changed',
       description: 'Test Campaign Description'
     },
     contacts: {
