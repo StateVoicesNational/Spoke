@@ -17,23 +17,6 @@ export const schema = `
     maxContacts: Int
   }
 `
-
-function addWhereClauseForMessageStatus(query, messageStatus) {
-  if (messageStatus.includes(',')) {
-    const messageStatuses = messageStatus.split(',')
-    return query.whereIn('message_status', messageStatuses)
-  }
-  return query.where('message_status', messageStatus)
-}
-
-function addWhereClauseForNeedsMessageOrResponse(query) {
-  return addWhereClauseForMessageStatus(query, 'needsResponse,needsMessage')
-}
-
-function hasOwnProperty(obj, propname) {
-  return Object.prototype.hasOwnProperty.call(obj, propname)
-}
-
 export function addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue(
   queryParameter,
   contactsFilter
@@ -44,9 +27,9 @@ export function addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDu
 
   let query = queryParameter
   if (contactsFilter.messageStatus === 'needsMessageOrResponse') {
-    query = addWhereClauseForNeedsMessageOrResponse(query)
+    query.whereIn('message_status', ['needsResponse', 'needsMessage'])
   } else {
-    query = addWhereClauseForMessageStatus(query, contactsFilter.messageStatus)
+    query = query.whereIn('message_status', contactsFilter.messageStatus.split(','))
   }
   return query
 }
@@ -66,14 +49,15 @@ export function getContacts(assignment, contactsFilter, organization, campaign, 
   let query = r.knex('campaign_contact').where('assignment_id', assignment.id)
 
   if (contactsFilter) {
-    if (hasOwnProperty(contactsFilter, 'validTimezone') && contactsFilter.validTimezone !== null) {
-      if (contactsFilter.validTimezone === true) {
+    const validTimezone = contactsFilter.validTimezone
+    if (validTimezone !== null) {
+      if (validTimezone === true) {
         if (defaultTimezoneIsBetweenTextingHours(config)) {
           // missing timezone ok
           validOffsets.push('')
         }
         query = query.whereIn('timezone_offset', validOffsets)
-      } else if (contactsFilter.validTimezone === false) {
+      } else if (validTimezone === false) {
         if (!defaultTimezoneIsBetweenTextingHours(config)) {
           // missing timezones are not ok to text
           invalidOffsets.push('')
@@ -82,52 +66,40 @@ export function getContacts(assignment, contactsFilter, organization, campaign, 
       }
     }
 
-    let includePastDue = false
-    if (hasOwnProperty(contactsFilter, 'includePastDue') && contactsFilter.includePastDue != null) {
-      includePastDue = contactsFilter.includePastDue
-    }
+    const includePastDue = contactsFilter.includePastDue
 
-    if (
-      includePastDue &&
-      hasOwnProperty(contactsFilter, 'messageStatus') &&
-      contactsFilter.messageStatus !== null
-    ) {
+    if (includePastDue && contactsFilter.messageStatus) {
       query = addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue(
         query,
         contactsFilter
       )
     } else {
-      if (
-        hasOwnProperty(contactsFilter, 'messageStatus') &&
-        contactsFilter.messageStatus !== null
-      ) {
+      if (contactsFilter.messageStatus) {
         if (pastDue && contactsFilter.messageStatus === 'needsMessage') {
-          query = addWhereClauseForMessageStatus(query, '') // stops finding anything after pastDue
+          query = query.where('message_status', '')
         } else if (contactsFilter.messageStatus === 'needsMessageOrResponse') {
-          query = addWhereClauseForNeedsMessageOrResponse(query)
+          query.whereIn('message_status', ['needsResponse', 'needsMessage'])
         } else {
-          query = addWhereClauseForMessageStatus(query, contactsFilter.messageStatus)
+          query = query.whereIn('message_status', contactsFilter.messageStatus.split(','))
         }
       } else {
         if (pastDue) {
           // by default if asking for 'send later' contacts we include only those that need replies
-          query = addWhereClauseForMessageStatus(query, 'needsResponse')
+          query = query.where('message_status', 'needsResponse')
         } else {
           // we do not want to return closed/messaged
-          query = addWhereClauseForNeedsMessageOrResponse(query)
+          query.whereIn('message_status', ['needsResponse', 'needsMessage'])
         }
       }
     }
 
-    if (hasOwnProperty(contactsFilter, 'isOptedOut') && contactsFilter.isOptedOut !== null) {
+    if (contactsFilter.isOptedOut) {
       query = query.where('is_opted_out', contactsFilter.isOptedOut)
     }
   }
 
   if (!forCount) {
-    query = query.orderByRaw(
-      'message_status DESC, updated_at'
-    )
+    query = query.orderByRaw('message_status DESC, updated_at')
   }
 
   return query
