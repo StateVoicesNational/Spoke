@@ -4,10 +4,10 @@ module.exports = {
     // define the log table
     if (!await knex.schema.hasTable('log')) {
       await knex.schema.createTable('log', t => {
-        t.primary('id')
-        t.string('message_sid').notNullable()
+        t.increments('id').primary()
+        t.text('message_sid').notNullable()
         t.text('body')
-        t.timestamp('created_at')
+        t.timestamp('created_at').notNullable().defaultTo(knex.fn.now())
       })
     }
     Promise.resolve()
