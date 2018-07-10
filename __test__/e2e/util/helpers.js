@@ -5,7 +5,7 @@ import _ from 'lodash'
 
 const defaultWait = 10000
 
-const selenium = {
+export const selenium = {
   buildDriver() {
     const driver = process.env.npm_config_saucelabs ?
       new Builder()
@@ -27,6 +27,13 @@ const selenium = {
   }
 }
 
+// export const find = {
+//   async elements(driver, locator) {
+//     return await driver.findElements(locator)
+//   }
+// }
+//todo
+
 const waitAnd = async (driver, locator, options) => {
   const el = await driver.wait(until.elementLocated(locator, options.msWait || defaultWait))
   if (options.elementIsVisible !== false) await driver.wait(until.elementIsVisible(el))
@@ -36,7 +43,7 @@ const waitAnd = async (driver, locator, options) => {
   return el
 }
 
-const wait = {
+export const wait = {
   async untilLocated(driver, locator, options) {
     return await waitAnd(driver, locator, _.assign({}, options))
   },
@@ -58,5 +65,3 @@ const wait = {
     return await el.isEnabled()
   }
 }
-
-export { selenium, wait }

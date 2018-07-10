@@ -5,7 +5,7 @@ import { campaigns, login, main } from './page-functions/index'
 // Instantiate browser(s)
 const driver = selenium.buildDriver()
 
-describe('Basic text manager workflow', () => {
+describe('Create and Edit Campaign', () => {
   const CAMPAIGN = STRINGS.campaigns.editCampaign
   beforeAll(() => {
     global.e2e = {}

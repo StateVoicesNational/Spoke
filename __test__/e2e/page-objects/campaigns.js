@@ -4,6 +4,7 @@ export const campaigns = {
   add: By.css('[data-test=addCampaign]'),
   start: By.css('[data-test=startCampaign]:not([disabled])'),
   campaignRowByText(text) { return By.xpath(`//*[contains(text(),'${text}')]/ancestor::*[@data-test='campaignRow']`) },
+  warningIcon: By.css('[data-test=warningIcon]'),
   form: {
     basics: {
       section: By.css('[data-test=basics]'),
@@ -42,11 +43,13 @@ export const campaigns = {
       addNew: By.css('[data-test=newCannedResponse]'),
       title: By.css('[data-test=title]'),
       editorLaunch: By.css('[data-test=editorResponse]'),
+      createdResponseByText(text) { return By.xpath(`//span[@data-test='cannedResponse']/descendant::*[contains(text(),'${text}')]`) },
       submit: By.css('[data-test=addResponse]')
     },
     save: By.css('[type=submit]:not([disabled]')
   },
   stats: {
+    copy: By.css('[data-test=copyCampaign]'),
     edit: By.css('[data-test=editCampaign]')
   },
   isStarted: By.css('[data-test=campaignIsStarted]')

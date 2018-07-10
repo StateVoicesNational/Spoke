@@ -1,5 +1,27 @@
 import path from 'path'
 
+// Common to all campaigns
+const contacts = {
+  csv: path.resolve(__dirname, './people.csv')
+}
+
+const texters = {
+  contactLength: 2
+}
+
+const interaction = {
+  script: 'Test First {firstName} Last {lastName}!',
+  question: 'Test Question?'
+}
+
+const cannedResponses = [
+  {
+    title: 'Test CR0',
+    script: 'Test CR First {firstName} Last {lastName}.'
+  }
+]
+
+// Exported
 const org = 'SpokeTestOrg'
 
 const users = {
@@ -53,26 +75,29 @@ const campaigns = {
     existingTexter: true,
     dynamicAssignment: false,
     basics: {
-      title: 'Test Campaign Title',
-      title_changed: 'Test Campaign Title Changed',
-      description: 'Test Campaign Description'
+      title: 'Test ET Campaign Title',
+      description: 'Test ET Campaign Description'
     },
-    contacts: {
-      csv: path.resolve(__dirname, './people.csv')
+    contacts,
+    texters,
+    interaction,
+    cannedResponses
+  },
+  copyCampaign: {
+    name: 'copyCampaign',
+    admin: users.admin0,
+    texter: users.texter0,
+    existingTexter: true,
+    dynamicAssignment: false,
+    basics: {
+      title: 'Test C Campaign Title',
+      title_copied: 'COPY - Test C Campaign Title',
+      description: 'Test C Campaign Description'
     },
-    texters: {
-      contactLength: 2
-    },
-    interaction: {
-      script: 'Test First {firstName} Last {lastName}!',
-      question: 'Test Question?'
-    },
-    cannedResponses: [
-      {
-        title: 'Test CR0',
-        script: 'Test CR First {firstName} Last {lastName}.'
-      }
-    ]
+    contacts,
+    texters,
+    interaction,
+    cannedResponses
   },
   editCampaign: {
     name: 'editCampaign',
@@ -80,26 +105,14 @@ const campaigns = {
     existingTexter: false,
     dynamicAssignment: true,
     basics: {
-      title: 'Test Campaign Title',
-      title_changed: 'Test Campaign Title Changed',
-      description: 'Test Campaign Description'
+      title: 'Test E Campaign Title',
+      title_changed: 'Test E Campaign Title Changed',
+      description: 'Test E Campaign Description'
     },
-    contacts: {
-      csv: path.resolve(__dirname, './people.csv')
-    },
-    texters: {
-      contactLength: 2
-    },
-    interaction: {
-      script: 'Test First {firstName} Last {lastName}!',
-      question: 'Test Question?'
-    },
-    cannedResponses: [
-      {
-        title: 'Test CR0',
-        script: 'Test CR First {firstName} Last {lastName}.'
-      }
-    ]
+    contacts,
+    texters,
+    interaction,
+    cannedResponses
   },
   userManagement: {
     name: 'userManagement',
