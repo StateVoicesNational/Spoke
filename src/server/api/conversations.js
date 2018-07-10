@@ -51,6 +51,23 @@ function getConversationsJoinsAndWhereClause(
   return addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue(query, contactsFilter)
 }
 
+/*
+This is necessary because the SQL query that provides the data for this resolver
+is a join across several tables with non-unique column names.  In the query, we
+alias the column names to make them unique.  This function creates a copy of the
+results, replacing keys in the fields map with the original column name, so the
+results can be consumed by downstream resolvers.
+ */
+function mapQueryFieldsToResolverFields(queryResult, fieldsMap) {
+  return _.mapKeys(queryResult, (value, key) => {
+    const newKey = fieldsMap[key]
+    if (newKey) {
+      return newKey
+    }
+    return key
+  })
+}
+
 export async function getConversations(
   cursor,
   organizationId,
@@ -59,6 +76,27 @@ export async function getConversations(
   contactsFilter,
   utc
 ) {
+
+  let offsetLimitQuery = r.knex.select('campaign_contact.id as cc_id')
+
+  offsetLimitQuery = getConversationsJoinsAndWhereClause(
+    offsetLimitQuery,
+    organizationId,
+    campaignsFilter,
+    assignmentsFilter,
+    contactsFilter
+  )
+
+  offsetLimitQuery = offsetLimitQuery
+    .orderBy('campaign_contact.updated_at')
+    .orderBy('cc_id')
+  offsetLimitQuery= offsetLimitQuery.limit(cursor.limit).offset(cursor.offset)
+
+  const ccIdRows = await offsetLimitQuery
+  const ccIds = ccIdRows.map((ccIdRow) => {
+    return ccIdRow.cc_id
+  })
+
   let query = r.knex.select(
     'campaign_contact.id as cc_id',
     'campaign_contact.first_name as cc_first_name',
@@ -74,7 +112,13 @@ export async function getConversations(
     'campaign.id as cmp_id',
     'campaign.title',
     'campaign.due_by',
-    'assignment.id as ass_id'
+    'assignment.id as ass_id',
+    'message.id as mess_id',
+    'message.text',
+    'message.user_number',
+    'message.contact_number',
+    'message.created_at',
+    'message.is_from_contact'
   )
 
   query = getConversationsJoinsAndWhereClause(
@@ -85,10 +129,44 @@ export async function getConversations(
     contactsFilter
   )
 
-  query = query.orderBy('campaign_contact.updated_at').orderBy('cc_id')
-  query = query.limit(cursor.limit).offset(cursor.offset)
+  query = query.whereIn('campaign_contact.id', ccIds)
 
-  const conversations = await query
+  query = query.leftJoin('message', table => {
+    table
+      .on('message.assignment_id', '=', 'assignment.id')
+      .andOn('message.contact_number', '=', 'campaign_contact.cell')
+  })
+
+  query = query
+    .orderBy('campaign_contact.updated_at')
+    .orderBy('cc_id')
+    .orderBy('message.created_at')
+
+  const conversationRows = await query
+
+  const messageFields = [
+    'mess_id',
+    'text',
+    'user_number',
+    'contact_number',
+    'created_at',
+    'is_from_contact'
+  ]
+
+  let ccId = undefined
+  let conversation = undefined
+  const conversations = []
+  for (const conversationRow of conversationRows) {
+    if (ccId !== conversationRow.cc_id) {
+      ccId = conversationRow.cc_id
+      conversation = _.omit(conversationRow, messageFields)
+      conversation.messages = []
+      conversations.push(conversation)
+    }
+    conversation.messages.push(
+      mapQueryFieldsToResolverFields(_.pick(conversationRow, messageFields), { mess_id: 'id' })
+    )
+  }
 
   const countQuery = r.knex.count('*')
   const conversationsCountArray = await getConversationsJoinsAndWhereClause(
@@ -108,23 +186,6 @@ export async function getConversations(
     conversations,
     pageInfo
   }
-}
-
-/*
-This is necessary because the SQL query that provides the data for this resolver
-is a join across several tables with non-unique column names.  In the query, we
-alias the column names to make them unique.  This function creates a copy of the
-results, replacing keys in the fields map with the original column name, so the
-results can be consumed by downstream resolvers.
- */
-function mapQueryFieldsToResolverFields(queryResult, fieldsMap) {
-  return _.mapKeys(queryResult, (value, key) => {
-    const newKey = fieldsMap[key]
-    if (newKey) {
-      return newKey
-    }
-    return key
-  })
 }
 
 export const resolvers = {
