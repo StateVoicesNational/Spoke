@@ -165,6 +165,11 @@ export const resolvers = {
       if (campaignContact.message_status === 'needsMessage') {
         return [] // it's the beginning, so there won't be any
       }
+
+      if ('messages' in campaignContact) {
+        return campaignContact.messages
+      }
+
       const messages = await r.table('message')
         .getAll(campaignContact.assignment_id, { index: 'assignment_id' })
         .filter({
