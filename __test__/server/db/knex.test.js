@@ -1,16 +1,25 @@
 const config = require('../../../knexfile.js')
 const knex = require('knex')(config)
+import { tables } from './schemas/export.js'
+const TEST_TIMEOUT = 30000
+
+function compareSchemas(a, b) {
+  return JSON.stringify(a, null, 2) === JSON.stringify(b, null, 2)
+}
 
 describe('The knexfile', () => {
-  beforeEach(() => knex.migrate.latest())
-  afterEach(() => knex.raw('DROP OWNED BY spoke_test;')) // make this more db-agnostic
+  knex.migrate.latest()
 
-  it('provides an up-to-date interaction_step schema', () => {
-    return knex('interaction_step').columnInfo()
-    .then(res => {
-      console.log('interaction_step', res)
-      expect(1).toEqual(1)
-    })
-    .catch(console.error)
-  }, 80000)
+  tables.forEach(async t => {
+    it(`provides an up-to-date ${t} table schema`, () => {
+      return knex(t).columnInfo()
+      .then(res => {
+        // eslint-disable-nextline global-require
+        const originalSchema = require(`./schemas/${t}.json`)
+        expect(compareSchemas(res, originalSchema)).toEqual(true)
+      })
+    }, TEST_TIMEOUT)
+  })
+
+  knex.raw('DROP OWNED BY spoke_test;') // make this more db-agnostic
 })

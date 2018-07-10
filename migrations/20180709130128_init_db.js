@@ -1,12 +1,14 @@
 module.exports = {
-  up: (knex, Promise) => {
+  up: async (knex, Promise) => {
     // define the log table
-    knex.schema.createTableIfNotExists('log', t => {
-      t.string('id')
-      t.string.notNullable('message_sid')
-      t.string('body')
-      t.timestamp('created_at')
-    })
+    if (!await knex.schema.hasTable('log')) {
+      knex.schema.createTable('log', t => {
+        t.string('id')
+        t.string.notNullable('message_sid')
+        t.string('body')
+        t.timestamp('created_at')
+      })
+    }
   },
   down: (knex, Promise) => {
     Promise.resolve()
