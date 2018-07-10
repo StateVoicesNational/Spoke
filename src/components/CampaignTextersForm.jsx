@@ -339,7 +339,7 @@ export default class CampaignTextersForm extends React.Component {
     return this.formValues().texters.map((texter, index) => {
       const messagedCount = texter.assignment.contactsCount - texter.assignment.needsMessageCount
       return (
-        <div className={css(styles.texterRow)}>
+        <div key={index} className={css(styles.texterRow)}>
           <div className={css(styles.leftSlider)}>
             <Slider
               maxValue={this.formValues().contactsCount}
