@@ -9,8 +9,11 @@ const {
   DB_NAME,
   DB_PASSWORD,
   DB_USER,
-  DATABASE_URL
+  DATABASE_URL,
+  NODE_ENV
 } = process.env
+const min = parseInt(DB_MIN_POOL, 10)
+const max = parseInt(DB_MAX_POOL, 10)
 
 const pg = require('pg')
 
@@ -20,7 +23,19 @@ if (useSSL) pg.defaults.ssl = true
 
 let config
 
-if (DB_JSON) {
+if (NODE_ENV === 'test') {
+  config = {
+    client: 'pg',
+    connection: {
+      host: DB_HOST,
+      port: DB_PORT,
+      database: 'spoke_test',
+      password: 'spoke_test',
+      user: 'spoke_test',
+      ssl: useSSL
+    }
+  }
+} else if (DB_JSON) {
   config = JSON.parse(DB_JSON)
 } else if (DB_TYPE) {
   config = {
@@ -33,20 +48,14 @@ if (DB_JSON) {
       user: DB_USER,
       ssl: useSSL
     },
-    pool: {
-      min: DB_MIN_POOL,
-      max: DB_MAX_POOL
-    }
+    pool: { min, max }
   }
 } else if (DATABASE_URL) {
   const dbType = DATABASE_URL.match(/^\w+/)[0]
   config = {
     client: (/postgres/.test(dbType) ? 'pg' : dbType),
     connection: DATABASE_URL,
-    pool: {
-      min: DB_MIN_POOL,
-      max: DB_MAX_POOL
-    },
+    pool: { min, max },
     ssl: useSSL
   }
 } else {
@@ -57,21 +66,4 @@ if (DB_JSON) {
   }
 }
 
-const test = {
-  client: 'pg',
-  connection: {
-    host: DB_HOST,
-    port: DB_PORT,
-    database: 'spoke_test',
-    password: 'spoke_test',
-    user: 'spoke_test',
-    ssl: useSSL
-  }
-}
-
-module.exports = {
-  development: config,
-  staging: config,
-  production: config,
-  test
-}
+module.exports = config
