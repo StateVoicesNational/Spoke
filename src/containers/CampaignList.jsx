@@ -49,7 +49,7 @@ class CampaignList extends React.Component {
       listItemStyle = inlineStyles.past
     } else if (!isStarted || hasUnassignedContacts) {
       listItemStyle = inlineStyles.warn
-      leftIcon = <WarningIcon />
+      leftIcon = <WarningIcon {...dataTest('warningIcon')} />
     } else {
       listItemStyle = inlineStyles.good
     }
@@ -78,8 +78,8 @@ class CampaignList extends React.Component {
           {campaign.description}
           <br />
           {dueByMoment.isValid() ?
-           dueByMoment.format('MMM D, YYYY') :
-           'No due date set'}
+            dueByMoment.format('MMM D, YYYY') :
+            'No due date set'}
         </span>
       </span>
     )
@@ -98,21 +98,21 @@ class CampaignList extends React.Component {
         secondaryText={secondaryText}
         leftIcon={leftIcon}
         rightIconButton={adminPerms ?
-                         (campaign.isArchived ? (
-          <IconButton
-            tooltip='Unarchive'
-            onTouchTap={async () => this.props.mutations.unarchiveCampaign(campaign.id)}
-          >
-            <UnarchiveIcon />
-          </IconButton>
-        ) : (
-          <IconButton
-            tooltip='Archive'
-            onTouchTap={async () => this.props.mutations.archiveCampaign(campaign.id)}
-          >
-            <ArchiveIcon />
-          </IconButton>
-        )) : null}
+          (campaign.isArchived ? (
+            <IconButton
+              tooltip='Unarchive'
+              onTouchTap={async () => this.props.mutations.unarchiveCampaign(campaign.id)}
+            >
+              <UnarchiveIcon />
+            </IconButton>
+          ) : (
+              <IconButton
+                tooltip='Archive'
+                onTouchTap={async () => this.props.mutations.archiveCampaign(campaign.id)}
+              >
+                <ArchiveIcon />
+              </IconButton>
+            )) : null}
       />
     )
   }
@@ -125,10 +125,10 @@ class CampaignList extends React.Component {
         icon={<SpeakerNotesIcon />}
       />
     ) : (
-      <List>
-        {campaigns.map((campaign) => this.renderRow(campaign))}
-      </List>
-    )
+        <List>
+          {campaigns.map((campaign) => this.renderRow(campaign))}
+        </List>
+      )
   }
 }
 

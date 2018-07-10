@@ -186,6 +186,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
       <div style={styles.answerContainer}>
         {interactionStep.questionText && interactionStep.script && (!interactionStep.parentInteractionId || interactionStep.answerOption) ? <div>
           <RaisedButton
+            {...dataTest('addResponse')}
             label='+ Add a response'
             onTouchTap={this.addStep(interactionStep.id).bind(this)}
             style={{ marginBottom: '10px' }}

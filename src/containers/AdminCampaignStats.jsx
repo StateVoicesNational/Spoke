@@ -214,6 +214,7 @@ class AdminCampaignStats extends React.Component {
                         /> : null),
                       ( // copy
                       <RaisedButton
+                        {...dataTest('copyCampaign')}
                         label='Copy Campaign'
                         onTouchTap={async() => await this.props.mutations.copyCampaign(this.props.params.campaignId)}
                       />)

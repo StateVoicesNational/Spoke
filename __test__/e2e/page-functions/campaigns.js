@@ -94,7 +94,8 @@ export const campaigns = {
       // Script
       await wait.andClick(driver, pom.campaigns.form.cannedResponse.editorLaunch)
       await wait.andClick(driver, pom.scriptEditor.editor)
-      await wait.andType(driver, pom.scriptEditor.editor, campaign.interaction.script, { clear: false })
+      await wait.andType(driver, pom.scriptEditor.editor, campaign.cannedResponses[0].script, { clear: false })
+      await driver.sleep(5000) // TODO
       await wait.andClick(driver, pom.scriptEditor.done)
       // Script - Relaunch and cancel (bug?)
       await driver.sleep(3000) // Transition
@@ -104,6 +105,7 @@ export const campaigns = {
       await driver.sleep(3000) // Transition
       // Submit Response
       await wait.andClick(driver, pom.campaigns.form.cannedResponse.submit)
+      await driver.sleep(5000) // TODO
       // Save
       await wait.andClick(driver, pom.campaigns.form.save)
       // Should be able to start campaign
@@ -114,6 +116,55 @@ export const campaigns = {
       await wait.andClick(driver, pom.campaigns.start)
       // Validate Started
       expect(await wait.andGetEl(driver, pom.campaigns.isStarted)).toBeTruthy()
+    })
+  },
+  copyCampaign(driver, campaign) {
+    it('opens the Campaigns tab', async () => {
+      await wait.andClick(driver, pom.navigation.sections.campaigns)
+    })
+
+    it('clicks on an existing campaign', async () => {
+      await wait.andClick(driver, pom.campaigns.campaignRowByText(campaign.basics.title))
+    })
+
+    it('clicks Copy in Stats', async () => {
+      await wait.andClick(driver, pom.campaigns.stats.copy)
+    })
+
+    it('verifies copy in Campaigns list', async () => {
+      await wait.andClick(driver, pom.navigation.sections.campaigns)
+      expect(await wait.andGetEl(driver, pom.campaigns.campaignRowByText('COPY'))).toBeDefined()
+      expect(await wait.andGetEl(driver, pom.campaigns.warningIcon)).toBeDefined()
+      await wait.andClick(driver, pom.campaigns.campaignRowByText('COPY'))
+    })
+
+    describe('verifies Campaign sections', () => {
+      it('verifies Basics section', async () => {
+        await wait.andClick(driver, pom.campaigns.form.basics.section)
+        expect(await wait.andGetValue(driver, pom.campaigns.form.basics.title)).toBe(campaign.basics.title_copied)
+        expect(await wait.andGetValue(driver, pom.campaigns.form.basics.description)).toBe(campaign.basics.description)
+        expect(await wait.andGetValue(driver, pom.campaigns.form.basics.dueBy)).toBe('')
+      })
+      it('verifies Contacts section', async () => {
+        await wait.andClick(driver, pom.campaigns.form.contacts.section)
+        const uploadedContacts = await driver.findElements(pom.campaigns.form.contacts.uploadedContacts)
+        expect(uploadedContacts.length > 0).toBeFalsy()
+      })
+      it('verifies Texters section', async () => {
+        await wait.andClick(driver, pom.campaigns.form.texters.section)
+        const texters = await driver.findElements(pom.campaigns.form.texters.texterAssignmentByIndex(0))
+        expect(texters.length > 0).toBeFalsy()
+      })
+      it('verifies Interactions section', async () => {
+        await wait.andClick(driver, pom.campaigns.form.interactions.section)
+        expect(await wait.andGetValue(driver, pom.campaigns.form.interactions.editorLaunch)).toBe(campaign.interaction.script)
+        expect(await wait.andGetValue(driver, pom.campaigns.form.interactions.questionText)).toBe(campaign.interaction.question)
+      })
+      it('verifies Canned Responses section', async () => {
+        await wait.andClick(driver, pom.campaigns.form.cannedResponse.section)
+        expect(await wait.andGetEl(driver, pom.campaigns.form.cannedResponse.createdResponseByText(campaign.cannedResponses[0].title))).toBeDefined()
+        expect(await wait.andGetEl(driver, pom.campaigns.form.cannedResponse.createdResponseByText(campaign.cannedResponses[0].script))).toBeDefined()
+      })
     })
   },
   editCampaign(driver, campaign) {
