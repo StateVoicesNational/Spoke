@@ -1,9 +1,10 @@
-import { wait } from '../util/helpers'
+import { wait, urlBuilder } from '../util/helpers'
 import pom from '../page-objects/index'
 
 export const people = {
   invite(driver) {
     it('opens the People tab', async () => {
+      await driver.get(urlBuilder.admin.root())
       await wait.andClick(driver, pom.navigation.sections.people)
     })
 
@@ -20,6 +21,7 @@ export const people = {
   },
   editUser(driver, user) {
     it('opens the People tab', async () => {
+      await driver.get(urlBuilder.admin.root())
       await wait.andClick(driver, pom.navigation.sections.people)
     })
 

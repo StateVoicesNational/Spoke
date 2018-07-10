@@ -1,6 +1,6 @@
 import { until } from 'selenium-webdriver'
 import config from '../util/config'
-import { wait } from '../util/helpers'
+import { wait, urlBuilder } from '../util/helpers'
 import pom from '../page-objects/index'
 
 // For legibility
@@ -19,10 +19,7 @@ export const login = {
       wait.andClick(driver, pom.login.loginGetStarted)
 
       // Wait until the Auth0 login page loads
-      const loginUrl = `${config.baseUrl}/login`
-      await driver.wait(until.urlContains(loginUrl))
-      const url = await driver.getCurrentUrl()
-      expect(url).toContain(loginUrl)
+      await driver.wait(until.urlContains(urlBuilder.login))
     })
   },
   signUpTab(driver, user) {

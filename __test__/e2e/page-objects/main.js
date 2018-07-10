@@ -15,5 +15,6 @@ export const main = {
     cell: By.css('[data-test=cell]'),
     save: By.css('[type=submit]')
   },
-  home: By.css('[data-test=home]')
+  home: By.css('[data-test=home]'),
+  logOut: By.css('[data-test=userMenuLogOut]')
 }

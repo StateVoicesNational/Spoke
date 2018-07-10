@@ -23,7 +23,8 @@ export const campaigns = {
       section: By.css('[data-test=contacts]'),
       uploadButton: By.css('[data-test=uploadButton]'),
       input: By.css('#contact-upload'),
-      uploadedContacts: By.css('[data-test=uploadedContacts]')
+      uploadedContacts: By.css('[data-test=uploadedContacts]'),
+      uploadedContactsByQty(n) { return By.xpath(`//*[@data-test='uploadedContacts']/descendant::*[contains(text(),'${n} contact')]`) }
     },
     texters: {
       section: By.css('[data-test=texters]'),
@@ -31,8 +32,8 @@ export const campaigns = {
       joinUrl: By.css('[data-test=joinUrl]'),
       addAll: By.css('[data-test=addAll]'),
       autoSplit: By.css('[data-test=autoSplit]'),
-      texterAssignmentByIndex(index) { return By.css(`[data-test=texter${index}Assignment]`) },
-      texterNameByIndex(index) { return By.css(`[data-test=texter${index}Name]`) }
+      texterAssignmentByText(text) { return By.xpath(`//*[@data-test='texterName' and contains(text(),'${text}')]/ancestor::*[@data-test='texterRow']/descendant::input[@data-test='texterAssignment']`) },
+      texterAssignmentByIndex(index) { return By.xpath(`(//*[@data-test='texterRow'])[${index + 1}]/descendant::input[@data-test='texterAssignment']`) }
     },
     interactions: {
       section: By.css('[data-test=interactions]'),
