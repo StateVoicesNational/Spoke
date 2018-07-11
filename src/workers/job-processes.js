@@ -1,6 +1,6 @@
 import { r } from '../server/models'
 import { sleep, getNextJob, log } from './lib'
-import { exportCampaign, processSqsMessages, uploadContacts, assignTexters, sendMessages, handleIncomingMessageParts, clearOldJobs } from './jobs'
+import { exportCampaign, processSqsMessages, uploadContacts, loadContactsFromDataWarehouse, assignTexters, sendMessages, handleIncomingMessageParts, clearOldJobs } from './jobs'
 import { runMigrations } from '../migrations'
 import { setupUserNotificationObservers } from '../server/notifications'
 
@@ -18,6 +18,7 @@ export { seedZipCodes } from '../server/seeds/seed-zip-codes'
 const jobMap = {
   'export': exportCampaign,
   'upload_contacts': uploadContacts,
+  'upload_contacts_sql': loadContactsFromDataWarehouse,
   'assign_texters': assignTexters
 }
 
@@ -152,6 +153,11 @@ export async function handleIncomingMessages() {
 
 export async function runDatabaseMigrations(event, dispatcher) {
   await runMigrations(event.migrationStart)
+}
+
+export async function loadContactsFromDataWharehouseJob(event, dispatcher) {
+  const eventAsJob = event
+  await loadContactsFromDataWarehouse(eventAsJob)
 }
 
 const processMap = {
