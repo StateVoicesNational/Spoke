@@ -64,7 +64,8 @@ import {
   uploadContacts,
   loadContactsFromDataWarehouse,
   assignTexters,
-  exportCampaign
+  exportCampaign,
+  sendJobToAWSLambda
 } from '../../workers/jobs'
 const uuidv4 = require('uuid').v4
 import GraphQLDate from 'graphql-date'
@@ -317,7 +318,11 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
       payload: campaign.contactSql
     })
     if (JOBS_SAME_PROCESS) {
-      loadContactsFromDataWarehouse(job)
+      if (process.env.WAREHOUSE_DB_LAMBDAINVOKE) {
+        await sendJobToAWSLambda(job)
+      } else {
+        loadContactsFromDataWarehouse(job)
+      }
     }
   }
   if (campaign.hasOwnProperty('texters')) {

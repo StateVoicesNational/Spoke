@@ -12,6 +12,10 @@ import { Notifications, sendUserNotification } from '../server/notifications'
 
 const zipMemoization = {}
 
+const jobToFunctionMap = {
+  'upload_contacts_sql': 'loadContactsFromDataWarehouseJob'
+}
+
 export async function getTimezoneByZip(zip) {
   if (zip in zipMemoization) {
     return zipMemoization[zip]
@@ -26,6 +30,39 @@ export async function getTimezoneByZip(zip) {
     return zipMemoization[zip]
   }
   return ''
+}
+
+export async function sendJobToAWSLambda(job) {
+  const p = new Promise
+  if (!jobToFunctionMap[job.job_type]) {
+    p.reject("Job type not available in job-processes")
+    console.log('LAMBDA INVOCATION FAILED: JOB NOT INVOKABLE')
+    return p
+  }
+  const lambda = new AWS.Lambda()
+  const lambdaPayload = JSON.stringify({
+    command: jobToFunctionMap[job.job_type],
+    job_type: job.job_type,
+    capaign_id: job.campaign_id,
+    payload: job.payload
+  })
+  if (lambdaPayload.length > 128000) {
+    p.reject("Payload too large")
+    console.log('LAMBDA INVOCATION FAILED PAYLOAD TOO LARGE')
+    return p
+  }
+  lambda.invoke({ FunctionName: process.env.AWS_LAMBDA_FUNCTION_NAME,
+                  InvocationType: "Event",
+                  Payload: lambdaPayload
+                }, function(err, data) {
+                  if (err) {
+                    p.reject(err)
+                    console.log('LAMBDA INVOCATION FAILED', err)
+                  } else {
+                    p.resolve(data)
+                  }
+                })
+  return p
 }
 
 export async function processSqsMessages() {
@@ -146,6 +183,7 @@ export async function uploadContacts(job) {
 
 
 export async function loadContactsFromDataWarehouse(job) {
+  const jobMessages = []
   const sqlQuery = job.payload
   if (!sqlQuery.startsWith('SELECT') || sqlQuery.indexOf(';') >= 0) {
     log.error('Malformed SQL statement.  Must begin with SELECT and not have any semicolons: ', sqlQuery)
@@ -154,6 +192,64 @@ export async function loadContactsFromDataWarehouse(job) {
   if (!datawarehouse) {
     log.error('No data warehouse connection, so cannot load contacts', job)
     return
+  }
+
+  let knexCountRes, knexCount
+  try {
+    knexCountRes = await datawarehouse.raw(`SELECT COUNT(*) FROM ( ${sqlQuery} )`)
+  } catch (err) {
+    log.error('Data warehouse count query failed: ', err)
+    jobMessages.push(`Error: Data warehouse count query failed: ${err}`)
+  }
+
+  if (knexCountRes) {
+    knexCount = knexCountRes.rows[0].count
+    console.log('WAREHOUSE COUNT', knexCount)
+  }
+  if (!knexCount) {
+    jobMessages.push(`Error: Data warehouse query returned zero results`)
+  }
+  const STEP = 10
+  const campaign = await Campaign.get(job.campaign_id)
+  const totalParts = Math.ceil(knexCount / STEP)
+
+  if (totalParts > 1 && /LIMIT/.test(sqlQuery)) {
+    jobMessages.push(`Error: LIMIT in query not supported for results larger than ${STEP}. Count was ${knexCount}`)
+  }
+
+  if (job.id && jobMessages.length) {
+    await r.knex('job_request').where('id', job.id)
+      .update({ result_message: jobMessages.join('\n') })
+    return
+  }
+
+  await r.knex('campaign_contact')
+    .where('campaign_id', job.campaign_id)
+    .delete()
+
+  await loadContactsFromDataWarehouseFragment({
+    jobId: job.id,
+    query: sqlQuery,
+    campaignId: job.campaign_id,
+    // beyond job object:
+    organizationId: campaign.organization_id,
+    totalParts: totalParts,
+    totalCount: knexCount,
+    step: STEP,
+    part: 0,
+    limit: (totalParts > 1 ? STEP : 0) // 0 is unlimited
+  })
+
+}
+
+export async function loadContactsFromDataWarehouseFragment(jobEvent) {
+  console.log('loadContactsFromDataWarehouseFragment', jobEvent)
+  let sqlQuery = jobEvent.query
+  if (jobEvent.limit) {
+    sqlQuery += ' LIMIT ' + jobEvent.limit
+  }
+  if (jobEvent.offset) {
+    sqlQuery += ' OFFSET ' + jobEvent.offset
   }
   let knexResult
   try {
@@ -183,16 +279,17 @@ export async function loadContactsFromDataWarehouse(job) {
     return
   }
 
-  // TODO break up result and save in portions, dispatched
   const jobMessages = []
   const savePortion = await Promise.all(knexResult.rows.map(async (row) => {
     const contact = {
-      campaign_id: job.campaign_id,
-      first_name: row.first_name,
-      last_name: row.last_name,
+      campaign_id: jobEvent.campaignId,
+      first_name: row.first_name || '',
+      last_name: row.last_name || '',
       cell: row.cell,
-      zip: row.zip,
-      external_id: row.external_id
+      zip: row.zip || null,
+      external_id: (row.external_id ? String(row.external_id) : null),
+      assignment_id: null,
+      message_status: 'needsMessage'
     }
     const contactCustomFields = {}
     for (const f in customFields) {
@@ -204,34 +301,36 @@ export async function loadContactsFromDataWarehouse(job) {
     }
     return contact
   }))
-
-  await r.table('campaign_contact')
-    .getAll(job.campaign_id, { index: 'campaign_id' })
-    .delete()
-
+  
   await CampaignContact.save(savePortion)
 
-  // now that we've saved them all, we delete everyone that is opted out locally
-  // doing this in one go so that we can get the DB to do the indexed cell matching
-  const campaign = await Campaign.get(job.campaign_id)
-  const optOutCellCount = await r.knex('campaign_contact')
-    .whereIn('cell', function () {
-      this.select('cell').from('opt_out').where('organization_id', campaign.organization_id)
-    })
-    .where('campaign_id', job.campaign_id)
-    .delete()
+  await r.knex('job_request').where('id', jobEvent.jobId).increment('status', 1)
 
-  console.log('OPTOUT CELL COUNT', optOutCellCount)
-
-  // dispatch something that tests completion?
-  if (job.id) {
-    if (jobMessages.length) {
-      await r.knex('job_request').where('id', job.id)
-        .update({ result_message: jobMessages.join('\n') })
+  const completed = await r.knex('job_request').where('id', jobEvent.jobId).select('status').first()
+  if (jobEvent.totalParts && completed.status >= jobEvent.totalParts) {
+    if (jobEvent.organizationId) {
+      // now that we've saved them all, we delete everyone that is opted out locally
+      // doing this in one go so that we can get the DB to do the indexed cell matching
+      const optOutCellCount = await r.knex('campaign_contact')
+        .whereIn('cell', function () {
+          this.select('cell').from('opt_out').where('organization_id', jobEvent.organizationId)
+        })
+        .where('campaign_id', jobEvent.campaignId)
+        .delete()
+      console.log('OPTOUT CELL COUNT', optOutCellCount)
+    }
+    await r.table('job_request').get(jobEvent.jobId).delete()
+  } else if (jobEvent.part < (jobEvent.totalParts - 1)) {
+    jobEvent.part += 1
+    jobEvent.offset = jobEvent.part * jobEvent.step
+    if (process.env.DATAWAREHOUSE_DB_LAMBDA) {
+      jobEvent.command = 'blah_upload_sql'
+      sendJobToAWSLambda(jobEvent)
     } else {
-      await r.table('job_request').get(job.id).delete()
+      loadContactsFromDataWarehouseFragment(jobEvent)
     }
   }
+
 }
 
 export async function assignTexters(job) {
