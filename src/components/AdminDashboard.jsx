@@ -29,12 +29,12 @@ class AdminDashboard extends React.Component {
   }
 
   urlFromPath(path) {
-    const organizationId = this.props.params.organizationId
+    const organizationId = this.props.match.params.organizationId
     return `/admin/${organizationId}/${path}`
   }
 
   renderNavigation(sections) {
-    const organizationId = this.props.params.organizationId
+    const organizationId = this.props.match.params.organizationId
     if (!organizationId) {
       return ''
     }
@@ -49,7 +49,8 @@ class AdminDashboard extends React.Component {
   }
 
   render() {
-    const { location, children, params } = this.props
+    const { location, children, match } = this.props
+    const { params } = match
     const { roles } = this.props.data.currentUser
 
     // HACK: Setting params.adminPerms helps us hide non-supervolunteer functionality
@@ -103,7 +104,7 @@ class AdminDashboard extends React.Component {
 }
 
 AdminDashboard.propTypes = {
-  params: PropTypes.object,
+  match: PropTypes.object,
   onEnter: PropTypes.func,
   children: PropTypes.object,
   location: PropTypes.object

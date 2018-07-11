@@ -53,7 +53,7 @@ class AdminPersonList extends React.Component {
     await this
       .props
       .mutations
-      .editOrganizationRoles(this.props.params.organizationId, userId, [value])
+      .editOrganizationRoles(this.props.match.params.organizationId, userId, [value])
   }
 
   editUser(userId) {
@@ -119,7 +119,8 @@ class AdminPersonList extends React.Component {
   }
 
   render() {
-    const { params, organizationData } = this.props
+    const { match, organizationData } = this.props
+    const { params } = match
 
     return (
       <div>
@@ -169,7 +170,7 @@ class AdminPersonList extends React.Component {
 
 AdminPersonList.propTypes = {
   mutations: PropTypes.object,
-  params: PropTypes.object,
+  match: PropTypes.object,
   personData: PropTypes.object,
   userData: PropTypes.object,
   organizationData: PropTypes.object

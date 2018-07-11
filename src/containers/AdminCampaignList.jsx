@@ -23,7 +23,7 @@ class AdminCampaignList extends React.Component {
   }
 
   handleClickNewButton = async () => {
-    const { organizationId } = this.props.params
+    const { organizationId } = this.props.match.params
     this.setState({ isCreating: true })
     const newCampaign = await this.props.mutations.createCampaign({
       title: 'New Campaign',
@@ -62,14 +62,14 @@ class AdminCampaignList extends React.Component {
     )
   }
   render() {
-    const { adminPerms } = this.props.params
+    const { adminPerms } = this.props.match.params
     return (
       <div>
         {this.renderFilters()}
         {this.state.isCreating ? <LoadingIndicator /> : (
           <CampaignList
             campaignsFilter={this.state.campaignsFilter}
-            organizationId={this.props.params.organizationId}
+            organizationId={this.props.match.params.organizationId}
             adminPerms={adminPerms}
           />
         )}
@@ -89,7 +89,7 @@ class AdminCampaignList extends React.Component {
 }
 
 AdminCampaignList.propTypes = {
-  params: PropTypes.object,
+  match: PropTypes.object,
   mutations: PropTypes.object,
   history: PropTypes.object
 }

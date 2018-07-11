@@ -11,7 +11,7 @@ class TexterTodo extends React.Component {
     this.assignContactsIfNeeded()
     if (!assignment || assignment.campaign.isArchived) {
       this.props.history.push(
-        `/app/${this.props.params.organizationId}/todos`
+        `/app/${this.props.match.params.organizationId}/todos`
       )
     }
   }
@@ -27,7 +27,7 @@ class TexterTodo extends React.Component {
         }
       }
       this.props.history.push(
-        `/app/${this.props.params.organizationId}/todos`
+        `/app/${this.props.match.params.organizationId}/todos`
       )
     }
   }
@@ -48,7 +48,7 @@ class TexterTodo extends React.Component {
         assignContactsIfNeeded={this.assignContactsIfNeeded.bind(this)}
         refreshData={this.refreshData.bind(this)}
         onRefreshAssignmentContacts={this.refreshAssignmentContacts}
-        organizationId={this.props.params.organizationId}
+        organizationId={this.props.match.params.organizationId}
       />
     )
   }
@@ -57,7 +57,7 @@ class TexterTodo extends React.Component {
 TexterTodo.propTypes = {
   contactsFilter: PropTypes.string,
   messageStatus: PropTypes.string,
-  params: PropTypes.object,
+  match: PropTypes.object,
   data: PropTypes.object,
   history: PropTypes.object
 }

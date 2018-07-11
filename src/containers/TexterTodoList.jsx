@@ -9,7 +9,7 @@ import { withRouter } from 'react-router'
 
 class TexterTodoList extends React.Component {
   renderTodoList(assignments) {
-    const organizationId = this.props.params.organizationId
+    const organizationId = this.props.match.params.organizationId
     return assignments
       .sort((x, y) => ((x.unmessagedCount + x.unrepliedCount) > (y.unmessagedCount + y.unrepliedCount) ? -1 : 1))
       .map((assignment) => {
@@ -43,7 +43,7 @@ class TexterTodoList extends React.Component {
   }
 
   termsAgreed() {
-    const { data, router } = this.props
+    const { data, history } = this.props
     if (window.TERMS_REQUIRE && !data.currentUser.terms) {
       history.push(`/terms?next=${this.props.location.pathname}`)
     }
@@ -73,7 +73,7 @@ class TexterTodoList extends React.Component {
 
 TexterTodoList.propTypes = {
   organizationId: PropTypes.string,
-  params: PropTypes.object,
+  match: PropTypes.object,
   data: PropTypes.object
 }
 

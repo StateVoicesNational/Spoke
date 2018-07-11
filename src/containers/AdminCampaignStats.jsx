@@ -147,10 +147,11 @@ class AdminCampaignStats extends React.Component {
   }
 
   render() {
-    const { data, params } = this.props
+    const { data, match } = this.props
+    const { params } = match
     const { organizationId, campaignId } = params
     const campaign = data.campaign
-    const { adminPerms } = this.props.params
+    const { adminPerms } = this.props.match.params
     const currentExportJob = this.props.data.campaign.pendingJobs.filter((job) => job.jobType === 'export')[0]
     const shouldDisableExport = this.state.disableExportButton || currentExportJob
 
@@ -213,7 +214,7 @@ class AdminCampaignStats extends React.Component {
                       ( // copy
                       <RaisedButton
                         label='Copy Campaign'
-                        onClick={async() => await this.props.mutations.copyCampaign(this.props.params.campaignId)}
+                        onClick={async() => await this.props.mutations.copyCampaign(this.props.match.params.campaignId)}
                       />)
                     ] : null}
                 </div>
@@ -263,7 +264,7 @@ class AdminCampaignStats extends React.Component {
 AdminCampaignStats.propTypes = {
   mutations: PropTypes.object,
   data: PropTypes.object,
-  params: PropTypes.object,
+  match: PropTypes.object,
   history: PropTypes.object
 }
 

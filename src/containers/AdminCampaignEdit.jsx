@@ -424,7 +424,7 @@ class AdminCampaignEdit extends React.Component {
   }
 
   renderStartButton() {
-    if (!this.props.params.adminPerms) {
+    if (!this.props.match.params.adminPerms) {
       // Supervolunteers don't have access to start the campaign or un/archive it
       return null
     }
@@ -484,7 +484,7 @@ class AdminCampaignEdit extends React.Component {
   render() {
     const sections = this.sections()
     const { expandedSection } = this.state
-    const { adminPerms } = this.props.params
+    const { adminPerms } = this.props.match.params
     return (
       <div>
         {this.renderHeader()}
@@ -581,7 +581,7 @@ AdminCampaignEdit.propTypes = {
   campaignData: PropTypes.object,
   mutations: PropTypes.object,
   organizationData: PropTypes.object,
-  params: PropTypes.object,
+  match: PropTypes.object,
   location: PropTypes.object,
   pendingJobsData: PropTypes.object,
   availableActionsData: PropTypes.object
