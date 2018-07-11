@@ -2,7 +2,7 @@ const config = require('../../../knexfile.js')
 const knex = require('knex')(config)
 // import { tables } from './schemas/tables.js'
 // still need to define this manually as we add them to the migration so they test output isn't rendered useless by being flooded with messages about tables whose schemas don't exist yet
-const tables = ['log', 'zip_code', 'message']
+const tables = ['log', 'zip_code', 'message', 'user', 'user_cell']
 const TEST_TIMEOUT = 20000
 
 // knex.on('query', console.log)
