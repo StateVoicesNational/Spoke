@@ -24,8 +24,8 @@ describe('The knex initial migration', async () => {
       const originalSchema = require(`./schemas/${t}.json`)
       return knex(t).columnInfo()
       .then(newSchema => {
-        console.log('new schema is', newSchema)
-        console.log('original schema is', originalSchema)
+        // console.log('new schema is', newSchema)
+        // console.log('original schema is', originalSchema)
         expect(newSchema).toMatchSchema(originalSchema)
       })
     }, TEST_TIMEOUT)
@@ -48,6 +48,8 @@ expect.extend({
       }
     }
     // Check each column for deep equality. Since we now know the new and old schemas have the same number of columns, and since duplicate column names cannot exist, this check is definitive.
+    const errors = []
+    // If the new and old schemas have the same number of columns, and the columns match, the errors array will group any errors _on the individual column attributes_ together and return them all at once.
     for (const [newColumnName, newColumnProperties] of newSchemaColumns) {
       const originalColumnProperties = originalSchema[newColumnName]
       // Ensure this column exists in the old schema
@@ -70,11 +72,14 @@ expect.extend({
       // This is the meat of the test: ensure that all the properties on each column are the same. Similar to the outer loop, since we've already determined that the new and old schemas' definitions of this column have the same number of properties, this check is definitive, and any mismatches represent errors.
       for (const [propertyName, propertyValue] of newColumnEntries) {
         if (originalColumnProperties[propertyName] !== propertyValue) {
-          return {
-            pass: false,
-            message: () => `Expected property ${printExpected(propertyName)} on column ${printExpected(newColumnName)} to have value ${printExpected(originalColumnProperties[propertyName])}, but received ${printReceived(propertyValue)}.`
-          }
+          errors.push(`Expected property ${printExpected(propertyName)} on column ${printExpected(newColumnName)} to have value ${printExpected(originalColumnProperties[propertyName])}, but received ${printReceived(propertyValue)}.\n`)
         }
+      }
+    }
+    if (errors.length > 0) {
+      return {
+        pass: false,
+        message: () => errors.join(`\n`)
       }
     }
     return { pass: true }
