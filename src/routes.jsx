@@ -31,6 +31,7 @@ const AdminCampaignRoutes = ({ match }) => {
       <Route path={campaignPath} exact component={AdminCampaignStats} />
       <Route path={`${campaignPath}/edit`} component={AdminCampaignEdit} />
       <Route path={`${campaignPath}/send-replies`} component={AdminReplySender} />
+      <Redirect path='*' to={match.url} />
     </Switch>
   )
 }
@@ -41,6 +42,7 @@ const AdminCampaignListRoutes = ({ match }) => {
     <Switch>
       <Route path={lastPath} exact component={AdminCampaignList} />
       <Route path={`${lastPath}/:campaignId`} component={AdminCampaignRoutes} />
+      <Redirect path='*' to={match.url} />
     </Switch>
   )
 }
@@ -49,12 +51,12 @@ const AdminOrganizationRoutes = ({ match }) => {
   const orgPath = '/admin/:organizationId'
   return (
     <Switch>
-      <Redirect path={orgPath} exact to={`${match.url}/campaigns`} />
       <Route path={`${orgPath}/campaigns`} component={AdminCampaignListRoutes} />
       <Route path={`${orgPath}/people`} component={AdminPersonList} />
       <Route path={`${orgPath}/optouts`} component={AdminOptOutList} />
       <Route path={`${orgPath}/incoming`} component={AdminIncomingMessageList} />
       <Route path={`${orgPath}/settings`} component={Settings} />
+      <Redirect path='*' to={`${match.url}/campaigns`} />
     </Switch>
   )
 }
@@ -68,6 +70,7 @@ const AdminRoutes = (props) => {
           <DashboardLoader path='/admin' {...indexMatch} />
         )} />
         <Route path='/admin/:organizationId' component={AdminOrganizationRoutes} />
+        <Redirect path='*' to={match.url} />
       </Switch>
     </AdminDashboard>
   )
@@ -150,6 +153,7 @@ export default function makeRoutes(requireAuth = () => {}) {
       <Route path='/invite/:inviteId' component={CreateOrganization} onEnter={requireAuth} />
       <Route path='/:organizationUuid/join/:campaignId' component={JoinTeam} onEnter={requireAuth} />
       <Route path='/:organizationUuid/join' component={JoinTeam} onEnter={requireAuth} />
+      <Redirect path='*' to='/' />
     </Switch>
   )
 }
