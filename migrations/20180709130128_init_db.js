@@ -18,20 +18,22 @@ const initialize = async (knex, Promise) => {
     },
     message: t => {
       t.increments('id').primary()
-      t.text('user_number')
+      t.text('user_number').notNullable().defaultTo('')
       t.text('contact_number').notNullable()
       t.boolean('is_from_contact').notNullable()
-      t.text('text')
-      t.text('service_response')
-      t.text('assignment_id').notNullable()
-      t.text('service')
-      t.text('service_id')
+      t.text('text').notNullable().defaultTo('')
+      t.text('service_response').notNullable().defaultTo('')
+      t.integer('assignment_id').notNullable()
+      t.text('service').notNullable().defaultTo('')
+      t.text('service_id').notNullable().defaultTo('')
       t.enu('send_status', ['QUEUED', 'SENDING', 'SENT', 'DELIVERED', 'ERROR', 'PAUSED', 'NOT_ATTEMPTED']).notNullable()
-      t.timestamp('created_at')
-      t.timestamp('queued_at')
-      t.timestamp('sent_at')
-      t.timestamp('service_response_at')
-      t.index(['user_number'])
+      t.timestamp('created_at').defaultTo(knex.fn.now()).notNullable()
+      t.timestamp('queued_at').defaultTo(knex.fn.now()).notNullable()
+      t.timestamp('sent_at').defaultTo(knex.fn.now()).notNullable()
+      t.timestamp('service_response_at').defaultTo(knex.fn.now()).notNullable()
+
+      // TODO verify these
+      t.index(['user_number', 'send_status', 'user_number', 'contact_number', 'service_id'])
     }
   }
 
