@@ -10,6 +10,7 @@ import makeRoutes from '../routes'
 import Store from '../store'
 import ApolloClientSingleton from '../network/apollo-client-singleton'
 import { login, logout } from './auth-service'
+import App from '../components/App'
 
 window.onerror = (msg, file, line, col, error) => { errorCatcher(error) }
 window.addEventListener('unhandledrejection', (event) => { errorCatcher(event.reason) })
@@ -24,9 +25,11 @@ StyleSheet.rehydrate(window.RENDERED_CLASS_NAMES)
 
 ReactDOM.render(
   <ApolloProvider store={store.data} client={ApolloClientSingleton}>
-    <BrowserRouter>
-      {makeRoutes()}
-    </BrowserRouter>
+    <App>
+      <BrowserRouter>
+        {makeRoutes()}
+      </BrowserRouter>
+    </App>
   </ApolloProvider>,
   document.getElementById('mount')
 )
