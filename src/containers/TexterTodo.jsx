@@ -10,7 +10,7 @@ class TexterTodo extends React.Component {
     const { assignment } = this.props.data
     this.assignContactsIfNeeded()
     if (!assignment || assignment.campaign.isArchived) {
-      this.props.router.push(
+      this.props.history.push(
         `/app/${this.props.params.organizationId}/todos`
       )
     }
@@ -26,7 +26,7 @@ class TexterTodo extends React.Component {
           return
         }
       }
-      this.props.router.push(
+      this.props.history.push(
         `/app/${this.props.params.organizationId}/todos`
       )
     }
@@ -59,7 +59,7 @@ TexterTodo.propTypes = {
   messageStatus: PropTypes.string,
   params: PropTypes.object,
   data: PropTypes.object,
-  router: PropTypes.object
+  history: PropTypes.object
 }
 
 const mapQueriesToProps = ({ ownProps }) => ({

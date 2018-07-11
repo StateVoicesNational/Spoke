@@ -46,9 +46,9 @@ class Home extends React.Component {
     const user = this.props.data.currentUser
     if (user) {
       if (user.adminOrganizations.length > 0) {
-        this.props.router.push(`/admin/${user.adminOrganizations[0].id}`)
+        this.props.history.push(`/admin/${user.adminOrganizations[0].id}`)
       } else if (user.texterOrganizations.length > 0) {
-        this.props.router.push(`/app/${user.texterOrganizations[0].id}`)
+        this.props.history.push(`/app/${user.texterOrganizations[0].id}`)
       } else {
         this.setState({ orgLessUser: true })
       }
@@ -67,7 +67,7 @@ class Home extends React.Component {
         throw new Error(newInvite.errors)
       } else {
         // alert(newInvite.data.createInvite.id)
-        this.props.router.push(`/login?nextUrl=/invite/${newInvite.data.createInvite.hash}`)
+        this.props.history.push(`/login?nextUrl=/invite/${newInvite.data.createInvite.hash}`)
       }
     }
   }
@@ -116,7 +116,7 @@ class Home extends React.Component {
 
 Home.propTypes = {
   mutations: PropTypes.object,
-  router: PropTypes.object,
+  history: PropTypes.object,
   data: PropTypes.object
 }
 

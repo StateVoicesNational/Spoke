@@ -336,7 +336,7 @@ export class AssignmentTexterContact extends React.Component {
 
   goBackToTodos = () => {
     const { campaign } = this.props
-    this.props.router.push(`/app/${campaign.organization.id}/todos`)
+    this.props.history.push(`/app/${campaign.organization.id}/todos`)
   }
 
   handleSendMessageError = (e) => {
@@ -881,7 +881,7 @@ AssignmentTexterContact.propTypes = {
   texter: PropTypes.object,
   navigationToolbarChildren: PropTypes.array,
   onFinishContact: PropTypes.func,
-  router: PropTypes.object,
+  history: PropTypes.object,
   data: PropTypes.object,
   mutations: PropTypes.object,
   onExitTexter: PropTypes.func,

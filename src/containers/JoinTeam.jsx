@@ -35,7 +35,7 @@ class JoinTeam extends React.Component {
     }
 
     if (organization) {
-      this.props.router.push(`/app/${organization.data.joinOrganization.id}`)
+      this.props.history.push(`/app/${organization.data.joinOrganization.id}`)
     }
   }
 
@@ -61,7 +61,7 @@ class JoinTeam extends React.Component {
 
 JoinTeam.propTypes = {
   mutations: PropTypes.object,
-  router: PropTypes.object
+  history: PropTypes.object
 }
 
 const mapMutationsToProps = ({ ownProps }) => ({

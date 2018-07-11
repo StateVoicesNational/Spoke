@@ -55,7 +55,7 @@ export class AssignmentSummary extends Component {
     const { organizationId, router } = this.props
 
     if (contactsFilter) {
-      router.push(`/app/${organizationId}/todos/${assignmentId}/${contactsFilter}`)
+      history.push(`/app/${organizationId}/todos/${assignmentId}/${contactsFilter}`)
     }
   }
 
@@ -174,7 +174,7 @@ export class AssignmentSummary extends Component {
 
 AssignmentSummary.propTypes = {
   organizationId: PropTypes.string,
-  router: PropTypes.object,
+  history: PropTypes.object,
   assignment: PropTypes.object,
   unmessagedCount: PropTypes.number,
   unrepliedCount: PropTypes.number,

@@ -7,11 +7,11 @@ import loadData from './hoc/load-data'
 class DashboardLoader extends React.Component {
   componentWillMount() {
     if (this.props.data.currentUser.organizations.length > 0) {
-      this.props.router.push(
+      this.props.history.push(
         `${this.props.path}/${this.props.data.currentUser.organizations[0].id}`
         )
     } else {
-      this.props.router.push('/')
+      this.props.history.push('/')
     }
   }
 
@@ -22,7 +22,7 @@ class DashboardLoader extends React.Component {
 
 DashboardLoader.propTypes = {
   data: PropTypes.object,
-  router: PropTypes.object,
+  history: PropTypes.object,
   path: PropTypes.string
 }
 

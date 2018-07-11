@@ -23,7 +23,7 @@ class AdminNavigation extends React.Component {
           <ListItem
             {...dataTest('navSwitchToTexter')}
             primaryText='Switch to texter'
-            onClick={() => this.props.router.push(`/app/${organizationId}/todos`)}
+            onClick={() => this.props.history.push(`/app/${organizationId}/todos`)}
           />
         }
       />
@@ -34,7 +34,7 @@ class AdminNavigation extends React.Component {
 AdminNavigation.propTypes = {
   data: PropTypes.object,
   organizationId: PropTypes.string,
-  router: PropTypes.object,
+  history: PropTypes.object,
   sections: PropTypes.array,
   params: PropTypes.object
 }

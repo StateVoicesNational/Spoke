@@ -92,8 +92,8 @@ class CampaignList extends React.Component {
         key={campaign.id}
         primaryText={primaryText}
         onClick={() => (!isStarted ?
-          this.props.router.push(`${campaignUrl}/edit`) :
-          this.props.router.push(campaignUrl))}
+          this.props.history.push(`${campaignUrl}/edit`) :
+          this.props.history.push(campaignUrl))}
         secondaryText={secondaryText}
         leftIcon={leftIcon}
         rightIconButton={adminPerms ?
@@ -139,7 +139,7 @@ CampaignList.propTypes = {
       description: PropTypes.string
     })
   ),
-  router: PropTypes.object,
+  history: PropTypes.object,
   adminPerms: PropTypes.bool,
   organizationId: PropTypes.string,
   data: PropTypes.object,

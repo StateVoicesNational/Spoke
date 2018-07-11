@@ -175,7 +175,7 @@ class AdminCampaignStats extends React.Component {
                   {!campaign.isArchived ?
                     ( // edit
                     <RaisedButton
-                      onClick={() => this.props.router.push(`/admin/${organizationId}/campaigns/${campaignId}/edit`)}
+                      onClick={() => this.props.history.push(`/admin/${organizationId}/campaigns/${campaignId}/edit`)}
                       label='Edit'
                     />
                   ) : null}
@@ -264,7 +264,7 @@ AdminCampaignStats.propTypes = {
   mutations: PropTypes.object,
   data: PropTypes.object,
   params: PropTypes.object,
-  router: PropTypes.object
+  history: PropTypes.object
 }
 
 const mapQueriesToProps = ({ ownProps }) => ({

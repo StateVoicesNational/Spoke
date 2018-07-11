@@ -64,7 +64,7 @@ class UserEdit extends React.Component {
 
 UserEdit.propTypes = {
   mutations: PropTypes.object,
-  router: PropTypes.object,
+  history: PropTypes.object,
   userId: PropTypes.string,
   organizationId: PropTypes.string,
   onRequestClose: PropTypes.func,

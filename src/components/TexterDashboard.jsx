@@ -33,7 +33,7 @@ class TexterDashboard extends React.Component {
 }
 
 TexterDashboard.propTypes = {
-  router: PropTypes.object,
+  history: PropTypes.object,
   params: PropTypes.object,
   children: PropTypes.object,
   location: PropTypes.object,

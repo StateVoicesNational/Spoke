@@ -48,23 +48,23 @@ class UserMenu extends Component {
       const { orgId } = this.props
       const { currentUser } = this.props.data
       if (orgId) {
-        this.props.router.push(`/app/${orgId}/account/${currentUser.id}`)
+        this.props.history.push(`/app/${orgId}/account/${currentUser.id}`)
       }
     } else {
-      this.props.router.push(`/admin/${value}`)
+      this.props.history.push(`/admin/${value}`)
     }
   }
 
   handleReturn = (e) => {
     e.preventDefault()
     const { orgId } = this.props
-    this.props.router.push(`/app/${orgId}/todos`)
+    this.props.history.push(`/app/${orgId}/todos`)
   }
 
   handleRequestFaqs = (e) => {
     e.preventDefault()
     const { orgId } = this.props
-    this.props.router.push(`/app/${orgId}/faqs`)
+    this.props.history.push(`/app/${orgId}/faqs`)
   }
 
 
@@ -142,7 +142,7 @@ class UserMenu extends Component {
 UserMenu.propTypes = {
   data: PropTypes.object,
   orgId: PropTypes.string,
-  router: PropTypes.object
+  history: PropTypes.object
 }
 
 const mapQueriesToProps = () => ({

@@ -45,7 +45,7 @@ class TexterTodoList extends React.Component {
   termsAgreed() {
     const { data, router } = this.props
     if (window.TERMS_REQUIRE && !data.currentUser.terms) {
-      router.push(`/terms?next=${this.props.location.pathname}`)
+      history.push(`/terms?next=${this.props.location.pathname}`)
     }
   }
 

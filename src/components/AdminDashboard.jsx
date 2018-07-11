@@ -5,7 +5,6 @@ import theme from '../styles/theme'
 import { hasRole } from '../lib'
 import TopNav from './TopNav'
 import gql from 'graphql-tag'
-import { withRouter } from 'react-router'
 import loadData from '../containers/hoc/load-data'
 import AdminNavigation from '../containers/AdminNavigation'
 const styles = StyleSheet.create({
@@ -100,7 +99,6 @@ class AdminDashboard extends React.Component {
 }
 
 AdminDashboard.propTypes = {
-  router: PropTypes.object,
   params: PropTypes.object,
   children: PropTypes.object,
   location: PropTypes.object
@@ -120,4 +118,4 @@ const mapQueriesToProps = ({ ownProps }) => ({
   }
 })
 
-export default loadData(withRouter(AdminDashboard), { mapQueriesToProps })
+export default loadData(AdminDashboard, { mapQueriesToProps })

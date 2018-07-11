@@ -20,7 +20,7 @@ class Terms extends React.Component {
   handleTermsAgree = async () => {
     const { data, router, mutations, location } = this.props
     const userData = await mutations.userAgreeTerms(data.currentUser.id)
-    if (userData.data.userAgreeTerms.terms) { router.push(location.query.next) }
+    if (userData.data.userAgreeTerms.terms) { history.push(location.query.next) }
   }
 
   state = {
@@ -124,7 +124,7 @@ class Terms extends React.Component {
 
 Terms.propTypes = {
   mutations: PropTypes.object,
-  router: PropTypes.object,
+  history: PropTypes.object,
   data: PropTypes.object
 }
 
