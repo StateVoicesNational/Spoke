@@ -9,11 +9,12 @@ import IconButton from 'material-ui/IconButton'
 import { withRouter } from 'react-router'
 import theme from '../styles/theme'
 import Chip from '../components/Chip'
-import loadData from './hoc/load-data'
+import { newLoadData } from './hoc/load-data'
 import gql from 'graphql-tag'
 import wrapMutations from './hoc/wrap-mutations'
 import SpeakerNotesIcon from 'material-ui/svg-icons/action/speaker-notes'
 import Empty from '../components/Empty'
+import { compose } from 'react-apollo'
 
 
 const campaignInfoFragment = `
@@ -146,45 +147,50 @@ CampaignList.propTypes = {
   mutations: PropTypes.object
 }
 
-const mapMutationsToProps = () => ({
-  archiveCampaign: (campaignId) => ({
-    mutation: gql`mutation archiveCampaign($campaignId: String!) {
-          archiveCampaign(id: $campaignId) {
+const queries = {
+  data: {
+    gql: gql`
+      query adminGetCampaigns($organizationId: String!, $campaignsFilter: CampaignsFilter) {
+        organization(id: $organizationId) {
+          id
+          campaigns(campaignsFilter: $campaignsFilter) {
             ${campaignInfoFragment}
           }
-        }`,
-    variables: { campaignId }
-  }),
-  unarchiveCampaign: (campaignId) => ({
-    mutation: gql`mutation unarchiveCampaign($campaignId: String!) {
-        unarchiveCampaign(id: $campaignId) {
-          ${campaignInfoFragment}
         }
-      }`,
-    variables: { campaignId }
-  })
-})
+      }
+    `,
+    options: (props) => ({
+      fetchPolicy: 'network-only',
+      variables: {
+        organizationId: props.organizationId,
+        campaignsFilter: props.campaignsFilter
+      }
+    })
+  }
+}
 
-const mapQueriesToProps = ({ ownProps }) => ({
-  data: {
-    query: gql`query adminGetCampaigns($organizationId: String!, $campaignsFilter: CampaignsFilter) {
-      organization(id: $organizationId) {
-        id
-        campaigns(campaignsFilter: $campaignsFilter) {
+const mutations = {
+  archiveCampaign: {
+    gql: gql`
+      mutation archiveCampaign($campaignId: String!) {
+        archiveCampaign(id: $campaignId) {
           ${campaignInfoFragment}
         }
       }
-    }`,
-    variables: {
-      organizationId: ownProps.organizationId,
-      campaignsFilter: ownProps.campaignsFilter
-    },
-    forceFetch: true
+    `
+  },
+  unarchiveCampaign: {
+    gql: gql`
+      mutation unarchiveCampaign($campaignId: String!) {
+        unarchiveCampaign(id: $campaignId) {
+          ${campaignInfoFragment}
+        }
+      }
+    `
   }
-})
+}
 
-export default loadData(wrapMutations(
-  withRouter(CampaignList)), {
-    mapQueriesToProps,
-    mapMutationsToProps
-  })
+export default compose(
+  newLoadData({ queries, mutations }),
+  withRouter
+)(CampaignList)
