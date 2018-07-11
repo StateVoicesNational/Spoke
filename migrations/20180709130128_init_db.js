@@ -1,5 +1,3 @@
-const tables = ['log', 'zip_code']
-
 const initialize = async (knex, Promise) => {
   // This object's keys are table names and each key's value is a function that defines that table's schema.
   const buildTableSchema = {
@@ -10,20 +8,20 @@ const initialize = async (knex, Promise) => {
       t.timestamp('created_at').notNullable().defaultTo(knex.fn.now())
     },
     zip_code: t => {
-      t.string('zip').notNullable()
-      t.string('city').notNullable()
-      t.string('state').notNullable()
-      t.float('latitute').notNullable()
+      t.text('zip').notNullable()
+      t.text('city').notNullable()
+      t.text('state').notNullable()
+      t.float('latitude').notNullable()
       t.float('longitude').notNullable()
       t.float('timezone_offset').notNullable()
       t.boolean('has_dst').notNullable()
     }
   }
 
-  // Automate the process of checking if each table exists
-  tables.forEach(async tableName => {
+  // For each table defined in the schema object, check if it exists and create it if necessary.
+  Object.keys(buildTableSchema).forEach(async tableName => {
     if (!await knex.schema.hasTable(tableName)) {
-      // buildTableSchema[tableName] will return a function. knex.schema.createTable calls it with one argument, the table instance (t).
+      // buildTableSchema[tableName] is the function that defines the table's schema. knex.schema.createTable calls it with one argument, the table instance (t).
       await knex.schema.createTable(tableName, buildTableSchema[tableName])
     }
   })
