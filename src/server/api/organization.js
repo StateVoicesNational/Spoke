@@ -8,7 +8,7 @@ export const schema = `
     uuid: String
     name: String
     campaigns(campaignsFilter: CampaignsFilter): [Campaign]
-    people(role: String): [User]
+    people(role: String, campaignsFilter: CampaignsFilter): [User]
     optOuts: [OptOut]
     threeClickEnabled: Boolean
     textingHoursEnforced: Boolean
@@ -51,16 +51,34 @@ export const resolvers = {
       return r.table('opt_out')
         .getAll(organization.id, { index: 'organization_id' })
     },
-    people: async (organization, { role }, { user }) => {
+    people: async (organization, { role, campaignsFilter }, { user }) => {
       await accessRequired(user, organization.id, 'SUPERVOLUNTEER')
 
       const roleFilter = role ? { role } : {}
 
-      return r.table('user_organization')
-        .getAll(organization.id, { index: 'organization_id' })
-        .filter(roleFilter)
-        .eqJoin('user_id', r.table('user'))('right')
+      let query = r.knex.select('user.*')
+        .from('user_organization')
+        .innerJoin('user', 'user_organization.user_id', 'user.id')
+        .where(roleFilter)
+        .where({'user_organization.organization_id':organization.id})
         .distinct()
+
+      if (campaignsFilter && ('isArchived' in campaignsFilter || 'campaignId' in campaignsFilter)) {
+        query = query
+          .innerJoin('assignment', 'assignment.user_id', 'user_organization.user_id')
+          .innerJoin('campaign', 'assignment.campaign_id', 'campaign.id')
+
+        if ('isArchived' in campaignsFilter) {
+          query = query.where({ 'campaign.is_archived': campaignsFilter.isArchived })
+        }
+
+        if ('campaignId' in campaignsFilter) {
+          query = query.where({ 'campaign.id': parseInt(campaignsFilter.campaignId, 10) })
+
+        }
+      }
+
+      return query
     },
     threeClickEnabled: (organization) => organization.features.indexOf('threeClick') !== -1,
     textingHoursEnforced: (organization) => organization.texting_hours_enforced,
