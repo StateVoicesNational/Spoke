@@ -34,6 +34,29 @@ const initialize = async (knex, Promise) => {
 
       // TODO verify these
       t.index(['user_number', 'send_status', 'user_number', 'contact_number', 'service_id'])
+    },
+    user: t => {
+      t.increments('id').primary()
+      t.text('auth0_id').notNullable()
+      t.text('first_name').notNullable()
+      t.text('last_name').notNullable()
+      t.text('cell').notNullable()
+      t.text('email').notNullable()
+      t.timestamp('created_at').notNullable().defaultTo(knex.fn.now())
+      t.text('assigned_cell')
+      t.boolean('is_superadmin')
+      t.boolean('terms').defaultTo(false)
+    },
+    user_cell: t => {
+      t.increments('id').primary()
+      t.text('cell').notNullable()
+      t.integer('user_id').notNullable()
+      t.enu('service', ['nexmo', 'twilio'])
+      t.boolean('is_primary')
+
+      // TODO verify
+      t.index(['user_id'])
+      t.foreign('user_id').references('user.id')
     }
   }
 
