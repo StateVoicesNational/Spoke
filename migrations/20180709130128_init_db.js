@@ -15,6 +15,23 @@ const initialize = async (knex, Promise) => {
       t.float('longitude').notNullable()
       t.float('timezone_offset').notNullable()
       t.boolean('has_dst').notNullable()
+    },
+    message: t => {
+      t.increments('id').primary()
+      t.text('user_number')
+      t.text('contact_number').notNullable()
+      t.boolean('is_from_contact').notNullable()
+      t.text('text')
+      t.text('service_response')
+      t.text('assignment_id').notNullable()
+      t.text('service')
+      t.text('service_id')
+      t.enu('send_status', ['QUEUED', 'SENDING', 'SENT', 'DELIVERED', 'ERROR', 'PAUSED', 'NOT_ATTEMPTED']).notNullable()
+      t.timestamp('created_at')
+      t.timestamp('queued_at')
+      t.timestamp('sent_at')
+      t.timestamp('service_response_at')
+      t.index(['user_number'])
     }
   }
 
