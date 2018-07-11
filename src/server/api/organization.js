@@ -14,7 +14,7 @@ export const schema = `
     uuid: String
     name: String
     campaigns(campaignsFilter: CampaignsFilter): [Campaign]
-    people(role: String): [User]
+    people(role: String, campaignsFilter: CampaignsFilter): [User]
     optOuts: [OptOut]
     threeClickEnabled: Boolean
     textingHoursEnforced: Boolean
@@ -52,7 +52,7 @@ export const resolvers = {
       return r.table('opt_out')
         .getAll(organization.id, { index: 'organization_id' })
     },
-    people: async (organization, { role }, { user }) => {
+    people: async (organization, { role, campaignsFilter }, { user }) => {
       await accessRequired(user, organization.id, 'SUPERVOLUNTEER')
       return buildUserOrganizationQuery(r.knex.select('user.*'), organization.id, role)
     },
