@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
+import { browserHistory } from 'react-router'
 import { ApolloProvider } from 'react-apollo'
-import { createBrowserHistory } from 'history'
 import { BrowserRouter } from 'react-router-dom'
 
 import { StyleSheet } from 'aphrodite'
@@ -18,8 +18,8 @@ window.AuthService = {
   login,
   logout
 }
-const history = createBrowserHistory()
-const store = new Store(history, {})
+
+const store = new Store(browserHistory, {})
 
 StyleSheet.rehydrate(window.RENDERED_CLASS_NAMES)
 
