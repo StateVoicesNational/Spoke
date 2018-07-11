@@ -1,7 +1,8 @@
 const config = require('../../../knexfile.js')
 const knex = require('knex')(config)
 // import { tables } from './schemas/tables.js'
-const tables = ['log', 'zip_code']
+// still need to define this manually as we add them to the migration so they test output isn't rendered useless by being flooded with messages about tables whose schemas don't exist yet
+const tables = ['log', 'zip_code', 'message']
 const TEST_TIMEOUT = 20000
 
 // knex.on('query', console.log)
@@ -23,8 +24,8 @@ describe('The knex initial migration', async () => {
       const originalSchema = require(`./schemas/${t}.json`)
       return knex(t).columnInfo()
       .then(newSchema => {
-        // console.log('new schema is', newSchema)
-        // console.log('original schema is', originalSchema)
+        console.log('new schema is', newSchema)
+        console.log('original schema is', originalSchema)
         expect(newSchema).toMatchSchema(originalSchema)
       })
     }, TEST_TIMEOUT)
