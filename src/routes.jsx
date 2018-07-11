@@ -146,13 +146,13 @@ export default function makeRoutes(requireAuth = () => {}) {
   return (
     <Switch>
       <Route path='/' exact component={Home} />
-      <Route path='/admin' component={AdminRoutes} onEnter={requireAuth} />
-      <Route path='/app' component={TexterRoutes} onEnter={requireAuth} />
+      <Route path='/admin' render={props => <AdminRoutes {...props} onEnter={requireAuth} />} />
+      <Route path='/app' render={props => <TexterRoutes {...props} onEnter={requireAuth} />} />
       <Route path='/login' component={Login} />
       <Route path='/terms' component={Terms} />
-      <Route path='/invite/:inviteId' component={CreateOrganization} onEnter={requireAuth} />
-      <Route path='/:organizationUuid/join/:campaignId' component={JoinTeam} onEnter={requireAuth} />
-      <Route path='/:organizationUuid/join' component={JoinTeam} onEnter={requireAuth} />
+      <Route path='/invite/:inviteId' render={props => <CreateOrganization {...props} onEnter={requireAuth} />} />
+      <Route path='/:organizationUuid/join/:campaignId' render={props => <JoinTeam {...props} onEnter={requireAuth} />} />
+      <Route path='/:organizationUuid/join' render={props => <JoinTeam {...props} onEnter={requireAuth} />} />
       <Redirect path='*' to='/' />
     </Switch>
   )

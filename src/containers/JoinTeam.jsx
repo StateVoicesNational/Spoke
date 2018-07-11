@@ -17,7 +17,10 @@ class JoinTeam extends React.Component {
   state = {
     errors: null
   }
+
   async componentWillMount() {
+    this.props.onEnter()
+
     let organization = null
     let campaign = null
     try {
@@ -61,7 +64,8 @@ class JoinTeam extends React.Component {
 
 JoinTeam.propTypes = {
   mutations: PropTypes.object,
-  history: PropTypes.object
+  history: PropTypes.object,
+  onEnter: PropTypes.func
 }
 
 const mapMutationsToProps = ({ ownProps }) => ({

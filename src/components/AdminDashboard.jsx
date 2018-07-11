@@ -24,6 +24,10 @@ const styles = StyleSheet.create({
 })
 
 class AdminDashboard extends React.Component {
+  componentWillMount() {
+    this.props.onEnter()
+  }
+
   urlFromPath(path) {
     const organizationId = this.props.params.organizationId
     return `/admin/${organizationId}/${path}`
@@ -100,6 +104,7 @@ class AdminDashboard extends React.Component {
 
 AdminDashboard.propTypes = {
   params: PropTypes.object,
+  onEnter: PropTypes.func,
   children: PropTypes.object,
   location: PropTypes.object
 }
