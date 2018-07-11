@@ -15,12 +15,12 @@ const initialize = async (knex, Promise) => {
       t.string('state').notNullable()
       t.float('latitute').notNullable()
       t.float('longitude').notNullable()
-      t.number('timezone_offset').notNullable()
+      t.float('timezone_offset').notNullable()
       t.boolean('has_dst').notNullable()
     }
   }
 
-  knex.on('query', console.log)
+  // knex.on('query', console.log)
   // Automate the process of checking if each table exists
   tables.forEach(async tableName => {
     if (!await knex.schema.hasTable(tableName)) {

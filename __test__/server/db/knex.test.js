@@ -5,18 +5,22 @@ const tables = ['log', 'zip_code']
 const TEST_TIMEOUT = 20000
 
 describe('The knex initial migration', async () => {
-  beforeAll(() => knex.migrate.latest())
+  beforeAll(async () => {
+    await knex.migrate.latest()
+  })
   afterAll(() => knex.raw('DROP OWNED BY spoke_test;')) // make this more db-agnostic
 
   tables.forEach(async t => {
-    it(`generates the correct ${t} table schema`, async () => {
+    it(`generates the correct ${t} table schema`, () => {
       expect.assertions(1)
-      const newSchema = await knex(t).columnInfo()
       // eslint-disable-next-line global-require
       const originalSchema = require(`./schemas/${t}.json`)
-      // console.log('new schema is', newSchema)
-      // console.log('original schema is', originalSchema)
-      expect(newSchema).toMatchSchema(originalSchema)
+      return knex(t).columnInfo()
+      .then(newSchema => {
+        // console.log('new schema is', newSchema)
+        // console.log('original schema is', originalSchema)
+        expect(newSchema).toMatchSchema(originalSchema)
+      })
     }, TEST_TIMEOUT)
   })
 })
