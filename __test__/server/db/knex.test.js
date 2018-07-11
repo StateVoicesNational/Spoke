@@ -1,7 +1,7 @@
 const config = require('../../../knexfile.js')
 const knex = require('knex')(config)
 // import { tables } from './schemas/tables.js'
-const tables = ['log']
+const tables = ['log', 'zip_code']
 const TEST_TIMEOUT = 20000
 
 describe('The knex initial migration', async () => {
@@ -10,6 +10,7 @@ describe('The knex initial migration', async () => {
 
   tables.forEach(async t => {
     it(`generates the correct ${t} table schema`, async () => {
+      expect.assertions(1)
       const newSchema = await knex(t).columnInfo()
       // eslint-disable-next-line global-require
       const originalSchema = require(`./schemas/${t}.json`)
