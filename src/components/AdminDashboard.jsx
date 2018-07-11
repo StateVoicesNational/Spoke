@@ -2,7 +2,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import { withRouter } from 'react-router'
 import gql from 'graphql-tag'
-import { Query } from "react-apollo";
+import { Query } from "react-apollo"
 import { StyleSheet, css } from 'aphrodite'
 
 import { hasRole } from '../lib'

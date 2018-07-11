@@ -10,6 +10,7 @@ import Avatar from 'material-ui/Avatar'
 import { connect } from 'react-apollo'
 import { withRouter } from 'react-router'
 import gql from 'graphql-tag'
+import { newLoadData } from './hoc/load-data'
 
 const avatarSize = 28
 
@@ -145,23 +146,23 @@ UserMenu.propTypes = {
   router: PropTypes.object
 }
 
-const mapQueriesToProps = () => ({
+const queries = {
   data: {
-    query: gql`query getCurrentUserForMenu {
-      currentUser {
-        id
-        displayName
-        email
-        organizations {
+    gql: gql`
+      query getCurrentUserForMenu {
+        currentUser {
           id
-          name
+          displayName
+          email
+          organizations {
+            id
+            name
+          }
         }
       }
-    }`,
-    forceFetch: true
+    `,
+    options: { fetchPolicy: 'network-only' }
   }
-})
+}
 
-export default connect({
-  mapQueriesToProps
-})(withRouter(UserMenu))
+export default newLoadData({ queries })(withRouter(UserMenu))

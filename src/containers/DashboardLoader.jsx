@@ -2,7 +2,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import gql from 'graphql-tag'
 import { withRouter } from 'react-router'
-import loadData from './hoc/load-data'
+import { newLoadData } from './hoc/load-data'
 
 class DashboardLoader extends React.Component {
   componentWillMount() {
@@ -26,18 +26,20 @@ DashboardLoader.propTypes = {
   path: PropTypes.string
 }
 
-const mapQueriesToProps = () => ({
+const queries = {
   data: {
-    query: gql`query getCurrentUserForLoader {
-      currentUser {
-        id
-        organizations {
+    gql: gql`
+      query getCurrentUserForLoader {
+        currentUser {
           id
+          organizations {
+            id
+          }
         }
       }
-    }`,
-    forceFetch: true
+    `,
+    options: { fetchPolicy: 'network-only' }
   }
-})
+}
 
-export default loadData(withRouter(DashboardLoader), { mapQueriesToProps })
+export default newLoadData({ queries })(withRouter(DashboardLoader))
