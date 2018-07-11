@@ -1,17 +1,38 @@
-module.exports = {
-  up: async (knex, Promise) => {
-    // knex.on('query', console.log)
-    // define the log table
-    if (!await knex.schema.hasTable('log')) {
-      await knex.schema.createTable('log', t => {
-        t.increments('id').primary()
-        t.text('message_sid').notNullable()
-        t.text('body')
-        t.timestamp('created_at').notNullable().defaultTo(knex.fn.now())
-      })
+const tables = ['log', 'zip_code']
+
+const initialize = async (knex, Promise) => {
+  // This object's keys are table names and each key's value is a function that defines that table's schema.
+  const buildTableSchema = {
+    log: t => {
+      t.increments('id').primary()
+      t.text('message_sid').notNullable()
+      t.text('body')
+      t.timestamp('created_at').notNullable().defaultTo(knex.fn.now())
+    },
+    zip_code: t => {
+      t.string('zip').notNullable()
+      t.string('city').notNullable()
+      t.string('state').notNullable()
+      t.float('latitute').notNullable()
+      t.float('longitude').notNullable()
+      t.number('timezone_offset').notNullable()
+      t.boolean('has_dst').notNullable()
     }
-    Promise.resolve()
-  },
+  }
+
+  knex.on('query', console.log)
+  // Automate the process of checking if each table exists
+  tables.forEach(async tableName => {
+    if (!await knex.schema.hasTable(tableName)) {
+      // buildTableSchema[tableName] will return a function. knex.schema.createTable calls it with one argument, the table instance (t).
+      await knex.schema.createTable(tableName, buildTableSchema[tableName])
+    }
+  })
+  Promise.resolve()
+}
+
+module.exports = {
+  up: initialize,
   down: (knex, Promise) => {
     Promise.resolve()
   }
