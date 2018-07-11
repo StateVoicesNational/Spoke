@@ -4,11 +4,17 @@ const knex = require('knex')(config)
 const tables = ['log', 'zip_code']
 const TEST_TIMEOUT = 20000
 
+// knex.on('query', console.log)
+
 describe('The knex initial migration', async () => {
   beforeAll(async () => {
     await knex.migrate.latest()
   })
-  afterAll(() => knex.raw('DROP OWNED BY spoke_test;')) // make this more db-agnostic
+  afterAll(async () => {
+    // tests only run in PG so this should work
+    await knex.raw('DROP OWNED BY spoke_test;')
+    await knex.destroy()
+  })
 
   tables.forEach(async t => {
     it(`generates the correct ${t} table schema`, () => {

@@ -20,7 +20,6 @@ const initialize = async (knex, Promise) => {
     }
   }
 
-  // knex.on('query', console.log)
   // Automate the process of checking if each table exists
   tables.forEach(async tableName => {
     if (!await knex.schema.hasTable(tableName)) {
