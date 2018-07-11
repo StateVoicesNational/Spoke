@@ -1,10 +1,8 @@
-import { createMemoryHistory } from 'react-router'
 import fs from 'fs'
 import path from 'path'
 
 import renderIndex from './render-index'
 import wrap from '../wrap'
-import Store from '../../store'
 
 
 let assetMap = {
@@ -34,7 +32,5 @@ if (process.env.NODE_ENV === 'production') {
 
 export default wrap(async (req, res) => {
   const html = '', css = ''
-  const memoryHistory = createMemoryHistory(req.url),
-        store = new Store(memoryHistory)
-  res.send(renderIndex(html, css, assetMap, store.data))
+  res.send(renderIndex(html, css, assetMap))
 })

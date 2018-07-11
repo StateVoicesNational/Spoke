@@ -1,9 +1,8 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { ApolloProvider } from 'react-apollo'
-import { Provider } from 'react-redux'
-import { ConnectedRouter } from 'connected-react-router'
 import { createBrowserHistory } from 'history'
+import { BrowserRouter } from 'react-router-dom'
 
 import { StyleSheet } from 'aphrodite'
 import errorCatcher from './error-catcher'
@@ -19,17 +18,15 @@ window.AuthService = {
   logout
 }
 const history = createBrowserHistory()
-const store = new Store(history, window.INITIAL_STATE)
+const store = new Store(history, {})
 
 StyleSheet.rehydrate(window.RENDERED_CLASS_NAMES)
 
 ReactDOM.render(
   <ApolloProvider store={store.data} client={ApolloClientSingleton}>
-    <Provider store={store}>
-      <ConnectedRouter history={history}>
-        {makeRoutes()}
-      </ConnectedRouter>
-    </Provider>
+    <BrowserRouter>
+      {makeRoutes()}
+    </BrowserRouter>
   </ApolloProvider>,
   document.getElementById('mount')
 )
