@@ -1,11 +1,11 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import loadData from './hoc/load-data'
+import { withRouter } from 'react-router'
 import gql from 'graphql-tag'
 import { StyleSheet, css } from 'aphrodite'
-import wrapMutations from './hoc/wrap-mutations'
+
+import { newLoadData } from './hoc/load-data'
 import theme from '../styles/theme'
-import { withRouter } from 'react-router'
 
 const styles = StyleSheet.create({
   container: {
@@ -43,7 +43,7 @@ class Home extends React.Component {
   }
 
   componentWillMount() {
-    const user = this.props.data.currentUser
+    const user = this.props.getCurrentUser.currentUser
     if (user) {
       if (user.adminOrganizations.length > 0) {
         this.props.router.push(`/admin/${user.adminOrganizations[0].id}`)
@@ -59,15 +59,14 @@ class Home extends React.Component {
   handleOrgInviteClick = async (e) => {
     if (!window.SUPPRESS_SELF_INVITE || window.SUPPRESS_SELF_INVITE === 'undefined') {
       e.preventDefault()
-      const newInvite = await this.props.mutations.createInvite({
+      const newInvite = await this.props.createInvite({
         is_valid: true
       })
       if (newInvite.errors) {
         alert('There was an error creating your invite')
         throw new Error(newInvite.errors)
       } else {
-        // alert(newInvite.data.createInvite.id)
-        this.props.router.push(`/login?nextUrl=/invite/${newInvite.data.createInvite.hash}`)
+        this.props.router.push(`/login?nextUrl=/invite/${newInvite.createInvite.hash}`)
       }
     }
   }
@@ -148,4 +147,34 @@ const mapMutationsToProps = () => ({
   })
 })
 
-export default loadData(wrapMutations(withRouter(Home)), { mapQueriesToProps, mapMutationsToProps })
+const queries = {
+  getCurrentUser: {
+    gql: gql`
+      query getCurrentUser {
+        currentUser {
+          id
+          adminOrganizations:organizations(role:"ADMIN") {
+            id
+          }
+          texterOrganizations:organizations(role:"TEXTER") {
+            id
+          }
+        }
+      }
+    `
+  }
+}
+
+const mutations = {
+  createInvite: {
+    gql: gql`
+      mutation createInvite($invite: InviteInput!) {
+        createInvite(invite: $invite) {
+          hash
+        }
+      }
+    `
+  }
+}
+
+export default newLoadData({ queries, mutations })(withRouter(Home))
