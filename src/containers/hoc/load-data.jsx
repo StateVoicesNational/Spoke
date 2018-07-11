@@ -1,5 +1,6 @@
 import React from 'react'
 import { connect, compose } from 'react-apollo'
+import { branch, renderComponent } from 'recompose'
 
 import { log } from '../../lib'
 import { wrapQueries, newWrapMutations } from '../hoc/wrap-mutations'
@@ -14,7 +15,7 @@ export const renderWhileLoading = (propNames = []) =>
       })
       return loading
     },
-    renderComponent(<LoadingIndicator />),
+    renderComponent(LoadingIndicator),
   )
 
 export const newLoadData = ({ queries = {}, mutations = {} } = {}) => {

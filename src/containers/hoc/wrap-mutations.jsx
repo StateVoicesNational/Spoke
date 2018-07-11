@@ -1,5 +1,6 @@
 import React from 'react'
 import _ from 'lodash'
+import { graphql } from 'react-apollo'
 
 import { GraphQLRequestError, graphQLErrorParser } from '../../network/errors'
 
@@ -36,6 +37,7 @@ export const newWrapMutations = (mutations) => {
   const result = mutationKeys.map(mutationKey => {
     const { gql } = mutations[mutationKey]
     return graphql(gql, {
+      name: mutationKey,
       props: (props) => {
         const mutations = props.mutations || {}
         mutations[mutationKey] = (variables) => props[mutationKey]({ variables })
