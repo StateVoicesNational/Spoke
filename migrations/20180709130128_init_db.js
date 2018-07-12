@@ -16,13 +16,19 @@ const initialize = async (knex, Promise) => {
         t.boolean('terms').defaultTo(false)
       }
     },
-    // {
-    //   tableName: 'pending_message_part',
-    //   create: t => {
-    //     t.increments('id').primary()
-    //     t.text('service')
-    //   }
-    // },
+    {
+      tableName: 'pending_message_part',
+      create: t => {
+        t.increments('id').primary()
+        t.text('service').notNullable()
+        t.text('service_id').notNullable()
+        t.text('parent_id').defaultTo('')
+        t.text('service_message').notNullable()
+        t.text('user_number').notNullable().defaultTo('')
+        t.text('contact_number').notNullable()
+        t.timestamp('created_at').defaultTo(knex.fn.now()).notNullable()
+      }
+    },
     {
       tableName: 'log',
       create: t => {
@@ -99,25 +105,23 @@ module.exports = {
   }
 }
 /*
-This table ordering is taken from __test__/test_helpers.js. Go from the bottom up!
-
-await r.knex.schema.dropTableIfExists('log')
-await r.knex.schema.dropTableIfExists('zip_code')
-await r.knex.schema.dropTableIfExists('message')
-await r.knex.schema.dropTableIfExists('user_cell')
-await r.knex.schema.dropTableIfExists('user_organization')
-await r.knex.schema.dropTableIfExists('canned_response')
-await r.knex.schema.dropTableIfExists('invite')
-await r.knex.schema.dropTableIfExists('job_request')
-await r.knex.schema.dropTableIfExists('migrations')
-await r.knex.schema.dropTableIfExists('opt_out')
-await r.knex.schema.dropTableIfExists('question_response')
-await r.knex.schema.dropTableIfExists('interaction_step')
-await r.knex.schema.dropTableIfExists('campaign_contact')
-await r.knex.schema.dropTableIfExists('assignment')
-await r.knex.schema.dropTableIfExists('campaign')
-await r.knex.schema.dropTableIfExists('organization')
-await r.knex.schema.dropTableIfExists('pending_message_part')
-await r.knex.schema.dropTableIfExists('user')
-
+This table ordering is taken from __test__/test_helpers.js. Go from the bottom up.
+  - log
+  - zip_code
+  - message
+  - user_cell
+  - user_organization
+  - canned_response
+  - invite
+  - job_request
+  - migrations
+  - opt_out
+  - question_response
+  - interaction_step
+  - campaign_contact
+  - assignment
+  - campaign
+  - organization
+  - pending_message_part
+  - user
 */
