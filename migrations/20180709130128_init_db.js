@@ -112,6 +112,30 @@ const initialize = async (knex, Promise) => {
       }
     },
     {
+      tableName: 'interaction_step',
+      create: t => {
+        t.increments('id')
+        t.integer('campaign_id').notNullable()
+        t.text('question').notNullable().defaultTo('')
+        t.text('script').notNullable().defaultTo('')
+        t.timestamp('created_at').notNullable().defaultTo(knex.fn.now())
+
+        // FIELDS FOR SUB-INTERACTIONS (only):
+        t.integer('parent_interaction_id')
+        t.text('answer_option').notNullable().defaultTo('')
+        t.text('answer_actions').notNullable().defaultTo('')
+        t.boolean('is_deleted').defaultTo(false).notNullable()
+        t.text('source')
+        t.text('external_question_id')
+        t.text('external_response_id')
+
+        t.index('parent_interaction_id')
+        t.foreign('parent_interaction_id').references('interaction_step.id')
+        t.index('campaign_id')
+        t.foreign('campaign_id').references('campaign.id')
+      }
+    },
+    {
       tableName: 'log',
       create: t => {
         t.increments('id').primary()
