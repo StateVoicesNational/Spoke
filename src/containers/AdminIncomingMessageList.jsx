@@ -120,6 +120,7 @@ export class AdminIncomingMessageList extends Component {
         ) : (
           <div>
             <IncomingMessageFilter
+              organizationId={this.props.params.organizationId}
               campaigns={this.props.organization.organization.campaigns}
               onCampaignChanged={this.handleCampaignChange}
               onMessageFilterChanged={this.handleMessageFilterChange}
@@ -151,15 +152,15 @@ export class AdminIncomingMessageList extends Component {
 const mapQueriesToProps = ({ ownProps }) => ({
   organization: {
     query: gql`
-      query Q($organizationId: String!) {
+      query Q($organizationId: String!, $campaignsFilter: CampaignsFilter) {
         organization(id: $organizationId) {
           id
-          people {
+          people(campaignsFilter: $campaignsFilter) {
             id
             displayName
             roles(organizationId: $organizationId)
           }
-          campaigns {
+          campaigns(campaignsFilter: $campaignsFilter) {
             id
             title
           }
@@ -167,7 +168,8 @@ const mapQueriesToProps = ({ ownProps }) => ({
       }
     `,
     variables: {
-      organizationId: ownProps.params.organizationId
+      organizationId: ownProps.params.organizationId,
+      campaignsFilter: { isArchived: false }
     },
     forceFetch: true
   }
@@ -199,3 +201,5 @@ export default loadData(withRouter(wrapMutations(AdminIncomingMessageList)), {
   mapQueriesToProps,
   mapMutationsToProps
 })
+
+// export default loadData(wrapMutations(UserEdit), { mapMutationsToProps })

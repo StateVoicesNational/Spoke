@@ -129,9 +129,12 @@ class IncomingMessageFilter extends Component {
 }
 
 IncomingMessageFilter.propTypes = {
+  organizationId: type.string.isRequired,
   onCampaignChanged: type.func.isRequired,
   campaigns: type.array.isRequired,
   onMessageFilterChanged: type.func.isRequired
 }
 
 export default IncomingMessageFilter
+
+// export default loadData(withRouter(IncomingMessageList), { mapQueriesToProps })
