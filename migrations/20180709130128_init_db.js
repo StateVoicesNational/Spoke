@@ -102,13 +102,13 @@ const initialize = async (knex, Promise) => {
         t.boolean('is_opted_out').defaultTo(false)
         t.text('timezone_offset').defaultTo('')
 
-        // t.index('assignment_id')
-        // t.foreign('assignment_id').references('assignment.id')
-        // t.index('campaign_id')
-        // t.foreign('campaign_id').references('campaign.id')
-        // t.index('cell')
-        // t.index(['campaign_id, assignment_id'], 'campaign_assignment')
-        // t.index(['assignment_id', 'timezone_offset'], 'assignment_timezone_offset')
+        t.index('assignment_id')
+        t.foreign('assignment_id').references('assignment.id')
+        t.index('campaign_id')
+        t.foreign('campaign_id').references('campaign.id')
+        t.index('cell')
+        t.index(['campaign_id, assignment_id'], 'campaign_assignment')
+        t.index(['assignment_id', 'timezone_offset'], 'assignment_timezone_offset')
       }
     },
     {
