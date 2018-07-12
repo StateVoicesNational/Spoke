@@ -162,12 +162,6 @@ const mapQueriesToProps = ({ ownProps }) => ({
           campaigns {
             id
             title
-            assignments {
-              texter {
-                id
-                displayName
-              }
-            }
           }
         }
       }
