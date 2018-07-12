@@ -63,6 +63,55 @@ const initialize = async (knex, Promise) => {
       }
     },
     {
+      tableName: 'assignment',
+      create: t => {
+        t.increments('id')
+        t.integer('user_id').notNullable()
+        t.integer('campaign_id').notNullable()
+        t.timestamp('created_at').defaultTo(knex.fn.now()).notNullable()
+        t.integer('max_contacts')
+
+        t.foreign('user_id').references('user.id')
+        t.foreign('campaign_id').references('campaign.id')
+      }
+    },
+    {
+      tableName: 'campaign_contact',
+      create: t => {
+        t.increments('id')
+        t.integer('campaign_id').notNullable()
+        t.integer('assignment_id')
+        t.text('external_id').notNullable().defaultTo('')
+        t.text('first_name').notNullable().defaultTo('')
+        t.text('last_name').notNullable().defaultTo('')
+        t.text('cell').notNullable()
+        t.text('zip').defaultTo('').notNullable()
+        t.text('custom_fields').notNullable().defaultTo('{}')
+        t.timestamp('created_at').defaultTo(knex.fn.now()).notNullable()
+        t.timestamp('updated_at').defaultTo(knex.fn.now()).notNullable()
+        t.enu('message_status', [
+          'needsMessage',
+          'needsResponse',
+          'convo',
+          'messaged',
+          'closed',
+          'UPDATING'
+        ])
+        .defaultTo('needsMessage')
+        .notNullable()
+        t.boolean('is_opted_out').defaultTo(false)
+        t.text('timezone_offset').defaultTo('')
+
+        // t.index('assignment_id')
+        // t.foreign('assignment_id').references('assignment.id')
+        // t.index('campaign_id')
+        // t.foreign('campaign_id').references('campaign.id')
+        // t.index('cell')
+        // t.index(['campaign_id, assignment_id'], 'campaign_assignment')
+        // t.index(['assignment_id', 'timezone_offset'], 'assignment_timezone_offset')
+      }
+    },
+    {
       tableName: 'log',
       create: t => {
         t.increments('id').primary()
