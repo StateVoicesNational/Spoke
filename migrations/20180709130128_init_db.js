@@ -43,6 +43,26 @@ const initialize = async (knex, Promise) => {
       }
     },
     {
+      tableName: 'campaign',
+      create: t => {
+        t.increments('id')
+        t.integer('organization_id').notNullable()
+        t.text('title').notNullable().defaultTo('')
+        t.text('description').notNullable().defaultTo('')
+        t.boolean('is_started')
+        t.timestamp('due_by').defaultTo(null)
+        t.timestamp('created_at').notNullable().defaultTo(knex.fn.now())
+        t.boolean('is_archived')
+        t.boolean('use_dynamic_assignment')
+        t.text('logo_image_url')
+        t.text('intro_html')
+        t.text('primary_color')
+
+        t.index('organization_id')
+        t.foreign('organization_id').references('organization.id')
+      }
+    },
+    {
       tableName: 'log',
       create: t => {
         t.increments('id').primary()
