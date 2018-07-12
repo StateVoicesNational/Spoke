@@ -30,6 +30,19 @@ const initialize = async (knex, Promise) => {
       }
     },
     {
+      tableName: 'organization',
+      create: t => {
+        t.increments('id')
+        t.text('uuid')
+        t.text('name').notNullable()
+        t.timestamp('created_at').defaultTo(knex.fn.now()).notNullable()
+        t.text('features').defaultTo('')
+        t.boolean('texting_hours_enforced').defaultTo(false)
+        t.integer('texting_hours_start').defaultTo(9)
+        t.integer('texting_hours_end').defaultTo(21)
+      }
+    },
+    {
       tableName: 'log',
       create: t => {
         t.increments('id').primary()
