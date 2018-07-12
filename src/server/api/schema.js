@@ -19,13 +19,16 @@ import {
   datawarehouse
 } from '../models'
 import { schema as userSchema, resolvers as userResolvers } from './user'
-import { schema as conversationSchema, resolvers as conversationsResolver } from './conversations'
+import {
+  schema as conversationSchema,
+  getConversations,
+  resolvers as conversationsResolver
+} from './conversations'
 import { schema as organizationSchema, resolvers as organizationResolvers } from './organization'
 import { schema as campaignSchema, resolvers as campaignResolvers } from './campaign'
 import {
   schema as assignmentSchema,
   resolvers as assignmentResolvers,
-  addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue
 } from './assignment'
 import {
   schema as interactionStepSchema,
@@ -1247,6 +1250,7 @@ const rootMutations = {
 
           await r
             .knex('campaign_contact')
+            .where('campaign_id', campaignId)
             .whereIn('id', campaignContactIds)
             .update({
               assignment_id: assignmentId
@@ -1279,37 +1283,6 @@ const rootMutations = {
       return returnCampaignIdAssignmentIds
     }
   }
-}
-
-function getConversationsJoinsAndWhereClause(
-  queryParam,
-  organizationId,
-  campaignsFilter,
-  assignmentsFilter,
-  contactsFilter
-) {
-  let query = queryParam
-    .from('campaign')
-    .leftJoin('campaign_contact', 'campaign.id', 'campaign_contact.campaign_id')
-    .leftJoin('assignment', 'campaign_contact.assignment_id', 'assignment.id')
-    .leftJoin('user', 'assignment.user_id', 'user.id')
-    .where({ 'campaign.organization_id': organizationId })
-
-  if (campaignsFilter) {
-    if ('isArchived' in campaignsFilter && campaignsFilter.isArchived !== null) {
-      query = query.where({ 'campaign.is_archived': campaignsFilter.isArchived })
-    }
-    if ('campaignId' in campaignsFilter && campaignsFilter.campaignId !== null) {
-      query = query.where({ 'campaign.id': parseInt(campaignsFilter.campaignId) })
-    }
-  }
-
-  if (assignmentsFilter) {
-    if ('texterId' in assignmentsFilter && assignmentsFilter.texterId !== null)
-      query = query.where({ 'assignment.user_id': assignmentsFilter.texterId })
-  }
-
-  return addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue(query, contactsFilter)
 }
 
 const rootResolvers = {
@@ -1391,51 +1364,14 @@ const rootResolvers = {
     ) => {
       await accessRequired(user, organizationId, 'SUPERVOLUNTEER', true)
 
-      let query = r.knex.select(
-        'campaign_contact.id as cc_id',
-        'campaign_contact.first_name as cc_first_name',
-        'campaign_contact.last_name as cc_last_name',
-        'campaign_contact.message_status',
-        'campaign_contact.is_opted_out',
-        'campaign_contact.updated_at',
-        'campaign_contact.cell',
-        'campaign_contact.assignment_id',
-        'user.id as u_id',
-        'user.first_name as u_first_name',
-        'user.last_name as u_last_name',
-        'campaign.id as cmp_id',
-        'campaign.title',
-        'campaign.due_by',
-        'assignment.id as ass_id'
-      )
-
-      query = getConversationsJoinsAndWhereClause(
-        query,
+      return getConversations(
+        cursor,
         organizationId,
         campaignsFilter,
         assignmentsFilter,
-        contactsFilter
+        contactsFilter,
+        utc
       )
-
-      query = query.orderBy('campaign_contact.updated_at').orderBy('cc_id')
-      query = query.limit(cursor.limit).offset(cursor.offset)
-
-      const conversations = await query
-
-      const countQuery = r.knex.count('*')
-      const conversationsCountArray = await getConversationsJoinsAndWhereClause(countQuery, organizationId, campaignsFilter, assignmentsFilter, contactsFilter)
-      const pageInfo = {
-        limit: cursor.limit,
-        offset: cursor.offset,
-        //next: offsetLimitCursor.next,
-        //previous: offsetLimitCursor.previous,
-        total: conversationsCountArray[0].count
-      }
-
-      return {
-        conversations,
-        pageInfo
-      }
     }
   }
 }
