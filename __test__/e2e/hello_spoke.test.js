@@ -1,17 +1,22 @@
-const { Builder, By, until } = require('selenium-webdriver')
+const { By, until } = require('selenium-webdriver')
 const config = require('./util/config')
-console.log(`config.baseUrl: ${config.baseUrl}`)
+const helpers = require('./util/helpers')
+
 // promise.USE_PROMISE_MANAGER = false; //TODO: This was recommended by Selenum but it doesn't work.
 
 describe('Signing up a new user to Spoke', () => {
   let driver
 
   beforeAll(async () => {
-    driver = await new Builder().forBrowser('chrome').build()
+    driver = await helpers.selenium.buildDriver()
   })
 
   afterAll(async () => {
-    await driver.quit()
+    await helpers.selenium.quitDriver(driver)
+  })
+
+  it('gets the guinea pig page', async () => {
+    await driver.get('http://saucelabs.com/test/guinea-pig')
   })
 
   it('gets the landing page', async () => {
