@@ -15,6 +15,10 @@ describe('Create and Edit Campaign', () => {
     await selenium.quitDriver(driver)
   })
 
+  describe('(As Admin) Open Landing Page', () => {
+    login.landing(driver)
+  })
+
   describe('(As Admin) Log In an admin to Spoke', () => {
     login.tryLoginThenSignUp(driver, CAMPAIGN.admin)
   })
