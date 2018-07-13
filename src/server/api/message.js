@@ -1,7 +1,7 @@
 import { mapFieldsToModel } from './lib/utils'
 import { Message } from '../models'
-import {schema as campaignSchema, resolvers as campaignResolvers} from './campaign'
-import {schema as assignmentSchema, resolvers as assignmentResolves} from './assignment'
+import { schema as campaignSchema, resolvers as campaignResolvers } from './campaign'
+import { schema as assignmentSchema, resolvers as assignmentResolves } from './assignment'
 
 export const schema = `
   type Message {
@@ -24,8 +24,8 @@ export const resolvers = {
       'userNumber',
       'contactNumber',
       'createdAt',
-      'isFromContact',
+      'isFromContact'
     ], Message),
-    'campaignId' : (instance) => instance['campaign_id']
+    'campaignId': (instance) => instance['campaign_id']
   }
 }

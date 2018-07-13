@@ -442,8 +442,7 @@ export class AssignmentTexterContact extends React.Component {
     }
     this.setState({ disabled: true })
     try {
-
-      if(optOutMessageText.length){
+      if (optOutMessageText.length) {
         await this.props.mutations.sendMessage(message, contact.id)
       }
 
