@@ -47,12 +47,8 @@ describe('Basic text manager workflow', () => {
     })
 
     describe('(As Texter) Follow the Invite URL', () => {
-      describe('should follow the link to the invite', async () => {
-        it('should follow the link to the invite', async () => {
-          await driverTexter.get(global.e2e.joinUrl)
-        })
-        login.tryLoginThenSignUp(driverTexter, CAMPAIGN.texter)
-      })
+      texter.viewInvite(driverTexter)
+      login.tryLoginThenSignUp(driverTexter, CAMPAIGN.texter)
     })
 
     describe('(As Texter) Verify Todos', () => {
@@ -72,12 +68,8 @@ describe('Basic text manager workflow', () => {
     })
 
     describe('(As Texter) Follow the Invite URL', () => {
-      describe('should follow the link to the invite', async () => {
-        it('should follow the link to the invite', async () => {
-          await driverTexter.get(global.e2e.joinUrl)
-        })
-        login.tryLoginThenSignUp(driverTexter, CAMPAIGN.texter)
-      })
+      texter.viewInvite(driverTexter)
+      login.tryLoginThenSignUp(driverTexter, CAMPAIGN.texter)
     })
 
     describe('(As Admin) Create a New Campaign', () => {
@@ -113,12 +105,8 @@ describe('Basic text manager workflow', () => {
     })
 
     describe('(As Texter) Follow the Invite URL', () => {
-      describe('should follow the link to the invite', async () => {
-        it('should follow the link to the invite', async () => {
-          await driverTexter.get(global.e2e.joinUrl)
-        })
-        login.tryLoginThenSignUp(driverTexter, CAMPAIGN.texter)
-      })
+      texter.viewInvite(driverTexter)
+      login.tryLoginThenSignUp(driverTexter, CAMPAIGN.texter)
     })
 
     describe('(As Texter) Verify Todos', () => {
@@ -138,12 +126,8 @@ describe('Basic text manager workflow', () => {
     })
 
     describe('(As Texter) Follow the Invite URL', () => {
-      describe('should follow the link to the invite', async () => {
-        it('should follow the link to the invite', async () => {
-          await driverTexter.get(global.e2e.joinUrl)
-        })
-        login.tryLoginThenSignUp(driverTexter, CAMPAIGN.texter)
-      })
+      texter.viewInvite(driverTexter)
+      login.tryLoginThenSignUp(driverTexter, CAMPAIGN.texter)
     })
 
     describe('(As Admin) Create a New Campaign', () => {

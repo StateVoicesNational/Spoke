@@ -1,6 +1,6 @@
 import { selenium } from './util/helpers'
 import STRINGS from './data/strings'
-import { login, main, people } from './page-functions/index'
+import { login, main, people, texter } from './page-functions/index'
 
 describe('Invite Texter workflow', () => {
   // Instantiate browser(s)
@@ -18,7 +18,7 @@ describe('Invite Texter workflow', () => {
   })
 
   describe('(As Admin) Open Landing Page', () => {
-    login.landing(driver)
+    login.landing(driverAdmin)
   })
 
   describe('(As Admin) Log In an admin to Spoke', () => {
@@ -34,13 +34,10 @@ describe('Invite Texter workflow', () => {
   })
 
   describe('(As Texter) Follow the Invite URL', () => {
-    describe('should follow the link to the invite', async () => {
-      it('should follow the link to the invite', async () => {
-        await driverTexter.get(global.e2e.joinUrl)
-      })
-      login.tryLoginThenSignUp(driverTexter, CAMPAIGN.texter)
-    })
+    texter.viewInvite(driverTexter)
+    login.tryLoginThenSignUp(driverTexter, CAMPAIGN.texter)
   })
+
   describe('(As Admin) Edit User', () => {
     people.editUser(driverAdmin, CAMPAIGN.admin)
   })
