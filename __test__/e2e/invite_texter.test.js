@@ -16,6 +16,10 @@ describe('Invite Texter workflow', () => {
     await selenium.quitDriver(driverTexter)
   })
 
+  describe('(As Admin) Open Landing Page', () => {
+    login.landing(driver)
+  })
+
   describe('(As Admin) Log In an admin to Spoke', () => {
     login.tryLoginThenSignUp(driver, CAMPAIGN.admin)
   })
@@ -29,14 +33,11 @@ describe('Invite Texter workflow', () => {
   })
 
   describe('(As Texter) Follow the Invite URL', () => {
-    describe('Create New Texter in Spoke', () => {
-      login.tryLoginThenSignUp(driverTexter, CAMPAIGN.texter)
-    })
-
     describe('should follow the link to the invite', async () => {
       it('should follow the link to the invite', async () => {
         await driverTexter.get(global.e2e.joinUrl)
       })
+      login.tryLoginThenSignUp(driverTexter, CAMPAIGN.texter)
     })
   })
 })
