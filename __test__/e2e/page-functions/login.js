@@ -69,8 +69,6 @@ export const login = {
     this.signUpTab(driver, user)
   },
   logIn(driver, user) {
-    this.landing(driver)
-
     it('opens the Log In tab', async () => {
       await wait.andClick(driver, auth0.tabs.logIn, { msWait: 20000 })
     })

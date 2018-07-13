@@ -26,7 +26,11 @@ describe('Basic text manager workflow', () => {
   })
 
   describe('Setup Admin and Texter Users', () => {
-    describe('(As Admin) Log In', () => {
+    describe('(As Admin) Open Landing Page', () => {
+      login.landing(driverAdmin)
+    })
+
+    describe('(As Admin) Log In an admin to Spoke', () => {
       login.tryLoginThenSignUp(driverAdmin, STRINGS.users.admin0)
     })
 
@@ -38,16 +42,17 @@ describe('Basic text manager workflow', () => {
   describe('Create Campaign (No Existing Texter)', () => {
     const CAMPAIGN = STRINGS.campaigns.noExistingTexter
 
-    describe('(As Texter) Log In', () => {
-      login.tryLoginThenSignUp(driverTexter, CAMPAIGN.texter)
-    })
-
     describe('(As Admin) Create a New Campaign', () => {
       campaigns.startCampaign(driverAdmin, CAMPAIGN)
     })
 
     describe('(As Texter) Follow the Invite URL', () => {
-      texter.viewInvite(driverTexter)
+      describe('should follow the link to the invite', async () => {
+        it('should follow the link to the invite', async () => {
+          await driverTexter.get(global.e2e.joinUrl)
+        })
+        login.tryLoginThenSignUp(driverTexter, CAMPAIGN.texter)
+      })
     })
 
     describe('(As Texter) Verify Todos', () => {
@@ -66,12 +71,13 @@ describe('Basic text manager workflow', () => {
       people.invite(driverAdmin)
     })
 
-    describe('(As Texter) Log In', () => {
-      login.tryLoginThenSignUp(driverTexter, CAMPAIGN.texter)
-    })
-
     describe('(As Texter) Follow the Invite URL', () => {
-      texter.viewInvite(driverTexter)
+      describe('should follow the link to the invite', async () => {
+        it('should follow the link to the invite', async () => {
+          await driverTexter.get(global.e2e.joinUrl)
+        })
+        login.tryLoginThenSignUp(driverTexter, CAMPAIGN.texter)
+      })
     })
 
     describe('(As Admin) Create a New Campaign', () => {
@@ -102,16 +108,17 @@ describe('Basic text manager workflow', () => {
   describe('Create Campaign (No Existing Texter with Opt-Out)', () => {
     const CAMPAIGN = STRINGS.campaigns.noExistingTexterOptOut
 
-    describe('(As Texter) Log In', () => {
-      login.tryLoginThenSignUp(driverTexter, CAMPAIGN.texter)
-    })
-
     describe('(As Admin) Create a New Campaign', () => {
       campaigns.startCampaign(driverAdmin, CAMPAIGN)
     })
 
     describe('(As Texter) Follow the Invite URL', () => {
-      texter.viewInvite(driverTexter)
+      describe('should follow the link to the invite', async () => {
+        it('should follow the link to the invite', async () => {
+          await driverTexter.get(global.e2e.joinUrl)
+        })
+        login.tryLoginThenSignUp(driverTexter, CAMPAIGN.texter)
+      })
     })
 
     describe('(As Texter) Verify Todos', () => {
@@ -130,12 +137,13 @@ describe('Basic text manager workflow', () => {
       people.invite(driverAdmin)
     })
 
-    describe('(As Texter) Log In', () => {
-      login.tryLoginThenSignUp(driverTexter, CAMPAIGN.texter)
-    })
-
     describe('(As Texter) Follow the Invite URL', () => {
-      texter.viewInvite(driverTexter)
+      describe('should follow the link to the invite', async () => {
+        it('should follow the link to the invite', async () => {
+          await driverTexter.get(global.e2e.joinUrl)
+        })
+        login.tryLoginThenSignUp(driverTexter, CAMPAIGN.texter)
+      })
     })
 
     describe('(As Admin) Create a New Campaign', () => {
