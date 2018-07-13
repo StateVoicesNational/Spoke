@@ -13,6 +13,7 @@ import yup from 'yup'
 import CreateIcon from 'material-ui/svg-icons/content/create'
 import theme from '../styles/theme'
 import { StyleSheet, css } from 'aphrodite'
+import { dataTest } from '../lib/attributes'
 
 const styles = StyleSheet.create({
   formContainer: {
@@ -73,6 +74,7 @@ export default class CampaignCannedResponsesForm extends React.Component {
     }
     return (
       <FlatButton
+        {...dataTest('newCannedResponse')}
         secondary
         label='Add new canned response'
         icon={<CreateIcon />}
@@ -84,6 +86,7 @@ export default class CampaignCannedResponsesForm extends React.Component {
   listItems(cannedResponses) {
     const listItems = cannedResponses.map((response) => (
       <ListItem
+        {...dataTest('cannedResponse')}
         value={response.text}
         key={response.id}
         primaryText={response.title}
