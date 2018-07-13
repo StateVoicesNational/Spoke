@@ -15,6 +15,7 @@ import { StyleSheet, css } from 'aphrodite'
 import theme from '../styles/theme'
 import Toggle from 'material-ui/Toggle'
 import DeleteIcon from 'material-ui/svg-icons/action/delete'
+import { dataTest } from '../lib/attributes'
 
 const styles = StyleSheet.create({
   sliderContainer: {
@@ -353,7 +354,10 @@ export default class CampaignTextersForm extends React.Component {
     return this.formValues().texters.map((texter, index) => {
       const messagedCount = texter.assignment.contactsCount - texter.assignment.needsMessageCount
       return (
-        <div className={css(styles.texterRow)}>
+        <div
+          {...dataTest('texterRow')}
+          className={css(styles.texterRow)}
+        >
           <div className={css(styles.leftSlider)}>
             <Slider
               maxValue={this.formValues().contactsCount}
@@ -365,11 +369,15 @@ export default class CampaignTextersForm extends React.Component {
           <div className={css(styles.assignedCount)}>
             {messagedCount}
           </div>
-          <div className={css(styles.nameColumn)}>
+          <div
+            {...dataTest('texterName')}
+            className={css(styles.nameColumn)}
+          >
             {this.getDisplayName(texter.id)}
           </div>
           <div className={css(styles.input)}>
             <Form.Field
+              {...dataTest('texterAssignment')}
               name={`texters[${index}].assignment.needsMessageCount`}
               hintText='Contacts'
               fullWidth
@@ -456,6 +464,7 @@ export default class CampaignTextersForm extends React.Component {
         />
         <div>
           <Toggle
+            {...dataTest('useDynamicAssignment')}
             label='Dynamically assign contacts'
             toggled={this.state.useDynamicAssignment}
             onToggle={this.handleToggleChange.bind(this)}
@@ -471,6 +480,7 @@ export default class CampaignTextersForm extends React.Component {
           {this.showSearch()}
             <div>
               <RaisedButton
+                {...dataTest('addAll')}
                 label='Add All'
                 onTouchTap={(() => this.addAllTexters())}
               />
@@ -491,6 +501,7 @@ export default class CampaignTextersForm extends React.Component {
                 className={css(styles.splitToggle)}
               >
                 <Toggle
+                  {...dataTest('autoSplit')}
                   label='Split assignments'
                   style={{
                     width: 'auto',

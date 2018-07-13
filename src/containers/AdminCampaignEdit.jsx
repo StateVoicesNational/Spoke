@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types'
 import React from 'react'
+import camelCase from 'camelcase'
 import WarningIcon from 'material-ui/svg-icons/alert/warning'
 import DoneIcon from 'material-ui/svg-icons/action/done'
 import Avatar from 'material-ui/Avatar'
@@ -15,6 +16,7 @@ import CampaignContactsForm from '../components/CampaignContactsForm'
 import CampaignTextersForm from '../components/CampaignTextersForm'
 import CampaignInteractionStepsForm from '../components/CampaignInteractionStepsForm'
 import CampaignCannedResponsesForm from '../components/CampaignCannedResponsesForm'
+import { dataTest } from '../lib/attributes'
 
 const campaignInfoFragment = `
   id
@@ -382,6 +384,7 @@ class AdminCampaignEdit extends React.Component {
   renderHeader() {
     const notStarting = this.props.campaignData.campaign.isStarted ? (
       <div
+        {...dataTest('campaignIsStarted')}
         style={{
           color: theme.colors.green,
           fontWeight: 800
@@ -459,6 +462,7 @@ class AdminCampaignEdit extends React.Component {
             />
           )}
           <RaisedButton
+            {...dataTest('startCampaign')}
             primary
             label='Start This Campaign!'
             disabled={!isCompleted}
@@ -540,6 +544,7 @@ class AdminCampaignEdit extends React.Component {
 
           return (
             <Card
+              {...dataTest(camelCase(`${section.title}`))}
               key={section.title}
               expanded={sectionIsExpanded && sectionCanExpandOrCollapse}
               expandable={sectionCanExpandOrCollapse}
