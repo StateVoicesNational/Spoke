@@ -1,6 +1,14 @@
 import { r } from '../server/models'
 import { sleep, getNextJob, log } from './lib'
-import { exportCampaign, processSqsMessages, uploadContacts, loadContactsFromDataWarehouse, assignTexters, sendMessages, handleIncomingMessageParts, clearOldJobs } from './jobs'
+import { exportCampaign,
+         processSqsMessages,
+         uploadContacts,
+         loadContactsFromDataWarehouse,
+         loadContactsFromDataWarehouseFragment,
+         assignTexters,
+         sendMessages,
+         handleIncomingMessageParts,
+         clearOldJobs } from './jobs'
 import { runMigrations } from '../migrations'
 import { setupUserNotificationObservers } from '../server/notifications'
 
@@ -155,9 +163,10 @@ export async function runDatabaseMigrations(event, dispatcher) {
   await runMigrations(event.migrationStart)
 }
 
-export async function loadContactsFromDataWharehouseJob(event, dispatcher) {
+export async function loadContactsFromDataWarehouseFragmentJob(event, dispatcher) {
   const eventAsJob = event
-  await loadContactsFromDataWarehouse(eventAsJob)
+  console.log('LAMBDA INVOCATION job-processes')
+  await loadContactsFromDataWarehouseFragment(eventAsJob)
 }
 
 const processMap = {

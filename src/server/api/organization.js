@@ -32,7 +32,7 @@ export const resolvers = {
         query = query.filter({ is_archived: campaignsFilter.isArchived })
       }
       if (campaignsFilter && campaignsFilter.hasOwnProperty('campaignId') && campaignsFilter.campaignId !== null) {
-        query = query.filter({ id: parseInt(campaignsFilter.campaignId)})
+        query = query.filter({ id: parseInt(campaignsFilter.campaignId) })
       }
 
       query = query.orderBy(r.desc('due_by'))

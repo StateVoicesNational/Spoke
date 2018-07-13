@@ -28,7 +28,7 @@ import { schema as organizationSchema, resolvers as organizationResolvers } from
 import { schema as campaignSchema, resolvers as campaignResolvers } from './campaign'
 import {
   schema as assignmentSchema,
-  resolvers as assignmentResolvers,
+  resolvers as assignmentResolvers
 } from './assignment'
 import {
   schema as interactionStepSchema,
@@ -67,8 +67,7 @@ import {
   uploadContacts,
   loadContactsFromDataWarehouse,
   assignTexters,
-  exportCampaign,
-  sendJobToAWSLambda
+  exportCampaign
 } from '../../workers/jobs'
 const uuidv4 = require('uuid').v4
 import GraphQLDate from 'graphql-date'
@@ -321,11 +320,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
       payload: campaign.contactSql
     })
     if (JOBS_SAME_PROCESS) {
-      if (process.env.WAREHOUSE_DB_LAMBDAINVOKE) {
-        await sendJobToAWSLambda(job)
-      } else {
-        loadContactsFromDataWarehouse(job)
-      }
+      loadContactsFromDataWarehouse(job)
     }
   }
   if (campaign.hasOwnProperty('texters')) {
@@ -754,7 +749,7 @@ const rootMutations = {
       let createCannedResponses = r
         .knex('canned_response')
         .where({ campaign_id: oldCampaignId })
-        .then(function(res) {
+        .then(function (res) {
           res.forEach((response, index) => {
             const copiedCannedResponse = new CannedResponse({
               campaign_id: newCampaignId,

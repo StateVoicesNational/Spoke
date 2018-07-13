@@ -12,10 +12,6 @@ import { Notifications, sendUserNotification } from '../server/notifications'
 
 const zipMemoization = {}
 
-const jobToFunctionMap = {
-  'upload_contacts_sql': 'loadContactsFromDataWarehouseJob'
-}
-
 export async function getTimezoneByZip(zip) {
   if (zip in zipMemoization) {
     return zipMemoization[zip]
@@ -33,35 +29,36 @@ export async function getTimezoneByZip(zip) {
 }
 
 export async function sendJobToAWSLambda(job) {
-  const p = new Promise
-  if (!jobToFunctionMap[job.job_type]) {
-    p.reject("Job type not available in job-processes")
-    console.log('LAMBDA INVOCATION FAILED: JOB NOT INVOKABLE')
-    return p
+  // job needs to be json-serializable
+  // requires a 'command' key which should map to a function in job-processes.js
+  console.log('LAMBDA INVOCATION STARTING', job, process.env.AWS_LAMBDA_FUNCTION_NAME)
+
+  if (!job.command) {
+    console.log('LAMBDA INVOCATION FAILED: JOB NOT INVOKABLE', job)
+    return Promise.reject('Job type not available in job-processes')
   }
   const lambda = new AWS.Lambda()
-  const lambdaPayload = JSON.stringify({
-    command: jobToFunctionMap[job.job_type],
-    job_type: job.job_type,
-    capaign_id: job.campaign_id,
-    payload: job.payload
-  })
+  const lambdaPayload = JSON.stringify(job)
   if (lambdaPayload.length > 128000) {
-    p.reject("Payload too large")
     console.log('LAMBDA INVOCATION FAILED PAYLOAD TOO LARGE')
-    return p
+    return Promise.reject('Payload too large')
   }
-  lambda.invoke({ FunctionName: process.env.AWS_LAMBDA_FUNCTION_NAME,
-                  InvocationType: "Event",
-                  Payload: lambdaPayload
-                }, function(err, data) {
-                  if (err) {
-                    p.reject(err)
-                    console.log('LAMBDA INVOCATION FAILED', err)
-                  } else {
-                    p.resolve(data)
-                  }
-                })
+
+  const p = new Promise((resolve, reject) => {
+    const result = lambda.invoke({
+      FunctionName: process.env.AWS_LAMBDA_FUNCTION_NAME,
+      InvocationType: 'Event',
+      Payload: lambdaPayload
+    }, function (err, data) {
+      if (err) {
+        console.log('LAMBDA INVOCATION FAILED', err, job)
+        reject(err)
+      } else {
+        resolve(data)
+      }
+    })
+    console.log('LAMBDA INVOCATION RESULT', result)
+  })
   return p
 }
 
@@ -87,35 +84,34 @@ export async function processSqsMessages() {
     ReceiveRequestAttemptId: 'string'
   }
 
-  const p = new Promise
+  const p = new Promise((resolve, reject) => {
+    sqs.receiveMessage(params, async (err, data) => {
+      if (err) {
+        console.log(err, err.stack)
+        reject(err)
+      } else if (data.Messages) {
+        console.log(data)
+        for (let i = 0; i < data.Messages.length; i ++) {
+          const message = data.Messages[i]
+          const body = message.Body
+          console.log('processing sqs queue:', body)
+          const twilioMessage = JSON.parse(body)
 
-  sqs.receiveMessage(params, async (err, data) => {
-    if (err) {
-      console.log(err, err.stack)
-      p.reject(err)
-    } else if (data.Messages) {
-      console.log(data)
-      for (let i = 0; i < data.Messages.length; i ++) {
-        const message = data.Messages[i]
-        const body = message.Body
-        console.log('processing sqs queue:', body)
-        const twilioMessage = JSON.parse(body)
+          await serviceMap.twilio.handleIncomingMessage(twilioMessage)
 
-        await serviceMap.twilio.handleIncomingMessage(twilioMessage)
-
-        sqs.deleteMessage({ QueueUrl: process.env.TWILIO_SQS_QUEUE_URL, ReceiptHandle: message.ReceiptHandle },
-                          (err, data) => {
-                            if (err) {
-                              console.log(err, err.stack) // an error occurred
-                            } else {
-                              console.log(data) // successful response
-                            }
-                          })
+          sqs.deleteMessage({ QueueUrl: process.env.TWILIO_SQS_QUEUE_URL, ReceiptHandle: message.ReceiptHandle },
+                            (delMessageErr, delMessageData) => {
+                              if (delMessageErr) {
+                                console.log(delMessageErr, delMessageErr.stack) // an error occurred
+                              } else {
+                                console.log(delMessageData) // successful response
+                              }
+                            })
+        }
+        resolve()
       }
-      p.resolve()
-    }
+    })
   })
-
   return p
 }
 
@@ -183,6 +179,7 @@ export async function uploadContacts(job) {
 
 
 export async function loadContactsFromDataWarehouse(job) {
+  console.log('STARTING loadContactsFromDataWarehouse')
   const jobMessages = []
   const sqlQuery = job.payload
   if (!sqlQuery.startsWith('SELECT') || sqlQuery.indexOf(';') >= 0) {
@@ -207,9 +204,11 @@ export async function loadContactsFromDataWarehouse(job) {
     console.log('WAREHOUSE COUNT', knexCount)
   }
   if (!knexCount) {
-    jobMessages.push(`Error: Data warehouse query returned zero results`)
+    jobMessages.push('Error: Data warehouse query returned zero results')
   }
-  const STEP = 10
+  const STEP = ((r.kninky && r.kninky.defaultsUnsupported)
+                ? 10 // sqlite has a max of 100 variables and ~8 or so are used per insert
+                : 10000) // default
   const campaign = await Campaign.get(job.campaign_id)
   const totalParts = Math.ceil(knexCount / STEP)
 
@@ -227,23 +226,24 @@ export async function loadContactsFromDataWarehouse(job) {
     .where('campaign_id', job.campaign_id)
     .delete()
 
+  console.log('STARTING loadContactsFromDataWarehouse')
+
   await loadContactsFromDataWarehouseFragment({
     jobId: job.id,
     query: sqlQuery,
     campaignId: job.campaign_id,
     // beyond job object:
     organizationId: campaign.organization_id,
-    totalParts: totalParts,
+    totalParts,
     totalCount: knexCount,
     step: STEP,
     part: 0,
     limit: (totalParts > 1 ? STEP : 0) // 0 is unlimited
   })
-
 }
 
 export async function loadContactsFromDataWarehouseFragment(jobEvent) {
-  console.log('loadContactsFromDataWarehouseFragment', jobEvent)
+  console.log('starting loadContactsFromDataWarehouseFragment', jobEvent)
   let sqlQuery = jobEvent.query
   if (jobEvent.limit) {
     sqlQuery += ' LIMIT ' + jobEvent.limit
@@ -286,8 +286,8 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
       first_name: row.first_name || '',
       last_name: row.last_name || '',
       cell: row.cell,
-      zip: row.zip || null,
-      external_id: (row.external_id ? String(row.external_id) : null),
+      zip: row.zip || '',
+      external_id: (row.external_id ? String(row.external_id) : ''),
       assignment_id: null,
       message_status: 'needsMessage'
     }
@@ -301,18 +301,23 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
     }
     return contact
   }))
-  
+
   await CampaignContact.save(savePortion)
 
   await r.knex('job_request').where('id', jobEvent.jobId).increment('status', 1)
 
-  const completed = await r.knex('job_request').where('id', jobEvent.jobId).select('status').first()
+  const completed = (await r.knex('job_request')
+                     .where('id', jobEvent.jobId)
+                     .select('status')
+                     .first())
+  console.log('loadContactsFromDataWarehouseFragment toward end', completed, jobEvent)
+
   if (jobEvent.totalParts && completed.status >= jobEvent.totalParts) {
     if (jobEvent.organizationId) {
       // now that we've saved them all, we delete everyone that is opted out locally
       // doing this in one go so that we can get the DB to do the indexed cell matching
       const optOutCellCount = await r.knex('campaign_contact')
-        .whereIn('cell', function () {
+        .whereIn('cell', () => {
           this.select('cell').from('opt_out').where('organization_id', jobEvent.organizationId)
         })
         .where('campaign_id', jobEvent.campaignId)
@@ -321,16 +326,19 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
     }
     await r.table('job_request').get(jobEvent.jobId).delete()
   } else if (jobEvent.part < (jobEvent.totalParts - 1)) {
-    jobEvent.part += 1
-    jobEvent.offset = jobEvent.part * jobEvent.step
-    if (process.env.DATAWAREHOUSE_DB_LAMBDA) {
-      jobEvent.command = 'blah_upload_sql'
-      sendJobToAWSLambda(jobEvent)
+    const newJob = {
+      ...jobEvent,
+      part: jobEvent.part + 1,
+      offset: jobEvent.part * jobEvent.step,
+      limit: jobEvent.step,
+      command: 'loadContactsFromDataWarehouseFragmentJob'
+    }
+    if (process.env.WAREHOUSE_DB_LAMBDA_ITERATION) {
+      sendJobToAWSLambda(newJob)
     } else {
-      loadContactsFromDataWarehouseFragment(jobEvent)
+      loadContactsFromDataWarehouseFragment(newJob)
     }
   }
-
 }
 
 export async function assignTexters(job) {
