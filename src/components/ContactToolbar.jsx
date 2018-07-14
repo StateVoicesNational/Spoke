@@ -2,7 +2,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import { Toolbar, ToolbarGroup, ToolbarTitle } from 'material-ui/Toolbar'
 import { getDisplayPhoneNumber } from '../lib/phone-format'
-import { getLocalTime } from '../lib/timezones'
+import { getLocalTime , getContactTimezone } from '../lib/timezones'
 import { grey100 } from 'material-ui/styles/colors'
 
 const inlineStyles = {
@@ -39,6 +39,9 @@ const ContactToolbar = function ContactToolbar(props) {
       offset = timezone.offset || offset
       hasDST = timezone.hasDST || hasDST
     }
+    const adjustedLocationTZ = getContactTimezone(location)
+    offset = adjustedLocationTZ.timezone.offset;
+    hasDST = adjustedLocationTZ.timezone.hasDST;
   }
 
   let formattedLocation = `${city}`
