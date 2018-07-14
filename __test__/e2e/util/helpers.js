@@ -6,10 +6,11 @@ import _ from 'lodash'
 const defaultWait = 10000
 
 export const selenium = {
-  buildDriver() {
+  buildDriver(options) {
+    const capabilities = _.assign({}, config.sauceLabs.capabilities, options)
     const driver = process.env.npm_config_saucelabs ?
       new Builder()
-        .withCapabilities(config.sauceLabs.capabilities)
+        .withCapabilities(capabilities)
         .usingServer(config.sauceLabs.server)
         .build() :
       new Builder().forBrowser('chrome').build()
@@ -40,6 +41,7 @@ export const urlBuilder = {
 const waitAnd = async (driver, locator, options) => {
   const el = await driver.wait(until.elementLocated(locator, options.msWait || defaultWait))
   if (options.elementIsVisible !== false) await driver.wait(until.elementIsVisible(el))
+  if (options.waitAfterVisible) await driver.sleep(options.waitAfterVisible)
   if (options.click) await el.click()
   if (options.clear) await el.clear()
   if (options.keys) await el.sendKeys(options.keys)

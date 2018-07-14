@@ -54,7 +54,7 @@ export const campaigns = {
       createdResponseByText(text) { return By.xpath(`//span[@data-test='cannedResponse']/descendant::*[contains(text(),'${text}')]`) },
       submit: By.css('[data-test=addResponse]')
     },
-    save: By.css('[type=submit]:not([disabled]')
+    save: By.css('[type=submit]:not([disabled])')
   },
   stats: {
     copy: By.css('[data-test=copyCampaign]'),

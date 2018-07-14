@@ -4,7 +4,7 @@ import { campaigns, login, main } from './page-functions/index'
 
 describe('Create and Edit Campaign', () => {
   // Instantiate browser(s)
-  const driver = selenium.buildDriver()
+  const driver = selenium.buildDriver({ name: 'Spoke E2E Tests - Chrome - Create and Edit Campaign - Admin' })
   const CAMPAIGN = STRINGS.campaigns.editCampaign
 
   beforeAll(() => {

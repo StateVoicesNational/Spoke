@@ -4,8 +4,8 @@ import { campaigns, login, main, people, texter } from './page-functions/index'
 
 describe('Create and Copy Campaign', () => {
   // Instantiate browser(s)
-  const driverAdmin = selenium.buildDriver()
-  const driverTexter = selenium.buildDriver()
+  const driverAdmin = selenium.buildDriver({ name: 'Spoke E2E Tests - Chrome - Create and Copy Campaign - Admin' })
+  const driverTexter = selenium.buildDriver({ name: 'Spoke E2E Tests - Chrome - Create and Copy Campaign - Texter' })
   const CAMPAIGN = STRINGS.campaigns.copyCampaign
 
   beforeAll(() => {
@@ -14,7 +14,6 @@ describe('Create and Copy Campaign', () => {
 
   afterAll(async () => {
     await selenium.quitDriver(driverAdmin)
-    await selenium.quitDriver(driverTexter)
   })
 
   describe('(As Admin) Open Landing Page', () => {
@@ -36,6 +35,12 @@ describe('Create and Copy Campaign', () => {
   describe('(As Texter) Follow the Invite URL', () => {
     texter.viewInvite(driverTexter)
     login.tryLoginThenSignUp(driverTexter, CAMPAIGN.texter)
+  })
+
+  describe('(As Texter) Close Browser', () => {
+    it('closes browser', async () => {
+      await selenium.quitDriver(driverTexter)
+    })
   })
 
   describe('(As Admin) Create a New Campaign', () => {
