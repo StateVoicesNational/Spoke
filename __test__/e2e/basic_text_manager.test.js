@@ -16,8 +16,8 @@ describe('Basic text manager workflow', () => {
    * Setup Admin and Texter Users
    * Create Campaign (No Existing Texter)
    * Create Campaign (Existing Texter)
-   * Create Campaign (No Existing Texter with Opt-Out) TODO
-   * Create Campaign (Existing Texter with Opt-Out) TODO
+   * Create Campaign (No Existing Texter with Opt-Out)
+   * Create Campaign (Existing Texter with Opt-Out)
    */
 
   afterAll(async () => {

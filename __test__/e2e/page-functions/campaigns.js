@@ -83,18 +83,55 @@ export const campaigns = {
       expect(await wait.andGetEl(driver, form.interactions.editorLaunch)).toBeDefined()
     })
 
-    it('completes the Interactions section', async () => {
-      // Script
-      await wait.andClick(driver, form.interactions.editorLaunch)
-      await wait.andClick(driver, pom.scriptEditor.editor)
-      await wait.andType(driver, pom.scriptEditor.editor, campaign.interaction.script, { clear: false })
-      await wait.andClick(driver, pom.scriptEditor.done)
-      // Question
-      await wait.andType(driver, form.interactions.questionText, campaign.interaction.question)
-      // Save
-      await wait.andClick(driver, form.interactions.submit)
-      // This should switch to the Canned Responses section
-      expect(await wait.andGetEl(driver, form.cannedResponse.addNew)).toBeDefined()
+    describe('completes the Interactions section', async () => {
+      it('adds an initial question', async () => {
+        // Script
+        await wait.andClick(driver, form.interactions.editorLaunch)
+        await wait.andClick(driver, pom.scriptEditor.editor)
+        await wait.andType(driver, pom.scriptEditor.editor, campaign.interaction.script, { clear: false })
+        await wait.andClick(driver, pom.scriptEditor.done)
+        // Question
+        await wait.andType(driver, form.interactions.questionText, campaign.interaction.question)
+        // Save with No Answers Defined
+        await wait.andClick(driver, form.interactions.submit)
+        await wait.andClick(driver, form.interactions.section)
+        let allChildInteractions = await driver.findElements(form.interactions.childInteraction)
+        expect(allChildInteractions.length).toBe(0)
+        // Save with Empty Answer
+        await wait.andClick(driver, form.interactions.addResponse)
+        await wait.andClick(driver, form.interactions.submit)
+        await wait.andClick(driver, form.interactions.section)
+        allChildInteractions = await driver.findElements(form.interactions.childInteraction)
+        expect(allChildInteractions.length).toBe(1)
+      })
+
+      describe('Add all Responses', () => {
+        _.each(campaign.interaction.answers, (answer, index) => {
+          it(`Adds Answer ${index}`, async () => {
+            if (index > 0) await wait.andClick(driver, form.interactions.addResponse) // The first (0th) response reuses the empty Answer created above
+            // Answer
+            await wait.andType(driver, form.interactions.answerOptionChildByIndex(index), answer.answerOption, { clear: false })
+            // Answer Script
+            await wait.andClick(driver, form.interactions.editorLaunchChildByIndex(index))
+            await wait.andClick(driver, pom.scriptEditor.editor)
+            await wait.andType(driver, pom.scriptEditor.editor, answer.script, { clear: false })
+            await wait.andClick(driver, pom.scriptEditor.done)
+            // Answer - Next Question
+            await wait.andType(driver, form.interactions.questionTextChildByIndex(index), answer.questionText, { clear: false })
+          })
+        })
+        it('validates that all responses were added', async () => {
+          const allChildInteractions = await driver.findElements(form.interactions.childInteraction)
+          expect(allChildInteractions.length).toBe(campaign.interaction.answers.length)
+        })
+      })
+
+      it('saves for the last time', async () => {
+        // Save
+        await wait.andClick(driver, form.interactions.submit)
+        // This should switch to the Canned Responses section
+        expect(await wait.andGetEl(driver, form.cannedResponse.addNew)).toBeDefined()
+      })
     })
 
     it('completes the Canned Responses section', async () => {
