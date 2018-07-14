@@ -10,9 +10,9 @@ SauceLabs is a cloud service which provides access to test clients on which auto
 
 In order to run tests on SauceLabs, environment variables need to get set on your environment:
 
-The access keys `SAUCE_USERNAME` and `SAUCE_ACCESS_KEY` is set in the "Environment Variables" section of Travis-CI
+The access keys `SAUCE_USERNAME` and `SAUCE_ACCESS_KEY` is set in the "Environment Variables" section of [Travis-CI](https://travis-ci.org/MoveOnOrg/Spoke/settings)
 
-https://travis-ci.org/MoveOnOrg/Spoke/settings
+To run tests against your localhost on SauceLabs clients, you must first setup [Sauce Labs Connect](https://wiki.saucelabs.com/display/DOCS/Basic+Sauce+Connect+Proxy+Setup).
 
 # Test Writing
 

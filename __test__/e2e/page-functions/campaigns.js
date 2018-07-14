@@ -31,28 +31,24 @@ export const campaigns = {
       await wait.andType(driver, form.basics.description, campaign.basics.description)
       // Select a Due Date using the Date Picker
       await wait.andClick(driver, form.basics.dueBy)
-      await wait.andClick(driver, form.datePickerDialog.nextMonth)
-      await driver.sleep(1000)
-      await wait.andClick(driver, form.datePickerDialog.enabledDate)
-      await driver.sleep(3000)
+      await wait.andClick(driver, form.datePickerDialog.nextMonth, { waitAfterVisible: 1000 })
+      await wait.andClick(driver, form.datePickerDialog.enabledDate, { waitAfterVisible: 1000 })
       // Save
-      await wait.andClick(driver, form.save)
+      await wait.andClick(driver, form.save, { waitAfterVisible: 3000 })
       // This should switch to the Contacts section
       expect(await wait.andGetEl(driver, form.contacts.uploadButton)).toBeDefined()
     })
 
     it('completes the Contacts section', async () => {
-      await driver.sleep(3000)
-      await wait.andType(driver, form.contacts.input, campaign.contacts.csv, { clear: false, elementIsVisible: false })
+      await wait.andType(driver, form.contacts.input, campaign.contacts.csv, { clear: false, elementIsVisible: false, waitAfterVisible: 3000 })
       expect(await wait.andGetEl(driver, form.contacts.uploadedContacts)).toBeDefined()
       // Save
-      await wait.andClick(driver, form.save)
+      await wait.andClick(driver, form.save, { waitAfterVisible: 2000 })
       // Reload the Contacts section to validate Contacts
-      await driver.sleep(3000)
-      await wait.andClick(driver, form.contacts.section)
+      await wait.andClick(driver, form.contacts.section, { waitAfterVisible: 2000 })
       expect(await wait.andGetEl(driver, form.contacts.uploadedContacts)).toBeDefined()
       expect(await wait.andGetEl(driver, form.contacts.uploadedContactsByQty(campaign.texters.contactLength))).toBeDefined()
-      await wait.andClick(driver, form.texters.section)
+      await wait.andClick(driver, form.texters.section, { waitAfterVisible: 2000 })
       // This should switch to the Texters section
       expect(await wait.andGetEl(driver, form.texters.addAll)).toBeDefined()
     })
@@ -73,7 +69,7 @@ export const campaigns = {
         expect(await wait.andGetValue(driver, form.texters.texterAssignmentByText(campaign.admin.given_name))).toBe('0')
       } else {
         // Dynamically Assign
-        await wait.andClick(driver, form.texters.useDynamicAssignment, { elementIsVisible: false })
+        await wait.andClick(driver, form.texters.useDynamicAssignment, { elementIsVisible: false, waitAfterVisible: 2000 })
         // Store the invite (join) URL into a global for future use.
         global.e2e.joinUrl = await wait.andGetValue(driver, form.texters.joinUrl)
       }
@@ -87,20 +83,20 @@ export const campaigns = {
       it('adds an initial question', async () => {
         // Script
         await wait.andClick(driver, form.interactions.editorLaunch)
-        await wait.andClick(driver, pom.scriptEditor.editor)
+        await wait.andClick(driver, pom.scriptEditor.editor, { waitAfterVisible: 2000 })
         await wait.andType(driver, pom.scriptEditor.editor, campaign.interaction.script, { clear: false })
         await wait.andClick(driver, pom.scriptEditor.done)
         // Question
         await wait.andType(driver, form.interactions.questionText, campaign.interaction.question)
         // Save with No Answers Defined
         await wait.andClick(driver, form.interactions.submit)
-        await wait.andClick(driver, form.interactions.section)
+        await wait.andClick(driver, form.interactions.section, { waitAfterVisible: 2000 })
         let allChildInteractions = await driver.findElements(form.interactions.childInteraction)
         expect(allChildInteractions.length).toBe(0)
         // Save with Empty Answer
         await wait.andClick(driver, form.interactions.addResponse)
         await wait.andClick(driver, form.interactions.submit)
-        await wait.andClick(driver, form.interactions.section)
+        await wait.andClick(driver, form.interactions.section, { waitAfterVisible: 2000 })
         allChildInteractions = await driver.findElements(form.interactions.childInteraction)
         expect(allChildInteractions.length).toBe(1)
       })
@@ -113,7 +109,7 @@ export const campaigns = {
             await wait.andType(driver, form.interactions.answerOptionChildByIndex(index), answer.answerOption, { clear: false })
             // Answer Script
             await wait.andClick(driver, form.interactions.editorLaunchChildByIndex(index))
-            await wait.andClick(driver, pom.scriptEditor.editor)
+            await wait.andClick(driver, pom.scriptEditor.editor, { waitAfterVisible: 2000 })
             await wait.andType(driver, pom.scriptEditor.editor, answer.script, { clear: false })
             await wait.andClick(driver, pom.scriptEditor.done)
             // Answer - Next Question
@@ -141,19 +137,16 @@ export const campaigns = {
       await wait.andType(driver, form.cannedResponse.title, campaign.cannedResponses[0].title)
       // Script
       await wait.andClick(driver, form.cannedResponse.editorLaunch)
-      await wait.andClick(driver, pom.scriptEditor.editor)
+      await wait.andClick(driver, pom.scriptEditor.editor, { waitAfterVisible: 3000 })
       await wait.andType(driver, pom.scriptEditor.editor, campaign.cannedResponses[0].script, { clear: false })
       await wait.andClick(driver, pom.scriptEditor.done)
       // Script - Relaunch and cancel (bug?)
-      await driver.sleep(3000) // Transition
-      await wait.andClick(driver, form.cannedResponse.editorLaunch)
-      await driver.sleep(3000) // Transition
-      await wait.andClick(driver, pom.scriptEditor.cancel)
-      await driver.sleep(3000) // Transition
+      await wait.andClick(driver, form.cannedResponse.editorLaunch, { waitAfterVisible: 2000 })
+      await wait.andClick(driver, pom.scriptEditor.cancel, { waitAfterVisible: 3000 })
       // Submit Response
-      await wait.andClick(driver, form.cannedResponse.submit)
+      await wait.andClick(driver, form.cannedResponse.submit, { waitAfterVisible: 2000 })
       // Save
-      await wait.andClick(driver, form.save)
+      await wait.andClick(driver, form.save, { waitAfterVisible: 2000 })
       // Should be able to start campaign
       expect(await wait.andIsEnabled(driver, pom.campaigns.start)).toBeTruthy()
     })
@@ -208,6 +201,9 @@ export const campaigns = {
         await wait.andClick(driver, form.interactions.section)
         expect(await wait.andGetValue(driver, form.interactions.editorLaunch)).toBe(campaign.interaction.script)
         expect(await wait.andGetValue(driver, form.interactions.questionText)).toBe(campaign.interaction.question)
+        // Verify Answers
+        const allChildInteractions = await driver.findElements(form.interactions.childInteraction)
+        expect(allChildInteractions.length).toBe(campaign.interaction.answers.length)
       })
       it('verifies Canned Responses section', async () => {
         await wait.andClick(driver, form.cannedResponse.section)
@@ -241,7 +237,7 @@ export const campaigns = {
 
     it('reopens the Basics section to verify title', async () => {
       // Expand Basics section
-      await wait.andClick(driver, form.basics.section)
+      await wait.andClick(driver, form.basics.section, { waitAfterVisible: 2000 })
       // Verify Title
       expect(await wait.andGetValue(driver, form.basics.title)).toBe(campaign.basics.title_changed)
     })

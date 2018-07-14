@@ -14,9 +14,7 @@ export const login = {
 
     it('clicks the login link', async () => {
       // Click on the login button
-      wait.untilLocated(driver, pom.login.loginGetStarted, { msWait: 30000 })
-      await driver.sleep(2000) // Transition
-      wait.andClick(driver, pom.login.loginGetStarted)
+      wait.andClick(driver, pom.login.loginGetStarted, { msWait: 30000, waitAfterVisible: 2000 })
 
       // Wait until the Auth0 login page loads
       await driver.wait(until.urlContains(urlBuilder.login))

@@ -2,10 +2,10 @@ import { selenium } from './util/helpers'
 import STRINGS from './data/strings'
 import { campaigns, login, main, people, texter } from './page-functions/index'
 
-describe('Basic text manager workflow', () => {
+describe('Basic Text Manager Workflow', () => {
   // Instantiate browser(s)
-  const driverAdmin = selenium.buildDriver()
-  const driverTexter = selenium.buildDriver()
+  const driverAdmin = selenium.buildDriver({ name: 'Spoke E2E Tests - Chrome - Basic Text Manager Workflow - Admin' })
+  const driverTexter = selenium.buildDriver({ name: 'Spoke E2E Tests - Chrome - Basic Text Manager Workflow - Texter' })
 
   beforeAll(() => {
     global.e2e = {}
