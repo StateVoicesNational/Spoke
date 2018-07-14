@@ -3,6 +3,13 @@ import remote from 'selenium-webdriver/remote'
 import config from './config'
 import _ from 'lodash'
 
+import SauceLabs from 'saucelabs'
+
+const saucelabs = new SauceLabs({
+  username: process.env.SAUCE_USERNAME,
+  password: process.env.SAUCE_ACCESS_KEY
+})
+
 const defaultWait = 10000
 
 export const selenium = {
@@ -19,12 +26,20 @@ export const selenium = {
   },
   async quitDriver(driver) {
     await driver.getSession()
-      .then(session => {
-        const sessionId = session.getId()
-        process.env.SELENIUM_ID = sessionId
-        console.log(`SauceOnDemandSessionID=${sessionId} job-name=${process.env.TRAVIS_JOB_NUMBER}`)
+      .then(async session => {
+        if (process.env.npm_config_saucelabs) {
+          const sessionId = session.getId()
+          process.env.SELENIUM_ID = sessionId
+          await saucelabs.updateJob(sessionId, { passed: global.e2e.suitePassed })
+          console.log(`SauceOnDemandSessionID=${sessionId} job-name=${process.env.TRAVIS_JOB_NUMBER || ''}`)
+        }
       })
     await driver.quit()
+  },
+  reporter: {
+    suiteDone: async (result) => {
+      global.e2e.suitePassed = result.failedExpectations.length === 0
+    }
   }
 }
 
