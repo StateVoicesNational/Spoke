@@ -30,6 +30,8 @@ import { withRouter } from 'react-router'
 import wrapMutations from './hoc/wrap-mutations'
 import Empty from '../components/Empty'
 import CreateIcon from 'material-ui/svg-icons/content/create'
+import { getContactTimezone } from '../lib/timezones'
+
 
 const styles = StyleSheet.create({
   mobile: {
@@ -511,7 +513,11 @@ export class AssignmentTexterContact extends React.Component {
       const { hasDST, offset } = contact.location.timezone
 
       timezoneData = { hasDST, offset }
+     } else {
+        const { hasDST, offset } = getContactTimezone(location).timezone
+        timezoneData = { hasDST, offset }
     }
+
     const { textingHoursStart, textingHoursEnd, textingHoursEnforced } = campaign.organization
     const config = {
       textingHoursStart,
