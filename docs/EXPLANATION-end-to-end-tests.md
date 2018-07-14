@@ -2,11 +2,11 @@
 
 ## Selenium
 
-End to end tests use Selenium, which is a framework which drives the WebDriver API exposed by browsers. A test script can therefore be executed at the UI level which is as close to a manual test as possible.
+End to end tests use **Selenium**, which is a framework which drives the WebDriver API exposed by browsers. A test script can therefore be executed at the UI level which is as close to a manual test as possible.
 
 ## Sauce Labs
 
-Sauce Labs is a cloud service which provides access to test clients on which automated tests are run.
+**Sauce Labs** is a cloud service which provides access to test clients on which automated tests are run.
 
 In order to run tests on Sauce Labs, environment variables need to get set on your environment:
 
@@ -20,13 +20,13 @@ Reporting is setup between Sauce Labs and Travis CI using a [Jasmine custom repo
 
 ## Jest / Jasmine
 
-Jest is the test runner which locates, runs and summarizes the tests.
+**Jest** is the test runner which locates, runs and summarizes the tests.
 
 Reference: [Jest 22.4 docs](http://jestjs.io/docs/en/22.4/getting-started)
 
-Jasmine is the test syntax used by many test harnesses including Jest.
+**Jasmine** is the BDD test framework used by many test harnesses including Jest.
 
-Example of a jasmine block:
+Example of a Jasmine block:
 ```
 describe('test description', () => {
   it('step description', async () => {

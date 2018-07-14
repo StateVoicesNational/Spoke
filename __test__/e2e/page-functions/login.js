@@ -41,25 +41,15 @@ export const login = {
     })
 
     it('accepts the user agreement', async () => {
-      if (!skip) {
-        const el = await driver.findElement(auth0.form.agreement)
-        await el.click()
-      }
+      if (!skip) await wait.andClick(driver, auth0.form.agreement)
     })
 
     it('clicks the submit button', async () => {
-      if (!skip) {
-        const el = await driver.findElement(auth0.form.submit)
-        await el.click()
-      }
+      if (!skip) await wait.andClick(driver, auth0.form.submit)
     })
 
     it('authorizes Auth0 to access tenant', async () => {
-      if (!skip) {
-        const el = await driver.wait(until.elementLocated(auth0.authorize.allow))
-        await driver.wait(until.elementIsVisible(el))
-        await el.click()
-      }
+      if (!skip) await wait.andClick(driver, auth0.authorize.allow)
     })
   },
   signUp(driver, user) {
