@@ -40,8 +40,10 @@ const ContactToolbar = function ContactToolbar(props) {
       hasDST = timezone.hasDST || hasDST
     }
     const adjustedLocationTZ = getContactTimezone(location)
-    offset = adjustedLocationTZ.timezone.offset;
-    hasDST = adjustedLocationTZ.timezone.hasDST;
+    if (adjustedLocationTZ && adjustedLocationTZ.timezone) {
+      offset = adjustedLocationTZ.timezone.offset;
+      hasDST = adjustedLocationTZ.timezone.hasDST;
+    }
   }
 
   let formattedLocation = `${city}`
