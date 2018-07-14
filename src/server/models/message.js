@@ -2,10 +2,14 @@ import thinky from './thinky'
 const type = thinky.type
 import { requiredString, optionalString, timestamp } from './custom-types'
 
+import User from './user'
 import Assignment from './assignment'
 
 const Message = thinky.createModel('message', type.object().schema({
   id: type.string(),
+  // Assignments may change, so attribute the message to the specific
+  // texter account that sent it
+  user_id: requiredString(),
   // theoretically the phone number
   // userNumber should stay constant for a
   // texter, but this is not guaranteed
@@ -28,9 +32,10 @@ const Message = thinky.createModel('message', type.object().schema({
   sent_at: timestamp(),
   service_response_at: timestamp()
 }, {
-  dependencies: [Assignment]
+  dependencies: [User, Assignment]
 }).allowExtra(false))
 
+Message.ensureIndex('user_id')
 Message.ensureIndex('assignment_id')
 Message.ensureIndex('send_status')
 Message.ensureIndex('user_number')

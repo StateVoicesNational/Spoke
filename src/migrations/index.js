@@ -124,7 +124,17 @@ const migrations = [
       })
       console.log('added log table')
     }
-  }
+  },
+  { auto: true, // 11
+    date: '2018-07-14',
+    // eslint-disable-next-line
+    migrate: async function() {
+      await r.knex.schema.alterTable('message', (table) => {
+        table.integer('user_id').unsigned().index().references('id').inTable('user')
+      })
+      console.log('added user_id column to message table')
+    }
+   }
   /* migration template
      {auto: true, //if auto is false, then it will block the migration running automatically
       date: '2017-08-23',
