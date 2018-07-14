@@ -4,15 +4,17 @@
 
 End to end tests use Selenium, which is a framework which drives the WebDriver API exposed by browsers. A test script can therefore be executed at the UI level which is as close to a manual test as possible.
 
-## SauceLabs
+## Sauce Labs
 
-SauceLabs is a cloud service which provides access to test clients on which automated tests are run.
+Sauce Labs is a cloud service which provides access to test clients on which automated tests are run.
 
-In order to run tests on SauceLabs, environment variables need to get set on your environment:
+In order to run tests on Sauce Labs, environment variables need to get set on your environment:
 
 The access keys `SAUCE_USERNAME` and `SAUCE_ACCESS_KEY` is set in the "Environment Variables" section of [Travis-CI](https://travis-ci.org/MoveOnOrg/Spoke/settings)
 
-To run tests against your localhost on SauceLabs clients, you must first setup [Sauce Labs Connect](https://wiki.saucelabs.com/display/DOCS/Basic+Sauce+Connect+Proxy+Setup).
+To run tests against your localhost on Sauce Labs clients, you must first setup [Sauce Labs Connect](https://wiki.saucelabs.com/display/DOCS/Basic+Sauce+Connect+Proxy+Setup).
+
+Reporting is setup between Sauce Labs and Travis CI using a [Jasmine custom reporter](https://jasmine.github.io/api/edge/global.html#SuiteResult) and [console stdout](https://wiki.saucelabs.com/display/DOCS/Setting+Up+Reporting+between+Sauce+Labs+and+Jenkins#SettingUpReportingbetweenSauceLabsandJenkins-OutputtingtheJenkinsSessionIDtostdout) in the tests.
 
 # Test Writing
 
@@ -26,8 +28,10 @@ Jasmine is the test syntax used by many test harnesses including Jest.
 
 Example of a jasmine block:
 ```
-it('step description', async () => {
-  // Operations
+describe('test description', () => {
+  it('step description', async () => {
+    // Operations
+  })
 })
 ```
 A note on `this`: Arrow functions lexically bind the this keyword. This interferes with how the test runner wants to use the `this` keyword for context. More information is available online.
@@ -52,3 +56,11 @@ import { dataTest } from '../lib/attributes'
 />
 ```
 This adds a `data-test` attribute to the **non-production** rendered HTML and indicates to future developers that this control is used in automated tests.
+
+## Helpers
+
+In `./Spoke/__test__/e2e/util/helpers.js` you'll find a helper named `wait`. This is an important collection of methods for interactive commands like click.
+
+```
+await wait.andClick(driver, <locator>)
+```

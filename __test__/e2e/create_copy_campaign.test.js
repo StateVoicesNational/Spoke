@@ -2,6 +2,8 @@ import { selenium } from './util/helpers'
 import STRINGS from './data/strings'
 import { campaigns, login, main, people, texter } from './page-functions/index'
 
+jasmine.getEnv().addReporter(selenium.reporter)
+
 describe('Create and Copy Campaign', () => {
   // Instantiate browser(s)
   const driverAdmin = selenium.buildDriver({ name: 'Spoke E2E Tests - Chrome - Create and Copy Campaign - Admin' })
@@ -14,6 +16,7 @@ describe('Create and Copy Campaign', () => {
 
   afterAll(async () => {
     await selenium.quitDriver(driverAdmin)
+    await selenium.quitDriver(driverTexter)
   })
 
   describe('(As Admin) Open Landing Page', () => {
@@ -35,12 +38,6 @@ describe('Create and Copy Campaign', () => {
   describe('(As Texter) Follow the Invite URL', () => {
     texter.viewInvite(driverTexter)
     login.tryLoginThenSignUp(driverTexter, CAMPAIGN.texter)
-  })
-
-  describe('(As Texter) Close Browser', () => {
-    it('closes browser', async () => {
-      await selenium.quitDriver(driverTexter)
-    })
   })
 
   describe('(As Admin) Create a New Campaign', () => {

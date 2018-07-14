@@ -2,6 +2,8 @@ import { selenium } from './util/helpers'
 import STRINGS from './data/strings'
 import { login, main, people, texter } from './page-functions/index'
 
+jasmine.getEnv().addReporter(selenium.reporter)
+
 describe('Invite Texter workflow', () => {
   // Instantiate browser(s)
   const driverAdmin = selenium.buildDriver({ name: 'Spoke E2E Tests - Chrome - Invite Texter workflow - Admin' })
