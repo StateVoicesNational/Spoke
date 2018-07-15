@@ -47,7 +47,7 @@ async function convertMessagePartsToMessage(messageParts) {
     is_from_contact: true,
     text,
     service_response: JSON.stringify(serviceMessages),
-    service_id: serviceMessages[0].service_id,
+    service_id: serviceMessages[0].MessagingServiceSid,
     assignment_id: lastMessage.assignment_id,
     service: 'twilio',
     send_status: 'DELIVERED'
