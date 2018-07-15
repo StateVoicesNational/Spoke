@@ -77,6 +77,10 @@ class IncomingMessageFilter extends Component {
     this.props.onCampaignChanged(value)
   }
 
+  onCampaignsSearchPatternChanged(searchText, dataSource, params) {
+    this.props.onCampaignsSearchPatternChanged(searchText)
+  }
+
   render() {
     return (
       <Card>
