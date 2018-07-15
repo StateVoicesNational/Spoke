@@ -3,6 +3,11 @@ import { r, Organization } from '../models'
 import { accessRequired } from './errors'
 
 export const schema = `
+  input PeopleFilter {
+    campaignsFilter: CampaignsFilter
+    searchPattern: String
+  }
+
   type Organization {
     id: ID
     uuid: String
@@ -25,17 +30,24 @@ export const resolvers = {
     ], Organization),
     campaigns: async (organization, { campaignsFilter }, { user }) => {
       await accessRequired(user, organization.id, 'SUPERVOLUNTEER')
-      let query = r.table('campaign').getAll(organization.id, { index:
-        'organization_id' })
 
-      if (campaignsFilter && campaignsFilter.hasOwnProperty('isArchived') && campaignsFilter.isArchived !== null) {
-        query = query.filter({ is_archived: campaignsFilter.isArchived })
-      }
-      if (campaignsFilter && campaignsFilter.hasOwnProperty('campaignId') && campaignsFilter.campaignId !== null) {
-        query = query.filter({ id: parseInt(campaignsFilter.campaignId)})
+      let query = r.knex.select('*').from('campaign')
+        .where('organization_id', organization.id)
+
+      if (campaignsFilter) {
+        if ('isArchived' in campaignsFilter) {
+          query = query.where({ is_archived: campaignsFilter.isArchived })
+        }
+        if ('campaignId' in campaignsFilter) {
+          query = query.where({ id: parseInt(campaignsFilter.campaignId, 10) })
+        }
+
+        if ('searchPattern' in campaignsFilter) {
+          query = query.where('title', 'like', `%${campaignsFilter.searchPattern}%`)
+        }
       }
 
-      query = query.orderBy(r.desc('due_by'))
+      query = query.orderBy('due_by', 'desc')
 
       return query
     },
