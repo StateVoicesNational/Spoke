@@ -37,6 +37,8 @@ describe('AssignmentSummary text', function t() {
           unmessagedCount={1}
           unrepliedCount={0}
           badTimezoneCount={0}
+          pastMessagesCount={0}
+          skippedMessagesCount={0}
         />
       </MuiThemeProvider>
     )
@@ -63,7 +65,7 @@ describe('AssignmentSummary text', function t() {
 
 describe('AssignmentSummary actions inUSA and NOT AllowSendAll', () => {
   injectTapEventPlugin()  // prevents warning
-  function create(unmessaged, unreplied, badTimezone, isDynamic) {
+  function create(unmessaged, unreplied, badTimezone, past, skipped, isDynamic) {
     window.NOT_IN_USA = 0
     window.ALLOW_SEND_ALL = false
     return mount(
@@ -73,50 +75,49 @@ describe('AssignmentSummary actions inUSA and NOT AllowSendAll', () => {
           unmessagedCount={unmessaged}
           unrepliedCount={unreplied}
           badTimezoneCount={badTimezone}
+          pastMessagesCount={past}
+          skippedMessagesCount={skipped}
         />
       </MuiThemeProvider>
     ).find(CardActions)
   }
 
   it('renders "send first texts (1)" with unmessaged (dynamic assignment)', () => {
-    const actions = create(5, 0, 0, true)
+    const actions = create(5, 0, 0, 0, 0, true)
     expect(actions.find(Badge).at(0).prop('badgeContent')).toBe(5)
     expect(actions.find(RaisedButton).at(0).prop('label')).toBe('Send first texts')
   })
 
   it('renders "send first texts (1)" with unmessaged (non-dynamic)', () => {
-    const actions = create(1, 0, 0, false)
+    const actions = create(1, 0, 0, 0, 0, false)
     expect(actions.find(Badge).at(0).prop('badgeContent')).toBe(1)
     expect(actions.find(RaisedButton).at(0).prop('label')).toBe('Send first texts')
   })
 
   it('renders "send first texts" with no unmessaged (dynamic assignment)', () => {
-    const actions = create(0, 0, 0, true)
-    expect(actions.find(Badge).length).toBe(1)
+    const actions = create(0, 0, 0, 0, 0, true)
     expect(actions.find(RaisedButton).at(0).prop('label')).toBe('Send first texts')
   })
 
   it('renders a "past messages" badge after messaged contacts', () => {
-    const actions = create(0, 0, 0, false)
-    expect(actions.find(Badge).length).toBe(1)
+    const actions = create(0, 0, 0, 1, 0, false)
     expect(actions.find(RaisedButton).length).toBe(1)
   })
 
-
-  it('renders three buttons with unmessaged and unreplied', () => {
-    const actions = create(3, 9, 0)
-    expect(actions.find(RaisedButton).length).toBe(3)
+  it('renders two buttons with unmessaged and unreplied', () => {
+    const actions = create(3, 9, 0, 0, 0, false)
+    expect(actions.find(RaisedButton).length).toBe(2)
   })
 
   it('renders "past messages (n)" with messaged', () => {
-    const actions = create(0, 9, 0)
+    const actions = create(0, 0, 0, 9, 0, false)
     expect(actions.find(Badge).at(0).prop('badgeContent')).toBe(9)
-    expect(actions.find(RaisedButton).at(1).prop('label')).toBe('Past Messages')
+    expect(actions.find(RaisedButton).at(0).prop('label')).toBe('Past Messages')
   })
 })
 
 describe('AssignmentSummary NOT inUSA and AllowSendAll', () => {
-  function create(unmessaged, unreplied, badTimezone, isDynamic) {
+  function create(unmessaged, unreplied, badTimezone, past, skipped, isDynamic) {
     window.NOT_IN_USA = 1
     window.ALLOW_SEND_ALL = true
     return mount(
@@ -126,19 +127,21 @@ describe('AssignmentSummary NOT inUSA and AllowSendAll', () => {
           unmessagedCount={unmessaged}
           unrepliedCount={unreplied}
           badTimezoneCount={badTimezone}
+          pastMessagesCount={past}
+          skippedMessagesCount={skipped}
         />
       </MuiThemeProvider>
     ).find(CardActions)
   }
 
   it('renders "Send message" with unmessaged', () => {
-    const actions = create(1, 0, 0)
-    expect(actions.find(RaisedButton).at(0).prop('label')).toBe('Past Messages')
+    const actions = create(1, 0, 0, 0, 0, false)
+    expect(actions.find(RaisedButton).at(0).prop('label')).toBe('Send messages')
   })
 
   it('renders "Send messages" with unreplied', () => {
-    const actions = create(0, 1, 0)
-    expect(actions.find(RaisedButton).at(0).prop('label')).toBe('Past Messages')
+    const actions = create(0, 1, 0, 0, 0, false)
+    expect(actions.find(RaisedButton).at(0).prop('label')).toBe('Send messages')
   })
 })
 
@@ -150,6 +153,7 @@ it('renders "Send later" when there is a badTimezoneCount', () => {
         unmessagedCount={0}
         unrepliedCount={0}
         badTimezoneCount={4}
+        skippedMessagesCount={0}
       />
     </MuiThemeProvider>
   ).find(CardActions)
@@ -176,6 +180,7 @@ describe('contacts filters', () => {
           unmessagedCount={1}
           unrepliedCount={1}
           badTimezoneCount={4}
+          skippedMessagesCount={0}
         />
       </MuiThemeProvider>
     )
@@ -190,6 +195,10 @@ describe('contacts filters', () => {
     const sendLater = mockRender.mock.calls[2][0]
     expect(sendLater.title).toBe('Past Messages')
     expect(sendLater.contactsFilter).toBe('stale')
+
+    const skippedMessages = mockRender.mock.calls[3][0]
+    expect(skippedMessages.title).toBe('Skipped Messages')
+    expect(skippedMessages.contactsFilter).toBe('skipped')
   })
   it('filters correctly out of USA', () => {
     window.NOT_IN_USA = 1
@@ -203,6 +212,7 @@ describe('contacts filters', () => {
           unmessagedCount={1}
           unrepliedCount={1}
           badTimezoneCount={4}
+          skippedMessagesCount={0}
         />
       </MuiThemeProvider>
     )
@@ -210,7 +220,11 @@ describe('contacts filters', () => {
     expect(sendMessages.title).toBe('Past Messages')
     expect(sendMessages.contactsFilter).toBe('stale')
 
-    const sendFirstTexts = mockRender.mock.calls[1][0]
+    const skippedMessages = mockRender.mock.calls[1][0]
+    expect(skippedMessages.title).toBe('Skipped Messages')
+    expect(skippedMessages.contactsFilter).toBe('skipped')
+
+    const sendFirstTexts = mockRender.mock.calls[2][0]
     expect(sendFirstTexts.title).toBe('Send messages')
     expect(sendFirstTexts.contactsFilter).toBe('all')
   })
