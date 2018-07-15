@@ -45,7 +45,7 @@ export const schema = `
 
 export const resolvers = {
   Location: {
-    timezone: (zipCode) => zipCode || {},
+    // timezone: (zipCode) => zipCode || {},
     city: (zipCode) => zipCode.city || '',
     state: (zipCode) => zipCode.state || ''
   },
