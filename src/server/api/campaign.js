@@ -5,6 +5,7 @@ export const schema = `
   input CampaignsFilter {
     isArchived: Boolean
     campaignId: Int
+    searchPattern: String
   }
 
   type CampaignStats {
