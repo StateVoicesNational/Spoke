@@ -119,6 +119,7 @@
     "passport-local": "^1.0.0",
     "passport-local-authenticate": "^1.2.0",
     "pg": "^6.4.2",
+    "promised-csv": "^1.0.1",
     "prop-types": "^15.6.0",
     "query-string": "^4.1.0",
     "react": "^15.6.1",
