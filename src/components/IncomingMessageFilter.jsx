@@ -1,7 +1,11 @@
 import React, { Component } from 'react'
 import type from 'prop-types'
+import loadData from '../containers/hoc/load-data'
+import { withRouter } from 'react-router'
+import gql from 'graphql-tag'
 
 import { Card, CardHeader, CardText } from 'material-ui/Card'
+import AutoComplete from 'material-ui/AutoComplete'
 import SelectField from 'material-ui/SelectField'
 import MenuItem from 'material-ui/MenuItem'
 
@@ -73,10 +77,14 @@ class IncomingMessageFilter extends Component {
     this.props.onCampaignChanged(value)
   }
 
+  onCampaignsSearchPatternChanged(searchText, dataSource, params) {
+    this.props.onCampaignsSearchPatternChanged(searchText)
+  }
+
   render() {
     return (
       <Card>
-        <CardHeader title='Message Filter' actAsExpander showExpandableButton />
+        <CardHeader title='Message Filter' actAsExpander showExpandableButton/>
         <CardText expandable>
           <SelectField
             multiple
@@ -89,7 +97,7 @@ class IncomingMessageFilter extends Component {
             {Object.keys(MESSAGE_STATUSES).map(messageStatus => {
               const displayText = MESSAGE_STATUSES[messageStatus].name
               const isChecked = this.state.messageFilter &&
-                  this.state.messageFilter.indexOf(messageStatus) > -1
+                this.state.messageFilter.indexOf(messageStatus) > -1
               return (
                 <MenuItem
                   key={messageStatus}
@@ -118,23 +126,55 @@ class IncomingMessageFilter extends Component {
                 />
               )
             })}
-            {this.props.campaigns.map(campaign => {
-              return <MenuItem key={campaign.id} value={campaign.id} primaryText={campaign.title} />
-            })}
           </SelectField>
+          <AutoComplete
+            dataSource={this.props.autocompleteOrganization.loading ? [] : this.props.autocompleteOrganization.organization.campaigns.map(campaign => {
+              return {
+                text: campaign.title,
+                value: (
+                  <MenuItem key={campaign.id} value={campaign.id} primaryText={campaign.title}/>
+                )
+              }
+            })}
+          />
         </CardText>
       </Card>
     )
   }
 }
 
+const mapQueriesToProps = ({ ownProps }) => ({
+  /*
+  autocompleteOrganization: {
+    query: gql`
+      query Q($organizationId: String!, $campaignsFilter: CampaignsFilter) {
+        organization(id: $organizationId) {
+          id
+          campaigns(campaignsFilter: $campaignsFilter) {
+            id
+            title
+          }
+        }
+      }
+    `,
+    variables: {
+      organizationId: ownProps.organizationId,
+      campaignsFilter: {}
+    },
+    forceFetch: true
+  }
+  */
+})
+
 IncomingMessageFilter.propTypes = {
   organizationId: type.string.isRequired,
   onCampaignChanged: type.func.isRequired,
   campaigns: type.array.isRequired,
-  onMessageFilterChanged: type.func.isRequired
+  onMessageFilterChanged: type.func.isRequired,
+  onCampaignsSearchPatternChanged: type.func.isRequired,
+  campaignsSearchPattern: type.string.isRequired
+
 }
 
-export default IncomingMessageFilter
-
-// export default loadData(withRouter(IncomingMessageList), { mapQueriesToProps })
+//export default IncomingMessageFilter
+export default loadData(withRouter(IncomingMessageFilter), { mapQueriesToProps })
