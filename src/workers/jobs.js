@@ -583,18 +583,19 @@ export async function exportCampaign(job) {
 let pastMessages = []
 
 export async function sendMessages(queryFunc, defaultStatus) {
-  knex.transaction(function(trx) {
-    let messageQuery = r.knex('message')
-      .transacting(trx)
-      .forUpdate()
-      .where({ send_status: defaultStatus || 'QUEUED' })
+  try {
+    await knex.transaction(trx => {
+      let messageQuery = r.knex('message')
+        .transacting(trx)
+        .forUpdate()
+        .where({ send_status: defaultStatus || 'QUEUED' })
 
-    if (queryFunc) {
-      messageQuery = queryFunc(messageQuery)
-    }
+      if (queryFunc) {
+        messageQuery = queryFunc(messageQuery)
+      }
 
-    messageQuery.orderBy('created_at')
-      .then((messages) => {
+      const messages = await messageQuery.orderBy('created_at')
+      try {
         for (let index = 0; index < messages.length; index++) {
           let message = messages[index]
           if (pastMessages.indexOf(message.id) !== -1) {
@@ -609,21 +610,18 @@ export async function sendMessages(queryFunc, defaultStatus) {
           pastMessages.push(message.id)
           pastMessages = pastMessages.slice(-100) // keep the last 100
         }
-      })
-      .then(trx.commit)
-      .catch(err => {
+
+        trx.commit()
+      } catch (err) {
         console.log('error sending messages:')
         console.error(err)
         trx.rollback()
-      })
-  })
-  .then((resp) => {
-    console.log('sendMessages transaction complete.')
-  })
-  .catch((err) => {
+      }
+    })
+  } catch (err) {
     console.log('sendMessages transaction errored:')
     console.error(err)
-  })
+  }
 }
 
 export async function handleIncomingMessageParts() {
