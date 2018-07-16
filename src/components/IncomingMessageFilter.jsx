@@ -98,10 +98,6 @@ class IncomingMessageFilter extends Component {
               const displayText = MESSAGE_STATUSES[messageStatus].name
               const isChecked =
                 this.state.messageFilter && this.state.messageFilter.indexOf(messageStatus) > -1
-              return (
-                <MenuItem
-                  key={messageStatus}
-                  value={messageStatus}
                   primaryText={displayText}
                   insetChildren
                   checked={isChecked}
