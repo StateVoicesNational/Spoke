@@ -165,7 +165,7 @@ export async function runDatabaseMigrations(event, dispatcher) {
 
 export async function loadContactsFromDataWarehouseFragmentJob(event, dispatcher) {
   const eventAsJob = event
-  console.log('LAMBDA INVOCATION job-processes')
+  console.log('LAMBDA INVOCATION job-processes', event)
   await loadContactsFromDataWarehouseFragment(eventAsJob)
 }
 
