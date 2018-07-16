@@ -10,27 +10,27 @@ import SelectField from 'material-ui/SelectField'
 import MenuItem from 'material-ui/MenuItem'
 
 export const MESSAGE_STATUSES = {
-  'all': {
+  all: {
     name: 'All',
     children: ['needsResponse', 'needsMessage', 'convo', 'messaged']
   },
-  'needsResponse': {
+  needsResponse: {
     name: 'Needs Texter Response',
     children: []
   },
-  'needsMessage': {
+  needsMessage: {
     name: 'Needs First Message',
     children: []
   },
-  'convo': {
+  convo: {
     name: 'Active Conversation',
     children: []
   },
-  'messaged': {
+  messaged: {
     name: 'First Message Sent',
     children: []
   },
-  'closed': {
+  closed: {
     name: 'Closed',
     children: []
   }
@@ -77,14 +77,10 @@ class IncomingMessageFilter extends Component {
     this.props.onCampaignChanged(value)
   }
 
-  onCampaignsSearchPatternChanged(searchText, dataSource, params) {
-    this.props.onCampaignsSearchPatternChanged(searchText)
-  }
-
   render() {
     return (
       <Card>
-        <CardHeader title='Message Filter' actAsExpander showExpandableButton/>
+        <CardHeader title="Message Filter" actAsExpander showExpandableButton />
         <CardText expandable>
           <SelectField
             multiple
@@ -96,8 +92,8 @@ class IncomingMessageFilter extends Component {
           >
             {Object.keys(MESSAGE_STATUSES).map(messageStatus => {
               const displayText = MESSAGE_STATUSES[messageStatus].name
-              const isChecked = this.state.messageFilter &&
-                this.state.messageFilter.indexOf(messageStatus) > -1
+              const isChecked =
+                this.state.messageFilter && this.state.messageFilter.indexOf(messageStatus) > -1
               return (
                 <MenuItem
                   key={messageStatus}
@@ -112,8 +108,8 @@ class IncomingMessageFilter extends Component {
           &nbsp;
           <SelectField
             value={this.state.campaignFilter}
-            hintText='Pick a campaign'
-            floatingLabelText='Campaign'
+            hintText="Pick a campaign"
+            floatingLabelText="Campaign"
             floatingLabelFixed
             onChange={this.onCampaignSelectChanged}
           >
@@ -128,14 +124,22 @@ class IncomingMessageFilter extends Component {
             })}
           </SelectField>
           <AutoComplete
-            dataSource={this.props.autocompleteOrganization.loading ? [] : this.props.autocompleteOrganization.organization.campaigns.map(campaign => {
-              return {
-                text: campaign.title,
-                value: (
-                  <MenuItem key={campaign.id} value={campaign.id} primaryText={campaign.title}/>
-                )
-              }
-            })}
+            dataSource={
+              this.props.autocompleteCampaigns.loading
+                ? []
+                : this.props.autocompleteCampaigns.campaigns.map(campaign => {
+                  return {
+                    text: campaign.title,
+                    value: (
+                      <MenuItem
+                        key={campaign.id}
+                        value={campaign.id}
+                        primaryText={campaign.title}
+                      />
+                    )
+                  }
+                })
+            }
           />
         </CardText>
       </Card>
@@ -144,26 +148,35 @@ class IncomingMessageFilter extends Component {
 }
 
 const mapQueriesToProps = ({ ownProps }) => ({
-  /*
-  autocompleteOrganization: {
+  autocompleteCampaigns: {
     query: gql`
-      query Q($organizationId: String!, $campaignsFilter: CampaignsFilter) {
-        organization(id: $organizationId) {
-          id
-          campaigns(campaignsFilter: $campaignsFilter) {
-            id
+      query Q(
+        $cursor: OffsetLimitCursor!
+        $organizationId: String!
+        $campaignsFilter: CampaignsFilter
+      ) {
+        campaigns(
+          cursor: $cursor
+          organizationId: $organizationId
+          campaignsFilter: $campaignsFilter
+        ) {
+          campaigns {
             title
+            id
           }
         }
       }
     `,
     variables: {
+      cursor: {
+        offset: ownProps.campaignsOffset,
+        limit: 1000
+      },
       organizationId: ownProps.organizationId,
       campaignsFilter: {}
     },
     forceFetch: true
   }
-  */
 })
 
 IncomingMessageFilter.propTypes = {
@@ -171,9 +184,6 @@ IncomingMessageFilter.propTypes = {
   onCampaignChanged: type.func.isRequired,
   campaigns: type.array.isRequired,
   onMessageFilterChanged: type.func.isRequired,
-  onCampaignsSearchPatternChanged: type.func.isRequired,
-  campaignsSearchPattern: type.string.isRequired
-
 }
 
 //export default IncomingMessageFilter

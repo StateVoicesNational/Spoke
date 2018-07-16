@@ -18,6 +18,17 @@ export const schema = `
   }
 `
 
+export function buildUserOrganizationQuery(queryParam, organizationId, role) {
+  const roleFilter = role ? { role } : {}
+
+  return queryParam
+    .from('user_organization')
+    .innerJoin('user', 'user_organization.user_id', 'user.id')
+    .where(roleFilter)
+    .where({ 'user_organization.organization_id': organizationId })
+    .distinct()
+}
+
 export const resolvers = {
   User: {
     ...mapFieldsToModel([

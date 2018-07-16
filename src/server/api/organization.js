@@ -1,11 +1,12 @@
 import { mapFieldsToModel } from './lib/utils'
 import { r, Organization } from '../models'
 import { accessRequired } from './errors'
+import { buildCampaignQuery } from './campaign'
+import { buildUserOrganizationQuery } from './user'
 
 export const schema = `
   input PeopleFilter {
     campaignsFilter: CampaignsFilter
-    searchPattern: String
   }
 
   type Organization {
@@ -13,7 +14,7 @@ export const schema = `
     uuid: String
     name: String
     campaigns(campaignsFilter: CampaignsFilter): [Campaign]
-    people(role: String, campaignsFilter: CampaignsFilter): [User]
+    people(role: String): [User]
     optOuts: [OptOut]
     threeClickEnabled: Boolean
     textingHoursEnforced: Boolean
@@ -31,24 +32,12 @@ export const resolvers = {
     campaigns: async (organization, { campaignsFilter }, { user }) => {
       await accessRequired(user, organization.id, 'SUPERVOLUNTEER')
 
-      let query = r.knex.select('*').from('campaign')
-        .where('organization_id', organization.id)
-
-      if (campaignsFilter) {
-        if ('isArchived' in campaignsFilter) {
-          query = query.where({ is_archived: campaignsFilter.isArchived })
-        }
-        if ('campaignId' in campaignsFilter) {
-          query = query.where({ id: parseInt(campaignsFilter.campaignId, 10) })
-        }
-
-        if ('searchPattern' in campaignsFilter) {
-          query = query.where('title', 'like', `%${campaignsFilter.searchPattern}%`)
-        }
-      }
-
+      let query = buildCampaignQuery(
+        r.knex.select('*'),
+        organization.id,
+        campaignsFilter
+      )
       query = query.orderBy('due_by', 'desc')
-
       return query
     },
     uuid: async (organization, _, { user }) => {
@@ -63,34 +52,9 @@ export const resolvers = {
       return r.table('opt_out')
         .getAll(organization.id, { index: 'organization_id' })
     },
-    people: async (organization, { role, campaignsFilter }, { user }) => {
+    people: async (organization, { role }, { user }) => {
       await accessRequired(user, organization.id, 'SUPERVOLUNTEER')
-
-      const roleFilter = role ? { role } : {}
-
-      let query = r.knex.select('user.*')
-        .from('user_organization')
-        .innerJoin('user', 'user_organization.user_id', 'user.id')
-        .where(roleFilter)
-        .where({'user_organization.organization_id':organization.id})
-        .distinct()
-
-      if (campaignsFilter && ('isArchived' in campaignsFilter || 'campaignId' in campaignsFilter)) {
-        query = query
-          .innerJoin('assignment', 'assignment.user_id', 'user_organization.user_id')
-          .innerJoin('campaign', 'assignment.campaign_id', 'campaign.id')
-
-        if ('isArchived' in campaignsFilter) {
-          query = query.where({ 'campaign.is_archived': campaignsFilter.isArchived })
-        }
-
-        if ('campaignId' in campaignsFilter) {
-          query = query.where({ 'campaign.id': parseInt(campaignsFilter.campaignId, 10) })
-
-        }
-      }
-
-      return query
+      return buildUserOrganizationQuery(r.knex.select('user.*'), organization.id, role)
     },
     threeClickEnabled: (organization) => organization.features.indexOf('threeClick') !== -1,
     textingHoursEnforced: (organization) => organization.texting_hours_enforced,
