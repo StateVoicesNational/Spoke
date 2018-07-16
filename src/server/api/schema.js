@@ -1023,7 +1023,7 @@ const rootMutations = {
 
       return []
     },
-    sendMessage: async (_, { message, campaignContactId }, { loaders }) => {
+    sendMessage: async (_, { message, campaignContactId }, { user, loaders }) => {
       const contact = await loaders.campaignContact.load(campaignContactId)
       const campaign = await loaders.campaign.load(contact.campaign_id)
       if (contact.assignment_id !== parseInt(message.assignmentId) || campaign.is_archived) {
@@ -1083,7 +1083,7 @@ const rootMutations = {
       const messageInstance = new Message({
         text: replaceCurlyApostrophes(text),
         contact_number: contactNumber,
-        user_id: campaignContactId,
+        user_id: user.id,
         user_number: '',
         assignment_id: message.assignmentId,
         send_status: JOBS_SAME_PROCESS ? 'SENDING' : 'QUEUED',
