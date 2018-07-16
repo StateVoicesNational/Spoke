@@ -46,7 +46,10 @@ export function getContacts(assignment, contactsFilter, organization, campaign, 
   const config = { textingHoursStart, textingHoursEnd, textingHoursEnforced }
   const [validOffsets, invalidOffsets] = getOffsets(config)
 
-  let query = r.knex('campaign_contact').where('assignment_id', assignment.id)
+  let query = r.knex('campaign_contact').where({
+    'assignment_id': assignment.id,
+    'is_opted_out': false
+  })
 
   if (contactsFilter) {
     const validTimezone = contactsFilter.validTimezone
