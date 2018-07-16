@@ -5,7 +5,6 @@ export const schema = `
   input CampaignsFilter {
     isArchived: Boolean
     campaignId: Int
-    searchPattern: String
   }
 
   type CampaignStats {
@@ -45,11 +44,6 @@ export const schema = `
     introHtml: String
     primaryColor: String
     logoImageUrl: String
-  }
-
-  type PaginatedCampaigns {
-    campaigns: [Campaign]!
-    pageInfo: PageInfo
   }
 `
 export function buildCampaignQuery(queryParam, organizationId, campaignsFilter, addFromClause = true) {
