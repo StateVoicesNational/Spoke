@@ -49,7 +49,7 @@ export async function sendJobToAWSLambda(job) {
       FunctionName: process.env.AWS_LAMBDA_FUNCTION_NAME,
       InvocationType: 'Event',
       Payload: lambdaPayload
-    }, function (err, data) {
+    }, (err, data) => {
       if (err) {
         console.log('LAMBDA INVOCATION FAILED', err, job)
         reject(err)
@@ -69,7 +69,7 @@ export async function processSqsMessages() {
   // if SQS doesnt have messages, exit
 
   if (!process.env.TWILIO_SQS_QUEUE_URL) {
-    return
+    return Promise.reject('TWILIO_SQS_QUEUE_URL not set')
   }
 
   const sqs = new AWS.SQS()
@@ -157,7 +157,7 @@ export async function uploadContacts(job) {
   }
 
   const optOutCellCount = await r.knex('campaign_contact')
-    .whereIn('cell', function () {
+    .whereIn('cell', function optouts() {
       this.select('cell').from('opt_out').where('organization_id', campaign.organization_id)
     })
     .where('campaign_id', campaignId)
@@ -175,71 +175,6 @@ export async function uploadContacts(job) {
       await r.table('job_request').get(job.id).delete()
     }
   }
-}
-
-
-export async function loadContactsFromDataWarehouse(job) {
-  console.log('STARTING loadContactsFromDataWarehouse')
-  const jobMessages = []
-  const sqlQuery = job.payload
-  if (!sqlQuery.startsWith('SELECT') || sqlQuery.indexOf(';') >= 0) {
-    log.error('Malformed SQL statement.  Must begin with SELECT and not have any semicolons: ', sqlQuery)
-    return
-  }
-  if (!datawarehouse) {
-    log.error('No data warehouse connection, so cannot load contacts', job)
-    return
-  }
-
-  let knexCountRes, knexCount
-  try {
-    knexCountRes = await datawarehouse.raw(`SELECT COUNT(*) FROM ( ${sqlQuery} )`)
-  } catch (err) {
-    log.error('Data warehouse count query failed: ', err)
-    jobMessages.push(`Error: Data warehouse count query failed: ${err}`)
-  }
-
-  if (knexCountRes) {
-    knexCount = knexCountRes.rows[0].count
-    console.log('WAREHOUSE COUNT', knexCount)
-  }
-  if (!knexCount) {
-    jobMessages.push('Error: Data warehouse query returned zero results')
-  }
-  const STEP = ((r.kninky && r.kninky.defaultsUnsupported)
-                ? 10 // sqlite has a max of 100 variables and ~8 or so are used per insert
-                : 10000) // default
-  const campaign = await Campaign.get(job.campaign_id)
-  const totalParts = Math.ceil(knexCount / STEP)
-
-  if (totalParts > 1 && /LIMIT/.test(sqlQuery)) {
-    jobMessages.push(`Error: LIMIT in query not supported for results larger than ${STEP}. Count was ${knexCount}`)
-  }
-
-  if (job.id && jobMessages.length) {
-    await r.knex('job_request').where('id', job.id)
-      .update({ result_message: jobMessages.join('\n') })
-    return
-  }
-
-  await r.knex('campaign_contact')
-    .where('campaign_id', job.campaign_id)
-    .delete()
-
-  console.log('STARTING loadContactsFromDataWarehouse')
-
-  await loadContactsFromDataWarehouseFragment({
-    jobId: job.id,
-    query: sqlQuery,
-    campaignId: job.campaign_id,
-    // beyond job object:
-    organizationId: campaign.organization_id,
-    totalParts,
-    totalCount: knexCount,
-    step: STEP,
-    part: 0,
-    limit: (totalParts > 1 ? STEP : 0) // 0 is unlimited
-  })
 }
 
 export async function loadContactsFromDataWarehouseFragment(jobEvent) {
@@ -293,9 +228,9 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
       message_status: 'needsMessage'
     }
     const contactCustomFields = {}
-    for (const f in customFields) {
+    Object.keys(customFields).forEach((f) => {
       contactCustomFields[f] = row[f]
-    }
+    })
     contact.custom_fields = JSON.stringify(contactCustomFields)
     if (contact.zip) {
       contact.timezone_offset = await getTimezoneByZip(contact.zip)
@@ -318,7 +253,7 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
       // now that we've saved them all, we delete everyone that is opted out locally
       // doing this in one go so that we can get the DB to do the indexed cell matching
       const optOutCellCount = await r.knex('campaign_contact')
-        .whereIn('cell', () => {
+        .whereIn('cell', function optouts() {
           this.select('cell').from('opt_out').where('organization_id', jobEvent.organizationId)
         })
         .where('campaign_id', jobEvent.campaignId)
@@ -327,19 +262,86 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
     }
     await r.table('job_request').get(jobEvent.jobId).delete()
   } else if (jobEvent.part < (jobEvent.totalParts - 1)) {
+    const newPart = jobEvent.part + 1
     const newJob = {
       ...jobEvent,
-      part: jobEvent.part + 1,
-      offset: jobEvent.part * jobEvent.step,
+      part: newPart,
+      offset: newPart * jobEvent.step,
       limit: jobEvent.step,
       command: 'loadContactsFromDataWarehouseFragmentJob'
     }
     if (process.env.WAREHOUSE_DB_LAMBDA_ITERATION) {
+      console.log('SENDING TO LAMBDA loadContactsFromDataWarehouseFragment', newJob)
       await sendJobToAWSLambda(newJob)
     } else {
       loadContactsFromDataWarehouseFragment(newJob)
     }
   }
+}
+
+export async function loadContactsFromDataWarehouse(job) {
+  console.log('STARTING loadContactsFromDataWarehouse')
+  const jobMessages = []
+  const sqlQuery = job.payload
+  if (!sqlQuery.startsWith('SELECT') || sqlQuery.indexOf(';') >= 0) {
+    log.error('Malformed SQL statement.  Must begin with SELECT and not have any semicolons: ', sqlQuery)
+    return
+  }
+  if (!datawarehouse) {
+    log.error('No data warehouse connection, so cannot load contacts', job)
+    return
+  }
+
+  let knexCountRes
+  let knexCount
+  try {
+    knexCountRes = await datawarehouse.raw(`SELECT COUNT(*) FROM ( ${sqlQuery} )`)
+  } catch (err) {
+    log.error('Data warehouse count query failed: ', err)
+    jobMessages.push(`Error: Data warehouse count query failed: ${err}`)
+  }
+
+  if (knexCountRes) {
+    knexCount = knexCountRes.rows[0].count
+    console.log('WAREHOUSE COUNT', knexCount)
+  }
+  if (!knexCount) {
+    jobMessages.push('Error: Data warehouse query returned zero results')
+  }
+  const STEP = ((r.kninky && r.kninky.defaultsUnsupported)
+                ? 10 // sqlite has a max of 100 variables and ~8 or so are used per insert
+                : 10000) // default
+  const campaign = await Campaign.get(job.campaign_id)
+  const totalParts = Math.ceil(knexCount / STEP)
+
+  if (totalParts > 1 && /LIMIT/.test(sqlQuery)) {
+    jobMessages.push(`Error: LIMIT in query not supported for results larger than ${STEP}. Count was ${knexCount}`)
+  }
+
+  if (job.id && jobMessages.length) {
+    await r.knex('job_request').where('id', job.id)
+      .update({ result_message: jobMessages.join('\n') })
+    return
+  }
+
+  await r.knex('campaign_contact')
+    .where('campaign_id', job.campaign_id)
+    .delete()
+
+  console.log('STARTING loadContactsFromDataWarehouse')
+
+  await loadContactsFromDataWarehouseFragment({
+    jobId: job.id,
+    query: sqlQuery,
+    campaignId: job.campaign_id,
+    // beyond job object:
+    organizationId: campaign.organization_id,
+    totalParts,
+    totalCount: knexCount,
+    step: STEP,
+    part: 0,
+    limit: (totalParts > 1 ? STEP : 0) // 0 is unlimited
+  })
 }
 
 export async function assignTexters(job) {
