@@ -592,7 +592,8 @@ export async function sendMessages(queryFunc, defaultStatus) {
     if (queryFunc) {
       messageQuery = queryFunc(messageQuery)
     }
-    await messageQuery.orderBy('created_at')
+
+    messageQuery.orderBy('created_at')
       .then((messages) => {
         for (let index = 0; index < messages.length; index++) {
           let message = messages[index]
