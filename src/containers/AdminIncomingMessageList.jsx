@@ -19,8 +19,7 @@ export class AdminIncomingMessageList extends Component {
       campaignsFilter: {},
       assignmentsFilter: {},
       needsRender: false,
-      utc: Date.now().toString(),
-      campaignsSearchPattern: ''
+      utc: Date.now().toString()
     }
 
     this.handleCampaignChange = this.handleCampaignChange.bind(this)
@@ -108,10 +107,6 @@ export class AdminIncomingMessageList extends Component {
     }
   }
 
-  async handleCampaignsSearchPatternChanged(campaignsSearchPattern) {
-    this.setState({ campaignsSearchPattern })
-  }
-
   render() {
     const cursor = {
       offset: this.state.page * this.state.pageSize,
@@ -129,8 +124,6 @@ export class AdminIncomingMessageList extends Component {
               campaigns={this.props.organization.organization.campaigns}
               onCampaignChanged={this.handleCampaignChange}
               onMessageFilterChanged={this.handleMessageFilterChange}
-              onCampaignsSearchPatternChanged={this.handleCampaignsSearchPatternChanged}
-              campaignsSearchPattern={this.state.campaignsSearchPattern}
             />
             <br />
             <IncomingMessageActions

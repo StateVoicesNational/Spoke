@@ -1,6 +1,7 @@
 import _ from 'lodash'
 import { r } from '../models'
 import { addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue } from './assignment'
+import { buildCampaignQuery } from './campaign'
 
 export const schema = `
   input ConversationFilter {
@@ -28,20 +29,12 @@ function getConversationsJoinsAndWhereClause(
   contactsFilter
 ) {
   let query = queryParam
-    .from('campaign')
     .leftJoin('campaign_contact', 'campaign.id', 'campaign_contact.campaign_id')
     .leftJoin('assignment', 'campaign_contact.assignment_id', 'assignment.id')
     .leftJoin('user', 'assignment.user_id', 'user.id')
     .where({ 'campaign.organization_id': organizationId })
 
-  if (campaignsFilter) {
-    if ('isArchived' in campaignsFilter && campaignsFilter.isArchived !== null) {
-      query = query.where({ 'campaign.is_archived': campaignsFilter.isArchived })
-    }
-    if ('campaignId' in campaignsFilter && campaignsFilter.campaignId !== null) {
-      query = query.where({ 'campaign.id': parseInt(campaignsFilter.campaignId) })
-    }
-  }
+  query = buildCampaignQuery(query, organizationId, campaignsFilter)
 
   if (assignmentsFilter) {
     if ('texterId' in assignmentsFilter && assignmentsFilter.texterId !== null)
