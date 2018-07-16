@@ -584,7 +584,7 @@ let pastMessages = []
 
 export async function sendMessages(queryFunc, defaultStatus) {
   try {
-    await knex.transaction(trx => {
+    await knex.transaction(async trx => {
       let messageQuery = r.knex('message')
         .transacting(trx)
         .forUpdate()
