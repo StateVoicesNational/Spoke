@@ -253,6 +253,7 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
   }
   let knexResult
   try {
+    console.log('loadContactsFromDataWarehouseFragment RUNNING WAREHOUSE query', sqlQuery)
     knexResult = await datawarehouse.raw(sqlQuery)
   } catch (err) {
     // query failed
@@ -334,7 +335,7 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
       command: 'loadContactsFromDataWarehouseFragmentJob'
     }
     if (process.env.WAREHOUSE_DB_LAMBDA_ITERATION) {
-      sendJobToAWSLambda(newJob)
+      await sendJobToAWSLambda(newJob)
     } else {
       loadContactsFromDataWarehouseFragment(newJob)
     }
