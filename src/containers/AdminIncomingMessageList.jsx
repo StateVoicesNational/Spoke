@@ -19,8 +19,7 @@ export class AdminIncomingMessageList extends Component {
       campaignsFilter: {},
       assignmentsFilter: {},
       needsRender: false,
-      utc: Date.now().toString(),
-      campaignsSearchPattern: ''
+      utc: Date.now().toString()
     }
 
     this.handleCampaignChange = this.handleCampaignChange.bind(this)
@@ -108,10 +107,6 @@ export class AdminIncomingMessageList extends Component {
     }
   }
 
-  async handleCampaignsSearchPatternChanged(campaignsSearchPattern) {
-    this.setState({ campaignsSearchPattern })
-  }
-
   render() {
     const cursor = {
       offset: this.state.page * this.state.pageSize,
@@ -125,12 +120,9 @@ export class AdminIncomingMessageList extends Component {
         ) : (
           <div>
             <IncomingMessageFilter
-              organizationId={this.props.params.organizationId}
               campaigns={this.props.organization.organization.campaigns}
               onCampaignChanged={this.handleCampaignChange}
               onMessageFilterChanged={this.handleMessageFilterChange}
-              onCampaignsSearchPatternChanged={this.handleCampaignsSearchPatternChanged}
-              campaignsSearchPattern={this.state.campaignsSearchPattern}
             />
             <br />
             <IncomingMessageActions
@@ -159,20 +151,23 @@ export class AdminIncomingMessageList extends Component {
 const mapQueriesToProps = ({ ownProps }) => ({
   organization: {
     query: gql`
-      query Q($organizationId: String!, $campaignsFilter: CampaignsFilter) {
+      query Q($organizationId: String!) {
         organization(id: $organizationId) {
           id
-          people(campaignsFilter: $campaignsFilter) {
+          people {
             id
             displayName
             roles(organizationId: $organizationId)
+          }
+          campaigns {
+            id
+            title
           }
         }
       }
     `,
     variables: {
-      organizationId: ownProps.params.organizationId,
-      campaignsFilter: { isArchived: false }
+      organizationId: ownProps.params.organizationId
     },
     forceFetch: true
   }
@@ -204,5 +199,3 @@ export default loadData(withRouter(wrapMutations(AdminIncomingMessageList)), {
   mapQueriesToProps,
   mapMutationsToProps
 })
-
-// export default loadData(wrapMutations(UserEdit), { mapMutationsToProps })
