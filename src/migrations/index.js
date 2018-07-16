@@ -129,7 +129,8 @@ const migrations = [
     date: '2018-07-16',
     migrate: async function() {
       await r.knex.schema.alterTable('message', (table) => {
-        table.integer('user_id').unsigned()
+        table.integer('user_id').unsigned().nullable().default(null)
+          .index().references('id').inTable('user')
       })
       console.log('added user_id column to message table')
     }
