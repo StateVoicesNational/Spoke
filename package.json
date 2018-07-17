@@ -40,7 +40,7 @@
     "generate-contacts": "./dev-tools/babel-run ./dev-tools/generate-contacts.js",
     "jest-test": "jest __test__/backend.test.js",
     "dev": "nf start -w --procfile ./dev-tools/Procfile.dev",
-    "dev-nowrap": "nf start --procfile ./dev-tools/Procfile.dev --env ./__test__/e2e/.env.e2e",
+    "dev-nowrap": "nf start --trim 500 --procfile ./dev-tools/Procfile.dev --env ./__test__/e2e/.env.e2e",
     "debug-server": "nf start -w --procfile ./dev-tools/Procfile-debug-server.dev",
     "dev-other": "nf start -w --procfile ./dev-tools/Procfile-other.dev"
   },
