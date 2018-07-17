@@ -3,24 +3,6 @@ import { r } from '../models'
 import { addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue } from './assignment'
 import { buildCampaignQuery } from './campaign'
 
-export const schema = `
-  input ConversationFilter {
-    assignmentsFilter: AssignmentsFilter
-    campaignsFilter: CampaignsFilter
-    contactsFilter: ContactsFilter
-  }
-
-  type Conversation {
-    texter: User!
-    contact: CampaignContact!
-    campaign: Campaign!
-  }
-  
-  type PaginatedConversations {
-    conversations: [Conversation]!
-    pageInfo: PageInfo
-  }
-`
 function getConversationsJoinsAndWhereClause(
   queryParam,
   organizationId,

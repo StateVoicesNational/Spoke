@@ -1,51 +1,6 @@
 import { mapFieldsToModel } from './lib/utils'
 import { Campaign, JobRequest, r } from '../models'
 
-export const schema = `
-  input CampaignsFilter {
-    isArchived: Boolean
-    campaignId: Int
-  }
-
-  type CampaignStats {
-    sentMessagesCount: Int
-    receivedMessagesCount: Int
-    optOutsCount: Int
-  }
-
-  type JobRequest {
-    id: String
-    jobType: String
-    assigned: Boolean
-    status: Int
-    resultMessage: String
-  }
-
-  type Campaign {
-    id: ID
-    organization: Organization
-    title: String
-    description: String
-    dueBy: Date
-    isStarted: Boolean
-    isArchived: Boolean
-    texters: [User]
-    assignments(assignmentsFilter: AssignmentsFilter): [Assignment]
-    interactionSteps: [InteractionStep]
-    contacts: [CampaignContact]
-    contactsCount: Int
-    hasUnassignedContacts: Boolean
-    customFields: [String]
-    cannedResponses(userId: String): [CannedResponse]
-    stats: CampaignStats,
-    pendingJobs: [JobRequest]
-    datawarehouseAvailable: Boolean
-    useDynamicAssignment: Boolean
-    introHtml: String
-    primaryColor: String
-    logoImageUrl: String
-  }
-`
 export function buildCampaignQuery(queryParam, organizationId, campaignsFilter, addFromClause = true) {
   let query = queryParam
 
@@ -60,7 +15,7 @@ export function buildCampaignQuery(queryParam, organizationId, campaignsFilter, 
       query = query.where({ is_archived: campaignsFilter.isArchived })
     }
     if ('campaignId' in campaignsFilter) {
-      query = query.where({ id: parseInt(campaignsFilter.campaignId, 10) })
+      query = query.where('campaign.id', parseInt(campaignsFilter.campaignId, 10))
     }
   }
 

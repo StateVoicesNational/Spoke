@@ -75,31 +75,6 @@ class IncomingMessageFilter extends Component {
     this.props.onCampaignChanged(value)
   }
 
-  async componentDidUpdate() {
-    results = await ApolloClientSingleton.query({
-      query: gql`
-      query Q($organizationId: String!) {
-        organization(id: $organizationId) {
-          id
-          people {
-            id
-            displayName
-            roles(organizationId: $organizationId)
-          }
-          campaigns {
-            id
-            title
-          }
-        }
-      }
-    `,
-      variables: {
-        organizationId: 1
-      }
-    })
-    console.log(results)
-  }
-
   render() {
     return (
       <Card>
