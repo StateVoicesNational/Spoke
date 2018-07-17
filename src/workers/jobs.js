@@ -179,6 +179,15 @@ export async function uploadContacts(job) {
 
 export async function loadContactsFromDataWarehouseFragment(jobEvent) {
   console.log('starting loadContactsFromDataWarehouseFragment', jobEvent)
+  const jobCompleted = (await r.knex('job_request')
+                        .where('id', jobEvent.jobId)
+                        .select('status')
+                        .first())
+  if (!jobCompleted) {
+    console.log('loadContactsFromDataWarehouseFragment job no longer exists', jobCompleted, jobEvent)
+    return { 'alreadyComplete': 1 }
+  }
+
   let sqlQuery = jobEvent.query
   if (jobEvent.limit) {
     sqlQuery += ' LIMIT ' + jobEvent.limit
@@ -248,7 +257,9 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
                      .first())
   console.log('loadContactsFromDataWarehouseFragment toward end', completed, jobEvent)
 
-  if (jobEvent.totalParts && completed.status >= jobEvent.totalParts) {
+  if (!completed) {
+    console.log('loadContactsFromDataWarehouseFragment job has been deleted', completed)
+  } else if (jobEvent.totalParts && completed.status >= jobEvent.totalParts) {
     if (jobEvent.organizationId) {
       // now that we've saved them all, we delete everyone that is opted out locally
       // doing this in one go so that we can get the DB to do the indexed cell matching
