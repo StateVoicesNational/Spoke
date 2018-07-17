@@ -585,17 +585,26 @@ let pastMessages = []
 export async function sendMessages(queryFunc, defaultStatus) {
   try {
     await knex.transaction(async trx => {
-      let messageQuery = r.knex('message')
-        .transacting(trx)
-        .forUpdate()
-        .where({ send_status: defaultStatus || 'QUEUED' })
+      let messages = []
+      try {
+        let messageQuery = r.knex('message')
+          .transacting(trx)
+          .forUpdate()
+          .where({ send_status: defaultStatus || 'QUEUED' })
 
-      if (queryFunc) {
-        messageQuery = queryFunc(messageQuery)
+        if (queryFunc) {
+          messageQuery = queryFunc(messageQuery)
+        }
+
+        messages = await messageQuery.orderBy('created_at')
+      } catch (err) {
+        // Unable to obtain lock on these rows meaning another process must be
+        // sending them. We will exit gracefully in that case.
+        trx.rollback()
+        return
       }
 
       try {
-        const messages = await messageQuery.orderBy('created_at')
         for (let index = 0; index < messages.length; index++) {
           let message = messages[index]
           if (pastMessages.indexOf(message.id) !== -1) {
