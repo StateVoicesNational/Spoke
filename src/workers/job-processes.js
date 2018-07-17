@@ -174,7 +174,7 @@ export async function loadContactsFromDataWarehouseFragmentJob(event, dispatcher
     if (eventCallback) {
       eventCallback(null, rv)
     }
-  } catch(err) {
+  } catch (err) {
     if (eventCallback) {
       eventCallback(err, null)
     }
