@@ -32,7 +32,6 @@ import Empty from '../components/Empty'
 import CreateIcon from 'material-ui/svg-icons/content/create'
 import { getContactTimezone } from '../lib/timezones'
 
-
 const styles = StyleSheet.create({
   mobile: {
     '@media(min-width: 425px)': {
@@ -518,8 +517,7 @@ export class AssignmentTexterContact extends React.Component {
         if (location) {
           let timezone = location.timezone
           if (timezone) {
-            const { hasDST, offset } = timezone
-            timezoneData = { hasDST, offset }
+              timezoneData = timezone
           }
         }
     }
