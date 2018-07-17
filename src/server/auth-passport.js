@@ -87,8 +87,8 @@ export function setupLocalAuthPassport() {
       AuthHasher.verify(
         password, hashed,
         (err, verified) => (verified
-                            ? done('Validation failed', null)
-                            : done(null, existingUser[0]))
+                            ? done(null, existingUser[0])
+                            : done('Validation failed', null))
       )
     } else {
       // create the user
