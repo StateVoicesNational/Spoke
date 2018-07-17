@@ -6,12 +6,16 @@ import { log } from '../../../lib'
 // that end up just in the db appropriately and then using sendReply() graphql
 // queries for the reception (rather than a real service)
 
-async function sendMessage(message) {
+async function sendMessage(message, trx) {
+  let options = { conflict: 'update' }
+  if (trx) {
+    options.transaction = trx
+  }
   return Message.save({ ...message,
                         send_status: 'SENT',
                         service: 'fakeservice',
                         sent_at: new Date()
-                      }, { conflict: 'update' })
+                      }, options)
     .then((saveError, newMessage) => newMessage)
 }
 

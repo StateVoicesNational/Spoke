@@ -606,7 +606,7 @@ export async function sendMessages(queryFunc, defaultStatus) {
           const service = serviceMap[message.service]
           log.info(`Sending (${message.service}): ${message.user_number} -> ${message.contact_number}\nMessage: ${message.text}`)
           // TODO: pass transaction to service.sendMessage
-          await service.sendMessage(message)
+          await service.sendMessage(message, trx)
           pastMessages.push(message.id)
           pastMessages = pastMessages.slice(-100) // keep the last 100
         }
