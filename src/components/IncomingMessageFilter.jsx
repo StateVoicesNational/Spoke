@@ -5,6 +5,8 @@ import { Card, CardHeader, CardText } from 'material-ui/Card'
 import SelectField from 'material-ui/SelectField'
 import MenuItem from 'material-ui/MenuItem'
 
+import {ApolloClientSingleton} from '../network/apollo-client-singleton'
+
 export const MESSAGE_STATUSES = {
   'all': {
     name: 'All',
@@ -73,6 +75,31 @@ class IncomingMessageFilter extends Component {
     this.props.onCampaignChanged(value)
   }
 
+  async componentDidUpdate() {
+    results = await ApolloClientSingleton.query({
+      query: gql`
+      query Q($organizationId: String!) {
+        organization(id: $organizationId) {
+          id
+          people {
+            id
+            displayName
+            roles(organizationId: $organizationId)
+          }
+          campaigns {
+            id
+            title
+          }
+        }
+      }
+    `,
+      variables: {
+        organizationId: 1
+      }
+    })
+    console.log(results)
+  }
+
   render() {
     return (
       <Card>
@@ -133,5 +160,6 @@ IncomingMessageFilter.propTypes = {
   campaigns: type.array.isRequired,
   onMessageFilterChanged: type.func.isRequired
 }
+
 
 export default IncomingMessageFilter
