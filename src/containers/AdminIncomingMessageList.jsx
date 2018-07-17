@@ -7,6 +7,9 @@ import IncomingMessageActions from '../components/IncomingMessageActions'
 import IncomingMessageList from '../components/IncomingMessageList'
 import LoadingIndicator from '../components/LoadingIndicator'
 import wrapMutations from './hoc/wrap-mutations'
+import { graphql } from 'graphql'
+import { schema } from '../api/schema'
+import { makeExecutableSchema } from 'graphql-tools'
 
 export class AdminIncomingMessageList extends Component {
   constructor(props) {
@@ -28,6 +31,21 @@ export class AdminIncomingMessageList extends Component {
     this.handlePageChange = this.handlePageChange.bind(this)
     this.handlePageSizeChange = this.handlePageSizeChange.bind(this)
     this.handleRowSelection = this.handleRowSelection.bind(this)
+  }
+
+  async componentDidUpdate(prevProps, prevState, snapshot) {
+
+    const source = `query Q($requestedFields: [String]!, $organizationId:String!) {
+      people(requestedFields: $requestedFields, organizationId: $organizationId) {
+        data
+      }
+    }
+      `
+
+    const variableValues = { requestedFields: ['id'], organizationId: '1' }
+
+    const result = await graphql({ schema:makeExecutableSchema({typeDefs: schema}), source, variableValues })
+    console.log(result)
   }
 
   shouldComponentUpdate(_, nextState) {
@@ -151,7 +169,7 @@ export class AdminIncomingMessageList extends Component {
 const mapQueriesToProps = ({ ownProps }) => ({
   organization: {
     query: gql`
-      query Q($organizationId: String!) {
+      query Q($organizationId: String!, $campaignsFilter: CampaignsFilter) {
         organization(id: $organizationId) {
           id
           people {
@@ -159,7 +177,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
             displayName
             roles(organizationId: $organizationId)
           }
-          campaigns {
+          campaigns(campaignsFilter: $campaignsFilter) {
             id
             title
           }
@@ -167,7 +185,8 @@ const mapQueriesToProps = ({ ownProps }) => ({
       }
     `,
     variables: {
-      organizationId: ownProps.params.organizationId
+      organizationId: ownProps.params.organizationId,
+      campaignsFilter: {}
     },
     forceFetch: true
   }

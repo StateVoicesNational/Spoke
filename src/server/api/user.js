@@ -1,23 +1,6 @@
 import { mapFieldsToModel } from './lib/utils'
 import { r, User } from '../models'
 
-export const schema = `
-  type User {
-    id: ID
-    firstName: String
-    lastName: String
-    displayName: String
-    email: String
-    cell: String
-    organizations(role: String): [Organization]
-    todos(organizationId: String): [Assignment]
-    roles(organizationId: String!): [String]
-    assignedCell: Phone
-    assignment(campaignId: String): Assignment,
-    terms: Boolean
-  }
-`
-
 export function buildUserOrganizationQuery(queryParam, organizationId, role) {
   const roleFilter = role ? { role } : {}
 
