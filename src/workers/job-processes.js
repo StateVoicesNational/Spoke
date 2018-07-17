@@ -159,14 +159,26 @@ export async function handleIncomingMessages() {
   }
 }
 
-export async function runDatabaseMigrations(event, dispatcher) {
+export async function runDatabaseMigrations(event, dispatcher, eventCallback) {
   await runMigrations(event.migrationStart)
+  if (eventCallback) {
+    eventCallback(null, 'completed migrations')
+  }
 }
 
-export async function loadContactsFromDataWarehouseFragmentJob(event, dispatcher) {
+export async function loadContactsFromDataWarehouseFragmentJob(event, dispatcher, eventCallback) {
   const eventAsJob = event
   console.log('LAMBDA INVOCATION job-processes', event)
-  await loadContactsFromDataWarehouseFragment(eventAsJob)
+  try {
+    const rv = await loadContactsFromDataWarehouseFragment(eventAsJob)
+    if (eventCallback) {
+      eventCallback(null, rv)
+    }
+  } catch(err) {
+    if (eventCallback) {
+      eventCallback(err, null)
+    }
+  }
 }
 
 const processMap = {
@@ -189,7 +201,7 @@ const syncProcessMap = {
 
 const JOBS_SAME_PROCESS = !!process.env.JOBS_SAME_PROCESS
 
-export async function dispatchProcesses(event, dispatcher) {
+export async function dispatchProcesses(event, dispatcher, eventCallback) {
   const toDispatch = event.processes || (JOBS_SAME_PROCESS ? syncProcessMap : processMap)
   for (let p in toDispatch) {
     if (p in processMap) {
