@@ -168,6 +168,7 @@ export default class CampaignTextersForm extends React.Component {
         assignment: {
           ...newTexter.assignment,
           contactsCount: convertedNeedsMessageCount + messagedCount,
+          messagedCount: messagedCount,
           needsMessageCount: convertedNeedsMessageCount,
           maxContacts: convertedMaxContacts
         }
@@ -182,9 +183,11 @@ export default class CampaignTextersForm extends React.Component {
       // 2. If extraTexterCapacity > 0, reduce the user's input to the number of contacts available
       // for assignment
       newFormValues.texters = newFormValues.texters.map((newTexter) => {
+        console.log('new texter:', JSON.stringify(newTexter));
         const returnTexter = newTexter
         if (newTexter.id === changedTexterId) {
-          const numberAssignable = existingFormValues.contactsCount - alreadyAssignedContactsCount
+          const nonAssignable = alreadyAssignedContactsCount + newTexter.assignment.messagedCount
+          const numberAssignable = existingFormValues.contactsCount - nonAssignable
           returnTexter.assignment.needsMessageCount = numberAssignable
           returnTexter.assignment.contactsCount = numberAssignable + (newTexter.assignment.messagedCount || 0)
         }
