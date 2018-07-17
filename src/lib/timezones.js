@@ -20,8 +20,8 @@ export const getContactTimezone = (location) => {
     let hasDST;
 
     if (getProcessEnvTz()) {
-      offset = moment().tz(getProcessEnvTz()).format('Z');
-      isDst =  moment().isDST();
+      offset = moment().tz(getProcessEnvTz()).format('Z')
+      hasDST =  moment().isDST()
       timezoneData = {offset, hasDST}
     } else {
       offset = TIMEZONE_CONFIG.missingTimeZone.offset
