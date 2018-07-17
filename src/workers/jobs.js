@@ -261,6 +261,7 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
       console.log('OPTOUT CELL COUNT', optOutCellCount)
     }
     await r.table('job_request').get(jobEvent.jobId).delete()
+    return {'completed': 1}
   } else if (jobEvent.part < (jobEvent.totalParts - 1)) {
     const newPart = jobEvent.part + 1
     const newJob = {
@@ -273,8 +274,9 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
     if (process.env.WAREHOUSE_DB_LAMBDA_ITERATION) {
       console.log('SENDING TO LAMBDA loadContactsFromDataWarehouseFragment', newJob)
       await sendJobToAWSLambda(newJob)
+      return {'invokedAgain': 1}
     } else {
-      loadContactsFromDataWarehouseFragment(newJob)
+      return loadContactsFromDataWarehouseFragment(newJob)
     }
   }
 }

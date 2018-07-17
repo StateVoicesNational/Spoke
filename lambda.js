@@ -11,7 +11,7 @@ const jobs = require('./build/server/workers/job-processes')
 // See: http://docs.aws.amazon.com/lambda/latest/dg/best-practices.html#function-code
 // "Separate the Lambda handler (entry point) from your core logic"
 
-exports.handler = (event, context) => {
+exports.handler = (event, context, handleCallback) => {
   if (process.env.LAMBDA_DEBUG_LOG) {
     console.log('LAMBDA EVENT', event)
   }
@@ -55,7 +55,8 @@ exports.handler = (event, context) => {
                 callback(err, dataReceived)
               }
             })
-          })
+          },
+          handleCallback)
     } else {
       console.error('Unfound command sent as a Lambda event: ' + event.command)
     }
