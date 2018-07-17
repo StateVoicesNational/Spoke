@@ -198,7 +198,7 @@ export default class CampaignTextersForm extends React.Component {
       })
       this.setState({
         snackbarOpen: true,
-        snackbarMessage: `${focusedTexter.assignment.contactsCount} contact${focusedTexter.assignment.contactsCount === 1 ? '' : 's'} assigned to ${this.getDisplayName(focusedTexter.id)}`
+        snackbarMessage: `Texter ${this.getDisplayName(focusedTexter.id)} now assigned ${focusedTexter.assignment.contactsCount} contact${focusedTexter.assignment.contactsCount === 1 ? '' : 's'}`
       })
     } else if (this.state.autoSplit) {
       // 3. if we don't have extraTexterCapacity and auto-split is on, then fill the texters with assignments
