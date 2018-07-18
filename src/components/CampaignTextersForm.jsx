@@ -1,5 +1,6 @@
 import type from 'prop-types'
 import React from 'react'
+import orderBy from 'lodash/orderBy'
 import Slider from './Slider'
 import AutoComplete from 'material-ui/AutoComplete'
 import IconButton from 'material-ui/IconButton'
@@ -128,10 +129,7 @@ export default class CampaignTextersForm extends React.Component {
     const texterCountChanged = newFormValues.texters.length !== existingFormValues.texters.length
 
     const alreadyAssignedContactsCount = existingFormValues.texters.reduce((contactsCountAccumulator, texter) => {
-      if (texter.id !== changedTexterId) {
-        return (texter.assignment.contactsCount || 0) + contactsCountAccumulator
-      }
-      return contactsCountAccumulator
+      return (texter.assignment.contactsCount || 0) + contactsCountAccumulator
     }, 0)
 
     // 1. map form texters to existing texters. with needsMessageCount tweaked to minimums when invalid or useless
@@ -168,6 +166,7 @@ export default class CampaignTextersForm extends React.Component {
         assignment: {
           ...newTexter.assignment,
           contactsCount: convertedNeedsMessageCount + messagedCount,
+          messagedCount: messagedCount,
           needsMessageCount: convertedNeedsMessageCount,
           maxContacts: convertedMaxContacts
         }
@@ -182,20 +181,20 @@ export default class CampaignTextersForm extends React.Component {
       // 2. If extraTexterCapacity > 0, reduce the user's input to the number of contacts available
       // for assignment
       newFormValues.texters = newFormValues.texters.map((newTexter) => {
-        const returnTexter = newTexter
         if (newTexter.id === changedTexterId) {
-          const numberAssignable = existingFormValues.contactsCount - alreadyAssignedContactsCount
-          returnTexter.assignment.needsMessageCount = numberAssignable
-          returnTexter.assignment.contactsCount = numberAssignable + (newTexter.assignment.messagedCount || 0)
+          const returnTexter = newTexter
+          returnTexter.assignment.needsMessageCount -= extraTexterCapacity
+          returnTexter.assignment.contactsCount -= extraTexterCapacity
+          return returnTexter
         }
-        return returnTexter
+        return newTexter
       })
       const focusedTexter = newFormValues.texters.find((texter) => {
         return texter.id === changedTexterId
       })
       this.setState({
         snackbarOpen: true,
-        snackbarMessage: `${focusedTexter.assignment.contactsCount} contact${focusedTexter.assignment.contactsCount === 1 ? '' : 's'} assigned to ${this.getDisplayName(focusedTexter.id)}`
+        snackbarMessage: `Texter ${this.getDisplayName(focusedTexter.id)} now assigned ${focusedTexter.assignment.contactsCount} contact${focusedTexter.assignment.contactsCount === 1 ? '' : 's'}`
       })
     } else if (this.state.autoSplit) {
       // 3. if we don't have extraTexterCapacity and auto-split is on, then fill the texters with assignments
@@ -254,16 +253,10 @@ export default class CampaignTextersForm extends React.Component {
   })
 
   formValues() {
+    const unorderedTexters = this.props.formValues.texters
     return {
       ...this.props.formValues,
-      texters: this.props.formValues.texters.sort((texter1, texter2) => {
-        if (texter1.firstName < texter2.firstName) {
-          return -1
-        } else if (texter1.firstName > texter2.firstName) {
-          return 1
-        }
-        return 0
-      })
+      texters: orderBy(unorderedTexters, ['firstName', 'lastName'], ['asc', 'asc'])
     }
   }
 
@@ -353,7 +346,7 @@ export default class CampaignTextersForm extends React.Component {
     return this.formValues().texters.map((texter, index) => {
       const messagedCount = texter.assignment.contactsCount - texter.assignment.needsMessageCount
       return (
-        <div className={css(styles.texterRow)}>
+        <div key={texter.id} className={css(styles.texterRow)}>
           <div className={css(styles.leftSlider)}>
             <Slider
               maxValue={this.formValues().contactsCount}
