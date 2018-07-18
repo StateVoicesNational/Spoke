@@ -12,6 +12,9 @@ const jobs = require('./build/server/workers/job-processes')
 // "Separate the Lambda handler (entry point) from your core logic"
 
 exports.handler = (event, context, handleCallback) => {
+  // Note: When lambda is called with invoke() we MUST call handleCallback with a success
+  // or Lambda will re-run/re-try the invocation twice:
+  // https://docs.aws.amazon.com/lambda/latest/dg/retries-on-errors.html
   if (process.env.LAMBDA_DEBUG_LOG) {
     console.log('LAMBDA EVENT', event)
   }

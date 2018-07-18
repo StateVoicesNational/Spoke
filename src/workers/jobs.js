@@ -328,6 +328,10 @@ export async function loadContactsFromDataWarehouse(job) {
   const totalParts = Math.ceil(knexCount / STEP)
 
   if (totalParts > 1 && /LIMIT/.test(sqlQuery)) {
+    // We do naive string concatenation when we divide queries up for parts
+    // just appending " LIMIT " and " OFFSET " arguments.
+    // If there is already a LIMIT in the query then we'll be unable to do that
+    // so we error out.  Note that if the total is < 10000, then LIMIT will be respected
     jobMessages.push(`Error: LIMIT in query not supported for results larger than ${STEP}. Count was ${knexCount}`)
   }
 
