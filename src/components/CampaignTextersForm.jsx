@@ -128,13 +128,6 @@ export default class CampaignTextersForm extends React.Component {
     let totalMessaged = 0
     const texterCountChanged = newFormValues.texters.length !== existingFormValues.texters.length
 
-    const alreadyAssignedContactsCount = existingFormValues.texters.reduce((contactsCountAccumulator, texter) => {
-      if (texter.id !== changedTexterId) {
-        return (texter.assignment.contactsCount || 0) + contactsCountAccumulator
-      }
-      return contactsCountAccumulator
-    }, 0)
-
     // 1. map form texters to existing texters. with needsMessageCount tweaked to minimums when invalid or useless
     newFormValues.texters = newFormValues.texters.map((newTexter) => {
       const existingTexter = existingFormValues.texters.filter((texter) => (texter.id === newTexter.id ? texter : null))[0]
@@ -169,6 +162,7 @@ export default class CampaignTextersForm extends React.Component {
         assignment: {
           ...newTexter.assignment,
           contactsCount: convertedNeedsMessageCount + messagedCount,
+          messagedCount: messagedCount,
           needsMessageCount: convertedNeedsMessageCount,
           maxContacts: convertedMaxContacts
         }
@@ -183,13 +177,13 @@ export default class CampaignTextersForm extends React.Component {
       // 2. If extraTexterCapacity > 0, reduce the user's input to the number of contacts available
       // for assignment
       newFormValues.texters = newFormValues.texters.map((newTexter) => {
-        const returnTexter = newTexter
         if (newTexter.id === changedTexterId) {
-          const numberAssignable = existingFormValues.contactsCount - alreadyAssignedContactsCount
-          returnTexter.assignment.needsMessageCount = numberAssignable
-          returnTexter.assignment.contactsCount = numberAssignable + (newTexter.assignment.messagedCount || 0)
+          const returnTexter = newTexter
+          returnTexter.assignment.needsMessageCount -= extraTexterCapacity
+          returnTexter.assignment.contactsCount -= extraTexterCapacity
+          return returnTexter
         }
-        return returnTexter
+        return newTexter
       })
       const focusedTexter = newFormValues.texters.find((texter) => {
         return texter.id === changedTexterId
