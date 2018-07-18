@@ -583,7 +583,7 @@ export class AssignmentTexterContact extends React.Component {
         onTouchTap={() => this.handleEditMessageStatus('needsResponse')}
         label='Reopen'
       />)
-    } else if (messageStatus === 'needsResponse' || messageStatus === 'messaged' || messageStatus === 'convo') {
+    } else if (messageStatus === 'needsResponse') {
       button = (<RaisedButton
         onTouchTap={this.handleClickCloseContactButton}
         label='Skip Reply'
