@@ -5,8 +5,6 @@ import { Card, CardHeader, CardText } from 'material-ui/Card'
 import SelectField from 'material-ui/SelectField'
 import MenuItem from 'material-ui/MenuItem'
 
-import {ApolloClientSingleton} from '../network/apollo-client-singleton'
-
 export const MESSAGE_STATUSES = {
   'all': {
     name: 'All',
@@ -135,6 +133,5 @@ IncomingMessageFilter.propTypes = {
   campaigns: type.array.isRequired,
   onMessageFilterChanged: type.func.isRequired
 }
-
 
 export default IncomingMessageFilter

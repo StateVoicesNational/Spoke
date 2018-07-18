@@ -1196,64 +1196,6 @@ const rootResolvers = {
         contactsFilter,
         utc
       )
-    },
-    people: async (_, { requestedFields, organizationId, role }, { user }) => {
-      await accessRequired(user, organizationId, 'SUPERVOLUNTEER')
-
-      const countQuery = buildUserOrganizationQuery(r.knex.count('*'), organizationId, role)
-
-      const countArray = await countQuery
-      const count = countArray[0].count
-
-      const people = []
-      people.length = count
-      let index = 0
-      for (let i = 0; i < count; i += 1000) {
-        const query = buildUserOrganizationQuery(r.knex.select('*').select('user.id'), organizationId, role)
-          .orderBy('user.id')
-          .limit(1000)
-          .offset(i)
-        const rows = await query
-        for (const row of rows) {
-          const person = []
-          for (const field of requestedFields) {
-            person.push(userResolvers.User[field](row))
-          }
-          people[index++] = person
-        }
-      }
-      return { data: JSON.stringify(people) }
-    },
-    campaigns: async (_, { requestedFields, organizationId, campaignsFilter }, { user }) => {
-      await accessRequired(user, organizationId, 'SUPERVOLUNTEER')
-
-      const countQuery = buildCampaignQuery(
-        r.knex.count('*'),
-        organizationId,
-        campaignsFilter
-      )
-      const campaignsCountArray = await countQuery
-      const campaignsCount = campaignsCountArray[0].count
-
-      const campaigns = []
-      campaigns.length = campaignsCount
-      let campaignsIndex = 0
-      for (let i = 0; i < campaignsCount; i += 1000) {
-        const query = buildCampaignQuery(r.knex.select('*'), organizationId, campaignsFilter)
-          .orderBy('due_by', 'desc')
-          .orderBy('id')
-          .limit(1000)
-          .offset(i)
-        const campaignRows = await query
-        for (const campaignRow of campaignRows) {
-          const campaign = []
-          for (const field of requestedFields) {
-            campaign.push(campaignResolvers.Campaign[field](campaignRow))
-          }
-          campaigns[campaignsIndex++] = campaign
-        }
-      }
-      return { data: JSON.stringify(campaigns) }
     }
   }
 }
