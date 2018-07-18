@@ -1,5 +1,6 @@
 import type from 'prop-types'
 import React from 'react'
+import orderBy from 'lodash/orderBy'
 import Slider from './Slider'
 import AutoComplete from 'material-ui/AutoComplete'
 import IconButton from 'material-ui/IconButton'
@@ -254,16 +255,10 @@ export default class CampaignTextersForm extends React.Component {
   })
 
   formValues() {
+    const unorderedTexters = this.props.formValues.texters
     return {
       ...this.props.formValues,
-      texters: this.props.formValues.texters.sort((texter1, texter2) => {
-        if (texter1.firstName < texter2.firstName) {
-          return -1
-        } else if (texter1.firstName > texter2.firstName) {
-          return 1
-        }
-        return 0
-      })
+      texters: orderBy(unorderedTexters, ['firstName', 'lastName'], ['asc', 'asc'])
     }
   }
 
@@ -353,7 +348,7 @@ export default class CampaignTextersForm extends React.Component {
     return this.formValues().texters.map((texter, index) => {
       const messagedCount = texter.assignment.contactsCount - texter.assignment.needsMessageCount
       return (
-        <div className={css(styles.texterRow)}>
+        <div key={texter.id} className={css(styles.texterRow)}>
           <div className={css(styles.leftSlider)}>
             <Slider
               maxValue={this.formValues().contactsCount}
