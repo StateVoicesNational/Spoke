@@ -25,12 +25,10 @@ describe('The knex initial migration', async () => {
     })
   }
 
-  // eslint-disable-next-line global-require
-  const originalIndexes = require('./schemas/indexes.json')
-  const newIndexes = await knex('pg_indexes').select().where({ schemaname: 'public' })
-  console.log('originalIndexes', originalIndexes)
-  console.log('newIndexes', newIndexes)
-  it('creates the correct number of indices', () => {
+  it('creates the correct indices', async () => {
+    // eslint-disable-next-line global-require
+    const originalIndexes = require('./schemas/indexes.json')
+    const newIndexes = await knex('pg_indexes').select().where({ schemaname: 'public' })
     expect(originalIndexes.length).toBe(newIndexes.length)
   })
 })
