@@ -194,6 +194,20 @@ const initialize = async (knex, Promise) => {
       }
     },
     {
+      tableName: 'canned_response',
+      create: t => {
+        t.increments('id')
+        t.integer('campaign_id').notNullable()
+        t.text('text').notNullable()
+        t.text('title').notNullable()
+        t.integer('user_id')
+        t.timestamp('created_at').notNullable().defaultTo(knex.fn.now())
+
+        t.foreign('campaign_id').references('campaign.id')
+        t.foreign('user_id').references('user.id')
+      }
+    },
+    {
       tableName: 'log',
       create: t => {
         t.increments('id').primary()
