@@ -1,4 +1,3 @@
-import moment from 'moment'
 import { mapFieldsToModel } from './lib/utils'
 import { r, Organization } from '../models'
 import { accessRequired } from './errors'
@@ -25,8 +24,9 @@ export const resolvers = {
         // Convert unix timestamp to date/time format
         if (!isNaN(result.due_by)) {
           const unixTimestamp = result.due_by
-          result.due_by = moment(unixTimestamp).utc().format('YYYY-MM-DD HH:mm:ss')
+          result.due_by = new Date(unixTimestamp)
         }
+        return result
       })
       return results
     },
