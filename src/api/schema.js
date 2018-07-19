@@ -152,7 +152,7 @@ const rootSchema = `
   type PageInfo {
     limit: Int!
     offset: Int!
-    next: Int!
+    next: Int
     previous: Int
     total: Int!
   }
