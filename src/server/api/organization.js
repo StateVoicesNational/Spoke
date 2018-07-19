@@ -1,3 +1,4 @@
+import moment from 'moment'
 import { mapFieldsToModel } from './lib/utils'
 import { r, Organization } from '../models'
 import { accessRequired } from './errors'
@@ -19,7 +20,15 @@ export const resolvers = {
         campaignsFilter
       )
       query = query.orderBy('due_by', 'desc')
-      return query
+      let results = await query
+      results = results.map(result => {
+        // Convert unix timestamp to date/time format
+        if (!isNaN(result.due_by)) {
+          const unixTimestamp = result.due_by
+          result.due_by = moment(unixTimestamp).utc().format('YYYY-MM-DD HH:mm:ss')
+        }
+      })
+      return results
     },
     uuid: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, 'SUPERVOLUNTEER')
