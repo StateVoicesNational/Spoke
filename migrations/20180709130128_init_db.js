@@ -163,6 +163,25 @@ const initialize = async (knex, Promise) => {
         t.foreign('organization_id').references('organization.id')
       }
     },
+    // The migrations table appears at this position in the list, but Knex manages that table itself, so it's ommitted from the schema builder
+    {
+      tableName: 'job_request',
+      create: t => {
+        t.increments('id')
+        t.integer('campaign_id').notNullable()
+        t.text('payload').notNullable()
+        t.text('queue_name').notNullable()
+        t.text('job_type').notNullable()
+        t.text('result_message').defaultTo('')
+        t.boolean('locks_queue').defaultTo(false)
+        t.boolean('assigned').defaultTo(false)
+        t.integer('status').defaultTo(0)
+        t.timestamp('updated_at').notNullable().defaultTo(knex.fn.now())
+        t.timestamp('created_at').notNullable().defaultTo(knex.fn.now())
+
+        t.foreign('campaign_id').references('campaign.id')
+      }
+    },
     {
       tableName: 'log',
       create: t => {
