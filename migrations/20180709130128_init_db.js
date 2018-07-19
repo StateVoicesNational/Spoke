@@ -195,14 +195,16 @@ const initialize = async (knex, Promise) => {
   ]
 
   // For each table in the schema array, check if it exists and create it if necessary. Do these in order, to avoid race conditions surrounding foreign keys.
+  const tablePromises = []
   for (let i = 0; i < buildTableSchema.length; i++) {
     const { tableName, create } = buildTableSchema[i]
     if (!await knex.schema.hasTable(tableName)) {
       // create is the function that defines the table's schema. knex.schema.createTable calls it with one argument, the table instance (t).
-      await knex.schema.createTable(tableName, create)
+      const result = await knex.schema.createTable(tableName, create)
+      tablePromises.push(result)
     }
   }
-  Promise.resolve()
+  return Promise.all(tablePromises)
 }
 
 module.exports = {
