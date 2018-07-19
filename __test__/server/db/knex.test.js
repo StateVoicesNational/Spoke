@@ -29,7 +29,7 @@ describe('The knex initial migration', async () => {
     // eslint-disable-next-line global-require
     const originalIndexes = require('./schemas/indexes.json')
     const newIndexes = await knex('pg_indexes').select().where({ schemaname: 'public' })
-    expect(originalIndexes.length).toBe(newIndexes.length)
+    expect(newIndexes).toMatchIndexes(originalIndexes)
   })
 })
 
@@ -77,6 +77,22 @@ expect.extend({
         }
       }
     }
+    if (errors.length > 0) {
+      return {
+        pass: false,
+        message: () => errors.join(`\n`)
+      }
+    }
+    return { pass: true }
+  },
+  toMatchIndexes(newIndexes, originalIndexes) {
+    const { printExpected, printReceived } = this.utils // utility
+    const errors = []
+    // Test for the same number of indices
+    if (newIndexes.length !== originalIndexes.length) {
+      errors.push(`Expected ${printExpected(originalIndexes.length)} indexes, but received ${printReceived(newIndexes.length)}`)
+    }
+
     if (errors.length > 0) {
       return {
         pass: false,
