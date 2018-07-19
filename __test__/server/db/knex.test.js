@@ -14,19 +14,24 @@ describe('The knex initial migration', async () => {
     await knex.raw('DROP OWNED BY spoke_test;')
     await knex.destroy()
   })
-
-  tables.forEach(async t => {
-    it(`generates the correct ${t} table schema`, () => {
-      expect.assertions(1)
+  // Test the schema for each table
+  for (let i = 0; i < tables.length; i++) {
+    const t = tables[i]
+    it(`generates the correct ${t} table schema`, async () => {
       // eslint-disable-next-line global-require
       const originalSchema = require(`./schemas/${t}.json`)
-      return knex(t).columnInfo()
-      .then(newSchema => {
-        // console.log('new schema is', newSchema)
-        // console.log('original schema is', originalSchema)
-        expect(newSchema).toMatchSchema(originalSchema)
-      })
+      const newSchema = await knex(t).columnInfo()
+      expect(newSchema).toMatchSchema(originalSchema)
     })
+  }
+
+  // eslint-disable-next-line global-require
+  const originalIndexes = require('./schemas/indexes.json')
+  const newIndexes = await knex('pg_indexes').select().where({ schemaname: 'public' })
+  console.log('originalIndexes', originalIndexes)
+  console.log('newIndexes', newIndexes)
+  it('creates the correct number of indices', () => {
+    expect(originalIndexes.length).toBe(newIndexes.length)
   })
 })
 
