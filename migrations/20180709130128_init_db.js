@@ -107,7 +107,7 @@ const initialize = async (knex, Promise) => {
         t.index('campaign_id')
         t.foreign('campaign_id').references('campaign.id')
         t.index('cell')
-        t.index(['campaign_id, assignment_id'], 'campaign_assignment')
+        t.index(['campaign_id', 'assignment_id'], 'campaign_assignment')
         t.index(['assignment_id', 'timezone_offset'], 'assignment_timezone_offset')
       }
     },
