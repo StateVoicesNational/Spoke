@@ -1,8 +1,6 @@
 const config = require('../../../knexfile.js')
 const knex = require('knex')(config)
 import { tables } from './schemas/tables.js'
-// still need to define this manually as we add them to the migration so they test output isn't rendered useless by being flooded with messages about tables whose schemas don't exist yet
-// const tables = ['user', 'pending_message_part', 'organization', 'campaign', 'assignment', 'campaign_contact', 'interaction_step', 'question_response']
 jest.setTimeout(20000)
 
 // knex.on('query', console.log)
