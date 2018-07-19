@@ -141,11 +141,26 @@ const initialize = async (knex, Promise) => {
         t.increments('id')
         t.integer('campaign_contact_id').notNullable()
         t.integer('interaction_step_id').notNullable()
-        t.text('value').notNull()
-        t.timestamp('created_at').notNull().defaultTo(knex.fn.now())
+        t.text('value').notNullable()
+        t.timestamp('created_at').notNullable().defaultTo(knex.fn.now())
 
         t.foreign('campaign_contact_id').references('campaign_contact.id')
         t.foreign('interaction_step_id').references('interaction_step.id')
+      }
+    },
+    {
+      tableName: 'opt_out',
+      create: t => {
+        t.increments('id')
+        t.text('cell').notNullable()
+        t.integer('assignment_id').notNullable()
+        t.integer('organization_id').notNullable()
+        t.text('reason_code').notNullable().defaultTo('')
+        t.timestamp('created_at').notNullable().defaultTo(knex.fn.now())
+
+        t.index('cell')
+        t.foreign('assignment_id').references('assignment.id')
+        t.foreign('organization_id').references('organization.id')
       }
     },
     {
