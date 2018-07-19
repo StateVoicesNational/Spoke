@@ -66,6 +66,19 @@ export const resolvers = {
       )
     )
   },
+  CampaignsReturn: {
+    __resolveType(obj, context, info) {
+      if (Array.isArray(obj)) {
+        return 'CampaignsList'
+      }
+      return null
+    }
+  },
+  CampaignsList: {
+    campaigns: (campaigns, _, { user }) => {
+      return campaigns
+    }
+  },
   Campaign: {
     ...mapFieldsToModel([
       'id',
