@@ -221,24 +221,17 @@ const initialize = async (knex, Promise) => {
       }
     },
     {
-      tableName: 'log',
+      tableName: 'user_cell',
       create: t => {
         t.increments('id').primary()
-        t.text('message_sid').notNullable()
-        t.text('body')
-        t.timestamp('created_at').notNullable().defaultTo(knex.fn.now())
-      }
-    },
-    {
-      tableName: 'zip_code',
-      create: t => {
-        t.text('zip').notNullable()
-        t.text('city').notNullable()
-        t.text('state').notNullable()
-        t.float('latitude').notNullable()
-        t.float('longitude').notNullable()
-        t.float('timezone_offset').notNullable()
-        t.boolean('has_dst').notNullable()
+        t.text('cell').notNullable()
+        t.integer('user_id').notNullable()
+        t.enu('service', ['nexmo', 'twilio'])
+        t.boolean('is_primary')
+
+        // TODO verify
+        t.index(['user_id'])
+        t.foreign('user_id').references('user.id')
       }
     },
     {
@@ -264,17 +257,24 @@ const initialize = async (knex, Promise) => {
       }
     },
     {
-      tableName: 'user_cell',
+      tableName: 'zip_code',
+      create: t => {
+        t.text('zip').notNullable()
+        t.text('city').notNullable()
+        t.text('state').notNullable()
+        t.float('latitude').notNullable()
+        t.float('longitude').notNullable()
+        t.float('timezone_offset').notNullable()
+        t.boolean('has_dst').notNullable()
+      }
+    },
+    {
+      tableName: 'log',
       create: t => {
         t.increments('id').primary()
-        t.text('cell').notNullable()
-        t.integer('user_id').notNullable()
-        t.enu('service', ['nexmo', 'twilio'])
-        t.boolean('is_primary')
-
-        // TODO verify
-        t.index(['user_id'])
-        t.foreign('user_id').references('user.id')
+        t.text('message_sid').notNullable()
+        t.text('body')
+        t.timestamp('created_at').notNullable().defaultTo(knex.fn.now())
       }
     }
   ]
