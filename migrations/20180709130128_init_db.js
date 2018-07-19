@@ -208,6 +208,19 @@ const initialize = async (knex, Promise) => {
       }
     },
     {
+      tableName: 'user_organization',
+      create: t => {
+        t.increments('id')
+        t.integer('user_id').notNullable()
+        t.integer('organization_id').notNullable()
+        t.enu('role', ['OWNER', 'ADMIN', 'SUPERVOLUNTEER', 'TEXTER']).notNullable()
+
+        t.foreign('user_id').references('user.id')
+        t.foreign('organization_id').references('organization.id')
+        t.index(['organization_id', 'user_id'], 'organization_user')
+      }
+    },
+    {
       tableName: 'log',
       create: t => {
         t.increments('id').primary()
