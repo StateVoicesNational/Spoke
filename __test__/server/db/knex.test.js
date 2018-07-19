@@ -87,11 +87,27 @@ expect.extend({
   },
   toMatchIndexes(newIndexes, originalIndexes) {
     const { printExpected, printReceived } = this.utils // utility
-    const errors = []
+    const errors = [] // same as with the other custom test function; we want to return as much useful information as possible, so we'll collect errors and return them all at the end.
+
     // Test for the same number of indices
     if (newIndexes.length !== originalIndexes.length) {
       errors.push(`Expected ${printExpected(originalIndexes.length)} indexes, but received ${printReceived(newIndexes.length)}`)
     }
+
+    // Loop through the expected indexes
+    while (originalIndexes.length > 0) {
+      // Index names are unique, so we can search by name in the received index array
+      const { indexname, tablename } = originalIndexes[0]
+      const foundI = newIndexes.findIndex(el => el.indexname === indexname)
+      if (foundI === -1) { // terminology to clarify the difference between a table index we're examinging and an index representing position in an array
+        errors.push(`Expected index ${printExpected(indexname)} on table ${printExpected(tablename)}, but it was not found`)
+      } else {
+        let newIndex = newIndexes[foundI]
+        // test for deep equality of all index properties here, and splice the found index out of the newIndexes array when done.
+      }
+      originalIndexes.splice(0, 1)
+    }
+    // at this point, the originalIndexes array will be empty. Check for any remaining items in newIndexes, and output appropriate errors if they exist (since they're extraneous).
 
     if (errors.length > 0) {
       return {
