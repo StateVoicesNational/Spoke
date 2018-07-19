@@ -183,6 +183,17 @@ const initialize = async (knex, Promise) => {
       }
     },
     {
+      tableName: 'invite',
+      create: t => {
+        t.increments('id')
+        t.boolean('is_valid').notNullable()
+        t.text('hash')
+        t.timestamp('created_at').notNullable().defaultTo(knex.fn.now())
+
+        t.index('is_valid')
+      }
+    },
+    {
       tableName: 'log',
       create: t => {
         t.increments('id').primary()
