@@ -383,7 +383,7 @@ const rootMutations = {
       }
       const userRes = await r
         .knex('user')
-        .rightJoin('user_organization', 'user.id', 'user_organization.user_id')
+        .join('user_organization', 'user.id', 'user_organization.user_id')
         .where({
           'user_organization.organization_id': organizationId,
           'user.id': userId
