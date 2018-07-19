@@ -60,7 +60,7 @@ Suggested steps for testing Spoke. These steps allow us to see if Spoke's 'basic
 ### Texting people in different Timezones:
 1. As an Admin, create a campaign with at least one contact in a non EST timezone (ex. PST) and one contact in EST
 2. In Settings: Enable Set Enforce texting hours (if needed given the current time, adjust the timezone settings so that one contact is within the texting hours and one is out of the hours)
-3. As a texter, verify that the you text the contact that’s within the texting hours and that you can’t text the contact that out of the texting hours (‘Send Later’ button is displayed and greyed out)
+3. As a texter, verify that you can text the contact that’s within the texting hours and that you can’t text the contact that out of the texting hours (‘Send Later’ button is displayed and greyed out for the latter)
 4. As an Admin, disable Enforce texting hours
 5. As a texter, verify that you can text any contact
 
