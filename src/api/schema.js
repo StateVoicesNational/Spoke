@@ -87,6 +87,7 @@ const rootSchema = `
     introHtml: String
     useDynamicAssignment: Boolean
     contacts: [CampaignContactInput]
+    excludeCampaignIds: [Int]
     contactSql: String
     organizationId: String
     texters: [TexterInput]

@@ -137,7 +137,11 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
       modelData.campaign_id = id
       return modelData
     })
-    const compressedString = await gzip(JSON.stringify(contactsToSave))
+    const jobPayload = {
+      excludeCampaignIds: campaign.excludeCampaignIds || [],
+      contacts: contactsToSave
+    }
+    const compressedString = await gzip(JSON.stringify(jobPayload))
     let job = await JobRequest.save({
       queue_name: `${id}:edit_campaign`,
       job_type: 'upload_contacts',
