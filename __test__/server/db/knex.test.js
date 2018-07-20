@@ -98,12 +98,26 @@ expect.extend({
     while (originalIndexes.length > 0) {
       // Index names are unique, so we can search by name in the received index array
       const { indexname, tablename } = originalIndexes[0]
+      const scopedIndexName = `${tablename}.${indexname}`
       const foundI = newIndexes.findIndex(el => el.indexname === indexname)
       if (foundI === -1) { // terminology to clarify the difference between a table index we're examinging and an index representing position in an array
-        errors.push(`Expected index ${printExpected(indexname)} on table ${printExpected(tablename)}, but it was not found`)
+        errors.push(`Expected index ${printExpected(scopedIndexName)} but it was not found`)
       } else {
-        let newIndex = newIndexes[foundI]
+        const newIndex = newIndexes[foundI]
         // test for deep equality of all index properties here, and splice the found index out of the newIndexes array when done.
+        const originalIndexEntries = Object.entries(originalIndexes[0])
+        const newIndexPropsLength = Object.keys(newIndex).length
+        if (originalIndexEntries.length !== newIndexPropsLength) {
+          errors.push(`Expected ${printExpected(scopedIndexName)} to have ${printExpected(originalIndexEntries.length)} properties, but received ${printReceived(newIndexPropsLength)}`)
+        }
+        // Check each property of the expected indexes for equality against the new ones
+        for (let i = 0; i < originalIndexEntries.length; i++) {
+          const [k, v] = originalIndexEntries[i]
+          if (newIndex[k] !== v) {
+            const scopedPropName = `${scopedIndexName}.${k}`
+            errors.push(`Expected ${printExpected(scopedPropName)} to be ${printExpected(v)}, but received ${printReceived(newIndex[k])}.`)
+          }
+        }
       }
       originalIndexes.splice(0, 1)
     }
