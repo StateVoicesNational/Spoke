@@ -38,7 +38,12 @@ export const campaigns = {
     interactions: {
       section: By.css('[data-test=interactions]'),
       questionText: By.css('[data-test=questionText]'),
+      addResponse: By.css('[data-test=addResponse]:nth-child(1)'),
+      childInteraction: By.css('[data-test=childInteraction]'),
+      questionTextChildByIndex(index) { return By.xpath(`(//*[@data-test='childInteraction']/descendant::*[@data-test='questionText'])[${index + 1}]`) },
       editorLaunch: By.css('[data-test=editorInteraction]'),
+      editorLaunchChildByIndex(index) { return By.xpath(`(//*[@data-test='childInteraction']/descendant::*[@data-test='editorInteraction'])[${index + 1}]`) },
+      answerOptionChildByIndex(index) { return By.xpath(`(//*[@data-test='childInteraction']/descendant::*[@data-test='answerOption'])[${index + 1}]`) },
       submit: By.css('[data-test=interactionSubmit]')
     },
     cannedResponse: {
@@ -49,7 +54,7 @@ export const campaigns = {
       createdResponseByText(text) { return By.xpath(`//span[@data-test='cannedResponse']/descendant::*[contains(text(),'${text}')]`) },
       submit: By.css('[data-test=addResponse]')
     },
-    save: By.css('[type=submit]:not([disabled]')
+    save: By.css('[type=submit]:not([disabled])')
   },
   stats: {
     copy: By.css('[data-test=copyCampaign]'),

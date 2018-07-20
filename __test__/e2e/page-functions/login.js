@@ -14,9 +14,7 @@ export const login = {
 
     it('clicks the login link', async () => {
       // Click on the login button
-      wait.untilLocated(driver, pom.login.loginGetStarted, { msWait: 30000 })
-      await driver.sleep(2000) // Transition
-      wait.andClick(driver, pom.login.loginGetStarted)
+      wait.andClick(driver, pom.login.loginGetStarted, { msWait: 30000, waitAfterVisible: 2000 })
 
       // Wait until the Auth0 login page loads
       await driver.wait(until.urlContains(urlBuilder.login))
@@ -43,25 +41,15 @@ export const login = {
     })
 
     it('accepts the user agreement', async () => {
-      if (!skip) {
-        const el = await driver.findElement(auth0.form.agreement)
-        await el.click()
-      }
+      if (!skip) await wait.andClick(driver, auth0.form.agreement)
     })
 
     it('clicks the submit button', async () => {
-      if (!skip) {
-        const el = await driver.findElement(auth0.form.submit)
-        await el.click()
-      }
+      if (!skip) await wait.andClick(driver, auth0.form.submit)
     })
 
     it('authorizes Auth0 to access tenant', async () => {
-      if (!skip) {
-        const el = await driver.wait(until.elementLocated(auth0.authorize.allow))
-        await driver.wait(until.elementIsVisible(el))
-        await el.click()
-      }
+      if (!skip) await wait.andClick(driver, auth0.authorize.allow)
     })
   },
   signUp(driver, user) {
@@ -69,8 +57,6 @@ export const login = {
     this.signUpTab(driver, user)
   },
   logIn(driver, user) {
-    this.landing(driver)
-
     it('opens the Log In tab', async () => {
       await wait.andClick(driver, auth0.tabs.logIn, { msWait: 20000 })
     })

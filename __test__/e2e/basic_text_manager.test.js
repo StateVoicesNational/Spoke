@@ -2,10 +2,12 @@ import { selenium } from './util/helpers'
 import STRINGS from './data/strings'
 import { campaigns, login, main, people, texter } from './page-functions/index'
 
-describe('Basic text manager workflow', () => {
+jasmine.getEnv().addReporter(selenium.reporter)
+
+describe('Basic Text Manager Workflow', () => {
   // Instantiate browser(s)
-  const driverAdmin = selenium.buildDriver()
-  const driverTexter = selenium.buildDriver()
+  const driverAdmin = selenium.buildDriver({ name: 'Spoke E2E Tests - Chrome - Basic Text Manager Workflow - Admin' })
+  const driverTexter = selenium.buildDriver({ name: 'Spoke E2E Tests - Chrome - Basic Text Manager Workflow - Texter' })
 
   beforeAll(() => {
     global.e2e = {}
@@ -16,8 +18,8 @@ describe('Basic text manager workflow', () => {
    * Setup Admin and Texter Users
    * Create Campaign (No Existing Texter)
    * Create Campaign (Existing Texter)
-   * Create Campaign (No Existing Texter with Opt-Out) TODO
-   * Create Campaign (Existing Texter with Opt-Out) TODO
+   * Create Campaign (No Existing Texter with Opt-Out)
+   * Create Campaign (Existing Texter with Opt-Out)
    */
 
   afterAll(async () => {
@@ -26,7 +28,11 @@ describe('Basic text manager workflow', () => {
   })
 
   describe('Setup Admin and Texter Users', () => {
-    describe('(As Admin) Log In', () => {
+    describe('(As Admin) Open Landing Page', () => {
+      login.landing(driverAdmin)
+    })
+
+    describe('(As Admin) Log In an admin to Spoke', () => {
       login.tryLoginThenSignUp(driverAdmin, STRINGS.users.admin0)
     })
 
@@ -38,16 +44,13 @@ describe('Basic text manager workflow', () => {
   describe('Create Campaign (No Existing Texter)', () => {
     const CAMPAIGN = STRINGS.campaigns.noExistingTexter
 
-    describe('(As Texter) Log In', () => {
-      login.tryLoginThenSignUp(driverTexter, CAMPAIGN.texter)
-    })
-
     describe('(As Admin) Create a New Campaign', () => {
       campaigns.startCampaign(driverAdmin, CAMPAIGN)
     })
 
     describe('(As Texter) Follow the Invite URL', () => {
       texter.viewInvite(driverTexter)
+      login.tryLoginThenSignUp(driverTexter, CAMPAIGN.texter)
     })
 
     describe('(As Texter) Verify Todos', () => {
@@ -66,12 +69,9 @@ describe('Basic text manager workflow', () => {
       people.invite(driverAdmin)
     })
 
-    describe('(As Texter) Log In', () => {
-      login.tryLoginThenSignUp(driverTexter, CAMPAIGN.texter)
-    })
-
     describe('(As Texter) Follow the Invite URL', () => {
       texter.viewInvite(driverTexter)
+      login.tryLoginThenSignUp(driverTexter, CAMPAIGN.texter)
     })
 
     describe('(As Admin) Create a New Campaign', () => {
@@ -102,16 +102,13 @@ describe('Basic text manager workflow', () => {
   describe('Create Campaign (No Existing Texter with Opt-Out)', () => {
     const CAMPAIGN = STRINGS.campaigns.noExistingTexterOptOut
 
-    describe('(As Texter) Log In', () => {
-      login.tryLoginThenSignUp(driverTexter, CAMPAIGN.texter)
-    })
-
     describe('(As Admin) Create a New Campaign', () => {
       campaigns.startCampaign(driverAdmin, CAMPAIGN)
     })
 
     describe('(As Texter) Follow the Invite URL', () => {
       texter.viewInvite(driverTexter)
+      login.tryLoginThenSignUp(driverTexter, CAMPAIGN.texter)
     })
 
     describe('(As Texter) Verify Todos', () => {
@@ -130,12 +127,9 @@ describe('Basic text manager workflow', () => {
       people.invite(driverAdmin)
     })
 
-    describe('(As Texter) Log In', () => {
-      login.tryLoginThenSignUp(driverTexter, CAMPAIGN.texter)
-    })
-
     describe('(As Texter) Follow the Invite URL', () => {
       texter.viewInvite(driverTexter)
+      login.tryLoginThenSignUp(driverTexter, CAMPAIGN.texter)
     })
 
     describe('(As Admin) Create a New Campaign', () => {

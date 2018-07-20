@@ -2,9 +2,11 @@ import { selenium } from './util/helpers'
 import STRINGS from './data/strings'
 import { campaigns, login, main } from './page-functions/index'
 
+jasmine.getEnv().addReporter(selenium.reporter)
+
 describe('Create and Edit Campaign', () => {
   // Instantiate browser(s)
-  const driver = selenium.buildDriver()
+  const driver = selenium.buildDriver({ name: 'Spoke E2E Tests - Chrome - Create and Edit Campaign - Admin' })
   const CAMPAIGN = STRINGS.campaigns.editCampaign
 
   beforeAll(() => {
@@ -13,6 +15,10 @@ describe('Create and Edit Campaign', () => {
 
   afterAll(async () => {
     await selenium.quitDriver(driver)
+  })
+
+  describe('(As Admin) Open Landing Page', () => {
+    login.landing(driver)
   })
 
   describe('(As Admin) Log In an admin to Spoke', () => {
