@@ -61,8 +61,8 @@ export const main = {
       await wait.andClick(driver, pom.main.userMenuButton)
     })
 
-    it('click on the user name', async () => {
-      await wait.andClick(driver, pom.main.logOut)
+    it('clicks on log out', async () => {
+      await wait.andClick(driver, pom.main.logOut, { waitAfterVisible: 2000 })
     })
   }
 }

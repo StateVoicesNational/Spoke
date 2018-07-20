@@ -1,11 +1,13 @@
 import { selenium } from './util/helpers'
 import STRINGS from './data/strings'
-import { login, main, people } from './page-functions/index'
+import { login, main, people, texter } from './page-functions/index'
+
+jasmine.getEnv().addReporter(selenium.reporter)
 
 describe('Invite Texter workflow', () => {
   // Instantiate browser(s)
-  const driverAdmin = selenium.buildDriver()
-  const driverTexter = selenium.buildDriver()
+  const driverAdmin = selenium.buildDriver({ name: 'Spoke E2E Tests - Chrome - Invite Texter workflow - Admin' })
+  const driverTexter = selenium.buildDriver({ name: 'Spoke E2E Tests - Chrome - Invite Texter workflow - Texter' })
   const CAMPAIGN = STRINGS.campaigns.userManagement
 
   beforeAll(() => {
@@ -15,6 +17,10 @@ describe('Invite Texter workflow', () => {
   afterAll(async () => {
     await selenium.quitDriver(driverAdmin)
     await selenium.quitDriver(driverTexter)
+  })
+
+  describe('(As Admin) Open Landing Page', () => {
+    login.landing(driverAdmin)
   })
 
   describe('(As Admin) Log In an admin to Spoke', () => {
@@ -30,16 +36,10 @@ describe('Invite Texter workflow', () => {
   })
 
   describe('(As Texter) Follow the Invite URL', () => {
-    describe('Create New Texter in Spoke', () => {
-      login.tryLoginThenSignUp(driverTexter, CAMPAIGN.texter)
-    })
-
-    describe('should follow the link to the invite', async () => {
-      it('should follow the link to the invite', async () => {
-        await driverTexter.get(global.e2e.joinUrl)
-      })
-    })
+    texter.viewInvite(driverTexter)
+    login.tryLoginThenSignUp(driverTexter, CAMPAIGN.texter)
   })
+
   describe('(As Admin) Edit User', () => {
     people.editUser(driverAdmin, CAMPAIGN.admin)
   })

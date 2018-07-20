@@ -125,11 +125,13 @@ export default class CampaignInteractionStepsForm extends React.Component {
         />
         <CardText>
           <GSForm
+            {...dataTest('childInteraction', !interactionStep.parentInteractionId)}
             schema={this.formSchema}
             value={interactionStep}
             onChange={this.handleFormChange.bind(this)}
           >
             {interactionStep.parentInteractionId ? <Form.Field
+              {...dataTest('answerOption')}
               name='answerOption'
               label='Answer'
               fullWidth

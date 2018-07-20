@@ -13,7 +13,19 @@ const texters = {
 
 const interaction = {
   script: 'Test First {firstName} Last {lastName}!',
-  question: 'Test Question?'
+  question: 'Test Question?',
+  answers: [
+    {
+      answerOption: 'Test Answer 0',
+      script: 'Test Answer 0 {firstName}.',
+      questionText: 'Test Child Question 0?'
+    },
+    {
+      answerOption: 'Test Answer 1',
+      script: 'Test Answer 1 {lastName}.',
+      questionText: 'Test Child Question 1?'
+    }
+  ]
 }
 
 const cannedResponses = [

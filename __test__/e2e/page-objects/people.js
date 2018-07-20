@@ -7,6 +7,7 @@ export const people = {
     ok: By.css('[data-test=inviteOk]')
   },
   getRowByName(name) { return By.xpath(`//td[contains(text(),'${name}')]/ancestor::tr`) },
+  editButtonByName(name) { return By.xpath(`//td[contains(text(),'${name}')]/ancestor::tr/descendant::button[@data-test='editPerson']`) },
   edit: {
     editButton: By.css('[data-test=editPerson]'),
     firstName: By.css('[data-test=firstName]'),

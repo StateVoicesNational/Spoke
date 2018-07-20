@@ -10,5 +10,5 @@
     "prefer-template": ["off"],
     "semi": ["error", "never"]
   },
-  "env": { "jest": true, "node": true, "browser": true }
+  "env": { "jest": true, "node": true, "browser": true, "jasmine": true }
 }
