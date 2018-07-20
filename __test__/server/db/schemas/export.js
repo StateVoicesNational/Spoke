@@ -14,6 +14,8 @@ function getIndexes() {
   knex('pg_indexes')
   .select()
   .where({ schemaname: 'public' })
+  .whereNot({ tablename: 'migrations' })
+  // this table is deprecated now
   .then(indexes => {
     fs.writeFile('indexes.json', JSON.stringify(indexes, null, 2))
     console.log('exported indices')
