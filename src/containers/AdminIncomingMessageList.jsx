@@ -23,7 +23,8 @@ export class AdminIncomingMessageList extends Component {
       needsRender: false,
       utc: Date.now().toString(),
       campaignsPage: 0,
-      campaignsPageSize: 1
+      campaignsPageSize: 1,
+      campaigns: []
     }
 
     this.handleCampaignChange = this.handleCampaignChange.bind(this)
@@ -112,6 +113,7 @@ export class AdminIncomingMessageList extends Component {
   }
 
   async handleCampaignsReceived(campaigns, total) {
+    await this.setState()
     console.log(campaigns)
   } 
 
@@ -127,7 +129,7 @@ export class AdminIncomingMessageList extends Component {
     return (
       <div>
         <h3> Message Review </h3>
-        {this.props.organization.loading ? (
+        {(this.props.organization && this.props.organization.loading) ? (
           <LoadingIndicator />
         ) : (
           <div>
@@ -158,7 +160,7 @@ export class AdminIncomingMessageList extends Component {
               onPageChanged={this.handlePageChange}
               onPageSizeChanged={this.handlePageSizeChange}
               onConversationSelected={this.handleRowSelection}
-            />
+              />
           </div>
         )}
       </div>
