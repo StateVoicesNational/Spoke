@@ -10,16 +10,39 @@ export const resolvers = {
       'id',
       'name'
     ], Organization),
-    campaigns: async (organization, { campaignsFilter }, { user }) => {
+    campaigns: async (organization, { cursor, campaignsFilter }, { user }) => {
       await accessRequired(user, organization.id, 'SUPERVOLUNTEER')
 
-      let query = buildCampaignQuery(
+      let campaignsQuery = buildCampaignQuery(
         r.knex.select('*'),
         organization.id,
         campaignsFilter
       )
-      query = query.orderBy('due_by', 'desc')
-      return query
+      campaignsQuery = campaignsQuery.orderBy('due_by', 'desc')
+
+      if (cursor) {
+        campaignsQuery = campaignsQuery.limit(cursor.limit).offset(cursor.offset)
+        const campaigns = await campaignsQuery
+
+        const campaignsCountQuery = buildCampaignQuery(
+          r.knex.count('*'),
+          organization.id,
+          campaignsFilter)
+
+        const campaignsCountArray = await campaignsCountQuery
+
+        const pageInfo = {
+          limit: cursor.limit,
+          offset: cursor.offset,
+          total: campaignsCountArray[0].count
+        }
+        return {
+          campaigns,
+          pageInfo
+        }
+      } else {
+        return campaignsQuery
+      }
     },
     uuid: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, 'SUPERVOLUNTEER')
