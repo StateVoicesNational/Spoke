@@ -27,6 +27,9 @@ const initialize = async (knex, Promise) => {
         t.text('user_number').notNullable().defaultTo('')
         t.text('contact_number').notNullable()
         t.timestamp('created_at').defaultTo(knex.fn.now()).notNullable()
+
+        t.index('parent_id')
+        t.index('service')
       }
     },
     {
@@ -179,6 +182,7 @@ const initialize = async (knex, Promise) => {
         t.timestamp('updated_at').notNullable().defaultTo(knex.fn.now())
         t.timestamp('created_at').notNullable().defaultTo(knex.fn.now())
 
+        t.index('queue_name')
         t.foreign('campaign_id').references('campaign.id')
       }
     },
@@ -229,9 +233,7 @@ const initialize = async (knex, Promise) => {
         t.enu('service', ['nexmo', 'twilio'])
         t.boolean('is_primary')
 
-        // TODO verify
         t.index(['user_id'])
-        t.foreign('user_id').references('user.id')
       }
     },
     {
@@ -252,14 +254,17 @@ const initialize = async (knex, Promise) => {
         t.timestamp('sent_at').defaultTo(knex.fn.now()).notNullable()
         t.timestamp('service_response_at').defaultTo(knex.fn.now()).notNullable()
 
-        // TODO verify these
-        t.index(['user_number', 'send_status', 'user_number', 'contact_number', 'service_id'])
+        t.foreign('assignment_id').references('assignment.id')
+        t.index('send_status')
+        t.index('user_number')
+        t.index('contact_number')
+        t.index('service_id')
       }
     },
     {
       tableName: 'zip_code',
       create: t => {
-        t.text('zip').notNullable()
+        t.text('zip').notNullable().primary()
         t.text('city').notNullable()
         t.text('state').notNullable()
         t.float('latitude').notNullable()
