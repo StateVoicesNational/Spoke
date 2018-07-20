@@ -41,6 +41,24 @@ class CampaignOSDIQuestionFetcher extends React.Component {
     const { osdiQuestions } = this.props.osdiQuestions.organization
     const questionsAvailable = osdiQuestions.length > 0
     const { description, responses } = this.state.selectedQuestion
+    const selectedQuestionHasResponses = responses.length > 0
+    let selectedQuestionResponseBlock
+    if (selectedQuestionHasResponses) {
+      selectedQuestionResponseBlock = (
+        <p>
+          <em>Responses:</em>
+          <ul>
+            {responses.map(r => <li>{r.title}</li>)}
+          </ul>
+        </p>
+      )
+    } else {
+      selectedQuestionResponseBlock = (
+        <p>
+          <em>This question has no responses.</em>
+        </p>
+      )
+    }
     return (
       <div>
         {questionsAvailable ?
@@ -60,13 +78,8 @@ class CampaignOSDIQuestionFetcher extends React.Component {
                 <p>
                   <em>Question: </em>{description}
                 </p>
-                <p>
-                  <em>Responses:</em>
-                  <ul>
-                    {responses.map(r => <li>{r.title}</li>)}
-                  </ul>
-                </p>
-                <RaisedButton primary label='Map' onTouchTap={this.handleMapQuestion} />
+                {selectedQuestionResponseBlock}
+                <RaisedButton primary label='Map' disabled={!selectedQuestionHasResponses} onTouchTap={this.handleMapQuestion} />
               </div>
             }
           </div>
