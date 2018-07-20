@@ -120,9 +120,7 @@ const styles = StyleSheet.create({
   },
   lgMobileToolBar: {
     '@media(max-width: 449px) and (min-width: 320px)': {
-      bottom: '0 !important',
-      marginLeft: '0px !important',
-      display: 'block !important'
+      display: 'inline-block'
     }
   }
 })
@@ -133,11 +131,10 @@ const inlineStyles = {
     bottom: '-5'
   },
   mobileCannedReplies: {
-    position: 'absolute',
-    left: 0,
-    bottom: '5'
+    '@media(max-width: 450px)': {
+      marginBottom: '1'
+    },
   },
-
   dialogButton: {
     display: 'inline-block'
   },
