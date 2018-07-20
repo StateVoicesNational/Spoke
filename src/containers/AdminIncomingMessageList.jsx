@@ -1,11 +1,13 @@
 import React, { Component } from 'react'
-import loadData from './hoc/load-data'
-import { withRouter } from 'react-router'
-import gql from 'graphql-tag'
-import IncomingMessageFilter from '../components/IncomingMessageFilter'
+
 import IncomingMessageActions from '../components/IncomingMessageActions'
+import IncomingMessageFilter from '../components/IncomingMessageFilter'
 import IncomingMessageList from '../components/IncomingMessageList'
 import LoadingIndicator from '../components/LoadingIndicator'
+import PaginatedCampaignsRetriever from './PaginatedCampaignsRetriever'
+import gql from 'graphql-tag'
+import loadData from './hoc/load-data'
+import { withRouter } from 'react-router'
 import wrapMutations from './hoc/wrap-mutations'
 
 export class AdminIncomingMessageList extends Component {
@@ -19,7 +21,9 @@ export class AdminIncomingMessageList extends Component {
       campaignsFilter: {},
       assignmentsFilter: {},
       needsRender: false,
-      utc: Date.now().toString()
+      utc: Date.now().toString(),
+      campaignsPage: 0,
+      campaignsPageSize: 1
     }
 
     this.handleCampaignChange = this.handleCampaignChange.bind(this)
@@ -107,10 +111,18 @@ export class AdminIncomingMessageList extends Component {
     }
   }
 
+  async handleCampaignsReceived(campaigns, total) {
+    console.log(campaigns)
+  } 
+
   render() {
     const cursor = {
       offset: this.state.page * this.state.pageSize,
       limit: this.state.pageSize
+    }
+    const campaignsCursor = {
+      offset: this.state.campaignsPage * this.state.campaignsPageSize,
+      limit: this.state.campaignsPageSize
     }
     return (
       <div>
@@ -119,8 +131,14 @@ export class AdminIncomingMessageList extends Component {
           <LoadingIndicator />
         ) : (
           <div>
+            <PaginatedCampaignsRetriever
+              organizationId={this.props.params.organizationId}
+              campaignsFilter={{}}
+              cursor={campaignsCursor}
+              onCampaignsReceived={this.handleCampaignsReceived}
+            />
             <IncomingMessageFilter
-              campaigns={this.props.organization.organization.campaigns}
+              campaigns={this.props.organization.organization.campaigns.campaigns}
               onCampaignChanged={this.handleCampaignChange}
               onMessageFilterChanged={this.handleMessageFilterChange}
             />
@@ -160,8 +178,12 @@ const mapQueriesToProps = ({ ownProps }) => ({
             roles(organizationId: $organizationId)
           }
           campaigns {
-            id
-            title
+            ... on CampaignsList {
+              campaigns {
+                id
+                title
+              }
+            }
           }
         }
       }
