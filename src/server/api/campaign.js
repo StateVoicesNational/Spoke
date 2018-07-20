@@ -70,13 +70,26 @@ export const resolvers = {
     __resolveType(obj, context, info) {
       if (Array.isArray(obj)) {
         return 'CampaignsList'
+      } else if ('campaigns' in obj && 'pageInfo' in obj) {
+        return 'PaginatedCampaigns'
       }
       return null
     }
   },
   CampaignsList: {
-    campaigns: (campaigns, _, { user }) => {
+    campaigns: campaigns => {
       return campaigns
+    }
+  },
+  PaginatedCampaigns: {
+    campaigns: queryResult => {
+      return queryResult.campaigns
+    },
+    pageInfo: queryResult => {
+      if ('pageInfo' in queryResult) {
+        return queryResult.pageInfo
+      }
+      return null
     }
   },
   Campaign: {
