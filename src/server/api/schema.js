@@ -1196,6 +1196,40 @@ const rootResolvers = {
         contactsFilter,
         utc
       )
+    },
+    campaigns: async (_, {organizationId, cursor, campaignsFilter}, {user}) => {
+      await accessRequired(user, organizationId, 'SUPERVOLUNTEER')
+
+      let campaignsQuery = buildCampaignQuery(
+        r.knex.select('*'),
+        organizationId,
+        campaignsFilter
+      )
+      campaignsQuery = campaignsQuery.orderBy('due_by', 'desc')
+
+      if (cursor) {
+        campaignsQuery = campaignsQuery.limit(cursor.limit).offset(cursor.offset)
+        const campaigns = await campaignsQuery
+
+        const campaignsCountQuery = buildCampaignQuery(
+          r.knex.count('*'),
+          organizationId,
+          campaignsFilter)
+
+        const campaignsCountArray = await campaignsCountQuery
+
+        const pageInfo = {
+          limit: cursor.limit,
+          offset: cursor.offset,
+          total: campaignsCountArray[0].count
+        }
+        return {
+          campaigns,
+          pageInfo
+        }
+      } else {
+        return campaignsQuery
+      }
     }
   }
 }
