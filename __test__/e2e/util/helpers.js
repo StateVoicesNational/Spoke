@@ -30,16 +30,15 @@ export const selenium = {
         if (process.env.npm_config_saucelabs) {
           const sessionId = session.getId()
           process.env.SELENIUM_ID = sessionId
-          await saucelabs.updateJob(sessionId, { passed: global.e2e.suitePassed })
+          await saucelabs.updateJob(sessionId, { passed: global.e2e.failureCount === 0 })
           console.log(`SauceOnDemandSessionID=${sessionId} job-name=${process.env.TRAVIS_JOB_NUMBER || ''}`)
         }
       })
     await driver.quit()
   },
   reporter: {
-    suiteDone: async (result) => {
-      global.e2e.suitePassed = result.failedExpectations.length === 0
-    }
+    specDone: async (result) => { global.e2e.failureCount = global.e2e.failureCount + result.failedExpectations.length || 0 },
+    suiteDone: async (result) => { global.e2e.failureCount = global.e2e.failureCount + result.failedExpectations.length || 0 }
   }
 }
 
