@@ -11,6 +11,7 @@ import { withRouter } from 'react-router'
 import wrapMutations from './hoc/wrap-mutations'
 
 export class AdminIncomingMessageList extends Component {
+
   constructor(props) {
     super(props)
 
@@ -22,8 +23,6 @@ export class AdminIncomingMessageList extends Component {
       assignmentsFilter: {},
       needsRender: false,
       utc: Date.now().toString(),
-      campaignsPage: 0,
-      campaignsPageSize: 1,
       campaigns: []
     }
 
@@ -33,8 +32,10 @@ export class AdminIncomingMessageList extends Component {
     this.handlePageChange = this.handlePageChange.bind(this)
     this.handlePageSizeChange = this.handlePageSizeChange.bind(this)
     this.handleRowSelection = this.handleRowSelection.bind(this)
+    this.handleCampaignsReceived = this.handleCampaignsReceived.bind(this)
   }
 
+  
   shouldComponentUpdate(_, nextState) {
     if (
       !nextState.needsRender &&
@@ -112,19 +113,14 @@ export class AdminIncomingMessageList extends Component {
     }
   }
 
-  async handleCampaignsReceived(campaigns, total) {
-    await this.setState()
-    console.log(campaigns)
+  async handleCampaignsReceived(campaigns) {
+    this.setState({ campaigns })
   } 
 
   render() {
     const cursor = {
       offset: this.state.page * this.state.pageSize,
       limit: this.state.pageSize
-    }
-    const campaignsCursor = {
-      offset: this.state.campaignsPage * this.state.campaignsPageSize,
-      limit: this.state.campaignsPageSize
     }
     return (
       <div>
@@ -133,14 +129,14 @@ export class AdminIncomingMessageList extends Component {
           <LoadingIndicator />
         ) : (
           <div>
-            <PaginatedCampaignsRetriever
-              organizationId={this.props.params.organizationId}
-              campaignsFilter={{}}
-              cursor={campaignsCursor}
-              onCampaignsReceived={this.handleCampaignsReceived}
+              <PaginatedCampaignsRetriever
+                organizationId={this.props.params.organizationId}
+                campaignsFilter={{}}
+                onCampaignsReceived={this.handleCampaignsReceived}
+                pageSize={1}
             />
             <IncomingMessageFilter
-              campaigns={this.props.organization.organization.campaigns.campaigns}
+              campaigns={this.state.campaigns}
               onCampaignChanged={this.handleCampaignChange}
               onMessageFilterChanged={this.handleMessageFilterChange}
             />
