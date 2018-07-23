@@ -114,7 +114,7 @@ export class AdminIncomingMessageList extends Component {
   }
 
   async handleCampaignsReceived(campaigns) {
-    this.setState({ campaigns })
+    this.setState({ campaigns, needsRender:true })
   } 
 
   render() {
@@ -129,11 +129,11 @@ export class AdminIncomingMessageList extends Component {
           <LoadingIndicator />
         ) : (
           <div>
-              <PaginatedCampaignsRetriever
-                organizationId={this.props.params.organizationId}
-                campaignsFilter={{}}
-                onCampaignsReceived={this.handleCampaignsReceived}
-                pageSize={1}
+            <PaginatedCampaignsRetriever
+              organizationId={this.props.params.organizationId}
+              campaignsFilter={this.state.campaignsFilter}
+              onCampaignsReceived={this.handleCampaignsReceived}
+              pageSize={1}
             />
             <IncomingMessageFilter
               campaigns={this.state.campaigns}
@@ -174,14 +174,6 @@ const mapQueriesToProps = ({ ownProps }) => ({
             id
             displayName
             roles(organizationId: $organizationId)
-          }
-          campaigns {
-            ... on CampaignsList {
-              campaigns {
-                id
-                title
-              }
-            }
           }
         }
       }
