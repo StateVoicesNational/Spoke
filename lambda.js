@@ -29,7 +29,7 @@ exports.handler = (event, context, handleCallback) => {
       }
     }
 
-    return webResponse
+    return handleCallback(null, webResponse)
   } else {
     // handle a custom command sent as an event
     const functionName = context.functionName
@@ -60,8 +60,9 @@ exports.handler = (event, context, handleCallback) => {
             })
           },
           handleCallback)
-    } else {
+    } else if (event.command !== 'ping') {
       console.error('Unfound command sent as a Lambda event: ' + event.command)
+      handleCallback(null, null)
     }
   }
 }
