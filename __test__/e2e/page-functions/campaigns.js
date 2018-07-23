@@ -64,6 +64,7 @@ export const campaigns = {
         expect(Number(assignedToFirstTexter)).toBeGreaterThan(0)
         // Assign (All to Texter)
         await wait.andClick(driver, form.texters.autoSplit, { elementIsVisible: false })
+        await wait.andType(driver, form.texters.texterAssignmentByText(campaign.admin.given_name), '0')
         await wait.andType(driver, form.texters.texterAssignmentByText(campaign.texter.given_name), campaign.texters.contactLength)
         // Validate Assignment
         expect(await wait.andGetValue(driver, form.texters.texterAssignmentByText(campaign.admin.given_name))).toBe('0')
