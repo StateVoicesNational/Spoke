@@ -64,28 +64,24 @@ export async function updateAssignments(campaignInfo) {
       .select('user_id', 'id', 'max_contacts')
       .where('campaign_id', campaignId)
 
-    const availableAssignments = await r.knex('campaign_contact')
-      .select()
-      .where({
-        'campaign_id': campaignId,
-        'is_opted_out': false,
-        'message_status': 'needsMessage'
-      })
-      .then((res) => {
-        console.log('res:', res);
-      })
+      const availableAssignments = await r.knex('campaign_contact')
+        .select()
+        .where({
+          'campaign_id': campaignId,
+          'is_opted_out': false,
+          'message_status': 'needsMessage'
+        })
 
     if (dynamicAssignment) {
       for (let i = 0; i < texterAssignments.length; i++) {
         // value is the actual assignments available for this campaign
         const texterId = texterAssignments[i].user_id
         const maxContacts = texterAssignments[i].max_contacts
-        const campaignContacts = availableAssignments
+        const campaignContacts = JSON.stringify(availableAssignments)
         const dynamicAssignmentKey = `dynamicassignments-${texterId}-${campaignId}`
-        console.log('key:', dynamicAssignmentKey);
-        console.log('value:', availableAssignments);
+        const possibleAssignmentsForTexterValue = `max_contacts-${maxContacts}-campaign_contacts-${campaignContacts}`
 
-        await r.redis.lpush(dynamicAssignmentKey, availableAssignments)
+        await r.redis.lpush(dynamicAssignmentKey, possibleAssignmentsForTexterValue)
       }
     }
 
@@ -95,10 +91,9 @@ export async function updateAssignments(campaignInfo) {
         const texterId = texterAssignments[i].user_id
         const assignmentId = texterAssignments[i].id
         const texterAssignmentKey = `newassignments-${texterId}-${campaignId}`
-        const texterAssignment = JSON.stringify(assignments)
-
         const assignments = await r.knex('campaign_contact')
           .where('assignment_id', assignmentId)
+        const texterAssignment = JSON.stringify(assignments)
 
         await r.redis.lpush(texterAssignmentKey, texterAssignment)
       }
