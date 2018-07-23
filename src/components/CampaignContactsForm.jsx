@@ -57,7 +57,11 @@ export default class CampaignContactsForm extends React.Component {
   validateSql = (sql) => {
     let errors = []
     if (!sql.startsWith('SELECT')) {
-      errors.push('Must start with "SELECT"')
+      errors.push('Must start with "SELECT" in caps')
+    }
+    if (/LIMIT (\d+)/i.test(sql)
+        && parseInt(sql.match(/LIMIT (\d+)/i)[1], 10) > 10000) {
+      errors.push('Spoke currently does not support LIMIT statements of higher than 10000')
     }
     const requiredFields = ['first_name', 'last_name', 'cell']
     requiredFields.forEach((f) => {
