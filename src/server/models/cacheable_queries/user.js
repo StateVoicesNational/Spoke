@@ -60,30 +60,46 @@ export async function updateAssignments(campaignInfo) {
   const campaignId = campaignInfo.id
   const dynamicAssignment = campaignInfo.use_dynamic_assignment
   if (r.redis) {
-    const texters = await r.knex('assignment')
-      .select('user_id', 'id')
+    const texterAssignments = await r.knex('assignment')
+      .select('user_id', 'id', 'max_contacts')
       .where('campaign_id', campaignId)
 
+    const availableAssignments = await r.knex('campaign_contact')
+      .select()
+      .where({
+        'campaign_id': campaignId,
+        'is_opted_out': false,
+        'message_status': 'needsMessage'
+      })
+      .then((res) => {
+        console.log('res:', res);
+      })
+
     if (dynamicAssignment) {
-      for (let i = 0; i < texters.length; i++) {
+      for (let i = 0; i < texterAssignments.length; i++) {
         // value is the actual assignments available for this campaign
-        let availableAssignments = ``
-        let dynamicAssignmentKey = `dynamicassignments-${campaignId}`
+        const texterId = texterAssignments[i].user_id
+        const maxContacts = texterAssignments[i].max_contacts
+        const campaignContacts = availableAssignments
+        const dynamicAssignmentKey = `dynamicassignments-${texterId}-${campaignId}`
+        console.log('key:', dynamicAssignmentKey);
+        console.log('value:', availableAssignments);
+
         await r.redis.lpush(dynamicAssignmentKey, availableAssignments)
       }
     }
 
     if (!dynamicAssignment) {
-      for (let i = 0; i < texters.length; i++) {
-        let texterId = texters[i].user_id
-        let assignmentId = texters[i].id
-        let texterAssignmentKey = `newassignments-${texterId}-${campaignId}`
-        let texterAssignment = `textercontactslist`
+      for (let i = 0; i < texterAssignments.length; i++) {
+        // value is the actual assignment for a specific texter
+        const texterId = texterAssignments[i].user_id
+        const assignmentId = texterAssignments[i].id
+        const texterAssignmentKey = `newassignments-${texterId}-${campaignId}`
+        const texterAssignment = JSON.stringify(assignments)
+
         const assignments = await r.knex('campaign_contact')
           .where('assignment_id', assignmentId)
 
-        console.log('assignments for this texter:', JSON.stringify(assignments));
-        // value is the acutal assignment for a specific texter
         await r.redis.lpush(texterAssignmentKey, texterAssignment)
       }
     }
