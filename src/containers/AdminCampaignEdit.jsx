@@ -35,6 +35,7 @@ const campaignInfoFragment = `
   texters {
     id
     firstName
+    lastName
     assignment(campaignId:$campaignId) {
       contactsCount
       needsMessageCount: contactsCount(contactsFilter:{messageStatus:\"needsMessage\"})
@@ -189,7 +190,7 @@ class AdminCampaignEdit extends React.Component {
             cell: contact.cell,
             firstName: contact.firstName,
             lastName: contact.lastName,
-            zip: contact.zip,
+            zip: contact.zip || '',
             external_id: contact.external_id || ''
           }
           Object.keys(contact).forEach((key) => {
@@ -626,6 +627,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
         texters: people {
           id
           firstName
+          lastName
           displayName
         }
       }
