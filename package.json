@@ -87,6 +87,7 @@
     "cookie-session": "^2.0.0-alpha.1",
     "dataloader": "^1.2.0",
     "dotenv": "^2.0.0",
+    "downshift": "^2.0.17",
     "draft-js": "^0.7.0",
     "express": "^4.14.0",
     "faker": "^3.1.0",

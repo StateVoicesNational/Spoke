@@ -170,9 +170,9 @@ class IncomingMessageFilter extends Component {
         </CardText>
       </Card>
     )
-  }
-}
-
+      }
+    }
+    
 IncomingMessageFilter.propTypes = {
   onCampaignChanged: type.func.isRequired,
   campaigns: type.array.isRequired,
