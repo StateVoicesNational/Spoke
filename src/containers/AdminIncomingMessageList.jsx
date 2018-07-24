@@ -114,7 +114,7 @@ export class AdminIncomingMessageList extends Component {
   }
 
   async handleCampaignsReceived(campaigns) {
-    this.setState({ campaigns, needsRender:true })
+    this.setState({ campaigns, needsRender: true })
   } 
 
   render() {
@@ -131,14 +131,14 @@ export class AdminIncomingMessageList extends Component {
           <div>
             <PaginatedCampaignsRetriever
               organizationId={this.props.params.organizationId}
-              campaignsFilter={this.state.campaignsFilter}
+              campaignsFilter={{ isArchived: false }}
               onCampaignsReceived={this.handleCampaignsReceived}
-              pageSize={1}
+              pageSize={1000}
             />
             <IncomingMessageFilter
-              campaigns={this.state.campaigns}
-              onCampaignChanged={this.handleCampaignChange}
-              onMessageFilterChanged={this.handleMessageFilterChange}
+                campaigns={this.state.campaigns}
+                onCampaignChanged={this.handleCampaignChange}
+                onMessageFilterChanged={this.handleMessageFilterChange}
             />
             <br />
             <IncomingMessageActions
@@ -156,7 +156,7 @@ export class AdminIncomingMessageList extends Component {
               onPageChanged={this.handlePageChange}
               onPageSizeChanged={this.handlePageSizeChange}
               onConversationSelected={this.handleRowSelection}
-              />
+            />
           </div>
         )}
       </div>
