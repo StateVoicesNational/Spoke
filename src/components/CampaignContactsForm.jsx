@@ -56,7 +56,7 @@ export default class CampaignContactsForm extends React.Component {
   }
 
   validateSql = (sql) => {
-    let errors = []
+    const errors = []
     if (!sql.startsWith('SELECT')) {
       errors.push('Must start with "SELECT" in caps')
     }
@@ -66,7 +66,7 @@ export default class CampaignContactsForm extends React.Component {
     }
     const requiredFields = ['first_name', 'last_name', 'cell']
     requiredFields.forEach((f) => {
-      if (sql.indexOf(f) == -1) {
+      if (sql.indexOf(f) === -1) {
         errors.push('"' + f + '" is a required column')
       }
     })
@@ -75,8 +75,12 @@ export default class CampaignContactsForm extends React.Component {
     }
     if (!errors.length) {
       this.setState({ contactSqlError: null })
+      this.props.onChange({
+        contactSql: sql
+      })
     } else {
       this.setState({ contactSqlError: errors.join(', ') })
+      this.props.onChange({})
     }
   }
 
