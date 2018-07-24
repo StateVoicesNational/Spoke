@@ -1,7 +1,7 @@
 import { mapFieldsToModel } from './lib/utils'
 import { r, Organization } from '../models'
 import { accessRequired } from './errors'
-import { buildCampaignQuery } from './campaign'
+import { buildCampaignQuery, getCampaigns } from './campaign'
 import { buildUserOrganizationQuery } from './user'
 
 export const resolvers = {
@@ -12,37 +12,7 @@ export const resolvers = {
     ], Organization),
     campaigns: async (organization, { cursor, campaignsFilter }, { user }) => {
       await accessRequired(user, organization.id, 'SUPERVOLUNTEER')
-
-      let campaignsQuery = buildCampaignQuery(
-        r.knex.select('*'),
-        organization.id,
-        campaignsFilter
-      )
-      campaignsQuery = campaignsQuery.orderBy('due_by', 'desc')
-
-      if (cursor) {
-        campaignsQuery = campaignsQuery.limit(cursor.limit).offset(cursor.offset)
-        const campaigns = await campaignsQuery
-
-        const campaignsCountQuery = buildCampaignQuery(
-          r.knex.count('*'),
-          organization.id,
-          campaignsFilter)
-
-        const campaignsCountArray = await campaignsCountQuery
-
-        const pageInfo = {
-          limit: cursor.limit,
-          offset: cursor.offset,
-          total: campaignsCountArray[0].count
-        }
-        return {
-          campaigns,
-          pageInfo
-        }
-      } else {
-        return campaignsQuery
-      }
+      return getCampaigns(user, organization.id, cursor, campaignsFilter)
     },
     uuid: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, 'SUPERVOLUNTEER')
