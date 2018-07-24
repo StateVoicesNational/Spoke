@@ -4,6 +4,28 @@ import type from 'prop-types'
 import { Card, CardHeader, CardText } from 'material-ui/Card'
 import SelectField from 'material-ui/SelectField'
 import MenuItem from 'material-ui/MenuItem'
+import theme from '../styles/theme'
+
+import SuperSelectField from 'material-ui-superselectfield'
+import { StyleSheet, css } from 'aphrodite'
+
+const styles = StyleSheet.create({
+  container: {
+    ...theme.layouts.multiColumn.container,
+    marginBottom: 40,
+    alignContent: 'flex-start',
+    flexWrap: 'wrap',
+    alignItems: 'flex-end',
+  },
+  flexColumn: {
+    flex: 1,
+    //textAlign: 'right',
+    display: 'flex'
+  },
+  spacer: {
+    marginRight: 20
+  },
+})
 
 export const MESSAGE_STATUSES = {
   'all': {
@@ -50,6 +72,7 @@ class IncomingMessageFilter extends Component {
 
     this.onMessageFilterSelectChanged = this.onMessageFilterSelectChanged.bind(this)
     this.onCampaignSelectChanged = this.onCampaignSelectChanged.bind(this)
+    this.onCampaignInputUpdated = this.onCampaignInputUpdated.bind(this)
   }
 
   onMessageFilterSelectChanged(event, index, values) {
@@ -68,42 +91,111 @@ class IncomingMessageFilter extends Component {
     this.props.onMessageFilterChanged(messageStatusesString)
   }
 
-  onCampaignSelectChanged(event, index, value) {
-    this.setState({ campaignFilter: value })
-    this.props.onCampaignChanged(value)
+  onCampaignSelectChanged(selectedCampaignOrString, index) {
+    let selectedCampaign = undefined
+    if (index < 0 && typeof (selectedCampaignOrString) === 'string') {
+      selectedCampaign = this.props.campaigns.find(campaign => {
+        return campaign.title === selectedCampaignOrString ? campaign : undefined
+      })
+    } else {
+      selectedCampaign = selectedCampaignOrString
+    }
+
+    if (!selectedCampaign) {
+      return
+    }
+
+    this.setState({ campaignwFilter: selectedCampaign })
+    this.props.onCampaignChanged(selectedCampaign.id)
+  }
+
+  onCampaignInputUpdated(searchText, dataSource, _) {
+    this.setState({campaignInput: searchText})
+  }
+
+  getCampaignsWithCampaignTypeFiltersPrepended() {
+    return CAMPAIGN_TYPE_FILTERS.map(campaignTypeFilter => {
+      return (
+        {
+          title: campaignTypeFilter[1],
+          id: campaignTypeFilter[0]
+        }
+      )
+    }).concat(this.props.campaigns)
   }
 
   render() {
+    const campaignNodes = this.props.campaigns.map((campaign) => {
+      return (
+        <div
+          key={campaign.id}
+          value={campaign.id}
+          label={campaign.title}
+        >
+        {campaign.title}
+        </div>
+      )
+    })
+
     return (
       <Card>
         <CardHeader title='Message Filter' actAsExpander showExpandableButton />
         <CardText expandable>
-          <SelectField
-            multiple
-            value={this.state.messageFilter}
-            hintText={'Which messages'}
-            floatingLabelText={'Contact message status'}
+          <div className={css(styles.container)}>
+            <div className={css(styles.flexColumn)}>
+              <SelectField
+                multiple
+                value={this.state.messageFilter}
+                hintText={'Which messages?'}
+                floatingLabelText={'Contact message status'}
+                floatingLabelFixed
+                onChange={this.onMessageFilterSelectChanged}
+              >
+                {Object.keys(MESSAGE_STATUSES).map(messageStatus => {
+                  const displayText = MESSAGE_STATUSES[messageStatus].name
+                  const isChecked = this.state.messageFilter &&
+                    this.state.messageFilter.indexOf(messageStatus) > -1
+                  return (
+                    <MenuItem
+                      key={messageStatus}
+                      value={messageStatus}
+                      primaryText={displayText}
+                      insetChildren
+                      checked={isChecked}
+                    />
+                  )
+                })}
+              </SelectField>
+            </div>
+            <div className={css(styles.flexColumn)}>
+              <SuperSelectField
+                children={campaignNodes}
+                nb2show={10}
+                showAutocompleteThreshold={'always'}
+                floatingLabel='Campaign'
+                hintText={'Type or select'}
+              />
+            </div>
+
+            {/*
+          <AutoComplete
+            dataSource={this.getCampaignsWithCampaignTypeFiltersPrepended()}
+            dataSourceConfig={{ text: 'title', value: 'id' }}
+            hintText={'Which campaign?'}
+            filter={AutoComplete.caseInsensitiveFilter}
+            maxSearchResults={10}
+            openOnFocus={this.props.campaigns.length < 100 ? true : false}
+            floatingLabelText='Campaign'
             floatingLabelFixed
-            onChange={this.onMessageFilterSelectChanged}
-          >
-            {Object.keys(MESSAGE_STATUSES).map(messageStatus => {
-              const displayText = MESSAGE_STATUSES[messageStatus].name
-              const isChecked = this.state.messageFilter &&
-                  this.state.messageFilter.indexOf(messageStatus) > -1
-              return (
-                <MenuItem
-                  key={messageStatus}
-                  value={messageStatus}
-                  primaryText={displayText}
-                  insetChildren
-                  checked={isChecked}
-                />
-              )
-            })}
-          </SelectField>
-          &nbsp;
+            onNewRequest={this.onCampaignSelectChanged}
+            onUpdateInput={this.onCampaignInputUpdated}
+          />
+          */}
+
+
+            {/*
           <SelectField
-            value={this.state.campaignFilter}
+            value={this.state.campaignsFilter}
             hintText='Pick a campaign'
             floatingLabelText='Campaign'
             floatingLabelFixed
@@ -122,12 +214,14 @@ class IncomingMessageFilter extends Component {
               return <MenuItem key={campaign.id} value={campaign.id} primaryText={campaign.title} />
             })}
           </SelectField>
+          */}
+          </div>
         </CardText>
       </Card>
     )
-  }
-}
-
+      }
+    }
+    
 IncomingMessageFilter.propTypes = {
   onCampaignChanged: type.func.isRequired,
   campaigns: type.array.isRequired,
