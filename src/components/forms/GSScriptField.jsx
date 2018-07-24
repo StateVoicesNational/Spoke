@@ -6,6 +6,7 @@ import Dialog from 'material-ui/Dialog'
 import FlatButton from 'material-ui/FlatButton'
 import RaisedButton from 'material-ui/RaisedButton'
 import TextField from 'material-ui/TextField'
+import { dataTest } from '../../lib/attributes'
 
 const styles = {
   dialog: {
@@ -53,10 +54,12 @@ export default class GSScriptField extends GSFormField {
         style={styles.dialog}
         actions={[
           <FlatButton
+            {...dataTest('scriptCancel')}
             label='Cancel'
             onTouchTap={this.handleCloseDialog}
           />,
           <RaisedButton
+            {...dataTest('scriptDone')}
             label='Done'
             onTouchTap={this.handleSaveScript}
             primary
