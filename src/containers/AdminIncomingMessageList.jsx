@@ -24,6 +24,7 @@ export class AdminIncomingMessageList extends Component {
 
     this.handleCampaignChange = this.handleCampaignChange.bind(this)
     this.handleMessageFilterChange = this.handleMessageFilterChange.bind(this)
+    this.handleAssignmentsFilterChange = this.handleAssignmentsFilterChange.bind(this)
     this.handleReassignRequested = this.handleReassignRequested.bind(this)
     this.handlePageChange = this.handlePageChange.bind(this)
     this.handlePageSizeChange = this.handlePageSizeChange.bind(this)
@@ -34,7 +35,8 @@ export class AdminIncomingMessageList extends Component {
     if (
       !nextState.needsRender &&
       nextState.contactsFilter === this.state.contactsFilter &&
-      nextState.campaignsFilter === this.state.campaignsFilter
+      nextState.campaignsFilter === this.state.campaignsFilter &&
+      nextState.assignmentsFilter === this.state.assignmentsFilter
     ) {
       return false
     }
@@ -64,6 +66,13 @@ export class AdminIncomingMessageList extends Component {
   async handleMessageFilterChange(messagesFilter) {
     await this.setState({
       contactsFilter: { messageStatus: messagesFilter },
+      needsRender: true
+    })
+  }
+
+  async handleAssignmentsFilterChange(assignmentsFilter) {
+    await this.setState({
+      assignmentsFilter: assignmentsFilter,
       needsRender: true
     })
   }
@@ -123,6 +132,7 @@ export class AdminIncomingMessageList extends Component {
               campaigns={this.props.organization.organization.campaigns}
               onCampaignChanged={this.handleCampaignChange}
               onMessageFilterChanged={this.handleMessageFilterChange}
+              onAssignmentsFilterChanged={this.handleAssignmentsFilterChange}
             />
             <br />
             <IncomingMessageActions
