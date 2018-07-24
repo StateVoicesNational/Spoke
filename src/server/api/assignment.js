@@ -2,21 +2,6 @@ import { mapFieldsToModel } from './lib/utils'
 import { Assignment, r } from '../models'
 import { getOffsets, defaultTimezoneIsBetweenTextingHours } from '../../lib'
 
-export const schema = `
-  input AssignmentsFilter {
-    texterId: Int
-  }
-  type Assignment {
-    id: ID
-    texter: User
-    campaign: Campaign
-    contacts(contactsFilter: ContactsFilter): [CampaignContact]
-    contactsCount(contactsFilter: ContactsFilter): Int
-    userCannedResponses: [CannedResponse]
-    campaignCannedResponses: [CannedResponse]
-    maxContacts: Int
-  }
-`
 export function addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue(
   queryParameter,
   contactsFilter
@@ -46,7 +31,9 @@ export function getContacts(assignment, contactsFilter, organization, campaign, 
   const config = { textingHoursStart, textingHoursEnd, textingHoursEnforced }
   const [validOffsets, invalidOffsets] = getOffsets(config)
 
-  let query = r.knex('campaign_contact').where('assignment_id', assignment.id)
+  let query = r.knex('campaign_contact').where({
+    'assignment_id': assignment.id
+  })
 
   if (contactsFilter) {
     const validTimezone = contactsFilter.validTimezone
@@ -93,7 +80,7 @@ export function getContacts(assignment, contactsFilter, organization, campaign, 
       }
     }
 
-    if (contactsFilter.isOptedOut) {
+    if (Object.prototype.hasOwnProperty.call(contactsFilter, 'isOptedOut')) {
       query = query.where('is_opted_out', contactsFilter.isOptedOut)
     }
   }
