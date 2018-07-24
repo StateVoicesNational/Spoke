@@ -1,51 +1,60 @@
 import { mapFieldsToModel } from './lib/utils'
 import { Campaign, JobRequest, r } from '../models'
 
-export const schema = `
-  input CampaignsFilter {
-    isArchived: Boolean
-    campaignId: Int
+export function buildCampaignQuery(queryParam, organizationId, campaignsFilter, addFromClause = true) {
+  let query = queryParam
+
+  if (addFromClause) {
+    query = query.from('campaign')
   }
 
-  type CampaignStats {
-    sentMessagesCount: Int
-    receivedMessagesCount: Int
-    optOutsCount: Int
+  query = query.where('organization_id', organizationId)
+
+  if (campaignsFilter) {
+    if ('isArchived' in campaignsFilter) {
+      query = query.where({ is_archived: campaignsFilter.isArchived })
+    }
+    if ('campaignId' in campaignsFilter) {
+      query = query.where('campaign.id', parseInt(campaignsFilter.campaignId, 10))
+    }
   }
 
-  type JobRequest {
-    id: String
-    jobType: String
-    assigned: Boolean
-    status: Int
-    resultMessage: String
-  }
+  return query
+}
 
-  type Campaign {
-    id: ID
-    organization: Organization
-    title: String
-    description: String
-    dueBy: Date
-    isStarted: Boolean
-    isArchived: Boolean
-    texters: [User]
-    assignments(assignmentsFilter: AssignmentsFilter): [Assignment]
-    interactionSteps: [InteractionStep]
-    contacts: [CampaignContact]
-    contactsCount: Int
-    hasUnassignedContacts: Boolean
-    customFields: [String]
-    cannedResponses(userId: String): [CannedResponse]
-    stats: CampaignStats,
-    pendingJobs: [JobRequest]
-    datawarehouseAvailable: Boolean
-    useDynamicAssignment: Boolean
-    introHtml: String
-    primaryColor: String
-    logoImageUrl: String
+export async function getCampaigns(user, organizationId, cursor, campaignsFilter) {
+
+  let campaignsQuery = buildCampaignQuery(
+    r.knex.select('*'),
+    organizationId,
+    campaignsFilter
+  )
+  campaignsQuery = campaignsQuery.orderBy('due_by', 'desc').orderBy('id')
+
+  if (cursor) {
+    campaignsQuery = campaignsQuery.limit(cursor.limit).offset(cursor.offset)
+    const campaigns = await campaignsQuery
+
+    const campaignsCountQuery = buildCampaignQuery(
+      r.knex.count('*'),
+      organizationId,
+      campaignsFilter)
+
+    const campaignsCountArray = await campaignsCountQuery
+
+    const pageInfo = {
+      limit: cursor.limit,
+      offset: cursor.offset,
+      total: campaignsCountArray[0].count
+    }
+    return {
+      campaigns,
+      pageInfo
+    }
+  } else {
+    return campaignsQuery
   }
-`
+}
 
 export const resolvers = {
   JobRequest: {
@@ -90,6 +99,32 @@ export const resolvers = {
           .where({ is_opted_out: true, campaign_id: campaign.id })
       )
     )
+  },
+  CampaignsReturn: {
+    __resolveType(obj, context, _) {
+      if (Array.isArray(obj)) {
+        return 'CampaignsList'
+      } else if ('campaigns' in obj && 'pageInfo' in obj) {
+        return 'PaginatedCampaigns'
+      }
+      return null
+    }
+  },
+  CampaignsList: {
+    campaigns: campaigns => {
+      return campaigns
+    }
+  },
+  PaginatedCampaigns: {
+    campaigns: queryResult => {
+      return queryResult.campaigns
+    },
+    pageInfo: queryResult => {
+      if ('pageInfo' in queryResult) {
+        return queryResult.pageInfo
+      }
+      return null
+    }
   },
   Campaign: {
     ...mapFieldsToModel([

@@ -33,6 +33,7 @@ const campaignInfoFragment = `
   texters {
     id
     firstName
+    lastName
     assignment(campaignId:$campaignId) {
       contactsCount
       needsMessageCount: contactsCount(contactsFilter:{messageStatus:\"needsMessage\"})
@@ -621,6 +622,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
         texters: people {
           id
           firstName
+          lastName
           displayName
         }
       }
