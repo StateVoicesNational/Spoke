@@ -26,13 +26,13 @@ export function getContacts(assignment, contactsFilter, organization, campaign, 
   const textingHoursEnd = organization.texting_hours_end
 
   // 24-hours past due - why is this 24 hours offset?
-  const pastDue = Number(campaign.due_by) + 24 * 60 * 60 * 1000 < Number(new Date())
-
+  const pastDue = (campaign.due_by
+                   && Number(campaign.due_by) + 24 * 60 * 60 * 1000 < Number(new Date()))
   const config = { textingHoursStart, textingHoursEnd, textingHoursEnforced }
   const [validOffsets, invalidOffsets] = getOffsets(config)
 
   let query = r.knex('campaign_contact').where({
-    'assignment_id': assignment.id
+    assignment_id: assignment.id
   })
 
   if (contactsFilter) {
