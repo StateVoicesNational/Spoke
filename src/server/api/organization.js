@@ -1,21 +1,8 @@
 import { mapFieldsToModel } from './lib/utils'
 import { r, Organization } from '../models'
 import { accessRequired } from './errors'
-
-export const schema = `
-  type Organization {
-    id: ID
-    uuid: String
-    name: String
-    campaigns(campaignsFilter: CampaignsFilter): [Campaign]
-    people(role: String): [User]
-    optOuts: [OptOut]
-    threeClickEnabled: Boolean
-    textingHoursEnforced: Boolean
-    textingHoursStart: Int
-    textingHoursEnd: Int
-  }
-`
+import { buildCampaignQuery, getCampaigns } from './campaign'
+import { buildUserOrganizationQuery } from './user'
 
 export const resolvers = {
   Organization: {
@@ -23,21 +10,9 @@ export const resolvers = {
       'id',
       'name'
     ], Organization),
-    campaigns: async (organization, { campaignsFilter }, { user }) => {
+    campaigns: async (organization, { cursor, campaignsFilter }, { user }) => {
       await accessRequired(user, organization.id, 'SUPERVOLUNTEER')
-      let query = r.table('campaign').getAll(organization.id, { index:
-        'organization_id' })
-
-      if (campaignsFilter && campaignsFilter.hasOwnProperty('isArchived') && campaignsFilter.isArchived !== null) {
-        query = query.filter({ is_archived: campaignsFilter.isArchived })
-      }
-      if (campaignsFilter && campaignsFilter.hasOwnProperty('campaignId') && campaignsFilter.campaignId !== null) {
-        query = query.filter({ id: parseInt(campaignsFilter.campaignId)})
-      }
-
-      query = query.orderBy(r.desc('due_by'))
-
-      return query
+      return getCampaigns(user, organization.id, cursor, campaignsFilter)
     },
     uuid: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, 'SUPERVOLUNTEER')
@@ -53,14 +28,7 @@ export const resolvers = {
     },
     people: async (organization, { role }, { user }) => {
       await accessRequired(user, organization.id, 'SUPERVOLUNTEER')
-
-      const roleFilter = role ? { role } : {}
-
-      return r.table('user_organization')
-        .getAll(organization.id, { index: 'organization_id' })
-        .filter(roleFilter)
-        .eqJoin('user_id', r.table('user'))('right')
-        .distinct()
+      return buildUserOrganizationQuery(r.knex.select('user.*'), organization.id, role)
     },
     threeClickEnabled: (organization) => organization.features.indexOf('threeClick') !== -1,
     textingHoursEnforced: (organization) => organization.texting_hours_enforced,
