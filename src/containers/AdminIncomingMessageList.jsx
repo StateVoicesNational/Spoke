@@ -1,14 +1,17 @@
 import React, { Component } from 'react'
-import loadData from './hoc/load-data'
-import { withRouter } from 'react-router'
-import gql from 'graphql-tag'
-import IncomingMessageFilter from '../components/IncomingMessageFilter'
+
 import IncomingMessageActions from '../components/IncomingMessageActions'
+import IncomingMessageFilter from '../components/IncomingMessageFilter'
 import IncomingMessageList from '../components/IncomingMessageList'
 import LoadingIndicator from '../components/LoadingIndicator'
+import PaginatedCampaignsRetriever from './PaginatedCampaignsRetriever'
+import gql from 'graphql-tag'
+import loadData from './hoc/load-data'
+import { withRouter } from 'react-router'
 import wrapMutations from './hoc/wrap-mutations'
 
 export class AdminIncomingMessageList extends Component {
+
   constructor(props) {
     super(props)
 
@@ -19,7 +22,8 @@ export class AdminIncomingMessageList extends Component {
       campaignsFilter: {},
       assignmentsFilter: {},
       needsRender: false,
-      utc: Date.now().toString()
+      utc: Date.now().toString(),
+      campaigns: []
     }
 
     this.handleCampaignChange = this.handleCampaignChange.bind(this)
@@ -29,8 +33,10 @@ export class AdminIncomingMessageList extends Component {
     this.handlePageChange = this.handlePageChange.bind(this)
     this.handlePageSizeChange = this.handlePageSizeChange.bind(this)
     this.handleRowSelection = this.handleRowSelection.bind(this)
+    this.handleCampaignsReceived = this.handleCampaignsReceived.bind(this)
   }
 
+  
   shouldComponentUpdate(_, nextState) {
     if (
       !nextState.needsRender &&
@@ -116,6 +122,10 @@ export class AdminIncomingMessageList extends Component {
     }
   }
 
+  async handleCampaignsReceived(campaigns) {
+    this.setState({ campaigns, needsRender: true })
+  } 
+
   render() {
     const cursor = {
       offset: this.state.page * this.state.pageSize,
@@ -124,15 +134,20 @@ export class AdminIncomingMessageList extends Component {
     return (
       <div>
         <h3> Message Review </h3>
-        {this.props.organization.loading ? (
+        {(this.props.organization && this.props.organization.loading) ? (
           <LoadingIndicator />
         ) : (
           <div>
+            <PaginatedCampaignsRetriever
+              organizationId={this.props.params.organizationId}
+              campaignsFilter={{ isArchived: false }}
+              onCampaignsReceived={this.handleCampaignsReceived}
+              pageSize={1000}
+            />
             <IncomingMessageFilter
-              campaigns={this.props.organization.organization.campaigns}
-              onCampaignChanged={this.handleCampaignChange}
-              onMessageFilterChanged={this.handleMessageFilterChange}
-              onAssignmentsFilterChanged={this.handleAssignmentsFilterChange}
+                campaigns={this.state.campaigns}
+                onCampaignChanged={this.handleCampaignChange}
+                onMessageFilterChanged={this.handleMessageFilterChange}
             />
             <br />
             <IncomingMessageActions
@@ -168,10 +183,6 @@ const mapQueriesToProps = ({ ownProps }) => ({
             id
             displayName
             roles(organizationId: $organizationId)
-          }
-          campaigns {
-            id
-            title
           }
         }
       }
