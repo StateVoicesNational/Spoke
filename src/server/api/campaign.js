@@ -1,6 +1,19 @@
 import { mapFieldsToModel } from './lib/utils'
 import { Campaign, JobRequest, r } from '../models'
 
+export function addCampaignsFilterToQuery(queryParam, campaignsFilter) {
+  let query = queryParam
+  if (campaignsFilter) {
+    if ('isArchived' in campaignsFilter) {
+      query = query.where('campaign.is_archived', campaignsFilter.isArchived )
+    }
+    if ('campaignId' in campaignsFilter) {
+      query = query.where('campaign.id', parseInt(campaignsFilter.campaignId, 10))
+    }
+  }
+  return query
+}
+
 export function buildCampaignQuery(queryParam, organizationId, campaignsFilter, addFromClause = true) {
   let query = queryParam
 
@@ -9,20 +22,12 @@ export function buildCampaignQuery(queryParam, organizationId, campaignsFilter, 
   }
 
   query = query.where('organization_id', organizationId)
-
-  if (campaignsFilter) {
-    if ('isArchived' in campaignsFilter) {
-      query = query.where({ is_archived: campaignsFilter.isArchived })
-    }
-    if ('campaignId' in campaignsFilter) {
-      query = query.where('campaign.id', parseInt(campaignsFilter.campaignId, 10))
-    }
-  }
+  query = addCampaignsFilterToQuery(query, campaignsFilter)
 
   return query
 }
 
-export async function getCampaigns(user, organizationId, cursor, campaignsFilter) {
+export async function getCampaigns(organizationId, cursor, campaignsFilter) {
 
   let campaignsQuery = buildCampaignQuery(
     r.knex.select('*'),

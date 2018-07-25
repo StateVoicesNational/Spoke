@@ -52,7 +52,7 @@ import { resolvers as organizationResolvers } from './organization'
 import { GraphQLPhone } from './phone'
 import { resolvers as questionResolvers } from './question'
 import { resolvers as questionResponseResolvers } from './question-response'
-import { resolvers as userResolvers } from './user'
+import { getUsers, resolvers as userResolvers } from './user'
 
 // import { isBetweenTextingHours } from '../../lib/timezones'
 const uuidv4 = require('uuid').v4
@@ -1180,7 +1180,11 @@ const rootResolvers = {
     },
     campaigns: async (_, {organizationId, cursor, campaignsFilter}, {user}) => {
       await accessRequired(user, organizationId, 'SUPERVOLUNTEER')
-      return getCampaigns(user, organizationId, cursor, campaignsFilter)
+      return getCampaigns(organizationId, cursor, campaignsFilter)
+    },
+    people: async (_, {organizationId, cursor, campaignsFilter, role}, {user}) => {
+      await accessRequired(user, organizationId, 'SUPERVOLUNTEER')
+      return getUsers(organizationId, cursor, campaignsFilter, role)
     }
   }
 }
