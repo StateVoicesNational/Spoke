@@ -48,5 +48,11 @@ export const texter = {
       await driver.get(urlBuilder.app.todos())
       expect(await wait.andGetEl(driver, pom.texter.sendFirstTexts)).toBeDefined()
     })
+  },
+  checkSendTextsCount(driver) {
+    it('TODO verifies that Send First Texts button is present', async () => {
+      await driver.get(urlBuilder.app.todos())
+      expect(await wait.andGetEl(driver, pom.texter.sendLater)).toBeDefined()
+    })
   }
 }

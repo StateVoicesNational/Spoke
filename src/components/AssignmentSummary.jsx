@@ -161,6 +161,7 @@ export class AssignmentSummary extends Component {
               hideIfZero: false
             }) : ''}
             {this.renderBadgedButton({
+              dataTestText: 'sendLater',
               assignment,
               title: 'Send later',
               count: badTimezoneCount,

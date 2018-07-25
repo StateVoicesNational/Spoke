@@ -2,6 +2,7 @@ import { Builder, until } from 'selenium-webdriver'
 import remote from 'selenium-webdriver/remote'
 import config from './config'
 import _ from 'lodash'
+import moment from 'moment-timezone'
 
 import SauceLabs from 'saucelabs'
 
@@ -84,5 +85,27 @@ export const wait = {
   async andIsEnabled(driver, locator, options) {
     const el = await waitAnd(driver, locator, _.assign({}, options))
     return await el.isEnabled()
+  }
+}
+
+// Determine Texting Hour Range for tests, assuming one in NY and one in LA
+export const getTextingHoursRange = () => {
+  const formatTextingHours = (hour) => moment(hour, 'H').format('h a') // Reference Settings.jsx
+
+  // Hard-coded start hour which will include NY but exclude LA
+  const textingHoursStart = moment()
+    .tz('America/New_York')
+    .subtract(1, 'hours')
+    .format('H')
+  // Hard-coded end hour
+  const textingHoursEnd = moment()
+    .tz('America/New_York')
+    .add(2, 'hours')
+    .format('H')
+  const textingHoursStartFormatted = formatTextingHours(textingHoursStart)
+  const textingHoursEndFormatted = formatTextingHours(textingHoursEnd)
+  return {
+    start: textingHoursStartFormatted,
+    end: textingHoursEndFormatted
   }
 }

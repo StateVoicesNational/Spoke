@@ -28,10 +28,34 @@ const interaction = {
   ]
 }
 
+const interactionShort = {
+  script: 'S',
+  question: 'Q',
+  answers: [
+    {
+      answerOption: 'TA0',
+      script: 'TA0.',
+      questionText: 'TCQ0?'
+    },
+    {
+      answerOption: 'TA1',
+      script: 'TA1.',
+      questionText: 'TCQ1?'
+    }
+  ]
+}
+
 const cannedResponses = [
   {
     title: 'Test CR0',
     script: 'Test CR First {firstName} Last {lastName}.'
+  }
+]
+
+const cannedResponsesShort = [
+  {
+    title: 'CR',
+    script: 'S'
   }
 ]
 
@@ -60,7 +84,7 @@ const users = {
     given_name_changed: 'Adminonefirstb',
     family_name: 'Adminonelast',
     family_name_changed: 'Adminonelastb',
-    cell: '4145550001',
+    cell: '2125550001',
     cell_changed: '6085550001'
   },
   texter0: {
@@ -196,6 +220,21 @@ const campaigns = {
     texters,
     interaction,
     cannedResponses
+  },
+  timezone: {
+    name: 'timezoneCampaign',
+    optOut: false,
+    admin: users.admin0,
+    texter: users.texter1,
+    existingTexter: true,
+    basics: {
+      title: 'Title',
+      description: 'Desc'
+    },
+    contacts,
+    texters,
+    interaction: interactionShort,
+    cannedResponses: cannedResponsesShort
   },
   userManagement: {
     name: 'userManagement',

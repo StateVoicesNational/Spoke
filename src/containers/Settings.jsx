@@ -13,6 +13,8 @@ import { Card, CardText, CardActions, CardHeader } from 'material-ui/Card'
 import { StyleSheet, css } from 'aphrodite'
 import Toggle from 'material-ui/Toggle'
 import moment from 'moment'
+import { dataTest } from '../lib/attributes'
+
 const styles = StyleSheet.create({
   section: {
     margin: '10px 0'
@@ -66,6 +68,7 @@ class Settings extends React.Component {
 
     const hours = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]
     const hourChoices = hours.map((hour) => ({
+      className: 'hourChoice',
       value: hour,
       label: formatTextingHours(hour)
     }))
@@ -81,6 +84,7 @@ class Settings extends React.Component {
           defaultValue={{ textingHoursStart, textingHoursEnd }}
         >
           <Form.Field
+            {...dataTest('textingHoursStart')}
             label='Start time'
             name='textingHoursStart'
             type='select'
@@ -88,6 +92,7 @@ class Settings extends React.Component {
             choices={hourChoices}
           />
           <Form.Field
+            {...dataTest('textingHoursEnd')}
             label='End time'
             name='textingHoursEnd'
             type='select'
@@ -121,10 +126,12 @@ class Settings extends React.Component {
             title='Settings'
           />
           <CardText>
-            <div className={css(styles.section)}>
+            <div className={css(styles.section)} {...dataTest('settingsCardText')}>
               <span className={css(styles.sectionLabel)}>
               </span>
               <Toggle
+                {...dataTest('textingHoursEnforced')}
+                data-toggled={organization.textingHoursEnforced}
                 toggled={organization.textingHoursEnforced}
                 label='Enforce texting hours?'
                 onToggle={async (event, isToggled) => await this.props.mutations.updateTextingHoursEnforcement(isToggled)}
@@ -147,6 +154,7 @@ class Settings extends React.Component {
           <CardActions>
             {organization.textingHoursEnforced ? (
               <FlatButton
+                {...dataTest('changeTextingHours')}
                 label='Change texting hours'
                 primary
                 onTouchTap={this.handleOpenTextingHoursDialog}
