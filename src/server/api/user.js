@@ -56,9 +56,9 @@ export async function getUsers(organizationId, cursor, campaignsFilter, role) {
       users,
       pageInfo
     }
-  } else {
-    return usersQuery
   }
+
+  return usersQuery
 }
 
 export const resolvers = {

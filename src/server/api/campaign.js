@@ -1,5 +1,6 @@
 import { mapFieldsToModel } from './lib/utils'
 import { Campaign, JobRequest, r } from '../models'
+import { getUsers } from './user';
 
 export function addCampaignsFilterToQuery(queryParam, campaignsFilter) {
   let query = queryParam
@@ -152,11 +153,8 @@ export const resolvers = {
     ),
     pendingJobs: async (campaign) => r.table('job_request')
       .filter({ campaign_id: campaign.id }).orderBy('updated_at', 'desc'),
-    texters: async (campaign) => (
-      r.table('assignment')
-        .getAll(campaign.id, { index: 'campaign_id' })
-        .eqJoin('user_id', r.table('user'))('right')
-    ),
+    texters: async (campaign) =>
+      getUsers(campaign.organization_id, null, {campaignId: campaign.id }) ,
     assignments: async (campaign, {assignmentsFilter} ) => {
       let query = r.table('assignment')
         .getAll(campaign.id, { index: 'campaign_id' })
