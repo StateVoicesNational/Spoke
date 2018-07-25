@@ -172,6 +172,7 @@ const rootSchema = `
     availableActions(organizationId:String!): [Action]
     conversations(cursor:OffsetLimitCursor!, organizationId:String!, campaignsFilter:CampaignsFilter, assignmentsFilter:AssignmentsFilter, contactsFilter:ContactsFilter, utc:String): PaginatedConversations
     campaigns(organizationId:String!, cursor:OffsetLimitCursor, campaignsFilter: CampaignsFilter): CampaignsReturn
+    people(organizationId:String!, cursor:OffsetLimitCursor, campaignsFilter:CampaignsFilter, role: String): UsersReturn
   }
 
   type RootMutation {

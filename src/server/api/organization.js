@@ -12,7 +12,7 @@ export const resolvers = {
     ], Organization),
     campaigns: async (organization, { cursor, campaignsFilter }, { user }) => {
       await accessRequired(user, organization.id, 'SUPERVOLUNTEER')
-      return getCampaigns(user, organization.id, cursor, campaignsFilter)
+      return getCampaigns(organization.id, cursor, campaignsFilter)
     },
     uuid: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, 'SUPERVOLUNTEER')
