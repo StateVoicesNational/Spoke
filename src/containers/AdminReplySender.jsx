@@ -8,6 +8,7 @@ import GSForm from '../components/forms/GSForm'
 import wrapMutations from './hoc/wrap-mutations'
 import Form from 'react-formal'
 import yup from 'yup'
+import { dataTest } from '../lib/attributes'
 
 const styles = StyleSheet.create({
   infoContainer: {
@@ -75,12 +76,14 @@ class AdminReplySender extends React.Component {
             }}
           >
             <Form.Field
+              {...dataTest('reply')}
               name='message'
               label='Reply'
               hintText='Reply'
               fullWidth
             />
             <Form.Button
+              {...dataTest('send')}
               type='submit'
               label='Send'
               name='submit'
