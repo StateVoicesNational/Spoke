@@ -1,6 +1,6 @@
 {
   "name": "spoke",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Spoke",
   "main": "src/server",
   "engines": {
@@ -9,7 +9,7 @@
   },
   "scripts": {
     "test": "jest",
-    "test-e2e": "jest --config jest.config.e2e.js",
+    "test-e2e": "jest --runInBand --config jest.config.e2e.js",
     "test-sqlite": "jest --config jest.config.sqlite.js",
     "test-coverage": "jest --coverage",
     "test-coverage-bothbackends": "jest --config jest.config.sqlite.js &&  jest --coverage",
@@ -170,6 +170,7 @@
     "regenerator-runtime": "^0.10.5",
     "selenium-webdriver": "^3.6.0",
     "sqlite3": "^3.1.9",
+    "wait-on": "^2.1.0",
     "webpack-dev-server": "^2.9.4"
   }
 }
