@@ -27,10 +27,10 @@ export const main = {
     })
 
     it('changes user details', async () => {
-      await wait.andType(driver, pom.people.edit.firstName, user.given_name_changed, { click: true, clear: false })
-      await wait.andType(driver, pom.people.edit.lastName, user.family_name_changed, { click: true, clear: false })
-      await wait.andType(driver, pom.people.edit.email, user.email_changed, { click: true, clear: false })
-      await wait.andType(driver, pom.people.edit.cell, user.cell_changed, { click: true, clear: false })
+      await wait.andType(driver, pom.people.edit.firstName, user.given_name_changed, { clear: false })
+      await wait.andType(driver, pom.people.edit.lastName, user.family_name_changed, { clear: false })
+      await wait.andType(driver, pom.people.edit.email, user.email_changed, { clear: false })
+      await wait.andType(driver, pom.people.edit.cell, user.cell_changed, { clear: false })
       // Save
       await wait.andClick(driver, pom.people.edit.save)
       // Verify edits
@@ -40,10 +40,10 @@ export const main = {
     })
 
     it('reverts user details back to original settings', async () => {
-      await wait.andType(driver, pom.people.edit.firstName, user.given_name, { click: true, clear: false })
-      await wait.andType(driver, pom.people.edit.lastName, user.family_name, { click: true, clear: false })
-      await wait.andType(driver, pom.people.edit.email, user.email, { click: true, clear: false })
-      await wait.andType(driver, pom.people.edit.cell, user.cell, { click: true, clear: false })
+      await wait.andType(driver, pom.people.edit.firstName, user.given_name, { clear: false })
+      await wait.andType(driver, pom.people.edit.lastName, user.family_name, { clear: false })
+      await wait.andType(driver, pom.people.edit.email, user.email, { clear: false })
+      await wait.andType(driver, pom.people.edit.cell, user.cell, { clear: false })
       // Save
       await wait.andClick(driver, pom.people.edit.save)
       // Verify edits
