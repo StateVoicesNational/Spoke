@@ -73,7 +73,7 @@ export const wait = {
     return await waitAnd(driver, locator, _.assign({ click: true }, options))
   },
   async andType(driver, locator, keys, options) {
-    return await waitAnd(driver, locator, _.assign({ keys, clear: true }, options))
+    return await waitAnd(driver, locator, _.assign({ keys, clear: true, click: true }, options))
   },
   async andGetValue(driver, locator, options) {
     const el = await waitAnd(driver, locator, _.assign({}, options))

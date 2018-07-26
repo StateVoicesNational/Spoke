@@ -14,7 +14,7 @@ export const login = {
 
     it('clicks the login link', async () => {
       // Click on the login button
-      wait.andClick(driver, pom.login.loginGetStarted, { msWait: 30000, waitAfterVisible: 2000 })
+      wait.andClick(driver, pom.login.loginGetStarted, { msWait: 50000, waitAfterVisible: 2000 })
 
       // Wait until the Auth0 login page loads
       await driver.wait(until.urlContains(urlBuilder.login))
@@ -58,7 +58,7 @@ export const login = {
   },
   logIn(driver, user) {
     it('opens the Log In tab', async () => {
-      await wait.andClick(driver, auth0.tabs.logIn, { msWait: 20000 })
+      await wait.andClick(driver, auth0.tabs.logIn, { msWait: 50000 })
     })
 
     it('fills in the existing user details', async () => {
