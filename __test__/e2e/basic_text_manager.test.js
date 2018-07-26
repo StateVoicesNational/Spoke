@@ -27,7 +27,7 @@ describe('Basic Text Manager Workflow', () => {
     await selenium.quitDriver(driverTexter)
   })
 
-  describe('Setup Admin and Texter Users', () => {
+  describe('Setup Admin User', () => {
     describe('(As Admin) Open Landing Page', () => {
       login.landing(driverAdmin)
     })
