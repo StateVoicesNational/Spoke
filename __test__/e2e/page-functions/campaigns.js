@@ -64,6 +64,7 @@ export const campaigns = {
         // Assign (All to Texter)
         await wait.andClick(driver, form.texters.autoSplit, { elementIsVisible: false })
         await wait.andType(driver, form.texters.texterAssignmentByText(campaign.admin.given_name), '0')
+        await driver.sleep(1000)
         await wait.andType(driver, form.texters.texterAssignmentByText(campaign.texter.given_name), campaign.texters.contactLength)
         // Validate Assignment
         expect(await wait.andGetValue(driver, form.texters.texterAssignmentByText(campaign.admin.given_name))).toBe('0')
@@ -86,7 +87,7 @@ export const campaigns = {
         await wait.andType(driver, pom.scriptEditor.editor, campaign.interaction.script, { clear: false, click: false, waitAfterVisible: 3000 })
         await wait.andClick(driver, pom.scriptEditor.done)
         // Question
-        await wait.andType(driver, form.interactions.questionText, campaign.interaction.question)
+        await wait.andType(driver, form.interactions.questionText, campaign.interaction.question, { waitAfterVisible: 2000 })
         // Save with No Answers Defined
         await wait.andClick(driver, form.interactions.submit)
         await wait.andClick(driver, form.interactions.section, { waitAfterVisible: 2000 })
@@ -111,7 +112,7 @@ export const campaigns = {
             await wait.andType(driver, pom.scriptEditor.editor, answer.script, { clear: false, click: false, waitAfterVisible: 3000 })
             await wait.andClick(driver, pom.scriptEditor.done)
             // Answer - Next Question
-            await wait.andType(driver, form.interactions.questionTextChildByIndex(index), answer.questionText, { clear: false })
+            await wait.andType(driver, form.interactions.questionTextChildByIndex(index), answer.questionText, { clear: false, waitAfterVisible: 2000 })
           })
         })
         it('validates that all responses were added', async () => {
