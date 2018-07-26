@@ -42,7 +42,7 @@ export async function getUsers(organizationId, cursor, campaignsFilter, role) {
     usersQuery = usersQuery.limit(cursor.limit).offset(cursor.offset)
     const users = await usersQuery
 
-    const usersCountQuery = buildUsersQuery(r.knex.count('*'), organizationId, campaignsFilter, role)
+    const usersCountQuery = buildUsersQuery(r.knex.countDistinct('user.id'), organizationId, campaignsFilter, role)
 
     const usersCountArray = await usersCountQuery
 
@@ -56,9 +56,9 @@ export async function getUsers(organizationId, cursor, campaignsFilter, role) {
       users,
       pageInfo
     }
+  } else {
+    return usersQuery
   }
-
-  return usersQuery
 }
 
 export const resolvers = {

@@ -65,6 +65,12 @@ export const CAMPAIGN_TYPE_FILTERS = [
   [ARCHIVED_CAMPAIGNS, 'Archived Campaigns']
 ]
 
+export const ALL_TEXTERS = -1
+
+export const TEXTER_FILTERS = [
+  [ALL_TEXTERS, 'All Texters']
+]
+
 class IncomingMessageFilter extends Component {
   constructor(props) {
     super(props)
@@ -77,7 +83,7 @@ class IncomingMessageFilter extends Component {
     this.onCampaignSuperSelectChanged = this.onCampaignSuperSelectChanged.bind(
       this
     )
-    this.onTexterSelectChanged = this.onTexterSelectChanged.bind(this)
+    this.onTexterSuperSelectChanged = this.onTexterSuperSelectChanged.bind(this)
   }
 
   onMessageFilterSelectChanged(event, index, values) {
@@ -104,23 +110,34 @@ class IncomingMessageFilter extends Component {
     this.props.onCampaignChanged(selectedCampaign.value)
   }
 
-  onTexterSelectChanged(event, index, value) {
-    this.setState({ texterFilter: value })
-    if (this.props.onAssignmentsFilterChanged !== undefined &&
-        typeof this.props.onAssignmentsFilterChanged === 'function') {
-      this.props.onAssignmentsFilterChanged({ texterId: value })
+  onTexterSuperSelectChanged(selectedTexter) {
+    if (selectedTexter === null) {
+      return
     }
+
+    this.setState({ texterFilter: selectedTexter })
+    this.props.onTexterChanged(selectedTexter.value)
   }
 
   render() {
-    const texters = [];
-    this.props.campaigns.forEach(campaign => {
-      campaign.assignments.forEach(assignment => {
-        if (assignment.texter && !texters.find((texter) => texter.id === assignment.texter.id)) {
-          texters.push(assignment.texter)
-        }
-      })
-    })
+    const texterNodes = TEXTER_FILTERS.map(texterFilter => (
+      <div
+        key={texterFilter[0]}
+        value={texterFilter[0]}
+        label={texterFilter[1]}
+      >{texterFilter[1]}</div>
+    )).concat(
+      !this.props.texters ? [] : this.props.texters.map(user => {
+        const userId = parseInt(user.id, 10)
+        return (
+          <div
+            key={userId} value={userId} label={user.displayName}
+          >
+            {user.displayName}
+          </div>
+        )
+      }))
+
     const campaignNodes = CAMPAIGN_TYPE_FILTERS.map(campaignTypeFilter => (
       <div
         key={campaignTypeFilter[0]}
@@ -130,6 +147,7 @@ class IncomingMessageFilter extends Component {
         {campaignTypeFilter[1]}
       </div>
     )).concat(
+      ! this.props.campaigns ? [] :
       this.props.campaigns.map(campaign => {
         const campaignId = parseInt(campaign.id, 10)
         return (
@@ -183,25 +201,18 @@ class IncomingMessageFilter extends Component {
                 onChange={this.onCampaignSuperSelectChanged}
               />
             </div>
+            <div className={css(styles.flexColumn)}>
+              <SuperSelectField
+                name={'usersSuperSelectField'}
+                children={texterNodes}
+                nb2show={10}
+                showAutocompleteThreshold={'always'}
+                floatingLabel={'Texter'}
+                hintText={'Type or select'}
+                onChange={this.onTexterSuperSelectChanged}
+              />
+            </div>
           </div>
-          
-          <SelectField
-            value={this.state.texterFilter}
-            hintText='Pick a texter'
-            floatingLabelText='Texter'
-            floatingLabelFixed
-            onChange={this.onTexterSelectChanged}
-          >
-            {texters.map(texter => {
-              return (
-                <MenuItem
-                  key={texter.id}
-                  value={texter.id}
-                  primaryText={texter.displayName}
-                />
-              )
-            })}
-          </SelectField>
         </CardText>
       </Card>
     )
@@ -210,7 +221,9 @@ class IncomingMessageFilter extends Component {
     
 IncomingMessageFilter.propTypes = {
   onCampaignChanged: type.func.isRequired,
+  onTexterChanged: type.func.isRequired,
   campaigns: type.array.isRequired,
+  texters: type.array.isRequired,
   onMessageFilterChanged: type.func.isRequired
 }
 
