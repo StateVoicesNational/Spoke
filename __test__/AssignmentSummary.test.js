@@ -1,18 +1,18 @@
 /**
  * @jest-environment jsdom
  */
-import React from 'react';
-import { mount } from 'enzyme';
-import { StyleSheetTestUtils } from 'aphrodite';
-import each from 'jest-each';
-import { MuiThemeProvider } from '@material-ui/core/styles';
-import CardActions from '@material-ui/core/CardActions';
-import CardHeader from '@material-ui/core/CardHeader';
+import React from 'react'
+import { mount } from 'enzyme'
+import { StyleSheetTestUtils } from 'aphrodite'
+import each from 'jest-each'
+import { MuiThemeProvider } from '@material-ui/core/styles'
+import CardActions from '@material-ui/core/CardActions'
+import CardHeader from '@material-ui/core/CardHeader'
 import { AssignmentSummary } from '../src/components/AssignmentSummary.jsx'
-import Badge from '@material-ui/core/Badge';
-import Button from '@material-ui/core/Button';
+import Badge from '@material-ui/core/Badge'
+import Button from '@material-ui/core/Button'
 
-import muiTheme from '../src/styles/mui-theme';
+import muiTheme from '../src/styles/mui-theme'
 
 function getAssignment(isDynamic = false) {
   return {
