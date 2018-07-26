@@ -20,7 +20,7 @@ export class PaginatedCampaignsRetriever extends Component {
   }
 
   handleCampaignsReceived() {
-    if (this.props.campaigns.loading) {
+    if (!this.props.campaigns || this.props.campaigns.loading) {
       return
     }
 

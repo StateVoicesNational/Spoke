@@ -9,6 +9,7 @@ import gql from 'graphql-tag'
 import loadData from './hoc/load-data'
 import { withRouter } from 'react-router'
 import wrapMutations from './hoc/wrap-mutations'
+import PaginatedUsersRetriever from './PaginatedUsersRetriever'
 
 export class AdminIncomingMessageList extends Component {
 
@@ -23,10 +24,11 @@ export class AdminIncomingMessageList extends Component {
       assignmentsFilter: {},
       needsRender: false,
       utc: Date.now().toString(),
-      campaigns: []
+      campaigns: [],
+      texters: []
     }
 
-    this.handleCampaignChange = this.handleCampaignChange.bind(this)
+    this.handleCampaignChanged = this.handleCampaignChanged.bind(this)
     this.handleMessageFilterChange = this.handleMessageFilterChange.bind(this)
     this.handleAssignmentsFilterChange = this.handleAssignmentsFilterChange.bind(this)
     this.handleReassignRequested = this.handleReassignRequested.bind(this)
@@ -34,9 +36,10 @@ export class AdminIncomingMessageList extends Component {
     this.handlePageSizeChange = this.handlePageSizeChange.bind(this)
     this.handleRowSelection = this.handleRowSelection.bind(this)
     this.handleCampaignsReceived = this.handleCampaignsReceived.bind(this)
+    this.handleUsersReceived = this.handleUsersReceived.bind(this)
+    this.handleTexterChanged = this.handleTexterChanged.bind(this)
   }
 
-  
   shouldComponentUpdate(_, nextState) {
     if (
       !nextState.needsRender &&
@@ -49,7 +52,7 @@ export class AdminIncomingMessageList extends Component {
     return true
   }
 
-  async handleCampaignChange(campaignId) {
+  async handleCampaignChanged(campaignId) {
     let campaignsFilter = {}
     switch (campaignId) {
       case -1:
@@ -67,6 +70,10 @@ export class AdminIncomingMessageList extends Component {
       campaignsFilter,
       needsRender: true
     })
+  }
+
+  async handleTexterChanged(userId) {
+
   }
 
   async handleMessageFilterChange(messagesFilter) {
@@ -124,7 +131,11 @@ export class AdminIncomingMessageList extends Component {
 
   async handleCampaignsReceived(campaigns) {
     this.setState({ campaigns, needsRender: true })
-  } 
+  }
+
+  async handleUsersReceived(texters){
+    this.setState({texters, needsRender: true})
+  }
 
   render() {
     const cursor = {
@@ -135,9 +146,15 @@ export class AdminIncomingMessageList extends Component {
       <div>
         <h3> Message Review </h3>
         {(this.props.organization && this.props.organization.loading) ? (
-          <LoadingIndicator />
+          <LoadingIndicator/>
         ) : (
           <div>
+            <PaginatedUsersRetriever
+              organizationId={this.props.params.organizationId}
+              onUsersReceived={this.handleUsersReceived}
+              pageSize={1000}
+              campaignsFilter={{ isArchived: false }}
+            />
             <PaginatedCampaignsRetriever
               organizationId={this.props.params.organizationId}
               campaignsFilter={{ isArchived: false }}
@@ -145,16 +162,18 @@ export class AdminIncomingMessageList extends Component {
               pageSize={1000}
             />
             <IncomingMessageFilter
-                campaigns={this.state.campaigns}
-                onCampaignChanged={this.handleCampaignChange}
-                onMessageFilterChanged={this.handleMessageFilterChange}
+              campaigns={this.state.campaigns}
+              texters={this.state.texters}
+              onCampaignChanged={this.handleCampaignChanged}
+              onTexterChanged={this.handleTexterChanged}
+              onMessageFilterChanged={this.handleMessageFilterChange}
             />
-            <br />
+            <br/>
             <IncomingMessageActions
               people={this.props.organization.organization.people}
               onReassignRequested={this.handleReassignRequested}
             />
-            <br />
+            <br/>
             <IncomingMessageList
               organizationId={this.props.params.organizationId}
               cursor={cursor}
