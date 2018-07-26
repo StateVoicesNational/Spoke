@@ -25,7 +25,6 @@ export const campaigns = {
 
     it('completes the Basics section', async () => {
       // Title
-      await wait.andClick(driver, form.basics.title)
       await wait.andType(driver, form.basics.title, campaign.basics.title)
       // Description
       await wait.andType(driver, form.basics.description, campaign.basics.description)
@@ -40,7 +39,7 @@ export const campaigns = {
     })
 
     it('completes the Contacts section', async () => {
-      await wait.andType(driver, form.contacts.input, campaign.contacts.csv, { clear: false, elementIsVisible: false, waitAfterVisible: 3000 })
+      await wait.andType(driver, form.contacts.input, campaign.contacts.csv, { clear: false, click: false, elementIsVisible: false, waitAfterVisible: 3000 })
       expect(await wait.andGetEl(driver, form.contacts.uploadedContacts)).toBeDefined()
       // Save
       await wait.andClick(driver, form.save, { waitAfterVisible: 2000 })
@@ -80,12 +79,11 @@ export const campaigns = {
       expect(await wait.andGetEl(driver, form.interactions.editorLaunch)).toBeDefined()
     })
 
-    describe('completes the Interactions section', async () => {
+    describe('completes the Interactions section', () => {
       it('adds an initial question', async () => {
         // Script
         await wait.andClick(driver, form.interactions.editorLaunch)
-        await wait.andClick(driver, pom.scriptEditor.editor, { waitAfterVisible: 2000 })
-        await wait.andType(driver, pom.scriptEditor.editor, campaign.interaction.script, { clear: false })
+        await wait.andType(driver, pom.scriptEditor.editor, campaign.interaction.script, { clear: false, click: false, waitAfterVisible: 3000 })
         await wait.andClick(driver, pom.scriptEditor.done)
         // Question
         await wait.andType(driver, form.interactions.questionText, campaign.interaction.question)
@@ -110,8 +108,7 @@ export const campaigns = {
             await wait.andType(driver, form.interactions.answerOptionChildByIndex(index), answer.answerOption, { clear: false })
             // Answer Script
             await wait.andClick(driver, form.interactions.editorLaunchChildByIndex(index))
-            await wait.andClick(driver, pom.scriptEditor.editor, { waitAfterVisible: 2000 })
-            await wait.andType(driver, pom.scriptEditor.editor, answer.script, { clear: false })
+            await wait.andType(driver, pom.scriptEditor.editor, answer.script, { clear: false, click: false, waitAfterVisible: 3000 })
             await wait.andClick(driver, pom.scriptEditor.done)
             // Answer - Next Question
             await wait.andType(driver, form.interactions.questionTextChildByIndex(index), answer.questionText, { clear: false })
@@ -138,8 +135,7 @@ export const campaigns = {
       await wait.andType(driver, form.cannedResponse.title, campaign.cannedResponses[0].title)
       // Script
       await wait.andClick(driver, form.cannedResponse.editorLaunch)
-      await wait.andClick(driver, pom.scriptEditor.editor, { waitAfterVisible: 3000 })
-      await wait.andType(driver, pom.scriptEditor.editor, campaign.cannedResponses[0].script, { clear: false })
+      await wait.andType(driver, pom.scriptEditor.editor, campaign.cannedResponses[0].script, { clear: false, click: false, waitAfterVisible: 3000 })
       await wait.andClick(driver, pom.scriptEditor.done)
       // Script - Relaunch and cancel (bug?)
       await wait.andClick(driver, form.cannedResponse.editorLaunch, { waitAfterVisible: 2000 })
@@ -231,7 +227,7 @@ export const campaigns = {
       // Expand Basics section
       await wait.andClick(driver, form.basics.section)
       // Change Title
-      await wait.andType(driver, form.basics.title, campaign.basics.title_changed, { click: true, clear: false })
+      await wait.andType(driver, form.basics.title, campaign.basics.title_changed, { clear: false })
       // Save
       await wait.andClick(driver, form.save)
     })
