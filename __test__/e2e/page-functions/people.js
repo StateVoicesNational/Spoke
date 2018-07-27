@@ -30,7 +30,7 @@ export const people = {
     })
 
     it('changes user details', async () => {
-      await wait.andType(driver, pom.people.edit.firstName, user.given_name_changed, { clear: false })
+      await wait.andType(driver, pom.people.edit.firstName, user.given_name_changed, { clear: false, waitAfterVisible: 2000 })
       await wait.andType(driver, pom.people.edit.lastName, user.family_name_changed, { clear: false })
       await wait.andType(driver, pom.people.edit.email, user.email_changed, { clear: false })
       await wait.andType(driver, pom.people.edit.cell, user.cell_changed, { clear: false })
@@ -45,7 +45,7 @@ export const people = {
     })
 
     it('reverts user details back to original settings', async () => {
-      await wait.andType(driver, pom.people.edit.firstName, user.given_name, { clear: false })
+      await wait.andType(driver, pom.people.edit.firstName, user.given_name, { clear: false, waitAfterVisible: 2000 })
       await wait.andType(driver, pom.people.edit.lastName, user.family_name, { clear: false })
       await wait.andType(driver, pom.people.edit.email, user.email, { clear: false })
       await wait.andType(driver, pom.people.edit.cell, user.cell, { clear: false })
