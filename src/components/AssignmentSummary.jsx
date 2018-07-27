@@ -9,6 +9,7 @@ import Badge from 'material-ui/Badge'
 import moment from 'moment'
 import Divider from 'material-ui/Divider'
 import { withRouter } from 'react-router'
+import { dataTest } from '../lib/attributes'
 
 const inlineStyles = {
   badge: {
@@ -59,11 +60,12 @@ export class AssignmentSummary extends Component {
     }
   }
 
-  renderBadgedButton({ assignment, title, count, primary, disabled, contactsFilter, hideIfZero, style }) {
+  renderBadgedButton({ dataTestText, assignment, title, count, primary, disabled, contactsFilter, hideIfZero, style }) {
     if (count === 0 && hideIfZero) { return '' }
     if (count === 0) {
       return (
         <RaisedButton
+          {...dataTest(dataTestText)}
           disabled={disabled}
           label={title}
           primary={primary && !disabled}
@@ -78,6 +80,7 @@ export class AssignmentSummary extends Component {
         secondary={!primary && !disabled}
       >
         <RaisedButton
+          {...dataTest(dataTestText)}
           disabled={disabled}
           label={title}
           onClick={() => this.goToTodos(contactsFilter, assignment.id)}
@@ -87,7 +90,6 @@ export class AssignmentSummary extends Component {
   }
 
   render() {
-
     const { assignment, unmessagedCount, unrepliedCount, badTimezoneCount, totalMessagedCount, pastMessagesCount, skippedMessagesCount } = this.props
     const { title, description, hasUnassignedContacts, dueBy,
             primaryColor, logoImageUrl, introHtml,
@@ -110,6 +112,7 @@ export class AssignmentSummary extends Component {
           </div>
           <CardActions>
             {(window.NOT_IN_USA && window.ALLOW_SEND_ALL) ? '' : this.renderBadgedButton({
+              dataTestText: 'sendFirstTexts',
               assignment,
               title: 'Send first texts',
               count: unmessagedCount,
@@ -119,6 +122,7 @@ export class AssignmentSummary extends Component {
               hideIfZero: !useDynamicAssignment
             })}
             {(window.NOT_IN_USA && window.ALLOW_SEND_ALL) ? '' : this.renderBadgedButton({
+              dataTestText: 'sendReplies',
               assignment,
               title: 'Send replies',
               count: unrepliedCount,

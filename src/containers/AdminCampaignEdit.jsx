@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types'
 import React from 'react'
+import _ from 'lodash'
 import WarningIcon from 'material-ui/svg-icons/alert/warning'
 import DoneIcon from 'material-ui/svg-icons/action/done'
 import Avatar from 'material-ui/Avatar'
@@ -544,6 +545,7 @@ class AdminCampaignEdit extends React.Component {
 
           return (
             <Card
+              {...dataTest(_.camelCase(`${section.title}`))}
               key={section.title}
               expanded={sectionIsExpanded && sectionCanExpandOrCollapse}
               expandable={sectionCanExpandOrCollapse}
