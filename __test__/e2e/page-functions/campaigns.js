@@ -30,16 +30,17 @@ export const campaigns = {
       await wait.andType(driver, form.basics.description, campaign.basics.description)
       // Select a Due Date using the Date Picker
       await wait.andClick(driver, form.basics.dueBy)
-      await wait.andClick(driver, form.datePickerDialog.nextMonth, { waitAfterVisible: 1000 })
-      await wait.andClick(driver, form.datePickerDialog.enabledDate, { waitAfterVisible: 1000 })
+      await wait.andClick(driver, form.datePickerDialog.nextMonth, { waitAfterVisible: 2000 })
+      await wait.andClick(driver, form.datePickerDialog.enabledDate, { waitAfterVisible: 2000 })
       // Save
-      await wait.andClick(driver, form.save, { waitAfterVisible: 3000 })
+      await wait.andClick(driver, form.save, { waitAfterVisible: 2000 })
       // This should switch to the Contacts section
       expect(await wait.andGetEl(driver, form.contacts.uploadButton)).toBeDefined()
+      expect(await wait.andGetEl(driver, form.contacts.input, { elementIsVisible: false })).toBeDefined()
     })
 
     it('completes the Contacts section', async () => {
-      await wait.andType(driver, form.contacts.input, campaign.contacts.csv, { clear: false, click: false, elementIsVisible: false, waitAfterVisible: 3000 })
+      await wait.andType(driver, form.contacts.input, campaign.contacts.csv, { clear: false, click: false, elementIsVisible: false })
       expect(await wait.andGetEl(driver, form.contacts.uploadedContacts)).toBeDefined()
       // Save
       await wait.andClick(driver, form.save, { waitAfterVisible: 2000 })
@@ -64,6 +65,7 @@ export const campaigns = {
         // Assign (All to Texter)
         await wait.andClick(driver, form.texters.autoSplit, { elementIsVisible: false })
         await wait.andType(driver, form.texters.texterAssignmentByText(campaign.admin.given_name), '0')
+        await driver.sleep(1000)
         await wait.andType(driver, form.texters.texterAssignmentByText(campaign.texter.given_name), campaign.texters.contactLength)
         // Validate Assignment
         expect(await wait.andGetValue(driver, form.texters.texterAssignmentByText(campaign.admin.given_name))).toBe('0')
@@ -83,10 +85,10 @@ export const campaigns = {
       it('adds an initial question', async () => {
         // Script
         await wait.andClick(driver, form.interactions.editorLaunch)
-        await wait.andType(driver, pom.scriptEditor.editor, campaign.interaction.script, { clear: false, click: false, waitAfterVisible: 3000 })
+        await wait.andType(driver, pom.scriptEditor.editor, campaign.interaction.script, { clear: false, click: false, waitAfterVisible: 2000 })
         await wait.andClick(driver, pom.scriptEditor.done)
         // Question
-        await wait.andType(driver, form.interactions.questionText, campaign.interaction.question)
+        await wait.andType(driver, form.interactions.questionText, campaign.interaction.question, { waitAfterVisible: 2000 })
         // Save with No Answers Defined
         await wait.andClick(driver, form.interactions.submit)
         await wait.andClick(driver, form.interactions.section, { waitAfterVisible: 2000 })
@@ -105,13 +107,13 @@ export const campaigns = {
           it(`Adds Answer ${index}`, async () => {
             if (index > 0) await wait.andClick(driver, form.interactions.addResponse) // The first (0th) response reuses the empty Answer created above
             // Answer
-            await wait.andType(driver, form.interactions.answerOptionChildByIndex(index), answer.answerOption, { clear: false })
+            await wait.andType(driver, form.interactions.answerOptionChildByIndex(index), answer.answerOption, { clear: false, waitAfterVisible: 2000 })
             // Answer Script
             await wait.andClick(driver, form.interactions.editorLaunchChildByIndex(index))
-            await wait.andType(driver, pom.scriptEditor.editor, answer.script, { clear: false, click: false, waitAfterVisible: 3000 })
+            await wait.andType(driver, pom.scriptEditor.editor, answer.script, { clear: false, click: false, waitAfterVisible: 2000 })
             await wait.andClick(driver, pom.scriptEditor.done)
             // Answer - Next Question
-            await wait.andType(driver, form.interactions.questionTextChildByIndex(index), answer.questionText, { clear: false })
+            await wait.andType(driver, form.interactions.questionTextChildByIndex(index), answer.questionText, { clear: false, waitAfterVisible: 2000 })
           })
         })
         it('validates that all responses were added', async () => {
@@ -135,11 +137,11 @@ export const campaigns = {
       await wait.andType(driver, form.cannedResponse.title, campaign.cannedResponses[0].title)
       // Script
       await wait.andClick(driver, form.cannedResponse.editorLaunch)
-      await wait.andType(driver, pom.scriptEditor.editor, campaign.cannedResponses[0].script, { clear: false, click: false, waitAfterVisible: 3000 })
+      await wait.andType(driver, pom.scriptEditor.editor, campaign.cannedResponses[0].script, { clear: false, click: false, waitAfterVisible: 2000 })
       await wait.andClick(driver, pom.scriptEditor.done)
       // Script - Relaunch and cancel (bug?)
       await wait.andClick(driver, form.cannedResponse.editorLaunch, { waitAfterVisible: 2000 })
-      await wait.andClick(driver, pom.scriptEditor.cancel, { waitAfterVisible: 3000 })
+      await wait.andClick(driver, pom.scriptEditor.cancel, { waitAfterVisible: 2000 })
       // Submit Response
       await wait.andClick(driver, form.cannedResponse.submit, { waitAfterVisible: 2000 })
       // Save
@@ -167,7 +169,7 @@ export const campaigns = {
     })
 
     it('clicks Copy in Stats', async () => {
-      await wait.andClick(driver, pom.campaigns.stats.copy)
+      await wait.andClick(driver, pom.campaigns.stats.copy, { waitAfterVisible: 2000 })
     })
 
     it('verifies copy in Campaigns list', async () => {
