@@ -57,6 +57,7 @@ const waitAnd = async (driver, locator, options) => {
   if (options.elementIsVisible !== false) await driver.wait(until.elementIsVisible(el))
   if (options.waitAfterVisible) await driver.sleep(options.waitAfterVisible)
   if (options.click) await el.click()
+  if (options.keys) await driver.sleep(500)
   if (options.clear) await el.clear()
   if (options.keys) await el.sendKeys(options.keys)
   return el

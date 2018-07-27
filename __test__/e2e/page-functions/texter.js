@@ -28,6 +28,7 @@ export const texter = {
     })
     it('clicks Send', async () => {
       await wait.andClick(driver, pom.texter.optOut.send)
+      await driver.sleep(3000)
     })
   },
   viewInvite(driver) {
