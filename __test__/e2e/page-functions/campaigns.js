@@ -30,8 +30,8 @@ export const campaigns = {
       await wait.andType(driver, form.basics.description, campaign.basics.description)
       // Select a Due Date using the Date Picker
       await wait.andClick(driver, form.basics.dueBy)
-      await wait.andClick(driver, form.datePickerDialog.nextMonth, { waitAfterVisible: 1000 })
-      await wait.andClick(driver, form.datePickerDialog.enabledDate, { waitAfterVisible: 1000 })
+      await wait.andClick(driver, form.datePickerDialog.nextMonth, { waitAfterVisible: 2000 })
+      await wait.andClick(driver, form.datePickerDialog.enabledDate, { waitAfterVisible: 2000 })
       // Save
       await wait.andClick(driver, form.save, { waitAfterVisible: 2000 })
       // This should switch to the Contacts section
