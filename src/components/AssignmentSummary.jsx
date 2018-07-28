@@ -90,7 +90,6 @@ export class AssignmentSummary extends Component {
   }
 
   render() {
-
     const { assignment, unmessagedCount, unrepliedCount, badTimezoneCount, totalMessagedCount, pastMessagesCount, skippedMessagesCount } = this.props
     const { title, description, hasUnassignedContacts, dueBy,
             primaryColor, logoImageUrl, introHtml,
