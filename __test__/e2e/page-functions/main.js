@@ -62,7 +62,7 @@ export const main = {
     })
 
     it('clicks on log out', async () => {
-      await wait.andClick(driver, pom.main.logOut, { waitAfterVisible: 2000 })
+      await wait.andClick(driver, pom.main.logOut, { waitAfterVisible: 3000 })
       const re = /http[s]*:\/\/[^\/]+[\/]*$/g
       await driver.wait(until.urlMatches(re))
     })

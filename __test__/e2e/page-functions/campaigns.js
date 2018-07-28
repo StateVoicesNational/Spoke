@@ -153,7 +153,7 @@ export const campaigns = {
     it('clicks Start Campaign', async () => {
       // Store the new campaign URL into a global for future use.
       global.e2e.newCampaignUrl = await driver.getCurrentUrl()
-      await wait.andClick(driver, pom.campaigns.start)
+      await wait.andClick(driver, pom.campaigns.start, { waitAfterVisible: 2000 })
       // Validate Started
       expect(await wait.andGetEl(driver, pom.campaigns.isStarted)).toBeTruthy()
     })
@@ -222,7 +222,7 @@ export const campaigns = {
     })
 
     it('clicks edit in Stats', async () => {
-      await wait.andClick(driver, pom.campaigns.stats.edit)
+      await wait.andClick(driver, pom.campaigns.stats.edit, { waitAfterVisible: 2000 })
     })
 
     it('changes the title in the Basics section', async () => {

@@ -67,7 +67,7 @@ export const login = {
     })
 
     it('clicks the submit button', async () => {
-      await wait.andClick(driver, auth0.form.submit)
+      await wait.andClick(driver, auth0.form.submit, { waitAfterVisible: 1000 })
     })
   },
   tryLoginThenSignUp(driver, user) {
