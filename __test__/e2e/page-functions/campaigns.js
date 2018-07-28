@@ -20,7 +20,7 @@ export const campaigns = {
     })
 
     it('clicks the + button to add a new campaign', async () => {
-      await wait.andClick(driver, pom.campaigns.add)
+      await wait.andClick(driver, pom.campaigns.add, { goesStale: true })
     })
 
     it('completes the Basics section', async () => {
@@ -31,7 +31,7 @@ export const campaigns = {
       // Select a Due Date using the Date Picker
       await wait.andClick(driver, form.basics.dueBy)
       await wait.andClick(driver, form.datePickerDialog.nextMonth, { waitAfterVisible: 2000 })
-      await wait.andClick(driver, form.datePickerDialog.enabledDate, { waitAfterVisible: 2000 })
+      await wait.andClick(driver, form.datePickerDialog.enabledDate, { waitAfterVisible: 2000, goesStale: true })
       // Save
       await wait.andClick(driver, form.save, { waitAfterVisible: 2000 })
       // This should switch to the Contacts section
@@ -86,7 +86,7 @@ export const campaigns = {
         // Script
         await wait.andClick(driver, form.interactions.editorLaunch)
         await wait.andType(driver, pom.scriptEditor.editor, campaign.interaction.script, { clear: false, click: false, waitAfterVisible: 2000 })
-        await wait.andClick(driver, pom.scriptEditor.done)
+        await wait.andClick(driver, pom.scriptEditor.done, { goesStale: true })
         // Question
         await wait.andType(driver, form.interactions.questionText, campaign.interaction.question, { waitAfterVisible: 2000 })
         // Save with No Answers Defined
@@ -111,7 +111,7 @@ export const campaigns = {
             // Answer Script
             await wait.andClick(driver, form.interactions.editorLaunchChildByIndex(index))
             await wait.andType(driver, pom.scriptEditor.editor, answer.script, { clear: false, click: false, waitAfterVisible: 2000 })
-            await wait.andClick(driver, pom.scriptEditor.done)
+            await wait.andClick(driver, pom.scriptEditor.done, { goesStale: true })
             // Answer - Next Question
             await wait.andType(driver, form.interactions.questionTextChildByIndex(index), answer.questionText, { clear: false, waitAfterVisible: 2000 })
           })
@@ -138,14 +138,14 @@ export const campaigns = {
       // Script
       await wait.andClick(driver, form.cannedResponse.editorLaunch)
       await wait.andType(driver, pom.scriptEditor.editor, campaign.cannedResponses[0].script, { clear: false, click: false, waitAfterVisible: 2000 })
-      await wait.andClick(driver, pom.scriptEditor.done)
+      await wait.andClick(driver, pom.scriptEditor.done, { goesStale: true })
       // Script - Relaunch and cancel (bug?)
       await wait.andClick(driver, form.cannedResponse.editorLaunch, { waitAfterVisible: 2000 })
-      await wait.andClick(driver, pom.scriptEditor.cancel, { waitAfterVisible: 2000 })
+      await wait.andClick(driver, pom.scriptEditor.cancel, { waitAfterVisible: 2000, goesStale: true })
       // Submit Response
-      await wait.andClick(driver, form.cannedResponse.submit, { waitAfterVisible: 2000 })
+      await wait.andClick(driver, form.cannedResponse.submit, { waitAfterVisible: 2000, goesStale: true })
       // Save
-      await wait.andClick(driver, form.save, { waitAfterVisible: 2000 })
+      await wait.andClick(driver, form.save, { waitAfterVisible: 2000, goesStale: true })
       // Should be able to start campaign
       expect(await wait.andIsEnabled(driver, pom.campaigns.start)).toBeTruthy()
     })
@@ -153,7 +153,7 @@ export const campaigns = {
     it('clicks Start Campaign', async () => {
       // Store the new campaign URL into a global for future use.
       global.e2e.newCampaignUrl = await driver.getCurrentUrl()
-      await wait.andClick(driver, pom.campaigns.start, { waitAfterVisible: 2000 })
+      await wait.andClick(driver, pom.campaigns.start, { waitAfterVisible: 2000, goesStale: true })
       // Validate Started
       expect(await wait.andGetEl(driver, pom.campaigns.isStarted)).toBeTruthy()
     })
@@ -165,7 +165,7 @@ export const campaigns = {
     })
 
     it('clicks on an existing campaign', async () => {
-      await wait.andClick(driver, pom.campaigns.campaignRowByText(campaign.basics.title))
+      await wait.andClick(driver, pom.campaigns.campaignRowByText(campaign.basics.title), { goesStale: true })
     })
 
     it('clicks Copy in Stats', async () => {
@@ -218,11 +218,11 @@ export const campaigns = {
     })
 
     it('clicks on an existing campaign', async () => {
-      await wait.andClick(driver, pom.campaigns.campaignRowByText(campaign.basics.title))
+      await wait.andClick(driver, pom.campaigns.campaignRowByText(campaign.basics.title), { goesStale: true })
     })
 
     it('clicks edit in Stats', async () => {
-      await wait.andClick(driver, pom.campaigns.stats.edit, { waitAfterVisible: 2000 })
+      await wait.andClick(driver, pom.campaigns.stats.edit, { waitAfterVisible: 2000, goesStale: true })
     })
 
     it('changes the title in the Basics section', async () => {
