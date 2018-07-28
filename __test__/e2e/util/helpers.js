@@ -60,6 +60,7 @@ const waitAnd = async (driver, locator, options) => {
   if (options.keys) await driver.sleep(500)
   if (options.clear) await el.clear()
   if (options.keys) await el.sendKeys(options.keys)
+  if (options.goesStale) await driver.wait(until.stalenessOf(el))
   return el
 }
 
