@@ -6,7 +6,6 @@ export const texter = {
   sendTexts(driver, campaign) {
     it('refreshes Dashboard', async () => {
       await driver.get(urlBuilder.app.todos())
-      await driver.navigate().refresh()
       await wait.andClick(driver, pom.texter.sendFirstTexts)
     })
     describe('works though the list of assigned contacts', () => {
@@ -17,7 +16,6 @@ export const texter = {
       })
       it('should have an empty todo list', async () => {
         await driver.get(urlBuilder.app.todos())
-        await driver.navigate().refresh()
         expect(await wait.andGetEl(driver, pom.texter.emptyTodo)).toBeDefined()
       })
     })
@@ -39,7 +37,6 @@ export const texter = {
   viewReplies(driver, campaign) {
     it('refreshes Dashboard', async () => {
       await driver.get(urlBuilder.app.todos())
-      await driver.navigate().refresh()
       await wait.andClick(driver, pom.texter.sendReplies)
     })
     it('verifies reply', async () => {
@@ -49,7 +46,6 @@ export const texter = {
   viewSendFirstTexts(driver) {
     it('verifies that Send First Texts button is present', async () => {
       await driver.get(urlBuilder.app.todos())
-      await driver.navigate().refresh()
       expect(await wait.andGetEl(driver, pom.texter.sendFirstTexts)).toBeDefined()
     })
   }
