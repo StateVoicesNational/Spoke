@@ -1,9 +1,10 @@
 import PropTypes from 'prop-types'
 import React, { Component } from 'react'
-import SelectField from 'material-ui/SelectField'
-import MenuItem from 'material-ui/MenuItem'
-import Divider from 'material-ui/Divider'
 import gql from 'graphql-tag'
+import Select from '@material-ui/core/Select'
+import MenuItem from '@material-ui/core/MenuItem'
+import Divider from '@material-ui/core/Divider'
+
 import loadData from './hoc/load-data'
 
 const styles = {
@@ -58,14 +59,7 @@ class AssignmentTexterSurveyDropdown extends Component {
     )
 
     menuItems.push(<Divider />)
-    menuItems.push(
-      <MenuItem
-        key='clear'
-        value='clearResponse'
-        primaryText='Clear response'
-        // onClick={(event) => this.handleAnswerDelete(event, step.id)}
-      />
-    )
+    menuItems.push(<MenuItem key='clear'>Clear response</MenuItem>)
 
     return menuItems
   }

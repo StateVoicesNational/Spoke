@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import RaisedButton from 'material-ui/RaisedButton'
-import CircularProgress from 'material-ui/CircularProgress'
+import Button from '@material-ui/core/Button'
+import CircularProgress from '@material-ui/core/CircularProgress'
 
 const styles = {
   button: {
@@ -25,15 +25,20 @@ const GSSubmitButton = (props) => {
     )
   }
 
+  const { label = '' } = props
+
   return (
     <div style={styles.button} {...props}>
-      <RaisedButton
+      <Button
+        variant='contained'
         primary
         type='submit'
         value='submit'
         {...props}
         {...extraProps}
-      />
+      >
+        {label}
+      </Button>
       {icon}
     </div>
   )

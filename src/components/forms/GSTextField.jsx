@@ -1,5 +1,6 @@
 import React from 'react'
-import TextField from 'material-ui/TextField'
+import TextField from '@material-ui/core/TextField'
+
 import GSFormField from './GSFormField'
 
 export default class GSTextField extends GSFormField {

@@ -1,16 +1,17 @@
 import type from 'prop-types'
 import React from 'react'
 import CampaignCannedResponseForm from './CampaignCannedResponseForm'
-import FlatButton from 'material-ui/FlatButton'
+import Button from '@material-ui/core/Button'
 import Form from 'react-formal'
 import GSForm from './forms/GSForm'
-import { List, ListItem } from 'material-ui/List'
-import Divider from 'material-ui/Divider'
+import List from '@material-ui/core/List'
+import ListItem from '@material-ui/core/ListItem'
+import Divider from '@material-ui/core/Divider'
 import CampaignFormSectionHeading from './CampaignFormSectionHeading'
-import DeleteIcon from 'material-ui/svg-icons/action/delete'
-import IconButton from 'material-ui/IconButton'
+import IconButton from '@material-ui/core/IconButton'
+import DeleteIcon from '@material-ui/icons/Delete'
 import yup from 'yup'
-import CreateIcon from 'material-ui/svg-icons/content/create'
+import CreateIcon from '@material-ui/icons/Create'
 import theme from '../styles/theme'
 import { StyleSheet, css } from 'aphrodite'
 import { dataTest } from '../lib/attributes'
@@ -73,13 +74,14 @@ export default class CampaignCannedResponsesForm extends React.Component {
       )
     }
     return (
-      <FlatButton
+      <Button
         {...dataTest('newCannedResponse')}
         secondary
-        label='Add new canned response'
         icon={<CreateIcon />}
         onClick={() => this.setState({ showForm: true })}
-      />
+      >
+        Add new canned response
+      </Button>
     )
   }
 

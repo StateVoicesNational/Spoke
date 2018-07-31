@@ -1,7 +1,8 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import Navigation from '../components/Navigation'
-import { ListItem } from 'material-ui/List'
+import ListItem from '@material-ui/core/ListItem'
+import ListItemText from '@material-ui/core/ListItemText'
 import { withRouter } from 'react-router'
 import { dataTest } from '../lib/attributes'
 
@@ -22,9 +23,10 @@ class AdminNavigation extends React.Component {
         switchListItem={
           <ListItem
             {...dataTest('navSwitchToTexter')}
-            primaryText='Switch to texter'
             onClick={() => this.props.router.push(`/app/${organizationId}/todos`)}
-          />
+          >
+            <ListItemText primary='Switch to texter' />
+          </ListItem>
         }
       />
     )

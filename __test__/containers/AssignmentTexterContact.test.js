@@ -3,10 +3,10 @@
  */
 import React from 'react'
 import moment from 'moment-timezone'
-import {mount} from "enzyme";
-import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider'
+import {mount} from "enzyme"
+import { MuiThemeProvider } from '@material-ui/core/styles'
 import {StyleSheetTestUtils} from 'aphrodite'
-import {AssignmentTexterContact} from "../../src/containers/AssignmentTexterContact";
+import {AssignmentTexterContact} from "../../src/containers/AssignmentTexterContact"
 
 var MockDate = require('mockdate');
 

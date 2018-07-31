@@ -2,20 +2,23 @@ import type from 'prop-types'
 import React from 'react'
 import orderBy from 'lodash/orderBy'
 import Slider from './Slider'
+// TODO: material-ui
 import AutoComplete from 'material-ui/AutoComplete'
-import IconButton from 'material-ui/IconButton'
-import RaisedButton from 'material-ui/RaisedButton'
-import Snackbar from 'material-ui/Snackbar'
+import IconButton from '@material-ui/core/IconButton'
+import Button from '@material-ui/core/Button'
+import Snackbar from '@material-ui/core/Snackbar'
 import GSForm from '../components/forms/GSForm'
 import yup from 'yup'
 import Form from 'react-formal'
-import { MenuItem } from 'material-ui/Menu'
+import MenuItem from '@material-ui/core/MenuItem'
 import OrganizationJoinLink from './OrganizationJoinLink'
 import CampaignFormSectionHeading from './CampaignFormSectionHeading'
 import { StyleSheet, css } from 'aphrodite'
 import theme from '../styles/theme'
-import Toggle from 'material-ui/Toggle'
-import DeleteIcon from 'material-ui/svg-icons/action/delete'
+import FormGroup from '@material-ui/core/FormGroup'
+import FormControlLabel from '@material-ui/core/FormControlLabel'
+import Switch from '@material-ui/core/Switch'
+import DeleteIcon from '@material-ui/icons/Delete'
 import { dataTest } from '../lib/attributes'
 
 const styles = StyleSheet.create({
@@ -110,6 +113,12 @@ export default class CampaignTextersForm extends React.Component {
     useDynamicAssignment: this.formValues().useDynamicAssignment,
     snackbarOpen: false,
     snackbarMessage: ''
+  }
+
+  constructor(props) {
+    super(props)
+
+    this.handleToggleChange = this.handleToggleChange.bind(this)
   }
 
   handleToggleChange() {
@@ -251,9 +260,10 @@ export default class CampaignTextersForm extends React.Component {
 
   formValues() {
     const unorderedTexters = this.props.formValues.texters
+    const texters = orderBy(unorderedTexters, ['firstName', 'lastName'], ['asc', 'asc'])
     return {
       ...this.props.formValues,
-      texters: orderBy(unorderedTexters, ['firstName', 'lastName'], ['asc', 'asc'])
+      texters
     }
   }
 
@@ -261,16 +271,10 @@ export default class CampaignTextersForm extends React.Component {
     const { orgTexters } = this.props
     const { texters } = this.formValues()
 
-    const dataSource = orgTexters
+    const options = orgTexters
       .filter((orgTexter) =>
         !texters.find((texter) => texter.id === orgTexter.id))
-      .map((orgTexter) =>
-          this.dataSourceItem(orgTexter.displayName,
-          orgTexter.id
-        )
-    )
-
-    const filter = (searchText, key) => ((key === 'allTexters') ? true : AutoComplete.caseInsensitiveFilter(searchText, key))
+      .map((orgTexter) => ({ value: orgTexter.id, label: orgTexter.displayName }))
 
     const autocomplete = (
       <AutoComplete
@@ -278,31 +282,23 @@ export default class CampaignTextersForm extends React.Component {
         style={inlineStyles.autocomplete}
         autoFocus
         onFocus={() => this.setState({ searchText: '' })}
-        onUpdateInput={(searchText) => this.setState({ searchText })}
-        searchText={this.state.searchText}
-        filter={filter}
-        hintText='Search for texters to assign'
-        dataSource={dataSource}
-        onNewRequest={(value) => {
-          // If you're searching but get no match, value is a string
-          // representing your search term, but we only want to handle matches
-          if (typeof value === 'object') {
-            const texterId = value.value.key
-            const newTexter = this.props.orgTexters.find((texter) => texter.id === texterId)
-            this.onChange({
-              texters: [
-                ...this.formValues().texters,
-                {
-                  id: texterId,
-                  firstName: newTexter.firstName,
-                  assignment: {
-                    contactsCount: 0,
-                    needsMessageCount: 0
-                  }
+        placeholder='Search for texters to assign'
+        options={options}
+        handleChange={(value) => {
+          const newTexter = this.props.orgTexters.find((texter) => texter.id === value)
+          this.onChange({
+            texters: [
+              ...this.formValues().texters,
+              {
+                id: texterId,
+                firstName: newTexter.firstName,
+                assignment: {
+                  contactsCount: 0,
+                  needsMessageCount: 0
                 }
-              ]
-            })
-          }
+              }
+            ]
+          })
         }}
       />
     )
@@ -448,14 +444,18 @@ export default class CampaignTextersForm extends React.Component {
           title='Who should send the texts?'
           subtitle={subtitle}
         />
-        <div>
-          <Toggle
-            {...dataTest('useDynamicAssignment')}
+        <FormGroup row>
+          <FormControlLabel
+            control={
+              <Switch
+                {...dataTest('useDynamicAssignment')}
+                checked={this.state.useDynamicAssignment}
+                onChange={this.handleToggleChange}
+              />
+            }
             label='Dynamically assign contacts'
-            toggled={this.state.useDynamicAssignment}
-            onToggle={this.handleToggleChange.bind(this)}
           />
-        </div>
+        </FormGroup>
         <GSForm
           schema={this.formSchema}
           value={this.formValues()}
@@ -465,11 +465,13 @@ export default class CampaignTextersForm extends React.Component {
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           {this.showSearch()}
             <div>
-              <RaisedButton
+              <Button
                 {...dataTest('addAll')}
-                label='Add All'
+                variant='contained'
                 onClick={(() => this.addAllTexters())}
-              />
+              >
+                Add All
+              </Button>
             </div>
           </div>
           <div className={css(styles.sliderContainer)}>
@@ -542,7 +544,7 @@ export default class CampaignTextersForm extends React.Component {
           open={this.state.snackbarOpen}
           message={this.state.snackbarMessage}
           autoHideDuration={3000}
-          onRequestClose={this.handleSnackbarClose}
+          onClose={this.handleSnackbarClose}
         />
       </div>
     )

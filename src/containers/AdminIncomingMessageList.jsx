@@ -9,6 +9,7 @@ import LoadingIndicator from '../components/LoadingIndicator'
 import wrapMutations from './hoc/wrap-mutations'
 
 export class AdminIncomingMessageList extends Component {
+
   constructor(props) {
     super(props)
 

@@ -17,8 +17,8 @@ describe('FAQs component', () => {
 
   // when
   test('Renders question and answer', () => {
-    const question = wrapper.find('CardTitle')
-    const answer = wrapper.find('CardText p')
+    const question = wrapper.find('WithStyles(CardHeader)')
+    const answer = wrapper.find('WithStyles(CardContent) p')
 
     // then
     expect(question.prop('title')).toBe('1. q1')

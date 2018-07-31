@@ -1,18 +1,28 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import loadData from './hoc/load-data'
+import Form from 'react-formal'
 import gql from 'graphql-tag'
+import yup from 'yup'
+import moment from 'moment'
+import { StyleSheet, css } from 'aphrodite'
+
+import Dialog from '@material-ui/core/Dialog'
+import DialogContent from '@material-ui/core/DialogContent'
+import DialogActions from '@material-ui/core/DialogActions'
+import Button from '@material-ui/core/Button'
+import Card from '@material-ui/core/Card'
+import CardHeader from '@material-ui/core/CardHeader'
+import CardContent from '@material-ui/core/CardContent'
+import CardActions from '@material-ui/core/CardActions'
+import FormGroup from '@material-ui/core/FormGroup'
+import FormControlLabel from '@material-ui/core/FormControlLabel'
+import Switch from '@material-ui/core/Switch'
+
+import loadData from './hoc/load-data'
 import wrapMutations from './hoc/wrap-mutations'
 import GSForm from '../components/forms/GSForm'
-import Form from 'react-formal'
-import Dialog from 'material-ui/Dialog'
 import GSSubmitButton from '../components/forms/GSSubmitButton'
-import FlatButton from 'material-ui/FlatButton'
-import yup from 'yup'
-import { Card, CardText, CardActions, CardHeader } from 'material-ui/Card'
-import { StyleSheet, css } from 'aphrodite'
-import Toggle from 'material-ui/Toggle'
-import moment from 'moment'
+
 const styles = StyleSheet.create({
   section: {
     margin: '10px 0'
@@ -80,33 +90,38 @@ class Settings extends React.Component {
           onSubmit={this.handleSubmitTextingHoursForm}
           defaultValue={{ textingHoursStart, textingHoursEnd }}
         >
-          <Form.Field
-            label='Start time'
-            name='textingHoursStart'
-            type='select'
-            fullWidth
-            choices={hourChoices}
-          />
-          <Form.Field
-            label='End time'
-            name='textingHoursEnd'
-            type='select'
-            fullWidth
-            choices={hourChoices}
-          />
-          <div className={css(styles.dialogActions)}>
-            <FlatButton
-              label='Cancel'
-              style={inlineStyles.dialogButton}
-              onClick={this.handleCloseTextingHoursDialog}
+          <DialogContent>
+            <Form.Field
+              label='Start time'
+              name='textingHoursStart'
+              type='select'
+              fullWidth
+              choices={hourChoices}
             />
-            <Form.Button
-              type='submit'
-              style={inlineStyles.dialogButton}
-              component={GSSubmitButton}
-              label='Save'
+            <Form.Field
+              label='End time'
+              name='textingHoursEnd'
+              type='select'
+              fullWidth
+              choices={hourChoices}
             />
-          </div>
+          </DialogContent>
+          <DialogActions>
+            {/* <div className={css(styles.dialogActions)}> */}
+              <Button
+                style={inlineStyles.dialogButton}
+                onClick={this.handleCloseTextingHoursDialog}
+              >
+                Cancel
+              </Button>
+              <Form.Button
+                type='submit'
+                style={inlineStyles.dialogButton}
+                component={GSSubmitButton}
+                label='Save'
+              />
+            {/* </div> */}
+          </DialogActions>
         </GSForm>
       </Dialog>
     )
@@ -117,21 +132,27 @@ class Settings extends React.Component {
     return (
       <div>
         <Card>
-          <CardHeader
-            title='Settings'
-          />
-          <CardText>
+          <CardHeader title='Settings' />
+          <CardContent>
             <div className={css(styles.section)}>
               <span className={css(styles.sectionLabel)}>
               </span>
-              <Toggle
-                toggled={organization.textingHoursEnforced}
-                label='Enforce texting hours?'
-                onToggle={async (event, isToggled) => await this.props.mutations.updateTextingHoursEnforcement(isToggled)}
-              />
+              <FormGroup row>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={organization.textingHoursEnforced}
+                      onChange={async (event, isToggled) => {
+                        await this.props.mutations.updateTextingHoursEnforcement(isToggled)
+                      }}
+                    />
+                  }
+                  label='Enforce texting hours?'
+                />
+              </FormGroup>
             </div>
 
-            {organization.textingHoursEnforced ? (
+            {organization.textingHoursEnforced &&
               <div className={css(styles.section)}>
                 <span className={css(styles.sectionLabel)}>
                   Texting hours:
@@ -142,16 +163,17 @@ class Settings extends React.Component {
                     ` in your organisations local time. Timezone ${window.TZ}`
                   ) : ' in contacts local time (or 12pm-6pm EST if timezone is unknown)'}
               </div>
-            ) : ''}
-          </CardText>
+            }
+          </CardContent>
           <CardActions>
-            {organization.textingHoursEnforced ? (
-              <FlatButton
-                label='Change texting hours'
+            {organization.textingHoursEnforced &&
+              <Button
                 primary
                 onClick={this.handleOpenTextingHoursDialog}
-              />
-            ) : ''}
+              >
+                Change texting hours
+              </Button>
+            }
           </CardActions>
         </Card>
         <div>

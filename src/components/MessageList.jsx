@@ -1,10 +1,12 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import { List, ListItem } from 'material-ui/List'
 import moment from 'moment'
-import ProhibitedIcon from 'material-ui/svg-icons/av/not-interested'
-import Divider from 'material-ui/Divider'
-import { red300 } from 'material-ui/styles/colors'
+
+import List from '@material-ui/core/List'
+import ListItem from '@material-ui/core/ListItem'
+import Divider from '@material-ui/core/Divider'
+import red from '@material-ui/core/colors/red'
+import NotInterestedIcon from '@material-ui/icons/NotInterested'
 
 const styles = {
   optOut: {
@@ -31,7 +33,7 @@ const MessageList = function MessageList(props) {
       <Divider />
       <ListItem
         style={styles.optOut}
-        leftIcon={<ProhibitedIcon style={{ fill: red300 }} />}
+        leftIcon={<NotInterestedIcon style={{ fill: red[300] }} />}
         disabled
         primaryText={`${contact.firstName} opted out of texts`}
         secondaryText={moment(optOut.createdAt).fromNow()}

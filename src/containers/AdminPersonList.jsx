@@ -3,19 +3,106 @@ import React from 'react'
 import Empty from '../components/Empty'
 import OrganizationJoinLink from '../components/OrganizationJoinLink'
 import UserEdit from './UserEdit'
-import FlatButton from 'material-ui/FlatButton'
-import FloatingActionButton from 'material-ui/FloatingActionButton'
-import DropDownMenu from 'material-ui/DropDownMenu'
-import MenuItem from 'material-ui/MenuItem'
-import ContentAdd from 'material-ui/svg-icons/content/add'
-import { Table, TableBody, TableRow, TableRowColumn } from 'material-ui/Table'
-import Dialog from 'material-ui/Dialog'
-import PeopleIcon from 'material-ui/svg-icons/social/people'
+import Button from '@material-ui/core/Button'
+import List from '@material-ui/core/List'
+import ListItem from '@material-ui/core/ListItem'
+import ListItemText from '@material-ui/core/ListItemText'
+import Menu from '@material-ui/core/Menu'
+import MenuItem from '@material-ui/core/MenuItem'
+import AddIcon from '@material-ui/icons/Add'
+import Table from '@material-ui/core/Table'
+import TableBody from '@material-ui/core/TableBody'
+import TableRow from '@material-ui/core/TableRow'
+import TableCell from '@material-ui/core/TableCell'
+import DialogTitle from '@material-ui/core/DialogTitle'
+import DialogContent from '@material-ui/core/DialogContent'
+import DialogActions from '@material-ui/core/DialogActions'
+import PeopleIcon from '@material-ui/icons/People'
 import { getHighestRole, ROLE_HIERARCHY } from '../lib'
 import theme from '../styles/theme'
 import loadData from './hoc/load-data'
 import gql from 'graphql-tag'
 import { dataTest } from '../lib/attributes'
+
+class SelectRoleDropdown extends React.Component {
+  constructor(props) {
+    super(props)
+
+    this.state = {
+      anchorEl: null,
+      personRole: getHighestRole(props.person.roles)
+    }
+
+    this.handleClickRoles = this.handleClickRoles.bind(this)
+    this.handleRoleChange = this.handleRoleChange.bind(this)
+    this.handleCloseRoles = this.handleCloseRoles.bind(this)
+  }
+
+  handleClickRoles(event) {
+    this.setState({ anchorEl: event.currentTarget })
+  }
+
+  handleRoleChange(newRole) {
+    this.props.handleChange(newRole)
+    this.setState({
+      anchorEl: null,
+      personRole: newRole
+    })
+  }
+
+  handleCloseRoles() {
+    this.setState({ anchorEl: null })
+  }
+
+  render() {
+    const { anchorEl, personRole } = this.state
+    const { person, currentUser } = this.props
+    const isCurrentUser = person.id === currentUser.id,
+      isOwner = personRole === 'OWNER' && getHighestRole(currentUser.roles) !== 'OWNER'
+    const isDisabled = isCurrentUser || isOwner
+    return (
+      <div>
+        <List component='nav'>
+          <ListItem
+            button={!isDisabled}
+            aria-haspopup='true'
+            aria-controls={`${person.id}-roles-menu`}
+            aria-label='Contact Roles'
+            onClick={isDisabled ? null : this.handleClickRoles}
+          >
+            <ListItemText
+              primary={personRole}
+            />
+          </ListItem>
+        </List>
+        <Menu
+          id={`${person.id}-roles-menu`}
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={this.handleCloseRoles}
+        >
+          {ROLE_HIERARCHY.map((role) => (
+            <MenuItem
+              key={person.id + '_' + role}
+              disabled={role === 'OWNER' && getHighestRole(currentUser.roles) !== 'OWNER'}
+              selected={personRole === role}
+              onClick={this.handleRoleChange(role)}
+            >
+              {`${role.charAt(0).toUpperCase()}${role.substring(1).toLowerCase()}`}
+            </MenuItem>
+          ))}
+        </Menu>
+      </div>
+    )
+  }
+}
+
+SelectRoleDropdown.propTypes = {
+  currentUser: PropTypes.object,
+  person: PropTypes.object,
+  handleChange: PropTypes.func
+}
+
 
 const organizationFragment = `
   id
@@ -88,29 +175,21 @@ class AdminPersonList extends React.Component {
             <TableRow
               key={person.id}
             >
-              <TableRowColumn>{person.displayName}</TableRowColumn>
-              <TableRowColumn>{person.email}</TableRowColumn>
-              <TableRowColumn>
-                <DropDownMenu
-                  value={getHighestRole(person.roles)}
-                  disabled={person.id === currentUser.id || getHighestRole(person.roles) === 'OWNER' && getHighestRole(currentUser.roles) !== 'OWNER'}
-                  onChange={(event, index, value) => this.handleChange(person.id, value)}
-                >
-                  {ROLE_HIERARCHY.map((option) => (
-                    <MenuItem
-                      key={person.id + '_' + option}
-                      value={option}
-                      disabled={option === 'OWNER' && getHighestRole(currentUser.roles) !== 'OWNER'}
-                      primaryText={`${option.charAt(0).toUpperCase()}${option.substring(1).toLowerCase()}`}
-                    />
-                  ))}
-                </DropDownMenu>
-                <FlatButton
-                  {...dataTest('editPerson')}
-                  label='Edit'
-                  onClick={() => { this.editUser(person.id) }}
+              <TableCell>{person.displayName}</TableCell>
+              <TableCell>{person.email}</TableCell>
+              <TableCell>
+                <SelectRoleDropdown
+                  person={person}
+                  currentUser={currentUser}
+                  handleChange={(newRole) => this.handleChange(person.id, newRole)}
                 />
-              </TableRowColumn>
+                <Button
+                  {...dataTest('editPerson')}
+                  onClick={() => { this.editUser(person.id) }}
+                >
+                  Edit
+                </Button>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -124,43 +203,49 @@ class AdminPersonList extends React.Component {
     return (
       <div>
         {this.renderTexters()}
-        <FloatingActionButton
+        <Button
           {...dataTest('addPerson')}
+          variant='fab'
           style={theme.components.floatingButton}
           onClick={this.handleOpen}
         >
-          <ContentAdd />
-        </FloatingActionButton>
+          <AddIcon />
+        </Button>
         <Dialog
           {...dataTest('editPersonDialog')}
-          title='Edit user'
           modal={false}
           open={Boolean(this.state.userEdit)}
           onRequestClose={() => { this.setState({ userEdit: false }) }}
         >
-          <UserEdit
-            organizationId={organizationData.organization.id}
-            userId={this.state.userEdit}
-            onRequestClose={this.updateUser}
-          />
+          <DialogTitle>Edit user</DialogTitle>
+          <DialogContent>
+            <UserEdit
+              organizationId={organizationData.organization.id}
+              userId={this.state.userEdit}
+              onRequestClose={this.updateUser}
+            />
+          </DialogContent>
         </Dialog>
         <Dialog
-          title='Invite new texters'
-          actions={[
-            <FlatButton
-              {...dataTest('inviteOk')}
-              label='OK'
-              primary
-              onClick={this.handleClose}
-            />
-          ]}
           modal={false}
           open={this.state.open}
           onRequestClose={this.handleClose}
         >
-          <OrganizationJoinLink
-            organizationUuid={organizationData.organization.uuid}
-          />
+          <DialogTitle>Invite new texters</DialogTitle>
+          <DialogContent>
+            <OrganizationJoinLink
+              organizationUuid={organizationData.organization.uuid}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button
+              {...dataTest('inviteOk')}
+              primary
+              onClick={this.handleClose}
+            >
+              OK
+            </Button>
+          </DialogActions>
         </Dialog>
       </div>
     )

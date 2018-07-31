@@ -1,13 +1,14 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import { Toolbar, ToolbarGroup, ToolbarTitle } from 'material-ui/Toolbar'
+import Toolbar from '@material-ui/core/Toolbar'
+import Typography from '@material-ui/core/Typography'
 import { getDisplayPhoneNumber } from '../lib/phone-format'
 import { getLocalTime , getContactTimezone } from '../lib/timezones'
-import { grey100 } from 'material-ui/styles/colors'
+import grey from '@material-ui/core/colors/grey'
 
 const inlineStyles = {
   toolbar: {
-    backgroundColor: grey100
+    backgroundColor: grey[100]
   },
   cellToolbarTitle: {
     fontSize: '1em'
@@ -55,28 +56,22 @@ const ContactToolbar = function ContactToolbar(props) {
   const formattedLocalTime = getLocalTime(offset, hasDST).format('LT') // format('h:mm a')
   return (
     <div>
-      <Toolbar
-        style={inlineStyles.toolbar}
-      >
-        <ToolbarGroup >
-          <ToolbarTitle text={campaignContact.firstName} />
-          <ToolbarTitle
-            style={inlineStyles.cellToolbarTitle}
-          />
-          {location ? (
-            <ToolbarTitle
-              style={inlineStyles.timeToolbarTitle}
-              text={formattedLocalTime}
-            />) : ''
+      <Toolbar style={inlineStyles.toolbar}>
+        <div>
+          <Typography variant='title'>{campaignContact.firstName}</Typography>
+          <Typography variant='title' style={inlineStyles.cellToolbarTitle} />
+          {location &&
+            <Typography variant='title' style={inlineStyles.timeToolbarTitle}>
+              {formattedLocalTime}
+            </Typography>
           }
-          {location ? (
-            <ToolbarTitle
-              style={inlineStyles.locationToolbarTitle}
-              text={formattedLocation}
-            />) : ''
+          {location &&
+            <Typography variant='title' style={inlineStyles.locationToolbarTitle}>
+              {formattedLocation}
+            </Typography>
           }
           {rightToolbarIcon}
-        </ToolbarGroup>
+        </div>
       </Toolbar>
     </div>
   )

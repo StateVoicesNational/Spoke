@@ -1,16 +1,17 @@
 import type from 'prop-types'
 import React from 'react'
-import RaisedButton from 'material-ui/RaisedButton'
+import Button from '@material-ui/core/Button'
 import GSForm from '../components/forms/GSForm'
 import Form from 'react-formal'
-import Subheader from 'material-ui/Subheader'
-import Divider from 'material-ui/Divider'
-import { ListItem, List } from 'material-ui/List'
+import ListSubheader from '@material-ui/core/ListSubheader'
+import Divider from '@material-ui/core/Divider'
+import List from '@material-ui/core/List'
+import ListItem from '@material-ui/core/ListItem'
 import { parseCSV } from '../lib'
 import CampaignFormSectionHeading from './CampaignFormSectionHeading'
-import CheckIcon from 'material-ui/svg-icons/action/check-circle'
-import WarningIcon from 'material-ui/svg-icons/alert/warning'
-import ErrorIcon from 'material-ui/svg-icons/alert/error'
+import CheckIcon from '@material-ui/icons/Check'
+import WarningIcon from '@material-ui/icons/Warning'
+import ErrorIcon from '@material-ui/icons/Error'
 import theme from '../styles/theme'
 import { StyleSheet, css } from 'aphrodite'
 import yup from 'yup'
@@ -124,7 +125,7 @@ export default class CampaignContactsForm extends React.Component {
     }
     return (
       <List>
-        <Subheader>Uploaded</Subheader>
+        <ListSubheader>Uploaded</ListSubheader>
         <ListItem
           {...dataTest('uploadedContacts')}
           primaryText={`${contactsCount} contacts`}
@@ -180,14 +181,16 @@ export default class CampaignContactsForm extends React.Component {
     const { uploading } = this.state
     return (
       <div>
-        <RaisedButton
+        <Button
           {...dataTest('uploadButton')}
+          variant='contained'
           style={innerStyles.button}
-          label={uploading ? 'Uploading...' : 'Upload contacts'}
           labelPosition='before'
           disabled={uploading}
           onClick={() => document.querySelector('#contact-upload').click()}
-        />
+        >
+          {uploading ? 'Uploading...' : 'Upload contacts'}
+        </Button>
         <input
           id='contact-upload'
           type='file'

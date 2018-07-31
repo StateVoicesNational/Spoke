@@ -1,6 +1,7 @@
 import React from 'react'
-import DatePicker from 'material-ui/DatePicker'
 import moment from 'moment'
+import DatePicker from 'material-ui-pickers/DatePicker'
+
 import GSFormField from './GSFormField'
 
 export default class GCDateField extends GSFormField {
