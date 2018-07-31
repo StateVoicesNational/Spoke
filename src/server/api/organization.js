@@ -10,8 +10,9 @@ export const resolvers = {
       'id',
       'name'
     ], Organization),
-    campaigns: async (organization, { campaignsFilter }, { user }) => {
-      await accessRequired(user, organization.id, 'SUPERVOLUNTEER')
+    campaigns: async (organization, { campaignsFilter }, context) => {
+      await accessRequired(context.user, organization.id, 'SUPERVOLUNTEER')
+      context.organization = organization
 
       let query = buildCampaignQuery(
         r.knex.select('*'),
@@ -33,8 +34,9 @@ export const resolvers = {
       return r.table('opt_out')
         .getAll(organization.id, { index: 'organization_id' })
     },
-    people: async (organization, { role }, { user }) => {
-      await accessRequired(user, organization.id, 'SUPERVOLUNTEER')
+    people: async (organization, { role }, context, info) => {
+      context.organization = organization
+      await accessRequired(context.user, organization.id, 'SUPERVOLUNTEER')
       return buildUserOrganizationQuery(r.knex.select('user.*'), organization.id, role)
     },
     threeClickEnabled: (organization) => organization.features.indexOf('threeClick') !== -1,

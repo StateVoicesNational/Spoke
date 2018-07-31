@@ -92,7 +92,8 @@ export const resolvers = {
         .getAll(campaign.id, { index: 'campaign_id' })
         .eqJoin('user_id', r.table('user'))('right')
     ),
-    assignments: async (campaign, {assignmentsFilter} ) => {
+    assignments: async (campaign, {assignmentsFilter}, context) => {
+      context.campaign = campaign
       let query = r.table('assignment')
         .getAll(campaign.id, { index: 'campaign_id' })
 

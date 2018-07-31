@@ -97,18 +97,24 @@ export const resolvers = {
     ...mapFieldsToModel(['id', 'maxContacts'], Assignment),
     texter: async (assignment, _, { loaders }) => loaders.user.load(assignment.user_id),
     campaign: async (assignment, _, { loaders }) => loaders.campaign.load(assignment.campaign_id),
-    contactsCount: async (assignment, { contactsFilter }) => {
-      const campaign = await r.table('campaign').get(assignment.campaign_id)
-
-      const organization = await r.table('organization').get(campaign.organization_id)
-
-      return await r.getCount(getContacts(assignment, contactsFilter, organization, campaign, true))
+    contactsCount: async (assignment, { contactsFilter }, context) => {
+      if (!context.campaign) {
+        context.campaign = await r.table('campaign').get(assignment.campaign_id)
+      }
+      if (!context.organization) {
+        context.organization = await r.table('organization').get(context.campaign.organization_id)
+      }
+      return await r.getCount(getContacts(assignment, contactsFilter,
+                                          context.organization, context.campaign, true))
     },
-    contacts: async (assignment, { contactsFilter }) => {
-      const campaign = await r.table('campaign').get(assignment.campaign_id)
-
-      const organization = await r.table('organization').get(campaign.organization_id)
-      return getContacts(assignment, contactsFilter, organization, campaign)
+    contacts: async (assignment, { contactsFilter }, context) => {
+      if (!context.campaign) {
+        context.campaign = await r.table('campaign').get(assignment.campaign_id)
+      }
+      if (!context.organization) {
+        context.organization = await r.table('organization').get(context.campaign.organization_id)
+      }
+      return getContacts(assignment, contactsFilter, context.organization, context.campaign)
     },
     campaignCannedResponses: async assignment =>
       await r
