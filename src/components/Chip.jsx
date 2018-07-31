@@ -29,11 +29,11 @@ const styles = {
   }
 }
 
-function Chip({ text, iconRightClass, onIconRightTouchTap, onTouchTap, style = {} }) {
+function Chip({ text, iconRightClass, onIconRightTouchTap, onClick, style = {} }) {
   return (
-    <div style={_.extend({}, styles.chip, style)} onTouchTap={onTouchTap}>
+    <div style={_.extend({}, styles.chip, style)} onClick={onClick}>
       {text}
-      {iconRightClass ? React.createElement(iconRightClass, { style: styles.icon, onTouchTap: onIconRightTouchTap }) : ''}
+      {iconRightClass ? React.createElement(iconRightClass, { style: styles.icon, onClick: onIconRightTouchTap }) : ''}
     </div>
   )
 }
@@ -42,7 +42,7 @@ Chip.propTypes = {
   text: PropTypes.element,
   iconRightClass: PropTypes.string,
   onIconRightTouchTap: PropTypes.func,
-  onTouchTap: PropTypes.func,
+  onClick: PropTypes.func,
   style: PropTypes.object
 }
 
