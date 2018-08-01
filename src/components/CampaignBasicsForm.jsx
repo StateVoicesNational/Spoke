@@ -7,6 +7,7 @@ import GSForm from './forms/GSForm'
 import yup from 'yup'
 import Toggle from 'material-ui/Toggle'
 import ColorPicker from 'material-ui-color-picker'
+import { dataTest } from '../lib/attributes'
 
 const FormSchema = {
   title: yup.string(),
@@ -54,18 +55,21 @@ export default class CampaignBasicsForm extends React.Component {
           onSubmit={this.props.onSubmit}
         >
           <Form.Field
+            {...dataTest('title')}
             name='title'
             label='Title'
             hintText='e.g. Election Day 2016'
             fullWidth
           />
           <Form.Field
+            {...dataTest('description')}
             name='description'
             label='Description'
             hintText='Get out the vote'
             fullWidth
           />
           <Form.Field
+            {...dataTest('dueBy')}
             name='dueBy'
             label='Due date'
             type='date'
