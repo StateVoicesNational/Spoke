@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="150px" height="38px" viewBox="0 0 150 38" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 51.2 (57519) - http://www.bohemiancoding.com/sketch -->
+    <title>BOLSTER</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="BOLSTER" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <text font-family="AvenirNext-DemiBold, Avenir Next" font-size="30" font-weight="500" letter-spacing="0.625" fill="#000000">
+            <tspan x="6" y="30">BOLSTER</tspan>
+        </text>
+        <path d="M129.15,16.5 L129.15,22.5" id="Line-3" stroke="#FFFFFF" stroke-width="2" stroke-linecap="square"></path>
+        <path d="M57.5,7.5 L52.5,9.5" id="Line" stroke="#FFFFFF" stroke-width="3" stroke-linecap="square"></path>
+    </g>
+</svg>
