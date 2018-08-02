@@ -1,6 +1,7 @@
 import { applyScript } from '../../lib/scripts'
 import camelCaseKeys from 'camelcase-keys'
 import isUrl from 'is-url'
+import { buildCampaignQuery } from './campaign'
 
 import {
   Assignment,
@@ -18,14 +19,17 @@ import {
   r,
   datawarehouse
 } from '../models'
-import { schema as userSchema, resolvers as userResolvers } from './user'
-import { schema as conversationSchema, resolvers as conversationsResolver } from './conversations'
+import { schema as userSchema, resolvers as userResolvers, buildUserOrganizationQuery } from './user'
+import {
+  schema as conversationSchema,
+  getConversations,
+  resolvers as conversationsResolver
+} from './conversations'
 import { schema as organizationSchema, resolvers as organizationResolvers } from './organization'
 import { schema as campaignSchema, resolvers as campaignResolvers } from './campaign'
 import {
   schema as assignmentSchema,
   resolvers as assignmentResolvers,
-  addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue
 } from './assignment'
 import {
   schema as interactionStepSchema,
@@ -77,182 +81,6 @@ import { GraphQLError } from 'graphql/error'
 
 const JOBS_SAME_PROCESS = !!(process.env.JOBS_SAME_PROCESS || global.JOBS_SAME_PROCESS)
 const JOBS_SYNC = !!(process.env.JOBS_SYNC || global.JOBS_SYNC)
-
-const rootSchema = `
-  input CampaignContactInput {
-    firstName: String!
-    lastName: String!
-    cell: String!
-    zip: String
-    external_id: String
-    customFields: String
-  }
-
-  input OptOutInput {
-    assignmentId: String!
-    cell: Phone!
-    reason: String
-  }
-
-  input QuestionResponseInput {
-    campaignContactId: String!
-    interactionStepId: String!
-    value: String!
-  }
-
-  input AnswerOptionInput {
-    action: String
-    value: String!
-    nextInteractionStepId: String
-  }
-
-  input InteractionStepInput {
-    id: String
-    questionText: String
-    script: String
-    answerOption: String
-    answerActions: String
-    parentInteractionId: String
-    isDeleted: Boolean
-    source: String
-    externalQuestion: String
-    externalResponse: String
-    interactionSteps: [InteractionStepInput]
-  }
-
-  input TexterInput {
-    id: String
-    needsMessageCount: Int
-    maxContacts: Int
-    contactsCount: Int
-  }
-
-  input CampaignInput {
-    title: String
-    description: String
-    dueBy: Date
-    logoImageUrl: String
-    primaryColor: String
-    introHtml: String
-    useDynamicAssignment: Boolean
-    contacts: [CampaignContactInput]
-    contactSql: String
-    organizationId: String
-    texters: [TexterInput]
-    interactionSteps: InteractionStepInput
-    cannedResponses: [CannedResponseInput]
-  }
-
-  input MessageInput {
-    text: String
-    contactNumber: Phone
-    assignmentId: String
-    userId: String
-  }
-
-  input InviteInput {
-    id: String
-    is_valid: Boolean
-    hash: String
-    created_at: Date
-  }
-
-  input UserInput {
-    id: String
-    firstName: String!
-    lastName: String!
-    email: String!
-    cell: String!
-    oldPassword: String
-    newPassword: String
-  }
-
-  input ContactMessage {
-    message: MessageInput!
-    campaignContactId: String!
-  }
-
-  input OffsetLimitCursor {
-    offset: Int!
-    limit: Int!
-  }
-
-  input CampaignIdContactId {
-    campaignId: String!
-    campaignContactId: Int!
-    messageIds: [Int]!
-  }
-
-  type CampaignIdAssignmentId {
-    campaignId: String!
-    assignmentId: String!
-  }
-
-  type Action {
-    name: String
-    display_name: String
-    instructions: String
-  }
-
-  type FoundContact {
-    found: Boolean
-  }
-
-  type PageInfo {
-    limit: Int!
-    offset: Int!
-    next: Int!
-    previous: Int
-    total: Int!
-  }
-
-  type RootQuery {
-    currentUser: User
-    organization(id:String!, utc:String): Organization
-    campaign(id:String!): Campaign
-    inviteByHash(hash:String!): [Invite]
-    contact(id:String!): CampaignContact
-    assignment(id:String!): Assignment
-    organizations: [Organization]
-    availableActions(organizationId:String!): [Action]
-    conversations(cursor:OffsetLimitCursor!, organizationId:String!, campaignsFilter:CampaignsFilter, assignmentsFilter:AssignmentsFilter, contactsFilter:ContactsFilter, utc:String): PaginatedConversations
-  }
-
-  type RootMutation {
-    createInvite(invite:InviteInput!): Invite
-    createCampaign(campaign:CampaignInput!): Campaign
-    editCampaign(id:String!, campaign:CampaignInput!): Campaign
-    copyCampaign(id: String!): Campaign
-    exportCampaign(id:String!): JobRequest
-    createCannedResponse(cannedResponse:CannedResponseInput!): CannedResponse
-    createOrganization(name: String!, userId: String!, inviteId: String!): Organization
-    joinOrganization(organizationUuid: String!): Organization
-    editOrganizationRoles(organizationId: String!, userId: String!, roles: [String]): Organization
-    editUser(organizationId: String!, userId: Int!, userData:UserInput): User
-    updateTextingHours( organizationId: String!, textingHoursStart: Int!, textingHoursEnd: Int!): Organization
-    updateTextingHoursEnforcement( organizationId: String!, textingHoursEnforced: Boolean!): Organization
-    updateOrganizationFeatures( organizationId: String!, osdiEnabled: Boolean, osdiApiUrl: String, osdiApiToken: String ) : Organization
-    bulkSendMessages(assignmentId: Int!): [CampaignContact]
-    sendMessage(message:MessageInput!, campaignContactId:String!): CampaignContact,
-    createOptOut(optOut:OptOutInput!, campaignContactId:String!):CampaignContact,
-    editCampaignContactMessageStatus(messageStatus: String!, campaignContactId:String!): CampaignContact,
-    deleteQuestionResponses(interactionStepIds:[String], campaignContactId:String!): CampaignContact,
-    updateQuestionResponses(questionResponses:[QuestionResponseInput], campaignContactId:String!): CampaignContact,
-    startCampaign(id:String!): Campaign,
-    archiveCampaign(id:String!): Campaign,
-    unarchiveCampaign(id:String!): Campaign,
-    sendReply(id: String!, message: String!): CampaignContact
-    findNewCampaignContact(assignmentId: String!, numberContacts: Int!): FoundContact,
-    assignUserToCampaign(organizationUuid: String!, campaignId: String!): Campaign
-    userAgreeTerms(userId: String!): User
-    reassignCampaignContacts(organizationId:String!, campaignIdsContactIds:[CampaignIdContactId]!, newTexterUserId:String!):[CampaignIdAssignmentId]
-  }
-
-  schema {
-    query: RootQuery
-    mutation: RootMutation
-  }
-`
 
 async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
   const {
@@ -1281,6 +1109,7 @@ const rootMutations = {
 
           await r
             .knex('campaign_contact')
+            .where('campaign_id', campaignId)
             .whereIn('id', campaignContactIds)
             .update({
               assignment_id: assignmentId
@@ -1313,37 +1142,6 @@ const rootMutations = {
       return returnCampaignIdAssignmentIds
     }
   }
-}
-
-function getConversationsJoinsAndWhereClause(
-  queryParam,
-  organizationId,
-  campaignsFilter,
-  assignmentsFilter,
-  contactsFilter
-) {
-  let query = queryParam
-    .from('campaign')
-    .leftJoin('campaign_contact', 'campaign.id', 'campaign_contact.campaign_id')
-    .leftJoin('assignment', 'campaign_contact.assignment_id', 'assignment.id')
-    .leftJoin('user', 'assignment.user_id', 'user.id')
-    .where({ 'campaign.organization_id': organizationId })
-
-  if (campaignsFilter) {
-    if ('isArchived' in campaignsFilter && campaignsFilter.isArchived !== null) {
-      query = query.where({ 'campaign.is_archived': campaignsFilter.isArchived })
-    }
-    if ('campaignId' in campaignsFilter && campaignsFilter.campaignId !== null) {
-      query = query.where({ 'campaign.id': parseInt(campaignsFilter.campaignId) })
-    }
-  }
-
-  if (assignmentsFilter) {
-    if ('texterId' in assignmentsFilter && assignmentsFilter.texterId !== null)
-      query = query.where({ 'assignment.user_id': assignmentsFilter.texterId })
-  }
-
-  return addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue(query, contactsFilter)
 }
 
 const rootResolvers = {
@@ -1427,55 +1225,19 @@ const rootResolvers = {
     ) => {
       await accessRequired(user, organizationId, 'SUPERVOLUNTEER', true)
 
-      let query = r.knex.select(
-        'campaign_contact.id as cc_id',
-        'campaign_contact.first_name as cc_first_name',
-        'campaign_contact.last_name as cc_last_name',
-        'campaign_contact.message_status',
-        'campaign_contact.is_opted_out',
-        'campaign_contact.updated_at',
-        'campaign_contact.cell',
-        'campaign_contact.assignment_id',
-        'user.id as u_id',
-        'user.first_name as u_first_name',
-        'user.last_name as u_last_name',
-        'campaign.id as cmp_id',
-        'campaign.title',
-        'campaign.due_by',
-        'assignment.id as ass_id'
-      )
-
-      query = getConversationsJoinsAndWhereClause(
-        query,
+      return getConversations(
+        cursor,
         organizationId,
         campaignsFilter,
         assignmentsFilter,
-        contactsFilter
+        contactsFilter,
+        utc
       )
-
-      query = query.orderBy('campaign_contact.updated_at').orderBy('cc_id')
-      query = query.limit(cursor.limit).offset(cursor.offset)
-
-      const conversations = await query
-
-      const countQuery = r.knex.count('*')
-      const conversationsCountArray = await getConversationsJoinsAndWhereClause(countQuery, organizationId, campaignsFilter, assignmentsFilter, contactsFilter)
-      const pageInfo = {
-        limit: cursor.limit,
-        offset: cursor.offset,
-        //next: offsetLimitCursor.next,
-        //previous: offsetLimitCursor.previous,
-        total: conversationsCountArray[0].count
-      }
-
-      return {
-        conversations,
-        pageInfo
-      }
     }
   }
 }
 
+<<<<<<< HEAD
 export const schema = [
   rootSchema,
   userSchema,
@@ -1498,6 +1260,8 @@ export const schema = [
   conversationSchema
 ]
 
+=======
+>>>>>>> upstream/main
 export const resolvers = {
   ...rootResolvers,
   ...userResolvers,

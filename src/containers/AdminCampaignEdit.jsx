@@ -15,6 +15,7 @@ import CampaignContactsForm from '../components/CampaignContactsForm'
 import CampaignTextersForm from '../components/CampaignTextersForm'
 import CampaignInteractionStepsForm from '../components/CampaignInteractionStepsForm'
 import CampaignCannedResponsesForm from '../components/CampaignCannedResponsesForm'
+import { dataTest } from '../lib/attributes'
 
 const campaignInfoFragment = `
   id
@@ -33,6 +34,7 @@ const campaignInfoFragment = `
   texters {
     id
     firstName
+    lastName
     assignment(campaignId:$campaignId) {
       contactsCount
       needsMessageCount: contactsCount(contactsFilter:{messageStatus:\"needsMessage\"})
@@ -190,7 +192,7 @@ class AdminCampaignEdit extends React.Component {
             cell: contact.cell,
             firstName: contact.firstName,
             lastName: contact.lastName,
-            zip: contact.zip,
+            zip: contact.zip || '',
             external_id: contact.external_id || ''
           }
           Object.keys(contact).forEach((key) => {
@@ -387,6 +389,7 @@ class AdminCampaignEdit extends React.Component {
   renderHeader() {
     const notStarting = this.props.campaignData.campaign.isStarted ? (
       <div
+        {...dataTest('campaignIsStarted')}
         style={{
           color: theme.colors.green,
           fontWeight: 800
@@ -464,6 +467,7 @@ class AdminCampaignEdit extends React.Component {
             />
           )}
           <RaisedButton
+            {...dataTest('startCampaign')}
             primary
             label='Start This Campaign!'
             disabled={!isCompleted}
@@ -626,6 +630,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
         texters: people {
           id
           firstName
+          lastName
           displayName
         }
       }

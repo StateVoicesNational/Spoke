@@ -1,6 +1,6 @@
 {
   "name": "spoke",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Spoke",
   "main": "src/server",
   "engines": {
@@ -9,7 +9,7 @@
   },
   "scripts": {
     "test": "jest",
-    "test-e2e": "jest --config jest.config.e2e.js",
+    "test-e2e": "jest --runInBand --config jest.config.e2e.js",
     "test-sqlite": "jest --config jest.config.sqlite.js",
     "test-coverage": "jest --coverage",
     "test-coverage-bothbackends": "jest --config jest.config.sqlite.js &&  jest --coverage",
@@ -40,7 +40,7 @@
     "generate-contacts": "./dev-tools/babel-run ./dev-tools/generate-contacts.js",
     "jest-test": "jest __test__/backend.test.js",
     "dev": "nf start -w --procfile ./dev-tools/Procfile.dev",
-    "dev-nowrap": "nf start --procfile ./dev-tools/Procfile.dev --env ./__test__/e2e/.env.e2e",
+    "dev-nowrap": "nf start --trim 500 --procfile ./dev-tools/Procfile.dev --env ./__test__/e2e/.env.e2e",
     "debug-server": "nf start -w --procfile ./dev-tools/Procfile-debug-server.dev",
     "dev-other": "nf start -w --procfile ./dev-tools/Procfile-other.dev"
   },
@@ -172,6 +172,7 @@
     "regenerator-runtime": "^0.10.5",
     "selenium-webdriver": "^3.6.0",
     "sqlite3": "^3.1.9",
+    "wait-on": "^2.1.0",
     "webpack-dev-server": "^2.9.4"
   }
 }

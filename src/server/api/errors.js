@@ -1,5 +1,4 @@
 import { GraphQLError } from 'graphql/error'
-
 import { r } from '../models'
 import { userHasRole } from '../models/cacheable-queries'
 
@@ -24,12 +23,9 @@ export async function accessRequired(user, orgId, role, allowSuperadmin = false)
   }
   // require a permission at-or-higher than the permission requested
   const acceptableRoles = accessHierarchy.slice(accessHierarchy.indexOf(role))
-  const hasRole = userHasRole(user.id, orgId, acceptableRoles)
+  const hasRole = await userHasRole(user.id, orgId, acceptableRoles)
   if (!hasRole) {
-    throw new GraphQLError({
-      status: 403,
-      message: 'You are not authorized to access that resource.'
-    })
+    throw new GraphQLError('You are not authorized to access that resource.')
   }
 }
 
@@ -47,10 +43,7 @@ export async function assignmentRequired(user, assignmentId) {
   }).limit(1)
 
   if (typeof assignment === 'undefined') {
-    throw new GraphQLError({
-      status: 403,
-      message: 'You are not authorized to access that resource.'
-    })
+    throw new GraphQLError('You are not authorized to access that resource.')
   }
 }
 
@@ -58,10 +51,7 @@ export function superAdminRequired(user) {
   authRequired(user)
 
   if (!user.is_superadmin) {
-    throw new GraphQLError({
-      status: 403,
-      message: 'You are not authorized to access that resource.'
-    })
+    throw new GraphQLError('You are not authorized to access that resource.')
   }
 }
 
