@@ -102,7 +102,7 @@ class Home extends React.Component {
       <div className={css(styles.container)}>
         <div className={css(styles.logoDiv)}>
           <img
-            src='https://raw.githubusercontent.com/ReviewKit/Bolster1/main/ramio-logo.png'
+            src='https://github.com/ReviewKit/Bolster1/blob/main/BOLSTER.svg'
             className={css(styles.logoImg)}
           />
         </div>
