@@ -73,16 +73,19 @@ export async function processAction(questionResponse, interactionStep, campaignC
         }
       ]
     }
-    console.log('request body is', JSON.stringify(body))
-    const client = axios.create({
+    const client = axios.create({ // move this to the global scope, perhaps?
       baseURL: osdiApiUrl,
       headers: { 'OSDI-Api-Token': osdiApiToken }
     })
     client.post(`/people/${external_id}/record_canvass_helper/`, body)
-    .then(res => {
-      console.log(res)
+    .then(({ status, statusText }) => {
+      console.log('received', status, statusText,
+      'for', JSON.stringify(body))
     })
-    .catch(console.error)
+    .catch(({ status, statusText }) => {
+      console.error('error', status, statusText,
+      'for', JSON.stringify(body))
+    })
 
     // await r.knex('campaign_contact')
     //   .where('id', campaignContactId)
