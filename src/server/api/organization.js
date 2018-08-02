@@ -21,25 +21,6 @@ export const resolvers = {
       query = query.orderBy('due_by', 'desc')
       return query
     },
-    osdiLists: async (organization, { osdiListFilter }, { user }) => {
-      // This is probably not working, since I took it apart to write the osdiQuestions function
-      await hasOsdiConfigured(organization)
-      const {osdiApiUrl, osdiApiToken} = organization.features
-      const client = await osdi.client(organization.features.osdiApiUrl)
-      // const client = await osdi.client(organization.features.osdiApiUrl).set('OSDI-API-Token', organization.features.osdiApiToken)
-
-      let lists = []
-      let res = client.parse(await client.getLists())
-
-      lists = lists.contact(res.lists)
-
-      while (res.nextPage) {
-        res = client.parse(await res.nextPage())
-        lists = lists.contact(res.lists)
-      }
-
-      return lists
-    },
     osdiQuestions: async (organization, args, context, info) => {
       // TODO pagination!
       await hasOsdiConfigured(organization)

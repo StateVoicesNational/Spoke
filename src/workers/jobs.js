@@ -234,10 +234,6 @@ export async function loadContactsFromDataWarehouse(job) {
   }
 }
 
-export async function loadContactsFromOsdiListApi(listId) {
-  const client = await osdi.client(process.env.OSDI_API_URL).set('OSDI-API-Token', process.env.OSDI_API_TOKEN)
-}
-
 export async function assignTexters(job) {
   // Assigns UNassigned campaign contacts to texters
   // It does NOT re-assign contacts to other texters

@@ -52,9 +52,6 @@ import {
   resolvers as cannedResponseResolvers
 } from './canned-response'
 import { schema as inviteSchema, resolvers as inviteResolvers } from './invite'
-import {
-  schema as osdiListSchema
-} from './osdi-list'
 import { schema as osdiQuestionsSchema } from './osdi-questions'
 import {
   authRequired,
@@ -1237,31 +1234,6 @@ const rootResolvers = {
   }
 }
 
-<<<<<<< HEAD
-export const schema = [
-  rootSchema,
-  userSchema,
-  organizationSchema,
-  'scalar Date',
-  'scalar JSON',
-  'scalar Phone',
-  campaignSchema,
-  assignmentSchema,
-  interactionStepSchema,
-  optOutSchema,
-  messageSchema,
-  campaignContactSchema,
-  cannedResponseSchema,
-  questionResponseSchema,
-  questionSchema,
-  inviteSchema,
-  osdiListSchema,
-  osdiQuestionsSchema,
-  conversationSchema
-]
-
-=======
->>>>>>> upstream/main
 export const resolvers = {
   ...rootResolvers,
   ...userResolvers,
