@@ -1,8 +1,9 @@
 import { mapFieldsToModel } from './lib/utils'
 import { r, Organization } from '../models'
-import { accessRequired } from './errors'
+import { accessRequired, hasOsdiConfigured } from './errors'
 import { buildCampaignQuery } from './campaign'
 import { buildUserOrganizationQuery } from './user'
+import axios from 'axios'
 
 export const resolvers = {
   Organization: {
