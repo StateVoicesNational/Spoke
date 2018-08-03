@@ -68,6 +68,9 @@ const rootSchema = `
     answerActions: String
     parentInteractionId: String
     isDeleted: Boolean
+    source: String
+    externalQuestion: String
+    externalResponse: String
     interactionSteps: [InteractionStepInput]
   }
 
