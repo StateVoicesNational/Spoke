@@ -209,8 +209,6 @@ class IncomingMessageFilter extends Component {
                 floatingLabel={'Texter'}
                 hintText={'Type or select'}
                 onChange={this.onTexterSuperSelectChanged}
-                value={'texterId' in this.props.assignmentsFilter ?
-                  {value: this.props.assignmentsFilter.texterId} : {value: -1, label: 'All textersxx'}}
               />
             </div>
           </div>
