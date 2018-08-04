@@ -104,7 +104,6 @@ class IncomingMessageFilter extends Component {
 
   onCampaignSuperSelectChanged(selectedCampaign) {
     if (selectedCampaign === null) {
-      return
     }
     this.setState({ campaignsFilter: selectedCampaign })
     this.props.onCampaignChanged(selectedCampaign.value)
@@ -147,20 +146,20 @@ class IncomingMessageFilter extends Component {
         {campaignTypeFilter[1]}
       </div>
     )).concat(
-      ! this.props.campaigns ? [] :
-      this.props.campaigns.map(campaign => {
-        const campaignId = parseInt(campaign.id, 10)
-        return (
-          <div key={campaignId} value={campaignId} label={campaign.title}>
-            {campaign.title}
-          </div>
-        )
-      })
+      !this.props.campaigns ? [] :
+        this.props.campaigns.map(campaign => {
+          const campaignId = parseInt(campaign.id, 10)
+          return (
+            <div key={campaignId} value={campaignId} label={campaign.title}>
+              {campaign.title}
+            </div>
+          )
+        })
     )
 
     return (
       <Card>
-        <CardHeader title='Message Filter' actAsExpander showExpandableButton />
+        <CardHeader title='Message Filter' actAsExpander showExpandableButton/>
         <CardText expandable>
           <div className={css(styles.container)}>
             <div className={css(styles.flexColumn)}>
@@ -189,7 +188,7 @@ class IncomingMessageFilter extends Component {
                 })}
               </SelectField>
             </div>
-            <div className={css(styles.spacer)} />
+            <div className={css(styles.spacer)}/>
             <div className={css(styles.flexColumn)}>
               <SuperSelectField
                 name={'campaignsSuperSelectField'}
@@ -210,21 +209,26 @@ class IncomingMessageFilter extends Component {
                 floatingLabel={'Texter'}
                 hintText={'Type or select'}
                 onChange={this.onTexterSuperSelectChanged}
+                value={'texterId' in this.props.assignmentsFilter ?
+                  {value: this.props.assignmentsFilter.texterId} : {value: -1, label: 'All textersxx'}}
               />
             </div>
           </div>
         </CardText>
       </Card>
     )
-      }
-    }
-    
+  }
+}
+
 IncomingMessageFilter.propTypes = {
   onCampaignChanged: type.func.isRequired,
   onTexterChanged: type.func.isRequired,
   campaigns: type.array.isRequired,
   texters: type.array.isRequired,
-  onMessageFilterChanged: type.func.isRequired
+  onMessageFilterChanged: type.func.isRequired,
+  assignmentsFilter: type.shape({
+    texterId: type.number
+  }).isRequired
 }
 
 export default IncomingMessageFilter

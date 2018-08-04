@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import _ from 'lodash'
 
 import IncomingMessageActions from '../components/IncomingMessageActions'
 import IncomingMessageFilter from '../components/IncomingMessageFilter'
@@ -21,6 +22,7 @@ export class AdminIncomingMessageList extends Component {
       pageSize: 10,
       contactsFilter: {},
       campaignsFilter: {},
+      campaignsFilterForTexterFiltering: { isArchived: false },
       assignmentsFilter: {},
       needsRender: false,
       utc: Date.now().toString(),
@@ -30,7 +32,6 @@ export class AdminIncomingMessageList extends Component {
 
     this.handleCampaignChanged = this.handleCampaignChanged.bind(this)
     this.handleMessageFilterChange = this.handleMessageFilterChange.bind(this)
-    this.handleAssignmentsFilterChange = this.handleAssignmentsFilterChange.bind(this)
     this.handleReassignRequested = this.handleReassignRequested.bind(this)
     this.handlePageChange = this.handlePageChange.bind(this)
     this.handlePageSizeChange = this.handlePageSizeChange.bind(this)
@@ -43,9 +44,9 @@ export class AdminIncomingMessageList extends Component {
   shouldComponentUpdate(_, nextState) {
     if (
       !nextState.needsRender &&
-      nextState.contactsFilter === this.state.contactsFilter &&
-      nextState.campaignsFilter === this.state.campaignsFilter &&
-      nextState.assignmentsFilter === this.state.assignmentsFilter
+      _.isEqual(this.state.contactsFilter, nextState.contactsFilter) &&
+      _.isEqual(this.state.campaignsFilter, nextState.campaignsFilter) &&
+      _.isEqual(this.state.assignmentsFilter, nextState.assignmentsFilter) 
     ) {
       return false
     }
@@ -54,38 +55,40 @@ export class AdminIncomingMessageList extends Component {
 
   async handleCampaignChanged(campaignId) {
     let campaignsFilter = {}
+    let campaignsFilterForTexterFiltering = {isArchived:false}
     switch (campaignId) {
       case -1:
         break
       case -2:
-        campaignsFilter = { isArchived: false }
+        campaignsFilterForTexterFiltering = campaignsFilter = { isArchived: false }
         break
       case -3:
-        campaignsFilter = { isArchived: true }
+        campaignsFilterForTexterFiltering = campaignsFilter = { isArchived: true }
         break
       default:
-        campaignsFilter = { campaignId }
+        campaignsFilterForTexterFiltering = campaignsFilter = { campaignId }
     }
     await this.setState({
+      campaignsFilterForTexterFiltering,
       campaignsFilter,
       needsRender: true
     })
   }
 
-  async handleTexterChanged(userId) {
-
+  async handleTexterChanged(texterId) {
+    const assignmentsFilter = {}
+    if (texterId >= 0) {
+      assignmentsFilter.texterId = texterId
+    }
+    await this.setState({
+      assignmentsFilter,
+      needsRender: true
+    })
   }
 
   async handleMessageFilterChange(messagesFilter) {
     await this.setState({
       contactsFilter: { messageStatus: messagesFilter },
-      needsRender: true
-    })
-  }
-
-  async handleAssignmentsFilterChange(assignmentsFilter) {
-    await this.setState({
-      assignmentsFilter: assignmentsFilter,
       needsRender: true
     })
   }
@@ -153,7 +156,7 @@ export class AdminIncomingMessageList extends Component {
               organizationId={this.props.params.organizationId}
               onUsersReceived={this.handleUsersReceived}
               pageSize={1000}
-              campaignsFilter={{ isArchived: false }}
+              campaignsFilter={this.state.campaignsFilterForTexterFiltering}
             />
             <PaginatedCampaignsRetriever
               organizationId={this.props.params.organizationId}
@@ -167,6 +170,7 @@ export class AdminIncomingMessageList extends Component {
               onCampaignChanged={this.handleCampaignChanged}
               onTexterChanged={this.handleTexterChanged}
               onMessageFilterChanged={this.handleMessageFilterChange}
+              assignmentsFilter={this.state.assignmentsFilter}
             />
             <br/>
             <IncomingMessageActions
@@ -198,7 +202,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
       query Q($organizationId: String!) {
         organization(id: $organizationId) {
           id
-          people {
+          people{
             id
             displayName
             roles(organizationId: $organizationId)
