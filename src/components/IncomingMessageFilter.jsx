@@ -4,29 +4,52 @@ import type from 'prop-types'
 import { Card, CardHeader, CardText } from 'material-ui/Card'
 import SelectField from 'material-ui/SelectField'
 import MenuItem from 'material-ui/MenuItem'
+import theme from '../styles/theme'
+
+import SuperSelectField from 'material-ui-superselectfield'
+import { StyleSheet, css } from 'aphrodite'
+
+const styles = StyleSheet.create({
+  container: {
+    ...theme.layouts.multiColumn.container,
+    marginBottom: 40,
+    alignContent: 'flex-start',
+    justifyContent: 'flex-start',
+    flexWrap: 'wrap',
+    alignItems: 'center'
+  },
+  flexColumn: {
+    flex: 0,
+    flexBasis: '25%',
+    display: 'flex'
+  },
+  spacer: {
+    marginRight: '30px'
+  }
+})
 
 export const MESSAGE_STATUSES = {
-  'all': {
+  all: {
     name: 'All',
     children: ['needsResponse', 'needsMessage', 'convo', 'messaged']
   },
-  'needsResponse': {
+  needsResponse: {
     name: 'Needs Texter Response',
     children: []
   },
-  'needsMessage': {
+  needsMessage: {
     name: 'Needs First Message',
     children: []
   },
-  'convo': {
+  convo: {
     name: 'Active Conversation',
     children: []
   },
-  'messaged': {
+  messaged: {
     name: 'First Message Sent',
     children: []
   },
-  'closed': {
+  closed: {
     name: 'Closed',
     children: []
   }
@@ -42,14 +65,25 @@ export const CAMPAIGN_TYPE_FILTERS = [
   [ARCHIVED_CAMPAIGNS, 'Archived Campaigns']
 ]
 
+export const ALL_TEXTERS = -1
+
+export const TEXTER_FILTERS = [
+  [ALL_TEXTERS, 'All Texters']
+]
+
 class IncomingMessageFilter extends Component {
   constructor(props) {
     super(props)
 
     this.state = {}
 
-    this.onMessageFilterSelectChanged = this.onMessageFilterSelectChanged.bind(this)
-    this.onCampaignSelectChanged = this.onCampaignSelectChanged.bind(this)
+    this.onMessageFilterSelectChanged = this.onMessageFilterSelectChanged.bind(
+      this
+    )
+    this.onCampaignSuperSelectChanged = this.onCampaignSuperSelectChanged.bind(
+      this
+    )
+    this.onTexterSuperSelectChanged = this.onTexterSuperSelectChanged.bind(this)
   }
 
   onMessageFilterSelectChanged(event, index, values) {
@@ -68,60 +102,116 @@ class IncomingMessageFilter extends Component {
     this.props.onMessageFilterChanged(messageStatusesString)
   }
 
-  onCampaignSelectChanged(event, index, value) {
-    this.setState({ campaignFilter: value })
-    this.props.onCampaignChanged(value)
+  onCampaignSuperSelectChanged(selectedCampaign) {
+    if (selectedCampaign === null) {
+    }
+    this.setState({ campaignsFilter: selectedCampaign })
+    this.props.onCampaignChanged(selectedCampaign.value)
+  }
+
+  onTexterSuperSelectChanged(selectedTexter) {
+    if (selectedTexter === null) {
+      return
+    }
+
+    this.setState({ texterFilter: selectedTexter })
+    this.props.onTexterChanged(selectedTexter.value)
   }
 
   render() {
+    const texterNodes = TEXTER_FILTERS.map(texterFilter => (
+      <div
+        key={texterFilter[0]}
+        value={texterFilter[0]}
+        label={texterFilter[1]}
+      >{texterFilter[1]}</div>
+    )).concat(
+      !this.props.texters ? [] : this.props.texters.map(user => {
+        const userId = parseInt(user.id, 10)
+        return (
+          <div
+            key={userId} value={userId} label={user.displayName}
+          >
+            {user.displayName}
+          </div>
+        )
+      }))
+
+    const campaignNodes = CAMPAIGN_TYPE_FILTERS.map(campaignTypeFilter => (
+      <div
+        key={campaignTypeFilter[0]}
+        value={campaignTypeFilter[0]}
+        label={campaignTypeFilter[1]}
+      >
+        {campaignTypeFilter[1]}
+      </div>
+    )).concat(
+      !this.props.campaigns ? [] :
+        this.props.campaigns.map(campaign => {
+          const campaignId = parseInt(campaign.id, 10)
+          return (
+            <div key={campaignId} value={campaignId} label={campaign.title}>
+              {campaign.title}
+            </div>
+          )
+        })
+    )
+
     return (
       <Card>
-        <CardHeader title='Message Filter' actAsExpander showExpandableButton />
+        <CardHeader title='Message Filter' actAsExpander showExpandableButton/>
         <CardText expandable>
-          <SelectField
-            multiple
-            value={this.state.messageFilter}
-            hintText={'Which messages'}
-            floatingLabelText={'Contact message status'}
-            floatingLabelFixed
-            onChange={this.onMessageFilterSelectChanged}
-          >
-            {Object.keys(MESSAGE_STATUSES).map(messageStatus => {
-              const displayText = MESSAGE_STATUSES[messageStatus].name
-              const isChecked = this.state.messageFilter &&
-                  this.state.messageFilter.indexOf(messageStatus) > -1
-              return (
-                <MenuItem
-                  key={messageStatus}
-                  value={messageStatus}
-                  primaryText={displayText}
-                  insetChildren
-                  checked={isChecked}
-                />
-              )
-            })}
-          </SelectField>
-          &nbsp;
-          <SelectField
-            value={this.state.campaignFilter}
-            hintText='Pick a campaign'
-            floatingLabelText='Campaign'
-            floatingLabelFixed
-            onChange={this.onCampaignSelectChanged}
-          >
-            {CAMPAIGN_TYPE_FILTERS.map(campaignTypeFilter => {
-              return (
-                <MenuItem
-                  key={campaignTypeFilter[0]}
-                  value={campaignTypeFilter[0]}
-                  primaryText={campaignTypeFilter[1]}
-                />
-              )
-            })}
-            {this.props.campaigns.map(campaign => {
-              return <MenuItem key={campaign.id} value={campaign.id} primaryText={campaign.title} />
-            })}
-          </SelectField>
+          <div className={css(styles.container)}>
+            <div className={css(styles.flexColumn)}>
+              <SelectField
+                multiple
+                value={this.state.messageFilter}
+                hintText={'Which messages?'}
+                floatingLabelText={'Contact message status'}
+                floatingLabelFixed
+                onChange={this.onMessageFilterSelectChanged}
+              >
+                {Object.keys(MESSAGE_STATUSES).map(messageStatus => {
+                  const displayText = MESSAGE_STATUSES[messageStatus].name
+                  const isChecked =
+                    this.state.messageFilter &&
+                    this.state.messageFilter.indexOf(messageStatus) > -1
+                  return (
+                    <MenuItem
+                      key={messageStatus}
+                      value={messageStatus}
+                      primaryText={displayText}
+                      insetChildren
+                      checked={isChecked}
+                    />
+                  )
+                })}
+              </SelectField>
+            </div>
+            <div className={css(styles.spacer)}/>
+            <div className={css(styles.flexColumn)}>
+              <SuperSelectField
+                name={'campaignsSuperSelectField'}
+                children={campaignNodes}
+                nb2show={10}
+                showAutocompleteThreshold={'always'}
+                floatingLabel='Campaign'
+                hintText={'Type or select'}
+                onChange={this.onCampaignSuperSelectChanged}
+              />
+            </div>
+            <div className={css(styles.flexColumn)}>
+              <SuperSelectField
+                name={'usersSuperSelectField'}
+                children={texterNodes}
+                nb2show={10}
+                showAutocompleteThreshold={'always'}
+                floatingLabel={'Texter'}
+                hintText={'Type or select'}
+                onChange={this.onTexterSuperSelectChanged}
+              />
+            </div>
+          </div>
         </CardText>
       </Card>
     )
@@ -130,8 +220,13 @@ class IncomingMessageFilter extends Component {
 
 IncomingMessageFilter.propTypes = {
   onCampaignChanged: type.func.isRequired,
+  onTexterChanged: type.func.isRequired,
   campaigns: type.array.isRequired,
-  onMessageFilterChanged: type.func.isRequired
+  texters: type.array.isRequired,
+  onMessageFilterChanged: type.func.isRequired,
+  assignmentsFilter: type.shape({
+    texterId: type.number
+  }).isRequired
 }
 
 export default IncomingMessageFilter
