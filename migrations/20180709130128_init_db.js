@@ -312,6 +312,7 @@ const initialize = async (knex, Promise) => {
 module.exports = {
   up: initialize,
   down: (knex, Promise) => {
+    // consider a rollback here that would simply drop all the tables
     Promise.resolve()
   }
 }
