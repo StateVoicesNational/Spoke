@@ -30,6 +30,7 @@ import { withRouter } from 'react-router'
 import wrapMutations from './hoc/wrap-mutations'
 import Empty from '../components/Empty'
 import CreateIcon from 'material-ui/svg-icons/content/create'
+import { getContactTimezone } from '../lib/timezones'
 
 const styles = StyleSheet.create({
   mobile: {
@@ -120,9 +121,7 @@ const styles = StyleSheet.create({
   },
   lgMobileToolBar: {
     '@media(max-width: 449px) and (min-width: 320px)': {
-      bottom: '0 !important',
-      marginLeft: '0px !important',
-      display: 'block !important'
+      display: 'inline-block'
     }
   }
 })
@@ -133,11 +132,10 @@ const inlineStyles = {
     bottom: '-5'
   },
   mobileCannedReplies: {
-    position: 'absolute',
-    left: 0,
-    bottom: '5'
+    '@media(max-width: 450px)': {
+      marginBottom: '1'
+    },
   },
-
   dialogButton: {
     display: 'inline-block'
   },
@@ -511,7 +509,16 @@ export class AssignmentTexterContact extends React.Component {
       const { hasDST, offset } = contact.location.timezone
 
       timezoneData = { hasDST, offset }
+     } else {
+        let location = getContactTimezone(contact.location)
+        if (location) {
+          let timezone = location.timezone
+          if (timezone) {
+              timezoneData = timezone
+          }
+        }
     }
+
     const { textingHoursStart, textingHoursEnd, textingHoursEnforced } = campaign.organization
     const config = {
       textingHoursStart,
@@ -583,7 +590,7 @@ export class AssignmentTexterContact extends React.Component {
         onTouchTap={() => this.handleEditMessageStatus('needsResponse')}
         label='Reopen'
       />)
-    } else if (messageStatus === 'needsResponse' || messageStatus === 'messaged' || messageStatus === 'convo') {
+    } else if (messageStatus === 'needsResponse') {
       button = (<RaisedButton
         onTouchTap={this.handleClickCloseContactButton}
         label='Skip Reply'
