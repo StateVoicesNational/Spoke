@@ -112,7 +112,7 @@ const initialize = async (knex, Promise) => {
         t.index('campaign_id')
         t.foreign('campaign_id').references('campaign.id')
         t.index('cell')
-        t.index(['campaign_id', 'assignment_id'], 'campaign_assignment')
+        t.index(['campaign_id', 'assignment_id'], 'campaign_contact_campaign_id_assignment_id_index')
         t.index(['assignment_id', 'timezone_offset'], 'campaign_contact_assignment_id_timezone_offset_index') // See footnote ¹ for clarification on naming.
       }
     },
@@ -130,9 +130,9 @@ const initialize = async (knex, Promise) => {
         t.text('answer_option').notNullable().defaultTo('')
         t.text('answer_actions').notNullable().defaultTo('')
         t.boolean('is_deleted').defaultTo(false).notNullable()
-        t.text('source')
-        t.text('external_question_id')
-        t.text('external_response_id')
+        // t.text('source')
+        // t.text('external_question_id')
+        // t.text('external_response_id')
 
         t.index('parent_interaction_id')
         t.foreign('parent_interaction_id').references('interaction_step.id')
