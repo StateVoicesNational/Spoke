@@ -74,7 +74,9 @@ const initialize = async (knex, Promise) => {
         t.timestamp('created_at').defaultTo(knex.fn.now()).notNullable()
         t.integer('max_contacts')
 
+        t.index('user_id')
         t.foreign('user_id').references('user.id')
+        t.index('campaign_id')
         t.foreign('campaign_id').references('campaign.id')
       }
     },
@@ -111,7 +113,7 @@ const initialize = async (knex, Promise) => {
         t.foreign('campaign_id').references('campaign.id')
         t.index('cell')
         t.index(['campaign_id', 'assignment_id'], 'campaign_assignment')
-        t.index(['assignment_id', 'timezone_offset'], 'assignment_timezone_offset')
+        t.index(['assignment_id', 'timezone_offset'], 'campaign_contact_assignment_id_timezone_offset_index') // See footnote ¹ for clarification on naming.
       }
     },
     {
@@ -147,7 +149,9 @@ const initialize = async (knex, Promise) => {
         t.text('value').notNullable()
         t.timestamp('created_at').notNullable().defaultTo(knex.fn.now())
 
+        t.index('campaign_contact_id')
         t.foreign('campaign_contact_id').references('campaign_contact.id')
+        t.index('interaction_step_id')
         t.foreign('interaction_step_id').references('interaction_step.id')
       }
     },
@@ -162,7 +166,9 @@ const initialize = async (knex, Promise) => {
         t.timestamp('created_at').notNullable().defaultTo(knex.fn.now())
 
         t.index('cell')
+        t.index('assignment_id')
         t.foreign('assignment_id').references('assignment.id')
+        t.index('organization_id')
         t.foreign('organization_id').references('organization.id')
       }
     },
@@ -207,7 +213,9 @@ const initialize = async (knex, Promise) => {
         t.integer('user_id')
         t.timestamp('created_at').notNullable().defaultTo(knex.fn.now())
 
+        t.index('campaign_id')
         t.foreign('campaign_id').references('campaign.id')
+        t.index('user_id')
         t.foreign('user_id').references('user.id')
       }
     },
@@ -219,9 +227,12 @@ const initialize = async (knex, Promise) => {
         t.integer('organization_id').notNullable()
         t.enu('role', ['OWNER', 'ADMIN', 'SUPERVOLUNTEER', 'TEXTER']).notNullable()
 
+        t.index('user_id')
         t.foreign('user_id').references('user.id')
+        t.index('organization_id')
         t.foreign('organization_id').references('organization.id')
-        t.index(['organization_id', 'user_id'], 'organization_user')
+        t.index(['organization_id', 'user_id'], 'user_organization_organization_id_user_id_index')
+        // rethink-knex-adapter doesn't properly preserve index names when making multicolumn indexes, so the name here ('user_organization_organization_id_user_id_index') is different from the corresponding Thinky model ('organization_user'). However, the underlying PG index that is created has the same name, so the tests pass.¹
       }
     },
     {
@@ -254,6 +265,7 @@ const initialize = async (knex, Promise) => {
         t.timestamp('sent_at').defaultTo(knex.fn.now()).notNullable()
         t.timestamp('service_response_at').defaultTo(knex.fn.now()).notNullable()
 
+        t.index('assignment_id')
         t.foreign('assignment_id').references('assignment.id')
         t.index('send_status')
         t.index('user_number')
@@ -323,4 +335,9 @@ This table ordering is taken from __test__/test_helpers.js. Go from the bottom u
   - organization
   - pending_message_part
   - user
+*/
+
+/*
+Footnotes:
+¹ At https://github.com/MoveOnOrg/rethink-knex-adapter/blob/master/models.js#L91, the Knex schema building index function is called like this: table.index(fields). According to Knex documentation (https://knexjs.org/#Schema-index), the index method accepts parameters like this: table.index(columns, [indexName], [indexType]). And: "A default index name using the columns is used unless indexName is specified." In the case of single-column indexes, the index name is the name of the column, so our tests here pass without further arguments. However, in multicolumn arguments, it's not the same. When I originally wrote the multicolumn index commands in this migration, I used the index names that were passed to rethink-knex-adapter's dbModel.ensureIndex, but since rethink-knex-adapter was effectively ignoring those names, the tests failed.
 */
