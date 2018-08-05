@@ -12,10 +12,6 @@ const styles = StyleSheet.create({
   container: {
     ...theme.layouts.multiColumn.container
   },
-  sideBar: {
-    width: 256,
-    minHeight: 'calc(100vh - 56px)'
-  },
   content: {
     ...theme.layouts.multiColumn.flexColumn,
     paddingLeft: '2rem',
@@ -48,29 +44,18 @@ class AdminDashboard extends React.Component {
     if (!organizationId) {
       return ''
     }
-    if (this.state.showMenu) {
-      return (
-        <div className={css(styles.sideBar)}>
-          <AdminNavigation
-            onToggleMenu={this.handleToggleMenu}
-            showMenu={this.state.showMenu}
-            organizationId={organizationId}
-            sections={sections}
-          />
-        </div>
-      )
-    }
-    else {
-      return (
-        <div style={{writingMode: 'vertical-rl', padding: '5px', paddingTop: '20px'}} onClick={this.handleToggleMenu}>
-          SHOW MENU
-        </div>
-      )
-    }
-  }
 
-  // TODO get rid of showMenu property
-  // TODO MAYBE add property to include closeMenu button
+    return (
+      <div>
+        <AdminNavigation
+          onToggleMenu={this.handleToggleMenu}
+          showMenu={this.state.showMenu}
+          organizationId={organizationId}
+          sections={sections}
+        />
+      </div>
+    )
+  }
 
   render() {
     const { location, children, params } = this.props
