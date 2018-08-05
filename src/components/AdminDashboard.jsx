@@ -25,25 +25,52 @@ const styles = StyleSheet.create({
 })
 
 class AdminDashboard extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      showMenu: true
+    }
+
+    this.handleToggleMenu = this.handleToggleMenu.bind(this)
+  }
   urlFromPath(path) {
     const organizationId = this.props.params.organizationId
     return `/admin/${organizationId}/${path}`
   }
 
+  async handleToggleMenu() {
+    await this.setState({showMenu: !this.state.showMenu})
+  }
+
   renderNavigation(sections) {
     const organizationId = this.props.params.organizationId
+
     if (!organizationId) {
       return ''
     }
-    return (
-      <div className={css(styles.sideBar)}>
-        <AdminNavigation
-          organizationId={organizationId}
-          sections={sections}
-        />
-      </div>
-    )
+    if (this.state.showMenu) {
+      return (
+        <div className={css(styles.sideBar)}>
+          <AdminNavigation
+            onToggleMenu={this.handleToggleMenu}
+            showMenu={this.state.showMenu}
+            organizationId={organizationId}
+            sections={sections}
+          />
+        </div>
+      )
+    }
+    else {
+      return (
+        <div style={{writingMode: 'vertical-rl', padding: '5px', paddingTop: '20px'}} onClick={this.handleToggleMenu}>
+          SHOW MENU
+        </div>
+      )
+    }
   }
+
+  // TODO get rid of showMenu property
+  // TODO MAYBE add property to include closeMenu button
 
   render() {
     const { location, children, params } = this.props
