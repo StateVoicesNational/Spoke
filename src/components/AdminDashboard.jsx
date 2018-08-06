@@ -12,6 +12,9 @@ const styles = StyleSheet.create({
   container: {
     ...theme.layouts.multiColumn.container
   },
+  sidebar: {
+    minHeight: 'calc(100vh - 56px)'
+  },
   content: {
     ...theme.layouts.multiColumn.flexColumn,
     paddingLeft: '2rem',
@@ -46,7 +49,7 @@ class AdminDashboard extends React.Component {
     }
 
     return (
-      <div>
+      <div className={css(styles.sidebar)}>
         <AdminNavigation
           onToggleMenu={this.handleToggleMenu}
           showMenu={this.state.showMenu}

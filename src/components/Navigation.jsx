@@ -12,8 +12,8 @@ import { StyleSheet, css } from 'aphrodite'
 const styles = StyleSheet.create({
   sideBarWithMenu: {
     width: 256,
+    height: '100%',
     writingMode: 'hoizontal-lr',
-    height: 'calc(100% - 56px)'
   },
   sideBarWithoutMenu: {
     writingMode: 'vertical-rl',
