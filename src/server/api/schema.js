@@ -29,7 +29,7 @@ import { schema as organizationSchema, resolvers as organizationResolvers } from
 import { schema as campaignSchema, resolvers as campaignResolvers } from './campaign'
 import {
   schema as assignmentSchema,
-  resolvers as assignmentResolvers,
+  resolvers as assignmentResolvers
 } from './assignment'
 import {
   schema as interactionStepSchema,
@@ -578,7 +578,7 @@ const rootMutations = {
       let createCannedResponses = r
         .knex('canned_response')
         .where({ campaign_id: oldCampaignId })
-        .then(function(res) {
+        .then(function (res) {
           res.forEach((response, index) => {
             const copiedCannedResponse = new CannedResponse({
               campaign_id: newCampaignId,
