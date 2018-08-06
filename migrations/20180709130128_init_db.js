@@ -133,6 +133,9 @@ const initialize = async (knex, Promise) => {
         // t.text('source')
         // t.text('external_question_id')
         // t.text('external_response_id')
+        /*
+        These columns are necessary for the OSDI question mapper. They're left here as a placeholder in case #690 ends up getting merged before #692, in which case they need to be uncommented. If #692 is deemed ready for merge before #690, we'll rebase #690 and add a new migration to it to add these columns, along with the model updates that are already there.
+        */
 
         t.index('parent_interaction_id')
         t.foreign('parent_interaction_id').references('interaction_step.id')
