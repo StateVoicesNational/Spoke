@@ -6,7 +6,7 @@ This document describes how to enable integration with OSDI-compliant systems su
 
 Currently, Spoke supports one OSDI integration: the `record_canvass_helper`, which allows questions and responses in a Spoke campaign script to be "mapped" to OSDI Answer and Canvass resources. In practice, this means that you can "import" questions from an OSDI-compliant system, and when your volunteers record contacts' responses to them, those responses will be "synced" back into the originating system.
 
-This integration has been tested with VAN, but still needs testing with Action Network and other OSDI-compliant systems. If you can help with this, [please let us know](/CONTRIBUTING.md).
+This integration has been tested with VAN, but still needs testing with other OSDI-compliant systems. If you can help with this, [please let us know](/CONTRIBUTING.md).
 
 ## Planned integrations
 
