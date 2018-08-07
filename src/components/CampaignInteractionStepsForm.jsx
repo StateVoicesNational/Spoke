@@ -1,30 +1,17 @@
 import type from 'prop-types'
 import React from 'react'
-import ReactDOM from 'react-dom'
-import Divider from 'material-ui/Divider'
-import ContentClear from 'material-ui/svg-icons/content/clear'
-import FlatButton from 'material-ui/FlatButton'
 import RaisedButton from 'material-ui/RaisedButton'
-import RadioButtonUnchecked from 'material-ui/svg-icons/toggle/radio-button-unchecked'
 import IconButton from 'material-ui/IconButton'
 import DeleteIcon from 'material-ui/svg-icons/action/delete'
-import { Card, CardActions, CardHeader, CardText } from 'material-ui/Card'
+import { Card, CardHeader, CardText } from 'material-ui/Card'
 import theme from '../styles/theme'
 import CampaignFormSectionHeading from './CampaignFormSectionHeading'
 import CampaignOSDIQuestionFetcher from './CampaignOSDIQuestionFetcher'
-import ForwardIcon from 'material-ui/svg-icons/navigation/arrow-forward'
-import HelpIcon from 'material-ui/svg-icons/action/help'
 import HelpIconOutline from 'material-ui/svg-icons/action/help-outline'
 import Form from 'react-formal'
 import GSForm from './forms/GSForm'
 import yup from 'yup'
-import {
-  sortInteractionSteps,
-  getInteractionPath,
-  getChildren,
-  findParent,
-  makeTree
-} from '../lib'
+import { makeTree } from '../lib'
 import { dataTest } from '../lib/attributes'
 
 const styles = {
@@ -53,9 +40,16 @@ const styles = {
 
 export default class CampaignInteractionStepsForm extends React.Component {
 
-  state = {
-    focusedField: null,
-    interactionSteps: this.props.formValues.interactionSteps[0] ? this.props.formValues.interactionSteps : [{ id: 'newId', parentInteractionId: null, questionText: '', answerOption: '', script: '', answerActions: '', isDeleted: false }]
+  constructor(props) {
+    super(props)
+
+    this.state = {
+      focusedField: null,
+      interactionSteps: this.props.formValues.interactionSteps[0] ? this.props.formValues.interactionSteps : [{ id: 'newId', parentInteractionId: null, questionText: '', answerOption: '', script: '', answerActions: '', isDeleted: false }]
+    }
+
+    this.handleFormChange = this.handleFormChange.bind(this)
+    this.onSave = this.onSave.bind(this)
   }
 
   onSave = async () => {
@@ -64,15 +58,13 @@ export default class CampaignInteractionStepsForm extends React.Component {
   }
 
   mapOSDIQuestion(interactionStepId, { questionText, questionId, source, responses }) {
-    console.log('mapOSDIQuestion called on interaction step id', interactionStepId, 'with responses', responses)
     /*
-    interactionStepId is the ID of the interaction step whose Question field should be set to the text of the mapped OSDI question. Second argument is an object describing the OSDI question to be mapped.
+    interactionStepId is the ID of the Spoke interaction step whose Question field should be set to the text of the mapped OSDI question. Second argument is an object describing the OSDI question to be mapped.
     */
     // First, set some attributes on the base interaction step
     this.setState(prevState => {
       const newInteractionSteps = prevState.interactionSteps.map(iS => Object.assign({}, iS))
       const targetInteractionStepIndex = newInteractionSteps.findIndex(is => is.id === interactionStepId)
-      console.log('computed index', targetInteractionStepIndex, 'for base interaction step')
       const targetInteractionStep = newInteractionSteps[targetInteractionStepIndex]
       targetInteractionStep.questionText = questionText
       targetInteractionStep.source = source
@@ -81,7 +73,6 @@ export default class CampaignInteractionStepsForm extends React.Component {
     })
     // Add interaction steps for each of the provided responses
     responses.forEach(response => {
-      console.log('adding response', response, 'to question', interactionStepId)
       const { key, title } = response
       const interactionStepOptions = {
         answerActions: 'osdi-survey-question',
@@ -141,7 +132,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
     return () => {
       this.setState({
         interactionSteps: this.state.interactionSteps.map((is) => {
-          if (is.id == id) {
+          if (is.id === id) {
             is.isDeleted = true
             this.state.interactionSteps.filter((isp) => isp.parentInteractionId === is.id).map((isp) => {
               this.deleteStep(isp.id)
@@ -154,17 +145,25 @@ export default class CampaignInteractionStepsForm extends React.Component {
   }
 
   handleFormChange(event) {
-    this.setState({
-      interactionSteps: this.state.interactionSteps.map((is) => {
-        if (is.id == event.id) {
-          delete event.interactionSteps
-          return event
-        } else {
-          delete event.interactionSteps
-          return is
-        }
+    this.setState(({ interactionSteps }) => ({
+      interactionSteps: interactionSteps.map(is => {
+        if (is.id !== event.id) return is
+        const newInteractionStep = event
+        delete newInteractionStep.interactionSteps
+        return newInteractionStep
       })
-    })
+    }))
+    // this.setState({
+    //   interactionSteps: this.state.interactionSteps.map((is) => {
+    //     if (is.id === event.id) {
+    //       delete event.interactionSteps
+    //       return event
+    //     } else {
+    //       delete event.interactionSteps
+    //       return is
+    //     }
+    //   })
+    // })
   }
 
   formSchema = yup.object({
@@ -190,27 +189,30 @@ export default class CampaignInteractionStepsForm extends React.Component {
           <GSForm
             schema={this.formSchema}
             value={interactionStep}
-            onChange={this.handleFormChange.bind(this)}
+            onChange={this.handleFormChange}
           >
-            {interactionStep.parentInteractionId ? <Form.Field
-              name='answerOption'
-              label='Answer'
-              fullWidth
-              disabled={interactionStep.source === 'OSDI'}
-              hintText='Answer to the previous question'
-                                                   /> : ''}
-            {interactionStep.parentInteractionId ? <DeleteIcon style={styles.pullRight} onTouchTap={this.deleteStep(interactionStep.id).bind(this)} /> : ''}
-            {interactionStep.parentInteractionId && this.props.availableActions && this.props.availableActions.length ?
-              (<div key={`answeractions-${interactionStep.id}`}>
+            {interactionStep.parentInteractionId ?
+              <Form.Field
+                name='answerOption'
+                label='Answer'
+                fullWidth
+                disabled={interactionStep.source === 'OSDI'}
+                hintText='Answer to the previous question'
+              />
+            :
+            ''}
+            {interactionStep.parentInteractionId ? <DeleteIcon style={styles.pullRight} onTouchTap={() => this.deleteStep(interactionStep.id)} /> : ''}
+            {interactionStep.parentInteractionId && this.props.availableActions && this.props.availableActions.length ? (
+              <div key={`answeractions-${interactionStep.id}`}>
                 <Form.Field
                   name='answerActions'
                   type='select'
                   default=''
                   disabled={interactionStep.source === 'OSDI'}
                   choices={[
-                    { 'value': '', 'label': 'Action...' },
+                    { value: '', label: 'Action...' },
                     ...this.props.availableActions.map(
-                      action => ({ 'value': action.name, 'label': action.display_name })
+                      action => ({ value: action.name, label: action.display_name })
                     )
                   ]}
                 />
@@ -219,13 +221,13 @@ export default class CampaignInteractionStepsForm extends React.Component {
                 >
                   <HelpIconOutline />
                 </IconButton>
-                <div>
-                  {
-                    interactionStep.answerActions
-                      ? this.props.availableActions.filter((a) => a.name === interactionStep.answerActions)[0].instructions
-                      : ''}
+                <div>{
+                  interactionStep.answerActions ?
+                    this.props.availableActions.filter((a) => a.name === interactionStep.answerActions)[0].instructions
+                  : ''}
                 </div>
-              </div>)
+              </div>
+            )
             : ''}
             <Form.Field
               {...dataTest('editorInteraction')}
@@ -245,8 +247,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
               disabled={interactionStep.externalQuestion}
               hintText='A question for texters to answer. E.g. Can this person attend the event?'
             />
-            {
-              this.props.availableActions.some(({ name }) => name === 'osdi-survey-question') &&
+            {this.props.availableActions.some(({ name }) => name === 'osdi-survey-question') &&
               <div>
                 You may also map a question from your connected OSDI system.
                 <CampaignOSDIQuestionFetcher organizationId={this.props.organizationId} mapQuestion={responses => this.mapOSDIQuestion(interactionStep.id, responses)} />
@@ -259,19 +260,16 @@ export default class CampaignInteractionStepsForm extends React.Component {
         {interactionStep.questionText && interactionStep.script && (!interactionStep.parentInteractionId || interactionStep.answerOption) ? <div>
           <RaisedButton
             label='+ Add a response'
-            onTouchTap={this.addStep.bind(this, interactionStep.id)}
+            onTouchTap={() => this.addStep(interactionStep.id)}
             style={{ marginBottom: '10px' }}
           />
         </div> : ''}
-        {interactionStep.interactionSteps.filter((is) => !is.isDeleted).map((is) => {
-          return (
-            <div>
-              {this.renderInteractionStep(is, `Question: ${interactionStep.questionText}`)}
-            </div>
-          )
-        })}
+        {interactionStep.interactionSteps.filter(is => !is.isDeleted).map(is => (
+          <div>
+            {this.renderInteractionStep(is, `Question: ${interactionStep.questionText}`)}
+          </div>
+        ))}
       </div>
-
     </div>)
   }
 
@@ -289,7 +287,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
           {...dataTest('interactionSubmit')}
           primary
           label={this.props.saveLabel}
-          onTouchTap={this.onSave.bind(this)}
+          onTouchTap={this.onSave}
         />
       </div>
     )
