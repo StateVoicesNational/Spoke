@@ -81,7 +81,7 @@ class Settings extends React.Component {
           fullWidth
         />
         <div>
-          Previously-entered URL and token values are not displayed here for security reasons.
+          Previously-entered URL and token values are not displayed here for security reasons. <em>Changing these values will cause any existing campaigns with imported OSDI questions to stop syncing responses</em>.
         </div>
         <Form.Button
           type='submit'
