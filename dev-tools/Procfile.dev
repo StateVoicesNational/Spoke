@@ -6,4 +6,4 @@ webpack: ./dev-tools/babel-run ./webpack/server.js
 #messagesender56: npm run dev-message-sender-56
 #messagesender789: npm run dev-message-sender-789
 #jobhandler: npm run dev-job-handler
-#incomingmessagehandler: npm run dev-incoming-message-handler
+incomingmessagehandler: npm run dev-incoming-message-handler
