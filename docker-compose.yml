@@ -1,0 +1,28 @@
+version: '3'
+services:
+  postgres:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_DB: spokedev
+      POSTGRES_PASSWORD: spoke
+      POSTGRES_USER: spoke
+    volumes:
+      - postgres:/var/lib/postgresql/data
+  app:
+    build:
+      context: .
+      args:
+        SPOKE_VERSION: 1.4.1
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: postgres://spoke:spoke@postgres:5432/spokedev
+    image: spoke
+    ports:
+      - 3000:3000
+    volumes:
+      - ./.env:/Spoke/.env
+volumes:
+  postgres:
+    external: false
