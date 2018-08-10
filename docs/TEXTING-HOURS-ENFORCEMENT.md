@@ -16,6 +16,8 @@ This configuration is stored in the `organization` table in the database.
 
 Spoke will not send texts to contacts before the start time or after the end time.
 
+If the end time is set to *before* the start time, texting hours will end *the next day* at that time. For example: if the texting hours are set from 8pm to 2am, 1am will be a valid texting hour.
+
 **How the current time is determined for a particular contact depends on other aspects of Spoke's configuration.**
 
 ## TZ environment variable

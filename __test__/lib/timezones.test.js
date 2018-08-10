@@ -69,14 +69,12 @@ describe('testing isBetweenTextingHours with env.TZ set', () => {
   })
 
   it('returns false if texting hours are 05-07 and time is 12:00', () => {
-      expect(isBetweenTextingHours(null, makeConfig(5, 7, true))).toBeFalsy()
-    }
-  )
+    expect(isBetweenTextingHours(null, makeConfig(5, 7, true))).toBeFalsy()
+  })
 
   it('returns false if texting hours are 14-21 and time is 12:00', () => {
-      expect(isBetweenTextingHours(null, makeConfig(14, 21, true))).toBeFalsy()
-    }
-  )
+    expect(isBetweenTextingHours(null, makeConfig(14, 21, true))).toBeFalsy()
+  })
 
   it('returns true if texting hours are 10-21 and time is 12:00', () => {
     expect(isBetweenTextingHours(null, makeConfig(10, 21, true))).toBeTruthy()
@@ -86,8 +84,31 @@ describe('testing isBetweenTextingHours with env.TZ set', () => {
     expect(isBetweenTextingHours(null, makeConfig(12, 21, true))).toBeTruthy()
   })
 
-  it('returns true if texting hours are 10-12 and time is 12:00', () => {
-    expect(isBetweenTextingHours(null, makeConfig(10, 12, true))).toBeTruthy()
+  it('returns false if texting hours are 10-12 and time is 12:00', () => {
+    expect(isBetweenTextingHours(null, makeConfig(10, 12, true))).toBeFalsy()
+  })
+
+  it('returns true if texting hours are 12-2 and time is 12:00', () => {
+    expect(isBetweenTextingHours(null, makeConfig(12, 2, true))).toBeTruthy()
+  })
+
+  it('returns true if texting hours are 10-2 and time is 12:00', () => {
+    expect(isBetweenTextingHours(null, makeConfig(10, 2, true))).toBeTruthy()
+  })
+
+  it('returns true if texting hours are 10-2 and time is 01:00', () => {
+    MockDate.set('2018-02-01T01:00:00.000-08:00')
+    expect(isBetweenTextingHours(null, makeConfig(10, 2, true))).toBeTruthy()
+  })
+
+  it('returns false if texting hours are 10-2 and time is 02:00', () => {
+    MockDate.set('2018-02-01T02:00:00.000-08:00')
+    expect(isBetweenTextingHours(null, makeConfig(10, 2, true))).toBeFalsy()
+  })
+
+  it('returns false if texting hours are 10-2 and time is 03:00', () => {
+    MockDate.set('2018-02-01T03:00:00.000-08:00')
+    expect(isBetweenTextingHours(null, makeConfig(10, 2, true))).toBeFalsy()
   })
 })
 
@@ -134,6 +155,29 @@ describe('test isBetweenTextingHours with offset data supplied', () => {
 
     it('returns true if texting hours are 10-11 and time is 12:00', () => {
       expect(isBetweenTextingHours(offsetData, makeConfig(10, 13, true))).toBeTruthy()
+    })
+
+    it('returns true if texting hours are 12-2 and time is 12:00', () => {
+      expect(isBetweenTextingHours(offsetData, makeConfig(12, 2, true))).toBeTruthy()
+    })
+
+    it('returns true if texting hours are 10-2 and time is 12:00', () => {
+      expect(isBetweenTextingHours(offsetData, makeConfig(10, 2, true))).toBeTruthy()
+    })
+
+    it('returns true if texting hours are 10-2 and time is 01:00', () => {
+      MockDate.set('2018-02-01T01:00:00.000-08:00')
+      expect(isBetweenTextingHours(offsetData, makeConfig(10, 2, true))).toBeTruthy()
+    })
+
+    it('returns false if texting hours are 10-2 and time is 02:00', () => {
+      MockDate.set('2018-02-01T02:00:00.000-08:00')
+      expect(isBetweenTextingHours(offsetData, makeConfig(10, 2, true))).toBeFalsy()
+    })
+
+    it('returns false if texting hours are 10-2 and time is 03:00', () => {
+      MockDate.set('2018-02-01T03:00:00.000-08:00')
+      expect(isBetweenTextingHours(offsetData, makeConfig(10, 2, true))).toBeFalsy()
     })
   }
 )

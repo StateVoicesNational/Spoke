@@ -46,7 +46,13 @@ export const isBetweenTextingHours = (offsetData, config) => {
     const today = moment.tz(getProcessEnvTz()).format('YYYY-MM-DD')
     const start = moment.tz(`${today}`, getProcessEnvTz()).add(config.textingHoursStart, 'hours')
     const stop = moment.tz(`${today}`, getProcessEnvTz()).add(config.textingHoursEnd, 'hours')
-    return moment.tz(getProcessEnvTz()).isBetween(start, stop, null, '[]')
+    if (config.textingHoursEnd < config.textingHoursStart) {
+      // Allowed hours cross into next day
+      const midnight = moment.tz(getProcessEnvTz()).hour(0)
+      const nextStop = moment.tz(`${today}`, getProcessEnvTz()).add(config.textingHoursEnd + 24, 'hours')
+      return moment.tz(getProcessEnvTz()).isBetween(midnight, stop, null, '[)') || moment.tz(getProcessEnvTz()).isBetween(start, nextStop, null, '[)')
+    }
+    return moment.tz(getProcessEnvTz()).isBetween(start, stop, null, '[)')
   }
   let offset
   let hasDST
@@ -65,6 +71,10 @@ export const isBetweenTextingHours = (offsetData, config) => {
   }
 
   const localTime = getLocalTime(offset, hasDST)
+  if (allowedEnd < allowedStart) {
+    // Allowed hours cross into next day
+    return (localTime.hours() >= allowedStart || localTime.hours() < allowedEnd)
+  }
   return (localTime.hours() >= allowedStart && localTime.hours() < allowedEnd)
 }
 
