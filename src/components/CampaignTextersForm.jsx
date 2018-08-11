@@ -16,6 +16,7 @@ import { StyleSheet, css } from 'aphrodite'
 import theme from '../styles/theme'
 import Toggle from 'material-ui/Toggle'
 import DeleteIcon from 'material-ui/svg-icons/action/delete'
+import { dataTest } from '../lib/attributes'
 
 const styles = StyleSheet.create({
   sliderContainer: {
@@ -354,11 +355,15 @@ export default class CampaignTextersForm extends React.Component {
           <div className={css(styles.assignedCount)}>
             {messagedCount}
           </div>
-          <div className={css(styles.nameColumn)}>
+          <div
+            {...dataTest(`texter${index}Name`)}
+            className={css(styles.nameColumn)}
+          >
             {this.getDisplayName(texter.id)}
           </div>
           <div className={css(styles.input)}>
             <Form.Field
+              {...dataTest(`texter${index}Assignment`)}
               name={`texters[${index}].assignment.needsMessageCount`}
               hintText='Contacts'
               fullWidth
@@ -445,6 +450,7 @@ export default class CampaignTextersForm extends React.Component {
         />
         <div>
           <Toggle
+            {...dataTest('useDynamicAssignment')}
             label='Dynamically assign contacts'
             toggled={this.state.useDynamicAssignment}
             onToggle={this.handleToggleChange.bind(this)}
@@ -460,6 +466,7 @@ export default class CampaignTextersForm extends React.Component {
           {this.showSearch()}
             <div>
               <RaisedButton
+                {...dataTest('addAll')}
                 label='Add All'
                 onTouchTap={(() => this.addAllTexters())}
               />
@@ -480,6 +487,7 @@ export default class CampaignTextersForm extends React.Component {
                 className={css(styles.splitToggle)}
               >
                 <Toggle
+                  {...dataTest('autoSplit')}
                   label='Split assignments'
                   style={{
                     width: 'auto',

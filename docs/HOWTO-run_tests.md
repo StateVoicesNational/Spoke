@@ -41,3 +41,7 @@ https://github.com/MoveOnOrg/Spoke/blob/main/README.md#getting-started) section.
       export SAUCE_ACCESS_KEY=<Sauce Labs access key>
       npm run test-e2e --saucelabs
       ```
+    * ... individually
+      ```
+      npm run test-e2e <test name>
+      ```
