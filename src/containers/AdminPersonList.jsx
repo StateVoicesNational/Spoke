@@ -15,6 +15,7 @@ import { getHighestRole, ROLE_HIERARCHY } from '../lib'
 import theme from '../styles/theme'
 import loadData from './hoc/load-data'
 import gql from 'graphql-tag'
+import { dataTest } from '../lib/attributes'
 
 const organizationFragment = `
   id
@@ -104,7 +105,11 @@ class AdminPersonList extends React.Component {
                     />
                   ))}
                 </DropDownMenu>
-                <FlatButton label='Edit' onTouchTap={() => { this.editUser(person.id) }} />
+                <FlatButton
+                  {...dataTest('editPerson')}
+                  label='Edit'
+                  onTouchTap={() => { this.editUser(person.id) }}
+                />
               </TableRowColumn>
             </TableRow>
           ))}
@@ -120,12 +125,14 @@ class AdminPersonList extends React.Component {
       <div>
         {this.renderTexters()}
         <FloatingActionButton
+          {...dataTest('addPerson')}
           style={theme.components.floatingButton}
           onTouchTap={this.handleOpen}
         >
           <ContentAdd />
         </FloatingActionButton>
         <Dialog
+          {...dataTest('editPersonDialog')}
           title='Edit user'
           modal={false}
           open={Boolean(this.state.userEdit)}
@@ -141,6 +148,7 @@ class AdminPersonList extends React.Component {
           title='Invite new texters'
           actions={[
             <FlatButton
+              {...dataTest('inviteOk')}
               label='OK'
               primary
               onTouchTap={this.handleClose}

@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import TextField from 'material-ui/TextField'
+import { dataTest } from '../lib/attributes'
 
 const OrganizationJoinLink = ({ organizationUuid, campaignId }) => {
   let baseUrl = 'http://base'
@@ -18,6 +19,7 @@ const OrganizationJoinLink = ({ organizationUuid, campaignId }) => {
         Send your texting volunteers this link! Once they sign up, they'll be automatically assigned to this campaign.
       </div>
       <TextField
+        {...dataTest('joinUrl')}
         value={joinUrl}
         autoFocus
         onFocus={(event) => event.target.select()}
