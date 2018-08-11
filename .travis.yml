@@ -20,6 +20,7 @@ before_script:
 - chmod +x ./travis-run-e2e-tests
 script:
 - npm run test-coverage
+- CC_TEST_RESULT=$?
 - ./travis-run-e2e-tests
 after_script:
-- ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
+- ./cc-test-reporter after-build --exit-code $CC_TEST_RESULT

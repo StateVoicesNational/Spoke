@@ -12,6 +12,7 @@ import LoadingIndicator from '../components/LoadingIndicator'
 import wrapMutations from './hoc/wrap-mutations'
 import DropDownMenu from 'material-ui/DropDownMenu'
 import { MenuItem } from 'material-ui/Menu'
+import { dataTest } from '../lib/attributes'
 
 class AdminCampaignList extends React.Component {
   state = {
@@ -74,13 +75,14 @@ class AdminCampaignList extends React.Component {
         )}
 
         {adminPerms ?
-         (<FloatingActionButton
-           style={theme.components.floatingButton}
-           onTouchTap={this.handleClickNewButton}
-         >
-           <ContentAdd />
-         </FloatingActionButton>
-         ) : null}
+          (<FloatingActionButton
+            {...dataTest('addCampaign')}
+            style={theme.components.floatingButton}
+            onTouchTap={this.handleClickNewButton}
+          >
+            <ContentAdd />
+          </FloatingActionButton>
+          ) : null}
       </div>
     )
   }

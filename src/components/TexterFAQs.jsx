@@ -3,7 +3,6 @@ import PropTypes from 'prop-types'
 import { Card, CardTitle, CardText } from 'material-ui/Card'
 
 const TexterFaqs = ({ faqs }) => {
-
   return (
     <div>
       <h1>Frequently Asked Questions</h1>
