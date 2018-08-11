@@ -1,24 +1,89 @@
 import { mapFieldsToModel } from './lib/utils'
 import { r, User } from '../models'
+import { addCampaignsFilterToQuery } from './campaign'
 
-export const schema = `
-  type User {
-    id: ID
-    firstName: String
-    lastName: String
-    displayName: String
-    email: String
-    cell: String
-    organizations(role: String): [Organization]
-    todos(organizationId: String): [Assignment]
-    roles(organizationId: String!): [String]
-    assignedCell: Phone
-    assignment(campaignId: String): Assignment,
-    terms: Boolean
+export function buildUserOrganizationQuery(queryParam, organizationId, role) {
+  const roleFilter = role ? { role } : {}
+
+  return queryParam
+    .from('user_organization')
+    .innerJoin('user', 'user_organization.user_id', 'user.id')
+    .where(roleFilter)
+    .where({ 'user_organization.organization_id': organizationId })
+    .distinct()
+}
+
+function buildUsersQuery(queryParam, organizationId, campaignsFilter, role) {
+  let query = undefined
+  if (campaignsFilter) {
+    query = queryParam
+      .from('assignment')
+      .join('user', 'assignment.user_id', 'user.id')
+      .join('user_organization', 'user.id', 'user_organization.user_id')
+      .join('campaign', 'assignment.campaign_id', 'campaign.id')
+      .where('user_organization.organization_id', organizationId)
+      .distinct()
+
+    if (role) {
+      query = query.where('user_organization.role', role)
+    }
+
+    return addCampaignsFilterToQuery(query, campaignsFilter)
   }
-`
+
+  return buildUserOrganizationQuery(queryParam, organizationId, role)
+}
+
+export async function getUsers(organizationId, cursor, campaignsFilter, role) {
+  let usersQuery = buildUsersQuery(r.knex.select('user.*'), organizationId, campaignsFilter, role)
+  usersQuery = usersQuery.orderBy('first_name').orderBy('last_name').orderBy('id')
+
+  if (cursor) {
+    usersQuery = usersQuery.limit(cursor.limit).offset(cursor.offset)
+    const users = await usersQuery
+
+    const usersCountQuery = buildUsersQuery(r.knex.countDistinct('user.id'), organizationId, campaignsFilter, role)
+
+    const usersCountArray = await usersCountQuery
+
+    const pageInfo = {
+      limit: cursor.limit,
+      offset: cursor.offset,
+      total: usersCountArray[0].count
+    }
+
+    return {
+      users,
+      pageInfo
+    }
+  } else {
+    return usersQuery
+  }
+}
 
 export const resolvers = {
+  UsersReturn: {
+    __resolveType(obj) {
+      if (Array.isArray(obj)) {
+        return 'UsersList'
+      } else if ('users' in obj && 'pageInfo' in obj) {
+        return 'PaginatedUsers'
+      }
+      return null
+    }
+  },
+  UsersList: {
+    users: users => users
+  },
+  PaginatedUsers: {
+    users: queryResult => queryResult.users,
+    pageInfo: queryResult => {
+      if ('pageInfo' in queryResult) {
+        return queryResult.pageInfo
+      }
+      return null
+    }
+  },
   User: {
     ...mapFieldsToModel([
       'id',
