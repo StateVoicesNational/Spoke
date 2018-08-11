@@ -1,4 +1,4 @@
-module.exports = {
+const config = {
   baseUrl: global.BASE_URL,
   sauceLabs: {
     username: process.env.SAUCE_USERNAME,
@@ -16,3 +16,5 @@ module.exports = {
     port: 4445
   }
 }
+
+export default config
