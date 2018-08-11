@@ -8,6 +8,7 @@ import _ from 'lodash'
 import { dataTest } from '../lib/attributes'
 import { FlatButton } from 'material-ui'
 import { StyleSheet, css } from 'aphrodite'
+import camelCase from 'camelcase'
 
 const styles = StyleSheet.create({
   sideBarWithMenu: {
