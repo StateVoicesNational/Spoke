@@ -160,7 +160,7 @@ export const resolvers = {
         .getAll(campaign.id, { index: 'campaign_id' })
 
       if (assignmentsFilter && assignmentsFilter.hasOwnProperty('texterId') && assignmentsFilter.textId !== null) {
-        query = query.filter({user_id: assignmentsFilter.texterId})
+        query = query.filter({ user_id: assignmentsFilter.texterId })
       }
 
       return query
