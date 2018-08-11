@@ -1,5 +1,38 @@
 # Release Notes
 
+## v1.4.1
+*August 2018:* Version 1.4.1
+* This version fixes bugs found in 1.4 including a deployment bug.
+
+## v1.4
+
+This release includes many optimizations, new features and more tests! We've fixed outstanding bugs, added more administrative functionality and worked on the texter experience. We've also introduced a new testing suite and redis caching capabilities. Over the next couple months, we intend to add more testing and continue to work on scaling.
+
+Note - we will have a new release in the next few weeks and switch to a shorter release cycle in the next few months. Please upgrade your instance and let us know if you find any bugs or have questions!
+
+*July 2018:* Version 1.4
+* A 'Skipped Messages' section for texters to allow access to previously skipped conversations. Skipped conversations can be 'reopened' and filter back into the 'replies' view.
+* A 'Message Review' board for administrators to allow message reassignment to different texters. Administrators also have the ability to see more incoming messages than previous.
+* The ability to mark contacts as opted out without sending a message.
+* Selenium end to end testing with Sauce Labs integration.
+* Redis caching capabilities including caching user's authentication status.
+* Updates to documentation for AK integration, popular queries, and email and data exporting integration.
+* Bug fixes around owner, admin and superadmin permissions when attempting to text, timezone handling, permission issues on admin dashboard.
+* Update to our community guidelines.
+
+Thanks go to all our contributors for this release including:
+[azuzunaga](https://github.com/azuzunaga),
+[bchrobot](https://github.com/bchrobot),
+[bdatkins](https://github.com/bdatkins),
+[cp4r3z](https://github.com/cp4r3z),
+[codygordon](https://github.com/codygordon),
+[eXrump](https://github.com/eXrump),
+[harpojaeger](https://github.com/harpojaeger),
+[joemcl](https://github.com/joemcl),
+[lperson](https://github.com/lperson),
+[mathemagica](https://github.com/mathemagica),
+[shakalee14](https://github.com/shakalee14),
+
 ## v1.3
 
 Two major themes that we are focusing on this year are improving
@@ -18,10 +51,10 @@ implement something or file an issue on something you want Spoke to do!
 
 Please upgrade your instance and let us know if you encounter any issues!
 
-*April 2018:* Version 1.3 
+*April 2018:* Version 1.3
 * A 'Past Messages' section for Texters to allow access to previous conversations before a reply comes back.
   This feature helps cases where someone accidentally clicked a button or wants to follow-up with requested information.
-* Texters can update their name, email and other information from the menu. 
+* Texters can update their name, email and other information from the menu.
   Admins can update texter info from the console
 * A new SuperVolunteer role, which allows a non-admin to update assignments, and [some other tasks](https://github.com/MoveOnOrg/Spoke/issues/455)
 * Added [MailGun support](HOWTO_HEROKU_DEPLOY.md#setting-up-mailgun)
@@ -34,7 +67,7 @@ Please upgrade your instance and let us know if you encounter any issues!
   - Some login issues were fixed and documentation was improved
   - Improved contact load times for texter screen
 
-Thanks go to all our contributors for this release including: 
+Thanks go to all our contributors for this release including:
 [ben-pr-p](https://github.com/ben-pr-p),
 [harpojaeger](https://github.com/harpojaeger),
 [lperson](https://github.com/lperson),
