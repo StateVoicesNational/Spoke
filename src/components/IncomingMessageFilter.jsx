@@ -149,9 +149,10 @@ class IncomingMessageFilter extends Component {
       !this.props.campaigns ? [] :
         this.props.campaigns.map(campaign => {
           const campaignId = parseInt(campaign.id, 10)
+          const campaignDisplay = `${campaignId}: ${campaign.title}`
           return (
             <div key={campaignId} value={campaignId} label={campaign.title}>
-              {campaign.title}
+              {campaignDisplay}
             </div>
           )
         })
@@ -164,6 +165,7 @@ class IncomingMessageFilter extends Component {
           <div className={css(styles.container)}>
             <div className={css(styles.flexColumn)}>
               <SelectField
+                style={{ width: '90%' }}
                 multiple
                 value={this.state.messageFilter}
                 hintText={'Which messages?'}
@@ -191,6 +193,7 @@ class IncomingMessageFilter extends Component {
             <div className={css(styles.spacer)}/>
             <div className={css(styles.flexColumn)}>
               <SuperSelectField
+                style={{ width: '90%' }}
                 name={'campaignsSuperSelectField'}
                 children={campaignNodes}
                 nb2show={10}
@@ -202,6 +205,7 @@ class IncomingMessageFilter extends Component {
             </div>
             <div className={css(styles.flexColumn)}>
               <SuperSelectField
+                style={{ width: '90%' }}
                 name={'usersSuperSelectField'}
                 children={texterNodes}
                 nb2show={10}
