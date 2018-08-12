@@ -41,7 +41,7 @@ export class AdminIncomingMessageList extends Component {
     this.handleTexterChanged = this.handleTexterChanged.bind(this)
   }
 
-  shouldComponentUpdate(_, nextState) {
+  shouldComponentUpdate(dummy, nextState) {
     if (
       !nextState.needsRender &&
       _.isEqual(this.state.contactsFilter, nextState.contactsFilter) &&
