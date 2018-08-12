@@ -74,6 +74,7 @@ class IncomingMessageActions extends Component {
           <div className={css(styles.container)}>
             <div className={css(styles.flexColumn)}>
               <SuperSelectField
+                style={{ width: '90%' }}
                 name={'reassignSuperSelectField'}
                 children={texterNodes}
                 nb2show={10}
