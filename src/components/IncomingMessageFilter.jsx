@@ -104,6 +104,7 @@ class IncomingMessageFilter extends Component {
 
   onCampaignSuperSelectChanged(selectedCampaign) {
     if (selectedCampaign === null) {
+      return
     }
     this.setState({ campaignsFilter: selectedCampaign })
     this.props.onCampaignChanged(selectedCampaign.value)
