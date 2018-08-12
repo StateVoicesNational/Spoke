@@ -6,6 +6,7 @@ import SelectField from 'material-ui/SelectField'
 import MenuItem from 'material-ui/MenuItem'
 import { getHighestRole } from '../lib/permissions'
 import FlatButton from 'material-ui/FlatButton'
+import SuperSelectField from 'material-ui-superselectfield'
 
 class IncomingMessageActions extends Component {
   constructor(props) {
@@ -15,10 +16,33 @@ class IncomingMessageActions extends Component {
   }
 
   render() {
+    const texterNodes = !this.props.people
+      ? []
+      : this.props.people.map(user => {
+          const userId = parseInt(user.id, 10)
+          const label = user.displayName + ' ' + getHighestRole(user.roles)
+          return (
+            <div key={userId} value={userId} label={label}>
+              {label}
+            </div>
+          )
+        })
+
     return (
       <Card>
         <CardHeader title={' Message Actions '} actAsExpander showExpandableButton />
         <CardText expandable>
+          <SuperSelectField
+            name={'reassignSuperSelectField'}
+            children={texterNodes}
+            nb2show={10}
+            showAutocompleteThreshold={'always'}
+            floatingLabel={'Reassign to ...'}
+            hintText={'Type or select'}
+            onChange={selectedTexter => {
+              this.setState({ reassignTo: selectedTexter.value })
+            }}
+          />
           <SelectField
             value={this.state.reassignTo}
             hintText={'Pick a texter'}
@@ -41,7 +65,7 @@ class IncomingMessageActions extends Component {
           </SelectField>
 
           <FlatButton
-            label='Reassign'
+            label="Reassign"
             onClick={() => {
               if (
                 this.props.onReassignRequested !== null &&
