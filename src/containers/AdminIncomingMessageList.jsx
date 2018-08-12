@@ -36,7 +36,7 @@ export class AdminIncomingMessageList extends Component {
   }
 
   
-  shouldComponentUpdate(_, nextState) {
+  shouldComponentUpdate(dummy, nextState) {
     if (
       !nextState.needsRender &&
       nextState.contactsFilter === this.state.contactsFilter &&
