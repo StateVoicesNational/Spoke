@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import type from 'prop-types'
 
 import { Card, CardHeader, CardText } from 'material-ui/Card'
+import AutoComplete from 'material-ui/AutoComplete'
 import SelectField from 'material-ui/SelectField'
 import MenuItem from 'material-ui/MenuItem'
 import theme from '../styles/theme'
@@ -118,7 +119,35 @@ class IncomingMessageFilter extends Component {
     this.props.onTexterChanged(selectedTexter.value)
   }
 
+  onTexterSelected(chosenRequest, index) {
+    if (index===-1) {
+
+    }
+
+    props.onTexterChanged(chosenRequest.value)
+
+  }
+
+  dataSourceItem(name, key) {
+    return {
+      text: name,
+      value: (
+        <MenuItem key={key} value={key} label={name} >
+          {name}
+        </MenuItem>
+      )
+    }
+  }
+
   render() {
+    const acTexterNodes = TEXTER_FILTERS.map(texterFilter =>
+      this.dataSourceItem(texterFilter[1], texterFilter[0])
+      ).concat(
+      !this.props.texters ? [] : this.props.texters.map(user => {
+        const userId = parseInt(user.id, 10)
+        return this.dataSourceItem(user.displayName, userId)
+      }))
+
     const texterNodes = TEXTER_FILTERS.map(texterFilter => (
       <div
         key={texterFilter[0]}
@@ -189,6 +218,9 @@ class IncomingMessageFilter extends Component {
               </SelectField>
             </div>
             <div className={css(styles.spacer)}/>
+            <div className={css(styles.flexColumn)}>
+              <AutoComplete dataSource={acTexterNodes}/>
+            </div>
             <div className={css(styles.flexColumn)}>
               <SuperSelectField
                 name={'campaignsSuperSelectField'}
