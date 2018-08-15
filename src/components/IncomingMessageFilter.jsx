@@ -20,9 +20,7 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   flexColumn: {
-    flex: 0,
-    flexBasis: '25%',
-    display: 'flex'
+    flex: '0 1 25%'
   },
   spacer: {
     marginRight: '30px'
