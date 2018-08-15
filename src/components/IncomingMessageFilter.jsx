@@ -6,8 +6,8 @@ import AutoComplete from 'material-ui/AutoComplete'
 import SelectField from 'material-ui/SelectField'
 import MenuItem from 'material-ui/MenuItem'
 import theme from '../styles/theme'
+import { dataSourceItem } from './utils'
 
-import SuperSelectField from 'material-ui-superselectfield'
 import { StyleSheet, css } from 'aphrodite'
 
 const styles = StyleSheet.create({
@@ -68,9 +68,7 @@ export const CAMPAIGN_TYPE_FILTERS = [
 
 export const ALL_TEXTERS = -1
 
-export const TEXTER_FILTERS = [
-  [ALL_TEXTERS, 'All Texters']
-]
+export const TEXTER_FILTERS = [[ALL_TEXTERS, 'All Texters']]
 
 class IncomingMessageFilter extends Component {
   constructor(props) {
@@ -81,10 +79,8 @@ class IncomingMessageFilter extends Component {
     this.onMessageFilterSelectChanged = this.onMessageFilterSelectChanged.bind(
       this
     )
-    this.onCampaignSuperSelectChanged = this.onCampaignSuperSelectChanged.bind(
-      this
-    )
-    this.onTexterSuperSelectChanged = this.onTexterSuperSelectChanged.bind(this)
+    this.onTexterSelected = this.onTexterSelected.bind(this)
+    this.onCampaignSelected = this.onCampaignSelected.bind(this)
   }
 
   onMessageFilterSelectChanged(event, index, values) {
@@ -103,92 +99,66 @@ class IncomingMessageFilter extends Component {
     this.props.onMessageFilterChanged(messageStatusesString)
   }
 
-  onCampaignSuperSelectChanged(selectedCampaign) {
-    if (selectedCampaign === null) {
+  onCampaignSelected(selection, index) {
+    let campaignId = undefined
+    if (index === -1) {
+      const campaign = this.props.texters.find(campaign => {
+        return campaign.title === selection
+      })
+      if (campaign) {
+        campaignId = campaign.id
+      }
+    } else {
+      campaignId = selection.value.key
     }
-    this.setState({ campaignsFilter: selectedCampaign })
-    this.props.onCampaignChanged(selectedCampaign.value)
+    if (campaignId) {
+      this.props.onCampaignChanged(parseInt(campaignId, 10))
+    }
   }
 
-  onTexterSuperSelectChanged(selectedTexter) {
-    if (selectedTexter === null) {
-      return
+  onTexterSelected(selection, index) {
+    let texterUserId = undefined
+    if (index === -1) {
+      const texter = this.props.texters.find(texter => {
+        return texter.displayName === selection
+      })
+      if (texter) {
+        texterUserId = texter.id
+      }
+    } else {
+      texterUserId = selection.value.key
     }
-
-    this.setState({ texterFilter: selectedTexter })
-    this.props.onTexterChanged(selectedTexter.value)
-  }
-
-  onTexterSelected(chosenRequest, index) {
-    if (index===-1) {
-
-    }
-
-    props.onTexterChanged(chosenRequest.value)
-
-  }
-
-  dataSourceItem(name, key) {
-    return {
-      text: name,
-      value: (
-        <MenuItem key={key} value={key} label={name} >
-          {name}
-        </MenuItem>
-      )
+    if (texterUserId) {
+      this.props.onTexterChanged(parseInt(texterUserId, 10))
     }
   }
 
   render() {
-    const acTexterNodes = TEXTER_FILTERS.map(texterFilter =>
-      this.dataSourceItem(texterFilter[1], texterFilter[0])
-      ).concat(
-      !this.props.texters ? [] : this.props.texters.map(user => {
-        const userId = parseInt(user.id, 10)
-        return this.dataSourceItem(user.displayName, userId)
-      }))
+    const texterNodes = TEXTER_FILTERS.map(texterFilter =>
+      dataSourceItem(texterFilter[1], texterFilter[0])
+    ).concat(
+      !this.props.texters
+        ? []
+        : this.props.texters.map(user => {
+            const userId = parseInt(user.id, 10)
+            return dataSourceItem(user.displayName, userId)
+          })
+    )
 
-    const texterNodes = TEXTER_FILTERS.map(texterFilter => (
-      <div
-        key={texterFilter[0]}
-        value={texterFilter[0]}
-        label={texterFilter[1]}
-      >{texterFilter[1]}</div>
-    )).concat(
-      !this.props.texters ? [] : this.props.texters.map(user => {
-        const userId = parseInt(user.id, 10)
-        return (
-          <div
-            key={userId} value={userId} label={user.displayName}
-          >
-            {user.displayName}
-          </div>
-        )
-      }))
-
-    const campaignNodes = CAMPAIGN_TYPE_FILTERS.map(campaignTypeFilter => (
-      <div
-        key={campaignTypeFilter[0]}
-        value={campaignTypeFilter[0]}
-        label={campaignTypeFilter[1]}
-      >
-        {campaignTypeFilter[1]}
-      </div>
-    )).concat(
-      !this.props.campaigns ? [] :
-        this.props.campaigns.map(campaign => {
-          const campaignId = parseInt(campaign.id, 10)
-          return (
-            <div key={campaignId} value={campaignId} label={campaign.title}>
-              {campaign.title}
-            </div>
-          )
-        })
+    const campaignNodes = CAMPAIGN_TYPE_FILTERS.map(campaignTypeFilter =>
+      dataSourceItem(campaignTypeFilter[1], campaignTypeFilter[0])
+    ).concat(
+      !this.props.campaigns
+        ? []
+        : this.props.campaigns.map(campaign => {
+            const campaignId = parseInt(campaign.id, 10)
+            return dataSourceItem(campaign.title, campaignId)
+          })
     )
 
     return (
       <Card>
-        <CardHeader title='Message Filter' actAsExpander showExpandableButton/>
+        <CardHeader title="Message Filter" actAsExpander showExpandableButton />
         <CardText expandable>
           <div className={css(styles.container)}>
             <div className={css(styles.flexColumn)}>
@@ -217,30 +187,34 @@ class IncomingMessageFilter extends Component {
                 })}
               </SelectField>
             </div>
-            <div className={css(styles.spacer)}/>
+            <div className={css(styles.spacer)} />
             <div className={css(styles.flexColumn)}>
-              <AutoComplete dataSource={acTexterNodes}/>
-            </div>
-            <div className={css(styles.flexColumn)}>
-              <SuperSelectField
-                name={'campaignsSuperSelectField'}
-                children={campaignNodes}
-                nb2show={10}
-                showAutocompleteThreshold={'always'}
-                floatingLabel='Campaign'
-                hintText={'Type or select'}
-                onChange={this.onCampaignSuperSelectChanged}
+              <AutoComplete
+                maxSearchResults={5}
+                onFocus={() => this.setState({ campaignSearchText: '' })}
+                onUpdateInput={campaignSearchText =>
+                  this.setState({ campaignSearchText })
+                }
+                searchText={this.state.campaignSearchText}
+                dataSource={campaignNodes}
+                hintText={'Search for a campaign'}
+                floatingLabelText={'Campaign'}
+                onNewRequest={this.onCampaignSelected}
               />
             </div>
+            <div className={css(styles.spacer)} />
             <div className={css(styles.flexColumn)}>
-              <SuperSelectField
-                name={'usersSuperSelectField'}
-                children={texterNodes}
-                nb2show={10}
-                showAutocompleteThreshold={'always'}
-                floatingLabel={'Texter'}
-                hintText={'Type or select'}
-                onChange={this.onTexterSuperSelectChanged}
+              <AutoComplete
+                maxSearchResults={5}
+                onFocus={() => this.setState({ texterSearchText: '' })}
+                onUpdateInput={texterSearchText =>
+                  this.setState({ texterSearchText })
+                }
+                searchText={this.state.texterSearchText}
+                dataSource={texterNodes}
+                hintText={'Search for a texter'}
+                floatingLabelText={'Texter'}
+                onNewRequest={this.onTexterSelected}
               />
             </div>
           </div>
