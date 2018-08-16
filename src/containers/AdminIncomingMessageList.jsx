@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import _ from 'lodash'
 
+
 import IncomingMessageActions from '../components/IncomingMessageActions'
 import IncomingMessageFilter from '../components/IncomingMessageFilter'
 import IncomingMessageList from '../components/IncomingMessageList'
@@ -13,7 +14,6 @@ import wrapMutations from './hoc/wrap-mutations'
 import PaginatedUsersRetriever from './PaginatedUsersRetriever'
 
 export class AdminIncomingMessageList extends Component {
-
   constructor(props) {
     super(props)
 
@@ -27,7 +27,8 @@ export class AdminIncomingMessageList extends Component {
       needsRender: false,
       utc: Date.now().toString(),
       campaigns: [],
-      texters: []
+      reassignmentTexters: [],
+      campaignTexters: []
     }
 
     this.handleCampaignChanged = this.handleCampaignChanged.bind(this)
@@ -37,16 +38,17 @@ export class AdminIncomingMessageList extends Component {
     this.handlePageSizeChange = this.handlePageSizeChange.bind(this)
     this.handleRowSelection = this.handleRowSelection.bind(this)
     this.handleCampaignsReceived = this.handleCampaignsReceived.bind(this)
-    this.handleUsersReceived = this.handleUsersReceived.bind(this)
+    this.handleCampaignTextersReceived = this.handleCampaignTextersReceived.bind(this)
+    this.handleReassignmentTextersReceived = this.handleReassignmentTextersReceived.bind(this)
     this.handleTexterChanged = this.handleTexterChanged.bind(this)
   }
 
-  shouldComponentUpdate(_, nextState) {
+  shouldComponentUpdate(dummy, nextState) {
     if (
       !nextState.needsRender &&
       _.isEqual(this.state.contactsFilter, nextState.contactsFilter) &&
       _.isEqual(this.state.campaignsFilter, nextState.campaignsFilter) &&
-      _.isEqual(this.state.assignmentsFilter, nextState.assignmentsFilter) 
+      _.isEqual(this.state.assignmentsFilter, nextState.assignmentsFilter)
     ) {
       return false
     }
@@ -55,7 +57,7 @@ export class AdminIncomingMessageList extends Component {
 
   async handleCampaignChanged(campaignId) {
     let campaignsFilter = {}
-    let campaignsFilterForTexterFiltering = {isArchived:false}
+    let campaignsFilterForTexterFiltering = { isArchived: false }
     switch (campaignId) {
       case -1:
         break
@@ -136,8 +138,12 @@ export class AdminIncomingMessageList extends Component {
     this.setState({ campaigns, needsRender: true })
   }
 
-  async handleUsersReceived(texters){
-    this.setState({texters, needsRender: true})
+  async handleCampaignTextersReceived(campaignTexters) {
+    this.setState({ campaignTexters, needsRender: true })
+  }
+
+  async handleReassignmentTextersReceived(reassignmentTexters) {
+    this.setState({ reassignmentTexters, needsRender: true })
   }
 
   render() {
@@ -148,13 +154,18 @@ export class AdminIncomingMessageList extends Component {
     return (
       <div>
         <h3> Message Review </h3>
-        {(this.props.organization && this.props.organization.loading) ? (
-          <LoadingIndicator/>
+        {this.props.organization && this.props.organization.loading ? (
+          <LoadingIndicator />
         ) : (
           <div>
             <PaginatedUsersRetriever
               organizationId={this.props.params.organizationId}
-              onUsersReceived={this.handleUsersReceived}
+              onUsersReceived={this.handleReassignmentTextersReceived}
+              pageSize={1000}
+            />
+            <PaginatedUsersRetriever
+              organizationId={this.props.params.organizationId}
+              onUsersReceived={this.handleCampaignTextersReceived}
               pageSize={1000}
               campaignsFilter={this.state.campaignsFilterForTexterFiltering}
             />
@@ -166,18 +177,18 @@ export class AdminIncomingMessageList extends Component {
             />
             <IncomingMessageFilter
               campaigns={this.state.campaigns}
-              texters={this.state.texters}
+              texters={this.state.campaignTexters}
               onCampaignChanged={this.handleCampaignChanged}
               onTexterChanged={this.handleTexterChanged}
               onMessageFilterChanged={this.handleMessageFilterChange}
               assignmentsFilter={this.state.assignmentsFilter}
             />
-            <br/>
+            <br />
             <IncomingMessageActions
-              people={this.props.organization.organization.people}
+              people={this.state.reassignmentTexters}
               onReassignRequested={this.handleReassignRequested}
             />
-            <br/>
+            <br />
             <IncomingMessageList
               organizationId={this.props.params.organizationId}
               cursor={cursor}
@@ -196,13 +207,14 @@ export class AdminIncomingMessageList extends Component {
   }
 }
 
+// TODO(lmp) don't need mapQueriesToProps
 const mapQueriesToProps = ({ ownProps }) => ({
   organization: {
     query: gql`
       query Q($organizationId: String!) {
         organization(id: $organizationId) {
           id
-          people{
+          people {
             id
             displayName
             roles(organizationId: $organizationId)
