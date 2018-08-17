@@ -3,7 +3,7 @@ import theme from '../styles/theme'
 export function logout() {
   const lock = new window.Auth0Lock(window.AUTH0_CLIENT_ID, window.AUTH0_DOMAIN)
   lock.logout({
-    returnTo: window.AUTH0_LOGOUT_CALLBACK,
+    returnTo: `${window.BASE_URL}/logout-callback`,
     client_id: window.AUTH0_CLIENT_ID
   })
 }
@@ -12,7 +12,7 @@ export function login(nextUrl) {
   const lock = new window.Auth0Lock(window.AUTH0_CLIENT_ID, window.AUTH0_DOMAIN, {
     auth: {
       redirect: true,
-      redirectUrl: window.AUTH0_LOGIN_CALLBACK,
+      redirectUrl: `${window.BASE_URL}/login-callback`,
       responseType: 'code',
       params: {
         state: nextUrl || '/',

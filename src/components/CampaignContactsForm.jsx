@@ -14,10 +14,11 @@ import ErrorIcon from 'material-ui/svg-icons/alert/error'
 import theme from '../styles/theme'
 import { StyleSheet, css } from 'aphrodite'
 import yup from 'yup'
+import { dataTest } from '../lib/attributes'
 
-const checkIcon = <CheckIcon style={{ fill: theme.colors.darkGreen }} />
-const warningIcon = <WarningIcon style={{ fill: theme.colors.orange }} />
-const errorIcon = <ErrorIcon style={{ fill: theme.colors.red }} />
+const checkIcon = <CheckIcon color={theme.colors.green} />
+const warningIcon = <WarningIcon color={theme.colors.orange} />
+const errorIcon = <ErrorIcon color={theme.colors.red} />
 
 const innerStyles = {
   button: {
@@ -55,13 +56,17 @@ export default class CampaignContactsForm extends React.Component {
   }
 
   validateSql = (sql) => {
-    let errors = []
+    const errors = []
     if (!sql.startsWith('SELECT')) {
-      errors.push('Must start with "SELECT"')
+      errors.push('Must start with "SELECT" in caps')
+    }
+    if (/LIMIT (\d+)/i.test(sql)
+        && parseInt(sql.match(/LIMIT (\d+)/i)[1], 10) > 10000) {
+      errors.push('Spoke currently does not support LIMIT statements of higher than 10000')
     }
     const requiredFields = ['first_name', 'last_name', 'cell']
     requiredFields.forEach((f) => {
-      if (sql.indexOf(f) == -1) {
+      if (sql.indexOf(f) === -1) {
         errors.push('"' + f + '" is a required column')
       }
     })
@@ -70,8 +75,12 @@ export default class CampaignContactsForm extends React.Component {
     }
     if (!errors.length) {
       this.setState({ contactSqlError: null })
+      this.props.onChange({
+        contactSql: sql
+      })
     } else {
       this.setState({ contactSqlError: errors.join(', ') })
+      this.props.onChange({})
     }
   }
 
@@ -125,15 +134,16 @@ export default class CampaignContactsForm extends React.Component {
       <List>
         <Subheader>Uploaded</Subheader>
         <ListItem
+          {...dataTest('uploadedContacts')}
           primaryText={`${contactsCount} contacts`}
           leftIcon={checkIcon}
-          leftIconColor={theme.colors.green}
         />
         <ListItem
           primaryText={`${customFields.length} custom fields`}
           leftIcon={checkIcon}
-          nestedItems={customFields.map((field) => (
+          nestedItems={customFields.map((field, index) => (
             <ListItem
+              key={index}
               innerDivStyle={innerStyles.nestedItem}
               primaryText={field}
             />
@@ -162,8 +172,9 @@ export default class CampaignContactsForm extends React.Component {
     return (
       <List>
         <Divider />
-        {stats.map((stat) => (
+        {stats.map((stat, index) => (
           <ListItem
+            key={index}
             leftIcon={warningIcon}
             innerDivStyle={innerStyles.nestedItem}
             primaryText={stat}
@@ -178,6 +189,7 @@ export default class CampaignContactsForm extends React.Component {
     return (
       <div>
         <RaisedButton
+          {...dataTest('uploadButton')}
           style={innerStyles.button}
           label={uploading ? 'Uploading...' : 'Upload contacts'}
           labelPosition='before'
@@ -189,7 +201,7 @@ export default class CampaignContactsForm extends React.Component {
           type='file'
           className={css(styles.exampleImageInput)}
           onChange={this.handleUpload}
-          style={{display: 'none'}}
+          style={{ display: 'none' }}
         />
       </div>
     )
@@ -200,10 +212,10 @@ export default class CampaignContactsForm extends React.Component {
     return (
       <div>
         {!this.props.jobResultMessage ? '' : (
-            <div>
-              <CampaignFormSectionHeading title='Job Outcome' />
-              <div>{this.props.jobResultMessage}</div>
-            </div>
+          <div>
+            <CampaignFormSectionHeading title='Job Outcome' />
+            <div>{this.props.jobResultMessage}</div>
+          </div>
         )}
         <GSForm
           schema={yup.object({
@@ -222,25 +234,25 @@ export default class CampaignContactsForm extends React.Component {
           {!this.props.datawarehouseAvailable ? '' : (
             <div>
               <div>
-              Instead of uploading contacts, as a super-admin, you can also create a SQL query directly from the
-              data warehouse that will load in contacts.  The SQL requires some constraints:
+                Instead of uploading contacts, as a super-admin, you can also create a SQL query directly from the
+                data warehouse that will load in contacts.  The SQL requires some constraints:
               <ul>
-                <li>Start the query with "SELECT"</li>
-                <li>Do not include a trailing (or any) semicolon</li>
-                <li>Three columns are necessary:
+                  <li>Start the query with "SELECT"</li>
+                  <li>Do not include a trailing (or any) semicolon</li>
+                  <li>Three columns are necessary:
                     <span className={css(styles.csvHeader)}>first_name</span>,
                     <span className={css(styles.csvHeader)}>last_name</span>,
                     <span className={css(styles.csvHeader)}>cell</span>,
                 </li>
-                <li>Optional fields are:
+                  <li>Optional fields are:
                     <span className={css(styles.csvHeader)}>zip</span>,
                     <span className={css(styles.csvHeader)}>external_id</span>
-                </li>
-                <li>Make sure you make those names exactly possibly requiring an
+                  </li>
+                  <li>Make sure you make those names exactly possibly requiring an
                     <span className={css(styles.csvHeader)}>as field_name</span> sometimes.
                 </li>
-                <li>Other columns will be added to the customFields</li>
-              </ul>
+                  <li>Other columns will be added to the customFields</li>
+                </ul>
               </div>
               <Form.Field
                 name='contactSql'
@@ -255,7 +267,7 @@ export default class CampaignContactsForm extends React.Component {
                     leftIcon={errorIcon}
                   />
                 </List>
-               ) : ''}
+              ) : ''}
 
             </div>
           )}

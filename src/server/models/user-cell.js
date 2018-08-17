@@ -2,6 +2,8 @@ import thinky from './thinky'
 const type = thinky.type
 import { requiredString } from './custom-types'
 
+import User from './user'
+
 const UserCell = thinky.createModel('user_cell', type.object().schema({
   id: type.string(),
   cell: requiredString(),
@@ -11,6 +13,8 @@ const UserCell = thinky.createModel('user_cell', type.object().schema({
     .enum('nexmo', 'twilio'),
   is_primary: type.boolean()
     .required()
+}, {
+  dependencies: [User]
 }).allowExtra(false))
 
 UserCell.ensureIndex('user_id')

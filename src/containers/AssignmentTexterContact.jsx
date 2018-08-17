@@ -30,6 +30,7 @@ import { withRouter } from 'react-router'
 import wrapMutations from './hoc/wrap-mutations'
 import Empty from '../components/Empty'
 import CreateIcon from 'material-ui/svg-icons/content/create'
+import { getContactTimezone } from '../lib/timezones'
 
 const styles = StyleSheet.create({
   mobile: {
@@ -119,9 +120,8 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end'
   },
   lgMobileToolBar: {
-    '@media(max-width: 449px) and (min-width: 410px)': {
-      bottom: '0 !important',
-      marginLeft: '0px !important'
+    '@media(max-width: 449px) and (min-width: 320px)': {
+      display: 'inline-block'
     }
   }
 })
@@ -132,11 +132,10 @@ const inlineStyles = {
     bottom: '-5'
   },
   mobileCannedReplies: {
-    position: 'absolute',
-    left: 0,
-    bottom: '5'
+    '@media(max-width: 450px)': {
+      marginBottom: '1'
+    },
   },
-
   dialogButton: {
     display: 'inline-block'
   },
@@ -441,7 +440,10 @@ export class AssignmentTexterContact extends React.Component {
     }
     this.setState({ disabled: true })
     try {
-      await this.props.mutations.sendMessage(message, contact.id)
+      if (optOutMessageText.length) {
+        await this.props.mutations.sendMessage(message, contact.id)
+      }
+
       const optOut = {
         cell: contact.cell,
         assignmentId: assignment.id
@@ -506,7 +508,16 @@ export class AssignmentTexterContact extends React.Component {
       const { hasDST, offset } = contact.location.timezone
 
       timezoneData = { hasDST, offset }
+     } else {
+        let location = getContactTimezone(contact.location)
+        if (location) {
+          let timezone = location.timezone
+          if (timezone) {
+              timezoneData = timezone
+          }
+        }
     }
+
     const { textingHoursStart, textingHoursEnd, textingHoursEnforced } = campaign.organization
     const config = {
       textingHoursStart,
@@ -517,7 +528,7 @@ export class AssignmentTexterContact extends React.Component {
   }
 
   optOutSchema = yup.object({
-    optOutMessageText: yup.string().required()
+    optOutMessageText: yup.string()
   })
 
   skipContact = () => {
@@ -578,7 +589,7 @@ export class AssignmentTexterContact extends React.Component {
         onTouchTap={() => this.handleEditMessageStatus('needsResponse')}
         label='Reopen'
       />)
-    } else if (messageStatus === 'needsResponse' || messageStatus === 'messaged') {
+    } else if (messageStatus === 'needsResponse') {
       button = (<RaisedButton
         onTouchTap={this.handleClickCloseContactButton}
         label='Skip Reply'
@@ -622,7 +633,7 @@ export class AssignmentTexterContact extends React.Component {
           </Toolbar>
         </div>
       )
-    } else if (size < 450) { // for needsResponse or messaged
+    } else if (size < 450) { // for needsResponse or messaged or convo
       return (
         <div>
           <Toolbar
@@ -764,7 +775,7 @@ export class AssignmentTexterContact extends React.Component {
                 type='submit'
                 style={inlineStyles.dialogButton}
                 component={GSSubmitButton}
-                label='Send'
+                label={this.state.optOutMessageText.length ? 'Send' : 'Opt Out without Text'}
               />
             </div>
           </GSForm>
@@ -776,7 +787,7 @@ export class AssignmentTexterContact extends React.Component {
   renderCorrectSendButton() {
     const { campaign } = this.props
     const { contact } = this.props.data
-    if (contact.messageStatus === 'needsResponse' || contact.messageStatus === 'messaged') {
+    if (contact.messageStatus === 'messaged' || contact.messageStatus === 'convo' || contact.messageStatus === 'needsResponse') {
       return (
         <SendButtonArrow
           threeClickEnabled={campaign.organization.threeClickEnabled}
@@ -853,7 +864,7 @@ export class AssignmentTexterContact extends React.Component {
         <Snackbar
           style={inlineStyles.snackbar}
           open={!!this.state.snackbarError}
-          message={this.state.snackbarError}
+          message={this.state.snackbarError || ''}
           action={this.state.snackbarActionTitle}
           onActionTouchTap={this.state.snackbarOnTouchTap}
         />

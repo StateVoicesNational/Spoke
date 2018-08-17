@@ -21,7 +21,8 @@ import JoinTeam from './containers/JoinTeam'
 import Home from './containers/Home'
 import Settings from './containers/Settings'
 import UserEdit from './containers/UserEdit'
-
+import TexterFaqs from './components/TexterFaqs'
+import FAQs from './lib/faqs'
 
 export default function makeRoutes(requireAuth = () => {}) {
   return (
@@ -50,6 +51,9 @@ export default function makeRoutes(requireAuth = () => {}) {
                                   topNav: (p) => <TopNav title='Spoke Texting' orgId={p.params.organizationId} /> }} />
         <Route path=':organizationId'>
           <IndexRedirect to='todos' />
+          <Route path='faqs' components={{
+            main: () => <TexterFaqs faqs={FAQs} />,
+            topNav: (p) => <TopNav title='Account' orgId={p.params.organizationId} /> }} />
           <Route path='account/:userId' components={{
             main: (p) => <UserEdit userId={p.params.userId} organizationId={p.params.organizationId} />,
             topNav: (p) => <TopNav title='Account' orgId={p.params.organizationId} /> }} />
@@ -77,7 +81,14 @@ export default function makeRoutes(requireAuth = () => {}) {
               <Route
                 path='stale'
                 components={{
-                  fullScreen: (props) => <TexterTodo {...props} messageStatus='messaged' />,
+                  fullScreen: (props) => <TexterTodo {...props} messageStatus='convo' />,
+                  topNav: null
+                }}
+              />
+              <Route
+                path='skipped'
+                components={{
+                  fullScreen: (props) => <TexterTodo {...props} messageStatus='closed' />,
                   topNav: null
                 }}
               />

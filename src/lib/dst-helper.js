@@ -1,4 +1,4 @@
-import {DateTime, zone, DateFunctions} from 'timezonecomplete'
+import { DateTime, zone, DateFunctions } from 'timezonecomplete'
 
 
 // a cache number of hours offset from GMT during DST per timezone
@@ -7,7 +7,6 @@ let _timezoneDstOffsets = {}
 // a class to help us know if a date is DST in a given timezone
 export class DstHelper {
   static isOffsetDst(offset: number, timezone: string): boolean {
-
     // if we don't have the offset for this timezone, calculate it now
     if (!(timezone in _timezoneDstOffsets)) {
       // If a location has DST, the offset from GMT at January 1 and July 1 will certainly

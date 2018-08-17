@@ -2,6 +2,7 @@ import passport from 'passport'
 import Auth0Strategy from 'passport-auth0'
 import AuthHasher from 'passport-local-authenticate'
 import { Strategy as LocalStrategy } from 'passport-local'
+import { userLoggedIn } from './models/cacheable-queries'
 import { User } from './models'
 import wrap from './wrap'
 
@@ -10,7 +11,7 @@ export function setupAuth0Passport() {
     domain: process.env.AUTH0_DOMAIN,
     clientID: process.env.AUTH0_CLIENT_ID,
     clientSecret: process.env.AUTH0_CLIENT_SECRET,
-    callbackURL: process.env.AUTH0_LOGIN_CALLBACK
+    callbackURL: `${process.env.BASE_URL}/login-callback`
   }, (accessToken, refreshToken, extraParams, profile, done) => done(null, profile)
   )
 
@@ -23,8 +24,9 @@ export function setupAuth0Passport() {
   })
 
   passport.deserializeUser(wrap(async (id, done) => {
-    const user = await User.filter({ auth0_id: id })
-    done(null, user[0] || false)
+    // add new cacheable query
+    const user = await userLoggedIn(id)
+    done(null, user || false)
   }))
 
   return [passport.authenticate('auth0', {

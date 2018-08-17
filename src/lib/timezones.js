@@ -1,7 +1,7 @@
 import moment from 'moment-timezone'
 
-import {getProcessEnvTz, getProcessEnvDstReferenceTimezone} from '../lib/tz-helpers'
-import {DstHelper} from "./dst-helper";
+import { getProcessEnvTz, getProcessEnvDstReferenceTimezone } from '../lib/tz-helpers'
+import { DstHelper } from './dst-helper'
 
 const TIMEZONE_CONFIG = {
   missingTimeZone: {
@@ -11,6 +11,28 @@ const TIMEZONE_CONFIG = {
     allowedEnd: 21 // 9pm EST/6pm PST
   }
 }
+
+export const getContactTimezone = (location) => {
+
+  if (location.timezone == null || location.timezone.offset == null) {
+    let timezoneData = null;
+    let offset;
+    let hasDST;
+
+    if (getProcessEnvTz()) {
+      offset = moment().tz(getProcessEnvTz()).format('Z')
+      hasDST =  moment().isDST()
+      timezoneData = {offset, hasDST}
+    } else {
+      offset = TIMEZONE_CONFIG.missingTimeZone.offset
+      hasDST = TIMEZONE_CONFIG.missingTimeZone.hasDST
+      timezoneData = {offset, hasDST}
+    }
+    location.timezone = timezoneData
+  }
+  return location;
+}
+
 
 export const getLocalTime = (offset, hasDST) => {
   return moment().utc().utcOffset(DstHelper.isDateDst(new Date(), getProcessEnvDstReferenceTimezone()) && hasDST ? offset + 1 : offset)
@@ -69,7 +91,7 @@ export const getOffsets = (config) => {
   const dst = [true, false]
   dst.forEach((hasDST) => (
     offsets.forEach((offset) => {
-      if (isBetweenTextingHours({offset, hasDST}, config)) {
+      if (isBetweenTextingHours({ offset, hasDST }, config)) {
         valid.push([offset, hasDST])
       } else {
         invalid.push([offset, hasDST])

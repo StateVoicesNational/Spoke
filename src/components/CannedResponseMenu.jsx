@@ -75,11 +75,11 @@ CannedResponseMenu.propTypes = {
   onSelectCannedResponse: type.func,
   onRequestClose: type.func,
   customFields: type.array,
-  texterId: type.string,
+  texterId: type.number,
   userCannedResponses: type.array,
   open: type.bool,
   anchorEl: type.object,
-  campaignId: type.string,
+  campaignId: type.number,
   campaignCannedResponses: type.array
 }
 
