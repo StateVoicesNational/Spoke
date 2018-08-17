@@ -5,6 +5,7 @@
 - ACTION_HANDLERS should equal "actionkit-rsvp"
 - AK_BASEURL should be your base url from your ActionKit account
 - AK_SECRET should be your secret from your ActionKit account
+    + Refer to ActionKit's [Hashing documentation](https://docs.actionkit.com/docs/manual/developer/hashing.html#actionkit-s-hashing-system) for instructions on where to find your secret
 
 ## Step Two - making sure you have the correct data in your contacts list
 
@@ -29,3 +30,16 @@
 
 - In the interaction script, After you fill out the initial Script and Question fields, more options will appear for possible answers for your texters to mark.
 - Make an answer option "yes", click the drop down menu under "Answer" be sure to select "ActionKit Event RSVP". When the texter then receives a yes reply from a member, the texter will choose yes, and that yes will be recorded in your database and "sent" to ActionKit for that event. An API request will be made to ActionKit, and you can check your Spoke Server logs to see that API request go out to make ensure it is working.
+
+## Note about Email Subscription Suppression
+
+- If you want to signup people for emails who've clicked yes, you'll need to add another column to your csv. Columns will be:
+  * external_id (the actionkit user_id)
+  * event_page
+  * event_id
+  * cell
+  * firstName
+  * lastName
+  * suppress_subscribe
+
+  In the suppress_subscribe column, all the row values should be equal to `0` (to denote false). If you do not include this column, it will automatically default to true which means folks who signup for an event will not be added to the mailable list. 

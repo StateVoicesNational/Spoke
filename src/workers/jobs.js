@@ -28,6 +28,40 @@ export async function getTimezoneByZip(zip) {
   return ''
 }
 
+export async function sendJobToAWSLambda(job) {
+  // job needs to be json-serializable
+  // requires a 'command' key which should map to a function in job-processes.js
+  console.log('LAMBDA INVOCATION STARTING', job, process.env.AWS_LAMBDA_FUNCTION_NAME)
+
+  if (!job.command) {
+    console.log('LAMBDA INVOCATION FAILED: JOB NOT INVOKABLE', job)
+    return Promise.reject('Job type not available in job-processes')
+  }
+  const lambda = new AWS.Lambda()
+  const lambdaPayload = JSON.stringify(job)
+  if (lambdaPayload.length > 128000) {
+    console.log('LAMBDA INVOCATION FAILED PAYLOAD TOO LARGE')
+    return Promise.reject('Payload too large')
+  }
+
+  const p = new Promise((resolve, reject) => {
+    const result = lambda.invoke({
+      FunctionName: process.env.AWS_LAMBDA_FUNCTION_NAME,
+      InvocationType: 'Event',
+      Payload: lambdaPayload
+    }, (err, data) => {
+      if (err) {
+        console.log('LAMBDA INVOCATION FAILED', err, job)
+        reject(err)
+      } else {
+        resolve(data)
+      }
+    })
+    console.log('LAMBDA INVOCATION RESULT', result)
+  })
+  return p
+}
+
 export async function processSqsMessages() {
   // hit endpoint on SQS
   // ask for a list of messages from SQS (with quantity tied to it)
@@ -35,7 +69,7 @@ export async function processSqsMessages() {
   // if SQS doesnt have messages, exit
 
   if (!process.env.TWILIO_SQS_QUEUE_URL) {
-    return
+    return Promise.reject('TWILIO_SQS_QUEUE_URL not set')
   }
 
   const sqs = new AWS.SQS()
@@ -50,35 +84,34 @@ export async function processSqsMessages() {
     ReceiveRequestAttemptId: 'string'
   }
 
-  const p = new Promise
+  const p = new Promise((resolve, reject) => {
+    sqs.receiveMessage(params, async (err, data) => {
+      if (err) {
+        console.log(err, err.stack)
+        reject(err)
+      } else if (data.Messages) {
+        console.log(data)
+        for (let i = 0; i < data.Messages.length; i ++) {
+          const message = data.Messages[i]
+          const body = message.Body
+          console.log('processing sqs queue:', body)
+          const twilioMessage = JSON.parse(body)
 
-  sqs.receiveMessage(params, async (err, data) => {
-    if (err) {
-      console.log(err, err.stack)
-      p.reject(err)
-    } else if (data.Messages) {
-      console.log(data)
-      for (let i = 0; i < data.Messages.length; i ++) {
-        const message = data.Messages[i]
-        const body = message.Body
-        console.log('processing sqs queue:', body)
-        const twilioMessage = JSON.parse(body)
+          await serviceMap.twilio.handleIncomingMessage(twilioMessage)
 
-        await serviceMap.twilio.handleIncomingMessage(twilioMessage)
-
-        sqs.deleteMessage({ QueueUrl: process.env.TWILIO_SQS_QUEUE_URL, ReceiptHandle: message.ReceiptHandle },
-                          (err, data) => {
-                            if (err) {
-                              console.log(err, err.stack) // an error occurred
-                            } else {
-                              console.log(data) // successful response
-                            }
-                          })
+          sqs.deleteMessage({ QueueUrl: process.env.TWILIO_SQS_QUEUE_URL, ReceiptHandle: message.ReceiptHandle },
+                            (delMessageErr, delMessageData) => {
+                              if (delMessageErr) {
+                                console.log(delMessageErr, delMessageErr.stack) // an error occurred
+                              } else {
+                                console.log(delMessageData) // successful response
+                              }
+                            })
+        }
+        resolve()
       }
-      p.resolve()
-    }
+    })
   })
-
   return p
 }
 
@@ -124,7 +157,7 @@ export async function uploadContacts(job) {
   }
 
   const optOutCellCount = await r.knex('campaign_contact')
-    .whereIn('cell', function () {
+    .whereIn('cell', function optouts() {
       this.select('cell').from('opt_out').where('organization_id', campaign.organization_id)
     })
     .where('campaign_id', campaignId)
@@ -144,19 +177,27 @@ export async function uploadContacts(job) {
   }
 }
 
-
-export async function loadContactsFromDataWarehouse(job) {
-  const sqlQuery = job.payload
-  if (!sqlQuery.startsWith('SELECT') || sqlQuery.indexOf(';') >= 0) {
-    log.error('Malformed SQL statement.  Must begin with SELECT and not have any semicolons: ', sqlQuery)
-    return
+export async function loadContactsFromDataWarehouseFragment(jobEvent) {
+  console.log('starting loadContactsFromDataWarehouseFragment', jobEvent)
+  const jobCompleted = (await r.knex('job_request')
+                        .where('id', jobEvent.jobId)
+                        .select('status')
+                        .first())
+  if (!jobCompleted) {
+    console.log('loadContactsFromDataWarehouseFragment job no longer exists', jobCompleted, jobEvent)
+    return { 'alreadyComplete': 1 }
   }
-  if (!datawarehouse) {
-    log.error('No data warehouse connection, so cannot load contacts', job)
-    return
+
+  let sqlQuery = jobEvent.query
+  if (jobEvent.limit) {
+    sqlQuery += ' LIMIT ' + jobEvent.limit
+  }
+  if (jobEvent.offset) {
+    sqlQuery += ' OFFSET ' + jobEvent.offset
   }
   let knexResult
   try {
+    console.log('loadContactsFromDataWarehouseFragment RUNNING WAREHOUSE query', sqlQuery)
     knexResult = await datawarehouse.raw(sqlQuery)
   } catch (err) {
     // query failed
@@ -183,21 +224,22 @@ export async function loadContactsFromDataWarehouse(job) {
     return
   }
 
-  // TODO break up result and save in portions, dispatched
   const jobMessages = []
   const savePortion = await Promise.all(knexResult.rows.map(async (row) => {
     const contact = {
-      campaign_id: job.campaign_id,
-      first_name: row.first_name,
-      last_name: row.last_name,
+      campaign_id: jobEvent.campaignId,
+      first_name: row.first_name || '',
+      last_name: row.last_name || '',
       cell: row.cell,
-      zip: row.zip,
-      external_id: row.external_id
+      zip: row.zip || '',
+      external_id: (row.external_id ? String(row.external_id) : ''),
+      assignment_id: null,
+      message_status: 'needsMessage'
     }
     const contactCustomFields = {}
-    for (const f in customFields) {
+    Object.keys(customFields).forEach((f) => {
       contactCustomFields[f] = row[f]
-    }
+    })
     contact.custom_fields = JSON.stringify(contactCustomFields)
     if (contact.zip) {
       contact.timezone_offset = await getTimezoneByZip(contact.zip)
@@ -205,33 +247,118 @@ export async function loadContactsFromDataWarehouse(job) {
     return contact
   }))
 
-  await r.table('campaign_contact')
-    .getAll(job.campaign_id, { index: 'campaign_id' })
-    .delete()
-
   await CampaignContact.save(savePortion)
 
-  // now that we've saved them all, we delete everyone that is opted out locally
-  // doing this in one go so that we can get the DB to do the indexed cell matching
+  await r.knex('job_request').where('id', jobEvent.jobId).increment('status', 1)
+
+  const completed = (await r.knex('job_request')
+                     .where('id', jobEvent.jobId)
+                     .select('status')
+                     .first())
+  console.log('loadContactsFromDataWarehouseFragment toward end', completed, jobEvent)
+
+  if (!completed) {
+    console.log('loadContactsFromDataWarehouseFragment job has been deleted', completed)
+  } else if (jobEvent.totalParts && completed.status >= jobEvent.totalParts) {
+    if (jobEvent.organizationId) {
+      // now that we've saved them all, we delete everyone that is opted out locally
+      // doing this in one go so that we can get the DB to do the indexed cell matching
+      const optOutCellCount = await r.knex('campaign_contact')
+        .whereIn('cell', function optouts() {
+          this.select('cell').from('opt_out').where('organization_id', jobEvent.organizationId)
+        })
+        .where('campaign_id', jobEvent.campaignId)
+        .delete()
+      console.log('OPTOUT CELL COUNT', optOutCellCount)
+    }
+    await r.table('job_request').get(jobEvent.jobId).delete()
+    return { 'completed': 1 }
+  } else if (jobEvent.part < (jobEvent.totalParts - 1)) {
+    const newPart = jobEvent.part + 1
+    const newJob = {
+      ...jobEvent,
+      part: newPart,
+      offset: newPart * jobEvent.step,
+      limit: jobEvent.step,
+      command: 'loadContactsFromDataWarehouseFragmentJob'
+    }
+    if (process.env.WAREHOUSE_DB_LAMBDA_ITERATION) {
+      console.log('SENDING TO LAMBDA loadContactsFromDataWarehouseFragment', newJob)
+      await sendJobToAWSLambda(newJob)
+      return { 'invokedAgain': 1 }
+    } else {
+      return loadContactsFromDataWarehouseFragment(newJob)
+    }
+  }
+}
+
+export async function loadContactsFromDataWarehouse(job) {
+  console.log('STARTING loadContactsFromDataWarehouse')
+  const jobMessages = []
+  const sqlQuery = job.payload
+  if (!sqlQuery.startsWith('SELECT') || sqlQuery.indexOf(';') >= 0) {
+    log.error('Malformed SQL statement.  Must begin with SELECT and not have any semicolons: ', sqlQuery)
+    return
+  }
+  if (!datawarehouse) {
+    log.error('No data warehouse connection, so cannot load contacts', job)
+    return
+  }
+
+  let knexCountRes
+  let knexCount
+  try {
+    knexCountRes = await datawarehouse.raw(`SELECT COUNT(*) FROM ( ${sqlQuery} )`)
+  } catch (err) {
+    log.error('Data warehouse count query failed: ', err)
+    jobMessages.push(`Error: Data warehouse count query failed: ${err}`)
+  }
+
+  if (knexCountRes) {
+    knexCount = knexCountRes.rows[0].count
+    console.log('WAREHOUSE COUNT', knexCount)
+  }
+  if (!knexCount) {
+    jobMessages.push('Error: Data warehouse query returned zero results')
+  }
+  const STEP = ((r.kninky && r.kninky.defaultsUnsupported)
+                ? 10 // sqlite has a max of 100 variables and ~8 or so are used per insert
+                : 10000) // default
   const campaign = await Campaign.get(job.campaign_id)
-  const optOutCellCount = await r.knex('campaign_contact')
-    .whereIn('cell', function () {
-      this.select('cell').from('opt_out').where('organization_id', campaign.organization_id)
-    })
+  const totalParts = Math.ceil(knexCount / STEP)
+
+  if (totalParts > 1 && /LIMIT/.test(sqlQuery)) {
+    // We do naive string concatenation when we divide queries up for parts
+    // just appending " LIMIT " and " OFFSET " arguments.
+    // If there is already a LIMIT in the query then we'll be unable to do that
+    // so we error out.  Note that if the total is < 10000, then LIMIT will be respected
+    jobMessages.push(`Error: LIMIT in query not supported for results larger than ${STEP}. Count was ${knexCount}`)
+  }
+
+  if (job.id && jobMessages.length) {
+    await r.knex('job_request').where('id', job.id)
+      .update({ result_message: jobMessages.join('\n') })
+    return
+  }
+
+  await r.knex('campaign_contact')
     .where('campaign_id', job.campaign_id)
     .delete()
 
-  console.log('OPTOUT CELL COUNT', optOutCellCount)
+  console.log('STARTING loadContactsFromDataWarehouse')
 
-  // dispatch something that tests completion?
-  if (job.id) {
-    if (jobMessages.length) {
-      await r.knex('job_request').where('id', job.id)
-        .update({ result_message: jobMessages.join('\n') })
-    } else {
-      await r.table('job_request').get(job.id).delete()
-    }
-  }
+  await loadContactsFromDataWarehouseFragment({
+    jobId: job.id,
+    query: sqlQuery,
+    campaignId: job.campaign_id,
+    // beyond job object:
+    organizationId: campaign.organization_id,
+    totalParts,
+    totalCount: knexCount,
+    step: STEP,
+    part: 0,
+    limit: (totalParts > 1 ? STEP : 0) // 0 is unlimited
+  })
 }
 
 export async function assignTexters(job) {
@@ -521,28 +648,40 @@ export async function exportCampaign(job) {
   const messageCsv = Papa.unparse(finalCampaignMessages)
 
   if (process.env.AWS_ACCESS_AVAILABLE || (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY)) {
-    const s3bucket = new AWS.S3({ params: { Bucket: process.env.AWS_S3_BUCKET_NAME } })
-    const campaignTitle = campaign.title.replace(/ /g, '_').replace(/\//g, '_')
-    const key = `${campaignTitle}-${moment().format('YYYY-MM-DD-HH-mm-ss')}.csv`
-    const messageKey = `${key}-messages.csv`
-    let params = { Key: key, Body: campaignCsv }
-    await s3bucket.putObject(params).promise()
-    params = { Key: key, Expires: 86400 }
-    const campaignExportUrl = await s3bucket.getSignedUrl('getObject', params)
-    params = { Key: messageKey, Body: messageCsv }
-    await s3bucket.putObject(params).promise()
-    params = { Key: messageKey, Expires: 86400 }
-    const campaignMessagesExportUrl = await s3bucket.getSignedUrl('getObject', params)
-    await sendEmail({
-      to: user.email,
-      subject: `Export ready for ${campaign.title}`,
-      text: `Your Spoke exports are ready! These URLs will be valid for 24 hours.
-
-      Campaign export: ${campaignExportUrl}
-
-      Message export: ${campaignMessagesExportUrl}`
-    })
-    log.info(`Successfully exported ${id}`)
+    try {
+      const s3bucket = new AWS.S3({ params: { Bucket: process.env.AWS_S3_BUCKET_NAME } })
+      const campaignTitle = campaign.title.replace(/ /g, '_').replace(/\//g, '_')
+      const key = `${campaignTitle}-${moment().format('YYYY-MM-DD-HH-mm-ss')}.csv`
+      const messageKey = `${key}-messages.csv`
+      let params = { Key: key, Body: campaignCsv }
+      await s3bucket.putObject(params).promise()
+      params = { Key: key, Expires: 86400 }
+      const campaignExportUrl = await s3bucket.getSignedUrl('getObject', params)
+      params = { Key: messageKey, Body: messageCsv }
+      await s3bucket.putObject(params).promise()
+      params = { Key: messageKey, Expires: 86400 }
+      const campaignMessagesExportUrl = await s3bucket.getSignedUrl('getObject', params)
+      await sendEmail({
+        to: user.email,
+        subject: `Export ready for ${campaign.title}`,
+        text: `Your Spoke exports are ready! These URLs will be valid for 24 hours.
+        Campaign export: ${campaignExportUrl}
+        Message export: ${campaignMessagesExportUrl}`
+      }).catch((err) => {
+        log.error(err)
+        log.info(`Campaign Export URL - ${campaignExportUrl}`)
+        log.info(`Campaign Messages Export URL - ${campaignMessagesExportUrl}`)
+      })
+      log.info(`Successfully exported ${id}`)
+    } catch (err) {
+      log.error(err)
+      await sendEmail({
+        to: user.email,
+        subject: `Export failed for ${campaign.title}`,
+        text: `Your Spoke exports failed... please try again later.
+        Error: ${err.message}`
+      })
+    }
   } else {
     log.debug('Would have saved the following to S3:')
     log.debug(campaignCsv)
@@ -550,11 +689,24 @@ export async function exportCampaign(job) {
   }
 
   if (job.id) {
-    await r.table('job_request').get(job.id).delete()
-  }
+    let retries = 0
+    const deleteJob = async () => {
+      try {
+        await r.table('job_request').get(job.id).delete()
+      } catch (err) {
+        if (retries < 5) {
+          retries += 1
+          await deleteJob()
+        } else log.error(`Could not delete job. Err: ${err.message}`)
+      }
+    }
+
+    await deleteJob()
+  } else log.debug(job)
 }
 
 // add an in-memory guard that the same messages are being sent again and again
+// not related to stale filter
 let pastMessages = []
 
 export async function sendMessages(queryFunc, defaultStatus) {

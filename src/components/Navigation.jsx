@@ -4,6 +4,8 @@ import Paper from 'material-ui/Paper'
 import { List, ListItem } from 'material-ui/List'
 import Divider from 'material-ui/Divider'
 import { withRouter } from 'react-router'
+import _ from 'lodash'
+import { dataTest } from '../lib/attributes'
 
 const Navigation = function Navigation(props) {
   const { sections, switchListItem } = props
@@ -19,6 +21,7 @@ const Navigation = function Navigation(props) {
       <List>
         {sections.map((section) => (
           <ListItem
+            {...dataTest(_.camelCase(`nav ${section.path}`))}
             key={section.name}
             primaryText={section.name}
             onTouchTap={() => props.router.push(section.url)}

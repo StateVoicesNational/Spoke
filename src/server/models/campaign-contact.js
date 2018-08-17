@@ -2,6 +2,9 @@ import thinky from './thinky'
 const type = thinky.type
 import { requiredString, optionalString, timestamp } from './custom-types'
 
+import Campaign from './campaign'
+import Assignment from './assignment'
+
 const CampaignContact = thinky.createModel('campaign_contact', type.object().schema({
   id: type.string(),
   campaign_id: requiredString(),
@@ -18,6 +21,7 @@ const CampaignContact = thinky.createModel('campaign_contact', type.object().sch
     .enum([
       'needsMessage',
       'needsResponse',
+      'convo',
       'messaged',
       'closed',
       'UPDATING'

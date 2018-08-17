@@ -20,6 +20,17 @@ const inlineStyles = {
     textAlign: 'center',
     verticalAlign: 'middle',
     height: 20
+  },
+  pastMsgStyle: {
+    backgroundColor: '#FFD700',
+    fontSize: 12,
+    top: 20,
+    right: 20,
+    padding: '4px 2px 0px 2px',
+    width: 20,
+    textAlign: 'center',
+    verticalAlign: 'middle',
+    height: 20
   }
 }
 
@@ -48,7 +59,7 @@ export class AssignmentSummary extends Component {
     }
   }
 
-  renderBadgedButton({ assignment, title, count, primary, disabled, contactsFilter, hideIfZero }) {
+  renderBadgedButton({ assignment, title, count, primary, disabled, contactsFilter, hideIfZero, style }) {
     if (count === 0 && hideIfZero) { return '' }
     if (count === 0) {
       return (
@@ -56,28 +67,28 @@ export class AssignmentSummary extends Component {
           disabled={disabled}
           label={title}
           primary={primary && !disabled}
-          onTouchTap={() => this.goToTodos(contactsFilter, assignment.id)}
+          onClick={() => this.goToTodos(contactsFilter, assignment.id)}
         />)
     } else {
       return (<Badge
         key={title}
-        badgeStyle={inlineStyles.badge}
-        badgeContent={count}
+        badgeStyle={style || inlineStyles.badge}
+        badgeContent={count || ''}
         primary={primary && !disabled}
         secondary={!primary && !disabled}
       >
         <RaisedButton
           disabled={disabled}
           label={title}
-          onTouchTap={() => this.goToTodos(contactsFilter, assignment.id)}
+          onClick={() => this.goToTodos(contactsFilter, assignment.id)}
         />
       </Badge>)
     }
   }
 
   render() {
-    const { assignment, unmessagedCount, unrepliedCount, badTimezoneCount, totalMessagedCount } = this.props
-    const { title, description, dueBy,
+    const { assignment, unmessagedCount, unrepliedCount, badTimezoneCount, totalMessagedCount, pastMessagesCount, skippedMessagesCount } = this.props
+    const { title, description, hasUnassignedContacts, dueBy,
             primaryColor, logoImageUrl, introHtml,
             useDynamicAssignment } = assignment.campaign
 
@@ -102,7 +113,7 @@ export class AssignmentSummary extends Component {
               title: 'Send first texts',
               count: unmessagedCount,
               primary: true,
-              disabled: false,
+              disabled: (useDynamicAssignment && !hasUnassignedContacts && unmessagedCount == 0) ? true : false,
               contactsFilter: 'text',
               hideIfZero: !useDynamicAssignment
             })}
@@ -117,11 +128,22 @@ export class AssignmentSummary extends Component {
             })}
             {this.renderBadgedButton({
               assignment,
-              title: 'Revisit convos',
+              title: 'Past Messages',
+              count: pastMessagesCount,
+              style: inlineStyles.pastMsgStyle,
               primary: false,
-              count: totalMessagedCount,
               disabled: false,
               contactsFilter: 'stale',
+              hideIfZero: true
+            })}
+            {this.renderBadgedButton({
+              assignment,
+              title: 'Skipped Messages',
+              count: skippedMessagesCount,
+              style: inlineStyles.pastMsgStyle,
+              primary: false,
+              disabled: false,
+              contactsFilter: 'skipped',
               hideIfZero: true
             })}
             {(window.NOT_IN_USA && window.ALLOW_SEND_ALL) ? this.renderBadgedButton({
@@ -157,6 +179,8 @@ AssignmentSummary.propTypes = {
   unrepliedCount: PropTypes.number,
   badTimezoneCount: PropTypes.number,
   totalMessagedCount: PropTypes.number,
+  pastMessagesCount: PropTypes.number,
+  skippedMessagesCount: PropTypes.number,
   data: PropTypes.object,
   mutations: PropTypes.object
 }

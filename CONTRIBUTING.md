@@ -7,8 +7,18 @@ many important organizations!
 
 * We generally hang out in the [Progressive Coder Network slack](https://www.progcode.org/) in the `#spoke` channel
   * Please fill out the Join form there, and once you are on-boarded, we can chat live!
+  * ProgCode has community guidelines
 * Feel free to [create an issue or comment on an existing issue](https://github.com/MoveOnOrg/Spoke/issues) -- Every time we hear from the outside progressive developer community, we do a little dance.
 * We also welcome reaching out on our [MoveOn Spoke interest form](https://act.moveon.org/survey/spoke-project/) with questions, etc.
+
+In all forums we affirm the [Progressive Coder Community Guidelines](https://docs.google.com/document/d/1coMHvuGf6x6Qn_73SEhOXi_QaoRBM__3Zj6_5TyrmWs/edit#heading=h.ab96v3qhdgk9)
+
+We are a community of campaigns, staffed organizations, and
+volunteers. We affirm our love and support for our volunteers and
+recognize that they are carving out valuable time from their friends,
+families and paid work to help this project. Just like all open-source
+projects, we should come to this project without demands or anger, but
+gratitude and appreciation of everyone's time and work.
 
 ## Your first code contribution
 
@@ -27,7 +37,7 @@ Generally, the first steps are:
 ### Working on an issue
 
 * Depending on the part of the codebase you are working on read relevant parts of [EXPLANATION-development-guidelines.md](./docs/EXPLANATION-development-guidelines.md) for some context and common gotchas.
-* While working on an issue, run existing tests to make sure they still work (`npm test`)
+* While working on an issue, run existing tests to make sure they still work (`npm test` or `npm run test-sqlite` depending on your backend)
 * Please try adding a test, at least for backend changes (We have an [open issue to wire up frontend React testing](https://github.com/MoveOnOrg/Spoke/issues/292))
 * Before committing changes, please run `npm run lint` to standardize formatting
 
