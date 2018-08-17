@@ -169,7 +169,7 @@ Here is the (proposed) structure of data in Redis to support the above data need
 
   1. HSET `contactinfo-<contact_cell>-<message_service_id>`
 
-##### updateAssignments - backend code [1](https://github.com/MoveOnOrg/Spoke/blob/main/src/server/api/schema.js#L155-L187), [2](https://github.com/MoveOnOrg/Spoke/blob/main/src/workers/jobs.js#L364) - [frontend code](https://github.com/MoveOnOrg/Spoke/blob/main/src/components/CampaignTextersForm.jsx#L122)
+##### updateAssignments - backend code: [1](https://github.com/MoveOnOrg/Spoke/blob/main/src/server/api/schema.js#L155-L187), [2](https://github.com/MoveOnOrg/Spoke/blob/main/src/workers/jobs.js#L364) - [frontend code](https://github.com/MoveOnOrg/Spoke/blob/main/src/components/CampaignTextersForm.jsx#L122)
 
   1. Either LPUSH `newassignments-<texter_id>-<campaign_id>` OR `dynamicassignments-<campaign_id>`
 
