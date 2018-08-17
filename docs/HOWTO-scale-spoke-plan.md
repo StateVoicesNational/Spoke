@@ -121,7 +121,7 @@ Here is the (proposed) structure of data in Redis to support the above data need
 
   1. Load from `texterinfo-<texter-id>`
 
-##### getContacts
+##### getContacts [backend](https://github.com/MoveOnOrg/Spoke/blob/main/src/server/api/assignment.js#L107) [frontend](https://github.com/MoveOnOrg/Spoke/blob/main/src/containers/TexterTodo.jsx#L67)
 
 * dynamicAssignment (when the texter requests more assignments)
 
