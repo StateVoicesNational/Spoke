@@ -5,14 +5,15 @@
     2. [S3](#s3)
     3. [VPC](#vpc)
     4. [RDS](#rds)
-2. [Deploy with Claudia.js](#deploy-with-claudia-js)
+2. [Deploy with Claudia.js](#deploy-with-claudiajs)
     1. [Preparation](#preparation)
         1. [Configure Deploy Environment](#configure-deploy-environment)
         2. [Create Production Environment File](#create-production-environment-file)
     2. [Deploy](#deploy)
         1. [Seed Database](#seed-database)
         2. [Setting Up Scheduled Jobs](#setting-up-scheduled-jobs)
-        3. [Add Domain](#add-domain)
+        3. [Migrating the Database](migrating-the-database)
+        4. [Add a Custom Domain](#add-a-custom-domain)
     3. [Updating Code or Environment Variables](#updating-code-or-environment-variables)
 
 # AWS Resource Configuration
@@ -220,7 +221,7 @@ $ AWS_PROFILE=[your_profile_nickname] claudia test-lambda --event ./deploy/lambd
 
 (Note: the migration will probably take much less than the 5 minutes or whatever your lambda timeout is, however it will look like `test-lambda` is still running/doing something. If you've confirmed on the DB side that the migration completed, it's safe to `Ctrl + c`)
 
-### Add Domain
+### Add a Custom Domain
 
 Once Claudia has created an API Gateway we can add a subdomain to access Spoke. Add the custom domain you created the certificate for, selecting that certificate. Add a mapping with a blank path and `spoke`:`latest` for the destination and path.
 
