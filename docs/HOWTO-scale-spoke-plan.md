@@ -121,7 +121,7 @@ Here is the (proposed) structure of data in Redis to support the above data need
 
   1. Load from `texterinfo-<texter-id>`
 
-##### getContacts - [backend code](https://github.com/MoveOnOrg/Spoke/blob/main/src/server/api/assignment.js#L107) - [frontend code](https://github.com/MoveOnOrg/Spoke/blob/main/src/containers/TexterTodo.jsx#L67)
+##### getContacts
 
 * dynamicAssignment (when the texter requests more assignments)
 
@@ -138,6 +138,14 @@ Here is the (proposed) structure of data in Redis to support the above data need
 
   1. Load from `replies-<texter_id>`
   2. For each contact, load `contactinfo-<contact_cell>-<message_service_id>`
+
+* Code points:
+  * Backend code is in [server/api/assignment.js](https://github.com/MoveOnOrg/Spoke/blob/main/src/server/api/assignment.js#L107)
+  * Frontend calls currently live in two places
+    * [containers/TexterTodo.jsx](https://github.com/MoveOnOrg/Spoke/blob/main/src/containers/TexterTodo.jsx#L67)
+      where it all _should_ live, so we don't need to make an API call per-contact -- and can load many at once
+    * [containers/AssignmentTexterContact.jsx](https://github.com/MoveOnOrg/Spoke/blob/main/src/containers/AssignmentTexterContact.jsx#L893-L933)
+    * There is a [toy/WIP branch to move this](https://github.com/MoveOnOrg/Spoke/pull/783)
 
 ##### incomingMessage
 
