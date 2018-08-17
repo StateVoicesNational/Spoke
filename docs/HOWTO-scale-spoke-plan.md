@@ -101,15 +101,32 @@ Here is the (proposed) structure of data in Redis to support the above data need
   Keys are `<contact_cell>`; values are full contact info and assignment id/status
   (same as values in `newassignments-<texter_id>-<campaign_id>` above)
 
+  The use-case that unsentassigned- helps us with is imagine the following situation:
+
+  1. Some things are in newassignments
+  2. A texter's browser sends the query to get some new assignments. So the system sends them some items from newassignments and removes them from newassignments (so that future queries won't re-send the same ones)
+  3. The texter leaves, a network failure occurs, or the texter's browser crashes.
+  4. Finally later the texter logs in again to resume. Their browser does more queries to newassignments, and they finish their task
+
+  The problem here is that those middle contacts got dropped. By storing unsentassigned, we track which ones are 'in the queue' -- i.e. sent to the texter, but the texter has not yet actually sent them a message/response. Thus we only want to fully remove them after the texter sends them a response. Until then, they're in 'purgatory'--i.e. we'll skip them until the texter thinks they're finished.
+
+
 * QUEUE: `dynamicassignments-<campaign_id>` -- full contact info for all contacts ready for dynamic assignment in a campaign
 
 * KEY (regular `SET` call): `campaign-<campaign_id>` -- campaign data that is loaded in TexterTodo and TexterTodoList components
 
 #### Workflows using Data-structures
 
-* Access Control
+##### Access Control
 
   1. Load from `texterinfo-<texter-id>`
+
+##### getContacts
+
+* dynamicAssignment (when the texter requests more assignments)
+
+  1. LPOP `dynamicassignments-<campaign_id>`
+  2. HSET `contactinfo-<contact_cell>-<message_service_id>`
 
 * getNew (needsMessage)
 
@@ -117,37 +134,31 @@ Here is the (proposed) structure of data in Redis to support the above data need
   2. If newassignments is empty, we check `unsentassigned-<texter_id>-<campaign_id>` for content.  If it does, we ?resend that data with an additional setting in the API getNew so the client knows that the 'original queue' is empty.
   3. (if not empty) HSET `unsentassigned-<texter_id>-<campaign_id>` `<contact_cell>` [the assignment data]
 
-
 * getReplies (needsRepsonse)
 
   1. Load from `replies-<texter_id>`
   2. For each contact, load `contactinfo-<contact_cell>-<message_service_id>`
 
-* incomingMessage
+##### incomingMessage
 
   1. Load `contactinfo-<contact_cell>-<message_service_id>` to lookup the texter id assigned the contact
   2. LPUSH `conversation-<contact_cell>-<message_service_id>`
   3. LPUSH `message-write-queue`
   4. HSET `replies-<texter_id>` (using lookup)
 
-* sendMessage
+##### sendMessage
 
   1. If status is needsMessage then confirm that it's the first item in `conversation-<contact_cell>-<message_service_id>`, otherwise, do not (re)send message.
   2. LPUSH `conversation-<contact_cell>-<message_service_id>`
   3. LPUSH `message-write-queue`
 
-* updateQuestionResponses
+##### updateQuestionResponses
 
   1. HSET `contactinfo-<contact_cell>-<message_service_id>`
 
-* updateAssignments
+##### updateAssignments
 
   1. Either LPUSH `newassignments-<texter_id>-<campaign_id>` OR `dynamicassignments-<campaign_id>`
-
-* dynamicAssignment (when the texter requests more assignments)
-
-  1. LPOP `dynamicassignments-<campaign_id>`
-  2. HSET `contactinfo-<contact_cell>-<message_service_id>`
 
 
 #### Initial loading into cache
