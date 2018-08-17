@@ -1,21 +1,8 @@
 import { mapFieldsToModel } from './lib/utils'
 import { r, Organization } from '../models'
 import { accessRequired } from './errors'
-
-export const schema = `
-  type Organization {
-    id: ID
-    uuid: String
-    name: String
-    campaigns(campaignsFilter: CampaignsFilter): [Campaign]
-    people(role: String): [User]
-    optOuts: [OptOut]
-    threeClickEnabled: Boolean
-    textingHoursEnforced: Boolean
-    textingHoursStart: Int
-    textingHoursEnd: Int
-  }
-`
+import { buildCampaignQuery } from './campaign'
+import { buildUserOrganizationQuery } from './user'
 
 export const resolvers = {
   Organization: {
@@ -25,15 +12,12 @@ export const resolvers = {
     ], Organization),
     campaigns: async (organization, { campaignsFilter }, { user }) => {
       await accessRequired(user, organization.id, 'SUPERVOLUNTEER')
-      let query = r.table('campaign').getAll(organization.id, { index:
-        'organization_id' })
-
-      if (campaignsFilter && campaignsFilter.hasOwnProperty('isArchived') && campaignsFilter.isArchived !== null) {
-        query = query.filter({ is_archived: campaignsFilter.isArchived })
-      }
-
-      query = query.orderBy(r.desc('due_by'))
-
+      let query = buildCampaignQuery(
+        r.knex.select('*'),
+        organization.id,
+        campaignsFilter
+      )
+      query = query.orderBy('due_by', 'desc')
       return query
     },
     uuid: async (organization, _, { user }) => {
@@ -50,14 +34,7 @@ export const resolvers = {
     },
     people: async (organization, { role }, { user }) => {
       await accessRequired(user, organization.id, 'SUPERVOLUNTEER')
-
-      const roleFilter = role ? { role } : {}
-
-      return r.table('user_organization')
-        .getAll(organization.id, { index: 'organization_id' })
-        .filter(roleFilter)
-        .eqJoin('user_id', r.table('user'))('right')
-        .distinct()
+      return buildUserOrganizationQuery(r.knex.select('user.*'), organization.id, role)
     },
     threeClickEnabled: (organization) => organization.features.indexOf('threeClick') !== -1,
     textingHoursEnforced: (organization) => organization.texting_hours_enforced,

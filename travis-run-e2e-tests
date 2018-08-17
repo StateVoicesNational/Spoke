@@ -1,0 +1,12 @@
+#!/bin/bash
+set -ev
+# Only run on non-pull requests
+# https://docs.travis-ci.com/user/pull-requests/#Pull-Requests-and-Security-Restrictions
+if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then
+  # Start dev server
+  npm run dev-nowrap &
+  # Wait for server availability https://github.com/jeffbski/wait-on#readme
+  wait-on -d 30000 -i 1000 -w 2000 http-get://localhost:3000
+  # Run end to end tests
+  npm run test-e2e --saucelabs
+fi

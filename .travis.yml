@@ -2,19 +2,25 @@ language: node_js
 node_js:
 - "6.10.3"
 services:
-  - postgresql
+- postgresql
+addons:
+  sauce_connect:
+    username: $SAUCE_USERNAME
+    access_key: $SAUCE_ACCESS_KEY
 env:
   global:
   - secure: TODO
 before_script:
-  - psql -c 'CREATE DATABASE spoke_test;' -U postgres
-  - psql -c "CREATE USER spoke_test WITH PASSWORD 'spoke_test';" -U postgres
-  - psql -c 'GRANT ALL PRIVILEGES ON DATABASE spoke_test TO spoke_test;' -U postgres
-
-  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-  - chmod +x ./cc-test-reporter
-  - ./cc-test-reporter before-build
+- psql -c 'CREATE DATABASE spoke_test;' -U postgres
+- psql -c "CREATE USER spoke_test WITH PASSWORD 'spoke_test';" -U postgres
+- psql -c 'GRANT ALL PRIVILEGES ON DATABASE spoke_test TO spoke_test;' -U postgres
+- curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+- chmod +x ./cc-test-reporter
+- ./cc-test-reporter before-build
+- chmod +x ./travis-run-e2e-tests
 script:
 - npm run test-coverage
+- CC_TEST_RESULT=$?
+- ./travis-run-e2e-tests
 after_script:
-- ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
+- ./cc-test-reporter after-build --exit-code $CC_TEST_RESULT

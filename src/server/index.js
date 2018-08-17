@@ -4,7 +4,8 @@ import express from 'express'
 import appRenderer from './middleware/app-renderer'
 import { graphqlExpress, graphiqlExpress } from 'apollo-server-express'
 import { makeExecutableSchema, addMockFunctionsToSchema } from 'graphql-tools'
-import { schema, resolvers } from './api/schema'
+import { resolvers } from './api/schema'
+import { schema } from '../api/schema'
 import { accessRequired } from './api/errors'
 import mocks from './api/mocks'
 import { createLoaders } from './models'
@@ -114,35 +115,6 @@ app.post('/twilio-message-report', wrap(async (req, res) => {
 // const accountSid = process.env.TWILIO_API_KEY
 // const authToken = process.env.TWILIO_AUTH_TOKEN
 // const client = require('twilio')(accountSid, authToken)
-// app.get('/incomingmessages', (req, res) => {
-//   client.sms.messages.list(function(err, data) {
-//     const listOfMessages = data.sms_messages
-//     listOfMessages.forEach(function(message){
-//       if(message.direction == "inbound"){
-//         return console.log(message.body)
-//       }
-//     })
-//   })
-// })
-
-app.get('/allmessages/:organizationId', wrap(async (req, res) => {
-  const orgId = req.params.organizationId
-  await accessRequired(req.user, orgId, 'SUPERVOLUNTEER', /* superadmin*/true)
-  const messages = await r.knex('message')
-    .select(
-      'message.id',
-      'message.text',
-      'message.user_number',
-      'message.contact_number',
-      'message.created_at'
-    )
-    .join('assignment', 'message.assignment_id', 'assignment.id')
-    .join('campaign', 'assignment.campaign_id', 'campaign.id')
-    .where('campaign.organization_id', orgId)
-    .where('message.is_from_contact', true)
-    .orderBy('message.created_at', 'desc')
-  return res.json(messages)
-}))
 
 app.get('/logout-callback', (req, res) => {
   req.logOut()
