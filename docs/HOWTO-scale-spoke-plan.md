@@ -154,17 +154,22 @@ Here is the (proposed) structure of data in Redis to support the above data need
   3. LPUSH `message-write-queue`
   4. HSET `replies-<texter_id>` (using lookup)
 
-##### sendMessage
+* Code points:
+  * [twilio backend codepoint](https://github.com/MoveOnOrg/Spoke/blob/main/src/server/api/lib/twilio.js#L203)
+  * note that is called both from server/index.js and workers/jobs.js
+  * In theory we can/should do this generically over services, but pending_message_part complicates this a bit much.  A 'middle road' approach would also implement this in server/api/lib/fakeservice.js
+
+##### sendMessage - [backend code](https://github.com/MoveOnOrg/Spoke/blob/main/src/server/api/schema.js#L855) - [frontend code](https://github.com/MoveOnOrg/Spoke/blob/main/src/containers/AssignmentTexterContact.jsx#L993)
 
   1. If status is needsMessage then confirm that it's the first item in `conversation-<contact_cell>-<message_service_id>`, otherwise, do not (re)send message.
   2. LPUSH `conversation-<contact_cell>-<message_service_id>`
   3. LPUSH `message-write-queue`
 
-##### updateQuestionResponses
+##### updateQuestionResponses - [backend code](https://github.com/MoveOnOrg/Spoke/blob/main/src/server/api/schema.js#L971) - [frontend code](https://github.com/MoveOnOrg/Spoke/blob/main/src/containers/AssignmentTexterContact.jsx#L980)
 
   1. HSET `contactinfo-<contact_cell>-<message_service_id>`
 
-##### updateAssignments
+##### updateAssignments - backend code [1](https://github.com/MoveOnOrg/Spoke/blob/main/src/server/api/schema.js#L155-L187), [2](https://github.com/MoveOnOrg/Spoke/blob/main/src/workers/jobs.js#L364) - [frontend code](https://github.com/MoveOnOrg/Spoke/blob/main/src/components/CampaignTextersForm.jsx#L122)
 
   1. Either LPUSH `newassignments-<texter_id>-<campaign_id>` OR `dynamicassignments-<campaign_id>`
 
