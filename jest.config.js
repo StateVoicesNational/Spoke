@@ -1,4 +1,6 @@
 module.exports = {
+  verbose: true,
+  testURL: "http://localhost/",
   testEnvironment: "node",
   globals: {
     DB_JSON: JSON.stringify({
@@ -34,4 +36,5 @@ module.exports = {
   },
   collectCoverageFrom : ["**/*.{js,jsx}", "!**/node_modules/**", "!**/__test__/**", "!**/deploy/**", "!**/coverage/**"],
   setupTestFrameworkScriptFile: "<rootDir>/__test__/setup.js",
+  testPathIgnorePatterns: ["<rootDir>/node_modules/", "<rootDir>/__test__/e2e/"]
 };

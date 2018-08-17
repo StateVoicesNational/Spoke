@@ -1,23 +1,5 @@
 import { r } from '../models'
 
-export const schema = `
-  type Question {
-    text: String
-    answerOptions: [AnswerOption]
-    interactionStep: InteractionStep
-  }
-
-  type AnswerOption {
-    interactionStepId: Int
-    value: String
-    action: String
-    nextInteractionStep: InteractionStep
-    responders: [CampaignContact]
-    responderCount: Int
-    question: Question
-  }
-`
-
 export const resolvers = {
   Question: {
     text: async (interactionStep) => interactionStep.question,
@@ -25,6 +7,7 @@ export const resolvers = {
       r.table('interaction_step')
         .filter({ parent_interaction_id: interactionStep.id })
         .filter({ is_deleted: false })
+        .orderBy('answer_option')
         .map({
           value: r.row('answer_option'),
           action: r.row('answer_actions'),

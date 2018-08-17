@@ -1,4 +1,5 @@
-import { schema, resolvers } from '../src/server/api/schema'
+import { resolvers } from '../src/server/api/schema'
+import { schema } from '../src/api/schema'
 import { graphql } from 'graphql'
 import { User, Organization, Campaign, CampaignContact, Assignment, r } from '../src/server/models/'
 import { resolvers as campaignResolvers } from '../src/server/api/campaign'

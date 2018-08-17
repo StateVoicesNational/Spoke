@@ -10,6 +10,7 @@ import theme from '../styles/theme'
 import Paper from 'material-ui/Paper'
 import { withRouter } from 'react-router'
 import GSForm from '../components/forms/GSForm'
+import { dataTest } from '../lib/attributes'
 
 const styles = StyleSheet.create({
   container: {
@@ -70,6 +71,7 @@ class CreateOrganization extends React.Component {
               }}
             >
               <Form.Field
+                {...dataTest('organization')}
                 name='name'
                 label='Your organization'
                 hintText='Bartlet Campaign'

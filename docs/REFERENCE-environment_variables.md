@@ -19,17 +19,24 @@ DB_NAME                           | Database connection name. _Required_.
 DB_PORT                           | Database connection port. _Required_.
 DB_TYPE                           | Database connection type for [Knex](http://knexjs.org/#Installation-client). _Options_: mysql, pg, sqlite3. _Default_: sqlite3.
 DB_USE_SSL                        | Boolean value to determine whether database connections should use SSL. _Default_: false.
+PGSSLMODE                         | Postgres SSL mode. Due to a [Knex bug](https://github.com/tgriesser/knex/issues/852), this environment variable must be used in order to specify the SSL mode directly in the driver. This must be set to `PGSSLMODE=require` to work with Heroku databases above the free tier (see [Heroku Postgres & SSL](https://devcenter.heroku.com/articles/heroku-postgresql#heroku-postgres-ssl)).
 DEBUG_SCALING                     | Emit console.log on events related to scaling issues. _Default_: false.
 DEFAULT_SERVICE                   | Default SMS service. _Options_: twilio, nexmo, fakeservice.
 DEV_APP_PORT                      | Port for development Webpack server. Required for development.
 DST_REFERENCE_TIMEZONE            | Timezone to use to determine whether DST is in effect. If it's DST in this timezone, we assume it's DST everywhere.  _Default_: "America/New_York". (The default will work for any campaign in the US. For example, if the campaign is in Australia, use "Australia/Sydney" or some other timezone in Australia.  Note that DST is opposite in the northern and souther hemispheres.)
-EMAIL_FROM                        | Email from address. _Required_.
-EMAIL_HOST                        | Email server host. _Required_.
-EMAIL_HOST_PASSWORD               | Email server password. _Required_.
-EMAIL_HOST_PORT                   | Email server port. _Required_.
-EMAIL_HOST_USER                   | Email server user. _Required_.
+EMAIL_FROM                        | Email from address. _Required to send email from either Mailgun **or** a custom SMTP server_.
+EMAIL_HOST                        | Email server host. _Required for custom SMTP server usage_.
+EMAIL_HOST_PASSWORD               | Email server password. _Required for custom SMTP server usage_.
+EMAIL_HOST_PORT                   | Email server port. _Required for custom SMTP server usage_.
+EMAIL_HOST_USER                   | Email server user. _Required for custom SMTP server usage_.
 GRAPHQL_URL                       | Optional URL for pointing GraphQL API requests. Should end with `/graphql`, e.g. `https://example.org/graphql`. _Default_: "/graphql"
 JOBS_SAME_PROCESS                 | Boolean value indicating whether jobs should be executed in the same process in which they are created (vs. processing asyncronously via worker processes). _Default_: false.
+MAILGUN_DOMAIN                    | The domain you set up in Mailgun, e.g. `email.bartletforamerica.com`. _Required for Mailgun usage._
+MAILGUN_PUBLIC_KEY                | Should be automatically set during Heroku auto-deploy. Do not modify. _Required for Mailgun usage._
+MAILGUN_SMTP_LOGIN                | 'Default SMTP Login' in Mailgun. _Required for Mailgun usage._
+MAILGUN_SMTP_PASSWORD             | 'Default Password' in Mailgun. _Required for Mailgun usage._
+MAILGUN_SMTP_PORT                 | _Default_: 587. Do not modify. _Required for Mailgun usage._
+MAILGUN_SMTP_SERVER               | _Default_: smtp.mailgun.org. Do not modify. _Required for Mailgun usage._
 MAX_CONTACTS                      | If set each campaign can only have a maximum of the value (an integer). This is good for staging/QA/evaluation instances.  _Default_: false (i.e. there is no maximum)
 MAX_CONTACTS_PER_TEXTER           | Maximum contacts that a texter can receive. This is particularly useful for dynamic assignment. If it's zero, then there is no maximum. _Default_: 0
 MAX_MESSAGE_LENGTH                | The maximum size for a message that a texter can send. When you send a SMS message over 160 characters the message will be split, so you might want to set this as 160 or less if you have a high SMS-only target demographic. _Default_: 99999
@@ -55,5 +62,7 @@ TWILIO_AUTH_TOKEN                 | Twilio auth token. Required if using Twilio.
 TWILIO_MESSAGE_SERVICE_SID        | Twilio message service ID. Required if using Twilio.
 TWILIO_STATUS_CALLBACK_URL        | URL for Twilio status callbacks. Should end with `/twilio-message-report`, e.g. `https://example.org/twilio-message-report`. Required if using Twilio.
 TWILIO_SQS_QUEUE_URL              | AWS SQS URL to handle incoming messages when app isn't connected to twilio
+WAREHOUSE_DB_{TYPE,HOST,PORT,NAME,USER,PASSWORD}   | Enables ability to load contacts directly from a SQL query from a separate data-warehouse db -- only is_superadmin-marked users will see the interface
+WAREHOUSE_DB_LAMBDA_ITERATION     | If the WAREHOUSE_DB_ connection/feature is enabled, then on AWS Lambda, queries that take longer than 5min can expire.  This will enable incrementing through queries on new lambda invocations to avoid timeouts.
 WEBPACK_HOST                      | Host domain or IP for Webpack development server. _Default_: 127.0.0.1.
 WEBPACK_PORT                      | Port for Webpack development server. _Defaut_: 3000.

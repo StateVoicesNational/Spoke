@@ -1,12 +1,13 @@
 [![Build Status](https://travis-ci.org/MoveOnOrg/Spoke.svg?branch=main)](https://travis-ci.org/MoveOnOrg/Spoke)
 
+[![Sauce Test Status](https://saucelabs.com/buildstatus/opensourcemoveon)](https://saucelabs.com/u/opensourcemoveon)
 # Spoke
 
 Spoke is an open source text-distribution tool for organizations to mobilize supporters and members into action. Spoke allows you to upload phone numbers, customize scripts and assign volunteers to communicate with supporters while allowing organizations to manage the process.
 
 Spoke was created by Saikat Chakrabarti and Sheena Pakanati, and is now maintained by MoveOn.org.
 
-The latest version is [1.3.0](https://github.com/MoveOnOrg/Spoke/tree/v1.3) (see [release notes](https://github.com/MoveOnOrg/Spoke/blob/main/docs/RELEASE_NOTES.md#v12)) which we recommend for production use, while our `main` branch is where features still in development and testing will be available.
+The latest version is [1.4.1](https://github.com/MoveOnOrg/Spoke/tree/v1.4.1) (see [release notes](https://github.com/MoveOnOrg/Spoke/blob/main/docs/RELEASE_NOTES.md#v141)) which we recommend for production use, while our `main` branch is where features still in development and testing will be available.
 
 ## Note
 
@@ -14,7 +15,7 @@ This is generated from [react-apollo-starter-kit](https://github.com/saikat/reac
 
 ## Deploy to Heroku
 
-<a href="https://heroku.com/deploy?template=https://github.com/MoveOnOrg/Spoke/tree/v1.3">
+<a href="https://heroku.com/deploy?template=https://github.com/MoveOnOrg/Spoke/tree/v1.4.1">
   <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy">
 </a>
 
@@ -60,6 +61,9 @@ If you want to create an invite via the home page "Login and get started" link, 
 ## Running Tests
 
 See https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO-run_tests.md
+
+## Big Thanks
+Cross-browser Testing Platform and Open Source <3 Provided by [Sauce Labs](https://saucelabs.com).
 
 ## Helpful Dev Tips
 * Run `sqlite3 mydb.sqlite` to connect to a SQL shell for the dev database
