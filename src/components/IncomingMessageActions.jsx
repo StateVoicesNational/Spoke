@@ -2,55 +2,95 @@ import React, { Component } from 'react'
 import type from 'prop-types'
 
 import { Card, CardHeader, CardText } from 'material-ui/Card'
-import SelectField from 'material-ui/SelectField'
-import MenuItem from 'material-ui/MenuItem'
 import { getHighestRole } from '../lib/permissions'
 import FlatButton from 'material-ui/FlatButton'
+import SuperSelectField from 'material-ui-superselectfield'
+import { css, StyleSheet } from 'aphrodite'
+import theme from '../styles/theme'
+
+const styles = StyleSheet.create({
+  container: {
+    ...theme.layouts.multiColumn.container,
+    marginBottom: 40,
+    alignContent: 'flex-start',
+    justifyContent: 'flex-start',
+    flexWrap: 'wrap',
+    alignItems: 'center'
+  },
+  flexColumn: {
+    flex: 0,
+    flexBasis: '40%',
+    display: 'flex'
+  },
+  spacer: {
+    marginRight: '30px'
+  }
+})
 
 class IncomingMessageActions extends Component {
   constructor(props) {
     super(props)
 
+    this.onReassignmentClicked = this.onReassignmentClicked.bind(this)
+    this.onReassignSuperSelectChanged = this.onReassignSuperSelectChanged.bind(
+      this
+    )
+
     this.state = {}
   }
 
+  onReassignmentClicked() {
+    this.props.onReassignRequested(this.state.reassignTo)
+  }
+
+  onReassignSuperSelectChanged(selectedTexter) {
+    if (selectedTexter === null) {
+      return
+    }
+    this.setState({ reassignTo: selectedTexter.value })
+  }
+
   render() {
+    const texterNodes = !this.props.people
+      ? []
+      : this.props.people.map(user => {
+          const userId = parseInt(user.id, 10)
+          const label = user.displayName + ' ' + getHighestRole(user.roles)
+          return (
+            <div key={userId} value={userId} label={label}>
+              {label}
+            </div>
+          )
+        })
+
     return (
       <Card>
-        <CardHeader title={' Message Actions '} actAsExpander showExpandableButton />
+        <CardHeader
+          title={' Message Actions '}
+          actAsExpander
+          showExpandableButton
+        />
         <CardText expandable>
-          <SelectField
-            value={this.state.reassignTo}
-            hintText={'Pick a texter'}
-            floatingLabelText={'Reassign to ...'}
-            floatingLabelFixed
-            onChange={(event, index, value) => {
-              this.setState({ reassignTo: value })
-            }}
-          >
-            <MenuItem />
-            {this.props.people.map(person => {
-              return (
-                <MenuItem
-                  key={person.id}
-                  value={person.id}
-                  primaryText={person.displayName + ' ' + getHighestRole(person.roles)}
-                />
-              )
-            })}
-          </SelectField>
-
-          <FlatButton
-            label='Reassign'
-            onClick={() => {
-              if (
-                this.props.onReassignRequested !== null &&
-                typeof this.props.onReassignRequested === 'function'
-              ) {
-                this.props.onReassignRequested(this.state.reassignTo)
-              }
-            }}
-          />
+          <div className={css(styles.container)}>
+            <div className={css(styles.flexColumn)}>
+              <SuperSelectField
+                style={{ width: '90%' }}
+                name={'reassignSuperSelectField'}
+                children={texterNodes}
+                nb2show={10}
+                showAutocompleteThreshold={'always'}
+                floatingLabel={'Reassign to ...'}
+                hintText={'Type or select'}
+                onChange={this.onReassignSuperSelectChanged}
+              />
+            </div>
+            <div className={css(styles.flexColumn)}>
+              <FlatButton
+                label={'Reassign'}
+                onClick={this.onReassignmentClicked}
+              />
+            </div>
+          </div>
         </CardText>
       </Card>
     )
@@ -59,7 +99,7 @@ class IncomingMessageActions extends Component {
 
 IncomingMessageActions.propTypes = {
   people: type.array,
-  onReassignRequested: type.func
+  onReassignRequested: type.func.isRequired
 }
 
 export default IncomingMessageActions
