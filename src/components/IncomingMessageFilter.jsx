@@ -150,7 +150,8 @@ class IncomingMessageFilter extends Component {
         ? []
         : this.props.campaigns.map(campaign => {
             const campaignId = parseInt(campaign.id, 10)
-            return dataSourceItem(campaign.title, campaignId)
+            const campaignDisplay = `${campaignId}: ${campaign.title}`
+            return dataSourceItem(campaignDisplay, campaignId)
           })
     )
 
