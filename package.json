@@ -108,6 +108,7 @@
     "material-ui": "^0.20.1",
     "material-ui-color-picker": "^1.0.1",
     "material-ui-datatables": "^0.18.2",
+    "material-ui-superselectfield": "^1.9.8",
     "minilog": "^3.0.1",
     "moment": "^2.14.1",
     "moment-timezone": "^0.5.14",

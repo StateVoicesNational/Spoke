@@ -42,4 +42,15 @@ export const schema = `
     primaryColor: String
     logoImageUrl: String
   }
+
+  type CampaignsList {
+    campaigns: [Campaign]
+  }
+
+  union CampaignsReturn = PaginatedCampaigns | CampaignsList
+  
+  type PaginatedCampaigns {
+    campaigns: [Campaign]
+    pageInfo: PageInfo
+  }  
 `
