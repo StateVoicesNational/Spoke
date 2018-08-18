@@ -8,7 +8,6 @@ import _ from 'lodash'
 import { dataTest } from '../lib/attributes'
 import { FlatButton } from 'material-ui'
 import { StyleSheet, css } from 'aphrodite'
-import camelCase from 'camelcase'
 
 const styles = StyleSheet.create({
   sideBarWithMenu: {
@@ -46,7 +45,7 @@ const Navigation = function Navigation(props) {
           <List>
             {sections.map(section => (
               <ListItem
-                {...dataTest(camelCase(`nav ${section.path}`))}
+                {...dataTest(_.camelCase(`nav ${section.path}`))}
                 key={section.name}
                 primaryText={section.name}
                 onTouchTap={() => props.router.push(section.url)}
