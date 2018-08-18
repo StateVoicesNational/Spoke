@@ -22,6 +22,40 @@ export function buildCampaignQuery(queryParam, organizationId, campaignsFilter, 
   return query
 }
 
+export async function getCampaigns(user, organizationId, cursor, campaignsFilter) {
+
+  let campaignsQuery = buildCampaignQuery(
+    r.knex.select('*'),
+    organizationId,
+    campaignsFilter
+  )
+  campaignsQuery = campaignsQuery.orderBy('due_by', 'desc').orderBy('id')
+
+  if (cursor) {
+    campaignsQuery = campaignsQuery.limit(cursor.limit).offset(cursor.offset)
+    const campaigns = await campaignsQuery
+
+    const campaignsCountQuery = buildCampaignQuery(
+      r.knex.count('*'),
+      organizationId,
+      campaignsFilter)
+
+    const campaignsCountArray = await campaignsCountQuery
+
+    const pageInfo = {
+      limit: cursor.limit,
+      offset: cursor.offset,
+      total: campaignsCountArray[0].count
+    }
+    return {
+      campaigns,
+      pageInfo
+    }
+  } else {
+    return campaignsQuery
+  }
+}
+
 export const resolvers = {
   JobRequest: {
     ...mapFieldsToModel([
@@ -65,6 +99,32 @@ export const resolvers = {
           .where({ is_opted_out: true, campaign_id: campaign.id })
       )
     )
+  },
+  CampaignsReturn: {
+    __resolveType(obj, context, _) {
+      if (Array.isArray(obj)) {
+        return 'CampaignsList'
+      } else if ('campaigns' in obj && 'pageInfo' in obj) {
+        return 'PaginatedCampaigns'
+      }
+      return null
+    }
+  },
+  CampaignsList: {
+    campaigns: campaigns => {
+      return campaigns
+    }
+  },
+  PaginatedCampaigns: {
+    campaigns: queryResult => {
+      return queryResult.campaigns
+    },
+    pageInfo: queryResult => {
+      if ('pageInfo' in queryResult) {
+        return queryResult.pageInfo
+      }
+      return null
+    }
   },
   Campaign: {
     ...mapFieldsToModel([

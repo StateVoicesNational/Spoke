@@ -1,7 +1,6 @@
 import { applyScript } from '../../lib/scripts'
 import camelCaseKeys from 'camelcase-keys'
 import isUrl from 'is-url'
-import { buildCampaignQuery } from './campaign'
 
 import {
   Assignment,
@@ -26,7 +25,7 @@ import {
   resolvers as conversationsResolver
 } from './conversations'
 import { schema as organizationSchema, resolvers as organizationResolvers } from './organization'
-import { schema as campaignSchema, resolvers as campaignResolvers } from './campaign'
+import { schema as campaignSchema, buildCampaignQuery, getCampaigns, resolvers as campaignResolvers } from './campaign'
 import {
   schema as assignmentSchema,
   resolvers as assignmentResolvers
@@ -1197,6 +1196,10 @@ const rootResolvers = {
         contactsFilter,
         utc
       )
+    },
+    campaigns: async (_, {organizationId, cursor, campaignsFilter}, {user}) => {
+      await accessRequired(user, organizationId, 'SUPERVOLUNTEER')
+      return getCampaigns(user, organizationId, cursor, campaignsFilter)
     }
   }
 }
