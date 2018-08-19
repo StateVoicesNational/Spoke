@@ -13,10 +13,7 @@ RUN wget https://github.com/MoveOnOrg/Spoke/archive/v$SPOKE_VERSION.tar.gz && \
     npm install && \
     npm install -g foreman
 
-# Build Spoke
-WORKDIR /Spoke
-RUN npm run prod-build
-
 # Spoke Runtime
+WORKDIR /Spoke
 EXPOSE 3000
 CMD ["nf", "start", "--procfile", "./dev-tools/Procfile.dev"]
