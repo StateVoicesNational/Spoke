@@ -45,7 +45,7 @@ Create the two private subnets with CIDR blocks `10.0.2.0/24` and `10.0.3.0/24`.
 
 A NAT Gateway is required to allow the private AWS Lambda function to talk to the outside world (Twilio, Mailgun, etc.).
 
-Create a NAT Gateway in one of the public subnets. Create a new Elastic IP address to use with it using the provided button.
+Create a NAT Gateway in one of the two **public** subnets. Create a new Elastic IP address to use with it using the provided button.
 
 ### Route Tables
 
@@ -102,11 +102,13 @@ Create a subnet group called `spoke_rds_group`. Choose the `TextForCampaign` VPC
 
 Create an RDS instance running Postgres 10.4 with the following settings:
 
-Nickname: `spoke_prod`
-Database name: `spoke_prod`
-User name: `spoke`
-Password: `[something secret]`
-Publically exposed: yes
+| Config name           | Config value          |
+|-----------------------|-----------------------|
+| Nickname              | `spoke_prod`          |
+| Database name         | `spoke_prod`          |
+| Username              | `spoke`               |
+| Password              | `[something secret]`  |
+| Publically exposed    | yes                   |
 
 # Deploy with Claudia.js
 [Claudia](https://www.claudiajs.com) is command line tool for serverless Node.js applications on AWS.
