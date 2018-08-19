@@ -23,7 +23,7 @@ const styles = StyleSheet.create({
     flex: '0 1 25%'
   },
   toggleFlexColumn: {
-    flex: '0 1 10%'
+    flex: '0 1 23%'
   },
   spacer: {
     marginRight: '30px'
