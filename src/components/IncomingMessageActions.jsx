@@ -1,12 +1,13 @@
-import React, { Component } from 'react'
-import type from 'prop-types'
+import React, { Component } from "react";
+import type from "prop-types";
 
-import { Card, CardHeader, CardText } from 'material-ui/Card'
-import { getHighestRole } from '../lib/permissions'
-import FlatButton from 'material-ui/FlatButton'
-import SuperSelectField from 'material-ui-superselectfield'
-import { css, StyleSheet } from 'aphrodite'
-import theme from '../styles/theme'
+import AutoComplete from "material-ui/AutoComplete";
+import { Card, CardHeader, CardText } from "material-ui/Card";
+import { getHighestRole } from "../lib/permissions";
+import FlatButton from "material-ui/FlatButton";
+import { css, StyleSheet } from "aphrodite";
+import theme from "../styles/theme";
+import { dataSourceItem } from './utils'
 
 const styles = StyleSheet.create({
   container: {
@@ -32,7 +33,7 @@ class IncomingMessageActions extends Component {
     super(props)
 
     this.onReassignmentClicked = this.onReassignmentClicked.bind(this)
-    this.onReassignSuperSelectChanged = this.onReassignSuperSelectChanged.bind(
+    this.onReassignChanged = this.onReassignChanged.bind(
       this
     )
 
@@ -43,11 +44,21 @@ class IncomingMessageActions extends Component {
     this.props.onReassignRequested(this.state.reassignTo)
   }
 
-  onReassignSuperSelectChanged(selectedTexter) {
-    if (selectedTexter === null) {
-      return
+  onReassignChanged(selection, index) {
+    let texterUserId = undefined
+    if (index === -1) {
+      const texter = this.props.texters.find(texter => {
+        return texter.displayName === selection
+      })
+      if (texter) {
+        texterUserId = texter.id
+      }
+    } else {
+      texterUserId = selection.value.key
     }
-    this.setState({ reassignTo: selectedTexter.value })
+    if (texterUserId) {
+      this.setState({ reassignTo: parseInt(texterUserId, 10) });
+    }
   }
 
   render() {
@@ -56,12 +67,11 @@ class IncomingMessageActions extends Component {
       : this.props.people.map(user => {
           const userId = parseInt(user.id, 10)
           const label = user.displayName + ' ' + getHighestRole(user.roles)
-          return (
-            <div key={userId} value={userId} label={label}>
-              {label}
-            </div>
-          )
+          return dataSourceItem(label, userId)
         })
+      texterNodes.sort((left, right) => {
+          return left.text.localeCompare(right.text, "en", {sensitivity: "base"})
+      })
 
     return (
       <Card>
@@ -73,17 +83,21 @@ class IncomingMessageActions extends Component {
         <CardText expandable>
           <div className={css(styles.container)}>
             <div className={css(styles.flexColumn)}>
-              <SuperSelectField
-                style={{ width: '90%' }}
-                name={'reassignSuperSelectField'}
-                children={texterNodes}
-                nb2show={10}
-                showAutocompleteThreshold={'always'}
-                floatingLabel={'Reassign to ...'}
-                hintText={'Type or select'}
-                onChange={this.onReassignSuperSelectChanged}
+              <AutoComplete
+                filter={AutoComplete.caseInsensitiveFilter}
+                maxSearchResults={8}
+                onFocus={() => this.setState({ texterSearchText : '' })}
+                onUpdateInput={texterSearchText=>
+                  this.setState({ texterSearchText })
+                }
+                searchText={this.state.texterSearchText}
+                dataSource={texterNodes}
+                hintText={'Search for a texter'}
+                floatingLabelText={'Reassign to ...'}
+                onNewRequest={this.onReassignChanged}
               />
             </div>
+            <div className={css(styles.spacer)} />
             <div className={css(styles.flexColumn)}>
               <FlatButton
                 label={'Reassign'}
