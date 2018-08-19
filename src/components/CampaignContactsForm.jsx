@@ -145,10 +145,10 @@ export default class CampaignContactsForm extends React.Component {
 
     return (
       <div>
-        <p>You can also exclude contacts from existing Spoke campaigns:</p>
+        <p>You can also filter out contacts from this upload that are already uploaded to an existing Spoke campaigns (regardless of whether they have been texted yet in that campaign).</p>
         <SelectField
           multiple
-          hintText='Other campaigns'
+          hintText='Existing campaigns'
           value={selectedCampaignIds}
           onChange={this.handleCampaignExclusionChange}
         >
