@@ -142,6 +142,9 @@ class IncomingMessageFilter extends Component {
             return dataSourceItem(user.displayName, userId)
           })
     )
+    texterNodes.sort((left, right) => {
+      return left.text.localeCompare(right.text, "en", {sensitivity: "base"})
+    })
 
     const campaignNodes = CAMPAIGN_TYPE_FILTERS.map(campaignTypeFilter =>
       dataSourceItem(campaignTypeFilter[1], campaignTypeFilter[0])
@@ -154,6 +157,9 @@ class IncomingMessageFilter extends Component {
             return dataSourceItem(campaignDisplay, campaignId)
           })
     )
+    campaignNodes.sort((left, right) => {
+      return left.text.localeCompare(right.text, "en", {sensitivity: "base"})
+    })
 
     return (
       <Card>
@@ -189,7 +195,8 @@ class IncomingMessageFilter extends Component {
             <div className={css(styles.spacer)} />
             <div className={css(styles.flexColumn)}>
               <AutoComplete
-                maxSearchResults={5}
+                filter={AutoComplete.caseInsensitiveFilter}
+                maxSearchResults={8}
                 onFocus={() => this.setState({ campaignSearchText: '' })}
                 onUpdateInput={campaignSearchText =>
                   this.setState({ campaignSearchText })
@@ -204,7 +211,8 @@ class IncomingMessageFilter extends Component {
             <div className={css(styles.spacer)} />
             <div className={css(styles.flexColumn)}>
               <AutoComplete
-                maxSearchResults={5}
+                filter={AutoComplete.caseInsensitiveFilter}
+                maxSearchResults={8}
                 onFocus={() => this.setState({ texterSearchText: '' })}
                 onUpdateInput={texterSearchText =>
                   this.setState({ texterSearchText })
