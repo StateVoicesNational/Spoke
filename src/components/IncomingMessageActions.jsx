@@ -12,7 +12,6 @@ import { dataSourceItem } from './utils'
 const styles = StyleSheet.create({
   container: {
     ...theme.layouts.multiColumn.container,
-    marginBottom: 40,
     alignContent: 'flex-start',
     justifyContent: 'flex-start',
     flexWrap: 'wrap',
