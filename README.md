@@ -63,7 +63,7 @@ If you want to create an invite via the home page "Login and get started" link, 
 1. `cp .env.example .env`
 2. Follow Steps 7, 9, & 10 above to set up your [Auth0](https://auth0.com) account.
 3. Build a Spoke Docker image with `docker-compose build app`
-4. Start the PostgreSQL container in the background with `docker-compose up -d postgres`.
+4. Start the PostgreSQL & Redis containers in the background with `docker-compose up -d postgres redis`.
 5. Start the Spoke application in the foreground with `docker-compose up app`.
 6. Go to `http://localhost:3000` to load the app.
 7. Follow Step 13 above.
@@ -73,7 +73,7 @@ docker-compose exec postgres psql -U spoke -d spokedev -c "INSERT INTO invite (h
 ```
   - Then use the generated key to visit an invite link, e.g.: `http://localhost:3000/invite/<your-hash>`. This should redirect you to the login screen. Use the "Sign Up" option to create your account.
 8. You should then be prompted to create an organization. Create it.
-9. Bring down your application with `docker-compose down`, or `docker-compose down -v` to bring it down and _completely destroy_ your database along with it.
+9. Bring down your application with `docker-compose down`, or `docker-compose down -v` to bring it down and _completely destroy_ your Postgres database & Redis datastore along with it.
 
 ## Running Tests
 
