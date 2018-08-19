@@ -143,7 +143,7 @@ class IncomingMessageFilter extends Component {
           })
     )
     texterNodes.sort((left, right) => {
-      return left.text.localeCompare(right.text, "en", {sensitivity: "base"})
+      return left.text.localeCompare(right.text, 'en', { sensitivity: 'base' })
     })
 
     const campaignNodes = CAMPAIGN_TYPE_FILTERS.map(campaignTypeFilter =>
@@ -158,7 +158,7 @@ class IncomingMessageFilter extends Component {
           })
     )
     campaignNodes.sort((left, right) => {
-      return left.text.localeCompare(right.text, "en", {sensitivity: "base"})
+      return left.text.localeCompare(right.text, 'en', { sensitivity: 'base' })
     })
 
     return (

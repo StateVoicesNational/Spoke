@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component } from 'react'
 import type from "prop-types";
 
 import AutoComplete from "material-ui/AutoComplete";
