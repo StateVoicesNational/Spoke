@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import type from 'prop-types'
+import Toggle from 'material-ui/Toggle'
 
 import { Card, CardHeader, CardText } from 'material-ui/Card'
 import AutoComplete from 'material-ui/AutoComplete'
@@ -13,7 +14,6 @@ import { StyleSheet, css } from 'aphrodite'
 const styles = StyleSheet.create({
   container: {
     ...theme.layouts.multiColumn.container,
-    marginBottom: 40,
     alignContent: 'flex-start',
     justifyContent: 'flex-start',
     flexWrap: 'wrap',
@@ -21,6 +21,9 @@ const styles = StyleSheet.create({
   },
   flexColumn: {
     flex: '0 1 25%'
+  },
+  toggleFlexColumn: {
+    flex: '0 1 23%'
   },
   spacer: {
     marginRight: '30px'
@@ -55,14 +58,8 @@ export const MESSAGE_STATUSES = {
 }
 
 export const ALL_CAMPAIGNS = -1
-export const ACTIVE_CAMPAIGNS = -2
-export const ARCHIVED_CAMPAIGNS = -3
 
-export const CAMPAIGN_TYPE_FILTERS = [
-  [ALL_CAMPAIGNS, 'All Campaigns'],
-  [ACTIVE_CAMPAIGNS, 'Active Campaigns'],
-  [ARCHIVED_CAMPAIGNS, 'Archived Campaigns']
-]
+export const CAMPAIGN_TYPE_FILTERS = [[ALL_CAMPAIGNS, 'All Campaigns']]
 
 export const ALL_TEXTERS = -1
 
@@ -166,6 +163,26 @@ class IncomingMessageFilter extends Component {
         <CardHeader title="Message Filter" actAsExpander showExpandableButton />
         <CardText expandable>
           <div className={css(styles.container)}>
+            <div className={css(styles.toggleFlexColumn)}>
+              <Toggle
+                label={'Active Campaigns'}
+                onToggle={this.props.onActiveCampaignsToggled}
+                toggled={
+                  this.props.includeActiveCampaigns ||
+                    !this.props.includeArchivedCampaigns
+                }
+              />
+            </div>
+            <div className={css(styles.spacer)} />
+            <div className={css(styles.toggleFlexColumn)}>
+              <Toggle
+                label={'Archived Campaigns'}
+                onToggle={this.props.onArchivedCampaignsToggled}
+                toggled={this.props.includeArchivedCampaigns}
+              />
+            </div>
+          </div>
+          <div className={css(styles.container)}>
             <div className={css(styles.flexColumn)}>
               <SelectField
                 multiple
@@ -234,6 +251,10 @@ class IncomingMessageFilter extends Component {
 IncomingMessageFilter.propTypes = {
   onCampaignChanged: type.func.isRequired,
   onTexterChanged: type.func.isRequired,
+  onActiveCampaignsToggled: type.func.isRequired,
+  onArchivedCampaignsToggled: type.func.isRequired,
+  includeArchivedCampaigns: type.bool.isRequired,
+  includeActiveCampaigns: type.bool.isRequired,
   campaigns: type.array.isRequired,
   texters: type.array.isRequired,
   onMessageFilterChanged: type.func.isRequired,
