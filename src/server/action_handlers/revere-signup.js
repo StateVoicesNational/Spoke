@@ -5,7 +5,7 @@ import { r } from '../models'
 export const displayName = () => 'Revere Signup'
 
 const listId = process.env.REVERE_LIST_ID
-const mobileFlowId = process.env.REVERE_NEW_SUBSCRIBER_MOBILE_FLOW
+const defaultMobileFlowId = process.env.REVERE_NEW_SUBSCRIBER_MOBILE_FLOW
 const mobileApiKey = process.env.REVERE_MOBILE_API_KEY
 const akAddUserUrl = process.env.AK_ADD_USER_URL
 const akAddPhoneUrl = process.env.AK_ADD_PHONE_URL
@@ -27,8 +27,11 @@ export async function processAction(questionResponse, interactionStep, campaignC
       .where('campaign_contact.id', campaignContactId)
       .leftJoin('campaign', 'campaign_contact.campaign_id', 'campaign.id')
       .leftJoin('organization', 'campaign.organization_id', 'organization.id')
-      .select('campaign_contact.cell', 'campaign_contact.first_name', 'campaign_contact.last_name')
+      .select('campaign_contact.cell', 'campaign_contact.first_name', 'campaign_contact.last_name', 'campaign_contact.custom_fields')
+
   const contact = (contactRes.length ? contactRes[0] : {})
+  const customFields = JSON.parse(contact.custom_fields)
+  const mobileFlowId = (customFields.revere_signup_flow ? customFields.revere_signup_flow : defaultMobileFlowId)
   const contactCell = contact.cell.substring(1)
 
   const options = {
