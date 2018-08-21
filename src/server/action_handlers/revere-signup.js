@@ -1,6 +1,8 @@
 import request from 'request'
+import aws from 'aws-sdk'
 import { r } from '../models'
 
+const sqs = new aws.SQS()
 // What the user sees as the option
 export const displayName = () => 'Revere Signup'
 
@@ -9,6 +11,7 @@ const defaultMobileFlowId = process.env.REVERE_NEW_SUBSCRIBER_MOBILE_FLOW
 const mobileApiKey = process.env.REVERE_MOBILE_API_KEY
 const akAddUserUrl = process.env.AK_ADD_USER_URL
 const akAddPhoneUrl = process.env.AK_ADD_PHONE_URL
+const sqsUrl = process.env.REVERE_SQS_URL
 
 // The Help text for the user after selecting the action
 export const instructions = () => (
@@ -34,67 +37,89 @@ export async function processAction(questionResponse, interactionStep, campaignC
   const mobileFlowId = (customFields.revere_signup_flow ? customFields.revere_signup_flow : defaultMobileFlowId)
   const contactCell = contact.cell.substring(1)
 
-  const options = {
-    method: 'POST',
-    url: 'https://mobile.reverehq.com/api/v1/messaging/sendContent',
-    headers: {
-      accept: 'application/json',
-      'content-type': 'application/json',
-      Authorization: mobileApiKey
-    },
-    body: {
-      msisdns: [`00${contactCell}`],
-      mobileFlow: `${mobileFlowId}`
-    },
-    json: true
-  }
-
-  return request(options, (error, response) => {
-    if (error) throw new Error(error)
-    if (response.statusCode === 204 && akAddUserUrl) {
-      const userData = {
-        email: contactCell + '-smssubscriber@example.com',
-        first_name: contact.first_name,
-        last_name: contact.last_name,
-        sms_subscribed: true,
-        action_mobilesubscribe: true,
-        suppress_subscribe: true,
-        phone: [contactCell],
-        phone_type: 'mobile',
-        source: 'spoke-signup'
+  if (sqsUrl) {
+    const msg = {
+      payload: {
+        cell: `${contactCell}`,
+        mobile_flow_id: `${mobileFlowId}`,
+        source: 'spoke'
       }
-
-      request.post({
-        url: akAddUserUrl,
-        headers: {
-          accept: 'application/json',
-          'content-type': 'application/json'
-        },
-        form: userData
-      }, (errorResponse, httpResponse) => {
-        if (errorResponse) throw new Error(errorResponse)
-        if (httpResponse.statusCode === 201) {
-          request.post({
-            url: akAddPhoneUrl,
-            headers: {
-              accept: 'application/json',
-              'content-type': 'application/json'
-            },
-            form: {
-              user: httpResponse.headers.location,
-              phone: contactCell,
-              type: 'mobile'
-            }
-          }, (lastError, lastResponse) => {
-            if (lastError) throw new Error(lastError)
-            if (lastResponse.statusCode === 201) {
-              return
-            }
-          })
-        }
-      })
-    } else {
-      return
     }
-  })
+
+    const sqsParams = {
+      MessageBody: JSON.stringify(msg),
+      QueueUrl: sqsUrl
+    }
+
+    sqs.sendMessage(sqsParams, (err, data) => {
+      if (err) {
+        console.log('Error sending message to queue', err);
+      }
+      console.log('Sent message to queue with data:', data);
+    })
+  } else {
+    const options = {
+      method: 'POST',
+      url: 'https://mobile.reverehq.com/api/v1/messaging/sendContent',
+      headers: {
+        accept: 'application/json',
+        'content-type': 'application/json',
+        Authorization: mobileApiKey
+      },
+      body: {
+        msisdns: [`00${contactCell}`],
+        mobileFlow: `${mobileFlowId}`
+      },
+      json: true
+    }
+
+    return request(options, (error, response) => {
+      if (error) throw new Error(error)
+      if (response.statusCode === 204 && akAddUserUrl) {
+        const userData = {
+          email: contactCell + '-smssubscriber@example.com',
+          first_name: contact.first_name,
+          last_name: contact.last_name,
+          sms_subscribed: true,
+          action_mobilesubscribe: true,
+          suppress_subscribe: true,
+          phone: [contactCell],
+          phone_type: 'mobile',
+          source: 'spoke-signup'
+        }
+
+        request.post({
+          url: akAddUserUrl,
+          headers: {
+            accept: 'application/json',
+            'content-type': 'application/json'
+          },
+          form: userData
+        }, (errorResponse, httpResponse) => {
+          if (errorResponse) throw new Error(errorResponse)
+          if (httpResponse.statusCode === 201) {
+            request.post({
+              url: akAddPhoneUrl,
+              headers: {
+                accept: 'application/json',
+                'content-type': 'application/json'
+              },
+              form: {
+                user: httpResponse.headers.location,
+                phone: contactCell,
+                type: 'mobile'
+              }
+            }, (lastError, lastResponse) => {
+              if (lastError) throw new Error(lastError)
+              if (lastResponse.statusCode === 201) {
+                return
+              }
+            })
+          }
+        })
+      } else {
+        return
+      }
+    })
+  }
 }
