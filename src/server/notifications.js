@@ -34,7 +34,8 @@ const sendAssignmentUserNotification = async (assignment, notification) => {
     text = `Your assignment changed: \n\n${process.env.BASE_URL}/app/${campaign.organization_id}/todos`
   } else if (notification === Notifications.ASSIGNMENT_CREATED) {
     subject = `[${organization.name}] New assignment: ${campaign.title}`
-    text = `You just got a new texting assignment from ${organization.name}. You can start sending texts right away: \n\n${process.env.BASE_URL}/app/${campaign.organization_id}/todos`
+    text = (process.env.ASSIGNMENT_NOTIFICATION_EMAIL ? `${process.env.ASSIGNMENT_NOTIFICATION_EMAIL}` :
+      `You just got a new texting assignment from ${organization.name}. You can start sending texts right away: \n\n${process.env.BASE_URL}/app/${campaign.organization_id}/todos`)
   }
 
   try {
