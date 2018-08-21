@@ -1,3 +1,4 @@
+require('dotenv').config()
 const path = require('path')
 const webpack = require('webpack')
 const ManifestPlugin = require('webpack-manifest-plugin')
@@ -69,7 +70,7 @@ const config = {
 }
 
 if (DEBUG) {
-  config.devtool = '#inline-source-map'
+  config.devtool = 'inline-source-map'
   config.output.sourceMapFilename = `${outputFile}.map`
 }
 
