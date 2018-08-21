@@ -50,6 +50,10 @@ OUTPUT_DIR                        | Directory path for packaged files should be 
 PHONE_NUMBER_COUNTRY              | Country code for phone number formatting. _Default_: US.
 PORT                              | Port for Heroku servers.
 PUBLIC_DIR                        | Directory path server should use to serve files. _Required_.
+REVERE_SQS_URL                    | SQS URL to process outgoing Revere SMS Messages.
+REVERE_LIST_ID                    | Revere List to add user to.
+REVERE_NEW_SUBSCRIBER_MOBILE_FLOW | Revere mobile flow to trigger upon recording action.
+REVERE_MOBILE_API_KEY             | Revere authentication api key to use to access Revere API.
 ROLLBAR_CLIENT_TOKEN              | Client token for Rollbar error tracking.
 ROLLBAR_ACCESS_TOKEN              | Access token for Rollbar error tracking.
 ROLLBAR_ENDPOINT                  | Endpoint URL for Rollbar error tracking.
