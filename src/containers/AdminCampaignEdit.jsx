@@ -545,7 +545,7 @@ class AdminCampaignEdit extends React.Component {
 
           return (
             <Card
-              {...dataTest(_.camelCase(`${section.title}`))}
+              {...dataTest(`${section.title}`)}
               key={section.title}
               expanded={sectionIsExpanded && sectionCanExpandOrCollapse}
               expandable={sectionCanExpandOrCollapse}
