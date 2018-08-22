@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
 import _ from 'lodash'
 
-
 import IncomingMessageActions from '../components/IncomingMessageActions'
 import IncomingMessageFilter from '../components/IncomingMessageFilter'
 import IncomingMessageList from '../components/IncomingMessageList'
@@ -13,6 +12,27 @@ import { withRouter } from 'react-router'
 import wrapMutations from './hoc/wrap-mutations'
 import PaginatedUsersRetriever from './PaginatedUsersRetriever'
 
+function getCampaignsFilterForCampaignArchiveStatus(
+  includeActiveCampaigns,
+  includeArchivedCampaigns
+) {
+  let isArchived = undefined
+  if (!includeActiveCampaigns && includeArchivedCampaigns) {
+    isArchived = true
+  } else if (
+    (includeActiveCampaigns && !includeArchivedCampaigns) ||
+    (!includeActiveCampaigns && !includeArchivedCampaigns)
+  ) {
+    isArchived = false
+  }
+
+  if (isArchived !== undefined) {
+    return { isArchived }
+  }
+
+  return {}
+}
+
 export class AdminIncomingMessageList extends Component {
   constructor(props) {
     super(props)
@@ -20,15 +40,16 @@ export class AdminIncomingMessageList extends Component {
     this.state = {
       page: 0,
       pageSize: 10,
+      campaignsFilter: { isArchived: false },
       contactsFilter: {},
-      campaignsFilter: {},
-      campaignsFilterForTexterFiltering: { isArchived: false },
       assignmentsFilter: {},
       needsRender: false,
       utc: Date.now().toString(),
       campaigns: [],
       reassignmentTexters: [],
-      campaignTexters: []
+      campaignTexters: [],
+      includeArchivedCampaigns: false,
+      includeActiveCampaigns: true
     }
 
     this.handleCampaignChanged = this.handleCampaignChanged.bind(this)
@@ -38,9 +59,19 @@ export class AdminIncomingMessageList extends Component {
     this.handlePageSizeChange = this.handlePageSizeChange.bind(this)
     this.handleRowSelection = this.handleRowSelection.bind(this)
     this.handleCampaignsReceived = this.handleCampaignsReceived.bind(this)
-    this.handleCampaignTextersReceived = this.handleCampaignTextersReceived.bind(this)
-    this.handleReassignmentTextersReceived = this.handleReassignmentTextersReceived.bind(this)
+    this.handleCampaignTextersReceived = this.handleCampaignTextersReceived.bind(
+      this
+    )
+    this.handleReassignmentTextersReceived = this.handleReassignmentTextersReceived.bind(
+      this
+    )
     this.handleTexterChanged = this.handleTexterChanged.bind(this)
+    this.handleArchivedCampaignsToggled = this.handleArchivedCampaignsToggled.bind(
+      this
+    )
+    this.handleActiveCampaignsToggled = this.handleActiveCampaignsToggled.bind(
+      this
+    )
   }
 
   shouldComponentUpdate(dummy, nextState) {
@@ -56,22 +87,15 @@ export class AdminIncomingMessageList extends Component {
   }
 
   async handleCampaignChanged(campaignId) {
-    let campaignsFilter = {}
-    let campaignsFilterForTexterFiltering = { isArchived: false }
-    switch (campaignId) {
-      case -1:
-        break
-      case -2:
-        campaignsFilterForTexterFiltering = campaignsFilter = { isArchived: false }
-        break
-      case -3:
-        campaignsFilterForTexterFiltering = campaignsFilter = { isArchived: true }
-        break
-      default:
-        campaignsFilterForTexterFiltering = campaignsFilter = { campaignId }
+    const campaignsFilter = getCampaignsFilterForCampaignArchiveStatus(
+      this.state.includeActiveCampaigns,
+      this.state.includeArchivedCampaigns
+    )
+    if (campaignId !== -1) {
+      campaignsFilter.campaignId = campaignId
     }
+
     await this.setState({
-      campaignsFilterForTexterFiltering,
       campaignsFilter,
       needsRender: true
     })
@@ -146,6 +170,40 @@ export class AdminIncomingMessageList extends Component {
     this.setState({ reassignmentTexters, needsRender: true })
   }
 
+  async handleActiveCampaignsToggled() {
+    if (
+      this.state.includeActiveCampaigns &&
+      !this.state.includeArchivedCampaigns
+    ) {
+      return
+    }
+
+    const campaignsFilter = getCampaignsFilterForCampaignArchiveStatus(
+      !this.state.includeActiveCampaigns,
+      this.state.includeArchivedCampaigns
+    )
+    this.setState({
+      campaignsFilter,
+      includeActiveCampaigns: !this.state.includeActiveCampaigns
+    })
+  }
+
+  async handleArchivedCampaignsToggled() {
+    const includeActiveCampaigns =
+      this.state.includeActiveCampaigns || !this.state.includeArchivedCampaigns
+
+    const campaignsFilter = getCampaignsFilterForCampaignArchiveStatus(
+      includeActiveCampaigns,
+      !this.state.includeArchivedCampaigns
+    )
+
+    this.setState({
+      campaignsFilter,
+      includeActiveCampaigns,
+      includeArchivedCampaigns: !this.state.includeArchivedCampaigns
+    })
+  }
+
   render() {
     const cursor = {
       offset: this.state.page * this.state.pageSize,
@@ -167,11 +225,11 @@ export class AdminIncomingMessageList extends Component {
               organizationId={this.props.params.organizationId}
               onUsersReceived={this.handleCampaignTextersReceived}
               pageSize={1000}
-              campaignsFilter={this.state.campaignsFilterForTexterFiltering}
+              campaignsFilter={this.state.campaignsFilter}
             />
             <PaginatedCampaignsRetriever
               organizationId={this.props.params.organizationId}
-              campaignsFilter={{ isArchived: false }}
+              campaignsFilter={_.pick(this.state.campaignsFilter, 'isArchived')}
               onCampaignsReceived={this.handleCampaignsReceived}
               pageSize={1000}
             />
@@ -182,6 +240,10 @@ export class AdminIncomingMessageList extends Component {
               onTexterChanged={this.handleTexterChanged}
               onMessageFilterChanged={this.handleMessageFilterChange}
               assignmentsFilter={this.state.assignmentsFilter}
+              onActiveCampaignsToggled={this.handleActiveCampaignsToggled}
+              onArchivedCampaignsToggled={this.handleArchivedCampaignsToggled}
+              includeActiveCampaigns={this.state.includeActiveCampaigns}
+              includeArchivedCampaigns={this.state.includeArchivedCampaigns}
             />
             <br />
             <IncomingMessageActions
@@ -230,7 +292,11 @@ const mapQueriesToProps = ({ ownProps }) => ({
 })
 
 const mapMutationsToProps = () => ({
-  reassignCampaignContacts: (organizationId, campaignIdsContactIds, newTexterUserId) => ({
+  reassignCampaignContacts: (
+    organizationId,
+    campaignIdsContactIds,
+    newTexterUserId
+  ) => ({
     mutation: gql`
       mutation reassignCampaignContacts(
         $organizationId: String!
