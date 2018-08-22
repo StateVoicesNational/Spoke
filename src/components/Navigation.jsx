@@ -2,6 +2,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import Paper from 'material-ui/Paper'
 import { List, ListItem } from 'material-ui/List'
+import camelCase from 'camelcase'
 import Divider from 'material-ui/Divider'
 import { withRouter } from 'react-router'
 import { dataTest } from '../lib/attributes'
@@ -20,7 +21,7 @@ const Navigation = function Navigation(props) {
       <List>
         {sections.map((section) => (
           <ListItem
-            {...dataTest(`nav ${section.path}`)}
+            {...dataTest(camelCase(`nav ${section.path}`))}
             key={section.name}
             primaryText={section.name}
             onTouchTap={() => props.router.push(section.url)}
