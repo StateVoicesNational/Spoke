@@ -120,8 +120,11 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end'
   },
   lgMobileToolBar: {
-    '@media(max-width: 449px) and (min-width: 320px)': {
-      display: 'inline-block'
+    '@media(max-width: 449px) and (min-width: 300px)': {
+      display: 'inline-block',
+    },
+    '@media(max-width: 320px) and (min-width: 300px)': {
+      marginLeft: '-30px !important'
     }
   }
 })
@@ -440,8 +443,7 @@ export class AssignmentTexterContact extends React.Component {
     }
     this.setState({ disabled: true })
     try {
-
-      if(optOutMessageText.length){
+      if (optOutMessageText.length) {
         await this.props.mutations.sendMessage(message, contact.id)
       }
 

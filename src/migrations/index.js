@@ -149,6 +149,16 @@ const migrations = [
         t.text('external_response')
       })
     }
+  },
+  { auto: true, // 13
+    date: '2018-07-16',
+    migrate: async function() {
+      await r.knex.schema.alterTable('message', (table) => {
+        table.integer('user_id').unsigned().nullable().default(null)
+          .index().references('id').inTable('user')
+      })
+      console.log('added user_id column to message table')
+    }
   }
   /* migration template
      {auto: true, //if auto is false, then it will block the migration running automatically
