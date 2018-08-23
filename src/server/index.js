@@ -1,4 +1,3 @@
-require('dotenv').config() // should probably be conditional on NODE_ENV; decide whether this needs to happen only in development or also in testing
 import 'babel-polyfill'
 import bodyParser from 'body-parser'
 import express from 'express'
