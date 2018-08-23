@@ -1,3 +1,8 @@
+// configure env vars in dev and test environments
+if (['development', 'test'].includes(process.env.NODE_ENV)) {
+  // eslint-disable-next-line global-require
+  require('dotenv').config()
+}
 import 'babel-polyfill'
 import bodyParser from 'body-parser'
 import express from 'express'
