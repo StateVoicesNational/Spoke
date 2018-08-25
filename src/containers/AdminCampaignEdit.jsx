@@ -15,6 +15,7 @@ import CampaignContactsForm from '../components/CampaignContactsForm'
 import CampaignTextersForm from '../components/CampaignTextersForm'
 import CampaignInteractionStepsForm from '../components/CampaignInteractionStepsForm'
 import CampaignCannedResponsesForm from '../components/CampaignCannedResponsesForm'
+import CampaignTextingHoursForm from '../components/CampaignTextingHoursForm'
 import { dataTest } from '../lib/attributes'
 
 const campaignInfoFragment = `
@@ -330,6 +331,17 @@ class AdminCampaignEdit extends React.Component {
       blocksStarting: true,
       expandAfterCampaignStarts: true,
       expandableBySuperVolunteers: true,
+      extraProps: {
+        customFields: this.props.campaignData.campaign.customFields
+      }
+    }, {
+      title: 'Texting Hours',
+      content: 'CampaignTextingHoursForm',
+      keys: [],
+      checkCompleted: () => true,
+      blocksStarting: false,
+      expandAfterCampaignStarts: true,
+      expandableBySuperVolunteers: false,
       extraProps: {
         customFields: this.props.campaignData.campaign.customFields
       }
