@@ -42,7 +42,8 @@
     "dev": "nf start -w --procfile ./dev-tools/Procfile.dev",
     "dev-nowrap": "nf start --trim 500 --procfile ./dev-tools/Procfile.dev --env ./__test__/e2e/.env.e2e",
     "debug-server": "nf start -w --procfile ./dev-tools/Procfile-debug-server.dev",
-    "dev-other": "nf start -w --procfile ./dev-tools/Procfile-other.dev"
+    "dev-other": "nf start -w --procfile ./dev-tools/Procfile-other.dev",
+    "email-report": "babel-node src/workers/email-report.js ./dev-tools/babel-run"
   },
   "repository": {
     "type": "git",
@@ -108,6 +109,7 @@
     "material-ui": "^0.20.1",
     "material-ui-color-picker": "^1.0.1",
     "material-ui-datatables": "^0.18.2",
+    "material-ui-superselectfield": "^1.9.8",
     "minilog": "^3.0.1",
     "moment": "^2.14.1",
     "moment-timezone": "^0.5.14",

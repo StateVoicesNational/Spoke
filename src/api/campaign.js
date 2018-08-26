@@ -47,4 +47,15 @@ export const schema = `
     textingHoursEnd: Int
     timezoneIfNoZipcode: String
   }
+
+  type CampaignsList {
+    campaigns: [Campaign]
+  }
+
+  union CampaignsReturn = PaginatedCampaigns | CampaignsList
+  
+  type PaginatedCampaigns {
+    campaigns: [Campaign]
+    pageInfo: PageInfo
+  }  
 `
