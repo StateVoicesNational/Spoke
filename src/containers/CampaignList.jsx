@@ -127,7 +127,7 @@ class CampaignList extends React.Component {
       />
     ) : (
       <List>
-        {campaigns.map((campaign) => this.renderRow(campaign))}
+        {campaigns.sort((a, b) => a.id - b.id).map((campaign) => this.renderRow(campaign))}
       </List>
     )
   }
