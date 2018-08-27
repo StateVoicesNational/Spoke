@@ -10,12 +10,13 @@ export const resolvers = {
       'id',
       'name'
     ], Organization),
-    campaigns: async (organization, { campaignsFilter }, { user }) => {
+    campaigns: async (organization, { campaignsFilter }, { user }, displaySize ) => {
       await accessRequired(user, organization.id, 'SUPERVOLUNTEER')
       let query = buildCampaignQuery(
         r.knex.select('*'),
         organization.id,
-        campaignsFilter
+        campaignsFilter,
+        displaySize
       )
       query = query.orderBy('due_by', 'desc')
       return query

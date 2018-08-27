@@ -19,7 +19,14 @@ class AdminCampaignList extends React.Component {
     isCreating: false,
     campaignsFilter: {
       isArchived: false
-    }
+    },
+    displaySize: 25
+  }
+
+  handleListSize = event => {
+    this.setState({
+      listSize: size
+    })
   }
 
   handleClickNewButton = async () => {
@@ -53,6 +60,23 @@ class AdminCampaignList extends React.Component {
     })
   }
 
+  handleListSizeChange = (event, index, value) => {
+    this.setState({
+      displaySize: value
+    })
+  }
+
+  renderListOptions(){
+    return (
+      <DropDownMenu value={this.state.displaySize} onChange={this.handleListSizeChange}>
+        <MenuItem value='25' primaryText='25' />
+        <MenuItem value='50' primaryText='50' />
+        <MenuItem value='100' primaryText='100' />
+        <MenuItem value='all' primaryText='All' />
+      </DropDownMenu>
+    )
+  }
+
   renderFilters() {
     return (
       <DropDownMenu value={this.state.campaignsFilter.isArchived} onChange={this.handleFilterChange}>
@@ -63,14 +87,17 @@ class AdminCampaignList extends React.Component {
   }
   render() {
     const { adminPerms } = this.props.params
+    const filter = this.state.campaignsFilter.isArchived
     return (
       <div>
         {this.renderFilters()}
+        {this.renderListOptions()}
         {this.state.isCreating ? <LoadingIndicator /> : (
           <CampaignList
             campaignsFilter={this.state.campaignsFilter}
             organizationId={this.props.params.organizationId}
             adminPerms={adminPerms}
+            displaySize={this.state.displaySize}
           />
         )}
 
