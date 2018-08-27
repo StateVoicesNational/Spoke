@@ -145,7 +145,7 @@ const migrations = [
         table.boolean('texting_hours_enforced').notNullable().default(true)
         table.integer('texting_hours_start').notNullable().default(9)
         table.integer('texting_hours_end').notNullable().default(21)
-        table.string('timezone_if_no_zipcode').notNullable().default('America/New_York')
+        table.string('timezone_if_no_zipcode').notNullable().default('US/Eastern')
       })
 
       console.log('added texting hours fields to campaign')

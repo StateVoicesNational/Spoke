@@ -32,6 +32,11 @@ const campaignInfoFragment = `
   logoImageUrl
   introHtml
   primaryColor
+  overrideOrganizationTextingHours
+  textingHoursEnforced
+  textingHoursStart
+  textingHoursEnd
+  timezoneIfNoZipcode
   texters {
     id
     firstName
@@ -336,15 +341,12 @@ class AdminCampaignEdit extends React.Component {
       }
     }, {
       title: 'Texting Hours',
-      content: 'CampaignTextingHoursForm',
-      keys: [],
+      content: CampaignTextingHoursForm,
+      keys: ['overrideOrganizationTextingHours', 'textingHoursEnforced', 'textingHoursStart', 'textingHoursEnd', 'timezoneIfNoZipcode'],
       checkCompleted: () => true,
       blocksStarting: false,
       expandAfterCampaignStarts: true,
-      expandableBySuperVolunteers: false,
-      extraProps: {
-        customFields: this.props.campaignData.campaign.customFields
-      }
+      expandableBySuperVolunteers: false
     }]
   }
 
