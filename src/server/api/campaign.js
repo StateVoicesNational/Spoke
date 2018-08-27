@@ -78,11 +78,11 @@ export const resolvers = {
       'introHtml',
       'primaryColor',
       'logoImageUrl',
-      "overrideOrganizationTextingHours",
-      "textingHoursEnforced",
-      "textingHoursStart",
-      "textingHoursEnd",
-      "timezoneIfNoZipcode"
+      'overrideOrganizationTextingHours',
+      'textingHoursEnforced',
+      'textingHoursStart',
+      'textingHoursEnd',
+      'timezoneIfNoZipcode'
     ], Campaign),
     organization: async (campaign, _, { loaders }) => (
       loaders.organization.load(campaign.organization_id)
