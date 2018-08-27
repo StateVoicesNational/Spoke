@@ -185,8 +185,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
     }`,
     variables: {
       organizationId: ownProps.organizationId,
-      campaignsFilter: ownProps.campaignsFilter,
-      displaySize: ownProps.displaySize
+      campaignsFilter: ownProps.campaignsFilter
     },
     forceFetch: true
   }
