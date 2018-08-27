@@ -18,9 +18,9 @@ class AdminCampaignList extends React.Component {
   state = {
     isCreating: false,
     campaignsFilter: {
-      isArchived: false
-    },
-    displaySize: 25
+      isArchived: false,
+      displaySize: 25
+    }
   }
 
   handleListSize = event => {
@@ -62,14 +62,16 @@ class AdminCampaignList extends React.Component {
 
   handleListSizeChange = (event, index, value) => {
     this.setState({
-      displaySize: value
+      campaignsFilter: {
+        displaySize: value
+      }
     })
   }
 
   renderListOptions(){
     return (
-      <DropDownMenu value={this.state.displaySize} onChange={this.handleListSizeChange}>
-        <MenuItem value='25' primaryText='25' />
+      <DropDownMenu value={this.state.campaignsFilter.displaySize} onChange={this.handleListSizeChange}>
+        <MenuItem value='3' primaryText='3' />
         <MenuItem value='50' primaryText='50' />
         <MenuItem value='100' primaryText='100' />
         <MenuItem value='all' primaryText='All' />

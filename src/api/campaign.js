@@ -2,6 +2,7 @@ export const schema = `
   input CampaignsFilter {
     isArchived: Boolean
     campaignId: Int
+    displaySize: Int
   }
 
   type CampaignStats {

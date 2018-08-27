@@ -1,7 +1,7 @@
 import { mapFieldsToModel } from './lib/utils'
 import { Campaign, JobRequest, r } from '../models'
 
-export function buildCampaignQuery(queryParam, organizationId, campaignsFilter, addFromClause = true, displaySize = 25) {
+export function buildCampaignQuery(queryParam, organizationId, campaignsFilter, addFromClause = true) {
   let query = queryParam
 
   if (addFromClause) {
@@ -10,13 +10,12 @@ export function buildCampaignQuery(queryParam, organizationId, campaignsFilter, 
 
   query = query.where('organization_id', organizationId)
 
-  if (campaignsFilter && displaySize) {
-    const size = parseInt(displaySize)
-    if ('isArchived' in campaignsFilter) {
-      query = query.where({ is_archived: campaignsFilter.isArchived }).limit(size)
+  if (campaignsFilter) {
+    if ('isArchived' in campaignsFilter && 'displaySize' in campaignsFilter) {
+      query = query.where({ is_archived: campaignsFilter.isArchived }).limit(campaignsFilter.displaySize)
     }
-    if ('campaignId' in campaignsFilter) {
-      query = query.where('campaign.id', parseInt(campaignsFilter.campaignId, 10)).limit(size)
+    if ('campaignId' in campaignsFilter  && 'displaySize' in campaignsFilter) {
+      query = query.where('campaign.id', parseInt(campaignsFilter.campaignId, 10)).limit(campaignsFilter.displaySize)
     }
   }
 
