@@ -40,8 +40,9 @@ const inlineStyles = {
 
 class CampaignList extends React.Component {
   renderRow(campaign) {
-    const { isStarted, isArchived, hasUnassignedContacts } = campaign
+    const { isStarted, isArchived, hasUnassignedContacts} = campaign
     const { adminPerms } = this.props
+    console.log('campaign:', campaign);
 
     let listItemStyle = {}
     let leftIcon = ''
@@ -119,7 +120,8 @@ class CampaignList extends React.Component {
   render() {
     const organization = this.props.data.organization
     const campaigns = organization.campaigns
-    
+    const displaySize = this.props.displaySize
+
     return campaigns.length === 0 ? (
       <Empty
         title='No campaigns'
@@ -127,7 +129,11 @@ class CampaignList extends React.Component {
       />
     ) : (
       <List>
-        {campaigns.sort((a, b) => a.id - b.id).map((campaign) => this.renderRow(campaign))}
+        {campaigns.sort((a, b) => {
+          if (a.title > b.title) return 1
+          if (a.title < b.title) return -1
+          return 0
+       }).map((campaign) => this.renderRow(campaign))}
       </List>
     )
   }
@@ -179,7 +185,8 @@ const mapQueriesToProps = ({ ownProps }) => ({
     }`,
     variables: {
       organizationId: ownProps.organizationId,
-      campaignsFilter: ownProps.campaignsFilter
+      campaignsFilter: ownProps.campaignsFilter,
+      displaySize: ownProps.displaySize
     },
     forceFetch: true
   }
