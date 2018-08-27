@@ -117,7 +117,9 @@ class CampaignList extends React.Component {
   }
 
   render() {
-    const { campaigns } = this.props.data.organization
+    const organization = this.props.data.organization
+    const campaigns = organization.campaigns
+    
     return campaigns.length === 0 ? (
       <Empty
         title='No campaigns'
