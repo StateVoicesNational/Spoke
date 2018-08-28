@@ -33,11 +33,11 @@ if (isClient()) {
   logInstance.error = (err) => {
     if (enableRollbar) {
       if (typeof err === 'object') {
-        rollbar.handleError(err)
+        rollbar.error(err)
       } else if (typeof err === 'string') {
-        rollbar.reportMessage(err)
+        rollbar.error(err)
       } else {
-        rollbar.reportMessage('Got backend error with no error message')
+        rollbar.error('Got backend error with no error message')
       }
     }
 
