@@ -40,7 +40,7 @@ const inlineStyles = {
 
 class CampaignList extends React.Component {
   renderRow(campaign) {
-    const { isStarted, isArchived, hasUnassignedContacts} = campaign
+    const { isStarted, isArchived, hasUnassignedContacts } = campaign
     const { adminPerms } = this.props
 
     let listItemStyle = {}
@@ -116,21 +116,20 @@ class CampaignList extends React.Component {
     )
   }
 
-
-    render() {
-      const { campaigns } = this.props.data.organization
-      return campaigns.length === 0 ? (
-        <Empty
-          title='No campaigns'
-          icon={<SpeakerNotesIcon />}
-        />
-      ) : (
-        <List>
-          {campaigns.map((campaign) => this.renderRow(campaign))}
-        </List>
-      )
-    }
+  render() {
+    const { campaigns } = this.props.data.organization
+    return campaigns.length === 0 ? (
+      <Empty
+        title='No campaigns'
+        icon={<SpeakerNotesIcon />}
+      />
+    ) : (
+      <List>
+        {campaigns.map((campaign) => this.renderRow(campaign))}
+      </List>
+    )
   }
+}
 
 CampaignList.propTypes = {
   campaigns: PropTypes.arrayOf(

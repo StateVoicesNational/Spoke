@@ -66,12 +66,12 @@ class AdminCampaignList extends React.Component {
 
   renderListSizeOptions(){
     return (
-      <DropDownMenu value={this.state.campaignsFilter.listSize} onChange={this.handleListSizeChange}>
-        <MenuItem value='10' primaryText='10' />
-        <MenuItem value='25' primaryText='25' />
-        <MenuItem value='50' primaryText='50' />
-        <MenuItem value='100' primaryText='100' />
-        <MenuItem value='0' primaryText='All' />
+      <DropDownMenu value={this.state.campaignsFilter.listSize} onChange={this.handleListSizeChange} >
+        <MenuItem value={10} primaryText='10' />
+        <MenuItem value={25} primaryText='25' />
+        <MenuItem value={50} primaryText='50' />
+        <MenuItem value={100} primaryText='100' />
+        <MenuItem value={0} primaryText='All' />
       </DropDownMenu>
     )
   }
