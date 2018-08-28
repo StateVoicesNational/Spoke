@@ -86,7 +86,6 @@ class AdminCampaignList extends React.Component {
   }
   render() {
     const { adminPerms } = this.props.params
-    const filter = this.state.campaignsFilter.isArchived
     return (
       <div>
         {this.renderFilters()}
@@ -96,7 +95,6 @@ class AdminCampaignList extends React.Component {
             campaignsFilter={this.state.campaignsFilter}
             organizationId={this.props.params.organizationId}
             adminPerms={adminPerms}
-            displaySize={this.state.displaySize}
           />
         )}
 
