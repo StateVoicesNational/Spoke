@@ -32,7 +32,8 @@ const Message = thinky.createModel('message', type.object().schema({
   sent_at: timestamp(),
   service_response_at: timestamp()
 }, {
-  dependencies: [User, Assignment]
+  dependencies: [User, Assignment],
+  noAutoCreation: true
 }).allowExtra(false))
 
 Message.ensureIndex('user_id')
