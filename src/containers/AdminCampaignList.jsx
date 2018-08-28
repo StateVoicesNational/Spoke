@@ -23,12 +23,6 @@ class AdminCampaignList extends React.Component {
     }
   }
 
-  handleListSize = event => {
-    this.setState({
-      listSize: size
-    })
-  }
-
   handleClickNewButton = async () => {
     const { organizationId } = this.props.params
     this.setState({ isCreating: true })
@@ -55,7 +49,8 @@ class AdminCampaignList extends React.Component {
   handleFilterChange = (event, index, value) => {
     this.setState({
       campaignsFilter: {
-        isArchived: value
+        isArchived: value,
+        displaySize: this.state.campaignsFilter.displaySize
       }
     })
   }
@@ -63,6 +58,7 @@ class AdminCampaignList extends React.Component {
   handleListSizeChange = (event, index, value) => {
     this.setState({
       campaignsFilter: {
+        isArchived: this.state.campaignsFilter.isArchived,
         displaySize: value
       }
     })
@@ -71,10 +67,11 @@ class AdminCampaignList extends React.Component {
   renderListOptions(){
     return (
       <DropDownMenu value={this.state.campaignsFilter.displaySize} onChange={this.handleListSizeChange}>
-        <MenuItem value='3' primaryText='3' />
+        <MenuItem value='10' primaryText='10' />
+        <MenuItem value='25' primaryText='25' />
         <MenuItem value='50' primaryText='50' />
         <MenuItem value='100' primaryText='100' />
-        <MenuItem value='all' primaryText='All' />
+        <MenuItem value='0' primaryText='All' />
       </DropDownMenu>
     )
   }
