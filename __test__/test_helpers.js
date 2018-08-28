@@ -1,36 +1,9 @@
-import {createLoaders, r} from '../src/server/models/'
+import { createLoaders, createTables, r } from '../src/server/models/'
 import { sleep } from '../src/workers/lib'
 
 export async function setupTest() {
-  createLoaders()
-  let i = 0
-  while (i++ < 10) {
-    const results = [await r.knex.schema.hasTable('assignment'),
-      await r.knex.schema.hasTable('campaign'),
-      await r.knex.schema.hasTable('campaign_contact'),
-      await r.knex.schema.hasTable('canned_response'),
-      await r.knex.schema.hasTable('interaction_step'),
-      await r.knex.schema.hasTable('invite'),
-      await r.knex.schema.hasTable('job_request'),
-      await r.knex.schema.hasTable('log'),
-      await r.knex.schema.hasTable('message'),
-      await r.knex.schema.hasTable('migrations'),
-      await r.knex.schema.hasTable('opt_out'),
-      await r.knex.schema.hasTable('organization'),
-      await r.knex.schema.hasTable('pending_message_part'),
-      await r.knex.schema.hasTable('question_response'),
-      await r.knex.schema.hasTable('user'),
-      await r.knex.schema.hasTable('user_cell'),
-      await r.knex.schema.hasTable('user_organization'),
-      await r.knex.schema.hasTable('zip_code')]
-
-    if (results.some((element) => !element)) {
-      await sleep(1000)
-    }
-    else {
-      break
-    }
-  }
+  await createTables()
+  return
 }
 
 export async function cleanupTest() {

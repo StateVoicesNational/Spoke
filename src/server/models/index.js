@@ -32,6 +32,29 @@ function createLoader(model, idKey = 'id') {
   })
 }
 
+function createTables() {
+  return thinky.createTables([
+    'organization',
+    'user',
+    'user_cell',
+    'user_organization',
+    'campaign',
+    'assignment',
+   
+    'campaign_contact',
+    'canned_response',
+    'interaction_step',
+    'invite',
+    'job_request',
+    'log',
+    'message',
+    'migrations',
+    'opt_out',
+    'pending_message_part',
+    'question_response',
+    'zip_code'])
+}
+
 const createLoaders = () => ({
   assignment: createLoader(Assignment),
   campaign: createLoader(Campaign),
@@ -58,6 +81,7 @@ const r = thinky.r
 export {
   createLoaders,
   r,
+  createTables,
   datawarehouse,
   Migrations,
   Assignment,

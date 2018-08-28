@@ -13,7 +13,8 @@ const OptOut = thinky.createModel('opt_out', type.object().schema({
   reason_code: optionalString(),
   created_at: timestamp()
 }, {
-  dependencies: [Organization, Assignment]
+  dependencies: [Organization, Assignment],
+  noAutoCreation: true
 }).allowExtra(false))
 
 OptOut.ensureIndex('cell')
