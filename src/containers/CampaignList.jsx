@@ -116,22 +116,21 @@ class CampaignList extends React.Component {
     )
   }
 
-  render() {
-    const organization = this.props.data.organization
-    const campaigns = organization.campaigns
 
-    return campaigns.length === 0 ? (
-      <Empty
-        title='No campaigns'
-        icon={<SpeakerNotesIcon />}
-      />
-    ) : (
-      <List>
-        {campaigns.map((campaign) => this.renderRow(campaign))}
-      </List>
-    )
+    render() {
+      const { campaigns } = this.props.data.organization
+      return campaigns.length === 0 ? (
+        <Empty
+          title='No campaigns'
+          icon={<SpeakerNotesIcon />}
+        />
+      ) : (
+        <List>
+          {campaigns.map((campaign) => this.renderRow(campaign))}
+        </List>
+      )
+    }
   }
-}
 
 CampaignList.propTypes = {
   campaigns: PropTypes.arrayOf(
