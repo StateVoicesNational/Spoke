@@ -136,7 +136,7 @@
     "redux-thunk": "^2.1.0",
     "request": "^2.81.0",
     "rethink-knex-adapter": "^0.4.11",
-    "rollbar": "^0.6.2",
+    "rollbar": "^2.4.4",
     "thinky": "^2.3.3",
     "timezonecomplete": "^5.5.0",
     "twilio": "^3.18.0",

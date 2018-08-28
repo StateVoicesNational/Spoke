@@ -1,6 +1,7 @@
 import minilog from 'minilog'
 import { isClient } from './is-client'
-const rollbar = require('rollbar')
+const Rollbar = require('rollbar')
+let rollbar = null
 let logInstance = null
 
 if (isClient()) {
@@ -18,7 +19,7 @@ if (isClient()) {
   let enableRollbar = false
   if (process.env.NODE_ENV === 'production' && process.env.ROLLBAR_ACCESS_TOKEN) {
     enableRollbar = true
-    rollbar.init(process.env.ROLLBAR_ACCESS_TOKEN)
+    rollbar = new Rollbar(process.env.ROLLBAR_ACCESS_TOKEN)
   }
 
   minilog.suggest.deny(/.*/, process.env.NODE_ENV === 'development' ? 'debug' : 'debug')
