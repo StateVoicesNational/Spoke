@@ -146,6 +146,7 @@
     "yup": "^0.19.0"
   },
   "devDependencies": {
+    "@babel/runtime": "^7.0.0",
     "babel-eslint": "^6.1.2",
     "babel-jest": "^23.4.2",
     "babel-plugin-transform-runtime": "^6.23.0",
