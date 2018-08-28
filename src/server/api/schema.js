@@ -29,7 +29,7 @@ import { schema as organizationSchema, resolvers as organizationResolvers } from
 import { schema as campaignSchema, resolvers as campaignResolvers } from './campaign'
 import {
   schema as assignmentSchema,
-  resolvers as assignmentResolvers,
+  resolvers as assignmentResolvers
 } from './assignment'
 import {
   schema as interactionStepSchema,
@@ -578,7 +578,7 @@ const rootMutations = {
       let createCannedResponses = r
         .knex('canned_response')
         .where({ campaign_id: oldCampaignId })
-        .then(function(res) {
+        .then(function (res) {
           res.forEach((response, index) => {
             const copiedCannedResponse = new CannedResponse({
               campaign_id: newCampaignId,
@@ -852,7 +852,7 @@ const rootMutations = {
 
       return []
     },
-    sendMessage: async (_, { message, campaignContactId }, { loaders }) => {
+    sendMessage: async (_, { message, campaignContactId }, { user, loaders }) => {
       const contact = await loaders.campaignContact.load(campaignContactId)
       const campaign = await loaders.campaign.load(contact.campaign_id)
       if (contact.assignment_id !== parseInt(message.assignmentId) || campaign.is_archived) {
@@ -912,6 +912,7 @@ const rootMutations = {
       const messageInstance = new Message({
         text: replaceCurlyApostrophes(text),
         contact_number: contactNumber,
+        user_id: user.id,
         user_number: '',
         assignment_id: message.assignmentId,
         send_status: JOBS_SAME_PROCESS ? 'SENDING' : 'QUEUED',
@@ -1145,7 +1146,14 @@ const rootResolvers = {
       authRequired(user)
       return r.table('invite').filter({ hash })
     },
-    currentUser: async (_, { id }, { user }) => user,
+    currentUser: async (_, { id }, { user }) => {
+      if (!user) {
+        return null;
+      } 
+      else {
+        return user;
+      }
+    },
     contact: async (_, { id }, { loaders, user }) => {
       authRequired(user)
       const contact = await loaders.campaignContact.load(id)
