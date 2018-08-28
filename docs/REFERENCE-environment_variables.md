@@ -45,6 +45,7 @@ NEXMO_API_SECRET                  | Nexmo API secret. Required if using Nexmo.
 NO_EXTERNAL_LINKS                 | Removes google fonts and auth0 login script -- good for development offline when you already have an auth0 session
 NODE_ENV                          | Node environment type. _Options_: development, production.
 NOT_IN_USA                        | A flag to affirmatively indicate the ability to use features that are discouraged or not legally usable in the United States. Consult with an attorney about the implications for doing so. _Default_: false (i.e. default assumes a USA legal context)
+OPT_OUT_MESSAGE                   | Spoke instance-wide default for opt out message.
 OUTPUT_DIR                        | Directory path for packaged files should be saved to. _Required_.
 PHONE_NUMBER_COUNTRY              | Country code for phone number formatting. _Default_: US.
 PORT                              | Port for Heroku servers.
@@ -62,5 +63,7 @@ TWILIO_AUTH_TOKEN                 | Twilio auth token. Required if using Twilio.
 TWILIO_MESSAGE_SERVICE_SID        | Twilio message service ID. Required if using Twilio.
 TWILIO_STATUS_CALLBACK_URL        | URL for Twilio status callbacks. Should end with `/twilio-message-report`, e.g. `https://example.org/twilio-message-report`. Required if using Twilio.
 TWILIO_SQS_QUEUE_URL              | AWS SQS URL to handle incoming messages when app isn't connected to twilio
+WAREHOUSE_DB_{TYPE,HOST,PORT,NAME,USER,PASSWORD}   | Enables ability to load contacts directly from a SQL query from a separate data-warehouse db -- only is_superadmin-marked users will see the interface
+WAREHOUSE_DB_LAMBDA_ITERATION     | If the WAREHOUSE_DB_ connection/feature is enabled, then on AWS Lambda, queries that take longer than 5min can expire.  This will enable incrementing through queries on new lambda invocations to avoid timeouts.
 WEBPACK_HOST                      | Host domain or IP for Webpack development server. _Default_: 127.0.0.1.
 WEBPACK_PORT                      | Port for Webpack development server. _Defaut_: 3000.
