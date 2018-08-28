@@ -3,6 +3,7 @@ import { Campaign, JobRequest, r } from '../models'
 
 export function buildCampaignQuery(queryParam, organizationId, campaignsFilter, addFromClause = true) {
   let query = queryParam
+  let resultSize = ( campaignsFilter.displaySize && campaignsFilter.displaySize !== 'All' ? campaignsFilter.displaySize : 0 )
 
   if (addFromClause) {
     query = query.from('campaign')
@@ -11,11 +12,23 @@ export function buildCampaignQuery(queryParam, organizationId, campaignsFilter, 
   query = query.where('organization_id', organizationId)
 
   if (campaignsFilter) {
-    if ('isArchived' in campaignsFilter && 'displaySize' in campaignsFilter) {
-      query = query.where({ is_archived: campaignsFilter.isArchived }).limit(campaignsFilter.displaySize)
+    if ('isArchived' in campaignsFilter && resultSize) {
+      console.log('getting here:', resultSize);
+      query = query.where({ is_archived: campaignsFilter.isArchived }).limit(resultSize)
     }
-    if ('campaignId' in campaignsFilter  && 'displaySize' in campaignsFilter) {
-      query = query.where('campaign.id', parseInt(campaignsFilter.campaignId, 10)).limit(campaignsFilter.displaySize)
+    if ('campaignId' in campaignsFilter  && resultSize) {
+      console.log('getting here:', resultSize);
+      query = query.where('campaign.id', parseInt(campaignsFilter.campaignId, 10)).limit(resultSize)
+    }
+
+    if ('isArchived' in campaignsFilter && !resultSize) {
+      console.log('getting here:', resultSize);
+      query = query.where({ is_archived: campaignsFilter.isArchived })
+    }
+
+    if ('campaignId' in campaignsFilter && !resultSize) {
+      console.log('getting here:', resultSize);
+      query = query.where('campaign.id', parseInt(campaignsFilter.campaignId, 10))
     }
   }
 
