@@ -3,7 +3,7 @@ import { Campaign, JobRequest, r } from '../models'
 
 export function buildCampaignQuery(queryParam, organizationId, campaignsFilter, addFromClause = true) {
   let query = queryParam
-  let resultSize = ( campaignsFilter.displaySize ? campaignsFilter.displaySize : 0 )
+  let resultSize = ( campaignsFilter.listSize ? campaignsFilter.listSize : 0 )
 
   if (addFromClause) {
     query = query.from('campaign')

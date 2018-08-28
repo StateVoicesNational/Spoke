@@ -19,7 +19,7 @@ class AdminCampaignList extends React.Component {
     isCreating: false,
     campaignsFilter: {
       isArchived: false,
-      displaySize: 25
+      listSize: 25
     }
   }
 
@@ -50,7 +50,7 @@ class AdminCampaignList extends React.Component {
     this.setState({
       campaignsFilter: {
         isArchived: value,
-        displaySize: this.state.campaignsFilter.displaySize
+        listSize: this.state.campaignsFilter.listSize
       }
     })
   }
@@ -59,14 +59,14 @@ class AdminCampaignList extends React.Component {
     this.setState({
       campaignsFilter: {
         isArchived: this.state.campaignsFilter.isArchived,
-        displaySize: value
+        listSize: value
       }
     })
   }
 
-  renderListOptions(){
+  renderListSizeOptions(){
     return (
-      <DropDownMenu value={this.state.campaignsFilter.displaySize} onChange={this.handleListSizeChange}>
+      <DropDownMenu value={this.state.campaignsFilter.listSize} onChange={this.handleListSizeChange}>
         <MenuItem value='10' primaryText='10' />
         <MenuItem value='25' primaryText='25' />
         <MenuItem value='50' primaryText='50' />
@@ -89,7 +89,7 @@ class AdminCampaignList extends React.Component {
     return (
       <div>
         {this.renderFilters()}
-        {this.renderListOptions()}
+        {this.renderListSizeOptions()}
         {this.state.isCreating ? <LoadingIndicator /> : (
           <CampaignList
             campaignsFilter={this.state.campaignsFilter}
