@@ -26,6 +26,10 @@ export async function available(organizationId) {
 }
 
 const actionKitSignup = (cell, contact) => {
+  // Currently we add the user to Revere and Action Kit. When we add them to AK
+  // It takes two requests - one to create the user and then a second request
+  // to add the phone numnber to the user. We add the user to ActionKit to make sure
+  // we keep have a record of their phone number & attach it to a fake email. 
   if (akAddUserUrl && akAddPhoneUrl) {
     const userData = {
       email: cell + '-smssubscriber@example.com',
@@ -125,5 +129,6 @@ export async function processAction(questionResponse, interactionStep, campaignC
       if (error) throw new Error(error)
     })
   }
+
   actionKitSignup(contactCell, contact)
 }
