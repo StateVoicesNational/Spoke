@@ -17,7 +17,7 @@ const PendingMessagePart = thinky.createModel('pending_message_part', type.objec
   user_number: optionalString(),
   contact_number: requiredString(),
   created_at: timestamp()
-}, {noAutoCreation: true}).allowExtra(false))
+}).allowExtra(false), {noAutoCreation: true})
 
 PendingMessagePart.ensureIndex('parent_id')
 PendingMessagePart.ensureIndex('service')

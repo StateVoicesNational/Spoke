@@ -14,6 +14,6 @@ const User = thinky.createModel('user', type.object().schema({
   assigned_cell: type.string(),
   is_superadmin: type.boolean(),
   terms: type.boolean().default(false)
-}, {noAutoCreation: true}).allowExtra(false))
+}).allowExtra(false), {noAutoCreation: true})
 
 export default User

@@ -32,7 +32,7 @@ const CampaignContact = thinky.createModel('campaign_contact', type.object().sch
     .string()
     .default('')
     .required()
-}, {noAutoCreation: true}).allowExtra(false))
+}).allowExtra(false), {noAutoCreation: true})
 
 CampaignContact.ensureIndex('assignment_id')
 CampaignContact.ensureIndex('campaign_id')

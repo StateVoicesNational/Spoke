@@ -32,27 +32,35 @@ function createLoader(model, idKey = 'id') {
   })
 }
 
+// This is in dependency order, so tables are after their dependencies
+const tableList = [
+  'organization',
+  'user',
+  'user_cell',
+  'user_organization',
+  'campaign',
+  'assignment',
+  
+  'campaign_contact',
+  'canned_response',
+  'interaction_step',
+  'invite',
+  'job_request',
+  'log',
+  'message',
+  'migrations',
+  'opt_out',
+  'pending_message_part',
+  'question_response',
+  'zip_code'
+]
+
 function createTables() {
-  return thinky.createTables([
-    'organization',
-    'user',
-    'user_cell',
-    'user_organization',
-    'campaign',
-    'assignment',
-   
-    'campaign_contact',
-    'canned_response',
-    'interaction_step',
-    'invite',
-    'job_request',
-    'log',
-    'message',
-    'migrations',
-    'opt_out',
-    'pending_message_part',
-    'question_response',
-    'zip_code'])
+  return thinky.createTables(tableList)
+}
+
+function dropTables() {
+  return thinky.dropTables(tableList)
 }
 
 const createLoaders = () => ({
@@ -82,6 +90,7 @@ export {
   createLoaders,
   r,
   createTables,
+  dropTables,
   datawarehouse,
   Migrations,
   Assignment,
