@@ -51,7 +51,6 @@ export async function getConversations(
   contactsFilter,
   utc
 ) {
-
   /* Query #1 == get campaign_contact.id for all the conversations matching
   * the criteria with offset and limit. */
   let offsetLimitQuery = r.knex.select('campaign_contact.id as cc_id')
@@ -67,7 +66,7 @@ export async function getConversations(
   offsetLimitQuery = offsetLimitQuery
     .orderBy('campaign_contact.updated_at')
     .orderBy('cc_id')
-  offsetLimitQuery= offsetLimitQuery.limit(cursor.limit).offset(cursor.offset)
+  offsetLimitQuery = offsetLimitQuery.limit(cursor.limit).offset(cursor.offset)
 
   const ccIdRows = await offsetLimitQuery
   const ccIds = ccIdRows.map((ccIdRow) => {
