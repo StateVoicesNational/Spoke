@@ -3,6 +3,7 @@ export const schema = `
     isArchived: Boolean
     campaignId: Int
     listSize: Int
+    pageSize: Int
   }
 
   type CampaignStats {
