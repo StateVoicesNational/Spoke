@@ -19,7 +19,7 @@ before_script:
 - ./cc-test-reporter before-build
 - chmod +x ./travis-run-e2e-tests
 script:
-- npm run test-coverage-bothbackends
+- npm run test-coverage
 - CC_TEST_RESULT=$?
 - ./travis-run-e2e-tests
 after_script:
