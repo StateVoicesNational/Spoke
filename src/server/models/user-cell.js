@@ -15,7 +15,7 @@ const UserCell = thinky.createModel('user_cell', type.object().schema({
     .required()
 }, {
   dependencies: [User]
-}).allowExtra(false))
+}).allowExtra(false), { noAutoCreation: true })
 
 UserCell.ensureIndex('user_id')
 

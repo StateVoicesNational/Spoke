@@ -26,7 +26,7 @@ const JobRequest = thinky.createModel('job_request', type.object().schema({
     .default(0),
   updated_at: timestamp(),
   created_at: timestamp()
-}, {noAutoCreation: true}).allowExtra(false))
+}).allowExtra(false), {noAutoCreation: true})
 
 JobRequest.ensureIndex('queue_name')
 
