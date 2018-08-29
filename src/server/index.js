@@ -1,3 +1,8 @@
+// configure env vars in dev and test environments
+if (['development', 'test'].includes(process.env.NODE_ENV)) {
+  // eslint-disable-next-line global-require
+  require('dotenv').config()
+}
 import 'babel-polyfill'
 import bodyParser from 'body-parser'
 import express from 'express'
@@ -21,6 +26,7 @@ import { runMigrations } from '../migrations'
 import { setupUserNotificationObservers } from './notifications'
 import { TwimlResponse } from 'twilio'
 import { r } from './models'
+import { logoutUser } from './models/cacheable_queries'
 
 process.on('uncaughtException', (ex) => {
   log.error(ex)
@@ -117,6 +123,7 @@ app.post('/twilio-message-report', wrap(async (req, res) => {
 // const client = require('twilio')(accountSid, authToken)
 
 app.get('/logout-callback', (req, res) => {
+  logoutUser(req.user.id)
   req.logOut()
   res.redirect('/')
 })

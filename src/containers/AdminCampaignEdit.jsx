@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types'
 import React from 'react'
+import camelCase from 'camelcase'
 import WarningIcon from 'material-ui/svg-icons/alert/warning'
 import DoneIcon from 'material-ui/svg-icons/action/done'
 import Avatar from 'material-ui/Avatar'
@@ -317,7 +318,7 @@ class AdminCampaignEdit extends React.Component {
       checkCompleted: () => this.state.campaignFormValues.interactionSteps.length > 0,
       blocksStarting: true,
       expandAfterCampaignStarts: true,
-      expandableBySuperVolunteers: false,
+      expandableBySuperVolunteers: true,
       extraProps: {
         customFields: this.props.campaignData.campaign.customFields,
         availableActions: this.props.availableActionsData.availableActions
@@ -544,6 +545,7 @@ class AdminCampaignEdit extends React.Component {
 
           return (
             <Card
+              {...dataTest(camelCase(`${section.title}`))}
               key={section.title}
               expanded={sectionIsExpanded && sectionCanExpandOrCollapse}
               expandable={sectionCanExpandOrCollapse}
