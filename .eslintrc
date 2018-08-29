@@ -8,7 +8,8 @@
     "no-alert": ["off"],
     "no-console": ["off"],
     "prefer-template": ["off"],
-    "semi": ["error", "never"]
+    "semi": ["error", "never"],
+    "react/require-extension": "off",
   },
   "env": { "jest": true, "node": true, "browser": true }
 }
