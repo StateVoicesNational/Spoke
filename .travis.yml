@@ -19,8 +19,10 @@ before_script:
 - ./cc-test-reporter before-build
 - chmod +x ./travis-run-e2e-tests
 script:
-- npm run test-coverage-bothbackends
-- CC_TEST_RESULT=$?
+- npm run test
+- CC_TEST_RESULT1=$?
+- npm run test-sqlite
+- CC_TEST_RESULT2=$?
 - ./travis-run-e2e-tests
 after_script:
-- ./cc-test-reporter after-build --exit-code $CC_TEST_RESULT
+- ./cc-test-reporter after-build --exit-code $(( $CC_TEST_RESULT1 && $CC_TEST_RESULT2 ))
