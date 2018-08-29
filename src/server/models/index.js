@@ -36,11 +36,9 @@ function createLoader(model, idKey = 'id') {
 const tableList = [
   'organization',
   'user',
-  'user_cell',
-  'user_organization',
   'campaign',
   'assignment',
-  
+  // the rest are alphabetical
   'campaign_contact',
   'canned_response',
   'interaction_step',
@@ -52,6 +50,8 @@ const tableList = [
   'opt_out',
   'pending_message_part',
   'question_response',
+  'user_cell',
+  'user_organization',
   'zip_code'
 ]
 
