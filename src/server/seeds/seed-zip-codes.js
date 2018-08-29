@@ -31,9 +31,12 @@ export async function seedZipCodes() {
         }))
 
       log.info(zipCodes.length, 'ZIP CODES')
-      ZipCode.save(zipCodes)
-        .then(() => log.info('Finished seeding'))
-        .error((err) => log.error('error', err))
+      try {
+        await ZipCode.save(zipCodes)
+        log.info('Finished seeding')
+      } catch(err) {
+        log.error('error', err)
+      }
     }
   }
 }
