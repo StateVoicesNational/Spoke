@@ -1148,10 +1148,10 @@ const rootResolvers = {
     },
     currentUser: async (_, { id }, { user }) => {
       if (!user) {
-        return null;
-      } 
+        return null
+      }
       else {
-        return user;
+        return user
       }
     },
     contact: async (_, { id }, { loaders, user }) => {
