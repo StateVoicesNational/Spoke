@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
   },
   lgMobileToolBar: {
     '@media(max-width: 449px) and (min-width: 300px)': {
-      display: 'inline-block',
+      display: 'inline-block'
     },
     '@media(max-width: 320px) and (min-width: 300px)': {
       marginLeft: '-30px !important'
@@ -137,7 +137,7 @@ const inlineStyles = {
   mobileCannedReplies: {
     '@media(max-width: 450px)': {
       marginBottom: '1'
-    },
+    }
   },
   dialogButton: {
     display: 'inline-block'
@@ -511,14 +511,14 @@ export class AssignmentTexterContact extends React.Component {
       const { hasDST, offset } = contact.location.timezone
 
       timezoneData = { hasDST, offset }
-     } else {
-        let location = getContactTimezone(contact.location)
-        if (location) {
-          let timezone = location.timezone
-          if (timezone) {
-              timezoneData = timezone
-          }
+    } else {
+      let location = getContactTimezone(contact.location)
+      if (location) {
+        let timezone = location.timezone
+        if (timezone) {
+          timezoneData = timezone
         }
+      }
     }
 
     const { textingHoursStart, textingHoursEnd, textingHoursEnforced } = campaign.organization
