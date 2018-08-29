@@ -55,6 +55,18 @@ const tableList = [
   'zip_code'
 ]
 
+function createTablesIfNecessary() {
+  // builds the database if we don't see the organization table
+  return thinky.k.schema.hasTable('organization').then(
+    (tableExists) => {
+      if (!tableExists) {
+        console.log('CREATING DATABASE SCHEMA')
+        createTables()
+        return true
+      }
+    })
+}
+
 function createTables() {
   return thinky.createTables(tableList)
 }
@@ -90,6 +102,7 @@ export {
   createLoaders,
   r,
   createTables,
+  createTablesIfNecessary,
   dropTables,
   datawarehouse,
   Migrations,
