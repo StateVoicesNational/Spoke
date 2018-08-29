@@ -3,7 +3,7 @@ import { Campaign, JobRequest, r } from '../models'
 
 export function buildCampaignQuery(queryParam, organizationId, campaignsFilter, addFromClause = true) {
   let query = queryParam
-  let resultSize = ( campaignsFilter.listSize ? campaignsFilter.listSize : 0 )
+  let resultSize = (campaignsFilter.listSize ? campaignsFilter.listSize : 0)
 
   if (addFromClause) {
     query = query.from('campaign')
@@ -12,20 +12,16 @@ export function buildCampaignQuery(queryParam, organizationId, campaignsFilter, 
   query = query.where('organization_id', organizationId)
 
   if (campaignsFilter) {
-    if ('isArchived' in campaignsFilter && resultSize) {
-      query = query.where({ is_archived: campaignsFilter.isArchived }).limit(resultSize)
-    }
-    if ('campaignId' in campaignsFilter && resultSize) {
-      query = query.where('campaign.id', parseInt(campaignsFilter.campaignId, 10)).limit(resultSize)
-    }
-
-    if ('isArchived' in campaignsFilter && !resultSize) {
+    if ('isArchived' in campaignsFilter) {
       query = query.where({ is_archived: campaignsFilter.isArchived })
     }
-
-    if ('campaignId' in campaignsFilter && !resultSize) {
+    if ('campaignId' in campaignsFilter) {
       query = query.where('campaign.id', parseInt(campaignsFilter.campaignId, 10))
     }
+  }
+
+  if (resultSize) {
+    query = query.limit(resultSize)
   }
 
   return query
