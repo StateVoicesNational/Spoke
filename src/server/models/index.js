@@ -58,10 +58,10 @@ const tableList = [
 function createTablesIfNecessary() {
   // builds the database if we don't see the organization table
   return thinky.k.schema.hasTable('organization').then(
-    (tableExists) => {
+    async (tableExists) => {
       if (!tableExists) {
         console.log('CREATING DATABASE SCHEMA')
-        createTables()
+        await createTables()
         return true
       }
     })

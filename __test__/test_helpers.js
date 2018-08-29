@@ -3,7 +3,6 @@ import { sleep } from '../src/workers/lib'
 
 export async function setupTest() {
   await createTables()
-  return
 }
 
 export async function cleanupTest() {
