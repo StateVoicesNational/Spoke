@@ -16,3 +16,4 @@ coverage/
 .idea/
 *sqlite
 *.vscode
+*.rdb
