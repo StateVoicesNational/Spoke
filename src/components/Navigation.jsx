@@ -4,8 +4,7 @@ import Paper from 'material-ui/Paper'
 import { List, ListItem } from 'material-ui/List'
 import Divider from 'material-ui/Divider'
 import { withRouter } from 'react-router'
-import camelCase from 'camelcase'
-import { dataTest } from '../lib/attributes'
+import { dataTest, camelCase } from '../lib/attributes'
 
 const Navigation = function Navigation(props) {
   const { sections, switchListItem } = props
