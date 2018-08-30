@@ -70,7 +70,7 @@ const config = {
 }
 
 if (DEBUG) {
-  config.devtool = '#inline-source-map'
+  config.devtool = 'inline-source-map'
   config.output.sourceMapFilename = `${outputFile}.map`
 }
 
