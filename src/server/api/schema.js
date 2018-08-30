@@ -1126,7 +1126,14 @@ const rootResolvers = {
       authRequired(user)
       return r.table('invite').filter({ hash })
     },
-    currentUser: async (_, { id }, { user }) => user,
+    currentUser: async (_, { id }, { user }) => {
+      if (!user) {
+        return null
+      }
+      else {
+        return user
+      }
+    },
     contact: async (_, { id }, { loaders, user }) => {
       authRequired(user)
       const contact = await loaders.campaignContact.load(id)
