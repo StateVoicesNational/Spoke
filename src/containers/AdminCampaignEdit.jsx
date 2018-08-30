@@ -102,7 +102,7 @@ class AdminCampaignEdit extends React.Component {
     // NOTE: Since this does not _deep_ copy the values the
     // expandedKey pointers will remain the same object as before
     // so setState passes on those subsections should1 not refresh
-    let pushToFormValues = {
+    const pushToFormValues = {
       ...this.state.campaignFormValues,
       ...campaignDataCopy
     }
@@ -184,10 +184,10 @@ class AdminCampaignEdit extends React.Component {
     let newCampaign = {}
     if (this.checkSectionSaved(section)) {
       return // already saved and no data changes
-    } else {
-      newCampaign = {
-        ...this.getSectionState(section)
-      }
+    }
+
+    newCampaign = {
+      ...this.getSectionState(section)
     }
 
     if (Object.keys(newCampaign).length > 0) {
@@ -241,7 +241,7 @@ class AdminCampaignEdit extends React.Component {
     const pendingJobs = await this.props.pendingJobsData.refetch()
     if (pendingJobs.length && !noMore) {
       const self = this
-      setTimeout(function () {
+      setTimeout(() => {
         // run it once more after there are no more jobs
         self.pollDuringActiveJobs(true)
       }, 1000)
@@ -547,7 +547,6 @@ class AdminCampaignEdit extends React.Component {
             />)
             cardHeaderStyle.backgroundColor = theme.colors.yellow
           }
-          const actionVal = <div>Foo</div>
           return (
             <Card
               key={section.title}
