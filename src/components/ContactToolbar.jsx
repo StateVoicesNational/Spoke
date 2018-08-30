@@ -84,7 +84,8 @@ const ContactToolbar = function ContactToolbar(props) {
 
 ContactToolbar.propTypes = {
   campaignContact: PropTypes.object, // contacts for current assignment
-  rightToolbarIcon: PropTypes.element
+  rightToolbarIcon: PropTypes.element,
+  campaign: PropTypes.object
 }
 
 export default ContactToolbar

@@ -716,6 +716,7 @@ export class AssignmentTexterContact extends React.Component {
     const { contact } = this.props.data
     return (
       <ContactToolbar
+        campaign={this.props.campaign}
         campaignContact={contact}
         onOptOut={this.handleNavigateNext}
         rightToolbarIcon={(
