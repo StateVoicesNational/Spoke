@@ -1,6 +1,5 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import camelCase from 'camelcase'
 import WarningIcon from 'material-ui/svg-icons/alert/warning'
 import DoneIcon from 'material-ui/svg-icons/action/done'
 import Avatar from 'material-ui/Avatar'
@@ -16,7 +15,7 @@ import CampaignContactsForm from '../components/CampaignContactsForm'
 import CampaignTextersForm from '../components/CampaignTextersForm'
 import CampaignInteractionStepsForm from '../components/CampaignInteractionStepsForm'
 import CampaignCannedResponsesForm from '../components/CampaignCannedResponsesForm'
-import { dataTest } from '../lib/attributes'
+import { dataTest, camelCase } from '../lib/attributes'
 
 const campaignInfoFragment = `
   id
