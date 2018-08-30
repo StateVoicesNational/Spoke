@@ -12,11 +12,14 @@ const TIMEZONE_CONFIG = {
   }
 }
 
+// TODO(lperson) add campaign as a parameter
 export const getContactTimezone = (location) => {
   if (location.timezone == null || location.timezone.offset == null) {
     let timezoneData = null
     let offset
     let hasDST
+
+    //TODO(lperson) if the campaign overrides texting hours add timezonedata for campaign timezone to location
 
     if (getProcessEnvTz()) {
       offset = moment().tz(getProcessEnvTz()).format('Z')
@@ -41,6 +44,8 @@ export const isBetweenTextingHours = (offsetData, config) => {
   if (!config.textingHoursEnforced) {
     return true
   }
+
+  // TODO(lperson) if campaign overrides texting hours handle here
 
   if (getProcessEnvTz()) {
     const today = moment.tz(getProcessEnvTz()).format('YYYY-MM-DD')
@@ -72,6 +77,7 @@ export const isBetweenTextingHours = (offsetData, config) => {
 // Currently USA (-4 through -11) and Australia (10)
 const ALL_OFFSETS = [-4, -5, -6, -7, -8, -9, -10, -11, 10]
 
+// TODO(lperson) if campaign overrides texting hours use campaign's timezone as default
 export const defaultTimezoneIsBetweenTextingHours = (config) => isBetweenTextingHours(null, config)
 
 export function convertOffsetsToStrings(offsetArray) {
