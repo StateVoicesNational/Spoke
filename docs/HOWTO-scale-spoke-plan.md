@@ -37,7 +37,7 @@ messages initially, and then handling replies and knowing when there are new rep
 
 Currently in [containers/AssignmentTexterContact.jsx](https://github.com/MoveOnOrg/Spoke/blob/main/src/containers/AssignmentTexterContact.jsx),
 each contact screen loads an individual contact's information and then calls an api again for the next screen.  This is
-incredibly inefficient and instead an asynchronous process in the 
+incredibly inefficient and instead an asynchronous process in the
 [containers/TexterTodo.jsx](https://github.com/MoveOnOrg/Spoke/blob/main/src/containers/TexterTodo.jsx) component should gather
 X contacts in sufficient quantity to feed it to the `AssignmentTexterContact.jsx` component as fast as it processes the data.
 
@@ -54,6 +54,7 @@ are part of the Message-Response Cycle.  That includes:
 * updateQuestionResponses -- the API call from texter to update the questionResponseValues of the contact
 * updateAssignments -- changes from the campaign admins to assign texters
 * dynamicAssignment -- for dyanmic assignment-enabled campaigns, allowing a texter to 'take' a queue of contacts for assignment and begin sending.
+* createOptOut -- when someone opts out we need to update some information too.
 
 #### DB write queue
 
@@ -115,6 +116,8 @@ Here is the (proposed) structure of data in Redis to support the above data need
 
 * KEY (regular `SET` call): `campaign-<campaign_id>` -- campaign data that is loaded in TexterTodo and TexterTodoList components
 
+* HASH: (?HSET) `optout-<org_id>-<?contact_cell | contact_id>` -- opt outs. An alternative would be to put this in the contact hash. Benefit of having it here is that it would be across the org.
+
 #### Workflows using Data-structures
 
 ##### Access Control
@@ -173,6 +176,7 @@ Here is the (proposed) structure of data in Redis to support the above data need
 
   1. Either LPUSH `newassignments-<texter_id>-<campaign_id>` OR `dynamicassignments-<campaign_id>`
 
+##### createOptOut - ??
 
 #### Initial loading into cache
 
@@ -193,4 +197,3 @@ For instances with multiple organizations, it's worth imagining how we should
 scale across larger instances.  The main thing that needs to be 'known' for, e.g.
 sharding is the instance for an organization and most-importantly a twilio account
 (so that the application can lookup the right info per-twilio account).
-
