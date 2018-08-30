@@ -187,7 +187,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
   }
 
   if (campaign.hasOwnProperty('interactionSteps')) {
-    await accessRequired(user, organizationId, 'ADMIN', /* superadmin*/ true)
+    await accessRequired(user, organizationId, 'SUPERVOLUNTEER', /* superadmin*/ true)
     await updateInteractionSteps(id, [campaign.interactionSteps], origCampaignRecord)
   }
 
