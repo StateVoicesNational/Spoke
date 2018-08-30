@@ -12,7 +12,7 @@ const CannedResponse = thinky.createModel('canned_response', type.object().schem
   title: requiredString(),
   user_id: optionalString(),
   created_at: timestamp()
-}).allowExtra(false))
+}).allowExtra(false), {noAutoCreation: true})
 
 CannedResponse.ensureIndex('campaign_id')
 CannedResponse.ensureIndex('user_id')
