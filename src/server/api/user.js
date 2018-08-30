@@ -1,5 +1,6 @@
 import { mapFieldsToModel } from './lib/utils'
 import { r, User } from '../models'
+import { rolesAtLeast } from '../../lib/permissions'
 
 export function buildUserOrganizationQuery(queryParam, organizationId, role) {
   const roleFilter = role ? { role } : {}
@@ -33,12 +34,15 @@ export const resolvers = {
       if (!user || !user.id) {
         return []
       }
-      let orgs = r.table('user_organization')
-        .getAll(user.id, { index: 'user_id' })
+      let orgs = r.knex.select('organization.*')
+        .from('organization')
+        .join('user_organization', 'organization.id', 'user_organization.organization_id')
+        .where('user_organization.user_id', user.id)
       if (role) {
-        orgs = orgs.filter({ role })
+        const matchingRoles = rolesAtLeast(role)
+        orgs = orgs.whereIn('user_organization.role', matchingRoles)
       }
-      return orgs.eqJoin('organization_id', r.table('organization'))('right').distinct()
+      return orgs.distinct()
     },
     roles: async(user, { organizationId }) => (
       r.table('user_organization')

@@ -15,7 +15,7 @@ import CampaignContactsForm from '../components/CampaignContactsForm'
 import CampaignTextersForm from '../components/CampaignTextersForm'
 import CampaignInteractionStepsForm from '../components/CampaignInteractionStepsForm'
 import CampaignCannedResponsesForm from '../components/CampaignCannedResponsesForm'
-import { dataTest } from '../lib/attributes'
+import { dataTest, camelCase } from '../lib/attributes'
 
 const campaignInfoFragment = `
   id
@@ -544,6 +544,7 @@ class AdminCampaignEdit extends React.Component {
 
           return (
             <Card
+              {...dataTest(camelCase(`${section.title}`))}
               key={section.title}
               expanded={sectionIsExpanded && sectionCanExpandOrCollapse}
               expandable={sectionCanExpandOrCollapse}
