@@ -579,13 +579,13 @@ class AdminCampaignEdit extends React.Component {
                 ?
                 <CardActions>
                   <div>Current Status: {savePercent}% complete</div>
-                  {( jobMessage
+                  {(jobMessage
                      ? <div>Message: {jobMessage}</div>
                      : null)}
                   <RaisedButton
-                     label="Discard Job"
-                     icon={<CancelIcon />}
-                     onTouchTap={() => this.handleDeleteJob(jobId)}
+                    label='Discard Job'
+                    icon={<CancelIcon />}
+                    onTouchTap={() => this.handleDeleteJob(jobId)}
                   />
                 </CardActions>
                 : null)}
