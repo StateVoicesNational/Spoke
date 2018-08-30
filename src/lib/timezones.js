@@ -41,6 +41,7 @@ export const isBetweenTextingHours = (offsetData, config) => {
   if (!config.textingHoursEnforced) {
     return true
   }
+
   if (getProcessEnvTz()) {
     const today = moment.tz(getProcessEnvTz()).format('YYYY-MM-DD')
     const start = moment.tz(`${today}`, getProcessEnvTz()).add(config.textingHoursStart, 'hours')
