@@ -21,7 +21,7 @@ import { runMigrations } from '../migrations'
 import { setupUserNotificationObservers } from './notifications'
 import { TwimlResponse } from 'twilio'
 import { r } from './models'
-import { logoutUser } from './models/cacheable-queries'
+import { logoutUser } from './models/cacheable_queries'
 
 process.on('uncaughtException', (ex) => {
   log.error(ex)
