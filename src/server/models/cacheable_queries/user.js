@@ -1,6 +1,6 @@
-import { r } from '../models'
+import { r } from '../../models'
 
-import { getHighestRole } from '../../lib/permissions'
+import { getHighestRole } from '../../../lib/permissions'
 
 export async function userHasRole(userId, orgId, acceptableRoles) {
   if (r.redis) {
@@ -29,6 +29,13 @@ export async function userHasRole(userId, orgId, acceptableRoles) {
         .whereIn('role', acceptableRoles)
     )
     return userHasRole
+  }
+}
+
+export async function logoutUser(userId) {
+  const userKey = `texterinfo-${userId}`
+  if (r.redis) {
+    r.redis.del(userKey)
   }
 }
 

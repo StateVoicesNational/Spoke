@@ -30,6 +30,7 @@ import { withRouter } from 'react-router'
 import wrapMutations from './hoc/wrap-mutations'
 import Empty from '../components/Empty'
 import CreateIcon from 'material-ui/svg-icons/content/create'
+import { dataTest } from '../lib/attributes'
 import { getContactTimezone } from '../lib/timezones'
 
 const styles = StyleSheet.create({
@@ -649,6 +650,7 @@ export class AssignmentTexterContact extends React.Component {
               firstChild
             >
               <RaisedButton
+                {...dataTest('optOut')}
                 secondary
                 label='Opt out'
                 onTouchTap={this.handleOpenDialog}
@@ -687,6 +689,7 @@ export class AssignmentTexterContact extends React.Component {
                 onTouchTap={this.handleOpenPopover}
               />
               <RaisedButton
+                {...dataTest('optOut')}
                 secondary
                 label='Opt out'
                 onTouchTap={this.handleOpenDialog}
@@ -804,6 +807,9 @@ export class AssignmentTexterContact extends React.Component {
 
   renderBottomFixedSection() {
     const { optOutDialogOpen } = this.state
+    const { data } = this.props
+    const { contact } = data
+    const { messageStatus } = contact
 
     const message = (optOutDialogOpen) ? '' : (
       <div className={css(styles.messageField)}>
@@ -812,7 +818,7 @@ export class AssignmentTexterContact extends React.Component {
           schema={this.messageSchema}
           value={{ messageText: this.state.messageText }}
           onSubmit={this.handleMessageFormSubmit}
-          onChange={this.handleMessageFormChange}
+          onChange={( messageStatus === 'needsMessage' ? '' : this.handleMessageFormChange )}
         >
           <Form.Field
             className={css(styles.textField)}
@@ -855,6 +861,7 @@ export class AssignmentTexterContact extends React.Component {
             {this.renderTopFixedSection()}
           </div>
           <div
+            {...dataTest('messageList')}
             ref='messageScrollContainer'
             className={css(styles.middleScrollingSection)}
           >
