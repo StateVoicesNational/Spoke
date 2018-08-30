@@ -13,24 +13,23 @@ const TIMEZONE_CONFIG = {
 }
 
 export const getContactTimezone = (location) => {
-
   if (location.timezone == null || location.timezone.offset == null) {
-    let timezoneData = null;
-    let offset;
-    let hasDST;
+    let timezoneData = null
+    let offset
+    let hasDST
 
     if (getProcessEnvTz()) {
       offset = moment().tz(getProcessEnvTz()).format('Z')
-      hasDST =  moment().isDST()
-      timezoneData = {offset, hasDST}
+      hasDST = moment().isDST()
+      timezoneData = { offset, hasDST }
     } else {
       offset = TIMEZONE_CONFIG.missingTimeZone.offset
       hasDST = TIMEZONE_CONFIG.missingTimeZone.hasDST
-      timezoneData = {offset, hasDST}
+      timezoneData = { offset, hasDST }
     }
     location.timezone = timezoneData
   }
-  return location;
+  return location
 }
 
 
