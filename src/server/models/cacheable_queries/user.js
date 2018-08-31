@@ -32,10 +32,27 @@ export async function userHasRole(userId, orgId, acceptableRoles) {
   }
 }
 
+// async function getUserOrgNames(user, orgId) {
+//   const userOrgKey = `userorg-${userId}-${orgId}`
+//   let orgNames = r.redis.getAllAsync(userOrgKey)
+//   if (!orgNames) {
+//     const orgInfo = await r.knex('user_organization')
+//       .leftjoin('organizaiton', 'organization.id', 'user_organization.organization_id')
+//       .where({
+//         user_id: userId,
+//         organization_id: orgId
+//       })
+//       .select('name')
+//
+//     await r.redis.setAsync(userOrgKey, orgNames)
+//   }
+// }
+
 export async function userOrgsWithRole(role, userId) {
   if (r.redis) {
    const userKey = `texterinfo-${userId}`
    const userOrgs = await r.redis.hgetallAsync(userKey)
+   console.log('user orgs:', userOrgs);
    if (userOrgs) {
      const orgs = []
      const arrOrgs = []
