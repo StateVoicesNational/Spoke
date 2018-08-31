@@ -41,5 +41,6 @@ export const schema = `
     introHtml: String
     primaryColor: String
     logoImageUrl: String
+    editors: String
   }
 `
