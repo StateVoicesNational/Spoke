@@ -1,6 +1,6 @@
-import { r } from '../models'
+import { r } from '../../models'
 
-import { getHighestRole } from '../../lib/permissions'
+import { getHighestRole } from '../../../lib/permissions'
 
 export async function userHasRole(userId, orgId, acceptableRoles) {
   if (r.redis) {
