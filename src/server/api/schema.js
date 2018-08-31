@@ -559,7 +559,7 @@ const rootMutations = {
       let createCannedResponses = r
         .knex('canned_response')
         .where({ campaign_id: oldCampaignId })
-        .then(function(res) {
+        .then(function (res) {
           res.forEach((response, index) => {
             const copiedCannedResponse = new CannedResponse({
               campaign_id: newCampaignId,
