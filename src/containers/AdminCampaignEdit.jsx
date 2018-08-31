@@ -317,7 +317,7 @@ class AdminCampaignEdit extends React.Component {
       checkCompleted: () => this.state.campaignFormValues.interactionSteps.length > 0,
       blocksStarting: true,
       expandAfterCampaignStarts: true,
-      expandableBySuperVolunteers: false,
+      expandableBySuperVolunteers: true,
       extraProps: {
         customFields: this.props.campaignData.campaign.customFields,
         availableActions: this.props.availableActionsData.availableActions
