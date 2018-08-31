@@ -1,6 +1,6 @@
 import { r } from '../../models'
 
-import { getHighestRole } from '../../../lib/permissions'
+import { getHighestRole, hasRoleAtLeast } from '../../../lib/permissions'
 
 export async function userHasRole(userId, orgId, acceptableRoles) {
   if (r.redis) {
@@ -31,6 +31,36 @@ export async function userHasRole(userId, orgId, acceptableRoles) {
     return userHasRole
   }
 }
+
+export async function userOrgsWithRole(role, userId) {
+  if (r.redis) {
+   const userKey = `texterinfo-${userId}`
+   const userOrgs = await r.redis.hgetallAsync(userKey)
+   if (userOrgs) {
+     const orgs = []
+     const arrOrgs = []
+     Object.keys(userOrgs).map(key => {
+       arrOrgs.push({[key]: userOrgs[key]})
+       if (hasRoleAtLeast(arrOrgs, role)) {
+         orgs.push({ id : key })
+       }
+     })
+     return orgs
+   }
+  } else {
+    let orgs = r.knex.select('organization.*')
+       .from('organization')
+       .join('user_organization', 'organization.id', 'user_organization.organization_id')
+       .where('user_organization.user_id', user.id)
+
+     if (role) {
+       const matchingRoles = rolesAtLeast(role)
+       orgs = orgs.whereIn('user_organization.role', matchingRoles)
+     }
+     return orgs.distinct()
+  }
+}
+
 
 export async function userLoggedIn(authId) {
   const authKey = `texterauth-${authId}`
