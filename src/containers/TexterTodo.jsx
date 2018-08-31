@@ -39,12 +39,12 @@ class TexterTodo extends React.Component {
   render() {
     const { assignment } = this.props.data
     const contacts = assignment.contacts
-    const allContacts = assignment.allContacts
+    const allContactsCount = assignment.allContactsCount
     return (
       <AssignmentTexter
         assignment={assignment}
         contacts={contacts}
-        allContacts={allContacts}
+        allContactsCount={allContactsCount}
         assignContactsIfNeeded={this.assignContactsIfNeeded.bind(this)}
         refreshData={this.refreshData.bind(this)}
         onRefreshAssignmentContacts={this.refreshAssignmentContacts}
@@ -115,9 +115,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
           id
           customFields
         }
-        allContacts: contacts {
-          id
-        }
+        allContactsCount: contactsCount
       }
     }`,
     variables: {

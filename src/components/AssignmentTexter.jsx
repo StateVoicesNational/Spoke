@@ -136,8 +136,7 @@ class AssignmentTexter extends React.Component {
   }
 
   renderNavigationToolbarChildren() {
-    const { allContacts } = this.props
-    const allContactsCount = allContacts.length
+    const { allContactsCount } = this.props
     const remainingContacts = this.contactCount()
     const messagedContacts = allContactsCount - remainingContacts
 
@@ -218,7 +217,7 @@ AssignmentTexter.propTypes = {
   currentUser: PropTypes.object,
   assignment: PropTypes.object,      // current assignment
   contacts: PropTypes.array,   // contacts for current assignment
-  allContacts: PropTypes.array,
+  allContactsCount: PropTypes.number,
   router: PropTypes.object,
   refreshData: PropTypes.func,
   organizationId: PropTypes.string
