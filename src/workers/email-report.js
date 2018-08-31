@@ -65,7 +65,7 @@ const SQL = (strings, ...values) => {
         FROM campaign AS c
         INNER JOIN (
           SELECT campaign_id,
-            COUNT(DISTINCT a.user_id) AS texters,
+            COUNT(DISTINCT user_id) AS texters,
             COUNT(DISTINCT (
               CASE WHEN m.is_from_contact = 'f' THEN m.id END
             )) AS texts_sent,
