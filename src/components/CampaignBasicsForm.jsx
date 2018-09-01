@@ -5,6 +5,7 @@ import moment from 'moment'
 import CampaignFormSectionHeading from './CampaignFormSectionHeading'
 import GSForm from './forms/GSForm'
 import yup from 'yup'
+import Toggle from 'material-ui/Toggle'
 import ColorPicker from 'material-ui-color-picker'
 import { dataTest } from '../lib/attributes'
 
