@@ -15,15 +15,19 @@ class AdminNavigation extends React.Component {
     const { organizationId, sections } = this.props
     return (
       <Navigation
-        sections={sections.map((section) => ({
+        onToggleMenu={this.props.onToggleMenu}
+        showMenu={this.props.showMenu}
+        sections={sections.map(section => ({
           ...section,
           url: this.urlFromPath(section.path)
         }))}
         switchListItem={
           <ListItem
             {...dataTest('navSwitchToTexter')}
-            primaryText='Switch to texter'
-            onTouchTap={() => this.props.router.push(`/app/${organizationId}/todos`)}
+            primaryText="Switch to texter"
+            onTouchTap={() =>
+              this.props.router.push(`/app/${organizationId}/todos`)
+            }
           />
         }
       />
@@ -31,12 +35,18 @@ class AdminNavigation extends React.Component {
   }
 }
 
+AdminNavigation.defaultProps = {
+  showMenu: true
+}
+
 AdminNavigation.propTypes = {
   data: PropTypes.object,
   organizationId: PropTypes.string,
   router: PropTypes.object,
   sections: PropTypes.array,
-  params: PropTypes.object
+  params: PropTypes.object,
+  onToggleMenu: PropTypes.func.isRequired,
+  showMenu: PropTypes.bool
 }
 
 export default withRouter(AdminNavigation)

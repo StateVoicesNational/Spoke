@@ -41,5 +41,21 @@ export const schema = `
     introHtml: String
     primaryColor: String
     logoImageUrl: String
+    overrideOrganizationTextingHours: Boolean
+    textingHoursEnforced: Boolean
+    textingHoursStart: Int
+    textingHoursEnd: Int
+    timezoneIfNoZipcode: String
   }
+
+  type CampaignsList {
+    campaigns: [Campaign]
+  }
+
+  union CampaignsReturn = PaginatedCampaigns | CampaignsList
+  
+  type PaginatedCampaigns {
+    campaigns: [Campaign]
+    pageInfo: PageInfo
+  }  
 `
