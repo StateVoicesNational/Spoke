@@ -528,6 +528,7 @@ export class AssignmentTexterContact extends React.Component {
       textingHoursEnforced
     }
 
+    // TODO(lmp) write tests for this
     if (campaign.overrideOrganizationTextingHours) {
       const { textingHoursStart, textingHoursEnd, textingHoursEnforced, timezoneIfNoZipcode } = campaign
       config.campaignTextingHours = { textingHoursStart, textingHoursEnd, textingHoursEnforced, timezoneIfNoZipcode }
