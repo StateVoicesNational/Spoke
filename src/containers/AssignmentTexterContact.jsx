@@ -512,7 +512,7 @@ export class AssignmentTexterContact extends React.Component {
 
       timezoneData = { hasDST, offset }
     } else {
-      let location = getContactTimezone(contact.location)
+      let location = getContactTimezone(this.props.campaign, contact.location)
       if (location) {
         let timezone = location.timezone
         if (timezone) {
