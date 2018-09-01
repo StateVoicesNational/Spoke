@@ -13,7 +13,6 @@ export const schema = `
     threeClickEnabled: Boolean
     textingHoursEnforced: Boolean
     textingHoursStart: Int
-
     textingHoursEnd: Int
   }
 `
