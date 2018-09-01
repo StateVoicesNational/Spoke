@@ -13,8 +13,6 @@ const TIMEZONE_CONFIG = {
 }
 
 export const getContactTimezone = (campaign, location) => {
-
-  // if the contact has a location with a timezone, just use that
   if (location.timezone == null || location.timezone.offset == null) {
     let timezoneData = null
 
@@ -69,9 +67,18 @@ export const isBetweenTextingHours = (offsetData, config) => {
     return true
   }
 
-  // TODO(lperson) if campaign overrides texting hours handle here
-  if (config.campaign)
+  // TODO(lperson) write tests for this
+  if (config.campaignTextingHours) {
+    const { campaignTextingHours } = config
+    const missingTimezoneConfig = {
+      allowedStart: campaignTextingHours.textingHoursStart,
+      allowedEnd:  campaignTextingHours.textingHoursEnd,
+      offset: DstHelper.getTimezoneOffsetHours(campaignTextingHours.timezoneIfNoZipcode),
+      hasDST: DstHelper.timezoneHasDst(campaignTextingHours.timeoneIfNoZipcode)
+    }
 
+    return isOffsetBetweenTextingHours(offsetData, config.textingHoursStart, config.textingHoursEnd, TIMEZONE_CONFIG.missingTimeZone)
+  }
 
   if (getProcessEnvTz()) {
     const today = moment.tz(getProcessEnvTz()).format('YYYY-MM-DD')
@@ -87,7 +94,7 @@ export const isBetweenTextingHours = (offsetData, config) => {
 // Currently USA (-4 through -11) and Australia (10)
 const ALL_OFFSETS = [-4, -5, -6, -7, -8, -9, -10, -11, 10]
 
-// TODO(lperson) if campaign overrides texting hours use campaign's timezone as default
+// TODO(lperson) write tests for this
 export const defaultTimezoneIsBetweenTextingHours = (config) => isBetweenTextingHours(null, config)
 
 export function convertOffsetsToStrings(offsetArray) {
