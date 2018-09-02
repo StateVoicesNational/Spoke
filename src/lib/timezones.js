@@ -13,14 +13,14 @@ const TIMEZONE_CONFIG = {
 }
 
 export const getContactTimezone = (campaign, location) => {
+  const returnLocation = Object.assign({}, location)
   if (location.timezone == null || location.timezone.offset == null) {
     let timezoneData = null
 
-    //TODO(lperson) write tests for this
     if (campaign.overrideOrganizationTextingHours) {
       const offset = DstHelper.getTimezoneOffsetHours(campaign.timezoneIfNoZipcode)
-      const hasDst = DstHelper.timezoneHasDst(campaign.timezoneIfNoZipcode)
-      timezoneData = { offset, hasDst }
+      const hasDST = DstHelper.timezoneHasDst(campaign.timezoneIfNoZipcode)
+      timezoneData = { offset, hasDST }
     } else if (getProcessEnvTz()) {
       const offset = moment().tz(getProcessEnvTz()).format('Z')
       const hasDST = moment().isDST()
@@ -30,17 +30,17 @@ export const getContactTimezone = (campaign, location) => {
       const hasDST = TIMEZONE_CONFIG.missingTimeZone.hasDST
       timezoneData = { offset, hasDST }
     }
-    location.timezone = timezoneData
+    returnLocation.timezone = timezoneData
   }
-  return location
+  return returnLocation
 }
 
 
-export const getLocalTime = (offset, hasDST) => {
-  return moment().utc().utcOffset(DstHelper.isDateDst(new Date(), getProcessEnvDstReferenceTimezone()) && hasDST ? offset + 1 : offset)
+export const getLocalTime = (offset, hasDST, dstReferenceTimezone) => {
+  return moment().utc().utcOffset(DstHelper.isDateDst(new Date(), dstReferenceTimezone) && hasDST ? offset + 1 : offset)
 }
 
-const isOffsetBetweenTextingHours = (offsetData, textingHoursStart, textingHoursEnd, missingTimezoneConfig ) => {
+const isOffsetBetweenTextingHours = (offsetData, textingHoursStart, textingHoursEnd, missingTimezoneConfig, dstReferenceTimezone) => {
   let offset
   let hasDST
   let allowedStart
@@ -57,27 +57,32 @@ const isOffsetBetweenTextingHours = (offsetData, textingHoursStart, textingHours
     hasDST = missingTimezoneConfig.hasDST
   }
 
-  const localTime = getLocalTime(offset, hasDST)
+  const localTime = getLocalTime(offset, hasDST, dstReferenceTimezone)
   return (localTime.hours() >= allowedStart && localTime.hours() < allowedEnd)
-
 }
 
 export const isBetweenTextingHours = (offsetData, config) => {
-  if (!config.textingHoursEnforced) {
+
+  if (!config.textingHoursEnforced &&
+    (!config.campaignTextingHours || (config.campaignTextingHours && !config.campaignTextingHours.textingHoursEnforced))) {
     return true
   }
 
-  // TODO(lperson) write tests for this
   if (config.campaignTextingHours) {
     const { campaignTextingHours } = config
     const missingTimezoneConfig = {
       allowedStart: campaignTextingHours.textingHoursStart,
       allowedEnd:  campaignTextingHours.textingHoursEnd,
       offset: DstHelper.getTimezoneOffsetHours(campaignTextingHours.timezoneIfNoZipcode),
-      hasDST: DstHelper.timezoneHasDst(campaignTextingHours.timeoneIfNoZipcode)
+      hasDST: DstHelper.timezoneHasDst(campaignTextingHours.timezoneIfNoZipcode)
     }
 
-    return isOffsetBetweenTextingHours(offsetData, config.textingHoursStart, config.textingHoursEnd, TIMEZONE_CONFIG.missingTimeZone)
+    return isOffsetBetweenTextingHours(
+      offsetData,
+      campaignTextingHours.textingHoursStart,
+      campaignTextingHours.textingHoursEnd,
+      missingTimezoneConfig,
+      campaignTextingHours.timezoneIfNoZipcode)
   }
 
   if (getProcessEnvTz()) {
@@ -87,14 +92,18 @@ export const isBetweenTextingHours = (offsetData, config) => {
     return moment.tz(getProcessEnvTz()).isBetween(start, stop, null, '[]')
   }
 
-  return isOffsetBetweenTextingHours(offsetData, config.textingHoursStart, config.textingHoursEnd, TIMEZONE_CONFIG.missingTimeZone)
+  return isOffsetBetweenTextingHours(
+    offsetData,
+    config.textingHoursStart,
+    config.textingHoursEnd,
+    TIMEZONE_CONFIG.missingTimeZone,
+    getProcessEnvDstReferenceTimezone())
 }
 
 
 // Currently USA (-4 through -11) and Australia (10)
 const ALL_OFFSETS = [-4, -5, -6, -7, -8, -9, -10, -11, 10]
 
-// TODO(lperson) write tests for this
 export const defaultTimezoneIsBetweenTextingHours = (config) => isBetweenTextingHours(null, config)
 
 export function convertOffsetsToStrings(offsetArray) {
