@@ -53,7 +53,6 @@ const ContactToolbar = function ContactToolbar(props) {
   }
   formattedLocation = `${formattedLocation} ${state}`
 
-  // TODO(lperson) test this
   const dstReferenceTimezone = props.campaign.overrideOrganizationTextingHours ?
     this.props.campaign.timezoneIfNoZipcode :
     getProcessEnvDstReferenceTimezone()

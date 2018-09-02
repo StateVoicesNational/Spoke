@@ -63,8 +63,11 @@ const isOffsetBetweenTextingHours = (offsetData, textingHoursStart, textingHours
 
 export const isBetweenTextingHours = (offsetData, config) => {
 
-  if (!config.textingHoursEnforced &&
-    (!config.campaignTextingHours || (config.campaignTextingHours && !config.campaignTextingHours.textingHoursEnforced))) {
+  if (config.campaignTextingHours) {
+    if (!config.campaignTextingHours.textingHoursEnforced) {
+      return true
+    }
+  } else if (!config.textingHoursEnforced) {
     return true
   }
 
