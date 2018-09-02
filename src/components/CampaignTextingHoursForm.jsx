@@ -89,7 +89,9 @@ export default class CampaignTextingHoursForm extends React.Component {
           if (!selectedChoice) {
             return
           }
-          this.state[stateName] = selectedChoice.text
+          const state = {}
+          state[stateName] = selectedChoice.text
+          this.setState(state)
           this.fireOnChangeIfTheFormValuesChanged(name, selectedChoice.rawValue)
         }}
       />
