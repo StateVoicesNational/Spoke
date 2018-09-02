@@ -824,7 +824,7 @@ describe('test getContactTimezone', () => {
   })
 
   it("uses TZ if no location is supplied, and the campaign doesn't override, and TZ exists in the environment", () => {
-    tzHelpers.getProcessEnvTz.mockImplementation(() => 'America/Denver')
+    tzHelpers.getProcessEnvTz.mockImplementation(() => 'America/Boise')
     expect(
       getContactTimezone(
         makeCampaignOnlyWithTextingHoursConfigFields(
