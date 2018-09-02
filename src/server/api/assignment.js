@@ -34,9 +34,9 @@ export function getContacts(assignment, contactsFilter, organization, campaign, 
     const textingHoursStart = campaign.texting_hours_start
     const textingHoursEnd = campaign.texting_hours_end
     const textingHoursEnforced = campaign.texting_hours_enforced
-    const timezoneIfNoZipcode = campaign.timezone_if_no_zipcode
+    const timezone = campaign.timezone
 
-    config.campaignTextingHours = { textingHoursStart, textingHoursEnd, textingHoursEnforced, timezoneIfNoZipcode }
+    config.campaignTextingHours = { textingHoursStart, textingHoursEnd, textingHoursEnforced, timezone }
   }
 
   const [validOffsets, invalidOffsets] = getOffsets(config)

@@ -45,6 +45,6 @@ export const schema = `
     textingHoursEnforced: Boolean
     textingHoursStart: Int
     textingHoursEnd: Int
-    timezoneIfNoZipcode: String
+    timezone: String
   }
 `
