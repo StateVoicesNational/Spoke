@@ -201,7 +201,7 @@ export default class CampaignTextingHoursForm extends React.Component {
                   'timezone',
                   'timezoneSearchText',
                   this.props.formValues.timezone,
-                  'Timezone to use for contacts without ZIP code',
+                  'Timezone to use for contacts without ZIP code and to determine daylight savings',
                   'Start typing a timezone',
                   timezoneChoices,
                   timezones
