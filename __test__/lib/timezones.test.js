@@ -838,7 +838,7 @@ describe('test getContactTimezone', () => {
       )
     ).toEqual({
       timezone: {
-        offset: "-06:00",
+        offset: -7,
         hasDST: true
       }
     })

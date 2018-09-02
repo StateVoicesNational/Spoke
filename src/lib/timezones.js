@@ -22,8 +22,8 @@ export const getContactTimezone = (campaign, location) => {
       const hasDST = DstHelper.timezoneHasDst(campaign.timezone)
       timezoneData = { offset, hasDST }
     } else if (getProcessEnvTz()) {
-      const offset = moment().tz(getProcessEnvTz()).format('Z')
-      const hasDST = moment().isDST()
+      const offset = DstHelper.getTimezoneOffsetHours(getProcessEnvTz())
+      const hasDST = DstHelper.timezoneHasDst(getProcessEnvTz())
       timezoneData = { offset, hasDST }
     } else {
       const offset = TIMEZONE_CONFIG.missingTimeZone.offset
