@@ -54,7 +54,7 @@ const ContactToolbar = function ContactToolbar(props) {
   formattedLocation = `${formattedLocation} ${state}`
 
   const dstReferenceTimezone = props.campaign.overrideOrganizationTextingHours ?
-    this.props.campaign.timezoneIfNoZipcode :
+    this.props.campaign.timezone :
     getProcessEnvDstReferenceTimezone()
 
   const formattedLocalTime = getLocalTime(offset, hasDST, dstReferenceTimezone).format('LT') // format('h:mm a')

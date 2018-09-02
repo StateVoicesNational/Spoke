@@ -15,13 +15,13 @@ const makeCampignTextingHoursConfig = (
   textingHoursEnforced,
   textingHoursStart,
   textingHoursEnd,
-  timezoneIfNoZipcode
+  timezone
 ) => {
   return {
     textingHoursEnforced,
     textingHoursStart,
     textingHoursEnd,
-    timezoneIfNoZipcode
+    timezone
   }
 }
 
@@ -30,13 +30,13 @@ const makeCampaignOnlyWithTextingHoursConfigFields = (
   textingHoursEnforced,
   textingHoursStart,
   textingHoursEnd,
-  timezoneIfNoZipcode
+  timezone
 ) => {
   const textingHoursConfigFields = makeCampignTextingHoursConfig(
     textingHoursEnforced,
     textingHoursStart,
     textingHoursEnd,
-    timezoneIfNoZipcode
+    timezone
   )
   textingHoursConfigFields.overrideOrganizationTextingHours = overrideOrganizationTextingHours
   return textingHoursConfigFields
@@ -507,7 +507,7 @@ describe('test getContactTimezone', () => {
     expect(getContactTimezone({}, location)).toEqual(location)
   })
 
-  it('uses campaign.timezoneIfNoZipcode if no location is supplied and the campaign overrides', () => {
+  it('uses campaign.timezone if no location is supplied and the campaign overrides', () => {
     expect(
       getContactTimezone(
         makeCampaignOnlyWithTextingHoursConfigFields(
@@ -803,7 +803,7 @@ describe('test getContactTimezone', () => {
     expect(getContactTimezone({}, location)).toEqual(location)
   })
 
-  it('uses campaign.timezoneIfNoZipcode if no location is supplied and the campaign overrides', () => {
+  it('uses campaign.timezone if no location is supplied and the campaign overrides', () => {
     expect(
       getContactTimezone(
         makeCampaignOnlyWithTextingHoursConfigFields(

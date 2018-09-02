@@ -18,8 +18,8 @@ export const getContactTimezone = (campaign, location) => {
     let timezoneData = null
 
     if (campaign.overrideOrganizationTextingHours) {
-      const offset = DstHelper.getTimezoneOffsetHours(campaign.timezoneIfNoZipcode)
-      const hasDST = DstHelper.timezoneHasDst(campaign.timezoneIfNoZipcode)
+      const offset = DstHelper.getTimezoneOffsetHours(campaign.timezone)
+      const hasDST = DstHelper.timezoneHasDst(campaign.timezone)
       timezoneData = { offset, hasDST }
     } else if (getProcessEnvTz()) {
       const offset = moment().tz(getProcessEnvTz()).format('Z')
@@ -76,8 +76,8 @@ export const isBetweenTextingHours = (offsetData, config) => {
     const missingTimezoneConfig = {
       allowedStart: campaignTextingHours.textingHoursStart,
       allowedEnd:  campaignTextingHours.textingHoursEnd,
-      offset: DstHelper.getTimezoneOffsetHours(campaignTextingHours.timezoneIfNoZipcode),
-      hasDST: DstHelper.timezoneHasDst(campaignTextingHours.timezoneIfNoZipcode)
+      offset: DstHelper.getTimezoneOffsetHours(campaignTextingHours.timezone),
+      hasDST: DstHelper.timezoneHasDst(campaignTextingHours.timezone)
     }
 
     return isOffsetBetweenTextingHours(
@@ -85,7 +85,7 @@ export const isBetweenTextingHours = (offsetData, config) => {
       campaignTextingHours.textingHoursStart,
       campaignTextingHours.textingHoursEnd,
       missingTimezoneConfig,
-      campaignTextingHours.timezoneIfNoZipcode)
+      campaignTextingHours.timezone)
   }
 
   if (getProcessEnvTz()) {
