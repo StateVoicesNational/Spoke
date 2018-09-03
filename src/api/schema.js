@@ -8,7 +8,7 @@ import { schema as organizationSchema, resolvers as organizationResolvers } from
 import { schema as campaignSchema, resolvers as campaignResolvers } from './campaign'
 import {
   schema as assignmentSchema,
-  resolvers as assignmentResolvers,
+  resolvers as assignmentResolvers
 } from './assignment'
 import {
   schema as interactionStepSchema,
@@ -92,6 +92,11 @@ const rootSchema = `
     texters: [TexterInput]
     interactionSteps: InteractionStepInput
     cannedResponses: [CannedResponseInput]
+    overrideOrganizationTextingHours: Boolean
+    textingHoursEnforced: Boolean
+    textingHoursStart: Int
+    textingHoursEnd: Int
+    timezone: String
   }
 
   input MessageInput {

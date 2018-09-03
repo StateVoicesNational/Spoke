@@ -143,7 +143,12 @@ export const resolvers = {
       'useDynamicAssignment',
       'introHtml',
       'primaryColor',
-      'logoImageUrl'
+      'logoImageUrl',
+      'overrideOrganizationTextingHours',
+      'textingHoursEnforced',
+      'textingHoursStart',
+      'textingHoursEnd',
+      'timezone'
     ], Campaign),
     organization: async (campaign, _, { loaders }) => (
       loaders.organization.load(campaign.organization_id)
