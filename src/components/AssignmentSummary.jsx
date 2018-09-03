@@ -119,7 +119,7 @@ export class AssignmentSummary extends Component {
             })}
             {(window.NOT_IN_USA && window.ALLOW_SEND_ALL) ? '' : this.renderBadgedButton({
               assignment,
-              title: 'Send replies',
+              title: 'Send responses',
               count: unrepliedCount,
               primary: false,
               disabled: false,
