@@ -170,7 +170,8 @@ const mapQueriesToProps = ({ ownProps }) => ({
       },
       assignmentId: ownProps.params.assignmentId
     },
-    forceFetch: true
+    forceFetch: true,
+    pollInterval: 20000
   }
 })
 
