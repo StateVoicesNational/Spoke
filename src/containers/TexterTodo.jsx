@@ -5,7 +5,47 @@ import { withRouter } from 'react-router'
 import loadData from './hoc/load-data'
 import gql from 'graphql-tag'
 
+const contactDataFragment = `
+        id
+        assignmentId
+        firstName
+        lastName
+        cell
+        zip
+        customFields
+        optOut {
+          id
+        }
+        currentInteractionStepScript
+        questionResponseValues {
+          interactionStepId
+          value
+        }
+        location {
+          city
+          state
+          timezone {
+            offset
+            hasDST
+          }
+        }
+        messageStatus
+        messages {
+          id
+          createdAt
+          text
+          isFromContact
+        }
+`
+
 class TexterTodo extends React.Component {
+  constructor(props) {
+    super()
+    this.assignContactsIfNeeded = this.assignContactsIfNeeded.bind(this)
+    this.refreshData = this.refreshData.bind(this)
+    this.loadContacts = this.loadContacts.bind(this)
+  }
+
   componentWillMount() {
     const { assignment } = this.props.data
     this.assignContactsIfNeeded()
@@ -32,6 +72,10 @@ class TexterTodo extends React.Component {
     }
   }
 
+  loadContacts = async (contactIds) => {
+    return await this.props.mutations.getAssignmentContacts(contactIds)
+  }
+
   refreshData = () => {
     this.props.data.refetch()
   }
@@ -45,8 +89,9 @@ class TexterTodo extends React.Component {
         assignment={assignment}
         contacts={contacts}
         allContactsCount={allContactsCount}
-        assignContactsIfNeeded={this.assignContactsIfNeeded.bind(this)}
-        refreshData={this.refreshData.bind(this)}
+        assignContactsIfNeeded={this.assignContactsIfNeeded}
+        refreshData={this.refreshData}
+        loadContacts={this.loadContacts}
         onRefreshAssignmentContacts={this.refreshAssignmentContacts}
         organizationId={this.props.params.organizationId}
       />
@@ -113,7 +158,6 @@ const mapQueriesToProps = ({ ownProps }) => ({
         }
         contacts(contactsFilter: $contactsFilter) {
           id
-          customFields
         }
         allContactsCount: contactsCount
       }
@@ -130,7 +174,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
   }
 })
 
-const mapMutationsToProps = () => ({
+const mapMutationsToProps = ({ ownProps }) => ({
   findNewCampaignContact: (assignmentId, numberContacts = 1) => ({
     mutation: gql`
       mutation findNewCampaignContact($assignmentId: String!, $numberContacts: Int!) {
@@ -142,6 +186,20 @@ const mapMutationsToProps = () => ({
     variables: {
       assignmentId,
       numberContacts
+    }
+  }),
+  getAssignmentContacts: (contactIds, findNew) => ({
+    mutation: gql`
+      mutation getAssignmentContacts($assignmentId: String!, $contactIds: [String]!, $findNew: Boolean) {
+        getAssignmentContacts(assignmentId: $assignmentId, contactIds: $contactIds, findNew: $findNew) {
+          ${contactDataFragment}
+        }
+      }
+    `,
+    variables: {
+      assignmentId: ownProps.params.assignmentId,
+      contactIds,
+      findNew: !!findNew
     }
   })
 })
