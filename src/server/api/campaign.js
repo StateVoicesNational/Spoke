@@ -1,5 +1,19 @@
 import { mapFieldsToModel } from './lib/utils'
 import { Campaign, JobRequest, r } from '../models'
+import { getUsers } from './user';
+
+export function addCampaignsFilterToQuery(queryParam, campaignsFilter) {
+  let query = queryParam
+  if (campaignsFilter) {
+    if ('isArchived' in campaignsFilter) {
+      query = query.where('campaign.is_archived', campaignsFilter.isArchived )
+    }
+    if ('campaignId' in campaignsFilter) {
+      query = query.where('campaign.id', parseInt(campaignsFilter.campaignId, 10))
+    }
+  }
+  return query
+}
 
 export function buildCampaignQuery(queryParam, organizationId, campaignsFilter, addFromClause = true) {
   let query = queryParam
@@ -9,17 +23,43 @@ export function buildCampaignQuery(queryParam, organizationId, campaignsFilter, 
   }
 
   query = query.where('organization_id', organizationId)
-
-  if (campaignsFilter) {
-    if ('isArchived' in campaignsFilter) {
-      query = query.where({ is_archived: campaignsFilter.isArchived })
-    }
-    if ('campaignId' in campaignsFilter) {
-      query = query.where('campaign.id', parseInt(campaignsFilter.campaignId, 10))
-    }
-  }
+  query = addCampaignsFilterToQuery(query, campaignsFilter)
 
   return query
+}
+
+export async function getCampaigns(organizationId, cursor, campaignsFilter) {
+
+  let campaignsQuery = buildCampaignQuery(
+    r.knex.select('*'),
+    organizationId,
+    campaignsFilter
+  )
+  campaignsQuery = campaignsQuery.orderBy('due_by', 'desc').orderBy('id')
+
+  if (cursor) {
+    campaignsQuery = campaignsQuery.limit(cursor.limit).offset(cursor.offset)
+    const campaigns = await campaignsQuery
+
+    const campaignsCountQuery = buildCampaignQuery(
+      r.knex.count('*'),
+      organizationId,
+      campaignsFilter)
+
+    const campaignsCountArray = await campaignsCountQuery
+
+    const pageInfo = {
+      limit: cursor.limit,
+      offset: cursor.offset,
+      total: campaignsCountArray[0].count
+    }
+    return {
+      campaigns,
+      pageInfo
+    }
+  } else {
+    return campaignsQuery
+  }
 }
 
 export const resolvers = {
@@ -66,6 +106,32 @@ export const resolvers = {
       )
     )
   },
+  CampaignsReturn: {
+    __resolveType(obj, context, _) {
+      if (Array.isArray(obj)) {
+        return 'CampaignsList'
+      } else if ('campaigns' in obj && 'pageInfo' in obj) {
+        return 'PaginatedCampaigns'
+      }
+      return null
+    }
+  },
+  CampaignsList: {
+    campaigns: campaigns => {
+      return campaigns
+    }
+  },
+  PaginatedCampaigns: {
+    campaigns: queryResult => {
+      return queryResult.campaigns
+    },
+    pageInfo: queryResult => {
+      if ('pageInfo' in queryResult) {
+        return queryResult.pageInfo
+      }
+      return null
+    }
+  },
   Campaign: {
     ...mapFieldsToModel([
       'id',
@@ -92,12 +158,9 @@ export const resolvers = {
     ),
     pendingJobs: async (campaign) => r.table('job_request')
       .filter({ campaign_id: campaign.id }).orderBy('updated_at', 'desc'),
-    texters: async (campaign) => (
-      r.table('assignment')
-        .getAll(campaign.id, { index: 'campaign_id' })
-        .eqJoin('user_id', r.table('user'))('right')
-    ),
-    assignments: async (campaign, { assignmentsFilter }) => {
+    texters: async (campaign) =>
+      getUsers(campaign.organization_id, null, {campaignId: campaign.id }) ,
+    assignments: async (campaign, {assignmentsFilter} ) => {
       let query = r.table('assignment')
         .getAll(campaign.id, { index: 'campaign_id' })
 
