@@ -23,6 +23,7 @@ TestFirstName3,TestLastName3,4435555555,
   - New Variables:
       REVERE_NEW_SUBSCRIBER_MOBILE_FLOW = the hash of the default flow you want to trigger when you send a new user to revere - used also if no flow row is added to the campaign csv.
       REVERE_MOBILE_API_KEY = revere mobile authentication api key
+      REVERE_API_URL = revere api endpoint to access to trigger flow
   - Updated Variable:
       ACTION_HANDLERS='revere-signup'
       *Note - if you currently have a variable set here, i.e. 'actionkit-rsvp', then it will look like the following

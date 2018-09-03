@@ -9,6 +9,7 @@ export const displayName = () => 'Revere Signup'
 const listId = process.env.REVERE_LIST_ID
 const defaultMobileFlowId = process.env.REVERE_NEW_SUBSCRIBER_MOBILE_FLOW
 const mobileApiKey = process.env.REVERE_MOBILE_API_KEY
+const sendContentUrl = process.env.REVERE_API_URL
 const akAddUserUrl = process.env.AK_ADD_USER_URL
 const akAddPhoneUrl = process.env.AK_ADD_PHONE_URL
 const sqsUrl = process.env.REVERE_SQS_URL
@@ -29,7 +30,7 @@ const actionKitSignup = (cell, contact) => {
   // Currently we add the user to Revere and Action Kit. When we add them to AK
   // It takes two requests - one to create the user and then a second request
   // to add the phone numnber to the user. We add the user to ActionKit to make sure
-  // we keep have a record of their phone number & attach it to a fake email. 
+  // we keep have a record of their phone number & attach it to a fake email.
   if (akAddUserUrl && akAddPhoneUrl) {
     const userData = {
       email: cell + '-smssubscriber@example.com',
@@ -112,7 +113,7 @@ export async function processAction(questionResponse, interactionStep, campaignC
   } else {
     const options = {
       method: 'POST',
-      url: 'https://mobile.reverehq.com/api/v1/messaging/sendContent',
+      url: sendContentUrl,
       headers: {
         accept: 'application/json',
         'content-type': 'application/json',
