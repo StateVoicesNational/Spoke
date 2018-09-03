@@ -34,13 +34,88 @@ class AssignmentTexter extends React.Component {
     super(props)
 
     this.state = {
-      currentContactIndex: 0,
+      // currentContactIndex: 0,
+      contactCache: {},
       direction: 'right'
     }
   }
 
+  componentWillMount() {
+    this.updateCurrentContactIndex(0)
+    const self = this
+    this.refreshInterval = setInterval(() => self.props.refreshData(), 20000)
+  }
+  componentWillUnmount() {
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval)
+    }
+  }
+
+  componentWillUpdate(nextProps, nextState) {
+    /// When we send a message that changes the contact status,
+    /// then if parent.refreshData is called, then props.contacts
+    /// will return a new list with the last contact removed and
+    /// presumably our currentContactIndex will be off.
+    /// In fact, without the code below, we will 'double-jump' each message
+    /// we send or change the status in some way.
+    /// Below, we update our index with the contact that matches our current index.
+    if (typeof nextState.currentContactIndex != 'undefined'
+        && nextState.currentContactIndex === this.state.currentContactIndex
+        && nextProps.contacts.length != this.props.contacts.length) {
+      const curId = this.props.contacts[this.state.currentContactIndex].id
+      const nextIndex = nextProps.contacts.findIndex((c) => c.id === curId)
+      if (nextIndex != nextState.currentContactIndex) {
+        nextState.currentContactIndex = nextIndex
+      }
+    }
+    if (this.contactCount() === 0) {
+      setTimeout(() => window.location.reload(), 5000)
+    }
+  }
+
+  getContactData = async (newIndex, force = false) => {
+    const { contacts } = this.props
+    const BATCH_GET = 10 // how many to get at once
+    const BATCH_FORWARD = 5 // when to reach out and get more
+    let getIds = []
+    // if we don't have current data, get that
+    if (contacts[newIndex]
+        && !this.state.contactCache[contacts[newIndex].id]) {
+      getIds = contacts
+        .slice(newIndex, newIndex + BATCH_GET)
+        .map((c) => c.id)
+        .filter((cId) => !force || !this.state.contactCache[cId])
+    }
+    // if we DO have current data, but don't have data base BATCH_FORWARD...
+    if (!getIds.length
+        && contacts[newIndex + BATCH_FORWARD]
+        && !this.state.contactCache[contacts[newIndex + BATCH_FORWARD].id]) {
+      getIds = contacts
+        .slice(newIndex + BATCH_FORWARD, newIndex + BATCH_FORWARD + BATCH_GET)
+        .map((c) => c.id)
+        .filter((cId) => !force || !this.state.contactCache[cId])
+    }
+
+    if (getIds.length) {
+      const contactData = await this.props.loadContacts(getIds)
+      const { data: { getAssignmentContacts } } = contactData
+      if (getAssignmentContacts) {
+        const newContactData = {}
+        getAssignmentContacts.forEach((c) => {
+          newContactData[c.id] = c
+        })
+        this.setState({
+          contactCache: { ...this.state.contactCache,
+                          ...newContactData}})
+      }
+    }
+  }
+
   getContact(contacts, index) {
-    return (contacts.length > index) ? contacts[index] : null
+    if (contacts.length > index) {
+      return contacts[index]
+    }
+    return null
   }
 
   incrementCurrentContactIndex = (increment) => {
@@ -53,12 +128,7 @@ class AssignmentTexter extends React.Component {
     this.setState({
       currentContactIndex: newIndex
     })
-  }
-
-  componentWillUpdate(nextProps, nextState) {
-    if (this.contactCount() === 0) {
-      setTimeout(() => window.location.reload(), 5000)
-    }
+    this.getContactData(newIndex)
   }
 
   hasPrevious() {
@@ -71,30 +141,19 @@ class AssignmentTexter extends React.Component {
 
   handleFinishContact = () => {
     if (this.hasNext()) {
-      this.handleNavigateNextforSend()
+      this.handleNavigateNext()
     } else {
       // Will look async and then redirect to todo page if not
       this.props.assignContactsIfNeeded(/* checkServer*/true)
     }
   }
 
-  // handleNavigateNext was previously handled in one function but is separated to protect against behavior found in issue:
-  // https://github.com/MoveOnOrg/Spoke/issues/452
-  handleNavigateNextforSend = () => {
+  handleNavigateNext = () => {
     if (!this.hasNext()) {
       return
     }
 
-    this.props.refreshData()
-    this.setState({ direction: 'right' }, () => this.incrementCurrentContactIndex(0))
-  }
-
-  handleNavigateNextforSkip = () => {
-    if (!this.hasNext()) {
-      return
-    }
-
-    this.props.refreshData()
+    //this.props.refreshData()
     this.setState({ direction: 'right' }, () => this.incrementCurrentContactIndex(1))
   }
 
@@ -127,7 +186,7 @@ class AssignmentTexter extends React.Component {
     const { contacts } = this.props
 
     // If the index has got out of sync with the contacts available, then rewind to the start
-    if (this.getContact(contacts, this.state.currentContactIndex)) {
+    if (typeof this.state.currentContactIndex != 'undefined') {
       return this.getContact(contacts, this.state.currentContactIndex)
     } else {
       this.updateCurrentContactIndex(0)
@@ -159,7 +218,7 @@ class AssignmentTexter extends React.Component {
         <NavigateBeforeIcon />
         </IconButton>,
       <IconButton
-        onTouchTap={this.handleNavigateNextforSkip}
+        onTouchTap={this.handleNavigateNext}
         disabled={!this.hasNext()}
       >
         <NavigateNextIcon />
@@ -172,11 +231,16 @@ class AssignmentTexter extends React.Component {
     const { campaign, texter } = assignment
     const contact = this.currentContact()
     const navigationToolbarChildren = this.renderNavigationToolbarChildren()
+    const contactData = this.state.contactCache[contact.id]
+    if (!contactData) {
+      return null
+    }
     return (
       <AssignmentTexterContact
         key={contact.id}
         assignment={assignment}
         campaignContactId={contact.id}
+        contact={contactData}
         texter={texter}
         campaign={campaign}
         navigationToolbarChildren={navigationToolbarChildren}
@@ -220,6 +284,7 @@ AssignmentTexter.propTypes = {
   allContactsCount: PropTypes.number,
   router: PropTypes.object,
   refreshData: PropTypes.func,
+  loadContacts: PropTypes.func,
   organizationId: PropTypes.string
 }
 
