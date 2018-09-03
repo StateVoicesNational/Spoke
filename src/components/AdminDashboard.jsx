@@ -12,8 +12,7 @@ const styles = StyleSheet.create({
   container: {
     ...theme.layouts.multiColumn.container
   },
-  sideBar: {
-    width: 256,
+  sidebar: {
     minHeight: 'calc(100vh - 56px)'
   },
   content: {
@@ -25,19 +24,35 @@ const styles = StyleSheet.create({
 })
 
 class AdminDashboard extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      showMenu: true
+    }
+
+    this.handleToggleMenu = this.handleToggleMenu.bind(this)
+  }
   urlFromPath(path) {
     const organizationId = this.props.params.organizationId
     return `/admin/${organizationId}/${path}`
   }
 
+  async handleToggleMenu() {
+    await this.setState({showMenu: !this.state.showMenu})
+  }
+
   renderNavigation(sections) {
     const organizationId = this.props.params.organizationId
+
     if (!organizationId) {
       return ''
     }
+
     return (
-      <div className={css(styles.sideBar)}>
+      <div className={css(styles.sidebar)}>
         <AdminNavigation
+          onToggleMenu={this.handleToggleMenu}
+          showMenu={this.state.showMenu}
           organizationId={organizationId}
           sections={sections}
         />
