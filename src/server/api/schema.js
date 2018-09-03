@@ -700,7 +700,21 @@ const rootMutations = {
       contact.message_status = messageStatus
       return await contact.save()
     },
-
+    getAssignmentContacts: async (_, { assignmentId, contactIds, findNew }, { loaders, user }) => {
+      assignmentRequired(user, assignmentId)
+      const contacts = contactIds.map(async (contactId) => {
+        const contact = await loaders.campaignContact.load(contactId)
+        if (contact && contact.assignment_id === Number(assignmentId)) {
+          return contact
+        }
+        return null
+      })
+      if (findNew) {
+        // maybe TODO: we could automatically add dynamic assignments in the same api call
+        // findNewCampaignContact()
+      }
+      return contacts
+    },
     findNewCampaignContact: async (_, { assignmentId, numberContacts }, { loaders, user }) => {
       /* This attempts to find a new contact for the assignment, in the case that useDynamicAssigment == true */
       const assignment = await Assignment.get(assignmentId)
