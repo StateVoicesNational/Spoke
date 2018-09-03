@@ -15,7 +15,7 @@ import CampaignContactsForm from '../components/CampaignContactsForm'
 import CampaignTextersForm from '../components/CampaignTextersForm'
 import CampaignInteractionStepsForm from '../components/CampaignInteractionStepsForm'
 import CampaignCannedResponsesForm from '../components/CampaignCannedResponsesForm'
-import { dataTest } from '../lib/attributes'
+import { dataTest, camelCase } from '../lib/attributes'
 
 const campaignInfoFragment = `
   id
@@ -317,7 +317,7 @@ class AdminCampaignEdit extends React.Component {
       checkCompleted: () => this.state.campaignFormValues.interactionSteps.length > 0,
       blocksStarting: true,
       expandAfterCampaignStarts: true,
-      expandableBySuperVolunteers: false,
+      expandableBySuperVolunteers: true,
       extraProps: {
         customFields: this.props.campaignData.campaign.customFields,
         availableActions: this.props.availableActionsData.availableActions
@@ -544,6 +544,7 @@ class AdminCampaignEdit extends React.Component {
 
           return (
             <Card
+              {...dataTest(camelCase(`${section.title}`))}
               key={section.title}
               expanded={sectionIsExpanded && sectionCanExpandOrCollapse}
               expandable={sectionCanExpandOrCollapse}
