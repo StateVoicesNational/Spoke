@@ -39,7 +39,7 @@ const contactDataFragment = `
 `
 
 class TexterTodo extends React.Component {
-  constructor(props) {
+  constructor() {
     super()
     this.assignContactsIfNeeded = this.assignContactsIfNeeded.bind(this)
     this.refreshData = this.refreshData.bind(this)
@@ -58,7 +58,7 @@ class TexterTodo extends React.Component {
 
   assignContactsIfNeeded = async (checkServer = false) => {
     const { assignment } = this.props.data
-    if (assignment.contacts.length == 0 || checkServer) {
+    if (assignment.contacts.length === 0 || checkServer) {
       if (assignment.campaign.useDynamicAssignment) {
         const didAddContacts = (await this.props.mutations.findNewCampaignContact(assignment.id, 1)).data.findNewCampaignContact.found
         if (didAddContacts) {
@@ -72,9 +72,9 @@ class TexterTodo extends React.Component {
     }
   }
 
-  loadContacts = async (contactIds) => {
-    return await this.props.mutations.getAssignmentContacts(contactIds)
-  }
+  loadContacts = async (contactIds) => (
+    await this.props.mutations.getAssignmentContacts(contactIds)
+  )
 
   refreshData = () => {
     this.props.data.refetch()
@@ -104,6 +104,7 @@ TexterTodo.propTypes = {
   messageStatus: PropTypes.string,
   params: PropTypes.object,
   data: PropTypes.object,
+  mutations: PropTypes.object,
   router: PropTypes.object
 }
 

@@ -45,19 +45,20 @@ class AssignmentTexter extends React.Component {
   }
 
   componentWillUpdate(nextProps, nextState) {
-    /// When we send a message that changes the contact status,
-    /// then if parent.refreshData is called, then props.contacts
-    /// will return a new list with the last contact removed and
-    /// presumably our currentContactIndex will be off.
-    /// In fact, without the code below, we will 'double-jump' each message
-    /// we send or change the status in some way.
-    /// Below, we update our index with the contact that matches our current index.
-    if (typeof nextState.currentContactIndex != 'undefined'
+    // When we send a message that changes the contact status,
+    // then if parent.refreshData is called, then props.contacts
+    // will return a new list with the last contact removed and
+    // presumably our currentContactIndex will be off.
+    // In fact, without the code below, we will 'double-jump' each message
+    // we send or change the status in some way.
+    // Below, we update our index with the contact that matches our current index.
+    if (typeof nextState.currentContactIndex !== 'undefined'
         && nextState.currentContactIndex === this.state.currentContactIndex
-        && nextProps.contacts.length != this.props.contacts.length) {
+        && nextProps.contacts.length !== this.props.contacts.length) {
       const curId = this.props.contacts[this.state.currentContactIndex].id
       const nextIndex = nextProps.contacts.findIndex((c) => c.id === curId)
-      if (nextIndex != nextState.currentContactIndex) {
+      if (nextIndex !== nextState.currentContactIndex) {
+        // eslint-disable-next-line no-param-reassign
         nextState.currentContactIndex = nextIndex
       }
     }
@@ -99,7 +100,7 @@ class AssignmentTexter extends React.Component {
         })
         this.setState({
           contactCache: { ...this.state.contactCache,
-                          ...newContactData}})
+                          ...newContactData } })
       }
     }
   }
@@ -146,7 +147,7 @@ class AssignmentTexter extends React.Component {
       return
     }
 
-    //this.props.refreshData()
+    // this.props.refreshData()
     this.setState({ direction: 'right' }, () => this.incrementCurrentContactIndex(1))
   }
 
@@ -179,12 +180,12 @@ class AssignmentTexter extends React.Component {
     const { contacts } = this.props
 
     // If the index has got out of sync with the contacts available, then rewind to the start
-    if (typeof this.state.currentContactIndex != 'undefined') {
+    if (typeof this.state.currentContactIndex !== 'undefined') {
       return this.getContact(contacts, this.state.currentContactIndex)
-    } else {
-      this.updateCurrentContactIndex(0)
-      return this.getContact(contacts, 0)
     }
+
+    this.updateCurrentContactIndex(0)
+    return this.getContact(contacts, 0)
   }
 
   renderNavigationToolbarChildren() {
@@ -209,13 +210,13 @@ class AssignmentTexter extends React.Component {
         disabled={!this.hasPrevious()}
       >
         <NavigateBeforeIcon />
-        </IconButton>,
+      </IconButton>,
       <IconButton
         onTouchTap={this.handleNavigateNext}
         disabled={!this.hasNext()}
       >
         <NavigateNextIcon />
-        </IconButton>
+      </IconButton>
     ]
   }
 
@@ -252,11 +253,8 @@ class AssignmentTexter extends React.Component {
           content={(<RaisedButton
             label='Back To Todos'
             onClick={this.handleExitTexter}
-          >
-          </RaisedButton>)}
-        >
-
-        </Empty>
+          />)}
+        />
       </div>
     )
   }
@@ -278,6 +276,7 @@ AssignmentTexter.propTypes = {
   router: PropTypes.object,
   refreshData: PropTypes.func,
   loadContacts: PropTypes.func,
+  assignContactsIfNeeded: PropTypes.func,
   organizationId: PropTypes.string
 }
 

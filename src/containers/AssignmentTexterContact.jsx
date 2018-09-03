@@ -220,6 +220,7 @@ export class AssignmentTexterContact extends React.Component {
       currentInteractionStep: availableSteps.length > 0 ? availableSteps[availableSteps.length - 1] : null
     }
     this.onEnter = this.onEnter.bind(this)
+    this.setDisabled = this.setDisabled.bind(this)
   }
 
   componentDidMount() {
@@ -255,6 +256,10 @@ export class AssignmentTexterContact extends React.Component {
         this.handleClickSendMessageButton()
       }
     }
+  }
+
+  setDisabled = async (disabled = true) => {
+    this.setState({ disabled })
   }
 
   getAvailableInteractionSteps(questionResponses) {
@@ -367,10 +372,6 @@ export class AssignmentTexterContact extends React.Component {
         snackbarError: 'Something went wrong!'
       })
     }
-  }
-
-  setDisabled = async (disabled = true) => {
-    this.setState({ disabled })
   }
 
   handleMessageFormSubmit = async ({ messageText }) => {
@@ -511,12 +512,9 @@ export class AssignmentTexterContact extends React.Component {
 
       timezoneData = { hasDST, offset }
     } else {
-      let location = getContactTimezone(contact.location)
-      if (location) {
-        let timezone = location.timezone
-        if (timezone) {
-          timezoneData = timezone
-        }
+      const { timezone } = getContactTimezone(contact.location)
+      if (timezone) {
+        timezoneData = timezone
       }
     }
 
@@ -570,7 +568,7 @@ export class AssignmentTexterContact extends React.Component {
       title={'This is your first message to ' + contact.firstName}
       icon={<CreateIcon color='rgb(83, 180, 119)' />}
       hideMobile
-    > </Empty>) : (
+    />) : (
       <div>
         <AssignmentTexterSurveys
           contact={contact}
@@ -623,7 +621,7 @@ export class AssignmentTexterContact extends React.Component {
                 assignment={assignment}
                 onFinishContact={onFinishContact}
                 bulkSendMessages={this.bulkSendMessages}
-                setDisabled={this.setDisabled.bind(this)}
+                setDisabled={this.setDisabled}
               /> : ''}
               <div
                 style={{ float: 'right', marginLeft: 20 }}
@@ -883,6 +881,7 @@ AssignmentTexterContact.propTypes = {
   onFinishContact: PropTypes.func,
   router: PropTypes.object,
   mutations: PropTypes.object,
+  refreshData: PropTypes.func,
   onExitTexter: PropTypes.func,
   onRefreshAssignmentContacts: PropTypes.func
 }
