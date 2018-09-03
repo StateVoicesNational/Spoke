@@ -42,13 +42,6 @@ class AssignmentTexter extends React.Component {
 
   componentWillMount() {
     this.updateCurrentContactIndex(0)
-    const self = this
-    this.refreshInterval = setInterval(() => self.props.refreshData(), 20000)
-  }
-  componentWillUnmount() {
-    if (this.refreshInterval) {
-      clearInterval(this.refreshInterval)
-    }
   }
 
   componentWillUpdate(nextProps, nextState) {

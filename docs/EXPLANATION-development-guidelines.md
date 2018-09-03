@@ -124,6 +124,19 @@ we want to add a value to campaign info for that edit page. We might need to edi
   see called in files like `src/server/api/campaign.js`
 * In `campaign.js` note that you will need to update `type Campaign` above, and possibly lower down in `Campaign: { ...mapFieldsToModel([...` (but only if it's a new field/column on the campaign table.
 
+### Security and Access-control
+
+* Roles are assigned per-organization. Users can be assigned a cross-organizational property called 'superadmin' which is limited for
+  actions that could undermine the security of the system or access system-level data.
+* Security for top-level graphQL queries are in rootResolvers.RootQuery object in [server/api/schema.js](https://github.com/MoveOnOrg/Spoke/blob/dec93521d54ea46476d2a5c7eb9deeedbd69d53f/src/server/api/schema.js#L1122)
+  * These correspond to e.g. getContact or getOrganization, etc
+* Mutations and custom queries are inside the method
+* Helper functions are in [server/api/errors.js](https://github.com/MoveOnOrg/Spoke/blob/main/src/server/api/errors.js) which should/will be optimized to use cached info, etc.  Each of them will throw an error and therefore cancel the request if the user doesn't have the appropriate access.
+  * `authRequired(user)` establishes that the user is not anonymous
+  * `accessRequired(user, orgId, role, allowSuperadmin = false)` will require the user to have a certain role or higher.  Pass in `true` to allowSuperadmin if superadmins should be allowed.  Generally they should be allowed to do things, but might as well be explicit.
+  * `assignmentRequired(user, assignmentId)` makes sure that the user has the assignment in question
+  * `superAdminRequired(user)` requires a super-admin user
+
 
 ## Asynchronous tasks (workers)
 

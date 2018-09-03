@@ -23,8 +23,16 @@ import Log from './log'
 import thinky from './thinky'
 import datawarehouse from './datawarehouse'
 
-function createLoader(model, idKey = 'id') {
+const r = thinky.r
+
+function createLoader(model, idKey = 'id', cacheFunction) {
   return new DataLoader(async (keys) => {
+    if (cacheFunction && r.redis) {
+      const cachedData = await cacheFunction(keys)
+      if (cachedData) {
+        return cachedData
+      }
+    }
     const docs = await model.getAll(...keys, { index: idKey })
     return keys.map((key) => (
       docs.find((doc) => doc[idKey].toString() === key.toString())
@@ -52,8 +60,6 @@ const createLoaders = () => ({
   userCell: createLoader(UserCell),
   userOrganization: createLoader(UserOrganization)
 })
-
-const r = thinky.r
 
 export {
   createLoaders,
