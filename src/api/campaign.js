@@ -41,6 +41,11 @@ export const schema = `
     introHtml: String
     primaryColor: String
     logoImageUrl: String
+    overrideOrganizationTextingHours: Boolean
+    textingHoursEnforced: Boolean
+    textingHoursStart: Int
+    textingHoursEnd: Int
+    timezone: String
   }
 
   type CampaignsList {
