@@ -92,6 +92,11 @@ const rootSchema = `
     texters: [TexterInput]
     interactionSteps: InteractionStepInput
     cannedResponses: [CannedResponseInput]
+    overrideOrganizationTextingHours: Boolean
+    textingHoursEnforced: Boolean
+    textingHoursStart: Int
+    textingHoursEnd: Int
+    timezoneIfNoZipcode: String
   }
 
   input MessageInput {
