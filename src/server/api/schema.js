@@ -95,7 +95,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     textingHoursEnforced,
     textingHoursStart,
     textingHoursEnd,
-    timezoneIfNoZipcode
+    timezone
   } = campaign
   // some changes require ADMIN and we recheck below
   const organizationId = campaign.organizationId || origCampaignRecord.organization_id
@@ -114,7 +114,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     texting_hours_enforced: textingHoursEnforced,
     texting_hours_start: textingHoursStart,
     texting_hours_end: textingHoursEnd,
-    timezone_if_no_zipcode: timezoneIfNoZipcode,
+    timezone: timezone,
   }
 
   Object.keys(campaignUpdates).forEach(key => {

@@ -46,7 +46,7 @@ const Campaign = thinky.createModel('campaign', type.object().schema({
     .min(0)
     .max(23)
     .default(21),
-  timezone_if_no_zipcode: type
+  timezone: type
     .string()
     .required()
     .default('US/Eastern')

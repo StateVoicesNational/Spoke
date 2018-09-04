@@ -7,6 +7,7 @@ export {
   isBetweenTextingHours,
   defaultTimezoneIsBetweenTextingHours,
   getOffsets,
+  getContactTimezone,
   getUtcFromTimezoneAndHour,
   getUtcFromOffsetAndHour,
   getSendBeforeTimeUtc

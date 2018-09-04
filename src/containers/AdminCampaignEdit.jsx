@@ -36,7 +36,7 @@ const campaignInfoFragment = `
   textingHoursEnforced
   textingHoursStart
   textingHoursEnd
-  timezoneIfNoZipcode
+  timezone
   texters {
     id
     firstName
@@ -342,7 +342,7 @@ class AdminCampaignEdit extends React.Component {
     }, {
       title: 'Texting Hours',
       content: CampaignTextingHoursForm,
-      keys: ['overrideOrganizationTextingHours', 'textingHoursEnforced', 'textingHoursStart', 'textingHoursEnd', 'timezoneIfNoZipcode'],
+      keys: ['overrideOrganizationTextingHours', 'textingHoursEnforced', 'textingHoursStart', 'textingHoursEnd', 'timezone'],
       checkCompleted: () => true,
       blocksStarting: false,
       expandAfterCampaignStarts: true,
