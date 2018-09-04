@@ -923,19 +923,24 @@ const rootMutations = {
 
       const replaceCurlyApostrophes = rawText => rawText.replace(/[\u2018\u2019]/g, "'")
 
-      const contactTimezone = {}
+      let contactTimezone = {}
       if (contact.timezone_offset) {
         // couldn't look up the timezone by zip record, so we load it
         // from the campaign_contact directly if it's there
-        const [offset, hasDst] = contact.timezone_offset.split('_')
+        const [offset, hasDST] = contact.timezone_offset.split('_')
         contactTimezone.offset = parseInt(offset, 10)
-        contactTimezone.has_dst = hasDst === '1'
+        contactTimezone.hasDST = hasDST === '1'
       }
 
       const sendBefore = getSendBeforeTimeUtc(
         contactTimezone,
-        mapFieldsToModel(['textingHoursEnd', 'textingHoursEnforced'], Organization),
-        mapFieldsToModel(['textingHoursEnd', 'overrideOrganizationTextingHours', 'textingHoursEnforced', 'timezone'], Campaign)
+        { textingHoursEnd: organization.texting_hours_end, textingHoursEnforced: organization.texting_hours_enforced },
+        {
+          textingHoursEnd: campaign.texting_hours_end,
+          overrideOrganizationTextingHours: campaign.override_organization_texting_hours,
+          textingHoursEnforced: campaign.texting_hours_enforced,
+          timezone: campaign.timezone
+        }
       )
 
       const sendBeforeDate = sendBefore ? sendBefore.toDate() : null

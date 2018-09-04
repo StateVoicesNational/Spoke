@@ -79,7 +79,7 @@ export const getSendBeforeTimeUtc = (contactTimezone, organization, campaign) =>
   if (contactTimezone && contactTimezone.offset) {
     return getUtcFromOffsetAndHour(
       contactTimezone.offset,
-      contactTimezone.hasDst,
+      contactTimezone.hasDST,
       organization.textingHoursEnd,
       getProcessEnvDstReferenceTimezone()
     )

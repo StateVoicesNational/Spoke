@@ -7,6 +7,8 @@ import faker from 'faker'
 
 let twilio = null
 const MAX_SEND_ATTEMPTS = 5
+const MESSAGE_VALIDITY_PADDING_SECONDS = 30
+const MAX_TWILIO_MESSAGE_VALIDITY = 14400
 
 if (process.env.TWILIO_API_KEY && process.env.TWILIO_AUTH_TOKEN) {
   // eslint-disable-next-line new-cap
@@ -136,9 +138,9 @@ async function sendMessage(message) {
     if (message.send_before) {
       // the message is valid no longer than the time between now and
       // the send_before time, less 30 seconds
-      // we subtract the 30 seconds to allow time for the message to be sent by
+      // we subtract the MESSAGE_VALIDITY_PADDING_SECONDS seconds to allow time for the message to be sent by
       // a downstream service
-      const messageValidityPeriod = Math.ceil((message.send_before - Date.now())/1000) - 30
+      const messageValidityPeriod = Math.ceil((message.send_before - Date.now())/1000) - MESSAGE_VALIDITY_PADDING_SECONDS
 
       if (messageValidityPeriod < 0) {
         // this is an edge case
@@ -147,9 +149,9 @@ async function sendMessage(message) {
       }
 
       if (twilioValidityPeriod) {
-        twilioValidityPeriod = Math.min(twilioValidityPeriod, messageValidityPeriod)
+        twilioValidityPeriod = Math.min(twilioValidityPeriod, messageValidityPeriod, MAX_TWILIO_MESSAGE_VALIDITY)
       } else {
-        twilioValidityPeriod = messageValidityPeriod
+        twilioValidityPeriod = Math.min(messageValidityPeriod, MAX_TWILIO_MESSAGE_VALIDITY)
       }
     }
 
