@@ -16,8 +16,6 @@ import {
 
 import { getProcessEnvDstReferenceTimezone } from '../../src/lib/tz-helpers'
 
-var MockDate = require('mockdate')
-
 const makeCampignTextingHoursConfig = (
   textingHoursEnforced,
   textingHoursStart,
@@ -872,27 +870,6 @@ describe('test getContactTimezone', () => {
   })
 })
 
-
-describe('test some stuff', () => {
-  it('works', () => {
-    console.log(getUtcFromOffsetAndHour(-5, true, 17, 'America/Los_Angeles'))
-    console.log(getUtcFromTimezoneAndHour('America/Denver', 17))
-
-    const sendBeforeTime = getSendBeforeTimeUtc(
-      { location: { timezone: { offset: -5, hasDST: 1 } } },
-      { textingHoursStart: 9, textingHoursEnd: 21, textingHoursEnforced: true },
-      {}
-    )
-
-    console.log(sendBeforeTime)
-    console.log(moment().utc())
-
-    console.log(((sendBeforeTime - moment().utc())/1000))
-    console.log(Math.ceil(((sendBeforeTime - moment().utc())/1000)))
-
-    console.log((sendBeforeTime.toDate() - Date.now())/1000)
-  })
-})
 
 describe('test getUtcFromOffsetAndHour', () => {
   afterEach(() => {
