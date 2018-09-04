@@ -2,6 +2,7 @@ import { applyScript } from '../../lib/scripts'
 import camelCaseKeys from 'camelcase-keys'
 import isUrl from 'is-url'
 import { buildCampaignQuery } from './campaign'
+import moment from 'moment-timezone'
 
 import {
   Assignment,
@@ -62,6 +63,7 @@ import {
 import serviceMap from './lib/services'
 import { saveNewIncomingMessage } from './lib/message-sending'
 import { gzip, log, makeTree } from '../../lib'
+import { mapFieldsToModel } from './lib/utils'
 // import { isBetweenTextingHours } from '../../lib/timezones'
 import { Notifications, sendUserNotification } from '../notifications'
 import {
@@ -70,6 +72,8 @@ import {
   assignTexters,
   exportCampaign
 } from '../../workers/jobs'
+
+import { getSendBeforeTimeUtc } from '../../lib/timezones'
 const uuidv4 = require('uuid').v4
 import GraphQLDate from 'graphql-date'
 import GraphQLJSON from 'graphql-type-json'
@@ -909,6 +913,23 @@ const rootMutations = {
 
       const replaceCurlyApostrophes = rawText => rawText.replace(/[\u2018\u2019]/g, "'")
 
+      const contactTimezone = {}
+      if (contact.timezone_offset) {
+        // couldn't look up the timezone by zip record, so we load it
+        // from the campaign_contact directly if it's there
+        const [offset, hasDst] = contact.timezone_offset.split('_')
+        contactTimezone.offset = parseInt(offset, 10)
+        contactTimezone.has_dst = hasDst === '1'
+      }
+
+      const sendBefore = getSendBeforeTimeUtc(
+        contactTimezone,
+        mapFieldsToModel(['textingHoursEnd', 'textingHoursEnforced'], Organization),
+        mapFieldsToModel(['textingHoursEnd', 'overrideOrganizationTextingHours', 'textingHoursEnforced', 'timezone'], Campaign)
+      )
+
+      const sendBeforeDate = sendBefore ? sendBefore.toDate() : null
+
       const messageInstance = new Message({
         text: replaceCurlyApostrophes(text),
         contact_number: contactNumber,
@@ -918,7 +939,8 @@ const rootMutations = {
         send_status: JOBS_SAME_PROCESS ? 'SENDING' : 'QUEUED',
         service: orgFeatures.service || process.env.DEFAULT_SERVICE || '',
         is_from_contact: false,
-        queued_at: new Date()
+        queued_at: new Date(),
+        send_before: sendBeforeDate
       })
 
       await messageInstance.save()
