@@ -135,7 +135,23 @@ const migrations = [
       console.log('added user_id column to message table')
     }
   },
-  { auto: true, // 12
+  {
+    auto: true, // 12
+    date: '2018-08-25',
+    migrate: async function () {
+      console.log('adding texting hours fields to campaign')
+      await r.knex.schema.alterTable('campaign', (table) => {
+        table.boolean('override_organization_texting_hours').notNullable().default(false)
+        table.boolean('texting_hours_enforced').notNullable().default(true)
+        table.integer('texting_hours_start').notNullable().default(9)
+        table.integer('texting_hours_end').notNullable().default(21)
+        table.string('timezone_if_no_zipcode').notNullable().default('US/Eastern')
+      })
+
+      console.log('added texting hours fields to campaign')
+    }
+  },
+  { auto: true, // 13
     date: '2018-09-03',
     migrate: async function() {
       await r.knex.schema.alterTable('message', (table) => {

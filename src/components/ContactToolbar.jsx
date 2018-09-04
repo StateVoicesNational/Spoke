@@ -39,7 +39,7 @@ const ContactToolbar = function ContactToolbar(props) {
       offset = timezone.offset || offset
       hasDST = timezone.hasDST || hasDST
     }
-    const adjustedLocationTZ = getContactTimezone(location)
+    const adjustedLocationTZ = getContactTimezone(props.campaign, location)
     if (adjustedLocationTZ && adjustedLocationTZ.timezone) {
       offset = adjustedLocationTZ.timezone.offset
       hasDST = adjustedLocationTZ.timezone.hasDST
@@ -84,7 +84,8 @@ const ContactToolbar = function ContactToolbar(props) {
 
 ContactToolbar.propTypes = {
   campaignContact: PropTypes.object, // contacts for current assignment
-  rightToolbarIcon: PropTypes.element
+  rightToolbarIcon: PropTypes.element,
+  campaign: PropTypes.object
 }
 
 export default ContactToolbar
