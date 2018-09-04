@@ -3,6 +3,7 @@ import React from 'react'
 import { Toolbar, ToolbarGroup, ToolbarTitle } from 'material-ui/Toolbar'
 import { getDisplayPhoneNumber } from '../lib/phone-format'
 import { getLocalTime, getContactTimezone } from '../lib/timezones'
+import { getProcessEnvDstReferenceTimezone } from '../lib/tz-helpers'
 import { grey100 } from 'material-ui/styles/colors'
 
 const inlineStyles = {
@@ -52,7 +53,11 @@ const ContactToolbar = function ContactToolbar(props) {
   }
   formattedLocation = `${formattedLocation} ${state}`
 
-  const formattedLocalTime = getLocalTime(offset, hasDST).format('LT') // format('h:mm a')
+  const dstReferenceTimezone = props.campaign.overrideOrganizationTextingHours ?
+    this.props.campaign.timezone :
+    getProcessEnvDstReferenceTimezone()
+
+  const formattedLocalTime = getLocalTime(offset, hasDST, dstReferenceTimezone).format('LT') // format('h:mm a')
   return (
     <div>
       <Toolbar

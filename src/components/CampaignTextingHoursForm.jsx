@@ -25,7 +25,7 @@ export default class CampaignTextingHoursForm extends React.Component {
     textingHoursEnforced: yup.boolean(),
     textingHoursStart: yup.number().integer(),
     textingHoursEnd: yup.number().integer(),
-    timezoneIfNoZipcode: yup.string()
+    timezone: yup.string()
   })
 
   fireOnChangeIfTheFormValuesChanged(fieldName, newValue) {
@@ -89,7 +89,9 @@ export default class CampaignTextingHoursForm extends React.Component {
           if (!selectedChoice) {
             return
           }
-          this.state[stateName] = selectedChoice.text
+          const state = {}
+          state[stateName] = selectedChoice.text
+          this.setState(state)
           this.fireOnChangeIfTheFormValuesChanged(name, selectedChoice.rawValue)
         }}
       />
@@ -196,10 +198,10 @@ export default class CampaignTextingHoursForm extends React.Component {
                 )}
 
                 {this.addAutocompleteFormField(
-                  'timezoneIfNoZipcode',
+                  'timezone',
                   'timezoneSearchText',
-                  this.props.formValues.timezoneIfNoZipcode,
-                  'Timezone to use for contacts without ZIP code',
+                  this.props.formValues.timezone,
+                  'Timezone to use for contacts without ZIP code and to determine daylight savings',
                   'Start typing a timezone',
                   timezoneChoices,
                   timezones

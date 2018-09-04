@@ -96,7 +96,7 @@ const rootSchema = `
     textingHoursEnforced: Boolean
     textingHoursStart: Int
     textingHoursEnd: Int
-    timezoneIfNoZipcode: String
+    timezone: String
   }
 
   input MessageInput {

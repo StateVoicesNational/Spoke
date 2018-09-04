@@ -82,7 +82,7 @@ export const resolvers = {
       'textingHoursEnforced',
       'textingHoursStart',
       'textingHoursEnd',
-      'timezoneIfNoZipcode'
+      'timezone'
     ], Campaign),
     organization: async (campaign, _, { loaders }) => (
       loaders.organization.load(campaign.organization_id)
