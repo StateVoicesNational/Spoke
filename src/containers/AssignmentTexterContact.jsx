@@ -595,7 +595,7 @@ export class AssignmentTexterContact extends React.Component {
     } else if (messageStatus === 'needsResponse') {
       button = (<RaisedButton
         onTouchTap={this.handleClickCloseContactButton}
-        label='Skip Reply'
+        label='Skip Response'
       />)
     }
 
