@@ -17,7 +17,8 @@ import {
   JobRequest,
   User,
   r,
-  datawarehouse
+  datawarehouse,
+  cacheableData
 } from '../models'
 import { schema as userSchema, resolvers as userResolvers, buildUserOrganizationQuery } from './user'
 import {
@@ -483,15 +484,16 @@ const rootMutations = {
     updateTextingHoursEnforcement: async (
       _,
       { organizationId, textingHoursEnforced },
-      { user }
+      { user, loaders }
     ) => {
       await accessRequired(user, organizationId, 'SUPERVOLUNTEER')
 
       await Organization.get(organizationId).update({
         texting_hours_enforced: textingHoursEnforced
       })
+      await cacheableData.organization.clear(organizationId)
 
-      return await Organization.get(organizationId)
+      return await loaders.organization.load(organizationId)
     },
     createInvite: async (_, { user }) => {
       if ((user && user.is_superadmin) || !process.env.SUPPRESS_SELF_INVITE) {
