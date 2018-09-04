@@ -134,6 +134,15 @@ const migrations = [
       })
       console.log('added user_id column to message table')
     }
+  },
+  { auto: true, // 12
+    date: '2018-09-03',
+    migrate: async function() {
+      await r.knex.schema.alterTable('message', (table) => {
+        table.timestamp('send_before')
+      })
+      console.log('added send_before column to message table')
+    }
   }
   /* migration template
      {auto: true, //if auto is false, then it will block the migration running automatically

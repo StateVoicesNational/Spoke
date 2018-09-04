@@ -131,8 +131,30 @@ async function sendMessage(message) {
       statusCallback: process.env.TWILIO_STATUS_CALLBACK_URL
     }, parseMessageText(message))
 
-    if (process.env.TWILIO_MESSAGE_VALIDITY_PERIOD) {
-      messageParams.validityPeriod = process.env.TWILIO_MESSAGE_VALIDITY_PERIOD
+    let twilioValidityPeriod = process.env.TWILIO_MESSAGE_VALIDITY_PERIOD
+
+    if (message.send_before) {
+      // the message is valid no longer than the time between now and
+      // the send_before time, less 30 seconds
+      // we subtract the 30 seconds to allow time for the message to be sent by
+      // a downstream service
+      const messageValidityPeriod = Math.ceil((message.send_before - Date.now())/1000) - 30
+
+      if (messageValidityPeriod < 0) {
+        // this is an edge case
+        // it means the message arrived in this function already too late to be sent
+        // pass the negative validity period to twilio, and let twilio respond with an error
+      }
+
+      if (twilioValidityPeriod) {
+        twilioValidityPeriod = Math.min(twilioValidityPeriod, messageValidityPeriod)
+      } else {
+        twilioValidityPeriod = messageValidityPeriod
+      }
+    }
+
+    if (twilioValidityPeriod) {
+      messageParams.validityPeriod = twilioValidityPeriod
     }
 
     twilio.messages.create(messageParams, (err, response) => {

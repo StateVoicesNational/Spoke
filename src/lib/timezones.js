@@ -32,6 +32,63 @@ export const getContactTimezone = (location) => {
   return location
 }
 
+export const getUtcFromOffsetAndHour = (offset, hasDst, hour, dstReferenceTimezone) => {
+  const isDst = moment().tz(dstReferenceTimezone).isDST()
+  return moment().utcOffset(offset + ((hasDst && isDst) ? 1 : 0)).hour(hour).startOf('hour').utc()
+}
+
+export const getUtcFromTimezoneAndHour = (timezone, hour) => {
+  return moment().tz(timezone).hour(hour).startOf('hour').utc()
+}
+
+export const getSendBeforeTimeUtc = (contactTimezone, organization, campaign) => {
+  if (campaign.overrideOrganizationTextingHours) {
+    if (!campaign.textingHoursEnforced) {
+      return null
+    }
+
+    if (contactTimezone && contactTimezone.offset) {
+      return getUtcFromOffsetAndHour(
+        contactTimezone.offset,
+        contactTimezone.hasDST,
+        campaign.textingHoursEnd,
+        campaign.timezone
+      )
+    } else {
+      return getUtcFromTimezoneAndHour(
+        campaign.timezone,
+        campaign.textingHoursEnd
+      )
+    }
+  }
+
+  if (!organization.textingHoursEnforced) {
+    return null
+  }
+
+  if (getProcessEnvTz()) {
+    return getUtcFromTimezoneAndHour(
+      getProcessEnvTz(),
+      organization.textingHoursEnd
+    )
+  }
+
+  if (contactTimezone && contactTimezone.offset) {
+    return getUtcFromOffsetAndHour(
+      contactTimezone.offset,
+      contactTimezone.hasDst,
+      organization.textingHoursEnd,
+      getProcessEnvDstReferenceTimezone()
+    )
+  } else {
+    return getUtcFromOffsetAndHour(
+      TIMEZONE_CONFIG.missingTimeZone.offset,
+      TIMEZONE_CONFIG.missingTimeZone.hasDST,
+      organization.textingHoursEnd,
+      getProcessEnvDstReferenceTimezone()
+    )
+  }
+}
 
 export const getLocalTime = (offset, hasDST) => {
   return moment().utc().utcOffset(DstHelper.isDateDst(new Date(), getProcessEnvDstReferenceTimezone()) && hasDST ? offset + 1 : offset)
