@@ -1,5 +1,7 @@
 import { mapFieldsToModel } from './lib/utils'
 import { r, User } from '../models'
+import { rolesAtLeast } from '../../lib/permissions'
+import { userOrgsWithRole } from '../models/cacheable_queries'
 
 export function buildUserOrganizationQuery(queryParam, organizationId, role) {
   const roleFilter = role ? { role } : {}
@@ -33,12 +35,7 @@ export const resolvers = {
       if (!user || !user.id) {
         return []
       }
-      let orgs = r.table('user_organization')
-        .getAll(user.id, { index: 'user_id' })
-      if (role) {
-        orgs = orgs.filter({ role })
-      }
-      return orgs.eqJoin('organization_id', r.table('organization'))('right').distinct()
+      return userOrgsWithRole(role, user.id)
     },
     roles: async(user, { organizationId }) => (
       r.table('user_organization')
