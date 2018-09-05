@@ -32,34 +32,37 @@ export async function userHasRole(userId, orgId, acceptableRoles) {
   }
 }
 
-// async function getUserOrgNames(user, orgId) {
-//   const userOrgKey = `userorg-${userId}-${orgId}`
-//   let orgNames = r.redis.getAllAsync(userOrgKey)
-//   if (!orgNames) {
-//     const orgInfo = await r.knex('user_organization')
-//       .leftjoin('organizaiton', 'organization.id', 'user_organization.organization_id')
-//       .where({
-//         user_id: userId,
-//         organization_id: orgId
-//       })
-//       .select('name')
-//
-//     await r.redis.setAsync(userOrgKey, orgNames)
-//   }
-// }
+async function getUserOrgInfo(userId, orgId) {
+  const userOrgKey = `texterorg-${userId}-${orgId}`
+  let orgInfo = await r.redis.getAsync(userOrgKey)
+  if (!orgInfo) {
+    const orgData = await r.knex('user_organization')
+      .join('organization', 'organization.id', 'user_organization.organization_id')
+      .where({
+        user_id: userId,
+        organization_id: orgId
+      })
+      .select('organization.id', 'organization.name')
+      .distinct()
+    await r.redis.set(userOrgKey, JSON.stringify(orgData[0]))
+    return orgData[0]
+  } else {
+    let parsedOrgInfo = JSON.parse(orgInfo)
+    return parsedOrgInfo
+  }
+}
 
 export async function userOrgsWithRole(role, userId) {
   if (r.redis) {
    const userKey = `texterinfo-${userId}`
    const userOrgs = await r.redis.hgetallAsync(userKey)
-   console.log('user orgs:', userOrgs);
    if (userOrgs) {
      const orgs = []
      const arrOrgs = []
      Object.keys(userOrgs).map(key => {
        arrOrgs.push({[key]: userOrgs[key]})
        if (hasRoleAtLeast(arrOrgs, role)) {
-         orgs.push({ id : key })
+         orgs.push(getUserOrgInfo(userId, key))
        }
      })
      return orgs
