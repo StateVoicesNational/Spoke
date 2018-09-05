@@ -2,6 +2,8 @@ export const schema = `
   input CampaignsFilter {
     isArchived: Boolean
     campaignId: Int
+    listSize: Int
+    pageSize: Int
   }
 
   type CampaignStats {
