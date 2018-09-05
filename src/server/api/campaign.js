@@ -3,6 +3,8 @@ import { Campaign, JobRequest, r } from '../models'
 
 export function buildCampaignQuery(queryParam, organizationId, campaignsFilter, addFromClause = true) {
   let query = queryParam
+  const resultSize = (campaignsFilter.listSize ? campaignsFilter.listSize : 0)
+  const pageSize = (campaignsFilter.pageSize ? campaignsFilter.pageSize : 0)
 
   if (addFromClause) {
     query = query.from('campaign')
@@ -16,6 +18,12 @@ export function buildCampaignQuery(queryParam, organizationId, campaignsFilter, 
     }
     if ('campaignId' in campaignsFilter) {
       query = query.where('campaign.id', parseInt(campaignsFilter.campaignId, 10))
+    }
+    if (resultSize && !pageSize) {
+      query = query.limit(resultSize)
+    }
+    if (resultSize && pageSize) {
+      query = query.limit(resultSize).offSet(pageSize)
     }
   }
 
