@@ -12,7 +12,7 @@ const Assignment = thinky.createModel('assignment', type.object().schema({
   campaign_id: requiredString(),
   created_at: timestamp(),
   max_contacts: type.integer()
-}).allowExtra(false))
+}).allowExtra(false), {noAutoCreation: true})
 
 Assignment.ensureIndex('user_id')
 Assignment.ensureIndex('campaign_id')
