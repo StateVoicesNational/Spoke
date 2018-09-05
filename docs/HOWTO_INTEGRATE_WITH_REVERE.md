@@ -5,11 +5,25 @@
 ## Step One - Understanding the workflow (for developers and non developers)
 - An admin will create a campaign, and in the interaction steps setup, after sending the first message (with approved script from your legal team), will then 'ADD A RESPONSE'. The admin will add 'yes' under 'Answer', click on the drop down and select 'Revere Signup', and then fill in a script. When a texter then receives an affirmative response for signup, they will click on the drop down menu for 'Current Question' and mark 'yes'. That yes then will create a post request to Revere (and then Revere if you follow those steps below).
 
+### V2: Custom Flows
+- To add a custom flow, add the following column to your csv `revere_signup_flow`
+- Visit the flow in Revere and copy the hash in the url after `/update/`
+- Paste in CSV for every contact row.
+- If you have multiple flows you want to activate in one campaign, make sure the contact row has the flow you want to trigger so for example:
+```
+firstName,lastName,cell,revere_signup_flow
+TestFirstName,TestLastName,2165555555,123abc
+TestFirstName2,TestLastName2,3125555555,1234abcd
+TestFirstName3,TestLastName3,4435555555,
+```
+- For the above contact list, TestFirstName would get the flow attached to `123abc`, TestFirstName2 would get the flow attached to `1234abcd`, and TestFirstName3 would get the flow included in the environment configuration for `REVERE_NEW_SUBSCRIBER_MOBILE_FLOW`. In the code, mobileFlowId looks for a revere_signup_flow value, and if it does not find one for the contact, defaults to the configuration environment variable.
+
 ## Step Two - Adding the appropriate environment variables (for developers)
 - In order to use this feature, you will have to add three more variables and update another environment variable in your environment variables file or your lambda config or your heroku variables config. The following variables you will need to add:
   - New Variables:
-      REVERE_NEW_SUBSCRIBER_MOBILE_FLOW = the hash of the flow you want to trigger when you send a new user to revere
+      REVERE_NEW_SUBSCRIBER_MOBILE_FLOW = the hash of the default flow you want to trigger when you send a new user to revere - used also if no flow row is added to the campaign csv.
       REVERE_MOBILE_API_KEY = revere mobile authentication api key
+      REVERE_API_URL = revere api endpoint to access to trigger flow
   - Updated Variable:
       ACTION_HANDLERS='revere-signup'
       *Note - if you currently have a variable set here, i.e. 'actionkit-rsvp', then it will look like the following
