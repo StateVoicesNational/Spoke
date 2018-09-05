@@ -1,5 +1,5 @@
 import { mapFieldsToModel } from './lib/utils'
-import { Campaign, JobRequest, r } from '../models'
+import { Campaign, JobRequest, r, cacheableData } from '../models'
 
 export function buildCampaignQuery(queryParam, organizationId, campaignsFilter, addFromClause = true) {
   let query = queryParam
@@ -108,9 +108,10 @@ export const resolvers = {
         .filter({ is_deleted: false })
     ),
     cannedResponses: async (campaign, { userId }) => (
-      r.table('canned_response')
-        .getAll(campaign.id, { index: 'campaign_id' })
-        .filter({ user_id: userId || '' })
+      await cacheableData.cannedResponse.query({
+        userId: userId || '',
+        campaignId: campaign.id
+      })
     ),
     contacts: async (campaign) => (
       r.knex('campaign_contact')

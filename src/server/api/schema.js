@@ -211,6 +211,10 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
       .filter({ user_id: '' })
       .delete()
     await CannedResponse.save(convertedResponses)
+    await cacheableData.cannedResponse.clearQuery({
+      userId: '',
+      campaignId: id
+    })
   }
 
   const newCampaign = await Campaign.get(id).update(campaignUpdates)
@@ -657,6 +661,10 @@ const rootMutations = {
         .andWhere({ user_id: cannedResponse.userId })
         .del()
       await query
+      cacheableData.cannedResponse.clearQuery({
+        campaignId: cannedResponse.campaignId,
+        userId: cannedResponse.userId
+      })
     },
     createOrganization: async (_, { name, userId, inviteId }, { loaders, user }) => {
       authRequired(user)
