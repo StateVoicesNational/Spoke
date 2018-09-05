@@ -392,10 +392,55 @@ export async function assignTexters(job) {
   // * new texter
   //   no current/changed assignment
   //   iterating over texter, assignment is created, then apportioned needsMessageCount texters
+ 
+  /*  
+  A. # of contacts assigned and already texted (for a texter)
+  B. # of contacts assigned but not yet texted (for a texter)
+  C. max contacts (for a texter)
+  D. pool of unassigned and assignable texters
+
+  In dynamic assignment mode:
+    Add new texter
+      Create assignment
+    Change C
+      if new C > A and new C <> old C:
+        Update assignment
+        For testing: confirm that contacts are being assigned to the texter up to min(new C, D)
+      if new C > A and new C = old C:
+        No change
+      if new C < A or new C = 0:
+        Why are we doing this? If we want to keep someone from texting any more, 
+          we should apply a separate "blocked". Re-assignment of previously texted contacts
+          is manual-only and doable in the Message Review admin. Form validation should
+          prevent either of these cases from reaching jobs.js.
+    Delete texter
+      Assignment form currently prevents this (though it might be okay if A = 0).
+      To stop a texter from texting any more, re-assign their contacts to another texter.
+
+  In standard assignment mode:
+    Add new texter
+      Create assignment
+      Assign B contacts
+    Change B
+      if new B > old B:
+        Update assignment
+        Assign (new B - old B) contacts
+      if new B = old B:
+        No change
+      if new B < old B:
+        Update assignment
+        Unassign (old B - new B) untexted contacts
+      if new B = 0:
+        Update assignment
+    Delete texter
+      Not sure we allow this?
+    */ 
+
   const payload = JSON.parse(job.payload)
   const cid = job.campaign_id
   const campaign = (await r.knex('campaign').where({ id: cid }))[0]
   const texters = payload.texters
+  console.log("texters", texters)
   const currentAssignments = await r.knex('assignment')
     .where('assignment.campaign_id', cid)
     .joinRaw('left join campaign_contact allcontacts'
@@ -414,6 +459,7 @@ export async function assignTexters(job) {
   // changedAssignments:
   currentAssignments.map((assignment) => {
     const texter = texters.filter((ele) => parseInt(ele.id, 10) === assignment.user_id)[0]
+    console.log("assignment", assignment)
     if (texter && texter.needsMessageCount === parseInt(assignment.needs_message_count, 10)) {
       unchangedTexters[assignment.user_id] = true
       return null
@@ -463,25 +509,34 @@ export async function assignTexters(job) {
   for (let index = 0; index < texterCount; index++) {
     const texter = texters[index]
     const texterId = parseInt(texter.id, 10)
+    console.log("texter.maxContacts", texter.maxContacts)
     const maxContacts = parseInt(texter.maxContacts || 0, 10)
+    console.log("maxContacts", maxContacts)
+    console.log("unchangedTexters", unchangedTexters)
     if (unchangedTexters[texterId]) {
+      console.log("unchangedTexter")
       continue
     }
     const contactsToAssign = Math.min(availableContacts, texter.needsMessageCount)
     if (contactsToAssign === 0) {
       // avoid creating a new assignment when the texter should get 0
       if (!campaign.use_dynamic_assignment) {
+        console.log("no contacts to assign and no dynamic assignment")
         continue
       }
     }
     availableContacts = availableContacts - contactsToAssign
+    console.log("currentAssignments", currentAssignments)
     const existingAssignment = currentAssignments.find((ele) => ele.user_id === texterId)
     let assignment = null
     if (existingAssignment) {
+      console.log("existingAssignment")
       assignment = new Assignment({ id: existingAssignment.id,
                                    user_id: existingAssignment.user_id,
                                    campaign_id: cid })
     } else {
+      const newMaxContacts = parseInt(maxContacts || process.env.MAX_CONTACTS_PER_TEXTER || 0, 10)
+      console.log(newMaxContacts)
       assignment = await new Assignment({
         user_id: texterId,
         campaign_id: cid,
