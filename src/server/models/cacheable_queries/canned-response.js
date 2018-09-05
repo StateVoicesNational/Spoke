@@ -23,7 +23,7 @@ export const cannedResponseCache = {
         return JSON.parse(cannedData)
       }
     }
-    const dbResult = r.table('canned_response')
+    const dbResult = await r.table('canned_response')
       .getAll(campaignId, { index: 'campaign_id' })
       .filter({ user_id: userId || '' })
     if (r.redis) {
