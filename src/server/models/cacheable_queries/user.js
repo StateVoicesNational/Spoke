@@ -81,7 +81,6 @@ export async function userOrgsWithRole(role, userId) {
   }
 }
 
-
 export async function userLoggedIn(authId) {
   const authKey = `texterauth-${authId}`
 
