@@ -629,6 +629,17 @@ const rootMutations = {
       }
       return editCampaign(id, campaign, loaders, user, origCampaign)
     },
+    deleteJob: async (_, { campaignId, id }, { user, loaders }) => {
+      const campaign = await Campaign.get(campaignId)
+      await accessRequired(user, campaign.organization_id, 'ADMIN')
+      const res = await r.knex('job_request')
+        .where({
+          id,
+          campaign_id: campaignId
+        })
+        .delete()
+      return { id }
+    },
     createCannedResponse: async (_, { cannedResponse }, { user, loaders }) => {
       authRequired(user)
 
