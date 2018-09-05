@@ -24,6 +24,6 @@ const Organization = thinky.createModel('organization', type.object().schema({
     .min(0)
     .max(24)
     .default(21)
-}).allowExtra(false))
+}).allowExtra(false), {noAutoCreation: true})
 
 export default Organization

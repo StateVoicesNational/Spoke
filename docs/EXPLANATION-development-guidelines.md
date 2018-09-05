@@ -84,6 +84,15 @@ current layout:
 const twoHoursAgo = new Date(new Date() - 1000 * 60 * 60 * 2)
 await r.knex('job_request').where({ assigned: true }).where('updated_at', '<', twoHoursAgo)
 ```
+  There are two specific gotchas:
+  * Do NOT use knex.insert and instead use `<Model>.save(...)`
+    * The reasoning is because sqlite does not support `returning()` as such and
+      [knex has inconsistent behavior for returning id values](https://github.com/MoveOnOrg/rethink-knex-adapter/blob/master/models.js#L206-L214).
+Sqlite does not support knex's `returning()` method.  This affects running `r.knex.insert(....)`
+  * Sqlite does not convert datefields in knex.
+    See for example: https://github.com/MoveOnOrg/Spoke/issues/817
+    One solution is to use r.table(...).getAll which WILL convert them.
+    Otherwise, make sure your code does the conversion when necessary.
 
 ### Schema changes
 
