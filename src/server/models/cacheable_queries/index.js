@@ -1,6 +1,14 @@
 export * from './user'
 import { organizationCache } from './organization'
+import { cannedResponseCache } from './canned-response'
+import { campaignContactCache } from './campaign-contact'
 
-export const cacheableData = {
-  organization: organizationCache
+const cacheableData = {
+  organization: organizationCache,
+  cannedResponse: cannedResponseCache,
+  campaignContact: campaignContactCache
+}
+
+export {
+  cacheableData
 }

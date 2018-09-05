@@ -108,6 +108,7 @@ const r = thinky.r
 export {
   createLoaders,
   r,
+  cacheableData,
   createTables,
   createTablesIfNecessary,
   dropTables,
