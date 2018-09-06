@@ -150,17 +150,21 @@ export const resolvers = {
       return messages
     },
     optOut: async (campaignContact, _, { loaders }) => {
-      let organizationId = campaignContact.organization_id
-      if (!organizationId) {
-        const campaign = await loaders.campaign.load(campaignContact.campaign_id)
-        organizationId = campaign.organization_id
+      let isOptedOut = null
+      if (typeof campaignContact.is_opted_out !== 'undefined') {
+        isOptedOut = campaignContact.is_opted_out
+      } else {
+        let organizationId = campaignContact.organization_id
+        if (!organizationId) {
+          const campaign = await loaders.campaign.load(campaignContact.campaign_id)
+          organizationId = campaign.organization_id
+        }
+
+        const isOptedOut = await cacheableData.optOut.query({
+          cell: campaignContact.cell,
+          organizationId
+        })
       }
-
-      const isOptedOut = await cacheableData.optOut.query({
-        cell: campaignContact.cell,
-        organizationId
-      })
-
       // fake ID so we don't need to look up existance
       return (isOptedOut ? { id: 'optout' } : null)
     }

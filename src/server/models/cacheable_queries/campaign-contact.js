@@ -1,4 +1,5 @@
-import { r } from '../../models'
+import { r, CampaignContact } from '../../models'
+import { optOutCache } from './opt-out'
 
 // <campaignContactId>
 //   - assignmentId
@@ -22,10 +23,8 @@ import { r } from '../../models'
 //   - messageStatus
 //   - messages
 
-// HASH <cell>-data
+// HASH message-<cell>
 //   - messageStatus
-//   - currentInteractionStepSript
-//   - currentInteractionStepId
 
 // TODO: relocate this method elsewhere
 const getMessageServiceSid = (organization) => {
@@ -44,17 +43,19 @@ const getMessageServiceSid = (organization) => {
   return orgSid
 }
 
+const cacheKey = async (id) => `${process.env.CACHE_PREFIX|""}contact-${id}`
+
 const saveCacheRecord = (dbRecord, organization, messageServiceSid) => {
-  // basic contact record
-  const contactCacheObj = generateCacheRecord(dbRecord, organization.id, messageServiceSid)
-  // messageStatus <cell>
-  // scriptStatus <contact_id>
+  if (r.redis) {
+    // basic contact record
+    const contactCacheObj = generateCacheRecord(dbRecord, organization.id, messageServiceSid)
+    await r.redis.setAsync(cacheKey(dbRecord.id), JSON.stringify(contactCacheObj))
+    // TODO:
+    //   messageStatus-<cell>
+  }
   // NOT INCLUDED:
   // - messages <cell><message_service_sid>
   // - questionResponseValues <contact_id>
-  // - optout <cell><organization> ~ opt_out match:{cell, organization}
-  // - optout ?<cell><campaign> ~ campaign_contact.is_opted_out
-  //   - currently the one below is redundant, because is_opted_out is redundant except for reporting
 }
 
 const generateCacheRecord = (dbRecord, organizationId, messageServiceSid) => ({
@@ -81,20 +82,32 @@ const generateCacheRecord = (dbRecord, organizationId, messageServiceSid) => ({
 
 export const campaignContactCache = {
   clear: async (id) => {
+    if (r.redis) {
+      await r.redis.delAsync(cacheKey(id))
+    }
   },
   load: async(id) => {
-    // Only cache NON-archived campaigns
-    //   should clear when archiving is done
-    // Should include (see TexterTodo.jsx):
-    // * campaignCannedResponses
-    // * organization metadata
-    // * interactionSteps
-    // * customFields
+    if (r.redis) {
+      const cacheRecord = await r.redis.getAsync(cacheKey(id))
+      if (cacheRecord) {
+        const cacheData = JSON.parse(cacheRecord)
+        if (cacheData.cell && cacheData.organization_id) {
+          cacheData.is_opted_out = await optOutCache.query({
+            cell: cacheData.cell,
+            organizationId: cacheData.organization_id })
+        }
+        console.log('fromCache', cacheData)
+        return cacheData
+      }
+    }
+    return await CampaignContact.get(id)
   },
   loadMany: async (organization, { campaign, queryFunc }) => {
     // queryFunc(query) has query input of a knex query
     // queryFunc should return a query with added where clauses
-
+    if (!r.redis) {
+      return
+    }
     // 1. load the data
     let query = r.knex('campaign_contact')
       .leftJoin('zip_code', 'zip_code.zip', 'campaign_contact.zip')
@@ -110,7 +123,6 @@ export const campaignContactCache = {
               'campaign_contact.zip',
               'campaign_contact.external_id',
               'campaign_contact.message_status',
-              'campaign_contact.is_opted_out',
               'campaign_contact.timezone_offset',
               'zip_code.city',
               'zip_code.state')
@@ -121,7 +133,6 @@ export const campaignContactCache = {
       query = queryFunc(query)
     }
     const dbResult = await query
-    console.log(dbResult)
     // 2. cache the data
     const messageServiceSid = getMessageServiceSid(organization)
     for (let i=0,l=dbResult.length; i<l; i++) {
