@@ -55,3 +55,68 @@ export async function userLoggedIn(authId) {
   }
   return userAuth
 }
+
+export async function updateAssignments(campaignInfo) {
+  const campaignId = campaignInfo.id
+  const dynamicAssignment = campaignInfo.use_dynamic_assignment
+  if (r.redis) {
+    const assignments = await r.knex('assignment')
+      .select('id', 'user_id', 'max_contacts')
+      .where('campaign_id', campaignId)
+      .then((result) => {
+        return result
+      })
+
+    const availableAssignments = await r.knex('campaign_contact')
+      .select()
+      .where({
+        'campaign_id': campaignId,
+        'is_opted_out': false,
+        'message_status': 'needsMessage'
+      })
+      .then((contacts) => {
+        const newArr = []
+        contacts.forEach((contact) => {
+          newArr.push(`id:${contact.id}-assignment_id:${contact.assignment_id}-external_id:${contact.external_id}-first_name:${contact.first_name}-last_name:${contact.last_name}-cell${contact.cell}-zip:${contact.zip}-timezone_offset:${contact.timezone_offset}
+          `)
+        })
+        return newArr
+      })
+
+
+    if (dynamicAssignment && !!assignments) {
+      for (let i = 0; i < assignments.length; i++) {
+        // value is the actual assignments available for this campaign
+        const texterId = assignments[i].user_id
+        const maxContacts = assignments[i].max_contacts
+        const dynamicAssignmentKey = `dynamicassignments-${texterId}-${campaignId}`
+        const possibleAssignmentsForTexterValue = `max_contacts-${maxContacts}-campaign_contacts-${availableAssignments}`
+
+        await r.redis.lpush(dynamicAssignmentKey, possibleAssignmentsForTexterValue)
+      }
+    }
+
+    if (!dynamicAssignment && !!assignments){
+
+      for (let i = 0; i < assignments.length; i++) {
+        // value is the actual assignment for a specific texter
+        const texterId = assignments[i].user_id
+        const assignmentId = assignments[i].id
+        const texterAssignmentKey = `newassignments-${texterId}-${campaignId}`
+        const texterContacts = await r.knex('campaign_contact')
+          .where('assignment_id', assignmentId)
+          .then((contacts) => {
+            const newArr = []
+            contacts.forEach((contact) => {
+              newArr.push(`id:${contact.id}-assignment_id:${contact.assignment_id}-external_id:${contact.external_id}-first_name:${contact.first_name}-last_name:${contact.last_name}-cell${contact.cell}-zip:${contact.zip}-timezone_offset:${contact.timezone_offset}
+              `)
+            })
+            return newArr
+          })
+
+        const texterAssignmentValue = `campaign_contacts-${texterContacts}`
+        await r.redis.lpush(texterAssignmentKey, texterAssignmentValue)
+      }
+    }
+  }
+}
