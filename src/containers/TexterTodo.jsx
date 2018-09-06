@@ -16,7 +16,6 @@ const contactDataFragment = `
         optOut {
           id
         }
-        currentInteractionStepScript
         questionResponseValues {
           interactionStepId
           value
@@ -145,6 +144,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
           customFields
           interactionSteps {
             id
+            script
             question {
               text
               answerOptions {
