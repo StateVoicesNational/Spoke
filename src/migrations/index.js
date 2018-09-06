@@ -8,7 +8,7 @@ const migrations = [
   { auto: true, // 0
     date: '2017-08-10',
     // eslint-disable-next-line
-    migrate: async function() {
+    migrate: async () => {
       await r.knex.schema.alterTable('organization', (table) => {
         table.string('uuid')
       })
@@ -18,7 +18,7 @@ const migrations = [
   { auto: true, // 1
     date: '2017-08-22',
     // eslint-disable-next-line
-    migrate: async function() {
+    migrate: async () => {
       await r.knex.schema.alterTable('interaction_step', (table) => {
         table.text('answer_actions')
       })
@@ -28,7 +28,7 @@ const migrations = [
   { auto: true, // 2
     date: '2017-08-23',
     // eslint-disable-next-line
-    migrate: async function() {
+    migrate: async () => {
       await r.knex.schema.alterTable('campaign_contact', (table) => {
         table.string('external_id').nullable().default(null)
       })
@@ -38,7 +38,7 @@ const migrations = [
   { auto: true, // 3
     date: '2017-09-24',
     // eslint-disable-next-line
-    migrate: async function() {
+    migrate: async () => {
       await r.knex.schema.alterTable('job_request', (table) => {
         table.string('result_message').nullable().default('')
       })
@@ -49,7 +49,7 @@ const migrations = [
   },
   { auto: true, // 4
     date: '2017-09-22',
-    migrate: async function migrate() {
+    migrate: async () => {
       console.log('updating for dynamic assignment (tables campaign, assignment)')
       await r.knex.schema.alterTable('campaign', (table) => {
         table.boolean('use_dynamic_assignment').notNullable().default(false)
@@ -62,7 +62,7 @@ const migrations = [
   },
   { auto: true, // 5
     date: '2017-09-25',
-    migrate: async function migrate() {
+    migrate: async () => {
       await r.knex.schema.alterTable('campaign_contact', (table) => {
         table.timestamp('updated_at').default('now()')
       })
@@ -71,7 +71,7 @@ const migrations = [
   },
   { auto: true, // 6
     date: '2017-10-03',
-    migrate: async function migrate() {
+    migrate: async () => {
       await r.knex.schema.alterTable('interaction_step', (table) => {
         console.log('updating interaction_step table')
         table.boolean('is_deleted').notNullable().default(false)
@@ -81,7 +81,7 @@ const migrations = [
   },
   { auto: true, // 7
     date: '2017-10-04',
-    migrate: async function migrate() {
+    migrate: async () => {
       await r.knex.schema.alterTable('campaign', (table) => {
         console.log('updating campaign table')
         table.text('intro_html')
@@ -93,7 +93,7 @@ const migrations = [
   },
   { auto: true, // 8
     date: '2017-09-28',
-    migrate: async function migrate() {
+    migrate: async () => {
       console.log('updating user table')
       await r.knex.schema.alterTable('user', (table) => {
         table.boolean('terms').default(false)
@@ -103,7 +103,7 @@ const migrations = [
   },
   { auto: true, // 9
     date: '2017-10-23',
-    migrate: async function migrate() {
+    migrate: async () => {
       console.log('updating message table')
       await r.knex.schema.alterTable('message', (table) => {
         table.timestamp('queued_at')
@@ -115,7 +115,7 @@ const migrations = [
   },
   { auto: true, // 10
     date: '2017-10-23',
-    migrate: async function migrate() {
+    migrate: async () => {
       console.log('adding log table')
       await r.knex.schema.createTableIfNotExists('log', (table) => {
         table.string('message_sid')
@@ -127,10 +127,15 @@ const migrations = [
   },
   { auto: true, // 11
     date: '2018-07-16',
-    migrate: async function() {
+    migrate: async () => {
       await r.knex.schema.alterTable('message', (table) => {
-        table.integer('user_id').unsigned().nullable().default(null)
-          .index().references('id').inTable('user')
+        table.integer('user_id')
+          .unsigned()
+          .nullable()
+          .default(null)
+          .index()
+          .references('id')
+          .inTable('user')
       })
       console.log('added user_id column to message table')
     }
@@ -158,10 +163,10 @@ export async function runMigrations(migrationIndex) {
     const migrationRecord = await Migrations.save({ completed: migrations.length })
     log.info('created Migration record for reference going forward', migrationRecord)
   } else {
-    migrationIndex = migrationIndex || exists.completed
-    if (migrationIndex < migrations.length) {
-      log.info('Migrating database from ', migrationIndex, 'to', migrations.length)
-      for (let i = migrationIndex, l = migrations.length; i <= l; i++) {
+    const migrationInd = migrationIndex || exists.completed
+    if (migrationInd < migrations.length) {
+      log.info('Migrating database from ', migrationInd, 'to', migrations.length)
+      for (let i = migrationInd, l = migrations.length; i <= l; i++) {
         const migration = migrations[i]
         if (!migration || !migration.auto) {
           break // stop all until the non-auto migration is run
