@@ -1,12 +1,14 @@
 export * from './user'
 import { organizationCache } from './organization'
 import { cannedResponseCache } from './canned-response'
-import { campaignContactCache } from './campaign-contact'
+//import { campaignContactCache } from './campaign-contact'
+import { optOutCache } from './opt-out'
 
 const cacheableData = {
-  organization: organizationCache,
+  //campaignContact: campaignContactCache,
   cannedResponse: cannedResponseCache,
-  campaignContact: campaignContactCache
+  optOut: optOutCache,
+  organization: organizationCache,
 }
 
 export {

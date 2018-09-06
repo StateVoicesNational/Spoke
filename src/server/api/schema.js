@@ -613,6 +613,7 @@ const rootMutations = {
       const campaign = await loaders.campaign.load(id)
       await accessRequired(user, campaign.organization_id, 'ADMIN')
       campaign.is_started = true
+
       await campaign.save()
       await sendUserNotification({
         type: Notifications.CAMPAIGN_STARTED,
@@ -785,37 +786,18 @@ const rootMutations = {
       await assignmentRequired(user, contact.assignment_id)
 
       const { assignmentId, cell, reason } = optOut
+      let organizationId = contact.organization_id
 
-      const campaign = await r
-        .table('assignment')
-        .get(assignmentId)
-        .eqJoin('campaign_id', r.table('campaign'))('right')
-      await new OptOut({
-        assignment_id: assignmentId,
-        organization_id: campaign.organization_id,
-        reason_code: reason,
-        cell
-      }).save()
-
-      // update all organization's active campaigns as well
-      await r
-        .knex('campaign_contact')
-        .where(
-          'id',
-          'in',
-          r
-            .knex('campaign_contact')
-            .leftJoin('campaign', 'campaign_contact.campaign_id', 'campaign.id')
-            .where({
-              'campaign_contact.cell': cell,
-              'campaign.organization_id': campaign.organization_id,
-              'campaign.is_archived': false
-            })
-            .select('campaign_contact.id')
-        )
-        .update({
-          is_opted_out: true
-        })
+      if (!organizationId) {
+        const campaign = await loaders.campaign.load(contact.campaign_id)
+        organizationId = campaign.organization_id
+      }
+      await cacheableData.optOut.save({
+        cell,
+        reason,
+        assignmentId,
+        organizationId
+      })
 
       return loaders.campaignContact.load(campaignContactId)
     },

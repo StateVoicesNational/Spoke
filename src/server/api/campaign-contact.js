@@ -1,4 +1,4 @@
-import { CampaignContact, r } from '../models'
+import { CampaignContact, r, cacheableData } from '../models'
 import { mapFieldsToModel } from './lib/utils'
 import { log, getTopMostParent, zipToTimeZone } from '../../lib'
 
@@ -150,13 +150,19 @@ export const resolvers = {
       return messages
     },
     optOut: async (campaignContact, _, { loaders }) => {
-      const campaign = await loaders.campaign.load(campaignContact.campaign_id)
+      let organizationId = campaignContact.organization_id
+      if (!organizationId) {
+        const campaign = await loaders.campaign.load(campaignContact.campaign_id)
+        organizationId = campaign.organization_id
+      }
 
-      return r.table('opt_out')
-        .getAll(campaignContact.cell, { index: 'cell' })
-        .filter({ organization_id: campaign.organization_id })
-        .limit(1)(0)
-        .default(null)
+      const isOptedOut = await cacheableData.optOut.query({
+        cell: campaignContact.cell,
+        organizationId
+      })
+
+      // fake ID so we don't need to look up existance
+      return (isOptedOut ? { id: 'optout' } : null)
     }
   }
 }
