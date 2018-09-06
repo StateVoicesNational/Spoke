@@ -188,7 +188,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
   }
 
   if (campaign.hasOwnProperty('interactionSteps')) {
-    await accessRequired(user, organizationId, 'ADMIN', /* superadmin*/ true)
+    await accessRequired(user, organizationId, 'SUPERVOLUNTEER', /* superadmin*/ true)
     await updateInteractionSteps(id, [campaign.interactionSteps], origCampaignRecord)
   }
 
@@ -709,7 +709,7 @@ const rootMutations = {
       return await contact.save()
     },
     getAssignmentContacts: async (_, { assignmentId, contactIds, findNew }, { loaders, user }) => {
-      assignmentRequired(user, assignmentId)
+      await assignmentRequired(user, assignmentId)
       const contacts = contactIds.map(async (contactId) => {
         const contact = await loaders.campaignContact.load(contactId)
         if (contact && contact.assignment_id === Number(assignmentId)) {
