@@ -27,7 +27,7 @@ const Campaign = thinky.createModel('campaign', type.object().schema({
   intro_html: type.string(),
   primary_color: type.string()
 
-}).allowExtra(false))
+}).allowExtra(false), {noAutoCreation: true})
 
 Campaign.ensureIndex('organization_id')
 
