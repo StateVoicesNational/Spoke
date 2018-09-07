@@ -111,12 +111,13 @@ function parseMessageText(message) {
   return params
 }
 
-async function sendMessage(message) {
+async function sendMessage(message, trx) {
   if (!twilio) {
     log.warn('cannot actually send SMS message -- twilio is not fully configured:', message.id)
     if (message.id) {
+      const options = trx ? { transaction: trx } : {}
       await Message.get(message.id)
-        .update({ send_status: 'SENT', sent_at: new Date() })
+        .update({ send_status: 'SENT', sent_at: new Date() }, options)
     }
     return 'test_message_uuid'
   }
@@ -182,18 +183,26 @@ async function sendMessage(message) {
         if (messageToSave.service_response.split(SENT_STRING).length >= MAX_SEND_ATTEMPTS + 1) {
           messageToSave.send_status = 'ERROR'
         }
-        Message.save(messageToSave, { conflict: 'update' })
+        let options = { conflict: 'update' }
+        if (trx) {
+          options.transaction = trx
+        }
+        Message.save(messageToSave, options)
         // eslint-disable-next-line no-unused-vars
         .then((_, newMessage) => {
           reject(err || (response ? new Error(JSON.stringify(response)) : new Error('Encountered unknown error')))
         })
       } else {
+        let options = { conflict: 'update' }
+        if (trx) {
+          options.transaction = trx
+        }
         Message.save({
           ...messageToSave,
           send_status: 'SENT',
           service: 'twilio',
           sent_at: new Date()
-        }, { conflict: 'update' })
+        }, options)
         .then((saveError, newMessage) => {
           resolve(newMessage)
         })
