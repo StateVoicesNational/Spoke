@@ -945,6 +945,13 @@ const rootMutations = {
 
       const sendBeforeDate = sendBefore ? sendBefore.toDate() : null
 
+      if (sendBeforeDate && sendBeforeDate <= Date.now()) {
+        throw new GraphQLError({
+          status: 400,
+          message: 'Outside permitted texting time for this recipient'
+        })
+      }
+
       const messageInstance = new Message({
         text: replaceCurlyApostrophes(text),
         contact_number: contactNumber,
