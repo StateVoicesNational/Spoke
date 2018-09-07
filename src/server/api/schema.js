@@ -46,6 +46,8 @@ import { resolvers as interactionStepResolvers } from './interaction-step'
 import { resolvers as inviteResolvers } from './invite'
 import { saveNewIncomingMessage } from './lib/message-sending'
 import serviceMap from './lib/services'
+import { saveNewIncomingMessage } from './lib/message-sending'
+import { gzip, log, makeTree } from '../../lib'
 import { resolvers as messageResolvers } from './message'
 import { resolvers as optOutResolvers } from './opt-out'
 import { resolvers as organizationResolvers } from './organization'
@@ -55,6 +57,15 @@ import { resolvers as questionResponseResolvers } from './question-response'
 import { getUsers, resolvers as userResolvers } from './user'
 
 // import { isBetweenTextingHours } from '../../lib/timezones'
+import { Notifications, sendUserNotification } from '../notifications'
+import {
+  uploadContacts,
+  loadContactsFromDataWarehouse,
+  assignTexters,
+  exportCampaign
+} from '../../workers/jobs'
+
+import { getSendBeforeTimeUtc } from '../../lib/timezones'
 const uuidv4 = require('uuid').v4
 const JOBS_SAME_PROCESS = !!(process.env.JOBS_SAME_PROCESS || global.JOBS_SAME_PROCESS)
 const JOBS_SYNC = !!(process.env.JOBS_SYNC || global.JOBS_SYNC)
@@ -900,6 +911,28 @@ const rootMutations = {
 
       const replaceCurlyApostrophes = rawText => rawText.replace(/[\u2018\u2019]/g, "'")
 
+      let contactTimezone = {}
+      if (contact.timezone_offset) {
+        // couldn't look up the timezone by zip record, so we load it
+        // from the campaign_contact directly if it's there
+        const [offset, hasDST] = contact.timezone_offset.split('_')
+        contactTimezone.offset = parseInt(offset, 10)
+        contactTimezone.hasDST = hasDST === '1'
+      }
+
+      const sendBefore = getSendBeforeTimeUtc(
+        contactTimezone,
+        { textingHoursEnd: organization.texting_hours_end, textingHoursEnforced: organization.texting_hours_enforced },
+        {
+          textingHoursEnd: campaign.texting_hours_end,
+          overrideOrganizationTextingHours: campaign.override_organization_texting_hours,
+          textingHoursEnforced: campaign.texting_hours_enforced,
+          timezone: campaign.timezone
+        }
+      )
+
+      const sendBeforeDate = sendBefore ? sendBefore.toDate() : null
+
       const messageInstance = new Message({
         text: replaceCurlyApostrophes(text),
         contact_number: contactNumber,
@@ -908,7 +941,8 @@ const rootMutations = {
         send_status: JOBS_SAME_PROCESS ? 'SENDING' : 'QUEUED',
         service: orgFeatures.service || process.env.DEFAULT_SERVICE || '',
         is_from_contact: false,
-        queued_at: new Date()
+        queued_at: new Date(),
+        send_before: sendBeforeDate
       })
 
       await messageInstance.save()
