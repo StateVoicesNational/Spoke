@@ -698,7 +698,7 @@ const rootMutations = {
       return await contact.save()
     },
     getAssignmentContacts: async (_, { assignmentId, contactIds, findNew }, { loaders, user }) => {
-      assignmentRequired(user, assignmentId)
+      await assignmentRequired(user, assignmentId)
       const contacts = contactIds.map(async (contactId) => {
         const contact = await loaders.campaignContact.load(contactId)
         if (contact && contact.assignment_id === Number(assignmentId)) {

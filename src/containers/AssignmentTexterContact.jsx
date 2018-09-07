@@ -803,8 +803,7 @@ export class AssignmentTexterContact extends React.Component {
 
   renderBottomFixedSection() {
     const { optOutDialogOpen } = this.state
-    const { data } = this.props
-    const { contact } = data
+    const { contact } = this.props
     const { messageStatus } = contact
 
     const message = (optOutDialogOpen) ? '' : (
