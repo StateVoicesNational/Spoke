@@ -32,6 +32,49 @@ function createLoader(model, idKey = 'id') {
   })
 }
 
+// This is in dependency order, so tables are after their dependencies
+const tableList = [
+  'organization',
+  'user',
+  'campaign',
+  'assignment',
+  // the rest are alphabetical
+  'campaign_contact',
+  'canned_response',
+  'interaction_step',
+  'invite',
+  'job_request',
+  'log',
+  'message',
+  'migrations',
+  'opt_out',
+  'pending_message_part',
+  'question_response',
+  'user_cell',
+  'user_organization',
+  'zip_code'
+]
+
+function createTablesIfNecessary() {
+  // builds the database if we don't see the organization table
+  return thinky.k.schema.hasTable('organization').then(
+    (tableExists) => {
+      if (!tableExists) {
+        console.log('CREATING DATABASE SCHEMA')
+        createTables()
+        return true
+      }
+    })
+}
+
+function createTables() {
+  return thinky.createTables(tableList)
+}
+
+function dropTables() {
+  return thinky.dropTables(tableList)
+}
+
 const createLoaders = () => ({
   assignment: createLoader(Assignment),
   campaign: createLoader(Campaign),
@@ -58,6 +101,9 @@ const r = thinky.r
 export {
   createLoaders,
   r,
+  createTables,
+  createTablesIfNecessary,
+  dropTables,
   datawarehouse,
   Migrations,
   Assignment,
