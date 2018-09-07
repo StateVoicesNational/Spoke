@@ -30,7 +30,8 @@ const Message = thinky.createModel('message', type.object().schema({
   created_at: timestamp(),
   queued_at: timestamp(),
   sent_at: timestamp(),
-  service_response_at: timestamp()
+  service_response_at: timestamp(),
+  send_before: timestamp()
 }, {
   dependencies: [User, Assignment]
 }).allowExtra(false))
