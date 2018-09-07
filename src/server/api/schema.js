@@ -6,12 +6,7 @@ import isUrl from 'is-url'
 
 import { gzip, log, makeTree } from '../../lib'
 import { applyScript } from '../../lib/scripts'
-import {
-  assignTexters,
-  exportCampaign,
-  loadContactsFromDataWarehouse,
-  uploadContacts
-} from '../../workers/jobs'
+import { assignTexters, exportCampaign, loadContactsFromDataWarehouse, uploadContacts } from '../../workers/jobs'
 import {
   Assignment,
   Campaign,
@@ -27,27 +22,18 @@ import {
   User,
   UserOrganization
 } from '../models'
+// import { isBetweenTextingHours } from '../../lib/timezones'
 import { Notifications, sendUserNotification } from '../notifications'
 import { resolvers as assignmentResolvers } from './assignment'
 import { getCampaigns, resolvers as campaignResolvers } from './campaign'
 import { resolvers as campaignContactResolvers } from './campaign-contact'
 import { resolvers as cannedResponseResolvers } from './canned-response'
-import {
-  getConversations,
-  resolvers as conversationsResolver
-} from './conversations'
-import {
-  accessRequired,
-  assignmentRequired,
-  authRequired,
-  superAdminRequired
-} from './errors'
+import { getConversations, resolvers as conversationsResolver } from './conversations'
+import { accessRequired, assignmentRequired, authRequired, superAdminRequired } from './errors'
 import { resolvers as interactionStepResolvers } from './interaction-step'
 import { resolvers as inviteResolvers } from './invite'
 import { saveNewIncomingMessage } from './lib/message-sending'
 import serviceMap from './lib/services'
-import { saveNewIncomingMessage } from './lib/message-sending'
-import { gzip, log, makeTree } from '../../lib'
 import { resolvers as messageResolvers } from './message'
 import { resolvers as optOutResolvers } from './opt-out'
 import { resolvers as organizationResolvers } from './organization'
@@ -56,16 +42,8 @@ import { resolvers as questionResolvers } from './question'
 import { resolvers as questionResponseResolvers } from './question-response'
 import { getUsers, resolvers as userResolvers } from './user'
 
-// import { isBetweenTextingHours } from '../../lib/timezones'
-import { Notifications, sendUserNotification } from '../notifications'
-import {
-  uploadContacts,
-  loadContactsFromDataWarehouse,
-  assignTexters,
-  exportCampaign
-} from '../../workers/jobs'
-
 import { getSendBeforeTimeUtc } from '../../lib/timezones'
+
 const uuidv4 = require('uuid').v4
 const JOBS_SAME_PROCESS = !!(process.env.JOBS_SAME_PROCESS || global.JOBS_SAME_PROCESS)
 const JOBS_SYNC = !!(process.env.JOBS_SYNC || global.JOBS_SYNC)
