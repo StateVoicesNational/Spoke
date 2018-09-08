@@ -224,9 +224,7 @@ export class AssignmentTexterContact extends React.Component {
 
   componentDidMount() {
     const { contact } = this.props.data
-    if (false) {
-      this.skipContact()
-    } else if (!this.isContactBetweenTextingHours(contact) || contact.optOut) {
+    if (!this.isContactBetweenTextingHours(contact) || contact.optOut) {
       setTimeout(() => {
         this.props.refreshData()
         this.setState({ disabled: false })
@@ -712,7 +710,7 @@ export class AssignmentTexterContact extends React.Component {
     return (
       <ContactToolbar
         campaignContact={contact}
-        onOptOut={this.onfin}
+        onOptOut={this.handleNavigateNext}
         rightToolbarIcon={(
           <IconButton
             onTouchTap={this.props.onExitTexter}
