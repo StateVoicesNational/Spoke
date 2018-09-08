@@ -224,12 +224,13 @@ export class AssignmentTexterContact extends React.Component {
 
   componentDidMount() {
     const { contact } = this.props.data
-    if (contact.optOut) {
+    if (false) {
       this.skipContact()
-    } else if (!this.isContactBetweenTextingHours(contact)) {
+    } else if (!this.isContactBetweenTextingHours(contact) || contact.optOut) {
       setTimeout(() => {
         this.props.refreshData()
         this.setState({ disabled: false })
+        this.skipContact()
       }, 1500)
     }
 
@@ -385,7 +386,7 @@ export class AssignmentTexterContact extends React.Component {
       await this.props.mutations.sendMessage(message, contact.id)
 
       await this.handleSubmitSurveys()
-      this.props.onFinishContact()
+      this.props.onFinishContact(false)
     } catch (e) {
       this.handleSendMessageError(e)
     }
@@ -425,7 +426,7 @@ export class AssignmentTexterContact extends React.Component {
   handleClickCloseContactButton = async () => {
     await this.handleSubmitSurveys()
     await this.handleEditMessageStatus('closed')
-    this.props.onFinishContact()
+    this.props.onFinishContact(false)
   }
 
   handleEditMessageStatus = async (messageStatus) => {
@@ -454,7 +455,7 @@ export class AssignmentTexterContact extends React.Component {
 
       await this.handleSubmitSurveys()
       await this.props.mutations.createOptOut(optOut, contact.id)
-      this.props.onFinishContact()
+      this.props.onFinishContact(false)
     } catch (e) {
       this.handleSendMessageError(e)
     }
@@ -535,7 +536,7 @@ export class AssignmentTexterContact extends React.Component {
   })
 
   skipContact = () => {
-    setTimeout(this.props.onFinishContact, 1500)
+    setTimeout(this.props.onFinishContact(true), 1500)
   }
 
   bulkSendMessages = async (assignmentId) => {
@@ -711,7 +712,7 @@ export class AssignmentTexterContact extends React.Component {
     return (
       <ContactToolbar
         campaignContact={contact}
-        onOptOut={this.handleNavigateNext}
+        onOptOut={this.onfin}
         rightToolbarIcon={(
           <IconButton
             onTouchTap={this.props.onExitTexter}
