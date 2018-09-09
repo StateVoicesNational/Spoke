@@ -230,7 +230,6 @@ export class AssignmentTexterContact extends React.Component {
       setTimeout(() => {
         this.props.refreshData()
         this.setState({ disabled: false })
-        this.skipContact()
       }, 1500)
     }
 
