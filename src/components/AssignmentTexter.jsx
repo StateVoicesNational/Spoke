@@ -69,9 +69,13 @@ class AssignmentTexter extends React.Component {
     return this.state.currentContactIndex < this.contactCount() - 1
   }
 
-  handleFinishContact = () => {
+  handleFinishContact = (skip) => {
     if (this.hasNext()) {
-      this.handleNavigateNextforSend()
+      if (!skip) {
+        this.handleNavigateNextforSend()
+      } else {
+        this.handleNavigateNextforSkip()
+      }
     } else {
       // Will look async and then redirect to todo page if not
       this.props.assignContactsIfNeeded(/* checkServer*/true)

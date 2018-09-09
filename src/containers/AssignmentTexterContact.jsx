@@ -382,7 +382,7 @@ export class AssignmentTexterContact extends React.Component {
       await this.props.mutations.sendMessage(message, contact.id)
 
       await this.handleSubmitSurveys()
-      this.props.onFinishContact()
+      this.props.onFinishContact(false)
     } catch (e) {
       this.handleSendMessageError(e)
     }
@@ -422,7 +422,7 @@ export class AssignmentTexterContact extends React.Component {
   handleClickCloseContactButton = async () => {
     await this.handleSubmitSurveys()
     await this.handleEditMessageStatus('closed')
-    this.props.onFinishContact()
+    this.props.onFinishContact(false)
   }
 
   handleEditMessageStatus = async (messageStatus) => {
@@ -451,7 +451,7 @@ export class AssignmentTexterContact extends React.Component {
 
       await this.handleSubmitSurveys()
       await this.props.mutations.createOptOut(optOut, contact.id)
-      this.props.onFinishContact()
+      this.props.onFinishContact(false)
     } catch (e) {
       this.handleSendMessageError(e)
     }
@@ -532,7 +532,7 @@ export class AssignmentTexterContact extends React.Component {
   })
 
   skipContact = () => {
-    setTimeout(this.props.onFinishContact, 1500)
+    setTimeout(this.props.onFinishContact(true), 1500)
   }
 
   bulkSendMessages = async (assignmentId) => {
