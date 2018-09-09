@@ -224,7 +224,9 @@ export class AssignmentTexterContact extends React.Component {
 
   componentDidMount() {
     const { contact } = this.props.data
-    if (!this.isContactBetweenTextingHours(contact) || contact.optOut) {
+    if (contact.optOut) {
+      this.skipContact()
+    } else if (!this.isContactBetweenTextingHours(contact)) {
       setTimeout(() => {
         this.props.refreshData()
         this.setState({ disabled: false })
