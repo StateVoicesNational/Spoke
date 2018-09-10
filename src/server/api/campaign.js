@@ -139,22 +139,10 @@ export const resolvers = {
         .limit(1)
       return contacts.length > 0
     },
-<<<<<<< HEAD
     customFields: async (campaign) => (
       campaign.customFields
       || cacheableData.campaign.dbCustomFields(campaign.id)
     ),
-    stats: async (campaign) => campaign
-=======
-    customFields: async (campaign) => {
-      const campaignContacts = await r.table('campaign_contact')
-        .getAll(campaign.id, { index: 'campaign_id' })
-        .limit(1)
-      if (campaignContacts.length > 0) {
-        return Object.keys(JSON.parse(campaignContacts[0].custom_fields))
-      }
-      return []
-    },
     stats: async (campaign) => campaign,
     editors: async (campaign, _, { user }) => {
       if (r.redis) {
@@ -162,6 +150,5 @@ export const resolvers = {
       }
       return ''
     }
->>>>>>> origin/main
   }
 }
