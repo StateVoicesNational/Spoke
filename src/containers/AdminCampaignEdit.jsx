@@ -1,11 +1,14 @@
 import PropTypes from 'prop-types'
 import React from 'react'
+
 import WarningIcon from 'material-ui/svg-icons/alert/warning'
 import DoneIcon from 'material-ui/svg-icons/action/done'
+import CancelIcon from 'material-ui/svg-icons/navigation/cancel'
+
 import Avatar from 'material-ui/Avatar'
 import theme from '../styles/theme'
 import CircularProgress from 'material-ui/CircularProgress'
-import { Card, CardHeader, CardText } from 'material-ui/Card'
+import { Card, CardHeader, CardText, CardActions } from 'material-ui/Card'
 import gql from 'graphql-tag'
 import loadData from './hoc/load-data'
 import wrapMutations from './hoc/wrap-mutations'
@@ -55,6 +58,7 @@ const campaignInfoFragment = `
     title
     text
   }
+  editors
 `
 
 class AdminCampaignEdit extends React.Component {
@@ -99,7 +103,7 @@ class AdminCampaignEdit extends React.Component {
     // NOTE: Since this does not _deep_ copy the values the
     // expandedKey pointers will remain the same object as before
     // so setState passes on those subsections should1 not refresh
-    let pushToFormValues = {
+    const pushToFormValues = {
       ...this.state.campaignFormValues,
       ...campaignDataCopy
     }
@@ -142,6 +146,15 @@ class AdminCampaignEdit extends React.Component {
     return this.props.location.query.new
   }
 
+  async handleDeleteJob(jobId) {
+    if (confirm('Discarding the job will not necessarily stop it from running.'
+                + ' However, if the job failed, discarding will let you try again.'
+                + ' Are you sure you want to discard the job?')) {
+      await this.props.mutations.deleteJob(jobId)
+      await this.props.pendingJobsData.refetch()
+    }
+  }
+
   handleChange = (formValues) => {
     this.setState({
       campaignFormValues: {
@@ -172,10 +185,10 @@ class AdminCampaignEdit extends React.Component {
     let newCampaign = {}
     if (this.checkSectionSaved(section)) {
       return // already saved and no data changes
-    } else {
-      newCampaign = {
-        ...this.getSectionState(section)
-      }
+    }
+
+    newCampaign = {
+      ...this.getSectionState(section)
     }
 
     if (Object.keys(newCampaign).length > 0) {
@@ -229,7 +242,7 @@ class AdminCampaignEdit extends React.Component {
     const pendingJobs = await this.props.pendingJobsData.refetch()
     if (pendingJobs.length && !noMore) {
       const self = this
-      setTimeout(function () {
+      setTimeout(() => {
         // run it once more after there are no more jobs
         self.pollDuringActiveJobs(true)
       }, 1000)
@@ -342,6 +355,7 @@ class AdminCampaignEdit extends React.Component {
     let relatedJob = null
     let savePercent = 0
     let jobMessage = null
+    let jobId = null
     if (pendingJobs.length > 0) {
       if (section.title === 'Contacts') {
         relatedJob = pendingJobs.filter((job) => (job.jobType === 'upload_contacts' || job.jobType === 'contact_sql'))[0]
@@ -356,12 +370,22 @@ class AdminCampaignEdit extends React.Component {
       sectionIsSaving = !relatedJob.resultMessage
       savePercent = relatedJob.status
       jobMessage = relatedJob.resultMessage
+      jobId = relatedJob.id
     }
     return {
       sectionIsSaving,
       savePercent,
-      jobMessage
+      jobMessage,
+      jobId
     }
+  }
+
+  renderCurrentEditors() {
+    const { editors } = this.props.campaignData.campaign
+    if (editors) {
+      return (<div>This campaign is being edited by: {editors}</div>)
+    }
+    return ''
   }
 
   renderCampaignFormSection(section, forceDisable) {
@@ -391,8 +415,9 @@ class AdminCampaignEdit extends React.Component {
         }}
       >
         This campaign is running!
+        {this.renderCurrentEditors()}
       </div>
-      ) :
+    ) :
       this.renderStartButton()
 
     return (
@@ -448,6 +473,7 @@ class AdminCampaignEdit extends React.Component {
           }}
         >
           {isCompleted ? 'Your campaign is all good to go! >>>>>>>>>' : 'You need to complete all the sections below before you can start this campaign'}
+          {this.renderCurrentEditors()}
         </div>
         <div>
           {this.props.campaignData.campaign.isArchived ? (
@@ -480,7 +506,6 @@ class AdminCampaignEdit extends React.Component {
       </div>
     )
   }
-
   render() {
     const sections = this.sections()
     const { expandedSection } = this.state
@@ -501,7 +526,7 @@ class AdminCampaignEdit extends React.Component {
             verticalAlign: 'middle'
           }
 
-          const { sectionIsSaving, savePercent } = this.sectionSaveStatus(section)
+          const { sectionIsSaving, savePercent, jobMessage, jobId } = this.sectionSaveStatus(section)
           const sectionCanExpandOrCollapse = (
             (section.expandAfterCampaignStarts
              || !this.props.campaignData.campaign.isStarted)
@@ -509,16 +534,8 @@ class AdminCampaignEdit extends React.Component {
 
           if (sectionIsSaving) {
             avatar = (<CircularProgress
-              size={0.35}
-              style={{
-                verticalAlign: 'top',
-                marginTop: '-13px',
-                marginLeft: '-14px',
-                marginRight: 36,
-                display: 'inline-block',
-                height: 20,
-                width: 20
-              }}
+              style={avatarStyle}
+              size={25}
             />)
             cardHeaderStyle.background = theme.colors.lightGray
             cardHeaderStyle.width = `${savePercent}%`
@@ -541,7 +558,6 @@ class AdminCampaignEdit extends React.Component {
             />)
             cardHeaderStyle.backgroundColor = theme.colors.yellow
           }
-
           return (
             <Card
               key={section.title}
@@ -569,6 +585,20 @@ class AdminCampaignEdit extends React.Component {
               >
                  {this.renderCampaignFormSection(section, sectionIsSaving)}
               </CardText>
+              {(sectionIsSaving && adminPerms
+                ?
+                <CardActions>
+                  <div>Current Status: {savePercent}% complete</div>
+                  {(jobMessage
+                     ? <div>Message: {jobMessage}</div>
+                     : null)}
+                  <RaisedButton
+                    label='Discard Job'
+                    icon={<CancelIcon />}
+                    onTouchTap={() => this.handleDeleteJob(jobId)}
+                  />
+                </CardActions>
+                : null)}
             </Card>
           )
         })}
@@ -651,7 +681,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
 })
 
 // Right now we are copying the result fields instead of using a fragment because of https://github.com/apollostack/apollo-client/issues/451
-const mapMutationsToProps = () => ({
+const mapMutationsToProps = ({ ownProps }) => ({
   archiveCampaign: (campaignId) => ({
     mutation: gql`mutation archiveCampaign($campaignId: String!) {
           archiveCampaign(id: $campaignId) {
@@ -676,21 +706,32 @@ const mapMutationsToProps = () => ({
       }`,
     variables: { campaignId }
   }),
-  editCampaign(campaignId, campaign) {
-    return ({
-      mutation: gql`
-        mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {
-          editCampaign(id: $campaignId, campaign: $campaign) {
-            ${campaignInfoFragment}
-          }
-        },
-      `,
-      variables: {
-        campaignId,
-        campaign
-      }
-    })
-  }
+  editCampaign: (campaignId, campaign) => ({
+    mutation: gql`
+      mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {
+        editCampaign(id: $campaignId, campaign: $campaign) {
+          ${campaignInfoFragment}
+        }
+      },
+    `,
+    variables: {
+      campaignId,
+      campaign
+    }
+  }),
+  deleteJob: (jobId) => ({
+    mutation: gql`
+      mutation deleteJob($campaignId: String!, $id: String!) {
+        deleteJob(campaignId: $campaignId, id: $id) {
+          id
+        }
+      },
+    `,
+    variables: {
+      campaignId: ownProps.params.campaignId,
+      id: jobId
+    }
+  })
 })
 
 export default loadData(wrapMutations(AdminCampaignEdit), {
