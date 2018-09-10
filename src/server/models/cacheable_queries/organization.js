@@ -29,7 +29,7 @@ export const organizationCache = {
         await r.redis.multi()
           .set(cacheKey(id), JSON.stringify(dbResult))
           .expire(cacheKey(id), 86400)
-          .exec()
+          .execAsync()
       }
       return dbResult
     }

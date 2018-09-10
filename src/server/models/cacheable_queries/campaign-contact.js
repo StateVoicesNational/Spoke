@@ -45,7 +45,7 @@ const getMessageServiceSid = (organization) => {
 
 const cacheKey = async (id) => `${process.env.CACHE_PREFIX|""}contact-${id}`
 
-const saveCacheRecord = (dbRecord, organization, messageServiceSid) => {
+const saveCacheRecord = async (dbRecord, organization, messageServiceSid) => {
   if (r.redis) {
     // basic contact record
     const contactCacheObj = generateCacheRecord(dbRecord, organization.id, messageServiceSid)
@@ -137,7 +137,7 @@ export const campaignContactCache = {
     const messageServiceSid = getMessageServiceSid(organization)
     for (let i=0,l=dbResult.length; i<l; i++) {
       const dbRecord = dbResult[i]
-      saveCacheRecord(dbRecord, organization, messageServiceSid)
+      await saveCacheRecord(dbRecord, organization, messageServiceSid)
     }
   }
 }
