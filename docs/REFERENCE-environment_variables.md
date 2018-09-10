@@ -11,6 +11,7 @@ AWS_ACCESS_KEY_ID                 | AWS access key ID with access to S3 bucket, 
 AWS_SECRET_ACCESS_KEY             | AWS access key secret with access to S3 bucket, required for campaign exports outside Amazon Lambda.
 AWS_S3_BUCKET_NAME                | Name of S3 bucket for saving campaign exports.
 BASE_URL                          | The base URL of the website, without trailing slack, e.g. `https://example.org`, used to construct various URLs.
+CACHE_PREFIX                      | If REDIS_URL is set, then this will prefix keys CACHE_PREFIX, which might be useful if multiple applications use the same redis server. _Default_: "".
 CAMPAIGN_ID                       | Campaign ID used by `dev-tools/export-query.js` to identify which campaign should be exported.
 DB_HOST                           | Domain or IP address of database host.
 DB_MAX_POOL                       | Database connection pool maximum size. _Default_: 10.
@@ -50,6 +51,7 @@ OUTPUT_DIR                        | Directory path for packaged files should be 
 PHONE_NUMBER_COUNTRY              | Country code for phone number formatting. _Default_: US.
 PORT                              | Port for Heroku servers.
 PUBLIC_DIR                        | Directory path server should use to serve files. _Required_.
+REDIS_URL                         | This enables caching using the [`url` option in redis library](https://github.com/NodeRedis/node_redis#options-object-properties).  This is an area of active development. More can be seen at [server/models/cacheable-queries/README](../src/server/models/cacheable-queries/README.md) and the [project board](https://github.com/MoveOnOrg/Spoke/projects/4)
 REVERE_SQS_URL                    | SQS URL to process outgoing Revere SMS Messages.
 REVERE_LIST_ID                    | Revere List to add user to.
 REVERE_NEW_SUBSCRIBER_MOBILE_FLOW | Revere mobile flow to trigger upon recording action.
