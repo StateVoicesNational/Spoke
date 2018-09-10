@@ -80,7 +80,8 @@ export const resolvers = {
       'logoImageUrl'
     ], Campaign),
     organization: async (campaign, _, { loaders }) => (
-      loaders.organization.load(campaign.organization_id)
+      campaign.organization
+      || loaders.organization.load(campaign.organization_id)
     ),
     datawarehouseAvailable: (campaign, _, { user }) => (
       user.is_superadmin && !!process.env.WAREHOUSE_DB_HOST
@@ -103,9 +104,8 @@ export const resolvers = {
       return query
     },
     interactionSteps: async (campaign) => (
-      r.table('interaction_step')
-        .getAll(campaign.id, { index: 'campaign_id' })
-        .filter({ is_deleted: false })
+      campaign.interactionSteps
+      || cacheableData.campaign.dbInteractionSteps(campaign.id)
     ),
     cannedResponses: async (campaign, { userId }) => (
       await cacheableData.cannedResponse.query({
@@ -130,15 +130,10 @@ export const resolvers = {
         .limit(1)
       return contacts.length > 0
     },
-    customFields: async (campaign) => {
-      const campaignContacts = await r.table('campaign_contact')
-        .getAll(campaign.id, { index: 'campaign_id' })
-        .limit(1)
-      if (campaignContacts.length > 0) {
-        return Object.keys(JSON.parse(campaignContacts[0].custom_fields))
-      }
-      return []
-    },
+    customFields: async (campaign) => (
+      campaign.customFields
+      || cacheableData.campaign.dbCustomFields(campaign.id)
+    ),
     stats: async (campaign) => campaign
   }
 }

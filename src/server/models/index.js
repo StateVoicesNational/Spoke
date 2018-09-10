@@ -84,7 +84,7 @@ function dropTables() {
 
 const createLoaders = () => ({
   assignment: createLoader(Assignment),
-  campaign: createLoader(Campaign),
+  campaign: createLoader(Campaign, {cacheObj: cacheableData.campaign}),
   invite: createLoader(Invite),
   organization: createLoader(Organization, {cacheObj: cacheableData.organization}),
   user: createLoader(User),
