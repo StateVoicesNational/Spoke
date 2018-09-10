@@ -11,6 +11,7 @@ import yup from 'yup'
 
 import FlatButton from 'material-ui/FlatButton'
 import RaisedButton from 'material-ui/RaisedButton'
+import { dataTest } from '../lib/attributes'
 
 class UserEdit extends React.Component {
 
@@ -49,10 +50,10 @@ class UserEdit extends React.Component {
         onSubmit={this.handleSave}
         defaultValue={user}
       >
-        <Form.Field label='First name' name='firstName' />
-        <Form.Field label='Last name' name='lastName' />
-        <Form.Field label='Email' name='email' />
-        <Form.Field label='Cell Number' name='cell' />
+        <Form.Field label='First name' name='firstName' {...dataTest('firstName')} />
+        <Form.Field label='Last name' name='lastName' {...dataTest('lastName')} />
+        <Form.Field label='Email' name='email' {...dataTest('email')} />
+        <Form.Field label='Cell Number' name='cell' {...dataTest('cell')} />
         <Form.Button
           type='submit'
           label={this.props.saveLabel || 'Save'}
