@@ -501,7 +501,7 @@ const rootMutations = {
       await accessRequired(user, organizationId, 'OWNER')
 
       const organization = await Organization.get(organizationId)
-      const featuresJSON = JSON.parse(organization.features)
+      const featuresJSON = JSON.parse(organization.features || '{}')
       featuresJSON.opt_out_message = optOutMessage
       organization.features = JSON.stringify(featuresJSON)
 

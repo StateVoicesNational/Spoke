@@ -124,23 +124,29 @@ class Settings extends React.Component {
           <CardHeader
             title='Settings'
           />
-          <GSForm
-            schema={formSchema}
-            onSubmit={this.props.mutations.updateOptOutMessage}
-            defaultValue={{ optOutMessage }}
-          >
+          <CardText>
+            <div className={css(styles.section)}>
 
-            <Form.Field 
-              label='Default Opt-Out Message' 
-              name='optOutMessage'  
-            />
+            <GSForm
+              schema={formSchema}
+              onSubmit={this.props.mutations.updateOptOutMessage}
+              defaultValue={{ optOutMessage }}
+            >
 
-            <Form.Button
-              type='submit'
-              label={this.props.saveLabel || 'Save Opt-Out Message'}
-            />
+              <Form.Field 
+                label='Default Opt-Out Message' 
+                name='optOutMessage'  
+              />
 
-          </GSForm>
+              <Form.Button
+                type='submit'
+                label={this.props.saveLabel || 'Save Opt-Out Message'}
+              />
+
+            </GSForm>
+            </div>
+          </CardText>
+
           <CardText>
             <div className={css(styles.section)}>
               <span className={css(styles.sectionLabel)}>
