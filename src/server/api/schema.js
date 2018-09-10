@@ -483,6 +483,7 @@ const rootMutations = {
         texting_hours_start: textingHoursStart,
         texting_hours_end: textingHoursEnd
       })
+      cacheableData.organization.clear(organizationId)
 
       return await Organization.get(organizationId)
     },
