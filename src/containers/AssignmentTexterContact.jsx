@@ -512,7 +512,7 @@ export class AssignmentTexterContact extends React.Component {
 
       timezoneData = { hasDST, offset }
     } else {
-      let location = getContactTimezone(contact.location)
+      let location = getContactTimezone(this.props.campaign, contact.location)
       if (location) {
         let timezone = location.timezone
         if (timezone) {
@@ -527,6 +527,11 @@ export class AssignmentTexterContact extends React.Component {
       textingHoursEnd,
       textingHoursEnforced
     }
+
+    if (campaign.overrideOrganizationTextingHours) {
+      config.campaignTextingHours = { textingHoursStart, textingHoursEnd, textingHoursEnforced, timezone }
+    }
+
     return isBetweenTextingHours(timezoneData, config)
   }
 
@@ -710,6 +715,7 @@ export class AssignmentTexterContact extends React.Component {
     const { contact } = this.props.data
     return (
       <ContactToolbar
+        campaign={this.props.campaign}
         campaignContact={contact}
         onOptOut={this.handleNavigateNext}
         rightToolbarIcon={(
