@@ -17,7 +17,8 @@ import {
   JobRequest,
   User,
   r,
-  datawarehouse
+  datawarehouse,
+  cacheableData
 } from '../models'
 import { schema as userSchema, resolvers as userResolvers, buildUserOrganizationQuery } from './user'
 import {
@@ -210,9 +211,14 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
       .filter({ user_id: '' })
       .delete()
     await CannedResponse.save(convertedResponses)
+    await cacheableData.cannedResponse.clearQuery({
+      userId: '',
+      campaignId: id
+    })
   }
 
   const newCampaign = await Campaign.get(id).update(campaignUpdates)
+  cacheableData.campaign.reload(id)
   return newCampaign || loaders.campaign.load(id)
 }
 
@@ -477,21 +483,23 @@ const rootMutations = {
         texting_hours_start: textingHoursStart,
         texting_hours_end: textingHoursEnd
       })
+      cacheableData.organization.clear(organizationId)
 
       return await Organization.get(organizationId)
     },
     updateTextingHoursEnforcement: async (
       _,
       { organizationId, textingHoursEnforced },
-      { user }
+      { user, loaders }
     ) => {
       await accessRequired(user, organizationId, 'SUPERVOLUNTEER')
 
       await Organization.get(organizationId).update({
         texting_hours_enforced: textingHoursEnforced
       })
+      await cacheableData.organization.clear(organizationId)
 
-      return await Organization.get(organizationId)
+      return await loaders.organization.load(organizationId)
     },
     createInvite: async (_, { user }) => {
       if ((user && user.is_superadmin) || !process.env.SUPPRESS_SELF_INVITE) {
@@ -607,6 +615,7 @@ const rootMutations = {
       const campaign = await loaders.campaign.load(id)
       await accessRequired(user, campaign.organization_id, 'ADMIN')
       campaign.is_started = true
+
       await campaign.save()
       await sendUserNotification({
         type: Notifications.CAMPAIGN_STARTED,
@@ -628,6 +637,17 @@ const rootMutations = {
         })
       }
       return editCampaign(id, campaign, loaders, user, origCampaign)
+    },
+    deleteJob: async (_, { campaignId, id }, { user, loaders }) => {
+      const campaign = await Campaign.get(campaignId)
+      await accessRequired(user, campaign.organization_id, 'ADMIN')
+      const res = await r.knex('job_request')
+        .where({
+          id,
+          campaign_id: campaignId
+        })
+        .delete()
+      return { id }
     },
     createCannedResponse: async (_, { cannedResponse }, { user, loaders }) => {
       authRequired(user)
@@ -655,6 +675,10 @@ const rootMutations = {
         .andWhere({ user_id: cannedResponse.userId })
         .del()
       await query
+      cacheableData.cannedResponse.clearQuery({
+        campaignId: cannedResponse.campaignId,
+        userId: cannedResponse.userId
+      })
     },
     createOrganization: async (_, { name, userId, inviteId }, { loaders, user }) => {
       authRequired(user)
@@ -775,37 +799,18 @@ const rootMutations = {
       await assignmentRequired(user, contact.assignment_id)
 
       const { assignmentId, cell, reason } = optOut
+      let organizationId = contact.organization_id
 
-      const campaign = await r
-        .table('assignment')
-        .get(assignmentId)
-        .eqJoin('campaign_id', r.table('campaign'))('right')
-      await new OptOut({
-        assignment_id: assignmentId,
-        organization_id: campaign.organization_id,
-        reason_code: reason,
-        cell
-      }).save()
-
-      // update all organization's active campaigns as well
-      await r
-        .knex('campaign_contact')
-        .where(
-          'id',
-          'in',
-          r
-            .knex('campaign_contact')
-            .leftJoin('campaign', 'campaign_contact.campaign_id', 'campaign.id')
-            .where({
-              'campaign_contact.cell': cell,
-              'campaign.organization_id': campaign.organization_id,
-              'campaign.is_archived': false
-            })
-            .select('campaign_contact.id')
-        )
-        .update({
-          is_opted_out: true
-        })
+      if (!organizationId) {
+        const campaign = await loaders.campaign.load(contact.campaign_id)
+        organizationId = campaign.organization_id
+      }
+      await cacheableData.optOut.save({
+        cell,
+        reason,
+        assignmentId,
+        organizationId
+      })
 
       return loaders.campaignContact.load(campaignContactId)
     },

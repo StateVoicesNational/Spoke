@@ -307,9 +307,9 @@ export class AssignmentTexterContact extends React.Component {
   }
 
   getStartingMessageText() {
-    const { contact } = this.props
+    const { contact, campaign } = this.props
     const { messages } = contact
-    return messages.length > 0 ? '' : this.getMessageTextFromScript(contact.currentInteractionStepScript)
+    return messages.length > 0 ? '' : this.getMessageTextFromScript(campaign.interactionSteps[0].script)
   }
 
   handleOpenPopover = (event) => {

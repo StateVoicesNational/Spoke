@@ -1,6 +1,8 @@
-import { r, datawarehouse, Assignment, Campaign, CampaignContact, Organization, User } from '../server/models'
+import { r, datawarehouse, cacheableData,
+         Assignment, Campaign, CampaignContact, Organization, User } from '../server/models'
 import { log, gunzip, zipToTimeZone, convertOffsetsToStrings } from '../lib'
 import { updateJob } from './lib'
+import { getFormattedPhoneNumber } from '../lib/phone-format.js'
 import serviceMap from '../server/api/lib/services'
 import { getLastMessage, saveNewIncomingMessage } from '../server/api/lib/message-sending'
 
@@ -175,6 +177,7 @@ export async function uploadContacts(job) {
       await r.table('job_request').get(job.id).delete()
     }
   }
+  await cacheableData.campaign.reload(campaignId)
 }
 
 export async function loadContactsFromDataWarehouseFragment(jobEvent) {
@@ -226,11 +229,12 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
 
   const jobMessages = []
   const savePortion = await Promise.all(knexResult.rows.map(async (row) => {
+    const formatCell = getFormattedPhoneNumber(row.cell, (process.env.PHONE_NUMBER_COUNTRY || 'US'))
     const contact = {
       campaign_id: jobEvent.campaignId,
       first_name: row.first_name || '',
       last_name: row.last_name || '',
-      cell: row.cell,
+      cell: formatCell,
       zip: row.zip || '',
       external_id: (row.external_id ? String(row.external_id) : ''),
       assignment_id: null,
@@ -272,6 +276,7 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
       console.log('OPTOUT CELL COUNT', optOutCellCount)
     }
     await r.table('job_request').get(jobEvent.jobId).delete()
+    await cacheableData.campaign.reload(jobEvent.campaignId)
     return { 'completed': 1 }
   } else if (jobEvent.part < (jobEvent.totalParts - 1)) {
     const newPart = jobEvent.part + 1
