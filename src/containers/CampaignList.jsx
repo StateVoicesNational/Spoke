@@ -1,3 +1,5 @@
+import gql from 'graphql-tag'
+import SpeakerNotesIcon from 'material-ui/svg-icons/action/speaker-notes'
 import PropTypes from 'prop-types'
 import React from 'react'
 import { List, ListItem } from 'material-ui/List'
@@ -10,9 +12,7 @@ import { withRouter } from 'react-router'
 import theme from '../styles/theme'
 import Chip from '../components/Chip'
 import loadData from './hoc/load-data'
-import gql from 'graphql-tag'
 import wrapMutations from './hoc/wrap-mutations'
-import SpeakerNotesIcon from 'material-ui/svg-icons/action/speaker-notes'
 import Empty from '../components/Empty'
 
 
@@ -22,6 +22,7 @@ const campaignInfoFragment = `
   isStarted
   isArchived
   hasUnassignedContacts
+  hasUnsentInitialMessages
   description
   dueBy
 `
@@ -40,8 +41,14 @@ const inlineStyles = {
 
 class CampaignList extends React.Component {
   renderRow(campaign) {
-    const { isStarted, isArchived, hasUnassignedContacts } = campaign
+    const {
+      isStarted,
+      isArchived,
+      hasUnassignedContacts,
+      hasUnsentInitialMessages
+    } = campaign
     const { adminPerms } = this.props
+
 
     let listItemStyle = {}
     let leftIcon = ''
@@ -62,6 +69,10 @@ class CampaignList extends React.Component {
 
     if (hasUnassignedContacts) {
       tags.push('Unassigned contacts')
+    }
+
+    if (hasUnsentInitialMessages) {
+      tags.push('Unsent initial messages')
     }
 
     const primaryText = (
