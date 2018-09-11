@@ -394,28 +394,30 @@ export async function assignTexters(job) {
   //   iterating over texter, assignment is created, then apportioned needsMessageCount texters
  
   /*  
-  A. # of contacts assigned and already texted (for a texter)
-  B. # of contacts assigned but not yet texted (for a texter)
+  A. clientMessagedCount  or serverMessagedCount: # of contacts assigned and already texted (for a texter) 
+    aka clientMessagedCount / serverMessagedCount
+  B. needsMessageCount: # of contacts assigned but not yet texted (for a texter) 
   C. max contacts (for a texter)
   D. pool of unassigned and assignable texters
+    aka availableContacts
 
   In dynamic assignment mode:
     Add new texter
       Create assignment
     Change C
-      if new C > A and new C <> old C:
+      if new C >= A and new C <> old C:
         Update assignment
-        For testing: confirm that contacts are being assigned to the texter up to min(new C, D)
-      if new C > A and new C = old C:
+      if new C >= A and new C = old C:
         No change
       if new C < A or new C = 0:
         Why are we doing this? If we want to keep someone from texting any more, 
-          we should apply a separate "blocked". Re-assignment of previously texted contacts
-          is manual-only and doable in the Message Review admin. Form validation should
-          prevent either of these cases from reaching jobs.js.
+          we set their max_contacts to 0, and manually re-assign any of their 
+          previously texted contacts in the Message Review admin. 
+          TODO: Form validation should catch the case where C < A.
     Delete texter
       Assignment form currently prevents this (though it might be okay if A = 0).
-      To stop a texter from texting any more, re-assign their contacts to another texter.
+      To stop a texter from texting any more in the campaign, 
+      set their max to zero and re-assign their contacts to another texter.
 
   In standard assignment mode:
     Add new texter
@@ -434,9 +436,11 @@ export async function assignTexters(job) {
         Update assignment
     Delete texter
       Not sure we allow this?
-    */ 
-
+  
+  TODO: what happens when we switch modes? Do we allow it?
+  */ 
   const payload = JSON.parse(job.payload)
+  console.log(payload)
   const cid = job.campaign_id
   const campaign = (await r.knex('campaign').where({ id: cid }))[0]
   const texters = payload.texters
@@ -448,41 +452,54 @@ export async function assignTexters(job) {
     .select('user_id',
             'assignment.id as id',
             r.knex.raw("SUM(CASE WHEN allcontacts.message_status = 'needsMessage' THEN 1 ELSE 0 END) as needs_message_count"),
-            r.knex.raw('COUNT(allcontacts.id) as full_contact_count')
+            r.knex.raw('COUNT(allcontacts.id) as full_contact_count'),
+            'max_contacts'
            )
     .catch(log.error)
 
-  const unchangedTexters = {}
-  const demotedTexters = {}
+  const unchangedTexters = {} // max_contacts and needsMessageCount unchanged
+  const demotedTexters = {} // needsMessageCount reduced
+  const dynamic = campaign.use_dynamic_assignment
 
-  // changedAssignments:
+  // detect changed assignments
   currentAssignments.map((assignment) => {
     const texter = texters.filter((ele) => parseInt(ele.id, 10) === assignment.user_id)[0]
-    if (texter && texter.needsMessageCount === parseInt(assignment.needs_message_count, 10)) {
-      unchangedTexters[assignment.user_id] = true
-      return null
-    } else if (texter) { // assignment change
-      // If there is a delta between client and server, then accomodate delta (See #322)
-      const clientMessagedCount = texter.contactsCount - texter.needsMessageCount
-      const serverMessagedCount = assignment.full_contact_count - assignment.needs_message_count
+    const unchangedMaxContacts = 
+      parseInt(texter.maxContacts || 0, 10) === assignment.max_contacts || // integer = integer
+      texter.maxContacts === assignment.max_contacts // null = null 
+    const unchangedNeedsMessageCount = 
+      texter.needsMessageCount === parseInt(assignment.needs_message_count, 10)
+    console.log("texter.id", texter.id)
+    console.log("unchangedMaxContacts", unchangedMaxContacts)
+    console.log("unchangedNeedsMessageCount", unchangedNeedsMessageCount)
+    if (texter) {
+      if ((!dynamic && unchangedNeedsMessageCount) || (dynamic && unchangedMaxContacts)) {
+        unchangedTexters[assignment.user_id] = true
+        return null
+      } else if (!dynamic) { // standard assignment change
+        // If there is a delta between client and server, then accommodate delta (See #322)
+        const clientMessagedCount = texter.contactsCount - texter.needsMessageCount
+        const serverMessagedCount = assignment.full_contact_count - assignment.needs_message_count
 
-      const numDifferent = ((texter.needsMessageCount || 0)
-                            - assignment.needs_message_count
-                            - Math.max(0, serverMessagedCount - clientMessagedCount))
+        const numDifferent = ((texter.needsMessageCount || 0)
+                              - assignment.needs_message_count
+                              - Math.max(0, serverMessagedCount - clientMessagedCount))
 
-      if (numDifferent < 0) { // got less than before
-        demotedTexters[assignment.id] = -numDifferent
-      } else { // got more than before: assign the difference
-        texter.needsMessageCount = numDifferent
-      }
+        if (numDifferent < 0) { // got less than before
+          demotedTexters[assignment.id] = -numDifferent
+        } else { // got more than before: assign the difference
+          texter.needsMessageCount = numDifferent
+        }
+      } 
       return assignment
-    } else { // new texter
+    }
+    else { // new texter
       return assignment
     }
   }).filter((ele) => ele !== null)
-
+  console.log("unchangedTexters", unchangedTexters)
   for (const assignId in demotedTexters) {
-    // Here we demote ALL the demotedTexters contacts (not just the demotion count)
+    // Here we unassign ALL the demotedTexters contacts (not just the demotion count)
     // because they will get reapportioned below
     await r.knex('campaign_contact')
       .where('id', 'in',
@@ -517,11 +534,11 @@ export async function assignTexters(job) {
     }
 
     if (unchangedTexters[texterId]) {
-      continue // TODO: make sure maxContacts changes don't end up in unchangedTexters
-      // after we move max contacts saving into here
+      continue 
     }
 
     const contactsToAssign = Math.min(availableContacts, texter.needsMessageCount)
+
     if (contactsToAssign === 0) {
       // avoid creating a new assignment when the texter should get 0
       if (!campaign.use_dynamic_assignment) {
@@ -531,10 +548,17 @@ export async function assignTexters(job) {
     availableContacts = availableContacts - contactsToAssign
     const existingAssignment = currentAssignments.find((ele) => ele.user_id === texterId)
     let assignment = null
+
     if (existingAssignment) {
-      assignment = new Assignment({ id: existingAssignment.id,
-                                   user_id: existingAssignment.user_id,
-                                   campaign_id: cid })
+      if (!dynamic) {
+        assignment = new Assignment({ id: existingAssignment.id,
+                                     user_id: existingAssignment.user_id,
+                                     campaign_id: cid}) // for notification
+      } else {
+        await r.knex('assignment')
+        .where({ id: existingAssignment.id })
+        .update({ max_contacts: maxContacts })
+      }
     } else {
       assignment = await new Assignment({
         user_id: texterId,
@@ -569,7 +593,7 @@ export async function assignTexters(job) {
   } // endfor
 
   if (!campaign.use_dynamic_assignment) {
-    // dynamic assignments, having zero initially initially is ok
+    // dynamic assignments, having zero initially is ok
     const assignmentsToDelete = r.knex('assignment')
       .where('assignment.campaign_id', cid)
       .leftJoin('campaign_contact', 'assignment.id', 'campaign_contact.assignment_id')
