@@ -1,5 +1,5 @@
 import { mapFieldsToModel } from './lib/utils'
-import { Assignment, r } from '../models'
+import { Assignment, r, cacheableData } from '../models'
 import { getOffsets, defaultTimezoneIsBetweenTextingHours } from '../../lib'
 
 export function addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue(
@@ -109,7 +109,11 @@ export function getContacts(assignment, contactsFilter, organization, campaign, 
 export const resolvers = {
   Assignment: {
     ...mapFieldsToModel(['id', 'maxContacts'], Assignment),
-    texter: async (assignment, _, { loaders }) => loaders.user.load(assignment.user_id),
+    texter: async (assignment, _, { loaders }) => (
+      assignment.texter
+      ? assignment.texter
+      : loaders.user.load(assignment.user_id)
+    ),
     campaign: async (assignment, _, { loaders }) => loaders.campaign.load(assignment.campaign_id),
     contactsCount: async (assignment, { contactsFilter }) => {
       const campaign = await r.table('campaign').get(assignment.campaign_id)
@@ -125,14 +129,14 @@ export const resolvers = {
       return getContacts(assignment, contactsFilter, organization, campaign)
     },
     campaignCannedResponses: async assignment =>
-      await r
-        .table('canned_response')
-        .getAll(assignment.campaign_id, { index: 'campaign_id' })
-        .filter({ user_id: '' }),
+      await cacheableData.cannedResponse.query({
+        userId: '',
+        campaignId: assignment.campaign_id
+      }),
     userCannedResponses: async assignment =>
-      await r
-        .table('canned_response')
-        .getAll(assignment.campaign_id, { index: 'campaign_id' })
-        .filter({ user_id: assignment.user_id })
+      await cacheableData.cannedResponse.query({
+        userId: assignment.user_id,
+        campaignId: assignment.campaign_id
+      })
   }
 }
