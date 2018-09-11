@@ -158,10 +158,12 @@ export async function uploadContacts(job) {
     await CampaignContact.save(savePortion)
   }
 
+  const optOutsByOrgId = function() { this.select('cell').from('opt_out').where('organization_id', campaign.organization_id) }
+  const optOutsByInstance = function() { this.select('cell').from('opt_out') }
+  const getOptOutCount = (!!process.env.OPTOUTS_SHARE_ALL_ORGS ? optOutsByInstance : optOutsByOrgId)
+
   const optOutCellCount = await r.knex('campaign_contact')
-    .whereIn('cell', function optouts() {
-      this.select('cell').from('opt_out').where('organization_id', campaign.organization_id)
-    })
+    .whereIn('cell', getOptOutCount)
     .where('campaign_id', campaignId)
     .delete()
 
@@ -267,10 +269,13 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
     if (jobEvent.organizationId) {
       // now that we've saved them all, we delete everyone that is opted out locally
       // doing this in one go so that we can get the DB to do the indexed cell matching
+
+      const optOutsByOrgId = function() { this.select('cell').from('opt_out').where('organization_id', campaign.organization_id) }
+      const optOutsByInstance = function() { this.select('cell').from('opt_out') }
+      const getOptOutCount = (!!process.env.OPTOUTS_SHARE_ALL_ORGS ? optOutsByInstance : optOutsByOrgId)
+      
       const optOutCellCount = await r.knex('campaign_contact')
-        .whereIn('cell', function optouts() {
-          this.select('cell').from('opt_out').where('organization_id', jobEvent.organizationId)
-        })
+        .whereIn('cell', getOptOutCount)
         .where('campaign_id', jobEvent.campaignId)
         .delete()
       console.log('OPTOUT CELL COUNT', optOutCellCount)
