@@ -92,7 +92,6 @@ export class AssignmentSummary extends Component {
             primaryColor, logoImageUrl, introHtml,
             useDynamicAssignment } = assignment.campaign
     const maxContacts = assignment.maxContacts
-    const disabled = (useDynamicAssignment && !hasUnassignedContacts && unmessagedCount == 0) || (useDynamicAssignment && maxContacts === 0)
     return (
       <div className={css(styles.container)}>
         <Card
