@@ -83,9 +83,9 @@ class AssignmentTexter extends React.Component {
     results in O(n) queries. Later rounds of optimization will make it so that these queries hit a 
     combination of redis cache and RDS database. You'll also see references to "contact cache" below--
     this is different than redis, and it's a reference to this component storing contact data in its state, which
-    is another form of in-memory caching. A blended set of strategies -- using redis to make data retrieval faster,
-    getting data from the data store in batches, and storing batches in the component that is rendering this data--
-    working in concert will be key to achieving our scaling goals.
+    is another form of in-memory client side caching. A blended set of strategies -- using redis to make data 
+    retrieval faster, getting data from the data store in batches, and storing batches in the component that 
+    is rendering this data-- working in concert will be key to achieving our scaling goals.
 
     In addition to getting all the contact data needed to text contacts at once instead of in a nested loop,
     these changes get a batch of contacts at a time with a moving batch window. BATCH_GET is teh number of contacts
