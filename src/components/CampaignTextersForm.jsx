@@ -163,7 +163,7 @@ export default class CampaignTextersForm extends React.Component {
         assignment: {
           ...newTexter.assignment,
           contactsCount: convertedNeedsMessageCount + messagedCount,
-          messagedCount: messagedCount,
+          messagedCount,
           needsMessageCount: convertedNeedsMessageCount,
           maxContacts: convertedMaxContacts
         }
