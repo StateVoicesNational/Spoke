@@ -47,6 +47,7 @@ NO_EXTERNAL_LINKS                 | Removes google fonts and auth0 login script 
 NODE_ENV                          | Node environment type. _Options_: development, production.
 NOT_IN_USA                        | A flag to affirmatively indicate the ability to use features that are discouraged or not legally usable in the United States. Consult with an attorney about the implications for doing so. _Default_: false (i.e. default assumes a USA legal context)
 OPT_OUT_MESSAGE                   | Spoke instance-wide default for opt out message.
+OPTOUTS_SHARE_ALL_ORGS            | Can be set to true if opt outs should be respected per instance and across organizations
 OUTPUT_DIR                        | Directory path for packaged files should be saved to. _Required_.
 PHONE_NUMBER_COUNTRY              | Country code for phone number formatting. _Default_: US.
 PORT                              | Port for Heroku servers.
