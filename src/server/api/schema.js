@@ -602,6 +602,7 @@ const rootMutations = {
       await accessRequired(user, campaign.organization_id, 'ADMIN')
       campaign.is_archived = false
       await campaign.save()
+      cacheableData.campaign.reload(id)
       return campaign
     },
     archiveCampaign: async (_, { id }, { user, loaders }) => {
@@ -609,6 +610,7 @@ const rootMutations = {
       await accessRequired(user, campaign.organization_id, 'ADMIN')
       campaign.is_archived = true
       await campaign.save()
+      cacheableData.campaign.reload(id)
       return campaign
     },
     startCampaign: async (_, { id }, { user, loaders }) => {
@@ -617,6 +619,7 @@ const rootMutations = {
       campaign.is_started = true
 
       await campaign.save()
+      cacheableData.campaign.reload(id)
       await sendUserNotification({
         type: Notifications.CAMPAIGN_STARTED,
         campaignId: id
