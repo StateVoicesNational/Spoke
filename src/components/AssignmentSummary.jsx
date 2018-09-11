@@ -91,7 +91,8 @@ export class AssignmentSummary extends Component {
     const { title, description, hasUnassignedContacts, dueBy,
             primaryColor, logoImageUrl, introHtml,
             useDynamicAssignment } = assignment.campaign
-
+    const maxContacts = assignment.maxContacts
+    const disabled = (useDynamicAssignment && !hasUnassignedContacts && unmessagedCount == 0) || (useDynamicAssignment && maxContacts === 0)
     return (
       <div className={css(styles.container)}>
         <Card
@@ -113,7 +114,7 @@ export class AssignmentSummary extends Component {
               title: 'Send first texts',
               count: unmessagedCount,
               primary: true,
-              disabled: (useDynamicAssignment && !hasUnassignedContacts && unmessagedCount == 0) ? true : false,
+              disabled: (useDynamicAssignment && !hasUnassignedContacts && unmessagedCount == 0) || (useDynamicAssignment && maxContacts === 0),
               contactsFilter: 'text',
               hideIfZero: !useDynamicAssignment
             })}
