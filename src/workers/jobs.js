@@ -465,13 +465,10 @@ export async function assignTexters(job) {
   currentAssignments.map((assignment) => {
     const texter = texters.filter((ele) => parseInt(ele.id, 10) === assignment.user_id)[0]
     const unchangedMaxContacts = 
-      parseInt(texter.maxContacts || 0, 10) === assignment.max_contacts || // integer = integer
+      parseInt(texter.maxContacts, 10) === assignment.max_contacts || // integer = integer
       texter.maxContacts === assignment.max_contacts // null = null 
     const unchangedNeedsMessageCount = 
       texter.needsMessageCount === parseInt(assignment.needs_message_count, 10)
-    console.log("texter.id", texter.id)
-    console.log("unchangedMaxContacts", unchangedMaxContacts)
-    console.log("unchangedNeedsMessageCount", unchangedNeedsMessageCount)
     if (texter) {
       if ((!dynamic && unchangedNeedsMessageCount) || (dynamic && unchangedMaxContacts)) {
         unchangedTexters[assignment.user_id] = true
@@ -548,7 +545,6 @@ export async function assignTexters(job) {
     availableContacts = availableContacts - contactsToAssign
     const existingAssignment = currentAssignments.find((ele) => ele.user_id === texterId)
     let assignment = null
-
     if (existingAssignment) {
       if (!dynamic) {
         assignment = new Assignment({ id: existingAssignment.id,
