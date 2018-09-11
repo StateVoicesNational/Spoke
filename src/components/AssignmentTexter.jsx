@@ -66,7 +66,44 @@ class AssignmentTexter extends React.Component {
       setTimeout(() => window.location.reload(), 5000)
     }
   }
+  /*
+    getContactData is a place where we've hit scaling issues in the past, and will be important
+    to think carefully about for scaling considerations in the future. 
 
+    As p2ptextbanking work scales up, texters will contact more people, and so the number of 
+    contacts in a campaign and the frequency at which we need to get contact data will increase.
+
+    Previously, when the texter clicked 'next' from the texting screen, we'd load a list of contact metadata
+    to text next, and then as this data was rendered into the AssignmentTexter and AssignmentTexterContact 
+    containers, we'd load up each contact in the list separately, doing an API call and database query
+    for each contact. For each of the O(n) contacts to text, in aggregate this yielded O(n^2) API calls and
+    database queries. 
+
+    This round of changes is a structural optimization that will make it so that O(n) contacts to text
+    results in O(n) queries. Later rounds of optimization will make it so that these queries hit a 
+    combination of redis cache and RDS database. You'll also see references to "contact cache" below--
+    this is different than redis, and it's a reference to this component storing contact data in its state, which
+    is another form of in-memory caching. A blended set of strategies -- using redis to make data retrieval faster,
+    getting data from the data store in batches, and storing batches in the component that is rendering this data--
+    working in concert will be key to achieving our scaling goals.
+
+    In addition to getting all the contact data needed to text contacts at once instead of in a nested loop,
+    these changes get a batch of contacts at a time with a moving batch window. BATCH_GET is teh number of contacts
+    to get at a time, and BATCH_FORWARD is how much before the end of the batch window to prefetch the next batch.
+
+    Example with BATCH_GET = 10 and BATCH_FORWARD = 5 :
+      - starting out in the contact list, we get contacts 0-9, and then get their associated data in batch 
+      via this.props.loadContacts(getIds)
+      - texter starts texting through this list, texting contact 0, 1, 2, 3. we do not need to make any more 
+      API or database calls because we're using data we already got and stored in this.state.contactCache
+      - when the texter gets to contact 4, contacts[newIndex + BATCH_FORWARD] is now false, and thts tells us we 
+      should get the next batch, so the next 10 contacts (10-19) are loaded up into this.state.contactCache
+      - when the texter gets to contact 10, contact 10 has already been loaded up into this.state.contactCache and
+      so the texter wont likely experience a data loading delay
+
+    getContactData runs when the user clicks the next arrow button on the contact screen.
+
+  */
   getContactData = async (newIndex, force = false) => {
     const { contacts } = this.props
     const BATCH_GET = 10 // how many to get at once
