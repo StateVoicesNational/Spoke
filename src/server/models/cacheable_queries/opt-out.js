@@ -10,7 +10,7 @@ const sharingOptOuts = !!process.env.OPTOUTS_SHARE_ALL_ORGS
 const loadMany = async (organizationId) => {
   console.log('org id:', organizationId);
   if (r.redis) {
-    if (organizationId) {
+    if (!sharingOptOuts) {
       const dbResult = await r.knex('opt_out')
         .select('cell')
         .where('organization_id', organizationId)
@@ -51,18 +51,21 @@ export const optOutCache = {
     }
   },
   query: async ({cell, organizationId}) => {
-    console.log('cell for query:', cell);
-    const accountingForOrgSharing = (organizationId ?
+    console.log('cell for query:', cell, organizationId);
+    const accountingForOrgSharing = (!sharingOptOuts ?
       {'organization_id': organizationId , 'cell': cell } :
-      {'cell' : cell}
+      {'cell' : cell }
     )
+
+    console.log('accounting for org sharing:', accountingForOrgSharing)
     // return optout result by db or by cache.
     // for a particular organization, if the org Id is NOT cached
     // then cache the WHOLE set of opt-outs for organizationId at once
     // and expire them in a day.
     if (r.redis) {
       const hashKey = (organizationId ? orgCacheKey(organizationId) : instanceCacheKey)
-      const orgIdPresent = organizationId ? organizationId : false
+      console.log('hash key:', hashKey);
+      const loadByOrgId = (sharingOptOuts ? false : organizationId)
       const [exists, isMember] = await r.redis.multi()
         .exists(hashKey)
         .sismember(hashKey, cell)
@@ -72,17 +75,25 @@ export const optOutCache = {
       } else {
         // note NOT awaiting this -- it should run in background
         // ideally not blocking the rest of the request
-        loadMany(orgIdPresent)
+        loadMany(loadByOrgId)
       }
+    } else {
+      const dbResult = await r.knex('opt_out')
+        .select('cell')
+        .where(accountingForOrgSharing)
+        .limit(1)
+      return (dbResult.length > 0)
     }
-    const dbResult = await r.knex('opt_out')
-      .select('cell')
-      .where({'organization_id': organizationId,
-              'cell': cell})
-      .limit(1)
-    return (dbResult.length > 0)
   },
   save: async ({cell, organizationId, assignmentId, reason}) => {
+    const updateOrgOrInstanceOptOuts = (!sharingOptOuts ?
+      { 'campaign_contact.cell': cell,
+        'campaign.organization_id': organizationId,
+        'campaign.is_archived': false } :
+      { 'campaign_contact.cell': cell,
+        'campaign.is_archived': false  
+      })
+
     if (r.redis) {
       const hashKey = (!sharingOptOuts ? orgCacheKey(organizationId) : instanceCacheKey )
       console.log('saving...', hashKey);
@@ -107,11 +118,7 @@ export const optOutCache = {
         'in',
         r.knex('campaign_contact')
           .leftJoin('campaign', 'campaign_contact.campaign_id', 'campaign.id')
-          .where({
-            'campaign_contact.cell': cell,
-            'campaign.organization_id': organizationId,
-            'campaign.is_archived': false
-          })
+          .where(updateOrgOrInstanceOptOuts)
           .select('campaign_contact.id')
       )
       .update({
