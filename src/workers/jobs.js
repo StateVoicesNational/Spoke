@@ -440,7 +440,6 @@ export async function assignTexters(job) {
   const cid = job.campaign_id
   const campaign = (await r.knex('campaign').where({ id: cid }))[0]
   const texters = payload.texters
-  console.log("texters", texters)
   const currentAssignments = await r.knex('assignment')
     .where('assignment.campaign_id', cid)
     .joinRaw('left join campaign_contact allcontacts'
@@ -459,7 +458,6 @@ export async function assignTexters(job) {
   // changedAssignments:
   currentAssignments.map((assignment) => {
     const texter = texters.filter((ele) => parseInt(ele.id, 10) === assignment.user_id)[0]
-    console.log("assignment", assignment)
     if (texter && texter.needsMessageCount === parseInt(assignment.needs_message_count, 10)) {
       unchangedTexters[assignment.user_id] = true
       return null
@@ -509,38 +507,39 @@ export async function assignTexters(job) {
   for (let index = 0; index < texterCount; index++) {
     const texter = texters[index]
     const texterId = parseInt(texter.id, 10)
-    console.log("texter.maxContacts", texter.maxContacts)
-    const maxContacts = parseInt(texter.maxContacts || 0, 10)
-    console.log("maxContacts", maxContacts)
-    console.log("unchangedTexters", unchangedTexters)
-    if (unchangedTexters[texterId]) {
-      console.log("unchangedTexter")
-      continue
+    let maxContacts = null // no limit
+
+    if (texter.maxContacts || texter.maxContacts === 0) {
+      maxContacts = Math.min(parseInt(texter.maxContacts, 10), 
+        parseInt(process.env.MAX_CONTACTS_PER_TEXTER || texter.maxContacts, 10))
+    } else if (process.env.MAX_CONTACTS_PER_TEXTER) {
+      maxContacts = parseInt(process.env.MAX_CONTACTS_PER_TEXTER, 10)
     }
+
+    if (unchangedTexters[texterId]) {
+      continue // TODO: make sure maxContacts changes don't end up in unchangedTexters
+      // after we move max contacts saving into here
+    }
+
     const contactsToAssign = Math.min(availableContacts, texter.needsMessageCount)
     if (contactsToAssign === 0) {
       // avoid creating a new assignment when the texter should get 0
       if (!campaign.use_dynamic_assignment) {
-        console.log("no contacts to assign and no dynamic assignment")
         continue
       }
     }
     availableContacts = availableContacts - contactsToAssign
-    console.log("currentAssignments", currentAssignments)
     const existingAssignment = currentAssignments.find((ele) => ele.user_id === texterId)
     let assignment = null
     if (existingAssignment) {
-      console.log("existingAssignment")
       assignment = new Assignment({ id: existingAssignment.id,
                                    user_id: existingAssignment.user_id,
                                    campaign_id: cid })
     } else {
-      const newMaxContacts = parseInt(maxContacts || process.env.MAX_CONTACTS_PER_TEXTER || 0, 10)
-      console.log(newMaxContacts)
       assignment = await new Assignment({
         user_id: texterId,
         campaign_id: cid,
-        max_contacts: parseInt(maxContacts || process.env.MAX_CONTACTS_PER_TEXTER || 0, 10)
+        max_contacts: maxContacts
       }).save()
     }
 
@@ -567,7 +566,7 @@ export async function assignTexters(job) {
     }
 
     await updateJob(job, Math.floor((75 / texterCount) * (index + 1)) + 20)
-  }
+  } // endfor
 
   if (!campaign.use_dynamic_assignment) {
     // dynamic assignments, having zero initially initially is ok
