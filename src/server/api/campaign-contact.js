@@ -156,10 +156,11 @@ export const resolvers = {
       //var is set in environment variables
       // removes check for organization id
       if (shareOptOutsAllOrgs){
-        console.log('hitting here:');
         const isOptedOut = await cacheableData.optOut.query({
           cell: campaignContact.cell
         })
+
+        campaignContact.is_opted_out = isOptedOut
       } else {
         if (typeof campaignContact.is_opted_out !== 'undefined') {
           isOptedOut = campaignContact.is_opted_out
