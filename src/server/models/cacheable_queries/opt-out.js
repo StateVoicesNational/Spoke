@@ -5,6 +5,7 @@ import { r, OptOut } from '../../models'
 
 const orgCacheKey = (orgId) => `${process.env.CACHE_PREFIX|""}optouts-${orgId}`
 const instanceCacheKey = `sharedoptouts`
+const sharingOptOuts = !!process.env.OPTOUTS_SHARE_ALL_ORGS
 
 const loadMany = async (organizationId) => {
   console.log('org id:', organizationId);
@@ -83,8 +84,8 @@ export const optOutCache = {
   },
   save: async ({cell, organizationId, assignmentId, reason}) => {
     if (r.redis) {
+      const hashKey = (!sharingOptOuts ? orgCacheKey(organizationId) : instanceCacheKey )
       console.log('saving...', hashKey);
-      const hashKey = orgCacheKey(organizationId)
       const exists = await r.redis.existsAsync(hashKey)
       if (exists) {
         await r.redis.saddAsync(hashKey, cell)
