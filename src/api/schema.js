@@ -179,6 +179,7 @@ const rootSchema = `
     createInvite(invite:InviteInput!): Invite
     createCampaign(campaign:CampaignInput!): Campaign
     editCampaign(id:String!, campaign:CampaignInput!): Campaign
+    deleteJob(campaignId:String!, id:String!): JobRequest
     copyCampaign(id: String!): Campaign
     exportCampaign(id:String!): JobRequest
     createCannedResponse(cannedResponse:CannedResponseInput!): CannedResponse
