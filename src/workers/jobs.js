@@ -1,4 +1,5 @@
-import { r, datawarehouse, Assignment, Campaign, CampaignContact, Organization, User } from '../server/models'
+import { r, datawarehouse, cacheableData,
+         Assignment, Campaign, CampaignContact, Organization, User } from '../server/models'
 import { log, gunzip, zipToTimeZone, convertOffsetsToStrings } from '../lib'
 import { updateJob } from './lib'
 import { getFormattedPhoneNumber } from '../lib/phone-format.js'
@@ -176,6 +177,7 @@ export async function uploadContacts(job) {
       await r.table('job_request').get(job.id).delete()
     }
   }
+  await cacheableData.campaign.reload(campaignId)
 }
 
 export async function loadContactsFromDataWarehouseFragment(jobEvent) {
@@ -274,6 +276,7 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
       console.log('OPTOUT CELL COUNT', optOutCellCount)
     }
     await r.table('job_request').get(jobEvent.jobId).delete()
+    await cacheableData.campaign.reload(jobEvent.campaignId)
     return { 'completed': 1 }
   } else if (jobEvent.part < (jobEvent.totalParts - 1)) {
     const newPart = jobEvent.part + 1
