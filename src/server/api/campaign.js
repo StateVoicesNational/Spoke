@@ -80,7 +80,6 @@ export const resolvers = {
       'id',
       'title',
       'description',
-      'dueBy',
       'isStarted',
       'isArchived',
       'useDynamicAssignment',
@@ -88,6 +87,11 @@ export const resolvers = {
       'primaryColor',
       'logoImageUrl'
     ], Campaign),
+    dueBy: (campaign) => (
+      (campaign.due_by instanceof Date || !campaign.due_by)
+      ? campaign.due_by || null
+      : new Date(campaign.due_by)
+    ),
     organization: async (campaign, _, { loaders }) => (
       campaign.organization
       || loaders.organization.load(campaign.organization_id)
