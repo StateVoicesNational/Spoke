@@ -4,25 +4,41 @@ import { r, OptOut } from '../../models'
 // maybe HASH by organization, so optout-<organization_id> has a <cell> key
 
 const orgCacheKey = (orgId) => `${process.env.CACHE_PREFIX|""}optouts-${orgId}`
+const instanceCacheKey = `sharedoptouts`
 
 const loadMany = async (organizationId) => {
+  console.log('org id:', organizationId);
   if (r.redis) {
-    const dbResult = await r.knex('opt_out')
-      .select('cell')
-      .where('organization_id', organizationId)
-    const cellOptOuts = dbResult.map((rec) => rec.cell)
-    const hashKey = orgCacheKey(organizationId)
-    // save 100 at a time
-    for (let i100=0, l100=Math.ceil(cellOptOuts.length/100); i100<l100; i100++) {
-      await r.redis.saddAsync(hashKey, cellOptOuts.slice(100*i100, 100*i100 + 100))
+    if (organizationId) {
+      const dbResult = await r.knex('opt_out')
+        .select('cell')
+        .where('organization_id', organizationId)
+      const cellOptOuts = dbResult.map((rec) => rec.cell)
+      const hashKey = orgCacheKey(organizationId)
+      // save 100 at a time
+      for (let i100=0, l100=Math.ceil(cellOptOuts.length/100); i100<l100; i100++) {
+        await r.redis.saddAsync(hashKey, cellOptOuts.slice(100*i100, 100*i100 + 100))
+      }
+      await r.redis.expire(hashKey, 86400)
+      console.log(`CACHE: Loaded optouts for ${organizationId}`)
+    } else {
+      const dbResult = await r.knex('opt_out')
+        .select('cell')
+      const cellOptOuts = dbResult.map((rec) => rec.cell)
+      const hashKey = instanceCacheKey
+      // save 100 at a time
+      for (let i100=0, l100=Math.ceil(cellOptOuts.length/100); i100<l100; i100++) {
+        await r.redis.saddAsync(hashKey, cellOptOuts.slice(100*i100, 100*i100 + 100))
+      }
+      await r.redis.expire(hashKey, 86400)
+      console.log(`CACHE: Loaded instance wide opt outs`)
     }
-    await r.redis.expire(hashKey, 86400)
-    console.log(`CACHE: Loaded optouts for ${organizationId}`)
   }
 }
 
 export const optOutCache = {
   clearQuery: async ({cell, organizationId}) => {
+    console.log('cell for clearQuery:', cell);
     // remove cache by organization
     // (if no cell is present, then clear whole query of organization)
     if (r.redis) {
@@ -34,12 +50,18 @@ export const optOutCache = {
     }
   },
   query: async ({cell, organizationId}) => {
+    console.log('cell for query:', cell);
+    const accountingForOrgSharing = (organizationId ?
+      {'organization_id': organizationId , 'cell': cell } :
+      {'cell' : cell}
+    )
     // return optout result by db or by cache.
     // for a particular organization, if the org Id is NOT cached
     // then cache the WHOLE set of opt-outs for organizationId at once
     // and expire them in a day.
     if (r.redis) {
-      const hashKey = orgCacheKey(organizationId)
+      const hashKey = (organizationId ? orgCacheKey(organizationId) : instanceCacheKey)
+      const orgIdPresent = organizationId ? organizationId : false
       const [exists, isMember] = await r.redis.multi()
         .exists(hashKey)
         .sismember(hashKey, cell)
@@ -49,7 +71,7 @@ export const optOutCache = {
       } else {
         // note NOT awaiting this -- it should run in background
         // ideally not blocking the rest of the request
-        loadMany(organizationId)
+        loadMany(orgIdPresent)
       }
     }
     const dbResult = await r.knex('opt_out')
@@ -61,6 +83,7 @@ export const optOutCache = {
   },
   save: async ({cell, organizationId, assignmentId, reason}) => {
     if (r.redis) {
+      console.log('saving...', hashKey);
       const hashKey = orgCacheKey(organizationId)
       const exists = await r.redis.existsAsync(hashKey)
       if (exists) {

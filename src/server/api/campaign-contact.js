@@ -2,6 +2,8 @@ import { CampaignContact, r, cacheableData } from '../models'
 import { mapFieldsToModel } from './lib/utils'
 import { log, getTopMostParent, zipToTimeZone } from '../../lib'
 
+const shareOptOutsAllOrgs = !!process.env.OPTOUTS_SHARE_ALL_ORGS
+
 export const resolvers = {
   Location: {
     timezone: (zipCode) => zipCode || {},
@@ -151,21 +153,29 @@ export const resolvers = {
     },
     optOut: async (campaignContact, _, { loaders }) => {
       let isOptedOut = null
-      if (typeof campaignContact.is_opted_out !== 'undefined') {
-        isOptedOut = campaignContact.is_opted_out
-      } else {
-        let organizationId = campaignContact.organization_id
-        if (!organizationId) {
-          const campaign = await loaders.campaign.load(campaignContact.campaign_id)
-          organizationId = campaign.organization_id
-        }
-
+      //var is set in environment variables
+      // removes check for organization id
+      if (shareOptOutsAllOrgs){
+        console.log('hitting here:');
         const isOptedOut = await cacheableData.optOut.query({
-          cell: campaignContact.cell,
-          organizationId
+          cell: campaignContact.cell
         })
+      } else {
+        if (typeof campaignContact.is_opted_out !== 'undefined') {
+          isOptedOut = campaignContact.is_opted_out
+        } else {
+          let organizationId = campaignContact.organization_id
+          if (!organizationId) {
+            const campaign = await loaders.campaign.load(campaignContact.campaign_id)
+            organizationId = campaign.organization_id
+          }
+          const isOptedOut = await cacheableData.optOut.query({
+            cell: campaignContact.cell,
+            organizationId
+          })
+        }
+        // fake ID so we don't need to look up existance
       }
-      // fake ID so we don't need to look up existance
       return (isOptedOut ? { id: 'optout' } : null)
     }
   }
