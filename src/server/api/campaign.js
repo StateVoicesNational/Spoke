@@ -139,6 +139,13 @@ export const resolvers = {
         .limit(1)
       return contacts.length > 0
     },
+    hasUnsentInitialMessages: async (campaign) => {
+      const contacts = await r.knex('campaign_contact')
+        .select('id')
+        .where({ campaign_id: campaign.id, message_status: 'needsMessage' })
+        .limit(1)
+      return contacts.length > 0
+    },
     customFields: async (campaign) => {
       const campaignContacts = await r.table('campaign_contact')
         .getAll(campaign.id, { index: 'campaign_id' })
