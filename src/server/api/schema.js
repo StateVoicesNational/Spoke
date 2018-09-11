@@ -174,7 +174,12 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     }
 
     // assign the maxContacts
+    // TODO: move this inside the job
     campaign.texters.forEach(async texter => {
+      let maxContacts = null
+      if (texter.maxContacts || parseInt(texter.maxContacts, 10) === 0) {
+        maxContacts = parseInt(texter.maxContacts)
+      }
       const dog = r
         .knex('campaign')
         .where({ id })
@@ -182,7 +187,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
       await r
         .knex('assignment')
         .where({ user_id: texter.id, campaign_id: id })
-        .update({ max_contacts: texter.maxContacts ? texter.maxContacts : null })
+        .update({ max_contacts: maxContacts })
     })
   }
 
