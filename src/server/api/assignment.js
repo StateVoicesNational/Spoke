@@ -118,7 +118,8 @@ export const resolvers = {
       await r
         .table('canned_response')
         .getAll(assignment.campaign_id, { index: 'campaign_id' })
-        .filter({ user_id: '' }),
+        .filter({ user_id: '' })
+        .orderBy('title'),
     userCannedResponses: async assignment =>
       await r
         .table('canned_response')
