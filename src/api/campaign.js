@@ -2,6 +2,8 @@ export const schema = `
   input CampaignsFilter {
     isArchived: Boolean
     campaignId: Int
+    listSize: Int
+    pageSize: Int
   }
 
   type CampaignStats {
@@ -46,5 +48,6 @@ export const schema = `
     textingHoursStart: Int
     textingHoursEnd: Int
     timezone: String
+    editors: String
   }
 `

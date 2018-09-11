@@ -84,6 +84,15 @@ current layout:
 const twoHoursAgo = new Date(new Date() - 1000 * 60 * 60 * 2)
 await r.knex('job_request').where({ assigned: true }).where('updated_at', '<', twoHoursAgo)
 ```
+  There are two specific gotchas:
+  * Do NOT use knex.insert and instead use `<Model>.save(...)`
+    * The reasoning is because sqlite does not support `returning()` as such and
+      [knex has inconsistent behavior for returning id values](https://github.com/MoveOnOrg/rethink-knex-adapter/blob/master/models.js#L206-L214).
+Sqlite does not support knex's `returning()` method.  This affects running `r.knex.insert(....)`
+  * Sqlite does not convert datefields in knex.
+    See for example: https://github.com/MoveOnOrg/Spoke/issues/817
+    One solution is to use r.table(...).getAll which WILL convert them.
+    Otherwise, make sure your code does the conversion when necessary.
 
 ### Schema changes
 
@@ -123,6 +132,19 @@ we want to add a value to campaign info for that edit page. We might need to edi
   Model object resolvers are 'auto-generated' by calls with `mapFieldsToModel` which you'll
   see called in files like `src/server/api/campaign.js`
 * In `campaign.js` note that you will need to update `type Campaign` above, and possibly lower down in `Campaign: { ...mapFieldsToModel([...` (but only if it's a new field/column on the campaign table.
+
+### Security and Access-control
+
+* Roles are assigned per-organization. Users can be assigned a cross-organizational property called 'superadmin' which is limited for
+  actions that could undermine the security of the system or access system-level data.
+* Security for top-level graphQL queries are in rootResolvers.RootQuery object in [server/api/schema.js](https://github.com/MoveOnOrg/Spoke/blob/dec93521d54ea46476d2a5c7eb9deeedbd69d53f/src/server/api/schema.js#L1122)
+  * These correspond to e.g. getContact or getOrganization, etc
+* Mutations and custom queries are inside the method
+* Helper functions are in [server/api/errors.js](https://github.com/MoveOnOrg/Spoke/blob/main/src/server/api/errors.js) which should/will be optimized to use cached info, etc.  Each of them will throw an error and therefore cancel the request if the user doesn't have the appropriate access.
+  * `authRequired(user)` establishes that the user is not anonymous
+  * `accessRequired(user, orgId, role, allowSuperadmin = false)` will require the user to have a certain role or higher.  Pass in `true` to allowSuperadmin if superadmins should be allowed.  Generally they should be allowed to do things, but might as well be explicit.
+  * `assignmentRequired(user, assignmentId)` makes sure that the user has the assignment in question
+  * `superAdminRequired(user)` requires a super-admin user
 
 
 ## Asynchronous tasks (workers)
