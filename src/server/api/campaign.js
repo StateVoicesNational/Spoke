@@ -88,11 +88,11 @@ export const resolvers = {
       'primaryColor',
       'logoImageUrl'
     ], Campaign),
-    dueBy: (campaign) => {
-	if(typeof campaign.due_by === 'number') {
-		return new Date(campaign.due_by)
-	} return campaign.due_by
-    },
+    dueBy: (campaign) => (
+      (campaign.due_by instanceof Date || !campaign.due_by)
+      ? campaign.due_by || null
+      : new Date(campaign.due_by)
+    ),
     organization: async (campaign, _, { loaders }) => (
       loaders.organization.load(campaign.organization_id)
     ),
