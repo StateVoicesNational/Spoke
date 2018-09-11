@@ -77,7 +77,13 @@ export const campaignCache = {
         campaignData = await r.redis.getAsync(cacheKey(id))
       }
       if (campaignData) {
-        return JSON.parse(campaignData)
+        const campaignObj = JSON.parse(campaignData)
+        const { customFields, interactionSteps } = campaignObj
+        delete campaignObj.customFields
+        delete campaignObj.interactionSteps
+        const campaign = new Campaign(campaignObj)
+        campaign.customFields = customFields
+        campaign.interactionSteps = interactionSteps
       }
     }
     return await Campaign.get(id)
