@@ -440,7 +440,6 @@ export async function assignTexters(job) {
   TODO: what happens when we switch modes? Do we allow it?
   */ 
   const payload = JSON.parse(job.payload)
-  console.log(payload)
   const cid = job.campaign_id
   const campaign = (await r.knex('campaign').where({ id: cid }))[0]
   const texters = payload.texters
@@ -460,7 +459,6 @@ export async function assignTexters(job) {
   const unchangedTexters = {} // max_contacts and needsMessageCount unchanged
   const demotedTexters = {} // needsMessageCount reduced
   const dynamic = campaign.use_dynamic_assignment
-
   // detect changed assignments
   currentAssignments.map((assignment) => {
     const texter = texters.filter((ele) => parseInt(ele.id, 10) === assignment.user_id)[0]
@@ -494,7 +492,7 @@ export async function assignTexters(job) {
       return assignment
     }
   }).filter((ele) => ele !== null)
-  console.log("unchangedTexters", unchangedTexters)
+
   for (const assignId in demotedTexters) {
     // Here we unassign ALL the demotedTexters contacts (not just the demotion count)
     // because they will get reapportioned below
