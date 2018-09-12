@@ -19,6 +19,7 @@ import CampaignTextersForm from '../components/CampaignTextersForm'
 import CampaignInteractionStepsForm from '../components/CampaignInteractionStepsForm'
 import CampaignCannedResponsesForm from '../components/CampaignCannedResponsesForm'
 import { dataTest, camelCase } from '../lib/attributes'
+import CampaignTextingHoursForm from '../components/CampaignTextingHoursForm'
 
 const campaignInfoFragment = `
   id
@@ -34,6 +35,11 @@ const campaignInfoFragment = `
   logoImageUrl
   introHtml
   primaryColor
+  overrideOrganizationTextingHours
+  textingHoursEnforced
+  textingHoursStart
+  textingHoursEnd
+  timezone
   texters {
     id
     firstName
@@ -346,6 +352,14 @@ class AdminCampaignEdit extends React.Component {
       extraProps: {
         customFields: this.props.campaignData.campaign.customFields
       }
+    }, {
+      title: 'Texting Hours',
+      content: CampaignTextingHoursForm,
+      keys: ['overrideOrganizationTextingHours', 'textingHoursEnforced', 'textingHoursStart', 'textingHoursEnd', 'timezone'],
+      checkCompleted: () => true,
+      blocksStarting: false,
+      expandAfterCampaignStarts: true,
+      expandableBySuperVolunteers: false
     }]
   }
 
