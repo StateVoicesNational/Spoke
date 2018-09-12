@@ -3,13 +3,20 @@ import { r, OptOut } from '../../models'
 // STRUCTURE
 // maybe HASH by organization, so optout-<organization_id> has a <cell> key
 
-const orgCacheKey = (orgId) => `${process.env.CACHE_PREFIX|""}optouts-${orgId}`
+const orgCacheKey = (orgId) => (
+!!process.env.OPTOUTS_SHARE_ALL_ORGS
+ ? `${process.env.CACHE_PREFIX|""}optouts`
+ : `${process.env.CACHE_PREFIX|""}optouts-${orgId}`)
+
+const sharingOptOuts = !!process.env.OPTOUTS_SHARE_ALL_ORGS
 
 const loadMany = async (organizationId) => {
   if (r.redis) {
-    const dbResult = await r.knex('opt_out')
-      .select('cell')
-      .where('organization_id', organizationId)
+    let dbQuery = r.knex('opt_out').select('cell')
+    if (!sharingOptOuts) {
+      dbQuery = dbQuery.where('organization_id', organizationId)
+    }
+    const dbResult = await dbQuery
     const cellOptOuts = dbResult.map((rec) => rec.cell)
     const hashKey = orgCacheKey(organizationId)
     // save 100 at a time
@@ -38,6 +45,11 @@ export const optOutCache = {
     // for a particular organization, if the org Id is NOT cached
     // then cache the WHOLE set of opt-outs for organizationId at once
     // and expire them in a day.
+    const accountingForOrgSharing = (!sharingOptOuts ?
+      {'organization_id': organizationId , 'cell': cell } :
+      {'cell' : cell }
+    )
+
     if (r.redis) {
       const hashKey = orgCacheKey(organizationId)
       const [exists, isMember] = await r.redis.multi()
@@ -54,12 +66,19 @@ export const optOutCache = {
     }
     const dbResult = await r.knex('opt_out')
       .select('cell')
-      .where({'organization_id': organizationId,
-              'cell': cell})
+      .where(accountingForOrgSharing)
       .limit(1)
     return (dbResult.length > 0)
   },
   save: async ({cell, organizationId, assignmentId, reason}) => {
+    const updateOrgOrInstanceOptOuts = (!sharingOptOuts ?
+      { 'campaign_contact.cell': cell,
+        'campaign.organization_id': organizationId,
+        'campaign.is_archived': false } :
+      { 'campaign_contact.cell': cell,
+        'campaign.is_archived': false
+      })
+
     if (r.redis) {
       const hashKey = orgCacheKey(organizationId)
       const exists = await r.redis.existsAsync(hashKey)
@@ -83,11 +102,7 @@ export const optOutCache = {
         'in',
         r.knex('campaign_contact')
           .leftJoin('campaign', 'campaign_contact.campaign_id', 'campaign.id')
-          .where({
-            'campaign_contact.cell': cell,
-            'campaign.organization_id': organizationId,
-            'campaign.is_archived': false
-          })
+          .where(updateOrgOrInstanceOptOuts)
           .select('campaign_contact.id')
       )
       .update({
