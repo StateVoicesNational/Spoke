@@ -55,6 +55,8 @@ All are `async` methods.
 * `load(id)` -- will load from cache if, available and otherwise from the database.
   If appropriate, it may save the result in the cache (some situations,
   it's better not to, because loading should happen purposefully at specific times)
+  Note: This needs to send an adapted Model object, so e.g. it should return a
+  `new Campaign(campaignData)` object and not just `campaignData`
 * `clear(id)` -- will clear from the cache for a specific id -- you should do this whenever
   the object is updated in the database.
 * `reload(id)` -- if this method exists, it often means loading the cache may be more
@@ -77,4 +79,6 @@ All are `async` methods.
 Others:
 * `loadMany()` -- this will often take arguments to load a dataset into the cache, e.g. all
   the opt-outs for a particular organization.
+
+## Data-structures
 
