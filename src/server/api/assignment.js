@@ -30,6 +30,16 @@ export function getContacts(assignment, contactsFilter, organization, campaign, 
   const pastDue = (campaign.due_by
                    && Number(campaign.due_by) + 24 * 60 * 60 * 1000 < Number(new Date()))
   const config = { textingHoursStart, textingHoursEnd, textingHoursEnforced }
+
+  if (campaign.override_organization_texting_hours) {
+    const textingHoursStart = campaign.texting_hours_start
+    const textingHoursEnd = campaign.texting_hours_end
+    const textingHoursEnforced = campaign.texting_hours_enforced
+    const timezone = campaign.timezone
+
+    config.campaignTextingHours = { textingHoursStart, textingHoursEnd, textingHoursEnforced, timezone }
+  }
+
   const [validOffsets, invalidOffsets] = getOffsets(config)
   if (!includePastDue && pastDue && contactsFilter.messageStatus === 'needsMessage') {
     return []
