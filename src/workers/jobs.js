@@ -1,6 +1,7 @@
 import { r, datawarehouse, Assignment, Campaign, CampaignContact, Organization, User } from '../server/models'
 import { log, gunzip, zipToTimeZone, convertOffsetsToStrings } from '../lib'
 import { updateJob } from './lib'
+import { getFormattedPhoneNumber } from '../lib/phone-format.js'
 import serviceMap from '../server/api/lib/services'
 import { getLastMessage, saveNewIncomingMessage } from '../server/api/lib/message-sending'
 
@@ -226,11 +227,12 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
 
   const jobMessages = []
   const savePortion = await Promise.all(knexResult.rows.map(async (row) => {
+    const formatCell = getFormattedPhoneNumber(row.cell, (process.env.PHONE_NUMBER_COUNTRY || 'US'))
     const contact = {
       campaign_id: jobEvent.campaignId,
       first_name: row.first_name || '',
       last_name: row.last_name || '',
-      cell: row.cell,
+      cell: formatCell,
       zip: row.zip || '',
       external_id: (row.external_id ? String(row.external_id) : ''),
       assignment_id: null,
