@@ -810,6 +810,7 @@ const rootMutations = {
       }
       await cacheableData.optOut.save({
         cell,
+        campaignContactId,
         reason,
         assignmentId,
         organizationId

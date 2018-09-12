@@ -1,4 +1,5 @@
 import { r, OptOut } from '../../models'
+import { assignmentCache } from './assignment'
 
 // STRUCTURE
 // maybe HASH by organization, so optout-<organization_id> has a <cell> key
@@ -59,13 +60,14 @@ export const optOutCache = {
       .limit(1)
     return (dbResult.length > 0)
   },
-  save: async ({cell, organizationId, assignmentId, reason}) => {
+  save: async ({cell, campaignContactId, organizationId, assignmentId, reason}) => {
     if (r.redis) {
       const hashKey = orgCacheKey(organizationId)
       const exists = await r.redis.existsAsync(hashKey)
       if (exists) {
         await r.redis.saddAsync(hashKey, cell)
       }
+      await assignmentCache.optOutContact(assignmentId, campaignContactId)
     }
     // database
     await new OptOut({
