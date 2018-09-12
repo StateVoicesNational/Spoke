@@ -493,6 +493,22 @@ const rootMutations = {
 
       return await Organization.get(organizationId)
     },
+    updateOptOutMessage: async (
+      _,
+      { organizationId, optOutMessage },
+      { user }
+    ) => {
+      await accessRequired(user, organizationId, 'OWNER')
+
+      const organization = await Organization.get(organizationId)
+      const featuresJSON = JSON.parse(organization.features || '{}')
+      featuresJSON.opt_out_message = optOutMessage
+      organization.features = JSON.stringify(featuresJSON)
+
+      await organization.save()
+
+      return await Organization.get(organizationId)
+    },
     createInvite: async (_, { user }) => {
       if ((user && user.is_superadmin) || !process.env.SUPPRESS_SELF_INVITE) {
         const inviteInstance = new Invite({
