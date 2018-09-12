@@ -36,6 +36,9 @@ const inlineStyles = {
   },
   good: {
     color: theme.colors.green
+  },
+  warnUnsent: {
+    color: theme.colors.blue
   }
 }
 
@@ -57,6 +60,8 @@ class CampaignList extends React.Component {
     } else if (!isStarted || hasUnassignedContacts) {
       listItemStyle = inlineStyles.warn
       leftIcon = <WarningIcon />
+    } else if (hasUnsentInitialMessages) {
+      listItemStyle = inlineStyles.warnUnsent
     } else {
       listItemStyle = inlineStyles.good
     }
