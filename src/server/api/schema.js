@@ -173,18 +173,6 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
         assignTexters(job)
       }
     }
-
-    // assign the maxContacts
-    campaign.texters.forEach(async texter => {
-      const dog = r
-        .knex('campaign')
-        .where({ id })
-        .select('useDynamicAssignment')
-      await r
-        .knex('assignment')
-        .where({ user_id: texter.id, campaign_id: id })
-        .update({ max_contacts: texter.maxContacts ? texter.maxContacts : null })
-    })
   }
 
   if (campaign.hasOwnProperty('interactionSteps')) {
@@ -765,7 +753,7 @@ const rootMutations = {
         })
       }
       const campaign = await Campaign.get(assignment.campaign_id)
-      if (!campaign.use_dynamic_assignment) {
+      if (!campaign.use_dynamic_assignment || assignment.max_contacts === 0) {
         return { found: false }
       }
 
