@@ -51,24 +51,24 @@ export const optOutCache = {
     )
 
     if (r.redis) {
-        const hashKey = orgCacheKey(organizationId)
-        const [exists, isMember] = await r.redis.multi()
-          .exists(hashKey)
-          .sismember(hashKey, cell)
-          .execAsync()
-        if (exists) {
-          return isMember
-        } else {
-          // note NOT awaiting this -- it should run in background
-          // ideally not blocking the rest of the request
-          loadMany(organizationId)
-        }
+      const hashKey = orgCacheKey(organizationId)
+      const [exists, isMember] = await r.redis.multi()
+        .exists(hashKey)
+        .sismember(hashKey, cell)
+        .execAsync()
+      if (exists) {
+        return isMember
+      } else {
+        // note NOT awaiting this -- it should run in background
+        // ideally not blocking the rest of the request
+        loadMany(organizationId)
       }
-      const dbResult = await r.knex('opt_out')
-        .select('cell')
-        .where(accountingForOrgSharing)
-        .limit(1)
-      return (dbResult.length > 0)
+    }
+    const dbResult = await r.knex('opt_out')
+      .select('cell')
+      .where(accountingForOrgSharing)
+      .limit(1)
+    return (dbResult.length > 0)
   },
   save: async ({cell, organizationId, assignmentId, reason}) => {
     const updateOrgOrInstanceOptOuts = (!sharingOptOuts ?
@@ -81,7 +81,6 @@ export const optOutCache = {
 
     if (r.redis) {
       const hashKey = orgCacheKey(organizationId)
-      console.log('saving...', hashKey);
       const exists = await r.redis.existsAsync(hashKey)
       if (exists) {
         await r.redis.saddAsync(hashKey, cell)
