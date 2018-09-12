@@ -76,7 +76,7 @@ class CampaignList extends React.Component {
       tags.push('Unassigned contacts')
     }
 
-    if (hasUnsentInitialMessages) {
+    if (isStarted && hasUnsentInitialMessages) {
       tags.push('Unsent initial messages')
     }
 
