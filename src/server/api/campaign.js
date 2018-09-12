@@ -85,7 +85,12 @@ export const resolvers = {
       'useDynamicAssignment',
       'introHtml',
       'primaryColor',
-      'logoImageUrl'
+      'logoImageUrl',
+      'overrideOrganizationTextingHours',
+      'textingHoursEnforced',
+      'textingHoursStart',
+      'textingHoursEnd',
+      'timezone'
     ], Campaign),
     dueBy: (campaign) => (
       (campaign.due_by instanceof Date || !campaign.due_by)
