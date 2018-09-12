@@ -84,6 +84,7 @@ export const campaignCache = {
         const campaign = new Campaign(campaignObj)
         campaign.customFields = customFields
         campaign.interactionSteps = interactionSteps
+        return campaign
       }
     }
     return await Campaign.get(id)
