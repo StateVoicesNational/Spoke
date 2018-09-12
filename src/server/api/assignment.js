@@ -83,6 +83,52 @@ export function getContacts(assignment, contactsFilter, organization, campaign, 
   return query
 }
 
+const findGraphqlContactSelection = (operation) => {
+  // Takes in a last-argument graphQL object 'operation' value
+  // which includes the 'whole query' in a tree-structure
+  // We search the structure recursively for assignment.contacts
+  // and return the selection set -- then we can determine which
+  // fields are going to be pulled from contacts query
+  // contactSelection might look something like
+  // [{"kind":"Field","name":{"kind":"Name","value":"id","loc":{"start":906,"end":908}},
+  //  "arguments":[],"directives":[],"loc":{"start":906,"end":908}}]
+
+  if (operation.name && operation.name.value === 'assignment' && operation.selectionSet) {
+    if (operation.selectionSet) {
+      const [contactQuery] = operation.selectionSet.selections.filter((sel) => sel.name.value === 'contacts')
+      if (contactQuery) {
+        if (contactQuery.selectionSet
+            && contactQuery.selectionSet.selections) {
+          return {
+            found: true,
+            contactSelection: contactQuery.selectionSet.selections
+          }
+        }
+      }
+    }
+  }
+  if (operation.selectionSet) {
+    const [foundSomething] = operation.selectionSet.selections.map((sel) => {
+      if (sel.selectionSet) {
+        return findGraphqlContactSelection(sel)
+      }
+    }).filter((x) => x && x.found)
+    if (foundSomething) {
+      return foundSomething
+    }
+  }
+}
+
+const graphqlQueryJustContactIds = (operation) => {
+  // If we find assignment.contacts query, see if we just ask for ids
+  // so we don't need to get all the data
+  const foundContacts = findGraphqlContactSelection(operation)
+  return (foundContacts
+          && foundContacts.found
+          && foundContacts.contactSelection.length === 1
+          && foundContacts.contactSelection[0].name.value === 'id')
+}
+
 export const resolvers = {
   Assignment: {
     ...mapFieldsToModel(['id', 'maxContacts'], Assignment),
@@ -93,16 +139,17 @@ export const resolvers = {
     ),
     campaign: async (assignment, _, { loaders }) => loaders.campaign.load(assignment.campaign_id),
     contactsCount: async (assignment, { contactsFilter }) => {
-      const campaign = await r.table('campaign').get(assignment.campaign_id)
-
-      const organization = await r.table('organization').get(campaign.organization_id)
+      const campaign = await loaders.campaign.load(assignment.campaign_id)
+      const organization = await loaders.campaign.load(campaign.organization_id)
 
       return await r.getCount(getContacts(assignment, contactsFilter, organization, campaign, true))
     },
-    contacts: async (assignment, { contactsFilter }) => {
-      const campaign = await r.table('campaign').get(assignment.campaign_id)
+    contacts: async (assignment, { contactsFilter }, { loaders }, graphqlRequest) => {
+      const justNeedContactIds = graphqlQueryJustContactIds(graphqlRequest.operation)
 
-      const organization = await r.table('organization').get(campaign.organization_id)
+      const campaign = await loaders.campaign.load(assignment.campaign_id)
+      const organization = await loaders.campaign.load(campaign.organization_id)
+
       return getContacts(assignment, contactsFilter, organization, campaign)
     },
     campaignCannedResponses: async assignment =>
