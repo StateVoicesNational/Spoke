@@ -1,6 +1,5 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import TextField from 'material-ui/TextField'
 import loadData from './hoc/load-data'
 import gql from 'graphql-tag'
 import wrapMutations from './hoc/wrap-mutations'
@@ -136,6 +135,7 @@ class Settings extends React.Component {
               <Form.Field 
                 label='Default Opt-Out Message' 
                 name='optOutMessage'  
+                fullWidth
               />
 
               <Form.Button
