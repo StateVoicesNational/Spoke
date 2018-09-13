@@ -1,7 +1,7 @@
 import { resolvers } from '../src/server/api/schema'
 import { schema } from '../src/api/schema'
 import { graphql } from 'graphql'
-import { User, Organization, UserOrganization, Campaign, CampaignContact, Assignment, r } from '../src/server/models/'
+import { User, Organization, Campaign, CampaignContact, Assignment, r } from '../src/server/models/'
 import { resolvers as campaignResolvers } from '../src/server/api/campaign'
 import { getContext,
   setupTest,
@@ -41,19 +41,6 @@ async function createUser(userInfo = {
     return user
   } catch(err) {
     console.error('Error saving user')
-    return false
-  }
-}
-
-async function makeAdmin(user, organization) {
-  const organizationUser = new UserOrganization({ user_id: user.id, organization_id: organization.id, role: 'ADMIN' })
-  try {
-    await organizationUser.save()
-    console.log('created organization user')
-    console.log(organizationUser)
-    return organizationUser
-  } catch(err) {
-   console.error('Error saving organization user')
     return false
   }
 }
@@ -223,9 +210,6 @@ it('should create campaign contacts', async () => {
 })
 
 it('should add texters to a organization', async () => {
-  const makeAdminReturn = await makeAdmin(testAdminUser, testOrganization.data.createOrganization)
-  expect(makeAdminReturn.id).toBeDefined()
-
   testTexterUser = await createUser({
     auth0_id: 'test456',
     first_name: 'TestTexterFirst',
