@@ -9,12 +9,6 @@ export function addCampaignsFilterToQuery(queryParam, campaignsFilter) {
   const resultSize = (campaignsFilter.listSize ? campaignsFilter.listSize : 0)
   const pageSize = (campaignsFilter.pageSize ? campaignsFilter.pageSize : 0)
 
-  if (addFromClause) {
-    query = query.from('campaign')
-  }
-
-  query = query.where('organization_id', organizationId)
-
   if (campaignsFilter) {
     if ('isArchived' in campaignsFilter) {
       query = query.where('campaign.is_archived', campaignsFilter.isArchived )
