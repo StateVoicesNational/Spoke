@@ -2,6 +2,8 @@ import { applyScript } from '../../lib/scripts'
 import camelCaseKeys from 'camelcase-keys'
 import isUrl from 'is-url'
 import { buildCampaignQuery } from './campaign'
+import { organizationCache } from '../models/cacheable_queries/organization'
+
 
 import {
   Assignment,
@@ -512,6 +514,7 @@ const rootMutations = {
       organization.features = JSON.stringify(featuresJSON)
 
       await organization.save()
+      await organizationCache.clear(organizationId)
 
       return await Organization.get(organizationId)
     },
