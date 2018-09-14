@@ -43,7 +43,7 @@ const getMessageServiceSid = (organization) => {
   return orgSid
 }
 
-const cacheKey = async (id) => `${process.env.CACHE_PREFIX|""}contact-${id}`
+const cacheKey = async (id) => `${process.env.CACHE_PREFIX || ""}contact-${id}`
 
 const saveCacheRecord = async (dbRecord, organization, messageServiceSid) => {
   if (r.redis) {
