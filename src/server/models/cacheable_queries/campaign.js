@@ -18,7 +18,7 @@ import { organizationCache } from './organization'
 // * organization metadata (saved in organization.js instead)
 // * campaignCannedResponses (saved in canned-responses.js instead)
 
-const cacheKey = (id) => `${process.env.CACHE_PREFIX || ""}campaign-${id}`
+const cacheKey = (id) => `${process.env.CACHE_PREFIX || ''}campaign-${id}`
 
 const dbCustomFields = async (id) => {
   const campaignContacts = await r.table('campaign_contact')
@@ -54,7 +54,7 @@ const loadDeep = async (id) => {
     campaign.interactionSteps = await dbInteractionSteps(id)
     // We should only cache organization data
     // if/when we can clear it on organization data changes
-    //campaign.organization = await organizationCache.load(campaign.organization_id)
+    // campaign.organization = await organizationCache.load(campaign.organization_id)
 
     await r.redis.multi()
       .set(cacheKey(id), JSON.stringify(campaign))
@@ -64,9 +64,28 @@ const loadDeep = async (id) => {
   return null
 }
 
-export const campaignCache = {
-  clear: clear,
-  load: async(id) => {
+const currentEditors = async (campaign, user) => {
+  // Add user ID in case of duplicate admin names
+  const displayName = `${user.id}~${user.first_name} ${user.last_name}`
+
+  await r.redis.hsetAsync(`campaign_editors_${campaign.id}`, displayName, new Date())
+  await r.redis.expire(`campaign_editors_${campaign.id}`, 120)
+
+  let editors = await r.redis.hgetallAsync(`campaign_editors_${campaign.id}`)
+
+  // Only get editors that were active in the last 2 mins, and exclude the
+  // current user
+  editors = Object.entries(editors).filter(editor => {
+    const rightNow = new Date()
+    return rightNow - new Date(editor[1]) <= 120000 && editor[0] !== displayName
+  })
+
+  // Return a list of comma-separated names
+  return editors.map(editor => editor[0].split('~')[1]).join(', ')
+}
+
+const campaignCache = {
+  load: async (id) => {
     if (r.redis) {
       let campaignData = await r.redis.getAsync(cacheKey(id))
       if (!campaignData) {
@@ -90,6 +109,10 @@ export const campaignCache = {
     return await Campaign.get(id)
   },
   reload: loadDeep,
-  dbCustomFields: dbCustomFields,
-  dbInteractionSteps: dbInteractionSteps
+  clear,
+  currentEditors,
+  dbCustomFields,
+  dbInteractionSteps
 }
+
+export default campaignCache
