@@ -19,7 +19,7 @@ const styles = StyleSheet.create({
   },
   flexColumn: {
     flex: 0,
-    flexBasis: '40%',
+    flexBasis: '30%',
     display: 'flex'
   },
   spacer: {
@@ -32,6 +32,9 @@ class IncomingMessageActions extends Component {
     super(props)
 
     this.onReassignmentClicked = this.onReassignmentClicked.bind(this)
+    this.onReassignAllMatchingClicked = this.onReassignAllMatchingClicked.bind(
+      this
+    )
     this.onReassignChanged = this.onReassignChanged.bind(
       this
     )
@@ -43,10 +46,15 @@ class IncomingMessageActions extends Component {
     this.props.onReassignRequested(this.state.reassignTo)
   }
 
+  onReassignAllMatchingClicked() {
+    this.props.onReassignAllMatchingRequested()
+  }
+
   onReassignChanged(selection, index) {
     let texterUserId = undefined
     if (index === -1) {
       const texter = this.props.texters.find(texter => {
+        this.setState({ reassignTo: undefined })
         return texter.displayName === selection
       })
       if (texter) {
@@ -57,6 +65,9 @@ class IncomingMessageActions extends Component {
     }
     if (texterUserId) {
       this.setState({ reassignTo: parseInt(texterUserId, 10) });
+    } else {
+      this.setState({ reassignTo: undefined })
+
     }
   }
 
@@ -85,7 +96,9 @@ class IncomingMessageActions extends Component {
               <AutoComplete
                 filter={AutoComplete.caseInsensitiveFilter}
                 maxSearchResults={8}
-                onFocus={() => this.setState({ texterSearchText : '' })}
+                onFocus={() => this.setState({
+                  reassignTo: undefined,
+                  texterSearchText : '' })}
                 onUpdateInput={texterSearchText=>
                   this.setState({ texterSearchText })
                 }
@@ -101,8 +114,18 @@ class IncomingMessageActions extends Component {
               <FlatButton
                 label={'Reassign'}
                 onClick={this.onReassignmentClicked}
+                disabled={!this.state.reassignTo}
               />
             </div>
+            {this.props.conversationCount ? (
+              <div className={css(styles.flexColumn)}>
+                <FlatButton
+                  label={`Reassign all ${this.props.conversationCount} matching`}
+                  onClick={this.onReassignAllMatchingClicked}
+                  disabled={!this.state.reassignTo}
+                />
+              </div>) : ''
+            }
           </div>
         </CardText>
       </Card>
@@ -112,7 +135,9 @@ class IncomingMessageActions extends Component {
 
 IncomingMessageActions.propTypes = {
   people: type.array,
-  onReassignRequested: type.func.isRequired
+  onReassignRequested: type.func.isRequired,
+  onReassignAllMatchingRequested: type.func.isRequired,
+  conversationCount: type.number
 }
 
 export default IncomingMessageActions
