@@ -86,7 +86,12 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     useDynamicAssignment,
     logoImageUrl,
     introHtml,
-    primaryColor
+    primaryColor,
+    overrideOrganizationTextingHours,
+    textingHoursEnforced,
+    textingHoursStart,
+    textingHoursEnd,
+    timezone
   } = campaign
   // some changes require ADMIN and we recheck below
   const organizationId = campaign.organizationId || origCampaignRecord.organization_id
@@ -100,7 +105,12 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     use_dynamic_assignment: useDynamicAssignment,
     logo_image_url: isUrl(logoImageUrl) ? logoImageUrl : '',
     primary_color: primaryColor,
-    intro_html: introHtml
+    intro_html: introHtml,
+    override_organization_texting_hours: overrideOrganizationTextingHours,
+    texting_hours_enforced: textingHoursEnforced,
+    texting_hours_start: textingHoursStart,
+    texting_hours_end: textingHoursEnd,
+    timezone: timezone,
   }
 
   Object.keys(campaignUpdates).forEach(key => {
