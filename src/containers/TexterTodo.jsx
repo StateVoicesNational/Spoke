@@ -141,6 +141,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
             textingHoursEnd
             threeClickEnabled
             optOutMessage
+            
           }
           customFields
           interactionSteps {
