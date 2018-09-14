@@ -1,4 +1,4 @@
-import { getContacts } from '../../../src/server/api/assignment'
+import { dbGetContactsQuery as getContacts } from '../../../src/server/models/cacheable_queries/assignment-lib'
 import { Organization, Assignment, Campaign } from '../../../src/server/models'
 
 jest.mock('../../../src/lib/timezones.js')

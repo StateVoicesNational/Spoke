@@ -1,23 +1,6 @@
 import { getOffsets, defaultTimezoneIsBetweenTextingHours } from '../../../lib'
 import { r } from '../index'
 
-export function addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue(
-  queryParameter,
-  messageStatusFilter
-) {
-  if (!messageStatusFilter) {
-    return queryParameter
-  }
-
-  let query = queryParameter
-  if (messageStatusFilter === 'needsMessageOrResponse') {
-    query.whereIn('message_status', ['needsResponse', 'needsMessage'])
-  } else {
-    query = query.whereIn('message_status', messageStatusFilter.split(','))
-  }
-  return query
-}
-
 const filterMessageStatuses = (messageStatusFilter) => {
   if (messageStatusFilter) {
     return (messageStatusFilter === 'needsMessageOrResponse'
@@ -26,13 +9,19 @@ const filterMessageStatuses = (messageStatusFilter) => {
   }
 }
 
-export const getContacts = (assignment, contactsFilter, organization, campaign, forCount, justCount, justIds) => {
+export const dbGetContactsQuery = (assignment, contactsFilter, organization, campaign, forCount, justCount, justIds) => {
+  const contactQueryArgs = getContactQueryArgs(assignment.id, contactsFilter, organization, campaign, forCount, justCount, justIds)
+  return (typeof contactQueryArgs.result !== 'undefined'
+          ? contactQueryArgs.result
+          : dbContactsQuery(contactQueryArgs))
+}
+
+export const getContactQueryArgs = (assignmentId, contactsFilter, organization, campaign, forCount, justCount, justIds) => {
   // / returns list of contacts eligible for contacting _now_ by a particular user
   const includePastDue = (contactsFilter && contactsFilter.includePastDue)
   // 24-hours past due - why is this 24 hours offset?
   const pastDue = (campaign.due_by
                    && Number(campaign.due_by) + 24 * 60 * 60 * 1000 < Number(new Date()))
-
   const config = {
     textingHoursStart: organization.texting_hours_start,
     textingHoursEnd: organization.texting_hours_end,
@@ -48,9 +37,8 @@ export const getContacts = (assignment, contactsFilter, organization, campaign, 
   }
 
   if (!includePastDue && pastDue && contactsFilter.messageStatus === 'needsMessage') {
-    return (justCount ? 0 : [])
+    return {result: (justCount ? 0 : [])}
   }
-
 
   let timezoneOffsets = null
   let messageStatuses = null
@@ -72,7 +60,7 @@ export const getContacts = (assignment, contactsFilter, organization, campaign, 
       }
 
       if (finalQueryOffsets.length === 0) {
-        return (justCount ? 0 : [])
+        return {result: (justCount ? 0 : [])}
       }
       timezoneOffsets = finalQueryOffsets
     }
@@ -86,17 +74,19 @@ export const getContacts = (assignment, contactsFilter, organization, campaign, 
          : 'needsMessageOrResponse'))
   }
 
-  return dbContactsQuery(assignment.id,
-                         timezoneOffsets,
-                         messageStatuses,
-                         contactsFilter && contactsFilter.isOptedOut,
-                         forCount,
-                         justCount,
-                         justIds)
+  return {
+    assignmentId,
+    timezoneOffsets,
+    messageStatuses,
+    forCount,
+    justCount,
+    justIds,
+    isOptedOutFilter: contactsFilter && contactsFilter.isOptedOut
+  }
 }
 
 
-const dbContactsQuery = (assignmentId, timezoneOffsets, messageStatuses, isOptedOutFilter, forCount, justCount, justIds) => {
+export const dbContactsQuery = ({assignmentId, timezoneOffsets, messageStatuses, isOptedOutFilter, forCount, justCount, justIds}) => {
   let query = r.knex('campaign_contact').where('assignment_id', assignmentId)
   if (timezoneOffsets) {
     query = query.whereIn('timezone_offset', timezoneOffsets)
@@ -112,7 +102,6 @@ const dbContactsQuery = (assignmentId, timezoneOffsets, messageStatuses, isOpted
   } else if (justCount) {
     return r.getCount(query)
   } else {
-    console.log('MESSAGE STATUSES', messageStatuses)
     if (messageStatuses
         && messageStatuses.length === 1
         && messageStatuses[0] === 'convo') {
