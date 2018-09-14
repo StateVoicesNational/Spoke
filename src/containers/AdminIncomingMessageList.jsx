@@ -49,12 +49,14 @@ export class AdminIncomingMessageList extends Component {
       reassignmentTexters: [],
       campaignTexters: [],
       includeArchivedCampaigns: false,
-      includeActiveCampaigns: true
+      includeActiveCampaigns: true,
+      conversationCount: 0
     }
 
     this.handleCampaignChanged = this.handleCampaignChanged.bind(this)
     this.handleMessageFilterChange = this.handleMessageFilterChange.bind(this)
     this.handleReassignRequested = this.handleReassignRequested.bind(this)
+    this.handleReassignAllMatchingRequested = this.handleReassignAllMatchingRequested.bind(this)
     this.handlePageChange = this.handlePageChange.bind(this)
     this.handlePageSizeChange = this.handlePageSizeChange.bind(this)
     this.handleRowSelection = this.handleRowSelection.bind(this)
@@ -72,6 +74,7 @@ export class AdminIncomingMessageList extends Component {
     this.handleActiveCampaignsToggled = this.handleActiveCampaignsToggled.bind(
       this
     )
+    this.conversationCountChanged = this.conversationCountChanged.bind(this)
   }
 
   shouldComponentUpdate(dummy, nextState) {
@@ -129,6 +132,10 @@ export class AdminIncomingMessageList extends Component {
       utc: Date.now().toString(),
       needsRender: true
     })
+  }
+
+  async handleReassignAllMatchingRequested() {
+    console.log("Rube Goldberg")
   }
 
   async handlePageChange(page) {
@@ -204,6 +211,13 @@ export class AdminIncomingMessageList extends Component {
     })
   }
 
+  conversationCountChanged(conversationCount) {
+    this.setState({
+      conversationCount
+    })
+
+  }
+
   render() {
     const cursor = {
       offset: this.state.page * this.state.pageSize,
@@ -249,6 +263,8 @@ export class AdminIncomingMessageList extends Component {
             <IncomingMessageActions
               people={this.state.reassignmentTexters}
               onReassignRequested={this.handleReassignRequested}
+              onReassignAllMatchingRequested={this.handleReassignAllMatchingRequested}
+              conversationCount={this.state.conversationCount}
             />
             <br />
             <IncomingMessageList
@@ -261,6 +277,7 @@ export class AdminIncomingMessageList extends Component {
               onPageChanged={this.handlePageChange}
               onPageSizeChanged={this.handlePageSizeChange}
               onConversationSelected={this.handleRowSelection}
+              onConversationCountChanged={this.conversationCountChanged}
             />
           </div>
         )}
