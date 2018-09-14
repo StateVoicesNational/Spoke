@@ -132,7 +132,7 @@ class Settings extends React.Component {
                 onToggle={async (event, isToggled) => await this.props.mutations.textingTurnedOff(isToggled)}
               />
             </div>
-
+            .. add red button
             <GSForm
               schema={formSchema}
               onSubmit={this.props.mutations.updateOptOutMessage}
