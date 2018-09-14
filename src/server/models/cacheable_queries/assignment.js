@@ -1,19 +1,53 @@
 import { r, Assignment } from '../../models'
 import { campaignCache } from './campaign'
 
-// ## HASH
+// ## KEY
 // assignment-<assignmentId>
 //   - user_id
 //   - campaign_id
 //   - organization_id (extra)
 //   - texter{}: user (do not save, so will update with texter info)
 //   - max_contacts
-//   OTHER DATA
-//    - campaign{}
-//    - contacts: [LIST] (TexterTodo.jsx)
-//        $contactsFilter
-//        "messageStatus", isOptedOut:false, validTimezone:true
-//    - contactsCount (TexterTodoList.jsx)
+//   - campaign{} (lookup with campaignCache)
+
+// ## SORTED SET (sadly a bit complex)
+// assignmentcontacts-<assignmentId>-<tz>
+//   key=<contactId>
+//   score=<mix of message_status AND message newness>
+//            optedOut: score=0
+//      e.g.  needsMessage is between 1-999 (add 4 more nines for scaled reality)
+//            needsResponse is between 1000-1999
+//            convo, messaged, closed all other ranges
+//      When a conversation is updated we will update the score as
+//        one more than the current highest
+//   Requirements:
+//    * filter based on message_status
+//    * filter based on *current* time in contact timezone being valid/invalid
+//    * easy counting of the same
+//   Strategy:
+//    ZRANGEBYSCORE: Since message_status is grouped together we can get ids with min/max
+//    ZCOUNT: We can count within a min/max range as well
+//    ZREVRANGEBYSCORE: With 'LIMIT 1' can get the highest current val within a range
+//                      We then update a message with that +1 each conversation change
+//    <tz> aggregating:
+//      Since which timezones are valid/invalid changes, this adds another dimension
+//      to an already crowded datastructure
+//      Thus we split out contacts by timezone and so each contact query will need
+//      to go across the relevant timezones, and then aggregate the results.
+//      * There's a subtle issue that newest messages across multiple timezones
+//        will be grouped
+//      * To avoid querying too many empty timezones, we cache all the
+//        campaign_contact.timezone_offset ranges for a particular campaign on the
+//        campaign cache object (campaign.contactTimezones) -- that way we can
+//        only search timezones that are actually possible
+//   Client Queries:
+//    TexterTodo.jsx
+//    - contacts: [LIST of ids] (
+//       $contactsFilter
+//       "<messageStatus>", isOptedOut:false, validTimezone:true
+//    - contactsCount (no filter)
+//    TexterTodoList.jsx
+//    - contactsCount (
 //      - needsMessage: isOptedOut:false, validTimezone:true
 //      - needsResponse: isOptedOut:false, validTimezone:true
 //      - badTimezone: isOptedOut:false, validTimezone:false
@@ -43,13 +77,16 @@ const hasAssignment = async (userId, assignmentId) => {
 const msgStatusRange = {
   // Inclusive min/max ranges
   // Special ranges:
-  // - isOptedOut: 1000
-  'needsMessage': [0, 0],
-  'needsResponse': [1, 1],
-  'needsMessageOrResponse': [0, 1],
-  'convo': [2, 2],
-  'messaged': [3, 3],
-  'closed': [4, 4],
+  // - isOptedOut: 0
+  // These ranges provide 10 million messages as 'room'
+  // this is per-assignment, so should be plenty.
+  // Redis uses a 64-bit floating point, so we can bump it up if necessary :-P
+  'needsMessage': [1, 9999999],
+  'needsResponse': [10000000, 19999999],
+  'needsMessageOrResponse': [1, 19999999],
+  'convo': [20000000, 29999999],
+  'messaged': [30000000, 39999999],
+  'closed': [40000000, 49999999],
 }
 
 const getContacts = async (assignmentId, contactsFilter, { justIds, justCount, campaign, organization }) => {

@@ -1,5 +1,6 @@
 import { r, Campaign } from '../../models'
 import { organizationCache } from './organization'
+import { modelWithExtraProps } from './lib'
 
 // This should be cached data for a campaign that will not change
 // based on assignments or texter actions
@@ -30,11 +31,19 @@ const dbCustomFields = async (id) => {
   return []
 }
 
-const dbInteractionSteps = async (id) => {
-  return r.table('interaction_step')
+const dbInteractionSteps = async (id) => (
+  await r.table('interaction_step')
     .getAll(id, { index: 'campaign_id' })
     .filter({ is_deleted: false })
-}
+)
+
+const dbContactTimezones = async (id) => (
+  (await r.knex('campaign_contact')
+   .where('campaign_id', id)
+   .distinct('timezone_offset')
+   .select())
+    .map(contact => contact.timezone_offset)
+)
 
 const clear = async (id) => {
   if (r.redis) {
@@ -52,6 +61,7 @@ const loadDeep = async (id) => {
     }
     campaign.customFields = await dbCustomFields(id)
     campaign.interactionSteps = await dbInteractionSteps(id)
+    campaign.contactTimezones = await dbContactTimezones(id)
     // We should only cache organization data
     // if/when we can clear it on organization data changes
     //campaign.organization = await organizationCache.load(campaign.organization_id)
@@ -78,12 +88,11 @@ export const campaignCache = {
       }
       if (campaignData) {
         const campaignObj = JSON.parse(campaignData)
-        const { customFields, interactionSteps } = campaignObj
-        delete campaignObj.customFields
-        delete campaignObj.interactionSteps
-        const campaign = new Campaign(campaignObj)
-        campaign.customFields = customFields
-        campaign.interactionSteps = interactionSteps
+        const campaign = modelWithExtraProps(
+          campaignObj,
+          Campaign,
+          ['customFields', 'interactionSteps', 'contactTimezones'])
+        return campaign
       }
     }
     return await Campaign.get(id)
