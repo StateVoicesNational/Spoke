@@ -3,7 +3,7 @@ import { r, OptOut } from '../../models'
 // STRUCTURE
 // maybe HASH by organization, so optout-<organization_id> has a <cell> key
 
-const orgCacheKey = (orgId) => `${process.env.CACHE_PREFIX || ""}optouts-${orgId}`
+const orgCacheKey = (orgId) => `${process.env.CACHE_PREFIX || ''}optouts-${orgId}`
 
 const loadMany = async (organizationId) => {
   if (r.redis) {
@@ -21,7 +21,7 @@ const loadMany = async (organizationId) => {
   }
 }
 
-export const optOutCache = {
+const optOutCache = {
   clearQuery: async ({cell, organizationId}) => {
     // remove cache by organization
     // (if no cell is present, then clear whole query of organization)
@@ -96,3 +96,5 @@ export const optOutCache = {
   },
   loadMany: loadMany
 }
+
+export default optOutCache

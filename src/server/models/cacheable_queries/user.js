@@ -28,30 +28,37 @@ userOrgsWithRole(role, user.id) -> organization list
 */
 
 
-const userRoleKey = (userId) => `${process.env.CACHE_PREFIX || ""}texterinfo-${userId}`
+const userRoleKey = (userId) => `${process.env.CACHE_PREFIX || ''}texterinfo-${userId}`
+const userAuthKey = (authId) => `${process.env.CACHE_PREFIX || ''}texterauth-${authId}`
 
-const getHighestRolesPerOrg = function(userOrgs) {
+const getHighestRolesPerOrg = (userOrgs) => {
   const highestRolesPerOrg = {}
   userOrgs.forEach(userOrg => {
     const orgId = userOrg.organization_id
     const orgRole = userOrg.role
     const orgName = userOrg.name
 
-    if (highestRolesPerOrg.hasOwnProperty(orgId) &&
-      isRoleGreater(orgRole, highestRolesPerOrg[orgId].role)) {
-        highestRolesPerOrg[orgId].role = orgRole
+    const orgIdPresent = Object.prototype.hasOwnProperty.call(
+      highestRolesPerOrg, orgId
+    )
+    const currentRoleGreater = isRoleGreater(
+      orgRole, highestRolesPerOrg[orgId].role
+    )
+
+    if (orgIdPresent && currentRoleGreater) {
+      highestRolesPerOrg[orgId].role = orgRole
     } else {
-      highestRolesPerOrg[orgId] = {id: orgId, role: orgRole, name: orgName}
+      highestRolesPerOrg[orgId] = { id: orgId, role: orgRole, name: orgName }
     }
   })
   return highestRolesPerOrg
 }
 
-const dbLoadUserRoles = async function(userId) {
+const dbLoadUserRoles = async (userId) => {
   const userOrgs = await r.knex('user_organization')
     .where('user_id', userId)
     .join('organization', 'user_organization.organization_id', 'organization.id')
-    .select('user_organization.role','user_organization.organization_id', 'organization.name')
+    .select('user_organization.role', 'user_organization.organization_id', 'organization.name')
 
   const highestRolesPerOrg = getHighestRolesPerOrg(userOrgs)
 
@@ -68,13 +75,14 @@ const dbLoadUserRoles = async function(userId) {
   return highestRolesPerOrg
 }
 
-const dbLoadUserAuth = async function(authId) {
+const dbLoadUserAuth = async (authId) => {
   const userAuth = await r.knex('user')
     .where('auth0_id', authId)
     .select('*')
     .first()
 
   if (r.redis && userAuth) {
+    const authKey = userAuthKey(authId)
     await r.redis.multi()
       .set(authKey, JSON.stringify(userAuth))
       .expire(authKey, 86400)
@@ -84,7 +92,7 @@ const dbLoadUserAuth = async function(authId) {
   return userAuth
 }
 
-export async function userHasRole(userId, orgId, acceptableRoles) {
+const userHasRole = async (userId, orgId, acceptableRoles) => {
   if (r.redis) {
     // cached approach
     const userKey = `texterinfo-${userId}`
@@ -95,19 +103,18 @@ export async function userHasRole(userId, orgId, acceptableRoles) {
     }
     highestRole = highestRole.split(':')[0]
     return (acceptableRoles.indexOf(highestRole) >= 0)
-  } else {
-    // regular DB approach
-    const userHasRole = await r.getCount(
-      r.knex('user_organization')
-        .where({ user_id: userId,
-                 organization_id: orgId })
-        .whereIn('role', acceptableRoles)
-    )
-    return userHasRole
   }
+  // regular DB approach
+  const userHasRoleDb = await r.getCount(
+    r.knex('user_organization')
+      .where({ user_id: userId,
+        organization_id: orgId })
+      .whereIn('role', acceptableRoles)
+  )
+  return userHasRoleDb
 }
 
-export async function userLoggedIn(authId) {
+const userLoggedIn = async (authId) => {
   const authKey = `texterauth-${authId}`
 
   if (r.redis) {
@@ -121,37 +128,15 @@ export async function userLoggedIn(authId) {
   return userAuth
 }
 
-export async function currentEditors(campaign, user) {
-  // Add user ID in case of duplicate admin names
-  const displayName = `${user.id}~${user.first_name} ${user.last_name}`
-
-  await r.redis.hsetAsync(`campaign_editors_${campaign.id}`, displayName, new Date())
-  await r.redis.expire(`campaign_editors_${campaign.id}`, 120)
-
-  let editors = await r.redis.hgetallAsync(`campaign_editors_${campaign.id}`)
-
-  // Only get editors that were active in the last 2 mins, and exclude the
-  // current user
-  editors = Object.entries(editors).filter(editor => {
-    const rightNow = new Date()
-    return rightNow - new Date(editor[1]) <= 120000 && editor[0] !== displayName
-  })
-
-  // Return a list of comma-separated names
-  return editors.map(editor => {
-    return editor[0].split('~')[1]
-  }).join(', ')
-}
-
-export const userCache = {
-  userHasRole: async () => {
-
-  },
+const userCache = {
   loadWithAuthId: async () => {
-
+    // placeholder
   },
   userOrgsWithRole: async () => {
-
+    // placeholder
   },
-
+  userHasRole,
+  userLoggedIn
 }
+
+export default userCache
