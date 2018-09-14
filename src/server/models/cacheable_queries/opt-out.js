@@ -3,7 +3,7 @@ import { r, OptOut } from '../../models'
 // STRUCTURE
 // maybe HASH by organization, so optout-<organization_id> has a <cell> key
 
-const orgCacheKey = (orgId) => `${process.env.CACHE_PREFIX|""}optouts-${orgId}`
+const orgCacheKey = (orgId) => `${process.env.CACHE_PREFIX || ""}optouts-${orgId}`
 
 const loadMany = async (organizationId) => {
   if (r.redis) {
