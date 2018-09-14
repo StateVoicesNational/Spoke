@@ -112,7 +112,7 @@ class Settings extends React.Component {
 
   render() {
     const { organization } = this.props.data
-    const {optOutMessage } = organization
+    const { optOutMessage } = organization
     const formSchema = yup.object({
       optOutMessage: yup.string().required()
     })
@@ -125,6 +125,13 @@ class Settings extends React.Component {
           />
           <CardText>
             <div className={css(styles.section)}>
+            <div className={css(styles.section)}>
+              <Toggle
+                toggled={organization.textingTurnedOff}
+                label='Turn Texting Off For All Campaigns?'
+                onToggle={async (event, isToggled) => await this.props.mutations.textingTurnedOff(isToggled)}
+              />
+            </div>
 
             <GSForm
               schema={formSchema}
@@ -132,9 +139,9 @@ class Settings extends React.Component {
               defaultValue={{ optOutMessage }}
             >
 
-              <Form.Field 
-                label='Default Opt-Out Message' 
-                name='optOutMessage'  
+              <Form.Field
+                label='Default Opt-Out Message'
+                name='optOutMessage'
                 fullWidth
               />
 
@@ -239,7 +246,20 @@ const mapMutationsToProps = ({ ownProps }) => ({
       organizationId: ownProps.params.organizationId,
       optOutMessage
     }
-  })
+  }),
+  textingTurnedOff: (textingTurnedOff) => ({
+    mutation: gql`
+      mutation textingTurnedOff($textingTurnedOff: Boolean!, $organizationId: String!) {
+        textingTurnedOff(textingTurnedOff: $textingTurnedOff, organizationId: $organizationId) {
+          id
+          textingTurnedOff
+        }
+      }`,
+    variables: {
+      organizationId: ownProps.params.organizationId,
+      textingTurnedOff
+    }
+  }),
 
 })
 
