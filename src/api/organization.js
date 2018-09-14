@@ -12,9 +12,9 @@ export const schema = `
     optOuts: [OptOut]
     threeClickEnabled: Boolean
     optOutMessage: String
+    turnTextingOff: Boolean
     textingHoursEnforced: Boolean
     textingHoursStart: Int
     textingHoursEnd: Int
   }
 `
-
