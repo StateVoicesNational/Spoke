@@ -1,8 +1,6 @@
 import { mapFieldsToModel } from './lib/utils'
 import { Assignment, r, cacheableData } from '../models'
-import { getContacts as aGetContacts } from '../models/cacheable_queries/assignment-lib'
-
-export const getContacts = aGetContacts
+import { dbGetContactsQuery as getContacts } from '../models/cacheable_queries/assignment-lib'
 
 export function addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue(
   queryParameter,
@@ -81,7 +79,7 @@ export const resolvers = {
       const campaign = await loaders.campaign.load(assignment.campaign_id)
       const organization = await loaders.campaign.load(campaign.organization_id)
 
-      return getContacts(assignment, contactsFilter, organization, campaign, true)
+      return getContacts(assignment, contactsFilter, organization, campaign, false, true)
     },
     contacts: async (assignment, { contactsFilter }, { loaders }, graphqlRequest) => {
       const justNeedContactIds = graphqlQueryJustContactIds(graphqlRequest.operation)
@@ -89,7 +87,7 @@ export const resolvers = {
       const campaign = await loaders.campaign.load(assignment.campaign_id)
       const organization = await loaders.campaign.load(campaign.organization_id)
 
-      return getContacts(assignment, contactsFilter, organization, campaign, false, justNeedContactIds)
+      return getContacts(assignment, contactsFilter, organization, campaign, false, false, justNeedContactIds)
     },
     campaignCannedResponses: async assignment =>
       await cacheableData.cannedResponse.query({
