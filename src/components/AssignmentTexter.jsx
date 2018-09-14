@@ -36,6 +36,7 @@ class AssignmentTexter extends React.Component {
     this.state = {
       // currentContactIndex: 0,
       contactCache: {},
+      loading: false,
       direction: 'right'
     }
   }
@@ -45,6 +46,10 @@ class AssignmentTexter extends React.Component {
   }
 
   componentWillUpdate(nextProps, nextState) {
+    if (this.contactCount() === 0) {
+      setTimeout(() => window.location.reload(), 5000)
+    }
+
     // When we send a message that changes the contact status,
     // then if parent.refreshData is called, then props.contacts
     // will return a new list with the last contact removed and
@@ -62,9 +67,6 @@ class AssignmentTexter extends React.Component {
         // eslint-disable-next-line no-param-reassign
         nextState.currentContactIndex = nextIndex
       }
-    }
-    if (this.contactCount() === 0) {
-      setTimeout(() => window.location.reload(), 5000)
     }
   }
   /*
@@ -130,6 +132,7 @@ class AssignmentTexter extends React.Component {
     }
 
     if (getIds.length) {
+      this.setState({ loading: true })
       const contactData = await this.props.loadContacts(getIds)
       const { data: { getAssignmentContacts } } = contactData
       if (getAssignmentContacts) {
@@ -138,6 +141,7 @@ class AssignmentTexter extends React.Component {
           newContactData[c.id] = c
         })
         this.setState({
+          loading: false,
           contactCache: { ...this.state.contactCache,
                           ...newContactData } })
       }
@@ -266,6 +270,14 @@ class AssignmentTexter extends React.Component {
     const navigationToolbarChildren = this.renderNavigationToolbarChildren()
     const contactData = this.state.contactCache[contact.id]
     if (!contactData) {
+      const self = this
+      setTimeout(() => {
+        if (self.state.contactCache[contact.id]) {
+          self.forceUpdate()
+        } else if (!self.state.loading) {
+          self.updateCurrentContactIndex(self.state.currentContactIndex)
+        }
+      }, 200)
       return null
     }
     return (
