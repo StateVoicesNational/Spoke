@@ -54,7 +54,8 @@ class AssignmentTexter extends React.Component {
     // Below, we update our index with the contact that matches our current index.
     if (typeof nextState.currentContactIndex !== 'undefined'
         && nextState.currentContactIndex === this.state.currentContactIndex
-        && nextProps.contacts.length !== this.props.contacts.length) {
+        && nextProps.contacts.length !== this.props.contacts.length
+        && this.props.contacts[this.state.currentContactIndex]) {
       const curId = this.props.contacts[this.state.currentContactIndex].id
       const nextIndex = nextProps.contacts.findIndex((c) => c.id === curId)
       if (nextIndex !== nextState.currentContactIndex) {
