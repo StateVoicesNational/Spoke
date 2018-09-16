@@ -139,7 +139,34 @@ const migrations = [
       })
       console.log('added user_id column to message table')
     }
+  },
+  { auto: true, // 14
+    date: '2018-09-16',
+    migrate: async () => {
+      await r.knex.schema.alterTable('message', (table) => {
+        table.integer('campaign_contact_id')
+          .unsigned()
+          .nullable()
+          .default(null)
+          .index()
+          .references('id')
+          .inTable('campaign_contact')
+        table.string('messageservice_sid')
+          .nullable()
+          .default(null)
+          .index()
+      })
+      await r.knex.schema.alterTable('organization', (table) => {
+        table.string('messageservice_sid')
+          .nullable()
+          .default(null)
+          .index()
+      })
+      console.log('added campaign_contact_id and messageservice_sid columns to message table')
+      console.log('added messageservice_sid column to organization table')
+    }
   }
+
   /* migration template
      {auto: true, //if auto is false, then it will block the migration running automatically
       date: '2017-08-23',

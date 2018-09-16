@@ -140,11 +140,8 @@ export const resolvers = {
         return campaignContact.messages
       }
 
-      const messages = await r.table('message')
-        .getAll(campaignContact.assignment_id, { index: 'assignment_id' })
-        .filter({
-          contact_number: campaignContact.cell
-        })
+      const messages = await r.knex('message')
+        .where('campaign_contact_id', campaignContact.id)
         .orderBy('created_at')
 
       return messages

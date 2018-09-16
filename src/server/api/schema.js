@@ -18,7 +18,8 @@ import {
   User,
   r,
   datawarehouse,
-  cacheableData
+  cacheableData,
+  getMessageServiceSid
 } from '../models'
 import { schema as userSchema, resolvers as userResolvers, buildUserOrganizationQuery } from './user'
 import {
@@ -317,7 +318,9 @@ const rootMutations = {
           }),
           service_id: mockId,
           assignment_id: lastMessage.assignment_id,
+          campaign_contact_id: contact.id,
           service: lastMessage.service,
+          messageservice_sid: '',
           send_status: 'DELIVERED'
         })
       )
@@ -934,6 +937,8 @@ const rootMutations = {
         user_id: user.id,
         user_number: '',
         assignment_id: message.assignmentId,
+        campaign_contact_id: contact.id,
+        messageservice_sid: getMessageServiceSid(organization),
         send_status: JOBS_SAME_PROCESS ? 'SENDING' : 'QUEUED',
         service: orgFeatures.service || process.env.DEFAULT_SERVICE || '',
         is_from_contact: false,
