@@ -44,6 +44,16 @@ export const dbGetContactsQuery = (assignment, contactsFilter, organization, cam
           : dbContactsQuery(contactQueryArgs))
 }
 
+export const optOutContact = async (assignmentId, contactId, campaign) => {
+  if (r.redis && campaign.contactTimezones) {
+    for (let i=0, l=campaign.contactTimezones.length; i<l; i++) {
+      const tz = campaign.contactTimezones[i]
+      // XX only changes the score if it already exists
+      await r.redis.zaddAsync(assignmentContactsKey(assignmentId, tz), 'XX', 0, contactId)
+    }
+  }
+}
+
 export const getContactQueryArgs = (assignmentId, contactsFilter, organization, campaign, forCount, justCount, justIds) => {
   // / returns list of contacts eligible for contacting _now_ by a particular user
   const includePastDue = (contactsFilter && contactsFilter.includePastDue)

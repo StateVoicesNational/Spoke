@@ -1,6 +1,6 @@
 import { r, Assignment } from '../../models'
 import { campaignCache } from './campaign'
-import { loadAssignmentContacts, getContacts } from './assignment-contacts'
+import { loadAssignmentContacts, getContacts, optOutContact } from './assignment-contacts'
 
 // ## KEY
 // assignment-<assignmentId>
@@ -120,20 +120,8 @@ export const assignmentCache = {
     }
     const { assignment } = loadDeep(id)
     return assignment
-    // should load cache of campaign by id separately, so that can be updated on campaign-save
-    // e.g. for script changes
-    // should include:
-    // texter: id, firstName, lastName, assignedCell, ?userCannedResponses
-    // campaignId
-    // organizationId
-    // ?should contact ids be key'd off of campaign or assignment?
   },
   hasAssignment: hasAssignment,
   getContacts: getContacts,
-  optOutContact: async (assignmentId, contactId) => {
-    if (r.redis) {
-      // TODO: will need to iterate over timezones
-      await r.redis.zaddAsync(assignmentContactsKey(assignmentId), 'XX', 1000, contactId)
-    }
-  }
+  optOutContact: optOutContact
 }

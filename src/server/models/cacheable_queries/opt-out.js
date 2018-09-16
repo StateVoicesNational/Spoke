@@ -60,14 +60,15 @@ export const optOutCache = {
       .limit(1)
     return (dbResult.length > 0)
   },
-  save: async ({cell, campaignContactId, organizationId, assignmentId, reason}) => {
+  save: async ({cell, campaignContactId, campaign, assignmentId, reason}) => {
+    const organizationId = campaign.organization_id
     if (r.redis) {
       const hashKey = orgCacheKey(organizationId)
       const exists = await r.redis.existsAsync(hashKey)
       if (exists) {
         await r.redis.saddAsync(hashKey, cell)
       }
-      await assignmentCache.optOutContact(assignmentId, campaignContactId)
+      await assignmentCache.optOutContact(assignmentId, campaignContactId, campaign)
     }
     // database
     await new OptOut({

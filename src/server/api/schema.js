@@ -812,18 +812,14 @@ const rootMutations = {
       await assignmentRequired(user, contact.assignment_id)
 
       const { assignmentId, cell, reason } = optOut
-      let organizationId = contact.organization_id
+      const campaign = await loaders.campaign.load(contact.campaign_id)
 
-      if (!organizationId) {
-        const campaign = await loaders.campaign.load(contact.campaign_id)
-        organizationId = campaign.organization_id
-      }
       await cacheableData.optOut.save({
         cell,
         campaignContactId,
         reason,
         assignmentId,
-        organizationId
+        campaign
       })
 
       return loaders.campaignContact.load(campaignContactId)
