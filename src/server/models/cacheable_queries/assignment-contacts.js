@@ -3,6 +3,8 @@ import { r } from '../index'
 
 const assignmentContactsKey = (id, tz) => `${process.env.CACHE_PREFIX||""}assignmentcontacts-${id}-${tz}`
 
+// TODO: dynamic assignment (updating assignment-contacts with dynamically assigned contacts)
+
 const msgStatusRange = {
   // Inclusive min/max ranges
   // Special ranges:
@@ -209,6 +211,7 @@ export const cachedContactsQuery = async ({assignmentId, timezoneOffsets, messag
   return null
 }
 
+const sharingOptOuts = !!process.env.OPTOUTS_SHARE_ALL_ORGS
 export const loadAssignmentContacts = async (assignmentId, organizationId, timezoneOffsets) => {
   // * for each timezone
   //   * zadd <key> <needsMessageScore> cid ...
@@ -224,8 +227,12 @@ export const loadAssignmentContacts = async (assignmentId, organizationId, timez
       return this.on('message.assignment_id', '=', 'campaign_contact.assignment_id')
         .andOn('message.contact_number', '=', 'campaign_contact.cell')})
     .leftJoin('opt_out', function () {
-      return this.on('opt_out.cell', '=', 'campaign_contact.cell')
-        .andOn('opt_out.organization_id', '=', r.knex.raw('?', [organizationId]))})
+      let joinOn = this.on('opt_out.cell', '=', 'campaign_contact.cell')
+      return (!sharingOptOuts
+              ? joinOn
+              : joinOn.andOn('opt_out.organization_id', '=',
+                             r.knex.raw('?', [organizationId])))
+    })
     .where('campaign_contact.assignment_id', assignmentId)
     .groupBy('campaign_contact.id',
              'campaign_contact.message_status',

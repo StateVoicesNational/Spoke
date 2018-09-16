@@ -23,7 +23,7 @@ import { optOutCache } from './opt-out'
 //   - messageStatus
 //   - messages
 
-// HASH message-<cell>
+// HASH message-<cell>-<campaignId>
 //   - messageStatus
 
 // TODO: relocate this method elsewhere
@@ -105,7 +105,7 @@ export const campaignContactCache = {
   loadMany: async (organization, { campaign, queryFunc }) => {
     // queryFunc(query) has query input of a knex query
     // queryFunc should return a query with added where clauses
-    if (!r.redis) {
+    if (!r.redis || !organization || !(campaign || queryFunc)) {
       return
     }
     // 1. load the data
