@@ -31,7 +31,7 @@ export const getContacts = async (assignment, contactsFilter, organization, camp
   if (typeof contactQueryArgs.result !== 'undefined') {
     return contactQueryArgs.result
   }
-  const cachedResult = cachedContactsQuery(contactQueryArgs)
+  const cachedResult = await cachedContactsQuery(contactQueryArgs)
   return (cachedResult !== null
           ? cachedResult
           : dbContactsQuery(contactQueryArgs))
@@ -101,7 +101,6 @@ export const getContactQueryArgs = (assignmentId, contactsFilter, organization, 
          // we do not want to return closed/messaged
          : 'needsMessageOrResponse'))
   }
-
   return {
     assignmentId,
     timezoneOffsets,
@@ -164,14 +163,14 @@ export const cachedContactsQuery = async ({assignmentId, timezoneOffsets, messag
             return null
           }
           const curRange = msgStatusRange[cur]
-          const accRange = (Array.isArray(accumulator)
-                            ? accumulator
-                            : msgStatusRange[accumulator])
-          if (curRange[0] === accRange[1] + 1) {
-            // we only support adjacent ranges for cache solution
-            return [accRange[0], curRange[1]]
+          if (accumulator === 'xxx') {
+            return curRange
           }
-        })
+          if (curRange[0] === accumulator[1] + 1) {
+            // we only support adjacent ranges for cache solution
+            return [accumulator[0], curRange[1]]
+          }
+        }, 'xxx')
         if (!range) {
           return null // non-adjacent ranges bail
         }
@@ -181,16 +180,20 @@ export const cachedContactsQuery = async ({assignmentId, timezoneOffsets, messag
     let resultQuery = r.redis.multi()
     let existsQuery = r.redis.multi()
     timezoneOffsets.forEach((tz) => {
-      existsQuery = existsQuery[cmd](assignmentContactsKey(assignmentId, tz))
-      resultQuery = resultQuery[cmd](assignmentContactsKey(assignmentId, tz), range[0], range[1])
+      const key = assignmentContactsKey(assignmentId, tz)
+      existsQuery = existsQuery.exists(key)
+      resultQuery = resultQuery[cmd](key, range[0], range[1])
     })
     const existsResult = await existsQuery.execAsync()
-    if (existsResult.reduce((a,b) => a && b)) {
-      const redisResult = await redisQuery.execAsync()
-      return redisResult.reduce(
-        justCount
-          ? (i,j) => i + j
-          : (m,n) => [...m, ...n])
+    if (existsResult.reduce((a,b) => a && b, true)) {
+      const redisResult = await resultQuery.execAsync()
+      if (justCount) {
+        return redisResult.reduce((i,j) => i + j, 0)
+      } else if (justIds) {
+        return redisResult
+          .reduce((m,n) => [...m, ...n], [])
+          .map(id => ({id: id}))
+      }
     }
   }
   return null
@@ -201,7 +204,6 @@ export const loadAssignmentContacts = async (assignmentId, organizationId, timez
   //   * zadd <key> <needsMessageScore> cid ...
   // * if not needsMessage, then need to sort by recent message
   const cols = []
-  console.log('loadAssignmentContacdts', assignmentId, organizationId, timezoneOffsets)
   const contacts = await r.knex('campaign_contact')
     .select('campaign_contact.id as cid',
             'campaign_contact.message_status as status',
@@ -220,7 +222,6 @@ export const loadAssignmentContacts = async (assignmentId, organizationId, timez
              'campaign_contact.timezone_offset',
              'opt_out.id')
     .orderByRaw('campaign_contact.timezone_offset, campaign_contact.message_status DESC, MAX(message.created_at)')
-  console.log('CONTACTS', contacts)
   // 2. group results with scores
   const tzs = {}
   timezoneOffsets.forEach((tzOffset) => {
@@ -229,32 +230,31 @@ export const loadAssignmentContacts = async (assignmentId, organizationId, timez
       needsMessage: 0, needsResponse: 0, convo: 0, messaged: 0, closed: 0
     }
   })
-  const getScore = (c, tz) => {
+  const getScore = (c, tzObj) => {
     if (c.optout) {
       return 0
     }
     if (c.latest_message) {
       // note: needsMessage will never increment and always end up ===1
-      ++tz[c.status]
+      ++tzObj[c.status]
     }
     if (c.status === 'convo') {
       // starts at max and counts down for reverse order
-      return msgStatusRange[c.status][1] - tz[c.status]
+      return msgStatusRange[c.status][1] - tzObj[c.status]
     }
-    return msgStatusRange[c.status][0] + tz[c.status]
+    return msgStatusRange[c.status][0] + tzObj[c.status]
   }
   contacts.forEach((c) => {
-    const tz = tzs[c.tz_offset]
-    tz.contacts.push(getScore(c, tz), c.cid)
+    const tzObj = tzs[c.tz_offset]
+    tz.contacts.push(getScore(c, tzObj), c.cid)
   })
-  for (const timezone in tzs) {
-    const contacts =  tzs[timezone].contacts
-    console.log('TIMEZONE contacts', timezone, contacts)
+  for (const tz in tzs) {
+    const contacts =  tzs[tz].contacts
+    const key = assignmentContactsKey(assignmentId, tz)
     await r.redis.multi()
-      .del(assignmentContactsKey(assignmentId, timezone))
-      .zadd(assignmentContactsKey(assignmentId, timezone),
-            // TODO: is there a max to how many we can add at once?
-            ...contacts)
+      .del(key)
+    // TODO: is there a max to how many we can add at once?
+      .zadd(key, ...contacts)
       .execAsync()
   }
 }

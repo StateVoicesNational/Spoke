@@ -1,6 +1,6 @@
 import { r, Assignment } from '../../models'
 import { campaignCache } from './campaign'
-import { loadAssignmentContacts } from './assignment-contacts'
+import { loadAssignmentContacts, getContacts } from './assignment-contacts'
 
 // ## KEY
 // assignment-<assignmentId>
@@ -64,7 +64,7 @@ const hasAssignment = async (userId, assignmentId) => {
     const assnData = await r.redis.getAsync(assignmentHashKey(assignmentId))
     if (assnData) {
       const assnObj = JSON.parse(assnData)
-      return (assnObj.userId === userId)
+      return (assnObj.user_id === userId)
     }
   }
   const [assignment] = await r.knex('assignment')
@@ -129,6 +129,7 @@ export const assignmentCache = {
     // ?should contact ids be key'd off of campaign or assignment?
   },
   hasAssignment: hasAssignment,
+  getContacts: getContacts,
   optOutContact: async (assignmentId, contactId) => {
     if (r.redis) {
       // TODO: will need to iterate over timezones
