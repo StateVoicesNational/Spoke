@@ -134,8 +134,18 @@ export class AdminIncomingMessageList extends Component {
     })
   }
 
-  async handleReassignAllMatchingRequested() {
-    console.log("Rube Goldberg")
+  async handleReassignAllMatchingRequested(newTexterUserId) {
+    await this.props.mutations.bulkReassignCampaignContacts(
+      this.props.params.organizationId,
+      this.state.campaignsFilter || {},
+      this.state.assignmentsFilter || {},
+      this.state.contactsFilter || {},
+      newTexterUserId
+    )
+    this.setState({
+      utc: Date.now().toString(),
+      needsRender: true
+    })
   }
 
   async handlePageChange(page) {
@@ -331,6 +341,35 @@ const mapMutationsToProps = () => ({
       }
     `,
     variables: { organizationId, campaignIdsContactIds, newTexterUserId }
+  }),
+  bulkReassignCampaignContacts: (
+    organizationId,
+    campaignsFilter,
+    assignmentsFilter,
+    contactsFilter,
+    newTexterUserId
+  ) => ({
+    mutation: gql`
+        mutation bulkReassignCampaignContacts(
+        $organizationId: String!
+        $contactsFilter: ContactsFilter
+        $campaignsFilter: CampaignsFilter
+        $assignmentsFilter: AssignmentsFilter
+        $newTexterUserId: String!
+        ) {
+            bulkReassignCampaignContacts(
+                organizationId: $organizationId
+                contactsFilter: $contactsFilter,
+                campaignsFilter: $campaignsFilter,
+                assignmentsFilter: $assignmentsFilter,
+                newTexterUserId: $newTexterUserId
+            ) {
+                campaignId
+                assignmentId
+            }
+        }
+    `,
+    variables: { organizationId, campaignsFilter, assignmentsFilter, contactsFilter, newTexterUserId }
   })
 })
 
