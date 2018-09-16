@@ -1,5 +1,6 @@
 import { r, Assignment } from '../../models'
 import { campaignCache } from './campaign'
+import { loadAssignmentContacts } from './assignment-lib'
 
 // ## KEY
 // assignment-<assignmentId>
@@ -55,8 +56,8 @@ import { campaignCache } from './campaign'
 //      - pastMessageFilter: isOptedOut:false, validTimezone:true, messageStatus:convo
 //      - skippedMessageFilter: isOptedOut:false, validTimezone:true, messageStatus:closed
 
-const assignmentHashKey = (id) => `${process.env.CACHE_PREFIX|""}assignment-${id}`
-const assignmentContactsKey = (id) => `${process.env.CACHE_PREFIX|""}assignmentcontacts-${id}`
+const assignmentHashKey = (id) => `${process.env.CACHE_PREFIX||""}assignment-${id}`
+const assignmentContactsKey = (id) => `${process.env.CACHE_PREFIX||""}assignmentcontacts-${id}`
 
 const hasAssignment = async (userId, assignmentId) => {
   if (r.redis) {
@@ -74,66 +75,24 @@ const hasAssignment = async (userId, assignmentId) => {
   return Boolean(assignment)
 }
 
-const msgStatusRange = {
-  // Inclusive min/max ranges
-  // Special ranges:
-  // - isOptedOut: 0
-  // These ranges provide 10 million messages as 'room'
-  // this is per-assignment, so should be plenty.
-  // Redis uses a 64-bit floating point, so we can bump it up if necessary :-P
-  'needsMessage': [1, 9999999],
-  'needsResponse': [10000000, 19999999],
-  'needsMessageOrResponse': [1, 19999999],
-  'convo': [20000000, 29999999],
-  'messaged': [30000000, 39999999],
-  'closed': [40000000, 49999999],
-}
-
-const getContacts = async (assignmentId, contactsFilter, { justIds, justCount, campaign, organization }) => {
-  if (r.redis
-      // Below are restrictions on what we support from the cache.
-      // Narrowing it to these cases (which are actually used, and others aren't)
-      // we can simplify the logic by not accomodating all the different permutations
-      && (!contactsFilter
-          || (contactsFilter.isOptedOut === false
-              && typeof contactsFilter.validTimezone !== 'undefined'
-              && contactsFilter.validTimezone !== null))
-      && (justCount || justIds)) {
-    // if it doesn't exist, then maybe the assignment was deleted, and we can't assume 0 means uncached
-    const exists = await r.redis.existsAsync(assignmentContactsKey(assignmentId))
-    if (exists) {
-      // TODO validTimezone AND timezones!
-      let range = [0, 1000] // everything, including optouts
-      if (contactsFilter && contactsFilter.isOptedOut === false) {
-        if (!contactsFilter.messageStatus) {
-          range = [0, 99]
-        } else { // contactsFilter.messageStatus
-          range = msgStatusRange[contactsFilter.messageStatus]
-        }
-      }
-      const cmd = (justCount ? 'zcountAsync' : 'zrangebyscoreAsync')
-      const cacheResult = await r.redis[cmd](assignmentContactsKey(assignmentId), range[0], range[1])
-      if (cacheResult !== null) {
-        return cacheResult
-      }
-    } // end:exists
-  } // end:r.redis
-  return dbGetContacts()
-}
-
 const loadDeep = async (id, yesDeep) => {
   const [assignment] = await r.knex('assignment')
     .select('id', 'user_id', 'campaign_id', 'max_contacts')
     .where('id', id)
     .limit(1)
-
+  console.log('loaddeep assingment', assignment)
   if (r.redis && assignment) {
-    const campaign = campaignCache.load(assignment.campaign_id)
+    const campaign = await campaignCache.load(assignment.campaign_id)
+    console.log('cached campaign for assn', campaign)
     assignment.organization_id = campaign.organization_id
     await r.redis.multi()
       .set(assignmentHashKey(id), JSON.stringify(assignment))
       .expire(assignmentHashKey(id), 86400)
       .execAsync()
+
+    await loadAssignmentContacts(id,
+                                 campaign.organization_id,
+                                 campaign.contactTimezones)
   }
   return { assignment }
 }
@@ -141,7 +100,13 @@ const loadDeep = async (id, yesDeep) => {
 export const assignmentCache = {
   clear: async (id) => {
     if (r.redis) {
-      await r.redis.delAsync(assignmentHashKey(id), assignmentContactsKey(id))
+      await r.redis.delAsync(assignmentHashKey(id))
+    }
+  },
+  clearAll: async (ids) => {
+    if (r.redis && ids && ids.length) {
+      const keys = ids.map(id => assignmentHashKey(id))
+      await r.redis.delAsync(...keys)
     }
   },
   reload: loadDeep,
