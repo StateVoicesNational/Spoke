@@ -38,17 +38,15 @@ async function convertMessagePartsToMessage(messageParts) {
     .map((serviceMessage) => serviceMessage.Body)
     .join('')
 
-  const lastMessage = await getLastMessage({
-    contactNumber
-  })
   return new Message({
     contact_number: contactNumber,
     user_number: userNumber,
     is_from_contact: true,
     text,
     service_response: JSON.stringify(serviceMessages),
-    service_id: serviceMessages[0].MessagingServiceSid,
-    assignment_id: lastMessage.assignment_id,
+    service_id: serviceMessages[0].MessageSid,
+    messageservice_sid: serviceMessages[0].MessagingServiceSid,
+    //assignment_id and campaign_contact_id will be saved later
     service: 'twilio',
     send_status: 'DELIVERED'
   })
@@ -127,7 +125,7 @@ async function sendMessage(message) {
     const messageParams = Object.assign({
       to: message.contact_number,
       body: message.text,
-      messagingServiceSid: process.env.TWILIO_MESSAGE_SERVICE_SID,
+      messagingServiceSid: message.messageservice_sid || process.env.TWILIO_MESSAGE_SERVICE_SID,
       statusCallback: process.env.TWILIO_STATUS_CALLBACK_URL
     }, parseMessageText(message))
 
@@ -221,14 +219,12 @@ async function handleIncomingMessage(message) {
     contact_number: contactNumber
   })
 
-  const part = await pendingMessagePart.save()
-  const partId = part.id
   if (process.env.JOBS_SAME_PROCESS) {
     const finalMessage = await convertMessagePartsToMessage([part])
     await saveNewIncomingMessage(finalMessage)
-    await r.knex('pending_message_part').where('id', partId).delete()
+  } else {
+    const part = await pendingMessagePart.save()
   }
-  return partId
 }
 
 export default {

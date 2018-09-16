@@ -45,8 +45,8 @@ const tableList = [
   'user', // good candidate
   'campaign', //good candidate
   'assignment',
-  // the rest are alphabetical
   'campaign_contact', //?good candidate (or by cell)
+  // the rest are alphabetical
   'canned_response', //good candidate
   'interaction_step',
   'invite',
@@ -82,6 +82,22 @@ function dropTables() {
   return thinky.dropTables(tableList)
 }
 
+function getMessageServiceSid(organization) {
+  const orgSid = organization.messageservice_sid
+  if (!orgSid) {
+    let orgFeatures = {}
+    if (organization.features) {
+      orgFeatures = JSON.parse(organization.features)
+    }
+    const service = orgFeatures.service || process.env.DEFAULT_SERVICE || ''
+    if (service === 'twilio') {
+      return process.env.TWILIO_MESSAGE_SERVICE_SID
+    }
+    return ''
+  }
+  return orgSid
+}
+
 const createLoaders = () => ({
   assignment: createLoader(Assignment),
   campaign: createLoader(Campaign, {cacheObj: cacheableData.campaign}),
@@ -112,6 +128,7 @@ export {
   createTables,
   createTablesIfNecessary,
   dropTables,
+  getMessageServiceSid,
   datawarehouse,
   Migrations,
   Assignment,
