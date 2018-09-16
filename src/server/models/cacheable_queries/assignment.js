@@ -11,7 +11,7 @@ import { loadAssignmentContacts, getContacts, optOutContact } from './assignment
 //   - max_contacts
 //   - campaign{} (lookup with campaignCache)
 
-// ## SORTED SET (sadly a bit complex)
+// ## SORTED SET (sadly a bit complex: all functions in ./assignment-contacts.js)
 // assignmentcontacts-<assignmentId>-<tz>
 //   key=<contactId>
 //   score=<mix of message_status AND message newness>
@@ -57,7 +57,6 @@ import { loadAssignmentContacts, getContacts, optOutContact } from './assignment
 //      - skippedMessageFilter: isOptedOut:false, validTimezone:true, messageStatus:closed
 
 const assignmentHashKey = (id) => `${process.env.CACHE_PREFIX||""}assignment-${id}`
-const assignmentContactsKey = (id) => `${process.env.CACHE_PREFIX||""}assignmentcontacts-${id}`
 
 const hasAssignment = async (userId, assignmentId) => {
   if (r.redis) {

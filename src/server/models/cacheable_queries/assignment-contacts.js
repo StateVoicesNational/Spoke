@@ -1,9 +1,13 @@
 import { getOffsets, defaultTimezoneIsBetweenTextingHours } from '../../../lib'
 import { r } from '../index'
 
+// This is a library for ./assignment.js consolidating all functions related to caching/querying assignment-contacts
+
 const assignmentContactsKey = (id, tz) => `${process.env.CACHE_PREFIX||""}assignmentcontacts-${id}-${tz}`
 
 // TODO: dynamic assignment (updating assignment-contacts with dynamically assigned contacts)
+// TODO: updating message status
+// TODO: expiration
 
 const msgStatusRange = {
   // Inclusive min/max ranges
