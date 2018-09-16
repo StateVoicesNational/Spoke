@@ -28,8 +28,18 @@ import { resolvers as assignmentResolvers } from './assignment'
 import { getCampaigns, resolvers as campaignResolvers } from './campaign'
 import { resolvers as campaignContactResolvers } from './campaign-contact'
 import { resolvers as cannedResponseResolvers } from './canned-response'
-import { getConversations, resolvers as conversationsResolver } from './conversations'
-import { accessRequired, assignmentRequired, authRequired, superAdminRequired } from './errors'
+import {
+  getConversations,
+  getCampaignIdMessageIdsAndCampaignIdContactIdsMaps,
+  reassignConversations,
+  resolvers as conversationsResolver
+} from './conversations'
+import {
+  accessRequired,
+  assignmentRequired,
+  authRequired,
+  superAdminRequired
+} from './errors'
 import { resolvers as interactionStepResolvers } from './interaction-step'
 import { resolvers as inviteResolvers } from './invite'
 import { saveNewIncomingMessage } from './lib/message-sending'
@@ -922,6 +932,13 @@ const rootMutations = {
 
       const sendBeforeDate = sendBefore ? sendBefore.toDate() : null
 
+      if (sendBeforeDate && sendBeforeDate <= Date.now()) {
+        throw new GraphQLError({
+          status: 400,
+          message: 'Outside permitted texting time for this recipient'
+        })
+      }
+
       const messageInstance = new Message({
         text: replaceCurlyApostrophes(text),
         contact_number: contactNumber,
@@ -1059,66 +1076,24 @@ const rootMutations = {
         campaignIdMessagesIdsMap.get(campaignId).push(...messageIds)
       }
 
-      // ensure existence of assignments
-      const campaignIdAssignmentIdMap = new Map()
-      for (const [campaignId, _] of campaignIdContactIdsMap) {
-        let assignment = await r
-          .table('assignment')
-          .getAll(newTexterUserId, { index: 'user_id' })
-          .filter({ campaign_id: campaignId })
-          .limit(1)(0)
-          .default(null)
-        if (!assignment) {
-          assignment = await Assignment.save({
-            user_id: newTexterUserId,
-            campaign_id: campaignId,
-            max_contacts: parseInt(process.env.MAX_CONTACTS_PER_TEXTER || 0, 10)
-          })
-        }
-        campaignIdAssignmentIdMap.set(campaignId, assignment.id)
-      }
+      return await reassignConversations(campaignIdContactIdsMap, campaignIdMessagesIdsMap, newTexterUserId)
+    },
+    bulkReassignCampaignContacts: async (
+      _,
+      { organizationId, campaignsFilter, assignmentsFilter, contactsFilter, newTexterUserId },
+      { user }
+    ) => {
+      // verify permissions
+      await accessRequired(user, organizationId, 'ADMIN', /* superadmin*/ true)
+      const { campaignIdContactIdsMap, campaignIdMessagesIdsMap }  =
+        await getCampaignIdMessageIdsAndCampaignIdContactIdsMaps(
+          organizationId,
+          campaignsFilter,
+          assignmentsFilter,
+          contactsFilter
+        )
 
-      // do the reassignment
-      const returnCampaignIdAssignmentIds = []
-
-      // TODO(larry) do this in a transaction!
-      try {
-        for (const [campaignId, campaignContactIds] of campaignIdContactIdsMap) {
-          const assignmentId = campaignIdAssignmentIdMap.get(campaignId)
-
-          await r
-            .knex('campaign_contact')
-            .where('campaign_id', campaignId)
-            .whereIn('id', campaignContactIds)
-            .update({
-              assignment_id: assignmentId
-            })
-
-          returnCampaignIdAssignmentIds.push({
-            campaignId,
-            assignmentId: assignmentId.toString()
-          })
-        }
-        for (const [campaignId, messageIds] of campaignIdMessagesIdsMap) {
-          const assignmentId = campaignIdAssignmentIdMap.get(campaignId)
-
-          await r
-            .knex('message')
-            .whereIn(
-              'id',
-              messageIds.map(messageId => {
-                return messageId
-              })
-            )
-            .update({
-              assignment_id: assignmentId
-            })
-        }
-      } catch (error) {
-        log.error(error)
-      }
-
-      return returnCampaignIdAssignmentIds
+      return await reassignConversations(campaignIdContactIdsMap, campaignIdMessagesIdsMap, newTexterUserId)
     }
   }
 }
