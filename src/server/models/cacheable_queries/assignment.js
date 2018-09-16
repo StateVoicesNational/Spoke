@@ -1,6 +1,6 @@
 import { r, Assignment } from '../../models'
 import { campaignCache } from './campaign'
-import { loadAssignmentContacts } from './assignment-lib'
+import { loadAssignmentContacts } from './assignment-contacts'
 
 // ## KEY
 // assignment-<assignmentId>

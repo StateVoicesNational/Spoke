@@ -1,6 +1,6 @@
 import { mapFieldsToModel } from './lib/utils'
 import { Assignment, r, cacheableData } from '../models'
-import { dbGetContactsQuery as getContacts } from '../models/cacheable_queries/assignment-lib'
+import { dbGetContactsQuery as getContacts } from '../models/cacheable_queries/assignment-contacts'
 
 export function addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue(
   queryParameter,
