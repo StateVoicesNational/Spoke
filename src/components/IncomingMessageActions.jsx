@@ -141,7 +141,7 @@ class IncomingMessageActions extends Component {
             <div className={css(styles.spacer)}/>
             <div className={css(styles.flexColumn)}>
               <FlatButton
-                label={'Reassign'}
+                label={'Reassign selected'}
                 onClick={this.onReassignmentClicked}
                 disabled={!this.state.reassignTo}
               />
