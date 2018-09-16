@@ -1,7 +1,8 @@
 import _ from 'lodash'
-import { r } from '../models'
+import { Assignment, r } from '../models'
 import { addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue } from './assignment'
 import { buildCampaignQuery } from './campaign'
+import { log } from '../../lib'
 
 function getConversationsJoinsAndWhereClause(
   queryParam,
@@ -169,6 +170,132 @@ export async function getConversations(
     conversations,
     pageInfo
   }
+}
+
+export async function getCampaignIdMessageIdsAndCampaignIdContactIdsMaps(
+  organizationId,
+  campaignsFilter,
+  assignmentsFilter,
+  contactsFilter,
+) {
+  let query = r.knex.select(
+    'campaign_contact.id as cc_id',
+    'campaign.id as cmp_id',
+    'message.id as mess_id',
+  )
+
+  query = getConversationsJoinsAndWhereClause(
+    query,
+    organizationId,
+    campaignsFilter,
+    assignmentsFilter,
+    contactsFilter
+  )
+
+  query = query.leftJoin('message', table => {
+    table
+      .on('message.assignment_id', '=', 'assignment.id')
+      .andOn('message.contact_number', '=', 'campaign_contact.cell')
+  })
+
+  query = query
+    .orderBy('cc_id')
+
+  const conversationRows = await query
+
+  const campaignIdContactIdsMap = new Map()
+  const campaignIdMessagesIdsMap = new Map()
+
+  let ccId = undefined
+  for (const conversationRow of conversationRows) {
+    if (ccId !== conversationRow.cc_id) {
+      const ccId = conversationRow.cc_id
+      campaignIdContactIdsMap[conversationRow.cmp_id] = ccId
+
+      if (!campaignIdContactIdsMap.has(conversationRow.cmp_id)) {
+        campaignIdContactIdsMap.set(conversationRow.cmp_id, [])
+      }
+
+      campaignIdContactIdsMap.get(conversationRow.cmp_id).push(ccId)
+
+      if (!campaignIdMessagesIdsMap.has(conversationRow.cmp_id)) {
+        campaignIdMessagesIdsMap.set(conversationRow.cmp_id, [])
+      }
+    }
+
+    if (conversationRow.mess_id) {
+      campaignIdMessagesIdsMap.get(conversationRow.cmp_id).push(conversationRow.mess_id)
+
+    }
+  }
+
+  return {
+    campaignIdContactIdsMap,
+    campaignIdMessagesIdsMap
+  }
+}
+
+export async function reassignConversations(campaignIdContactIdsMap, campaignIdMessagesIdsMap, newTexterUserId) {
+  // ensure existence of assignments
+  const campaignIdAssignmentIdMap = new Map()
+  for (const [campaignId, _] of campaignIdContactIdsMap) {
+    let assignment = await r
+      .table('assignment')
+      .getAll(newTexterUserId, { index: 'user_id' })
+      .filter({ campaign_id: campaignId })
+      .limit(1)(0)
+      .default(null)
+    if (!assignment) {
+      assignment = await Assignment.save({
+        user_id: newTexterUserId,
+        campaign_id: campaignId,
+        max_contacts: parseInt(process.env.MAX_CONTACTS_PER_TEXTER || 0, 10)
+      })
+    }
+    campaignIdAssignmentIdMap.set(campaignId, assignment.id)
+  }
+
+  // do the reassignment
+  const returnCampaignIdAssignmentIds = []
+
+  // TODO(larry) do this in a transaction!
+  try {
+    for (const [campaignId, campaignContactIds] of campaignIdContactIdsMap) {
+      const assignmentId = campaignIdAssignmentIdMap.get(campaignId)
+
+      await r
+        .knex('campaign_contact')
+        .where('campaign_id', campaignId)
+        .whereIn('id', campaignContactIds)
+        .update({
+          assignment_id: assignmentId
+        })
+
+      returnCampaignIdAssignmentIds.push({
+        campaignId,
+        assignmentId: assignmentId.toString()
+      })
+    }
+    for (const [campaignId, messageIds] of campaignIdMessagesIdsMap) {
+      const assignmentId = campaignIdAssignmentIdMap.get(campaignId)
+
+      await r
+        .knex('message')
+        .whereIn(
+          'id',
+          messageIds.map(messageId => {
+            return messageId
+          })
+        )
+        .update({
+          assignment_id: assignmentId
+        })
+    }
+  } catch (error) {
+    log.error(error)
+  }
+
+  return returnCampaignIdAssignmentIds
 }
 
 export const resolvers = {
