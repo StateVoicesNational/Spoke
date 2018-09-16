@@ -3,6 +3,7 @@ import type from "prop-types";
 
 import AutoComplete from "material-ui/AutoComplete";
 import { Card, CardHeader, CardText } from "material-ui/Card";
+import Dialog from "material-ui/Dialog"
 import { getHighestRole } from "../lib/permissions";
 import FlatButton from "material-ui/FlatButton";
 import { css, StyleSheet } from "aphrodite";
@@ -39,7 +40,12 @@ class IncomingMessageActions extends Component {
       this
     )
 
-    this.state = {}
+    this.handleConfirmDialogCancel = this.handleConfirmDialogCancel.bind(this)
+    this.handleConfirmDialogReassign = this.handleConfirmDialogReassign.bind(this)
+
+    this.state = {
+      confirmDialogOpen: false
+    }
   }
 
   onReassignmentClicked() {
@@ -47,7 +53,7 @@ class IncomingMessageActions extends Component {
   }
 
   onReassignAllMatchingClicked() {
-    this.props.onReassignAllMatchingRequested()
+    this.setState({confirmDialogOpen: true})
   }
 
   onReassignChanged(selection, index) {
@@ -71,17 +77,39 @@ class IncomingMessageActions extends Component {
     }
   }
 
+  handleConfirmDialogCancel() {
+    this.setState({confirmDialogOpen: false})
+  }
+
+ handleConfirmDialogReassign() {
+   this.setState({confirmDialogOpen: false})
+   this.props.onReassignAllMatchingRequested(this.state.reassignTo)
+ }
+
   render() {
     const texterNodes = !this.props.people
       ? []
       : this.props.people.map(user => {
-          const userId = parseInt(user.id, 10)
-          const label = user.displayName + ' ' + getHighestRole(user.roles)
-          return dataSourceItem(label, userId)
-        })
-      texterNodes.sort((left, right) => {
-          return left.text.localeCompare(right.text, "en", {sensitivity: "base"})
+        const userId = parseInt(user.id, 10)
+        const label = user.displayName + ' ' + getHighestRole(user.roles)
+        return dataSourceItem(label, userId)
       })
+    texterNodes.sort((left, right) => {
+      return left.text.localeCompare(right.text, 'en', { sensitivity: 'base' })
+    })
+
+    const confirmDialogActions = [
+      <FlatButton
+        label="Cancel"
+        primary={true}
+        onClick={this.handleConfirmDialogCancel}
+      />,
+      <FlatButton
+        label="Reassign"
+        primary={true}
+        onClick={this.handleConfirmDialogReassign}
+      />
+    ]
 
     return (
       <Card>
@@ -98,8 +126,9 @@ class IncomingMessageActions extends Component {
                 maxSearchResults={8}
                 onFocus={() => this.setState({
                   reassignTo: undefined,
-                  texterSearchText : '' })}
-                onUpdateInput={texterSearchText=>
+                  texterSearchText: ''
+                })}
+                onUpdateInput={texterSearchText =>
                   this.setState({ texterSearchText })
                 }
                 searchText={this.state.texterSearchText}
@@ -109,7 +138,7 @@ class IncomingMessageActions extends Component {
                 onNewRequest={this.onReassignChanged}
               />
             </div>
-            <div className={css(styles.spacer)} />
+            <div className={css(styles.spacer)}/>
             <div className={css(styles.flexColumn)}>
               <FlatButton
                 label={'Reassign'}
@@ -126,6 +155,16 @@ class IncomingMessageActions extends Component {
                 />
               </div>) : ''
             }
+            <Dialog
+              actions={confirmDialogActions}
+              open={this.state.confirmDialogOpen}
+              modal={true}
+              onRequestClose={this.handleConfirmDialogCancel}
+            >
+              {
+                `Reassign all ${this.props.conversationCount} matching conversations?`
+              }
+            </Dialog>
           </div>
         </CardText>
       </Card>
