@@ -2,6 +2,8 @@ import { applyScript } from '../../lib/scripts'
 import camelCaseKeys from 'camelcase-keys'
 import isUrl from 'is-url'
 import { buildCampaignQuery } from './campaign'
+import { organizationCache } from '../models/cacheable_queries/organization'
+
 
 import {
   Assignment,
@@ -183,18 +185,6 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
         assignTexters(job)
       }
     }
-
-    // assign the maxContacts
-    campaign.texters.forEach(async texter => {
-      const dog = r
-        .knex('campaign')
-        .where({ id })
-        .select('useDynamicAssignment')
-      await r
-        .knex('assignment')
-        .where({ user_id: texter.id, campaign_id: id })
-        .update({ max_contacts: texter.maxContacts ? texter.maxContacts : null })
-    })
   }
 
   if (campaign.hasOwnProperty('interactionSteps')) {
@@ -511,6 +501,23 @@ const rootMutations = {
 
       return await loaders.organization.load(organizationId)
     },
+    updateOptOutMessage: async (
+      _,
+      { organizationId, optOutMessage },
+      { user }
+    ) => {
+      await accessRequired(user, organizationId, 'OWNER')
+
+      const organization = await Organization.get(organizationId)
+      const featuresJSON = JSON.parse(organization.features || '{}')
+      featuresJSON.opt_out_message = optOutMessage
+      organization.features = JSON.stringify(featuresJSON)
+
+      await organization.save()
+      await organizationCache.clear(organizationId)
+
+      return await Organization.get(organizationId)
+    },
     createInvite: async (_, { user }) => {
       if ((user && user.is_superadmin) || !process.env.SUPPRESS_SELF_INVITE) {
         const inviteInstance = new Invite({
@@ -759,7 +766,7 @@ const rootMutations = {
         })
       }
       const campaign = await Campaign.get(assignment.campaign_id)
-      if (!campaign.use_dynamic_assignment) {
+      if (!campaign.use_dynamic_assignment || assignment.max_contacts === 0) {
         return { found: false }
       }
 
