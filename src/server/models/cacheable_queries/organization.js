@@ -1,6 +1,6 @@
 import { r } from '../../models'
 
-const cacheKey = (orgId) => `${process.env.CACHE_PREFIX|""}org-${orgId}`
+const cacheKey = (orgId) => `${process.env.CACHE_PREFIX | ''}org-${orgId}`
 
 export const organizationCache = {
   clear: async (id) => {

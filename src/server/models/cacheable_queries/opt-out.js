@@ -6,8 +6,8 @@ import { assignmentCache } from './assignment'
 
 const orgCacheKey = (orgId) => (
 !!process.env.OPTOUTS_SHARE_ALL_ORGS
- ? `${process.env.CACHE_PREFIX|""}optouts`
- : `${process.env.CACHE_PREFIX|""}optouts-${orgId}`)
+ ? `${process.env.CACHE_PREFIX | ''}optouts`
+ : `${process.env.CACHE_PREFIX | ''}optouts-${orgId}`)
 
 const sharingOptOuts = !!process.env.OPTOUTS_SHARE_ALL_ORGS
 
@@ -21,8 +21,8 @@ const loadMany = async (organizationId) => {
     const cellOptOuts = dbResult.map((rec) => rec.cell)
     const hashKey = orgCacheKey(organizationId)
     // save 100 at a time
-    for (let i100=0, l100=Math.ceil(cellOptOuts.length/100); i100<l100; i100++) {
-      await r.redis.saddAsync(hashKey, cellOptOuts.slice(100*i100, 100*i100 + 100))
+    for (let i100 = 0, l100 = Math.ceil(cellOptOuts.length / 100); i100 < l100; i100++) {
+      await r.redis.saddAsync(hashKey, cellOptOuts.slice(100 * i100, 100 * i100 + 100))
     }
     await r.redis.expire(hashKey, 86400)
     console.log(`CACHE: Loaded optouts for ${organizationId}`)
@@ -30,7 +30,7 @@ const loadMany = async (organizationId) => {
 }
 
 export const optOutCache = {
-  clearQuery: async ({cell, organizationId}) => {
+  clearQuery: async ({ cell, organizationId }) => {
     // remove cache by organization
     // (if no cell is present, then clear whole query of organization)
     if (r.redis) {
@@ -41,14 +41,14 @@ export const optOutCache = {
       }
     }
   },
-  query: async ({cell, organizationId}) => {
+  query: async ({ cell, organizationId }) => {
     // return optout result by db or by cache.
     // for a particular organization, if the org Id is NOT cached
     // then cache the WHOLE set of opt-outs for organizationId at once
     // and expire them in a day.
     const accountingForOrgSharing = (!sharingOptOuts ?
-      {'organization_id': organizationId , 'cell': cell } :
-      {'cell' : cell }
+      { 'organization_id': organizationId, cell } :
+      { cell }
     )
 
     if (r.redis) {
@@ -71,7 +71,7 @@ export const optOutCache = {
       .limit(1)
     return (dbResult.length > 0)
   },
-  save: async ({cell, campaignContactId, campaign, assignmentId, reason}) => {
+  save: async ({ cell, campaignContactId, campaign, assignmentId, reason }) => {
     const organizationId = campaign.organization_id
     if (r.redis) {
       const hashKey = orgCacheKey(organizationId)
@@ -111,5 +111,5 @@ export const optOutCache = {
         is_opted_out: true
       })
   },
-  loadMany: loadMany
+  loadMany
 }
