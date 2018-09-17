@@ -1,4 +1,5 @@
 import { r, OptOut } from '../../models'
+import { assignmentCache } from './assignment'
 
 // STRUCTURE
 // maybe HASH by organization, so optout-<organization_id> has a <cell> key
@@ -70,21 +71,15 @@ export const optOutCache = {
       .limit(1)
     return (dbResult.length > 0)
   },
-  save: async ({cell, organizationId, assignmentId, reason}) => {
-    const updateOrgOrInstanceOptOuts = (!sharingOptOuts ?
-      { 'campaign_contact.cell': cell,
-        'campaign.organization_id': organizationId,
-        'campaign.is_archived': false } :
-      { 'campaign_contact.cell': cell,
-        'campaign.is_archived': false
-      })
-
+  save: async ({cell, campaignContactId, campaign, assignmentId, reason}) => {
+    const organizationId = campaign.organization_id
     if (r.redis) {
       const hashKey = orgCacheKey(organizationId)
       const exists = await r.redis.existsAsync(hashKey)
       if (exists) {
         await r.redis.saddAsync(hashKey, cell)
       }
+      await assignmentCache.optOutContact(assignmentId, campaignContactId, campaign)
     }
     // database
     await new OptOut({
@@ -94,7 +89,14 @@ export const optOutCache = {
       cell
     }).save()
 
-    // update all organization's active campaigns as well
+    // update all organization/instance's active campaigns as well
+    const updateOrgOrInstanceOptOuts = (!sharingOptOuts ?
+      { 'campaign_contact.cell': cell,
+        'campaign.organization_id': organizationId,
+        'campaign.is_archived': false } :
+      { 'campaign_contact.cell': cell,
+        'campaign.is_archived': false
+      })
     await r
       .knex('campaign_contact')
       .where(
