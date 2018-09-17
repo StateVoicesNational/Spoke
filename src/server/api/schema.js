@@ -891,51 +891,28 @@ const rootMutations = {
     sendMessage: async (_, { message, campaignContactId }, { user, loaders }) => {
       const contact = await loaders.campaignContact.load(campaignContactId)
       const campaign = await loaders.campaign.load(contact.campaign_id)
+
       if (contact.assignment_id !== parseInt(message.assignmentId) || campaign.is_archived) {
         throw new GraphQLError({
           status: 400,
           message: 'Your assignment has changed'
         })
       }
-      const organization = await r
-        .table('campaign')
-        .get(contact.campaign_id)
-        .eqJoin('organization_id', r.table('organization'))('right')
 
-      const orgFeatures = JSON.parse(organization.features || '{}')
+      const organization = await loaders.campaign.load(campaign.organization_id)
+      const isOptedOut = await cacheableData.optOut.query({
+        cell: contact.cell,
+        organizationId: organization.id
+      })
 
-      const optOut = await r
-        .table('opt_out')
-        .getAll(contact.cell, { index: 'cell' })
-        .filter({ organization_id: organization.id })
-        .limit(1)(0)
-        .default(null)
-      if (optOut) {
+      if (isOptedOut) {
         throw new GraphQLError({
           status: 400,
           message: 'Skipped sending because this contact was already opted out'
         })
       }
 
-      // const zipData = await r.table('zip_code')
-      //   .get(contact.zip)
-      //   .default(null)
-
-      // const config = {
-      //   textingHoursEnforced: organization.texting_hours_enforced,
-      //   textingHoursStart: organization.texting_hours_start,
-      //   textingHoursEnd: organization.texting_hours_end,
-      // }
-      // const offsetData = zipData ? { offset: zipData.timezone_offset, hasDST: zipData.has_dst } : null
-      // if (!isBetweenTextingHours(offsetData, config)) {
-      //   throw new GraphQLError({
-      //     status: 400,
-      //     message: "Skipped sending because it's now outside texting hours for this contact"
-      //   })
-      // }
-
       const { contactNumber, text } = message
-
       if (text.length > (process.env.MAX_MESSAGE_LENGTH || 99999)) {
         throw new GraphQLError({
           status: 400,
@@ -953,8 +930,8 @@ const rootMutations = {
         assignment_id: message.assignmentId,
         campaign_contact_id: contact.id,
         messageservice_sid: getMessageServiceSid(organization),
-        send_status: JOBS_SAME_PROCESS ? 'SENDING' : 'QUEUED',
-        service: orgFeatures.service || process.env.DEFAULT_SERVICE || '',
+        send_status: 'SENDING',
+        service: organization.feature.service || process.env.DEFAULT_SERVICE || '',
         is_from_contact: false,
         queued_at: new Date()
       })
@@ -962,33 +939,16 @@ const rootMutations = {
       await messageInstance.save()
 
       if (contact.message_status === 'needsResponse') {
-        const service = serviceMap[messageInstance.service || process.env.DEFAULT_SERVICE]
         contact.message_status = 'convo'
-        contact.updated_at = 'now()'
-        await contact.save()
-
-        service.sendMessage(messageInstance)
-        return contact
       } else {
-        const service = serviceMap[messageInstance.service || process.env.DEFAULT_SERVICE]
         contact.message_status = 'messaged'
-        contact.updated_at = 'now()'
-        await contact.save()
-
-        service.sendMessage(messageInstance)
-        return contact
       }
 
-      if (JOBS_SAME_PROCESS) {
-        const service = serviceMap[messageInstance.service || process.env.DEFAULT_SERVICE]
-        log.info(
-          `Sending (${service}): ${messageInstance.user_number} -> ${
-            messageInstance.contact_number
-          }\nMessage: ${messageInstance.text}`
-        )
-        service.sendMessage(messageInstance)
-      }
+      contact.updated_at = 'now()'
+      await contact.save()
 
+      const service = serviceMap[messageInstance.service || process.env.DEFAULT_SERVICE]
+      service.sendMessage(messageInstance)
       return contact
     },
     deleteQuestionResponses: async (
