@@ -4,8 +4,6 @@ import { currentEditors } from '../models/cacheable_queries'
 
 export function buildCampaignQuery(queryParam, organizationId, campaignsFilter, addFromClause = true) {
   let query = queryParam
-  const resultSize = (campaignsFilter.listSize ? campaignsFilter.listSize : 0)
-  const pageSize = (campaignsFilter.pageSize ? campaignsFilter.pageSize : 0)
 
   if (addFromClause) {
     query = query.from('campaign')
@@ -14,6 +12,9 @@ export function buildCampaignQuery(queryParam, organizationId, campaignsFilter, 
   query = query.where('organization_id', organizationId)
 
   if (campaignsFilter) {
+    const resultSize = (campaignsFilter.listSize ? campaignsFilter.listSize : 0)
+    const pageSize = (campaignsFilter.pageSize ? campaignsFilter.pageSize : 0)
+    
     if ('isArchived' in campaignsFilter) {
       query = query.where({ is_archived: campaignsFilter.isArchived })
     }
@@ -85,7 +86,12 @@ export const resolvers = {
       'useDynamicAssignment',
       'introHtml',
       'primaryColor',
-      'logoImageUrl'
+      'logoImageUrl',
+      'overrideOrganizationTextingHours',
+      'textingHoursEnforced',
+      'textingHoursStart',
+      'textingHoursEnd',
+      'timezone'
     ], Campaign),
     dueBy: (campaign) => (
       (campaign.due_by instanceof Date || !campaign.due_by)
