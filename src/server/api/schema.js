@@ -527,7 +527,7 @@ const rootMutations = {
 
       const organization = await Organization.get(organizationId)
       const featuresJSON = JSON.parse(organization.features || '{}')
-      featuresJSON.texting_turned_off =
+      featuresJSON.texting_turned_off = turnTextingOff
       organization.features = JSON.stringify(featuresJSON)
 
       await organization.save()
