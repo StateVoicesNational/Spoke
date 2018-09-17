@@ -39,7 +39,7 @@ MAILGUN_SMTP_PASSWORD             | 'Default Password' in Mailgun. _Required for
 MAILGUN_SMTP_PORT                 | _Default_: 587. Do not modify. _Required for Mailgun usage._
 MAILGUN_SMTP_SERVER               | _Default_: smtp.mailgun.org. Do not modify. _Required for Mailgun usage._
 MAX_CONTACTS                      | If set each campaign can only have a maximum of the value (an integer). This is good for staging/QA/evaluation instances.  _Default_: false (i.e. there is no maximum)
-MAX_CONTACTS_PER_TEXTER           | Maximum contacts that a texter can receive. This is particularly useful for dynamic assignment. If it's zero, then there is no maximum. _Default_: 0
+MAX_CONTACTS_PER_TEXTER           | Maximum contacts that a texter can receive. This is particularly useful for dynamic assignment. Leave it blank (which is the default value) for no maximum.
 MAX_MESSAGE_LENGTH                | The maximum size for a message that a texter can send. When you send a SMS message over 160 characters the message will be split, so you might want to set this as 160 or less if you have a high SMS-only target demographic. _Default_: 99999
 NEXMO_API_KEY                     | Nexmo API key. Required if using Nexmo.
 NEXMO_API_SECRET                  | Nexmo API secret. Required if using Nexmo.
@@ -47,6 +47,7 @@ NO_EXTERNAL_LINKS                 | Removes google fonts and auth0 login script 
 NODE_ENV                          | Node environment type. _Options_: development, production.
 NOT_IN_USA                        | A flag to affirmatively indicate the ability to use features that are discouraged or not legally usable in the United States. Consult with an attorney about the implications for doing so. _Default_: false (i.e. default assumes a USA legal context)
 OPT_OUT_MESSAGE                   | Spoke instance-wide default for opt out message.
+OPTOUTS_SHARE_ALL_ORGS            | Can be set to true if opt outs should be respected per instance and across organizations
 OUTPUT_DIR                        | Directory path for packaged files should be saved to. _Required_.
 PHONE_NUMBER_COUNTRY              | Country code for phone number formatting. _Default_: US.
 PORT                              | Port for Heroku servers.

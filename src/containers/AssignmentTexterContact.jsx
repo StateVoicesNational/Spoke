@@ -30,6 +30,7 @@ import { withRouter } from 'react-router'
 import wrapMutations from './hoc/wrap-mutations'
 import Empty from '../components/Empty'
 import CreateIcon from 'material-ui/svg-icons/content/create'
+import { dataTest } from '../lib/attributes'
 import { getContactTimezone } from '../lib/timezones'
 
 const styles = StyleSheet.create({
@@ -213,7 +214,7 @@ export class AssignmentTexterContact extends React.Component {
       snackbarError,
       snackbarActionTitle,
       snackbarOnTouchTap,
-      optOutMessageText: window.OPT_OUT_MESSAGE,
+      optOutMessageText: campaign.organization.optOutMessage,
       responsePopoverOpen: false,
       messageText: this.getStartingMessageText(),
       optOutDialogOpen: false,
@@ -308,7 +309,7 @@ export class AssignmentTexterContact extends React.Component {
   getStartingMessageText() {
     const { contact, campaign } = this.props
     const { messages } = contact
-    return messages.length > 0 ? '' : this.getMessageTextFromScript(campaign.interactionSteps[0].script)
+    return messages.length > 0 ? '' : this.getMessageTextFromScript(getTopMostParent(campaign.interactionSteps).script)
   }
 
   handleOpenPopover = (event) => {
@@ -653,6 +654,7 @@ export class AssignmentTexterContact extends React.Component {
               firstChild
             >
               <RaisedButton
+                {...dataTest('optOut')}
                 secondary
                 label='Opt out'
                 onTouchTap={this.handleOpenDialog}
@@ -691,6 +693,7 @@ export class AssignmentTexterContact extends React.Component {
                 onTouchTap={this.handleOpenPopover}
               />
               <RaisedButton
+                {...dataTest('optOut')}
                 secondary
                 label='Opt out'
                 onTouchTap={this.handleOpenDialog}
@@ -862,6 +865,7 @@ export class AssignmentTexterContact extends React.Component {
             {this.renderTopFixedSection()}
           </div>
           <div
+            {...dataTest('messageList')}
             ref='messageScrollContainer'
             className={css(styles.middleScrollingSection)}
           >
