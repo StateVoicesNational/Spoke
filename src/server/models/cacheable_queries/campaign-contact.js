@@ -28,7 +28,7 @@ import { optOutCache } from './opt-out'
 
 // TODO: relocate this method elsewhere
 
-const cacheKey = async (id) => `${process.env.CACHE_PREFIX|""}contact-${id}`
+const cacheKey = async (id) => `${process.env.CACHE_PREFIX | ''}contact-${id}`
 
 const saveCacheRecord = async (dbRecord, organization, messageServiceSid) => {
   if (r.redis) {
@@ -120,7 +120,7 @@ export const campaignContactCache = {
     const dbResult = await query
     // 2. cache the data
     const messageServiceSid = getMessageServiceSid(organization)
-    for (let i=0,l=dbResult.length; i<l; i++) {
+    for (let i = 0, l = dbResult.length; i < l; i++) {
       const dbRecord = dbResult[i]
       await saveCacheRecord(dbRecord, organization, messageServiceSid)
     }

@@ -56,7 +56,7 @@ import { loadAssignmentContacts, getContacts, optOutContact } from './assignment
 //      - pastMessageFilter: isOptedOut:false, validTimezone:true, messageStatus:convo
 //      - skippedMessageFilter: isOptedOut:false, validTimezone:true, messageStatus:closed
 
-const assignmentHashKey = (id) => `${process.env.CACHE_PREFIX||""}assignment-${id}`
+const assignmentHashKey = (id) => `${process.env.CACHE_PREFIX || ''}assignment-${id}`
 
 const hasAssignment = async (userId, assignmentId) => {
   if (r.redis) {
@@ -120,7 +120,7 @@ export const assignmentCache = {
     const { assignment } = loadDeep(id)
     return assignment
   },
-  hasAssignment: hasAssignment,
-  getContacts: getContacts,
-  optOutContact: optOutContact
+  hasAssignment,
+  getContacts,
+  optOutContact
 }
