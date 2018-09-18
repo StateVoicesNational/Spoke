@@ -23,7 +23,20 @@ function getConversationsJoinsAndWhereClause(
       query = query.where({ 'assignment.user_id': assignmentsFilter.texterId })
   }
 
-  return addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue(query, contactsFilter)
+  query = addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue(query, contactsFilter)
+
+  if (contactsFilter && 'isOptedOut' in contactsFilter) {
+    const subQuery = (r.knex.select('cell')
+      .from('opt_out')
+      .whereRaw('opt_out.cell=campaign_contact.cell'))
+    if (contactsFilter.isOptedOut) {
+      query = query.whereExists(subQuery)
+    } else {
+      query = query.whereNotExists(subQuery)
+    }
+  }
+
+  return query
 }
 
 /*
