@@ -128,7 +128,7 @@ class Settings extends React.Component {
             <div className={css(styles.section)}>
               <Toggle
                 toggled={organization.turnTextingOff}
-                label={(organization.turnTextingOff ? 'Texting for All Campaigns On' : 'Texting for All Campaigns Off')}
+                label={(organization.turnTextingOff ? 'TEXTING TURNED OFF FOR ALL CAMPAIGNS' : 'TEXTING TURNED ON FOR ALL CAMPAIGNS')}
                 onToggle={async (event, isToggled) => await this.props.mutations.turnTextingOff(isToggled)}
               />
             </div>
