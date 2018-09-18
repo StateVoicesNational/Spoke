@@ -54,6 +54,14 @@ export const MESSAGE_STATUSES = {
   closed: {
     name: 'Closed',
     children: []
+  },
+  notOptedOut: {
+    name: 'Not Opted Out',
+    children: []
+  },
+  optedOut: {
+    name: 'Opted Out',
+    children: []
   }
 }
 

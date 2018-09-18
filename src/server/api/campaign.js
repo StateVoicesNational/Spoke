@@ -33,7 +33,7 @@ export function buildCampaignQuery(queryParam, organizationId, campaignsFilter, 
     query = query.from('campaign')
   }
 
-  query = query.where('organization_id', organizationId)
+  query = query.where('campaign.organization_id', organizationId)
   query = addCampaignsFilterToQuery(query, campaignsFilter)
 
   return query
