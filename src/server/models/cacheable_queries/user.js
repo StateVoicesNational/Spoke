@@ -38,15 +38,12 @@ const getHighestRolesPerOrg = (userOrgs) => {
     const orgRole = userOrg.role
     const orgName = userOrg.name
 
-    const orgIdPresent = Object.prototype.hasOwnProperty.call(
-      highestRolesPerOrg, orgId
-    )
-    const currentRoleGreater = isRoleGreater(
-      orgRole, highestRolesPerOrg[orgId].role
-    )
-
-    if (orgIdPresent && currentRoleGreater) {
-      highestRolesPerOrg[orgId].role = orgRole
+    if (highestRolesPerOrg[orgId]) {
+      if (isRoleGreater(
+        orgRole, highestRolesPerOrg[orgId].role
+      )) {
+        highestRolesPerOrg[orgId].role = orgRole
+      }
     } else {
       highestRolesPerOrg[orgId] = { id: orgId, role: orgRole, name: orgName }
     }
@@ -63,13 +60,17 @@ const dbLoadUserRoles = async (userId) => {
   const highestRolesPerOrg = getHighestRolesPerOrg(userOrgs)
 
   if (r.redis) {
-    Object.values(highestRolesPerOrg).forEach(highestRole => {
-      r.redis.hsetAsync(
-        userRoleKey(userId),
-        highestRole.id,
-        `${highestRole.role}:${highestRole.name}`
-      )
-    })
+    // delete keys first
+    // pass all values to hset instead of looping
+    const mappedHighestRoles = Object.values(highestRolesPerOrg).reduce((acc, orgRole) => {
+      acc.push(orgRole.id, `${orgRole.role}:${orgRole.name}`)
+      return acc
+    }, [])
+
+    await r.redis.multi()
+      .del(userRoleKey(userId))
+      .hmset(userRoleKey(userId), ...mappedHighestRoles)
+      .execAsync()
   }
 
   return highestRolesPerOrg
@@ -87,7 +88,7 @@ const dbLoadUserAuth = async (authId) => {
       .set(authKey, JSON.stringify(userAuth))
       .expire(authKey, 86400)
       .execAsync()
-    dbLoadUserRoles(userAuth.id)
+    await dbLoadUserRoles(userAuth.id)
   }
   return userAuth
 }
@@ -97,12 +98,14 @@ const userHasRole = async (userId, orgId, acceptableRoles) => {
     // cached approach
     const userKey = `texterinfo-${userId}`
     let highestRole = await r.redis.hgetAsync(userKey, orgId)
-    if (!highestRole) {
+    if (highestRole) {
+      highestRole = highestRole.split(':')[0]
+    } else {
       // need to get it from db, and then cache it
-      highestRole = await dbLoadUserRoles(userId)
+      const highestRoles = await dbLoadUserRoles(userId)
+      highestRole = highestRoles[orgId] && highestRoles[orgId].role
     }
-    highestRole = highestRole.split(':')[0]
-    return (acceptableRoles.indexOf(highestRole) >= 0)
+    return (highestRole && acceptableRoles.indexOf(highestRole) >= 0)
   }
   // regular DB approach
   const userHasRoleDb = await r.getCount(
