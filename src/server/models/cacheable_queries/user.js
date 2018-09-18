@@ -32,6 +32,13 @@ export async function userHasRole(userId, orgId, acceptableRoles) {
   }
 }
 
+export async function logoutUser(userId) {
+  const userKey = `texterinfo-${userId}`
+  if (r.redis) {
+    r.redis.del(userKey)
+  }
+}
+
 export async function userLoggedIn(authId) {
   const authKey = `texterauth-${authId}`
 
