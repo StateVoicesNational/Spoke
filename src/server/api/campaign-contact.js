@@ -139,13 +139,20 @@ export const resolvers = {
       return messages
     },
     optOut: async (campaignContact, _, { loaders }) => {
-      const campaign = await loaders.campaign.load(campaignContact.campaign_id)
 
-      return r.table('opt_out')
-        .getAll(campaignContact.cell, { index: 'cell' })
-        .filter({ organization_id: campaign.organization_id })
-        .limit(1)(0)
-        .default(null)
+      if ('opt_out_cell' in campaignContact) {
+        return {
+          cell: campaignContact.opt_out_cell
+        }
+      } else {
+        const campaign = await loaders.campaign.load(campaignContact.campaign_id)
+
+        return r.table('opt_out')
+          .getAll(campaignContact.cell, { index: 'cell' })
+          .filter({ organization_id: campaign.organization_id })
+          .limit(1)(0)
+          .default(null)
+      }
     },
     currentInteractionStepId: async (campaignContact) => {
       const steps = await r.table('interaction_step')

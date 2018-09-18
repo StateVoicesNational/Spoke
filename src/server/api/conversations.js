@@ -95,8 +95,8 @@ export async function getConversations(
     'campaign_contact.message_status',
     'campaign_contact.is_opted_out',
     'campaign_contact.updated_at',
-    'campaign_contact.cell',
     'campaign_contact.assignment_id',
+    'opt_out.cell as opt_out_cell',
     'user.id as u_id',
     'user.first_name as u_first_name',
     'user.last_name as u_last_name',
@@ -129,6 +129,11 @@ export async function getConversations(
   })
 
   query = query
+    .leftJoin('opt_out', table => {
+      table
+        .on('opt_out.organization_id', '=',  'campaign.organization_id')
+        .andOn('campaign_contact.cell', 'opt_out.cell')
+    })
     .orderBy('campaign_contact.updated_at')
     .orderBy('cc_id')
     .orderBy('message.created_at')
@@ -209,7 +214,8 @@ export const resolvers = {
       return mapQueryFieldsToResolverFields(queryResult, {
         cc_id: 'id',
         cc_first_name: 'first_name',
-        cc_last_name: 'last_name'
+        cc_last_name: 'last_name',
+        opt_out_cell: 'opt_out_cell'
       })
     },
     campaign: queryResult => {
