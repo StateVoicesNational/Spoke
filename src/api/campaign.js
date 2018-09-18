@@ -45,5 +45,10 @@ export const schema = `
     primaryColor: String
     logoImageUrl: String
     editors: String
+    overrideOrganizationTextingHours: Boolean
+    textingHoursEnforced: Boolean
+    textingHoursStart: Int
+    textingHoursEnd: Int
+    timezone: String
   }
 `
