@@ -7,7 +7,6 @@ import { r } from '../../models'
 // * needs an order
 // * needs to get by campaignId-userId pairs
 
-
 const cacheKey = (campaignId, userId) => `${process.env.CACHE_PREFIX || ''}canned-${campaignId}-${userId || ''}`
 
 const cannedResponseCache = {
@@ -26,6 +25,7 @@ const cannedResponseCache = {
     const dbResult = await r.table('canned_response')
       .getAll(campaignId, { index: 'campaign_id' })
       .filter({ user_id: userId || '' })
+      .orderBy('title')
     if (r.redis) {
       const cacheData = dbResult.map((cannedRes) => ({
         id: cannedRes.id,

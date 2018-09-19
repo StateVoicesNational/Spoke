@@ -1,6 +1,7 @@
 import { GraphQLError } from 'graphql/error'
-import { r } from '../models'
-import { cacheableData } from '../models'
+import { r, cacheableData } from '../models'
+import { userHasRole } from '../models/cacheable_queries'
+
 
 const accessHierarchy = ['TEXTER', 'SUPERVOLUNTEER', 'ADMIN', 'OWNER']
 
@@ -36,13 +37,8 @@ export async function assignmentRequired(user, assignmentId) {
     return
   }
 
-  const [assignment] = await r.knex('assignment')
-  .where({
-    user_id: user.id,
-    id: assignmentId
-  }).limit(1)
-
-  if (typeof assignment === 'undefined') {
+  const userHasAssignment = await cacheableData.assignment.hasAssignment(user.id, assignmentId)
+  if (!userHasAssignment) {
     throw new GraphQLError('You are not authorized to access that resource.')
   }
 }

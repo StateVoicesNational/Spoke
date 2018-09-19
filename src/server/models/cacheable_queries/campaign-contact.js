@@ -1,4 +1,4 @@
-import { r, CampaignContact } from '../../models'
+import { r, getMessageServiceSid, CampaignContact } from '../../models'
 import { optOutCache } from './opt-out'
 
 // <campaignContactId>
@@ -23,25 +23,10 @@ import { optOutCache } from './opt-out'
 //   - messageStatus
 //   - messages
 
-// HASH message-<cell>
+// HASH message-<cell>-<campaignId>
 //   - messageStatus
 
 // TODO: relocate this method elsewhere
-const getMessageServiceSid = (organization) => {
-  let orgFeatures = {}
-  if (organization.features) {
-    orgFeatures = JSON.parse(organization.features)
-  }
-  const orgSid = orgFeatures.message_service_sid
-  if (!orgSid) {
-    const service = orgFeatures.service || process.env.DEFAULT_SERVICE || ''
-    if (service === 'twilio') {
-      return process.env.TWILIO_MESSAGE_SERVICE_SID
-    }
-    return ''
-  }
-  return orgSid
-}
 
 const cacheKey = async (id) => `${process.env.CACHE_PREFIX || ''}contact-${id}`
 
@@ -105,7 +90,7 @@ const campaignContactCache = {
   loadMany: async (organization, { campaign, queryFunc }) => {
     // queryFunc(query) has query input of a knex query
     // queryFunc should return a query with added where clauses
-    if (!r.redis) {
+    if (!r.redis || !organization || !(campaign || queryFunc)) {
       return
     }
     // 1. load the data
@@ -135,7 +120,7 @@ const campaignContactCache = {
     const dbResult = await query
     // 2. cache the data
     const messageServiceSid = getMessageServiceSid(organization)
-    for (let i=0,l=dbResult.length; i<l; i++) {
+    for (let i = 0, l = dbResult.length; i < l; i++) {
       const dbRecord = dbResult[i]
       await saveCacheRecord(dbRecord, organization, messageServiceSid)
     }
