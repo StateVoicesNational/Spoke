@@ -50,12 +50,18 @@ OUTPUT_DIR                        | Directory path for packaged files should be 
 PHONE_NUMBER_COUNTRY              | Country code for phone number formatting. _Default_: US.
 PORT                              | Port for Heroku servers.
 PUBLIC_DIR                        | Directory path server should use to serve files. _Required_.
+REVERE_SQS_URL                    | SQS URL to process outgoing Revere SMS Messages.
+REVERE_LIST_ID                    | Revere List to add user to.
+REVERE_NEW_SUBSCRIBER_MOBILE_FLOW | Revere mobile flow to trigger upon recording action.
+REVERE_MOBILE_API_KEY             | Revere authentication api key to use to access Revere API.
+REVERE_API_URL                    | Revere api endpoint to use for triggering a mobile flow. 
 ROLLBAR_CLIENT_TOKEN              | Client token for Rollbar error tracking.
 ROLLBAR_ACCESS_TOKEN              | Access token for Rollbar error tracking.
 ROLLBAR_ENDPOINT                  | Endpoint URL for Rollbar error tracking.
 SESSION_SECRET                    | Unique key used to encrypt sessions. _Required_.
 SLACK_NOTIFY_URL                  | If set, then on post-install (often from deploying) a message will be posted to a slack channel's `#spoke` channel
 SUPPRESS_SELF_INVITE              | Boolean value to prevent self-invitations. Recommend setting before making sites available to public. _Default_: false.
+SUPPRESS_DATABASE_AUTOCREATE      | Suppress database auto-creation on first start. Mostly just used for test context
 TERMS_REQUIRE                     | Require texters to accept the [Terms page](../src/containers/Terms.jsx#L85) before they can start texting. _Default_: false
 TWILIO_API_KEY                    | Twilio API key. Required if using Twilio.
 TWILIO_APPLICATION_SID            | Twilio application ID. Required if using Twilio.
