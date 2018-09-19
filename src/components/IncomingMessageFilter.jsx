@@ -20,10 +20,10 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   flexColumn: {
-    flex: '0 1 25%'
+    width: '30%'
   },
   toggleFlexColumn: {
-    flex: '0 1 23%'
+    width: '30%'
   },
   spacer: {
     marginRight: '30px'
@@ -53,14 +53,6 @@ export const MESSAGE_STATUSES = {
   },
   closed: {
     name: 'Closed',
-    children: []
-  },
-  notOptedOut: {
-    name: 'Not Opted Out',
-    children: []
-  },
-  optedOut: {
-    name: 'Opted Out',
     children: []
   }
 }
@@ -177,19 +169,35 @@ class IncomingMessageFilter extends Component {
                 onToggle={this.props.onActiveCampaignsToggled}
                 toggled={
                   this.props.includeActiveCampaigns ||
-                    !this.props.includeArchivedCampaigns
+                  !this.props.includeArchivedCampaigns
                 }
               />
-            </div>
-            <div className={css(styles.spacer)} />
-            <div className={css(styles.toggleFlexColumn)}>
+              <br />
               <Toggle
                 label={'Archived Campaigns'}
                 onToggle={this.props.onArchivedCampaignsToggled}
                 toggled={this.props.includeArchivedCampaigns}
               />
             </div>
+            <div className={css(styles.spacer)} />
+            <div className={css(styles.toggleFlexColumn)}>
+              <Toggle
+                label={'Not Opted Out'}
+                onToggle={this.props.onNotOptedOutConversationsToggled}
+                toggled={
+                  this.props.includeNotOptedOutConversations ||
+                  !this.props.includeOptedOutConversations
+                }
+              />
+              <br />
+              <Toggle
+                label={'Opted Out'}
+                onToggle={this.props.onOptedOutConversationsToggled}
+                toggled={this.props.includeOptedOutConversations}
+              />
+            </div>
           </div>
+
           <div className={css(styles.container)}>
             <div className={css(styles.flexColumn)}>
               <SelectField
@@ -263,6 +271,10 @@ IncomingMessageFilter.propTypes = {
   onArchivedCampaignsToggled: type.func.isRequired,
   includeArchivedCampaigns: type.bool.isRequired,
   includeActiveCampaigns: type.bool.isRequired,
+  onNotOptedOutConversationsToggled: type.func.isRequired,
+  onOptedOutConversationsToggled: type.func.isRequired,
+  includeNotOptedOutConversations: type.bool.isRequired,
+  includeOptedOutConversations: type.bool.isRequired,
   campaigns: type.array.isRequired,
   texters: type.array.isRequired,
   onMessageFilterChanged: type.func.isRequired,

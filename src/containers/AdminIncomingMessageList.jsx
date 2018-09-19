@@ -33,6 +33,27 @@ function getCampaignsFilterForCampaignArchiveStatus(
   return {}
 }
 
+function getContactsFilterForConversationOptOutStatus(
+  includeNotOptedOutConversations,
+  includeOptedOutConversations
+) {
+  let isOptedOut = undefined
+  if (!includeNotOptedOutConversations && includeOptedOutConversations) {
+    isOptedOut = true
+  } else if (
+    (includeNotOptedOutConversations && !includeOptedOutConversations) ||
+    (!includeNotOptedOutConversations && !includeOptedOutConversations)
+  ) {
+    isOptedOut = false
+  }
+
+  if (isOptedOut !== undefined) {
+    return { isOptedOut }
+  }
+
+  return {}
+}
+
 export class AdminIncomingMessageList extends Component {
   constructor(props) {
     super(props)
@@ -41,7 +62,7 @@ export class AdminIncomingMessageList extends Component {
       page: 0,
       pageSize: 10,
       campaignsFilter: { isArchived: false },
-      contactsFilter: {},
+      contactsFilter: { isOptedOut: false },
       assignmentsFilter: {},
       needsRender: false,
       utc: Date.now().toString(),
@@ -49,7 +70,9 @@ export class AdminIncomingMessageList extends Component {
       reassignmentTexters: [],
       campaignTexters: [],
       includeArchivedCampaigns: false,
-      includeActiveCampaigns: true
+      includeActiveCampaigns: true,
+      includeNotOptedOutConversations: true,
+      includeOptedOutConversations: false
     }
 
     this.handleCampaignChanged = this.handleCampaignChanged.bind(this)
@@ -70,6 +93,12 @@ export class AdminIncomingMessageList extends Component {
       this
     )
     this.handleActiveCampaignsToggled = this.handleActiveCampaignsToggled.bind(
+      this
+    )
+    this.handleNotOptedOutConversationsToggled = this.handleNotOptedOutConversationsToggled.bind(
+      this
+    )
+    this.handleOptedOutConversationsToggled = this.handleOptedOutConversationsToggled.bind(
       this
     )
   }
@@ -113,8 +142,12 @@ export class AdminIncomingMessageList extends Component {
   }
 
   async handleMessageFilterChange(messagesFilter) {
+    const contactsFilter = Object.assign(
+      _.omit(this.state.contactsFilter, ['messageStatus']),
+      { messageStatus: messagesFilter }
+    )
     await this.setState({
-      contactsFilter: { messageStatus: messagesFilter },
+      contactsFilter,
       needsRender: true
     })
   }
@@ -168,6 +201,53 @@ export class AdminIncomingMessageList extends Component {
 
   async handleReassignmentTextersReceived(reassignmentTexters) {
     this.setState({ reassignmentTexters, needsRender: true })
+  }
+
+  async handleNotOptedOutConversationsToggled() {
+    if (
+      this.state.includeNotOptedOutConversations &&
+      !this.state.includeOptedOutConversations
+    ) {
+      return
+    }
+
+    const contactsFilterUpdate = getContactsFilterForConversationOptOutStatus(
+      !this.state.includeNotOptedOutConversations,
+      this.state.includeOptedOutConversations
+    )
+
+    const contactsFilter = Object.assign(
+      _.omit(this.state.contactsFilter, ['isOptedOut']),
+      contactsFilterUpdate
+    )
+
+    this.setState({
+      contactsFilter,
+      includeNotOptedOutConversations: !this.state
+        .includeNotOptedOutConversations
+    })
+  }
+
+  async handleOptedOutConversationsToggled() {
+    const includeNotOptedOutConversations =
+      this.state.includeNotOptedOutConversations ||
+      !this.state.includeOptedOutConversations
+
+    const contactsFilterUpdate = getContactsFilterForConversationOptOutStatus(
+      includeNotOptedOutConversations,
+      !this.state.includeOptedOutConversations
+    )
+
+    const contactsFilter = Object.assign(
+      _.omit(this.state.contactsFilter, ['isOptedOut']),
+      contactsFilterUpdate
+    )
+
+    this.setState({
+      contactsFilter,
+      includeNotOptedOutConversations,
+      includeOptedOutConversations: !this.state.includeOptedOutConversations
+    })
   }
 
   async handleActiveCampaignsToggled() {
@@ -244,6 +324,18 @@ export class AdminIncomingMessageList extends Component {
               onArchivedCampaignsToggled={this.handleArchivedCampaignsToggled}
               includeActiveCampaigns={this.state.includeActiveCampaigns}
               includeArchivedCampaigns={this.state.includeArchivedCampaigns}
+              onNotOptedOutConversationsToggled={
+                this.handleNotOptedOutConversationsToggled
+              }
+              onOptedOutConversationsToggled={
+                this.handleOptedOutConversationsToggled
+              }
+              includeNotOptedOutConversations={
+                this.state.includeNotOptedOutConversations
+              }
+              includeOptedOutConversations={
+                this.state.includeOptedOutConversations
+              }
             />
             <br />
             <IncomingMessageActions
