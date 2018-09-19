@@ -1,4 +1,4 @@
-import { r } from '../../models'
+import { r, cacheableData } from '../../models'
 
 export async function getLastMessage({ contactNumber, service, messageServiceSid }) {
   let query = r.knex('message')
@@ -23,29 +23,5 @@ export async function getLastMessage({ contactNumber, service, messageServiceSid
 }
 
 export async function saveNewIncomingMessage(messageInstance) {
-  if (messageInstance.service_id) {
-    const countResult = await r.getCount(r.knex('message').where('service_id', messageInstance.service_id))
-    if (countResult) {
-      console.error('DUPLICATE MESSAGE SAVED', countResult.count, messageInstance)
-    }
-  }
-  if (!messageInstance.campaign_contact_id) {
-    const lastMessage = await getLastMessage({
-      contactNumber,
-      service: messageInstance.service,
-      messageServiceSid: messageInstance.messageservice_sid
-    })
-    if (lastMessage) {
-      messageInstance.campaign_contact_id = lastMessage.campaign_contact_id
-      messageInstance.assignment_id = (messageInstance.assignment_id
-                                       || lastMessage.assignment_id)
-    }
-  }
-  await messageInstance.save()
-
-  await r.table('campaign_contact')
-    .getAll(messageInstance.assignment_id, { index: 'assignment_id' })
-    .filter({ cell: messageInstance.contact_number })
-    .limit(1)
-    .update({ message_status: 'needsResponse', updated_at: 'now()' })
+  await cacheableData.message.save({ messageInstance })
 }

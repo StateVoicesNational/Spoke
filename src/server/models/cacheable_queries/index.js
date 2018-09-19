@@ -4,6 +4,7 @@ import { organizationCache } from './organization'
 import { cannedResponseCache } from './canned-response'
 import { campaignCache } from './campaign'
 import { campaignContactCache } from './campaign-contact'
+import { messageCache } from './message'
 import { optOutCache } from './opt-out'
 
 const cacheableData = {
@@ -11,6 +12,7 @@ const cacheableData = {
   campaign: campaignCache,
   campaignContact: campaignContactCache,
   cannedResponse: cannedResponseCache,
+  message: messageCache,
   optOut: optOutCache,
   organization: organizationCache,
 }

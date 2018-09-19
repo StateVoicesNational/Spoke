@@ -889,7 +889,7 @@ const rootMutations = {
       return []
     },
     sendMessage: async (_, { message, campaignContactId }, { user, loaders }) => {
-      const contact = await loaders.campaignContact.load(campaignContactId)
+      let contact = await loaders.campaignContact.load(campaignContactId)
       const campaign = await loaders.campaign.load(contact.campaign_id)
 
       if (contact.assignment_id !== parseInt(message.assignmentId) || campaign.is_archived) {
@@ -899,7 +899,7 @@ const rootMutations = {
         })
       }
 
-      const organization = await loaders.campaign.load(campaign.organization_id)
+      const organization = await loaders.organization.load(campaign.organization_id)
       const isOptedOut = await cacheableData.optOut.query({
         cell: contact.cell,
         organizationId: organization.id
@@ -921,7 +921,6 @@ const rootMutations = {
       }
 
       const replaceCurlyApostrophes = rawText => rawText.replace(/[\u2018\u2019]/g, "'")
-
       const messageInstance = new Message({
         text: replaceCurlyApostrophes(text),
         contact_number: contactNumber,
@@ -936,16 +935,8 @@ const rootMutations = {
         queued_at: new Date()
       })
 
-      await messageInstance.save()
-
-      if (contact.message_status === 'needsResponse') {
-        contact.message_status = 'convo'
-      } else {
-        contact.message_status = 'messaged'
-      }
-
-      contact.updated_at = 'now()'
-      await contact.save()
+      contact = await cacheableData.message.save({ messageInstance, contact })
+      console.log('contact saved', contact)
 
       const service = serviceMap[messageInstance.service || process.env.DEFAULT_SERVICE]
       service.sendMessage(messageInstance)

@@ -38,6 +38,7 @@ export const getContacts = async (assignment, contactsFilter, organization, camp
     return contactQueryArgs.result
   }
   const cachedResult = await cachedContactsQuery(contactQueryArgs)
+  console.log('getContacts cached', justCount, justIds, assignment.id, cachedResult)
   return (cachedResult !== null
           ? cachedResult
           : dbContactsQuery(contactQueryArgs))
@@ -257,7 +258,7 @@ export const loadAssignmentContacts = async (assignmentId, organizationId, timez
     }
     if (c.latest_message) {
       // note: needsMessage will never increment and always end up ===1
-      ++tzObj[c.status]
+      ++(tzObj[c.status])
     }
     if (c.status === 'convo') {
       // starts at max and counts down for reverse order
@@ -277,5 +278,22 @@ export const loadAssignmentContacts = async (assignmentId, organizationId, timez
     // TODO: is there a max to how many we can add at once?
       .zadd(key, ...contacts)
       .execAsync()
+  }
+}
+
+export const updateAssignmentContact = async (contact, newStatus) => {
+  // Needs: contact.id, contact.timezone_offset, contact.assignment_id, ?contact.message_status
+  const key = assignmentContactsKey(contact.assignment_id, contact.timezone_offset)
+  const range = msgStatusRange[newStatus]
+  const cmd = (newStatus === 'convo' ? 'zrangebyscore' : 'zrevrangebyscore')
+  const [exists, curMax] = await r.redis.multi()
+    .exists(key)
+    [cmd](key, range[0], range[1], 'WITHSCORES', 'LIMIT', 0, 1)
+    .execAsync()
+  if (exists) {
+    const newScore = (curMax
+                      ? curMax + (newStatus === 'convo' ? -1 : 1)
+                      : (newStatus === 'convo' ? range[1] : range[0]))
+    await r.redis.zaddAsync([key, newScore, contact.id])
   }
 }
