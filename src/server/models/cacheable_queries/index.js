@@ -6,6 +6,7 @@ import organizationCache from './organization'
 import userCache from './user'
 
 const cacheableData = {
+  assignment: assignmentCache,
   campaign: campaignCache,
   campaignContact: campaignContactCache,
   cannedResponse: cannedResponseCache,
