@@ -817,6 +817,7 @@ export async function sendMessages(queryFunc, defaultStatus) {
 }
 
 export async function handleIncomingMessageParts() {
+  // TODO: remove lastMessage test, since that will be in saveNewIncomingMessage()
   const messageParts = await r.table('pending_message_part').limit(100)
   const messagePartsByService = {}
   messageParts.forEach((m) => {

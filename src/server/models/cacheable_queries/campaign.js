@@ -57,6 +57,7 @@ const loadDeep = async (id) => {
   if (r.redis) {
     const campaign = await Campaign.get(id)
     if (campaign.is_archived) {
+      console.log('campaign is_archived')
       // do not cache archived campaigns
       await clear(id)
       return campaign

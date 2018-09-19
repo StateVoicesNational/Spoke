@@ -20,7 +20,6 @@ export const resolvers = {
       'cell',
       'zip',
       'customFields',
-      'messageStatus',
       'assignmentId',
       'external_id'
     ], CampaignContact),
@@ -28,7 +27,7 @@ export const resolvers = {
       if (campaignContact.message_status) {
         return campaignContact.message_status
       }
-      // TODO: look it up via cacheing
+      return await cacheableData.campaignContact.getMessageStatus(campaignContact.id)
     },
     campaign: async (campaignContact, _, { loaders }) => (
       loaders.campaign.load(campaignContact.campaign_id)
@@ -135,16 +134,10 @@ export const resolvers = {
       if (campaignContact.message_status === 'needsMessage') {
         return [] // it's the beginning, so there won't be any
       }
-
       if ('messages' in campaignContact) {
         return campaignContact.messages
       }
-
-      const messages = await r.knex('message')
-        .where('campaign_contact_id', campaignContact.id)
-        .orderBy('created_at')
-
-      return messages
+      return await cacheableData.message.query({campaignContactId: campaignContact.id})
     },
     optOut: async (campaignContact, _, { loaders }) => {
       let isOptedOut = null
