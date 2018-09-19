@@ -3,6 +3,7 @@ import camelCaseKeys from 'camelcase-keys'
 import isUrl from 'is-url'
 import { buildCampaignQuery } from './campaign'
 import { organizationCache } from '../models/cacheable_queries/organization'
+import { cacheableData } from '../models'
 
 
 import {
@@ -1004,6 +1005,10 @@ const rootMutations = {
         .getAll(campaignContactId, { index: 'campaign_contact_id' })
         .getAll(...interactionStepIds, { index: 'interaction_step_id' })
         .delete()
+
+      // update cache
+      cacheableData.questionResponse.reloadQuery(campaignContactId)
+
       return contact
     },
     updateQuestionResponses: async (_, { questionResponses, campaignContactId }, { loaders }) => {
@@ -1052,6 +1057,9 @@ const rootMutations = {
           }
         }
       }
+
+      // update cache
+      cacheableData.questionResponse.reloadQuery(campaignContactId)
 
       const contact = loaders.campaignContact.load(campaignContactId)
       return contact
