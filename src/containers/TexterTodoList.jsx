@@ -94,6 +94,9 @@ const mapQueriesToProps = ({ ownProps }) => ({
             introHtml
             primaryColor
             logoImageUrl
+            organization {
+              turnTextingOff
+            }
           }
           maxContacts
           unmessagedCount: contactsCount(contactsFilter: $needsMessageFilter)
