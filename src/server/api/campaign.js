@@ -1,15 +1,26 @@
 import { mapFieldsToModel } from './lib/utils'
 import { Campaign, JobRequest, r } from '../models'
 import { getUsers } from './user';
+import { currentEditors } from '../models/cacheable_queries'
+
 
 export function addCampaignsFilterToQuery(queryParam, campaignsFilter) {
   let query = queryParam
+  const resultSize = (campaignsFilter.listSize ? campaignsFilter.listSize : 0)
+  const pageSize = (campaignsFilter.pageSize ? campaignsFilter.pageSize : 0)
+
   if (campaignsFilter) {
     if ('isArchived' in campaignsFilter) {
       query = query.where('campaign.is_archived', campaignsFilter.isArchived )
     }
     if ('campaignId' in campaignsFilter) {
       query = query.where('campaign.id', parseInt(campaignsFilter.campaignId, 10))
+    }
+    if (resultSize && !pageSize) {
+      query = query.limit(resultSize)
+    }
+    if (resultSize && pageSize) {
+      query = query.limit(resultSize).offSet(pageSize)
     }
   }
   return query
@@ -22,7 +33,7 @@ export function buildCampaignQuery(queryParam, organizationId, campaignsFilter, 
     query = query.from('campaign')
   }
 
-  query = query.where('organization_id', organizationId)
+  query = query.where('campaign.organization_id', organizationId)
   query = addCampaignsFilterToQuery(query, campaignsFilter)
 
   return query
@@ -206,6 +217,12 @@ export const resolvers = {
       }
       return []
     },
-    stats: async (campaign) => campaign
+    stats: async (campaign) => campaign,
+    editors: async (campaign, _, { user }) => {
+      if (r.redis) {
+        return currentEditors(r.redis, campaign, user)
+      }
+      return ''
+    }
   }
 }
