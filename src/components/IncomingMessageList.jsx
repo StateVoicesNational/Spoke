@@ -16,7 +16,7 @@ function prepareDataTableData(conversations) {
     return {
       campaignTitle: conversation.campaign.title,
       texter: conversation.texter.displayName,
-      to: conversation.contact.firstName + ' ' + conversation.contact.lastName,
+      to: conversation.contact.firstName + ' ' + conversation.contact.lastName + (conversation.contact.optOut.cell ? '⛔️' : ''),
       status: conversation.contact.messageStatus,
       messages: conversation.contact.messages
     }
@@ -303,6 +303,9 @@ const mapQueriesToProps = ({ ownProps }) => ({
                 id
                 text
                 isFromContact
+              }
+              optOut {
+                cell
               }
             }
             campaign {

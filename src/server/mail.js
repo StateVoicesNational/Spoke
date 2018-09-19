@@ -10,15 +10,14 @@ const mailgun =
 const sender =
   process.env.MAILGUN_API_KEY && process.env.MAILGUN_DOMAIN
     ? {
-      sendMail: ({ from, to, subject, replyTo, text, html }) =>
+      sendMail: ({ from, to, subject, replyTo, text }) =>
             mailgun.messages().send(
               {
                 from,
                 'h:Reply-To': replyTo,
                 to,
                 subject,
-                text,
-                html
+                text
               })
     }
     : nodemailer.createTransport({
@@ -34,7 +33,7 @@ const sender =
       }
     })
 
-export const sendEmail = async ({ to, subject, text, html, replyTo }) => {
+export const sendEmail = async ({ to, subject, text, replyTo }) => {
   log.info(`Sending e-mail to ${to} with subject ${subject}.`)
 
   if (process.env.NODE_ENV === 'development') {
@@ -46,8 +45,7 @@ export const sendEmail = async ({ to, subject, text, html, replyTo }) => {
     from: process.env.EMAIL_FROM,
     to,
     subject,
-    text,
-    html
+    text
   }
 
   if (replyTo) {
