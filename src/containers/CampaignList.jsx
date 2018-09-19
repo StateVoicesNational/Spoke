@@ -97,8 +97,8 @@ class CampaignList extends React.Component {
           this.props.router.push(campaignUrl))}
         secondaryText={secondaryText}
         leftIcon={leftIcon}
-        rightIconButton={adminPerms ?
-          (campaign.isArchived ? (
+        rightIconButton={adminPerms && (
+          campaign.isArchived ? (
             <IconButton
               tooltip='Unarchive'
               onTouchTap={async () => this.props.mutations.unarchiveCampaign(campaign.id)}
@@ -106,13 +106,13 @@ class CampaignList extends React.Component {
               <UnarchiveIcon />
             </IconButton>
           ) : (
-              <IconButton
-                tooltip='Archive'
-                onTouchTap={async () => this.props.mutations.archiveCampaign(campaign.id)}
-              >
-                <ArchiveIcon />
-              </IconButton>
-            )) : null}
+            <IconButton
+              tooltip='Archive'
+              onTouchTap={async () => this.props.mutations.archiveCampaign(campaign.id)}
+            >
+              <ArchiveIcon />
+            </IconButton>
+          ))}
       />
     )
   }
@@ -125,9 +125,9 @@ class CampaignList extends React.Component {
         icon={<SpeakerNotesIcon />}
       />
     ) : (
-        <List>
-          {campaigns.map((campaign) => this.renderRow(campaign))}
-        </List>
+      <List>
+        {campaigns.map((campaign) => this.renderRow(campaign))}
+      </List>
       )
   }
 }
