@@ -44,7 +44,7 @@ class CampaignList extends React.Component {
     const { adminPerms } = this.props
 
     let listItemStyle = {}
-    let leftIcon = ''
+    let leftIcon = null
     if (isArchived) {
       listItemStyle = inlineStyles.past
     } else if (!isStarted || hasUnassignedContacts) {
@@ -118,6 +118,7 @@ class CampaignList extends React.Component {
   }
 
   render() {
+    if (this.props.data.loading) return null
     const { campaigns } = this.props.data.organization
     return campaigns.length === 0 ? (
       <Empty
