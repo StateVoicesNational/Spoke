@@ -177,7 +177,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
   }
 
   if (campaign.hasOwnProperty('interactionSteps')) {
-    await accessRequired(user, organizationId, 'ADMIN', /* superadmin*/ true)
+    await accessRequired(user, organizationId, 'SUPERVOLUNTEER', /* superadmin*/ true)
     await updateInteractionSteps(id, [campaign.interactionSteps], origCampaignRecord)
   }
 
@@ -218,9 +218,7 @@ async function updateInteractionSteps(
       is.parentInteractionId = idMap[is.parentInteractionId]
     }
     if (is.id.indexOf('new') !== -1) {
-      const newId = await r
-        .knex('interaction_step')
-        .insert({
+      const newIstep = await InteractionStep.save({
           parent_interaction_id: is.parentInteractionId || null,
           question: is.questionText,
           script: is.script,
@@ -229,8 +227,7 @@ async function updateInteractionSteps(
           campaign_id: campaignId,
           is_deleted: false
         })
-        .returning('id')
-      idMap[is.id] = newId[0]
+      idMap[is.id] = newIstep.id
     } else {
       if (!origCampaignRecord.is_started && is.isDeleted) {
         await r
@@ -568,7 +565,7 @@ const rootMutations = {
       let createCannedResponses = r
         .knex('canned_response')
         .where({ campaign_id: oldCampaignId })
-        .then(function(res) {
+        .then(function (res) {
           res.forEach((response, index) => {
             const copiedCannedResponse = new CannedResponse({
               campaign_id: newCampaignId,

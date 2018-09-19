@@ -52,7 +52,7 @@ const Campaign = thinky.createModel('campaign', type.object().schema({
     .default('US/Eastern')
 
 
-}).allowExtra(false))
+}).allowExtra(false), {noAutoCreation: true})
 
 Campaign.ensureIndex('organization_id')
 
