@@ -30,7 +30,7 @@ const loadMany = async (organizationId) => {
 }
 
 const optOutCache = {
-  clearQuery: async ({cell, organizationId}) => {
+  clearQuery: async ({ cell, organizationId }) => {
     // remove cache by organization
     // (if no cell is present, then clear whole query of organization)
     if (r.redis) {
