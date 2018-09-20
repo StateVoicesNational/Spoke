@@ -13,7 +13,6 @@ import {
   InteractionStep,
   Invite,
   Message,
-  OptOut,
   Organization,
   QuestionResponse,
   UserOrganization,
