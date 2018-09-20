@@ -16,50 +16,20 @@ const msgStatusRange = {
   // These ranges provide 10 million messages as 'room'
   // this is per-assignment, so should be plenty.
   // Redis uses a 64-bit floating point, so we can bump it up if necessary :-P
-  'needsMessage': [1, 9999999],
-  'needsResponse': [10000000, 19999999],
-  'needsMessageOrResponse': [1, 19999999],
-  'convo': [20000000, 29999999],
-  'messaged': [30000000, 39999999],
-  'closed': [40000000, 49999999]
+  needsMessage: [1, 9999999],
+  needsResponse: [10000000, 19999999],
+  needsMessageOrResponse: [1, 19999999],
+  convo: [20000000, 29999999],
+  messaged: [30000000, 39999999],
+  closed: [40000000, 49999999]
 }
 
-const filterMessageStatuses = (messageStatusFilter) => {
-  if (messageStatusFilter) {
-    return (messageStatusFilter === 'needsMessageOrResponse'
-            ? ['needsMessage', 'needsResponse']
-            : messageStatusFilter.split(','))
-  }
-}
-
-export const getContacts = async (assignment, contactsFilter, organization, campaign, forCount, justCount, justIds) => {
-  const contactQueryArgs = getContactQueryArgs(assignment.id, contactsFilter, organization, campaign, forCount, justCount, justIds)
-  if (typeof contactQueryArgs.result !== 'undefined') {
-    return contactQueryArgs.result
-  }
-  const cachedResult = await cachedContactsQuery(contactQueryArgs)
-  //console.log('getContacts cached', justCount, justIds, assignment.id, cachedResult)
-  return (cachedResult !== null
-          ? cachedResult
-          : dbContactsQuery(contactQueryArgs))
-}
-
-export const dbGetContactsQuery = (assignment, contactsFilter, organization, campaign, forCount, justCount, justIds) => {
-  const contactQueryArgs = getContactQueryArgs(assignment.id, contactsFilter, organization, campaign, forCount, justCount, justIds)
-  return (typeof contactQueryArgs.result !== 'undefined'
-          ? contactQueryArgs.result
-          : dbContactsQuery(contactQueryArgs))
-}
-
-export const optOutContact = async (assignmentId, contactId, campaign) => {
-  if (r.redis && campaign.contactTimezones) {
-    for (let i = 0, l = campaign.contactTimezones.length; i < l; i++) {
-      const tz = campaign.contactTimezones[i]
-      // XX only changes the score if it already exists
-      await r.redis.zaddAsync(assignmentContactsKey(assignmentId, tz), 'XX', 0, contactId)
-    }
-  }
-}
+const filterMessageStatuses = (messageStatusFilter) => (
+  messageStatusFilter
+  && (messageStatusFilter === 'needsMessageOrResponse'
+      ? ['needsMessage', 'needsResponse']
+      : messageStatusFilter.split(','))
+)
 
 export const getContactQueryArgs = (assignmentId, contactsFilter, organization, campaign, forCount, justCount, justIds) => {
   // / returns list of contacts eligible for contacting _now_ by a particular user
@@ -126,6 +96,35 @@ export const getContactQueryArgs = (assignmentId, contactsFilter, organization, 
     justCount,
     justIds,
     isOptedOutFilter: contactsFilter && contactsFilter.isOptedOut
+  }
+}
+
+export const getContacts = async (assignment, contactsFilter, organization, campaign, forCount, justCount, justIds) => {
+  const contactQueryArgs = getContactQueryArgs(assignment.id, contactsFilter, organization, campaign, forCount, justCount, justIds)
+  if (typeof contactQueryArgs.result !== 'undefined') {
+    return contactQueryArgs.result
+  }
+  const cachedResult = await cachedContactsQuery(contactQueryArgs)
+  // console.log('getContacts cached', justCount, justIds, assignment.id, cachedResult)
+  return (cachedResult !== null
+          ? cachedResult
+          : dbContactsQuery(contactQueryArgs))
+}
+
+export const dbGetContactsQuery = (assignment, contactsFilter, organization, campaign, forCount, justCount, justIds) => {
+  const contactQueryArgs = getContactQueryArgs(assignment.id, contactsFilter, organization, campaign, forCount, justCount, justIds)
+  return (typeof contactQueryArgs.result !== 'undefined'
+          ? contactQueryArgs.result
+          : dbContactsQuery(contactQueryArgs))
+}
+
+export const optOutContact = async (assignmentId, contactId, campaign) => {
+  if (r.redis && campaign.contactTimezones) {
+    for (let i = 0, l = campaign.contactTimezones.length; i < l; i++) {
+      const tz = campaign.contactTimezones[i]
+      // XX only changes the score if it already exists
+      await r.redis.zaddAsync(assignmentContactsKey(assignmentId, tz), 'XX', 0, contactId)
+    }
   }
 }
 
@@ -201,7 +200,7 @@ export const cachedContactsQuery = async ({ assignmentId, timezoneOffsets, messa
       existsQuery = existsQuery.exists(key)
       resultQuery = resultQuery[cmd](key, range[0], range[1])
     })
-    //console.log('redis assignment query', assignmentId, timezoneOffsets, range)
+    // console.log('redis assignment query', assignmentId, timezoneOffsets, range)
     const existsResult = await existsQuery.execAsync()
     if (existsResult.reduce((a, b) => a && b, true)) {
       const redisResult = await resultQuery.execAsync()
@@ -291,12 +290,12 @@ export const updateAssignmentContact = async (contact, newStatus) => {
     .exists(key)
     [cmd](key, range[0], range[1], 'WITHSCORES', 'LIMIT', 0, 1)
     .execAsync()
-  //console.log('updateassignmentcontact', contact.id, newStatus, range, cmd, key, exists, curMax)
+  // console.log('updateassignmentcontact', contact.id, newStatus, range, cmd, key, exists, curMax)
   if (exists) {
     const newScore = (curMax && curMax.length
                       ? curMax[0] + (newStatus === 'convo' ? -1 : 1)
                       : (newStatus === 'convo' ? range[1] : range[0]))
-    //console.log('updateassignment', newScore, await r.redis.zrangeAsync(key, 0, -1, 'WITHSCORES'))
+    // console.log('updateassignment', newScore, await r.redis.zrangeAsync(key, 0, -1, 'WITHSCORES'))
     await r.redis.zaddAsync([key, newScore, contact.id])
   }
 }

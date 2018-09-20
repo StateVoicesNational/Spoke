@@ -31,17 +31,17 @@ import { updateAssignmentContact } from './assignment-contacts'
 // TODO: relocate this method elsewhere
 
 // stores most of the contact info:
-const cacheKey = async (id) => `${process.env.CACHE_PREFIX||""}contact-${id}`
+const cacheKey = async (id) => `${process.env.CACHE_PREFIX || ''}contact-${id}`
 // just stores messageStatus -- this changes more often than the rest of the contact info
-const messageStatusKey = async (id) => `${process.env.CACHE_PREFIX||""}contactstatus-${id}`
+const messageStatusKey = async (id) => `${process.env.CACHE_PREFIX || ''}contactstatus-${id}`
 // allows a lookup of contact_id, assignment_id, and timezone_offset by cell+messageservice_sid
-const cellTargetKey = async (cell, messageServiceSid) => `${process.env.CACHE_PREFIX||""}cell-${cell}-${messageServiceSid}`
+const cellTargetKey = async (cell, messageServiceSid) => `${process.env.CACHE_PREFIX || ''}cell-${cell}-${messageServiceSid}`
 
 const saveCacheRecord = async (dbRecord, organization, messageServiceSid) => {
   if (r.redis) {
     // basic contact record
     const contactCacheObj = generateCacheRecord(dbRecord, organization.id, messageServiceSid)
-    //console.log('generated contact', contactCacheObj)
+    // console.log('generated contact', contactCacheObj)
     await r.redis.setAsync(cacheKey(dbRecord.id), JSON.stringify(contactCacheObj))
     // TODO:
     //   messageStatus-<cell>
@@ -107,7 +107,7 @@ export const campaignContactCache = {
             organizationId: cacheData.organization_id })
         }
         cacheData.message_status = await getMessageStatus(id, cacheData)
-        //console.log('contact fromCache', cacheData)
+        // console.log('contact fromCache', cacheData)
         return modelWithExtraProps(
           cacheData,
           CampaignContact,
@@ -178,7 +178,7 @@ export const campaignContactCache = {
         is_from_contact: false,
         service
       })
-      .where(function() {
+      .where(function () {
         // Allow null for active campaigns immediately after post-migration
         // where messageservice_sid may not have been set yet
         return this.where('messageservice_sid', messageServiceSid)
@@ -197,7 +197,7 @@ export const campaignContactCache = {
       }
     }
   },
-  getMessageStatus: getMessageStatus,
+  getMessageStatus,
   updateStatus: async (contact, newStatus) => {
     if (r.redis) {
       await r.redis.multi()

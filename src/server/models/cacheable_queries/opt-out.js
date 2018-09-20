@@ -47,7 +47,7 @@ export const optOutCache = {
     // then cache the WHOLE set of opt-outs for organizationId at once
     // and expire them in a day.
     const accountingForOrgSharing = (!sharingOptOuts ?
-      { 'organization_id': organizationId, cell } :
+      { cell, organization_id: organizationId } :
       { cell }
     )
 
@@ -59,11 +59,10 @@ export const optOutCache = {
         .execAsync()
       if (exists) {
         return isMember
-      } else {
-        // note NOT awaiting this -- it should run in background
-        // ideally not blocking the rest of the request
-        loadMany(organizationId)
       }
+      // note NOT awaiting this -- it should run in background
+      // ideally not blocking the rest of the request
+      loadMany(organizationId)
     }
     const dbResult = await r.knex('opt_out')
       .select('cell')
