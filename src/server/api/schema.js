@@ -34,8 +34,6 @@ import { resolvers as campaignContactResolvers } from './campaign-contact'
 import { resolvers as cannedResponseResolvers } from './canned-response'
 import {
   getConversations,
-  getCampaignIdMessageIdsAndCampaignIdContactIdsMaps,
-  reassignConversations,
   resolvers as conversationsResolver
 } from './conversations'
 import {
@@ -170,7 +168,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
   }
 
   if (campaign.hasOwnProperty('interactionSteps')) {
-    await accessRequired(user, organizationId, 'SUPERVOLUNTEER', /* superadmin*/ true)
+    await accessRequired(user, organizationId, 'ADMIN', /* superadmin*/ true)
     await updateInteractionSteps(id, [campaign.interactionSteps], origCampaignRecord)
   }
 
@@ -211,7 +209,9 @@ async function updateInteractionSteps(
       is.parentInteractionId = idMap[is.parentInteractionId]
     }
     if (is.id.indexOf('new') !== -1) {
-      const newIstep = await InteractionStep.save({
+      const newId = await r
+        .knex('interaction_step')
+        .insert({
           parent_interaction_id: is.parentInteractionId || null,
           question: is.questionText,
           script: is.script,
@@ -220,7 +220,8 @@ async function updateInteractionSteps(
           campaign_id: campaignId,
           is_deleted: false
         })
-      idMap[is.id] = newIstep.id
+        .returning('id')
+      idMap[is.id] = newId[0]
     } else {
       if (!origCampaignRecord.is_started && is.isDeleted) {
         await r
@@ -558,7 +559,7 @@ const rootMutations = {
       let createCannedResponses = r
         .knex('canned_response')
         .where({ campaign_id: oldCampaignId })
-        .then(function (res) {
+        .then(function(res) {
           res.forEach((response, index) => {
             const copiedCannedResponse = new CannedResponse({
               campaign_id: newCampaignId,
@@ -1036,24 +1037,66 @@ const rootMutations = {
         campaignIdMessagesIdsMap.get(campaignId).push(...messageIds)
       }
 
-      return await reassignConversations(campaignIdContactIdsMap, campaignIdMessagesIdsMap, newTexterUserId)
-    },
-    bulkReassignCampaignContacts: async (
-      _,
-      { organizationId, campaignsFilter, assignmentsFilter, contactsFilter, newTexterUserId },
-      { user }
-    ) => {
-      // verify permissions
-      await accessRequired(user, organizationId, 'ADMIN', /* superadmin*/ true)
-      const { campaignIdContactIdsMap, campaignIdMessagesIdsMap }  =
-        await getCampaignIdMessageIdsAndCampaignIdContactIdsMaps(
-          organizationId,
-          campaignsFilter,
-          assignmentsFilter,
-          contactsFilter
-        )
+      // ensure existence of assignments
+      const campaignIdAssignmentIdMap = new Map()
+      for (const [campaignId, _] of campaignIdContactIdsMap) {
+        let assignment = await r
+          .table('assignment')
+          .getAll(newTexterUserId, { index: 'user_id' })
+          .filter({ campaign_id: campaignId })
+          .limit(1)(0)
+          .default(null)
+        if (!assignment) {
+          assignment = await Assignment.save({
+            user_id: newTexterUserId,
+            campaign_id: campaignId,
+            max_contacts: parseInt(process.env.MAX_CONTACTS_PER_TEXTER || 0, 10)
+          })
+        }
+        campaignIdAssignmentIdMap.set(campaignId, assignment.id)
+      }
 
-      return await reassignConversations(campaignIdContactIdsMap, campaignIdMessagesIdsMap, newTexterUserId)
+      // do the reassignment
+      const returnCampaignIdAssignmentIds = []
+
+      // TODO(larry) do this in a transaction!
+      try {
+        for (const [campaignId, campaignContactIds] of campaignIdContactIdsMap) {
+          const assignmentId = campaignIdAssignmentIdMap.get(campaignId)
+
+          await r
+            .knex('campaign_contact')
+            .where('campaign_id', campaignId)
+            .whereIn('id', campaignContactIds)
+            .update({
+              assignment_id: assignmentId
+            })
+
+          returnCampaignIdAssignmentIds.push({
+            campaignId,
+            assignmentId: assignmentId.toString()
+          })
+        }
+        for (const [campaignId, messageIds] of campaignIdMessagesIdsMap) {
+          const assignmentId = campaignIdAssignmentIdMap.get(campaignId)
+
+          await r
+            .knex('message')
+            .whereIn(
+              'id',
+              messageIds.map(messageId => {
+                return messageId
+              })
+            )
+            .update({
+              assignment_id: assignmentId
+            })
+        }
+      } catch (error) {
+        log.error(error)
+      }
+
+      return returnCampaignIdAssignmentIds
     }
   }
 }

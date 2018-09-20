@@ -3,7 +3,6 @@ module.exports = {
   testURL: "http://localhost/",
   testEnvironment: "node",
   globals: {
-    SUPPRESS_DATABASE_AUTOCREATE: "1",
     DB_JSON: JSON.stringify({
       client: "pg",
       connection: {

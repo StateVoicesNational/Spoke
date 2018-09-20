@@ -8,6 +8,6 @@ const Log = thinky.createModel('log', type.object().schema({
   message_sid: requiredString(),
   body: type.string(),
   created_at: timestamp()
-}).allowExtra(false), {noAutoCreation: true})
+}).allowExtra(false))
 
 export default Log

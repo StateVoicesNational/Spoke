@@ -8,7 +8,7 @@ import { resolvers } from './api/schema'
 import { schema } from '../api/schema'
 import { accessRequired } from './api/errors'
 import mocks from './api/mocks'
-import { createLoaders, createTablesIfNecessary } from './models'
+import { createLoaders } from './models'
 import passport from 'passport'
 import cookieSession from 'cookie-session'
 import { setupAuth0Passport } from './auth-passport'
@@ -20,6 +20,7 @@ import { seedZipCodes } from './seeds/seed-zip-codes'
 import { runMigrations } from '../migrations'
 import { setupUserNotificationObservers } from './notifications'
 import { TwimlResponse } from 'twilio'
+import { r } from './models'
 
 process.on('uncaughtException', (ex) => {
   log.error(ex)
@@ -34,22 +35,12 @@ if (!process.env.PASSPORT_STRATEGY) {
 } else {
 
 }
-
 if (!process.env.SUPPRESS_SEED_CALLS) {
   seedZipCodes()
 }
-
-if (!process.env.SUPPRESS_DATABASE_AUTOCREATE) {
-  createTablesIfNecessary().then((didCreate) => {
-    // seed above won't have succeeded if we needed to create first
-    if (didCreate && !process.env.SUPPRESS_SEED_CALLS) {
-      seedZipCodes()
-    }
-  })
-} else if (!process.env.SUPPRESS_MIGRATIONS) {
+if (!process.env.SUPPRESS_MIGRATIONS) {
   runMigrations()
 }
-
 setupUserNotificationObservers()
 const app = express()
 // Heroku requires you to use process.env.PORT

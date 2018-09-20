@@ -10,7 +10,7 @@ const Invite = thinky.createModel('invite', type.object().schema({
     .allowNull(false),
   hash: type.string(),
   created_at: timestamp()
-}).allowExtra(false), {noAutoCreation: true})
+}).allowExtra(false))
 
 Invite.ensureIndex('is_valid')
 

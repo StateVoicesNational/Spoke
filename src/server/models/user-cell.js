@@ -13,9 +13,9 @@ const UserCell = thinky.createModel('user_cell', type.object().schema({
     .enum('nexmo', 'twilio'),
   is_primary: type.boolean()
     .required()
-}).allowExtra(false), { noAutoCreation: true,
-                        dependencies: [User]
-                      })
+}, {
+  dependencies: [User]
+}).allowExtra(false))
 
 UserCell.ensureIndex('user_id')
 
