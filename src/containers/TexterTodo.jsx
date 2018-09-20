@@ -83,7 +83,6 @@ class TexterTodo extends React.Component {
     const { assignment } = this.props.data
     const contacts = assignment.contacts
     const allContactsCount = assignment.allContactsCount
-    console.log('props in texter todo:', this.props);
     return (
       <AssignmentTexter
         assignment={assignment}
