@@ -16,6 +16,9 @@ async function getOrganizationOwner(organizationId) {
     .limit(1)
     .eqJoin('user_id', r.table('user'))('right')(0)
 }
+
+export const ASSIGNMENT_CREATED_SUBJECT = '[{organizationName}] New assignment: {campaignTitle}'
+export const ASSIGNMENT_CREATED_BODY = 'You just got a new texting assignment from {organizationName}. You can start sending texts right away: \n\n{todoUrl}'
 const sendAssignmentUserNotification = async (assignment, notification) => {
   const campaign = await Campaign.get(assignment.campaign_id)
 
@@ -27,14 +30,15 @@ const sendAssignmentUserNotification = async (assignment, notification) => {
   const user = await User.get(assignment.user_id)
   const orgOwner = await getOrganizationOwner(organization.id)
 
+  const todoUrl = `${process.env.BASE_URL}/app/${campaign.organization_id}/todos`
   let subject
   let text
   if (notification === Notifications.ASSIGNMENT_UPDATED) {
     subject = `[${organization.name}] Updated assignment: ${campaign.title}`
     text = `Your assignment changed: \n\n${process.env.BASE_URL}/app/${campaign.organization_id}/todos`
   } else if (notification === Notifications.ASSIGNMENT_CREATED) {
-    subject = `[${organization.name}] New assignment: ${campaign.title}`
-    text = `You just got a new texting assignment from ${organization.name}. You can start sending texts right away: \n\n${process.env.BASE_URL}/app/${campaign.organization_id}/todos`
+    subject = ASSIGNMENT_CREATED_SUBJECT
+    text = ASSIGNMENT_CREATED_BODY
   }
 
   try {
