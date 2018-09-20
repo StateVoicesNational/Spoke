@@ -125,11 +125,13 @@ export default class CampaignInteractionStepsForm extends React.Component {
         />
         <CardText>
           <GSForm
+            {...dataTest('childInteraction', !interactionStep.parentInteractionId)}
             schema={this.formSchema}
             value={interactionStep}
             onChange={this.handleFormChange.bind(this)}
           >
             {interactionStep.parentInteractionId ? <Form.Field
+              {...dataTest('answerOption')}
               name='answerOption'
               label='Answer'
               fullWidth
@@ -186,6 +188,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
       <div style={styles.answerContainer}>
         {interactionStep.questionText && interactionStep.script && (!interactionStep.parentInteractionId || interactionStep.answerOption) ? <div>
           <RaisedButton
+            {...dataTest('addResponse')}
             label='+ Add a response'
             onTouchTap={this.addStep(interactionStep.id).bind(this)}
             style={{ marginBottom: '10px' }}

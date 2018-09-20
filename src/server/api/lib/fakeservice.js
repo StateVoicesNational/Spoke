@@ -24,10 +24,6 @@ async function convertMessagePartsToMessage(messageParts) {
   const contactNumber = firstPart.contact_number
   const text = firstPart.service_message
 
-  const lastMessage = await getLastMessage({
-    contactNumber
-  })
-
   const service_id = (firstPart.service_id
                       || `fakeservice_${Math.random().toString(36).replace(/[^a-zA-Z1-9]+/g, '')}`)
   return new Message({
@@ -37,7 +33,8 @@ async function convertMessagePartsToMessage(messageParts) {
     text,
     service_response: JSON.stringify(messageParts),
     service_id,
-    assignment_id: lastMessage.assignment_id,
+    //assignment_id and campaign_contact_id will be saved later
+    messageservice_sid: '',
     service: 'fakeservice',
     send_status: 'DELIVERED'
   })
@@ -54,8 +51,12 @@ async function handleIncomingMessage(message) {
     contact_number
   })
 
-  const part = await pendingMessagePart.save()
-  return part.id
+  if (process.env.JOBS_SAME_PROCESS) {
+    const finalMessage = await convertMessagePartsToMessage([part])
+    await saveNewIncomingMessage(finalMessage)
+  } else {
+    const part = await pendingMessagePart.save()
+  }
 }
 
 export default {

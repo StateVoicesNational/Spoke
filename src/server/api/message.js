@@ -11,6 +11,11 @@ export const resolvers = {
       'createdAt',
       'isFromContact'
     ], Message),
-    'campaignId': (instance) => instance['campaign_id']
+    'campaignId': msg => msg.campaign_id,
+    'createdAt': msg => 
+      (msg.created_at instanceof Date || !msg.created_at)
+      ? msg.created_at || null
+      : new Date(msg.created_at),
+    'id': msg => (msg.id || 'x')
   }
 }
