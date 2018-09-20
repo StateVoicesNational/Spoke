@@ -851,6 +851,8 @@ export class AssignmentTexterContact extends React.Component {
   }
 
   render() {
+    const textingTurnedOff = this.props.campaign.organization.textingTurnedOff
+    console.log('texting turned off:', this.props.campaign.organization.textingTurnedOff);
     return (
       <div>
         {this.state.disabled ? (
