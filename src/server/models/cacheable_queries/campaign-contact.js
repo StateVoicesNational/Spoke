@@ -28,7 +28,7 @@ import { optOutCache } from './opt-out'
 
 // TODO: relocate this method elsewhere
 
-const cacheKey = async (id) => `${process.env.CACHE_PREFIX | ''}contact-${id}`
+const cacheKey = async (id) => `${process.env.CACHE_PREFIX || ''}contact-${id}`
 
 const saveCacheRecord = async (dbRecord, organization, messageServiceSid) => {
   if (r.redis) {
@@ -65,7 +65,7 @@ const generateCacheRecord = (dbRecord, organizationId, messageServiceSid) => ({
   state: dbRecord.state
 })
 
-export const campaignContactCache = {
+const campaignContactCache = {
   clear: async (id) => {
     if (r.redis) {
       await r.redis.delAsync(cacheKey(id))
@@ -126,3 +126,5 @@ export const campaignContactCache = {
     }
   }
 }
+
+export default campaignContactCache

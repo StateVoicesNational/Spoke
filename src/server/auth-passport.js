@@ -2,8 +2,7 @@ import passport from 'passport'
 import Auth0Strategy from 'passport-auth0'
 import AuthHasher from 'passport-local-authenticate'
 import { Strategy as LocalStrategy } from 'passport-local'
-import { userLoggedIn } from './models/cacheable_queries'
-import { User } from './models'
+import { User, cacheableData } from './models'
 import wrap from './wrap'
 
 export function setupAuth0Passport() {
@@ -19,13 +18,14 @@ export function setupAuth0Passport() {
 
   passport.serializeUser((user, done) => {
     // This is the Auth0 user object, not the db one
+    // eslint-disable-next-line no-underscore-dangle
     const auth0Id = (user.id || user._json.sub)
     done(null, auth0Id)
   })
 
   passport.deserializeUser(wrap(async (id, done) => {
     // add new cacheable query
-    const user = await userLoggedIn(id)
+    const user = await cacheableData.user.userLoggedIn(id)
     done(null, user || false)
   }))
 
@@ -33,6 +33,7 @@ export function setupAuth0Passport() {
     failureRedirect: '/login'
   }), wrap(async (req, res) => {
     const auth0Id = (req.user && (req.user.id
+    // eslint-disable-next-line no-underscore-dangle
                                   || req.user._json.sub))
     if (!auth0Id) {
       throw new Error('Null user in login callback')
