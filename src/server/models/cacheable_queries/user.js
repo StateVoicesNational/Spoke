@@ -96,10 +96,11 @@ const dbLoadUserAuth = async (authId) => {
 const userHasRole = async (userId, orgId, acceptableRoles) => {
   if (r.redis) {
     // cached approach
-    const userKey = `texterinfo-${userId}`
-    let highestRole = await r.redis.hgetAsync(userKey, orgId)
-    if (highestRole) {
-      highestRole = highestRole.split(':')[0]
+    const userKey = userRoleKey(userId)
+    const cacheRoleResult = await r.redis.hgetAsync(userKey, orgId)
+    let highestRole
+    if (cacheRoleResult) {
+      highestRole = cacheRoleResult.split(':')[0]
     } else {
       // need to get it from db, and then cache it
       const highestRoles = await dbLoadUserRoles(userId)
@@ -118,7 +119,7 @@ const userHasRole = async (userId, orgId, acceptableRoles) => {
 }
 
 const userLoggedIn = async (authId) => {
-  const authKey = `texterauth-${authId}`
+  const authKey = userAuthKey(authId)
 
   if (r.redis) {
     const cachedAuth = await r.redis.getAsync(authKey)
@@ -132,12 +133,6 @@ const userLoggedIn = async (authId) => {
 }
 
 const userCache = {
-  loadWithAuthId: async () => {
-    // placeholder
-  },
-  userOrgsWithRole: async () => {
-    // placeholder
-  },
   userHasRole,
   userLoggedIn
 }
