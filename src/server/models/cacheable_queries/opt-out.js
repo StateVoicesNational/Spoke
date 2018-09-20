@@ -6,8 +6,8 @@ import { assignmentCache } from './assignment'
 
 const orgCacheKey = (orgId) => (
 !!process.env.OPTOUTS_SHARE_ALL_ORGS
- ? `${process.env.CACHE_PREFIX | ''}optouts`
- : `${process.env.CACHE_PREFIX | ''}optouts-${orgId}`)
+ ? `${process.env.CACHE_PREFIX || ''}optouts`
+ : `${process.env.CACHE_PREFIX || ''}optouts-${orgId}`)
 
 const sharingOptOuts = !!process.env.OPTOUTS_SHARE_ALL_ORGS
 
@@ -29,8 +29,8 @@ const loadMany = async (organizationId) => {
   }
 }
 
-export const optOutCache = {
-  clearQuery: async ({ cell, organizationId }) => {
+const optOutCache = {
+  clearQuery: async ({cell, organizationId}) => {
     // remove cache by organization
     // (if no cell is present, then clear whole query of organization)
     if (r.redis) {
@@ -113,3 +113,5 @@ export const optOutCache = {
   },
   loadMany
 }
+
+export default optOutCache
