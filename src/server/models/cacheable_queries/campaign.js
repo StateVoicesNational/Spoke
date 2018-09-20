@@ -1,5 +1,5 @@
 import { r, Campaign } from '../../models'
-import { organizationCache } from './organization'
+import organizationCache from './organization'
 import { modelWithExtraProps } from './lib'
 
 // This should be cached data for a campaign that will not change

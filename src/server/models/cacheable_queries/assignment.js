@@ -1,5 +1,5 @@
 import { r, Assignment } from '../../models'
-import { campaignCache } from './campaign'
+import campaignCache from './campaign'
 import { loadAssignmentContacts, getContacts, optOutContact } from './assignment-contacts'
 
 // ## KEY

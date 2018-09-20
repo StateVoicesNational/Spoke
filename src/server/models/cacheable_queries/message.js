@@ -1,5 +1,5 @@
 import { r, Message } from '../../models'
-import { campaignContactCache } from './campaign-contact'
+import campaignContactCache from './campaign-contact'
 
 // QUEUE
 // messages-<contactId>
@@ -104,7 +104,7 @@ const query = async (queryObj) => {
   return dbResult
 }
 
-export const messageCache = {
+const messageCache = {
   clearQuery: async (queryObj) => {
     if (r.redis) {
       const contactId = await contactIdFromOther(queryObj)
@@ -176,3 +176,5 @@ export const messageCache = {
   },
   loadMany
 }
+
+export default messageCache
