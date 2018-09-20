@@ -127,9 +127,9 @@ class Settings extends React.Component {
             <div className={css(styles.section)}>
             <div className={css(styles.section)}>
               <Toggle
-                toggled={organization.turnTextingOff}
-                label={(organization.turnTextingOff ? 'TEXTING TURNED OFF FOR ALL CAMPAIGNS' : 'TEXTING TURNED ON FOR ALL CAMPAIGNS')}
-                onToggle={async (event, isToggled) => await this.props.mutations.turnTextingOff(isToggled)}
+                toggled={organization.textingTurnedOff}
+                label={(organization.textingTurnedOff ? 'TEXTING TURNED OFF FOR ALL CAMPAIGNS' : 'TEXTING TURNED ON FOR ALL CAMPAIGNS')}
+                onToggle={async (event, isToggled) => await this.props.mutations.textingTurnedOff(isToggled)}
               />
             </div>
             <GSForm
@@ -246,17 +246,17 @@ const mapMutationsToProps = ({ ownProps }) => ({
       optOutMessage
     }
   }),
-  turnTextingOff: (turnTextingOff) => ({
+  textingTurnedOff: (textingTurnedOff) => ({
     mutation: gql`
-      mutation turnTextingOff($turnTextingOff: Boolean!, $organizationId: String!) {
-        turnTextingOff(turnTextingOff: $turnTextingOff, organizationId: $organizationId) {
+      mutation textingTurnedOff($textingTurnedOff: Boolean!, $organizationId: String!) {
+        textingTurnedOff(textingTurnedOff: $textingTurnedOff, organizationId: $organizationId) {
           id
-          turnTextingOff
+          textingTurnedOff
         }
       }`,
     variables: {
       organizationId: ownProps.params.organizationId,
-      turnTextingOff
+      textingTurnedOff
     }
   }),
 
@@ -272,7 +272,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
         textingHoursStart
         textingHoursEnd
         optOutMessage
-        turnTextingOff
+        textingTurnedOff
       }
     }`,
     variables: {

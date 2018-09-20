@@ -518,16 +518,16 @@ const rootMutations = {
 
       return await Organization.get(organizationId)
     },
-    turnTextingOff: async (
+    textingTurnedOff: async (
       _,
-      { organizationId, turnTextingOff },
+      { organizationId, textingTurnedOff },
       { user }
     ) => {
       await accessRequired(user, organizationId, 'OWNER')
 
       const organization = await Organization.get(organizationId)
       const featuresJSON = JSON.parse(organization.features || '{}')
-      featuresJSON.texting_turned_off = turnTextingOff
+      featuresJSON.texting_turned_off = textingTurnedOff
       organization.features = JSON.stringify(featuresJSON)
 
       await organization.save()

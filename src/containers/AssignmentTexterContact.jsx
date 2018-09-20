@@ -971,7 +971,7 @@ const mapMutationsToProps = () => ({
             text
             isFromContact
           }
-          resultStatus
+          textingTurnedOff
         }
       }
     `,

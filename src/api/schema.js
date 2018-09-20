@@ -193,7 +193,7 @@ const rootSchema = `
     updateTextingHours( organizationId: String!, textingHoursStart: Int!, textingHoursEnd: Int!): Organization
     updateTextingHoursEnforcement( organizationId: String!, textingHoursEnforced: Boolean!): Organization
     updateOptOutMessage( organizationId: String!, optOutMessage: String!): Organization
-    turnTextingOff( organizationId: String!, turnTextingOff: Boolean!): Organization
+    textingTurnedOff( organizationId: String!, textingTurnedOff: Boolean!): Organization
     bulkSendMessages(assignmentId: Int!): [CampaignContact]
     sendMessage(message:MessageInput!, campaignContactId:String!): CampaignContact,
     createOptOut(optOut:OptOutInput!, campaignContactId:String!):CampaignContact,
