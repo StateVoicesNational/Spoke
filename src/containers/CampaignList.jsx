@@ -141,10 +141,10 @@ class CampaignList extends React.Component {
         icon={<SpeakerNotesIcon />}
       />
     ) : (
-        <List>
-          {campaigns.map((campaign) => this.renderRow(campaign))}
-        </List>
-      )
+      <List>
+        {campaigns.campaigns.map((campaign) => this.renderRow(campaign))}
+      </List>
+    )
   }
 }
 
@@ -188,7 +188,11 @@ const mapQueriesToProps = ({ ownProps }) => ({
       organization(id: $organizationId) {
         id
         campaigns(campaignsFilter: $campaignsFilter) {
-          ${campaignInfoFragment}
+          ... on CampaignsList{
+            campaigns{
+              ${campaignInfoFragment}
+            }
+          }
         }
       }
     }`,

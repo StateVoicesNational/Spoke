@@ -157,7 +157,7 @@ const rootSchema = `
   type PageInfo {
     limit: Int!
     offset: Int!
-    next: Int!
+    next: Int
     previous: Int
     total: Int!
   }
@@ -176,6 +176,8 @@ const rootSchema = `
     organizations: [Organization]
     availableActions(organizationId:String!): [Action]
     conversations(cursor:OffsetLimitCursor!, organizationId:String!, campaignsFilter:CampaignsFilter, assignmentsFilter:AssignmentsFilter, contactsFilter:ContactsFilter, utc:String): PaginatedConversations
+    campaigns(organizationId:String!, cursor:OffsetLimitCursor, campaignsFilter: CampaignsFilter): CampaignsReturn
+    people(organizationId:String!, cursor:OffsetLimitCursor, campaignsFilter:CampaignsFilter, role: String): UsersReturn
   }
 
   type RootMutation {
