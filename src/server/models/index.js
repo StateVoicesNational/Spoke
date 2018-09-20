@@ -23,7 +23,7 @@ import Log from './log'
 import thinky from './thinky'
 import datawarehouse from './datawarehouse'
 
-import { cacheableData } from './cacheable_queries'
+import cacheableData from './cacheable_queries'
 
 function createLoader(model, opts) {
   const idKey = (opts && opts.idKey) || 'id'

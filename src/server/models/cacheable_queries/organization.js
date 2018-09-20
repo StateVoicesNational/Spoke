@@ -2,7 +2,7 @@ import { r } from '../../models'
 
 const cacheKey = (orgId) => `${process.env.CACHE_PREFIX || ''}org-${orgId}`
 
-export const organizationCache = {
+const organizationCache = {
   clear: async (id) => {
     if (r.redis) {
       await r.redis.delAsync(cacheKey(id))
