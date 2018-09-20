@@ -1,5 +1,5 @@
 import { r, getMessageServiceSid, CampaignContact } from '../../models'
-import { optOutCache } from './opt-out'
+import optOutCache from './opt-out'
 import { modelWithExtraProps } from './lib'
 import { updateAssignmentContact } from './assignment-contacts'
 

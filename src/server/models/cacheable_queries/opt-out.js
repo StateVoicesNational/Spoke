@@ -1,5 +1,5 @@
 import { r, OptOut } from '../../models'
-import { assignmentCache } from './assignment'
+import assignmentCache from './assignment'
 
 // STRUCTURE
 // maybe HASH by organization, so optout-<organization_id> has a <cell> key
