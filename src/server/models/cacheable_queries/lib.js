@@ -1,12 +1,13 @@
 
 
-export const modelWithExtraProps = (obj, model, props) => {
+export const modelWithExtraProps = (obj, Model, props) => {
+  const newObj = { ...obj }
   const extraProps = {}
   props.forEach(prop => {
-    extraProps[prop] = obj[prop]
-    delete obj[prop]
+    extraProps[prop] = newObj[prop]
+    delete newObj[prop]
   })
-  const newModel = new model(obj)
+  const newModel = new Model(newObj)
   props.forEach(prop => {
     newModel[prop] = extraProps[prop]
   })
