@@ -38,7 +38,7 @@ export const getContacts = async (assignment, contactsFilter, organization, camp
     return contactQueryArgs.result
   }
   const cachedResult = await cachedContactsQuery(contactQueryArgs)
-  console.log('getContacts cached', justCount, justIds, assignment.id, cachedResult)
+  //console.log('getContacts cached', justCount, justIds, assignment.id, cachedResult)
   return (cachedResult !== null
           ? cachedResult
           : dbContactsQuery(contactQueryArgs))
@@ -201,6 +201,7 @@ export const cachedContactsQuery = async ({assignmentId, timezoneOffsets, messag
       existsQuery = existsQuery.exists(key)
       resultQuery = resultQuery[cmd](key, range[0], range[1])
     })
+    //console.log('redis assignment query', assignmentId, timezoneOffsets, range)
     const existsResult = await existsQuery.execAsync()
     if (existsResult.reduce((a,b) => a && b, true)) {
       const redisResult = await resultQuery.execAsync()
@@ -290,10 +291,12 @@ export const updateAssignmentContact = async (contact, newStatus) => {
     .exists(key)
     [cmd](key, range[0], range[1], 'WITHSCORES', 'LIMIT', 0, 1)
     .execAsync()
+  //console.log('updateassignmentcontact', contact.id, newStatus, range, cmd, key, exists, curMax)
   if (exists) {
-    const newScore = (curMax
-                      ? curMax + (newStatus === 'convo' ? -1 : 1)
+    const newScore = (curMax && curMax.length
+                      ? curMax[0] + (newStatus === 'convo' ? -1 : 1)
                       : (newStatus === 'convo' ? range[1] : range[0]))
+    //console.log('updateassignment', newScore, await r.redis.zrangeAsync(key, 0, -1, 'WITHSCORES'))
     await r.redis.zaddAsync([key, newScore, contact.id])
   }
 }

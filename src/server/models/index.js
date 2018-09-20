@@ -99,13 +99,13 @@ function getMessageServiceSid(organization) {
 }
 
 const createLoaders = () => ({
-  assignment: createLoader(Assignment),
+  assignment: createLoader(Assignment, {cacheObj: cacheableData.assignment}),
   campaign: createLoader(Campaign, {cacheObj: cacheableData.campaign}),
   invite: createLoader(Invite),
   organization: createLoader(Organization, {cacheObj: cacheableData.organization}),
   user: createLoader(User),
   interactionStep: createLoader(InteractionStep),
-  campaignContact: createLoader(CampaignContact),
+  campaignContact: createLoader(CampaignContact, {cacheObj: cacheableData.campaignContact}),
   zipCode: createLoader(ZipCode, {idKey: 'zip'}),
   log: createLoader(Log),
   cannedResponse: createLoader(CannedResponse),

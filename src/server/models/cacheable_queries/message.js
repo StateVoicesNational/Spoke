@@ -143,7 +143,8 @@ export const messageCache = {
       contactData.id = (contactData.id || activeCellFound.campaign_contact_id)
       contactData.timezone_offset = (contactData.timezone_offset || activeCellFound.timezone_offset)
       contactData.message_status = (contactData.message_status || activeCellFound.message_status)
-      ['campaign_contact_id', 'assignment_id'].forEach(f => {
+      const updateFields = ['campaign_contact_id', 'assignment_id']
+      updateFields.forEach(f => {
         if (!messageInstance[f]) {
           messageInstance[f] = activeCellFound[f]
         }
