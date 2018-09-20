@@ -67,11 +67,26 @@ class TexterTodoList extends React.Component {
       />
     )
 
+    const textingOff = (
+      <Empty
+        title='Texting is Currently Disabled For This Organization.'
+        icon={<Check />}
+      />
+    )
+
+    const renderTexterTodosScreen = () => {
+      if(renderedTodos.length === 0) {
+        return empty
+      } else if (textingTurnedOff) {
+        return textingOff
+      } else {
+        return renderedTodos
+      }
+    }
+
     return (
       <div>
-        {renderedTodos.length === 0  || textingTurnedOff ?
-          empty : renderedTodos
-        }
+        {renderTexterTodosScreen()}
       </div>
     )
   }
