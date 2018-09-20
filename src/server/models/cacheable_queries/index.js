@@ -14,7 +14,7 @@ const cacheableData = {
   cannedResponse: cannedResponseCache,
   message: messageCache,
   optOut: optOutCache,
-  organization: organizationCache,
+  organization: organizationCache
 }
 
 export {
