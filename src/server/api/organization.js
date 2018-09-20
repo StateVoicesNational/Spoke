@@ -38,6 +38,7 @@ export const resolvers = {
     },
     threeClickEnabled: (organization) => organization.features.indexOf('threeClick') !== -1,
     textingHoursEnforced: (organization) => organization.texting_hours_enforced,
+    optOutMessage: (organization) => (organization.features && organization.features.indexOf('opt_out_message') !== -1 ? JSON.parse(organization.features).opt_out_message : process.env.OPT_OUT_MESSAGE) || 'I\'m opting you out of texts immediately. Have a great day.',
     textingHoursStart: (organization) => organization.texting_hours_start,
     textingHoursEnd: (organization) => organization.texting_hours_end
   }

@@ -11,6 +11,7 @@ export const schema = `
     people(role: String): [User]
     optOuts: [OptOut]
     threeClickEnabled: Boolean
+    optOutMessage: String
     textingHoursEnforced: Boolean
     textingHoursStart: Int
     textingHoursEnd: Int
