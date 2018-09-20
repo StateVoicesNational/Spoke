@@ -168,6 +168,6 @@ export const resolvers = {
       // fake ID so we don't need to look up existance
       return (isOptedOut ? { id: 'optout' } : null)
     },
-    resultStatus: campaignContact => campaignContact.resultStatus || null
+    textingTurnedOff: campaignContact => campaignContact.textingTurnedOff || null
   }
 }

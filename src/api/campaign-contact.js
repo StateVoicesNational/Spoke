@@ -34,6 +34,6 @@ export const schema = `
     interactionSteps: [InteractionStep]
     messageStatus: String
     assignmentId: String
-    resultStatus: String
+    textingTurnedOff: String
   }
 `

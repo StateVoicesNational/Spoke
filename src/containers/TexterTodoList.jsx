@@ -49,11 +49,17 @@ class TexterTodoList extends React.Component {
     }
   }
 
+  textingTurnedOffForOrganization(todos){
+    const orgDataForFirstTodo = todos[0].campaign.organization
+    return (todos[0].campaign.organization && orgDataForFirstTodo.textingTurnedOff ? true : false)
+  }
+
   render() {
     this.termsAgreed()
     const todos = this.props.data.currentUser.todos
     const renderedTodos = this.renderTodoList(todos)
-
+    const textingTurnedOff = this.textingTurnedOffForOrganization(todos)
+    
     const empty = (
       <Empty
         title='You have nothing to do!'
@@ -63,7 +69,7 @@ class TexterTodoList extends React.Component {
 
     return (
       <div>
-        {renderedTodos.length === 0 ?
+        {renderedTodos.length === 0  || textingTurnedOff ?
           empty : renderedTodos
         }
       </div>
@@ -95,7 +101,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
             primaryColor
             logoImageUrl
             organization {
-              turnTextingOff
+              textingTurnedOff
             }
           }
           maxContacts
