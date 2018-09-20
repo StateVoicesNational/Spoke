@@ -90,7 +90,7 @@ const getMessageStatus = async (id, contactObj) => {
   }
 }
 
-export const campaignContactCache = {
+const campaignContactCache = {
   clear: async (id) => {
     if (r.redis) {
       await r.redis.delAsync(cacheKey(id), messageStatusKey(id))
@@ -215,3 +215,5 @@ export const campaignContactCache = {
       .update({ message_status: newStatus, updated_at: 'now()' })
   }
 }
+
+export default campaignContactCache
