@@ -23,7 +23,7 @@ const InteractionStep = thinky.createModel('interaction_step', type.object().sch
   answer_option: optionalString(), // (was 'value')
   answer_actions: optionalString(),
   is_deleted: type.boolean().default(false).allowNull(false)
-}).allowExtra(false), {noAutoCreation: true})
+}).allowExtra(false))
 
 InteractionStep.ensureIndex('campaign_id')
 InteractionStep.ensureIndex('parent_interaction_id')

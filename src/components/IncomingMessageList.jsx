@@ -12,7 +12,7 @@ import DataTables from 'material-ui-datatables'
 import { MESSAGE_STATUSES } from '../components/IncomingMessageFilter'
 
 function prepareDataTableData(conversations) {
-  return conversations.map(conversation => {
+  const tableData = conversations.map(conversation => {
     return {
       campaignTitle: conversation.campaign.title,
       texter: conversation.texter.displayName,
@@ -21,6 +21,7 @@ function prepareDataTableData(conversations) {
       messages: conversation.contact.messages
     }
   })
+  return tableData
 }
 
 function prepareSelectedRowsData(conversations, rowsSelected) {
@@ -55,22 +56,6 @@ export class IncomingMessageList extends Component {
 
     this.handleOpenConversation = this.handleOpenConversation.bind(this)
     this.handleCloseConversation = this.handleCloseConversation.bind(this)
-  }
-
-  componentDidUpdate(prevProps) {
-    let previousPageInfo = {total:0}
-    if (prevProps.conversations.conversations) {
-      previousPageInfo=prevProps.conversations.conversations.pageInfo
-    }
-
-    let pageInfo = {total:0}
-    if (this.props.conversations.conversations) {
-      pageInfo = this.props.conversations.conversations.pageInfo
-    }
-
-    if (previousPageInfo.total !== pageInfo.total || (!previousPageInfo && pageInfo)) {
-      this.props.onConversationCountChanged(pageInfo.total)
-    }
   }
 
   prepareTableColumns() {
@@ -261,7 +246,6 @@ IncomingMessageList.propTypes = {
   onPageChanged: type.func,
   onPageSizeChanged: type.func,
   onConversationSelected: type.func,
-  onConversationCountChanged: type.func,
   utc: type.string
 }
 

@@ -86,11 +86,7 @@ export function getContacts(assignment, contactsFilter, organization, campaign, 
   }
 
   if (!forCount) {
-    if (contactsFilter && contactsFilter.messageStatus === 'convo') {
-      query = query.orderByRaw('message_status DESC, updated_at DESC')
-    } else {
-      query = query.orderByRaw('message_status DESC, updated_at')
-    }
+    query = query.orderByRaw('message_status DESC, updated_at')
   }
 
   return query

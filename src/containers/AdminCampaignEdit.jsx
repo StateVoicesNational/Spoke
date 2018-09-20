@@ -58,7 +58,6 @@ const campaignInfoFragment = `
     title
     text
   }
-  editors
 `
 
 class AdminCampaignEdit extends React.Component {
@@ -330,7 +329,7 @@ class AdminCampaignEdit extends React.Component {
       checkCompleted: () => this.state.campaignFormValues.interactionSteps.length > 0,
       blocksStarting: true,
       expandAfterCampaignStarts: true,
-      expandableBySuperVolunteers: true,
+      expandableBySuperVolunteers: false,
       extraProps: {
         customFields: this.props.campaignData.campaign.customFields,
         availableActions: this.props.availableActionsData.availableActions
@@ -380,14 +379,6 @@ class AdminCampaignEdit extends React.Component {
     }
   }
 
-  renderCurrentEditors() {
-    const { editors } = this.props.campaignData.campaign
-    if (editors) {
-      return (<div>This campaign is being edited by: {editors}</div>)
-    }
-    return ''
-  }
-
   renderCampaignFormSection(section, forceDisable) {
     let shouldDisable = forceDisable || (!this.isNew() && this.checkSectionSaved(section))
     const ContentComponent = section.content
@@ -415,9 +406,8 @@ class AdminCampaignEdit extends React.Component {
         }}
       >
         This campaign is running!
-        {this.renderCurrentEditors()}
       </div>
-    ) :
+      ) :
       this.renderStartButton()
 
     return (
@@ -473,7 +463,6 @@ class AdminCampaignEdit extends React.Component {
           }}
         >
           {isCompleted ? 'Your campaign is all good to go! >>>>>>>>>' : 'You need to complete all the sections below before you can start this campaign'}
-          {this.renderCurrentEditors()}
         </div>
         <div>
           {this.props.campaignData.campaign.isArchived ? (

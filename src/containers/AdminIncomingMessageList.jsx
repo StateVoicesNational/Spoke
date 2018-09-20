@@ -49,14 +49,12 @@ export class AdminIncomingMessageList extends Component {
       reassignmentTexters: [],
       campaignTexters: [],
       includeArchivedCampaigns: false,
-      includeActiveCampaigns: true,
-      conversationCount: 0
+      includeActiveCampaigns: true
     }
 
     this.handleCampaignChanged = this.handleCampaignChanged.bind(this)
     this.handleMessageFilterChange = this.handleMessageFilterChange.bind(this)
     this.handleReassignRequested = this.handleReassignRequested.bind(this)
-    this.handleReassignAllMatchingRequested = this.handleReassignAllMatchingRequested.bind(this)
     this.handlePageChange = this.handlePageChange.bind(this)
     this.handlePageSizeChange = this.handlePageSizeChange.bind(this)
     this.handleRowSelection = this.handleRowSelection.bind(this)
@@ -74,7 +72,6 @@ export class AdminIncomingMessageList extends Component {
     this.handleActiveCampaignsToggled = this.handleActiveCampaignsToggled.bind(
       this
     )
-    this.conversationCountChanged = this.conversationCountChanged.bind(this)
   }
 
   shouldComponentUpdate(dummy, nextState) {
@@ -126,20 +123,6 @@ export class AdminIncomingMessageList extends Component {
     await this.props.mutations.reassignCampaignContacts(
       this.props.params.organizationId,
       this.state.campaignIdsContactIds,
-      newTexterUserId
-    )
-    this.setState({
-      utc: Date.now().toString(),
-      needsRender: true
-    })
-  }
-
-  async handleReassignAllMatchingRequested(newTexterUserId) {
-    await this.props.mutations.bulkReassignCampaignContacts(
-      this.props.params.organizationId,
-      this.state.campaignsFilter || {},
-      this.state.assignmentsFilter || {},
-      this.state.contactsFilter || {},
       newTexterUserId
     )
     this.setState({
@@ -221,13 +204,6 @@ export class AdminIncomingMessageList extends Component {
     })
   }
 
-  conversationCountChanged(conversationCount) {
-    this.setState({
-      conversationCount
-    })
-
-  }
-
   render() {
     const cursor = {
       offset: this.state.page * this.state.pageSize,
@@ -273,8 +249,6 @@ export class AdminIncomingMessageList extends Component {
             <IncomingMessageActions
               people={this.state.reassignmentTexters}
               onReassignRequested={this.handleReassignRequested}
-              onReassignAllMatchingRequested={this.handleReassignAllMatchingRequested}
-              conversationCount={this.state.conversationCount}
             />
             <br />
             <IncomingMessageList
@@ -287,7 +261,6 @@ export class AdminIncomingMessageList extends Component {
               onPageChanged={this.handlePageChange}
               onPageSizeChanged={this.handlePageSizeChange}
               onConversationSelected={this.handleRowSelection}
-              onConversationCountChanged={this.conversationCountChanged}
             />
           </div>
         )}
@@ -341,35 +314,6 @@ const mapMutationsToProps = () => ({
       }
     `,
     variables: { organizationId, campaignIdsContactIds, newTexterUserId }
-  }),
-  bulkReassignCampaignContacts: (
-    organizationId,
-    campaignsFilter,
-    assignmentsFilter,
-    contactsFilter,
-    newTexterUserId
-  ) => ({
-    mutation: gql`
-        mutation bulkReassignCampaignContacts(
-        $organizationId: String!
-        $contactsFilter: ContactsFilter
-        $campaignsFilter: CampaignsFilter
-        $assignmentsFilter: AssignmentsFilter
-        $newTexterUserId: String!
-        ) {
-            bulkReassignCampaignContacts(
-                organizationId: $organizationId
-                contactsFilter: $contactsFilter,
-                campaignsFilter: $campaignsFilter,
-                assignmentsFilter: $assignmentsFilter,
-                newTexterUserId: $newTexterUserId
-            ) {
-                campaignId
-                assignmentId
-            }
-        }
-    `,
-    variables: { organizationId, campaignsFilter, assignmentsFilter, contactsFilter, newTexterUserId }
   })
 })
 

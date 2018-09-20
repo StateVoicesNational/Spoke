@@ -10,9 +10,9 @@ const UserOrganization = thinky.createModel('user_organization', type.object().s
   user_id: requiredString(),
   organization_id: requiredString(),
   role: requiredString().enum('OWNER', 'ADMIN', 'SUPERVOLUNTEER', 'TEXTER')
-}).allowExtra(false), { noAutoCreation: true,
-                        dependencies: [User, Organization]
-                      })
+}, {
+  dependencies: [User, Organization]
+}).allowExtra(false))
 
 UserOrganization.ensureIndex('user_id')
 UserOrganization.ensureIndex('organization_id')

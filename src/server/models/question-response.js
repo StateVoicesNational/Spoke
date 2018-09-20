@@ -11,9 +11,9 @@ const QuestionResponse = thinky.createModel('question_response', type.object().s
   interaction_step_id: requiredString(),
   value: requiredString(),
   created_at: timestamp()
-}).allowExtra(false), { noAutoCreation: true,
-                        dependencies: [CampaignContact, InteractionStep]
-                      })
+}, {
+  dependencies: [CampaignContact, InteractionStep]
+}).allowExtra(false))
 
 QuestionResponse.ensureIndex('campaign_contact_id')
 QuestionResponse.ensureIndex('interaction_step_id')

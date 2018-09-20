@@ -804,9 +804,6 @@ export class AssignmentTexterContact extends React.Component {
 
   renderBottomFixedSection() {
     const { optOutDialogOpen } = this.state
-    const { data } = this.props
-    const { contact } = data
-    const { messageStatus } = contact
 
     const message = (optOutDialogOpen) ? '' : (
       <div className={css(styles.messageField)}>
@@ -815,7 +812,7 @@ export class AssignmentTexterContact extends React.Component {
           schema={this.messageSchema}
           value={{ messageText: this.state.messageText }}
           onSubmit={this.handleMessageFormSubmit}
-          onChange={( messageStatus === 'needsMessage' ? '' : this.handleMessageFormChange )}
+          onChange={this.handleMessageFormChange}
         >
           <Form.Field
             className={css(styles.textField)}

@@ -17,4 +17,3 @@ coverage/
 *sqlite
 *.vscode
 *.rdb
-package-lock.json
