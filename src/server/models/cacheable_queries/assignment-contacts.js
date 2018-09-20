@@ -3,7 +3,7 @@ import { r } from '../index'
 
 // This is a library for ./assignment.js consolidating all functions related to caching/querying assignment-contacts
 
-const assignmentContactsKey = (id, tz) => `${process.env.CACHE_PREFIX||""}assignmentcontacts-${id}-${tz}`
+const assignmentContactsKey = (id, tz) => `${process.env.CACHE_PREFIX || ''}assignmentcontacts-${id}-${tz}`
 
 // TODO: dynamic assignment (updating assignment-contacts with dynamically assigned contacts)
 // TODO: updating message status
@@ -21,7 +21,7 @@ const msgStatusRange = {
   'needsMessageOrResponse': [1, 19999999],
   'convo': [20000000, 29999999],
   'messaged': [30000000, 39999999],
-  'closed': [40000000, 49999999],
+  'closed': [40000000, 49999999]
 }
 
 const filterMessageStatuses = (messageStatusFilter) => {
@@ -53,7 +53,7 @@ export const dbGetContactsQuery = (assignment, contactsFilter, organization, cam
 
 export const optOutContact = async (assignmentId, contactId, campaign) => {
   if (r.redis && campaign.contactTimezones) {
-    for (let i=0, l=campaign.contactTimezones.length; i<l; i++) {
+    for (let i = 0, l = campaign.contactTimezones.length; i < l; i++) {
       const tz = campaign.contactTimezones[i]
       // XX only changes the score if it already exists
       await r.redis.zaddAsync(assignmentContactsKey(assignmentId, tz), 'XX', 0, contactId)
@@ -82,7 +82,7 @@ export const getContactQueryArgs = (assignmentId, contactsFilter, organization, 
   }
 
   if (!includePastDue && pastDue && contactsFilter.messageStatus === 'needsMessage') {
-    return {result: (justCount ? 0 : [])}
+    return { result: (justCount ? 0 : []) }
   }
 
   let timezoneOffsets = null
@@ -98,14 +98,14 @@ export const getContactQueryArgs = (assignmentId, contactsFilter, organization, 
       if (addMissingTz(defaultTimezoneIsBetweenTextingHours(config))) {
         queryOffsets.push('')
       }
-      
+
       let finalQueryOffsets = queryOffsets
       if (campaign.contactTimezones) {
         finalQueryOffsets = queryOffsets.filter(offset => campaign.contactTimezones.indexOf(offset) !== -1)
       }
 
       if (finalQueryOffsets.length === 0) {
-        return {result: (justCount ? 0 : [])}
+        return { result: (justCount ? 0 : []) }
       }
       timezoneOffsets = finalQueryOffsets
     }
@@ -129,7 +129,7 @@ export const getContactQueryArgs = (assignmentId, contactsFilter, organization, 
   }
 }
 
-export const dbContactsQuery = ({assignmentId, timezoneOffsets, messageStatuses, isOptedOutFilter, forCount, justCount, justIds}) => {
+export const dbContactsQuery = ({ assignmentId, timezoneOffsets, messageStatuses, isOptedOutFilter, forCount, justCount, justIds }) => {
   let query = r.knex('campaign_contact').where('assignment_id', assignmentId)
   if (timezoneOffsets) {
     query = query.whereIn('timezone_offset', timezoneOffsets)
@@ -159,7 +159,7 @@ export const dbContactsQuery = ({assignmentId, timezoneOffsets, messageStatuses,
   }
 }
 
-export const cachedContactsQuery = async ({assignmentId, timezoneOffsets, messageStatuses, isOptedOutFilter, justCount, justIds}) => {
+export const cachedContactsQuery = async ({ assignmentId, timezoneOffsets, messageStatuses, isOptedOutFilter, justCount, justIds }) => {
   if (r.redis
       // Below are restrictions on what we support from the cache.
       // Narrowing it to these cases (which are actually used, and others aren't)
@@ -203,14 +203,14 @@ export const cachedContactsQuery = async ({assignmentId, timezoneOffsets, messag
     })
     //console.log('redis assignment query', assignmentId, timezoneOffsets, range)
     const existsResult = await existsQuery.execAsync()
-    if (existsResult.reduce((a,b) => a && b, true)) {
+    if (existsResult.reduce((a, b) => a && b, true)) {
       const redisResult = await resultQuery.execAsync()
       if (justCount) {
-        return redisResult.reduce((i,j) => i + j, 0)
+        return redisResult.reduce((i, j) => i + j, 0)
       } else if (justIds) {
         return redisResult
-          .reduce((m,n) => [...m, ...n], [])
-          .map(id => ({id: id}))
+          .reduce((m, n) => [...m, ...n], [])
+          .map(id => ({ id }))
       }
     }
   }
@@ -231,7 +231,7 @@ export const loadAssignmentContacts = async (assignmentId, organizationId, timez
             r.knex.raw('MAX(message.created_at) as latest_message'))
     .leftJoin('message', function () {
       return this.on('message.assignment_id', '=', 'campaign_contact.assignment_id')
-        .andOn('message.contact_number', '=', 'campaign_contact.cell')})
+        .andOn('message.contact_number', '=', 'campaign_contact.cell') })
     .leftJoin('opt_out', function () {
       let joinOn = this.on('opt_out.cell', '=', 'campaign_contact.cell')
       return (!sharingOptOuts
@@ -272,7 +272,7 @@ export const loadAssignmentContacts = async (assignmentId, organizationId, timez
     tz.contacts.push(getScore(c, tzObj), c.cid)
   })
   for (const tz in tzs) {
-    const contacts =  tzs[tz].contacts
+    const contacts = tzs[tz].contacts
     const key = assignmentContactsKey(assignmentId, tz)
     await r.redis.multi()
       .del(key)
