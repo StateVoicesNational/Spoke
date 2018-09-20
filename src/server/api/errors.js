@@ -1,6 +1,5 @@
 import { GraphQLError } from 'graphql/error'
 import { r, cacheableData } from '../models'
-import { userHasRole } from '../models/cacheable_queries'
 
 
 const accessHierarchy = ['TEXTER', 'SUPERVOLUNTEER', 'ADMIN', 'OWNER']
