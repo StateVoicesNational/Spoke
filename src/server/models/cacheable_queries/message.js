@@ -8,11 +8,12 @@ import campaignContactCache from './campaign-contact'
 
 const cacheKey = (contactId) => `${process.env.CACHE_PREFIX || ''}messages-${contactId}`
 
-const loadMany = async ({ campaignId, contactId }) => {
-  // TODO: finish loadMany trigger on post-expiration use-cases (i.e. 'next day' we keep going)
-  if (r.redis) {
-  }
-}
+// TODO: loadMany trigger on post-expiration use-cases (i.e. 'next day' we keep going)
+const loadMany = async () => {}
+// const loadMany = async ({ campaignId, contactId }) => {
+//   if (r.redis) {
+//   }
+// }
 
 const dbQuery = ({ campaignId, contactId }) => {
   const cols = Object.keys(Message.fields).filter(f => f !== 'service_response').map(f => `message.${f}`)
@@ -165,10 +166,12 @@ const messageCache = {
     // eslint-disable-next-line no-param-reassign
     messageInstance.created_at = new Date()
     await saveMessageCache(contactData.id, [messageInstance], true)
-    const newStatus = (messageInstance.is_from_contact
-                       ? 'needsResponse'
-                       : (contactData.message_status === 'needsResponse'
-                          ? 'convo' : 'messaged'))
+
+    let newStatus = 'needsResponse'
+    if (!messageInstance.is_from_contact) {
+      newStatus = (contactData.message_status === 'needsResponse'
+                   ? 'convo' : 'messaged')
+    }
     await campaignContactCache.updateStatus(
       contactData, newStatus
     )

@@ -37,20 +37,6 @@ const messageStatusKey = async (id) => `${process.env.CACHE_PREFIX || ''}contact
 // allows a lookup of contact_id, assignment_id, and timezone_offset by cell+messageservice_sid
 const cellTargetKey = async (cell, messageServiceSid) => `${process.env.CACHE_PREFIX || ''}cell-${cell}-${messageServiceSid}`
 
-const saveCacheRecord = async (dbRecord, organization, messageServiceSid) => {
-  if (r.redis) {
-    // basic contact record
-    const contactCacheObj = generateCacheRecord(dbRecord, organization.id, messageServiceSid)
-    // console.log('generated contact', contactCacheObj)
-    await r.redis.setAsync(cacheKey(dbRecord.id), JSON.stringify(contactCacheObj))
-    // TODO:
-    //   messageStatus-<cell>
-  }
-  // NOT INCLUDED:
-  // - messages <cell><message_service_sid>
-  // - questionResponseValues <contact_id>
-}
-
 const generateCacheRecord = (dbRecord, organizationId, messageServiceSid) => ({
   // This should be contactinfo that
   // never needs to be updated by an action of the texter or contact
@@ -74,6 +60,20 @@ const generateCacheRecord = (dbRecord, organizationId, messageServiceSid) => ({
   state: dbRecord.state
 })
 
+const saveCacheRecord = async (dbRecord, organization, messageServiceSid) => {
+  if (r.redis) {
+    // basic contact record
+    const contactCacheObj = generateCacheRecord(dbRecord, organization.id, messageServiceSid)
+    // console.log('generated contact', contactCacheObj)
+    await r.redis.setAsync(cacheKey(dbRecord.id), JSON.stringify(contactCacheObj))
+    // TODO:
+    //   messageStatus-<cell>
+  }
+  // NOT INCLUDED:
+  // - messages <cell><message_service_sid>
+  // - questionResponseValues <contact_id>
+}
+
 const getMessageStatus = async (id, contactObj) => {
   if (contactObj && contactObj.message_status) {
     return contactObj.message_status
@@ -85,9 +85,7 @@ const getMessageStatus = async (id, contactObj) => {
     }
   }
   const [contact] = await r.knex('campaign_contact').select('message_status').where('id', id)
-  if (contact) {
-    return contact.message_status
-  }
+  return (contact && contact.message_status)
 }
 
 const campaignContactCache = {
@@ -159,17 +157,17 @@ const campaignContactCache = {
       const cellData = await r.redis.getAsync(
         cellTargetKey(cell, messageServiceSid))
       if (cellData) {
+        // eslint-disable-next-line camelcase
         const [campaign_contact_id, assignment_id, timezone_offset] = cellData.split(':')
-        const message_status = await getMessageStatus(campaign_contact_id)
         return {
           campaign_contact_id,
           assignment_id,
           timezone_offset,
-          message_status
+          message_status: await getMessageStatus(campaign_contact_id)
         }
       }
       if (bailWithoutCache) {
-        return
+        return false
       }
     }
     const [lastMessage] = await r.knex('message')
@@ -178,7 +176,7 @@ const campaignContactCache = {
         is_from_contact: false,
         service
       })
-      .where(function () {
+      .where(function subquery() {
         // Allow null for active campaigns immediately after post-migration
         // where messageservice_sid may not have been set yet
         return this.where('messageservice_sid', messageServiceSid)
@@ -196,6 +194,7 @@ const campaignContactCache = {
         // That's ok, because we only need it in the caching case to update assignment info
       }
     }
+    return false
   },
   getMessageStatus,
   updateStatus: async (contact, newStatus) => {

@@ -1,6 +1,8 @@
-import { r, Assignment } from '../../models'
+import { r } from '../../models'
 import campaignCache from './campaign'
 import { loadAssignmentContacts, getContacts, optOutContact } from './assignment-contacts'
+
+// TODO: add user-org-assignment list for user.todos
 
 // ## KEY
 // assignment-<assignmentId>
@@ -74,7 +76,7 @@ const hasAssignment = async (userId, assignmentId) => {
   return Boolean(assignment)
 }
 
-const loadDeep = async (id, yesDeep) => {
+const loadDeep = async (id) => {
   const [assignment] = await r.knex('assignment')
     .select('id', 'user_id', 'campaign_id', 'max_contacts')
     .where('id', id)
@@ -111,7 +113,7 @@ const assignmentCache = {
   reload: loadDeep,
   load: async (id) => {
     if (r.redis) {
-      const assnData = await r.redis.getAsync(assignmentHashKey(assignmentId))
+      const assnData = await r.redis.getAsync(assignmentHashKey(id))
       if (assnData) {
         const assnObj = JSON.parse(assnData)
         return assnObj

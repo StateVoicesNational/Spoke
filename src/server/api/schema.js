@@ -1012,6 +1012,7 @@ const rootMutations = {
       { organizationId, campaignIdsContactIds, newTexterUserId },
       { user }
     ) => {
+      // TODO: update assignment after Assignment.save
       // verify permissions
       await accessRequired(user, organizationId, 'ADMIN', /* superadmin*/ true)
 
