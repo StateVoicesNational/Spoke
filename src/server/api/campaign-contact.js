@@ -1,4 +1,4 @@
-import { CampaignContact, r } from '../models'
+import { CampaignContact, r, cacheableData } from '../models'
 import { mapFieldsToModel } from './lib/utils'
 import { log, getTopMostParent, zipToTimeZone } from '../../lib'
 
@@ -20,11 +20,15 @@ export const resolvers = {
       'cell',
       'zip',
       'customFields',
-      'messageStatus',
       'assignmentId',
       'external_id'
     ], CampaignContact),
-
+    messageStatus: async (campaignContact, _, { loaders }) => {
+      if (campaignContact.message_status) {
+        return campaignContact.message_status
+      }
+      return await cacheableData.campaignContact.getMessageStatus(campaignContact.id)
+    },
     campaign: async (campaignContact, _, { loaders }) => (
       loaders.campaign.load(campaignContact.campaign_id)
     ),
@@ -105,10 +109,16 @@ export const resolvers = {
         // couldn't look up the timezone by zip record, so we load it
         // from the campaign_contact directly if it's there
         const [offset, hasDst] = campaignContact.timezone_offset.split('_')
-        return {
+        const loc = {
           timezone_offset: parseInt(offset, 10),
           has_dst: (hasDst === '1')
         }
+        // From cache
+        if (campaignContact.city) {
+          loc.city = campaignContact.city
+          loc.state = campaignContact.state || undefined
+        }
+        return loc
       }
       const mainZip = campaignContact.zip.split('-')[0]
       const calculated = zipToTimeZone(mainZip)
@@ -124,47 +134,29 @@ export const resolvers = {
       if (campaignContact.message_status === 'needsMessage') {
         return [] // it's the beginning, so there won't be any
       }
-
       if ('messages' in campaignContact) {
         return campaignContact.messages
       }
-
-      const messages = await r.table('message')
-        .getAll(campaignContact.assignment_id, { index: 'assignment_id' })
-        .filter({
-          contact_number: campaignContact.cell
-        })
-        .orderBy('created_at')
-
-      return messages
+      return await cacheableData.message.query({campaignContactId: campaignContact.id})
     },
     optOut: async (campaignContact, _, { loaders }) => {
-
-      if ('opt_out_cell' in campaignContact) {
-        return {
-          cell: campaignContact.opt_out_cell
-        }
+      let isOptedOut = null
+      if (typeof campaignContact.is_opted_out !== 'undefined') {
+        isOptedOut = campaignContact.is_opted_out || campaignContact.opt_out_cell
       } else {
-        const campaign = await loaders.campaign.load(campaignContact.campaign_id)
+        let organizationId = campaignContact.organization_id
+        if (!organizationId) {
+          const campaign = await loaders.campaign.load(campaignContact.campaign_id)
+          organizationId = campaign.organization_id
+        }
 
-        return r.table('opt_out')
-          .getAll(campaignContact.cell, { index: 'cell' })
-          .filter({ organization_id: campaign.organization_id })
-          .limit(1)(0)
-          .default(null)
+        const isOptedOut = await cacheableData.optOut.query({
+          cell: campaignContact.cell,
+          organizationId
+        })
       }
-    },
-    currentInteractionStepId: async (campaignContact) => {
-      const steps = await r.table('interaction_step')
-        .getAll(campaignContact.campaign_id, { index: 'campaign_id' })
-        .filter({ is_deleted: false })
-      return getTopMostParent(steps, true).id
-    },
-    currentInteractionStepScript: async (campaignContact) => {
-      const steps = await r.table('interaction_step')
-        .getAll(campaignContact.campaign_id, { index: 'campaign_id' })
-        .filter({ is_deleted: false })
-      return getTopMostParent(steps, true).script
+      // fake ID so we don't need to look up existance
+      return (isOptedOut ? { id: 'optout' } : null)
     }
   }
 }

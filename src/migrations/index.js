@@ -139,7 +139,49 @@ const migrations = [
       })
       console.log('added user_id column to message table')
     }
-  }
+  },
+  {
+    auto: true, // 12
+    date: '2018-08-25',
+    migrate: async function () {
+      console.log('adding texting hours fields to campaign')
+      await r.knex.schema.alterTable('campaign', (table) => {
+        table.boolean('override_organization_texting_hours').notNullable().default(false)
+        table.boolean('texting_hours_enforced').notNullable().default(true)
+        table.integer('texting_hours_start').notNullable().default(9)
+        table.integer('texting_hours_end').notNullable().default(21)
+        table.string('timezone').notNullable().default('US/Eastern')
+      })
+
+      console.log('added texting hours fields to campaign')
+    }
+  },
+  { auto: true, // 13
+    date: '2018-09-16',
+    migrate: async () => {
+      await r.knex.schema.alterTable('message', (table) => {
+        table.integer('campaign_contact_id')
+          .unsigned()
+          .nullable()
+          .default(null)
+          .index()
+          .references('id')
+          .inTable('campaign_contact')
+        table.string('messageservice_sid')
+          .nullable()
+          .default(null)
+          .index()
+      })
+      await r.knex.schema.alterTable('organization', (table) => {
+        table.string('messageservice_sid')
+          .nullable()
+          .default(null)
+          .index()
+      })
+      console.log('added campaign_contact_id and messageservice_sid columns to message table')
+      console.log('added messageservice_sid column to organization table')
+    }
+  },
   /* migration template
      {auto: true, //if auto is false, then it will block the migration running automatically
       date: '2017-08-23',
