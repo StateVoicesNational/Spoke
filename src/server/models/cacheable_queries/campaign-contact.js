@@ -41,7 +41,7 @@ const saveCacheRecord = async (dbRecord, organization, messageServiceSid) => {
   if (r.redis) {
     // basic contact record
     const contactCacheObj = generateCacheRecord(dbRecord, organization.id, messageServiceSid)
-    console.log('generated contact', contactCacheObj)
+    //console.log('generated contact', contactCacheObj)
     await r.redis.setAsync(cacheKey(dbRecord.id), JSON.stringify(contactCacheObj))
     // TODO:
     //   messageStatus-<cell>
@@ -75,7 +75,7 @@ const generateCacheRecord = (dbRecord, organizationId, messageServiceSid) => ({
 })
 
 const getMessageStatus = async (id, contactObj) => {
-  if (contactOjb && contactObj.message_status) {
+  if (contactObj && contactObj.message_status) {
     return contactObj.message_status
   }
   if (r.redis) {
@@ -93,7 +93,7 @@ const getMessageStatus = async (id, contactObj) => {
 export const campaignContactCache = {
   clear: async (id) => {
     if (r.redis) {
-      await r.redis.delAsync(cacheKey(id))
+      await r.redis.delAsync(cacheKey(id), messageStatusKey(id))
     }
   },
   load: async(id) => {
@@ -106,7 +106,8 @@ export const campaignContactCache = {
             cell: cacheData.cell,
             organizationId: cacheData.organization_id })
         }
-        console.log('fromCache', cacheData)
+        cacheData.message_status = await getMessageStatus(id, cacheData)
+        //console.log('contact fromCache', cacheData)
         return modelWithExtraProps(
           cacheData,
           CampaignContact,
@@ -156,7 +157,7 @@ export const campaignContactCache = {
   lookupByCell: async (cell, service, messageServiceSid, bailWithoutCache) => {
     if (r.redis) {
       const cellData = await r.redis.getAsync(
-        cellTargetKey(contact.cell, contact.messageservice_sid))
+        cellTargetKey(cell, messageServiceSid))
       if (cellData) {
         const [campaign_contact_id, assignment_id, timezone_offset] = cellData.split(':')
         const message_status = await getMessageStatus(campaign_contact_id)
