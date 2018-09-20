@@ -96,7 +96,7 @@ const loadDeep = async (id, yesDeep) => {
   return { assignment }
 }
 
-export const assignmentCache = {
+const assignmentCache = {
   clear: async (id) => {
     if (r.redis) {
       await r.redis.delAsync(assignmentHashKey(id))
@@ -124,3 +124,5 @@ export const assignmentCache = {
   getContacts,
   optOutContact
 }
+
+export default assignmentCache
