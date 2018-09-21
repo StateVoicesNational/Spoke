@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import Check from 'material-ui/svg-icons/action/check-circle'
+import Lock from 'material-ui/svg-icons/action/lock'
 import Empty from '../components/Empty'
 import AssignmentSummary from '../components/AssignmentSummary'
 import loadData from './hoc/load-data'
@@ -69,8 +70,8 @@ class TexterTodoList extends React.Component {
 
     const textingOff = (
       <Empty
-        title='Texting is Currently Disabled For This Organization.'
-        icon={<Check />}
+        title='Texting is Currently Turned Off For This Organization.'
+        icon={<Lock />}
       />
     )
 
