@@ -1,6 +1,6 @@
 import { mapFieldsToModel } from './lib/utils'
 import { Campaign, JobRequest, r, cacheableData } from '../models'
-import { getUsers } from './user';
+import { getUsers } from './user'
 
 export function addCampaignsFilterToQuery(queryParam, campaignsFilter) {
   let query = queryParam

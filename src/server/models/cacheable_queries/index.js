@@ -1,4 +1,4 @@
-export * from './user'
+export * from '../user'
 import { organizationCache } from './organization'
 import { cannedResponseCache } from './canned-response'
 import { campaignCache } from './campaign'

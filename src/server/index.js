@@ -20,7 +20,7 @@ import { seedZipCodes } from './seeds/seed-zip-codes'
 import { runMigrations } from '../migrations'
 import { setupUserNotificationObservers } from './notifications'
 import { TwimlResponse } from 'twilio'
-import { r } from './models'
+import { createTablesIfNecessary } from './models'
 
 process.on('uncaughtException', (ex) => {
   log.error(ex)
