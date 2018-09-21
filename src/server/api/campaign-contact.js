@@ -40,9 +40,9 @@ export const resolvers = {
       if (campaignContact.message_status === 'needsMessage') {
         return [] // it's the beginning, so there won't be any
       }
-      return await r.knex('question_response')
-        .where('question_response.campaign_contact_id', campaignContact.id)
-        .select('value', 'interaction_step_id')
+      return await cacheableData.questionResponse.query(
+        campaignContact.id, true // justMinimalObj
+      )
     },
     questionResponses: async (campaignContact, _, { loaders }) => {
       const results = await r.knex('question_response as qres')
