@@ -3,7 +3,6 @@ import camelCaseKeys from 'camelcase-keys'
 import isUrl from 'is-url'
 import { buildCampaignQuery } from './campaign'
 import { organizationCache } from '../models/cacheable_queries/organization'
-import { cacheableData } from '../models'
 
 
 import {
