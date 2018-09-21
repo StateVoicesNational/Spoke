@@ -3,9 +3,9 @@ import { r } from '../models'
 export const resolvers = {
   Question: {
     text: async (interactionStep) => interactionStep.question,
-    answerOptions: async (interactionStep) => {
-      console.log('ANSWER OPTIONS graphQL', interactionStep)
-      return interactionStep.answerOptions
+    answerOptions: async (interactionStep) => (
+      // this should usually be pre-built from campaign's interactionSteps call
+      interactionStep.answerOptions
       || r.table('interaction_step')
         .filter({ parent_interaction_id: interactionStep.id })
         .filter({ is_deleted: false })
@@ -16,7 +16,7 @@ export const resolvers = {
           interaction_step_id: r.row('id'),
           parent_interaction_step: r.row('parent_interaction_id')
         })
-    },
+    ),
     interactionStep: async (interactionStep) => interactionStep
   },
   AnswerOption: {
