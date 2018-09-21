@@ -3,8 +3,10 @@ import { r } from '../models'
 export const resolvers = {
   Question: {
     text: async (interactionStep) => interactionStep.question,
-    answerOptions: async (interactionStep) => (
-      r.table('interaction_step')
+    answerOptions: async (interactionStep) => {
+      // TODO: make this use the cache
+      console.log('question answerOption', interactionStep)
+      return r.table('interaction_step')
         .filter({ parent_interaction_id: interactionStep.id })
         .filter({ is_deleted: false })
         .orderBy('answer_option')
@@ -14,7 +16,7 @@ export const resolvers = {
           interaction_step_id: r.row('id'),
           parent_interaction_step: r.row('parent_interaction_id')
         })
-    ),
+    },
     interactionStep: async (interactionStep) => interactionStep
   },
   AnswerOption: {

@@ -25,9 +25,10 @@ currentEditors(campaign, user) -> string
 userOrgsWithRole(role, user.id) -> organization list
 */
 
-
 const userRoleKey = (userId) => `${process.env.CACHE_PREFIX || ''}texterinfo-${userId}`
 const userAuthKey = (authId) => `${process.env.CACHE_PREFIX || ''}texterauth-${authId}`
+
+export const accessHierarchy = ['TEXTER', 'SUPERVOLUNTEER', 'ADMIN', 'OWNER']
 
 const getHighestRolesPerOrg = (userOrgs) => {
   const highestRolesPerOrg = {}
@@ -74,6 +75,22 @@ const dbLoadUserRoles = async (userId) => {
   return highestRolesPerOrg
 }
 
+const loadUserRoles = async (userId) => {
+  if (r.redis) {
+    const roles = await r.redis.hgetallAsync(userRoleKey(userId))
+    console.log('cached roles', roles)
+    if (roles) {
+      const userRoles = {}
+      Object.keys(roles).forEach(orgId => {
+        const [highestRole, orgName] = roles[orgId].split(':')
+        userRoles[orgId] = { id: orgId, name: orgName, role: highestRole }
+      })
+      return userRoles
+    }
+  }
+  return await dbLoadUserRoles(userId)
+}
+
 const dbLoadUserAuth = async (authId) => {
   const userAuth = await r.knex('user')
     .where('auth0_id', authId)
@@ -91,7 +108,28 @@ const dbLoadUserAuth = async (authId) => {
   return userAuth
 }
 
-const userHasRole = async (userId, orgId, acceptableRoles) => {
+const userOrgs = async (userId, role) => {
+  const acceptableRoles = (role
+                           ? accessHierarchy.slice(accessHierarchy.indexOf(role))
+                           : [...accessHierarchy])
+  const orgRoles = await loadUserRoles(userId)
+  const matchedOrgs = Object.keys(orgRoles).filter(orgId => (
+    acceptableRoles.indexOf(orgRoles[orgId]) !== -1
+  ))
+  return matchedOrgs.map(orgId => orgRoles[orgId])
+}
+
+const orgRoles = async (userId, orgId) => {
+  const orgRoles = await loadUserRoles(userId)
+  if (orgId in orgRoles) {
+    return accessHierarchy.slice(
+      0, 1 + accessHierarchy.indexOf(orgRoles[orgId].role))
+  }
+  return []
+}
+
+const userHasRole = async (userId, orgId, role) => {
+  const acceptableRoles = accessHierarchy.slice(accessHierarchy.indexOf(role))
   if (r.redis) {
     // cached approach
     const userKey = userRoleKey(userId)
@@ -132,7 +170,9 @@ const userLoggedIn = async (authId) => {
 
 const userCache = {
   userHasRole,
-  userLoggedIn
+  userLoggedIn,
+  userOrgs,
+  orgRoles
 }
 
 export default userCache

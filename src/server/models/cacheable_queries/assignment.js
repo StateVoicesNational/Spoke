@@ -119,7 +119,7 @@ const assignmentCache = {
         return assnObj
       }
     }
-    const { assignment } = loadDeep(id)
+    const { assignment } = await loadDeep(id)
     return assignment
   },
   hasAssignment,

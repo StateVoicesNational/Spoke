@@ -271,6 +271,9 @@ async function updateInteractionSteps(
 const rootMutations = {
   RootMutation: {
     userAgreeTerms: async (_, { userId }, { user, loaders }) => {
+      if (user.id === parseInt(userId, 10)) {
+        return (user.terms ? user : null)
+      }
       const currentUser = await r
         .table('user')
         .get(userId)
@@ -890,6 +893,7 @@ const rootMutations = {
     },
     sendMessage: async (_, { message, campaignContactId }, { user, loaders }) => {
       let contact = await loaders.campaignContact.load(campaignContactId)
+      await assignmentRequired(user, contact.assignment_id)
       const campaign = await loaders.campaign.load(contact.campaign_id)
 
       if (contact.assignment_id !== parseInt(message.assignmentId) || campaign.is_archived) {

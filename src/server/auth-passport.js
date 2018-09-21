@@ -38,9 +38,9 @@ export function setupAuth0Passport() {
     if (!auth0Id) {
       throw new Error('Null user in login callback')
     }
-    const existingUser = await User.filter({ auth0_id: auth0Id })
+    const existingUser = await cacheableData.user.userLoggedIn(auth0Id)
 
-    if (existingUser.length === 0) {
+    if (!existingUser) {
       const userMetadata = (
         // eslint-disable-next-line no-underscore-dangle
         req.user._json['https://spoke/user_metadata']
