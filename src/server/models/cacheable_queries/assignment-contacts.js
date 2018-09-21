@@ -273,7 +273,7 @@ export const loadAssignmentContacts = async (assignmentId, organizationId, timez
   })
   const tzKeys = Object.keys(tzs)
   for (let i = 0, l = tzKeys.length; i < l; i++) {
-    const tz = tzs[tzKeys[i]]
+    const tz = tzKeys[i]
     const tzContacts = tzs[tz].contacts
     const key = assignmentContactsKey(assignmentId, tz)
     await r.redis.multi()

@@ -31,11 +31,11 @@ import { updateAssignmentContact } from './assignment-contacts'
 // TODO: relocate this method elsewhere
 
 // stores most of the contact info:
-const cacheKey = async (id) => `${process.env.CACHE_PREFIX || ''}contact-${id}`
+const cacheKey = (id) => `${process.env.CACHE_PREFIX || ''}contact-${id}`
 // just stores messageStatus -- this changes more often than the rest of the contact info
-const messageStatusKey = async (id) => `${process.env.CACHE_PREFIX || ''}contactstatus-${id}`
+const messageStatusKey = (id) => `${process.env.CACHE_PREFIX || ''}contactstatus-${id}`
 // allows a lookup of contact_id, assignment_id, and timezone_offset by cell+messageservice_sid
-const cellTargetKey = async (cell, messageServiceSid) => `${process.env.CACHE_PREFIX || ''}cell-${cell}-${messageServiceSid}`
+const cellTargetKey = (cell, messageServiceSid) => `${process.env.CACHE_PREFIX || ''}cell-${cell}-${messageServiceSid}`
 
 const generateCacheRecord = (dbRecord, organizationId, messageServiceSid) => ({
   // This should be contactinfo that
@@ -65,6 +65,7 @@ const saveCacheRecord = async (dbRecord, organization, messageServiceSid) => {
     // basic contact record
     const contactCacheObj = generateCacheRecord(dbRecord, organization.id, messageServiceSid)
     // console.log('generated contact', contactCacheObj)
+    console.log('contact saveCacheRecord', contactCacheObj)
     await r.redis.setAsync(cacheKey(dbRecord.id), JSON.stringify(contactCacheObj))
     // TODO:
     //   messageStatus-<cell>
@@ -98,6 +99,7 @@ const campaignContactCache = {
     if (r.redis) {
       const cacheRecord = await r.redis.getAsync(cacheKey(id))
       if (cacheRecord) {
+        console.log('contact cacheRecord', cacheRecord)
         const cacheData = JSON.parse(cacheRecord)
         if (cacheData.cell && cacheData.organization_id) {
           cacheData.is_opted_out = await optOutCache.query({
@@ -199,12 +201,14 @@ const campaignContactCache = {
   getMessageStatus,
   updateStatus: async (contact, newStatus) => {
     if (r.redis) {
+      const cellKey = cellTargetKey(contact.cell, contact.messageservice_sid)
+      console.log('contact updateStatus', cellKey, newStatus, contact)
       await r.redis.multi()
         .set(messageStatusKey(contact.id), newStatus)
       // We update the cell info on status updates, because this happens
       // during message sending -- this is exactly the moment we want to
       // 'steal' a cell from one (presumably older) campaign into another
-        .set(cellTargetKey(contact.cell, contact.messageservice_sid),
+        .set(cellKey,
              [contact.id, contact.assignment_id, contact.timezone_offset].join(':'))
         .execAsync()
       await updateAssignmentContact(contact, newStatus)
