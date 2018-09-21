@@ -11,9 +11,9 @@ export const resolvers = {
       'parentInteractionId',
       'isDeleted'
     ], InteractionStep),
-    questionText: async(interactionStep) => {
-      return interactionStep.question
-    },
+    questionText: async(interactionStep) => (
+      interactionStep.question
+    ),
     question: async (interactionStep) => interactionStep,
     questionResponse: async (interactionStep, { campaignContactId }) => (
       r.table('question_response')
