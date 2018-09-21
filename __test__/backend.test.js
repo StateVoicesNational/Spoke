@@ -342,9 +342,9 @@ it('should start the campaign', async() => {
     to: 'testtexter@example.com',
     replyTo: 'testuser@example.com',
     subject:
-        '~~~~~[Testy test organization] ~~ New assignment: test campaign',
-    text:
-        '~~~~You just got a new texting assignment from Testy test organization. You can start sending texts right away: \n\nundefined/app/1/todos'
+        '~~~~~[Testy test organization] ~~ New assignment: test campaign'
+    // text:
+    //     '~~~~You just got a new texting assignment from Testy test organization. You can start sending texts right away: \n\nundefined/app/1/todos'
   }))
 })
 
