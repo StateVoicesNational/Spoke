@@ -41,7 +41,7 @@ export const resolvers = {
         return [] // it's the beginning, so there won't be any
       }
       return await cacheableData.questionResponse.query(
-        campaignContact.id, true // justMinimalObj
+        campaignContact.id, true // minimalObj: we might need more info one day
       )
     },
     questionResponses: async (campaignContact, _, { loaders }) => {
