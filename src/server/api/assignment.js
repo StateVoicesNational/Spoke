@@ -77,7 +77,7 @@ export const resolvers = {
     campaign: async (assignment, _, { loaders }) => loaders.campaign.load(assignment.campaign_id),
     contactsCount: async (assignment, { contactsFilter }, { loaders }) => {
       const campaign = await loaders.campaign.load(assignment.campaign_id)
-      const organization = await loaders.campaign.load(campaign.organization_id)
+      const organization = await loaders.organization.load(campaign.organization_id)
       return await cacheableData.assignment.getContacts(
         assignment, contactsFilter, organization, campaign, false, true)
     },
@@ -85,7 +85,7 @@ export const resolvers = {
       const justNeedContactIds = graphqlQueryJustContactIds(graphqlRequest.operation)
 
       const campaign = await loaders.campaign.load(assignment.campaign_id)
-      const organization = await loaders.campaign.load(campaign.organization_id)
+      const organization = await loaders.organization.load(campaign.organization_id)
       return await cacheableData.assignment.getContacts(
         assignment, contactsFilter, organization, campaign, false, false, justNeedContactIds)
     },
