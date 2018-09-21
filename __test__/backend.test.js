@@ -2,6 +2,7 @@ import { resolvers } from '../src/server/api/schema'
 import { schema } from '../src/api/schema'
 import { graphql } from 'graphql'
 import { User, Organization, Campaign, CampaignContact, Assignment, r } from '../src/server/models/'
+import { campaignInfoFragment } from '../src/containers/AdminCampaignEdit'
 import { resolvers as campaignResolvers } from '../src/server/api/campaign'
 import { getContext,
   setupTest,
@@ -231,41 +232,31 @@ it('should add texters to a organization', async () => {
   expect(result.data.joinOrganization.id).toBeTruthy()
 })
 
+it('should set a custom assignment message for the organization', async () => {
+  const query = `
+    mutation updateUserAssignmentMessage($subject: String, $body: String, $organizationId: String!) {
+      updateUserAssignmentMessage(subject: $subject, body: $body, organizationId: $organizationId) {
+        id
+        assignmentMessage {
+          subject
+          body
+        }
+      }
+  }`
+  const variables = {
+    organizationId: testOrganization.data.createOrganization.id,
+    subject: '~~~~~[{organizationName}] ~~ New assignment: {campaignTitle}',
+    body: '~~~~You just got a new texting assignment from {organizationName}. You can start sending texts right away: \n\n{todoUrl}'
+  }
+  const context = getContext({ user: testAdminUser })
+  await graphql(mySchema, query, rootValue, context, variables)
+})
+
 it('should assign texters to campaign contacts', async () => {
   const campaignEditQuery = `
   mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {
     editCampaign(id: $campaignId, campaign: $campaign) {
-      id
-      title
-      description
-      dueBy
-      isStarted
-      isArchived
-      contactsCount
-      datawarehouseAvailable
-      customFields
-      texters {
-        id
-        firstName
-        assignment(campaignId:$campaignId) {
-          contactsCount
-          needsMessageCount: contactsCount(contactsFilter:{messageStatus:\"needsMessage\"})
-        }
-      }
-      interactionSteps {
-        id
-        questionText
-        script
-        answerOption
-        answerActions
-        parentInteractionId
-        isDeleted
-      }
-      cannedResponses {
-        id
-        title
-        text
-      }
+      ${campaignInfoFragment}
     }
   }`
   const context = getContext({user: testAdminUser})
@@ -285,11 +276,77 @@ it('should assign texters to campaign contacts', async () => {
   expect(result.data.editCampaign.texters[0].assignment.contactsCount).toBe(1)
 })
 
-// it('should save a campaign script composed of interaction steps', async() => {})
+it('should save a campaign script composed of interaction steps', async() => {
+  const campaignEditQuery = `
+  mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {
+    editCampaign(id: $campaignId, campaign: $campaign) {
+      ${campaignInfoFragment}
+    }
+  }`
+  const context = getContext({ user: testAdminUser })
+  const updateCampaign = Object.assign({}, testCampaign.data.createCampaign)
+  const campaignId = updateCampaign.id
+  updateCampaign.texters = [{
+    id: testTexterUser.id
+  }]
+  delete (updateCampaign.id)
+  delete (updateCampaign.contacts)
+  const variables = {
+    campaignId,
+    campaign: {
+      interactionSteps: {
+        id: '1',
+        questionText: 'Test',
+        script: '{zip}',
+        answerOption: '',
+        answerActions: '',
+        parentInteractionId: null,
+        isDeleted: false,
+        interactionSteps: [
+          {
+            id: '2',
+            questionText: 'hmm',
+            script: '{lastName}',
+            answerOption: 'hmm',
+            answerActions: '',
+            parentInteractionId: '1',
+            isDeleted: false,
+            interactionSteps: [
+            ]
+          }
+        ]
+      }
+    }
+  }
+  const result = await graphql(mySchema, campaignEditQuery, rootValue, context, variables)
+  expect(result.data.editCampaign.texters.length).toBe(1)
+  expect(result.data.editCampaign.texters[0].assignment.contactsCount).toBe(1)
+})
 
 // it('should save some canned responses for texters', async() => {})
 
-// it('should start the campaign', async() => {})
+import { sendEmail } from '../src/server/mail'
+jest.mock('../src/server/mail')
+
+it('should start the campaign', async() => {
+  const startCampaignQuery = `mutation startCampaign($campaignId: String!) {
+    startCampaign(id: $campaignId) {
+      ${campaignInfoFragment}
+    }
+  }`
+  const context = getContext({ user: testAdminUser })
+  const variables = { campaignId: testCampaign.data.createCampaign.id }
+  const result = await graphql(mySchema, startCampaignQuery, rootValue, context, variables)
+  expect(result.data.startCampaign.isStarted).toBeTruthy()
+  expect(sendEmail).toBeCalledWith(expect.objectContaining({
+    to: 'testtexter@example.com',
+    replyTo: 'testuser@example.com',
+    subject:
+        '~~~~~[Testy test organization] ~~ New assignment: test campaign',
+    text:
+        '~~~~You just got a new texting assignment from Testy test organization. You can start sending texts right away: \n\nundefined/app/1/todos'
+  }))
+})
 
 // TEST STUBS: MESSAGING
 
