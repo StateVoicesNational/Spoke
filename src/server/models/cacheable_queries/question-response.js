@@ -6,6 +6,8 @@ const responseCacheKey = (campaignContactId) => (
 
 const questionResponseCache = {
   query: async (campaignContactId, minimalObj) => {
+    // For now, minimalObj is always being invoked as true in
+    // server/api/campaign-contact
     if (r.redis && minimalObj) {
       const cachedResponse = await r.redis.hgetallAsync(
         responseCacheKey(campaignContactId)
