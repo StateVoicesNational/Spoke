@@ -125,13 +125,15 @@ class Settings extends React.Component {
           />
           <CardText>
             <div className={css(styles.section)}>
-            <div className={css(styles.section)}>
               <Toggle
                 toggled={organization.textingTurnedOff}
                 label={(organization.textingTurnedOff ? 'TEXTING TURNED OFF FOR ALL CAMPAIGNS' : 'TEXTING TURNED ON FOR ALL CAMPAIGNS')}
                 onToggle={async (event, isToggled) => await this.props.mutations.textingTurnedOff(isToggled)}
               />
             </div>
+          </CardText>
+          <CardText>
+            <div className={css(styles.section)}>
             <GSForm
               schema={formSchema}
               onSubmit={this.props.mutations.updateOptOutMessage}
