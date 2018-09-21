@@ -4,8 +4,7 @@ import Paper from 'material-ui/Paper'
 import { List, ListItem } from 'material-ui/List'
 import Divider from 'material-ui/Divider'
 import { withRouter } from 'react-router'
-import _ from 'lodash'
-import { dataTest } from '../lib/attributes'
+import { dataTest, camelCase } from '../lib/attributes'
 import { FlatButton } from 'material-ui'
 import { StyleSheet, css } from 'aphrodite'
 
@@ -45,7 +44,7 @@ const Navigation = function Navigation(props) {
           <List>
             {sections.map(section => (
               <ListItem
-                {...dataTest(_.camelCase(`nav ${section.path}`))}
+                {...dataTest(camelCase(`nav ${section.path}`))}
                 key={section.name}
                 primaryText={section.name}
                 onTouchTap={() => props.router.push(section.url)}
