@@ -5,7 +5,7 @@ import { List, ListItem } from 'material-ui/List'
 import Divider from 'material-ui/Divider'
 import { withRouter } from 'react-router'
 import { dataTest, camelCase } from '../lib/attributes'
-import { dataTest } from '../lib/attributes'
+import { FlatButton } from 'material-ui'
 import { StyleSheet, css } from 'aphrodite'
 
 const styles = StyleSheet.create({

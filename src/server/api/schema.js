@@ -28,7 +28,6 @@ import {
   QuestionResponse,
   User,
   r,
-  datawarehouse,
   cacheableData,
   UserOrganization
 } from '../models'
