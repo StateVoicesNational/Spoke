@@ -4,9 +4,9 @@ export const resolvers = {
   Question: {
     text: async (interactionStep) => interactionStep.question,
     answerOptions: async (interactionStep) => {
-      // TODO: make this use the cache
-      console.log('question answerOption', interactionStep)
-      return r.table('interaction_step')
+      console.log('ANSWER OPTIONS graphQL', interactionStep)
+      return interactionStep.answerOptions
+      || r.table('interaction_step')
         .filter({ parent_interaction_id: interactionStep.id })
         .filter({ is_deleted: false })
         .orderBy('answer_option')
@@ -22,7 +22,9 @@ export const resolvers = {
   AnswerOption: {
     value: (answer) => answer.value,
     interactionStepId: (answer) => answer.interaction_step_id,
-    nextInteractionStep: async (answer) => r.table('interaction_step').get(answer.interaction_step_id),
+    nextInteractionStep: async (answer) => (
+      answer.nextInteractionStep
+      || r.table('interaction_step').get(answer.interaction_step_id)),
     responders: async (answer) => (
       r.table('question_response')
         .getAll(answer.parent_interaction_step, { index: 'interaction_step_id' })
