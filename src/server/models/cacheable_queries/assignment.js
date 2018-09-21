@@ -3,6 +3,7 @@ import campaignCache from './campaign'
 import { loadAssignmentContacts, getContacts, optOutContact } from './assignment-contacts'
 
 // TODO: add user-org-assignment list for user.todos
+// TODO: refresh on user name-change
 
 // ## KEY
 // assignment-<assignmentId>
@@ -78,8 +79,14 @@ const hasAssignment = async (userId, assignmentId) => {
 
 const loadDeep = async (id) => {
   const [assignment] = await r.knex('assignment')
-    .select('id', 'user_id', 'campaign_id', 'max_contacts')
-    .where('id', id)
+    .select('assignment.id as id',
+            'assignment.user_id',
+            'assignment.campaign_id',
+            'assignment.max_contacts',
+            'user.first_name',
+            'user.last_name')
+    .join('user', 'assignment.user_id', 'user.id')
+    .where('assignment.id', id)
     .limit(1)
   console.log('loaddeep assingment', assignment)
   if (r.redis && assignment) {

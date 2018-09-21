@@ -70,8 +70,8 @@ export const resolvers = {
   Assignment: {
     ...mapFieldsToModel(['id', 'maxContacts'], Assignment),
     texter: async (assignment, _, { loaders }) => (
-      assignment.texter
-      ? assignment.texter
+      assignment.first_name
+      ? { id: assignment.user_id, first_name: assignment.first_name, last_name: assignment.last_name }
       : loaders.user.load(assignment.user_id)
     ),
     campaign: async (assignment, _, { loaders }) => loaders.campaign.load(assignment.campaign_id),
