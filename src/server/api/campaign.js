@@ -121,11 +121,10 @@ export const resolvers = {
 
       return query
     },
-    interactionSteps: async (campaign) => {
-      console.log('interactionSteps, campaign', campaign)
-      return campaign.interactionSteps
+    interactionSteps: async (campaign) => (
+      campaign.interactionSteps
         || cacheableData.campaign.dbInteractionSteps(campaign.id)
-    },
+    ),
     cannedResponses: async (campaign, { userId }) => (
       await cacheableData.cannedResponse.query({
         userId: userId || '',
