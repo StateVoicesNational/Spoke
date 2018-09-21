@@ -1,14 +1,3 @@
-/*
-questionResponseValues: async (campaignContact, _, { loaders }) => {
-  if (campaignContact.message_status === 'needsMessage') {
-    return [] // it's the beginning, so there won't be any
-  }
-  return await r.knex('question_response')
-    .where('question_response.campaign_contact_id', campaignContact.id)
-    .select('value', 'interaction_step_id')
-}
-*/
-
 import { r } from '../../models'
 
 const responseCacheKey = (campaignContactId) => (
@@ -23,7 +12,7 @@ const questionResponseCache = {
       )
       if (cachedResponse) {
         const formattedResponse = Object.keys(cachedResponse).reduce((acc, key) => {
-          acc.push({interaction_step_id: key, value: cachedResponse[key]})
+          acc.push({ interaction_step_id: key, value: cachedResponse[key] })
           return acc
         }, [])
         return formattedResponse
@@ -58,9 +47,5 @@ const questionResponseCache = {
     }
   }
 }
-
-// questionResponseValues.reduce((acc, qrv) => {
-//   return acc.push(qrv.value, qrv.interaction_step)
-// }, [])
 
 export default questionResponseCache
