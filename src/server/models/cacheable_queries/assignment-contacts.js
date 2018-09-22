@@ -6,7 +6,6 @@ import { r } from '../index'
 const assignmentContactsKey = (id, tz) => `${process.env.CACHE_PREFIX || ''}assignmentcontacts-${id}-${tz}`
 
 // TODO: dynamic assignment (updating assignment-contacts with dynamically assigned contacts)
-// TODO: updating message status
 // TODO: expiration
 
 const msgStatusRange = {
@@ -280,6 +279,7 @@ export const loadAssignmentContacts = async (assignmentId, organizationId, timez
       .del(key)
     // TODO: is there a max to how many we can add at once?
       .zadd(key, ...tzContacts)
+      .expire(key, 86400 * 2)
       .execAsync()
   }
 }

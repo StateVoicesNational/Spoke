@@ -78,6 +78,10 @@ const hasAssignment = async (userId, assignmentId) => {
 }
 
 const loadDeep = async (id) => {
+  // needs refresh whenever
+  // * assignment is updated
+  // * user is updated
+  // * contacts are updated
   const [assignment] = await r.knex('assignment')
     .select('assignment.id as id',
             'assignment.user_id',
