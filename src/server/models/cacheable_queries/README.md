@@ -21,11 +21,15 @@ may change.  Nonetheless, the first round has the following goals:
 
 ## Cached Objects
 
+* user
 * organization
 * campaign
-* optOut
 * cannedResponse
-* user
+* optOut
+* assignment
+  * assignment-contacts
+* campaign-contact
+* message
 
 ## Code Style
 
@@ -81,4 +85,40 @@ Others:
   the opt-outs for a particular organization.
 
 ## Data-structures
+
+* user
+  * KEY `texterauth-${authId}`
+  * HASH `texterinfo-${userId}`
+    * key=orgId, value=highest_role:org_name
+* organization
+  * KEY `org-${orgId}`
+* campaign
+  * KEY `campaign-${campaignId}`
+    * Besides campaign data, also includes `customFields`, `interactionSteps`, `contactTimezones`
+* cannedResponse
+  * KEY `canned-${campaignId}-${userId}`
+    * For non user-specific campaigns userId=''
+* optOut
+  * SET `optouts${-orgId|}`
+* assignment
+  * KEY `assignment-${assignmentId}`
+    * Besides assignment data, also includes `organization_id`, `user.first_name`, `user.last_name`
+* (assignment-contacts) (library only, used by assignment and campaign-contact)
+  * SORTED SET `assignmentcontacts-${assignmentId}-${timezone_offset}` 
+    * key=contactId, score={0=optedout, 1=needsMessage, 200...-399...=needsResponse, ...}
+    * See the top of ./assignment.js for more details on this complex data structure.
+* campaign-contact
+  * KEY `contact-${contactId}`
+    * Besides contact data, also includes `organization_id`, `messageservice_sid`, `zip.city`, `zip.state`
+    * However it does NOT have message_status which is the key below, since status changes frequently
+  * KEY `contactstatus-${contactId}`
+    * Just stores message_status for the contact
+  * KEY `cell-${cell}-${messageServiceSid}`
+    * value=`{contact_id}:{assignment_id}:{timezone_offset}`
+    * This is saved on the sending of the first message, for easy lookup of the contact info when a response comes in from the contact.
+* message
+  * LIST `messages-${contactId}`
+    * Includes all data _except_ service_response
+
+## Expiration
 

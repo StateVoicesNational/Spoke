@@ -29,6 +29,8 @@ import { updateAssignmentContact } from './assignment-contacts'
 //   - messageStatus
 
 // TODO: relocate this method elsewhere
+// TODO: expiration story
+// TODO: loading
 
 // stores most of the contact info:
 const cacheKey = (id) => `${process.env.CACHE_PREFIX || ''}contact-${id}`
@@ -176,6 +178,7 @@ const campaignContactCache = {
       .select('assignment_id', 'campaign_contact_id')
       .where({
         is_from_contact: false,
+        contact_number: cell,
         service
       })
       .where(function subquery() {
