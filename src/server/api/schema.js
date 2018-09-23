@@ -64,7 +64,7 @@ import {
 } from './errors'
 import serviceMap from './lib/services'
 import { saveNewIncomingMessage } from './lib/message-sending'
-import { gzip, log, makeTree } from '../../lib'
+import { gzip, log, makeTree, isProfane } from '../../lib'
 // import { isBetweenTextingHours } from '../../lib/timezones'
 import { Notifications, sendUserNotification } from '../notifications'
 import {
@@ -959,24 +959,29 @@ const rootMutations = {
 
       await messageInstance.save()
 
+      const service = serviceMap[messageInstance.service || process.env.DEFAULT_SERVICE]
+
       if (contact.message_status === 'needsResponse') {
-        const service = serviceMap[messageInstance.service || process.env.DEFAULT_SERVICE]
         contact.message_status = 'convo'
-        contact.updated_at = 'now()'
-        await contact.save()
-
-        service.sendMessage(messageInstance)
-        return contact
       } else {
-        const service = serviceMap[messageInstance.service || process.env.DEFAULT_SERVICE]
         contact.message_status = 'messaged'
-        contact.updated_at = 'now()'
-        await contact.save()
-
-        service.sendMessage(messageInstance)
-        return contact
       }
 
+      contact.updated_at = 'now()'
+      await contact.save()
+
+      if (isProfane()) {
+        // don't send the message
+
+        // apply tags
+      } else {
+        //send the message
+        service.sendMessage(messageInstance)
+      }
+
+      return contact
+
+      // TODO this code is unreachable
       if (JOBS_SAME_PROCESS) {
         const service = serviceMap[messageInstance.service || process.env.DEFAULT_SERVICE]
         log.info(

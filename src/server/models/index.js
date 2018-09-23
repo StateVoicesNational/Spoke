@@ -7,6 +7,7 @@ import Organization from './organization'
 import Campaign from './campaign'
 import Assignment from './assignment'
 import CampaignContact from './campaign-contact'
+import CampaignContactTag from './campaign-contact-tag'
 import InteractionStep from './interaction-step'
 import QuestionResponse from './question-response'
 import OptOut from './opt-out'
@@ -45,14 +46,15 @@ const tableList = [
   'user', // good candidate
   'campaign', //good candidate
   'assignment',
-  // the rest are alphabetical
-  'campaign_contact', //?good candidate (or by cell)
-  'canned_response', //good candidate
+  'campaign_contact', // good candidat4e (or by cell)
+  // the rest are alphabetical, except as noted
+  'canned_response', // good candidate
   'interaction_step',
   'invite',
   'job_request',
   'log',
   'message',
+  'campaign_contact_tag', // depends on message and campaign_contact
   'migrations',
   'opt_out',  //good candidate
   'pending_message_part',
@@ -90,6 +92,7 @@ const createLoaders = () => ({
   user: createLoader(User),
   interactionStep: createLoader(InteractionStep),
   campaignContact: createLoader(CampaignContact),
+  campaignContactTag: createLoader(CampaignContactTag),
   zipCode: createLoader(ZipCode, {idKey: 'zip'}),
   log: createLoader(Log),
   cannedResponse: createLoader(CannedResponse),
@@ -117,6 +120,7 @@ export {
   Assignment,
   Campaign,
   CampaignContact,
+  CampaignContactTag,
   InteractionStep,
   Invite,
   JobRequest,

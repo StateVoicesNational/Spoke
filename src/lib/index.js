@@ -147,3 +147,5 @@ export const convertRowToContact = (row) => {
   contact.customFields = customFields
   return contact
 }
+
+export { isProfane } from './profanity'
