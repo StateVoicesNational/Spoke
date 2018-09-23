@@ -960,8 +960,6 @@ const rootMutations = {
 
       await messageInstance.save()
 
-      const service = serviceMap[messageInstance.service || process.env.DEFAULT_SERVICE]
-
       if (contact.message_status === 'needsResponse') {
         contact.message_status = 'convo'
       } else {
@@ -976,6 +974,7 @@ const rootMutations = {
         tagProfaneMessage(contact, messageInstance)
       } else {
         //send the message
+        const service = serviceMap[messageInstance.service || process.env.DEFAULT_SERVICE]
         service.sendMessage(messageInstance)
       }
 
