@@ -63,6 +63,7 @@ import {
   superAdminRequired
 } from './errors'
 import serviceMap from './lib/services'
+import { tagProfaneMessage } from './lib/profanity'
 import { saveNewIncomingMessage } from './lib/message-sending'
 import { gzip, log, makeTree, isProfane } from '../../lib'
 // import { isBetweenTextingHours } from '../../lib/timezones'
@@ -970,10 +971,9 @@ const rootMutations = {
       contact.updated_at = 'now()'
       await contact.save()
 
-      if (isProfane()) {
+      if (isProfane(message.text)) {
         // don't send the message
-
-        // apply tags
+        tagProfaneMessage(contact, messageInstance)
       } else {
         //send the message
         service.sendMessage(messageInstance)

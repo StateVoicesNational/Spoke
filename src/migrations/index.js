@@ -155,6 +155,21 @@ const migrations = [
 
       console.log('added texting hours fields to campaign')
     }
+  },
+  {
+    auto: true, // 13
+    date: '2018-09-22',
+    migrate: async () => {
+      console.log('creating campaign_contact_tag table')
+      await r.knex.schema.createTableIfNotExists('campaign_contact_tag', (table) => {
+        table.increments('id').unsigned().primary()
+        table.integer('campaign_contact_id').unsigned().notNullable().index().references('id').inTable('campaign_contact')
+        table.string('tag', 16).notNullable()
+        table.timestamp('created_at').notNullable()
+        table.integer('message_id').unsigned().nullable().references('id').inTable('message')
+      })
+      console.log('created campaign_contact_tag table')
+    }
   }
   /* migration template
      {auto: true, //if auto is false, then it will block the migration running automatically
