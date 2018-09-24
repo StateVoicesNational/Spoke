@@ -1,5 +1,11 @@
 import { r } from '../../models'
 
+/*
+HASH: response-<campaignContactId>
+key = question_response.interaction_step_id
+value = question_response.value
+*/
+
 const responseCacheKey = (campaignContactId) => (
   `${process.env.CACHE_PREFIX || ''}response-${campaignContactId}`
 )
@@ -30,16 +36,16 @@ const questionResponseCache = {
     }
   },
   reloadQuery: async (campaignContactId) => {
-    const questionResponseValues = await r.knex('question_response')
-      .where('question_response.campaign_contact_id', campaignContactId)
-      .select('value', 'interaction_step_id')
-
-    const valueInteractionArray = questionResponseValues.reduce((acc, qrv) => {
-      acc.push(qrv.interaction_step_id, qrv.value)
-      return acc
-    }, [])
-
     if (r.redis) {
+      const questionResponseValues = await r.knex('question_response')
+        .where('question_response.campaign_contact_id', campaignContactId)
+        .select('value', 'interaction_step_id')
+
+      const valueInteractionArray = questionResponseValues.reduce((acc, qrv) => {
+        acc.push(qrv.interaction_step_id, qrv.value)
+        return acc
+      }, [])
+
       const cacheKey = responseCacheKey(campaignContactId)
       await r.redis.multi()
         .del(cacheKey)
