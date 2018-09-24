@@ -3,8 +3,7 @@ import campaignCache from './campaign'
 import { loadAssignmentContacts, getContacts, optOutContact } from './assignment-contacts'
 
 // TODO: add user-org-assignment list for user.todos
-// TODO: refresh on user name-change
-
+// TODO: move user metadata (first/last) into a separate cache key to avoid cache drift
 // ## KEY
 // assignment-<assignmentId>
 //   - user_id

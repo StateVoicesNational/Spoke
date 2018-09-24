@@ -120,10 +120,10 @@ const userOrgs = async (userId, role) => {
 }
 
 const orgRoles = async (userId, orgId) => {
-  const orgRoles = await loadUserRoles(userId)
-  if (orgId in orgRoles) {
+  const orgRolesDict = await loadUserRoles(userId)
+  if (orgId in orgRolesDict) {
     return accessHierarchy.slice(
-      0, 1 + accessHierarchy.indexOf(orgRoles[orgId].role))
+      0, 1 + accessHierarchy.indexOf(orgRolesDict[orgId].role))
   }
   return []
 }
