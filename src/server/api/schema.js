@@ -219,7 +219,9 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
   }
 
   const newCampaign = await Campaign.get(id).update(campaignUpdates)
-  cacheableData.campaign.reload(id)
+  if (newCampaign.is_started) {
+    await cacheableData.campaign.reload(id)
+  }
   return newCampaign || loaders.campaign.load(id)
 }
 
@@ -642,7 +644,14 @@ const rootMutations = {
       campaign.is_started = true
 
       await campaign.save()
-      cacheableData.campaign.reload(id)
+      // some synchronous caching:
+      await cacheableData.campaign.reload(id)
+      // TODO: load assignments
+      // some asynchronous cache-priming:
+      cacheableData.optOut.loadMany(campaign.organization_id)
+      cacheableData.campaignContact.loadMany(
+        await loaders.organization.load(campaign.organization_id),
+        { campaign })
       await sendUserNotification({
         type: Notifications.CAMPAIGN_STARTED,
         campaignId: id
