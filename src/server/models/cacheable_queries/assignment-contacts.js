@@ -6,7 +6,6 @@ import { r } from '../index'
 const assignmentContactsKey = (id, tz) => `${process.env.CACHE_PREFIX || ''}assignmentcontacts-${id}-${tz}`
 
 // TODO: dynamic assignment (updating assignment-contacts with dynamically assigned contacts)
-// TODO: expiration
 
 const msgStatusRange = {
   // Inclusive min/max ranges

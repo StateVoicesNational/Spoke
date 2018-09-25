@@ -646,8 +646,8 @@ const rootMutations = {
       await campaign.save()
       // some synchronous caching:
       await cacheableData.campaign.reload(id)
-      // TODO: load assignments
       // some asynchronous cache-priming:
+      cacheableData.assignment.loadCampaignAssignments(campaign)
       cacheableData.optOut.loadMany(campaign.organization_id)
       cacheableData.campaignContact.loadMany(
         await loaders.organization.load(campaign.organization_id),
@@ -1032,7 +1032,6 @@ const rootMutations = {
       { organizationId, campaignIdsContactIds, newTexterUserId },
       { user }
     ) => {
-      // TODO: update assignment after Assignment.save
       // verify permissions
       await accessRequired(user, organizationId, 'ADMIN', /* superadmin*/ true)
 
@@ -1072,6 +1071,7 @@ const rootMutations = {
             max_contacts: parseInt(process.env.MAX_CONTACTS_PER_TEXTER || 0, 10)
           })
         }
+        await cacheableData.assignment.reload(assignment.id)
         campaignIdAssignmentIdMap.set(campaignId, assignment.id)
       }
 

@@ -569,7 +569,9 @@ export async function assignTexters(job) {
         max_contacts: maxContacts
       }).save()
     }
-
+    if (assignment && campaign.is_started) {
+      await cacheableData.assignment.reload(assignment.id)
+    }
     if (!campaign.use_dynamic_assignment) {
       await r.knex('campaign_contact')
         .where('id', 'in',
@@ -597,17 +599,21 @@ export async function assignTexters(job) {
 
   if (!campaign.use_dynamic_assignment) {
     // dynamic assignments, having zero initially is ok
-    const assignmentsToDelete = r.knex('assignment')
+    const assignmentsToDelete = await r.knex('assignment')
       .where('assignment.campaign_id', cid)
       .leftJoin('campaign_contact', 'assignment.id', 'campaign_contact.assignment_id')
       .groupBy('assignment.id')
       .havingRaw('COUNT(campaign_contact.id) = 0')
       .select('assignment.id as id')
-
+    const assignmentIdsToDelete = assignmentsToDelete.map(a => a.id)
+    if (assignmentIdsToDelete.length) {
+      await cacheableData.assignment.clearAll(assignmentIdsToDelete, campaign.id)
+    }
     await r.knex('assignment')
-      .where('id', 'in', assignmentsToDelete)
+      .where('id', 'in', assignmentIdsToDelete)
       .delete()
       .catch(log.error)
+
   }
 
 
