@@ -229,6 +229,7 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
   knexResult.fields.forEach((f) => {
     fields[f.name] = 1
     if (! (f.name in contactFields)) {
+      console.log('contact fields field name:', f.name);
       customFields[f.name] = 1
     }
   })
@@ -239,7 +240,8 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
 
   const jobMessages = []
   const savePortion = await Promise.all(knexResult.rows.map(async (row) => {
-    const formatCell = getFormattedPhoneNumber(row.cell, (process.env.PHONE_NUMBER_COUNTRY || 'US'))
+    const rawCell = row.cell
+    const formatCell = getFormattedPhoneNumber(row.cell, (process.env.PHONE_NUMBER_COUNTRY || 'US')) 
     const contact = {
       campaign_id: jobEvent.campaignId,
       first_name: row.first_name || '',
@@ -306,6 +308,7 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
 
 export async function loadContactsFromDataWarehouse(job) {
   console.log('STARTING loadContactsFromDataWarehouse')
+  console.log('job:', job);
   const jobMessages = []
   const sqlQuery = job.payload
   if (!sqlQuery.startsWith('SELECT') || sqlQuery.indexOf(';') >= 0) {
@@ -320,10 +323,10 @@ export async function loadContactsFromDataWarehouse(job) {
   let knexCountRes
   let knexCount
   try {
-    knexCountRes = await datawarehouse.raw(`SELECT COUNT(*) FROM ( ${sqlQuery} )`)
+    knexCountRes = await datawarehouse.raw(`SELECT COUNT(*) FROM ( ${sqlQuery} ) AS QUERYCOUNT`)
   } catch (err) {
     log.error('Data warehouse count query failed: ', err)
-    jobMessages.push(`Error: Data warehouse count query failed: ${err}`)
+    jobMessages.push(`Data warehouse count query failed with ${err}`)
   }
 
   if (knexCountRes) {
