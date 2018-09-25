@@ -14,7 +14,7 @@ KEY: texterauth-${authId}
 - is_superadmin: type.boolean(),
 - terms: type.boolean().default(false)
 
-HASH texterinfo-<userId>
+HASH texterroles-<userId>
 key = orgId
 value = highest_role:org_name
 
@@ -25,7 +25,7 @@ currentEditors(campaign, user) -> string
 userOrgsWithRole(role, user.id) -> organization list
 */
 
-const userRoleKey = (userId) => `${process.env.CACHE_PREFIX || ''}texterinfo-${userId}`
+const userRoleKey = (userId) => `${process.env.CACHE_PREFIX || ''}texterroles-${userId}`
 const userAuthKey = (authId) => `${process.env.CACHE_PREFIX || ''}texterauth-${authId}`
 
 export const accessHierarchy = ['TEXTER', 'SUPERVOLUNTEER', 'ADMIN', 'OWNER']

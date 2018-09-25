@@ -16,10 +16,10 @@ import { loadAssignmentContacts, getContacts, optOutContact } from './assignment
 // ## SORTED SET (sadly a bit complex: all functions in ./assignment-contacts.js)
 // assignmentcontacts-<assignmentId>-<tz>
 //   key=<contactId>
-//   score=<mix of message_status AND message newness>
+//   score=<mix of message_status AND message newness (Think `ORDER BY message_status, created_at DESC`)>
 //            optedOut: score=0
-//      e.g.  needsMessage is between 1-999 (add 4 more nines for scaled reality)
-//            needsResponse is between 1000-1999
+//      e.g.  needsMessage is between 1-9999999
+//            needsResponse is between 10000000-19999999
 //            convo, messaged, closed all other ranges
 //      When a conversation is updated we will update the score as
 //        one more than the current highest
