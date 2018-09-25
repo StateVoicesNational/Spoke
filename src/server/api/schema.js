@@ -477,6 +477,7 @@ const rootMutations = {
           campaign_id: campaign.id,
           max_contacts: parseInt(process.env.MAX_CONTACTS_PER_TEXTER || 0, 10)
         })
+        await cacheableData.assignment.reload(assignment.id)
       }
       return campaign
     },
