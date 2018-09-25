@@ -186,6 +186,7 @@ export async function uploadContacts(job) {
     } else {
       await r.table('job_request').get(job.id).delete()
     }
+    await cacheableData.optOut.loadMany(campaign.organization_id)
   }
   await cacheableData.campaign.reload(campaignId)
 }
@@ -284,6 +285,7 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
     }
     await r.table('job_request').get(jobEvent.jobId).delete()
     await cacheableData.campaign.reload(jobEvent.campaignId)
+    await cacheableData.optOut.loadMany(jobEvent.organizationId)
     return { 'completed': 1 }
   } else if (jobEvent.part < (jobEvent.totalParts - 1)) {
     const newPart = jobEvent.part + 1

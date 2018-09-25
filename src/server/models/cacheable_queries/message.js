@@ -126,7 +126,10 @@ const messageCache = {
       )
       console.log('activeCellFound', activeCellFound)
       if (!activeCellFound) {
-        // no active thread to attach message to
+        // No active thread to attach message to. This should be very RARE
+        // This could happen way after a campaign is closed and a contact responds 'very late'
+        // or e.g. gives the 'number for moveon' to another person altogether that tries to text it.
+        console.error('ORPHAN MESSAGE', messageInstance, activeCellFound)
         return false
       }
       if (activeCellFound.service_id) {

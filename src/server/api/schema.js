@@ -647,9 +647,9 @@ const rootMutations = {
       await campaign.save()
       // some synchronous caching:
       await cacheableData.campaign.reload(id)
+
       // some asynchronous cache-priming:
       cacheableData.assignment.loadCampaignAssignments(campaign)
-      cacheableData.optOut.loadMany(campaign.organization_id)
       cacheableData.campaignContact.loadMany(
         await loaders.organization.load(campaign.organization_id),
         { campaign })

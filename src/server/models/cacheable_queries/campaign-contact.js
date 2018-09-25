@@ -172,6 +172,14 @@ const campaignContactCache = {
     }
   },
   lookupByCell: async (cell, service, messageServiceSid, bailWithoutCache) => {
+    // Used to lookup contact/campaign information by cell number for incoming messages
+    // in order to map it to the existing campaign, since Twilio, etc "doesn't know"
+    // what campaign or other objects this is.
+    // In non-cache settings, this is done through looking up the last message
+    // that was sent to the cell phone.  Since Spoke always accepts "just replies"
+    // after an initial outgoing message, there should always be a 'last message'
+    // The cached version uses the info added in the updateStatus (of a contact) method below
+    // which is called for incoming AND outgoing messages.
     if (r.redis) {
       const cellData = await r.redis.getAsync(
         cellTargetKey(cell, messageServiceSid))

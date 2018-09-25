@@ -88,7 +88,7 @@ Others:
 
 * user
   * KEY `texterauth-${authId}`
-  * HASH `texterinfo-${userId}`
+  * HASH `texterroles-${userId}`
     * key=orgId, value=highest_role:org_name
 * organization
   * KEY `org-${orgId}`
@@ -164,8 +164,10 @@ However some stories are more complicated:
   Thus, we need all optOuts loaded, and it's 'all or nothing' -- so when optOut is not found
   in cache, we load every record in at once, however asynchronous to the request that triggered
   it.  We could, in theory, keep the optOut cache in much longer, but this could then lead to
-  drift if there are any 'missed' saves.  One thing we do is refresh all optOuts at the start
-  of every campaign.
+  drift if there are any 'missed' saves.  To avoid this, we do an optOut update for every
+  contacts upload job -- we put it in the job, because the opt_out table might be very large,
+  and syncing could be a significant process. By doing it on contact upload, we can make sure
+  that the cache exists before each campaign starts.
 * `message` (1 day since last add): Message is mostly simple but when it enters and exits cache
   is a little interesting.  When a texter sends a first messaage to someone with message_status
   needsMessage (i.e. first contact), we create the message LIST cache with the first message.
