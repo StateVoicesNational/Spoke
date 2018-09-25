@@ -86,6 +86,21 @@ const assignmentQuery = () => (
             'user.last_name')
     .join('user', 'assignment.user_id', 'user.id'))
 
+const saveCache = async (assignment, campaign) => {
+  if (r.redis) {
+    const id = assignment.id
+    // eslint-disable-next-line no-param-reassign
+    assignment.organization_id = campaign.organization_id
+    await r.redis.multi()
+      .set(assignmentHashKey(id), JSON.stringify(assignment))
+      .expire(assignmentHashKey(id), 86400)
+      .execAsync()
+    await loadAssignmentContacts(id,
+                                 campaign.organization_id,
+                                 campaign.contactTimezones)
+  }
+}
+
 const loadDeep = async (id) => {
   // needs refresh whenever
   // * assignment is updated
@@ -106,24 +121,10 @@ const loadDeep = async (id) => {
 const loadCampaignAssignments = async (campaign) => {
   if (r.redis) {
     const assignments = await assignmentQuery()
-      .where('campaign_id', campaignId)
+      .where('campaign_id', campaign.id)
     for (let i = 0, l = assignments.length; i < l; i++) {
       await saveCache(assignments[i], campaign)
     }
-  }
-}
-
-const saveCache = async (assignment, campaign) => {
-  if (r.redis) {
-    const id = assignment.id
-    assignment.organization_id = campaign.organization_id
-    await r.redis.multi()
-      .set(assignmentHashKey(id), JSON.stringify(assignment))
-      .expire(assignmentHashKey(id), 86400)
-      .execAsync()
-    await loadAssignmentContacts(id,
-                                 campaign.organization_id,
-                                 campaign.contactTimezones)
   }
 }
 

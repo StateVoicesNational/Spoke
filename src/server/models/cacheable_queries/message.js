@@ -53,8 +53,11 @@ const saveMessageCache = async (contactId, contactMessages, overwriteFull) => {
     if (overwriteFull) {
       redisQ = redisQ.del(key)
     }
+
     await redisQ
-      .lpush(key, contactMessages.map(m => JSON.stringify(m)))
+      .lpush(key, contactMessages.map(
+        m => JSON.stringify({ ...m, // don't cache service_response key
+                              service_response: undefined })))
       .expire(key, 86400)
       .execAsync()
   }
