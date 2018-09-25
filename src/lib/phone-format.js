@@ -10,10 +10,10 @@ export const getFormattedPhoneNumber = (cell, country = 'US') => {
     if (isValid) {
       return phoneUtil.format(inputNumber, PhoneNumberFormat.E164)
     }
-    return null
+    return ''
   } catch (e) {
     log.error(e)
-    return null
+    return ''
   }
 }
 
