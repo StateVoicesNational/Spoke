@@ -6,7 +6,7 @@ if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then
   # Start dev server
   npm run dev-nowrap &
   # Wait for server availability https://github.com/jeffbski/wait-on#readme
-  wait-on -d 30000 -i 1000 -w 2000 http-get://localhost:3000
+  wait-on -d 30000 -i 1000 -w 10000 http-get://localhost:3000
   # Run end to end tests
   npm run test-e2e --saucelabs
 fi
