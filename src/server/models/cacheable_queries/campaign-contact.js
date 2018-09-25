@@ -3,6 +3,11 @@ import optOutCache from './opt-out'
 import { modelWithExtraProps } from './lib'
 import { updateAssignmentContact } from './assignment-contacts'
 
+// TODO: for dynamic assignment, the assignment_id should NOT be set
+// -- so it can be loaded before it's assigned
+// used below and in sendMessage -- can be loaded from cellTargetKey
+// OR with dynamic assignment, we can get it from inflight-sortedset
+
 // <campaignContactId>
 //   - assignmentId
 //   - campaignId
@@ -28,14 +33,12 @@ import { updateAssignmentContact } from './assignment-contacts'
 // HASH message-<cell>-<campaignId>
 //   - messageStatus
 
-// TODO: relocate this method elsewhere
-
 // stores most of the contact info:
-const cacheKey = async (id) => `${process.env.CACHE_PREFIX || ''}contact-${id}`
+const cacheKey = (id) => `${process.env.CACHE_PREFIX || ''}contact-${id}`
 // just stores messageStatus -- this changes more often than the rest of the contact info
-const messageStatusKey = async (id) => `${process.env.CACHE_PREFIX || ''}contactstatus-${id}`
+const messageStatusKey = (id) => `${process.env.CACHE_PREFIX || ''}contactstatus-${id}`
 // allows a lookup of contact_id, assignment_id, and timezone_offset by cell+messageservice_sid
-const cellTargetKey = async (cell, messageServiceSid) => `${process.env.CACHE_PREFIX || ''}cell-${cell}-${messageServiceSid}`
+const cellTargetKey = (cell, messageServiceSid) => `${process.env.CACHE_PREFIX || ''}cell-${cell}-${messageServiceSid}`
 
 const generateCacheRecord = (dbRecord, organizationId, messageServiceSid) => ({
   // This should be contactinfo that
@@ -65,13 +68,28 @@ const saveCacheRecord = async (dbRecord, organization, messageServiceSid) => {
     // basic contact record
     const contactCacheObj = generateCacheRecord(dbRecord, organization.id, messageServiceSid)
     // console.log('generated contact', contactCacheObj)
-    await r.redis.setAsync(cacheKey(dbRecord.id), JSON.stringify(contactCacheObj))
-    // TODO:
-    //   messageStatus-<cell>
+    console.log('contact saveCacheRecord', contactCacheObj)
+    const contactKey = cacheKey(dbRecord.id)
+    const statusKey = messageStatusKey(dbRecord.id)
+    const [statusKeyExists] = await r.redis.multi()
+      .exists(statusKey)
+      .set(contactKey, JSON.stringify(contactCacheObj))
+      .expire(contactKey, 86400)
+      .execAsync()
+    if (!statusKeyExists && dbRecord.message_status) {
+      // To avoid a write-syncing risk, before updating the status
+      // we check to see it doesn't exist before overwrite
+      // This could also cause a problem, if the cache, itself, somehow gets out-of-sync
+      await r.redis.multi()
+        .set(statusKey, dbRecord.message_status)
+        .expire(statusKey, 86400)
+        .execAsync()
+    }
   }
-  // NOT INCLUDED:
-  // - messages <cell><message_service_sid>
-  // - questionResponseValues <contact_id>
+  // NOT INCLUDED: (All SET on first-text (i.e. updateStatus) rather than initial save)
+  // - cellTargetKey <cell><messageservice_sid>: to not steal the cell from another campaign "too early"
+  // - messages <contact_id>: because it's empty, dur
+  // - questionResponseValues <contact_id>: also empty, dur
 }
 
 const getMessageStatus = async (id, contactObj) => {
@@ -98,6 +116,7 @@ const campaignContactCache = {
     if (r.redis) {
       const cacheRecord = await r.redis.getAsync(cacheKey(id))
       if (cacheRecord) {
+        console.log('contact cacheRecord', cacheRecord)
         const cacheData = JSON.parse(cacheRecord)
         if (cacheData.cell && cacheData.organization_id) {
           cacheData.is_opted_out = await optOutCache.query({
@@ -153,6 +172,14 @@ const campaignContactCache = {
     }
   },
   lookupByCell: async (cell, service, messageServiceSid, bailWithoutCache) => {
+    // Used to lookup contact/campaign information by cell number for incoming messages
+    // in order to map it to the existing campaign, since Twilio, etc "doesn't know"
+    // what campaign or other objects this is.
+    // In non-cache settings, this is done through looking up the last message
+    // that was sent to the cell phone.  Since Spoke always accepts "just replies"
+    // after an initial outgoing message, there should always be a 'last message'
+    // The cached version uses the info added in the updateStatus (of a contact) method below
+    // which is called for incoming AND outgoing messages.
     if (r.redis) {
       const cellData = await r.redis.getAsync(
         cellTargetKey(cell, messageServiceSid))
@@ -174,6 +201,7 @@ const campaignContactCache = {
       .select('assignment_id', 'campaign_contact_id')
       .where({
         is_from_contact: false,
+        contact_number: cell,
         service
       })
       .where(function subquery() {
@@ -199,13 +227,21 @@ const campaignContactCache = {
   getMessageStatus,
   updateStatus: async (contact, newStatus) => {
     if (r.redis) {
+      const contactKey = cacheKey(contact.id)
+      const statusKey = messageStatusKey(contact.id)
+      const cellKey = cellTargetKey(contact.cell, contact.messageservice_sid)
+      console.log('contact updateStatus', cellKey, newStatus, contact)
       await r.redis.multi()
-        .set(messageStatusKey(contact.id), newStatus)
+        .set(statusKey, newStatus)
       // We update the cell info on status updates, because this happens
       // during message sending -- this is exactly the moment we want to
       // 'steal' a cell from one (presumably older) campaign into another
-        .set(cellTargetKey(contact.cell, contact.messageservice_sid),
+        .set(cellKey,
              [contact.id, contact.assignment_id, contact.timezone_offset].join(':'))
+      // delay expiration for contacts we continue to update
+        .expire(contactKey, 86400)
+        .expire(statusKey, 86400)
+        .expire(cellKey, 86400)
         .execAsync()
       await updateAssignmentContact(contact, newStatus)
     }

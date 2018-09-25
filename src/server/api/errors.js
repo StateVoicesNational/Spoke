@@ -1,9 +1,6 @@
 import { GraphQLError } from 'graphql/error'
 import { r, cacheableData } from '../models'
 
-
-const accessHierarchy = ['TEXTER', 'SUPERVOLUNTEER', 'ADMIN', 'OWNER']
-
 export function authRequired(user) {
   if (!user) {
     throw new GraphQLError({
@@ -22,8 +19,7 @@ export async function accessRequired(user, orgId, role, allowSuperadmin = false)
     return
   }
   // require a permission at-or-higher than the permission requested
-  const acceptableRoles = accessHierarchy.slice(accessHierarchy.indexOf(role))
-  const hasRole = await cacheableData.user.userHasRole(user.id, orgId, acceptableRoles)
+  const hasRole = await cacheableData.user.userHasRole(user.id, orgId, role)
   if (!hasRole) {
     throw new GraphQLError('You are not authorized to access that resource.')
   }

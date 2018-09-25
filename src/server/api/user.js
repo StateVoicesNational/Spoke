@@ -1,5 +1,5 @@
 import { mapFieldsToModel } from './lib/utils'
-import { r, User } from '../models'
+import { r, User, cacheableData } from '../models'
 import { addCampaignsFilterToQuery } from './campaign'
 
 export function buildUserOrganizationQuery(queryParam, organizationId, role) {
@@ -104,17 +104,11 @@ export const resolvers = {
       if (!user || !user.id) {
         return []
       }
-      let orgs = r.table('user_organization')
-        .getAll(user.id, { index: 'user_id' })
-      if (role) {
-        orgs = orgs.filter({ role })
-      }
-      return orgs.eqJoin('organization_id', r.table('organization'))('right').distinct()
+      // Note: this only returns {id, name}, but that is all apis need here
+      return await cacheableData.user.userOrgs(user.id, role)
     },
     roles: async(user, { organizationId }) => (
-      r.table('user_organization')
-        .getAll([organizationId, user.id], { index: 'organization_user' })
-        .pluck('role')('role')
+      cacheableData.user.orgRoles(user.id, organizationId)
     ),
     todos: async (user, { organizationId }) =>
       r.table('assignment')

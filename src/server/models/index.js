@@ -29,6 +29,7 @@ function createLoader(model, opts) {
   const idKey = (opts && opts.idKey) || 'id'
   const cacheObj = opts && opts.cacheObj
   return new DataLoader(async (keys) => {
+    console.log('dataloader', model.tableName, keys)
     if (cacheObj && cacheObj.load) {
       return keys.map(async (key) => await cacheObj.load(key))
     }

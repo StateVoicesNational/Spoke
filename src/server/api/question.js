@@ -4,7 +4,9 @@ export const resolvers = {
   Question: {
     text: async (interactionStep) => interactionStep.question,
     answerOptions: async (interactionStep) => (
-      r.table('interaction_step')
+      // this should usually be pre-built from campaign's interactionSteps call
+      interactionStep.answerOptions
+      || r.table('interaction_step')
         .filter({ parent_interaction_id: interactionStep.id })
         .filter({ is_deleted: false })
         .orderBy('answer_option')
@@ -20,7 +22,9 @@ export const resolvers = {
   AnswerOption: {
     value: (answer) => answer.value,
     interactionStepId: (answer) => answer.interaction_step_id,
-    nextInteractionStep: async (answer) => r.table('interaction_step').get(answer.interaction_step_id),
+    nextInteractionStep: async (answer) => (
+      answer.nextInteractionStep
+      || r.table('interaction_step').get(answer.interaction_step_id)),
     responders: async (answer) => (
       r.table('question_response')
         .getAll(answer.parent_interaction_step, { index: 'interaction_step_id' })

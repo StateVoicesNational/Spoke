@@ -6,8 +6,6 @@ import { r } from '../index'
 const assignmentContactsKey = (id, tz) => `${process.env.CACHE_PREFIX || ''}assignmentcontacts-${id}-${tz}`
 
 // TODO: dynamic assignment (updating assignment-contacts with dynamically assigned contacts)
-// TODO: updating message status
-// TODO: expiration
 
 const msgStatusRange = {
   // Inclusive min/max ranges
@@ -273,13 +271,14 @@ export const loadAssignmentContacts = async (assignmentId, organizationId, timez
   })
   const tzKeys = Object.keys(tzs)
   for (let i = 0, l = tzKeys.length; i < l; i++) {
-    const tz = tzs[tzKeys[i]]
+    const tz = tzKeys[i]
     const tzContacts = tzs[tz].contacts
     const key = assignmentContactsKey(assignmentId, tz)
     await r.redis.multi()
       .del(key)
     // TODO: is there a max to how many we can add at once?
       .zadd(key, ...tzContacts)
+      .expire(key, 86400 * 2)
       .execAsync()
   }
 }
