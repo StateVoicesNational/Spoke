@@ -5,6 +5,7 @@ export async function getLastMessage({ contactNumber, service, messageServiceSid
     .select('assignment_id', 'campaign_contact_id')
     .where({
       is_from_contact: false,
+      contact_number: contactNumber,
       service
     })
   if (messageServiceSid) {

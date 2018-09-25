@@ -188,7 +188,7 @@ export const resolvers = {
     },
     interactionSteps: async (campaign) => (
       campaign.interactionSteps
-      || cacheableData.campaign.dbInteractionSteps(campaign.id)
+        || cacheableData.campaign.dbInteractionSteps(campaign.id)
     ),
     cannedResponses: async (campaign, { userId }) => (
       await cacheableData.cannedResponse.query({

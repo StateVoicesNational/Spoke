@@ -1,5 +1,6 @@
 import { r, Campaign } from '../../models'
 import { modelWithExtraProps } from './lib'
+import { assembleAnswerOptions } from '../../../lib/interaction-step-helpers'
 
 // This should be cached data for a campaign that will not change
 // based on assignments or texter actions
@@ -30,11 +31,12 @@ const dbCustomFields = async (id) => {
   return []
 }
 
-const dbInteractionSteps = async (id) => (
-  await r.table('interaction_step')
+const dbInteractionSteps = async (id) => {
+  const allSteps = await r.table('interaction_step')
     .getAll(id, { index: 'campaign_id' })
     .filter({ is_deleted: false })
-)
+  return assembleAnswerOptions(allSteps)
+}
 
 const dbContactTimezones = async (id) => (
   (await r.knex('campaign_contact')
@@ -64,7 +66,7 @@ const loadDeep = async (id) => {
     campaign.customFields = await dbCustomFields(id)
     campaign.interactionSteps = await dbInteractionSteps(id)
     campaign.contactTimezones = await dbContactTimezones(id)
-    console.log('loaded deep campaign', campaign)
+    console.log('loaded deep campaign', JSON.stringify(campaign, null, 2))
     // We should only cache organization data
     // if/when we can clear it on organization data changes
     // campaign.organization = await organizationCache.load(campaign.organization_id)
@@ -102,6 +104,7 @@ const campaignCache = {
     if (r.redis) {
       let campaignData = await r.redis.getAsync(cacheKey(id))
       if (!campaignData) {
+        console.log('no campaigndata')
         const campaignNoCache = await loadDeep(id)
         if (campaignNoCache) {
           return campaignNoCache

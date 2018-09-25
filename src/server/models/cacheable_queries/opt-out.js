@@ -2,7 +2,8 @@ import { r, OptOut } from '../../models'
 import assignmentCache from './assignment'
 
 // STRUCTURE
-// maybe HASH by organization, so optout-<organization_id> has a <cell> key
+// SET by organization, so optout-<organization_id> has a <cell> key
+//  and membership can be tested
 
 const orgCacheKey = (orgId) => (
 !!process.env.OPTOUTS_SHARE_ALL_ORGS

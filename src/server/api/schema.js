@@ -198,7 +198,9 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
   }
 
   const newCampaign = await Campaign.get(id).update(campaignUpdates)
-  cacheableData.campaign.reload(id)
+  if (newCampaign.is_started) {
+    await cacheableData.campaign.reload(id)
+  }
   return newCampaign || loaders.campaign.load(id)
 }
 
@@ -250,6 +252,9 @@ async function updateInteractionSteps(
 const rootMutations = {
   RootMutation: {
     userAgreeTerms: async (_, { userId }, { user, loaders }) => {
+      if (user.id === parseInt(userId, 10)) {
+        return (user.terms ? user : null)
+      }
       const currentUser = await r
         .table('user')
         .get(userId)
@@ -451,6 +456,7 @@ const rootMutations = {
           campaign_id: campaign.id,
           max_contacts: parseInt(process.env.MAX_CONTACTS_PER_TEXTER || 0, 10)
         })
+        await cacheableData.assignment.reload(assignment.id)
       }
       return campaign
     },
@@ -618,7 +624,14 @@ const rootMutations = {
       campaign.is_started = true
 
       await campaign.save()
-      cacheableData.campaign.reload(id)
+      // some synchronous caching:
+      await cacheableData.campaign.reload(id)
+
+      // some asynchronous cache-priming:
+      cacheableData.assignment.loadCampaignAssignments(campaign)
+      cacheableData.campaignContact.loadMany(
+        await loaders.organization.load(campaign.organization_id),
+        { campaign })
       await sendUserNotification({
         type: Notifications.CAMPAIGN_STARTED,
         campaignId: id
@@ -870,6 +883,7 @@ const rootMutations = {
     sendMessage: async (_, { message, campaignContactId }, { user, loaders }) => {
       // TODO: add access-control
       let contact = await loaders.campaignContact.load(campaignContactId)
+      await assignmentRequired(user, contact.assignment_id)
       const campaign = await loaders.campaign.load(contact.campaign_id)
 
       if (contact.assignment_id !== parseInt(message.assignmentId) || campaign.is_archived) {
@@ -934,6 +948,10 @@ const rootMutations = {
         .getAll(campaignContactId, { index: 'campaign_contact_id' })
         .getAll(...interactionStepIds, { index: 'interaction_step_id' })
         .delete()
+
+      // update cache
+      cacheableData.questionResponse.reloadQuery(campaignContactId)
+
       return contact
     },
     updateQuestionResponses: async (_, { questionResponses, campaignContactId }, { loaders }) => {
@@ -983,6 +1001,9 @@ const rootMutations = {
         }
       }
 
+      // update cache
+      cacheableData.questionResponse.reloadQuery(campaignContactId)
+
       const contact = loaders.campaignContact.load(campaignContactId)
       return contact
     },
@@ -991,7 +1012,6 @@ const rootMutations = {
       { organizationId, campaignIdsContactIds, newTexterUserId },
       { user }
     ) => {
-      // TODO: update assignment after Assignment.save
       // verify permissions
       await accessRequired(user, organizationId, 'ADMIN', /* superadmin*/ true)
 
@@ -1031,6 +1051,7 @@ const rootMutations = {
             max_contacts: parseInt(process.env.MAX_CONTACTS_PER_TEXTER || 0, 10)
           })
         }
+        await cacheableData.assignment.reload(assignment.id)
         campaignIdAssignmentIdMap.set(campaignId, assignment.id)
       }
 

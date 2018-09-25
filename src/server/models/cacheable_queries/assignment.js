@@ -3,7 +3,7 @@ import campaignCache from './campaign'
 import { loadAssignmentContacts, getContacts, optOutContact } from './assignment-contacts'
 
 // TODO: add user-org-assignment list for user.todos
-
+// TODO: move user metadata (first/last) into a separate cache key to avoid cache drift
 // ## KEY
 // assignment-<assignmentId>
 //   - user_id
@@ -16,10 +16,10 @@ import { loadAssignmentContacts, getContacts, optOutContact } from './assignment
 // ## SORTED SET (sadly a bit complex: all functions in ./assignment-contacts.js)
 // assignmentcontacts-<assignmentId>-<tz>
 //   key=<contactId>
-//   score=<mix of message_status AND message newness>
+//   score=<mix of message_status AND message newness (Think `ORDER BY message_status, created_at DESC`)>
 //            optedOut: score=0
-//      e.g.  needsMessage is between 1-999 (add 4 more nines for scaled reality)
-//            needsResponse is between 1000-1999
+//      e.g.  needsMessage is between 1-9999999
+//            needsResponse is between 10000000-19999999
 //            convo, messaged, closed all other ranges
 //      When a conversation is updated we will update the score as
 //        one more than the current highest
@@ -76,26 +76,55 @@ const hasAssignment = async (userId, assignmentId) => {
   return Boolean(assignment)
 }
 
+const assignmentQuery = () => (
+  r.knex('assignment')
+    .select('assignment.id as id',
+            'assignment.user_id',
+            'assignment.campaign_id',
+            'assignment.max_contacts',
+            'user.first_name',
+            'user.last_name')
+    .join('user', 'assignment.user_id', 'user.id'))
+
 const loadDeep = async (id) => {
-  const [assignment] = await r.knex('assignment')
-    .select('id', 'user_id', 'campaign_id', 'max_contacts')
-    .where('id', id)
+  // needs refresh whenever
+  // * assignment is updated
+  // * user is updated
+  // * contacts are updated
+  const [assignment] = await assignmentQuery()
+    .where('assignment.id', id)
     .limit(1)
   console.log('loaddeep assingment', assignment)
   if (r.redis && assignment) {
     const campaign = await campaignCache.load(assignment.campaign_id)
     console.log('cached campaign for assn', campaign)
+    await saveCache(assignment, campaign)
+  }
+  return { assignment }
+}
+
+const loadCampaignAssignments = async (campaign) => {
+  if (r.redis) {
+    const assignments = await assignmentQuery()
+      .where('campaign_id', campaignId)
+    for (let i = 0, l = assignments.length; i < l; i++) {
+      await saveCache(assignments[i], campaign)
+    }
+  }
+}
+
+const saveCache = async (assignment, campaign) => {
+  if (r.redis) {
+    const id = assignment.id
     assignment.organization_id = campaign.organization_id
     await r.redis.multi()
       .set(assignmentHashKey(id), JSON.stringify(assignment))
       .expire(assignmentHashKey(id), 86400)
       .execAsync()
-
     await loadAssignmentContacts(id,
                                  campaign.organization_id,
                                  campaign.contactTimezones)
   }
-  return { assignment }
 }
 
 const assignmentCache = {
@@ -119,12 +148,13 @@ const assignmentCache = {
         return assnObj
       }
     }
-    const { assignment } = loadDeep(id)
+    const { assignment } = await loadDeep(id)
     return assignment
   },
   hasAssignment,
   getContacts,
-  optOutContact
+  optOutContact,
+  loadCampaignAssignments
 }
 
 export default assignmentCache

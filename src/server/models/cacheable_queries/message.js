@@ -3,17 +3,13 @@ import campaignContactCache from './campaign-contact'
 
 // QUEUE
 // messages-<contactId>
-// TODO: expiration
+// Expiration: 24 hours after last message added
+//   The message cache starts when the first message is sent initially.
+//   After that, presumably a conversation will continue in cache, and then fade away.
+
 // TODO: Does query() need to support other args, or should we simplify/require a contactId
 
 const cacheKey = (contactId) => `${process.env.CACHE_PREFIX || ''}messages-${contactId}`
-
-// TODO: loadMany trigger on post-expiration use-cases (i.e. 'next day' we keep going)
-const loadMany = async () => {}
-// const loadMany = async ({ campaignId, contactId }) => {
-//   if (r.redis) {
-//   }
-// }
 
 const dbQuery = ({ campaignId, contactId }) => {
   const cols = Object.keys(Message.fields).filter(f => f !== 'service_response').map(f => `message.${f}`)
@@ -50,15 +46,16 @@ const contactIdFromOther = async ({ campaignContactId, assignmentId, cell, servi
   return null
 }
 
-const saveMessageCache = async (contactId, contactMessages, justAppend) => {
+const saveMessageCache = async (contactId, contactMessages, overwriteFull) => {
   if (r.redis) {
     const key = cacheKey(contactId)
     let redisQ = r.redis.multi()
-    if (!justAppend) {
+    if (overwriteFull) {
       redisQ = redisQ.del(key)
     }
     await redisQ
       .lpush(key, contactMessages.map(m => JSON.stringify(m)))
+      .expire(key, 86400)
       .execAsync()
   }
 }
@@ -77,7 +74,7 @@ const cacheDbResult = async (dbResult) => {
     const contactIds = Object.keys(contacts)
     for (let i = 0, l = contactIds.length; i < l; i++) {
       const c = contactIds[i]
-      await saveMessageCache(c, contacts[c])
+      await saveMessageCache(c, contacts[c], true)
     }
   }
 }
@@ -129,7 +126,10 @@ const messageCache = {
       )
       console.log('activeCellFound', activeCellFound)
       if (!activeCellFound) {
-        // no active thread to attach message to
+        // No active thread to attach message to. This should be very RARE
+        // This could happen way after a campaign is closed and a contact responds 'very late'
+        // or e.g. gives the 'number for moveon' to another person altogether that tries to text it.
+        console.error('ORPHAN MESSAGE', messageInstance, activeCellFound)
         return false
       }
       if (activeCellFound.service_id) {
@@ -165,7 +165,7 @@ const messageCache = {
     await messageInstance.save()
     // eslint-disable-next-line no-param-reassign
     messageInstance.created_at = new Date()
-    await saveMessageCache(contactData.id, [messageInstance], true)
+    await saveMessageCache(contactData.id, [messageInstance])
 
     let newStatus = 'needsResponse'
     if (!messageInstance.is_from_contact) {
@@ -176,8 +176,7 @@ const messageCache = {
       contactData, newStatus
     )
     return { ...contactData, message_status: newStatus }
-  },
-  loadMany
+  }
 }
 
 export default messageCache
