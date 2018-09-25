@@ -76,36 +76,55 @@ const hasAssignment = async (userId, assignmentId) => {
   return Boolean(assignment)
 }
 
-const loadDeep = async (id) => {
-  // needs refresh whenever
-  // * assignment is updated
-  // * user is updated
-  // * contacts are updated
-  const [assignment] = await r.knex('assignment')
+const assignmentQuery = () => (
+  r.knex('assignment')
     .select('assignment.id as id',
             'assignment.user_id',
             'assignment.campaign_id',
             'assignment.max_contacts',
             'user.first_name',
             'user.last_name')
-    .join('user', 'assignment.user_id', 'user.id')
+    .join('user', 'assignment.user_id', 'user.id'))
+
+const loadDeep = async (id) => {
+  // needs refresh whenever
+  // * assignment is updated
+  // * user is updated
+  // * contacts are updated
+  const [assignment] = await assignmentQuery()
     .where('assignment.id', id)
     .limit(1)
   console.log('loaddeep assingment', assignment)
   if (r.redis && assignment) {
     const campaign = await campaignCache.load(assignment.campaign_id)
     console.log('cached campaign for assn', campaign)
+    await saveCache(assignment, campaign)
+  }
+  return { assignment }
+}
+
+const loadCampaignAssignments = async (campaign) => {
+  if (r.redis) {
+    const assignments = await assignmentQuery()
+      .where('campaign_id', campaignId)
+    for (let i = 0, l = assignments.length; i < l; i++) {
+      await saveCache(assignments[i], campaign)
+    }
+  }
+}
+
+const saveCache = async (assignment, campaign) => {
+  if (r.redis) {
+    const id = assignment.id
     assignment.organization_id = campaign.organization_id
     await r.redis.multi()
       .set(assignmentHashKey(id), JSON.stringify(assignment))
       .expire(assignmentHashKey(id), 86400)
       .execAsync()
-
     await loadAssignmentContacts(id,
                                  campaign.organization_id,
                                  campaign.contactTimezones)
   }
-  return { assignment }
 }
 
 const assignmentCache = {
@@ -134,7 +153,8 @@ const assignmentCache = {
   },
   hasAssignment,
   getContacts,
-  optOutContact
+  optOutContact,
+  loadCampaignAssignments
 }
 
 export default assignmentCache
