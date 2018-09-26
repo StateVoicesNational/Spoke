@@ -114,7 +114,7 @@ const userOrgs = async (userId, role) => {
                            : [...accessHierarchy])
   const orgRoles = await loadUserRoles(userId)
   const matchedOrgs = Object.keys(orgRoles).filter(orgId => (
-    acceptableRoles.indexOf(orgRoles[orgId]) !== -1
+    acceptableRoles.indexOf(orgRoles[orgId].role) !== -1
   ))
   return matchedOrgs.map(orgId => orgRoles[orgId])
 }
