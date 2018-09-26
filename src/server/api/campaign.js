@@ -37,6 +37,12 @@ export function buildCampaignQuery(queryParam, organizationId, campaignsFilter, 
   query = query.where('organization_id', organizationId)
   query = addCampaignsFilterToQuery(query, campaignsFilter)
 
+  if (campaignsFilter && campaignsFilter.orderBy) {
+    query = query.orderBy(campaignsFilter.orderBy, 'desc')
+  } else {
+    query = query.orderBy('due_by', 'desc')
+  }
+
   return query
 }
 
