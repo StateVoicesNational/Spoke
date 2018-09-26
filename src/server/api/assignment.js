@@ -41,7 +41,7 @@ export function getContacts(assignment, contactsFilter, organization, campaign, 
   }
 
   const [validOffsets, invalidOffsets] = getOffsets(config)
-  if (!includePastDue && pastDue && contactsFilter.messageStatus === 'needsMessage') {
+  if (!includePastDue && pastDue && contactsFilter && contactsFilter.messageStatus === 'needsMessage') {
     return []
   }
 
@@ -69,7 +69,7 @@ export function getContacts(assignment, contactsFilter, organization, campaign, 
 
     query = addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue(
       query,
-      (contactsFilter.messageStatus ||
+      ((contactsFilter && contactsFilter.messageStatus) ||
        (pastDue
         // by default if asking for 'send later' contacts we include only those that need replies
         ? 'needsResponse'
