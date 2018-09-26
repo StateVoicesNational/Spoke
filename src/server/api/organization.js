@@ -3,7 +3,7 @@ import { r, Organization } from '../models'
 import { accessRequired } from './errors'
 import { buildCampaignQuery } from './campaign'
 import { buildUserOrganizationQuery } from './user'
-import { ASSIGNMENT_CREATED_SUBJECT, ASSIGNMENT_CREATED_BODY } from '../notifications';
+import { defaultAssignmentSubject, defaultAssignmentBody } from '../notifications'
 
 export const resolvers = {
   Organization: {
@@ -54,7 +54,7 @@ export const resolvers = {
     textingHoursEnd: (organization) => organization.texting_hours_end
   },
   AssignmentMessage: {
-    subject: s => s.subject || ASSIGNMENT_CREATED_SUBJECT,
-    body: b => b.body || ASSIGNMENT_CREATED_BODY
+    subject: s => s.subject || defaultAssignmentSubject,
+    body: b => b.body || defaultAssignmentBody
   }
 }

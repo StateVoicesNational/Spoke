@@ -24,8 +24,8 @@ const getNotificationFields = (organization, campaign) => ({
   todoUrl: `${process.env.BASE_URL}/app/${campaign.organization_id}/todos`
 })
 
-export const ASSIGNMENT_CREATED_SUBJECT = '[{organizationName}] New assignment: {campaignTitle}'
-export const ASSIGNMENT_CREATED_BODY = 'You just got a new texting assignment from {organizationName}. You can start sending texts right away: \n\n{todoUrl}'
+export const defaultAssignmentSubject = '[{organizationName}] New assignment: {campaignTitle}'
+export const defaultAssignmentBody = 'You just got a new texting assignment from {organizationName}. You can start sending texts right away: \n\n{todoUrl}'
 
 const sendAssignmentUserNotification = async (assignment, notification) => {
   const campaign = await Campaign.get(assignment.campaign_id)
@@ -47,8 +47,8 @@ const sendAssignmentUserNotification = async (assignment, notification) => {
     text = `Your assignment changed: \n\n${process.env.BASE_URL}/app/${campaign.organization_id}/todos`
   } else if (notification === Notifications.ASSIGNMENT_CREATED) {
     const custMessage = JSON.parse(organization.features || '{}').assignment_message || {}
-    subject = custMessage.subject || ASSIGNMENT_CREATED_SUBJECT
-    text = custMessage.body || ASSIGNMENT_CREATED_BODY
+    subject = custMessage.subject || defaultAssignmentSubject
+    text = custMessage.body || defaultAssignmentBody
     for (const field of Object.keys(fieldReplacements)) {
       const re = new RegExp(`${delimit(field)}`, 'g')
       subject = subject.replace(re, fieldReplacements[field])
