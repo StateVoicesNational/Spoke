@@ -229,7 +229,6 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
   knexResult.fields.forEach((f) => {
     fields[f.name] = 1
     if (! (f.name in contactFields)) {
-      console.log('contact fields field name:', f.name);
       customFields[f.name] = 1
     }
   })
@@ -240,8 +239,7 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
 
   const jobMessages = []
   const savePortion = await Promise.all(knexResult.rows.map(async (row) => {
-    const rawCell = row.cell
-    const formatCell = getFormattedPhoneNumber(row.cell, (process.env.PHONE_NUMBER_COUNTRY || 'US')) 
+    const formatCell = getFormattedPhoneNumber(row.cell, (process.env.PHONE_NUMBER_COUNTRY || 'US'))
     const contact = {
       campaign_id: jobEvent.campaignId,
       first_name: row.first_name || '',
@@ -282,6 +280,11 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
       const optOutCellCount = await r.knex('campaign_contact')
         .whereIn('cell', getOptOutSubQuery(jobEvent.organizationId))
         .where('campaign_id', jobEvent.campaignId)
+        .delete()
+
+      const inValidCellCount = await r.knex('campaign_contact')
+        .whereRaw('length(cell) != 12')
+        .andWhere('campaign_id', jobEvent.campaignId)
         .delete()
     }
     await r.table('job_request').get(jobEvent.jobId).delete()
