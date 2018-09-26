@@ -182,6 +182,15 @@ const migrations = [
       console.log('added messageservice_sid column to organization table')
     }
   },
+  {
+    auto: true,
+    date: '2018-09-25', 
+    migrate: async () => {
+      const query = 'UPDATE message SET campaign_contact_id = cc.id FROM campaign_contact cc WHERE message.contact_number = cc.cell'
+      await r.knex.raw(query)
+      console.log('backfilled message.campaign_contact_id column')
+    }
+  }
   /* migration template
      {auto: true, //if auto is false, then it will block the migration running automatically
       date: '2017-08-23',
