@@ -22,10 +22,10 @@ const questionResponseCache = {
         .hgetall(key)
         .execAsync()
       if (exists && cachedResponse) {
-        const formattedResponse = Object.keys(cachedResponse).reduce((acc, key) => {
-          acc.push({ interaction_step_id: key, value: cachedResponse[key] })
-          return acc
-        }, [])
+        const formattedResponse = Object.keys(cachedResponse).map((key) => ({
+          interaction_step_id: key,
+          value: cachedResponse[key]
+        }))
         return formattedResponse
       }
     }
