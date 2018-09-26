@@ -4,6 +4,7 @@ export const schema = `
     campaignId: Int
     listSize: Int
     pageSize: Int
+    orderBy: String
   }
 
   type CampaignStats {
@@ -34,6 +35,7 @@ export const schema = `
     contacts: [CampaignContact]
     contactsCount: Int
     hasUnassignedContacts: Boolean
+    hasUnsentInitialMessages: Boolean
     customFields: [String]
     cannedResponses(userId: String): [CannedResponse]
     stats: CampaignStats,
@@ -50,4 +52,15 @@ export const schema = `
     textingHoursEnd: Int
     timezone: String
   }
+
+  type CampaignsList {
+    campaigns: [Campaign]
+  }
+
+  union CampaignsReturn = PaginatedCampaigns | CampaignsList
+  
+  type PaginatedCampaigns {
+    campaigns: [Campaign]
+    pageInfo: PageInfo
+  }  
 `

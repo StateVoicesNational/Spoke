@@ -1,3 +1,5 @@
+import gql from 'graphql-tag'
+import SpeakerNotesIcon from 'material-ui/svg-icons/action/speaker-notes'
 import PropTypes from 'prop-types'
 import React from 'react'
 import { List, ListItem } from 'material-ui/List'
@@ -10,9 +12,7 @@ import { withRouter } from 'react-router'
 import theme from '../styles/theme'
 import Chip from '../components/Chip'
 import loadData from './hoc/load-data'
-import gql from 'graphql-tag'
 import wrapMutations from './hoc/wrap-mutations'
-import SpeakerNotesIcon from 'material-ui/svg-icons/action/speaker-notes'
 import Empty from '../components/Empty'
 import { dataTest } from '../lib/attributes'
 
@@ -22,6 +22,7 @@ const campaignInfoFragment = `
   isStarted
   isArchived
   hasUnassignedContacts
+  hasUnsentInitialMessages
   description
   dueBy
 `
@@ -35,21 +36,32 @@ const inlineStyles = {
   },
   good: {
     color: theme.colors.green
+  },
+  warnUnsent: {
+    color: theme.colors.blue
   }
 }
 
 class CampaignList extends React.Component {
   renderRow(campaign) {
-    const { isStarted, isArchived, hasUnassignedContacts } = campaign
+    const {
+      isStarted,
+      isArchived,
+      hasUnassignedContacts,
+      hasUnsentInitialMessages
+    } = campaign
     const { adminPerms } = this.props
 
+
     let listItemStyle = {}
-    let leftIcon = ''
+    let leftIcon = null
     if (isArchived) {
       listItemStyle = inlineStyles.past
     } else if (!isStarted || hasUnassignedContacts) {
       listItemStyle = inlineStyles.warn
-      leftIcon = <WarningIcon {...dataTest('warningIcon')} />
+      leftIcon = <WarningIcon />
+    } else if (hasUnsentInitialMessages) {
+      listItemStyle = inlineStyles.warnUnsent
     } else {
       listItemStyle = inlineStyles.good
     }
@@ -62,6 +74,10 @@ class CampaignList extends React.Component {
 
     if (hasUnassignedContacts) {
       tags.push('Unassigned contacts')
+    }
+
+    if (isStarted && hasUnsentInitialMessages) {
+      tags.push('Unsent initial messages')
     }
 
     const primaryText = (
@@ -97,8 +113,8 @@ class CampaignList extends React.Component {
           this.props.router.push(campaignUrl))}
         secondaryText={secondaryText}
         leftIcon={leftIcon}
-        rightIconButton={adminPerms ?
-          (campaign.isArchived ? (
+        rightIconButton={adminPerms && (
+          campaign.isArchived ? (
             <IconButton
               tooltip='Unarchive'
               onTouchTap={async () => this.props.mutations.unarchiveCampaign(campaign.id)}
@@ -106,18 +122,19 @@ class CampaignList extends React.Component {
               <UnarchiveIcon />
             </IconButton>
           ) : (
-              <IconButton
-                tooltip='Archive'
-                onTouchTap={async () => this.props.mutations.archiveCampaign(campaign.id)}
-              >
-                <ArchiveIcon />
-              </IconButton>
-            )) : null}
+            <IconButton
+              tooltip='Archive'
+              onTouchTap={async () => this.props.mutations.archiveCampaign(campaign.id)}
+            >
+              <ArchiveIcon />
+            </IconButton>
+          ))}
       />
     )
   }
 
   render() {
+    if (this.props.data.loading) return null
     const { campaigns } = this.props.data.organization
     return campaigns.length === 0 ? (
       <Empty
@@ -125,10 +142,10 @@ class CampaignList extends React.Component {
         icon={<SpeakerNotesIcon />}
       />
     ) : (
-        <List>
-          {campaigns.map((campaign) => this.renderRow(campaign))}
-        </List>
-      )
+      <List>
+        {campaigns.campaigns.map((campaign) => this.renderRow(campaign))}
+      </List>
+    )
   }
 }
 
@@ -172,7 +189,11 @@ const mapQueriesToProps = ({ ownProps }) => ({
       organization(id: $organizationId) {
         id
         campaigns(campaignsFilter: $campaignsFilter) {
-          ${campaignInfoFragment}
+          ... on CampaignsList{
+            campaigns{
+              ${campaignInfoFragment}
+            }
+          }
         }
       }
     }`,
