@@ -183,10 +183,13 @@ const migrations = [
     }
   },
   {
-    auto: true,
+    auto: true, // 14
     date: '2018-09-25', 
     migrate: async () => {
-      const query = 'UPDATE message SET campaign_contact_id = cc.id FROM campaign_contact cc WHERE message.contact_number = cc.cell'
+      const query = 'UPDATE message ' +
+      'SET campaign_contact_id = cc.id ' +
+      'FROM campaign_contact cc ' + 
+      'WHERE message.contact_number = cc.cell and message.assignment_id = cc.assignment_id'
       await r.knex.raw(query)
       console.log('backfilled message.campaign_contact_id column')
     }
