@@ -18,7 +18,8 @@ class AdminCampaignList extends React.Component {
     isCreating: false,
     campaignsFilter: {
       isArchived: false,
-      listSize: 100
+      listSize: 100,
+      orderBy: 'due_by'
     }
   }
 
@@ -49,6 +50,7 @@ class AdminCampaignList extends React.Component {
     this.setState({
       campaignsFilter: {
         isArchived: value,
+        orderBy: value ? 'created_at' : 'due_by',
         listSize: this.state.campaignsFilter.listSize
       }
     })
@@ -58,6 +60,7 @@ class AdminCampaignList extends React.Component {
     this.setState({
       campaignsFilter: {
         isArchived: this.state.campaignsFilter.isArchived,
+        orderBy: this.state.campaignsFilter.orderBy,
         listSize: value
       }
     })

@@ -13,7 +13,7 @@ export function buildCampaignQuery(queryParam, organizationId, campaignsFilter, 
   if (campaignsFilter) {
     const resultSize = (campaignsFilter.listSize ? campaignsFilter.listSize : 0)
     const pageSize = (campaignsFilter.pageSize ? campaignsFilter.pageSize : 0)
-    
+
     if ('isArchived' in campaignsFilter) {
       query = query.where({ is_archived: campaignsFilter.isArchived })
     }
@@ -26,6 +26,12 @@ export function buildCampaignQuery(queryParam, organizationId, campaignsFilter, 
     if (resultSize && pageSize) {
       query = query.limit(resultSize).offSet(pageSize)
     }
+  }
+
+  if (campaignsFilter && campaignsFilter.orderBy) {
+    query = query.orderBy(campaignsFilter.orderBy, 'desc')
+  } else {
+    query = query.orderBy('due_by', 'desc')
   }
 
   return query

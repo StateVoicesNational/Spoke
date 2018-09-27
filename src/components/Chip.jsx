@@ -39,7 +39,7 @@ function Chip({ text, iconRightClass, onIconRightTouchTap, onTouchTap, style = {
 }
 
 Chip.propTypes = {
-  text: PropTypes.element,
+  text: PropTypes.node,
   iconRightClass: PropTypes.string,
   onIconRightTouchTap: PropTypes.func,
   onTouchTap: PropTypes.func,
