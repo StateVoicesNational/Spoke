@@ -280,6 +280,7 @@ const rootMutations = {
         .update({
           terms: true
         })
+      await cacheableData.user.clearUser(user.id, user.auth0_id)
       return currentUser
     },
 
@@ -383,6 +384,7 @@ const rootMutations = {
       if (newOrgRoles.length) {
         await UserOrganization.save(newOrgRoles, { conflict: 'update' })
       }
+      await cacheableData.user.clearUser(userId)
       return loaders.organization.load(organizationId)
     },
     editUser: async (_, { organizationId, userId, userData }, { user }) => {
@@ -412,6 +414,7 @@ const rootMutations = {
               email: userData.email,
               cell: userData.cell
             })
+          await cacheableData.user.clearUser(member.id, member.auth0_id)
           userData = {
             id: userId,
             first_name: userData.firstName,
@@ -426,8 +429,7 @@ const rootMutations = {
       }
     },
     joinOrganization: async (_, { organizationUuid }, { user, loaders }) => {
-      let organization
-      ;[organization] = await r.knex('organization').where('uuid', organizationUuid)
+      const [organization] = await r.knex('organization').where('uuid', organizationUuid)
       if (organization) {
         const userOrg = await r
           .table('user_organization')
@@ -442,6 +444,7 @@ const rootMutations = {
             organization_id: organization.id,
             role: 'TEXTER'
           })
+          cacheableData.user.clearUser(user.id)
         }
       }
       return organization
@@ -475,6 +478,7 @@ const rootMutations = {
           campaign_id: campaign.id,
           max_contacts: parseInt(process.env.MAX_CONTACTS_PER_TEXTER || 0, 10)
         })
+      } else {
         await cacheableData.assignment.reload(assignment.id)
       }
       return campaign

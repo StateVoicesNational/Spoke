@@ -61,15 +61,19 @@ const dbLoadUserRoles = async (userId) => {
   if (r.redis) {
     // delete keys first
     // pass all values to hset instead of looping
+    const key = userRoleKey(userId)
     const mappedHighestRoles = Object.values(highestRolesPerOrg).reduce((acc, orgRole) => {
       acc.push(orgRole.id, `${orgRole.role}:${orgRole.name}`)
       return acc
     }, [])
-
-    await r.redis.multi()
-      .del(userRoleKey(userId))
-      .hmset(userRoleKey(userId), ...mappedHighestRoles)
-      .execAsync()
+    if (mappedHighestRoles.length) {
+      await r.redis.multi()
+        .del(key)
+        .hmset(key, ...mappedHighestRoles)
+        .execAsync()
+    } else {
+      await r.redis.delAsync(key)
+    }
   }
 
   return highestRolesPerOrg
@@ -172,7 +176,15 @@ const userCache = {
   userHasRole,
   userLoggedIn,
   userOrgs,
-  orgRoles
+  orgRoles,
+  clearUser: async (userId, authId) => {
+    if (r.redis) {
+      await r.redis.delAsync(userRoleKey(userId))
+      if (authId) {
+        await r.redis.delAsync(userAuthKey(authId))
+      }
+    }
+  }
 }
 
 export default userCache
