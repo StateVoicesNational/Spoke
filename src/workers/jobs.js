@@ -215,6 +215,7 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
   } catch (err) {
     // query failed
     log.error('Data warehouse query failed: ', err)
+    jobMessages.push(`Data warehouse count query failed with ${err}`)
     // TODO: send feedback about job
   }
   const fields = {}
@@ -237,7 +238,6 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
     return
   }
 
-  const jobMessages = []
   const savePortion = await Promise.all(knexResult.rows.map(async (row) => {
     const formatCell = getFormattedPhoneNumber(row.cell, (process.env.PHONE_NUMBER_COUNTRY || 'US'))
     const contact = {
@@ -310,8 +310,7 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
 }
 
 export async function loadContactsFromDataWarehouse(job) {
-  console.log('STARTING loadContactsFromDataWarehouse')
-  console.log('job:', job);
+  console.log('STARTING loadContactsFromDataWarehouse', job.payload)
   const jobMessages = []
   const sqlQuery = job.payload
   if (!sqlQuery.startsWith('SELECT') || sqlQuery.indexOf(';') >= 0) {
@@ -334,11 +333,11 @@ export async function loadContactsFromDataWarehouse(job) {
 
   if (knexCountRes) {
     knexCount = knexCountRes.rows[0].count
-    console.log('WAREHOUSE COUNT', knexCount)
+    if (!knexCount || knexCount == 0) {
+      jobMessages.push('Error: Data warehouse query returned zero results')
+    }
   }
-  if (!knexCount) {
-    jobMessages.push('Error: Data warehouse query returned zero results')
-  }
+
   const STEP = ((r.kninky && r.kninky.defaultsUnsupported)
                 ? 10 // sqlite has a max of 100 variables and ~8 or so are used per insert
                 : 10000) // default
@@ -354,21 +353,20 @@ export async function loadContactsFromDataWarehouse(job) {
   }
 
   if (job.id && jobMessages.length) {
-    await r.knex('job_request').where('id', job.id)
+    let resultMessages = await r.knex('job_request').where('id', job.id)
       .update({ result_message: jobMessages.join('\n') })
-    return
+    return resultMessages
   }
 
   await r.knex('campaign_contact')
     .where('campaign_id', job.campaign_id)
     .delete()
 
-  console.log('STARTING loadContactsFromDataWarehouse')
-
   await loadContactsFromDataWarehouseFragment({
     jobId: job.id,
     query: sqlQuery,
     campaignId: job.campaign_id,
+    jobMessages: jobMessages,
     // beyond job object:
     organizationId: campaign.organization_id,
     totalParts,
