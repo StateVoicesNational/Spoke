@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types'
 import React from 'react'
+import { withRouter } from 'react-router'
 import Empty from '../components/Empty'
 import OrganizationJoinLink from '../components/OrganizationJoinLink'
 import UserEdit from './UserEdit'
@@ -16,14 +17,18 @@ import theme from '../styles/theme'
 import loadData from './hoc/load-data'
 import gql from 'graphql-tag'
 import { dataTest } from '../lib/attributes'
+import LoadingIndicator from '../components/LoadingIndicator'
 
+const personFragment = `
+  id
+  displayName
+  email
+  roles(organizationId: $organizationId)
+`
 const organizationFragment = `
   id
   people {
-    id
-    displayName
-    email
-    roles(organizationId: $organizationId)
+    ${personFragment}
   }
 `
 class AdminPersonList extends React.Component {
@@ -39,6 +44,14 @@ class AdminPersonList extends React.Component {
   state = {
     open: false,
     userEdit: false
+  }
+
+  handleFilterChange = (event, index, value) => {
+    let query = ''
+    if (value !== 'all') query = `?campaignId=${value}`
+    this.props.router.push(
+      `/admin/${this.props.params.organizationId}/people${query}`
+    )
   }
 
   handleOpen() {
@@ -65,8 +78,38 @@ class AdminPersonList extends React.Component {
     this.props.personData.refetch()
   }
 
+  renderCampaignList = () => {
+    const { organizationData: { organization } } = this.props
+    const campaigns = organization ? organization.campaigns : []
+    return (
+      <DropDownMenu
+        value={this.props.location.query.campaignId || 'all'}
+        onChange={this.handleFilterChange}
+      >
+        <MenuItem value='all' primaryText='All Campaigns' />
+        {campaigns.map(campaign => (
+          <MenuItem
+            value={campaign.id}
+            primaryText={campaign.title}
+            key={campaign.id}
+          />
+        ))}
+      </DropDownMenu>
+    )
+  }
+
   renderTexters() {
-    const { people } = this.props.personData.organization
+    const { campaignData, personData, userData: { currentUser }, location: { query } } = this.props
+    if (!currentUser) return <LoadingIndicator />
+
+    let people
+    if (query.campaignId) {
+      // if the campaign filter has been used, get people from the campaign
+      people = campaignData.campaign && campaignData.campaign.texters || []
+    } else {
+      // otherwise get people from the organization
+      people = personData.organization && personData.organization.people || []
+    }
     if (people.length === 0) {
       return (
         <Empty
@@ -75,8 +118,6 @@ class AdminPersonList extends React.Component {
         />
       )
     }
-
-    const currentUser = this.props.userData.currentUser
 
     return (
       <Table selectable={false}>
@@ -123,6 +164,7 @@ class AdminPersonList extends React.Component {
 
     return (
       <div>
+        {this.renderCampaignList()}
         {this.renderTexters()}
         <FloatingActionButton
           {...dataTest('addPerson')}
@@ -131,37 +173,41 @@ class AdminPersonList extends React.Component {
         >
           <ContentAdd />
         </FloatingActionButton>
-        <Dialog
-          {...dataTest('editPersonDialog')}
-          title='Edit user'
-          modal={false}
-          open={Boolean(this.state.userEdit)}
-          onRequestClose={() => { this.setState({ userEdit: false }) }}
-        >
-          <UserEdit
-            organizationId={organizationData.organization.id}
-            userId={this.state.userEdit}
-            onRequestClose={this.updateUser}
-          />
-        </Dialog>
-        <Dialog
-          title='Invite new texters'
-          actions={[
-            <FlatButton
-              {...dataTest('inviteOk')}
-              label='OK'
-              primary
-              onTouchTap={this.handleClose}
-            />
-          ]}
-          modal={false}
-          open={this.state.open}
-          onRequestClose={this.handleClose}
-        >
-          <OrganizationJoinLink
-            organizationUuid={organizationData.organization.uuid}
-          />
-        </Dialog>
+        {organizationData.organization && (
+          <div>
+            <Dialog
+              {...dataTest('editPersonDialog')}
+              title='Edit user'
+              modal={false}
+              open={Boolean(this.state.userEdit)}
+              onRequestClose={() => { this.setState({ userEdit: false }) }}
+            >
+              <UserEdit
+                organizationId={organizationData.organization && organizationData.organization.id}
+                userId={this.state.userEdit}
+                onRequestClose={this.updateUser}
+              />
+            </Dialog>
+            <Dialog
+              title='Invite new texters'
+              actions={[
+                <FlatButton
+                  {...dataTest('inviteOk')}
+                  label='OK'
+                  primary
+                  onTouchTap={this.handleClose}
+                />
+              ]}
+              modal={false}
+              open={this.state.open}
+              onRequestClose={this.handleClose}
+            >
+              <OrganizationJoinLink
+                organizationUuid={organizationData.organization.uuid}
+              />
+            </Dialog>
+          </div>
+        )}
       </div>
     )
   }
@@ -172,7 +218,10 @@ AdminPersonList.propTypes = {
   params: PropTypes.object,
   personData: PropTypes.object,
   userData: PropTypes.object,
-  organizationData: PropTypes.object
+  organizationData: PropTypes.object,
+  campaignData: PropTypes.object,
+  router: PropTypes.object,
+  location: PropTypes.object
 }
 
 const mapMutationsToProps = () => ({
@@ -221,13 +270,33 @@ const mapQueriesToProps = ({ ownProps }) => ({
       organization(id: $organizationId) {
         id
         uuid
+        campaigns(campaignsFilter: { isArchived: false }) {
+          id
+          title
+        }
       }
     }`,
     variables: {
       organizationId: ownProps.params.organizationId
     },
     forceFetch: true
+  },
+  campaignData: {
+    query: gql`
+      query getCampaign($campaignId: String!, $organizationId: String!) {
+        campaign(id: $campaignId) {
+          texters {
+            ${personFragment}
+          }
+        }
+      }
+    `,
+    variables: {
+      campaignId: ownProps.location.query.campaignId || '0', // need fallback if no campaign filter to avoid error
+      organizationId: ownProps.params.organizationId
+    },
+    forceFetch: true
   }
 })
 
-export default loadData(AdminPersonList, { mapQueriesToProps, mapMutationsToProps })
+export default loadData(withRouter(AdminPersonList), { mapQueriesToProps, mapMutationsToProps })
