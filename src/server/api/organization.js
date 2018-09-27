@@ -3,6 +3,7 @@ import { r, Organization } from '../models'
 import { accessRequired } from './errors'
 import { buildCampaignQuery } from './campaign'
 import { buildUserOrganizationQuery } from './user'
+import { defaultAssignmentSubject, defaultAssignmentBody } from '../notifications'
 
 export const resolvers = {
   Organization: {
@@ -36,8 +37,22 @@ export const resolvers = {
     },
     threeClickEnabled: (organization) => organization.features.indexOf('threeClick') !== -1,
     textingHoursEnforced: (organization) => organization.texting_hours_enforced,
-    optOutMessage: (organization) => (organization.features && organization.features.indexOf('opt_out_message') !== -1 ? JSON.parse(organization.features).opt_out_message : process.env.OPT_OUT_MESSAGE) || 'I\'m opting you out of texts immediately. Have a great day.',
+    optOutMessage: organization =>
+      (organization.features &&
+        organization.features.indexOf('opt_out_message') !== -1
+        ? JSON.parse(organization.features).opt_out_message
+        : process.env.OPT_OUT_MESSAGE) ||
+      'I\'m opting you out of texts immediately. Have a great day.',
+    assignmentMessage: organization =>
+      (organization.features &&
+        organization.features.indexOf('assignment_message') !== -1
+        ? JSON.parse(organization.features).assignment_message
+        : {}) || {},
     textingHoursStart: (organization) => organization.texting_hours_start,
     textingHoursEnd: (organization) => organization.texting_hours_end
+  },
+  AssignmentMessage: {
+    subject: s => s.subject || defaultAssignmentSubject,
+    body: b => b.body || defaultAssignmentBody
   }
 }

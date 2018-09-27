@@ -21,7 +21,7 @@ import CampaignCannedResponsesForm from '../components/CampaignCannedResponsesFo
 import { dataTest, camelCase } from '../lib/attributes'
 import CampaignTextingHoursForm from '../components/CampaignTextingHoursForm'
 
-const campaignInfoFragment = `
+export const campaignInfoFragment = `
   id
   title
   description
