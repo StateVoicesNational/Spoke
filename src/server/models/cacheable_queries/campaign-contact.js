@@ -225,12 +225,12 @@ const campaignContactCache = {
   },
   getMessageStatus,
   updateStatus: async (contact, newStatus) => {
-    //console.log('updateSTATUS', contact, newStatus)
+    // console.log('updateSTATUS', contact, newStatus)
     if (r.redis) {
       const contactKey = cacheKey(contact.id)
       const statusKey = messageStatusKey(contact.id)
       const cellKey = cellTargetKey(contact.cell, contact.messageservice_sid)
-      //console.log('contact updateStatus', cellKey, newStatus, contact)
+      // console.log('contact updateStatus', cellKey, newStatus, contact)
       await r.redis.multi()
         .set(statusKey, newStatus)
       // We update the cell info on status updates, because this happens
@@ -245,7 +245,7 @@ const campaignContactCache = {
         .execAsync()
       await updateAssignmentContact(contact, newStatus)
     }
-    //console.log('updateStatus, CONTACT', contact)
+    // console.log('updateStatus, CONTACT', contact)
     await r.knex('campaign_contact')
       .where('id', contact.id)
       .update({ message_status: newStatus, updated_at: 'now()' })
