@@ -325,7 +325,7 @@ const rootMutations = {
           service: lastMessage.service,
           messageservice_sid: '',
           send_status: 'DELIVERED'
-        })
+        }, contact)
       )
       return loaders.campaignContact.load(id)
     },
@@ -951,7 +951,7 @@ const rootMutations = {
       console.log('contact saved', contact)
 
       const service = serviceMap[messageInstance.service || process.env.DEFAULT_SERVICE]
-      service.sendMessage(messageInstance)
+      service.sendMessage(messageInstance, contact)
       return contact
     },
     deleteQuestionResponses: async (
@@ -975,7 +975,7 @@ const rootMutations = {
     },
     updateQuestionResponses: async (_, { questionResponses, campaignContactId }, { loaders }) => {
       const count = questionResponses.length
-
+      //console.log('updatingQuestionResponses', questionResponses)
       for (let i = 0; i < count; i++) {
         const questionResponse = questionResponses[i]
         const { interactionStepId, value } = questionResponse
@@ -1021,7 +1021,7 @@ const rootMutations = {
       }
 
       // update cache
-      cacheableData.questionResponse.reloadQuery(campaignContactId)
+      cacheableData.questionResponse.clearQuery(campaignContactId)
 
       const contact = loaders.campaignContact.load(campaignContactId)
       return contact

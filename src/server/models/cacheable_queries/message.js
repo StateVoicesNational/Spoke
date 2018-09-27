@@ -29,9 +29,10 @@ const dbQuery = ({ campaignId, contactId }) => {
 
 const contactIdFromOther = async ({ campaignContactId, assignmentId, cell, service, messageServiceSid }) => {
   if (campaignContactId) {
-    console.log('contactIdfromother easy', campaignContactId)
     return campaignContactId
   }
+  console.error('contactIdfromother hard', campaignContactId, assignmentId, cell, service)
+
   if (!assignmentId || !cell || !messageServiceSid) {
     throw new Error('campaignContactId required or assignmentId-cell-service-messageServiceSid triple required')
   }
@@ -85,7 +86,7 @@ const cacheDbResult = async (dbResult) => {
 const query = async (queryObj) => {
   // queryObj ~ { campaignContactId, assignmentId, cell, service, messageServiceSid }
   let cid = query.campaignContactId
-  console.log('message query', queryObj)
+  //console.log('message query', queryObj)
   if (r.redis) {
     cid = await contactIdFromOther(queryObj)
     if (cid) {
@@ -93,7 +94,7 @@ const query = async (queryObj) => {
         .exists(cacheKey(cid))
         .lrange(cacheKey(cid), 0, -1)
         .execAsync()
-      console.log('cached messages exist?', exists, messages)
+      //console.log('cached messages exist?', exists, messages)
       if (exists) {
         // note: lrange returns messages in reverse order
         return messages.reverse().map(m => JSON.parse(m))
@@ -127,7 +128,7 @@ const messageCache = {
         messageInstance.service,
         messageInstance.messageservice_sid
       )
-      console.log('activeCellFound', activeCellFound)
+      //console.log('activeCellFound', activeCellFound)
       if (!activeCellFound) {
         // No active thread to attach message to. This should be very RARE
         // This could happen way after a campaign is closed and a contact responds 'very late'
@@ -165,19 +166,26 @@ const messageCache = {
       })
     }
 
-    await messageInstance.save()
+    await Message.save(messageInstance,
+                       (messageInstance.id
+                        ? { conflict: 'update' }
+                        : undefined
+                       ))
     // eslint-disable-next-line no-param-reassign
     messageInstance.created_at = new Date()
+    //console.log('hi saveMsg1', contactData, contact)
     await saveMessageCache(contactData.id, [messageInstance])
-
+    //console.log('hi saveMsg2')
     let newStatus = 'needsResponse'
     if (!messageInstance.is_from_contact) {
       newStatus = (contactData.message_status === 'needsResponse'
                    ? 'convo' : 'messaged')
     }
+    //console.log('hi saveMsg3', newStatus, contactData)
     await campaignContactCache.updateStatus(
       contactData, newStatus
     )
+    //console.log('hi saveMsg4', newStatus)
     return { ...contactData, message_status: newStatus }
   }
 }

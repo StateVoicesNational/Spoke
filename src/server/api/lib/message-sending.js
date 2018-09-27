@@ -23,6 +23,6 @@ export async function getLastMessage({ contactNumber, service, messageServiceSid
   return lastMessage
 }
 
-export async function saveNewIncomingMessage(messageInstance) {
-  await cacheableData.message.save({ messageInstance })
+export async function saveNewIncomingMessage(messageInstance, contact) {
+  await cacheableData.message.save({ messageInstance, contact })
 }
