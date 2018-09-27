@@ -1,6 +1,5 @@
 import { mapFieldsToModel } from './lib/utils'
 import { Campaign, JobRequest, r, cacheableData } from '../models'
-import { currentEditors } from '../models/cacheable_queries'
 
 export function buildCampaignQuery(queryParam, organizationId, campaignsFilter, addFromClause = true) {
   let query = queryParam
@@ -14,7 +13,7 @@ export function buildCampaignQuery(queryParam, organizationId, campaignsFilter, 
   if (campaignsFilter) {
     const resultSize = (campaignsFilter.listSize ? campaignsFilter.listSize : 0)
     const pageSize = (campaignsFilter.pageSize ? campaignsFilter.pageSize : 0)
-    
+
     if ('isArchived' in campaignsFilter) {
       query = query.where({ is_archived: campaignsFilter.isArchived })
     }
@@ -27,6 +26,12 @@ export function buildCampaignQuery(queryParam, organizationId, campaignsFilter, 
     if (resultSize && pageSize) {
       query = query.limit(resultSize).offSet(pageSize)
     }
+  }
+
+  if (campaignsFilter && campaignsFilter.orderBy) {
+    query = query.orderBy(campaignsFilter.orderBy, 'desc')
+  } else {
+    query = query.orderBy('due_by', 'desc')
   }
 
   return query
@@ -124,7 +129,7 @@ export const resolvers = {
     },
     interactionSteps: async (campaign) => (
       campaign.interactionSteps
-      || cacheableData.campaign.dbInteractionSteps(campaign.id)
+        || cacheableData.campaign.dbInteractionSteps(campaign.id)
     ),
     cannedResponses: async (campaign, { userId }) => (
       await cacheableData.cannedResponse.query({
@@ -149,6 +154,22 @@ export const resolvers = {
         .limit(1)
       return contacts.length > 0
     },
+    hasUnsentInitialMessages: async (campaign) => {
+      const contacts = await r.knex('campaign_contact')
+        .select('id')
+        .where({ campaign_id: campaign.id, message_status: 'needsMessage' })
+        .limit(1)
+      return contacts.length > 0
+    },
+    customFields: async (campaign) => {
+      const campaignContacts = await r.table('campaign_contact')
+        .getAll(campaign.id, { index: 'campaign_id' })
+        .limit(1)
+      if (campaignContacts.length > 0) {
+        return Object.keys(JSON.parse(campaignContacts[0].custom_fields))
+      }
+      return []
+    },
     customFields: async (campaign) => (
       campaign.customFields
       || cacheableData.campaign.dbCustomFields(campaign.id)
@@ -156,7 +177,7 @@ export const resolvers = {
     stats: async (campaign) => campaign,
     editors: async (campaign, _, { user }) => {
       if (r.redis) {
-        return currentEditors(r.redis, campaign, user)
+        return cacheableData.campaign.currentEditors(r.redis, campaign, user)
       }
       return ''
     }

@@ -20,7 +20,6 @@ export const resolvers = {
       'cell',
       'zip',
       'customFields',
-      'messageStatus',
       'assignmentId',
       'external_id'
     ], CampaignContact),
@@ -28,7 +27,7 @@ export const resolvers = {
       if (campaignContact.message_status) {
         return campaignContact.message_status
       }
-      // TODO: look it up via cacheing
+      return await cacheableData.campaignContact.getMessageStatus(campaignContact.id)
     },
     campaign: async (campaignContact, _, { loaders }) => (
       loaders.campaign.load(campaignContact.campaign_id)
@@ -40,9 +39,9 @@ export const resolvers = {
       if (campaignContact.message_status === 'needsMessage') {
         return [] // it's the beginning, so there won't be any
       }
-      return await r.knex('question_response')
-        .where('question_response.campaign_contact_id', campaignContact.id)
-        .select('value', 'interaction_step_id')
+      return await cacheableData.questionResponse.query(
+        campaignContact.id, true // minimalObj: we might need more info one day
+      )
     },
     questionResponses: async (campaignContact, _, { loaders }) => {
       const results = await r.knex('question_response as qres')
@@ -135,19 +134,10 @@ export const resolvers = {
       if (campaignContact.message_status === 'needsMessage') {
         return [] // it's the beginning, so there won't be any
       }
-
       if ('messages' in campaignContact) {
         return campaignContact.messages
       }
-
-      const messages = await r.table('message')
-        .getAll(campaignContact.assignment_id, { index: 'assignment_id' })
-        .filter({
-          contact_number: campaignContact.cell
-        })
-        .orderBy('created_at')
-
-      return messages
+      return await cacheableData.message.query({campaignContactId: campaignContact.id})
     },
     optOut: async (campaignContact, _, { loaders }) => {
       let isOptedOut = null

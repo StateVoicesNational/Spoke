@@ -46,8 +46,8 @@ export default class GSScriptField extends GSFormField {
 
   renderDialog() {
     const { open } = this.state
-    const { customFields, sampleContact } = this.props
-    const scriptFields = allScriptFields(customFields)
+    const { customFields, sampleContact, overrideFields } = this.props
+    const scriptFields = overrideFields || allScriptFields(customFields)
 
     return (
       <Dialog

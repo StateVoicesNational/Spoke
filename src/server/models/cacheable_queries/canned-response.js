@@ -7,10 +7,9 @@ import { r } from '../../models'
 // * needs an order
 // * needs to get by campaignId-userId pairs
 
+const cacheKey = (campaignId, userId) => `${process.env.CACHE_PREFIX || ''}canned-${campaignId}-${userId || ''}`
 
-const cacheKey = (campaignId, userId) => `${process.env.CACHE_PREFIX|""}canned-${campaignId}-${userId|""}`
-
-export const cannedResponseCache = {
+const cannedResponseCache = {
   clearQuery: async ({ campaignId, userId }) => {
     if (r.redis) {
       await r.redis.delAsync(cacheKey(campaignId, userId))
@@ -42,3 +41,5 @@ export const cannedResponseCache = {
     return dbResult
   }
 }
+
+export default cannedResponseCache

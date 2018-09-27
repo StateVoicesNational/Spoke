@@ -155,6 +155,44 @@ const migrations = [
 
       console.log('added texting hours fields to campaign')
     }
+  },
+  { auto: true, // 13
+    date: '2018-09-16',
+    migrate: async () => {
+      await r.knex.schema.alterTable('message', (table) => {
+        table.integer('campaign_contact_id')
+          .unsigned()
+          .nullable()
+          .default(null)
+          .index()
+          .references('id')
+          .inTable('campaign_contact')
+        table.string('messageservice_sid')
+          .nullable()
+          .default(null)
+          .index()
+      })
+      await r.knex.schema.alterTable('organization', (table) => {
+        table.string('messageservice_sid')
+          .nullable()
+          .default(null)
+          .index()
+      })
+      console.log('added campaign_contact_id and messageservice_sid columns to message table')
+      console.log('added messageservice_sid column to organization table')
+    }
+  },
+  {
+    auto: true, // 14
+    date: '2018-09-25', 
+    migrate: async () => {
+      const query = 'UPDATE message ' +
+      'SET campaign_contact_id = cc.id ' +
+      'FROM campaign_contact cc ' + 
+      'WHERE message.contact_number = cc.cell and message.assignment_id = cc.assignment_id'
+      await r.knex.raw(query)
+      console.log('backfilled message.campaign_contact_id column')
+    }
   }
   /* migration template
      {auto: true, //if auto is false, then it will block the migration running automatically

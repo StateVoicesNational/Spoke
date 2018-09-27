@@ -1,6 +1,6 @@
 import thinky from './thinky'
 const type = thinky.type
-import { requiredString, timestamp } from './custom-types'
+import { optionalString, requiredString, timestamp } from './custom-types'
 
 const Organization = thinky.createModel('organization', type.object().schema({
   id: type.string(),
@@ -8,6 +8,7 @@ const Organization = thinky.createModel('organization', type.object().schema({
   name: requiredString(),
   created_at: timestamp(),
   features: type.string().required().default(''), // should be JSON
+  messageservice_sid: optionalString().stopReference(),
   texting_hours_enforced: type
     .boolean()
     .required()

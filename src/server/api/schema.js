@@ -20,7 +20,8 @@ import {
   User,
   r,
   datawarehouse,
-  cacheableData
+  cacheableData,
+  getMessageServiceSid
 } from '../models'
 import { schema as userSchema, resolvers as userResolvers, buildUserOrganizationQuery } from './user'
 import {
@@ -218,7 +219,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
   }
 
   const newCampaign = await Campaign.get(id).update(campaignUpdates)
-  cacheableData.campaign.reload(id)
+  await cacheableData.campaign.reload(id)
   return newCampaign || loaders.campaign.load(id)
 }
 
@@ -270,6 +271,9 @@ async function updateInteractionSteps(
 const rootMutations = {
   RootMutation: {
     userAgreeTerms: async (_, { userId }, { user, loaders }) => {
+      if (user.id === parseInt(userId, 10)) {
+        return (user.terms ? user : null)
+      }
       const currentUser = await r
         .table('user')
         .get(userId)
@@ -317,7 +321,9 @@ const rootMutations = {
           }),
           service_id: mockId,
           assignment_id: lastMessage.assignment_id,
+          campaign_contact_id: contact.id,
           service: lastMessage.service,
+          messageservice_sid: '',
           send_status: 'DELIVERED'
         })
       )
@@ -469,6 +475,7 @@ const rootMutations = {
           campaign_id: campaign.id,
           max_contacts: parseInt(process.env.MAX_CONTACTS_PER_TEXTER || 0, 10)
         })
+        await cacheableData.assignment.reload(assignment.id)
       }
       return campaign
     },
@@ -511,6 +518,23 @@ const rootMutations = {
       const organization = await Organization.get(organizationId)
       const featuresJSON = JSON.parse(organization.features || '{}')
       featuresJSON.opt_out_message = optOutMessage
+      organization.features = JSON.stringify(featuresJSON)
+
+      await organization.save()
+      await organizationCache.clear(organizationId)
+
+      return await Organization.get(organizationId)
+    },
+    updateUserAssignmentMessage: async (
+      _,
+      { organizationId, subject, body },
+      { user }
+    ) => {
+      await accessRequired(user, organizationId, 'OWNER')
+
+      const organization = await Organization.get(organizationId)
+      const featuresJSON = JSON.parse(organization.features || '{}')
+      featuresJSON.assignment_message = { subject, body }
       organization.features = JSON.stringify(featuresJSON)
 
       await organization.save()
@@ -636,7 +660,14 @@ const rootMutations = {
       campaign.is_started = true
 
       await campaign.save()
-      cacheableData.campaign.reload(id)
+      // some synchronous caching:
+      await cacheableData.campaign.reload(id)
+
+      // some asynchronous cache-priming:
+      cacheableData.assignment.loadCampaignAssignments(campaign)
+      cacheableData.campaignContact.loadMany(
+        await loaders.organization.load(campaign.organization_id),
+        { campaign })
       await sendUserNotification({
         type: Notifications.CAMPAIGN_STARTED,
         campaignId: id
@@ -819,17 +850,14 @@ const rootMutations = {
       await assignmentRequired(user, contact.assignment_id)
 
       const { assignmentId, cell, reason } = optOut
-      let organizationId = contact.organization_id
+      const campaign = await loaders.campaign.load(contact.campaign_id)
 
-      if (!organizationId) {
-        const campaign = await loaders.campaign.load(contact.campaign_id)
-        organizationId = campaign.organization_id
-      }
       await cacheableData.optOut.save({
         cell,
+        campaignContactId,
         reason,
         assignmentId,
-        organizationId
+        campaign
       })
 
       return loaders.campaignContact.load(campaignContactId)
@@ -889,53 +917,31 @@ const rootMutations = {
       return []
     },
     sendMessage: async (_, { message, campaignContactId }, { user, loaders }) => {
-      const contact = await loaders.campaignContact.load(campaignContactId)
+      let contact = await loaders.campaignContact.load(campaignContactId)
+      await assignmentRequired(user, contact.assignment_id)
       const campaign = await loaders.campaign.load(contact.campaign_id)
+
       if (contact.assignment_id !== parseInt(message.assignmentId) || campaign.is_archived) {
         throw new GraphQLError({
           status: 400,
           message: 'Your assignment has changed'
         })
       }
-      const organization = await r
-        .table('campaign')
-        .get(contact.campaign_id)
-        .eqJoin('organization_id', r.table('organization'))('right')
 
-      const orgFeatures = JSON.parse(organization.features || '{}')
+      const organization = await loaders.organization.load(campaign.organization_id)
+      const isOptedOut = await cacheableData.optOut.query({
+        cell: contact.cell,
+        organizationId: organization.id
+      })
 
-      const optOut = await r
-        .table('opt_out')
-        .getAll(contact.cell, { index: 'cell' })
-        .filter({ organization_id: organization.id })
-        .limit(1)(0)
-        .default(null)
-      if (optOut) {
+      if (isOptedOut) {
         throw new GraphQLError({
           status: 400,
           message: 'Skipped sending because this contact was already opted out'
         })
       }
 
-      // const zipData = await r.table('zip_code')
-      //   .get(contact.zip)
-      //   .default(null)
-
-      // const config = {
-      //   textingHoursEnforced: organization.texting_hours_enforced,
-      //   textingHoursStart: organization.texting_hours_start,
-      //   textingHoursEnd: organization.texting_hours_end,
-      // }
-      // const offsetData = zipData ? { offset: zipData.timezone_offset, hasDST: zipData.has_dst } : null
-      // if (!isBetweenTextingHours(offsetData, config)) {
-      //   throw new GraphQLError({
-      //     status: 400,
-      //     message: "Skipped sending because it's now outside texting hours for this contact"
-      //   })
-      // }
-
       const { contactNumber, text } = message
-
       if (text.length > (process.env.MAX_MESSAGE_LENGTH || 99999)) {
         throw new GraphQLError({
           status: 400,
@@ -944,49 +950,25 @@ const rootMutations = {
       }
 
       const replaceCurlyApostrophes = rawText => rawText.replace(/[\u2018\u2019]/g, "'")
-
       const messageInstance = new Message({
         text: replaceCurlyApostrophes(text),
         contact_number: contactNumber,
         user_id: user.id,
         user_number: '',
         assignment_id: message.assignmentId,
-        send_status: JOBS_SAME_PROCESS ? 'SENDING' : 'QUEUED',
-        service: orgFeatures.service || process.env.DEFAULT_SERVICE || '',
+        campaign_contact_id: contact.id,
+        messageservice_sid: getMessageServiceSid(organization),
+        send_status: 'SENDING',
+        service: organization.feature.service || process.env.DEFAULT_SERVICE || '',
         is_from_contact: false,
         queued_at: new Date()
       })
 
-      await messageInstance.save()
+      contact = await cacheableData.message.save({ messageInstance, contact })
+      console.log('contact saved', contact)
 
-      if (contact.message_status === 'needsResponse') {
-        const service = serviceMap[messageInstance.service || process.env.DEFAULT_SERVICE]
-        contact.message_status = 'convo'
-        contact.updated_at = 'now()'
-        await contact.save()
-
-        service.sendMessage(messageInstance)
-        return contact
-      } else {
-        const service = serviceMap[messageInstance.service || process.env.DEFAULT_SERVICE]
-        contact.message_status = 'messaged'
-        contact.updated_at = 'now()'
-        await contact.save()
-
-        service.sendMessage(messageInstance)
-        return contact
-      }
-
-      if (JOBS_SAME_PROCESS) {
-        const service = serviceMap[messageInstance.service || process.env.DEFAULT_SERVICE]
-        log.info(
-          `Sending (${service}): ${messageInstance.user_number} -> ${
-            messageInstance.contact_number
-          }\nMessage: ${messageInstance.text}`
-        )
-        service.sendMessage(messageInstance)
-      }
-
+      const service = serviceMap[messageInstance.service || process.env.DEFAULT_SERVICE]
+      service.sendMessage(messageInstance)
       return contact
     },
     deleteQuestionResponses: async (
@@ -1002,6 +984,10 @@ const rootMutations = {
         .getAll(campaignContactId, { index: 'campaign_contact_id' })
         .getAll(...interactionStepIds, { index: 'interaction_step_id' })
         .delete()
+
+      // update cache
+      cacheableData.questionResponse.reloadQuery(campaignContactId)
+
       return contact
     },
     updateQuestionResponses: async (_, { questionResponses, campaignContactId }, { loaders }) => {
@@ -1051,6 +1037,9 @@ const rootMutations = {
         }
       }
 
+      // update cache
+      cacheableData.questionResponse.reloadQuery(campaignContactId)
+
       const contact = loaders.campaignContact.load(campaignContactId)
       return contact
     },
@@ -1098,6 +1087,7 @@ const rootMutations = {
             max_contacts: parseInt(process.env.MAX_CONTACTS_PER_TEXTER || 0, 10)
           })
         }
+        await cacheableData.assignment.reload(assignment.id)
         campaignIdAssignmentIdMap.set(campaignId, assignment.id)
       }
 
