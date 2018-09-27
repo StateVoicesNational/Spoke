@@ -155,7 +155,7 @@ export const resolvers = {
     stats: async (campaign) => campaign,
     editors: async (campaign, _, { user }) => {
       if (r.redis) {
-        return cacheableData.campaign.currentEditors(r.redis, campaign, user)
+        return cacheableData.campaign.currentEditors(campaign, user)
       }
       return ''
     }
