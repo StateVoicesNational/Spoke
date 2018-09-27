@@ -19,16 +19,13 @@ import gql from 'graphql-tag'
 import { dataTest } from '../lib/attributes'
 import LoadingIndicator from '../components/LoadingIndicator'
 
-const personFragment = `
-  id
-  displayName
-  email
-  roles(organizationId: $organizationId)
-`
 const organizationFragment = `
   id
-  people {
-    ${personFragment}
+  people(campaignId: $campaignId) {
+    id
+    displayName
+    email
+    roles(organizationId: $organizationId)
   }
 `
 class AdminPersonList extends React.Component {
@@ -47,8 +44,7 @@ class AdminPersonList extends React.Component {
   }
 
   handleFilterChange = (event, index, value) => {
-    let query = ''
-    if (value !== 'all') query = `?campaignId=${value}`
+    const query = value ? `?campaignId=${value}` : ''
     this.props.router.push(
       `/admin/${this.props.params.organizationId}/people${query}`
     )
@@ -83,10 +79,10 @@ class AdminPersonList extends React.Component {
     const campaigns = organization ? organization.campaigns : []
     return (
       <DropDownMenu
-        value={this.props.location.query.campaignId || 'all'}
+        value={this.props.location.query.campaignId}
         onChange={this.handleFilterChange}
       >
-        <MenuItem value='all' primaryText='All Campaigns' />
+        <MenuItem primaryText='All Campaigns' />
         {campaigns.map(campaign => (
           <MenuItem
             value={campaign.id}
@@ -99,17 +95,10 @@ class AdminPersonList extends React.Component {
   }
 
   renderTexters() {
-    const { campaignData, personData, userData: { currentUser }, location: { query } } = this.props
+    const { personData, userData: { currentUser } } = this.props
     if (!currentUser) return <LoadingIndicator />
 
-    let people
-    if (query.campaignId) {
-      // if the campaign filter has been used, get people from the campaign
-      people = campaignData.campaign && campaignData.campaign.texters || []
-    } else {
-      // otherwise get people from the organization
-      people = personData.organization && personData.organization.people || []
-    }
+    const people = personData.organization && personData.organization.people || []
     if (people.length === 0) {
       return (
         <Empty
@@ -160,7 +149,7 @@ class AdminPersonList extends React.Component {
   }
 
   render() {
-    const { params, organizationData } = this.props
+    const { organizationData } = this.props
 
     return (
       <div>
@@ -219,7 +208,6 @@ AdminPersonList.propTypes = {
   personData: PropTypes.object,
   userData: PropTypes.object,
   organizationData: PropTypes.object,
-  campaignData: PropTypes.object,
   router: PropTypes.object,
   location: PropTypes.object
 }
@@ -243,13 +231,14 @@ const mapMutationsToProps = () => ({
 
 const mapQueriesToProps = ({ ownProps }) => ({
   personData: {
-    query: gql`query getPeople($organizationId: String!) {
+    query: gql`query getPeople($organizationId: String!, $campaignId: String) {
       organization(id: $organizationId) {
         ${organizationFragment}
       }
     }`,
     variables: {
-      organizationId: ownProps.params.organizationId
+      organizationId: ownProps.params.organizationId,
+      campaignId: ownProps.location.query.campaignId
     },
     forceFetch: true
   },
@@ -277,22 +266,6 @@ const mapQueriesToProps = ({ ownProps }) => ({
       }
     }`,
     variables: {
-      organizationId: ownProps.params.organizationId
-    },
-    forceFetch: true
-  },
-  campaignData: {
-    query: gql`
-      query getCampaign($campaignId: String!, $organizationId: String!) {
-        campaign(id: $campaignId) {
-          texters {
-            ${personFragment}
-          }
-        }
-      }
-    `,
-    variables: {
-      campaignId: ownProps.location.query.campaignId || '0', // need fallback if no campaign filter to avoid error
       organizationId: ownProps.params.organizationId
     },
     forceFetch: true
