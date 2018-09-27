@@ -1158,6 +1158,8 @@ const rootResolvers = {
   RootQuery: {
     campaign: async (_, { id }, { loaders, user }) => {
       const campaign = await loaders.campaign.load(id)
+      if (Array.isArray(campaign) && campaign.length === 0) return null
+
       await accessRequired(user, campaign.organization_id, 'SUPERVOLUNTEER')
       return campaign
     },
