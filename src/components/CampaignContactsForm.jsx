@@ -74,7 +74,10 @@ export default class CampaignContactsForm extends React.Component {
       errors.push('Do not include a trailing (or any) ";"')
     }
     if (!errors.length) {
-      this.setState({ contactSqlError: null })
+      this.setState({
+        contactSqlError: null,
+        uploading: true
+      })
       this.props.onChange({
         contactSql: sql
       })
