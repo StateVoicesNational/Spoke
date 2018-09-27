@@ -12,7 +12,7 @@ const responseCacheKey = (campaignContactId) => (
 
 const questionResponseCache = {
   query: async (campaignContactId, minimalObj) => {
-    //console.log('query questionresponse cache', campaignContactId)
+    // console.log('query questionresponse cache', campaignContactId)
     // For now, minimalObj is always being invoked as true in
     // server/api/campaign-contact
     if (r.redis && minimalObj) {
@@ -34,7 +34,7 @@ const questionResponseCache = {
       .select('value', 'interaction_step_id')
   },
   clearQuery: async (campaignContactId) => {
-    //console.log('clearing questionresponse cache', campaignContactId)
+    // console.log('clearing questionresponse cache', campaignContactId)
     if (r.redis) {
       await r.redis.delAsync(responseCacheKey(campaignContactId))
     }
