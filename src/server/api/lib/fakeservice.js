@@ -1,4 +1,4 @@
-import { getLastMessage } from './message-sending'
+import { getLastMessage, saveNewIncomingMessage } from './message-sending'
 import { Message, PendingMessagePart, r } from '../../models'
 import { log } from '../../../lib'
 
@@ -6,13 +6,31 @@ import { log } from '../../../lib'
 // that end up just in the db appropriately and then using sendReply() graphql
 // queries for the reception (rather than a real service)
 
-async function sendMessage(message) {
-  return Message.save({ ...message,
-                        send_status: 'SENT',
-                        service: 'fakeservice',
-                        sent_at: new Date()
-                      }, { conflict: 'update' })
-    .then((saveError, newMessage) => newMessage)
+async function sendMessage(message, contact) {
+  let newMessage;
+  try {
+    newMessage = await Message.save({
+        ...message,
+      send_status: 'SENT',
+      service: 'fakeservice',
+      sent_at: new Date()
+    }, { conflict: 'update' })
+  } catch(err) {
+    console.error('FAILED MESSAGE SAVE', err, message)
+  }
+
+  if (contact && /autorespond/.test(message.text)) {
+    // We can auto-respond to the the user if they include the text 'autorespond' in their message
+    await saveNewIncomingMessage({
+      ...message,
+      // just flip/renew the vars for the contact
+      service_id: `mockedresponse${Math.random()}`,
+      is_from_contact: true,
+      text: `responding to ${message.text}`,
+      send_status: 'DELIVERED'
+    }, contact)
+  }
+  return newMessage
 }
 
 // None of the rest of this is even used for fake-service

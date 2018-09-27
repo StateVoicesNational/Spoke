@@ -140,10 +140,11 @@ export const cachedContactsQuery = async ({ assignmentId, timezoneOffsets, messa
       existsQuery = existsQuery.exists(key)
       resultQuery = resultQuery[cmd](key, range[0], range[1])
     })
-    // console.log('redis assignment query', assignmentId, timezoneOffsets, range)
+    //console.log('redis assignment query', assignmentId, timezoneOffsets, range)
     const existsResult = await existsQuery.execAsync()
     if (existsResult.reduce((a, b) => a && b, true)) {
       const redisResult = await resultQuery.execAsync()
+      //console.log('redis assignment contact result', redisResult, assignmentId, timezoneOffsets, range, messageStatuses)
       if (justCount) {
         return redisResult.reduce((i, j) => i + j, 0)
       } else if (justIds) {
@@ -288,6 +289,7 @@ export const updateAssignmentContact = async (contact, newStatus) => {
   const key = assignmentContactsKey(contact.assignment_id, contact.timezone_offset)
   const range = msgStatusRange[newStatus]
   const cmd = (newStatus === 'convo' ? 'zrangebyscore' : 'zrevrangebyscore')
+  //console.log('updateAssignmentContact', contact, newStatus, range, cmd, key)
   const [exists, curMax] = await r.redis.multi()
     .exists(key)
     [cmd](key, range[0], range[1], 'WITHSCORES', 'LIMIT', 0, 1)

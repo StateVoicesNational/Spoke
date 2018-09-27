@@ -176,12 +176,18 @@ class AssignmentTexter extends React.Component {
     return this.state.currentContactIndex < this.contactCount() - 1
   }
 
-  handleFinishContact = () => {
+  handleFinishContact = (contactId) => {
     if (this.hasNext()) {
       this.handleNavigateNext()
     } else {
       // Will look async and then redirect to todo page if not
       this.props.assignContactsIfNeeded(/* checkServer*/true)
+    }
+    if (contactId) {
+      // contactId was mutated, so clear current data
+      this.setState({ contactCache: { ...this.state.contactCache,
+                                      [contactId]: undefined }
+                    })
     }
   }
 
