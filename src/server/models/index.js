@@ -23,15 +23,8 @@ import Log from './log'
 import thinky from './thinky'
 import datawarehouse from './datawarehouse'
 
-import { cacheableData } from './cacheable_queries'
-
-function createLoader(model, opts) {
-  const idKey = (opts && opts.idKey) || 'id'
-  const cacheObj = opts && opts.cacheObj
+function createLoader(model, idKey = 'id') {
   return new DataLoader(async (keys) => {
-    if (cacheObj && cacheObj.load) {
-      return keys.map(async (key) => await cacheObj.load(key))
-    }
     const docs = await model.getAll(...keys, { index: idKey })
     return keys.map((key) => (
       docs.find((doc) => doc[idKey].toString() === key.toString())
@@ -39,58 +32,15 @@ function createLoader(model, opts) {
   })
 }
 
-// This is in dependency order, so tables are after their dependencies
-const tableList = [
-  'organization', // good candidate?
-  'user', // good candidate
-  'campaign', //good candidate
-  'assignment',
-  // the rest are alphabetical
-  'campaign_contact', //?good candidate (or by cell)
-  'canned_response', //good candidate
-  'interaction_step',
-  'invite',
-  'job_request',
-  'log',
-  'message',
-  'migrations',
-  'opt_out',  //good candidate
-  'pending_message_part',
-  'question_response',
-  'user_cell',
-  'user_organization',
-  'zip_code' //good candidate (or by contact)?
-]
-
-function createTablesIfNecessary() {
-  // builds the database if we don't see the organization table
-  return thinky.k.schema.hasTable('organization').then(
-    (tableExists) => {
-      if (!tableExists) {
-        console.log('CREATING DATABASE SCHEMA')
-        createTables()
-        return true
-      }
-    })
-}
-
-function createTables() {
-  return thinky.createTables(tableList)
-}
-
-function dropTables() {
-  return thinky.dropTables(tableList)
-}
-
 const createLoaders = () => ({
   assignment: createLoader(Assignment),
-  campaign: createLoader(Campaign, {cacheObj: cacheableData.campaign}),
+  campaign: createLoader(Campaign),
   invite: createLoader(Invite),
-  organization: createLoader(Organization, {cacheObj: cacheableData.organization}),
+  organization: createLoader(Organization),
   user: createLoader(User),
   interactionStep: createLoader(InteractionStep),
   campaignContact: createLoader(CampaignContact),
-  zipCode: createLoader(ZipCode, {idKey: 'zip'}),
+  zipCode: createLoader(ZipCode, 'zip'),
   log: createLoader(Log),
   cannedResponse: createLoader(CannedResponse),
   jobRequest: createLoader(JobRequest),
@@ -108,10 +58,6 @@ const r = thinky.r
 export {
   createLoaders,
   r,
-  cacheableData,
-  createTables,
-  createTablesIfNecessary,
-  dropTables,
   datawarehouse,
   Migrations,
   Assignment,

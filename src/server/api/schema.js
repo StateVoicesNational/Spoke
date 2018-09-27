@@ -3,9 +3,6 @@ import GraphQLDate from 'graphql-date'
 import GraphQLJSON from 'graphql-type-json'
 import { GraphQLError } from 'graphql/error'
 import isUrl from 'is-url'
-import { buildCampaignQuery } from './campaign'
-import { organizationCache } from '../models/cacheable_queries/organization'
-
 
 import { gzip, log, makeTree } from '../../lib'
 import { applyScript } from '../../lib/scripts'
@@ -26,9 +23,8 @@ import {
   OptOut,
   Organization,
   QuestionResponse,
-  User,
   r,
-  cacheableData,
+  User,
   UserOrganization
 } from '../models'
 import { Notifications, sendUserNotification } from '../notifications'
@@ -71,12 +67,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     useDynamicAssignment,
     logoImageUrl,
     introHtml,
-    primaryColor,
-    overrideOrganizationTextingHours,
-    textingHoursEnforced,
-    textingHoursStart,
-    textingHoursEnd,
-    timezone
+    primaryColor
   } = campaign
   // some changes require ADMIN and we recheck below
   const organizationId = campaign.organizationId || origCampaignRecord.organization_id
@@ -90,12 +81,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     use_dynamic_assignment: useDynamicAssignment,
     logo_image_url: isUrl(logoImageUrl) ? logoImageUrl : '',
     primary_color: primaryColor,
-    intro_html: introHtml,
-    override_organization_texting_hours: overrideOrganizationTextingHours,
-    texting_hours_enforced: textingHoursEnforced,
-    texting_hours_start: textingHoursStart,
-    texting_hours_end: textingHoursEnd,
-    timezone: timezone,
+    intro_html: introHtml
   }
 
   Object.keys(campaignUpdates).forEach(key => {
@@ -167,6 +153,18 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
         assignTexters(job)
       }
     }
+
+    // assign the maxContacts
+    campaign.texters.forEach(async texter => {
+      const dog = r
+        .knex('campaign')
+        .where({ id })
+        .select('useDynamicAssignment')
+      await r
+        .knex('assignment')
+        .where({ user_id: texter.id, campaign_id: id })
+        .update({ max_contacts: texter.maxContacts ? texter.maxContacts : null })
+    })
   }
 
   if (campaign.hasOwnProperty('interactionSteps')) {
@@ -193,14 +191,9 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
       .filter({ user_id: '' })
       .delete()
     await CannedResponse.save(convertedResponses)
-    await cacheableData.cannedResponse.clearQuery({
-      userId: '',
-      campaignId: id
-    })
   }
 
   const newCampaign = await Campaign.get(id).update(campaignUpdates)
-  cacheableData.campaign.reload(id)
   return newCampaign || loaders.campaign.load(id)
 }
 
@@ -468,38 +461,19 @@ const rootMutations = {
         texting_hours_start: textingHoursStart,
         texting_hours_end: textingHoursEnd
       })
-      cacheableData.organization.clear(organizationId)
 
       return await Organization.get(organizationId)
     },
     updateTextingHoursEnforcement: async (
       _,
       { organizationId, textingHoursEnforced },
-      { user, loaders }
+      { user }
     ) => {
       await accessRequired(user, organizationId, 'SUPERVOLUNTEER')
 
       await Organization.get(organizationId).update({
         texting_hours_enforced: textingHoursEnforced
       })
-      await cacheableData.organization.clear(organizationId)
-
-      return await loaders.organization.load(organizationId)
-    },
-    updateOptOutMessage: async (
-      _,
-      { organizationId, optOutMessage },
-      { user }
-    ) => {
-      await accessRequired(user, organizationId, 'OWNER')
-
-      const organization = await Organization.get(organizationId)
-      const featuresJSON = JSON.parse(organization.features || '{}')
-      featuresJSON.opt_out_message = optOutMessage
-      organization.features = JSON.stringify(featuresJSON)
-
-      await organization.save()
-      await organizationCache.clear(organizationId)
 
       return await Organization.get(organizationId)
     },
@@ -604,7 +578,6 @@ const rootMutations = {
       await accessRequired(user, campaign.organization_id, 'ADMIN')
       campaign.is_archived = false
       await campaign.save()
-      cacheableData.campaign.reload(id)
       return campaign
     },
     archiveCampaign: async (_, { id }, { user, loaders }) => {
@@ -612,16 +585,13 @@ const rootMutations = {
       await accessRequired(user, campaign.organization_id, 'ADMIN')
       campaign.is_archived = true
       await campaign.save()
-      cacheableData.campaign.reload(id)
       return campaign
     },
     startCampaign: async (_, { id }, { user, loaders }) => {
       const campaign = await loaders.campaign.load(id)
       await accessRequired(user, campaign.organization_id, 'ADMIN')
       campaign.is_started = true
-
       await campaign.save()
-      cacheableData.campaign.reload(id)
       await sendUserNotification({
         type: Notifications.CAMPAIGN_STARTED,
         campaignId: id
@@ -680,10 +650,6 @@ const rootMutations = {
         .andWhere({ user_id: cannedResponse.userId })
         .del()
       await query
-      cacheableData.cannedResponse.clearQuery({
-        campaignId: cannedResponse.campaignId,
-        userId: cannedResponse.userId
-      })
     },
     createOrganization: async (_, { name, userId, inviteId }, { loaders, user }) => {
       authRequired(user)
@@ -726,21 +692,7 @@ const rootMutations = {
       contact.message_status = messageStatus
       return await contact.save()
     },
-    getAssignmentContacts: async (_, { assignmentId, contactIds, findNew }, { loaders, user }) => {
-      await assignmentRequired(user, assignmentId)
-      const contacts = contactIds.map(async (contactId) => {
-        const contact = await loaders.campaignContact.load(contactId)
-        if (contact && contact.assignment_id === Number(assignmentId)) {
-          return contact
-        }
-        return null
-      })
-      if (findNew) {
-        // maybe TODO: we could automatically add dynamic assignments in the same api call
-        // findNewCampaignContact()
-      }
-      return contacts
-    },
+
     findNewCampaignContact: async (_, { assignmentId, numberContacts }, { loaders, user }) => {
       /* This attempts to find a new contact for the assignment, in the case that useDynamicAssigment == true */
       const assignment = await Assignment.get(assignmentId)
@@ -751,7 +703,7 @@ const rootMutations = {
         })
       }
       const campaign = await Campaign.get(assignment.campaign_id)
-      if (!campaign.use_dynamic_assignment || assignment.max_contacts === 0) {
+      if (!campaign.use_dynamic_assignment) {
         return { found: false }
       }
 
@@ -804,18 +756,37 @@ const rootMutations = {
       await assignmentRequired(user, contact.assignment_id)
 
       const { assignmentId, cell, reason } = optOut
-      let organizationId = contact.organization_id
 
-      if (!organizationId) {
-        const campaign = await loaders.campaign.load(contact.campaign_id)
-        organizationId = campaign.organization_id
-      }
-      await cacheableData.optOut.save({
-        cell,
-        reason,
-        assignmentId,
-        organizationId
-      })
+      const campaign = await r
+        .table('assignment')
+        .get(assignmentId)
+        .eqJoin('campaign_id', r.table('campaign'))('right')
+      await new OptOut({
+        assignment_id: assignmentId,
+        organization_id: campaign.organization_id,
+        reason_code: reason,
+        cell
+      }).save()
+
+      // update all organization's active campaigns as well
+      await r
+        .knex('campaign_contact')
+        .where(
+          'id',
+          'in',
+          r
+            .knex('campaign_contact')
+            .leftJoin('campaign', 'campaign_contact.campaign_id', 'campaign.id')
+            .where({
+              'campaign_contact.cell': cell,
+              'campaign.organization_id': campaign.organization_id,
+              'campaign.is_archived': false
+            })
+            .select('campaign_contact.id')
+        )
+        .update({
+          is_opted_out: true
+        })
 
       return loaders.campaignContact.load(campaignContactId)
     },
