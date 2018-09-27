@@ -14,7 +14,7 @@ export function buildCampaignQuery(queryParam, organizationId, campaignsFilter, 
   if (campaignsFilter) {
     const resultSize = (campaignsFilter.listSize ? campaignsFilter.listSize : 0)
     const pageSize = (campaignsFilter.pageSize ? campaignsFilter.pageSize : 0)
-    
+
     if ('isArchived' in campaignsFilter) {
       query = query.where({ is_archived: campaignsFilter.isArchived })
     }
@@ -111,6 +111,9 @@ export const resolvers = {
       r.table('assignment')
         .getAll(campaign.id, { index: 'campaign_id' })
         .eqJoin('user_id', r.table('user'))('right')
+        .eqJoin('user_id', r.table('user_organization')).zip()
+        .filter({ organization_id: campaign.organization_id })
+
     ),
     assignments: async (campaign, { assignmentsFilter }) => {
       let query = r.table('assignment')
