@@ -214,7 +214,7 @@ export class AssignmentTexterContact extends React.Component {
       snackbarError,
       snackbarActionTitle,
       snackbarOnTouchTap,
-      optOutMessageText: campaign.organization.optOutMessage,
+      optOutMessageText: "You have now been opted out of text messages from our organization.",
       responsePopoverOpen: false,
       messageText: this.getStartingMessageText(),
       optOutDialogOpen: false,
