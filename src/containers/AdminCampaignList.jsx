@@ -18,7 +18,8 @@ class AdminCampaignList extends React.Component {
   state = {
     isCreating: false,
     campaignsFilter: {
-      isArchived: false
+      isArchived: false,
+      listSize: 100
     }
   }
 

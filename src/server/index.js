@@ -20,7 +20,7 @@ import { seedZipCodes } from './seeds/seed-zip-codes'
 import { runMigrations } from '../migrations'
 import { setupUserNotificationObservers } from './notifications'
 import { TwimlResponse } from 'twilio'
-import { r } from './models'
+import { createTablesIfNecessary } from './models'
 
 process.on('uncaughtException', (ex) => {
   log.error(ex)
@@ -38,7 +38,18 @@ if (!process.env.PASSPORT_STRATEGY) {
 if (!process.env.SUPPRESS_SEED_CALLS) {
   seedZipCodes()
 }
-if (!process.env.SUPPRESS_MIGRATIONS) {
+
+if (!process.env.SUPPRESS_DATABASE_AUTOCREATE) {
+  createTablesIfNecessary().then((didCreate) => {
+    // seed above won't have succeeded if we needed to create first
+    if (didCreate && !process.env.SUPPRESS_SEED_CALLS) {
+      seedZipCodes()
+    }
+    if (!didCreate && !process.env.SUPPRESS_MIGRATIONS) {
+      runMigrations()
+    }
+  })
+} else if (!process.env.SUPPRESS_MIGRATIONS) {
   runMigrations()
 }
 setupUserNotificationObservers()

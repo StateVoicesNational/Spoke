@@ -51,7 +51,7 @@ export async function userLoggedIn(authId) {
     await r.redis.multi()
       .set(authKey, JSON.stringify(userAuth))
       .expire(authKey, 86400)
-      .exec()
+      .execAsync()
   }
   return userAuth
 }
