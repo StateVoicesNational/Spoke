@@ -35,15 +35,13 @@ https://github.com/MoveOnOrg/Spoke/blob/main/README.md#getting-started) section.
       ```
       npm run test-e2e
       ```
-    * ... individually
-      ```
-      npm run test-e2e <test name>
-      ```
-    * ... using Sauce Labs browser with your local host
-      
-      **Note:** You must first setup [Sauce Labs](https://github.com/MoveOnOrg/Spoke/blob/main/docs/EXPLANATION-end-to-end-tests.md#saucelabs)
+    * ... using Sauce Labs
       ```
       export SAUCE_USERNAME=<Sauce Labs user name>
       export SAUCE_ACCESS_KEY=<Sauce Labs access key>
-      npm run test-e2e <optional test name> --saucelabs
+      npm run test-e2e --saucelabs
+      ```
+    * ... individually
+      ```
+      npm run test-e2e <test name>
       ```

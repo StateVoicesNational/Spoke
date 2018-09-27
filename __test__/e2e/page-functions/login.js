@@ -1,6 +1,6 @@
 import { until } from 'selenium-webdriver'
 import config from '../util/config'
-import { wait, urlBuilder } from '../util/helpers'
+import { wait } from '../util/helpers'
 import pom from '../page-objects/index'
 
 // For legibility
@@ -14,10 +14,15 @@ export const login = {
 
     it('clicks the login link', async () => {
       // Click on the login button
-      wait.andClick(driver, pom.login.loginGetStarted, { msWait: 50000, waitAfterVisible: 2000 })
+      wait.untilLocated(driver, pom.login.loginGetStarted, { msWait: 30000 })
+      await driver.sleep(2000) // Transition
+      wait.andClick(driver, pom.login.loginGetStarted)
 
       // Wait until the Auth0 login page loads
-      await driver.wait(until.urlContains(urlBuilder.login))
+      const loginUrl = `${config.baseUrl}/login`
+      await driver.wait(until.urlContains(loginUrl))
+      const url = await driver.getCurrentUrl()
+      expect(url).toContain(loginUrl)
     })
   },
   signUpTab(driver, user) {
@@ -41,15 +46,25 @@ export const login = {
     })
 
     it('accepts the user agreement', async () => {
-      if (!skip) await wait.andClick(driver, auth0.form.agreement)
+      if (!skip) {
+        const el = await driver.findElement(auth0.form.agreement)
+        await el.click()
+      }
     })
 
     it('clicks the submit button', async () => {
-      if (!skip) await wait.andClick(driver, auth0.form.submit)
+      if (!skip) {
+        const el = await driver.findElement(auth0.form.submit)
+        await el.click()
+      }
     })
 
     it('authorizes Auth0 to access tenant', async () => {
-      if (!skip) await wait.andClick(driver, auth0.authorize.allow)
+      if (!skip) {
+        const el = await driver.wait(until.elementLocated(auth0.authorize.allow))
+        await driver.wait(until.elementIsVisible(el))
+        await el.click()
+      }
     })
   },
   signUp(driver, user) {
@@ -58,7 +73,7 @@ export const login = {
   },
   logIn(driver, user) {
     it('opens the Log In tab', async () => {
-      await wait.andClick(driver, auth0.tabs.logIn, { msWait: 50000 })
+      await wait.andClick(driver, auth0.tabs.logIn, { msWait: 20000 })
     })
 
     it('fills in the existing user details', async () => {
@@ -67,7 +82,7 @@ export const login = {
     })
 
     it('clicks the submit button', async () => {
-      await wait.andClick(driver, auth0.form.submit, { waitAfterVisible: 1000 })
+      await wait.andClick(driver, auth0.form.submit)
     })
   },
   tryLoginThenSignUp(driver, user) {

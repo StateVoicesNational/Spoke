@@ -3,7 +3,6 @@ import React from 'react'
 import { Toolbar, ToolbarGroup, ToolbarTitle } from 'material-ui/Toolbar'
 import { getDisplayPhoneNumber } from '../lib/phone-format'
 import { getLocalTime, getContactTimezone } from '../lib/timezones'
-import { getProcessEnvDstReferenceTimezone } from '../lib/tz-helpers'
 import { grey100 } from 'material-ui/styles/colors'
 
 const inlineStyles = {
@@ -40,7 +39,7 @@ const ContactToolbar = function ContactToolbar(props) {
       offset = timezone.offset || offset
       hasDST = timezone.hasDST || hasDST
     }
-    const adjustedLocationTZ = getContactTimezone(props.campaign, location)
+    const adjustedLocationTZ = getContactTimezone(location)
     if (adjustedLocationTZ && adjustedLocationTZ.timezone) {
       offset = adjustedLocationTZ.timezone.offset
       hasDST = adjustedLocationTZ.timezone.hasDST
@@ -53,11 +52,7 @@ const ContactToolbar = function ContactToolbar(props) {
   }
   formattedLocation = `${formattedLocation} ${state}`
 
-  const dstReferenceTimezone = props.campaign.overrideOrganizationTextingHours ?
-    this.props.campaign.timezone :
-    getProcessEnvDstReferenceTimezone()
-
-  const formattedLocalTime = getLocalTime(offset, hasDST, dstReferenceTimezone).format('LT') // format('h:mm a')
+  const formattedLocalTime = getLocalTime(offset, hasDST).format('LT') // format('h:mm a')
   return (
     <div>
       <Toolbar
@@ -89,8 +84,7 @@ const ContactToolbar = function ContactToolbar(props) {
 
 ContactToolbar.propTypes = {
   campaignContact: PropTypes.object, // contacts for current assignment
-  rightToolbarIcon: PropTypes.element,
-  campaign: PropTypes.object
+  rightToolbarIcon: PropTypes.element
 }
 
 export default ContactToolbar
