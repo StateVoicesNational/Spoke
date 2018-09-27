@@ -219,9 +219,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
   }
 
   const newCampaign = await Campaign.get(id).update(campaignUpdates)
-  if (newCampaign.is_started) {
-    await cacheableData.campaign.reload(id)
-  }
+  await cacheableData.campaign.reload(id)
   return newCampaign || loaders.campaign.load(id)
 }
 
