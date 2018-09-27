@@ -3,6 +3,11 @@ export const schema = `
     campaignsFilter: CampaignsFilter
   }
 
+  type AssignmentMessage {
+    subject: String
+    body: String
+  }
+
   type Organization {
     id: ID
     uuid: String
@@ -12,9 +17,9 @@ export const schema = `
     optOuts: [OptOut]
     threeClickEnabled: Boolean
     optOutMessage: String
+    assignmentMessage: AssignmentMessage
     textingHoursEnforced: Boolean
     textingHoursStart: Int
     textingHoursEnd: Int
   }
 `
-
