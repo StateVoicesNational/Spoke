@@ -16,10 +16,10 @@ const questionResponseCache = {
     // For now, minimalObj is always being invoked as true in
     // server/api/campaign-contact
     if (r.redis && minimalObj) {
-      const key = responseCacheKey(campaignContactId)
+      const cacheKey = responseCacheKey(campaignContactId)
       const [exists, cachedResponse] = await r.redis.multi()
-        .exists(key)
-        .hgetall(key)
+        .exists(cacheKey)
+        .hgetall(cacheKey)
         .execAsync()
       if (exists && cachedResponse) {
         const formattedResponse = Object.keys(cachedResponse).map((key) => ({
