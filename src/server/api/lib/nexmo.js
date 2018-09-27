@@ -23,11 +23,6 @@ async function convertMessagePartsToMessage(messageParts) {
     .map((serviceMessage) => serviceMessage.text)
     .join('')
 
-  const lastMessage = await getLastMessage({
-    contactNumber,
-    service: 'nexmo'
-  })
-
   return new Message({
     contact_number: contactNumber,
     user_number: userNumber,
@@ -35,7 +30,8 @@ async function convertMessagePartsToMessage(messageParts) {
     text,
     service_response: JSON.stringify(serviceMessages),
     service_id: serviceMessages[0].service_id,
-    assignment_id: lastMessage.assignment_id,
+    messageservice_sid: '',
+    //assignment_id and campaign_contact_id will be saved later
     service: 'nexmo',
     send_status: 'DELIVERED'
   })

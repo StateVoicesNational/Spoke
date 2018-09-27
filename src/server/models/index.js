@@ -23,12 +23,13 @@ import Log from './log'
 import thinky from './thinky'
 import datawarehouse from './datawarehouse'
 
-import { cacheableData } from './cacheable_queries'
+import cacheableData from './cacheable_queries'
 
 function createLoader(model, opts) {
   const idKey = (opts && opts.idKey) || 'id'
   const cacheObj = opts && opts.cacheObj
   return new DataLoader(async (keys) => {
+    console.log('dataloader', model.tableName, keys)
     if (cacheObj && cacheObj.load) {
       return keys.map(async (key) => await cacheObj.load(key))
     }
@@ -45,8 +46,8 @@ const tableList = [
   'user', // good candidate
   'campaign', //good candidate
   'assignment',
-  // the rest are alphabetical
   'campaign_contact', //?good candidate (or by cell)
+  // the rest are alphabetical
   'canned_response', //good candidate
   'interaction_step',
   'invite',
@@ -82,14 +83,30 @@ function dropTables() {
   return thinky.dropTables(tableList)
 }
 
+function getMessageServiceSid(organization) {
+  const orgSid = organization.messageservice_sid
+  if (!orgSid) {
+    let orgFeatures = {}
+    if (organization.features) {
+      orgFeatures = JSON.parse(organization.features)
+    }
+    const service = orgFeatures.service || process.env.DEFAULT_SERVICE || ''
+    if (service === 'twilio') {
+      return process.env.TWILIO_MESSAGE_SERVICE_SID
+    }
+    return ''
+  }
+  return orgSid
+}
+
 const createLoaders = () => ({
-  assignment: createLoader(Assignment),
+  assignment: createLoader(Assignment, {cacheObj: cacheableData.assignment}),
   campaign: createLoader(Campaign, {cacheObj: cacheableData.campaign}),
   invite: createLoader(Invite),
   organization: createLoader(Organization, {cacheObj: cacheableData.organization}),
   user: createLoader(User),
   interactionStep: createLoader(InteractionStep),
-  campaignContact: createLoader(CampaignContact),
+  campaignContact: createLoader(CampaignContact, {cacheObj: cacheableData.campaignContact}),
   zipCode: createLoader(ZipCode, {idKey: 'zip'}),
   log: createLoader(Log),
   cannedResponse: createLoader(CannedResponse),
@@ -112,6 +129,7 @@ export {
   createTables,
   createTablesIfNecessary,
   dropTables,
+  getMessageServiceSid,
   datawarehouse,
   Migrations,
   Assignment,

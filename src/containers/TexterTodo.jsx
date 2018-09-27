@@ -128,7 +128,6 @@ const mapQueriesToProps = ({ ownProps }) => ({
           id
           firstName
           lastName
-          assignedCell
         }
         campaign {
           id

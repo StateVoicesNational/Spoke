@@ -186,6 +186,7 @@ export async function uploadContacts(job) {
     } else {
       await r.table('job_request').get(job.id).delete()
     }
+    await cacheableData.optOut.loadMany(campaign.organization_id)
   }
   await cacheableData.campaign.reload(campaignId)
 }
@@ -284,6 +285,7 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
     }
     await r.table('job_request').get(jobEvent.jobId).delete()
     await cacheableData.campaign.reload(jobEvent.campaignId)
+    await cacheableData.optOut.loadMany(jobEvent.organizationId)
     return { 'completed': 1 }
   } else if (jobEvent.part < (jobEvent.totalParts - 1)) {
     const newPart = jobEvent.part + 1
@@ -569,7 +571,9 @@ export async function assignTexters(job) {
         max_contacts: maxContacts
       }).save()
     }
-
+    if (assignment && campaign.is_started) {
+      await cacheableData.assignment.reload(assignment.id)
+    }
     if (!campaign.use_dynamic_assignment) {
       await r.knex('campaign_contact')
         .where('id', 'in',
@@ -597,17 +601,21 @@ export async function assignTexters(job) {
 
   if (!campaign.use_dynamic_assignment) {
     // dynamic assignments, having zero initially is ok
-    const assignmentsToDelete = r.knex('assignment')
+    const assignmentsToDelete = await r.knex('assignment')
       .where('assignment.campaign_id', cid)
       .leftJoin('campaign_contact', 'assignment.id', 'campaign_contact.assignment_id')
       .groupBy('assignment.id')
       .havingRaw('COUNT(campaign_contact.id) = 0')
       .select('assignment.id as id')
-
+    const assignmentIdsToDelete = assignmentsToDelete.map(a => a.id)
+    if (assignmentIdsToDelete.length) {
+      await cacheableData.assignment.clearAll(assignmentIdsToDelete, campaign.id)
+    }
     await r.knex('assignment')
-      .where('id', 'in', assignmentsToDelete)
+      .where('id', 'in', assignmentIdsToDelete)
       .delete()
       .catch(log.error)
+
   }
 
 
@@ -817,6 +825,7 @@ export async function sendMessages(queryFunc, defaultStatus) {
 }
 
 export async function handleIncomingMessageParts() {
+  // TODO: remove lastMessage test, since that will be in saveNewIncomingMessage()
   const messageParts = await r.table('pending_message_part').limit(100)
   const messagePartsByService = {}
   messageParts.forEach((m) => {

@@ -1,6 +1,5 @@
 import { mapFieldsToModel } from './lib/utils'
 import { Campaign, JobRequest, r, cacheableData } from '../models'
-import { currentEditors } from '../models/cacheable_queries'
 
 export function buildCampaignQuery(queryParam, organizationId, campaignsFilter, addFromClause = true) {
   let query = queryParam
@@ -124,7 +123,7 @@ export const resolvers = {
     },
     interactionSteps: async (campaign) => (
       campaign.interactionSteps
-      || cacheableData.campaign.dbInteractionSteps(campaign.id)
+        || cacheableData.campaign.dbInteractionSteps(campaign.id)
     ),
     cannedResponses: async (campaign, { userId }) => (
       await cacheableData.cannedResponse.query({
@@ -156,7 +155,7 @@ export const resolvers = {
     stats: async (campaign) => campaign,
     editors: async (campaign, _, { user }) => {
       if (r.redis) {
-        return currentEditors(r.redis, campaign, user)
+        return cacheableData.campaign.currentEditors(r.redis, campaign, user)
       }
       return ''
     }
