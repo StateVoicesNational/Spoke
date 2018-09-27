@@ -1154,7 +1154,10 @@ const rootResolvers = {
       }
       return assignment
     },
-    organization: async (_, { id }, { loaders }) => loaders.organization.load(id),
+    organization: async (_, { id }, { user, loaders }) => {
+      await accessRequired(user, id, 'TEXTER')
+      return await loaders.organization.load(id)
+    },
     inviteByHash: async (_, { hash }, { loaders, user }) => {
       authRequired(user)
       return r.table('invite').filter({ hash })
@@ -1175,8 +1178,11 @@ const rootResolvers = {
       return contact
     },
     organizations: async (_, { id }, { user }) => {
-      await superAdminRequired(user)
-      return r.table('organization')
+      if (user.is_superadmin) {
+        return r.table('organization')
+      } else {
+        return await cacheableData.user.userOrgs(user.id, 'TEXTER')
+      }
     },
     availableActions: (_, { organizationId }, { user }) => {
       if (!process.env.ACTION_HANDLERS) {
