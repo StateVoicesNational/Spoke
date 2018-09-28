@@ -198,9 +198,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
   }
 
   const newCampaign = await Campaign.get(id).update(campaignUpdates)
-  if (newCampaign.is_started) {
-    await cacheableData.campaign.reload(id)
-  }
+  await cacheableData.campaign.reload(id)
   return newCampaign || loaders.campaign.load(id)
 }
 
@@ -261,6 +259,7 @@ const rootMutations = {
         .update({
           terms: true
         })
+      await cacheableData.user.clearUser(user.id, user.auth0_id)
       return currentUser
     },
 
@@ -306,7 +305,7 @@ const rootMutations = {
           service: lastMessage.service,
           messageservice_sid: '',
           send_status: 'DELIVERED'
-        })
+        }, contact)
       )
       return loaders.campaignContact.load(id)
     },
@@ -364,6 +363,7 @@ const rootMutations = {
       if (newOrgRoles.length) {
         await UserOrganization.save(newOrgRoles, { conflict: 'update' })
       }
+      await cacheableData.user.clearUser(userId)
       return loaders.organization.load(organizationId)
     },
     editUser: async (_, { organizationId, userId, userData }, { user }) => {
@@ -393,6 +393,7 @@ const rootMutations = {
               email: userData.email,
               cell: userData.cell
             })
+          await cacheableData.user.clearUser(member.id, member.auth0_id)
           userData = {
             id: userId,
             first_name: userData.firstName,
@@ -407,8 +408,7 @@ const rootMutations = {
       }
     },
     joinOrganization: async (_, { organizationUuid }, { user, loaders }) => {
-      let organization
-      ;[organization] = await r.knex('organization').where('uuid', organizationUuid)
+      const [organization] = await r.knex('organization').where('uuid', organizationUuid)
       if (organization) {
         const userOrg = await r
           .table('user_organization')
@@ -423,6 +423,7 @@ const rootMutations = {
             organization_id: organization.id,
             role: 'TEXTER'
           })
+          cacheableData.user.clearUser(user.id)
         }
       }
       return organization
@@ -456,6 +457,7 @@ const rootMutations = {
           campaign_id: campaign.id,
           max_contacts: parseInt(process.env.MAX_CONTACTS_PER_TEXTER || 0, 10)
         })
+      } else {
         await cacheableData.assignment.reload(assignment.id)
       }
       return campaign
@@ -734,7 +736,8 @@ const rootMutations = {
       const contact = await loaders.campaignContact.load(campaignContactId)
       await assignmentRequired(user, contact.assignment_id)
       contact.message_status = messageStatus
-      return await contact.save()
+      await cacheableData.campaignContact.updateStatus(contact, messageStatus)
+      return contact
     },
     getAssignmentContacts: async (_, { assignmentId, contactIds, findNew }, { loaders, user }) => {
       await assignmentRequired(user, assignmentId)
@@ -932,7 +935,7 @@ const rootMutations = {
       console.log('contact saved', contact)
 
       const service = serviceMap[messageInstance.service || process.env.DEFAULT_SERVICE]
-      service.sendMessage(messageInstance)
+      service.sendMessage(messageInstance, contact)
       return contact
     },
     deleteQuestionResponses: async (
@@ -956,7 +959,7 @@ const rootMutations = {
     },
     updateQuestionResponses: async (_, { questionResponses, campaignContactId }, { loaders }) => {
       const count = questionResponses.length
-
+      //console.log('updatingQuestionResponses', questionResponses)
       for (let i = 0; i < count; i++) {
         const questionResponse = questionResponses[i]
         const { interactionStepId, value } = questionResponse
@@ -1002,7 +1005,7 @@ const rootMutations = {
       }
 
       // update cache
-      cacheableData.questionResponse.reloadQuery(campaignContactId)
+      cacheableData.questionResponse.clearQuery(campaignContactId)
 
       const contact = loaders.campaignContact.load(campaignContactId)
       return contact
@@ -1131,7 +1134,10 @@ const rootResolvers = {
       }
       return assignment
     },
-    organization: async (_, { id }, { loaders }) => loaders.organization.load(id),
+    organization: async (_, { id }, { user, loaders }) => {
+      await accessRequired(user, id, 'TEXTER')
+      return await loaders.organization.load(id)
+    },
     inviteByHash: async (_, { hash }, { loaders, user }) => {
       authRequired(user)
       return r.table('invite').filter({ hash })
@@ -1152,8 +1158,11 @@ const rootResolvers = {
       return contact
     },
     organizations: async (_, { id }, { user }) => {
-      await superAdminRequired(user)
-      return r.table('organization')
+      if (user.is_superadmin) {
+        return r.table('organization')
+      } else {
+        return await cacheableData.user.userOrgs(user.id, 'TEXTER')
+      }
     },
     availableActions: (_, { organizationId }, { user }) => {
       if (!process.env.ACTION_HANDLERS) {
