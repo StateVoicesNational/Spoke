@@ -757,7 +757,8 @@ const rootMutations = {
       const contact = await loaders.campaignContact.load(campaignContactId)
       await assignmentRequired(user, contact.assignment_id)
       contact.message_status = messageStatus
-      return await contact.save()
+      await cacheableData.campaignContact.updateStatus(contact, messageStatus)
+      return contact
     },
     getAssignmentContacts: async (_, { assignmentId, contactIds, findNew }, { loaders, user }) => {
       await assignmentRequired(user, assignmentId)
