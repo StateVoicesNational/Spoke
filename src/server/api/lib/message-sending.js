@@ -9,7 +9,7 @@ export async function getLastMessage({ contactNumber, service, messageServiceSid
       service
     })
   if (messageServiceSid) {
-    query = query.where(function() {
+    query = query.where(function subquery() {
       // Allow null for active campaigns immediately after post-migration
       // where messageservice_sid may not have been set yet
       return this.where('messageservice_sid', messageServiceSid)
