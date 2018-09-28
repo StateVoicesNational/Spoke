@@ -16,6 +16,6 @@ export const resolvers = {
       (msg.created_at instanceof Date || !msg.created_at)
       ? msg.created_at || null
       : new Date(msg.created_at),
-    'id': msg => (msg.id || 'x')
+    'id': msg => (msg.id || `fake${Math.random()}`)
   }
 }

@@ -2,7 +2,7 @@ import Twilio from 'twilio'
 import { getFormattedPhoneNumber } from '../../../lib/phone-format'
 import { Log, Message, PendingMessagePart, r } from '../../models'
 import { log } from '../../../lib'
-import { getLastMessage, saveNewIncomingMessage } from './message-sending'
+import { saveNewIncomingMessage } from './message-sending'
 import faker from 'faker'
 
 let twilio = null
@@ -23,10 +23,9 @@ function webhook() {
   log.warn('twilio webhook call') // sky: doesn't run this
   if (twilio) {
     return Twilio.webhook()
-  } else {
-    log.warn('NO TWILIO WEB VALIDATION')
-    return function (req, res, next) { next() }
   }
+  log.warn('NO TWILIO WEB VALIDATION')
+  return ((req, res, next) => next())
 }
 
 async function convertMessagePartsToMessage(messageParts) {
@@ -46,7 +45,7 @@ async function convertMessagePartsToMessage(messageParts) {
     service_response: JSON.stringify(serviceMessages),
     service_id: serviceMessages[0].MessageSid,
     messageservice_sid: serviceMessages[0].MessagingServiceSid,
-    //assignment_id and campaign_contact_id will be saved later
+    // assignment_id and campaign_contact_id will be saved later
     service: 'twilio',
     send_status: 'DELIVERED'
   })
@@ -220,10 +219,10 @@ async function handleIncomingMessage(message) {
   })
 
   if (process.env.JOBS_SAME_PROCESS) {
-    const finalMessage = await convertMessagePartsToMessage([part])
+    const finalMessage = await convertMessagePartsToMessage([pendingMessagePart])
     await saveNewIncomingMessage(finalMessage)
   } else {
-    const part = await pendingMessagePart.save()
+    await pendingMessagePart.save()
   }
 }
 

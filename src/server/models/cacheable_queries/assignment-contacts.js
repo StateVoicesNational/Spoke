@@ -144,8 +144,9 @@ export const cachedContactsQuery = async ({ assignmentId, timezoneOffsets, messa
     const existsResult = await existsQuery.execAsync()
     if (existsResult.reduce((a, b) => a && b, true)) {
       const redisResult = await resultQuery.execAsync()
+      // console.log('redis assignment contact result', redisResult, assignmentId, timezoneOffsets, range, messageStatuses)
       if (justCount) {
-        return redisResult.reduce((i, j) => i + j, 0)
+        return redisResult.reduce((i, j) => Number(i) + Number(j), 0)
       } else if (justIds) {
         return redisResult
           .reduce((m, n) => [...m, ...n], [])
@@ -288,6 +289,7 @@ export const updateAssignmentContact = async (contact, newStatus) => {
   const key = assignmentContactsKey(contact.assignment_id, contact.timezone_offset)
   const range = msgStatusRange[newStatus]
   const cmd = (newStatus === 'convo' ? 'zrangebyscore' : 'zrevrangebyscore')
+  // console.log('updateAssignmentContact', contact, newStatus, range, cmd, key)
   const [exists, curMax] = await r.redis.multi()
     .exists(key)
     [cmd](key, range[0], range[1], 'WITHSCORES', 'LIMIT', 0, 1)
@@ -296,9 +298,9 @@ export const updateAssignmentContact = async (contact, newStatus) => {
   if (exists) {
     // eslint-disable-next-line no-nested-ternary
     const newScore = (curMax && curMax.length
-                      ? curMax[0] + (newStatus === 'convo' ? -1 : 1)
+                      ? Number(curMax[0]) + (newStatus === 'convo' ? -1 : 1)
                       : (newStatus === 'convo' ? range[1] : range[0]))
-    // console.log('updateassignment', newScore, await r.redis.zrangeAsync(key, 0, -1, 'WITHSCORES'))
+    // console.log('updateassignment', contact.id, newScore, await r.redis.zrangeAsync(key, 0, -1, 'WITHSCORES'))
     await r.redis.zaddAsync([key, newScore, contact.id])
   }
 }

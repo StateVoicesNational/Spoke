@@ -67,8 +67,7 @@ const saveCacheRecord = async (dbRecord, organization, messageServiceSid) => {
   if (r.redis) {
     // basic contact record
     const contactCacheObj = generateCacheRecord(dbRecord, organization.id, messageServiceSid)
-    // console.log('generated contact', contactCacheObj)
-    console.log('contact saveCacheRecord', contactCacheObj)
+    // console.log('contact saveCacheRecord', contactCacheObj)
     const contactKey = cacheKey(dbRecord.id)
     const statusKey = messageStatusKey(dbRecord.id)
     const [statusKeyExists] = await r.redis.multi()
@@ -116,7 +115,7 @@ const campaignContactCache = {
     if (r.redis) {
       const cacheRecord = await r.redis.getAsync(cacheKey(id))
       if (cacheRecord) {
-        console.log('contact cacheRecord', cacheRecord)
+        // console.log('contact cacheRecord', cacheRecord)
         const cacheData = JSON.parse(cacheRecord)
         if (cacheData.cell && cacheData.organization_id) {
           cacheData.is_opted_out = await optOutCache.query({
@@ -226,11 +225,15 @@ const campaignContactCache = {
   },
   getMessageStatus,
   updateStatus: async (contact, newStatus) => {
+    // console.log('updateSTATUS', contact, newStatus)
     if (r.redis) {
       const contactKey = cacheKey(contact.id)
       const statusKey = messageStatusKey(contact.id)
+      // NOTE: contact.messageservice_sid is not a field, but will have been
+      //       added on to the contact object from message.save
+      // Other contexts don't really need to update the cell key -- just the status
       const cellKey = cellTargetKey(contact.cell, contact.messageservice_sid)
-      console.log('contact updateStatus', cellKey, newStatus, contact)
+      // console.log('contact updateStatus', cellKey, newStatus, contact)
       await r.redis.multi()
         .set(statusKey, newStatus)
       // We update the cell info on status updates, because this happens
@@ -245,6 +248,7 @@ const campaignContactCache = {
         .execAsync()
       await updateAssignmentContact(contact, newStatus)
     }
+    // console.log('updateStatus, CONTACT', contact)
     await r.knex('campaign_contact')
       .where('id', contact.id)
       .update({ message_status: newStatus, updated_at: 'now()' })
