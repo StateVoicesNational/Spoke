@@ -14,7 +14,7 @@ const cacheKey = (contactId) => `${process.env.CACHE_PREFIX || ''}messages-${con
 const dbQuery = ({ campaignId, contactId }) => {
   const cols = Object.keys(Message.fields).filter(f => f !== 'service_response').map(f => `message.${f}`)
   let query = r.knex('message').select(...cols)
-  console.log('message dbquery', contactId, cols)
+  // console.log('message dbquery', contactId, cols)
   if (contactId) {
     query = query.where('campaign_contact_id', contactId)
     // TODO: do we need to accomodate active campaigns just after migration here?
@@ -101,6 +101,7 @@ const query = async (queryObj) => {
       }
     }
   }
+  // console.log('dbQuery', cid)
   const dbResult = await dbQuery({ contactId: cid })
   await cacheDbResult(dbResult)
   return dbResult
@@ -115,10 +116,12 @@ const messageCache = {
   },
   query,
   save: async ({ messageInstance, contact }) => {
+    // 0. Gathers any missing data in the case of is_from_contact
     // 1. Saves the messageInstance
     // 2. Updates the campaign_contact record with an updated status and updated_at
     // 3. Updates all the related caches
     const contactData = Object.assign({}, contact || {})
+    // console.log('message SAVE', contact, messageInstance)
     if (messageInstance.is_from_contact) {
       // is_from_contact is a particularly complex conditional
       // This is because we don't have the contact id or other info
@@ -128,6 +131,7 @@ const messageCache = {
         messageInstance.service,
         messageInstance.messageservice_sid
       )
+
       // console.log('activeCellFound', activeCellFound)
       if (!activeCellFound) {
         // No active thread to attach message to. This should be very RARE
@@ -136,16 +140,16 @@ const messageCache = {
         console.error('ORPHAN MESSAGE', messageInstance, activeCellFound)
         return false
       }
-      if (activeCellFound.service_id) {
-        // probably in DB non-caching context
+      // Check to see if the message is a duplicate of the last one
+      // if-case==db result from lastMessage, else-case==cache-result
+      if (activeCellFound.service_id) { // DB non-caching contect
         if (messageInstance.service_id === activeCellFound.service_id) {
           // already saved the message -- this is a duplicate message
           console.error('DUPLICATE MESSAGE', messageInstance, activeCellFound)
           return false
         }
-      } else {
-        // caching context need to look at message thread
-        const messageThread = await query({ campaignContactId: messageInstance.campaign_contact_id })
+      } else { // cached context looking through message thread
+        const messageThread = await query({ campaignContactId: activeCellFound.campaign_contact_id })
         const redundant = messageThread.filter(
           m => (m.service_id && m.service_id === messageInstance.service_id)
         )
@@ -157,6 +161,8 @@ const messageCache = {
       contactData.id = (contactData.id || activeCellFound.campaign_contact_id)
       contactData.timezone_offset = (contactData.timezone_offset || activeCellFound.timezone_offset)
       contactData.message_status = (contactData.message_status || activeCellFound.message_status)
+      contactData.assignment_id = (contactData.assignment_id || activeCellFound.assignment_id)
+
       const updateFields = ['campaign_contact_id', 'assignment_id']
       updateFields.forEach(f => {
         if (!messageInstance[f]) {
