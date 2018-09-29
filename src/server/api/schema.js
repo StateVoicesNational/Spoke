@@ -1,73 +1,61 @@
-import { applyScript } from '../../lib/scripts'
 import camelCaseKeys from 'camelcase-keys'
+import GraphQLDate from 'graphql-date'
+import GraphQLJSON from 'graphql-type-json'
+import { GraphQLError } from 'graphql/error'
 import isUrl from 'is-url'
-import { buildCampaignQuery } from './campaign'
 import { organizationCache } from '../models/cacheable_queries/organization'
 
-import moment from 'moment-timezone'
-
+import { gzip, log, makeTree } from '../../lib'
+import { applyScript } from '../../lib/scripts'
+import {
+  assignTexters,
+  exportCampaign,
+  loadContactsFromDataWarehouse,
+  uploadContacts
+} from '../../workers/jobs'
 import {
   Assignment,
   Campaign,
   CannedResponse,
-  InteractionStep,
   Invite,
+  JobRequest,
   Message,
-  OptOut,
   Organization,
   QuestionResponse,
-  UserOrganization,
-  JobRequest,
   User,
+  UserOrganization,
   r,
-  datawarehouse,
   cacheableData
 } from '../models'
-import { schema as userSchema, resolvers as userResolvers, buildUserOrganizationQuery } from './user'
+import { Notifications, sendUserNotification } from '../notifications'
+import { resolvers as assignmentResolvers } from './assignment'
+import { getCampaigns, resolvers as campaignResolvers } from './campaign'
+import { resolvers as campaignContactResolvers } from './campaign-contact'
+import { resolvers as cannedResponseResolvers } from './canned-response'
 import {
-  schema as conversationSchema,
   getConversations,
+  getCampaignIdMessageIdsAndCampaignIdContactIdsMaps,
+  reassignConversations,
   resolvers as conversationsResolver
 } from './conversations'
-import { schema as organizationSchema, resolvers as organizationResolvers } from './organization'
-import { schema as campaignSchema, resolvers as campaignResolvers } from './campaign'
 import {
-  schema as assignmentSchema,
-  resolvers as assignmentResolvers
-} from './assignment'
-import {
-  schema as interactionStepSchema,
-  resolvers as interactionStepResolvers
-} from './interaction-step'
-import { schema as questionSchema, resolvers as questionResolvers } from './question'
-import {
-  schema as questionResponseSchema,
-  resolvers as questionResponseResolvers
-} from './question-response'
-import { GraphQLPhone } from './phone'
-import { schema as optOutSchema, resolvers as optOutResolvers } from './opt-out'
-import { schema as messageSchema, resolvers as messageResolvers } from './message'
-import {
-  schema as campaignContactSchema,
-  resolvers as campaignContactResolvers
-} from './campaign-contact'
-import {
-  schema as cannedResponseSchema,
-  resolvers as cannedResponseResolvers
-} from './canned-response'
-import { schema as inviteSchema, resolvers as inviteResolvers } from './invite'
-import {
-  authRequired,
   accessRequired,
-  hasRole,
   assignmentRequired,
+  authRequired,
   superAdminRequired
 } from './errors'
-import serviceMap from './lib/services'
+import { resolvers as interactionStepResolvers } from './interaction-step'
+import { resolvers as inviteResolvers } from './invite'
 import { saveNewIncomingMessage } from './lib/message-sending'
-import { gzip, log, makeTree } from '../../lib'
-import { mapFieldsToModel } from './lib/utils'
-// import { isBetweenTextingHours } from '../../lib/timezones'
+import serviceMap from './lib/services'
+import { resolvers as messageResolvers } from './message'
+import { resolvers as optOutResolvers } from './opt-out'
+import { resolvers as organizationResolvers } from './organization'
+import { GraphQLPhone } from './phone'
+import { resolvers as questionResolvers } from './question'
+import { resolvers as questionResponseResolvers } from './question-response'
+import { getUsers, resolvers as userResolvers } from './user'
+
 import { Notifications, sendUserNotification } from '../notifications'
 import {
   uploadContacts,
@@ -78,10 +66,6 @@ import {
 
 import { getSendBeforeTimeUtc } from '../../lib/timezones'
 const uuidv4 = require('uuid').v4
-import GraphQLDate from 'graphql-date'
-import GraphQLJSON from 'graphql-type-json'
-import { GraphQLError } from 'graphql/error'
-
 const JOBS_SAME_PROCESS = !!(process.env.JOBS_SAME_PROCESS || global.JOBS_SAME_PROCESS)
 const JOBS_SYNC = !!(process.env.JOBS_SYNC || global.JOBS_SYNC)
 
@@ -892,7 +876,7 @@ const rootMutations = {
 
       return []
     },
-    sendMessage: async (_, { message, campaignContactId }, { user, loaders }) => {
+    sendMessage: async (_, { message, campaignContactId }, { loaders }) => {
       const contact = await loaders.campaignContact.load(campaignContactId)
       const campaign = await loaders.campaign.load(contact.campaign_id)
       if (contact.assignment_id !== parseInt(message.assignmentId) || campaign.is_archived) {
@@ -981,7 +965,6 @@ const rootMutations = {
       const messageInstance = new Message({
         text: replaceCurlyApostrophes(text),
         contact_number: contactNumber,
-        user_id: user.id,
         user_number: '',
         assignment_id: message.assignmentId,
         send_status: JOBS_SAME_PROCESS ? 'SENDING' : 'QUEUED',
@@ -1116,66 +1099,24 @@ const rootMutations = {
         campaignIdMessagesIdsMap.get(campaignId).push(...messageIds)
       }
 
-      // ensure existence of assignments
-      const campaignIdAssignmentIdMap = new Map()
-      for (const [campaignId, _] of campaignIdContactIdsMap) {
-        let assignment = await r
-          .table('assignment')
-          .getAll(newTexterUserId, { index: 'user_id' })
-          .filter({ campaign_id: campaignId })
-          .limit(1)(0)
-          .default(null)
-        if (!assignment) {
-          assignment = await Assignment.save({
-            user_id: newTexterUserId,
-            campaign_id: campaignId,
-            max_contacts: parseInt(process.env.MAX_CONTACTS_PER_TEXTER || 0, 10)
-          })
-        }
-        campaignIdAssignmentIdMap.set(campaignId, assignment.id)
-      }
+      return await reassignConversations(campaignIdContactIdsMap, campaignIdMessagesIdsMap, newTexterUserId)
+    },
+    bulkReassignCampaignContacts: async (
+      _,
+      { organizationId, campaignsFilter, assignmentsFilter, contactsFilter, newTexterUserId },
+      { user }
+    ) => {
+      // verify permissions
+      await accessRequired(user, organizationId, 'ADMIN', /* superadmin*/ true)
+      const { campaignIdContactIdsMap, campaignIdMessagesIdsMap }  =
+        await getCampaignIdMessageIdsAndCampaignIdContactIdsMaps(
+          organizationId,
+          campaignsFilter,
+          assignmentsFilter,
+          contactsFilter
+        )
 
-      // do the reassignment
-      const returnCampaignIdAssignmentIds = []
-
-      // TODO(larry) do this in a transaction!
-      try {
-        for (const [campaignId, campaignContactIds] of campaignIdContactIdsMap) {
-          const assignmentId = campaignIdAssignmentIdMap.get(campaignId)
-
-          await r
-            .knex('campaign_contact')
-            .where('campaign_id', campaignId)
-            .whereIn('id', campaignContactIds)
-            .update({
-              assignment_id: assignmentId
-            })
-
-          returnCampaignIdAssignmentIds.push({
-            campaignId,
-            assignmentId: assignmentId.toString()
-          })
-        }
-        for (const [campaignId, messageIds] of campaignIdMessagesIdsMap) {
-          const assignmentId = campaignIdAssignmentIdMap.get(campaignId)
-
-          await r
-            .knex('message')
-            .whereIn(
-              'id',
-              messageIds.map(messageId => {
-                return messageId
-              })
-            )
-            .update({
-              assignment_id: assignmentId
-            })
-        }
-      } catch (error) {
-        log.error(error)
-      }
-
-      return returnCampaignIdAssignmentIds
+      return await reassignConversations(campaignIdContactIdsMap, campaignIdMessagesIdsMap, newTexterUserId)
     }
   }
 }
@@ -1274,6 +1215,14 @@ const rootResolvers = {
         contactsFilter,
         utc
       )
+    },
+    campaigns: async (_, {organizationId, cursor, campaignsFilter}, {user}) => {
+      await accessRequired(user, organizationId, 'SUPERVOLUNTEER')
+      return getCampaigns(organizationId, cursor, campaignsFilter)
+    },
+    people: async (_, {organizationId, cursor, campaignsFilter, role}, {user}) => {
+      await accessRequired(user, organizationId, 'SUPERVOLUNTEER')
+      return getUsers(organizationId, cursor, campaignsFilter, role)
     }
   }
 }
