@@ -1,6 +1,7 @@
 import { mapFieldsToModel } from './lib/utils'
 import { Campaign, JobRequest, r, cacheableData } from '../models'
 import { currentEditors } from '../models/cacheable_queries'
+import { getUsers } from './user';
 
 
 export function addCampaignsFilterToQuery(queryParam, campaignsFilter) {
