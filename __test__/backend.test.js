@@ -156,7 +156,7 @@ it('should be undefined when user not logged in', async () => {
   const result = await graphql(mySchema, query, rootValue, context)
   const data = result
 
-  expect(typeof data.currentUser).toBeUndefined
+  expect(typeof data.currentUser).toEqual('undefined')
 })
 
 it('should return the current user when user is logged in', async () => {
