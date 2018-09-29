@@ -60,27 +60,16 @@ const propsWithEnforcedTextingHoursCampaign = {
     campaign: campaign,
     contacts: [
       {
-        id: 19,
-        customFields: "{}"
-      },
-      {
-        id: 20,
-        customFields: "{}"
-      }
-    ],
-    allContacts: [
-      {
         id: 19
       },
       {
         id: 20
       }
     ],
+    allContactsCount: 2,
   },
   refreshData: jest.fn(),
-  data: {
-    loading: false,
-    contact: {
+  contact: {
       id: 19,
       assignmentId: 9,
       firstName: "larry",
@@ -101,7 +90,6 @@ const propsWithEnforcedTextingHoursCampaign = {
       },
       messageStatus: "needsMessage",
       messages: []
-    }
   }
 }
 
@@ -121,7 +109,7 @@ describe('when contact is not within texting hours...', () => {
           campaign={campaign}
           assignment={propsWithEnforcedTextingHoursCampaign.assignment}
           refreshData={propsWithEnforcedTextingHoursCampaign.refreshData}
-          data={propsWithEnforcedTextingHoursCampaign.data}
+          contact={propsWithEnforcedTextingHoursCampaign.contact}
         />
       </MuiThemeProvider>
     )
@@ -144,7 +132,7 @@ describe('when contact is within texting hours...', () => {
           campaign={campaign}
           assignment={propsWithEnforcedTextingHoursCampaign.assignment}
           refreshData={propsWithEnforcedTextingHoursCampaign.refreshData}
-          data={propsWithEnforcedTextingHoursCampaign.data}
+          contact={propsWithEnforcedTextingHoursCampaign.contact}
         />
       </MuiThemeProvider>
     )
