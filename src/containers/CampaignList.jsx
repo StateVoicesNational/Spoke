@@ -126,7 +126,7 @@ class CampaignList extends React.Component {
       />
     ) : (
         <List>
-          {campaigns.map((campaign) => this.renderRow(campaign))}
+          {campaigns.campaigns.map((campaign) => this.renderRow(campaign))}
         </List>
       )
   }
