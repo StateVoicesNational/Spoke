@@ -56,13 +56,6 @@ import { resolvers as questionResolvers } from './question'
 import { resolvers as questionResponseResolvers } from './question-response'
 import { getUsers, resolvers as userResolvers } from './user'
 
-import { Notifications, sendUserNotification } from '../notifications'
-import {
-  uploadContacts,
-  loadContactsFromDataWarehouse,
-  assignTexters,
-  exportCampaign
-} from '../../workers/jobs'
 
 import { getSendBeforeTimeUtc } from '../../lib/timezones'
 const uuidv4 = require('uuid').v4
