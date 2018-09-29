@@ -24,7 +24,9 @@ function getConversationsJoinsAndWhereClause(
       query = query.where({ 'assignment.user_id': assignmentsFilter.texterId })
   }
 
-  return addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue(query, contactsFilter)
+  return addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue(
+    query,
+    contactsFilter && contactsFilter.messageStatus)
 }
 
 /*
