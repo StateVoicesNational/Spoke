@@ -1,5 +1,4 @@
-import { r, datawarehouse, cacheableData,
-         Assignment, Campaign, CampaignContact, Organization, User } from '../server/models'
+import { r, datawarehouse, Assignment, Campaign, CampaignContact, Organization, User } from '../server/models'
 import { log, gunzip, zipToTimeZone, convertOffsetsToStrings } from '../lib'
 import { updateJob } from './lib'
 import { getFormattedPhoneNumber } from '../lib/phone-format.js'
@@ -13,18 +12,6 @@ import { sendEmail } from '../server/mail'
 import { Notifications, sendUserNotification } from '../server/notifications'
 
 const zipMemoization = {}
-
-function optOutsByOrgId(orgId) {
-  return r.knex.select('cell').from('opt_out').where('organization_id', orgId)
-}
-
-function optOutsByInstance() {
-  return r.knex.select('cell').from('opt_out')
-}
-
-function getOptOutSubQuery(orgId) {
-  return (!!process.env.OPTOUTS_SHARE_ALL_ORGS ? optOutsByInstance() : optOutsByOrgId(orgId))
-}
 
 export async function getTimezoneByZip(zip) {
   if (zip in zipMemoization) {
@@ -171,7 +158,9 @@ export async function uploadContacts(job) {
   }
 
   const optOutCellCount = await r.knex('campaign_contact')
-    .whereIn('cell', getOptOutSubQuery(campaign.organization_id))
+    .whereIn('cell', function optouts() {
+      this.select('cell').from('opt_out').where('organization_id', campaign.organization_id)
+    })
     .where('campaign_id', campaignId)
     .delete()
 
@@ -187,7 +176,6 @@ export async function uploadContacts(job) {
       await r.table('job_request').get(job.id).delete()
     }
   }
-  await cacheableData.campaign.reload(campaignId)
 }
 
 export async function loadContactsFromDataWarehouseFragment(jobEvent) {
@@ -278,12 +266,14 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
       // now that we've saved them all, we delete everyone that is opted out locally
       // doing this in one go so that we can get the DB to do the indexed cell matching
       const optOutCellCount = await r.knex('campaign_contact')
-        .whereIn('cell', getOptOutSubQuery(jobEvent.organizationId))
+        .whereIn('cell', function optouts() {
+          this.select('cell').from('opt_out').where('organization_id', jobEvent.organizationId)
+        })
         .where('campaign_id', jobEvent.campaignId)
         .delete()
+      console.log('OPTOUT CELL COUNT', optOutCellCount)
     }
     await r.table('job_request').get(jobEvent.jobId).delete()
-    await cacheableData.campaign.reload(jobEvent.campaignId)
     return { 'completed': 1 }
   } else if (jobEvent.part < (jobEvent.totalParts - 1)) {
     const newPart = jobEvent.part + 1
@@ -402,53 +392,6 @@ export async function assignTexters(job) {
   // * new texter
   //   no current/changed assignment
   //   iterating over texter, assignment is created, then apportioned needsMessageCount texters
- 
-  /*  
-  A. clientMessagedCount  or serverMessagedCount: # of contacts assigned and already texted (for a texter) 
-    aka clientMessagedCount / serverMessagedCount
-  B. needsMessageCount: # of contacts assigned but not yet texted (for a texter) 
-  C. max contacts (for a texter)
-  D. pool of unassigned and assignable texters
-    aka availableContacts
-
-  In dynamic assignment mode:
-    Add new texter
-      Create assignment
-    Change C
-      if new C >= A and new C <> old C:
-        Update assignment
-      if new C >= A and new C = old C:
-        No change
-      if new C < A or new C = 0:
-        Why are we doing this? If we want to keep someone from texting any more, 
-          we set their max_contacts to 0, and manually re-assign any of their 
-          previously texted contacts in the Message Review admin. 
-          TODO: Form validation should catch the case where C < A.
-    Delete texter
-      Assignment form currently prevents this (though it might be okay if A = 0).
-      To stop a texter from texting any more in the campaign, 
-      set their max to zero and re-assign their contacts to another texter.
-
-  In standard assignment mode:
-    Add new texter
-      Create assignment
-      Assign B contacts
-    Change B
-      if new B > old B:
-        Update assignment
-        Assign (new B - old B) contacts
-      if new B = old B:
-        No change
-      if new B < old B:
-        Update assignment
-        Unassign (old B - new B) untexted contacts
-      if new B = 0:
-        Update assignment
-    Delete texter
-      Not sure we allow this?
-  
-  TODO: what happens when we switch modes? Do we allow it?
-  */ 
   const payload = JSON.parse(job.payload)
   const cid = job.campaign_id
   const campaign = (await r.knex('campaign').where({ id: cid }))[0]
@@ -461,41 +404,33 @@ export async function assignTexters(job) {
     .select('user_id',
             'assignment.id as id',
             r.knex.raw("SUM(CASE WHEN allcontacts.message_status = 'needsMessage' THEN 1 ELSE 0 END) as needs_message_count"),
-            r.knex.raw('COUNT(allcontacts.id) as full_contact_count'),
-            'max_contacts'
+            r.knex.raw('COUNT(allcontacts.id) as full_contact_count')
            )
     .catch(log.error)
 
-  const unchangedTexters = {} // max_contacts and needsMessageCount unchanged
-  const demotedTexters = {} // needsMessageCount reduced
-  const dynamic = campaign.use_dynamic_assignment
-  // detect changed assignments
+  const unchangedTexters = {}
+  const demotedTexters = {}
+
+  // changedAssignments:
   currentAssignments.map((assignment) => {
     const texter = texters.filter((ele) => parseInt(ele.id, 10) === assignment.user_id)[0]
-    const unchangedMaxContacts = 
-      parseInt(texter.maxContacts, 10) === assignment.max_contacts || // integer = integer
-      texter.maxContacts === assignment.max_contacts // null = null 
-    const unchangedNeedsMessageCount = 
-      texter.needsMessageCount === parseInt(assignment.needs_message_count, 10)
-    if (texter) {
-      if ((!dynamic && unchangedNeedsMessageCount) || (dynamic && unchangedMaxContacts)) {
-        unchangedTexters[assignment.user_id] = true
-        return null
-      } else if (!dynamic) { // standard assignment change
-        // If there is a delta between client and server, then accommodate delta (See #322)
-        const clientMessagedCount = texter.contactsCount - texter.needsMessageCount
-        const serverMessagedCount = assignment.full_contact_count - assignment.needs_message_count
+    if (texter && texter.needsMessageCount === parseInt(assignment.needs_message_count, 10)) {
+      unchangedTexters[assignment.user_id] = true
+      return null
+    } else if (texter) { // assignment change
+      // If there is a delta between client and server, then accomodate delta (See #322)
+      const clientMessagedCount = texter.contactsCount - texter.needsMessageCount
+      const serverMessagedCount = assignment.full_contact_count - assignment.needs_message_count
 
-        const numDifferent = ((texter.needsMessageCount || 0)
-                              - assignment.needs_message_count
-                              - Math.max(0, serverMessagedCount - clientMessagedCount))
+      const numDifferent = ((texter.needsMessageCount || 0)
+                            - assignment.needs_message_count
+                            - Math.max(0, serverMessagedCount - clientMessagedCount))
 
-        if (numDifferent < 0) { // got less than before
-          demotedTexters[assignment.id] = -numDifferent
-        } else { // got more than before: assign the difference
-          texter.needsMessageCount = numDifferent
-        }
-      } 
+      if (numDifferent < 0) { // got less than before
+        demotedTexters[assignment.id] = -numDifferent
+      } else { // got more than before: assign the difference
+        texter.needsMessageCount = numDifferent
+      }
       return assignment
     } else { // new texter
       return assignment
@@ -503,7 +438,7 @@ export async function assignTexters(job) {
   }).filter((ele) => ele !== null)
 
   for (const assignId in demotedTexters) {
-    // Here we unassign ALL the demotedTexters contacts (not just the demotion count)
+    // Here we demote ALL the demotedTexters contacts (not just the demotion count)
     // because they will get reapportioned below
     await r.knex('campaign_contact')
       .where('id', 'in',
@@ -528,21 +463,11 @@ export async function assignTexters(job) {
   for (let index = 0; index < texterCount; index++) {
     const texter = texters[index]
     const texterId = parseInt(texter.id, 10)
-    let maxContacts = null // no limit
-
-    if (texter.maxContacts || texter.maxContacts === 0) {
-      maxContacts = Math.min(parseInt(texter.maxContacts, 10), 
-        parseInt(process.env.MAX_CONTACTS_PER_TEXTER || texter.maxContacts, 10))
-    } else if (process.env.MAX_CONTACTS_PER_TEXTER) {
-      maxContacts = parseInt(process.env.MAX_CONTACTS_PER_TEXTER, 10)
-    }
-
+    const maxContacts = parseInt(texter.maxContacts || 0, 10)
     if (unchangedTexters[texterId]) {
-      continue 
+      continue
     }
-
     const contactsToAssign = Math.min(availableContacts, texter.needsMessageCount)
-
     if (contactsToAssign === 0) {
       // avoid creating a new assignment when the texter should get 0
       if (!campaign.use_dynamic_assignment) {
@@ -553,20 +478,14 @@ export async function assignTexters(job) {
     const existingAssignment = currentAssignments.find((ele) => ele.user_id === texterId)
     let assignment = null
     if (existingAssignment) {
-      if (!dynamic) {
-        assignment = new Assignment({ id: existingAssignment.id,
-                                     user_id: existingAssignment.user_id,
-                                     campaign_id: cid}) // for notification
-      } else {
-        await r.knex('assignment')
-        .where({ id: existingAssignment.id })
-        .update({ max_contacts: maxContacts })
-      }
+      assignment = new Assignment({ id: existingAssignment.id,
+                                   user_id: existingAssignment.user_id,
+                                   campaign_id: cid })
     } else {
       assignment = await new Assignment({
         user_id: texterId,
         campaign_id: cid,
-        max_contacts: maxContacts
+        max_contacts: parseInt(maxContacts || process.env.MAX_CONTACTS_PER_TEXTER || 0, 10)
       }).save()
     }
 
@@ -593,10 +512,10 @@ export async function assignTexters(job) {
     }
 
     await updateJob(job, Math.floor((75 / texterCount) * (index + 1)) + 20)
-  } // endfor
+  }
 
   if (!campaign.use_dynamic_assignment) {
-    // dynamic assignments, having zero initially is ok
+    // dynamic assignments, having zero initially initially is ok
     const assignmentsToDelete = r.knex('assignment')
       .where('assignment.campaign_id', cid)
       .leftJoin('campaign_contact', 'assignment.id', 'campaign_contact.assignment_id')
