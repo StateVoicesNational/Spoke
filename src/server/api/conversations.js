@@ -24,9 +24,7 @@ function getConversationsJoinsAndWhereClause(
       query = query.where({ 'assignment.user_id': assignmentsFilter.texterId })
   }
 
-  query = addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue(
-    query,
-    contactsFilter && contactsFilter.messageStatus)
+  query = addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue(query, contactsFilter)
 
   if (contactsFilter && 'isOptedOut' in contactsFilter) {
     const subQuery = (r.knex.select('cell')

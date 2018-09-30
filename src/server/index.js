@@ -45,9 +45,6 @@ if (!process.env.SUPPRESS_DATABASE_AUTOCREATE) {
     if (didCreate && !process.env.SUPPRESS_SEED_CALLS) {
       seedZipCodes()
     }
-    if (!didCreate && !process.env.SUPPRESS_MIGRATIONS) {
-      runMigrations()
-    }
   })
 } else if (!process.env.SUPPRESS_MIGRATIONS) {
   runMigrations()
