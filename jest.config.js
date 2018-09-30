@@ -1,6 +1,9 @@
 module.exports = {
+  verbose: true,
+  testURL: "http://localhost/",
   testEnvironment: "node",
   globals: {
+    SUPPRESS_DATABASE_AUTOCREATE: "1",
     DB_JSON: JSON.stringify({
       client: "pg",
       connection: {
@@ -16,7 +19,7 @@ module.exports = {
     RETHINK_KNEX_NOREFS: "1", // avoids db race conditions
     DEFAULT_SERVICE: 'fakeservice',
     DST_REFERENCE_TIMEZONE: 'America/New_York',
-    DATABASE_SETUP_TEARDOWN_TIMEOUT: 20000,
+    DATABASE_SETUP_TEARDOWN_TIMEOUT: 60000,
   },
   moduleFileExtensions: [
     "js",
@@ -27,7 +30,7 @@ module.exports = {
   },
   moduleDirectories: [
     "node_modules"
-  ], 
+  ],
   moduleNameMapper: {
     "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>/__mocks__/fileMock.js",
     "\\.(css|less)$": "<rootDir>/__mocks__/styleMock.js"

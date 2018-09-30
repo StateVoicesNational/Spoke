@@ -4,7 +4,6 @@ import CampaignList from './CampaignList'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import ContentAdd from 'material-ui/svg-icons/content/add'
 import loadData from './hoc/load-data'
-import { hasRole } from '../lib'
 import { withRouter } from 'react-router'
 import gql from 'graphql-tag'
 import theme from '../styles/theme'
@@ -18,7 +17,8 @@ class AdminCampaignList extends React.Component {
   state = {
     isCreating: false,
     campaignsFilter: {
-      isArchived: false
+      isArchived: false,
+      listSize: 100
     }
   }
 
@@ -48,9 +48,31 @@ class AdminCampaignList extends React.Component {
   handleFilterChange = (event, index, value) => {
     this.setState({
       campaignsFilter: {
-        isArchived: value
+        isArchived: value,
+        listSize: this.state.campaignsFilter.listSize
       }
     })
+  }
+
+  handleListSizeChange = (event, index, value) => {
+    this.setState({
+      campaignsFilter: {
+        isArchived: this.state.campaignsFilter.isArchived,
+        listSize: value
+      }
+    })
+  }
+
+  renderListSizeOptions() {
+    return (
+      <DropDownMenu value={this.state.campaignsFilter.listSize} onChange={this.handleListSizeChange} >
+        <MenuItem value={10} primaryText='10' />
+        <MenuItem value={25} primaryText='25' />
+        <MenuItem value={50} primaryText='50' />
+        <MenuItem value={100} primaryText='100' />
+        <MenuItem value={0} primaryText='All' />
+      </DropDownMenu>
+    )
   }
 
   renderFilters() {
@@ -66,6 +88,7 @@ class AdminCampaignList extends React.Component {
     return (
       <div>
         {this.renderFilters()}
+        {this.renderListSizeOptions()}
         {this.state.isCreating ? <LoadingIndicator /> : (
           <CampaignList
             campaignsFilter={this.state.campaignsFilter}

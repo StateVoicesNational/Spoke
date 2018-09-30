@@ -7,7 +7,7 @@ Spoke is an open source text-distribution tool for organizations to mobilize sup
 
 Spoke was created by Saikat Chakrabarti and Sheena Pakanati, and is now maintained by MoveOn.org.
 
-The latest version is [1.4.0](https://github.com/MoveOnOrg/Spoke/tree/v1.4) (see [release notes](https://github.com/MoveOnOrg/Spoke/blob/main/docs/RELEASE_NOTES.md#v12)) which we recommend for production use, while our `main` branch is where features still in development and testing will be available.
+The latest version is [1.4.1](https://github.com/MoveOnOrg/Spoke/tree/v1.4.1) (see [release notes](https://github.com/MoveOnOrg/Spoke/blob/main/docs/RELEASE_NOTES.md#v141)) which we recommend for production use, while our `main` branch is where features still in development and testing will be available.
 
 ## Note
 
@@ -15,7 +15,7 @@ This is generated from [react-apollo-starter-kit](https://github.com/saikat/reac
 
 ## Deploy to Heroku
 
-<a href="https://heroku.com/deploy?template=https://github.com/MoveOnOrg/Spoke/tree/v1.4">
+<a href="https://heroku.com/deploy?template=https://github.com/MoveOnOrg/Spoke/tree/v1.4.1">
   <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy">
 </a>
 
@@ -57,6 +57,23 @@ echo "INSERT INTO invite (hash,is_valid) VALUES ('abc', 1);" |sqlite3 mydb.sqlit
 14. You should then be prompted to create an organization. Create it.
 
 If you want to create an invite via the home page "Login and get started" link, make sure your `SUPPRESS_SELF_INVITE` variable is not set.
+
+## Getting started with Docker
+
+1. `cp .env.example .env`
+2. Follow Steps 7, 9, & 10 above to set up your [Auth0](https://auth0.com) account.
+3. Build a Spoke Docker image with `docker-compose build app`
+4. Start the PostgreSQL & Redis containers in the background with `docker-compose up -d postgres redis`.
+5. Start the Spoke application in the foreground with `docker-compose up app`.
+6. Go to `http://localhost:3000` to load the app.
+7. Follow Step 13 above.
+  - But if you need to generate an invite, run:
+```bash
+docker-compose exec postgres psql -U spoke -d spokedev -c "INSERT INTO invite (hash,is_valid) VALUES ('<your-hash>', true);"
+```
+  - Then use the generated key to visit an invite link, e.g.: `http://localhost:3000/invite/<your-hash>`. This should redirect you to the login screen. Use the "Sign Up" option to create your account.
+8. You should then be prompted to create an organization. Create it.
+9. Bring down your application with `docker-compose down`, or `docker-compose down -v` to bring it down and _completely destroy_ your Postgres database & Redis datastore along with it.
 
 ## Running Tests
 

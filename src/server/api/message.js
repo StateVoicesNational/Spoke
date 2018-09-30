@@ -9,8 +9,8 @@ export const resolvers = {
       'userNumber',
       'contactNumber',
       'createdAt',
-      'isFromContact',
+      'isFromContact'
     ], Message),
-    'campaignId' : (instance) => instance['campaign_id']
+    'campaignId': (instance) => instance['campaign_id']
   }
 }

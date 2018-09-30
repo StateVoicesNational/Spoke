@@ -12,60 +12,95 @@ const TIMEZONE_CONFIG = {
   }
 }
 
-export const getContactTimezone = (location) => {
-
+export const getContactTimezone = (campaign, location) => {
+  const returnLocation = Object.assign({}, location)
   if (location.timezone == null || location.timezone.offset == null) {
-    let timezoneData = null;
-    let offset;
-    let hasDST;
+    let timezoneData = null
 
-    if (getProcessEnvTz()) {
-      offset = moment().tz(getProcessEnvTz()).format('Z')
-      hasDST =  moment().isDST()
-      timezoneData = {offset, hasDST}
+    if (campaign.overrideOrganizationTextingHours) {
+      const offset = DstHelper.getTimezoneOffsetHours(campaign.timezone)
+      const hasDST = DstHelper.timezoneHasDst(campaign.timezone)
+      timezoneData = { offset, hasDST }
+    } else if (getProcessEnvTz()) {
+      const offset = DstHelper.getTimezoneOffsetHours(getProcessEnvTz())
+      const hasDST = DstHelper.timezoneHasDst(getProcessEnvTz())
+      timezoneData = { offset, hasDST }
     } else {
-      offset = TIMEZONE_CONFIG.missingTimeZone.offset
-      hasDST = TIMEZONE_CONFIG.missingTimeZone.hasDST
-      timezoneData = {offset, hasDST}
+      const offset = TIMEZONE_CONFIG.missingTimeZone.offset
+      const hasDST = TIMEZONE_CONFIG.missingTimeZone.hasDST
+      timezoneData = { offset, hasDST }
     }
-    location.timezone = timezoneData
+    returnLocation.timezone = timezoneData
   }
-  return location;
+  return returnLocation
 }
 
 
-export const getLocalTime = (offset, hasDST) => {
-  return moment().utc().utcOffset(DstHelper.isDateDst(new Date(), getProcessEnvDstReferenceTimezone()) && hasDST ? offset + 1 : offset)
+export const getLocalTime = (offset, hasDST, dstReferenceTimezone) => {
+  return moment().utc().utcOffset(DstHelper.isDateDst(new Date(), dstReferenceTimezone) && hasDST ? offset + 1 : offset)
+}
+
+const isOffsetBetweenTextingHours = (offsetData, textingHoursStart, textingHoursEnd, missingTimezoneConfig, dstReferenceTimezone) => {
+  let offset
+  let hasDST
+  let allowedStart
+  let allowedEnd
+  if (offsetData && offsetData.offset) {
+    allowedStart = textingHoursStart
+    allowedEnd = textingHoursEnd
+    offset = offsetData.offset
+    hasDST = offsetData.hasDST
+  } else {
+    allowedStart = missingTimezoneConfig.allowedStart
+    allowedEnd = missingTimezoneConfig.allowedEnd
+    offset = missingTimezoneConfig.offset
+    hasDST = missingTimezoneConfig.hasDST
+  }
+
+  const localTime = getLocalTime(offset, hasDST, dstReferenceTimezone)
+  return (localTime.hours() >= allowedStart && localTime.hours() < allowedEnd)
 }
 
 export const isBetweenTextingHours = (offsetData, config) => {
-  if (!config.textingHoursEnforced) {
+
+  if (config.campaignTextingHours) {
+    if (!config.campaignTextingHours.textingHoursEnforced) {
+      return true
+    }
+  } else if (!config.textingHoursEnforced) {
     return true
   }
+
+  if (config.campaignTextingHours) {
+    const { campaignTextingHours } = config
+    const missingTimezoneConfig = {
+      allowedStart: campaignTextingHours.textingHoursStart,
+      allowedEnd:  campaignTextingHours.textingHoursEnd,
+      offset: DstHelper.getTimezoneOffsetHours(campaignTextingHours.timezone),
+      hasDST: DstHelper.timezoneHasDst(campaignTextingHours.timezone)
+    }
+
+    return isOffsetBetweenTextingHours(
+      offsetData,
+      campaignTextingHours.textingHoursStart,
+      campaignTextingHours.textingHoursEnd,
+      missingTimezoneConfig,
+      campaignTextingHours.timezone)
+  }
+
   if (getProcessEnvTz()) {
     const today = moment.tz(getProcessEnvTz()).format('YYYY-MM-DD')
     const start = moment.tz(`${today}`, getProcessEnvTz()).add(config.textingHoursStart, 'hours')
     const stop = moment.tz(`${today}`, getProcessEnvTz()).add(config.textingHoursEnd, 'hours')
     return moment.tz(getProcessEnvTz()).isBetween(start, stop, null, '[]')
   }
-  let offset
-  let hasDST
-  let allowedStart
-  let allowedEnd
-  if (offsetData && offsetData.offset) {
-    allowedStart = config.textingHoursStart
-    allowedEnd = config.textingHoursEnd
-    offset = offsetData.offset
-    hasDST = offsetData.hasDST
-  } else {
-    allowedStart = TIMEZONE_CONFIG.missingTimeZone.allowedStart
-    allowedEnd = TIMEZONE_CONFIG.missingTimeZone.allowedEnd
-    offset = TIMEZONE_CONFIG.missingTimeZone.offset
-    hasDST = TIMEZONE_CONFIG.missingTimeZone.hasDST
-  }
 
-  const localTime = getLocalTime(offset, hasDST)
-  return (localTime.hours() >= allowedStart && localTime.hours() < allowedEnd)
+  return isOffsetBetweenTextingHours(
+    offsetData,
+    config.textingHoursStart,
+    config.textingHoursEnd,
+    TIMEZONE_CONFIG.missingTimeZone,
+    getProcessEnvDstReferenceTimezone())
 }
 
 

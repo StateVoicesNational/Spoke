@@ -1,33 +1,52 @@
 import { DateTime, zone, DateFunctions } from 'timezonecomplete'
 
 
-// a cache number of hours offset from GMT during DST per timezone
-let _timezoneDstOffsets = {}
+class TimezoneOffsetAndDst {
+  constructor(tzOffsetMinutes: number, hasDst: boolean) {
+    this.tzOffsetMinutes = tzOffsetMinutes
+    this.hasDst = hasDst
+  }
+}
+
+const _timezoneOffsetAndDst = {}
+
 
 // a class to help us know if a date is DST in a given timezone
 export class DstHelper {
-  static isOffsetDst(offset: number, timezone: string): boolean {
-    // if we don't have the offset for this timezone, calculate it now
-    if (!(timezone in _timezoneDstOffsets)) {
-      // If a location has DST, the offset from GMT at January 1 and July 1 will certainly
+
+  static ensureTimezoneDstCalculated(timezone) {
+    if (!(timezone in _timezoneOffsetAndDst)) {
+      // If a location has DST, the offset from GMT at January 1 and June 1 will certainly
       // be different.  The greater of the two is the DST offset.  For our check, we
       // don't care when DST is (March-October in the northern hemisphere, October-March
       // in the southern hemisphere).  We only care about the offset during DST.
-      let januaryDate = new DateTime(new Date().getFullYear(), 1, 1, 0, 0, 0, 0, zone(timezone))
-      let julyDate = new DateTime(new Date().getFullYear(), 7, 1, 0, 0, 0, 0, zone(timezone))
-      if (januaryDate.offset() == julyDate.offset()) {
-        // there is no DTC in this timezone
-        _timezoneDstOffsets[timezone] = undefined
-      }
-      else {
-        _timezoneDstOffsets[timezone] = Math.max(januaryDate.offset(), julyDate.offset())
-      }
+      const januaryDate = new DateTime(new Date().getFullYear(), 1, 1, 0, 0, 0, 0, zone(timezone))
+      const julyDate = new DateTime(new Date().getFullYear(), 6, 1, 0, 0, 0, 0, zone(timezone))
+      _timezoneOffsetAndDst[timezone] = new TimezoneOffsetAndDst(
+        Math.min(januaryDate.offset(), julyDate.offset()),
+        januaryDate.offset() !== julyDate.offset()
+      )
     }
+  }
+
+  static getTimezoneOffsetHours(timezone:string): number {
+    DstHelper.ensureTimezoneDstCalculated(timezone)
+    return _timezoneOffsetAndDst[timezone].tzOffsetMinutes/60
+  }
+
+  static timezoneHasDst(timezone: string): boolean {
+    DstHelper.ensureTimezoneDstCalculated(timezone)
+    return _timezoneOffsetAndDst[timezone].hasDst
+  }
+
+  static isOffsetDst(offset: number, timezone: string): boolean {
+    DstHelper.ensureTimezoneDstCalculated(timezone)
 
     // if this timezone has DST (meaning, january and july offsets were different)
     // and the offset from GMT passed into this function is the same as the timezone's
     // offset from GMT during DST, we return true.
-    return _timezoneDstOffsets[timezone] && _timezoneDstOffsets[timezone] == offset
+    const timezoneOffsetAndDst = _timezoneOffsetAndDst[timezone]
+    return timezoneOffsetAndDst.hasDst && (timezoneOffsetAndDst.tzOffsetMinutes + 60) === offset
   }
 
   static isDateDst(date: Date, timezone: string): boolean {
