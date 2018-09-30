@@ -12,7 +12,7 @@
     2. [Deploy](#deploy)
         1. [Seed Database](#seed-database)
         2. [Setting Up Scheduled Jobs](#setting-up-scheduled-jobs)
-        3. [Migrating the Database](#migrating-the-database)
+        3. [Migrating the Database](migrating-the-database)
         4. [Add a Custom Domain](#add-a-custom-domain)
     3. [Updating Code or Environment Variables](#updating-code-or-environment-variables)
 

@@ -14,9 +14,7 @@ export function graphQLErrorParser(response) {
     try {
       parsedError = JSON.parse(error.message)
     } catch (ex) {
-      // Even if we can't parse an error messge into JSON, still render it as a string 
-      // so that we still display some error message instead of no error message at all.
-      parsedError = {status: 500, message: error.message}
+      parsedError = null
     }
     if (parsedError) {
       return {
