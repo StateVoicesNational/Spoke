@@ -1,15 +1,17 @@
 import { campaigns } from './campaigns'
-import { invite } from './invite'
+import { main } from './main'
 import { login } from './login'
 import { navigation } from './navigation'
 import { people } from './people'
 import { scriptEditor } from './scriptEditor'
+import { texter } from './texter'
 
 export default {
   campaigns,
-  invite,
   login,
+  main,
   navigation,
   people,
-  scriptEditor
+  scriptEditor,
+  texter
 }
