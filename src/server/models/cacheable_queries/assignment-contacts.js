@@ -298,7 +298,7 @@ export const updateAssignmentContact = async (contact, newStatus) => {
   if (exists) {
     // eslint-disable-next-line no-nested-ternary
     const newScore = (curMax && curMax.length
-                      ? Number(curMax[0]) + (newStatus === 'convo' ? -1 : 1)
+                      ? Number(curMax[1]) + (newStatus === 'convo' ? -1 : 1)
                       : (newStatus === 'convo' ? range[1] : range[0]))
     // console.log('updateassignment', contact.id, newScore, await r.redis.zrangeAsync(key, 0, -1, 'WITHSCORES'))
     await r.redis.zaddAsync([key, newScore, contact.id])
