@@ -12,6 +12,7 @@ import {
   Assignment,
   Campaign,
   CannedResponse,
+  InteractionStep,
   Invite,
   JobRequest,
   Message,
