@@ -9,7 +9,6 @@ import Badge from 'material-ui/Badge'
 import moment from 'moment'
 import Divider from 'material-ui/Divider'
 import { withRouter } from 'react-router'
-import { dataTest } from '../lib/attributes'
 
 const inlineStyles = {
   badge: {
@@ -60,12 +59,11 @@ export class AssignmentSummary extends Component {
     }
   }
 
-  renderBadgedButton({ dataTestText, assignment, title, count, primary, disabled, contactsFilter, hideIfZero, style }) {
+  renderBadgedButton({ assignment, title, count, primary, disabled, contactsFilter, hideIfZero, style }) {
     if (count === 0 && hideIfZero) { return '' }
     if (count === 0) {
       return (
         <RaisedButton
-          {...dataTest(dataTestText)}
           disabled={disabled}
           label={title}
           primary={primary && !disabled}
@@ -80,7 +78,6 @@ export class AssignmentSummary extends Component {
         secondary={!primary && !disabled}
       >
         <RaisedButton
-          {...dataTest(dataTestText)}
           disabled={disabled}
           label={title}
           onClick={() => this.goToTodos(contactsFilter, assignment.id)}
@@ -94,7 +91,7 @@ export class AssignmentSummary extends Component {
     const { title, description, hasUnassignedContacts, dueBy,
             primaryColor, logoImageUrl, introHtml,
             useDynamicAssignment } = assignment.campaign
-    const maxContacts = assignment.maxContacts
+
     return (
       <div className={css(styles.container)}>
         <Card
@@ -112,17 +109,15 @@ export class AssignmentSummary extends Component {
           </div>
           <CardActions>
             {(window.NOT_IN_USA && window.ALLOW_SEND_ALL) ? '' : this.renderBadgedButton({
-              dataTestText: 'sendFirstTexts',
               assignment,
               title: 'Send first texts',
               count: unmessagedCount,
               primary: true,
-              disabled: (useDynamicAssignment && !hasUnassignedContacts && unmessagedCount == 0) || (useDynamicAssignment && maxContacts === 0),
+              disabled: (useDynamicAssignment && !hasUnassignedContacts && unmessagedCount == 0) ? true : false,
               contactsFilter: 'text',
               hideIfZero: !useDynamicAssignment
             })}
             {(window.NOT_IN_USA && window.ALLOW_SEND_ALL) ? '' : this.renderBadgedButton({
-              dataTestText: 'sendReplies',
               assignment,
               title: 'Send replies',
               count: unrepliedCount,
