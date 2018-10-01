@@ -216,6 +216,10 @@ export const getContacts = async (assignment, contactsFilter, organization, camp
           : dbContactsQuery(contactQueryArgs))
 }
 
+export const getTotalContactCount = async (assignment, campaign) => (
+  getContacts(assignment, null, { texting_hours_enforced: false }, campaign, false, true, false)
+)
+
 const sharingOptOuts = !!process.env.OPTOUTS_SHARE_ALL_ORGS
 export const loadAssignmentContacts = async (assignmentId, organizationId, timezoneOffsets) => {
   // * for each timezone

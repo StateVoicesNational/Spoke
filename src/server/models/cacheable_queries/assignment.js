@@ -1,6 +1,8 @@
+import { log } from '../../../lib'
 import { r } from '../../models'
 import campaignCache from './campaign'
-import { loadAssignmentContacts, getContacts, optOutContact } from './assignment-contacts'
+import { loadAssignmentContacts, getContacts, getTotalContactCount, optOutContact } from './assignment-contacts'
+import { getUserAssignments, clearUserAssignments, addUserAssignment } from './assignment-user'
 
 // TODO: add user-org-assignment list for user.todos
 // TODO: move user metadata (first/last) into a separate cache key to avoid cache drift
@@ -86,7 +88,7 @@ const assignmentQuery = () => (
             'user.last_name')
     .join('user', 'assignment.user_id', 'user.id'))
 
-const saveCache = async (assignment, campaign) => {
+const saveCache = async (assignment, campaign, notDeep) => {
   if (r.redis) {
     const id = assignment.id
     // eslint-disable-next-line no-param-reassign
@@ -95,13 +97,17 @@ const saveCache = async (assignment, campaign) => {
       .set(assignmentHashKey(id), JSON.stringify(assignment))
       .expire(assignmentHashKey(id), 86400)
       .execAsync()
-    await loadAssignmentContacts(id,
-                                 campaign.organization_id,
-                                 campaign.contactTimezones)
+
+    await addUserAssignment(campaign, assignment)
+    if (!notDeep) {
+      await loadAssignmentContacts(id,
+                                   campaign.organization_id,
+                                   campaign.contactTimezones)
+    }
   }
 }
 
-const loadDeep = async (id) => {
+const loadDeep = async (id, notDeep) => {
   // needs refresh whenever
   // * assignment is updated
   // * user is updated
@@ -113,7 +119,8 @@ const loadDeep = async (id) => {
   if (r.redis && assignment) {
     const campaign = await campaignCache.load(assignment.campaign_id)
     console.log('cached campaign for assn', campaign)
-    await saveCache(assignment, campaign)
+    await saveCache(assignment, campaign, notDeep)
+    assignment.campaign = campaign
   }
   return { assignment }
 }
@@ -128,32 +135,74 @@ const loadCampaignAssignments = async (campaign) => {
   }
 }
 
+const load = async (assignmentId, notDeep) => {
+  if (r.redis) {
+    const assnData = await r.redis.getAsync(assignmentHashKey(assignmentId))
+    if (assnData) {
+      const assnObj = JSON.parse(assnData)
+      return assnObj
+    }
+  }
+  const { assignment } = await loadDeep(assignmentId, notDeep)
+  return assignment
+}
+
 const assignmentCache = {
   clear: async (id) => {
     if (r.redis) {
       await r.redis.delAsync(assignmentHashKey(id))
+      // TODO: clear assignmentcontacts
+      // TODO: clear user-assignment data (does not yet exist)
+      // TODO: clear dynamic assignments (does not yet exist)
     }
   },
-  clearAll: async (ids) => {
-    if (r.redis && ids && ids.length) {
-      const keys = ids.map(id => assignmentHashKey(id))
-      await r.redis.delAsync(...keys)
+  deleteAll: async (assignments, campaign) => {
+    if (assignments && assignments.length) {
+      if (r.redis) {
+        const keys = assignments.map(a => assignmentHashKey(a.id))
+        await r.redis.delAsync(...keys)
+
+        for (let i = 0, l = assignments.length; i < l; i++) {
+          const a = assignments[i]
+          await clearUserAssignments(campaign.organization_id,
+                                     [a.user_id],
+                                     a.id)
+        }
+      }
+      const assignmentIdsToDelete = assignments.map(a => a.id)
+      try {
+        await r.knex('assignment')
+          .where('id', 'in', assignmentIdsToDelete)
+          .delete()
+      } catch (err) {
+        log.error('FAILED assignment delete', err)
+      }
     }
   },
   reload: loadDeep,
-  load: async (id) => {
-    if (r.redis) {
-      const assnData = await r.redis.getAsync(assignmentHashKey(id))
-      if (assnData) {
-        const assnObj = JSON.parse(assnData)
-        return assnObj
+  getUserTodos: async (organizationId, userId) => (
+    await getUserAssignments(organizationId, userId, async (assignmentIds) => {
+      if (assignmentIds.length === 0) {
+        return []
       }
-    }
-    const { assignment } = await loadDeep(id)
-    return assignment
-  },
+      const assignments = []
+      for (let i = 0, l = assignmentIds.length; i < l; i++) {
+        const assignment = await load(assignmentIds[i], /* notDeep */ true)
+        if (assignment) {
+          // TODO: test for campaign.is_archived
+          assignments.push(assignment)
+        } else {
+          // assignment must have been deleted
+          await clearUserAssignments(organizationId, [userId], assignmentIds[i])
+        }
+      }
+      return assignments
+    })
+  ),
+  load,
   hasAssignment,
   getContacts,
+  getTotalContactCount,
   optOutContact,
   loadCampaignAssignments
 }

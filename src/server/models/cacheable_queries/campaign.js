@@ -1,6 +1,7 @@
 import { r, Campaign } from '../../models'
 import { modelWithExtraProps } from './lib'
 import { assembleAnswerOptions } from '../../../lib/interaction-step-helpers'
+import { clearUserAssignments, getCampaignTexterIds } from './assignment-user'
 
 // This should be cached data for a campaign that will not change
 // based on assignments or texter actions
@@ -46,10 +47,24 @@ const dbContactTimezones = async (id) => (
     .map(contact => contact.timezone_offset)
 )
 
-const clear = async (id) => {
+const clearCampaignUserAssignments = async (campaign) => {
+  // iterate over userIds in campaignassignments-<campaignId>
+  // or just clear all userassignments-<orgId><userId>
+  if (r.redis) {
+    // TODO: this method doesn't exist yet!
+    // TODO: make sure we don't load cache just to delete it, dur
+    const userIds = await getCampaignTexterIds(campaign)
+    await clearUserAssignments(campaign.organization_id, userIds, null, campaign.id)
+  }
+}
+
+const clear = async (id, campaign) => {
   if (r.redis) {
     console.log('clearing campaign cache')
     await r.redis.delAsync(cacheKey(id))
+    if (campaign) {
+      await clearCampaignUserAssignments(campaign)
+    }
   }
 }
 
@@ -60,9 +75,11 @@ const loadDeep = async (id) => {
     if (campaign.is_archived) {
       console.log('campaign is_archived')
       // do not cache archived campaigns
-      await clear(id)
+      await clear(id, campaign)
       return campaign
     }
+    // TODO: get userIds for all assignments in campaignassignments
+
     campaign.customFields = await dbCustomFields(id)
     campaign.interactionSteps = await dbInteractionSteps(id)
     campaign.contactTimezones = await dbContactTimezones(id)
