@@ -1,5 +1,6 @@
 import { r, Assignment, Campaign, User, Organization } from './models'
 import { log } from '../lib'
+import { delimit } from '../lib/scripts'
 import { sendEmail } from './mail'
 
 export const Notifications = {
@@ -16,6 +17,16 @@ async function getOrganizationOwner(organizationId) {
     .limit(1)
     .eqJoin('user_id', r.table('user'))('right')(0)
 }
+
+const getNotificationFields = (organization, campaign) => ({
+  organizationName: organization.name,
+  campaignTitle: campaign.title,
+  todoUrl: `${process.env.BASE_URL}/app/${campaign.organization_id}/todos`
+})
+
+export const defaultAssignmentSubject = '[{organizationName}] New assignment: {campaignTitle}'
+export const defaultAssignmentBody = 'You just got a new texting assignment from {organizationName}. You can start sending texts right away: \n\n{todoUrl}'
+
 const sendAssignmentUserNotification = async (assignment, notification) => {
   const campaign = await Campaign.get(assignment.campaign_id)
 
@@ -27,14 +38,22 @@ const sendAssignmentUserNotification = async (assignment, notification) => {
   const user = await User.get(assignment.user_id)
   const orgOwner = await getOrganizationOwner(organization.id)
 
+  const fieldReplacements = getNotificationFields(organization, campaign)
+
   let subject
   let text
   if (notification === Notifications.ASSIGNMENT_UPDATED) {
     subject = `[${organization.name}] Updated assignment: ${campaign.title}`
     text = `Your assignment changed: \n\n${process.env.BASE_URL}/app/${campaign.organization_id}/todos`
   } else if (notification === Notifications.ASSIGNMENT_CREATED) {
-    subject = `[${organization.name}] New assignment: ${campaign.title}`
-    text = `You just got a new texting assignment from ${organization.name}. You can start sending texts right away: \n\n${process.env.BASE_URL}/app/${campaign.organization_id}/todos`
+    const custMessage = JSON.parse(organization.features || '{}').assignment_message || {}
+    subject = custMessage.subject || defaultAssignmentSubject
+    text = custMessage.body || defaultAssignmentBody
+    for (const field of Object.keys(fieldReplacements)) {
+      const re = new RegExp(`${delimit(field)}`, 'g')
+      subject = subject.replace(re, fieldReplacements[field])
+      text = text.replace(re, fieldReplacements[field])
+    }
   }
 
   try {

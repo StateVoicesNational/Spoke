@@ -518,6 +518,23 @@ const rootMutations = {
 
       return await Organization.get(organizationId)
     },
+    updateUserAssignmentMessage: async (
+      _,
+      { organizationId, subject, body },
+      { user }
+    ) => {
+      await accessRequired(user, organizationId, 'OWNER')
+
+      const organization = await Organization.get(organizationId)
+      const featuresJSON = JSON.parse(organization.features || '{}')
+      featuresJSON.assignment_message = { subject, body }
+      organization.features = JSON.stringify(featuresJSON)
+
+      await organization.save()
+      await organizationCache.clear(organizationId)
+
+      return await Organization.get(organizationId)
+    },
     createInvite: async (_, { user }) => {
       if ((user && user.is_superadmin) || !process.env.SUPPRESS_SELF_INVITE) {
         const inviteInstance = new Invite({

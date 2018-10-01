@@ -42,7 +42,7 @@ const formatTextingHours = (hour) => moment(hour, 'H').format('h a')
 class Settings extends React.Component {
 
   state = {
-    formIsSubmitting: false
+    textingHoursDialogOpen: false
   }
 
   handleSubmitTextingHoursForm = async ({ textingHoursStart, textingHoursEnd }) => {
@@ -112,9 +112,16 @@ class Settings extends React.Component {
 
   render() {
     const { organization } = this.props.data
-    const {optOutMessage } = organization
-    const formSchema = yup.object({
-      optOutMessage: yup.string().required()
+    const { optOutMessage, assignmentMessage } = organization
+    const formSchemaOptOut = yup.object({
+      optOutMessage: yup.string().required(),
+      assignmentBody: yup.string(),
+      assignmentSubject: yup.string()
+    })
+
+    const formSchemaAssignmentMessage = yup.object({
+      subject: yup.string(),
+      body: yup.string()
     })
 
     return (
@@ -126,24 +133,54 @@ class Settings extends React.Component {
           <CardText>
             <div className={css(styles.section)}>
 
-            <GSForm
-              schema={formSchema}
-              onSubmit={this.props.mutations.updateOptOutMessage}
-              defaultValue={{ optOutMessage }}
-            >
+              <GSForm
+                schema={formSchemaOptOut}
+                onSubmit={this.props.mutations.updateOptOutMessage}
+                defaultValue={{ optOutMessage }}
+              >
 
-              <Form.Field 
-                label='Default Opt-Out Message' 
-                name='optOutMessage'  
-                fullWidth
-              />
+                <Form.Field
+                  label='Default Opt-Out Message'
+                  name='optOutMessage'
+                  fullWidth
+                />
 
-              <Form.Button
-                type='submit'
-                label={this.props.saveLabel || 'Save Opt-Out Message'}
-              />
+                <Form.Button
+                  type='submit'
+                  label={this.props.saveLabel || 'Save Opt-Out Message'}
+                />
 
-            </GSForm>
+              </GSForm>
+
+              <GSForm
+                schema={formSchemaAssignmentMessage}
+                onSubmit={this.props.mutations.updateUserAssignmentMessage}
+                defaultValue={assignmentMessage}
+              >
+                <Form.Field
+                  name='subject'
+                  type='script'
+                  fullWidth
+                  overrideFields={['organizationName', 'campaignTitle', 'todoUrl']}
+                  label='Assignment Email Subject'
+                  multiLine
+                />
+
+                <Form.Field
+                  name='body'
+                  type='script'
+                  fullWidth
+                  overrideFields={['organizationName', 'campaignTitle', 'todoUrl']}
+                  label='Assignment Email Body'
+                  multiLine
+                />
+
+                <Form.Button
+                  type='submit'
+                  label='Save Assignment Message'
+                />
+
+              </GSForm>
             </div>
           </CardText>
 
@@ -239,6 +276,23 @@ const mapMutationsToProps = ({ ownProps }) => ({
       organizationId: ownProps.params.organizationId,
       optOutMessage
     }
+  }),
+  updateUserAssignmentMessage: ({ subject, body }) => ({
+    mutation: gql`
+      mutation updateUserAssignmentMessage($subject: String, $body: String, $organizationId: String!) {
+        updateUserAssignmentMessage(subject: $subject, body: $body, organizationId: $organizationId) {
+          id
+          assignmentMessage {
+            subject
+            body
+          }
+        }
+      }`,
+    variables: {
+      organizationId: ownProps.params.organizationId,
+      subject,
+      body
+    }
   })
 
 })
@@ -253,6 +307,10 @@ const mapQueriesToProps = ({ ownProps }) => ({
         textingHoursStart
         textingHoursEnd
         optOutMessage
+        assignmentMessage {
+          subject
+          body
+        }
       }
     }`,
     variables: {
