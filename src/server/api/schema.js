@@ -775,7 +775,7 @@ const rootMutations = {
         // maybe TODO: we could automatically add dynamic assignments in the same api call
         // findNewCampaignContact()
       }
-      return contacts
+      return contacts.filter(c => c)
     },
     findNewCampaignContact: async (_, { assignmentId, numberContacts }, { loaders, user }) => {
       /* This attempts to find a new contact for the assignment, in the case that useDynamicAssigment == true */
@@ -829,6 +829,11 @@ const rootMutations = {
         .catch(log.error)
 
       if (updatedCount > 0) {
+        // update the campaign contact data with assignment
+        // This isn't super efficient, but we'll improve this later with dynamic assignment caching
+        await cacheableData.campaignContact.loadMany(campaign, (query) => {
+          return query.where({ assignment_id: assignmentId, status_message: 'needsMessage' })
+        })
         return { found: true }
       } else {
         return { found: false }
