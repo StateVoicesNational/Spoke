@@ -32,6 +32,8 @@ export const schema = `
     questionResponseValues: [AnswerOption]
     questionResponses: [AnswerOption]
     interactionSteps: [InteractionStep]
+    currentInteractionStepScript: String
+    currentInteractionStepId: String
     messageStatus: String
     assignmentId: String
   }

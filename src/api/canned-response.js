@@ -12,6 +12,8 @@ export const schema = `
     title: String
     text: String
     isUserCreated: Boolean
+    campaign: Campaign
+    user: User
   }
 `
 
