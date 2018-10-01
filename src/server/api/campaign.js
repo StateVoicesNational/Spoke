@@ -152,7 +152,11 @@ export const resolvers = {
     hasUnsentInitialMessages: async (campaign) => {
       const contacts = await r.knex('campaign_contact')
         .select('id')
-        .where({ campaign_id: campaign.id, message_status: 'needsMessage' })
+        .where({
+          campaign_id: campaign.id,
+          message_status: 'needsMessage',
+          is_opted_out: false
+         })
         .limit(1)
       return contacts.length > 0
     },
