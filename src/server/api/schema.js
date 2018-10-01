@@ -11,6 +11,7 @@ import {
   Assignment,
   Campaign,
   CannedResponse,
+  InteractionStep,
   datawarehouse,
   Invite,
   JobRequest,
