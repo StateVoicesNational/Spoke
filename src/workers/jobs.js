@@ -606,16 +606,10 @@ export async function assignTexters(job) {
       .leftJoin('campaign_contact', 'assignment.id', 'campaign_contact.assignment_id')
       .groupBy('assignment.id')
       .havingRaw('COUNT(campaign_contact.id) = 0')
-      .select('assignment.id as id')
-    const assignmentIdsToDelete = assignmentsToDelete.map(a => a.id)
-    if (assignmentIdsToDelete.length) {
-      await cacheableData.assignment.clearAll(assignmentIdsToDelete, campaign.id)
-    }
-    await r.knex('assignment')
-      .where('id', 'in', assignmentIdsToDelete)
-      .delete()
-      .catch(log.error)
+      .select('assignment.id as id, assignment.user_id as user_id')
 
+    // We're a little 'clever' here -- just sending {id, user_id} for assignment
+    await cacheableData.assignment.deleteAll(assignmentsToDelete, campaign)
   }
 
 

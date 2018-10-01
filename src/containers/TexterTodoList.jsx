@@ -37,9 +37,9 @@ class TexterTodoList extends React.Component {
       }).filter((ele) => ele !== null)
   }
   componentDidMount() {
-    this.props.data.refetch()
-    // re-asserts polling after manual refresh
-    // this.props.data.startPolling(5000)
+    if (this.props.data.currentUser.cacheable) {
+      this.props.data.startPolling(5000)
+    }
   }
 
   termsAgreed() {
@@ -83,6 +83,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
       currentUser {
         id
         terms
+        cacheable
         todos(organizationId: $organizationId) {
           id
           campaign {

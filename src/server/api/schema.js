@@ -777,25 +777,27 @@ const rootMutations = {
     },
     findNewCampaignContact: async (_, { assignmentId, numberContacts }, { loaders, user }) => {
       /* This attempts to find a new contact for the assignment, in the case that useDynamicAssigment == true */
-      const assignment = await Assignment.get(assignmentId)
+      const assignment = await loaders.assignment.load(assignmentId)
       if (assignment.user_id != user.id) {
         throw new GraphQLError({
           status: 400,
           message: 'Invalid assignment'
         })
       }
-      const campaign = await Campaign.get(assignment.campaign_id)
+      const campaign = await loaders.campaign.load(assignment.campaign_id)
       if (!campaign.use_dynamic_assignment || assignment.max_contacts === 0) {
         return { found: false }
       }
 
-      const contactsCount = await r.getCount(
-        r.knex('campaign_contact').where('assignment_id', assignmentId)
-      )
+      const contactsCount = await cacheableData.assignment.getTotalContactCount(assignment, campaign)
 
       numberContacts = numberContacts || 1
-      if (assignment.max_contacts && contactsCount + numberContacts > assignment.max_contacts) {
+      if (assignment.max_contacts && assignment.max_contacts !== null && contactsCount + numberContacts > assignment.max_contacts) {
         numberContacts = assignment.max_contacts - contactsCount
+      }
+
+      if (numberContacts <= 0) {
+        return { found: false }
       }
       // Don't add more if they already have that many
       const result = await r.getCount(
@@ -909,6 +911,7 @@ const rootMutations = {
       await assignmentRequired(user, contact.assignment_id)
       const campaign = await loaders.campaign.load(contact.campaign_id)
 
+      // TODO: if dynamic_assignment then make sure it's not inflight with a different user_id
       if (contact.assignment_id !== parseInt(message.assignmentId) || campaign.is_archived) {
         throw new GraphQLError({
           status: 400,
@@ -1041,6 +1044,10 @@ const rootMutations = {
 
       // group contactIds by campaign
       // group messages by campaign
+      // TODO: remove previous assignment or contact ids from it
+      // TODO: 1. based on contactIds, get campaign_id, assignment_id and timezone_offset
+      // TODO: 2. remove contactId from assignmentcontacts-
+      // TODO: 3. remove from dynamic assignment objects inflight queue
       const campaignIdContactIdsMap = new Map()
       const campaignIdMessagesIdsMap = new Map()
       for (const campaignIdContactId of campaignIdsContactIds) {

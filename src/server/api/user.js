@@ -40,13 +40,7 @@ export const resolvers = {
       cacheableData.user.orgRoles(user.id, organizationId)
     ),
     todos: async (user, { organizationId }) =>
-      r.table('assignment')
-        .getAll(user.id, { index: 'assignment.user_id' })
-        .eqJoin('campaign_id', r.table('campaign'))
-        .filter({ 'is_started': true,
-                 'organization_id': organizationId,
-                 'is_archived': false }
-               )('left')
-
+      cacheableData.assignment.getUserTodos(organizationId, user.id),
+    cacheable: () => Boolean(r.redis)
   }
 }

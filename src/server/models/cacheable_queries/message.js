@@ -17,8 +17,6 @@ const dbQuery = ({ campaignId, contactId }) => {
   // console.log('message dbquery', contactId, cols)
   if (contactId) {
     query = query.where('campaign_contact_id', contactId)
-    // TODO: do we need to accomodate active campaigns just after migration here?
-    //  probably should include it in the migration
   } else if (campaignId) {
     query = query
       .join('assignment', 'message.assignment_id', 'assignment.id')
@@ -170,6 +168,9 @@ const messageCache = {
           messageInstance[f] = activeCellFound[f]
         }
       })
+    } else {
+      // is_from_contact==false
+      // TODO: remove from inflight queue (if there)
     }
 
     await Message.save(messageInstance,

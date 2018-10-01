@@ -74,7 +74,10 @@ export const resolvers = {
       ? { id: assignment.user_id, first_name: assignment.first_name, last_name: assignment.last_name }
       : loaders.user.load(assignment.user_id)
     ),
-    campaign: async (assignment, _, { loaders }) => loaders.campaign.load(assignment.campaign_id),
+    campaign: async (assignment, _, { loaders }) => (
+      assignment.campaign
+      || loaders.campaign.load(assignment.campaign_id)
+    ),
     contactsCount: async (assignment, { contactsFilter }, { loaders }) => {
       const campaign = await loaders.campaign.load(assignment.campaign_id)
       const organization = await loaders.organization.load(campaign.organization_id)
