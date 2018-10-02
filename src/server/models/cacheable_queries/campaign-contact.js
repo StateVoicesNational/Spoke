@@ -81,13 +81,14 @@ const saveCacheRecord = async (dbRecord, organization, messageServiceSid, campai
       .expire(contactKey, 86400)
       .execAsync()
     if (dbRecord.message_status) {
-      // To avoid a write-syncing risk, before updating the status
-      // we check to see it doesn't exist before overwrite
+      // FUTURE: To avoid a write-syncing risk, before updating the status
+      // we should check to see it doesn't exist before overwrite
       // This could also cause a problem, if the cache, itself, somehow gets out-of-sync
       await r.redis.multi()
         .set(statusKey, dbRecord.message_status)
         .expire(statusKey, 86400)
         .execAsync()
+      await updateAssignmentContact(dbRecord, dbRecord.message_status)
     }
     if (dbRecord.assignment_id) {
       await r.redis.multi()
