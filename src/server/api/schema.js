@@ -643,7 +643,7 @@ const rootMutations = {
       cacheableData.campaign.reload(id)
       return campaign
     },
-    startCampaign: async (_, { id }, { user, loaders }) => {
+    startCampaign: async (_, { id }, { user, loaders, remainingMilliseconds }) => {
       const campaign = await loaders.campaign.load(id)
       await accessRequired(user, campaign.organization_id, 'ADMIN')
       campaign.is_started = true
@@ -660,7 +660,7 @@ const rootMutations = {
       cacheableData.assignment.loadCampaignAssignments(campaign)
       cacheableData.campaignContact.loadMany(
         await loaders.organization.load(campaign.organization_id),
-        { campaign })
+        { campaign, remainingMilliseconds })
       return campaign
     },
     editCampaign: async (_, { id, campaign }, { user, loaders }) => {
