@@ -5,6 +5,7 @@ import IconButton from 'material-ui/IconButton/IconButton'
 import NavigateBeforeIcon from 'material-ui/svg-icons/image/navigate-before'
 import NavigateNextIcon from 'material-ui/svg-icons/image/navigate-next'
 import AssignmentTexterContact from '../containers/AssignmentTexterContact'
+import LoadingIndicator from './LoadingIndicator'
 import { StyleSheet, css } from 'aphrodite'
 import { withRouter } from 'react-router'
 import Check from 'material-ui/svg-icons/action/check-circle'
@@ -286,7 +287,7 @@ class AssignmentTexter extends React.Component {
           self.updateCurrentContactIndex(self.state.currentContactIndex)
         }
       }, 200)
-      return null
+      return <LoadingIndicator />
     }
     return (
       <AssignmentTexterContact
