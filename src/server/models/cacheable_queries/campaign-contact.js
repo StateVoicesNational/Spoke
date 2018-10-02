@@ -75,14 +75,15 @@ const saveCacheRecord = async (dbRecord, organization, messageServiceSid) => {
       .set(contactKey, JSON.stringify(contactCacheObj))
       .expire(contactKey, 86400)
       .execAsync()
-    if (!statusKeyExists && dbRecord.message_status) {
-      // To avoid a write-syncing risk, before updating the status
-      // we check to see it doesn't exist before overwrite
+    if (dbRecord.message_status) {
+      // FUTURE: To avoid a write-syncing risk, before updating the status
+      // we should check to see it doesn't exist before overwrite
       // This could also cause a problem, if the cache, itself, somehow gets out-of-sync
       await r.redis.multi()
         .set(statusKey, dbRecord.message_status)
         .expire(statusKey, 86400)
         .execAsync()
+      await updateAssignmentContact(dbRecord, dbRecord.message_status)
     }
   }
   // NOT INCLUDED: (All SET on first-text (i.e. updateStatus) rather than initial save)
