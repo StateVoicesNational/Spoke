@@ -48,17 +48,17 @@ const dbContactTimezones = async (id) => (
 
 const clear = async (id) => {
   if (r.redis) {
-    console.log('clearing campaign cache')
+    // console.log('clearing campaign cache')
     await r.redis.delAsync(cacheKey(id))
   }
 }
 
 const loadDeep = async (id) => {
-  console.log('load campaign deep', id)
+  // console.log('load campaign deep', id)
   if (r.redis) {
     const campaign = await Campaign.get(id)
     if (campaign.is_archived) {
-      console.log('campaign is_archived')
+      // console.log('campaign is_archived')
       // do not cache archived campaigns
       await clear(id)
       return campaign
@@ -66,7 +66,7 @@ const loadDeep = async (id) => {
     campaign.customFields = await dbCustomFields(id)
     campaign.interactionSteps = await dbInteractionSteps(id)
     campaign.contactTimezones = await dbContactTimezones(id)
-    console.log('loaded deep campaign', JSON.stringify(campaign, null, 2))
+    // console.log('loaded deep campaign', JSON.stringify(campaign, null, 2))
     // We should only cache organization data
     // if/when we can clear it on organization data changes
     // campaign.organization = await organizationCache.load(campaign.organization_id)
@@ -104,7 +104,7 @@ const campaignCache = {
     if (r.redis) {
       let campaignData = await r.redis.getAsync(cacheKey(id))
       if (!campaignData) {
-        console.log('no campaigndata')
+        // console.log('no campaigndata')
         const campaignNoCache = await loadDeep(id)
         if (campaignNoCache) {
           return campaignNoCache

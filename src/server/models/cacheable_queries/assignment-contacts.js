@@ -137,6 +137,7 @@ export const cachedContactsQuery = async ({ assignmentId, timezoneOffsets, messa
     let existsQuery = r.redis.multi()
     timezoneOffsets.forEach((tz) => {
       const key = assignmentContactsKey(assignmentId, tz)
+      // console.log('assignentcontacts key', key)
       existsQuery = existsQuery.exists(key)
       resultQuery = resultQuery[cmd](key, range[0], range[1])
     })
@@ -210,7 +211,7 @@ export const getContacts = async (assignment, contactsFilter, organization, camp
     return contactQueryArgs.result
   }
   const cachedResult = await cachedContactsQuery(contactQueryArgs)
-  // console.log('getContacts cached', justCount, justIds, assignment.id, cachedResult)
+  // console.log('getContacts cached', justCount, justIds, assignment.id, contactsFilter, cachedResult)
   return (cachedResult !== null
           ? cachedResult
           : dbContactsQuery(contactQueryArgs))
@@ -251,6 +252,7 @@ export const loadAssignmentContacts = async (assignmentId, organizationId, timez
       needsMessage: 0, needsResponse: 0, convo: 0, messaged: 0, closed: 0
     }
   })
+  // console.log('loadAssignmentContacts data', tzs)
   const getScore = (c, tzObj) => {
     if (c.optout) {
       return 0
@@ -275,6 +277,11 @@ export const loadAssignmentContacts = async (assignmentId, organizationId, timez
     const tz = tzKeys[i]
     const tzContacts = tzs[tz].contacts
     const key = assignmentContactsKey(assignmentId, tz)
+    // console.log('loadAssignmentContacts', key, tzContacts)
+    if (tzContacts.length === 0) {
+      // for the sorted set to exist, we need something in there
+      tzContacts.push(-1, 'fakekey')
+    }
     await r.redis.multi()
       .del(key)
     // TODO: is there a max to how many we can add at once?
