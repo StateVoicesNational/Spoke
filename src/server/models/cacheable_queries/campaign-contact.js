@@ -166,6 +166,9 @@ const campaignContactCache = {
     const messageServiceSid = getMessageServiceSid(organization)
 
     // We process the results in a stream, because this could be a very large result
+    // For docs see:
+    // https://knexjs.org/#Interfaces-Streams
+    // https://github.com/substack/stream-handbook#creating-a-writable-stream
     await query.stream((stream) => {
       const cacheSaver = new Writable({ objectMode: true })
       // eslint-disable-next-line no-underscore-dangle
