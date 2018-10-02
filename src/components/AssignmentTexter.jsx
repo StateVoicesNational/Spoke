@@ -138,7 +138,9 @@ class AssignmentTexter extends React.Component {
       if (getAssignmentContacts) {
         const newContactData = {}
         getAssignmentContacts.forEach((c) => {
-          newContactData[c.id] = c
+          if (c && c.id) {
+            newContactData[c.id] = c
+          }
         })
         this.setState({
           loading: false,
