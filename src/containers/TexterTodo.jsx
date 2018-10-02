@@ -59,7 +59,7 @@ class TexterTodo extends React.Component {
     const { assignment } = this.props.data
     if (assignment.contacts.length === 0 || checkServer) {
       if (assignment.campaign.useDynamicAssignment) {
-        const didAddContacts = (await this.props.mutations.findNewCampaignContact(assignment.id, 1)).data.findNewCampaignContact.found
+        const didAddContacts = (await this.props.mutations.findNewCampaignContact(assignment.id)).data.findNewCampaignContact.found
         if (didAddContacts) {
           this.props.data.refetch()
           return
@@ -177,7 +177,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
 })
 
 const mapMutationsToProps = ({ ownProps }) => ({
-  findNewCampaignContact: (assignmentId, numberContacts = 1) => ({
+  findNewCampaignContact: (assignmentId, numberContacts = 10) => ({
     mutation: gql`
       mutation findNewCampaignContact($assignmentId: String!, $numberContacts: Int!) {
         findNewCampaignContact(assignmentId: $assignmentId, numberContacts: $numberContacts) {

@@ -770,6 +770,7 @@ const rootMutations = {
         return null
       })
       if (findNew) {
+
         // maybe TODO: we could automatically add dynamic assignments in the same api call
         // findNewCampaignContact()
       }
@@ -785,54 +786,9 @@ const rootMutations = {
         })
       }
       const campaign = await loaders.campaign.load(assignment.campaign_id)
-      if (!campaign.use_dynamic_assignment || assignment.max_contacts === 0) {
-        return { found: false }
-      }
 
-      const contactsCount = await cacheableData.assignment.getTotalContactCount(assignment, campaign)
-
-      numberContacts = numberContacts || 1
-      if (assignment.max_contacts && assignment.max_contacts !== null && contactsCount + numberContacts > assignment.max_contacts) {
-        numberContacts = assignment.max_contacts - contactsCount
-      }
-
-      if (numberContacts <= 0) {
-        return { found: false }
-      }
-      // Don't add more if they already have that many
-      const result = await r.getCount(
-        r.knex('campaign_contact').where({
-          assignment_id: assignmentId,
-          message_status: 'needsMessage',
-          is_opted_out: false
-        })
-      )
-      if (result >= numberContacts) {
-        return { found: false }
-      }
-
-      const updatedCount = await r
-        .knex('campaign_contact')
-        .where(
-          'id',
-          'in',
-          r
-            .knex('campaign_contact')
-            .where({
-              assignment_id: null,
-              campaign_id: campaign.id
-            })
-            .limit(numberContacts)
-            .select('id')
-        )
-        .update({ assignment_id: assignmentId })
-        .catch(log.error)
-
-      if (updatedCount > 0) {
-        return { found: true }
-      } else {
-        return { found: false }
-      }
+      return Boolean(
+        await cacheableData.assignment.findNewContacts(assignment, campaign, numberContacts))
     },
 
     createOptOut: async (_, { optOut, campaignContactId }, { loaders, user }) => {

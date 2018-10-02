@@ -39,16 +39,20 @@ const cacheKey = (id) => `${process.env.CACHE_PREFIX || ''}contact-${id}`
 const messageStatusKey = (id) => `${process.env.CACHE_PREFIX || ''}contactstatus-${id}`
 // allows a lookup of contact_id, assignment_id, and timezone_offset by cell+messageservice_sid
 const cellTargetKey = (cell, messageServiceSid) => `${process.env.CACHE_PREFIX || ''}cell-${cell}-${messageServiceSid}`
+// assignment_id and user_id of assignment
+const contactAssignmentKey = (id) => `${process.env.CACHE_PREFIX || ''}contactassignment-${id}`
 
-const generateCacheRecord = (dbRecord, organizationId, messageServiceSid) => ({
+const generateCacheRecord = (dbRecord, organizationId, messageServiceSid, campaign) => ({
   // This should be contactinfo that
   // never needs to be updated by an action of the texter or contact
   id: dbRecord.id,
-  assignment_id: dbRecord.assignment_id,
+  // don't cache inside contact if we have dynamic assignment
+  assignment_id: (campaign.use_dynamic_assignment ? undefined : dbRecord.assignment_id),
+  user_id: (campaign.use_dynamic_assignment ? undefined : dbRecord.user_id), // assigned user_id
   campaign_id: dbRecord.campaign_id,
   organization_id: organizationId,
+  dynamic_assignment: campaign.use_dynamic_assignment,
   messageservice_sid: messageServiceSid,
-  user_id: dbRecord.user_id, // assigned user_id
   first_name: dbRecord.first_name,
   last_name: dbRecord.last_name,
   cell: dbRecord.cell,
@@ -63,25 +67,32 @@ const generateCacheRecord = (dbRecord, organizationId, messageServiceSid) => ({
   state: dbRecord.state
 })
 
-const saveCacheRecord = async (dbRecord, organization, messageServiceSid) => {
+const saveCacheRecord = async (dbRecord, organization, messageServiceSid, campaign) => {
   if (r.redis) {
     // basic contact record
-    const contactCacheObj = generateCacheRecord(dbRecord, organization.id, messageServiceSid)
+    const contactCacheObj = generateCacheRecord(dbRecord, organization.id, messageServiceSid, campaign)
     // console.log('contact saveCacheRecord', contactCacheObj)
     const contactKey = cacheKey(dbRecord.id)
     const statusKey = messageStatusKey(dbRecord.id)
+    const assignmentKey = contactAssignmentKey(dbRecord.id)
     const [statusKeyExists] = await r.redis.multi()
       .exists(statusKey)
       .set(contactKey, JSON.stringify(contactCacheObj))
       .expire(contactKey, 86400)
       .execAsync()
-    if (!statusKeyExists && dbRecord.message_status) {
+    if (dbRecord.message_status) {
       // To avoid a write-syncing risk, before updating the status
       // we check to see it doesn't exist before overwrite
       // This could also cause a problem, if the cache, itself, somehow gets out-of-sync
       await r.redis.multi()
         .set(statusKey, dbRecord.message_status)
         .expire(statusKey, 86400)
+        .execAsync()
+    }
+    if (dbRecord.assignment_id) {
+      await r.redis.multi()
+        .set(assignmentKey, [dbRecord.assignment_id, dbRecord.user_id].join(':'))
+        .expire(assignmentKey, 86400)
         .execAsync()
     }
   }
@@ -105,6 +116,21 @@ const getMessageStatus = async (id, contactObj) => {
   return (contact && contact.message_status)
 }
 
+const getContactAssignment = async (id, contactObj) => {
+  if (contactObj.assignment_id) {
+    return { assignment_id: contactObj.assignment_id,
+             user_id: contactObj.user_id }
+  }
+  if (r.redis) {
+    const contactAssignment = await r.redis.getAsync(contactAssignmentKey(id))
+    if (contactAssignment) {
+      const [assignment_id, user_id] = contactAssignment.split(':')
+    }
+    return { assignment_id, user_id }
+  }
+  return {}
+}
+
 const campaignContactCache = {
   clear: async (id) => {
     if (r.redis) {
@@ -123,11 +149,15 @@ const campaignContactCache = {
             organizationId: cacheData.organization_id })
         }
         cacheData.message_status = await getMessageStatus(id, cacheData)
+        if (cacheData.dynamic_assignment) {
+          Object.assign(cacheData,
+                        await getContactAssignment(id, cacheData))
+        }
         // console.log('contact fromCache', cacheData)
         return modelWithExtraProps(
           cacheData,
           CampaignContact,
-          ['organization_id', 'city', 'state', 'user_id', 'messageservice_sid'])
+          ['organization_id', 'city', 'state', 'user_id', 'messageservice_sid', 'dynamic_assignment'])
       }
     }
     return await CampaignContact.get(id)
@@ -162,12 +192,13 @@ const campaignContactCache = {
     if (queryFunc) {
       query = queryFunc(query)
     }
+    // TODO: paginate if contacts are BIG
     const dbResult = await query
     // 2. cache the data
     const messageServiceSid = getMessageServiceSid(organization)
     for (let i = 0, l = dbResult.length; i < l; i++) {
       const dbRecord = dbResult[i]
-      await saveCacheRecord(dbRecord, organization, messageServiceSid)
+      await saveCacheRecord(dbRecord, organization, messageServiceSid, campaign)
     }
   },
   lookupByCell: async (cell, service, messageServiceSid, bailWithoutCache) => {

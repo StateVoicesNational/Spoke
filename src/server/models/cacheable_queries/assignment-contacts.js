@@ -29,12 +29,7 @@ const filterMessageStatuses = (messageStatusFilter) => (
       : messageStatusFilter.split(','))
 )
 
-export const getContactQueryArgs = (assignmentId, contactsFilter, organization, campaign, forCount, justCount, justIds) => {
-  // / returns list of contacts eligible for contacting _now_ by a particular user
-  const includePastDue = (contactsFilter && contactsFilter.includePastDue)
-  // 24-hours past due - why is this 24 hours offset?
-  const pastDue = (campaign.due_by
-                   && Number(campaign.due_by) + 24 * 60 * 60 * 1000 < Number(new Date()))
+export const campaignTimezoneConfig = (organization, campaign) => {
   const config = {
     textingHoursStart: organization.texting_hours_start,
     textingHoursEnd: organization.texting_hours_end,
@@ -48,6 +43,16 @@ export const getContactQueryArgs = (assignmentId, contactsFilter, organization, 
       textingHoursEnforced: campaign.texting_hours_enforced,
       timezone: campaign.timezone }
   }
+  return config
+}
+
+export const getContactQueryArgs = (assignmentId, contactsFilter, organization, campaign, forCount, justCount, justIds) => {
+  // / returns list of contacts eligible for contacting _now_ by a particular user
+  const includePastDue = (contactsFilter && contactsFilter.includePastDue)
+  // 24-hours past due - why is this 24 hours offset?
+  const pastDue = (campaign.due_by
+                   && Number(campaign.due_by) + 24 * 60 * 60 * 1000 < Number(new Date()))
+  const config = campaignTimezoneConfig(organization, campaign)
 
   if (!includePastDue && pastDue && contactsFilter.messageStatus === 'needsMessage') {
     return { result: (justCount ? 0 : []) }
