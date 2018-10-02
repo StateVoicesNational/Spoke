@@ -476,7 +476,9 @@ const rootMutations = {
         await Assignment.save({
           user_id: user.id,
           campaign_id: campaign.id,
-          max_contacts: parseInt(process.env.MAX_CONTACTS_PER_TEXTER || 0, 10)
+          max_contacts: (typeof process.env.MAX_CONTACTS_PER_TEXTER != 'undefined'
+                         ? Number(process.env.MAX_CONTACTS_PER_TEXTER)
+                         : null)
         })
       } else {
         await cacheableData.assignment.reload(assignment.id)
@@ -763,7 +765,13 @@ const rootMutations = {
     getAssignmentContacts: async (_, { assignmentId, contactIds, findNew }, { loaders, user }) => {
       await assignmentRequired(user, assignmentId)
       const contacts = contactIds.map(async (contactId) => {
-        const contact = await loaders.campaignContact.load(contactId)
+        let contact = await loaders.campaignContact.load(contactId)
+        if (contact.assignment_id === null) {
+          // Reload if assignment_id is null, because we are probably
+          // in a race condition with dynamic assignment here
+          await cacheableData.campaignContact.clear(contactId)
+          contact = await cacheableData.campaignContact.load(contactId)
+        }
         if (contact && contact.assignment_id === Number(assignmentId)) {
           return contact
         }
@@ -787,8 +795,8 @@ const rootMutations = {
       }
       const campaign = await loaders.campaign.load(assignment.campaign_id)
 
-      return Boolean(
-        await cacheableData.assignment.findNewContacts(assignment, campaign, numberContacts))
+      return { found: Boolean(
+        await cacheableData.assignment.findNewContacts(assignment, campaign, numberContacts))}
     },
 
     createOptOut: async (_, { optOut, campaignContactId }, { loaders, user }) => {

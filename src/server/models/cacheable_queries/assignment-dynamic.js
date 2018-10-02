@@ -94,7 +94,7 @@ export const reloadCampaignContactsForDynamicAssignment = async (campaign, organ
     // add in: contact_id AND timezone_offset
   },
 */
-export const assignNewContacts = async (assignment, campaign, numberContacts) => {
+export const findNewContacts = async (assignment, campaign, numberContacts) => {
   // Returns false if none found, and returns true-ish value
   // If new contacts were assigned with DB then we return the count
   // If new contacts were assigned in cache-mode, we return an array of contactIds
@@ -108,7 +108,7 @@ export const assignNewContacts = async (assignment, campaign, numberContacts) =>
   const contactsCount = await getTotalContactCount(assignment, campaign)
 
   let finalNumberContacts = numberContacts || 1
-  if (assignment.max_contacts && assignment.max_contacts !== null && contactsCount + finalNumberContacts > assignment.max_contacts) {
+  if (assignment.max_contacts && contactsCount + finalNumberContacts > assignment.max_contacts) {
     finalNumberContacts = assignment.max_contacts - contactsCount
   }
   if (finalNumberContacts <= 0) {
@@ -117,7 +117,7 @@ export const assignNewContacts = async (assignment, campaign, numberContacts) =>
   
   // 2. Make sure texter doesn't have too many messages in-flight
   //    i.e. Don't add more if they already have that many
-  const inFlightCount = await currentUserInfFlight(assignment)
+  const inFlightCount = await currentUserInflight(assignment)
   if (inFlightCount >= finalNumberContacts) {
       return false
   }
@@ -153,6 +153,9 @@ export const assignNewContacts = async (assignment, campaign, numberContacts) =>
   }
       
   if (updatedCount > 0) {
+    // MAYBE THESE ARE DONE IN popInFlight?
+    // TODO: refresh campaign_contact assignments
+    // TODO: refresh assignmentcontacts caches
     return (Array.isArray(contactIds) ? contactIds : updatedCount)
   } else {
     return false
