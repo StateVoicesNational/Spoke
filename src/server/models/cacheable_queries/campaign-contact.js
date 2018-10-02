@@ -2,6 +2,7 @@ import { r, getMessageServiceSid, CampaignContact } from '../../models'
 import optOutCache from './opt-out'
 import { modelWithExtraProps } from './lib'
 import { updateAssignmentContact } from './assignment-contacts'
+import { Writable } from 'stream'
 
 // TODO: for dynamic assignment, the assignment_id should NOT be set
 // -- so it can be loaded before it's assigned
@@ -163,7 +164,7 @@ const campaignContactCache = {
     }
     return await CampaignContact.get(id)
   },
-  loadMany: async (organization, { campaign, queryFunc }) => {
+  loadMany: async (campaign, organization, { queryFunc, remainingMilliseconds }) => {
     // queryFunc(query) has query input of a knex query
     // queryFunc should return a query with added where clauses
     if (!r.redis || !organization || !(campaign || queryFunc)) {
@@ -187,20 +188,43 @@ const campaignContactCache = {
               'campaign_contact.timezone_offset',
               'zip_code.city',
               'zip_code.state')
-    if (campaign) {
-      query = query.where('campaign_contact.campaign_id', campaign.id)
-    }
     if (queryFunc) {
       query = queryFunc(query)
+    } else {
+      query = query.where('campaign_contact.campaign_id', campaign.id)
     }
-    // TODO: paginate if contacts are BIG
-    const dbResult = await query
-    // 2. cache the data
     const messageServiceSid = getMessageServiceSid(organization)
-    for (let i = 0, l = dbResult.length; i < l; i++) {
-      const dbRecord = dbResult[i]
-      await saveCacheRecord(dbRecord, organization, messageServiceSid, campaign)
-    }
+
+    // We process the results in a stream, because this could be a very large result
+    // For docs see:
+    // https://knexjs.org/#Interfaces-Streams
+    // https://github.com/substack/stream-handbook#creating-a-writable-stream
+    await query.stream((stream) => {
+      const cacheSaver = new Writable({ objectMode: true })
+      // eslint-disable-next-line no-underscore-dangle
+      cacheSaver._write = (dbRecord, enc, next) => {
+        // Note: non-async land
+        saveCacheRecord(dbRecord, organization, messageServiceSid, campaign)
+          .then(
+            () => {
+              // If we are passed a remainingMilliseconds function, then
+              // run it and see if we're almost at-time.
+              // The rest of the cache loading will have to be done later
+              // FUTURE: consider making this a job that can divide work up and complete
+              if (typeof remainingMilliseconds === 'function'
+                  && remainingMilliseconds() < 2000) {
+                stream.end()
+              }
+              next()
+            },
+            (err) => {
+              console.error('FAILED CACHE SAVE', err)
+              stream.end()
+              next()
+            })
+      }
+      stream.pipe(cacheSaver)
+    })
   },
   lookupByCell: async (cell, service, messageServiceSid, bailWithoutCache) => {
     // Used to lookup contact/campaign information by cell number for incoming messages

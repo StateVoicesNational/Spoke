@@ -9,7 +9,7 @@ const cachePrefix = process.env.CACHE_PREFIX || ''
 // SORTED SET needsMessage-<campaignId> to use ZPOPMIN to assign into inFlight
 //  While sorted set has a slower add-complexity, O(log(N)), it's very important
 //  that we don't accidentally add a contactId twice
-const needsMessageQueueKey = (campaignId) => `${cachePrefix}needsMessage-${campaignId}`
+const needsMessageQueueKey = (campaignId, tz) => `${cachePrefix}needsMessage-${campaignId}-${tz}`
 
 // SORTED SET inflight-<campaignId> with key=<contactId>, score=<userId>
 const inFlightKey = (campaignId) => `${cachePrefix}inflight-${campaignId}`

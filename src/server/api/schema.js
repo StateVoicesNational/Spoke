@@ -644,24 +644,25 @@ const rootMutations = {
       cacheableData.campaign.reload(id)
       return campaign
     },
-    startCampaign: async (_, { id }, { user, loaders }) => {
+    startCampaign: async (_, { id }, { user, loaders, remainingMilliseconds }) => {
       const campaign = await loaders.campaign.load(id)
       await accessRequired(user, campaign.organization_id, 'ADMIN')
+      const organization = await loaders.organization.load(campaign.organization_id)
+
       campaign.is_started = true
 
       await campaign.save()
-      // some synchronous caching:
+      // some synchronous tasks:
       await cacheableData.campaign.reload(id)
-
-      // some asynchronous cache-priming:
-      cacheableData.assignment.loadCampaignAssignments(campaign)
-      cacheableData.campaignContact.loadMany(
-        await loaders.organization.load(campaign.organization_id),
-        { campaign })
       await sendUserNotification({
         type: Notifications.CAMPAIGN_STARTED,
         campaignId: id
       })
+
+      // some asynchronous cache-priming:
+      cacheableData.assignment.loadCampaignAssignments(campaign)
+      cacheableData.campaignContact.loadMany(
+        campaign, organization, { remainingMilliseconds })
       return campaign
     },
     editCampaign: async (_, { id, campaign }, { user, loaders }) => {
