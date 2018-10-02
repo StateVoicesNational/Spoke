@@ -132,6 +132,7 @@ export const resolvers = {
       })
     ),
     contacts: async (campaign) => (
+      // todo: should we limit this field?
       r.knex('campaign_contact')
         .where({ campaign_id: campaign.id })
     ),

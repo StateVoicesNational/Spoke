@@ -287,7 +287,8 @@ const rootMutations = {
     sendReply: async (_, { id, message }, { user, loaders }) => {
       const contact = await loaders.campaignContact.load(id)
       const campaign = await loaders.campaign.load(contact.campaign_id)
-
+      const organization = await loaders.organization.load(campaign.organization_id)
+      // console.log('SENDREPLY', contact, campaign)
       await accessRequired(user, campaign.organization_id, 'ADMIN')
 
       const lastMessage = await r
@@ -324,7 +325,7 @@ const rootMutations = {
           assignment_id: lastMessage.assignment_id,
           campaign_contact_id: contact.id,
           service: lastMessage.service,
-          messageservice_sid: '',
+          messageservice_sid: getMessageServiceSid(organization),
           send_status: 'DELIVERED'
         }, contact)
       )
