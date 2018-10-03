@@ -14,7 +14,7 @@ export function buildCampaignQuery(queryParam, organizationId, campaignsFilter, 
   if (campaignsFilter) {
     const resultSize = (campaignsFilter.listSize ? campaignsFilter.listSize : 0)
     const pageSize = (campaignsFilter.pageSize ? campaignsFilter.pageSize : 0)
-    
+
     if ('isArchived' in campaignsFilter) {
       query = query.where({ is_archived: campaignsFilter.isArchived })
     }
@@ -159,15 +159,6 @@ export const resolvers = {
          })
         .limit(1)
       return contacts.length > 0
-    },
-    customFields: async (campaign) => {
-      const campaignContacts = await r.table('campaign_contact')
-        .getAll(campaign.id, { index: 'campaign_id' })
-        .limit(1)
-      if (campaignContacts.length > 0) {
-        return Object.keys(JSON.parse(campaignContacts[0].custom_fields))
-      }
-      return []
     },
     customFields: async (campaign) => (
       campaign.customFields
