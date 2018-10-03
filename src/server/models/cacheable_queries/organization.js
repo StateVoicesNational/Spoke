@@ -1,4 +1,4 @@
-import { r } from '../../models'
+import { r, loaders } from '../../models'
 
 const cacheKey = (orgId) => `${process.env.CACHE_PREFIX || ''}org-${orgId}`
 
@@ -7,6 +7,7 @@ const organizationCache = {
     if (r.redis) {
       await r.redis.delAsync(cacheKey(id))
     }
+    loaders.organization.clear(id)
   },
   load: async (id) => {
     if (r.redis) {

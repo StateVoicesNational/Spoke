@@ -1,4 +1,4 @@
-import { r, Campaign } from '../../models'
+import { r, loaders, Campaign } from '../../models'
 import { modelWithExtraProps } from './lib'
 import { assembleAnswerOptions } from '../../../lib/interaction-step-helpers'
 
@@ -51,10 +51,12 @@ const clear = async (id) => {
     // console.log('clearing campaign cache')
     await r.redis.delAsync(cacheKey(id))
   }
+  loaders.campaign.clear(id)
 }
 
 const loadDeep = async (id) => {
   // console.log('load campaign deep', id)
+  loaders.campaign.clear(id)
   if (r.redis) {
     const campaign = await Campaign.get(id)
     if (Array.isArray(campaign) && campaign.length === 0) {
