@@ -26,7 +26,7 @@ const loadMany = async (organizationId) => {
       await r.redis.saddAsync(hashKey, cellOptOuts.slice(100 * i100, 100 * i100 + 100))
     }
     await r.redis.expire(hashKey, 86400)
-    console.log(`CACHE: Loaded optouts for ${organizationId}`)
+    // console.log(`CACHE: Loaded optouts for ${organizationId}`)
   }
 }
 

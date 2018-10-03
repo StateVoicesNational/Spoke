@@ -48,29 +48,34 @@ const dbContactTimezones = async (id) => (
 
 const clear = async (id) => {
   if (r.redis) {
-    console.log('clearing campaign cache')
+    // console.log('clearing campaign cache')
     await r.redis.delAsync(cacheKey(id))
   }
 }
 
 const loadDeep = async (id) => {
-  console.log('load campaign deep', id)
+  // console.log('load campaign deep', id)
   if (r.redis) {
     const campaign = await Campaign.get(id)
+    if (Array.isArray(campaign) && campaign.length === 0) {
+      console.error('NO CAMPAIGN FOUND')
+      return {}
+    }
     if (campaign.is_archived) {
-      console.log('campaign is_archived')
+      // console.log('campaign is_archived')
       // do not cache archived campaigns
       await clear(id)
       return campaign
     }
+    // console.log('campaign loaddeep', campaign)
     campaign.customFields = await dbCustomFields(id)
     campaign.interactionSteps = await dbInteractionSteps(id)
     campaign.contactTimezones = await dbContactTimezones(id)
-    console.log('loaded deep campaign', JSON.stringify(campaign, null, 2))
+    // console.log('loaded deep campaign', JSON.stringify(campaign, null, 2))
     // We should only cache organization data
     // if/when we can clear it on organization data changes
     // campaign.organization = await organizationCache.load(campaign.organization_id)
-
+    // console.log('campaign loaddeep', campaign, JSON.stringify(campaign))
     await r.redis.multi()
       .set(cacheKey(id), JSON.stringify(campaign))
       .expire(cacheKey(id), 86400)
@@ -101,18 +106,23 @@ const currentEditors = async (campaign, user) => {
 
 const campaignCache = {
   load: async (id) => {
+    // console.log('campaign cache load', id)
     if (r.redis) {
       let campaignData = await r.redis.getAsync(cacheKey(id))
+      // console.log('pre campaign cache', campaignData)
       if (!campaignData) {
-        console.log('no campaigndata')
+        // console.log('no campaigndata', id)
         const campaignNoCache = await loadDeep(id)
         if (campaignNoCache) {
+          // not found in db either
           return campaignNoCache
         }
         campaignData = await r.redis.getAsync(cacheKey(id))
+        // console.log('new campaign data', campaignData)
       }
       if (campaignData) {
         const campaignObj = JSON.parse(campaignData)
+        // console.log('campaign cache', cacheKey(id), campaignObj, campaignData)
         const campaign = modelWithExtraProps(
           campaignObj,
           Campaign,
