@@ -287,7 +287,8 @@ const rootMutations = {
     sendReply: async (_, { id, message }, { user, loaders }) => {
       const contact = await loaders.campaignContact.load(id)
       const campaign = await loaders.campaign.load(contact.campaign_id)
-
+      const organization = await loaders.organization.load(campaign.organization_id)
+      // console.log('SENDREPLY', contact, campaign)
       await accessRequired(user, campaign.organization_id, 'ADMIN')
 
       const lastMessage = await r
@@ -324,7 +325,7 @@ const rootMutations = {
           assignment_id: lastMessage.assignment_id,
           campaign_contact_id: contact.id,
           service: lastMessage.service,
-          messageservice_sid: '',
+          messageservice_sid: getMessageServiceSid(organization),
           send_status: 'DELIVERED'
         }, contact)
       )
@@ -765,7 +766,13 @@ const rootMutations = {
     getAssignmentContacts: async (_, { assignmentId, contactIds, findNew }, { loaders, user }) => {
       await assignmentRequired(user, assignmentId)
       const contacts = contactIds.map(async (contactId) => {
-        const contact = await loaders.campaignContact.load(contactId)
+        let contact = await loaders.campaignContact.load(contactId)
+        if (contact.assignment_id === null) {
+          // Reload if assignment_id is null, because we are probably
+          // in a race condition with dynamic assignment here
+          await cacheableData.campaignContact.clear(contactId)
+          contact = await cacheableData.campaignContact.load(contactId)
+        }
         if (contact && contact.assignment_id === Number(assignmentId)) {
           return contact
         }
@@ -775,7 +782,7 @@ const rootMutations = {
         // maybe TODO: we could automatically add dynamic assignments in the same api call
         // findNewCampaignContact()
       }
-      return contacts.filter(c => c)
+      return contacts
     },
     findNewCampaignContact: async (_, { assignmentId, numberContacts }, { loaders, user }) => {
       /* This attempts to find a new contact for the assignment, in the case that useDynamicAssigment == true */
@@ -794,7 +801,6 @@ const rootMutations = {
       const contactsCount = await r.getCount(
         r.knex('campaign_contact').where('assignment_id', assignmentId)
       )
-
       numberContacts = numberContacts || 1
       if (assignment.max_contacts && contactsCount + numberContacts > assignment.max_contacts) {
         numberContacts = assignment.max_contacts - contactsCount
@@ -807,6 +813,7 @@ const rootMutations = {
           is_opted_out: false
         })
       )
+
       if (result >= numberContacts) {
         return { found: false }
       }
@@ -831,8 +838,13 @@ const rootMutations = {
       if (updatedCount > 0) {
         // update the campaign contact data with assignment
         // This isn't super efficient, but we'll improve this later with dynamic assignment caching
-        await cacheableData.campaignContact.loadMany(campaign, (query) => {
-          return query.where({ assignment_id: assignmentId, status_message: 'needsMessage' })
+        const organization = await loaders.organization.load(campaign.organization_id)
+        await cacheableData.campaignContact.loadMany(organization, {
+          campaign,
+          queryFunc: (query) => {
+            return query.where({ 'campaign_contact.assignment_id': assignmentId,
+                                 'campaign_contact.message_status': 'needsMessage' })
+          }
         })
         return { found: true }
       } else {

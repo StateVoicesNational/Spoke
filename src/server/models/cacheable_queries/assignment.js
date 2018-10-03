@@ -109,10 +109,10 @@ const loadDeep = async (id) => {
   const [assignment] = await assignmentQuery()
     .where('assignment.id', id)
     .limit(1)
-  console.log('loaddeep assingment', assignment)
+  // console.log('loaddeep assingment', assignment)
   if (r.redis && assignment) {
     const campaign = await campaignCache.load(assignment.campaign_id)
-    console.log('cached campaign for assn', campaign)
+    // console.log('cached campaign for assn', campaign)
     await saveCache(assignment, campaign)
   }
   return { assignment }

@@ -82,7 +82,7 @@ const dbLoadUserRoles = async (userId) => {
 const loadUserRoles = async (userId) => {
   if (r.redis) {
     const roles = await r.redis.hgetallAsync(userRoleKey(userId))
-    console.log('cached roles', roles)
+    // console.log('cached roles', roles)
     if (roles) {
       const userRoles = {}
       Object.keys(roles).forEach(orgId => {
