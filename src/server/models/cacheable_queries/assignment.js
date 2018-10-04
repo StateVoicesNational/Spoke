@@ -5,7 +5,6 @@ import { loadAssignmentContacts, getContacts, getTotalContactCount, optOutContac
 import { getUserAssignments, clearUserAssignments, addUserAssignment } from './assignment-user'
 import { findNewContacts, reloadCampaignContactsForDynamicAssignment } from './assignment-dynamic'
 
-// TODO: add user-org-assignment list for user.todos
 // TODO: move user metadata (first/last) into a separate cache key to avoid cache drift
 // ## KEY
 // assignment-<assignmentId>
