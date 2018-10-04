@@ -17,4 +17,4 @@ before_script:
 - chmod +x ./travis-run-e2e-tests
 script:
 - ./travis-run-e2e-tests
-- npm run test-cli
+- npm run test

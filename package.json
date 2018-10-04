@@ -8,12 +8,11 @@
     "npm": "3.10.10"
   },
   "scripts": {
-    "test": "jest",
+    "test": "jest --runInBand --forceExit",
     "test-e2e": "jest --runInBand --config jest.config.e2e.js",
-    "test-sqlite": "jest --config jest.config.sqlite.js",
-    "test-cli": "jest --maxWorkers=2",
+    "test-sqlite": "jest --runInBand --config jest.config.sqlite.js",
     "test-coverage": "jest --coverage",
-    "test-coverage-bothbackends": "jest --config jest.config.sqlite.js -- __test__/backend.test.js &&  jest --coverage",
+    "test-coverage-bothbackends": "jest --runInBand --config jest.config.sqlite.js -- __test__/backend.test.js &&  jest --coverage",
     "clean": "rm -rf $OUTPUT_DIR",
     "lint": "eslint --fix --ext js --ext jsx src",
     "prod-build-client": "webpack --config ./webpack/config.js",
