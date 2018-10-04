@@ -9,8 +9,9 @@ import { log } from '../../../lib'
 async function sendMessage(message, contact) {
   const newMessage = new Message({
     ...message,
+    service: 'fakeservice',
     send_status: 'SENT',
-    sent_at: new Date()
+    sent_at: new Date(),
   })
 
   if (message && message.id) {
@@ -18,6 +19,7 @@ async function sendMessage(message, contact) {
     await r.knex('message')
       .where('id', message.id)
       .update({
+        service: 'fakeservice',
         send_status: 'SENT',
         sent_at: new Date()
       })
