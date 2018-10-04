@@ -12,13 +12,11 @@ export const resolvers = {
     ], Organization),
     campaigns: async (organization, { campaignsFilter }, { user }) => {
       await accessRequired(user, organization.id, 'SUPERVOLUNTEER')
-      let query = buildCampaignQuery(
+      return buildCampaignQuery(
         r.knex.select('*'),
         organization.id,
         campaignsFilter
       )
-      query = query.orderBy('due_by', 'desc')
-      return query
     },
     uuid: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, 'SUPERVOLUNTEER')

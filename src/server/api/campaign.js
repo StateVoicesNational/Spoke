@@ -29,6 +29,12 @@ export function buildCampaignQuery(queryParam, organizationId, campaignsFilter, 
     }
   }
 
+  if (campaignsFilter && campaignsFilter.orderBy) {
+    query = query.orderBy(campaignsFilter.orderBy, 'desc')
+  } else {
+    query = query.orderBy('due_by', 'desc')
+  }
+
   return query
 }
 

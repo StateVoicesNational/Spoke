@@ -4,6 +4,7 @@ export const schema = `
     campaignId: Int
     listSize: Int
     pageSize: Int
+    orderBy: String
   }
 
   type CampaignStats {
