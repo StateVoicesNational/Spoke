@@ -169,10 +169,7 @@ const messageCache = {
           messageInstance[f] = activeCellFound[f]
         }
       })
-    } else {
-      // is_from_contact==false
-      // TODO: remove from inflight queue (if there)
-    }
+    } // endif messageInstance.is_from_contact
 
     const savedMessage = await Message.save(messageInstance,
                                             (messageInstance.id
