@@ -167,6 +167,7 @@ export const optOutContact = async (assignmentId, contactId, campaign) => {
     for (let i = 0, l = campaign.contactTimezones.length; i < l; i++) {
       const tz = campaign.contactTimezones[i]
       // XX only changes the score if it already exists
+      console.log('optoutcontact', assignmentId, contactId)
       await r.redis.zaddAsync(assignmentContactsKey(assignmentId, tz), 'XX', 0, contactId)
     }
   }
@@ -199,6 +200,7 @@ export const dbContactsQuery = ({ assignmentId, timezoneOffsets, messageStatuses
   if (justIds) {
     query = query.select('id')
   }
+  console.log('dbContactsQuery', query.toString())
   return query
 }
 
@@ -216,6 +218,12 @@ export const getContacts = async (assignment, contactsFilter, organization, camp
   }
   const cachedResult = await cachedContactsQuery(contactQueryArgs)
   // console.log('getContacts cached', justCount, justIds, assignment.id, contactsFilter, cachedResult)
+  if (justIds && cachedResult === null && campaign.contactTimezones) {
+    // Trigger a cache load if we're loading ids, which is only done for the texter
+    // async (no await) on purpose to avoid blocking the original request
+    loadAssignmentContacts(assignment.id, campaign.id, organization.id, campaign.contactTimezones)
+      .then(() => 1)
+  }
   return (cachedResult !== null
           ? cachedResult
           : dbContactsQuery(contactQueryArgs))
@@ -226,76 +234,82 @@ export const getTotalContactCount = async (assignment, campaign) => (
 )
 
 const sharingOptOuts = !!process.env.OPTOUTS_SHARE_ALL_ORGS
-export const loadAssignmentContacts = async (assignmentId, organizationId, timezoneOffsets) => {
+
+export const loadAssignmentContacts = async (assignmentId, campaignId, organizationId, timezoneOffsets) => {
   // * for each timezone
   //   * zadd <key> <needsMessageScore> cid ...
   // * if not needsMessage, then need to sort by recent message
-  const contacts = await r.knex('campaign_contact')
-    .select('campaign_contact.id as cid',
-            'campaign_contact.message_status as status',
-            'campaign_contact.timezone_offset as tz_offset',
-            'opt_out.id as optout',
-            r.knex.raw('MAX(message.created_at) as latest_message'))
-    .leftJoin('message', function msgJoin() {
-      return this.on('message.assignment_id', '=', 'campaign_contact.assignment_id')
-        .andOn('message.contact_number', '=', 'campaign_contact.cell') })
-    .leftJoin('opt_out', function optoutJoin() {
-      const joinOn = this.on('opt_out.cell', '=', 'campaign_contact.cell')
-      return (!sharingOptOuts
-              ? joinOn
-              : joinOn.andOn('opt_out.organization_id', '=',
-                             r.knex.raw('?', [organizationId])))
+  console.log('loadAssignmentContacts', assignmentId, campaignId, organizationId, timezoneOffsets)
+  if (r.redis) {
+    const contacts = await r.knex('campaign_contact')
+      .select('campaign_contact.id as cid',
+              'campaign_contact.message_status as status',
+              'campaign_contact.timezone_offset as tz_offset',
+              'opt_out.id as optout',
+              r.knex.raw('MAX(message.created_at) as latest_message'))
+      .leftJoin('message', function msgJoin() {
+        return this.on('message.assignment_id', '=', 'campaign_contact.assignment_id')
+          .andOn('message.contact_number', '=', 'campaign_contact.cell') })
+      .leftJoin('opt_out', function optoutJoin() {
+        const joinOn = this.on('opt_out.cell', '=', 'campaign_contact.cell')
+        return (!sharingOptOuts
+                ? joinOn
+                : joinOn.andOn('opt_out.organization_id', '=',
+                               r.knex.raw('?', [organizationId])))
+      })
+      .where({ 'campaign_contact.assignment_id': assignmentId,
+               'campaign_contact.campaign_id': campaignId // redundant guard
+             })
+      .groupBy('campaign_contact.id',
+               'campaign_contact.message_status',
+               'campaign_contact.timezone_offset',
+               'opt_out.id')
+      .orderByRaw('campaign_contact.timezone_offset, campaign_contact.message_status DESC, MAX(message.created_at)')
+    // 2. group results with scores
+    const tzs = {}
+    timezoneOffsets.forEach((tzOffset) => {
+      tzs[tzOffset] = {
+        contacts: [],
+        needsMessage: 0, needsResponse: 0, convo: 0, messaged: 0, closed: 0
+      }
     })
-    .where('campaign_contact.assignment_id', assignmentId)
-    .groupBy('campaign_contact.id',
-             'campaign_contact.message_status',
-             'campaign_contact.timezone_offset',
-             'opt_out.id')
-    .orderByRaw('campaign_contact.timezone_offset, campaign_contact.message_status DESC, MAX(message.created_at)')
-  // 2. group results with scores
-  const tzs = {}
-  timezoneOffsets.forEach((tzOffset) => {
-    tzs[tzOffset] = {
-      contacts: [],
-      needsMessage: 0, needsResponse: 0, convo: 0, messaged: 0, closed: 0
+    console.log('loadAssignmentContacts data', tzs)
+    const getScore = (c, tzObj) => {
+      if (c.optout) {
+        return 0
+      }
+      if (c.latest_message) {
+        // note: needsMessage will never increment and always end up ===1
+        // eslint-disable-next-line no-param-reassign
+        tzObj[c.status] += 1
+      }
+      if (c.status === 'convo') {
+        // starts at max and counts down for reverse order
+        return msgStatusRange[c.status][1] - tzObj[c.status]
+      }
+      return msgStatusRange[c.status][0] + tzObj[c.status]
     }
-  })
-  // console.log('loadAssignmentContacts data', tzs)
-  const getScore = (c, tzObj) => {
-    if (c.optout) {
-      return 0
+    contacts.forEach((c) => {
+      const tzObj = tzs[c.tz_offset]
+      tzObj.contacts.push(getScore(c, tzObj), c.cid)
+    })
+    const tzKeys = Object.keys(tzs)
+    for (let i = 0, l = tzKeys.length; i < l; i++) {
+      const tz = tzKeys[i]
+      const tzContacts = tzs[tz].contacts
+      const key = assignmentContactsKey(assignmentId, tz)
+      console.log('loadAssignmentContacts', key, tzContacts)
+      if (tzContacts.length === 0) {
+        // for the sorted set to exist, we need something in there
+        tzContacts.push(-1, 'fakekey')
+      }
+      await r.redis.multi()
+        .del(key)
+      // TODO: is there a max to how many we can add at once?
+        .zadd(key, ...tzContacts)
+        .expire(key, 86400 * 2)
+        .execAsync()
     }
-    if (c.latest_message) {
-      // note: needsMessage will never increment and always end up ===1
-      // eslint-disable-next-line no-param-reassign
-      tzObj[c.status] += 1
-    }
-    if (c.status === 'convo') {
-      // starts at max and counts down for reverse order
-      return msgStatusRange[c.status][1] - tzObj[c.status]
-    }
-    return msgStatusRange[c.status][0] + tzObj[c.status]
-  }
-  contacts.forEach((c) => {
-    const tzObj = tzs[c.tz_offset]
-    tzObj.contacts.push(getScore(c, tzObj), c.cid)
-  })
-  const tzKeys = Object.keys(tzs)
-  for (let i = 0, l = tzKeys.length; i < l; i++) {
-    const tz = tzKeys[i]
-    const tzContacts = tzs[tz].contacts
-    const key = assignmentContactsKey(assignmentId, tz)
-    // console.log('loadAssignmentContacts', key, tzContacts)
-    if (tzContacts.length === 0) {
-      // for the sorted set to exist, we need something in there
-      tzContacts.push(-1, 'fakekey')
-    }
-    await r.redis.multi()
-      .del(key)
-    // TODO: is there a max to how many we can add at once?
-      .zadd(key, ...tzContacts)
-      .expire(key, 86400 * 2)
-      .execAsync()
   }
 }
 
@@ -304,18 +318,18 @@ export const updateAssignmentContact = async (contact, newStatus) => {
   const key = assignmentContactsKey(contact.assignment_id, contact.timezone_offset)
   const range = msgStatusRange[newStatus]
   const cmd = (newStatus === 'convo' ? 'zrangebyscore' : 'zrevrangebyscore')
-  // console.log('updateAssignmentContact', contact, newStatus, range, cmd, key)
+  console.log('updateAssignmentContact', contact, newStatus, range, cmd, key)
   const [exists, curMax] = await r.redis.multi()
     .exists(key)
     [cmd](key, range[0], range[1], 'WITHSCORES', 'LIMIT', 0, 1)
     .execAsync()
-  // console.log('updateassignmentcontact', contact.id, newStatus, range, cmd, key, exists, curMax)
+  console.log('updateassignmentcontact', contact.id, newStatus, range, cmd, key, exists, curMax)
   if (exists) {
     // eslint-disable-next-line no-nested-ternary
     const newScore = (curMax && curMax.length
                       ? Number(curMax[1]) + (newStatus === 'convo' ? -1 : 1)
                       : (newStatus === 'convo' ? range[1] : range[0]))
-    // console.log('updateassignment', contact.id, newScore, await r.redis.zrangeAsync(key, 0, -1, 'WITHSCORES'))
+    console.log('updateassignment', contact.id, newScore, await r.redis.zrangeAsync(key, 0, -1, 'WITHSCORES'))
     await r.redis.multi()
       .zadd([key, newScore, contact.id])
       .expire(key, 86400)

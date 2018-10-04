@@ -158,6 +158,7 @@ export const reloadCampaignContactsForDynamicAssignment = async (campaign, organ
       const tzKeys = Object.keys(tzs)
       for (let i = 0, l = tzKeys.length; i < l; i++) {
         const tz = tzKeys[i]
+        console.log('reloadCampaignContactsForDynamicAssignment LPUSH', tz, tzs[tz])
         const key = needsMessageQueueKey(campaign.id, tz)
         await r.redis.multi()
           .lpush(key, ...tzs[tz])
@@ -239,6 +240,7 @@ export const findNewContacts = async (assignment, campaign, organization, number
   const updatedCount = await r
     .knex('campaign_contact')
     .whereIn('id', contactIds)
+    .where('campaign_id', campaign.id) // guard qualification
     .update({ assignment_id: assignment.id })
   console.log('findNewContacts5', updatedCount)
   if (updatedCount > 0) {

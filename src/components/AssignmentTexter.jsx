@@ -39,7 +39,7 @@ class AssignmentTexter extends React.Component {
       contactCache: {},
       loading: false,
       direction: 'right',
-      reloadDelay: 400
+      reloadDelay: 200
     }
   }
 
@@ -67,7 +67,8 @@ class AssignmentTexter extends React.Component {
       const nextIndex = nextProps.contacts.findIndex((c) => c.id === curId)
       if (nextIndex !== nextState.currentContactIndex) {
         // eslint-disable-next-line no-param-reassign
-        nextState.currentContactIndex = nextIndex
+        nextState.currentContactIndex = Math.max(nextIndex, 0)
+        // nextIndex can be -1 if not found, and in that case, we should defer to the front
       }
     }
   }
@@ -131,6 +132,10 @@ class AssignmentTexter extends React.Component {
         .slice(newIndex + BATCH_FORWARD, newIndex + BATCH_FORWARD + BATCH_GET)
         .map((c) => c.id)
         .filter((cId) => !force || !this.state.contactCache[cId])
+    } else if (!getIds.length
+               && !contacts[newIndex + BATCH_FORWARD]
+               && this.props.assignment.campaign.useDynamicAssignment) {
+      this.props.getNewContacts()
     }
 
     if (getIds.length) {
@@ -144,6 +149,7 @@ class AssignmentTexter extends React.Component {
             newContactData[c.id] = c
           }
         })
+        console.log('getContactData', newContactData, getAssignmentContacts)
         this.setState({
           loading: false,
           contactCache: { ...this.state.contactCache,
@@ -153,6 +159,7 @@ class AssignmentTexter extends React.Component {
   }
 
   getContact(contacts, index) {
+    console.log('getContact', contacts, index)
     if (contacts.length > index) {
       return contacts[index]
     }
@@ -172,6 +179,7 @@ class AssignmentTexter extends React.Component {
     if (newDelay) {
       updateState.reloadDelay = newDelay
     }
+    console.log('updateCurrentContactIndex', newIndex, newDelay)
     this.setState(updateState)
     this.getContactData(newIndex)
   }
@@ -283,11 +291,13 @@ class AssignmentTexter extends React.Component {
     const contact = this.currentContact()
     const navigationToolbarChildren = this.renderNavigationToolbarChildren()
     if (!contact || !contact.id) {
+      console.log('NO CONTACT', contact, this.props)
       return <LoadingIndicator />
     }
     const contactData = this.state.contactCache[contact.id]
     if (!contactData) {
       const self = this
+      console.log('NO CONTACT DATA', contact, self.state.reloadDelay)
       setTimeout(() => {
         if (self.state.contactCache[contact.id]) {
           self.forceUpdate()
@@ -346,6 +356,7 @@ AssignmentTexter.propTypes = {
   router: PropTypes.object,
   refreshData: PropTypes.func,
   loadContacts: PropTypes.func,
+  getNewContacts: PropTypes.func,
   assignContactsIfNeeded: PropTypes.func,
   organizationId: PropTypes.string
 }
