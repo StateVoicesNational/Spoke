@@ -932,6 +932,7 @@ const rootMutations = {
         queued_at: new Date()
       })
       console.log('sendMessage3', messageInstance.messageservice_sid)
+      // This should hackily update messageInstance.id
       contact = await cacheableData.message.save({ messageInstance, contact })
       console.log('contact saved', contact.message_status)
 

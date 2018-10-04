@@ -161,15 +161,23 @@ async function sendMessage(message) {
           reject(err || (response ? new Error(JSON.stringify(response)) : new Error('Encountered unknown error')))
         })
       } else {
-        Message.save({
-          ...messageToSave,
-          send_status: 'SENT',
-          service: 'twilio',
-          sent_at: new Date()
-        }, { conflict: 'update' })
-        .then((saveError, newMessage) => {
-          resolve(newMessage)
-        })
+        messageToSave.send_status = 'SENT'
+        messageToSave.sent_at = new Date()
+        messageToSave.service = 'twilio'
+        if (messageToSave.id) {
+          r.knex('message')
+            .where('id', messageToSave.id)
+            .update({
+              send_status: 'SENT',
+              service: 'twilio',
+              sent_at: new Date()
+            })
+            .then((saveError, updateResult) => {
+              resolve(messageToSave)
+            })
+        } else {
+          reject('no message ID, so unable to update. message WAS SENT though', messageToSave)
+        }
       }
     })
   })
