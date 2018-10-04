@@ -200,6 +200,7 @@ const rootSchema = `
     deleteQuestionResponses(interactionStepIds:[String], campaignContactId:String!): CampaignContact,
     updateQuestionResponses(questionResponses:[QuestionResponseInput], campaignContactId:String!): CampaignContact,
     startCampaign(id:String!): Campaign,
+    refreshCampaignCache(id:String!): Campaign,
     archiveCampaign(id:String!): Campaign,
     unarchiveCampaign(id:String!): Campaign,
     sendReply(id: String!, message: String!): CampaignContact

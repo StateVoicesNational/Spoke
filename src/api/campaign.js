@@ -44,6 +44,7 @@ export const schema = `
     primaryColor: String
     logoImageUrl: String
     editors: String
+    cacheable: Boolean
     overrideOrganizationTextingHours: Boolean
     textingHoursEnforced: Boolean
     textingHoursStart: Int

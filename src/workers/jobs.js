@@ -618,6 +618,20 @@ export async function assignTexters(job) {
   }
 }
 
+export function loadCampaignCache(campaign, organization, { remainingMilliseconds }) {
+  // Asynchronously start running a refresh of all the campaign data into
+  // our cache.  This should refresh/clear any corruption
+  console.log('loadCampaignCache async tasks...', campaign.id)
+  cacheableData.assignment.loadCampaignAssignments(campaign)
+    .then(() => {console.log('FINISHED loadcampaignassignments', campaign.id)})
+  cacheableData.campaignContact.loadMany(
+    campaign, organization, { remainingMilliseconds })
+    .then(() => {console.log('FINISHED contact loadMany', campaign.id)})
+  cacheableData.assignment.reloadCampaignContactsForDynamicAssignment(
+    campaign, organization, { remainingMilliseconds })
+    .then(() => {console.log('FINISHED reloadCampaignContactsForDynamicAssignment', campaign.id)})
+}
+
 export async function exportCampaign(job) {
   const payload = JSON.parse(job.payload)
   const id = job.campaign_id

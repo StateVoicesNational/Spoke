@@ -65,6 +65,7 @@ const campaignInfoFragment = `
     text
   }
   editors
+  cacheable
 `
 
 class AdminCampaignEdit extends React.Component {
@@ -402,6 +403,17 @@ class AdminCampaignEdit extends React.Component {
     return ''
   }
 
+  renderCacheButton() {
+    if (this.props.campaignData.campaign.isStarted
+        && this.props.campaignData.campaign.cacheable) {
+      return <RaisedButton
+        label='Reset Campaign Cache'
+        onTouchTap={async() => await this.props.mutations.refreshCampaignCache()}
+        />
+    }
+    return null
+  }
+
   renderCampaignFormSection(section, forceDisable) {
     let shouldDisable = forceDisable || (!this.isNew() && this.checkSectionSaved(section))
     const ContentComponent = section.content
@@ -617,6 +629,7 @@ class AdminCampaignEdit extends React.Component {
             </Card>
           )
         })}
+        {this.renderCacheButton()}
       </div>
     )
   }
@@ -720,6 +733,16 @@ const mapMutationsToProps = ({ ownProps }) => ({
         }
       }`,
     variables: { campaignId }
+  }),
+  refreshCampaignCache: () => ({
+    mutation: gql`mutation refreshCampaignCache($campaignId: String!) {
+        refreshCampaignCache(id: $campaignId) {
+          id
+        }
+      }`,
+    variables: {
+      campaignId: ownProps.params.campaignId
+    }
   }),
   editCampaign: (campaignId, campaign) => ({
     mutation: gql`
