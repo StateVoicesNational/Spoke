@@ -48,7 +48,6 @@ const dbContactTimezones = async (id) => (
 )
 
 const clearCampaignUserAssignments = async (campaign) => {
-  throw new Error('hi clear ampaignUser assignments')
   // iterate over userIds in campaignassignments-<campaignId>
   // or just clear all userassignments-<orgId><userId>
   if (r.redis) {

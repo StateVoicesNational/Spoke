@@ -99,7 +99,6 @@ const popNeedsMessage = async (assignment, campaign, organization, numberContact
       return [] // bail early. Note this should NOT be null which is interpreted differently
     }
     const finalContactIds = []
-    
     for (let j = 0, l = newContacts.length; j < l; j++) {
       const cPartial = newContacts[j]
       const cAssignmentData = await getCacheContactAssignment(cPartial.id)

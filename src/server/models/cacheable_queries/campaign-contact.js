@@ -141,7 +141,9 @@ const getMessageStatus = async (id, contactObj) => {
 const campaignContactCache = {
   clear: async (id) => {
     if (r.redis) {
-      await r.redis.delAsync(cacheKey(id), messageStatusKey(id))
+      await r.redis.delAsync(cacheKey(id),
+                             messageStatusKey(id),
+                             contactAssignmentKey(id))
     }
   },
   load: async(id, opts) => {
@@ -156,12 +158,12 @@ const campaignContactCache = {
             organizationId: cacheData.organization_id })
         }
         cacheData.message_status = await getMessageStatus(id, cacheData)
-        
+
         if (cacheData.dynamic_assignment) {
           Object.assign(cacheData,
                         await getCacheContactAssignment(id, cacheData))
         }
-        
+
         console.log('contact fromCache', cacheData.id, cacheData.message_status)
         return modelWithExtraProps(
           cacheData,
@@ -290,6 +292,10 @@ const campaignContactCache = {
     return false
   },
   getMessageStatus,
+  updateAssignmentCache: async (contactId, newAssignmentId, newUserId) => (
+    await setCacheContactAssignment(contactId, { assignment_id: newAssignmentId,
+                                                 user_id: newUserId })
+  ),
   updateStatus: async (contact, newStatus) => {
     // console.log('updateSTATUS', contact, newStatus)
     if (r.redis) {
