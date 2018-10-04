@@ -468,24 +468,22 @@ const rootMutations = {
           message: 'Invalid join request'
         })
       }
-      const assignment = await r
+      let assignment = await r
         .table('assignment')
         .getAll(user.id, { index: 'user_id' })
         .filter({ campaign_id: campaign.id })
         .limit(1)(0)
         .default(null)
       if (!assignment) {
-        await Assignment.save({
+        assignment = await Assignment.save({
           user_id: user.id,
           campaign_id: campaign.id,
           max_contacts: (typeof process.env.MAX_CONTACTS_PER_TEXTER != 'undefined'
                          ? Number(process.env.MAX_CONTACTS_PER_TEXTER)
                          : null)
         })
-      } else {
-        await cacheableData.assignment.reload(assignment.id)
-        // TODO: update user assignment, as well
       }
+      await cacheableData.assignment.reload(assignment.id)
       return campaign
     },
     updateTextingHours: async (

@@ -71,6 +71,7 @@ export const addUserAssignment = async (campaign, assignment) => {
         await r.redis.multi()
           .zadd(userKey, assignment.id, assignment.id)
           .expire(userKey, 86400)
+          .execAsync()
       }
       if (cExists) {
         await r.redis.multi()
