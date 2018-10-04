@@ -154,6 +154,7 @@ export const resolvers = {
       || cacheableData.campaign.dbCustomFields(campaign.id)
     ),
     stats: async (campaign) => campaign,
+    cacheable: () => Boolean(r.redis),
     editors: async (campaign, _, { user }) => {
       if (r.redis) {
         return cacheableData.campaign.currentEditors(campaign, user)

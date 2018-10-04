@@ -72,7 +72,8 @@ import {
   uploadContacts,
   loadContactsFromDataWarehouse,
   assignTexters,
-  exportCampaign
+  exportCampaign,
+  loadCampaignCache
 } from '../../workers/jobs'
 const uuidv4 = require('uuid').v4
 import GraphQLDate from 'graphql-date'
@@ -661,16 +662,16 @@ const rootMutations = {
       })
 
       // some asynchronous cache-priming:
-      console.log('startCampaign async tasks...', campaign.id)
-      cacheableData.assignment.loadCampaignAssignments(campaign)
-        .then(x => {console.log('finished loadcampaignassignments', x)})
-      cacheableData.campaignContact.loadMany(
-        campaign, organization, { remainingMilliseconds })
-        .then(x => {console.log('finished contact loadMany', x)})
-      cacheableData.assignment.reloadCampaignContactsForDynamicAssignment(
-        campaign, organization, { remainingMilliseconds })
-        .then(x => {console.log('finished reloadCampaignContactsForDynamicAssignment', x)})
+      loadCampaignCache(campaign, organization, { remainingMilliseconds })
       return campaign
+    },
+    refreshCampaignCache: async (_, { id }, { user, loaders, remainingMilliseconds }) => {
+      const campaign = await loaders.campaign.load(id)
+      await accessRequired(user, campaign.organization_id, 'ADMIN')
+      const organization = await loaders.organization.load(campaign.organization_id)
+      await cacheableData.campaign.reload(id)
+      loadCampaignCache(campaign, organization, { remainingMilliseconds })
+      return null
     },
     editCampaign: async (_, { id, campaign }, { user, loaders }) => {
       const origCampaign = await Campaign.get(id)
