@@ -17,6 +17,7 @@ const campaignAssignmentsKey = (campaignId) => `${process.env.CACHE_PREFIX || ''
 
 export const getUserAssignments = async (organizationId, userId, assignmentLoader) => {
   const key = userCacheKey(organizationId, userId)
+  console.log('getUserAssignments', organizationId, userId, key)
   if (r.redis) {
     const [exists, assignmentIds] = await r.redis.multi()
       .exists(key)
@@ -58,7 +59,11 @@ export const addUserAssignment = async (campaign, assignment) => {
     if (r.redis) {
       const userKey = userCacheKey(campaign.organization_id, assignment.user_id)
       const campaignKey = campaignAssignmentsKey(assignment.campaign_id)
-      const [uExists, cExists] = r.redis.existsAsync(userKey, campaignKey)
+      console.log('addUserAssignment', userKey, campaignKey, campaign, assignment)
+      const [uExists, cExists] = await r.redis.multi()
+      // two commands, because exists command just gives a count of each
+        .exists(userKey).exists(campaignKey)
+        .execAsync()
       if (uExists) {
         // first argument is the SCORE, we keep it the same as the ID for now
         await r.redis.multi()
@@ -78,6 +83,7 @@ export const addUserAssignment = async (campaign, assignment) => {
 const reloadCampaignTexters = async (campaignId) => {
   if (r.redis) {
     const key = campaignAssignmentsKey(campaignId)
+    console.log('reloadCampaignTexters', campaignId, key)
     const usersByUpdate = await r.knex('assignment')
       .select('assignment.user_id', r.knex.raw('max(message.created_at) as score'))
       .leftJoin('message', 'assignment.id', 'message.assignment_id')
@@ -97,17 +103,19 @@ const reloadCampaignTexters = async (campaignId) => {
 }
 
 export const getCampaignTexterIds = async (campaignId) => {
+  console.log('getCampaignTexterIds', campaignId)
   if (r.redis) {
     const campaignKey = campaignAssignmentsKey(campaignId)
+    console.log('getCampaignTexterIds', campaignId, campaignKey)
     const [exists, cacheRes] = await r.redis.multi()
       .exists(campaignKey)
-      .zrange(campaignKey, 0 -1)
+      .zrange(campaignKey, 0, -1)
       .execAsync()
     if (exists) {
       return cacheRes
     }
     await reloadCampaignTexters(campaignId)
-    return await r.redis.zrangeAsync(campaignKey, 0 -1)
+    return await r.redis.zrangeAsync(campaignKey, 0, -1)
   }
   return await r.knex('assignment')
     .select('user_id')
@@ -116,6 +124,7 @@ export const getCampaignTexterIds = async (campaignId) => {
 
 export const clearUserAssignments = async (organizationId, userIds, assignmentId, campaignId) => {
   if (r.redis) {
+    console.log('clearUserAssignments', organizationId, userIds, assignmentId, campaignId)
     if (assignmentId) {
       const key = userCacheKey(organizationId, userIds[0])
       await r.redis.zremAsync(key, 1, assignmentId)

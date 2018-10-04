@@ -177,7 +177,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
 })
 
 const mapMutationsToProps = ({ ownProps }) => ({
-  findNewCampaignContact: (assignmentId, numberContacts = 10) => ({
+  findNewCampaignContact: (assignmentId) => ({
     mutation: gql`
       mutation findNewCampaignContact($assignmentId: String!, $numberContacts: Int!) {
         findNewCampaignContact(assignmentId: $assignmentId, numberContacts: $numberContacts) {
@@ -187,7 +187,7 @@ const mapMutationsToProps = ({ ownProps }) => ({
     `,
     variables: {
       assignmentId,
-      numberContacts
+      numberContacts: 10
     }
   }),
   getAssignmentContacts: (contactIds, findNew) => ({

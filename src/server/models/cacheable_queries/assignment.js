@@ -3,7 +3,7 @@ import { r } from '../../models'
 import campaignCache from './campaign'
 import { loadAssignmentContacts, getContacts, getTotalContactCount, optOutContact } from './assignment-contacts'
 import { getUserAssignments, clearUserAssignments, addUserAssignment } from './assignment-user'
-import { findNewContacts } from './assignment-dynamic'
+import { findNewContacts, reloadCampaignContactsForDynamicAssignment } from './assignment-dynamic'
 
 // TODO: add user-org-assignment list for user.todos
 // TODO: move user metadata (first/last) into a separate cache key to avoid cache drift
@@ -206,7 +206,8 @@ const assignmentCache = {
   getContacts,
   getTotalContactCount,
   optOutContact,
-  loadCampaignAssignments
+  loadCampaignAssignments,
+  reloadCampaignContactsForDynamicAssignment
 }
 
 export default assignmentCache
