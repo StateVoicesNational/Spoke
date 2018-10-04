@@ -55,15 +55,17 @@ export const getUserAssignments = async (organizationId, userId, assignmentLoade
 
 export const addUserAssignment = async (campaign, assignment) => {
   // We should ONLY add an assignment to the cache after the campaign is started
+  console.log('addUserAssignment', assignment.id, campaign.id, assignment.user_id)
   if (campaign.is_started && !campaign.is_archived) {
     if (r.redis) {
       const userKey = userCacheKey(campaign.organization_id, assignment.user_id)
       const campaignKey = campaignAssignmentsKey(assignment.campaign_id)
-      console.log('addUserAssignment', userKey, campaignKey, campaign, assignment)
+      console.log('addUserAssignment', userKey, campaignKey)
       const [uExists, cExists] = await r.redis.multi()
       // two commands, because exists command just gives a count of each
         .exists(userKey).exists(campaignKey)
         .execAsync()
+      console.log('addUserAssignment3', uExists, cExists)
       if (uExists) {
         // first argument is the SCORE, we keep it the same as the ID for now
         await r.redis.multi()

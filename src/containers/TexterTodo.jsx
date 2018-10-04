@@ -58,22 +58,36 @@ class TexterTodo extends React.Component {
   assignContactsIfNeeded = async (checkServer = false) => {
     const { assignment } = this.props.data
     if (assignment.contacts.length === 0 || checkServer) {
-      if (assignment.campaign.useDynamicAssignment) {
-        const didAddContacts = (await this.props.mutations.findNewCampaignContact(assignment.id)).data.findNewCampaignContact.found
-        if (didAddContacts) {
-          this.props.data.refetch()
-          return
-        }
+      const didAddContacts = await this.getNewContacts()
+      if (didAddContacts) {
+        return
       }
+      console.log('ABOUT TO JUMP BACK', this.loadingAssignmentContacts, this.props.mutations.getAssignmentContacts.loading)
       this.props.router.push(
         `/app/${this.props.params.organizationId}/todos`
       )
     }
   }
 
-  loadContacts = async (contactIds) => (
-    await this.props.mutations.getAssignmentContacts(contactIds)
-  )
+  getNewContacts = async () => {
+    const { assignment } = this.props.data
+    if (assignment.campaign.useDynamicAssignment) {
+      console.log('getnewContacts')
+      const didAddContacts = (await this.props.mutations.findNewCampaignContact(assignment.id)).data.findNewCampaignContact.found
+      console.log('getNewContacts ?added', didAddContacts)
+      if (didAddContacts) {
+        this.props.data.refetch()
+      }
+      return didAddContacts
+    }
+  }
+
+  loadContacts = async (contactIds) => {
+    this.loadingAssignmentContacts = true
+    const newContacts = await this.props.mutations.getAssignmentContacts(contactIds)
+    this.loadingAssignmentContacts = false
+    return newContacts
+  }
 
   refreshData = () => {
     this.props.data.refetch()
@@ -91,6 +105,7 @@ class TexterTodo extends React.Component {
         assignContactsIfNeeded={this.assignContactsIfNeeded}
         refreshData={this.refreshData}
         loadContacts={this.loadContacts}
+        getNewContacts={this.getNewContacts}
         onRefreshAssignmentContacts={this.refreshAssignmentContacts}
         organizationId={this.props.params.organizationId}
       />

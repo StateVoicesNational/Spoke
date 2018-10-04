@@ -102,6 +102,7 @@ const saveCache = async (assignment, campaign, notDeep) => {
     await addUserAssignment(campaign, assignment)
     if (!notDeep) {
       await loadAssignmentContacts(id,
+                                   campaign.id,
                                    campaign.organization_id,
                                    campaign.contactTimezones)
     }
@@ -128,6 +129,7 @@ const loadDeep = async (id, notDeep) => {
 
 const loadCampaignAssignments = async (campaign) => {
   if (r.redis) {
+    console.log('loadCampaignAssignments', campaign.id)
     const assignments = await assignmentQuery()
       .where('campaign_id', campaign.id)
     for (let i = 0, l = assignments.length; i < l; i++) {

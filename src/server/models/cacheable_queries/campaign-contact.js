@@ -162,7 +162,7 @@ const campaignContactCache = {
                         await getCacheContactAssignment(id, cacheData))
         }
         
-        console.log('contact fromCache', cacheData)
+        console.log('contact fromCache', cacheData.id, cacheData.message_status)
         return modelWithExtraProps(
           cacheData,
           CampaignContact,
@@ -179,6 +179,7 @@ const campaignContactCache = {
     if (!r.redis || !organization || !(campaign || queryFunc)) {
       return
     }
+    console.log('campaign-contact loadMany', campaign.id)
     // 1. load the data
     let query = r.knex('campaign_contact')
       .leftJoin('zip_code', 'zip_code.zip', 'campaign_contact.zip')

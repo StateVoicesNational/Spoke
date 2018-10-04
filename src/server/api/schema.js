@@ -483,6 +483,7 @@ const rootMutations = {
         })
       } else {
         await cacheableData.assignment.reload(assignment.id)
+        // TODO: update user assignment, as well
       }
       return campaign
     },
@@ -660,11 +661,15 @@ const rootMutations = {
       })
 
       // some asynchronous cache-priming:
+      console.log('startCampaign async tasks...', campaign.id)
       cacheableData.assignment.loadCampaignAssignments(campaign)
+        .then(x => {console.log('finished loadcampaignassignments', x)})
       cacheableData.campaignContact.loadMany(
         campaign, organization, { remainingMilliseconds })
+        .then(x => {console.log('finished contact loadMany', x)})
       cacheableData.assignment.reloadCampaignContactsForDynamicAssignment(
         campaign, organization, { remainingMilliseconds })
+        .then(x => {console.log('finished reloadCampaignContactsForDynamicAssignment', x)})
       return campaign
     },
     editCampaign: async (_, { id, campaign }, { user, loaders }) => {
@@ -882,9 +887,10 @@ const rootMutations = {
       await assignmentRequired(user, contact.assignment_id)
       const campaign = await loaders.campaign.load(contact.campaign_id)
 
-      console.log('sendMessage', contact.id, message.assignmentId, contact.assignment_id, message.text, contact.campaign_id, campaign)
+      console.log('sendMessage', contact.id, message.assignmentId, contact.assignment_id, message.text, contact.campaign_id)
       if (Number(contact.assignment_id) !== Number(message.assignmentId) || campaign.is_archived) {
         console.error('sendMessage WRONG ASSIGNMENT', contact.assignment_id, message.assignmentId, campaign.is_archived)
+        // TODO: should we clear a cache here in case something is remaining?
         throw new GraphQLError({
           status: 400,
           message: 'Your assignment has changed'
