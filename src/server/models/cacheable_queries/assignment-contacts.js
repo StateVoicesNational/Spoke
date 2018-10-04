@@ -3,7 +3,7 @@ import { r } from '../index'
 
 // This is a library for ./assignment.js consolidating all functions related to caching/querying assignment-contacts
 
-const assignmentContactsKey = (id, tz) => `${process.env.CACHE_PREFIX || ''}assignmentcontacts-${id}-${tz}`
+const assignmentContactsKey = (assignmentId, tz) => `${process.env.CACHE_PREFIX || ''}assignmentcontacts-${assignmentId}-${tz}`
 
 // TODO: dynamic assignment (updating assignment-contacts with dynamically assigned contacts)
 
@@ -66,7 +66,7 @@ export const getContactQueryArgs = (assignmentId, contactsFilter, organization, 
   const pastDue = (campaign.due_by
                    && Number(campaign.due_by) + 24 * 60 * 60 * 1000 < Number(new Date()))
 
-  if (!includePastDue && pastDue && contactsFilter.messageStatus === 'needsMessage') {
+  if (!includePastDue && pastDue && contactsFilter && contactsFilter.messageStatus === 'needsMessage') {
     return { result: (justCount ? 0 : []) }
   }
 
@@ -310,6 +310,13 @@ export const loadAssignmentContacts = async (assignmentId, campaignId, organizat
         .expire(key, 86400 * 2)
         .execAsync()
     }
+  }
+}
+
+export const clearAssignmentContacts = async (assignmentId, timezoneOffsets) => {
+  if (r.redis && assignmentId && timezoneOffsets && timezoneOffsets.length) {
+    const keys = timezoneOffsets.map(tz => assignmentContactsKey(assignmentId, tz))
+    await r.redis.delAsync(...keys)
   }
 }
 

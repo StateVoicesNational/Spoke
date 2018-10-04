@@ -446,7 +446,7 @@ const rootMutations = {
             organization_id: organization.id,
             role: 'TEXTER'
           })
-          cacheableData.user.clearUser(user.id)
+          await cacheableData.user.clearUser(user.id)
         }
       }
       return organization
@@ -497,7 +497,7 @@ const rootMutations = {
         texting_hours_start: textingHoursStart,
         texting_hours_end: textingHoursEnd
       })
-      cacheableData.organization.clear(organizationId)
+      await cacheableData.organization.clear(organizationId)
 
       return await Organization.get(organizationId)
     },
@@ -633,7 +633,7 @@ const rootMutations = {
       await accessRequired(user, campaign.organization_id, 'ADMIN')
       campaign.is_archived = false
       await campaign.save()
-      cacheableData.campaign.reload(id)
+      await cacheableData.campaign.reload(id)
       return campaign
     },
     archiveCampaign: async (_, { id }, { user, loaders }) => {
@@ -641,7 +641,7 @@ const rootMutations = {
       await accessRequired(user, campaign.organization_id, 'ADMIN')
       campaign.is_archived = true
       await campaign.save()
-      cacheableData.campaign.clear(id)
+      await cacheableData.campaign.clear(id, campaign)
       return campaign
     },
     startCampaign: async (_, { id }, { user, loaders, remainingMilliseconds }) => {
@@ -723,7 +723,7 @@ const rootMutations = {
         .andWhere({ user_id: cannedResponse.userId })
         .del()
       await query
-      cacheableData.cannedResponse.clearQuery({
+      await cacheableData.cannedResponse.clearQuery({
         campaignId: cannedResponse.campaignId,
         userId: cannedResponse.userId
       })
@@ -956,7 +956,7 @@ const rootMutations = {
         .delete()
 
       // update cache
-      cacheableData.questionResponse.reloadQuery(campaignContactId)
+      await cacheableData.questionResponse.reloadQuery(campaignContactId)
 
       return contact
     },
@@ -1008,7 +1008,7 @@ const rootMutations = {
       }
 
       // update cache
-      cacheableData.questionResponse.clearQuery(campaignContactId)
+      await cacheableData.questionResponse.clearQuery(campaignContactId)
 
       const contact = loaders.campaignContact.load(campaignContactId)
       return contact
@@ -1016,17 +1016,13 @@ const rootMutations = {
     reassignCampaignContacts: async (
       _,
       { organizationId, campaignIdsContactIds, newTexterUserId },
-      { user }
+      { user, loaders }
     ) => {
       // verify permissions
       await accessRequired(user, organizationId, 'ADMIN', /* superadmin*/ true)
 
       // group contactIds by campaign
       // group messages by campaign
-      // TODO: remove previous assignment or contact ids from it
-      // TODO: 1. based on contactIds, get campaign_id, assignment_id and timezone_offset
-      // TODO: 2. remove contactId from assignmentcontacts-
-      // TODO: 3. remove from dynamic assignment objects inflight queue
       const campaignIdContactIdsMap = new Map()
       const campaignIdMessagesIdsMap = new Map()
       for (const campaignIdContactId of campaignIdsContactIds) {
@@ -1073,6 +1069,7 @@ const rootMutations = {
         for (const [campaignId, campaignContactIds] of campaignIdContactIdsMap) {
           const assignmentId = campaignIdAssignmentIdMap.get(campaignId)
 
+          // update contacts
           await r
             .knex('campaign_contact')
             .where('campaign_id', campaignId)
@@ -1080,6 +1077,42 @@ const rootMutations = {
             .update({
               assignment_id: assignmentId
             })
+
+          // update messages
+          await r
+            .knex('message')
+            .whereIn('campaign_contact_id', campaignContactIds)
+            .update('assignment_id', assignmentId)
+
+          // cache updates
+          const campaign = await loaders.campaign.load(campaignId)
+          for (let i = 0, l = campaignContactIds.length; i < l; i++) {
+            if (campaign.use_dynamic_assignment) {
+              // "Claim" the assignment even though it's cleared above
+              // in case of dynamic assignment condition
+              await cacheableData.campaignContact.updateAssignmentCache(
+                campaignContactIds[i], assignmentId, newTexterUserId)
+            } else {
+              // This will have a local contact.assignment_id to clear
+              await cacheableData.campaignContact.clear(campaignContactIds[i])
+            }
+            // If we got the timezone+status of each contact, then we could update
+            // the new Texter's assignmentcontacts directly.  Instead clear it.
+            await cacheableData.assignment.clearAssignmentContacts(
+              assignmentId, campaign.contactTimezones)
+
+            // This is not everywhere the ids are cached,
+            // but should be enough to force a 'change of course'
+            // Things not updated:
+            // Prev assignee's assignmentcontacts list
+            // - When loaded it will compare current assignment
+            // Dynamic assignment inflight queue
+            // - If the previous assignee already has it in their browser cache
+            //   they will send a message, it will get popped off the inflight queue
+            //   and then they won't see it after.
+            // - If the user abandons it, then it will get popped off the queue
+            //   with the next message from anyone
+          }
 
           returnCampaignIdAssignmentIds.push({
             campaignId,
@@ -1089,6 +1122,10 @@ const rootMutations = {
         for (const [campaignId, messageIds] of campaignIdMessagesIdsMap) {
           const assignmentId = campaignIdAssignmentIdMap.get(campaignId)
 
+          // This may be redundant to the above 'update messages'
+          //  - but this was written before message.campaign_contact_id
+          //    was a field, and so we also make sure that the messages
+          //    that are explicitly passed in should be updated
           await r
             .knex('message')
             .whereIn(

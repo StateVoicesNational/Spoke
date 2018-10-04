@@ -1,7 +1,11 @@
 import { log } from '../../../lib'
 import { r } from '../../models'
 import campaignCache from './campaign'
-import { loadAssignmentContacts, getContacts, getTotalContactCount, optOutContact } from './assignment-contacts'
+import { loadAssignmentContacts,
+         clearAssignmentContacts,
+         getContacts,
+         getTotalContactCount,
+         optOutContact } from './assignment-contacts'
 import { getUserAssignments, clearUserAssignments, addUserAssignment } from './assignment-user'
 import { findNewContacts, reloadCampaignContactsForDynamicAssignment } from './assignment-dynamic'
 
@@ -205,6 +209,7 @@ const assignmentCache = {
   hasAssignment,
   findNewContacts,
   getContacts,
+  clearAssignmentContacts,
   getTotalContactCount,
   optOutContact,
   loadCampaignAssignments,
