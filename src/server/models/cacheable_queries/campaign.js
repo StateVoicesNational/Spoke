@@ -48,12 +48,11 @@ const dbContactTimezones = async (id) => (
 )
 
 const clearCampaignUserAssignments = async (campaign) => {
+  throw new Error('hi clear ampaignUser assignments')
   // iterate over userIds in campaignassignments-<campaignId>
   // or just clear all userassignments-<orgId><userId>
   if (r.redis) {
-    // TODO: this method doesn't exist yet!
-    // TODO: make sure we don't load cache just to delete it, dur
-    const userIds = await getCampaignTexterIds(campaign)
+    const userIds = await getCampaignTexterIds(campaign.id)
     await clearUserAssignments(campaign.organization_id, userIds, null, campaign.id)
   }
 }
@@ -79,7 +78,6 @@ const loadDeep = async (id) => {
     if (campaign.is_archived) {
       // console.log('campaign is_archived')
       // do not cache archived campaigns
-      await clear(id, campaign)
       return campaign
     }
     // TODO: get userIds for all assignments in campaignassignments

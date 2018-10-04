@@ -29,7 +29,7 @@ const filterMessageStatuses = (messageStatusFilter) => (
       : messageStatusFilter.split(','))
 )
 
-export const campaignTimezoneConfig = (organization, campaign) => {
+export const getTimezoneOffsets = (organization, campaign, validTimezone) => {
   const config = {
     textingHoursStart: organization.texting_hours_start,
     textingHoursEnd: organization.texting_hours_end,
@@ -43,7 +43,20 @@ export const campaignTimezoneConfig = (organization, campaign) => {
       textingHoursEnforced: campaign.texting_hours_enforced,
       timezone: campaign.timezone }
   }
-  return config
+
+  const [validOffsets, invalidOffsets] = getOffsets(config)
+  const [queryOffsets, addMissingTz] = (validTimezone
+                                        ? [validOffsets, x => x]
+                                        : [invalidOffsets, x => !x])
+  if (addMissingTz(defaultTimezoneIsBetweenTextingHours(config))) {
+    queryOffsets.push('')
+  }
+
+  let finalQueryOffsets = queryOffsets
+  if (campaign.contactTimezones) {
+    finalQueryOffsets = queryOffsets.filter(offset => campaign.contactTimezones.indexOf(offset) !== -1)
+  }
+  return finalQueryOffsets
 }
 
 export const getContactQueryArgs = (assignmentId, contactsFilter, organization, campaign, forCount, justCount, justIds) => {
@@ -52,7 +65,6 @@ export const getContactQueryArgs = (assignmentId, contactsFilter, organization, 
   // 24-hours past due - why is this 24 hours offset?
   const pastDue = (campaign.due_by
                    && Number(campaign.due_by) + 24 * 60 * 60 * 1000 < Number(new Date()))
-  const config = campaignTimezoneConfig(organization, campaign)
 
   if (!includePastDue && pastDue && contactsFilter.messageStatus === 'needsMessage') {
     return { result: (justCount ? 0 : []) }
@@ -63,24 +75,11 @@ export const getContactQueryArgs = (assignmentId, contactsFilter, organization, 
   if (contactsFilter) {
     const validTimezone = contactsFilter.validTimezone
     if (typeof validTimezone === 'boolean') {
-      const [validOffsets, invalidOffsets] = getOffsets(config)
+      timezoneOffsets = getTimezoneOffsets(organization, campaign, validTimezone)
 
-      const [queryOffsets, addMissingTz] = (validTimezone
-                                          ? [validOffsets, x => x]
-                                          : [invalidOffsets, x => !x])
-      if (addMissingTz(defaultTimezoneIsBetweenTextingHours(config))) {
-        queryOffsets.push('')
-      }
-
-      let finalQueryOffsets = queryOffsets
-      if (campaign.contactTimezones) {
-        finalQueryOffsets = queryOffsets.filter(offset => campaign.contactTimezones.indexOf(offset) !== -1)
-      }
-
-      if (finalQueryOffsets.length === 0) {
+      if (timezoneOffsets.length === 0) {
         return { result: (justCount ? 0 : []) }
       }
-      timezoneOffsets = finalQueryOffsets
     }
 
     messageStatuses = filterMessageStatuses(
@@ -317,6 +316,9 @@ export const updateAssignmentContact = async (contact, newStatus) => {
                       ? Number(curMax[1]) + (newStatus === 'convo' ? -1 : 1)
                       : (newStatus === 'convo' ? range[1] : range[0]))
     // console.log('updateassignment', contact.id, newScore, await r.redis.zrangeAsync(key, 0, -1, 'WITHSCORES'))
-    await r.redis.zaddAsync([key, newScore, contact.id])
+    await r.redis.multi()
+      .zadd([key, newScore, contact.id])
+      .expire(key, 86400)
+      .execAsync()
   }
 }

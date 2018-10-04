@@ -38,7 +38,8 @@ class AssignmentTexter extends React.Component {
       // currentContactIndex: 0,
       contactCache: {},
       loading: false,
-      direction: 'right'
+      direction: 'right',
+      reloadDelay: 400
     }
   }
 
@@ -164,10 +165,14 @@ class AssignmentTexter extends React.Component {
     this.updateCurrentContactIndex(newIndex)
   }
 
-  updateCurrentContactIndex(newIndex) {
-    this.setState({
+  updateCurrentContactIndex(newIndex, newDelay) {
+    const updateState = {
       currentContactIndex: newIndex
-    })
+    }
+    if (newDelay) {
+      updateState.reloadDelay = newDelay
+    }
+    this.setState(updateState)
     this.getContactData(newIndex)
   }
 
@@ -277,6 +282,9 @@ class AssignmentTexter extends React.Component {
     const { campaign, texter } = assignment
     const contact = this.currentContact()
     const navigationToolbarChildren = this.renderNavigationToolbarChildren()
+    if (!contact || !contact.id) {
+      return <LoadingIndicator />
+    }
     const contactData = this.state.contactCache[contact.id]
     if (!contactData) {
       const self = this
@@ -284,9 +292,11 @@ class AssignmentTexter extends React.Component {
         if (self.state.contactCache[contact.id]) {
           self.forceUpdate()
         } else if (!self.state.loading) {
-          self.updateCurrentContactIndex(self.state.currentContactIndex)
+          // This makes us back off if we keep not having contacts
+          self.updateCurrentContactIndex(self.state.currentContactIndex,
+                                         2 * self.state.reloadDelay)
         }
-      }, 200)
+      }, self.state.reloadDelay)
       return <LoadingIndicator />
     }
     return (

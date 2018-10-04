@@ -1,5 +1,6 @@
 import { r, Message } from '../../models'
 import campaignContactCache from './campaign-contact'
+import { popInFlight } from './assignment-dynamic'
 
 // QUEUE
 // messages-<contactId>
@@ -192,6 +193,10 @@ const messageCache = {
     await campaignContactCache.updateStatus(
       contactData, newStatus
     )
+    if (contactData.campaign_id) {
+      // after we send a message, we should remove it from the inflight-list
+      await popInFlight(contactData.campaign_id, contactData.id)
+    }
     // console.log('hi saveMsg4', newStatus)
     return { ...contactData, message_status: newStatus }
   }

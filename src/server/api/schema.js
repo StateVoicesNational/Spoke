@@ -641,7 +641,7 @@ const rootMutations = {
       await accessRequired(user, campaign.organization_id, 'ADMIN')
       campaign.is_archived = true
       await campaign.save()
-      cacheableData.campaign.reload(id)
+      cacheableData.campaign.clear(id)
       return campaign
     },
     startCampaign: async (_, { id }, { user, loaders, remainingMilliseconds }) => {
@@ -662,6 +662,8 @@ const rootMutations = {
       // some asynchronous cache-priming:
       cacheableData.assignment.loadCampaignAssignments(campaign)
       cacheableData.campaignContact.loadMany(
+        campaign, organization, { remainingMilliseconds })
+      cacheableData.assignment.reloadCampaignContactsForDynamicAssignment(
         campaign, organization, { remainingMilliseconds })
       return campaign
     },
@@ -774,9 +776,10 @@ const rootMutations = {
           await cacheableData.campaignContact.clear(contactId)
           contact = await cacheableData.campaignContact.load(contactId)
         }
-        if (contact && contact.assignment_id === Number(assignmentId)) {
+        if (contact && Number(contact.assignment_id) === Number(assignmentId)) {
           return contact
         }
+        console.log('getAssignmentContacts did not match assignment', assignmentId, contact)
         return null
       })
       if (findNew) {
@@ -795,10 +798,12 @@ const rootMutations = {
           message: 'Invalid assignment'
         })
       }
+      console.log('findNewCampaignContact', assignmentId, numberContacts)
       const campaign = await loaders.campaign.load(assignment.campaign_id)
-
+      const organization = await loaders.organization.load(campaign.organization_id)
+      console.log('findNewCampaignContact2', campaign.title, organization.name, assignment.user_id)
       return { found: Boolean(
-        await cacheableData.assignment.findNewContacts(assignment, campaign, numberContacts))}
+        await cacheableData.assignment.findNewContacts(assignment, campaign, organization, numberContacts))}
     },
 
     createOptOut: async (_, { optOut, campaignContactId }, { loaders, user }) => {
@@ -877,27 +882,28 @@ const rootMutations = {
       await assignmentRequired(user, contact.assignment_id)
       const campaign = await loaders.campaign.load(contact.campaign_id)
 
-      // TODO: if dynamic_assignment then make sure it's not inflight with a different user_id
-      if (contact.assignment_id !== parseInt(message.assignmentId) || campaign.is_archived) {
+      console.log('sendMessage', contact.id, message.assignmentId, contact.assignment_id, message.text, contact.campaign_id, campaign)
+      if (Number(contact.assignment_id) !== Number(message.assignmentId) || campaign.is_archived) {
+        console.error('sendMessage WRONG ASSIGNMENT', contact.assignment_id, message.assignmentId, campaign.is_archived)
         throw new GraphQLError({
           status: 400,
           message: 'Your assignment has changed'
         })
       }
-
+      console.log('sendMessage1.3', campaign.organization_id)
       const organization = await loaders.organization.load(campaign.organization_id)
       const isOptedOut = await cacheableData.optOut.query({
         cell: contact.cell,
         organizationId: organization.id
       })
-
+      console.log('sendMessage1.4')
       if (isOptedOut) {
         throw new GraphQLError({
           status: 400,
           message: 'Skipped sending because this contact was already opted out'
         })
       }
-
+      console.log('sendMessage1.5')
       const { contactNumber, text } = message
       if (text.length > (process.env.MAX_MESSAGE_LENGTH || 99999)) {
         throw new GraphQLError({
@@ -905,7 +911,7 @@ const rootMutations = {
           message: 'Message was longer than the limit'
         })
       }
-
+      console.log('sendMessage2', isOptedOut, organization.id)
       const replaceCurlyApostrophes = rawText => rawText.replace(/[\u2018\u2019]/g, "'")
       const messageInstance = new Message({
         text: replaceCurlyApostrophes(text),
@@ -920,12 +926,13 @@ const rootMutations = {
         is_from_contact: false,
         queued_at: new Date()
       })
-
+      console.log('sendMessage3', messageInstance.messageservice_sid)
       contact = await cacheableData.message.save({ messageInstance, contact })
-      console.log('contact saved', contact)
+      console.log('contact saved', contact.message_status)
 
       const service = serviceMap[messageInstance.service || process.env.DEFAULT_SERVICE]
       service.sendMessage(messageInstance, contact)
+      console.log('sendMessage return', contact.id)
       return contact
     },
     deleteQuestionResponses: async (
