@@ -174,13 +174,15 @@ const messageCache = {
       // TODO: remove from inflight queue (if there)
     }
 
-    await Message.save(messageInstance,
-                       (messageInstance.id
-                        ? { conflict: 'update' }
-                        : undefined
-                       ))
+    const savedMessage = await Message.save(messageInstance,
+                                            (messageInstance.id
+                                             ? { conflict: 'update' }
+                                             : undefined
+                                            ))
     // eslint-disable-next-line no-param-reassign
     messageInstance.created_at = new Date()
+    // eslint-disable-next-line no-param-reassign
+    messageInstance.id = messageInstance.id || savedMessage.id
     // console.log('hi saveMsg1', contactData, contact)
     await saveMessageCache(contactData.id, [messageInstance])
     // console.log('hi saveMsg2')

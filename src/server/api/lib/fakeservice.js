@@ -7,16 +7,20 @@ import { log } from '../../../lib'
 // queries for the reception (rather than a real service)
 
 async function sendMessage(message, contact) {
-  let newMessage;
-  try {
-    newMessage = await Message.save({
-        ...message,
-      send_status: 'SENT',
-      service: 'fakeservice',
-      sent_at: new Date()
-    }, { conflict: 'update' })
-  } catch(err) {
-    console.error('FAILED MESSAGE SAVE', err, message)
+  const newMessage = new Message({
+    ...message,
+    send_status: 'SENT',
+    sent_at: new Date()
+  })
+
+  if (message && message.id) {
+    // updating message!
+    await r.knex('message')
+      .where('id', message.id)
+      .update({
+        send_status: 'SENT',
+        sent_at: new Date()
+      })
   }
 
   if (contact && /autorespond/.test(message.text)) {
@@ -24,6 +28,7 @@ async function sendMessage(message, contact) {
     await saveNewIncomingMessage({
       ...message,
       // just flip/renew the vars for the contact
+      id: undefined,
       service_id: `mockedresponse${Math.random()}`,
       is_from_contact: true,
       text: `responding to ${message.text}`,
