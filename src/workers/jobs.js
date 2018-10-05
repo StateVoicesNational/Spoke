@@ -174,9 +174,8 @@ export async function uploadContacts(job) {
     .whereIn('cell', getOptOutSubQuery(campaign.organization_id))
     .where('campaign_id', campaignId)
     .delete()
-    .then(function (result) {
+    .then(result => {
       console.log('deleted result: ' + result);
-      success(200);
     })
 
   if (deleteOptOutCells) {
@@ -287,9 +286,9 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
         .whereIn('cell', getOptOutSubQuery(jobEvent.organizationId))
         .where('campaign_id', jobEvent.campaignId)
         .delete()
-        .then(function (result) {
-          console.log('290 - result opted out' + result);
-          validationStats = {
+        .then(result => {
+          console.log('# of contacts opted out removed : ' + result);
+          const validationStats = {
             optOutCount: result
           }
         })
@@ -298,8 +297,8 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
         .whereRaw('length(cell) != 12')
         .andWhere('campaign_id', jobEvent.campaignId)
         .delete()
-        .then(function (result) {
-          console.log('299 - result invalid cell' + result);
+        .then(result => {
+          console.log('# of contacts with invalid cells removed : ' + result);
           validationStats = {
             invalidCellCount: result
           }
@@ -307,7 +306,7 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
     }
     await r.table('job_request').get(jobEvent.jobId).delete()
     await cacheableData.campaign.reload(jobEvent.campaignId)
-    return { 'completed': 1, validationStats }
+    return { 'completed': 1, ...validationStats }
   } else if (jobEvent.part < (jobEvent.totalParts - 1)) {
     const newPart = jobEvent.part + 1
     const newJob = {
