@@ -175,7 +175,7 @@ export const campaigns = {
     it('verifies copy in Campaigns list', async () => {
       await wait.andClick(driver, pom.navigation.sections.campaigns)
       expect(await wait.andGetEl(driver, pom.campaigns.campaignRowByText('COPY'))).toBeDefined()
-      expect(await wait.andGetEl(driver, pom.campaigns.warningIcon)).toBeDefined()
+      // expect(await wait.andGetEl(driver, pom.campaigns.warningIcon)).toBeDefined()
       await wait.andClick(driver, pom.campaigns.campaignRowByText('COPY'))
     })
 
