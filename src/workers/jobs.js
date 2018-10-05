@@ -254,7 +254,6 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
       assignment_id: null,
       message_status: 'needsMessage'
     }
-    const validationStats = {}
     const contactCustomFields = {}
     Object.keys(customFields).forEach((f) => {
       contactCustomFields[f] = row[f]
@@ -269,7 +268,7 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
   await CampaignContact.save(savePortion)
 
   await r.knex('job_request').where('id', jobEvent.jobId).increment('status', 1)
-
+  let validationStats = {}
   const completed = (await r.knex('job_request')
                      .where('id', jobEvent.jobId)
                      .select('status')
@@ -288,7 +287,7 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
         .delete()
         .then(result => {
           console.log('# of contacts opted out removed : ' + result);
-          const validationStats = {
+          validationStats = {
             optOutCount: result
           }
         })
@@ -306,7 +305,7 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
     }
     await r.table('job_request').get(jobEvent.jobId).delete()
     await cacheableData.campaign.reload(jobEvent.campaignId)
-    return { 'completed': 1, ...validationStats }
+    return { 'completed': 1, validationStats }
   } else if (jobEvent.part < (jobEvent.totalParts - 1)) {
     const newPart = jobEvent.part + 1
     const newJob = {
@@ -330,6 +329,7 @@ export async function loadContactsFromDataWarehouse(job) {
   console.log('STARTING loadContactsFromDataWarehouse', job.payload)
   const jobMessages = []
   const sqlQuery = job.payload
+
   if (!sqlQuery.startsWith('SELECT') || sqlQuery.indexOf(';') >= 0) {
     log.error('Malformed SQL statement.  Must begin with SELECT and not have any semicolons: ', sqlQuery)
     return
