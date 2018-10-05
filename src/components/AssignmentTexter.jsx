@@ -302,9 +302,22 @@ class AssignmentTexter extends React.Component {
         if (self.state.contactCache[contact.id]) {
           self.forceUpdate()
         } else if (!self.state.loading) {
-          // This makes us back off if we keep not having contacts
-          self.updateCurrentContactIndex(self.state.currentContactIndex,
-                                         2 * self.state.reloadDelay)
+          // something isn't loading And we should try some strategies to work around it
+          // Case 1: corrupt/problematic single entry
+          //   Maybe they don't have access to that contact, etc
+          // Strategy: see if we can just skip to the next one
+          if (self.state.reloadDelay > 500
+              && self.props.contacts[self.state.currentContactIndex + 1]
+              && self.state.contactCache[
+                self.props.contacts[self.state.currentContactIndex + 1].id]) {
+            self.updateCurrentContactIndex(self.state.currentContactIndex + 1)
+          } else {
+            // Case 2: Maybe loading it was a problem or it's time to load it
+            // So let's load again
+            // This makes us back off if we keep not having contacts
+            self.updateCurrentContactIndex(self.state.currentContactIndex,
+                                           2 * self.state.reloadDelay)
+          }
         }
       }, self.state.reloadDelay)
       return <LoadingIndicator />

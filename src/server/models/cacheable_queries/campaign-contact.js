@@ -39,7 +39,7 @@ const cacheKey = (id) => `${process.env.CACHE_PREFIX || ''}contact-${id}`
 // just stores messageStatus -- this changes more often than the rest of the contact info
 const messageStatusKey = (id) => `${process.env.CACHE_PREFIX || ''}contactstatus-${id}`
 // allows a lookup of contact_id, assignment_id, and timezone_offset by cell+messageservice_sid
-const cellTargetKey = (cell, messageServiceSid) => `${process.env.CACHE_PREFIX || ''}cell-${cell}-${messageServiceSid}`
+const cellTargetKey = (cell, messageServiceSid) => `${process.env.CACHE_PREFIX || ''}cell-${cell}-${messageServiceSid || 'x'}`
 // assignment_id and user_id of assignment
 const contactAssignmentKey = (id) => `${process.env.CACHE_PREFIX || ''}contactassignment-${id}`
 
