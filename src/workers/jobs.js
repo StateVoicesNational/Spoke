@@ -1,5 +1,6 @@
 import { r, datawarehouse, cacheableData,
-         Assignment, Campaign, CampaignContact, Organization, User } from '../server/models'
+         Assignment, Campaign, CampaignContact, Organization, User, 
+         UserOrganization } from '../server/models'
 import { log, gunzip, zipToTimeZone, convertOffsetsToStrings } from '../lib'
 import { updateJob } from './lib'
 import { getFormattedPhoneNumber } from '../lib/phone-format.js'
@@ -916,6 +917,27 @@ export async function handleIncomingMessageParts() {
       .delete()
   }
 }
+
+export async function fixOrgless() {
+  if (process.env.FIX_ORGLESS) {
+    const orgless = await r.knex
+      .select('user.id')
+      .from('user')
+      .leftJoin('user_organization', 'user.id', 'user_organization.user_id')
+      .whereNull('user_organization.id');
+    orgless.forEach(async(orglessUser) => {
+      await UserOrganization.save({
+        user_id: orglessUser.id.toString(),
+        organization_id: process.env.DEFAULT_ORG || 1,
+        role: 'TEXTER'
+      }).error(function(error) {
+        // Unexpected errors
+        console.log("error on userOrganization save in orgless", error)
+      });
+      console.log("added orgless user " + user.id + " to organization " + process.env.DEFAULT_ORG )
+    }) // forEach
+  } // if
+} // function
 
 export async function clearOldJobs(delay) {
   // to clear out old stuck jobs
