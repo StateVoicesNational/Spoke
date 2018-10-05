@@ -1,7 +1,7 @@
 import { r, Campaign } from '../../models'
 import { modelWithExtraProps } from './lib'
 import { assembleAnswerOptions } from '../../../lib/interaction-step-helpers'
-import { clearUserAssignments, getCampaignTexterIds } from './assignment-user'
+import { clearUserAssignments, getCampaignTexterIds, reloadCampaignTexters } from './assignment-user'
 
 // This should be cached data for a campaign that will not change
 // based on assignments or texter actions
@@ -79,11 +79,12 @@ const loadDeep = async (id) => {
       // do not cache archived campaigns
       return campaign
     }
-    // TODO: get userIds for all assignments in campaignassignments
     // console.log('campaign loaddeep', campaign)
     campaign.customFields = await dbCustomFields(id)
     campaign.interactionSteps = await dbInteractionSteps(id)
     campaign.contactTimezones = await dbContactTimezones(id)
+    // cache userIds for all assignments
+    await reloadCampaignTexters(id)
     // console.log('loaded deep campaign', JSON.stringify(campaign, null, 2))
     // We should only cache organization data
     // if/when we can clear it on organization data changes

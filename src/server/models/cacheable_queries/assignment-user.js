@@ -83,7 +83,7 @@ export const addUserAssignment = async (campaign, assignment) => {
   }
 }
 
-const reloadCampaignTexters = async (campaignId) => {
+export const reloadCampaignTexters = async (campaignId) => {
   if (r.redis) {
     const key = campaignAssignmentsKey(campaignId)
     console.log('reloadCampaignTexters', campaignId, key)

@@ -417,6 +417,8 @@ const rootMutations = {
               cell: userData.cell
             })
           await cacheableData.user.clearUser(member.id, member.auth0_id)
+          // assignments cache first/last name, so clear them to be reloaded
+          await cacheableData.assignment.clearUserAssignments(organizationId, userId)
           userData = {
             id: userId,
             first_name: userData.firstName,
@@ -889,7 +891,14 @@ const rootMutations = {
       console.log('sendMessage', contact.id, message.assignmentId, contact.assignment_id, message.text, contact.campaign_id)
       if (Number(contact.assignment_id) !== Number(message.assignmentId) || campaign.is_archived) {
         console.error('sendMessage WRONG ASSIGNMENT', contact.assignment_id, message.assignmentId, campaign.is_archived)
-        // TODO: should we clear a cache here in case something is remaining?
+        if (contact.assignment_id === null) {
+          // In case assignment_id from cache needs to be refreshed
+          await cacheableData.campaignContact.clear(contact.id)
+          // If we suspected the other direction, maybe we would remove the id
+          //    from user's assignmentcontacts queue:
+          // await cacheableData.assignment.clearAssignmentContacts(
+          //   message.assignmentId, campaign.contactTimezones, contact)
+        }
         throw new GraphQLError({
           status: 400,
           message: 'Your assignment has changed'

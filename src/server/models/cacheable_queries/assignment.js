@@ -9,7 +9,6 @@ import { loadAssignmentContacts,
 import { getUserAssignments, clearUserAssignments, addUserAssignment } from './assignment-user'
 import { findNewContacts, reloadCampaignContactsForDynamicAssignment } from './assignment-dynamic'
 
-// TODO: move user metadata (first/last) into a separate cache key to avoid cache drift
 // ## KEY
 // assignment-<assignmentId>
 //   - user_id
@@ -153,15 +152,20 @@ const load = async (assignmentId, notDeep) => {
   return assignment
 }
 
+const clear = async (id) => {
+  if (r.redis) {
+    await r.redis.delAsync(assignmentHashKey(id))
+    // We could probably clear more things. ?FUTURE
+    // but at the moment nothing calls assignment.clear
+    // Things we could clear:
+    // - With campaign.contactTimezones: clear assignment-contacts
+    // - With assignment.user_id: clear assignment-user
+    // - With campaign.id: clear assignment-dynamic
+  }
+}
+
 const assignmentCache = {
-  clear: async (id) => {
-    if (r.redis) {
-      await r.redis.delAsync(assignmentHashKey(id))
-      // TODO: clear assignmentcontacts
-      // TODO: clear user-assignment data (does not yet exist)
-      // TODO: clear dynamic assignments (does not yet exist)
-    }
-  },
+  clear,
   deleteAll: async (assignments, campaign) => {
     if (assignments && assignments.length) {
       if (r.redis) {
@@ -195,7 +199,9 @@ const assignmentCache = {
       for (let i = 0, l = assignmentIds.length; i < l; i++) {
         const assignment = await load(assignmentIds[i], /* notDeep */ true)
         if (assignment) {
-          // TODO: test for campaign.is_archived
+          // We could test for campaign.is_archived here,
+          // but then we'd need to load it.  Instead we depend on
+          // archiveCampaign (in api/schema.js) triggering clearUserAssignments
           assignments.push(assignment)
         } else {
           // assignment must have been deleted
@@ -203,6 +209,13 @@ const assignmentCache = {
         }
       }
       return assignments
+    })
+  ),
+  clearUserAssignments: async (organizationId, userId) => (
+    await getUserAssignments(organizationId, userId, async (assignmentIds) => {
+      for (let i = 0, l = assignmentIds.length; i < l; i++) {
+        await clear(assignmentIds[i])
+      }
     })
   ),
   load,
