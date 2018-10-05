@@ -1,4 +1,4 @@
-import { r, getMessageServiceSid, CampaignContact } from '../../models'
+import { r, loaders, getMessageServiceSid, CampaignContact } from '../../models'
 import optOutCache from './opt-out'
 import { modelWithExtraProps } from './lib'
 import { updateAssignmentContact } from './assignment-contacts'
@@ -145,6 +145,7 @@ const campaignContactCache = {
                              messageStatusKey(id),
                              contactAssignmentKey(id))
     }
+    loaders.campaignContact.clear(id)
   },
   load: async(id, opts) => {
     if (r.redis) {
@@ -182,6 +183,7 @@ const campaignContactCache = {
       return
     }
     console.log('campaign-contact loadMany', campaign.id)
+    loaders.campaignContact.clearAll()
     // 1. load the data
     let query = r.knex('campaign_contact')
       .leftJoin('zip_code', 'zip_code.zip', 'campaign_contact.zip')

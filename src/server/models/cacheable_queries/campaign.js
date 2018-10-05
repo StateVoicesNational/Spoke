@@ -1,4 +1,4 @@
-import { r, Campaign } from '../../models'
+import { r, loaders, Campaign } from '../../models'
 import { modelWithExtraProps } from './lib'
 import { assembleAnswerOptions } from '../../../lib/interaction-step-helpers'
 import { clearUserAssignments, getCampaignTexterIds, reloadCampaignTexters } from './assignment-user'
@@ -64,10 +64,12 @@ const clear = async (id, campaign) => {
       await clearCampaignUserAssignments(campaign)
     }
   }
+  loaders.campaign.clear(id)
 }
 
 const loadDeep = async (id) => {
   // console.log('load campaign deep', id)
+  loaders.campaign.clear(id)
   if (r.redis) {
     const campaign = await Campaign.get(id)
     if (Array.isArray(campaign) && campaign.length === 0) {

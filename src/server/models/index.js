@@ -99,7 +99,9 @@ function getMessageServiceSid(organization) {
   return orgSid
 }
 
-const createLoaders = () => ({
+const loaders = {
+  // Note: loaders with cacheObj should also run loaders.XX.clear(id)
+  //  on clear on the cache as well.
   assignment: createLoader(Assignment, {cacheObj: cacheableData.assignment}),
   campaign: createLoader(Campaign, {cacheObj: cacheableData.campaign}),
   invite: createLoader(Invite),
@@ -118,11 +120,14 @@ const createLoaders = () => ({
   questionResponse: createLoader(QuestionResponse),
   userCell: createLoader(UserCell),
   userOrganization: createLoader(UserOrganization)
-})
+}
+
+const createLoaders = () => loaders
 
 const r = thinky.r
 
 export {
+  loaders,
   createLoaders,
   r,
   cacheableData,
