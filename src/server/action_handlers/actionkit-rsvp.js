@@ -37,7 +37,8 @@ export const akidGenerate = function (ak_secret, cleartext) {
   const shaHash = crypto.createHash('sha256')
   shaHash.write(`${ak_secret}.${cleartext}`)
   const shortHash = shaHash.digest('base64').slice(0, 6)
-  return `${cleartext}.${shortHash}`
+  const rawAkid = `${cleartext}.${shortHash}`
+  return rawAkid.replace('+', '-').replace('/', '_')
 }
 
 export async function processAction(questionResponse, interactionStep, campaignContactId) {
