@@ -1,6 +1,7 @@
 import { r } from '../../models'
 import { getTotalContactCount, getTimezoneOffsets, updateAssignmentContact } from './assignment-contacts'
 import { getCacheContactAssignment, setCacheContactAssignment } from './campaign-contact'
+import { Writable } from 'stream'
 
 // LIST needsMessage-<campaignId> to use ZPOPMIN to assign into inFlight
 // FUTURE: When Redis 5.0 is more widely available (e.g. on AWS)
@@ -74,7 +75,7 @@ const popNeedsMessage = async (assignment, campaign, organization, numberContact
     timezoneOffsets.sort(() => Math.random() - 0.5)
     const popN = (key, N) => {
       // pop N results from a redis list
-      let rquery = r.redis.multi().expire(key, 86400)
+      let rquery = r.redis.multi()
       for (let i = 0; i < N; i++) {
         rquery = rquery.lpop(key)
       }
@@ -83,6 +84,7 @@ const popNeedsMessage = async (assignment, campaign, organization, numberContact
     for (let i = 0, l = timezoneOffsets.length; i < l; i++) {
       const tz = timezoneOffsets[i]
       const key = needsMessageQueueKey(campaign.id, tz)
+      await r.redis.expireAsync(key, 86400)
       const poppedContacts = (await popN(key, numberContacts - newContacts.length)
         .execAsync())
         .filter(cid => cid) // only values with results

@@ -274,7 +274,7 @@ export const loadAssignmentContacts = async (assignmentId, campaignId, organizat
       const tz = tzKeys[i]
       const tzContacts = tzs[tz].contacts
       const key = assignmentContactsKey(assignmentId, tz)
-      console.log('loadAssignmentContacts', key, tzContacts)
+      console.log('loadAssignmentContacts', tz, key, tzContacts)
       if (tzContacts.length === 0) {
         // for the sorted set to exist, we need something in there
         tzContacts.push(-1, 'fakekey')

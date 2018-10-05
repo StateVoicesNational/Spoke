@@ -643,6 +643,8 @@ const rootMutations = {
       await accessRequired(user, campaign.organization_id, 'ADMIN')
       campaign.is_archived = true
       await campaign.save()
+      // including the second campaign arg here makes it clear more 'deeply'
+      // including user assignments
       await cacheableData.campaign.clear(id, campaign)
       return campaign
     },

@@ -21,7 +21,7 @@ export const getUserAssignments = async (organizationId, userId, assignmentLoade
   if (r.redis) {
     const [exists, assignmentIds] = await r.redis.multi()
       .exists(key)
-      .zrange(key, 0, -1)
+      .zrangebyscore(key, 0, Infinity)
       .execAsync()
     if (exists) {
       if (assignmentLoader) {
@@ -44,6 +44,9 @@ export const getUserAssignments = async (organizationId, userId, assignmentLoade
       // but maybe we should make that e.g. a refresh time or something
       args.push(a.id, a.id)
     })
+    if (args.length === 0) {
+      args.push(-1, 'fakeval') // create empty if so
+    }
     await r.redis.multi()
       .del(key)
       .zadd(key, args)
@@ -97,6 +100,9 @@ export const reloadCampaignTexters = async (campaignId) => {
     usersByUpdate.forEach(res => {
       redisArgs.push(Number(res.score), res.user_id)
     })
+    if (redisArgs.length === 0) {
+      redisArgs.push(-1, 'fakeval') // create empty if so
+    }
     await r.redis.multi()
       .del(key)
       .zadd(key, ...redisArgs)
@@ -112,13 +118,13 @@ export const getCampaignTexterIds = async (campaignId) => {
     console.log('getCampaignTexterIds', campaignId, campaignKey)
     const [exists, cacheRes] = await r.redis.multi()
       .exists(campaignKey)
-      .zrange(campaignKey, 0, -1)
+      .zrangebyscore(campaignKey, 0, Infinity)
       .execAsync()
     if (exists) {
       return cacheRes
     }
     await reloadCampaignTexters(campaignId)
-    return await r.redis.zrangeAsync(campaignKey, 0, -1)
+    return await r.redis.zrangebyscoreAsync(campaignKey, 0, Infinity)
   }
   return await r.knex('assignment')
     .select('user_id')
