@@ -5,8 +5,6 @@ import { r } from '../index'
 
 const assignmentContactsKey = (assignmentId, tz) => `${process.env.CACHE_PREFIX || ''}assignmentcontacts-${assignmentId}-${tz}`
 
-// TODO: dynamic assignment (updating assignment-contacts with dynamically assigned contacts)
-
 const msgStatusRange = {
   // Inclusive min/max ranges
   // Special ranges:
@@ -211,28 +209,6 @@ export const dbGetContactsQuery = (assignment, contactsFilter, organization, cam
           : dbContactsQuery(contactQueryArgs))
 }
 
-export const getContacts = async (assignment, contactsFilter, organization, campaign, forCount, justCount, justIds) => {
-  const contactQueryArgs = getContactQueryArgs(assignment.id, contactsFilter, organization, campaign, forCount, justCount, justIds)
-  if (typeof contactQueryArgs.result !== 'undefined') {
-    return contactQueryArgs.result
-  }
-  const cachedResult = await cachedContactsQuery(contactQueryArgs)
-  // console.log('getContacts cached', justCount, justIds, assignment.id, contactsFilter, cachedResult)
-  if (justIds && cachedResult === null && campaign.contactTimezones) {
-    // Trigger a cache load if we're loading ids, which is only done for the texter
-    // async (no await) on purpose to avoid blocking the original request
-    loadAssignmentContacts(assignment.id, campaign.id, organization.id, campaign.contactTimezones)
-      .then(() => 1)
-  }
-  return (cachedResult !== null
-          ? cachedResult
-          : dbContactsQuery(contactQueryArgs))
-}
-
-export const getTotalContactCount = async (assignment, campaign) => (
-  getContacts(assignment, null, { texting_hours_enforced: false }, campaign, false, true, false)
-)
-
 const sharingOptOuts = !!process.env.OPTOUTS_SHARE_ALL_ORGS
 
 export const loadAssignmentContacts = async (assignmentId, campaignId, organizationId, timezoneOffsets) => {
@@ -305,7 +281,7 @@ export const loadAssignmentContacts = async (assignmentId, campaignId, organizat
       }
       await r.redis.multi()
         .del(key)
-      // TODO: is there a max to how many we can add at once?
+         // this can be big, but redis supports 512M keys, so..
         .zadd(key, ...tzContacts)
         .expire(key, 86400 * 2)
         .execAsync()
@@ -313,10 +289,37 @@ export const loadAssignmentContacts = async (assignmentId, campaignId, organizat
   }
 }
 
-export const clearAssignmentContacts = async (assignmentId, timezoneOffsets) => {
+export const getContacts = async (assignment, contactsFilter, organization, campaign, forCount, justCount, justIds) => {
+  const contactQueryArgs = getContactQueryArgs(assignment.id, contactsFilter, organization, campaign, forCount, justCount, justIds)
+  if (typeof contactQueryArgs.result !== 'undefined') {
+    return contactQueryArgs.result
+  }
+  const cachedResult = await cachedContactsQuery(contactQueryArgs)
+  // console.log('getContacts cached', justCount, justIds, assignment.id, contactsFilter, cachedResult)
+  if (justIds && cachedResult === null && campaign.contactTimezones) {
+    // Trigger a cache load if we're loading ids, which is only done for the texter
+    // async (no await) on purpose to avoid blocking the original request
+    loadAssignmentContacts(assignment.id, campaign.id, organization.id, campaign.contactTimezones)
+      .then(() => 1)
+  }
+  return (cachedResult !== null
+          ? cachedResult
+          : dbContactsQuery(contactQueryArgs))
+}
+
+export const getTotalContactCount = async (assignment, campaign) => (
+  getContacts(assignment, null, { texting_hours_enforced: false }, campaign, false, true, false)
+)
+
+export const clearAssignmentContacts = async (assignmentId, timezoneOffsets, contact) => {
   if (r.redis && assignmentId && timezoneOffsets && timezoneOffsets.length) {
-    const keys = timezoneOffsets.map(tz => assignmentContactsKey(assignmentId, tz))
-    await r.redis.delAsync(...keys)
+    if (contact) {
+      await r.redis.zremAsync(assignmentContactsKey(assignmentId, contact.timezone_offset),
+                              contact.id)
+    } else {
+      const keys = timezoneOffsets.map(tz => assignmentContactsKey(assignmentId, tz))
+      await r.redis.delAsync(...keys)
+    }
   }
 }
 
