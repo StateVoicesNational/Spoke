@@ -1,5 +1,5 @@
 import { log } from '../../../lib'
-import { r } from '../../models'
+import { r, loaders } from '../../models'
 import campaignCache from './campaign'
 import { loadAssignmentContacts,
          clearAssignmentContacts,
@@ -126,6 +126,7 @@ const loadDeep = async (id, notDeep) => {
     await saveCache(assignment, campaign, notDeep)
     assignment.campaign = campaign
   }
+  loaders.assignment.clear(id)
   return { assignment }
 }
 
@@ -162,6 +163,7 @@ const clear = async (id) => {
     // - With assignment.user_id: clear assignment-user
     // - With campaign.id: clear assignment-dynamic
   }
+  loaders.assignment.clear(id)
 }
 
 const assignmentCache = {
@@ -188,6 +190,7 @@ const assignmentCache = {
         log.error('FAILED assignment delete', err)
       }
     }
+    loaders.assignment.clearAll()
   },
   reload: loadDeep,
   getUserTodos: async (organizationId, userId) => (
