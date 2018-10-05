@@ -13,7 +13,7 @@ export function buildCampaignQuery(queryParam, organizationId, campaignsFilter, 
   if (campaignsFilter) {
     const resultSize = (campaignsFilter.listSize ? campaignsFilter.listSize : 0)
     const pageSize = (campaignsFilter.pageSize ? campaignsFilter.pageSize : 0)
-    
+
     if ('isArchived' in campaignsFilter) {
       query = query.where({ is_archived: campaignsFilter.isArchived })
     }
@@ -146,6 +146,17 @@ export const resolvers = {
       const contacts = await r.knex('campaign_contact')
         .select('id')
         .where({ campaign_id: campaign.id, assignment_id: null })
+        .limit(1)
+      return contacts.length > 0
+    },
+    hasUnsentInitialMessages: async (campaign) => {
+      const contacts = await r.knex('campaign_contact')
+        .select('id')
+        .where({
+          campaign_id: campaign.id,
+          message_status: 'needsMessage',
+          is_opted_out: false
+         })
         .limit(1)
       return contacts.length > 0
     },
