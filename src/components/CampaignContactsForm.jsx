@@ -75,8 +75,7 @@ export default class CampaignContactsForm extends React.Component {
     }
     if (!errors.length) {
       this.setState({
-        contactSqlError: null,
-        uploading: true
+        contactSqlError: null
       })
       this.props.onChange({
         contactSql: sql
