@@ -8,6 +8,11 @@ import gql from 'graphql-tag'
 import { withRouter } from 'react-router'
 
 class TexterTodoList extends React.Component {
+  constructor() {
+    super()
+    this.state = { polling: null }
+  }
+
   renderTodoList(assignments) {
     const organizationId = this.props.params.organizationId
     return assignments
@@ -37,8 +42,21 @@ class TexterTodoList extends React.Component {
       }).filter((ele) => ele !== null)
   }
   componentDidMount() {
-    if (this.props.data.currentUser.cacheable) {
-      this.props.data.startPolling(5000)
+    this.props.data.refetch()
+    // stopPolling is broken (at least in currently used version), so we roll our own so we can unmount correctly
+    if (this.props.data.currentUser.cacheable && !this.state.polling) {
+      const self = this
+      this.setState({
+        polling: setInterval(() => {
+          self.props.data.refetch()
+        }, 5000) })
+    }
+  }
+
+  componentWillUnmount() {
+    if (this.state.polling) {
+      clearInterval(this.state.polling)
+      this.setState({ polling: null })
     }
   }
 

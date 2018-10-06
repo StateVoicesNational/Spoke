@@ -7,7 +7,8 @@ const organizationCache = {
     if (r.redis) {
       await r.redis.delAsync(cacheKey(id))
     }
-    loaders.organization.clear(id)
+    loaders.organization.clear(String(id))
+    loaders.organization.clear(Number(id))
   },
   load: async (id) => {
     if (r.redis) {

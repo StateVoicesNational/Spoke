@@ -69,7 +69,6 @@ const clear = async (id, campaign) => {
 
 const loadDeep = async (id) => {
   // console.log('load campaign deep', id)
-  loaders.campaign.clear(id)
   if (r.redis) {
     const campaign = await Campaign.get(id)
     if (Array.isArray(campaign) && campaign.length === 0) {
@@ -79,6 +78,7 @@ const loadDeep = async (id) => {
     if (campaign.is_archived) {
       // console.log('campaign is_archived')
       // do not cache archived campaigns
+      loaders.campaign.clear(id)
       return campaign
     }
     // console.log('campaign loaddeep', campaign)
@@ -96,6 +96,9 @@ const loadDeep = async (id) => {
       .set(cacheKey(id), JSON.stringify(campaign))
       .expire(cacheKey(id), 86400)
       .execAsync()
+    console.log('clearing campaign', id, typeof id, loaders.campaign)
+    loaders.campaign.clear(String(id))
+    loaders.campaign.clear(Number(id))
   }
   return null
 }

@@ -126,7 +126,8 @@ const loadDeep = async (id, notDeep) => {
     await saveCache(assignment, campaign, notDeep)
     assignment.campaign = campaign
   }
-  loaders.assignment.clear(id)
+  loaders.assignment.clear(String(id))
+  loaders.assignment.clear(Number(id))
   return { assignment }
 }
 
@@ -193,8 +194,9 @@ const assignmentCache = {
     loaders.assignment.clearAll()
   },
   reload: loadDeep,
-  getUserTodos: async (organizationId, userId) => (
-    await getUserAssignments(organizationId, userId, async (assignmentIds) => {
+  getUserTodos: async (organizationId, userId) => {
+    // console.log('getUserTodos', organizationId, userId)
+    return await getUserAssignments(organizationId, userId, async (assignmentIds) => {
       if (assignmentIds.length === 0) {
         return []
       }
@@ -213,7 +215,7 @@ const assignmentCache = {
       }
       return assignments
     })
-  ),
+  },
   clearUserAssignments: async (organizationId, userId) => (
     await getUserAssignments(organizationId, userId, async (assignmentIds) => {
       for (let i = 0, l = assignmentIds.length; i < l; i++) {

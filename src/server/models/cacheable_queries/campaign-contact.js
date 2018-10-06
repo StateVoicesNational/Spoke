@@ -145,7 +145,8 @@ const campaignContactCache = {
                              messageStatusKey(id),
                              contactAssignmentKey(id))
     }
-    loaders.campaignContact.clear(id)
+    loaders.campaignContact.clear(String(id))
+    loaders.campaignContact.clear(Number(id))
   },
   load: async(id, opts) => {
     if (r.redis) {

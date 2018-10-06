@@ -137,7 +137,7 @@ class AssignmentTexter extends React.Component {
                && this.props.assignment.campaign.useDynamicAssignment) {
       this.props.getNewContacts()
     }
-
+    console.log('getContactData length', newIndex, getIds.length)
     if (getIds.length) {
       this.setState({ loading: true })
       const contactData = await this.props.loadContacts(getIds)
@@ -159,7 +159,6 @@ class AssignmentTexter extends React.Component {
   }
 
   getContact(contacts, index) {
-    console.log('getContact', contacts, index)
     if (contacts.length > index) {
       return contacts[index]
     }
@@ -177,9 +176,8 @@ class AssignmentTexter extends React.Component {
       currentContactIndex: newIndex
     }
     if (newDelay) {
-      updateState.reloadDelay = newDelay
+      updateState.reloadDelay = Math.min(newDelay, 20000)
     }
-    console.log('updateCurrentContactIndex', newIndex, newDelay)
     this.setState(updateState)
     this.getContactData(newIndex)
   }
@@ -297,7 +295,8 @@ class AssignmentTexter extends React.Component {
     const contactData = this.state.contactCache[contact.id]
     if (!contactData) {
       const self = this
-      console.log('NO CONTACT DATA', contact, self.state.reloadDelay)
+      console.log('NO CONTACT DATA', self.state.currentContactIndex,
+                  contact, self.state.reloadDelay, this.state.contactCache)
       setTimeout(() => {
         if (self.state.contactCache[contact.id]) {
           self.forceUpdate()
@@ -306,10 +305,17 @@ class AssignmentTexter extends React.Component {
           // Case 1: corrupt/problematic single entry
           //   Maybe they don't have access to that contact, etc
           // Strategy: see if we can just skip to the next one
+          console.log('try something',
+                      self.state.currentContactIndex,
+                      self.state.reloadDelay,
+                      self.props.contacts[self.state.currentContactIndex + 1],
+                      (self.props.contacts[self.state.currentContactIndex + 1]||{}).id,
+                      self.props.contacts,
+                      self.state.contactCache[
+                        (self.props.contacts[self.state.currentContactIndex + 1]||{}).id])
           if (self.state.reloadDelay > 500
-              && self.props.contacts[self.state.currentContactIndex + 1]
-              && self.state.contactCache[
-                self.props.contacts[self.state.currentContactIndex + 1].id]) {
+              && self.props.contacts.length > (self.state.currentContactIndex + 1)) {
+            console.log('TRY NEXT ID', self.state.currentContactIndex + 1)
             self.updateCurrentContactIndex(self.state.currentContactIndex + 1)
           } else {
             // Case 2: Maybe loading it was a problem or it's time to load it
