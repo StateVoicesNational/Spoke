@@ -164,9 +164,13 @@ export const optOutContact = async (assignmentId, contactId, campaign) => {
   if (r.redis && campaign.contactTimezones) {
     for (let i = 0, l = campaign.contactTimezones.length; i < l; i++) {
       const tz = campaign.contactTimezones[i]
-      // XX only changes the score if it already exists
       console.log('optoutcontact', assignmentId, contactId)
-      await r.redis.multi().zadd(assignmentContactsKey(assignmentId, tz), 'XX', 0, contactId).execAsync
+      // XX only changes the score if it already exists
+      // Run as a single multi() command because zaddAsync
+      //   doesn't seem to accept the 'XX' argument
+      await r.redis.multi()
+        .zadd(assignmentContactsKey(assignmentId, tz), 'XX', 0, contactId)
+        .execAsync()
     }
   }
 }
@@ -326,8 +330,12 @@ export const clearAssignmentContacts = async (assignmentId, timezoneOffsets, con
 export const updateAssignmentContact = async (contact, newStatus) => {
   // Needs: contact.id, contact.timezone_offset, contact.assignment_id, ?contact.message_status
   const key = assignmentContactsKey(contact.assignment_id, contact.timezone_offset)
-  const range = msgStatusRange[newStatus]
-  const cmd = (newStatus === 'convo' ? 'zrangebyscore' : 'zrevrangebyscore')
+  const range = msgStatusRange[newStatus].reverse()  // revrange goes max-min argument order
+  let cmd = 'zrevrangebyscore'
+  if (newStatus === 'convo') {
+    cmd = 'zrangebyscore'
+    range.reverse() // range goes min-max argument order
+  }
   console.log('updateAssignmentContact', contact, newStatus, range, cmd, key)
   const [exists, curMax] = await r.redis.multi()
     .exists(key)
