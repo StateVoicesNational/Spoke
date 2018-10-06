@@ -137,11 +137,11 @@ export const clearUserAssignments = async (organizationId, userIds, assignmentId
     if (assignmentId) {
       const key = userCacheKey(organizationId, userIds[0])
       await r.redis.zremAsync(key, 1, assignmentId)
-    } else {
+    } else if (userIds && userIds.length) {
       const keys = userIds.map(u => userCacheKey(organizationId, u))
       await r.redis.delAsync(keys)
     }
-    if (campaignId) {
+    if (campaignId && userIds && userIds.length) {
       await r.redis.zremAsync(campaignAssignmentsKey(campaignId), userIds)
     }
   }

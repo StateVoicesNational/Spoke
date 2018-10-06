@@ -166,7 +166,7 @@ export const optOutContact = async (assignmentId, contactId, campaign) => {
       const tz = campaign.contactTimezones[i]
       // XX only changes the score if it already exists
       console.log('optoutcontact', assignmentId, contactId)
-      await r.redis.zaddAsync(assignmentContactsKey(assignmentId, tz), 'XX', 0, contactId)
+      await r.redis.multi().zadd(assignmentContactsKey(assignmentId, tz), 'XX', 0, contactId).execAsync
     }
   }
 }

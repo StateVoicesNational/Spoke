@@ -171,15 +171,14 @@ const messageCache = {
       })
     } // endif messageInstance.is_from_contact
 
-    const savedMessage = await Message.save(messageInstance,
-                                            (messageInstance.id
-                                             ? { conflict: 'update' }
-                                             : undefined
-                                            ))
+    // We set created_at so that the cache can return something with a valid date for the client
     // eslint-disable-next-line no-param-reassign
     messageInstance.created_at = new Date()
-    // eslint-disable-next-line no-param-reassign
-    messageInstance.id = messageInstance.id || savedMessage.id
+
+    if (contactData.campaign_id) {
+      // after we send a message, we should remove it from the inflight-list
+      await popInFlight(contactData.campaign_id, contactData.id)
+    }
     // console.log('hi saveMsg1', contactData, contact)
     await saveMessageCache(contactData.id, [messageInstance])
     // console.log('hi saveMsg2')
@@ -192,10 +191,14 @@ const messageCache = {
     await campaignContactCache.updateStatus(
       contactData, newStatus
     )
-    if (contactData.campaign_id) {
-      // after we send a message, we should remove it from the inflight-list
-      await popInFlight(contactData.campaign_id, contactData.id)
-    }
+    const savedMessage = await Message.save(messageInstance,
+                                            (messageInstance.id
+                                             ? { conflict: 'update' }
+                                             : undefined
+                                            ))
+    // We modify this info for sendMessage so it can send through the service with the id, etc.
+    // eslint-disable-next-line no-param-reassign
+    messageInstance.id = messageInstance.id || savedMessage.id
     // console.log('hi saveMsg4', newStatus)
     return { ...contactData, message_status: newStatus }
   }
