@@ -291,7 +291,7 @@ const rootMutations = {
       const organization = await loaders.organization.load(campaign.organization_id)
       // console.log('SENDREPLY', contact, campaign)
       await accessRequired(user, campaign.organization_id, 'ADMIN')
-
+      console.log('sendReply', contact.id, campaign.id, organization.id)
       const lastMessage = await r
         .table('message')
         .getAll(contact.assignment_id, { index: 'assignment_id' })
@@ -311,6 +311,7 @@ const rootMutations = {
       const mockId = `mocked_${Math.random()
         .toString(36)
         .replace(/[^a-zA-Z1-9]+/g, '')}`
+      console.log('sendReply3', mockId, userNumber, lastMessage)
       await saveNewIncomingMessage(
         new Message({
           contact_number: contactNumber,
@@ -683,10 +684,7 @@ const rootMutations = {
         await accessRequired(user, origCampaign.organization_id, 'SUPERVOLUNTEER')
       }
       if (origCampaign.is_started && campaign.hasOwnProperty('contacts') && campaign.contacts) {
-        throw new GraphQLError({
-          status: 400,
-          message: 'Not allowed to add contacts after the campaign starts'
-        })
+        throw new GraphQLError('Not allowed to add contacts after the campaign starts')
       }
       return editCampaign(id, campaign, loaders, user, origCampaign)
     },
@@ -736,10 +734,7 @@ const rootMutations = {
       authRequired(user)
       const invite = await loaders.invite.load(inviteId)
       if (!invite || !invite.is_valid) {
-        throw new GraphQLError({
-          status: 400,
-          message: 'That invitation is no longer valid'
-        })
+        throw new GraphQLError('That invitation is no longer valid')
       }
 
       const newOrganization = await Organization.save({
@@ -779,15 +774,18 @@ const rootMutations = {
       const contacts = contactIds.map(async (contactId) => {
         let contact = await loaders.campaignContact.load(contactId)
         if (contact.assignment_id === null) {
-          // Reload if assignment_id is null, because we are probably
-          // in a race condition with dynamic assignment here
-          await cacheableData.campaignContact.clear(contactId)
-          contact = await cacheableData.campaignContact.load(contactId)
+          // In case assignment_id from cache needs to be refreshed, try again
+          await cacheableData.campaignContact.clear(contact.id)
+          contact = await loaders.campaignContact.load(contactId)
         }
         if (contact && Number(contact.assignment_id) === Number(assignmentId)) {
           return contact
         }
         console.log('getAssignmentContacts did not match assignment', assignmentId, contact)
+        // clear assignment from user's list if it's not assigned
+        const campaign = await loaders.campaign.load(contact.campaign_id)
+        await cacheableData.assignment.clearAssignmentContacts(
+          assignmentId, campaign.contactTimezones, contact)
         return null
       })
       if (findNew) {
@@ -893,18 +891,7 @@ const rootMutations = {
       console.log('sendMessage', contact.id, message.assignmentId, contact.assignment_id, message.text, contact.campaign_id)
       if (Number(contact.assignment_id) !== Number(message.assignmentId) || campaign.is_archived) {
         console.error('sendMessage WRONG ASSIGNMENT', contact.assignment_id, message.assignmentId, campaign.is_archived)
-        if (contact.assignment_id === null) {
-          // In case assignment_id from cache needs to be refreshed
-          await cacheableData.campaignContact.clear(contact.id)
-          // If we suspected the other direction, maybe we would remove the id
-          //    from user's assignmentcontacts queue:
-          // await cacheableData.assignment.clearAssignmentContacts(
-          //   message.assignmentId, campaign.contactTimezones, contact)
-        }
-        throw new GraphQLError({
-          status: 400,
-          message: 'Your assignment has changed'
-        })
+        throw new GraphQLError('Your assignment has changed')
       }
       console.log('sendMessage1.3', campaign.organization_id)
       const organization = await loaders.organization.load(campaign.organization_id)
@@ -914,18 +901,12 @@ const rootMutations = {
       })
       console.log('sendMessage1.4')
       if (isOptedOut) {
-        throw new GraphQLError({
-          status: 400,
-          message: 'Skipped sending because this contact was already opted out'
-        })
+        throw new GraphQLError('Skipped sending because this contact was already opted out')
       }
       console.log('sendMessage1.5')
       const { contactNumber, text } = message
       if (text.length > (process.env.MAX_MESSAGE_LENGTH || 99999)) {
-        throw new GraphQLError({
-          status: 400,
-          message: 'Message was longer than the limit'
-        })
+        throw new GraphQLError('Message was longer than the limit')
       }
       console.log('sendMessage2', isOptedOut, organization.id)
       const replaceCurlyApostrophes = rawText => rawText.replace(/[\u2018\u2019]/g, "'")
