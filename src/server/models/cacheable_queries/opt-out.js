@@ -79,7 +79,8 @@ const optOutCache = {
       if (exists) {
         await r.redis.saddAsync(hashKey, cell)
       }
-      await assignmentCache.optOutContact(assignmentId, campaignContactId, campaign)
+      await assignmentCache.optOutContact(
+        assignmentId, campaignContactId, campaign.contactTimezones)
     }
     // database
     await new OptOut({

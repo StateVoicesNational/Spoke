@@ -160,17 +160,16 @@ export const cachedContactsQuery = async ({ assignmentId, timezoneOffsets, messa
   return null
 }
 
-export const optOutContact = async (assignmentId, contactId, campaign) => {
-  if (r.redis && campaign.contactTimezones) {
-    for (let i = 0, l = campaign.contactTimezones.length; i < l; i++) {
-      const tz = campaign.contactTimezones[i]
-      console.log('optoutcontact', assignmentId, contactId)
-      // XX only changes the score if it already exists
-      // Run as a single multi() command because zaddAsync
-      //   doesn't seem to accept the 'XX' argument
-      await r.redis.multi()
-        .zadd(assignmentContactsKey(assignmentId, tz), 'XX', 0, contactId)
-        .execAsync()
+export const optOutContact = async (assignmentId, contactId, contactTimezones) => {
+  if (r.redis && contactTimezones && contactTimezones.length) {
+    for (let i = 0, l = contactTimezones.length; i < l; i++) {
+      const tz = contactTimezones[i]
+      console.log('optoutcontact', assignmentId, contactId, tz)
+      const key = assignmentContactsKey(assignmentId, tz)
+      const exists = await r.redis.zscoreAsync(key, contactId)
+      if (exists) {
+        await r.redis.zadd(key, 0, contactId)
+      }
     }
   }
 }

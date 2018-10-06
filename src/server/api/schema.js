@@ -779,6 +779,14 @@ const rootMutations = {
           contact = await loaders.campaignContact.load(contactId)
         }
         if (contact && Number(contact.assignment_id) === Number(assignmentId)) {
+          console.log('is contacted optedout?', contact.id, contact.is_opted_out)
+          if (contact.is_opted_out) {
+            // We shouldn't be loading opted-out contacts from this api
+            // so this means we need to update the status in assignmentcontacts
+            cacheableData.assignment.optOutContact(
+              assignmentId, contactId, [contact.timezone_offset])
+              .then(() => 1)
+          }
           return contact
         }
         console.log('getAssignmentContacts did not match assignment', assignmentId, contact)
