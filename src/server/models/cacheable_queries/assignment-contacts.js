@@ -220,7 +220,7 @@ export const loadAssignmentContacts = async (assignmentId, campaignId, organizat
   //   * zadd <key> <needsMessageScore> cid ...
   // * if not needsMessage, then need to sort by recent message
   console.log('loadAssignmentContacts', assignmentId, campaignId, organizationId, timezoneOffsets)
-  if (r.redis) {
+  if (r.redis && timezoneOffsets && timezoneOffsets.length) {
     const contacts = await r.knex('campaign_contact')
       .select('campaign_contact.id as cid',
               'campaign_contact.message_status as status',

@@ -102,7 +102,7 @@ const saveCache = async (assignment, campaign, notDeep) => {
       .execAsync()
 
     await addUserAssignment(campaign, assignment)
-    if (!notDeep) {
+    if (!notDeep && campaign.contactTimezones) {
       await loadAssignmentContacts(id,
                                    campaign.id,
                                    campaign.organization_id,
