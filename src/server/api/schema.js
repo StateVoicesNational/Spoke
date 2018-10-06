@@ -153,6 +153,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
       uploadContacts(job)
     }
   }
+
   if (campaign.hasOwnProperty('contactSql') && datawarehouse && user.is_superadmin) {
     await accessRequired(user, organizationId, 'ADMIN', /* superadmin*/ true)
     let job = await JobRequest.save({
@@ -167,6 +168,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
       loadContactsFromDataWarehouse(job)
     }
   }
+
   if (campaign.hasOwnProperty('texters')) {
     let job = await JobRequest.save({
       queue_name: `${id}:edit_campaign`,
@@ -220,6 +222,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
   }
 
   const newCampaign = await Campaign.get(id).update(campaignUpdates)
+
   await cacheableData.campaign.reload(id)
   return newCampaign || loaders.campaign.load(id)
 }
@@ -230,12 +233,16 @@ async function updateInteractionSteps(
   origCampaignRecord,
   idMap = {}
 ) {
-  await interactionSteps.forEach(async is => {
+  if (!interactionSteps) {
+    return
+  }
+  for (let i = 0, l = interactionSteps.length; i < l; i++) {
+    const is = interactionSteps[i]
     // map the interaction step ids for new ones
     if (idMap[is.parentInteractionId]) {
       is.parentInteractionId = idMap[is.parentInteractionId]
     }
-    if (is.id.indexOf('new') !== -1) {
+    if (!is.id || is.id.indexOf('new') !== -1) {
       const newIstep = await InteractionStep.save({
           parent_interaction_id: is.parentInteractionId || null,
           question: is.questionText,
@@ -266,7 +273,7 @@ async function updateInteractionSteps(
       }
     }
     await updateInteractionSteps(campaignId, is.interactionSteps, origCampaignRecord, idMap)
-  })
+  }
 }
 
 const rootMutations = {
@@ -771,6 +778,7 @@ const rootMutations = {
     },
     getAssignmentContacts: async (_, { assignmentId, contactIds, findNew }, { loaders, user }) => {
       await assignmentRequired(user, assignmentId)
+      console.log('getAssignmentContacts', contactIds)
       const contacts = contactIds.map(async (contactId) => {
         let contact = await loaders.campaignContact.load(contactId)
         if (contact.assignment_id === null) {
@@ -779,7 +787,7 @@ const rootMutations = {
           contact = await loaders.campaignContact.load(contactId)
         }
         if (contact && Number(contact.assignment_id) === Number(assignmentId)) {
-          console.log('is contacted optedout?', contact.id, contact.is_opted_out)
+          // console.log('is contacted optedout?', contact.id, contact.is_opted_out)
           if (contact.is_opted_out) {
             // We shouldn't be loading opted-out contacts from this api
             // so this means we need to update the status in assignmentcontacts
@@ -806,16 +814,12 @@ const rootMutations = {
     findNewCampaignContact: async (_, { assignmentId, numberContacts }, { loaders, user }) => {
       /* This attempts to find a new contact for the assignment, in the case that useDynamicAssigment == true */
       const assignment = await loaders.assignment.load(assignmentId)
-      if (assignment.user_id != user.id) {
-        throw new GraphQLError({
-          status: 400,
-          message: 'Invalid assignment'
-        })
-      }
+      await assignmentRequired(user, assignmentId, assignment)
+
       console.log('findNewCampaignContact', assignmentId, numberContacts)
       const campaign = await loaders.campaign.load(assignment.campaign_id)
       const organization = await loaders.organization.load(campaign.organization_id)
-      console.log('findNewCampaignContact2', campaign.title, organization.name, assignment.user_id)
+      // console.log('findNewCampaignContact2', campaign.title, organization.name, assignment.user_id)
       return { found: Boolean(
         await cacheableData.assignment.findNewContacts(assignment, campaign, organization, numberContacts))}
     },
@@ -896,27 +900,27 @@ const rootMutations = {
       await assignmentRequired(user, contact.assignment_id)
       const campaign = await loaders.campaign.load(contact.campaign_id)
 
-      console.log('sendMessage', contact.id, message.assignmentId, contact.assignment_id, message.text, contact.campaign_id)
+      // console.log('sendMessage', contact.id, message.assignmentId, contact.assignment_id, message.text, contact.campaign_id)
       if (Number(contact.assignment_id) !== Number(message.assignmentId) || campaign.is_archived) {
         console.error('sendMessage WRONG ASSIGNMENT', contact.assignment_id, message.assignmentId, campaign.is_archived)
         throw new GraphQLError('Your assignment has changed')
       }
-      console.log('sendMessage1.3', campaign.organization_id)
+      // console.log('sendMessage1.3', campaign.organization_id)
       const organization = await loaders.organization.load(campaign.organization_id)
       const isOptedOut = await cacheableData.optOut.query({
         cell: contact.cell,
         organizationId: organization.id
       })
-      console.log('sendMessage1.4')
+      // console.log('sendMessage1.4')
       if (isOptedOut) {
         throw new GraphQLError('Skipped sending because this contact was already opted out')
       }
-      console.log('sendMessage1.5')
+      // console.log('sendMessage1.5')
       const { contactNumber, text } = message
       if (text.length > (process.env.MAX_MESSAGE_LENGTH || 99999)) {
         throw new GraphQLError('Message was longer than the limit')
       }
-      console.log('sendMessage2', isOptedOut, organization.id)
+      // console.log('sendMessage2', isOptedOut, organization.id)
       const replaceCurlyApostrophes = rawText => rawText.replace(/[\u2018\u2019]/g, "'")
       const messageInstance = new Message({
         text: replaceCurlyApostrophes(text),
@@ -931,14 +935,14 @@ const rootMutations = {
         is_from_contact: false,
         queued_at: new Date()
       })
-      console.log('sendMessage3', messageInstance.messageservice_sid)
+      // console.log('sendMessage3', messageInstance.messageservice_sid)
       // This should hackily update messageInstance.id
       contact = await cacheableData.message.save({ messageInstance, contact })
-      console.log('contact saved', contact.message_status)
+      // console.log('contact saved', contact.message_status)
 
       const service = serviceMap[messageInstance.service || process.env.DEFAULT_SERVICE]
       service.sendMessage(messageInstance, contact)
-      console.log('sendMessage return', contact.id)
+      // console.log('sendMessage return', contact.id)
       return contact
     },
     deleteQuestionResponses: async (
