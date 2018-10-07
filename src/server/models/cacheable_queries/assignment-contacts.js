@@ -147,10 +147,10 @@ export const cachedContactsQuery = async ({ assignmentId, timezoneOffsets, messa
     const existsResult = await existsQuery.execAsync()
     if (existsResult.reduce((a, b) => a && b, true)) {
       const redisResult = await resultQuery.execAsync()
-      // console.log('redis assignment contact result', redisResult, assignmentId, timezoneOffsets, range, messageStatuses)
       if (justCount) {
         return redisResult.reduce((i, j) => Number(i) + Number(j), 0)
       } else if (justIds) {
+        console.log('redis assignment contact result', redisResult, assignmentId, timezoneOffsets, range, messageStatuses)
         return redisResult
           .reduce((m, n) => [...m, ...n], [])
           .map(id => ({ id }))
@@ -164,7 +164,7 @@ export const optOutContact = async (assignmentId, contactId, contactTimezones) =
   if (r.redis && contactTimezones && contactTimezones.length) {
     for (let i = 0, l = contactTimezones.length; i < l; i++) {
       const tz = contactTimezones[i]
-      console.log('optoutcontact', assignmentId, contactId, tz)
+      // console.log('optoutcontact', assignmentId, contactId, tz)
       const key = assignmentContactsKey(assignmentId, tz)
       const exists = await r.redis.zscoreAsync(key, contactId)
       if (exists) {
@@ -201,7 +201,7 @@ export const dbContactsQuery = ({ assignmentId, timezoneOffsets, messageStatuses
   if (justIds) {
     query = query.select('id')
   }
-  console.log('dbContactsQuery', query.toString())
+  // console.log('dbContactsQuery', query.toString())
   return query
 }
 
@@ -218,7 +218,7 @@ export const loadAssignmentContacts = async (assignmentId, campaignId, organizat
   // * for each timezone
   //   * zadd <key> <needsMessageScore> cid ...
   // * if not needsMessage, then need to sort by recent message
-  console.log('loadAssignmentContacts', assignmentId, campaignId, organizationId, timezoneOffsets)
+  // console.log('loadAssignmentContacts', assignmentId, campaignId, organizationId, timezoneOffsets)
   if (r.redis && timezoneOffsets && timezoneOffsets.length) {
     const contacts = await r.knex('campaign_contact')
       .select('campaign_contact.id as cid',
@@ -252,7 +252,7 @@ export const loadAssignmentContacts = async (assignmentId, campaignId, organizat
         needsMessage: 0, needsResponse: 0, convo: 0, messaged: 0, closed: 0
       }
     })
-    console.log('loadAssignmentContacts data', tzs)
+    // console.log('loadAssignmentContacts data', tzs)
     const getScore = (c, tzObj) => {
       if (c.optout) {
         return 0
@@ -277,7 +277,7 @@ export const loadAssignmentContacts = async (assignmentId, campaignId, organizat
       const tz = tzKeys[i]
       const tzContacts = tzs[tz].contacts
       const key = assignmentContactsKey(assignmentId, tz)
-      console.log('loadAssignmentContacts', tz, key, tzContacts)
+      // console.log('loadAssignmentContacts', tz, key, tzContacts)
       if (tzContacts.length === 0) {
         // for the sorted set to exist, we need something in there
         tzContacts.push(-1, 'fakekey')
@@ -329,24 +329,27 @@ export const clearAssignmentContacts = async (assignmentId, timezoneOffsets, con
 export const updateAssignmentContact = async (contact, newStatus) => {
   // Needs: contact.id, contact.timezone_offset, contact.assignment_id, ?contact.message_status
   const key = assignmentContactsKey(contact.assignment_id, contact.timezone_offset)
-  const range = msgStatusRange[newStatus].reverse()  // revrange goes max-min argument order
+  const range = msgStatusRange[newStatus]
+  const ri = [1, 0] // range index
   let cmd = 'zrevrangebyscore'
   if (newStatus === 'convo') {
     cmd = 'zrangebyscore'
-    range.reverse() // range goes min-max argument order
+    ri.reverse()
+    //range.reverse() // range goes min-max argument order
   }
-  console.log('updateAssignmentContact', contact, newStatus, range, cmd, key)
+  // console.log('updateAssignmentContact', contact, newStatus, range, cmd, key)
   const [exists, curMax] = await r.redis.multi()
     .exists(key)
-    [cmd](key, range[0], range[1], 'WITHSCORES', 'LIMIT', 0, 1)
+    [cmd](key, range[ri[0]], range[ri[1]], 'WITHSCORES', 'LIMIT', 0, 1)
     .execAsync()
-  console.log('updateassignmentcontact', contact.id, newStatus, range, cmd, key, exists, curMax)
+  // console.log('updateassignmentcontact', contact.id, newStatus, range, cmd, key, exists, curMax)
   if (exists) {
     // eslint-disable-next-line no-nested-ternary
     const newScore = (curMax && curMax.length
                       ? Number(curMax[1]) + (newStatus === 'convo' ? -1 : 1)
                       : (newStatus === 'convo' ? range[1] : range[0]))
-    console.log('updateassignment', contact.id, newScore, await r.redis.zrangeAsync(key, 0, -1, 'WITHSCORES'))
+    console.log('updateassignment', contact.id, newScore)
+    //, await r.redis.zrangeAsync(key, 0, -1, 'WITHSCORES'))
     await r.redis.multi()
       .zadd([key, newScore, contact.id])
       .expire(key, 86400)

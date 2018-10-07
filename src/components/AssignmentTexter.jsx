@@ -144,9 +144,13 @@ class AssignmentTexter extends React.Component {
       const { data: { getAssignmentContacts } } = contactData
       if (getAssignmentContacts) {
         const newContactData = {}
-        getAssignmentContacts.forEach((c) => {
+        getAssignmentContacts.forEach((c, i) => {
           if (c && c.id) {
             newContactData[c.id] = c
+          } else {
+            // store the null result so that we know to skip it
+            const badId = getIds[i]
+            newContactData[badId] = null
           }
         })
         console.log('getContactData', newContactData, getAssignmentContacts)
@@ -313,9 +317,9 @@ class AssignmentTexter extends React.Component {
                       self.props.contacts,
                       self.state.contactCache[
                         (self.props.contacts[self.state.currentContactIndex + 1]||{}).id])
-          if (self.state.reloadDelay > 500
+          if (this.state.contactCache[contact.id] === null
               && self.props.contacts.length > (self.state.currentContactIndex + 1)) {
-            console.log('TRY NEXT ID', self.state.currentContactIndex + 1)
+            // The current index was loaded and set as null to be invalid
             self.updateCurrentContactIndex(self.state.currentContactIndex + 1)
           } else {
             // Case 2: Maybe loading it was a problem or it's time to load it
