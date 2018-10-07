@@ -20,6 +20,7 @@ import { seedZipCodes } from './seeds/seed-zip-codes'
 import { runMigrations } from '../migrations'
 import { setupUserNotificationObservers } from './notifications'
 import { TwimlResponse } from 'twilio'
+import contactsApi from './api/contactsApi'
 
 process.on('uncaughtException', (ex) => {
   log.error(ex)
@@ -157,6 +158,10 @@ app.use('/graphql', graphqlExpress((request) => ({
 })))
 app.get('/graphiql', graphiqlExpress({
   endpointURL: '/graphql'
+}))
+
+app.use('/admin/:orgId/campaigns/:campaignId/contacts', wrap(async (req, res) => {
+  await contactsApi(req, res)
 }))
 
 
