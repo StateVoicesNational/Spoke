@@ -227,6 +227,7 @@ export const loadAssignmentContacts = async (assignmentId, campaignId, organizat
               'opt_out.id as optout',
               r.knex.raw('MAX(message.created_at) as latest_message'))
       .leftJoin('message', function msgJoin() {
+        // TODO: change to campaign_contact_id, maybe?
         return this.on('message.assignment_id', '=', 'campaign_contact.assignment_id')
           .andOn('message.contact_number', '=', 'campaign_contact.cell') })
       .leftJoin('opt_out', function optoutJoin() {
@@ -334,8 +335,7 @@ export const updateAssignmentContact = async (contact, newStatus) => {
   let cmd = 'zrevrangebyscore'
   if (newStatus === 'convo') {
     cmd = 'zrangebyscore'
-    ri.reverse()
-    //range.reverse() // range goes min-max argument order
+    ri.reverse() // range goes min-max argument order
   }
   // console.log('updateAssignmentContact', contact, newStatus, range, cmd, key)
   const [exists, curMax] = await r.redis.multi()

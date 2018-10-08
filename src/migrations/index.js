@@ -160,6 +160,9 @@ const migrations = [
     date: '2018-09-16',
     migrate: async () => {
       await r.knex.schema.alterTable('message', (table) => {
+        // ALTER TABLE message
+        // ADD COLUMN campaign_contact_id integer default null,
+        // ADD COLUMN messageservice_sid varchar(255) default null
         table.integer('campaign_contact_id')
           .unsigned()
           .nullable()
