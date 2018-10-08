@@ -235,7 +235,7 @@ const mapMutationsToProps = ({ ownProps }) => ({
       textingHoursEnforced
     }
   }),
-  updateOptOutMessage: ({optOutMessage}) => ({
+  updateOptOutMessage: ({ optOutMessage }) => ({
     mutation: gql`
       mutation updateOptOutMessage($optOutMessage: String!, $organizationId: String!) {
         updateOptOutMessage(optOutMessage: $optOutMessage, organizationId: $organizationId) {

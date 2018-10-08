@@ -402,11 +402,11 @@ export async function assignTexters(job) {
   // * new texter
   //   no current/changed assignment
   //   iterating over texter, assignment is created, then apportioned needsMessageCount texters
- 
-  /*  
-  A. clientMessagedCount  or serverMessagedCount: # of contacts assigned and already texted (for a texter) 
+
+  /*
+  A. clientMessagedCount  or serverMessagedCount: # of contacts assigned and already texted (for a texter)
     aka clientMessagedCount / serverMessagedCount
-  B. needsMessageCount: # of contacts assigned but not yet texted (for a texter) 
+  B. needsMessageCount: # of contacts assigned but not yet texted (for a texter)
   C. max contacts (for a texter)
   D. pool of unassigned and assignable texters
     aka availableContacts
@@ -420,13 +420,13 @@ export async function assignTexters(job) {
       if new C >= A and new C = old C:
         No change
       if new C < A or new C = 0:
-        Why are we doing this? If we want to keep someone from texting any more, 
-          we set their max_contacts to 0, and manually re-assign any of their 
-          previously texted contacts in the Message Review admin. 
+        Why are we doing this? If we want to keep someone from texting any more,
+          we set their max_contacts to 0, and manually re-assign any of their
+          previously texted contacts in the Message Review admin.
           TODO: Form validation should catch the case where C < A.
     Delete texter
       Assignment form currently prevents this (though it might be okay if A = 0).
-      To stop a texter from texting any more in the campaign, 
+      To stop a texter from texting any more in the campaign,
       set their max to zero and re-assign their contacts to another texter.
 
   In standard assignment mode:
@@ -446,9 +446,9 @@ export async function assignTexters(job) {
         Update assignment
     Delete texter
       Not sure we allow this?
-  
+
   TODO: what happens when we switch modes? Do we allow it?
-  */ 
+  */
   const payload = JSON.parse(job.payload)
   const cid = job.campaign_id
   const campaign = (await r.knex('campaign').where({ id: cid }))[0]
@@ -472,10 +472,10 @@ export async function assignTexters(job) {
   // detect changed assignments
   currentAssignments.map((assignment) => {
     const texter = texters.filter((ele) => parseInt(ele.id, 10) === assignment.user_id)[0]
-    const unchangedMaxContacts = 
+    const unchangedMaxContacts =
       parseInt(texter.maxContacts, 10) === assignment.max_contacts || // integer = integer
-      texter.maxContacts === assignment.max_contacts // null = null 
-    const unchangedNeedsMessageCount = 
+      texter.maxContacts === assignment.max_contacts // null = null
+    const unchangedNeedsMessageCount =
       texter.needsMessageCount === parseInt(assignment.needs_message_count, 10)
     if (texter) {
       if ((!dynamic && unchangedNeedsMessageCount) || (dynamic && unchangedMaxContacts)) {
@@ -495,7 +495,7 @@ export async function assignTexters(job) {
         } else { // got more than before: assign the difference
           texter.needsMessageCount = numDifferent
         }
-      } 
+      }
       return assignment
     } else { // new texter
       return assignment
@@ -531,14 +531,14 @@ export async function assignTexters(job) {
     let maxContacts = null // no limit
 
     if (texter.maxContacts || texter.maxContacts === 0) {
-      maxContacts = Math.min(parseInt(texter.maxContacts, 10), 
+      maxContacts = Math.min(parseInt(texter.maxContacts, 10),
         parseInt(process.env.MAX_CONTACTS_PER_TEXTER || texter.maxContacts, 10))
     } else if (process.env.MAX_CONTACTS_PER_TEXTER) {
       maxContacts = parseInt(process.env.MAX_CONTACTS_PER_TEXTER, 10)
     }
 
     if (unchangedTexters[texterId]) {
-      continue 
+      continue
     }
 
     const contactsToAssign = Math.min(availableContacts, texter.needsMessageCount)
@@ -556,7 +556,7 @@ export async function assignTexters(job) {
       if (!dynamic) {
         assignment = new Assignment({ id: existingAssignment.id,
                                      user_id: existingAssignment.user_id,
-                                     campaign_id: cid}) // for notification
+                                     campaign_id: cid }) // for notification
       } else {
         await r.knex('assignment')
         .where({ id: existingAssignment.id })
