@@ -125,7 +125,15 @@ class Settings extends React.Component {
           />
           <CardText>
             <div className={css(styles.section)}>
-
+              <Toggle
+                toggled={organization.textingTurnedOff}
+                label={(organization.textingTurnedOff ? 'TEXTING TURNED OFF FOR ALL CAMPAIGNS' : 'TEXTING TURNED ON FOR ALL CAMPAIGNS')}
+                onToggle={async (event, isToggled) => await this.props.mutations.textingTurnedOff(isToggled)}
+              />
+            </div>
+          </CardText>
+          <CardText>
+            <div className={css(styles.section)}>
             <GSForm
               schema={formSchema}
               onSubmit={this.props.mutations.updateOptOutMessage}
@@ -239,7 +247,20 @@ const mapMutationsToProps = ({ ownProps }) => ({
       organizationId: ownProps.params.organizationId,
       optOutMessage
     }
-  })
+  }),
+  textingTurnedOff: (textingTurnedOff) => ({
+    mutation: gql`
+      mutation textingTurnedOff($textingTurnedOff: Boolean!, $organizationId: String!) {
+        textingTurnedOff(textingTurnedOff: $textingTurnedOff, organizationId: $organizationId) {
+          id
+          textingTurnedOff
+        }
+      }`,
+    variables: {
+      organizationId: ownProps.params.organizationId,
+      textingTurnedOff
+    }
+  }),
 
 })
 
@@ -253,6 +274,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
         textingHoursStart
         textingHoursEnd
         optOutMessage
+        textingTurnedOff
       }
     }`,
     variables: {
