@@ -106,9 +106,9 @@ export async function processAction(questionResponse, interactionStep, campaignC
 
     sqs.sendMessage(sqsParams, (err, data) => {
       if (err) {
-        console.log('Error sending message to queue', err);
+        console.log('Error sending message to queue', err)
       }
-      console.log('Sent message to queue with data:', data);
+      console.log('Sent message to queue with data:', data)
     })
   } else {
     const options = {
