@@ -521,7 +521,7 @@ const rootMutations = {
     textingTurnedOff: async (
       _,
       { organizationId, textingTurnedOff },
-      { user }
+      { user, loaders }
     ) => {
       await accessRequired(user, organizationId, 'OWNER')
 
@@ -533,7 +533,7 @@ const rootMutations = {
       await organization.save()
       await organizationCache.clear(organizationId)
 
-      return await Organization.get(organizationId)
+      return await loaders.organization.load(organizationId)
     },
     createInvite: async (_, { user }) => {
       if ((user && user.is_superadmin) || !process.env.SUPPRESS_SELF_INVITE) {
