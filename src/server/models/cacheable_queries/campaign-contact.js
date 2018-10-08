@@ -71,7 +71,7 @@ const generateCacheRecord = (dbRecord, organizationId, messageServiceSid, campai
 export const setCacheContactAssignment = async (id, contactObj) => {
   if (r.redis && contactObj && contactObj.assignment_id) {
     const assignmentKey = contactAssignmentKey(id)
-    console.log('setCacheContactAssignment', id, contactObj.assignment_id, contactObj.user_id, assignmentKey)
+    // console.log('setCacheContactAssignment', id, contactObj.assignment_id, contactObj.user_id, assignmentKey)
     await r.redis.multi()
       .set(assignmentKey, [contactObj.assignment_id, contactObj.user_id].join(':'))
       .expire(assignmentKey, 86400)
@@ -166,7 +166,7 @@ const campaignContactCache = {
                         await getCacheContactAssignment(id, cacheData))
         }
 
-        console.log('contact fromCache', cacheData.id, cacheData.message_status)
+        // console.log('contact fromCache', cacheData.id, cacheData.message_status)
         return modelWithExtraProps(
           cacheData,
           CampaignContact,
@@ -183,7 +183,7 @@ const campaignContactCache = {
     if (!r.redis || !organization || !(campaign || queryFunc)) {
       return
     }
-    console.log('campaign-contact loadMany', campaign.id)
+    // console.log('campaign-contact loadMany', campaign.id)
     loaders.campaignContact.clearAll()
     // 1. load the data
     let query = r.knex('campaign_contact')

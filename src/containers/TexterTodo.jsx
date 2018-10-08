@@ -55,11 +55,14 @@ class TexterTodo extends React.Component {
     }
   }
 
-  assignContactsIfNeeded = async (checkServer = false) => {
+  assignContactsIfNeeded = async (checkServer = false, stayOnFail = false) => {
     const { assignment } = this.props.data
     if (assignment.contacts.length === 0 || checkServer) {
       const didAddContacts = await this.getNewContacts()
       if (didAddContacts) {
+        return
+      }
+      if (stayOnFail && !assignment.contacts.length) {
         return
       }
       console.log('ABOUT TO JUMP BACK', this.loadingAssignmentContacts, this.props.mutations.getAssignmentContacts.loading)

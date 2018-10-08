@@ -122,7 +122,7 @@ const loadDeep = async (id, notDeep) => {
   // console.log('loaddeep assingment', assignment)
   if (r.redis && assignment) {
     const campaign = await campaignCache.load(assignment.campaign_id)
-    console.log('cached campaign for assn', campaign)
+    // console.log('cached campaign for assn', campaign)
     await saveCache(assignment, campaign, notDeep)
     assignment.campaign = campaign
   }
@@ -133,7 +133,7 @@ const loadDeep = async (id, notDeep) => {
 
 const loadCampaignAssignments = async (campaign) => {
   if (r.redis) {
-    console.log('loadCampaignAssignments', campaign.id)
+    // console.log('loadCampaignAssignments', campaign.id)
     const assignments = await assignmentQuery()
       .where('campaign_id', campaign.id)
     for (let i = 0, l = assignments.length; i < l; i++) {

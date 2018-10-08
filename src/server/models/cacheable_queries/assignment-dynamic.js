@@ -14,13 +14,14 @@ const inFlightKey = (campaignId) => `${process.env.CACHE_PREFIX || ''}inflight-$
 
 const currentUserInflight = async (assignment) => {
   // Returns the count of in-flight assignments for the assignment
-  console.log('currentUserInflight', assignment.id, assignment.user_id)
+  // console.log('currentUserInflight', assignment.id, assignment.user_id)
   if (r.redis) {
     const key = inFlightKey(assignment.campaign_id)
     const [exists, count] = await r.redis.multi()
       .exists(key)
       .zcount(key, assignment.user_id, assignment.user_id)
       .execAsync()
+    console.log('currentUserInflight', exists, count)
     if (exists) {
       return count
     }
@@ -39,7 +40,7 @@ const pushInFlight = async (assignment, contactId) => {
   // (it will be popped when they send a message)
   if (r.redis) {
     const key = inFlightKey(assignment.campaign_id)
-    console.log('popinflight', assignment.campaign_id, assignment.user_id, contactId, key)
+    console.log('pushinflight', assignment.campaign_id, contactId, key)
     await r.redis.multi()
       .zadd([key, assignment.user_id, contactId])
       .expire(key, 86400)
@@ -52,11 +53,11 @@ export const popInFlight = async (campaignId, contactId) => {
   // (called when the user sends a message to the contact)
   if (r.redis) {
     const key = inFlightKey(campaignId)
-    console.log('popinflight', campaignId, contactId, key)
-    await r.redis.multi()
+    const res = await r.redis.multi()
       .zrem(key, contactId)
       .expire(key, 86400)
       .execAsync()
+    console.log('popinflight', campaignId, contactId, key, res)
   }
 }
 
@@ -65,7 +66,7 @@ const popNeedsMessage = async (assignment, campaign, organization, numberContact
   // If available, then assigns them and push them to assignee (ONLY in-cache)
   // Used from findNewContacts
   // ASSUMES we've already checked various reasons and counts for the campaign and assignment
-  console.log('popNeedsMessage', assignment.id, campaign.id, numberContacts)
+  // console.log('popNeedsMessage', assignment.id, campaign.id, numberContacts)
   if (r.redis) {
     const newContacts = []
     // 1. POP contacts from needsMessage queue
@@ -94,7 +95,7 @@ const popNeedsMessage = async (assignment, campaign, organization, numberContact
         break
       }
     }
-    console.log('popNeedsMessage2', newContacts)
+    // console.log('popNeedsMessage2', newContacts)
     // FUTURE: 1.1 if not enough there, then look for stale protoassignments in inflight queue
     // NOTE: Below we check inflight queue
     if (!newContacts.length) {
@@ -117,7 +118,7 @@ const popNeedsMessage = async (assignment, campaign, organization, numberContact
         // then this check might be 'circular'
         continue
       }
-      console.log('popNeedsMessage3 contact to save', cPartial)
+      // console.log('popNeedsMessage3 contact to save', cPartial)
       // 4. Push contactIds with assignmentId score onto inflight
       await pushInFlight(assignment, cPartial.id)
       // 5. Update contact.assignment_id and contact.user_id
@@ -137,7 +138,7 @@ export const reloadCampaignContactsForDynamicAssignment = async (campaign, organ
   // This should be done when a campaign is 'started'
 
   // TODO: what if this is 1million?  We shouldn't load them all
-  console.log('reloadCampaignContactsForDynamicAssignment', campaign.id, organization.id, campaign.contactTimezones)
+  // console.log('reloadCampaignContactsForDynamicAssignment', campaign.id, organization.id, campaign.contactTimezones)
   if (r.redis && campaign.use_dynamic_assignment) {
     const contactsToDynAssign = (await r.knex('campaign_contact')
       .where({ is_opted_out: false,
@@ -159,7 +160,7 @@ export const reloadCampaignContactsForDynamicAssignment = async (campaign, organ
       const tzKeys = Object.keys(tzs)
       for (let i = 0, l = tzKeys.length; i < l; i++) {
         const tz = tzKeys[i]
-        console.log('reloadCampaignContactsForDynamicAssignment LPUSH', tz, tzs[tz])
+        // console.log('reloadCampaignContactsForDynamicAssignment LPUSH', tz, tzs[tz])
         const key = needsMessageQueueKey(campaign.id, tz)
         await r.redis.multi()
           .lpush(key, ...tzs[tz])
@@ -197,7 +198,7 @@ export const findNewContacts = async (assignment, campaign, organization, number
     return false
   }
 
-  console.log('findNewContacts', assignment.id, campaign.id, numberContacts)
+  // console.log('findNewContacts', assignment.id, campaign.id, numberContacts)
   // 1. Make sure texter isn't maxed out on contacts
   const contactsCount = await getTotalContactCount(assignment, campaign)
 
@@ -208,7 +209,7 @@ export const findNewContacts = async (assignment, campaign, organization, number
   if (finalNumberContacts <= 0) {
     return false
   }
-  console.log('findNewContacts2', finalNumberContacts, contactsCount)
+  // console.log('findNewContacts2', finalNumberContacts, contactsCount)
   // 2. Make sure texter doesn't have too many messages in-flight
   //    i.e. Don't add more if they already have that many
   const inFlightCount = await currentUserInflight(assignment)
@@ -237,13 +238,13 @@ export const findNewContacts = async (assignment, campaign, organization, number
       contactIds = poppedInFlight
     }
   }
-  console.log('findNewContacts4', contactIds)
+  // console.log('findNewContacts4', contactIds)
   const updatedCount = await r
     .knex('campaign_contact')
     .whereIn('id', contactIds)
     .where('campaign_id', campaign.id) // guard qualification
     .update({ assignment_id: assignment.id })
-  console.log('findNewContacts5', updatedCount)
+  // console.log('findNewContacts5', updatedCount)
   if (updatedCount > 0) {
     return (Array.isArray(contactIds) ? contactIds : updatedCount)
   }

@@ -67,6 +67,9 @@ class AssignmentTexter extends React.Component {
       const nextIndex = nextProps.contacts.findIndex((c) => c.id === curId)
       if (nextIndex !== nextState.currentContactIndex) {
         // eslint-disable-next-line no-param-reassign
+        console.log('changingIndex on update',
+                    nextState.currentContactIndex, nextIndex,
+                    this.props.contacts)
         nextState.currentContactIndex = Math.max(nextIndex, 0)
         // nextIndex can be -1 if not found, and in that case, we should defer to the front
       }
@@ -137,8 +140,8 @@ class AssignmentTexter extends React.Component {
                && this.props.assignment.campaign.useDynamicAssignment) {
       this.props.getNewContacts()
     }
-    console.log('getContactData length', newIndex, getIds.length)
     if (getIds.length) {
+      console.log('getContactData length', newIndex, getIds.length)
       this.setState({ loading: true })
       const contactData = await this.props.loadContacts(getIds)
       const { data: { getAssignmentContacts } } = contactData
@@ -320,6 +323,7 @@ class AssignmentTexter extends React.Component {
           if (this.state.contactCache[contact.id] === null
               && self.props.contacts.length > (self.state.currentContactIndex + 1)) {
             // The current index was loaded and set as null to be invalid
+            console.log('GOT A NULL SKIPPING', self.state.currentContactIndex)
             self.updateCurrentContactIndex(self.state.currentContactIndex + 1)
           } else {
             // Case 2: Maybe loading it was a problem or it's time to load it

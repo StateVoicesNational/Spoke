@@ -43,5 +43,6 @@ Message.ensureIndex('send_status')
 Message.ensureIndex('user_number')
 Message.ensureIndex('contact_number')
 Message.ensureIndex('service_id')
+Message.ensureIndex('cell_messageservice_sid', (doc) => [doc('contact_number'), doc('messageservice_sid')])
 
 export default Message

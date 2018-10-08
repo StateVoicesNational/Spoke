@@ -96,7 +96,7 @@ const loadDeep = async (id) => {
       .set(cacheKey(id), JSON.stringify(campaign))
       .expire(cacheKey(id), 86400)
       .execAsync()
-    console.log('clearing campaign', id, typeof id, loaders.campaign)
+    // console.log('clearing campaign', id, typeof id, loaders.campaign)
     loaders.campaign.clear(String(id))
     loaders.campaign.clear(Number(id))
   }

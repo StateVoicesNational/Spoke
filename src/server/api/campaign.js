@@ -132,7 +132,7 @@ export const resolvers = {
       })
     ),
     contacts: async (campaign) => (
-      // todo: should we limit this field?
+      // TODO: should we include a limit() since this is only for send-replies
       r.knex('campaign_contact')
         .where({ campaign_id: campaign.id })
     ),
@@ -143,6 +143,7 @@ export const resolvers = {
       )
     ),
     hasUnassignedContacts: async (campaign) => {
+      // TODO: if campaign.use_dynamic_assignment, try cache
       const contacts = await r.knex('campaign_contact')
         .select('id')
         .where({ campaign_id: campaign.id, assignment_id: null })
