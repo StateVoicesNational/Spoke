@@ -11,6 +11,12 @@ const jobs = require('./build/server/workers/job-processes')
 // See: http://docs.aws.amazon.com/lambda/latest/dg/best-practices.html#function-code
 // "Separate the Lambda handler (entry point) from your core logic"
 
+let invocationContext = {}
+let invocationEvent = {}
+app.default.set('awsContextGetter', function(req, res) {
+  return [invocationEvent, invocationContext]
+})
+
 exports.handler = (event, context, handleCallback) => {
   // Note: When lambda is called with invoke() we MUST call handleCallback with a success
   // or Lambda will re-run/re-try the invocation twice:
@@ -21,6 +27,8 @@ exports.handler = (event, context, handleCallback) => {
   if (!event.command) {
     // default web server stuff
     const startTime = (context.getRemainingTimeInMillis ? context.getRemainingTimeInMillis() : 0)
+    invocationEvent = event
+    invocationContext = context
     const webResponse = awsServerlessExpress.proxy(server, event, context)
     if (process.env.DEBUG_SCALING) {
       const endTime = (context.getRemainingTimeInMillis ? context.getRemainingTimeInMillis() : 0)
