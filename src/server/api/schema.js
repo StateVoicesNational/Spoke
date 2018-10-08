@@ -429,14 +429,21 @@ const rootMutations = {
           .filter({ organization_id: organization.id })
           .limit(1)(0)
           .default(null)
-
         if (!userOrg) {
           await UserOrganization.save({
             user_id: user.id,
             organization_id: organization.id,
             role: 'TEXTER'
-          })
+          }).error(function(error) {
+            // Unexpected errors
+            console.log("error on userOrganization save", error)
+          });
+
+        } else { // userOrg exists
+          console.log('existing userOrg ' + userOrg.id + ' user ' + user.id + ' organizationUuid ' + organizationUuid )
         }
+      } else { // no organization 
+        console.log('no organization with id ' + organizationUuid + ' for user ' + user.id)
       }
       return organization
     },
@@ -517,6 +524,23 @@ const rootMutations = {
       await organizationCache.clear(organizationId)
 
       return await Organization.get(organizationId)
+    },
+    textingTurnedOff: async (
+      _,
+      { organizationId, textingTurnedOff },
+      { user, loaders }
+    ) => {
+      await accessRequired(user, organizationId, 'OWNER')
+
+      const organization = await Organization.get(organizationId)
+      const featuresJSON = JSON.parse(organization.features || '{}')
+      featuresJSON.texting_turned_off = textingTurnedOff
+      organization.features = JSON.stringify(featuresJSON)
+
+      await organization.save()
+      await organizationCache.clear(organizationId)
+
+      return await loaders.organization.load(organizationId)
     },
     createInvite: async (_, { user }) => {
       if ((user && user.is_superadmin) || !process.env.SUPPRESS_SELF_INVITE) {

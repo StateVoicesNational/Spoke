@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import Check from 'material-ui/svg-icons/action/check-circle'
+import Lock from 'material-ui/svg-icons/action/lock'
 import Empty from '../components/Empty'
 import AssignmentSummary from '../components/AssignmentSummary'
 import loadData from './hoc/load-data'
@@ -49,11 +50,17 @@ class TexterTodoList extends React.Component {
     }
   }
 
+  textingTurnedOffForOrganization(todos){
+    const orgDataForFirstTodo = todos[0].campaign.organization
+    return (todos[0].campaign.organization && orgDataForFirstTodo.textingTurnedOff ? true : false)
+  }
+
   render() {
     this.termsAgreed()
     const todos = this.props.data.currentUser.todos
     const renderedTodos = this.renderTodoList(todos)
-
+    const textingTurnedOff = this.textingTurnedOffForOrganization(todos)
+    
     const empty = (
       <Empty
         title='You have nothing to do!'
@@ -61,11 +68,26 @@ class TexterTodoList extends React.Component {
       />
     )
 
+    const textingOff = (
+      <Empty
+        title='Texting is Currently Turned Off For This Organization.'
+        icon={<Lock />}
+      />
+    )
+
+    const renderTexterTodosScreen = () => {
+      if(renderedTodos.length === 0) {
+        return empty
+      } else if (textingTurnedOff) {
+        return textingOff
+      } else {
+        return renderedTodos
+      }
+    }
+
     return (
       <div>
-        {renderedTodos.length === 0 ?
-          empty : renderedTodos
-        }
+        {renderTexterTodosScreen()}
       </div>
     )
   }
@@ -94,6 +116,9 @@ const mapQueriesToProps = ({ ownProps }) => ({
             introHtml
             primaryColor
             logoImageUrl
+            organization {
+              textingTurnedOff
+            }
           }
           maxContacts
           unmessagedCount: contactsCount(contactsFilter: $needsMessageFilter)
