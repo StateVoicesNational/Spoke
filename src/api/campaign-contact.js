@@ -36,4 +36,3 @@ export const schema = `
     assignmentId: String
   }
 `
-

@@ -185,6 +185,8 @@ export class AssignmentTexterContact extends React.Component {
     const questionResponses = this.getInitialQuestionResponses(contact.questionResponseValues)
     const availableSteps = this.getAvailableInteractionSteps(questionResponses)
 
+    const textingTurnedOff = this.props.campaign.organization.textingTurnedOff
+
     let disabled = false
     let disabledText = 'Sending...'
     let snackbarOnTouchTap = null
@@ -203,6 +205,12 @@ export class AssignmentTexterContact extends React.Component {
     } else if (!this.isContactBetweenTextingHours(contact)) {
       disabledText = "Refreshing because it's now out of texting hours for some of your contacts"
       disabled = true
+    } else if (textingTurnedOff) {
+      disabledText = 'Texting is turned off for this organization'
+      disabled = true
+      snackbarError = 'Texting is turned off for this organization'
+      snackbarOnTouchTap = this.goBackToTodos
+      snackbarActionTitle = 'Back to Todos'
     }
 
     this.state = {
@@ -971,6 +979,7 @@ const mapMutationsToProps = () => ({
             text
             isFromContact
           }
+          textingTurnedOff
         }
       }
     `,
