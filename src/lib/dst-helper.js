@@ -31,7 +31,7 @@ export class DstHelper {
 
   static getTimezoneOffsetHours(timezone:string): number {
     DstHelper.ensureTimezoneDstCalculated(timezone)
-    return _timezoneOffsetAndDst[timezone].tzOffsetMinutes/60
+    return _timezoneOffsetAndDst[timezone].tzOffsetMinutes / 60
   }
 
   static timezoneHasDst(timezone: string): boolean {
