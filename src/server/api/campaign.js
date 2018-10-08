@@ -9,7 +9,7 @@ export function addCampaignsFilterToQuery(queryParam, campaignsFilter) {
   if (campaignsFilter) {
     const resultSize = (campaignsFilter.listSize ? campaignsFilter.listSize : 0)
     const pageSize = (campaignsFilter.pageSize ? campaignsFilter.pageSize : 0)
-    
+
     if ('isArchived' in campaignsFilter) {
       query = query.where('campaign.is_archived', campaignsFilter.isArchived )
     }
@@ -197,6 +197,7 @@ export const resolvers = {
       })
     ),
     contacts: async (campaign) => (
+      // todo: should we limit this field?
       r.knex('campaign_contact')
         .where({ campaign_id: campaign.id })
     ),
@@ -210,6 +211,17 @@ export const resolvers = {
       const contacts = await r.knex('campaign_contact')
         .select('id')
         .where({ campaign_id: campaign.id, assignment_id: null })
+        .limit(1)
+      return contacts.length > 0
+    },
+    hasUnsentInitialMessages: async (campaign) => {
+      const contacts = await r.knex('campaign_contact')
+        .select('id')
+        .where({
+          campaign_id: campaign.id,
+          message_status: 'needsMessage',
+          is_opted_out: false
+         })
         .limit(1)
       return contacts.length > 0
     },
