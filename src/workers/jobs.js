@@ -918,6 +918,9 @@ export async function handleIncomingMessageParts() {
   }
 }
 
+// Temporary fix for orgless users
+// See https://github.com/MoveOnOrg/Spoke/issues/934
+// and job-processes.js
 export async function fixOrgless() {
   if (process.env.FIX_ORGLESS) {
     const orgless = await r.knex
