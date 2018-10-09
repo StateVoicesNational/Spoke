@@ -165,7 +165,6 @@ const campaignContactCache = {
       query = queryFunc(query)
     }
     const messageServiceSid = getMessageServiceSid(organization)
-
     // We process the results in a stream, because this could be a very large result
     // For docs see:
     // https://knexjs.org/#Interfaces-Streams

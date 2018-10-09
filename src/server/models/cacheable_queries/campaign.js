@@ -84,6 +84,7 @@ const loadDeep = async (id) => {
   return null
 }
 
+<<<<<<< HEAD
 const currentEditors = async (campaign, user) => {
   // Add user ID in case of duplicate admin names
   const displayName = `${user.id}~${user.first_name} ${user.last_name}`
