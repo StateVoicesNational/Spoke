@@ -822,7 +822,7 @@ export class AssignmentTexterContact extends React.Component {
           schema={this.messageSchema}
           value={{ messageText: this.state.messageText }}
           onSubmit={this.handleMessageFormSubmit}
-          onChange={( messageStatus === 'needsMessage' ? '' : this.handleMessageFormChange )}
+          onChange={(messageStatus === 'needsMessage' ? '' : this.handleMessageFormChange)}
         >
           <Form.Field
             className={css(styles.textField)}
