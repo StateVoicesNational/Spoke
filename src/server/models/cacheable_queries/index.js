@@ -10,7 +10,7 @@ const cacheableData = {
   campaignContact: campaignContactCache,
   cannedResponse: cannedResponseCache,
   optOut: optOutCache,
-  organization: organizationCache,
+  organization: organizationCache
 }
 
 export {

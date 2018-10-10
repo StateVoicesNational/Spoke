@@ -583,7 +583,7 @@ export async function assignTexters(job) {
       if (!dynamic) {
         assignment = new Assignment({ id: existingAssignment.id,
                                      user_id: existingAssignment.user_id,
-                                     campaign_id: cid}) // for notification
+                                     campaign_id: cid }) // for notification
       } else {
         await r.knex('assignment')
         .where({ id: existingAssignment.id })
