@@ -209,7 +209,6 @@ const campaignContactCache = {
       query = query.where('campaign_contact.campaign_id', campaign.id)
     }
     const messageServiceSid = getMessageServiceSid(organization)
-
     // We process the results in a stream, because this could be a very large result
     // For docs see:
     // https://knexjs.org/#Interfaces-Streams

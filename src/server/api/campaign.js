@@ -157,7 +157,7 @@ export const resolvers = {
           campaign_id: campaign.id,
           message_status: 'needsMessage',
           is_opted_out: false
-         })
+        })
         .limit(1)
       return contacts.length > 0
     },

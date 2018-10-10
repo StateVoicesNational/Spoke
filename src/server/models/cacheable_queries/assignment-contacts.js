@@ -150,7 +150,7 @@ export const cachedContactsQuery = async ({ assignmentId, timezoneOffsets, messa
       if (justCount) {
         return redisResult.reduce((i, j) => Number(i) + Number(j), 0)
       } else if (justIds) {
-        console.log('redis assignment contact result', redisResult, assignmentId, timezoneOffsets, range, messageStatuses)
+        console.log('redis assignment contact result', /*redisResult, */assignmentId, timezoneOffsets, range, messageStatuses)
         return redisResult
           .reduce((m, n) => [...m, ...n], [])
           .map(id => ({ id }))
@@ -299,7 +299,7 @@ export const getContacts = async (assignment, contactsFilter, organization, camp
     return contactQueryArgs.result
   }
   const cachedResult = await cachedContactsQuery(contactQueryArgs)
-  // console.log('getContacts cached', justCount, justIds, assignment.id, contactsFilter, cachedResult)
+  console.log('getContacts cached', justCount, justIds, assignment.id, contactsFilter, cachedResult)
   if (justIds && cachedResult === null && campaign.contactTimezones) {
     // Trigger a cache load if we're loading ids, which is only done for the texter
     // async (no await) on purpose to avoid blocking the original request

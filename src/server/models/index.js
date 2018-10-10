@@ -44,23 +44,23 @@ function createLoader(model, opts) {
 const tableList = [
   'organization', // good candidate?
   'user', // good candidate
-  'campaign', //good candidate
+  'campaign', // good candidate
   'assignment',
-  'campaign_contact', //?good candidate (or by cell)
+  'campaign_contact',
   // the rest are alphabetical
-  'canned_response', //good candidate
+  'canned_response',
   'interaction_step',
   'invite',
   'job_request',
   'log',
   'message',
   'migrations',
-  'opt_out',  //good candidate
+  'opt_out',  // good candidate
   'pending_message_part',
   'question_response',
   'user_cell',
   'user_organization',
-  'zip_code' //good candidate (or by contact)?
+  'zip_code' // good candidate (or by contact)?
 ]
 
 function createTablesIfNecessary() {
@@ -102,14 +102,14 @@ function getMessageServiceSid(organization) {
 const loaders = {
   // Note: loaders with cacheObj should also run loaders.XX.clear(id)
   //  on clear on the cache as well.
-  assignment: createLoader(Assignment, {cacheObj: cacheableData.assignment}),
-  campaign: createLoader(Campaign, {cacheObj: cacheableData.campaign}),
+  assignment: createLoader(Assignment, { cacheObj: cacheableData.assignment }),
+  campaign: createLoader(Campaign, { cacheObj: cacheableData.campaign }),
   invite: createLoader(Invite),
-  organization: createLoader(Organization, {cacheObj: cacheableData.organization}),
+  organization: createLoader(Organization, { cacheObj: cacheableData.organization }),
   user: createLoader(User),
   interactionStep: createLoader(InteractionStep),
-  campaignContact: createLoader(CampaignContact, {cacheObj: cacheableData.campaignContact}),
-  zipCode: createLoader(ZipCode, {idKey: 'zip'}),
+  campaignContact: createLoader(CampaignContact, { cacheObj: cacheableData.campaignContact }),
+  zipCode: createLoader(ZipCode, { idKey: 'zip' }),
   log: createLoader(Log),
   cannedResponse: createLoader(CannedResponse),
   jobRequest: createLoader(JobRequest),
