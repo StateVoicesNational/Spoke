@@ -17,4 +17,5 @@ before_script:
 - chmod +x ./travis-run-e2e-tests
 script:
 - npm run test
+- npm run test-fakeredis
 - ./travis-run-e2e-tests
