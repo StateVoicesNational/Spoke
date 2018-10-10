@@ -48,10 +48,6 @@ class AssignmentTexter extends React.Component {
   }
 
   componentWillUpdate(nextProps, nextState) {
-    if (this.contactCount() === 0) {
-      setTimeout(() => window.location.reload(), 5000)
-    }
-
     // When we send a message that changes the contact status,
     // then if parent.refreshData is called, then props.contacts
     // will return a new list with the last contact removed and
@@ -59,17 +55,21 @@ class AssignmentTexter extends React.Component {
     // In fact, without the code below, we will 'double-jump' each message
     // we send or change the status in some way.
     // Below, we update our index with the contact that matches our current index.
+    if (nextState.currentContactIndex != this.state.currentContactIndex) {
+      console.log('sendmessage updateindex <cur> <next>', this.state.currentContactIndex, nextState.currentContactIndex)
+    }
     if (typeof nextState.currentContactIndex !== 'undefined'
         && nextState.currentContactIndex === this.state.currentContactIndex
-        && nextProps.contacts.length !== this.props.contacts.length
+        && (nextProps.contacts[nextState.currentContactIndex]||{}).id !== (this.props.contacts[nextState.currentContactIndex]||{}).id
         && this.props.contacts[this.state.currentContactIndex]) {
       const curId = this.props.contacts[this.state.currentContactIndex].id
       const nextIndex = nextProps.contacts.findIndex((c) => c.id === curId)
       if (nextIndex !== nextState.currentContactIndex) {
         // eslint-disable-next-line no-param-reassign
-        console.log('changingIndex on update',
+        console.log('changingIndex on update <cur><next><curId><curList><nextList>',
                     nextState.currentContactIndex, nextIndex,
-                    this.props.contacts)
+                    curId,
+                    this.props.contacts, nextProps.contacts)
         nextState.currentContactIndex = Math.max(nextIndex, 0)
         // nextIndex can be -1 if not found, and in that case, we should defer to the front
       }
@@ -136,8 +136,12 @@ class AssignmentTexter extends React.Component {
         .map((c) => c.id)
         .filter((cId) => !force || !this.state.contactCache[cId])
     } else if (!getIds.length
+               && contacts[newIndex + BATCH_FORWARD - 1]
                && !contacts[newIndex + BATCH_FORWARD]
                && this.props.assignment.campaign.useDynamicAssignment) {
+      // If we have just crossed the threshold of contact data we have
+      // (i.e. BATCH_FORWARD-1 we have, but not BATCH_FORWARD)
+      // And we are in dynamic assignment, then we should get more contacts
       this.props.getNewContacts()
     }
     if (getIds.length) {
@@ -167,12 +171,19 @@ class AssignmentTexter extends React.Component {
 
   getContact(contacts, index) {
     if (contacts.length > index) {
+      console.log('getcontact',
+                  index, (contacts[index]||{}).id,
+                  (contacts.length > index + 1 ? 'next' + (contacts[index+1]||{}).id : 'end'))
       return contacts[index]
     }
     return null
   }
 
   incrementCurrentContactIndex = (increment) => {
+    console.log('incrementCurIndex',
+                this.state.currentContactIndex, (this.props.contacts[this.state.currentContactIndex]||{}).id,
+                this.props.contacts.length
+               )
     let newIndex = this.state.currentContactIndex
     newIndex = newIndex + increment
     this.updateCurrentContactIndex(newIndex)
@@ -202,9 +213,13 @@ class AssignmentTexter extends React.Component {
       this.handleNavigateNext()
     } else {
       // Will look async and then redirect to todo page if not
+      console.log('handleFinishContact',
+                  this.props.contacts[this.state.currentContactIndex],
+                  this.state.currentContactIndex)
       this.props.assignContactsIfNeeded(/* checkServer*/true)
     }
     if (contactId) {
+      console.log('updating state', contactId, this.props.contacts.findIndex((c) => c.id === contactId))
       // contactId was mutated, so clear current data
       this.setState({ contactCache: { ...this.state.contactCache,
                                       [contactId]: undefined }
@@ -248,7 +263,6 @@ class AssignmentTexter extends React.Component {
 
   currentContact() {
     const { contacts } = this.props
-
     // If the index has got out of sync with the contacts available, then rewind to the start
     if (typeof this.state.currentContactIndex !== 'undefined') {
       return this.getContact(contacts, this.state.currentContactIndex)
@@ -303,7 +317,7 @@ class AssignmentTexter extends React.Component {
     if (!contactData) {
       const self = this
       console.log('NO CONTACT DATA', self.state.currentContactIndex,
-                  contact, self.state.reloadDelay, this.state.contactCache)
+                  contact, self.state.reloadDelay, this.props.contacts)
       setTimeout(() => {
         if (self.state.contactCache[contact.id]) {
           self.forceUpdate()
