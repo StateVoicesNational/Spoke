@@ -55,9 +55,10 @@ class AssignmentTexter extends React.Component {
     // In fact, without the code below, we will 'double-jump' each message
     // we send or change the status in some way.
     // Below, we update our index with the contact that matches our current index.
-    if (nextState.currentContactIndex != this.state.currentContactIndex) {
-      console.log('sendmessage updateindex <cur> <next>', this.state.currentContactIndex, nextState.currentContactIndex)
-    }
+
+    // if (nextState.currentContactIndex != this.state.currentContactIndex) {
+    //   console.log('sendmessage updateindex <cur> <next>', this.state.currentContactIndex, nextState.currentContactIndex)
+    // }
     if (typeof nextState.currentContactIndex !== 'undefined'
         && nextState.currentContactIndex === this.state.currentContactIndex
         && (nextProps.contacts[nextState.currentContactIndex]||{}).id !== (this.props.contacts[nextState.currentContactIndex]||{}).id
@@ -65,11 +66,11 @@ class AssignmentTexter extends React.Component {
       const curId = this.props.contacts[this.state.currentContactIndex].id
       const nextIndex = nextProps.contacts.findIndex((c) => c.id === curId)
       if (nextIndex !== nextState.currentContactIndex) {
+        // console.log('changingIndex on update <cur><next><curId><curList><nextList>',
+        //             nextState.currentContactIndex, nextIndex,
+        //             curId,
+        //             this.props.contacts, nextProps.contacts)
         // eslint-disable-next-line no-param-reassign
-        console.log('changingIndex on update <cur><next><curId><curList><nextList>',
-                    nextState.currentContactIndex, nextIndex,
-                    curId,
-                    this.props.contacts, nextProps.contacts)
         nextState.currentContactIndex = Math.max(nextIndex, 0)
         // nextIndex can be -1 if not found, and in that case, we should defer to the front
       }
@@ -136,16 +137,14 @@ class AssignmentTexter extends React.Component {
         .map((c) => c.id)
         .filter((cId) => !force || !this.state.contactCache[cId])
     } else if (!getIds.length
+               && this.props.assignment.campaign.useDynamicAssignment
+               // If we have just crossed the threshold of contact data we have, get more
                && contacts[newIndex + BATCH_FORWARD - 1]
-               && !contacts[newIndex + BATCH_FORWARD]
-               && this.props.assignment.campaign.useDynamicAssignment) {
-      // If we have just crossed the threshold of contact data we have
-      // (i.e. BATCH_FORWARD-1 we have, but not BATCH_FORWARD)
-      // And we are in dynamic assignment, then we should get more contacts
+               && !contacts[newIndex + BATCH_FORWARD]) {
       this.props.getNewContacts()
     }
     if (getIds.length) {
-      console.log('getContactData length', newIndex, getIds.length)
+      // console.log('getContactData length', newIndex, getIds.length)
       this.setState({ loading: true })
       const contactData = await this.props.loadContacts(getIds)
       const { data: { getAssignmentContacts } } = contactData
@@ -160,7 +159,7 @@ class AssignmentTexter extends React.Component {
             newContactData[badId] = null
           }
         })
-        console.log('getContactData', newContactData, getAssignmentContacts)
+        // console.log('getContactData', newContactData, getAssignmentContacts)
         this.setState({
           loading: false,
           contactCache: { ...this.state.contactCache,
@@ -171,19 +170,14 @@ class AssignmentTexter extends React.Component {
 
   getContact(contacts, index) {
     if (contacts.length > index) {
-      console.log('getcontact',
-                  index, (contacts[index]||{}).id,
-                  (contacts.length > index + 1 ? 'next' + (contacts[index+1]||{}).id : 'end'))
+      // console.log('getcontact', index, (contacts[index]||{}).id, (contacts.length > index + 1 ? 'next' + (contacts[index+1]||{}).id : 'end'))
       return contacts[index]
     }
     return null
   }
 
   incrementCurrentContactIndex = (increment) => {
-    console.log('incrementCurIndex',
-                this.state.currentContactIndex, (this.props.contacts[this.state.currentContactIndex]||{}).id,
-                this.props.contacts.length
-               )
+    // console.log('incrementCurIndex', this.state.currentContactIndex, (this.props.contacts[this.state.currentContactIndex]||{}).id, this.props.contacts.length)
     let newIndex = this.state.currentContactIndex
     newIndex = newIndex + increment
     this.updateCurrentContactIndex(newIndex)
@@ -213,13 +207,11 @@ class AssignmentTexter extends React.Component {
       this.handleNavigateNext()
     } else {
       // Will look async and then redirect to todo page if not
-      console.log('handleFinishContact',
-                  this.props.contacts[this.state.currentContactIndex],
-                  this.state.currentContactIndex)
-      this.props.assignContactsIfNeeded(/* checkServer*/true)
+      // console.log('handleFinishContact', this.props.contacts[this.state.currentContactIndex], this.state.currentContactIndex)
+      this.props.assignContactsIfNeeded(/* checkServer */ true, this.state.currentContactIndex)
     }
     if (contactId) {
-      console.log('updating state', contactId, this.props.contacts.findIndex((c) => c.id === contactId))
+      // console.log('updating state', contactId, this.props.contacts.findIndex((c) => c.id === contactId))
       // contactId was mutated, so clear current data
       this.setState({ contactCache: { ...this.state.contactCache,
                                       [contactId]: undefined }
@@ -326,14 +318,15 @@ class AssignmentTexter extends React.Component {
           // Case 1: corrupt/problematic single entry
           //   Maybe they don't have access to that contact, etc
           // Strategy: see if we can just skip to the next one
-          console.log('try something',
-                      self.state.currentContactIndex,
-                      self.state.reloadDelay,
-                      self.props.contacts[self.state.currentContactIndex + 1],
-                      (self.props.contacts[self.state.currentContactIndex + 1]||{}).id,
-                      self.props.contacts,
-                      self.state.contactCache[
-                        (self.props.contacts[self.state.currentContactIndex + 1]||{}).id])
+
+          // console.log('try something',
+          //             self.state.currentContactIndex,
+          //             self.state.reloadDelay,
+          //             self.props.contacts[self.state.currentContactIndex + 1],
+          //             (self.props.contacts[self.state.currentContactIndex + 1]||{}).id,
+          //             self.props.contacts,
+          //             self.state.contactCache[
+          //               (self.props.contacts[self.state.currentContactIndex + 1]||{}).id])
           if (this.state.contactCache[contact.id] === null
               && self.props.contacts.length > (self.state.currentContactIndex + 1)) {
             // The current index was loaded and set as null to be invalid
