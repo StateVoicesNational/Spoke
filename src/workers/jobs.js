@@ -197,7 +197,7 @@ export async function uploadContacts(job) {
 export async function loadContactsFromDataWarehouseFragment(jobEvent) {
   console.log('starting loadContactsFromDataWarehouseFragment', jobEvent)
   const insertOptions = {
-    size: 1000
+    batchSize: 1000
   }
   const jobCompleted = (await r.knex('job_request')
                         .where('id', jobEvent.jobId)
