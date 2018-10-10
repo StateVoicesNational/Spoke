@@ -1,5 +1,6 @@
 import { r, datawarehouse, cacheableData,
-         Assignment, Campaign, CampaignContact, Organization, User } from '../server/models'
+         Assignment, Campaign, CampaignContact, Organization, User,
+         UserOrganization } from '../server/models'
 import { log, gunzip, zipToTimeZone, convertOffsetsToStrings } from '../lib'
 import { updateJob } from './lib'
 import { getFormattedPhoneNumber } from '../lib/phone-format.js'
@@ -195,6 +196,9 @@ export async function uploadContacts(job) {
 
 export async function loadContactsFromDataWarehouseFragment(jobEvent) {
   console.log('starting loadContactsFromDataWarehouseFragment', jobEvent)
+  const insertOptions = {
+    size: 1000
+  }
   const jobCompleted = (await r.knex('job_request')
                         .where('id', jobEvent.jobId)
                         .select('status')
@@ -259,14 +263,16 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
       contactCustomFields[f] = row[f]
     })
     contact.custom_fields = JSON.stringify(contactCustomFields)
-    if (contact.zip) {
-      contact.timezone_offset = await getTimezoneByZip(contact.zip)
+    if (contact.zip && !contactCustomFields.hasOwnProperty('timezone_offset')){
+      contact.timezone_offset = getTimezoneByZip(contact.zip)
+    }
+    if (contactCustomFields.hasOwnProperty('timezone_offset')){
+      contact.timezone_offset = contactCustomFields['timezone_offset']
     }
     return contact
   }))
 
-  await CampaignContact.save(savePortion)
-
+  await CampaignContact.save(savePortion, insertOptions)
   await r.knex('job_request').where('id', jobEvent.jobId).increment('status', 1)
   let validationStats = {}
   const completed = (await r.knex('job_request')
@@ -286,7 +292,7 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
         .where('campaign_id', jobEvent.campaignId)
         .delete()
         .then(result => {
-          console.log('# of contacts opted out removed : ' + result);
+          console.log('# of contacts opted out removed from DW query: ' + result);
           validationStats = {
             optOutCount: result
           }
@@ -297,7 +303,7 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
         .andWhere('campaign_id', jobEvent.campaignId)
         .delete()
         .then(result => {
-          console.log('# of contacts with invalid cells removed : ' + result);
+          console.log('# of contacts with invalid cells removed from DW query: ' + result);
           validationStats = {
             invalidCellCount: result
           }
@@ -383,7 +389,7 @@ export async function loadContactsFromDataWarehouse(job) {
     jobId: job.id,
     query: sqlQuery,
     campaignId: job.campaign_id,
-    jobMessages: jobMessages,
+    jobMessages,
     // beyond job object:
     organizationId: campaign.organization_id,
     totalParts,
@@ -467,9 +473,9 @@ export async function assignTexters(job) {
         Update assignment
     Delete texter
       Not sure we allow this?
-  
+
   TODO: what happens when we switch modes? Do we allow it?
-  */ 
+  */
   const payload = JSON.parse(job.payload)
   const cid = job.campaign_id
   const campaign = (await r.knex('campaign').where({ id: cid }))[0]
