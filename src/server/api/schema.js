@@ -974,7 +974,7 @@ const rootMutations = {
       contact = await cacheableData.message.save({ messageInstance, contact })
       console.log('contact saved', contact)
 
-      const service = serviceMap[messageInstance.service || process.env.DEFAULT_SERVICE]
+      const service = serviceMap[messageInstance.service || process.env.DEFAULT_SERVICE || global.DEFAULT_SERVICE]
       service.sendMessage(messageInstance, contact)
       return contact
     },
