@@ -143,7 +143,7 @@ const migrations = [
   {
     auto: true, // 12
     date: '2018-08-25',
-    migrate: async function () {
+    migrate: async () => {
       console.log('adding texting hours fields to campaign')
       await r.knex.schema.alterTable('campaign', (table) => {
         table.boolean('override_organization_texting_hours').notNullable().default(false)

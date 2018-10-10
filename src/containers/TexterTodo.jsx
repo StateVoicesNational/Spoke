@@ -44,6 +44,9 @@ class TexterTodo extends React.Component {
     this.refreshData = this.refreshData.bind(this)
     this.loadContacts = this.loadContacts.bind(this)
   }
+  componentWillUpdate(nextProps, nextState) {
+    console.log('textertodo willupdate', this.props.data, nextProps.data)
+  }
 
   componentWillMount() {
     const { assignment } = this.props.data
@@ -57,7 +60,9 @@ class TexterTodo extends React.Component {
 
   assignContactsIfNeeded = async (checkServer = false, stayOnFail = false) => {
     const { assignment } = this.props.data
-    if (assignment.contacts.length === 0 || checkServer) {
+    // TODO: should we assign a single contact at first, and then afterwards assign 10
+    //       to avoid people loading up the screen but doing nothing -- then they've 'taken' only one contact
+    if (!this.loadingNewContacts && (assignment.contacts.length === 0 || checkServer)) {
       const didAddContacts = await this.getNewContacts()
       if (didAddContacts) {
         return
@@ -65,7 +70,8 @@ class TexterTodo extends React.Component {
       if (stayOnFail && !assignment.contacts.length) {
         return
       }
-      console.log('ABOUT TO JUMP BACK', this.loadingAssignmentContacts, this.props.mutations.getAssignmentContacts.loading)
+      console.log('ABOUT TO JUMP BACK', this.loadingAssignmentContacts, this.loadingNewContacts,
+                  this.props.mutations.getAssignmentContacts.loading)
       this.props.router.push(
         `/app/${this.props.params.organizationId}/todos`
       )
@@ -75,12 +81,15 @@ class TexterTodo extends React.Component {
   getNewContacts = async () => {
     const { assignment } = this.props.data
     if (assignment.campaign.useDynamicAssignment) {
-      console.log('getnewContacts')
+      console.log('getnewContacts', assignment.contacts.map(c => c.id))
+      this.loadingNewContacts = true
       const didAddContacts = (await this.props.mutations.findNewCampaignContact(assignment.id)).data.findNewCampaignContact.found
       console.log('getNewContacts ?added', didAddContacts)
       if (didAddContacts) {
-        this.props.data.refetch()
+        // ?BUG: this isn't awaited on, but does this affect the immediate event loop cycle?
+        await this.props.data.refetch()
       }
+      this.loadingNewContacts = false
       return didAddContacts
     }
   }
