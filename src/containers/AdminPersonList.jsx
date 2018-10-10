@@ -212,11 +212,11 @@ AdminPersonList.propTypes = {
   location: PropTypes.object
 }
 
-const mapMutationsToProps = () => ({
+const mapMutationsToProps = ({ ownProps }) => ({
   editOrganizationRoles: (organizationId, userId, roles) => ({
     mutation: gql`
-      mutation editOrganizationRoles($organizationId: String!, $userId: String!, $roles: [String]) {
-        editOrganizationRoles(organizationId: $organizationId, userId: $userId, roles: $roles) {
+      mutation editOrganizationRoles($organizationId: String!, $userId: String!, $roles: [String], $campaignId: String) {
+        editOrganizationRoles(organizationId: $organizationId, userId: $userId, roles: $roles, campaignId: $campaignId) {
           ${organizationFragment}
         }
       }
@@ -224,7 +224,8 @@ const mapMutationsToProps = () => ({
     variables: {
       organizationId,
       userId,
-      roles
+      roles,
+      campaignId: ownProps.location.query.campaignId
     }
   })
 })
