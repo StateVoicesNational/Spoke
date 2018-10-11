@@ -2,7 +2,7 @@ import { r } from '../../models'
 
 import { getHighestRole } from '../../../lib/permissions'
 
-export async function userHasRole(userId, orgId, acceptableRoles) {
+const userHasRole = async (userId, orgId, acceptableRoles) => {
   if (r.redis) {
     // cached approach
     const userKey = `texterinfo-${userId}`
@@ -32,7 +32,16 @@ export async function userHasRole(userId, orgId, acceptableRoles) {
   }
 }
 
-export async function userLoggedIn(authId) {
+const updateRole = async (userId, newRole) => {
+  if (r.redis) {
+    console.log('user id:', userId);
+    console.log('new role:', newRole);
+  } else {
+
+  }
+}
+
+const userLoggedIn = async (authId) => {
   const authKey = `texterauth-${authId}`
 
   if (r.redis) {
@@ -56,7 +65,7 @@ export async function userLoggedIn(authId) {
   return userAuth
 }
 
-export async function currentEditors(redis, campaign, user) {
+const currentEditors = async (redis, campaign, user) => {
   // Add user ID in case of duplicate admin names
   const displayName = `${user.id}~${user.first_name} ${user.last_name}`
 
@@ -76,4 +85,11 @@ export async function currentEditors(redis, campaign, user) {
   return editors.map(editor => {
     return editor[0].split('~')[1]
   }).join(', ')
+}
+
+export const userCache = {
+  currentEditors,
+  userLoggedIn,
+  userHasRole,
+  updateRole
 }
