@@ -1,5 +1,6 @@
 import { r } from '../../models'
 import { getTotalContactCount, getTimezoneOffsets, updateAssignmentContact } from './assignment-contacts'
+import { updateTexterLastActivity } from './assignment-user'
 import { getCacheContactAssignment, setCacheContactAssignment } from './campaign-contact'
 import { Writable } from 'stream'
 
@@ -48,7 +49,7 @@ const pushInFlight = async (assignment, contactId) => {
   }
 }
 
-export const popInFlight = async (campaignId, contactId) => {
+export const popInFlight = async (campaignId, contactId, userId = null) => {
   // Function to remove a contact from the campaign's inflight list
   // (called when the user sends a message to the contact)
   if (r.redis) {
@@ -57,6 +58,9 @@ export const popInFlight = async (campaignId, contactId) => {
       .zrem(key, contactId)
       .expire(key, 86400)
       .execAsync()
+    if (userId) {
+      await updateTexterLastActivity(campaignId, userId)
+    }
     console.log('popinflight', campaignId, contactId, key, res)
   }
 }

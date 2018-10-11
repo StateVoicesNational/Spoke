@@ -177,7 +177,9 @@ const messageCache = {
 
     if (contactData.campaign_id) {
       // after we send a message, we should remove it from the inflight-list
-      await popInFlight(contactData.campaign_id, contactData.id)
+      await popInFlight(contactData.campaign_id, contactData.id,
+                        // This will update the texter's last-activity time
+                        !messageInstance.is_from_contact && messageInstance.user_id)
     }
     // console.log('hi saveMsg1', contactData, contact)
     await saveMessageCache(contactData.id, [messageInstance])
