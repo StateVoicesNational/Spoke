@@ -14,7 +14,6 @@ const userCacheKey = (orgId, userId) => `${process.env.CACHE_PREFIX || ''}useras
 //   score=0 means they have been unassigned the assignment
 const campaignAssignmentsKey = (campaignId) => `${process.env.CACHE_PREFIX || ''}campaignassignments-${campaignId}`
 
-
 export const getUserAssignments = async (organizationId, userId, assignmentLoader) => {
   const key = userCacheKey(organizationId, userId)
   // console.log('getUserAssignments', organizationId, userId, key)
@@ -108,6 +107,19 @@ export const reloadCampaignTexters = async (campaignId) => {
       .zadd(key, ...redisArgs)
       .expire(key, 86400)
       .execAsync()
+  }
+}
+
+export const updateTexterLastActivity = async (campaignId, userId) => {
+  if (r.redis) {
+    const campaignKey = campaignAssignmentsKey(campaignId)
+    const exists = await r.redis.existsAsync(campaignKey)
+    if (exists) {
+      await r.redis.multi()
+        .zadd(campaignKey, Number(new Date()), userId)
+        .expire(campaignKey, 86400)
+        .execAsync()
+    }
   }
 }
 
