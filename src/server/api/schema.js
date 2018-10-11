@@ -377,6 +377,7 @@ const rootMutations = {
       if (newOrgRoles.length) {
         await UserOrganization.save(newOrgRoles, { conflict: 'update' })
       }
+      cacheableData.userCache.updateRole(userId, newRole)
       return loaders.organization.load(organizationId)
     },
     editUser: async (_, { organizationId, userId, userData }, { user }) => {

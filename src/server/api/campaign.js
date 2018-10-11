@@ -1,6 +1,5 @@
 import { mapFieldsToModel } from './lib/utils'
 import { Campaign, JobRequest, r, cacheableData } from '../models'
-import { currentEditors } from '../models/cacheable_queries'
 
 export function buildCampaignQuery(queryParam, organizationId, campaignsFilter, addFromClause = true) {
   let query = queryParam
@@ -167,7 +166,7 @@ export const resolvers = {
     stats: async (campaign) => campaign,
     editors: async (campaign, _, { user }) => {
       if (r.redis) {
-        return currentEditors(r.redis, campaign, user)
+        return cacheableData.user.currentEditors(r.redis, campaign, user)
       }
       return ''
     }
