@@ -276,6 +276,7 @@ const rootMutations = {
         .update({
           terms: true
         })
+      await cacheableData.user.clearUser(user.id, user.auth0_id)
       return currentUser
     },
 
@@ -377,6 +378,7 @@ const rootMutations = {
       if (newOrgRoles.length) {
         await UserOrganization.save(newOrgRoles, { conflict: 'update' })
       }
+      await cacheableData.user.clearUser(userId)
       return loaders.organization.load(organizationId)
     },
     editUser: async (_, { organizationId, userId, userData }, { user }) => {
@@ -406,6 +408,7 @@ const rootMutations = {
               email: userData.email,
               cell: userData.cell
             })
+          await cacheableData.user.clearUser(member.id, member.auth0_id)
           userData = {
             id: userId,
             first_name: userData.firstName,
@@ -421,7 +424,7 @@ const rootMutations = {
     },
     joinOrganization: async (_, { organizationUuid }, { user, loaders }) => {
       let organization
-      ;[organization] = await r.knex('organization').where('uuid', organizationUuid)
+      [organization] = await r.knex('organization').where('uuid', organizationUuid)
       if (organization) {
         const userOrg = await r
           .table('user_organization')
@@ -438,11 +441,12 @@ const rootMutations = {
             // Unexpected errors
             console.log("error on userOrganization save", error)
           });
+          await cacheableData.user.clearUser(user.id)
 
         } else { // userOrg exists
           console.log('existing userOrg ' + userOrg.id + ' user ' + user.id + ' organizationUuid ' + organizationUuid )
         }
-      } else { // no organization 
+      } else { // no organization
         console.log('no organization with id ' + organizationUuid + ' for user ' + user.id)
       }
       return organization
@@ -1205,8 +1209,11 @@ const rootResolvers = {
       return contact
     },
     organizations: async (_, { id }, { user }) => {
-      await superAdminRequired(user)
-      return r.table('organization')
+      if (user.is_superadmin) {
+        return r.table('organization')
+      } else {
+        return await cacheableData.user.userOrgs(user.id, 'TEXTER')
+      }
     },
     availableActions: (_, { organizationId }, { user }) => {
       if (!process.env.ACTION_HANDLERS) {
