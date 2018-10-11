@@ -138,7 +138,6 @@ export async function createCampaign(user, organization) {
   const title = 'test campaign'
   const description = 'test description'
   const organizationId = organization.data.createOrganization.id
-  const contacts = []
   const context = getContext({ user })
 
   const campaignQuery = `mutation createCampaign($input: CampaignInput!) {
@@ -150,8 +149,7 @@ export async function createCampaign(user, organization) {
     input: {
       title,
       description,
-      organizationId,
-      contacts
+      organizationId
     }
   }
   const ret = await graphql(mySchema, campaignQuery, rootValue, context, variables)
