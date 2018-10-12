@@ -76,3 +76,5 @@ WAREHOUSE_DB_{TYPE,HOST,PORT,NAME,USER,PASSWORD}   | Enables ability to load con
 WAREHOUSE_DB_LAMBDA_ITERATION     | If the WAREHOUSE_DB_ connection/feature is enabled, then on AWS Lambda, queries that take longer than 5min can expire.  This will enable incrementing through queries on new lambda invocations to avoid timeouts.
 WEBPACK_HOST                      | Host domain or IP for Webpack development server. _Default_: 127.0.0.1.
 WEBPACK_PORT                      | Port for Webpack development server. _Defaut_: 3000.
+FIX_ORGLESS                       | Set to any truthy value only if you want to run the job that automatically assigns the default org (see DEFAULT_ORG) to new users who have no assigned org.
+DEFAULT_ORG                       | Set only with FIX_ORGLESS. Set to integer organization.id corresponding to the organization you want orgless users to be assigned to.
