@@ -57,6 +57,41 @@ export const getTimezoneOffsets = (organization, campaign, validTimezone) => {
   return finalQueryOffsets
 }
 
+const getTimeOfDayScore = (range, status) => {
+  const time = new Date()
+  // note, this is pretty close to the range but if we did full milliseconds, we'd go over
+  const dayScore = Math.floor((time.getUTCHours() * 60 * 24 * 100)
+                              + (time.getUTCMinutes() * 60 * 100)
+                              + time.getUTCSeconds() * 100
+                              + time.getMilliseconds() / 10
+                             )
+  // const spreadedScore = ((range[1] - range[0]) * daySeconds / 86400)
+  // if (status && status === 'convo') {
+  //   return Math.floor(range[1] - dayScore)
+  // }
+  return Math.floor(range[0] + dayScore)
+}
+
+const dayCycleSortFunction = (messageStatus, key) => {
+  // return a function that will sort based on current time and the inputted range
+  // for 'most recent', though if it's 7pm today and someone texted at 6:30pm *yesterday*
+  // then it will be as if that person texted at 6:30pm today -- i.e. we flatten the day
+  const range = msgStatusRange[messageStatus]
+  const now = getTimeOfDayScore(range) + 1000 // add 1000 to avoid millisecond/delta games
+  const max = range[1]
+  return (a,b) => {
+    // Price is Right rules
+    // Sort so that it is ordered with low being most recent (closest to now but under)
+    // and the stuff after now is from yesterday, and so should sort in reverse order
+    const aval = (a[key] > now ? max + now - a[key] : now - a[key])
+    const bval = (b[key] > now ? max + now - b[key] : now - b[key])
+    if (messageStatus === 'convo') {
+      return aval - bval // newest to oldest
+    }
+    return bval - aval // oldest to newest
+  }
+}
+
 export const getContactQueryArgs = (assignmentId, contactsFilter, organization, campaign, forCount, justCount, justIds) => {
   // / returns list of contacts eligible for contacting _now_ by a particular user
   const includePastDue = (contactsFilter && contactsFilter.includePastDue)
@@ -105,7 +140,7 @@ export const cachedContactsQuery = async ({ assignmentId, timezoneOffsets, messa
       // Narrowing it to these cases (which are actually used, and others aren't)
       // we can simplify the logic by not accomodating all the different permutations
       && timezoneOffsets
-      && (justCount || justIds)) {
+      && (justCount || (justIds && messageStatuses))) {
     let range = [0, Infinity] // everything, including optouts
     if (isOptedOutFilter === true) {
       range = [0, 0]
@@ -141,7 +176,7 @@ export const cachedContactsQuery = async ({ assignmentId, timezoneOffsets, messa
       const key = assignmentContactsKey(assignmentId, tz)
       // console.log('assignentcontacts key', key)
       existsQuery = existsQuery.exists(key)
-      resultQuery = resultQuery[cmd](key, range[0], range[1])
+      resultQuery = resultQuery[cmd](key, range[0], range[1], justCount ? undefined : 'WITHSCORES')
     })
     // console.log('redis assignment query', assignmentId, timezoneOffsets, range)
     const existsResult = await existsQuery.execAsync()
@@ -151,9 +186,16 @@ export const cachedContactsQuery = async ({ assignmentId, timezoneOffsets, messa
         return redisResult.reduce((i, j) => Number(i) + Number(j), 0)
       } else if (justIds) {
         console.log('redis assignment contact result', /*redisResult, */assignmentId, timezoneOffsets, range, messageStatuses)
-        return redisResult
-          .reduce((m, n) => [...m, ...n], [])
-          .map(id => ({ id }))
+        const retVal = []
+        redisResult.forEach(tzScoreList => {
+          for (let i = 0, l = tzScoreList.length; i < l; i = i + 2) {
+            retVal.push({ id: tzScoreList[i], score: tzScoreList[i+1] })
+          }
+        })
+        // Sort so we can combine the diff timezone cache lines together
+        // This function also reverses when status=convo
+        retVal.sort(dayCycleSortFunction(messageStatuses[0], 'score'))
+        return retVal
       }
     }
   }
@@ -263,10 +305,10 @@ export const loadAssignmentContacts = async (assignmentId, campaignId, organizat
         // eslint-disable-next-line no-param-reassign
         tzObj[c.status] += 1
       }
-      if (c.status === 'convo') {
-        // starts at max and counts down for reverse order
-        return msgStatusRange[c.status][1] - tzObj[c.status]
-      }
+      // if (c.status === 'convo') {
+      //   // starts at max and counts down for reverse order
+      //   return msgStatusRange[c.status][1] - tzObj[c.status]
+      // }
       return msgStatusRange[c.status][0] + tzObj[c.status]
     }
     contacts.forEach((c) => {
@@ -299,7 +341,10 @@ export const getContacts = async (assignment, contactsFilter, organization, camp
     return contactQueryArgs.result
   }
   const cachedResult = await cachedContactsQuery(contactQueryArgs)
-  console.log('getContacts cached', justCount, justIds, assignment.id, contactsFilter, cachedResult)
+  if (justIds) {
+    console.log('getContacts cached', justCount, justIds, assignment.id, contactsFilter,
+                cachedResult && cachedResult.length, cachedResult && cachedResult.slice(0,2))
+  }
   if (justIds && cachedResult === null && campaign.contactTimezones) {
     // Trigger a cache load if we're loading ids, which is only done for the texter
     // async (no await) on purpose to avoid blocking the original request
@@ -327,32 +372,20 @@ export const clearAssignmentContacts = async (assignmentId, timezoneOffsets, con
   }
 }
 
-export const updateAssignmentContact = async (contact, newStatus) => {
-  // Needs: contact.id, contact.timezone_offset, contact.assignment_id, ?contact.message_status
-  const key = assignmentContactsKey(contact.assignment_id, contact.timezone_offset)
-  const range = msgStatusRange[newStatus]
-  const ri = [1, 0] // range index
-  let cmd = 'zrevrangebyscore'
-  if (newStatus === 'convo') {
-    cmd = 'zrangebyscore'
-    ri.reverse() // range goes min-max argument order
-  }
-  // console.log('updateAssignmentContact', contact, newStatus, range, cmd, key)
-  const [exists, curMax] = await r.redis.multi()
-    .exists(key)
-    [cmd](key, range[ri[0]], range[ri[1]], 'WITHSCORES', 'LIMIT', 0, 1)
-    .execAsync()
-  // console.log('updateassignmentcontact', contact.id, newStatus, range, cmd, key, exists, curMax)
-  if (exists) {
-    // eslint-disable-next-line no-nested-ternary
-    const newScore = (curMax && curMax.length
-                      ? Number(curMax[1]) + (newStatus === 'convo' ? -1 : 1)
-                      : (newStatus === 'convo' ? range[1] : range[0]))
-    console.log('updateassignment', contact.id, newScore)
-    //, await r.redis.zrangeAsync(key, 0, -1, 'WITHSCORES'))
-    await r.redis.multi()
-      .zadd([key, newScore, contact.id])
-      .expire(key, 86400)
-      .execAsync()
+export const updateAssignmentContact = async (contact, newStatus, delta) => {
+  // Needs: contact.id, contact.timezone_offset, contact.assignment_id
+  if (r.redis) {
+    const key = assignmentContactsKey(contact.assignment_id, contact.timezone_offset)
+    const range = msgStatusRange[newStatus]
+    const exists = await r.redis.existsAsync(key)
+    if (exists) {
+      const newScore = getTimeOfDayScore(range, newStatus) + (delta || 0)
+      // TODO: score is sometimes ending up as needsMessage when it should be needsResponse or messaged
+      console.log('updateassignment', contact.id, newScore, newStatus, range)
+      await r.redis.multi()
+        .zadd([key, newScore, contact.id])
+        .expire(key, 86400)
+        .execAsync()
+    }
   }
 }

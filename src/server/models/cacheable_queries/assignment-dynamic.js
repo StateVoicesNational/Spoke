@@ -128,7 +128,7 @@ const popNeedsMessage = async (assignment, campaign, organization, numberContact
       // 5. Update contact.assignment_id and contact.user_id
       await setCacheContactAssignment(cPartial.id, cPartial)
       // 6. Push into assignment-contacts (with appropriate timezones!)
-      await updateAssignmentContact(cPartial, 'needsMessage')
+      await updateAssignmentContact(cPartial, 'needsMessage', j)
 
       finalContactIds.push(cPartial.id)
     }

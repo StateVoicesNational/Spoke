@@ -158,9 +158,12 @@ const messageCache = {
         }
       }
       contactData.id = (contactData.id || activeCellFound.campaign_contact_id)
-      contactData.timezone_offset = (contactData.timezone_offset || activeCellFound.timezone_offset)
-      contactData.message_status = (contactData.message_status || activeCellFound.message_status)
       contactData.assignment_id = (contactData.assignment_id || activeCellFound.assignment_id)
+      contactData.message_status = (contactData.message_status || activeCellFound.message_status)
+      contactData.timezone_offset = (contactData.timezone_offset || activeCellFound.timezone_offset)
+
+      contactData.cell = (contactData.cell || messageInstance.contact_number)
+      contactData.messageservice_sid = (contactData.messageservice_sid || messageInstance.messageservice_sid)
 
       const updateFields = ['campaign_contact_id', 'assignment_id']
       updateFields.forEach(f => {
@@ -189,7 +192,7 @@ const messageCache = {
       newStatus = (contactData.message_status === 'needsResponse'
                    ? 'convo' : 'messaged')
     }
-    // console.log('hi saveMsg3', newStatus, contactData)
+    console.log('hi saveMsg3', newStatus, contactData)
     await campaignContactCache.updateStatus(
       contactData, newStatus
     )
