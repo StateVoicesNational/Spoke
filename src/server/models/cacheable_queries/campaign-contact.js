@@ -256,6 +256,7 @@ const campaignContactCache = {
     if (r.redis) {
       const cellData = await r.redis.getAsync(
         cellTargetKey(cell, messageServiceSid))
+      // console.log('lookupByCell cache', cell, service, messageServiceSid, cellData)
       if (cellData) {
         // eslint-disable-next-line camelcase
         const [campaign_contact_id, assignment_id, timezone_offset] = cellData.split(':')
@@ -285,6 +286,7 @@ const campaignContactCache = {
       })
       .orderBy('created_at', 'desc')
       .limit(1)
+    // console.log('lookupByCell db', cell, 'x', service, 'y', messageServiceSid, 'z', lastMessage)
     if (lastMessage) {
       return {
         assignment_id: lastMessage.assignment_id,
