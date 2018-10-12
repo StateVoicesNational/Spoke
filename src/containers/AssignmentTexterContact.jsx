@@ -383,7 +383,7 @@ export class AssignmentTexterContact extends React.Component {
         return // stops from multi-send
       }
       this.setState({ disabled: true })
-      // console.log('sendMessage', contact.id)
+      console.log('sendMessage', contact.id)
       await this.props.mutations.sendMessage(message, contact.id)
 
       await this.handleSubmitSurveys()
