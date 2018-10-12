@@ -449,15 +449,21 @@ const rootMutations = {
           .filter({ organization_id: organization.id })
           .limit(1)(0)
           .default(null)
-
         if (!userOrg) {
           await UserOrganization.save({
             user_id: user.id,
             organization_id: organization.id,
             role: 'TEXTER'
-          })
+          }).error(function(error) {
+            // Unexpected errors
+            console.log("error on userOrganization save", error)
+          });
           await cacheableData.user.clearUser(user.id)
+        } else { // userOrg exists
+          console.log('existing userOrg ' + userOrg.id + ' user ' + user.id + ' organizationUuid ' + organizationUuid )
         }
+      } else { // no organization 
+        console.log('no organization with id ' + organizationUuid + ' for user ' + user.id)
       }
       return organization
     },
