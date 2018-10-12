@@ -1,5 +1,3 @@
-There are current two ways to run tests, using either PostgreSQL or SQLite.
-
 ## PostgreSQL Testing (default, closer to most prod environments)
 
 1) Install PostgreSQL
@@ -11,17 +9,27 @@ GRANT ALL PRIVILEGES ON DATABASE spoke_test TO spoke_test;
 ```
 3) Run `npm test`
 
+## Testing with PostgreSQL and fakeredis
+
+Spoke has an additional cache in redis as described in [this document](./HOWTO-scale-spoke-plan.md). You can run the tests with this cache enabled with:
+```
+npm run test-fakeredis
+```
+You don't need to have redis running, as this uses an emulated version from npm.
+
+Note that this also requires the `spoke_test` PostgreSQL database described above.
+
 ## SQLite Testing (simpler)
 
 1) Run `npm run test-sqlite`
 
 ## End-To-End (Interactive Browser) Testing
 
-1. Remember to set `NODE_ENV=dev` 
+1. Remember to set `NODE_ENV=dev`
 1. **Start DB** and **Start Spoke Server** as described in the [Getting Started](
-https://github.com/MoveOnOrg/Spoke/blob/main/README.md#getting-started) section. 
+https://github.com/MoveOnOrg/Spoke/blob/main/README.md#getting-started) section.
 1. Install browser driver(s)
-    
+
     * Installing chromedriver on MacOS
         ```
         brew tap homebrew/cask
@@ -40,7 +48,7 @@ https://github.com/MoveOnOrg/Spoke/blob/main/README.md#getting-started) section.
       npm run test-e2e <test name>
       ```
     * ... using Sauce Labs browser with your local host
-      
+
       **Note:** You must first setup [Sauce Labs](https://github.com/MoveOnOrg/Spoke/blob/main/docs/EXPLANATION-end-to-end-tests.md#saucelabs)
       ```
       export SAUCE_USERNAME=<Sauce Labs user name>
