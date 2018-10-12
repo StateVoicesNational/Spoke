@@ -59,7 +59,7 @@ const generateCacheRecord = (dbRecord, organizationId, messageServiceSid, campai
   cell: dbRecord.cell,
   custom_fields: dbRecord.custom_fields,
   zip: dbRecord.zip,
-  external_id: dbRecord.message_status,
+  external_id: dbRecord.external_id,
   // explicitly excluding:
   // message_status -- because it will be indexed by cell elsewhere
   // updated_at -- because we will not update it
@@ -138,6 +138,11 @@ const getMessageStatus = async (id, contactObj) => {
   return (contact && contact.message_status)
 }
 
+const clearMemoizedCache = (id) => {
+  loaders.campaignContact.clear(String(id))
+  loaders.campaignContact.clear(Number(id))
+}
+
 const campaignContactCache = {
   clear: async (id) => {
     if (r.redis) {
@@ -145,8 +150,7 @@ const campaignContactCache = {
                              messageStatusKey(id),
                              contactAssignmentKey(id))
     }
-    loaders.campaignContact.clear(String(id))
-    loaders.campaignContact.clear(Number(id))
+    clearMemoizedCache(id)
   },
   load: async(id, opts) => {
     if (r.redis) {
@@ -294,10 +298,11 @@ const campaignContactCache = {
     return false
   },
   getMessageStatus,
-  updateAssignmentCache: async (contactId, newAssignmentId, newUserId) => (
+  updateAssignmentCache: async (contactId, newAssignmentId, newUserId) => {
     await setCacheContactAssignment(contactId, { assignment_id: newAssignmentId,
                                                  user_id: newUserId })
-  ),
+    clearMemoizedCache(contactId)
+  },
   updateStatus: async (contact, newStatus) => {
     // console.log('updateSTATUS', contact, newStatus)
     if (r.redis) {
@@ -322,6 +327,7 @@ const campaignContactCache = {
         .execAsync()
       await updateAssignmentContact(contact, newStatus)
     }
+    clearMemoizedCache(contact.id)
     // console.log('updateStatus, CONTACT', contact)
     await r.knex('campaign_contact')
       .where('id', contact.id)
