@@ -4,13 +4,8 @@ import { modelWithExtraProps } from './lib'
 import { updateAssignmentContact } from './assignment-contacts'
 import { Writable } from 'stream'
 
-// TODO: for dynamic assignment, the assignment_id should NOT be set
-// -- so it can be loaded before it's assigned
-// used below and in sendMessage -- can be loaded from cellTargetKey
-// OR with dynamic assignment, we can get it from inflight-sortedset
-
 // <campaignContactId>
-//   - assignmentId
+//   - assignmentId (for non-dynamic assignment)
 //   - campaignId
 //   - orgId
 //   - userId

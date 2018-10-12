@@ -417,7 +417,6 @@ export const updateAssignmentContact = async (contact, newStatus, delta) => {
     const exists = await r.redis.existsAsync(key)
     if (exists) {
       const newScore = getTimeOfDayScore(range, newStatus) + (delta || 0)
-      // TODO: score is sometimes ending up as needsMessage when it should be needsResponse or messaged
       console.log('updateassignment', contact.id, newScore, newStatus, range)
       await r.redis.multi()
         .zadd([key, newScore, contact.id])
