@@ -57,18 +57,14 @@ export const getTimezoneOffsets = (organization, campaign, validTimezone) => {
   return finalQueryOffsets
 }
 
-const getTimeOfDayScore = (range, status) => {
+const getTimeOfDayScore = (range) => {
   const time = new Date()
-  // note, this is pretty close to the range but if we did full milliseconds, we'd go over
+  // Note, this is pretty close to the range but if we did full milliseconds, we'd go over
   const dayScore = Math.floor((time.getUTCHours() * 60 * 24 * 100)
                               + (time.getUTCMinutes() * 60 * 100)
                               + time.getUTCSeconds() * 100
                               + time.getMilliseconds() / 10
                              )
-  // const spreadedScore = ((range[1] - range[0]) * daySeconds / 86400)
-  // if (status && status === 'convo') {
-  //   return Math.floor(range[1] - dayScore)
-  // }
   return Math.floor(range[0] + dayScore)
 }
 
@@ -79,7 +75,7 @@ const dayCycleSortFunction = (messageStatus, key) => {
   const range = msgStatusRange[messageStatus]
   const now = getTimeOfDayScore(range) + 1000 // add 1000 to avoid millisecond/delta games
   const max = range[1]
-  return (a,b) => {
+  return (a, b) => {
     // Price is Right rules
     // Sort so that it is ordered with low being most recent (closest to now but under)
     // and the stuff after now is from yesterday, and so should sort in reverse order
@@ -185,11 +181,11 @@ export const cachedContactsQuery = async ({ assignmentId, timezoneOffsets, messa
       if (justCount) {
         return redisResult.reduce((i, j) => Number(i) + Number(j), 0)
       } else if (justIds) {
-        console.log('redis assignment contact result', /*redisResult, */assignmentId, timezoneOffsets, range, messageStatuses)
+        console.log('redis assignment contact result', assignmentId, timezoneOffsets, range, messageStatuses)
         const retVal = []
         redisResult.forEach(tzScoreList => {
           for (let i = 0, l = tzScoreList.length; i < l; i = i + 2) {
-            retVal.push({ id: tzScoreList[i], score: tzScoreList[i+1] })
+            retVal.push({ id: tzScoreList[i], score: tzScoreList[i + 1] })
           }
         })
         // Sort so we can combine the diff timezone cache lines together
@@ -343,7 +339,7 @@ export const getContacts = async (assignment, contactsFilter, organization, camp
   const cachedResult = await cachedContactsQuery(contactQueryArgs)
   if (justIds) {
     console.log('getContacts cached', justCount, justIds, assignment.id, contactsFilter,
-                cachedResult && cachedResult.length, cachedResult && cachedResult.slice(0,2))
+                cachedResult && cachedResult.length, cachedResult && cachedResult.slice(0, 2))
   }
   if (justIds && cachedResult === null && campaign.contactTimezones) {
     // Trigger a cache load if we're loading ids, which is only done for the texter
