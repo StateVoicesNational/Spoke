@@ -65,20 +65,23 @@ class TexterTodo extends React.Component {
         return
       }
       // FUTURE: we might check if currentIndex is really at the end now that we've updated
-      console.log('ABOUT TO JUMP BACK', checkServer, currentIndex)
-      this.props.router.push(
-        `/app/${this.props.params.organizationId}/todos`
-      )
+      console.log('Are we empty?', checkServer, currentIndex)
+      const self = this
+      return () => {
+        self.props.router.push(
+          `/app/${self.props.params.organizationId}/todos`
+        )
+      }
     }
   }
 
   getNewContacts = async (waitForServer = false, currentIndex) => {
     const { assignment } = this.props.data
     if (assignment.campaign.useDynamicAssignment) {
-      // console.log('getnewContacts', assignment.contacts.map(c => c.id))
+      console.log('getnewContacts<ind><cur contacts>', currentIndex, assignment.contacts.map(c => c.id))
       this.loadingNewContacts = true
       const didAddContacts = (await this.props.mutations.findNewCampaignContact(assignment.id)).data.findNewCampaignContact.found
-      // console.log('getNewContacts ?added', didAddContacts)
+      console.log('getNewContacts ?added', didAddContacts)
       if (didAddContacts | waitForServer) {
         await this.props.data.refetch()
       }
