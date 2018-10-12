@@ -182,6 +182,8 @@ const userCache = {
       await r.redis.delAsync(userRoleKey(userId))
       if (authId) {
         await r.redis.delAsync(userAuthKey(authId))
+      } else {
+        return await dbLoadUserRoles(userId)
       }
     }
   }
