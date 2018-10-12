@@ -71,7 +71,7 @@ thinkyConn.r.getCount = async (query) => {
 
 if (process.env.REDIS_URL) {
   thinkyConn.r.redis = redis.createClient({ url: process.env.REDIS_URL })
-} else if (process.env.REDIS_FAKE) {
+} else if (process.env.REDIS_FAKE || global.REDIS_FAKE) {
   const fakeredis = require('fakeredis')
   bluebird.promisifyAll(fakeredis.RedisClient.prototype)
   bluebird.promisifyAll(fakeredis.Multi.prototype)
