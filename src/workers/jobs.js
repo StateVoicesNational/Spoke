@@ -22,7 +22,7 @@ function optOutsByInstance() {
   return r.knex.select('cell').from('opt_out')
 }
 
-function getOptOutSubQuery(orgId) {
+export function getOptOutSubQuery(orgId) {
   return (!!process.env.OPTOUTS_SHARE_ALL_ORGS ? optOutsByInstance() : optOutsByOrgId(orgId))
 }
 

@@ -38,7 +38,7 @@ const topLevelUploadFields = ['firstName', 'lastName', 'cell', 'zip', 'external_
 
 export { ROLE_HIERARCHY, getHighestRole, hasRole, isRoleGreater } from './permissions'
 
-const getValidatedData = (data, optOuts) => {
+export const getValidatedData = (data, optOuts) => {
   const optOutCells = optOuts.map((optOut) => optOut.cell)
   let validatedData
   let result
@@ -73,7 +73,9 @@ const getValidatedData = (data, optOuts) => {
       optOutCount: optOutRows.length,
       invalidCellCount: invalidCellRows.length,
       missingCellCount: missingCellRows.length,
-      zipCount
+      zipCount,
+      invalidCellRows,
+      missingCellRows
     }
   }
 }
