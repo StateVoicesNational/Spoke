@@ -8,7 +8,9 @@ __test__/test_data/*
 production-env.json
 claudia.json
 stage.json
+beta.json
 stage-env.json
+beta-env.json
 test.sqlite
 *~
 *#
