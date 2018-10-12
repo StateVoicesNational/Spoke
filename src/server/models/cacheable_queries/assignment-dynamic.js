@@ -137,47 +137,95 @@ const popNeedsMessage = async (assignment, campaign, organization, numberContact
   return null
 }
 
+const bulkSaveContacts = async (campaignId, timezoneOffsets, remainingMilliseconds, contactsQuery) => {
+  const contactsToDynAssign = (await contactsQuery)
+  for (let i1000 = 0, l1000 = Math.ceil(contactsToDynAssign.length / 1000); i1000 < l1000; i1000++) {
+    const tzs = {}
+    contactsToDynAssign.slice(1000 * i1000, 1000 * i1000 + 1000).forEach((c) => {
+      if (!(c.timezone_offset in tzs)) {
+        tzs[c.timezone_offset] = []
+      }
+      tzs[c.timezone_offset].push(c.id)
+    })
+    const tzKeys = Object.keys(tzs)
+    for (let i = 0, l = tzKeys.length; i < l; i++) {
+      const tz = tzKeys[i]
+      // console.log('reloadCampaignContactsForDynamicAssignment LPUSH', tz, tzs[tz])
+      const key = needsMessageQueueKey(campaignId, tz)
+      await r.redis.multi()
+        .lpush(key, ...tzs[tz])
+        .expire(key, 86400)
+        .execAsync()
+    }
+    if (typeof remainingMilliseconds === 'function') {
+      if (remainingMilliseconds() < 2000) {
+        // not enough time to keep caching stuff
+        console.error('bulkSaveContacts timing out at', i1000 * 1000, 'of', contactsToDynAssign.length)
+        break
+      }
+    }
+  }
+}
+
+const bulkSaveContactsStream = async (campaignId, timezoneOffsets, remainingMilliseconds, contactsQuery) => {
+  // TODO: This isn't currently enabled, but might be better for really big contact lists
+  // On the other hand, if we are doing this, maybe we should even do it from a separate job
+  // Maybe based on count (and presence of remainingMilliseconds)?
+  if (timezoneOffsets) {
+    for (let i = 0, l = timezoneOffsets.length; i < l; i++) {
+      await r.redis.expireAsync(needsMessageQueueKey(campaignId, timezoneOffsets[i]), 86400)
+    }
+  }
+  await contactsQuery.stream((stream) => {
+    const cacheSaver = new Writable({ objectMode: true })
+    // eslint-disable-next-line no-underscore-dangle
+    cacheSaver._write = (dbRecord, enc, next) => {
+      // Note: non-async land
+      r.redis.lpushAsync(needsMessageQueueKey(campaignId, dbRecord.timezone_offset),
+                         dbRecord.id)
+        .then(
+          () => {
+            // If we are passed a remainingMilliseconds function, then
+            // run it and see if we're almost at-time.
+            // The rest of the cache loading will have to be done later
+            // FUTURE: consider making this a job that can divide work up and complete
+            if (typeof remainingMilliseconds === 'function'
+                && remainingMilliseconds() < 2000) {
+              console.error('bulkSaveContactsStream timing out at', dbRecord.id)
+              stream.end()
+            }
+            next()
+          },
+          (err) => {
+            console.error('FAILED CACHE SAVE', err)
+            stream.end()
+            next()
+          })
+    }
+    stream.pipe(cacheSaver)
+  })
+}
+
 export const reloadCampaignContactsForDynamicAssignment = async (campaign, organization, { remainingMilliseconds }) => {
   // Used to load all the contacts for dynamic assignment into cache
   // This should be done when a campaign is 'started'
 
-  // TODO: what if this is 1million?  We shouldn't load them all
   // console.log('reloadCampaignContactsForDynamicAssignment', campaign.id, organization.id, campaign.contactTimezones)
   if (r.redis && campaign.use_dynamic_assignment) {
-    const contactsToDynAssign = (await r.knex('campaign_contact')
-      .where({ is_opted_out: false,
-               campaign_id: campaign.id,
-               assignment_id: null
-             })
-      .select('id', 'timezone_offset'))
     if (campaign.contactTimezones) {
       await r.redis.delAsync(campaign.contactTimezones.map(tz => needsMessageQueueKey(campaign.id, tz)))
     }
-    for (let i1000 = 0, l1000 = Math.ceil(contactsToDynAssign.length / 1000); i1000 < l1000; i1000++) {
-      const tzs = {}
-      contactsToDynAssign.slice(1000 * i1000, 1000 * i1000 + 1000).forEach((c) => {
-        if (!(c.timezone_offset in tzs)) {
-          tzs[c.timezone_offset] = []
-        }
-        tzs[c.timezone_offset].push(c.id)
-      })
-      const tzKeys = Object.keys(tzs)
-      for (let i = 0, l = tzKeys.length; i < l; i++) {
-        const tz = tzKeys[i]
-        // console.log('reloadCampaignContactsForDynamicAssignment LPUSH', tz, tzs[tz])
-        const key = needsMessageQueueKey(campaign.id, tz)
-        await r.redis.multi()
-          .lpush(key, ...tzs[tz])
-          .expire(key, 86400)
-          .execAsync()
-      }
-      if (typeof remainingMilliseconds === 'function') {
-        if (remainingMilliseconds() < 2000) {
-          // not enough time to keep caching stuff
-          break
-        }
-      }
-    }
+    // TODO: maybe use bulkSaveContactsStream or spawn a lambda if contacts is big and remainingMilliseconds exists
+    await bulkSaveContacts(
+      campaign.id,
+      campaign.contactTimezones,
+      remainingMilliseconds,
+      r.knex('campaign_contact')
+        .where({ is_opted_out: false,
+                 campaign_id: campaign.id,
+                 assignment_id: null
+               })
+        .select('id', 'timezone_offset'))
   }
 }
 
