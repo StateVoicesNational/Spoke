@@ -18,51 +18,6 @@ import { findNewContacts, reloadCampaignContactsForDynamicAssignment } from './a
 //   - max_contacts
 //   - campaign{} (lookup with campaignCache)
 
-// ## SORTED SET (sadly a bit complex: all functions in ./assignment-contacts.js)
-// assignmentcontacts-<assignmentId>-<tz>
-//   key=<contactId>
-//   score=<mix of message_status AND message newness (Think `ORDER BY message_status, created_at DESC`)>
-//            optedOut: score=0
-//      e.g.  needsMessage is between 1-9999999
-//            needsResponse is between 10000000-19999999
-//            convo, messaged, closed all other ranges
-//      When a conversation is updated we will update the score as
-//        one more than the current highest
-//   Requirements:
-//    * filter based on message_status
-//    * filter based on *current* time in contact timezone being valid/invalid
-//    * easy counting of the same
-//   Strategy:
-//    ZRANGEBYSCORE: Since message_status is grouped together we can get ids with min/max
-//    ZCOUNT: We can count within a min/max range as well
-//    ZREVRANGEBYSCORE: With 'LIMIT 1' can get the highest current val within a range
-//                      We then update a message with that +1 each conversation change
-//    <tz> aggregating:
-//      Since which timezones are valid/invalid changes, this adds another dimension
-//      to an already crowded datastructure
-//      Thus we split out contacts by timezone and so each contact query will need
-//      to go across the relevant timezones, and then aggregate the results.
-//      * There's a subtle issue that newest messages across multiple timezones
-//        will be grouped
-//      * To avoid querying too many empty timezones, we cache all the
-//        campaign_contact.timezone_offset ranges for a particular campaign on the
-//        campaign cache object (campaign.contactTimezones) -- that way we can
-//        only search timezones that are actually possible
-//   Client Queries:
-//    TexterTodo.jsx
-//    - contacts: [LIST of ids] (
-//       $contactsFilter
-//       "<messageStatus>", isOptedOut:false, validTimezone:true
-//    - contactsCount (no filter)
-//    TexterTodoList.jsx
-//    - contactsCount (
-//      - needsMessage: isOptedOut:false, validTimezone:true
-//      - needsResponse: isOptedOut:false, validTimezone:true
-//      - badTimezone: isOptedOut:false, validTimezone:false
-//      - completedConvos: isOptedOut:false, validTimezone:true, messageStatus:messaged
-//      - pastMessageFilter: isOptedOut:false, validTimezone:true, messageStatus:convo
-//      - skippedMessageFilter: isOptedOut:false, validTimezone:true, messageStatus:closed
-
 const assignmentHashKey = (id) => `${process.env.CACHE_PREFIX || ''}assignment-${id}`
 
 const hasAssignment = async (userId, assignmentId) => {

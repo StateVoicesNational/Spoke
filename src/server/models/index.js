@@ -42,9 +42,9 @@ function createLoader(model, opts) {
 
 // This is in dependency order, so tables are after their dependencies
 const tableList = [
-  'organization', // good candidate?
-  'user', // good candidate
-  'campaign', // good candidate
+  'organization',
+  'user',
+  'campaign',
   'assignment',
   'campaign_contact',
   // the rest are alphabetical
@@ -55,12 +55,12 @@ const tableList = [
   'log',
   'message',
   'migrations',
-  'opt_out',  // good candidate
+  'opt_out',
   'pending_message_part',
   'question_response',
   'user_cell',
   'user_organization',
-  'zip_code' // good candidate (or by contact)?
+  'zip_code'
 ]
 
 function createTablesIfNecessary() {
