@@ -94,14 +94,8 @@ it('should send an inital message to test contacts', async () => {
   // wait for fakeservice to mark the message as sent
   await waitForExpect(async () => {
     const dbMessage = await r.knex('message')
-    expect(dbMessage.length).toEqual(2)
+    expect(dbMessage.length).toEqual(1)
     expect(dbMessage[0]).toEqual(
-      expect.objectContaining({
-        send_status: 'SENDING',
-        ...expectedDbMessage
-      })
-    )
-    expect(dbMessage[1]).toEqual(
       expect.objectContaining({
         send_status: 'SENT',
         ...expectedDbMessage
@@ -149,8 +143,8 @@ it('should be able to receive a response and reply (using fakeService)', async (
   // wait for fakeservice to autorespond
   await waitForExpect(async () => {
     const dbMessage = await r.knex('message')
-    expect(dbMessage.length).toEqual(3)
-    expect(dbMessage[2]).toEqual(
+    expect(dbMessage.length).toEqual(2)
+    expect(dbMessage[1]).toEqual(
       expect.objectContaining({
         send_status: 'DELIVERED',
         text: `responding to ${message.text}`,
@@ -186,13 +180,8 @@ it('should be able to receive a response and reply (using fakeService)', async (
   // wait for fakeservice to mark the message as sent
   await waitForExpect(async () => {
     const dbMessage = await r.knex('message')
-    expect(dbMessage.length).toEqual(5)
-    expect(dbMessage[3]).toEqual(
-      expect.objectContaining({
-        send_status: 'SENDING'
-      })
-    )
-    expect(dbMessage[4]).toEqual(
+    expect(dbMessage.length).toEqual(3)
+    expect(dbMessage[2]).toEqual(
       expect.objectContaining({
         send_status: 'SENT'
       })

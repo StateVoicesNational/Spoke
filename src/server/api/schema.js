@@ -937,11 +937,11 @@ const rootMutations = {
         campaign_contact_id: contact.id,
         messageservice_sid: getMessageServiceSid(organization),
         send_status: 'SENDING',
-        service: organization.feature.service || process.env.DEFAULT_SERVICE || '',
+        service: organization.feature.service || process.env.DEFAULT_SERVICE || global.DEFAULT_SERVICE || '',
         is_from_contact: false,
         queued_at: new Date()
       })
-      // console.log('sendMessage3', messageInstance.messageservice_sid)
+      // console.log('sendMessage3', messageInstance.messageservice_sid, 'y', process.env.DEFAULT_SERVICE, 'z', organization.feature.service)
       // This should hackily update messageInstance.id
       contact = await cacheableData.message.save({ messageInstance, contact })
       // console.log('contact saved', contact.message_status)
