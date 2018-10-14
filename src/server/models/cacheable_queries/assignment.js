@@ -7,7 +7,7 @@ import { loadAssignmentContacts,
          getTotalContactCount,
          optOutContact } from './assignment-contacts'
 import { getUserAssignments, clearUserAssignments, addUserAssignment } from './assignment-user'
-import { findNewContacts, reloadCampaignContactsForDynamicAssignment } from './assignment-dynamic'
+import { findNewContacts, findStaleInflights, reloadCampaignContactsForDynamicAssignment } from './assignment-dynamic'
 
 // ## KEY
 // assignment-<assignmentId>
@@ -178,6 +178,10 @@ const assignmentCache = {
       }
     })
   ),
+  userInflightCounts: async (campaignId) => {
+    const textersWithInFlights = await findStaleInflights(campaignId)
+    return textersWithInFlights.map(obj => ({ id: obj.userId, inflightCount: obj.contacts.length }))
+  },
   load,
   hasAssignment,
   findNewContacts,

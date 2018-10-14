@@ -123,20 +123,21 @@ export const updateTexterLastActivity = async (campaignId, userId) => {
   }
 }
 
-export const getCampaignTexterIds = async (campaignId) => {
+export const getCampaignTexterIds = async (campaignId, olderThanEpochMs) => {
   // console.log('getCampaignTexterIds', campaignId)
   if (r.redis) {
     const campaignKey = campaignAssignmentsKey(campaignId)
     // console.log('getCampaignTexterIds', campaignId, campaignKey)
+    const zrangeArgs = [campaignKey, 0, olderThanEpochMs || Infinity]
     const [exists, cacheRes] = await r.redis.multi()
       .exists(campaignKey)
-      .zrangebyscore(campaignKey, 0, Infinity)
+      .zrangebyscore(zrangeArgs)
       .execAsync()
     if (exists) {
       return cacheRes
     }
     await reloadCampaignTexters(campaignId)
-    return await r.redis.zrangebyscoreAsync(campaignKey, 0, Infinity)
+    return await r.redis.zrangebyscoreAsync(zrangeArgs)
   }
   return await r.knex('assignment')
     .select('user_id')

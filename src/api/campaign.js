@@ -29,6 +29,7 @@ export const schema = `
     isStarted: Boolean
     isArchived: Boolean
     texters: [User]
+    textersInflight: [User]
     assignments(assignmentsFilter: AssignmentsFilter): [Assignment]
     interactionSteps: [InteractionStep]
     contacts: [CampaignContact]
