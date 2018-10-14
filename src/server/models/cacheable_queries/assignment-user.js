@@ -139,9 +139,10 @@ export const getCampaignTexterIds = async (campaignId, olderThanEpochMs) => {
     await reloadCampaignTexters(campaignId)
     return await r.redis.zrangebyscoreAsync(zrangeArgs)
   }
-  return await r.knex('assignment')
-    .select('user_id')
-    .where('campaign_id', campaignId)
+  return (await r.knex('assignment')
+          .select('user_id')
+          .where('campaign_id', campaignId))
+    .map(a => a.user_id)
 }
 
 export const clearUserAssignments = async (organizationId, userIds, assignmentId, campaignId) => {
