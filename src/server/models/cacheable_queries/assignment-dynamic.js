@@ -1,6 +1,6 @@
 import { r } from '../../models'
 import { getTotalContactCount, getTimezoneOffsets, updateAssignmentContact } from './assignment-contacts'
-import { updateTexterLastActivity } from './assignment-user'
+import { getCampaignTexterIds, updateTexterLastActivity } from './assignment-user'
 import { getCacheContactAssignment, setCacheContactAssignment } from './campaign-contact'
 import { Writable } from 'stream'
 
@@ -65,11 +65,41 @@ export const popInFlight = async (campaignId, contactId, userId = null) => {
   }
 }
 
+export const findStaleInflights = async (campaignId, secondsDelta) => {
+  // Returns an array of objects
+  // with two keys: userId (for the texter) and contacts (array of contact ids)
+  // The first element will be from the 'staleist' user/texter session
+  // If you pass secondsDelta (how many seconds old contacts should be)
+  // then it should filter to users that haven't texted since that time ago
+  const texterIds = await getCampaignTexterIds(
+    campaignId,
+    (secondsDelta ? Number(new Date()) - (secondsDelta * 1000) : undefined))
+  console.log('findStaleInflights', texterIds)
+  if (!texterIds || !texterIds.length) {
+    return []
+  }
+  let redisQuery = r.redis.multi()
+  const inflightCacheKey = inFlightKey(campaignId)
+  for (let i = 0, l = texterIds.length; i < l; i++) {
+    const userId = texterIds[i]
+    redisQuery = redisQuery.zrangebyscore(inflightCacheKey, userId, userId)
+  }
+  const result = await redisQuery.execAsync()
+  console.log('findStaleInflights result', result)
+  return result
+    .map((contactIds, i) => ({
+      userId: texterIds[i],
+      contacts: contactIds
+    }))
+    .filter(obj => obj.contacts.length)
+}
+
 const popNeedsMessage = async (assignment, campaign, organization, numberContacts) => {
   // Looks for contacts to assign
   // If available, then assigns them and push them to assignee (ONLY in-cache)
   // Used from findNewContacts
   // ASSUMES we've already checked various reasons and counts for the campaign and assignment
+
   // console.log('popNeedsMessage', assignment.id, campaign.id, numberContacts)
   if (r.redis) {
     const newContacts = []

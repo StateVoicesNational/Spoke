@@ -288,6 +288,10 @@ const mapQueriesToProps = ({ ownProps }) => ({
           unmessagedCount: contactsCount(contactsFilter:$contactsFilter)
           contactsCount
         }
+        textersInflight {
+          id
+          inflightCount
+        }
         pendingJobs {
           id
           jobType
