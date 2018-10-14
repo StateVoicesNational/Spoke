@@ -1,3 +1,4 @@
+import { accessRequired } from './errors'
 import { mapFieldsToModel } from './lib/utils'
 import { Campaign, JobRequest, r, cacheableData } from '../models'
 
@@ -104,14 +105,26 @@ export const resolvers = {
     datawarehouseAvailable: (campaign, _, { user }) => (
       user.is_superadmin && !!process.env.WAREHOUSE_DB_HOST
     ),
-    pendingJobs: async (campaign) => r.table('job_request')
-      .filter({ campaign_id: campaign.id }).orderBy('updated_at', 'desc'),
-    texters: async (campaign) => (
-      r.table('assignment')
+    pendingJobs: async (campaign, _, { user }) => {
+      await accessRequired(user, campaign.organization_id, 'SUPERVOLUNTEER', true)
+      return r.table('job_request')
+      .filter({ campaign_id: campaign.id }).orderBy('updated_at', 'desc')
+    },
+    texters: async (campaign, _, { user }) => {
+      await accessRequired(user, campaign.organization_id, 'SUPERVOLUNTEER', true)
+      return r.table('assignment')
         .getAll(campaign.id, { index: 'campaign_id' })
         .eqJoin('user_id', r.table('user'))('right')
-    ),
-    assignments: async (campaign, { assignmentsFilter }) => {
+    },
+    textersInflight: async (campaign, _, { user }) => {
+      if (campaign.is_archived || !campaign.is_started || !campaign.use_dynamic_assignment) {
+        return []
+      }
+      await accessRequired(user, campaign.organization_id, 'SUPERVOLUNTEER', true)
+      return cacheableData.assignment.userInflightCounts(campaign.id)
+    },
+    assignments: async (campaign, { assignmentsFilter }, { user }) => {
+      await accessRequired(user, campaign.organization_id, 'SUPERVOLUNTEER', true)
       let query = r.table('assignment')
         .getAll(campaign.id, { index: 'campaign_id' })
 
@@ -121,28 +134,33 @@ export const resolvers = {
 
       return query
     },
-    interactionSteps: async (campaign) => (
-      campaign.interactionSteps
+    interactionSteps: async (campaign, _, { user }) => {
+      await accessRequired(user, campaign.organization_id, 'TEXTER', true)
+      return campaign.interactionSteps
         || cacheableData.campaign.dbInteractionSteps(campaign.id)
-    ),
-    cannedResponses: async (campaign, { userId }) => (
-      await cacheableData.cannedResponse.query({
+    },
+    cannedResponses: async (campaign, { userId }, { user }) => {
+      await accessRequired(user, campaign.organization_id, 'TEXTER', true)
+      return await cacheableData.cannedResponse.query({
         userId: userId || '',
         campaignId: campaign.id
       })
-    ),
-    contacts: async (campaign) => (
+    },
+    contacts: async (campaign, _, { user }) => {
+      await accessRequired(user, campaign.organization_id, 'ADMIN', true)
       // TODO: should we include a limit() since this is only for send-replies
-      r.knex('campaign_contact')
+      return r.knex('campaign_contact')
         .where({ campaign_id: campaign.id })
-    ),
-    contactsCount: async (campaign) => (
-      await r.getCount(
+    },
+    contactsCount: async (campaign, _, { user }) => {
+      await accessRequired(user, campaign.organization_id, 'SUPERVOLUNTEER', true)
+      return await r.getCount(
         r.knex('campaign_contact')
           .where({ campaign_id: campaign.id })
       )
-    ),
-    hasUnassignedContacts: async (campaign) => {
+    },
+    hasUnassignedContacts: async (campaign, _, { user }) => {
+      await accessRequired(user, campaign.organization_id, 'SUPERVOLUNTEER', true)
       // TODO: if campaign.use_dynamic_assignment, try cache
       const contacts = await r.knex('campaign_contact')
         .select('id')
@@ -150,7 +168,8 @@ export const resolvers = {
         .limit(1)
       return contacts.length > 0
     },
-    hasUnsentInitialMessages: async (campaign) => {
+    hasUnsentInitialMessages: async (campaign, _, { user }) => {
+      await accessRequired(user, campaign.organization_id, 'SUPERVOLUNTEER', true)
       const contacts = await r.knex('campaign_contact')
         .select('id')
         .where({
@@ -168,6 +187,7 @@ export const resolvers = {
     stats: async (campaign) => campaign,
     cacheable: () => Boolean(r.redis),
     editors: async (campaign, _, { user }) => {
+      await accessRequired(user, campaign.organization_id, 'SUPERVOLUNTEER', true)
       if (r.redis) {
         return cacheableData.campaign.currentEditors(campaign, user)
       }
