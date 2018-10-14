@@ -1,3 +1,4 @@
+import DataLoader from 'dataloader'
 import { r } from '../../models'
 import { isRoleGreater } from '../../../lib/permissions'
 
@@ -132,13 +133,12 @@ const orgRoles = async (userId, orgId) => {
   return []
 }
 
-const userHasRole = async (userId, orgId, role) => {
-  const acceptableRoles = accessHierarchy.slice(accessHierarchy.indexOf(role))
+const userOrgHighestRole = async (userId, orgId) => {
+  let highestRole = ''
   if (r.redis) {
     // cached approach
     const userKey = userRoleKey(userId)
     const cacheRoleResult = await r.redis.hgetAsync(userKey, orgId)
-    let highestRole
     if (cacheRoleResult) {
       highestRole = cacheRoleResult.split(':')[0]
     } else {
@@ -146,30 +146,56 @@ const userHasRole = async (userId, orgId, role) => {
       const highestRoles = await dbLoadUserRoles(userId)
       highestRole = highestRoles[orgId] && highestRoles[orgId].role
     }
-    return (highestRole && acceptableRoles.indexOf(highestRole) >= 0)
   }
-  // regular DB approach
-  const userHasRoleDb = await r.getCount(
-    r.knex('user_organization')
+  if (!highestRole) {
+    // regular DB approach
+    const roles = await r.knex('user_organization')
+      .select('role')
       .where({ user_id: userId,
-        organization_id: orgId })
-      .whereIn('role', acceptableRoles)
-  )
-  return userHasRoleDb
+               organization_id: orgId })
+    if (roles.length) {
+      highestRole = roles
+        .map(r => r.role)
+        .sort((a, b) => accessHierarchy.indexOf(b) - accessHierarchy.indexOf(a))[0]
+    }
+  }
+  return highestRole
+}
+
+const userHasRole = async (user, orgId, role) => {
+  const acceptableRoles = accessHierarchy.slice(accessHierarchy.indexOf(role))
+  let highestRole = ''
+  if (user.orgRoleCache) {
+    highestRole = await user.orgRoleCache.load(`${user.id}:${orgId}`)
+  } else {
+    highestRole = await userOrgHighestRole(user.id, orgId)
+  }
+  return Boolean(highestRole && acceptableRoles.indexOf(highestRole) >= 0)
 }
 
 const userLoggedIn = async (authId) => {
   const authKey = userAuthKey(authId)
+  let user = null
 
   if (r.redis) {
     const cachedAuth = await r.redis.getAsync(authKey)
     if (cachedAuth) {
-      return JSON.parse(cachedAuth)
+      user = JSON.parse(cachedAuth)
     }
   }
-
-  const userAuth = await dbLoadUserAuth(authId)
-  return userAuth
+  if (!user) {
+    user = await dbLoadUserAuth(authId)
+  }
+  if (user) {
+    // This will be per-request, and can cache through multiple tests
+    user.orgRoleCache = new DataLoader(async (keys) => {
+      return keys.map(async (key) => {
+        const [userId, orgId] = key.split(':')
+        return await userOrgHighestRole(userId, orgId)
+      })
+    })
+  }
+  return user
 }
 
 const userCache = {

@@ -19,7 +19,7 @@ export async function accessRequired(user, orgId, role, allowSuperadmin = false)
     return
   }
   // require a permission at-or-higher than the permission requested
-  const hasRole = await cacheableData.user.userHasRole(user.id, orgId, role)
+  const hasRole = await cacheableData.user.userHasRole(user, orgId, role)
   if (!hasRole) {
     throw new GraphQLError('You are not authorized to access that resource.')
   }
