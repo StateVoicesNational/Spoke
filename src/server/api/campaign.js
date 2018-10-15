@@ -112,9 +112,19 @@ export const resolvers = {
     },
     texters: async (campaign, _, { user }) => {
       await accessRequired(user, campaign.organization_id, 'SUPERVOLUNTEER', true)
-      return r.table('assignment')
-        .getAll(campaign.id, { index: 'campaign_id' })
-        .eqJoin('user_id', r.table('user'))('right')
+      // We load assignment info, because this is called with texters[].assignment
+      // So we can make it a single query
+      return r.knex('assignment')
+        .join('user', 'assignment.user_id', 'user.id')
+        .where('assignment.campaign_id', campaign.id)
+        .select(
+          'user.first_name as first_name',
+          'user.last_name as last_name',
+          'user.id as id',
+          'assignment.max_contacts as assignment_max_contacts',
+          'assignment.id as assignment_id',
+          'assignment.campaign_id as assignment_campaign_id',
+        )
     },
     textersInflight: async (campaign, _, { user }) => {
       if (campaign.is_archived || !campaign.is_started || !campaign.use_dynamic_assignment) {
