@@ -63,8 +63,8 @@ it('should send an inital message to test contacts', async () => {
     false
   )
 
-  const ret2 = await runGql(getAssignmentContacts, assignVars, testTexterUser)
-  const contact = ret2.data.getAssignmentContacts[0]
+  const contactResponse = await runGql(getAssignmentContacts, assignVars, testTexterUser)
+  const contact = contactResponse.data.getAssignmentContacts[0]
 
   const message = {
     contactNumber: contact.cell,
@@ -112,8 +112,8 @@ it('should send an inital message to test contacts', async () => {
   })
 
   // Refetch the contacts via gql to check the caching
-  const ret3 = await runGql(getAssignmentContacts, assignVars, testTexterUser)
-  expect(ret3.data.getAssignmentContacts[0].messageStatus).toEqual('messaged')
+  const contactResponseAfterSending = await runGql(getAssignmentContacts, assignVars, testTexterUser)
+  expect(contactResponseAfterSending.data.getAssignmentContacts[0].messageStatus).toEqual('messaged')
 })
 
 it('should be able to receive a response and reply (using fakeService)', async () => {
@@ -132,8 +132,8 @@ it('should be able to receive a response and reply (using fakeService)', async (
     false
   )
 
-  const ret2 = await runGql(getAssignmentContacts, assignVars, testTexterUser)
-  const contact = ret2.data.getAssignmentContacts[0]
+  const contactResponse = await runGql(getAssignmentContacts, assignVars, testTexterUser)
+  const contact = contactResponse.data.getAssignmentContacts[0]
 
   const message = {
     contactNumber: contact.cell,
@@ -168,8 +168,8 @@ it('should be able to receive a response and reply (using fakeService)', async (
   })
 
   // Refetch the contacts via gql to check the caching
-  const ret3 = await runGql(getAssignmentContacts, assignVars, testTexterUser)
-  expect(ret3.data.getAssignmentContacts[0].messageStatus).toEqual('needsResponse')
+  const contactResponseAfterSending = await runGql(getAssignmentContacts, assignVars, testTexterUser)
+  expect(contactResponseAfterSending.data.getAssignmentContacts[0].messageStatus).toEqual('needsResponse')
 
   // Then we reply
   const message2 = {
