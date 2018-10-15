@@ -226,7 +226,7 @@ export const cachedContactsQuery = async ({ assignmentId, timezoneOffsets, messa
         const retVal = []
         redisResult.forEach(tzScoreList => {
           for (let i = 0, l = tzScoreList.length; i < l; i = i + 2) {
-            retVal.push({ id: tzScoreList[i], score: tzScoreList[i + 1] })
+            retVal.push({ id: tzScoreList[i], score: Number(tzScoreList[i + 1]) })
           }
         })
         // Sort so we can combine the diff timezone cache lines together

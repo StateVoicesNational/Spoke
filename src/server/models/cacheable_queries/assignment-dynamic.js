@@ -81,14 +81,15 @@ export const findStaleInflights = async (campaignId, secondsDelta) => {
   let redisQuery = r.redis.multi()
   const inflightCacheKey = inFlightKey(campaignId)
   for (let i = 0, l = texterIds.length; i < l; i++) {
-    const userId = texterIds[i]
+    const userId = texterIds[i].id
     redisQuery = redisQuery.zrangebyscore(inflightCacheKey, userId, userId)
   }
   const result = await redisQuery.execAsync()
   console.log('findStaleInflights result', result)
   return result
     .map((contactIds, i) => ({
-      userId: texterIds[i],
+      userId: texterIds[i].id,
+      lastMessageTime: texterIds[i].lastMessageTime,
       contacts: contactIds
     }))
     .filter(obj => obj.contacts.length)

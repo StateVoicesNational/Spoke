@@ -51,7 +51,7 @@ const clearCampaignUserAssignments = async (campaign) => {
   // iterate over userIds in campaignassignments-<campaignId>
   // or just clear all userassignments-<orgId><userId>
   if (r.redis) {
-    const userIds = await getCampaignTexterIds(campaign.id)
+    const userIds = (await getCampaignTexterIds(campaign.id)).map(u => u.id)
     await clearUserAssignments(campaign.organization_id, userIds, null, campaign.id)
   }
 }

@@ -123,26 +123,36 @@ export const updateTexterLastActivity = async (campaignId, userId) => {
   }
 }
 
+const mapScoreResult = (redisResultArray) => {
+  const mappedRes = []
+  for (let i = 0, l = redisResultArray.length; i < l; i = i + 2) {
+    mappedRes.push({
+      id: redisResultArray[i],
+      lastMessageTime: Number(redisResultArray[i + 1])
+    })
+  }
+  return mappedRes
+}
+
 export const getCampaignTexterIds = async (campaignId, olderThanEpochMs) => {
   // console.log('getCampaignTexterIds', campaignId)
   if (r.redis) {
     const campaignKey = campaignAssignmentsKey(campaignId)
     // console.log('getCampaignTexterIds', campaignId, campaignKey)
-    const zrangeArgs = [campaignKey, 0, olderThanEpochMs || Infinity]
+    const zrangeArgs = [campaignKey, 0, olderThanEpochMs || Infinity, 'WITHSCORES']
     const [exists, cacheRes] = await r.redis.multi()
       .exists(campaignKey)
       .zrangebyscore(zrangeArgs)
       .execAsync()
     if (exists) {
-      return cacheRes
+      return mapScoreResult(cacheRes)
     }
     await reloadCampaignTexters(campaignId)
-    return await r.redis.zrangebyscoreAsync(zrangeArgs)
+    return mapScoreResult(await r.redis.zrangebyscoreAsync(zrangeArgs))
   }
-  return (await r.knex('assignment')
-          .select('user_id')
-          .where('campaign_id', campaignId))
-    .map(a => a.user_id)
+  return await r.knex('assignment')
+    .select('user_id as id')
+    .where('campaign_id', campaignId)
 }
 
 export const clearUserAssignments = async (organizationId, userIds, assignmentId, campaignId) => {
