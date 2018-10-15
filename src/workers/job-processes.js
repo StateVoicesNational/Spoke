@@ -167,11 +167,11 @@ export async function runDatabaseMigrations(event, dispatcher, eventCallback) {
   }
 }
 
-export async function loadContactsFromDataWarehouseFragmentJob(event, dispatcher, eventCallback) {
+async function asyncRunEventOrError(func, event, eventCallback) {
   const eventAsJob = event
   console.log('LAMBDA INVOCATION job-processes', event)
   try {
-    const rv = await loadContactsFromDataWarehouseFragment(eventAsJob)
+    const rv = await func(eventAsJob)
     if (eventCallback) {
       eventCallback(null, rv)
     }
@@ -180,6 +180,14 @@ export async function loadContactsFromDataWarehouseFragmentJob(event, dispatcher
       eventCallback(err, null)
     }
   }
+}
+
+export async function loadContactsFromDataWarehouseFragmentJob(event, dispatcher, eventCallback) {
+  return await asyncRunEventOrError(loadContactsFromDataWarehouseFragment, event, eventCallback)
+}
+
+export async function assignTextersJob(event, dispatcher, eventCallback) {
+  return await asyncRunEventOrError(assignTexters, event, eventCallback)
 }
 
 const processMap = {
