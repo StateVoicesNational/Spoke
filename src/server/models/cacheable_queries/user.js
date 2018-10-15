@@ -155,7 +155,7 @@ const userOrgHighestRole = async (userId, orgId) => {
                organization_id: orgId })
     if (roles.length) {
       highestRole = roles
-        .map(r => r.role)
+        .map(ri => ri.role)
         .sort((a, b) => accessHierarchy.indexOf(b) - accessHierarchy.indexOf(a))[0]
     }
   }
@@ -188,12 +188,12 @@ const userLoggedIn = async (authId) => {
   }
   if (user) {
     // This will be per-request, and can cache through multiple tests
-    user.orgRoleCache = new DataLoader(async (keys) => {
-      return keys.map(async (key) => {
+    user.orgRoleCache = new DataLoader(async (keys) => (
+      keys.map(async (key) => {
         const [userId, orgId] = key.split(':')
         return await userOrgHighestRole(userId, orgId)
       })
-    })
+    ))
   }
   return user
 }

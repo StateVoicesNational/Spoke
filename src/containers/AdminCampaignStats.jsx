@@ -291,6 +291,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
         textersInflight {
           id
           inflightCount
+          lastMessageTime
         }
         pendingJobs {
           id

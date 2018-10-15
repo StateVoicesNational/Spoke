@@ -10,6 +10,7 @@ export const schema = `
     todos(organizationId: String): [Assignment]
     roles(organizationId: String!): [String]
     inflightCount: Int
+    lastMessageTime: Date
     assignedCell: Phone
     assignment(campaignId: String): Assignment,
     terms: Boolean

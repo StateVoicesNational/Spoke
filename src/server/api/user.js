@@ -48,6 +48,9 @@ export const resolvers = {
     todos: async (user, { organizationId }) =>
       cacheableData.assignment.getUserTodos(organizationId, user.id),
     inflightCount: (user) => (user.inflightCount || null), // see organization.people(inflightCounts)
+    lastMessageTime: (user) => ( // see organization.people(inflightCounts)
+      user.lastMessageTime ? new Date(user.lastMessageTime) : null
+    ),
     cacheable: () => Boolean(r.redis)
   }
 }

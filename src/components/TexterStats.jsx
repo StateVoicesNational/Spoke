@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types'
 import React from 'react'
+import moment from 'moment'
 import LinearProgress from 'material-ui/LinearProgress'
 
 class TexterStats extends React.Component {
@@ -23,26 +24,34 @@ class TexterStats extends React.Component {
     )
   }
 
-  renderAssignmentDynamic(assignment) {
+  renderAssignmentDynamic(assignment, textersInflight) {
     const { contactsCount, unmessagedCount, texter, id } = assignment
     if (contactsCount === 0) {
       return <div key={id} />
     }
-
+    const [inflight] = textersInflight.filter(t => t.id === texter.id)
     return (
       <div key={id}>
         {texter.firstName}
-        <div>{contactsCount - unmessagedCount} initial messages sent</div>
+        <div>
+          {contactsCount - unmessagedCount} initial messages sent
+          {inflight
+           ? <span> ({inflight.inflightCount} in-flight {moment(inflight.lastMessageTime).fromNow()})</span>
+           : null}
+        </div>
       </div>
     )
   }
 
   render() {
     const { campaign } = this.props
-    const { assignments } = campaign
+    const { assignments, textersInflight } = campaign
     return (
       <div>
-        {assignments.map((assignment) => campaign.useDynamicAssignment ? this.renderAssignmentDynamic(assignment) : this.renderAssignment(assignment))}
+        {assignments.map((assignment) => (
+          campaign.useDynamicAssignment
+            ? this.renderAssignmentDynamic(assignment, textersInflight)
+            : this.renderAssignment(assignment)))}
       </div>
     )
   }

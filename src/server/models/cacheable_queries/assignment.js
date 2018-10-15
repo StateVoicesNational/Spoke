@@ -180,7 +180,9 @@ const assignmentCache = {
   ),
   userInflightCounts: async (campaignId) => {
     const textersWithInFlights = await findStaleInflights(campaignId)
-    return textersWithInFlights.map(obj => ({ id: obj.userId, inflightCount: obj.contacts.length }))
+    return textersWithInFlights.map(obj => ({ id: obj.userId,
+                                              inflightCount: obj.contacts.length,
+                                              lastMessageTime: obj.lastMessageTime }))
   },
   load,
   hasAssignment,
