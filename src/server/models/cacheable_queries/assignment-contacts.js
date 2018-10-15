@@ -162,6 +162,7 @@ export const getContactQueryArgs = (assignmentId, contactsFilter, organization, 
   }
   return {
     assignmentId,
+    campaign,
     timezoneOffsets,
     messageStatuses,
     forCount,
@@ -171,12 +172,12 @@ export const getContactQueryArgs = (assignmentId, contactsFilter, organization, 
   }
 }
 
-export const cachedContactsQuery = async ({ assignmentId, timezoneOffsets, messageStatuses, isOptedOutFilter, justCount, justIds }) => {
+export const cachedContactsQuery = async ({ assignmentId, timezoneOffsets, messageStatuses, isOptedOutFilter, justCount, justIds, campaign }) => {
   if (r.redis
       // Below are restrictions on what we support from the cache.
       // Narrowing it to these cases (which are actually used, and others aren't)
       // we can simplify the logic by not accomodating all the different permutations
-      && timezoneOffsets
+      && (timezoneOffsets || (campaign && campaign.contactTimezones))
       && (justCount || (justIds && messageStatuses))) {
     let range = [0, Infinity] // everything, including optouts
     if (isOptedOutFilter === true) {
@@ -209,6 +210,7 @@ export const cachedContactsQuery = async ({ assignmentId, timezoneOffsets, messa
     const cmd = (justCount ? 'zcount' : 'zrangebyscore')
     let resultQuery = r.redis.multi()
     let existsQuery = r.redis.multi()
+    timezoneOffsets = timezoneOffsets || campaign.contactTimezones
     timezoneOffsets.forEach((tz) => {
       const key = assignmentContactsKey(assignmentId, tz)
       // console.log('assignentcontacts key', key)

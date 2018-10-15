@@ -30,11 +30,19 @@ export const resolvers = {
       'terms'
     ], User),
     displayName: (user) => `${user.first_name} ${user.last_name}`,
-    assignment: async (user, { campaignId }) => r.table('assignment')
-      .getAll(user.id, { index: 'user_id' })
-      .filter({ campaign_id: campaignId })
-      .limit(1)(0)
-      .default(null),
+    assignment: async (user, { campaignId }) => {
+      if (user.assignment_id && user.assignment_campaign_id === Number(campaignId)) {
+        // from context of campaign.texters.assignment
+        return { id: user.assignment_id,
+                 campaign_id: user.assignment_campaign_id,
+                 max_contacts: user.assignment_max_contacts }
+      }
+      return r.table('assignment')
+        .getAll(user.id, { index: 'user_id' })
+        .filter({ campaign_id: campaignId })
+        .limit(1)(0)
+        .default(null)
+    },
     organizations: async (user, { role }) => {
       if (!user || !user.id) {
         return []
