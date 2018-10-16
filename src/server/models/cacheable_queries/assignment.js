@@ -139,13 +139,14 @@ const assignmentCache = {
                                      a.id)
         }
       }
+      // console.log('assignment.deleteAll', assignments)
       const assignmentIdsToDelete = assignments.map(a => a.id)
       try {
         await r.knex('assignment')
           .where('id', 'in', assignmentIdsToDelete)
           .delete()
       } catch (err) {
-        log.error('FAILED assignment delete', err)
+        log.error(`FAILED assignment delete, ${err}, ${assignmentIdsToDelete}`)
       }
     }
     loaders.assignment.clearAll()
