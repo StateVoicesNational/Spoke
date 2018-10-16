@@ -208,6 +208,7 @@ const rootSchema = `
     assignUserToCampaign(organizationUuid: String!, campaignId: String!): Campaign
     userAgreeTerms(userId: String!): User
     reassignCampaignContacts(organizationId:String!, campaignIdsContactIds:[CampaignIdContactId]!, newTexterUserId:String!):[CampaignIdAssignmentId]
+    updateApiKey(organizationId:String!, apiKey:String!): Organization
   }
 
   schema {

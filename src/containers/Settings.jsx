@@ -13,6 +13,8 @@ import { Card, CardText, CardActions, CardHeader } from 'material-ui/Card'
 import { StyleSheet, css } from 'aphrodite'
 import Toggle from 'material-ui/Toggle'
 import moment from 'moment'
+import { newUUID, getHash } from '../lib/api-auth'
+
 const styles = StyleSheet.create({
   section: {
     margin: '10px 0'
@@ -53,6 +55,14 @@ class Settings extends React.Component {
   handleOpenTextingHoursDialog = () => this.setState({ textingHoursDialogOpen: true })
 
   handleCloseTextingHoursDialog = () => this.setState({ textingHoursDialogOpen: false })
+
+  handleOpenApiKeyDialog = () => this.setState({ ApiKeyDialogOpen : true })
+
+  handleCloseApiKeyDialog = () => this.setState({ ApiKeyDialogOpen : false })
+
+  handleOpenApiKeyConfirmationDialog = () => this.setState({ ApiKeyConfirmationDialogOpen : true })
+
+  handleCloseApiKeyConfirmationDialog = () => this.setState({ ApiKeyConfirmationDialogOpen : false })
 
   renderTextingHoursForm() {
     const { organization } = this.props.data
@@ -108,6 +118,88 @@ class Settings extends React.Component {
         </GSForm>
       </Dialog>
     )
+  }
+
+  renderApiKeyForm() {
+    const { apiKey } = this.props.data.organization
+    const newApiKey = newUUID()
+
+    const confirmationAction = [
+      <FlatButton
+        label={'Close'}
+        primary={true}
+        onTouchTap={async () => {
+          await this.props.mutations.updateApiKey(getHash(newApiKey))
+          this.handleCloseApiKeyConfirmationDialog()
+        }}
+      />
+    ]
+
+    const goAheadActions = [
+      <FlatButton
+        label={'Cancel'}
+        primary={true}
+        onTouchTap={async () => {
+          this.handleCloseApiKeyDialog()
+        }}
+      />,
+      <FlatButton
+        label={'Update API Key'}
+        primary={false}
+        onTouchTap={async () => {
+          this.handleCloseApiKeyDialog()
+          this.handleOpenApiKeyConfirmationDialog()
+        }}
+      />
+    ]
+
+    return <div>
+      <Dialog
+        open={this.state.ApiKeyConfirmationDialogOpen}
+        onRequestClose={this.handleCloseApiKeyConfirmationDialog}
+        modal={true}
+        actions={confirmationAction}
+        title={'New API Key'}
+      >
+        <div style={{ paddingBottom: '10px' }}> Your new API key is: {newApiKey}</div>
+        <div>Be sure to save it somewhere. This is the only time it will be displayed.</div>
+      </Dialog>
+
+      <Dialog
+        open={this.state.ApiKeyDialogOpen}
+        onRequestClose={this.handleCloseApiKeyDialog}
+        modal={true}
+        actions={goAheadActions}
+        title={'Update API Key?'}
+      >
+        <div>
+          If you proceed, the previous API key will no longer
+          work. Any applications using it will break until they have the new API key.
+        </div>
+      </Dialog>
+
+      <Card>
+        <CardHeader title={'API Key'}/>
+        <CardText>
+          {apiKey ? (
+            <div style={{ paddingBottom: '25px' }}>
+              ✅ API Key Set
+            </div>
+          ) : ''
+          }
+          <div>
+            <FlatButton
+              label={`${apiKey ? 'Replace' : 'Create'} API key`}
+              primary
+              onTouchTap={
+                apiKey ?
+                  this.handleOpenApiKeyDialog :
+                  this.handleOpenApiKeyConfirmationDialog
+              }
+            />
+          </div>
+  </CardText>
+  </Card></div>
   }
 
   render() {
@@ -171,6 +263,7 @@ class Settings extends React.Component {
               </div>
             ) : ''}
           </CardText>
+
           <CardActions>
             {organization.textingHoursEnforced ? (
               <FlatButton
@@ -180,6 +273,9 @@ class Settings extends React.Component {
               />
             ) : ''}
           </CardActions>
+
+          {this.renderApiKeyForm()}
+
         </Card>
         <div>
           {this.renderTextingHoursForm()}
@@ -239,8 +335,22 @@ const mapMutationsToProps = ({ ownProps }) => ({
       organizationId: ownProps.params.organizationId,
       optOutMessage
     }
-  })
-
+  }),
+  updateApiKey: (apiKey) => ({
+      mutation: gql`
+        mutation updateApiKey($organizationId: String!, $apiKey: String!) {
+          updateApiKey(organizationId: $organizationId, apiKey: $apiKey) {
+            id
+            apiKey
+          }
+        }
+      `,
+      variables: {
+          organizationId: ownProps.params.organizationId,
+          apiKey
+        }
+    }
+  )
 })
 
 const mapQueriesToProps = ({ ownProps }) => ({
@@ -253,6 +363,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
         textingHoursStart
         textingHoursEnd
         optOutMessage
+        apiKey 
       }
     }`,
     variables: {
