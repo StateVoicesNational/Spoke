@@ -480,6 +480,17 @@ export async function assignTexters(job) {
 
   TODO: what happens when we switch modes? Do we allow it?
   */
+  if (process.env.ASSIGNTEXTERS_LAMBDA_ITERATION && !job.command) {
+    try {
+      await sendJobToAWSLambda({
+        command: 'assignTextersJob',
+          ...job
+      })
+      return // We'll do it in the lambda!
+    } catch(err) {
+      console.error('FAILED LAMBDA INVOCATION FOR assignTexters', err)
+    }
+  }
   const payload = JSON.parse(job.payload)
   const cid = job.campaign_id
   const campaign = (await r.knex('campaign').where({ id: cid }))[0]
