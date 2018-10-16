@@ -185,7 +185,7 @@ export const resolvers = {
       || cacheableData.campaign.dbCustomFields(campaign.id)
     ),
     stats: async (campaign) => campaign,
-    cacheable: (campaign, _, { user }) => Boolean(r.redis && user.is_superadmin),
+    cacheable: (campaign, _, { user }) => Boolean(r.redis),
     editors: async (campaign, _, { user }) => {
       await accessRequired(user, campaign.organization_id, 'SUPERVOLUNTEER', true)
       if (r.redis) {
