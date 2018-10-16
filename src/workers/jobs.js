@@ -14,7 +14,7 @@ import { sendEmail } from '../server/mail'
 import { Notifications, sendUserNotification } from '../server/notifications'
 
 const zipMemoization = {}
-
+let warehouseConnection = null
 function optOutsByOrgId(orgId) {
   return r.knex.select('cell').from('opt_out').where('organization_id', orgId)
 }
@@ -218,8 +218,9 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
   }
   let knexResult
   try {
+    warehouseConnection = warehouseConnection || datawarehouse()
     console.log('loadContactsFromDataWarehouseFragment RUNNING WAREHOUSE query', sqlQuery)
-    knexResult = await datawarehouse.raw(sqlQuery)
+    knexResult = await warehouseConnection.raw(sqlQuery)
   } catch (err) {
     // query failed
     log.error('Data warehouse query failed: ', err)
@@ -350,7 +351,8 @@ export async function loadContactsFromDataWarehouse(job) {
   let knexCountRes
   let knexCount
   try {
-    knexCountRes = await datawarehouse.raw(`SELECT COUNT(*) FROM ( ${sqlQuery} ) AS QUERYCOUNT`)
+    warehouseConnection = warehouseConnection || datawarehouse()
+    knexCountRes = await warehouseConnection.raw(`SELECT COUNT(*) FROM ( ${sqlQuery} ) AS QUERYCOUNT`)
   } catch (err) {
     log.error('Data warehouse count query failed: ', err)
     jobMessages.push(`Data warehouse count query failed with ${err}`)
