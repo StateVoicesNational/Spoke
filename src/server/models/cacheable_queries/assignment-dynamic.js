@@ -37,7 +37,7 @@ export const campaignHasUnassigned = async (campaign) => {
   const [anyMore] = await r.knex('campaign_contact')
     .where({ message_status: 'needsMessage',
              is_opted_out: false,
-             campaign_id: campaignId })
+             campaign_id: campaign.id })
     .select('id')
     .limit(1)
   return Boolean(anyMore)
