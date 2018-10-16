@@ -22,7 +22,7 @@ const currentUserInflight = async (assignment) => {
       .exists(key)
       .zcount(key, assignment.user_id, assignment.user_id)
       .execAsync()
-    console.log('currentUserInflight', exists, count)
+    // console.log('currentUserInflight', exists, count)
     if (exists) {
       return count
     }
@@ -41,7 +41,7 @@ const pushInFlight = async (assignment, contactId) => {
   // (it will be popped when they send a message)
   if (r.redis) {
     const key = inFlightKey(assignment.campaign_id)
-    console.log('pushinflight', assignment.campaign_id, contactId, key)
+    // console.log('pushinflight', assignment.campaign_id, contactId, key)
     await r.redis.multi()
       .zadd([key, assignment.user_id, contactId])
       .expire(key, 86400)
@@ -61,7 +61,7 @@ export const popInFlight = async (campaignId, contactId, userId = null) => {
     if (userId) {
       await updateTexterLastActivity(campaignId, userId)
     }
-    console.log('popinflight', campaignId, contactId, key, res)
+    // console.log('popinflight', campaignId, contactId, key, res)
   }
 }
 
@@ -74,7 +74,7 @@ export const findStaleInflights = async (campaignId, secondsDelta) => {
   const texterIds = await getCampaignTexterIds(
     campaignId,
     (secondsDelta ? Number(new Date()) - (secondsDelta * 1000) : undefined))
-  console.log('findStaleInflights', texterIds)
+  // console.log('findStaleInflights', texterIds)
   if (!texterIds || !texterIds.length) {
     return []
   }
@@ -85,7 +85,7 @@ export const findStaleInflights = async (campaignId, secondsDelta) => {
     redisQuery = redisQuery.zrangebyscore(inflightCacheKey, userId, userId)
   }
   const result = await redisQuery.execAsync()
-  console.log('findStaleInflights result', result)
+  // console.log('findStaleInflights result', result)
   return result
     .map((contactIds, i) => ({
       userId: texterIds[i].id,
@@ -299,7 +299,7 @@ export const findNewContacts = async (assignment, campaign, organization, number
   if (inFlightCount >= finalNumberContacts) {
     return false
   }
-  console.log('findNewContacts3', finalNumberContacts, inFlightCount)
+  // console.log('findNewContacts3', finalNumberContacts, inFlightCount)
   // 3. Look for assignable contacts and assign them to the texter
 
   // NOTE contactIds is a QUERY and we don't get the results

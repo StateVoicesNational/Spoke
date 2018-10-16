@@ -298,7 +298,7 @@ const rootMutations = {
       const organization = await loaders.organization.load(campaign.organization_id)
       // console.log('SENDREPLY', contact, campaign)
       await accessRequired(user, campaign.organization_id, 'ADMIN')
-      console.log('sendReply', contact.id, campaign.id, organization.id)
+      // console.log('sendReply', contact.id, campaign.id, organization.id)
       const lastMessage = await r
         .table('message')
         .getAll(contact.assignment_id, { index: 'assignment_id' })
@@ -318,7 +318,7 @@ const rootMutations = {
       const mockId = `mocked_${Math.random()
         .toString(36)
         .replace(/[^a-zA-Z1-9]+/g, '')}`
-      console.log('sendReply3', mockId, userNumber, lastMessage)
+      // console.log('sendReply3', mockId, userNumber, lastMessage)
       await saveNewIncomingMessage(
         new Message({
           contact_number: contactNumber,
@@ -456,14 +456,14 @@ const rootMutations = {
             role: 'TEXTER'
           }).error(function(error) {
             // Unexpected errors
-            console.log("error on userOrganization save", error)
+            // console.log("error on userOrganization save", error)
           });
           await cacheableData.user.clearUser(user.id)
         } else { // userOrg exists
-          console.log('existing userOrg ' + userOrg.id + ' user ' + user.id + ' organizationUuid ' + organizationUuid )
+          // console.log('existing userOrg ' + userOrg.id + ' user ' + user.id + ' organizationUuid ' + organizationUuid )
         }
       } else { // no organization 
-        console.log('no organization with id ' + organizationUuid + ' for user ' + user.id)
+        // console.log('no organization with id ' + organizationUuid + ' for user ' + user.id)
       }
       return organization
     },
@@ -683,7 +683,8 @@ const rootMutations = {
     },
     refreshCampaignCache: async (_, { id }, { user, loaders, remainingMilliseconds }) => {
       const campaign = await loaders.campaign.load(id)
-      await accessRequired(user, campaign.organization_id, 'ADMIN')
+      superAdminRequired(user)
+      // await accessRequired(user, campaign.organization_id, 'ADMIN')
       const organization = await loaders.organization.load(campaign.organization_id)
       await cacheableData.campaign.reload(id)
       loadCampaignCache(campaign, organization, { remainingMilliseconds })
@@ -784,7 +785,7 @@ const rootMutations = {
     },
     getAssignmentContacts: async (_, { assignmentId, contactIds, findNew }, { loaders, user }) => {
       await assignmentRequired(user, assignmentId)
-      console.log('getAssignmentContacts', contactIds)
+      // console.log('getAssignmentContacts', contactIds)
       const contacts = contactIds.map(async (contactId) => {
         let contact = await loaders.campaignContact.load(contactId)
         if (contact.assignment_id === null) {
@@ -803,7 +804,7 @@ const rootMutations = {
           }
           return contact
         }
-        console.log('getAssignmentContacts did not match assignment', assignmentId, contact)
+        // console.log('getAssignmentContacts did not match assignment', assignmentId, contact)
         // clear assignment from user's list if it's not assigned
         const campaign = await loaders.campaign.load(contact.campaign_id)
         await cacheableData.assignment.clearAssignmentContacts(
@@ -822,7 +823,7 @@ const rootMutations = {
       const assignment = await loaders.assignment.load(assignmentId)
       await assignmentRequired(user, assignmentId, assignment)
 
-      console.log('findNewCampaignContact', assignmentId, numberContacts)
+      // console.log('findNewCampaignContact', assignmentId, numberContacts)
       const campaign = await loaders.campaign.load(assignment.campaign_id)
       const organization = await loaders.organization.load(campaign.organization_id)
       // console.log('findNewCampaignContact2', campaign.title, organization.name, assignment.user_id)
