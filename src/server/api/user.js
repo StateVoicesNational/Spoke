@@ -1,15 +1,21 @@
 import { mapFieldsToModel } from './lib/utils'
 import { r, User } from '../models'
 
-export function buildUserOrganizationQuery(queryParam, organizationId, role) {
+export function buildUserOrganizationQuery(queryParam, organizationId, role, campaignId) {
   const roleFilter = role ? { role } : {}
 
-  return queryParam
+  queryParam
     .from('user_organization')
     .innerJoin('user', 'user_organization.user_id', 'user.id')
     .where(roleFilter)
     .where({ 'user_organization.organization_id': organizationId })
     .distinct()
+
+  if (campaignId) {
+    queryParam.innerJoin('assignment', 'assignment.user_id', 'user.id')
+    .where({ 'assignment.campaign_id': campaignId })
+  }
+  return queryParam
 }
 
 export const resolvers = {

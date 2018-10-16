@@ -113,7 +113,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     texting_hours_enforced: textingHoursEnforced,
     texting_hours_start: textingHoursStart,
     texting_hours_end: textingHoursEnd,
-    timezone: timezone,
+    timezone
   }
 
   Object.keys(campaignUpdates).forEach(key => {
@@ -235,14 +235,14 @@ async function updateInteractionSteps(
     }
     if (is.id.indexOf('new') !== -1) {
       const newIstep = await InteractionStep.save({
-          parent_interaction_id: is.parentInteractionId || null,
-          question: is.questionText,
-          script: is.script,
-          answer_option: is.answerOption,
-          answer_actions: is.answerActions,
-          campaign_id: campaignId,
-          is_deleted: false
-        })
+        parent_interaction_id: is.parentInteractionId || null,
+        question: is.questionText,
+        script: is.script,
+        answer_option: is.answerOption,
+        answer_actions: is.answerActions,
+        campaign_id: campaignId,
+        is_deleted: false
+      })
       idMap[is.id] = newIstep.id
     } else {
       if (!origCampaignRecord.is_started && is.isDeleted) {
@@ -429,14 +429,21 @@ const rootMutations = {
           .filter({ organization_id: organization.id })
           .limit(1)(0)
           .default(null)
-
         if (!userOrg) {
           await UserOrganization.save({
             user_id: user.id,
             organization_id: organization.id,
             role: 'TEXTER'
-          })
+          }).error(function(error) {
+            // Unexpected errors
+            console.log("error on userOrganization save", error)
+          });
+
+        } else { // userOrg exists
+          console.log('existing userOrg ' + userOrg.id + ' user ' + user.id + ' organizationUuid ' + organizationUuid )
         }
+      } else { // no organization 
+        console.log('no organization with id ' + organizationUuid + ' for user ' + user.id)
       }
       return organization
     },

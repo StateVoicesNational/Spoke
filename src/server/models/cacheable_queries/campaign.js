@@ -18,7 +18,7 @@ import { organizationCache } from './organization'
 // * organization metadata (saved in organization.js instead)
 // * campaignCannedResponses (saved in canned-responses.js instead)
 
-const cacheKey = (id) => `${process.env.CACHE_PREFIX|""}campaign-${id}`
+const cacheKey = (id) => `${process.env.CACHE_PREFIX | ''}campaign-${id}`
 
 const dbCustomFields = async (id) => {
   const campaignContacts = await r.table('campaign_contact')
@@ -54,7 +54,7 @@ const loadDeep = async (id) => {
     campaign.interactionSteps = await dbInteractionSteps(id)
     // We should only cache organization data
     // if/when we can clear it on organization data changes
-    //campaign.organization = await organizationCache.load(campaign.organization_id)
+    // campaign.organization = await organizationCache.load(campaign.organization_id)
 
     await r.redis.multi()
       .set(cacheKey(id), JSON.stringify(campaign))
@@ -65,7 +65,7 @@ const loadDeep = async (id) => {
 }
 
 export const campaignCache = {
-  clear: clear,
+  clear,
   load: async(id) => {
     if (r.redis) {
       let campaignData = await r.redis.getAsync(cacheKey(id))
@@ -90,6 +90,6 @@ export const campaignCache = {
     return await Campaign.get(id)
   },
   reload: loadDeep,
-  dbCustomFields: dbCustomFields,
-  dbInteractionSteps: dbInteractionSteps
+  dbCustomFields,
+  dbInteractionSteps
 }

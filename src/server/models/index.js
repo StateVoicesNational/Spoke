@@ -43,23 +43,23 @@ function createLoader(model, opts) {
 const tableList = [
   'organization', // good candidate?
   'user', // good candidate
-  'campaign', //good candidate
+  'campaign', // good candidate
   'assignment',
   // the rest are alphabetical
-  'campaign_contact', //?good candidate (or by cell)
-  'canned_response', //good candidate
+  'campaign_contact', // ?good candidate (or by cell)
+  'canned_response', // good candidate
   'interaction_step',
   'invite',
   'job_request',
   'log',
   'message',
   'migrations',
-  'opt_out',  //good candidate
+  'opt_out',  // good candidate
   'pending_message_part',
   'question_response',
   'user_cell',
   'user_organization',
-  'zip_code' //good candidate (or by contact)?
+  'zip_code' // good candidate (or by contact)?
 ]
 
 function createTablesIfNecessary() {
@@ -84,13 +84,13 @@ function dropTables() {
 
 const createLoaders = () => ({
   assignment: createLoader(Assignment),
-  campaign: createLoader(Campaign, {cacheObj: cacheableData.campaign}),
+  campaign: createLoader(Campaign, { cacheObj: cacheableData.campaign }),
   invite: createLoader(Invite),
-  organization: createLoader(Organization, {cacheObj: cacheableData.organization}),
+  organization: createLoader(Organization, { cacheObj: cacheableData.organization }),
   user: createLoader(User),
   interactionStep: createLoader(InteractionStep),
   campaignContact: createLoader(CampaignContact),
-  zipCode: createLoader(ZipCode, {idKey: 'zip'}),
+  zipCode: createLoader(ZipCode, { idKey: 'zip' }),
   log: createLoader(Log),
   cannedResponse: createLoader(CannedResponse),
   jobRequest: createLoader(JobRequest),
