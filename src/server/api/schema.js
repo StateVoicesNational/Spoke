@@ -683,8 +683,8 @@ const rootMutations = {
     },
     refreshCampaignCache: async (_, { id }, { user, loaders, remainingMilliseconds }) => {
       const campaign = await loaders.campaign.load(id)
-      superAdminRequired(user)
-      // await accessRequired(user, campaign.organization_id, 'ADMIN')
+      // superAdminRequired(user)
+      await accessRequired(user, campaign.organization_id, 'SUPERVOLUNTEER')
       const organization = await loaders.organization.load(campaign.organization_id)
       await cacheableData.campaign.reload(id)
       loadCampaignCache(campaign, organization, { remainingMilliseconds })
