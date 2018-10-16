@@ -160,7 +160,7 @@ export const resolvers = {
       )
     },
     hasUnassignedContacts: async (campaign, _, { user }) => {
-      await accessRequired(user, campaign.organization_id, 'SUPERVOLUNTEER', true)
+      await accessRequired(user, campaign.organization_id, 'TEXTER', true)
       // TODO: if campaign.use_dynamic_assignment, try cache
       const contacts = await r.knex('campaign_contact')
         .select('id')
