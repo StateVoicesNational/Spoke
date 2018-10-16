@@ -2,6 +2,7 @@ import { r, loaders, Campaign } from '../../models'
 import { modelWithExtraProps } from './lib'
 import { assembleAnswerOptions } from '../../../lib/interaction-step-helpers'
 import { clearUserAssignments, getCampaignTexterIds, reloadCampaignTexters } from './assignment-user'
+import { campaignHasUnassigned } from './assignment-dynamic'
 
 // This should be cached data for a campaign that will not change
 // based on assignments or texter actions
@@ -153,6 +154,7 @@ const campaignCache = {
   },
   reload: loadDeep,
   clear,
+  campaignHasUnassigned,
   currentEditors,
   dbCustomFields,
   dbInteractionSteps

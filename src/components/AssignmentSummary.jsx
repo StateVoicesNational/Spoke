@@ -91,7 +91,7 @@ export class AssignmentSummary extends Component {
 
   render() {
     const { assignment, unmessagedCount, unrepliedCount, badTimezoneCount, totalMessagedCount, pastMessagesCount, skippedMessagesCount } = this.props
-    const { title, description, hasUnassignedContacts, dueBy,
+    const { title, description, hasUnassignedContactsForTexter, dueBy,
             primaryColor, logoImageUrl, introHtml,
             useDynamicAssignment } = assignment.campaign
     const maxContacts = assignment.maxContacts
@@ -117,7 +117,7 @@ export class AssignmentSummary extends Component {
               title: 'Send first texts',
               count: unmessagedCount,
               primary: true,
-              disabled: (useDynamicAssignment && !hasUnassignedContacts && unmessagedCount == 0) || (useDynamicAssignment && maxContacts === 0),
+              disabled: (useDynamicAssignment && !hasUnassignedContactsForTexter && unmessagedCount == 0) || (useDynamicAssignment && maxContacts === 0),
               contactsFilter: 'text',
               hideIfZero: !useDynamicAssignment
             })}
