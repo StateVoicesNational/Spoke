@@ -379,8 +379,7 @@ export const getContacts = async (assignment, contactsFilter, organization, camp
   }
   const cachedResult = await cachedContactsQuery(contactQueryArgs)
   if (justIds) {
-    // console.log('getContacts cached', justCount, justIds, assignment.id, contactsFilter,
-                cachedResult && cachedResult.length, cachedResult && cachedResult.slice(0, 2))
+    // console.log('getContacts cached', justCount, justIds, assignment.id, contactsFilter, cachedResult && cachedResult.length, cachedResult && cachedResult.slice(0, 2))
   }
   if (justIds && cachedResult === null && campaign.contactTimezones) {
     // Trigger a cache load if we're loading ids, which is only done for the texter
