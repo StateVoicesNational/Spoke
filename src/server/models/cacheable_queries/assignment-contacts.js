@@ -333,7 +333,7 @@ export const loadAssignmentContacts = async (assignmentId, campaignId, organizat
       tzContacts[tzOffset] = []
     })
     // console.log('loadAssignmentContacts data', tzs)
-    const getScore = (c, tzObj) => {
+    const getScore = (c) => {
       if (c.optout) {
         return 0
       }
@@ -352,17 +352,17 @@ export const loadAssignmentContacts = async (assignmentId, campaignId, organizat
     const tzKeys = Object.keys(tzContacts)
     for (let i = 0, l = tzKeys.length; i < l; i++) {
       const tz = tzKeys[i]
-      const contacts = tzContacts[tz]
+      const contactsTz = tzContacts[tz]
       const key = assignmentContactsKey(assignmentId, tz)
       // console.log('loadAssignmentContacts', tz, key, tzContacts)
-      if (contacts.length === 0) {
+      if (contactsTz.length === 0) {
         // for the sorted set to exist, we need something in there
-        contacts.push(-1, 'fakekey')
+        contactsTz.push(-1, 'fakekey')
       }
       await r.redis.multi()
         .del(key)
          // this can be big, but redis supports 512M keys, so..
-        .zadd(key, ...contacts)
+        .zadd(key, ...contactsTz)
         .expire(key, 86400 * 2)
         .execAsync()
     }
