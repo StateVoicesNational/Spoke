@@ -493,7 +493,7 @@ export async function assignTexters(job) {
   }
   const payload = JSON.parse(job.payload)
   const cid = job.campaign_id
-  const campaign = loaders.campaign.load(cid)
+  const campaign = await loaders.campaign.load(cid)
   const texters = payload.texters
   const currentAssignments = await r.knex('assignment')
     .where('assignment.campaign_id', cid)
@@ -615,6 +615,7 @@ export async function assignTexters(job) {
       await cacheableData.assignment.clear(assignment.id, assignment.user_id, campaign)
       await cacheableData.assignment.reload(assignment.id)
     }
+    // console.log('assignTexters campaign', campaign)
     if (!campaign.use_dynamic_assignment) {
       await r.knex('campaign_contact')
         .where('id', 'in',
@@ -647,7 +648,7 @@ export async function assignTexters(job) {
       .leftJoin('campaign_contact', 'assignment.id', 'campaign_contact.assignment_id')
       .groupBy('assignment.id')
       .havingRaw('COUNT(campaign_contact.id) = 0')
-      .select('assignment.id as id, assignment.user_id as user_id')
+      .select('assignment.id as id', 'assignment.user_id as user_id')
 
     // We're a little 'clever' here -- just sending {id, user_id} for assignment
     await cacheableData.assignment.deleteAll(assignmentsToDelete, campaign)
