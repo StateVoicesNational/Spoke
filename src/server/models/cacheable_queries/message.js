@@ -192,7 +192,7 @@ const messageCache = {
       newStatus = (contactData.message_status === 'needsResponse'
                    ? 'convo' : 'messaged')
     }
-    console.log('hi saveMsg3', newStatus, contactData)
+    // console.log('hi saveMsg3', newStatus, contactData)
     await campaignContactCache.updateStatus(
       contactData, newStatus
     )

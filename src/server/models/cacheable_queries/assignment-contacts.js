@@ -222,7 +222,7 @@ export const cachedContactsQuery = async ({ assignmentId, timezoneOffsets, messa
       if (justCount) {
         return redisResult.reduce((i, j) => Number(i) + Number(j), 0)
       } else if (justIds) {
-        console.log('redis assignment contact result', assignmentId, timezoneOffsets, range, messageStatuses)
+        // console.log('redis assignment contact result', assignmentId, timezoneOffsets, range, messageStatuses)
         const retVal = []
         redisResult.forEach(tzScoreList => {
           for (let i = 0, l = tzScoreList.length; i < l; i = i + 2) {
@@ -379,7 +379,7 @@ export const getContacts = async (assignment, contactsFilter, organization, camp
   }
   const cachedResult = await cachedContactsQuery(contactQueryArgs)
   if (justIds) {
-    console.log('getContacts cached', justCount, justIds, assignment.id, contactsFilter,
+    // console.log('getContacts cached', justCount, justIds, assignment.id, contactsFilter,
                 cachedResult && cachedResult.length, cachedResult && cachedResult.slice(0, 2))
   }
   if (justIds && cachedResult === null && campaign.contactTimezones) {
@@ -417,7 +417,7 @@ export const updateAssignmentContact = async (contact, newStatus, delta) => {
     const exists = await r.redis.existsAsync(key)
     if (exists) {
       const newScore = getTimeOfDayScore(range, newStatus) + (delta || 0)
-      console.log('updateassignment', contact.id, newScore, newStatus, range)
+      // console.log('updateassignment', contact.id, newScore, newStatus, range)
       await r.redis.multi()
         .zadd([key, newScore, contact.id])
         .expire(key, 86400)
