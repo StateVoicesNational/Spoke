@@ -1,4 +1,4 @@
-import { r, datawarehouse, cacheableData,
+import { r, cacheableData, datawarehouse, loaders,
          Assignment, Campaign, CampaignContact, Organization, User, 
          UserOrganization } from '../server/models'
 import { log, gunzip, zipToTimeZone, convertOffsetsToStrings } from '../lib'
@@ -478,9 +478,20 @@ export async function assignTexters(job) {
 
   TODO: what happens when we switch modes? Do we allow it?
   */
+  if (process.env.ASSIGNTEXTERS_LAMBDA_ITERATION && !job.command) {
+    try {
+      await sendJobToAWSLambda({
+        command: 'assignTextersJob',
+          ...job
+      })
+      return // We'll do it in the lambda!
+    } catch(err) {
+      console.error('FAILED LAMBDA INVOCATION FOR assignTexters', err)
+    }
+  }
   const payload = JSON.parse(job.payload)
   const cid = job.campaign_id
-  const campaign = (await r.knex('campaign').where({ id: cid }))[0]
+  const campaign = loaders.campaign.load(cid)
   const texters = payload.texters
   const currentAssignments = await r.knex('assignment')
     .where('assignment.campaign_id', cid)
@@ -599,6 +610,7 @@ export async function assignTexters(job) {
       }).save()
     }
     if (assignment && campaign.is_started) {
+      await cacheableData.assignment.clear(assignment.id, assignment.user_id, campaign)
       await cacheableData.assignment.reload(assignment.id)
     }
     if (!campaign.use_dynamic_assignment) {
