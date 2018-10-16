@@ -67,6 +67,7 @@ const dbLoadUserRoles = async (userId) => {
       acc.push(orgRole.id, `${orgRole.role}:${orgRole.name}`)
       return acc
     }, [])
+    console.log('dbLoadUserRoles', userId, mappedHighestRoles)
     if (mappedHighestRoles.length) {
       await r.redis.multi()
         .del(key)
@@ -83,7 +84,7 @@ const dbLoadUserRoles = async (userId) => {
 const loadUserRoles = async (userId) => {
   if (r.redis) {
     const roles = await r.redis.hgetallAsync(userRoleKey(userId))
-    // console.log('cached roles', roles)
+    console.log('cached roles', roles)
     if (roles) {
       const userRoles = {}
       Object.keys(roles).forEach(orgId => {
@@ -144,6 +145,7 @@ const userOrgHighestRole = async (userId, orgId) => {
     } else {
       // need to get it from db, and then cache it
       const highestRoles = await dbLoadUserRoles(userId)
+      console.log('loading all roles into cache')
       highestRole = highestRoles[orgId] && highestRoles[orgId].role
     }
   }
@@ -159,6 +161,7 @@ const userOrgHighestRole = async (userId, orgId) => {
         .sort((a, b) => accessHierarchy.indexOf(b) - accessHierarchy.indexOf(a))[0]
     }
   }
+  console.log('userOrgHighestRole', userId, orgId, highestRole)
   return highestRole
 }
 

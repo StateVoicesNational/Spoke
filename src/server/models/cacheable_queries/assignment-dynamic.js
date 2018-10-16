@@ -12,6 +12,36 @@ const needsMessageQueueKey = (campaignId, tz) => `${process.env.CACHE_PREFIX || 
 // SORTED SET inflight-<campaignId> with key=<contactId>, score=<userId>
 const inFlightKey = (campaignId) => `${process.env.CACHE_PREFIX || ''}inflight-${campaignId}`
 
+export const campaignHasUnassigned = async (campaign) => {
+  if (r.redis && campaign && campaign.contactTimezones) {
+    let allExist = true
+    for (let i = 0, l = campaign.contactTimezones.length; i < l; i++) {
+      const key = needsMessageQueueKey(campaign.id, campaign.contactTimezones[i])
+      const [exists, cacheMore] = await r.redis.multi()
+        .exists(key)
+        .llen(key)
+        .execAsync()
+      if (exists) {
+        console.log('campaignHasUnassigned CACHEMORE', cacheMore, typeof cacheMore)
+        if (cacheMore) {
+          return true // 1 is enough
+        }
+      } else {
+        allExist = false
+      }
+    } // end for
+    if (allExist) {
+      return false // all exist but all are empty, so no need to fallback to the DB
+    }
+  }
+  const [anyMore] = await r.knex('campaign_contact')
+    .where({ message_status: 'needsMessage',
+             is_opted_out: false,
+             campaign_id: campaignId })
+    .select('id')
+    .limit(1)
+  return Boolean(anyMore)
+}
 
 const currentUserInflight = async (assignment) => {
   // Returns the count of in-flight assignments for the assignment

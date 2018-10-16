@@ -116,7 +116,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
             title
             description
             useDynamicAssignment
-            hasUnassignedContacts
+            hasUnassignedContactsForTexter
             introHtml
             primaryColor
             logoImageUrl

@@ -169,6 +169,16 @@ export const resolvers = {
           .where({ campaign_id: campaign.id })
       )
     },
+    hasUnassignedContactsForTexter: async (campaign, _, { user }) => {
+      // This is the same as hasUnassignedContacts, but the access control
+      // is different because for TEXTERs it's just for dynamic campaigns
+      // but hasUnassignedContacts for admins is for the campaigns list
+      await accessRequired(user, campaign.organization_id, 'TEXTER', true)
+      if (!campaign.use_dynamic_assignment || campaign.is_archived) {
+        return false
+      }
+      return await cacheableData.campaign.campaignHasUnassigned(campaign)
+    },
     hasUnassignedContacts: async (campaign, _, { user }) => {
       await accessRequired(user, campaign.organization_id, 'SUPERVOLUNTEER', true)
       // TODO: if campaign.use_dynamic_assignment, try cache
