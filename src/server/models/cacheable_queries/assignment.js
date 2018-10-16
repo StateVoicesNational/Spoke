@@ -109,15 +109,17 @@ const load = async (assignmentId, notDeep) => {
   return assignment
 }
 
-const clear = async (id) => {
+const clear = async (id, userId, campaign) => {
   if (r.redis) {
     await r.redis.delAsync(assignmentHashKey(id))
-    // We could probably clear more things. ?FUTURE
-    // but at the moment nothing calls assignment.clear
-    // Things we could clear:
-    // - With campaign.contactTimezones: clear assignment-contacts
-    // - With assignment.user_id: clear assignment-user
-    // - With campaign.id: clear assignment-dynamic
+    if (campaign && userId) {
+      // - With assignment.user_id: clear assignment-user
+      await clearUserAssignments(campaign.organization_id, [userId], null, campaign.id)
+    }
+    if (campaign && campaign.contactTimezones) {
+      // - With campaign.contactTimezones: clear assignment-contacts
+      await clearAssignmentContacts(id, campaign.contactTimezones)
+    }
   }
   loaders.assignment.clear(id)
 }
