@@ -301,7 +301,7 @@ export const loadAssignmentContacts = async (assignmentId, campaignId, organizat
   if (r.redis && timezoneOffsets && timezoneOffsets.length) {
     const contacts = await r.knex('campaign_contact')
       .select('campaign_contact.id as cid',
-              'campaign_contact.message_status as status',
+              'campaign_contact.message_status as message_status',
               'campaign_contact.timezone_offset as tz_offset',
               'opt_out.id as optout',
               r.knex.raw('MAX(message.created_at) as latest_message'))
@@ -325,47 +325,44 @@ export const loadAssignmentContacts = async (assignmentId, campaignId, organizat
                'opt_out.id')
       .orderByRaw('campaign_contact.timezone_offset, campaign_contact.message_status DESC, MAX(message.created_at)')
     // 2. group results with scores
-    const tzs = {}
+    const tzContacts = {}
+    const statusCounters = {
+      needsMessage: 0, needsResponse: 0, convo: 0, messaged: 0, closed: 0
+    }
     timezoneOffsets.forEach((tzOffset) => {
-      tzs[tzOffset] = {
-        contacts: [],
-        needsMessage: 0, needsResponse: 0, convo: 0, messaged: 0, closed: 0
-      }
+      tzContacts[tzOffset] = []
     })
     // console.log('loadAssignmentContacts data', tzs)
     const getScore = (c, tzObj) => {
       if (c.optout) {
         return 0
       }
-      if (c.latest_message) {
-        // note: needsMessage will never increment and always end up ===1
-        // eslint-disable-next-line no-param-reassign
-        tzObj[c.status] += 1
-      }
+      // eslint-disable-next-line no-param-reassign
+      statusCounters[c.message_status] += 1
+
       // if (c.status === 'convo') {
       //   // starts at max and counts down for reverse order
       //   return msgStatusRange[c.status][1] - tzObj[c.status]
       // }
-      return msgStatusRange[c.status][0] + tzObj[c.status]
+      return msgStatusRange[c.message_status][0] + statusCounters[c.message_status]
     }
     contacts.forEach((c) => {
-      const tzObj = tzs[c.tz_offset]
-      tzObj.contacts.push(getScore(c, tzObj), c.cid)
+      tzContacts[c.tz_offset].push(getScore(c), c.cid)
     })
-    const tzKeys = Object.keys(tzs)
+    const tzKeys = Object.keys(tzContacts)
     for (let i = 0, l = tzKeys.length; i < l; i++) {
       const tz = tzKeys[i]
-      const tzContacts = tzs[tz].contacts
+      const contacts = tzContacts[tz]
       const key = assignmentContactsKey(assignmentId, tz)
       // console.log('loadAssignmentContacts', tz, key, tzContacts)
-      if (tzContacts.length === 0) {
+      if (contacts.length === 0) {
         // for the sorted set to exist, we need something in there
-        tzContacts.push(-1, 'fakekey')
+        contacts.push(-1, 'fakekey')
       }
       await r.redis.multi()
         .del(key)
          // this can be big, but redis supports 512M keys, so..
-        .zadd(key, ...tzContacts)
+        .zadd(key, ...contacts)
         .expire(key, 86400 * 2)
         .execAsync()
     }
