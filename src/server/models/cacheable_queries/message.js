@@ -33,7 +33,9 @@ const contactIdFromOther = async ({ campaignContactId, assignmentId, cell, servi
   console.error('contactIdfromother hard', campaignContactId, assignmentId, cell, service)
 
   if (!assignmentId || !cell || !messageServiceSid) {
-    throw new Error('campaignContactId required or assignmentId-cell-service-messageServiceSid triple required')
+    throw new Error(`campaignContactId required or assignmentId-cell-service-messageServiceSid triple required.
+                    cell: ${cell}, messageServivceSid: ${messageServiceSid}, assignmentId: ${assignmentId}
+                    `)
   }
   if (r.redis) {
     const cellLookup = await campaignContactCache.lookupByCell(
