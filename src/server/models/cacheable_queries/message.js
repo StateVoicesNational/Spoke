@@ -60,7 +60,7 @@ const saveMessageCache = async (contactId, contactMessages, overwriteFull) => {
       .lpush(key, contactMessages.map(
         m => JSON.stringify({ ...m, // don't cache service_response key
                               service_response: undefined })))
-      .expire(key, 86400)
+      .expire(key, 43200)
       .execAsync()
   }
 }

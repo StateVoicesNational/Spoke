@@ -53,7 +53,7 @@ const saveCache = async (assignment, campaign, notDeep) => {
     assignment.organization_id = campaign.organization_id
     await r.redis.multi()
       .set(assignmentHashKey(id), JSON.stringify(assignment))
-      .expire(assignmentHashKey(id), 86400)
+      .expire(assignmentHashKey(id), 43200)
       .execAsync()
 
     await addUserAssignment(campaign, assignment)

@@ -95,7 +95,7 @@ const loadDeep = async (id) => {
     // console.log('campaign loaddeep', campaign, JSON.stringify(campaign))
     await r.redis.multi()
       .set(cacheKey(id), JSON.stringify(campaign))
-      .expire(cacheKey(id), 86400)
+      .expire(cacheKey(id), 43200)
       .execAsync()
     // console.log('clearing campaign', id, typeof id, loaders.campaign)
     loaders.campaign.clear(String(id))

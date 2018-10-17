@@ -74,7 +74,7 @@ const pushInFlight = async (assignment, contactId) => {
     // console.log('pushinflight', assignment.campaign_id, contactId, key)
     await r.redis.multi()
       .zadd([key, assignment.user_id, contactId])
-      .expire(key, 86400)
+      .expire(key, 43200)
       .execAsync()
   }
 }
@@ -86,7 +86,7 @@ export const popInFlight = async (campaignId, contactId, userId = null) => {
     const key = inFlightKey(campaignId)
     const res = await r.redis.multi()
       .zrem(key, contactId)
-      .expire(key, 86400)
+      .expire(key, 43200)
       .execAsync()
     if (userId) {
       await updateTexterLastActivity(campaignId, userId)
@@ -150,7 +150,7 @@ const popNeedsMessage = async (assignment, campaign, organization, numberContact
     for (let i = 0, l = timezoneOffsets.length; i < l; i++) {
       const tz = timezoneOffsets[i]
       const key = needsMessageQueueKey(campaign.id, tz)
-      await r.redis.expireAsync(key, 86400)
+      await r.redis.expireAsync(key, 43200)
       const poppedContacts = (await popN(key, numberContacts - newContacts.length)
         .execAsync())
         .filter(cid => cid) // only values with results
@@ -215,7 +215,7 @@ const bulkSaveContacts = async (campaignId, timezoneOffsets, remainingMillisecon
       const key = needsMessageQueueKey(campaignId, tz)
       await r.redis.multi()
         .lpush(key, ...tzs[tz])
-        .expire(key, 86400)
+        .expire(key, 43200)
         .execAsync()
     }
     if (typeof remainingMilliseconds === 'function') {
@@ -234,7 +234,7 @@ const bulkSaveContactsStream = async (campaignId, timezoneOffsets, remainingMill
   // Maybe based on count (and presence of remainingMilliseconds)?
   if (timezoneOffsets) {
     for (let i = 0, l = timezoneOffsets.length; i < l; i++) {
-      await r.redis.expireAsync(needsMessageQueueKey(campaignId, timezoneOffsets[i]), 86400)
+      await r.redis.expireAsync(needsMessageQueueKey(campaignId, timezoneOffsets[i]), 43200)
     }
   }
   await contactsQuery.stream((stream) => {

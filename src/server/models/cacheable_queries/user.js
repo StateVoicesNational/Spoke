@@ -107,7 +107,7 @@ const dbLoadUserAuth = async (authId) => {
     const authKey = userAuthKey(authId)
     await r.redis.multi()
       .set(authKey, JSON.stringify(userAuth))
-      .expire(authKey, 86400)
+      .expire(authKey, 43200)
       .execAsync()
     await dbLoadUserRoles(userAuth.id)
   }
