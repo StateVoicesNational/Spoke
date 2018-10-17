@@ -30,7 +30,7 @@ const organizationCache = {
       if (r.redis) {
         await r.redis.multi()
           .set(cacheKey(id), JSON.stringify(dbResult))
-          .expire(cacheKey(id), 86400)
+          .expire(cacheKey(id), 43200)
           .execAsync()
       }
     }

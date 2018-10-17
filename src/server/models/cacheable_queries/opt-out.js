@@ -25,7 +25,7 @@ const loadMany = async (organizationId) => {
     for (let i100 = 0, l100 = Math.ceil(cellOptOuts.length / 100); i100 < l100; i100++) {
       await r.redis.saddAsync(hashKey, cellOptOuts.slice(100 * i100, 100 * i100 + 100))
     }
-    await r.redis.expire(hashKey, 86400)
+    await r.redis.expire(hashKey, 43200)
     // console.log(`CACHE: Loaded optouts for ${organizationId}`)
   }
 }

@@ -365,7 +365,7 @@ export const loadAssignmentContacts = async (assignmentId, campaignId, organizat
         .del(key)
          // this can be big, but redis supports 512M keys, so..
         .zadd(key, ...contactsTz)
-        .expire(key, 86400 * 2)
+        .expire(key, 43200)
         .execAsync()
     }
   }
@@ -418,7 +418,7 @@ export const updateAssignmentContact = async (contact, newStatus, delta) => {
       // console.log('updateassignment', contact.id, newScore, newStatus, range)
       await r.redis.multi()
         .zadd([key, newScore, contact.id])
-        .expire(key, 86400)
+        .expire(key, 43200)
         .execAsync()
     }
   }

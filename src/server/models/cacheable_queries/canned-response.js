@@ -35,7 +35,7 @@ const cannedResponseCache = {
       }))
       await r.redis.multi()
         .set(cacheKey(campaignId, userId), JSON.stringify(cacheData))
-        .expire(cacheKey(campaignId, userId), 86400)
+        .expire(cacheKey(campaignId, userId), 43200)
         .execAsync()
     }
     return dbResult
