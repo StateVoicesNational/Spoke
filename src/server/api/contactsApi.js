@@ -3,6 +3,37 @@ import _ from 'lodash'
 import { getTimezoneByZip, getOptOutSubQuery } from '../../workers/jobs'
 
 import { getValidatedData } from '../../lib'
+import { getHash } from '../../lib/api-auth'
+
+function sendUnauthorizedResponse(res) {
+  res.writeHead(401, { 'WWW-Authenticate': 'Basic realm=Contacts API' })
+  res.end('Unauthorized')
+}
+
+async function authShortCircuit(req, res, orgId) {
+  if (!('authorization' in req.headers)) {
+    sendUnauthorizedResponse(res)
+    return true
+  }
+
+  const organization = await r.knex('organization').where('id', orgId).first('features')
+  const features = organization.features ? JSON.parse(organization.features) : {}
+  const {apiKey} = features
+
+  const matchResult = req.headers.authorization.match(/Basic\s+(.*)$/)
+  let apiKeyInHeader = undefined
+  if (matchResult && matchResult.length > 1) {
+    apiKeyInHeader = matchResult[1]
+  }
+
+  const hashedApiKeyInHeader = getHash(apiKeyInHeader)
+  if (!apiKey || !apiKeyInHeader || apiKey !== hashedApiKeyInHeader) {
+    sendUnauthorizedResponse(res)
+    return true
+  }
+
+  return false
+}
 
 function campaignStatusShortCircuit(campaign, res) {
   let message = ''
@@ -21,16 +52,20 @@ function campaignStatusShortCircuit(campaign, res) {
   return false
 }
 
-// TODO(lperson) enforce auth
 export default async function contactsApi(req, res) {
   const orgId = req.params.orgId
-  const campaignId = req.params.campaignId
+
+  if (await authShortCircuit(req, res, orgId)) {
+    return
+  }
 
   if (!['GET', 'DELETE', 'POST'].includes(req.method)) {
     res.writeHead(405, { Allow: 'GET, POST, DELETE' })
     res.end('Not allowed')
     return
   }
+
+  const campaignId = req.params.campaignId
 
   const [campaign] = await r
     .knex('campaign')

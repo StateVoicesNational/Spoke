@@ -56,11 +56,11 @@ class Settings extends React.Component {
 
   handleCloseTextingHoursDialog = () => this.setState({ textingHoursDialogOpen: false })
 
-  handleOpenApiKeyDialog = () => this.setState({ ApiKeyDialogOpen : true })
+  handleOpenApiKeyDialog = () => this.setState({ ApiKeyDialogOpen: true })
 
   handleCloseApiKeyDialog = () => this.setState({ ApiKeyDialogOpen : false })
 
-  handleOpenApiKeyConfirmationDialog = () => this.setState({ ApiKeyConfirmationDialogOpen : true })
+  handleOpenApiKeyConfirmationDialog = () => this.setState({ newApiKey: newUUID(), ApiKeyConfirmationDialogOpen : true })
 
   handleCloseApiKeyConfirmationDialog = () => this.setState({ ApiKeyConfirmationDialogOpen : false })
 
@@ -122,15 +122,14 @@ class Settings extends React.Component {
 
   renderApiKeyForm() {
     const { apiKey } = this.props.data.organization
-    const newApiKey = newUUID()
 
     const confirmationAction = [
       <FlatButton
         label={'Close'}
         primary={true}
         onTouchTap={async () => {
-          await this.props.mutations.updateApiKey(getHash(newApiKey))
           this.handleCloseApiKeyConfirmationDialog()
+          await this.props.mutations.updateApiKey(getHash(this.state.newApiKey))
         }}
       />
     ]
@@ -161,7 +160,7 @@ class Settings extends React.Component {
         actions={confirmationAction}
         title={'New API Key'}
       >
-        <div style={{ paddingBottom: '10px' }}> Your new API key is: {newApiKey}</div>
+        <div style={{ paddingBottom: '10px' }}> Your new API key is: {this.state.newApiKey}</div>
         <div>Be sure to save it somewhere. This is the only time it will be displayed.</div>
       </Dialog>
 

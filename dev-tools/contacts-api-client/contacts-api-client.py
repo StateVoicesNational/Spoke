@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 
-import csv
 import argparse
-import ujson
-import gzip
-import base64
+import csv
+from copy import deepcopy
+
 import requests
 
 
@@ -24,6 +23,7 @@ def _get_parsed_args():
         action='store_true',
         help='Add contacts that duplicate contacts already in the campaign',
         required=False)
+    arg_parser.add_argument('-k', '--api_key', help='API key for authorization')
 
     return arg_parser.parse_args()
 
@@ -32,22 +32,32 @@ def _prepare_batch(batch):
     return batch
 
 
+def _request(method, url, api_key, **kwargs):
+    _kwargs = deepcopy(kwargs)
+    headers = _kwargs.get('headers', {})
+    headers['authorization'] = 'Basic {api_key}'.format(api_key=api_key)
+    _kwargs.update({'headers': headers})
+    return requests.request(method, url, **_kwargs)
+
+
 def main():
     args = _get_parsed_args()
+
+    api_key = args.api_key
 
     url = 'http://{host}:{port}/admin/{organization_id}/campaigns/{campaign_id}/contacts'.format(
         host=args.address, port=args.port, organization_id=args.organization_id, campaign_id=args.campaign_id)
 
     batches = list()
 
-    response = requests.get(url)
+    response = _request('GET', url, api_key)
     print('Starting campaign status: {campaign_status}\n'.format(campaign_status=response.text))
 
     if args.delete_first:
-        response = requests.delete(url)
+        response = _request('DELETE', url, api_key)
         print('Delete results: {delete_results}\n'.format(delete_results=response.text))
 
-        response = requests.get(url)
+        response = _request('GET', url, api_key)
         print('Campaign status after delete: {campaign_status}\n'.format(campaign_status=response.text))
 
     with open(args.file, mode='r', encoding='utf-8') as csvfile:
@@ -68,17 +78,17 @@ def main():
     for batch in batches:
         post_url = url
         if args.duplicate_existing:
-            post_url = post_url+'?duplicate_existing'
+            post_url = post_url + '?duplicate_existing'
 
-        response = requests.post(post_url, json=batch, headers={'Content-Type': 'application/json'})
-        print(response.text)
+        response = _request('POST', post_url, api_key, json=batch, headers={'Content-Type': 'application/json'})
+        print(response.text, response.headers)
 
-    response = requests.get(url)
+    response = _request('GET', url, api_key)
     print('\nCampaign status after upload: {campaign_status}\n'.format(campaign_status=response.text))
 
 
 if __name__ == '__main__':
     try:
         main()
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-except
         print(e)
