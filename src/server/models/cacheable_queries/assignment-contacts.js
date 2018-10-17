@@ -177,7 +177,8 @@ export const cachedContactsQuery = async ({ assignmentId, timezoneOffsets, messa
       // Below are restrictions on what we support from the cache.
       // Narrowing it to these cases (which are actually used, and others aren't)
       // we can simplify the logic by not accomodating all the different permutations
-      && (timezoneOffsets || (campaign && campaign.contactTimezones))
+      // FUTURE: we will need to debug the issue below of texters not being saved properly after a cache flush
+      && (timezoneOffsets) // || (campaign && campaign.contactTimezones))
       && (justCount || (justIds && messageStatuses))) {
     let range = [0, Infinity] // everything, including optouts
     if (isOptedOutFilter === true) {
