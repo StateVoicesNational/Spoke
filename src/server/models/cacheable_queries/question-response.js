@@ -54,7 +54,7 @@ const questionResponseCache = {
       await r.redis.multi()
         .del(cacheKey)
         .hmset(cacheKey, ...valueInteractionArray)
-        .expire(cacheKey, 86400)
+        .expire(cacheKey, 43200)
         .execAsync()
     }
   }

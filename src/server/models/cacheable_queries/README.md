@@ -31,7 +31,7 @@ may change.  Nonetheless, the first round has the following goals:
 * campaign-contact `load(id)`
 * message `query({ campaignContactId })`, `save({messageInstance, contact})`
 
-## Code Style
+## Code Style for Consuming cacheableData API
 
 Generally `import { cacheableData } from 'server/models'` provides a
 per-object interface.  Not all interfaces are the same, based on what can/should be cached.
@@ -50,11 +50,13 @@ For example in `server/api/campaign.js` interactionSteps is cached *with* the ca
 so by the time you get to the `interactionSteps` resolver, the result is available already.
 In these cases, we should name the cached result the same as the resolver method.  This way,
 we can test whether our result is already cached by testing for `campaign.interactionSteps`, otherwise,
-we can make the db call -- often that db call will be available 
+we can make the db call -- often that db call will be available through a cacheableData object method,
+in which case you should use that.
 
-### cacheableData Object Method Definitions
+### Standardized cacheableData Object Method Definitions
 
-All are `async` methods.
+There are a host of other object-specific methods, but methods with these names all
+should behave the save way.  All are `async` methods.
 
 * `load(id)` -- will load from cache if, available and otherwise from the database.
   If appropriate, it may save the result in the cache (some situations,
@@ -86,6 +88,11 @@ Others:
 
 ## Data-structures
 
+Note that cacheable_queries/ files are organized around redis keys.  No key will be directly
+looked up or changed except in the file its in.  Key-creation methods will always be at the
+top of the file and should *never* be `export`ed.  All redis commands should use those methods -- never
+manually referencing a key inline.
+
 * user
   * KEY `texterauth-${authId}`
   * HASH `texterroles-${userId}`
@@ -100,13 +107,6 @@ Others:
     * For non user-specific campaigns userId=''
 * optOut
   * SET `optouts${-orgId|}`
-* assignment
-  * KEY `assignment-${assignmentId}`
-    * Besides assignment data, also includes `organization_id`, `user.first_name`, `user.last_name`
-* (assignment-contacts) (library only, used by assignment and campaign-contact)
-  * SORTED SET `assignmentcontacts-${assignmentId}-${timezone_offset}` 
-    * key=contactId, score={0=optedout, 1=needsMessage, 200...-399...=needsResponse, ...}
-    * See the top of [./assignment.js](./assignment.js) for more details on this complex data structure.
 * campaign-contact
   * KEY `contact-${contactId}`
     * Besides contact data, also includes `organization_id`, `messageservice_sid`, `zip.city`, `zip.state`
@@ -119,6 +119,25 @@ Others:
 * message
   * LIST `messages-${contactId}`
     * Includes all data _except_ service_response
+* assignment
+  * KEY `assignment-${assignmentId}`
+    * Besides assignment data, also includes `organization_id`, `user.first_name`, `user.last_name`
+* (assignment-contacts) (library only, used by assignment, campaign-contact, and assignment-dynamic)
+  * SORTED SET `assignmentcontacts-${assignmentId}-${timezone_offset}`
+    * key=contactId, score={0=optedout, 1-9999999=needsMessage, 10000000 19999999=needsResponse, ...}
+    * See the top of [./assignment-contacts.js](./assignment-contacts.js) for more details on this complex data structure.
+* (assignment-user) (library only, used by assignment, campaign, and assignment-dynamic)
+  * SORTED SET `userassignment-${orgId}-${userId}`
+    * key=assignmentId, score=assignmentId
+    * We use a sorted set to avoid duplicates, but maintain the return order
+  * SORTED SET `campaignassignments-${campaignId}`
+    * key=userId, score=<lastSent datetime>
+* (assignment-dynamic) (library only, used by assignment, campaign, and message)
+  * LIST `needsMessage-${campaignId}-${timezoneOffset}`
+    * value=campaignContactId
+    * Queue of contacts to pop off when texters request more contacts
+  * SORTED SET `inflight-${campaignId}`
+    * key=campaignContactId, score=userId
 
 ## Expiration
 
@@ -162,8 +181,9 @@ However some stories are more complicated:
   opted-out, even if they opted out from a second organization/campaign.
 
   Thus, we need all optOuts loaded, and it's 'all or nothing' -- so when optOut is not found
-  in cache, we load every record in at once, however asynchronous to the request that triggered
-  it.  We could, in theory, keep the optOut cache in much longer, but this could then lead to
+  in cache, we load every record in at once, (asynchronous to the request that triggered
+  it -- because it could take some time).
+  We could, in theory, keep the optOut cache in much longer, but this could then lead to
   drift if there are any 'missed' saves.  To avoid this, we do an optOut update for every
   contacts upload job -- we put it in the job, because the opt_out table might be very large,
   and syncing could be a significant process. By doing it on contact upload, we can make sure

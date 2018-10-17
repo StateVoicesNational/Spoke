@@ -69,7 +69,7 @@ export const setCacheContactAssignment = async (id, contactObj) => {
     // console.log('setCacheContactAssignment', id, contactObj.assignment_id, contactObj.user_id, assignmentKey)
     await r.redis.multi()
       .set(assignmentKey, [contactObj.assignment_id, contactObj.user_id].join(':'))
-      .expire(assignmentKey, 86400)
+      .expire(assignmentKey, 43200)
       .execAsync()
   }
 }
@@ -98,7 +98,7 @@ const saveCacheRecord = async (dbRecord, organization, messageServiceSid, campai
     const contactKey = cacheKey(dbRecord.id)
     await r.redis.multi()
       .set(contactKey, JSON.stringify(contactCacheObj))
-      .expire(contactKey, 86400)
+      .expire(contactKey, 43200)
       .execAsync()
     if (dbRecord.message_status) {
       // FUTURE: To avoid a write-syncing risk, before updating the status
@@ -107,7 +107,7 @@ const saveCacheRecord = async (dbRecord, organization, messageServiceSid, campai
       const statusKey = messageStatusKey(dbRecord.id)
       await r.redis.multi()
         .set(statusKey, dbRecord.message_status)
-        .expire(statusKey, 86400)
+        .expire(statusKey, 43200)
         .execAsync()
       await updateAssignmentContact(dbRecord, dbRecord.message_status)
     }
@@ -318,9 +318,9 @@ const campaignContactCache = {
         .set(cellKey,
              [contact.id, contact.assignment_id, contact.timezone_offset].join(':'))
       // delay expiration for contacts we continue to update
-        .expire(contactKey, 86400)
-        .expire(statusKey, 86400)
-        .expire(cellKey, 86400)
+        .expire(contactKey, 43200)
+        .expire(statusKey, 43200)
+        .expire(cellKey, 43200)
         .execAsync()
       await updateAssignmentContact(contact, newStatus)
     }

@@ -49,7 +49,7 @@ export const getUserAssignments = async (organizationId, userId, assignmentLoade
     await r.redis.multi()
       .del(key)
       .zadd(key, args)
-      .expire(key, 86400)
+      .expire(key, 43200)
       .execAsync()
   }
   return dbRes
@@ -72,13 +72,13 @@ export const addUserAssignment = async (campaign, assignment) => {
         // first argument is the SCORE, we keep it the same as the ID for now
         await r.redis.multi()
           .zadd(userKey, assignment.id, assignment.id)
-          .expire(userKey, 86400)
+          .expire(userKey, 43200)
           .execAsync()
       }
       if (cExists) {
         await r.redis.multi()
           .zadd(campaignKey, 1, assignment.user_id)
-          .expire(campaignKey, 86400)
+          .expire(campaignKey, 43200)
           .execAsync()
       }
     }
@@ -105,7 +105,7 @@ export const reloadCampaignTexters = async (campaignId) => {
     await r.redis.multi()
       .del(key)
       .zadd(key, ...redisArgs)
-      .expire(key, 86400)
+      .expire(key, 43200)
       .execAsync()
   }
 }
@@ -117,7 +117,7 @@ export const updateTexterLastActivity = async (campaignId, userId) => {
     if (exists) {
       await r.redis.multi()
         .zadd(campaignKey, Number(new Date()), userId)
-        .expire(campaignKey, 86400)
+        .expire(campaignKey, 43200)
         .execAsync()
     }
   }
