@@ -993,6 +993,13 @@ const rootMutations = {
         )
         service.sendMessage(messageInstance)
       }
+      if (r.redis) {
+        const simultaneousKey = `${process.env.CACHE_PREFIX || ''}simultaneous-${user.id}-${contact.campaign_id}`
+        await r.redis.multi()
+          .set(key, 1)
+          .expire(key, 300) // 5 minutes
+          .execAsync()
+      }
 
       return contact
     },
