@@ -996,8 +996,8 @@ const rootMutations = {
       if (r.redis) {
         const simultaneousKey = `${process.env.CACHE_PREFIX || ''}simultaneous-${user.id}-${contact.campaign_id}`
         await r.redis.multi()
-          .set(key, 1)
-          .expire(key, 300) // 5 minutes
+          .set(simultaneousKey, 1)
+          .expire(simultaneousKey, 300) // 5 minutes
           .execAsync()
       }
 
