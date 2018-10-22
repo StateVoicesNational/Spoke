@@ -11,6 +11,17 @@ const jobs = require('./build/server/workers/job-processes')
 // See: http://docs.aws.amazon.com/lambda/latest/dg/best-practices.html#function-code
 // "Separate the Lambda handler (entry point) from your core logic"
 
+function cleanHeaders(event) {
+  // X-Twilio-Body can contain unicode and disallowed chars by aws-serverless-express like "'"
+  // We don't need it anyway
+  if (event.headers) {
+    delete event.headers['X-Twilio-Body']
+  }
+  if (event.multiValueHeaders) {
+    delete event.multiValueHeaders['X-Twilio-Body']
+  }
+}
+
 exports.handler = (event, context, handleCallback) => {
   // Note: When lambda is called with invoke() we MUST call handleCallback with a success
   // or Lambda will re-run/re-try the invocation twice:
@@ -21,6 +32,7 @@ exports.handler = (event, context, handleCallback) => {
   if (!event.command) {
     // default web server stuff
     const startTime = (context.getRemainingTimeInMillis ? context.getRemainingTimeInMillis() : 0)
+    cleanHeaders(event)
     const webResponse = awsServerlessExpress.proxy(server, event, context)
     if (process.env.DEBUG_SCALING) {
       const endTime = (context.getRemainingTimeInMillis ? context.getRemainingTimeInMillis() : 0)
