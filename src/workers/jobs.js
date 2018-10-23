@@ -294,9 +294,7 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
         .delete()
         .then(result => {
           console.log('# of contacts opted out removed from DW query: ' + result);
-          validationStats = {
-            optOutCount: result
-          }
+          validationStats['optOutCount'] = result
         })
 
       const inValidCellCount = await r.knex('campaign_contact')
@@ -305,9 +303,23 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
         .delete()
         .then(result => {
           console.log('# of contacts with invalid cells removed from DW query: ' + result);
-          validationStats = {
-            invalidCellCount: result
-          }
+          validationStats['invalidCellCount'] = result
+        })
+
+      const dupeCellCount = await r.knex('campaign_contact')
+        .whereIn('id', r.knex('campaign_contact')
+                 .select('campaign_contact.id')
+                 .leftJoin('campaign_contact c2', function joinSelf() {
+                   this.on('c2.campaign_id', '=', 'campaign_contact.campaign_id')
+                     .andOn('c2.cell', '=', 'campaign_contact.cell')
+                     .andOn('c2.id', '>', 'campaign_contact.id')
+                 })
+                 .where('campaign_contact.campaign_id', jobEvent.campaignId)
+                 .whereNotNull('c2.id'))
+        .delete()
+        .then(result => {
+          console.log('# of contacts with duplicate cells removed from DW query: ' + result);
+          validationStats['duplicateCellCount'] = result
         })
     }
     await r.table('job_request').get(jobEvent.jobId).delete()
