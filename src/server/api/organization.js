@@ -28,15 +28,16 @@ export const resolvers = {
     },
     people: async (organization, { role, campaignId, offset }, { user }) => {
       await accessRequired(user, organization.id, 'SUPERVOLUNTEER')
-      let query = buildUserOrganizationQuery(
+      const query = buildUserOrganizationQuery(
         r.knex.select('user.*'), organization.id, role, campaignId, offset)
         .orderBy('created_at', 'desc')
-      if (typeof offset == 'number') {
+      if (typeof offset === 'number') {
         return query.limit(200)
       }
       return query
     },
     peopleCount: async (organization, _, { user }) => {
+      await accessRequired(user, organization.id, 'SUPERVOLUNTEER')
       return r.getCount(r.knex('user')
                         .join('user_organization', 'user.id', 'user_organization.user_id')
                         .where('user_organization.organization_id', organization.id))
