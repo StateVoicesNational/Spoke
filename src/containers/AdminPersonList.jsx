@@ -20,15 +20,6 @@ import gql from 'graphql-tag'
 import { dataTest } from '../lib/attributes'
 import LoadingIndicator from '../components/LoadingIndicator'
 
-const organizationFragment = `
-  id
-  people(campaignId: $campaignId) {
-    id
-    displayName
-    email
-    roles(organizationId: $organizationId)
-  }
-`
 class AdminPersonList extends React.Component {
 
   constructor(props) {
@@ -45,11 +36,21 @@ class AdminPersonList extends React.Component {
     passwordResetHash: ''
   }
 
-  handleFilterChange = (event, index, value) => {
-    const query = value ? `?campaignId=${value}` : ''
+  handleFilterChange = (campaignId, offset) => {
+    let query = '?' + (campaignId ? `campaignId=${campaignId}` : '')
+    query += (offset ? `&offset=${offset}` : '')
     this.props.router.push(
       `/admin/${this.props.params.organizationId}/people${query}`
     )
+  }
+
+  handleCampaignChange = (event, index, value) => {
+    // We send 0 when there is a campaign change, because presumably we start on page 1
+    this.handleFilterChange(value, 0)
+  }
+
+  handleOffsetChange = (event, index, value) => {
+    this.handleFilterChange(this.props.location.query.campaignId, value)
   }
 
   handleOpen() {
@@ -93,7 +94,7 @@ class AdminPersonList extends React.Component {
     return (
       <DropDownMenu
         value={this.props.location.query.campaignId}
-        onChange={this.handleFilterChange}
+        onChange={this.handleCampaignChange}
       >
         <MenuItem primaryText='All Campaigns' />
         {campaigns.campaigns.map(campaign => (
@@ -172,6 +173,7 @@ class AdminPersonList extends React.Component {
     return (
       <div>
         {this.renderCampaignList()}
+        {this.renderOffsetList()}
         {this.renderTexters()}
         <FloatingActionButton
           {...dataTest('addPerson')}
@@ -248,10 +250,20 @@ AdminPersonList.propTypes = {
   location: PropTypes.object
 }
 
+const organizationFragment = `
+  id
+  peopleCount
+  people(campaignId: $campaignId, offset: $offset) {
+    id
+    displayName
+    email
+    roles(organizationId: $organizationId)
+  }
+`
 const mapMutationsToProps = ({ ownProps }) => ({
   editOrganizationRoles: (organizationId, userId, roles) => ({
     mutation: gql`
-      mutation editOrganizationRoles($organizationId: String!, $userId: String!, $roles: [String], $campaignId: String) {
+      mutation editOrganizationRoles($organizationId: String!, $userId: String!, $roles: [String], $campaignId: String, $offset: Int) {
         editOrganizationRoles(organizationId: $organizationId, userId: $userId, roles: $roles, campaignId: $campaignId) {
           ${organizationFragment}
         }
@@ -261,7 +273,8 @@ const mapMutationsToProps = ({ ownProps }) => ({
       organizationId,
       userId,
       roles,
-      campaignId: ownProps.location.query.campaignId
+      campaignId: ownProps.location.query.campaignId,
+      offset: ownProps.location.query.offset || 0
     }
   }),
   resetUserPassword: (organizationId, userId) => ({
@@ -279,14 +292,15 @@ const mapMutationsToProps = ({ ownProps }) => ({
 
 const mapQueriesToProps = ({ ownProps }) => ({
   personData: {
-    query: gql`query getPeople($organizationId: String!, $campaignId: String) {
+    query: gql`query getPeople($organizationId: String!, $campaignId: String, $offset: Int) {
       organization(id: $organizationId) {
         ${organizationFragment}
       }
     }`,
     variables: {
       organizationId: ownProps.params.organizationId,
-      campaignId: ownProps.location.query.campaignId
+      campaignId: ownProps.location.query.campaignId,
+      offset: ownProps.location.query.offset || 0
     },
     forceFetch: true
   },
