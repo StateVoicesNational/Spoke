@@ -79,7 +79,7 @@ class AdminPersonList extends React.Component {
     const LIMIT = 200
     const { personData: { organization} } = this.props
     if (organization.peopleCount > LIMIT) {
-      const offsetList = Array.apply(null, { length: parseInt(organization.peopleCount / LIMIT, 10) })
+      const offsetList = Array.apply(null, { length: Math.ceil(organization.peopleCount / LIMIT) })
       return (
         <DropDownMenu
           value={Number(this.props.location.query.offset || 0)}
