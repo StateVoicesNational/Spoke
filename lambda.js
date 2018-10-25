@@ -1,9 +1,19 @@
 'use strict'
 const AWS = require('aws-sdk')
 const awsServerlessExpress = require('aws-serverless-express')
-const app = require('./build/server/server/index')
-const server = awsServerlessExpress.createServer(app.default)
-const jobs = require('./build/server/workers/job-processes')
+let app, server, jobs
+try {
+  app = require('./build/server/server/index')
+  server = awsServerlessExpress.createServer(app.default)
+  jobs = require('./build/server/workers/job-processes')
+} catch(err) {
+  if (!global.TEST_ENVIRONMENT) {
+    console.error(`Unable to load built server: ${err}`)
+  }
+  app = require('./src/server/index')
+  server = awsServerlessExpress.createServer(app.default)
+  jobs = require('./src/workers/job-processes')
+}
 
 // NOTE: the downside of loading above is environment variables are initially loaded immediately,
 //       so changing them means that the code must test environment variable inline (rather than use a const set on-load)
