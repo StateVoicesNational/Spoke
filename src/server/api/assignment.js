@@ -102,14 +102,20 @@ export const resolvers = {
       : loaders.user.load(assignment.user_id)
     ),
     campaign: async (assignment, _, { loaders }) => loaders.campaign.load(assignment.campaign_id),
-    contactsCount: async (assignment, { contactsFilter }) => {
+    contactsCount: async (assignment, { contactsFilter }, { user }) => {
+      if (user.blocked) {
+        return 0
+      }
       const campaign = await r.table('campaign').get(assignment.campaign_id)
 
       const organization = await r.table('organization').get(campaign.organization_id)
 
       return await r.getCount(getContacts(assignment, contactsFilter, organization, campaign, true))
     },
-    contacts: async (assignment, { contactsFilter }) => {
+    contacts: async (assignment, { contactsFilter }, { user }) => {
+      if (user.blocked) {
+        return []
+      }
       const campaign = await r.table('campaign').get(assignment.campaign_id)
 
       const organization = await r.table('organization').get(campaign.organization_id)

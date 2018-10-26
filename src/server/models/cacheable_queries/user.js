@@ -38,7 +38,11 @@ export async function userLoggedIn(authId) {
   if (r.redis) {
     const cachedAuth = await r.redis.getAsync(authKey)
     if (cachedAuth) {
-      return JSON.parse(cachedAuth)
+      const parsedAuth = JSON.parse(cachedAuth)
+      if (await r.redis.getAsync(`texterblocked-${parsedAuth.id}`)) {
+        parsedAuth.blocked = true
+      }
+      return parsedAuth
     }
   }
 
@@ -52,6 +56,9 @@ export async function userLoggedIn(authId) {
       .set(authKey, JSON.stringify(userAuth))
       .expire(authKey, 86400)
       .execAsync()
+    if (await r.redis.getAsync(`texterblocked-${userAuth.id}`)) {
+      userAuth.blocked = true
+    }
   }
   return userAuth
 }
