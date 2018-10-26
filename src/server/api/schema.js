@@ -896,6 +896,10 @@ const rootMutations = {
       return []
     },
     sendMessage: async (_, { message, campaignContactId }, { user, loaders }) => {
+      if (user.blocked) {
+        return null
+      }
+
       const contact = await loaders.campaignContact.load(campaignContactId)
       const campaign = await loaders.campaign.load(contact.campaign_id)
       if (contact.assignment_id !== parseInt(message.assignmentId) || campaign.is_archived) {

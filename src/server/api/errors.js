@@ -32,6 +32,10 @@ export async function accessRequired(user, orgId, role, allowSuperadmin = false)
 export async function assignmentRequired(user, assignmentId) {
   authRequired(user)
 
+  if (user.blocked) {
+    throw new GraphQLError('Try accessing the system at another time or contact your administrator.')
+  }
+
   if (user.is_superadmin) {
     return
   }

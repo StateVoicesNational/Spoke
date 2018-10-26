@@ -51,14 +51,18 @@ export const resolvers = {
         .getAll([organizationId, user.id], { index: 'organization_user' })
         .pluck('role')('role')
     ),
-    todos: async (user, { organizationId }) =>
-      r.table('assignment')
+    todos: async (user, { organizationId }) => {
+      if (user.blocked) {
+        return []
+      }
+      return r.table('assignment')
         .getAll(user.id, { index: 'assignment.user_id' })
         .eqJoin('campaign_id', r.table('campaign'))
         .filter({ 'is_started': true,
                  'organization_id': organizationId,
                  'is_archived': false }
                )('left')
+    }
 
   }
 }
