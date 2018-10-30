@@ -45,10 +45,10 @@ export class PaginatedUsersRetriever extends Component {
             return prev
           }
           const returnValue = Object.assign({}, prev)
-          returnValue.users.people = returnValue.users.people.concat(
-            fetchMoreResult.data.users.people
+          returnValue.people.users = returnValue.people.users.concat(
+            fetchMoreResult.data.people.users
           )
-          returnValue.users.pageInfo = fetchMoreResult.data.users.pageInfo
+          returnValue.people.pageInfo = fetchMoreResult.data.people.pageInfo
           return returnValue
         }
       })
