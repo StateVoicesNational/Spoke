@@ -1,5 +1,6 @@
 import { mapFieldsToModel } from './lib/utils'
 import { r, User } from '../models'
+import { getAuth0Skipper } from '../auth-passport'
 
 export function buildUserOrganizationQuery(queryParam, organizationId, role, campaignId) {
   const roleFilter = role ? { role } : {}
@@ -51,6 +52,13 @@ export const resolvers = {
         .getAll([organizationId, user.id], { index: 'organization_user' })
         .pluck('role')('role')
     ),
+    fastLogin: async (texter, { organizationId }, { user }) => {
+      if (process.env.AUTH0_SHORT_CIRCUIT_INSECUREHASH) {
+        const token = getAuth0Skipper(texter.id)
+        return `/loginfast?o=${organizationId}&id=${texter.id}&h=${token}`
+      }
+      return null
+    },
     todos: async (user, { organizationId }) =>
       r.table('assignment')
         .getAll(user.id, { index: 'assignment.user_id' })

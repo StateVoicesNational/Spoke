@@ -1,3 +1,4 @@
+import crypto from 'crypto'
 import passport from 'passport'
 import Auth0Strategy from 'passport-auth0'
 import AuthHasher from 'passport-local-authenticate'
@@ -5,6 +6,30 @@ import { Strategy as LocalStrategy } from 'passport-local'
 import { userLoggedIn } from './models/cacheable_queries'
 import { User } from './models'
 import wrap from './wrap'
+
+export function getAuth0Skipper(id) {
+  const hmac = crypto.createHmac('sha256', process.env.AUTH0_SHORT_CIRCUIT_INSECUREHASH);
+  hmac.update(`${id}`)
+  hmac.update((new Date()).toJSON().slice(0,10))
+  const calculatedHmac = hmac.digest('base64').replace('+', '_')
+  return calculatedHmac
+}
+
+export const skipAuth0 = wrap(async (req, res) => {
+  console.log('SKIPAUTH', req.query, req.session);
+  const calculatedHmac = getAuth0Skipper(req.query.id)
+  console.log('HASHED', req.query.h, `/loginfast?o=1&id=${req.query.id}&h=${calculatedHmac}`)
+  if (calculatedHmac === req.query.h) {
+    console.log('matched!', req.query.h)
+    const [user] = await User.filter({ id: req.query.id })
+    if (user) {
+      req.session = {passport: { user: user.auth0_id } }
+    }
+  }
+  res.redirect(req.query.o // organization
+               ? `/app/${req.query.o}/todos`
+               : '/')
+})
 
 export function setupAuth0Passport() {
   const strategy = new Auth0Strategy({

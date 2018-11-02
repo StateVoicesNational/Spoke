@@ -9,9 +9,11 @@ import FloatingActionButton from 'material-ui/FloatingActionButton'
 import DropDownMenu from 'material-ui/DropDownMenu'
 import MenuItem from 'material-ui/MenuItem'
 import ContentAdd from 'material-ui/svg-icons/content/add'
+import ContentCopy from 'material-ui/svg-icons/content/content-copy'
 import { Table, TableBody, TableRow, TableRowColumn } from 'material-ui/Table'
 import Dialog from 'material-ui/Dialog'
 import PeopleIcon from 'material-ui/svg-icons/social/people'
+import Snackbar from 'material-ui/Snackbar'
 import { getHighestRole, ROLE_HIERARCHY } from '../lib'
 import theme from '../styles/theme'
 import loadData from './hoc/load-data'
@@ -26,6 +28,7 @@ const organizationFragment = `
     displayName
     email
     roles(organizationId: $organizationId)
+    fastLogin(organizationId: $organizationId)
   }
 `
 class AdminPersonList extends React.Component {
@@ -141,6 +144,22 @@ class AdminPersonList extends React.Component {
                   onTouchTap={() => { this.editUser(person.id) }}
                 />
               </TableRowColumn>
+              {person.fastLogin
+               ? <TableRowColumn>
+                 Login Link:
+                 <ContentCopy
+                   onClick={() => {
+                     const copyInput = document.getElementById(`copyfastlogin${person.id}`)
+                     console.log('login link', this, person.id)
+                     copyInput.select();
+                     document.execCommand("copy");
+                     this.setState({snackbarMessage: "copied"})
+                   }}
+                   label="Click to copy a link to login quickly as this user. Be careful! This link lasts for a day."
+                 />
+                 <input id={`copyfastlogin${person.id}`} width="1" value={`${window.location.origin}${person.fastLogin}`} />
+               </TableRowColumn>
+               : null}
             </TableRow>
           ))}
         </TableBody>
@@ -162,6 +181,12 @@ class AdminPersonList extends React.Component {
         >
           <ContentAdd />
         </FloatingActionButton>
+        <Snackbar
+          open={this.state.snackbarMessage}
+          message={this.state.snackbarMessage}
+          autoHideDuration={3000}
+          onRequestClose={() => { this.setState({ snackbarMessage: ''}) }}
+        />
         {organizationData.organization && (
           <div>
             <Dialog
@@ -198,6 +223,7 @@ class AdminPersonList extends React.Component {
           </div>
         )}
       </div>
+
     )
   }
 }

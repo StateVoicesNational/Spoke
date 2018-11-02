@@ -6,6 +6,7 @@ export const schema = `
     displayName: String
     email: String
     cell: String
+    fastLogin(organizationId: String): String
     organizations(role: String): [Organization]
     todos(organizationId: String): [Assignment]
     roles(organizationId: String!): [String]
