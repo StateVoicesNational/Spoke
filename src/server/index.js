@@ -11,7 +11,7 @@ import mocks from './api/mocks'
 import { createLoaders, createTablesIfNecessary } from './models'
 import passport from 'passport'
 import cookieSession from 'cookie-session'
-import { setupAuth0Passport } from './auth-passport'
+import { setupAuth0Passport, skipAuth0 } from './auth-passport'
 import wrap from './wrap'
 import { log } from '../lib'
 import nexmo from './api/lib/nexmo'
@@ -135,6 +135,10 @@ app.get('/logout-callback', (req, res) => {
 
 if (loginCallbacks) {
   app.get('/login-callback', ...loginCallbacks)
+}
+
+if (process.env.AUTH0_SHORT_CIRCUIT_INSECUREHASH) {
+  app.get('/loginfast', skipAuth0)
 }
 
 const executableSchema = makeExecutableSchema({
