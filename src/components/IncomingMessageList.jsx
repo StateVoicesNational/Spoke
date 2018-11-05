@@ -45,7 +45,10 @@ export class IncomingMessageList extends Component {
   constructor(props) {
     super(props)
 
-    this.state = { activeConversation: undefined }
+    this.state = {
+      selectedRows:[],
+      activeConversation: undefined
+    }
 
     this.prepareTableColumns = this.prepareTableColumns.bind(this)
     this.handleNextPageClick = this.handleNextPageClick.bind(this)
@@ -183,6 +186,7 @@ export class IncomingMessageList extends Component {
   }
 
   handleRowsSelected(rowsSelected) {
+    this.setState({selectedRows: rowsSelected})
     const conversations = this.props.conversations.conversations.conversations
     const selectedConversations = prepareSelectedRowsData(conversations, rowsSelected)
     this.props.onConversationSelected(rowsSelected, selectedConversations)
@@ -221,6 +225,7 @@ export class IncomingMessageList extends Component {
           onPreviousPageClick={this.handlePreviousPageClick}
           onRowSizeChange={this.handleRowSizeChanged}
           onRowSelection={this.handleRowsSelected}
+          selectedRows={this.state.selectedRows}
         />
         <Dialog
           title='Messages'
