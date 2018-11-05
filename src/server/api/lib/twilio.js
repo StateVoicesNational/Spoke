@@ -134,8 +134,9 @@ async function sendMessage(message) {
     if (process.env.TWILIO_MESSAGE_VALIDITY_PERIOD) {
       messageParams.validityPeriod = process.env.TWILIO_MESSAGE_VALIDITY_PERIOD
     }
+    let numTries = 0
 
-    twilio.messages.create(messageParams, (err, response) => {
+    const postCreateFunc = (err, response) => {
       const messageToSave = {
         ...message
       }
@@ -144,7 +145,7 @@ async function sendMessage(message) {
       if (err) {
         hasError = true
         log.error('Error sending message', err)
-        console.log('Error sending message', err)
+        console.log('Error sending message', numTries, message.contact_number, err)
         messageToSave.service_response += JSON.stringify(err)
       }
       if (response) {
@@ -163,6 +164,11 @@ async function sendMessage(message) {
         .then((_, newMessage) => {
           reject(err || (response ? new Error(JSON.stringify(response)) : new Error('Encountered unknown error')))
         })
+        if (numTries === 0 && err.message && /Unable to reach host/.test(err.message)) {
+          console.log('Error sending message -- retrying', numTries, message.contact_number, err)
+          numTries = 1
+          twilio.messages.create(messageParams, postCreateFunc)
+        }
       } else {
         Message.save({
           ...messageToSave,
@@ -174,7 +180,8 @@ async function sendMessage(message) {
           resolve(newMessage)
         })
       }
-    })
+    }
+    twilio.messages.create(messageParams, postCreateFunc)
   })
 }
 
