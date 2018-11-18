@@ -156,6 +156,20 @@ const migrations = [
       console.log('added texting hours fields to campaign')
     }
   }
+  { auto: true, //13
+    date: '2018-10-26',
+    // eslint-disable-next-line
+    migrate: async function() {
+      // it is ok if this function fails if run again, but
+      // it should be ok to be run twice.  If not, then make auto=false
+      await r.knex.raw(`
+        CREATE UNIQUE INDEX "campaign_contact_cell_campaign_id_idx"
+          ON "campaign_contact" ("cell","campaign_id");
+      `)
+      console.log('added unique index campaign_contact_cell_campaign_id_idx to campaign_contact')
+    }
+   }
+
   /* migration template
      {auto: true, //if auto is false, then it will block the migration running automatically
       date: '2017-08-23',
