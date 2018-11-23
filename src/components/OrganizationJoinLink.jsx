@@ -16,7 +16,7 @@ const OrganizationJoinLink = ({ organizationUuid, campaignId }) => {
   return (
     <div>
       <div>
-        Send your texting volunteers this link! Once they sign up, they'll be automatically assigned to this campaign.
+        Send your texting volunteers this link! Once they sign up, they'll be automatically assigned to this Organization.
       </div>
       <TextField
         {...dataTest('joinUrl')}
