@@ -10,6 +10,9 @@ export function addCampaignsFilterToQuery(queryParam, campaignsFilter) {
   const pageSize = (campaignsFilter.pageSize ? campaignsFilter.pageSize : 0)
 
   if (campaignsFilter) {
+    const resultSize = (campaignsFilter.listSize ? campaignsFilter.listSize : 0)
+    const pageSize = (campaignsFilter.pageSize ? campaignsFilter.pageSize : 0)
+
     if ('isArchived' in campaignsFilter) {
       query = query.where('campaign.is_archived', campaignsFilter.isArchived )
     }
@@ -208,15 +211,21 @@ export const resolvers = {
         .limit(1)
       return contacts.length > 0
     },
-    customFields: async (campaign) => {
-      const campaignContacts = await r.table('campaign_contact')
-        .getAll(campaign.id, { index: 'campaign_id' })
+    hasUnsentInitialMessages: async (campaign) => {
+      const contacts = await r.knex('campaign_contact')
+        .select('id')
+        .where({
+          campaign_id: campaign.id,
+          message_status: 'needsMessage',
+          is_opted_out: false
+        })
         .limit(1)
-      if (campaignContacts.length > 0) {
-        return Object.keys(JSON.parse(campaignContacts[0].custom_fields))
-      }
-      return []
+      return contacts.length > 0
     },
+    customFields: async (campaign) => (
+      campaign.customFields
+      || cacheableData.campaign.dbCustomFields(campaign.id)
+    ),
     stats: async (campaign) => campaign,
     editors: async (campaign, _, { user }) => {
       if (r.redis) {

@@ -8,6 +8,7 @@ import { exportCampaign,
          assignTexters,
          sendMessages,
          handleIncomingMessageParts,
+         fixOrgless,
          clearOldJobs } from './jobs'
 import { runMigrations } from '../migrations'
 import { setupUserNotificationObservers } from '../server/notifications'
@@ -187,7 +188,8 @@ const processMap = {
   messageSender234,
   messageSender56,
   messageSender789,
-  handleIncomingMessages
+  handleIncomingMessages,
+  fixOrgless
 }
 
 // if process.env.JOBS_SAME_PROCESS then we don't need to run
@@ -196,6 +198,7 @@ const syncProcessMap = {
   // 'failedMessageSender': failedMessageSender, //see method for danger
   handleIncomingMessages,
   checkMessageQueue,
+  fixOrgless,
   clearOldJobs
 }
 

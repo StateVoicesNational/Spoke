@@ -34,25 +34,25 @@ function createLoader(model, idKey = 'id') {
 
 // This is in dependency order, so tables are after their dependencies
 const tableList = [
-  'organization',
-  'user',
-  'campaign',
+  'organization', // good candidate?
+  'user', // good candidate
+  'campaign', // good candidate
   'assignment',
   // the rest are alphabetical
-  'campaign_contact',
-  'canned_response',
+  'campaign_contact', // ?good candidate (or by cell)
+  'canned_response', // good candidate
   'interaction_step',
   'invite',
   'job_request',
   'log',
   'message',
   'migrations',
-  'opt_out',
+  'opt_out',  // good candidate
   'pending_message_part',
   'question_response',
   'user_cell',
   'user_organization',
-  'zip_code'
+  'zip_code' // good candidate (or by contact)?
 ]
 
 function createTablesIfNecessary() {
@@ -77,13 +77,13 @@ function dropTables() {
 
 const createLoaders = () => ({
   assignment: createLoader(Assignment),
-  campaign: createLoader(Campaign),
+  campaign: createLoader(Campaign, { cacheObj: cacheableData.campaign }),
   invite: createLoader(Invite),
-  organization: createLoader(Organization),
+  organization: createLoader(Organization, { cacheObj: cacheableData.organization }),
   user: createLoader(User),
   interactionStep: createLoader(InteractionStep),
   campaignContact: createLoader(CampaignContact),
-  zipCode: createLoader(ZipCode, 'zip'),
+  zipCode: createLoader(ZipCode, { idKey: 'zip' }),
   log: createLoader(Log),
   cannedResponse: createLoader(CannedResponse),
   jobRequest: createLoader(JobRequest),
