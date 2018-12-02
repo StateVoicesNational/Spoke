@@ -127,7 +127,7 @@ const rootSchema = `
     message: MessageInput!
     campaignContactId: String!
   }
-  
+
   input OffsetLimitCursor {
     offset: Int!
     limit: Int!
@@ -153,7 +153,7 @@ const rootSchema = `
   type FoundContact {
     found: Boolean
   }
-  
+
   type PageInfo {
     limit: Int!
     offset: Int!
@@ -190,7 +190,7 @@ const rootSchema = `
     createCannedResponse(cannedResponse:CannedResponseInput!): CannedResponse
     createOrganization(name: String!, userId: String!, inviteId: String!): Organization
     joinOrganization(organizationUuid: String!): Organization
-    editOrganizationRoles(organizationId: String!, userId: String!, roles: [String]): Organization
+    editOrganizationRoles(organizationId: String!, userId: String!, campaignId: String, roles: [String]): Organization
     editUser(organizationId: String!, userId: Int!, userData:UserInput): User
     updateTextingHours( organizationId: String!, textingHoursStart: Int!, textingHoursEnd: Int!): Organization
     updateTextingHoursEnforcement( organizationId: String!, textingHoursEnforced: Boolean!): Organization
@@ -236,4 +236,3 @@ export const schema = [
   inviteSchema,
   conversationSchema
 ]
-

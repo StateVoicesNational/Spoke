@@ -115,5 +115,102 @@ export const campaigns = {
       // Validate Started
       expect(await wait.andGetEl(driver, pom.campaigns.isStarted)).toBeTruthy()
     })
+  },
+  copyCampaign(driver, campaign) {
+    it('opens the Campaigns tab', async () => {
+      await driver.get(urlBuilder.admin.root())
+      await wait.andClick(driver, pom.navigation.sections.campaigns)
+    })
+
+    it('clicks on an existing campaign', async () => {
+      await wait.andClick(driver, pom.campaigns.campaignRowByText(campaign.basics.title), { goesStale: true })
+    })
+
+    it('clicks Copy in Stats', async () => {
+      await wait.andClick(driver, pom.campaigns.stats.copy, { waitAfterVisible: 2000 })
+    })
+
+    it('verifies copy in Campaigns list', async () => {
+      await wait.andClick(driver, pom.navigation.sections.campaigns)
+      expect(await wait.andGetEl(driver, pom.campaigns.campaignRowByText('COPY'))).toBeDefined()
+      // expect(await wait.andGetEl(driver, pom.campaigns.warningIcon)).toBeDefined()
+      await wait.andClick(driver, pom.campaigns.campaignRowByText('COPY'))
+    })
+
+    describe('verifies Campaign sections', () => {
+      it('verifies Basics section', async () => {
+        await wait.andClick(driver, form.basics.section)
+        expect(await wait.andGetValue(driver, form.basics.title)).toBe(campaign.basics.title_copied)
+        expect(await wait.andGetValue(driver, form.basics.description)).toBe(campaign.basics.description)
+        expect(await wait.andGetValue(driver, form.basics.dueBy)).toBe('')
+      })
+      it('verifies Contacts section', async () => {
+        await wait.andClick(driver, form.contacts.section)
+        const uploadedContacts = await driver.findElements(form.contacts.uploadedContacts)
+        expect(uploadedContacts.length > 0).toBeFalsy()
+      })
+      it('verifies Texters section', async () => {
+        await wait.andClick(driver, form.texters.section)
+        const assignedContacts = await driver.findElements(form.texters.texterAssignmentByText(campaign.texter.given_name))
+        expect(assignedContacts.length > 0).toBeFalsy()
+      })
+      it('verifies Interactions section', async () => {
+        await wait.andClick(driver, form.interactions.section)
+        expect(await wait.andGetValue(driver, form.interactions.editorLaunch)).toBe(campaign.interaction.script)
+        expect(await wait.andGetValue(driver, form.interactions.questionText)).toBe(campaign.interaction.question)
+        // Verify Answers
+        const allChildInteractions = await driver.findElements(form.interactions.childInteraction)
+        expect(allChildInteractions.length).toBe(campaign.interaction.answers.length)
+      })
+      it('verifies Canned Responses section', async () => {
+        await wait.andClick(driver, form.cannedResponse.section)
+        expect(await wait.andGetEl(driver, form.cannedResponse.createdResponseByText(campaign.cannedResponses[0].title))).toBeDefined()
+        expect(await wait.andGetEl(driver, form.cannedResponse.createdResponseByText(campaign.cannedResponses[0].script))).toBeDefined()
+      })
+    })
+  },
+  editCampaign(driver, campaign) {
+    it('opens the Campaigns tab', async () => {
+      await driver.get(urlBuilder.admin.root())
+      await wait.andClick(driver, pom.navigation.sections.campaigns)
+    })
+
+    it('clicks on an existing campaign', async () => {
+      await wait.andClick(driver, pom.campaigns.campaignRowByText(campaign.basics.title), { goesStale: true })
+    })
+
+    it('clicks edit in Stats', async () => {
+      await wait.andClick(driver, pom.campaigns.stats.edit, { waitAfterVisible: 2000, goesStale: true })
+    })
+
+    it('changes the title in the Basics section', async () => {
+      // Expand Basics section
+      await wait.andClick(driver, form.basics.section)
+      // Change Title
+      await wait.andType(driver, form.basics.title, campaign.basics.title_changed, { clear: false })
+      // Save
+      await wait.andClick(driver, form.save)
+    })
+
+    it('reopens the Basics section to verify title', async () => {
+      // Expand Basics section
+      await wait.andClick(driver, form.basics.section, { waitAfterVisible: 2000 })
+      // Verify Title
+      expect(await wait.andGetValue(driver, form.basics.title)).toBe(campaign.basics.title_changed)
+    })
+  },
+  sendReplies(driver, campaign) {
+    it('sends Replies', async () => {
+      const sendRepliesUrl = global.e2e.newCampaignUrl.substring(0, global.e2e.newCampaignUrl.indexOf('edit?new=true')) + 'send-replies'
+      await driver.get(sendRepliesUrl)
+    })
+    describe('simulates the assigned contacts sending replies', () => {
+      _.times(campaign.texters.contactLength, n => {
+        it(`sends reply ${n}`, async () => {
+          await wait.andType(driver, pom.campaigns.replyByIndex(n), campaign.standardReply)
+          await wait.andClick(driver, pom.campaigns.sendByIndex(n))
+        })
+      })
+    })
   }
 }

@@ -1,4 +1,6 @@
-import { r, datawarehouse, Assignment, Campaign, CampaignContact, Organization, User } from '../server/models'
+import { r, datawarehouse, cacheableData,
+         Assignment, Campaign, CampaignContact, Organization, User, 
+         UserOrganization } from '../server/models'
 import { log, gunzip, zipToTimeZone, convertOffsetsToStrings } from '../lib'
 import { updateJob } from './lib'
 import { getFormattedPhoneNumber } from '../lib/phone-format.js'
@@ -12,6 +14,18 @@ import { sendEmail } from '../server/mail'
 import { Notifications, sendUserNotification } from '../server/notifications'
 
 const zipMemoization = {}
+let warehouseConnection = null
+function optOutsByOrgId(orgId) {
+  return r.knex.select('cell').from('opt_out').where('organization_id', orgId)
+}
+
+function optOutsByInstance() {
+  return r.knex.select('cell').from('opt_out')
+}
+
+function getOptOutSubQuery(orgId) {
+  return (!!process.env.OPTOUTS_SHARE_ALL_ORGS ? optOutsByInstance() : optOutsByOrgId(orgId))
+}
 
 export async function getTimezoneByZip(zip) {
   if (zip in zipMemoization) {
@@ -161,10 +175,16 @@ export async function uploadContacts(job) {
     .whereIn('cell', function optouts() {
       this.select('cell').from('opt_out').where('organization_id', campaign.organization_id)
     })
+    
+  const deleteOptOutCells = await r.knex('campaign_contact')
+    .whereIn('cell', getOptOutSubQuery(campaign.organization_id))
     .where('campaign_id', campaignId)
     .delete()
+    .then(result => {
+      console.log('deleted result: ' + result);
+    })
 
-  if (optOutCellCount) {
+  if (deleteOptOutCells) {
     jobMessages.push(`Number of contacts excluded due to their opt-out status: ${optOutCellCount}`)
   }
 
@@ -180,6 +200,9 @@ export async function uploadContacts(job) {
 
 export async function loadContactsFromDataWarehouseFragment(jobEvent) {
   console.log('starting loadContactsFromDataWarehouseFragment', jobEvent)
+  const insertOptions = {
+    batchSize: 1000
+  }
   const jobCompleted = (await r.knex('job_request')
                         .where('id', jobEvent.jobId)
                         .select('status')
@@ -198,11 +221,13 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
   }
   let knexResult
   try {
+    warehouseConnection = warehouseConnection || datawarehouse()
     console.log('loadContactsFromDataWarehouseFragment RUNNING WAREHOUSE query', sqlQuery)
-    knexResult = await datawarehouse.raw(sqlQuery)
+    knexResult = await warehouseConnection.raw(sqlQuery)
   } catch (err) {
     // query failed
     log.error('Data warehouse query failed: ', err)
+    jobMessages.push(`Data warehouse count query failed with ${err}`)
     // TODO: send feedback about job
   }
   const fields = {}
@@ -222,10 +247,10 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
   })
   if (! ('first_name' in fields && 'last_name' in fields && 'cell' in fields)) {
     log.error('SQL statement does not return first_name, last_name, and cell: ', sqlQuery, fields)
+    jobMessages.push(`SQL statement does not return first_name, last_name and cell => ${sqlQuery} => with fields ${fields}`)
     return
   }
 
-  const jobMessages = []
   const savePortion = await Promise.all(knexResult.rows.map(async (row) => {
     const formatCell = getFormattedPhoneNumber(row.cell, (process.env.PHONE_NUMBER_COUNTRY || 'US'))
     const contact = {
@@ -243,16 +268,18 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
       contactCustomFields[f] = row[f]
     })
     contact.custom_fields = JSON.stringify(contactCustomFields)
-    if (contact.zip) {
-      contact.timezone_offset = await getTimezoneByZip(contact.zip)
+    if (contact.zip && !contactCustomFields.hasOwnProperty('timezone_offset')){
+      contact.timezone_offset = getTimezoneByZip(contact.zip)
+    }
+    if (contactCustomFields.hasOwnProperty('timezone_offset')){
+      contact.timezone_offset = contactCustomFields['timezone_offset']
     }
     return contact
   }))
 
-  await CampaignContact.save(savePortion)
-
+  await CampaignContact.save(savePortion, insertOptions)
   await r.knex('job_request').where('id', jobEvent.jobId).increment('status', 1)
-
+  let validationStats = {}
   const completed = (await r.knex('job_request')
                      .where('id', jobEvent.jobId)
                      .select('status')
@@ -271,10 +298,27 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
         })
         .where('campaign_id', jobEvent.campaignId)
         .delete()
-      console.log('OPTOUT CELL COUNT', optOutCellCount)
+        .then(result => {
+          console.log('# of contacts opted out removed from DW query: ' + result);
+          validationStats = {
+            optOutCount: result
+          }
+        })
+
+      const inValidCellCount = await r.knex('campaign_contact')
+        .whereRaw('length(cell) != 12')
+        .andWhere('campaign_id', jobEvent.campaignId)
+        .delete()
+        .then(result => {
+          console.log('# of contacts with invalid cells removed from DW query: ' + result);
+          validationStats = {
+            invalidCellCount: result
+          }
+        })
     }
     await r.table('job_request').get(jobEvent.jobId).delete()
-    return { 'completed': 1 }
+    await cacheableData.campaign.reload(jobEvent.campaignId)
+    return { 'completed': 1, validationStats }
   } else if (jobEvent.part < (jobEvent.totalParts - 1)) {
     const newPart = jobEvent.part + 1
     const newJob = {
@@ -295,9 +339,10 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
 }
 
 export async function loadContactsFromDataWarehouse(job) {
-  console.log('STARTING loadContactsFromDataWarehouse')
+  console.log('STARTING loadContactsFromDataWarehouse', job.payload)
   const jobMessages = []
   const sqlQuery = job.payload
+
   if (!sqlQuery.startsWith('SELECT') || sqlQuery.indexOf(';') >= 0) {
     log.error('Malformed SQL statement.  Must begin with SELECT and not have any semicolons: ', sqlQuery)
     return
@@ -310,19 +355,20 @@ export async function loadContactsFromDataWarehouse(job) {
   let knexCountRes
   let knexCount
   try {
-    knexCountRes = await datawarehouse.raw(`SELECT COUNT(*) FROM ( ${sqlQuery} )`)
+    warehouseConnection = warehouseConnection || datawarehouse()
+    knexCountRes = await warehouseConnection.raw(`SELECT COUNT(*) FROM ( ${sqlQuery} ) AS QUERYCOUNT`)
   } catch (err) {
     log.error('Data warehouse count query failed: ', err)
-    jobMessages.push(`Error: Data warehouse count query failed: ${err}`)
+    jobMessages.push(`Data warehouse count query failed with ${err}`)
   }
 
   if (knexCountRes) {
     knexCount = knexCountRes.rows[0].count
-    console.log('WAREHOUSE COUNT', knexCount)
+    if (!knexCount || knexCount == 0) {
+      jobMessages.push('Error: Data warehouse query returned zero results')
+    }
   }
-  if (!knexCount) {
-    jobMessages.push('Error: Data warehouse query returned zero results')
-  }
+
   const STEP = ((r.kninky && r.kninky.defaultsUnsupported)
                 ? 10 // sqlite has a max of 100 variables and ~8 or so are used per insert
                 : 10000) // default
@@ -338,21 +384,20 @@ export async function loadContactsFromDataWarehouse(job) {
   }
 
   if (job.id && jobMessages.length) {
-    await r.knex('job_request').where('id', job.id)
+    let resultMessages = await r.knex('job_request').where('id', job.id)
       .update({ result_message: jobMessages.join('\n') })
-    return
+    return resultMessages
   }
 
   await r.knex('campaign_contact')
     .where('campaign_id', job.campaign_id)
     .delete()
 
-  console.log('STARTING loadContactsFromDataWarehouse')
-
   await loadContactsFromDataWarehouseFragment({
     jobId: job.id,
     query: sqlQuery,
     campaignId: job.campaign_id,
+    jobMessages,
     // beyond job object:
     organizationId: campaign.organization_id,
     totalParts,
@@ -392,6 +437,53 @@ export async function assignTexters(job) {
   // * new texter
   //   no current/changed assignment
   //   iterating over texter, assignment is created, then apportioned needsMessageCount texters
+
+  /*
+  A. clientMessagedCount  or serverMessagedCount: # of contacts assigned and already texted (for a texter)
+    aka clientMessagedCount / serverMessagedCount
+  B. needsMessageCount: # of contacts assigned but not yet texted (for a texter)
+  C. max contacts (for a texter)
+  D. pool of unassigned and assignable texters
+    aka availableContacts
+
+  In dynamic assignment mode:
+    Add new texter
+      Create assignment
+    Change C
+      if new C >= A and new C <> old C:
+        Update assignment
+      if new C >= A and new C = old C:
+        No change
+      if new C < A or new C = 0:
+        Why are we doing this? If we want to keep someone from texting any more,
+          we set their max_contacts to 0, and manually re-assign any of their
+          previously texted contacts in the Message Review admin.
+          TODO: Form validation should catch the case where C < A.
+    Delete texter
+      Assignment form currently prevents this (though it might be okay if A = 0).
+      To stop a texter from texting any more in the campaign,
+      set their max to zero and re-assign their contacts to another texter.
+
+  In standard assignment mode:
+    Add new texter
+      Create assignment
+      Assign B contacts
+    Change B
+      if new B > old B:
+        Update assignment
+        Assign (new B - old B) contacts
+      if new B = old B:
+        No change
+      if new B < old B:
+        Update assignment
+        Unassign (old B - new B) untexted contacts
+      if new B = 0:
+        Update assignment
+    Delete texter
+      Not sure we allow this?
+
+  TODO: what happens when we switch modes? Do we allow it?
+  */
   const payload = JSON.parse(job.payload)
   const cid = job.campaign_id
   const campaign = (await r.knex('campaign').where({ id: cid }))[0]
@@ -414,22 +506,29 @@ export async function assignTexters(job) {
   // changedAssignments:
   currentAssignments.map((assignment) => {
     const texter = texters.filter((ele) => parseInt(ele.id, 10) === assignment.user_id)[0]
-    if (texter && texter.needsMessageCount === parseInt(assignment.needs_message_count, 10)) {
-      unchangedTexters[assignment.user_id] = true
-      return null
-    } else if (texter) { // assignment change
-      // If there is a delta between client and server, then accomodate delta (See #322)
-      const clientMessagedCount = texter.contactsCount - texter.needsMessageCount
-      const serverMessagedCount = assignment.full_contact_count - assignment.needs_message_count
+    const unchangedMaxContacts =
+      parseInt(texter.maxContacts, 10) === assignment.max_contacts || // integer = integer
+      texter.maxContacts === assignment.max_contacts // null = null
+    const unchangedNeedsMessageCount =
+      texter.needsMessageCount === parseInt(assignment.needs_message_count, 10)
+    if (texter) {
+      if ((!dynamic && unchangedNeedsMessageCount) || (dynamic && unchangedMaxContacts)) {
+        unchangedTexters[assignment.user_id] = true
+        return null
+      } else if (!dynamic) { // standard assignment change
+        // If there is a delta between client and server, then accommodate delta (See #322)
+        const clientMessagedCount = texter.contactsCount - texter.needsMessageCount
+        const serverMessagedCount = assignment.full_contact_count - assignment.needs_message_count
 
-      const numDifferent = ((texter.needsMessageCount || 0)
-                            - assignment.needs_message_count
-                            - Math.max(0, serverMessagedCount - clientMessagedCount))
+        const numDifferent = ((texter.needsMessageCount || 0)
+                              - assignment.needs_message_count
+                              - Math.max(0, serverMessagedCount - clientMessagedCount))
 
-      if (numDifferent < 0) { // got less than before
-        demotedTexters[assignment.id] = -numDifferent
-      } else { // got more than before: assign the difference
-        texter.needsMessageCount = numDifferent
+        if (numDifferent < 0) { // got less than before
+          demotedTexters[assignment.id] = -numDifferent
+        } else { // got more than before: assign the difference
+          texter.needsMessageCount = numDifferent
+        }
       }
       return assignment
     } else { // new texter
@@ -463,7 +562,15 @@ export async function assignTexters(job) {
   for (let index = 0; index < texterCount; index++) {
     const texter = texters[index]
     const texterId = parseInt(texter.id, 10)
-    const maxContacts = parseInt(texter.maxContacts || 0, 10)
+    let maxContacts = null // no limit
+
+    if (texter.maxContacts || texter.maxContacts === 0) {
+      maxContacts = Math.min(parseInt(texter.maxContacts, 10),
+        parseInt(process.env.MAX_CONTACTS_PER_TEXTER || texter.maxContacts, 10))
+    } else if (process.env.MAX_CONTACTS_PER_TEXTER) {
+      maxContacts = parseInt(process.env.MAX_CONTACTS_PER_TEXTER, 10)
+    }
+
     if (unchangedTexters[texterId]) {
       continue
     }
@@ -478,9 +585,15 @@ export async function assignTexters(job) {
     const existingAssignment = currentAssignments.find((ele) => ele.user_id === texterId)
     let assignment = null
     if (existingAssignment) {
-      assignment = new Assignment({ id: existingAssignment.id,
-                                   user_id: existingAssignment.user_id,
-                                   campaign_id: cid })
+      if (!dynamic) {
+        assignment = new Assignment({ id: existingAssignment.id,
+                                     user_id: existingAssignment.user_id,
+                                     campaign_id: cid }) // for notification
+      } else {
+        await r.knex('assignment')
+        .where({ id: existingAssignment.id })
+        .update({ max_contacts: maxContacts })
+      }
     } else {
       assignment = await new Assignment({
         user_id: texterId,
@@ -861,6 +974,30 @@ export async function handleIncomingMessageParts() {
       .delete()
   }
 }
+
+// Temporary fix for orgless users
+// See https://github.com/MoveOnOrg/Spoke/issues/934
+// and job-processes.js
+export async function fixOrgless() {
+  if (process.env.FIX_ORGLESS) {
+    const orgless = await r.knex
+      .select('user.id')
+      .from('user')
+      .leftJoin('user_organization', 'user.id', 'user_organization.user_id')
+      .whereNull('user_organization.id');
+    orgless.forEach(async(orglessUser) => {
+      await UserOrganization.save({
+        user_id: orglessUser.id.toString(),
+        organization_id: process.env.DEFAULT_ORG || 1,
+        role: 'TEXTER'
+      }).error(function(error) {
+        // Unexpected errors
+        console.log("error on userOrganization save in orgless", error)
+      });
+      console.log("added orgless user " + user.id + " to organization " + process.env.DEFAULT_ORG )
+    }) // forEach
+  } // if
+} // function
 
 export async function clearOldJobs(delay) {
   // to clear out old stuck jobs

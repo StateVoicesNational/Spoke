@@ -119,7 +119,6 @@ const isOffsetBetweenTextingHours = (offsetData, textingHoursStart, textingHours
 }
 
 export const isBetweenTextingHours = (offsetData, config) => {
-
   if (config.campaignTextingHours) {
     if (!config.campaignTextingHours.textingHoursEnforced) {
       return true
@@ -132,7 +131,7 @@ export const isBetweenTextingHours = (offsetData, config) => {
     const { campaignTextingHours } = config
     const missingTimezoneConfig = {
       allowedStart: campaignTextingHours.textingHoursStart,
-      allowedEnd:  campaignTextingHours.textingHoursEnd,
+      allowedEnd: campaignTextingHours.textingHoursEnd,
       offset: DstHelper.getTimezoneOffsetHours(campaignTextingHours.timezone),
       hasDST: DstHelper.timezoneHasDst(campaignTextingHours.timezone)
     }
