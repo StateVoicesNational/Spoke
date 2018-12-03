@@ -1,14 +1,14 @@
 import { selenium } from './util/helpers'
 import STRINGS from './data/strings'
-import { login, main, people, texter } from './page-functions/index'
+import { campaigns, login, main, people, texter } from './page-functions/index'
 
 jasmine.getEnv().addReporter(selenium.reporter)
 
-describe('Invite Texter workflow', () => {
+describe('Create and Copy Campaign', () => {
   // Instantiate browser(s)
-  const driverAdmin = selenium.buildDriver({ name: 'Spoke E2E Tests - Chrome - Invite Texter workflow - Admin' })
-  const driverTexter = selenium.buildDriver({ name: 'Spoke E2E Tests - Chrome - Invite Texter workflow - Texter' })
-  const CAMPAIGN = STRINGS.campaigns.userManagement
+  const driverAdmin = selenium.buildDriver({ name: 'Spoke E2E Tests - Chrome - Create and Copy Campaign - Admin' })
+  const driverTexter = selenium.buildDriver({ name: 'Spoke E2E Tests - Chrome - Create and Copy Campaign - Texter' })
+  const CAMPAIGN = STRINGS.campaigns.copyCampaign
 
   beforeAll(() => {
     global.e2e = {}
@@ -40,11 +40,11 @@ describe('Invite Texter workflow', () => {
     login.tryLoginThenSignUp(driverTexter, CAMPAIGN.texter)
   })
 
-  describe('(As Admin) Edit User', () => {
-    people.editUser(driverAdmin, CAMPAIGN.admin)
+  describe('(As Admin) Create a New Campaign', () => {
+    campaigns.startCampaign(driverAdmin, CAMPAIGN)
   })
 
-  describe('(As Texter) Edit User', () => {
-    main.editUser(driverTexter, CAMPAIGN.texter)
+  describe('(As Admin) Copy Campaign', () => {
+    campaigns.copyCampaign(driverAdmin, CAMPAIGN)
   })
 })

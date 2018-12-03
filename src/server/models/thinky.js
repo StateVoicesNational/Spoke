@@ -63,6 +63,9 @@ thinkyConn.r.getCount = async (query) => {
   // with fewer bugs.  Using knex's .count()
   // results in a 'count' key on postgres, but a 'count(*)' key
   // on sqlite -- ridiculous.  This smooths that out
+  if (Array.isArray(query)) {
+    return query.length
+  }
   return Number((await query.count('* as count').first()).count)
 }
 

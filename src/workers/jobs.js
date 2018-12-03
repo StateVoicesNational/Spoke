@@ -27,6 +27,18 @@ function getOptOutSubQuery(orgId) {
   return (!!process.env.OPTOUTS_SHARE_ALL_ORGS ? optOutsByInstance() : optOutsByOrgId(orgId))
 }
 
+function optOutsByOrgId(orgId) {
+  return r.knex.select('cell').from('opt_out').where('organization_id', orgId)
+}
+
+function optOutsByInstance() {
+  return r.knex.select('cell').from('opt_out')
+}
+
+function getOptOutSubQuery(orgId) {
+  return (!!process.env.OPTOUTS_SHARE_ALL_ORGS ? optOutsByInstance() : optOutsByOrgId(orgId))
+}
+
 export async function getTimezoneByZip(zip) {
   if (zip in zipMemoization) {
     return zipMemoization[zip]
@@ -196,6 +208,7 @@ export async function uploadContacts(job) {
       await r.table('job_request').get(job.id).delete()
     }
   }
+  await cacheableData.campaign.reload(campaignId)
 }
 
 export async function loadContactsFromDataWarehouseFragment(jobEvent) {
@@ -293,9 +306,7 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
       // now that we've saved them all, we delete everyone that is opted out locally
       // doing this in one go so that we can get the DB to do the indexed cell matching
       const optOutCellCount = await r.knex('campaign_contact')
-        .whereIn('cell', function optouts() {
-          this.select('cell').from('opt_out').where('organization_id', jobEvent.organizationId)
-        })
+        .whereIn('cell', getOptOutSubQuery(jobEvent.organizationId))
         .where('campaign_id', jobEvent.campaignId)
         .delete()
         .then(result => {
@@ -496,14 +507,15 @@ export async function assignTexters(job) {
     .select('user_id',
             'assignment.id as id',
             r.knex.raw("SUM(CASE WHEN allcontacts.message_status = 'needsMessage' THEN 1 ELSE 0 END) as needs_message_count"),
-            r.knex.raw('COUNT(allcontacts.id) as full_contact_count')
+            r.knex.raw('COUNT(allcontacts.id) as full_contact_count'),
+            'max_contacts'
            )
     .catch(log.error)
 
-  const unchangedTexters = {}
-  const demotedTexters = {}
-
-  // changedAssignments:
+  const unchangedTexters = {} // max_contacts and needsMessageCount unchanged
+  const demotedTexters = {} // needsMessageCount reduced
+  const dynamic = campaign.use_dynamic_assignment
+  // detect changed assignments
   currentAssignments.map((assignment) => {
     const texter = texters.filter((ele) => parseInt(ele.id, 10) === assignment.user_id)[0]
     const unchangedMaxContacts =
@@ -537,7 +549,7 @@ export async function assignTexters(job) {
   }).filter((ele) => ele !== null)
 
   for (const assignId in demotedTexters) {
-    // Here we demote ALL the demotedTexters contacts (not just the demotion count)
+    // Here we unassign ALL the demotedTexters contacts (not just the demotion count)
     // because they will get reapportioned below
     await r.knex('campaign_contact')
       .where('id', 'in',
@@ -572,9 +584,11 @@ export async function assignTexters(job) {
     }
 
     if (unchangedTexters[texterId]) {
-      continue
+      continue 
     }
+
     const contactsToAssign = Math.min(availableContacts, texter.needsMessageCount)
+
     if (contactsToAssign === 0) {
       // avoid creating a new assignment when the texter should get 0
       if (!campaign.use_dynamic_assignment) {
@@ -598,7 +612,7 @@ export async function assignTexters(job) {
       assignment = await new Assignment({
         user_id: texterId,
         campaign_id: cid,
-        max_contacts: parseInt(maxContacts || process.env.MAX_CONTACTS_PER_TEXTER || 0, 10)
+        max_contacts: maxContacts
       }).save()
     }
 
@@ -625,10 +639,10 @@ export async function assignTexters(job) {
     }
 
     await updateJob(job, Math.floor((75 / texterCount) * (index + 1)) + 20)
-  }
+  } // endfor
 
   if (!campaign.use_dynamic_assignment) {
-    // dynamic assignments, having zero initially initially is ok
+    // dynamic assignments, having zero initially is ok
     const assignmentsToDelete = r.knex('assignment')
       .where('assignment.campaign_id', cid)
       .leftJoin('campaign_contact', 'assignment.id', 'campaign_contact.assignment_id')

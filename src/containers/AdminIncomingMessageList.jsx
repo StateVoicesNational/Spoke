@@ -70,6 +70,7 @@ export class AdminIncomingMessageList extends Component {
       reassignmentTexters: [],
       campaignTexters: [],
       includeArchivedCampaigns: false,
+      conversationCount: 0,
       includeActiveCampaigns: true,
       conversationCount: 0,
       includeNotOptedOutConversations: true,
@@ -104,6 +105,7 @@ export class AdminIncomingMessageList extends Component {
     this.handleOptedOutConversationsToggled = this.handleOptedOutConversationsToggled.bind(
       this
     )
+    this.conversationCountChanged = this.conversationCountChanged.bind(this)
   }
 
   shouldComponentUpdate(dummy, nextState) {

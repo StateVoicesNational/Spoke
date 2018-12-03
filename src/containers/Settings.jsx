@@ -54,11 +54,9 @@ class Settings extends React.Component {
 
   handleCloseTextingHoursDialog = () => this.setState({ textingHoursDialogOpen: false })
 
-
   renderTextingHoursForm() {
     const { organization } = this.props.data
     const { textingHoursStart, textingHoursEnd } = organization
-
     const formSchema = yup.object({
       textingHoursStart: yup.number().required(),
       textingHoursEnd: yup.number().required()
@@ -242,6 +240,7 @@ const mapMutationsToProps = ({ ownProps }) => ({
       optOutMessage
     }
   })
+
 })
 
 const mapQueriesToProps = ({ ownProps }) => ({
@@ -253,6 +252,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
         textingHoursEnforced
         textingHoursStart
         textingHoursEnd
+        optOutMessage
       }
     }`,
     variables: {
