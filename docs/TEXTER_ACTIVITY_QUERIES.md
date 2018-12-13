@@ -97,43 +97,43 @@ ORDER BY
   message_sent_count DESC;
 `
 
-* counts of texters, sent, responses, total texts, opt outs and estimated cost for all current campaigns
+* counts of texters, sent, responses, reply rate, total texts, opt outs, opt out rate and estimated cost for all current campaigns
 `SELECT
-    c.id AS campaign_id,
-    c.title AS campaign,
+    c.id AS camp_id,
+    c.title AS title,
+    c.organization_id AS org,
     texters::int,
     texts_sent::int,
-    replies::int,
-    total_texts::int,
+    replies::dec,
+    (replies::decimal / texts_sent)  AS reply_rate,
+    total_texts::dec,
     opt_outs::int,
-    /* cost per texter = $1 / 30 days (est) */
-    ROUND(((texters / 30)  + ((total_texts * .015)*1.15)), 2) AS costid
-FROM campaign AS c
+    (opt_outs::decimal / texts_sent)  AS opt_out_rate,
+    /* cost per texter = $1 / 30 days (est), total_texts at .015 assumes typical text is two 'message segments', see https://www.twilio.com/blog/2017/03/what-the-heck-is-a-segment.html#segment  */
+    round(((texters / 30) + ((total_texts * .015)*1.15)), 2) AS costid
+    
+FROM wfp_spoke.campaign AS c
 
-INNER JOIN organization AS o ON o.id = c.organization_id
+INNER JOIN wfp_spoke.organization AS o ON o.id = c.organization_id
 
 INNER JOIN (
     SELECT
         campaign_id,
         COUNT (DISTINCT m.assignment_id) AS texters,
         COUNT(DISTINCT (
-          CASE WHEN m.is_from_contact = 'f' THEN m.id END
+          CASE WHEN m.is_from_contact = 'false' THEN m.id END
         )) AS texts_sent,
         COUNT(DISTINCT (
-          CASE WHEN m.is_from_contact = 't' THEN m.id END
+          CASE WHEN m.is_from_contact = 'true' THEN m.id END
         )) AS replies,
         COUNT(DISTINCT m.id) AS total_texts,
         COUNT(DISTINCT o.id) AS opt_outs
-    FROM assignment AS a
-
-    INNER JOIN message AS m ON m.assignment_id = a.id
-
-    LEFT JOIN opt_out AS o ON o.assignment_id = a.id
-
-
-    GROUP BY 1
-) AS m ON m.campaign_id = c.id
-WHERE c.is_archived = 'f' AND c.is_started = 't'
+    FROM wfp_spoke.assignment a
+    INNER JOIN wfp_spoke.message m ON m.assignment_id = a.id
+    LEFT JOIN wfp_spoke.opt_out o ON o.assignment_id = a.id
+    GROUP BY 1)
+AS m ON m.campaign_id = c.id
+WHERE campaign_id >= 0
 ORDER BY 1,2
 `
 
