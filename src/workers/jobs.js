@@ -212,7 +212,7 @@ export async function uploadContacts(job) {
 }
 
 export async function loadContactsFromDataWarehouseFragment(jobEvent) {
-  console.log('starting loadContactsFromDataWarehouseFragment', jobEvent)
+  console.log('starting loadContactsFromDataWarehouseFragment', jobEvent.campaignId, jobEvent.limit, jobEvent.offset, jobEvent)
   const insertOptions = {
     batchSize: 1000
   }
@@ -221,7 +221,7 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
                         .select('status')
                         .first())
   if (!jobCompleted) {
-    console.log('loadContactsFromDataWarehouseFragment job no longer exists', jobCompleted, jobEvent)
+    console.log('loadContactsFromDataWarehouseFragment job no longer exists', jobEvent.campaignId, jobCompleted, jobEvent)
     return { 'alreadyComplete': 1 }
   }
 
@@ -292,7 +292,7 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
 
   await CampaignContact.save(savePortion, insertOptions)
   await r.knex('job_request').where('id', jobEvent.jobId).increment('status', 1)
-  let validationStats = {}
+  const validationStats = {}
   const completed = (await r.knex('job_request')
                      .where('id', jobEvent.jobId)
                      .select('status')
@@ -300,31 +300,47 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
   console.log('loadContactsFromDataWarehouseFragment toward end', completed, jobEvent)
 
   if (!completed) {
-    console.log('loadContactsFromDataWarehouseFragment job has been deleted', completed)
+    console.log('loadContactsFromDataWarehouseFragment job has been deleted', completed, jobEvent.campaignId)
   } else if (jobEvent.totalParts && completed.status >= jobEvent.totalParts) {
     if (jobEvent.organizationId) {
       // now that we've saved them all, we delete everyone that is opted out locally
       // doing this in one go so that we can get the DB to do the indexed cell matching
-      const optOutCellCount = await r.knex('campaign_contact')
+
+      // delete optout cells
+      await r.knex('campaign_contact')
         .whereIn('cell', getOptOutSubQuery(jobEvent.organizationId))
         .where('campaign_id', jobEvent.campaignId)
         .delete()
         .then(result => {
-          console.log('# of contacts opted out removed from DW query: ' + result);
-          validationStats = {
-            optOutCount: result
-          }
+          console.log(`loadContactsFromDataWarehouseFragment # of contacts opted out removed from DW query (${jobEvent.campaignId}): ${result}`)
+          validationStats.optOutCount = result
         })
 
-      const inValidCellCount = await r.knex('campaign_contact')
+      // delete invalid cells
+      await r.knex('campaign_contact')
         .whereRaw('length(cell) != 12')
         .andWhere('campaign_id', jobEvent.campaignId)
         .delete()
         .then(result => {
-          console.log('# of contacts with invalid cells removed from DW query: ' + result);
-          validationStats = {
-            invalidCellCount: result
-          }
+          console.log(`loadContactsFromDataWarehouseFragment # of contacts with invalid cells removed from DW query (${jobEvent.campaignId}): ${result}`)
+          validationStats.invalidCellCount = result
+        })
+
+      // delete duplicate cells
+      await r.knex('campaign_contact')
+        .whereIn('id', r.knex('campaign_contact')
+                 .select('campaign_contact.id')
+                 .leftJoin('campaign_contact AS c2', function joinSelf() {
+                   this.on('c2.campaign_id', '=', 'campaign_contact.campaign_id')
+                     .andOn('c2.cell', '=', 'campaign_contact.cell')
+                     .andOn('c2.id', '>', 'campaign_contact.id')
+                 })
+                 .where('campaign_contact.campaign_id', jobEvent.campaignId)
+                 .whereNotNull('c2.id'))
+        .delete()
+        .then(result => {
+          console.log(`loadContactsFromDataWarehouseFragment # of contacts with duplicate cells removed from DW query (${jobEvent.campaignId}): ${result}`)
+          validationStats.duplicateCellCount = result
         })
     }
     await r.table('job_request').get(jobEvent.jobId).delete()
