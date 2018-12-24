@@ -701,13 +701,11 @@ const rootMutations = {
         name,
         uuid: uuidv4()
       })
-      await UserOrganization.save(
-        ['OWNER', 'ADMIN', 'TEXTER'].map(role => ({
-          user_id: userId,
-          organization_id: newOrganization.id,
-          role
-        }))
-      )
+      await UserOrganization.save({
+        role: 'OWNER',
+        user_id: userId,
+        organization_id: newOrganization.id
+      })
       await Invite.save(
         {
           id: inviteId,
