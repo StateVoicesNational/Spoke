@@ -246,6 +246,7 @@ export default class CampaignContactsForm extends React.Component {
                   <li>Start the query with "SELECT"</li>
                   <li>End the query with "ORDER BY [field]" for example "ORDER BY cell"</li>
                   <li>Do not include a trailing (or any) semicolon</li>
+                  <li> If "timezone_offset" is not included, it will default to EST --> "-5_1" </li>
                   <li>Three columns are necessary:
                     <span className={css(styles.csvHeader)}>first_name</span>,
                     <span className={css(styles.csvHeader)}>last_name</span>,

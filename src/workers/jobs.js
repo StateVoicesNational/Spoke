@@ -249,6 +249,7 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
 
   const savePortion = await Promise.all(knexResult.rows.map(async (row) => {
     const formatCell = getFormattedPhoneNumber(row.cell, (process.env.PHONE_NUMBER_COUNTRY || 'US'))
+    const defaultTimezoneOffset = process.env.DEFAULT_TIMEZONE_OFFSET || '-5_1'
     const contact = {
       campaign_id: jobEvent.campaignId,
       first_name: row.first_name || '',
@@ -265,7 +266,7 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
     })
     contact.custom_fields = JSON.stringify(contactCustomFields)
     if (contact.zip && !contactCustomFields.hasOwnProperty('timezone_offset')){
-      contact.timezone_offset = getTimezoneByZip(contact.zip)
+      contact.timezone_offset = defaultTimezoneOffset
     }
     if (contactCustomFields.hasOwnProperty('timezone_offset')){
       contact.timezone_offset = contactCustomFields['timezone_offset']
