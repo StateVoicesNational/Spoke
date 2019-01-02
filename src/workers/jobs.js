@@ -265,7 +265,7 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
       contactCustomFields[f] = row[f]
     })
     contact.custom_fields = JSON.stringify(contactCustomFields)
-    if (contact.zip && !contactCustomFields.hasOwnProperty('timezone_offset')){
+    if (!contactCustomFields.hasOwnProperty('timezone_offset')){
       contact.timezone_offset = defaultTimezoneOffset
     }
     if (contactCustomFields.hasOwnProperty('timezone_offset')){
