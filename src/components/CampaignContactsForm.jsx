@@ -57,8 +57,12 @@ export default class CampaignContactsForm extends React.Component {
 
   validateSql = (sql) => {
     const errors = []
+    const lowercaseSql = sql.toLowerCase()
     if (!sql.startsWith('SELECT')) {
       errors.push('Must start with "SELECT" in caps')
+    }
+    if(!lowercaseSql.includes('order by')) {
+      errors.push('Must end with an "ORDER BY [field]" statement')
     }
     if (/LIMIT (\d+)/i.test(sql)
         && parseInt(sql.match(/LIMIT (\d+)/i)[1], 10) > 10000) {
@@ -240,6 +244,7 @@ export default class CampaignContactsForm extends React.Component {
                 data warehouse that will load in contacts.  The SQL requires some constraints:
               <ul>
                   <li>Start the query with "SELECT"</li>
+                  <li>End the query with "ORDER BY [field]" for example "ORDER BY cell"</li>
                   <li>Do not include a trailing (or any) semicolon</li>
                   <li>Three columns are necessary:
                     <span className={css(styles.csvHeader)}>first_name</span>,
