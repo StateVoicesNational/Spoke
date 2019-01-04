@@ -27,6 +27,18 @@ function getOptOutSubQuery(orgId) {
   return (!!process.env.OPTOUTS_SHARE_ALL_ORGS ? optOutsByInstance() : optOutsByOrgId(orgId))
 }
 
+function optOutsByOrgId(orgId) {
+  return r.knex.select('cell').from('opt_out').where('organization_id', orgId)
+}
+
+function optOutsByInstance() {
+  return r.knex.select('cell').from('opt_out')
+}
+
+function getOptOutSubQuery(orgId) {
+  return (!!process.env.OPTOUTS_SHARE_ALL_ORGS ? optOutsByInstance() : optOutsByOrgId(orgId))
+}
+
 export async function getTimezoneByZip(zip) {
   if (zip in zipMemoization) {
     return zipMemoization[zip]
@@ -171,6 +183,11 @@ export async function uploadContacts(job) {
     await CampaignContact.save(savePortion)
   }
 
+  const optOutCellCount = await r.knex('campaign_contact')
+    .whereIn('cell', function optouts() {
+      this.select('cell').from('opt_out').where('organization_id', campaign.organization_id)
+    })
+    
   const deleteOptOutCells = await r.knex('campaign_contact')
     .whereIn('cell', getOptOutSubQuery(campaign.organization_id))
     .where('campaign_id', campaignId)
@@ -583,7 +600,7 @@ export async function assignTexters(job) {
     }
 
     if (unchangedTexters[texterId]) {
-      continue
+      continue 
     }
 
     const contactsToAssign = Math.min(availableContacts, texter.needsMessageCount)
@@ -838,26 +855,52 @@ export async function exportCampaign(job) {
 let pastMessages = []
 
 export async function sendMessages(queryFunc, defaultStatus) {
-  let messages = r.knex('message')
-    .where({ send_status: defaultStatus || 'QUEUED' })
+  try {
+    await knex.transaction(async trx => {
+      let messages = []
+      try {
+        let messageQuery = r.knex('message')
+          .transacting(trx)
+          .forUpdate()
+          .where({ send_status: defaultStatus || 'QUEUED' })
 
-  if (queryFunc) {
-    messages = queryFunc(messages)
-  }
-  messages = await messages.orderBy('created_at')
+        if (queryFunc) {
+          messageQuery = queryFunc(messageQuery)
+        }
 
-  for (let index = 0; index < messages.length; index++) {
-    let message = messages[index]
-    if (pastMessages.indexOf(message.id) !== -1) {
-      throw new Error('Encountered send message request of the same message.'
-                      + ' This is scary!  If ok, just restart process. Message ID: ' + message.id)
-    }
-    message.service = message.service || process.env.DEFAULT_SERVICE
-    const service = serviceMap[message.service]
-    log.info(`Sending (${message.service}): ${message.user_number} -> ${message.contact_number}\nMessage: ${message.text}`)
-    await service.sendMessage(message)
-    pastMessages.push(message.id)
-    pastMessages = pastMessages.slice(-100) // keep the last 100
+        messages = await messageQuery.orderBy('created_at')
+      } catch (err) {
+        // Unable to obtain lock on these rows meaning another process must be
+        // sending them. We will exit gracefully in that case.
+        trx.rollback()
+        return
+      }
+
+      try {
+        for (let index = 0; index < messages.length; index++) {
+          let message = messages[index]
+          if (pastMessages.indexOf(message.id) !== -1) {
+            throw new Error('Encountered send message request of the same message.'
+                            + ' This is scary!  If ok, just restart process. Message ID: ' + message.id)
+          }
+          message.service = message.service || process.env.DEFAULT_SERVICE
+          const service = serviceMap[message.service]
+          log.info(`Sending (${message.service}): ${message.user_number} -> ${message.contact_number}\nMessage: ${message.text}`)
+          await service.sendMessage(message, trx)
+          pastMessages.push(message.id)
+          pastMessages = pastMessages.slice(-100) // keep the last 100
+        }
+
+        trx.commit()
+      } catch (err) {
+        console.log('error sending messages:')
+        console.error(err)
+        trx.rollback()
+      }
+    })
+  } catch (err) {
+    console.log('sendMessages transaction errored:')
+    console.error(err)
   }
 }
 

@@ -9,7 +9,6 @@ import Snackbar from 'material-ui/Snackbar'
 import GSForm from '../components/forms/GSForm'
 import yup from 'yup'
 import Form from 'react-formal'
-import { MenuItem } from 'material-ui/Menu'
 import OrganizationJoinLink from './OrganizationJoinLink'
 import CampaignFormSectionHeading from './CampaignFormSectionHeading'
 import { StyleSheet, css } from 'aphrodite'
@@ -17,6 +16,7 @@ import theme from '../styles/theme'
 import Toggle from 'material-ui/Toggle'
 import DeleteIcon from 'material-ui/svg-icons/action/delete'
 import { dataTest } from '../lib/attributes'
+import { dataSourceItem } from './utils'
 
 const styles = StyleSheet.create({
   sliderContainer: {
@@ -227,18 +227,6 @@ export default class CampaignTextersForm extends React.Component {
     this.props.onChange(newFormValues)
   }
 
-  dataSourceItem(name, key) {
-    return {
-      text: name,
-      value: (
-        <MenuItem
-          key={key}
-          primaryText={name}
-        />
-      )
-    }
-  }
-
   formSchema = yup.object({
     texters: yup.array().of(yup.object({
       id: yup.string(),
@@ -265,7 +253,7 @@ export default class CampaignTextersForm extends React.Component {
       .filter((orgTexter) =>
         !texters.find((texter) => texter.id === orgTexter.id))
       .map((orgTexter) =>
-          this.dataSourceItem(orgTexter.displayName,
+          dataSourceItem(orgTexter.displayName,
           orgTexter.id
         )
     )
