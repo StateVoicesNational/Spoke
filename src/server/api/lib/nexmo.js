@@ -83,10 +83,11 @@ async function rentNewCell() {
   throw new Error('Did not find any cell')
 }
 
-async function sendMessage(message) {
+async function sendMessage(message, trx) {
   if (!nexmo) {
+    const options = trx ? { transaction: trx } : {}
     await Message.get(message.id)
-      .update({ send_status: 'SENT' })
+      .update({ send_status: 'SENT' }, options)
     return 'test_message_uuid'
   }
 
@@ -120,16 +121,24 @@ async function sendMessage(message) {
           if (messageToSave.service_messages.length >= MAX_SEND_ATTEMPTS) {
             messageToSave.send_status = 'ERROR'
           }
-          Message.save(messageToSave, { conflict: 'update' })
+          let options = { conflict: 'update' }
+          if (trx) {
+            options.transaction = trx
+          }
+          Message.save(messageToSave, options)
           // eslint-disable-next-line no-unused-vars
           .then((_, newMessage) => {
             reject(err || (response ? new Error(JSON.stringify(response)) : new Error('Encountered unknown error')))
           })
         } else {
+          let options = { conflict: 'update' }
+          if (trx) {
+            options.transaction = trx
+          }
           Message.save({
             ...messageToSave,
             send_status: 'SENT'
-          }, { conflict: 'update' })
+          }, options)
           .then((saveError, newMessage) => {
             resolve(newMessage)
           })
