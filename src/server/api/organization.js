@@ -1,7 +1,7 @@
 import { mapFieldsToModel } from './lib/utils'
 import { r, Organization } from '../models'
 import { accessRequired } from './errors'
-import { buildCampaignQuery } from './campaign'
+import { buildCampaignQuery, getCampaigns } from './campaign'
 import { buildUserOrganizationQuery } from './user'
 
 export const resolvers = {
@@ -10,15 +10,9 @@ export const resolvers = {
       'id',
       'name'
     ], Organization),
-    campaigns: async (organization, { campaignsFilter }, { user }) => {
+    campaigns: async (organization, { cursor, campaignsFilter }, { user }) => {
       await accessRequired(user, organization.id, 'SUPERVOLUNTEER')
-      let query = buildCampaignQuery(
-        r.knex.select('*'),
-        organization.id,
-        campaignsFilter
-      )
-      query = query.orderBy('due_by', 'desc')
-      return query
+      return getCampaigns(organization.id, cursor, campaignsFilter)
     },
     uuid: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, 'SUPERVOLUNTEER')
@@ -32,12 +26,13 @@ export const resolvers = {
       return r.table('opt_out')
         .getAll(organization.id, { index: 'organization_id' })
     },
-    people: async (organization, { role }, { user }) => {
+    people: async (organization, { role, campaignId }, { user }) => {
       await accessRequired(user, organization.id, 'SUPERVOLUNTEER')
-      return buildUserOrganizationQuery(r.knex.select('user.*'), organization.id, role)
+      return buildUserOrganizationQuery(r.knex.select('user.*'), organization.id, role, campaignId)
     },
     threeClickEnabled: (organization) => organization.features.indexOf('threeClick') !== -1,
     textingHoursEnforced: (organization) => organization.texting_hours_enforced,
+    optOutMessage: (organization) => (organization.features && organization.features.indexOf('opt_out_message') !== -1 ? JSON.parse(organization.features).opt_out_message : process.env.OPT_OUT_MESSAGE) || 'I\'m opting you out of texts immediately. Have a great day.',
     textingHoursStart: (organization) => organization.texting_hours_start,
     textingHoursEnd: (organization) => organization.texting_hours_end
   }

@@ -95,6 +95,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
             primaryColor
             logoImageUrl
           }
+          maxContacts
           unmessagedCount: contactsCount(contactsFilter: $needsMessageFilter)
           unrepliedCount: contactsCount(contactsFilter: $needsResponseFilter)
           badTimezoneCount: contactsCount(contactsFilter: $badTimezoneFilter)
