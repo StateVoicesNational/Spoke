@@ -32,7 +32,7 @@ class UserEdit extends React.Component {
   }
 
   render() {
-    const user = this.props.editUser.editUser
+    const user = (this.props.editUser && this.props.editUser.editUser) || {}
     const formSchema = yup.object({
       firstName: yup.string().required(),
       lastName: yup.string().required(),
@@ -75,24 +75,28 @@ UserEdit.propTypes = {
   allowSetPassword: PropTypes.bool
 }
 
-const mapMutationsToProps = ({ ownProps }) => ({
-  editUser: (userData) => ({
-    mutation: gql`
-        mutation editUser($organizationId: String!, $userId: Int!, $userData: UserInput) {
-          editUser(organizationId: $organizationId, userId: $userId, userData: $userData) {
-            id,
-            firstName,
-            lastName,
-            cell,
-            email
-          }
-        }`,
-    variables: {
-      userId: ownProps.userId,
-      organizationId: ownProps.organizationId,
-      userData
+const mapMutationsToProps = ({ ownProps }) => {
+  if (ownProps.userId) {
+    return {
+      editUser: (userData) => ({
+        mutation: gql`
+          mutation editUser($organizationId: String!, $userId: Int!, $userData: UserInput) {
+            editUser(organizationId: $organizationId, userId: $userId, userData: $userData) {
+              id,
+              firstName,
+              lastName,
+              cell,
+              email
+            }
+          }`,
+        variables: {
+          userId: ownProps.userId,
+          organizationId: ownProps.organizationId,
+          userData
+        }
+      })
     }
-  })
-})
+  }
+}
 
 export default loadData(wrapMutations(UserEdit), { mapMutationsToProps })
