@@ -129,6 +129,6 @@ export function setupLocalAuthPassport() {
 }
 
 export default {
-  local: setupLocalAuthPassport,
+  localauthexperimental: setupLocalAuthPassport,
   auth0: setupAuth0Passport
 }
