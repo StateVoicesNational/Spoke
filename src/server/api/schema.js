@@ -690,6 +690,15 @@ const rootMutations = {
       loadCampaignCache(campaign, organization, { remainingMilliseconds })
       return null
     },
+    clearCampaignNeedsMessage: async (_, { id }, { user, loaders }) => {
+      await r.knex('campaign_contact')
+        .where({
+          campaign_id: id,
+          message_status: 'needsMessage',
+        })
+        .update('assignment_id', null)
+      // TODO: clear inflights, and clear assignment caches
+    },
     editCampaign: async (_, { id, campaign }, { user, loaders }) => {
       const origCampaign = await Campaign.get(id)
       if (campaign.organizationId) {
