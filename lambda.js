@@ -1,9 +1,19 @@
 'use strict'
 const AWS = require('aws-sdk')
 const awsServerlessExpress = require('aws-serverless-express')
-const app = require('./build/server/server/index')
-const server = awsServerlessExpress.createServer(app.default)
-const jobs = require('./build/server/workers/job-processes')
+let app, server, jobs
+try {
+  app = require('./build/server/server/index')
+  server = awsServerlessExpress.createServer(app.default)
+  jobs = require('./build/server/workers/job-processes')
+} catch(err) {
+  if (!global.TEST_ENVIRONMENT) {
+    console.error(`Unable to load built server: ${err}`)
+  }
+  app = require('./src/server/index')
+  server = awsServerlessExpress.createServer(app.default)
+  jobs = require('./src/workers/job-processes')
+}
 
 // NOTE: the downside of loading above is environment variables are initially loaded immediately,
 //       so changing them means that the code must test environment variable inline (rather than use a const set on-load)
@@ -11,13 +21,28 @@ const jobs = require('./build/server/workers/job-processes')
 // See: http://docs.aws.amazon.com/lambda/latest/dg/best-practices.html#function-code
 // "Separate the Lambda handler (entry point) from your core logic"
 
-exports.handler = (event, context) => {
+function cleanHeaders(event) {
+  // X-Twilio-Body can contain unicode and disallowed chars by aws-serverless-express like "'"
+  // We don't need it anyway
+  if (event.headers) {
+    delete event.headers['X-Twilio-Body']
+  }
+  if (event.multiValueHeaders) {
+    delete event.multiValueHeaders['X-Twilio-Body']
+  }
+}
+
+exports.handler = (event, context, handleCallback) => {
+  // Note: When lambda is called with invoke() we MUST call handleCallback with a success
+  // or Lambda will re-run/re-try the invocation twice:
+  // https://docs.aws.amazon.com/lambda/latest/dg/retries-on-errors.html
   if (process.env.LAMBDA_DEBUG_LOG) {
     console.log('LAMBDA EVENT', event)
   }
   if (!event.command) {
     // default web server stuff
     const startTime = (context.getRemainingTimeInMillis ? context.getRemainingTimeInMillis() : 0)
+    cleanHeaders(event)
     const webResponse = awsServerlessExpress.proxy(server, event, context)
     if (process.env.DEBUG_SCALING) {
       const endTime = (context.getRemainingTimeInMillis ? context.getRemainingTimeInMillis() : 0)
@@ -55,7 +80,8 @@ exports.handler = (event, context) => {
                 callback(err, dataReceived)
               }
             })
-          })
+          },
+          handleCallback)
     } else {
       console.error('Unfound command sent as a Lambda event: ' + event.command)
     }
