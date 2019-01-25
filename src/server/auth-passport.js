@@ -2,7 +2,7 @@ import passport from 'passport'
 import Auth0Strategy from 'passport-auth0'
 import AuthHasher from 'passport-local-authenticate'
 import { Strategy as LocalStrategy } from 'passport-local'
-import { userLoggedIn } from './models/cacheable-queries'
+import { userLoggedIn } from './models/cacheable_queries'
 import { User } from './models'
 import wrap from './wrap'
 

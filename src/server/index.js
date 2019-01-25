@@ -8,7 +8,7 @@ import { resolvers } from './api/schema'
 import { schema } from '../api/schema'
 import { accessRequired } from './api/errors'
 import mocks from './api/mocks'
-import { createLoaders } from './models'
+import { createLoaders, createTablesIfNecessary } from './models'
 import passport from 'passport'
 import cookieSession from 'cookie-session'
 import passportSetup from './auth-passport'
@@ -20,7 +20,6 @@ import { seedZipCodes } from './seeds/seed-zip-codes'
 import { runMigrations } from '../migrations'
 import { setupUserNotificationObservers } from './notifications'
 import { TwimlResponse } from 'twilio'
-import { r } from './models'
 
 process.on('uncaughtException', (ex) => {
   log.error(ex)
@@ -28,14 +27,26 @@ process.on('uncaughtException', (ex) => {
 })
 const DEBUG = process.env.NODE_ENV === 'development'
 
-const loginCallbacks = passportSetup[process.env.PASSPORT_STRATEGY || 'auth0']()
+const loginCallbacks = passportSetup[process.env.PASSPORT_STRATEGY || global.PASSPORT_STRATEGY || 'auth0']()
 
 if (!process.env.SUPPRESS_SEED_CALLS) {
   seedZipCodes()
 }
-if (!process.env.SUPPRESS_MIGRATIONS) {
+
+if (!process.env.SUPPRESS_DATABASE_AUTOCREATE) {
+  createTablesIfNecessary().then((didCreate) => {
+    // seed above won't have succeeded if we needed to create first
+    if (didCreate && !process.env.SUPPRESS_SEED_CALLS) {
+      seedZipCodes()
+    }
+    if (!didCreate && !process.env.SUPPRESS_MIGRATIONS) {
+      runMigrations()
+    }
+  })
+} else if (!process.env.SUPPRESS_MIGRATIONS) {
   runMigrations()
 }
+
 setupUserNotificationObservers()
 const app = express()
 // Heroku requires you to use process.env.PORT
@@ -43,7 +54,7 @@ const port = process.env.DEV_APP_PORT || process.env.PORT
 
 // Don't rate limit heroku
 app.enable('trust proxy')
-if (!DEBUG) {
+if (!DEBUG && process.env.PUBLIC_DIR) {
   app.use(express.static(process.env.PUBLIC_DIR, {
     maxAge: '180 days'
   }))
@@ -58,7 +69,7 @@ app.use(cookieSession({
     secure: !DEBUG,
     maxAge: null
   },
-  secret: process.env.SESSION_SECRET
+  secret: process.env.SESSION_SECRET || global.SESSION_SECRET
 }))
 app.use(passport.initialize())
 app.use(passport.session())

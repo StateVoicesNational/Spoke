@@ -12,16 +12,15 @@ import DataTables from 'material-ui-datatables'
 import { MESSAGE_STATUSES } from '../components/IncomingMessageFilter'
 
 function prepareDataTableData(conversations) {
-  const tableData = conversations.map(conversation => {
+  return conversations.map(conversation => {
     return {
       campaignTitle: conversation.campaign.title,
       texter: conversation.texter.displayName,
-      to: conversation.contact.firstName + ' ' + conversation.contact.lastName,
+      to: conversation.contact.firstName + ' ' + conversation.contact.lastName + (conversation.contact.optOut.cell ? '⛔️' : ''),
       status: conversation.contact.messageStatus,
       messages: conversation.contact.messages
     }
   })
-  return tableData
 }
 
 function prepareSelectedRowsData(conversations, rowsSelected) {
@@ -46,7 +45,10 @@ export class IncomingMessageList extends Component {
   constructor(props) {
     super(props)
 
-    this.state = { activeConversation: undefined }
+    this.state = {
+      selectedRows:[],
+      activeConversation: undefined
+    }
 
     this.prepareTableColumns = this.prepareTableColumns.bind(this)
     this.handleNextPageClick = this.handleNextPageClick.bind(this)
@@ -58,6 +60,22 @@ export class IncomingMessageList extends Component {
     this.handleCloseConversation = this.handleCloseConversation.bind(this)
   }
 
+  componentDidUpdate(prevProps) {
+    let previousPageInfo = {total:0}
+    if (prevProps.conversations.conversations) {
+      previousPageInfo=prevProps.conversations.conversations.pageInfo
+    }
+
+    let pageInfo = {total:0}
+    if (this.props.conversations.conversations) {
+      pageInfo = this.props.conversations.conversations.pageInfo
+    }
+
+    if (previousPageInfo.total !== pageInfo.total || (!previousPageInfo && pageInfo)) {
+      this.props.onConversationCountChanged(pageInfo.total)
+    }
+  }
+
   prepareTableColumns() {
     return [
       {
@@ -66,25 +84,45 @@ export class IncomingMessageList extends Component {
         style: {
           textOverflow: 'ellipsis',
           overflow: 'hidden',
-          whiteSpace: 'nowrap'
+          whiteSpace: 'pre-line'
         }
       },
       {
         key: 'texter',
-        label: 'Texter'
+        label: 'Texter',
+        style: {
+          textOverflow: 'ellipsis',
+          overflow: 'scroll',
+          whiteSpace: 'pre-line'
+        }
       },
       {
         key: 'to',
-        label: 'To'
+        label: 'To',
+        style: {
+          textOverflow: 'ellipsis',
+          overflow: 'scroll',
+          whiteSpace: 'pre-line'
+        }
       },
       {
         key: 'status',
         label: 'Conversation Status',
+        style: {
+          textOverflow: 'ellipsis',
+          overflow: 'scroll',
+          whiteSpace: 'pre-line'
+        },
         render: (columnKey, row) => MESSAGE_STATUSES[row.status].name
       },
       {
         key: 'latestMessage',
         label: 'Latest Message',
+        style: {
+          textOverflow: 'ellipsis',
+          overflow: 'scroll',
+          whiteSpace: 'pre-line'
+        },
         render: (columnKey, row) => {
           let lastMessage = null
           let lastMessageEl = <p>No Messages</p>
@@ -105,6 +143,11 @@ export class IncomingMessageList extends Component {
       {
         key: 'viewConversation',
         label: 'View Conversation',
+        style: {
+          textOverflow: 'ellipsis',
+          overflow: 'scroll',
+          whiteSpace: 'pre-line'
+        },
         render: (columnKey, row) => {
           if (row.messages && row.messages.length > 0) {
             return (
@@ -143,6 +186,7 @@ export class IncomingMessageList extends Component {
   }
 
   handleRowsSelected(rowsSelected) {
+    this.setState({selectedRows: rowsSelected})
     const conversations = this.props.conversations.conversations.conversations
     const selectedConversations = prepareSelectedRowsData(conversations, rowsSelected)
     this.props.onConversationSelected(rowsSelected, selectedConversations)
@@ -181,6 +225,7 @@ export class IncomingMessageList extends Component {
           onPreviousPageClick={this.handlePreviousPageClick}
           onRowSizeChange={this.handleRowSizeChanged}
           onRowSelection={this.handleRowsSelected}
+          selectedRows={this.state.selectedRows}
         />
         <Dialog
           title='Messages'
@@ -221,6 +266,7 @@ IncomingMessageList.propTypes = {
   onPageChanged: type.func,
   onPageSizeChanged: type.func,
   onConversationSelected: type.func,
+  onConversationCountChanged: type.func,
   utc: type.string
 }
 
@@ -262,6 +308,9 @@ const mapQueriesToProps = ({ ownProps }) => ({
                 id
                 text
                 isFromContact
+              }
+              optOut {
+                cell
               }
             }
             campaign {

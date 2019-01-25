@@ -64,6 +64,7 @@ export default function renderIndex(html, css, assetMap, store) {
       window.AUTH0_CLIENT_ID="${process.env.AUTH0_CLIENT_ID}"
       window.AUTH0_DOMAIN="${process.env.AUTH0_DOMAIN}"
       window.SUPPRESS_SELF_INVITE="${process.env.SUPPRESS_SELF_INVITE || ''}"
+      window.NODE_ENV="${process.env.NODE_ENV}"
       window.PRIVACY_URL="${process.env.PRIVACY_URL || ''}"
       window.BASE_URL="${process.env.BASE_URL || ''}"
       window.NOT_IN_USA=${process.env.NOT_IN_USA || 0}
