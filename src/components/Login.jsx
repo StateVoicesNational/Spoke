@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import { isClient } from '../lib'
+import UserEdit from '../containers/UserEdit'
 
 const Login = ({ location }) => (
   <div>
@@ -19,6 +20,7 @@ const Login = ({ location }) => (
 	<input type="submit" value="Submit"/>
       </div>
     </form>
+    <UserEdit  />
   </div>
 )
 
