@@ -42,12 +42,26 @@ MessageList.propTypes = {
 }
 
 class ConversationPreviewBody extends Component {
+  constructor(props) {
+    super(props)
+
+    this.state = {
+      messages: props.conversation.contact.messages
+    }
+
+    this.messagesChanged = this.messagesChanged.bind(this)
+  }
+
+  messagesChanged(messages) {
+    this.setState({ messages })
+  }
+
   render() {
     return (
       <div>
-        <MessageList messages={this.props.conversation.contact.messages} />
+        <MessageList messages={this.state.messages} />
         <Divider />
-        <MessageResponse conversation={this.props.conversation} />
+        <MessageResponse conversation={this.props.conversation} messagesChanged={this.messagesChanged} />
       </div>
     )
   }

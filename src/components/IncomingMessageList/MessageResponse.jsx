@@ -22,7 +22,7 @@ class MessageResponse extends Component {
 
     this.state = {
       messageText: '',
-      disabled: false
+      isSending: false
     }
   }
 
@@ -40,17 +40,24 @@ class MessageResponse extends Component {
   handleMessageFormChange = ({ messageText }) => this.setState({ messageText })
 
   handleMessageFormSubmit = async ({ messageText }) => {
+    const { contact } = this.props.conversation
+    const message = this.createMessageToContact(messageText)
+    if (this.state.isSending) {
+      return // stops from multi-send
+    }
+    this.setState({ isSending: true })
+
+    const finalState = { isSending: false }
     try {
-      const { contact } = this.props.conversation
-      const message = this.createMessageToContact(messageText)
-      if (this.state.disabled) {
-        return // stops from multi-send
-      }
-      this.setState({ disabled: true })
-      await this.props.mutations.sendMessage(message, contact.id)
+      const response = await this.props.mutations.sendMessage(message, contact.id)
+      const { messages } = response.data.sendMessage
+      this.props.messagesChanged(messages)
+      finalState.messageText = ''
     } catch (e) {
       this.handleSendMessageError(e)
     }
+
+    this.setState(finalState)
   }
 
   handleSendMessageError = (e) => {
@@ -69,8 +76,11 @@ class MessageResponse extends Component {
 
   render() {
     const messageSchema = yup.object({
-      messageText: yup.string().required("Can't send empty message").max(window.MAX_MESSAGE_LENGTH)
+      messageText: yup.string().required('Can\'t send empty message').max(window.MAX_MESSAGE_LENGTH)
     })
+
+    const { messageText, isSending } = this.state
+    const isSendDisabled = isSending || messageText.trim() === ''
 
     return (
       <div className={css(styles.messageField)}>
@@ -86,7 +96,7 @@ class MessageResponse extends Component {
               <SendButton
                 threeClickEnabled={false}
                 onFinalTouchTap={this.handleClickSendMessageButton}
-                disabled={this.state.messageText.trim() === ''}
+                disabled={isSendDisabled}
               />
             </div>
             <div style={{marginRight: '120px'}}>
@@ -95,6 +105,7 @@ class MessageResponse extends Component {
                 label='Send a response'
                 multiLine
                 fullWidth
+                disabled={isSending}
                 rowsMax={6}
               />
             </div>
@@ -106,7 +117,8 @@ class MessageResponse extends Component {
 }
 
 MessageResponse.propTypes = {
-  conversation: PropTypes.object
+  conversation: PropTypes.object,
+  messagesChanged: PropTypes.func
 }
 
 const mapMutationsToProps = () => ({
