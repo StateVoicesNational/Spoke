@@ -12,13 +12,14 @@ import ConversationPreviewModal from './ConversationPreviewModal';
 import { MESSAGE_STATUSES } from '../../components/IncomingMessageFilter'
 
 function prepareDataTableData(conversations) {
-  return conversations.map(conversation => {
+  return conversations.map((conversation, index) => {
     return {
       campaignTitle: conversation.campaign.title,
       texter: conversation.texter.displayName,
       to: conversation.contact.firstName + ' ' + conversation.contact.lastName + (conversation.contact.optOut.cell ? '⛔️' : ''),
       status: conversation.contact.messageStatus,
-      messages: conversation.contact.messages
+      messages: conversation.contact.messages,
+      index
     }
   })
 }
@@ -154,7 +155,7 @@ export class IncomingMessageList extends Component {
               <FlatButton
                 onClick={event => {
                   event.stopPropagation()
-                  this.handleOpenConversation(row)
+                  this.handleOpenConversation(row.index)
                 }}
                 icon={<ActionOpenInNew />}
               />
@@ -192,8 +193,13 @@ export class IncomingMessageList extends Component {
     this.props.onConversationSelected(rowsSelected, selectedConversations)
   }
 
-  handleOpenConversation(contact) {
-    this.setState({ activeConversation: contact })
+  handleOpenConversation(index) {
+    const conversation = this.props.conversations.conversations.conversations[index]
+    const activeConversation = {
+      contact: conversation.contact,
+      texter: conversation.texter
+    }
+    this.setState({ activeConversation })
   }
 
   handleCloseConversation() {
@@ -228,7 +234,7 @@ export class IncomingMessageList extends Component {
           selectedRows={this.state.selectedRows}
         />
         <ConversationPreviewModal
-          contact={this.state.activeConversation}
+          conversation={this.state.activeConversation}
           onRequestClose={this.handleCloseConversation}
         />
       </div>
@@ -280,8 +286,10 @@ const mapQueriesToProps = ({ ownProps }) => ({
             }
             contact {
               id
+              assignmentId
               firstName
               lastName
+              cell
               messageStatus
               messages {
                 id
