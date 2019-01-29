@@ -4,6 +4,8 @@ import Form from 'react-formal'
 import yup from 'yup'
 import gql from 'graphql-tag'
 import { StyleSheet, css } from 'aphrodite'
+import Dialog from 'material-ui/Dialog'
+import FlatButton from 'material-ui/FlatButton'
 
 import loadData from '../../containers//hoc/load-data'
 import wrapMutations from '../../containers/hoc/wrap-mutations'
@@ -22,8 +24,11 @@ class MessageResponse extends Component {
 
     this.state = {
       messageText: '',
-      isSending: false
+      isSending: false,
+      sendError: ''
     }
+
+    this.handleCloseErrorDialog = this.handleCloseErrorDialog.bind(this)
   }
 
   createMessageToContact(text) {
@@ -54,20 +59,14 @@ class MessageResponse extends Component {
       this.props.messagesChanged(messages)
       finalState.messageText = ''
     } catch (e) {
-      this.handleSendMessageError(e)
+      finalState.sendError = e.message
     }
 
     this.setState(finalState)
   }
 
-  handleSendMessageError = (e) => {
-    console.error(e)
-    const newState = {
-      // snackbarActionTitle: 'Back to todos',
-      // snackbarOnTouchTap: this.goBackToTodos,
-      snackbarError: e.message
-    }
-    this.setState(newState)
+  handleCloseErrorDialog() {
+    this.setState({ sendError: '' })
   }
 
   handleClickSendMessageButton = () => {
@@ -81,6 +80,14 @@ class MessageResponse extends Component {
 
     const { messageText, isSending } = this.state
     const isSendDisabled = isSending || messageText.trim() === ''
+
+    const errorActions = [
+      <FlatButton
+        label="OK"
+        primary={true}
+        onClick={this.handleCloseErrorDialog}
+      />
+    ]
 
     return (
       <div className={css(styles.messageField)}>
@@ -111,6 +118,14 @@ class MessageResponse extends Component {
             </div>
           </div>
         </GSForm>
+        <Dialog
+          title='Error Sending'
+          open={!!this.state.sendError}
+          actions={errorActions}
+          modal={false}
+        >
+          <p>{this.state.sendError}</p>
+        </Dialog>
       </div>
     )
   }
