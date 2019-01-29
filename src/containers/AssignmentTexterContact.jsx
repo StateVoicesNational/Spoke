@@ -880,7 +880,7 @@ export class AssignmentTexterContact extends React.Component {
           open={!!this.state.snackbarError}
           message={this.state.snackbarError || ''}
           action={this.state.snackbarActionTitle}
-          onActionTouchTap={this.state.snackbarOnTouchTap}
+          onActionClick={this.state.snackbarOnTouchTap}
         />
       </div>
     )
