@@ -44,9 +44,38 @@ context.idToken["https://spoke/user_metadata"] = user.user_metadata;
 callback(null, user, context);
 }
 ```
-11. If the application is still running from step 8, kill the process and re-run `npm run dev` to restart the app. Wait until you see both "Node app is running ..." and "webpack: Compiled successfully." before attempting to connect. (make sure environment variable `JOBS_SAME_PROCESS=1`)
-12. Go to `http://localhost:3000` to load the app.
-13. As long as you leave `SUPPRESS_SELF_INVITE=` blank and unset in your `.env` you should be able to invite yourself from the homepage.
+11. Update the Auth0 [Universal Landing page](https://manage.auth0.com/#/login_page) to include custom fields. You may also include other Auth0 Lock [configuration options](https://auth0.com/docs/libraries/lock/v11/configuration).
+    ```javascript
+    ...
+
+    var lock = new Auth0Lock(config.clientID, config.auth0Domain, {
+      ...
+
+      allowedConnections: ['Username-Password-Authentication'],
+      additionalSignUpFields: [{
+        name: 'given_name',
+        icon: 'https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1.png',
+        placeholder: 'First Name'
+      }, {
+        name: 'family_name',
+        placeholder: 'Last Name',
+        icon: 'https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1.png'
+      }, {
+        name: 'cell',
+        placeholder: 'Cell Phone',
+        icon: 'https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1.png',
+        validator: (cell) => ({
+          valid: cell.length >= 10,
+          hint: 'Must be a valid phone number'
+        })
+      }],
+
+      ...
+    });
+    ```
+12. If the application is still running from step 8, kill the process and re-run `npm run dev` to restart the app. Wait until you see both "Node app is running ..." and "webpack: Compiled successfully." before attempting to connect. (make sure environment variable `JOBS_SAME_PROCESS=1`)
+13. Go to `http://localhost:3000` to load the app.
+14. As long as you leave `SUPPRESS_SELF_INVITE=` blank and unset in your `.env` you should be able to invite yourself from the homepage.
     - If you DO set that variable, then spoke will be invite-only and you'll need to generate an invite. Run:
 ```
 echo "INSERT INTO invite (hash,is_valid) VALUES ('abc', 1);" |sqlite3 mydb.sqlite
@@ -54,7 +83,7 @@ echo "INSERT INTO invite (hash,is_valid) VALUES ('abc', 1);" |sqlite3 mydb.sqlit
 ```
   - Then use the generated key to visit an invite link, e.g.: http://localhost:3000/invite/abc. This should redirect you to the login screen. Use the "Sign Up" option to create your account.
 
-14. You should then be prompted to create an organization. Create it.
+15. You should then be prompted to create an organization. Create it.
 
 If you want to create an invite via the home page "Login and get started" link, make sure your `SUPPRESS_SELF_INVITE` variable is not set.
 
