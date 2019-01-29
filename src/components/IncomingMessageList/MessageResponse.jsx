@@ -137,23 +137,6 @@ MessageResponse.propTypes = {
 }
 
 const mapMutationsToProps = () => ({
-  createOptOut: (optOut, campaignContactId) => ({
-    mutation: gql`
-      mutation createOptOut($optOut: OptOutInput!, $campaignContactId: String!) {
-        createOptOut(optOut: $optOut, campaignContactId: $campaignContactId) {
-          id
-          optOut {
-            id
-            createdAt
-          }
-        }
-      }
-    `,
-    variables: {
-      optOut,
-      campaignContactId
-    }
-  }),
   sendMessage: (message, campaignContactId) => ({
     mutation: gql`
       mutation sendMessage($message: MessageInput!, $campaignContactId: String!) {
