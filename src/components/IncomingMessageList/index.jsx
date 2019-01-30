@@ -1,24 +1,25 @@
 import React, { Component } from 'react'
 import type from 'prop-types'
-import Dialog from 'material-ui/Dialog'
 import FlatButton from 'material-ui/FlatButton'
 import ActionOpenInNew from 'material-ui/svg-icons/action/open-in-new'
-import loadData from '../containers/hoc/load-data'
+import loadData from '../../containers/hoc/load-data'
 import { withRouter } from 'react-router'
 import gql from 'graphql-tag'
-import LoadingIndicator from '../components/LoadingIndicator'
+import LoadingIndicator from '../../components/LoadingIndicator'
 import DataTables from 'material-ui-datatables'
+import ConversationPreviewModal from './ConversationPreviewModal';
 
-import { MESSAGE_STATUSES } from '../components/IncomingMessageFilter'
+import { MESSAGE_STATUSES } from '../../components/IncomingMessageFilter'
 
 function prepareDataTableData(conversations) {
-  return conversations.map(conversation => {
+  return conversations.map((conversation, index) => {
     return {
       campaignTitle: conversation.campaign.title,
       texter: conversation.texter.displayName,
       to: conversation.contact.firstName + ' ' + conversation.contact.lastName + (conversation.contact.optOut.cell ? '⛔️' : ''),
       status: conversation.contact.messageStatus,
-      messages: conversation.contact.messages
+      messages: conversation.contact.messages,
+      index
     }
   })
 }
@@ -154,7 +155,7 @@ export class IncomingMessageList extends Component {
               <FlatButton
                 onClick={event => {
                   event.stopPropagation()
-                  this.handleOpenConversation(row)
+                  this.handleOpenConversation(row.index)
                 }}
                 icon={<ActionOpenInNew />}
               />
@@ -192,8 +193,13 @@ export class IncomingMessageList extends Component {
     this.props.onConversationSelected(rowsSelected, selectedConversations)
   }
 
-  handleOpenConversation(contact) {
-    this.setState({ activeConversation: contact })
+  handleOpenConversation(index) {
+    const conversation = this.props.conversations.conversations.conversations[index]
+    const activeConversation = {
+      contact: conversation.contact,
+      texter: conversation.texter
+    }
+    this.setState({ activeConversation })
   }
 
   handleCloseConversation() {
@@ -227,31 +233,10 @@ export class IncomingMessageList extends Component {
           onRowSelection={this.handleRowsSelected}
           selectedRows={this.state.selectedRows}
         />
-        <Dialog
-          title='Messages'
-          open={this.state.activeConversation !== undefined}
-          modal={false}
-          autoScrollBodyContent
+        <ConversationPreviewModal
+          conversation={this.state.activeConversation}
           onRequestClose={this.handleCloseConversation}
-        >
-          {this.state.activeConversation !== undefined && (
-            <div>
-              {this.state.activeConversation.messages.map((message, index) => {
-                const isFromContact = message.isFromContact
-                const style = {
-                  color: isFromContact ? 'blue' : 'black',
-                  textAlign: isFromContact ? 'left' : 'right'
-                }
-
-                return (
-                  <p key={index} style={style}>
-                    {message.text}
-                  </p>
-                )
-              })}
-            </div>
-          )}
-        </Dialog>
+        />
       </div>
     )
   }
@@ -301,8 +286,10 @@ const mapQueriesToProps = ({ ownProps }) => ({
             }
             contact {
               id
+              assignmentId
               firstName
               lastName
+              cell
               messageStatus
               messages {
                 id
