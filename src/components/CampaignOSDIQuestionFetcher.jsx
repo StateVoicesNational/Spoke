@@ -6,7 +6,8 @@ import SelectField from 'material-ui/SelectField'
 import MenuItem from 'material-ui/MenuItem'
 import RaisedButton from 'material-ui/RaisedButton/RaisedButton'
 
-class CampaignOSDIQuestionFetcher extends React.Component {
+// It's necessary to export the component on its own for enzyme testing
+export class CampaignOSDIQuestionFetcher extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
