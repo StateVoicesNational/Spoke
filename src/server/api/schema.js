@@ -530,10 +530,9 @@ const rootMutations = {
       } catch (ex) {
         features = updates
       }
-
       await Organization
         .get(organizationId)
-        .update({ features })
+        .update({ features: JSON.stringify(features) })
 
       return await Organization.get(organizationId)
     },
