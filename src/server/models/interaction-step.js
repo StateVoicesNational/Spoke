@@ -26,7 +26,7 @@ const InteractionStep = thinky.createModel('interaction_step', type.object().sch
   source: optionalString(),
   external_question: optionalString(),
   external_response: optionalString()
-}).allowExtra(false))
+}).allowExtra(false), { noAutoCreation: true })
 
 InteractionStep.ensureIndex('campaign_id')
 InteractionStep.ensureIndex('parent_interaction_id')

@@ -1,5 +1,31 @@
 import { mapFieldsToModel } from './lib/utils'
-import { Campaign, JobRequest, r } from '../models'
+import { Campaign, JobRequest, r, cacheableData } from '../models'
+import { currentEditors } from '../models/cacheable_queries'
+import { getUsers } from './user';
+
+
+export function addCampaignsFilterToQuery(queryParam, campaignsFilter) {
+  let query = queryParam
+
+  if (campaignsFilter) {
+    const resultSize = (campaignsFilter.listSize ? campaignsFilter.listSize : 0)
+    const pageSize = (campaignsFilter.pageSize ? campaignsFilter.pageSize : 0)
+
+    if ('isArchived' in campaignsFilter) {
+      query = query.where('campaign.is_archived', campaignsFilter.isArchived )
+    }
+    if ('campaignId' in campaignsFilter) {
+      query = query.where('campaign.id', parseInt(campaignsFilter.campaignId, 10))
+    }
+    if (resultSize && !pageSize) {
+      query = query.limit(resultSize)
+    }
+    if (resultSize && pageSize) {
+      query = query.limit(resultSize).offSet(pageSize)
+    }
+  }
+  return query
+}
 
 export function buildCampaignQuery(queryParam, organizationId, campaignsFilter, addFromClause = true) {
   let query = queryParam
@@ -8,18 +34,44 @@ export function buildCampaignQuery(queryParam, organizationId, campaignsFilter, 
     query = query.from('campaign')
   }
 
-  query = query.where('organization_id', organizationId)
-
-  if (campaignsFilter) {
-    if ('isArchived' in campaignsFilter) {
-      query = query.where({ is_archived: campaignsFilter.isArchived })
-    }
-    if ('campaignId' in campaignsFilter) {
-      query = query.where('campaign.id', parseInt(campaignsFilter.campaignId, 10))
-    }
-  }
+  query = query.where('campaign.organization_id', organizationId)
+  query = addCampaignsFilterToQuery(query, campaignsFilter)
 
   return query
+}
+
+export async function getCampaigns(organizationId, cursor, campaignsFilter) {
+
+  let campaignsQuery = buildCampaignQuery(
+    r.knex.select('*'),
+    organizationId,
+    campaignsFilter
+  )
+  campaignsQuery = campaignsQuery.orderBy('due_by', 'desc').orderBy('id')
+
+  if (cursor) {
+    campaignsQuery = campaignsQuery.limit(cursor.limit).offset(cursor.offset)
+    const campaigns = await campaignsQuery
+
+    const campaignsCountQuery = buildCampaignQuery(
+      r.knex.count('*'),
+      organizationId,
+      campaignsFilter)
+
+    const campaignsCountArray = await campaignsCountQuery
+
+    const pageInfo = {
+      limit: cursor.limit,
+      offset: cursor.offset,
+      total: campaignsCountArray[0].count
+    }
+    return {
+      campaigns,
+      pageInfo
+    }
+  } else {
+    return campaignsQuery
+  }
 }
 
 export const resolvers = {
@@ -66,33 +118,66 @@ export const resolvers = {
       )
     )
   },
+  CampaignsReturn: {
+    __resolveType(obj, context, _) {
+      if (Array.isArray(obj)) {
+        return 'CampaignsList'
+      } else if ('campaigns' in obj && 'pageInfo' in obj) {
+        return 'PaginatedCampaigns'
+      }
+      return null
+    }
+  },
+  CampaignsList: {
+    campaigns: campaigns => {
+      return campaigns
+    }
+  },
+  PaginatedCampaigns: {
+    campaigns: queryResult => {
+      return queryResult.campaigns
+    },
+    pageInfo: queryResult => {
+      if ('pageInfo' in queryResult) {
+        return queryResult.pageInfo
+      }
+      return null
+    }
+  },
   Campaign: {
     ...mapFieldsToModel([
       'id',
       'title',
       'description',
-      'dueBy',
       'isStarted',
       'isArchived',
       'useDynamicAssignment',
       'introHtml',
       'primaryColor',
-      'logoImageUrl'
+      'logoImageUrl',
+      'overrideOrganizationTextingHours',
+      'textingHoursEnforced',
+      'textingHoursStart',
+      'textingHoursEnd',
+      'timezone'
     ], Campaign),
+    dueBy: (campaign) => (
+      (campaign.due_by instanceof Date || !campaign.due_by)
+      ? campaign.due_by || null
+      : new Date(campaign.due_by)
+    ),
     organization: async (campaign, _, { loaders }) => (
-      loaders.organization.load(campaign.organization_id)
+      campaign.organization
+      || loaders.organization.load(campaign.organization_id)
     ),
     datawarehouseAvailable: (campaign, _, { user }) => (
       user.is_superadmin && !!process.env.WAREHOUSE_DB_HOST
     ),
     pendingJobs: async (campaign) => r.table('job_request')
       .filter({ campaign_id: campaign.id }).orderBy('updated_at', 'desc'),
-    texters: async (campaign) => (
-      r.table('assignment')
-        .getAll(campaign.id, { index: 'campaign_id' })
-        .eqJoin('user_id', r.table('user'))('right')
-    ),
-    assignments: async (campaign, { assignmentsFilter }) => {
+    texters: async (campaign) =>
+      getUsers(campaign.organization_id, null, {campaignId: campaign.id }) ,
+    assignments: async (campaign, {assignmentsFilter} ) => {
       let query = r.table('assignment')
         .getAll(campaign.id, { index: 'campaign_id' })
 
@@ -103,14 +188,14 @@ export const resolvers = {
       return query
     },
     interactionSteps: async (campaign) => (
-      r.table('interaction_step')
-        .getAll(campaign.id, { index: 'campaign_id' })
-        .filter({ is_deleted: false })
+      campaign.interactionSteps
+      || cacheableData.campaign.dbInteractionSteps(campaign.id)
     ),
     cannedResponses: async (campaign, { userId }) => (
-      r.table('canned_response')
-        .getAll(campaign.id, { index: 'campaign_id' })
-        .filter({ user_id: userId || '' })
+      await cacheableData.cannedResponse.query({
+        userId: userId || '',
+        campaignId: campaign.id
+      })
     ),
     contacts: async (campaign) => (
       r.knex('campaign_contact')
@@ -129,15 +214,27 @@ export const resolvers = {
         .limit(1)
       return contacts.length > 0
     },
-    customFields: async (campaign) => {
-      const campaignContacts = await r.table('campaign_contact')
-        .getAll(campaign.id, { index: 'campaign_id' })
+    hasUnsentInitialMessages: async (campaign) => {
+      const contacts = await r.knex('campaign_contact')
+        .select('id')
+        .where({
+          campaign_id: campaign.id,
+          message_status: 'needsMessage',
+          is_opted_out: false
+        })
         .limit(1)
-      if (campaignContacts.length > 0) {
-        return Object.keys(JSON.parse(campaignContacts[0].custom_fields))
-      }
-      return []
+      return contacts.length > 0
     },
-    stats: async (campaign) => campaign
+    customFields: async (campaign) => (
+      campaign.customFields
+      || cacheableData.campaign.dbCustomFields(campaign.id)
+    ),
+    stats: async (campaign) => campaign,
+    editors: async (campaign, _, { user }) => {
+      if (r.redis) {
+        return currentEditors(r.redis, campaign, user)
+      }
+      return ''
+    }
   }
 }

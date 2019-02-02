@@ -153,17 +153,6 @@ export default class CampaignInteractionStepsForm extends React.Component {
         return newInteractionStep
       })
     }))
-    // this.setState({
-    //   interactionSteps: this.state.interactionSteps.map((is) => {
-    //     if (is.id === event.id) {
-    //       delete event.interactionSteps
-    //       return event
-    //     } else {
-    //       delete event.interactionSteps
-    //       return is
-    //     }
-    //   })
-    // })
   }
 
   formSchema = yup.object({
@@ -187,6 +176,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
         />
         <CardText>
           <GSForm
+            {...dataTest('childInteraction', !interactionStep.parentInteractionId)}
             schema={this.formSchema}
             value={interactionStep}
             onChange={this.handleFormChange}
@@ -259,6 +249,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
       <div style={styles.answerContainer}>
         {interactionStep.questionText && interactionStep.script && (!interactionStep.parentInteractionId || interactionStep.answerOption) ? <div>
           <RaisedButton
+            {...dataTest('addResponse')}
             label='+ Add a response'
             onTouchTap={() => this.addStep(interactionStep.id)}
             style={{ marginBottom: '10px' }}
