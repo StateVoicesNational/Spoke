@@ -9,7 +9,6 @@ import Snackbar from 'material-ui/Snackbar'
 import GSForm from '../components/forms/GSForm'
 import yup from 'yup'
 import Form from 'react-formal'
-import { MenuItem } from 'material-ui/Menu'
 import OrganizationJoinLink from './OrganizationJoinLink'
 import CampaignFormSectionHeading from './CampaignFormSectionHeading'
 import { StyleSheet, css } from 'aphrodite'
@@ -17,6 +16,7 @@ import theme from '../styles/theme'
 import Toggle from 'material-ui/Toggle'
 import DeleteIcon from 'material-ui/svg-icons/action/delete'
 import { dataTest } from '../lib/attributes'
+import { dataSourceItem } from './utils'
 
 const styles = StyleSheet.create({
   sliderContainer: {
@@ -163,7 +163,7 @@ export default class CampaignTextersForm extends React.Component {
         assignment: {
           ...newTexter.assignment,
           contactsCount: convertedNeedsMessageCount + messagedCount,
-          messagedCount: messagedCount,
+          messagedCount,
           needsMessageCount: convertedNeedsMessageCount,
           maxContacts: convertedMaxContacts
         }
@@ -227,18 +227,6 @@ export default class CampaignTextersForm extends React.Component {
     this.props.onChange(newFormValues)
   }
 
-  dataSourceItem(name, key) {
-    return {
-      text: name,
-      value: (
-        <MenuItem
-          key={key}
-          primaryText={name}
-        />
-      )
-    }
-  }
-
   formSchema = yup.object({
     texters: yup.array().of(yup.object({
       id: yup.string(),
@@ -265,7 +253,7 @@ export default class CampaignTextersForm extends React.Component {
       .filter((orgTexter) =>
         !texters.find((texter) => texter.id === orgTexter.id))
       .map((orgTexter) =>
-          this.dataSourceItem(orgTexter.displayName,
+          dataSourceItem(orgTexter.displayName,
           orgTexter.id
         )
     )
@@ -343,7 +331,11 @@ export default class CampaignTextersForm extends React.Component {
     return this.formValues().texters.map((texter, index) => {
       const messagedCount = texter.assignment.contactsCount - texter.assignment.needsMessageCount
       return (
-        <div key={texter.id} className={css(styles.texterRow)}>
+        <div
+          {...dataTest('texterRow')}
+          key={texter.id}
+          className={css(styles.texterRow)}
+        >
           <div className={css(styles.leftSlider)}>
             <Slider
               maxValue={this.formValues().contactsCount}
@@ -356,14 +348,14 @@ export default class CampaignTextersForm extends React.Component {
             {messagedCount}
           </div>
           <div
-            {...dataTest(`texter${index}Name`)}
+            {...dataTest('texterName')}
             className={css(styles.nameColumn)}
           >
             {this.getDisplayName(texter.id)}
           </div>
           <div className={css(styles.input)}>
             <Form.Field
-              {...dataTest(`texter${index}Assignment`)}
+              {...dataTest('texterAssignment')}
               name={`texters[${index}].assignment.needsMessageCount`}
               hintText='Contacts'
               fullWidth

@@ -96,7 +96,6 @@ class Settings extends React.Component {
   renderTextingHoursForm() {
     const { organization } = this.props.data
     const { textingHoursStart, textingHoursEnd } = organization
-
     const formSchema = yup.object({
       textingHoursStart: yup.number().required(),
       textingHoursEnd: yup.number().required()
@@ -152,6 +151,10 @@ class Settings extends React.Component {
 
   render() {
     const { organization } = this.props.data
+    const { optOutMessage } = organization
+    const formSchema = yup.object({
+      optOutMessage: yup.string().required()
+    })
 
     return (
       <div>
@@ -174,6 +177,30 @@ class Settings extends React.Component {
               />
               {organization.osdiEnabled && this.renderOSDIOptionsForm()}
             </div>
+            <div className={css(styles.section)}>
+
+            <GSForm
+              schema={formSchema}
+              onSubmit={this.props.mutations.updateOptOutMessage}
+              defaultValue={{ optOutMessage }}
+            >
+
+              <Form.Field
+                label='Default Opt-Out Message'
+                name='optOutMessage'
+                fullWidth
+              />
+
+              <Form.Button
+                type='submit'
+                label={this.props.saveLabel || 'Save Opt-Out Message'}
+              />
+
+            </GSForm>
+            </div>
+          </CardText>
+
+          <CardText>
             <div className={css(styles.section)}>
               <span className={css(styles.sectionLabel)}>
                 Texting Hours
@@ -265,9 +292,23 @@ const mapMutationsToProps = ({ ownProps }) => ({
       }`,
     variables: {
       organizationId: ownProps.params.organizationId,
-      ...updates
+        ...updates
+    }
+  }),
+  updateOptOutMessage: ({ optOutMessage }) => ({
+    mutation: gql`
+      mutation updateOptOutMessage($optOutMessage: String!, $organizationId: String!) {
+        updateOptOutMessage(optOutMessage: $optOutMessage, organizationId: $organizationId) {
+          id
+          optOutMessage
+        }
+      }`,
+    variables: {
+      organizationId: ownProps.params.organizationId,
+      optOutMessage
     }
   })
+
 })
 
 const mapQueriesToProps = ({ ownProps }) => ({
@@ -280,6 +321,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
         textingHoursStart
         textingHoursEnd
         osdiEnabled
+        optOutMessage
       }
     }`,
     variables: {

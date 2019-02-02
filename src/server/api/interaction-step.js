@@ -16,10 +16,7 @@ export const resolvers = {
       'externalResponse'
     ], InteractionStep),
     questionText: async(interactionStep) => {
-      const interaction = await r.table('interaction_step')
-        .get(interactionStep.id)
-
-      return interaction.question
+      return interactionStep.question
     },
     question: async (interactionStep) => interactionStep,
     questionResponse: async (interactionStep, { campaignContactId }) => (

@@ -11,6 +11,7 @@ import loadData from './hoc/load-data'
 import gql from 'graphql-tag'
 import theme from '../styles/theme'
 import wrapMutations from './hoc/wrap-mutations'
+import { dataTest } from '../lib/attributes'
 
 const inlineStyles = {
   stat: {
@@ -175,6 +176,7 @@ class AdminCampaignStats extends React.Component {
                   {!campaign.isArchived ?
                     ( // edit
                     <RaisedButton
+                      {...dataTest('editCampaign')}
                       onTouchTap={() => this.props.router.push(`/admin/${organizationId}/campaigns/${campaignId}/edit`)}
                       label='Edit'
                     />
@@ -212,6 +214,7 @@ class AdminCampaignStats extends React.Component {
                         /> : null),
                       ( // copy
                       <RaisedButton
+                        {...dataTest('copyCampaign')}
                         label='Copy Campaign'
                         onTouchTap={async() => await this.props.mutations.copyCampaign(this.props.params.campaignId)}
                       />)
