@@ -197,6 +197,7 @@ const rootSchema = `
     editUser(organizationId: String!, userId: Int!, userData:UserInput): User
     updateTextingHours( organizationId: String!, textingHoursStart: Int!, textingHoursEnd: Int!): Organization
     updateTextingHoursEnforcement( organizationId: String!, textingHoursEnforced: Boolean!): Organization
+    updateOptOutMessage( organizationId: String!, optOutMessage: String!): Organization
     updateOrganizationFeatures( organizationId: String!, optOutMessage: String!, osdiEnabled: Boolean, osdiApiUrl: String, osdiApiToken: String ) : Organization
     bulkSendMessages(assignmentId: Int!): [CampaignContact]
     sendMessage(message:MessageInput!, campaignContactId:String!): CampaignContact,
