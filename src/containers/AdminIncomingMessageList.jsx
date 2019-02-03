@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import React, { Component } from 'react'
 import _ from 'lodash'
 
@@ -72,40 +73,9 @@ export class AdminIncomingMessageList extends Component {
       includeArchivedCampaigns: false,
       conversationCount: 0,
       includeActiveCampaigns: true,
-      conversationCount: 0,
       includeNotOptedOutConversations: true,
       includeOptedOutConversations: false
     }
-
-    this.handleCampaignChanged = this.handleCampaignChanged.bind(this)
-    this.handleMessageFilterChange = this.handleMessageFilterChange.bind(this)
-    this.handleReassignRequested = this.handleReassignRequested.bind(this)
-    this.handleReassignAllMatchingRequested = this.handleReassignAllMatchingRequested.bind(this)
-    this.handlePageChange = this.handlePageChange.bind(this)
-    this.handlePageSizeChange = this.handlePageSizeChange.bind(this)
-    this.handleRowSelection = this.handleRowSelection.bind(this)
-    this.handleCampaignsReceived = this.handleCampaignsReceived.bind(this)
-    this.handleCampaignTextersReceived = this.handleCampaignTextersReceived.bind(
-      this
-    )
-    this.handleReassignmentTextersReceived = this.handleReassignmentTextersReceived.bind(
-      this
-    )
-    this.handleTexterChanged = this.handleTexterChanged.bind(this)
-    this.handleArchivedCampaignsToggled = this.handleArchivedCampaignsToggled.bind(
-      this
-    )
-    this.handleActiveCampaignsToggled = this.handleActiveCampaignsToggled.bind(
-      this
-    )
-    this.conversationCountChanged = this.conversationCountChanged.bind(this)
-    this.handleNotOptedOutConversationsToggled = this.handleNotOptedOutConversationsToggled.bind(
-      this
-    )
-    this.handleOptedOutConversationsToggled = this.handleOptedOutConversationsToggled.bind(
-      this
-    )
-    this.conversationCountChanged = this.conversationCountChanged.bind(this)
   }
 
   shouldComponentUpdate(dummy, nextState) {
@@ -120,7 +90,7 @@ export class AdminIncomingMessageList extends Component {
     return true
   }
 
-  async handleCampaignChanged(campaignId) {
+  handleCampaignChanged = async (campaignId) => {
     const campaignsFilter = getCampaignsFilterForCampaignArchiveStatus(
       this.state.includeActiveCampaigns,
       this.state.includeArchivedCampaigns
@@ -135,7 +105,7 @@ export class AdminIncomingMessageList extends Component {
     })
   }
 
-  async handleTexterChanged(texterId) {
+  handleTexterChanged = async (texterId) => {
     const assignmentsFilter = {}
     if (texterId >= 0) {
       assignmentsFilter.texterId = texterId
@@ -146,7 +116,7 @@ export class AdminIncomingMessageList extends Component {
     })
   }
 
-  async handleMessageFilterChange(messagesFilter) {
+  handleMessageFilterChange = async (messagesFilter) => {
     const contactsFilter = Object.assign(
       _.omit(this.state.contactsFilter, ['messageStatus']),
       { messageStatus: messagesFilter }
@@ -157,7 +127,7 @@ export class AdminIncomingMessageList extends Component {
     })
   }
 
-  async handleReassignRequested(newTexterUserId) {
+  handleReassignRequested = async (newTexterUserId) => {
     await this.props.mutations.reassignCampaignContacts(
       this.props.params.organizationId,
       this.state.campaignIdsContactIds,
@@ -169,7 +139,7 @@ export class AdminIncomingMessageList extends Component {
     })
   }
 
-  async handleReassignAllMatchingRequested(newTexterUserId) {
+  handleReassignAllMatchingRequested = async (newTexterUserId) => {
     await this.props.mutations.bulkReassignCampaignContacts(
       this.props.params.organizationId,
       this.state.campaignsFilter || {},
@@ -183,18 +153,18 @@ export class AdminIncomingMessageList extends Component {
     })
   }
 
-  async handlePageChange(page) {
+  handlePageChange = async (page) => {
     await this.setState({
       page,
       needsRender: true
     })
   }
 
-  async handlePageSizeChange(pageSize) {
+  handlePageSizeChange = async (pageSize) => {
     await this.setState({ needsRender: true, pageSize })
   }
 
-  async handleRowSelection(selectedRows, data) {
+  handleRowSelection = async (selectedRows, data) => {
     if (this.state.previousSelectedRows === 'all' && selectedRows !== 'all') {
       await this.setState({
         previousSelectedRows: [],
@@ -210,19 +180,19 @@ export class AdminIncomingMessageList extends Component {
     }
   }
 
-  async handleCampaignsReceived(campaigns) {
+  handleCampaignsReceived = async (campaigns) => {
     this.setState({ campaigns, needsRender: true })
   }
 
-  async handleCampaignTextersReceived(campaignTexters) {
+  handleCampaignTextersReceived = async (campaignTexters) => {
     this.setState({ campaignTexters, needsRender: true })
   }
 
-  async handleReassignmentTextersReceived(reassignmentTexters) {
+  handleReassignmentTextersReceived = async (reassignmentTexters) => {
     this.setState({ reassignmentTexters, needsRender: true })
   }
 
-  async handleNotOptedOutConversationsToggled() {
+  handleNotOptedOutConversationsToggled = async () => {
     if (
       this.state.includeNotOptedOutConversations &&
       !this.state.includeOptedOutConversations
@@ -247,7 +217,7 @@ export class AdminIncomingMessageList extends Component {
     })
   }
 
-  async handleOptedOutConversationsToggled() {
+  handleOptedOutConversationsToggled = async () => {
     const includeNotOptedOutConversations =
       this.state.includeNotOptedOutConversations ||
       !this.state.includeOptedOutConversations
@@ -269,7 +239,7 @@ export class AdminIncomingMessageList extends Component {
     })
   }
 
-  async handleActiveCampaignsToggled() {
+  handleActiveCampaignsToggled = async () => {
     if (
       this.state.includeActiveCampaigns &&
       !this.state.includeArchivedCampaigns
@@ -287,7 +257,7 @@ export class AdminIncomingMessageList extends Component {
     })
   }
 
-  async handleArchivedCampaignsToggled() {
+  handleArchivedCampaignsToggled = async () => {
     const includeActiveCampaigns =
       this.state.includeActiveCampaigns || !this.state.includeArchivedCampaigns
 
@@ -303,11 +273,10 @@ export class AdminIncomingMessageList extends Component {
     })
   }
 
-  conversationCountChanged(conversationCount) {
+  conversationCountChanged = (conversationCount) => {
     this.setState({
       conversationCount
     })
-
   }
 
   render() {
@@ -466,6 +435,13 @@ const mapMutationsToProps = () => ({
     variables: { organizationId, campaignsFilter, assignmentsFilter, contactsFilter, newTexterUserId }
   })
 })
+
+AdminIncomingMessageList.propTypes = {
+  conversations: PropTypes.object,
+  mutations: PropTypes.object,
+  params: PropTypes.object,
+  organization: PropTypes.object
+}
 
 export default loadData(withRouter(wrapMutations(AdminIncomingMessageList)), {
   mapQueriesToProps,
