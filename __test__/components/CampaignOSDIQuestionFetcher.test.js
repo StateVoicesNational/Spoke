@@ -1,6 +1,6 @@
 import React from 'react'
-import {shallow} from 'enzyme'
-import {CampaignOSDIQuestionFetcher} from '../../src/components/CampaignOSDIQuestionFetcher'
+import { shallow } from 'enzyme'
+import { CampaignOSDIQuestionFetcher } from '../../src/components/CampaignOSDIQuestionFetcher'
 import sampleOsdiQuestions from '../test_data/sample_osdi_questions.json'
 
 // CampaignOSDIQuestionFetcher.propTypes = {
@@ -32,9 +32,9 @@ describe('The OSDI question fetcher component', () => {
     // point, so we won't bother mocking it. It will be tested later.
     const wrapper = shallow(
       <CampaignOSDIQuestionFetcher
-        organizationId = {'42'}
-        osdiQuestions = {questionObject}
-        mapQuestion = {() => null}
+        organizationId={'42'}
+        osdiQuestions={questionObject}
+        mapQuestion={() => null}
       />
     )
     const noQuestionsFoundDiv = <div>No questions were found. Please check your OSDI credentials and make sure questions exist in the target system.</div>
@@ -44,33 +44,33 @@ describe('The OSDI question fetcher component', () => {
   it('renders the correct number of list items when OSDI questions are present', () => {
     const wrapper = shallow(
       <CampaignOSDIQuestionFetcher
-        organizationId = {'42'}
-        osdiQuestions = {questionObject}
-        mapQuestion = {() => null}
+        organizationId={'42'}
+        osdiQuestions={questionObject}
+        mapQuestion={() => null}
       />
     )
-    const questionsSelectField = wrapper.find('div SelectField');
-    const questionsSelectFieldItems = questionsSelectField.children();
+    const questionsSelectField = wrapper.find('div SelectField')
+    const questionsSelectFieldItems = questionsSelectField.children()
     // The question fetcher prepends a "Select a question..." item to the list,
     // so we expect one more item than there are questions in our fake input.
-    expect(questionsSelectFieldItems.length).toBe(4);
+    expect(questionsSelectFieldItems.length).toBe(4)
   })
 
   it('triggers the mapQuestion function from its parent component', () => {
     const mockedQuestionMapFn = jest.fn()
     const wrapper = shallow(
       <CampaignOSDIQuestionFetcher
-        organizationId = {'42'}
-        osdiQuestions = {questionObject}
-        mapQuestion = {mockedQuestionMapFn}
+        organizationId={'42'}
+        osdiQuestions={questionObject}
+        mapQuestion={mockedQuestionMapFn}
       />
     )
-    const questionsSelectField = wrapper.find('div SelectField');
+    const questionsSelectField = wrapper.find('div SelectField')
 
     // Simulate selection of the first question in the list
     // (element 0 is the "Select a question..." item). Only the final argument
     // here is actually used by the CampaignOSDIQuestionFetcher.
-    questionsSelectField.simulate('change', {target: {value: null}}, 1, 1)
+    questionsSelectField.simulate('change', { target: { value: null } }, 1, 1)
 
     // Simulate the user clicking "Map" after selecting the question.
     const mapQuestionButton = wrapper.find('div RaisedButton')
@@ -84,6 +84,6 @@ describe('The OSDI question fetcher component', () => {
     const [[argument]] = mockedQuestionMapFn.mock.calls
 
     // Ensure we passed the correct question to mapQuestion.
-    expect(argument.questionId).toEqual('https://osdi-sample-system.org/api/v1/questions/a91b4b2e-ae0e-4cd3-9ed7-d0ec501b0baa');
+    expect(argument.questionId).toEqual('https://osdi-sample-system.org/api/v1/questions/a91b4b2e-ae0e-4cd3-9ed7-d0ec501b0baa')
   })
 })
