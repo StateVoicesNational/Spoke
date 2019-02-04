@@ -15,7 +15,7 @@ This is generated from [react-apollo-starter-kit](https://github.com/saikat/reac
 
 ## Deploy to Heroku
 
-<a href="https://heroku.com/deploy?template=https://github.com/MoveOnOrg/Spoke/tree/v1.4.1">
+<a href="https://heroku.com/deploy">
   <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy">
 </a>
 
