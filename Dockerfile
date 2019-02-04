@@ -1,19 +1,34 @@
-FROM node:6.10
+ARG BUILDER_IMAGE=node:8.10
+ARG RUNTIME_IMAGE=node:8.10-alpine
 
-# Install Spoke
-ARG SPOKE_VERSION=1.4.1
-ENV OUTPUT_DIR=/Spoke/build \
-    SPOKE_VERSION=$SPOKE_VERSION \
-    SUDO_USER=root
-RUN wget https://github.com/MoveOnOrg/Spoke/archive/v$SPOKE_VERSION.tar.gz && \
-    tar zxf v$SPOKE_VERSION.tar.gz && \
-    rm v$SPOKE_VERSION.tar.gz && \
-    mv /Spoke-$SPOKE_VERSION /Spoke && \
-    cd /Spoke && \
-    npm install && \
-    npm install -g foreman
+FROM ${BUILDER_IMAGE} as builder
+
+ENV NODE_ENV=production \
+    OUTPUT_DIR=./build \
+    PUBLIC_DIR=./build/client \
+    ASSETS_DIR=./build/client/assets \
+    ASSETS_MAP_FILE=assets.json
+
+COPY . /spoke
+WORKDIR /spoke
+RUN yarn install --ignore-scripts && \
+    yarn run prod-build && \
+    rm -rf node_modules && \
+    yarn install --production --ignore-scripts
 
 # Spoke Runtime
-WORKDIR /Spoke
+FROM ${RUNTIME_IMAGE}
+WORKDIR /spoke
+COPY --from=builder /spoke/build build
+COPY --from=builder /spoke/node_modules node_modules
+COPY --from=builder /spoke/package.json /spoke/yarn.lock ./
+ENV NODE_ENV=production \
+    PORT=3000 \
+    ASSETS_DIR=./build/client/assets \
+    ASSETS_MAP_FILE=assets.json \
+    JOBS_SAME_PROCESS=1
+
+# Switch to non-root user https://github.com/nodejs/docker-node/blob/d4d52ac41b1f922242d3053665b00336a50a50b3/docs/BestPractices.md#non-root-user
+USER node
 EXPOSE 3000
-CMD ["nf", "start", "--procfile", "./dev-tools/Procfile.dev"]
+CMD ["npm", "start"]
