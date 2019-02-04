@@ -123,14 +123,8 @@
       "value": ""
     },
 
-    "ADVANCED_OPTIONS": {
-      "description": "Everything below here you should probably leave alone",
-      "required": false,
-      "value": ""
-    },
-
     "NODE_ENV": {
-      "description": "node environment determines the application build/start process",
+      "description": "node environment determines the application start process",
       "required": true,
       "value": "production"
     },
@@ -139,30 +133,6 @@
       "description": "recommended setting which means that the same node process that runs the web app processes applications.",
       "required": true,
       "value": "1"
-    },
-
-    "OUTPUT_DIR": {
-      "description": "for production build placement",
-      "required": true,
-      "value": "./build"
-    },
-
-    "PUBLIC_DIR": {
-      "description": "for production build placement",
-      "required": true,
-      "value": "./build/client"
-    },
-
-    "ASSETS_DIR": {
-      "description": "for assets directory in production build placement",
-      "required": true,
-      "value": "./build/client/assets"
-    },
-
-    "ASSETS_MAP_FILE": {
-      "description": "for assets directory placement",
-      "required": true,
-      "value": "assets.json"
     },
 
     "SUPPRESS_MIGRATIONS": {
@@ -178,6 +148,7 @@
     },
 
     "HEROKU_APP_NAME": {
+      "description": "Name of your Heroku app (not used if BASE_URL is set)",
       "required": false
     }
 
