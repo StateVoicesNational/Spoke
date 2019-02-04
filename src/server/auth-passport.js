@@ -5,13 +5,14 @@ import { Strategy as LocalStrategy } from 'passport-local'
 import { userLoggedIn } from './models/cacheable_queries'
 import { User } from './models'
 import wrap from './wrap'
+import parseBaseURL from '../lib/parse-base-url'
 
 export function setupAuth0Passport() {
   const strategy = new Auth0Strategy({
     domain: process.env.AUTH0_DOMAIN,
     clientID: process.env.AUTH0_CLIENT_ID,
     clientSecret: process.env.AUTH0_CLIENT_SECRET,
-    callbackURL: `${process.env.BASE_URL}/login-callback`
+    callbackURL: `${parseBaseURL()}/login-callback`
   }, (accessToken, refreshToken, extraParams, profile, done) => done(null, profile)
   )
 

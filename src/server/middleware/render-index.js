@@ -1,3 +1,5 @@
+import parseBaseURL from '../../lib/parse-base-url'
+
 const rollbarScript = process.env.ROLLBAR_CLIENT_TOKEN ?
   `<script>
     var _rollbarConfig = {
@@ -65,7 +67,7 @@ export default function renderIndex(html, css, assetMap, store) {
       window.SUPPRESS_SELF_INVITE="${process.env.SUPPRESS_SELF_INVITE || ''}"
       window.NODE_ENV="${process.env.NODE_ENV}"
       window.PRIVACY_URL="${process.env.PRIVACY_URL || ''}"
-      window.BASE_URL="${process.env.BASE_URL || ''}"
+      window.BASE_URL="${parseBaseURL()}"
       window.NOT_IN_USA=${process.env.NOT_IN_USA || 0}
       window.ALLOW_SEND_ALL=${process.env.ALLOW_SEND_ALL || 0}
       window.BULK_SEND_CHUNK_SIZE=${process.env.BULK_SEND_CHUNK_SIZE || 0}
