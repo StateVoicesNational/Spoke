@@ -1,6 +1,6 @@
 language: node_js
 node_js:
-- "6.10.3"
+- "8.10"
 services:
 - postgresql
 addons:
@@ -16,5 +16,5 @@ before_script:
 - psql -c 'GRANT ALL PRIVILEGES ON DATABASE spoke_test TO spoke_test;' -U postgres
 - chmod +x ./travis-run-e2e-tests
 script:
-- npm run test
+- npm test
 - ./travis-run-e2e-tests
