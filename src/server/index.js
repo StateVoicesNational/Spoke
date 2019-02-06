@@ -1,4 +1,4 @@
-// configure env vars in dev and test environments
+// dotenv is used only in development & test
 if (['development', 'test'].includes(process.env.NODE_ENV)) {
   // eslint-disable-next-line global-require
   require('dotenv').config()
