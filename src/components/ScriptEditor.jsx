@@ -176,7 +176,6 @@ class ScriptEditor extends React.Component {
       <div>
         <div style={styles.editor} onClick={this.focus}>
           <Editor
-            webDriverTestID='editorid' // Will render as data-testid
             name={name}
             editorState={this.state.editorState}
             onChange={this.onChange}

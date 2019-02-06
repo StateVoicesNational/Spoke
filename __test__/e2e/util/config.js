@@ -6,6 +6,7 @@ const config = {
     capabilities: {
       name: 'Spoke - Chrome E2E Tests',
       browserName: 'chrome',
+      idleTimeout: 240, // 4 minute idle
       'tunnel-identifier': process.env.TRAVIS_JOB_NUMBER,
       username: process.env.SAUCE_USERNAME,
       accessKey: process.env.SAUCE_ACCESS_KEY,
