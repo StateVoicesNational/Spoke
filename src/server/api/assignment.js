@@ -1,20 +1,20 @@
 import { mapFieldsToModel } from './lib/utils'
-import { Assignment, r } from '../models'
+import { Assignment, r, cacheableData } from '../models'
 import { getOffsets, defaultTimezoneIsBetweenTextingHours } from '../../lib'
 
 export function addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue(
   queryParameter,
-  contactsFilter
+  messageStatusFilter
 ) {
-  if (!contactsFilter || !('messageStatus' in contactsFilter)) {
+  if (!messageStatusFilter) {
     return queryParameter
   }
 
   let query = queryParameter
-  if (contactsFilter.messageStatus === 'needsMessageOrResponse') {
+  if (messageStatusFilter === 'needsMessageOrResponse') {
     query.whereIn('message_status', ['needsResponse', 'needsMessage'])
   } else {
-    query = query.whereIn('message_status', contactsFilter.messageStatus.split(','))
+    query = query.whereIn('message_status', messageStatusFilter.split(','))
   }
   return query
 }
@@ -26,13 +26,27 @@ export function getContacts(assignment, contactsFilter, organization, campaign, 
   const textingHoursEnd = organization.texting_hours_end
 
   // 24-hours past due - why is this 24 hours offset?
-  const pastDue = Number(campaign.due_by) + 24 * 60 * 60 * 1000 < Number(new Date())
-
+  const includePastDue = (contactsFilter && contactsFilter.includePastDue)
+  const pastDue = (campaign.due_by
+                   && Number(campaign.due_by) + 24 * 60 * 60 * 1000 < Number(new Date()))
   const config = { textingHoursStart, textingHoursEnd, textingHoursEnforced }
+
+  if (campaign.override_organization_texting_hours) {
+    const textingHoursStart = campaign.texting_hours_start
+    const textingHoursEnd = campaign.texting_hours_end
+    const textingHoursEnforced = campaign.texting_hours_enforced
+    const timezone = campaign.timezone
+
+    config.campaignTextingHours = { textingHoursStart, textingHoursEnd, textingHoursEnforced, timezone }
+  }
+
   const [validOffsets, invalidOffsets] = getOffsets(config)
+  if (!includePastDue && pastDue && contactsFilter && contactsFilter.messageStatus === 'needsMessage') {
+    return []
+  }
 
   let query = r.knex('campaign_contact').where({
-    'assignment_id': assignment.id
+    assignment_id: assignment.id
   })
 
   if (contactsFilter) {
@@ -53,32 +67,15 @@ export function getContacts(assignment, contactsFilter, organization, campaign, 
       }
     }
 
-    const includePastDue = contactsFilter.includePastDue
-
-    if (includePastDue && contactsFilter.messageStatus) {
-      query = addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue(
-        query,
-        contactsFilter
-      )
-    } else {
-      if (contactsFilter.messageStatus) {
-        if (pastDue && contactsFilter.messageStatus === 'needsMessage') {
-          query = query.where('message_status', '')
-        } else if (contactsFilter.messageStatus === 'needsMessageOrResponse') {
-          query.whereIn('message_status', ['needsResponse', 'needsMessage'])
-        } else {
-          query = query.whereIn('message_status', contactsFilter.messageStatus.split(','))
-        }
-      } else {
-        if (pastDue) {
-          // by default if asking for 'send later' contacts we include only those that need replies
-          query = query.where('message_status', 'needsResponse')
-        } else {
-          // we do not want to return closed/messaged
-          query.whereIn('message_status', ['needsResponse', 'needsMessage'])
-        }
-      }
-    }
+    query = addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue(
+      query,
+      ((contactsFilter && contactsFilter.messageStatus) ||
+       (pastDue
+        // by default if asking for 'send later' contacts we include only those that need replies
+        ? 'needsResponse'
+        // we do not want to return closed/messaged
+        : 'needsMessageOrResponse'))
+    )
 
     if (Object.prototype.hasOwnProperty.call(contactsFilter, 'isOptedOut')) {
       query = query.where('is_opted_out', contactsFilter.isOptedOut)
@@ -86,7 +83,11 @@ export function getContacts(assignment, contactsFilter, organization, campaign, 
   }
 
   if (!forCount) {
-    query = query.orderByRaw('message_status DESC, updated_at')
+    if (contactsFilter && contactsFilter.messageStatus === 'convo') {
+      query = query.orderByRaw('message_status DESC, updated_at DESC')
+    } else {
+      query = query.orderByRaw('message_status DESC, updated_at')
+    }
   }
 
   return query
@@ -95,7 +96,11 @@ export function getContacts(assignment, contactsFilter, organization, campaign, 
 export const resolvers = {
   Assignment: {
     ...mapFieldsToModel(['id', 'maxContacts'], Assignment),
-    texter: async (assignment, _, { loaders }) => loaders.user.load(assignment.user_id),
+    texter: async (assignment, _, { loaders }) => (
+      assignment.texter
+      ? assignment.texter
+      : loaders.user.load(assignment.user_id)
+    ),
     campaign: async (assignment, _, { loaders }) => loaders.campaign.load(assignment.campaign_id),
     contactsCount: async (assignment, { contactsFilter }) => {
       const campaign = await r.table('campaign').get(assignment.campaign_id)
@@ -111,14 +116,14 @@ export const resolvers = {
       return getContacts(assignment, contactsFilter, organization, campaign)
     },
     campaignCannedResponses: async assignment =>
-      await r
-        .table('canned_response')
-        .getAll(assignment.campaign_id, { index: 'campaign_id' })
-        .filter({ user_id: '' }),
+      await cacheableData.cannedResponse.query({
+        userId: '',
+        campaignId: assignment.campaign_id
+      }),
     userCannedResponses: async assignment =>
-      await r
-        .table('canned_response')
-        .getAll(assignment.campaign_id, { index: 'campaign_id' })
-        .filter({ user_id: assignment.user_id })
+      await cacheableData.cannedResponse.query({
+        userId: assignment.user_id,
+        campaignId: assignment.campaign_id
+      })
   }
 }

@@ -86,6 +86,7 @@ export default class CampaignCannedResponsesForm extends React.Component {
   listItems(cannedResponses) {
     const listItems = cannedResponses.map((response) => (
       <ListItem
+        {...dataTest('cannedResponse')}
         value={response.text}
         key={response.id}
         primaryText={response.title}
