@@ -22,6 +22,6 @@ const ZipCode = thinky.createModel('zip_code', type.object().schema({
     .boolean()
     .required()
     .allowNull(false)
-}).allowExtra(false), { pk: 'zip' })
+}).allowExtra(false), { pk: 'zip', noAutoCreation: true })
 
 export default ZipCode

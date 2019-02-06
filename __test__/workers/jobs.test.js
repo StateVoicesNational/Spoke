@@ -65,6 +65,11 @@ describe('test getTimezoneByZip', () => {
 
 
   })
-
-
 })
+
+// TODO
+// 1. loadContacts with upload
+// 2. loadContactsFromWarehouse (connect the db to the test db and use another campaign's contacts for input)
+// 3. loadContactsFromWarehouse with > 10000 contacts for iteration
+// 4. loadContactsFromWarehouse with > 10000 LIMIT clause which should error out and save job with error message
+// 5. loadContactsFromWarehouse with = 30000 and check contact count

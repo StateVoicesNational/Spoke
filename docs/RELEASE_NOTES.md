@@ -1,5 +1,9 @@
 # Release Notes
 
+## v1.4.1
+*August 2018:* Version 1.4.1
+* This version fixes bugs found in 1.4 including a deployment bug.
+
 ## v1.4
 
 This release includes many optimizations, new features and more tests! We've fixed outstanding bugs, added more administrative functionality and worked on the texter experience. We've also introduced a new testing suite and redis caching capabilities. Over the next couple months, we intend to add more testing and continue to work on scaling.
@@ -63,7 +67,7 @@ Please upgrade your instance and let us know if you encounter any issues!
   - Some login issues were fixed and documentation was improved
   - Improved contact load times for texter screen
 
-Thanks go to all our contributors for this release including: 
+Thanks go to all our contributors for this release including:
 [ben-pr-p](https://github.com/ben-pr-p),
 [harpojaeger](https://github.com/harpojaeger),
 [lperson](https://github.com/lperson),
