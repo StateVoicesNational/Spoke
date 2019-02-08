@@ -255,6 +255,7 @@ const initialize = async (knex, Promise) => {
       create: t => {
         t.increments('id').primary()
         t.text('user_number').notNullable().defaultTo('')
+        t.integer('user_id')
         t.text('contact_number').notNullable()
         t.boolean('is_from_contact').notNullable()
         t.text('text').notNullable().defaultTo('')
@@ -267,9 +268,11 @@ const initialize = async (knex, Promise) => {
         t.timestamp('queued_at').defaultTo(knex.fn.now()).notNullable()
         t.timestamp('sent_at').defaultTo(knex.fn.now()).notNullable()
         t.timestamp('service_response_at').defaultTo(knex.fn.now()).notNullable()
+        t.timestamp('send_before').defaultTo(knex.fn.now()).notNullable()
 
         t.index('assignment_id')
         t.foreign('assignment_id').references('assignment.id')
+        t.foreign('user_id').references('user.id')
         t.index('send_status')
         t.index('user_number')
         t.index('contact_number')
