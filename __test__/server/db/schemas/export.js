@@ -6,7 +6,7 @@ import fs from 'fs'
 
 function getSchema(s) {
   return knex(s).columnInfo().then(schema => {
-    fs.writeFile(`${s}.json`, JSON.stringify(schema, null, 2))
+    fs.writeFileSync(`${s}.json`, JSON.stringify(schema, null, 2))
   })
 }
 function getIndexes() {
@@ -16,7 +16,7 @@ function getIndexes() {
   .whereNot({ tablename: 'migrations' })
   // this table is deprecated now
   .then(indexes => {
-    fs.writeFile('indexes.json', JSON.stringify(indexes, null, 2))
+    fs.writeFileSync('indexes.json', JSON.stringify(indexes, null, 2))
     console.log('exported indices')
   })
 }
