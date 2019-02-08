@@ -60,6 +60,11 @@ const initialize = async (knex, Promise) => {
         t.text('logo_image_url')
         t.text('intro_html')
         t.text('primary_color')
+        t.boolean('override_organization_texting_hours').defaultTo(false)
+        t.boolean('texting_hours_enforced').defaultTo(true)
+        t.integer('texting_hours_start').defaultTo(9)
+        t.integer('texting_hours_end').defaultTo(21)
+        t.text('timezone').defaultTo('US/Eastern')
 
         t.index('organization_id')
         t.foreign('organization_id').references('organization.id')
