@@ -6,6 +6,7 @@ import fs from 'fs'
 
 function getSchema(s) {
   return knex(s).columnInfo().then(schema => {
+    console.log('exported schema for', s)
     fs.writeFileSync(`${s}.json`, JSON.stringify(schema, null, 2))
   })
 }
