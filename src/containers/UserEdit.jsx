@@ -35,12 +35,26 @@ class UserEdit extends React.Component {
 
   render() {
     const user = (this.props.editUser && this.props.editUser.editUser) || {}
+
+    let passwordFields = {}
+    if (this.props.allowSetPassword) {
+      passwordFields = {
+        password: yup.string().required(),
+        passwordConfirm: yup
+          .string()
+          .oneOf([yup.ref('password')], 'Passwords must match')
+          .required()
+      }
+    }
+
     const formSchema = yup.object({
       firstName: yup.string().required(),
       lastName: yup.string().required(),
       cell: yup.string().required(),
-      email: yup.string().email()
+      email: yup.string().email(),
+      ...passwordFields
     })
+
     return (
       <GSForm
         schema={formSchema}
@@ -53,8 +67,8 @@ class UserEdit extends React.Component {
         <Form.Field label='Cell Number' name='cell' {...dataTest('cell')} />
         {(this.props.allowSetPassword
           ? <div>
-            <Form.Field label='Password' name='password' />
-            <Form.Field label='Confirm Password' name='passwordConfirm' />
+            <Form.Field label='Password' name='password' type='password' />
+            <Form.Field label='Confirm Password' name='passwordConfirm' type='password' />
           </div>
          : null)}
         <Form.Button
