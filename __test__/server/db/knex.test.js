@@ -28,11 +28,19 @@ describe('The knex initial migration', async () => {
   it('creates the correct indices', async () => {
     // eslint-disable-next-line global-require
     const originalIndexes = require('./schemas/indexes.json')
-    const newIndexes = await knex('pg_indexes')
-    .select()
-    .where({ schemaname: 'public' })
-    .whereNotIn('tablename', ['knex_migrations', 'knex_migrations_lock']) // we're not interested in these tables
-    expect(newIndexes).toMatchIndexes(originalIndexes)
+    // const newIndexes = await knex('pg_indexes')
+    // .select()
+    // .where({ schemaname: 'public' })
+    // .whereNotIn('tablename', ['knex_migrations', 'knex_migrations_lock']) // we're not interested in these tables
+    const newIndexes = await knex.raw(`SELECT conrelid::regclass AS table_from
+       , conname
+       , pg_get_constraintdef(c.oid)
+  FROM   pg_constraint c
+  JOIN   pg_namespace n ON n.oid = c.connamespace
+  WHERE  contype IN ('f', 'p ')
+  AND    n.nspname = 'public' -- your schema here
+  ORDER  BY conrelid::regclass::text, contype DESC;`)
+    expect(newIndexes.rows).toMatchIndexes(originalIndexes.rows)
   })
 })
 
