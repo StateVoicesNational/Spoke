@@ -22,10 +22,10 @@ function getIndexes() {
   })
 }
 
-const tablePomises = tables.map(getSchema)
+const tablePromises = tables.map(getSchema)
 const indexesPromises = getIndexes()
 
-Promise.all(tablePomises.concat([indexesPromises]))
+Promise.all(tablePromises.concat([indexesPromises]))
   .then(() => {
     console.log('completed')
     process.exit(0)
