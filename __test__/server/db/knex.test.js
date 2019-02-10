@@ -1,5 +1,4 @@
-const config = require('../../../knexfile.js')
-const knex = require('knex')(config)
+import knex from '../../../src/server/knex.js'
 import { indexQuery, tables } from './utils.js'
 jest.setTimeout(20000)
 
