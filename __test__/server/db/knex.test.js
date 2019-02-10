@@ -38,7 +38,8 @@ describe('The knex initial migration', async () => {
   FROM   pg_constraint c
   JOIN   pg_namespace n ON n.oid = c.connamespace
   WHERE  contype IN ('f', 'p ')
-  AND    n.nspname = 'public' -- your schema here
+  AND    conrelid::regclass::text <> 'migrations'
+  AND    n.nspname = 'public'
   ORDER  BY conrelid::regclass::text, contype DESC;`)
     expect(newIndexes.rows).toMatchIndexes(originalIndexes.rows)
   })
