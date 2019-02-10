@@ -26,5 +26,7 @@ FROM   pg_constraint c
 JOIN   pg_namespace n ON n.oid = c.connamespace
 WHERE  contype IN ('f', 'p ')
 AND    conrelid::regclass::text <> 'migrations'
+AND    conrelid::regclass::text <> 'knex_migrations'
+AND    conrelid::regclass::text <> 'knex_migrations_lock'
 AND    n.nspname = 'public'
 ORDER  BY conrelid::regclass::text, contype DESC;`
