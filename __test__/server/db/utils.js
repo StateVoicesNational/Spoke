@@ -19,6 +19,7 @@ export const tables = [
   'campaign_contact'
 ]
 
+// Adapted from https://dba.stackexchange.com/a/37068
 export const indexQuery = `SELECT conrelid::regclass AS table_from
    , conname
    , pg_get_constraintdef(c.oid)
