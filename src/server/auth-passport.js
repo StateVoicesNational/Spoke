@@ -74,15 +74,16 @@ export function setupAuth0Passport() {
 
 export function setupLocalAuthPassport() {
   const strategy = new LocalStrategy({
-    usernameField: 'email'
-  }, wrap(async (username, password, done) => {
+    usernameField: 'email',
+    passReqToCallback: true
+  }, wrap(async (req, username, password, done) => {
     console.log('LOGIN', username, password)
     const existingUser = await User.filter({ email: username })
     if (existingUser.length > 0) {
       const pwFieldSplit = existingUser[0].auth0_id.split('|')
       const hashed = {
-        salt: pwFieldSplit[0],
-        hash: pwFieldSplit[1]
+        salt: pwFieldSplit[1],
+        hash: pwFieldSplit[2]
       }
       AuthHasher.verify(
         password, hashed,
@@ -93,8 +94,8 @@ export function setupLocalAuthPassport() {
     } else {
       // create the user
       AuthHasher.hash(password, async function(err, hashed) {
-        const passwordToSave = `${hashed.salt}|${hashed.hash}`
-          //.salt and .hash
+        const passwordToSave = `localauth|${hashed.salt}|${hashed.hash}`
+          // .salt and .hash
         const user = await User.save({
           email: username,
           auth0_id: passwordToSave,
@@ -104,7 +105,7 @@ export function setupLocalAuthPassport() {
           is_superadmin: false
         })
         done(null, user)
-      });
+      })
     }
   }))
   passport.use(strategy)
