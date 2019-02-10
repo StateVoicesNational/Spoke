@@ -3,12 +3,11 @@ import React from 'react'
 import { isClient } from '../lib'
 
 const Login = ({ location }) => {
-  const auth0Strategy = window.PASSPORT_STRATEGY === 'auth0' || window.PASSPORT_STRATEGY === ''
+  const auth0Strategy =
+    window.PASSPORT_STRATEGY === 'auth0' ||
+    window.PASSPORT_STRATEGY === ''
   const auth0Login = isClient() && auth0Strategy
-  console.log('authstrategy', auth0Strategy,
-    'window.PASSPORT_STRATEGY === "auth0"', window.PASSPORT_STRATEGY === 'auth0',
-    'window.PASSPORT_STRATEGY === ""', window.PASSPORT_STRATEGY === ''
-  )
+
   return (
     <div>
       {auth0Login ? window.AuthService.login(location.query.nextUrl) : ''}

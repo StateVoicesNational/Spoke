@@ -65,12 +65,11 @@ class UserEdit extends React.Component {
         <Form.Field label='Last name' name='lastName' {...dataTest('lastName')} />
         <Form.Field label='Email' name='email' {...dataTest('email')} />
         <Form.Field label='Cell Number' name='cell' {...dataTest('cell')} />
-        {(this.props.allowSetPassword
-          ? <div>
+        {this.props.allowSetPassword &&
+          <div>
             <Form.Field label='Password' name='password' type='password' />
             <Form.Field label='Confirm Password' name='passwordConfirm' type='password' />
-          </div>
-         : null)}
+          </div>}
         <Form.Button
           type='submit'
           label={this.props.saveLabel || 'Save'}
