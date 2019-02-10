@@ -1,6 +1,4 @@
-require('dotenv').config({ path: '../../../.env' })
-const config = require('../../../knexfile.js')
-const knex = require('knex')(config)
+import knex from '../../../src/server/knex.js'
 import { tables, indexQuery } from './utils'
 import fs from 'fs'
 
