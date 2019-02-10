@@ -252,7 +252,7 @@ const initialize = async (knex, Promise) => {
         t.enu('service', ['nexmo', 'twilio'])
         t.boolean('is_primary')
 
-        t.index(['user_id'])
+        t.foreign('user_id').references('user.id')
       }
     },
     {
