@@ -1,5 +1,5 @@
-require('dotenv').config({ path: '../../../../.env' })
-const config = require('../../../../knexfile.js')
+require('dotenv').config({ path: '../../../.env' })
+const config = require('../../../knexfile.js')
 const knex = require('knex')(config)
 import { tables, indexQuery } from './utils'
 import fs from 'fs'
@@ -7,13 +7,13 @@ import fs from 'fs'
 function getSchema(s) {
   return knex(s).columnInfo().then(schema => {
     console.log('exported schema for', s)
-    fs.writeFileSync(`${s}.json`, JSON.stringify(schema, null, 2))
+    fs.writeFileSync(`schemas/${s}.json`, JSON.stringify(schema, null, 2))
   })
 }
 function getIndexes() {
   return knex.raw(indexQuery)
   .then(indexes => {
-    fs.writeFileSync('indexes.json', JSON.stringify(indexes, null, 2))
+    fs.writeFileSync('schemas/indexes.json', JSON.stringify(indexes, null, 2))
     console.log('exported indices')
   })
 }
