@@ -1,6 +1,6 @@
 const config = require('../../../knexfile.js')
 const knex = require('knex')(config)
-import { tables } from './tables.js'
+import { indexQuery, tables } from './utils.js'
 jest.setTimeout(20000)
 
 // knex.on('query', console.log)
@@ -28,19 +28,7 @@ describe('The knex initial migration', async () => {
   it('creates the correct indices', async () => {
     // eslint-disable-next-line global-require
     const originalIndexes = require('./schemas/indexes.json')
-    // const newIndexes = await knex('pg_indexes')
-    // .select()
-    // .where({ schemaname: 'public' })
-    // .whereNotIn('tablename', ['knex_migrations', 'knex_migrations_lock']) // we're not interested in these tables
-    const newIndexes = await knex.raw(`SELECT conrelid::regclass AS table_from
-       , conname
-       , pg_get_constraintdef(c.oid)
-  FROM   pg_constraint c
-  JOIN   pg_namespace n ON n.oid = c.connamespace
-  WHERE  contype IN ('f', 'p ')
-  AND    conrelid::regclass::text <> 'migrations'
-  AND    n.nspname = 'public'
-  ORDER  BY conrelid::regclass::text, contype DESC;`)
+    const newIndexes = await knex.raw(indexQuery)
     expect(newIndexes.rows).toMatchIndexes(originalIndexes.rows)
   })
 })

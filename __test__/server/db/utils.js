@@ -18,3 +18,13 @@ export const tables = [
   'question_response',
   'campaign_contact'
 ]
+
+export const indexQuery = `SELECT conrelid::regclass AS table_from
+   , conname
+   , pg_get_constraintdef(c.oid)
+FROM   pg_constraint c
+JOIN   pg_namespace n ON n.oid = c.connamespace
+WHERE  contype IN ('f', 'p ')
+AND    conrelid::regclass::text <> 'migrations'
+AND    n.nspname = 'public'
+ORDER  BY conrelid::regclass::text, contype DESC;`
