@@ -507,13 +507,15 @@ class AdminCampaignEdit extends React.Component {
             label='Start This Campaign!'
             disabled={!isCompleted}
             onTouchTap={async () => {
-              this.setState({
-                startingCampaign: true
-              })
-              await this.props.mutations.startCampaign(this.props.campaignData.campaign.id)
-              this.setState({
-                startingCampaign: false
-              })
+              if (isCompleted) {
+                this.setState({
+                  startingCampaign: true
+                })
+                await this.props.mutations.startCampaign(this.props.campaignData.campaign.id)
+                this.setState({
+                  startingCampaign: false
+                })
+              }
             }}
           />
         </div>
