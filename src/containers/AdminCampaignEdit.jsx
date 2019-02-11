@@ -333,7 +333,10 @@ class AdminCampaignEdit extends React.Component {
       title: 'Interactions',
       content: CampaignInteractionStepsForm,
       keys: ['interactionSteps'],
-      checkCompleted: () => this.state.campaignFormValues.interactionSteps.length > 0,
+      checkCompleted: () => (
+        this.state.campaignFormValues.interactionSteps[0]
+          && this.state.campaignFormValues.interactionSteps.some(step => step.script)
+      ),
       blocksStarting: true,
       expandAfterCampaignStarts: true,
       expandableBySuperVolunteers: true,
@@ -507,15 +510,13 @@ class AdminCampaignEdit extends React.Component {
             label='Start This Campaign!'
             disabled={!isCompleted}
             onTouchTap={async () => {
-              if (isCompleted) {
-                this.setState({
-                  startingCampaign: true
-                })
-                await this.props.mutations.startCampaign(this.props.campaignData.campaign.id)
-                this.setState({
-                  startingCampaign: false
-                })
-              }
+              this.setState({
+                startingCampaign: true
+              })
+              await this.props.mutations.startCampaign(this.props.campaignData.campaign.id)
+              this.setState({
+                startingCampaign: false
+              })
             }}
           />
         </div>
