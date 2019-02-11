@@ -23,13 +23,19 @@ class UserEdit extends React.Component {
   };
 
   async componentWillMount() {
-    await this.props.mutations.editUser(null)
+    if (!this.props.allowLogin && !this.props.allowSetPassword) {
+      await this.props.mutations.editUser(null)
+    }
   }
 
   async handleSave(formData) {
-    await this.props.mutations.editUser(formData)
-    if (this.props.onRequestClose) {
-      this.props.onRequestClose()
+    if (this.props.allowLogin || this.props.allowSetPassword) {
+      // log in or sign up
+    } else if (!this.props.allowLogin && !this.props.allowSetPassword) {
+      await this.props.mutations.editUser(formData)
+      if (this.props.onRequestClose) {
+        this.props.onRequestClose()
+      }
     }
   }
 
@@ -37,21 +43,34 @@ class UserEdit extends React.Component {
     const user = (this.props.editUser && this.props.editUser.editUser) || {}
 
     let passwordFields = {}
+    if (this.props.allowLogin) {
+      passwordFields = {
+        password: yup.string().required()
+      }
+    }
+
     if (this.props.allowSetPassword) {
       passwordFields = {
-        password: yup.string().required(),
+        ...passwordFields,
         passwordConfirm: yup
-          .string()
-          .oneOf([yup.ref('password')], 'Passwords must match')
-          .required()
+        .string()
+        .oneOf([yup.ref('password')], 'Passwords must match')
+        .required()
+      }
+    }
+
+    let userFields = {}
+    if (!this.props.allowLogin || this.props.allowSetPassword) {
+      userFields = {
+        firstName: yup.string().required(),
+        lastName: yup.string().required(),
+        cell: yup.string().required()
       }
     }
 
     const formSchema = yup.object({
-      firstName: yup.string().required(),
-      lastName: yup.string().required(),
-      cell: yup.string().required(),
       email: yup.string().email(),
+      ...userFields,
       ...passwordFields
     })
 
@@ -61,13 +80,20 @@ class UserEdit extends React.Component {
         onSubmit={this.handleSave}
         defaultValue={user}
       >
-        <Form.Field label='First name' name='firstName' {...dataTest('firstName')} />
-        <Form.Field label='Last name' name='lastName' {...dataTest('lastName')} />
         <Form.Field label='Email' name='email' {...dataTest('email')} />
-        <Form.Field label='Cell Number' name='cell' {...dataTest('cell')} />
-        {this.props.allowSetPassword &&
+        {(!this.props.allowLogin || this.props.allowSetPassword) &&
+          <div>
+            <Form.Field label='First name' name='firstName' {...dataTest('firstName')} />
+            <Form.Field label='Last name' name='lastName' {...dataTest('lastName')} />
+            <Form.Field label='Cell Number' name='cell' {...dataTest('cell')} />
+          </div>
+        }
+        {(this.props.allowLogin || this.props.allowSetPassword) &&
           <div>
             <Form.Field label='Password' name='password' type='password' />
+          </div>}
+        {this.props.allowSetPassword &&
+          <div>
             <Form.Field label='Confirm Password' name='passwordConfirm' type='password' />
           </div>}
         <Form.Button
@@ -87,7 +113,8 @@ UserEdit.propTypes = {
   organizationId: PropTypes.string,
   onRequestClose: PropTypes.func,
   saveLabel: PropTypes.string,
-  allowSetPassword: PropTypes.bool
+  allowSetPassword: PropTypes.bool,
+  allowLogin: PropTypes.bool
 }
 
 const mapMutationsToProps = ({ ownProps }) => {
