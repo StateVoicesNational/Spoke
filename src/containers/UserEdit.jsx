@@ -31,6 +31,24 @@ class UserEdit extends React.Component {
   async handleSave(formData) {
     if (this.props.allowLogin || this.props.allowSetPassword) {
       // log in or sign up
+      const allData = {
+        nextUrl: this.props.location.query.nextUrl,
+        ...formData
+      }
+      const res = await fetch('/login-callback', {
+        method: 'POST',
+        body: JSON.stringify(allData),
+        headers: { 'Content-Type': 'application/json' },
+        redirect: 'follow'
+      })
+      const { redirected, status, url } = res
+      if (redirected && status === 200) {
+        this.props.router.push(url)
+      } else if (!redirected && status === 401) {
+        throw new Error('Invalid username or password')
+      } else {
+        throw new Error()
+      }
     } else if (!this.props.allowLogin && !this.props.allowSetPassword) {
       await this.props.mutations.editUser(formData)
       if (this.props.onRequestClose) {
@@ -43,7 +61,7 @@ class UserEdit extends React.Component {
     const user = (this.props.editUser && this.props.editUser.editUser) || {}
 
     let passwordFields = {}
-    if (this.props.allowLogin) {
+    if (this.props.allowLogin || this.props.allowSetPassword) {
       passwordFields = {
         password: yup.string().required()
       }
@@ -53,9 +71,9 @@ class UserEdit extends React.Component {
       passwordFields = {
         ...passwordFields,
         passwordConfirm: yup
-        .string()
-        .oneOf([yup.ref('password')], 'Passwords must match')
-        .required()
+          .string()
+          .oneOf([yup.ref('password')], 'Passwords must match')
+          .required()
       }
     }
 
@@ -69,7 +87,7 @@ class UserEdit extends React.Component {
     }
 
     const formSchema = yup.object({
-      email: yup.string().email(),
+      email: yup.string().email().required(),
       ...userFields,
       ...passwordFields
     })
@@ -89,13 +107,9 @@ class UserEdit extends React.Component {
           </div>
         }
         {(this.props.allowLogin || this.props.allowSetPassword) &&
-          <div>
-            <Form.Field label='Password' name='password' type='password' />
-          </div>}
+          <Form.Field label='Password' name='password' type='password' />}
         {this.props.allowSetPassword &&
-          <div>
-            <Form.Field label='Confirm Password' name='passwordConfirm' type='password' />
-          </div>}
+          <Form.Field label='Confirm Password' name='passwordConfirm' type='password' />}
         <Form.Button
           type='submit'
           label={this.props.saveLabel || 'Save'}
@@ -114,7 +128,8 @@ UserEdit.propTypes = {
   onRequestClose: PropTypes.func,
   saveLabel: PropTypes.string,
   allowSetPassword: PropTypes.bool,
-  allowLogin: PropTypes.bool
+  allowLogin: PropTypes.bool,
+  location: PropTypes.string
 }
 
 const mapMutationsToProps = ({ ownProps }) => {
