@@ -23,13 +23,13 @@ class UserEdit extends React.Component {
   };
 
   async componentWillMount() {
-    if (!this.props.allowLogin && !this.props.allowSetPassword) {
+    if (!this.props.authType === 'login' && !this.props.authType === 'signup') {
       await this.props.mutations.editUser(null)
     }
   }
 
   async handleSave(formData) {
-    if (this.props.allowLogin || this.props.allowSetPassword) {
+    if (this.props.authType === 'login' || this.props.authType === 'signup') {
       // log in or sign up
       const allData = {
         nextUrl: this.props.location.query.nextUrl,
@@ -49,7 +49,7 @@ class UserEdit extends React.Component {
       } else {
         throw new Error()
       }
-    } else if (!this.props.allowLogin && !this.props.allowSetPassword) {
+    } else if (!this.props.authType === 'login' && !this.props.authType === 'signup') {
       await this.props.mutations.editUser(formData)
       if (this.props.onRequestClose) {
         this.props.onRequestClose()
@@ -61,13 +61,13 @@ class UserEdit extends React.Component {
     const user = (this.props.editUser && this.props.editUser.editUser) || {}
 
     let passwordFields = {}
-    if (this.props.allowLogin || this.props.allowSetPassword) {
+    if (this.props.authType === 'login' || this.props.authType === 'signup') {
       passwordFields = {
         password: yup.string().required()
       }
     }
 
-    if (this.props.allowSetPassword) {
+    if (this.props.authType === 'signup') {
       passwordFields = {
         ...passwordFields,
         passwordConfirm: yup
@@ -78,7 +78,7 @@ class UserEdit extends React.Component {
     }
 
     let userFields = {}
-    if (!this.props.allowLogin || this.props.allowSetPassword) {
+    if (!this.props.authType === 'login' || this.props.authType === 'signup') {
       userFields = {
         firstName: yup.string().required(),
         lastName: yup.string().required(),
@@ -99,16 +99,16 @@ class UserEdit extends React.Component {
         defaultValue={user}
       >
         <Form.Field label='Email' name='email' {...dataTest('email')} />
-        {(!this.props.allowLogin || this.props.allowSetPassword) &&
+        {(!this.props.authType === 'login' || this.props.authType === 'signup') &&
           <div>
             <Form.Field label='First name' name='firstName' {...dataTest('firstName')} />
             <Form.Field label='Last name' name='lastName' {...dataTest('lastName')} />
             <Form.Field label='Cell Number' name='cell' {...dataTest('cell')} />
           </div>
         }
-        {(this.props.allowLogin || this.props.allowSetPassword) &&
+        {(this.props.authType === 'login' || this.props.authType === 'signup') &&
           <Form.Field label='Password' name='password' type='password' />}
-        {this.props.allowSetPassword &&
+        {this.props.authType === 'signup' &&
           <Form.Field label='Confirm Password' name='passwordConfirm' type='password' />}
         <Form.Button
           type='submit'
@@ -127,8 +127,7 @@ UserEdit.propTypes = {
   organizationId: PropTypes.string,
   onRequestClose: PropTypes.func,
   saveLabel: PropTypes.string,
-  allowSetPassword: PropTypes.bool,
-  allowLogin: PropTypes.bool,
+  authType: PropTypes.string,
   location: PropTypes.string
 }
 
