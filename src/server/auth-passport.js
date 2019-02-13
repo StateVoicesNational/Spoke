@@ -49,8 +49,8 @@ export function setupAuth0Passport() {
             // eslint-disable-next-line no-underscore-dangle
             req.user._json['https://spoke/user_metadata']
             // eslint-disable-next-line no-underscore-dangle
-              || req.user._json.user_metadata
-              || {})
+            || req.user._json.user_metadata
+            || {})
           const userData = {
             auth0_id: auth0Id,
             // eslint-disable-next-line no-underscore-dangle
@@ -77,8 +77,8 @@ export function setupLocalAuthPassport() {
     usernameField: 'email',
     passReqToCallback: true
   }, wrap(async (req, username, password, done) => {
-    console.log('LOGIN', username, password)
-    const existingUser = await User.filter({ email: username })
+    const lowerCaseEmail = username.toLowerCase()
+    const existingUser = await User.filter({ email: lowerCaseEmail })
     if (existingUser.length > 0) {
       const pwFieldSplit = existingUser[0].auth0_id.split('|')
       const hashed = {
@@ -88,20 +88,20 @@ export function setupLocalAuthPassport() {
       AuthHasher.verify(
         password, hashed,
         (err, verified) => (verified
-                            ? done(null, existingUser[0])
-                            : done('Validation failed', null))
+          ? done(null, existingUser[0])
+          : done(null, false))
       )
     } else {
       // create the user
-      AuthHasher.hash(password, async function(err, hashed) {
+      AuthHasher.hash(password, async function (err, hashed) {
         const passwordToSave = `localauth|${hashed.salt}|${hashed.hash}`
-          // .salt and .hash
+        // .salt and .hash
         const user = await User.save({
           email: username,
           auth0_id: passwordToSave,
-          first_name: '',
-          last_name: '',
-          cell: '',
+          first_name: req.body.firstName,
+          last_name: req.body.lastName,
+          cell: req.body.cell,
           is_superadmin: false
         })
         done(null, user)
@@ -120,9 +120,8 @@ export function setupLocalAuthPassport() {
 
   return {
     loginCallback: [
-      passport.authenticate('local', { failureRedirect: '/login' }),
+      passport.authenticate('local'),
       (req, res) => {
-        console.log('POSTLOGIN', req.user, req.body)
         res.redirect(req.body.nextUrl || '/')
       }
     ]
