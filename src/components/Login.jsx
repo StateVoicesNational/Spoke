@@ -30,6 +30,7 @@ class Login extends React.Component {
         {/* Use auth0 */}
         {auth0Login && window.AuthService.login(location.query.nextUrl)}
 
+        {/* Show UserEdit component configured for login / signup */}
         <section>
           <button
             type='button'
@@ -49,21 +50,10 @@ class Login extends React.Component {
           </button>
         </section >
 
-        {/* Show UserEdit component configured for login */}
-        {(!auth0Login && this.state.active === 'login') &&
+        {!auth0Login &&
           <UserEdit
-            allowLogin
-            saveLabel='Log in'
-            router={router}
-            location={location}
-          />
-        }
-
-        {/* Show UserEdit component configured for sign up */}
-        {(!auth0Login && this.state.active === 'signup') &&
-          <UserEdit
-            allowSetPassword
-            saveLabel='Sign up'
+            authType={this.state.active}
+            saveLabel={this.state.active === 'login' ? 'Log in' : 'Sign up'}
             router={router}
             location={location}
           />
