@@ -23,13 +23,18 @@ class UserEdit extends React.Component {
   };
 
   async componentWillMount() {
-    if (!this.props.authType === 'login' && !this.props.authType === 'signup') {
+    if (!this.props.authType) {
       await this.props.mutations.editUser(null)
     }
   }
 
   async handleSave(formData) {
-    if (this.props.authType === 'login' || this.props.authType === 'signup') {
+    if (!this.props.authType) {
+      await this.props.mutations.editUser(formData)
+      if (this.props.onRequestClose) {
+        this.props.onRequestClose()
+      }
+    } else {
       // log in or sign up
       const allData = {
         nextUrl: this.props.location.query.nextUrl,
@@ -38,8 +43,7 @@ class UserEdit extends React.Component {
       const res = await fetch('/login-callback', {
         method: 'POST',
         body: JSON.stringify(allData),
-        headers: { 'Content-Type': 'application/json' },
-        redirect: 'follow'
+        headers: { 'Content-Type': 'application/json' }
       })
       const { redirected, status, url } = res
       if (redirected && status === 200) {
@@ -49,11 +53,6 @@ class UserEdit extends React.Component {
       } else {
         throw new Error()
       }
-    } else if (!this.props.authType === 'login' && !this.props.authType === 'signup') {
-      await this.props.mutations.editUser(formData)
-      if (this.props.onRequestClose) {
-        this.props.onRequestClose()
-      }
     }
   }
 
@@ -61,7 +60,7 @@ class UserEdit extends React.Component {
     const user = (this.props.editUser && this.props.editUser.editUser) || {}
 
     let passwordFields = {}
-    if (this.props.authType === 'login' || this.props.authType === 'signup') {
+    if (this.props.authType) {
       passwordFields = {
         password: yup.string().required()
       }
@@ -78,7 +77,7 @@ class UserEdit extends React.Component {
     }
 
     let userFields = {}
-    if (!this.props.authType === 'login' || this.props.authType === 'signup') {
+    if (!this.props.authType || this.props.authType === 'signup') {
       userFields = {
         firstName: yup.string().required(),
         lastName: yup.string().required(),
@@ -99,17 +98,19 @@ class UserEdit extends React.Component {
         defaultValue={user}
       >
         <Form.Field label='Email' name='email' {...dataTest('email')} />
-        {(!this.props.authType === 'login' || this.props.authType === 'signup') &&
+        {(!this.props.authType || this.props.authType === 'signup') &&
           <div>
             <Form.Field label='First name' name='firstName' {...dataTest('firstName')} />
             <Form.Field label='Last name' name='lastName' {...dataTest('lastName')} />
             <Form.Field label='Cell Number' name='cell' {...dataTest('cell')} />
           </div>
         }
-        {(this.props.authType === 'login' || this.props.authType === 'signup') &&
-          <Form.Field label='Password' name='password' type='password' />}
+        {(this.props.authType) &&
+          <Form.Field label='Password' name='password' type='password' />
+        }
         {this.props.authType === 'signup' &&
-          <Form.Field label='Confirm Password' name='passwordConfirm' type='password' />}
+          <Form.Field label='Confirm Password' name='passwordConfirm' type='password' />
+        }
         <Form.Button
           type='submit'
           label={this.props.saveLabel || 'Save'}
@@ -128,7 +129,7 @@ UserEdit.propTypes = {
   onRequestClose: PropTypes.func,
   saveLabel: PropTypes.string,
   authType: PropTypes.string,
-  location: PropTypes.string
+  location: PropTypes.object
 }
 
 const mapMutationsToProps = ({ ownProps }) => {
