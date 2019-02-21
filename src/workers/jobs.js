@@ -14,6 +14,18 @@ import { sendEmail } from '../server/mail'
 import { Notifications, sendUserNotification } from '../server/notifications'
 
 const zipMemoization = {}
+let warehouseConnection = null
+function optOutsByOrgId(orgId) {
+  return r.knex.select('cell').from('opt_out').where('organization_id', orgId)
+}
+
+function optOutsByInstance() {
+  return r.knex.select('cell').from('opt_out')
+}
+
+function getOptOutSubQuery(orgId) {
+  return (!!process.env.OPTOUTS_SHARE_ALL_ORGS ? optOutsByInstance() : optOutsByOrgId(orgId))
+}
 
 function optOutsByOrgId(orgId) {
   return r.knex.select('cell').from('opt_out').where('organization_id', orgId)
@@ -171,6 +183,11 @@ export async function uploadContacts(job) {
     await CampaignContact.save(savePortion)
   }
 
+  const optOutCellCount = await r.knex('campaign_contact')
+    .whereIn('cell', function optouts() {
+      this.select('cell').from('opt_out').where('organization_id', campaign.organization_id)
+    })
+    
   const deleteOptOutCells = await r.knex('campaign_contact')
     .whereIn('cell', getOptOutSubQuery(campaign.organization_id))
     .where('campaign_id', campaignId)
@@ -196,7 +213,7 @@ export async function uploadContacts(job) {
 }
 
 export async function loadContactsFromDataWarehouseFragment(jobEvent) {
-  console.log('starting loadContactsFromDataWarehouseFragment', jobEvent)
+  console.log('starting loadContactsFromDataWarehouseFragment', jobEvent.campaignId, jobEvent.limit, jobEvent.offset, jobEvent)
   const insertOptions = {
     batchSize: 1000
   }
@@ -205,7 +222,7 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
                         .select('status')
                         .first())
   if (!jobCompleted) {
-    console.log('loadContactsFromDataWarehouseFragment job no longer exists', jobCompleted, jobEvent)
+    console.log('loadContactsFromDataWarehouseFragment job no longer exists', jobEvent.campaignId, jobCompleted, jobEvent)
     return { 'alreadyComplete': 1 }
   }
 
@@ -218,8 +235,9 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
   }
   let knexResult
   try {
+    warehouseConnection = warehouseConnection || datawarehouse()
     console.log('loadContactsFromDataWarehouseFragment RUNNING WAREHOUSE query', sqlQuery)
-    knexResult = await datawarehouse.raw(sqlQuery)
+    knexResult = await warehouseConnection.raw(sqlQuery)
   } catch (err) {
     // query failed
     log.error('Data warehouse query failed: ', err)
@@ -275,7 +293,7 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
 
   await CampaignContact.save(savePortion, insertOptions)
   await r.knex('job_request').where('id', jobEvent.jobId).increment('status', 1)
-  let validationStats = {}
+  const validationStats = {}
   const completed = (await r.knex('job_request')
                      .where('id', jobEvent.jobId)
                      .select('status')
@@ -283,31 +301,47 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
   console.log('loadContactsFromDataWarehouseFragment toward end', completed, jobEvent)
 
   if (!completed) {
-    console.log('loadContactsFromDataWarehouseFragment job has been deleted', completed)
+    console.log('loadContactsFromDataWarehouseFragment job has been deleted', completed, jobEvent.campaignId)
   } else if (jobEvent.totalParts && completed.status >= jobEvent.totalParts) {
     if (jobEvent.organizationId) {
       // now that we've saved them all, we delete everyone that is opted out locally
       // doing this in one go so that we can get the DB to do the indexed cell matching
-      const optOutCellCount = await r.knex('campaign_contact')
+
+      // delete optout cells
+      await r.knex('campaign_contact')
         .whereIn('cell', getOptOutSubQuery(jobEvent.organizationId))
         .where('campaign_id', jobEvent.campaignId)
         .delete()
         .then(result => {
-          console.log('# of contacts opted out removed from DW query: ' + result);
-          validationStats = {
-            optOutCount: result
-          }
+          console.log(`loadContactsFromDataWarehouseFragment # of contacts opted out removed from DW query (${jobEvent.campaignId}): ${result}`)
+          validationStats.optOutCount = result
         })
 
-      const inValidCellCount = await r.knex('campaign_contact')
+      // delete invalid cells
+      await r.knex('campaign_contact')
         .whereRaw('length(cell) != 12')
         .andWhere('campaign_id', jobEvent.campaignId)
         .delete()
         .then(result => {
-          console.log('# of contacts with invalid cells removed from DW query: ' + result);
-          validationStats = {
-            invalidCellCount: result
-          }
+          console.log(`loadContactsFromDataWarehouseFragment # of contacts with invalid cells removed from DW query (${jobEvent.campaignId}): ${result}`)
+          validationStats.invalidCellCount = result
+        })
+
+      // delete duplicate cells
+      await r.knex('campaign_contact')
+        .whereIn('id', r.knex('campaign_contact')
+                 .select('campaign_contact.id')
+                 .leftJoin('campaign_contact AS c2', function joinSelf() {
+                   this.on('c2.campaign_id', '=', 'campaign_contact.campaign_id')
+                     .andOn('c2.cell', '=', 'campaign_contact.cell')
+                     .andOn('c2.id', '>', 'campaign_contact.id')
+                 })
+                 .where('campaign_contact.campaign_id', jobEvent.campaignId)
+                 .whereNotNull('c2.id'))
+        .delete()
+        .then(result => {
+          console.log(`loadContactsFromDataWarehouseFragment # of contacts with duplicate cells removed from DW query (${jobEvent.campaignId}): ${result}`)
+          validationStats.duplicateCellCount = result
         })
     }
     await r.table('job_request').get(jobEvent.jobId).delete()
@@ -350,7 +384,8 @@ export async function loadContactsFromDataWarehouse(job) {
   let knexCountRes
   let knexCount
   try {
-    knexCountRes = await datawarehouse.raw(`SELECT COUNT(*) FROM ( ${sqlQuery} ) AS QUERYCOUNT`)
+    warehouseConnection = warehouseConnection || datawarehouse()
+    knexCountRes = await warehouseConnection.raw(`SELECT COUNT(*) FROM ( ${sqlQuery} ) AS QUERYCOUNT`)
   } catch (err) {
     log.error('Data warehouse count query failed: ', err)
     jobMessages.push(`Data warehouse count query failed with ${err}`)
@@ -567,7 +602,7 @@ export async function assignTexters(job) {
     }
 
     if (unchangedTexters[texterId]) {
-      continue
+      continue 
     }
 
     const contactsToAssign = Math.min(availableContacts, texter.needsMessageCount)
@@ -836,26 +871,52 @@ export async function exportCampaign(job) {
 let pastMessages = []
 
 export async function sendMessages(queryFunc, defaultStatus) {
-  let messages = r.knex('message')
-    .where({ send_status: defaultStatus || 'QUEUED' })
+  try {
+    await knex.transaction(async trx => {
+      let messages = []
+      try {
+        let messageQuery = r.knex('message')
+          .transacting(trx)
+          .forUpdate()
+          .where({ send_status: defaultStatus || 'QUEUED' })
 
-  if (queryFunc) {
-    messages = queryFunc(messages)
-  }
-  messages = await messages.orderBy('created_at')
+        if (queryFunc) {
+          messageQuery = queryFunc(messageQuery)
+        }
 
-  for (let index = 0; index < messages.length; index++) {
-    let message = messages[index]
-    if (pastMessages.indexOf(message.id) !== -1) {
-      throw new Error('Encountered send message request of the same message.'
-                      + ' This is scary!  If ok, just restart process. Message ID: ' + message.id)
-    }
-    message.service = message.service || process.env.DEFAULT_SERVICE
-    const service = serviceMap[message.service]
-    log.info(`Sending (${message.service}): ${message.user_number} -> ${message.contact_number}\nMessage: ${message.text}`)
-    await service.sendMessage(message)
-    pastMessages.push(message.id)
-    pastMessages = pastMessages.slice(-100) // keep the last 100
+        messages = await messageQuery.orderBy('created_at')
+      } catch (err) {
+        // Unable to obtain lock on these rows meaning another process must be
+        // sending them. We will exit gracefully in that case.
+        trx.rollback()
+        return
+      }
+
+      try {
+        for (let index = 0; index < messages.length; index++) {
+          let message = messages[index]
+          if (pastMessages.indexOf(message.id) !== -1) {
+            throw new Error('Encountered send message request of the same message.'
+                            + ' This is scary!  If ok, just restart process. Message ID: ' + message.id)
+          }
+          message.service = message.service || process.env.DEFAULT_SERVICE
+          const service = serviceMap[message.service]
+          log.info(`Sending (${message.service}): ${message.user_number} -> ${message.contact_number}\nMessage: ${message.text}`)
+          await service.sendMessage(message, null, trx)
+          pastMessages.push(message.id)
+          pastMessages = pastMessages.slice(-100) // keep the last 100
+        }
+
+        trx.commit()
+      } catch (err) {
+        console.log('error sending messages:')
+        console.error(err)
+        trx.rollback()
+      }
+    })
+  } catch (err) {
+    console.log('sendMessages transaction errored:')
+    console.error(err)
   }
 }
 
