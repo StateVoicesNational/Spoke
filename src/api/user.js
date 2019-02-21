@@ -16,5 +16,15 @@ export const schema = `
     terms: Boolean
     cacheable: Boolean
   }
-`
+  
+type UsersList {
+  users: [User]
+}
 
+type PaginatedUsers {
+  users: [User]
+  pageInfo: PageInfo
+}
+
+union UsersReturn = PaginatedUsers | UsersList
+`

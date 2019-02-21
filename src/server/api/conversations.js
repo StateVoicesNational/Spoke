@@ -1,7 +1,8 @@
 import _ from 'lodash'
-import { r } from '../models'
+import { Assignment, cacheableData, r } from '../models'
 import { addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue } from './assignment'
 import { buildCampaignQuery } from './campaign'
+import { log } from '../../lib'
 
 function getConversationsJoinsAndWhereClause(
   queryParam,
@@ -23,9 +24,22 @@ function getConversationsJoinsAndWhereClause(
       query = query.where({ 'assignment.user_id': assignmentsFilter.texterId })
   }
 
-  return addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue(
+  query = addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue(
     query,
     contactsFilter && contactsFilter.messageStatus)
+
+  if (contactsFilter && 'isOptedOut' in contactsFilter) {
+    const subQuery = (r.knex.select('cell')
+      .from('opt_out')
+      .whereRaw('opt_out.cell=campaign_contact.cell'))
+    if (contactsFilter.isOptedOut) {
+      query = query.whereExists(subQuery)
+    } else {
+      query = query.whereNotExists(subQuery)
+    }
+  }
+
+  return query
 }
 
 /*
@@ -84,8 +98,8 @@ export async function getConversations(
     'campaign_contact.message_status',
     'campaign_contact.is_opted_out',
     'campaign_contact.updated_at',
-    'campaign_contact.cell',
     'campaign_contact.assignment_id',
+    'opt_out.cell as opt_out_cell',
     'user.id as u_id',
     'user.first_name as u_first_name',
     'user.last_name as u_last_name',
@@ -118,6 +132,11 @@ export async function getConversations(
   })
 
   query = query
+    .leftJoin('opt_out', table => {
+      table
+        .on('opt_out.organization_id', '=',  'campaign.organization_id')
+        .andOn('campaign_contact.cell', 'opt_out.cell')
+    })
     .orderBy('campaign_contact.updated_at')
     .orderBy('cc_id')
     .orderBy('message.created_at')
@@ -173,6 +192,173 @@ export async function getConversations(
   }
 }
 
+export async function getCampaignIdMessageIdsAndCampaignIdContactIdsMaps(
+  organizationId,
+  campaignsFilter,
+  assignmentsFilter,
+  contactsFilter,
+) {
+  let query = r.knex.select(
+    'campaign_contact.id as cc_id',
+    'campaign.id as cmp_id',
+    'message.id as mess_id',
+  )
+
+  query = getConversationsJoinsAndWhereClause(
+    query,
+    organizationId,
+    campaignsFilter,
+    assignmentsFilter,
+    contactsFilter
+  )
+
+  query = query.leftJoin('message', table => {
+    table
+      .on('message.assignment_id', '=', 'assignment.id')
+      .andOn('message.contact_number', '=', 'campaign_contact.cell')
+  })
+
+  query = query
+    .orderBy('cc_id')
+
+  const conversationRows = await query
+
+  const campaignIdContactIdsMap = new Map()
+  const campaignIdMessagesIdsMap = new Map()
+
+  let ccId = undefined
+  for (const conversationRow of conversationRows) {
+    if (ccId !== conversationRow.cc_id) {
+      const ccId = conversationRow.cc_id
+      campaignIdContactIdsMap[conversationRow.cmp_id] = ccId
+
+      if (!campaignIdContactIdsMap.has(conversationRow.cmp_id)) {
+        campaignIdContactIdsMap.set(conversationRow.cmp_id, [])
+      }
+
+      campaignIdContactIdsMap.get(conversationRow.cmp_id).push(ccId)
+
+      if (!campaignIdMessagesIdsMap.has(conversationRow.cmp_id)) {
+        campaignIdMessagesIdsMap.set(conversationRow.cmp_id, [])
+      }
+    }
+
+    if (conversationRow.mess_id) {
+      campaignIdMessagesIdsMap.get(conversationRow.cmp_id).push(conversationRow.mess_id)
+
+    }
+  }
+
+  return {
+    campaignIdContactIdsMap,
+    campaignIdMessagesIdsMap
+  }
+}
+
+export async function reassignConversations(campaignIdContactIdsMap, campaignIdMessagesIdsMap, newTexterUserId) {
+  // ensure existence of assignments
+  const campaignIdAssignmentIdMap = new Map()
+  for (const [campaignId, _] of campaignIdContactIdsMap) {
+    let assignment = await r
+      .table('assignment')
+      .getAll(newTexterUserId, { index: 'user_id' })
+      .filter({ campaign_id: campaignId })
+      .limit(1)(0)
+      .default(null)
+    if (!assignment) {
+      assignment = await Assignment.save({
+        user_id: newTexterUserId,
+        campaign_id: campaignId,
+        max_contacts: parseInt(process.env.MAX_CONTACTS_PER_TEXTER || 0, 10)
+      })
+    }
+    await cacheableData.assignment.reload(assignment.id)
+    campaignIdAssignmentIdMap.set(campaignId, assignment.id)
+  }
+
+  // do the reassignment
+  const returnCampaignIdAssignmentIds = []
+
+  // TODO(larry) do this in a transaction!
+  try {
+    for (const [campaignId, campaignContactIds] of campaignIdContactIdsMap) {
+      const assignmentId = campaignIdAssignmentIdMap.get(campaignId)
+      // update contacts
+      await r
+        .knex('campaign_contact')
+        .where('campaign_id', campaignId)
+        .whereIn('id', campaignContactIds)
+        .update({
+          assignment_id: assignmentId
+        })
+
+      // update messages
+      await r
+        .knex('message')
+        .whereIn('campaign_contact_id', campaignContactIds)
+        .update('assignment_id', assignmentId)
+
+      // cache updates
+      const campaign = await loaders.campaign.load(campaignId)
+      for (let i = 0, l = campaignContactIds.length; i < l; i++) {
+        if (campaign.use_dynamic_assignment) {
+          // "Claim" the assignment even though it's cleared above
+          // in case of dynamic assignment condition
+          await cacheableData.campaignContact.updateAssignmentCache(
+            campaignContactIds[i], assignmentId, newTexterUserId)
+        } else {
+          // This will have a local contact.assignment_id to clear
+          await cacheableData.campaignContact.clear(campaignContactIds[i])
+        }
+        // If we got the timezone+status of each contact, then we could update
+        // the new Texter's assignmentcontacts directly.  Instead clear it.
+        await cacheableData.assignment.clearAssignmentContacts(
+          assignmentId, campaign.contactTimezones)
+        
+        // This is not everywhere the ids are cached,
+        // but should be enough to force a 'change of course'
+        // Things not updated:
+        // Prev assignee's assignmentcontacts list
+        // - When loaded it will compare current assignment
+        // Dynamic assignment inflight queue
+        // - If the previous assignee already has it in their browser cache
+        //   they will send a message, it will get popped off the inflight queue
+        //   and then they won't see it after.
+        // - If the user abandons it, then it will get popped off the queue
+        //   with the next message from anyone
+      }
+
+      returnCampaignIdAssignmentIds.push({
+        campaignId,
+        assignmentId: assignmentId.toString()
+      })
+    }
+    for (const [campaignId, messageIds] of campaignIdMessagesIdsMap) {
+      const assignmentId = campaignIdAssignmentIdMap.get(campaignId)
+
+      // TODO: This may be redundant to the above 'update messages'
+      //  - but this was written before message.campaign_contact_id
+      //    was a field, and so we also make sure that the messages
+      //    that are explicitly passed in should be updated
+      await r
+        .knex('message')
+        .whereIn(
+          'id',
+          messageIds.map(messageId => {
+            return messageId
+          })
+        )
+        .update({
+          assignment_id: assignmentId
+        })
+    }
+  } catch (error) {
+    log.error(error)
+  }
+
+  return returnCampaignIdAssignmentIds
+}
+
 export const resolvers = {
   PaginatedConversations: {
     conversations: queryResult => {
@@ -198,7 +384,8 @@ export const resolvers = {
       return mapQueryFieldsToResolverFields(queryResult, {
         cc_id: 'id',
         cc_first_name: 'first_name',
-        cc_last_name: 'last_name'
+        cc_last_name: 'last_name',
+        opt_out_cell: 'opt_out_cell'
       })
     },
     campaign: queryResult => {
