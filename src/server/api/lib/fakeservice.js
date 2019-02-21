@@ -6,7 +6,7 @@ import { log } from '../../../lib'
 // that end up just in the db appropriately and then using sendReply() graphql
 // queries for the reception (rather than a real service)
 
-async function sendMessage(message, contact) {
+async function sendMessage(message, contact, trx) {
   const newMessage = new Message({
     ...message,
     service: 'fakeservice',
@@ -15,8 +15,12 @@ async function sendMessage(message, contact) {
   })
 
   if (message && message.id) {
+    let request = r.knex('message')
+    if (trx) {
+      request = request.transacting(trx)
+    }
     // updating message!
-    await r.knex('message')
+    await request
       .where('id', message.id)
       .update({
         service: 'fakeservice',

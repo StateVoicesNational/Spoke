@@ -159,7 +159,7 @@ describe('AssignmentTextContact has the proper enabled/disabled state when creat
     timezones.isBetweenTextingHours.mockReturnValueOnce(false)
     var assignmentTexterContact = new AssignmentTexterContact(propsWithEnforcedTextingHoursCampaign)
     expect(assignmentTexterContact.state.disabled).toBeTruthy()
-    expect(assignmentTexterContact.state.disabledText).toEqual('Refreshing because it\'s now out of texting hours for some of your contacts')
+    expect(assignmentTexterContact.state.disabledText).toEqual('Refreshing ...')
   })
 })
 

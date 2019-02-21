@@ -1,15 +1,20 @@
+import moment from 'moment-timezone'
+
+const MockDate = require('mockdate');
+
 import {
   convertOffsetsToStrings,
   defaultTimezoneIsBetweenTextingHours,
   getLocalTime,
   getOffsets,
   isBetweenTextingHours,
-  getContactTimezone
+  getContactTimezone,
+  getUtcFromOffsetAndHour,
+  getUtcFromTimezoneAndHour,
+  getSendBeforeTimeUtc
 } from '../../src/lib/index'
 
 import { getProcessEnvDstReferenceTimezone } from '../../src/lib/tz-helpers'
-
-var MockDate = require('mockdate')
 
 const makeCampignTextingHoursConfig = (
   textingHoursEnforced,
@@ -862,5 +867,151 @@ describe('test getContactTimezone', () => {
         hasDST: true
       }
     })
+  })
+})
+
+
+describe('test getUtcFromOffsetAndHour', () => {
+  afterEach(() => {
+    MockDate.reset()
+  })
+
+  it('returns the correct UTC during northern hemisphere summer', () => {
+    MockDate.set('2018-07-01T11:00:00.000-05:00')
+    expect(getUtcFromOffsetAndHour(-5, true, 12, 'America/New_York').unix()).toEqual(moment('2018-07-01T16:00:00.000Z').unix())
+  })
+
+  it('returns the correct UTC during northern hemisphere summer with result being next day', () => {
+    MockDate.set('2018-07-01T11:00:00.000-05:00')
+    expect(getUtcFromOffsetAndHour(-5, true, 23, 'America/New_York').unix()).toEqual(moment('2018-07-02T03:00:00.000Z').unix())
+  })
+
+  it('returns the correct UTC during northern hemisphere winter', () => {
+    MockDate.set('2018-02-01T11:00:00.000-05:00')
+    expect(getUtcFromOffsetAndHour(-5, true, 12, 'America/New_York').unix()).toEqual(moment('2018-02-01T17:00:00.000Z').unix())
+
+  })
+
+  it('returns the correct UTC during northern hemisphere summer if offset doesn\'t have DST', () => {
+    MockDate.set('2018-07-01T11:00:00.000-05:00')
+    expect(getUtcFromOffsetAndHour(-5, false, 12, 'America/New_York').unix()).toEqual(moment('2018-07-01T17:00:00.000Z').unix())
+  })
+
+  it('returns the correct UTC during northern hemisphere winter if offset doesn\'t have DST', () => {
+    MockDate.set('2018-02-01T11:00:00.000-05:00')
+    expect(getUtcFromOffsetAndHour(-5, false, 12, 'America/New_York').unix()).toEqual(moment('2018-02-01T17:00:00.000Z').unix())
+  })
+})
+
+describe('test getUtcFromTimezoneAndHour', () => {
+  afterEach(() => {
+    MockDate.reset()
+  })
+
+  it('returns the correct UTC during northern hemisphere summer', () => {
+    MockDate.set('2018-07-01T11:00:00.000-05:00')
+    expect(getUtcFromTimezoneAndHour('America/New_York', 12).unix()).toEqual(moment('2018-07-01T16:00:00.000Z').unix())
+  })
+
+  it('returns the correct UTC during northern hemisphere summer with result being next day', () => {
+    MockDate.set('2018-07-01T11:00:00.000-05:00')
+    expect(getUtcFromTimezoneAndHour('America/New_York', 23).unix()).toEqual(moment('2018-07-02T03:00:00.000Z').unix())
+  })
+
+  it('returns the correct UTC during northern hemisphere winter', () => {
+    MockDate.set('2018-02-01T11:00:00.000-05:00')
+    expect(getUtcFromTimezoneAndHour('America/New_York', 12).unix()).toEqual(moment('2018-02-01T17:00:00.000Z').unix())
+
+  })
+
+  it('returns the correct UTC during northern hemisphere summer if timezone doesn\'t have DST', () => {
+    MockDate.set('2018-07-01T11:00:00.000-05:00')
+    expect(getUtcFromTimezoneAndHour('US/Arizona', 12).unix()).toEqual(moment('2018-07-01T19:00:00.000Z').unix())
+  })
+
+  it('returns the correct UTC during northern hemisphere winter if timezone doesn\'t have DST', () => {
+    MockDate.set('2018-02-01T11:00:00.000-05:00')
+    expect(getUtcFromTimezoneAndHour('US/Arizona', 12).unix()).toEqual(moment('2018-02-01T19:00:00.000Z').unix())
+  })
+})
+
+describe('test getSendBeforeTimewUtc', () => {
+  const tzHelpers = require('../../src/lib/tz-helpers')
+
+  beforeAll(() => {
+    MockDate.set('2018-09-03T11:00:00.000-05:00')
+  })
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  })
+
+  afterAll(() => {
+    MockDate.reset()
+  })
+
+  it('returns undefined if campaign overrides and texting hours are not enforced', () => {
+    expect(getSendBeforeTimeUtc(
+      {},
+      {},
+      { overrideOrganizationTextingHours: true, textingHoursEnforced: false}
+    )).toBeNull()
+  })
+
+  it('returns undefined if campaign does not override and texting hours are not enforced', () => {
+    expect(getSendBeforeTimeUtc(
+      {},
+      { textingHoursStart: 9, textingHoursEnd: 21, textingHoursEnforced: false},
+      {}
+    )).toBeNull()
+  })
+
+  it('returns correct time if campaign overrides and contact offset is supplied', () => {
+    expect(getSendBeforeTimeUtc(
+      { offset: -5, hasDST: 1 },
+      { textingHoursStart: 9, textingHoursEnd: 21, textingHoursEnforced: true },
+      { overrideOrganizationTextingHours: true, textingHoursEnforced: true, textingHoursEnd: 21, timezone: 'America/New_York'}
+    ).unix()).toEqual(moment('2018-09-04T01:00:00.000Z').unix())
+  })
+
+  it('returns correct time if campaign overrides and contact offset is not supplied', () => {
+    expect(getSendBeforeTimeUtc(
+      {},
+      { textingHoursStart: 9, textingHoursEnd: 21, textingHoursEnforced: true },
+      { overrideOrganizationTextingHours: true, textingHoursEnforced: true, textingHoursEnd: 21, timezone: 'America/New_York'}
+    ).unix()).toEqual(moment('2018-09-04T01:00:00.000Z').unix())
+  })
+
+  it('returns correct time if campaign does not override and TZ is set', () => {
+    tzHelpers.getProcessEnvTz.mockImplementation(() => 'America/New_York')
+    expect(getSendBeforeTimeUtc(
+      {},
+      { textingHoursStart: 9, textingHoursEnd: 21, textingHoursEnforced: true },
+      {}
+    ).unix()).toEqual(moment('2018-09-04T01:00:00.000Z').unix())
+  })
+
+  it('returns correct time if campaign does not override and TZ is not set and contact offset is supplied', () => {
+    expect(getSendBeforeTimeUtc(
+      { offset: -5, hasDST: 1 },
+      { textingHoursStart: 9, textingHoursEnd: 21, textingHoursEnforced: true },
+      {}
+    ).unix()).toEqual(moment('2018-09-04T01:00:00.000Z').unix())
+  })
+
+  it('returns correct time if campaign does not override and TZ is not set and contact offset is not supplied', () => {
+    expect(getSendBeforeTimeUtc(
+      {},
+      { textingHoursStart: 9, textingHoursEnd: 21, textingHoursEnforced: true },
+      {}
+    ).unix()).toEqual(moment('2018-09-04T01:00:00.000Z').unix())
+  })
+
+  it('converts to Date as expected', () => {
+    expect(getSendBeforeTimeUtc(
+      {},
+      { textingHoursStart: 9, textingHoursEnd: 21, textingHoursEnforced: true },
+      {}
+    ).toDate()).toEqual(Date('2018-09-04T01:00:00.000Z'))
   })
 })

@@ -1,85 +1,63 @@
-import { applyScript } from '../../lib/scripts'
 import camelCaseKeys from 'camelcase-keys'
+import GraphQLDate from 'graphql-date'
+import GraphQLJSON from 'graphql-type-json'
+import { GraphQLError } from 'graphql/error'
 import isUrl from 'is-url'
-import { buildCampaignQuery } from './campaign'
 import { organizationCache } from '../models/cacheable_queries/organization'
 
-
+import { gzip, log, makeTree } from '../../lib'
+import { applyScript } from '../../lib/scripts'
+import { assignTexters, exportCampaign, loadCampaignCache, loadContactsFromDataWarehouse, uploadContacts } from '../../workers/jobs'
 import {
   Assignment,
   Campaign,
   CannedResponse,
   InteractionStep,
   Invite,
+  JobRequest,
   Message,
-  OptOut,
   Organization,
   QuestionResponse,
-  UserOrganization,
-  JobRequest,
   User,
+  UserOrganization,
   r,
-  datawarehouse,
   cacheableData,
+  datawarehouse,
   getMessageServiceSid
 } from '../models'
-import { schema as userSchema, resolvers as userResolvers, buildUserOrganizationQuery } from './user'
-import {
-  schema as conversationSchema,
-  getConversations,
-  resolvers as conversationsResolver
-} from './conversations'
-import { schema as organizationSchema, resolvers as organizationResolvers } from './organization'
-import { schema as campaignSchema, resolvers as campaignResolvers } from './campaign'
-import {
-  schema as assignmentSchema,
-  resolvers as assignmentResolvers
-} from './assignment'
-import {
-  schema as interactionStepSchema,
-  resolvers as interactionStepResolvers
-} from './interaction-step'
-import { schema as questionSchema, resolvers as questionResolvers } from './question'
-import {
-  schema as questionResponseSchema,
-  resolvers as questionResponseResolvers
-} from './question-response'
-import { GraphQLPhone } from './phone'
-import { schema as optOutSchema, resolvers as optOutResolvers } from './opt-out'
-import { schema as messageSchema, resolvers as messageResolvers } from './message'
-import {
-  schema as campaignContactSchema,
-  resolvers as campaignContactResolvers
-} from './campaign-contact'
-import {
-  schema as cannedResponseSchema,
-  resolvers as cannedResponseResolvers
-} from './canned-response'
-import { schema as inviteSchema, resolvers as inviteResolvers } from './invite'
-import {
-  authRequired,
-  accessRequired,
-  hasRole,
-  assignmentRequired,
-  superAdminRequired
-} from './errors'
-import serviceMap from './lib/services'
-import { saveNewIncomingMessage } from './lib/message-sending'
-import { gzip, log, makeTree } from '../../lib'
 // import { isBetweenTextingHours } from '../../lib/timezones'
 import { Notifications, sendUserNotification } from '../notifications'
+import { resolvers as assignmentResolvers } from './assignment'
+import { getCampaigns, resolvers as campaignResolvers } from './campaign'
+import { resolvers as campaignContactResolvers } from './campaign-contact'
+import { resolvers as cannedResponseResolvers } from './canned-response'
 import {
-  uploadContacts,
-  loadContactsFromDataWarehouse,
-  assignTexters,
-  exportCampaign,
-  loadCampaignCache
-} from '../../workers/jobs'
-const uuidv4 = require('uuid').v4
-import GraphQLDate from 'graphql-date'
-import GraphQLJSON from 'graphql-type-json'
-import { GraphQLError } from 'graphql/error'
+  getConversations,
+  getCampaignIdMessageIdsAndCampaignIdContactIdsMaps,
+  reassignConversations,
+  resolvers as conversationsResolver
+} from './conversations'
+import {
+  accessRequired,
+  assignmentRequired,
+  authRequired,
+  superAdminRequired
+} from './errors'
+import { resolvers as interactionStepResolvers } from './interaction-step'
+import { resolvers as inviteResolvers } from './invite'
+import { saveNewIncomingMessage } from './lib/message-sending'
+import serviceMap from './lib/services'
+import { resolvers as messageResolvers } from './message'
+import { resolvers as optOutResolvers } from './opt-out'
+import { resolvers as organizationResolvers } from './organization'
+import { GraphQLPhone } from './phone'
+import { resolvers as questionResolvers } from './question'
+import { resolvers as questionResponseResolvers } from './question-response'
+import { getUsers, resolvers as userResolvers } from './user'
 
+import { getSendBeforeTimeUtc } from '../../lib/timezones'
+
+const uuidv4 = require('uuid').v4
 const JOBS_SAME_PROCESS = !!(process.env.JOBS_SAME_PROCESS || global.JOBS_SAME_PROCESS)
 const JOBS_SYNC = !!(process.env.JOBS_SYNC || global.JOBS_SYNC)
 
@@ -690,6 +668,15 @@ const rootMutations = {
       loadCampaignCache(campaign, organization, { remainingMilliseconds })
       return null
     },
+    clearCampaignNeedsMessage: async (_, { id }, { user, loaders }) => {
+      await r.knex('campaign_contact')
+        .where({
+          campaign_id: id,
+          message_status: 'needsMessage',
+        })
+        .update('assignment_id', null)
+      // TODO: clear inflights, and clear assignment caches
+    },
     editCampaign: async (_, { id, campaign }, { user, loaders }) => {
       const origCampaign = await Campaign.get(id)
       if (campaign.organizationId) {
@@ -755,13 +742,11 @@ const rootMutations = {
         name,
         uuid: uuidv4()
       })
-      await UserOrganization.save(
-        ['OWNER', 'ADMIN', 'TEXTER'].map(role => ({
-          user_id: userId,
-          organization_id: newOrganization.id,
-          role
-        }))
-      )
+      await UserOrganization.save({
+        role: 'OWNER',
+        user_id: userId,
+        organization_id: newOrganization.id
+      })
       await Invite.save(
         {
           id: inviteId,
@@ -914,6 +899,7 @@ const rootMutations = {
       }
       // console.log('sendMessage1.3', campaign.organization_id)
       const organization = await loaders.organization.load(campaign.organization_id)
+      console.log('sendMessage1.35', organization)
       const isOptedOut = await cacheableData.optOut.query({
         cell: contact.cell,
         organizationId: organization.id
@@ -929,10 +915,39 @@ const rootMutations = {
       }
       // console.log('sendMessage2', isOptedOut, organization.id)
       const replaceCurlyApostrophes = rawText => rawText.replace(/[\u2018\u2019]/g, "'")
+
+      let contactTimezone = {}
+      if (contact.timezone_offset) {
+        // couldn't look up the timezone by zip record, so we load it
+        // from the campaign_contact directly if it's there
+        const [offset, hasDST] = contact.timezone_offset.split('_')
+        contactTimezone.offset = parseInt(offset, 10)
+        contactTimezone.hasDST = hasDST === '1'
+      }
+
+      const sendBefore = getSendBeforeTimeUtc(
+        contactTimezone,
+        { textingHoursEnd: organization.texting_hours_end, textingHoursEnforced: organization.texting_hours_enforced },
+        {
+          textingHoursEnd: campaign.texting_hours_end,
+          overrideOrganizationTextingHours: campaign.override_organization_texting_hours,
+          textingHoursEnforced: campaign.texting_hours_enforced,
+          timezone: campaign.timezone
+        }
+      )
+
+      const sendBeforeDate = sendBefore ? sendBefore.toDate() : null
+
+      if (sendBeforeDate && sendBeforeDate <= Date.now()) {
+        throw new GraphQLError({
+          status: 400,
+          message: 'Outside permitted texting time for this recipient'
+        })
+      }
+
       const messageInstance = new Message({
         text: replaceCurlyApostrophes(text),
         contact_number: contactNumber,
-        user_id: user.id,
         user_number: '',
         assignment_id: message.assignmentId,
         campaign_contact_id: contact.id,
@@ -940,7 +955,8 @@ const rootMutations = {
         send_status: 'SENDING',
         service: organization.feature.service || process.env.DEFAULT_SERVICE || global.DEFAULT_SERVICE || '',
         is_from_contact: false,
-        queued_at: new Date()
+        queued_at: new Date(),
+        send_before: sendBeforeDate
       })
       // console.log('sendMessage3', messageInstance.messageservice_sid, 'y', process.env.DEFAULT_SERVICE, 'z', organization.feature.service)
       // This should hackily update messageInstance.id
@@ -1052,108 +1068,23 @@ const rootMutations = {
         campaignIdMessagesIdsMap.get(campaignId).push(...messageIds)
       }
 
-      // ensure existence of assignments
-      const campaignIdAssignmentIdMap = new Map()
-      for (const [campaignId, _] of campaignIdContactIdsMap) {
-        let assignment = await r
-          .table('assignment')
-          .getAll(newTexterUserId, { index: 'user_id' })
-          .filter({ campaign_id: campaignId })
-          .limit(1)(0)
-          .default(null)
-        if (!assignment) {
-          assignment = await Assignment.save({
-            user_id: newTexterUserId,
-            campaign_id: campaignId,
-            max_contacts: parseInt(process.env.MAX_CONTACTS_PER_TEXTER || 0, 10)
-          })
-        }
-        await cacheableData.assignment.reload(assignment.id)
-        campaignIdAssignmentIdMap.set(campaignId, assignment.id)
-      }
-
-      // do the reassignment
-      const returnCampaignIdAssignmentIds = []
-
-      // TODO(larry) do this in a transaction!
-      try {
-        for (const [campaignId, campaignContactIds] of campaignIdContactIdsMap) {
-          const assignmentId = campaignIdAssignmentIdMap.get(campaignId)
-
-          // update contacts
-          await r
-            .knex('campaign_contact')
-            .where('campaign_id', campaignId)
-            .whereIn('id', campaignContactIds)
-            .update({
-              assignment_id: assignmentId
-            })
-
-          // update messages
-          await r
-            .knex('message')
-            .whereIn('campaign_contact_id', campaignContactIds)
-            .update('assignment_id', assignmentId)
-
-          // cache updates
-          const campaign = await loaders.campaign.load(campaignId)
-          for (let i = 0, l = campaignContactIds.length; i < l; i++) {
-            if (campaign.use_dynamic_assignment) {
-              // "Claim" the assignment even though it's cleared above
-              // in case of dynamic assignment condition
-              await cacheableData.campaignContact.updateAssignmentCache(
-                campaignContactIds[i], assignmentId, newTexterUserId)
-            } else {
-              // This will have a local contact.assignment_id to clear
-              await cacheableData.campaignContact.clear(campaignContactIds[i])
-            }
-            // If we got the timezone+status of each contact, then we could update
-            // the new Texter's assignmentcontacts directly.  Instead clear it.
-            await cacheableData.assignment.clearAssignmentContacts(
-              assignmentId, campaign.contactTimezones)
-
-            // This is not everywhere the ids are cached,
-            // but should be enough to force a 'change of course'
-            // Things not updated:
-            // Prev assignee's assignmentcontacts list
-            // - When loaded it will compare current assignment
-            // Dynamic assignment inflight queue
-            // - If the previous assignee already has it in their browser cache
-            //   they will send a message, it will get popped off the inflight queue
-            //   and then they won't see it after.
-            // - If the user abandons it, then it will get popped off the queue
-            //   with the next message from anyone
-          }
-
-          returnCampaignIdAssignmentIds.push({
-            campaignId,
-            assignmentId: assignmentId.toString()
-          })
-        }
-        for (const [campaignId, messageIds] of campaignIdMessagesIdsMap) {
-          const assignmentId = campaignIdAssignmentIdMap.get(campaignId)
-
-          // This may be redundant to the above 'update messages'
-          //  - but this was written before message.campaign_contact_id
-          //    was a field, and so we also make sure that the messages
-          //    that are explicitly passed in should be updated
-          await r
-            .knex('message')
-            .whereIn(
-              'id',
-              messageIds.map(messageId => {
-                return messageId
-              })
-            )
-            .update({
-              assignment_id: assignmentId
-            })
-        }
-      } catch (error) {
-        log.error(error)
-      }
-
-      return returnCampaignIdAssignmentIds
+      return await reassignConversations(campaignIdContactIdsMap, campaignIdMessagesIdsMap, newTexterUserId)
+    },
+    bulkReassignCampaignContacts: async (
+      _,
+      { organizationId, campaignsFilter, assignmentsFilter, contactsFilter, newTexterUserId },
+      { user }
+    ) => {
+      // verify permissions
+      await accessRequired(user, organizationId, 'ADMIN', /* superadmin*/ true)
+      const { campaignIdContactIdsMap, campaignIdMessagesIdsMap }  =
+        await getCampaignIdMessageIdsAndCampaignIdContactIdsMaps(
+          organizationId,
+          campaignsFilter,
+          assignmentsFilter,
+          contactsFilter
+        )
+      return await reassignConversations(campaignIdContactIdsMap, campaignIdMessagesIdsMap, newTexterUserId)
     }
   }
 }
@@ -1258,6 +1189,14 @@ const rootResolvers = {
         contactsFilter,
         utc
       )
+    },
+    campaigns: async (_, {organizationId, cursor, campaignsFilter}, {user}) => {
+      await accessRequired(user, organizationId, 'SUPERVOLUNTEER')
+      return getCampaigns(organizationId, cursor, campaignsFilter)
+    },
+    people: async (_, {organizationId, cursor, campaignsFilter, role}, {user}) => {
+      await accessRequired(user, organizationId, 'SUPERVOLUNTEER')
+      return getUsers(organizationId, cursor, campaignsFilter, role)
     }
   }
 }

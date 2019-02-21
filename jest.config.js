@@ -20,6 +20,9 @@ module.exports = {
     DEFAULT_SERVICE: 'fakeservice',
     DST_REFERENCE_TIMEZONE: 'America/New_York',
     DATABASE_SETUP_TEARDOWN_TIMEOUT: 60000,
+    PASSPORT_STRATEGY: 'localauthexperimental',
+    SESSION_SECRET: 'it is JUST a test! -- it better be!',
+    TEST_ENVIRONMENT: '1'
   },
   moduleFileExtensions: [
     "js",
