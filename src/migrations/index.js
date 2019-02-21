@@ -157,6 +157,15 @@ const migrations = [
     }
   },
   { auto: true, // 13
+    date: '2018-09-03',
+    migrate: async function() {
+      await r.knex.schema.alterTable('message', (table) => {
+        table.timestamp('send_before')
+      })
+      console.log('added send_before column to message table')
+    }
+  },
+  { auto: true, // 14
     date: '2018-09-16',
     migrate: async () => {
       await r.knex.schema.alterTable('message', (table) => {
@@ -186,7 +195,7 @@ const migrations = [
     }
   },
   {
-    auto: true, // 14
+    auto: true, // 15
     date: '2018-09-25', 
     migrate: async () => {
       const query = 'UPDATE message ' +
