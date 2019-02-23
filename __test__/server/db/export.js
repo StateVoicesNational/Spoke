@@ -5,13 +5,13 @@ import fs from 'fs'
 function getSchema(s) {
   return knex(s).columnInfo().then(schema => {
     console.log('exported schema for', s)
-    fs.writeFileSync(`schemas/${s}.json`, JSON.stringify(schema, null, 2))
+    fs.writeFileSync(`init_schemas/${s}.json`, JSON.stringify(schema, null, 2))
   })
 }
 function getIndexes() {
   return knex.raw(indexQuery)
   .then(indexes => {
-    fs.writeFileSync('schemas/indexes.json', JSON.stringify(indexes, null, 2))
+    fs.writeFileSync('init_schemas/indexes.json', JSON.stringify(indexes, null, 2))
     console.log('exported indices')
   })
 }

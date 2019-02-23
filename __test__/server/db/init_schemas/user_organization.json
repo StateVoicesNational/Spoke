@@ -1,0 +1,26 @@
+{
+  "id": {
+    "type": "integer",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": "nextval('user_organization_id_seq'::regclass)"
+  },
+  "user_id": {
+    "type": "integer",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": null
+  },
+  "organization_id": {
+    "type": "integer",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": null
+  },
+  "role": {
+    "type": "text",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": null
+  }
+}

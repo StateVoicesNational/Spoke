@@ -1,0 +1,38 @@
+{
+  "id": {
+    "type": "integer",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": "nextval('opt_out_id_seq'::regclass)"
+  },
+  "cell": {
+    "type": "text",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": null
+  },
+  "assignment_id": {
+    "type": "integer",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": null
+  },
+  "organization_id": {
+    "type": "integer",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": null
+  },
+  "reason_code": {
+    "type": "text",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": "''::text"
+  },
+  "created_at": {
+    "type": "timestamp with time zone",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": "CURRENT_TIMESTAMP"
+  }
+}
