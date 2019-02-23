@@ -1,0 +1,104 @@
+{
+  "id": {
+    "type": "integer",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": "nextval('campaign_id_seq'::regclass)"
+  },
+  "organization_id": {
+    "type": "integer",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": null
+  },
+  "title": {
+    "type": "text",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": "''::text"
+  },
+  "description": {
+    "type": "text",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": "''::text"
+  },
+  "is_started": {
+    "type": "boolean",
+    "maxLength": null,
+    "nullable": true,
+    "defaultValue": null
+  },
+  "due_by": {
+    "type": "timestamp with time zone",
+    "maxLength": null,
+    "nullable": true,
+    "defaultValue": null
+  },
+  "created_at": {
+    "type": "timestamp with time zone",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": "CURRENT_TIMESTAMP"
+  },
+  "is_archived": {
+    "type": "boolean",
+    "maxLength": null,
+    "nullable": true,
+    "defaultValue": null
+  },
+  "use_dynamic_assignment": {
+    "type": "boolean",
+    "maxLength": null,
+    "nullable": true,
+    "defaultValue": null
+  },
+  "logo_image_url": {
+    "type": "text",
+    "maxLength": null,
+    "nullable": true,
+    "defaultValue": null
+  },
+  "intro_html": {
+    "type": "text",
+    "maxLength": null,
+    "nullable": true,
+    "defaultValue": null
+  },
+  "primary_color": {
+    "type": "text",
+    "maxLength": null,
+    "nullable": true,
+    "defaultValue": null
+  },
+  "override_organization_texting_hours": {
+    "type": "boolean",
+    "maxLength": null,
+    "nullable": true,
+    "defaultValue": "false"
+  },
+  "texting_hours_enforced": {
+    "type": "boolean",
+    "maxLength": null,
+    "nullable": true,
+    "defaultValue": "true"
+  },
+  "texting_hours_start": {
+    "type": "integer",
+    "maxLength": null,
+    "nullable": true,
+    "defaultValue": "9"
+  },
+  "texting_hours_end": {
+    "type": "integer",
+    "maxLength": null,
+    "nullable": true,
+    "defaultValue": "21"
+  },
+  "timezone": {
+    "type": "text",
+    "maxLength": null,
+    "nullable": true,
+    "defaultValue": "'US/Eastern'::text"
+  }
+}

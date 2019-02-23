@@ -18,7 +18,7 @@ describe('The knex initial migration', async () => {
     const t = tables[i]
     it(`generates the correct ${t} table schema`, async () => {
       // eslint-disable-next-line global-require
-      const originalSchema = require(`./schemas/${t}.json`)
+      const originalSchema = require(`./init_schemas/${t}.json`)
       const newSchema = await knex(t).columnInfo()
       expect(newSchema).toMatchSchema(originalSchema)
     })
@@ -26,7 +26,7 @@ describe('The knex initial migration', async () => {
 
   it('creates the correct indices', async () => {
     // eslint-disable-next-line global-require
-    const originalIndexes = require('./schemas/indexes.json')
+    const originalIndexes = require('./init_schemas/indexes.json')
     const newIndexes = await knex.raw(indexQuery)
     expect(newIndexes.rows).toMatchIndexes(originalIndexes.rows)
   })

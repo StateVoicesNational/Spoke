@@ -1,0 +1,26 @@
+{
+  "id": {
+    "type": "integer",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": "nextval('log_id_seq'::regclass)"
+  },
+  "message_sid": {
+    "type": "text",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": null
+  },
+  "body": {
+    "type": "text",
+    "maxLength": null,
+    "nullable": true,
+    "defaultValue": null
+  },
+  "created_at": {
+    "type": "timestamp with time zone",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": "CURRENT_TIMESTAMP"
+  }
+}

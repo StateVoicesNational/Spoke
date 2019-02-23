@@ -1,0 +1,86 @@
+{
+  "id": {
+    "type": "integer",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": "nextval('campaign_contact_id_seq'::regclass)"
+  },
+  "campaign_id": {
+    "type": "integer",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": null
+  },
+  "assignment_id": {
+    "type": "integer",
+    "maxLength": null,
+    "nullable": true,
+    "defaultValue": null
+  },
+  "external_id": {
+    "type": "text",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": "''::text"
+  },
+  "first_name": {
+    "type": "text",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": "''::text"
+  },
+  "last_name": {
+    "type": "text",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": "''::text"
+  },
+  "cell": {
+    "type": "text",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": null
+  },
+  "zip": {
+    "type": "text",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": "''::text"
+  },
+  "custom_fields": {
+    "type": "text",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": "'{}'::text"
+  },
+  "created_at": {
+    "type": "timestamp with time zone",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": "CURRENT_TIMESTAMP"
+  },
+  "updated_at": {
+    "type": "timestamp with time zone",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": "CURRENT_TIMESTAMP"
+  },
+  "message_status": {
+    "type": "text",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": "'needsMessage'::text"
+  },
+  "is_opted_out": {
+    "type": "boolean",
+    "maxLength": null,
+    "nullable": true,
+    "defaultValue": "false"
+  },
+  "timezone_offset": {
+    "type": "text",
+    "maxLength": null,
+    "nullable": true,
+    "defaultValue": "''::text"
+  }
+}
