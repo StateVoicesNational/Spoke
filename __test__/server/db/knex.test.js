@@ -1,17 +1,16 @@
-import knex from '../../../src/server/knex.js'
+import {r} from '../../../src/server/models'
 import { indexQuery, tables } from './utils.js'
 jest.setTimeout(20000)
 
-// knex.on('query', console.log)
 
-describe('The knex initial migration', async () => {
+describe('The r initial migration', async () => {
   beforeAll(async () => {
-    await knex.migrate.latest()
+    await r.k.migrate.latest()
   })
   afterAll(async () => {
     // tests only run in PG so this should work
-    await knex.raw('DROP OWNED BY spoke_test;')
-    await knex.destroy()
+    await r.k.raw('DROP OWNED BY spoke_test;')
+    await r.k.destroy()
   })
   // Test the schema for each table
   for (let i = 0; i < tables.length; i++) {
@@ -19,7 +18,7 @@ describe('The knex initial migration', async () => {
     it(`generates the correct ${t} table schema`, async () => {
       // eslint-disable-next-line global-require
       const originalSchema = require(`./init_schemas/${t}.json`)
-      const newSchema = await knex(t).columnInfo()
+      const newSchema = await r.k(t).columnInfo()
       expect(newSchema).toMatchSchema(originalSchema)
     })
   }
@@ -27,7 +26,7 @@ describe('The knex initial migration', async () => {
   it('creates the correct indices', async () => {
     // eslint-disable-next-line global-require
     const originalIndexes = require('./init_schemas/indexes.json')
-    const newIndexes = await knex.raw(indexQuery)
+    const newIndexes = await r.k.raw(indexQuery)
     expect(newIndexes.rows).toMatchIndexes(originalIndexes.rows)
   })
 })

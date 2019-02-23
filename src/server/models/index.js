@@ -10,7 +10,6 @@ import CampaignContact from './campaign-contact'
 import InteractionStep from './interaction-step'
 import QuestionResponse from './question-response'
 import OptOut from './opt-out'
-import Migrations from './migrations'
 import JobRequest from './job-request'
 import Invite from './invite'
 import CannedResponse from './canned-response'
@@ -53,7 +52,6 @@ const tableList = [
   'job_request',
   'log',
   'message',
-  'migrations',
   'opt_out',  // good candidate
   'pending_message_part',
   'question_response',
@@ -95,7 +93,6 @@ const createLoaders = () => ({
   cannedResponse: createLoader(CannedResponse),
   jobRequest: createLoader(JobRequest),
   message: createLoader(Message),
-  migrations: createLoader(Migrations),
   optOut: createLoader(OptOut),
   pendingMessagePart: createLoader(PendingMessagePart),
   questionResponse: createLoader(QuestionResponse),
@@ -113,7 +110,6 @@ export {
   createTablesIfNecessary,
   dropTables,
   datawarehouse,
-  Migrations,
   Assignment,
   Campaign,
   CampaignContact,
