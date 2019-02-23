@@ -19,7 +19,9 @@ import twilio from './api/lib/twilio'
 import { seedZipCodes } from './seeds/seed-zip-codes'
 import { setupUserNotificationObservers } from './notifications'
 import { TwimlResponse } from 'twilio'
-import knex from './knex'
+import {r} from './models'
+
+require('dotenv').config()
 
 process.on('uncaughtException', (ex) => {
   log.error(ex)
@@ -49,11 +51,11 @@ if (!process.env.SUPPRESS_DATABASE_AUTOCREATE) {
       seedZipCodes()
     }
     if (!didCreate && !process.env.SUPPRESS_MIGRATIONS) {
-      knex.migrate.latest()
+      r.k.migrate.latest()
     }
   })
 } else if (!process.env.SUPPRESS_MIGRATIONS) {
-  knex.migrate.latest()
+  r.k.migrate.latest()
 }
 
 setupUserNotificationObservers()

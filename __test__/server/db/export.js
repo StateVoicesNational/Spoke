@@ -1,15 +1,15 @@
-import knex from '../../../src/server/knex.js'
+import {r} from '../../../src/server/models'
 import { tables, indexQuery } from './utils'
 import fs from 'fs'
 
 function getSchema(s) {
-  return knex(s).columnInfo().then(schema => {
+  return r.k(s).columnInfo().then(schema => {
     console.log('exported schema for', s)
     fs.writeFileSync(`init_schemas/${s}.json`, JSON.stringify(schema, null, 2))
   })
 }
 function getIndexes() {
-  return knex.raw(indexQuery)
+  return r.k.raw(indexQuery)
   .then(indexes => {
     fs.writeFileSync('init_schemas/indexes.json', JSON.stringify(indexes, null, 2))
     console.log('exported indices')
