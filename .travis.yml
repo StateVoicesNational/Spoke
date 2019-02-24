@@ -4,7 +4,6 @@ node_js:
 services:
 - postgresql
 addons:
-  postgresql: "10.0"
   sauce_connect:
     username: $SAUCE_USERNAME
     access_key: $SAUCE_ACCESS_KEY
