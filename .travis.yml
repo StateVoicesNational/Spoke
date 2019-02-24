@@ -4,11 +4,7 @@ node_js:
 services:
 - postgresql
 addons:
-  apt:
-    packages:
-    - postgresql-11
-    - postgresql-client-11
-  postgresql: "11.1"
+  postgresql: "10.0"
   sauce_connect:
     username: $SAUCE_USERNAME
     access_key: $SAUCE_ACCESS_KEY
