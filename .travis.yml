@@ -2,7 +2,7 @@ language: node_js
 node_js:
 - "6.10.3"
 services:
-- postgresql
+- postgresql: "11.1"
 addons:
   sauce_connect:
     username: $SAUCE_USERNAME
