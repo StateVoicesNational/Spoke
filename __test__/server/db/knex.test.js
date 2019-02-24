@@ -3,7 +3,7 @@ import { indexQuery, tables } from './utils.js'
 jest.setTimeout(20000)
 
 
-describe('The r initial migration', async () => {
+describe('The knex initial migration', async () => {
   beforeAll(async () => {
     await r.k.migrate.latest()
   })
