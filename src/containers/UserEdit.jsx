@@ -77,7 +77,7 @@ class UserEdit extends React.Component {
     }
 
     let userFields = {}
-    if (!this.props.authType || this.props.authType === 'signup') {
+    if (this.props.authType !== 'login') {
       userFields = {
         firstName: yup.string().required(),
         lastName: yup.string().required(),
@@ -96,10 +96,11 @@ class UserEdit extends React.Component {
         schema={formSchema}
         onSubmit={this.handleSave}
         defaultValue={user}
+        className={this.props.style}
       >
         <Form.Field label='Email' name='email' {...dataTest('email')} />
-        {(!this.props.authType || this.props.authType === 'signup') &&
-          <div>
+        {(this.props.authType !== 'login') &&
+          <div className={this.props.style}>
             <Form.Field label='First name' name='firstName' {...dataTest('firstName')} />
             <Form.Field label='Last name' name='lastName' {...dataTest('lastName')} />
             <Form.Field label='Cell Number' name='cell' {...dataTest('cell')} />
@@ -129,7 +130,8 @@ UserEdit.propTypes = {
   onRequestClose: PropTypes.func,
   saveLabel: PropTypes.string,
   authType: PropTypes.string,
-  location: PropTypes.object
+  location: PropTypes.object,
+  style: PropTypes.string
 }
 
 const mapMutationsToProps = ({ ownProps }) => {
