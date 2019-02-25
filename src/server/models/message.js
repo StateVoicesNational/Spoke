@@ -37,13 +37,8 @@ const Message = thinky.createModel('message', type.object().schema({
 }).allowExtra(false), { noAutoCreation: true,
                         dependencies: [User, Assignment] })
 
-// TODO NEED TO DELETE AND CONSOLIDATE
-Message.ensureIndex('user_id') //TODO DELETE
-Message.ensureIndex('assignment_id') //used in server/api/campaign for joins
 Message.ensureIndex('campaign_contact_id') // necessary to get message list for contact
 Message.ensureIndex('send_status') // needed in jobs to search for QUEUED
-Message.ensureIndex('user_number') //TODO DELETE
-Message.ensureIndex('contact_number') //? should this be contact_number PLUS assignment_id? -- or maybe for campaign_contact
 Message.ensureIndex('service_id') // necessary to lookup a message by the service_id
 Message.ensureIndex('cell_messageservice_sid', (doc) => [doc('contact_number'), doc('messageservice_sid')])
 
