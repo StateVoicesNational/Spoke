@@ -45,7 +45,7 @@ const inlineStyles = {
   }
 }
 
-class CampaignList extends React.Component {
+export class CampaignList extends React.Component {
   renderRow(campaign) {
     const {
       isStarted,
