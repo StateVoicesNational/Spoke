@@ -1,0 +1,32 @@
+{
+  "id": {
+    "type": "integer",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": "nextval('question_response_id_seq'::regclass)"
+  },
+  "campaign_contact_id": {
+    "type": "integer",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": null
+  },
+  "interaction_step_id": {
+    "type": "integer",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": null
+  },
+  "value": {
+    "type": "text",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": null
+  },
+  "created_at": {
+    "type": "timestamp with time zone",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": "CURRENT_TIMESTAMP"
+  }
+}

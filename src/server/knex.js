@@ -1,3 +1,7 @@
+// Define a Knex connection. Currently, this is used only to instantiate the
+// rethink-knex-adapter's connection. In the future, if the adapter is
+// deprecated, a better pattern would be to instantiate knex here and export
+// that instance, for reference everywhere else in the codebase.
 const {
   DB_USE_SSL = 'false',
   DB_JSON = global.DB_JSON,
@@ -66,4 +70,4 @@ if (NODE_ENV === 'test') {
   }
 }
 
-module.exports = config
+export default config

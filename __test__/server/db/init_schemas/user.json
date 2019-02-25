@@ -1,0 +1,62 @@
+{
+  "id": {
+    "type": "integer",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": "nextval('user_id_seq'::regclass)"
+  },
+  "auth0_id": {
+    "type": "text",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": null
+  },
+  "first_name": {
+    "type": "text",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": null
+  },
+  "last_name": {
+    "type": "text",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": null
+  },
+  "cell": {
+    "type": "text",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": null
+  },
+  "email": {
+    "type": "text",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": null
+  },
+  "created_at": {
+    "type": "timestamp with time zone",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": "CURRENT_TIMESTAMP"
+  },
+  "assigned_cell": {
+    "type": "text",
+    "maxLength": null,
+    "nullable": true,
+    "defaultValue": null
+  },
+  "is_superadmin": {
+    "type": "boolean",
+    "maxLength": null,
+    "nullable": true,
+    "defaultValue": null
+  },
+  "terms": {
+    "type": "boolean",
+    "maxLength": null,
+    "nullable": true,
+    "defaultValue": "false"
+  }
+}

@@ -8,7 +8,7 @@ import { schema as organizationSchema, resolvers as organizationResolvers } from
 import { schema as campaignSchema, resolvers as campaignResolvers } from './campaign'
 import {
   schema as assignmentSchema,
-  resolvers as assignmentResolvers,
+  resolvers as assignmentResolvers
 } from './assignment'
 import {
   schema as interactionStepSchema,
@@ -92,6 +92,11 @@ const rootSchema = `
     texters: [TexterInput]
     interactionSteps: InteractionStepInput
     cannedResponses: [CannedResponseInput]
+    overrideOrganizationTextingHours: Boolean
+    textingHoursEnforced: Boolean
+    textingHoursStart: Int
+    textingHoursEnd: Int
+    timezone: String
   }
 
   input MessageInput {
@@ -122,7 +127,7 @@ const rootSchema = `
     message: MessageInput!
     campaignContactId: String!
   }
-  
+
   input OffsetLimitCursor {
     offset: Int!
     limit: Int!
@@ -148,11 +153,11 @@ const rootSchema = `
   type FoundContact {
     found: Boolean
   }
-  
+
   type PageInfo {
     limit: Int!
     offset: Int!
-    next: Int!
+    next: Int
     previous: Int
     total: Int!
   }
@@ -171,21 +176,25 @@ const rootSchema = `
     organizations: [Organization]
     availableActions(organizationId:String!): [Action]
     conversations(cursor:OffsetLimitCursor!, organizationId:String!, campaignsFilter:CampaignsFilter, assignmentsFilter:AssignmentsFilter, contactsFilter:ContactsFilter, utc:String): PaginatedConversations
+    campaigns(organizationId:String!, cursor:OffsetLimitCursor, campaignsFilter: CampaignsFilter): CampaignsReturn
+    people(organizationId:String!, cursor:OffsetLimitCursor, campaignsFilter:CampaignsFilter, role: String): UsersReturn
   }
 
   type RootMutation {
     createInvite(invite:InviteInput!): Invite
     createCampaign(campaign:CampaignInput!): Campaign
     editCampaign(id:String!, campaign:CampaignInput!): Campaign
+    deleteJob(campaignId:String!, id:String!): JobRequest
     copyCampaign(id: String!): Campaign
     exportCampaign(id:String!): JobRequest
     createCannedResponse(cannedResponse:CannedResponseInput!): CannedResponse
     createOrganization(name: String!, userId: String!, inviteId: String!): Organization
     joinOrganization(organizationUuid: String!): Organization
-    editOrganizationRoles(organizationId: String!, userId: String!, roles: [String]): Organization
+    editOrganizationRoles(organizationId: String!, userId: String!, campaignId: String, roles: [String]): Organization
     editUser(organizationId: String!, userId: Int!, userData:UserInput): User
     updateTextingHours( organizationId: String!, textingHoursStart: Int!, textingHoursEnd: Int!): Organization
     updateTextingHoursEnforcement( organizationId: String!, textingHoursEnforced: Boolean!): Organization
+    updateOptOutMessage( organizationId: String!, optOutMessage: String!): Organization
     bulkSendMessages(assignmentId: Int!): [CampaignContact]
     sendMessage(message:MessageInput!, campaignContactId:String!): CampaignContact,
     createOptOut(optOut:OptOutInput!, campaignContactId:String!):CampaignContact,
@@ -196,10 +205,12 @@ const rootSchema = `
     archiveCampaign(id:String!): Campaign,
     unarchiveCampaign(id:String!): Campaign,
     sendReply(id: String!, message: String!): CampaignContact
+    getAssignmentContacts(assignmentId: String!, contactIds: [String], findNew: Boolean): [CampaignContact],
     findNewCampaignContact(assignmentId: String!, numberContacts: Int!): FoundContact,
     assignUserToCampaign(organizationUuid: String!, campaignId: String!): Campaign
     userAgreeTerms(userId: String!): User
-    reassignCampaignContacts(organizationId:String!, campaignIdsContactIds:[CampaignIdContactId]!, newTexterUserId:String!):[CampaignIdAssignmentId]
+    reassignCampaignContacts(organizationId:String!, campaignIdsContactIds:[CampaignIdContactId]!, newTexterUserId:String!):[CampaignIdAssignmentId],
+    bulkReassignCampaignContacts(organizationId:String!, campaignsFilter:CampaignsFilter, assignmentsFilter:AssignmentsFilter, contactsFilter:ContactsFilter, newTexterUserId:String!):[CampaignIdAssignmentId]
   }
 
   schema {
@@ -227,4 +238,3 @@ export const schema = [
   inviteSchema,
   conversationSchema
 ]
-

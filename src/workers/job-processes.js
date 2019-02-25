@@ -8,8 +8,8 @@ import { exportCampaign,
          assignTexters,
          sendMessages,
          handleIncomingMessageParts,
+         fixOrgless,
          clearOldJobs } from './jobs'
-import { runMigrations } from '../migrations'
 import { setupUserNotificationObservers } from '../server/notifications'
 
 export { seedZipCodes } from '../server/seeds/seed-zip-codes'
@@ -160,7 +160,7 @@ export async function handleIncomingMessages() {
 }
 
 export async function runDatabaseMigrations(event, dispatcher, eventCallback) {
-  await runMigrations(event.migrationStart)
+  knex.migrate.latest()
   if (eventCallback) {
     eventCallback(null, 'completed migrations')
   }
@@ -187,7 +187,8 @@ const processMap = {
   messageSender234,
   messageSender56,
   messageSender789,
-  handleIncomingMessages
+  handleIncomingMessages,
+  fixOrgless
 }
 
 // if process.env.JOBS_SAME_PROCESS then we don't need to run
@@ -196,6 +197,7 @@ const syncProcessMap = {
   // 'failedMessageSender': failedMessageSender, //see method for danger
   handleIncomingMessages,
   checkMessageQueue,
+  fixOrgless,
   clearOldJobs
 }
 

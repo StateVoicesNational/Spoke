@@ -7,6 +7,8 @@ import faker from 'faker'
 
 let twilio = null
 const MAX_SEND_ATTEMPTS = 5
+const MESSAGE_VALIDITY_PADDING_SECONDS = 30
+const MAX_TWILIO_MESSAGE_VALIDITY = 14400
 
 if (process.env.TWILIO_API_KEY && process.env.TWILIO_AUTH_TOKEN) {
   // eslint-disable-next-line new-cap
@@ -109,12 +111,13 @@ function parseMessageText(message) {
   return params
 }
 
-async function sendMessage(message) {
+async function sendMessage(message, trx) {
   if (!twilio) {
     log.warn('cannot actually send SMS message -- twilio is not fully configured:', message.id)
     if (message.id) {
+      const options = trx ? { transaction: trx } : {}
       await Message.get(message.id)
-        .update({ send_status: 'SENT', sent_at: new Date() })
+        .update({ send_status: 'SENT', sent_at: new Date() }, options)
     }
     return 'test_message_uuid'
   }
@@ -131,8 +134,30 @@ async function sendMessage(message) {
       statusCallback: process.env.TWILIO_STATUS_CALLBACK_URL
     }, parseMessageText(message))
 
-    if (process.env.TWILIO_MESSAGE_VALIDITY_PERIOD) {
-      messageParams.validityPeriod = process.env.TWILIO_MESSAGE_VALIDITY_PERIOD
+    let twilioValidityPeriod = process.env.TWILIO_MESSAGE_VALIDITY_PERIOD
+
+    if (message.send_before) {
+      // the message is valid no longer than the time between now and
+      // the send_before time, less 30 seconds
+      // we subtract the MESSAGE_VALIDITY_PADDING_SECONDS seconds to allow time for the message to be sent by
+      // a downstream service
+      const messageValidityPeriod = Math.ceil((message.send_before - Date.now())/1000) - MESSAGE_VALIDITY_PADDING_SECONDS
+
+      if (messageValidityPeriod < 0) {
+        // this is an edge case
+        // it means the message arrived in this function already too late to be sent
+        // pass the negative validity period to twilio, and let twilio respond with an error
+      }
+
+      if (twilioValidityPeriod) {
+        twilioValidityPeriod = Math.min(twilioValidityPeriod, messageValidityPeriod, MAX_TWILIO_MESSAGE_VALIDITY)
+      } else {
+        twilioValidityPeriod = Math.min(messageValidityPeriod, MAX_TWILIO_MESSAGE_VALIDITY)
+      }
+    }
+
+    if (twilioValidityPeriod) {
+      messageParams.validityPeriod = twilioValidityPeriod
     }
 
     twilio.messages.create(messageParams, (err, response) => {
@@ -158,18 +183,26 @@ async function sendMessage(message) {
         if (messageToSave.service_response.split(SENT_STRING).length >= MAX_SEND_ATTEMPTS + 1) {
           messageToSave.send_status = 'ERROR'
         }
-        Message.save(messageToSave, { conflict: 'update' })
+        let options = { conflict: 'update' }
+        if (trx) {
+          options.transaction = trx
+        }
+        Message.save(messageToSave, options)
         // eslint-disable-next-line no-unused-vars
         .then((_, newMessage) => {
           reject(err || (response ? new Error(JSON.stringify(response)) : new Error('Encountered unknown error')))
         })
       } else {
+        let options = { conflict: 'update' }
+        if (trx) {
+          options.transaction = trx
+        }
         Message.save({
           ...messageToSave,
           send_status: 'SENT',
           service: 'twilio',
           sent_at: new Date()
-        }, { conflict: 'update' })
+        }, options)
         .then((saveError, newMessage) => {
           resolve(newMessage)
         })
