@@ -87,30 +87,24 @@ export const resolvers = {
   },
   CampaignStats: {
     sentMessagesCount: async (campaign) => (
-      r.table('assignment')
-        .getAll(campaign.id, { index: 'campaign_id' })
-        .eqJoin('id', r.table('message'), { index: 'assignment_id' })
-        .filter({ is_from_contact: false })
-        .count()
-        // TODO: NEEDS TESTING
-        // this is a change to avoid very weird map(...).sum() pattern
-        // that will work better with RDBMs
-        // main question is will/should filter work, or do we need to specify,
-        // e.g. 'right_is_from_contact': false, or something
-        // .map((assignment) => (
-        //   r.table('message')
-        //     .getAll(assignment('id'), { index: 'assignment_id' })
-        //     .filter({ is_from_contact: false })
-        //     .count()
-        // )).sum()
+      await r.getCount(
+        r.knex('message')
+        .innerJoin('campaign_contact', 'message.campaign_contact_id', 'campaign_contact.id')
+        .where({
+          'campaign_contact.campaign_id': campaign.id,
+          'message.is_front_contact': false
+        })
+      )
     ),
     receivedMessagesCount: async (campaign) => (
-      r.table('assignment')
-        .getAll(campaign.id, { index: 'campaign_id' })
-        // TODO: NEEDSTESTING -- see above setMessagesCount()
-        .eqJoin('id', r.table('message'), { index: 'assignment_id' })
-        .filter({ is_from_contact: true })
-        .count()
+      await r.getCount(
+        r.knex('message')
+        .innerJoin('campaign_contact', 'message.campaign_contact_id', 'campaign_contact.id')
+        .where({
+          'campaign_contact.campaign_id': campaign.id,
+          'message.is_front_contact': true
+        })
+      )
     ),
     optOutsCount: async (campaign) => (
       await r.getCount(

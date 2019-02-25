@@ -205,6 +205,18 @@ const migrations = [
       await r.knex.raw(query)
       console.log('backfilled message.campaign_contact_id column')
     }
+  },
+  {
+    auto: true, // 16
+    date: '2019-02-24',
+    migrate: async () => {
+      await r.knex.schema.alterTable('message', (table) => {
+        table.dropIndex('user_id')
+        table.dropIndex('assignment_id')
+        table.dropIndex('user_number')
+        table.dropIndex('contact_number')
+      })
+    }
   }
   /* migration template
      {auto: true, //if auto is false, then it will block the migration running automatically
