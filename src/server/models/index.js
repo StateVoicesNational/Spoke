@@ -28,8 +28,7 @@ import cacheableData from './cacheable_queries'
 function createLoader(model, opts) {
   const idKey = (opts && opts.idKey) || 'id'
   const cacheObj = opts && opts.cacheObj
-  return new DataLoader(async (keys) => {
-    // console.log('dataloader', model.tableName, keys)
+  const loader = new DataLoader(async (keys) => {
     if (cacheObj && cacheObj.load) {
       return keys.map(async (key) => await cacheObj.load(key))
     }
@@ -38,6 +37,7 @@ function createLoader(model, opts) {
       docs.find((doc) => doc[idKey].toString() === key.toString())
     ))
   })
+  return loader
 }
 
 // This is in dependency order, so tables are after their dependencies
