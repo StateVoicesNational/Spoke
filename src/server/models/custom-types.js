@@ -31,3 +31,8 @@ export function timestamp() {
     .allowNull(false)
     .default(r.now())
 }
+
+export function optionalTimestamp() {
+  return type
+    .date()
+}
