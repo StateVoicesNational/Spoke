@@ -60,6 +60,11 @@ const initialize = async (knex, Promise) => {
         t.text('logo_image_url')
         t.text('intro_html')
         t.text('primary_color')
+        t.boolean('override_organization_texting_hours').defaultTo(false)
+        t.boolean('texting_hours_enforced').defaultTo(true)
+        t.integer('texting_hours_start').defaultTo(9)
+        t.integer('texting_hours_end').defaultTo(21)
+        t.text('timezone').defaultTo('US/Eastern')
 
         t.index('organization_id')
         t.foreign('organization_id').references('organization.id')
@@ -130,12 +135,6 @@ const initialize = async (knex, Promise) => {
         t.text('answer_option').notNullable().defaultTo('')
         t.text('answer_actions').notNullable().defaultTo('')
         t.boolean('is_deleted').defaultTo(false).notNullable()
-        // t.text('source')
-        // t.text('external_question_id')
-        // t.text('external_response_id')
-        /*
-        These columns are necessary for the OSDI question mapper. They're left here as a placeholder in case #690 ends up getting merged before #692, in which case they need to be uncommented. If #692 is deemed ready for merge before #690, we'll rebase #690 and add a new migration to it to add these columns, along with the model updates that are already there.
-        */
 
         t.index('parent_interaction_id')
         t.foreign('parent_interaction_id').references('interaction_step.id')
@@ -247,7 +246,7 @@ const initialize = async (knex, Promise) => {
         t.enu('service', ['nexmo', 'twilio'])
         t.boolean('is_primary')
 
-        t.index(['user_id'])
+        t.foreign('user_id').references('user.id')
       }
     },
     {
@@ -255,6 +254,7 @@ const initialize = async (knex, Promise) => {
       create: t => {
         t.increments('id').primary()
         t.text('user_number').notNullable().defaultTo('')
+        t.integer('user_id')
         t.text('contact_number').notNullable()
         t.boolean('is_from_contact').notNullable()
         t.text('text').notNullable().defaultTo('')
@@ -267,9 +267,11 @@ const initialize = async (knex, Promise) => {
         t.timestamp('queued_at').defaultTo(knex.fn.now()).notNullable()
         t.timestamp('sent_at').defaultTo(knex.fn.now()).notNullable()
         t.timestamp('service_response_at').defaultTo(knex.fn.now()).notNullable()
+        t.timestamp('send_before').defaultTo(knex.fn.now()).notNullable()
 
         t.index('assignment_id')
         t.foreign('assignment_id').references('assignment.id')
+        t.foreign('user_id').references('user.id')
         t.index('send_status')
         t.index('user_number')
         t.index('contact_number')

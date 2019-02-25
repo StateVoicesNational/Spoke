@@ -1,0 +1,44 @@
+{
+  "zip": {
+    "type": "text",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": null
+  },
+  "city": {
+    "type": "text",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": null
+  },
+  "state": {
+    "type": "text",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": null
+  },
+  "latitude": {
+    "type": "real",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": null
+  },
+  "longitude": {
+    "type": "real",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": null
+  },
+  "timezone_offset": {
+    "type": "real",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": null
+  },
+  "has_dst": {
+    "type": "boolean",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": null
+  }
+}

@@ -1,38 +1,33 @@
-const config = require('../../../knexfile.js')
-const knex = require('knex')(config)
-import { tables } from './schemas/tables.js'
+import {r} from '../../../src/server/models'
+import { indexQuery, tables } from './utils.js'
 jest.setTimeout(20000)
 
-// knex.on('query', console.log)
 
 describe('The knex initial migration', async () => {
   beforeAll(async () => {
-    await knex.migrate.latest()
+    await r.k.migrate.latest()
   })
   afterAll(async () => {
     // tests only run in PG so this should work
-    await knex.raw('DROP OWNED BY spoke_test;')
-    await knex.destroy()
+    await r.k.raw('DROP OWNED BY spoke_test;')
+    await r.k.destroy()
   })
   // Test the schema for each table
   for (let i = 0; i < tables.length; i++) {
     const t = tables[i]
     it(`generates the correct ${t} table schema`, async () => {
       // eslint-disable-next-line global-require
-      const originalSchema = require(`./schemas/${t}.json`)
-      const newSchema = await knex(t).columnInfo()
+      const originalSchema = require(`./init_schemas/${t}.json`)
+      const newSchema = await r.k(t).columnInfo()
       expect(newSchema).toMatchSchema(originalSchema)
     })
   }
 
   it('creates the correct indices', async () => {
     // eslint-disable-next-line global-require
-    const originalIndexes = require('./schemas/indexes.json')
-    const newIndexes = await knex('pg_indexes')
-    .select()
-    .where({ schemaname: 'public' })
-    .whereNotIn('tablename', ['knex_migrations', 'knex_migrations_lock']) // we're not interested in these tables
-    expect(newIndexes).toMatchIndexes(originalIndexes)
+    const originalIndexes = require('./init_schemas/indexes.json')
+    const newIndexes = await r.k.raw(indexQuery)
+    expect(newIndexes.rows).toMatchIndexes(originalIndexes.rows)
   })
 })
 
@@ -101,37 +96,29 @@ expect.extend({
     while (originalIndexes.length > 0) {
       // Index names are unique, so we can search by name in the received index array
       const originalIndex = originalIndexes.shift()
-      const { indexname, tablename } = originalIndex
-      const scopedIndexName = `${tablename}.${indexname}`
-      const foundI = newIndexes.findIndex(el => el.indexname === indexname)
+      const { conname, table_from } = originalIndex
+      const scopedconname = `${table_from}.${conname}`
+      const foundI = newIndexes.findIndex(el => el.conname === conname)
       if (foundI === -1) { // terminology to clarify the difference between a table index we're examinging and an index representing position in an array
-        errors.push(`Expected index ${printExpected(scopedIndexName)} but it was not found`)
+        errors.push(`Expected index ${printExpected(scopedconname)} but it was not found`)
       } else {
         // Since the index was located, remove it from the array
         const [newIndex] = newIndexes.splice(foundI, 1)
 
-        // Test for equality of all index properties
-        const originalIndexEntries = Object.entries(originalIndex)
-        const newIndexPropsLength = Object.keys(newIndex).length
-        if (originalIndexEntries.length !== newIndexPropsLength) {
-          errors.push(`Expected ${printExpected(scopedIndexName)} to have ${printExpected(originalIndexEntries.length)} properties, but received ${printReceived(newIndexPropsLength)}`)
-        }
-        // Check each property of the expected indexes for equality against the new ones
-        for (let i = 0; i < originalIndexEntries.length; i++) {
-          const [k, v] = originalIndexEntries[i]
-          if (newIndex[k] !== v) {
-            const scopedPropName = `${scopedIndexName}.${k}`
-            errors.push(`Expected ${printExpected(scopedPropName)} to be ${printExpected(v)}, but received ${printReceived(newIndex[k])}.`)
-          }
+        // Test for equality of the pg constraint def
+        const originalIndexConstraintdef = originalIndex.pg_get_constraintdef
+        const newIndexConstraintdef = newIndex.pg_get_constraintdef
+        if(originalIndexConstraintdef !== newIndexConstraintdef) {
+          errors.push(`Expected ${printExpected(scopedconname)} to have constraintdef ${printExpected(originalConstraintdef)}, but received ${printReceived(newIndexConstraintdef)}.`)
         }
       }
     }
     // at this point, the originalIndexes array will be empty. Check for any remaining items in newIndexes, and output appropriate errors if they exist (since they're extraneous).
     if (newIndexes.length > 0) {
       for (let i = 0; i < newIndexes.length; i++) {
-        const { indexname, tablename } = newIndexes[i]
-        const scopedIndexName = `${tablename}.${indexname}`
-        errors.push(`Received unexpected index ${printReceived(scopedIndexName)}`)
+        const { conname, table_from } = newIndexes[i]
+        const scopedconname = `${table_from}.${conname}`
+        errors.push(`Received unexpected index ${printReceived(scopedconname)}`)
       }
     }
 

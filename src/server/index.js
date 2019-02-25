@@ -8,19 +8,20 @@ import { resolvers } from './api/schema'
 import { schema } from '../api/schema'
 import { accessRequired } from './api/errors'
 import mocks from './api/mocks'
-import { createLoaders } from './models'
+import { createLoaders, createTablesIfNecessary } from './models'
 import passport from 'passport'
 import cookieSession from 'cookie-session'
-import { setupAuth0Passport } from './auth-passport'
+import { setupAuth0Passport, setupLocalAuthPassport } from './auth-passport'
 import wrap from './wrap'
 import { log } from '../lib'
 import nexmo from './api/lib/nexmo'
 import twilio from './api/lib/twilio'
 import { seedZipCodes } from './seeds/seed-zip-codes'
-import { runMigrations } from '../migrations'
 import { setupUserNotificationObservers } from './notifications'
 import { TwimlResponse } from 'twilio'
-import { r } from './models'
+import {r} from './models'
+
+require('dotenv').config()
 
 process.on('uncaughtException', (ex) => {
   log.error(ex)
@@ -28,19 +29,35 @@ process.on('uncaughtException', (ex) => {
 })
 const DEBUG = process.env.NODE_ENV === 'development'
 
-const loginCallbacks = setupAuth0Passport()
-if (!process.env.PASSPORT_STRATEGY) {
+let loginCallbacks
+if (!process.env.PASSPORT_STRATEGY && !global.PASSPORT_STRATEGY) {
   // default to legacy Auth0 choice
-
+  loginCallbacks = setupAuth0Passport()
 } else {
-
+  const loginStrategy = process.env.PASSPORT_STRATEGY || global.PASSPORT_STRATEGY
+  if (loginStrategy === 'localauthexperimental') {
+    loginCallbacks = setupLocalAuthPassport()
+  }
 }
+
 if (!process.env.SUPPRESS_SEED_CALLS) {
   seedZipCodes()
 }
-if (!process.env.SUPPRESS_MIGRATIONS) {
-  runMigrations()
+
+if (!process.env.SUPPRESS_DATABASE_AUTOCREATE) {
+  createTablesIfNecessary().then((didCreate) => {
+    // seed above won't have succeeded if we needed to create first
+    if (didCreate && !process.env.SUPPRESS_SEED_CALLS) {
+      seedZipCodes()
+    }
+    if (!didCreate && !process.env.SUPPRESS_MIGRATIONS) {
+      r.k.migrate.latest()
+    }
+  })
+} else if (!process.env.SUPPRESS_MIGRATIONS) {
+  r.k.migrate.latest()
 }
+
 setupUserNotificationObservers()
 const app = express()
 // Heroku requires you to use process.env.PORT
@@ -48,7 +65,7 @@ const port = process.env.DEV_APP_PORT || process.env.PORT
 
 // Don't rate limit heroku
 app.enable('trust proxy')
-if (!DEBUG) {
+if (!DEBUG && process.env.PUBLIC_DIR) {
   app.use(express.static(process.env.PUBLIC_DIR, {
     maxAge: '180 days'
   }))
@@ -63,7 +80,7 @@ app.use(cookieSession({
     secure: !DEBUG,
     maxAge: null
   },
-  secret: process.env.SESSION_SECRET
+  secret: process.env.SESSION_SECRET || global.SESSION_SECRET
 }))
 app.use(passport.initialize())
 app.use(passport.session())
