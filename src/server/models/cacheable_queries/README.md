@@ -21,13 +21,13 @@ may change.  Nonetheless, the first round has the following goals:
 
 ## Cached Objects (with most common lookup method)
 
-* user
+* user `userLoggedIn(authId)`
 * organization `load(id)`
 * campaign `load(id)`
-* cannedResponse
+* cannedResponse `query({ campaignId, userId })` (userId='' for campaign-wide canned responses)
 * optOut `query({ cell, organizationId })`, `save({cell, campaignContactId, campaign, assignmentId, reason})`
 * assignment `load(id)`
-  * assignment-contacts
+  * assignment-contacts `getContacts(assignment, contactsFilter, organization, campaign, forCount, justCount, justIds)`
 * campaign-contact `load(id)`
 * message `query({ campaignContactId })`, `save({messageInstance, contact})`
 
@@ -44,7 +44,7 @@ If you are loading an object by id, then the best way to do that in server code 
 use the `loaders` object, e.g. `await loaders.campaign.load(campaignId)` will return
 a campaign object however is best (cache or not).
 
-In api resolvers (i.e. the methods in /api/*.js files), occasionally the method may have a
+In api resolvers (i.e. the methods in `server/api/*.js` files), occasionally the method may have a
 cached version already populated on the object.
 For example in `server/api/campaign.js` interactionSteps is cached *with* the campaign object,
 so by the time you get to the `interactionSteps` resolver, the result is available already.

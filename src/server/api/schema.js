@@ -949,6 +949,7 @@ const rootMutations = {
         text: replaceCurlyApostrophes(text),
         contact_number: contactNumber,
         user_number: '',
+        user_id: user.id,
         assignment_id: message.assignmentId,
         campaign_contact_id: contact.id,
         messageservice_sid: getMessageServiceSid(organization),
