@@ -422,7 +422,7 @@ const rootMutations = {
         } else { // userOrg exists
           console.log('existing userOrg ' + userOrg.id + ' user ' + user.id + ' organizationUuid ' + organizationUuid )
         }
-      } else { // no organization 
+      } else { // no organization
         console.log('no organization with id ' + organizationUuid + ' for user ' + user.id)
       }
       return organization
@@ -519,6 +519,7 @@ const rootMutations = {
       await accessRequired(user, campaign.organizationId, 'ADMIN', /* allowSuperadmin=*/ true)
       const campaignInstance = new Campaign({
         organization_id: campaign.organizationId,
+        creator_id: user.id,
         title: campaign.title,
         description: campaign.description,
         due_by: campaign.dueBy,
@@ -534,6 +535,7 @@ const rootMutations = {
 
       const campaignInstance = new Campaign({
         organization_id: campaign.organization_id,
+        creator_id: user.id,
         title: 'COPY - ' + campaign.title,
         description: campaign.description,
         due_by: campaign.dueBy,
