@@ -533,13 +533,13 @@ export async function assignTexters(job) {
   const dynamic = campaign.use_dynamic_assignment
   // detect changed assignments
   currentAssignments.map((assignment) => {
-    const texter = texters.filter((ele) => parseInt(ele.id, 10) === assignment.user_id)[0]
-    const unchangedMaxContacts =
-      parseInt(texter.maxContacts, 10) === assignment.max_contacts || // integer = integer
-      texter.maxContacts === assignment.max_contacts // null = null
-    const unchangedNeedsMessageCount =
-      texter.needsMessageCount === parseInt(assignment.needs_message_count, 10)
+    const texter = texters.filter((texter) => parseInt(texter.id, 10) === assignment.user_id)[0]
     if (texter) {
+      const unchangedMaxContacts =
+        parseInt(texter.maxContacts, 10) === assignment.max_contacts || // integer = integer
+        texter.maxContacts === assignment.max_contacts // null = null
+      const unchangedNeedsMessageCount =
+        texter.needsMessageCount === parseInt(assignment.needs_message_count, 10)
       if ((!dynamic && unchangedNeedsMessageCount) || (dynamic && unchangedMaxContacts)) {
         unchangedTexters[assignment.user_id] = true
         return null
@@ -559,7 +559,8 @@ export async function assignTexters(job) {
         }
       }
       return assignment
-    } else { // new texter
+    } else { // deleted texter
+      demotedTexters[assignment.id] = assignment.needs_message_count
       return assignment
     }
   }).filter((ele) => ele !== null)
