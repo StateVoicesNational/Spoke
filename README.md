@@ -44,8 +44,10 @@ context.idToken["https://spoke/user_metadata"] = user.user_metadata;
 callback(null, user, context);
 }
 ```
-11. Update the Auth0 [Universal Landing page](https://manage.auth0.com/#/login_page), click on the `Customize Login Page` toggle, and copy and paste following code into the `Default Templates` space:
-    ```html
+11. Update the Auth0 [Universal Landing page](https://manage.auth0.com/#/login_page), click on the `Customize Login Page` toggle, and copy and paste following code in the drop down into the `Default Templates` space:
+<details>
+<summary> Code to paste into Auth0</summary>
+
     <!DOCTYPE html>
     <html>
     <head>
@@ -137,7 +139,7 @@ callback(null, user, context);
       </script>
     </body>
     </html>
-    ```
+</details>
 12. If the application is still running from step 8, kill the process and re-run `npm run dev` to restart the app. Wait until you see both "Node app is running ..." and "webpack: Compiled successfully." before attempting to connect. (make sure environment variable `JOBS_SAME_PROCESS=1`)
 13. Go to `http://localhost:3000` to load the app.
 14. As long as you leave `SUPPRESS_SELF_INVITE=` blank and unset in your `.env` you should be able to invite yourself from the homepage.
