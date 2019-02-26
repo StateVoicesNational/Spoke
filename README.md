@@ -145,11 +145,11 @@ callback(null, user, context);
 13. Go to `http://localhost:3000` to load the app.
 14. As long as you leave `SUPPRESS_SELF_INVITE=` blank and unset in your `.env` you should be able to invite yourself from the homepage.
     - If you DO set that variable, then spoke will be invite-only and you'll need to generate an invite. Run:
-```
-echo "INSERT INTO invite (hash,is_valid) VALUES ('abc', 1);" |sqlite3 mydb.sqlite
-# Note: When doing this with PostgreSQL, you would replace the `1` with `true`
-```
-  - Then use the generated key to visit an invite link, e.g.: http://localhost:3000/invite/abc. This should redirect you to the login screen. Use the "Sign Up" option to create your account.
+      ```
+      echo "INSERT INTO invite (hash,is_valid) VALUES ('abc', 1);" |sqlite3 mydb.sqlite
+      # Note: When doing this with PostgreSQL, you would replace the `1` with `true`
+      ```
+    - Then use the generated key to visit an invite link, e.g.: http://localhost:3000/invite/abc. This should redirect you to the login screen. Use the "Sign Up" option to create your account.
 
 15. You should then be prompted to create an organization. Create it.
 
