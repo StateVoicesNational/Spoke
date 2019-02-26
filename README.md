@@ -45,9 +45,11 @@ callback(null, user, context);
 }
 ```
 11. Update the Auth0 [Universal Landing page](https://manage.auth0.com/#/login_page), click on the `Customize Login Page` toggle, and copy and paste following code in the drop down into the `Default Templates` space:
-<details>
-<summary> Code to paste into Auth0</summary>
 
+    <details>
+    <summary>Code to paste into Auth0</summary>
+
+    ```html
     <!DOCTYPE html>
     <html>
     <head>
@@ -57,7 +59,6 @@ callback(null, user, context);
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     </head>
     <body>
-
       <!--[if IE 8]>
       <script src="//cdnjs.cloudflare.com/ajax/libs/ie8/0.2.5/ie8.js"></script>
       <![endif]-->
@@ -66,7 +67,6 @@ callback(null, user, context);
       <script src="https://cdn.auth0.com/js/base64.js"></script>
       <script src="https://cdn.auth0.com/js/es5-shim.min.js"></script>
       <![endif]-->
-
       <script src="https://cdn.auth0.com/js/lock/11.11/lock.min.js"></script>
       <script>
         // Decode utf8 characters properly
@@ -92,12 +92,12 @@ callback(null, user, context);
               (config.callbackOnLocationHash ? 'token' : 'code'),
             params: config.internalOptions
           },
-          /* additional configuration needed for custom domains
-          configurationBaseUrl: config.clientConfigurationBaseUrl,
-          overrides: {
-            __tenant: config.auth0Tenant,
-            __token_issuer: 'YOUR_CUSTOM_DOMAIN'
-          }, */
+          // Additional configuration needed for custom domains: https://auth0.com/docs/custom-domains/additional-configuration
+          // configurationBaseUrl: config.clientConfigurationBaseUrl,
+          // overrides: {
+          //   __tenant: config.auth0Tenant,
+          //   __token_issuer: 'YOUR_CUSTOM_DOMAIN'
+          // },
           assetsUrl:  config.assetsUrl,
           allowedConnections: ['Username-Password-Authentication'],
           rememberLastLogin: !prompt,
@@ -131,15 +131,16 @@ callback(null, user, context);
           prefill: loginHint ? { email: loginHint, username: loginHint } : null,
           closable: false,
           defaultADUsernameFromEmailPrefix: false,
-          // uncomment if you want small buttons for social providers
+          // Uncomment if you want small buttons for social providers
           // socialButtonStyle: 'small'
         });
-
         lock.show();
       </script>
     </body>
     </html>
-</details>
+    ```
+
+    </details>
 12. If the application is still running from step 8, kill the process and re-run `npm run dev` to restart the app. Wait until you see both "Node app is running ..." and "webpack: Compiled successfully." before attempting to connect. (make sure environment variable `JOBS_SAME_PROCESS=1`)
 13. Go to `http://localhost:3000` to load the app.
 14. As long as you leave `SUPPRESS_SELF_INVITE=` blank and unset in your `.env` you should be able to invite yourself from the homepage.
