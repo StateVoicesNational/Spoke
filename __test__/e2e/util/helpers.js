@@ -10,7 +10,7 @@ const saucelabs = new SauceLabs({
   password: process.env.SAUCE_ACCESS_KEY
 })
 
-const defaultWait = 10000
+const defaultWait = 3000
 
 export const selenium = {
   buildDriver(options) {

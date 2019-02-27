@@ -11,21 +11,13 @@ export const login = {
     it('gets the landing page', async () => {
       await driver.get(config.baseUrl)
     })
-
-    it('clicks the login link', async () => {
-      // Click on the login button
-      wait.andClick(driver, pom.login.loginGetStarted, { msWait: 50000, waitAfterVisible: 2000 })
-
-      // Wait until the Auth0 login page loads
-      await driver.wait(until.urlContains(urlBuilder.login))
-    })
   },
   signUpTab(driver, user) {
     let skip = false // Assume that these tests will proceed
     it('opens the Sign Up tab', async () => {
       skip = !!global.e2e[user.name].loginSucceeded // Skip tests if the login succeeded
       if (!skip) {
-        wait.andClick(driver, auth0.tabs.signIn, { msWait: 20000 })
+        wait.andClick(driver, auth0.tabs.signIn, { msWait: 4000 })
       }
     })
 
@@ -58,7 +50,7 @@ export const login = {
   },
   logIn(driver, user) {
     it('opens the Log In tab', async () => {
-      await wait.andClick(driver, auth0.tabs.logIn, { msWait: 50000 })
+      await wait.andClick(driver, auth0.tabs.logIn, { msWait: 4000 })
     })
 
     it('fills in the existing user details', async () => {
