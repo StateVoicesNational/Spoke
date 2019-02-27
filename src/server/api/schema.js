@@ -454,7 +454,7 @@ const rootMutations = {
         await Assignment.save({
           user_id: user.id,
           campaign_id: campaign.id,
-          max_contacts: parseInt(process.env.MAX_CONTACTS_PER_TEXTER || 0, 10)
+          max_contacts: (process.env.MAX_CONTACTS_PER_TEXTER ? parseInt(process.env.MAX_CONTACTS_PER_TEXTER, 10) : null )
         })
       }
       return campaign
