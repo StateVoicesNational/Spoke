@@ -53,9 +53,19 @@ class Login extends React.Component {
     }
   }
 
+  componentDidMount = () => {
+    if (!this.naiveVerifyInviteValid(this.props.location.query.nextUrl)) {
+      this.props.router.push('/login')
+    }
+  }
+
   handleClick = e => {
     this.setState({ active: e.target.name })
   }
+
+  naiveVerifyInviteValid = nextUrl => (
+    /\/\w{8}-(\w{4}\-){3}\w{12}(\/|$)/.test(nextUrl)
+  )
 
   render() {
     const auth0Strategy =
@@ -63,18 +73,30 @@ class Login extends React.Component {
       window.PASSPORT_STRATEGY === ''
     const auth0Login = isClient() && auth0Strategy
 
-    const { location, router } = this.props
+    const { location: { query: { nextUrl } }, router
+    } = this.props
+
+    // If nextUrl is a valid (naive RegEx only) invite or organization,
+    // UUID display Sign Up section. Full validation done on backend.
+    const inviteLink = nextUrl && (
+      nextUrl.includes('join') ||
+      nextUrl.includes('invite')
+    )
+    let displaySignUp
+    if (inviteLink) {
+      displaySignUp = this.naiveVerifyInviteValid(nextUrl)
+    }
 
     return (
       <div className={css(styles.authContainer)}>
         {/* Use auth0 */}
-        {auth0Login && window.AuthService.login(location.query.nextUrl)}
+        {auth0Login && window.AuthService.login(nextUrl)}
 
         {/* Show UserEdit component configured for login / signup */}
         {!auth0Login &&
           <div>
             {/* Only display sign up option if there is a nextUrl */}
-            {location.search &&
+            {displaySignUp &&
               <section>
                 <button
                   className={css(styles.button)}
@@ -101,7 +123,7 @@ class Login extends React.Component {
                 authType={this.state.active}
                 saveLabel={this.state.active === 'login' ? 'Log in' : 'Sign up'}
                 router={router}
-                location={location}
+                nextUrl={nextUrl}
                 style={css(styles.authFields)}
               />
             </div>
