@@ -3,11 +3,8 @@ import Auth0Strategy from 'passport-auth0'
 import AuthHasher from 'passport-local-authenticate'
 import { Strategy as LocalStrategy } from 'passport-local'
 import { userLoggedIn } from './models/cacheable_queries'
-import { User } from './models'
+import { User, Invite, Organization } from './models'
 import wrap from './wrap'
-
-// login callback
-// create user
 
 export function setupAuth0Passport() {
   const strategy = new Auth0Strategy({
@@ -79,40 +76,76 @@ export function setupLocalAuthPassport() {
   }, wrap(async (req, username, password, done) => {
     const lowerCaseEmail = username.toLowerCase()
     const existingUser = await User.filter({ email: lowerCaseEmail })
-    if (existingUser.length > 0) {
-      const pwFieldSplit = existingUser[0].auth0_id.split('|')
-      const hashed = {
-        salt: pwFieldSplit[1],
-        hash: pwFieldSplit[2]
+    const nextUrl = req.body.nextUrl || ''
+    const uuidMatch = nextUrl.match(/\w{9}-(\w{4}\-){3}\w{12}/)
+
+    if (uuidMatch) {
+      let validUUID
+      if (nextUrl.includes('join')) {
+        validUUID = await Organization.filter({ uuid: uuidMatch[0] })
+      } else {
+        validUUID = await Invite.filter({ hash: uuidMatch[0] })
       }
-      AuthHasher.verify(
-        password, hashed,
-        (err, verified) => (verified
-          ? done(null, existingUser[0])
-          : done(null, false))
-      )
-    } else {
-      // create the user
-      AuthHasher.hash(password, async function (err, hashed) {
-        const passwordToSave = `localauth|${hashed.salt}|${hashed.hash}`
-        // .salt and .hash
-        const user = await User.save({
-          email: username,
-          auth0_id: passwordToSave,
-          first_name: req.body.firstName,
-          last_name: req.body.lastName,
-          cell: req.body.cell,
-          is_superadmin: false
+      if (!validUUID) {
+        return done(null, false)
+      }
+    }
+
+    switch (req.body.authType) {
+      case 'login':
+        if (existingUser.length > 0) {
+          const pwFieldSplit = existingUser[0].auth0_id.split('|')
+          const hashed = {
+            salt: pwFieldSplit[1],
+            hash: pwFieldSplit[2]
+          }
+          return AuthHasher.verify(
+            password, hashed,
+            (err, verified) => (verified
+              ? done(null, existingUser[0])
+              : done(null, false, 'Invalid username or password'))
+          )
+        }
+        return done(null, false)
+      case 'signup':
+        // Verify user doesn't already exist
+        if (existingUser.length > 0 && existingUser[0].email === lowerCaseEmail) {
+          return done(null, false, 'That email is taken.')
+        }
+
+        // Verify password and password confirm fields match
+        if (password !== req.body.passwordConfirm) {
+          return done(null, false, 'Passwords don\'t match.')
+        }
+
+        // create the user
+        return AuthHasher.hash(password, async function (err, hashed) {
+          // .salt and .hash
+          const passwordToSave = `localauth|${hashed.salt}|${hashed.hash}`
+          const user = await User.save({
+            email: username,
+            auth0_id: passwordToSave,
+            first_name: req.body.firstName,
+            last_name: req.body.lastName,
+            cell: req.body.cell,
+            is_superadmin: false
+          })
+          return done(null, user)
         })
-        done(null, user)
-      })
+      case 'reset':
+        // TO-DO: Backend flow to reset a password.
+        return done(null, false)
+      default:
+        return done(null, false)
     }
   }))
+
   passport.use(strategy)
 
   passport.serializeUser((user, done) => {
     done(null, user.id)
   })
+
   passport.deserializeUser(wrap(async (id, done) => {
     const user = await userLoggedIn('id', parseInt(id, 10))
     done(null, user || false)
@@ -120,7 +153,9 @@ export function setupLocalAuthPassport() {
 
   return {
     loginCallback: [
-      passport.authenticate('local'),
+      passport.authenticate('local', {
+        failureRedirect: '/login'
+      }),
       (req, res) => {
         res.redirect(req.body.nextUrl || '/')
       }
