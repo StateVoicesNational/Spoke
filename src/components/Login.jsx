@@ -15,7 +15,8 @@ const styles = StyleSheet.create({
   },
   fieldContainer: {
     background: theme.colors.white,
-    padding: '15px'
+    padding: '15px',
+    width: '256px'
   },
   authContainer: {
     display: 'flex',
