@@ -77,17 +77,18 @@ export function setupLocalAuthPassport() {
     const lowerCaseEmail = username.toLowerCase()
     const existingUser = await User.filter({ email: lowerCaseEmail })
     const nextUrl = req.body.nextUrl || ''
-    const uuidMatch = nextUrl.match(/\w{9}-(\w{4}\-){3}\w{12}/)
+    const uuidMatch = nextUrl.match(/\w{8}-(\w{4}\-){3}\w{12}/)
 
+    // Verify UUID or invite code
     if (uuidMatch) {
-      let validUUID
+      let foundUUID
       if (nextUrl.includes('join')) {
-        validUUID = await Organization.filter({ uuid: uuidMatch[0] })
+        foundUUID = await Organization.filter({ uuid: uuidMatch[0] })
       } else {
-        validUUID = await Invite.filter({ hash: uuidMatch[0] })
+        foundUUID = await Invite.filter({ hash: uuidMatch[0] })
       }
-      if (!validUUID) {
-        return done(null, false)
+      if (foundUUID.length === 0) {
+        return done(null, false, 'Invalid invite code. Contact your administrator.')
       }
     }
 
@@ -106,11 +107,11 @@ export function setupLocalAuthPassport() {
               : done(null, false, 'Invalid username or password'))
           )
         }
-        return done(null, false)
+        return done(null, false, 'Invalid username or password')
       case 'signup':
         // Verify user doesn't already exist
         if (existingUser.length > 0 && existingUser[0].email === lowerCaseEmail) {
-          return done(null, false, 'That email is taken.')
+          return done(null, false, 'That email is already taken.')
         }
 
         // Verify password and password confirm fields match
@@ -153,9 +154,7 @@ export function setupLocalAuthPassport() {
 
   return {
     loginCallback: [
-      passport.authenticate('local', {
-        failureRedirect: '/login'
-      }),
+      passport.authenticate('local'),
       (req, res) => {
         res.redirect(req.body.nextUrl || '/')
       }
