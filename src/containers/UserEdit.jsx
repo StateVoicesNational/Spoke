@@ -37,7 +37,8 @@ class UserEdit extends React.Component {
     } else {
       // log in or sign up
       const allData = {
-        nextUrl: this.props.location.query.nextUrl,
+        nextUrl: this.props.nextUrl,
+        authType: this.props.authType,
         ...formData
       }
       const res = await fetch('/login-callback', {
@@ -45,13 +46,11 @@ class UserEdit extends React.Component {
         body: JSON.stringify(allData),
         headers: { 'Content-Type': 'application/json' }
       })
-      const { redirected, status, url } = res
+      const { redirected, headers, status, url } = res
       if (redirected && status === 200) {
         this.props.router.push(url)
-      } else if (!redirected && status === 401) {
-        throw new Error('Invalid username or password')
       } else {
-        throw new Error()
+        throw new Error(headers.get('www-authenticate') || '')
       }
     }
   }
@@ -130,7 +129,7 @@ UserEdit.propTypes = {
   onRequestClose: PropTypes.func,
   saveLabel: PropTypes.string,
   authType: PropTypes.string,
-  location: PropTypes.object,
+  nextUrl: PropTypes.string,
   style: PropTypes.string
 }
 
