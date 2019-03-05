@@ -399,9 +399,27 @@ const rootMutations = {
         return userData
       }
     },
+    resetUserPassword: async (_, { organizationId, userId }, { user }) => {
+      if (user.id === userId) {
+        throw new GraphQLError('You can\'t reset your own password.')
+      }
+      await accessRequired(user, organizationId, 'ADMIN', true)
+
+      // Add date at the end in case user record is modified after password is reset
+      const passwordResetHash = uuidv4()
+      const auth0_id = `reset|${passwordResetHash}|${Date.now()}`
+
+      const userRes = await r
+        .knex('user')
+        .where('id', userId)
+        .update({
+          auth0_id
+        })
+      return passwordResetHash
+    },
     joinOrganization: async (_, { organizationUuid }, { user, loaders }) => {
       let organization
-      ;[organization] = await r.knex('organization').where('uuid', organizationUuid)
+        ;[organization] = await r.knex('organization').where('uuid', organizationUuid)
       if (organization) {
         const userOrg = await r
           .table('user_organization')
@@ -414,15 +432,15 @@ const rootMutations = {
             user_id: user.id,
             organization_id: organization.id,
             role: 'TEXTER'
-          }).error(function(error) {
+          }).error(function (error) {
             // Unexpected errors
             console.log("error on userOrganization save", error)
           });
 
         } else { // userOrg exists
-          console.log('existing userOrg ' + userOrg.id + ' user ' + user.id + ' organizationUuid ' + organizationUuid )
+          console.log('existing userOrg ' + userOrg.id + ' user ' + user.id + ' organizationUuid ' + organizationUuid)
         }
-      } else { // no organization 
+      } else { // no organization
         console.log('no organization with id ' + organizationUuid + ' for user ' + user.id)
       }
       return organization
@@ -995,7 +1013,7 @@ const rootMutations = {
         const service = serviceMap[messageInstance.service || process.env.DEFAULT_SERVICE]
         log.info(
           `Sending (${service}): ${messageInstance.user_number} -> ${
-            messageInstance.contact_number
+          messageInstance.contact_number
           }\nMessage: ${messageInstance.text}`
         )
         service.sendMessage(messageInstance)
@@ -1105,7 +1123,7 @@ const rootMutations = {
     ) => {
       // verify permissions
       await accessRequired(user, organizationId, 'ADMIN', /* superadmin*/ true)
-      const { campaignIdContactIdsMap, campaignIdMessagesIdsMap }  =
+      const { campaignIdContactIdsMap, campaignIdMessagesIdsMap } =
         await getCampaignIdMessageIdsAndCampaignIdContactIdsMaps(
           organizationId,
           campaignsFilter,
@@ -1213,11 +1231,11 @@ const rootResolvers = {
         utc
       )
     },
-    campaigns: async (_, {organizationId, cursor, campaignsFilter}, {user}) => {
+    campaigns: async (_, { organizationId, cursor, campaignsFilter }, { user }) => {
       await accessRequired(user, organizationId, 'SUPERVOLUNTEER')
       return getCampaigns(organizationId, cursor, campaignsFilter)
     },
-    people: async (_, {organizationId, cursor, campaignsFilter, role}, {user}) => {
+    people: async (_, { organizationId, cursor, campaignsFilter, role }, { user }) => {
       await accessRequired(user, organizationId, 'SUPERVOLUNTEER')
       return getUsers(organizationId, cursor, campaignsFilter, role)
     }
