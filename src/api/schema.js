@@ -192,6 +192,7 @@ const rootSchema = `
     joinOrganization(organizationUuid: String!): Organization
     editOrganizationRoles(organizationId: String!, userId: String!, campaignId: String, roles: [String]): Organization
     editUser(organizationId: String!, userId: Int!, userData:UserInput): User
+    resetUserPassword(organizationId: String!, userId: Int!): String!
     updateTextingHours( organizationId: String!, textingHoursStart: Int!, textingHoursEnd: Int!): Organization
     updateTextingHoursEnforcement( organizationId: String!, textingHoursEnforced: Boolean!): Organization
     updateOptOutMessage( organizationId: String!, optOutMessage: String!): Organization
