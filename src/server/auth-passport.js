@@ -80,7 +80,7 @@ export function setupLocalAuthPassport() {
     const uuidMatch = nextUrl.match(/\w{8}-(\w{4}\-){3}\w{12}/)
 
     // Verify UUID or invite code
-    if (uuidMatch) {
+    if (uuidMatch && req.body.authType !== 'reset') {
       let foundUUID
       if (nextUrl.includes('join')) {
         foundUUID = await Organization.filter({ uuid: uuidMatch[0] })
@@ -108,6 +108,7 @@ export function setupLocalAuthPassport() {
           )
         }
         return done(null, false, 'Invalid username or password')
+
       case 'signup':
         // Verify user doesn't already exist
         if (existingUser.length > 0 && existingUser[0].email === lowerCaseEmail) {
@@ -133,9 +134,33 @@ export function setupLocalAuthPassport() {
           })
           return done(null, user)
         })
-      case 'reset':
-        // TO-DO: Backend flow to reset a password.
-        return done(null, false)
+
+      case 'reset': {
+        if (existingUser.length === 0) {
+          return done(null, false, 'Invalid username or password reset link. Contact your administrator.')
+        }
+        const pwFieldSplit = existingUser[0].auth0_id.split('|')
+        const [resetHash, datetime] = [pwFieldSplit[1], pwFieldSplit[2]]
+        const isExpired = (Date.now() - datetime) / 1000 / 60 > 15
+
+        if (isExpired) {
+          return done(null, false, 'Password reset link has expired. Contact your administrator.')
+        }
+        if (uuidMatch[0] !== resetHash) {
+          return done(null, false, 'Invalid username or password reset link. Contact your administrator.')
+        }
+        if (password !== req.body.passwordConfirm) {
+          return done(null, false, 'Passwords don\'t match.')
+        }
+        return AuthHasher.hash(password, async function (err, hashed) {
+          // .salt and .hash
+          const passwordToSave = `localauth|${hashed.salt}|${hashed.hash}`
+          const updatedUser = await User.get(existingUser[0].id).update({ auth0_id: passwordToSave }).run()
+          req.body.nextUrl = ''
+          return done(null, updatedUser)
+        })
+      }
+
       default:
         return done(null, false)
     }
