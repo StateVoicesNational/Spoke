@@ -35,7 +35,7 @@ class UserEdit extends React.Component {
         this.props.onRequestClose()
       }
     } else {
-      // log in or sign up
+      // log in, sign up, or reset
       const allData = {
         nextUrl: this.props.nextUrl,
         authType: this.props.authType,
@@ -48,7 +48,7 @@ class UserEdit extends React.Component {
       })
       const { redirected, headers, status, url } = res
       if (redirected && status === 200) {
-        this.props.router.push(url)
+        this.props.router.replace(url)
       } else {
         throw new Error(headers.get('www-authenticate') || '')
       }
@@ -65,7 +65,7 @@ class UserEdit extends React.Component {
       }
     }
 
-    if (this.props.authType === 'signup') {
+    if (this.props.authType === 'signup' || this.props.authType === 'reset') {
       passwordFields = {
         ...passwordFields,
         passwordConfirm: yup
@@ -76,7 +76,7 @@ class UserEdit extends React.Component {
     }
 
     let userFields = {}
-    if (this.props.authType !== 'login') {
+    if (this.props.authType !== 'login' && this.props.authType !== 'reset') {
       userFields = {
         firstName: yup.string().required(),
         lastName: yup.string().required(),
@@ -98,7 +98,7 @@ class UserEdit extends React.Component {
         className={this.props.style}
       >
         <Form.Field label='Email' name='email' {...dataTest('email')} />
-        {(this.props.authType !== 'login') &&
+        {(this.props.authType !== 'login' && this.props.authType !== 'reset') &&
           <div className={this.props.style}>
             <Form.Field label='First name' name='firstName' {...dataTest('firstName')} />
             <Form.Field label='Last name' name='lastName' {...dataTest('lastName')} />
@@ -108,7 +108,7 @@ class UserEdit extends React.Component {
         {(this.props.authType) &&
           <Form.Field label='Password' name='password' type='password' />
         }
-        {this.props.authType === 'signup' &&
+        {(this.props.authType === 'signup' || this.props.authType === 'reset') &&
           <Form.Field label='Confirm Password' name='passwordConfirm' type='password' />
         }
         <Form.Button
