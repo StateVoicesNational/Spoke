@@ -56,7 +56,10 @@ class Login extends React.Component {
 
   componentDidMount = () => {
     if (!this.naiveVerifyInviteValid(this.props.location.query.nextUrl)) {
-      this.props.router.push('/login')
+      this.props.router.replace('/login')
+    }
+    if (this.props.location.query.nextUrl && this.props.location.query.nextUrl.includes('reset')) {
+      this.setState({ active: 'reset' })
     }
   }
 
@@ -77,7 +80,7 @@ class Login extends React.Component {
     const { location: { query: { nextUrl } }, router
     } = this.props
 
-    // If nextUrl is a valid (naive RegEx only) invite or organization,
+    // If nextUrl is a valid (naive RegEx only) invite or organization
     // UUID display Sign Up section. Full validation done on backend.
     const inviteLink = nextUrl && (
       nextUrl.includes('join') ||
@@ -86,6 +89,12 @@ class Login extends React.Component {
     let displaySignUp
     if (inviteLink) {
       displaySignUp = this.naiveVerifyInviteValid(nextUrl)
+    }
+
+    const saveLabels = {
+      login: 'Log In',
+      signup: 'Sign Up',
+      reset: 'Save New Password'
     }
 
     return (
@@ -122,7 +131,7 @@ class Login extends React.Component {
             <div className={css(styles.fieldContainer)}>
               <UserEdit
                 authType={this.state.active}
-                saveLabel={this.state.active === 'login' ? 'Log in' : 'Sign up'}
+                saveLabel={saveLabels[this.state.active]}
                 router={router}
                 nextUrl={nextUrl}
                 style={css(styles.authFields)}
