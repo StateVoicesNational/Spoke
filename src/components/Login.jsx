@@ -9,16 +9,12 @@ import { isClient } from '../lib'
 import UserEdit from '../containers/UserEdit'
 
 const styles = StyleSheet.create({
-  authFields: {
-    display: 'flex',
-    'flex-direction': 'column'
-  },
   fieldContainer: {
     background: theme.colors.white,
     padding: '15px',
     width: '256px'
   },
-  authContainer: {
+  loginPage: {
     display: 'flex',
     'justify-content': 'center',
     'align-items': 'flex-start',
@@ -35,8 +31,7 @@ const styles = StyleSheet.create({
     'text-transform': 'uppercase',
     cursor: 'pointer',
     width: '50%',
-    'transition-timing-function': 'linear',
-    'transition-duration': '0.05s',
+    transition: 'all 0.3s',
     ':disabled': {
       background: theme.colors.white,
       cursor: 'default',
@@ -46,7 +41,6 @@ const styles = StyleSheet.create({
 })
 
 class Login extends React.Component {
-
   constructor(props) {
     super(props)
     this.state = {
@@ -98,7 +92,7 @@ class Login extends React.Component {
     }
 
     return (
-      <div className={css(styles.authContainer)}>
+      <div className={css(styles.loginPage)}>
         {/* Use auth0 */}
         {auth0Login && window.AuthService.login(nextUrl)}
 

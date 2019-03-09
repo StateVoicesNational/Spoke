@@ -99,11 +99,11 @@ class UserEdit extends React.Component {
       >
         <Form.Field label='Email' name='email' {...dataTest('email')} />
         {(this.props.authType !== 'login' && this.props.authType !== 'reset') &&
-          <div className={this.props.style}>
+          <span>
             <Form.Field label='First name' name='firstName' {...dataTest('firstName')} />
             <Form.Field label='Last name' name='lastName' {...dataTest('lastName')} />
             <Form.Field label='Cell Number' name='cell' {...dataTest('cell')} />
-          </div>
+          </span>
         }
         {(this.props.authType) &&
           <Form.Field label='Password' name='password' type='password' />
