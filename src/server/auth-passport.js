@@ -3,7 +3,7 @@ import Auth0Strategy from 'passport-auth0'
 import { Strategy as LocalStrategy } from 'passport-local'
 import { userLoggedIn } from './models/cacheable_queries'
 import { User } from './models'
-import localAuthHelpers, { validUuid } from './local-auth-helpers'
+import localAuthHelpers from './local-auth-helpers'
 import wrap from './wrap'
 
 export function setupAuth0Passport() {
@@ -83,15 +83,19 @@ export function setupLocalAuthPassport() {
     if (req.body.authType && !localAuthHelpers[req.body.authType]) {
       return done(null, false)
     }
-    localAuthHelpers[req.body.authType]({
-      done,
-      lowerCaseEmail,
-      password,
-      existingUser,
-      nextUrl,
-      uuidMatch,
-      reqBody: req.body
-    })
+    try {
+      const result = await localAuthHelpers[req.body.authType]({
+        lowerCaseEmail,
+        password,
+        existingUser,
+        nextUrl,
+        uuidMatch,
+        reqBody: req.body
+      })
+      return done(...result)
+    } catch (err) {
+      return done(null, false)
+    }
   }))
 
   passport.use(strategy)
