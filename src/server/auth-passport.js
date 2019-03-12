@@ -1,9 +1,9 @@
 import passport from 'passport'
 import Auth0Strategy from 'passport-auth0'
-import AuthHasher from 'passport-local-authenticate'
 import { Strategy as LocalStrategy } from 'passport-local'
 import { userLoggedIn } from './models/cacheable_queries'
-import { User, Invite, Organization } from './models'
+import { User } from './models'
+import localAuthHelpers, { validUuid } from './local-auth-helpers'
 import wrap from './wrap'
 
 export function setupAuth0Passport() {
@@ -79,91 +79,19 @@ export function setupLocalAuthPassport() {
     const nextUrl = req.body.nextUrl || ''
     const uuidMatch = nextUrl.match(/\w{8}-(\w{4}\-){3}\w{12}/)
 
-    // Verify UUID or invite code
-    if (uuidMatch && req.body.authType !== 'reset') {
-      let foundUUID
-      if (nextUrl.includes('join')) {
-        foundUUID = await Organization.filter({ uuid: uuidMatch[0] })
-      } else {
-        foundUUID = await Invite.filter({ hash: uuidMatch[0] })
-      }
-      if (foundUUID.length === 0) {
-        return done(null, false, 'Invalid invite code. Contact your administrator.')
-      }
+    // Run login, signup, or reset functions based on request data
+    if (req.body.authType && !localAuthHelpers[req.body.authType]) {
+      return done(null, false)
     }
-
-    switch (req.body.authType) {
-      case 'login':
-        if (existingUser.length > 0) {
-          const pwFieldSplit = existingUser[0].auth0_id.split('|')
-          const hashed = {
-            salt: pwFieldSplit[1],
-            hash: pwFieldSplit[2]
-          }
-          return AuthHasher.verify(
-            password, hashed,
-            (err, verified) => (verified
-              ? done(null, existingUser[0])
-              : done(null, false, 'Invalid username or password'))
-          )
-        }
-        return done(null, false, 'Invalid username or password')
-
-      case 'signup':
-        // Verify user doesn't already exist
-        if (existingUser.length > 0 && existingUser[0].email === lowerCaseEmail) {
-          return done(null, false, 'That email is already taken.')
-        }
-
-        // Verify password and password confirm fields match
-        if (password !== req.body.passwordConfirm) {
-          return done(null, false, 'Passwords don\'t match.')
-        }
-
-        // create the user
-        return AuthHasher.hash(password, async function (err, hashed) {
-          // .salt and .hash
-          const passwordToSave = `localauth|${hashed.salt}|${hashed.hash}`
-          const user = await User.save({
-            email: username,
-            auth0_id: passwordToSave,
-            first_name: req.body.firstName,
-            last_name: req.body.lastName,
-            cell: req.body.cell,
-            is_superadmin: false
-          })
-          return done(null, user)
-        })
-
-      case 'reset': {
-        if (existingUser.length === 0) {
-          return done(null, false, 'Invalid username or password reset link. Contact your administrator.')
-        }
-        const pwFieldSplit = existingUser[0].auth0_id.split('|')
-        const [resetHash, datetime] = [pwFieldSplit[1], pwFieldSplit[2]]
-        const isExpired = (Date.now() - datetime) / 1000 / 60 > 15
-
-        if (isExpired) {
-          return done(null, false, 'Password reset link has expired. Contact your administrator.')
-        }
-        if (uuidMatch[0] !== resetHash) {
-          return done(null, false, 'Invalid username or password reset link. Contact your administrator.')
-        }
-        if (password !== req.body.passwordConfirm) {
-          return done(null, false, 'Passwords don\'t match.')
-        }
-        return AuthHasher.hash(password, async function (err, hashed) {
-          // .salt and .hash
-          const passwordToSave = `localauth|${hashed.salt}|${hashed.hash}`
-          const updatedUser = await User.get(existingUser[0].id).update({ auth0_id: passwordToSave }).run()
-          req.body.nextUrl = ''
-          return done(null, updatedUser)
-        })
-      }
-
-      default:
-        return done(null, false)
-    }
+    localAuthHelpers[req.body.authType]({
+      done,
+      lowerCaseEmail,
+      password,
+      existingUser,
+      nextUrl,
+      uuidMatch,
+      reqBody: req.body
+    })
   }))
 
   passport.use(strategy)
