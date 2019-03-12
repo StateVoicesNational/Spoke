@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
   button: {
     border: 'none',
     background: theme.colors.lightGray,
-    color: theme.colors.green,
+    color: theme.colors.darkGreen,
     padding: '16px 16px',
     'font-size': '14px',
     'text-transform': 'uppercase',
@@ -35,8 +35,14 @@ const styles = StyleSheet.create({
     ':disabled': {
       background: theme.colors.white,
       cursor: 'default',
-      color: theme.colors.darkGreen
+      color: theme.colors.green
     }
+  },
+  header: {
+    ...theme.text.header,
+    color: theme.colors.green,
+    'text-align': 'center',
+    'margin-bottom': 0
   }
 })
 
@@ -123,6 +129,7 @@ class Login extends React.Component {
               </section >
             }
             <div className={css(styles.fieldContainer)}>
+              <h2 className={css(styles.header)}>Welcome to Spoke</h2>
               <UserEdit
                 authType={this.state.active}
                 saveLabel={saveLabels[this.state.active]}
