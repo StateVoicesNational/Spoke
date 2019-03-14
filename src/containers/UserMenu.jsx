@@ -11,8 +11,106 @@ import { connect } from 'react-apollo'
 import { withRouter } from 'react-router'
 import gql from 'graphql-tag'
 import { dataTest } from '../lib/attributes'
+import { hasRole } from '../lib/permissions'
 
 const avatarSize = 28
+
+class OrganizationItemInner extends Component {
+  componentDidMount() {
+    this.updateHasTeam()
+  }
+
+  componentDidUpdate() {
+    this.updateHasTeam()
+  }
+
+  isAdminOfOrg = () => {
+    if (this.props.data.loading) {
+      return false
+    }
+    const roles = this.props.data.currentUser.roles || []
+    return hasRole('SUPERVOLUNTEER', roles)
+  }
+
+  updateHasTeam = () => {
+    this.props.handleHasTeam(this.isAdminOfOrg())
+  }
+
+  handleClick = (event) => {
+    event.preventDefault()
+    this.props.router.push(`/admin/${this.props.organization.id}`)
+  }
+
+  render() {
+    const { organization } = this.props
+
+    if (!this.isAdminOfOrg()) {
+      return <div />
+    }
+
+    return (
+      <MenuItem
+        primaryText={organization.name}
+        value={organization.id}
+        onClick={this.handleClick}
+      />
+    )
+  }
+}
+
+const orgRoleProps = ({ ownProps }) => ({
+  data: {
+    query: gql`query getCurrentUserRoles($organizationId: String!) {
+      currentUser {
+        id
+        roles(organizationId: $organizationId)
+      }
+    }`,
+    variables: {
+      organizationId: ownProps.organization.id
+    }
+  }
+})
+
+const OrganizationItem = connect({
+  mapQueriesToProps: orgRoleProps
+})(withRouter(OrganizationItemInner))
+
+class TeamMenu extends Component {
+  constructor(props) {
+    super(props)
+
+    this.state = {
+      hasTeams: false
+    }
+  }
+
+  handleHasTeam = (hasTeam) => {
+    this.setState((currentState, currentProps) => ({
+      hasTeams: currentState.hasTeams || hasTeam
+    }))
+  }
+
+  render() {
+    return (
+      <div>
+        {this.state.hasTeams &&
+          <div>
+            <Divider />
+            <Subheader>Teams</Subheader>
+          </div>
+        }
+        {this.props.organizations.map((organization) => (
+          <OrganizationItem
+            key={organization.id}
+            organization={organization}
+            handleHasTeam={this.handleHasTeam}
+          />
+        ))}
+      </div>
+    )
+  }
+}
 
 class UserMenu extends Component {
   constructor(props) {
@@ -112,15 +210,7 @@ class UserMenu extends Component {
             >
               {currentUser.email}
             </MenuItem>
-            <Divider />
-            <Subheader>Teams</Subheader>
-            {currentUser.organizations.map((organization) => (
-              <MenuItem
-                key={organization.id}
-                primaryText={organization.name}
-                value={organization.id}
-              />
-            ))}
+            <TeamMenu organizations={currentUser.organizations} />
             <Divider />
             <MenuItem
               {...dataTest('home')}
