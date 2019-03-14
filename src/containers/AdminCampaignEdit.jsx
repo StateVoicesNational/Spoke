@@ -333,7 +333,10 @@ class AdminCampaignEdit extends React.Component {
       title: 'Interactions',
       content: CampaignInteractionStepsForm,
       keys: ['interactionSteps'],
-      checkCompleted: () => this.state.campaignFormValues.interactionSteps.length > 0,
+      checkCompleted: () => (
+        this.state.campaignFormValues.interactionSteps[0]
+          && this.state.campaignFormValues.interactionSteps.some(step => step.script)
+      ),
       blocksStarting: true,
       expandAfterCampaignStarts: true,
       expandableBySuperVolunteers: true,
