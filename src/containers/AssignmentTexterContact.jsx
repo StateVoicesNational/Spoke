@@ -218,7 +218,8 @@ export class AssignmentTexterContact extends React.Component {
       responsePopoverOpen: false,
       messageText: this.getStartingMessageText(),
       optOutDialogOpen: false,
-      currentInteractionStep: availableSteps.length > 0 ? availableSteps[availableSteps.length - 1] : null
+      currentInteractionStep: availableSteps.length > 0 ? availableSteps[availableSteps.length - 1] : null,
+      hasRSVPed: false
     }
     this.onEnter = this.onEnter.bind(this)
     this.setDisabled = this.setDisabled.bind(this)
@@ -715,22 +716,64 @@ export class AssignmentTexterContact extends React.Component {
 
   renderTopFixedSection() {
     const { contact } = this.props
+    const customFields = JSON.parse(contact.customFields)
+    const isEvent = !!customFields.event_id
+
+    const handleRSVP = () => {
+      if (this.state.hasRSVPed) {
+        return
+      }
+
+      if (confirm(`Are you sure? This will send a confirmation email to ${contact.firstName || 'the contact'}.`)) {
+        const xhr = new XMLHttpRequest()
+        xhr.open('POST', `https://rsvp.fftf.xyz/action-network/${customFields.event_id}`)
+        xhr.setRequestHeader('Content-Type', 'application/json')
+        xhr.send(JSON.stringify({
+          email: customFields.email,
+          first_name: contact.firstName,
+          last_name: contact.lastName,
+          phone: contact.cell,
+          zip_code: contact.zip,
+          opt_out: parseInt(customFields.opt_out_email) === 1,
+          custom: {
+            spoke_id: customFields.fftf_contact_id
+          }
+        }))
+
+        this.setState({ hasRSVPed: true })
+      }
+    }
+
     return (
-      <ContactToolbar
-        campaign={this.props.campaign}
-        campaignContact={contact}
-        onOptOut={this.handleNavigateNext}
-        rightToolbarIcon={(
-          <IconButton
-            onTouchTap={this.props.onExitTexter}
-            style={inlineStyles.exitTexterIconButton}
-            tooltip='Return Home'
-            tooltipPosition='bottom-center'
-          >
-            <NavigateHomeIcon />
-          </IconButton>
-        )}
-      />
+      <div style={{ display: (isEvent ? 'grid' : 'block'), gridTemplateColumns: '75% 25%' }}>
+        <ContactToolbar
+          campaign={this.props.campaign}
+          campaignContact={contact}
+          onOptOut={this.handleNavigateNext}
+          rightToolbarIcon={(
+            <IconButton
+              onTouchTap={this.props.onExitTexter}
+              style={inlineStyles.exitTexterIconButton}
+              tooltip='Return Home'
+              tooltipPosition='bottom-center'
+            >
+              <NavigateHomeIcon />
+            </IconButton>
+          )}
+        />
+        { isEvent ?
+          <RaisedButton
+            style={{ height: '100%', opacity: (this.state.hasRSVPed ? 0.5 : 1.0) }}
+            secondary
+            label='RSVP'
+            onTouchTap={handleRSVP}
+            tooltip='RSVP this contact'
+            tooltipPosition='top-center'
+          />
+          :
+          <span></span>
+        }
+      </div>
     )
   }
 
