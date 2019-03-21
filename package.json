@@ -22,6 +22,7 @@
     "postinstall": "if [ \"$NODE_ENV\" = production ] ; then npm run prod-build && npm run prod-static-upload && npm run notify-slack; fi",
     "notify-slack": "if [ \"$SLACK_NOTIFY_URL\" != \"\" ] ; then echo notifying slack && curl -XPOST -d '{\"channel\": \"#spoke\", \"text\":\"'\"$(whoami) building spoke $(git log -1 --pretty=%h) for $AWS_S3_BUCKET_NAME\"'\"}' $SLACK_NOTIFY_URL; fi",
     "start": "node ./build/server/server",
+    "start:heroku": "BASE_URL=$(node ./build/server/heroku/print-base-url) npm start",
     "dev-message-sender-01": "nodemon -e js,jsx -w ./src --exec ./dev-tools/babel-run -- ./src/workers/message-sender-01",
     "prod-message-sender-01": "./dev-tools/babel-run ./src/workers/message-sender-01.js",
     "dev-message-sender-234": "nodemon -e js,jsx -w ./src --exec ./dev-tools/babel-run -- ./src/workers/message-sender-234",
