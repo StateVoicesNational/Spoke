@@ -9,6 +9,28 @@ Spoke was created by Saikat Chakrabarti and Sheena Pakanati, and is now maintain
 
 The latest version is [1.4.1](https://github.com/MoveOnOrg/Spoke/tree/v1.4.1) (see [release notes](https://github.com/MoveOnOrg/Spoke/blob/main/docs/RELEASE_NOTES.md#v141)) which we recommend for production use, while our `main` branch is where features still in development and testing will be available.
 
+# Contributing
+
+We welcome contributions from progressive developers of all skill levels. Please see our [contributor guidelines](./CONTRIBUTING.md) for information on how to get started.
+
+## Maintainers
+
+We follow a modified version of the [Moya contributor protocol](https://github.com/Moya/contributors). Specifically:
+
+1) Anyone with a merged PR is eligible to become a maintainer.
+2) PRs are eligible for merge when two existing maintainers approve them.
+3) Nobody, including maintainers, can push directly to `main`. Everyone follows the same rules and goes through the same code review process.
+
+You can see the maintainers team membership [here](https://github.com/orgs/spokecommunity/teams/maintainers).
+
+## Core team
+
+The core team is made up of maintainers who have worked on the project for a longer period of time. They have admin privileges on this repository, but aside from that, they're just regular maintainers. They have no special committing or review privileges. The core team is also the first point of contact for [code of conduct](./code-of-conduct.md) violation reports. The core team currently comprises:
+- [Ben Chrobot](https://github.com/bchrobot)
+- [Harpo Jaeger](https://github.com/harpojaeger)
+
+Please reach out to either or both of them with any questions or to report a Code of Conduct violation.
+
 ## Note
 
 This is generated from [react-apollo-starter-kit](https://github.com/saikat/react-apollo-starter-kit).  Look at that project's README for info on some of the libraries used.
