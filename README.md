@@ -27,15 +27,14 @@ Please let us know if you deployed by filling out this form [here](https://act.m
 
 1. Install either sqlite (or another [knex](http://knexjs.org/#Installation-client)-supported database)
 2. Install the Node version listed under `engines` in `package.json`. [NVM](https://github.com/creationix/nvm) is one way to do this.
-3. `npm install`
-4. `npm install -g foreman`
+3. `yarn install`
 5. `cp .env.example .env`
 6. If you want to use Postgres:
     - In `.env` set `DB_TYPE=pg`. (Otherwise, you will use sqlite.)
     - Set `DB_PORT=5432`, which is the default port for Postgres.
     - Create the spokedev database:  `psql -c "create database spokedev;"`
 7. Create an [Auth0](https://auth0.com) account. In your Auth0 account, go to [Applications](https://manage.auth0.com/#/applications/), click on `Default App` and then grab your Client ID, Client Secret, and your Auth0 domain (should look like xxx.auth0.com). Add those inside your `.env` file (AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_DOMAIN respectively).
-8. Run `npm run dev` to create and populate the tables.
+8. Run `yarn dev` to create and populate the tables.
 9. In your Auth0 app settings, add `http://localhost:3000/login-callback` , `http://localhost:3000` and `http://localhost:3000/logout-callback` to "Allowed Callback URLs", "Allowed Web Origins" and  "Allowed Logout URLs" respectively. (If you get an error when logging in later about "OIDC", go to Advanced Settings section, and then OAuth, and turn off 'OIDC Conformant')
 10. Add a new [rule](https://manage.auth0.com/#/rules/create) in Auth0:
 ```javascript
@@ -141,7 +140,7 @@ callback(null, user, context);
     ```
 
     </details>
-12. If the application is still running from step 8, kill the process and re-run `npm run dev` to restart the app. Wait until you see both "Node app is running ..." and "webpack: Compiled successfully." before attempting to connect. (make sure environment variable `JOBS_SAME_PROCESS=1`)
+12. If the application is still running from step 8, kill the process and re-run `yarn dev` to restart the app. Wait until you see both "Node app is running ..." and "webpack: Compiled successfully." before attempting to connect. (make sure environment variable `JOBS_SAME_PROCESS=1`)
 13. Go to `http://localhost:3000` to load the app.
 14. As long as you leave `SUPPRESS_SELF_INVITE=` blank and unset in your `.env` you should be able to invite yourself from the homepage.
     - If you DO set that variable, then spoke will be invite-only and you'll need to generate an invite. Run:
@@ -196,9 +195,9 @@ Twilio provides test credentials that will not charge your account as described 
 
 ## Deploying
 
-1. Run `OUTPUT_DIR=./build npm run prod-build-server`
+1. Run `OUTPUT_DIR=./build yarn run prod-build-server`
    This will generate something you can deploy to production in ./build and run nodejs server/server/index.js
-2. Run `npm run prod-build-client`
+2. Run `yarn run prod-build-client`
 3. Make a copy of `deploy/spoke-pm2.config.js.template`, e.g. `spoke-pm2.config.js`, add missing environment variables, and run it with [pm2](https://www.npmjs.com/package/pm2), e.g. `pm2 start spoke-pm2.config.js --env production`
 4. [Install PostgreSQL](https://wiki.postgresql.org/wiki/Detailed_installation_guides)
 5. Start PostgreSQL (e.g. `sudo /etc/init.d/postgresql start`), connect (e.g. `sudo -u postgres psql`), create a user and database (e.g. `create user spoke password 'spoke'; create database spoke owner spoke;`), disconnect (e.g. `\q`) and add credentials to `DB_` variables in spoke-pm2.config.js
