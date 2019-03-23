@@ -1,6 +1,8 @@
 language: node_js
 node_js:
 - "8.10"
+cache:
+  yarn: true
 services:
 - postgresql
 addons:
@@ -10,11 +12,16 @@ addons:
 env:
   global:
   - secure: TODO
+before_install:
+- curl -o- -L https://yarnpkg.com/install.sh | bash -s -- --version 1.13.0
+- export PATH="$HOME/.yarn/bin:$PATH"
+install:
+- yarn install --frozen-lockfile
 before_script:
 - psql -c 'CREATE DATABASE spoke_test;' -U postgres
 - psql -c "CREATE USER spoke_test WITH PASSWORD 'spoke_test';" -U postgres
 - psql -c 'GRANT ALL PRIVILEGES ON DATABASE spoke_test TO spoke_test;' -U postgres
 - chmod +x ./travis-run-e2e-tests
 script:
-- npm test
+- yarn test
 - ./travis-run-e2e-tests
