@@ -44,17 +44,114 @@ context.idToken["https://spoke/user_metadata"] = user.user_metadata;
 callback(null, user, context);
 }
 ```
-11. If the application is still running from step 8, kill the process and re-run `npm run dev` to restart the app. Wait until you see both "Node app is running ..." and "webpack: Compiled successfully." before attempting to connect. (make sure environment variable `JOBS_SAME_PROCESS=1`)
-12. Go to `http://localhost:3000` to load the app.
-13. As long as you leave `SUPPRESS_SELF_INVITE=` blank and unset in your `.env` you should be able to invite yourself from the homepage.
-    - If you DO set that variable, then spoke will be invite-only and you'll need to generate an invite. Run:
-```
-echo "INSERT INTO invite (hash,is_valid) VALUES ('abc', 1);" |sqlite3 mydb.sqlite
-# Note: When doing this with PostgreSQL, you would replace the `1` with `true`
-```
-  - Then use the generated key to visit an invite link, e.g.: http://localhost:3000/invite/abc. This should redirect you to the login screen. Use the "Sign Up" option to create your account.
+11. Update the Auth0 [Universal Landing page](https://manage.auth0.com/#/login_page), click on the `Customize Login Page` toggle, and copy and paste following code in the drop down into the `Default Templates` space:
 
-14. You should then be prompted to create an organization. Create it.
+    <details>
+    <summary>Code to paste into Auth0</summary>
+
+    ```html
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Sign In with Auth0</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    </head>
+    <body>
+      <!--[if IE 8]>
+      <script src="//cdnjs.cloudflare.com/ajax/libs/ie8/0.2.5/ie8.js"></script>
+      <![endif]-->
+
+      <!--[if lte IE 9]>
+      <script src="https://cdn.auth0.com/js/base64.js"></script>
+      <script src="https://cdn.auth0.com/js/es5-shim.min.js"></script>
+      <![endif]-->
+      <script src="https://cdn.auth0.com/js/lock/11.11/lock.min.js"></script>
+      <script>
+        // Decode utf8 characters properly
+        var config = JSON.parse(decodeURIComponent(escape(window.atob('@@config@@'))));
+        config.extraParams = config.extraParams || {};
+        var connection = config.connection;
+        var prompt = config.prompt;
+        var languageDictionary;
+        var language;
+
+        if (config.dict && config.dict.signin && config.dict.signin.title) {
+          languageDictionary = { title: config.dict.signin.title };
+        } else if (typeof config.dict === 'string') {
+          language = config.dict;
+        }
+        var loginHint = config.extraParams.login_hint;
+
+        // Available Lock configuration options: https://auth0.com/docs/libraries/lock/v11/configuration
+        var lock = new Auth0Lock(config.clientID, config.auth0Domain, {
+          auth: {
+            redirectUrl: config.callbackURL,
+            responseType: (config.internalOptions || {}).response_type ||
+              (config.callbackOnLocationHash ? 'token' : 'code'),
+            params: config.internalOptions
+          },
+          // Additional configuration needed for custom domains: https://auth0.com/docs/custom-domains/additional-configuration
+          // configurationBaseUrl: config.clientConfigurationBaseUrl,
+          // overrides: {
+          //   __tenant: config.auth0Tenant,
+          //   __token_issuer: 'YOUR_CUSTOM_DOMAIN'
+          // },
+          assetsUrl:  config.assetsUrl,
+          allowedConnections: ['Username-Password-Authentication'],
+          rememberLastLogin: !prompt,
+          language: language,
+          languageDictionary: {
+            title: 'Spoke',
+            signUpTerms: 'I agree to the <a href="YOUR_LINK HERE" target="_new">terms of service and privacy policy</a>.'
+          },
+          mustAcceptTerms: true,
+          theme: {
+            logo:            '',
+            primaryColor:    'rgb(83, 180, 119)'
+          },
+          additionalSignUpFields: [{
+            name: 'given_name',
+            icon: 'https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1.png',
+            placeholder: 'First Name'
+          }, {
+            name: 'family_name',
+            placeholder: 'Last Name',
+            icon: 'https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1.png'
+          }, {
+            name: 'cell',
+            placeholder: 'Cell Phone',
+            icon: 'https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1.png',
+            validator: (cell) => ({
+              valid: cell.length >= 10,
+              hint: 'Must be a valid phone number'
+            })
+          }],
+          prefill: loginHint ? { email: loginHint, username: loginHint } : null,
+          closable: false,
+          defaultADUsernameFromEmailPrefix: false,
+          // Uncomment if you want small buttons for social providers
+          // socialButtonStyle: 'small'
+        });
+        lock.show();
+      </script>
+    </body>
+    </html>
+    ```
+
+    </details>
+12. If the application is still running from step 8, kill the process and re-run `npm run dev` to restart the app. Wait until you see both "Node app is running ..." and "webpack: Compiled successfully." before attempting to connect. (make sure environment variable `JOBS_SAME_PROCESS=1`)
+13. Go to `http://localhost:3000` to load the app.
+14. As long as you leave `SUPPRESS_SELF_INVITE=` blank and unset in your `.env` you should be able to invite yourself from the homepage.
+    - If you DO set that variable, then spoke will be invite-only and you'll need to generate an invite. Run:
+      ```
+      echo "INSERT INTO invite (hash,is_valid) VALUES ('abc', 1);" |sqlite3 mydb.sqlite
+      # Note: When doing this with PostgreSQL, you would replace the `1` with `true`
+      ```
+    - Then use the generated key to visit an invite link, e.g.: http://localhost:3000/invite/abc. This should redirect you to the login screen. Use the "Sign Up" option to create your account.
+
+15. You should then be prompted to create an organization. Create it.
 
 If you want to create an invite via the home page "Login and get started" link, make sure your `SUPPRESS_SELF_INVITE` variable is not set.
 

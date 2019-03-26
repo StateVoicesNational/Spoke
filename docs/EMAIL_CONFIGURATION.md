@@ -1,5 +1,5 @@
 # Configuring email notifications
-This guide explains how to configure Spoke to send email notifications. Email notifications are sent for account-related actions, to remind texters when they have messages to send and for data exports.
+This guide explains how to configure Spoke to send email notifications. Email notifications are sent for account-related actions, to remind texters when they have messages to send and for data exports. See .[Data Exporting doc].(DATA_EXPORTING.md) in the /docs folder regarding setting up an AWS S3 'bucket' to receive exports.
 
 If you auto-deployed to Heroku, the [Mailgun add-on](https://elements.heroku.com/addons/mailgun) was automatically provisioned for you. To use it, [follow the steps below](#mailgun-setup-heroku-only).
 

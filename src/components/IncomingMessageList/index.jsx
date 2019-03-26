@@ -1,30 +1,26 @@
 import React, { Component } from 'react'
 import type from 'prop-types'
-import Dialog from 'material-ui/Dialog'
 import FlatButton from 'material-ui/FlatButton'
 import ActionOpenInNew from 'material-ui/svg-icons/action/open-in-new'
-import loadData from '../containers/hoc/load-data'
+import loadData from '../../containers/hoc/load-data'
 import { withRouter } from 'react-router'
 import gql from 'graphql-tag'
-import LoadingIndicator from '../components/LoadingIndicator'
+import LoadingIndicator from '../../components/LoadingIndicator'
 import DataTables from 'material-ui-datatables'
+import ConversationPreviewModal from './ConversationPreviewModal';
 
-import { MESSAGE_STATUSES } from '../components/IncomingMessageFilter'
+import { MESSAGE_STATUSES } from '../../components/IncomingMessageFilter'
 
-function prepareDataTableData(conversations) {
-  const tableData = conversations.map(conversation => {
-    return {
-      campaignTitle: conversation.campaign.title,
-      texter: conversation.texter.displayName,
-      to: conversation.contact.firstName + ' ' + conversation.contact.lastName,
-      status: conversation.contact.messageStatus,
-      messages: conversation.contact.messages
-    }
-  })
-  return tableData
-}
+const prepareDataTableData = (conversations) => conversations.map(conversation => ({
+  campaignTitle: conversation.campaign.title,
+  texter: conversation.texter.displayName,
+  to: conversation.contact.firstName + ' ' + conversation.contact.lastName + (conversation.contact.optOut.cell ? '⛔️' : ''),
+  status: conversation.contact.messageStatus,
+  messages: conversation.contact.messages
+})
+)
 
-function prepareSelectedRowsData(conversations, rowsSelected) {
+const prepareSelectedRowsData = (conversations, rowsSelected) => {
   let selection = rowsSelected
   if (rowsSelected === 'all') {
     selection = Array.from(Array(conversations.length).keys())
@@ -46,84 +42,117 @@ export class IncomingMessageList extends Component {
   constructor(props) {
     super(props)
 
-    this.state = { activeConversation: undefined }
-
-    this.prepareTableColumns = this.prepareTableColumns.bind(this)
-    this.handleNextPageClick = this.handleNextPageClick.bind(this)
-    this.handlePreviousPageClick = this.handlePreviousPageClick.bind(this)
-    this.handleRowSizeChanged = this.handleRowSizeChanged.bind(this)
-    this.handleRowsSelected = this.handleRowsSelected.bind(this)
-
-    this.handleOpenConversation = this.handleOpenConversation.bind(this)
-    this.handleCloseConversation = this.handleCloseConversation.bind(this)
+    this.state = {
+      selectedRows: [],
+      activeConversation: undefined
+    }
   }
 
-  prepareTableColumns() {
-    return [
-      {
-        key: 'campaignTitle',
-        label: 'Campaign',
-        style: {
-          textOverflow: 'ellipsis',
-          overflow: 'hidden',
-          whiteSpace: 'nowrap'
-        }
-      },
-      {
-        key: 'texter',
-        label: 'Texter'
-      },
-      {
-        key: 'to',
-        label: 'To'
-      },
-      {
-        key: 'status',
-        label: 'Conversation Status',
-        render: (columnKey, row) => MESSAGE_STATUSES[row.status].name
-      },
-      {
-        key: 'latestMessage',
-        label: 'Latest Message',
-        render: (columnKey, row) => {
-          let lastMessage = null
-          let lastMessageEl = <p>No Messages</p>
-          if (row.messages && row.messages.length > 0) {
-            lastMessage = row.messages[row.messages.length - 1]
-            lastMessageEl = (
-              <p style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-                <span style={{ color: lastMessage.isFromContact ? 'blue' : 'black' }}>
-                  <b>{lastMessage.isFromContact ? 'Contact:' : 'Texter:'} </b>
-                </span>
-                {lastMessage.text}
-              </p>
-            )
-          }
-          return lastMessageEl
-        }
-      },
-      {
-        key: 'viewConversation',
-        label: 'View Conversation',
-        render: (columnKey, row) => {
-          if (row.messages && row.messages.length > 0) {
-            return (
-              <FlatButton
-                onClick={event => {
-                  event.stopPropagation()
-                  this.handleOpenConversation(row)
-                }}
-                icon={<ActionOpenInNew />}
-              />
-            )
-          }
-          return ''
-        }
+  componentDidUpdate(prevProps) {
+    let previousPageInfo = { total: 0 }
+    if (prevProps.conversations.conversations) {
+      previousPageInfo = prevProps.conversations.conversations.pageInfo
+    }
+
+    let pageInfo = { total: 0 }
+    if (this.props.conversations.conversations) {
+      pageInfo = this.props.conversations.conversations.pageInfo
+    }
+
+    if (previousPageInfo.total !== pageInfo.total || (!previousPageInfo && pageInfo)) {
+      this.props.onConversationCountChanged(pageInfo.total)
+    }
+  }
+
+  prepareTableColumns = () => [
+    {
+      key: 'campaignTitle',
+      label: 'Campaign',
+      style: {
+        textOverflow: 'ellipsis',
+        overflow: 'hidden',
+        whiteSpace: 'pre-line'
       }
-    ]
-  }
+    },
+    {
+      key: 'texter',
+      label: 'Texter',
+      style: {
+        textOverflow: 'ellipsis',
+        overflow: 'scroll',
+        whiteSpace: 'pre-line'
+      }
+    },
+    {
+      key: 'to',
+      label: 'To',
+      style: {
+        textOverflow: 'ellipsis',
+        overflow: 'scroll',
+        whiteSpace: 'pre-line'
+      }
+    },
+    {
+      key: 'status',
+      label: 'Conversation Status',
+      style: {
+        textOverflow: 'ellipsis',
+        overflow: 'scroll',
+        whiteSpace: 'pre-line'
+      },
+      render: (columnKey, row) => MESSAGE_STATUSES[row.status].name
+    },
+    {
+      key: 'latestMessage',
+      label: 'Latest Message',
+      style: {
+        textOverflow: 'ellipsis',
+        overflow: 'scroll',
+        whiteSpace: 'pre-line'
+      },
+      render: (columnKey, row) => {
+        let lastMessage = null
+        let lastMessageEl = <p>No Messages</p>
+        if (row.messages && row.messages.length > 0) {
+          lastMessage = row.messages[row.messages.length - 1]
+          lastMessageEl = (
+            <p style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+              <span style={{ color: lastMessage.isFromContact ? 'blue' : 'black' }}>
+                <b>{lastMessage.isFromContact ? 'Contact:' : 'Texter:'} </b>
+              </span>
+              {lastMessage.text}
+            </p>
+            )
+        }
+        return lastMessageEl
+      }
+    },
+    {
+      key: 'viewConversation',
+      label: 'View Conversation',
+      style: {
+        textOverflow: 'ellipsis',
+        overflow: 'scroll',
+        whiteSpace: 'pre-line'
+      },
+      render: (columnKey, row) => {
+        if (row.messages && row.messages.length > 0) {
+          return (
+            <FlatButton
+              onClick={event => {
+                event.stopPropagation()
+                this.handleOpenConversation(row)
+              }}
+              icon={<ActionOpenInNew />}
+            />
+            )
+        }
+        return ''
+      }
+    }
+  ]
 
-  handleNextPageClick() {
+  handleNextPageClick = () => {
     const { limit, offset, total } = this.props.conversations.conversations.pageInfo
     const currentPage = Math.floor(offset / limit)
     const maxPage = Math.floor(total / limit)
@@ -131,28 +160,29 @@ export class IncomingMessageList extends Component {
     this.props.onPageChanged(newPage)
   }
 
-  handlePreviousPageClick() {
+  handlePreviousPageClick = () => {
     const { limit, offset } = this.props.conversations.conversations.pageInfo
     const currentPage = Math.floor(offset / limit)
     const newPage = Math.max(0, currentPage - 1)
     this.props.onPageChanged(newPage)
   }
 
-  handleRowSizeChanged(index, value) {
+  handleRowSizeChanged = (index, value) => {
     this.props.onPageSizeChanged(value)
   }
 
-  handleRowsSelected(rowsSelected) {
+  handleRowsSelected = (rowsSelected) => {
+    this.setState({ selectedRows: rowsSelected })
     const conversations = this.props.conversations.conversations.conversations
     const selectedConversations = prepareSelectedRowsData(conversations, rowsSelected)
     this.props.onConversationSelected(rowsSelected, selectedConversations)
   }
 
-  handleOpenConversation(contact) {
+  handleOpenConversation = (contact) => {
     this.setState({ activeConversation: contact })
   }
 
-  handleCloseConversation() {
+  handleCloseConversation = () => {
     this.setState({ activeConversation: undefined })
   }
 
@@ -181,32 +211,12 @@ export class IncomingMessageList extends Component {
           onPreviousPageClick={this.handlePreviousPageClick}
           onRowSizeChange={this.handleRowSizeChanged}
           onRowSelection={this.handleRowsSelected}
+          selectedRows={this.state.selectedRows}
         />
-        <Dialog
-          title='Messages'
-          open={this.state.activeConversation !== undefined}
-          modal={false}
-          autoScrollBodyContent
+        <ConversationPreviewModal
+          conversation={this.state.activeConversation}
           onRequestClose={this.handleCloseConversation}
-        >
-          {this.state.activeConversation !== undefined && (
-            <div>
-              {this.state.activeConversation.messages.map((message, index) => {
-                const isFromContact = message.isFromContact
-                const style = {
-                  color: isFromContact ? 'blue' : 'black',
-                  textAlign: isFromContact ? 'left' : 'right'
-                }
-
-                return (
-                  <p key={index} style={style}>
-                    {message.text}
-                  </p>
-                )
-              })}
-            </div>
-          )}
-        </Dialog>
+        />
       </div>
     )
   }
@@ -221,7 +231,9 @@ IncomingMessageList.propTypes = {
   onPageChanged: type.func,
   onPageSizeChanged: type.func,
   onConversationSelected: type.func,
-  utc: type.string
+  onConversationCountChanged: type.func,
+  utc: type.string,
+  conversations: type.object
 }
 
 const mapQueriesToProps = ({ ownProps }) => ({
@@ -255,13 +267,18 @@ const mapQueriesToProps = ({ ownProps }) => ({
             }
             contact {
               id
+              assignmentId
               firstName
               lastName
+              cell
               messageStatus
               messages {
                 id
                 text
                 isFromContact
+              }
+              optOut {
+                cell
               }
             }
             campaign {
