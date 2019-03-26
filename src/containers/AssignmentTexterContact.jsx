@@ -201,7 +201,7 @@ export class AssignmentTexterContact extends React.Component {
       disabledText = 'Skipping opt-out...'
       disabled = true
     } else if (!this.isContactBetweenTextingHours(contact)) {
-      disabledText = "Refreshing because it's now out of texting hours for some of your contacts"
+      disabledText = "Refreshing ..."
       disabled = true
     }
 
@@ -880,7 +880,7 @@ export class AssignmentTexterContact extends React.Component {
           open={!!this.state.snackbarError}
           message={this.state.snackbarError || ''}
           action={this.state.snackbarActionTitle}
-          onActionTouchTap={this.state.snackbarOnTouchTap}
+          onActionClick={this.state.snackbarOnTouchTap}
         />
       </div>
     )

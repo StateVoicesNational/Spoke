@@ -11,7 +11,7 @@ import mocks from './api/mocks'
 import { createLoaders, createTablesIfNecessary } from './models'
 import passport from 'passport'
 import cookieSession from 'cookie-session'
-import { setupAuth0Passport } from './auth-passport'
+import { setupAuth0Passport, setupLocalAuthPassport } from './auth-passport'
 import wrap from './wrap'
 import { log } from '../lib'
 import nexmo from './api/lib/nexmo'
@@ -27,12 +27,15 @@ process.on('uncaughtException', (ex) => {
 })
 const DEBUG = process.env.NODE_ENV === 'development'
 
-const loginCallbacks = setupAuth0Passport()
-if (!process.env.PASSPORT_STRATEGY) {
+let loginCallbacks
+if (!process.env.PASSPORT_STRATEGY && !global.PASSPORT_STRATEGY) {
   // default to legacy Auth0 choice
-
+  loginCallbacks = setupAuth0Passport()
 } else {
-
+  const loginStrategy = process.env.PASSPORT_STRATEGY || global.PASSPORT_STRATEGY
+  if (loginStrategy === 'localauthexperimental') {
+    loginCallbacks = setupLocalAuthPassport()
+  }
 }
 
 if (!process.env.SUPPRESS_SEED_CALLS) {
@@ -60,7 +63,7 @@ const port = process.env.DEV_APP_PORT || process.env.PORT
 
 // Don't rate limit heroku
 app.enable('trust proxy')
-if (!DEBUG) {
+if (!DEBUG && process.env.PUBLIC_DIR) {
   app.use(express.static(process.env.PUBLIC_DIR, {
     maxAge: '180 days'
   }))
@@ -75,7 +78,7 @@ app.use(cookieSession({
     secure: !DEBUG,
     maxAge: null
   },
-  secret: process.env.SESSION_SECRET
+  secret: process.env.SESSION_SECRET || global.SESSION_SECRET
 }))
 app.use(passport.initialize())
 app.use(passport.session())

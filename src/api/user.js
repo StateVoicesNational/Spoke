@@ -13,5 +13,15 @@ export const schema = `
     assignment(campaignId: String): Assignment,
     terms: Boolean
   }
-`
+  
+type UsersList {
+  users: [User]
+}
 
+type PaginatedUsers {
+  users: [User]
+  pageInfo: PageInfo
+}
+
+union UsersReturn = PaginatedUsers | UsersList
+`

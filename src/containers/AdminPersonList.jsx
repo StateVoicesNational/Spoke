@@ -109,7 +109,7 @@ class AdminPersonList extends React.Component {
         onChange={this.handleCampaignChange}
       >
         <MenuItem primaryText='All Campaigns' />
-        {campaigns.map(campaign => (
+        {campaigns.campaigns.map(campaign => (
           <MenuItem
             value={campaign.id}
             primaryText={campaign.title}
@@ -300,8 +300,12 @@ const mapQueriesToProps = ({ ownProps }) => ({
         id
         uuid
         campaigns(campaignsFilter: { isArchived: false }) {
-          id
-          title
+          ... on CampaignsList{
+            campaigns{
+              id
+              title
+            }
+          }
         }
       }
     }`,
