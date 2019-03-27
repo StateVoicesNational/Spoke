@@ -2,7 +2,7 @@ import { mapFieldsToModel } from './lib/utils'
 import { r, User } from '../models'
 import { addCampaignsFilterToQuery } from './campaign'
 
-export function buildUserOrganizationQuery(queryParam, organizationId, role, campaignId) {
+export function buildUserOrganizationQuery(queryParam, organizationId, role, campaignId, offset) {
   const roleFilter = role ? { role } : {}
 
   queryParam
@@ -15,6 +15,9 @@ export function buildUserOrganizationQuery(queryParam, organizationId, role, cam
   if (campaignId) {
     queryParam.innerJoin('assignment', 'assignment.user_id', 'user.id')
     .where({ 'assignment.campaign_id': campaignId })
+  }
+  if (typeof offset == 'number') {
+    queryParam.offset(offset)
   }
   return queryParam
 }

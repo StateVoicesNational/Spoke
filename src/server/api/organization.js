@@ -26,9 +26,21 @@ export const resolvers = {
       return r.table('opt_out')
         .getAll(organization.id, { index: 'organization_id' })
     },
-    people: async (organization, { role, campaignId }, { user }) => {
+    people: async (organization, { role, campaignId, offset }, { user }) => {
       await accessRequired(user, organization.id, 'SUPERVOLUNTEER')
-      return buildUserOrganizationQuery(r.knex.select('user.*'), organization.id, role, campaignId)
+      const query = buildUserOrganizationQuery(
+        r.knex.select('user.*'), organization.id, role, campaignId, offset)
+        .orderBy(['first_name', 'last_name', {column: 'id', order: 'desc'}])
+      if (typeof offset === 'number') {
+        return query.limit(200)
+      }
+      return query
+    },
+    peopleCount: async (organization, _, { user }) => {
+      await accessRequired(user, organization.id, 'SUPERVOLUNTEER')
+      return r.getCount(r.knex('user')
+                        .join('user_organization', 'user.id', 'user_organization.user_id')
+                        .where('user_organization.organization_id', organization.id))
     },
     threeClickEnabled: (organization) => organization.features.indexOf('threeClick') !== -1,
     textingHoursEnforced: (organization) => organization.texting_hours_enforced,
