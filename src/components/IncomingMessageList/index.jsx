@@ -1,15 +1,15 @@
 import React, { Component } from 'react'
 import type from 'prop-types'
-import Dialog from 'material-ui/Dialog'
 import FlatButton from 'material-ui/FlatButton'
 import ActionOpenInNew from 'material-ui/svg-icons/action/open-in-new'
-import loadData from '../containers/hoc/load-data'
+import loadData from '../../containers/hoc/load-data'
 import { withRouter } from 'react-router'
 import gql from 'graphql-tag'
-import LoadingIndicator from '../components/LoadingIndicator'
+import LoadingIndicator from '../../components/LoadingIndicator'
 import DataTables from 'material-ui-datatables'
+import ConversationPreviewModal from './ConversationPreviewModal';
 
-import { MESSAGE_STATUSES } from '../components/IncomingMessageFilter'
+import { MESSAGE_STATUSES } from '../../components/IncomingMessageFilter'
 
 const prepareDataTableData = (conversations) => conversations.map(conversation => ({
   campaignTitle: conversation.campaign.title,
@@ -222,31 +222,10 @@ export class IncomingMessageList extends Component {
           onRowSelection={this.handleRowsSelected}
           selectedRows={clearSelectedMessages ? null : this.state.selectedRows}
         />
-        <Dialog
-          title='Messages'
-          open={this.state.activeConversation !== undefined}
-          modal={false}
-          autoScrollBodyContent
+        <ConversationPreviewModal
+          conversation={this.state.activeConversation}
           onRequestClose={this.handleCloseConversation}
-        >
-          {this.state.activeConversation !== undefined && (
-            <div>
-              {this.state.activeConversation.messages.map((message, index) => {
-                const isFromContact = message.isFromContact
-                const style = {
-                  color: isFromContact ? 'blue' : 'black',
-                  textAlign: isFromContact ? 'left' : 'right'
-                }
-
-                return (
-                  <p key={index} style={style}>
-                    {message.text}
-                  </p>
-                )
-              })}
-            </div>
-          )}
-        </Dialog>
+        />
       </div>
     )
   }
@@ -298,8 +277,10 @@ const mapQueriesToProps = ({ ownProps }) => ({
             }
             contact {
               id
+              assignmentId
               firstName
               lastName
+              cell
               messageStatus
               messages {
                 id
