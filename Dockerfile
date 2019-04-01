@@ -1,12 +1,14 @@
 ARG BUILDER_IMAGE=node:8.10
 ARG RUNTIME_IMAGE=node:8.10-alpine
+ARG PHONE_NUMBER_COUNTRY=US
 
 FROM ${BUILDER_IMAGE} as builder
 
 ENV NODE_ENV=production \
     OUTPUT_DIR=./build \
     ASSETS_DIR=./build/client/assets \
-    ASSETS_MAP_FILE=assets.json
+    ASSETS_MAP_FILE=assets.json \
+    PHONE_NUMBER_COUNTRY=${PHONE_NUMBER_COUNTRY}
 
 COPY . /spoke
 WORKDIR /spoke
