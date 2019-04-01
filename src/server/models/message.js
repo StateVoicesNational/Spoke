@@ -1,6 +1,6 @@
 import thinky from './thinky'
 const type = thinky.type
-import { requiredString, optionalString, timestamp } from './custom-types'
+import { requiredString, optionalString, timestamp, optionalTimestamp } from './custom-types'
 
 import User from './user'
 import Assignment from './assignment'
@@ -31,7 +31,7 @@ const Message = thinky.createModel('message', type.object().schema({
   queued_at: timestamp(),
   sent_at: timestamp(),
   service_response_at: timestamp(),
-  send_before: timestamp()
+  send_before: optionalTimestamp()
 }).allowExtra(false), { noAutoCreation: true,
                         dependencies: [User, Assignment] })
 

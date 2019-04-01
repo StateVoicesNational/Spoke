@@ -1,53 +1,26 @@
-import theme from '../styles/theme'
+import auth0 from 'auth0-js'
 
 export function logout() {
-  const lock = new window.Auth0Lock(window.AUTH0_CLIENT_ID, window.AUTH0_DOMAIN)
-  lock.logout({
+  var webAuth = new auth0.WebAuth({
+    domain: window.AUTH0_DOMAIN,
+    clientID: window.AUTH0_CLIENT_ID,
+  })
+
+  webAuth.logout({
     returnTo: `${window.BASE_URL}/logout-callback`,
     client_id: window.AUTH0_CLIENT_ID
   })
 }
 
 export function login(nextUrl) {
-  const lock = new window.Auth0Lock(window.AUTH0_CLIENT_ID, window.AUTH0_DOMAIN, {
-    auth: {
-      redirect: true,
-      redirectUrl: `${window.BASE_URL}/login-callback`,
-      responseType: 'code',
-      params: {
-        state: nextUrl || '/',
-        scope: 'openid profile email'
-      }
-    },
-    allowedConnections: ['Username-Password-Authentication'],
-    languageDictionary: {
-      title: 'Spoke',
-      signUpTerms: 'I agree to the <a href="' + window.PRIVACY_URL + '" target="_new">terms of service and privacy policy</a>.'
-    },
-    mustAcceptTerms: true,
-    closable: false,
-    theme: {
-      logo: '',
-      primaryColor: theme.colors.green
-    },
-    additionalSignUpFields: [{
-      name: 'given_name',
-      icon: 'https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1.png',
-      placeholder: 'first name'
-    }, {
-      name: 'family_name',
-      placeholder: 'last name',
-      icon: 'https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1.png'
-    }, {
-      name: 'cell',
-      placeholder: 'cell phone',
-      icon: 'https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1.png',
-      validator: (cell) => ({
-        valid: cell.length >= 10,
-        hint: 'Must be a valid phone number'
-      })
-    }]
+  const webAuth = new auth0.WebAuth({
+    domain: window.AUTH0_DOMAIN,
+    clientID: window.AUTH0_CLIENT_ID,
+    redirectUri: `${window.BASE_URL}/login-callback`,
+    responseType: 'code',
+    state: nextUrl || '/',
+    scope: 'openid profile email'
   })
-  lock.show()
-}
 
+  webAuth.authorize()
+}
