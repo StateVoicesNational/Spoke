@@ -50,8 +50,15 @@ class UserEdit extends React.Component {
       if (this.props.onRequestClose) {
         this.props.onRequestClose()
       }
+    } if (this.props.authType === 'change') {
+      // change password
+      const res = await this.props.mutations.changeUserPassword(formData)
+      if (res.errors) {
+        throw new Error(res.errors.graphQLErrors[0].message)
+      }
+      this.props.openSuccessDialog()
     } else {
-      // log in, sign up, reset, or change
+      // log in, sign up, or reset
       const allData = {
         nextUrl: this.props.nextUrl,
         authType: this.props.authType,
@@ -64,7 +71,6 @@ class UserEdit extends React.Component {
       })
       const { redirected, headers, status, url } = res
       if (redirected && status === 200) {
-        if (this.props.openSuccessDialog) this.props.openSuccessDialog()
         this.props.router.replace(url)
       } else if (status === 401) {
         throw new Error(headers.get('www-authenticate') || '')
@@ -161,7 +167,7 @@ class UserEdit extends React.Component {
             <Form.Field label='Confirm Password' name='passwordConfirm' type='password' />
           }
           <div className={css(styles.buttons)}>
-            {userId && (userId === data.currentUser.id) &&
+            {authType !== 'change' && userId && (userId === data.currentUser.id) &&
               <div className={css(styles.container)}>
                 <RaisedButton
                   onTouchTap={this.handleClick}
@@ -188,6 +194,8 @@ class UserEdit extends React.Component {
               saveLabel='Save new password'
               handleClose={this.handleClose}
               openSuccessDialog={this.openSuccessDialog}
+              userId={this.props.userId}
+              mutations={this.props.mutations}
             />
           </Dialog>
           <Dialog
@@ -196,6 +204,8 @@ class UserEdit extends React.Component {
             modal={false}
             open={this.state.successDialog}
             onRequestClose={this.handleClose}
+            onBackdropClick={this.handleClose}
+            onEscapeKeyDown={this.handleClose}
           >
             <RaisedButton
               onTouchTap={this.handleClose}
@@ -257,6 +267,19 @@ const mapMutationsToProps = ({ ownProps }) => {
           userId: ownProps.userId,
           organizationId: ownProps.organizationId,
           userData
+        }
+      }),
+      changeUserPassword: (formData) => ({
+        mutation: gql`
+          mutation changeUserPassword($userId: Int!, $formData: UserPasswordChange) {
+            changeUserPassword(userId: $userId, formData: $formData) {
+              id
+            }
+          }
+        `,
+        variables: {
+          userId: ownProps.userId,
+          formData
         }
       })
     }

@@ -53,7 +53,7 @@ import { GraphQLPhone } from './phone'
 import { resolvers as questionResolvers } from './question'
 import { resolvers as questionResponseResolvers } from './question-response'
 import { getUsers, resolvers as userResolvers } from './user'
-
+import { change } from '../local-auth-helpers'
 
 import { getSendBeforeTimeUtc } from '../../lib/timezones'
 
@@ -401,7 +401,7 @@ const rootMutations = {
     },
     resetUserPassword: async (_, { organizationId, userId }, { user }) => {
       if (user.id === userId) {
-        throw new GraphQLError('You can\'t reset your own password.')
+        throw new Error('You can\'t reset your own password.')
       }
       await accessRequired(user, organizationId, 'ADMIN', true)
 
@@ -416,6 +416,17 @@ const rootMutations = {
           auth0_id
         })
       return passwordResetHash
+    },
+    changeUserPassword: async (_, { userId, formData }, { user }) => {
+      if (user.id !== userId) {
+        throw new Error('You can only change your own password.')
+      }
+
+      const { password, newPassword, passwordConfirm } = formData
+
+      const updatedUser = await change({ user, password, newPassword, passwordConfirm })
+
+      return updatedUser
     },
     joinOrganization: async (_, { organizationUuid }, { user, loaders }) => {
       let organization
@@ -472,7 +483,7 @@ const rootMutations = {
         await Assignment.save({
           user_id: user.id,
           campaign_id: campaign.id,
-          max_contacts: (process.env.MAX_CONTACTS_PER_TEXTER ? parseInt(process.env.MAX_CONTACTS_PER_TEXTER, 10) : null )
+          max_contacts: (process.env.MAX_CONTACTS_PER_TEXTER ? parseInt(process.env.MAX_CONTACTS_PER_TEXTER, 10) : null)
         })
       }
       return campaign
