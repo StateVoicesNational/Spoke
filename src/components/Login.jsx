@@ -103,7 +103,7 @@ class Login extends React.Component {
         {auth0Login && window.AuthService.login(nextUrl)}
 
         {/* Show UserEdit component configured for login / signup */}
-        {!auth0Login &&
+        {window.PASSPORT_STRATEGY === 'local' &&
           <div>
             {/* Only display sign up option if there is a nextUrl */}
             {displaySignUp &&
