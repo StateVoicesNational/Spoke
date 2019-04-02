@@ -5,6 +5,8 @@ import { userLoggedIn } from './models/cacheable_queries'
 import { User } from './models'
 import localAuthHelpers from './local-auth-helpers'
 import wrap from './wrap'
+import { capitalize } from './api/lib/utils'
+
 
 export function setupAuth0Passport() {
   const strategy = new Auth0Strategy({
@@ -51,9 +53,9 @@ export function setupAuth0Passport() {
           const userData = {
             auth0_id: auth0Id,
             // eslint-disable-next-line no-underscore-dangle
-            first_name: userMetadata.given_name || '',
+            first_name: capitalize(userMetadata.given_name) || '',
             // eslint-disable-next-line no-underscore-dangle
-            last_name: userMetadata.family_name || '',
+            last_name: capitalize(userMetadata.family_name) || '',
             cell: userMetadata.cell || '',
             // eslint-disable-next-line no-underscore-dangle
             email: req.user._json.email,
