@@ -1,5 +1,6 @@
 import AuthHasher from 'passport-local-authenticate'
 import { User, Invite, Organization } from './models'
+import { capitalize } from './api/lib/utils'
 
 const errorMessages = {
   invalidInvite: 'Invalid invite code. Contact your administrator.',
@@ -85,8 +86,8 @@ const signup = async ({
       const user = await User.save({
         email: lowerCaseEmail,
         auth0_id: passwordToSave,
-        first_name: reqBody.firstName,
-        last_name: reqBody.lastName,
+        first_name: capitalize(reqBody.firstName),
+        last_name: capitalize(reqBody.lastName),
         cell: reqBody.cell,
         is_superadmin: false
       })
