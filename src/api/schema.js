@@ -139,6 +139,13 @@ const rootSchema = `
     messageIds: [Int]!
   }
 
+  input UserPasswordChange {
+    email: String!
+    password: String!
+    passwordConfirm: String!
+    newPassword: String!
+  }
+
   type CampaignIdAssignmentId {
     campaignId: String!
     assignmentId: String!
@@ -193,6 +200,7 @@ const rootSchema = `
     editOrganizationRoles(organizationId: String!, userId: String!, campaignId: String, roles: [String]): Organization
     editUser(organizationId: String!, userId: Int!, userData:UserInput): User
     resetUserPassword(organizationId: String!, userId: Int!): String!
+    changeUserPassword(userId: Int!, formData: UserPasswordChange): User
     updateTextingHours( organizationId: String!, textingHoursStart: Int!, textingHoursEnd: Int!): Organization
     updateTextingHoursEnforcement( organizationId: String!, textingHoursEnforced: Boolean!): Organization
     updateOptOutMessage( organizationId: String!, optOutMessage: String!): Organization
