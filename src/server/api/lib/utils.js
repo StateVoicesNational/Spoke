@@ -16,7 +16,7 @@ export function mapFieldsToModel(fields, model) {
   return resolvers
 }
 
-export const capitalize = word => {
+export const capitalizeWord = word => {
   if (word) {
     return word[0].toUpperCase() + word.slice(1)
   }
