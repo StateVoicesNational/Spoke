@@ -1,5 +1,30 @@
 # Release Notes
 
+## v1.5
+*April 2019:* Version 1.5
+
+This release includes an improvement to message sending speeds, many usability improvements to the Admin Message Review, bug fixes for different features, improved data warehouse querying for audiences, Docker support/documentation, etc. We also have switched to using `yarn` dev and install commands versus `npm`. To see an updated feature list, please visit opensource.moveon.org/spoke.
+
+Migrations:
+- Texting hour related columns to the `Campaign` table.
+- Send_before column to the `Message` table.
+- Creator_id column to the `Campaign` table.
+
+
+Thanks to all the contributors apart of this release including:
+[anasauceda](https://github.com/anasauceda),
+[azuzunaga](https://github.com/azuzunaga),
+[bchrobot](https://github.com/bchrobot),
+[benhiller](https://github.com/benhiller),
+[harpojaeger](https://github.com/harpojaeger),
+[jlegrone](https://github.com/jlegrone),
+[joemcl](https://github.com/joemcl),
+[jparkrr](https://github.com/jparkrr),
+[lperson](https://github.com/lperson),
+[sandramchung](https://github.com/sandramchung),
+[schuyler1d](https://github.com/schuyler1d),
+[shakalee14](https://github.com/shakalee14)
+
 ## v1.4.1
 *August 2018:* Version 1.4.1
 * This version fixes bugs found in 1.4 including a deployment bug.
@@ -31,7 +56,7 @@ Thanks go to all our contributors for this release including:
 [joemcl](https://github.com/joemcl),
 [lperson](https://github.com/lperson),
 [mathemagica](https://github.com/mathemagica),
-[shakalee14](https://github.com/shakalee14),
+[shakalee14](https://github.com/shakalee14)
 
 ## v1.3
 
