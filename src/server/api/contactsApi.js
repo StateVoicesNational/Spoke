@@ -3,37 +3,9 @@ import _ from 'lodash'
 import { getTimezoneByZip, getOptOutSubQuery } from '../../workers/jobs'
 
 import { getValidatedData } from '../../lib'
-import { getHash } from '../../lib/api-auth'
+import apiAuth from '../../lib/api-auth'
+import osdi from './osdi'
 
-function sendUnauthorizedResponse(res) {
-  res.writeHead(401, { 'WWW-Authenticate': 'Basic realm=Contacts API' })
-  res.end('Unauthorized')
-}
-
-async function authShortCircuit(req, res, orgId) {
-  if (!('authorization' in req.headers)) {
-    sendUnauthorizedResponse(res)
-    return true
-  }
-
-  const organization = await r.knex('organization').where('id', orgId).first('features')
-  const features = organization.features ? JSON.parse(organization.features) : {}
-  const {apiKey} = features
-
-  const matchResult = req.headers.authorization.match(/Basic\s+(.*)$/)
-  let apiKeyInHeader = undefined
-  if (matchResult && matchResult.length > 1) {
-    apiKeyInHeader = matchResult[1]
-  }
-
-  const hashedApiKeyInHeader = getHash(apiKeyInHeader)
-  if (!apiKey || !apiKeyInHeader || apiKey !== hashedApiKeyInHeader) {
-    sendUnauthorizedResponse(res)
-    return true
-  }
-
-  return false
-}
 
 function campaignStatusShortCircuit(campaign, res) {
   let message = ''
@@ -53,9 +25,9 @@ function campaignStatusShortCircuit(campaign, res) {
 }
 
 export default async function contactsApi(req, res) {
-  const orgId = req.params.orgId
+  const orgId = req.params.orgId;
 
-  if (await authShortCircuit(req, res, orgId)) {
+  if (await apiAuth.authShortCircuit(req, res, orgId)) {
     return
   }
 
@@ -86,18 +58,65 @@ export default async function contactsApi(req, res) {
 
   let resp = null
 
-  if (req.method === 'GET') {
+  if (req.params.contactId && req.method === 'GET') {
+
+    console.log(req);
+
+    const contact=await r
+        .knex('campaign_contact')
+        .where({campaign_id: campaignId, id: req.params.contactId})
+        .limit(1).first();
+
+    if (!contact) {
+      res.writeHead(404);
+      res.end('Not Found');
+      return
+    }
+
+    resp=osdi.translate_contact_to_osdi_person(contact, req);
+
+  } else if (req.method === 'GET') {
     const count = await r.getCount(
       r.knex('campaign_contact').where({ campaign_id: campaignId })
-    )
+    );
+
+    /*
+    ?per_page specifies how many results to return per page.
+?page specifies the starting page to start with.
+     */
+
+    const base_url=process.env.BASE_URL
+    const per_page=parseInt(req.query.per_page || 5);
+    const page=parseInt(req.query.page || 0);
+
+    const offset = page * per_page;
+
+    const contacts = await r
+        .knex('campaign_contact')
+        .where({campaign_id: campaignId})
+        .offset(offset)
+        .limit(per_page);
+
 
     resp = {
-      contacts: {
-        count: parseInt(count)
+
+      total_records: parseInt(count),
+      page: page,
+
+      _embedded: {
+        "osdi:people": _.map(contacts, (contact) => osdi.translate_contact_to_osdi_person(contact,req))
       },
-      status: {
-        started: campaign.is_started,
-        archived: campaign.is_archived
+      _links: {
+        self: {
+          href: base_url.concat(req.originalUrl)
+        },
+        next: (contacts.length > 0) ? {
+          href: base_url.concat(req.baseUrl,"?per_page=",per_page,"&page=",page + 1)
+
+        } : undefined,
+        prev: (page > 0) ? {
+          href: base_url.concat(req.baseUrl,"?per_page=",per_page,"&page=",page -1)
+        } : undefined
       }
     }
   } else if (req.method === 'DELETE') {
@@ -108,7 +127,25 @@ export default async function contactsApi(req, res) {
 
     resp = { contacts: { deleted } }
   } else if (req.method === 'POST') {
-    const { validationStats, validatedData } = getValidatedData(req.body, [])
+    const osdi_body=req.body;
+    var people=undefined;
+    if (osdi_body.people) {
+      people=osdi_body.people // translated
+    } else if (osdi_body.person) {
+      people=[osdi_body.person];
+    }
+
+    var inputRows;
+
+    if (people) {
+      inputRows = _.map(people, (person) => osdi.translate_osdi_person_to_input_row(person));
+
+    } else {
+      inputRows=req.body
+    }
+
+    console.log(inputRows);
+    const { validationStats, validatedData } = getValidatedData(inputRows, []);
 
     const successResponse = {
       invalid: _.concat(
@@ -116,7 +153,7 @@ export default async function contactsApi(req, res) {
         validationStats.missingCellRows
       ),
       dupes_in_batch: validationStats.dupeCount,
-      number_submitted: req.body.length
+      number_submitted: inputRows.length
     }
 
     let validatedContactsToSave = validatedData
@@ -199,10 +236,10 @@ export default async function contactsApi(req, res) {
       })
   }
 
+  console.log(resp);
   if (resp) {
-    resp = { resp }
     res.writeHead(200, { 'Content-Type': 'application/json' })
-    res.end(JSON.stringify(resp))
+    res.end(JSON.stringify(resp,null, 2))
   } else {
     res.writeHead(500, { 'Content-Type': 'application/json' })
     res.end(JSON.stringify({ error: 'Internal server error' }))

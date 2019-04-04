@@ -21,6 +21,7 @@ import { runMigrations } from '../migrations'
 import { setupUserNotificationObservers } from './notifications'
 import { TwimlResponse } from 'twilio'
 import contactsApi from './api/contactsApi'
+import osdi from './api/osdi'
 
 process.on('uncaughtException', (ex) => {
   log.error(ex)
@@ -164,6 +165,35 @@ app.use('/admin/:orgId/campaigns/:campaignId/contacts', wrap(async (req, res) =>
   await contactsApi(req, res)
 }))
 
+
+app.use('/osdi/org/:orgId/campaigns/:campaignId/api/v1/contacts/:contactId', wrap(async (req, res) => {
+  await contactsApi(req, res)
+}))
+
+app.use('/osdi/org/:orgId/campaigns/:campaignId/api/v1/contacts', wrap(async (req, res) => {
+  await contactsApi(req, res)
+}))
+
+
+app.use('/osdi/org/:orgId/campaigns/:campaignId/api/v1/stats', wrap(async (req, res) => {
+  await osdi.campaignStats(req, res)
+}))
+
+app.use('/osdi/org/:orgId/campaigns/:campaignId/api/v1', wrap(async (req, res) => {
+  await osdi.AEP(req, res)
+}))
+
+app.get('/api/v1',
+  wrap(async (req, res) => {
+  await osdi.chooser(req, res)
+}))
+
+
+app.use('/hal', express.static('hal'));
+
+app.get('/osdi', function(req,res) {
+  res.redirect('/hal/browser.html#/api/v1');
+});
 
 // This middleware should be last. Return the React app only if no other route is hit.
 app.use(appRenderer)
