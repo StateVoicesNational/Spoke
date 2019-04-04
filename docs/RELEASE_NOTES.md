@@ -14,6 +14,10 @@ Heroku:
 
   The Heroku deployment method has been migrated to the container runtime. When upgrading an existing Heroku app, these [migration steps](HOWTO_HEROKU_DEPLOY.md#upgrading-an-existing-heroku-app) will need to be performed.
 
+Lambda:
+
+  This version includes an update for the Node runtime environment. For current AWS Lambda Users - you can update your Node runtime to 8.10 by either visiting the `Function code` Section and moving the drop down to 8.10 or by running the following script: `claudia update --runtime nodejs8.10`. For new Lambda deployments, Claudia.js will default to Node 8.10.
+
 Thanks to all the contributors apart of this release including:
 [anasauceda](https://github.com/anasauceda),
 [azuzunaga](https://github.com/azuzunaga),
