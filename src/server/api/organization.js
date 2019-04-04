@@ -30,7 +30,7 @@ export const resolvers = {
       await accessRequired(user, organization.id, 'SUPERVOLUNTEER')
       const query = buildUserOrganizationQuery(
         r.knex.select('user.*'), organization.id, role, campaignId, offset)
-        .orderBy(['first_name', 'last_name', {column: 'id', order: 'desc'}])
+        .orderBy(['first_name', 'last_name', 'id'])
       if (typeof offset === 'number') {
         return query.limit(200)
       }
