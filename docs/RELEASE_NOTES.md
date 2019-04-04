@@ -10,6 +10,9 @@ Migrations:
 - Send_before column to the `Message` table.
 - Creator_id column to the `Campaign` table.
 
+Heroku:
+
+  The Heroku deployment method has been migrated to the container runtime. When upgrading an existing Heroku app, these [migration steps](HOWTO_HEROKU_DEPLOY.md#upgrading-an-existing-heroku-app) will need to be performed.
 
 Thanks to all the contributors apart of this release including:
 [anasauceda](https://github.com/anasauceda),
