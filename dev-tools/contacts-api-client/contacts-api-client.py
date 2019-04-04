@@ -36,21 +36,53 @@ def _request(method, url, api_key, **kwargs):
     _kwargs = deepcopy(kwargs)
     headers = _kwargs.get('headers', {})
     headers['authorization'] = 'Basic {api_key}'.format(api_key=api_key)
+    headers['OSDI-API-Token']= api_key
     _kwargs.update({'headers': headers})
     return requests.request(method, url, **_kwargs)
 
+def translate_to_osdi_person(contact):
+
+    person={
+        "given_name": contact['first_name'],
+        "family_name": contact['last_name'],
+        "phone_numbers": [
+            {
+                "number": contact['cell'],
+                "number_type": "Mobile"
+            }
+        ],
+        "postal_addresses": [
+            {
+                "postal_code": contact['zip']
+            }
+        ],
+        "email_addresses": [
+            {
+                "address": contact['email']
+            }
+        ]
+    }
+    return person
+
+def make_psh(batch):
+    psh={
+        "people": batch
+    }
+    return psh
 
 def main():
     args = _get_parsed_args()
 
     api_key = args.api_key
 
-    url = 'http://{host}:{port}/admin/{organization_id}/campaigns/{campaign_id}/contacts'.format(
+    url = 'http://{host}:{port}/osdi/org/{organization_id}/campaigns/{campaign_id}/api/v1/contacts'.format(
         host=args.address, port=args.port, organization_id=args.organization_id, campaign_id=args.campaign_id)
+
+    status_url = 'http://{host}:{port}/osdi/org/{organization_id}/campaigns/{campaign_id}/api/v1/stats'.format(host=args.address, port=args.port, organization_id=args.organization_id, campaign_id=args.campaign_id)
 
     batches = list()
 
-    response = _request('GET', url, api_key)
+    response = _request('GET', status_url, api_key)
     print('Starting campaign status: {campaign_status}\n'.format(campaign_status=response.text))
 
     if args.delete_first:
@@ -66,7 +98,8 @@ def main():
         for i, row in enumerate(reader, start=1):
             contact = dict(first_name=row.get('firstName'), last_name=row.get('lastName'))
             contact.update({key: row[key] for key in row.keys() if key not in ['firstName', 'lastName']})
-            batch.append(contact)
+            person=translate_to_osdi_person(contact)
+            batch.append(person)
 
             if i > 0 and not i % args.batch_size:
                 batches.append(_prepare_batch(batch))
@@ -80,10 +113,12 @@ def main():
         if args.duplicate_existing:
             post_url = post_url + '?duplicate_existing'
 
-        response = _request('POST', post_url, api_key, json=batch, headers={'Content-Type': 'application/json'})
+
+        response = _request('POST', post_url, api_key, json=make_psh(batch), headers={'Content-Type':
+        'application/json'})
         print(response.text, response.headers)
 
-    response = _request('GET', url, api_key)
+    response = _request('GET', status_url, api_key)
     print('\nCampaign status after upload: {campaign_status}\n'.format(campaign_status=response.text))
 
 
