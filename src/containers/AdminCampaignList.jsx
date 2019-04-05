@@ -3,6 +3,8 @@ import React from 'react'
 import CampaignList from './CampaignList'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import ContentAdd from 'material-ui/svg-icons/content/add'
+import ArchiveIcon from 'material-ui/svg-icons/content/archive'
+import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
 import loadData from './hoc/load-data'
 import { withRouter } from 'react-router'
 import gql from 'graphql-tag'
@@ -10,8 +12,10 @@ import theme from '../styles/theme'
 import LoadingIndicator from '../components/LoadingIndicator'
 import wrapMutations from './hoc/wrap-mutations'
 import DropDownMenu from 'material-ui/DropDownMenu'
+import IconMenu from 'material-ui/IconMenu';
 import { MenuItem } from 'material-ui/Menu'
 import { dataTest } from '../lib/attributes'
+import IconButton from 'material-ui/IconButton/IconButton';
 
 class AdminCampaignList extends React.Component {
   state = {
@@ -19,7 +23,9 @@ class AdminCampaignList extends React.Component {
     campaignsFilter: {
       isArchived: false,
       listSize: 0
-    }
+    },
+    archiveMultiple: false,
+    campaignsToArchive: {}
   }
 
   handleClickNewButton = async () => {
@@ -45,6 +51,18 @@ class AdminCampaignList extends React.Component {
     )
   }
 
+  handleClickArchiveButton = () => {
+    const campaignIds = Object.entries(this.state.campaignsToArchive)
+      .reduce((arr, [id, checked]) => {
+        if (checked) {
+          arr.push(id)
+          return arr
+        }
+        return arr
+      }, [])
+    console.log(campaignIds)
+  }
+
   handleFilterChange = (event, index, value) => {
     this.setState({
       campaignsFilter: {
@@ -61,6 +79,14 @@ class AdminCampaignList extends React.Component {
         listSize: value
       }
     })
+  }
+
+  handleChecked = ({ campaignId, checked }) => {
+    const { campaignsToArchive } = this.state
+    // checked has to be reversed here because the onTouchTap
+    // event fires before the input is checked.
+    campaignsToArchive[campaignId] = !checked
+    this.setState({ campaignsToArchive })
   }
 
   renderListSizeOptions() {
@@ -83,29 +109,69 @@ class AdminCampaignList extends React.Component {
       </DropDownMenu>
     )
   }
+
+  renderArchiveMultiple() {
+    return (
+      <IconMenu
+        iconButtonElement={<IconButton><MoreVertIcon /></IconButton>}
+      >
+        {this.state.archiveMultiple ?
+          <MenuItem
+            primaryText='Cancel'
+            onClick={() => { this.setState({ archiveMultiple: false }) }}
+          />
+          :
+          <MenuItem
+            primaryText='Archive multiple campaigns'
+            onClick={() => { this.setState({ archiveMultiple: true }) }}
+          />
+        }
+
+      </IconMenu>
+    )
+  }
+
+  renderActionButton() {
+    if (this.state.archiveMultiple) {
+      return (
+        <FloatingActionButton
+          {...dataTest('archiveCampaigns')}
+          style={theme.components.floatingButton}
+          onTouchTap={this.handleClickArchiveButton}
+        >
+          <ArchiveIcon />
+        </FloatingActionButton>
+      )
+    }
+    return (
+      <FloatingActionButton
+        {...dataTest('addCampaign')}
+        style={theme.components.floatingButton}
+        onTouchTap={this.handleClickNewButton}
+      >
+        <ContentAdd />
+      </FloatingActionButton>
+    )
+  }
+
   render() {
     const { adminPerms } = this.props.params
     return (
       <div>
-        {this.renderFilters()}
+        {adminPerms && this.renderArchiveMultiple()}
+        {!this.state.archiveMultiple && this.renderFilters()}
         {this.renderListSizeOptions()}
         {this.state.isCreating ? <LoadingIndicator /> : (
           <CampaignList
             campaignsFilter={this.state.campaignsFilter}
             organizationId={this.props.params.organizationId}
             adminPerms={adminPerms}
+            selectMultiple={this.state.archiveMultiple}
+            handleChecked={this.handleChecked}
           />
         )}
 
-        {adminPerms ?
-          (<FloatingActionButton
-            {...dataTest('addCampaign')}
-            style={theme.components.floatingButton}
-            onTouchTap={this.handleClickNewButton}
-          >
-            <ContentAdd />
-          </FloatingActionButton>
-          ) : null}
+        {adminPerms && this.renderActionButton()}
       </div>
     )
   }
