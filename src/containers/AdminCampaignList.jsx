@@ -51,16 +51,11 @@ class AdminCampaignList extends React.Component {
     )
   }
 
-  handleClickArchiveButton = () => {
-    const campaignIds = Object.entries(this.state.campaignsToArchive)
-      .reduce((arr, [id, checked]) => {
-        if (checked) {
-          arr.push(id)
-          return arr
-        }
-        return arr
-      }, [])
-    console.log(campaignIds)
+  handleClickArchiveButton = (keys) => {
+    if (keys.length) {
+      const campaignIds = Object.keys(this.state.campaignsToArchive)
+      console.log(campaignIds)
+    }
   }
 
   handleFilterChange = (event, index, value) => {
@@ -82,11 +77,17 @@ class AdminCampaignList extends React.Component {
   }
 
   handleChecked = ({ campaignId, checked }) => {
-    const { campaignsToArchive } = this.state
-    // checked has to be reversed here because the onTouchTap
-    // event fires before the input is checked.
-    campaignsToArchive[campaignId] = !checked
-    this.setState({ campaignsToArchive })
+    this.setState(prevState => {
+      const { campaignsToArchive } = prevState
+      // checked has to be reversed here because the onTouchTap
+      // event fires before the input is checked.
+      if (!checked) {
+        campaignsToArchive[campaignId] = !checked
+      } else {
+        delete campaignsToArchive[campaignId]
+      }
+      return { campaignsToArchive }
+    })
   }
 
   renderListSizeOptions() {
@@ -133,11 +134,13 @@ class AdminCampaignList extends React.Component {
 
   renderActionButton() {
     if (this.state.archiveMultiple) {
+      const keys = Object.keys(this.state.campaignsToArchive)
       return (
         <FloatingActionButton
           {...dataTest('archiveCampaigns')}
           style={theme.components.floatingButton}
-          onTouchTap={this.handleClickArchiveButton}
+          onTouchTap={() => this.handleClickArchiveButton(keys)}
+          disabled={!keys.length}
         >
           <ArchiveIcon />
         </FloatingActionButton>
