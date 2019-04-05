@@ -137,12 +137,12 @@ class AdminCampaignList extends React.Component {
         {this.state.archiveMultiple ?
           <MenuItem
             primaryText='Cancel'
-            onClick={() => { this.toggleStateWithDelay('archiveMultiple', 201) }}
+            onClick={() => { this.toggleStateWithDelay('archiveMultiple', 250) }}
           />
           :
           <MenuItem
             primaryText='Archive multiple campaigns'
-            onClick={() => { this.toggleStateWithDelay('archiveMultiple', 201) }}
+            onClick={() => { this.toggleStateWithDelay('archiveMultiple', 250) }}
           />
         }
 
