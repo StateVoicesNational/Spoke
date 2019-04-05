@@ -55,7 +55,11 @@ class AdminCampaignList extends React.Component {
     if (keys.length) {
       this.setState({ isLoading: true })
       await this.props.mutations.archiveCampaigns(keys)
-      this.setState({ archiveMultiple: false, isLoading: false })
+      this.setState({
+        archiveMultiple: false,
+        isLoading: false,
+        campaignsToArchive: {}
+      })
     }
   }
 
