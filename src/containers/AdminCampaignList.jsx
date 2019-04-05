@@ -19,7 +19,7 @@ import IconButton from 'material-ui/IconButton/IconButton';
 
 class AdminCampaignList extends React.Component {
   state = {
-    isCreating: false,
+    isLoading: false,
     campaignsFilter: {
       isArchived: false,
       listSize: 0
@@ -30,7 +30,7 @@ class AdminCampaignList extends React.Component {
 
   handleClickNewButton = async () => {
     const { organizationId } = this.props.params
-    this.setState({ isCreating: true })
+    this.setState({ isLoading: true })
     const newCampaign = await this.props.mutations.createCampaign({
       title: 'New Campaign',
       description: '',
@@ -51,10 +51,11 @@ class AdminCampaignList extends React.Component {
     )
   }
 
-  handleClickArchiveButton = (keys) => {
+  handleClickArchiveButton = async (keys) => {
     if (keys.length) {
-      const campaignIds = Object.keys(this.state.campaignsToArchive)
-      console.log(campaignIds)
+      this.setState({ isLoading: true })
+      await this.props.mutations.archiveCampaigns(keys)
+      this.setState({ archiveMultiple: false, isLoading: false })
     }
   }
 
@@ -164,7 +165,7 @@ class AdminCampaignList extends React.Component {
         {adminPerms && this.renderArchiveMultiple()}
         {!this.state.archiveMultiple && this.renderFilters()}
         {this.renderListSizeOptions()}
-        {this.state.isCreating ? <LoadingIndicator /> : (
+        {this.state.isLoading ? <LoadingIndicator /> : (
           <CampaignList
             campaignsFilter={this.state.campaignsFilter}
             organizationId={this.props.params.organizationId}
@@ -182,7 +183,10 @@ class AdminCampaignList extends React.Component {
 
 AdminCampaignList.propTypes = {
   params: PropTypes.object,
-  mutations: PropTypes.object,
+  mutations: PropTypes.exact({
+    createCampaign: PropTypes.func,
+    archiveCampaigns: PropTypes.func
+  }),
   router: PropTypes.object
 }
 
@@ -196,6 +200,16 @@ const mapMutationsToProps = () => ({
       }
     `,
     variables: { campaign }
+  }),
+  archiveCampaigns: ids => ({
+    mutation: gql`
+      mutation archiveCampaigns($ids: [String!]) {
+        archiveCampaigns(ids: $ids) {
+          id
+        }
+      }
+    `,
+    variables: { ids }
   })
 })
 
