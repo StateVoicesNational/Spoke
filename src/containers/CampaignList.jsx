@@ -8,6 +8,7 @@ import WarningIcon from 'material-ui/svg-icons/alert/warning'
 import ArchiveIcon from 'material-ui/svg-icons/content/archive'
 import UnarchiveIcon from 'material-ui/svg-icons/content/unarchive'
 import IconButton from 'material-ui/IconButton'
+import Checkbox from 'material-ui/Checkbox'
 import { withRouter } from 'react-router'
 import theme from '../styles/theme'
 import Chip from '../components/Chip'
@@ -43,6 +44,27 @@ const inlineStyles = {
 }
 
 class CampaignList extends React.Component {
+
+  renderRightIcon({ isArchived }) {
+    if (isArchived) {
+      return (
+        <IconButton
+          tooltip='Unarchive'
+          onTouchTap={async () => this.props.mutations.unarchiveCampaign(campaign.id)}
+        >
+          <UnarchiveIcon />
+        </IconButton>)
+    }
+    return (
+      <IconButton
+        tooltip='Archive'
+        onTouchTap={async () => this.props.mutations.archiveCampaign(campaign.id)}
+      >
+        <ArchiveIcon />
+      </IconButton>)
+  }
+
+
   renderRow(campaign) {
     const {
       isStarted,
@@ -50,8 +72,7 @@ class CampaignList extends React.Component {
       hasUnassignedContacts,
       hasUnsentInitialMessages
     } = campaign
-    const { adminPerms } = this.props
-
+    const { adminPerms, selectMultiple } = this.props
 
     let listItemStyle = {}
     let leftIcon = ''
@@ -108,28 +129,24 @@ class CampaignList extends React.Component {
         style={listItemStyle}
         key={campaign.id}
         primaryText={primaryText}
-        onTouchTap={() => (!isStarted ?
-          this.props.router.push(`${campaignUrl}/edit`) :
-          this.props.router.push(campaignUrl))}
+        onTouchTap={({
+          currentTarget: { firstElementChild: { firstElementChild: { checked } } }
+        }) => {
+          if (selectMultiple) {
+            this.props.handleChecked({ campaignId: campaign.id, checked })
+          } else {
+            return !isStarted ?
+              this.props.router.push(`${campaignUrl}/edit`) :
+              this.props.router.push(campaignUrl)
+          }
+        }
+        }
         secondaryText={secondaryText}
-        leftIcon={leftIcon}
-        rightIconButton={adminPerms ?
-          (campaign.isArchived ? (
-            <IconButton
-              tooltip='Unarchive'
-              onTouchTap={async () => this.props.mutations.unarchiveCampaign(campaign.id)}
-            >
-              <UnarchiveIcon />
-            </IconButton>
-          ) : (
-              <IconButton
-                tooltip='Archive'
-                onTouchTap={async () => this.props.mutations.archiveCampaign(campaign.id)}
-              >
-                <ArchiveIcon />
-              </IconButton>
-            )) : null}
-      />
+        leftIcon={!selectMultiple && leftIcon}
+        rightIconButton={!selectMultiple && adminPerms && this.renderRightIcon({ isArchived })}
+        leftCheckbox={selectMultiple && <Checkbox />}
+      >
+      </ListItem>
     )
   }
 
@@ -158,9 +175,11 @@ CampaignList.propTypes = {
   ),
   router: PropTypes.object,
   adminPerms: PropTypes.bool,
+  selectMultiple: PropTypes.bool,
   organizationId: PropTypes.string,
   data: PropTypes.object,
-  mutations: PropTypes.object
+  mutations: PropTypes.object,
+  handleChecked: PropTypes.func
 }
 
 const mapMutationsToProps = () => ({
