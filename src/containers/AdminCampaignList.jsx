@@ -4,7 +4,7 @@ import CampaignList from './CampaignList'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import ContentAdd from 'material-ui/svg-icons/content/add'
 import ArchiveIcon from 'material-ui/svg-icons/content/archive'
-import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
+import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert'
 import loadData from './hoc/load-data'
 import { withRouter } from 'react-router'
 import gql from 'graphql-tag'
@@ -12,10 +12,10 @@ import theme from '../styles/theme'
 import LoadingIndicator from '../components/LoadingIndicator'
 import wrapMutations from './hoc/wrap-mutations'
 import DropDownMenu from 'material-ui/DropDownMenu'
-import IconMenu from 'material-ui/IconMenu';
+import IconMenu from 'material-ui/IconMenu'
 import { MenuItem } from 'material-ui/Menu'
 import { dataTest } from '../lib/attributes'
-import IconButton from 'material-ui/IconButton/IconButton';
+import IconButton from 'material-ui/IconButton/IconButton'
 
 class AdminCampaignList extends React.Component {
   state = {
@@ -91,6 +91,12 @@ class AdminCampaignList extends React.Component {
     })
   }
 
+  toggleStateWithDelay = (property, delay) => {
+    setTimeout(() => {
+      this.setState(prevState => ({ [property]: !prevState[property] }))
+    }, delay)
+  }
+
   renderListSizeOptions() {
     return (
       <DropDownMenu value={this.state.campaignsFilter.listSize} onChange={this.handleListSizeChange} >
@@ -116,16 +122,23 @@ class AdminCampaignList extends React.Component {
     return (
       <IconMenu
         iconButtonElement={<IconButton><MoreVertIcon /></IconButton>}
+        style={{ bottom: '13px' }}
       >
+        {/*
+          The IconMenu component delays hiding the menu after it is
+          clicked for 200ms. This looks nice, so the state change is
+          delayed for 201ms to avoid switching the menu text before the
+          menu is hidden.
+        */}
         {this.state.archiveMultiple ?
           <MenuItem
             primaryText='Cancel'
-            onClick={() => { this.setState({ archiveMultiple: false }) }}
+            onClick={() => { this.toggleStateWithDelay('archiveMultiple', 201) }}
           />
           :
           <MenuItem
             primaryText='Archive multiple campaigns'
-            onClick={() => { this.setState({ archiveMultiple: true }) }}
+            onClick={() => { this.toggleStateWithDelay('archiveMultiple', 201) }}
           />
         }
 
