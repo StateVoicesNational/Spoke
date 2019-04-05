@@ -401,7 +401,7 @@ const rootMutations = {
     },
     joinOrganization: async (_, { organizationUuid }, { user, loaders }) => {
       let organization
-      ;[organization] = await r.knex('organization').where('uuid', organizationUuid)
+        ;[organization] = await r.knex('organization').where('uuid', organizationUuid)
       if (organization) {
         const userOrg = await r
           .table('user_organization')
@@ -422,7 +422,7 @@ const rootMutations = {
         } else { // userOrg exists
           console.log('existing userOrg ' + userOrg.id + ' user ' + user.id + ' organizationUuid ' + organizationUuid )
         }
-      } else { // no organization 
+      } else { // no organization
         console.log('no organization with id ' + organizationUuid + ' for user ' + user.id)
       }
       return organization
@@ -616,6 +616,22 @@ const rootMutations = {
       await campaign.save()
       cacheableData.campaign.reload(id)
       return campaign
+    },
+    archiveCampaigns: async (_, { ids }, { user, loaders }) => {
+      // Take advantage of the cache instead of running a DB query
+      const campaigns = await Promise.all(ids.map(id => (
+        loaders.campaign.load(id)
+      )))
+
+      await Promise.all(campaigns.map(campaign => (
+        accessRequired(user, campaign.organization_id, 'ADMIN')
+      )))
+
+      campaigns.forEach(campaign => { campaign.is_archived = true })
+      await Promise.all(campaigns.map(campaign => (
+        campaign.save()
+      )))
+      return campaigns
     },
     startCampaign: async (_, { id }, { user, loaders }) => {
       const campaign = await loaders.campaign.load(id)
@@ -995,7 +1011,7 @@ const rootMutations = {
         const service = serviceMap[messageInstance.service || process.env.DEFAULT_SERVICE]
         log.info(
           `Sending (${service}): ${messageInstance.user_number} -> ${
-            messageInstance.contact_number
+          messageInstance.contact_number
           }\nMessage: ${messageInstance.text}`
         )
         service.sendMessage(messageInstance)
