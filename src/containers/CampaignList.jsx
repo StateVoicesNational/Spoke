@@ -144,7 +144,7 @@ class CampaignList extends React.Component {
         secondaryText={secondaryText}
         leftIcon={!selectMultiple && leftIcon}
         rightIconButton={!selectMultiple && adminPerms && this.renderRightIcon({ isArchived })}
-        leftCheckbox={selectMultiple && <Checkbox />}
+        leftCheckbox={selectMultiple ? <Checkbox /> : null}
       >
       </ListItem>
     )
