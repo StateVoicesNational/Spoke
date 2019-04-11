@@ -12,15 +12,15 @@ const errorMessages = {
 }
 
 const validUuid = async (nextUrl, uuidMatch) => {
+  if (!uuidMatch || !nextUrl) throw new Error(errorMessages.invalidInvite)
+
   let foundUUID
   if (nextUrl.includes('join')) {
     foundUUID = await Organization.filter({ uuid: uuidMatch[0] })
   } else if (nextUrl.includes('invite')) {
     foundUUID = await Invite.filter({ hash: uuidMatch[0] })
   }
-  if (foundUUID.length === 0) {
-    return [null, false, errorMessages.invalidInvite]
-  }
+  if (foundUUID.length === 0) throw new Error(errorMessages.invalidInvite)
 }
 
 const login = async ({
@@ -30,11 +30,13 @@ const login = async ({
   uuidMatch
 }) => {
   if (existingUser.length === 0) {
-    return [null, false, errorMessages.invalidCredentials]
+    throw new Error(errorMessages.invalidCredentials)
   }
 
-  // Verify UUID validity
-  if (nextUrl) validUuid(nextUrl, uuidMatch)
+  // Verify UUID validity when an existing user is invited to a new
+  // campaign, e.g. dynamic assignament.
+  // If there is an error, it will be caught on local strategy invocation
+  if (nextUrl) await validUuid(nextUrl, uuidMatch)
 
   // Get salt and hash and verify user password
   const pwFieldSplit = existingUser[0].auth0_id.split('|')
@@ -48,9 +50,9 @@ const login = async ({
       (err, verified) => {
         if (err) reject(err)
         if (verified) {
-          resolve([null, existingUser[0]])
+          resolve(existingUser[0])
         }
-        resolve([null, false, errorMessages.invalidCredentials])
+        reject({ message: errorMessages.invalidCredentials })
       }
     )
   })
@@ -65,16 +67,17 @@ const signup = async ({
   reqBody
 }) => {
   // Verify UUID validity
-  if (nextUrl) validUuid(nextUrl, uuidMatch)
+  // If there is an error, it will be caught on local strategy invocation
+  await validUuid(nextUrl, uuidMatch)
 
   // Verify user doesn't already exist
   if (existingUser.length > 0 && existingUser[0].email === lowerCaseEmail) {
-    return [null, false, errorMessages.emailTaken]
+    throw new Error(errorMessages.emailTaken)
   }
 
   // Verify password and password confirm fields match
   if (password !== reqBody.passwordConfirm) {
-    return [null, false, errorMessages.passwordsDontMatch]
+    throw new Error(errorMessages.passwordsDontMatch)
   }
 
   // create the user
@@ -91,7 +94,7 @@ const signup = async ({
         cell: reqBody.cell,
         is_superadmin: false
       })
-      resolve([null, user])
+      resolve(user)
     })
   })
 }
@@ -103,7 +106,7 @@ const reset = ({
   uuidMatch
 }) => {
   if (existingUser.length === 0) {
-    return [null, false, errorMessages.invalidResetHash]
+    throw new Error(errorMessages.invalidResetHash)
   }
 
   // Get user resetHash and date of hash creation
@@ -113,17 +116,17 @@ const reset = ({
   // Verify hash was created in the last 15 mins
   const isExpired = (Date.now() - datetime) / 1000 / 60 > 15
   if (isExpired) {
-    return [null, false, errorMessages.invalidResetHash]
+    throw new Error(errorMessages.invalidResetHash)
   }
 
   // Verify the UUID in request matches hash in DB
   if (uuidMatch[0] !== resetHash) {
-    return [null, false, errorMessages.invalidResetHash]
+    throw new Error(errorMessages.invalidResetHash)
   }
 
   // Verify passwords match
   if (password !== reqBody.passwordConfirm) {
-    return [null, false, errorMessages.passwordsDontMatch]
+    throw new Error(errorMessages.passwordsDontMatch)
   }
 
   // Save new user password to DB
@@ -136,7 +139,7 @@ const reset = ({
         .get(existingUser[0].id)
         .update({ auth0_id: passwordToSave })
         .run()
-      resolve([null, updatedUser])
+      resolve(updatedUser)
     })
   })
 }

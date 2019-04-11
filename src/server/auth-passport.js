@@ -86,7 +86,7 @@ export function setupLocalAuthPassport() {
       return done(null, false)
     }
     try {
-      const result = await localAuthHelpers[req.body.authType]({
+      const user = await localAuthHelpers[req.body.authType]({
         lowerCaseEmail,
         password,
         existingUser,
@@ -94,9 +94,9 @@ export function setupLocalAuthPassport() {
         uuidMatch,
         reqBody: req.body
       })
-      return done(...result)
+      return done(null, user)
     } catch (err) {
-      return done(null, false)
+      return done(null, false, err.message)
     }
   }))
 
