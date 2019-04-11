@@ -48,7 +48,15 @@ export class IncomingMessageList extends Component {
     }
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate = (prevProps) => {
+    if (this.props.clearSelectedMessages && this.state.selectedRows.length > 0) {
+      this.setState(
+        {
+          selectedRows: []
+        })
+      this.props.onConversationSelected([], [])
+    }
+
     let previousPageInfo = { total: 0 }
     if (prevProps.conversations.conversations) {
       previousPageInfo = prevProps.conversations.conversations.pageInfo
@@ -193,6 +201,7 @@ export class IncomingMessageList extends Component {
 
     const { conversations, pageInfo } = this.props.conversations.conversations
     const { limit, offset, total } = pageInfo
+    const { clearSelectedMessages } = this.props
     const displayPage = Math.floor(offset / limit) + 1
     const tableData = prepareDataTableData(conversations)
     return (
@@ -211,7 +220,7 @@ export class IncomingMessageList extends Component {
           onPreviousPageClick={this.handlePreviousPageClick}
           onRowSizeChange={this.handleRowSizeChanged}
           onRowSelection={this.handleRowsSelected}
-          selectedRows={this.state.selectedRows}
+          selectedRows={clearSelectedMessages ? null : this.state.selectedRows}
         />
         <ConversationPreviewModal
           conversation={this.state.activeConversation}
@@ -233,7 +242,8 @@ IncomingMessageList.propTypes = {
   onConversationSelected: type.func,
   onConversationCountChanged: type.func,
   utc: type.string,
-  conversations: type.object
+  conversations: type.object,
+  clearSelectedMessages: type.bool
 }
 
 const mapQueriesToProps = ({ ownProps }) => ({
