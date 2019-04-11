@@ -50,7 +50,7 @@ class UserEdit extends React.Component {
       if (this.props.onRequestClose) {
         this.props.onRequestClose()
       }
-    } if (this.props.authType === 'change') {
+    } else if (this.props.authType === 'change') {
       // change password
       const res = await this.props.mutations.changeUserPassword(formData)
       if (res.errors) {
