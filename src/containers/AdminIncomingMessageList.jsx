@@ -74,11 +74,12 @@ export class AdminIncomingMessageList extends Component {
       conversationCount: 0,
       includeActiveCampaigns: true,
       includeNotOptedOutConversations: true,
-      includeOptedOutConversations: false
+      includeOptedOutConversations: false,
+      clearSelectedMessages: false
     }
   }
 
-  shouldComponentUpdate(dummy, nextState) {
+  shouldComponentUpdate = (dummy, nextState) => {
     if (
       !nextState.needsRender &&
       _.isEqual(this.state.contactsFilter, nextState.contactsFilter) &&
@@ -88,6 +89,16 @@ export class AdminIncomingMessageList extends Component {
       return false
     }
     return true
+  }
+
+  componentDidUpdate = () => {
+    if (this.state.clearSelectedMessages) {
+      this.setState(
+        {
+          clearSelectedMessages: false,
+          needsRender: true
+        })
+    }
   }
 
   handleCampaignChanged = async (campaignId) => {
@@ -135,6 +146,7 @@ export class AdminIncomingMessageList extends Component {
     )
     this.setState({
       utc: Date.now().toString(),
+      clearSelectedMessages: true,
       needsRender: true
     })
   }
@@ -149,6 +161,7 @@ export class AdminIncomingMessageList extends Component {
     )
     this.setState({
       utc: Date.now().toString(),
+      clearSelectedMessages: true,
       needsRender: true
     })
   }
@@ -351,9 +364,10 @@ export class AdminIncomingMessageList extends Component {
               onPageSizeChanged={this.handlePageSizeChange}
               onConversationSelected={this.handleRowSelection}
               onConversationCountChanged={this.conversationCountChanged}
+              clearSelectedMessages={this.state.clearSelectedMessages}
             />
           </div>
-        )}
+          )}
       </div>
     )
   }
