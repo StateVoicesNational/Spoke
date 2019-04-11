@@ -80,3 +80,20 @@ See [this guide](EMAIL_CONFIGURATION.md) for instructions.
 
 ## Data exporting
 In order to export data from campaigns (such as contacts' responses to questions), you need to configure S3 or Bucketeer. See [this guide](DATA_EXPORTING.md) for instructions.
+
+## Upgrading an existing Heroku app
+
+Spoke now runs on the Heroku [container stack](https://devcenter.heroku.com/categories/deploying-with-docker). Before updating an existing instance of Spoke, the target application needs to be [configured to use this stack](https://devcenter.heroku.com/articles/stack#migrating-to-a-new-stack) if it is not already.
+
+To update to the `container` stack, run:
+
+```cli
+heroku stack:set container --app myspokeapp
+```
+
+Then push to heroku from the branch that you wish to deploy:
+
+```cli
+git remote add heroku https://git.heroku.com/myspokeapp.git
+git push heroku master
+```

@@ -6,7 +6,6 @@ import { graphqlExpress, graphiqlExpress } from 'apollo-server-express'
 import { makeExecutableSchema, addMockFunctionsToSchema } from 'graphql-tools'
 import { resolvers } from './api/schema'
 import { schema } from '../api/schema'
-import { accessRequired } from './api/errors'
 import mocks from './api/mocks'
 import { createLoaders, createTablesIfNecessary } from './models'
 import passport from 'passport'
@@ -20,6 +19,7 @@ import { seedZipCodes } from './seeds/seed-zip-codes'
 import { runMigrations } from '../migrations'
 import { setupUserNotificationObservers } from './notifications'
 import { TwimlResponse } from 'twilio'
+import { existsSync } from 'fs'
 
 process.on('uncaughtException', (ex) => {
   log.error(ex)
@@ -63,8 +63,10 @@ const port = process.env.DEV_APP_PORT || process.env.PORT
 
 // Don't rate limit heroku
 app.enable('trust proxy')
-if (!DEBUG && process.env.PUBLIC_DIR) {
-  app.use(express.static(process.env.PUBLIC_DIR, {
+
+// Serve static assets
+if (existsSync(process.env.ASSETS_DIR)) {
+  app.use('/assets', express.static(process.env.ASSETS_DIR, {
     maxAge: '180 days'
   }))
 }
@@ -161,7 +163,6 @@ app.use('/graphql', graphqlExpress((request) => ({
 app.get('/graphiql', graphiqlExpress({
   endpointURL: '/graphql'
 }))
-
 
 // This middleware should be last. Return the React app only if no other route is hit.
 app.use(appRenderer)
