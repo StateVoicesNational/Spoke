@@ -64,9 +64,15 @@ def translate_to_osdi_person(contact):
     }
     return person
 
+def translate_osdi_person_to_signup(person):
+    signup={
+        "person": person
+        }
+    return signup
+
 def make_psh(batch):
     psh={
-        "people": batch
+        "signups": batch
     }
     return psh
 
@@ -99,7 +105,8 @@ def main():
             contact = dict(first_name=row.get('firstName'), last_name=row.get('lastName'))
             contact.update({key: row[key] for key in row.keys() if key not in ['firstName', 'lastName']})
             person=translate_to_osdi_person(contact)
-            batch.append(person)
+            signup=translate_osdi_person_to_signup(person)
+            batch.append(signup)
 
             if i > 0 and not i % args.batch_size:
                 batches.append(_prepare_batch(batch))

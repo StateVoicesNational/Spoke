@@ -122,7 +122,11 @@ export async function AEP(req, res) {
             },
             "osdi:person_signup_helper":{
                 href: baseUrl.concat("/contacts"),
-                title: "Multiple capable Person Signup Helper"
+                title: "Person signup Helper"
+            },
+            "osdi:people_import_helper": {
+                href: baseUrl.concat("/contacts"),
+                title: "People Import Helper"
             },
             "spoke:stats": {
                 href: baseUrl.concat("/stats"),
@@ -184,11 +188,23 @@ export async function campaignStats(req,res) {
     res.end(JSON.stringify(resp,null, 2))
 
 }
+
+function osdi_error(code, description) {
+    const err={
+        "osdi:error": {
+            response_code: code,
+            error_description: description
+        }
+    }
+    return err;
+}
+
 export default {
     translate_contact_to_osdi_person,
     translate_osdi_person_to_input_row,
     AEP: AEP,
     chooser: chooser,
     digDug: digDug,
-    campaignStats
+    campaignStats,
+    osdi_error
 }

@@ -129,10 +129,15 @@ export default async function contactsApi(req, res) {
   } else if (req.method === 'POST') {
     const osdi_body=req.body;
     var people=undefined;
-    if (osdi_body.people) {
-      people=osdi_body.people // translated
-    } else if (osdi_body.person) {
+    if (osdi_body.person) {
       people=[osdi_body.person];
+    } else if (osdi_body.signups) {
+      people=_.map(osdi_body.signups,(signup) => signup.person);
+    } else {
+      res.writeHead(400)
+      var err=osdi.osdi_error(400,"Signup requires either a person attribute or signups array");
+      res.end(JSON.stringify(err))
+      return
     }
 
     var inputRows;
