@@ -33,11 +33,6 @@ const login = async ({
     throw new Error(errorMessages.invalidCredentials)
   }
 
-  // Verify UUID validity when an existing user is invited to a new
-  // campaign, e.g. dynamic assignament.
-  // If there is an error, it will be caught on local strategy invocation
-  if (nextUrl) await validUuid(nextUrl, uuidMatch)
-
   // Get salt and hash and verify user password
   const pwFieldSplit = existingUser[0].auth0_id.split('|')
   const hashed = {
