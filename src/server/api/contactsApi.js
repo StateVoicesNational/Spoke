@@ -233,7 +233,7 @@ export default async function contactsApi(req, res) {
           })
       })
       .then(function() {
-        resp = successResponse
+        resp = osdi.translate_success_to_import_helper_response(successResponse,req)
       })
       .catch(function(error) {
         resp = { error }

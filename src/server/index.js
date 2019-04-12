@@ -166,11 +166,11 @@ app.use('/admin/:orgId/campaigns/:campaignId/contacts', wrap(async (req, res) =>
 }))
 
 
-app.use('/osdi/org/:orgId/campaigns/:campaignId/api/v1/contacts/:contactId', wrap(async (req, res) => {
+app.use('/osdi/org/:orgId/campaigns/:campaignId/api/v1/people/:contactId', wrap(async (req, res) => {
   await contactsApi(req, res)
 }))
 
-app.use('/osdi/org/:orgId/campaigns/:campaignId/api/v1/contacts', wrap(async (req, res) => {
+app.use('/osdi/org/:orgId/campaigns/:campaignId/api/v1/people', wrap(async (req, res) => {
   await contactsApi(req, res)
 }))
 
@@ -179,7 +179,7 @@ app.use('/osdi/org/:orgId/campaigns/:campaignId/api/v1/stats', wrap(async (req, 
   await osdi.campaignStats(req, res)
 }))
 
-app.use('/osdi/org/:orgId/campaigns/:campaignId/api/v1', wrap(async (req, res) => {
+app.use('/osdi/org/:orgId/campaigns/:campaignId/api/v1\/?$', wrap(async (req, res) => {
   await osdi.AEP(req, res)
 }))
 

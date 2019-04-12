@@ -117,15 +117,15 @@ export async function AEP(req, res) {
         motd: "Welcome to Spoke's OSDI Endpoint",
         _links: {
             "osdi:people": {
-                href: baseUrl.concat("/contacts"),
+                href: baseUrl.concat("/people"),
                 title: "The People Collection"
             },
             "osdi:person_signup_helper":{
-                href: baseUrl.concat("/contacts"),
+                href: baseUrl.concat("/people"),
                 title: "Person signup Helper"
             },
             "osdi:people_import_helper": {
-                href: baseUrl.concat("/contacts"),
+                href: baseUrl.concat("/people"),
                 title: "People Import Helper"
             },
             "spoke:stats": {
@@ -199,6 +199,59 @@ function osdi_error(code, description) {
     return err;
 }
 
+function osdi_batch_error(invalids) {
+
+    const err={
+        request_type: "batch",
+        response_code: 200,
+        "batch_errors": [
+            _.map(invalids, function(i) {
+                return {
+                    request_type: "non-atomic",
+                    response_code: 400,
+                    resource_status: [
+                        {
+                            resource: "osdi:person",
+                            response_code: 400,
+                            errors: [
+                                {
+                                    code: "INVALID DATA",
+                                    input: i
+                                }
+                            ]
+                        }
+                    ]
+                }
+            })
+        ]
+    }
+    return err;
+}
+
+function translate_success_to_import_helper_response(success,req) {
+    var self_href="".concat(process.env.BASE_URL,
+        req.baseUrl, "_import_result");
+
+    var errors=success.invalid.length;
+    var resp = {
+        submitted: success.number_submitted,
+        updated: success.dupes_in_campaign,
+        created: success.added,
+        errors: errors,
+        "spoke:opted_out": success.opted_out,
+        _links: {
+            self: {
+                href: self_href
+            }
+        }
+
+    }
+    if (errors > 0) {
+        resp['osdi:error']=osdi_batch_error(success.invalid)
+    }
+    return resp;
+}
+
 export default {
     translate_contact_to_osdi_person,
     translate_osdi_person_to_input_row,
@@ -206,5 +259,7 @@ export default {
     chooser: chooser,
     digDug: digDug,
     campaignStats,
-    osdi_error
+    osdi_error,
+    osdi_batch_error,
+    translate_success_to_import_helper_response
 }

@@ -81,7 +81,7 @@ def main():
 
     api_key = args.api_key
 
-    url = 'http://{host}:{port}/osdi/org/{organization_id}/campaigns/{campaign_id}/api/v1/contacts'.format(
+    url = 'http://{host}:{port}/osdi/org/{organization_id}/campaigns/{campaign_id}/api/v1/people'.format(
         host=args.address, port=args.port, organization_id=args.organization_id, campaign_id=args.campaign_id)
 
     status_url = 'http://{host}:{port}/osdi/org/{organization_id}/campaigns/{campaign_id}/api/v1/stats'.format(host=args.address, port=args.port, organization_id=args.organization_id, campaign_id=args.campaign_id)
