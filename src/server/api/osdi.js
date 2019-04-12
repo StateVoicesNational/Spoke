@@ -131,9 +131,9 @@ export async function AEP(req, res) {
             "spoke:stats": {
                 href: baseUrl.concat("/stats"),
                 title: "Stats for this campaign"
-            }
-        },
-        curies:  curies()
+            },
+            curies:  curies()
+        }
     };
     res.writeHead(200,{'Content-Type': 'application/json'});
     res.end(JSON.stringify(aep,null,2));
