@@ -3,9 +3,7 @@
   "description": "Mass peer to peer texting tool",
   "repository":"https://github.com/moveonorg/spoke",
   "success_url":"/",
-  "buildpacks": [
-      { "url": "https://github.com/heroku/heroku-buildpack-nodejs"}
-  ],
+  "stack": "container",
   "env": {
     "SUPPRESS_SELF_INVITE": {
       "description": "Should anonymous visitors be able to create new organizations from the home page? You will probably want to start the app with this off, and then after creating your own organization, come back here and set it to 1",
@@ -15,26 +13,22 @@
 
     "AUTH0_DOMAIN": {
       "description": "auth0 domain attached to auth0 account",
-      "required": true,
-      "value": "<changeme>.auth0.com"
+      "required": true
     },
 
     "AUTH0_CLIENT_ID": {
       "description": "auth0 client id attached to auth0 account",
-      "required": true,
-      "value": "<changeme>"
+      "required": true
     },
 
     "AUTH0_CLIENT_SECRET": {
       "description": "auth0 client secret attached to auth0 account",
-      "required": true,
-      "value": "<changeme>"
+      "required": true
     },
 
     "BASE_URL": {
-      "description": "based on your herokuapp name or domain name",
-      "required": true,
-      "value": "https://<changeme>.herokuapp.com"
+      "description": "Set this if you are using a custom domain",
+      "required": false
     },
 
     "SESSION_SECRET": {
@@ -51,26 +45,22 @@
 
     "TWILIO_API_KEY": {
       "description": "for twilio integration and connected to twilio account",
-      "required": true,
-      "value": "<changeme>"
+      "required": true
     },
 
     "TWILIO_APPLICATION_SID": {
       "description": "for twilio integration and connected to twilio account",
-      "required": true,
-      "value": "<changeme>"
+      "required": true
     },
 
     "TWILIO_AUTH_TOKEN": {
       "description": "for twilio integration and connected to twilio account",
-      "required": true,
-      "value": "<changeme>"
+      "required": true
     },
 
     "TWILIO_MESSAGE_SERVICE_SID": {
       "description": "for twilio integration and connected to twilio account",
-      "required": true,
-      "value": "<changeme>"
+      "required": true
     },
 
     "TWILIO_STATUS_CALLBACK_URL": {
@@ -133,14 +123,8 @@
       "value": ""
     },
 
-    "ADVANCED_OPTIONS": {
-      "description": "Everything below here you should probably leave alone",
-      "required": false,
-      "value": ""
-    },
-
     "NODE_ENV": {
-      "description": "node environment determines the application build/start process",
+      "description": "node environment determines the application start process",
       "required": true,
       "value": "production"
     },
@@ -149,30 +133,6 @@
       "description": "recommended setting which means that the same node process that runs the web app processes applications.",
       "required": true,
       "value": "1"
-    },
-
-    "OUTPUT_DIR": {
-      "description": "for production build placement",
-      "required": true,
-      "value": "./build"
-    },
-
-    "PUBLIC_DIR": {
-      "description": "for production build placement",
-      "required": true,
-      "value": "./build/client"
-    },
-
-    "ASSETS_DIR": {
-      "description": "for assets directory in production build placement",
-      "required": true,
-      "value": "./build/client/assets"
-    },
-
-    "ASSETS_MAP_FILE": {
-      "description": "for assets directory placement",
-      "required": true,
-      "value": "assets.json"
     },
 
     "SUPPRESS_MIGRATIONS": {
@@ -185,10 +145,14 @@
       "description": "Timezone to use to determine whether DST is in effect for a date",
       "required": true,
       "value": "America/New_York"
+    },
+
+    "HEROKU_APP_NAME": {
+      "description": "Name of your Heroku app (not used if BASE_URL is set)",
+      "required": false
     }
 
   },
-
   "addons": [
     "heroku-postgresql:hobby-dev",
     "mailgun:starter"
