@@ -51,13 +51,12 @@ OPTOUTS_SHARE_ALL_ORGS            | Can be set to true if opt outs should be res
 OUTPUT_DIR                        | Directory path for packaged files should be saved to. _Required_.
 PHONE_NUMBER_COUNTRY              | Country code for phone number formatting. _Default_: US.
 PORT                              | Port for Heroku servers.
-PUBLIC_DIR                        | Directory path server should use to serve files. _Required_.
 REDIS_URL                         | This enables caching using the [`url` option in redis library](https://github.com/NodeRedis/node_redis#options-object-properties).  This is an area of active development. More can be seen at [server/models/cacheable-queries/README](../src/server/models/cacheable-queries/README.md) and the [project board](https://github.com/MoveOnOrg/Spoke/projects/4)
 REVERE_SQS_URL                    | SQS URL to process outgoing Revere SMS Messages.
 REVERE_LIST_ID                    | Revere List to add user to.
 REVERE_NEW_SUBSCRIBER_MOBILE_FLOW | Revere mobile flow to trigger upon recording action.
 REVERE_MOBILE_API_KEY             | Revere authentication api key to use to access Revere API.
-REVERE_API_URL                    | Revere api endpoint to use for triggering a mobile flow. 
+REVERE_API_URL                    | Revere api endpoint to use for triggering a mobile flow.
 ROLLBAR_CLIENT_TOKEN              | Client token for Rollbar error tracking.
 ROLLBAR_ACCESS_TOKEN              | Access token for Rollbar error tracking.
 ROLLBAR_ENDPOINT                  | Endpoint URL for Rollbar error tracking.
