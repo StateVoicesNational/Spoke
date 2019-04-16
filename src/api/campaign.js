@@ -28,6 +28,7 @@ export const schema = `
     dueBy: Date
     isStarted: Boolean
     isArchived: Boolean
+    creator: User
     texters: [User]
     assignments(assignmentsFilter: AssignmentsFilter): [Assignment]
     interactionSteps: [InteractionStep]
@@ -57,9 +58,9 @@ export const schema = `
   }
 
   union CampaignsReturn = PaginatedCampaigns | CampaignsList
-  
+
   type PaginatedCampaigns {
     campaigns: [Campaign]
     pageInfo: PageInfo
-  }  
+  }
 `
