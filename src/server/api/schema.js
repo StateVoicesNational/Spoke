@@ -648,6 +648,22 @@ const rootMutations = {
       cacheableData.campaign.reload(id)
       return campaign
     },
+    archiveCampaigns: async (_, { ids }, { user, loaders }) => {
+      // Take advantage of the cache instead of running a DB query
+      const campaigns = await Promise.all(ids.map(id => (
+        loaders.campaign.load(id)
+      )))
+
+      await Promise.all(campaigns.map(campaign => (
+        accessRequired(user, campaign.organization_id, 'ADMIN')
+      )))
+
+      campaigns.forEach(campaign => { campaign.is_archived = true })
+      await Promise.all(campaigns.map(campaign => (
+        campaign.save()
+      )))
+      return campaigns
+    },
     startCampaign: async (_, { id }, { user, loaders }) => {
       const campaign = await loaders.campaign.load(id)
       await accessRequired(user, campaign.organization_id, 'ADMIN')

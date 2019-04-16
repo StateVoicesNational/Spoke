@@ -212,6 +212,7 @@ const rootSchema = `
     updateQuestionResponses(questionResponses:[QuestionResponseInput], campaignContactId:String!): CampaignContact,
     startCampaign(id:String!): Campaign,
     archiveCampaign(id:String!): Campaign,
+    archiveCampaigns(ids: [String!]): [Campaign],
     unarchiveCampaign(id:String!): Campaign,
     sendReply(id: String!, message: String!): CampaignContact
     getAssignmentContacts(assignmentId: String!, contactIds: [String], findNew: Boolean): [CampaignContact],
