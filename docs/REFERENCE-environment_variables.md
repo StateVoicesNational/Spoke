@@ -54,7 +54,6 @@ PASSPORT_STRATEGY                 | A flag to set passport strategy to use for u
 PGSSLMODE                         | Postgres SSL mode. Due to a [Knex bug](https://github.com/tgriesser/knex/issues/852), this environment variable must be used in order to specify the SSL mode directly in the driver. This must be set to `PGSSLMODE=require` to work with Heroku databases above the free tier (see [Heroku Postgres & SSL](https://devcenter.heroku.com/articles/heroku-postgresql#heroku-postgres-ssl)).
 PHONE_NUMBER_COUNTRY              | Country code for phone number formatting. _Default_: US.
 PORT                              | Port for Heroku servers.
-PUBLIC_DIR                        | Directory path server should use to serve files. _Required_.
 REDIS_URL                         | This enables caching using the [`url` option in redis library](https://github.com/NodeRedis/node_redis#options-object-properties).  This is an area of active development. More can be seen at [server/models/cacheable-queries/README](../src/server/models/cacheable-queries/README.md) and the [project board](https://github.com/MoveOnOrg/Spoke/projects/4)
 REVERE_SQS_URL                    | SQS URL to process outgoing Revere SMS Messages.
 REVERE_LIST_ID                    | Revere List to add user to.
