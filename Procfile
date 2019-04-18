@@ -1,4 +1,4 @@
-web: npm start
+web: npm run start:heroku
 jobhandler: npm run prod-job-handler
 messagesender01: npm run prod-message-sender-01
 messagesender234: npm run prod-message-sender-234
