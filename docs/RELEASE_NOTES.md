@@ -1,9 +1,9 @@
 # Release Notes
 
-## v1.5
-*April 2019:* Version 1.5
+## v2.0
+*April 2019:* Version 2.0.0
 
-This release includes an improvement to message sending speeds, many usability improvements to the Admin Message Review, bug fixes for different features, improved data warehouse querying for audiences, Docker support/documentation, etc. We also have switched to using `yarn` dev and install commands versus `npm`. To see an updated feature list, please visit opensource.moveon.org/spoke.
+This release includes an improvement to message sending speeds, many usability improvements to the Admin Message Review panel, bug fixes for different features, improved data warehouse querying for audiences, Docker support/documentation, Local Authentication, etc. We also have switched to using `yarn` dev and install commands versus `npm`. To see an updated feature list, please visit opensource.moveon.org/spoke.
 
 Migrations:
 - Texting hour related columns to the `Campaign` table.
@@ -12,7 +12,7 @@ Migrations:
 
 Heroku:
 
-  The Heroku deployment method has been migrated to the container runtime. When upgrading an existing Heroku app, these [migration steps](HOWTO_HEROKU_DEPLOY.md#upgrading-an-existing-heroku-app) will need to be performed.
+  The Heroku deployment method has been migrated to the container runtime. When upgrading an existing Heroku app, these [migration steps](https://github.com/MoveOnOrg/Spoke/blob/33e2edcc455836f36eafd56d585430ac1ceda515/docs/HOWTO_HEROKU_DEPLOY.md#upgrading-an-existing-heroku-app) will need to be performed.
 
 Lambda:
 
