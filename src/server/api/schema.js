@@ -54,6 +54,7 @@ import { GraphQLPhone } from './phone'
 import { resolvers as questionResolvers } from './question'
 import { resolvers as questionResponseResolvers } from './question-response'
 import { getUsers, resolvers as userResolvers } from './user'
+import { change } from '../local-auth-helpers'
 
 import { getSendBeforeTimeUtc } from '../../lib/timezones'
 
@@ -382,7 +383,7 @@ const rootMutations = {
       }
       const userRes = await r
         .knex('user')
-        .rightJoin('user_organization', 'user.id', 'user_organization.user_id')
+        .join('user_organization', 'user.id', 'user_organization.user_id')
         .where({
           'user_organization.organization_id': organizationId,
           'user.id': userId
@@ -418,6 +419,35 @@ const rootMutations = {
         return userData
       }
     },
+    resetUserPassword: async (_, { organizationId, userId }, { user }) => {
+      if (user.id === userId) {
+        throw new Error('You can\'t reset your own password.')
+      }
+      await accessRequired(user, organizationId, 'ADMIN', true)
+
+      // Add date at the end in case user record is modified after password is reset
+      const passwordResetHash = uuidv4()
+      const auth0_id = `reset|${passwordResetHash}|${Date.now()}`
+
+      const userRes = await r
+        .knex('user')
+        .where('id', userId)
+        .update({
+          auth0_id
+        })
+      return passwordResetHash
+    },
+    changeUserPassword: async (_, { userId, formData }, { user }) => {
+      if (user.id !== userId) {
+        throw new Error('You can only change your own password.')
+      }
+
+      const { password, newPassword, passwordConfirm } = formData
+
+      const updatedUser = await change({ user, password, newPassword, passwordConfirm })
+
+      return updatedUser
+    },
     joinOrganization: async (_, { organizationUuid }, { user, loaders }) => {
       const [organization] = await r.knex('organization').where('uuid', organizationUuid)
       if (organization) {
@@ -432,16 +462,16 @@ const rootMutations = {
             user_id: user.id,
             organization_id: organization.id,
             role: 'TEXTER'
-          }).error(function(error) {
+          }).error(function (error) {
             // Unexpected errors
             // console.log("error on userOrganization save", error)
           });
           await cacheableData.user.clearUser(user.id)
         } else { // userOrg exists
-          // console.log('existing userOrg ' + userOrg.id + ' user ' + user.id + ' organizationUuid ' + organizationUuid )
+          console.log('existing userOrg ' + userOrg.id + ' user ' + user.id + ' organizationUuid ' + organizationUuid)
         }
-      } else { // no organization 
-        // console.log('no organization with id ' + organizationUuid + ' for user ' + user.id)
+      } else { // no organization
+        console.log('no organization with id ' + organizationUuid + ' for user ' + user.id)
       }
       return organization
     },
@@ -472,9 +502,7 @@ const rootMutations = {
         assignment = await Assignment.save({
           user_id: user.id,
           campaign_id: campaign.id,
-          max_contacts: (typeof process.env.MAX_CONTACTS_PER_TEXTER != 'undefined'
-                         ? Number(process.env.MAX_CONTACTS_PER_TEXTER)
-                         : null)
+          max_contacts: (process.env.MAX_CONTACTS_PER_TEXTER ? parseInt(process.env.MAX_CONTACTS_PER_TEXTER, 10) : null)
         })
       }
       await cacheableData.assignment.reload(assignment.id)
@@ -540,6 +568,7 @@ const rootMutations = {
       await accessRequired(user, campaign.organizationId, 'ADMIN', /* allowSuperadmin=*/ true)
       const campaignInstance = new Campaign({
         organization_id: campaign.organizationId,
+        creator_id: user.id,
         title: campaign.title,
         description: campaign.description,
         due_by: campaign.dueBy,
@@ -555,6 +584,7 @@ const rootMutations = {
 
       const campaignInstance = new Campaign({
         organization_id: campaign.organization_id,
+        creator_id: user.id,
         title: 'COPY - ' + campaign.title,
         description: campaign.description,
         due_by: campaign.dueBy,
@@ -639,6 +669,22 @@ const rootMutations = {
       // including user assignments
       await cacheableData.campaign.clear(id, campaign)
       return campaign
+    },
+    archiveCampaigns: async (_, { ids }, { user, loaders }) => {
+      // Take advantage of the cache instead of running a DB query
+      const campaigns = await Promise.all(ids.map(id => (
+        loaders.campaign.load(id)
+      )))
+
+      await Promise.all(campaigns.map(campaign => (
+        accessRequired(user, campaign.organization_id, 'ADMIN')
+      )))
+
+      campaigns.forEach(campaign => { campaign.is_archived = true })
+      await Promise.all(campaigns.map(campaign => (
+        campaign.save()
+      )))
+      return campaigns
     },
     startCampaign: async (_, { id }, { user, loaders, remainingMilliseconds }) => {
       const campaign = await loaders.campaign.load(id)
@@ -965,6 +1011,11 @@ const rootMutations = {
       // console.log('contact saved', contact.message_status)
 
       const service = serviceMap[messageInstance.service || process.env.DEFAULT_SERVICE || global.DEFAULT_SERVICE]
+      log.info(
+        `Sending (${service}): ${messageInstance.user_number} -> ${
+           messageInstance.contact_number
+         }\nMessage: ${messageInstance.text}`
+      )
       service.sendMessage(messageInstance, contact)
       // console.log('sendMessage return', contact.id)
       return contact
@@ -1078,7 +1129,7 @@ const rootMutations = {
     ) => {
       // verify permissions
       await accessRequired(user, organizationId, 'ADMIN', /* superadmin*/ true)
-      const { campaignIdContactIdsMap, campaignIdMessagesIdsMap }  =
+      const { campaignIdContactIdsMap, campaignIdMessagesIdsMap } =
         await getCampaignIdMessageIdsAndCampaignIdContactIdsMaps(
           organizationId,
           campaignsFilter,
@@ -1191,11 +1242,11 @@ const rootResolvers = {
         utc
       )
     },
-    campaigns: async (_, {organizationId, cursor, campaignsFilter}, {user}) => {
+    campaigns: async (_, { organizationId, cursor, campaignsFilter }, { user }) => {
       await accessRequired(user, organizationId, 'SUPERVOLUNTEER')
       return getCampaigns(organizationId, cursor, campaignsFilter)
     },
-    people: async (_, {organizationId, cursor, campaignsFilter, role}, {user}) => {
+    people: async (_, { organizationId, cursor, campaignsFilter, role }, { user }) => {
       await accessRequired(user, organizationId, 'SUPERVOLUNTEER')
       return getUsers(organizationId, cursor, campaignsFilter, role)
     }

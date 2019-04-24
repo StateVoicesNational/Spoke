@@ -165,7 +165,25 @@ const migrations = [
       console.log('added send_before column to message table')
     }
   },
-  { auto: true, // 14
+  {
+    auto: true, // 14
+    date: '2019-02-24',
+    migrate: async () => {
+      console.log('adding creator_id field to campaign')
+      await r.knex.schema.alterTable('campaign', (table) => {
+        table.integer('creator_id')
+          .unsigned()
+          .nullable()
+          .default(null)
+          .index()
+          .references('id')
+          .inTable('user')
+      })
+
+      console.log('added creator_id field to campaign')
+    }
+  },
+  { auto: true, // 15
     date: '2018-09-16',
     migrate: async () => {
       await r.knex.schema.alterTable('message', (table) => {
@@ -195,7 +213,7 @@ const migrations = [
     }
   },
   {
-    auto: true, // 15
+    auto: true, // 16
     date: '2018-09-25', 
     migrate: async () => {
       const query = 'UPDATE message ' +
@@ -207,7 +225,7 @@ const migrations = [
     }
   },
   {
-    auto: true, // 16
+    auto: true, // 17
     date: '2019-02-24',
     migrate: async () => {
       await r.knex.schema.alterTable('message', (table) => {
@@ -217,7 +235,7 @@ const migrations = [
         table.dropIndex('contact_number')
       })
     }
-  }
+  },
   /* migration template
      {auto: true, //if auto is false, then it will block the migration running automatically
       date: '2017-08-23',

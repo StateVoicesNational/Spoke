@@ -192,6 +192,7 @@ const messageCache = {
     let newStatus = 'needsResponse'
     if (!messageInstance.is_from_contact) {
       newStatus = (contactData.message_status === 'needsResponse'
+                   || contactData.message_status === 'convo'
                    ? 'convo' : 'messaged')
     }
     // console.log('hi saveMsg3', newStatus, contactData)

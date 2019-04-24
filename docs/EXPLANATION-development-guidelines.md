@@ -18,6 +18,12 @@ Generally, label by filename what kind of documentation it is in all-caps, one o
 * How-to guide
 * Reference
 
+## Dependency Management
+
+Spoke uses the [yarn](https://yarnpkg.com) package manager. Please follow their documentation when [adding, upgrading, or removing dependencies](https://yarnpkg.com/en/docs/managing-dependencies).
+
+Yarn also uses a [yarn.lock](https://yarnpkg.com/en/docs/yarn-lock) file to ensure consistent installs across machines. Any changes to `yarn.lock` should be included in your pull request. If merge conflicts arise in `yarn.lock`, yarn should [automatically resolve those conflicts](https://stackoverflow.com/questions/42939113/how-do-you-resolve-git-conflicts-in-yarn-lock) during the next `yarn install`.
+
 ## Environment Variables/Configuration
 
 Environment Variables affect how the application is run. We aim to support a
