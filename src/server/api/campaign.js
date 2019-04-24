@@ -263,6 +263,11 @@ export const resolvers = {
         return cacheableData.campaign.currentEditors(campaign, user)
       }
       return ''
-    }
+    },
+    creator: async (campaign, _, { loaders }) => (
+      campaign.creator_id
+      ? loaders.user.load(campaign.creator_id)
+      : null
+    )
   }
 }

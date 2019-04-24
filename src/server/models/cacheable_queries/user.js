@@ -58,7 +58,6 @@ const dbLoadUserRoles = async (userId) => {
     .select('user_organization.role', 'user_organization.organization_id', 'organization.name')
 
   const highestRolesPerOrg = getHighestRolesPerOrg(userOrgs)
-
   if (r.redis) {
     // delete keys first
     // pass all values to hset instead of looping
@@ -97,9 +96,9 @@ const loadUserRoles = async (userId) => {
   return await dbLoadUserRoles(userId)
 }
 
-const dbLoadUserAuth = async (authId) => {
+const dbLoadUserAuth = async (field, val) => {
   const userAuth = await r.knex('user')
-    .where('auth0_id', authId)
+    .where(field, val)
     .select('*')
     .first()
 
@@ -176,8 +175,12 @@ const userHasRole = async (user, orgId, role) => {
   return Boolean(highestRole && acceptableRoles.indexOf(highestRole) >= 0)
 }
 
-const userLoggedIn = async (authId) => {
-  const authKey = userAuthKey(authId)
+
+const userLoggedIn = async (field, val) => {
+  if (field !== 'id' && field !== 'auth0_id') {
+    return null
+  }
+  const authKey = userAuthKey(val)
   let user = null
 
   if (r.redis) {
@@ -187,7 +190,7 @@ const userLoggedIn = async (authId) => {
     }
   }
   if (!user) {
-    user = await dbLoadUserAuth(authId)
+    user = await dbLoadUserAuth(field, val)
   }
   if (user) {
     // This will be per-request, and can cache through multiple tests
@@ -209,6 +212,7 @@ const userCache = {
   clearUser: async (userId, authId) => {
     if (r.redis) {
       await r.redis.delAsync(userRoleKey(userId))
+      await r.redis.delAsync(userAuthKey(userId))
       if (authId) {
         await r.redis.delAsync(userAuthKey(authId))
       }
