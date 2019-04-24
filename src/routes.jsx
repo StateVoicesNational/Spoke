@@ -24,7 +24,7 @@ import UserEdit from './containers/UserEdit'
 import TexterFaqs from './components/TexterFaqs'
 import FAQs from './lib/faqs'
 
-export default function makeRoutes(requireAuth = () => {}) {
+export default function makeRoutes(requireAuth = () => { }) {
   return (
     <Route path='/' component={App}>
       <IndexRoute component={Home} />
@@ -47,16 +47,20 @@ export default function makeRoutes(requireAuth = () => {}) {
         </Route>
       </Route>
       <Route path='app' component={TexterDashboard} onEnter={requireAuth}>
-        <IndexRoute components={{ main: () => <DashboardLoader path='/app' />,
-                                  topNav: (p) => <TopNav title='Spoke Texting' orgId={p.params.organizationId} /> }} />
+        <IndexRoute components={{
+          main: () => <DashboardLoader path='/app' />,
+          topNav: (p) => <TopNav title='Spoke Texting' orgId={p.params.organizationId} />
+        }} />
         <Route path=':organizationId'>
           <IndexRedirect to='todos' />
           <Route path='faqs' components={{
             main: () => <TexterFaqs faqs={FAQs} />,
-            topNav: (p) => <TopNav title='Account' orgId={p.params.organizationId} /> }} />
+            topNav: (p) => <TopNav title='Account' orgId={p.params.organizationId} />
+          }} />
           <Route path='account/:userId' components={{
             main: (p) => <UserEdit userId={p.params.userId} organizationId={p.params.organizationId} />,
-            topNav: (p) => <TopNav title='Account' orgId={p.params.organizationId} /> }} />
+            topNav: (p) => <TopNav title='Account' orgId={p.params.organizationId} />
+          }} />
           <Route path='todos'>
             <IndexRoute
               components={{
@@ -105,6 +109,7 @@ export default function makeRoutes(requireAuth = () => {}) {
       </Route>
       <Route path='login' component={Login} />
       <Route path='terms' component={Terms} />
+      <Route path='reset/:resetHash' component={Home} onEnter={requireAuth} />
       <Route path='invite/:inviteId' component={CreateOrganization} onEnter={requireAuth} />
       <Route path=':organizationUuid/join/:campaignId' component={JoinTeam} onEnter={requireAuth} />
       <Route path=':organizationUuid/join' component={JoinTeam} onEnter={requireAuth} />

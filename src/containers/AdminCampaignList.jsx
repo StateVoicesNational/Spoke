@@ -3,6 +3,8 @@ import React from 'react'
 import CampaignList from './CampaignList'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import ContentAdd from 'material-ui/svg-icons/content/add'
+import ArchiveIcon from 'material-ui/svg-icons/content/archive'
+import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert'
 import loadData from './hoc/load-data'
 import { withRouter } from 'react-router'
 import gql from 'graphql-tag'
@@ -10,21 +12,25 @@ import theme from '../styles/theme'
 import LoadingIndicator from '../components/LoadingIndicator'
 import wrapMutations from './hoc/wrap-mutations'
 import DropDownMenu from 'material-ui/DropDownMenu'
+import IconMenu from 'material-ui/IconMenu'
 import { MenuItem } from 'material-ui/Menu'
 import { dataTest } from '../lib/attributes'
+import IconButton from 'material-ui/IconButton/IconButton'
 
 class AdminCampaignList extends React.Component {
   state = {
-    isCreating: false,
+    isLoading: false,
     campaignsFilter: {
       isArchived: false,
       listSize: 0
-    }
+    },
+    archiveMultiple: false,
+    campaignsToArchive: {}
   }
 
   handleClickNewButton = async () => {
     const { organizationId } = this.props.params
-    this.setState({ isCreating: true })
+    this.setState({ isLoading: true })
     const newCampaign = await this.props.mutations.createCampaign({
       title: 'New Campaign',
       description: '',
@@ -45,6 +51,18 @@ class AdminCampaignList extends React.Component {
     )
   }
 
+  handleClickArchiveButton = async (keys) => {
+    if (keys.length) {
+      this.setState({ isLoading: true })
+      await this.props.mutations.archiveCampaigns(keys)
+      this.setState({
+        archiveMultiple: false,
+        isLoading: false,
+        campaignsToArchive: {}
+      })
+    }
+  }
+
   handleFilterChange = (event, index, value) => {
     this.setState({
       campaignsFilter: {
@@ -61,6 +79,26 @@ class AdminCampaignList extends React.Component {
         listSize: value
       }
     })
+  }
+
+  handleChecked = ({ campaignId, checked }) => {
+    this.setState(prevState => {
+      const { campaignsToArchive } = prevState
+      // checked has to be reversed here because the onTouchTap
+      // event fires before the input is checked.
+      if (!checked) {
+        campaignsToArchive[campaignId] = !checked
+      } else {
+        delete campaignsToArchive[campaignId]
+      }
+      return { campaignsToArchive }
+    })
+  }
+
+  toggleStateWithDelay = (property, delay) => {
+    setTimeout(() => {
+      this.setState(prevState => ({ [property]: !prevState[property] }))
+    }, delay)
   }
 
   renderListSizeOptions() {
@@ -83,29 +121,78 @@ class AdminCampaignList extends React.Component {
       </DropDownMenu>
     )
   }
+
+  renderArchiveMultiple() {
+    return (
+      <IconMenu
+        iconButtonElement={<IconButton><MoreVertIcon /></IconButton>}
+        style={{ bottom: '13px' }}
+      >
+        {/*
+          The IconMenu component delays hiding the menu after it is
+          clicked for 200ms. This looks nice, so the state change is
+          delayed for 201ms to avoid switching the menu text before the
+          menu is hidden.
+        */}
+        {this.state.archiveMultiple ?
+          <MenuItem
+            primaryText='Cancel'
+            onClick={() => { this.toggleStateWithDelay('archiveMultiple', 250) }}
+          />
+          :
+          <MenuItem
+            primaryText='Archive multiple campaigns'
+            onClick={() => { this.toggleStateWithDelay('archiveMultiple', 250) }}
+          />
+        }
+
+      </IconMenu>
+    )
+  }
+
+  renderActionButton() {
+    if (this.state.archiveMultiple) {
+      const keys = Object.keys(this.state.campaignsToArchive)
+      return (
+        <FloatingActionButton
+          {...dataTest('archiveCampaigns')}
+          style={theme.components.floatingButton}
+          onTouchTap={() => this.handleClickArchiveButton(keys)}
+          disabled={!keys.length}
+        >
+          <ArchiveIcon />
+        </FloatingActionButton>
+      )
+    }
+    return (
+      <FloatingActionButton
+        {...dataTest('addCampaign')}
+        style={theme.components.floatingButton}
+        onTouchTap={this.handleClickNewButton}
+      >
+        <ContentAdd />
+      </FloatingActionButton>
+    )
+  }
+
   render() {
     const { adminPerms } = this.props.params
     return (
       <div>
-        {this.renderFilters()}
+        {adminPerms && this.renderArchiveMultiple()}
+        {!this.state.archiveMultiple && this.renderFilters()}
         {this.renderListSizeOptions()}
-        {this.state.isCreating ? <LoadingIndicator /> : (
+        {this.state.isLoading ? <LoadingIndicator /> : (
           <CampaignList
             campaignsFilter={this.state.campaignsFilter}
             organizationId={this.props.params.organizationId}
             adminPerms={adminPerms}
+            selectMultiple={this.state.archiveMultiple}
+            handleChecked={this.handleChecked}
           />
         )}
 
-        {adminPerms ?
-          (<FloatingActionButton
-            {...dataTest('addCampaign')}
-            style={theme.components.floatingButton}
-            onTouchTap={this.handleClickNewButton}
-          >
-            <ContentAdd />
-          </FloatingActionButton>
-          ) : null}
+        {adminPerms && this.renderActionButton()}
       </div>
     )
   }
@@ -113,7 +200,10 @@ class AdminCampaignList extends React.Component {
 
 AdminCampaignList.propTypes = {
   params: PropTypes.object,
-  mutations: PropTypes.object,
+  mutations: PropTypes.exact({
+    createCampaign: PropTypes.func,
+    archiveCampaigns: PropTypes.func
+  }),
   router: PropTypes.object
 }
 
@@ -127,6 +217,16 @@ const mapMutationsToProps = () => ({
       }
     `,
     variables: { campaign }
+  }),
+  archiveCampaigns: ids => ({
+    mutation: gql`
+      mutation archiveCampaigns($ids: [String!]) {
+        archiveCampaigns(ids: $ids) {
+          id
+        }
+      }
+    `,
+    variables: { ids }
   })
 })
 

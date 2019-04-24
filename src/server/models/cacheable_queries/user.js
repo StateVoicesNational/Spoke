@@ -32,8 +32,8 @@ export async function userHasRole(userId, orgId, acceptableRoles) {
   }
 }
 
-export async function userLoggedIn(authId) {
-  const authKey = `texterauth-${authId}`
+export async function userLoggedIn(field, val) {
+  const authKey = `texterauth-${val}`
 
   if (r.redis) {
     const cachedAuth = await r.redis.getAsync(authKey)
@@ -43,7 +43,7 @@ export async function userLoggedIn(authId) {
   }
 
   const userAuth = await r.knex('user')
-    .where('auth0_id', authId)
+    .where(field, val)
     .select('*')
     .first()
 
