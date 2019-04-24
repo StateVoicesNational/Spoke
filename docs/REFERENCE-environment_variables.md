@@ -20,9 +20,9 @@ DB_NAME                           | Database connection name. _Required_.
 DB_PORT                           | Database connection port. _Required_.
 DB_TYPE                           | Database connection type for [Knex](http://knexjs.org/#Installation-client). _Options_: mysql, pg, sqlite3. _Default_: sqlite3.
 DB_USE_SSL                        | Boolean value to determine whether database connections should use SSL. _Default_: false.
-PGSSLMODE                         | Postgres SSL mode. Due to a [Knex bug](https://github.com/tgriesser/knex/issues/852), this environment variable must be used in order to specify the SSL mode directly in the driver. This must be set to `PGSSLMODE=require` to work with Heroku databases above the free tier (see [Heroku Postgres & SSL](https://devcenter.heroku.com/articles/heroku-postgresql#heroku-postgres-ssl)).
 DEBUG_SCALING                     | Emit console.log on events related to scaling issues. _Default_: false.
 DEFAULT_SERVICE                   | Default SMS service. _Options_: twilio, nexmo, fakeservice.
+DEFAULT_ORG                       | Set only with FIX_ORGLESS. Set to integer organization.id corresponding to the organization you want orgless users to be assigned to.
 DEV_APP_PORT                      | Port for development Webpack server. Required for development.
 DST_REFERENCE_TIMEZONE            | Timezone to use to determine whether DST is in effect. If it's DST in this timezone, we assume it's DST everywhere.  _Default_: "America/New_York". (The default will work for any campaign in the US. For example, if the campaign is in Australia, use "Australia/Sydney" or some other timezone in Australia.  Note that DST is opposite in the northern and souther hemispheres.)
 EMAIL_FROM                        | Email from address. _Required to send email from either Mailgun **or** a custom SMTP server_.
@@ -30,6 +30,7 @@ EMAIL_HOST                        | Email server host. _Required for custom SMTP
 EMAIL_HOST_PASSWORD               | Email server password. _Required for custom SMTP server usage_.
 EMAIL_HOST_PORT                   | Email server port. _Required for custom SMTP server usage_.
 EMAIL_HOST_USER                   | Email server user. _Required for custom SMTP server usage_.
+FIX_ORGLESS                       | Set to any truthy value only if you want to run the job that automatically assigns the default org (see DEFAULT_ORG) to new users who have no assigned org.
 GRAPHQL_URL                       | Optional URL for pointing GraphQL API requests. Should end with `/graphql`, e.g. `https://example.org/graphql`. _Default_: "/graphql"
 JOBS_SAME_PROCESS                 | Boolean value indicating whether jobs should be executed in the same process in which they are created (vs. processing asyncronously via worker processes). _Default_: false.
 MAILGUN_DOMAIN                    | The domain you set up in Mailgun, e.g. `email.bartletforamerica.com`. _Required for Mailgun usage._
@@ -49,15 +50,16 @@ NOT_IN_USA                        | A flag to affirmatively indicate the ability
 OPT_OUT_MESSAGE                   | Spoke instance-wide default for opt out message.
 OPTOUTS_SHARE_ALL_ORGS            | Can be set to true if opt outs should be respected per instance and across organizations
 OUTPUT_DIR                        | Directory path for packaged files should be saved to. _Required_.
+PASSPORT_STRATEGY                 | A flag to set passport strategy to use for user authentication. The Auth0 strategy will be used if the value is an empty string or `auth0`. The local strategy will be used if the value is `local`.
+PGSSLMODE                         | Postgres SSL mode. Due to a [Knex bug](https://github.com/tgriesser/knex/issues/852), this environment variable must be used in order to specify the SSL mode directly in the driver. This must be set to `PGSSLMODE=require` to work with Heroku databases above the free tier (see [Heroku Postgres & SSL](https://devcenter.heroku.com/articles/heroku-postgresql#heroku-postgres-ssl)).
 PHONE_NUMBER_COUNTRY              | Country code for phone number formatting. _Default_: US.
 PORT                              | Port for Heroku servers.
-PUBLIC_DIR                        | Directory path server should use to serve files. _Required_.
 REDIS_URL                         | This enables caching using the [`url` option in redis library](https://github.com/NodeRedis/node_redis#options-object-properties).  This is an area of active development. More can be seen at [server/models/cacheable-queries/README](../src/server/models/cacheable-queries/README.md) and the [project board](https://github.com/MoveOnOrg/Spoke/projects/4)
 REVERE_SQS_URL                    | SQS URL to process outgoing Revere SMS Messages.
 REVERE_LIST_ID                    | Revere List to add user to.
 REVERE_NEW_SUBSCRIBER_MOBILE_FLOW | Revere mobile flow to trigger upon recording action.
 REVERE_MOBILE_API_KEY             | Revere authentication api key to use to access Revere API.
-REVERE_API_URL                    | Revere api endpoint to use for triggering a mobile flow. 
+REVERE_API_URL                    | Revere api endpoint to use for triggering a mobile flow.
 ROLLBAR_CLIENT_TOKEN              | Client token for Rollbar error tracking.
 ROLLBAR_ACCESS_TOKEN              | Access token for Rollbar error tracking.
 ROLLBAR_ENDPOINT                  | Endpoint URL for Rollbar error tracking.
@@ -76,5 +78,3 @@ WAREHOUSE_DB_{TYPE,HOST,PORT,NAME,USER,PASSWORD}   | Enables ability to load con
 WAREHOUSE_DB_LAMBDA_ITERATION     | If the WAREHOUSE_DB_ connection/feature is enabled, then on AWS Lambda, queries that take longer than 5min can expire.  This will enable incrementing through queries on new lambda invocations to avoid timeouts.
 WEBPACK_HOST                      | Host domain or IP for Webpack development server. _Default_: 127.0.0.1.
 WEBPACK_PORT                      | Port for Webpack development server. _Defaut_: 3000.
-FIX_ORGLESS                       | Set to any truthy value only if you want to run the job that automatically assigns the default org (see DEFAULT_ORG) to new users who have no assigned org.
-DEFAULT_ORG                       | Set only with FIX_ORGLESS. Set to integer organization.id corresponding to the organization you want orgless users to be assigned to.
