@@ -55,25 +55,47 @@ class TexterTodo extends React.Component {
     }
   }
 
-  assignContactsIfNeeded = async (checkServer = false) => {
+  assignContactsIfNeeded = async (checkServer = false, currentIndex) => {
     const { assignment } = this.props.data
-    if (assignment.contacts.length === 0 || checkServer) {
-      if (assignment.campaign.useDynamicAssignment) {
-        const didAddContacts = (await this.props.mutations.findNewCampaignContact(assignment.id, 1)).data.findNewCampaignContact.found
-        if (didAddContacts) {
-          this.props.data.refetch()
-          return
-        }
+    // TODO: should we assign a single contact at first, and then afterwards assign 10
+    //       to avoid people loading up the screen but doing nothing -- then they've 'taken' only one contact
+    if (!this.loadingNewContacts && (assignment.contacts.length === 0 || checkServer)) {
+      const didAddContacts = await this.getNewContacts(checkServer, currentIndex)
+      if (didAddContacts) {
+        return
       }
-      this.props.router.push(
-        `/app/${this.props.params.organizationId}/todos`
-      )
+      // FUTURE: we might check if currentIndex is really at the end now that we've updated
+      console.log('Are we empty?', checkServer, currentIndex)
+      const self = this
+      return () => {
+        self.props.router.push(
+          `/app/${self.props.params.organizationId}/todos`
+        )
+      }
     }
   }
 
-  loadContacts = async (contactIds) => (
-    await this.props.mutations.getAssignmentContacts(contactIds)
-  )
+  getNewContacts = async (waitForServer = false, currentIndex) => {
+    const { assignment } = this.props.data
+    if (assignment.campaign.useDynamicAssignment) {
+      console.log('getnewContacts<ind><cur contacts>', currentIndex, assignment.contacts.map(c => c.id))
+      this.loadingNewContacts = true
+      const didAddContacts = (await this.props.mutations.findNewCampaignContact(assignment.id)).data.findNewCampaignContact.found
+      console.log('getNewContacts ?added', didAddContacts)
+      if (didAddContacts | waitForServer) {
+        await this.props.data.refetch()
+      }
+      this.loadingNewContacts = false
+      return didAddContacts
+    }
+  }
+
+  loadContacts = async (contactIds) => {
+    this.loadingAssignmentContacts = true
+    const newContacts = await this.props.mutations.getAssignmentContacts(contactIds)
+    this.loadingAssignmentContacts = false
+    return newContacts
+  }
 
   refreshData = () => {
     this.props.data.refetch()
@@ -91,6 +113,7 @@ class TexterTodo extends React.Component {
         assignContactsIfNeeded={this.assignContactsIfNeeded}
         refreshData={this.refreshData}
         loadContacts={this.loadContacts}
+        getNewContacts={this.getNewContacts}
         onRefreshAssignmentContacts={this.refreshAssignmentContacts}
         organizationId={this.props.params.organizationId}
       />
@@ -128,7 +151,6 @@ const mapQueriesToProps = ({ ownProps }) => ({
           id
           firstName
           lastName
-          assignedCell
         }
         campaign {
           id
@@ -178,7 +200,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
 })
 
 const mapMutationsToProps = ({ ownProps }) => ({
-  findNewCampaignContact: (assignmentId, numberContacts = 1) => ({
+  findNewCampaignContact: (assignmentId) => ({
     mutation: gql`
       mutation findNewCampaignContact($assignmentId: String!, $numberContacts: Int!) {
         findNewCampaignContact(assignmentId: $assignmentId, numberContacts: $numberContacts) {
@@ -188,7 +210,7 @@ const mapMutationsToProps = ({ ownProps }) => ({
     `,
     variables: {
       assignmentId,
-      numberContacts
+      numberContacts: 10
     }
   }),
   getAssignmentContacts: (contactIds, findNew) => ({
