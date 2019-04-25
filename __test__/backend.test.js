@@ -297,6 +297,7 @@ it('should assign texters to campaign contacts', async () => {
 
 describe('Campaign', () => {
   let organization
+  const adminUser = { is_superadmin: true, id: 1 }
 
   beforeEach(async () => {
     organization = await (new Organization({
@@ -309,7 +310,6 @@ describe('Campaign', () => {
   describe('contacts', async () => {
     let campaigns
     let contacts
-
     beforeEach(async () => {
       campaigns = await Promise.all([
         new Campaign({
@@ -337,13 +337,13 @@ describe('Campaign', () => {
     })
 
     test('resolves contacts', async () => {
-      const results = await campaignResolvers.Campaign.contacts(campaigns[0])
+      const results = await campaignResolvers.Campaign.contacts(campaigns[0], null, { user: adminUser })
       expect(results).toHaveLength(1)
       expect(results[0].campaign_id).toEqual(campaigns[0].id)
     })
 
     test('resolves contacts count', async () => {
-      const results = await campaignResolvers.Campaign.contactsCount(campaigns[0])
+      const results = await campaignResolvers.Campaign.contactsCount(campaigns[0], null, { user: adminUser })
       expect(results).toEqual(1)
     })
 
@@ -354,7 +354,7 @@ describe('Campaign', () => {
         is_archived: false,
         due_by: new Date()
       })).save()
-      const results = await campaignResolvers.Campaign.contactsCount(campaign)
+      const results = await campaignResolvers.Campaign.contactsCount(campaign, null, { user: adminUser })
       expect(results).toEqual(0)
     })
   })
@@ -367,6 +367,7 @@ describe('Campaign', () => {
         organization_id: organization.id,
         is_started: false,
         is_archived: false,
+        use_dynamic_assignment: true,
         due_by: new Date()
       })).save()
     })
@@ -378,8 +379,10 @@ describe('Campaign', () => {
         cell: '',
       })).save()
 
-      const results = await campaignResolvers.Campaign.hasUnassignedContacts(campaign)
+      const results = await campaignResolvers.Campaign.hasUnassignedContacts(campaign, null, { user: adminUser })
       expect(results).toEqual(true)
+      const resultsForTexter = await campaignResolvers.Campaign.hasUnassignedContactsForTexter(campaign, null, { user: adminUser })
+      expect(resultsForTexter).toEqual(true)
     })
 
     test('resolves unassigned contacts when false with assigned contacts', async () => {
@@ -403,12 +406,14 @@ describe('Campaign', () => {
         cell: '',
       })).save()
 
-      const results = await campaignResolvers.Campaign.hasUnassignedContacts(campaign)
+      const results = await campaignResolvers.Campaign.hasUnassignedContacts(campaign, null, { user: adminUser })
       expect(results).toEqual(false)
+      const resultsForTexter = await campaignResolvers.Campaign.hasUnassignedContactsForTexter(campaign, null, { user: adminUser })
+      expect(resultsForTexter).toEqual(false)
     })
 
     test('resolves unassigned contacts when false with no contacts', async () => {
-      const results = await campaignResolvers.Campaign.hasUnassignedContacts(campaign)
+      const results = await campaignResolvers.Campaign.hasUnassignedContacts(campaign, null, { user: adminUser })
       expect(results).toEqual(false)
     })
   })

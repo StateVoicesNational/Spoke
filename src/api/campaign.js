@@ -35,6 +35,7 @@ export const schema = `
     contacts: [CampaignContact]
     contactsCount: Int
     hasUnassignedContacts: Boolean
+    hasUnassignedContactsForTexter: Boolean
     hasUnsentInitialMessages: Boolean
     customFields: [String]
     cannedResponses(userId: String): [CannedResponse]
@@ -46,6 +47,7 @@ export const schema = `
     primaryColor: String
     logoImageUrl: String
     editors: String
+    cacheable: Boolean
     overrideOrganizationTextingHours: Boolean
     textingHoursEnforced: Boolean
     textingHoursStart: Int

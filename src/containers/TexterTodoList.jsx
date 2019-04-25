@@ -83,6 +83,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
       currentUser {
         id
         terms
+        cacheable
         todos(organizationId: $organizationId) {
           id
           campaign {
@@ -90,7 +91,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
             title
             description
             useDynamicAssignment
-            hasUnassignedContacts
+            hasUnassignedContactsForTexter
             introHtml
             primaryColor
             logoImageUrl
