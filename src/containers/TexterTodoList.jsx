@@ -8,10 +8,22 @@ import gql from 'graphql-tag'
 import { withRouter } from 'react-router'
 
 class TexterTodoList extends React.Component {
+  constructor() {
+    super()
+    this.state = { polling: null }
+  }
+
   renderTodoList(assignments) {
     const organizationId = this.props.params.organizationId
     return assignments
-      .sort((x, y) => ((x.unmessagedCount + x.unrepliedCount) > (y.unmessagedCount + y.unrepliedCount) ? -1 : 1))
+      .sort((x, y) => {
+        const xToText = (x.unmessagedCount + x.unrepliedCount)
+        const yToText = (y.unmessagedCount + y.unrepliedCount)
+        if (xToText === yToText) {
+          return Number(y.id) - Number(x.id)
+        }
+        return (xToText > yToText ? -1 : 1)
+      })
       .map((assignment) => {
         if (assignment.unmessagedCount > 0 ||
             assignment.unrepliedCount > 0 ||
@@ -38,8 +50,21 @@ class TexterTodoList extends React.Component {
   }
   componentDidMount() {
     this.props.data.refetch()
-    // re-asserts polling after manual refresh
-    // this.props.data.startPolling(5000)
+    // stopPolling is broken (at least in currently used version), so we roll our own so we can unmount correctly
+    if (this.props.data.currentUser.cacheable && !this.state.polling) {
+      const self = this
+      this.setState({
+        polling: setInterval(() => {
+          self.props.data.refetch()
+        }, 5000) })
+    }
+  }
+
+  componentWillUnmount() {
+    if (this.state.polling) {
+      clearInterval(this.state.polling)
+      this.setState({ polling: null })
+    }
   }
 
   termsAgreed() {
@@ -83,6 +108,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
       currentUser {
         id
         terms
+        cacheable
         todos(organizationId: $organizationId) {
           id
           campaign {
@@ -90,7 +116,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
             title
             description
             useDynamicAssignment
-            hasUnassignedContacts
+            hasUnassignedContactsForTexter
             introHtml
             primaryColor
             logoImageUrl
