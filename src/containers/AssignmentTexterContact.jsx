@@ -383,10 +383,11 @@ export class AssignmentTexterContact extends React.Component {
         return // stops from multi-send
       }
       this.setState({ disabled: true })
+      console.log('sendMessage', contact.id)
       await this.props.mutations.sendMessage(message, contact.id)
 
       await this.handleSubmitSurveys()
-      this.props.onFinishContact()
+      this.props.onFinishContact(contact.id)
     } catch (e) {
       this.handleSendMessageError(e)
     }
@@ -455,7 +456,7 @@ export class AssignmentTexterContact extends React.Component {
 
       await this.handleSubmitSurveys()
       await this.props.mutations.createOptOut(optOut, contact.id)
-      this.props.onFinishContact()
+      this.props.onFinishContact(contact.id)
     } catch (e) {
       this.handleSendMessageError(e)
     }
