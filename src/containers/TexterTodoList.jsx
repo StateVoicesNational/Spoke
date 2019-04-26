@@ -83,7 +83,6 @@ const mapQueriesToProps = ({ ownProps }) => ({
       currentUser {
         id
         terms
-        cacheable
         todos(organizationId: $organizationId) {
           id
           campaign {
