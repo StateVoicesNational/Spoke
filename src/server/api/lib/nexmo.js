@@ -83,7 +83,7 @@ async function rentNewCell() {
   throw new Error('Did not find any cell')
 }
 
-async function sendMessage(message, trx) {
+async function sendMessage(message, contact, trx) {
   if (!nexmo) {
     const options = trx ? { transaction: trx } : {}
     await Message.get(message.id)
