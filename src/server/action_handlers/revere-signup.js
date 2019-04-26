@@ -27,6 +27,7 @@ export async function available(organizationId) {
 }
 
 const actionKitSignup = (cell, contact) => {
+  console.log('sending contact to ak:', contact);
   // Currently we add the user to Revere and Action Kit. When we add them to AK
   // It takes two requests - one to create the user and then a second request
   // to add the phone numnber to the user. We add the user to ActionKit to make sure
@@ -108,6 +109,7 @@ export async function processAction(questionResponse, interactionStep, campaignC
       if (err) {
         console.log('Error sending message to queue', err)
       }
+      actionKitSignup(contactCell, contact)
       console.log('Sent message to queue with data:', data)
     })
   } else {
@@ -128,8 +130,7 @@ export async function processAction(questionResponse, interactionStep, campaignC
 
     return request(options, (error, response) => {
       if (error) throw new Error(error)
+      actionKitSignup(contactCell, contact)
     })
   }
-
-  actionKitSignup(contactCell, contact)
 }
