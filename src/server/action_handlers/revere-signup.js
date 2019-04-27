@@ -26,15 +26,14 @@ export async function available(organizationId) {
   return false
 }
 
-const actionKitSignup = (cell, contact) => {
-  console.log('sending contact to ak:', contact);
+const actionKitSignup = (contactCell, contact) => {
   // Currently we add the user to Revere and Action Kit. When we add them to AK
   // It takes two requests - one to create the user and then a second request
   // to add the phone numnber to the user. We add the user to ActionKit to make sure
   // we keep have a record of their phone number & attach it to a fake email.
   if (akAddUserUrl && akAddPhoneUrl) {
     const userData = {
-      email: cell + '-smssubscriber@example.com',
+      email: contactCell + '-smssubscriber@example.com',
       first_name: contact.first_name,
       last_name: contact.last_name,
       sms_subscribed: true,
@@ -53,7 +52,9 @@ const actionKitSignup = (cell, contact) => {
       },
       form: userData
     }, (errorResponse, httpResponse) => {
-      if (errorResponse) throw new Error(errorResponse)
+      if (errorResponse) {
+        console.error('error: actionkit event sign up failed', errorResponse, userData, httpResponse)
+      }
       if (httpResponse.statusCode === 201) {
         request.post({
           url: akAddPhoneUrl,
@@ -67,7 +68,9 @@ const actionKitSignup = (cell, contact) => {
             type: 'mobile'
           }
         }, (lastError, lastResponse) => {
-          if (lastError) throw new Error(lastError)
+          if (lastError) {
+            console.error('error: actionkit adding phone field failed', lastError, contactCell, lastResponse)
+          }
           if (lastResponse.statusCode === 201) {
             return
           }
