@@ -37,7 +37,7 @@ const contactDataFragment = `
         }
 `
 
-class TexterTodo extends React.Component {
+export class TexterTodo extends React.Component {
   constructor() {
     super()
     this.assignContactsIfNeeded = this.assignContactsIfNeeded.bind(this)
@@ -59,7 +59,7 @@ class TexterTodo extends React.Component {
     const { assignment } = this.props.data
     // TODO: should we assign a single contact at first, and then afterwards assign 10
     //       to avoid people loading up the screen but doing nothing -- then they've 'taken' only one contact
-    if (!this.loadingNewContacts && (assignment.contacts.length === 0 || checkServer)) {
+    if (!this.loadingNewContacts && assignment && (assignment.contacts.length === 0 || checkServer)) {
       const didAddContacts = await this.getNewContacts(checkServer, currentIndex)
       if (didAddContacts) {
         return
@@ -103,8 +103,8 @@ class TexterTodo extends React.Component {
 
   render() {
     const { assignment } = this.props.data
-    const contacts = assignment.contacts
-    const allContactsCount = assignment.allContactsCount
+    const contacts = assignment ? assignment.contacts : []
+    const allContactsCount = assignment ? assignment.allContactsCount : 0
     return (
       <AssignmentTexter
         assignment={assignment}
@@ -122,7 +122,6 @@ class TexterTodo extends React.Component {
 }
 
 TexterTodo.propTypes = {
-  contactsFilter: PropTypes.string,
   messageStatus: PropTypes.string,
   params: PropTypes.object,
   data: PropTypes.object,
