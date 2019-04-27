@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
   }
 })
 
-class AssignmentTexter extends React.Component {
+export class AssignmentTexter extends React.Component {
   constructor(props) {
     super(props)
 
@@ -404,7 +404,7 @@ class AssignmentTexter extends React.Component {
     )
   }
   render() {
-    const { contacts } = this.props.assignment
+    const { contacts } = this.props
     return (
       <div className={css(styles.container)}>
         {contacts.length === 0 ? this.renderEmpty() : this.renderTexter()}
@@ -414,7 +414,6 @@ class AssignmentTexter extends React.Component {
 }
 
 AssignmentTexter.propTypes = {
-  currentUser: PropTypes.object,
   assignment: PropTypes.object,      // current assignment
   contacts: PropTypes.array,   // contacts for current assignment
   allContactsCount: PropTypes.number,
