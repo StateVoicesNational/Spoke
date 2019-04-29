@@ -201,7 +201,7 @@ export class AssignmentTexterContact extends React.Component {
       disabledText = 'Skipping opt-out...'
       disabled = true
     } else if (!this.isContactBetweenTextingHours(contact)) {
-      disabledText = "Refreshing ..."
+      disabledText = 'Refreshing ...'
       disabled = true
     }
 
@@ -898,8 +898,7 @@ AssignmentTexterContact.propTypes = {
   router: PropTypes.object,
   mutations: PropTypes.object,
   refreshData: PropTypes.func,
-  onExitTexter: PropTypes.func,
-  onRefreshAssignmentContacts: PropTypes.func
+  onExitTexter: PropTypes.func
 }
 
 const mapMutationsToProps = () => ({
