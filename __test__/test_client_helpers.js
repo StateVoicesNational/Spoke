@@ -7,7 +7,11 @@ import {StyleSheetTestUtils} from 'aphrodite'
 export function genAssignment(assignmentId, isArchived, hasContacts) {
   const contacts = []
   if (hasContacts) {
-    contacts.push({ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 6 })
+    if (typeof hasContacts !== 'number') {
+      contacts.push.apply(contacts, (new Array(hasContacts)).map((x,i) => ({ id: i })))
+    } else {
+      contacts.push({ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 6 })
+    }
   }
   const assignmentTest = {
         id: assignmentId,
