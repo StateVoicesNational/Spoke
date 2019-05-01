@@ -5,10 +5,6 @@ cache:
   yarn: true
 services:
 - postgresql
-addons:
-  sauce_connect:
-    username: $SAUCE_USERNAME
-    access_key: $SAUCE_ACCESS_KEY
 env:
   global:
   - secure: TODO
