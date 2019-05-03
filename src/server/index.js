@@ -4,10 +4,11 @@ import express from 'express'
 import appRenderer from './middleware/app-renderer'
 import { graphqlExpress, graphiqlExpress } from 'apollo-server-express'
 import { makeExecutableSchema, addMockFunctionsToSchema } from 'graphql-tools'
+// ORDERING: ./models import must be imported above ./api to help circular imports
+import { createLoaders, createTablesIfNecessary } from './models'
 import { resolvers } from './api/schema'
 import { schema } from '../api/schema'
 import mocks from './api/mocks'
-import { createLoaders, createTablesIfNecessary } from './models'
 import passport from 'passport'
 import cookieSession from 'cookie-session'
 import passportSetup from './auth-passport'
@@ -75,6 +76,16 @@ app.use(cookieSession({
 }))
 app.use(passport.initialize())
 app.use(passport.session())
+
+app.use((req, res, next) => {
+  const getContext = app.get('awsContextGetter')
+  if (typeof getContext === 'function') {
+    const [event, context] = getContext(req, res)
+    req.awsEvent = event
+    req.awsContext = context
+  }
+  next()
+})
 
 app.post('/nexmo', wrap(async (req, res) => {
   try {
@@ -148,7 +159,14 @@ app.use('/graphql', graphqlExpress((request) => ({
   schema: executableSchema,
   context: {
     loaders: createLoaders(),
-    user: request.user
+    user: request.user,
+    awsContext: request.awsContext || null,
+    awsEvent: request.awsEvent || null,
+    remainingMilliseconds: () => (
+      (request.awsContext && request.awsContext.getRemainingTimeInMillis)
+      ? request.awsContext.getRemainingTimeInMillis()
+      : 5 * 60 * 1000 // default saying 5 min, no matter what
+    )
   }
 })))
 app.get('/graphiql', graphiqlExpress({
