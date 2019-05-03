@@ -1,8 +1,7 @@
 import passport from 'passport'
 import Auth0Strategy from 'passport-auth0'
 import { Strategy as LocalStrategy } from 'passport-local'
-import { userLoggedIn } from './models/cacheable_queries'
-import { User } from './models'
+import { User, cacheableData } from './models'
 import localAuthHelpers from './local-auth-helpers'
 import wrap from './wrap'
 import { capitalizeWord } from './api/lib/utils'
@@ -28,7 +27,7 @@ export function setupAuth0Passport() {
 
   passport.deserializeUser(wrap(async (id, done) => {
     // add new cacheable query
-    const user = await userLoggedIn('auth0_id', id)
+    const user = await cacheableData.user.userLoggedIn('auth0_id', id)
     done(null, user || false)
   }))
 
@@ -107,7 +106,7 @@ export function setupLocalAuthPassport() {
   })
 
   passport.deserializeUser(wrap(async (id, done) => {
-    const user = await userLoggedIn('id', parseInt(id, 10))
+    const user = await cacheableData.user.userLoggedIn('id', parseInt(id, 10))
     done(null, user || false)
   }))
 

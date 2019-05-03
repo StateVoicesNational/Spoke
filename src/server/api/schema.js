@@ -250,12 +250,16 @@ async function updateInteractionSteps(
 const rootMutations = {
   RootMutation: {
     userAgreeTerms: async (_, { userId }, { user, loaders }) => {
+      if (user.id === Number(userId)) {
+        return (user.terms ? user : null)
+      }
       const currentUser = await r
         .table('user')
         .get(userId)
         .update({
           terms: true
         })
+      await cacheableData.user.clearUser(user.id, user.auth0_id)
       return currentUser
     },
 
@@ -357,6 +361,7 @@ const rootMutations = {
       if (newOrgRoles.length) {
         await UserOrganization.save(newOrgRoles, { conflict: 'update' })
       }
+      await cacheableData.user.clearUser(userId)
       return loaders.organization.load(organizationId)
     },
     editUser: async (_, { organizationId, userId, userData }, { user }) => {
@@ -386,6 +391,7 @@ const rootMutations = {
               email: userData.email,
               cell: userData.cell
             })
+          await cacheableData.user.clearUser(member.id, member.auth0_id)
           userData = {
             id: userId,
             first_name: userData.firstName,
@@ -447,7 +453,7 @@ const rootMutations = {
             // Unexpected errors
             console.log("error on userOrganization save", error)
           });
-
+          await cacheableData.user.clearUser(user.id)
         } else { // userOrg exists
           console.log('existing userOrg ' + userOrg.id + ' user ' + user.id + ' organizationUuid ' + organizationUuid)
         }
@@ -791,12 +797,8 @@ const rootMutations = {
     findNewCampaignContact: async (_, { assignmentId, numberContacts }, { loaders, user }) => {
       /* This attempts to find a new contact for the assignment, in the case that useDynamicAssigment == true */
       const assignment = await Assignment.get(assignmentId)
-      if (assignment.user_id != user.id) {
-        throw new GraphQLError({
-          status: 400,
-          message: 'Invalid assignment'
-        })
-      }
+      await assignmentRequired(user, assignmentId, assignment)
+
       const campaign = await Campaign.get(assignment.campaign_id)
       if (!campaign.use_dynamic_assignment || assignment.max_contacts === 0) {
         return { found: false }
@@ -1019,35 +1021,25 @@ const rootMutations = {
       })
 
       await messageInstance.save()
+      const service = serviceMap[messageInstance.service || process.env.DEFAULT_SERVICE || global.DEFAULT_SERVICE]
+
+      contact.updated_at = 'now()'
 
       if (contact.message_status === 'needsResponse' || contact.message_status === 'convo') {
-        const service = serviceMap[messageInstance.service || process.env.DEFAULT_SERVICE]
         contact.message_status = 'convo'
-        contact.updated_at = 'now()'
-        await contact.save()
-
-        service.sendMessage(messageInstance)
-        return contact
       } else {
-        const service = serviceMap[messageInstance.service || process.env.DEFAULT_SERVICE]
         contact.message_status = 'messaged'
-        contact.updated_at = 'now()'
-        await contact.save()
-
-        service.sendMessage(messageInstance)
-        return contact
       }
 
-      if (JOBS_SAME_PROCESS) {
-        const service = serviceMap[messageInstance.service || process.env.DEFAULT_SERVICE]
-        log.info(
-          `Sending (${service}): ${messageInstance.user_number} -> ${
+      await contact.save()
+
+      log.info(
+        `Sending (${service}): ${messageInstance.user_number} -> ${
           messageInstance.contact_number
           }\nMessage: ${messageInstance.text}`
-        )
-        service.sendMessage(messageInstance)
-      }
+      )
 
+      service.sendMessage(messageInstance, contact)
       return contact
     },
     deleteQuestionResponses: async (
