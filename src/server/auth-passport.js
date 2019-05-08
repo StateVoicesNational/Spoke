@@ -1,10 +1,11 @@
 import passport from 'passport'
 import Auth0Strategy from 'passport-auth0'
-import AuthHasher from 'passport-local-authenticate'
 import { Strategy as LocalStrategy } from 'passport-local'
-import { userLoggedIn } from './models/cacheable_queries'
-import { User } from './models'
+import { User, cacheableData } from './models'
+import localAuthHelpers from './local-auth-helpers'
 import wrap from './wrap'
+import { capitalizeWord } from './api/lib/utils'
+
 
 export function setupAuth0Passport() {
   const strategy = new Auth0Strategy({
@@ -19,90 +20,107 @@ export function setupAuth0Passport() {
 
   passport.serializeUser((user, done) => {
     // This is the Auth0 user object, not the db one
+    // eslint-disable-next-line no-underscore-dangle
     const auth0Id = (user.id || user._json.sub)
     done(null, auth0Id)
   })
 
   passport.deserializeUser(wrap(async (id, done) => {
     // add new cacheable query
-    const user = await userLoggedIn(id)
+    const user = await cacheableData.user.userLoggedIn('auth0_id', id)
     done(null, user || false)
   }))
 
-  return [passport.authenticate('auth0', {
-    failureRedirect: '/login'
-  }), wrap(async (req, res) => {
-    const auth0Id = (req.user && (req.user.id
-                                  || req.user._json.sub))
-    if (!auth0Id) {
-      throw new Error('Null user in login callback')
-    }
-    const existingUser = await User.filter({ auth0_id: auth0Id })
+  return {
+    loginCallback: [
+      passport.authenticate('auth0', { failureRedirect: '/login' }),
+      wrap(async (req, res) => {
+        // eslint-disable-next-line no-underscore-dangle
+        const auth0Id = (req.user && (req.user.id || req.user._json.sub))
+        if (!auth0Id) {
+          throw new Error('Null user in login callback')
+        }
+        const existingUser = await User.filter({ auth0_id: auth0Id })
 
-    if (existingUser.length === 0) {
-      const userMetadata = (
-        // eslint-disable-next-line no-underscore-dangle
-        req.user._json['https://spoke/user_metadata']
-        // eslint-disable-next-line no-underscore-dangle
-        || req.user._json.user_metadata
-        || {})
-      const userData = {
-        auth0_id: auth0Id,
-        // eslint-disable-next-line no-underscore-dangle
-        first_name: userMetadata.given_name || '',
-        // eslint-disable-next-line no-underscore-dangle
-        last_name: userMetadata.family_name || '',
-        cell: userMetadata.cell || '',
-        // eslint-disable-next-line no-underscore-dangle
-        email: req.user._json.email,
-        is_superadmin: false
-      }
-      await User.save(userData)
-      res.redirect(req.query.state || 'terms')
-      return
-    }
-    res.redirect(req.query.state || '/')
-    return
-  })]
+        if (existingUser.length === 0) {
+          const userMetadata = (
+            // eslint-disable-next-line no-underscore-dangle
+            req.user._json['https://spoke/user_metadata']
+            // eslint-disable-next-line no-underscore-dangle
+            || req.user._json.user_metadata
+            || {})
+          const userData = {
+            auth0_id: auth0Id,
+            // eslint-disable-next-line no-underscore-dangle
+            first_name: capitalizeWord(userMetadata.given_name) || '',
+            // eslint-disable-next-line no-underscore-dangle
+            last_name: capitalizeWord(userMetadata.family_name) || '',
+            cell: userMetadata.cell || '',
+            // eslint-disable-next-line no-underscore-dangle
+            email: req.user._json.email,
+            is_superadmin: false
+          }
+          await User.save(userData)
+          res.redirect(req.query.state || 'terms')
+          return
+        }
+        res.redirect(req.query.state || '/')
+        return
+      })]
+  }
 }
 
 export function setupLocalAuthPassport() {
   const strategy = new LocalStrategy({
     usernameField: 'email',
-    passwordField: 'auth0_id' // using the legacy fieldname for password
-  }, function (username, password, done) {
-    User.filter({ email: username }, function (err, user) {
-      if (err) { return done(err) }
-      if (!user) { return done(null, false) }
+    passReqToCallback: true
+  }, wrap(async (req, username, password, done) => {
+    const lowerCaseEmail = username.toLowerCase()
+    const existingUser = await User.filter({ email: lowerCaseEmail })
+    const nextUrl = req.body.nextUrl || ''
+    const uuidMatch = nextUrl.match(/\w{8}-(\w{4}\-){3}\w{12}/)
 
-        // AuthHasher.hash(password, function(err, hashed) {
-        // const passwordToSave = `${hashed.salt}|${hashed.hash}`
-        // .salt and .hash
-        // });
-      const pwFieldSplit = user.auth0_id.split('|')
-      const hashed = {
-        salt: pwFieldSplit[0],
-        hash: pwFieldSplit[1]
-      }
-      AuthHasher.verify(password, hashed, function (err, verified) {
-        if (verified) {
-          return done(null, false)
-        } else {
-          done(null, user)
-        }
+    // Run login, signup, or reset functions based on request data
+    if (req.body.authType && !localAuthHelpers[req.body.authType]) {
+      return done(null, false)
+    }
+    try {
+      const user = await localAuthHelpers[req.body.authType]({
+        lowerCaseEmail,
+        password,
+        existingUser,
+        nextUrl,
+        uuidMatch,
+        reqBody: req.body
       })
-    })
-  }
-  )
+      return done(null, user)
+    } catch (err) {
+      return done(null, false, err.message)
+    }
+  }))
+
   passport.use(strategy)
 
   passport.serializeUser((user, done) => {
     done(null, user.id)
   })
+
   passport.deserializeUser(wrap(async (id, done) => {
-    const user = await User.filter({ id })
-    done(null, user[0] || false)
+    const user = await cacheableData.user.userLoggedIn('id', parseInt(id, 10))
+    done(null, user || false)
   }))
 
-  return null // no loginCallback
+  return {
+    loginCallback: [
+      passport.authenticate('local'),
+      (req, res) => {
+        res.redirect(req.body.nextUrl || '/')
+      }
+    ]
+  }
+}
+
+export default {
+  local: setupLocalAuthPassport,
+  auth0: setupAuth0Passport
 }
