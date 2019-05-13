@@ -4,7 +4,6 @@ import GraphQLJSON from 'graphql-type-json'
 import { GraphQLError } from 'graphql/error'
 import isUrl from 'is-url'
 import { organizationCache } from '../models/cacheable_queries/organization'
-import _ from 'lodash'
 
 import { gzip, log, makeTree } from '../../lib'
 import { applyScript } from '../../lib/scripts'
@@ -178,10 +177,11 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     const convertedResponses = []
     for (let index = 0; index < cannedResponses.length; index++) {
       const response = cannedResponses[index]
-      convertedResponses.push(_.omit({
+      convertedResponses.push({
         ...response,
-        campaign_id: id
-      }, ['id']))
+        campaign_id: id,
+        id: undefined
+      })
     }
 
     await r
