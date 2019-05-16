@@ -28,8 +28,14 @@ export class AdminScriptImport extends Component {
   }
 
   startImport = async () => {
-    const jobId = await this.props.mutations.importCampaignScript(this.props.campaignData.campaign.id, this.state.url)
-    this.setState({ jobId })
+    const res = await this.props.mutations.importCampaignScript(this.props.campaignData.campaign.id, this.state.url)
+    if (res.errors) {
+
+    } else {
+      const jobId = res.data.importCampaignScript
+      this.setState({ jobId })
+      console.log(jobId)
+    }
   }
 
   handleUrlChange = (_eventId, newValue) => this.setState({ url: newValue })
@@ -63,9 +69,7 @@ const mapMutationsToProps = () => ({
   importCampaignScript: (campaignId, url) => ({
     mutation: gql`
       mutation importCampaignScript($campaignId: String!, $url: String!) {
-        importCampaignScript(id: $campaignId, campaign: $campaign) {
-          jobId
-        }
+        importCampaignScript(campaignId: $campaignId, url: $url) 
       },
     `,
     variables: {
