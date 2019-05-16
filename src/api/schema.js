@@ -1,3 +1,5 @@
+import gql from 'graphql-tag'
+
 import { schema as userSchema, resolvers as userResolvers, buildUserOrganizationQuery } from './user'
 import {
   schema as conversationSchema,
@@ -32,7 +34,7 @@ import {
 import { schema as inviteSchema, resolvers as inviteResolvers } from './invite'
 
 
-const rootSchema = `
+const rootSchema = gql`
   input CampaignContactInput {
     firstName: String!
     lastName: String!
@@ -220,7 +222,8 @@ const rootSchema = `
     assignUserToCampaign(organizationUuid: String!, campaignId: String!): Campaign
     userAgreeTerms(userId: String!): User
     reassignCampaignContacts(organizationId:String!, campaignIdsContactIds:[CampaignIdContactId]!, newTexterUserId:String!):[CampaignIdAssignmentId],
-    bulkReassignCampaignContacts(organizationId:String!, campaignsFilter:CampaignsFilter, assignmentsFilter:AssignmentsFilter, contactsFilter:ContactsFilter, newTexterUserId:String!):[CampaignIdAssignmentId]
+    bulkReassignCampaignContacts(organizationId:String!, campaignsFilter:CampaignsFilter, assignmentsFilter:AssignmentsFilter, contactsFilter:ContactsFilter, newTexterUserId:String!):[CampaignIdAssignmentId],
+    importCampaignScript(campaignId:String!, url:String!): Int 
   }
 
   schema {

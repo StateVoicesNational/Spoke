@@ -450,8 +450,8 @@ const rootMutations = {
             role: 'TEXTER'
           }).error(function (error) {
             // Unexpected errors
-            console.log("error on userOrganization save", error)
-          });
+            console.log('error on userOrganization save', error)
+          })
           await cacheableData.user.clearUser(user.id)
         } else { // userOrg exists
           console.log('existing userOrg ' + userOrg.id + ' user ' + user.id + ' organizationUuid ' + organizationUuid)
@@ -1152,6 +1152,9 @@ const rootMutations = {
         )
 
       return await reassignConversations(campaignIdContactIdsMap, campaignIdMessagesIdsMap, newTexterUserId)
+    },
+    importCampaignScript: async (_, { campaignId, url }, { loaders }) => {
+      return 777
     }
   }
 }
