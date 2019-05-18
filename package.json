@@ -4,7 +4,7 @@
   "description": "Spoke",
   "main": "src/server",
   "engines": {
-    "node": ">=8.10 <11",
+    "node": ">=10.3 <11",
     "npm": "3.10.10"
   },
   "scripts": {
