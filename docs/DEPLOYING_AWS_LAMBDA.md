@@ -1,3 +1,6 @@
+Below configuration about all the services necessary to deploy on AWS are outlined. There is an
+[experimental CloudFront deploy script maintained by the community as an alternative](https://github.com/bchrobot/terraform-aws-spoke).
+
 # Table Contents
 
 1. [AWS Resource Configuration](#aws-resource-configuration)
