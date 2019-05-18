@@ -31,121 +31,15 @@ Please let us know if you deployed by filling out this form [here](https://act.m
     nvm use
     ```
 3. `yarn install`
-5. `cp .env.example .env`
-6. If you want to use Postgres:
+4. `cp .env.example .env`
+5. If you want to use Postgres:
     - In `.env` set `DB_TYPE=pg`. (Otherwise, you will use sqlite.)
     - Set `DB_PORT=5432`, which is the default port for Postgres.
     - Create the spokedev database:  `psql -c "create database spokedev;"`
-7. Create an [Auth0](https://auth0.com) account. In your Auth0 account, go to [Applications](https://manage.auth0.com/#/applications/), click on `Default App` and then grab your Client ID, Client Secret, and your Auth0 domain (should look like xxx.auth0.com). Add those inside your `.env` file (AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_DOMAIN respectively).
-8. Run `yarn dev` to create and populate the tables.
-9. In your Auth0 app settings, add `http://localhost:3000/login-callback` , `http://localhost:3000` and `http://localhost:3000/logout-callback` to "Allowed Callback URLs", "Allowed Web Origins" and  "Allowed Logout URLs" respectively. (If you get an error when logging in later about "OIDC", go to Advanced Settings section, and then OAuth, and turn off 'OIDC Conformant')
-10. Add a new [rule](https://manage.auth0.com/#/rules/create) in Auth0:
-```javascript
-function (user, context, callback) {
-context.idToken["https://spoke/user_metadata"] = user.user_metadata;
-callback(null, user, context);
-}
-```
-11. Update the Auth0 [Universal Landing page](https://manage.auth0.com/#/login_page), click on the `Customize Login Page` toggle, and copy and paste following code in the drop down into the `Default Templates` space:
 
-    <details>
-    <summary>Code to paste into Auth0</summary>
-
-    ```html
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-      <title>Sign In with Auth0</title>
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    </head>
-    <body>
-      <!--[if IE 8]>
-      <script src="//cdnjs.cloudflare.com/ajax/libs/ie8/0.2.5/ie8.js"></script>
-      <![endif]-->
-
-      <!--[if lte IE 9]>
-      <script src="https://cdn.auth0.com/js/base64.js"></script>
-      <script src="https://cdn.auth0.com/js/es5-shim.min.js"></script>
-      <![endif]-->
-      <script src="https://cdn.auth0.com/js/lock/11.11/lock.min.js"></script>
-      <script>
-        // Decode utf8 characters properly
-        var config = JSON.parse(decodeURIComponent(escape(window.atob('@@config@@'))));
-        config.extraParams = config.extraParams || {};
-        var connection = config.connection;
-        var prompt = config.prompt;
-        var languageDictionary;
-        var language;
-
-        if (config.dict && config.dict.signin && config.dict.signin.title) {
-          languageDictionary = { title: config.dict.signin.title };
-        } else if (typeof config.dict === 'string') {
-          language = config.dict;
-        }
-        var loginHint = config.extraParams.login_hint;
-
-        // Available Lock configuration options: https://auth0.com/docs/libraries/lock/v11/configuration
-        var lock = new Auth0Lock(config.clientID, config.auth0Domain, {
-          auth: {
-            redirectUrl: config.callbackURL,
-            responseType: (config.internalOptions || {}).response_type ||
-              (config.callbackOnLocationHash ? 'token' : 'code'),
-            params: config.internalOptions
-          },
-          // Additional configuration needed for custom domains: https://auth0.com/docs/custom-domains/additional-configuration
-          // configurationBaseUrl: config.clientConfigurationBaseUrl,
-          // overrides: {
-          //   __tenant: config.auth0Tenant,
-          //   __token_issuer: 'YOUR_CUSTOM_DOMAIN'
-          // },
-          assetsUrl:  config.assetsUrl,
-          allowedConnections: ['Username-Password-Authentication'],
-          rememberLastLogin: !prompt,
-          language: language,
-          languageDictionary: {
-            title: 'Spoke',
-            signUpTerms: 'I agree to the <a href="YOUR_LINK HERE" target="_new">terms of service and privacy policy</a>.'
-          },
-          mustAcceptTerms: true,
-          theme: {
-            logo:            '',
-            primaryColor:    'rgb(83, 180, 119)'
-          },
-          additionalSignUpFields: [{
-            name: 'given_name',
-            icon: 'https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1.png',
-            placeholder: 'First Name'
-          }, {
-            name: 'family_name',
-            placeholder: 'Last Name',
-            icon: 'https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1.png'
-          }, {
-            name: 'cell',
-            placeholder: 'Cell Phone',
-            icon: 'https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1.png',
-            validator: (cell) => ({
-              valid: cell.length >= 10,
-              hint: 'Must be a valid phone number'
-            })
-          }],
-          prefill: loginHint ? { email: loginHint, username: loginHint } : null,
-          closable: false,
-          defaultADUsernameFromEmailPrefix: false,
-          // Uncomment if you want small buttons for social providers
-          // socialButtonStyle: 'small'
-        });
-        lock.show();
-      </script>
-    </body>
-    </html>
-    ```
-
-    </details>
-12. If the application is still running from step 8, kill the process and re-run `yarn dev` to restart the app. Wait until you see both "Node app is running ..." and "webpack: Compiled successfully." before attempting to connect. (make sure environment variable `JOBS_SAME_PROCESS=1`)
-13. Go to `http://localhost:3000` to load the app.
-14. As long as you leave `SUPPRESS_SELF_INVITE=` blank and unset in your `.env` you should be able to invite yourself from the homepage.
+ Run `yarn dev` to restart the app. Wait until you see both "Node app is running ..." and "webpack: Compiled successfully." before attempting to connect. (make sure environment variable `JOBS_SAME_PROCESS=1`)
+6. Go to `http://localhost:3000` to load the app.
+7. As long as you leave `SUPPRESS_SELF_INVITE=` blank and unset in your `.env` you should be able to invite yourself from the homepage.
     - If you DO set that variable, then spoke will be invite-only and you'll need to generate an invite. Run:
       ```
       echo "INSERT INTO invite (hash,is_valid) VALUES ('abc', 1);" |sqlite3 mydb.sqlite
@@ -153,25 +47,24 @@ callback(null, user, context);
       ```
     - Then use the generated key to visit an invite link, e.g.: http://localhost:3000/invite/abc. This should redirect you to the login screen. Use the "Sign Up" option to create your account.
 
-15. You should then be prompted to create an organization. Create it.
+8. You should then be prompted to create an organization. Create it.
 
 If you want to create an invite via the home page "Login and get started" link, make sure your `SUPPRESS_SELF_INVITE` variable is not set.
 
 ## Getting started with Docker
 
 1. `cp .env.example .env`
-2. Follow Steps 7, 9, & 10 above to set up your [Auth0](https://auth0.com) account.
-3. Build and run Spoke with `docker-compose up --build`
+2. Build and run Spoke with `docker-compose up --build`
     - You can stop docker compose at any time with `CTRL+C`, and data will persist next time you run `docker-compose up`.
-4. Go to [localhost:3000](http://localhost:3000) to load the app.
-5. Follow Step 13 above.
+3. Go to [localhost:3000](http://localhost:3000) to load the app.
+4. Follow Step 13 above.
     - But if you need to generate an invite, run:
       ```bash
       docker-compose exec postgres psql -U spoke -d spokedev -c "INSERT INTO invite (hash,is_valid) VALUES ('<your-hash>', true);"
       ```
     - Then use the generated key to visit an invite link, e.g.: `http://localhost:3000/invite/<your-hash>`. This should redirect you to the login screen. Use the "Sign Up" option to create your account.
-6. You should then be prompted to create an organization. Create it.
-7. When done testing, clean up resources with `docker-compose down`, or `docker-compose down -v` to **_completely destroy_** your Postgres database & Redis datastore volumes.
+5. You should then be prompted to create an organization. Create it.
+6. When done testing, clean up resources with `docker-compose down`, or `docker-compose down -v` to **_completely destroy_** your Postgres database & Redis datastore volumes.
 
 ## Running Tests
 
@@ -196,7 +89,9 @@ To simulate receiving a reply from a contact you can use the Send Replies utilit
 
 Twilio provides test credentials that will not charge your account as described in their [documentation](https://www.twilio.com/docs/iam/test-credentials). You may use either your test credentials or your live keys by following the instructions [here](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_INTEGRATE_TWILIO.md).
 
-## Deploying
+## Deploying Minimally
+
+There are several ways to deploy documented below. This is the 'most minimal' approach:
 
 1. Run `OUTPUT_DIR=./build yarn run prod-build-server`
    This will generate something you can deploy to production in ./build and run nodejs server/server/index.js
@@ -205,5 +100,36 @@ Twilio provides test credentials that will not charge your account as described 
 4. [Install PostgreSQL](https://wiki.postgresql.org/wiki/Detailed_installation_guides)
 5. Start PostgreSQL (e.g. `sudo /etc/init.d/postgresql start`), connect (e.g. `sudo -u postgres psql`), create a user and database (e.g. `create user spoke password 'spoke'; create database spoke owner spoke;`), disconnect (e.g. `\q`) and add credentials to `DB_` variables in spoke-pm2.config.js
 
+## More Documentation
+
+* Getting Started with Development:
+  * Welcome! Start with [CONTRIBUTING.md](./CONTRIBUTING.md) for community participation and engagement details.
+  * [Development Guidelines](https://github.com/MoveOnOrg/Spoke/blob/main/docs/EXPLANATION-development-guidelines.md)
+
+* More Development documentation
+  * [A request example](https://github.com/MoveOnOrg/Spoke/blob/main/docs/EXPLANATION-request-example.md) pointing to different code points that all connect to it.
+  * [GraphQL Debugging](https://github.com/MoveOnOrg/Spoke/blob/main/docs/graphql-debug.md)
+  * [Environment Variable Reference](https://github.com/MoveOnOrg/Spoke/blob/main/docs/REFERENCE-environment_variables.md)
+  * [QA Guide](https://github.com/MoveOnOrg/Spoke/blob/main/docs/QA_GUIDE.md)
+
+* Deploying
+  * [Deploying with Heroku](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_HEROKU_DEPLOY.md) (and see Heroku deploy button above)
+  * [Deploying on AWS Lambda](https://github.com/MoveOnOrg/Spoke/blob/main/docs/DEPLOYING_AWS_LAMBDA.md)
+  * We recommend using [Auth0 for authentication](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO-configure-auth0.md) in deployed environments (Heroku docs have their own instructions)
+  * [How to setup Twilio](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_INTEGRATE_TWILIO.md)
+  * [Configuring Email](https://github.com/MoveOnOrg/Spoke/blob/main/docs/EMAIL_CONFIGURATION.md)
+  * [Configuring Data Exports](https://github.com/MoveOnOrg/Spoke/blob/main/docs/DATA_EXPORTING.md) works
+  * [Using Redis for Caching](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_CONNECT_WITH_REDIS.md) to improve server performance
+  * Configuration for [Enforcing Texting Hours](https://github.com/MoveOnOrg/Spoke/blob/main/docs/TEXTING-HOURS-ENFORCEMENT.md)
+
+* Integrations
+  * [ActionKit](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_INTEGRATE_WITH_ACTIONKIT.md)
+
+* Administration
+  * Description of the different [Roles and Their Permissions](https://github.com/MoveOnOrg/Spoke/blob/main/docs/ROLES_DESCRIPTION.md)
+  * Some DB queries for [Texter Activity](https://github.com/MoveOnOrg/Spoke/blob/main/docs/TEXTER_ACTIVITY_QUERIES.md)
+
+
 # License
 Spoke is licensed under the MIT license.
+
