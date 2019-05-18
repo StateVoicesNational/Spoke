@@ -7,7 +7,7 @@ import { organizationCache } from '../models/cacheable_queries/organization'
 
 import { gzip, log, makeTree } from '../../lib'
 import { applyScript } from '../../lib/scripts'
-import { assignTexters, exportCampaign, loadContactsFromDataWarehouse, uploadContacts } from '../../workers/jobs'
+import { assignTexters, exportCampaign, importScript, loadContactsFromDataWarehouse, uploadContacts } from '../../workers/jobs'
 import {
   Assignment,
   Campaign,
@@ -450,8 +450,8 @@ const rootMutations = {
             role: 'TEXTER'
           }).error(function (error) {
             // Unexpected errors
-            console.log('error on userOrganization save', error)
-          })
+            console.log("error on userOrganization save", error)
+          });
           await cacheableData.user.clearUser(user.id)
         } else { // userOrg exists
           console.log('existing userOrg ' + userOrg.id + ' user ' + user.id + ' organizationUuid ' + organizationUuid)
@@ -1153,8 +1153,25 @@ const rootMutations = {
 
       return await reassignConversations(campaignIdContactIdsMap, campaignIdMessagesIdsMap, newTexterUserId)
     },
-    importCampaignScript: async (_, { campaignId, url }, { loaders }) => {
-      return 777
+    importCampaignScript: async (_, { campaignId, url}, {loaders} ) => {
+      const compressedString = await gzip(JSON.stringify({campaignId, url}))
+      const job = await JobRequest.save({
+        queue_name: `${campaignId}:import_script`,
+        job_type: 'import_script',
+        locks_queue: true,
+        assigned: JOBS_SAME_PROCESS, // can get called immediately, below
+        campaign_id: campaignId,
+        // NOTE: stringifying because compressedString is a binary buffer
+        payload: compressedString.toString('base64')
+      })
+
+      const jobId = job.id
+
+      if (JOBS_SAME_PROCESS) {
+        importScript(job)
+      }
+
+      return jobId
     }
   }
 }
