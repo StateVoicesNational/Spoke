@@ -22,6 +22,7 @@ import { dataTest, camelCase } from '../lib/attributes'
 import CampaignTextingHoursForm from '../components/CampaignTextingHoursForm'
 
 import AdminScriptImport from '../containers/AdminScriptImport'
+import { pendingJobsGql } from '../lib/pendingJobsUtils'
 
 const campaignInfoFragment = `
   id
@@ -173,7 +174,9 @@ class AdminCampaignEdit extends React.Component {
   }
 
   handleSubmit = async () => {
-    await this.handleSave()
+    if (!this.state.expandedSection.doNotSaveAfterSubmit) {
+      await this.handleSave()
+    }
     this.setState({
       expandedSection: this.state.expandedSection >= this.sections().length - 1 ||
         !this.isNew() ?
@@ -371,11 +374,12 @@ class AdminCampaignEdit extends React.Component {
       keys: [],
       checkCompleted: () => true,
       blocksStarting: false,
-      expandAfterCampaignStarts: true,
+      expandAfterCampaignStarts: false,
       expandableBySuperVolunteers: false,
       extraProps: {
         campaignData: this.props.campaignData
-      }
+      },
+      doNotSaveAfterSubmit: true
     }
     ]
   }
@@ -650,24 +654,7 @@ AdminCampaignEdit.propTypes = {
 }
 
 const mapQueriesToProps = ({ ownProps }) => ({
-  pendingJobsData: {
-    query: gql`query getCampaignJobs($campaignId: String!) {
-      campaign(id: $campaignId) {
-        id
-        pendingJobs {
-          id
-          jobType
-          assigned
-          status
-          resultMessage
-        }
-      }
-    }`,
-    variables: {
-      campaignId: ownProps.params.campaignId
-    },
-    pollInterval: 60000
-  },
+  pendingJobsData: pendingJobsGql(ownProps.params.campaignId),
   campaignData: {
     query: gql`query getCampaign($campaignId: String!) {
       campaign(id: $campaignId) {

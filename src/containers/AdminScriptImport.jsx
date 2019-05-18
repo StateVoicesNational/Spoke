@@ -10,6 +10,8 @@ import wrapMutations from './hoc/wrap-mutations'
 import CampaignFormSectionHeading from '../components/CampaignFormSectionHeading'
 import TextField from 'material-ui/TextField'
 import RaisedButton from 'material-ui/RaisedButton'
+import { pendingJobsGql } from '../lib/pendingJobsUtils'
+import { type } from 'os';
 
 const styles = StyleSheet.create({
   buttonDiv: {
@@ -20,11 +22,7 @@ const styles = StyleSheet.create({
 export class AdminScriptImport extends Component {
   constructor(props) {
     super(props)
-
-    console.log(props)
-
-    this.state = {
-    }
+    this.state = {}
   }
 
   startImport = async () => {
@@ -33,13 +31,26 @@ export class AdminScriptImport extends Component {
 
     } else {
       const jobId = res.data.importCampaignScript
-      this.setState({ jobId })
-      console.log(jobId)
+      this.setState({ importingScript: true })
+      await this.pollDuringActiveJobs(jobId)
     }
   }
 
   handleUrlChange = (_eventId, newValue) => this.setState({ url: newValue })
 
+  pollDuringActiveJobs = async (jobId) => {
+    const fetchedPendingJobsData = await this.props.pendingJobsData.refetch()
+    const pendingJobs = fetchedPendingJobsData.data.campaign.pendingJobs
+    const ourJob = _.find(pendingJobs, (pendingJob) => pendingJob.id === jobId.toString())
+    if (!ourJob || ourJob.resultMessage) {
+      this.setState({ importingScript: false })
+      this.props.onSubmit()
+      return
+    }
+    setTimeout(async () => {
+      await this.pollDuringActiveJobs(jobId)
+    }, 1000)
+  }
   render() {
     return (
       <div>
@@ -54,16 +65,22 @@ export class AdminScriptImport extends Component {
           onChange={this.handleUrlChange}
         />
         <div className={css(styles.buttonDiv)}>
-        <RaisedButton
-          label='Import'
-          primary
-          onTouchTap={this.startImport}
-        />
+          <RaisedButton
+            label='Import'
+            disabled={this.state.importingScript}
+            primary
+            onTouchTap={this.startImport}
+          />
         </div>
       </div>
     )
   }
 }
+
+const mapQueriesToProps = ({ ownProps }) => ({
+  pendingJobsData: pendingJobsGql(ownProps.campaignData.campaign.id)
+})
+
 
 const mapMutationsToProps = () => ({
   importCampaignScript: (campaignId, url) => ({
@@ -80,10 +97,13 @@ const mapMutationsToProps = () => ({
 })
 
 AdminScriptImport.propTypes = {
+  onSubmit: type.func,
   campaignData: PropTypes.object,
-  mutations: PropTypes.object
+  mutations: PropTypes.object,
+  pendingJobsData: PropTypes.object
 }
 
 export default loadData(wrapMutations(AdminScriptImport), {
+  mapQueriesToProps,
   mapMutationsToProps
 })
