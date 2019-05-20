@@ -58,7 +58,7 @@ class ConversationPreviewBody extends Component {
     super(props)
 
     this.state = {
-      messages: props.conversation.contact.messages
+      messages: props.conversation.messages
     }
 
     this.messagesChanged = this.messagesChanged.bind(this)
