@@ -48,6 +48,7 @@ Please let us know if you deployed by filling out this form [here](https://act.m
 
 10. You should then be prompted to create an organization. Create it.
 11. See the [Admin and Texter demos](https://opensource.moveon.org/spoke-p2p#block-yui_3_17_2_25_1509554076500_36334) to learn about how Spoke works.
+12. See [Getting Started with Development](#more-documentation) below.
 
 ### SMS
 
