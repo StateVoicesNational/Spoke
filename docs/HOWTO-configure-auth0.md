@@ -9,7 +9,7 @@ in the database and resets, etc are administered all within Spoke.  While good f
 believe Auth0 still provides better security for production environments.  Below are the steps to configure
 Spoke for Auth0.
 
-## For Development
+## Configuration Steps
 
 1. First configure the environment variable `PASSPORT_STRATEGY=auth0` in `.env` or wherever to configure Spoke environment
 variables.
