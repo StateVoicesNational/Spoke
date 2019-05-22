@@ -21,12 +21,12 @@ Please let us know if you deployed by filling out this form [here](https://act.m
 ## Getting started
 
 1. Install either sqlite (or another [knex](http://knexjs.org/#Installation-client)-supported database)
-2. Install the Node version listed in `.nvmrc`. [NVM](https://github.com/creationix/nvm) is one way to do this:
+2. Install the Node version listed in `.nvmrc`. [NVM](https://github.com/creationix/nvm) is one way to do this (from the spoke directory):
     ```
     nvm install
     nvm use
     ```
-3. `yarn install`
+3. `yarn install` (If yarn is not yet installed, run `npm install -g yarn` first)
 4. `cp .env.example .env`
 5. If you want to use Postgres:
     - In `.env` set `DB_TYPE=pg`. (Otherwise, you will use sqlite.)
