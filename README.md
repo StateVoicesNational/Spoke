@@ -36,10 +36,13 @@ Please let us know if you deployed by filling out this form [here](https://act.m
     - In `.env` set `DB_TYPE=pg`. (Otherwise, you will use sqlite.)
     - Set `DB_PORT=5432`, which is the default port for Postgres.
     - Create the spokedev database:  `psql -c "create database spokedev;"`
+6. Some other settings to tweak in dev:
+   * For development, you can set `DEFAULT_SERVICE=fakeservice` to skip using an SMS provider (Twilio or Nexmo) and insert the message directly into the database.
+   * For production, you'll want to use Auth0 for login and set PASSPORT_STRATEGY=auth0 -- see [Auth0 for authentication](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO-configure-auth0.md) for setup instructions
 
- Run `yarn dev` to restart the app. Wait until you see both "Node app is running ..." and "webpack: Compiled successfully." before attempting to connect. (make sure environment variable `JOBS_SAME_PROCESS=1`)
-6. Go to `http://localhost:3000` to load the app.
-7. As long as you leave `SUPPRESS_SELF_INVITE=` blank and unset in your `.env` you should be able to invite yourself from the homepage.
+7. Run `yarn dev` to start the app. Wait until you see both "Node app is running ..." and "webpack: Compiled successfully." before attempting to connect. (make sure environment variable `JOBS_SAME_PROCESS=1`)
+8. Go to `http://localhost:3000` to load the app and create the database (Note: the terminal will say it's running on port 8090 -- don't believe it :-) -- it's running a proxy on port 3000 which also includes static asset serving, etc.
+9. As long as you leave `SUPPRESS_SELF_INVITE=` blank and unset in your `.env` you should be able to invite yourself from the homepage.
     - If you DO set that variable, then spoke will be invite-only and you'll need to generate an invite. Run:
       ```
       echo "INSERT INTO invite (hash,is_valid) VALUES ('abc', 1);" |sqlite3 mydb.sqlite
@@ -47,17 +50,27 @@ Please let us know if you deployed by filling out this form [here](https://act.m
       ```
     - Then use the generated key to visit an invite link, e.g.: http://localhost:3000/invite/abc. This should redirect you to the login screen. Use the "Sign Up" option to create your account.
 
-8. You should then be prompted to create an organization. Create it.
+10. You should then be prompted to create an organization. Create it.
 
 If you want to create an invite via the home page "Login and get started" link, make sure your `SUPPRESS_SELF_INVITE` variable is not set.
 
+### SMS
+
+For development, you can set `DEFAULT_SERVICE=fakeservice` to skip using an SMS provider (Twilio or Nexmo) and insert the message directly into the database.
+
+To simulate receiving a reply from a contact you can use the Send Replies utility: `http://localhost:3000/admin/1/campaigns/1/send-replies`, updating the app and campaign IDs as necessary.  You can also include "autorespond" in the script message text, and an automatic reply will be generated (just for `fakeservice`!)
+
+**Twilio**
+
+Twilio provides test credentials that will not charge your account as described in their [documentation](https://www.twilio.com/docs/iam/test-credentials). You may use either your test credentials or your live keys by following the instructions [here](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_INTEGRATE_TWILIO.md).
+
+
 ## Getting started with Docker
 
-1. `cp .env.example .env`
+1. `cp .env.example .env` and see step 6 above for some possible tweaks
 2. Build and run Spoke with `docker-compose up --build`
     - You can stop docker compose at any time with `CTRL+C`, and data will persist next time you run `docker-compose up`.
 3. Go to [localhost:3000](http://localhost:3000) to load the app.
-4. Follow Step 13 above.
     - But if you need to generate an invite, run:
       ```bash
       docker-compose exec postgres psql -U spoke -d spokedev -c "INSERT INTO invite (hash,is_valid) VALUES ('<your-hash>', true);"
@@ -78,16 +91,6 @@ Cross-browser Testing Platform and Open Source <3 Provided by [Sauce Labs](https
 * [Set up an ESLint plugin in your code editor so that you catch coding errors and follow code style guidelines more easily!](https://medium.com/planet-arkency/catch-mistakes-before-you-run-you-javascript-code-6e524c36f0c8#.oboqsse48)
 * [Install the redux-devtools-extension](https://github.com/zalmoxisus/redux-devtools-extension) in Chrome to get advanced Redux debugging features.
 * Right now there is a bug in Apollo (https://github.com/apollostack/react-apollo/issues/57) that means in one particular case, errors get swallowed.  If you end up with an app that is silently breaking, console.log(this.props.data) and check the errors property.
-
-### SMS
-
-For development, you can set `DEFAULT_SERVICE=fakeservice` to skip using an SMS provider (Twilio or Nexmo) and insert the message directly into the database.
-
-To simulate receiving a reply from a contact you can use the Send Replies utility: `http://localhost:3000/admin/1/campaigns/1/send-replies`, updating the app and campaign IDs as necessary.
-
-**Twilio**
-
-Twilio provides test credentials that will not charge your account as described in their [documentation](https://www.twilio.com/docs/iam/test-credentials). You may use either your test credentials or your live keys by following the instructions [here](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_INTEGRATE_TWILIO.md).
 
 ## Deploying Minimally
 
