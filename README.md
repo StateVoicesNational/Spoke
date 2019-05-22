@@ -36,132 +36,25 @@ Please let us know if you deployed by filling out this form [here](https://act.m
 6. Determine which database to use.
     - To use Postgres, [follow these instructions](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_USE_POSTGRESQL.md)
 7. Spoke uses [Auth0](https://auth0.com) by default. However, for development, there are a few ways to bypass authentication.
-    - To bypass Auth0, [follow these instructions](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO-configure-auth0.md)
-8. In your Auth0 account, go to [Applications](https://manage.auth0.com/#/applications/), click on `Default App` and then grab your Client ID, Client Secret, and your Auth0 domain (should look like xxx.auth0.com). Add those inside your `.env` file (AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_DOMAIN respectively).
-9. In your Auth0 app settings, add `http://localhost:3000/login-callback` , `http://localhost:3000` and `http://localhost:3000/logout-callback` to "Allowed Callback URLs", "Allowed Web Origins" and  "Allowed Logout URLs" respectively. (If you get an error when logging in later about "OIDC", go to Advanced Settings section, and then OAuth, and turn off 'OIDC Conformant')
-10. Add a new [rule](https://manage.auth0.com/#/rules/create) in Auth0:
-```javascript
-function (user, context, callback) {
-context.idToken["https://spoke/user_metadata"] = user.user_metadata;
-callback(null, user, context);
-}
-```
-11. Update the Auth0 [Universal Landing page](https://manage.auth0.com/#/login_page), click on the `Customize Login Page` toggle, and copy and paste following code in the drop down into the `Default Templates` space:
-
-    <details>
-    <summary>Code to paste into Auth0</summary>
-
-    ```html
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-      <title>Sign In with Auth0</title>
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    </head>
-    <body>
-      <!--[if IE 8]>
-      <script src="//cdnjs.cloudflare.com/ajax/libs/ie8/0.2.5/ie8.js"></script>
-      <![endif]-->
-
-      <!--[if lte IE 9]>
-      <script src="https://cdn.auth0.com/js/base64.js"></script>
-      <script src="https://cdn.auth0.com/js/es5-shim.min.js"></script>
-      <![endif]-->
-      <script src="https://cdn.auth0.com/js/lock/11.11/lock.min.js"></script>
-      <script>
-        // Decode utf8 characters properly
-        var config = JSON.parse(decodeURIComponent(escape(window.atob('@@config@@'))));
-        config.extraParams = config.extraParams || {};
-        var connection = config.connection;
-        var prompt = config.prompt;
-        var languageDictionary;
-        var language;
-
-        if (config.dict && config.dict.signin && config.dict.signin.title) {
-          languageDictionary = { title: config.dict.signin.title };
-        } else if (typeof config.dict === 'string') {
-          language = config.dict;
-        }
-        var loginHint = config.extraParams.login_hint;
-
-        // Available Lock configuration options: https://auth0.com/docs/libraries/lock/v11/configuration
-        var lock = new Auth0Lock(config.clientID, config.auth0Domain, {
-          auth: {
-            redirectUrl: config.callbackURL,
-            responseType: (config.internalOptions || {}).response_type ||
-              (config.callbackOnLocationHash ? 'token' : 'code'),
-            params: config.internalOptions
-          },
-          // Additional configuration needed for custom domains: https://auth0.com/docs/custom-domains/additional-configuration
-          // configurationBaseUrl: config.clientConfigurationBaseUrl,
-          // overrides: {
-          //   __tenant: config.auth0Tenant,
-          //   __token_issuer: 'YOUR_CUSTOM_DOMAIN'
-          // },
-          assetsUrl:  config.assetsUrl,
-          allowedConnections: ['Username-Password-Authentication'],
-          rememberLastLogin: !prompt,
-          language: language,
-          languageDictionary: {
-            title: 'Spoke',
-            signUpTerms: 'I agree to the <a href="YOUR_LINK HERE" target="_new">terms of service and privacy policy</a>.'
-          },
-          mustAcceptTerms: true,
-          theme: {
-            logo:            '',
-            primaryColor:    'rgb(83, 180, 119)'
-          },
-          additionalSignUpFields: [{
-            name: 'given_name',
-            icon: 'https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1.png',
-            placeholder: 'First Name'
-          }, {
-            name: 'family_name',
-            placeholder: 'Last Name',
-            icon: 'https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1.png'
-          }, {
-            name: 'cell',
-            placeholder: 'Cell Phone',
-            icon: 'https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1.png',
-            validator: (cell) => ({
-              valid: cell.length >= 10,
-              hint: 'Must be a valid phone number'
-            })
-          }],
-          prefill: loginHint ? { email: loginHint, username: loginHint } : null,
-          closable: false,
-          defaultADUsernameFromEmailPrefix: false,
-          // Uncomment if you want small buttons for social providers
-          // socialButtonStyle: 'small'
-        });
-        lock.show();
-      </script>
-    </body>
-    </html>
-    ```
-
-    </details>
-12. Run `yarn dev` to create and populate the tables.
+    - To set up authentication, [follow these instructions](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO-configure-auth0.md)
+8. Run `yarn dev` to create and populate the tables.
     - Wait until you see both "Node app is running ..." and "webpack: Compiled successfully." before attempting to connect. (make sure environment variable `JOBS_SAME_PROCESS=1`)
-13. Go to `http://localhost:3000` to load the app.
-14. As long as you leave `SUPPRESS_SELF_INVITE=` blank and unset in your `.env` you should be able to invite yourself from the homepage.
+9. Go to `http://localhost:3000` to load the app.
+10. As long as you leave `SUPPRESS_SELF_INVITE=` blank in your `.env` you should be able to invite yourself from the homepage.
     - If you DO set that variable, then spoke will be invite-only and you'll need to generate an invite. Run:
       ```
       echo "INSERT INTO invite (hash,is_valid) VALUES ('abc', 1);" |sqlite3 mydb.sqlite
       # Note: When doing this with PostgreSQL, you would replace the `1` with `true`
       ```
     - Then use the generated key to visit an invite link, e.g.: http://localhost:3000/invite/abc. This should redirect you to the login screen. Use the "Sign Up" option to create your account.
-
-15. You should then be prompted to create an organization. Create it.
+11. You should then be prompted to create an organization. Create it.
 
 If you want to create an invite via the home page "Login and get started" link, make sure your `SUPPRESS_SELF_INVITE` variable is not set.
 
 ## Getting started with Docker
 
 1. `cp .env.example .env`
-2. Follow Steps 7, 9, & 10 above to set up your [Auth0](https://auth0.com) account.
+2. Follow [the Auth0 instructions](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO-configure-auth0.md) to set up your [Auth0](https://auth0.com) account.
 3. Build and run Spoke with `docker-compose up --build`
     - You can stop docker compose at any time with `CTRL+C`, and data will persist next time you run `docker-compose up`.
 4. Go to [localhost:3000](http://localhost:3000) to load the app.
