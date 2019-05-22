@@ -34,9 +34,9 @@ Please let us know if you deployed by filling out this form [here](https://act.m
 4. `cp .env.example .env`
 5. [Fill out your newly created `.env` file.](https://github.com/MoveOnOrg/Spoke/blob/main/docs/REFERENCE-environment_variables.md)
 6. Determine which database to use.
-    - To use Postgres, [follow these instructions](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_USE_POSTGRESQL.md)
+    - To use Postgres, [follow these instructions](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_USE_POSTGRESQL.md).
 7. Spoke uses [Auth0](https://auth0.com) by default. However, for development, there are a few ways to bypass authentication.
-    - To set up authentication, [follow these instructions](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO-configure-auth0.md)
+    - To set up authentication, [follow these instructions](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO-configure-auth0.md).
 8. Run `yarn dev` to create and populate the tables.
     - Wait until you see both "Node app is running ..." and "webpack: Compiled successfully." before attempting to connect. (make sure environment variable `JOBS_SAME_PROCESS=1`)
 9. Go to `http://localhost:3000` to load the app.
