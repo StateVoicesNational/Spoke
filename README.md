@@ -31,22 +31,22 @@ Please let us know if you deployed by filling out this form [here](https://act.m
     nvm use
     ```
 3. `yarn install`
-5. `cp .env.example .env`
-6. If you want to use Postgres:
+4. `cp .env.example .env`
+5. If you want to use Postgres:
     - In `.env` set `DB_TYPE=pg`. (Otherwise, you will use sqlite.)
     - Set `DB_PORT=5432`, which is the default port for Postgres.
     - Create the spokedev database:  `psql -c "create database spokedev;"`
-7. Create an [Auth0](https://auth0.com) account. In your Auth0 account, go to [Applications](https://manage.auth0.com/#/applications/), click on `Default App` and then grab your Client ID, Client Secret, and your Auth0 domain (should look like xxx.auth0.com). Add those inside your `.env` file (AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_DOMAIN respectively).
-8. Run `yarn dev` to create and populate the tables.
-9. In your Auth0 app settings, add `http://localhost:3000/login-callback` , `http://localhost:3000` and `http://localhost:3000/logout-callback` to "Allowed Callback URLs", "Allowed Web Origins" and  "Allowed Logout URLs" respectively. (If you get an error when logging in later about "OIDC", go to Advanced Settings section, and then OAuth, and turn off 'OIDC Conformant')
-10. Add a new [rule](https://manage.auth0.com/#/rules/create) in Auth0:
+6. Create an [Auth0](https://auth0.com) account. In your Auth0 account, go to [Applications](https://manage.auth0.com/#/applications/), click on `Default App` and then grab your Client ID, Client Secret, and your Auth0 domain (should look like xxx.auth0.com). Add those inside your `.env` file (AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_DOMAIN respectively).
+7. Run `yarn dev` to create and populate the tables.
+8. In your Auth0 app settings, add `http://localhost:3000/login-callback` , `http://localhost:3000` and `http://localhost:3000/logout-callback` to "Allowed Callback URLs", "Allowed Web Origins" and  "Allowed Logout URLs" respectively. (If you get an error when logging in later about "OIDC", go to Advanced Settings section, and then OAuth, and turn off 'OIDC Conformant')
+9. Add a new [rule](https://manage.auth0.com/#/rules/create) in Auth0:
 ```javascript
 function (user, context, callback) {
 context.idToken["https://spoke/user_metadata"] = user.user_metadata;
 callback(null, user, context);
 }
 ```
-11. Update the Auth0 [Universal Landing page](https://manage.auth0.com/#/login_page), click on the `Customize Login Page` toggle, and copy and paste following code in the drop down into the `Default Templates` space:
+10. Update the Auth0 [Universal Landing page](https://manage.auth0.com/#/login_page), click on the `Customize Login Page` toggle, and copy and paste following code in the drop down into the `Default Templates` space:
 
     <details>
     <summary>Code to paste into Auth0</summary>
