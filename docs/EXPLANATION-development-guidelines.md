@@ -113,6 +113,8 @@ Production instances can disable automatic migrations on startup with environmen
 
 ## Apollo/GraphQL structure and gotchas
 
+Spoke was originally generated from [react-apollo-starter-kit](https://github.com/saikat/react-apollo-starter-kit).  You can look at that project's README for info on some of the libraries used.
+
 See [EXPLANATION-request-example.md](./EXPLANATION-request-example.md) for a great run-down all the
 way through the call stack on the client and server.
 
