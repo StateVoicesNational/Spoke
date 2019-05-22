@@ -15,7 +15,13 @@ Spoke for Auth0.
 variables.
 2. Create an [Auth0](https://auth0.com) account. In your Auth0 account, go to [Applications](https://manage.auth0.com/#/applications/), click on `Default App` and then grab your Client ID, Client Secret, and your Auth0 domain (should look like xxx.auth0.com). Add those inside your `.env` file (AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_DOMAIN respectively).
 3. Run `yarn dev` to create and populate the tables.
-4. In your Auth0 app settings, add `http://localhost:3000/login-callback` , `http://localhost:3000` and `http://localhost:3000/logout-callback` to "Allowed Callback URLs", "Allowed Web Origins" and  "Allowed Logout URLs" respectively. (If you get an error when logging in later about "OIDC", go to Advanced Settings section, and then OAuth, and turn off 'OIDC Conformant')
+4. In your Auth0 app settings, set the following (Note: for development use `http://localhost:3000` instead of `https://yourspokedomain.com`):
+    + **Allowed Callback URLs** - `https://yourspokedomain.com/login-callback`
+    + **Allowed Web Origins** - `https://yourspokedomain.com`
+    + **Allowed Logout URLs** - `https://yourspokedomain.com/logout-callback`
+    + **Allowed Origins (CORS)** - `https://*.yourspokedomain.com`
+        - _Note: for development this will be `http://localhost:3000` without the `*.`_
+    + If you get an error when logging in later about "OIDC", go to Advanced Settings section, then OAuth, and turn off 'OIDC Conformant'.
 5. Add a new [rule](https://manage.auth0.com/#/rules/create) in Auth0:
 ```javascript
 function (user, context, callback) {
