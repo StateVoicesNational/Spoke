@@ -32,7 +32,7 @@ Please let us know if you deployed by filling out this form [here](https://act.m
     - In `.env` set `DB_TYPE=pg`. (Otherwise, you will use sqlite.)
     - Set `DB_PORT=5432`, which is the default port for Postgres.
     - Create the spokedev database:  `psql -c "create database spokedev;"`
-6. Some other settings to tweak in dev:
+6. Some other settings to tweak in dev -- make sure you are NOT editing .env.example -- edit `.env`:
    * For development, you can set `DEFAULT_SERVICE=fakeservice` to skip using an SMS provider (Twilio or Nexmo) and insert the message directly into the database.
    * For production, you'll want to use Auth0 for login and set PASSPORT_STRATEGY=auth0 -- see [Auth0 for authentication](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO-configure-auth0.md) for setup instructions
 
