@@ -8,39 +8,8 @@
 - There is a variable named `SUPPRESS_SELF_INVITE` in your configuration variables in Heroku. When this is set to nothing, anyone can visit your app and create an organization. When it is set to `true`, this changes login/signup behavior - when a person signs up and visits your app, they will not create an organization. On first deployment, it should be set to nothing to ensure that you have the ability to create an organization and view the full functionality of the application.
 
 ## Instructions for Auth0 configuration variable setup
-- Create an Auth0 account - click [here to visit Auth0's website to signup](https://auth0.com/signup)
-- After logging in to account, click on `Clients`
-- Click on `+Create Client`
-- Create a name and click on click on `Single Page App` - click create
-- If it asks for `What technology are you using?` - click React
-- Click on `Settings` in the tabs
-- You should see 3 variables at the top you need for your Heroku app.
-  - `Domain name` will be the value to put into the value for `AUTH0_DOMAIN` in Heroku
-  - `Client ID` will be the value to put into the value for `AUTH0_CLIENT_ID` in Heroku
-  - `Client Secret` will be the value to put into the value for `AUTH0_CLIENT_SECRET` in Heroku
-
-- Scroll to `Allowed Callback URLs` section and update it with your HEROKU_APP_URL:
-  - `https://<YOUR_HEROKU_APP_URL>/login-callback, http://<YOUR_HEROKU_APP_URL>/login-callback`
-
-- Scroll to `Allowed Logout URLs` section and update it with (your HEROKU_APP_URL):
-  - `https://<YOUR_HEROKU_APP_URL>/logout-callback, http://<YOUR_HEROKU_APP_URL>/logout-callback`
-
-- Scroll to `Allowed Origin (CORS)` add:
-  - `http://*.<YOUR_HEROKU_APP_URL>.com`, ` https://*.<YOUR_HEROKU_APP_URL>.com`
-- Scroll to `Allowed Web Origins` add:
-  - `http://<YOUR_HEROKU_APP_URL>.com`, ` https://<YOUR_HEROKU_APP_URL>.com`
-- Scroll to bottom and click on `Advanced Settings`
-  - Click on `OAuth` - make sure `OIDC Conformant` is turned off
-- Then create a rule in Auth0:
-  - Click [here](https://manage.auth0.com/#/rules/create) to navigate to rule creation tab when logged into Auth0
-  - Note: name of rule can be anything
-  - Paste the following code in the box where it says `function`:
-    ```javascript
-    function (user, context, callback) {
-      context.idToken["https://spoke/user_metadata"] = user.user_metadata;
-      callback(null, user, context);
-    }
-  - Now, it should only say the pasted code in the box. Click save.
+- Follow the instructions at [Auth0 for authentication](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO-configure-auth0.md)
+  - Where the instructions mention `yourspoke.example.com`, replace it with `<YOUR SPOKE APP>.herokuapp.com` (or in production, possibly the domain you aliased to it in your DNS config)
 
 
 ## Notes about Twilio configuration variable setup
