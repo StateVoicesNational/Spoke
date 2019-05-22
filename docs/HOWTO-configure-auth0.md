@@ -93,11 +93,19 @@ callback(null, user, context);
           additionalSignUpFields: [{
             name: 'given_name',
             icon: 'https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1.png',
-            placeholder: 'First Name'
+            placeholder: 'First Name',
+            validator: (name) => ({
+              valid: name.length >= 1,
+              hint: 'Required'
+            })
           }, {
             name: 'family_name',
             placeholder: 'Last Name',
-            icon: 'https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1.png'
+            icon: 'https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1.png',
+            validator: (name) => ({
+              valid: name.length >= 1,
+              hint: 'Required'
+            })
           }, {
             name: 'cell',
             placeholder: 'Cell Phone',
