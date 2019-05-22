@@ -76,36 +76,13 @@ Docker is optional, but can help with a consistent development environment using
 5. You should then be prompted to create an organization. Create it.
 6. When done testing, clean up resources with `docker-compose down`, or `docker-compose down -v` to **_completely destroy_** your Postgres database & Redis datastore volumes.
 
-## Running Tests
-
-See https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO-run_tests.md
-
-## Big Thanks
-Cross-browser Testing Platform and Open Source <3 Provided by [Sauce Labs](https://saucelabs.com).
-
-## Helpful Dev Tips
-* Run `sqlite3 mydb.sqlite` to connect to a SQL shell for the dev database
-* [Set up an ESLint plugin in your code editor so that you catch coding errors and follow code style guidelines more easily!](https://medium.com/planet-arkency/catch-mistakes-before-you-run-you-javascript-code-6e524c36f0c8#.oboqsse48)
-* [Install the redux-devtools-extension](https://github.com/zalmoxisus/redux-devtools-extension) in Chrome to get advanced Redux debugging features.
-* Right now there is a bug in Apollo (https://github.com/apollostack/react-apollo/issues/57) that means in one particular case, errors get swallowed.  If you end up with an app that is silently breaking, console.log(this.props.data) and check the errors property.
-
-## Deploying Minimally
-
-There are several ways to deploy documented below. This is the 'most minimal' approach:
-
-1. Run `OUTPUT_DIR=./build yarn run prod-build-server`
-   This will generate something you can deploy to production in ./build and run nodejs server/server/index.js
-2. Run `yarn run prod-build-client`
-3. Make a copy of `deploy/spoke-pm2.config.js.template`, e.g. `spoke-pm2.config.js`, add missing environment variables, and run it with [pm2](https://www.npmjs.com/package/pm2), e.g. `pm2 start spoke-pm2.config.js --env production`
-4. [Install PostgreSQL](https://wiki.postgresql.org/wiki/Detailed_installation_guides)
-5. Start PostgreSQL (e.g. `sudo /etc/init.d/postgresql start`), connect (e.g. `sudo -u postgres psql`), create a user and database (e.g. `create user spoke password 'spoke'; create database spoke owner spoke;`), disconnect (e.g. `\q`) and add credentials to `DB_` variables in spoke-pm2.config.js
 
 ## More Documentation
 
 * Getting Started with Development:
   * Welcome! Start with [CONTRIBUTING.md](./CONTRIBUTING.md) for community participation and engagement details.
-  * [Development Guidelines](https://github.com/MoveOnOrg/Spoke/blob/main/docs/EXPLANATION-development-guidelines.md)
-
+  * [Development Guidelines and Tips](https://github.com/MoveOnOrg/Spoke/blob/main/docs/EXPLANATION-development-guidelines.md)
+  * [Running Tests](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO-run_tests.md)
 * More Development documentation
   * [A request example](https://github.com/MoveOnOrg/Spoke/blob/main/docs/EXPLANATION-request-example.md) pointing to different code points that all connect to it.
   * [GraphQL Debugging](https://github.com/MoveOnOrg/Spoke/blob/main/docs/graphql-debug.md)
@@ -129,6 +106,20 @@ There are several ways to deploy documented below. This is the 'most minimal' ap
   * Description of the different [Roles and Their Permissions](https://github.com/MoveOnOrg/Spoke/blob/main/docs/ROLES_DESCRIPTION.md)
   * Some DB queries for [Texter Activity](https://github.com/MoveOnOrg/Spoke/blob/main/docs/TEXTER_ACTIVITY_QUERIES.md)
 
+
+## Deploying Minimally
+
+There are several ways to deploy documented below. This is the 'most minimal' approach:
+
+1. Run `OUTPUT_DIR=./build yarn run prod-build-server`
+   This will generate something you can deploy to production in ./build and run nodejs server/server/index.js
+2. Run `yarn run prod-build-client`
+3. Make a copy of `deploy/spoke-pm2.config.js.template`, e.g. `spoke-pm2.config.js`, add missing environment variables, and run it with [pm2](https://www.npmjs.com/package/pm2), e.g. `pm2 start spoke-pm2.config.js --env production`
+4. [Install PostgreSQL](https://wiki.postgresql.org/wiki/Detailed_installation_guides)
+5. Start PostgreSQL (e.g. `sudo /etc/init.d/postgresql start`), connect (e.g. `sudo -u postgres psql`), create a user and database (e.g. `create user spoke password 'spoke'; create database spoke owner spoke;`), disconnect (e.g. `\q`) and add credentials to `DB_` variables in spoke-pm2.config.js
+
+## Big Thanks
+Cross-browser Testing Platform and Open Source <3 Provided by [Sauce Labs](https://saucelabs.com).
 
 # License
 Spoke is licensed under the MIT license.
