@@ -155,7 +155,7 @@ export async function uploadContacts(job) {
     .getAll(campaignId, { index: 'campaign_id' })
     .delete()
   const maxPercentage = 100
-  let contacts = await gunzip(new Buffer(job.payload, 'base64'))
+  let contacts = await gunzip(new Buffer.from(job.payload, 'base64'))
   const chunkSize = 1000
   contacts = JSON.parse(contacts)
 
