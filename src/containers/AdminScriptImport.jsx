@@ -7,11 +7,16 @@ import { StyleSheet, css } from 'aphrodite'
 import gql from 'graphql-tag'
 import loadData from './hoc/load-data'
 import wrapMutations from './hoc/wrap-mutations'
+import theme from '../styles/theme'
 import CampaignFormSectionHeading from '../components/CampaignFormSectionHeading'
 import TextField from 'material-ui/TextField'
+import { ListItem, List } from 'material-ui/List'
 import RaisedButton from 'material-ui/RaisedButton'
+import ErrorIcon from 'material-ui/svg-icons/alert/error'
 import { pendingJobsGql } from '../lib/pendingJobsUtils'
-import { type } from 'os';
+import { type } from 'os'
+
+const errorIcon = <ErrorIcon color={theme.colors.red} />
 
 const styles = StyleSheet.create({
   buttonDiv: {
@@ -24,14 +29,13 @@ export class AdminScriptImport extends Component {
     super(props)
     this.state = {}
   }
-
   startImport = async () => {
     const res = await this.props.mutations.importCampaignScript(this.props.campaignData.campaign.id, this.state.url)
     if (res.errors) {
-
+      this.setState({ error: res.errors.message, importingScript: false })
     } else {
       const jobId = res.data.importCampaignScript
-      this.setState({ importingScript: true })
+      this.setState({ importingScript: true, error: undefined })
       await this.pollDuringActiveJobs(jobId)
     }
   }
@@ -43,14 +47,32 @@ export class AdminScriptImport extends Component {
     const pendingJobs = fetchedPendingJobsData.data.campaign.pendingJobs
     const ourJob = _.find(pendingJobs, (pendingJob) => pendingJob.id === jobId.toString())
     if (!ourJob || ourJob.resultMessage) {
-      this.setState({ importingScript: false })
-      this.props.onSubmit()
+      this.setState(
+        {
+          importingScript: false,
+          error: !!ourJob && ourJob.resultMessage
+        }
+      )
+
+      if (!ourJob) {
+        this.props.onSubmit()
+      }
       return
     }
     setTimeout(async () => {
       await this.pollDuringActiveJobs(jobId)
     }, 1000)
   }
+
+  renderErrors = () => this.state.error && (
+    <List>
+      <ListItem
+        primaryText={this.state.error}
+        leftIcon={errorIcon}
+      />
+    </List>
+  )
+
   render() {
     return (
       <div>
@@ -64,6 +86,7 @@ export class AdminScriptImport extends Component {
           style={{ width: '100%' }}
           onChange={this.handleUrlChange}
         />
+        {this.renderErrors()}
         <div className={css(styles.buttonDiv)}>
           <RaisedButton
             label='Import'

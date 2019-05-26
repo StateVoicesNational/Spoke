@@ -6,12 +6,14 @@ import { updateJob } from './lib'
 import { getFormattedPhoneNumber } from '../lib/phone-format.js'
 import serviceMap from '../server/api/lib/services'
 import { getLastMessage, saveNewIncomingMessage } from '../server/api/lib/message-sending'
+import  importScriptFromDocument from '../server/api/lib/import-script.'
 
 import AWS from 'aws-sdk'
 import Papa from 'papaparse'
 import moment from 'moment'
 import { sendEmail } from '../server/mail'
 import { Notifications, sendUserNotification } from '../server/notifications'
+import { unzip } from 'zlib';
 
 const defensivelyDeleteJob = async (job) => {
   if (job.id) {
@@ -160,6 +162,8 @@ export async function processSqsMessages() {
   return p
 }
 
+const unzipPayload = async (job) => JSON.parse(await gunzip(Buffer.from(job.payload, 'base64')))
+
 export async function uploadContacts(job) {
   const campaignId = job.campaign_id
   // We do this deletion in schema.js but we do it again here just in case the the queue broke and we had a backlog of contact uploads for one campaign
@@ -173,9 +177,8 @@ export async function uploadContacts(job) {
     .getAll(campaignId, { index: 'campaign_id' })
     .delete()
   const maxPercentage = 100
-  let contacts = await gunzip(new Buffer(job.payload, 'base64'))
+  let contacts = unzipPayload(job)
   const chunkSize = 1000
-  contacts = JSON.parse(contacts)
 
   const maxContacts = parseInt(orgFeatures.hasOwnProperty('maxContacts')
                                 ? orgFeatures.maxContacts
@@ -857,7 +860,16 @@ export async function exportCampaign(job) {
   await defensivelyDeleteJob(job)
 }
 export async function importScript(job) {
-  setTimeout(() => defensivelyDeleteJob(job), 20000)
+  const payload = await unzipPayload(job)
+  try {
+    await importScriptFromDocument(payload.campaignId, payload.url) // TODO try/catch
+  } catch (exception) {
+    await r.knex('job_request').where('id', job.id)
+      .update({ result_message: exception.message })
+    console.log(exception.message)
+    return
+  }
+  defensivelyDeleteJob(job)
 }
 
 // add an in-memory guard that the same messages are being sent again and again

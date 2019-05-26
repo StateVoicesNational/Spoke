@@ -1153,8 +1153,21 @@ const rootMutations = {
 
       return await reassignConversations(campaignIdContactIdsMap, campaignIdMessagesIdsMap, newTexterUserId)
     },
-    importCampaignScript: async (_, { campaignId, url}, {loaders} ) => {
-      const compressedString = await gzip(JSON.stringify({campaignId, url}))
+    importCampaignScript: async (_, {
+      campaignId,
+      url
+    }, {
+      loaders
+    }) => {
+      const campaign = await loaders.campaign.load(campaignId)
+      if (campaign.is_started || campaign.is_archived) {
+        throw new GraphQLError('Cannot import a campaign script for a campaign that is started or archived')
+      }
+
+      const compressedString = await gzip(JSON.stringify({
+        campaignId,
+        url
+      }))
       const job = await JobRequest.save({
         queue_name: `${campaignId}:import_script`,
         job_type: 'import_script',
