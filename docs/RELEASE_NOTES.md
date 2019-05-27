@@ -16,7 +16,7 @@ Heroku:
 
 Lambda:
 
-  This version includes an update for the Node runtime environment. For current AWS Lambda Users - you can update your Node runtime to 8.10 by either visiting the `Function code` Section and moving the drop down to 8.10 or by running the following script: `claudia update --runtime nodejs8.10`. For new Lambda deployments, Claudia.js will default to Node 8.10.
+  This version includes an update for the Node runtime environment. For current AWS Lambda Users - you can update your Node runtime to 10.15 by either visiting the `Function code` Section and moving the drop down to 10.15 or by running the following script: `claudia update --runtime nodejs10.15`. For new Lambda deployments, Claudia.js will default to Node 10.
 
 Thanks to all the contributors apart of this release including:
 [anasauceda](https://github.com/anasauceda),
