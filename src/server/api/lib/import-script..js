@@ -96,7 +96,7 @@ const getSections = compose(
   filter(hasParagraph)
 )
 
-const getSectionParagraphs = (sections, heading) => (sections.find((section) => section.text === heading) || {}).paragraphs
+const getSectionParagraphs = (sections, heading) => (sections.find((section) => section.text && section.text.toLowerCase() === heading.toLowerCase()) || {}).paragraphs
 
 const getInteractions = (sections) => getSectionParagraphs(sections, 'Interactions')
 const getCannedResponses = (sections) => getSectionParagraphs(sections, 'Canned Responses')
