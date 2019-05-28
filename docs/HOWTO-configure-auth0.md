@@ -9,21 +9,26 @@ in the database and resets, etc are administered all within Spoke.  While good f
 believe Auth0 still provides better security for production environments.  Below are the steps to configure
 Spoke for Auth0.
 
-## For Development
+## Configuration Steps
 
 1. First configure the environment variable `PASSPORT_STRATEGY=auth0` in `.env` or wherever to configure Spoke environment
 variables.
 2. Create an [Auth0](https://auth0.com) account. In your Auth0 account, go to [Applications](https://manage.auth0.com/#/applications/), click on `Default App` and then grab your Client ID, Client Secret, and your Auth0 domain (should look like xxx.auth0.com). Add those inside your `.env` file (AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_DOMAIN respectively).
 3. Run `yarn dev` to create and populate the tables.
-4. In your Auth0 app settings, add `http://localhost:3000/login-callback` , `http://localhost:3000` and `http://localhost:3000/logout-callback` to "Allowed Callback URLs", "Allowed Web Origins" and  "Allowed Logout URLs" respectively. (If you get an error when logging in later about "OIDC", go to Advanced Settings section, and then OAuth, and turn off 'OIDC Conformant')
-5. Add a new [rule](https://manage.auth0.com/#/rules/create) in Auth0:
+4. In your Auth0 app settings, set the following (Note: for development use `http://localhost:3000` instead of `https://yourspoke.example.com`):
+    + **Allowed Callback URLs** - `https://yourspoke.example.com/login-callback`
+    + **Allowed Web Origins** - `https://yourspoke.example.com`
+    + **Allowed Logout URLs** - `https://yourspoke.example.com/logout-callback`
+    + **Allowed Origins (CORS)** - `https://yourspoke.example.com`
+5. In Advanced Settings, under the OAuth section, turn off 'OIDC Conformant'.
+6. Add a [new empty rule](https://manage.auth0.com/#/rules/create) in Auth0:
 ```javascript
 function (user, context, callback) {
 context.idToken["https://spoke/user_metadata"] = user.user_metadata;
 callback(null, user, context);
 }
 ```
-6. Update the Auth0 [Universal Landing page](https://manage.auth0.com/#/login_page), click on the `Customize Login Page` toggle, and copy and paste following code in the drop down into the `Default Templates` space:
+7. Update the Auth0 [Universal Landing page](https://manage.auth0.com/#/login_page), click on the `Customize Login Page` toggle, and copy and paste following code in the drop down into the `Default Templates` space:
 
     <details>
     <summary>Code to paste into Auth0</summary>
