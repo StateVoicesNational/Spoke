@@ -177,7 +177,7 @@ export async function uploadContacts(job) {
     .getAll(campaignId, { index: 'campaign_id' })
     .delete()
   const maxPercentage = 100
-  let contacts = unzipPayload(job)
+  let contacts = await unzipPayload(job)
   const chunkSize = 1000
 
   const maxContacts = parseInt(orgFeatures.hasOwnProperty('maxContacts')
