@@ -160,7 +160,7 @@
     "eslint-plugin-jsx-a11y": "^1.5.5",
     "eslint-plugin-react": "^5.2.2",
     "fakeredis": "^2.0.0",
-    "foreman": "^1.4.1",
+    "foreman": "^3.0.1",
     "json2csv": "^3.6.2",
     "mockdate": "^2.0.2",
     "nodemon": "^1.9.2",
