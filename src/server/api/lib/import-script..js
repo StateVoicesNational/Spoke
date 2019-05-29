@@ -17,6 +17,8 @@ import {
   r
 } from '../../models'
 
+const textRegex = RegExp('.*[A-Za-z0-9]+.*')
+
 const getDocument = async (documentId) => {
   const auth = google.auth.fromJSON(JSON.parse(process.env.GOOGLE_SECRET))
   auth.scopes = ['https://www.googleapis.com/auth/documents']
@@ -62,7 +64,7 @@ const getParagraph = (element) => ({
   text: getParagraphText(element)
 })
 const hasParagraph = has('paragraph')
-const hasText = (paragraph) => !!paragraph.text.trim()
+const hasText = (paragraph) => !!paragraph.text && textRegex.test(paragraph.text.trim())
 const pushAndReturnSection = (sections) => {
   const newSection = {
     paragraphs: []
@@ -79,9 +81,12 @@ const addParagraph = (accumulatorInput, value) => {
   return accumulator
 }
 
+const sanitizeHeaderText = (header) => header.replace(/[^A-Za-z0-9 ]/g, '')
+
 const addHeader = (accumulatorInput, value) => {
   const accumulator = accumulatorInput || []
   accumulator.push(_.assign(_.clone(value), {
+    text: sanitizeHeaderText(value.text),
     paragraphs: []
   }))
   return accumulator
