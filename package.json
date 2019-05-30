@@ -173,6 +173,6 @@
     "selenium-webdriver": "^3.6.0",
     "sqlite3": "^3.1.9",
     "wait-on": "^2.1.0",
-    "webpack-dev-server": "^2.9.4"
+    "webpack-dev-server": "^3.1.11"
   }
 }
