@@ -95,7 +95,7 @@
     "google-libphonenumber": "^1.0.25",
     "graphql": "^0.13.2",
     "graphql-date": "^1.0.3",
-    "graphql-tag": "^0.1.9",
+    "graphql-tag": "^2.10.1",
     "graphql-tools": "^2.8.0",
     "graphql-type-json": "^0.1.4",
     "humps": "^1.1.0",
