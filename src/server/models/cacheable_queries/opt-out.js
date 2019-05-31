@@ -1,5 +1,4 @@
 import { r, OptOut } from '../../models'
-import assignmentCache from './assignment'
 
 // STRUCTURE
 // SET by organization, so optout-<organization_id> has a <cell> key
@@ -79,8 +78,6 @@ const optOutCache = {
       if (exists) {
         await r.redis.saddAsync(hashKey, cell)
       }
-      await assignmentCache.optOutContact(
-        assignmentId, campaignContactId, campaign.contactTimezones)
     }
     // database
     await new OptOut({
