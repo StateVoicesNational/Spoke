@@ -29,16 +29,23 @@ export async function assignmentRequired(user, assignmentId, assignment) {
   authRequired(user)
 
   if (user.is_superadmin) {
-    return
+    return true
   }
+  if (assignment && assignment.user_id === user.id) {
+    // if we are passed the full assignment object, we can test directly
+    return true
+  }
+
   if (assignment && assignment.user_id === user.id) {
     // if we are passed the full assignment object, we can test directly
     return
   }
   const userHasAssignment = await cacheableData.assignment.hasAssignment(user.id, assignmentId)
-  if (!userHasAssignment) {
+
+  if (!userHasAssignment) { // undefined or null
     throw new GraphQLError('You are not authorized to access that resource.')
   }
+  return true
 }
 
 export function superAdminRequired(user) {

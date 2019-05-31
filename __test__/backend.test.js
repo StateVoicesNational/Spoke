@@ -1,5 +1,11 @@
 import { resolvers } from '../src/server/api/schema'
 import { schema } from '../src/api/schema'
+import {
+  accessRequired,
+  assignmentRequired,
+  authRequired,
+  superAdminRequired
+} from '../src/server/api/errors'
 import { graphql } from 'graphql'
 import { User, Organization, Campaign, CampaignContact, Assignment, r } from '../src/server/models/'
 import { resolvers as campaignResolvers } from '../src/server/api/campaign'
@@ -367,6 +373,7 @@ describe('Campaign', () => {
         organization_id: organization.id,
         is_started: false,
         is_archived: false,
+        use_dynamic_assignment: true,
         due_by: new Date()
       })).save()
     })
@@ -380,6 +387,8 @@ describe('Campaign', () => {
 
       const results = await campaignResolvers.Campaign.hasUnassignedContacts(campaign, null, { user: adminUser })
       expect(results).toEqual(true)
+      const resultsForTexter = await campaignResolvers.Campaign.hasUnassignedContactsForTexter(campaign, null, { user: adminUser })
+      expect(resultsForTexter).toEqual(true)
     })
 
     test('resolves unassigned contacts when false with assigned contacts', async () => {
@@ -405,11 +414,34 @@ describe('Campaign', () => {
 
       const results = await campaignResolvers.Campaign.hasUnassignedContacts(campaign, null, { user: adminUser })
       expect(results).toEqual(false)
+      const resultsForTexter = await campaignResolvers.Campaign.hasUnassignedContactsForTexter(campaign, null, { user: adminUser })
+      expect(resultsForTexter).toEqual(false)
     })
 
     test('resolves unassigned contacts when false with no contacts', async () => {
       const results = await campaignResolvers.Campaign.hasUnassignedContacts(campaign, null, { user: adminUser })
       expect(results).toEqual(false)
     })
+
+    test('test assignmentRequired access control', async () => {
+      const user = await createUser()
+
+      const assignment = await (new Assignment({
+        user_id: user.id,
+        campaign_id: campaign.id,
+      })).save()
+
+      const allowUser = await assignmentRequired(user, assignment.id, assignment)
+      expect(allowUser).toEqual(true)
+      const allowUserAssignmentId = await assignmentRequired(user, assignment.id)
+      expect(allowUserAssignmentId).toEqual(true)
+      try {
+        const notAllowed = await assignmentRequired(user, -1)
+        throw new Exception('should throw BEFORE this exception')
+      } catch(err) {
+        expect(/not authorized/.test(String(err))).toEqual(true)
+      }
+    })
+
   })
 })

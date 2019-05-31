@@ -86,8 +86,9 @@ export const resolvers = {
     ], JobRequest)
   },
   CampaignStats: {
-    sentMessagesCount: async (campaign) => (
-      await r.getCount(
+    sentMessagesCount: async (campaign, _, { user }) => {
+      await accessRequired(user, campaign.organization_id, 'SUPERVOLUNTEER', true)
+      return await r.getCount(
         r.knex('message')
         .innerJoin('campaign_contact', 'message.campaign_contact_id', 'campaign_contact.id')
         .where({
@@ -95,9 +96,10 @@ export const resolvers = {
           'message.is_front_contact': false
         })
       )
-    ),
-    receivedMessagesCount: async (campaign) => (
-      await r.getCount(
+    },
+    receivedMessagesCount: async (campaign, _, { user }) => {
+      await accessRequired(user, campaign.organization_id, 'SUPERVOLUNTEER', true)
+      return await r.getCount(
         r.knex('message')
         .innerJoin('campaign_contact', 'message.campaign_contact_id', 'campaign_contact.id')
         .where({
@@ -105,13 +107,14 @@ export const resolvers = {
           'message.is_front_contact': true
         })
       )
-    ),
-    optOutsCount: async (campaign) => (
-      await r.getCount(
+    },
+    optOutsCount: async (campaign, _, { user }) => {
+      await accessRequired(user, campaign.organization_id, 'SUPERVOLUNTEER', true)
+      return await r.getCount(
         r.knex('campaign_contact')
           .where({ is_opted_out: true, campaign_id: campaign.id })
       )
-    )
+    }
   },
   CampaignsReturn: {
     __resolveType(obj, context, _) {
