@@ -90,7 +90,7 @@ class AdminPersonList extends React.Component {
 
   renderCampaignList = () => {
     const { organizationData: { organization } } = this.props
-    const campaigns = organization ? organization.campaigns : []
+    const campaigns = organization ? organization.campaigns : { campaigns: [] }
     return (
       <DropDownMenu
         value={this.props.location.query.campaignId}
@@ -252,8 +252,7 @@ AdminPersonList.propTypes = {
 
 const organizationFragment = `
   id
-  peopleCount
-  people(campaignId: $campaignId, offset: $offset) {
+  people(campaignId: $campaignId) {
     id
     displayName
     email
