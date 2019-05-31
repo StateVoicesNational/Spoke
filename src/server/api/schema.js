@@ -258,7 +258,7 @@ async function updateInteractionSteps(
 const rootMutations = {
   RootMutation: {
     userAgreeTerms: async (_, { userId }, { user, loaders }) => {
-      if (user.id === parseInt(userId, 10)) {
+      if (user.id === Number(userId)) {
         return (user.terms ? user : null)
       }
       const currentUser = await r
@@ -404,6 +404,7 @@ const rootMutations = {
               cell: userData.cell
             })
           await cacheableData.user.clearUser(member.id, member.auth0_id)
+
           // assignments cache first/last name, so clear them to be reloaded
           await cacheableData.assignment.clearUserAssignments(organizationId, userId)
           userData = {
@@ -851,6 +852,7 @@ const rootMutations = {
     },
     findNewCampaignContact: async (_, { assignmentId, numberContacts }, { loaders, user }) => {
       /* This attempts to find a new contact for the assignment, in the case that useDynamicAssigment == true */
+
       const assignment = await loaders.assignment.load(assignmentId)
       await assignmentRequired(user, assignmentId, assignment)
 
@@ -1005,6 +1007,7 @@ const rootMutations = {
         queued_at: new Date(),
         send_before: sendBeforeDate
       })
+
       // console.log('sendMessage3', messageInstance.messageservice_sid, 'y', process.env.DEFAULT_SERVICE, 'z', organization.feature.service)
       // This should hackily update messageInstance.id
       contact = await cacheableData.message.save({ messageInstance, contact })

@@ -12,7 +12,7 @@ export const schema = `
     inflightCount: Int
     lastMessageTime: Date
     assignedCell: Phone
-    assignment(campaignId: String): Assignment,
+    assignment(campaignId: String): Assignment
     terms: Boolean
     cacheable: Boolean
   }

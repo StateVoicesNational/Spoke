@@ -28,6 +28,9 @@ module.exports = {
     "js",
     "jsx"
   ],
+  transform: {
+    ".*.js": "<rootDir>/node_modules/babel-jest"
+  },
   moduleDirectories: [
     "node_modules"
   ],

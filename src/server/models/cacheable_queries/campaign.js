@@ -153,7 +153,6 @@ const campaignCache = {
     return await Campaign.get(id)
   },
   reload: loadDeep,
-  clear,
   campaignHasUnassigned,
   currentEditors,
   dbCustomFields,
