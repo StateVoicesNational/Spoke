@@ -173,7 +173,6 @@ class AdminPersonList extends React.Component {
     return (
       <div>
         {this.renderCampaignList()}
-        {this.renderOffsetList()}
         {this.renderTexters()}
         <FloatingActionButton
           {...dataTest('addPerson')}
@@ -291,15 +290,14 @@ const mapMutationsToProps = ({ ownProps }) => ({
 
 const mapQueriesToProps = ({ ownProps }) => ({
   personData: {
-    query: gql`query getPeople($organizationId: String!, $campaignId: String, $offset: Int) {
+    query: gql`query getPeople($organizationId: String!, $campaignId: String) {
       organization(id: $organizationId) {
         ${organizationFragment}
       }
     }`,
     variables: {
       organizationId: ownProps.params.organizationId,
-      campaignId: ownProps.location.query.campaignId,
-      offset: ownProps.location.query.offset || 0
+      campaignId: ownProps.location.query.campaignId
     },
     forceFetch: true
   },
