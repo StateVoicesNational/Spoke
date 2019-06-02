@@ -67,11 +67,13 @@ const mapQueriesToProps = ({ ownProps }) => ({
         $organizationId: String!
         $cursor: OffsetLimitCursor
         $campaignsFilter: CampaignsFilter
+        $sortBy: SortPeopleBy
         ) {
             people(
                 organizationId: $organizationId
                 cursor: $cursor
                 campaignsFilter: $campaignsFilter
+                sortBy: $sortBy
             ) {
                 ...on PaginatedUsers {
                     pageInfo {
@@ -82,6 +84,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
                     users {
                         id
                         displayName
+                        email
                         roles(organizationId: $organizationId)
                     }
                 }
@@ -91,7 +94,8 @@ const mapQueriesToProps = ({ ownProps }) => ({
     variables: {
       cursor: { offset: 0, limit: ownProps.pageSize },
       organizationId: ownProps.organizationId,
-      campaignsFilter: ownProps.campaignsFilter
+      campaignsFilter: ownProps.campaignsFilter,
+      sortBy: ownProps.sortBy || 'FIRST_NAME'
     },
     forceFetch: true
   }
@@ -103,6 +107,7 @@ PaginatedUsersRetriever.propTypes = {
     isArchived: PropTypes.bool,
     campaignId: PropTypes.number
   }),
+  sortBy: PropTypes.string,
   onUsersReceived: PropTypes.func.isRequired,
   pageSize: PropTypes.number.isRequired
 }
