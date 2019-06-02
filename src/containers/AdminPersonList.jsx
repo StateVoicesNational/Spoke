@@ -19,6 +19,7 @@ import loadData from './hoc/load-data'
 import gql from 'graphql-tag'
 import { dataTest } from '../lib/attributes'
 import LoadingIndicator from '../components/LoadingIndicator'
+import PaginatedUsersRetriever from './PaginatedUsersRetriever'
 
 class AdminPersonList extends React.Component {
 
@@ -28,13 +29,34 @@ class AdminPersonList extends React.Component {
     this.handleClose = this.handleClose.bind(this)
     this.handleChange = this.handleChange.bind(this)
     this.updateUser = this.updateUser.bind(this)
+
+    this.state = {
+      open: false,
+      userEdit: false,
+      passwordResetHash: '',
+      sortBy: this.FIRST_NAME_SORT.value,
+      people: []
+    }
   }
 
-  state = {
-    open: false,
-    userEdit: false,
-    passwordResetHash: ''
+  FIRST_NAME_SORT = {
+    display: 'First Name',
+    value: 'FIRST_NAME'
   }
+  LAST_NAME_SORT = {
+    display: 'Last Name',
+    value: 'LAST_NAME'
+  }
+  CREATED_AT_SORT = {
+    display: 'Created At',
+    value: 'CREATED_AT'
+  }
+
+  SORTS = [
+    this.FIRST_NAME_SORT,
+    this.LAST_NAME_SORT,
+    this.CREATED_AT_SORT
+  ]
 
   handleFilterChange = (campaignId) => {
     const query = '?' + (campaignId ? `campaignId=${campaignId}` : '')
@@ -61,6 +83,14 @@ class AdminPersonList extends React.Component {
       .props
       .mutations
       .editOrganizationRoles(this.props.params.organizationId, userId, [value])
+  }
+
+  handleSortByChanged = (event, index, sortBy) => {
+    this.setState({ sortBy })
+  }
+
+  handlePeopleReceived = (people) => {
+    this.setState({ people })
   }
 
   editUser(userId) {
@@ -103,12 +133,27 @@ class AdminPersonList extends React.Component {
     )
   }
 
+  renderSortBy = () => (
+    <DropDownMenu
+      value={this.state.sortBy}
+      onChange={this.handleSortByChanged}
+      >
+      {this.SORTS.map((sort) => (
+        <MenuItem
+          value ={sort.value}
+          key={sort.value}
+          primaryText={'Sort by ' + sort.display}
+        />
+      ))
+    }
+    </DropDownMenu>
+  )
+
   renderTexters() {
-    const { personData, userData: { currentUser } } = this.props
+    const { userData: { currentUser } } = this.props
     if (!currentUser) return <LoadingIndicator />
 
-    const people = personData.organization && personData.organization.people || []
-    if (people.length === 0) {
+    if (this.state.people.length === 0) {
       return (
         <Empty
           title='No people yet'
@@ -123,7 +168,7 @@ class AdminPersonList extends React.Component {
           displayRowCheckbox={false}
           showRowHover
         >
-          {people.map((person) => (
+          {this.state.people.map((person) => (
             <TableRow
               key={person.id}
             >
@@ -167,7 +212,15 @@ class AdminPersonList extends React.Component {
 
     return (
       <div>
+        <PaginatedUsersRetriever
+          campaignsFilter={{ campaignId: this.props.location.query.campaignId && parseInt(this.props.location.query.campaignId, 10) }}
+          organizationId={this.props.params.organizationId}
+          sortBy={this.state.sortBy}
+          onUsersReceived={this.handlePeopleReceived}
+          pageSize={1000}
+        />
         {this.renderCampaignList()}
+        {this.renderSortBy()}
         {this.renderTexters()}
         <FloatingActionButton
           {...dataTest('addPerson')}
@@ -237,7 +290,6 @@ class AdminPersonList extends React.Component {
 AdminPersonList.propTypes = {
   mutations: PropTypes.object,
   params: PropTypes.object,
-  personData: PropTypes.object,
   userData: PropTypes.object,
   organizationData: PropTypes.object,
   router: PropTypes.object,
@@ -283,18 +335,6 @@ const mapMutationsToProps = ({ ownProps }) => ({
 })
 
 const mapQueriesToProps = ({ ownProps }) => ({
-  personData: {
-    query: gql`query getPeople($organizationId: String!, $campaignId: String) {
-      organization(id: $organizationId) {
-        ${organizationFragment}
-      }
-    }`,
-    variables: {
-      organizationId: ownProps.params.organizationId,
-      campaignId: ownProps.location.query.campaignId
-    },
-    forceFetch: true
-  },
   userData: {
     query: gql` query getCurrentUserAndRoles($organizationId: String!) {
       currentUser {

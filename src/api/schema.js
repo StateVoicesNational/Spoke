@@ -175,6 +175,12 @@ const rootSchema = gql`
     data: String!
   }
 
+  enum SortPeopleBy {
+    FIRST_NAME
+    LAST_NAME
+    CREATED_AT
+  } 
+
   type RootQuery {
     currentUser: User
     organization(id:String!, utc:String): Organization
@@ -186,7 +192,7 @@ const rootSchema = gql`
     availableActions(organizationId:String!): [Action]
     conversations(cursor:OffsetLimitCursor!, organizationId:String!, campaignsFilter:CampaignsFilter, assignmentsFilter:AssignmentsFilter, contactsFilter:ContactsFilter, utc:String): PaginatedConversations
     campaigns(organizationId:String!, cursor:OffsetLimitCursor, campaignsFilter: CampaignsFilter): CampaignsReturn
-    people(organizationId:String!, cursor:OffsetLimitCursor, campaignsFilter:CampaignsFilter, role: String): UsersReturn
+    people(organizationId:String!, cursor:OffsetLimitCursor, campaignsFilter:CampaignsFilter, role: String, sortBy: SortPeopleBy): UsersReturn
   }
 
   type RootMutation {
