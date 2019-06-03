@@ -5,6 +5,8 @@ import { addCampaignsFilterToQuery } from './campaign'
 const firstName = 'lower("user"."first_name")'
 const lastName = 'lower("user"."last_name")'
 const created = '"user"."created_at"'
+const oldest = created
+const newest = '"user"."created_at" desc'
 
 function buildSelect(sortBy) {
   const userStar = '"user".*' 
@@ -17,7 +19,10 @@ function buildSelect(sortBy) {
     case 'LAST_NAME':
       fragmentArray = [userStar, lastName, firstName, created]
       break
-    case 'CREATED_AT':
+    case 'NEWEST':
+      fragmentArray = [userStar, created]
+      break
+    case 'OLDEST':
       fragmentArray = [userStar, created]
       break
     case 'FIRST_NAME':
@@ -36,14 +41,17 @@ function buildOrderBy(query, sortBy) {
     case 'COUNT_ONLY':
       return query
     case 'LAST_NAME':
-      fragmentArray = [lastName, firstName, created]
+      fragmentArray = [lastName, firstName, newest]
       break
-    case 'CREATED_AT':
-      fragmentArray = [created]
+    case 'NEWEST':
+      fragmentArray = [newest]
+      break
+    case 'OLDEST':
+      fragmentArray = [oldest]
       break
     case 'FIRST_NAME':
     default:
-      fragmentArray = [firstName, lastName, created]
+      fragmentArray = [firstName, lastName, newest]
       break
   }
 
