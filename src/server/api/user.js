@@ -2,8 +2,8 @@ import { mapFieldsToModel } from './lib/utils'
 import { r, User, cacheableData } from '../models'
 import { addCampaignsFilterToQuery } from './campaign'
 
-const firstName = 'lower("user"."first_name")'
-const lastName = 'lower("user"."last_name")'
+const firstName = '"user"."first_name"'
+const lastName = '"user"."last_name"'
 const created = '"user"."created_at"'
 const oldest = created
 const newest = '"user"."created_at" desc'
@@ -17,17 +17,17 @@ function buildSelect(sortBy) {
     case 'COUNT_ONLY':
       return r.knex.countDistinct('user.id')
     case 'LAST_NAME':
-      fragmentArray = [userStar, lastName, firstName, created]
+      fragmentArray = [userStar]
       break
     case 'NEWEST':
-      fragmentArray = [userStar, created]
+      fragmentArray = [userStar]
       break
     case 'OLDEST':
-      fragmentArray = [userStar, created]
+      fragmentArray = [userStar]
       break
     case 'FIRST_NAME':
     default:
-      fragmentArray = [userStar, firstName, lastName, created]
+      fragmentArray = [userStar]
       break
   }
 
