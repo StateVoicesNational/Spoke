@@ -47,15 +47,21 @@ class AdminPersonList extends React.Component {
     display: 'Last Name',
     value: 'LAST_NAME'
   }
-  CREATED_AT_SORT = {
-    display: 'Created At',
-    value: 'CREATED_AT'
+  NEWEST_SORT = {
+    display: 'Newest',
+    value: 'NEWEST'
+  }
+
+  OLDEST_SORT = {
+    display: 'Oldest',
+    value: 'OLDEST'
   }
 
   SORTS = [
     this.FIRST_NAME_SORT,
     this.LAST_NAME_SORT,
-    this.CREATED_AT_SORT
+    this.NEWEST_SORT,
+    this.OLDEST_SORT
   ]
 
   handleFilterChange = (campaignId) => {
