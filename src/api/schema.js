@@ -178,7 +178,8 @@ const rootSchema = gql`
   enum SortPeopleBy {
     FIRST_NAME
     LAST_NAME
-    CREATED_AT
+    NEWEST
+    OLDEST
   } 
 
   type RootQuery {
