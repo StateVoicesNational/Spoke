@@ -7,7 +7,7 @@ import { organizationCache } from '../models/cacheable_queries/organization'
 
 import { gzip, log, makeTree } from '../../lib'
 import { applyScript } from '../../lib/scripts'
-import { assignTexters, exportCampaign, loadContactsFromDataWarehouse, uploadContacts } from '../../workers/jobs'
+import { assignTexters, exportCampaign, importScript, loadContactsFromDataWarehouse, uploadContacts } from '../../workers/jobs'
 import {
   Assignment,
   Campaign,
@@ -1151,6 +1151,39 @@ const rootMutations = {
         )
 
       return await reassignConversations(campaignIdContactIdsMap, campaignIdMessagesIdsMap, newTexterUserId)
+    },
+    importCampaignScript: async (_, {
+      campaignId,
+      url
+    }, {
+      loaders
+    }) => {
+      const campaign = await loaders.campaign.load(campaignId)
+      if (campaign.is_started || campaign.is_archived) {
+        throw new GraphQLError('Cannot import a campaign script for a campaign that is started or archived')
+      }
+
+      const compressedString = await gzip(JSON.stringify({
+        campaignId,
+        url
+      }))
+      const job = await JobRequest.save({
+        queue_name: `${campaignId}:import_script`,
+        job_type: 'import_script',
+        locks_queue: true,
+        assigned: JOBS_SAME_PROCESS, // can get called immediately, below
+        campaign_id: campaignId,
+        // NOTE: stringifying because compressedString is a binary buffer
+        payload: compressedString.toString('base64')
+      })
+
+      const jobId = job.id
+
+      if (JOBS_SAME_PROCESS) {
+        importScript(job)
+      }
+
+      return jobId
     }
   }
 }
@@ -1260,9 +1293,9 @@ const rootResolvers = {
       await accessRequired(user, organizationId, 'SUPERVOLUNTEER')
       return getCampaigns(organizationId, cursor, campaignsFilter)
     },
-    people: async (_, { organizationId, cursor, campaignsFilter, role }, { user }) => {
+    people: async (_, { organizationId, cursor, campaignsFilter, role, sortBy }, { user }) => {
       await accessRequired(user, organizationId, 'SUPERVOLUNTEER')
-      return getUsers(organizationId, cursor, campaignsFilter, role)
+      return getUsers(organizationId, cursor, campaignsFilter, role, sortBy)
     }
   }
 }

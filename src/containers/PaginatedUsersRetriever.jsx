@@ -5,17 +5,15 @@ import { withRouter } from 'react-router'
 import loadData from './hoc/load-data'
 
 export class PaginatedUsersRetriever extends Component {
-  constructor(props) {
-    super(props)
-
-    this.state = { offset: 0 }
-  }
-
   componentDidMount() {
     this.handleUsersReceived()
   }
 
   componentDidUpdate(prevProps) {
+    if (this.props.forceUpdateTime !== prevProps.forceUpdateTime) {
+      this.props.users.refetch()
+      return
+    }
     this.handleUsersReceived()
   }
 
@@ -67,11 +65,13 @@ const mapQueriesToProps = ({ ownProps }) => ({
         $organizationId: String!
         $cursor: OffsetLimitCursor
         $campaignsFilter: CampaignsFilter
+        $sortBy: SortPeopleBy
         ) {
             people(
                 organizationId: $organizationId
                 cursor: $cursor
                 campaignsFilter: $campaignsFilter
+                sortBy: $sortBy
             ) {
                 ...on PaginatedUsers {
                     pageInfo {
@@ -82,6 +82,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
                     users {
                         id
                         displayName
+                        email
                         roles(organizationId: $organizationId)
                     }
                 }
@@ -91,7 +92,8 @@ const mapQueriesToProps = ({ ownProps }) => ({
     variables: {
       cursor: { offset: 0, limit: ownProps.pageSize },
       organizationId: ownProps.organizationId,
-      campaignsFilter: ownProps.campaignsFilter
+      campaignsFilter: ownProps.campaignsFilter,
+      sortBy: ownProps.sortBy || 'FIRST_NAME'
     },
     forceFetch: true
   }
@@ -103,9 +105,10 @@ PaginatedUsersRetriever.propTypes = {
     isArchived: PropTypes.bool,
     campaignId: PropTypes.number
   }),
+  sortBy: PropTypes.string,
   onUsersReceived: PropTypes.func.isRequired,
-  pageSize: PropTypes.number.isRequired
+  pageSize: PropTypes.number.isRequired,
+  forceUpdateTime: PropTypes.number
 }
 
 export default loadData(withRouter(PaginatedUsersRetriever), { mapQueriesToProps })
-

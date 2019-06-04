@@ -35,6 +35,8 @@ const dbInteractionSteps = async (id) => {
   const allSteps = await r.table('interaction_step')
     .getAll(id, { index: 'campaign_id' })
     .filter({ is_deleted: false })
+    .orderBy('id')
+    
   return assembleAnswerOptions(allSteps)
 }
 
