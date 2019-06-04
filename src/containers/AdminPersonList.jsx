@@ -20,6 +20,8 @@ import gql from 'graphql-tag'
 import { dataTest } from '../lib/attributes'
 import LoadingIndicator from '../components/LoadingIndicator'
 import PaginatedUsersRetriever from './PaginatedUsersRetriever'
+import { DateTime } from 'timezonecomplete'
+import { DeviceBatteryUnknown } from 'material-ui/svg-icons';
 
 class AdminPersonList extends React.Component {
 
@@ -35,7 +37,8 @@ class AdminPersonList extends React.Component {
       userEdit: false,
       passwordResetHash: '',
       sortBy: this.FIRST_NAME_SORT.value,
-      people: []
+      people: [],
+      forceUpdateTime: Date.now()
     }
   }
 
@@ -100,12 +103,16 @@ class AdminPersonList extends React.Component {
   }
 
   editUser(userId) {
-    this.setState({ userEdit: userId })
+    this.setState({ 
+      userEdit: userId
+    })
   }
 
   updateUser() {
-    this.setState({ userEdit: false })
-    this.props.personData.refetch()
+    this.setState({ 
+      userEdit: false,
+      forceUpdateTime: Date.now()
+    })
   }
 
   async resetPassword(userId) {
@@ -143,10 +150,10 @@ class AdminPersonList extends React.Component {
     <DropDownMenu
       value={this.state.sortBy}
       onChange={this.handleSortByChanged}
-      >
+    >
       {this.SORTS.map((sort) => (
         <MenuItem
-          value ={sort.value}
+          value={sort.value}
           key={sort.value}
           primaryText={'Sort by ' + sort.display}
         />
@@ -224,6 +231,7 @@ class AdminPersonList extends React.Component {
           sortBy={this.state.sortBy}
           onUsersReceived={this.handlePeopleReceived}
           pageSize={1000}
+          forceUpdateTime={this.state.forceUpdateTime}
         />
         {this.renderCampaignList()}
         {this.renderSortBy()}
