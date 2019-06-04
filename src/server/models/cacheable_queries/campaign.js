@@ -34,6 +34,7 @@ const dbInteractionSteps = async (id) => {
   return r.table('interaction_step')
     .getAll(id, { index: 'campaign_id' })
     .filter({ is_deleted: false })
+    .orderBy('id')
 }
 
 const clear = async (id) => {
