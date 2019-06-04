@@ -17,13 +17,7 @@ import HelpIconOutline from 'material-ui/svg-icons/action/help-outline'
 import Form from 'react-formal'
 import GSForm from './forms/GSForm'
 import yup from 'yup'
-import {
-  sortInteractionSteps,
-  getInteractionPath,
-  getChildren,
-  findParent,
-  makeTree
-} from '../lib'
+import { makeTree } from '../lib'
 import { dataTest } from '../lib/attributes'
 
 const styles = {
