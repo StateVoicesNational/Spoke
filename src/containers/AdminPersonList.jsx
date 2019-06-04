@@ -20,8 +20,6 @@ import gql from 'graphql-tag'
 import { dataTest } from '../lib/attributes'
 import LoadingIndicator from '../components/LoadingIndicator'
 import PaginatedUsersRetriever from './PaginatedUsersRetriever'
-import { DateTime } from 'timezonecomplete'
-import { DeviceBatteryUnknown } from 'material-ui/svg-icons';
 
 class AdminPersonList extends React.Component {
 
