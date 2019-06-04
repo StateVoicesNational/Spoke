@@ -138,6 +138,7 @@
     "request": "^2.81.0",
     "rethink-knex-adapter": "^0.4.17",
     "rollbar": "^0.6.2",
+    "serve-favicon": "^2.5.0",
     "thinky": "^2.3.3",
     "timezonecomplete": "^5.5.0",
     "twilio": "^2.11.0",
