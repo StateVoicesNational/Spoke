@@ -5,12 +5,6 @@ import { withRouter } from 'react-router'
 import loadData from './hoc/load-data'
 
 export class PaginatedUsersRetriever extends Component {
-  constructor(props) {
-    super(props)
-
-    this.state = { offset: 0 }
-  }
-
   componentDidMount() {
     this.handleUsersReceived()
   }
