@@ -13,6 +13,9 @@ import { getContext,
   setupTest,
   cleanupTest } from './test_helpers'
 import { makeExecutableSchema } from 'graphql-tools'
+import app from '../src/server'
+import request from 'supertest'
+
 
 const mySchema = makeExecutableSchema({
   typeDefs: schema,
@@ -443,5 +446,15 @@ describe('Campaign', () => {
       }
     })
 
+  })
+})
+
+const server = request(app)
+
+describe('Express server', () => {
+  test('serves a favicon for this kind of request', async () => {
+    const response = await server.get('/favicon.ico')
+    expect(response.statusCode).toEqual(200)
+    expect(response.type).toEqual('image/x-icon')
   })
 })
