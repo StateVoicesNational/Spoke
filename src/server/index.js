@@ -1,6 +1,7 @@
 import 'babel-polyfill'
 import bodyParser from 'body-parser'
 import express from 'express'
+import favicon from 'serve-favicon'
 import appRenderer from './middleware/app-renderer'
 import { graphqlExpress, graphiqlExpress } from 'apollo-server-express'
 import { makeExecutableSchema, addMockFunctionsToSchema } from 'graphql-tools'
@@ -21,6 +22,7 @@ import { runMigrations } from '../migrations'
 import { setupUserNotificationObservers } from './notifications'
 import { TwimlResponse } from 'twilio'
 import { existsSync } from 'fs'
+import path from 'path'
 
 process.on('uncaughtException', (ex) => {
   log.error(ex)
@@ -55,6 +57,9 @@ const port = process.env.DEV_APP_PORT || process.env.PORT
 
 // Don't rate limit heroku
 app.enable('trust proxy')
+
+//serve favicon
+app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')))
 
 // Serve static assets
 if (existsSync(process.env.ASSETS_DIR)) {
