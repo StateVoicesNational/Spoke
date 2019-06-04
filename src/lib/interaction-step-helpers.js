@@ -91,3 +91,25 @@ export function makeTree(interactionSteps, id = null) {
     })
   }
 }
+
+export function assembleAnswerOptions(allInteractionSteps) {
+  // creates recursive array required for the graphQL query with 'answerOptions' key
+  const interactionStepsCopy = allInteractionSteps.map(
+    is => ({...is, answerOptions: []}))
+  allInteractionSteps.forEach(interactionStep => {
+    if (interactionStep.parent_interaction_id) {
+      const [parentStep] = interactionStepsCopy.filter(
+        par => (par.id === interactionStep.parent_interaction_id))
+      if (parentStep) {
+        parentStep.answerOptions.push({
+          nextInteractionStep: interactionStep,
+          value: interactionStep.answer_option,
+          action: interactionStep.answer_actions,
+          interaction_step_id: interactionStep.id,
+          parent_interaction_step: interactionStep.parent_interaction_id
+        })
+      }
+    }
+  })
+  return interactionStepsCopy
+}

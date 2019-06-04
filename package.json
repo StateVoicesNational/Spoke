@@ -9,6 +9,7 @@
   },
   "scripts": {
     "test": "jest --runInBand --forceExit",
+    "test-cache": "REDIS_FAKE=1 jest --runInBand --forceExit",
     "test-e2e": "jest --runInBand --config jest.config.e2e.js",
     "test-sqlite": "jest --runInBand --config jest.config.sqlite.js",
     "test-coverage": "jest --coverage",

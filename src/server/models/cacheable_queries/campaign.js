@@ -1,5 +1,6 @@
-import { r, Campaign } from '../../models'
-import { organizationCache } from './organization'
+import { r, loaders, Campaign } from '../../models'
+import { modelWithExtraProps } from './lib'
+import { assembleAnswerOptions } from '../../../lib/interaction-step-helpers'
 
 // This should be cached data for a campaign that will not change
 // based on assignments or texter actions
@@ -18,7 +19,7 @@ import { organizationCache } from './organization'
 // * organization metadata (saved in organization.js instead)
 // * campaignCannedResponses (saved in canned-responses.js instead)
 
-const cacheKey = (id) => `${process.env.CACHE_PREFIX | ''}campaign-${id}`
+const cacheKey = (id) => `${process.env.CACHE_PREFIX || ''}campaign-${id}`
 
 const dbCustomFields = async (id) => {
   const campaignContacts = await r.table('campaign_contact')
@@ -31,36 +32,60 @@ const dbCustomFields = async (id) => {
 }
 
 const dbInteractionSteps = async (id) => {
-  return r.table('interaction_step')
+  const allSteps = await r.table('interaction_step')
     .getAll(id, { index: 'campaign_id' })
     .filter({ is_deleted: false })
+  return assembleAnswerOptions(allSteps)
 }
 
-const clear = async (id) => {
+const dbContactTimezones = async (id) => (
+  (await r.knex('campaign_contact')
+   .where('campaign_id', id)
+   .distinct('timezone_offset')
+   .select())
+    .map(contact => contact.timezone_offset)
+)
+
+const clear = async (id, campaign) => {
   if (r.redis) {
+    // console.log('clearing campaign cache')
     await r.redis.delAsync(cacheKey(id))
   }
+  loaders.campaign.clear(id)
 }
 
 const loadDeep = async (id) => {
+  // console.log('load campaign deep', id)
   if (r.redis) {
     const campaign = await Campaign.get(id)
+    if (Array.isArray(campaign) && campaign.length === 0) {
+      console.error('NO CAMPAIGN FOUND')
+      return {}
+    }
     if (campaign.is_archived) {
+      // console.log('campaign is_archived')
       // do not cache archived campaigns
-      await clear(id)
+      loaders.campaign.clear(id)
       return campaign
     }
+    // console.log('campaign loaddeep', campaign)
     campaign.customFields = await dbCustomFields(id)
     campaign.interactionSteps = await dbInteractionSteps(id)
+    campaign.contactTimezones = await dbContactTimezones(id)
+    // cache userIds for all assignments
+    // console.log('loaded deep campaign', JSON.stringify(campaign, null, 2))
     // We should only cache organization data
     // if/when we can clear it on organization data changes
     // campaign.organization = await organizationCache.load(campaign.organization_id)
-
+    // console.log('campaign loaddeep', campaign, JSON.stringify(campaign))
     await r.redis.multi()
       .set(cacheKey(id), JSON.stringify(campaign))
-      .expire(cacheKey(id), 86400)
+      .expire(cacheKey(id), 43200)
       .execAsync()
   }
+  // console.log('clearing campaign', id, typeof id, loaders.campaign)
+  loaders.campaign.clear(String(id))
+  loaders.campaign.clear(Number(id))
   return null
 }
 
@@ -84,26 +109,30 @@ const currentEditors = async (campaign, user) => {
   return editors.map(editor => editor[0].split('~')[1]).join(', ')
 }
 
-export const campaignCache = {
+const campaignCache = {
   clear,
-  load: async(id) => {
+  load: async (id) => {
+    // console.log('campaign cache load', id)
     if (r.redis) {
       let campaignData = await r.redis.getAsync(cacheKey(id))
+      // console.log('pre campaign cache', campaignData)
       if (!campaignData) {
+        // console.log('no campaigndata', id)
         const campaignNoCache = await loadDeep(id)
         if (campaignNoCache) {
+          // not found in db either
           return campaignNoCache
         }
         campaignData = await r.redis.getAsync(cacheKey(id))
+        // console.log('new campaign data', campaignData)
       }
       if (campaignData) {
         const campaignObj = JSON.parse(campaignData)
-        const { customFields, interactionSteps } = campaignObj
-        delete campaignObj.customFields
-        delete campaignObj.interactionSteps
-        const campaign = new Campaign(campaignObj)
-        campaign.customFields = customFields
-        campaign.interactionSteps = interactionSteps
+        // console.log('campaign cache', cacheKey(id), campaignObj, campaignData)
+        const campaign = modelWithExtraProps(
+          campaignObj,
+          Campaign,
+          ['customFields', 'interactionSteps', 'contactTimezones'])
         return campaign
       }
     }
@@ -114,3 +143,5 @@ export const campaignCache = {
   dbCustomFields,
   dbInteractionSteps
 }
+
+export default campaignCache
