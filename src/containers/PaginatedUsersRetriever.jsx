@@ -5,17 +5,15 @@ import { withRouter } from 'react-router'
 import loadData from './hoc/load-data'
 
 export class PaginatedUsersRetriever extends Component {
-  constructor(props) {
-    super(props)
-
-    this.state = { offset: 0 }
-  }
-
   componentDidMount() {
     this.handleUsersReceived()
   }
 
   componentDidUpdate(prevProps) {
+    if (this.props.forceUpdateTime !== prevProps.forceUpdateTime) {
+      this.props.users.refetch()
+      return
+    }
     this.handleUsersReceived()
   }
 
@@ -109,8 +107,8 @@ PaginatedUsersRetriever.propTypes = {
   }),
   sortBy: PropTypes.string,
   onUsersReceived: PropTypes.func.isRequired,
-  pageSize: PropTypes.number.isRequired
+  pageSize: PropTypes.number.isRequired,
+  forceUpdateTime: PropTypes.number
 }
 
 export default loadData(withRouter(PaginatedUsersRetriever), { mapQueriesToProps })
-
