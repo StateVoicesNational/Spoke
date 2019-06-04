@@ -11,7 +11,6 @@ import userCache from './user'
 const cacheableData = {
   assignment: assignmentCache,
   campaign: campaignCache,
-  campaignContact: campaignContactCache,
   cannedResponse: cannedResponseCache,
   message: messageCache,
   optOut: optOutCache,

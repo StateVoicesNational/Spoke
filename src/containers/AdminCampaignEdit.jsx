@@ -68,6 +68,13 @@ const campaignInfoFragment = `
   cacheable
 `
 
+export const campaignDataQuery =
+  gql`query getCampaign($campaignId: String!) {
+        campaign(id: $campaignId) {
+          ${campaignInfoFragment}
+        }
+      }`
+
 class AdminCampaignEdit extends React.Component {
   constructor(props) {
     super(props)
@@ -668,11 +675,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
     pollInterval: 60000
   },
   campaignData: {
-    query: gql`query getCampaign($campaignId: String!) {
-      campaign(id: $campaignId) {
-        ${campaignInfoFragment}
-      }
-    }`,
+    query: campaignDataQuery,
     variables: {
       campaignId: ownProps.params.campaignId
     },

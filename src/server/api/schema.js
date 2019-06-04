@@ -173,6 +173,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
   if (campaign.hasOwnProperty('interactionSteps')) {
     await accessRequired(user, organizationId, 'SUPERVOLUNTEER', /* superadmin*/ true)
     await updateInteractionSteps(id, [campaign.interactionSteps], origCampaignRecord)
+    await cacheableData.campaign.clear(id)
   }
 
   if (campaign.hasOwnProperty('cannedResponses')) {
@@ -657,7 +658,7 @@ const rootMutations = {
       await accessRequired(user, campaign.organization_id, 'ADMIN')
       campaign.is_archived = false
       await campaign.save()
-      await cacheableData.campaign.reload(id)
+      await cacheableData.campaign.clear(id)
       return campaign
     },
     archiveCampaign: async (_, { id }, { user, loaders }) => {
@@ -681,9 +682,10 @@ const rootMutations = {
       )))
 
       campaigns.forEach(campaign => { campaign.is_archived = true })
-      await Promise.all(campaigns.map(campaign => (
+      await Promise.all(campaigns.map(campaign => {
         campaign.save()
-      )))
+        cacheableData.campaign.clear(id)
+      }))
       return campaigns
     },
     startCampaign: async (_, { id }, { user, loaders, remainingMilliseconds }) => {
