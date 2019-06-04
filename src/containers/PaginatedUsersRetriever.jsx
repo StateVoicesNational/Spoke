@@ -16,6 +16,10 @@ export class PaginatedUsersRetriever extends Component {
   }
 
   componentDidUpdate(prevProps) {
+    if (this.props.forceUpdateTime !== prevProps.forceUpdateTime) {
+      this.props.users.refetch()
+      return
+    }
     this.handleUsersReceived()
   }
 
@@ -109,8 +113,8 @@ PaginatedUsersRetriever.propTypes = {
   }),
   sortBy: PropTypes.string,
   onUsersReceived: PropTypes.func.isRequired,
-  pageSize: PropTypes.number.isRequired
+  pageSize: PropTypes.number.isRequired,
+  forceUpdateTime: PropTypes.number
 }
 
 export default loadData(withRouter(PaginatedUsersRetriever), { mapQueriesToProps })
-
