@@ -82,10 +82,10 @@ const loadDeep = async (id) => {
       .set(cacheKey(id), JSON.stringify(campaign))
       .expire(cacheKey(id), 43200)
       .execAsync()
-    // console.log('clearing campaign', id, typeof id, loaders.campaign)
-    loaders.campaign.clear(String(id))
-    loaders.campaign.clear(Number(id))
   }
+  // console.log('clearing campaign', id, typeof id, loaders.campaign)
+  loaders.campaign.clear(String(id))
+  loaders.campaign.clear(Number(id))
   return null
 }
 
@@ -110,6 +110,7 @@ const currentEditors = async (campaign, user) => {
 }
 
 const campaignCache = {
+  clear,
   load: async (id) => {
     // console.log('campaign cache load', id)
     if (r.redis) {

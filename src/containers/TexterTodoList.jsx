@@ -102,9 +102,7 @@ TexterTodoList.propTypes = {
   data: PropTypes.object
 }
 
-const mapQueriesToProps = ({ ownProps }) => ({
-  data: {
-    query: gql`query getTodos($organizationId: String!, $needsMessageFilter: ContactsFilter, $needsResponseFilter: ContactsFilter, $badTimezoneFilter: ContactsFilter, $completedConvosFilter: ContactsFilter, $pastMessagesFilter: ContactsFilter, $skippedMessagesFilter: ContactsFilter) {
+export const dataQuery = gql`query getTodos($organizationId: String!, $needsMessageFilter: ContactsFilter, $needsResponseFilter: ContactsFilter, $badTimezoneFilter: ContactsFilter, $completedConvosFilter: ContactsFilter, $pastMessagesFilter: ContactsFilter, $skippedMessagesFilter: ContactsFilter) {
       currentUser {
         id
         terms
@@ -130,7 +128,11 @@ const mapQueriesToProps = ({ ownProps }) => ({
           skippedMessagesCount: contactsCount(contactsFilter: $skippedMessagesFilter)
         }
       }
-    }`,
+    }`
+
+const mapQueriesToProps = ({ ownProps }) => ({
+  data: {
+    query: dataQuery,
     variables: {
       organizationId: ownProps.params.organizationId,
       needsMessageFilter: {

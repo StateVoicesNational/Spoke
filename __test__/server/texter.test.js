@@ -79,7 +79,7 @@ it('should send an inital message to test contacts', async () => {
   const campaignContact = messageResult.data.sendMessage
 
   // These things are expected to be returned from the sendMessage mutation
-  console.log('CAMPAIGNCONTACT', messageResult.data, campaignContact)
+  // console.log('CAMPAIGNCONTACT', messageResult.data, campaignContact)
   expect(campaignContact.messageStatus).toBe('messaged')
   expect(campaignContact.messages.length).toBe(1)
   expect(campaignContact.messages[0].text).toBe(message.text)
@@ -144,7 +144,6 @@ it('should be able to receive a response and reply (using fakeService)', async (
   // wait for fakeservice to autorespond
   await waitForExpect(async () => {
     const dbMessage = await r.knex('message')
-    console.log('DBMESSAGE', dbMessage)
     expect(dbMessage.length).toEqual(2)
     expect(dbMessage[1]).toEqual(
       expect.objectContaining({
