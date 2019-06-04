@@ -28,9 +28,8 @@ jest.mock('../src/containers/hoc/load-data')
 *  The query it returns will be that of the requested component, but
 *  the mutations will be merged from the component and its children.
 */
-export function getGql(componentPath, props) {
+export function getGql(componentPath, props, dataKey='data') {
   require(componentPath) // eslint-disable-line
-
   const { mapQueriesToProps } = _.last(loadData.mock.calls)[1]
 
   const mutations = loadData.mock.calls.reduce((acc, mapping) => {
@@ -49,8 +48,8 @@ export function getGql(componentPath, props) {
 
   let query
   if (mapQueriesToProps) {
-    const data = mapQueriesToProps({ ownProps: props }).data
-    query = [data.query.loc.source.body, data.variables]
+    const data = mapQueriesToProps({ ownProps: props })
+    query = [data[dataKey].query.loc.source.body, data[dataKey].variables]
   }
 
   return { query, mutations }
@@ -95,14 +94,18 @@ const mySchema = makeExecutableSchema({
   allowUndefinedInResolve: true
 })
 
-const rootValue = {}
-
 export async function runGql(query, vars, user) {
+  const rootValue = {}
   const context = getContext({ user })
   return await graphql(mySchema, query, rootValue, context, vars)
 }
 
+export async function runComponentGql(componentDataQuery, queryVars, user) {
+  return await runGql(componentDataQuery.loc.source.body, queryVars, user)
+}
+
 export async function createInvite() {
+  const rootValue = {}
   const inviteQuery = `mutation {
     createInvite(invite: {is_valid: true}) {
       id
@@ -113,6 +116,7 @@ export async function createInvite() {
 }
 
 export async function createOrganization(user, invite) {
+  const rootValue = {}
   const name = 'Testy test organization'
   const userId = user.id
   const inviteId = invite.data.createInvite.id
@@ -134,8 +138,8 @@ export async function createOrganization(user, invite) {
   return await graphql(mySchema, orgQuery, rootValue, context, variables)
 }
 
-export async function createCampaign(user, organization) {
-  const title = 'test campaign'
+export async function createCampaign(user, organization, title='test campaign') {
+  const rootValue = {}
   const description = 'test description'
   const organizationId = organization.data.createOrganization.id
   const context = getContext({ user })
@@ -156,7 +160,34 @@ export async function createCampaign(user, organization) {
   return ret.data.createCampaign
 }
 
+export async function saveCampaign(user, campaign, title='test campaign') {
+  const rootValue = {}
+  const description = 'test description'
+  const organizationId = campaign.organizationId
+  const context = getContext({ user })
+
+  const campaignQuery =
+  `mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {
+    editCampaign(id: $campaignId, campaign: $campaign) {
+      id
+      title
+    }
+  }`
+
+  const variables = {
+    campaign: {
+      title,
+      description,
+      organizationId
+    },
+    campaignId: campaign.id
+  }
+  const ret = await graphql(mySchema, campaignQuery, rootValue, context, variables)
+  return ret.data.editCampaign
+}
+
 export async function createTexter(organization) {
+  const rootValue = {}
   const user = await createUser({
     auth0_id: 'test456',
     first_name: 'TestTexterFirst',
@@ -179,6 +210,7 @@ export async function createTexter(organization) {
 }
 
 export async function assignTexter(admin, user, campaign) {
+  const rootValue = {}
   const campaignEditQuery = `
   mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {
     editCampaign(id: $campaignId, campaign: $campaign) {
@@ -202,39 +234,47 @@ export async function assignTexter(admin, user, campaign) {
   return await graphql(mySchema, campaignEditQuery, rootValue, context, variables)
 }
 
-export async function createScript(admin, campaign) {
+export function buildScript(steps=2) {
+  const createSteps = (step, max) => {
+    if (max <= step) {
+      return []
+    }
+    return [{
+      id: 'new'+step,
+      questionText: 'hmm' + step,
+      script: (step === 1 ? '{lastName}' : (
+        step === 0 ? 'autorespond {zip}' : ('Step Script ' + step))),
+      answerOption: 'hmm' + step,
+      answerActions: '',
+      parentInteractionId: (step > 0 ? ('new' + (step - 1)) : null),
+      isDeleted: false,
+      interactionSteps: createSteps(step+1, max)
+    }]
+  }
+  return createSteps(0, steps)
+}
+
+export async function createScript(admin, campaign, interactionSteps, steps=2) {
+  const rootValue = {}
   const campaignEditQuery = `
   mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {
     editCampaign(id: $campaignId, campaign: $campaign) {
       id
     }
   }`
+  // function to create a recursive set of steps of arbitrary depth
+  let builtInteractionSteps
+
+  if (!interactionSteps) {
+    builtInteractionSteps = buildScript(steps)
+  }
+
   const context = getContext({ user: admin })
   const campaignId = campaign.id
   const variables = {
     campaignId,
     campaign: {
-      interactionSteps: {
-        id: '1',
-        questionText: 'Test',
-        script: '{zip}',
-        answerOption: '',
-        answerActions: '',
-        parentInteractionId: null,
-        isDeleted: false,
-        interactionSteps: [
-          {
-            id: '2',
-            questionText: 'hmm',
-            script: '{lastName}',
-            answerOption: 'hmm',
-            answerActions: '',
-            parentInteractionId: '1',
-            isDeleted: false,
-            interactionSteps: []
-          }
-        ]
-      }
+      interactionSteps: (interactionSteps || builtInteractionSteps[0])
     }
   }
   return await graphql(mySchema, campaignEditQuery, rootValue, context, variables)
@@ -243,6 +283,7 @@ export async function createScript(admin, campaign) {
 
 jest.mock('../src/server/mail')
 export async function startCampaign(admin, campaign) {
+  const rootValue = {}
   const startCampaignQuery = `mutation startCampaign($campaignId: String!) {
     startCampaign(id: $campaignId) {
       id
