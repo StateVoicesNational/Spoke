@@ -1,4 +1,4 @@
-import { r, Migrations } from '../server/models'
+import { r, Migrations, CannedResponse } from '../server/models'
 import { log } from '../lib'
 
 // To add a migrations, add a new migration object to the
@@ -183,7 +183,17 @@ const migrations = [
       console.log('added creator_id field to campaign')
     }
   },
-  { auto: true, // 15
+  {
+    auto: true, // 15
+    date: '2019-05-13',
+    migrate: async () => {
+      console.log('setting sequence value for canned_response')
+      const maxId = (await r.knex('canned_response').max('id').first()).max || 0
+      await r.knex.raw(`ALTER SEQUENCE canned_response_id_seq RESTART WITH ${maxId + 1}`)
+      console.log(`set sequence canned_response_id_seq to ${maxId + 1}`)
+    }
+  },
+  { auto: true, // 16
     date: '2018-09-16',
     migrate: async () => {
       await r.knex.schema.alterTable('message', (table) => {
@@ -213,7 +223,7 @@ const migrations = [
     }
   },
   {
-    auto: true, // 16
+    auto: true, // 17
     date: '2018-09-25', 
     migrate: async () => {
       const query = 'UPDATE message ' +
@@ -225,7 +235,7 @@ const migrations = [
     }
   },
   {
-    auto: true, // 17
+    auto: true, // 18
     date: '2019-02-24',
     migrate: async () => {
       await r.knex.schema.alterTable('message', (table) => {
