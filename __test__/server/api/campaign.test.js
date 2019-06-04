@@ -1,18 +1,14 @@
 /* eslint-disable no-unused-expressions, consistent-return */
 import { r } from '../../../src/server/models/'
-import { resolvers as campaignResolvers } from '../../../src/server/api/campaign'
 import { dataQuery as TexterTodoListQuery } from '../../../src/containers/TexterTodoList'
 import { dataQuery as TexterTodoQuery } from '../../../src/containers/TexterTodo'
 import { campaignDataQuery as AdminCampaignEditQuery } from '../../../src/containers/AdminCampaignEdit'
 import { makeTree } from '../../../src/lib'
 
 import {
-  runGql,
   setupTest,
   cleanupTest,
-  getGql,
   runComponentGql,
-  getContext,
   createUser,
   createInvite,
   createOrganization,
@@ -25,7 +21,6 @@ import {
   startCampaign,
   getCampaignContact
 } from '../../test_helpers'
-import waitForExpect from 'wait-for-expect'
 
 let testAdminUser
 let testInvite
@@ -67,7 +62,7 @@ it('save campaign data, edit it, make sure the last value', async () => {
 
   const organizationId = testOrganization.data.createOrganization.id
   let texterCampaignDataResults = await runComponentGql(TexterTodoListQuery,
-                                                        {organizationId: organizationId},
+                                                        { organizationId },
                                                         testTexterUser)
   // empty before we start the campaign
   expect(texterCampaignDataResults.data.currentUser.todos).toEqual([])
@@ -75,7 +70,7 @@ it('save campaign data, edit it, make sure the last value', async () => {
   // now we start and confirm that we can access it
   await startCampaign(testAdminUser, testCampaign)
   texterCampaignDataResults = await runComponentGql(TexterTodoListQuery,
-                                                    {organizationId: organizationId},
+                                                    { organizationId },
                                                     testTexterUser)
   expect(texterCampaignDataResults.data.currentUser.todos[0].campaign.title).toEqual('test campaign')
   expect(texterCampaignDataResults.data.currentUser.todos[0].campaign.description).toEqual('test description')
@@ -83,26 +78,25 @@ it('save campaign data, edit it, make sure the last value', async () => {
   // now we modify it, and confirm that it changes
 
   const savedCampaign = await saveCampaign(testAdminUser,
-                                           {id: testCampaign.id,
-                                            organizationId: organizationId},
+                                           { id: testCampaign.id,
+                                            organizationId },
                                            'test campaign new title')
   expect(savedCampaign.title).toEqual('test campaign new title')
 
   campaignDataResults = await runComponentGql(AdminCampaignEditQuery,
-                                              {campaignId: testCampaign.id},
+                                              { campaignId: testCampaign.id },
                                               testAdminUser)
 
   texterCampaignDataResults = await runComponentGql(TexterTodoListQuery,
-                                                    {organizationId: organizationId},
+                                                    { organizationId },
                                                     testTexterUser)
 
   expect(texterCampaignDataResults.data.currentUser.todos[0].campaign.title).toEqual('test campaign new title')
 })
 
 
-
 it('save campaign interaction steps, edit it, make sure the last value is set', async () => {
-  const scriptResult = await createScript(testAdminUser, testCampaign)
+  await createScript(testAdminUser, testCampaign)
   let campaignDataResults = await runComponentGql(AdminCampaignEditQuery,
                                                   { campaignId: testCampaign.id },
                                                   testAdminUser)
@@ -135,16 +129,15 @@ it('save campaign interaction steps, edit it, make sure the last value is set', 
   await startCampaign(testAdminUser, testCampaign)
   // now we start and confirm that we can access the script as a texter
 
-  const organizationId = testOrganization.data.createOrganization.id
   let texterCampaignDataResults = await runComponentGql(TexterTodoQuery,
-                                                        {
-                                                          contactsFilter: {
-                                                            messageStatus: 'needsMessage',
-                                                            isOptedOut: false,
-                                                            validTimezone: true
-                                                          },
-                                                          assignmentId: assignmentId
-                                                        },
+    {
+      contactsFilter: {
+        messageStatus: 'needsMessage',
+        isOptedOut: false,
+        validTimezone: true
+      },
+      assignmentId
+    },
                                                         testTexterUser)
   expect(
     texterCampaignDataResults.data.assignment.campaign.interactionSteps[0].script)
@@ -174,14 +167,14 @@ it('save campaign interaction steps, edit it, make sure the last value is set', 
     campaignDataResults.data.campaign.interactionSteps[1].questionText)
     .toEqual('hmm1 after campaign start')
   texterCampaignDataResults = await runComponentGql(TexterTodoQuery,
-                                                    {
-                                                      contactsFilter: {
-                                                        messageStatus: 'needsMessage',
-                                                        isOptedOut: false,
-                                                        validTimezone: true
-                                                      },
-                                                      assignmentId: assignmentId
-                                                    },
+    {
+      contactsFilter: {
+        messageStatus: 'needsMessage',
+        isOptedOut: false,
+        validTimezone: true
+      },
+      assignmentId
+    },
                                                     testTexterUser)
 
   expect(
