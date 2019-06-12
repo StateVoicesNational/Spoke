@@ -14,6 +14,7 @@ import {
   createOrganization,
   createCampaign,
   saveCampaign,
+  copyCampaign,
   createContact,
   createTexter,
   assignTexter,
@@ -186,4 +187,32 @@ it('save campaign interaction steps, edit it, make sure the last value is set', 
   expect(
     texterCampaignDataResults.data.assignment.campaign.interactionSteps[1].question.text)
     .toEqual('hmm1 after campaign start')
+
+  // COPIED CAMPAIGN
+  const copiedCampaign = await copyCampaign(testCampaign.id, testAdminUser)
+  expect(copiedCampaign.data.copyCampaign.id).not.toEqual(testCampaign.id)
+
+  const prevCampaignIsteps = campaignDataResults.data.campaign.interactionSteps
+  campaignDataResults = await runComponentGql(AdminCampaignEditQuery,
+                                              { campaignId: copiedCampaign.data.copyCampaign.id },
+                                              testAdminUser)
+  expect(
+    campaignDataResults.data.campaign.interactionSteps[0].script)
+    .toEqual('Hi {firstName}, please autorespond -- after campaign start')
+  expect(
+    campaignDataResults.data.campaign.interactionSteps[1].script)
+    .toEqual('third save after campaign start')
+  expect(
+    campaignDataResults.data.campaign.interactionSteps[1].questionText)
+    .toEqual('hmm1 after campaign start')
+
+  // make sure the copied steps are new ones
+  expect(
+    Number(campaignDataResults.data.campaign.interactionSteps[0].id))
+    .toBeGreaterThan(Number(prevCampaignIsteps[1].id))
+  expect(
+    Number(campaignDataResults.data.campaign.interactionSteps[1].id))
+    .toBeGreaterThan(Number(prevCampaignIsteps[1].id))
+
+
 })
