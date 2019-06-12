@@ -186,6 +186,18 @@ export async function saveCampaign(user, campaign, title='test campaign') {
   return ret.data.editCampaign
 }
 
+export async function copyCampaign(campaignId, user) {
+  const rootValue = {}
+  const query = `mutation copyCampaign($campaignId: String!) {
+    copyCampaign(id: $campaignId) {
+      id
+    }
+  }`
+  const context = getContext({ user })
+  return await graphql(mySchema, query, rootValue, context, { campaignId })
+}
+
+
 export async function createTexter(organization) {
   const rootValue = {}
   const user = await createUser({
