@@ -69,18 +69,21 @@ export async function createUser(
   return user
 }
 
-export async function createContact(campaign) {
+export async function createContacts(campaign, count=1) {
   const campaignId = campaign.id
-
-  const contact = new CampaignContact({
-    first_name: 'Ann',
-    last_name: 'Lewis',
-    cell: '5555555555',
-    zip: '12345',
-    campaign_id: campaignId
-  })
-  await contact.save()
-  return contact
+  const contacts = []
+  for (let i=0; i<count; i++) {
+    const contact = new CampaignContact({
+      first_name: `Ann${i}`,
+      last_name: `Lewis${i}`,
+      cell: '5555555555'.substr(String(count).length) + String(count),
+      zip: '12345',
+      campaign_id: campaignId
+    })
+    await contact.save()
+    contacts.push(contact)
+  }
+  return contacts
 }
 
 
@@ -244,6 +247,29 @@ export async function assignTexter(admin, user, campaign) {
     campaign: updateCampaign
   }
   return await graphql(mySchema, campaignEditQuery, rootValue, context, variables)
+}
+
+export async function sendMessage(campaignContactId, user, message) {
+  const rootValue = {}
+  const query = `
+    mutation sendMessage($message: MessageInput!, $campaignContactId: String!) {
+        sendMessage(message: $message, campaignContactId: $campaignContactId) {
+          id
+          messageStatus
+          messages {
+            id
+            createdAt
+            text
+            isFromContact
+          }
+        }
+      }`
+  const context = getContext({ user: user })
+  const variables = {
+    message,
+    campaignContactId
+  }
+  return await graphql(mySchema, query, rootValue, context, variables)
 }
 
 export function buildScript(steps=2) {

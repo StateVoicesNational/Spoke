@@ -15,12 +15,13 @@ import {
   createCampaign,
   saveCampaign,
   copyCampaign,
-  createContact,
+  createContacts,
   createTexter,
   assignTexter,
   createScript,
   startCampaign,
-  getCampaignContact
+  getCampaignContact,
+  sendMessage
 } from '../../test_helpers'
 
 let testAdminUser
@@ -28,7 +29,9 @@ let testInvite
 let testOrganization
 let testCampaign
 let testTexterUser
-let testContact
+let testTexterUser2
+let testContacts
+
 let assignmentId
 
 beforeEach(async () => {
@@ -38,10 +41,11 @@ beforeEach(async () => {
   testInvite = await createInvite()
   testOrganization = await createOrganization(testAdminUser, testInvite)
   testCampaign = await createCampaign(testAdminUser, testOrganization)
-  testContact = await createContact(testCampaign)
+  testContacts = await createContacts(testCampaign, 100)
   testTexterUser = await createTexter(testOrganization)
+  testTexterUser2 = await createTexter(testOrganization)
   await assignTexter(testAdminUser, testTexterUser, testCampaign)
-  const dbCampaignContact = await getCampaignContact(testContact.id)
+  const dbCampaignContact = await getCampaignContact(testContacts[0].id)
   assignmentId = dbCampaignContact.assignment_id
   // await createScript(testAdminUser, testCampaign)
   // await startCampaign(testAdminUser, testCampaign)
@@ -130,7 +134,8 @@ it('save campaign interaction steps, edit it, make sure the last value is set', 
   await startCampaign(testAdminUser, testCampaign)
   // now we start and confirm that we can access the script as a texter
 
-  let texterCampaignDataResults = await runComponentGql(TexterTodoQuery,
+  let texterCampaignDataResults = await runComponentGql(
+    TexterTodoQuery,
     {
       contactsFilter: {
         messageStatus: 'needsMessage',
@@ -139,7 +144,7 @@ it('save campaign interaction steps, edit it, make sure the last value is set', 
       },
       assignmentId
     },
-                                                        testTexterUser)
+    testTexterUser)
   expect(
     texterCampaignDataResults.data.assignment.campaign.interactionSteps[0].script)
     .toEqual('Hi {firstName}, please autorespond')
@@ -223,4 +228,65 @@ it('save campaign interaction steps, edit it, make sure the last value is set', 
   await compareToLater(copiedCampaign2.data.copyCampaign.id, campaign1Results.data.campaign.interactionSteps)
 
 
+})
+
+
+describe('Reassignments', async () => {
+  it('should allow reassignments before campaign start', async() => {
+    // - user gets assignment todos
+    // - assignments are changed in different ways (with different mutations)
+    //   - and the current assignments are verified
+    // - assign three texters 10 contacts each
+    // - reassign 5 from one to another
+    // - verify admin query texter counts are correct
+    expect(true).toEqual(true)
+  })
+
+
+  it('should allow reassignments after campaign start', async () => {
+    await createScript(testAdminUser, testCampaign)
+    await startCampaign(testAdminUser, testCampaign)
+    let texterCampaignDataResults = await runComponentGql(
+      TexterTodoQuery,
+      { contactsFilter: { messageStatus: 'needsMessage',
+                          isOptedOut: false,
+                          validTimezone: true },
+        assignmentId
+      },
+      testTexterUser)
+
+    console.log('texterCampaignDataResults', JSON.stringify(texterCampaignDataResults))
+    expect(texterCampaignDataResults.data.assignment.contacts.length).toEqual(100)
+    expect(texterCampaignDataResults.data.assignment.allContactsCount).toEqual(100)
+
+    // send some texts
+    for (let i=0; i<5; i++) {
+      const messageResult = await sendMessage(testContacts[i].id, testTexterUser,
+                                              { userId: testTexterUser.id,
+                                                contactNumber: testContacts[i].cell,
+                                                text: 'test text',
+                                                assignmentId })
+      console.log('messageResult', messageResult)
+    }
+    texterCampaignDataResults = await runComponentGql(
+      TexterTodoQuery,
+      { contactsFilter: { messageStatus: 'needsMessage',
+                          isOptedOut: false,
+                          validTimezone: true },
+        assignmentId
+      },
+      testTexterUser)
+    expect(texterCampaignDataResults.data.assignment.contacts.length).toEqual(95)
+    expect(texterCampaignDataResults.data.assignment.allContactsCount).toEqual(100)
+    // - reassign 5 from one to another
+    // using editCampaign
+    // using reassignCampaignContacts
+    // using bulkReassignCampaignContacts
+    // - verify that admin texter counts are correct
+    // - verify that texter counts are correct
+    // - reassign after some replies
+    // - verify that texter data is correct (e.g. empty contact info)
+    // - verify that admin texter counts are correct
+
+  })
 })
