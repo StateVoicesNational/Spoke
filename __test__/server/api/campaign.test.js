@@ -189,30 +189,38 @@ it('save campaign interaction steps, edit it, make sure the last value is set', 
     .toEqual('hmm1 after campaign start')
 
   // COPIED CAMPAIGN
-  const copiedCampaign = await copyCampaign(testCampaign.id, testAdminUser)
-  expect(copiedCampaign.data.copyCampaign.id).not.toEqual(testCampaign.id)
+  const copiedCampaign1 = await copyCampaign(testCampaign.id, testAdminUser)
+  // 2nd campaign to test against https://github.com/MoveOnOrg/Spoke/issues/854
+  const copiedCampaign2 = await copyCampaign(testCampaign.id, testAdminUser)
+  expect(copiedCampaign1.data.copyCampaign.id).not.toEqual(testCampaign.id)
 
   const prevCampaignIsteps = campaignDataResults.data.campaign.interactionSteps
-  campaignDataResults = await runComponentGql(AdminCampaignEditQuery,
-                                              { campaignId: copiedCampaign.data.copyCampaign.id },
-                                              testAdminUser)
-  expect(
-    campaignDataResults.data.campaign.interactionSteps[0].script)
-    .toEqual('Hi {firstName}, please autorespond -- after campaign start')
-  expect(
-    campaignDataResults.data.campaign.interactionSteps[1].script)
-    .toEqual('third save after campaign start')
-  expect(
-    campaignDataResults.data.campaign.interactionSteps[1].questionText)
-    .toEqual('hmm1 after campaign start')
+  const compareToLater = async (campaignId, prevCampaignIsteps) => {
+    const campaignDataResults = await runComponentGql(
+      AdminCampaignEditQuery, { campaignId: campaignId }, testAdminUser)
 
-  // make sure the copied steps are new ones
-  expect(
-    Number(campaignDataResults.data.campaign.interactionSteps[0].id))
-    .toBeGreaterThan(Number(prevCampaignIsteps[1].id))
-  expect(
-    Number(campaignDataResults.data.campaign.interactionSteps[1].id))
-    .toBeGreaterThan(Number(prevCampaignIsteps[1].id))
+    expect(
+      campaignDataResults.data.campaign.interactionSteps[0].script)
+      .toEqual('Hi {firstName}, please autorespond -- after campaign start')
+    expect(
+      campaignDataResults.data.campaign.interactionSteps[1].script)
+      .toEqual('third save after campaign start')
+    expect(
+      campaignDataResults.data.campaign.interactionSteps[1].questionText)
+      .toEqual('hmm1 after campaign start')
+
+    // make sure the copied steps are new ones
+    expect(
+      Number(campaignDataResults.data.campaign.interactionSteps[0].id))
+      .toBeGreaterThan(Number(prevCampaignIsteps[1].id))
+    expect(
+      Number(campaignDataResults.data.campaign.interactionSteps[1].id))
+      .toBeGreaterThan(Number(prevCampaignIsteps[1].id))
+    return campaignDataResults
+  }
+  const campaign1Results = await compareToLater(copiedCampaign1.data.copyCampaign.id, prevCampaignIsteps)
+  await compareToLater(copiedCampaign2.data.copyCampaign.id, prevCampaignIsteps)
+  await compareToLater(copiedCampaign2.data.copyCampaign.id, campaign1Results.data.campaign.interactionSteps)
 
 
 })
