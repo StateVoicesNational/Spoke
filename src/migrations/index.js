@@ -187,10 +187,13 @@ const migrations = [
     auto: true, // 14
     date: '2019-05-13',
     migrate: async () => {
-      console.log('setting sequence value for canned_response')
-      const maxId = (await r.knex('canned_response').max('id').first()).max || 0
-      await r.knex.raw(`ALTER SEQUENCE canned_response_id_seq RESTART WITH ${maxId + 1}`)
-      console.log(`set sequence canned_response_id_seq to ${maxId + 1}`)
+      // only postgres, since sqlite doesn't support this syntax
+      if (r.knex._context.client.config.client === 'pg') {
+        console.log('setting sequence value for canned_response')
+        const maxId = (await r.knex('canned_response').max('id').first()).max || 0
+        await r.knex.raw(`ALTER SEQUENCE canned_response_id_seq RESTART WITH ${maxId + 1}`)
+        console.log(`set sequence canned_response_id_seq to ${maxId + 1}`)
+      }
     }
   }
 
