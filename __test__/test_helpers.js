@@ -76,7 +76,7 @@ export async function createContacts(campaign, count=1) {
     const contact = new CampaignContact({
       first_name: `Ann${i}`,
       last_name: `Lewis${i}`,
-      cell: '5555555555'.substr(String(count).length) + String(count),
+      cell: '5555555555'.substr(String(i).length) + String(i),
       zip: '12345',
       campaign_id: campaignId
     })
@@ -224,7 +224,10 @@ export async function createTexter(organization) {
   return user
 }
 
-export async function assignTexter(admin, user, campaign) {
+export async function assignTexter(admin, user, campaign, assignments) {
+  // optional argument assignments could look like:
+  // [{id: userId1, needsMessageCount: 10}, {id: userId2, needsMessageCount: 100}]
+  // If a userId has an existing assignment, then, also include `contactsCount: <current>`
   const rootValue = {}
   const campaignEditQuery = `
   mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {
@@ -235,7 +238,7 @@ export async function assignTexter(admin, user, campaign) {
   const context = getContext({ user: admin })
   const updateCampaign = Object.assign({}, campaign)
   const campaignId = updateCampaign.id
-  updateCampaign.texters = [
+  updateCampaign.texters = assignments || [
     {
       id: user.id
     }
@@ -316,6 +319,27 @@ export async function createScript(admin, campaign, interactionSteps, steps=2) {
     }
   }
   return await graphql(mySchema, campaignEditQuery, rootValue, context, variables)
+}
+
+export async function createCannedResponses(admin, campaign, cannedResponses) {
+  // cannedResponses: {title, text}
+  const rootValue = {}
+  const campaignEditQuery = `
+  mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {
+    editCampaign(id: $campaignId, campaign: $campaign) {
+      id
+    }
+  }`
+  const context = getContext({ user: admin })
+  const campaignId = campaign.id
+  const variables = {
+    campaignId,
+    campaign: {
+      cannedResponses
+    }
+  }
+  return await graphql(mySchema, campaignEditQuery, rootValue, context, variables)
+
 }
 
 
