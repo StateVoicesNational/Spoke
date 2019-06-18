@@ -11,18 +11,24 @@
       "value": ""
     },
 
+    "PASSPORT_STRATEGY": {
+      "description": "Either 'auth0' or 'local' -- We recommend auth0 for production systems",
+      "required": true,
+      "value": "auth0"
+    },
+
     "AUTH0_DOMAIN": {
-      "description": "auth0 domain attached to auth0 account",
+      "description": "auth0 domain attached to auth0 account (if not using auth0, enter anything)",
       "required": true
     },
 
     "AUTH0_CLIENT_ID": {
-      "description": "auth0 client id attached to auth0 account",
+      "description": "auth0 client id attached to auth0 account (if not using auth0, enter anything)",
       "required": true
     },
 
     "AUTH0_CLIENT_SECRET": {
-      "description": "auth0 client secret attached to auth0 account",
+      "description": "auth0 client secret attached to auth0 account (if not using auth0, enter anything)",
       "required": true
     },
 

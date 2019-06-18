@@ -1,6 +1,6 @@
-# Development Guidelines
+# Development Guidelines and Tips
 
-This document describes current gotchas in our code base an explains the context
+This document describes tips and current gotchas in our code base and explains the context
 for parts that are evolving in a certain direction (or we *want* to evolve in a certain direction).
 
 See [CONTRIBUTING.md](../CONTRIBUTING.md) and the [README](../README.md) for setup
@@ -17,6 +17,12 @@ Generally, label by filename what kind of documentation it is in all-caps, one o
 * Explanation
 * How-to guide
 * Reference
+
+## Helpful Dev Tips
+* Run `sqlite3 mydb.sqlite` to connect to a SQL shell for the dev database
+* [Set up an ESLint plugin in your code editor so that you catch coding errors and follow code style guidelines more easily!](https://medium.com/planet-arkency/catch-mistakes-before-you-run-you-javascript-code-6e524c36f0c8#.oboqsse48)
+* [Install the redux-devtools-extension](https://github.com/zalmoxisus/redux-devtools-extension) in Chrome to get advanced Redux debugging features.
+* Right now there is a bug in Apollo (https://github.com/apollostack/react-apollo/issues/57) that means in one particular case, errors get swallowed.  If you end up with an app that is silently breaking, console.log(this.props.data) and check the errors property.
 
 ## Dependency Management
 
@@ -112,6 +118,8 @@ Production instances can disable automatic migrations on startup with environmen
 
 
 ## Apollo/GraphQL structure and gotchas
+
+Spoke was originally generated from [react-apollo-starter-kit](https://github.com/saikat/react-apollo-starter-kit).  You can look at that project's README for info on some of the libraries used.
 
 See [EXPLANATION-request-example.md](./EXPLANATION-request-example.md) for a great run-down all the
 way through the call stack on the client and server.
