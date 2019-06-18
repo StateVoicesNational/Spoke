@@ -19,6 +19,7 @@ import {
   createTexter,
   assignTexter,
   createScript,
+  createCannedResponses,
   startCampaign,
   getCampaignContact,
   sendMessage
@@ -31,7 +32,7 @@ let testCampaign
 let testTexterUser
 let testTexterUser2
 let testContacts
-
+let organizationId
 let assignmentId
 
 beforeEach(async () => {
@@ -40,6 +41,7 @@ beforeEach(async () => {
   testAdminUser = await createUser()
   testInvite = await createInvite()
   testOrganization = await createOrganization(testAdminUser, testInvite)
+  organizationId = testOrganization.data.createOrganization.id
   testCampaign = await createCampaign(testAdminUser, testOrganization)
   testContacts = await createContacts(testCampaign, 100)
   testTexterUser = await createTexter(testOrganization)
@@ -65,7 +67,6 @@ it('save campaign data, edit it, make sure the last value', async () => {
   expect(campaignDataResults.data.campaign.title).toEqual('test campaign')
   expect(campaignDataResults.data.campaign.description).toEqual('test description')
 
-  const organizationId = testOrganization.data.createOrganization.id
   let texterCampaignDataResults = await runComponentGql(TexterTodoListQuery,
                                                         { organizationId },
                                                         testTexterUser)
@@ -230,6 +231,47 @@ it('save campaign interaction steps, edit it, make sure the last value is set', 
 
 })
 
+it('should save campaign canned responses across copies and match saved data', async () => {
+  await createScript(testAdminUser, testCampaign)
+  await createCannedResponses(testAdminUser, testCampaign,
+                              [{title: "canned 1", text: "can1 {firstName}"},
+                               {title: "canned 2", text: "can2 {firstName}"},
+                               {title: "canned 3", text: "can3 {firstName}"},
+                               {title: "canned 4", text: "can4 {firstName}"},
+                               {title: "canned 5", text: "can5 {firstName}"},
+                               {title: "canned 6", text: "can6 {firstName}"},
+                              ])
+  let campaignDataResults = await runComponentGql(
+    AdminCampaignEditQuery, { campaignId: testCampaign.id }, testAdminUser)
+
+  expect(campaignDataResults.data.campaign.cannedResponses.length).toEqual(6)
+  for (let i=0; i<6; i++) {
+    expect(campaignDataResults.data.campaign.cannedResponses[i].title).toEqual(`canned ${i+1}`)
+    expect(campaignDataResults.data.campaign.cannedResponses[i].text).toEqual(`can${i+1} {firstName}`)
+  }
+
+  // COPY CAMPAIGN
+  const copiedCampaign1 = await copyCampaign(testCampaign.id, testAdminUser)
+  const copiedCampaign2 = await copyCampaign(testCampaign.id, testAdminUser)
+
+ campaignDataResults = await runComponentGql(
+    AdminCampaignEditQuery, { campaignId: copiedCampaign2.data.copyCampaign.id }, testAdminUser)
+  expect(campaignDataResults.data.campaign.cannedResponses.length).toEqual(6)
+  for (let i=0; i<6; i++) {
+    expect(campaignDataResults.data.campaign.cannedResponses[i].title).toEqual(`canned ${i+1}`)
+    expect(campaignDataResults.data.campaign.cannedResponses[i].text).toEqual(`can${i+1} {firstName}`)
+  }
+  campaignDataResults = await runComponentGql(
+    AdminCampaignEditQuery, { campaignId: copiedCampaign1.data.copyCampaign.id }, testAdminUser)
+
+  expect(campaignDataResults.data.campaign.cannedResponses.length).toEqual(6)
+  for (let i=0; i<6; i++) {
+    expect(campaignDataResults.data.campaign.cannedResponses[i].title).toEqual(`canned ${i+1}`)
+    expect(campaignDataResults.data.campaign.cannedResponses[i].text).toEqual(`can${i+1} {firstName}`)
+  }
+
+
+})
 
 describe('Reassignments', async () => {
   it('should allow reassignments before campaign start', async() => {
@@ -255,7 +297,6 @@ describe('Reassignments', async () => {
       },
       testTexterUser)
 
-    console.log('texterCampaignDataResults', JSON.stringify(texterCampaignDataResults))
     expect(texterCampaignDataResults.data.assignment.contacts.length).toEqual(100)
     expect(texterCampaignDataResults.data.assignment.allContactsCount).toEqual(100)
 
@@ -266,7 +307,6 @@ describe('Reassignments', async () => {
                                                 contactNumber: testContacts[i].cell,
                                                 text: 'test text',
                                                 assignmentId })
-      console.log('messageResult', messageResult)
     }
     texterCampaignDataResults = await runComponentGql(
       TexterTodoQuery,
@@ -280,6 +320,108 @@ describe('Reassignments', async () => {
     expect(texterCampaignDataResults.data.assignment.allContactsCount).toEqual(100)
     // - reassign 5 from one to another
     // using editCampaign
+    await assignTexter(testAdminUser, testTexterUser, testCampaign,
+                       [{id: testTexterUser.id, needsMessageCount: 70, contactsCount: 100},
+                        {id: testTexterUser2.id, needsMessageCount: 20}])
+    texterCampaignDataResults = await runComponentGql(
+      TexterTodoQuery,
+      { contactsFilter: { messageStatus: 'needsMessage',
+                          isOptedOut: false,
+                          validTimezone: true },
+        assignmentId
+      },
+      testTexterUser)
+    let texterCampaignDataResults2 = await runComponentGql(TexterTodoListQuery,
+                                                           { organizationId },
+                                                           testTexterUser2)
+    expect(texterCampaignDataResults.data.assignment.contacts.length).toEqual(70)
+    expect(texterCampaignDataResults.data.assignment.allContactsCount).toEqual(75)
+
+    const assignmentId2 = texterCampaignDataResults2.data.currentUser.todos[0].id
+    texterCampaignDataResults = await runComponentGql(
+      TexterTodoQuery,
+      { contactsFilter: { messageStatus: 'needsMessage',
+                          isOptedOut: false,
+                          validTimezone: true },
+        assignmentId: assignmentId2
+      },
+      testTexterUser2)
+    expect(texterCampaignDataResults.data.assignment.contacts.length).toEqual(20)
+    expect(texterCampaignDataResults.data.assignment.allContactsCount).toEqual(20)
+    let assignmentContacts2 = texterCampaignDataResults.data.assignment.contacts
+    for (let i=0; i<5; i++) {
+      const contact = testContacts.filter(c => assignmentContacts2[i].id == c.id)[0]
+      const messageResult = await sendMessage(contact.id, testTexterUser2,
+                                              { userId: testTexterUser2.id,
+                                                contactNumber: contact.cell,
+                                                text: 'test text autorespond',
+                                                assignmentId: assignmentId2 })
+    }
+    texterCampaignDataResults = await runComponentGql(
+      TexterTodoQuery,
+      { contactsFilter: { messageStatus: 'needsMessage',
+                          isOptedOut: false,
+                          validTimezone: true },
+        assignmentId: assignmentId2
+      },
+      testTexterUser2)
+    expect(texterCampaignDataResults.data.assignment.contacts.length).toEqual(15)
+    expect(texterCampaignDataResults.data.assignment.allContactsCount).toEqual(20)
+    texterCampaignDataResults = await runComponentGql(
+      TexterTodoQuery,
+      { contactsFilter: { messageStatus: 'needsResponse',
+                          isOptedOut: false,
+                          validTimezone: true },
+        assignmentId: assignmentId2
+      },
+      testTexterUser2)
+    expect(texterCampaignDataResults.data.assignment.contacts.length).toEqual(5)
+    expect(texterCampaignDataResults.data.assignment.allContactsCount).toEqual(20)
+    for (let i=0; i<3; i++) {
+      const contact = testContacts.filter(c => texterCampaignDataResults.data.assignment.contacts[i].id == c.id)[0]
+      const messageResult = await sendMessage(contact.id, testTexterUser2,
+                                              { userId: testTexterUser2.id,
+                                                contactNumber: contact.cell,
+                                                text: 'keep talking',
+                                                assignmentId: assignmentId2 })
+    }
+    texterCampaignDataResults = await runComponentGql(
+      TexterTodoQuery,
+      { contactsFilter: { messageStatus: 'needsResponse',
+                          isOptedOut: false,
+                          validTimezone: true },
+        assignmentId: assignmentId2
+      },
+      testTexterUser2)
+    expect(texterCampaignDataResults.data.assignment.contacts.length).toEqual(2)
+    expect(texterCampaignDataResults.data.assignment.allContactsCount).toEqual(20)
+    texterCampaignDataResults = await runComponentGql(
+      TexterTodoQuery,
+      { contactsFilter: { messageStatus: 'convo',
+                          isOptedOut: false,
+                          validTimezone: true },
+        assignmentId: assignmentId2
+      },
+      testTexterUser2)
+    expect(texterCampaignDataResults.data.assignment.contacts.length).toEqual(3)
+    expect(texterCampaignDataResults.data.assignment.allContactsCount).toEqual(20)
+
+    await assignTexter(testAdminUser, testTexterUser, testCampaign,
+                       [{id: testTexterUser.id, needsMessageCount: 60, contactsCount: 70},
+                        {id: testTexterUser2.id, needsMessageCount: 30, contactsCount: 20}])
+    texterCampaignDataResults = await runComponentGql(
+      TexterTodoQuery,
+      { contactsFilter: { messageStatus: 'needsMessage',
+                          isOptedOut: false,
+                          validTimezone: true },
+        assignmentId: assignmentId2
+      },
+      testTexterUser2)
+    expect(texterCampaignDataResults.data.assignment.contacts.length).toEqual(15)
+    expect(texterCampaignDataResults.data.assignment.allContactsCount).toEqual(30)
+
+    // maybe test no intersections of texted people and non-texted, and/or needsReply
+
     // using reassignCampaignContacts
     // using bulkReassignCampaignContacts
     // - verify that admin texter counts are correct
