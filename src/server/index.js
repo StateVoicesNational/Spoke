@@ -1,186 +1,51 @@
-import 'babel-polyfill'
-import bodyParser from 'body-parser'
-import express from 'express'
-import appRenderer from './middleware/app-renderer'
-import { graphqlExpress, graphiqlExpress } from 'apollo-server-express'
-import { makeExecutableSchema, addMockFunctionsToSchema } from 'graphql-tools'
-// ORDERING: ./models import must be imported above ./api to help circular imports
-import { createLoaders, createTablesIfNecessary } from './models'
-import { resolvers } from './api/schema'
-import { schema } from '../api/schema'
-import mocks from './api/mocks'
-import passport from 'passport'
-import cookieSession from 'cookie-session'
-import passportSetup from './auth-passport'
-import wrap from './wrap'
-import { log } from '../lib'
-import nexmo from './api/lib/nexmo'
-import twilio from './api/lib/twilio'
-import { seedZipCodes } from './seeds/seed-zip-codes'
-import { runMigrations } from '../migrations'
-import { setupUserNotificationObservers } from './notifications'
-import { TwimlResponse } from 'twilio'
-import { existsSync } from 'fs'
+import WebpackDevServer from 'webpack-dev-server'
+import webpack from 'webpack'
+import config from './config'
+import { log } from '../src/lib'
 
-process.on('uncaughtException', (ex) => {
-  log.error(ex)
-  process.exit(1)
+const webpackPort = process.env.WEBPACK_PORT || 3000
+const appPort = process.env.DEV_APP_PORT
+const webpackHost = process.env.WEBPACK_HOST || '127.0.0.1'
+
+Object.keys(config.entry)
+.forEach((key) => {
+  config.entry[key].unshift(`webpack-dev-server/client?http://${webpackHost}:${webpackPort}/`)
+  config.entry[key].unshift('webpack/hot/only-dev-server')
 })
-const DEBUG = process.env.NODE_ENV === 'development'
 
-const loginCallbacks = passportSetup[process.env.PASSPORT_STRATEGY || global.PASSPORT_STRATEGY || 'auth0']()
+const compiler = webpack(config)
+const connstring = `http://127.0.0.1:${appPort}`
 
-if (!process.env.SUPPRESS_SEED_CALLS) {
-  seedZipCodes()
-}
+log.info(`Proxying requests to:${connstring}`)
 
-if (!process.env.SUPPRESS_DATABASE_AUTOCREATE) {
-  createTablesIfNecessary().then((didCreate) => {
-    // seed above won't have succeeded if we needed to create first
-    if (didCreate && !process.env.SUPPRESS_SEED_CALLS) {
-      seedZipCodes()
-    }
-    if (!didCreate && !process.env.SUPPRESS_MIGRATIONS) {
-      runMigrations()
-    }
-  })
-} else if (!process.env.SUPPRESS_MIGRATIONS) {
-  runMigrations()
-}
-
-setupUserNotificationObservers()
-const app = express()
-// Heroku requires you to use process.env.PORT
-const port = process.env.DEV_APP_PORT || process.env.PORT
-
-// Don't rate limit heroku
-app.enable('trust proxy')
-
-// Serve static assets
-if (existsSync(process.env.ASSETS_DIR)) {
-  app.use('/assets', express.static(process.env.ASSETS_DIR, {
-    maxAge: '180 days'
-  }))
-}
-
-app.use(bodyParser.json({ limit: '50mb' }))
-app.use(bodyParser.urlencoded({ extended: true }))
-
-app.use(cookieSession({
-  cookie: {
-    httpOnly: true,
-    secure: !DEBUG,
-    maxAge: null
+const app = new WebpackDevServer(compiler, {
+  contentBase: '/assets/',
+  publicPath: '/assets/',
+  hot: true,
+  // this should be temporary until we get the real hostname plugged in everywhere
+  disableHostCheck: true,
+  headers: { 'Access-Control-Allow-Origin': '*' },
+  proxy: {
+    '*': `http://127.0.0.1:${appPort}`
   },
-  secret: process.env.SESSION_SECRET || global.SESSION_SECRET
-}))
-app.use(passport.initialize())
-app.use(passport.session())
-
-app.use((req, res, next) => {
-  const getContext = app.get('awsContextGetter')
-  if (typeof getContext === 'function') {
-    const [event, context] = getContext(req, res)
-    req.awsEvent = event
-    req.awsContext = context
+  stats: {
+    colors: true,
+    hash: false,
+    version: false,
+    timings: false,
+    assets: false,
+    chunks: false,
+    modules: false,
+    reasons: false,
+    children: false,
+    source: false,
+    errors: false,
+    errorDetails: false,
+    warnings: true,
+    publicPath: false
   }
-  next()
 })
 
-app.post('/nexmo', wrap(async (req, res) => {
-  try {
-    const messageId = await nexmo.handleIncomingMessage(req.body)
-    res.send(messageId)
-  } catch (ex) {
-    log.error(ex)
-    res.send('done')
-  }
-}))
-
-app.post('/twilio', twilio.webhook(), wrap(async (req, res) => {
-  try {
-    await twilio.handleIncomingMessage(req.body)
-  } catch (ex) {
-    log.error(ex)
-  }
-
-  const resp = new TwimlResponse()
-  res.writeHead(200, { 'Content-Type': 'text/xml' })
-  res.end(resp.toString())
-}))
-
-app.post('/nexmo-message-report', wrap(async (req, res) => {
-  try {
-    const body = req.body
-    await nexmo.handleDeliveryReport(body)
-  } catch (ex) {
-    log.error(ex)
-  }
-  res.send('done')
-}))
-
-app.post('/twilio-message-report', wrap(async (req, res) => {
-  try {
-    const body = req.body
-    await twilio.handleDeliveryReport(body)
-  } catch (ex) {
-    log.error(ex)
-  }
-  const resp = new TwimlResponse()
-  res.writeHead(200, { 'Content-Type': 'text/xml' })
-  res.end(resp.toString())
-}))
-
-// const accountSid = process.env.TWILIO_API_KEY
-// const authToken = process.env.TWILIO_AUTH_TOKEN
-// const client = require('twilio')(accountSid, authToken)
-
-app.get('/logout-callback', (req, res) => {
-  req.logOut()
-  res.redirect('/')
+app.listen(webpackPort || process.env.PORT, () => {
+  log.info(`Webpack dev server is now running on http://${webpackHost}:${webpackPort}`)
 })
-if (loginCallbacks) {
-  app.get('/login-callback', ...loginCallbacks.loginCallback)
-  app.post('/login-callback', ...loginCallbacks.loginCallback)
-}
-
-const executableSchema = makeExecutableSchema({
-  typeDefs: schema,
-  resolvers,
-  allowUndefinedInResolve: false
-})
-addMockFunctionsToSchema({
-  schema: executableSchema,
-  mocks,
-  preserveResolvers: true
-})
-
-app.use('/graphql', graphqlExpress((request) => ({
-  schema: executableSchema,
-  context: {
-    loaders: createLoaders(),
-    user: request.user,
-    awsContext: request.awsContext || null,
-    awsEvent: request.awsEvent || null,
-    remainingMilliseconds: () => (
-      (request.awsContext && request.awsContext.getRemainingTimeInMillis)
-      ? request.awsContext.getRemainingTimeInMillis()
-      : 5 * 60 * 1000 // default saying 5 min, no matter what
-    )
-  }
-})))
-app.get('/graphiql', graphiqlExpress({
-  endpointURL: '/graphql'
-}))
-
-// This middleware should be last. Return the React app only if no other route is hit.
-app.use(appRenderer)
-
-
-if (port) {
-  app.listen(port, () => {
-    log.info(`Node app is running on port ${port}`)
-  })
-}
-
-export default app
