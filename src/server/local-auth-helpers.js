@@ -148,8 +148,8 @@ export const change = ({
 }) => {
   const pwFieldSplit = user.auth0_id.split('|')
   const hashedPassword = {
-    salt: pwFieldSplit[1],
-    hash: pwFieldSplit[2]
+    salt: pwFieldSplit[0],
+    hash: pwFieldSplit[1]
   }
 
   // Verify password and password confirm fields match
