@@ -227,6 +227,8 @@ export async function createTexter(organization) {
 export async function assignTexter(admin, user, campaign, assignments) {
   // optional argument assignments could look like:
   // [{id: userId1, needsMessageCount: 10}, {id: userId2, needsMessageCount: 100}]
+  // needsMessageCount: total desired number of unmessaged contacts
+  // contactsCount: (messagedCount from texter) + needsMessageCount (above)
   // If a userId has an existing assignment, then, also include `contactsCount: <current>`
   const rootValue = {}
   const campaignEditQuery = `
