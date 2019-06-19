@@ -424,6 +424,7 @@ describe('Reassignments', async () => {
 
     await assignTexter(testAdminUser, testTexterUser, testCampaign,
                        [{id: testTexterUser.id, needsMessageCount: 60, contactsCount: 75},
+                        // contactsCount: 30 = 25 (desired needsMessage) + 5 (messaged)
                         {id: testTexterUser2.id, needsMessageCount: 25, contactsCount: 30}])
     // TEXTER 1 (60 needsMessage, 5 messaged)
     // TEXTER 2 (25 needsMessage, 2 needsResponse, 3 convo)
@@ -452,16 +453,79 @@ describe('Reassignments', async () => {
     expect(texterCampaignDataResults2.data.assignment.allContactsCount).toEqual(30)
 
     // maybe test no intersections of texted people and non-texted, and/or needsReply
-    //   bulkReassignCampaignContactsMutation,
     //   reassignCampaignContactsMutation
+    await runComponentGql(
+      reassignCampaignContactsMutation, { organizationId,
+                                          newTexterUserId: testTexterUser2.id,
+                                          campaignIdsContactIds: [
+                                            { campaignId: testCampaign.id,
+                                              // depending on testContacts[0] being
+                                              // first message sent at top of text
+                                              campaignContactId: testContacts[0].id,
+                                              messageIds: [1]
+                                            }
+                                          ]
+                                        }, testAdminUser)
+    // TEXTER 1 (60 needsMessage, 4 messaged)
+    // TEXTER 2 (25 needsMessage, 2 needsResponse, 3 convo, 1 messaged)
+    texterCampaignDataResults = await runComponentGql(
+      TexterTodoQuery,
+      { contactsFilter: { messageStatus: 'messaged',
+                          isOptedOut: false,
+                          validTimezone: true },
+        assignmentId
+      },
+      testTexterUser)
 
-    // using reassignCampaignContacts
-    // using bulkReassignCampaignContacts
-    // - verify that admin texter counts are correct
-    // - verify that texter counts are correct
-    // - reassign after some replies
-    // - verify that texter data is correct (e.g. empty contact info)
-    // - verify that admin texter counts are correct
+    texterCampaignDataResults2 = await runComponentGql(
+      TexterTodoQuery,
+      { contactsFilter: { messageStatus: 'messaged',
+                          isOptedOut: false,
+                          validTimezone: true },
+        assignmentId: assignmentId2
+      },
+      testTexterUser2)
 
+
+    expect(texterCampaignDataResults.data.assignment.contacts.length).toEqual(4)
+    expect(texterCampaignDataResults.data.assignment.allContactsCount).toEqual(64)
+    expect(texterCampaignDataResults2.data.assignment.contacts.length).toEqual(1)
+    expect(texterCampaignDataResults2.data.assignment.allContactsCount).toEqual(31)
+
+    //   bulkReassignCampaignContactsMutation
+    await runComponentGql(
+      bulkReassignCampaignContactsMutation, {
+        organizationId,
+        contactsFilter: { messageStatus: 'needsResponse',
+                          isOptedOut: false,
+                          validTimezone: true },
+        campaignsFilter: { campaignId: testCampaign.id },
+        assignmentsFilter: { texterId: testTexterUser2.id },
+        newTexterUserId: testTexterUser.id
+      }, testAdminUser)
+    // TEXTER 1 (60 needsMessage, 2 needsResponse, 4 messaged)
+    // TEXTER 2 (25 needsMessage, 3 convo, 1 messaged)
+    texterCampaignDataResults = await runComponentGql(
+      TexterTodoQuery,
+      { contactsFilter: { messageStatus: 'needsResponse',
+                          isOptedOut: false,
+                          validTimezone: true },
+        assignmentId
+      },
+      testTexterUser)
+
+    texterCampaignDataResults2 = await runComponentGql(
+      TexterTodoQuery,
+      { contactsFilter: { messageStatus: 'needsResponse',
+                          isOptedOut: false,
+                          validTimezone: true },
+        assignmentId: assignmentId2
+      },
+      testTexterUser2)
+
+    expect(texterCampaignDataResults.data.assignment.contacts.length).toEqual(2)
+    expect(texterCampaignDataResults.data.assignment.allContactsCount).toEqual(66)
+    expect(texterCampaignDataResults2.data.assignment.contacts.length).toEqual(0)
+    expect(texterCampaignDataResults2.data.assignment.allContactsCount).toEqual(29)
   })
 })
