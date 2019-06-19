@@ -28,8 +28,17 @@ Please let us know if you deployed by filling out this form [here](https://act.m
     nvm install
     nvm use
     ```
-3. `yarn install`
-4. `cp .env.example .env`
+3. Install yarn.
+  - Yarn is a package manager that will download all required packages to run Spoke.
+  - Install using the [directions provided by Yarn](https://yarnpkg.com/en/docs/install).
+4. Install the packages.
+    ```
+    yarn install
+    ```
+5. Create a real environment file:
+    ```
+    cp .env.example .env
+    ```
   - This creates a copy of `.env.example`, but renames it `.env` so the system will use it. *Make sure you use this new file.*
 
 ### Filling out your `.env` file
@@ -41,8 +50,9 @@ There are some common environment variables you will want to adjust:
 1. To skip using the SMS provider (useful for development), set `DEFAULT_SERVICE=fakeservice`.
 2. Determine which database to use and set the necessary variables, listed in the [reference](https://github.com/MoveOnOrg/Spoke/blob/main/docs/REFERENCE-environment_variables.md).
   - To use Postgres, [follow these instructions](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_USE_POSTGRESQL.md).
-3. Spoke uses [Auth0](https://auth0.com) by default. However, for development, there are a few ways to bypass authentication.
-    - To set up authentication, [follow these instructions](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO-configure-auth0.md).
+3. Determine which authentication system you want to use. For development, there are a few ways authenticate.
+  - To use the local strategy for authentication, use `PASSPORT_STRATEGY=local`.
+  - To use [Auth0](https://auth0.com) by default, [follow these instructions](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO-configure-auth0.md).
 
 ### Getting the app running
 
