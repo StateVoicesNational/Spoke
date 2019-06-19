@@ -395,38 +395,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
   }
 })
 
-const mapMutationsToProps = () => ({
-  reassignCampaignContacts: (
-    organizationId,
-    campaignIdsContactIds,
-    newTexterUserId
-  ) => ({
-    mutation: gql`
-      mutation reassignCampaignContacts(
-        $organizationId: String!
-        $campaignIdsContactIds: [CampaignIdContactId]!
-        $newTexterUserId: String!
-      ) {
-        reassignCampaignContacts(
-          organizationId: $organizationId
-          campaignIdsContactIds: $campaignIdsContactIds
-          newTexterUserId: $newTexterUserId
-        ) {
-          campaignId
-          assignmentId
-        }
-      }
-    `,
-    variables: { organizationId, campaignIdsContactIds, newTexterUserId }
-  }),
-  bulkReassignCampaignContacts: (
-    organizationId,
-    campaignsFilter,
-    assignmentsFilter,
-    contactsFilter,
-    newTexterUserId
-  ) => ({
-    mutation: gql`
+export const bulkReassignCampaignContactsMutation = gql`
         mutation bulkReassignCampaignContacts(
         $organizationId: String!
         $contactsFilter: ContactsFilter
@@ -445,7 +414,42 @@ const mapMutationsToProps = () => ({
                 assignmentId
             }
         }
-    `,
+    `
+
+export const reassignCampaignContactsMutation = gql`
+      mutation reassignCampaignContacts(
+        $organizationId: String!
+        $campaignIdsContactIds: [CampaignIdContactId]!
+        $newTexterUserId: String!
+      ) {
+        reassignCampaignContacts(
+          organizationId: $organizationId
+          campaignIdsContactIds: $campaignIdsContactIds
+          newTexterUserId: $newTexterUserId
+        ) {
+          campaignId
+          assignmentId
+        }
+      }
+    `
+
+const mapMutationsToProps = () => ({
+  reassignCampaignContacts: (
+    organizationId,
+    campaignIdsContactIds,
+    newTexterUserId
+  ) => ({
+    mutation: reassignCampaignContactsMutation,
+    variables: { organizationId, campaignIdsContactIds, newTexterUserId }
+  }),
+  bulkReassignCampaignContacts: (
+    organizationId,
+    campaignsFilter,
+    assignmentsFilter,
+    contactsFilter,
+    newTexterUserId
+  ) => ({
+    mutation: bulkReassignCampaignContactsMutation,
     variables: { organizationId, campaignsFilter, assignmentsFilter, contactsFilter, newTexterUserId }
   })
 })

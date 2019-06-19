@@ -3,6 +3,12 @@ import { r } from '../../../src/server/models/'
 import { dataQuery as TexterTodoListQuery } from '../../../src/containers/TexterTodoList'
 import { dataQuery as TexterTodoQuery } from '../../../src/containers/TexterTodo'
 import { campaignDataQuery as AdminCampaignEditQuery } from '../../../src/containers/AdminCampaignEdit'
+
+import {
+  bulkReassignCampaignContactsMutation,
+  reassignCampaignContactsMutation
+} from '../../../src/containers/AdminIncomingMessageList'
+
 import { makeTree } from '../../../src/lib'
 
 import {
@@ -297,6 +303,7 @@ describe('Reassignments', async () => {
       },
       testTexterUser)
 
+    // TEXTER 1 (100 needsMessage)
     expect(texterCampaignDataResults.data.assignment.contacts.length).toEqual(100)
     expect(texterCampaignDataResults.data.assignment.allContactsCount).toEqual(100)
 
@@ -308,6 +315,7 @@ describe('Reassignments', async () => {
                                                 text: 'test text',
                                                 assignmentId })
     }
+    // TEXTER 1 (95 needsMessage, 5 needsResponse)
     texterCampaignDataResults = await runComponentGql(
       TexterTodoQuery,
       { contactsFilter: { messageStatus: 'needsMessage',
@@ -316,6 +324,7 @@ describe('Reassignments', async () => {
         assignmentId
       },
       testTexterUser)
+
     expect(texterCampaignDataResults.data.assignment.contacts.length).toEqual(95)
     expect(texterCampaignDataResults.data.assignment.allContactsCount).toEqual(100)
     // - reassign 5 from one to another
@@ -323,6 +332,8 @@ describe('Reassignments', async () => {
     await assignTexter(testAdminUser, testTexterUser, testCampaign,
                        [{id: testTexterUser.id, needsMessageCount: 70, contactsCount: 100},
                         {id: testTexterUser2.id, needsMessageCount: 20}])
+    // TEXTER 1 (70 needsMessage, 5 messaged)
+    // TEXTER 2 (20 needsMessage)
     texterCampaignDataResults = await runComponentGql(
       TexterTodoQuery,
       { contactsFilter: { messageStatus: 'needsMessage',
@@ -357,6 +368,8 @@ describe('Reassignments', async () => {
                                                 text: 'test text autorespond',
                                                 assignmentId: assignmentId2 })
     }
+    // TEXTER 1 (70 needsMessage, 5 messaged)
+    // TEXTER 2 (15 needsMessage, 5 needsResponse)
     texterCampaignDataResults = await runComponentGql(
       TexterTodoQuery,
       { contactsFilter: { messageStatus: 'needsMessage',
@@ -365,6 +378,7 @@ describe('Reassignments', async () => {
         assignmentId: assignmentId2
       },
       testTexterUser2)
+
     expect(texterCampaignDataResults.data.assignment.contacts.length).toEqual(15)
     expect(texterCampaignDataResults.data.assignment.allContactsCount).toEqual(20)
     texterCampaignDataResults = await runComponentGql(
@@ -385,6 +399,8 @@ describe('Reassignments', async () => {
                                                 text: 'keep talking',
                                                 assignmentId: assignmentId2 })
     }
+    // TEXTER 1 (70 needsMessage, 5 messaged)
+    // TEXTER 2 (15 needsMessage, 2 needsResponse, 3 convo)
     texterCampaignDataResults = await runComponentGql(
       TexterTodoQuery,
       { contactsFilter: { messageStatus: 'needsResponse',
@@ -407,9 +423,20 @@ describe('Reassignments', async () => {
     expect(texterCampaignDataResults.data.assignment.allContactsCount).toEqual(20)
 
     await assignTexter(testAdminUser, testTexterUser, testCampaign,
-                       [{id: testTexterUser.id, needsMessageCount: 60, contactsCount: 70},
-                        {id: testTexterUser2.id, needsMessageCount: 30, contactsCount: 20}])
+                       [{id: testTexterUser.id, needsMessageCount: 60, contactsCount: 75},
+                        {id: testTexterUser2.id, needsMessageCount: 25, contactsCount: 30}])
+    // TEXTER 1 (60 needsMessage, 5 messaged)
+    // TEXTER 2 (25 needsMessage, 2 needsResponse, 3 convo)
     texterCampaignDataResults = await runComponentGql(
+      TexterTodoQuery,
+      { contactsFilter: { messageStatus: 'needsMessage',
+                          isOptedOut: false,
+                          validTimezone: true },
+        assignmentId
+      },
+      testTexterUser)
+
+    texterCampaignDataResults2 = await runComponentGql(
       TexterTodoQuery,
       { contactsFilter: { messageStatus: 'needsMessage',
                           isOptedOut: false,
@@ -417,10 +444,16 @@ describe('Reassignments', async () => {
         assignmentId: assignmentId2
       },
       testTexterUser2)
-    expect(texterCampaignDataResults.data.assignment.contacts.length).toEqual(15)
-    expect(texterCampaignDataResults.data.assignment.allContactsCount).toEqual(30)
+
+
+    expect(texterCampaignDataResults.data.assignment.contacts.length).toEqual(60)
+    expect(texterCampaignDataResults.data.assignment.allContactsCount).toEqual(65)
+    expect(texterCampaignDataResults2.data.assignment.contacts.length).toEqual(25)
+    expect(texterCampaignDataResults2.data.assignment.allContactsCount).toEqual(30)
 
     // maybe test no intersections of texted people and non-texted, and/or needsReply
+    //   bulkReassignCampaignContactsMutation,
+    //   reassignCampaignContactsMutation
 
     // using reassignCampaignContacts
     // using bulkReassignCampaignContacts
