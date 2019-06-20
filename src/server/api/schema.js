@@ -596,7 +596,7 @@ const rootMutations = {
       const newCampaignId = newCampaign.id
       const oldCampaignId = campaign.id
 
-      let interactions = await r.knex('interaction_step').where({ campaign_id: oldCampaignId })
+      let interactions = await r.knex('interaction_step').where({ campaign_id: oldCampaignId, is_deleted: false })
 
       const interactionsArr = []
       interactions.forEach((interaction, index) => {

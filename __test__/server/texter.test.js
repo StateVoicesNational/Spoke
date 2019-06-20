@@ -9,7 +9,7 @@ import {
   createInvite,
   createOrganization,
   createCampaign,
-  createContact,
+  createContacts,
   createTexter,
   assignTexter,
   createScript,
@@ -23,6 +23,8 @@ let testInvite
 let testOrganization
 let testCampaign
 let testTexterUser
+let testTexterUser2
+let testContacts
 let testContact
 let assignmentId
 
@@ -33,13 +35,18 @@ beforeEach(async () => {
   testInvite = await createInvite()
   testOrganization = await createOrganization(testAdminUser, testInvite)
   testCampaign = await createCampaign(testAdminUser, testOrganization)
-  testContact = await createContact(testCampaign)
+  testContacts = await createContacts(testCampaign, 100)
+  testContact = testContacts[0]
   testTexterUser = await createTexter(testOrganization)
+  testTexterUser2 = await createTexter(testOrganization)
+
   await assignTexter(testAdminUser, testTexterUser, testCampaign)
+
   const dbCampaignContact = await getCampaignContact(testContact.id)
   assignmentId = dbCampaignContact.assignment_id
   await createScript(testAdminUser, testCampaign)
   await startCampaign(testAdminUser, testCampaign)
+  console.log('hi')
 }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT)
 
 afterEach(async () => {
