@@ -256,7 +256,7 @@ export async function getCampaignIdMessageIdsAndCampaignIdContactIdsMaps(
   }
 }
 
-export async function reassignConversations(campaignIdContactIdsMap, campaignIdMessagesIdsMap, newTexterUserId) {
+export async function reassignConversations(campaignIdContactIdsMap, campaignIdMessagesIdsMap, newTexterUserId, loaders) {
   // ensure existence of assignments
   const campaignIdAssignmentIdMap = new Map()
   for (const [campaignId, _] of campaignIdContactIdsMap) {

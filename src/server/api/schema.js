@@ -697,7 +697,8 @@ const rootMutations = {
 
       await campaign.save()
       // some synchronous tasks:
-      await cacheableData.campaign.reload(id)
+      console.log('startCampaign', campaign)
+      await cacheableData.campaign.reload(id, campaign)
       await sendUserNotification({
         type: Notifications.CAMPAIGN_STARTED,
         campaignId: id
@@ -1124,12 +1125,12 @@ const rootMutations = {
         campaignIdMessagesIdsMap.get(campaignId).push(...messageIds)
       }
 
-      return await reassignConversations(campaignIdContactIdsMap, campaignIdMessagesIdsMap, newTexterUserId)
+      return await reassignConversations(campaignIdContactIdsMap, campaignIdMessagesIdsMap, newTexterUserId, loaders)
     },
     bulkReassignCampaignContacts: async (
       _,
       { organizationId, campaignsFilter, assignmentsFilter, contactsFilter, newTexterUserId },
-      { user }
+      { user, loaders }
     ) => {
       // verify permissions
       await accessRequired(user, organizationId, 'ADMIN', /* superadmin*/ true)
@@ -1140,7 +1141,7 @@ const rootMutations = {
           assignmentsFilter,
           contactsFilter
         )
-      return await reassignConversations(campaignIdContactIdsMap, campaignIdMessagesIdsMap, newTexterUserId)
+      return await reassignConversations(campaignIdContactIdsMap, campaignIdMessagesIdsMap, newTexterUserId, loaders)
     }
   }
 }
