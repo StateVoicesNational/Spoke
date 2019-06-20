@@ -1,23 +1,23 @@
-import PropTypes from 'prop-types'
-import React from 'react'
-import { withRouter } from 'react-router'
-import Empty from '../components/Empty'
-import OrganizationJoinLink from '../components/OrganizationJoinLink'
-import UserEdit from './UserEdit'
-import FlatButton from 'material-ui/FlatButton'
-import FloatingActionButton from 'material-ui/FloatingActionButton'
-import DropDownMenu from 'material-ui/DropDownMenu'
-import MenuItem from 'material-ui/MenuItem'
-import ContentAdd from 'material-ui/svg-icons/content/add'
-import { Table, TableBody, TableRow, TableRowColumn } from 'material-ui/Table'
-import Dialog from 'material-ui/Dialog'
-import PeopleIcon from 'material-ui/svg-icons/social/people'
-import { getHighestRole, ROLE_HIERARCHY } from '../lib'
-import theme from '../styles/theme'
-import loadData from './hoc/load-data'
-import gql from 'graphql-tag'
-import { dataTest } from '../lib/attributes'
-import LoadingIndicator from '../components/LoadingIndicator'
+import PropTypes from "prop-types";
+import React from "react";
+import { withRouter } from "react-router";
+import Empty from "../components/Empty";
+import OrganizationJoinLink from "../components/OrganizationJoinLink";
+import UserEdit from "./UserEdit";
+import FlatButton from "material-ui/FlatButton";
+import FloatingActionButton from "material-ui/FloatingActionButton";
+import DropDownMenu from "material-ui/DropDownMenu";
+import MenuItem from "material-ui/MenuItem";
+import ContentAdd from "material-ui/svg-icons/content/add";
+import { Table, TableBody, TableRow, TableRowColumn } from "material-ui/Table";
+import Dialog from "material-ui/Dialog";
+import PeopleIcon from "material-ui/svg-icons/social/people";
+import { getHighestRole, ROLE_HIERARCHY } from "../lib";
+import theme from "../styles/theme";
+import loadData from "./hoc/load-data";
+import gql from "graphql-tag";
+import { dataTest } from "../lib/attributes";
+import LoadingIndicator from "../components/LoadingIndicator";
 
 const organizationFragment = `
   id
@@ -27,62 +27,64 @@ const organizationFragment = `
     email
     roles(organizationId: $organizationId)
   }
-`
+`;
 class AdminPersonList extends React.Component {
-
   constructor(props) {
-    super(props)
-    this.handleOpen = this.handleOpen.bind(this)
-    this.handleClose = this.handleClose.bind(this)
-    this.handleChange = this.handleChange.bind(this)
-    this.updateUser = this.updateUser.bind(this)
+    super(props);
+    this.handleOpen = this.handleOpen.bind(this);
+    this.handleClose = this.handleClose.bind(this);
+    this.handleChange = this.handleChange.bind(this);
+    this.updateUser = this.updateUser.bind(this);
   }
 
   state = {
     open: false,
     userEdit: false
-  }
+  };
 
   handleFilterChange = (event, index, value) => {
-    const query = value ? `?campaignId=${value}` : ''
+    const query = value ? `?campaignId=${value}` : "";
     this.props.router.push(
       `/admin/${this.props.params.organizationId}/people${query}`
-    )
-  }
+    );
+  };
 
   handleOpen() {
-    this.setState({ open: true })
+    this.setState({ open: true });
   }
 
   handleClose() {
-    this.setState({ open: false })
+    this.setState({ open: false });
   }
 
   handleChange = async (userId, value) => {
-    await this
-      .props
-      .mutations
-      .editOrganizationRoles(this.props.params.organizationId, userId, [value])
-  }
+    await this.props.mutations.editOrganizationRoles(
+      this.props.params.organizationId,
+      userId,
+      [value]
+    );
+  };
 
   editUser(userId) {
-    this.setState({ userEdit: userId })
+    this.setState({ userEdit: userId });
   }
 
   updateUser() {
-    this.setState({ userEdit: false })
-    this.props.personData.refetch()
+    this.setState({ userEdit: false });
+    this.props.personData.refetch();
   }
 
   renderCampaignList = () => {
-    const { organizationData: { organization } } = this.props
-    const campaigns = organization ? organization.campaigns : []
+    const {
+      organizationData: { organization }
+    } = this.props;
+    const campaigns = organization ? organization.campaigns : [];
     return (
       <DropDownMenu
         value={this.props.location.query.campaignId}
         onChange={this.handleFilterChange}
       >
-        <MenuItem primaryText='All Campaigns' />
+        <MenuItem primaryText="All Campaigns" />
         {campaigns.campaigns.map(campaign => (
           <MenuItem
             value={campaign.id}
@@ -91,72 +93,79 @@ class AdminPersonList extends React.Component {
           />
         ))}
       </DropDownMenu>
-    )
-  }
+    );
+  };
 
   renderTexters() {
-    const { personData, userData: { currentUser } } = this.props
-    if (!currentUser) return <LoadingIndicator />
+    const {
+      personData,
+      userData: { currentUser }
+    } = this.props;
+    if (!currentUser) return <LoadingIndicator />;
 
-    const people = personData.organization && personData.organization.people || []
+    const people =
+      (personData.organization && personData.organization.people) || [];
     if (people.length === 0) {
-      return (
-        <Empty
-          title='No people yet'
-          icon={<PeopleIcon />}
-        />
-      )
+      return <Empty title="No people yet" icon={<PeopleIcon />} />;
     }
 
     return (
       <Table selectable={false}>
-        <TableBody
-          displayRowCheckbox={false}
-          showRowHover
-        >
-          {people.map((person) => (
-            <TableRow
-              key={person.id}
-            >
+        <TableBody displayRowCheckbox={false} showRowHover>
+          {people.map(person => (
+            <TableRow key={person.id}>
               <TableRowColumn>{person.displayName}</TableRowColumn>
               <TableRowColumn>{person.email}</TableRowColumn>
               <TableRowColumn>
                 <DropDownMenu
                   value={getHighestRole(person.roles)}
-                  disabled={person.id === currentUser.id || getHighestRole(person.roles) === 'OWNER' && getHighestRole(currentUser.roles) !== 'OWNER'}
-                  onChange={(event, index, value) => this.handleChange(person.id, value)}
+                  disabled={
+                    person.id === currentUser.id ||
+                    (getHighestRole(person.roles) === "OWNER" &&
+                      getHighestRole(currentUser.roles) !== "OWNER")
+                  }
+                  onChange={(event, index, value) =>
+                    this.handleChange(person.id, value)
+                  }
                 >
-                  {ROLE_HIERARCHY.map((option) => (
+                  {ROLE_HIERARCHY.map(option => (
                     <MenuItem
-                      key={person.id + '_' + option}
+                      key={person.id + "_" + option}
                       value={option}
-                      disabled={option === 'OWNER' && getHighestRole(currentUser.roles) !== 'OWNER'}
-                      primaryText={`${option.charAt(0).toUpperCase()}${option.substring(1).toLowerCase()}`}
+                      disabled={
+                        option === "OWNER" &&
+                        getHighestRole(currentUser.roles) !== "OWNER"
+                      }
+                      primaryText={`${option
+                        .charAt(0)
+                        .toUpperCase()}${option.substring(1).toLowerCase()}`}
                     />
                   ))}
                 </DropDownMenu>
                 <FlatButton
-                  {...dataTest('editPerson')}
-                  label='Edit'
-                  onTouchTap={() => { this.editUser(person.id) }}
+                  {...dataTest("editPerson")}
+                  label="Edit"
+                  onTouchTap={() => {
+                    this.editUser(person.id);
+                  }}
                 />
               </TableRowColumn>
             </TableRow>
           ))}
         </TableBody>
       </Table>
-    )
+    );
   }
 
   render() {
-    const { organizationData } = this.props
+    const { organizationData } = this.props;
 
     return (
       <div>
         {this.renderCampaignList()}
         {this.renderTexters()}
         <FloatingActionButton
-          {...dataTest('addPerson')}
+          {...dataTest("addPerson")}
           style={theme.components.floatingButton}
           onTouchTap={this.handleOpen}
         >
@@ -165,24 +174,29 @@ class AdminPersonList extends React.Component {
         {organizationData.organization && (
           <div>
             <Dialog
-              {...dataTest('editPersonDialog')}
-              title='Edit user'
+              {...dataTest("editPersonDialog")}
+              title="Edit user"
               modal={false}
               open={Boolean(this.state.userEdit)}
-              onRequestClose={() => { this.setState({ userEdit: false }) }}
+              onRequestClose={() => {
+                this.setState({ userEdit: false });
+              }}
             >
               <UserEdit
-                organizationId={organizationData.organization && organizationData.organization.id}
+                organizationId={
+                  organizationData.organization &&
+                  organizationData.organization.id
+                }
                 userId={this.state.userEdit}
                 onRequestClose={this.updateUser}
               />
             </Dialog>
             <Dialog
-              title='Invite new texters'
+              title="Invite new texters"
               actions={[
                 <FlatButton
-                  {...dataTest('inviteOk')}
-                  label='OK'
+                  {...dataTest("inviteOk")}
+                  label="OK"
                   primary
                   onTouchTap={this.handleClose}
                 />
@@ -198,7 +212,7 @@ class AdminPersonList extends React.Component {
           </div>
         )}
       </div>
-    )
+    );
   }
 }
 
@@ -210,7 +224,7 @@ AdminPersonList.propTypes = {
   organizationData: PropTypes.object,
   router: PropTypes.object,
   location: PropTypes.object
-}
+};
 
 const mapMutationsToProps = ({ ownProps }) => ({
   editOrganizationRoles: (organizationId, userId, roles) => ({
@@ -228,7 +242,7 @@ const mapMutationsToProps = ({ ownProps }) => ({
       campaignId: ownProps.location.query.campaignId
     }
   })
-})
+});
 
 const mapQueriesToProps = ({ ownProps }) => ({
   personData: {
@@ -244,37 +258,44 @@ const mapQueriesToProps = ({ ownProps }) => ({
     forceFetch: true
   },
   userData: {
-    query: gql` query getCurrentUserAndRoles($organizationId: String!) {
-      currentUser {
-        id
-        roles(organizationId: $organizationId)
+    query: gql`
+      query getCurrentUserAndRoles($organizationId: String!) {
+        currentUser {
+          id
+          roles(organizationId: $organizationId)
+        }
       }
-    }`,
+    `,
     variables: {
       organizationId: ownProps.params.organizationId
     },
     forceFetch: true
   },
   organizationData: {
-    query: gql`query getOrganizationData($organizationId: String!) {
-      organization(id: $organizationId) {
-        id
-        uuid
-        campaigns(campaignsFilter: { isArchived: false }) {
-          ... on CampaignsList{
-            campaigns{
-              id
-              title
+    query: gql`
+      query getOrganizationData($organizationId: String!) {
+        organization(id: $organizationId) {
+          id
+          uuid
+          campaigns(campaignsFilter: { isArchived: false }) {
+            ... on CampaignsList {
+              campaigns {
+                id
+                title
+              }
             }
           }
         }
       }
-    }`,
+    `,
     variables: {
       organizationId: ownProps.params.organizationId
     },
     forceFetch: true
   }
-})
+});
 
-export default loadData(withRouter(AdminPersonList), { mapQueriesToProps, mapMutationsToProps })
+export default loadData(withRouter(AdminPersonList), {
+  mapQueriesToProps,
+  mapMutationsToProps
+});

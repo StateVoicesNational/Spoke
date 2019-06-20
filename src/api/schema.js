@@ -1,36 +1,54 @@
-import { schema as userSchema, resolvers as userResolvers, buildUserOrganizationQuery } from './user'
+import {
+  schema as userSchema,
+  resolvers as userResolvers,
+  buildUserOrganizationQuery
+} from "./user";
 import {
   schema as conversationSchema,
   getConversations,
   resolvers as conversationsResolver
-} from './conversations'
-import { schema as organizationSchema, resolvers as organizationResolvers } from './organization'
-import { schema as campaignSchema, resolvers as campaignResolvers } from './campaign'
+} from "./conversations";
+import {
+  schema as organizationSchema,
+  resolvers as organizationResolvers
+} from "./organization";
+import {
+  schema as campaignSchema,
+  resolvers as campaignResolvers
+} from "./campaign";
 import {
   schema as assignmentSchema,
   resolvers as assignmentResolvers
-} from './assignment'
+} from "./assignment";
 import {
   schema as interactionStepSchema,
   resolvers as interactionStepResolvers
-} from './interaction-step'
-import { schema as questionSchema, resolvers as questionResolvers } from './question'
+} from "./interaction-step";
+import {
+  schema as questionSchema,
+  resolvers as questionResolvers
+} from "./question";
 import {
   schema as questionResponseSchema,
   resolvers as questionResponseResolvers
-} from './question-response'
-import { schema as optOutSchema, resolvers as optOutResolvers } from './opt-out'
-import { schema as messageSchema, resolvers as messageResolvers } from './message'
+} from "./question-response";
+import {
+  schema as optOutSchema,
+  resolvers as optOutResolvers
+} from "./opt-out";
+import {
+  schema as messageSchema,
+  resolvers as messageResolvers
+} from "./message";
 import {
   schema as campaignContactSchema,
   resolvers as campaignContactResolvers
-} from './campaign-contact'
+} from "./campaign-contact";
 import {
   schema as cannedResponseSchema,
   resolvers as cannedResponseResolvers
-} from './canned-response'
-import { schema as inviteSchema, resolvers as inviteResolvers } from './invite'
-
+} from "./canned-response";
+import { schema as inviteSchema, resolvers as inviteResolvers } from "./invite";
 
 const rootSchema = `
   input CampaignContactInput {
@@ -217,15 +235,15 @@ const rootSchema = `
     query: RootQuery
     mutation: RootMutation
   }
-`
+`;
 
 export const schema = [
   rootSchema,
   userSchema,
   organizationSchema,
-  'scalar Date',
-  'scalar JSON',
-  'scalar Phone',
+  "scalar Date",
+  "scalar JSON",
+  "scalar Phone",
   campaignSchema,
   assignmentSchema,
   interactionStepSchema,
@@ -237,4 +255,4 @@ export const schema = [
   questionSchema,
   inviteSchema,
   conversationSchema
-]
+];

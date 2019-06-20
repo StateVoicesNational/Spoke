@@ -1,33 +1,32 @@
-import type from 'prop-types'
-import React from 'react'
-import Popover from 'material-ui/Popover'
-import { List } from 'material-ui/List'
-import ScriptList from './ScriptList'
+import type from "prop-types";
+import React from "react";
+import Popover from "material-ui/Popover";
+import { List } from "material-ui/List";
+import ScriptList from "./ScriptList";
 
 const styles = {
   popover: {
-    width: '75%',
-    overflowY: 'scroll'
+    width: "75%",
+    overflowY: "scroll"
   }
-}
-
+};
 
 class CannedResponseMenu extends React.Component {
   constructor(props) {
-    super(props)
+    super(props);
     this.state = {
       popoverOpen: false
-    }
+    };
   }
 
-  handleSelectCannedResponse = (cannedResponse) => {
-    const { onSelectCannedResponse, onRequestClose } = this.props
-    onSelectCannedResponse(cannedResponse.text)
-    onRequestClose()
-  }
+  handleSelectCannedResponse = cannedResponse => {
+    const { onSelectCannedResponse, onRequestClose } = this.props;
+    onSelectCannedResponse(cannedResponse.text);
+    onRequestClose();
+  };
 
   renderCannedResponses({ scripts, subheader, showAddScriptButton }) {
-    const { customFields, campaignId, texterId } = this.props
+    const { customFields, campaignId, texterId } = this.props;
 
     return (
       <ScriptList
@@ -40,11 +39,17 @@ class CannedResponseMenu extends React.Component {
         subheader={subheader}
         onSelectCannedResponse={this.handleSelectCannedResponse}
       />
-    )
+    );
   }
 
   render() {
-    const { userCannedResponses, campaignCannedResponses, open, onRequestClose, anchorEl } = this.props
+    const {
+      userCannedResponses,
+      campaignCannedResponses,
+      open,
+      onRequestClose,
+      anchorEl
+    } = this.props;
 
     return (
       <div>
@@ -52,21 +57,29 @@ class CannedResponseMenu extends React.Component {
           style={styles.popover}
           open={open}
           anchorEl={anchorEl}
-          anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
-          targetOrigin={{ horizontal: 'left', vertical: 'bottom' }}
+          anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
+          targetOrigin={{ horizontal: "left", vertical: "bottom" }}
           onRequestClose={onRequestClose}
           style={{
-            overflowY: 'scroll',
-            width: '75%'
+            overflowY: "scroll",
+            width: "75%"
           }}
         >
           <List>
-            {this.renderCannedResponses({ scripts: campaignCannedResponses, subheader: 'Suggested', showAddScriptButton: false })}
-            {this.renderCannedResponses({ scripts: userCannedResponses, subheader: 'Personal', showAddScriptButton: true })}
+            {this.renderCannedResponses({
+              scripts: campaignCannedResponses,
+              subheader: "Suggested",
+              showAddScriptButton: false
+            })}
+            {this.renderCannedResponses({
+              scripts: userCannedResponses,
+              subheader: "Personal",
+              showAddScriptButton: true
+            })}
           </List>
         </Popover>
       </div>
-    )
+    );
   }
 }
 
@@ -81,6 +94,6 @@ CannedResponseMenu.propTypes = {
   anchorEl: type.object,
   campaignId: type.number,
   campaignCannedResponses: type.array
-}
+};
 
-export default CannedResponseMenu
+export default CannedResponseMenu;

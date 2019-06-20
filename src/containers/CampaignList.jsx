@@ -1,20 +1,20 @@
-import gql from 'graphql-tag'
-import SpeakerNotesIcon from 'material-ui/svg-icons/action/speaker-notes'
-import PropTypes from 'prop-types'
-import React from 'react'
-import { List, ListItem } from 'material-ui/List'
-import moment from 'moment'
-import WarningIcon from 'material-ui/svg-icons/alert/warning'
-import ArchiveIcon from 'material-ui/svg-icons/content/archive'
-import UnarchiveIcon from 'material-ui/svg-icons/content/unarchive'
-import IconButton from 'material-ui/IconButton'
-import { withRouter } from 'react-router'
-import theme from '../styles/theme'
-import Chip from '../components/Chip'
-import loadData from './hoc/load-data'
-import wrapMutations from './hoc/wrap-mutations'
-import Empty from '../components/Empty'
-import { dataTest } from '../lib/attributes'
+import gql from "graphql-tag";
+import SpeakerNotesIcon from "material-ui/svg-icons/action/speaker-notes";
+import PropTypes from "prop-types";
+import React from "react";
+import { List, ListItem } from "material-ui/List";
+import moment from "moment";
+import WarningIcon from "material-ui/svg-icons/alert/warning";
+import ArchiveIcon from "material-ui/svg-icons/content/archive";
+import UnarchiveIcon from "material-ui/svg-icons/content/unarchive";
+import IconButton from "material-ui/IconButton";
+import { withRouter } from "react-router";
+import theme from "../styles/theme";
+import Chip from "../components/Chip";
+import loadData from "./hoc/load-data";
+import wrapMutations from "./hoc/wrap-mutations";
+import Empty from "../components/Empty";
+import { dataTest } from "../lib/attributes";
 
 const campaignInfoFragment = `
   id
@@ -25,7 +25,7 @@ const campaignInfoFragment = `
   hasUnsentInitialMessages
   description
   dueBy
-`
+`;
 
 const inlineStyles = {
   past: {
@@ -40,7 +40,7 @@ const inlineStyles = {
   warnUnsent: {
     color: theme.colors.blue
   }
-}
+};
 
 class CampaignList extends React.Component {
   renderRow(campaign) {
@@ -49,43 +49,44 @@ class CampaignList extends React.Component {
       isArchived,
       hasUnassignedContacts,
       hasUnsentInitialMessages
-    } = campaign
-    const { adminPerms } = this.props
+    } = campaign;
+    const { adminPerms } = this.props;
 
-
-    let listItemStyle = {}
-    let leftIcon = ''
+    let listItemStyle = {};
+    let leftIcon = "";
     if (isArchived) {
-      listItemStyle = inlineStyles.past
+      listItemStyle = inlineStyles.past;
     } else if (!isStarted || hasUnassignedContacts) {
-      listItemStyle = inlineStyles.warn
-      leftIcon = <WarningIcon />
+      listItemStyle = inlineStyles.warn;
+      leftIcon = <WarningIcon />;
     } else if (hasUnsentInitialMessages) {
-      listItemStyle = inlineStyles.warnUnsent
+      listItemStyle = inlineStyles.warnUnsent;
     } else {
-      listItemStyle = inlineStyles.good
+      listItemStyle = inlineStyles.good;
     }
 
-    const dueByMoment = moment(campaign.dueBy)
-    const tags = []
+    const dueByMoment = moment(campaign.dueBy);
+    const tags = [];
     if (!isStarted) {
-      tags.push('Not started')
+      tags.push("Not started");
     }
 
     if (hasUnassignedContacts) {
-      tags.push('Unassigned contacts')
+      tags.push("Unassigned contacts");
     }
 
     if (isStarted && hasUnsentInitialMessages) {
-      tags.push('Unsent initial messages')
+      tags.push("Unsent initial messages");
     }
 
     const primaryText = (
       <div>
         {campaign.title}
-        {tags.map((tag) => <Chip key={tag} text={tag} />)}
+        {tags.map(tag => (
+          <Chip key={tag} text={tag} />
+        ))}
       </div>
-    )
+    );
     const secondaryText = (
       <span>
         <span>
@@ -93,58 +94,63 @@ class CampaignList extends React.Component {
           <br />
           {campaign.description}
           <br />
-          {dueByMoment.isValid() ?
-            dueByMoment.format('MMM D, YYYY') :
-            'No due date set'}
+          {dueByMoment.isValid()
+            ? dueByMoment.format("MMM D, YYYY")
+            : "No due date set"}
         </span>
       </span>
-    )
+    );
 
-
-    const campaignUrl = `/admin/${this.props.organizationId}/campaigns/${campaign.id}`
+    const campaignUrl = `/admin/${this.props.organizationId}/campaigns/${campaign.id}`;
     return (
       <ListItem
-        {...dataTest('campaignRow')}
+        {...dataTest("campaignRow")}
         style={listItemStyle}
         key={campaign.id}
         primaryText={primaryText}
-        onTouchTap={() => (!isStarted ?
-          this.props.router.push(`${campaignUrl}/edit`) :
-          this.props.router.push(campaignUrl))}
+        onTouchTap={() =>
+          !isStarted
+            ? this.props.router.push(`${campaignUrl}/edit`)
+            : this.props.router.push(campaignUrl)
+        }
         secondaryText={secondaryText}
         leftIcon={leftIcon}
-        rightIconButton={adminPerms ?
-          (campaign.isArchived ? (
-            <IconButton
-              tooltip='Unarchive'
-              onTouchTap={async () => this.props.mutations.unarchiveCampaign(campaign.id)}
-            >
-              <UnarchiveIcon />
-            </IconButton>
-          ) : (
+        rightIconButton={
+          adminPerms ? (
+            campaign.isArchived ? (
               <IconButton
-                tooltip='Archive'
-                onTouchTap={async () => this.props.mutations.archiveCampaign(campaign.id)}
+                tooltip="Unarchive"
+                onTouchTap={async () =>
+                  this.props.mutations.unarchiveCampaign(campaign.id)
+                }
+              >
+                <UnarchiveIcon />
+              </IconButton>
+            ) : (
+              <IconButton
+                tooltip="Archive"
+                onTouchTap={async () =>
+                  this.props.mutations.archiveCampaign(campaign.id)
+                }
               >
                 <ArchiveIcon />
               </IconButton>
-            )) : null}
+            )
+          ) : null
+        }
       />
-    )
+    );
   }
 
   render() {
-    const { campaigns } = this.props.data.organization
+    const { campaigns } = this.props.data.organization;
     return campaigns.length === 0 ? (
-      <Empty
-        title='No campaigns'
-        icon={<SpeakerNotesIcon />}
-      />
+      <Empty title="No campaigns" icon={<SpeakerNotesIcon />} />
     ) : (
-        <List>
-          {campaigns.campaigns.map((campaign) => this.renderRow(campaign))}
-        </List>
-      )
+      <List>
+        {campaigns.campaigns.map(campaign => this.renderRow(campaign))}
+      </List>
+    );
   }
 }
 
@@ -161,10 +167,10 @@ CampaignList.propTypes = {
   organizationId: PropTypes.string,
   data: PropTypes.object,
   mutations: PropTypes.object
-}
+};
 
 const mapMutationsToProps = () => ({
-  archiveCampaign: (campaignId) => ({
+  archiveCampaign: campaignId => ({
     mutation: gql`mutation archiveCampaign($campaignId: String!) {
           archiveCampaign(id: $campaignId) {
             ${campaignInfoFragment}
@@ -172,7 +178,7 @@ const mapMutationsToProps = () => ({
         }`,
     variables: { campaignId }
   }),
-  unarchiveCampaign: (campaignId) => ({
+  unarchiveCampaign: campaignId => ({
     mutation: gql`mutation unarchiveCampaign($campaignId: String!) {
         unarchiveCampaign(id: $campaignId) {
           ${campaignInfoFragment}
@@ -180,7 +186,7 @@ const mapMutationsToProps = () => ({
       }`,
     variables: { campaignId }
   })
-})
+});
 
 const mapQueriesToProps = ({ ownProps }) => ({
   data: {
@@ -202,10 +208,9 @@ const mapQueriesToProps = ({ ownProps }) => ({
     },
     forceFetch: true
   }
-})
+});
 
-export default loadData(wrapMutations(
-  withRouter(CampaignList)), {
-    mapQueriesToProps,
-    mapMutationsToProps
-  })
+export default loadData(wrapMutations(withRouter(CampaignList)), {
+  mapQueriesToProps,
+  mapMutationsToProps
+});

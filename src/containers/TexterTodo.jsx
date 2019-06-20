@@ -1,9 +1,9 @@
-import PropTypes from 'prop-types'
-import React from 'react'
-import AssignmentTexter from '../components/AssignmentTexter'
-import { withRouter } from 'react-router'
-import loadData from './hoc/load-data'
-import gql from 'graphql-tag'
+import PropTypes from "prop-types";
+import React from "react";
+import AssignmentTexter from "../components/AssignmentTexter";
+import { withRouter } from "react-router";
+import loadData from "./hoc/load-data";
+import gql from "graphql-tag";
 
 const contactDataFragment = `
         id
@@ -35,54 +35,52 @@ const contactDataFragment = `
           text
           isFromContact
         }
-`
+`;
 
 class TexterTodo extends React.Component {
   constructor() {
-    super()
-    this.assignContactsIfNeeded = this.assignContactsIfNeeded.bind(this)
-    this.refreshData = this.refreshData.bind(this)
-    this.loadContacts = this.loadContacts.bind(this)
+    super();
+    this.assignContactsIfNeeded = this.assignContactsIfNeeded.bind(this);
+    this.refreshData = this.refreshData.bind(this);
+    this.loadContacts = this.loadContacts.bind(this);
   }
 
   componentWillMount() {
-    const { assignment } = this.props.data
-    this.assignContactsIfNeeded()
+    const { assignment } = this.props.data;
+    this.assignContactsIfNeeded();
     if (!assignment || assignment.campaign.isArchived) {
-      this.props.router.push(
-        `/app/${this.props.params.organizationId}/todos`
-      )
+      this.props.router.push(`/app/${this.props.params.organizationId}/todos`);
     }
   }
 
   assignContactsIfNeeded = async (checkServer = false) => {
-    const { assignment } = this.props.data
+    const { assignment } = this.props.data;
     if (assignment.contacts.length === 0 || checkServer) {
       if (assignment.campaign.useDynamicAssignment) {
-        const didAddContacts = (await this.props.mutations.findNewCampaignContact(assignment.id, 1)).data.findNewCampaignContact.found
+        const didAddContacts = (await this.props.mutations.findNewCampaignContact(
+          assignment.id,
+          1
+        )).data.findNewCampaignContact.found;
         if (didAddContacts) {
-          this.props.data.refetch()
-          return
+          this.props.data.refetch();
+          return;
         }
       }
-      this.props.router.push(
-        `/app/${this.props.params.organizationId}/todos`
-      )
+      this.props.router.push(`/app/${this.props.params.organizationId}/todos`);
     }
-  }
+  };
 
-  loadContacts = async (contactIds) => (
-    await this.props.mutations.getAssignmentContacts(contactIds)
-  )
+  loadContacts = async contactIds =>
+    await this.props.mutations.getAssignmentContacts(contactIds);
 
   refreshData = () => {
-    this.props.data.refetch()
-  }
+    this.props.data.refetch();
+  };
 
   render() {
-    const { assignment } = this.props.data
-    const contacts = assignment.contacts
-    const allContactsCount = assignment.allContactsCount
+    const { assignment } = this.props.data;
+    const contacts = assignment.contacts;
+    const allContactsCount = assignment.allContactsCount;
     return (
       <AssignmentTexter
         assignment={assignment}
@@ -94,7 +92,7 @@ class TexterTodo extends React.Component {
         onRefreshAssignmentContacts={this.refreshAssignmentContacts}
         organizationId={this.props.params.organizationId}
       />
-    )
+    );
   }
 }
 
@@ -105,65 +103,70 @@ TexterTodo.propTypes = {
   data: PropTypes.object,
   mutations: PropTypes.object,
   router: PropTypes.object
-}
+};
 
 const mapQueriesToProps = ({ ownProps }) => ({
   data: {
-    query: gql`query getContacts($assignmentId: String!, $contactsFilter: ContactsFilter!) {
-      assignment(id: $assignmentId) {
-        id
-        userCannedResponses {
+    query: gql`
+      query getContacts(
+        $assignmentId: String!
+        $contactsFilter: ContactsFilter!
+      ) {
+        assignment(id: $assignmentId) {
           id
-          title
-          text
-          isUserCreated
-        }
-        campaignCannedResponses {
-          id
-          title
-          text
-          isUserCreated
-        }
-        texter {
-          id
-          firstName
-          lastName
-          assignedCell
-        }
-        campaign {
-          id
-          isArchived
-          useDynamicAssignment
-          organization {
+          userCannedResponses {
             id
-            textingHoursEnforced
-            textingHoursStart
-            textingHoursEnd
-            threeClickEnabled
-            optOutMessage
+            title
+            text
+            isUserCreated
           }
-          customFields
-          interactionSteps {
+          campaignCannedResponses {
             id
-            script
-            question {
-              text
-              answerOptions {
-                value
-                nextInteractionStep {
-                  id
-                  script
+            title
+            text
+            isUserCreated
+          }
+          texter {
+            id
+            firstName
+            lastName
+            assignedCell
+          }
+          campaign {
+            id
+            isArchived
+            useDynamicAssignment
+            organization {
+              id
+              textingHoursEnforced
+              textingHoursStart
+              textingHoursEnd
+              threeClickEnabled
+              optOutMessage
+            }
+            customFields
+            interactionSteps {
+              id
+              script
+              question {
+                text
+                answerOptions {
+                  value
+                  nextInteractionStep {
+                    id
+                    script
+                  }
                 }
               }
             }
           }
+          contacts(contactsFilter: $contactsFilter) {
+            id
+          }
+          allContactsCount: contactsCount
         }
-        contacts(contactsFilter: $contactsFilter) {
-          id
-        }
-        allContactsCount: contactsCount
       }
-    }`,
+    `,
     variables: {
       contactsFilter: {
         messageStatus: ownProps.messageStatus,
@@ -175,13 +178,19 @@ const mapQueriesToProps = ({ ownProps }) => ({
     forceFetch: true,
     pollInterval: 20000
   }
-})
+});
 
 const mapMutationsToProps = ({ ownProps }) => ({
   findNewCampaignContact: (assignmentId, numberContacts = 1) => ({
     mutation: gql`
-      mutation findNewCampaignContact($assignmentId: String!, $numberContacts: Int!) {
-        findNewCampaignContact(assignmentId: $assignmentId, numberContacts: $numberContacts) {
+      mutation findNewCampaignContact(
+        $assignmentId: String!
+        $numberContacts: Int!
+      ) {
+        findNewCampaignContact(
+          assignmentId: $assignmentId
+          numberContacts: $numberContacts
+        ) {
           found
         }
       }
@@ -205,6 +214,9 @@ const mapMutationsToProps = ({ ownProps }) => ({
       findNew: !!findNew
     }
   })
-})
+});
 
-export default loadData(withRouter(TexterTodo), { mapQueriesToProps, mapMutationsToProps })
+export default loadData(withRouter(TexterTodo), {
+  mapQueriesToProps,
+  mapMutationsToProps
+});

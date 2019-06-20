@@ -1,62 +1,62 @@
-import React, { Component } from 'react'
-import _ from 'lodash'
+import React, { Component } from "react";
+import _ from "lodash";
 
-import IncomingMessageActions from '../components/IncomingMessageActions'
-import IncomingMessageFilter from '../components/IncomingMessageFilter'
-import IncomingMessageList from '../components/IncomingMessageList'
-import LoadingIndicator from '../components/LoadingIndicator'
-import PaginatedCampaignsRetriever from './PaginatedCampaignsRetriever'
-import gql from 'graphql-tag'
-import loadData from './hoc/load-data'
-import { withRouter } from 'react-router'
-import wrapMutations from './hoc/wrap-mutations'
-import PaginatedUsersRetriever from './PaginatedUsersRetriever'
+import IncomingMessageActions from "../components/IncomingMessageActions";
+import IncomingMessageFilter from "../components/IncomingMessageFilter";
+import IncomingMessageList from "../components/IncomingMessageList";
+import LoadingIndicator from "../components/LoadingIndicator";
+import PaginatedCampaignsRetriever from "./PaginatedCampaignsRetriever";
+import gql from "graphql-tag";
+import loadData from "./hoc/load-data";
+import { withRouter } from "react-router";
+import wrapMutations from "./hoc/wrap-mutations";
+import PaginatedUsersRetriever from "./PaginatedUsersRetriever";
 
 function getCampaignsFilterForCampaignArchiveStatus(
   includeActiveCampaigns,
   includeArchivedCampaigns
 ) {
-  let isArchived = undefined
+  let isArchived = undefined;
   if (!includeActiveCampaigns && includeArchivedCampaigns) {
-    isArchived = true
+    isArchived = true;
   } else if (
     (includeActiveCampaigns && !includeArchivedCampaigns) ||
     (!includeActiveCampaigns && !includeArchivedCampaigns)
   ) {
-    isArchived = false
+    isArchived = false;
   }
 
   if (isArchived !== undefined) {
-    return { isArchived }
+    return { isArchived };
   }
 
-  return {}
+  return {};
 }
 
 function getContactsFilterForConversationOptOutStatus(
   includeNotOptedOutConversations,
   includeOptedOutConversations
 ) {
-  let isOptedOut = undefined
+  let isOptedOut = undefined;
   if (!includeNotOptedOutConversations && includeOptedOutConversations) {
-    isOptedOut = true
+    isOptedOut = true;
   } else if (
     (includeNotOptedOutConversations && !includeOptedOutConversations) ||
     (!includeNotOptedOutConversations && !includeOptedOutConversations)
   ) {
-    isOptedOut = false
+    isOptedOut = false;
   }
 
   if (isOptedOut !== undefined) {
-    return { isOptedOut }
+    return { isOptedOut };
   }
 
-  return {}
+  return {};
 }
 
 export class AdminIncomingMessageList extends Component {
   constructor(props) {
-    super(props)
+    super(props);
 
     this.state = {
       page: 0,
@@ -75,37 +75,39 @@ export class AdminIncomingMessageList extends Component {
       conversationCount: 0,
       includeNotOptedOutConversations: true,
       includeOptedOutConversations: false
-    }
+    };
 
-    this.handleCampaignChanged = this.handleCampaignChanged.bind(this)
-    this.handleMessageFilterChange = this.handleMessageFilterChange.bind(this)
-    this.handleReassignRequested = this.handleReassignRequested.bind(this)
-    this.handleReassignAllMatchingRequested = this.handleReassignAllMatchingRequested.bind(this)
-    this.handlePageChange = this.handlePageChange.bind(this)
-    this.handlePageSizeChange = this.handlePageSizeChange.bind(this)
-    this.handleRowSelection = this.handleRowSelection.bind(this)
-    this.handleCampaignsReceived = this.handleCampaignsReceived.bind(this)
+    this.handleCampaignChanged = this.handleCampaignChanged.bind(this);
+    this.handleMessageFilterChange = this.handleMessageFilterChange.bind(this);
+    this.handleReassignRequested = this.handleReassignRequested.bind(this);
+    this.handleReassignAllMatchingRequested = this.handleReassignAllMatchingRequested.bind(
+      this
+    );
+    this.handlePageChange = this.handlePageChange.bind(this);
+    this.handlePageSizeChange = this.handlePageSizeChange.bind(this);
+    this.handleRowSelection = this.handleRowSelection.bind(this);
+    this.handleCampaignsReceived = this.handleCampaignsReceived.bind(this);
     this.handleCampaignTextersReceived = this.handleCampaignTextersReceived.bind(
       this
-    )
+    );
     this.handleReassignmentTextersReceived = this.handleReassignmentTextersReceived.bind(
       this
-    )
-    this.handleTexterChanged = this.handleTexterChanged.bind(this)
+    );
+    this.handleTexterChanged = this.handleTexterChanged.bind(this);
     this.handleArchivedCampaignsToggled = this.handleArchivedCampaignsToggled.bind(
       this
-    )
+    );
     this.handleActiveCampaignsToggled = this.handleActiveCampaignsToggled.bind(
       this
-    )
-    this.conversationCountChanged = this.conversationCountChanged.bind(this)
+    );
+    this.conversationCountChanged = this.conversationCountChanged.bind(this);
     this.handleNotOptedOutConversationsToggled = this.handleNotOptedOutConversationsToggled.bind(
       this
-    )
+    );
     this.handleOptedOutConversationsToggled = this.handleOptedOutConversationsToggled.bind(
       this
-    )
-    this.conversationCountChanged = this.conversationCountChanged.bind(this)
+    );
+    this.conversationCountChanged = this.conversationCountChanged.bind(this);
   }
 
   shouldComponentUpdate(dummy, nextState) {
@@ -115,46 +117,46 @@ export class AdminIncomingMessageList extends Component {
       _.isEqual(this.state.campaignsFilter, nextState.campaignsFilter) &&
       _.isEqual(this.state.assignmentsFilter, nextState.assignmentsFilter)
     ) {
-      return false
+      return false;
     }
-    return true
+    return true;
   }
 
   async handleCampaignChanged(campaignId) {
     const campaignsFilter = getCampaignsFilterForCampaignArchiveStatus(
       this.state.includeActiveCampaigns,
       this.state.includeArchivedCampaigns
-    )
+    );
     if (campaignId !== -1) {
-      campaignsFilter.campaignId = campaignId
+      campaignsFilter.campaignId = campaignId;
     }
 
     await this.setState({
       campaignsFilter,
       needsRender: true
-    })
+    });
   }
 
   async handleTexterChanged(texterId) {
-    const assignmentsFilter = {}
+    const assignmentsFilter = {};
     if (texterId >= 0) {
-      assignmentsFilter.texterId = texterId
+      assignmentsFilter.texterId = texterId;
     }
     await this.setState({
       assignmentsFilter,
       needsRender: true
-    })
+    });
   }
 
   async handleMessageFilterChange(messagesFilter) {
     const contactsFilter = Object.assign(
-      _.omit(this.state.contactsFilter, ['messageStatus']),
+      _.omit(this.state.contactsFilter, ["messageStatus"]),
       { messageStatus: messagesFilter }
-    )
+    );
     await this.setState({
       contactsFilter,
       needsRender: true
-    })
+    });
   }
 
   async handleReassignRequested(newTexterUserId) {
@@ -162,11 +164,11 @@ export class AdminIncomingMessageList extends Component {
       this.props.params.organizationId,
       this.state.campaignIdsContactIds,
       newTexterUserId
-    )
+    );
     this.setState({
       utc: Date.now().toString(),
       needsRender: true
-    })
+    });
   }
 
   async handleReassignAllMatchingRequested(newTexterUserId) {
@@ -176,50 +178,50 @@ export class AdminIncomingMessageList extends Component {
       this.state.assignmentsFilter || {},
       this.state.contactsFilter || {},
       newTexterUserId
-    )
+    );
     this.setState({
       utc: Date.now().toString(),
       needsRender: true
-    })
+    });
   }
 
   async handlePageChange(page) {
     await this.setState({
       page,
       needsRender: true
-    })
+    });
   }
 
   async handlePageSizeChange(pageSize) {
-    await this.setState({ needsRender: true, pageSize })
+    await this.setState({ needsRender: true, pageSize });
   }
 
   async handleRowSelection(selectedRows, data) {
-    if (this.state.previousSelectedRows === 'all' && selectedRows !== 'all') {
+    if (this.state.previousSelectedRows === "all" && selectedRows !== "all") {
       await this.setState({
         previousSelectedRows: [],
         campaignIdsContactIds: [],
         needsRender: false
-      })
+      });
     } else {
       await this.setState({
         previousSelectedRows: selectedRows,
         campaignIdsContactIds: data,
         needsRender: false
-      })
+      });
     }
   }
 
   async handleCampaignsReceived(campaigns) {
-    this.setState({ campaigns, needsRender: true })
+    this.setState({ campaigns, needsRender: true });
   }
 
   async handleCampaignTextersReceived(campaignTexters) {
-    this.setState({ campaignTexters, needsRender: true })
+    this.setState({ campaignTexters, needsRender: true });
   }
 
   async handleReassignmentTextersReceived(reassignmentTexters) {
-    this.setState({ reassignmentTexters, needsRender: true })
+    this.setState({ reassignmentTexters, needsRender: true });
   }
 
   async handleNotOptedOutConversationsToggled() {
@@ -227,46 +229,46 @@ export class AdminIncomingMessageList extends Component {
       this.state.includeNotOptedOutConversations &&
       !this.state.includeOptedOutConversations
     ) {
-      return
+      return;
     }
 
     const contactsFilterUpdate = getContactsFilterForConversationOptOutStatus(
       !this.state.includeNotOptedOutConversations,
       this.state.includeOptedOutConversations
-    )
+    );
 
     const contactsFilter = Object.assign(
-      _.omit(this.state.contactsFilter, ['isOptedOut']),
+      _.omit(this.state.contactsFilter, ["isOptedOut"]),
       contactsFilterUpdate
-    )
+    );
 
     this.setState({
       contactsFilter,
       includeNotOptedOutConversations: !this.state
         .includeNotOptedOutConversations
-    })
+    });
   }
 
   async handleOptedOutConversationsToggled() {
     const includeNotOptedOutConversations =
       this.state.includeNotOptedOutConversations ||
-      !this.state.includeOptedOutConversations
+      !this.state.includeOptedOutConversations;
 
     const contactsFilterUpdate = getContactsFilterForConversationOptOutStatus(
       includeNotOptedOutConversations,
       !this.state.includeOptedOutConversations
-    )
+    );
 
     const contactsFilter = Object.assign(
-      _.omit(this.state.contactsFilter, ['isOptedOut']),
+      _.omit(this.state.contactsFilter, ["isOptedOut"]),
       contactsFilterUpdate
-    )
+    );
 
     this.setState({
       contactsFilter,
       includeNotOptedOutConversations,
       includeOptedOutConversations: !this.state.includeOptedOutConversations
-    })
+    });
   }
 
   async handleActiveCampaignsToggled() {
@@ -274,47 +276,46 @@ export class AdminIncomingMessageList extends Component {
       this.state.includeActiveCampaigns &&
       !this.state.includeArchivedCampaigns
     ) {
-      return
+      return;
     }
 
     const campaignsFilter = getCampaignsFilterForCampaignArchiveStatus(
       !this.state.includeActiveCampaigns,
       this.state.includeArchivedCampaigns
-    )
+    );
     this.setState({
       campaignsFilter,
       includeActiveCampaigns: !this.state.includeActiveCampaigns
-    })
+    });
   }
 
   async handleArchivedCampaignsToggled() {
     const includeActiveCampaigns =
-      this.state.includeActiveCampaigns || !this.state.includeArchivedCampaigns
+      this.state.includeActiveCampaigns || !this.state.includeArchivedCampaigns;
 
     const campaignsFilter = getCampaignsFilterForCampaignArchiveStatus(
       includeActiveCampaigns,
       !this.state.includeArchivedCampaigns
-    )
+    );
 
     this.setState({
       campaignsFilter,
       includeActiveCampaigns,
       includeArchivedCampaigns: !this.state.includeArchivedCampaigns
-    })
+    });
   }
 
   conversationCountChanged(conversationCount) {
     this.setState({
       conversationCount
-    })
-
+    });
   }
 
   render() {
     const cursor = {
       offset: this.state.page * this.state.pageSize,
       limit: this.state.pageSize
-    }
+    };
     return (
       <div>
         <h3> Message Review </h3>
@@ -335,7 +336,7 @@ export class AdminIncomingMessageList extends Component {
             />
             <PaginatedCampaignsRetriever
               organizationId={this.props.params.organizationId}
-              campaignsFilter={_.pick(this.state.campaignsFilter, 'isArchived')}
+              campaignsFilter={_.pick(this.state.campaignsFilter, "isArchived")}
               onCampaignsReceived={this.handleCampaignsReceived}
               pageSize={1000}
             />
@@ -367,7 +368,9 @@ export class AdminIncomingMessageList extends Component {
             <IncomingMessageActions
               people={this.state.reassignmentTexters}
               onReassignRequested={this.handleReassignRequested}
-              onReassignAllMatchingRequested={this.handleReassignAllMatchingRequested}
+              onReassignAllMatchingRequested={
+                this.handleReassignAllMatchingRequested
+              }
               conversationCount={this.state.conversationCount}
             />
             <br />
@@ -386,7 +389,7 @@ export class AdminIncomingMessageList extends Component {
           </div>
         )}
       </div>
-    )
+    );
   }
 }
 
@@ -410,7 +413,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
     },
     forceFetch: true
   }
-})
+});
 
 const mapMutationsToProps = () => ({
   reassignCampaignContacts: (
@@ -444,30 +447,36 @@ const mapMutationsToProps = () => ({
     newTexterUserId
   ) => ({
     mutation: gql`
-        mutation bulkReassignCampaignContacts(
+      mutation bulkReassignCampaignContacts(
         $organizationId: String!
         $contactsFilter: ContactsFilter
         $campaignsFilter: CampaignsFilter
         $assignmentsFilter: AssignmentsFilter
         $newTexterUserId: String!
+      ) {
+        bulkReassignCampaignContacts(
+          organizationId: $organizationId
+          contactsFilter: $contactsFilter
+          campaignsFilter: $campaignsFilter
+          assignmentsFilter: $assignmentsFilter
+          newTexterUserId: $newTexterUserId
         ) {
-            bulkReassignCampaignContacts(
-                organizationId: $organizationId
-                contactsFilter: $contactsFilter,
-                campaignsFilter: $campaignsFilter,
-                assignmentsFilter: $assignmentsFilter,
-                newTexterUserId: $newTexterUserId
-            ) {
-                campaignId
-                assignmentId
-            }
+          campaignId
+          assignmentId
         }
+      }
     `,
-    variables: { organizationId, campaignsFilter, assignmentsFilter, contactsFilter, newTexterUserId }
+    variables: {
+      organizationId,
+      campaignsFilter,
+      assignmentsFilter,
+      contactsFilter,
+      newTexterUserId
+    }
   })
-})
+});
 
 export default loadData(withRouter(wrapMutations(AdminIncomingMessageList)), {
   mapQueriesToProps,
   mapMutationsToProps
-})
+});

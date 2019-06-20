@@ -24,4 +24,4 @@ type PaginatedUsers {
 }
 
 union UsersReturn = PaginatedUsers | UsersList
-`
+`;

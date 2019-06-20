@@ -1,6 +1,6 @@
-import nexmo from './nexmo'
-import twilio from './twilio'
-import fakeservice from './fakeservice'
+import nexmo from "./nexmo";
+import twilio from "./twilio";
+import fakeservice from "./fakeservice";
 
 // Each service needs the following api points:
 // async sendMessage(message, trx) -> void
@@ -12,6 +12,6 @@ const serviceMap = {
   nexmo,
   twilio,
   fakeservice
-}
+};
 
-export default serviceMap
+export default serviceMap;

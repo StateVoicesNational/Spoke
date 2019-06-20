@@ -1,53 +1,53 @@
-import PropTypes from 'prop-types'
-import React from 'react'
-import { ToolbarTitle } from 'material-ui/Toolbar'
-import IconButton from 'material-ui/IconButton/IconButton'
-import NavigateBeforeIcon from 'material-ui/svg-icons/image/navigate-before'
-import NavigateNextIcon from 'material-ui/svg-icons/image/navigate-next'
-import AssignmentTexterContact from '../containers/AssignmentTexterContact'
-import { StyleSheet, css } from 'aphrodite'
-import { withRouter } from 'react-router'
-import Check from 'material-ui/svg-icons/action/check-circle'
-import Empty from '../components/Empty'
-import RaisedButton from 'material-ui/RaisedButton'
+import PropTypes from "prop-types";
+import React from "react";
+import { ToolbarTitle } from "material-ui/Toolbar";
+import IconButton from "material-ui/IconButton/IconButton";
+import NavigateBeforeIcon from "material-ui/svg-icons/image/navigate-before";
+import NavigateNextIcon from "material-ui/svg-icons/image/navigate-next";
+import AssignmentTexterContact from "../containers/AssignmentTexterContact";
+import { StyleSheet, css } from "aphrodite";
+import { withRouter } from "react-router";
+import Check from "material-ui/svg-icons/action/check-circle";
+import Empty from "../components/Empty";
+import RaisedButton from "material-ui/RaisedButton";
 
 const styles = StyleSheet.create({
   container: {
-    position: 'fixed',
+    position: "fixed",
     top: 0,
     left: 0,
     // right: 0,
     // bottom: 0
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
     zIndex: 1002,
-    backgroundColor: 'white',
-    overflow: 'hidden'
+    backgroundColor: "white",
+    overflow: "hidden"
   },
   navigationToolbarTitle: {
-    fontSize: '12px'
+    fontSize: "12px"
   }
-})
+});
 
 class AssignmentTexter extends React.Component {
   constructor(props) {
-    super(props)
+    super(props);
 
     this.state = {
       // currentContactIndex: 0,
       contactCache: {},
       loading: false,
-      direction: 'right'
-    }
+      direction: "right"
+    };
   }
 
   componentWillMount() {
-    this.updateCurrentContactIndex(0)
+    this.updateCurrentContactIndex(0);
   }
 
   componentWillUpdate(nextProps, nextState) {
     if (this.contactCount() === 0) {
-      setTimeout(() => window.location.reload(), 5000)
+      setTimeout(() => window.location.reload(), 5000);
     }
 
     // When we send a message that changes the contact status,
@@ -57,15 +57,17 @@ class AssignmentTexter extends React.Component {
     // In fact, without the code below, we will 'double-jump' each message
     // we send or change the status in some way.
     // Below, we update our index with the contact that matches our current index.
-    if (typeof nextState.currentContactIndex !== 'undefined'
-        && nextState.currentContactIndex === this.state.currentContactIndex
-        && nextProps.contacts.length !== this.props.contacts.length
-        && this.props.contacts[this.state.currentContactIndex]) {
-      const curId = this.props.contacts[this.state.currentContactIndex].id
-      const nextIndex = nextProps.contacts.findIndex((c) => c.id === curId)
+    if (
+      typeof nextState.currentContactIndex !== "undefined" &&
+      nextState.currentContactIndex === this.state.currentContactIndex &&
+      nextProps.contacts.length !== this.props.contacts.length &&
+      this.props.contacts[this.state.currentContactIndex]
+    ) {
+      const curId = this.props.contacts[this.state.currentContactIndex].id;
+      const nextIndex = nextProps.contacts.findIndex(c => c.id === curId);
       if (nextIndex !== nextState.currentContactIndex) {
         // eslint-disable-next-line no-param-reassign
-        nextState.currentContactIndex = nextIndex
+        nextState.currentContactIndex = nextIndex;
       }
     }
   }
@@ -109,140 +111,149 @@ class AssignmentTexter extends React.Component {
 
   */
   getContactData = async (newIndex, force = false) => {
-    const { contacts } = this.props
-    const BATCH_GET = 10 // how many to get at once
-    const BATCH_FORWARD = 5 // when to reach out and get more
-    let getIds = []
+    const { contacts } = this.props;
+    const BATCH_GET = 10; // how many to get at once
+    const BATCH_FORWARD = 5; // when to reach out and get more
+    let getIds = [];
     // if we don't have current data, get that
-    if (contacts[newIndex]
-        && !this.state.contactCache[contacts[newIndex].id]) {
+    if (contacts[newIndex] && !this.state.contactCache[contacts[newIndex].id]) {
       getIds = contacts
         .slice(newIndex, newIndex + BATCH_GET)
-        .map((c) => c.id)
-        .filter((cId) => !force || !this.state.contactCache[cId])
+        .map(c => c.id)
+        .filter(cId => !force || !this.state.contactCache[cId]);
     }
     // if we DO have current data, but don't have data base BATCH_FORWARD...
-    if (!getIds.length
-        && contacts[newIndex + BATCH_FORWARD]
-        && !this.state.contactCache[contacts[newIndex + BATCH_FORWARD].id]) {
+    if (
+      !getIds.length &&
+      contacts[newIndex + BATCH_FORWARD] &&
+      !this.state.contactCache[contacts[newIndex + BATCH_FORWARD].id]
+    ) {
       getIds = contacts
         .slice(newIndex + BATCH_FORWARD, newIndex + BATCH_FORWARD + BATCH_GET)
-        .map((c) => c.id)
-        .filter((cId) => !force || !this.state.contactCache[cId])
+        .map(c => c.id)
+        .filter(cId => !force || !this.state.contactCache[cId]);
     }
 
     if (getIds.length) {
-      this.setState({ loading: true })
-      const contactData = await this.props.loadContacts(getIds)
-      const { data: { getAssignmentContacts } } = contactData
+      this.setState({ loading: true });
+      const contactData = await this.props.loadContacts(getIds);
+      const {
+        data: { getAssignmentContacts }
+      } = contactData;
       if (getAssignmentContacts) {
-        const newContactData = {}
-        getAssignmentContacts.forEach((c) => {
-          newContactData[c.id] = c
-        })
+        const newContactData = {};
+        getAssignmentContacts.forEach(c => {
+          newContactData[c.id] = c;
+        });
         this.setState({
           loading: false,
-          contactCache: { ...this.state.contactCache,
-                          ...newContactData } })
+          contactCache: { ...this.state.contactCache, ...newContactData }
+        });
       }
     }
-  }
+  };
 
   getContact(contacts, index) {
     if (contacts.length > index) {
-      return contacts[index]
+      return contacts[index];
     }
-    return null
+    return null;
   }
 
-  incrementCurrentContactIndex = (increment) => {
-    let newIndex = this.state.currentContactIndex
-    newIndex = newIndex + increment
-    this.updateCurrentContactIndex(newIndex)
-  }
+  incrementCurrentContactIndex = increment => {
+    let newIndex = this.state.currentContactIndex;
+    newIndex = newIndex + increment;
+    this.updateCurrentContactIndex(newIndex);
+  };
 
   updateCurrentContactIndex(newIndex) {
     this.setState({
       currentContactIndex: newIndex
-    })
-    this.getContactData(newIndex)
+    });
+    this.getContactData(newIndex);
   }
 
   hasPrevious() {
-    return this.state.currentContactIndex > 0
+    return this.state.currentContactIndex > 0;
   }
 
   hasNext() {
-    return this.state.currentContactIndex < this.contactCount() - 1
+    return this.state.currentContactIndex < this.contactCount() - 1;
   }
 
   handleFinishContact = () => {
     if (this.hasNext()) {
-      this.handleNavigateNext()
+      this.handleNavigateNext();
     } else {
       // Will look async and then redirect to todo page if not
-      this.props.assignContactsIfNeeded(/* checkServer*/true)
+      this.props.assignContactsIfNeeded(/* checkServer*/ true);
     }
-  }
+  };
 
   handleNavigateNext = () => {
     if (!this.hasNext()) {
-      return
+      return;
     }
 
     // this.props.refreshData()
-    this.setState({ direction: 'right' }, () => this.incrementCurrentContactIndex(1))
-  }
+    this.setState({ direction: "right" }, () =>
+      this.incrementCurrentContactIndex(1)
+    );
+  };
 
   handleNavigatePrevious = () => {
     if (!this.hasPrevious()) {
-      return
+      return;
     }
-    this.setState({ direction: 'left' }, () => this.incrementCurrentContactIndex(-1))
-  }
+    this.setState({ direction: "left" }, () =>
+      this.incrementCurrentContactIndex(-1)
+    );
+  };
 
-  handleCannedResponseChange = (script) => {
-    this.handleScriptChange(script)
-    this.handleClosePopover()
-  }
+  handleCannedResponseChange = script => {
+    this.handleScriptChange(script);
+    this.handleClosePopover();
+  };
 
-  handleScriptChange = (script) => {
-    this.setState({ script })
-  }
+  handleScriptChange = script => {
+    this.setState({ script });
+  };
 
   handleExitTexter = () => {
-    this.props.router.push('/app/' + (this.props.organizationId || ''))
-  }
+    this.props.router.push("/app/" + (this.props.organizationId || ""));
+  };
 
   contactCount() {
-    const { contacts } = this.props
-    return contacts.length
+    const { contacts } = this.props;
+    return contacts.length;
   }
 
   currentContact() {
-    const { contacts } = this.props
+    const { contacts } = this.props;
 
     // If the index has got out of sync with the contacts available, then rewind to the start
-    if (typeof this.state.currentContactIndex !== 'undefined') {
-      return this.getContact(contacts, this.state.currentContactIndex)
+    if (typeof this.state.currentContactIndex !== "undefined") {
+      return this.getContact(contacts, this.state.currentContactIndex);
     }
 
-    this.updateCurrentContactIndex(0)
-    return this.getContact(contacts, 0)
+    this.updateCurrentContactIndex(0);
+    return this.getContact(contacts, 0);
   }
 
   renderNavigationToolbarChildren() {
-    const { allContactsCount } = this.props
-    const remainingContacts = this.contactCount()
-    const messagedContacts = allContactsCount - remainingContacts
+    const { allContactsCount } = this.props;
+    const remainingContacts = this.contactCount();
+    const messagedContacts = allContactsCount - remainingContacts;
 
-    const currentIndex = this.state.currentContactIndex + 1 + messagedContacts
-    let ofHowMany = allContactsCount
-    if (ofHowMany === currentIndex
-        && this.props.assignment.campaign.useDynamicAssignment) {
-      ofHowMany = '?'
+    const currentIndex = this.state.currentContactIndex + 1 + messagedContacts;
+    let ofHowMany = allContactsCount;
+    if (
+      ofHowMany === currentIndex &&
+      this.props.assignment.campaign.useDynamicAssignment
+    ) {
+      ofHowMany = "?";
     }
-    const title = `${currentIndex} of ${ofHowMany}`
+    const title = `${currentIndex} of ${ofHowMany}`;
     return [
       <ToolbarTitle
         className={css(styles.navigationToolbarTitle)}
@@ -260,25 +271,25 @@ class AssignmentTexter extends React.Component {
       >
         <NavigateNextIcon />
       </IconButton>
-    ]
+    ];
   }
 
   renderTexter() {
-    const { assignment } = this.props
-    const { campaign, texter } = assignment
-    const contact = this.currentContact()
-    const navigationToolbarChildren = this.renderNavigationToolbarChildren()
-    const contactData = this.state.contactCache[contact.id]
+    const { assignment } = this.props;
+    const { campaign, texter } = assignment;
+    const contact = this.currentContact();
+    const navigationToolbarChildren = this.renderNavigationToolbarChildren();
+    const contactData = this.state.contactCache[contact.id];
     if (!contactData) {
-      const self = this
+      const self = this;
       setTimeout(() => {
         if (self.state.contactCache[contact.id]) {
-          self.forceUpdate()
+          self.forceUpdate();
         } else if (!self.state.loading) {
-          self.updateCurrentContactIndex(self.state.currentContactIndex)
+          self.updateCurrentContactIndex(self.state.currentContactIndex);
         }
-      }, 200)
-      return null
+      }, 200);
+      return null;
     }
     return (
       <AssignmentTexterContact
@@ -293,7 +304,7 @@ class AssignmentTexter extends React.Component {
         refreshData={this.props.refreshData}
         onExitTexter={this.handleExitTexter}
       />
-    )
+    );
   }
   renderEmpty() {
     return (
@@ -301,34 +312,36 @@ class AssignmentTexter extends React.Component {
         <Empty
           title="You've already messaged or replied to all your assigned contacts for now."
           icon={<Check />}
-          content={(<RaisedButton
-            label='Back To Todos'
-            onClick={this.handleExitTexter}
-          />)}
+          content={
+            <RaisedButton
+              label="Back To Todos"
+              onClick={this.handleExitTexter}
+            />
+          }
         />
       </div>
-    )
+    );
   }
   render() {
-    const { contacts } = this.props.assignment
+    const { contacts } = this.props.assignment;
     return (
       <div className={css(styles.container)}>
         {contacts.length === 0 ? this.renderEmpty() : this.renderTexter()}
       </div>
-    )
+    );
   }
 }
 
 AssignmentTexter.propTypes = {
   currentUser: PropTypes.object,
-  assignment: PropTypes.object,      // current assignment
-  contacts: PropTypes.array,   // contacts for current assignment
+  assignment: PropTypes.object, // current assignment
+  contacts: PropTypes.array, // contacts for current assignment
   allContactsCount: PropTypes.number,
   router: PropTypes.object,
   refreshData: PropTypes.func,
   loadContacts: PropTypes.func,
   assignContactsIfNeeded: PropTypes.func,
   organizationId: PropTypes.string
-}
+};
 
-export default withRouter(AssignmentTexter)
+export default withRouter(AssignmentTexter);
