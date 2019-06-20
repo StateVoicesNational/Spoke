@@ -108,7 +108,7 @@ Sqlite does not support knex's `returning()` method.  This affects running `r.kn
 
 ### Schema changes
 
-Schema changes should include an addition to `src/migrations/index.js`.  If you create a table, make sure you use
+Create a new migration using the [knex CLI](https://knexjs.org/#Migrations).  If you create a table, make sure you use
 `r.knex.schema.createTableIfNotExists` (see knex documentation and existing examples).
 
 In order to support PostgreSQL and Sqlite, you can define a field as `.json()` when defining it in the

@@ -1,0 +1,50 @@
+{
+  "id": {
+    "type": "integer",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": "nextval('pending_message_part_id_seq'::regclass)"
+  },
+  "service": {
+    "type": "text",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": null
+  },
+  "service_id": {
+    "type": "text",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": null
+  },
+  "parent_id": {
+    "type": "text",
+    "maxLength": null,
+    "nullable": true,
+    "defaultValue": "''::text"
+  },
+  "service_message": {
+    "type": "text",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": null
+  },
+  "user_number": {
+    "type": "text",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": "''::text"
+  },
+  "contact_number": {
+    "type": "text",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": null
+  },
+  "created_at": {
+    "type": "timestamp with time zone",
+    "maxLength": null,
+    "nullable": false,
+    "defaultValue": "CURRENT_TIMESTAMP"
+  }
+}
