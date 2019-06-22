@@ -9,9 +9,9 @@ module.exports = {
       connection: {
         host: "127.0.0.1",
         "port": "5432",
-        "database": "spoke_scaling_test",
-        "password": "spoke_scaling_test",
-        "user": "spoke_scaling_test"
+        "database": "spoke_test",
+        "password": "spoke_test",
+        "user": "spoke_test"
       },
     }),
     JOBS_SYNC: "1",
