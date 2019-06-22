@@ -1,4 +1,4 @@
-import r from './index.js'
+import knex from 'knex'
 
 let config
 
@@ -16,5 +16,5 @@ if (process.env.WAREHOUSE_DB_TYPE) {
 }
 
 export default (process.env.WAREHOUSE_DB_TYPE
-                ? () => r(config)
+                ? () => knex(config)
                 : null)
