@@ -72,11 +72,14 @@ function createTablesIfNecessary() {
 }
 
 function createTables() {
-  return thinky.r.k.migrate.latest()
+  return thinky.r.knex.migrate.latest()
 }
 
 function dropTables() {
-  return thinky.r.k.destroy()
+  // thinky.r.knex.destroy() DOES NOT WORK
+  return thinky.dropTables(tableList).then(function() {
+    return thinky.dropTables(['knex_migrations', 'knex_migrations_lock'])
+  })
 }
 
 const createLoaders = () => ({
