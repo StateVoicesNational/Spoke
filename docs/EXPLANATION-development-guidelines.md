@@ -116,6 +116,8 @@ migration, but it should be `type.string()` in its `src/server/models/` definiti
 
 Production instances can disable automatic migrations on startup with environment variable `SUPPRESS_MIGRATIONS`.
 
+If you want to use the knex CLI, run with `yarn knex` which will leverage your `.env` environment.
+
 
 ## Apollo/GraphQL structure and gotchas
 
