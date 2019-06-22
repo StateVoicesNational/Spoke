@@ -160,7 +160,7 @@ const userOrgHighestRole = async (userId, orgId) => {
         .sort((a, b) => accessHierarchy.indexOf(b) - accessHierarchy.indexOf(a))[0]
     }
   }
-  console.log('userOrgHighestRole', userId, orgId, highestRole)
+  // console.log('userOrgHighestRole', userId, orgId, highestRole)
   return highestRole
 }
 

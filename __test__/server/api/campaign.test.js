@@ -43,6 +43,9 @@ let assignmentId
 
 beforeEach(async () => {
   // Set up an entire working campaign
+  if (r.redis) {
+    await r.redis.flushdb()
+  }
   await setupTest()
   testAdminUser = await createUser()
   testInvite = await createInvite()
@@ -61,7 +64,6 @@ beforeEach(async () => {
 
 afterEach(async () => {
   await cleanupTest()
-  if (r.redis) r.redis.flushdb()
 }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT)
 
 
@@ -84,6 +86,7 @@ it('save campaign data, edit it, make sure the last value', async () => {
   texterCampaignDataResults = await runComponentGql(TexterTodoListQuery,
                                                     { organizationId },
                                                     testTexterUser)
+  console.log('TODOS', texterCampaignDataResults.data.currentUser)
   expect(texterCampaignDataResults.data.currentUser.todos[0].campaign.title).toEqual('test campaign')
   expect(texterCampaignDataResults.data.currentUser.todos[0].campaign.description).toEqual('test description')
 

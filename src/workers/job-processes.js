@@ -160,7 +160,7 @@ export async function handleIncomingMessages() {
 }
 
 export async function runDatabaseMigrations(event, dispatcher, eventCallback) {
-  knex.migrate.latest()
+  await r.knex.migrate.latest()
   if (eventCallback) {
     eventCallback(null, 'completed migrations')
   }

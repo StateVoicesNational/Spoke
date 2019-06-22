@@ -53,6 +53,7 @@ const clearCampaignUserAssignments = async (campaign) => {
   // or just clear all userassignments-<orgId><userId>
   if (r.redis) {
     const userIds = (await getCampaignTexterIds(campaign.id)).map(u => u.id)
+    console.log('clearcampaignuserassignments userids', userIds)
     await clearUserAssignments(campaign.organization_id, userIds, null, campaign.id)
   }
 }
@@ -68,9 +69,13 @@ const clear = async (id, campaign) => {
   loaders.campaign.clear(id)
 }
 
-const loadDeep = async (id) => {
-  // console.log('load campaign deep', id)
+const loadDeep = async (id, campaignCurrent) => {
+  console.log('load campaign deep', id, Boolean(campaignCurrent))
   if (r.redis) {
+    if (campaignCurrent) {
+      console.log('campaign.reload: clearcampaignuserassignments....', campaignCurrent)
+      await clearCampaignUserAssignments(campaignCurrent)
+    }
     const campaign = await Campaign.get(id)
     if (Array.isArray(campaign) && campaign.length === 0) {
       console.error('NO CAMPAIGN FOUND')

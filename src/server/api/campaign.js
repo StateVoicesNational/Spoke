@@ -228,6 +228,7 @@ export const resolvers = {
       // is different because for TEXTERs it's just for dynamic campaigns
       // but hasUnassignedContacts for admins is for the campaigns list
       await accessRequired(user, campaign.organization_id, 'TEXTER', true)
+      console.log('hasUnassignedContactsForTexter getting cache', campaign)
       if (!campaign.use_dynamic_assignment || campaign.is_archived) {
         return false
       }

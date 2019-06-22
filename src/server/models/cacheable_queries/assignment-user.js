@@ -16,12 +16,13 @@ const campaignAssignmentsKey = (campaignId) => `${process.env.CACHE_PREFIX || ''
 
 export const getUserAssignments = async (organizationId, userId, assignmentLoader) => {
   const key = userCacheKey(organizationId, userId)
-  // console.log('getUserAssignments', organizationId, userId, key)
+  console.log('getUserAssignments', organizationId, userId, key)
   if (r.redis) {
     const [exists, assignmentIds] = await r.redis.multi()
       .exists(key)
       .zrangebyscore(key, 0, Infinity)
       .execAsync()
+    console.log('getuserassignments exists/assignmentIds', exists, assignmentIds)
     if (exists) {
       if (assignmentLoader) {
         return await assignmentLoader(assignmentIds)
@@ -135,10 +136,10 @@ const mapScoreResult = (redisResultArray) => {
 }
 
 export const getCampaignTexterIds = async (campaignId, olderThanEpochMs) => {
-  // console.log('getCampaignTexterIds', campaignId)
+  console.log('getCampaignTexterIds', campaignId)
   if (r.redis) {
     const campaignKey = campaignAssignmentsKey(campaignId)
-    // console.log('getCampaignTexterIds', campaignId, campaignKey)
+    console.log('getCampaignTexterIds', campaignId, campaignKey)
     const zrangeArgs = [campaignKey, 0, olderThanEpochMs || Infinity, 'WITHSCORES']
     const [exists, cacheRes] = await r.redis.multi()
       .exists(campaignKey)
@@ -147,6 +148,7 @@ export const getCampaignTexterIds = async (campaignId, olderThanEpochMs) => {
     if (exists) {
       return mapScoreResult(cacheRes)
     }
+    console.log('getCampaigntexterids campaigntexters NO exist', exists, campaignId, campaignKey)
     await reloadCampaignTexters(campaignId)
     return mapScoreResult(await r.redis.zrangebyscoreAsync(zrangeArgs))
   }

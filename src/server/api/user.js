@@ -124,8 +124,10 @@ export const resolvers = {
     roles: async(user, { organizationId }) => (
       cacheableData.user.orgRoles(user.id, organizationId)
     ),
-    todos: async (user, { organizationId }) =>
-      cacheableData.assignment.getUserTodos(organizationId, user.id),
+    todos: async (user, { organizationId }) => {
+      console.log('USER TODOS', user)
+      return await cacheableData.assignment.getUserTodos(organizationId, user.id)
+    },
     inflightCount: (user) => (user.inflightCount || null), // see organization.people(inflightCounts)
     lastMessageTime: (user) => ( // see organization.people(inflightCounts)
       user.lastMessageTime ? new Date(user.lastMessageTime) : null

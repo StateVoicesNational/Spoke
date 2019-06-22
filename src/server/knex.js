@@ -37,6 +37,9 @@ if (NODE_ENV === 'test') {
       password: 'spoke_test',
       user: 'spoke_test',
       ssl: useSSL
+    },
+    migrations: {
+      tableName: 'knex_migrations'
     }
   }
 } else if (DB_JSON) {
@@ -52,7 +55,10 @@ if (NODE_ENV === 'test') {
       user: DB_USER,
       ssl: useSSL
     },
-    pool: { min, max }
+    pool: { min, max },
+    migrations: {
+      tableName: 'knex_migrations'
+    }
   }
 } else if (DATABASE_URL) {
   const dbType = DATABASE_URL.match(/^\w+/)[0]
@@ -60,14 +66,21 @@ if (NODE_ENV === 'test') {
     client: (/postgres/.test(dbType) ? 'pg' : dbType),
     connection: DATABASE_URL,
     pool: { min, max },
-    ssl: useSSL
+    ssl: useSSL,
+    migrations: {
+      tableName: 'knex_migrations'
+    }
   }
 } else {
   config = {
     client: 'sqlite3',
     connection: { filename: './mydb.sqlite' },
-    defaultsUnsupported: true
+    defaultsUnsupported: true,
+    migrations: {
+      tableName: 'knex_migrations'
+    }
   }
 }
 
-export default config
+// es5 to support direct knex CLI import
+module.exports = config
