@@ -1,6 +1,7 @@
 /node_modules
 /build
 npm-debug.log
+yarn-error.log
 .DS_Store
 rethinkdb_data
 .env

@@ -2,9 +2,11 @@
 
 ## Selenium
 
+NOTE: Currently Selenium tests do not run consistently on Travis CI so they are turned off in the main repository until fixed.
+
 End to end tests use **Selenium**, which is a framework which drives the WebDriver API exposed by browsers. A test script can therefore be executed at the UI level which is as close to a manual test as possible.
 
-## Sauce Labs
+## Sauce Labs [Currently Not Used]
 
 **Sauce Labs** is a cloud service which provides access to test clients on which automated tests are run.
 

@@ -7,6 +7,7 @@ import Organization from './organization'
 const Campaign = thinky.createModel('campaign', type.object().schema({
   id: type.string(),
   organization_id: requiredString(),
+  creator_id: type.string().allowNull(true).foreign('user'),
   title: optionalString(),
   description: optionalString(),
   is_started: type
@@ -55,5 +56,6 @@ const Campaign = thinky.createModel('campaign', type.object().schema({
 }).allowExtra(false), { noAutoCreation: true })
 
 Campaign.ensureIndex('organization_id')
+Campaign.ensureIndex('creator_id')
 
 export default Campaign

@@ -28,12 +28,14 @@ export const schema = `
     dueBy: Date
     isStarted: Boolean
     isArchived: Boolean
+    creator: User
     texters: [User]
     assignments(assignmentsFilter: AssignmentsFilter): [Assignment]
     interactionSteps: [InteractionStep]
     contacts: [CampaignContact]
     contactsCount: Int
     hasUnassignedContacts: Boolean
+    hasUnassignedContactsForTexter: Boolean
     hasUnsentInitialMessages: Boolean
     customFields: [String]
     cannedResponses(userId: String): [CannedResponse]
@@ -45,6 +47,7 @@ export const schema = `
     primaryColor: String
     logoImageUrl: String
     editors: String
+    cacheable: Boolean
     overrideOrganizationTextingHours: Boolean
     textingHoursEnforced: Boolean
     textingHoursStart: Int
@@ -57,9 +60,9 @@ export const schema = `
   }
 
   union CampaignsReturn = PaginatedCampaigns | CampaignsList
-  
+
   type PaginatedCampaigns {
     campaigns: [Campaign]
     pageInfo: PageInfo
-  }  
+  }
 `
