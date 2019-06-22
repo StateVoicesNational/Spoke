@@ -201,7 +201,7 @@ export class AssignmentTexterContact extends React.Component {
       disabledText = 'Skipping opt-out...'
       disabled = true
     } else if (!this.isContactBetweenTextingHours(contact)) {
-      disabledText = "Refreshing ..."
+      disabledText = 'Refreshing ...'
       disabled = true
     }
 
@@ -383,10 +383,11 @@ export class AssignmentTexterContact extends React.Component {
         return // stops from multi-send
       }
       this.setState({ disabled: true })
+      console.log('sendMessage', contact.id)
       await this.props.mutations.sendMessage(message, contact.id)
 
       await this.handleSubmitSurveys()
-      this.props.onFinishContact()
+      this.props.onFinishContact(contact.id)
     } catch (e) {
       this.handleSendMessageError(e)
     }
@@ -455,7 +456,7 @@ export class AssignmentTexterContact extends React.Component {
 
       await this.handleSubmitSurveys()
       await this.props.mutations.createOptOut(optOut, contact.id)
-      this.props.onFinishContact()
+      this.props.onFinishContact(contact.id)
     } catch (e) {
       this.handleSendMessageError(e)
     }
@@ -880,7 +881,7 @@ export class AssignmentTexterContact extends React.Component {
           open={!!this.state.snackbarError}
           message={this.state.snackbarError || ''}
           action={this.state.snackbarActionTitle}
-          onActionTouchTap={this.state.snackbarOnTouchTap}
+          onActionClick={this.state.snackbarOnTouchTap}
         />
       </div>
     )
@@ -897,8 +898,7 @@ AssignmentTexterContact.propTypes = {
   router: PropTypes.object,
   mutations: PropTypes.object,
   refreshData: PropTypes.func,
-  onExitTexter: PropTypes.func,
-  onRefreshAssignmentContacts: PropTypes.func
+  onExitTexter: PropTypes.func
 }
 
 const mapMutationsToProps = () => ({

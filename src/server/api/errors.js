@@ -1,8 +1,5 @@
 import { GraphQLError } from 'graphql/error'
-import { r } from '../models'
-import { userHasRole } from '../models/cacheable_queries'
-
-const accessHierarchy = ['TEXTER', 'SUPERVOLUNTEER', 'ADMIN', 'OWNER']
+import { r, cacheableData } from '../models'
 
 export function authRequired(user) {
   if (!user) {
@@ -22,29 +19,33 @@ export async function accessRequired(user, orgId, role, allowSuperadmin = false)
     return
   }
   // require a permission at-or-higher than the permission requested
-  const acceptableRoles = accessHierarchy.slice(accessHierarchy.indexOf(role))
-  const hasRole = await userHasRole(user.id, orgId, acceptableRoles)
+  const hasRole = await cacheableData.user.userHasRole(user, orgId, role)
   if (!hasRole) {
     throw new GraphQLError('You are not authorized to access that resource.')
   }
 }
 
-export async function assignmentRequired(user, assignmentId) {
+export async function assignmentRequired(user, assignmentId, assignment) {
   authRequired(user)
 
   if (user.is_superadmin) {
-    return
+    return true
+  }
+  if (assignment && assignment.user_id === user.id) {
+    // if we are passed the full assignment object, we can test directly
+    return true
   }
 
-  const [assignment] = await r.knex('assignment')
+  const [userHasAssignment] = await r.knex('assignment')
   .where({
     user_id: user.id,
     id: assignmentId
   }).limit(1)
 
-  if (typeof assignment === 'undefined') {
+  if (!userHasAssignment) { // undefined or null
     throw new GraphQLError('You are not authorized to access that resource.')
   }
+  return true
 }
 
 export function superAdminRequired(user) {

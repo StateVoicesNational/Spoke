@@ -66,18 +66,17 @@ function createTablesIfNecessary() {
     (tableExists) => {
       if (!tableExists) {
         console.log('CREATING DATABASE SCHEMA')
-        createTables()
-        return true
+        return thinky.r.k.migrate.latest()
       }
     })
 }
 
 function createTables() {
-  return thinky.createTables(tableList)
+  return thinky.r.k.migrate.latest()
 }
 
 function dropTables() {
-  return thinky.dropTables(tableList)
+  return thinky.r.k.destroy()
 }
 
 const createLoaders = () => ({

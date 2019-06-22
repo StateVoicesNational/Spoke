@@ -1,3 +1,4 @@
+import { accessRequired } from './errors'
 import { mapFieldsToModel } from './lib/utils'
 import { Campaign, JobRequest, r, cacheableData } from '../models'
 import { currentEditors } from '../models/cacheable_queries'
@@ -85,38 +86,30 @@ export const resolvers = {
     ], JobRequest)
   },
   CampaignStats: {
-    sentMessagesCount: async (campaign) => (
-      r.table('assignment')
+    sentMessagesCount: async (campaign, _, { user }) => {
+      await accessRequired(user, campaign.organization_id, 'SUPERVOLUNTEER', true)
+      return r.table('assignment')
         .getAll(campaign.id, { index: 'campaign_id' })
         .eqJoin('id', r.table('message'), { index: 'assignment_id' })
         .filter({ is_from_contact: false })
         .count()
-        // TODO: NEEDS TESTING
-        // this is a change to avoid very weird map(...).sum() pattern
-        // that will work better with RDBMs
-        // main question is will/should filter work, or do we need to specify,
-        // e.g. 'right_is_from_contact': false, or something
-        // .map((assignment) => (
-        //   r.table('message')
-        //     .getAll(assignment('id'), { index: 'assignment_id' })
-        //     .filter({ is_from_contact: false })
-        //     .count()
-        // )).sum()
-    ),
-    receivedMessagesCount: async (campaign) => (
-      r.table('assignment')
+    },
+    receivedMessagesCount: async (campaign, _, { user }) => {
+      await accessRequired(user, campaign.organization_id, 'SUPERVOLUNTEER', true)
+      return r.table('assignment')
         .getAll(campaign.id, { index: 'campaign_id' })
         // TODO: NEEDSTESTING -- see above setMessagesCount()
         .eqJoin('id', r.table('message'), { index: 'assignment_id' })
         .filter({ is_from_contact: true })
         .count()
-    ),
-    optOutsCount: async (campaign) => (
-      await r.getCount(
+    },
+    optOutsCount: async (campaign, _, { user }) => {
+      await accessRequired(user, campaign.organization_id, 'SUPERVOLUNTEER', true)
+      return await r.getCount(
         r.knex('campaign_contact')
           .where({ is_opted_out: true, campaign_id: campaign.id })
       )
-    )
+    }
   },
   CampaignsReturn: {
     __resolveType(obj, context, _) {
@@ -173,11 +166,17 @@ export const resolvers = {
     datawarehouseAvailable: (campaign, _, { user }) => (
       user.is_superadmin && !!process.env.WAREHOUSE_DB_HOST
     ),
-    pendingJobs: async (campaign) => r.table('job_request')
-      .filter({ campaign_id: campaign.id }).orderBy('updated_at', 'desc'),
-    texters: async (campaign) =>
-      getUsers(campaign.organization_id, null, {campaignId: campaign.id }) ,
-    assignments: async (campaign, {assignmentsFilter} ) => {
+    pendingJobs: async (campaign, _, { user }) => {
+      await accessRequired(user, campaign.organization_id, 'SUPERVOLUNTEER', true)
+      return r.table('job_request')
+      .filter({ campaign_id: campaign.id }).orderBy('updated_at', 'desc')
+    },
+    texters: async (campaign, _, { user }) => {
+      await accessRequired(user, campaign.organization_id, 'SUPERVOLUNTEER', true)
+      return getUsers(campaign.organization_id, null, {campaignId: campaign.id })
+    },
+    assignments: async (campaign, { assignmentsFilter }, { user }) => {
+      await accessRequired(user, campaign.organization_id, 'SUPERVOLUNTEER', true)
       let query = r.table('assignment')
         .getAll(campaign.id, { index: 'campaign_id' })
 
@@ -187,34 +186,55 @@ export const resolvers = {
 
       return query
     },
-    interactionSteps: async (campaign) => (
-      campaign.interactionSteps
-      || cacheableData.campaign.dbInteractionSteps(campaign.id)
-    ),
-    cannedResponses: async (campaign, { userId }) => (
-      await cacheableData.cannedResponse.query({
+    interactionSteps: async (campaign, _, { user }) => {
+      await accessRequired(user, campaign.organization_id, 'TEXTER', true)
+      return campaign.interactionSteps
+        || cacheableData.campaign.dbInteractionSteps(campaign.id)
+    },
+    cannedResponses: async (campaign, { userId }, { user }) => {
+      await accessRequired(user, campaign.organization_id, 'TEXTER', true)
+      return await cacheableData.cannedResponse.query({
         userId: userId || '',
         campaignId: campaign.id
       })
-    ),
-    contacts: async (campaign) => (
-      r.knex('campaign_contact')
+    },
+    contacts: async (campaign, _, { user }) => {
+      await accessRequired(user, campaign.organization_id, 'ADMIN', true)
+      // TODO: should we include a limit() since this is only for send-replies
+      return r.knex('campaign_contact')
         .where({ campaign_id: campaign.id })
-    ),
-    contactsCount: async (campaign) => (
-      await r.getCount(
+    },
+    contactsCount: async (campaign, _, { user }) => {
+      await accessRequired(user, campaign.organization_id, 'SUPERVOLUNTEER', true)
+      return await r.getCount(
         r.knex('campaign_contact')
           .where({ campaign_id: campaign.id })
       )
-    ),
-    hasUnassignedContacts: async (campaign) => {
+    },
+    hasUnassignedContactsForTexter: async (campaign, _, { user }) => {
+      // This is the same as hasUnassignedContacts, but the access control
+      // is different because for TEXTERs it's just for dynamic campaigns
+      // but hasUnassignedContacts for admins is for the campaigns list
+      await accessRequired(user, campaign.organization_id, 'TEXTER', true)
+      if (!campaign.use_dynamic_assignment || campaign.is_archived) {
+        return false
+      }
       const contacts = await r.knex('campaign_contact')
         .select('id')
         .where({ campaign_id: campaign.id, assignment_id: null })
         .limit(1)
       return contacts.length > 0
     },
-    hasUnsentInitialMessages: async (campaign) => {
+    hasUnassignedContacts: async (campaign, _, { user }) => {
+      await accessRequired(user, campaign.organization_id, 'SUPERVOLUNTEER', true)
+      const contacts = await r.knex('campaign_contact')
+        .select('id')
+        .where({ campaign_id: campaign.id, assignment_id: null })
+        .limit(1)
+      return contacts.length > 0
+    },
+    hasUnsentInitialMessages: async (campaign, _, { user }) => {
+      await accessRequired(user, campaign.organization_id, 'SUPERVOLUNTEER', true)
       const contacts = await r.knex('campaign_contact')
         .select('id')
         .where({
@@ -230,11 +250,18 @@ export const resolvers = {
       || cacheableData.campaign.dbCustomFields(campaign.id)
     ),
     stats: async (campaign) => campaign,
+    cacheable: (campaign, _, { user }) => Boolean(r.redis),
     editors: async (campaign, _, { user }) => {
+      await accessRequired(user, campaign.organization_id, 'SUPERVOLUNTEER', true)
       if (r.redis) {
-        return currentEditors(r.redis, campaign, user)
+        return cacheableData.campaign.currentEditors(campaign, user)
       }
       return ''
-    }
+    },
+    creator: async (campaign, _, { loaders }) => (
+      campaign.creator_id
+      ? loaders.user.load(campaign.creator_id)
+      : null
+    )
   }
 }

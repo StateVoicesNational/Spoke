@@ -111,7 +111,7 @@ function parseMessageText(message) {
   return params
 }
 
-async function sendMessage(message, trx) {
+async function sendMessage(message, contact, trx) {
   if (!twilio) {
     log.warn('cannot actually send SMS message -- twilio is not fully configured:', message.id)
     if (message.id) {
