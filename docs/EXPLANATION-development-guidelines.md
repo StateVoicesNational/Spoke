@@ -108,8 +108,11 @@ Sqlite does not support knex's `returning()` method.  This affects running `r.kn
 
 ### Schema changes
 
-Create a new migration using the [knex CLI](https://knexjs.org/#Migrations).  If you create a table, make sure you use
-`r.knex.schema.createTableIfNotExists` (see knex documentation and existing examples).
+Every schema change needs two changes:
+
+1. An update to the appropriate model definition in src/server/models/ directory
+2. Create a new migration using the [knex CLI](https://knexjs.org/#Migrations) -- `yarn knex migrate:make <migration_name>`
+   If you create a table, make sure you use `r.knex.schema.createTableIfNotExists` (see knex documentation and existing examples).
 
 In order to support PostgreSQL and Sqlite, you can define a field as `.json()` when defining it in the
 migration, but it should be `type.string()` in its `src/server/models/` definition.
@@ -117,6 +120,7 @@ migration, but it should be `type.string()` in its `src/server/models/` definiti
 Production instances can disable automatic migrations on startup with environment variable `SUPPRESS_MIGRATIONS`.
 
 If you want to use the knex CLI, run with `yarn knex` which will leverage your `.env` environment.
+
 
 
 ## Apollo/GraphQL structure and gotchas
