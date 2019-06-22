@@ -3,11 +3,11 @@ import { createLoaders, createTables, dropTables, User, CampaignContact, r } fro
 import { graphql } from 'graphql'
 
 export async function setupTest() {
-  await r.k.migrate.latest()
+  await createTables()
 }
 
 export async function cleanupTest() {
-  r.k.destroy()
+  await dropTables()
 }
 
 export function getContext(context) {

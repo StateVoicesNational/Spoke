@@ -267,7 +267,7 @@ const initialize = async (knex, Promise) => {
         t.timestamp('queued_at').defaultTo(knex.fn.now()).notNullable()
         t.timestamp('sent_at').defaultTo(knex.fn.now()).notNullable()
         t.timestamp('service_response_at').defaultTo(knex.fn.now()).notNullable()
-        t.timestamp('send_before').defaultTo(knex.fn.now()).notNullable()
+        t.timestamp('send_before')
 
         t.index('assignment_id')
         t.foreign('assignment_id').references('assignment.id')
