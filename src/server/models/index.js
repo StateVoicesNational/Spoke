@@ -74,11 +74,13 @@ function createTablesIfNecessary() {
 }
 
 function createTables() {
-  return thinky.createTables(tableList)
+  return thinky.r.knex.migrate.latest()
 }
 
 function dropTables() {
-  return thinky.dropTables(tableList)
+  return thinky.dropTables(tableList).then(function() {
+    return thinky.dropTables(['knex_migrations', 'knex_migrations_lock'])
+  })
 }
 
 function getMessageServiceSid(organization) {
