@@ -65,9 +65,10 @@ const initialize = async (knex, Promise) => {
         t.integer('texting_hours_start').defaultTo(9)
         t.integer('texting_hours_end').defaultTo(21)
         t.text('timezone').defaultTo('US/Eastern')
-
         t.index('organization_id')
         t.foreign('organization_id').references('organization.id')
+        t.index('creator_id')
+        t.foreign('creator_id').references('user.id')
       }
     },
     {
