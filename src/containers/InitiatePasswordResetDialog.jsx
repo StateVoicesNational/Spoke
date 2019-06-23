@@ -48,10 +48,14 @@ class InitiatePasswordResetDialog extends React.Component {
   }
 
   editingSelf = () => {
-    return this.props.currentUser.id === this.userId
+    return this.props.currentUser.id === this.props.userId
   }
 
   openDialog = () => {
+    if (this.props.disabled) {
+      return
+    }
+
     this.setState({ open: true })
   }
 
@@ -66,24 +70,24 @@ class InitiatePasswordResetDialog extends React.Component {
     if (this.editingSelf()) {
       if (this.state.alreadyInitiated) {
         return 'Check your email. We sent instructions to reset your password.'
-      } else {
-        return "To reset your password, click Initiate Password Reset. We'll send instructions via email."
       }
-    } else {
-      if (this.state.alreadyInitiated) {
-        return 'Tell the user to check their email. We sent instructions to reset their password.'
-      } else {
-        return "To reset this user's password, click Initiate Password Reset. We'll send them instructions via email."
-      }
+      return "To reset your password, click Initiate Password Reset. We'll send instructions via email."
     }
+
+    // else
+    if (this.state.alreadyInitiated) {
+      return 'Tell the user to check their email. We sent instructions to reset their password.'
+    }
+    return "To reset this user's password, click Initiate Password Reset. We'll send them instructions via email."
   }
 
   render = () => {
-    return this.props.currentUser.loading ? null : (<div>
+    return this.props.currentUser.loading ? null : (<span>
       <RaisedButton
         onTouchTap={this.openDialog}
         label='Reset password'
         variant='outlined'
+        disabled={this.props.disabled}
       />
       <Dialog
         className={css(styles.container)}
@@ -94,7 +98,7 @@ class InitiatePasswordResetDialog extends React.Component {
       >
         {this.text()}
       </Dialog>
-    </div>)
+    </span>)
   }
 }
 
@@ -102,7 +106,8 @@ InitiatePasswordResetDialog.propTypes = {
   currentUser: PropTypes.object,
   organizationId: PropTypes.string,
   userId: PropTypes.string,
-  mutations: PropTypes.object
+  mutations: PropTypes.object,
+  disabled: PropTypes.boolean
 }
 
 const mapMutationsToProps = ({ ownProps }) => ({

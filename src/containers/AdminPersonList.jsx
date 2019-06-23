@@ -20,6 +20,7 @@ import gql from 'graphql-tag'
 import { dataTest } from '../lib/attributes'
 import LoadingIndicator from '../components/LoadingIndicator'
 import PaginatedUsersRetriever from './PaginatedUsersRetriever'
+import InitiatePasswordResetDialog from './InitiatePasswordResetDialog';
 
 class AdminPersonList extends React.Component {
 
@@ -205,11 +206,20 @@ class AdminPersonList extends React.Component {
                   label='Edit'
                   onTouchTap={() => { this.editUser(person.id) }}
                 />
-                <FlatButton
-                  label='Reset Password'
-                  disabled={currentUser.id === person.id}
-                  onTouchTap={() => { this.resetPassword(person.id) }}
-                />
+                {window.PASSPORT_STRATEGY === 'local' ? (
+                  <FlatButton
+                    label='Reset Password'
+                    disabled={currentUser.id === person.id}
+                    onTouchTap={() => { this.resetPassword(person.id) }}
+                  />
+                ) : (
+                  <InitiatePasswordResetDialog
+                    currentUser={currentUser.id}
+                    userId={person.id}
+                    organizationId={this.props.organizationData.organization.id}
+                    disabled={currentUser.id === person.id}
+                  />
+                )}
               </TableRowColumn>
             </TableRow>
           ))}
