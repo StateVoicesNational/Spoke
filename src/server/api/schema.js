@@ -57,6 +57,8 @@ import { change } from '../local-auth-helpers'
 
 import { getSendBeforeTimeUtc } from '../../lib/timezones'
 
+import request from 'request'
+
 const uuidv4 = require('uuid').v4
 const JOBS_SAME_PROCESS = !!(process.env.JOBS_SAME_PROCESS || global.JOBS_SAME_PROCESS)
 const JOBS_SYNC = !!(process.env.JOBS_SYNC || global.JOBS_SYNC)
@@ -369,7 +371,9 @@ const rootMutations = {
         await accessRequired(user, organizationId, 'ADMIN', true)
       }
       const userRes = await r
-        .knex('user')
+        .knex
+        .select('user.id', 'first_name', 'last_name', 'email', 'cell')
+        .from('user')
         .join('user_organization', 'user.id', 'user_organization.user_id')
         .where({
           'user_organization.organization_id': organizationId,
@@ -432,6 +436,32 @@ const rootMutations = {
       const updatedUser = await change({ user, password, newPassword, passwordConfirm })
 
       return updatedUser
+    },
+    initiatePasswordReset: async (_, { organizationId, userId }, { user } ) => {
+      if (user.id !== userId) {
+        await accessRequired(user, organizationId, 'ADMIN', true)
+      }
+
+      const targetUser = await r
+        .table('user')
+        .get(userId)
+
+      const options = { method: 'POST',
+        url: `https://${process.env.AUTH0_DOMAIN}/dbconnections/change_password`,
+        headers: { 'content-type': 'application/json' },
+        body:
+          { client_id: `${process.env.AUTH0_CLIENT_ID}`,
+            email: targetUser.email,
+            connection: 'Username-Password-Authentication' },
+        json: true }
+
+      await request.post(options, (error, response, body) => {
+        const successful = !error && response.statusCode === 200
+        if (!successful) {
+          console.log(response.body)
+        }
+      })
+      return true
     },
     joinOrganization: async (_, { organizationUuid }, { user, loaders }) => {
       let organization

@@ -210,6 +210,7 @@ const rootSchema = gql`
     editUser(organizationId: String!, userId: Int!, userData:UserInput): User
     resetUserPassword(organizationId: String!, userId: Int!): String!
     changeUserPassword(userId: Int!, formData: UserPasswordChange): User
+    initiatePasswordReset(organizationId: String!, userId: String!): Boolean
     updateTextingHours( organizationId: String!, textingHoursStart: Int!, textingHoursEnd: Int!): Organization
     updateTextingHoursEnforcement( organizationId: String!, textingHoursEnforced: Boolean!): Organization
     updateOptOutMessage( organizationId: String!, optOutMessage: String!): Organization

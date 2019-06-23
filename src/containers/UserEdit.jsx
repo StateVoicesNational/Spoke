@@ -12,6 +12,7 @@ import RaisedButton from 'material-ui/RaisedButton'
 import { StyleSheet, css } from 'aphrodite'
 
 import { dataTest } from '../lib/attributes'
+import InitiatePasswordResetDialog from './InitiatePasswordResetDialog';
 
 const styles = StyleSheet.create({
   buttons: {
@@ -169,11 +170,19 @@ class UserEdit extends React.Component {
           <div className={css(styles.buttons)}>
             {authType !== 'change' && userId && (userId === data.currentUser.id) &&
               <div className={css(styles.container)}>
-                <RaisedButton
-                  onTouchTap={this.handleClick}
-                  label='Change password'
-                  variant='outlined'
-                />
+                {window.PASSPORT_STRATEGY === 'local' ? (
+                  <RaisedButton
+                    onTouchTap={() => this.handleClick()}
+                    label='Change password'
+                    variant='outlined'
+                  />
+                ) : (
+                  <InitiatePasswordResetDialog
+                    currentUser={this.props.editUser}
+                    userId={this.props.userId}
+                    organizationId={this.props.organizationId}
+                  />
+                )}
               </div>}
             <Form.Button
               type='submit'
