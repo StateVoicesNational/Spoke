@@ -1,7 +1,9 @@
 import PropTypes from 'prop-types'
 import React from 'react'
+import { withRouter } from 'react-router'
 import Empty from '../components/Empty'
 import OrganizationJoinLink from '../components/OrganizationJoinLink'
+import PasswordResetLink from '../components/PasswordResetLink'
 import UserEdit from './UserEdit'
 import FlatButton from 'material-ui/FlatButton'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
@@ -16,10 +18,11 @@ import theme from '../styles/theme'
 import loadData from './hoc/load-data'
 import gql from 'graphql-tag'
 import { dataTest } from '../lib/attributes'
+import LoadingIndicator from '../components/LoadingIndicator'
 
 const organizationFragment = `
   id
-  people {
+  people(campaignId: $campaignId) {
     id
     displayName
     email
@@ -38,7 +41,15 @@ class AdminPersonList extends React.Component {
 
   state = {
     open: false,
-    userEdit: false
+    userEdit: false,
+    passwordResetHash: ''
+  }
+
+  handleFilterChange = (event, index, value) => {
+    const query = value ? `?campaignId=${value}` : ''
+    this.props.router.push(
+      `/admin/${this.props.params.organizationId}/people${query}`
+    )
   }
 
   handleOpen() {
@@ -46,7 +57,7 @@ class AdminPersonList extends React.Component {
   }
 
   handleClose() {
-    this.setState({ open: false })
+    this.setState({ open: false, passwordResetHash: '' })
   }
 
   handleChange = async (userId, value) => {
@@ -65,8 +76,42 @@ class AdminPersonList extends React.Component {
     this.props.personData.refetch()
   }
 
+  async resetPassword(userId) {
+    const { userData: { currentUser } } = this.props
+    if (currentUser.id !== userId) {
+      const res = await this
+        .props
+        .mutations
+        .resetUserPassword(this.props.params.organizationId, userId)
+      this.setState({ passwordResetHash: res.data.resetUserPassword })
+    }
+  }
+
+  renderCampaignList = () => {
+    const { organizationData: { organization } } = this.props
+    const campaigns = organization ? organization.campaigns : []
+    return (
+      <DropDownMenu
+        value={this.props.location.query.campaignId}
+        onChange={this.handleFilterChange}
+      >
+        <MenuItem primaryText='All Campaigns' />
+        {campaigns.campaigns.map(campaign => (
+          <MenuItem
+            value={campaign.id}
+            primaryText={campaign.title}
+            key={campaign.id}
+          />
+        ))}
+      </DropDownMenu>
+    )
+  }
+
   renderTexters() {
-    const { people } = this.props.personData.organization
+    const { personData, userData: { currentUser } } = this.props
+    if (!currentUser) return <LoadingIndicator />
+
+    const people = personData.organization && personData.organization.people || []
     if (people.length === 0) {
       return (
         <Empty
@@ -75,8 +120,6 @@ class AdminPersonList extends React.Component {
         />
       )
     }
-
-    const currentUser = this.props.userData.currentUser
 
     return (
       <Table selectable={false}>
@@ -110,6 +153,11 @@ class AdminPersonList extends React.Component {
                   label='Edit'
                   onTouchTap={() => { this.editUser(person.id) }}
                 />
+                <FlatButton
+                  label='Reset Password'
+                  disabled={currentUser.id === person.id}
+                  onTouchTap={() => { this.resetPassword(person.id) }}
+                />
               </TableRowColumn>
             </TableRow>
           ))}
@@ -119,10 +167,11 @@ class AdminPersonList extends React.Component {
   }
 
   render() {
-    const { params, organizationData } = this.props
+    const { organizationData } = this.props
 
     return (
       <div>
+        {this.renderCampaignList()}
         {this.renderTexters()}
         <FloatingActionButton
           {...dataTest('addPerson')}
@@ -131,37 +180,59 @@ class AdminPersonList extends React.Component {
         >
           <ContentAdd />
         </FloatingActionButton>
-        <Dialog
-          {...dataTest('editPersonDialog')}
-          title='Edit user'
-          modal={false}
-          open={Boolean(this.state.userEdit)}
-          onRequestClose={() => { this.setState({ userEdit: false }) }}
-        >
-          <UserEdit
-            organizationId={organizationData.organization.id}
-            userId={this.state.userEdit}
-            onRequestClose={this.updateUser}
-          />
-        </Dialog>
-        <Dialog
-          title='Invite new texters'
-          actions={[
-            <FlatButton
-              {...dataTest('inviteOk')}
-              label='OK'
-              primary
-              onTouchTap={this.handleClose}
-            />
-          ]}
-          modal={false}
-          open={this.state.open}
-          onRequestClose={this.handleClose}
-        >
-          <OrganizationJoinLink
-            organizationUuid={organizationData.organization.uuid}
-          />
-        </Dialog>
+        {organizationData.organization && (
+          <div>
+            <Dialog
+              {...dataTest('editPersonDialog')}
+              title='Edit user'
+              modal={false}
+              open={Boolean(this.state.userEdit)}
+              onRequestClose={() => { this.setState({ userEdit: false }) }}
+            >
+              <UserEdit
+                organizationId={organizationData.organization && organizationData.organization.id}
+                userId={this.state.userEdit}
+                onRequestClose={this.updateUser}
+              />
+            </Dialog>
+            <Dialog
+              title='Invite new texters'
+              actions={[
+                <FlatButton
+                  {...dataTest('inviteOk')}
+                  label='OK'
+                  primary
+                  onTouchTap={this.handleClose}
+                />
+              ]}
+              modal={false}
+              open={this.state.open}
+              onRequestClose={this.handleClose}
+            >
+              <OrganizationJoinLink
+                organizationUuid={organizationData.organization.uuid}
+              />
+            </Dialog>
+            <Dialog
+              title='Reset user password'
+              actions={[
+                <FlatButton
+                  {...dataTest('passResetOK')}
+                  label='OK'
+                  primary
+                  onTouchTap={this.handleClose}
+                />
+              ]}
+              modal={false}
+              open={Boolean(this.state.passwordResetHash)}
+              onRequestClose={this.handleClose}
+            >
+              <PasswordResetLink
+                passwordResetHash={this.state.passwordResetHash}
+              />
+            </Dialog>
+          </div>
+        )}
       </div>
     )
   }
@@ -172,14 +243,16 @@ AdminPersonList.propTypes = {
   params: PropTypes.object,
   personData: PropTypes.object,
   userData: PropTypes.object,
-  organizationData: PropTypes.object
+  organizationData: PropTypes.object,
+  router: PropTypes.object,
+  location: PropTypes.object
 }
 
-const mapMutationsToProps = () => ({
+const mapMutationsToProps = ({ ownProps }) => ({
   editOrganizationRoles: (organizationId, userId, roles) => ({
     mutation: gql`
-      mutation editOrganizationRoles($organizationId: String!, $userId: String!, $roles: [String]) {
-        editOrganizationRoles(organizationId: $organizationId, userId: $userId, roles: $roles) {
+      mutation editOrganizationRoles($organizationId: String!, $userId: String!, $roles: [String], $campaignId: String) {
+        editOrganizationRoles(organizationId: $organizationId, userId: $userId, roles: $roles, campaignId: $campaignId) {
           ${organizationFragment}
         }
       }
@@ -187,20 +260,33 @@ const mapMutationsToProps = () => ({
     variables: {
       organizationId,
       userId,
-      roles
+      roles,
+      campaignId: ownProps.location.query.campaignId
+    }
+  }),
+  resetUserPassword: (organizationId, userId) => ({
+    mutation: gql`
+      mutation resetUserPassword($organizationId: String!, $userId: Int!) {
+        resetUserPassword(organizationId: $organizationId, userId: $userId)
+      }
+    `,
+    variables: {
+      organizationId,
+      userId
     }
   })
 })
 
 const mapQueriesToProps = ({ ownProps }) => ({
   personData: {
-    query: gql`query getPeople($organizationId: String!) {
+    query: gql`query getPeople($organizationId: String!, $campaignId: String) {
       organization(id: $organizationId) {
         ${organizationFragment}
       }
     }`,
     variables: {
-      organizationId: ownProps.params.organizationId
+      organizationId: ownProps.params.organizationId,
+      campaignId: ownProps.location.query.campaignId
     },
     forceFetch: true
   },
@@ -221,6 +307,14 @@ const mapQueriesToProps = ({ ownProps }) => ({
       organization(id: $organizationId) {
         id
         uuid
+        campaigns(campaignsFilter: { isArchived: false }) {
+          ... on CampaignsList{
+            campaigns{
+              id
+              title
+            }
+          }
+        }
       }
     }`,
     variables: {
@@ -230,4 +324,4 @@ const mapQueriesToProps = ({ ownProps }) => ({
   }
 })
 
-export default loadData(AdminPersonList, { mapQueriesToProps, mapMutationsToProps })
+export default loadData(withRouter(AdminPersonList), { mapQueriesToProps, mapMutationsToProps })

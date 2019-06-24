@@ -11,11 +11,11 @@ const plugins = [
     'process.env.PHONE_NUMBER_COUNTRY': `"${process.env.PHONE_NUMBER_COUNTRY}"`
   }),
   new webpack.ContextReplacementPlugin(
-    /[\/\\]node_modules[\/\\]timezonecomplete[\/\\]/,
-    path.resolve("tz-database-context"),
-    {
-      "tzdata": "tzdata",
-    }
+      /[\/\\]node_modules[\/\\]timezonecomplete[\/\\]/,
+      path.resolve("tz-database-context"),
+      {
+        "tzdata": "tzdata",
+      }
   )
 ]
 const jsxLoaders = [{loader: 'babel-loader'}]

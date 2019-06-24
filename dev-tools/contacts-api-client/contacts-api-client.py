@@ -12,10 +12,10 @@ def _get_parsed_args():
     arg_parser.add_argument('-f', '--file', help='File containing contacts to upload', required=True)
     arg_parser.add_argument(
         '-b', '--batch_size', help='Number of contacts to send in each batch', type=int, default=100)
-    arg_parser.add_argument('-a', '--address', help='API host address', required=True)
+    arg_parser.add_argument('-a', '--address', help='API host address')
     arg_parser.add_argument('-p', '--port', help='API port', default=3000)
-    arg_parser.add_argument('-c', '--campaign_id', help='ID of campaign to add contacts to', required=True)
-    arg_parser.add_argument('-o', '--organization_id', help='ID of organization', required=True)
+    arg_parser.add_argument('-c', '--campaign_id', help='ID of campaign to add contacts to')
+    arg_parser.add_argument('-o', '--organization_id', help='ID of organization')
     arg_parser.add_argument(
         '--delete_first', action='store_true', help='Delete all existing contacts for the campaign', required=False)
     arg_parser.add_argument(
@@ -24,6 +24,7 @@ def _get_parsed_args():
         help='Add contacts that duplicate contacts already in the campaign',
         required=False)
     arg_parser.add_argument('-k', '--api_key', help='API key for authorization')
+    arg_parser.add_argument('-u', '--aep', help='AEP URL')
 
     return arg_parser.parse_args()
 
@@ -79,12 +80,20 @@ def make_psh(batch):
 def main():
     args = _get_parsed_args()
 
+    if (not (( args.address and args.campaign_id and args.organization_id ) or (args.aep))):
+        raise ValueError("Argument error: either --aep or -a/--address, -c/--campaign_id, -o/--organization_id")
+        
     api_key = args.api_key
 
-    url = 'http://{host}:{port}/osdi/org/{organization_id}/campaigns/{campaign_id}/api/v1/people'.format(
-        host=args.address, port=args.port, organization_id=args.organization_id, campaign_id=args.campaign_id)
+    aep=args.aep
 
-    status_url = 'http://{host}:{port}/osdi/org/{organization_id}/campaigns/{campaign_id}/api/v1/stats'.format(host=args.address, port=args.port, organization_id=args.organization_id, campaign_id=args.campaign_id)
+    if ( not aep ):
+        aep = 'http://{host}:{port}/osdi/org/{organization_id}/campaigns/{campaign_id}/api/v1'.format(host=args.address, port=args.port, organization_id=args.organization_id, campaign_id=args.campaign_id)
+
+    url = '{aep}/people'.format(
+        aep=aep)
+
+    status_url = '{aep}/stats'.format(aep=aep)
 
     batches = list()
 

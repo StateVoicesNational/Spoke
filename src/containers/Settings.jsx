@@ -203,7 +203,7 @@ class Settings extends React.Component {
 
   render() {
     const { organization } = this.props.data
-    const {optOutMessage } = organization
+    const { optOutMessage } = organization
     const formSchema = yup.object({
       optOutMessage: yup.string().required()
     })
@@ -223,9 +223,9 @@ class Settings extends React.Component {
               defaultValue={{ optOutMessage }}
             >
 
-              <Form.Field 
-                label='Default Opt-Out Message' 
-                name='optOutMessage'  
+              <Form.Field
+                label='Default Opt-Out Message'
+                name='optOutMessage'
                 fullWidth
               />
 
@@ -322,7 +322,7 @@ const mapMutationsToProps = ({ ownProps }) => ({
       textingHoursEnforced
     }
   }),
-  updateOptOutMessage: ({optOutMessage}) => ({
+  updateOptOutMessage: ({ optOutMessage }) => ({
     mutation: gql`
       mutation updateOptOutMessage($optOutMessage: String!, $organizationId: String!) {
         updateOptOutMessage(optOutMessage: $optOutMessage, organizationId: $organizationId) {

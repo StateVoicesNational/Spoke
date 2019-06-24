@@ -1,6 +1,6 @@
-# Development Guidelines
+# Development Guidelines and Tips
 
-This document describes current gotchas in our code base an explains the context
+This document describes tips and current gotchas in our code base and explains the context
 for parts that are evolving in a certain direction (or we *want* to evolve in a certain direction).
 
 See [CONTRIBUTING.md](../CONTRIBUTING.md) and the [README](../README.md) for setup
@@ -18,6 +18,18 @@ Generally, label by filename what kind of documentation it is in all-caps, one o
 * How-to guide
 * Reference
 
+## Helpful Dev Tips
+* Run `sqlite3 mydb.sqlite` to connect to a SQL shell for the dev database
+* [Set up an ESLint plugin in your code editor so that you catch coding errors and follow code style guidelines more easily!](https://medium.com/planet-arkency/catch-mistakes-before-you-run-you-javascript-code-6e524c36f0c8#.oboqsse48)
+* [Install the redux-devtools-extension](https://github.com/zalmoxisus/redux-devtools-extension) in Chrome to get advanced Redux debugging features.
+* Right now there is a bug in Apollo (https://github.com/apollostack/react-apollo/issues/57) that means in one particular case, errors get swallowed.  If you end up with an app that is silently breaking, console.log(this.props.data) and check the errors property.
+
+## Dependency Management
+
+Spoke uses the [yarn](https://yarnpkg.com) package manager. Please follow their documentation when [adding, upgrading, or removing dependencies](https://yarnpkg.com/en/docs/managing-dependencies).
+
+Yarn also uses a [yarn.lock](https://yarnpkg.com/en/docs/yarn-lock) file to ensure consistent installs across machines. Any changes to `yarn.lock` should be included in your pull request. If merge conflicts arise in `yarn.lock`, yarn should [automatically resolve those conflicts](https://stackoverflow.com/questions/42939113/how-do-you-resolve-git-conflicts-in-yarn-lock) during the next `yarn install`.
+
 ## Environment Variables/Configuration
 
 Environment Variables affect how the application is run. We aim to support a
@@ -33,7 +45,7 @@ enviornment variable:
 * For any variables that enable features that should not be enabled (for legal reasons) in the United States, always ALSO test for `process.env.NOT_IN_USA` -- this ensures that the code self-documents the context these features will be available (and not available in).
 
 
-## Understanding DB/ORM calls
+## Understanding DB/.[ORM].(https://stackoverflow.com/questions/1279613/what-is-an-orm-and-where-can-i-learn-more-about-it) calls
 
 ###TLDR
 
@@ -106,6 +118,8 @@ Production instances can disable automatic migrations on startup with environmen
 
 
 ## Apollo/GraphQL structure and gotchas
+
+Spoke was originally generated from [react-apollo-starter-kit](https://github.com/saikat/react-apollo-starter-kit).  You can look at that project's README for info on some of the libraries used.
 
 See [EXPLANATION-request-example.md](./EXPLANATION-request-example.md) for a great run-down all the
 way through the call stack on the client and server.

@@ -127,7 +127,7 @@ const rootSchema = `
     message: MessageInput!
     campaignContactId: String!
   }
-  
+
   input OffsetLimitCursor {
     offset: Int!
     limit: Int!
@@ -137,6 +137,13 @@ const rootSchema = `
     campaignId: String!
     campaignContactId: Int!
     messageIds: [Int]!
+  }
+
+  input UserPasswordChange {
+    email: String!
+    password: String!
+    passwordConfirm: String!
+    newPassword: String!
   }
 
   type CampaignIdAssignmentId {
@@ -153,11 +160,11 @@ const rootSchema = `
   type FoundContact {
     found: Boolean
   }
-  
+
   type PageInfo {
     limit: Int!
     offset: Int!
-    next: Int!
+    next: Int
     previous: Int
     total: Int!
   }
@@ -176,6 +183,8 @@ const rootSchema = `
     organizations: [Organization]
     availableActions(organizationId:String!): [Action]
     conversations(cursor:OffsetLimitCursor!, organizationId:String!, campaignsFilter:CampaignsFilter, assignmentsFilter:AssignmentsFilter, contactsFilter:ContactsFilter, utc:String): PaginatedConversations
+    campaigns(organizationId:String!, cursor:OffsetLimitCursor, campaignsFilter: CampaignsFilter): CampaignsReturn
+    people(organizationId:String!, cursor:OffsetLimitCursor, campaignsFilter:CampaignsFilter, role: String): UsersReturn
   }
 
   type RootMutation {
@@ -188,8 +197,10 @@ const rootSchema = `
     createCannedResponse(cannedResponse:CannedResponseInput!): CannedResponse
     createOrganization(name: String!, userId: String!, inviteId: String!): Organization
     joinOrganization(organizationUuid: String!): Organization
-    editOrganizationRoles(organizationId: String!, userId: String!, roles: [String]): Organization
+    editOrganizationRoles(organizationId: String!, userId: String!, campaignId: String, roles: [String]): Organization
     editUser(organizationId: String!, userId: Int!, userData:UserInput): User
+    resetUserPassword(organizationId: String!, userId: Int!): String!
+    changeUserPassword(userId: Int!, formData: UserPasswordChange): User
     updateTextingHours( organizationId: String!, textingHoursStart: Int!, textingHoursEnd: Int!): Organization
     updateTextingHoursEnforcement( organizationId: String!, textingHoursEnforced: Boolean!): Organization
     updateOptOutMessage( organizationId: String!, optOutMessage: String!): Organization
@@ -201,13 +212,15 @@ const rootSchema = `
     updateQuestionResponses(questionResponses:[QuestionResponseInput], campaignContactId:String!): CampaignContact,
     startCampaign(id:String!): Campaign,
     archiveCampaign(id:String!): Campaign,
+    archiveCampaigns(ids: [String!]): [Campaign],
     unarchiveCampaign(id:String!): Campaign,
     sendReply(id: String!, message: String!): CampaignContact
     getAssignmentContacts(assignmentId: String!, contactIds: [String], findNew: Boolean): [CampaignContact],
     findNewCampaignContact(assignmentId: String!, numberContacts: Int!): FoundContact,
     assignUserToCampaign(organizationUuid: String!, campaignId: String!): Campaign
     userAgreeTerms(userId: String!): User
-    reassignCampaignContacts(organizationId:String!, campaignIdsContactIds:[CampaignIdContactId]!, newTexterUserId:String!):[CampaignIdAssignmentId]
+    reassignCampaignContacts(organizationId:String!, campaignIdsContactIds:[CampaignIdContactId]!, newTexterUserId:String!):[CampaignIdAssignmentId],
+    bulkReassignCampaignContacts(organizationId:String!, campaignsFilter:CampaignsFilter, assignmentsFilter:AssignmentsFilter, contactsFilter:ContactsFilter, newTexterUserId:String!):[CampaignIdAssignmentId]
     updateApiKey(organizationId:String!, apiKey:String!): Organization
   }
 
@@ -236,4 +249,3 @@ export const schema = [
   inviteSchema,
   conversationSchema
 ]
-

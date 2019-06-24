@@ -1,3 +1,6 @@
+Below configuration about all the services necessary to deploy on AWS are outlined. There is an
+[experimental CloudFront deploy script maintained by the community as an alternative](https://github.com/bchrobot/terraform-aws-spoke).
+
 # Table Contents
 
 1. [AWS Resource Configuration](#aws-resource-configuration)
@@ -117,7 +120,7 @@ Create an RDS instance running Postgres 10.4 with the following settings:
 
 ### Configure Deploy Environment
 
-1. First make sure you are running node 6.10 (compatible with AWS Lambda) `nvm install 6.10; nvm use 6.10`
+1. First make sure you are running node 8.10 (compatible with AWS Lambda) `nvm install 8.10; nvm use 8.10`
 2. Install Claudia js: `npm install -g claudia`
 3. Create an admin user on AWS selecting programmatic access. Add that profile to `~/.aws/credentials` giving it a nickname to use later in shell commands:
     ```
@@ -229,7 +232,7 @@ Once Claudia has created an API Gateway we can add a subdomain to access Spoke. 
 
 ## Updating Code or Environment Variables
 
-(if you are using nvm, make sure to run `nvm use 6.10` first)
+(if you are using nvm, make sure to run `nvm use 8.10` first)
 
 ```sh
 $ AWS_PROFILE=[your_profile_nickname] claudia update \

@@ -1,4 +1,4 @@
-import { r, Migrations } from '../server/models'
+import { r, Migrations, CannedResponse } from '../server/models'
 import { log } from '../lib'
 
 // To add a migrations, add a new migration object to the
@@ -143,7 +143,7 @@ const migrations = [
   {
     auto: true, // 12
     date: '2018-08-25',
-    migrate: async function () {
+    migrate: async () => {
       console.log('adding texting hours fields to campaign')
       await r.knex.schema.alterTable('campaign', (table) => {
         table.boolean('override_organization_texting_hours').notNullable().default(false)
@@ -155,7 +155,45 @@ const migrations = [
 
       console.log('added texting hours fields to campaign')
     }
+  },
+  { auto: true, // 13
+    date: '2018-09-03',
+    migrate: async function() {
+      await r.knex.schema.alterTable('message', (table) => {
+        table.timestamp('send_before')
+      })
+      console.log('added send_before column to message table')
+    }
+  },
+  {
+    auto: true, // 14
+    date: '2019-02-24',
+    migrate: async () => {
+      console.log('adding creator_id field to campaign')
+      await r.knex.schema.alterTable('campaign', (table) => {
+        table.integer('creator_id')
+          .unsigned()
+          .nullable()
+          .default(null)
+          .index()
+          .references('id')
+          .inTable('user')
+      })
+
+      console.log('added creator_id field to campaign')
+    }
+  },
+  {
+    auto: true, // 14
+    date: '2019-05-13',
+    migrate: async () => {
+      console.log('setting sequence value for canned_response')
+      const maxId = (await r.knex('canned_response').max('id').first()).max || 0
+      await r.knex.raw(`ALTER SEQUENCE canned_response_id_seq RESTART WITH ${maxId + 1}`)
+      console.log(`set sequence canned_response_id_seq to ${maxId + 1}`)
+    }
   }
+
   /* migration template
      {auto: true, //if auto is false, then it will block the migration running automatically
       date: '2017-08-23',

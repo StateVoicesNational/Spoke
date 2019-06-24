@@ -5,7 +5,6 @@ import Form from 'react-formal'
 import GSForm from './forms/GSForm'
 import CampaignFormSectionHeading from './CampaignFormSectionHeading'
 import yup from 'yup'
-import { css, StyleSheet } from 'aphrodite'
 import cloneDeep from 'lodash/cloneDeep'
 import isEqual from 'lodash/isEqual'
 import moment from 'moment'
@@ -159,8 +158,8 @@ export default class CampaignTextingHoursForm extends React.Component {
         onSubmit={this.props.onSubmit}
       >
         <CampaignFormSectionHeading
-          title="Texting hours for campaign"
-          subtitle="You can use the texting-hours configuration for your organization, or configure texting hours for this campaign."
+          title='Texting hours for campaign'
+          subtitle='You can use the texting-hours configuration for your organization, or configure texting hours for this campaign.'
         />
 
         {this.addToggleFormField(
@@ -216,7 +215,7 @@ export default class CampaignTextingHoursForm extends React.Component {
         )}
 
         <Form.Button
-          type="submit"
+          type='submit'
           disabled={this.props.saveDisabled}
           label={this.props.saveLabel}
         />

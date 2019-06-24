@@ -27,7 +27,7 @@ export async function authShortCircuit(req, res, orgId) {
 
   const organization = await r.knex('organization').where('id', orgId).first('features')
   const features = organization.features ? JSON.parse(organization.features) : {}
-  const {apiKey} = features
+  const apiKey = features.apiKey;
 
   let apiKeyInHeader = undefined;
   const matchResult = req.headers.authorization ? req.headers.authorization.match(/Basic\s+(.*)$/) : undefined;
