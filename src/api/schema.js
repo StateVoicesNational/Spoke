@@ -178,7 +178,6 @@ const rootSchema = `
     organization(id:String!, utc:String): Organization
     campaign(id:String!): Campaign
     inviteByHash(hash:String!): [Invite]
-    contact(id:String!): CampaignContact
     assignment(id:String!): Assignment
     organizations: [Organization]
     availableActions(organizationId:String!): [Action]
