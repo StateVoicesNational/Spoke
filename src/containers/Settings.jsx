@@ -13,6 +13,8 @@ import { Card, CardText, CardActions, CardHeader } from 'material-ui/Card'
 import { StyleSheet, css } from 'aphrodite'
 import Toggle from 'material-ui/Toggle'
 import moment from 'moment'
+import { newUUID, getHash } from '../server/api/osdi/api-auth'
+
 const styles = StyleSheet.create({
   section: {
     margin: '10px 0'
@@ -53,6 +55,71 @@ class Settings extends React.Component {
   handleOpenTextingHoursDialog = () => this.setState({ textingHoursDialogOpen: true })
 
   handleCloseTextingHoursDialog = () => this.setState({ textingHoursDialogOpen: false })
+
+  handleOpenApiKeyDialog = () => this.setState({ ApiKeyDialogOpen: true })
+
+  handleCloseApiKeyDialog = () => this.setState({ ApiKeyDialogOpen : false })
+
+  handleOpenApiKeyConfirmationDialog = () => this.setState({ newApiKey: newUUID(), ApiKeyConfirmationDialogOpen : true })
+
+  handleCloseApiKeyConfirmationDialog = () => this.setState({ ApiKeyConfirmationDialogOpen : false })
+
+
+  renderTextingHoursForm() {
+    const { organization } = this.props.data
+    const { textingHoursStart, textingHoursEnd } = organization
+    const formSchema = yup.object({
+      textingHoursStart: yup.number().required(),
+      textingHoursEnd: yup.number().required()
+    })
+
+    const hours = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]
+    const hourChoices = hours.map((hour) => ({
+      value: hour,
+      label: formatTextingHours(hour)
+    }))
+
+    return (
+        <Dialog
+            open={this.state.textingHoursDialogOpen}
+            onRequestClose={this.handleCloseTextingHoursDialog}
+        >
+          <GSForm
+              schema={formSchema}
+              onSubmit={this.handleSubmitTextingHoursForm}
+              defaultValue={{ textingHoursStart, textingHoursEnd }}
+          >
+            <Form.Field
+                label='Start time'
+                name='textingHoursStart'
+                type='select'
+                fullWidth
+                choices={hourChoices}
+            />
+            <Form.Field
+                label='End time'
+                name='textingHoursEnd'
+                type='select'
+                fullWidth
+                choices={hourChoices}
+            />
+            <div className={css(styles.dialogActions)}>
+              <FlatButton
+                  label='Cancel'
+                  style={inlineStyles.dialogButton}
+                  onTouchTap={this.handleCloseTextingHoursDialog}
+              />
+              <Form.Button
+                  type='submit'
+                  style={inlineStyles.dialogButton}
+                  component={GSSubmitButton}
+                  label='Save'
+              />
+            </div>
+          </GSForm>
+        </Dialog>
+    )
+  }
 
   renderTextingHoursForm() {
     const { organization } = this.props.data
@@ -180,6 +247,8 @@ class Settings extends React.Component {
               />
             ) : ''}
           </CardActions>
+          {this.renderApiKeyForm()}
+
         </Card>
         <div>
           {this.renderTextingHoursForm()}
@@ -253,6 +322,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
         textingHoursStart
         textingHoursEnd
         optOutMessage
+        apiKey 
       }
     }`,
     variables: {

@@ -47,6 +47,7 @@ const rootSchema = `
     cell: Phone!
     reason: String
   }
+  
 
   input QuestionResponseInput {
     campaignContactId: String!
@@ -221,6 +222,7 @@ const rootSchema = `
     userAgreeTerms(userId: String!): User
     reassignCampaignContacts(organizationId:String!, campaignIdsContactIds:[CampaignIdContactId]!, newTexterUserId:String!):[CampaignIdAssignmentId],
     bulkReassignCampaignContacts(organizationId:String!, campaignsFilter:CampaignsFilter, assignmentsFilter:AssignmentsFilter, contactsFilter:ContactsFilter, newTexterUserId:String!):[CampaignIdAssignmentId]
+    updateApiKey(organizationId:String!, apiKey:String!): Organization
   }
 
   schema {
