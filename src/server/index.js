@@ -22,6 +22,11 @@ import { setupUserNotificationObservers } from './notifications'
 import { TwimlResponse } from 'twilio'
 import { existsSync } from 'fs'
 
+
+
+
+import osdiInitialize from './api/osdi';
+
 process.on('uncaughtException', (ex) => {
   log.error(ex)
   process.exit(1)
@@ -172,6 +177,9 @@ app.use('/graphql', graphqlExpress((request) => ({
 app.get('/graphiql', graphiqlExpress({
   endpointURL: '/graphql'
 }))
+
+
+osdiInitialize(app)
 
 // This middleware should be last. Return the React app only if no other route is hit.
 app.use(appRenderer)
