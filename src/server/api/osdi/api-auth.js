@@ -1,16 +1,5 @@
-import crypto from 'crypto'
-import {r} from "../../models";
-const uuidv4 = require('uuid').v4
 
-export function newUUID() {
-  return uuidv4()
-}
-
-export function getHash(text) {
-  const shaHash = crypto.createHash('sha256')
-  shaHash.update(text)
-  return shaHash.digest('base64')
-}
+import { r } from '../../models';
 
 
 function sendUnauthorizedResponse(res) {
@@ -61,7 +50,5 @@ export async function authShortCircuit(req, res, orgId) {
 }
 
 export default {
-  authShortCircuit,
-  getHash,
-  newUUID
+  authShortCircuit
 }

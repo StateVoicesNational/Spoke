@@ -13,7 +13,7 @@ import { Card, CardText, CardActions, CardHeader } from 'material-ui/Card'
 import { StyleSheet, css } from 'aphrodite'
 import Toggle from 'material-ui/Toggle'
 import moment from 'moment'
-import { newUUID, getHash } from '../server/api/osdi/api-auth'
+import { newUUID, getHash } from '../server/api/osdi/guid'
 
 const styles = StyleSheet.create({
   section: {
@@ -121,60 +121,85 @@ class Settings extends React.Component {
     )
   }
 
-  renderTextingHoursForm() {
-    const { organization } = this.props.data
-    const { textingHoursStart, textingHoursEnd } = organization
-    const formSchema = yup.object({
-      textingHoursStart: yup.number().required(),
-      textingHoursEnd: yup.number().required()
-    })
+  renderApiKeyForm() {
+    const { apiKey } = this.props.data.organization
 
-    const hours = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]
-    const hourChoices = hours.map((hour) => ({
-      value: hour,
-      label: formatTextingHours(hour)
-    }))
+    const confirmationAction = [
+      <FlatButton
+          label={'Close'}
+          primary={true}
+          onTouchTap={async () => {
+            this.handleCloseApiKeyConfirmationDialog()
+            await this.props.mutations.updateApiKey(getHash(this.state.newApiKey))
+          }}
+      />
+    ]
 
-    return (
+    const goAheadActions = [
+      <FlatButton
+          label={'Cancel'}
+          primary={true}
+          onTouchTap={async () => {
+            this.handleCloseApiKeyDialog()
+          }}
+      />,
+      <FlatButton
+          label={'Update API Key'}
+          primary={false}
+          onTouchTap={async () => {
+            this.handleCloseApiKeyDialog()
+            this.handleOpenApiKeyConfirmationDialog()
+          }}
+      />
+    ]
+
+    return <div>
       <Dialog
-        open={this.state.textingHoursDialogOpen}
-        onRequestClose={this.handleCloseTextingHoursDialog}
+          open={this.state.ApiKeyConfirmationDialogOpen}
+          onRequestClose={this.handleCloseApiKeyConfirmationDialog}
+          modal={true}
+          actions={confirmationAction}
+          title={'New API Key'}
       >
-        <GSForm
-          schema={formSchema}
-          onSubmit={this.handleSubmitTextingHoursForm}
-          defaultValue={{ textingHoursStart, textingHoursEnd }}
-        >
-          <Form.Field
-            label='Start time'
-            name='textingHoursStart'
-            type='select'
-            fullWidth
-            choices={hourChoices}
-          />
-          <Form.Field
-            label='End time'
-            name='textingHoursEnd'
-            type='select'
-            fullWidth
-            choices={hourChoices}
-          />
-          <div className={css(styles.dialogActions)}>
+        <div style={{ paddingBottom: '10px' }}> Your new API key is: {this.state.newApiKey}</div>
+        <div>Be sure to save it somewhere. This is the only time it will be displayed.</div>
+      </Dialog>
+
+      <Dialog
+          open={this.state.ApiKeyDialogOpen}
+          onRequestClose={this.handleCloseApiKeyDialog}
+          modal={true}
+          actions={goAheadActions}
+          title={'Update API Key?'}
+      >
+        <div>
+          If you proceed, the previous API key will no longer
+          work. Any applications using it will break until they have the new API key.
+        </div>
+      </Dialog>
+
+      <Card>
+        <CardHeader title={'API Key'}/>
+        <CardText>
+          {apiKey ? (
+              <div style={{ paddingBottom: '25px' }}>
+                ✅ API Key Set
+              </div>
+          ) : ''
+          }
+          <div>
             <FlatButton
-              label='Cancel'
-              style={inlineStyles.dialogButton}
-              onTouchTap={this.handleCloseTextingHoursDialog}
-            />
-            <Form.Button
-              type='submit'
-              style={inlineStyles.dialogButton}
-              component={GSSubmitButton}
-              label='Save'
+                label={`${apiKey ? 'Replace' : 'Create'} API key`}
+                primary
+                onTouchTap={
+                  apiKey ?
+                      this.handleOpenApiKeyDialog :
+                      this.handleOpenApiKeyConfirmationDialog
+                }
             />
           </div>
-        </GSForm>
-      </Dialog>
-    )
+        </CardText>
+      </Card></div>
   }
 
   render() {
