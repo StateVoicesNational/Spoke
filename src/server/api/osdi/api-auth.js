@@ -1,10 +1,18 @@
 
 import { r } from '../../models';
-
+import { getHash } from './guid'
 
 function sendUnauthorizedResponse(res) {
   res.writeHead(401, { 'WWW-Authenticate': 'Basic realm=Contacts API' })
   res.end('Unauthorized')
+}
+
+function publicApi(features) {
+  if (features.publicApi === true || process.env.PUBLIC_API === 'true') {
+    return true
+  } else {
+    return false
+  }
 }
 
 export async function authShortCircuit(req, res, orgId) {
@@ -13,12 +21,12 @@ export async function authShortCircuit(req, res, orgId) {
   const features = organization.features ? JSON.parse(organization.features) : {}
   const apiKey = features.apiKey;
 
-  if (features.publicApi === true) {
-    return false;
+  if (publicApi(features) === true) {
+    return false
   }
 
-  if (!((features.publicApi === true) || ('authorization' in req.headers)
-      || ('osdi-api-token' in req.headers)) ) {
+  if (!(('authorization' in req.headers)
+      || ('osdi-api-token' in req.headers))) {
     sendUnauthorizedResponse(res)
     return true
   }

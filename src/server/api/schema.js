@@ -1152,6 +1152,17 @@ const rootMutations = {
         )
 
       return await reassignConversations(campaignIdContactIdsMap, campaignIdMessagesIdsMap, newTexterUserId)
+    },
+    updateApiKey: async (_, { organizationId, apiKey }, { user }) => {
+      await accessRequired(user, organizationId, 'ADMIN', /* superadmin*/ true)
+
+      const organization = await r.knex('organization').where('id', organizationId).first('features')
+      const features = organization.features ? JSON.parse(organization.features) : {}
+
+      features.apiKey = apiKey
+      await r.knex('organization').where('id', organizationId).update({'features':JSON.stringify(features)})
+
+      return await r.knex('organization').where('id', organizationId).first()
     }
   }
 }

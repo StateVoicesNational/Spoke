@@ -333,7 +333,22 @@ const mapMutationsToProps = ({ ownProps }) => ({
       organizationId: ownProps.params.organizationId,
       optOutMessage
     }
-  })
+  }),
+  updateApiKey: (apiKey) => ({
+        mutation: gql`
+        mutation updateApiKey($organizationId: String!, $apiKey: String!) {
+          updateApiKey(organizationId: $organizationId, apiKey: $apiKey) {
+            id
+            apiKey
+          }
+        }
+      `,
+        variables: {
+          organizationId: ownProps.params.organizationId,
+          apiKey
+        }
+      }
+  )
 
 })
 

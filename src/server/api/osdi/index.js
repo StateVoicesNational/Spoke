@@ -113,8 +113,6 @@ function osdiStart(app) {
         })
     }))
 
-
-
     app.use('/api/v1/org/:orgId/campaigns', wrap(async (req, res) => {
         await osdi.campaignChooser(req, res)
     }))
@@ -130,15 +128,11 @@ function osdiStart(app) {
             await osdi.chooser(req, res)
         }))
 
-
-
     app.use('/hal', express.static('hal'));
 
     app.get('/osdi', function(req,res) {
         res.redirect('/hal/browser.html#/api/v1');
-    });
-
-    console.log("added OSDI routes")
+    })
 }
 
 export default osdiStart
