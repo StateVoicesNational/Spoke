@@ -21,6 +21,9 @@ import CampaignCannedResponsesForm from '../components/CampaignCannedResponsesFo
 import { dataTest, camelCase } from '../lib/attributes'
 import CampaignTextingHoursForm from '../components/CampaignTextingHoursForm'
 
+import AdminScriptImport from '../containers/AdminScriptImport'
+import { pendingJobsGql } from '../lib/pendingJobsUtils'
+
 const campaignInfoFragment = `
   id
   title
@@ -161,8 +164,8 @@ class AdminCampaignEdit extends React.Component {
 
   async handleDeleteJob(jobId) {
     if (confirm('Discarding the job will not necessarily stop it from running.'
-                + ' However, if the job failed, discarding will let you try again.'
-                + ' Are you sure you want to discard the job?')) {
+      + ' However, if the job failed, discarding will let you try again.'
+      + ' Are you sure you want to discard the job?')) {
       await this.props.mutations.deleteJob(jobId)
       await this.props.pendingJobsData.refetch()
     }
@@ -178,11 +181,13 @@ class AdminCampaignEdit extends React.Component {
   }
 
   handleSubmit = async () => {
-    await this.handleSave()
+    if (!this.state.expandedSection.doNotSaveAfterSubmit) {
+      await this.handleSave()
+    }
     this.setState({
       expandedSection: this.state.expandedSection >= this.sections().length - 1 ||
         !this.isNew() ?
-          null : this.state.expandedSection + 1
+        null : this.state.expandedSection + 1
     }) // currently throws an unmounted component error in the console
     this.props.campaignData.refetch()
   }
@@ -298,8 +303,8 @@ class AdminCampaignEdit extends React.Component {
       expandableBySuperVolunteers: true,
       checkCompleted: () => (
         this.state.campaignFormValues.title !== '' &&
-          this.state.campaignFormValues.description !== '' &&
-          this.state.campaignFormValues.dueBy !== null
+        this.state.campaignFormValues.description !== '' &&
+        this.state.campaignFormValues.dueBy !== null
       )
     }, {
       title: 'Contacts',
@@ -342,7 +347,7 @@ class AdminCampaignEdit extends React.Component {
       keys: ['interactionSteps'],
       checkCompleted: () => (
         this.state.campaignFormValues.interactionSteps[0]
-          && this.state.campaignFormValues.interactionSteps.some(step => step.script)
+        && this.state.campaignFormValues.interactionSteps.some(step => step.script)
       ),
       blocksStarting: true,
       expandAfterCampaignStarts: true,
@@ -370,7 +375,20 @@ class AdminCampaignEdit extends React.Component {
       blocksStarting: false,
       expandAfterCampaignStarts: true,
       expandableBySuperVolunteers: false
-    }]
+    }, {
+      title: 'Script Import',
+      content: AdminScriptImport,
+      keys: [],
+      checkCompleted: () => true,
+      blocksStarting: false,
+      expandAfterCampaignStarts: false,
+      expandableBySuperVolunteers: false,
+      extraProps: {
+        campaignData: this.props.campaignData
+      },
+      doNotSaveAfterSubmit: true
+    }
+    ]
   }
 
   sectionSaveStatus(section) {
@@ -451,23 +469,23 @@ class AdminCampaignEdit extends React.Component {
           fontSize: 16
         }}
       >
-          {this.state.startingCampaign ? (
-            <div
+        {this.state.startingCampaign ? (
+          <div
+            style={{
+              color: theme.colors.gray,
+              fontWeight: 800
+            }}
+          >
+            <CircularProgress
+              size={0.5}
               style={{
-                color: theme.colors.gray,
-                fontWeight: 800
+                verticalAlign: 'middle',
+                display: 'inline-block'
               }}
-            >
-              <CircularProgress
-                size={0.5}
-                style={{
-                  verticalAlign: 'middle',
-                  display: 'inline-block'
-                }}
-              />
-              Starting your campaign...
+            />
+            Starting your campaign...
             </div>
-          ) : notStarting}
+        ) : notStarting}
       </div>
     )
   }
@@ -503,14 +521,14 @@ class AdminCampaignEdit extends React.Component {
           {this.props.campaignData.campaign.isArchived ? (
             <RaisedButton
               label='Unarchive'
-              onTouchTap={async() => await this.props.mutations.unarchiveCampaign(this.props.campaignData.campaign.id)}
+              onTouchTap={async () => await this.props.mutations.unarchiveCampaign(this.props.campaignData.campaign.id)}
             />
           ) : (
-            <RaisedButton
-              label='Archive'
-              onTouchTap={async() => await this.props.mutations.archiveCampaign(this.props.campaignData.campaign.id)}
-            />
-          )}
+              <RaisedButton
+                label='Archive'
+                onTouchTap={async () => await this.props.mutations.archiveCampaign(this.props.campaignData.campaign.id)}
+              />
+            )}
           <RaisedButton
             {...dataTest('startCampaign')}
             primary
@@ -553,7 +571,7 @@ class AdminCampaignEdit extends React.Component {
           const { sectionIsSaving, savePercent, jobMessage, jobId } = this.sectionSaveStatus(section)
           const sectionCanExpandOrCollapse = (
             (section.expandAfterCampaignStarts
-             || !this.props.campaignData.campaign.isStarted)
+              || !this.props.campaignData.campaign.isStarted)
             && (adminPerms || section.expandableBySuperVolunteers))
 
           if (sectionIsSaving) {
@@ -608,15 +626,15 @@ class AdminCampaignEdit extends React.Component {
               <CardText
                 expandable
               >
-                 {this.renderCampaignFormSection(section, sectionIsSaving)}
+                {this.renderCampaignFormSection(section, sectionIsSaving)}
               </CardText>
               {(sectionIsSaving && adminPerms
                 ?
                 <CardActions>
                   <div>Current Status: {savePercent}% complete</div>
                   {(jobMessage
-                     ? <div>Message: {jobMessage}</div>
-                     : null)}
+                    ? <div>Message: {jobMessage}</div>
+                    : null)}
                   <RaisedButton
                     label='Discard Job'
                     icon={<CancelIcon />}
@@ -643,24 +661,7 @@ AdminCampaignEdit.propTypes = {
 }
 
 const mapQueriesToProps = ({ ownProps }) => ({
-  pendingJobsData: {
-    query: gql`query getCampaignJobs($campaignId: String!) {
-      campaign(id: $campaignId) {
-        id
-        pendingJobs {
-          id
-          jobType
-          assigned
-          status
-          resultMessage
-        }
-      }
-    }`,
-    variables: {
-      campaignId: ownProps.params.campaignId
-    },
-    pollInterval: 60000
-  },
+  pendingJobsData: pendingJobsGql(ownProps.params.campaignId),
   campaignData: {
     query: campaignDataQuery,
     variables: {
