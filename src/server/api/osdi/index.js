@@ -128,10 +128,10 @@ function osdiStart(app) {
             await osdi.chooser(req, res)
         }))
 
-    app.use('/hal', express.static('hal'));
+    app.use('/hal', express.static('./hal'))
 
     app.get('/osdi', function(req,res) {
-        res.redirect('/hal/browser.html#/api/v1');
+        res.redirect('/hal/browser.html#/api/v1')
     })
 }
 
