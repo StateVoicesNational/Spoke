@@ -392,6 +392,10 @@ export async function AEP(req, res) {
                 href: baseUrl.concat("/questions"),
                 title: "The Questions (interaction steps) collection"
             },
+            "osdi:answers": {
+                href: baseUrl.concat("/answers"),
+                title: "The Answers (question responses) collection"
+            },
             "osdi:messages": {
                 href: baseUrl.concat("/messages"),
                 title: "The collection of SMS messages"
