@@ -1,6 +1,8 @@
 import { r } from '../../models'
 import _ from 'lodash'
 import { getTimezoneByZip, getOptOutSubQuery } from '../../../workers/jobs'
+import { log } from '../../../lib'
+
 import { getValidatedData } from '../../../lib'
 import apiAuth from './api-auth'
 import osdi from './osdi'
@@ -86,294 +88,301 @@ async function findMyWhere(req,res,options) {
 }
 
 export default async function osdiResourcesApi(req, res, options) {
-  const orgId = req.params.orgId;
 
-  const resource_type=options.resource_type;
-  let where=options.where;
+  try {
+    const orgId = req.params.orgId;
 
-  if (typeof where === 'undefined') {
+    const resource_type = options.resource_type;
+    let where = options.where;
 
-    where=await findMyWhere(req,res,options);
-  }
+    if (typeof where === 'undefined') {
 
-  let orderBy=options.orderBy || [ 'created_at', 'desc']
-
-  if (await apiAuth.authShortCircuit(req, res, orgId)) {
-    return
-  }
-
-  if (!['GET', 'DELETE', 'POST'].includes(req.method)) {
-    res.writeHead(405, { Allow: 'GET, POST, DELETE' })
-    res.end('Not allowed')
-    return
-  }
-
-  const campaignId = req.params.campaignId
-
-  const [campaign] = await r
-    .knex('campaign')
-    .select()
-    .where({ organization_id: orgId, id: campaignId })
-
-  if (!campaign) {
-    res.writeHead(404)
-    res.end('Not found')
-    return
-  }
-
-  if (['DELETE', 'POST'].includes(req.method)) {
-    if (campaignStatusShortCircuit(campaign, res)) {
-      return
-    }
-  }
-
-  let resp = null
-
-  let resources=null
-  let resource=null
-
-  if (options.single==true && req.params.id && req.method === 'GET') {
-
-    switch(true) {
-
-      case (resource_type == 'interaction_step'):
-        resource = await getInteractionStep(req,req.params.id)
-
-        break;
-
-      default:
-
-        resource = await r
-            .knex(resource_type)
-            .where({id: req.params.id})
-            .limit(1).first();
+      where = await findMyWhere(req, res, options);
     }
 
-    if (!resource) {
-      res.writeHead(404);
-      res.end('Not Found');
+    let orderBy = options.orderBy || ['created_at', 'desc']
+
+    if (await apiAuth.authShortCircuit(req, res, orgId)) {
       return
     }
 
-    resp=await osdi.translate_resource_to_osdi(resource,req,options);
+    if (!['GET', 'DELETE', 'POST'].includes(req.method)) {
+      res.writeHead(405, {Allow: 'GET, POST, DELETE'})
+      res.end('Not allowed')
+      return
+    }
 
-  } else if (req.method === 'GET') {
+    const campaignId = req.params.campaignId
 
-    var count;
+    const [campaign] = await r
+        .knex('campaign')
+        .select()
+        .where({organization_id: orgId, id: campaignId})
 
-    /*
-    ?per_page specifies how many results to return per page.
-?page specifies the starting page to start with.
-     */
+    if (!campaign) {
+      res.writeHead(404)
+      res.end('Not found')
+      return
+    }
 
-    const base_url=process.env.BASE_URL
-    const per_page=parseInt(req.query.per_page || 20);
-    const page=parseInt(req.query.page || 0);
+    if (['DELETE', 'POST'].includes(req.method)) {
+      if (campaignStatusShortCircuit(campaign, res)) {
+        return
+      }
+    }
 
-    const offset = page * per_page;
+    let resp = null
 
-    switch(true) {
+    let resources = null
+    let resource = null
 
-      case resource_type==='interaction_step':
+    if (options.single == true && req.params.id && req.method === 'GET') {
 
-        resources = await getInteractionSteps(req);
-        count= resources.length;
+      switch (true) {
 
-        break;
+        case (resource_type == 'interaction_step'):
+          resource = await getInteractionStep(req, req.params.id)
 
-      case options.root_messages==true:
+          break;
 
-        count = await r.getCount(
-            r.knex(resource_type)
-            .where('assignment.campaign_id',req.params.campaignId)
-            .join('assignment', 'message.assignment_id', '=', 'assignment.id')
+        default:
+
+          resource = await r
+              .knex(resource_type)
+              .where({id: req.params.id})
+              .limit(1).first();
+      }
+
+      if (!resource) {
+        res.writeHead(404);
+        res.end('Not Found');
+        return
+      }
+
+      resp = await osdi.translate_resource_to_osdi(resource, req, options);
+
+    } else if (req.method === 'GET') {
+
+      var count;
+
+      /*
+      ?per_page specifies how many results to return per page.
+  ?page specifies the starting page to start with.
+       */
+
+      const base_url = process.env.BASE_URL
+      const per_page = parseInt(req.query.per_page || 20);
+      const page = parseInt(req.query.page || 0);
+
+      const offset = page * per_page;
+
+      switch (true) {
+
+        case resource_type === 'interaction_step':
+
+          resources = await getInteractionSteps(req);
+          count = resources.length;
+
+          break;
+
+        case options.root_messages == true:
+
+          count = await r.getCount(
+              r.knex(resource_type)
+                  .where('assignment.campaign_id', req.params.campaignId)
+                  .join('assignment', 'message.assignment_id', '=', 'assignment.id')
+          )
+
+          resources = await r
+              .knex(resource_type)
+              .where('assignment.campaign_id', req.params.campaignId)
+              .join('assignment', 'message.assignment_id', '=', 'assignment.id')
+              .orderBy('message.created_at', 'desc')
+              .offset(offset)
+              .limit(per_page);
+          break;
+
+        default:
+          count = await r.getCount(
+              r.knex(resource_type)
+                  .where(where)
+          );
+
+          resources = await r
+              .knex(resource_type)
+              .where(where)
+              .orderBy(...orderBy)
+              .offset(offset)
+              .limit(per_page);
+      }
+
+      var embedded_key = "osdi:".concat(pluralize(osdi.spoke_to_osdi_type(resource_type)));
+
+      let _embedded = {}
+
+      var capture;
+
+      capture = await Promise.all(_.map(resources, async function (resource) {
+        return await osdi.translate_resource_to_osdi(resource, req, options)
+      }))
+
+      _embedded[embedded_key] = capture;
+
+      resp = {
+
+        total_records: parseInt(count),
+        page: page,
+        _embedded: _embedded,
+        _links: {
+          self: {
+            href: base_url.concat(req.originalUrl)
+          },
+          next: (resources.length > 0) ? {
+            href: base_url.concat(req.baseUrl, "?per_page=", per_page, "&page=", page + 1)
+
+          } : undefined,
+          prev: (page > 0) ? {
+            href: base_url.concat(req.baseUrl, "?per_page=", per_page, "&page=", page - 1)
+          } : undefined
+        }
+      }
+    } else if (req.method === 'DELETE') {
+      const deleted = await r
+          .knex('campaign_contact')
+          .where({campaign_id: campaignId})
+          .delete()
+
+      resp = {contacts: {deleted}}
+    } else if (req.method === 'POST') {
+      const osdi_body = req.body;
+      var people = undefined;
+      if (osdi_body.person) {
+        people = [osdi_body.person];
+      } else if (osdi_body.signups) {
+        people = _.map(osdi_body.signups, (signup) => signup.person);
+      } else {
+        res.writeHead(400)
+        var err = osdi.osdi_error(400, "Signup requires either a person attribute or signups array");
+        res.end(JSON.stringify(err))
+        return
+      }
+
+      var inputRows;
+
+      if (people) {
+        inputRows = _.map(people, (person) => osdi.translate_osdi_person_to_input_row(person));
+
+      } else {
+        inputRows = req.body
+      }
+
+      const {validationStats, validatedData} = getValidatedData(inputRows, []);
+
+      const successResponse = {
+        invalid: _.concat(
+            validationStats.invalidCellRows,
+            validationStats.missingCellRows
+        ),
+        dupes_in_batch: validationStats.dupeCount,
+        number_submitted: inputRows.length
+      }
+
+      let validatedContactsToSave = validatedData
+
+      if (!('duplicate_existing' in req.query)) {
+        const existingContacts = await r
+            .knex('campaign_contact')
+            .select('cell')
+            .whereIn('cell', validatedData.map(contact => contact.cell))
+            .andWhere({campaign_id: campaignId})
+
+        const existingContactCells = new Set(
+            existingContacts.map(contact => contact.cell)
         )
 
-        resources = await r
-            .knex(resource_type)
-            .where('assignment.campaign_id',req.params.campaignId)
-            .join('assignment', 'message.assignment_id', '=', 'assignment.id')
-            .orderBy('message.created_at','desc')
-            .offset(offset)
-            .limit(per_page);
-        break;
+        const dedupedContactsToSave = _.filter(
+            validatedData,
+            contact => !existingContactCells.has(contact.cell)
+        )
 
-      default:
-        count = await r.getCount(
-            r.knex(resource_type)
-                .where(where)
-        );
+        successResponse.dupes_in_campaign =
+            validatedData.length - dedupedContactsToSave.length
 
-         resources = await r
-            .knex(resource_type)
-            .where(where)
-            .orderBy(...orderBy)
-            .offset(offset)
-            .limit(per_page);
-    }
-
-    var embedded_key="osdi:".concat(pluralize(osdi.spoke_to_osdi_type(resource_type)));
-
-    let _embedded = {}
-
-    var capture;
-
-    capture=await Promise.all(_.map(resources, async function(resource) {
-      return await osdi.translate_resource_to_osdi(resource,req, options)
-    }))
-
-    _embedded[embedded_key]=capture;
-
-    resp = {
-
-      total_records: parseInt(count),
-      page: page,
-      _embedded: _embedded,
-      _links: {
-        self: {
-          href: base_url.concat(req.originalUrl)
-        },
-        next: (resources.length > 0) ? {
-          href: base_url.concat(req.baseUrl,"?per_page=",per_page,"&page=",page + 1)
-
-        } : undefined,
-        prev: (page > 0) ? {
-          href: base_url.concat(req.baseUrl,"?per_page=",per_page,"&page=",page -1)
-        } : undefined
+        validatedContactsToSave = dedupedContactsToSave
       }
-    }
-  } else if (req.method === 'DELETE') {
-    const deleted = await r
-      .knex('campaign_contact')
-      .where({ campaign_id: campaignId })
-      .delete()
 
-    resp = { contacts: { deleted } }
-  } else if (req.method === 'POST') {
-    const osdi_body=req.body;
-    var people=undefined;
-    if (osdi_body.person) {
-      people=[osdi_body.person];
-    } else if (osdi_body.signups) {
-      people=_.map(osdi_body.signups,(signup) => signup.person);
-    } else {
-      res.writeHead(400)
-      var err=osdi.osdi_error(400,"Signup requires either a person attribute or signups array");
-      res.end(JSON.stringify(err))
-      return
-    }
+      const standardFields = [
+        'first_name',
+        'last_name',
+        'cell',
+        'external_id',
+        'zip',
+        'timezone_offset'
+      ]
 
-    var inputRows;
-
-    if (people) {
-      inputRows = _.map(people, (person) => osdi.translate_osdi_person_to_input_row(person));
-
-    } else {
-      inputRows=req.body
-    }
-
-    const { validationStats, validatedData } = getValidatedData(inputRows, []);
-
-    const successResponse = {
-      invalid: _.concat(
-        validationStats.invalidCellRows,
-        validationStats.missingCellRows
-      ),
-      dupes_in_batch: validationStats.dupeCount,
-      number_submitted: inputRows.length
-    }
-
-    let validatedContactsToSave = validatedData
-
-    if (!('duplicate_existing' in req.query)) {
-      const existingContacts = await r
-        .knex('campaign_contact')
-        .select('cell')
-        .whereIn('cell', validatedData.map(contact => contact.cell))
-        .andWhere({ campaign_id: campaignId })
-
-      const existingContactCells = new Set(
-        existingContacts.map(contact => contact.cell)
+      const contactsToSavePromises = validatedContactsToSave.map(
+          async contact => {
+            const contactToSave = _.pick(contact, standardFields)
+            const customFields = _.omit(contact, standardFields)
+            contactToSave.custom_fields = JSON.stringify(customFields)
+            if (!contactToSave.timezone_offset) {
+              contactToSave.timezone_offset = await getTimezoneByZip(
+                  contactToSave.zip
+              )
+            }
+            return contactToSave
+          }
       )
 
-      const dedupedContactsToSave = _.filter(
-        validatedData,
-        contact => !existingContactCells.has(contact.cell)
-      )
+      const contactsToSave = await Promise.all(contactsToSavePromises)
 
-      successResponse.dupes_in_campaign =
-        validatedData.length - dedupedContactsToSave.length
+      await r.knex
+          .transaction(async tr => {
+            await tr
+                .batchInsert(
+                    'campaign_contact',
+                    contactsToSave.map(row => {
+                      row.campaign_id = campaignId
+                      return _.omitBy(row, v => v === null)
+                    }),
+                    req.body.length
+                )
+                .then(async () => {
+                  const optOutCellCount = await tr('campaign_contact')
+                      .whereIn('cell', getOptOutSubQuery(orgId))
+                      .where('campaign_id', campaignId)
+                      .delete()
 
-      validatedContactsToSave = dedupedContactsToSave
-    }
-
-    const standardFields = [
-      'first_name',
-      'last_name',
-      'cell',
-      'external_id',
-      'zip',
-      'timezone_offset'
-    ]
-
-    const contactsToSavePromises = validatedContactsToSave.map(
-      async contact => {
-        const contactToSave = _.pick(contact, standardFields)
-        const customFields = _.omit(contact, standardFields)
-        contactToSave.custom_fields = JSON.stringify(customFields)
-        if (!contactToSave.timezone_offset) {
-          contactToSave.timezone_offset = await getTimezoneByZip(
-            contactToSave.zip
-          )
-        }
-        return contactToSave
-      }
-    )
-
-    const contactsToSave = await Promise.all(contactsToSavePromises)
-
-    await r.knex
-      .transaction(async tr => {
-        await tr
-          .batchInsert(
-            'campaign_contact',
-            contactsToSave.map(row => {
-              row.campaign_id = campaignId
-              return _.omitBy(row, v => v === null)
-            }),
-            req.body.length
-          )
-          .then(async () => {
-            const optOutCellCount = await tr('campaign_contact')
-              .whereIn('cell', getOptOutSubQuery(orgId))
-              .where('campaign_id', campaignId)
-              .delete()
-
-            successResponse.opted_out = optOutCellCount
-            successResponse.added =
-              validatedContactsToSave.length - optOutCellCount
+                  successResponse.opted_out = optOutCellCount
+                  successResponse.added =
+                      validatedContactsToSave.length - optOutCellCount
+                })
           })
-      })
-      .then(function() {
-        resp = osdi.translate_success_to_import_helper_response(successResponse,req)
-      })
-      .catch(function(error) {
-        resp = { error }
-        console.log(error)
-      })
-  }
-  
-  if (resp) {
-    if (resp._links) {
-      resp._links['osdi:aep']={
-        href: osdi.osdiAEP(req),
-        title: "Go to Entry Point"
-      }
+          .then(function () {
+            resp = osdi.translate_success_to_import_helper_response(successResponse, req)
+          })
+          .catch(function (error) {
+            resp = {error}
+            console.log(error)
+          })
     }
-    res.writeHead(200, { 'Content-Type': 'application/json' })
-    res.end(JSON.stringify(resp,null, 2))
-  } else {
-    res.writeHead(500, { 'Content-Type': 'application/json' })
-    res.end(JSON.stringify({ error: 'Internal server error' }))
+
+    if (resp) {
+      if (resp._links) {
+        resp._links['osdi:aep'] = {
+          href: osdi.osdiAEP(req),
+          title: "Go to Entry Point"
+        }
+      }
+      res.writeHead(200, {'Content-Type': 'application/json'})
+      res.end(JSON.stringify(resp, null, 2))
+    } else {
+      res.writeHead(500, {'Content-Type': 'application/json'})
+      res.end(JSON.stringify({error: 'Internal server error'}))
+    }
+  } catch(ex) {
+    log.error(ex)
+    res.writeHead(500, {'Content-Type': 'application/json'})
+    res.end(JSON.stringify({error: ex}))
   }
 }
