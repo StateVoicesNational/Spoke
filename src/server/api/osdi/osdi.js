@@ -78,7 +78,6 @@ function translate_osdi_person_to_input_row(person) {
         row.zip = zip
     }
 
-    console.log(row);
     return row;
 }
 

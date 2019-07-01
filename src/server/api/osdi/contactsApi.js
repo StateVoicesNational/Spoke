@@ -209,7 +209,6 @@ export default async function contactsApi(req, res) {
       )
 
       const contactsToSave = await Promise.all(contactsToSavePromises)
-      console.log(contactsToSave)
       await r.knex
           .transaction(async tr => {
             await tr

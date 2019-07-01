@@ -64,7 +64,7 @@ export function getCommonZipRanges() {
 export const zipToTimeZone = function (zip) {
   // will search common zip ranges -- won't necessarily find something
   // so fallback on looking it up in db
-  if (typeof zip == 'number' || zip.length >= 5) {
+  if (zip && (typeof zip == 'number' || zip.length >= 5)) {
     zip = parseInt(zip)
     return getCommonZipRanges().find((g) => (zip >= g[0] && zip < g[1]))
   }
