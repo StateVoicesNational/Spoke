@@ -9,7 +9,8 @@ import { exportCampaign,
          sendMessages,
          handleIncomingMessageParts,
          fixOrgless,
-         clearOldJobs } from './jobs'
+         clearOldJobs, 
+         importScript } from './jobs'
 import { runMigrations } from '../migrations'
 import { setupUserNotificationObservers } from '../server/notifications'
 
@@ -28,7 +29,8 @@ const jobMap = {
   'export': exportCampaign,
   'upload_contacts': uploadContacts,
   'upload_contacts_sql': loadContactsFromDataWarehouse,
-  'assign_texters': assignTexters
+  'assign_texters': assignTexters,
+  'import_script': importScript
 }
 
 export async function processJobs() {
