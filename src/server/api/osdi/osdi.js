@@ -96,6 +96,14 @@ function osdiAEP(req) {
         "/api/v1")
 }
 
+function should_show_native(req) {
+    if ('osdi-diagnostics' in req.headers) {
+        if ( req.headers['osdi-diagnostics'].includes('show_native') ) {
+            return true
+        }
+    }
+    return false
+}
 
 async function translate_resource_to_osdi(resource,req,options) {
     var self_href=options.single==true ? "".concat(process.env.BASE_URL, req.baseUrl) : "".concat(process.env.BASE_URL, req.baseUrl,"/", resource.id);
@@ -104,6 +112,7 @@ async function translate_resource_to_osdi(resource,req,options) {
 
     let resource_type=options.resource_type;
 
+    var show_native = should_show_native(req)
 
     const identifiers=[
         "spoke".concat(
@@ -189,8 +198,7 @@ async function translate_resource_to_osdi(resource,req,options) {
                 responses: [ resource.value ],
                 created_date: resource.created_at,
                 id: resource.id,
-                question_id: resource.interaction_step_id,
-                _native: resource
+                question_id: resource.interaction_step_id
             }
             _links['osdi:question']={
                 href: "".concat(osdiAEP(req),"/questions/",resource.interaction_step_id)
@@ -247,6 +255,9 @@ async function translate_resource_to_osdi(resource,req,options) {
     });
 
     osdi._links=_links;
+    if (show_native && !(osdi._spoke_native==true)) {
+        osdi._native=resource
+    }
     return osdi;
 }
 

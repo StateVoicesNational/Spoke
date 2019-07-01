@@ -202,6 +202,24 @@ export default async function osdiResourcesApi(req, res, options) {
               .limit(per_page);
           break;
 
+        case options.root_answers == true:
+
+          var query=r
+              .knex(resource_type)
+              .where({'interaction_step.campaign_id': req.params.campaignId})
+              .join('interaction_step','question_response.interaction_step_id', '=', 'interaction_step.id')
+
+          count = await r.getCount(
+              query.clone()
+          )
+
+          resources = await query
+              .orderBy('question_response.created_at','desc')
+              .offset(offset)
+              .limit(per_page)
+
+          break;
+
         default:
           count = await r.getCount(
               r.knex(resource_type)

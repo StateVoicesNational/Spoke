@@ -184,6 +184,14 @@ class Settings extends React.Component {
           {apiKey ? (
               <div style={{ paddingBottom: '25px' }}>
                 ✅ API Key Set
+                &nbsp;
+                <a href={'/osdi'} target={'_osdi_browser'}>
+                <FlatButton
+                    label={'Visit OSDI Browser'}
+                    primary
+                />
+                </a>
+
               </div>
           ) : ''
           }
@@ -197,6 +205,7 @@ class Settings extends React.Component {
                       this.handleOpenApiKeyConfirmationDialog
                 }
             />
+
           </div>
         </CardText>
       </Card></div>

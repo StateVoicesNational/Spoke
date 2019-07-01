@@ -49,7 +49,7 @@ function osdiStart(app) {
     }))
 
     app.use('/osdi/org/:orgId/campaigns/:campaignId/api/v1/answers', wrap(async (req, res) => {
-        await osdiResourcesApi(req, res, {resource_type: 'question_response'}
+        await osdiResourcesApi(req, res, {resource_type: 'question_response', root_answers: true}
         )
     }))
 
