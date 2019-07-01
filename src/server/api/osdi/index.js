@@ -9,6 +9,11 @@ function osdiStart(app) {
         await contactsApi(req, res)
     }))
 
+
+    app.use('/osdi/org/:orgId/campaigns/:campaignId/api/v1/users/:id/assignments', wrap(async (req, res) => {
+        await osdiResourcesApi(req, res, {resource_type: 'assignment', where: {user_id: req.params.id}})
+    }))
+
     app.use('/osdi/org/:orgId/campaigns/:campaignId/api/v1/users/:id/messages', wrap(async (req, res) => {
         await osdiResourcesApi(req, res, {resource_type: 'message', slicer: 'user_messages'})
     }))

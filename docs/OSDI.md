@@ -21,6 +21,8 @@ While looking at the HAL browser, try the following walkthrough
 7. Go back to the AEP. (or Click "Go To Entry Point" in the top navbar to start over)
 8. Click the link for 'osdi:answers' and see the recently added answers.  From each answer you can navigate to the person (campaign contact) or the question itself (derived from interaction steps)
 
+> You can also start navigating users -> assignments -> messages
+
 ## Supported Scenarios
 
 * Batch and Single Import of people / contacts
