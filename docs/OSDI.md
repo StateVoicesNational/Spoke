@@ -58,29 +58,3 @@ Example Syntax
 ```
 ./osdi-client.py -u http://your-spoke-server/osdi/org/1/campaigns/5/api/v1 -k APIKEY -f ./small.csv                                            
 ```
-
-## HOWTO
-
-Browse to http://spoke.dev.joshco.org/osdi
-
-While looking at the HAL browser, try the following walkthrough
-
-1. Click the link for the organization you want to browse
-2. See the list of campaigns
-3. Choose the campaign you want to browse
-4. You should now be at the API Entry Point for the Campaign
-5. Click the link for 'osdi:people' and see the first page of people results
-6. Choose a person, and look at it's links.  You can navigate to that person's Answers (question responses), or messages
-7. Go back to the AEP. (or Click "Go To Entry Point" in the top navbar to start over)
-8. Click the link for 'osdi:answers' and see the recently added answers.  From each answer you can navigate to the person (campaign contact) or the question itself (derived from interaction steps)
-
-
-### Using your own Spoke
-
-1. Set up an organization and a campaign
-2. Set the API key in Settings
-3. Click the "VISIT OSDI BROWSER" button in settings, or browse to http://your-spoke-server/osdi
-4. See the HAL browser
-5. Past into the Custom Request Headers:
-```OSDI-API-Token: YOURTOKEN```
-6. Continue follow the steps as for the Spoke demo
