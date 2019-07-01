@@ -97,7 +97,7 @@
     "graphql-date": "^1.0.3",
     "graphql-tag": "^0.1.9",
     "graphql-tools": "^2.8.0",
-    "graphql-type-json": "^0.1.4",
+    "graphql-type-json": "^0.3.0",
     "humps": "^1.1.0",
     "is-url": "^1.2.2",
     "isomorphic-fetch": "^2.2.1",
