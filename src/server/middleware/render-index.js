@@ -54,6 +54,7 @@ export default function renderIndex(html, css, assetMap, store) {
     </style>
     <style data-aphrodite>${css.content}</style>
     ${rollbarScript}
+    <link rel="icon" href="https://s3-us-west-1.amazonaws.com/spoke-public/spoke_logo.svg">
   </head>
   <body>
     <div id="mount">${html}</div>
