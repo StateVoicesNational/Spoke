@@ -21,8 +21,8 @@ RUN yarn install --ignore-scripts --non-interactive --frozen-lockfile && \
 FROM ${RUNTIME_IMAGE}
 WORKDIR /spoke
 COPY --from=builder /spoke/build build
-RUN mkdir -p build/client/assets/hal
-COPY --from=builder /spoke/hal/* build/client/assets/hal/
+RUN mkdir -p build/client/hal
+COPY --from=builder /spoke/hal/* build/client/hal/
 COPY --from=builder /spoke/node_modules node_modules
 COPY --from=builder /spoke/package.json /spoke/yarn.lock ./
 ENV NODE_ENV=production \
