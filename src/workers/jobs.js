@@ -6,12 +6,32 @@ import { updateJob } from './lib'
 import { getFormattedPhoneNumber } from '../lib/phone-format.js'
 import serviceMap from '../server/api/lib/services'
 import { getLastMessage, saveNewIncomingMessage } from '../server/api/lib/message-sending'
+import  importScriptFromDocument from '../server/api/lib/import-script.'
 
 import AWS from 'aws-sdk'
 import Papa from 'papaparse'
 import moment from 'moment'
 import { sendEmail } from '../server/mail'
 import { Notifications, sendUserNotification } from '../server/notifications'
+import { unzip } from 'zlib';
+
+const defensivelyDeleteJob = async (job) => {
+  if (job.id) {
+    let retries = 0
+    const deleteJob = async () => {
+      try {
+        await r.table('job_request').get(job.id).delete()
+      } catch (err) {
+        if (retries < 5) {
+          retries += 1
+          await deleteJob()
+        } else log.error(`Could not delete job. Err: ${err.message}`)
+      }
+    }
+
+    await deleteJob()
+  } else log.debug(job)
+}
 
 const zipMemoization = {}
 let warehouseConnection = null
@@ -127,7 +147,7 @@ export async function processSqsMessages() {
           await serviceMap.twilio.handleIncomingMessage(twilioMessage)
 
           sqs.deleteMessage({ QueueUrl: process.env.TWILIO_SQS_QUEUE_URL, ReceiptHandle: message.ReceiptHandle },
-                            (delMessageErr, delMessageData) => {
+            (delMessageErr, delMessageData) => {
                               if (delMessageErr) {
                                 console.log(delMessageErr, delMessageErr.stack) // an error occurred
                               } else {
@@ -142,6 +162,8 @@ export async function processSqsMessages() {
   return p
 }
 
+const unzipPayload = async (job) => JSON.parse(await gunzip(Buffer.from(job.payload, 'base64')))
+
 export async function uploadContacts(job) {
   const campaignId = job.campaign_id
   // We do this deletion in schema.js but we do it again here just in case the the queue broke and we had a backlog of contact uploads for one campaign
@@ -155,9 +177,8 @@ export async function uploadContacts(job) {
     .getAll(campaignId, { index: 'campaign_id' })
     .delete()
   const maxPercentage = 100
-  let contacts = await gunzip(new Buffer(job.payload, 'base64'))
+  let contacts = await unzipPayload(job)
   const chunkSize = 1000
-  contacts = JSON.parse(contacts)
 
   const maxContacts = parseInt(orgFeatures.hasOwnProperty('maxContacts')
                                 ? orgFeatures.maxContacts
@@ -217,8 +238,8 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
     batchSize: 1000
   }
   const jobCompleted = (await r.knex('job_request')
-                        .where('id', jobEvent.jobId)
-                        .select('status')
+    .where('id', jobEvent.jobId)
+    .select('status')
                         .first())
   if (!jobCompleted) {
     console.log('loadContactsFromDataWarehouseFragment job no longer exists', jobEvent.campaignId, jobCompleted, jobEvent)
@@ -333,8 +354,8 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
                  .leftJoin('campaign_contact AS c2', function joinSelf() {
                    this.on('c2.campaign_id', '=', 'campaign_contact.campaign_id')
                      .andOn('c2.cell', '=', 'campaign_contact.cell')
-                     .andOn('c2.id', '>', 'campaign_contact.id')
-                 })
+              .andOn('c2.id', '>', 'campaign_contact.id')
+          })
                  .where('campaign_contact.campaign_id', jobEvent.campaignId)
                  .whereNotNull('c2.id'))
         .delete()
@@ -642,7 +663,9 @@ export async function assignTexters(job) {
                       })
                .limit(contactsToAssign)
                .select('id'))
-        .update({ assignment_id: assignment.id })
+        .update({
+          assignment_id: assignment.id
+        })
         .catch(log.error)
 
       if (existingAssignment) {
@@ -834,21 +857,19 @@ export async function exportCampaign(job) {
     log.debug(messageCsv)
   }
 
-  if (job.id) {
-    let retries = 0
-    const deleteJob = async () => {
-      try {
-        await r.table('job_request').get(job.id).delete()
-      } catch (err) {
-        if (retries < 5) {
-          retries += 1
-          await deleteJob()
-        } else log.error(`Could not delete job. Err: ${err.message}`)
-      }
-    }
-
-    await deleteJob()
-  } else log.debug(job)
+  await defensivelyDeleteJob(job)
+}
+export async function importScript(job) {
+  const payload = await unzipPayload(job)
+  try {
+    await importScriptFromDocument(payload.campaignId, payload.url) // TODO try/catch
+  } catch (exception) {
+    await r.knex('job_request').where('id', job.id)
+      .update({ result_message: exception.message })
+    console.log(exception.message)
+    return
+  }
+  defensivelyDeleteJob(job)
 }
 
 // add an in-memory guard that the same messages are being sent again and again
