@@ -186,7 +186,7 @@ async function translate_resource_to_osdi(resource,req,options) {
             }
 
             _links['osdi:messages']={
-                href: "".concat(osdiAEP(req),"/messages")
+                href: "".concat(osdiAEP(req),"/people/",resource.id,"/messages")
             }
 
             break;

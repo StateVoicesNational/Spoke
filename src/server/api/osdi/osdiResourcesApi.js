@@ -220,6 +220,24 @@ export default async function osdiResourcesApi(req, res, options) {
 
           break;
 
+        case options.people_messages == true:
+
+          var query=r
+              .knex(resource_type)
+              .where({'campaign_contact.id': req.params.id})
+              .join('campaign_contact','message.contact_number','=','campaign_contact.cell')
+
+          count=await r.getCount(
+                query.clone()
+            )
+
+          resources = await query
+              .orderBy('message.created_at','desc')
+              .offset(offset)
+              .limit(per_page)
+
+          break;
+
         default:
           count = await r.getCount(
               r.knex(resource_type)

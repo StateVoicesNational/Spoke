@@ -36,12 +36,12 @@ function osdiStart(app) {
 
 
     app.use('/osdi/org/:orgId/campaigns/:campaignId/api/v1/people/:id/messages', wrap(async (req, res) => {
-        await osdiResourcesApi(req, res, {resource_type: 'message', person_id: req.id})
+        await osdiResourcesApi(req, res, {resource_type: 'message', people_messages: true})
     }))
 
 
     app.use('/osdi/org/:orgId/campaigns/:campaignId/api/v1/people/:id/answers', wrap(async (req, res) => {
-        await osdiResourcesApi(req, res, {resource_type: 'question_response'})
+        await osdiResourcesApi(req, res, {resource_type: 'question_response', where: {'campaign_contact_id': req.params.id}})
     }))
 
     app.use('/osdi/org/:orgId/campaigns/:campaignId/api/v1/people/:id', wrap(async (req, res) => {
