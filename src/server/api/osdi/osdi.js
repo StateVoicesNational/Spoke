@@ -319,6 +319,8 @@ function translate_contact_to_osdi_person(contact,req) {
                 sms_capable: !(contact.is_opted_out)
             }
         ],
+        modified_date: contact['updated_at'],
+        created_date: contact['created_at']
 
     };
 
@@ -341,6 +343,8 @@ function translate_contact_to_osdi_person(contact,req) {
     if (! _.isEmpty(custom_fields)) {
         osdi.custom_fields=custom_fields
     }
+
+
 
     return osdi;
 }
