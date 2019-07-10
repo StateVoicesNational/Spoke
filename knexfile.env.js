@@ -1,6 +1,7 @@
-// Update with your config settings.
 require('dotenv').config()
-var config = require('./src/server/knex')
+
+// environment variables will be populated from above, and influence the knex-connect import
+var config = require('./src/server/knex-connect')
 
 module.exports = {
   development: config,
