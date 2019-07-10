@@ -3,7 +3,6 @@ export const tables = [
   'message',
   'user_cell',
   'job_request',
-  // 'migrations' // Now automatically managed by Knex
   'pending_message_part',
   'zip_code',
   'invite',

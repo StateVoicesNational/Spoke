@@ -1,7 +1,7 @@
 import dumbThinky from 'rethink-knex-adapter'
 import redis from 'redis'
 import bluebird from 'bluebird'
-import config from '../knex.js'
+import config from '../knex-connect'
 
 bluebird.promisifyAll(redis.RedisClient.prototype)
 bluebird.promisifyAll(redis.Multi.prototype)
