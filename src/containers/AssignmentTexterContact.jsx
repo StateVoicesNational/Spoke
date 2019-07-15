@@ -531,7 +531,12 @@ export class AssignmentTexterContact extends React.Component {
     }
 
     if (campaign.overrideOrganizationTextingHours) {
-      config.campaignTextingHours = { textingHoursStart, textingHoursEnd, textingHoursEnforced, timezone }
+      config.campaignTextingHours = { 
+        textingHoursStart: campaign.textingHoursStart,
+        textingHoursEnd: campaign.textingHoursEnd,
+        textingHoursEnforced: campaign.textingHoursEnforced,
+        timezone: campaign.timezone
+      }
     }
 
     return isBetweenTextingHours(timezoneData, config)
