@@ -11,9 +11,7 @@ describe('test getTimezoneByZip', () => {
   beforeEach(
     async () => {
       await setupTest()
-      console.log('hi')
       await seedZipCodes()
-      console.log('hi2')
     }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT)
   afterEach(
     async () => await cleanupTest(),
