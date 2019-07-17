@@ -1235,13 +1235,6 @@ const rootResolvers = {
         return user
       }
     },
-    contact: async (_, { id }, { loaders, user }) => {
-      authRequired(user)
-      const contact = await loaders.campaignContact.load(id)
-      const campaign = await loaders.campaign.load(contact.campaign_id)
-      await accessRequired(user, campaign.organization_id, 'TEXTER', /* allowSuperadmin=*/ true)
-      return contact
-    },
     organizations: async (_, { id }, { user }) => {
       if (user.is_superadmin) {
         return r.table('organization')
