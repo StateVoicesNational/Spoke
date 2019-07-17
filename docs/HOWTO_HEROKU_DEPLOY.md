@@ -66,3 +66,4 @@ Then push to heroku from the branch that you wish to deploy:
 git remote add heroku https://git.heroku.com/myspokeapp.git
 git push heroku master
 ```
+You may find that the Customize Log In toggle in auth0 has been disabled, so you will want to turn that back on. You will also want to make sure you are running the latest version of the code for that. See the instructions in Step 11 in the main readme doc. 
