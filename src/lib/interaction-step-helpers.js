@@ -99,7 +99,7 @@ export function assembleAnswerOptions(allInteractionSteps) {
   allInteractionSteps.forEach(interactionStep => {
     if (interactionStep.parent_interaction_id) {
       const [parentStep] = interactionStepsCopy.filter(
-        par => (par.id === interactionStep.parent_interaction_id))
+        parent => (parent.id === interactionStep.parent_interaction_id))
       if (parentStep) {
         parentStep.answerOptions.push({
           nextInteractionStep: interactionStep,
