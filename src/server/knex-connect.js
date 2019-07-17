@@ -27,19 +27,7 @@ if (useSSL) pg.defaults.ssl = true
 
 let config
 
-if (NODE_ENV === 'test') {
-  config = {
-    client: 'pg',
-    connection: {
-      host: DB_HOST,
-      port: DB_PORT,
-      database: 'spoke_test',
-      password: 'spoke_test',
-      user: 'spoke_test',
-      ssl: useSSL
-    }
-  }
-} else if (DB_JSON) {
+if (DB_JSON) {
   config = JSON.parse(DB_JSON)
 } else if (DB_TYPE) {
   config = {
@@ -61,6 +49,18 @@ if (NODE_ENV === 'test') {
     connection: DATABASE_URL,
     pool: { min, max },
     ssl: useSSL
+  }
+} else if (NODE_ENV === 'test') {
+  config = {
+    client: 'pg',
+    connection: {
+      host: DB_HOST,
+      port: DB_PORT,
+      database: 'spoke_test',
+      password: 'spoke_test',
+      user: 'spoke_test',
+      ssl: useSSL
+    }
   }
 } else {
   config = {
