@@ -46,7 +46,6 @@ beforeEach(async () => {
   assignmentId = dbCampaignContact.assignment_id
   await createScript(testAdminUser, testCampaign)
   await startCampaign(testAdminUser, testCampaign)
-  console.log('hi')
 }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT)
 
 afterEach(async () => {
@@ -86,7 +85,6 @@ it('should send an inital message to test contacts', async () => {
   const campaignContact = messageResult.data.sendMessage
 
   // These things are expected to be returned from the sendMessage mutation
-  // console.log('CAMPAIGNCONTACT', messageResult.data, campaignContact)
   expect(campaignContact.messageStatus).toBe('messaged')
   expect(campaignContact.messages.length).toBe(1)
   expect(campaignContact.messages[0].text).toBe(message.text)
