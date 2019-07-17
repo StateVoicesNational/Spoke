@@ -47,6 +47,8 @@ class Home extends React.Component {
     if (user) {
       if (user.adminOrganizations.length > 0) {
         this.props.router.push(`/admin/${user.adminOrganizations[0].id}`)
+      } else if (user.ownerOrganizations.length > 0) {
+        this.props.router.push(`/admin/${user.ownerOrganizations[0].id}`)
       } else if (user.texterOrganizations.length > 0) {
         this.props.router.push(`/app/${user.texterOrganizations[0].id}`)
       } else {
@@ -126,6 +128,9 @@ const mapQueriesToProps = () => ({
       currentUser {
         id
         adminOrganizations:organizations(role:"ADMIN") {
+          id
+        }
+        ownerOrganizations:organizations(role:"OWNER") {
           id
         }
         texterOrganizations:organizations(role:"TEXTER") {

@@ -1,6 +1,7 @@
 /node_modules
 /build
 npm-debug.log
+yarn-error.log
 .DS_Store
 rethinkdb_data
 .env
@@ -8,7 +9,9 @@ __test__/test_data/*
 production-env.json
 claudia.json
 stage.json
+beta.json
 stage-env.json
+beta-env.json
 test.sqlite
 *~
 *#
@@ -17,3 +20,4 @@ coverage/
 *sqlite
 *.vscode
 *.rdb
+package-lock.json

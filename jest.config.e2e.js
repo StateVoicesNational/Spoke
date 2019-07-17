@@ -4,7 +4,8 @@ const config = require('./jest.config')
 const overrides = {
   setupTestFrameworkScriptFile: '<rootDir>/__test__/e2e/util/setup.js',
   testMatch: ['**/__test__/e2e/**/*.test.js'],
-  testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/__test__/e2e/util/', '<rootDir>/__test__/e2e/pom/']
+  testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/__test__/e2e/util/', '<rootDir>/__test__/e2e/pom/'],
+  bail: true // To learn about errors sooner
 }
 const merges = {
   // Merge in changes to deeper objects

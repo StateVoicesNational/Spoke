@@ -1,6 +1,6 @@
-# Development Guidelines
+# Development Guidelines and Tips
 
-This document describes current gotchas in our code base an explains the context
+This document describes tips and current gotchas in our code base and explains the context
 for parts that are evolving in a certain direction (or we *want* to evolve in a certain direction).
 
 See [CONTRIBUTING.md](../CONTRIBUTING.md) and the [README](../README.md) for setup
@@ -18,6 +18,18 @@ Generally, label by filename what kind of documentation it is in all-caps, one o
 * How-to guide
 * Reference
 
+## Helpful Dev Tips
+* Run `sqlite3 mydb.sqlite` to connect to a SQL shell for the dev database
+* [Set up an ESLint plugin in your code editor so that you catch coding errors and follow code style guidelines more easily!](https://medium.com/planet-arkency/catch-mistakes-before-you-run-you-javascript-code-6e524c36f0c8#.oboqsse48)
+* [Install the redux-devtools-extension](https://github.com/zalmoxisus/redux-devtools-extension) in Chrome to get advanced Redux debugging features.
+* Right now there is a bug in Apollo (https://github.com/apollostack/react-apollo/issues/57) that means in one particular case, errors get swallowed.  If you end up with an app that is silently breaking, console.log(this.props.data) and check the errors property.
+
+## Dependency Management
+
+Spoke uses the [yarn](https://yarnpkg.com) package manager. Please follow their documentation when [adding, upgrading, or removing dependencies](https://yarnpkg.com/en/docs/managing-dependencies).
+
+Yarn also uses a [yarn.lock](https://yarnpkg.com/en/docs/yarn-lock) file to ensure consistent installs across machines. Any changes to `yarn.lock` should be included in your pull request. If merge conflicts arise in `yarn.lock`, yarn should [automatically resolve those conflicts](https://stackoverflow.com/questions/42939113/how-do-you-resolve-git-conflicts-in-yarn-lock) during the next `yarn install`.
+
 ## Environment Variables/Configuration
 
 Environment Variables affect how the application is run. We aim to support a
@@ -33,7 +45,7 @@ enviornment variable:
 * For any variables that enable features that should not be enabled (for legal reasons) in the United States, always ALSO test for `process.env.NOT_IN_USA` -- this ensures that the code self-documents the context these features will be available (and not available in).
 
 
-## Understanding DB/ORM calls
+## Understanding DB/.[ORM].(https://stackoverflow.com/questions/1279613/what-is-an-orm-and-where-can-i-learn-more-about-it) calls
 
 ###TLDR
 
@@ -96,16 +108,24 @@ Sqlite does not support knex's `returning()` method.  This affects running `r.kn
 
 ### Schema changes
 
-Schema changes should include an addition to `src/migrations/index.js`.  If you create a table, make sure you use
-`r.knex.schema.createTableIfNotExists` (see knex documentation and existing examples).
+Every schema change needs two changes:
+
+1. An update to the appropriate model definition in src/server/models/ directory
+2. Create a new migration using the [knex CLI](https://knexjs.org/#Migrations) -- `yarn knex migrate:make <migration_name>`
+   If you create a table, make sure you use `r.knex.schema.createTableIfNotExists` (see knex documentation and existing examples).
 
 In order to support PostgreSQL and Sqlite, you can define a field as `.json()` when defining it in the
 migration, but it should be `type.string()` in its `src/server/models/` definition.
 
 Production instances can disable automatic migrations on startup with environment variable `SUPPRESS_MIGRATIONS`.
 
+If you want to use the knex CLI, run with `yarn knex` which will leverage your `.env` environment.
+
+
 
 ## Apollo/GraphQL structure and gotchas
+
+Spoke was originally generated from [react-apollo-starter-kit](https://github.com/saikat/react-apollo-starter-kit).  You can look at that project's README for info on some of the libraries used.
 
 See [EXPLANATION-request-example.md](./EXPLANATION-request-example.md) for a great run-down all the
 way through the call stack on the client and server.
@@ -132,6 +152,19 @@ we want to add a value to campaign info for that edit page. We might need to edi
   Model object resolvers are 'auto-generated' by calls with `mapFieldsToModel` which you'll
   see called in files like `src/server/api/campaign.js`
 * In `campaign.js` note that you will need to update `type Campaign` above, and possibly lower down in `Campaign: { ...mapFieldsToModel([...` (but only if it's a new field/column on the campaign table.
+
+### Security and Access-control
+
+* Roles are assigned per-organization. Users can be assigned a cross-organizational property called 'superadmin' which is limited for
+  actions that could undermine the security of the system or access system-level data.
+* Security for top-level graphQL queries are in rootResolvers.RootQuery object in [server/api/schema.js](https://github.com/MoveOnOrg/Spoke/blob/dec93521d54ea46476d2a5c7eb9deeedbd69d53f/src/server/api/schema.js#L1122)
+  * These correspond to e.g. getContact or getOrganization, etc
+* Mutations and custom queries are inside the method
+* Helper functions are in [server/api/errors.js](https://github.com/MoveOnOrg/Spoke/blob/main/src/server/api/errors.js) which should/will be optimized to use cached info, etc.  Each of them will throw an error and therefore cancel the request if the user doesn't have the appropriate access.
+  * `authRequired(user)` establishes that the user is not anonymous
+  * `accessRequired(user, orgId, role, allowSuperadmin = false)` will require the user to have a certain role or higher.  Pass in `true` to allowSuperadmin if superadmins should be allowed.  Generally they should be allowed to do things, but might as well be explicit.
+  * `assignmentRequired(user, assignmentId)` makes sure that the user has the assignment in question
+  * `superAdminRequired(user)` requires a super-admin user
 
 
 ## Asynchronous tasks (workers)

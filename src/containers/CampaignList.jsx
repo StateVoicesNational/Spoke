@@ -1,3 +1,5 @@
+import gql from 'graphql-tag'
+import SpeakerNotesIcon from 'material-ui/svg-icons/action/speaker-notes'
 import PropTypes from 'prop-types'
 import React from 'react'
 import { List, ListItem } from 'material-ui/List'
@@ -6,15 +8,14 @@ import WarningIcon from 'material-ui/svg-icons/alert/warning'
 import ArchiveIcon from 'material-ui/svg-icons/content/archive'
 import UnarchiveIcon from 'material-ui/svg-icons/content/unarchive'
 import IconButton from 'material-ui/IconButton'
+import Checkbox from 'material-ui/Checkbox'
 import { withRouter } from 'react-router'
 import theme from '../styles/theme'
 import Chip from '../components/Chip'
 import loadData from './hoc/load-data'
-import gql from 'graphql-tag'
 import wrapMutations from './hoc/wrap-mutations'
-import SpeakerNotesIcon from 'material-ui/svg-icons/action/speaker-notes'
 import Empty from '../components/Empty'
-
+import { dataTest } from '../lib/attributes'
 
 const campaignInfoFragment = `
   id
@@ -22,8 +23,12 @@ const campaignInfoFragment = `
   isStarted
   isArchived
   hasUnassignedContacts
+  hasUnsentInitialMessages
   description
   dueBy
+  creator {
+    displayName
+  }
 `
 
 const inlineStyles = {
@@ -35,13 +40,41 @@ const inlineStyles = {
   },
   good: {
     color: theme.colors.green
+  },
+  warnUnsent: {
+    color: theme.colors.blue
   }
 }
 
-class CampaignList extends React.Component {
+export class CampaignList extends React.Component {
+
+  renderRightIcon({ isArchived }) {
+    if (isArchived) {
+      return (
+        <IconButton
+          tooltip='Unarchive'
+          onTouchTap={async () => this.props.mutations.unarchiveCampaign(campaign.id)}
+        >
+          <UnarchiveIcon />
+        </IconButton>)
+    }
+    return (
+      <IconButton
+        tooltip='Archive'
+        onTouchTap={async () => this.props.mutations.archiveCampaign(campaign.id)}
+      >
+        <ArchiveIcon />
+      </IconButton>)
+  }
+
   renderRow(campaign) {
-    const { isStarted, isArchived, hasUnassignedContacts } = campaign
-    const { adminPerms } = this.props
+    const {
+      isStarted,
+      isArchived,
+      hasUnassignedContacts,
+      hasUnsentInitialMessages
+    } = campaign
+    const { adminPerms, selectMultiple } = this.props
 
     let listItemStyle = {}
     let leftIcon = ''
@@ -50,11 +83,14 @@ class CampaignList extends React.Component {
     } else if (!isStarted || hasUnassignedContacts) {
       listItemStyle = inlineStyles.warn
       leftIcon = <WarningIcon />
+    } else if (hasUnsentInitialMessages) {
+      listItemStyle = inlineStyles.warnUnsent
     } else {
       listItemStyle = inlineStyles.good
     }
 
     const dueByMoment = moment(campaign.dueBy)
+    const creatorName = campaign.creator ? campaign.creator.displayName : null
     const tags = []
     if (!isStarted) {
       tags.push('Not started')
@@ -62,6 +98,10 @@ class CampaignList extends React.Component {
 
     if (hasUnassignedContacts) {
       tags.push('Unassigned contacts')
+    }
+
+    if (isStarted && hasUnsentInitialMessages) {
+      tags.push('Unsent initial messages')
     }
 
     const primaryText = (
@@ -76,10 +116,12 @@ class CampaignList extends React.Component {
           Campaign ID: {campaign.id}
           <br />
           {campaign.description}
+          {creatorName ?
+              (<span> &mdash; Created by {creatorName}</span>) : null}
           <br />
           {dueByMoment.isValid() ?
-           dueByMoment.format('MMM D, YYYY') :
-           'No due date set'}
+            dueByMoment.format('MMM D, YYYY') :
+            'No due date set'}
         </span>
       </span>
     )
@@ -88,31 +130,28 @@ class CampaignList extends React.Component {
     const campaignUrl = `/admin/${this.props.organizationId}/campaigns/${campaign.id}`
     return (
       <ListItem
+        {...dataTest('campaignRow')}
         style={listItemStyle}
         key={campaign.id}
         primaryText={primaryText}
-        onTouchTap={() => (!isStarted ?
-          this.props.router.push(`${campaignUrl}/edit`) :
-          this.props.router.push(campaignUrl))}
+        onTouchTap={({
+          currentTarget: { firstElementChild: { firstElementChild: { checked } } }
+        }) => {
+          if (selectMultiple) {
+            this.props.handleChecked({ campaignId: campaign.id, checked })
+          } else {
+            return !isStarted ?
+              this.props.router.push(`${campaignUrl}/edit`) :
+              this.props.router.push(campaignUrl)
+          }
+        }
+        }
         secondaryText={secondaryText}
-        leftIcon={leftIcon}
-        rightIconButton={adminPerms ?
-                         (campaign.isArchived ? (
-          <IconButton
-            tooltip='Unarchive'
-            onTouchTap={async () => this.props.mutations.unarchiveCampaign(campaign.id)}
-          >
-            <UnarchiveIcon />
-          </IconButton>
-        ) : (
-          <IconButton
-            tooltip='Archive'
-            onTouchTap={async () => this.props.mutations.archiveCampaign(campaign.id)}
-          >
-            <ArchiveIcon />
-          </IconButton>
-        )) : null}
-      />
+        leftIcon={!selectMultiple ? leftIcon : null}
+        rightIconButton={(!selectMultiple && adminPerms) ? this.renderRightIcon({ isArchived }) : null}
+        leftCheckbox={selectMultiple ? <Checkbox /> : null}
+      >
+      </ListItem>
     )
   }
 
@@ -124,10 +163,10 @@ class CampaignList extends React.Component {
         icon={<SpeakerNotesIcon />}
       />
     ) : (
-      <List>
-        {campaigns.map((campaign) => this.renderRow(campaign))}
-      </List>
-    )
+        <List>
+          {campaigns.campaigns.map((campaign) => this.renderRow(campaign))}
+        </List>
+      )
   }
 }
 
@@ -141,9 +180,11 @@ CampaignList.propTypes = {
   ),
   router: PropTypes.object,
   adminPerms: PropTypes.bool,
+  selectMultiple: PropTypes.bool,
   organizationId: PropTypes.string,
   data: PropTypes.object,
-  mutations: PropTypes.object
+  mutations: PropTypes.object,
+  handleChecked: PropTypes.func
 }
 
 const mapMutationsToProps = () => ({
@@ -171,7 +212,11 @@ const mapQueriesToProps = ({ ownProps }) => ({
       organization(id: $organizationId) {
         id
         campaigns(campaignsFilter: $campaignsFilter) {
-          ${campaignInfoFragment}
+          ... on CampaignsList{
+            campaigns{
+              ${campaignInfoFragment}
+            }
+          }
         }
       }
     }`,

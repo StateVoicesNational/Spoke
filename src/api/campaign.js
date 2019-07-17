@@ -2,6 +2,8 @@ export const schema = `
   input CampaignsFilter {
     isArchived: Boolean
     campaignId: Int
+    listSize: Int
+    pageSize: Int
   }
 
   type CampaignStats {
@@ -26,12 +28,15 @@ export const schema = `
     dueBy: Date
     isStarted: Boolean
     isArchived: Boolean
+    creator: User
     texters: [User]
     assignments(assignmentsFilter: AssignmentsFilter): [Assignment]
     interactionSteps: [InteractionStep]
     contacts: [CampaignContact]
     contactsCount: Int
     hasUnassignedContacts: Boolean
+    hasUnassignedContactsForTexter: Boolean
+    hasUnsentInitialMessages: Boolean
     customFields: [String]
     cannedResponses(userId: String): [CannedResponse]
     stats: CampaignStats,
@@ -41,5 +46,23 @@ export const schema = `
     introHtml: String
     primaryColor: String
     logoImageUrl: String
+    editors: String
+    cacheable: Boolean
+    overrideOrganizationTextingHours: Boolean
+    textingHoursEnforced: Boolean
+    textingHoursStart: Int
+    textingHoursEnd: Int
+    timezone: String
+  }
+
+  type CampaignsList {
+    campaigns: [Campaign]
+  }
+
+  union CampaignsReturn = PaginatedCampaigns | CampaignsList
+
+  type PaginatedCampaigns {
+    campaigns: [Campaign]
+    pageInfo: PageInfo
   }
 `

@@ -3,6 +3,7 @@ import React from 'react'
 import { Toolbar, ToolbarGroup, ToolbarTitle } from 'material-ui/Toolbar'
 import { getDisplayPhoneNumber } from '../lib/phone-format'
 import { getLocalTime, getContactTimezone } from '../lib/timezones'
+import { getProcessEnvDstReferenceTimezone } from '../lib/tz-helpers'
 import { grey100 } from 'material-ui/styles/colors'
 
 const inlineStyles = {
@@ -39,7 +40,7 @@ const ContactToolbar = function ContactToolbar(props) {
       offset = timezone.offset || offset
       hasDST = timezone.hasDST || hasDST
     }
-    const adjustedLocationTZ = getContactTimezone(location)
+    const adjustedLocationTZ = getContactTimezone(props.campaign, location)
     if (adjustedLocationTZ && adjustedLocationTZ.timezone) {
       offset = adjustedLocationTZ.timezone.offset
       hasDST = adjustedLocationTZ.timezone.hasDST
@@ -52,14 +53,21 @@ const ContactToolbar = function ContactToolbar(props) {
   }
   formattedLocation = `${formattedLocation} ${state}`
 
-  const formattedLocalTime = getLocalTime(offset, hasDST).format('LT') // format('h:mm a')
+  const dstReferenceTimezone = props.campaign.overrideOrganizationTextingHours ?
+    props.campaign.timezone :
+    getProcessEnvDstReferenceTimezone()
+
+  const formattedLocalTime = getLocalTime(offset, hasDST, dstReferenceTimezone).format('LT') // format('h:mm a')
   return (
     <div>
       <Toolbar
         style={inlineStyles.toolbar}
       >
         <ToolbarGroup >
-          <ToolbarTitle text={campaignContact.firstName} />
+          <ToolbarTitle
+            text={campaignContact.firstName}
+            title={`id:${campaignContact.id} m:${campaignContact.messages.length} s:${campaignContact.messageStatus}`}
+          />
           <ToolbarTitle
             style={inlineStyles.cellToolbarTitle}
           />
@@ -84,7 +92,8 @@ const ContactToolbar = function ContactToolbar(props) {
 
 ContactToolbar.propTypes = {
   campaignContact: PropTypes.object, // contacts for current assignment
-  rightToolbarIcon: PropTypes.element
+  rightToolbarIcon: PropTypes.element,
+  campaign: PropTypes.object
 }
 
 export default ContactToolbar

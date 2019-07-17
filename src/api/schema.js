@@ -1,3 +1,5 @@
+import gql from 'graphql-tag'
+
 import { schema as userSchema, resolvers as userResolvers, buildUserOrganizationQuery } from './user'
 import {
   schema as conversationSchema,
@@ -32,7 +34,7 @@ import {
 import { schema as inviteSchema, resolvers as inviteResolvers } from './invite'
 
 
-const rootSchema = `
+const rootSchema = gql`
   input CampaignContactInput {
     firstName: String!
     lastName: String!
@@ -92,6 +94,11 @@ const rootSchema = `
     texters: [TexterInput]
     interactionSteps: InteractionStepInput
     cannedResponses: [CannedResponseInput]
+    overrideOrganizationTextingHours: Boolean
+    textingHoursEnforced: Boolean
+    textingHoursStart: Int
+    textingHoursEnd: Int
+    timezone: String
   }
 
   input MessageInput {
@@ -122,7 +129,7 @@ const rootSchema = `
     message: MessageInput!
     campaignContactId: String!
   }
-  
+
   input OffsetLimitCursor {
     offset: Int!
     limit: Int!
@@ -132,6 +139,13 @@ const rootSchema = `
     campaignId: String!
     campaignContactId: Int!
     messageIds: [Int]!
+  }
+
+  input UserPasswordChange {
+    email: String!
+    password: String!
+    passwordConfirm: String!
+    newPassword: String!
   }
 
   type CampaignIdAssignmentId {
@@ -148,11 +162,11 @@ const rootSchema = `
   type FoundContact {
     found: Boolean
   }
-  
+
   type PageInfo {
     limit: Int!
     offset: Int!
-    next: Int!
+    next: Int
     previous: Int
     total: Int!
   }
@@ -161,31 +175,43 @@ const rootSchema = `
     data: String!
   }
 
+  enum SortPeopleBy {
+    FIRST_NAME
+    LAST_NAME
+    NEWEST
+    OLDEST
+  } 
+
   type RootQuery {
     currentUser: User
     organization(id:String!, utc:String): Organization
     campaign(id:String!): Campaign
     inviteByHash(hash:String!): [Invite]
-    contact(id:String!): CampaignContact
     assignment(id:String!): Assignment
     organizations: [Organization]
     availableActions(organizationId:String!): [Action]
     conversations(cursor:OffsetLimitCursor!, organizationId:String!, campaignsFilter:CampaignsFilter, assignmentsFilter:AssignmentsFilter, contactsFilter:ContactsFilter, utc:String): PaginatedConversations
+    campaigns(organizationId:String!, cursor:OffsetLimitCursor, campaignsFilter: CampaignsFilter): CampaignsReturn
+    people(organizationId:String!, cursor:OffsetLimitCursor, campaignsFilter:CampaignsFilter, role: String, sortBy: SortPeopleBy): UsersReturn
   }
 
   type RootMutation {
     createInvite(invite:InviteInput!): Invite
     createCampaign(campaign:CampaignInput!): Campaign
     editCampaign(id:String!, campaign:CampaignInput!): Campaign
+    deleteJob(campaignId:String!, id:String!): JobRequest
     copyCampaign(id: String!): Campaign
     exportCampaign(id:String!): JobRequest
     createCannedResponse(cannedResponse:CannedResponseInput!): CannedResponse
     createOrganization(name: String!, userId: String!, inviteId: String!): Organization
     joinOrganization(organizationUuid: String!): Organization
-    editOrganizationRoles(organizationId: String!, userId: String!, roles: [String]): Organization
+    editOrganizationRoles(organizationId: String!, userId: String!, campaignId: String, roles: [String]): Organization
     editUser(organizationId: String!, userId: Int!, userData:UserInput): User
+    resetUserPassword(organizationId: String!, userId: Int!): String!
+    changeUserPassword(userId: Int!, formData: UserPasswordChange): User
     updateTextingHours( organizationId: String!, textingHoursStart: Int!, textingHoursEnd: Int!): Organization
     updateTextingHoursEnforcement( organizationId: String!, textingHoursEnforced: Boolean!): Organization
+    updateOptOutMessage( organizationId: String!, optOutMessage: String!): Organization
     bulkSendMessages(assignmentId: Int!): [CampaignContact]
     sendMessage(message:MessageInput!, campaignContactId:String!): CampaignContact,
     createOptOut(optOut:OptOutInput!, campaignContactId:String!):CampaignContact,
@@ -194,12 +220,16 @@ const rootSchema = `
     updateQuestionResponses(questionResponses:[QuestionResponseInput], campaignContactId:String!): CampaignContact,
     startCampaign(id:String!): Campaign,
     archiveCampaign(id:String!): Campaign,
+    archiveCampaigns(ids: [String!]): [Campaign],
     unarchiveCampaign(id:String!): Campaign,
     sendReply(id: String!, message: String!): CampaignContact
+    getAssignmentContacts(assignmentId: String!, contactIds: [String], findNew: Boolean): [CampaignContact],
     findNewCampaignContact(assignmentId: String!, numberContacts: Int!): FoundContact,
     assignUserToCampaign(organizationUuid: String!, campaignId: String!): Campaign
     userAgreeTerms(userId: String!): User
-    reassignCampaignContacts(organizationId:String!, campaignIdsContactIds:[CampaignIdContactId]!, newTexterUserId:String!):[CampaignIdAssignmentId]
+    reassignCampaignContacts(organizationId:String!, campaignIdsContactIds:[CampaignIdContactId]!, newTexterUserId:String!):[CampaignIdAssignmentId],
+    bulkReassignCampaignContacts(organizationId:String!, campaignsFilter:CampaignsFilter, assignmentsFilter:AssignmentsFilter, contactsFilter:ContactsFilter, newTexterUserId:String!):[CampaignIdAssignmentId],
+    importCampaignScript(campaignId:String!, url:String!): Int 
   }
 
   schema {
@@ -227,4 +257,3 @@ export const schema = [
   inviteSchema,
   conversationSchema
 ]
-

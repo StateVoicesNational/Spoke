@@ -6,7 +6,6 @@ const env_production = {
   AWS_S3_BUCKET_NAME: '',
   APOLLO_OPTICS_KEY:'',
   DEV_APP_PORT:8090,
-  PUBLIC_DIR:'./build/client',
   ASSETS_DIR:'./build/client/assets',
   ASSETS_MAP_FILE:'assets.json',
   CAMPAIGN_ID:'campaign-id-hash',

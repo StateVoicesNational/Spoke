@@ -7,7 +7,6 @@
   "APOLLO_OPTICS_KEY": "",
   "DEFAULT_SERVICE": "twilio",
   "OUTPUT_DIR": "./build",
-  "PUBLIC_DIR": "./build/client",
   "ASSETS_DIR": "./build/client/assets",
   "STATIC_BASE_URL": "https://s3.amazonaws.com/s3.example.com/spoke/",
   "S3_STATIC_PATH": "s3://s3.example.com/spoke/",

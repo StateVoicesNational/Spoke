@@ -2,6 +2,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import { StyleSheet, css } from 'aphrodite'
 import theme from '../styles/theme'
+import { dataTest } from '../lib/attributes'
 
 const inlineStyles = {
   icon: {
@@ -31,7 +32,6 @@ const styles = StyleSheet.create({
   },
   title: {
     ...theme.text.header,
-    opacity: 0.2,
     textAlign: 'center'
   },
   content: {
@@ -41,10 +41,10 @@ const styles = StyleSheet.create({
 })
 
 const Empty = ({ title, icon, content, hideMobile }) => (
-  <div className={hideMobile ? css(styles.hideMobile) : css(styles.container)}>
+  <div className={hideMobile ? css(styles.hideMobile) : css(styles.container)} {...dataTest('empty')}>
     {React.cloneElement(icon, { style: inlineStyles.icon })}
     <div className={css(styles.title)}>
-     {title}
+      {title}
     </div>
     {content ? (<div className={css(styles.content)}>
       {content}

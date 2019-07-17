@@ -1,5 +1,37 @@
 # Release Notes
 
+## v2.0
+*April 2019:* Version 2.0.0
+
+This release includes an improvement to message sending speeds, many usability improvements to the Admin Message Review panel, bug fixes for different features, improved data warehouse querying for audiences, Docker support/documentation, Local Authentication, etc. We also have switched to using `yarn` dev and install commands versus `npm`. To see an updated feature list, please visit opensource.moveon.org/spoke.
+
+Migrations:
+- Texting hour related columns to the `Campaign` table.
+- Send_before column to the `Message` table.
+- Creator_id column to the `Campaign` table.
+
+Heroku:
+
+  The Heroku deployment method has been migrated to the container runtime. When upgrading an existing Heroku app, these [migration steps](https://github.com/MoveOnOrg/Spoke/blob/33e2edcc455836f36eafd56d585430ac1ceda515/docs/HOWTO_HEROKU_DEPLOY.md#upgrading-an-existing-heroku-app) will need to be performed.
+
+Lambda:
+
+  This version includes an update for the Node runtime environment. For current AWS Lambda Users - you can update your Node runtime to 8.10 by either visiting the `Function code` Section and moving the drop down to 8.10 or by running the following script: `claudia update --runtime nodejs8.10`. For new Lambda deployments, Claudia.js will default to Node 8.10.
+
+Thanks to all the contributors apart of this release including:
+[anasauceda](https://github.com/anasauceda),
+[azuzunaga](https://github.com/azuzunaga),
+[bchrobot](https://github.com/bchrobot),
+[benhiller](https://github.com/benhiller),
+[harpojaeger](https://github.com/harpojaeger),
+[jlegrone](https://github.com/jlegrone),
+[joemcl](https://github.com/joemcl),
+[jparkrr](https://github.com/jparkrr),
+[lperson](https://github.com/lperson),
+[sandramchung](https://github.com/sandramchung),
+[schuyler1d](https://github.com/schuyler1d),
+[shakalee14](https://github.com/shakalee14)
+
 ## v1.4.1
 *August 2018:* Version 1.4.1
 * This version fixes bugs found in 1.4 including a deployment bug.
@@ -31,7 +63,7 @@ Thanks go to all our contributors for this release including:
 [joemcl](https://github.com/joemcl),
 [lperson](https://github.com/lperson),
 [mathemagica](https://github.com/mathemagica),
-[shakalee14](https://github.com/shakalee14),
+[shakalee14](https://github.com/shakalee14)
 
 ## v1.3
 
