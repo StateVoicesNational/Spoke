@@ -23,8 +23,7 @@ const rollbarScript = process.env.ROLLBAR_CLIENT_TOKEN ?
 // the site is not very useful without auth0, unless you have a session cookie already
 // good for doing dev offline
 const externalLinks = (process.env.NO_EXTERNAL_LINKS ? '' :
-  `<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Poppins">
-  <script src="https://cdn.auth0.com/js/lock/11.0.1/lock.min.js"></script>`)
+  '<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Poppins">')
 
 export default function renderIndex(html, css, assetMap, store) {
   return `
@@ -55,6 +54,7 @@ export default function renderIndex(html, css, assetMap, store) {
     </style>
     <style data-aphrodite>${css.content}</style>
     ${rollbarScript}
+    <link rel="icon" href="https://s3-us-west-1.amazonaws.com/spoke-public/spoke_logo.svg">
   </head>
   <body>
     <div id="mount">${html}</div>
@@ -69,12 +69,12 @@ export default function renderIndex(html, css, assetMap, store) {
       window.BASE_URL="${process.env.BASE_URL || ''}"
       window.NOT_IN_USA=${process.env.NOT_IN_USA || 0}
       window.ALLOW_SEND_ALL=${process.env.ALLOW_SEND_ALL || 0}
-      window.OPT_OUT_MESSAGE="${process.env.OPT_OUT_MESSAGE || 'I\'m opting you out of texts immediately. Have a great day.'}"
       window.BULK_SEND_CHUNK_SIZE=${process.env.BULK_SEND_CHUNK_SIZE || 0}
       window.MAX_MESSAGE_LENGTH=${process.env.MAX_MESSAGE_LENGTH || 99999}
       window.TERMS_REQUIRE="${process.env.TERMS_REQUIRE || ''}"
       window.TZ="${process.env.TZ || ''}"
       window.DST_REFERENCE_TIMEZONE="${process.env.DST_REFERENCE_TIMEZONE || 'America/New_York'}"
+      window.PASSPORT_STRATEGY="${process.env.PASSPORT_STRATEGY || ''}"
     </script>
     <script src="${assetMap['bundle.js']}"></script>
   </body>

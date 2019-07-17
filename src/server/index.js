@@ -4,22 +4,22 @@ import express from 'express'
 import appRenderer from './middleware/app-renderer'
 import { graphqlExpress, graphiqlExpress } from 'apollo-server-express'
 import { makeExecutableSchema, addMockFunctionsToSchema } from 'graphql-tools'
+// ORDERING: ./models import must be imported above ./api to help circular imports
+import { createLoaders, createTablesIfNecessary, r } from './models'
 import { resolvers } from './api/schema'
 import { schema } from '../api/schema'
-import { accessRequired } from './api/errors'
 import mocks from './api/mocks'
-import { createLoaders, createTablesIfNecessary } from './models'
 import passport from 'passport'
 import cookieSession from 'cookie-session'
-import { setupAuth0Passport } from './auth-passport'
+import passportSetup from './auth-passport'
 import wrap from './wrap'
 import { log } from '../lib'
 import nexmo from './api/lib/nexmo'
 import twilio from './api/lib/twilio'
 import { seedZipCodes } from './seeds/seed-zip-codes'
-import { runMigrations } from '../migrations'
 import { setupUserNotificationObservers } from './notifications'
 import { TwimlResponse } from 'twilio'
+import { existsSync } from 'fs'
 
 process.on('uncaughtException', (ex) => {
   log.error(ex)
@@ -27,13 +27,7 @@ process.on('uncaughtException', (ex) => {
 })
 const DEBUG = process.env.NODE_ENV === 'development'
 
-const loginCallbacks = setupAuth0Passport()
-if (!process.env.PASSPORT_STRATEGY) {
-  // default to legacy Auth0 choice
-
-} else {
-
-}
+const loginCallbacks = passportSetup[process.env.PASSPORT_STRATEGY || global.PASSPORT_STRATEGY || 'auth0']()
 
 if (!process.env.SUPPRESS_SEED_CALLS) {
   seedZipCodes()
@@ -45,9 +39,12 @@ if (!process.env.SUPPRESS_DATABASE_AUTOCREATE) {
     if (didCreate && !process.env.SUPPRESS_SEED_CALLS) {
       seedZipCodes()
     }
+    if (!didCreate && !process.env.SUPPRESS_MIGRATIONS) {
+      r.k.migrate.latest()
+    }
   })
 } else if (!process.env.SUPPRESS_MIGRATIONS) {
-  runMigrations()
+  r.k.migrate.latest()
 }
 
 setupUserNotificationObservers()
@@ -57,8 +54,10 @@ const port = process.env.DEV_APP_PORT || process.env.PORT
 
 // Don't rate limit heroku
 app.enable('trust proxy')
-if (!DEBUG) {
-  app.use(express.static(process.env.PUBLIC_DIR, {
+
+// Serve static assets
+if (existsSync(process.env.ASSETS_DIR)) {
+  app.use('/assets', express.static(process.env.ASSETS_DIR, {
     maxAge: '180 days'
   }))
 }
@@ -72,10 +71,20 @@ app.use(cookieSession({
     secure: !DEBUG,
     maxAge: null
   },
-  secret: process.env.SESSION_SECRET
+  secret: process.env.SESSION_SECRET || global.SESSION_SECRET
 }))
 app.use(passport.initialize())
 app.use(passport.session())
+
+app.use((req, res, next) => {
+  const getContext = app.get('awsContextGetter')
+  if (typeof getContext === 'function') {
+    const [event, context] = getContext(req, res)
+    req.awsEvent = event
+    req.awsContext = context
+  }
+  next()
+})
 
 app.post('/nexmo', wrap(async (req, res) => {
   try {
@@ -129,9 +138,9 @@ app.get('/logout-callback', (req, res) => {
   req.logOut()
   res.redirect('/')
 })
-
 if (loginCallbacks) {
-  app.get('/login-callback', ...loginCallbacks)
+  app.get('/login-callback', ...loginCallbacks.loginCallback)
+  app.post('/login-callback', ...loginCallbacks.loginCallback)
 }
 
 const executableSchema = makeExecutableSchema({
@@ -149,13 +158,19 @@ app.use('/graphql', graphqlExpress((request) => ({
   schema: executableSchema,
   context: {
     loaders: createLoaders(),
-    user: request.user
+    user: request.user,
+    awsContext: request.awsContext || null,
+    awsEvent: request.awsEvent || null,
+    remainingMilliseconds: () => (
+      (request.awsContext && request.awsContext.getRemainingTimeInMillis)
+      ? request.awsContext.getRemainingTimeInMillis()
+      : 5 * 60 * 1000 // default saying 5 min, no matter what
+    )
   }
 })))
 app.get('/graphiql', graphiqlExpress({
   endpointURL: '/graphql'
 }))
-
 
 // This middleware should be last. Return the React app only if no other route is hit.
 app.use(appRenderer)
