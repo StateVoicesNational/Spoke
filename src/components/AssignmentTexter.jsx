@@ -140,7 +140,7 @@ export class AssignmentTexter extends React.Component {
         .slice(newIndex, newIndex + BATCH_GET)
         .map((c) => c.id)
         .filter((cId) => !force || !this.state.contactCache[cId])
-      console.log('getContactData missing current', newIndex, getIds)
+      // console.log('getContactData missing current', newIndex, getIds)
     }
     // if we DO have current data, but don't have data base BATCH_FORWARD...
     if (!getIds.length
@@ -150,7 +150,7 @@ export class AssignmentTexter extends React.Component {
         .slice(newIndex + BATCH_FORWARD, newIndex + BATCH_FORWARD + BATCH_GET)
         .map((c) => c.id)
         .filter((cId) => !force || !this.state.contactCache[cId])
-      console.log('getContactData batch forward ', getIds)
+      // console.log('getContactData batch forward ', getIds)
     } else if (!getIds.length
                && this.props.assignment.campaign.useDynamicAssignment
                // If we have just crossed the threshold of contact data we have, get more
@@ -159,7 +159,7 @@ export class AssignmentTexter extends React.Component {
       this.props.getNewContacts()
     }
     if (getIds.length) {
-      console.log('getContactData length', newIndex, getIds.length)
+      // console.log('getContactData length', newIndex, getIds.length)
       this.setState({ loading: true })
       const contactData = await this.props.loadContacts(getIds)
       const { data: { getAssignmentContacts } } = contactData
@@ -174,7 +174,7 @@ export class AssignmentTexter extends React.Component {
             newContactData[badId] = null
           }
         })
-        console.log('getContactData results<new data>', newContactData, getAssignmentContacts)
+        // console.log('getContactData results<new data>', newContactData, getAssignmentContacts)
         this.setState({
           loading: false,
           contactCache: { ...this.state.contactCache,

@@ -1,12 +1,13 @@
 import { r, OptOut } from '../../models'
 
 // STRUCTURE
-// maybe HASH by organization, so optout-<organization_id> has a <cell> key
+// SET by organization, so optout-<organization_id> has a <cell> key
+//  and membership can be tested
 
 const orgCacheKey = (orgId) => (
 !!process.env.OPTOUTS_SHARE_ALL_ORGS
- ? `${process.env.CACHE_PREFIX | ''}optouts`
- : `${process.env.CACHE_PREFIX | ''}optouts-${orgId}`)
+ ? `${process.env.CACHE_PREFIX || ''}optouts`
+ : `${process.env.CACHE_PREFIX || ''}optouts-${orgId}`)
 
 const sharingOptOuts = !!process.env.OPTOUTS_SHARE_ALL_ORGS
 
@@ -23,12 +24,11 @@ const loadMany = async (organizationId) => {
     for (let i100 = 0, l100 = Math.ceil(cellOptOuts.length / 100); i100 < l100; i100++) {
       await r.redis.saddAsync(hashKey, cellOptOuts.slice(100 * i100, 100 * i100 + 100))
     }
-    await r.redis.expire(hashKey, 86400)
-    console.log(`CACHE: Loaded optouts for ${organizationId}`)
+    await r.redis.expire(hashKey, 43200)
   }
 }
 
-export const optOutCache = {
+const optOutCache = {
   clearQuery: async ({ cell, organizationId }) => {
     // remove cache by organization
     // (if no cell is present, then clear whole query of organization)
@@ -46,7 +46,7 @@ export const optOutCache = {
     // then cache the WHOLE set of opt-outs for organizationId at once
     // and expire them in a day.
     const accountingForOrgSharing = (!sharingOptOuts ?
-      { 'organization_id': organizationId, cell } :
+      { cell, organization_id: organizationId } :
       { cell }
     )
 
@@ -58,11 +58,10 @@ export const optOutCache = {
         .execAsync()
       if (exists) {
         return isMember
-      } else {
-        // note NOT awaiting this -- it should run in background
-        // ideally not blocking the rest of the request
-        loadMany(organizationId)
       }
+      // note NOT awaiting this -- it should run in background
+      // ideally not blocking the rest of the request
+      loadMany(organizationId)
     }
     const dbResult = await r.knex('opt_out')
       .select('cell')
@@ -70,15 +69,8 @@ export const optOutCache = {
       .limit(1)
     return (dbResult.length > 0)
   },
-  save: async ({ cell, organizationId, assignmentId, reason }) => {
-    const updateOrgOrInstanceOptOuts = (!sharingOptOuts ?
-      { 'campaign_contact.cell': cell,
-        'campaign.organization_id': organizationId,
-        'campaign.is_archived': false } :
-      { 'campaign_contact.cell': cell,
-        'campaign.is_archived': false
-      })
-
+  save: async ({ cell, campaignContactId, campaign, assignmentId, reason }) => {
+    const organizationId = campaign.organization_id
     if (r.redis) {
       const hashKey = orgCacheKey(organizationId)
       const exists = await r.redis.existsAsync(hashKey)
@@ -94,7 +86,14 @@ export const optOutCache = {
       cell
     }).save()
 
-    // update all organization's active campaigns as well
+    // update all organization/instance's active campaigns as well
+    const updateOrgOrInstanceOptOuts = (!sharingOptOuts ?
+      { 'campaign_contact.cell': cell,
+        'campaign.organization_id': organizationId,
+        'campaign.is_archived': false } :
+      { 'campaign_contact.cell': cell,
+        'campaign.is_archived': false
+      })
     await r
       .knex('campaign_contact')
       .where(
@@ -111,3 +110,5 @@ export const optOutCache = {
   },
   loadMany
 }
+
+export default optOutCache

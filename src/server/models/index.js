@@ -22,7 +22,7 @@ import Log from './log'
 import thinky from './thinky'
 import datawarehouse from './datawarehouse'
 
-import { cacheableData } from './cacheable_queries'
+import cacheableData from './cacheable_queries'
 
 function createLoader(model, opts) {
   const idKey = (opts && opts.idKey) || 'id'
@@ -82,7 +82,9 @@ function dropTables() {
   })
 }
 
-const createLoaders = () => ({
+const loaders = {
+  // Note: loaders with cacheObj should also run loaders.XX.clear(id)
+  //  on clear on the cache as well.
   assignment: createLoader(Assignment),
   campaign: createLoader(Campaign, { cacheObj: cacheableData.campaign }),
   invite: createLoader(Invite),
@@ -100,11 +102,14 @@ const createLoaders = () => ({
   questionResponse: createLoader(QuestionResponse),
   userCell: createLoader(UserCell),
   userOrganization: createLoader(UserOrganization)
-})
+}
+
+const createLoaders = () => loaders
 
 const r = thinky.r
 
 export {
+  loaders,
   createLoaders,
   r,
   cacheableData,
