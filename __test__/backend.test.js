@@ -7,11 +7,13 @@ import {
   superAdminRequired
 } from '../src/server/api/errors'
 import { graphql } from 'graphql'
-import { User, Organization, Campaign, CampaignContact, Assignment, r } from '../src/server/models/'
+import { User, Organization, Campaign, CampaignContact, Assignment, r, CannedResponse, InteractionStep, UserOrganization } from '../src/server/models/'
 import { resolvers as campaignResolvers } from '../src/server/api/campaign'
-import { getContext,
+import {
+  getContext,
   setupTest,
-  cleanupTest } from './test_helpers'
+  cleanupTest
+} from './test_helpers'
 import { makeExecutableSchema } from 'graphql-tools'
 
 const mySchema = makeExecutableSchema({
@@ -45,7 +47,7 @@ async function createUser(userInfo = {
     console.log("created user")
     console.log(user)
     return user
-  } catch(err) {
+  } catch (err) {
     console.error('Error saving user')
     return false
   }
@@ -64,7 +66,7 @@ async function createContact(campaignId) {
     console.log("created contact")
     console.log(contact)
     return contact
-  } catch(err) {
+  } catch (err) {
     console.error('Error saving contact: ', err)
     return false
   }
@@ -80,7 +82,7 @@ async function createInvite() {
   try {
     const invite = await graphql(mySchema, inviteQuery, rootValue, context)
     return invite
-  } catch(err) {
+  } catch (err) {
     console.error('Error creating invite')
     return false
   }
@@ -110,14 +112,14 @@ async function createOrganization(user, name, userId, inviteId) {
   try {
     const org = await graphql(mySchema, orgQuery, rootValue, context, variables)
     return org
-  } catch(err) {
+  } catch (err) {
     console.error('Error creating organization')
     return false
   }
 }
 
 async function createCampaign(user, title, description, organizationId, contacts = []) {
-  const context = getContext({user})
+  const context = getContext({ user })
 
   const campaignQuery = `mutation createCampaign($input: CampaignInput!) {
     createCampaign(campaign: $input) {
@@ -131,17 +133,17 @@ async function createCampaign(user, title, description, organizationId, contacts
   }`
   const variables = {
     "input": {
-        "title": title,
-        "description": description,
-        "organizationId": organizationId,
-        "contacts": contacts
+      "title": title,
+      "description": description,
+      "organizationId": organizationId,
+      "contacts": contacts
     }
   }
 
   try {
     const campaign = await graphql(mySchema, campaignQuery, rootValue, context, variables)
     return campaign
-  } catch(err) {
+  } catch (err) {
     console.error('Error creating campaign')
     return false
   }
@@ -191,7 +193,7 @@ it('should convert an invitation and user into a valid organization instance', a
 
   if (testInvite && testAdminUser) {
     console.log("user and invite for org")
-    console.log([testAdminUser,testInvite.data])
+    console.log([testAdminUser, testInvite.data])
 
     testOrganization = await createOrganization(testAdminUser, "Testy test organization", testInvite.data.createInvite.id, testInvite.data.createInvite.id)
 
@@ -232,7 +234,7 @@ it('should add texters to a organization', async () => {
   const variables = {
     organizationUuid: testOrganization.data.createOrganization.uuid
   }
-  const context = getContext({user: testTexterUser})
+  const context = getContext({ user: testTexterUser })
   const result = await graphql(mySchema, joinQuery, rootValue, context, variables)
   expect(result.data.joinOrganization.id).toBeTruthy()
 })
@@ -274,14 +276,14 @@ it('should assign texters to campaign contacts', async () => {
       }
     }
   }`
-  const context = getContext({user: testAdminUser})
+  const context = getContext({ user: testAdminUser })
   const updateCampaign = Object.assign({}, testCampaign.data.createCampaign)
   const campaignId = updateCampaign.id
   updateCampaign.texters = [{
     id: testTexterUser.id
   }]
-  delete(updateCampaign.id)
-  delete(updateCampaign.contacts)
+  delete (updateCampaign.id)
+  delete (updateCampaign.contacts)
   const variables = {
     campaignId: campaignId,
     campaign: updateCampaign
@@ -335,8 +337,8 @@ describe('Campaign', () => {
       )))
 
       contacts = await Promise.all([
-        new CampaignContact({campaign_id: campaigns[0].id, cell: '', message_status: 'closed'}),
-        new CampaignContact({campaign_id: campaigns[1].id, cell: '', message_status: 'closed'})
+        new CampaignContact({ campaign_id: campaigns[0].id, cell: '', message_status: 'closed' }),
+        new CampaignContact({ campaign_id: campaigns[1].id, cell: '', message_status: 'closed' })
       ].map(async (each) => (
         each.save()
       )))
@@ -438,10 +440,121 @@ describe('Campaign', () => {
       try {
         const notAllowed = await assignmentRequired(user, -1)
         throw new Exception('should throw BEFORE this exception')
-      } catch(err) {
+      } catch (err) {
         expect(/not authorized/.test(String(err))).toEqual(true)
       }
     })
 
+  })
+  describe('Copy Campaign', () => {
+    let campaign
+    let copiedCampaign
+    let grandpaInteraction
+    let parantInteraction
+    let childInteraction
+    let cannedResponseOne
+    let cannedResponseTwo
+    let cannedResponseThree
+    let queryHelper
+    beforeEach(async () => {
+      // creating an owner user and a relation to the organization created upper scope
+      const userTest = await createUser()
+      await (new UserOrganization({
+        user_id: userTest.id,
+        organization_id: organization.id,
+        role: 'OWNER'
+      })).save()
+      // creating campaign, interactions (two levels down), and canned responses
+      campaign = await (new Campaign({
+        organization_id: organization.id,
+        title: 'My campaign',
+        description: 'This is my new campaign',
+        is_started: false,
+        is_archived: false,
+        use_dynamic_assignment: true,
+        due_by: new Date()
+      })).save()
+      grandpaInteraction = new InteractionStep({
+        campaign_id: campaign.id,
+        question: 'Favorite color',
+        script: 'Hi {firstName}! What\'s your favorite color?',
+        parent_interaction_id: null
+      })
+      await grandpaInteraction.save()
+      parantInteraction = new InteractionStep({
+        campaign_id: campaign.id,
+        parent_interaction_id: grandpaInteraction.id,
+        answer_option: 'Blue'
+      })
+      await parantInteraction.save()
+      childInteraction = new InteractionStep({
+        campaign_id: campaign.id,
+        parent_interaction_id: parantInteraction.id,
+        answer_option: 'Thanks. Blue is Awesome!'
+      })
+      await childInteraction.save()
+      cannedResponseOne = new CannedResponse({
+        campaign_id: campaign.id,
+        text: 'Hello {firstName}',
+        title: 'Hello'
+      })
+      cannedResponseTwo = new CannedResponse({
+        campaign_id: campaign.id,
+        text: 'Just check in',
+        title: 'Check in'
+      })
+      cannedResponseThree = new CannedResponse({
+        campaign_id: campaign.id,
+        text: 'Good bye {firstName}',
+        title: 'GoodBye'
+      })
+      await Promise.all([cannedResponseOne.save(), cannedResponseTwo.save(), cannedResponseThree.save()])
+      // a helper function to help querying both the original and copied campaign
+      queryHelper = async (table, campaignId) => {
+        const response = await r
+          .knex(table)
+          .where({ campaign_id: campaignId })
+        return response
+      }
+      // invoke the method being tested, emulating the loader
+      copiedCampaign = await resolvers.RootMutation.copyCampaign(null, campaign, {
+        user: userTest,
+        loaders: {
+          campaign: {
+            load: async (id) => {
+              const findCampaign = await r.knex('campaign').where({ id })
+              return findCampaign[0]
+            }
+          }
+        }
+      })
+    })
+    test('creates and returns a copy of the campaign', () => {
+      expect(campaign.id).not.toEqual(copiedCampaign.id)
+      expect(campaign.description).toEqual(copiedCampaign.description)
+      expect(copiedCampaign.title).toEqual(`COPY - ${campaign.title}`)
+    })
+    test('the copied campaign has the same canned response as the original one', async () => {
+      const originalCannedResponseP = queryHelper('canned_response', campaign.id)
+      const copiedCannedResponseP = queryHelper('canned_response', copiedCampaign.id)
+      const [originalCannedResponse, copiedCannedResponse] = await Promise.all([originalCannedResponseP, copiedCannedResponseP])
+      const originalCannedFiltered = originalCannedResponse.map(el => ({ text: el.text, title: el.title }))
+      const copiedFiltered = copiedCannedResponse.map(el => ({ text: el.text, title: el.title }))
+      expect(copiedCannedResponse).toHaveLength(originalCannedResponse.length)
+      originalCannedFiltered.forEach(response => {
+        expect(copiedFiltered).toContainEqual(response)
+      })
+    })
+    test('the copied campaign has the same interactions as the original one', async () => {
+      const originalInteractionsP = queryHelper('interaction_step', campaign.id)
+      const copiedInteractionsP = queryHelper('interaction_step', copiedCampaign.id)
+      const [originalInteractions, copiedInteractions] = await Promise.all([originalInteractionsP, copiedInteractionsP])
+      const originalIntFiltered = originalInteractions.map(int => ({ question: int.question, script: int.script, answer_option: int.answer_option, answer_actions: int.answer_actions }))
+      const copiedIntFiltered = copiedInteractions.map(int => ({ question: int.question, script: int.script, answer_option: int.answer_option, answer_actions: int.answer_actions }))
+      expect(copiedInteractions).toHaveLength(originalInteractions.length)
+      originalIntFiltered.forEach(interaction => {
+        expect(copiedIntFiltered).toContainEqual(interaction)
+      })
+    })
   })
 })
