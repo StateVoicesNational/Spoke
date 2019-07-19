@@ -619,21 +619,17 @@ const rootMutations = {
       )
 
       await createSteps
-
-      let createCannedResponses = r
+      const originalCannedResponses = await r
         .knex('canned_response')
         .where({ campaign_id: oldCampaignId })
-        .then(function (res) {
-          res.forEach((response, index) => {
-            const copiedCannedResponse = new CannedResponse({
-              campaign_id: newCampaignId,
-              title: response.title,
-              text: response.text
-            }).save()
-          })
-        })
-
-      await createCannedResponses
+      const copiedCannedResponsePromises = originalCannedResponses.map(response => {
+        return new CannedResponse({
+          campaign_id: newCampaignId,
+          title: response.title,
+          text: response.text
+        }).save()
+      })
+      await Promise.all(copiedCannedResponsePromises)
 
       return newCampaign
     },
