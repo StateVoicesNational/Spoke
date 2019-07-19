@@ -7,6 +7,7 @@ import { organizationCache } from '../models/cacheable_queries/organization'
 
 import { gzip, log, makeTree } from '../../lib'
 import { applyScript } from '../../lib/scripts'
+import { capitalizeWord } from './lib/utils'
 import { assignTexters, exportCampaign, importScript, loadContactsFromDataWarehouse, uploadContacts } from '../../workers/jobs'
 import {
   Assignment,
@@ -381,23 +382,23 @@ const rootMutations = {
         return null
       } else {
         const member = userRes[0]
+
+        const newUserData = {
+          first_name: capitalizeWord(userData.firstName),
+          last_name: capitalizeWord(userData.lastName),
+          email: userData.email,
+          cell: userData.cell
+        }
+
         if (userData) {
           const userRes = await r
             .knex('user')
             .where('id', userId)
-            .update({
-              first_name: userData.firstName,
-              last_name: userData.lastName,
-              email: userData.email,
-              cell: userData.cell
-            })
+            .update(newUserData)
           await cacheableData.user.clearUser(member.id, member.auth0_id)
           userData = {
             id: userId,
-            first_name: userData.firstName,
-            last_name: userData.lastName,
-            email: userData.email,
-            cell: userData.cell
+            ...newUserData
           }
         } else {
           userData = member
@@ -1033,8 +1034,8 @@ const rootMutations = {
 
       log.info(
         `Sending (${service}): ${messageInstance.user_number} -> ${
-          messageInstance.contact_number
-          }\nMessage: ${messageInstance.text}`
+        messageInstance.contact_number
+        }\nMessage: ${messageInstance.text}`
       )
 
       service.sendMessage(messageInstance, contact)
