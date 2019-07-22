@@ -2,12 +2,13 @@ import request from 'request'
 import aws from 'aws-sdk'
 import { r } from '../models'
 // What the user sees as the option
-export const displayName = () => 'Revere Signup'
+export const displayName = () => 'Mobile Commons Signup'
 
 const akAddUserUrl = process.env.AK_ADD_USER_URL
 const akAddPhoneUrl = process.env.AK_ADD_PHONE_URL
 const createProfileUrl = process.env.UMC_PROFILE_URL
-const profileSubscriptionId = process.env.UMC_OPT_IN_PATH
+const defaultProfileOptInId = process.env.UMC_OPT_IN_PATH
+const umcConfigured = (defaultProfileOptInId && createProfileUrl)
 
 // The Help text for the user after selecting the action
 export const instructions = () => (
@@ -15,26 +16,24 @@ export const instructions = () => (
 )
 
 export async function available(organizationId) {
-  if ((organizationId && listId) && mobileApiKey) {
+  if ((organizationId && listId) && umcConfigured) {
     return true
   }
   return false
 }
 
-const actionKitSignup = (cell, contact) => {
-  // Currently we add the user to Revere and Action Kit. When we add them to AK
-  // It takes two requests - one to create the user and then a second request
-  // to add the phone numnber to the user. We add the user to ActionKit to make sure
-  // we keep have a record of their phone number & attach it to a fake email.
+const actionKitSignup = (contact) => {
+  const cell = contact.cell.substring(1)
+ // We add the user to ActionKit to make sure we keep have a record of their phone number & attach it to a fake email.
   if (akAddUserUrl && akAddPhoneUrl) {
     const userData = {
       email: cell + '-smssubscriber@example.com',
       first_name: contact.first_name,
       last_name: contact.last_name,
-      sms_subscribed: true,
+      sms_subscribed: 'sms_subscribed',
       action_mobilesubscribe: true,
       suppress_subscribe: true,
-      phone: [contactCell],
+      phone: [cell],
       phone_type: 'mobile',
       source: 'spoke-signup'
     }
@@ -57,8 +56,9 @@ const actionKitSignup = (cell, contact) => {
           },
           form: {
             user: httpResponse.headers.location,
-            phone: contactCell,
-            type: 'mobile'
+            phone: cell,
+            type: 'mobile',
+            sms_subscribed: 'sms_subscribed'
           }
         }, (lastError, lastResponse) => {
           if (lastError) throw new Error(lastError)
@@ -82,10 +82,10 @@ export async function processAction(questionResponse, interactionStep, campaignC
 
   const contact = (contactRes.length ? contactRes[0] : {})
   const customFields = JSON.parse(contact.custom_fields)
-  const mobileFlowId = (customFields.revere_signup_flow ? customFields.revere_signup_flow : defaultMobileFlowId)
-  const contactCell = contact.cell.substring(1)
+  const optInPathId = (customFields.umc_opt_in_path ? customFields.umc_opt_in_path :  defaultProfileOptInId)
+  const cell = contact.cell.substring(1)
 
-  actionKitSignup(contactCell, contact)
+  actionKitSignup(contact)
 
   const options = {
     method: 'POST',
@@ -96,10 +96,10 @@ export async function processAction(questionResponse, interactionStep, campaignC
       Authorization: mobileApiKey
     },
     body: {
-      phone_number: contactCell,
+      phone_number: cell,
       first_name: contact.first_name || '',
       last_name: contact.last_name || '',
-      opt_in_path_id:
+      opt_in_path_id: optInPathId
     },
     json: true
   }
