@@ -8,6 +8,7 @@ const akAddUserUrl = process.env.AK_ADD_USER_URL
 const akAddPhoneUrl = process.env.AK_ADD_PHONE_URL
 const createProfileUrl = process.env.UMC_PROFILE_URL
 const defaultProfileOptInId = process.env.UMC_OPT_IN_PATH
+const umcAuth = 'Basic ' + Buffer.from(process.env.UMC_USER + ':' + process.env.UMC_PW).toString('base64')
 const umcConfigured = (defaultProfileOptInId && createProfileUrl)
 
 // The Help text for the user after selecting the action
@@ -23,6 +24,7 @@ export async function available(organizationId) {
 }
 
 const actionKitSignup = (contact) => {
+  console.log('sending contact to ak-->', contact)
   const cell = contact.cell.substring(1)
  // We add the user to ActionKit to make sure we keep have a record of their phone number & attach it to a fake email.
   if (akAddUserUrl && akAddPhoneUrl) {
@@ -42,7 +44,8 @@ const actionKitSignup = (contact) => {
       url: akAddUserUrl,
       headers: {
         accept: 'application/json',
-        'content-type': 'application/json'
+        'content-type': 'application/json',
+        'Authorization': umcAuth
       },
       form: userData
     }, (errorResponse, httpResponse) => {
@@ -93,7 +96,7 @@ export async function processAction(questionResponse, interactionStep, campaignC
     headers: {
       accept: 'application/json',
       'content-type': 'application/json',
-      Authorization: mobileApiKey
+      Authorization: umcAuth
     },
     body: {
       phone_number: cell,
@@ -105,6 +108,7 @@ export async function processAction(questionResponse, interactionStep, campaignC
   }
 
   return request(options, (error, response) => {
+    console.og('response -> ',response)
     if (error) throw new Error(error)
   })
 
