@@ -4,7 +4,6 @@ const akAddUserUrl = process.env.AK_ADD_USER_URL
 const akAddPhoneUrl = process.env.AK_ADD_PHONE_URL
 
 export const actionKitSignup = (contact) => {
-  console.log('sending contact to ak-->', contact)
   const cell = contact.cell.substring(1)
  // We add the user to ActionKit to make sure we keep have a record of their phone number & attach it to a fake email.
   if (akAddUserUrl && akAddPhoneUrl) {
@@ -12,8 +11,11 @@ export const actionKitSignup = (contact) => {
       email: cell + '-smssubscriber@example.com',
       first_name: contact.first_name,
       last_name: contact.last_name,
-      sms_subscribed: 'sms_subscribed',
-      action_mobilesubscribe: true,
+      user_sms_subscribed: 'sms_subscribed',
+      action_mobilesubscribe: '1',
+      action_sms_termsandconditions: 'sms_termsandconditions',
+      user_sms_termsandconditions: 'sms_termsandconditions',
+      user_robodial_termsandconditions: 'yes',
       suppress_subscribe: true,
       phone: [cell],
       phone_type: 'mobile',
@@ -24,11 +26,11 @@ export const actionKitSignup = (contact) => {
       url: akAddUserUrl,
       headers: {
         accept: 'application/json',
-        'content-type': 'application/json',
-        'Authorization': umcAuth
+        'content-type': 'application/json'
       },
       form: userData
     }, (errorResponse, httpResponse) => {
+      console.log('http response from ak: ', httpResponse)
       if (errorResponse) throw new Error(errorResponse)
       if (httpResponse.statusCode === 201) {
         request.post({
@@ -41,7 +43,11 @@ export const actionKitSignup = (contact) => {
             user: httpResponse.headers.location,
             phone: cell,
             type: 'mobile',
-            sms_subscribed: 'sms_subscribed'
+            user_sms_subscribed: 'sms_subscribed',
+            action_mobilesubscribe: '1',
+            action_sms_termsandconditions: 'sms_termsandconditions',
+            user_sms_termsandconditions: 'sms_termsandconditions',
+            user_robodial_termsandconditions: 'yes'
           }
         }, (lastError, lastResponse) => {
           if (lastError) throw new Error(lastError)

@@ -1,7 +1,7 @@
 import request from 'request'
 import aws from 'aws-sdk'
 import { r } from '../models'
-import { actionKitSignup } from './actionkit-rsvp.js'
+import { actionKitSignup } from './helper-ak-sync.js'
 // What the user sees as the option
 export const displayName = () => 'Mobile Commons Signup'
 
@@ -18,7 +18,7 @@ export const instructions = () => (
 )
 
 export async function available(organizationId) {
-  if ((organizationId && listId) && umcConfigured) {
+  if (organizationId  && umcConfigured) {
     return true
   }
   return false
@@ -33,10 +33,12 @@ export async function processAction(questionResponse, interactionStep, campaignC
 
   const contact = (contactRes.length ? contactRes[0] : {})
   const customFields = JSON.parse(contact.custom_fields)
-  const optInPathId = (customFields.umc_opt_in_path ? customFields.umc_opt_in_path :  defaultProfileOptInId)
+  const optInPathId = (customFields.umc_opt_in_path ? customFields.umc_opt_in_path : defaultProfileOptInId)
   const cell = contact.cell.substring(1)
 
-  if (akAddUserUrl && akAddPhoneUrl) actionKitSignup(contact)
+  actionKitSignup(contact)
+
+  console.log('sending sign up to mobile commons ', cell)
 
   const options = {
     method: 'POST',
@@ -56,7 +58,7 @@ export async function processAction(questionResponse, interactionStep, campaignC
   }
 
   return request(options, (error, response) => {
-    console.og('response -> ',response)
+    console.log('response -> ',response)
     if (error) throw new Error(error)
   })
 
