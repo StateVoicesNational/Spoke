@@ -1,7 +1,7 @@
 import request from 'request'
 import aws from 'aws-sdk'
 import { r } from '../models'
-import { actionKitSignup } from './actionkit-rsvp.js'
+import { actionKitSignup } from './helper-ak-sync.js'
 
 const sqs = new aws.SQS()
 // What the user sees as the option
