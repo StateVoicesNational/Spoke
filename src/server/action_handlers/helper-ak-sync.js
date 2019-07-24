@@ -12,8 +12,6 @@ export const actionKitSignup = (contact) => {
       first_name: contact.first_name,
       last_name: contact.last_name,
       user_sms_subscribed: 'sms_subscribed',
-      action_mobilesubscribe: '1',
-      action_sms_termsandconditions: 'sms_termsandconditions',
       user_sms_termsandconditions: 'sms_termsandconditions',
       user_robodial_termsandconditions: 'yes',
       suppress_subscribe: true,
@@ -30,7 +28,6 @@ export const actionKitSignup = (contact) => {
       },
       form: userData
     }, (errorResponse, httpResponse) => {
-      console.log('http response from ak: ', httpResponse)
       if (errorResponse) throw new Error(errorResponse)
       if (httpResponse.statusCode === 201) {
         request.post({
@@ -49,9 +46,9 @@ export const actionKitSignup = (contact) => {
             user_sms_termsandconditions: 'sms_termsandconditions',
             user_robodial_termsandconditions: 'yes'
           }
-        }, (lastError, lastResponse) => {
-          if (lastError) throw new Error(lastError)
-          if (lastResponse.statusCode === 201) {
+        }, (phoneError, phoneResponse) => {
+          if (phoneError) throw new Error(phoneError)
+          if (phoneResponse.statusCode === 201) {
             return
           }
         })

@@ -38,8 +38,6 @@ export async function processAction(questionResponse, interactionStep, campaignC
 
   actionKitSignup(contact)
 
-  console.log('sending sign up to mobile commons ', cell)
-
   const options = {
     method: 'POST',
     url: createProfileUrl,
@@ -58,7 +56,6 @@ export async function processAction(questionResponse, interactionStep, campaignC
   }
 
   return request(options, (error, response) => {
-    console.log('response -> ',response)
     if (error) throw new Error(error)
   })
 
