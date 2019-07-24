@@ -1,6 +1,7 @@
 import request from 'request'
 import aws from 'aws-sdk'
 import { r } from '../models'
+import { actionKitSignup } from './actionkit-rsvp.js'
 
 const sqs = new aws.SQS()
 // What the user sees as the option
@@ -24,58 +25,6 @@ export async function available(organizationId) {
     return true
   }
   return false
-}
-
-const actionKitSignup = (cell, contact) => {
-  // Currently we add the user to Revere and Action Kit. When we add them to AK
-  // It takes two requests - one to create the user and then a second request
-  // to add the phone numnber to the user. We add the user to ActionKit to make sure
-  // we keep have a record of their phone number & attach it to a fake email.
-  if (akAddUserUrl && akAddPhoneUrl) {
-    const userData = {
-      email: cell + '-smssubscriber@example.com',
-      first_name: contact.first_name,
-      last_name: contact.last_name,
-      sms_subscribed: true,
-      action_mobilesubscribe: true,
-      suppress_subscribe: true,
-      phone: [contactCell],
-      phone_type: 'mobile',
-      source: 'spoke-signup'
-    }
-
-    request.post({
-      url: akAddUserUrl,
-      headers: {
-        accept: 'application/json',
-        'content-type': 'application/json'
-      },
-      form: userData
-    }, (errorResponse, httpResponse) => {
-      if (errorResponse) throw new Error(errorResponse)
-      if (httpResponse.statusCode === 201) {
-        request.post({
-          url: akAddPhoneUrl,
-          headers: {
-            accept: 'application/json',
-            'content-type': 'application/json'
-          },
-          form: {
-            user: httpResponse.headers.location,
-            phone: contactCell,
-            type: 'mobile'
-          }
-        }, (lastError, lastResponse) => {
-          if (lastError) throw new Error(lastError)
-          if (lastResponse.statusCode === 201) {
-            return
-          }
-        })
-      }
-    })
-  } else {
-    console.log('No AK Post URLs Configured')
-  }
 }
 
 export async function processAction(questionResponse, interactionStep, campaignContactId) {
@@ -131,5 +80,5 @@ export async function processAction(questionResponse, interactionStep, campaignC
     })
   }
 
-  actionKitSignup(contactCell, contact)
+  if (akAddUserUrl && akAddPhoneUrl) actionKitSignup(contact)
 }
