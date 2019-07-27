@@ -1,6 +1,7 @@
 import type from 'prop-types'
 import React from 'react'
 import ReactDOM from 'react-dom'
+import Fragment from 'react-dot-fragment'
 import Divider from 'material-ui/Divider'
 import ContentClear from 'material-ui/svg-icons/content/clear'
 import FlatButton from 'material-ui/FlatButton'
@@ -112,7 +113,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
   })
 
   renderInteractionStep(interactionStep, title = 'Start') {
-    return (<div>
+    return (<Fragment>
       <Card
         style={styles.interactionStep}
         ref={interactionStep.id}
@@ -156,12 +157,12 @@ export default class CampaignInteractionStepsForm extends React.Component {
                  >
                     <HelpIconOutline />
                  </IconButton>
-                 <div>
+                 <Fragment>
                  {
                    interactionStep.answerActions
                      ? this.props.availableActions.filter((a) => a.name === interactionStep.answerActions)[0].instructions
                      : ''}
-                 </div>
+                 </Fragment>
                </div>)
             : ''}
             <Form.Field
@@ -186,31 +187,31 @@ export default class CampaignInteractionStepsForm extends React.Component {
         </CardText>
       </Card>
       <div style={styles.answerContainer}>
-        {interactionStep.questionText && interactionStep.script && (!interactionStep.parentInteractionId || interactionStep.answerOption) ? <div>
+        {interactionStep.questionText && interactionStep.script && (!interactionStep.parentInteractionId || interactionStep.answerOption) ? <Fragment>
           <RaisedButton
             {...dataTest('addResponse')}
             label='+ Add a response'
             onTouchTap={this.addStep(interactionStep.id).bind(this)}
             style={{ marginBottom: '10px' }}
           />
-        </div> : ''}
+        </Fragment> : ''}
         {interactionStep.interactionSteps.filter((is) => !is.isDeleted).map((is) => {
           return (
-            <div>
+            <Fragment>
               {this.renderInteractionStep(is, `Question: ${interactionStep.questionText}`)}
-            </div>
+            </Fragment>
           )
         })}
       </div>
 
-    </div>)
+    </Fragment>)
   }
 
   render() {
     const tree = makeTree(this.state.interactionSteps)
 
     return (
-      <div>
+      <Fragment>
         <CampaignFormSectionHeading
           title='What do you want to discuss?'
           subtitle='You can add scripts and questions and your texters can indicate responses from your contacts. For example, you might want to collect RSVPs to an event or find out whether to follow up about a different volunteer activity.'
@@ -222,7 +223,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
           label={this.props.saveLabel}
           onTouchTap={this.onSave.bind(this)}
         />
-      </div>
+      </Fragment>
     )
   }
 
