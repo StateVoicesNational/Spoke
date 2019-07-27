@@ -129,6 +129,7 @@
     "react-async-script": "^0.6.0",
     "react-chartjs": "^0.7.3",
     "react-dom": "^15.6.1",
+    "react-dot-fragment": "^0.2.9",
     "react-formal": "^0.18.5",
     "react-router": "^2.5.2",
     "react-router-redux": "^4.0.5",
