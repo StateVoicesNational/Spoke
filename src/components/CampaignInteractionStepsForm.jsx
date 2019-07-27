@@ -1,30 +1,17 @@
 import type from 'prop-types'
 import React from 'react'
-import ReactDOM from 'react-dom'
 import Fragment from 'react-dot-fragment'
-import Divider from 'material-ui/Divider'
-import ContentClear from 'material-ui/svg-icons/content/clear'
-import FlatButton from 'material-ui/FlatButton'
 import RaisedButton from 'material-ui/RaisedButton'
-import RadioButtonUnchecked from 'material-ui/svg-icons/toggle/radio-button-unchecked'
 import IconButton from 'material-ui/IconButton'
 import DeleteIcon from 'material-ui/svg-icons/action/delete'
-import { Card, CardActions, CardHeader, CardText } from 'material-ui/Card'
+import { Card, CardHeader, CardText } from 'material-ui/Card'
 import theme from '../styles/theme'
 import CampaignFormSectionHeading from './CampaignFormSectionHeading'
-import ForwardIcon from 'material-ui/svg-icons/navigation/arrow-forward'
-import HelpIcon from 'material-ui/svg-icons/action/help'
 import HelpIconOutline from 'material-ui/svg-icons/action/help-outline'
 import Form from 'react-formal'
 import GSForm from './forms/GSForm'
 import yup from 'yup'
-import {
-  sortInteractionSteps,
-  getInteractionPath,
-  getChildren,
-  findParent,
-  makeTree
-} from '../lib'
+import { makeTree } from '../lib'
 import { dataTest } from '../lib/attributes'
 
 const styles = {
@@ -55,7 +42,20 @@ export default class CampaignInteractionStepsForm extends React.Component {
 
   state = {
     focusedField: null,
-    interactionSteps: this.props.formValues.interactionSteps[0] ? this.props.formValues.interactionSteps : [{ id: 'newId', parentInteractionId: null, questionText: '', answerOption: '', script: '', answerActions: '', isDeleted: false }]
+    interactionSteps: this.props.formValues.interactionSteps[0] ? this.props.formValues.interactionSteps : [{ id: 'newId', parentInteractionId: null, questionText: '', answerOption: '', script: '', answerActions: '', isDeleted: false }],
+    displayAllSteps: false
+  }
+
+  componentDidUpdate = (prevProps, prevState) => {
+    if (!this.state.displayAllSteps) {
+      this.setState({ displayAllSteps: true })
+    }
+  }
+
+  componentDidMount = () => {
+    if (!this.state.displayAllSteps) {
+      this.setState({ displayAllSteps: true })
+    }
   }
 
   onSave = async () => {
@@ -112,7 +112,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
     answerActions: yup.string()
   })
 
-  renderInteractionStep(interactionStep, title = 'Start') {
+  renderInteractionStep(interactionStep, interactionStepsArray, title = 'Start') {
     return (<Fragment>
       <Card
         style={styles.interactionStep}
@@ -195,13 +195,11 @@ export default class CampaignInteractionStepsForm extends React.Component {
             style={{ marginBottom: '10px' }}
           />
         </Fragment> : ''}
-        {interactionStep.interactionSteps.filter((is) => !is.isDeleted).map((is) => {
-          return (
-            <Fragment>
+        {this.state.displayAllSteps && interactionStep.interactionSteps.filter((is) => !is.isDeleted).map((is) =>
+          (<Fragment>
               {this.renderInteractionStep(is, `Question: ${interactionStep.questionText}`)}
-            </Fragment>
-          )
-        })}
+          </Fragment>)
+        )}
       </div>
 
     </Fragment>)
