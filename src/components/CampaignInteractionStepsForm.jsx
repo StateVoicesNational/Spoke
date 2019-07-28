@@ -1,6 +1,5 @@
 import type from 'prop-types'
 import React from 'react'
-import Fragment from 'react-dot-fragment'
 import RaisedButton from 'material-ui/RaisedButton'
 import IconButton from 'material-ui/IconButton'
 import DeleteIcon from 'material-ui/svg-icons/action/delete'
@@ -46,12 +45,15 @@ export default class CampaignInteractionStepsForm extends React.Component {
     displayAllSteps: false
   }
 
-  componentDidUpdate = (prevProps, prevState) => {
-    if (!this.state.displayAllSteps) {
-      this.setState({ displayAllSteps: true })
-    }
-  }
 
+  /*
+    this.statye.displayAllSteps is used to cause only the root interaction
+    node to render when the component first mounts.  ComponentDidMount sets
+    displayAllSteps to true, which forces render to run again, this time
+    including all interaction steps. This cuts half the time required to
+    render the interaction steps after clicking the header to expand the
+    interaction steps card.
+  */
   componentDidMount = () => {
     if (!this.state.displayAllSteps) {
       this.setState({ displayAllSteps: true })
@@ -113,7 +115,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
   })
 
   renderInteractionStep(interactionStep, interactionStepsArray, title = 'Start') {
-    return (<Fragment>
+    return (<div>
       <Card
         style={styles.interactionStep}
         ref={interactionStep.id}
@@ -157,12 +159,12 @@ export default class CampaignInteractionStepsForm extends React.Component {
                  >
                     <HelpIconOutline />
                  </IconButton>
-                 <Fragment>
+                 <div>
                  {
                    interactionStep.answerActions
                      ? this.props.availableActions.filter((a) => a.name === interactionStep.answerActions)[0].instructions
                      : ''}
-                 </Fragment>
+                 </div>
                </div>)
             : ''}
             <Form.Field
@@ -187,29 +189,29 @@ export default class CampaignInteractionStepsForm extends React.Component {
         </CardText>
       </Card>
       <div style={styles.answerContainer}>
-        {interactionStep.questionText && interactionStep.script && (!interactionStep.parentInteractionId || interactionStep.answerOption) ? <Fragment>
+        {interactionStep.questionText && interactionStep.script && (!interactionStep.parentInteractionId || interactionStep.answerOption) ? <div>
           <RaisedButton
             {...dataTest('addResponse')}
             label='+ Add a response'
             onTouchTap={this.addStep(interactionStep.id).bind(this)}
             style={{ marginBottom: '10px' }}
           />
-        </Fragment> : ''}
+        </div> : ''}
         {this.state.displayAllSteps && interactionStep.interactionSteps.filter((is) => !is.isDeleted).map((is) =>
-          (<Fragment>
+          (<div>
               {this.renderInteractionStep(is, `Question: ${interactionStep.questionText}`)}
-          </Fragment>)
+          </div>)
         )}
       </div>
 
-    </Fragment>)
+    </div>)
   }
 
   render() {
     const tree = makeTree(this.state.interactionSteps)
 
     return (
-      <Fragment>
+      <div>
         <CampaignFormSectionHeading
           title='What do you want to discuss?'
           subtitle='You can add scripts and questions and your texters can indicate responses from your contacts. For example, you might want to collect RSVPs to an event or find out whether to follow up about a different volunteer activity.'
@@ -221,7 +223,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
           label={this.props.saveLabel}
           onTouchTap={this.onSave.bind(this)}
         />
-      </Fragment>
+      </div>
     )
   }
 
