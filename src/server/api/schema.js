@@ -666,9 +666,9 @@ const rootMutations = {
       )))
 
       campaigns.forEach(campaign => { campaign.is_archived = true })
-      await Promise.all(campaigns.map(campaign => {
-        campaign.save()
-        cacheableData.campaign.clear(id)
+      await Promise.all(campaigns.map(async (campaign) => {
+        await campaign.save()
+        await cacheableData.campaign.clear(campaign.id)
       }))
       return campaigns
     },
