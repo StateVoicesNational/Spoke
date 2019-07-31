@@ -7,6 +7,7 @@ import { organizationCache } from '../models/cacheable_queries/organization'
 
 import { gzip, log, makeTree } from '../../lib'
 import { applyScript } from '../../lib/scripts'
+import { capitalizeWord } from './lib/utils'
 import { assignTexters, exportCampaign, importScript, loadContactsFromDataWarehouse, uploadContacts } from '../../workers/jobs'
 import {
   Assignment,
@@ -170,6 +171,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
   if (campaign.hasOwnProperty('interactionSteps')) {
     await accessRequired(user, organizationId, 'SUPERVOLUNTEER', /* superadmin*/ true)
     await updateInteractionSteps(id, [campaign.interactionSteps], origCampaignRecord)
+    await cacheableData.campaign.clear(id)
   }
 
   if (campaign.hasOwnProperty('cannedResponses')) {
@@ -380,23 +382,23 @@ const rootMutations = {
         return null
       } else {
         const member = userRes[0]
+
+        const newUserData = {
+          first_name: capitalizeWord(userData.firstName),
+          last_name: capitalizeWord(userData.lastName),
+          email: userData.email,
+          cell: userData.cell
+        }
+
         if (userData) {
           const userRes = await r
             .knex('user')
             .where('id', userId)
-            .update({
-              first_name: userData.firstName,
-              last_name: userData.lastName,
-              email: userData.email,
-              cell: userData.cell
-            })
+            .update(newUserData)
           await cacheableData.user.clearUser(member.id, member.auth0_id)
           userData = {
             id: userId,
-            first_name: userData.firstName,
-            last_name: userData.lastName,
-            email: userData.email,
-            cell: userData.cell
+            ...newUserData
           }
         } else {
           userData = member
@@ -580,7 +582,7 @@ const rootMutations = {
       const newCampaignId = newCampaign.id
       const oldCampaignId = campaign.id
 
-      let interactions = await r.knex('interaction_step').where({ campaign_id: oldCampaignId })
+      let interactions = await r.knex('interaction_step').where({ campaign_id: oldCampaignId, is_deleted: false })
 
       const interactionsArr = []
       interactions.forEach((interaction, index) => {
@@ -642,7 +644,7 @@ const rootMutations = {
       await accessRequired(user, campaign.organization_id, 'ADMIN')
       campaign.is_archived = false
       await campaign.save()
-      cacheableData.campaign.reload(id)
+      await cacheableData.campaign.clear(id)
       return campaign
     },
     archiveCampaign: async (_, { id }, { user, loaders }) => {
@@ -650,7 +652,7 @@ const rootMutations = {
       await accessRequired(user, campaign.organization_id, 'ADMIN')
       campaign.is_archived = true
       await campaign.save()
-      cacheableData.campaign.reload(id)
+      await cacheableData.campaign.clear(id)
       return campaign
     },
     archiveCampaigns: async (_, { ids }, { user, loaders }) => {
@@ -664,9 +666,10 @@ const rootMutations = {
       )))
 
       campaigns.forEach(campaign => { campaign.is_archived = true })
-      await Promise.all(campaigns.map(campaign => (
-        campaign.save()
-      )))
+      await Promise.all(campaigns.map(async (campaign) => {
+        await campaign.save()
+        await cacheableData.campaign.clear(campaign.id)
+      }))
       return campaigns
     },
     startCampaign: async (_, { id }, { user, loaders }) => {
@@ -852,17 +855,14 @@ const rootMutations = {
       await assignmentRequired(user, contact.assignment_id)
 
       const { assignmentId, cell, reason } = optOut
-      let organizationId = contact.organization_id
+      const campaign = await loaders.campaign.load(contact.campaign_id)
 
-      if (!organizationId) {
-        const campaign = await loaders.campaign.load(contact.campaign_id)
-        organizationId = campaign.organization_id
-      }
       await cacheableData.optOut.save({
         cell,
+        campaignContactId,
         reason,
         assignmentId,
-        organizationId
+        campaign
       })
 
       return loaders.campaignContact.load(campaignContactId)
@@ -1034,8 +1034,8 @@ const rootMutations = {
 
       log.info(
         `Sending (${service}): ${messageInstance.user_number} -> ${
-          messageInstance.contact_number
-          }\nMessage: ${messageInstance.text}`
+        messageInstance.contact_number
+        }\nMessage: ${messageInstance.text}`
       )
 
       service.sendMessage(messageInstance, contact)
@@ -1220,7 +1220,10 @@ const rootResolvers = {
       }
       return assignment
     },
-    organization: async (_, { id }, { loaders }) => loaders.organization.load(id),
+    organization: async (_, { id }, { user, loaders }) => {
+      await accessRequired(user, id, 'TEXTER')
+      return await loaders.organization.load(id)
+    },
     inviteByHash: async (_, { hash }, { loaders, user }) => {
       authRequired(user)
       return r.table('invite').filter({ hash })
@@ -1234,8 +1237,11 @@ const rootResolvers = {
       }
     },
     organizations: async (_, { id }, { user }) => {
-      await superAdminRequired(user)
-      return r.table('organization')
+      if (user.is_superadmin) {
+        return r.table('organization')
+      } else {
+        return await cacheableData.user.userOrgs(user.id, 'TEXTER')
+      }
     },
     availableActions: (_, { organizationId }, { user }) => {
       if (!process.env.ACTION_HANDLERS) {

@@ -381,7 +381,7 @@ describe('Campaign', () => {
     test('resolves unassigned contacts when true', async () => {
       const contact = await (new CampaignContact({
         campaign_id: campaign.id,
-        message_status: 'closed',
+        message_status: 'needsMessage',
         cell: '',
       })).save()
 

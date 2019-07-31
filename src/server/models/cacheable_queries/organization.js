@@ -1,12 +1,14 @@
-import { r } from '../../models'
+import { r, loaders } from '../../models'
 
-const cacheKey = (orgId) => `${process.env.CACHE_PREFIX | ''}org-${orgId}`
+const cacheKey = (orgId) => `${process.env.CACHE_PREFIX || ''}org-${orgId}`
 
-export const organizationCache = {
+const organizationCache = {
   clear: async (id) => {
     if (r.redis) {
       await r.redis.delAsync(cacheKey(id))
     }
+    loaders.organization.clear(String(id))
+    loaders.organization.clear(Number(id))
   },
   load: async (id) => {
     if (r.redis) {
@@ -28,11 +30,11 @@ export const organizationCache = {
       if (r.redis) {
         await r.redis.multi()
           .set(cacheKey(id), JSON.stringify(dbResult))
-          .expire(cacheKey(id), 86400)
+          .expire(cacheKey(id), 43200)
           .execAsync()
       }
-      return dbResult
     }
+    return dbResult
   }
 }
 
