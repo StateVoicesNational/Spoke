@@ -70,6 +70,13 @@ const campaignInfoFragment = `
   editors
 `
 
+export const campaignDataQuery =
+  gql`query getCampaign($campaignId: String!) {
+        campaign(id: $campaignId) {
+          ${campaignInfoFragment}
+        }
+      }`
+
 class AdminCampaignEdit extends React.Component {
   constructor(props) {
     super(props)
@@ -656,11 +663,7 @@ AdminCampaignEdit.propTypes = {
 const mapQueriesToProps = ({ ownProps }) => ({
   pendingJobsData: pendingJobsGql(ownProps.params.campaignId),
   campaignData: {
-    query: gql`query getCampaign($campaignId: String!) {
-      campaign(id: $campaignId) {
-        ${campaignInfoFragment}
-      }
-    }`,
+    query: campaignDataQuery,
     variables: {
       campaignId: ownProps.params.campaignId
     },
