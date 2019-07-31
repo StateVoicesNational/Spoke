@@ -5,7 +5,7 @@ import appRenderer from './middleware/app-renderer'
 import { graphqlExpress, graphiqlExpress } from 'apollo-server-express'
 import { makeExecutableSchema, addMockFunctionsToSchema } from 'graphql-tools'
 // ORDERING: ./models import must be imported above ./api to help circular imports
-import { createLoaders, createTablesIfNecessary } from './models'
+import { createLoaders, createTablesIfNecessary, r } from './models'
 import { resolvers } from './api/schema'
 import { schema } from '../api/schema'
 import mocks from './api/mocks'
@@ -17,7 +17,6 @@ import { log } from '../lib'
 import nexmo from './api/lib/nexmo'
 import twilio from './api/lib/twilio'
 import { seedZipCodes } from './seeds/seed-zip-codes'
-import { runMigrations } from '../migrations'
 import { setupUserNotificationObservers } from './notifications'
 import { TwimlResponse } from 'twilio'
 import { existsSync } from 'fs'
@@ -41,11 +40,11 @@ if (!process.env.SUPPRESS_DATABASE_AUTOCREATE) {
       seedZipCodes()
     }
     if (!didCreate && !process.env.SUPPRESS_MIGRATIONS) {
-      runMigrations()
+      r.k.migrate.latest()
     }
   })
 } else if (!process.env.SUPPRESS_MIGRATIONS) {
-  runMigrations()
+  r.k.migrate.latest()
 }
 
 setupUserNotificationObservers()
