@@ -39,6 +39,7 @@ Congratulations on making decisions about whether and how to run Spoke! You now 
 
 ### Who should you hire and what skills should they have?
 
+Baseline skills:
 1. Basic understanding of client / server architecture
 1. Basic familiarity with running a React app (the Spoke client)
 1. Basic familiarity with running a Node server (the Spoke server)
@@ -55,7 +56,7 @@ If you're going our particular recommended AWS route, you'll need:
 1. Ability to setup, configure and run API gateway and Amazon Lambda server containers
 1. Ability to setup, configure and run worker processes 
 
-Note how these are all phrased as "ability to" and not "experience in." The general category of work being done here is devops, and people with experience and interest in devops can learn to use a variety of different systems and tools more or less interchangeably.
+Note how these are all phrased as "ability to" and not "experience in." The general category of work being done here is devops, and people with experience and interest in devops can learn to use a variety of different systems and tools more or less interchangeably. You also don't need a person who writes code in React and Node, just someone who can work with, configure, and install applications in these frameworks.
 
 You're also not likely to encounter many people with prior experience specifically in deploying Spoke, because political tech is a small niche within tech, and Spoke is a small project within that. Don't filter for prior experience, but rather a track record of getting deployment work done on time and on budget.
 
@@ -65,25 +66,28 @@ You're also not likely to encounter many people with prior experience specifical
 There are lots of tech industry people interested in politics. They really want to work with you. 
 But tech skills and tech costs vary wildly. You can easily spend $0, $100, $1000, $10,000 for the same work and functionality. Make candidates compete for your business so you can drive down the cost of your project, and make sure the person you bring on is the right fit for your org.
 
-Please, please, please don't just hire you friends, or someone who looks like a tech person happens to be sitting 100 ft from you in your coworking space when you realize you need a website. Most software contracting projects experience a 50% failure rate due to lack of skill fit and contractor capacity. Publish your job publicly and run a competitive process to find a person to ensure that you're getting the right person with the right skills and right availability for your job.
+Please, please, please don't just hire your friends, or someone who looks like a tech person who happens to be sitting 100 ft from you in your coworking space when you realize you need a website. Most software contracting projects experience a 50% failure rate due to lack of skill fit and contractor capacity. Publish your job publicly and run a competitive process to find a person to ensure that you're getting the right person with the right skills and right availability for your job.
 
 
-1. Decide on the terms of your job. 
+*Decide on the terms of your job.*
 
 You may think you just need someone to set Spoke up for you, but you'll probably also evnetually want someone to maintain your instance over time, do regular upgrades, analyze the Spoke data you gather, and troubleshoot problems. Think about how much you want to spend upfront and in an ongoing retainer basis. Think about whether this work adds up to a full-time person or a contractor.
 
-1. Write a job description or a vendor RFP. You can start with [this](https://docs.google.com/document/d/1uxFGwzQqzU1y_W-XAb9jEW1VDeIfH2eNUfF6c1pOSRI/edit) template if you like.
+*Write a job description or a vendor RFP.* 
+
+You can start with [this](https://docs.google.com/document/d/1uxFGwzQqzU1y_W-XAb9jEW1VDeIfH2eNUfF6c1pOSRI/edit) template if you like.
 
 
-1. Advertise this job or RFP publicly. Advice on how, where [here](https://medium.com/@ann_lewis/how-we-hire-tech-folks-7f36bfec594a) under "Advertising The Job." Spending $200 on an ad on a well-trafficked job board is less expensive than less-competitively hiring a person who doesn't finish the job.
+*Advertise this job or RFP publicly* 
+Advice on how and where to advertise can be found [here](https://medium.com/@ann_lewis/how-we-hire-tech-folks-7f36bfec594a) under "Advertising The Job." Spending $200 on an ad on a well-trafficked job board is less expensive than less-competitively hiring a person who doesn't finish the job.
 
 ## What else do I need to worry about?
 
 Scaling! Let's say you are scaling up a texting program and can afford to send millions of messages. Congrats! Now you need a plan for how to scale up your use of Spoke.
 
-The AWS setup described above as of this writing is CPU-bound at the database level. When it hits its scaling limitations, we've see the RDS database CPU spike to 90% utilization which then caused cascading side-effects. There will eventually be a longer term software-based solution for these problems, but one easy way to handle this if it happens to you is to monitor database CPU and when it hits 80%, increase the size of the database (which is just a button push in Amazon RDS, but can takes hours depending on the size of your database) to get more CPU headroom. This is expensive- some high CPU databases in the RDS ecosystem cost $1000/week or more, so this is akin to throwing money at the problem. We've as many as 2MM messages / day with this setup before needing to scale up.
+The AWS setup described above as of this writing is CPU-bound at the database level. When it hits its scaling limitations, we've seen the RDS database CPU spike to 90% utilization which then caused cascading side-effects. There will eventually be a longer term software-based solution for these problems, but one easy way to handle this if it happens to you is to monitor database CPU and when it hits 80%, increase the size of the database (which is just a button push in Amazon RDS, but can takes hours depending on the size of your database) to get more CPU headroom. This is expensive- some high CPU databases in the RDS ecosystem cost $1000/week or more, so this is akin to throwing money at the problem. We've as many as 2MM messages / day with this setup before needing to scale up.
 
 Amazon lambda automatically spins up more server containers when you send in more requests, but there is an undocumented data center specific limit on the number of simultaneous containers you can run at a time, which can cause problems with lots of simultaneous texting activity. Deploy to a data center that has a high concurrent lambda limit and ask your Amazon AWS rep which one this is.
 
-Carrier specific sending limits are a problem for all texting systems- ask your metered SMS API provider (Twilio in this example) for granular error messages and carrier status.
+Carrier specific sending limits are a problem for all texting systems- ask your metered SMS API provider (Twilio in this example) for granular error messages and carrier status, so you can analyze and understand the real throughput of your texting program.
 
