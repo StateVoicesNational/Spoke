@@ -14,6 +14,7 @@ This release includes the following improvements:
 - Addition of a favicon
 - Adding automatic capitalization to new user names
 - New Upland Mobile Commons Action Handler / Integration with documentation
+- New documentation "how to" guide for deciding to adopt Spoke
 
 Note on Knex Migration:
 Anyone that is upgrading from a version released earlier than March 2018 should see this issue comment:
@@ -27,6 +28,7 @@ Thanks to all the contributors apart of this release including:
 [ibrand](https://github.com/ibrand),
 [joemcl](https://github.com/joemcl),
 [lperson](https://github.com/lperson),
+[mathemagica](https://github.com/mathemagica),
 [rcackermanCC](https://github.com/rcackermanCC),
 [schuyler1d](https://github.com/schuyler1d),
 [shakalee14](https://github.com/shakalee14)
