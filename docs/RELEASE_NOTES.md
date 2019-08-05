@@ -1,5 +1,38 @@
 # Release Notes
 
+## v3.0
+*August 2019:* Version 3.0.0
+
+This release includes the following improvements:
+- Knex Migration Configuration (see note below)
+- An upgrade to Node 10
+- A new feature - Google Doc Imports for Interactions / Campaign Scripts
+- Additions to the caching layer
+- More texter tests
+- Improvements and standardization on the developer experience
+- Improvements in documentation, including the README.md
+- Addition of a favicon
+- Adding automatic capitalization to new user names
+- New Upland Mobile Commons Action Handler / Integration with documentation
+- New documentation "how to" guide for deciding to adopt Spoke
+
+Note on Knex Migration:
+Anyone that is upgrading from a version released earlier than March 2018 should see this issue comment:
+https://github.com/MoveOnOrg/Spoke/pull/1154#issuecomment-510163604
+
+Thanks to all the contributors apart of this release including:
+[AnuradhaNaik](https://github.com/AnuradhaNaik),
+[azuzunaga](https://github.com/azuzunaga),
+[filafb](https://github.com/filafb),
+[harpojaeger](https://github.com/harpojaeger),
+[ibrand](https://github.com/ibrand),
+[joemcl](https://github.com/joemcl),
+[lperson](https://github.com/lperson),
+[mathemagica](https://github.com/mathemagica),
+[rcackermanCC](https://github.com/rcackermanCC),
+[schuyler1d](https://github.com/schuyler1d),
+[shakalee14](https://github.com/shakalee14)
+
 ## v2.0
 *April 2019:* Version 2.0.0
 
