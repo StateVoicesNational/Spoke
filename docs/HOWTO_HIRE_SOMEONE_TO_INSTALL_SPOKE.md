@@ -28,7 +28,7 @@ Reasons to be ok with less control:
 1. You aren't yet sure if you are able to / want to scale up your system and just want to try it out first
 1. The cost of devops time spent implementing control over your deployment architecture isn't worth the benefit textbanking has to your organization
 
-There are many ways to deploy software onto hardware and many cloud computing providers. In this set of documentation, we use Heroku and Amazon AWS. AWS is more work to setup than Heroku, but gives you more control over scaling and security. In our experience, a full stack engineer with 2+ yrs experience that includes AWS can set this up in 5 days. There is also a Spoke open source community is anchored in the Progressive Coders Network slack who can help with setup.
+There are many ways to deploy software onto hardware and many cloud computing providers. In this set of documentation, we use Heroku and Amazon AWS. AWS is more work to setup than Heroku, but gives you more control over scaling and security. In our experience, a full stack engineer with 2+ yrs experience that includes AWS can set this up in 5 days. There is also a Spoke open source community anchored in the Progressive Coders Network slack who can help with setup.
 
 If you're ok with less control, you can follow the instructions [here](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_HEROKU_DEPLOY.md) to deploy an instance of Spoke to Heroku  
 
@@ -72,7 +72,7 @@ Please, please, please don't just hire your friends, or someone who looks like a
 
 *Decide on the terms of your job.*
 
-You may think you just need someone to set Spoke up for you, but you'll probably also evnetually want someone to maintain your instance over time, do regular upgrades, analyze the Spoke data you gather, and troubleshoot problems. Think about how much you want to spend upfront and in an ongoing retainer basis. Think about whether this work eventually adds up to a full-time person or a contractor.
+You may think you just need someone to set Spoke up for you, but you'll probably also eventually want someone to maintain your instance over time, do regular upgrades, analyze the Spoke data you gather, and troubleshoot problems. Think about how much you want to spend upfront and in an ongoing retainer basis. Think about whether this work eventually adds up to a full-time person or a contractor.
 
 *Write a job description or a vendor RFP.* 
 
@@ -86,7 +86,7 @@ Advice on how and where to advertise can be found [here](https://medium.com/@ann
 
 Scaling! Let's say you are scaling up a texting program and can afford to send millions of messages. Congrats! Now you need a plan for how to scale up your use of Spoke.
 
-The AWS setup described above as of this writing is CPU-bound at the database level. When it hits its scaling limitations, we've seen the RDS database CPU spike to 90% utilization which then caused cascading side-effects. There will eventually be a longer term software-based solution for these problems, but one easy way to handle this if it happens to you is to monitor database CPU and when it hits 80%, increase the size of the database (which is just a button push in Amazon RDS, but can takes hours depending on the size of your database) to get more CPU headroom. This is expensive- some high CPU databases in the RDS ecosystem cost $1000/week or more, so this is akin to throwing money at the problem. We've as many as 2MM messages / day with this setup before needing to scale up.
+The AWS setup described above as of this writing is CPU-bound at the database level. When it hits its scaling limitations, we've seen the RDS database CPU spike to 90% utilization which then caused cascading side-effects. There will eventually be a longer term software-based solution for these problems, but one easy way to handle this if it happens to you is to monitor database CPU and when it hits 80%, increase the size of the database (which is just a button push in Amazon RDS, but can takes hours depending on the size of your database) to get more CPU headroom. This is expensive- some high CPU databases in the RDS ecosystem cost $1000/week or more, so this is akin to throwing money at the problem. We've handled as many as 2MM messages / day with this setup before needing to scale up.
 
 Amazon lambda automatically spins up more server containers when you send in more requests, but there is an undocumented data center specific limit on the number of simultaneous containers you can run at a time, which can cause problems with lots of simultaneous texting activity. Deploy to a data center that has a high concurrent lambda limit and ask your Amazon AWS rep which one this is.
 
