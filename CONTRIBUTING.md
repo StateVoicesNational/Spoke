@@ -48,6 +48,7 @@ Generally, the first steps are:
 * In the description or title of the pull request, include a reference to the issue that the pull request relates to
 * If you are a junior developer, please don't be concerned about the code quality -- we will work with you if there are issues. We are super-excited to help junior developers submit and merge a first pull request.  If you have done some work and tests aren't passing, you can still feel free to submit it, and just comment on the issue that you are having trouble, and we'll work together to fix it.
 * Pull Requests sometimes take a bit of time to review or comment on. We will try to respond within 1-3 business days (sometimes we are busy fighting the good fight!)
+* Each pull request creates an automatic template to follow - so please follow the template when submitting your work.
 
 ### Release Process
 
@@ -55,26 +56,11 @@ This describes MoveOn's internal regression testing and release process, and can
 
 As an organization starts using complex software at scale, it becomes increasingly important to avoid production outages and scaling issues when possible. As MoveOn transitioned into a production software development stage with Spoke, instead of just rolling out changes when they became ready, we decided to adopt a more formal and careful process.
 
-We're a small team, practice agile software development, and plan weekly sprints starting every Monday. For us, it makes sense to do weekly releases of production software. We deploy changes every Wednesday afternoon.
-
 The actual process:
-* On Tuesday, we delete the old stage-main branch, and cut a new one from main: 
-  * git checkout main
-  * git branch -D stage-main
-  * git push origin :stage-main
-  * git checkout -b stage-main
-  * git push origin stage-main
-* On Tuesday we will test each PR and only merge it to stage-main and NOT main. We wait to merge to main only after Wednesday's regression 'testing party'
-  * This ensures that PRs will not contain anything that breaks deployment and also will allow us to see if any PRs negatively interact with each other before they end up merged to main.  Why bother with this step? it's helpful to have a separate "release candidate" on the stage-main branch because in earlier testing rounds people weren't sure what had been deployed to staging and having a separate branch makes this explicit and clear.
-  * When you have tested a PR branch locally and approve its merge (you do NOT click the 'merge' button in github -- that would merge to main (BAD!)). Instead:
-  * if this is a different person that created stage-main above, they should run:
-    * git fetch
-    * git checkout stage-main
-    * git reset --hard origin/stage-main
-  * Then deploy the stage-main branch to our staging environment
-* By EOD Tuesday, we should have reviewed and merged the PRs to stage-main that contain changes we would like to test on staging and roll to prod Wednesday.
-* On Wednesday morning, the whole team then piles onto regression testing staging
-* After the tech team tests staging, we get at least one member of the Mobile team to signoff on the state of staging.
-* If we fix all issues, regression test staging, and tech and mobile have signed off on staging, we merge stage-main back into main, roll to prod, as early as signoff is possible and at latest Thursday morning. This way, we know that the main branch is stable and is what we're running in our prod env.
-* After we roll to prod, at least one member of the Tech and Mobile team verify that prod is up and working.
-* We never roll code directly to prod without first testing on staging.
+* We create a new stage-main branch at least twice a month:
+  * The stage-main branch includes the latest approved pull requests in one merged branch
+      * This ensures that PRs will not contain anything that breaks deployment and also will allow us to see if any PRs negatively interact with each other before they end up merged to main.  Why bother with this step? it's helpful to have a separate "release candidate" on the stage-main branch because in earlier testing rounds people weren't sure what had been deployed to staging and having a separate branch makes this explicit and clear.
+  * After stage-main is created, we deploy it to MoveOn's staging instance. We have a small set of QA volunteers who then run through a list of [QA steps](https://github.com/MoveOnOrg/Spoke/blob/main/docs/QA_GUIDE.md) in order to find bugs and test new features.
+  * After QA is completed, and volunteers haven't identified any bugs, we deploy stage-main to production.
+  * We let stage-main run in production for at least a day, before merging stage-main into the main branch.
+  * We never roll code directly to prod without first testing on staging.
