@@ -46,7 +46,6 @@ beforeEach(async () => {
   assignmentId = dbCampaignContact.assignment_id
   await createScript(testAdminUser, testCampaign)
   await startCampaign(testAdminUser, testCampaign)
-  console.log('hi')
 }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT)
 
 afterEach(async () => {

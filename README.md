@@ -6,19 +6,21 @@ Spoke is an open source text-distribution tool for organizations to mobilize sup
 
 Spoke was created by Saikat Chakrabarti and Sheena Pakanati, and is now maintained by MoveOn.org.
 
-The latest version is [2.0.0](https://github.com/MoveOnOrg/Spoke/tree/v2.0) (see [release notes](https://github.com/MoveOnOrg/Spoke/blob/main/docs/RELEASE_NOTES.md#v20)) which we recommend for production use, while our `main` branch is where features still in development and testing will be available.
+The latest version is [3.0.0](https://github.com/MoveOnOrg/Spoke/tree/v3.0) (see [release notes](https://github.com/MoveOnOrg/Spoke/blob/main/docs/RELEASE_NOTES.md#v30)) which we recommend for production use, while our `main` branch is where features still in development and testing will be available.
 
 ## Deploy to Heroku
 
-<a href="https://heroku.com/deploy?template=https://github.com/MoveOnOrg/Spoke/tree/v2.0">
+<a href="https://heroku.com/deploy?template=https://github.com/MoveOnOrg/Spoke/tree/v3.0">
   <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy">
 </a>
 
-Follow up instructions located [here](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_HEROKU_DEPLOY.md)
+Follow up instructions located [here](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_HEROKU_DEPLOY.md).
 
 Please let us know if you deployed by filling out this form [here](https://act.moveon.org/survey/tech/)
 
 ## Getting started
+
+### Downloading
 
 1. Install either sqlite (or another [knex](http://knexjs.org/#Installation-client)-supported database)
 2. Install the Node version listed in `.nvmrc`. [NVM](https://github.com/creationix/nvm) is one way to do this (from the spoke directory):
@@ -26,29 +28,49 @@ Please let us know if you deployed by filling out this form [here](https://act.m
     nvm install
     nvm use
     ```
-3. `yarn install` (If yarn is not yet installed, run `npm install -g yarn` first)
-4. `cp .env.example .env`
-5. If you want to use Postgres:
-    - In `.env` set `DB_TYPE=pg`. (Otherwise, you will use sqlite.)
-    - Set `DB_PORT=5432`, which is the default port for Postgres.
-    - Create the spokedev database:  `psql -c "create database spokedev;"`
-6. Some other settings to tweak in dev -- make sure you are NOT editing .env.example -- edit `.env`:
-   * For development, you should probably set `DEFAULT_SERVICE=fakeservice` to skip using an SMS provider (Twilio or Nexmo) and insert the message directly into the database.
-   * For production, you'll want to use Auth0 for login and set PASSPORT_STRATEGY=auth0 -- see [Auth0 for authentication](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO-configure-auth0.md) for setup instructions
+3. Install yarn.
+  - Yarn is a package manager that will download all required packages to run Spoke.
+  - Install using the [directions provided by Yarn](https://yarnpkg.com/en/docs/install).
+4. Install the packages.
+    ```
+    yarn install
+    ```
+5. Create a real environment file:
+    ```
+    cp .env.example .env
+    ```
+  - This creates a copy of `.env.example`, but renames it `.env` so the system will use it. *Make sure you use this new file.*
 
-7. Run `yarn dev` to start the app. Wait until you see both "Node app is running ..." and "webpack: Compiled successfully." before attempting to connect. (make sure environment variable `JOBS_SAME_PROCESS=1`)
-8. Go to `http://localhost:3000` to load the app and create the database (Note: the terminal will say it's running on port 8090 -- don't believe it :-) -- it's running a proxy on port 3000 which also includes static asset serving, etc.
-9. As long as you leave `SUPPRESS_SELF_INVITE=` blank and unset in your `.env` you should be able to invite yourself from the homepage.
+### Filling out your `.env` file
+
+You now have a `.env` file to fill out. For more details on environment variables you can change, see the [environment variable reference](https://github.com/MoveOnOrg/Spoke/blob/main/docs/REFERENCE-environment_variables.md).
+
+There are some common environment variables you will want to adjust:
+
+1. To skip using the SMS provider (useful for development), set `DEFAULT_SERVICE=fakeservice`.
+2. Determine which database to use and set the necessary variables, listed in the [reference](https://github.com/MoveOnOrg/Spoke/blob/main/docs/REFERENCE-environment_variables.md).
+  - To use Postgres, [follow these instructions](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_USE_POSTGRESQL.md).
+3. Determine which authentication system you want to use. For development, there are a few ways authenticate.
+  - To use the local strategy for authentication, use `PASSPORT_STRATEGY=local`.
+  - To use [Auth0](https://auth0.com) by default, [follow these instructions](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO-configure-auth0.md).
+
+### Getting the app running
+
+At this point, you should be ready to start your app in development mode.
+
+1. Run `yarn dev` to create and populate the tables.
+    - Wait until you see both "Node app is running ..." and "webpack: Compiled successfully." before attempting to connect. (make sure environment variable `JOBS_SAME_PROCESS=1`)
+2. Go to `http://localhost:3000` to load the app. (Note: the terminal will say it's running on port 8090 -- don't believe it :-)
+3. As long as you leave `SUPPRESS_SELF_INVITE=` blank in your `.env` you should be able to invite yourself from the homepage.
     - If you DO set that variable, then spoke will be invite-only and you'll need to generate an invite. Run:
       ```
       echo "INSERT INTO invite (hash,is_valid) VALUES ('abc', 1);" |sqlite3 mydb.sqlite
       # Note: When doing this with PostgreSQL, you would replace the `1` with `true`
       ```
     - Then use the generated key to visit an invite link, e.g.: http://localhost:3000/invite/abc. This should redirect you to the login screen. Use the "Sign Up" option to create your account.
-
-10. You should then be prompted to create an organization. Create it.
-11. See the [Admin and Texter demos](https://opensource.moveon.org/spoke-p2p#block-yui_3_17_2_25_1509554076500_36334) to learn about how Spoke works.
-12. See [Getting Started with Development](#more-documentation) below.
+4. You should then be prompted to create an organization. Create it.
+5. See the [Admin and Texter demos](https://opensource.moveon.org/spoke-p2p#block-yui_3_17_2_25_1509554076500_36334) to learn about how Spoke works.
+6. See [Getting Started with Development](#more-documentation) below.
 
 ### SMS
 
@@ -65,7 +87,7 @@ Twilio provides [test credentials](https://www.twilio.com/docs/iam/test-credenti
 
 Docker is optional, but can help with a consistent development environment using postgres.
 
-1. `cp .env.example .env` and see step 6 above for some possible tweaks
+1. `cp .env.example .env` and see the "Filling out your `.env` file" section above for some possible tweaks
 2. Build and run Spoke with `docker-compose up --build`
     - You can stop docker compose at any time with `CTRL+C`, and data will persist next time you run `docker-compose up`.
 3. Go to [localhost:3000](http://localhost:3000) to load the app.

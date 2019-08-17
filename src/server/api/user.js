@@ -2,53 +2,97 @@ import { mapFieldsToModel } from './lib/utils'
 import { r, User, cacheableData } from '../models'
 import { addCampaignsFilterToQuery } from './campaign'
 
-export function buildUserOrganizationQuery(queryParam, organizationId, role, campaignId) {
+const firstName = '"user"."first_name"'
+const lastName = '"user"."last_name"'
+const created = '"user"."created_at"'
+const oldest = created
+const newest = '"user"."created_at" desc'
+
+function buildSelect(sortBy) {
+  const userStar = '"user".*' 
+
+  let fragmentArray = undefined
+
+  switch (sortBy) {
+    case 'COUNT_ONLY':
+      return r.knex.countDistinct('user.id')
+    case 'LAST_NAME':
+      fragmentArray = [userStar]
+      break
+    case 'NEWEST':
+      fragmentArray = [userStar]
+      break
+    case 'OLDEST':
+      fragmentArray = [userStar]
+      break
+    case 'FIRST_NAME':
+    default:
+      fragmentArray = [userStar]
+      break
+  }
+
+  return r.knex.select(r.knex.raw(fragmentArray.join(', ')))
+}
+
+function buildOrderBy(query, sortBy) {
+  let fragmentArray = undefined
+
+  switch (sortBy) {
+    case 'COUNT_ONLY':
+      return query
+    case 'LAST_NAME':
+      fragmentArray = [lastName, firstName, newest]
+      break
+    case 'NEWEST':
+      fragmentArray = [newest]
+      break
+    case 'OLDEST':
+      fragmentArray = [oldest]
+      break
+    case 'FIRST_NAME':
+    default:
+      fragmentArray = [firstName, lastName, newest]
+      break
+  }
+
+  return query.orderByRaw(fragmentArray.join(', '))
+}
+
+export function buildUserOrganizationQuery(queryParam, organizationId, role, campaignId, offset) {
   const roleFilter = role ? { role } : {}
 
-  queryParam
+  let query = queryParam
     .from('user_organization')
     .innerJoin('user', 'user_organization.user_id', 'user.id')
     .where(roleFilter)
-    .where({ 'user_organization.organization_id': organizationId })
+    .whereRaw('"user_organization"."organization_id" = ?', organizationId)
     .distinct()
 
   if (campaignId) {
-    queryParam.innerJoin('assignment', 'assignment.user_id', 'user.id')
+    query = query.leftOuterJoin('assignment', 'assignment.user_id', 'user.id')
     .where({ 'assignment.campaign_id': campaignId })
   }
-  return queryParam
+
+  return query
 }
 
-function buildUsersQuery(queryParam, organizationId, campaignsFilter, role) {
-  let query = undefined
-  if (campaignsFilter) {
-    query = queryParam
-      .from('assignment')
-      .join('user', 'assignment.user_id', 'user.id')
-      .join('user_organization', 'user.id', 'user_organization.user_id')
-      .join('campaign', 'assignment.campaign_id', 'campaign.id')
-      .where('user_organization.organization_id', organizationId)
-      .distinct()
-
-    if (role) {
-      query = query.where('user_organization.role', role)
-    }
-
-    return addCampaignsFilterToQuery(query, campaignsFilter)
-  }
-
-  return buildUserOrganizationQuery(queryParam, organizationId, role)
+export function buildSortedUserOrganizationQuery(organizationId, role, campaignId, sortBy) {
+  const query = buildUserOrganizationQuery(buildSelect(sortBy), organizationId, role, campaignId)
+  return buildOrderBy(query, sortBy)
 }
 
-export async function getUsers(organizationId, cursor, campaignsFilter, role) {
-  let usersQuery = buildUsersQuery(r.knex.select('user.*'), organizationId, campaignsFilter, role)
-  usersQuery = usersQuery.orderBy('first_name').orderBy('last_name').orderBy('id')
+function buildUsersQuery(organizationId, campaignsFilter, role, sortBy) {
+  return buildSortedUserOrganizationQuery(organizationId, role, campaignsFilter && campaignsFilter.campaignId, sortBy)
+}
+
+export async function getUsers(organizationId, cursor, campaignsFilter, role, sortBy) {
+  let usersQuery = buildUsersQuery(organizationId, campaignsFilter, role, sortBy)
 
   if (cursor) {
     usersQuery = usersQuery.limit(cursor.limit).offset(cursor.offset)
     const users = await usersQuery
 
-    const usersCountQuery = buildUsersQuery(r.knex.countDistinct('user.id'), organizationId, campaignsFilter, role)
+    const usersCountQuery = buildUsersQuery(organizationId, campaignsFilter, role, 'COUNT_ONLY')
 
     const usersCountArray = await usersCountQuery
 
@@ -130,6 +174,6 @@ export const resolvers = {
     lastMessageTime: (user) => ( // see organization.people(inflightCounts)
       user.lastMessageTime ? new Date(user.lastMessageTime) : null
     ),
-    cacheable: () => Boolean(r.redis)
+    cacheable: () => false // FUTURE: Boolean(r.redis) when full assignment data is cached
   }
 }
