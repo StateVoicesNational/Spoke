@@ -70,7 +70,7 @@ export const sendUserNotification = async (notification) => {
       .filter({ campaign_id: campaign.id })
       .limit(1)(0)
 
-    if (!campaignContact.is_opted_out) {
+    if (!campaignContact.is_opted_out && !campaign.is_archived) {
       const user = await User.get(assignment.user_id)
       const organization = await Organization.get(campaign.organization_id)
       const orgOwner = await getOrganizationOwner(organization.id)

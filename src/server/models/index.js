@@ -10,7 +10,6 @@ import CampaignContact from './campaign-contact'
 import InteractionStep from './interaction-step'
 import QuestionResponse from './question-response'
 import OptOut from './opt-out'
-import Migrations from './migrations'
 import JobRequest from './job-request'
 import Invite from './invite'
 import CannedResponse from './canned-response'
@@ -54,7 +53,6 @@ const tableList = [
   'job_request',
   'log',
   'message',
-  'migrations',
   'opt_out',
   'pending_message_part',
   'question_response',
@@ -69,18 +67,20 @@ function createTablesIfNecessary() {
     (tableExists) => {
       if (!tableExists) {
         console.log('CREATING DATABASE SCHEMA')
-        createTables()
-        return true
+        return thinky.r.k.migrate.latest()
       }
     })
 }
 
 function createTables() {
-  return thinky.createTables(tableList)
+  return thinky.r.knex.migrate.latest()
 }
 
 function dropTables() {
-  return thinky.dropTables(tableList)
+  // thinky.r.knex.destroy() DOES NOT WORK
+  return thinky.dropTables(tableList).then(function() {
+    return thinky.dropTables(['knex_migrations', 'knex_migrations_lock'])
+  })
 }
 
 function getMessageServiceSid(organization) {
@@ -114,7 +114,6 @@ const loaders = {
   cannedResponse: createLoader(CannedResponse),
   jobRequest: createLoader(JobRequest),
   message: createLoader(Message),
-  migrations: createLoader(Migrations),
   optOut: createLoader(OptOut),
   pendingMessagePart: createLoader(PendingMessagePart),
   questionResponse: createLoader(QuestionResponse),
@@ -136,7 +135,6 @@ export {
   dropTables,
   getMessageServiceSid,
   datawarehouse,
-  Migrations,
   Assignment,
   Campaign,
   CampaignContact,

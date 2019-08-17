@@ -4,7 +4,6 @@ import { graphql } from 'graphql'
 
 export async function setupTest() {
   await createTables()
-  return
 }
 
 export async function cleanupTest() {

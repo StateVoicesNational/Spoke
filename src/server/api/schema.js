@@ -7,7 +7,15 @@ import { organizationCache } from '../models/cacheable_queries/organization'
 
 import { gzip, log, makeTree } from '../../lib'
 import { applyScript } from '../../lib/scripts'
-import { assignTexters, exportCampaign, loadCampaignCache, loadContactsFromDataWarehouse, uploadContacts } from '../../workers/jobs'
+import { capitalizeWord } from './lib/utils'
+import {
+  assignTexters,
+  exportCampaign,
+  importScript,
+  loadCampaignCache,
+  loadContactsFromDataWarehouse,
+  uploadContacts
+} from '../../workers/jobs'
 import {
   Assignment,
   Campaign,
@@ -393,26 +401,26 @@ const rootMutations = {
         return null
       } else {
         const member = userRes[0]
+
+        const newUserData = {
+          first_name: capitalizeWord(userData.firstName),
+          last_name: capitalizeWord(userData.lastName),
+          email: userData.email,
+          cell: userData.cell
+        }
+
         if (userData) {
           const userRes = await r
             .knex('user')
             .where('id', userId)
-            .update({
-              first_name: userData.firstName,
-              last_name: userData.lastName,
-              email: userData.email,
-              cell: userData.cell
-            })
+            .update(newUserData)
           await cacheableData.user.clearUser(member.id, member.auth0_id)
 
           // assignments cache first/last name, so clear them to be reloaded
           await cacheableData.assignment.clearUserAssignments(organizationId, userId)
           userData = {
             id: userId,
-            first_name: userData.firstName,
-            last_name: userData.lastName,
-            email: userData.email,
-            cell: userData.cell
+            ...newUserData
           }
         } else {
           userData = member
@@ -682,9 +690,9 @@ const rootMutations = {
       )))
 
       campaigns.forEach(campaign => { campaign.is_archived = true })
-      await Promise.all(campaigns.map(campaign => {
-        campaign.save()
-        cacheableData.campaign.clear(id)
+      await Promise.all(campaigns.map(async (campaign) => {
+        await campaign.save()
+        await cacheableData.campaign.clear(campaign.id)
       }))
       return campaigns
     },
@@ -1018,8 +1026,8 @@ const rootMutations = {
       const service = serviceMap[messageInstance.service || process.env.DEFAULT_SERVICE || global.DEFAULT_SERVICE]
       log.info(
         `Sending (${service}): ${messageInstance.user_number} -> ${
-           messageInstance.contact_number
-         }\nMessage: ${messageInstance.text}`
+        messageInstance.contact_number
+        }\nMessage: ${messageInstance.text}`
       )
       service.sendMessage(messageInstance, contact)
       // console.log('sendMessage return', contact.id)
@@ -1142,6 +1150,39 @@ const rootMutations = {
           contactsFilter
         )
       return await reassignConversations(campaignIdContactIdsMap, campaignIdMessagesIdsMap, newTexterUserId, loaders)
+    },
+    importCampaignScript: async (_, {
+      campaignId,
+      url
+    }, {
+      loaders
+    }) => {
+      const campaign = await loaders.campaign.load(campaignId)
+      if (campaign.is_started || campaign.is_archived) {
+        throw new GraphQLError('Cannot import a campaign script for a campaign that is started or archived')
+      }
+
+      const compressedString = await gzip(JSON.stringify({
+        campaignId,
+        url
+      }))
+      const job = await JobRequest.save({
+        queue_name: `${campaignId}:import_script`,
+        job_type: 'import_script',
+        locks_queue: true,
+        assigned: JOBS_SAME_PROCESS, // can get called immediately, below
+        campaign_id: campaignId,
+        // NOTE: stringifying because compressedString is a binary buffer
+        payload: compressedString.toString('base64')
+      })
+
+      const jobId = job.id
+
+      if (JOBS_SAME_PROCESS) {
+        importScript(job)
+      }
+
+      return jobId
     }
   }
 }
@@ -1192,13 +1233,6 @@ const rootResolvers = {
       else {
         return user
       }
-    },
-    contact: async (_, { id }, { loaders, user }) => {
-      authRequired(user)
-      const contact = await loaders.campaignContact.load(id)
-      const campaign = await loaders.campaign.load(contact.campaign_id)
-      await accessRequired(user, campaign.organization_id, 'TEXTER', /* allowSuperadmin=*/ true)
-      return contact
     },
     organizations: async (_, { id }, { user }) => {
       if (user.is_superadmin) {
@@ -1251,9 +1285,9 @@ const rootResolvers = {
       await accessRequired(user, organizationId, 'SUPERVOLUNTEER')
       return getCampaigns(organizationId, cursor, campaignsFilter)
     },
-    people: async (_, { organizationId, cursor, campaignsFilter, role }, { user }) => {
+    people: async (_, { organizationId, cursor, campaignsFilter, role, sortBy }, { user }) => {
       await accessRequired(user, organizationId, 'SUPERVOLUNTEER')
-      return getUsers(organizationId, cursor, campaignsFilter, role)
+      return getUsers(organizationId, cursor, campaignsFilter, role, sortBy)
     }
   }
 }

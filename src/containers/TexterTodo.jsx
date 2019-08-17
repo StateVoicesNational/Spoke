@@ -61,6 +61,11 @@ export const dataQuery = gql`query getContacts($assignmentId: String!, $contacts
           id
           isArchived
           useDynamicAssignment
+          overrideOrganizationTextingHours
+          timezone
+          textingHoursStart
+          textingHoursEnd
+          textingHoursEnforced
           organization {
             id
             textingHoursEnforced

@@ -35,7 +35,7 @@ Create a private S3 bucket by choosing all the default values as you go throuh t
 ## VPC
 
 We will create a VPC with two groups of subnets, one publicly accessible one for the RDS instance and one private one for our AWS Lambda function (don't worry, the API Gateway created later will expose the function via the domain you created a certificate for). Each group will have two subnets for redundancy.
- 
+
 Getting the VPC right is pretty tricky. Start by launching the VPC creation wizard and choosing "VPC with a Single Public Subnet". Give the VPC a name, `TextForCampaign`, and change the name of the subnet to `Public - 1`. Click create.
 
 ### Subnets
@@ -218,7 +218,7 @@ $ AWS_PROFILE=[your_profile_nickname] claudia add-scheduled-event \
 
 ### Migrating the Database
 
-New migrations are added to `src/migrations/index.js`. You can trigger migration updates with the following command:
+Migrations are created with knex[https://knexjs.org/#Migrations]. You can trigger migration updates with the following command:
 
 ```sh
 $ AWS_PROFILE=[your_profile_nickname] claudia test-lambda --event ./deploy/lambda-migrate-database.js
