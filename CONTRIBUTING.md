@@ -45,14 +45,10 @@ Generally, the first steps are:
 ### Submitting your Pull Request
 
 * Push your changes to your forked version, and create a Pull Request on GitHub for your change
-* Follow the guidelines in the pull request template: connect your pull request to an issue, include a description to give your contribution context, and go through the checklist.
+* Each pull request creates an automatic template to follow - so please follow the template when submitting your work.
 * If you are a junior developer, please don't be concerned about the code quality -- we will work with you if there are issues. We are super-excited to help junior developers submit and merge a first pull request.  If you have done some work and tests aren't passing, you can still feel free to submit it, and just comment on the issue that you are having trouble, and we'll work together to fix it.
 * Pull Requests sometimes take a bit of time to review or comment on. We will try to respond within 1-3 business days (sometimes we are busy fighting the good fight!)
-<<<<<<< HEAD
-* Each pull request creates an automatic template to follow - so please follow the template when submitting your work.
-=======
 * Try to keep your changes under 300 lines of code. Studies show that people can't review changesets longer than that without missing things. If your change ends up longer than 300 lines, try breaking up it into smaller chunks and submitting those as separate pull requests.
->>>>>>> Add a pr template and modify the contributor guidelines
 
 ### Release Process
 
