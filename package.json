@@ -68,7 +68,7 @@
   },
   "homepage": "https://github.com/MoveOnOrg/Spoke/#readme",
   "dependencies": {
-    "aphrodite": "^0.4.1",
+    "aphrodite": "^2.3.1",
     "apollo-client": "^0.4.7",
     "apollo-server-express": "^1.2.0",
     "auth0-js": "^9.10.0",
@@ -131,7 +131,7 @@
     "react-async-script": "^0.6.0",
     "react-chartjs": "^0.7.3",
     "react-dom": "^15.6.1",
-    "react-formal": "^0.18.5",
+    "react-formal": "^0.20.0",
     "react-router": "^2.5.2",
     "react-router-redux": "^4.0.5",
     "react-tap-event-plugin": "^2.0.0",
