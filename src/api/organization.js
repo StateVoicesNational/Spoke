@@ -4,7 +4,7 @@ export const schema = `
     uuid: String
     name: String
     campaigns(cursor:OffsetLimitCursor, campaignsFilter: CampaignsFilter): CampaignsReturn
-    people(role: String, campaignId: String): [User]
+    people(role: String, campaignId: String, sortBy: SortPeopleBy): [User]
     optOuts: [OptOut]
     threeClickEnabled: Boolean
     optOutMessage: String

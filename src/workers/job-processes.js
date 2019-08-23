@@ -9,8 +9,8 @@ import { exportCampaign,
          sendMessages,
          handleIncomingMessageParts,
          fixOrgless,
-         clearOldJobs } from './jobs'
-import { runMigrations } from '../migrations'
+         clearOldJobs, 
+         importScript } from './jobs'
 import { setupUserNotificationObservers } from '../server/notifications'
 
 export { seedZipCodes } from '../server/seeds/seed-zip-codes'
@@ -28,7 +28,8 @@ const jobMap = {
   'export': exportCampaign,
   'upload_contacts': uploadContacts,
   'upload_contacts_sql': loadContactsFromDataWarehouse,
-  'assign_texters': assignTexters
+  'assign_texters': assignTexters,
+  'import_script': importScript
 }
 
 export async function processJobs() {
@@ -161,7 +162,7 @@ export async function handleIncomingMessages() {
 }
 
 export async function runDatabaseMigrations(event, dispatcher, eventCallback) {
-  await runMigrations(event.migrationStart)
+  await r.knex.migrate.latest()
   if (eventCallback) {
     eventCallback(null, 'completed migrations')
   }

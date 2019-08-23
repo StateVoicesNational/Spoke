@@ -54,7 +54,7 @@ const ContactToolbar = function ContactToolbar(props) {
   formattedLocation = `${formattedLocation} ${state}`
 
   const dstReferenceTimezone = props.campaign.overrideOrganizationTextingHours ?
-    this.props.campaign.timezone :
+    props.campaign.timezone :
     getProcessEnvDstReferenceTimezone()
 
   const formattedLocalTime = getLocalTime(offset, hasDST, dstReferenceTimezone).format('LT') // format('h:mm a')
@@ -64,7 +64,10 @@ const ContactToolbar = function ContactToolbar(props) {
         style={inlineStyles.toolbar}
       >
         <ToolbarGroup >
-          <ToolbarTitle text={campaignContact.firstName} />
+          <ToolbarTitle
+            text={campaignContact.firstName}
+            title={`id:${campaignContact.id} m:${campaignContact.messages.length} s:${campaignContact.messageStatus}`}
+          />
           <ToolbarTitle
             style={inlineStyles.cellToolbarTitle}
           />

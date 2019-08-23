@@ -1,3 +1,5 @@
+import gql from 'graphql-tag'
+
 import { schema as userSchema, resolvers as userResolvers, buildUserOrganizationQuery } from './user'
 import {
   schema as conversationSchema,
@@ -32,7 +34,7 @@ import {
 import { schema as inviteSchema, resolvers as inviteResolvers } from './invite'
 
 
-const rootSchema = `
+const rootSchema = gql`
   input CampaignContactInput {
     firstName: String!
     lastName: String!
@@ -174,18 +176,24 @@ const rootSchema = `
     data: String!
   }
 
+  enum SortPeopleBy {
+    FIRST_NAME
+    LAST_NAME
+    NEWEST
+    OLDEST
+  } 
+
   type RootQuery {
     currentUser: User
     organization(id:String!, utc:String): Organization
     campaign(id:String!): Campaign
     inviteByHash(hash:String!): [Invite]
-    contact(id:String!): CampaignContact
     assignment(id:String!): Assignment
     organizations: [Organization]
     availableActions(organizationId:String!): [Action]
     conversations(cursor:OffsetLimitCursor!, organizationId:String!, campaignsFilter:CampaignsFilter, assignmentsFilter:AssignmentsFilter, contactsFilter:ContactsFilter, utc:String): PaginatedConversations
     campaigns(organizationId:String!, cursor:OffsetLimitCursor, campaignsFilter: CampaignsFilter): CampaignsReturn
-    people(organizationId:String!, cursor:OffsetLimitCursor, campaignsFilter:CampaignsFilter, role: String): UsersReturn
+    people(organizationId:String!, cursor:OffsetLimitCursor, campaignsFilter:CampaignsFilter, role: String, sortBy: SortPeopleBy): UsersReturn
   }
 
   type RootMutation {
@@ -221,7 +229,8 @@ const rootSchema = `
     assignUserToCampaign(organizationUuid: String!, campaignId: String!): Campaign
     userAgreeTerms(userId: String!): User
     reassignCampaignContacts(organizationId:String!, campaignIdsContactIds:[CampaignIdContactId]!, newTexterUserId:String!):[CampaignIdAssignmentId],
-    bulkReassignCampaignContacts(organizationId:String!, campaignsFilter:CampaignsFilter, assignmentsFilter:AssignmentsFilter, contactsFilter:ContactsFilter, newTexterUserId:String!):[CampaignIdAssignmentId]
+    bulkReassignCampaignContacts(organizationId:String!, campaignsFilter:CampaignsFilter, assignmentsFilter:AssignmentsFilter, contactsFilter:ContactsFilter, newTexterUserId:String!):[CampaignIdAssignmentId],
+    importCampaignScript(campaignId:String!, url:String!): Int 
     updateApiKey(organizationId:String!, apiKey:String!): Organization
   }
 
