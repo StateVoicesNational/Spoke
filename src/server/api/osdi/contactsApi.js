@@ -8,22 +8,6 @@ import apiAuth from './api-auth'
 import osdi from './osdi'
 
 
-function campaignStatusShortCircuit(campaign, res) {
-  let message = ''
-  if (campaign.is_archived) {
-    message = 'Campaign is archived'
-  } else if (campaign.is_started) {
-    message = 'Campaign is started'
-  }
-
-  if (message) {
-    res.writeHead(403)
-    res.end(message)
-    return true
-  }
-
-  return false
-}
 
 export default async function contactsApi(req, res) {
   const orgId = req.params.orgId;
@@ -53,7 +37,7 @@ export default async function contactsApi(req, res) {
     }
 
     if (['DELETE', 'POST'].includes(req.method)) {
-      if (campaignStatusShortCircuit(campaign, res)) {
+      if (apiAuth.campaignStatusShortCircuit(campaign, res)) {
         return
       }
     }

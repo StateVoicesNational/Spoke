@@ -2,13 +2,10 @@ import wrap from "../../wrap";
 import contactsApi from "./contactsApi";
 import osdiResourcesApi from "./osdiResourcesApi";
 import osdi from "./osdi"
+import osdiMeta from "./osdiMeta"
 import express from "express";
 
 function osdiStart(app) {
-    app.use('/admin/:orgId/campaigns/:campaignId/contacts', wrap(async (req, res) => {
-        await contactsApi(req, res)
-    }))
-
 
     app.use('/osdi/org/:orgId/campaigns/:campaignId/api/v1/users/:id/assignments', wrap(async (req, res) => {
         await osdiResourcesApi(req, res, {resource_type: 'assignment', where: {user_id: req.params.id}})
@@ -105,10 +102,6 @@ function osdiStart(app) {
     }))
 
 
-    app.use('/osdi/org/:orgId/campaigns/:campaignId/api/v1\/?$', wrap(async (req, res) => {
-        await osdi.AEP(req, res)
-    }))
-
 
     app.use('/osdi/org/:orgId/campaigns/:campaignId/api/v1/assignments', wrap(async (req, res) => {
         await osdiResourcesApi(req, res, {
@@ -118,19 +111,25 @@ function osdiStart(app) {
         })
     }))
 
-    app.use('/api/v1/org/:orgId/campaigns', wrap(async (req, res) => {
-        await osdi.campaignChooser(req, res)
+
+    app.use('/osdi/org/:orgId/campaigns/:campaignId/api/v1\/?$', wrap(async (req, res) => {
+        await osdiMeta.AEP(req, res)
     }))
 
-    app.get('/api/v1/org',
+    app.use('/osdi/org/:orgId/campaigns', wrap(async (req, res) => {
+        await osdiMeta.campaignChooser(req, res)
+    }))
+
+
+    app.get('/osdi/org/:orgId',
         wrap(async (req, res) => {
-            await osdi.orgChooser(req, res)
+            await osdiMeta.orgAEP(req, res)
         }))
 
 
     app.get('/api/v1',
         wrap(async (req, res) => {
-            await osdi.chooser(req, res)
+            await osdiMeta.chooser(req, res)
         }))
 
     app.use('/hal', express.static('./hal'))

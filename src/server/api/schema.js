@@ -1154,16 +1154,35 @@ const rootMutations = {
       return await reassignConversations(campaignIdContactIdsMap, campaignIdMessagesIdsMap, newTexterUserId)
     },
 
-    updateApiKey: async (_, { organizationId, apiKey }, { user }) => {
-      await accessRequired(user, organizationId, 'ADMIN', /* superadmin*/ true)
+    updateOsdiApiToken: async (_, { organizationId, osdiApiToken }, { user }) => {
+      await accessRequired(user, organizationId, 'OWNER', /* superadmin*/ true)
 
       const organization = await r.knex('organization').where('id', organizationId).first('features')
       const features = organization.features ? JSON.parse(organization.features) : {}
 
-      features.apiKey = apiKey
+      features.osdi_api_token = osdiApiToken
       await r.knex('organization').where('id', organizationId).update({'features': JSON.stringify(features)})
 
       return await r.knex('organization').where('id', organizationId).first()
+    },
+    toggleOsdiEnabled: async (
+        _,
+        { organizationId, osdiEnabled },
+        { user }
+    ) => {
+      await accessRequired(user, organizationId, 'OWNER')
+      const organization = await Organization.get(organizationId)
+      const featuresJSON = JSON.parse(organization.features || '{}')
+
+
+      featuresJSON.osdi_enabled = osdiEnabled
+      organization.features = JSON.stringify(featuresJSON)
+
+      await organization.save()
+      if (organizationCache) {
+        await organizationCache.clear(organizationId)
+      }
+      return await Organization.get(organizationId)
     },
 
     importCampaignScript: async (_, {

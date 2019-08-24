@@ -122,7 +122,13 @@ class Settings extends React.Component {
   }
 
   renderApiKeyForm() {
-    const { apiKey } = this.props.data.organization
+    const { organization } = this.props.data
+
+
+    const { osdiApiToken } = organization
+    const  { osdiEnabled } = organization
+
+    console.log("key ".concat(osdiApiToken, " enabled ", osdiEnabled))
 
     const confirmationAction = [
       <FlatButton
@@ -130,7 +136,7 @@ class Settings extends React.Component {
           primary={true}
           onTouchTap={async () => {
             this.handleCloseApiKeyConfirmationDialog()
-            await this.props.mutations.updateApiKey(getHash(this.state.newApiKey))
+            await this.props.mutations.updateOsdiApiToken(getHash(this.state.newApiKey))
           }}
       />
     ]
@@ -144,7 +150,7 @@ class Settings extends React.Component {
           }}
       />,
       <FlatButton
-          label={'Update API Key'}
+          label={'Replace OSDI API Key'}
           primary={false}
           onTouchTap={async () => {
             this.handleCloseApiKeyDialog()
@@ -170,7 +176,7 @@ class Settings extends React.Component {
           onRequestClose={this.handleCloseApiKeyDialog}
           modal={true}
           actions={goAheadActions}
-          title={'Update API Key?'}
+          title={'Replace Key?'}
       >
         <div>
           If you proceed, the previous API key will no longer
@@ -179,15 +185,28 @@ class Settings extends React.Component {
       </Dialog>
 
       <Card>
-        <CardHeader title={'API Key'}/>
         <CardText>
-          {apiKey ? (
-              <div style={{ paddingBottom: '25px' }}>
+          <div className={css(styles.section)}>
+          <Toggle
+              toggled={organization.osdiEnabled}
+              label='OSDI API Access'
+              onToggle={async (event, isToggled) => await this.props.mutations.toggleOsdiEnabled(isToggled)}
+          />
+          </div>
+          { organization.osdiEnabled ? (
+              <div className={css(styles.section)}>
+
+          {organization.osdiApiToken ? (
+              <div style={{ paddingBottom: '20px' }}>
+                 <span className={css(styles.sectionLabel)}>
+
+
                 ✅ API Key Set
                 &nbsp;
+                   </span>
                 <a href={'/osdi'} target={'_osdi_browser'}>
                 <FlatButton
-                    label={'Visit OSDI Browser'}
+                    label={'Visit The OSDI Browser'}
                     primary
                 />
                 </a>
@@ -197,16 +216,19 @@ class Settings extends React.Component {
           }
           <div>
             <FlatButton
-                label={`${apiKey ? 'Replace' : 'Create'} API key`}
+                label={`${osdiApiToken ? 'Replace' : 'Create'} OSDI API key`}
                 primary
                 onTouchTap={
-                  apiKey ?
+                  osdiApiToken ?
                       this.handleOpenApiKeyDialog :
                       this.handleOpenApiKeyConfirmationDialog
                 }
             />
 
           </div>
+
+            </div>
+          ) : ''}
         </CardText>
       </Card></div>
   }
@@ -343,21 +365,36 @@ const mapMutationsToProps = ({ ownProps }) => ({
       optOutMessage
     }
   }),
-  updateApiKey: (apiKey) => ({
+  updateOsdiApiToken: (osdiApiToken) => ({
         mutation: gql`
-        mutation updateApiKey($organizationId: String!, $apiKey: String!) {
-          updateApiKey(organizationId: $organizationId, apiKey: $apiKey) {
+        mutation updateOsdiApiToken($organizationId: String!, $osdiApiToken: String!) {
+          updateOsdiApiToken(organizationId: $organizationId, osdiApiToken: $osdiApiToken) {
             id
-            apiKey
+            osdiApiToken
           }
         }
       `,
         variables: {
           organizationId: ownProps.params.organizationId,
-          apiKey
+          osdiApiToken
         }
       }
-  )
+  ),
+  toggleOsdiEnabled: (osdiEnabled) => ({
+    mutation: gql`
+       mutation toggleOsdiEnabled($organizationId: String!, $osdiEnabled: Boolean!) {
+          toggleOsdiEnabled(organizationId: $organizationId, osdiEnabled: $osdiEnabled) {
+            id
+            osdiEnabled
+          }
+        }
+      `,
+        variables: {
+          organizationId: ownProps.params.organizationId,
+          osdiEnabled
+        }
+
+  })
 
 })
 
@@ -371,7 +408,8 @@ const mapQueriesToProps = ({ ownProps }) => ({
         textingHoursStart
         textingHoursEnd
         optOutMessage
-        apiKey 
+        osdiApiToken
+        osdiEnabled
       }
     }`,
     variables: {

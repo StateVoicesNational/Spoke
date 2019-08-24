@@ -231,7 +231,8 @@ const rootSchema = gql`
     reassignCampaignContacts(organizationId:String!, campaignIdsContactIds:[CampaignIdContactId]!, newTexterUserId:String!):[CampaignIdAssignmentId],
     bulkReassignCampaignContacts(organizationId:String!, campaignsFilter:CampaignsFilter, assignmentsFilter:AssignmentsFilter, contactsFilter:ContactsFilter, newTexterUserId:String!):[CampaignIdAssignmentId],
     importCampaignScript(campaignId:String!, url:String!): Int 
-    updateApiKey(organizationId:String!, apiKey:String!): Organization
+    updateOsdiApiToken(organizationId:String!, osdiApiToken:String!): Organization
+    toggleOsdiEnabled(organizationId:String!, osdiEnabled:Boolean!): Organization
   }
 
   schema {

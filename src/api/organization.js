@@ -11,6 +11,8 @@ export const schema = `
     textingHoursEnforced: Boolean
     textingHoursStart: Int
     textingHoursEnd: Int
-    apiKey: String
+    features: String
+    osdiApiToken: String
+    osdiEnabled: Boolean
   }
 `

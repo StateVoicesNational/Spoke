@@ -126,7 +126,7 @@ export default async function osdiResourcesApi(req, res, options) {
     }
 
     if (['DELETE', 'POST'].includes(req.method)) {
-      if (campaignStatusShortCircuit(campaign, res)) {
+      if (apiAuth.campaignStatusShortCircuit(campaign, res)) {
         return
       }
     }

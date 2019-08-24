@@ -2,6 +2,8 @@ import _ from 'lodash'
 import apiAuth from './api-auth'
 import { r } from '../../models'
 import { log } from '../../../lib'
+import osdiUtil from './osdiUtil'
+
 
 export const digDug = (p, o) => {
     return p.reduce((xs, x) => (xs && xs[x]) ? xs[x] : null, o);
@@ -86,15 +88,6 @@ async function get_contact_from_mobile(mobile) {
     return contact
 }
 
-function osdiAEP(req) {
-    return "".concat(process.env.BASE_URL,
-        "/osdi/org/",
-        req.params.orgId,
-        "/campaigns/",
-        req.params.campaignId,
-        "/api/v1")
-}
-
 function should_show_native(req) {
     if ('osdi-diagnostics' in req.headers) {
         if ( req.headers['osdi-diagnostics'].includes('show_native') ) {
@@ -135,7 +128,7 @@ async function translate_resource_to_osdi(resource,req,options) {
         case resource_type=='campaign':
             req.campaignId=resource.id
             _links['osdi:aep']={
-                href: "".concat(osdiAEP(req)),
+                href: "".concat(osdiUtil.osdiAEP(req)),
                 title: resource.title
             }
             break;
@@ -153,27 +146,27 @@ async function translate_resource_to_osdi(resource,req,options) {
             }
 
             _links['osdi:person']={
-                href: "".concat(osdiAEP(req),"/people/", contact_id)
+                href: "".concat(osdiUtil.osdiAEP(req),"/people/", contact_id)
             }
             _links['spoke:assignment']={
-                href: "".concat(osdiAEP(req),"/assignments/",resource.assignment_id)
+                href: "".concat(osdiUtil.osdiAEP(req),"/assignments/",resource.assignment_id)
             }
             break;
 
         case resource_type=='user':
             osdi=translate_user_to_osdi(resource,req,options)
             _links['spoke:assignments']={
-                href: "".concat(osdiAEP(req),"/users/", resource.id, "/assignments" )
+                href: "".concat(osdiUtil.osdiAEP(req),"/users/", resource.id, "/assignments" )
             }
 
             break;
 
         case resource_type=='assignment':
             _links['osdi:user']={
-                href: "".concat(osdiAEP(req),"/users/",resource.user_id)
+                href: "".concat(osdiUtil.osdiAEP(req),"/users/",resource.user_id)
             }
             _links['osdi:messages']={
-                href: "".concat(osdiAEP(req),"/assignments/",resource.id,"/messages")
+                href: "".concat(osdiUtil.osdiAEP(req),"/assignments/",resource.id,"/messages")
             }
             break;
 
@@ -182,11 +175,11 @@ async function translate_resource_to_osdi(resource,req,options) {
             self_title= "".concat(resource['first_name'], " ", resource['last_name'])
 
             _links['osdi:answers']={
-                href: "".concat(osdiAEP(req),"/people/", resource.id, "/answers")
+                href: "".concat(osdiUtil.osdiAEP(req),"/people/", resource.id, "/answers")
             }
 
             _links['osdi:messages']={
-                href: "".concat(osdiAEP(req),"/people/",resource.id,"/messages")
+                href: "".concat(osdiUtil.osdiAEP(req),"/people/",resource.id,"/messages")
             }
 
             break;
@@ -200,10 +193,10 @@ async function translate_resource_to_osdi(resource,req,options) {
                 question_id: resource.interaction_step_id
             }
             _links['osdi:question']={
-                href: "".concat(osdiAEP(req),"/questions/",resource.interaction_step_id)
+                href: "".concat(osdiUtil.osdiAEP(req),"/questions/",resource.interaction_step_id)
             }
             _links['osdi:person']={
-                href: "".concat(osdiAEP(req),"/people/",resource.campaign_contact_id)
+                href: "".concat(osdiUtil.osdiAEP(req),"/people/",resource.campaign_contact_id)
             }
 
             break;
@@ -227,7 +220,7 @@ async function translate_resource_to_osdi(resource,req,options) {
             }
 
             _links['osdi:answers']={
-                href: "".concat(osdiAEP(req),"/questions/",resource.id,"/answers")
+                href: "".concat(osdiUtil.osdiAEP(req),"/questions/",resource.id,"/answers")
             }
 
             break;
@@ -349,138 +342,6 @@ function translate_contact_to_osdi_person(contact,req) {
     return osdi;
 }
 
-function curies() {
-    return [
-        {
-            "name": "osdi",
-            "href": "http://opensupporter.github.io/osdi-docs/{rel}",
-            "templated": true
-        },
-        {
-            "name": "spoke",
-            "href": "https://github.com/MoveOnOrg/Spoke"
-        }
-    ]
-
-}
-export async function AEP(req, res) {
-
-    const baseUrl="".concat(process.env.BASE_URL,req.baseUrl);
-
-    if (!['GET'].includes(req.method)) {
-        res.writeHead(405, { Allow: 'GET' });
-        res.end('Not allowed');
-        return
-    }
-    var aep={
-        motd: "Welcome to Spoke's OSDI Endpoint",
-        _links: {
-            "osdi:people": {
-                href: baseUrl.concat("/people"),
-                title: "The People Collection"
-            },
-            "osdi:users": {
-                href: baseUrl.concat("/users"),
-                title: "The Users Collection"
-            },
-            "osdi:person_signup_helper":{
-                href: baseUrl.concat("/people"),
-                title: "Person signup Helper"
-            },
-            "osdi:people_import_helper": {
-                href: baseUrl.concat("/people"),
-                title: "People Import Helper"
-            },
-            "osdi:questions": {
-                href: baseUrl.concat("/questions"),
-                title: "The Questions (interaction steps) collection"
-            },
-            "osdi:answers": {
-                href: baseUrl.concat("/answers"),
-                title: "The Answers (question responses) collection"
-            },
-            "osdi:messages": {
-                href: baseUrl.concat("/messages"),
-                title: "The collection of SMS messages"
-            },
-            "spoke:assignments": {
-                href: baseUrl.concat("/assignments"),
-                title: "The collection of assignments"
-            },
-            "spoke:stats": {
-                href: baseUrl.concat("/stats"),
-                title: "Stats for this campaign"
-            },
-            curies:  curies()
-        }
-    };
-    res.writeHead(200,{'Content-Type': 'application/json'});
-    res.end(JSON.stringify(aep,null,2));
-}
-
-export async function campaignChooser(req,res) {
-
-    const campaigns = await r
-        .knex('campaign')
-        .select()
-
-    var osdi_campaigns= _.map(campaigns, function(campaign) {
-
-        return {
-            title: campaign.title,
-            description: campaign.description,
-            _links: {
-                self: {
-                    href: process.env.BASE_URL.concat("/osdi/org/",req.params.orgId,"/campaigns/", campaign.id,"/api/v1"),
-                    title: campaign.title
-                }
-            }
-        }
-
-
-    })
-
-    var response= {
-        motd: "You must put your API Key in the custom headers box\nOSDI-API-Token: APIKEY",
-        _embedded: {
-            'osdi:campaigns': osdi_campaigns
-        },
-        links: {
-            self: {
-                href: process.env.BASE_URL.concat("/osdi/org/", req.orgId, "/campaigns")
-            },
-            curies: curies()
-        }
-    }
-
-    res.send(response)
-}
-
-export async function chooser(req,res){
-    res.status(200);
-    const organizations = await r.knex('organization')
-
-    var response= {
-        motd: "You must an OSDI-API-Token header with your API key as the value, eg",
-        "key_help": "OSDI-API-Token: YOURAPIKEY",
-        _links: {
-            org_campaign: {
-                href: "/osdi/org/{orgId}/campaigns/{campaignId}/api/v1",
-                templated: true
-            }
-        }
-    }
-
-    _.map(organizations, function(org) {
-        var rel="".concat("spoke:org_", org.id)
-        response._links[rel]={
-            href: process.env.BASE_URL.concat("/api/v1/org/",org.id,"/campaigns")
-        }
-    })
-    response._links['curies']=curies()
-
-    res.send(response)
-}
 
 export async function campaignStats(req,res) {
     const orgId = req.params.orgId;
@@ -607,8 +468,6 @@ async function getQuestionResponses(campaignContact) {
 export default {
     translate_contact_to_osdi_person,
     translate_osdi_person_to_input_row,
-    AEP: AEP,
-    chooser: chooser,
     digDug: digDug,
     campaignStats,
     osdi_error,
@@ -616,7 +475,5 @@ export default {
     translate_success_to_import_helper_response,
     translate_message_to_osdi_message,
     translate_resource_to_osdi,
-    spoke_to_osdi_type,
-    osdiAEP,
-    campaignChooser
+    spoke_to_osdi_type
 }
