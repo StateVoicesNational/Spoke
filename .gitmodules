@@ -1,3 +1,0 @@
-[submodule "hal"]
-	path = hal
-	url = https://github.com/opensupporter/hal-browser.git
