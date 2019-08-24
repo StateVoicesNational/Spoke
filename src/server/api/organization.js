@@ -35,8 +35,14 @@ export const resolvers = {
     optOutMessage: (organization) => (organization.features && organization.features.indexOf('opt_out_message') !== -1 ? JSON.parse(organization.features).opt_out_message : process.env.OPT_OUT_MESSAGE) || 'I\'m opting you out of texts immediately. Have a great day.',
     textingHoursStart: (organization) => organization.texting_hours_start,
     textingHoursEnd: (organization) => organization.texting_hours_end,
-    osdiApiToken: (organization) => (organization.features && organization.features.indexOf('osdi_api_token') !== -1 ? JSON.parse(organization.features).osdi_api_token : ''),
-    osdiEnabled: (organization) =>((organization.features && organization.features.indexOf('osdi_enabled') !== -1 ) ? JSON.parse(organization.features).osdi_enabled : false
-    )
+    osdiApiToken: async (organization, _, { user }) => {
+      await accessRequired(user, organization.id, 'OWNER')
+
+      return (organization.features && organization.features.indexOf('osdi_api_token') !== -1 ? JSON.parse(organization.features).osdi_api_token : '')},
+    osdiEnabled: async (organization, _, {user}) => {
+      await accessRequired(user, organization.id, 'OWNER')
+
+      return ((organization.features && organization.features.indexOf('osdi_enabled') !== -1) ? JSON.parse(organization.features).osdi_enabled : false)
+    }
   }
 }
