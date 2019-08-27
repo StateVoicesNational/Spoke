@@ -5,6 +5,7 @@ cache:
   yarn: true
 services:
 - postgresql
+- redis-server
 env:
   global:
   - secure: TODO
@@ -20,3 +21,4 @@ before_script:
 script:
 - yarn test
 - yarn test-cache
+- yarn test-rediscache

@@ -112,6 +112,7 @@ it('save campaign interaction steps, edit it, make sure the last value is set', 
   let campaignDataResults = await runComponentGql(AdminCampaignEditQuery,
                                                   { campaignId: testCampaign.id },
                                                   testAdminUser)
+
   expect(campaignDataResults.data.campaign.interactionSteps.length).toEqual(2)
   expect(campaignDataResults.data.campaign.interactionSteps[0].questionText).toEqual('hmm0')
   expect(campaignDataResults.data.campaign.interactionSteps[1].questionText).toEqual('hmm1')
