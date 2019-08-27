@@ -117,7 +117,7 @@ const campaignCache = {
     if (r.redis) {
       let campaignData = await r.redis.getAsync(cacheKey(id))
       // console.log('pre campaign cache', campaignData)
-      if (!campaignData) {
+      if (!campaignData || !campaignData.interactionSteps) {
         // console.log('no campaigndata', id)
         const campaignNoCache = await loadDeep(id)
         if (campaignNoCache) {
