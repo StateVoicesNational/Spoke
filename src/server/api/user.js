@@ -132,12 +132,12 @@ export async function getUsers(
       "COUNT_ONLY"
     );
 
-    const usersCountArray = await usersCountQuery;
+    const usersCount = await r.getCount(usersCountQuery);
 
     const pageInfo = {
       limit: cursor.limit,
       offset: cursor.offset,
-      total: usersCountArray[0].count
+      total: usersCount
     };
 
     return {
