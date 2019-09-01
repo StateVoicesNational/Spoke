@@ -14316,10 +14316,10 @@ w3c-xmlserializer@^1.0.1:
     webidl-conversions "^4.0.2"
     xml-name-validator "^3.0.0"
 
-wait-for-expect@^1.1.1:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/wait-for-expect/-/wait-for-expect-1.1.1.tgz#9cd10e07d52810af9e0aaf509872e38f3c3d81ae"
-  integrity sha512-vd9JOqqEcBbCDhARWhW85ecjaEcfBLuXgVBqatfS3iw6oU4kzAcs+sCNjF+TC9YHPImCW7ypsuQc+htscIAQCw==
+wait-for-expect@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/wait-for-expect/-/wait-for-expect-2.0.0.tgz#22b24cbd94a59acbf4e4cd13c8d3cd022ddf0cdf"
+  integrity sha512-1/UFqhLCKU70h1Hl6ua/iycsstrjMIeN0fCQuu2fRITQB54QLw26JC8Uid3rp7dY/fDP+ZNBAaNa1R59+vh5Zg==
 
 wait-on@^2.1.0:
   version "2.1.2"
