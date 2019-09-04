@@ -215,7 +215,8 @@ async function updateInteractionSteps(
     if (idMap[is.parentInteractionId]) {
       is.parentInteractionId = idMap[is.parentInteractionId]
     }
-    if (is.id.indexOf('new') !== -1) {
+    if (!is.id && is.script === '') continue
+    if (is.id && is.id.indexOf('new') !== -1) {
       const newIstep = await InteractionStep.save({
         parent_interaction_id: is.parentInteractionId || null,
         question: is.questionText,
@@ -227,7 +228,7 @@ async function updateInteractionSteps(
       })
       idMap[is.id] = newIstep.id
     } else {
-      if (!origCampaignRecord.is_started && is.isDeleted) {
+      if (origCampaignRecord && !origCampaignRecord.is_started && is.isDeleted) {
         await r
           .knex('interaction_step')
           .where({ id: is.id })
