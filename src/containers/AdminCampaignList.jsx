@@ -31,27 +31,25 @@ class AdminCampaignList extends React.Component {
   handleClickNewButton = async () => {
     const { organizationId } = this.props.params
     this.setState({ isLoading: true })
-    const newCampaign = this.props.mutations.createCampaign({
+    const newCampaign = await this.props.mutations.createCampaign({
       title: 'New Campaign',
       description: '',
       dueBy: null,
       organizationId,
       contacts: [],
       interactionSteps: {
-        script: ''
+        script: '',
+        id: 'new'
       }
     })
-
-    await newCampaign
-    console.log('campaign-->', newCampaign)
 
     if (newCampaign.errors) {
       alert('There was an error creating your campaign')
       throw new Error(newCampaign.errors)
     }
 
-    this.props.router.push(
-      `/admin/${organizationId}/campaigns/${newCampaign['_v'].data.createCampaign.id}/edit?new=true`
+    await this.props.router.push(
+      `/admin/${organizationId}/campaigns/${newCampaign.data.createCampaign.id}/edit?new=true`
     )
   }
 
