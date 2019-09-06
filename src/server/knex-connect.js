@@ -43,6 +43,7 @@ if (DB_JSON) {
     pool: { min, max }
   }
 } else if (DATABASE_URL) {
+  console.log('getting here?', DATABASE_URL)
   const dbType = DATABASE_URL.match(/^\w+/)[0]
   config = {
     client: (/postgres/.test(dbType) ? 'pg' : dbType),
