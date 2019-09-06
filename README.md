@@ -11,7 +11,7 @@ The latest version is [3.0.0](https://github.com/MoveOnOrg/Spoke/tree/v3.0) (see
 
 ## Deploy to Heroku
 
-<a href="https://heroku.com/deploy?template=https://github.com/MoveOnOrg/Spoke/tree/v3.0">
+<a href="https://heroku.com/deploy?template=https://github.com/MoveOnOrg/Spoke/tree/1221-heroku-migrations">
   <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy">
 </a>
 
