@@ -35,6 +35,7 @@ if (!process.env.SUPPRESS_SEED_CALLS) {
 
 if (!process.env.SUPPRESS_DATABASE_AUTOCREATE) {
   createTablesIfNecessary().then((didCreate) => {
+    console.log('getting here -->', didCreate)
     // seed above won't have succeeded if we needed to create first
     if (didCreate && !process.env.SUPPRESS_SEED_CALLS) {
       seedZipCodes()
@@ -44,6 +45,7 @@ if (!process.env.SUPPRESS_DATABASE_AUTOCREATE) {
     }
   })
 } else if (!process.env.SUPPRESS_MIGRATIONS) {
+  console.log('running?', process.env.SUPPRESS_MIGRATIONS)
   r.k.migrate.latest()
 }
 

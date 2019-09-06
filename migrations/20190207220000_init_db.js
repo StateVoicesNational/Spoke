@@ -1,4 +1,5 @@
 const initialize = async (knex, Promise) => {
+  console.log('initilize running??')
   // This object's keys are table names and each key's value is a function that defines that table's schema.
   const buildTableSchema = [
     {
