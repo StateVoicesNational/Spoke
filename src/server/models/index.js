@@ -72,8 +72,8 @@ function createTablesIfNecessary() {
 }
 
 function createTables() {
-  console.log('knex migrate object-->', JSON.stringify(thinky.r.k))
-  return thinky.r.k.migrate.latest()
+  console.log('knex migrate object-->', JSON.stringify(thinky.k))
+  return thinky.k.migrate.latest()
 }
 
 function dropTables() {
