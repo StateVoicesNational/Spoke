@@ -55,7 +55,7 @@ if (DB_JSON) {
     client: (/postgres/.test(dbType) ? 'pg' : dbType),
     connection: DATABASE_URL,
     migrations: {
-      directory: './migrations/'
+      directory: process.env.KNEX_MIGRATION_DIR || './migrations/'
     },
     pool: { min, max },
     ssl: useSSL
