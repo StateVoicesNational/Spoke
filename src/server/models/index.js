@@ -66,13 +66,13 @@ function createTablesIfNecessary() {
     (tableExists) => {
       if (!tableExists) {
         console.log('CREATING DATABASE SCHEMA')
-        return createTables()
+        thinky.knex.migrate.latest()
+        return thinky.r.k.migrate.latest()
       }
     })
 }
 
 function createTables() {
-  console.log('knex migrate object-->', thinky.k)
   return thinky.k.migrate.latest()
 }
 

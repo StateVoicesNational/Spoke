@@ -28,6 +28,7 @@ if (useSSL) pg.defaults.ssl = true
 let config
 
 console.log('dir name:? -->', __dirname)
+console.log('dir path -->' + process.env.KNEX_MIGRATION_DIR)
 
 if (DB_JSON) {
   config = JSON.parse(DB_JSON)
@@ -43,7 +44,7 @@ if (DB_JSON) {
       ssl: useSSL
     },
     migrations: {
-      directory: './migrations/'
+      directory: process.env.KNEX_MIGRATION_DIR
     },
     pool: { min, max }
   }
