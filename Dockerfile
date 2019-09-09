@@ -15,8 +15,8 @@ WORKDIR /spoke
 RUN yarn install --ignore-scripts --non-interactive --frozen-lockfile && \
     yarn run prod-build && \
     rm -rf node_modules && \
-    yarn install --production --ignore-scripts && \
-    
+    yarn install --production --ignore-scripts
+
 
 # Spoke Runtime
 FROM ${RUNTIME_IMAGE}
