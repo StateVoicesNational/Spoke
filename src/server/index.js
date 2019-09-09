@@ -45,7 +45,6 @@ if (!process.env.SUPPRESS_DATABASE_AUTOCREATE) {
     }
   })
 } else if (!process.env.SUPPRESS_MIGRATIONS) {
-  console.log('running?', process.env.SUPPRESS_MIGRATIONS)
   r.k.migrate.latest()
 }
 

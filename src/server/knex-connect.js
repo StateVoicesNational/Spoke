@@ -27,6 +27,8 @@ if (useSSL) pg.defaults.ssl = true
 
 let config
 
+console.log('dir name:? -->', __dirname)
+
 if (DB_JSON) {
   config = JSON.parse(DB_JSON)
 } else if (DB_TYPE) {

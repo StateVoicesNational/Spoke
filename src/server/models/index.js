@@ -72,7 +72,7 @@ function createTablesIfNecessary() {
 }
 
 function createTables() {
-  console.log('knex migrate object-->', JSON.stringify(thinky.k))
+  console.log('knex migrate object-->', thinky.k)
   return thinky.k.migrate.latest()
 }
 
