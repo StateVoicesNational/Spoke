@@ -44,7 +44,7 @@ if (DB_JSON) {
       ssl: useSSL
     },
     migrations: {
-      directory: process.env.KNEX_MIGRATION_DIR
+      directory: process.env.KNEX_MIGRATION_DIR || './migrations/'
     },
     pool: { min, max }
   }

@@ -72,7 +72,6 @@ function createTablesIfNecessary() {
 }
 
 function createTables() {
-  console.log('create tables -->', thinky.k.migrate)
   return thinky.k.migrate.latest()
 }
 
