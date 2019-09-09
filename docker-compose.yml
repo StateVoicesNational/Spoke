@@ -24,7 +24,7 @@ services:
     env_file:
       - ./.env
     environment:
-      DATABASE_URL: postgres://spoke:spoke@postgres:5432/spokedev
+      DATABASE_URL: postgres://spoke:spoke@db:5432/spokedev
       REDIS_URL: redis://redis:6379
     ports:
       - 3000:3000
