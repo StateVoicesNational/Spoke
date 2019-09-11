@@ -26,6 +26,7 @@ services:
     environment:
       DATABASE_URL: postgres://spoke:spoke@postgres:5432/spokedev
       REDIS_URL: redis://redis:6379
+      KNEX_MIGRATION_DIR: /spoke/build/server/migrations/
     ports:
       - 3000:3000
     volumes:

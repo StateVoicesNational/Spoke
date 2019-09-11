@@ -156,8 +156,13 @@
     "HEROKU_APP_NAME": {
       "description": "Name of your Heroku app (not used if BASE_URL is set)",
       "required": false
-    }
+    },
 
+    "KNEX_MIGRATION_DIR": {
+      "description": "sets path for migration directory - do not change",
+      "required": true,
+      "value": "/spoke/build/server/migrations/"
+    }
   },
   "addons": [
     "heroku-postgresql:hobby-dev",
