@@ -12,7 +12,7 @@ const OrganizationJoinLink = ({ organizationUuid, campaignId }) => {
     ? `${baseUrl}/${organizationUuid}/join/${campaignId}`
     : `${baseUrl}/${organizationUuid}/join`)
 
-  const textContent = 'Send your texting volunteers this link! Once they sign up, they\'ll be automatically assigned to this campaign.'
+  const textContent = 'Send your texting volunteers this link! Once they sign up, they\'ll be automatically assigned to this organization.'
 
   return (
     <DisplayLink url={joinUrl} textContent={textContent} />
