@@ -36,6 +36,7 @@ async function createUser(userInfo = {
   auth0_id: 'test123',
   first_name: 'TestUserFirst',
   last_name: 'TestUserLast',
+  alias: 'TestUserAlias',
   cell: '555-555-5555',
   email: 'testuser@example.com',
 }) {
@@ -443,5 +444,15 @@ describe('Campaign', () => {
       }
     })
 
+  })
+})
+
+describe('Contact schema', () => {
+  test('has an alias field', async () => {
+    // create a default user...
+    const user = await createUser()
+    // ...and check if it's on the DB. The object being returned in the above function is not the db instance.
+    const userFromDB = await User.getAll(user.id)
+    expect(userFromDB[0].alias).toEqual('TestUserAlias')
   })
 })
