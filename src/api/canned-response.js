@@ -13,5 +13,4 @@ export const schema = `
     text: String
     isUserCreated: Boolean
   }
-`
-
+`;
