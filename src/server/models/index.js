@@ -65,13 +65,13 @@ function createTablesIfNecessary() {
   return thinky.k.schema.hasTable("organization").then(tableExists => {
     if (!tableExists) {
       console.log("CREATING DATABASE SCHEMA");
-      return thinky.r.k.migrate.latest();
+      return createTables();
     }
   });
 }
 
 function createTables() {
-  return thinky.r.knex.migrate.latest();
+  return thinky.k.migrate.latest();
 }
 
 function dropTables() {

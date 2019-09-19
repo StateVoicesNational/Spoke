@@ -40,6 +40,9 @@ if (DB_JSON) {
       user: DB_USER,
       ssl: useSSL
     },
+    migrations: {
+      directory: process.env.KNEX_MIGRATION_DIR || "./migrations/"
+    },
     pool: { min, max }
   };
 } else if (DATABASE_URL) {
@@ -47,6 +50,9 @@ if (DB_JSON) {
   config = {
     client: /postgres/.test(dbType) ? "pg" : dbType,
     connection: DATABASE_URL,
+    migrations: {
+      directory: process.env.KNEX_MIGRATION_DIR || "./migrations/"
+    },
     pool: { min, max },
     ssl: useSSL
   };
