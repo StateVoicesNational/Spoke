@@ -1,10 +1,10 @@
-import faker from 'faker'
-import json2csv from 'json2csv'
+import faker from "faker";
+import json2csv from "json2csv";
 
-const fields = ['firstName', 'lastName', 'cell', 'companyName', 'city', 'zip']
-const numContacts = 10000
+const fields = ["firstName", "lastName", "cell", "companyName", "city", "zip"];
+const numContacts = 10000;
 
-const data = []
+const data = [];
 for (let index = 0; index < numContacts; index++) {
   data.push({
     firstName: faker.name.firstName(),
@@ -13,8 +13,8 @@ for (let index = 0; index < numContacts; index++) {
     companyName: faker.company.companyName(),
     city: faker.address.city(),
     zip: faker.address.zipCode()
-  })
+  });
 }
 
-const csvFile = json2csv({ data, fields })
-console.log(csvFile)
+const csvFile = json2csv({ data, fields });
+console.log(csvFile);

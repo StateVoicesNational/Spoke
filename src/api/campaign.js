@@ -65,4 +65,4 @@ export const schema = `
     campaigns: [Campaign]
     pageInfo: PageInfo
   }
-`
+`;
