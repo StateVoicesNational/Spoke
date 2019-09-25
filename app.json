@@ -156,6 +156,10 @@
     "HEROKU_APP_NAME": {
       "description": "Name of your Heroku app (not used if BASE_URL is set)",
       "required": false
+    },
+    "OSDI_MASTER_ENABLE": {
+      "description": "Server wide switch to enable/disable OSDI",
+      "required": false
     }
 
   },

@@ -2,6 +2,7 @@ require('dotenv').config()
 const path = require('path')
 const webpack = require('webpack')
 const ManifestPlugin = require('webpack-manifest-plugin')
+const CopyPlugin = require('copy-webpack-plugin')
 
 const DEBUG = process.env.NODE_ENV !== 'production'
 
@@ -16,7 +17,11 @@ const plugins = [
     {
       "tzdata": "tzdata",
     }
-  )
+  ),
+  new CopyPlugin([
+    { from: 'dev-tools/osdi-browser', to: 'osdi', toType: 'dir' },
+    { from: 'docs/OSDI_CONFIGURATION.md', to: 'osdi/'}
+  ]),
 ]
 const jsxLoaders = [{loader: 'babel-loader'}]
 const assetsDir = process.env.ASSETS_DIR

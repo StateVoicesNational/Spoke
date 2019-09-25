@@ -14,6 +14,7 @@ import { StyleSheet, css } from 'aphrodite'
 import Toggle from 'material-ui/Toggle'
 import moment from 'moment'
 import { newUUID, getHash } from '../server/api/osdi/guid'
+import osdiUtil from '../server/api/osdi/osdiUtil'
 
 const styles = StyleSheet.create({
   section: {
@@ -63,6 +64,11 @@ class Settings extends React.Component {
   handleOpenApiKeyConfirmationDialog = () => this.setState({ newApiKey: newUUID(), ApiKeyConfirmationDialogOpen : true })
 
   handleCloseApiKeyConfirmationDialog = () => this.setState({ ApiKeyConfirmationDialogOpen : false })
+
+
+  osdiMasterEnabled() {
+    return osdiUtil.truthy(window.OSDI_MASTER_ENABLE)
+  }
 
 
   renderTextingHoursForm() {
@@ -121,14 +127,37 @@ class Settings extends React.Component {
     )
   }
 
-  renderApiKeyForm() {
+  renderOSDISettings() {
+    if (this.osdiMasterEnabled()) {
+      return this.renderOSDISettingsForm()
+    }  else {
+      return this.renderOSDIDisabled()
+    }
+  }
+
+  renderOSDIDisabled() {
+    return <div>
+
+      <Card>
+        <CardText>
+          <div className={css(styles.section)}>
+            ⛔ OSDI Access Disabled: OSDI_MASTER_ENABLE Environment Variable not set
+
+          </div>
+        </CardText>
+      </Card>
+    </div>
+  }
+
+  renderOSDISettingsForm() {
+
     const { organization } = this.props.data
 
 
     const { osdiApiToken } = organization
     const  { osdiEnabled } = organization
 
-    console.log("key ".concat(osdiApiToken, " enabled ", osdiEnabled))
+    console.log("key ".concat(osdiApiToken, " enabled ", osdiEnabled, " master "))
 
     const confirmationAction = [
       <FlatButton
@@ -204,7 +233,7 @@ class Settings extends React.Component {
                 ✅ API Key Set
                 &nbsp;
                    </span>
-                <a href={'/osdi'} target={'_osdi_browser'}>
+                <a href={ window.makeStaticPath('osdi/browser.html').concat("#",window.makeAbsolutePath('/osdi/org/'),organization.id)} target={'_osdi_browser'}>
                 <FlatButton
                     label={'Visit The OSDI Browser'}
                     primary
@@ -303,7 +332,7 @@ class Settings extends React.Component {
               />
             ) : ''}
           </CardActions>
-          {this.renderApiKeyForm()}
+          {this.renderOSDISettings()}
 
         </Card>
         <div>

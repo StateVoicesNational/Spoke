@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import apiAuth from './api-auth'
+import apiAuth, {authStatusObject} from './api-auth'
 import { r } from '../../models'
 import { log } from '../../../lib'
 import osdiUtil from './osdiUtil'
@@ -184,10 +184,35 @@ export async function chooser(req,res){
     res.send(response)
 }
 
+export async function disabled(req,res) {
+    const responseCode=510
+    const statusMessage="OSDI Extensions disabled"
+
+    res.writeHead(responseCode, statusMessage)
+    var error={
+        motd: statusMessage,
+        "osdi:error": {
+        response_code: responseCode,
+        error_description: "OSDI Service is disabled by server configuration."
+
+        },
+        _links: {
+            "spoke:osdi_setup": {
+                title: "Consult your vehicle's user manual",
+                href: "#"
+            },
+            curies: osdiUtil.curies()
+        }
+    }
+    res.end(JSON.stringify(error,null, 2))
+}
+
 
 export default {
     AEP: AEP,
     chooser: chooser,
     campaignChooser,
-    orgAEP
+    orgAEP,
+    disabled
+
 }

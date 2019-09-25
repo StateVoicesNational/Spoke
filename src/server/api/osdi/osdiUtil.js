@@ -1,5 +1,5 @@
-
-
+import _ from "lodash";
+import {log} from "../../../lib";
 
 function osdiAEP(req) {
     return "".concat(process.env.BASE_URL,
@@ -20,13 +20,34 @@ function curies() {
         },
         {
             "name": "spoke",
-            "href": "https://github.com/MoveOnOrg/Spoke"
+            "href": "/assets/osdi/OSDI_CONFIGURATION.md"
         }
     ]
 
 }
 
+
+export function isEnabled() {
+    const envVar = process.env.OSDI_MASTER_ENABLE
+    const enabled = truthy(envVar)
+    log.info("OSDI State [".concat(enabled,"] var [",envVar,"]"))
+
+    return enabled
+}
+
+export function truthy(value){
+    _.some([true,'true','1',1], (item) => (
+        _.isEqual(value, item))
+    )
+}
+export function isDisabled() {
+    return (! isEnabled())
+}
+
 export default {
     osdiAEP,
-    curies
+    curies,
+    isEnabled,
+    isDisabled,
+    truthy
 }

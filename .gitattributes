@@ -1,6 +1,9 @@
 # Set the default behavior, in case people don't have core.autocrlf set.
 * text=auto
 
+# Any bash scripts should be LF.
+*.sh text eol=lf
+
 # devtools need to use lf linefeeds or nf will not be able to find the Procfile
 dev-tools/* text eol=lf
 

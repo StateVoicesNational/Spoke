@@ -20,11 +20,7 @@ import { seedZipCodes } from './seeds/seed-zip-codes'
 import { setupUserNotificationObservers } from './notifications'
 import { TwimlResponse } from 'twilio'
 import { existsSync } from 'fs'
-
-
-
-
-import osdiInitialize from './api/osdi';
+import osdi from './api/osdi';
 
 process.on('uncaughtException', (ex) => {
   log.error(ex)
@@ -33,6 +29,7 @@ process.on('uncaughtException', (ex) => {
 const DEBUG = process.env.NODE_ENV === 'development'
 
 const loginCallbacks = passportSetup[process.env.PASSPORT_STRATEGY || global.PASSPORT_STRATEGY || 'auth0']()
+
 
 if (!process.env.SUPPRESS_SEED_CALLS) {
   seedZipCodes()
@@ -177,8 +174,7 @@ app.get('/graphiql', graphiqlExpress({
   endpointURL: '/graphql'
 }))
 
-
-osdiInitialize(app)
+osdi.startIfEnabled(app);
 
 // This middleware should be last. Return the React app only if no other route is hit.
 app.use(appRenderer)
@@ -186,7 +182,7 @@ app.use(appRenderer)
 
 if (port) {
   app.listen(port, () => {
-    log.info(`Node app is running on port ${port}`)
+    log.debug(`Node app is running on port ${port}`)
   })
 }
 

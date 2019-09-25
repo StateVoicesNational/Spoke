@@ -66,7 +66,6 @@ export default function renderIndex(html, css, assetMap, store) {
       window.SUPPRESS_SELF_INVITE="${process.env.SUPPRESS_SELF_INVITE || ''}"
       window.NODE_ENV="${process.env.NODE_ENV}"
       window.PRIVACY_URL="${process.env.PRIVACY_URL || ''}"
-      window.BASE_URL="${process.env.BASE_URL || ''}"
       window.NOT_IN_USA=${process.env.NOT_IN_USA || 0}
       window.ALLOW_SEND_ALL=${process.env.ALLOW_SEND_ALL || 0}
       window.BULK_SEND_CHUNK_SIZE=${process.env.BULK_SEND_CHUNK_SIZE || 0}
@@ -75,6 +74,18 @@ export default function renderIndex(html, css, assetMap, store) {
       window.TZ="${process.env.TZ || ''}"
       window.DST_REFERENCE_TIMEZONE="${process.env.DST_REFERENCE_TIMEZONE || 'America/New_York'}"
       window.PASSPORT_STRATEGY="${process.env.PASSPORT_STRATEGY || ''}"
+      window.OSDI_MASTER_ENABLE="${process.env.OSDI_MASTER_ENABLE || ''}"
+      
+      window.STATIC_BASE_URL="${process.env.STATIC_BASE_URL || '/assets/'}"
+      window.makeStaticPath = function(relPath) {
+          return window.STATIC_BASE_URL.concat(relPath)
+      }
+      
+      window.BASE_URL="${process.env.BASE_URL || window.location.origin}"
+      window.makeAbsolutePath = function(relPath) {
+          return window.BASE_URL.concat("/",relPath)
+      }
+      
     </script>
     <script src="${assetMap['bundle.js']}"></script>
   </body>

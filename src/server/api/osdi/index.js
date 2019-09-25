@@ -3,9 +3,26 @@ import contactsApi from "./contactsApi";
 import osdiResourcesApi from "./osdiResourcesApi";
 import osdi from "./osdi"
 import osdiMeta from "./osdiMeta"
-import express from "express";
+import osdiUtil from "./osdiUtil"
+import {log} from "../../../lib";
+import cors from 'cors'
 
-function osdiStart(app) {
+function osdiCors(app) {
+
+    var corsOptions={
+        origin: true,
+        credentials: true,
+        allowedHeaders: [
+            'Cookie',
+            'OSDI-API-Token'
+        ]
+    }
+    app.options('*', cors(corsOptions)) // include before other routes
+    app.use('/osdi',cors(corsOptions))
+    app.use('/api/v1',cors(corsOptions))
+}
+function initializeService(app) {
+
 
     app.use('/osdi/org/:orgId/campaigns/:campaignId/api/v1/users/:id/assignments', wrap(async (req, res) => {
         await osdiResourcesApi(req, res, {resource_type: 'assignment', where: {user_id: req.params.id}})
@@ -132,11 +149,35 @@ function osdiStart(app) {
             await osdiMeta.chooser(req, res)
         }))
 
-    app.use('/hal', express.static('./hal'))
-
     app.get('/osdi', function(req,res) {
-        res.redirect('/hal/browser.html#/api/v1')
+        console.log("in /osdi redirect")
+        res.redirect('/osdi-browser/browser.html#/api/v1')
     })
 }
 
-export default osdiStart
+function disableService(app){
+    app.use('/osdi',
+        wrap(async (req, res) => {
+            await osdiMeta.disabled(req, res)
+        }))
+
+
+}
+
+export function startIfEnabled(app) {
+    osdiCors(app)
+    if ( osdiUtil.isEnabled()) {
+        log.info("OSDI Service is starting")
+        initializeService(app)
+    } else {
+        log.info("OSDI Service DISABLED.  To enable set OSDI_MASTER_ENABLE environment variable.")
+        disableService(app)
+    }
+}
+
+export default {
+    initializeService: initializeService,
+    isEnabled: osdiUtil.isEnabled,
+    isDisabled: osdiUtil.isDisabled,
+    startIfEnabled: startIfEnabled
+}
