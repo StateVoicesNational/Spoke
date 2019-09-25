@@ -1,0 +1,70 @@
+{
+  "motd": "OSDI Demo System",
+  "_links": {
+    "self": {
+      "href": "http://sample.demo.osdi.io/api/v1"
+    },
+    "osdi:people": {
+      "href": "http://sample.demo.osdi.io/api/v1/people"
+    },
+    "osdi:person_signup_helper": {
+      "href": "http://sample.demo.osdi.io/api/v1/person_signup_helper"
+    },
+    "osdi:events": {
+      "href": "http://sample.demo.osdi.io/api/v1/events"
+    },
+    "osdi:forms": {
+      "href": "http://sample.demo.osdi.io/api/v1/forms"
+    },
+    "osdi:submissions": {
+      "href": "http://sample.demo.osdi.io/api/v1/submissions"
+    },
+    "osdi:lists": {
+      "href": "http://sample.demo.osdi.io/api/v1/lists"
+    },
+    "osdi:items": {
+      "href": "http://sample.demo.osdi.io/api/v1/items"
+    },
+    "osdi:tags": {
+      "href": "http://sample.demo.osdi.io/api/v1/tags"
+    },
+    "osdi:taggings": {
+      "href": "http://sample.demo.osdi.io/api/v1/taggings"
+    },
+    "osdi:questions": {
+      "href": "http://sample.demo.osdi.io/api/v1/questions"
+    },
+    "osdi:canvasses": {
+      "href": "http://sample.demo.osdi.io/api/v1/canvasses"
+    },
+    "demo:lawn_signs": {
+      "href": "http://sample.demo.osdi.io/api/v1/lawn_signs"
+    },
+    "demo:rebuild_data": {
+      "href": "http://sample.demo.osdi.io/api/v1/rebuild_data"
+    },
+    "demo:clear_data": {
+      "href": "http://sample.demo.osdi.io/api/v1/clear_data"
+    },
+    "demo:jiggle_data": {
+      "href": "http://sample.demo.osdi.io/api/v1/jiggle_data"
+    },
+    "osdi:metadata": {
+      "href": "http://sample.demo.osdi.io/api/v1/metadata"
+    },
+    "osdi:custom_fields": {
+      "href": "http://sample.demo.osdi.io/api/v1/custom_fields"
+    },
+    "curies": [
+      {
+        "name": "osdi",
+        "href": "http://opensupporter.github.io/osdi-docs/{rel}",
+        "templated": true
+      },
+      {
+        "name": "demo",
+        "href": "http://public.demo.osdi.io"
+      }
+    ]
+  }
+}

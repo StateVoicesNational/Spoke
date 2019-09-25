@@ -1,0 +1,31 @@
+
+.nav > li > a.osdi-nav-logo-anchor {
+    padding-top: 5px;
+    padding-bottom: 5px;
+
+}
+img.osdi-nav-logo {
+    height: 30px;
+
+}
+.navbar-inner.navbar-inner-gayness {
+    border-image-source: repeating-conic-gradient(
+            orange, yellow, green, cyan, violet, red,
+            orange, yellow, green, cyan, violet, red,
+            orange, yellow, green, cyan, violet, red,
+            orange, yellow, green, cyan, violet, red,
+            orange, yellow, green, cyan, violet, red,
+            orange, yellow, green, cyan, violet, red,
+            orange, yellow, green, cyan, violet, red,
+            orange, yellow, green, cyan, violet, red,
+            orange, yellow, green, cyan, violet, red  25%
+    );
+
+    border-image-slice: 1;
+
+    /*border-image: repeating-conic-gradient(from 0deg, red 0deg 30deg, yellow 30deg 60deg, blue 60deg 90deg) 1; */
+    border-bottom-width: 2px;
+    border-bottom-style: ridge;
+    border-top-width: 1px;
+    border-image-repeat: repeat;
+}
