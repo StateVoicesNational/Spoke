@@ -22,7 +22,8 @@ module.exports = {
     DATABASE_SETUP_TEARDOWN_TIMEOUT: 60000,
     PASSPORT_STRATEGY: 'local',
     SESSION_SECRET: 'it is JUST a test! -- it better be!',
-    TEST_ENVIRONMENT: '1'
+    TEST_ENVIRONMENT: '1',
+    OSDI_MASTER_ENABLE: '1'
   },
   moduleFileExtensions: [
     "js",

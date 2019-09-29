@@ -36,7 +36,7 @@ export function isEnabled() {
 }
 
 export function truthy(value){
-    _.some([true,'true','1',1], (item) => (
+    return _.some([true,'true','1',1], (item) => (
         _.isEqual(value, item))
     )
 }

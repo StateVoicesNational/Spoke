@@ -3,7 +3,7 @@ import {cacheableData, r, createLoaders} from '../../models';
 import { getHash } from './guid'
 
 async function sendForbiddenResponse(req,res) {
-  res.writeHead(403)
+  res.writeHead(403,{'Content-Type': 'application/json'})
   var error={
     "osdi:error": {
       response_code: 403,
@@ -17,7 +17,7 @@ async function sendForbiddenResponse(req,res) {
 
 
 async function sendDisabledResponse(req,res) {
-  res.writeHead(510)
+  res.writeHead(510,{'Content-Type': 'application/json'})
   var error={
     "osdi:error": {
       response_code: 510,
@@ -118,7 +118,7 @@ export async function authStatusObject(req,res) {
   const osdi_enabled = await osdiEnabled(req,res)
 
   const result= {
-    token_status: token_status ? "VALID_OSDI_TOKEN" : "INVALID_OSDI_TOKEN",
+    token_status: req.headers['osdi-api-token'] ? (token_status ? "VALID_OSDI_TOKEN" : "INVALID_OSDI_TOKEN") : "NO_OSDI_TOKEN",
     user_status: user_status ? "USER_LOGGED_IN" : "LOGGED_OUT",
     authenticated: token_status || user_status,
     osdi_enabled: osdi_enabled

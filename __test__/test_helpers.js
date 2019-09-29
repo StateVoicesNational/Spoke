@@ -86,9 +86,36 @@ export async function createContacts(campaign, count=1) {
 }
 
 
+export async function enableOSDI(organization, user, apiToken) {
+  const context = getContext({ user })
+  //const organizationId = "".organization.id
+  const apiTokenHash = getHash(apiToken)
+  const organizationId = organization.data.createOrganization.id
+  const query = 'mutation toggleOsdiEnabled($organizationId: String!, $osdiEnabled: Boolean!) {      toggleOsdiEnabled(organizationId: $organizationId, osdiEnabled: $osdiEnabled) {                 id              osdiEnabled          }        }'
+
+  const turnOn = await graphql(mySchema, query, {}, context, {
+    organizationId: organizationId,
+    osdiEnabled: true
+  })
+
+  const setTokenQuery = 'mutation updateOsdiApiToken($organizationId: String!, $osdiApiToken: String!) {          updateOsdiApiToken(organizationId: $organizationId, osdiApiToken: $osdiApiToken) {            id            osdiApiToken          }' +
+      '' +
+      '        }'
+
+  const setToken = await graphql(mySchema, setTokenQuery, {}, context, {
+    organizationId: organizationId,
+    osdiApiToken: apiTokenHash
+  })
+
+  return
+
+}
+
+
 import { makeExecutableSchema } from 'graphql-tools'
 import { resolvers } from '../src/server/api/schema'
 import { schema } from '../src/api/schema'
+import {getHash} from "../src/server/api/osdi/guid";
 
 const mySchema = makeExecutableSchema({
   typeDefs: schema,
