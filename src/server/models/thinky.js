@@ -21,6 +21,11 @@ thinkyConn.r.getCount = async query => {
   return Number((await query.count("* as count").first()).count);
 };
 
+thinkyConn.r.getCountDistinct = async (query, distinctConstraint) =>
+  Number(
+    (await query.countDistinct(distinctConstraint + " as count").first()).count
+  );
+
 if (process.env.REDIS_URL) {
   thinkyConn.r.redis = redis.createClient({ url: process.env.REDIS_URL });
 } else if (process.env.REDIS_FAKE) {
