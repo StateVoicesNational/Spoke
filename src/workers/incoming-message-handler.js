@@ -1,3 +1,3 @@
-import { handleIncomingMessages } from './job-processes'
+import { handleIncomingMessages } from "./job-processes";
 
-handleIncomingMessages()
+handleIncomingMessages();

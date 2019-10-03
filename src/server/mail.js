@@ -1,44 +1,46 @@
-import { log } from '../lib'
-import nodemailer from 'nodemailer'
-import mailgunConstructor from 'mailgun-js'
+import { log } from "../lib";
+import nodemailer from "nodemailer";
+import mailgunConstructor from "mailgun-js";
 
 const mailgun =
   process.env.MAILGUN_API_KEY &&
   process.env.MAILGUN_DOMAIN &&
-  mailgunConstructor({ apiKey: process.env.MAILGUN_API_KEY, domain: process.env.MAILGUN_DOMAIN })
+  mailgunConstructor({
+    apiKey: process.env.MAILGUN_API_KEY,
+    domain: process.env.MAILGUN_DOMAIN
+  });
 
 const sender =
   process.env.MAILGUN_API_KEY && process.env.MAILGUN_DOMAIN
     ? {
-      sendMail: ({ from, to, subject, replyTo, text }) =>
-            mailgun.messages().send(
-              {
-                from,
-                'h:Reply-To': replyTo,
-                to,
-                subject,
-                text
-              })
-    }
+        sendMail: ({ from, to, subject, replyTo, text }) =>
+          mailgun.messages().send({
+            from,
+            "h:Reply-To": replyTo,
+            to,
+            subject,
+            text
+          })
+      }
     : nodemailer.createTransport({
-      host: process.env.EMAIL_HOST,
-      port: process.env.EMAIL_HOST_PORT,
-      secure:
-          typeof process.env.EMAIL_HOST_SECURE !== 'undefined'
+        host: process.env.EMAIL_HOST,
+        port: process.env.EMAIL_HOST_PORT,
+        secure:
+          typeof process.env.EMAIL_HOST_SECURE !== "undefined"
             ? process.env.EMAIL_HOST_SECURE
             : true,
-      auth: {
-        user: process.env.EMAIL_HOST_USER,
-        pass: process.env.EMAIL_HOST_PASSWORD
-      }
-    })
+        auth: {
+          user: process.env.EMAIL_HOST_USER,
+          pass: process.env.EMAIL_HOST_PASSWORD
+        }
+      });
 
 export const sendEmail = async ({ to, subject, text, replyTo }) => {
-  log.info(`Sending e-mail to ${to} with subject ${subject}.`)
+  log.info(`Sending e-mail to ${to} with subject ${subject}.`);
 
-  if (process.env.NODE_ENV === 'development') {
-    log.debug(`Would send e-mail with subject ${subject} and text ${text}.`)
-    return null
+  if (process.env.NODE_ENV === "development") {
+    log.debug(`Would send e-mail with subject ${subject} and text ${text}.`);
+    return null;
   }
 
   const params = {
@@ -46,11 +48,11 @@ export const sendEmail = async ({ to, subject, text, replyTo }) => {
     to,
     subject,
     text
-  }
+  };
 
   if (replyTo) {
-    params['replyTo'] = replyTo
+    params["replyTo"] = replyTo;
   }
 
-  return sender.sendMail(params)
-}
+  return sender.sendMail(params);
+};

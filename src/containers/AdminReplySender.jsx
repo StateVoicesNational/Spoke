@@ -1,25 +1,25 @@
-import PropTypes from 'prop-types'
-import React from 'react'
-import loadData from './hoc/load-data'
-import gql from 'graphql-tag'
-import { StyleSheet, css } from 'aphrodite'
-import theme from '../styles/theme'
-import GSForm from '../components/forms/GSForm'
-import wrapMutations from './hoc/wrap-mutations'
-import Form from 'react-formal'
-import yup from 'yup'
-import { dataTest } from '../lib/attributes'
+import PropTypes from "prop-types";
+import React from "react";
+import loadData from "./hoc/load-data";
+import gql from "graphql-tag";
+import { StyleSheet, css } from "aphrodite";
+import theme from "../styles/theme";
+import GSForm from "../components/forms/GSForm";
+import wrapMutations from "./hoc/wrap-mutations";
+import Form from "react-formal";
+import yup from "yup";
+import { dataTest } from "../lib/attributes";
 
 const styles = StyleSheet.create({
   infoContainer: {
     ...theme.layouts.greenBox,
-    textAlign: 'left',
+    textAlign: "left",
     padding: 20
   },
   header: {
     ...theme.text.header,
     color: theme.colors.white,
-    borderBottom: '1px solid white'
+    borderBottom: "1px solid white"
   },
   subtitle: {
     ...theme.text.body,
@@ -29,31 +29,31 @@ const styles = StyleSheet.create({
   fromContactMessage: {
     ...theme.text.body,
     backgroundColor: theme.colors.lightGreen,
-    textAlign: 'right',
+    textAlign: "right",
     padding: 5
   },
   message: {
     ...theme.text.body,
-    textAlign: 'left',
+    textAlign: "left",
     padding: 5
   },
   formContainer: {
-    width: '60%',
+    width: "60%",
     backgroundColor: theme.colors.white,
     marginTop: 15,
     marginBottom: 15,
     paddingLeft: 15,
     paddingRight: 15,
     paddingBottom: 15,
-    marginLeft: 'auto',
-    marginRight: 'auto'
+    marginLeft: "auto",
+    marginRight: "auto"
   }
-})
+});
 
 class AdminReplySender extends React.Component {
   formSchema = yup.object({
     message: yup.string().required()
-  })
+  });
 
   renderMessageSendingForm(contact) {
     return (
@@ -62,8 +62,14 @@ class AdminReplySender extends React.Component {
           {`${contact.firstName} ${contact.lastName}: ${contact.cell}`}
         </div>
         <div className={css(styles.subtitle)}>
-          {contact.messages.map((message) => (
-            <div className={message.isFromContact ? css(styles.fromContactMessage) : css(styles.message)}>
+          {contact.messages.map(message => (
+            <div
+              className={
+                message.isFromContact
+                  ? css(styles.fromContactMessage)
+                  : css(styles.message)
+              }
+            >
               {message.text}
             </div>
           ))}
@@ -71,79 +77,83 @@ class AdminReplySender extends React.Component {
         <div className={css(styles.formContainer)}>
           <GSForm
             schema={this.formSchema}
-            onSubmit={async (formValues) => {
-              await this.props.mutations.sendReply(contact.id, formValues.message)
+            onSubmit={async formValues => {
+              await this.props.mutations.sendReply(
+                contact.id,
+                formValues.message
+              );
             }}
           >
             <Form.Field
-              {...dataTest('reply')}
-              name='message'
-              label='Reply'
-              hintText='Reply'
+              {...dataTest("reply")}
+              name="message"
+              label="Reply"
+              hintText="Reply"
               fullWidth
             />
             <Form.Button
-              {...dataTest('send')}
-              type='submit'
-              label='Send'
-              name='submit'
+              {...dataTest("send")}
+              type="submit"
+              label="Send"
+              name="submit"
               secondary
               fullWidth
             />
           </GSForm>
         </div>
       </div>
-    )
+    );
   }
 
   render() {
-    const { data } = this.props
+    const { data } = this.props;
     return (
       <div>
-        {data.campaign.contacts.map((contact) => {
-          if (contact.messageStatus === 'messaged') {
-            return this.renderMessageSendingForm(contact)
+        {data.campaign.contacts.map(contact => {
+          if (contact.messageStatus === "messaged") {
+            return this.renderMessageSendingForm(contact);
           }
-          return ''
+          return "";
         })}
       </div>
-    )
+    );
   }
 }
 
 AdminReplySender.propTypes = {
   mutations: PropTypes.object,
   data: PropTypes.object
-}
+};
 
 const mapQueriesToProps = ({ ownProps }) => ({
   data: {
-    query: gql`query getCampaignMessages($campaignId: String!) {
-      campaign(id: $campaignId) {
-        id
-        contacts {
+    query: gql`
+      query getCampaignMessages($campaignId: String!) {
+        campaign(id: $campaignId) {
           id
-          firstName
-          lastName
-          cell
-          messageStatus
-          messages {
-            text
-            isFromContact
+          contacts {
+            id
+            firstName
+            lastName
+            cell
+            messageStatus
+            messages {
+              text
+              isFromContact
+            }
           }
         }
       }
-    }`,
+    `,
     variables: {
       campaignId: ownProps.params.campaignId
     }
   }
-})
+});
 
 const mapMutationsToProps = () => ({
-  sendReply: (contactId, message) =>
-    ({
-      mutation: gql`
+  sendReply: (contactId, message) => ({
+    mutation: gql`
       mutation sendReply($contactId: String!, $message: String!) {
         sendReply(id: $contactId, message: $message) {
           id
@@ -152,9 +162,13 @@ const mapMutationsToProps = () => ({
             isFromContact
           }
         }
-      }`,
-      variables: { contactId, message }
-    })
-})
+      }
+    `,
+    variables: { contactId, message }
+  })
+});
 
-export default loadData(wrapMutations(AdminReplySender), { mapQueriesToProps, mapMutationsToProps })
+export default loadData(wrapMutations(AdminReplySender), {
+  mapQueriesToProps,
+  mapMutationsToProps
+});

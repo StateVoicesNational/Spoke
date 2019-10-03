@@ -1,88 +1,86 @@
-import React from 'react'
-import { shallow } from 'enzyme'
-import TexterStats from '../src/components/TexterStats'
+import React from "react";
+import { shallow } from "enzyme";
+import TexterStats from "../src/components/TexterStats";
 
 const campaign = {
   useDynamicAssignment: false,
   assignments: [
     {
-      id: '1',
+      id: "1",
       texter: {
-        id: '1',
-        firstName: 'Test',
-        lastName: 'Tester'
+        id: "1",
+        firstName: "Test",
+        lastName: "Tester"
       },
       unmessagedCount: 193,
       contactsCount: 238
     },
     {
-      id: '1',
+      id: "1",
       texter: {
-        id: '1',
-        firstName: 'Someone',
-        lastName: 'Else',
+        id: "1",
+        firstName: "Someone",
+        lastName: "Else"
       },
       unmessagedCount: 4,
       contactsCount: 545
     }
   ]
-}
+};
 
 const campaignDynamic = {
   useDynamicAssignment: true,
   assignments: [
     {
-      id: '1',
+      id: "1",
       texter: {
-        id: '1',
-        firstName: 'Test',
-        lastName: 'Tester'
+        id: "1",
+        firstName: "Test",
+        lastName: "Tester"
       },
       unmessagedCount: 193,
       contactsCount: 238
     },
     {
-      id: '1',
+      id: "1",
       texter: {
-        id: '1',
-        firstName: 'Someone',
-        lastName: 'Else',
+        id: "1",
+        firstName: "Someone",
+        lastName: "Else"
       },
       unmessagedCount: 4,
       contactsCount: 545
     }
   ]
-}
+};
 
-
-describe('TexterStats (Non-dynamic campaign)', () => {
-  it('contains the right text', () => {
-    const stats = shallow(<TexterStats campaign={campaign} />)
+describe("TexterStats (Non-dynamic campaign)", () => {
+  it("contains the right text", () => {
+    const stats = shallow(<TexterStats campaign={campaign} />);
     expect(stats.text()).toEqual(
-      'Test Tester19%<LinearProgress />Someone Else99%<LinearProgress />'
-    )
-  })
+      "Test Tester19%<LinearProgress />Someone Else99%<LinearProgress />"
+    );
+  });
 
-  it('creates linear progress correctly', () => {
+  it("creates linear progress correctly", () => {
     const linearProgress = shallow(<TexterStats campaign={campaign} />).find(
-      'LinearProgress'
-    )
-    expect(linearProgress.length).toBe(2)
+      "LinearProgress"
+    );
+    expect(linearProgress.length).toBe(2);
     expect(linearProgress.first().props()).toEqual({
       max: 100,
       min: 0,
-      mode: 'determinate',
+      mode: "determinate",
       value: 19
-    })
-  })
-})
+    });
+  });
+});
 
-
-describe('TexterStats (Dynamic campaign)', () => {
-  it('contains the right text', () => {
-    const stats = shallow(<TexterStats campaign={campaignDynamic} />)
+describe("TexterStats (Dynamic campaign)", () => {
+  it("contains the right text", () => {
+    const stats = shallow(<TexterStats campaign={campaignDynamic} />);
     expect(stats.text()).toEqual(
-      'Test45 initial messages sentSomeone541 initial messages sent'
-    )
-  })
-})
+      "Test45 initial messages sentSomeone541 initial messages sent"
+    );
+  });
+});
