@@ -1,7 +1,8 @@
-import gql from 'graphql-tag'
+import gql from "graphql-tag";
 
-export const pendingJobsGql = (campaignId) => ({
-  query: gql `query getCampaignJobs($campaignId: String!) {
+export const pendingJobsGql = campaignId => ({
+  query: gql`
+    query getCampaignJobs($campaignId: String!) {
       campaign(id: $campaignId) {
         id
         pendingJobs {
@@ -12,10 +13,10 @@ export const pendingJobsGql = (campaignId) => ({
           resultMessage
         }
       }
-    }`,
+    }
+  `,
   variables: {
     campaignId
   },
   pollInterval: 60000
-})
-
+});

@@ -1,9 +1,9 @@
-import React from 'react'
-import { shallow } from 'enzyme'
-import { StyleSheetTestUtils } from 'aphrodite'
+import React from "react";
+import { shallow } from "enzyme";
+import { StyleSheetTestUtils } from "aphrodite";
 
-import { genAssignment, contactGenerator } from '../test_client_helpers'
-import { AssignmentTexter } from '../../src/components/AssignmentTexter'
+import { genAssignment, contactGenerator } from "../test_client_helpers";
+import { AssignmentTexter } from "../../src/components/AssignmentTexter";
 
 /*
     These tests try to ensure the 'texting loop' -- i.e. the loop between
@@ -35,13 +35,12 @@ import { AssignmentTexter } from '../../src/components/AssignmentTexter'
           * clearcontactidolddata(contactid)
 */
 
-
 function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms))
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 function genComponent(assignment, propertyOverrides = {}) {
-  StyleSheetTestUtils.suppressStyleInjection()
+  StyleSheetTestUtils.suppressStyleInjection();
   const wrapper = shallow(
     <AssignmentTexter
       assignment={assignment}
@@ -49,48 +48,53 @@ function genComponent(assignment, propertyOverrides = {}) {
       allContactsCount={assignment.allContactsCount}
       router={{ push: () => {} }}
       refreshData={() => {}}
-      loadContacts={(getIds) => {}}
+      loadContacts={getIds => {}}
       getNewContacts={() => {}}
-      assignContactsIfNeeded={
-         (checkServer, currentContactIndex) => Promise.resolve()
-       }
-      organizationId={'123'}
+      assignContactsIfNeeded={(checkServer, currentContactIndex) =>
+        Promise.resolve()
+      }
+      organizationId={"123"}
       {...propertyOverrides}
     />
-  )
-  return wrapper
+  );
+  return wrapper;
 }
 
-describe('AssignmentTexter process flows', async () => {
-  it('Normal nondynamic assignment queue', async () => {
-    const assignment = genAssignment(false, true, /* contacts=*/ 6, 'needsMessage')
-    const createContact = contactGenerator(assignment.id, 'needsMessage')
-    let calledAssignmentIfNeeded = false
-    let component
+describe("AssignmentTexter process flows", async () => {
+  it("Normal nondynamic assignment queue", async () => {
+    const assignment = genAssignment(
+      false,
+      true,
+      /* contacts=*/ 6,
+      "needsMessage"
+    );
+    const createContact = contactGenerator(assignment.id, "needsMessage");
+    let calledAssignmentIfNeeded = false;
+    let component;
     const wrapper = genComponent(assignment, {
-      loadContacts: (getIds) => {
-        return { data: { getAssignmentContacts: getIds.map(createContact) } }
+      loadContacts: getIds => {
+        return { data: { getAssignmentContacts: getIds.map(createContact) } };
       },
       assignContactsIfNeeded: (checkServer, curContactIndex) => {
-        calledAssignmentIfNeeded = true
-        return Promise.resolve()
+        calledAssignmentIfNeeded = true;
+        return Promise.resolve();
       }
-    })
-    component = wrapper.instance()
-    let contactsContacted = 0
+    });
+    component = wrapper.instance();
+    let contactsContacted = 0;
     while (component.hasNext()) {
-      component.handleFinishContact(wrapper.state('currentContactIndex'))
-      contactsContacted += 1
-      await sleep(1) // triggers updates
+      component.handleFinishContact(wrapper.state("currentContactIndex"));
+      contactsContacted += 1;
+      await sleep(1); // triggers updates
     }
     // last contact
-    component.handleFinishContact(wrapper.state('currentContactIndex'))
-    contactsContacted += 1
-    await sleep(1)
-    expect(calledAssignmentIfNeeded).toBe(true)
-    expect(contactsContacted).toBe(6)
-  })
-})
+    component.handleFinishContact(wrapper.state("currentContactIndex"));
+    contactsContacted += 1;
+    await sleep(1);
+    expect(calledAssignmentIfNeeded).toBe(true);
+    expect(contactsContacted).toBe(6);
+  });
+});
 
 /*
 TESTS:
@@ -120,4 +124,3 @@ TESTS:
       }
 *
 */
-

@@ -1,2 +1,2 @@
-const zipFormat = jest.genMockFromModule('../zip-format')
-module.exports = zipFormat
+const zipFormat = jest.genMockFromModule("../zip-format");
+module.exports = zipFormat;
