@@ -375,6 +375,16 @@ describe("Reassignments", async () => {
   });
 
   it("should allow reassignments after campaign start", async () => {
+    // Outline:
+    // start campaign
+    // send 5 texts with texter1
+    // reassign 20 to texter2
+    // texter2 sends 5 which will get autoreplies (needsResponse)
+    // texter2 replies to 3
+    // reassign 10 more to texter2 from texter1
+    // use reassignCampaignContactsMutation (Message Center)
+    //     to reassign a messaged contact from texter1 to texter2
+    // use bulkReassignmentCampaign to reassign texter2 needsResponse => texter1
     console.time('fullfunction');
     await createScript(testAdminUser, testCampaign);
     await startCampaign(testAdminUser, testCampaign);
@@ -438,7 +448,7 @@ describe("Reassignments", async () => {
     );
     console.timeEnd('func3');
     console.time('func4');
-    // - reassign 5 from one to another
+    // - reassign 20 from one to another
     // using editCampaign
     await assignTexter(testAdminUser, testTexterUser, testCampaign, [
       { id: testTexterUser.id, needsMessageCount: 70, contactsCount: 100 },
@@ -769,5 +779,5 @@ describe("Reassignments", async () => {
       29
     );
     console.timeEnd('fullfunction');
-  });
+  }, 10000);  // long test can exceed default 5seconds
 });
