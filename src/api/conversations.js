@@ -15,4 +15,4 @@ export const schema = `
     conversations: [Conversation]!
     pageInfo: PageInfo
   }
-`
+`;

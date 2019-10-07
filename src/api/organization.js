@@ -12,4 +12,4 @@ export const schema = `
     textingHoursStart: Int
     textingHoursEnd: Int
   }
-`
+`;
