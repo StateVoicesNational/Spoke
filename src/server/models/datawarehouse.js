@@ -1,6 +1,6 @@
-import knex from 'knex'
+import knex from "knex";
 
-let config
+let config;
 
 if (process.env.WAREHOUSE_DB_TYPE) {
   config = {
@@ -12,9 +12,7 @@ if (process.env.WAREHOUSE_DB_TYPE) {
       password: process.env.WAREHOUSE_DB_PASSWORD,
       user: process.env.WAREHOUSE_DB_USER
     }
-  }
+  };
 }
 
-export default (process.env.WAREHOUSE_DB_TYPE
-                ? () => knex(config)
-                : null)
+export default process.env.WAREHOUSE_DB_TYPE ? () => knex(config) : null;

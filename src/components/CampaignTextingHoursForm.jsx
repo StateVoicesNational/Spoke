@@ -1,15 +1,15 @@
-import type from 'prop-types'
-import Toggle from 'material-ui/Toggle'
-import React from 'react'
-import Form from 'react-formal'
-import GSForm from './forms/GSForm'
-import CampaignFormSectionHeading from './CampaignFormSectionHeading'
-import yup from 'yup'
-import cloneDeep from 'lodash/cloneDeep'
-import isEqual from 'lodash/isEqual'
-import moment from 'moment'
-import Autocomplete from 'material-ui/AutoComplete'
-import { dataSourceItem } from './utils'
+import type from "prop-types";
+import Toggle from "material-ui/Toggle";
+import React from "react";
+import Form from "react-formal";
+import GSForm from "./forms/GSForm";
+import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
+import yup from "yup";
+import cloneDeep from "lodash/cloneDeep";
+import isEqual from "lodash/isEqual";
+import moment from "moment";
+import Autocomplete from "material-ui/AutoComplete";
+import { dataSourceItem } from "./utils";
 
 export default class CampaignTextingHoursForm extends React.Component {
   state = {
@@ -17,7 +17,7 @@ export default class CampaignTextingHoursForm extends React.Component {
     timezoneSearchText: undefined,
     textingHoursStartSearchText: undefined,
     textingHoursEndSearchText: undefined
-  }
+  };
 
   formSchema = yup.object({
     overrideOrganizationTextingHours: yup.boolean(),
@@ -25,13 +25,13 @@ export default class CampaignTextingHoursForm extends React.Component {
     textingHoursStart: yup.number().integer(),
     textingHoursEnd: yup.number().integer(),
     timezone: yup.string()
-  })
+  });
 
   fireOnChangeIfTheFormValuesChanged(fieldName, newValue) {
-    const formValues = cloneDeep(this.props.formValues)
-    formValues[fieldName] = newValue
+    const formValues = cloneDeep(this.props.formValues);
+    formValues[fieldName] = newValue;
     if (!isEqual(formValues, this.props.formValues)) {
-      this.props.onChange(formValues)
+      this.props.onChange(formValues);
     }
   }
 
@@ -43,10 +43,10 @@ export default class CampaignTextingHoursForm extends React.Component {
         defaultToggled={this.props.formValues[name]}
         label={label}
         onToggle={async (_, isToggled) => {
-          this.fireOnChangeIfTheFormValuesChanged(name, isToggled)
+          this.fireOnChangeIfTheFormValuesChanged(name, isToggled);
         }}
       />
-    )
+    );
   }
 
   addAutocompleteFormField(
@@ -74,31 +74,34 @@ export default class CampaignTextingHoursForm extends React.Component {
         hintText={hint}
         floatingLabelText={label}
         onUpdateInput={text => {
-          const state = {}
-          state[stateName] = text
-          this.setState(state)
+          const state = {};
+          state[stateName] = text;
+          this.setState(state);
         }}
         onNewRequest={(selection, index) => {
-          let selectedChoice = undefined
+          let selectedChoice = undefined;
           if (index === -1) {
-            selectedChoice = choices.find(item => item.text === selection)
+            selectedChoice = choices.find(item => item.text === selection);
           } else {
-            selectedChoice = selection
+            selectedChoice = selection;
           }
           if (!selectedChoice) {
-            return
+            return;
           }
-          const state = {}
-          state[stateName] = selectedChoice.text
-          this.setState(state)
-          this.fireOnChangeIfTheFormValuesChanged(name, selectedChoice.rawValue)
+          const state = {};
+          state[stateName] = selectedChoice.text;
+          this.setState(state);
+          this.fireOnChangeIfTheFormValuesChanged(
+            name,
+            selectedChoice.rawValue
+          );
         }}
       />
-    )
+    );
   }
 
   render() {
-    const formatTextingHours = hour => moment(hour, 'H').format('h a')
+    const formatTextingHours = hour => moment(hour, "H").format("h a");
     const hours = [
       0,
       1,
@@ -124,31 +127,31 @@ export default class CampaignTextingHoursForm extends React.Component {
       21,
       22,
       23
-    ]
+    ];
     const hourChoices = hours.map(hour => {
-      const formattedHour = formatTextingHours(hour)
-      return dataSourceItem(formattedHour, hour)
-    })
+      const formattedHour = formatTextingHours(hour);
+      return dataSourceItem(formattedHour, hour);
+    });
 
     const timezones = [
-      'US/Alaska',
-      'US/Aleutian',
-      'US/Arizona',
-      'US/Central',
-      'US/East-Indiana',
-      'US/Eastern',
-      'US/Hawaii',
-      'US/Indiana-Starke',
-      'US/Michigan',
-      'US/Mountain',
-      'US/Pacific',
-      'US/Samoa',
-      'America/Puerto_Rico',
-      'America/Virgin'
-    ]
+      "US/Alaska",
+      "US/Aleutian",
+      "US/Arizona",
+      "US/Central",
+      "US/East-Indiana",
+      "US/Eastern",
+      "US/Hawaii",
+      "US/Indiana-Starke",
+      "US/Michigan",
+      "US/Mountain",
+      "US/Pacific",
+      "US/Samoa",
+      "America/Puerto_Rico",
+      "America/Virgin"
+    ];
     const timezoneChoices = timezones.map(timezone =>
       dataSourceItem(timezone, timezone)
-    )
+    );
 
     return (
       <GSForm
@@ -158,69 +161,69 @@ export default class CampaignTextingHoursForm extends React.Component {
         onSubmit={this.props.onSubmit}
       >
         <CampaignFormSectionHeading
-          title='Texting hours for campaign'
-          subtitle='You can use the texting-hours configuration for your organization, or configure texting hours for this campaign.'
+          title="Texting hours for campaign"
+          subtitle="You can use the texting-hours configuration for your organization, or configure texting hours for this campaign."
         />
 
         {this.addToggleFormField(
-          'overrideOrganizationTextingHours',
-          'Override organization texting hours?'
+          "overrideOrganizationTextingHours",
+          "Override organization texting hours?"
         )}
 
         {this.props.formValues.overrideOrganizationTextingHours ? (
           <div>
             {this.addToggleFormField(
-              'textingHoursEnforced',
-              'Texting hours enforced?'
+              "textingHoursEnforced",
+              "Texting hours enforced?"
             )}
 
             {this.props.formValues.textingHoursEnforced ? (
               <div>
                 {this.addAutocompleteFormField(
-                  'textingHoursStart',
-                  'textingHoursStartSearchText',
+                  "textingHoursStart",
+                  "textingHoursStartSearchText",
                   formatTextingHours(this.props.formValues.textingHoursStart),
-                  'Start time',
-                  'Start typing a start time',
+                  "Start time",
+                  "Start typing a start time",
                   hourChoices,
                   hours
                 )}
 
                 {this.addAutocompleteFormField(
-                  'textingHoursEnd',
-                  'textingHoursEndSearchText',
+                  "textingHoursEnd",
+                  "textingHoursEndSearchText",
                   formatTextingHours(this.props.formValues.textingHoursEnd),
-                  'End time',
-                  'Start typing an end time',
+                  "End time",
+                  "Start typing an end time",
                   hourChoices,
                   hours
                 )}
 
                 {this.addAutocompleteFormField(
-                  'timezone',
-                  'timezoneSearchText',
+                  "timezone",
+                  "timezoneSearchText",
                   this.props.formValues.timezone,
-                  'Timezone to use for contacts without ZIP code and to determine daylight savings',
-                  'Start typing a timezone',
+                  "Timezone to use for contacts without ZIP code and to determine daylight savings",
+                  "Start typing a timezone",
                   timezoneChoices,
                   timezones
                 )}
               </div>
             ) : (
-              ''
+              ""
             )}
           </div>
         ) : (
-          ''
+          ""
         )}
 
         <Form.Button
-          type='submit'
+          type="submit"
           disabled={this.props.saveDisabled}
           label={this.props.saveLabel}
         />
       </GSForm>
-    )
+    );
   }
 }
 
@@ -230,4 +233,4 @@ CampaignTextingHoursForm.propTypes = {
   onSubmit: type.func,
   onChange: type.func,
   formValues: type.object
-}
+};

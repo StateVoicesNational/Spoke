@@ -3,13 +3,14 @@
   "parser": "babel-eslint",
   "rules": {
     "comma-dangle": ["error", "never"],
-    "jsx-quotes": ["error", "prefer-single"],
+    "jsx-quotes": ["error", "prefer-double"],
     "max-len": ["off"],
     "no-alert": ["off"],
     "no-console": ["off"],
     "prefer-template": ["off"],
-    "semi": ["error", "never"],
+    "semi": ["error", "always"],
     "react/require-extension": "off",
+    "quotes": ["error", "double"],
   },
   "env": { "jest": true, "node": true, "browser": true, "jasmine": true }
 }
