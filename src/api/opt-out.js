@@ -5,5 +5,4 @@ export const schema = `
     assignment: Assignment
     createdAt: Date
   }
-`
-
+`;
