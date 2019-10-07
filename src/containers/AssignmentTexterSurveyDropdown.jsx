@@ -1,22 +1,22 @@
-import PropTypes from 'prop-types'
-import React, { Component } from 'react'
-import SelectField from 'material-ui/SelectField'
-import MenuItem from 'material-ui/MenuItem'
-import Divider from 'material-ui/Divider'
-import gql from 'graphql-tag'
-import loadData from './hoc/load-data'
+import PropTypes from "prop-types";
+import React, { Component } from "react";
+import SelectField from "material-ui/SelectField";
+import MenuItem from "material-ui/MenuItem";
+import Divider from "material-ui/Divider";
+import gql from "graphql-tag";
+import loadData from "./hoc/load-data";
 
 const styles = {
   previousStep: {
     fontSize: 16,
-    verticalAlign: 'middle'
+    verticalAlign: "middle"
   },
   currentStep: {
     // fontSize: 16,
   },
   currentStepSelect: {
     fontSize: 16,
-    color: 'red'
+    color: "red"
   },
   previousStepSelect: {
     fontSize: 16,
@@ -28,71 +28,75 @@ const styles = {
   },
   currentStepLabel: {
     fontSize: 16,
-    color: 'red',
-    fontWeight: 'bold'
+    color: "red",
+    fontWeight: "bold"
   }
-}
+};
 
 class AssignmentTexterSurveyDropdown extends Component {
   handleAnswerChange = async (event, index, value) => {
-    const { step, campaignContactId } = this.props
+    const { step, campaignContactId } = this.props;
 
-    if (value !== 'clearResponse') {
+    if (value !== "clearResponse") {
       const questionResponse = {
         interactionStepId: step.id,
         campaignContactId,
         value
-      }
-      await this.props.mutations.editQuestionResponse(questionResponse)
+      };
+      await this.props.mutations.editQuestionResponse(questionResponse);
     }
-  }
+  };
 
   renderAnswers() {
-    const { step } = this.props
-    const menuItems = step.question.answerOptions.map(answerOption =>
+    const { step } = this.props;
+    const menuItems = step.question.answerOptions.map(answerOption => (
       <MenuItem
         key={answerOption.value}
         value={answerOption.value}
         primaryText={answerOption.value}
       />
-    )
+    ));
 
-    menuItems.push(<Divider />)
+    menuItems.push(<Divider />);
     menuItems.push(
       <MenuItem
-        key='clear'
-        value='clearResponse'
-        primaryText='Clear response'
+        key="clear"
+        value="clearResponse"
+        primaryText="Clear response"
         // onTouchTap={(event) => this.handleAnswerDelete(event, step.id)}
       />
-    )
+    );
 
-    return menuItems
+    return menuItems;
   }
 
   render() {
-    const { step, isCurrentStep } = this.props
-    const responseValue = step.questionResponse ? step.questionResponse.value : null
-    const { question } = step
+    const { step, isCurrentStep } = this.props;
+    const responseValue = step.questionResponse
+      ? step.questionResponse.value
+      : null;
+    const { question } = step;
 
     if (!question) {
-      return null
+      return null;
     }
 
     return (
       <div>
         <SelectField
-          style={isCurrentStep ? styles.currentStepSelect : styles.previousStepSelect}
+          style={
+            isCurrentStep ? styles.currentStepSelect : styles.previousStepSelect
+          }
           onChange={this.handleAnswerChange}
           name={question.id}
           value={responseValue}
           floatingLabelText={question.text}
-          hintText='Choose answer'
+          hintText="Choose answer"
         >
           {this.renderAnswers()}
         </SelectField>
       </div>
-    )
+    );
   }
 }
 
@@ -102,10 +106,10 @@ AssignmentTexterSurveyDropdown.propTypes = {
   isCurrentStep: PropTypes.boolean,
   campaignContactId: PropTypes.number,
   mutations: PropTypes.object
-}
+};
 
 const mapMutationsToProps = () => ({
-  editQuestionResponse: (questionResponse) => ({
+  editQuestionResponse: questionResponse => ({
     mutation: gql`
       mutation editQuestionResponse($questionResponse: QuestionResponseInput!) {
         editQuestionResponse(questionResponse: $questionResponse) {
@@ -118,6 +122,8 @@ const mapMutationsToProps = () => ({
       questionResponse
     }
   })
-})
+});
 
-export default loadData(AssignmentTexterSurveyDropdown, { mapMutationsToProps })
+export default loadData(AssignmentTexterSurveyDropdown, {
+  mapMutationsToProps
+});

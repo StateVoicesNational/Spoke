@@ -1,6 +1,6 @@
 {
   "name": "spoke",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "Spoke",
   "main": "src/server",
   "engines": {
@@ -68,7 +68,7 @@
   },
   "homepage": "https://github.com/MoveOnOrg/Spoke/#readme",
   "dependencies": {
-    "aphrodite": "^0.4.1",
+    "aphrodite": "^2.3.1",
     "apollo-client": "^0.4.7",
     "apollo-server-express": "^1.2.0",
     "auth0-js": "^9.10.0",
@@ -164,10 +164,12 @@
     "eslint-plugin-react": "^5.2.2",
     "fakeredis": "^2.0.0",
     "foreman": "^1.4.1",
+    "husky": "^3.0.1",
     "json2csv": "^3.6.2",
+    "lint-staged": "^9.2.0",
     "mockdate": "^2.0.2",
     "nodemon": "^1.9.2",
-    "prettier": "1.13.6",
+    "prettier": "^1.18.2",
     "react-hot-loader": "^1.3.0",
     "react-scripts": "^2.1.3",
     "react-test-renderer": "15",
@@ -177,5 +179,16 @@
     "sqlite3": "^4.0.0",
     "wait-on": "^2.1.0",
     "webpack-dev-server": "^2.9.4"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,css,json,md}": [
+      "prettier --write",
+      "git add"
+    ]
   }
 }
