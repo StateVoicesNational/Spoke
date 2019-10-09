@@ -317,11 +317,11 @@ export class AssignmentTexterContact extends React.Component {
 
     return script
       ? applyScript({
-        contact,
-        texter,
-        script,
-        customFields: campaign.customFields
-      })
+          contact,
+          texter,
+          script,
+          customFields: campaign.customFields
+        })
       : null;
   }
 
@@ -331,8 +331,8 @@ export class AssignmentTexterContact extends React.Component {
     return messages.length > 0
       ? ""
       : this.getMessageTextFromScript(
-        getTopMostParent(campaign.interactionSteps).script
-      );
+          getTopMostParent(campaign.interactionSteps).script
+        );
   }
 
   handleOpenPopover = event => {
@@ -636,16 +636,16 @@ export class AssignmentTexterContact extends React.Component {
         hideMobile
       />
     ) : (
-        <div>
-          <AssignmentTexterSurveys
-            contact={contact}
-            interactionSteps={availableInteractionSteps}
-            onQuestionResponseChange={this.handleQuestionResponseChange}
-            currentInteractionStep={this.state.currentInteractionStep}
-            questionResponses={questionResponses}
-          />
-        </div>
-      );
+      <div>
+        <AssignmentTexterSurveys
+          contact={contact}
+          interactionSteps={availableInteractionSteps}
+          onQuestionResponseChange={this.handleQuestionResponseChange}
+          currentInteractionStep={this.state.currentInteractionStep}
+          questionResponses={questionResponses}
+        />
+      </div>
+    );
   }
 
   renderNeedsResponseToggleButton(contact) {
@@ -693,17 +693,17 @@ export class AssignmentTexterContact extends React.Component {
                 disabled={this.state.disabled}
               />
               {window.NOT_IN_USA &&
-                window.ALLOW_SEND_ALL &&
-                window.BULK_SEND_CHUNK_SIZE ? (
-                  <BulkSendButton
-                    assignment={assignment}
-                    onFinishContact={onFinishContact}
-                    bulkSendMessages={this.bulkSendMessages}
-                    setDisabled={this.setDisabled}
-                  />
-                ) : (
-                  ""
-                )}
+              window.ALLOW_SEND_ALL &&
+              window.BULK_SEND_CHUNK_SIZE ? (
+                <BulkSendButton
+                  assignment={assignment}
+                  onFinishContact={onFinishContact}
+                  bulkSendMessages={this.bulkSendMessages}
+                  setDisabled={this.setDisabled}
+                />
+              ) : (
+                ""
+              )}
               <div style={{ float: "right", marginLeft: 20 }}>
                 {navigationToolbarChildren}
               </div>
@@ -893,28 +893,28 @@ export class AssignmentTexterContact extends React.Component {
     const message = optOutDialogOpen ? (
       ""
     ) : (
-        <div className={css(styles.messageField)}>
-          <GSForm
-            ref="form"
-            schema={this.messageSchema}
-            value={{ messageText: this.state.messageText }}
-            onSubmit={this.handleMessageFormSubmit}
-            onChange={
-              messageStatus === "needsMessage" ? "" : this.handleMessageFormChange
-            }
-          >
-            <Form.Field
-              className={css(styles.textField)}
-              name="messageText"
-              label="Your message"
-              multiLine
-              fullWidth
-              rowsMax={6}
-            />
-            {this.renderCorrectSendButton()}
-          </GSForm>
-        </div>
-      );
+      <div className={css(styles.messageField)}>
+        <GSForm
+          ref="form"
+          schema={this.messageSchema}
+          value={{ messageText: this.state.messageText }}
+          onSubmit={this.handleMessageFormSubmit}
+          onChange={
+            messageStatus === "needsMessage" ? "" : this.handleMessageFormChange
+          }
+        >
+          <Form.Field
+            className={css(styles.textField)}
+            name="messageText"
+            label="Your message"
+            multiLine
+            fullWidth
+            rowsMax={6}
+          />
+          {this.renderCorrectSendButton()}
+        </GSForm>
+      </div>
+    );
 
     return (
       <div>
@@ -938,8 +938,8 @@ export class AssignmentTexterContact extends React.Component {
             {this.state.disabledText}
           </div>
         ) : (
-            ""
-          )}
+          ""
+        )}
         <div
           className={css(styles.container)}
           style={
