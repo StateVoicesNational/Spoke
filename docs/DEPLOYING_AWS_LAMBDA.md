@@ -4,22 +4,23 @@ Below configuration about all the services necessary to deploy on AWS are outlin
 # Table Contents
 
 1. [AWS Resource Configuration](#aws-resource-configuration)
-    1. [Certificate](#certificate)
-    2. [S3](#s3)
-    3. [VPC](#vpc)
-    4. [RDS](#rds)
+   1. [Certificate](#certificate)
+   2. [S3](#s3)
+   3. [VPC](#vpc)
+   4. [RDS](#rds)
 2. [Deploy with Claudia.js](#deploy-with-claudiajs)
-    1. [Preparation](#preparation)
-        1. [Configure Deploy Environment](#configure-deploy-environment)
-        2. [Create Production Environment File](#create-production-environment-file)
-    2. [Deploy](#deploy)
-        1. [Seed Database](#seed-database)
-        2. [Setting Up Scheduled Jobs](#setting-up-scheduled-jobs)
-        3. [Migrating the Database](#migrating-the-database)
-        4. [Add a Custom Domain](#add-a-custom-domain)
-    3. [Updating Code or Environment Variables](#updating-code-or-environment-variables)
+   1. [Preparation](#preparation)
+      1. [Configure Deploy Environment](#configure-deploy-environment)
+      2. [Create Production Environment File](#create-production-environment-file)
+   2. [Deploy](#deploy)
+      1. [Seed Database](#seed-database)
+      2. [Setting Up Scheduled Jobs](#setting-up-scheduled-jobs)
+      3. [Migrating the Database](#migrating-the-database)
+      4. [Add a Custom Domain](#add-a-custom-domain)
+   3. [Updating Code or Environment Variables](#updating-code-or-environment-variables)
 
 # AWS Resource Configuration
+
 Walking through all the different AWS resources and configuration that must be in place before deploying Spoke.
 
 ## Certificate
@@ -105,15 +106,16 @@ Create a subnet group called `spoke_rds_group`. Choose the `TextForCampaign` VPC
 
 Create an RDS instance running Postgres 10.4 with the following settings:
 
-| Config name           | Config value          |
-|-----------------------|-----------------------|
-| Nickname              | `spoke_prod`          |
-| Database name         | `spoke_prod`          |
-| Username              | `spoke`               |
-| Password              | `[something secret]`  |
-| Publically exposed    | yes                   |
+| Config name        | Config value         |
+| ------------------ | -------------------- |
+| Nickname           | `spoke_prod`         |
+| Database name      | `spoke_prod`         |
+| Username           | `spoke`              |
+| Password           | `[something secret]` |
+| Publically exposed | yes                  |
 
 # Deploy with Claudia.js
+
 [Claudia](https://www.claudiajs.com) is command line tool for serverless Node.js applications on AWS.
 
 ## Preparation
@@ -123,21 +125,21 @@ Create an RDS instance running Postgres 10.4 with the following settings:
 1. First make sure you are running node 8.10 (compatible with AWS Lambda) `nvm install 8.10; nvm use 8.10`
 2. Install Claudia js: `npm install -g claudia`
 3. Create an admin user on AWS selecting programmatic access. Add that profile to `~/.aws/credentials` giving it a nickname to use later in shell commands:
-    ```
-    [your_profile_nickname]
-    aws_access_key_id = XXXXXXXXXXXXXXXXXXX
-    aws_secret_access_key = XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-    ```
+   ```
+   [your_profile_nickname]
+   aws_access_key_id = XXXXXXXXXXXXXXXXXXX
+   aws_secret_access_key = XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+   ```
 4. Configure [s3cmd](https://github.com/s3tools/s3cmd)
-    1. Create an AWS user called `spoke_upload`. Create a new group for it with the `AmazonS3FullAccess` policy
-    2. Copy the credentials of the `spoke_upload` user to `~/.s3cfg`:
-        ```
-        [default]
-        access_key = XXXXXXXXXXXXXXXXXX
-        secret_key = XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-        ```
-        > _TODO_: figure out how to switch away from default profile in `package.json`'s `prod-static-upload` script using ENV vars
-    3. [Install s3cmd](https://s3tools.org/download)
+   1. Create an AWS user called `spoke_upload`. Create a new group for it with the `AmazonS3FullAccess` policy
+   2. Copy the credentials of the `spoke_upload` user to `~/.s3cfg`:
+      ```
+      [default]
+      access_key = XXXXXXXXXXXXXXXXXX
+      secret_key = XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+      ```
+      > _TODO_: figure out how to switch away from default profile in `package.json`'s `prod-static-upload` script using ENV vars
+   3. [Install s3cmd](https://s3tools.org/download)
 
 ### Create Production Environment File
 
@@ -156,19 +158,19 @@ The main variables you will require set in a lambda environment beyond the regul
 
 Do **NOT** set:
 
-* `PORT`: The whole application is called as a library, rather than running a process on a port
-* `DEV_APP_PORT`
-* `AWS_ACCESS_KEY_ID`: amazon forbids this variable -- access should be granted through the "role" for the Lambda function
-* `AWS_SECRET_ACCESS_KEY`
+- `PORT`: The whole application is called as a library, rather than running a process on a port
+- `DEV_APP_PORT`
+- `AWS_ACCESS_KEY_ID`: amazon forbids this variable -- access should be granted through the "role" for the Lambda function
+- `AWS_SECRET_ACCESS_KEY`
 
 **DO** Set:
 
-* `"SUPPRESS_SEED_CALLS": "1",`: This stops Spoke from trying to connect to the database every startup point. You will need to run the seed call once, directly to the database rather than through Lambda (or send us a PR to make it easy to do this and other jobs in Lambda :-)
-* `"JOBS_SAME_PROCESS": "1",`: This makes jobs get called semi-synchronously (as async in code, but triggered directly from the same Lambda instance as the originating web request
-* `"AWS_ACCESS_AVAILABLE": "1",`: This replaces the AWS_ key variables for S3 bucket support
-* `STATIC_BASE_URL`: You will need to upload your ASSETS_DIR to an S3 bucket (or other static file site) and then set this to something like: `"https://s3.amazonaws.com/YOUR_BUCKET_AND_PATH/"` (don't forget the trailing '/')
-* `S3_STATIC_PATH`: This will be the s3cmd upload path that corresponds to STATIC_BASE_URL.  So if `STATIC_BASE_URL=https://s3.amazon.com/spoke.example.com/static/` then `S3_STATIC_PATH=s3://spoke.example.com/static/`  You will also need a ~/.s3cfg file that has the s3 upload credentials.  See `package.json`'s postinstall script and more specifically `prod-static-upload`.
-* `"LAMBDA_DEBUG_LOG": "1",`: (ONLY FOR DEBUGGING) This will send more details of requests to the CloudWatch log. However, it will include the full request details, e.g. so do not use this in production.
+- `"SUPPRESS_SEED_CALLS": "1",`: This stops Spoke from trying to connect to the database every startup point. You will need to run the seed call once, directly to the database rather than through Lambda (or send us a PR to make it easy to do this and other jobs in Lambda :-)
+- `"JOBS_SAME_PROCESS": "1",`: This makes jobs get called semi-synchronously (as async in code, but triggered directly from the same Lambda instance as the originating web request
+- `"AWS_ACCESS_AVAILABLE": "1",`: This replaces the AWS\_ key variables for S3 bucket support
+- `STATIC_BASE_URL`: You will need to upload your ASSETS_DIR to an S3 bucket (or other static file site) and then set this to something like: `"https://s3.amazonaws.com/YOUR_BUCKET_AND_PATH/"` (don't forget the trailing '/')
+- `S3_STATIC_PATH`: This will be the s3cmd upload path that corresponds to STATIC_BASE_URL. So if `STATIC_BASE_URL=https://s3.amazon.com/spoke.example.com/static/` then `S3_STATIC_PATH=s3://spoke.example.com/static/` You will also need a ~/.s3cfg file that has the s3 upload credentials. See `package.json`'s postinstall script and more specifically `prod-static-upload`.
+- `"LAMBDA_DEBUG_LOG": "1",`: (ONLY FOR DEBUGGING) This will send more details of requests to the CloudWatch log. However, it will include the full request details, e.g. so do not use this in production.
 
 ## Deploy
 
@@ -187,8 +189,9 @@ $ AWS_PROFILE=[your_profile_nickname] claudia create --handler lambda.handler \
 ```
 
 **Notes**:
- * You'll want a timeout that corresponds with the scheduled jobs -- this is 5 minutes which should be the same as below
- * The memory requirement can probably be lower, but that will affect the maximum contact upload file you can send in and process.
+
+- You'll want a timeout that corresponds with the scheduled jobs -- this is 5 minutes which should be the same as below
+- The memory requirement can probably be lower, but that will affect the maximum contact upload file you can send in and process.
 
 After Claudia.js does an 'npm install' essentially of your directory (which will filter out files in .gitignore, etc), It runs `package.json`'s `postinstall` script which does the building necessary for production. The environment variables included in your env-from-json file will also be set during build.
 
@@ -232,7 +235,7 @@ Once Claudia has created an API Gateway we can add a subdomain to access Spoke. 
 
 ## Updating Code or Environment Variables
 
-(if you are using nvm, make sure to run `nvm use 8.10` first)
+(if you are using nvm, make sure to run `nvm use` first to use the correct node version)
 
 ```sh
 $ AWS_PROFILE=[your_profile_nickname] claudia update \
