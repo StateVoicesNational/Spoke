@@ -3,7 +3,6 @@ import { getFormattedPhoneNumber } from "../../../lib/phone-format";
 import { Log, Message, PendingMessagePart, r } from "../../models";
 import { log } from "../../../lib";
 import { getLastMessage, saveNewIncomingMessage } from "./message-sending";
-import faker from "faker";
 
 let twilio = null;
 const MAX_SEND_ATTEMPTS = 5;
@@ -79,7 +78,11 @@ async function findNewCell() {
 
 async function rentNewCell() {
   if (!twilio) {
-    return getFormattedPhoneNumber(faker.phone.phoneNumber());
+    const num = "1234"
+      .split("")
+      .map(() => parseInt(Math.random() * 10))
+      .join("");
+    return getFormattedPhoneNumber(`+1212555${num}`);
   }
   const newCell = await findNewCell();
 

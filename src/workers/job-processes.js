@@ -1,5 +1,6 @@
 import { r } from "../server/models";
-import { sleep, getNextJob, log } from "./lib";
+import { sleep, getNextJob } from "./lib";
+import { log } from "../lib";
 import {
   exportCampaign,
   processSqsMessages,
