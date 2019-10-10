@@ -375,8 +375,20 @@ describe("Reassignments", async () => {
   });
 
   it("should allow reassignments after campaign start", async () => {
+    // Outline:
+    // start campaign
+    // send 5 texts with texter1
+    // reassign 20 to texter2
+    // texter2 sends 5 which will get autoreplies (needsResponse)
+    // texter2 replies to 3
+    // reassign 10 more to texter2 from texter1
+    // use reassignCampaignContactsMutation (Message Center)
+    //     to reassign a messaged contact from texter1 to texter2
+    // use bulkReassignmentCampaign to reassign texter2 needsResponse => texter1
+    console.time('fullfunction');
     await createScript(testAdminUser, testCampaign);
     await startCampaign(testAdminUser, testCampaign);
+    console.time('func1');
     let texterCampaignDataResults = await runComponentGql(
       TexterTodoQuery,
       {
@@ -397,7 +409,8 @@ describe("Reassignments", async () => {
     expect(texterCampaignDataResults.data.assignment.allContactsCount).toEqual(
       100
     );
-
+    console.timeEnd('func1');
+    console.time('func2');
     // send some texts
     for (let i = 0; i < 5; i++) {
       const messageResult = await sendMessage(
@@ -411,6 +424,8 @@ describe("Reassignments", async () => {
         }
       );
     }
+    console.timeEnd('func2');
+    console.time('func3');
     // TEXTER 1 (95 needsMessage, 5 needsResponse)
     texterCampaignDataResults = await runComponentGql(
       TexterTodoQuery,
@@ -431,7 +446,9 @@ describe("Reassignments", async () => {
     expect(texterCampaignDataResults.data.assignment.allContactsCount).toEqual(
       100
     );
-    // - reassign 5 from one to another
+    console.timeEnd('func3');
+    console.time('func4');
+    // - reassign 20 from one to another
     // using editCampaign
     await assignTexter(testAdminUser, testTexterUser, testCampaign, [
       { id: testTexterUser.id, needsMessageCount: 70, contactsCount: 100 },
@@ -451,6 +468,8 @@ describe("Reassignments", async () => {
       },
       testTexterUser
     );
+    console.timeEnd('func4');
+    console.time('func5');
     let texterCampaignDataResults2 = await runComponentGql(
       TexterTodoListQuery,
       { organizationId },
@@ -483,6 +502,8 @@ describe("Reassignments", async () => {
     expect(texterCampaignDataResults.data.assignment.allContactsCount).toEqual(
       20
     );
+    console.timeEnd('func5');
+    console.time('func6');
     let assignmentContacts2 =
       texterCampaignDataResults.data.assignment.contacts;
     for (let i = 0; i < 5; i++) {
@@ -510,7 +531,8 @@ describe("Reassignments", async () => {
       },
       testTexterUser2
     );
-
+    console.timeEnd('func6');
+    console.time('func7');
     expect(texterCampaignDataResults.data.assignment.contacts.length).toEqual(
       15
     );
@@ -535,6 +557,8 @@ describe("Reassignments", async () => {
     expect(texterCampaignDataResults.data.assignment.allContactsCount).toEqual(
       20
     );
+    console.timeEnd('func7');
+    console.time('func8');
     for (let i = 0; i < 3; i++) {
       const contact = testContacts.filter(
         c => texterCampaignDataResults.data.assignment.contacts[i].id == c.id
@@ -566,6 +590,8 @@ describe("Reassignments", async () => {
     expect(texterCampaignDataResults.data.assignment.allContactsCount).toEqual(
       20
     );
+    console.timeEnd('func8');
+    console.time('func9');
     texterCampaignDataResults = await runComponentGql(
       TexterTodoQuery,
       {
@@ -584,7 +610,8 @@ describe("Reassignments", async () => {
     expect(texterCampaignDataResults.data.assignment.allContactsCount).toEqual(
       20
     );
-
+    console.timeEnd('func9');
+    console.time('func10');
     await assignTexter(testAdminUser, testTexterUser, testCampaign, [
       { id: testTexterUser.id, needsMessageCount: 60, contactsCount: 75 },
       // contactsCount: 30 = 25 (desired needsMessage) + 5 (messaged)
@@ -604,7 +631,8 @@ describe("Reassignments", async () => {
       },
       testTexterUser
     );
-
+    console.timeEnd('func10');
+    console.time('func11');
     texterCampaignDataResults2 = await runComponentGql(
       TexterTodoQuery,
       {
@@ -630,7 +658,8 @@ describe("Reassignments", async () => {
     expect(texterCampaignDataResults2.data.assignment.allContactsCount).toEqual(
       30
     );
-
+    console.timeEnd('func11');
+    console.time('func12');
     // maybe test no intersections of texted people and non-texted, and/or needsReply
     //   reassignCampaignContactsMutation
     await runComponentGql(
@@ -664,7 +693,8 @@ describe("Reassignments", async () => {
       },
       testTexterUser
     );
-
+    console.timeEnd('func12');
+    console.time('func13');
     texterCampaignDataResults2 = await runComponentGql(
       TexterTodoQuery,
       {
@@ -690,7 +720,8 @@ describe("Reassignments", async () => {
     expect(texterCampaignDataResults2.data.assignment.allContactsCount).toEqual(
       31
     );
-
+    console.timeEnd('func13');
+    console.time('func14');
     //   bulkReassignCampaignContactsMutation
     await runComponentGql(
       bulkReassignCampaignContactsMutation,
@@ -734,7 +765,7 @@ describe("Reassignments", async () => {
       },
       testTexterUser2
     );
-
+    console.timeEnd('func14');
     expect(texterCampaignDataResults.data.assignment.contacts.length).toEqual(
       2
     );
@@ -747,5 +778,6 @@ describe("Reassignments", async () => {
     expect(texterCampaignDataResults2.data.assignment.allContactsCount).toEqual(
       29
     );
-  });
+    console.timeEnd('fullfunction');
+  }, 10000);  // long test can exceed default 5seconds
 });
