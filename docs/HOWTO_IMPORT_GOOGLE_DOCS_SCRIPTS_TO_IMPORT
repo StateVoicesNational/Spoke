@@ -1,0 +1,26 @@
+HOWTO import 'scripts' from a Google Doc into Spoke
+DRAFT
+20191011
+
+Get a Google Docs API key - see  https://developers.google.com/docs/api/quickstart/js 
+[there’s obvs some other step in between above and below.  I’m looking at this - https://developers.google.com/docs/api/quickstart/nodejs ]
+
+Add a GOOGLE_SECRET variable to .env/Config Vars in Settings, [with that API key as part of it? Or what’s below is oauth etc obvs].
+Sample [edited to remove sensitive info, ‘XXX’ substituted] 
+{ "type": "service_account", "project_id": "XXXXXXX", "private_key_id": "XXXXXXXX", "private_key": "-----BEGIN PRIVATE KEY-----XXXXXXX--------END PRIVATE KEY-----\n", "client_email": "XXXX@XXXXXX.iam.gserviceaccount.com", "client_id": "XXXXXXXXXX", "auth_uri": "https://accounts.google.com/o/oauth2/auth", "token_uri": "https://oauth2.googleapis.com/token", "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs", "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/XXXXXX.iam.gserviceaccount.com" }
+
+Create a script from a Google Doc Spoke script template - see for example https://docs.google.com/document/d/1zKRbDU9vwetJlfWYgSGd1taBEVj_QrI7bhu4snvHlmg/edit  
+
+Copy the template, create a new draft doc with that and save it, then edit the new script doc, not the template :) 
+
+Install the ‘Show’ add-on to be able to see non-printable characters 
+- You can see codes like End of Paragraph (Usually from Return)  
+- The ability to see hidden characters and formatting marks isn't built into Docs. However, there's an add-on for Docs called Show that can do this. 
+- You can get it by going to Add-ons (in the tool bar) > Get add-ons and then searching for it by name.
+- Once you find it, just press the blue Free button to add it to Docs. You can then access it by clicking on  Add-ons in the tool bar to display all the add-ons you have.
+
+Use Outline
+
+Important formatting tips
+
+Share the document with [your unique gserviceaccount.com?] e-mail address:
