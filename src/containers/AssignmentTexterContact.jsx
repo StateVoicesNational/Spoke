@@ -733,7 +733,7 @@ export class AssignmentTexterContact extends React.Component {
               />
               <RaisedButton
                 style={inlineStyles.mobileCannedReplies}
-                label="Canned replies"
+                label="Canned Responses"
                 onTouchTap={this.handleOpenPopover}
               />
               {this.renderNeedsResponseToggleButton(contact)}
