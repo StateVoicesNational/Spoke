@@ -1,6 +1,6 @@
-# Development Guidelines
+# Development Guidelines and Tips
 
-This document describes current gotchas in our code base an explains the context
+This document describes tips and current gotchas in our code base and explains the context
 for parts that are evolving in a certain direction (or we *want* to evolve in a certain direction).
 
 See [CONTRIBUTING.md](../CONTRIBUTING.md) and the [README](../README.md) for setup
@@ -17,6 +17,18 @@ Generally, label by filename what kind of documentation it is in all-caps, one o
 * Explanation
 * How-to guide
 * Reference
+
+## Helpful Dev Tips
+* Run `sqlite3 mydb.sqlite` to connect to a SQL shell for the dev database
+* [Set up an ESLint plugin in your code editor so that you catch coding errors and follow code style guidelines more easily!](https://medium.com/planet-arkency/catch-mistakes-before-you-run-you-javascript-code-6e524c36f0c8#.oboqsse48)
+* [Install the redux-devtools-extension](https://github.com/zalmoxisus/redux-devtools-extension) in Chrome to get advanced Redux debugging features.
+* Right now there is a bug in Apollo (https://github.com/apollostack/react-apollo/issues/57) that means in one particular case, errors get swallowed.  If you end up with an app that is silently breaking, console.log(this.props.data) and check the errors property.
+
+## Dependency Management
+
+Spoke uses the [yarn](https://yarnpkg.com) package manager. Please follow their documentation when [adding, upgrading, or removing dependencies](https://yarnpkg.com/en/docs/managing-dependencies).
+
+Yarn also uses a [yarn.lock](https://yarnpkg.com/en/docs/yarn-lock) file to ensure consistent installs across machines. Any changes to `yarn.lock` should be included in your pull request. If merge conflicts arise in `yarn.lock`, yarn should [automatically resolve those conflicts](https://stackoverflow.com/questions/42939113/how-do-you-resolve-git-conflicts-in-yarn-lock) during the next `yarn install`.
 
 ## Environment Variables/Configuration
 
@@ -96,16 +108,24 @@ Sqlite does not support knex's `returning()` method.  This affects running `r.kn
 
 ### Schema changes
 
-Schema changes should include an addition to `src/migrations/index.js`.  If you create a table, make sure you use
-`r.knex.schema.createTableIfNotExists` (see knex documentation and existing examples).
+Every schema change needs two changes:
+
+1. An update to the appropriate model definition in src/server/models/ directory
+2. Create a new migration using the [knex CLI](https://knexjs.org/#Migrations) -- `yarn knex migrate:make <migration_name>`
+   If you create a table, make sure you use `r.knex.schema.createTableIfNotExists` (see knex documentation and existing examples).
 
 In order to support PostgreSQL and Sqlite, you can define a field as `.json()` when defining it in the
 migration, but it should be `type.string()` in its `src/server/models/` definition.
 
 Production instances can disable automatic migrations on startup with environment variable `SUPPRESS_MIGRATIONS`.
 
+If you want to use the knex CLI, run with `yarn knex` which will leverage your `.env` environment.
+
+
 
 ## Apollo/GraphQL structure and gotchas
+
+Spoke was originally generated from [react-apollo-starter-kit](https://github.com/saikat/react-apollo-starter-kit).  You can look at that project's README for info on some of the libraries used.
 
 See [EXPLANATION-request-example.md](./EXPLANATION-request-example.md) for a great run-down all the
 way through the call stack on the client and server.

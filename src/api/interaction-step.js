@@ -10,5 +10,4 @@ export const schema = `
     answerActions: String
     questionResponse(campaignContactId: String): QuestionResponse
   }
-`
-
+`;

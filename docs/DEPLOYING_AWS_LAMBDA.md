@@ -1,3 +1,6 @@
+Below configuration about all the services necessary to deploy on AWS are outlined. There is an
+[experimental CloudFront deploy script maintained by the community as an alternative](https://github.com/bchrobot/terraform-aws-spoke).
+
 # Table Contents
 
 1. [AWS Resource Configuration](#aws-resource-configuration)
@@ -32,7 +35,7 @@ Create a private S3 bucket by choosing all the default values as you go throuh t
 ## VPC
 
 We will create a VPC with two groups of subnets, one publicly accessible one for the RDS instance and one private one for our AWS Lambda function (don't worry, the API Gateway created later will expose the function via the domain you created a certificate for). Each group will have two subnets for redundancy.
- 
+
 Getting the VPC right is pretty tricky. Start by launching the VPC creation wizard and choosing "VPC with a Single Public Subnet". Give the VPC a name, `TextForCampaign`, and change the name of the subnet to `Public - 1`. Click create.
 
 ### Subnets
@@ -117,7 +120,7 @@ Create an RDS instance running Postgres 10.4 with the following settings:
 
 ### Configure Deploy Environment
 
-1. First make sure you are running node 6.10 (compatible with AWS Lambda) `nvm install 6.10; nvm use 6.10`
+1. First make sure you are running node 8.10 (compatible with AWS Lambda) `nvm install 8.10; nvm use 8.10`
 2. Install Claudia js: `npm install -g claudia`
 3. Create an admin user on AWS selecting programmatic access. Add that profile to `~/.aws/credentials` giving it a nickname to use later in shell commands:
     ```
@@ -215,7 +218,7 @@ $ AWS_PROFILE=[your_profile_nickname] claudia add-scheduled-event \
 
 ### Migrating the Database
 
-New migrations are added to `src/migrations/index.js`. You can trigger migration updates with the following command:
+Migrations are created with knex[https://knexjs.org/#Migrations]. You can trigger migration updates with the following command:
 
 ```sh
 $ AWS_PROFILE=[your_profile_nickname] claudia test-lambda --event ./deploy/lambda-migrate-database.js
@@ -229,7 +232,7 @@ Once Claudia has created an API Gateway we can add a subdomain to access Spoke. 
 
 ## Updating Code or Environment Variables
 
-(if you are using nvm, make sure to run `nvm use 6.10` first)
+(if you are using nvm, make sure to run `nvm use 8.10` first)
 
 ```sh
 $ AWS_PROFILE=[your_profile_nickname] claudia update \

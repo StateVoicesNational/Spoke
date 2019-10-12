@@ -10,8 +10,9 @@ export const schema = `
     todos(organizationId: String): [Assignment]
     roles(organizationId: String!): [String]
     assignedCell: Phone
-    assignment(campaignId: String): Assignment,
+    assignment(campaignId: String): Assignment
     terms: Boolean
+    cacheable: Boolean
   }
   
 type UsersList {
@@ -24,4 +25,4 @@ type PaginatedUsers {
 }
 
 union UsersReturn = PaginatedUsers | UsersList
-`
+`;

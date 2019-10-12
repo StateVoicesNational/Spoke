@@ -1,3 +1,3 @@
 export function isClient() {
-  return typeof window !== 'undefined'
+  return typeof window !== "undefined";
 }

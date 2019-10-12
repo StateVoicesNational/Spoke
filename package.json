@@ -1,27 +1,30 @@
 {
   "name": "spoke",
-  "version": "1.4.1",
+  "version": "3.1.0",
   "description": "Spoke",
   "main": "src/server",
   "engines": {
-    "node": "6.10.3",
+    "node": ">=10.3 <11",
     "npm": "3.10.10"
   },
   "scripts": {
-    "test": "jest --runInBand --forceExit",
+    "test": "jest --runInBand --forceExit --detectOpenHandles",
+    "test-cache": "REDIS_FAKE=1 jest --runInBand --forceExit --detectOpenHandles",
     "test-e2e": "jest --runInBand --config jest.config.e2e.js",
     "test-sqlite": "jest --runInBand --config jest.config.sqlite.js",
     "test-coverage": "jest --coverage",
     "test-coverage-bothbackends": "jest --runInBand --config jest.config.sqlite.js -- __test__/backend.test.js &&  jest --coverage",
+    "knex": "knex --knexfile ./knexfile.env.js",
     "clean": "rm -rf $OUTPUT_DIR",
     "lint": "eslint --fix --ext js --ext jsx src",
     "prod-build-client": "webpack --config ./webpack/config.js",
-    "prod-build-server": "babel ./src -d ./build/server --source-maps --copy-files",
+    "prod-build-server": "babel ./src  -d ./build/server --source-maps --copy-files; babel ./migrations -d ./build/server/migrations/ --source-maps --copy-files",
     "prod-build": "npm run clean && npm run prod-build-client && npm run prod-build-server",
     "prod-static-upload": "if [ \"$S3_STATIC_PATH\" != \"\" ] ; then s3cmd sync --acl-public --guess-mime-type ./build/client/assets/ $S3_STATIC_PATH ; fi",
     "postinstall": "if [ \"$NODE_ENV\" = production ] ; then npm run prod-build && npm run prod-static-upload && npm run notify-slack; fi",
     "notify-slack": "if [ \"$SLACK_NOTIFY_URL\" != \"\" ] ; then echo notifying slack && curl -XPOST -d '{\"channel\": \"#spoke\", \"text\":\"'\"$(whoami) building spoke $(git log -1 --pretty=%h) for $AWS_S3_BUCKET_NAME\"'\"}' $SLACK_NOTIFY_URL; fi",
     "start": "node ./build/server/server",
+    "start:heroku": "BASE_URL=$(node ./build/server/heroku/print-base-url) npm start",
     "dev-message-sender-01": "nodemon -e js,jsx -w ./src --exec ./dev-tools/babel-run -- ./src/workers/message-sender-01",
     "prod-message-sender-01": "./dev-tools/babel-run ./src/workers/message-sender-01.js",
     "dev-message-sender-234": "nodemon -e js,jsx -w ./src --exec ./dev-tools/babel-run -- ./src/workers/message-sender-234",
@@ -65,7 +68,7 @@
   },
   "homepage": "https://github.com/MoveOnOrg/Spoke/#readme",
   "dependencies": {
-    "aphrodite": "^0.4.1",
+    "aphrodite": "^2.3.1",
     "apollo-client": "^0.4.7",
     "apollo-server-express": "^1.2.0",
     "auth0-js": "^9.10.0",
@@ -92,6 +95,7 @@
     "faker": "^3.1.0",
     "fs": "^0.0.2",
     "google-libphonenumber": "^1.0.25",
+    "googleapis": "^39.2.0",
     "graphql": "^0.13.2",
     "graphql-date": "^1.0.3",
     "graphql-tag": "^0.1.9",
@@ -102,7 +106,7 @@
     "isomorphic-fetch": "^2.2.1",
     "jest-each": "^0.3.1",
     "json-loader": "^0.5.4",
-    "knex": "^0.13.0",
+    "knex": "^0.17.3",
     "lodash": "^4.13.1",
     "mailgun-js": "^0.16.0",
     "material-ui": "^0.20.1",
@@ -135,15 +139,16 @@
     "redux": "^3.7.2",
     "redux-thunk": "^2.1.0",
     "request": "^2.81.0",
-    "rethink-knex-adapter": "^0.4.17",
+    "rethink-knex-adapter": "^0.4.18",
     "rollbar": "^0.6.2",
     "thinky": "^2.3.3",
     "timezonecomplete": "^5.5.0",
     "twilio": "^2.11.0",
     "uuid": "^3.1.0",
+    "wait-for-expect": "^1.1.1",
     "webpack": "^3.8.1",
     "webpack-manifest-plugin": "^1.3.2",
-    "yup": "^0.19.0"
+    "yup": "^0.24.0"
   },
   "devDependencies": {
     "babel-eslint": "^6.1.2",
@@ -159,19 +164,31 @@
     "eslint-plugin-react": "^5.2.2",
     "fakeredis": "^2.0.0",
     "foreman": "^1.4.1",
-    "jest": "^22.1.4",
+    "husky": "^3.0.1",
     "json2csv": "^3.6.2",
+    "lint-staged": "^9.2.0",
     "mockdate": "^2.0.2",
     "nodemon": "^1.9.2",
-    "prettier": "1.13.6",
+    "prettier": "^1.18.2",
     "react-hot-loader": "^1.3.0",
-    "react-scripts": "^1.1.0",
+    "react-scripts": "^2.1.3",
     "react-test-renderer": "15",
     "regenerator-runtime": "^0.10.5",
     "saucelabs": "^1.5.0",
     "selenium-webdriver": "^3.6.0",
-    "sqlite3": "^3.1.9",
+    "sqlite3": "^4.0.0",
     "wait-on": "^2.1.0",
     "webpack-dev-server": "^2.9.4"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,css,json,md}": [
+      "prettier --write",
+      "git add"
+    ]
   }
 }
