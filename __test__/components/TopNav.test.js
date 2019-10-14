@@ -1,9 +1,11 @@
 import React from "react";
-
 import { shallow } from "enzyme";
+import { StyleSheetTestUtils } from "aphrodite";
 import TopNav from "../../src/components/TopNav";
 
 describe("TopNav component", () => {
+  StyleSheetTestUtils.suppressStyleInjection();
+
   // given
   const orgId = "1";
   const wrapper = shallow(<TopNav orgId={orgId} />);
