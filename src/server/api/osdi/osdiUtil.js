@@ -30,7 +30,6 @@ function curies() {
 export function isEnabled() {
     const envVar = process.env.OSDI_MASTER_ENABLE
     const enabled = truthy(envVar)
-    log.info("OSDI State [".concat(enabled,"] var [",envVar,"]"))
 
     return enabled
 }
@@ -44,10 +43,22 @@ export function isDisabled() {
     return (! isEnabled())
 }
 
+
+export function prettyOSDI(osdi) {
+    return JSON.stringify(osdi,undefined,2)
+}
+
+export function logOSDI(osdi) {
+    const json=prettyOSDI(osdi)
+    console.log(json)
+}
+
 export default {
     osdiAEP,
     curies,
     isEnabled,
     isDisabled,
-    truthy
+    truthy,
+    prettyOSDI,
+    logOSDI
 }

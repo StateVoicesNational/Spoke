@@ -107,7 +107,7 @@ export async function enableOSDI(organization, user, apiToken) {
     osdiApiToken: apiTokenHash
   })
 
-  return
+  return setToken
 
 }
 

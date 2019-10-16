@@ -81,7 +81,7 @@ export default function renderIndex(html, css, assetMap, store) {
           return window.STATIC_BASE_URL.concat(relPath)
       }
       
-      window.BASE_URL="${process.env.BASE_URL || window.location.origin}"
+      window.BASE_URL="${process.env.BASE_URL}"
       window.makeAbsolutePath = function(relPath) {
           return window.BASE_URL.concat("/",relPath)
       }

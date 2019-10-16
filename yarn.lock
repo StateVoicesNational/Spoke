@@ -5562,6 +5562,11 @@ fbjs@^0.8.1, fbjs@^0.8.4, fbjs@^0.8.6, fbjs@^0.8.9:
     setimmediate "^1.0.5"
     ua-parser-js "^0.7.18"
 
+fetch-mw-oauth2@^0.3.4:
+  version "0.3.5"
+  resolved "https://registry.yarnpkg.com/fetch-mw-oauth2/-/fetch-mw-oauth2-0.3.5.tgz#3a4a0ee9e0fe2a72f401a75ea625e1c37fd80935"
+  integrity sha512-ctlGARDDUY6fsUQFjAfGIRgTRtZGKmFSmnUQAK4xYdwWgXzKe6iQmBAUng0vE3pe8pu+Es84Li5oc1TRwpXdOg==
+
 figgy-pudding@^3.5.1:
   version "3.5.1"
   resolved "https://registry.yarnpkg.com/figgy-pudding/-/figgy-pudding-3.5.1.tgz#862470112901c727a0e495a80744bd5baa1d6790"
@@ -6734,6 +6739,11 @@ http-errors@1.6.3, http-errors@~1.6.2, http-errors@~1.6.3:
     inherits "2.0.3"
     setprototypeof "1.1.0"
     statuses ">= 1.4.0 < 2"
+
+http-link-header@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/http-link-header/-/http-link-header-1.0.2.tgz#bea50f02e1c7996021f1013b428c63f77e0f4e11"
+  integrity sha512-z6YOZ8ZEnejkcCWlGZzYXNa6i+ZaTfiTg3WhlV/YvnNya3W/RbX1bMVUMTuCrg/DrtTCQxaFCkXCz4FtLpcebg==
 
 http-parser-js@>=0.4.0:
   version "0.5.0"
@@ -8400,6 +8410,18 @@ jws@^3.1.5:
     jwa "^1.4.1"
     safe-buffer "^5.0.1"
 
+ketting@^4.0.3:
+  version "4.0.3"
+  resolved "https://registry.yarnpkg.com/ketting/-/ketting-4.0.3.tgz#d1667230c56e7d0236fa4124d2f7053af829e58a"
+  integrity sha512-ap/wE5rKDGHwCmoiuTNlp0iQ+E7Bn6zSaeMfFQWB0WNp8g4C/1vuieoRar89rx65eRZouvAAVp35J4fa9vHtAA==
+  dependencies:
+    fetch-mw-oauth2 "^0.3.4"
+    http-link-header "^1.0.2"
+    node-fetch "^2.6.0"
+    querystring-browser "^1.0.4"
+    sax "^1.2.4"
+    uri-template "^1.0.1"
+
 keycode@^2.1.8:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/keycode/-/keycode-2.2.0.tgz#3d0af56dc7b8b8e5cba8d0a97f107204eec22b04"
@@ -9523,7 +9545,7 @@ node-fetch@^1.0.1:
     encoding "^0.1.11"
     is-stream "^1.0.1"
 
-node-fetch@^2.3.0:
+node-fetch@^2.3.0, node-fetch@^2.6.0:
   version "2.6.0"
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.0.tgz#e633456386d4aa55863f676a7ab0daa8fdecb0fd"
   integrity sha512-8dG4H5ujfvFiqDmVu9fQ5bOHUC15JMjMY/Zumv26oOvvVJjM67KF8koCWIabKQ1GJIa9r2mMZscBq/TbdOcmNA==
@@ -10390,6 +10412,11 @@ pbkdf2@^3.0.3:
     ripemd160 "^2.0.1"
     safe-buffer "^5.0.1"
     sha.js "^2.4.8"
+
+pct-encode@~1.0.0:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/pct-encode/-/pct-encode-1.0.2.tgz#b99b7b044d6bd7c39e4839a7a80122ad7515caa5"
+  integrity sha1-uZt7BE1r18OeSDmnqAEirXUVyqU=
 
 performance-now@^2.1.0:
   version "2.1.0"
@@ -11462,6 +11489,11 @@ query-string@^4.1.0:
   dependencies:
     object-assign "^4.1.0"
     strict-uri-encode "^1.0.0"
+
+querystring-browser@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/querystring-browser/-/querystring-browser-1.0.4.tgz#f2e35881840a819bc7b1bf597faf0979e6622dc6"
+  integrity sha1-8uNYgYQKgZvHsb9Zf68JeeZiLcY=
 
 querystring-es3@^0.2.0:
   version "0.2.1"
@@ -14159,6 +14191,13 @@ uri-js@^4.2.2:
   integrity sha512-KY9Frmirql91X2Qgjry0Wd4Y+YTdrdZheS8TFwvkbLWf/G5KNJDCh6pKL5OZctEW4+0Baa5idK2ZQuELRwPznQ==
   dependencies:
     punycode "^2.1.0"
+
+uri-template@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/uri-template/-/uri-template-1.0.1.tgz#14a925a37e4d93f7625432aa116b05e50cae81ad"
+  integrity sha1-FKklo35Nk/diVDKqEWsF5Qyuga0=
+  dependencies:
+    pct-encode "~1.0.0"
 
 urix@^0.1.0:
   version "0.1.0"

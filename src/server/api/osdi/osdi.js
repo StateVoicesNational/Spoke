@@ -3,6 +3,7 @@ import apiAuth from './api-auth'
 import { r } from '../../models'
 import { log } from '../../../lib'
 import osdiUtil from './osdiUtil'
+import osdiTranslate from './osdiTranslate'
 
 
 export const digDug = (p, o) => {
@@ -281,65 +282,9 @@ function translate_message_to_osdi_message(message,req) {
     return osdi;
 }
 
+
 function translate_contact_to_osdi_person(contact,req) {
-    var self_href="".concat(process.env.BASE_URL,
-        req.baseUrl,"/", contact.id);
-
-    var contact_custom_fields=contact.custom_fields;
-
-    var all_custom_fields=JSON.parse(contact_custom_fields);
-    var email=all_custom_fields['email'];
-    var custom_fields=_.omit(all_custom_fields,['email']);
-    var zip=contact.zip;
-
-
-    const identifiers=[
-        "spoke".concat(
-            ":",
-            contact.campaign_id,
-            "-",
-            contact.id
-        )
-    ]
-    var osdi = {
-        identifiers: identifiers,
-        given_name: contact['first_name'],
-        family_name: contact['last_name'],
-        phone_numbers: [
-            {
-                number_type: "Mobile",
-                number: contact['cell'],
-                sms_capable: !(contact.is_opted_out)
-            }
-        ],
-        modified_date: contact['updated_at'],
-        created_date: contact['created_at']
-
-    };
-
-    if (email) {
-        osdi.email_addresses=[
-            {
-                address: email
-            }
-        ]
-    }
-
-    if (zip) {
-        osdi.postal_addresses=[
-            {
-                postal_code: zip
-            }
-        ]
-    }
-
-    if (! _.isEmpty(custom_fields)) {
-        osdi.custom_fields=custom_fields
-    }
-
-
-
-    return osdi;
+    return osdiTranslate.contact_to_osdi_person(contact)
 }
 
 

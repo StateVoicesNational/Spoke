@@ -58,6 +58,8 @@ import { change } from '../local-auth-helpers'
 
 import { getSendBeforeTimeUtc } from '../../lib/timezones'
 
+import osdiPush from './osdi/osdiPush'
+
 const uuidv4 = require('uuid').v4
 const JOBS_SAME_PROCESS = !!(process.env.JOBS_SAME_PROCESS || global.JOBS_SAME_PROCESS)
 const JOBS_SYNC = !!(process.env.JOBS_SYNC || global.JOBS_SYNC)
@@ -1090,8 +1092,17 @@ const rootMutations = {
         if (interactionStepAction) {
           // run interaction step handler
           try {
-            const handler = require(`../action_handlers/${interactionStepAction}.js`)
-            handler.processAction(qr, interactionStepResult[0], campaignContactId)
+            // if it begins with osdi:....
+            if (_.startsWith(interactionStepAction,'osdi:')) {
+              // pass it to osdiPush
+
+              await osdiPush.processAction(interactionStepAction, qr, interactionStepResult[0], campaignContactId)
+
+            } else {
+
+              const handler = require(`../action_handlers/${interactionStepAction}.js`)
+              handler.processAction(qr, interactionStepResult[0], campaignContactId)
+            }
           } catch (err) {
             console.error(
               'Handler for InteractionStep',
@@ -1275,29 +1286,40 @@ const rootResolvers = {
         return await cacheableData.user.userOrgs(user.id, 'TEXTER')
       }
     },
-    availableActions: (_, { organizationId }, { user }) => {
-      if (!process.env.ACTION_HANDLERS) {
+    availableActions: async (_, { organizationId }, { user }) => {
+
+      if ( ! (process.env.ACTION_HANDLERS || osdiPush.enabled())) {
         return []
       }
-      const allHandlers = process.env.ACTION_HANDLERS.split(',')
 
-      const availableHandlers = allHandlers
-        .map(handler => {
+      var availableHandlerObjects
+
+      if (process.env.ACTION_HANDLERS) {
+        const allHandlers = process.env.ACTION_HANDLERS.split(',')
+
+        const availableHandlers = allHandlers
+            .map(handler => {
+              return {
+                name: handler,
+                handler: require(`../action_handlers/${handler}.js`)
+              }
+            })
+            .filter(async h => h && (await h.handler.available(organizationId)))
+
+        availableHandlerObjects = availableHandlers.map(handler => {
           return {
-            name: handler,
-            handler: require(`../action_handlers/${handler}.js`)
+            name: handler.name,
+            display_name: handler.handler.displayName(),
+            instructions: handler.handler.instructions()
           }
         })
-        .filter(async h => h && (await h.handler.available(organizationId)))
+      } else {
+        availableHandlerObjects = []
+      }
 
-      const availableHandlerObjects = availableHandlers.map(handler => {
-        return {
-          name: handler.name,
-          display_name: handler.handler.displayName(),
-          instructions: handler.handler.instructions()
-        }
-      })
-      return availableHandlerObjects
+      const osdiHandlerObjects = osdiPush.enabled() ? (await osdiPush.getActions()) : []
+      const allHandlerObjects = Array.concat(availableHandlerObjects, osdiHandlerObjects)
+      return allHandlerObjects
     },
     conversations: async (
       _,
