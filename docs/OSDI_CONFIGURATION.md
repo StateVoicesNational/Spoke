@@ -11,7 +11,7 @@ Outbound OSDI is configured with these environment variables
 * __OSDI_OUTBOUND_API_KEY__ Your OSDI API TOKEN
 * __OSDI_OUTBOUND_AEP__ [Optional] The URL of your OSDI API Entry Point
 
-By default, if you configured an API TOKEN but no AEP, Spoke will push to VAN / EveryAction.
+By default, if you configured an API TOKEN but no AEP, Spoke will push to VAN / EveryAction using `https://osdi.ngpvan.com/api/v1`
 
 ### Usage
 Once configured, when you are editing your interaction steps, Spoke will download the available survey questions and tags (aka Activist Codes in VAN)
