@@ -1,296 +1,382 @@
-import {
-  google
-} from 'googleapis'
+import { google } from "googleapis";
 
-import _ from 'lodash'
-import {
-  compose,
-  map,
-  reduce,
-  getOr,
-  find,
-  filter,
-  has
-} from 'lodash/fp'
+import _ from "lodash";
+import { compose, map, reduce, getOr, find, filter, has } from "lodash/fp";
 
-import {
-  r
-} from '../../models'
+import { r } from "../../models";
 
-const textRegex = RegExp('.*[A-Za-z0-9]+.*')
+const textRegex = RegExp(".*[A-Za-z0-9]+.*");
 
-const getDocument = async (documentId) => {
-  const auth = google.auth.fromJSON(JSON.parse(process.env.GOOGLE_SECRET))
-  auth.scopes = ['https://www.googleapis.com/auth/documents']
+const getDocument = async documentId => {
+  const auth = google.auth.fromJSON(JSON.parse(process.env.GOOGLE_SECRET));
+  auth.scopes = ["https://www.googleapis.com/auth/documents"];
 
   const docs = google.docs({
-    version: 'v1',
+    version: "v1",
     auth
-  })
+  });
 
-  let result = null
+  let result = null;
   try {
     result = await docs.documents.get({
       documentId
-    })
+    });
   } catch (err) {
-    console.log(err)
-    throw new Error(err.message)
+    console.log(err);
+    throw new Error(err.message);
   }
-  return result
-}
+  return result;
+};
 
-const getParagraphStyle = getOr('', 'paragraph.paragraphStyle.namedStyleType')
-const getTextRun = getOr('', 'textRun.content')
-const sanitizeTextRun = (textRun) => textRun.replace('\n', '')
+const getParagraphStyle = getOr("", "paragraph.paragraphStyle.namedStyleType");
+const getTextRun = getOr("", "textRun.content");
+const sanitizeTextRun = textRun => textRun.replace("\n", "");
 const getSanitizedTextRun = compose(
   sanitizeTextRun,
-  getTextRun)
-const concat = (left, right) => left.concat(right)
-const reduceStrings = reduce(concat, String())
+  getTextRun
+);
+const concat = (left, right) => left.concat(right);
+const reduceStrings = reduce(concat, String());
 const getParagraphText = compose(
   reduceStrings,
   map(getSanitizedTextRun),
-  getOr([], 'paragraph.elements'))
-const getParagraphIndent = getOr(0, 'paragraph.paragraphStyle.indentFirstLine.magnitude')
+  getOr([], "paragraph.elements")
+);
+const getParagraphIndent = getOr(
+  0,
+  "paragraph.paragraphStyle.indentFirstLine.magnitude"
+);
 const getParagraphBold = compose(
-  getOr(false, 'textRun.textStyle.bold'),
+  getOr(false, "textRun.textStyle.bold"),
   find(getTextRun),
-  getOr([], 'paragraph.elements'))
-const getParagraph = (element) => ({
+  getOr([], "paragraph.elements")
+);
+const getParagraph = element => ({
   style: getParagraphStyle(element),
   indent: getParagraphIndent(element),
   isParagraphBold: getParagraphBold(element),
   text: getParagraphText(element)
-})
-const hasParagraph = has('paragraph')
-const hasText = (paragraph) => !!paragraph.text && textRegex.test(paragraph.text.trim())
-const pushAndReturnSection = (sections) => {
+});
+const hasParagraph = has("paragraph");
+const hasText = paragraph =>
+  !!paragraph.text && textRegex.test(paragraph.text.trim());
+const pushAndReturnSection = sections => {
   const newSection = {
     paragraphs: []
-  }
-  sections.push(newSection)
-  return newSection
-}
+  };
+  sections.push(newSection);
+  return newSection;
+};
 
-const getLastSection = (sections) => _.last(sections) || pushAndReturnSection(sections)
+const getLastSection = sections =>
+  _.last(sections) || pushAndReturnSection(sections);
 
 const addParagraph = (accumulatorInput, value) => {
-  const accumulator = accumulatorInput || []
-  getLastSection(accumulator).paragraphs.push(value)
-  return accumulator
-}
+  const accumulator = accumulatorInput || [];
+  getLastSection(accumulator).paragraphs.push(value);
+  return accumulator;
+};
 
-const sanitizeHeaderText = (header) => header.replace(/[^A-Za-z0-9 ]/g, '')
+const sanitizeHeaderText = header => header.replace(/[^A-Za-z0-9 ]/g, "");
 
 const addHeader = (accumulatorInput, value) => {
-  const accumulator = accumulatorInput || []
-  accumulator.push(_.assign(_.clone(value), {
-    text: sanitizeHeaderText(value.text),
-    paragraphs: []
-  }))
-  return accumulator
-}
+  const accumulator = accumulatorInput || [];
+  accumulator.push(
+    _.assign(_.clone(value), {
+      text: sanitizeHeaderText(value.text),
+      paragraphs: []
+    })
+  );
+  return accumulator;
+};
 
-const addSection = (accumulator, value) => (value.style === 'HEADING_2' ? addHeader(accumulator, value) : addParagraph(accumulator, value))
+const addSection = (accumulator, value) =>
+  value.style === "HEADING_2"
+    ? addHeader(accumulator, value)
+    : addParagraph(accumulator, value);
 
 const getSections = compose(
   reduce(addSection, null),
   filter(hasText),
   map(getParagraph),
   filter(hasParagraph)
-)
+);
 
-const getSectionParagraphs = (sections, heading) => (sections.find((section) => section.text && section.text.toLowerCase() === heading.toLowerCase()) || {}).paragraphs
+const getSectionParagraphs = (sections, heading) =>
+  (
+    sections.find(
+      section =>
+        section.text && section.text.toLowerCase() === heading.toLowerCase()
+    ) || {}
+  ).paragraphs;
 
-const getInteractions = (sections) => getSectionParagraphs(sections, 'Interactions')
-const getCannedResponses = (sections) => getSectionParagraphs(sections, 'Canned Responses')
+const getInteractions = sections =>
+  getSectionParagraphs(sections, "Interactions");
+const getCannedResponses = sections =>
+  getSectionParagraphs(sections, "Canned Responses");
 
-const isNextChunkAQuestion = (interactionParagraphs, currentIndent) => interactionParagraphs.length > 1 &&
+const isNextChunkAQuestion = (interactionParagraphs, currentIndent) =>
+  interactionParagraphs.length > 1 &&
   interactionParagraphs[0].indent === currentIndent &&
   interactionParagraphs[1].indent > currentIndent &&
-  interactionParagraphs[1].isParagraphBold
+  interactionParagraphs[1].isParagraphBold;
 
-const isNextChunkAnAnswer = (interactionParagraphs, currentIndent) => interactionParagraphs.length > 1 &&
+const isNextChunkAnAnswer = (interactionParagraphs, currentIndent) =>
+  interactionParagraphs.length > 1 &&
   interactionParagraphs[0].indent === currentIndent &&
   interactionParagraphs[1].indent === currentIndent &&
-  !interactionParagraphs[1].isParagraphBold
+  !interactionParagraphs[1].isParagraphBold;
 
-const isError = (interactionParagraphs, currentIndent) => interactionParagraphs.length > 1 &&
+const isError = (interactionParagraphs, currentIndent) =>
+  interactionParagraphs.length > 1 &&
   interactionParagraphs[0].indent === currentIndent &&
-  ((interactionParagraphs[1].indent === currentIndent && interactionParagraphs[1].isParagraphBold) ||
-    (interactionParagraphs[1].indent > currentIndent && !interactionParagraphs[1].isParagraphBold))
+  ((interactionParagraphs[1].indent === currentIndent &&
+    interactionParagraphs[1].isParagraphBold) ||
+    (interactionParagraphs[1].indent > currentIndent &&
+      !interactionParagraphs[1].isParagraphBold));
 
-const isThisALeaf = (interactionParagraphs, currentIndent) => interactionParagraphs.length < 2 ||
-  interactionParagraphs[1].indent < currentIndent
+const isThisALeaf = (interactionParagraphs, currentIndent) =>
+  interactionParagraphs.length < 2 ||
+  interactionParagraphs[1].indent < currentIndent;
 
-const saveCurrentNodeToParent = (parentHierarchyNode, currentHierarchyNode) => parentHierarchyNode && parentHierarchyNode.children.push(currentHierarchyNode)
+const saveCurrentNodeToParent = (parentHierarchyNode, currentHierarchyNode) =>
+  parentHierarchyNode &&
+  parentHierarchyNode.children.push(currentHierarchyNode);
 
-const throwInteractionsHierarchyError = (message, interactionsHierarchyNode, interactionParagraphs) => {
+const throwInteractionsHierarchyError = (
+  message,
+  interactionsHierarchyNode,
+  interactionParagraphs
+) => {
   const lookFor = [
-    ...(interactionsHierarchyNode.answer ? [interactionsHierarchyNode.answer] : []),
-    ...(interactionsHierarchyNode.script ? interactionsHierarchyNode.script : []),
+    ...(interactionsHierarchyNode.answer
+      ? [interactionsHierarchyNode.answer]
+      : []),
+    ...(interactionsHierarchyNode.script
+      ? interactionsHierarchyNode.script
+      : []),
     ...(interactionParagraphs[0] ? [interactionParagraphs[0].text] : []),
     ...(interactionParagraphs[1] ? [interactionParagraphs[1].text] : [])
-  ].join(' | ')
-  throw new Error(`${message} Look for ${lookFor}`)
-}
+  ].join(" | ");
+  throw new Error(`${message} Look for ${lookFor}`);
+};
 
-const makeInteractionHierarchy = (interactionParagraphs, parentHierarchyNode) => {
-  if (!interactionParagraphs.length || interactionParagraphs[0].indent < (parentHierarchyNode ? parentHierarchyNode.indent : 0)) {
-    return parentHierarchyNode
+const makeInteractionHierarchy = (
+  interactionParagraphs,
+  parentHierarchyNode
+) => {
+  if (
+    !interactionParagraphs.length ||
+    interactionParagraphs[0].indent <
+      (parentHierarchyNode ? parentHierarchyNode.indent : 0)
+  ) {
+    return parentHierarchyNode;
   }
 
-  const currentIndent = interactionParagraphs[0].indent
+  const currentIndent = interactionParagraphs[0].indent;
 
-  let interactionsHierarchyNode = undefined
+  let interactionsHierarchyNode = undefined;
 
-  while (interactionParagraphs[0] && interactionParagraphs[0].indent === currentIndent) {
+  while (
+    interactionParagraphs[0] &&
+    interactionParagraphs[0].indent === currentIndent
+  ) {
     interactionsHierarchyNode = {
       children: []
-    }
+    };
 
-    interactionsHierarchyNode.answer = interactionParagraphs.shift().text
-    interactionsHierarchyNode.script = []
+    interactionsHierarchyNode.answer = interactionParagraphs.shift().text;
+    interactionsHierarchyNode.script = [];
 
-    while (interactionParagraphs.length && !interactionParagraphs[0].isParagraphBold) {
-      const interactionParagraph = interactionParagraphs.shift()
-      interactionsHierarchyNode.script.push(interactionParagraph.text)
+    while (
+      interactionParagraphs.length &&
+      !interactionParagraphs[0].isParagraphBold
+    ) {
+      const interactionParagraph = interactionParagraphs.shift();
+      interactionsHierarchyNode.script.push(interactionParagraph.text);
     }
 
     if (!interactionsHierarchyNode.script[0]) {
-      throwInteractionsHierarchyError('Interactions format error -- no script.', interactionsHierarchyNode, interactionParagraphs)
+      throwInteractionsHierarchyError(
+        "Interactions format error -- no script.",
+        interactionsHierarchyNode,
+        interactionParagraphs
+      );
     }
 
     if (isNextChunkAQuestion(interactionParagraphs, currentIndent)) {
-      interactionsHierarchyNode.question = interactionParagraphs.shift().text
-      saveCurrentNodeToParent(parentHierarchyNode, interactionsHierarchyNode)
-      makeInteractionHierarchy(interactionParagraphs, interactionsHierarchyNode)
+      interactionsHierarchyNode.question = interactionParagraphs.shift().text;
+      saveCurrentNodeToParent(parentHierarchyNode, interactionsHierarchyNode);
+      makeInteractionHierarchy(
+        interactionParagraphs,
+        interactionsHierarchyNode
+      );
     } else if (isNextChunkAnAnswer(interactionParagraphs, currentIndent)) {
-      saveCurrentNodeToParent(parentHierarchyNode, interactionsHierarchyNode)
-      makeInteractionHierarchy(interactionParagraphs, parentHierarchyNode)
+      saveCurrentNodeToParent(parentHierarchyNode, interactionsHierarchyNode);
+      makeInteractionHierarchy(interactionParagraphs, parentHierarchyNode);
     } else if (isThisALeaf(interactionParagraphs, currentIndent)) {
-      saveCurrentNodeToParent(parentHierarchyNode, interactionsHierarchyNode)
+      saveCurrentNodeToParent(parentHierarchyNode, interactionsHierarchyNode);
     } else if (isError(interactionParagraphs, currentIndent)) {
-      throwInteractionsHierarchyError('Interactions format error.', interactionsHierarchyNode, interactionParagraphs)
+      throwInteractionsHierarchyError(
+        "Interactions format error.",
+        interactionsHierarchyNode,
+        interactionParagraphs
+      );
     } else {
-      throwInteractionsHierarchyError('Interactions unexpected format.', interactionsHierarchyNode, interactionParagraphs)
+      throwInteractionsHierarchyError(
+        "Interactions unexpected format.",
+        interactionsHierarchyNode,
+        interactionParagraphs
+      );
     }
   }
-  return interactionsHierarchyNode
-}
+  return interactionsHierarchyNode;
+};
 
-const saveInteractionsHierarchyNode = async (trx, campaignId, interactionsHierarchyNode, parentHierarchyNodeId) => {
-  const nodeId = await r.knex.insert({
-    parent_interaction_id: parentHierarchyNodeId,
-    question: interactionsHierarchyNode.question || '',
-    script: interactionsHierarchyNode.script.join('\n') || '',
-    answer_option: interactionsHierarchyNode.answer || '',
-    answer_actions: '',
-    campaign_id: campaignId,
-    is_deleted: false
-  })
-    .into('interaction_step')
+const saveInteractionsHierarchyNode = async (
+  trx,
+  campaignId,
+  interactionsHierarchyNode,
+  parentHierarchyNodeId
+) => {
+  const nodeId = await r.knex
+    .insert({
+      parent_interaction_id: parentHierarchyNodeId,
+      question: interactionsHierarchyNode.question || "",
+      script: interactionsHierarchyNode.script.join("\n") || "",
+      answer_option: interactionsHierarchyNode.answer || "",
+      answer_actions: "",
+      campaign_id: campaignId,
+      is_deleted: false
+    })
+    .into("interaction_step")
     .transacting(trx)
-    .returning('id')
+    .returning("id");
 
   for (const child of interactionsHierarchyNode.children) {
-    await saveInteractionsHierarchyNode(trx, campaignId, child, nodeId[0])
+    await saveInteractionsHierarchyNode(trx, campaignId, child, nodeId[0]);
   }
-}
+};
 
-const replaceInteractionsInDatabase = async (campaignId, interactionsHierarchy) => {
+const replaceInteractionsInDatabase = async (
+  campaignId,
+  interactionsHierarchy
+) => {
   await r.knex.transaction(async trx => {
     try {
-      await r.knex('interaction_step')
+      await r
+        .knex("interaction_step")
         .transacting(trx)
         .where({
           campaign_id: campaignId
         })
-        .delete()
+        .delete();
 
-      await saveInteractionsHierarchyNode(trx, campaignId, interactionsHierarchy, null)
+      await saveInteractionsHierarchyNode(
+        trx,
+        campaignId,
+        interactionsHierarchy,
+        null
+      );
     } catch (exception) {
-      console.log(exception)
-      throw exception
+      console.log(exception);
+      throw exception;
     }
-  })
-}
+  });
+};
 
-const makeCannedResponsesList = (cannedResponsesParagraphs) => {
-  const cannedResponses = []
+const makeCannedResponsesList = cannedResponsesParagraphs => {
+  const cannedResponses = [];
   while (cannedResponsesParagraphs[0]) {
     const cannedResponse = {
       text: []
-    }
+    };
 
-    const paragraph = cannedResponsesParagraphs.shift()
+    const paragraph = cannedResponsesParagraphs.shift();
     if (!paragraph.isParagraphBold) {
-      throw new Error(`Canned responses format error -- can't find a bold paragraph. Look for [${paragraph.text}]`)
+      throw new Error(
+        `Canned responses format error -- can't find a bold paragraph. Look for [${paragraph.text}]`
+      );
     }
-    cannedResponse.title = paragraph.text
+    cannedResponse.title = paragraph.text;
 
-    while (cannedResponsesParagraphs[0] && !cannedResponsesParagraphs[0].isParagraphBold) {
-      const textParagraph = cannedResponsesParagraphs.shift()
-      cannedResponse.text.push(textParagraph.text)
+    while (
+      cannedResponsesParagraphs[0] &&
+      !cannedResponsesParagraphs[0].isParagraphBold
+    ) {
+      const textParagraph = cannedResponsesParagraphs.shift();
+      cannedResponse.text.push(textParagraph.text);
     }
 
     if (!cannedResponse.text[0]) {
-      throw new Error(`Canned responses format error -- canned response has no text. Look for [${cannedResponse.title}]`)
+      throw new Error(
+        `Canned responses format error -- canned response has no text. Look for [${cannedResponse.title}]`
+      );
     }
 
-    cannedResponses.push(cannedResponse)
+    cannedResponses.push(cannedResponse);
   }
 
-  return cannedResponses
-}
+  return cannedResponses;
+};
 
-const replaceCannedResponsesInDatabase = async (campaignId, cannedResponses) => {
+const replaceCannedResponsesInDatabase = async (
+  campaignId,
+  cannedResponses
+) => {
   await r.knex.transaction(async trx => {
     try {
-      await r.knex('canned_response')
+      await r
+        .knex("canned_response")
         .transacting(trx)
         .where({
           campaign_id: campaignId
         })
-        .whereNull('user_id')
-        .delete()
+        .whereNull("user_id")
+        .delete();
 
       for (const cannedResponse of cannedResponses) {
-        await r.knex.insert({
-          campaign_id: campaignId,
-          user_id: null,
-          title: cannedResponse.title,
-          text: cannedResponse.text.join('\n')
-        })
-        .into('canned_response')
-        .transacting(trx)
+        await r.knex
+          .insert({
+            campaign_id: campaignId,
+            user_id: null,
+            title: cannedResponse.title,
+            text: cannedResponse.text.join("\n")
+          })
+          .into("canned_response")
+          .transacting(trx);
       }
     } catch (exception) {
-      console.log(exception)
-      throw exception
+      console.log(exception);
+      throw exception;
     }
-  })
-}
+  });
+};
 
 const importScriptFromDocument = async (campaignId, scriptUrl) => {
-  const match = scriptUrl.match(/document\/d\/(.*)\//)
+  const match = scriptUrl.match(/document\/d\/(.*)\//);
   if (!match || !match[1]) {
-    throw new Error(`Invalid URL. This doesn't seem like a Google Docs URL.`)
+    throw new Error(`Invalid URL. This doesn't seem like a Google Docs URL.`);
   }
-  const documentId = match[1]
-  const result = await getDocument(documentId)
+  const documentId = match[1];
+  const result = await getDocument(documentId);
 
-  const document = result.data.body.content
-  const sections = getSections(document)
+  const document = result.data.body.content;
+  const sections = getSections(document);
 
-  const interactionParagraphs = getInteractions(sections)
-  const interactionsHierarchy = makeInteractionHierarchy(_.clone(interactionParagraphs), null, 0)
-  await replaceInteractionsInDatabase(campaignId, interactionsHierarchy)
+  const interactionParagraphs = getInteractions(sections);
+  const interactionsHierarchy = makeInteractionHierarchy(
+    _.clone(interactionParagraphs),
+    null,
+    0
+  );
+  await replaceInteractionsInDatabase(campaignId, interactionsHierarchy);
 
-  const cannedResponsesParagraphs = getCannedResponses(sections)
-  const cannedResponsesList = makeCannedResponsesList(_.clone(cannedResponsesParagraphs))
-  await replaceCannedResponsesInDatabase(campaignId, cannedResponsesList)
-}
+  const cannedResponsesParagraphs = getCannedResponses(sections);
+  const cannedResponsesList = makeCannedResponsesList(
+    _.clone(cannedResponsesParagraphs)
+  );
+  await replaceCannedResponsesInDatabase(campaignId, cannedResponsesList);
+};
 
-export default importScriptFromDocument
+export default importScriptFromDocument;

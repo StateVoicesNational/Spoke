@@ -15,4 +15,4 @@ export const schema = `
     osdiApiToken: String
     osdiEnabled: Boolean
   }
-`
+`;

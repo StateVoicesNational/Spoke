@@ -1,8 +1,8 @@
 {
   "name": "spoke",
   "description": "Mass peer to peer texting tool",
-  "repository":"https://github.com/moveonorg/spoke",
-  "success_url":"/",
+  "repository": "https://github.com/moveonorg/spoke",
+  "success_url": "/",
   "stack": "container",
   "env": {
     "SUPPRESS_SELF_INVITE": {
@@ -160,11 +160,12 @@
     "OSDI_MASTER_ENABLE": {
       "description": "Server wide switch to enable/disable OSDI",
       "required": false
+    },
+    "KNEX_MIGRATION_DIR": {
+      "description": "sets path for migration directory - do not change",
+      "required": true,
+      "value": "/spoke/build/server/migrations/"
     }
-
   },
-  "addons": [
-    "heroku-postgresql:hobby-dev",
-    "mailgun:starter"
-  ]
+  "addons": ["heroku-postgresql:hobby-dev", "mailgun:starter"]
 }

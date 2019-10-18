@@ -3,8 +3,8 @@ import _ from 'lodash'
 import {Ketting} from 'ketting'
 import osdiUtil from './osdiUtil'
 import osdiTranslate from './osdiTranslate'
-import {log} from "../../../lib";
-
+import {getProcessEnvTz, log} from "../../../lib";
+import moment from "moment-timezone";
 
 
 export const useSample = osdiUtil.truthy(process.env.OSDI_OUTBOUND_USE_SAMPLE)
@@ -203,7 +203,6 @@ export function getCanvassUrl(osdi_identifier) {
 }
 export async function processAction(action, qr, interactionStep, campaignContactId ) {
 
-
     const contact=await getCampaignContact(campaignContactId)
     if (useSample){
         return {
@@ -251,7 +250,7 @@ export async function personSignupHelper(contact) {
         person: osdiTranslate.contact_to_osdi_person(contact)
     }
 
-    console.log(JSON.stringify(pshrep))
+    log.debug(JSON.stringify(pshrep))
     const oclient = client()
     const psh =await oclient.follow('osdi:person_signup_helper')
 
@@ -279,7 +278,7 @@ export async function recordCanvass(canvass_url, action,contact) {
     const canvass={
         canvass: {
             contact_type: 'phone',
-            action_date: '2019-10-01'
+            action_date: moment.tz(getProcessEnvTz()).format("YYYY-MM-DD")
         }
     }
 
@@ -301,7 +300,7 @@ export async function recordCanvass(canvass_url, action,contact) {
 
 
     const canvass_json=JSON.stringify(canvass)
-    console.log(canvass_json)
+    log.debug(canvass_json)
 
     const init={
         method: 'POST',

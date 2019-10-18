@@ -1,22 +1,22 @@
 export const tables = [
-  'log',
-  'message',
-  'user_cell',
-  'job_request',
-  'pending_message_part',
-  'zip_code',
-  'invite',
-  'user',
-  'user_organization',
-  'campaign',
-  'interaction_step',
-  'assignment',
-  'organization',
-  'canned_response',
-  'opt_out',
-  'question_response',
-  'campaign_contact'
-]
+  "log",
+  "message",
+  "user_cell",
+  "job_request",
+  "pending_message_part",
+  "zip_code",
+  "invite",
+  "user",
+  "user_organization",
+  "campaign",
+  "interaction_step",
+  "assignment",
+  "organization",
+  "canned_response",
+  "opt_out",
+  "question_response",
+  "campaign_contact"
+];
 
 // Adapted from https://dba.stackexchange.com/a/37068
 export const indexQuery = `SELECT conrelid::regclass AS table_from
@@ -29,4 +29,4 @@ AND    conrelid::regclass::text <> 'migrations'
 AND    conrelid::regclass::text <> 'knex_migrations'
 AND    conrelid::regclass::text <> 'knex_migrations_lock'
 AND    n.nspname = 'public'
-ORDER  BY conrelid::regclass::text, contype DESC;`
+ORDER  BY conrelid::regclass::text, contype DESC;`;

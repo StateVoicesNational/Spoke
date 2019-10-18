@@ -1,2 +1,2 @@
-const timezones = jest.genMockFromModule('../timezones')
-module.exports = timezones
+const timezones = jest.genMockFromModule("../timezones");
+module.exports = timezones;
