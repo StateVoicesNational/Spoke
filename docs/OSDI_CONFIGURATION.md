@@ -49,6 +49,11 @@ One can now write automation scripts without having to be familiar with Node, di
 
 ### HOWTO
 
+#### Configuration
+
+Set environment variable `OSDI_MASTER_ENABLE` to `true`
+If you need the server to use a response content-type other than `application/json` such as `application/hal+json`, set the `OSDI_SERVER_CONTENT_TYPE` variable accordingly.
+
 Browse to http://spoke.dev.joshco.org/osdi
 
 While looking at the HAL browser, try the following walkthrough

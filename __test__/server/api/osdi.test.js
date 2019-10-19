@@ -10,7 +10,7 @@ import 'babel-polyfill'
 import bodyParser from 'body-parser'
 import express from 'express'
 
-import { r } from '../../../src/server/models/'
+import { r, loaders, CampaignContact, QuestionResponse } from '../../../src/server/models/'
 /*
 import { newUUID, getHash } from '../../../src/server/api/osdi/guid'
 
@@ -49,6 +49,7 @@ import {
 } from '../../test_helpers'
 //import app from "../../../src/server";
 import osdi from "../../../src/server/api/osdi";
+import osdiUtil from "../../../src/server/api/osdi/osdiUtil";
 
 let testAdminUser
 let testInvite
@@ -134,6 +135,53 @@ describe("osdi.server infrastructure", async () => {
         expect(response.statusCode).toBe(403)
     });
 
+
+    test("content_type", async () => {
+
+        process.env.OSDI_SERVER_CONTENT_TYPE='application/hal+json'
+
+        const apiToken = 'sexualorientationgenderidentity'
+
+        let tosdi = await enableOSDI(testOrganization, testAdminUser, apiToken)
+
+        let response = await request(app).get("/osdi/org/1/campaigns/1/api/v1/people?per_page=5").set("OSDI-API-Token", apiToken)
+
+        const contentType =response.headers['content-type']
+
+        expect(contentType).toEqual('application/hal+json')
+
+        expect(response.statusCode).toBe(200);
+    })
+
+
+    // not yet implemented
+    test.skip("filter_date", async () => {
+
+        const contact_id=testContacts[2].id
+        const contact = await loaders.campaignContact.load(contact_id)
+        contact.updated_at = "2020-10-10T04:58:43.109Z"
+
+        await CampaignContact.update(contact)
+
+        const contact2 = await loaders.campaignContact.load(contact_id)
+
+        osdiUtil.logOSDI(contact2)
+
+        const apiToken = 'sexualorientationgenderidentity'
+
+        /*
+        let tosdi = await enableOSDI(testOrganization, testAdminUser, apiToken)
+
+        let response = await request(app).get("/osdi/org/1/campaigns/1/api/v1/people?per_page=5").set("OSDI-API-Token", apiToken)
+
+        expect(response.statusCode).toBe(200);
+        let osdiResponse = response.body
+
+        expect(osdiResponse.total_records).toBe(100)
+        */
+
+
+    })
 
     test("It should fail because OSDI is disabled", async () => {
 

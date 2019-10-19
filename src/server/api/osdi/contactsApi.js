@@ -6,6 +6,7 @@ import { log } from '../../../lib'
 import { getValidatedData } from '../../../lib'
 import apiAuth from './api-auth'
 import osdi from './osdi'
+import osdiUtil from './osdiUtil'
 
 
 
@@ -118,7 +119,7 @@ export default async function contactsApi(req, res) {
       } else if (osdi_body.signups) {
         people = _.map(osdi_body.signups, (signup) => signup.person);
       } else {
-        res.writeHead(400)
+        res.writeHead(400,{'Content-Type': osdiUtil.serverContentType()})
         var err = osdi.osdi_error(400, "Signup requires either a person attribute or signups array");
         res.end(JSON.stringify(err))
         return
@@ -225,15 +226,15 @@ export default async function contactsApi(req, res) {
     }
 
     if (resp) {
-      res.writeHead(200, {'Content-Type': 'application/json'})
+      res.writeHead(200, {'Content-Type': osdiUtil.serverContentType()})
       res.end(JSON.stringify(resp, null, 2))
     } else {
-      res.writeHead(500, {'Content-Type': 'application/json'})
+      res.writeHead(500, {'Content-Type': osdiUtil.serverContentType()})
       res.end(JSON.stringify({error: 'Internal server error'}))
     }
   } catch (ex) {
     log.error(ex)
-    res.writeHead(500, {'Content-Type': 'application/json'})
+    res.writeHead(500, {'Content-Type': osdiUtil.serverContentType()})
     res.end(JSON.stringify({error: ex}))
   }
 

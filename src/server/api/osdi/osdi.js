@@ -318,7 +318,7 @@ export async function campaignStats(req,res) {
             }
         }
     };
-    res.writeHead(200, { 'Content-Type': 'application/json' })
+    res.writeHead(200, { 'Content-Type': osdiUtil.serverContentType() })
     res.end(JSON.stringify(resp,null, 2))
 
 }

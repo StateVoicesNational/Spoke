@@ -1,9 +1,10 @@
 import _ from 'lodash'
 import {cacheableData, r, createLoaders} from '../../models';
 import { getHash } from './guid'
+import osdiUtil from './osdiUtil'
 
 async function sendForbiddenResponse(req,res) {
-  res.writeHead(403,{'Content-Type': 'application/json'})
+  res.writeHead(403,{'Content-Type': osdiUtil.serverContentType()})
   var error={
     "osdi:error": {
       response_code: 403,
@@ -17,7 +18,7 @@ async function sendForbiddenResponse(req,res) {
 
 
 async function sendDisabledResponse(req,res) {
-  res.writeHead(510,{'Content-Type': 'application/json'})
+  res.writeHead(510,{'Content-Type': osdiUtil.serverContentType()})
   var error={
     "osdi:error": {
       response_code: 510,

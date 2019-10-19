@@ -1,6 +1,9 @@
 import _ from "lodash";
 import {log} from "../../../lib";
 
+export function serverContentType() {
+    return process.env.OSDI_SERVER_CONTENT_TYPE || 'application/json'
+}
 function osdiAEP(req) {
     return "".concat(process.env.BASE_URL,
         "/osdi/org/",
@@ -60,5 +63,6 @@ export default {
     isDisabled,
     truthy,
     prettyOSDI,
-    logOSDI
+    logOSDI,
+    serverContentType
 }

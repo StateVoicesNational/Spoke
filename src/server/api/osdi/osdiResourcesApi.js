@@ -6,6 +6,7 @@ import { log } from '../../../lib'
 import { getValidatedData } from '../../../lib'
 import apiAuth from './api-auth'
 import osdi from './osdi'
+import osdiUtil from './osdiUtil'
 
 function pluralize(singular){
   // lamest pluralize function ever
@@ -410,15 +411,15 @@ export default async function osdiResourcesApi(req, res, options) {
           title: "Go to Entry Point"
         }
       }
-      res.writeHead(200, {'Content-Type': 'application/json'})
+      res.writeHead(200, {'Content-Type': osdiUtil.serverContentType()})
       res.end(JSON.stringify(resp, null, 2))
     } else {
-      res.writeHead(500, {'Content-Type': 'application/json'})
+      res.writeHead(500, {'Content-Type': osdiUtil.serverContentType()})
       res.end(JSON.stringify({error: 'Internal server error'}))
     }
   } catch(ex) {
     log.error(ex)
-    res.writeHead(500, {'Content-Type': 'application/json'})
+    res.writeHead(500, {'Content-Type': osdiUtil.serverContentType()})
     res.end(JSON.stringify({error: ex}))
   }
 }
