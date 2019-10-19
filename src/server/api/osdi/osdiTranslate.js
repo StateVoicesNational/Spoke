@@ -1,4 +1,5 @@
 import _ from "lodash";
+import moment from "moment-timezone";
 
 
 function contact_to_osdi_person(contact) {
@@ -66,6 +67,23 @@ function contact_to_osdi_person(contact) {
     return osdi;
 }
 
+function odata_filter_to_where(filter, resource_type) {
+    // I made the lamest OData filter parser.  TBD find a real one from a real developer.
+
+    const dateField= resource_type.concat(".",resource_type === "campaign_contact" ? "updated_at" : "created_at")
+    const dateFilter = new RegExp(/modified_date gt \'(.+)\'/)
+    let where={}
+
+    const results = filter.match(dateFilter)
+    if (results) {
+        let dateValue=moment(results[1]).toISOString()
+        where=[dateField,'>', dateValue]
+        console.log("date where ".concat(where))
+    }
+    return where;
+}
+
 module.exports = {
-    contact_to_osdi_person
+    contact_to_osdi_person,
+    odata_filter_to_where
 }

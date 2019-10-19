@@ -81,7 +81,6 @@ export async function AEP(req, res) {
             curies:  osdiUtil.curies()
         }
     };
-    log.info(JSON.stringify(aep))
     res.writeHead(200,{'Content-Type': osdiUtil.serverContentType()});
     res.end(JSON.stringify(aep,null,2));
 }

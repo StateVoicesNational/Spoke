@@ -14,7 +14,8 @@ function osdiCors(app) {
         credentials: true,
         allowedHeaders: [
             'Cookie',
-            'OSDI-API-Token'
+            'OSDI-API-Token',
+            'OSDI-Diagnostics'
         ]
     }
     app.options('*', cors(corsOptions)) // include before other routes
@@ -63,14 +64,27 @@ function initializeService(app) {
     }))
 
 
+
+    app.get('/osdi/org/:orgId/campaigns/:campaignId/api/v1/people', wrap(async (req, res) => {
+        await osdiResourcesApi(req, res, { resource_type: 'campaign_contact'})
+    }))
+
     app.use('/osdi/org/:orgId/campaigns/:campaignId/api/v1/people', wrap(async (req, res) => {
         await contactsApi(req, res)
+    }))
+
+
+    app.use('/osdi/org/:orgId/campaigns/:campaignId/api/v1/answers/:id', wrap(async (req, res) => {
+        await osdiResourcesApi(req, res, {resource_type: 'question_response', single: true}
+        )
     }))
 
     app.use('/osdi/org/:orgId/campaigns/:campaignId/api/v1/answers', wrap(async (req, res) => {
         await osdiResourcesApi(req, res, {resource_type: 'question_response', root_answers: true}
         )
     }))
+
+
 
     app.use('/osdi/org/:orgId/campaigns/:campaignId/api/v1/stats', wrap(async (req, res) => {
         await osdi.campaignStats(req, res)

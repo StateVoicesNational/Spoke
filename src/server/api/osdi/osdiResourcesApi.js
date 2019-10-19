@@ -7,6 +7,7 @@ import { getValidatedData } from '../../../lib'
 import apiAuth from './api-auth'
 import osdi from './osdi'
 import osdiUtil from './osdiUtil'
+import osdiTranslate from './osdiTranslate'
 
 function pluralize(singular){
   // lamest pluralize function ever
@@ -136,6 +137,8 @@ export default async function osdiResourcesApi(req, res, options) {
 
     let resources = null
     let resource = null
+    let resources_promise = null
+
 
     if (options.single == true && req.params.id && req.method === 'GET') {
 
@@ -206,18 +209,15 @@ export default async function osdiResourcesApi(req, res, options) {
         case options.root_answers == true:
 
           var query=r
-              .knex(resource_type)
-              .where({'interaction_step.campaign_id': req.params.campaignId})
+              .knex
+              .select('question_response.*')
+              .from('question_response')
               .join('interaction_step','question_response.interaction_step_id', '=', 'interaction_step.id')
+              .where({'interaction_step.campaign_id': req.params.campaignId})
 
-          count = await r.getCount(
-              query.clone()
-          )
 
-          resources = await query
-              .orderBy('question_response.created_at','desc')
-              .offset(offset)
-              .limit(per_page)
+            orderBy = ['question_response.created_at','desc']
+            resources_promise = query.clone()
 
           break;
 
@@ -240,19 +240,31 @@ export default async function osdiResourcesApi(req, res, options) {
           break;
 
         default:
-          count = await r.getCount(
-              r.knex(resource_type)
-                  .where(where)
-          );
-
-          resources = await r
+          var query = r
               .knex(resource_type)
               .where(where)
-              .orderBy(...orderBy)
-              .offset(offset)
-              .limit(per_page);
+
+
+          resources_promise = query.clone()
+
       }
 
+      if ( ! resources && resources_promise ) {
+        if ( req.query.filter ) {
+          resources_promise=resources_promise.where(...osdiTranslate.odata_filter_to_where(req.query.filter, resource_type))
+        }
+        count = 5
+        // await r.getCount(
+        //     resources_promise.clone()
+        // )
+        resources_promise = resources_promise
+            .orderBy(...orderBy)
+            .offset(offset)
+            .limit(per_page);
+
+
+        resources = await resources_promise
+      }
       var embedded_key = "osdi:".concat(pluralize(osdi.spoke_to_osdi_type(resource_type)));
 
       let _embedded = {}
@@ -407,7 +419,7 @@ export default async function osdiResourcesApi(req, res, options) {
     if (resp) {
       if (resp._links) {
         resp._links['osdi:aep'] = {
-          href: osdi.osdiAEP(req),
+          href: osdiUtil.osdiAEP(req),
           title: "Go to Entry Point"
         }
       }
