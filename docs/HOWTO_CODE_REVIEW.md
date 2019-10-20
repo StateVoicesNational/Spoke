@@ -1,5 +1,5 @@
 # How to Code Review
-
+Thank you for stepping up to code review changes for Spoke! Check out [our developer docs](https://github.com/MoveOnOrg/Spoke#more-documentation) for more information about how we write code.
 ## Pre-Review
 - Put your mentor hat on — be respectful and gentle — the Spoke project encourages contributions from beginner-developers, and we want to make their early experiences with open-source contributions as positive as possible. We have a [Code of Conduct](https://github.com/MoveOnOrg/Spoke/blob/main/CODE_OF_CONDUCT.md) that we expect all members of the community to follow, and is especially important in the position of being a reviewer.
 
