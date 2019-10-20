@@ -9,7 +9,7 @@
 
 ### Example mutation - takes an input object, creates a valid invitation object and requests id of the newly created invitation in response:
 
-```
+```gql
 mutation {
   createInvite(invite: {is_valid: true}) {
     id
@@ -19,7 +19,7 @@ mutation {
 
 #### Example mutation result
 
-```
+```json
 {
   "data": {
     "createInvite": {
@@ -31,7 +31,7 @@ mutation {
 
 ### Example mutation 2 - takes query variables, creates a valid organization object and requests id of the newly created organization in response:
 
-```
+```gql
 mutation createOrganization($name: String!, $userId: String!, $inviteId: String!) {
   createOrganization(name: $name, userId: $userId, inviteId: $inviteId) {
     id
@@ -41,8 +41,9 @@ mutation createOrganization($name: String!, $userId: String!, $inviteId: String!
 
 (in query variables window)
 
-```
-{"userId": "749bd1dd-63a1-4696-a1a8-137bbcecb5d0",
+```json
+{
+  "userId": "749bd1dd-63a1-4696-a1a8-137bbcecb5d0",
   "name": "Testy test organization",
   "inviteId": "d9691319-1106-4c4d-9efc-7765029fc140"
 }
@@ -50,7 +51,7 @@ mutation createOrganization($name: String!, $userId: String!, $inviteId: String!
 
 #### Example mutation 2 result
 
-```
+```json
 {
   "data": {
     "createOrganization": {
@@ -62,7 +63,7 @@ mutation createOrganization($name: String!, $userId: String!, $inviteId: String!
 
 ### Example query - requests a specific campaign instance and specific details of subfields (use a campaign id from your own database)
 
-```
+```gql
 {
   campaign(id: "8c429f5b-2627-47b4-9395-5814a27e403f") {
     organization {
@@ -84,7 +85,7 @@ mutation createOrganization($name: String!, $userId: String!, $inviteId: String!
 
 #### Example query result:
 
-```
+```json
 {
   "data": {
     "campaign": {
@@ -145,7 +146,7 @@ mutation createOrganization($name: String!, $userId: String!, $inviteId: String!
 
 Like so:
 
-```
+```js
 app.use('/graphql', apolloServer((req) => ({
   graphiql: true,
   pretty: true,
@@ -159,14 +160,8 @@ app.use('/graphql', apolloServer((req) => ({
   tracer,
   printErrors: true,
   allowUndefinedInResolve: false,
-  formatError: (err) => { console.log(err.stack); return err }, 
+  formatError: (err) => { console.log(err.stack); return err },
 })))
 ```
 
-* console.log statements in mutation definitions in src/server/schema.js will show up in the console when the mutations fire 
-
-
-
-
-
-
+* console.log statements in mutation definitions in src/server/schema.js will show up in the console when the mutations fire
