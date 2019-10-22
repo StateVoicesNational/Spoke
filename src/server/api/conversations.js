@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { Assignment, r } from "../models";
+import { Assignment, r, loaders } from "../models";
 import { addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue } from "./assignment";
 import { buildCampaignQuery } from "./campaign";
 import { log } from "../../lib";
@@ -299,6 +299,13 @@ export async function reassignConversations(
         .update({
           assignment_id: assignmentId
         });
+
+      // Clear the DataLoader cache for the campaign contacts affected by the foregoing
+      // SQL statement to keep the cache in sync.  This will force the campaignContact
+      // to be refreshed from the database.
+      campaignContactIds.forEach(campaignContactId =>
+        loaders.campaignContact.clear(campaignContactId)
+      );
 
       returnCampaignIdAssignmentIds.push({
         campaignId,
