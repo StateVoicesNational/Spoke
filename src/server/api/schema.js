@@ -29,7 +29,8 @@ import {
   User,
   UserOrganization,
   r,
-  cacheableData
+  cacheableData,
+  loaders
 } from "../models";
 // import { isBetweenTextingHours } from '../../lib/timezones'
 import { Notifications, sendUserNotification } from "../notifications";
@@ -882,6 +883,12 @@ const rootMutations = {
     ) => {
       await assignmentRequired(user, assignmentId);
       const contacts = contactIds.map(async contactId => {
+        // this is a super-local change to handle the specific case
+        // of message_status being updated in a separate message-handling
+        // process -- incomingmessagehandler -- and not updating the
+        // DataLoader (https://github.com/graphql/dataloader) cache.
+        loaders.campaignContact.clear(contactId);
+
         const contact = await loaders.campaignContact.load(contactId);
         if (contact && contact.assignment_id === Number(assignmentId)) {
           return contact;
