@@ -78,11 +78,11 @@ describe("osdi.server infrastructure", async () => {
 
     beforeEach(async () => {
 
-        process.env.OSDI_MASTER_ENABLE = 'true'
+        process.env.OSDI_SERVER_ENABLE = 'true'
         process.env.BASE_URL = 'http://spoke.loopback.site:3000'
 
         // Set up an entire working campaign
-        console.log("JOBS SYNC ".concat(process.env.OSDI_MASTER_ENABLE))
+        console.log("JOBS SYNC ".concat(process.env.OSDI_SERVER_ENABLE))
         await setupTest()
         testAdminUser = await createUser()
         testInvite = await createInvite()
@@ -99,7 +99,6 @@ describe("osdi.server infrastructure", async () => {
         // await startCampaign(testAdminUser, testCampaign)
         app = appSetup()
 
-        console.log('endbefore')
     }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT)
 
     afterEach(async () => {
@@ -127,7 +126,7 @@ describe("osdi.server infrastructure", async () => {
 
         let osdiPerson = osdiPeople[0]
 
-        expect(osdiPerson.given_name).toEqual('Ann0')
+        expect(osdiPerson.given_name).toEqual('Ann99')
 
         // try with bad apitoken
         response = await request(app).get("/osdi/org/1/campaigns/1/api/v1/people?per_page=5").set("OSDI-API-Token", 'homophobia')

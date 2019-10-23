@@ -7,32 +7,53 @@ import {getProcessEnvTz, log} from "../../../lib";
 import moment from "moment-timezone";
 
 
-export const useSample = osdiUtil.truthy(process.env.OSDI_OUTBOUND_USE_SAMPLE)
-const osdiOutboundAEP = process.env.OSDI_OUTBOUND_AEP || 'https://osdi.ngpvan.com/api/v1'
-const osdiOutboundAPIToken = process.env.OSDI_OUTBOUND_API_TOKEN
+export function useSample() { return osdiUtil.truthy(process.env.OSDI_OUTBOUND_USE_SAMPLE) }
+
+export function osdiOutboundAEP() {
+    return process.env.OSDI_OUTBOUND_AEP || 'https://osdi.ngpvan.com/api/v1'
+}
+
+function osdiOutboundAPIToken() {
+  return process.env.OSDI_OUTBOUND_API_TOKEN
+}
 
 const cacheKey = (id) => `${process.env.CACHE_PREFIX || ''}osdi-${id}`
 
 export function enabled() {
-    var res=_.isString(osdiOutboundAPIToken)
+    var res=_.isString(osdiOutboundAPIToken())
     return (res)
 }
 
+async function hasRel(ketting,rel) {
+    const aepResource = ketting.getResource()
+    const links = await aepResource.links()
+    const linkRels = links.map((l) => {
+        return l.rel
+    })
+    return linkRels.includes(rel)
+}
 async function slurpCollection(ketting, rel) {
-    let resourceCollection = await ketting.follow(rel)
-    let resources = await resourceCollection.followAll(rel)
+    var resource_array
 
-    let resource_array = await Promise.all(resources.map(async function (r) {
-        const rr = await r.representation()
-        return rr
-    }))
+    if ( await hasRel(ketting,rel )) {
+        let resourceCollection = await ketting.follow(rel)
+        let resources = await resourceCollection.followAll(rel)
+
+        resource_array = await Promise.all(resources.map(async function (r) {
+            const rr = await r.representation()
+            return rr
+        }))
+    } else {
+        log.warn("No ".concat(rel, " Collection on OSDI system"))
+        resource_array = []
+    }
     return resource_array
 }
 
 export function client() {
     const osdiPushConfig = {
-        ApiToken: osdiOutboundAPIToken,
-        AEP: osdiOutboundAEP
+        ApiToken: osdiOutboundAPIToken(),
+        AEP: osdiOutboundAEP()
 
     }
     let osdiOptions = {
@@ -77,7 +98,12 @@ export function questionChoices(osdiCache) {
             let choice = {
                 type: 'question',
                 name: name,
-                display_name: "Q [".concat(body.name, "] => A [", response.name,"]"),
+                display_name: [
+                    "[",
+                _.truncate(response.name,20),
+                "] ",
+                osdiUtil.st(display_text,40)
+            ].join(''),
                 instructions: "Answer ".concat(display_text, " with: ",response.name)
             }
             return choice
@@ -107,7 +133,7 @@ export function tagChoices(osdiCache) {
             type: 'tag_activist_code',
             name: choiceName(t,'osdi:tag',action_key),
             display_name: "Tag with ".concat(body.name),
-            instructions: "Remotely apply Tag or Activist Code ".concat(body.name, " ID: ", identifier)
+            instructions: "Tag/AC ".concat(body.name, " ID: ", identifier)
         }
         return choice
     })
@@ -118,13 +144,26 @@ export function eventChoices(osdiCache) {
     return []
 }
 
+function signupChoices(osdiCache) {
+    return [
+        {
+            type: 'signup',
+            name: 'osdi:signup|signup|signup',
+            display_name: 'Person Signup Helper',
+            instructions: 'Invoke a standard osdi:person_signup_helper action'
+        }
+    ]
+}
+
 export function choices(osdiCache) {
     let choiceList = _.flatten([
+            signupChoices(osdiCache),
             questionChoices(osdiCache),
             tagChoices(osdiCache),
             eventChoices(osdiCache)
         ]
     )
+
     return choiceList
 }
 
@@ -133,7 +172,7 @@ export async function getCache() {
     var id='osdi_push_config'
     var cacheData
 
-    if ( r.redis) {
+    if ( r.redis && (!osdiUtil.truthy(process.env.OSDI_DISABLE_OUTBOUND_CACHE))) {
         cacheData = await r.redis.getAsync(cacheKey(id))
         if (!cacheData) {
             cacheData = await loadCache()
@@ -159,7 +198,7 @@ export async function loadCache(){
 
     await r.redis.multi()
         .set(cacheKey(id), JSON.stringify(osdiCache))
-        .expire(cacheKey(id), 43200)
+        .expire(cacheKey(id), 120)
         .execAsync()
     return osdiCache
 }
@@ -184,9 +223,10 @@ export async function downloadCache() {
     return osdiCache
 }
 
-export async function getActions() {
-    const data=useSample ? sampleCache() : (await getCache())
+export async function getActions(options) {
+    const data=useSample() ? sampleCache() : (await getCache(options))
     const actions=choices(data)
+    osdiUtil.logOSDI(actions)
     return actions
 }
 
@@ -197,14 +237,20 @@ export async function getCampaignContact(id) {
 export function getCanvassUrl(osdi_identifier) {
     const id=osdi_identifier.split(':').pop()
 
-    const url=osdiOutboundAEP.concat('/people/',id,'/record_canvass_helper')
+    const url=osdiOutboundAEP().concat('/people/',id,'/record_canvass_helper')
     return url
 
 }
 export async function processAction(action, qr, interactionStep, campaignContactId ) {
 
+    osdiUtil.logOSDI([
+        "Processing OSDI Action ", action, "ContactID", campaignContactId
+    ])
+
+    const action_object = crackAction(action)
+
     const contact=await getCampaignContact(campaignContactId)
-    if (useSample){
+    if (useSample()){
         return {
             signup: osdiTranslate.contact_to_osdi_person(contact),
             canvass: {}
@@ -218,12 +264,12 @@ export async function processAction(action, qr, interactionStep, campaignContact
 
 
     let pshResponse={}
-    let canvassResponse
+    let canvassResponse={}
     let canvass_url
 
     let osdi_identifier
 
-    if ( custom_fields.osdi_identifier) {
+    if ( custom_fields.osdi_identifier && (action_object.type != 'osdi:signup' )) {
         osdi_identifier = custom_fields.osdi_identifier
     } else {
         // do person signup to match first
@@ -232,16 +278,21 @@ export async function processAction(action, qr, interactionStep, campaignContact
         custom_fields.osdi_identifier=osdi_identifier
         contact.custom_fields=JSON.stringify(custom_fields)
         await contact.save()
-        osdiUtil.logOSDI()
     }
 
-    canvass_url = getCanvassUrl(osdi_identifier)
-    canvassResponse= await recordCanvass(canvass_url, action, contact)
 
-    return {
+    if (action_object.type != 'osdi:signup' ) {
+        canvass_url = getCanvassUrl(osdi_identifier)
+        canvassResponse = await recordCanvass(canvass_url, action, contact)
+    }
+    const result= {
+        message: "OSDI Responses for signup and canvass",
         signup: pshResponse,
         canvass: canvassResponse
     }
+
+    osdiUtil.logOSDI(result)
+    return result
 }
 
 export async function personSignupHelper(contact) {
@@ -250,7 +301,10 @@ export async function personSignupHelper(contact) {
         person: osdiTranslate.contact_to_osdi_person(contact)
     }
 
-    log.debug(JSON.stringify(pshrep))
+    osdiUtil.logOSDI([
+        "Posting Person Signup Helper:",
+        pshrep
+    ])
     const oclient = client()
     const psh =await oclient.follow('osdi:person_signup_helper')
 
@@ -266,21 +320,31 @@ export async function personSignupHelper(contact) {
 
 }
 
-
-export async function recordCanvass(canvass_url, action,contact) {
-    const oclient=client()
+function crackAction(action) {
     const question_parts=action.split('|')
-    const question_action={
+    const action_object={
         type: question_parts[0],
         response_key: question_parts[1],
         url: question_parts[2]
     }
+    return action_object
+}
+
+export async function recordCanvass(canvass_url, action,contact) {
+    const oclient=client()
+    const question_action=crackAction(action)
+
     const canvass={
         canvass: {
             contact_type: 'phone',
             action_date: moment.tz(getProcessEnvTz()).format("YYYY-MM-DD")
         }
     }
+
+    osdiUtil.logOSDI([
+        "Posting canvass_record_helper",
+        canvass
+    ])
 
     if (question_action.type==='osdi:question') {
         canvass.add_answers = [
@@ -316,6 +380,95 @@ export async function recordCanvass(canvass_url, action,contact) {
 
 }
 
+export async function clearOsdiIdentifiers() {
+    const contacts = await r.knex('campaign_contact')
+        .whereRaw("custom_fields ilike '%osdi_identifier%'")
+
+    const rows=contacts.length
+
+    const updates = Promise.all(contacts.map( async function(c) {
+        let custom_fields = c.custom_fields
+        if (custom_fields) {
+            let new_fields = JSON.stringify(_.omit(JSON.parse(custom_fields), ['osdi_identifier']))
+            await r.knex('campaign_contact')
+                .where({id: c.id})
+                .update({custom_fields: new_fields})
+
+        }
+    }))
+
+
+    return rows
+}
+
+export async function configuredInteractionSteps() {
+    const osdiSteps = await r.knex('interaction_step')
+        .select('interaction_step.*','isp.question as pq')
+        .from('interaction_step')
+        .joinRaw('join interaction_step as isp on interaction_step.parent_interaction_id = isp.id',)
+        .whereRaw("interaction_step.answer_actions ilike 'osdi:%'").limit(10)
+        .orderBy('interaction_step.campaign_id','asc')
+        .orderBy('interaction_step.id','asc')
+
+    osdiUtil.logOSDI(osdiSteps)
+
+
+    return osdiSteps
+}
+
+export async function clearConfiguredInteractionSteps() {
+    const isteps=await configuredInteractionSteps()
+    const matchString = 'osdi:'
+
+
+    await Promise.all(isteps.map(async (i) => {
+
+        const removed =
+
+            _.join(
+                _.reject(
+                    _.split( i.answer_actions,','),
+                    (s) => {
+                        return _.startsWith(s, matchString)
+                    }),
+                ',')
+
+
+        osdiUtil.logCLI("Old ".concat(i.answer_actions, " NEW ", removed))
+
+        const update = await r.knex
+            .from('interaction_step')
+            .where({id: i.id})
+            .update({answer_actions: removed})
+
+
+        return update
+    }))
+    return isteps.length
+}
+
+export async function addOsdiIdentifiers() {
+    const contacts = await r.knex('campaign_contact')
+        .limit(20)
+
+
+
+    const updates = Promise.all((contacts.map( async function(c) {
+        let custom_fields = c.custom_fields
+        if (custom_fields) {
+            let new_fields = JSON.stringify(_.assign(JSON.parse(custom_fields), {'osdi_identifier': 'deadbeef'}))
+            return await r.knex('campaign_contact')
+                .where({id: c.id})
+                .update({custom_fields: new_fields})
+
+        }
+    })))
+
+
+    return updates
+}
+
+
 module.exports=  {
     client,
     slurpCollection,
@@ -325,7 +478,12 @@ module.exports=  {
     enabled,
     personSignupHelper,
     getActions,
-    useSample
+    useSample,
+    osdiOutboundAEP,
+    clearOsdiIdentifiers,
+    addOsdiIdentifiers,
+    configuredInteractionSteps,
+    clearConfiguredInteractionSteps
 }
 
 export function sampleCache() {

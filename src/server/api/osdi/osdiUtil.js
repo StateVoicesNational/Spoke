@@ -30,8 +30,12 @@ function curies() {
 }
 
 
+export function st(str,length) {
+    return _.padEnd(str.substr(0,length),length)
+}
+
 export function isEnabled() {
-    const envVar = process.env.OSDI_MASTER_ENABLE
+    const envVar = process.env.OSDI_SERVER_ENABLE
     const enabled = truthy(envVar)
 
     return enabled
@@ -51,10 +55,28 @@ export function prettyOSDI(osdi) {
     return JSON.stringify(osdi,undefined,2)
 }
 
-export function logOSDI(osdi) {
-    const json=prettyOSDI(osdi)
-    console.log(json)
+
+function loggingEnabled() {
+    return truthy(process.env.OSDI_LOGGING_ENABLED)
 }
+
+function logOSDI(osdi) {
+
+    if ( loggingEnabled() ) {
+        const message = ( typeof(osdi) != "string") ? prettyOSDI(osdi) : osdi
+
+        log.info(message)
+    }
+}
+
+export function logCLI(osdi) {
+    const message = ( typeof(osdi) != "string") ? prettyOSDI(osdi) : osdi
+
+    console.log(message)
+    return
+}
+
+
 
 export default {
     osdiAEP,
@@ -64,5 +86,7 @@ export default {
     truthy,
     prettyOSDI,
     logOSDI,
-    serverContentType
+    logCLI,
+    serverContentType,
+    st
 }

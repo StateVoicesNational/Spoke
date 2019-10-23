@@ -77,7 +77,7 @@ export default function renderIndex(html, css, assetMap, store) {
       window.TZ="${process.env.TZ || ''}"
       window.DST_REFERENCE_TIMEZONE="${process.env.DST_REFERENCE_TIMEZONE || 'America/New_York'}"
       window.PASSPORT_STRATEGY="${process.env.PASSPORT_STRATEGY || ""}"
-      window.OSDI_MASTER_ENABLE="${process.env.OSDI_MASTER_ENABLE || ""}"
+      window.OSDI_SERVER_ENABLE="${process.env.OSDI_SERVER_ENABLE || ""}"
       window.STATIC_BASE_URL="${process.env.STATIC_BASE_URL || '/assets/'}"
       window.makeStaticPath = function(relPath) {
           return window.STATIC_BASE_URL.concat(relPath)

@@ -184,7 +184,7 @@ export function startIfEnabled(app) {
         log.info("OSDI Service is starting")
         initializeService(app)
     } else {
-        log.info("OSDI Service DISABLED.  To enable set OSDI_MASTER_ENABLE environment variable.")
+        log.info("OSDI Service DISABLED.  To enable set OSDI_SERVER_ENABLE environment variable.")
         disableService(app)
     }
 }

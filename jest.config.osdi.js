@@ -14,7 +14,7 @@ const merges = {
   globals: {
     // This sets the BASE_URL for the target of the e2e tests (what the tests are testing)
     BASE_URL: 'spoke.loopback.site:3000',
-    OSDI_MASTER_ENABLE: '1'
+    OSDI_SERVER_ENABLE: '1'
   }
 }
 

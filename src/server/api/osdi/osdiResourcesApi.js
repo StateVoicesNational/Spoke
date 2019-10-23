@@ -253,10 +253,9 @@ export default async function osdiResourcesApi(req, res, options) {
         if ( req.query.filter ) {
           resources_promise=resources_promise.where(...osdiTranslate.odata_filter_to_where(req.query.filter, resource_type))
         }
-        count = 5
-        // await r.getCount(
-        //     resources_promise.clone()
-        // )
+        count = await r.getCount(
+            resources_promise.clone()
+        )
         resources_promise = resources_promise
             .orderBy(...orderBy)
             .offset(offset)

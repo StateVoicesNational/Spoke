@@ -157,8 +157,24 @@
       "description": "Name of your Heroku app (not used if BASE_URL is set)",
       "required": false
     },
-    "OSDI_MASTER_ENABLE": {
+    "OSDI_SERVER_ENABLE": {
       "description": "Server wide switch to enable/disable OSDI",
+      "required": false
+    },
+    "OSDI_SERVER_CONTENT_TYPE": {
+      "description": "Sets the OSDI server's response content-type.  Default is application/json"
+      "required": false
+    },
+    "OSDI_OUTBOUND_API_TOKEN": {
+      "description": "OSDI API Token to use outbound when talking to other systems",
+      "required": false
+    },
+    "OSDI_OUTBOUND_AEP": {
+      "description": "OSDI AEP to speak to on the remote server.  Defaults to VAN/EveryAction.  https://osdi.ngpvan.com/",
+      "required": false
+    },
+    "OSDI_LOGGING_ENABLED": {
+      "description": "Enables network level logging of OSDI messages for troubleshooting.",
       "required": false
     },
     "KNEX_MIGRATION_DIR": {

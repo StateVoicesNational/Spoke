@@ -5,7 +5,7 @@ const MYDELAY = 60000
 
 const request = require("supertest");
 // we also need our app for the correct routes!
-process.env.OSDI_MASTER_ENABLE = 1
+process.env.OSDI_SERVER_ENABLE = 1
 
 import {CampaignContact, QuestionResponse, r} from '../../../src/server/models/'
 import {newUUID, getHash} from '../../../src/server/api/osdi/guid'
@@ -52,6 +52,7 @@ let organizationId
 let assignmentId
 let testContact
 let testScript
+let testCustomFieldValue='foosoo'.concat(Date.now())
 
 export async function createTestyContact(campaign) {
     const campaignId = campaign.id
@@ -63,7 +64,8 @@ export async function createTestyContact(campaign) {
         zip: '12345',
         campaign_id: campaignId,
         custom_fields: {
-            email: 'testy.mctesterson@fake.osdi.info'
+            email: 'testy.mctesterson@fake.osdi.info',
+            test_field: testCustomFieldValue
         }
     })
     const result=await contact.save()
@@ -101,6 +103,7 @@ describe("Use Spoke infrastructure", async () => {
     }, MYDELAY)
 
     test("cache_test", async () => {
+        process.env.OSDI_OUTBOUND_USE_SAMPLE='true'
 
         const choices=await osdiPush.getActions()
 
@@ -204,7 +207,7 @@ describe("Use Spoke infrastructure", async () => {
         osdiUtil.logOSDI(result)
         expect(result.signup.given_name).toEqual('Testy')
 
-        if ( ! osdiPush.useSample ) {
+        if ( ! osdiPush.useSample() ) {
             const activist_code = choices.filter(function (choice) {
                 return choice.type === "tag_activist_code"
             }).pop()
@@ -215,6 +218,34 @@ describe("Use Spoke infrastructure", async () => {
         }
     })
 
+
+    test("push_signup", async () => {
+        const action_name='osdi:signup|signup|signup'
+        const campaignContactId=testContact.id;
+        const result=await osdiPush.processAction(action_name,undefined, undefined, campaignContactId)
+        const resultFieldValue = _.get(result,'signup.custom_fields.test_field')
+        expect(resultFieldValue).toEqual(testCustomFieldValue)
+
+
+    })
+
+
+    test("psh_test", async () => {
+        const contactId=testContact.id;
+        const contact = await getCampaignContact(contactId)
+
+        const result= await osdiPush.personSignupHelper(contact)
+
+    })
+
+    test("push_cache", async () => {
+        process.env.OSDI_OUTBOUND_DISABLE_CACHE=false
+
+        await osdiPush.getActions()
+        await osdiPush.getActions()
+        // eyeball log and see 2 download actions instead of one in the cached case
+        expect(true).toEqual(true)
+    })
 })
 
 
@@ -244,5 +275,6 @@ describe("Bare OSDI only", async () => {
 
 
     });
+
 
 })

@@ -1,22 +1,51 @@
-# OSDI Support
+OSDI Support
+-------
 
-Server: Spoke supports OSDI with a server to expose its own data.
+### Outbound Client
+Outbound Client: Spoke has an outbound client with action handler style behavior to push data into another system like VAN/EveryAction, Action Network or others
+
+#### Quickstart
+
+Outbound OSDI is configured with these environment variables
+* `OSDI_OUTBOUND_API_TOKEN` Your OSDI API TOKEN
+* `OSDI_OUTBOUND_AEP` [Optional] The URL of your OSDI API Entry Point. (Defaults to VAN/EveryAction)
+
+Once these are set, in the campaign interaction step / script form, you should see actions for survey questions, tags, activist codes in the remote system
+
+> Test your configuration by running `yarn osdi-info actions` which will show you Spoke's view of the available actions on your OSDI server  
+
+[More information on OSDI Outbound Client](#outbound-osdi-actions)
+
+### OSDI Server
+
+#### Quickstart
+
+Set environment variable `OSDI_SERVER_ENABLE` to `true`
+
+Once set, you should see a new section under __Settings__ in the admin menu to turn on OSDI Server service for the organization, set your API Token, and visit the HAL Browser to begin your quest for enlightenment.
+
+
+[More information on OSDI Server](#osdi-server)
+
+### Appendix
+
+------
  
-Outbound Client: Spoke has an outbound client with action handler style behavior to push data into another system
-
-## Outbound OSDI Actions
+# Outbound OSDI Actions
 
 ### Configuration
 Outbound OSDI is configured with these environment variables
-* __OSDI_OUTBOUND_API_KEY__ Your OSDI API TOKEN
+* __OSDI_OUTBOUND_API_TOKEN__ Your OSDI API TOKEN
 * __OSDI_OUTBOUND_AEP__ [Optional] The URL of your OSDI API Entry Point
 
+> Note that VAN/EveryAction API Tokens require the database mode (1=My Campaign, 0=My Voters) appended following a pipe '|'.  eg: MYAPICODE|1
+>
 By default, if you configured an API TOKEN but no AEP, Spoke will push to VAN / EveryAction using `https://osdi.ngpvan.com/api/v1`
 
 ### Usage
-Once configured, when you are editing your interaction steps, Spoke will download the available survey questions and tags (aka Activist Codes in VAN)
+Once configured, when you are editing your interaction steps, Spoke will download the available survey questions and tags (aka Activist Codes in VAN) 
 
-In the drop down for actions, you'll see options to apply tags/activist codes or submit responses to survey questions.
+In the drop down for actions, you'll see options to apply tags/activist codes or submit responses to survey questions, as well as a simple OSDI Person Signup Helper
 
 #### Dropdown of Choices
 ![OSDI Choices](images/osdi_outbound_choices.png)
@@ -37,9 +66,53 @@ If you are importing contacts that you got from the OSDI system itself (eg VAN),
 
 If `osdi_identifier` is present, then Spoke will skip the `osdi:person_signup_helper` and just to the `osdi:record_canvass_helper`
  
+### Diagnostics and Troubleshooting
+
+__NOTE Regarding Edge Case__ 
+> In the case that you setup Spoke talking to one OSDI server, and then reconfigure it to talk to another, by changing the environment variables, you'll need to perform a cleanup step.  Your existing interaction step actions will still be in the database.  So will any external IDs received from the remote server for optimization.  This will lead spoke to use the previously set IDs and actions with the new server.  To clean this, run:
+
+`yarn osdi-info wipe`
 
 
-## OSDI Server
+#### CLI Tool
+A diagnostics tool is included and can be run with the following command
+
+`yarn osdi-info`
+
+The default output will display the OSDI AEP spoke is configured to talk to, and the survey questions, activist codes etc it was about to discover, and demonstrate your API is correct.
+
+`yarn osdi-info aep`
+
+Displays the actual AEP data, eg attributes, links, collections available
+
+'yarn-osdi-info questions|tags'
+
+Displays just the actions of the specified type like questions or tags/activist codes.
+
+#### Environment Variables
+
+`OSDI_LOGGING_ENABLED`
+When set to true, the OSDI components will emit log messages with OSDI JSON traces of what's going back and forth between systems.
+
+`OSDI_OUTBOUND_DISABLE_CACHE`
+
+To avoid taxing the UI when editing interaction steps, the downloaded actions are cached in redis.  When troubleshooting, or if updating survey question in VAN, this can be annoying.
+
+The environment  variable `OSDI_OUTBOUND_DISABLE_CACHE=true` can be used to prevent this caching.
+
+#### HAL Browser
+
+Most OSDI systems host, or can work with the HAL Browser.  For example, the following links will take you to them:
+* [https://osdi.ngpvan.com/](https://osdi.ngpvan.com/)
+* [https://actionnetwork.org/api/browser/](https://actionnetwork.org/api/browser/)
+
+#### OSDI Sandbox Tutorial
+If you don't yet have a production account with your other system yet, but want to get a feel for working with OSDI.  You can set up a sandbox with sample data for yourself, and follow a tutorial.
+
+[Tutorial: Zero to Person Signup Helper](http://opensupporter.org/osdi-101-zero-to-person-signup-helper/)
+[OSDI Sandbox](http://demo.osdi.io)
+
+# OSDI Server
 
 Spoke supports People Import, exposes contacts as OSDI People, interaction steps and questions answers as OSDI Questions and Answers.
 
@@ -51,7 +124,7 @@ One can now write automation scripts without having to be familiar with Node, di
 
 #### Configuration
 
-Set environment variable `OSDI_MASTER_ENABLE` to `true`
+Set environment variable `OSDI_SERVER_ENABLE` to `true`
 If you need the server to use a response content-type other than `application/json` such as `application/hal+json`, set the `OSDI_SERVER_CONTENT_TYPE` variable accordingly.
 
 Browse to http://spoke.dev.joshco.org/osdi

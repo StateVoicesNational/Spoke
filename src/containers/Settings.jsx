@@ -74,7 +74,7 @@ class Settings extends React.Component {
 
 
   osdiMasterEnabled() {
-    return osdiUtil.truthy(window.OSDI_MASTER_ENABLE)
+    return osdiUtil.truthy(window.OSDI_SERVER_ENABLE)
   }
 
 
@@ -174,7 +174,7 @@ class Settings extends React.Component {
       <Card>
         <CardText>
           <div className={css(styles.section)}>
-            ⛔ OSDI Access Disabled: OSDI_MASTER_ENABLE Environment Variable not set
+            ⛔ OSDI Access Disabled: OSDI_SERVER_ENABLE Environment Variable not set
 
           </div>
         </CardText>
