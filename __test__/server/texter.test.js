@@ -225,6 +225,7 @@ it("should be able to receive a response and reply (using fakeService)", async (
 });
 
 it("should return contacts after they are reassigned", async () => {
+  // set up graphQL call for reassignCampaignContacts
   const { mutations: adminIncomingMessageListMutations } = getGql(
     "../src/containers/AdminIncomingMessageList",
     {
@@ -250,6 +251,7 @@ it("should return contacts after they are reassigned", async () => {
     testTexterUser2.id
   );
 
+  // set up graphQL call for getAssignmentContacts
   const { mutations: mutationsBefore } = getGql(
     "../src/containers/TexterTodo",
     {
@@ -265,8 +267,10 @@ it("should return contacts after they are reassigned", async () => {
     assignVarsBefore
   ] = mutationsBefore.getAssignmentContacts(testContacts.map(e => e.id), false);
 
+  // call getAssignmentContacts to get CampaignContacts into the DataLoader cache.
   await runGql(getAssignmentContactsBefore, assignVarsBefore, testTexterUser);
 
+  // make the reassign call
   const reassignReturn = await runGql(
     reassignCampaignContacts,
     reassignCampaignContactsVars,
@@ -276,6 +280,7 @@ it("should return contacts after they are reassigned", async () => {
   const newAssignmentId =
     reassignReturn.data.reassignCampaignContacts[0].assignmentId;
 
+  // set up getAssignmentContacts to get the contacts so we can examine them
   const { mutations: mutationsAfter } = getGql("../src/containers/TexterTodo", {
     messageStatus: "needsMessage",
     params: {
@@ -288,11 +293,14 @@ it("should return contacts after they are reassigned", async () => {
     assignVarsAfter
   ] = mutationsAfter.getAssignmentContacts(testContacts.map(e => e.id), false);
 
+  // make getAssignmentContacts call
   const getAssignmentContactsResult = await runGql(
     getAssignmentContactsAfter,
     assignVarsAfter,
     testTexterUser2
   );
+
+  // test our expectations
   expect(getAssignmentContactsResult.data.getAssignmentContacts.length).toBe(
     100
   );
@@ -302,6 +310,7 @@ it("should return contacts after they are reassigned", async () => {
 });
 
 it("should return contacts with correct opt_out after they are opted out", async () => {
+  // set up graphQL call for createOptOut
   const { mutations: assignmentTexterContactMutations } = getGql(
     "../src/containers/AssignmentTexterContact"
   );
@@ -317,6 +326,7 @@ it("should return contacts with correct opt_out after they are opted out", async
     testContacts[0].id
   );
 
+  // set up graphQL call for getAssignmentContacts
   const { mutations } = getGql("../src/containers/TexterTodo", {
     messageStatus: "needsMessage",
     params: {
@@ -329,6 +339,7 @@ it("should return contacts with correct opt_out after they are opted out", async
     false
   );
 
+  // getAssignmentContacts before creating the opt out
   const getAssignmentContactsBeforeResult = await runGql(
     getAssignmentContacts,
     assignVars,
@@ -338,13 +349,16 @@ it("should return contacts with correct opt_out after they are opted out", async
     getAssignmentContactsBeforeResult.data.getAssignmentContacts[0].optOut
   ).toBeFalsy();
 
-  const x = await runGql(createOptOut, createOptOutVars, testTexterUser);
+  // create the optOut
+  await runGql(createOptOut, createOptOutVars, testTexterUser);
 
+  // getAssignmentContacts after creating the opt out
   const getAssignmentContactsAfterResult = await runGql(
     getAssignmentContacts,
     assignVars,
     testTexterUser
   );
+
   expect(
     getAssignmentContactsAfterResult.data.getAssignmentContacts[0].optOut
   ).toEqual({ id: "optout" });
