@@ -304,7 +304,7 @@ export async function reassignConversations(
       // SQL statement to keep the cache in sync.  This will force the campaignContact
       // to be refreshed from the database.
       campaignContactIds.forEach(campaignContactId =>
-        loaders.campaignContact.clear(campaignContactId)
+        loaders.campaignContact.clear(campaignContactId.toString())
       );
 
       returnCampaignIdAssignmentIds.push({
