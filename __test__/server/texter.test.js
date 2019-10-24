@@ -223,3 +223,129 @@ it("should be able to receive a response and reply (using fakeService)", async (
   const ret4 = await runGql(getAssignmentContacts, assignVars, testTexterUser);
   expect(ret4.data.getAssignmentContacts[0].messageStatus).toEqual("convo");
 });
+
+it("should return contacts after they are reassigned", async () => {
+  const { mutations: adminIncomingMessageListMutations } = getGql(
+    "../src/containers/AdminIncomingMessageList",
+    {
+      params: {
+        organizationId: testOrganization.id
+      }
+    },
+    "organization"
+  );
+
+  const [
+    reassignCampaignContacts,
+    reassignCampaignContactsVars
+  ] = adminIncomingMessageListMutations.reassignCampaignContacts(
+    testOrganization.data.createOrganization.id,
+    testContacts.map(c => {
+      return {
+        campaignId: testCampaign.id,
+        campaignContactId: c.id,
+        messageIds: []
+      };
+    }),
+    testTexterUser2.id
+  );
+
+  const { mutations: mutationsBefore } = getGql(
+    "../src/containers/TexterTodo",
+    {
+      messageStatus: "needsMessage",
+      params: {
+        assignmentId
+      }
+    }
+  );
+
+  const [
+    getAssignmentContactsBefore,
+    assignVarsBefore
+  ] = mutationsBefore.getAssignmentContacts(testContacts.map(e => e.id), false);
+
+  await runGql(getAssignmentContactsBefore, assignVarsBefore, testTexterUser);
+
+  const reassignReturn = await runGql(
+    reassignCampaignContacts,
+    reassignCampaignContactsVars,
+    testAdminUser
+  );
+
+  const newAssignmentId =
+    reassignReturn.data.reassignCampaignContacts[0].assignmentId;
+
+  const { mutations: mutationsAfter } = getGql("../src/containers/TexterTodo", {
+    messageStatus: "needsMessage",
+    params: {
+      assignmentId: newAssignmentId
+    }
+  });
+
+  const [
+    getAssignmentContactsAfter,
+    assignVarsAfter
+  ] = mutationsAfter.getAssignmentContacts(testContacts.map(e => e.id), false);
+
+  const getAssignmentContactsResult = await runGql(
+    getAssignmentContactsAfter,
+    assignVarsAfter,
+    testTexterUser2
+  );
+  expect(getAssignmentContactsResult.data.getAssignmentContacts.length).toBe(
+    100
+  );
+  expect(
+    getAssignmentContactsResult.data.getAssignmentContacts.map(c => c.id)
+  ).toEqual(testContacts.map(c => c.id.toString()));
+});
+
+it("should return contacts with correct opt_out after they are opted out", async () => {
+  const { mutations: assignmentTexterContactMutations } = getGql(
+    "../src/containers/AssignmentTexterContact"
+  );
+
+  const [
+    createOptOut,
+    createOptOutVars
+  ] = assignmentTexterContactMutations.createOptOut(
+    {
+      cell: testContacts[0].cell,
+      assignmentId
+    },
+    testContacts[0].id
+  );
+
+  const { mutations } = getGql("../src/containers/TexterTodo", {
+    messageStatus: "needsMessage",
+    params: {
+      assignmentId
+    }
+  });
+
+  const [getAssignmentContacts, assignVars] = mutations.getAssignmentContacts(
+    testContacts.map(e => e.id),
+    false
+  );
+
+  const getAssignmentContactsBeforeResult = await runGql(
+    getAssignmentContacts,
+    assignVars,
+    testTexterUser
+  );
+  expect(
+    getAssignmentContactsBeforeResult.data.getAssignmentContacts[0].optOut
+  ).toBeFalsy();
+
+  const x = await runGql(createOptOut, createOptOutVars, testTexterUser);
+
+  const getAssignmentContactsAfterResult = await runGql(
+    getAssignmentContacts,
+    assignVars,
+    testTexterUser
+  );
+  expect(
+    getAssignmentContactsAfterResult.data.getAssignmentContacts[0].optOut
+  ).toEqual({ id: "optout" });
+});
