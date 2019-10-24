@@ -981,6 +981,8 @@ const rootMutations = {
         campaign
       });
 
+      loaders.campaignContact.clear(campaignContactId.toString());
+
       return loaders.campaignContact.load(campaignContactId);
     },
     bulkSendMessages: async (_, { assignmentId }, loaders) => {
