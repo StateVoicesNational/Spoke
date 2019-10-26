@@ -14,9 +14,6 @@ process.env.OSDI_OUTBOUND_DISABLE_CACHE = false
 process.env.OSDI_LOGGING_ENABLED = false
 
 
-console.log("hello")
-
-
 function constrainChoices(choices, crit) {
     return _.filter(choices, function (c) {
         return (c.type == crit)
@@ -44,10 +41,10 @@ async function getAEP() {
     const linkRels = links.map((l) => {
         return l.rel
     })
-    osdiUtil.logCLI([
-        "questions",
-        linkRels.includes('osdi:tags')
-    ].join(' '))
+    // osdiUtil.logCLI([
+    //     "questions",
+    //     linkRels.includes('osdi:tags')
+    // ].join(' '))
 
     const aep = await aepResource.representation()
     return aep
