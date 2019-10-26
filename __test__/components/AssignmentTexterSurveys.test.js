@@ -4,24 +4,15 @@ import AssignmentTexterSurveys from "../../src/components/AssignmentTexterSurvey
 
 describe("AssignmentTexterSurveys component", () => {
   const questionResponses = {};
-  const interactionSteps = [
-    {
-      id: 1,
-      question: {
-        id: 1,
-        text: "What is foo?",
-        answerOptions: ["a", "b", "c", "d"]
-      }
-    }
-  ];
   const currentInteractionStep = {
     id: 1,
     question: {
       id: 1,
       text: "What is foo?",
-      answerOptions: ["a", "b", "c", "d"]
+      answerOptions: [{ nextInteractionStep: { script: "foo" } }]
     }
   };
+  const interactionSteps = [currentInteractionStep];
 
   const wrapper = shallow(
     <AssignmentTexterSurveys
@@ -37,5 +28,20 @@ describe("AssignmentTexterSurveys component", () => {
 
     expect(cardHeader.prop("showExpandableButton")).toBe(false);
     expect(cardText.childAt(0).text()).toBe("<SelectField />");
+  });
+
+  test("handleExpandChange Function", () => {
+    expect(wrapper.state().showAllQuestions).toEqual(false);
+    wrapper.instance().handleExpandChange(true);
+    expect(wrapper.state().showAllQuestions).toEqual(true);
+  });
+
+  test("getNextScript Function", () => {
+    expect(
+      wrapper.instance().getNextScript({
+        interactionStep: currentInteractionStep,
+        answerIndex: 0
+      })
+    ).toBe("foo");
   });
 });
