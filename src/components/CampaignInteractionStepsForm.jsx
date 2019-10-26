@@ -44,9 +44,18 @@ const styles = {
   }
 };
 
-const missingAction = {
-    instructions: "The action handler or function no longer exists!",
+function missingAction(a)  {
+  let msg
+
+  if (a) {
+    msg= "".concat(a)
+  } else {
+    msg = ''
+  }
+  return {
+    instructions: msg,
     value: ''
+  }
 }
 
 export default class CampaignInteractionStepsForm extends React.Component {
@@ -206,7 +215,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
                     {interactionStep.answerActions
                         ? ((this.props.availableActions.filter(
                             (a) => a.name === interactionStep.answerActions
-                        )[0]) || missingAction ).instructions
+                        )[0]) || missingAction(interactionStep.answerActions) ).instructions
                       : ""}
                   </div>
                 </div>

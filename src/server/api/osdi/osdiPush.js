@@ -320,7 +320,7 @@ export async function personSignupHelper(contact) {
 
 }
 
-function crackAction(action) {
+export function crackAction(action) {
     const question_parts=action.split('|')
     const action_object={
         type: question_parts[0],
@@ -330,9 +330,9 @@ function crackAction(action) {
     return action_object
 }
 
-export async function recordCanvass(canvass_url, action,contact) {
+export async function recordCanvass(canvass_url, actions,contact) {
     const oclient=client()
-    const question_action=crackAction(action)
+
 
     const canvass={
         canvass: {
@@ -341,30 +341,40 @@ export async function recordCanvass(canvass_url, action,contact) {
         }
     }
 
+    let add_answers=[], add_tags=[]
+
+    actions.split(',').forEach(function(action) {
+        let question_action = crackAction(action)
+
+
+        if (question_action.type === 'osdi:question') {
+            add_answers.push(
+                {
+                    question: question_action.url,
+                    responses: [
+                        question_action.response_key
+                    ]
+                }
+            )
+
+        }
+        if (question_action.type === 'osdi:tag') {
+            add_tags.push(
+                question_action.response_key
+            )
+        }
+    })
+
+    canvass.add_answers = add_answers
+    canvass.add_tags = add_tags
+
+    const canvass_json=JSON.stringify(canvass)
+
     osdiUtil.logOSDI([
         "Posting canvass_record_helper",
         canvass
     ])
 
-    if (question_action.type==='osdi:question') {
-        canvass.add_answers = [
-            {
-                question: question_action.url,
-                responses: [
-                    question_action.response_key
-                ]
-            }
-        ]
-    }
-    if (question_action.type==='osdi:tag') {
-        canvass.add_tags = [
-            question_action.response_key
-        ]
-    }
-
-
-    const canvass_json=JSON.stringify(canvass)
-    log.debug(canvass_json)
 
     const init={
         method: 'POST',
@@ -483,7 +493,8 @@ module.exports=  {
     clearOsdiIdentifiers,
     addOsdiIdentifiers,
     configuredInteractionSteps,
-    clearConfiguredInteractionSteps
+    clearConfiguredInteractionSteps,
+    crackAction
 }
 
 export function sampleCache() {

@@ -230,6 +230,45 @@ describe("Use Spoke infrastructure", async () => {
     })
 
 
+
+    test("push_double", async () => {
+        process.env.OSDI_LOGGING_ENABLED='true'
+
+        var choices=await osdiPush.getActions()
+        const qchoices = choices.filter(function(choice) {
+            return choice.type === "question"
+        })
+
+        const qchoice=qchoices.pop()
+        const qchoice2=qchoices.pop()
+        const action_name=[
+            qchoice.name,
+            qchoice2.name
+            ].join(',')
+
+
+        const campaignContactId=testContact.id;
+        const result=await osdiPush.processAction(action_name,undefined, undefined, campaignContactId)
+        // const resultFieldValue = _.get(result,'signup.custom_fields.test_field')
+        osdiUtil.logCLI(result)
+
+            const names= [
+                qchoice.name,
+                qchoice2.name
+            ]
+            names.forEach(function (qn) {
+                let qname = osdiPush.crackAction(qn).response_key
+            expect(
+                JSON.stringify(result.canvass['osdi:status'])
+            ).toContain(qname)
+        })
+
+        //expect(resultFieldValue).toEqual(testCustomFieldValue)
+
+
+    })
+
+
     test("psh_test", async () => {
         const contactId=testContact.id;
         const contact = await getCampaignContact(contactId)
