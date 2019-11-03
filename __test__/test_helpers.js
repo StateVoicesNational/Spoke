@@ -35,7 +35,7 @@ jest.mock("../src/containers/hoc/load-data");
 *  the mutations will be merged from the component and its children.
 */
 export function getGql(componentPath, props, dataKey = "data") {
-  require(componentPath); // eslint-disable-line
+  const req = require(componentPath); // eslint-disable-line
   const { mapQueriesToProps } = _.last(loadData.mock.calls)[1];
 
   const mutations = loadData.mock.calls.reduce((acc, mapping) => {
@@ -55,6 +55,7 @@ export function getGql(componentPath, props, dataKey = "data") {
   let query;
   if (mapQueriesToProps) {
     const data = mapQueriesToProps({ ownProps: props });
+    console.log(data, dataKey);
     query = [data[dataKey].query.loc.source.body, data[dataKey].variables];
   }
 
