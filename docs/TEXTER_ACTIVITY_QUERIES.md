@@ -98,6 +98,7 @@ ORDER BY
 `
 
 * counts of texters, sent, responses, reply rate, total texts, opt outs, opt out rate and estimated cost for all current campaigns
+
 `SELECT
     c.id AS camp_id,
     c.title AS title,
@@ -111,11 +112,8 @@ ORDER BY
     (opt_outs::decimal / texts_sent)  AS opt_out_rate,
     /* cost per texter = $1 / 30 days (est), total_texts at .015 assumes typical text is two 'message segments', see https://www.twilio.com/blog/2017/03/what-the-heck-is-a-segment.html#segment  */
     round(((texters / 30) + ((total_texts * .015)*1.15)), 2) AS costid
-    
 FROM wfp_spoke.campaign AS c
-
 INNER JOIN wfp_spoke.organization AS o ON o.id = c.organization_id
-
 INNER JOIN (
     SELECT
         campaign_id,
@@ -137,6 +135,23 @@ WHERE campaign_id >= 0
 ORDER BY 1,2
 `
 
+* all responses to Initial text, excluding opt-outs, and separate out JSON data from `custom_fields`
+
+`SELECT
+c.id AS campaign_id,c.title,cc.first_name AS first,substring(custom_fields from '(?:"MiddleName":")([\w\.]*)') AS MiddleName,
+cc.last_name As last,substring(custom_fields from '(?:"Suffix":")([\w\.]*)') AS Suffix,
+cc.cell,cc.external_id,substring(custom_fields from '(?:"external_ID":")([\d\.]*)') AS van_id,
+substring(custom_fields from '(?:"DWID":")([\d\.]*)') AS dwid,cc.updated_at,texter.first_name AS texterFirst,
+texter.last_name AS texterLast, qr1.value as question_response
+FROM campaign_contact cc
+LEFT JOIN assignment a ON (cc.assignment_id = a.id)
+LEFT JOIN public.user texter ON (texter.id = a.user_id)
+LEFT JOIN question_response qr1 ON  (qr1.campaign_contact_id = cc.id)
+LEFT JOIN campaign c ON (c.id = cc.campaign_id)
+WHERE qR1.value IS NOT NULL AND cc.is_opted_out = 'false' 
+AND c.id IN (23,25,28,29,30,31,32)
+ORDER BY updated_at DESC;
+`
 
 *TO DO (wish list) of some useful SQL query examples, for creating redash dashboard reports:
 
