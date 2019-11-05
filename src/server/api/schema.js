@@ -229,7 +229,8 @@ async function updateInteractionSteps(
     if (idMap[is.parentInteractionId]) {
       is.parentInteractionId = idMap[is.parentInteractionId]
     }
-    if (!is.id || is.id.indexOf('new') !== -1) {
+    if (typeof(is.id) === 'undefined') continue
+    if (is.id.indexOf('new') !== -1) {
       const newIstep = await InteractionStep.save({
         parent_interaction_id: is.parentInteractionId || null,
         question: is.questionText,
@@ -241,7 +242,7 @@ async function updateInteractionSteps(
       })
       idMap[is.id] = newIstep.id
     } else {
-      if (!origCampaignRecord.is_started && is.isDeleted) {
+      if (origCampaignRecord && !origCampaignRecord.is_started && is.isDeleted) {
         await r
           .knex('interaction_step')
           .where({ id: is.id })
@@ -259,7 +260,9 @@ async function updateInteractionSteps(
           })
       }
     }
-    await updateInteractionSteps(campaignId, is.interactionSteps, origCampaignRecord, idMap)
+    if (Array.isArray(is.interactionSteps) && is.interactionSteps.length) {
+      await updateInteractionSteps(campaignId, is.interactionSteps, origCampaignRecord, idMap)
+    }
   }
 }
 
@@ -635,29 +638,24 @@ const rootMutations = {
         }
       })
 
-      let createSteps = updateInteractionSteps(
+      await updateInteractionSteps(
         newCampaignId,
         [makeTree(interactionsArr, (id = null))],
         campaign,
         {}
       )
 
-      await createSteps
-
-      let createCannedResponses = r
+      const originalCannedResponses = await r
         .knex('canned_response')
         .where({ campaign_id: oldCampaignId })
-        .then(function (res) {
-          res.forEach((response, index) => {
-            const copiedCannedResponse = new CannedResponse({
-              campaign_id: newCampaignId,
-              title: response.title,
-              text: response.text
-            }).save()
-          })
-        })
-
-      await createCannedResponses
+      const copiedCannedResponsePromises = originalCannedResponses.map(response => {
+        return new CannedResponse({
+          campaign_id: newCampaignId,
+          title: response.title,
+          text: response.text
+        }).save()
+      })
+      await Promise.all(copiedCannedResponsePromises)
 
       return newCampaign
     },
