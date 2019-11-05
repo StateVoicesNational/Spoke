@@ -42,12 +42,13 @@ class AdminCampaignList extends React.Component {
         id: 'new'
       }
     })
+
     if (newCampaign.errors) {
       alert('There was an error creating your campaign')
       throw new Error(newCampaign.errors)
     }
 
-    this.props.router.push(
+    await this.props.router.push(
       `/admin/${organizationId}/campaigns/${newCampaign.data.createCampaign.id}/edit?new=true`
     )
   }

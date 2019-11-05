@@ -53,7 +53,7 @@ export class CampaignList extends React.Component {
       return (
         <IconButton
           tooltip='Unarchive'
-          onTouchTap={async () => this.props.mutations.unarchiveCampaign(campaign.id)}
+          onTouchTap={async () => await this.props.mutations.unarchiveCampaign(campaign.id)}
         >
           <UnarchiveIcon />
         </IconButton>)
@@ -61,7 +61,7 @@ export class CampaignList extends React.Component {
     return (
       <IconButton
         tooltip='Archive'
-        onTouchTap={async () => this.props.mutations.archiveCampaign(campaign.id)}
+        onTouchTap={async () => await this.props.mutations.archiveCampaign(campaign.id)}
       >
         <ArchiveIcon />
       </IconButton>)

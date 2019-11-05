@@ -18,7 +18,7 @@
     "clean": "rm -rf $OUTPUT_DIR",
     "lint": "eslint --fix --ext js --ext jsx src",
     "prod-build-client": "webpack --config ./webpack/config.js",
-    "prod-build-server": "babel ./src -d ./build/server --source-maps --copy-files",
+    "prod-build-server": "babel ./src  -d ./build/server --source-maps --copy-files; babel ./migrations -d ./build/server/migrations/ --source-maps --copy-files",
     "prod-build": "npm run clean && npm run prod-build-client && npm run prod-build-server",
     "prod-static-upload": "if [ \"$S3_STATIC_PATH\" != \"\" ] ; then s3cmd sync --acl-public --guess-mime-type ./build/client/assets/ $S3_STATIC_PATH ; fi",
     "postinstall": "if [ \"$NODE_ENV\" = production ] ; then npm run prod-build && npm run prod-static-upload && npm run notify-slack; fi",
@@ -68,7 +68,7 @@
   },
   "homepage": "https://github.com/MoveOnOrg/Spoke/#readme",
   "dependencies": {
-    "aphrodite": "^0.4.1",
+    "aphrodite": "^2.3.1",
     "apollo-client": "^0.4.7",
     "apollo-server-express": "^1.2.0",
     "auth0-js": "^9.10.0",
