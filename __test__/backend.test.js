@@ -1,11 +1,6 @@
 import { resolvers } from "../src/server/api/schema";
 import { schema } from "../src/api/schema";
-import {
-  accessRequired,
-  assignmentRequired,
-  authRequired,
-  superAdminRequired
-} from "../src/server/api/errors";
+import { assignmentRequired } from "../src/server/api/errors";
 import { graphql } from "graphql";
 import {
   User,
@@ -24,7 +19,7 @@ import { makeExecutableSchema } from "graphql-tools";
 
 const mySchema = makeExecutableSchema({
   typeDefs: schema,
-  resolvers: resolvers,
+  resolvers,
   allowUndefinedInResolve: true
 });
 
@@ -112,9 +107,9 @@ async function createOrganization(user, name, userId, inviteId) {
   }`;
 
   const variables = {
-    userId: userId,
-    name: name,
-    inviteId: inviteId
+    userId,
+    name,
+    inviteId
   };
 
   try {
@@ -153,10 +148,10 @@ async function createCampaign(
   }`;
   const variables = {
     input: {
-      title: title,
-      description: description,
-      organizationId: organizationId,
-      contacts: contacts
+      title,
+      description,
+      organizationId,
+      contacts
     }
   };
 
@@ -337,7 +332,7 @@ it("should assign texters to campaign contacts", async () => {
   delete updateCampaign.id;
   delete updateCampaign.contacts;
   const variables = {
-    campaignId: campaignId,
+    campaignId,
     campaign: updateCampaign
   };
   const result = await graphql(

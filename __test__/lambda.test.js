@@ -1,10 +1,10 @@
 import { handler } from "../lambda.js";
 import { setupTest, cleanupTest } from "./test_helpers";
 
-beforeAll(
-  async () => await setupTest(),
-  global.DATABASE_SETUP_TEARDOWN_TIMEOUT
-);
+beforeAll(async () => {
+  await cleanupTest();
+  await setupTest();
+}, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 afterAll(
   async () => await cleanupTest(),
   global.DATABASE_SETUP_TEARDOWN_TIMEOUT

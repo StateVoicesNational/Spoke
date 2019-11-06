@@ -3,7 +3,6 @@ import { getFormattedPhoneNumber } from "../../../lib/phone-format";
 import { Message, PendingMessagePart } from "../../models";
 import { getLastMessage } from "./message-sending";
 import { log } from "../../../lib";
-import faker from "faker";
 
 let nexmo = null;
 const MAX_SEND_ATTEMPTS = 5;
@@ -45,8 +44,12 @@ async function convertMessagePartsToMessage(messageParts) {
 
 async function findNewCell() {
   if (!nexmo) {
+    const num = "1234"
+      .split("")
+      .map(() => parseInt(Math.random() * 10))
+      .join("");
     return {
-      numbers: [{ msisdn: getFormattedPhoneNumber(faker.phone.phoneNumber()) }]
+      numbers: [{ msisdn: getFormattedPhoneNumber(`+1212555${num}`) }]
     };
   }
   return new Promise((resolve, reject) => {
