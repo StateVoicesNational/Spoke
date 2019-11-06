@@ -37,7 +37,7 @@ It's a horrible idea to publish live secrets to Github.  You should never do tha
     * Make sure the `JSON` radio button is selected (it should be selected by default)
     * Click `Create`
     * Wait.
-13. Another file to be downloaded.  The name of the file (which will have the extension `json`) will be displayed when the download is complete. 
+13. Another file will be downloaded.  The name of the file (which will have the extension `json`) will be displayed when the download is complete. 
 14. Open the file.
 15. The contents will look like this:
 ```
