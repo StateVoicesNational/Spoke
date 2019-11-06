@@ -757,7 +757,7 @@ export class AssignmentTexterContact extends React.Component {
               />
               {this.renderNeedsResponseToggleButton(contact)}
               <RaisedButton
-                label="Canned responses"
+                label="Other responses"
                 onTouchTap={this.handleOpenPopover}
               />
               <RaisedButton
