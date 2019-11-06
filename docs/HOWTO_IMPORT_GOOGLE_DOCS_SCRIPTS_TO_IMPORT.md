@@ -80,7 +80,7 @@ When creating or editing a campaign that has not started:
 1. Paste the URL into the `Google Doc URL` field.
 1. Click `IMPORT`.
 
-Note that Spoke will not allow you to import a script once.
+Note that Spoke will not allow you to import a script after the campaign starts.
 
 
 ## Tips for editing script documents
