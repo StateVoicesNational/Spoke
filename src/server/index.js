@@ -1,3 +1,8 @@
+// dotenv is used only in development & test
+if (["development", "test"].includes(process.env.NODE_ENV)) {
+  // eslint-disable-next-line global-require
+  require("dotenv").config();
+}
 import "babel-polyfill";
 import bodyParser from "body-parser";
 import express from "express";

@@ -1,4 +1,8 @@
-require("dotenv").config();
+if (["development", "test"].includes(process.env.NODE_ENV)) {
+  // eslint-disable-next-line global-require
+  require("dotenv").config();
+}
+
 const path = require("path");
 const webpack = require("webpack");
 const ManifestPlugin = require("webpack-manifest-plugin");
