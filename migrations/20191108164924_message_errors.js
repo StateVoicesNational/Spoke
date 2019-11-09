@@ -3,7 +3,6 @@ exports.up = function(knex, Promise) {
     knex.schema.alterTable("message", table => {
       table
         .integer("error_code")
-        .signed()
         .nullable()
         .default(null);
       table.dropColumn("service_response");
@@ -12,14 +11,12 @@ exports.up = function(knex, Promise) {
     knex.schema.alterTable("campaign_contact", table => {
       table
         .integer("error_code")
-        .signed()
         .nullable()
         .default(null);
     }),
     knex.schema.alterTable("log", table => {
       table
         .integer("error_code")
-        .signed()
         .nullable()
         .default(null);
       table
