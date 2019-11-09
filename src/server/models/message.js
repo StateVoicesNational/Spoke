@@ -44,6 +44,11 @@ const Message = thinky.createModel(
         "PAUSED",
         "NOT_ATTEMPTED"
       ),
+      error_code: type
+        .integer()
+        .nullable()
+        .allowNull()
+        .default(null),
       created_at: timestamp(),
       queued_at: timestamp(),
       sent_at: timestamp(),
@@ -57,7 +62,6 @@ const Message = thinky.createModel(
 Message.ensureIndex("user_id");
 Message.ensureIndex("assignment_id");
 Message.ensureIndex("send_status");
-Message.ensureIndex("user_number");
 Message.ensureIndex("contact_number");
 Message.ensureIndex("service_id");
 
