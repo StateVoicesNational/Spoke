@@ -3,7 +3,6 @@ import { setupTest, cleanupTest } from "./test_helpers";
 
 beforeAll(async () => {
   await cleanupTest();
-  await setupTest();
 }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 afterAll(
   async () => await cleanupTest(),

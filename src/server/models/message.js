@@ -46,7 +46,6 @@ const Message = thinky.createModel(
       ),
       error_code: type
         .integer()
-        .nullable()
         .allowNull()
         .default(null),
       created_at: timestamp(),
