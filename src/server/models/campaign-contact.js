@@ -31,6 +31,11 @@ const CampaignContact = thinky.createModel(
           "UPDATING"
         ])
         .default("needsMessage"),
+      error_code: type
+        .integer()
+        .nullable()
+        .allowNull()
+        .default(null),
       is_opted_out: type.boolean().default(false),
       timezone_offset: type
         .string()
