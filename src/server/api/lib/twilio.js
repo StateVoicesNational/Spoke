@@ -201,12 +201,20 @@ async function sendMessage(message, contact, trx) {
     }
 
     twilio.messages.create(messageParams, (err, response) => {
-      postMessageSend(message, contact, resolve, reject, err, response);
+      postMessageSend(message, contact, trx, resolve, reject, err, response);
     });
   });
 }
 
-function postMessageSend(message, contact, resolve, reject, err, response) {
+export function postMessageSend(
+  message,
+  contact,
+  trx,
+  resolve,
+  reject,
+  err,
+  response
+) {
   const messageToSave = {
     ...message
   };
@@ -220,19 +228,23 @@ function postMessageSend(message, contact, resolve, reject, err, response) {
   if (response) {
     messageToSave.service_id = response.sid;
     hasError = !!response.error_code;
+    if (hasError) {
+      messageToSave.error_code = response.error_code;
+      messageToSave.send_status = "ERROR";
+    }
   }
 
   if (hasError) {
-    if (
-      messageToSave.error_code < -MAX_SEND_ATTEMPTS &&
-      messageToSave.error_code > -100
-    ) {
-      messageToSave.send_status = "ERROR";
+    if (err) {
+      if (messageToSave.error_code <= -MAX_SEND_ATTEMPTS) {
+        messageToSave.send_status = "ERROR";
+      }
+      // decrement error code starting from zero
+      messageToSave.error_code = Number(messageToSave.error_code || 0) - 1;
     }
-    // decrement error code starting from zero
-    messageToSave.error_code = Number(response.error_code || 0) - 1;
+
     let contactUpdateQuery = Promise.resolve(1);
-    if (contact) {
+    if (contact && messageToSave.error_code) {
       contactUpdateQuery = r
         .knex("campaign_contact")
         .where("id", contact.id)
@@ -241,7 +253,7 @@ function postMessageSend(message, contact, resolve, reject, err, response) {
     let options = { conflict: "update" };
     if (trx) {
       options.transaction = trx;
-      if (contact) {
+      if (contact && messageToSave.error_code < 0) {
         contactUpdateQuery = contactUpdateQuery.transacting(trx);
       }
     }
@@ -270,7 +282,7 @@ function postMessageSend(message, contact, resolve, reject, err, response) {
         sent_at: new Date()
       },
       options
-    ).then((saveError, newMessage) => {
+    ).then((newMessage, saveError) => {
       resolve(newMessage);
     });
   }
@@ -351,7 +363,6 @@ export default {
   findNewCell,
   rentNewCell,
   sendMessage,
-  postMessageSend,
   handleDeliveryReport,
   handleIncomingMessage,
   parseMessageText
