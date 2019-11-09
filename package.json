@@ -10,6 +10,7 @@
   "scripts": {
     "test": "jest --runInBand --forceExit --detectOpenHandles",
     "test-cache": "REDIS_FAKE=1 jest --runInBand --forceExit --detectOpenHandles",
+    "test-rediscache": "REDIS_URL=redis://localhost:6379 CACHE_PREFIX=test jest --runInBand --forceExit --detectOpenHandles",
     "test-e2e": "jest --runInBand --config jest.config.e2e.js",
     "test-sqlite": "jest --runInBand --config jest.config.sqlite.js",
     "test-coverage": "jest --coverage",
@@ -96,7 +97,6 @@
     "dotenv": "^2.0.0",
     "draft-js": "^0.7.0",
     "express": "^4.14.0",
-    "faker": "^3.1.0",
     "fs": "^0.0.2",
     "google-libphonenumber": "^1.0.25",
     "googleapis": "^39.2.0",
@@ -192,7 +192,7 @@
     }
   },
   "lint-staged": {
-    "*.{js,css,json,md}": [
+    "*.{js,jsx,css,json,md}": [
       "prettier --write",
       "git add"
     ]
