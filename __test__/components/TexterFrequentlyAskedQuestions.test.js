@@ -1,7 +1,7 @@
 import React from "react";
 
 import { shallow } from "enzyme";
-import TexterFaqs from "../../src/components/TexterFaqs";
+import TexterFaqs from "../../src/components/TexterFrequentlyAskedQuestions";
 
 describe("FAQs component", () => {
   // given

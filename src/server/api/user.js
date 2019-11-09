@@ -15,7 +15,7 @@ function buildSelect(sortBy) {
 
   switch (sortBy) {
     case "COUNT_ONLY":
-      return r.knex.countDistinct("user.id");
+      return r.knex;
     case "LAST_NAME":
       fragmentArray = [userStar];
       break;
@@ -132,7 +132,7 @@ export async function getUsers(
       "COUNT_ONLY"
     );
 
-    const usersCount = await r.getCount(usersCountQuery);
+    const usersCount = await r.getCountDistinct(usersCountQuery, "user.id");
 
     const pageInfo = {
       limit: cursor.limit,
