@@ -106,6 +106,67 @@ export class AssignmentSummary extends Component {
     }
   }
 
+  calcHexBrightness(color) {
+    let hexcolor = color.replace("#", "");
+    if (hexcolor.length === 3) {
+      hexcolor = hexcolor.replace(/(.)/g, "$1$1");
+    }
+    const r = parseInt(hexcolor.substr(0, 2), 16);
+    const g = parseInt(hexcolor.substr(2, 2), 16);
+    const b = parseInt(hexcolor.substr(4, 2), 16);
+
+    const brightness = Math.floor((r * 299 + g * 587 + b * 114) / 1000);
+    const threshhold = 130;
+
+    return brightness > threshhold ? "light" : "dark";
+  }
+
+  calcRgbBrightness(color) {
+    const colorValuesArray = color
+      .slice(color.indexOf("(") + 1, color.indexOf(")"))
+      .split(",");
+
+    const r = parseInt(colorValuesArray[0]);
+    const g = parseInt(colorValuesArray[1]);
+    const b = parseInt(colorValuesArray[2]);
+    const alpha = colorValuesArray[3]
+      ? parseInt(colorValuesArray[3] * 100)
+      : 100;
+
+    const brightness = Math.floor((r * 299 + g * 587 + b * 114) / 1000);
+    const threshhold = 130;
+
+    return brightness > threshhold || alpha < 50 ? "light" : "dark";
+  }
+
+  calcHslBrightness(color) {
+    let colorValuesArray = color
+      .slice(color.indexOf("(") + 1, color.indexOf(")"))
+      .replace(/(%)/g, "")
+      .split(",");
+
+    const brightness = parseInt(colorValuesArray[2]);
+    const alpha = colorValuesArray[3]
+      ? parseInt(colorValuesArray[3] * 100)
+      : 100;
+
+    const threshhold = 60;
+
+    return brightness > threshhold || alpha < 50 ? "light" : "dark";
+  }
+
+  checkColorContrast(color) {
+    let brightness;
+
+    color[0] === "#"
+      ? (brightness = this.calcHexBrightness(color))
+      : color[0] === "h"
+      ? (brightness = this.calcHslBrightness(color))
+      : (brightness = this.calcRgbBrightness(color));
+
+    return brightness;
+  }
+
   render() {
     const {
       assignment,
@@ -127,6 +188,10 @@ export class AssignmentSummary extends Component {
       useDynamicAssignment
     } = assignment.campaign;
     const maxContacts = assignment.maxContacts;
+
+    const backgroundBrightness = this.checkColorContrast(primaryColor);
+    console.log(backgroundBrightness);
+
     return (
       <div className={css(styles.container)}>
         <Card key={assignment.id}>
