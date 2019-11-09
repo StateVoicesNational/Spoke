@@ -106,7 +106,7 @@ export class AssignmentSummary extends Component {
     }
   }
 
-  calcHexBrightness(color) {
+  detectHexBrightness(color) {
     let hexcolor = color.replace("#", "");
     if (hexcolor.length === 3) {
       hexcolor = hexcolor.replace(/(.)/g, "$1$1");
@@ -121,7 +121,7 @@ export class AssignmentSummary extends Component {
     return brightness > threshhold ? "light" : "dark";
   }
 
-  calcRgbBrightness(color) {
+  detectRgbBrightness(color) {
     const colorValuesArray = color
       .slice(color.indexOf("(") + 1, color.indexOf(")"))
       .split(",");
@@ -139,7 +139,7 @@ export class AssignmentSummary extends Component {
     return brightness > threshhold || alpha < 50 ? "light" : "dark";
   }
 
-  calcHslBrightness(color) {
+  detectHslBrightness(color) {
     let colorValuesArray = color
       .slice(color.indexOf("(") + 1, color.indexOf(")"))
       .replace(/(%)/g, "")
@@ -155,16 +155,16 @@ export class AssignmentSummary extends Component {
     return brightness > threshhold || alpha < 50 ? "light" : "dark";
   }
 
-  checkColorContrast(color) {
+  setContrastingColor(color) {
     let brightness;
 
     color[0] === "#"
-      ? (brightness = this.calcHexBrightness(color))
+      ? (brightness = this.detectHexBrightness(color))
       : color[0] === "h"
-      ? (brightness = this.calcHslBrightness(color))
-      : (brightness = this.calcRgbBrightness(color));
+      ? (brightness = this.detectHslBrightness(color))
+      : (brightness = this.detectRgbBrightness(color));
 
-    return brightness;
+    return brightness === "dark" ? "rgb(255,255,255)" : "rgb(54, 67, 80)";
   }
 
   render() {
@@ -189,16 +189,19 @@ export class AssignmentSummary extends Component {
     } = assignment.campaign;
     const maxContacts = assignment.maxContacts;
 
-    const backgroundBrightness = this.checkColorContrast(primaryColor);
-    console.log(backgroundBrightness);
+    const cardTitleTextColor = this.setContrastingColor(primaryColor);
 
     return (
       <div className={css(styles.container)}>
         <Card key={assignment.id}>
           <CardTitle
             title={title}
+            titleStyle={{ color: cardTitleTextColor }}
             subtitle={`${description} - ${moment(dueBy).format("MMM D YYYY")}`}
-            style={{ backgroundColor: primaryColor }}
+            subtitleStyle={{ color: cardTitleTextColor }}
+            style={{
+              backgroundColor: primaryColor
+            }}
             children={
               logoImageUrl ? (
                 <img src={logoImageUrl} className={css(styles.image)} />
