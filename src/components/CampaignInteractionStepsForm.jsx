@@ -41,10 +41,13 @@ const styles = {
     marginLeft: "35px",
     marginTop: "10px",
     borderLeft: `3px dashed ${theme.colors.veryLightGray}`
+  },
+  answerActionDropdown: {
+    width: "600px"
   }
 };
 
-function missingAction(a)  {
+function unknownAction(a)  {
   let msg
 
   if (a) {
@@ -200,6 +203,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
                     name="answerActions"
                     type="select"
                     default=""
+                    style={styles.answerActionDropdown}
                     choices={[
                       { value: "", label: "Action..." },
                       ...this.props.availableActions.map(action => ({
@@ -215,7 +219,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
                     {interactionStep.answerActions
                         ? ((this.props.availableActions.filter(
                             (a) => a.name === interactionStep.answerActions
-                        )[0]) || missingAction(interactionStep.answerActions) ).instructions
+                        )[0]) || unknownAction(interactionStep.answerActions) ).instructions
                       : ""}
                   </div>
                 </div>
