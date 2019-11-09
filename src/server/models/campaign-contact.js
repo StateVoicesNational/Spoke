@@ -33,7 +33,6 @@ const CampaignContact = thinky.createModel(
         .default("needsMessage"),
       error_code: type
         .integer()
-        .nullable()
         .allowNull()
         .default(null),
       is_opted_out: type.boolean().default(false),

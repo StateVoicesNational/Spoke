@@ -15,7 +15,6 @@ const Log = thinky.createModel(
       to_num: type.string(),
       error_code: type
         .integer()
-        .nullable()
         .allowNull()
         .default(null),
       created_at: timestamp()
