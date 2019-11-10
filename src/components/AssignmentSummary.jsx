@@ -10,6 +10,7 @@ import moment from "moment";
 import Divider from "material-ui/Divider";
 import { withRouter } from "react-router";
 import { dataTest } from "../lib/attributes";
+import theme from "../styles/theme";
 
 const inlineStyles = {
   badge: {
@@ -106,7 +107,7 @@ export class AssignmentSummary extends Component {
     }
   }
 
-  detectHexBrightness(color) {
+  calcHexBrightness(color) {
     let hexcolor = color.replace("#", "");
     if (hexcolor.length === 3) {
       hexcolor = hexcolor.replace(/(.)/g, "$1$1");
@@ -118,10 +119,12 @@ export class AssignmentSummary extends Component {
     const brightness = Math.floor((r * 299 + g * 587 + b * 114) / 1000);
     const threshhold = 130;
 
-    return brightness > threshhold ? "light" : "dark";
+    const contrastingColor =
+      brightness > threshhold ? theme.colors.darkGray : theme.colors.white;
+    return contrastingColor;
   }
 
-  detectRgbBrightness(color) {
+  calcRgbBrightness(color) {
     const colorValuesArray = color
       .slice(color.indexOf("(") + 1, color.indexOf(")"))
       .split(",");
@@ -136,10 +139,14 @@ export class AssignmentSummary extends Component {
     const brightness = Math.floor((r * 299 + g * 587 + b * 114) / 1000);
     const threshhold = 130;
 
-    return brightness > threshhold || alpha < 50 ? "light" : "dark";
+    const contrastingColor =
+      brightness > threshhold || alpha < 50
+        ? theme.colors.darkGray
+        : theme.colors.white;
+    return contrastingColor;
   }
 
-  detectHslBrightness(color) {
+  calcHslBrightness(color) {
     let colorValuesArray = color
       .slice(color.indexOf("(") + 1, color.indexOf(")"))
       .replace(/(%)/g, "")
@@ -152,19 +159,23 @@ export class AssignmentSummary extends Component {
 
     const threshhold = 60;
 
-    return brightness > threshhold || alpha < 50 ? "light" : "dark";
+    const contrastingColor =
+      brightness > threshhold || alpha < 50
+        ? theme.colors.darkGray
+        : theme.colors.white;
+    return contrastingColor;
   }
 
-  setContrastingColor(color) {
-    let brightness;
+  setContrastingColor(primaryColor) {
+    let contrastingColor;
 
-    color[0] === "#"
-      ? (brightness = this.detectHexBrightness(color))
-      : color[0] === "h"
-      ? (brightness = this.detectHslBrightness(color))
-      : (brightness = this.detectRgbBrightness(color));
+    primaryColor[0] === "#"
+      ? (contrastingColor = this.calcHexBrightness(primaryColor))
+      : primaryColor[0] === "h"
+      ? (contrastingColor = this.calcHslBrightness(primaryColor))
+      : (contrastingColor = this.calcRgbBrightness(primaryColor));
 
-    return brightness === "dark" ? "rgb(255,255,255)" : "rgb(54, 67, 80)";
+    return contrastingColor;
   }
 
   render() {
