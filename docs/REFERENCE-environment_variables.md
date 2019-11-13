@@ -32,6 +32,7 @@ EMAIL_HOST_PORT                   | Email server port. _Required for custom SMTP
 EMAIL_HOST_USER                   | Email server user. _Required for custom SMTP server usage_.
 EMAIL_HOST_SECURE                 | Email server security -- set to `1` if connection is made with smtps, otherwise set to the _default_ empty string to connect without TLS.
 FIX_ORGLESS                       | Set to any truthy value only if you want to run the job that automatically assigns the default org (see DEFAULT_ORG) to new users who have no assigned org.
+GOOGLE_SECRET                     | Credentials for Google Docs API.  Refer to [HOWTO_IMPORT_GOOGLE_DOCS_SCRIPTS_TO_IMPORT.md](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_IMPORT_GOOGLE_DOCS_SCRIPTS_TO_IMPORT.md#howto-import-interaction-steps-and-canned-responses-from-a-google-doc-into-spoke) for detailed instructions. _Required for importing scripts (interaction steps and canned responses) from Google Docs._
 GRAPHQL_URL                       | Optional URL for pointing GraphQL API requests. Should end with `/graphql`, e.g. `https://example.org/graphql`. _Default_: "/graphql"
 JOBS_SAME_PROCESS                 | Boolean value indicating whether jobs should be executed in the same process in which they are created (vs. processing asyncronously via worker processes). _Default_: false.
 MAILGUN_DOMAIN                    | The domain you set up in Mailgun, e.g. `email.bartletforamerica.com`. _Required for Mailgun usage._
