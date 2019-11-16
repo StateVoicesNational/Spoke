@@ -1,4 +1,23 @@
 # Release Notes
+## v3.2
+
+_November 2019:_ Version 3.2.0
+
+This release includes the following improvements:
+
+- Fixed bug that was not allowing texts to be reassigned in message review
+- Multiple documentation fixes and copy adjustments in the UI
+- Fixes bug that made deployment fail for AWS Lambda
+- Adds redis into the testing suite for more reliable tests
+
+Thanks to all the contributors apart of this release including:
+[stevenfranks](https://github.com/stevenfranks),
+[ibrand](https://github.com/ibrand),
+[lperson](https://github.com/lperson),
+[schuyler1d](https://github.com/schuyler1d),
+[zhaluza](https://github.com/zhaluza),
+[WSINTRA](https://github.com/WSINTRA)
+[joemcl](https://github.com/joemcl)
 
 ## v3.1
 
