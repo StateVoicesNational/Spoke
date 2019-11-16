@@ -1,8 +1,11 @@
 # Fixes # (issue)
+
 ## Description
-*Please include a summary of the change and which issue is fixed. Please also include relevant motivation and context. List any dependencies that are required for this change, and any blockers that make your change a WIP*
+
+_Please include a summary of the change and which issue is fixed. Please also include relevant motivation and context. List any dependencies that are required for this change, and any blockers that make your change a WIP_
 
 # Checklist:
+
 - [ ] I have manually tested my changes on desktop and mobile
 - [ ] The test suite passes locally with my changes
 - [ ] If my change is a UI change, I have attached a screenshot to the description section of this pull request

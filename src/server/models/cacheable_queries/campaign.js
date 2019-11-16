@@ -1,8 +1,8 @@
-import { r, loaders, Campaign } from '../../models'
-import { modelWithExtraProps } from './lib'
-import { assembleAnswerOptions } from '../../../lib/interaction-step-helpers'
-import { clearUserAssignments, getCampaignTexterIds, reloadCampaignTexters } from './assignment-user'
-import { campaignHasUnassigned } from './assignment-dynamic'
+import { r, loaders, Campaign } from "../../models";
+import { modelWithExtraProps } from "./lib";
+import { assembleAnswerOptions } from "../../../lib/interaction-step-helpers";
+import { clearUserAssignments, getCampaignTexterIds, reloadCampaignTexters } from './assignment-user';
+import { campaignHasUnassigned } from './assignment-dynamic';
 
 // This should be cached data for a campaign that will not change
 // based on assignments or texter actions
@@ -21,33 +21,34 @@ import { campaignHasUnassigned } from './assignment-dynamic'
 // * organization metadata (saved in organization.js instead)
 // * campaignCannedResponses (saved in canned-responses.js instead)
 
-const cacheKey = (id) => `${process.env.CACHE_PREFIX || ''}campaign-${id}`
+const cacheKey = id => `${process.env.CACHE_PREFIX || ""}campaign-${id}`;
 
-const dbCustomFields = async (id) => {
-  const campaignContacts = await r.table('campaign_contact')
-    .getAll(id, { index: 'campaign_id' })
-    .limit(1)
+const dbCustomFields = async id => {
+  const campaignContacts = await r
+    .table("campaign_contact")
+    .getAll(id, { index: "campaign_id" })
+    .limit(1);
   if (campaignContacts.length > 0) {
-    return Object.keys(JSON.parse(campaignContacts[0].custom_fields))
+    return Object.keys(JSON.parse(campaignContacts[0].custom_fields));
   }
-  return []
-}
+  return [];
+};
 
-const dbInteractionSteps = async (id) => {
-  const allSteps = await r.table('interaction_step')
-    .getAll(id, { index: 'campaign_id' })
+const dbInteractionSteps = async id => {
+  const allSteps = await r
+    .table("interaction_step")
+    .getAll(id, { index: "campaign_id" })
     .filter({ is_deleted: false })
-    .orderBy('id')
-  return assembleAnswerOptions(allSteps)
-}
+    .orderBy("id");
+  return assembleAnswerOptions(allSteps);
+};
 
-const dbContactTimezones = async (id) => (
-  (await r.knex('campaign_contact')
-   .where('campaign_id', id)
-   .distinct('timezone_offset')
-   .select())
-    .map(contact => contact.timezone_offset)
-)
+const dbContactTimezones = async id =>
+  (await r
+    .knex("campaign_contact")
+    .where("campaign_id", id)
+    .distinct("timezone_offset")
+    .select()).map(contact => contact.timezone_offset);
 
 const clearCampaignUserAssignments = async (campaign) => {
   // iterate over userIds in campaignassignments-<campaignId>
@@ -61,32 +62,32 @@ const clearCampaignUserAssignments = async (campaign) => {
 const clear = async (id, campaign) => {
   if (r.redis) {
     // console.log('clearing campaign cache')
-    await r.redis.delAsync(cacheKey(id))
+    await r.redis.delAsync(cacheKey(id));
     if (campaign) {
-      await clearCampaignUserAssignments(campaign)
+      await clearCampaignUserAssignments(campaign);
     }
   }
-  loaders.campaign.clear(id)
-}
+  loaders.campaign.clear(id);
+};
 
-const loadDeep = async (id) => {
+const loadDeep = async id => {
   // console.log('load campaign deep', id)
   if (r.redis) {
-    const campaign = await Campaign.get(id)
+    const campaign = await Campaign.get(id);
     if (Array.isArray(campaign) && campaign.length === 0) {
-      console.error('NO CAMPAIGN FOUND')
-      return {}
+      console.error("NO CAMPAIGN FOUND");
+      return {};
     }
     if (campaign.is_archived) {
       // console.log('campaign is_archived')
       // do not cache archived campaigns
-      loaders.campaign.clear(id)
-      return campaign
+      loaders.campaign.clear(id);
+      return campaign;
     }
     // console.log('campaign loaddeep', campaign)
-    campaign.customFields = await dbCustomFields(id)
-    campaign.interactionSteps = await dbInteractionSteps(id)
-    campaign.contactTimezones = await dbContactTimezones(id)
+    campaign.customFields = await dbCustomFields(id);
+    campaign.interactionSteps = await dbInteractionSteps(id);
+    campaign.contactTimezones = await dbContactTimezones(id);
     // cache userIds for all assignments
     await reloadCampaignTexters(id)
     // console.log('loaded deep campaign', JSON.stringify(campaign, null, 2))
@@ -94,74 +95,82 @@ const loadDeep = async (id) => {
     // if/when we can clear it on organization data changes
     // campaign.organization = await organizationCache.load(campaign.organization_id)
     // console.log('campaign loaddeep', campaign, JSON.stringify(campaign))
-    await r.redis.multi()
+    await r.redis
+      .multi()
       .set(cacheKey(id), JSON.stringify(campaign))
       .expire(cacheKey(id), 43200)
-      .execAsync()
+      .execAsync();
     // console.log('clearing campaign', id, typeof id, loaders.campaign)
-    loaders.campaign.clear(String(id))
-    loaders.campaign.clear(Number(id))
+    loaders.campaign.clear(String(id));
+    loaders.campaign.clear(Number(id));
   }
   // console.log('clearing campaign', id, typeof id, loaders.campaign)
-  loaders.campaign.clear(String(id))
-  loaders.campaign.clear(Number(id))
-  return null
-}
+  loaders.campaign.clear(String(id));
+  loaders.campaign.clear(Number(id));
+  return null;
+};
 
 const currentEditors = async (campaign, user) => {
   // Add user ID in case of duplicate admin names
-  const displayName = `${user.id}~${user.first_name} ${user.last_name}`
+  const displayName = `${user.id}~${user.first_name} ${user.last_name}`;
 
-  await r.redis.hsetAsync(`campaign_editors_${campaign.id}`, displayName, new Date())
-  await r.redis.expire(`campaign_editors_${campaign.id}`, 120)
+  await r.redis.hsetAsync(
+    `campaign_editors_${campaign.id}`,
+    displayName,
+    new Date()
+  );
+  await r.redis.expire(`campaign_editors_${campaign.id}`, 120);
 
-  let editors = await r.redis.hgetallAsync(`campaign_editors_${campaign.id}`)
+  let editors = await r.redis.hgetallAsync(`campaign_editors_${campaign.id}`);
 
   // Only get editors that were active in the last 2 mins, and exclude the
   // current user
   editors = Object.entries(editors).filter(editor => {
-    const rightNow = new Date()
-    return rightNow - new Date(editor[1]) <= 120000 && editor[0] !== displayName
-  })
+    const rightNow = new Date();
+    return (
+      rightNow - new Date(editor[1]) <= 120000 && editor[0] !== displayName
+    );
+  });
 
   // Return a list of comma-separated names
-  return editors.map(editor => editor[0].split('~')[1]).join(', ')
-}
+  return editors.map(editor => editor[0].split("~")[1]).join(", ");
+};
 
 const campaignCache = {
   clear,
-  load: async (id) => {
+  load: async id => {
     // console.log('campaign cache load', id)
     if (r.redis) {
-      let campaignData = await r.redis.getAsync(cacheKey(id))
+      let campaignData = await r.redis.getAsync(cacheKey(id));
       // console.log('pre campaign cache', campaignData)
-      if (!campaignData) {
+      if (!campaignData || !campaignData.interactionSteps) {
         // console.log('no campaigndata', id)
-        const campaignNoCache = await loadDeep(id)
+        const campaignNoCache = await loadDeep(id);
         if (campaignNoCache) {
           // not found in db either
-          return campaignNoCache
+          return campaignNoCache;
         }
-        campaignData = await r.redis.getAsync(cacheKey(id))
+        campaignData = await r.redis.getAsync(cacheKey(id));
         // console.log('new campaign data', campaignData)
       }
       if (campaignData) {
-        const campaignObj = JSON.parse(campaignData)
+        const campaignObj = JSON.parse(campaignData);
         // console.log('campaign cache', cacheKey(id), campaignObj, campaignData)
-        const campaign = modelWithExtraProps(
-          campaignObj,
-          Campaign,
-          ['customFields', 'interactionSteps', 'contactTimezones'])
-        return campaign
+        const campaign = modelWithExtraProps(campaignObj, Campaign, [
+          "customFields",
+          "interactionSteps",
+          "contactTimezones"
+        ]);
+        return campaign;
       }
     }
-    return await Campaign.get(id)
+    return await Campaign.get(id);
   },
   reload: loadDeep,
   campaignHasUnassigned,
   currentEditors,
   dbCustomFields,
   dbInteractionSteps
-}
+};
 
-export default campaignCache
+export default campaignCache;
