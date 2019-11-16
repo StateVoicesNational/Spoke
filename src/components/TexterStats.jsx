@@ -1,63 +1,67 @@
-import PropTypes from 'prop-types'
-import React from 'react'
-import moment from 'moment'
-import LinearProgress from 'material-ui/LinearProgress'
+import PropTypes from "prop-types";
+import React from "react";
+import moment from "moment";
+import LinearProgress from "material-ui/LinearProgress";
 
 class TexterStats extends React.Component {
   renderAssignment(assignment) {
-    const { contactsCount, unmessagedCount, texter, id } = assignment
+    const { contactsCount, unmessagedCount, texter, id } = assignment;
     if (contactsCount === 0) {
-      return <div key={id} />
+      return <div key={id} />;
     }
 
-    const percentComplete = Math.round(((contactsCount - unmessagedCount) * 100) / contactsCount)
+    const percentComplete = Math.round(
+      ((contactsCount - unmessagedCount) * 100) / contactsCount
+    );
 
     return (
       <div key={id}>
         {texter.firstName} {texter.lastName}
         <div>{percentComplete}%</div>
-        <LinearProgress
-          mode='determinate'
-          value={percentComplete}
-        />
+        <LinearProgress mode="determinate" value={percentComplete} />
       </div>
-    )
+    );
   }
 
   renderAssignmentDynamic(assignment, textersInflight) {
-    const { contactsCount, unmessagedCount, texter, id } = assignment
+    const { contactsCount, unmessagedCount, texter, id } = assignment;
     if (contactsCount === 0) {
-      return <div key={id} />
+      return <div key={id} />;
     }
-    const [inflight] = textersInflight.filter(t => t.id === texter.id)
+    const [inflight] = textersInflight.filter(t => t.id === texter.id);
     return (
       <div key={id}>
         {texter.firstName}
         <div>
           {contactsCount - unmessagedCount} initial messages sent
-          {inflight
-           ? <span> ({inflight.inflightCount} in-flight {moment(inflight.lastMessageTime).fromNow()})</span>
-           : null}
+          {inflight ? (
+            <span>
+              {" "}
+              ({inflight.inflightCount} in-flight{" "}
+              {moment(inflight.lastMessageTime).fromNow()})
+            </span>
+          ) : null}
         </div>
       </div>
-    )
+    );
   }
 
   render() {
-    const { campaign } = this.props
-    const { assignments, textersInflight } = campaign
+    const { campaign } = this.props;
+    const { assignments, textersInflight } = campaign;
     return (
       <div>
-        {assignments.map((assignment) => (
+        {assignments.map(assignment =>
           campaign.useDynamicAssignment
             ? this.renderAssignmentDynamic(assignment, textersInflight)
-            : this.renderAssignment(assignment)))}
+            : this.renderAssignment(assignment)
+        )}
       </div>
-    )
+    );
   }
 }
 
 TexterStats.propTypes = {
   campaign: PropTypes.object
-}
-export default TexterStats
+};
+export default TexterStats;

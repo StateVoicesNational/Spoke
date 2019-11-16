@@ -1,21 +1,24 @@
-import { mapFieldsToModel } from './lib/utils'
-import { Message } from '../models'
+import { mapFieldsToModel } from "./lib/utils";
+import { Message } from "../models";
 
 export const resolvers = {
   Message: {
-    ...mapFieldsToModel([
-      'id',
-      'text',
-      'userNumber',
-      'contactNumber',
-      'createdAt',
-      'isFromContact'
-    ], Message),
-    'campaignId': msg => msg.campaign_id,
-    'createdAt': msg => 
-      (msg.created_at instanceof Date || !msg.created_at)
-      ? msg.created_at || null
-      : new Date(msg.created_at),
-    'id': msg => (msg.id || `fake${Math.random()}`)
+    ...mapFieldsToModel(
+      [
+        "id",
+        "text",
+        "userNumber",
+        "contactNumber",
+        "createdAt",
+        "isFromContact"
+      ],
+      Message
+    ),
+    campaignId: instance => instance["campaign_id"],
+    createdAt: msg =>
+      msg.created_at instanceof Date || !msg.created_at
+        ? msg.created_at || null
+        : new Date(msg.created_at),
+    id: msg => msg.id || `fake${Math.random()}`
   }
-}
+};
