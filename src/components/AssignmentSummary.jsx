@@ -3,6 +3,7 @@ import React, { Component } from "react";
 import { Card, CardActions, CardTitle } from "material-ui/Card";
 import { StyleSheet, css } from "aphrodite";
 import loadData from "../containers/hoc/load-data";
+import { setContrastingColor } from "../lib/color-contrast-helper";
 import gql from "graphql-tag";
 import RaisedButton from "material-ui/RaisedButton";
 import Badge from "material-ui/Badge";
@@ -10,7 +11,6 @@ import moment from "moment";
 import Divider from "material-ui/Divider";
 import { withRouter } from "react-router";
 import { dataTest } from "../lib/attributes";
-import theme from "../styles/theme";
 
 const inlineStyles = {
   badge: {
@@ -107,77 +107,6 @@ export class AssignmentSummary extends Component {
     }
   }
 
-  calcHexBrightness(color) {
-    let hexcolor = color.replace("#", "");
-    if (hexcolor.length === 3) {
-      hexcolor = hexcolor.replace(/(.)/g, "$1$1");
-    }
-    const r = parseInt(hexcolor.substr(0, 2), 16);
-    const g = parseInt(hexcolor.substr(2, 2), 16);
-    const b = parseInt(hexcolor.substr(4, 2), 16);
-
-    const brightness = Math.floor((r * 299 + g * 587 + b * 114) / 1000);
-    const threshhold = 130;
-
-    const contrastingColor =
-      brightness > threshhold ? theme.colors.darkGray : theme.colors.white;
-    return contrastingColor;
-  }
-
-  calcRgbBrightness(color) {
-    const colorValuesArray = color
-      .slice(color.indexOf("(") + 1, color.indexOf(")"))
-      .split(",");
-
-    const r = parseInt(colorValuesArray[0]);
-    const g = parseInt(colorValuesArray[1]);
-    const b = parseInt(colorValuesArray[2]);
-    const alpha = colorValuesArray[3]
-      ? parseInt(colorValuesArray[3] * 100)
-      : 100;
-
-    const brightness = Math.floor((r * 299 + g * 587 + b * 114) / 1000);
-    const threshhold = 130;
-
-    const contrastingColor =
-      brightness > threshhold || alpha < 50
-        ? theme.colors.darkGray
-        : theme.colors.white;
-    return contrastingColor;
-  }
-
-  calcHslBrightness(color) {
-    let colorValuesArray = color
-      .slice(color.indexOf("(") + 1, color.indexOf(")"))
-      .replace(/(%)/g, "")
-      .split(",");
-
-    const brightness = parseInt(colorValuesArray[2]);
-    const alpha = colorValuesArray[3]
-      ? parseInt(colorValuesArray[3] * 100)
-      : 100;
-
-    const threshhold = 60;
-
-    const contrastingColor =
-      brightness > threshhold || alpha < 50
-        ? theme.colors.darkGray
-        : theme.colors.white;
-    return contrastingColor;
-  }
-
-  setContrastingColor(primaryColor) {
-    let contrastingColor;
-
-    primaryColor[0] === "#"
-      ? (contrastingColor = this.calcHexBrightness(primaryColor))
-      : primaryColor[0] === "h"
-      ? (contrastingColor = this.calcHslBrightness(primaryColor))
-      : (contrastingColor = this.calcRgbBrightness(primaryColor));
-
-    return contrastingColor;
-  }
-
   render() {
     const {
       assignment,
@@ -200,7 +129,7 @@ export class AssignmentSummary extends Component {
     } = assignment.campaign;
     const maxContacts = assignment.maxContacts;
 
-    const cardTitleTextColor = this.setContrastingColor(primaryColor);
+    const cardTitleTextColor = setContrastingColor(primaryColor);
 
     return (
       <div className={css(styles.container)}>
