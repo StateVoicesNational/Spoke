@@ -11,7 +11,6 @@ GRANT ALL PRIVILEGES ON DATABASE spoke_test TO spoke_test;
 ```
 3) Run `npm test`
 
-
 ## SQLite Testing (simpler)
 
 1) Run `npm run test-sqlite`
