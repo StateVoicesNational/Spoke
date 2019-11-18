@@ -4,7 +4,7 @@ import {
   convertHslToRgb,
   calcBrightness,
   setContrastingColor
-} from "../../src/lib/color-eval";
+} from "../../src/lib/color-contrast-helper";
 
 import theme from "../../src/styles/theme";
 
