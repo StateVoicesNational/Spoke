@@ -8,6 +8,7 @@ import { getLastMessage, saveNewIncomingMessage } from "./message-sending";
 // > 1 (i.e. positive) error_codes are reserved for Twilio error codes
 // -1 - -MAX_SEND_ATTEMPTS (5): failed send messages
 // -100-....: custom local errors
+// -101: incoming message with a MediaUrl
 
 let twilio = null;
 const MAX_SEND_ATTEMPTS = 5;
@@ -353,6 +354,17 @@ async function handleIncomingMessage(message) {
     if (finalMessage) {
       await saveNewIncomingMessage(finalMessage);
     }
+  }
+
+  // store mediaurl data in Log, so it can be extracted manually
+  if (message.MediaUrl0 && !DISABLE_DB_LOG) {
+    await Log.save({
+      message_sid: MessageSid,
+      body: JSON.stringify(message),
+      error_code: -101,
+      from_num: From || null,
+      to_num: To || null
+    });
   }
 }
 
