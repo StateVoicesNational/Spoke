@@ -28,7 +28,8 @@ import {
   createCannedResponses,
   startCampaign,
   getCampaignContact,
-  sendMessage
+  sendMessage,
+  bulkSendMessages
 } from "../../test_helpers";
 
 let testAdminUser;
@@ -778,6 +779,82 @@ describe("Reassignments", async () => {
     expect(texterCampaignDataResults2.data.assignment.allContactsCount).toEqual(
       29
     );
-    console.timeEnd('fullfunction');
-  }, 10000);  // long test can exceed default 5seconds
+    console.timeEnd("fullfunction");
+  }, 10000); // long test can exceed default 5seconds
+});
+
+describe("Bulk Send", async () => {
+  const OLD_ENV = process.env;
+
+  beforeEach(async () => {
+    jest.resetModules(); // this is important - it clears the cache
+    process.env = {
+      ...OLD_ENV
+    };
+    process.env.ALLOW_SEND_ALL = true;
+    process.env.NOT_IN_USA = true;
+    process.env.BULK_SEND_CHUNK_SIZE = 100;
+  });
+
+  afterEach(async () => {
+    process.env = OLD_ENV;
+  });
+
+  it("should send initial texts to as many contacts as are in the chunk size", async () => {
+    console.time("fullfunction");
+    testCampaign.use_dynamic_assignment = true;
+    await createScript(testAdminUser, testCampaign);
+    await startCampaign(testAdminUser, testCampaign);
+    console.time("func1");
+    let texterCampaignDataResults = await runComponentGql(
+      TexterTodoQuery, {
+        contactsFilter: {
+          messageStatus: "needsMessage",
+          isOptedOut: false,
+          validTimezone: true
+        },
+        assignmentId
+      },
+      testTexterUser
+    );
+
+    // TEXTER 1 (100 needsMessage)
+    expect(texterCampaignDataResults.data.assignment.contacts.length).toEqual(
+      100
+    );
+    expect(texterCampaignDataResults.data.assignment.allContactsCount).toEqual(
+      100
+    );
+    console.timeEnd("func1");
+    console.time("func2");
+
+    // send some texts
+    await bulkSendMessages(assignmentId, testTexterUser);
+
+
+    console.timeEnd("func2");
+    console.time("func3");
+
+    // TEXTER 1 (95 needsMessage, 5 needsResponse)
+    texterCampaignDataResults = await runComponentGql(
+      TexterTodoQuery, {
+        contactsFilter: {
+          messageStatus: "needsMessage",
+          isOptedOut: false,
+          validTimezone: true
+        },
+        assignmentId
+      },
+      testTexterUser
+    );
+
+    expect(texterCampaignDataResults.data.assignment.contacts.length).toEqual(
+      0
+    );
+    expect(texterCampaignDataResults.data.assignment.allContactsCount).toEqual(
+      100
+    );
+    console.timeEnd("func3");
+    console.time("func4");
+  });
 });

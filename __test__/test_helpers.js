@@ -302,6 +302,23 @@ export async function sendMessage(campaignContactId, user, message) {
   return await graphql(mySchema, query, rootValue, context, variables);
 }
 
+export async function bulkSendMessages(assignmentId, user) {
+  const rootValue = {};
+  const query = `
+    mutation bulkSendMessage($assignmentId: Int!) {
+        bulkSendMessages(assignmentId: $assignmentId) {
+          id
+        }
+      }`;
+  const context = getContext({
+    user
+  });
+  const variables = {
+    assignmentId
+  };
+  return await graphql(mySchema, query, rootValue, context, variables);
+}
+
 export function buildScript(steps = 2) {
   const createSteps = (step, max) => {
     if (max <= step) {
