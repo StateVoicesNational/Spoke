@@ -336,11 +336,7 @@ const rootMutations = {
           user_number: userNumber,
           is_from_contact: true,
           text: message,
-          service_response: JSON.stringify({
-            fakeMessage: true,
-            userId: user.id,
-            userFirstName: user.first_name
-          }),
+          error_code: null,
           service_id: mockId,
           assignment_id: lastMessage.assignment_id,
           service: lastMessage.service,
@@ -1164,7 +1160,7 @@ const rootMutations = {
         `Sending (${service}): ${messageInstance.user_number} -> ${messageInstance.contact_number}\nMessage: ${messageInstance.text}`
       );
 
-      service.sendMessage(messageInstance, contact);
+      service.sendMessage(messageInstance, contact); // NOAWAIT
       return contact;
     },
     deleteQuestionResponses: async (

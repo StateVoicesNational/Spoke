@@ -195,8 +195,10 @@ async function handleDeliveryReport(report) {
       report.status === "rejected"
     ) {
       message.send_status = "ERROR";
+      const errCode = report["err-code"];
+      messageToSave.error_code = Number(errCode) || 0;
     }
-    Message.save(message, { conflict: "update" });
+    await Message.save(message, { conflict: "update" });
   }
 }
 

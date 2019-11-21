@@ -314,8 +314,11 @@ async function handleDeliveryReport(report) {
         messageStatus === "undelivered"
       ) {
         message.send_status = "ERROR";
+        message.error_code = Number(report.ErrorCode) || 0;
       }
-      Message.save(message, { conflict: "update" });
+      await Message.save(message, { conflict: "update" });
+
+      // FUTURE: update campaign_contact.error_code based on message.campaign_contact_id
     }
   }
 }
