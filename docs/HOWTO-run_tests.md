@@ -9,16 +9,20 @@ CREATE DATABASE spoke_test;
 CREATE USER spoke_test WITH PASSWORD 'spoke_test';
 GRANT ALL PRIVILEGES ON DATABASE spoke_test TO spoke_test;
 ```
-3) Run `npm test`
+3) Run `yarn test`
 
 ## SQLite Testing (simpler)
 
-1) Run `npm run test-sqlite`
+1) Run `yarn run test-sqlite`
+  
+## Test Redis Cache
+
+1) Run `yarn test-rediscache`
 
 ## End-To-End (Interactive Browser) Testing
 
 1. Remember to set `NODE_ENV=dev` 
-1. **Start DB** and **Start Spoke Server** as described in the [Getting Started](
+2. **Start DB** and **Start Spoke Server** as described in the [Getting Started](
 https://github.com/MoveOnOrg/Spoke/blob/main/README.md#getting-started) section. 
 1. Install browser driver(s)
     
@@ -33,11 +37,11 @@ https://github.com/MoveOnOrg/Spoke/blob/main/README.md#getting-started) section.
 1. Running tests...
     * ... using your local browser
       ```
-      npm run test-e2e
+      yarn run test-e2e
       ```
     * ... individually
       ```
-      npm run test-e2e <test name>
+      yarn run test-e2e <test name>
       ```
     * ... using Sauce Labs browser with your local host
       
@@ -45,5 +49,5 @@ https://github.com/MoveOnOrg/Spoke/blob/main/README.md#getting-started) section.
       ```
       export SAUCE_USERNAME=<Sauce Labs user name>
       export SAUCE_ACCESS_KEY=<Sauce Labs access key>
-      npm run test-e2e <optional test name> --saucelabs
+      yarn run test-e2e <optional test name> --saucelabs
       ```
