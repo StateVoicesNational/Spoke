@@ -830,6 +830,7 @@ describe("Bulk Send", async () => {
     // send some texts
     const bulkSendResult = await bulkSendMessages(assignmentId, testTexterUser);
     resultTestFunction(bulkSendResult);
+    print(bulkSendResult);
 
     // TEXTER 1 (95 needsMessage, 5 needsResponse)
     texterCampaignDataResults = await runComponentGql(
