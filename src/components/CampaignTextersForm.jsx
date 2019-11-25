@@ -1,22 +1,22 @@
-import type from 'prop-types'
-import React from 'react'
-import orderBy from 'lodash/orderBy'
-import Slider from './Slider'
-import AutoComplete from 'material-ui/AutoComplete'
-import IconButton from 'material-ui/IconButton'
-import RaisedButton from 'material-ui/RaisedButton'
-import Snackbar from 'material-ui/Snackbar'
-import GSForm from '../components/forms/GSForm'
-import yup from 'yup'
-import Form from 'react-formal'
-import OrganizationJoinLink from './OrganizationJoinLink'
-import CampaignFormSectionHeading from './CampaignFormSectionHeading'
-import { StyleSheet, css } from 'aphrodite'
-import theme from '../styles/theme'
-import Toggle from 'material-ui/Toggle'
-import DeleteIcon from 'material-ui/svg-icons/action/delete'
-import { dataTest } from '../lib/attributes'
-import { dataSourceItem } from './utils'
+import type from "prop-types";
+import React from "react";
+import orderBy from "lodash/orderBy";
+import Slider from "./Slider";
+import AutoComplete from "material-ui/AutoComplete";
+import IconButton from "material-ui/IconButton";
+import RaisedButton from "material-ui/RaisedButton";
+import Snackbar from "material-ui/Snackbar";
+import GSForm from "../components/forms/GSForm";
+import yup from "yup";
+import Form from "react-formal";
+import OrganizationJoinLink from "./OrganizationJoinLink";
+import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
+import { StyleSheet, css } from "aphrodite";
+import theme from "../styles/theme";
+import Toggle from "material-ui/Toggle";
+import DeleteIcon from "material-ui/svg-icons/action/delete";
+import { dataTest } from "../lib/attributes";
+import { dataSourceItem } from "./utils";
 
 const styles = StyleSheet.create({
   sliderContainer: {
@@ -28,11 +28,11 @@ const styles = StyleSheet.create({
     width: 50
   },
   texterRow: {
-    display: 'flex',
-    flexDirection: 'row'
+    display: "flex",
+    flexDirection: "row"
   },
   alreadyTextedHeader: {
-    textAlign: 'right',
+    textAlign: "right",
     fontWeight: 600,
     fontSize: 16
   },
@@ -42,29 +42,29 @@ const styles = StyleSheet.create({
   },
   nameColumn: {
     width: 100,
-    textOverflow: 'ellipsis',
-    marginTop: 'auto',
-    marginBottom: 'auto',
+    textOverflow: "ellipsis",
+    marginTop: "auto",
+    marginBottom: "auto",
     paddingRight: 10
   },
   splitToggle: {
     ...theme.text.body,
-    flex: '1 1 50%'
+    flex: "1 1 50%"
   },
   slider: {
-    flex: '1 1 35%',
-    marginTop: 'auto',
-    marginBottom: 'auto',
+    flex: "1 1 35%",
+    marginTop: "auto",
+    marginBottom: "auto",
     paddingRight: 10
   },
   leftSlider: {
-    flex: '1 1 35%',
-    marginTop: 'auto',
-    marginBottom: 'auto',
+    flex: "1 1 35%",
+    marginTop: "auto",
+    marginBottom: "auto",
     paddingRight: 10
   },
   headerContainer: {
-    display: 'flex',
+    display: "flex",
     borderBottom: `1px solid ${theme.colors.lightGray}`,
     marginBottom: 20
   },
@@ -73,11 +73,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     paddingLeft: 5,
     paddingRight: 5,
-    textAlign: 'center',
-    marginTop: 'auto',
-    marginBottom: 'auto',
+    textAlign: "center",
+    marginTop: "auto",
+    marginBottom: "auto",
     marginRight: 10,
-    display: 'inline-block',
+    display: "inline-block",
     backgroundColor: theme.colors.lightGray
   },
   input: {
@@ -85,11 +85,11 @@ const styles = StyleSheet.create({
     paddingLeft: 0,
     paddingRight: 0,
     marginRight: 10,
-    marginTop: 'auto',
-    marginBottom: 'auto',
-    display: 'inline-block'
+    marginTop: "auto",
+    marginBottom: "auto",
+    display: "inline-block"
   }
-})
+});
 
 const inlineStyles = {
   autocomplete: {
@@ -101,7 +101,7 @@ const inlineStyles = {
   header: {
     ...theme.text.header
   }
-}
+};
 
 export default class CampaignTextersForm extends React.Component {
   state = {
@@ -109,54 +109,70 @@ export default class CampaignTextersForm extends React.Component {
     focusedTexterId: null,
     useDynamicAssignment: this.formValues().useDynamicAssignment,
     snackbarOpen: false,
-    snackbarMessage: ''
-  }
+    snackbarMessage: ""
+  };
 
   handleToggleChange() {
     this.setState({
       useDynamicAssignment: !this.state.useDynamicAssignment
-    })
-    this.props.onChange({ useDynamicAssignment: !this.state.useDynamicAssignment })
+    });
+    this.props.onChange({
+      useDynamicAssignment: !this.state.useDynamicAssignment
+    });
   }
 
-  onChange = (formValues) => {
-    const existingFormValues = this.formValues()
-    const changedTexterId = this.state.focusedTexterId
+  onChange = formValues => {
+    const existingFormValues = this.formValues();
+    const changedTexterId = this.state.focusedTexterId;
     const newFormValues = {
       ...formValues
-    }
-    let totalNeedsMessage = 0
-    let totalMessaged = 0
-    const texterCountChanged = newFormValues.texters.length !== existingFormValues.texters.length
+    };
+    let totalNeedsMessage = 0;
+    let totalMessaged = 0;
+    const texterCountChanged =
+      newFormValues.texters.length !== existingFormValues.texters.length;
 
     // 1. map form texters to existing texters. with needsMessageCount tweaked to minimums when invalid or useless
-    newFormValues.texters = newFormValues.texters.map((newTexter) => {
-      const existingTexter = existingFormValues.texters.filter((texter) => (texter.id === newTexter.id ? texter : null))[0]
-      let messagedCount = 0
+    newFormValues.texters = newFormValues.texters.map(newTexter => {
+      const existingTexter = existingFormValues.texters.filter(texter =>
+        texter.id === newTexter.id ? texter : null
+      )[0];
+      let messagedCount = 0;
       if (existingTexter) {
-        messagedCount = existingTexter.assignment.contactsCount - existingTexter.assignment.needsMessageCount
-        totalMessaged += messagedCount
+        messagedCount =
+          existingTexter.assignment.contactsCount -
+          existingTexter.assignment.needsMessageCount;
+        totalMessaged += messagedCount;
       }
 
-      let convertedNeedsMessageCount = parseInt(newTexter.assignment.needsMessageCount, 10)
-      let convertedMaxContacts = (!!newTexter.assignment.maxContacts ? parseInt(newTexter.assignment.maxContacts) : null)
+      let convertedNeedsMessageCount = parseInt(
+        newTexter.assignment.needsMessageCount,
+        10
+      );
+      let convertedMaxContacts = !!newTexter.assignment.maxContacts
+        ? parseInt(newTexter.assignment.maxContacts)
+        : null;
 
       if (isNaN(convertedNeedsMessageCount)) {
-        convertedNeedsMessageCount = 0
+        convertedNeedsMessageCount = 0;
       }
-      if (convertedNeedsMessageCount + messagedCount > this.formValues().contactsCount) {
-        convertedNeedsMessageCount = this.formValues().contactsCount - messagedCount
+      if (
+        convertedNeedsMessageCount + messagedCount >
+        this.formValues().contactsCount
+      ) {
+        convertedNeedsMessageCount =
+          this.formValues().contactsCount - messagedCount;
       }
 
       if (convertedNeedsMessageCount < 0) {
-        convertedNeedsMessageCount = 0
+        convertedNeedsMessageCount = 0;
       }
 
       if (texterCountChanged && this.state.autoSplit) {
-        convertedNeedsMessageCount = 0
+        convertedNeedsMessageCount = 0;
       }
 
-      totalNeedsMessage = totalNeedsMessage + convertedNeedsMessageCount
+      totalNeedsMessage = totalNeedsMessage + convertedNeedsMessageCount;
 
       return {
         ...newTexter,
@@ -167,116 +183,134 @@ export default class CampaignTextersForm extends React.Component {
           needsMessageCount: convertedNeedsMessageCount,
           maxContacts: convertedMaxContacts
         }
-      }
-    })
+      };
+    });
 
     // extraTexterCapacity is the number of contacts assigned to texters in excess of the
     // total number of contacts available
-    let extraTexterCapacity = totalNeedsMessage + totalMessaged - this.formValues().contactsCount
+    let extraTexterCapacity =
+      totalNeedsMessage + totalMessaged - this.formValues().contactsCount;
 
     if (extraTexterCapacity > 0) {
       // 2. If extraTexterCapacity > 0, reduce the user's input to the number of contacts available
       // for assignment
-      newFormValues.texters = newFormValues.texters.map((newTexter) => {
+      newFormValues.texters = newFormValues.texters.map(newTexter => {
         if (newTexter.id === changedTexterId) {
-          const returnTexter = newTexter
-          returnTexter.assignment.needsMessageCount -= extraTexterCapacity
-          returnTexter.assignment.contactsCount -= extraTexterCapacity
-          return returnTexter
+          const returnTexter = newTexter;
+          returnTexter.assignment.needsMessageCount -= extraTexterCapacity;
+          returnTexter.assignment.contactsCount -= extraTexterCapacity;
+          return returnTexter;
         }
-        return newTexter
-      })
-      const focusedTexter = newFormValues.texters.find((texter) => {
-        return texter.id === changedTexterId
-      })
+        return newTexter;
+      });
+      const focusedTexter = newFormValues.texters.find(texter => {
+        return texter.id === changedTexterId;
+      });
       this.setState({
         snackbarOpen: true,
-        snackbarMessage: `${focusedTexter.assignment.contactsCount} contact${focusedTexter.assignment.contactsCount === 1 ? '' : 's'} assigned to ${this.getDisplayName(focusedTexter.id)}`
-      })
+        snackbarMessage: `${focusedTexter.assignment.contactsCount} contact${
+          focusedTexter.assignment.contactsCount === 1 ? "" : "s"
+        } assigned to ${this.getDisplayName(focusedTexter.id)}`
+      });
     } else if (this.state.autoSplit) {
       // 3. if we don't have extraTexterCapacity and auto-split is on, then fill the texters with assignments
-      const factor = 1
-      let index = 0
-      let skipsByIndex = new Array(newFormValues.texters.length).fill(0)
+      const factor = 1;
+      let index = 0;
+      let skipsByIndex = new Array(newFormValues.texters.length).fill(0);
       if (newFormValues.texters.length === 1) {
-        const messagedCount = newFormValues.texters[0].assignment.contactsCount - newFormValues.texters[0].assignment.needsMessageCount
-        newFormValues.texters[0].assignment.contactsCount = this.formValues().contactsCount
-        newFormValues.texters[0].assignment.needsMessageCount = this.formValues().contactsCount - messagedCount
+        const messagedCount =
+          newFormValues.texters[0].assignment.contactsCount -
+          newFormValues.texters[0].assignment.needsMessageCount;
+        newFormValues.texters[0].assignment.contactsCount = this.formValues().contactsCount;
+        newFormValues.texters[0].assignment.needsMessageCount =
+          this.formValues().contactsCount - messagedCount;
       } else if (newFormValues.texters.length > 1) {
         while (extraTexterCapacity < 0) {
-          const texter = newFormValues.texters[index]
-          if (skipsByIndex[index] < texter.assignment.contactsCount - texter.assignment.needsMessageCount) {
-            skipsByIndex[index]++
+          const texter = newFormValues.texters[index];
+          if (
+            skipsByIndex[index] <
+            texter.assignment.contactsCount -
+              texter.assignment.needsMessageCount
+          ) {
+            skipsByIndex[index]++;
           } else {
             if (!changedTexterId || texter.id !== changedTexterId) {
               if (texter.assignment.needsMessageCount + factor >= 0) {
-                texter.assignment.needsMessageCount = texter.assignment.needsMessageCount + factor
-                texter.assignment.contactsCount = texter.assignment.contactsCount + factor
-                extraTexterCapacity = extraTexterCapacity + factor
+                texter.assignment.needsMessageCount =
+                  texter.assignment.needsMessageCount + factor;
+                texter.assignment.contactsCount =
+                  texter.assignment.contactsCount + factor;
+                extraTexterCapacity = extraTexterCapacity + factor;
               }
             }
           }
-          index = index + 1
+          index = index + 1;
           if (index >= newFormValues.texters.length) {
-            index = 0
+            index = 0;
           }
         }
       }
     }
 
-    this.props.onChange(newFormValues)
-  }
+    this.props.onChange(newFormValues);
+  };
 
   formSchema = yup.object({
-    texters: yup.array().of(yup.object({
-      id: yup.string(),
-      assignment: yup.object({
-        needsMessageCount: yup.string(),
-        maxContacts: yup.string().nullable()
+    texters: yup.array().of(
+      yup.object({
+        id: yup.string(),
+        assignment: yup.object({
+          needsMessageCount: yup.string(),
+          maxContacts: yup.string().nullable()
+        })
       })
-    }))
-  })
+    )
+  });
 
   formValues() {
-    const unorderedTexters = this.props.formValues.texters
+    const unorderedTexters = this.props.formValues.texters;
     return {
       ...this.props.formValues,
-      texters: orderBy(unorderedTexters, ['firstName', 'lastName'], ['asc', 'asc'])
-    }
+      texters: orderBy(
+        unorderedTexters,
+        ["firstName", "lastName"],
+        ["asc", "asc"]
+      )
+    };
   }
 
   showSearch() {
-    const { orgTexters } = this.props
-    const { texters } = this.formValues()
+    const { orgTexters } = this.props;
+    const { texters } = this.formValues();
 
     const dataSource = orgTexters
-      .filter((orgTexter) =>
-        !texters.find((texter) => texter.id === orgTexter.id))
-      .map((orgTexter) =>
-          dataSourceItem(orgTexter.displayName,
-          orgTexter.id
-        )
-    )
+      .filter(orgTexter => !texters.find(texter => texter.id === orgTexter.id))
+      .map(orgTexter => dataSourceItem(orgTexter.displayName, orgTexter.id));
 
-    const filter = (searchText, key) => ((key === 'allTexters') ? true : AutoComplete.caseInsensitiveFilter(searchText, key))
+    const filter = (searchText, key) =>
+      key === "allTexters"
+        ? true
+        : AutoComplete.caseInsensitiveFilter(searchText, key);
 
     const autocomplete = (
       <AutoComplete
-        ref='autocomplete'
+        ref="autocomplete"
         style={inlineStyles.autocomplete}
         autoFocus
-        onFocus={() => this.setState({ searchText: '' })}
-        onUpdateInput={(searchText) => this.setState({ searchText })}
+        onFocus={() => this.setState({ searchText: "" })}
+        onUpdateInput={searchText => this.setState({ searchText })}
         searchText={this.state.searchText}
         filter={filter}
-        hintText='Search for texters to assign'
+        hintText="Search for texters to assign"
         dataSource={dataSource}
-        onNewRequest={(value) => {
+        onNewRequest={value => {
           // If you're searching but get no match, value is a string
           // representing your search term, but we only want to handle matches
-          if (typeof value === 'object') {
-            const texterId = value.value.key
-            const newTexter = this.props.orgTexters.find((texter) => texter.id === texterId)
+          if (typeof value === "object") {
+            const texterId = value.value.key;
+            const newTexter = this.props.orgTexters.find(
+              texter => texter.id === texterId
+            );
             this.onChange({
               texters: [
                 ...this.formValues().texters,
@@ -289,50 +323,46 @@ export default class CampaignTextersForm extends React.Component {
                   }
                 }
               ]
-            })
+            });
           }
         }}
       />
-    )
+    );
 
-    return (
-      <div>
-        {orgTexters.length > 0 ? autocomplete : ''}
-      </div>
-    )
+    return <div>{orgTexters.length > 0 ? autocomplete : ""}</div>;
   }
 
   addAllTexters() {
-    const { orgTexters } = this.props
+    const { orgTexters } = this.props;
 
-    const textersToAdd = orgTexters
-      .map((orgTexter) => {
-        const id = orgTexter.id
-        const firstName = orgTexter.firstName
-        return {
-          id,
-          firstName,
-          assignment: {
-            contactsCount: 0,
-            needsMessageCount: 0
-          }
+    const textersToAdd = orgTexters.map(orgTexter => {
+      const id = orgTexter.id;
+      const firstName = orgTexter.firstName;
+      return {
+        id,
+        firstName,
+        assignment: {
+          contactsCount: 0,
+          needsMessageCount: 0
         }
-      })
+      };
+    });
 
-    this.onChange({ texters: textersToAdd })
+    this.onChange({ texters: textersToAdd });
   }
 
   getDisplayName(texterId) {
-    let texterObj = this.props.orgTexters.find(o => o.id === texterId)
-    return texterObj.displayName
+    let texterObj = this.props.orgTexters.find(o => o.id === texterId);
+    return texterObj.displayName;
   }
 
   showTexters() {
     return this.formValues().texters.map((texter, index) => {
-      const messagedCount = texter.assignment.contactsCount - texter.assignment.needsMessageCount
+      const messagedCount =
+        texter.assignment.contactsCount - texter.assignment.needsMessageCount;
       return (
         <div
-          {...dataTest('texterRow')}
+          {...dataTest("texterRow")}
           key={texter.id}
           className={css(styles.texterRow)}
         >
@@ -344,25 +374,22 @@ export default class CampaignTextersForm extends React.Component {
               direction={1}
             />
           </div>
-          <div className={css(styles.assignedCount)}>
-            {messagedCount}
-          </div>
-          <div
-            {...dataTest('texterName')}
-            className={css(styles.nameColumn)}
-          >
+          <div className={css(styles.assignedCount)}>{messagedCount}</div>
+          <div {...dataTest("texterName")} className={css(styles.nameColumn)}>
             {this.getDisplayName(texter.id)}
           </div>
           <div className={css(styles.input)}>
             <Form.Field
-              {...dataTest('texterAssignment')}
+              {...dataTest("texterAssignment")}
               name={`texters[${index}].assignment.needsMessageCount`}
-              hintText='Contacts'
+              hintText="Contacts"
               fullWidth
               onFocus={() => this.setState({ focusedTexterId: texter.id })}
-              onBlur={() => this.setState({
-                focusedTexterId: null
-              })}
+              onBlur={() =>
+                this.setState({
+                  focusedTexterId: null
+                })
+              }
             />
           </div>
           <div className={css(styles.slider)}>
@@ -373,77 +400,89 @@ export default class CampaignTextersForm extends React.Component {
               direction={0}
             />
           </div>
-          {this.state.useDynamicAssignment ?
-           <div className={css(styles.input)}>
-            <Form.Field
-              name={`texters[${index}].assignment.maxContacts`}
-              hintText='Max'
-              fullWidth
-              onFocus={() => this.setState({ focusedTexterId: texter.id })}
-              onBlur={() => this.setState({
-                focusedTexterId: null
-              })}
-            />
-           </div>
-           : ''}
+          {this.state.useDynamicAssignment ? (
+            <div className={css(styles.input)}>
+              <Form.Field
+                name={`texters[${index}].assignment.maxContacts`}
+                hintText="Max"
+                fullWidth
+                onFocus={() => this.setState({ focusedTexterId: texter.id })}
+                onBlur={() =>
+                  this.setState({
+                    focusedTexterId: null
+                  })
+                }
+              />
+            </div>
+          ) : (
+            ""
+          )}
           <div className={css(styles.removeButton)}>
             <IconButton
               onTouchTap={async () => {
-                const currentFormValues = this.formValues()
+                const currentFormValues = this.formValues();
                 const newFormValues = {
                   ...currentFormValues
-                }
-                newFormValues.texters = newFormValues.texters.slice()
+                };
+                newFormValues.texters = newFormValues.texters.slice();
                 if (messagedCount === 0) {
-                  newFormValues.texters.splice(index, 1)
+                  newFormValues.texters.splice(index, 1);
                 } else {
-                  await this.setState({ focusedTexterId: texter.id })
+                  await this.setState({ focusedTexterId: texter.id });
                   newFormValues.texters[index] = {
                     ...texter,
                     assignment: {
                       needsMessageCount: 0
                     }
-                  }
+                  };
                 }
-                this.onChange(newFormValues)
+                this.onChange(newFormValues);
               }}
             >
               <DeleteIcon />
             </IconButton>
           </div>
         </div>
-      )
-    })
+      );
+    });
   }
 
   handleSnackbarClose = () => {
-    this.setState({ snackbarOpen: false, snackbarMessage: '' })
-  }
+    this.setState({ snackbarOpen: false, snackbarMessage: "" });
+  };
 
   render() {
-    const { organizationUuid, campaignId } = this.props
-    const subtitle = (
-      this.state.useDynamicAssignment ?
-        <div>
-          <OrganizationJoinLink organizationUuid={organizationUuid} campaignId={campaignId} />
-        </div>
-        : '')
+    const { organizationUuid, campaignId } = this.props;
+    const subtitle = this.state.useDynamicAssignment ? (
+      <div>
+        <OrganizationJoinLink
+          organizationUuid={organizationUuid}
+          campaignId={campaignId}
+        />
+      </div>
+    ) : (
+      ""
+    );
 
-    const assignedContacts = this.formValues()
-      .texters
-      .reduce(((prev, texter) => prev + texter.assignment.contactsCount), 0)
+    const assignedContacts = this.formValues().texters.reduce(
+      (prev, texter) => prev + texter.assignment.contactsCount,
+      0
+    );
 
-    const headerColor = assignedContacts === this.formValues().contactsCount ? theme.colors.green : theme.colors.orange
+    const headerColor =
+      assignedContacts === this.formValues().contactsCount
+        ? theme.colors.green
+        : theme.colors.orange;
     return (
       <div>
         <CampaignFormSectionHeading
-          title='Who should send the texts?'
+          title="Who should send the texts?"
           subtitle={subtitle}
         />
         <div>
           <Toggle
-            {...dataTest('useDynamicAssignment')}
-            label='Dynamically assign contacts'
+            {...dataTest("useDynamicAssignment")}
+            label="Dynamically assign contacts"
             toggled={this.state.useDynamicAssignment}
             onToggle={this.handleToggleChange.bind(this)}
           />
@@ -454,13 +493,13 @@ export default class CampaignTextersForm extends React.Component {
           onChange={this.onChange}
           onSubmit={this.props.onSubmit}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          {this.showSearch()}
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            {this.showSearch()}
             <div>
               <RaisedButton
-                {...dataTest('addAll')}
-                label='Add All'
-                onTouchTap={(() => this.addAllTexters())}
+                {...dataTest("addAll")}
+                label="Add All"
+                onTouchTap={() => this.addAllTexters()}
               />
             </div>
           </div>
@@ -470,62 +509,66 @@ export default class CampaignTextersForm extends React.Component {
                 style={{
                   ...inlineStyles.header,
                   color: headerColor,
-                  flex: '1 1 50%'
+                  flex: "1 1 50%"
                 }}
               >
-                {`Assigned contacts: ${assignedContacts}/${this.formValues().contactsCount}`}
+                {`Assigned contacts: ${assignedContacts}/${
+                  this.formValues().contactsCount
+                }`}
               </div>
-              <div
-                className={css(styles.splitToggle)}
-              >
+              <div className={css(styles.splitToggle)}>
                 <Toggle
-                  {...dataTest('autoSplit')}
-                  label='Split assignments'
+                  {...dataTest("autoSplit")}
+                  label="Split assignments"
                   style={{
-                    width: 'auto',
-                    marginLeft: 'auto'
+                    width: "auto",
+                    marginLeft: "auto"
                   }}
                   toggled={this.state.autoSplit}
                   onToggle={() => {
                     this.setState({ autoSplit: !this.state.autoSplit }, () => {
                       if (this.state.autoSplit) {
-                        const contactsCount = Math.floor(this.formValues().contactsCount / this.formValues().texters.length)
-                        const newTexters = this.formValues().texters.map((texter) =>
-                          ({
+                        const contactsCount = Math.floor(
+                          this.formValues().contactsCount /
+                            this.formValues().texters.length
+                        );
+                        const newTexters = this.formValues().texters.map(
+                          texter => ({
                             ...texter,
                             assignment: {
                               ...texter.assignment,
                               contactsCount
                             }
                           })
-                        )
-                        this.onChange({ ...this.formValues(), texters: newTexters })
+                        );
+                        this.onChange({
+                          ...this.formValues(),
+                          texters: newTexters
+                        });
                       }
-                    })
+                    });
                   }}
                 />
               </div>
             </div>
             <div className={css(styles.texterRow)}>
-              <div className={css(styles.leftSlider, styles.alreadyTextedHeader)}>
+              <div
+                className={css(styles.leftSlider, styles.alreadyTextedHeader)}
+              >
                 Already texted
               </div>
-              <div className={css(styles.assignedCount)}>
-              </div>
-              <div className={css(styles.nameColumn)}>
-              </div>
-              <div className={css(styles.input)}>
-              </div>
+              <div className={css(styles.assignedCount)}></div>
+              <div className={css(styles.nameColumn)}></div>
+              <div className={css(styles.input)}></div>
               <div className={css(styles.slider, styles.availableHeader)}>
                 Available to assign
               </div>
-              <div className={css(styles.removeButton)}>
-              </div>
+              <div className={css(styles.removeButton)}></div>
             </div>
             {this.showTexters()}
           </div>
           <Form.Button
-            type='submit'
+            type="submit"
             label={this.props.saveLabel}
             disabled={this.props.saveDisabled}
           />
@@ -537,7 +580,7 @@ export default class CampaignTextersForm extends React.Component {
           onRequestClose={this.handleSnackbarClose}
         />
       </div>
-    )
+    );
   }
 }
 
@@ -551,4 +594,4 @@ CampaignTextersForm.propTypes = {
   onSubmit: type.func,
   saveLabel: type.string,
   saveDisabled: type.bool
-}
+};

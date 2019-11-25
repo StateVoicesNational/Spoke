@@ -4,5 +4,4 @@ export const schema = `
     value: String
     question: Question
   }
-`
-
+`;

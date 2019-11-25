@@ -12,4 +12,4 @@ export const schema = `
     campaignCannedResponses: [CannedResponse]
     maxContacts: Int
   }
-`
+`;

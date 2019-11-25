@@ -1,3 +1,3 @@
-import { processJobs } from './job-processes'
+import { processJobs } from "./job-processes";
 
-processJobs()
+processJobs();
