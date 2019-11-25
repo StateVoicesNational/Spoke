@@ -3,13 +3,13 @@
 ## Testing queries and mutations in graphiql
 
 * Every query and mutation in src/server/schema.js can be tested in the graphiql interface.
-* Open (graphiql)[localhost:3000/graphql] in one browser tab and (Rethink data explorer)[localhost:8080/#dataexplorer] in another. You can use the Data Explorer to verify specific data changes after a query or mutation.
+* Open [graphiql](localhost:3000/graphql) in one browser tab and [Rethink data explorer](localhost:8080/#dataexplorer) in another. You can use the Data Explorer to verify specific data changes after a query or mutation.
   * If you're not using RethinkDB, open a query interface for the current database.
 * Enter a valid graphQL query or mutation. Inspect src/server/schema or the tree in the graphiql Docs tab to see available queries and mutations. 
 
 ### Example mutation - takes an input object, creates a valid invitation object and requests id of the newly created invitation in response:
 
-```
+```gql
 mutation {
   createInvite(invite: {is_valid: true}) {
     id
@@ -19,7 +19,7 @@ mutation {
 
 #### Example mutation result
 
-```
+```json
 {
   "data": {
     "createInvite": {
@@ -31,7 +31,7 @@ mutation {
 
 ### Example mutation 2 - takes query variables, creates a valid organization object and requests id of the newly created organization in response:
 
-```
+```gql
 mutation createOrganization($name: String!, $userId: String!, $inviteId: String!) {
   createOrganization(name: $name, userId: $userId, inviteId: $inviteId) {
     id
@@ -41,8 +41,9 @@ mutation createOrganization($name: String!, $userId: String!, $inviteId: String!
 
 (in query variables window)
 
-```
-{"userId": "749bd1dd-63a1-4696-a1a8-137bbcecb5d0",
+```json
+{
+  "userId": "749bd1dd-63a1-4696-a1a8-137bbcecb5d0",
   "name": "Testy test organization",
   "inviteId": "d9691319-1106-4c4d-9efc-7765029fc140"
 }
@@ -50,7 +51,7 @@ mutation createOrganization($name: String!, $userId: String!, $inviteId: String!
 
 #### Example mutation 2 result
 
-```
+```json
 {
   "data": {
     "createOrganization": {
@@ -62,7 +63,7 @@ mutation createOrganization($name: String!, $userId: String!, $inviteId: String!
 
 ### Example query - requests a specific campaign instance and specific details of subfields (use a campaign id from your own database)
 
-```
+```gql
 {
   campaign(id: "8c429f5b-2627-47b4-9395-5814a27e403f") {
     organization {
@@ -84,7 +85,7 @@ mutation createOrganization($name: String!, $userId: String!, $inviteId: String!
 
 #### Example query result:
 
-```
+```json
 {
   "data": {
     "campaign": {
@@ -141,11 +142,13 @@ mutation createOrganization($name: String!, $userId: String!, $inviteId: String!
 
 * To add graphql stack traces to the console, edit src/server/index.js to add the following option
 
-`formatError: (err) => { console.log(err.stack); return err },`
+```js
+formatError: (err) => { console.log(err.stack); return err },
+```
 
 Like so:
 
-```
+```js
 app.use('/graphql', apolloServer((req) => ({
   graphiql: true,
   pretty: true,
@@ -159,14 +162,8 @@ app.use('/graphql', apolloServer((req) => ({
   tracer,
   printErrors: true,
   allowUndefinedInResolve: false,
-  formatError: (err) => { console.log(err.stack); return err }, 
+  formatError: (err) => { console.log(err.stack); return err },
 })))
 ```
 
-* console.log statements in mutation definitions in src/server/schema.js will show up in the console when the mutations fire 
-
-
-
-
-
-
+* `console.log` statements in mutation definitions in src/server/schema.js will show up in the console when the mutations fire

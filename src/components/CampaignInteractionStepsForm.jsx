@@ -43,16 +43,16 @@ export default class CampaignInteractionStepsForm extends React.Component {
     interactionSteps: this.props.formValues.interactionSteps[0]
       ? this.props.formValues.interactionSteps
       : [
-          {
-            id: "newId",
-            parentInteractionId: null,
-            questionText: "",
-            answerOption: "",
-            script: "",
-            answerActions: "",
-            isDeleted: false
-          }
-        ],
+        {
+          id: "newId",
+          parentInteractionId: null,
+          questionText: "",
+          answerOption: "",
+          script: "",
+          answerActions: "",
+          isDeleted: false
+        }
+      ],
     displayAllSteps: false
   };
 
@@ -142,7 +142,6 @@ export default class CampaignInteractionStepsForm extends React.Component {
 
   renderInteractionStep(
     interactionStep,
-    interactionStepsArray,
     title = "Start"
   ) {
     return (

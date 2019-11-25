@@ -5,6 +5,7 @@ cache:
   yarn: true
 services:
 - postgresql
+- redis-server
 env:
   global:
   - secure: TODO
@@ -19,3 +20,5 @@ before_script:
 - psql -c 'GRANT ALL PRIVILEGES ON DATABASE spoke_test TO spoke_test;' -U postgres
 script:
 - yarn test
+- yarn test-cache
+- yarn test-rediscache
