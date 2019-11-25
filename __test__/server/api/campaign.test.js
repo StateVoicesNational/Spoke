@@ -42,6 +42,8 @@ let testContacts;
 let organizationId;
 let assignmentId;
 
+const NUMBER_OF_CONTACTS = 100;
+
 beforeEach(async () => {
   // Set up an entire working campaign
   await setupTest();
@@ -50,7 +52,7 @@ beforeEach(async () => {
   testOrganization = await createOrganization(testAdminUser, testInvite);
   organizationId = testOrganization.data.createOrganization.id;
   testCampaign = await createCampaign(testAdminUser, testOrganization);
-  testContacts = await createContacts(testCampaign, 100);
+  testContacts = await createContacts(testCampaign, NUMBER_OF_CONTACTS);
   testTexterUser = await createTexter(testOrganization);
   testTexterUser2 = await createTexter(testOrganization);
   await assignTexter(testAdminUser, testTexterUser, testCampaign);
@@ -403,12 +405,12 @@ describe("Reassignments", async () => {
       testTexterUser
     );
 
-    // TEXTER 1 (100 needsMessage)
+    // TEXTER 1 (NUMBER_OF_CONTACTS needsMessage)
     expect(texterCampaignDataResults.data.assignment.contacts.length).toEqual(
-      100
+      NUMBER_OF_CONTACTS
     );
     expect(texterCampaignDataResults.data.assignment.allContactsCount).toEqual(
-      100
+      NUMBER_OF_CONTACTS
     );
     console.timeEnd('func1');
     console.time('func2');
@@ -445,14 +447,14 @@ describe("Reassignments", async () => {
       95
     );
     expect(texterCampaignDataResults.data.assignment.allContactsCount).toEqual(
-      100
+      NUMBER_OF_CONTACTS
     );
     console.timeEnd('func3');
     console.time('func4');
     // - reassign 20 from one to another
     // using editCampaign
     await assignTexter(testAdminUser, testTexterUser, testCampaign, [
-      { id: testTexterUser.id, needsMessageCount: 70, contactsCount: 100 },
+      { id: testTexterUser.id, needsMessageCount: 70, contactsCount: NUMBER_OF_CONTACTS },
       { id: testTexterUser2.id, needsMessageCount: 20 }
     ]);
     // TEXTER 1 (70 needsMessage, 5 messaged)
@@ -791,21 +793,20 @@ describe("Bulk Send", async () => {
     process.env = {
       ...OLD_ENV
     };
-    process.env.ALLOW_SEND_ALL = true;
-    process.env.NOT_IN_USA = true;
-    process.env.BULK_SEND_CHUNK_SIZE = 100;
   });
 
   afterEach(async () => {
     process.env = OLD_ENV;
   });
 
-  it("should send initial texts to as many contacts as are in the chunk size", async () => {
-    console.time("fullfunction");
+  const testBulkSend = async (params, expectedSentCount, resultTestFunction) => {
+    process.env.ALLOW_SEND_ALL = params.allowSendAll;
+    process.env.NOT_IN_USA = params.notInUsa;
+    process.env.BULK_SEND_CHUNK_SIZE = params.bulkSendChunkSize;
+
     testCampaign.use_dynamic_assignment = true;
     await createScript(testAdminUser, testCampaign);
     await startCampaign(testAdminUser, testCampaign);
-    console.time("func1");
     let texterCampaignDataResults = await runComponentGql(
       TexterTodoQuery, {
         contactsFilter: {
@@ -818,22 +819,17 @@ describe("Bulk Send", async () => {
       testTexterUser
     );
 
-    // TEXTER 1 (100 needsMessage)
+    // TEXTER 1 (NUMBER_OF_CONTACTS needsMessage)
     expect(texterCampaignDataResults.data.assignment.contacts.length).toEqual(
-      100
+      NUMBER_OF_CONTACTS
     );
     expect(texterCampaignDataResults.data.assignment.allContactsCount).toEqual(
-      100
+      NUMBER_OF_CONTACTS
     );
-    console.timeEnd("func1");
-    console.time("func2");
 
     // send some texts
-    await bulkSendMessages(assignmentId, testTexterUser);
-
-
-    console.timeEnd("func2");
-    console.time("func3");
+    const bulkSendResult = await bulkSendMessages(assignmentId, testTexterUser);
+    resultTestFunction(bulkSendResult);
 
     // TEXTER 1 (95 needsMessage, 5 needsResponse)
     texterCampaignDataResults = await runComponentGql(
@@ -849,12 +845,76 @@ describe("Bulk Send", async () => {
     );
 
     expect(texterCampaignDataResults.data.assignment.contacts.length).toEqual(
-      0
+      NUMBER_OF_CONTACTS - expectedSentCount
     );
     expect(texterCampaignDataResults.data.assignment.allContactsCount).toEqual(
-      100
+      NUMBER_OF_CONTACTS
     );
-    console.timeEnd("func3");
-    console.time("func4");
+  };
+
+  const expectErrorBulkSending = (result) => {
+    expect(result.errors[0].message.status).toEqual(403);
+    expect(result.errors[0].message.message).toEqual('Not allowed to send all messages at once');
+    expect(result.data.bulkSendMessages).toBeFalsy();
+  };
+
+  const expectSuccessBulkSending = (expectedSentCount) =>
+    (result) => {
+      expect(result.errors).toBeFalsy();
+      expect(result.data.bulkSendMessages.length).toEqual(expectedSentCount);
+    };
+
+  it("should send initial texts to as many contacts as are in the chunk size if chunk size equals the number of contacts", async () => {
+    const params = {
+      allowSendAll: true,
+      notInUsa: true,
+      bulkSendChunkSize: NUMBER_OF_CONTACTS
+    };
+    await testBulkSend(params, NUMBER_OF_CONTACTS, expectSuccessBulkSending(NUMBER_OF_CONTACTS));
+  });
+
+  it("should send initial texts to as many contacts as are in the chunk size if chunk size is smaller than the number of contacts", async () => {
+    const params = {
+      allowSendAll: true,
+      notInUsa: true,
+      bulkSendChunkSize: NUMBER_OF_CONTACTS - 1
+    };
+    await testBulkSend(params, NUMBER_OF_CONTACTS - 1, expectSuccessBulkSending(NUMBER_OF_CONTACTS - 1));
+  });
+
+  it("should send initial texts to all contacts if chunk size is greater than the number of contacts", async () => {
+    const params = {
+      allowSendAll: true,
+      notInUsa: true,
+      bulkSendChunkSize: NUMBER_OF_CONTACTS + 1
+    };
+    await testBulkSend(params, NUMBER_OF_CONTACTS, expectSuccessBulkSending(NUMBER_OF_CONTACTS));
+  });
+
+  it("should NOT bulk send initial texts if ALLOW_SEND_ALL is not set", async () => {
+    const params = {
+      allowSendAll: false,
+      notInUsa: true,
+      bulkSendChunkSize: NUMBER_OF_CONTACTS
+    };
+    await testBulkSend(params, 0, expectErrorBulkSending);
+  });
+
+  it("should NOT bulk send initial texts if NOT_IN_USA is not set", async () => {
+    const params = {
+      allowSendAll: true,
+      notInUsa: false,
+      bulkSendChunkSize: NUMBER_OF_CONTACTS
+    };
+    await testBulkSend(params, 0, expectErrorBulkSending);
+  });
+
+  it("should NOT bulk send initial texts if neither ALLOW_SEND_ALL nor NOT_IN_USA is not set", async () => {
+    const params = {
+      allowSendAll: false,
+      notInUsa: false,
+      bulkSendChunkSize: NUMBER_OF_CONTACTS
+    };
+    await testBulkSend(params, 0, expectErrorBulkSending);
   });
 });
