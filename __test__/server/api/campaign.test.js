@@ -854,6 +854,7 @@ describe("Bulk Send", async () => {
   };
 
   const expectErrorBulkSending = (result) => {
+    console.log(result.errors[0]);
     expect(result.errors[0]).toBeDefined();
     expect(result.data.bulkSendMessages).toBeFalsy();
   };
