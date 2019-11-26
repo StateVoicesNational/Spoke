@@ -11,6 +11,12 @@ const Log = thinky.createModel(
       id: type.string(),
       message_sid: requiredString(),
       body: type.string(),
+      from_num: type.string(),
+      to_num: type.string(),
+      error_code: type
+        .integer()
+        .allowNull()
+        .default(null),
       created_at: timestamp()
     })
     .allowExtra(false),
