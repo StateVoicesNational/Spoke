@@ -793,6 +793,7 @@ describe("Bulk Send", async () => {
     process.env = {
       ...OLD_ENV
     };
+    process.env.NODE_ENV='test';
   });
 
   afterEach(async () => {
@@ -854,8 +855,24 @@ describe("Bulk Send", async () => {
   };
 
   const expectErrorBulkSending = (result) => {
-    console.log(result.errors[0]);
+
     expect(result.errors[0]).toBeDefined();
+
+    /*
+        We expect result.errors[0] to be this for the errors encountered in these tests
+        GraphQLError {
+          message: {
+            status: 403,
+            message: 'Not allowed to send all messages at once'
+          },
+          locations: [{
+            line: 3,
+            column: 9
+          }],
+          path: ['bulkSendMessages']
+        }
+     */
+    expect(result.errors[0].message.status).toEqual(403);
     expect(result.data.bulkSendMessages).toBeFalsy();
   };
 
