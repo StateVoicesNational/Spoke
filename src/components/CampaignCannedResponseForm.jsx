@@ -26,7 +26,7 @@ class CannedResponseForm extends React.Component {
       text: yup.string().required()
     });
 
-    const { customFields } = this.props;
+    const { customFields, handleCloseAddForm } = this.props;
     return (
       <div>
         <GSForm ref="form" schema={modelSchema} onSubmit={this.handleSave}>
@@ -57,7 +57,7 @@ class CannedResponseForm extends React.Component {
             />
             <FlatButton
               label="Cancel"
-              onTouchTap={() => this.setState({ showForm: false })}
+              onTouchTap={handleCloseAddForm}
               style={{
                 marginLeft: 5,
                 display: "inline-block"
@@ -72,6 +72,7 @@ class CannedResponseForm extends React.Component {
 
 CannedResponseForm.propTypes = {
   onSaveCannedResponse: type.func,
+  handleCloseAddForm: type.func,
   customFields: type.array
 };
 
