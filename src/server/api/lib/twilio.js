@@ -4,10 +4,17 @@ import { Log, Message, PendingMessagePart, r } from "../../models";
 import { log } from "../../../lib";
 import { getLastMessage, saveNewIncomingMessage } from "./message-sending";
 
+// TWILIO error_codes:
+// > 1 (i.e. positive) error_codes are reserved for Twilio error codes
+// -1 - -MAX_SEND_ATTEMPTS (5): failed send messages
+// -100-....: custom local errors
+// -101: incoming message with a MediaUrl
+
 let twilio = null;
 const MAX_SEND_ATTEMPTS = 5;
 const MESSAGE_VALIDITY_PADDING_SECONDS = 30;
 const MAX_TWILIO_MESSAGE_VALIDITY = 14400;
+const DISABLE_DB_LOG = process.env.DISABLE_DB_LOG || global.DISABLE_DB_LOG;
 
 if (process.env.TWILIO_API_KEY && process.env.TWILIO_AUTH_TOKEN) {
   // eslint-disable-next-line new-cap
@@ -43,7 +50,8 @@ async function convertMessagePartsToMessage(messageParts) {
   );
   const text = serviceMessages
     .map(serviceMessage => serviceMessage.Body)
-    .join("");
+    .join("")
+    .replace(/\0/g, ""); // strip all UTF-8 null characters (0x00)
 
   const lastMessage = await getLastMessage({
     contactNumber
@@ -53,7 +61,7 @@ async function convertMessagePartsToMessage(messageParts) {
     user_number: userNumber,
     is_from_contact: true,
     text,
-    service_response: JSON.stringify(serviceMessages),
+    error_code: null,
     service_id: serviceMessages[0].MessagingServiceSid,
     assignment_id: lastMessage.assignment_id,
     service: "twilio",
@@ -194,72 +202,102 @@ async function sendMessage(message, contact, trx) {
     }
 
     twilio.messages.create(messageParams, (err, response) => {
-      const messageToSave = {
-        ...message
-      };
-      log.info("messageToSave", messageToSave);
-      let hasError = false;
-      if (err) {
-        hasError = true;
-        log.error("Error sending message", err);
-        console.log("Error sending message", err);
-        messageToSave.service_response += JSON.stringify(err);
-      }
-      if (response) {
-        messageToSave.service_id = response.sid;
-        hasError = !!response.error_code;
-        messageToSave.service_response += JSON.stringify(response);
-      }
-
-      if (hasError) {
-        const SENT_STRING = '"status"'; // will appear in responses
-        if (
-          messageToSave.service_response.split(SENT_STRING).length >=
-          MAX_SEND_ATTEMPTS + 1
-        ) {
-          messageToSave.send_status = "ERROR";
-        }
-        let options = { conflict: "update" };
-        if (trx) {
-          options.transaction = trx;
-        }
-        Message.save(messageToSave, options)
-          // eslint-disable-next-line no-unused-vars
-          .then((_, newMessage) => {
-            reject(
-              err ||
-                (response
-                  ? new Error(JSON.stringify(response))
-                  : new Error("Encountered unknown error"))
-            );
-          });
-      } else {
-        let options = { conflict: "update" };
-        if (trx) {
-          options.transaction = trx;
-        }
-        Message.save(
-          {
-            ...messageToSave,
-            send_status: "SENT",
-            service: "twilio",
-            sent_at: new Date()
-          },
-          options
-        ).then((saveError, newMessage) => {
-          resolve(newMessage);
-        });
-      }
+      postMessageSend(message, contact, trx, resolve, reject, err, response);
     });
   });
 }
 
+export function postMessageSend(
+  message,
+  contact,
+  trx,
+  resolve,
+  reject,
+  err,
+  response
+) {
+  const messageToSave = {
+    ...message
+  };
+  log.info("messageToSave", messageToSave);
+  let hasError = false;
+  if (err) {
+    hasError = true;
+    log.error("Error sending message", err);
+    console.log("Error sending message", err);
+  }
+  if (response) {
+    messageToSave.service_id = response.sid;
+    hasError = !!response.error_code;
+    if (hasError) {
+      messageToSave.error_code = response.error_code;
+      messageToSave.send_status = "ERROR";
+    }
+  }
+
+  if (hasError) {
+    if (err) {
+      if (messageToSave.error_code <= -MAX_SEND_ATTEMPTS) {
+        messageToSave.send_status = "ERROR";
+      }
+      // decrement error code starting from zero
+      messageToSave.error_code = Number(messageToSave.error_code || 0) - 1;
+    }
+
+    let contactUpdateQuery = Promise.resolve(1);
+    if (contact && messageToSave.error_code) {
+      contactUpdateQuery = r
+        .knex("campaign_contact")
+        .where("id", contact.id)
+        .update("error_code", messageToSave.error_code);
+    }
+    let options = { conflict: "update" };
+    if (trx) {
+      options.transaction = trx;
+      if (contact && messageToSave.error_code < 0) {
+        contactUpdateQuery = contactUpdateQuery.transacting(trx);
+      }
+    }
+
+    Promise.all([
+      Message.save(messageToSave, options),
+      contactUpdateQuery
+    ]).then(() => {
+      reject(
+        err ||
+          (response
+            ? new Error(JSON.stringify(response))
+            : new Error("Encountered unknown error"))
+      );
+    });
+  } else {
+    let options = { conflict: "update" };
+    if (trx) {
+      options.transaction = trx;
+    }
+    Message.save(
+      {
+        ...messageToSave,
+        send_status: "SENT",
+        service: "twilio",
+        sent_at: new Date()
+      },
+      options
+    ).then((newMessage, saveError) => {
+      resolve(newMessage);
+    });
+  }
+}
+
 async function handleDeliveryReport(report) {
   const messageSid = report.MessageSid;
-  if (messageSid) {
+  if (messageSid && !DISABLE_DB_LOG) {
     await Log.save({
       message_sid: report.MessageSid,
-      body: JSON.stringify(report)
+      body: JSON.stringify(report),
+      error_code: Number(report.ErrorCode) || 0,
+      from_num: report.From || null,
+      to_num: report.To || null
     });
     const messageStatus = report.MessageStatus;
     const message = await r
@@ -276,8 +314,11 @@ async function handleDeliveryReport(report) {
         messageStatus === "undelivered"
       ) {
         message.send_status = "ERROR";
+        message.error_code = Number(report.ErrorCode) || 0;
       }
-      Message.save(message, { conflict: "update" });
+      await Message.save(message, { conflict: "update" });
+
+      // FUTURE: update campaign_contact.error_code based on message.campaign_contact_id
     }
   }
 }
@@ -305,17 +346,29 @@ async function handleIncomingMessage(message) {
     contact_number: contactNumber
   });
 
-  const part = await pendingMessagePart.save();
-  const partId = part.id;
-  if (process.env.JOBS_SAME_PROCESS) {
-    const finalMessage = await convertMessagePartsToMessage([part]);
-    await saveNewIncomingMessage(finalMessage);
-    await r
-      .knex("pending_message_part")
-      .where("id", partId)
-      .delete();
+  if (!process.env.JOBS_SAME_PROCESS) {
+    // If multiple processes, just insert the message part and let another job handle it
+    await r.knex("pending_message_part").insert(pendingMessagePart);
+  } else {
+    // Handle the message directly and skip saving an intermediate part
+    const finalMessage = await convertMessagePartsToMessage([
+      pendingMessagePart
+    ]);
+    if (finalMessage) {
+      await saveNewIncomingMessage(finalMessage);
+    }
   }
-  return partId;
+
+  // store mediaurl data in Log, so it can be extracted manually
+  if (message.MediaUrl0 && !DISABLE_DB_LOG) {
+    await Log.save({
+      message_sid: MessageSid,
+      body: JSON.stringify(message),
+      error_code: -101,
+      from_num: From || null,
+      to_num: To || null
+    });
+  }
 }
 
 export default {

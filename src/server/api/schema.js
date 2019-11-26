@@ -39,11 +39,7 @@ import {
   reassignConversations,
   resolvers as conversationsResolver
 } from "./conversations";
-import {
-  accessRequired,
-  assignmentRequired,
-  authRequired
-} from "./errors";
+import { accessRequired, assignmentRequired, authRequired } from "./errors";
 import { resolvers as interactionStepResolvers } from "./interaction-step";
 import { resolvers as inviteResolvers } from "./invite";
 import { saveNewIncomingMessage } from "./lib/message-sending";
@@ -56,7 +52,11 @@ import { resolvers as questionResponseResolvers } from "./question-response";
 import { getUsers, resolvers as userResolvers } from "./user";
 import { change } from "../local-auth-helpers";
 
-import { sendMessage, bulkSendMessages, findNewCampaignContact } from "./mutations";
+import {
+  sendMessage,
+  bulkSendMessages,
+  findNewCampaignContact
+} from "./mutations";
 
 const uuidv4 = require("uuid").v4;
 const JOBS_SAME_PROCESS = !!(
@@ -330,11 +330,7 @@ const rootMutations = {
           user_number: userNumber,
           is_from_contact: true,
           text: message,
-          service_response: JSON.stringify({
-            fakeMessage: true,
-            userId: user.id,
-            userFirstName: user.first_name
-          }),
+          error_code: null,
           service_id: mockId,
           assignment_id: lastMessage.assignment_id,
           service: lastMessage.service,
@@ -921,7 +917,7 @@ const rootMutations = {
       return await bulkSendMessages(assignmentId, loaders, user);
     },
     sendMessage: async (_, { message, campaignContactId }, { loaders }) => {
-      return await sendMessage(message, campaignContactId, loaders)
+      return await sendMessage(message, campaignContactId, loaders);
     },
     deleteQuestionResponses: async (
       _,
