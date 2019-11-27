@@ -15,6 +15,7 @@ async function sendMessage(message, contact, trx) {
   });
 
   if (message && message.id) {
+    // TODO: update cached data, too?
     let request = r.knex("message");
     if (trx) {
       request = request.transacting(trx);
@@ -37,7 +38,8 @@ async function sendMessage(message, contact, trx) {
         service_id: `mockedresponse${Math.random()}`,
         is_from_contact: true,
         text: `responding to ${message.text}`,
-        send_status: "DELIVERED"
+        send_status: "DELIVERED",
+        service: "fakeservice"
       },
       contact
     );

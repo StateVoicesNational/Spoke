@@ -333,7 +333,7 @@ const initialize = async (knex, Promise) => {
           .notNullable()
           .defaultTo("");
         t.integer("campaign_contact_id");
-        t.integer("messageservice_sid");
+        t.text("messageservice_sid");
         t.integer("user_id");
         t.text("contact_number").notNullable();
         t.boolean("is_from_contact").notNullable();
