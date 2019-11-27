@@ -2,7 +2,7 @@
 name: Bug report
 about: Create a report to help Spoke improve
 title: 'Bug: <your-title-here>'
-labels: bug
+labels: C-bug
 assignees: ''
 
 ---
