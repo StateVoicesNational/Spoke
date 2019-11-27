@@ -232,6 +232,8 @@ export async function uploadContacts(job) {
     contacts = contacts.slice(0, maxContacts);
   }
 
+  console.log('DEBUG: uploadContacts', campaignId, contacts.length);
+
   const numChunks = Math.ceil(contacts.length / chunkSize);
 
   for (let index = 0; index < contacts.length; index++) {
@@ -248,6 +250,7 @@ export async function uploadContacts(job) {
       index * chunkSize,
       (index + 1) * chunkSize
     );
+    console.log('DEBUG: uploadContacts 2', campaignId, index, savePortion.length);
     await CampaignContact.save(savePortion);
   }
 
@@ -258,6 +261,7 @@ export async function uploadContacts(job) {
         .from("opt_out")
         .where("organization_id", campaign.organization_id);
     });
+  console.log('DEBUG: uploadContacts 3', campaignId, optOutCellCount);
 
   const deleteOptOutCells = await r
     .knex("campaign_contact")
@@ -267,6 +271,7 @@ export async function uploadContacts(job) {
     .then(result => {
       console.log("deleted result: " + result);
     });
+  console.log('DEBUG: uploadContacts 4', campaignId, deleteOptOutCells);
 
   if (deleteOptOutCells) {
     jobMessages.push(
