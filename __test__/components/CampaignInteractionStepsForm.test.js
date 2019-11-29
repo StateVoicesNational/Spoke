@@ -63,12 +63,11 @@ describe("AssignmentSummary text", function t() {
     );
 
     const interactionSteps = getInteractionSteps();
-    const scripts = this.component.findWhere(
-      x =>
-        x.length &&
-        x.props()["data-test"] === "editorInteraction" &&
-        x.debug().startsWith("<input")
-    );
+    const scripts = this.component
+      .findWhere(
+        x => x.length && x.props()["data-test"] === "editorInteraction"
+      )
+      .hostNodes();
     expect(scripts.at(0).props().value).toEqual(interactionSteps[0].script);
   });
 
@@ -77,11 +76,9 @@ describe("AssignmentSummary text", function t() {
 
     const scripts = this.component
       .findWhere(
-        x =>
-          x.length &&
-          x.props()["data-test"] === "editorInteraction" &&
-          x.debug().startsWith("<input")
+        x => x.length && x.props()["data-test"] === "editorInteraction"
       )
+      .hostNodes()
       .map(script => script.props().value);
 
     expect(interactionSteps.sort()).toEqual(scripts.sort());
