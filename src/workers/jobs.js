@@ -235,11 +235,19 @@ export async function uploadContacts(job) {
       (index + 1) * chunkSize
     );
     console.log('DEBUG: uploadContacts 2', campaignId, index, savePortion.length);
-    await CampaignContact.save(savePortion);
+    await CampaignContact.save(savePortion)
+      .then(result => {
+        console.log('DEBUG: uploadContacts 2b save', campaignId, index, savePortion.length);
+      })
+      .catch(err => {
+        console.log('DEBUG: uploadContacts 2b save error', campaignId, index, savePortion.length, err);
+      });
   }
 
+  console.log('DEBUG: uploadContacts 3 begin', campaignId);
   let knexResult;
   let optOutCellResults;
+  let optOutCellCount = 0;
   try {
     knexResult = await r
       .knex("campaign_contact")
@@ -248,8 +256,9 @@ export async function uploadContacts(job) {
           .from("opt_out")
           .where("organization_id", campaign.organization_id);
       })
-      .then(result => {
+      .then(async (result) => {
         optOutCellResults = result;
+        optOutCellCount = await r.getCount(result);
       })
       .catch(err => {
         console.log('DEBUG: uploadContacts 3b query error', campaignId, err);
@@ -257,7 +266,6 @@ export async function uploadContacts(job) {
   } catch (err) {
     console.log('DEBUG: uploadContacts 3a query build error', campaignId, err);
   }
-  const optOutCellCount = await r.getCount(optOutCellResults);
   console.log('DEBUG: uploadContacts 3c completed', campaignId, optOutCellCount, optOutCellResults);
 
   /*
