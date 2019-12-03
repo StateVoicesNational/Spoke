@@ -238,6 +238,29 @@ export async function uploadContacts(job) {
     await CampaignContact.save(savePortion);
   }
 
+  let knexResult;
+  let optOutCellResults;
+  try {
+    knexResult = await r
+      .knex("campaign_contact")
+      .whereIn("cell", function optouts() {
+        this.select("cell")
+          .from("opt_out")
+          .where("organization_id", campaign.organization_id);
+      })
+      .then(result => {
+        optOutCellResults = result;
+      })
+      .catch(err => {
+        console.log('DEBUG: uploadContacts 3b query error', campaignId, err);
+      });
+  } catch (err) {
+    console.log('DEBUG: uploadContacts 3a query build error', campaignId, err);
+  }
+  const optOutCellCount = await r.getCount(optOutCellResults);
+  console.log('DEBUG: uploadContacts 3c completed', campaignId, optOutCellCount, optOutCellResults);
+
+  /*
   const optOutCellResults = await r
     .knex("campaign_contact")
     .whereIn("cell", function optouts() {
@@ -247,8 +270,8 @@ export async function uploadContacts(job) {
     });
   const optOutCellCount = await r.getCount(optOutCellResults);
   console.log('DEBUG: uploadContacts 3', campaignId, optOutCellCount, optOutCellResults);
+  */
 
-  let knexResult;
   let deleteOptOutCells;
   try {
     knexResult = await r
@@ -256,15 +279,15 @@ export async function uploadContacts(job) {
       .whereIn("cell", getOptOutSubQuery(campaign.organization_id))
       .where("campaign_id", campaignId)
       .delete()
-    .then(result => {
-      deleteOptOutCells = result;
-      console.log("deleted result: " + deleteOptOutCells);
-    })
-    .catch(err => {
-      console.log('DEBUG: uploadContacts 4b query error', campaignId, err);
-    });
+      .then(result => {
+        deleteOptOutCells = result;
+        console.log("deleted result: " + deleteOptOutCells);
+      })
+      .catch(err => {
+        console.log('DEBUG: uploadContacts 4b query error', campaignId, err);
+      });
   } catch (err) {
-    console.log('DEBUG: uploadContacts 4a query build error', err);
+    console.log('DEBUG: uploadContacts 4a query build error', campaignId, err);
   }
   console.log('DEBUG: uploadContacts 4c completed', campaignId, deleteOptOutCells);
 
