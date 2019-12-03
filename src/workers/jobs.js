@@ -238,15 +238,37 @@ export async function uploadContacts(job) {
     await CampaignContact.save(savePortion);
   }
 
-  const optOutCellCount = await r
+  const optOutCellResults = await r
     .knex("campaign_contact")
     .whereIn("cell", function optouts() {
       this.select("cell")
         .from("opt_out")
         .where("organization_id", campaign.organization_id);
     });
-  console.log('DEBUG: uploadContacts 3', campaignId, optOutCellCount);
+  const optOutCellCount = optOutCellResults.length;
+  console.log('DEBUG: uploadContacts 3', campaignId, optOutCellCount, optOutCellResults);
 
+  let knexResult;
+  let deleteOptOutCells;
+  try {
+    knexResult = await r
+      .knex("campaign_contact")
+      .whereIn("cell", getOptOutSubQuery(campaign.organization_id))
+      .where("campaign_id", campaignId)
+      .delete()
+    .then(result => {
+      deleteOptOutCells = result;
+      console.log("deleted result: " + deleteOptOutCells);
+    })
+    .catch(err => {
+      console.log('DEBUG: uploadContacts 4b query error', campaignId, err);
+    });
+  } catch (err) {
+    console.log('DEBUG: uploadContacts 4a query build error', err);
+  }
+  console.log('DEBUG: uploadContacts 4c completed', campaignId, deleteOptOutCells);
+
+  /*
   const deleteOptOutCells = await r
     .knex("campaign_contact")
     .whereIn("cell", getOptOutSubQuery(campaign.organization_id))
@@ -256,6 +278,7 @@ export async function uploadContacts(job) {
       console.log("deleted result: " + result);
     });
   console.log('DEBUG: uploadContacts 4', campaignId, deleteOptOutCells);
+  */
 
   if (deleteOptOutCells) {
     jobMessages.push(
