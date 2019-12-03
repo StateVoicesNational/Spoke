@@ -245,7 +245,7 @@ export async function uploadContacts(job) {
         .from("opt_out")
         .where("organization_id", campaign.organization_id);
     });
-  const optOutCellCount = optOutCellResults.length;
+  const optOutCellCount = await r.getCount(optOutCellResults);
   console.log('DEBUG: uploadContacts 3', campaignId, optOutCellCount, optOutCellResults);
 
   let knexResult;
