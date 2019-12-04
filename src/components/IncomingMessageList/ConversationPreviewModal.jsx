@@ -102,10 +102,11 @@ class ConversationPreviewModal extends Component {
   }
 
   handleClickOptOut = async () => {
-    const { contact } = this.props.conversation;
+    const { cell, assignmentId, campaignContactId } = this.props.conversation;
     const optOut = {
-      cell: contact.cell,
-      assignmentId: contact.assignmentId
+      cell,
+      assignmentId,
+      reason: ""
     };
     try {
       const response = await this.props.mutations.createOptOut(
@@ -113,9 +114,14 @@ class ConversationPreviewModal extends Component {
         campaignContactId
       );
       if (response.errors) {
-        const errorText = response.errors.join("\n");
+        let errorText = "Error processing opt-out.";
+        if ("message" in response.errors) {
+          errorText = response.errors.message;
+        }
         throw new Error(errorText);
       }
+      this.props.onForceRefresh();
+      this.props.onRequestClose();
     } catch (error) {
       this.setState({ optOutError: error.message });
     }
@@ -162,8 +168,11 @@ class ConversationPreviewModal extends Component {
 }
 
 ConversationPreviewModal.propTypes = {
+  organizationId: PropTypes.string,
   conversation: PropTypes.object,
-  onRequestClose: PropTypes.func
+  onRequestClose: PropTypes.func,
+  mutations: PropTypes.object,
+  onForceRefresh: PropTypes.func
 };
 
 const mapMutationsToProps = () => ({
@@ -175,10 +184,6 @@ const mapMutationsToProps = () => ({
       ) {
         createOptOut(optOut: $optOut, campaignContactId: $campaignContactId) {
           id
-          optOut {
-            id
-            createdAt
-          }
         }
       }
     `,
