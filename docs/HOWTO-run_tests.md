@@ -17,6 +17,8 @@ GRANT ALL PRIVILEGES ON DATABASE spoke_test TO spoke_test;
   
 ## Test Redis Cache
 
+Redis is used for caching and is separate from the backend DB so can be used with sqlite *or* postgres. Redis cache testing defaults to postgres and functions like an 'addon' to the DB for improved speed/scalability.
+
 1) Run `yarn test-rediscache`
 
 ## End-To-End (Interactive Browser) Testing
