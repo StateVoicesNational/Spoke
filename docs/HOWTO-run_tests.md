@@ -2,7 +2,7 @@ There are current two ways to run tests, using either PostgreSQL or SQLite.
 
 ## PostgreSQL Testing (default, closer to most prod environments)
 
-1) Install PostgreSQL - [Tips to installing Postgre](https://www.codementor.io/engineerapart/getting-started-with-postgresql-on-mac-osx-are8jcopb)
+1) Install PostgreSQL - [Tips to installing Postgres](https://www.codementor.io/engineerapart/getting-started-with-postgresql-on-mac-osx-are8jcopb)
 2) In PostgreSQL, create a database and user named "spoke_test":
 ```
 CREATE DATABASE spoke_test;
