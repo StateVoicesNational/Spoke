@@ -78,6 +78,7 @@ At this point, you should be ready to start your app in development mode.
 4. You should then be prompted to create an organization. Create it.
 5. See the [Admin and Texter demos](https://opensource.moveon.org/spoke-p2p#block-yui_3_17_2_25_1509554076500_36334) to learn about how Spoke works.
 6. See [Getting Started with Development](#more-documentation) below.
+7. See [How to Run Tests](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO-run_tests.md)
 
 ### SMS
 
