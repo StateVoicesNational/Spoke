@@ -39,9 +39,10 @@ function cleanHeaders(event) {
 }
 
 exports.handler = async (event, context) => {
-  // Note: When lambda is called with invoke() we MUST call handleCallback with a success
+  // Note: When lambda is called with invoke() we MUST return with success
   // or Lambda will re-run/re-try the invocation twice:
   // https://docs.aws.amazon.com/lambda/latest/dg/retries-on-errors.html
+
   if (process.env.LAMBDA_DEBUG_LOG) {
     console.log("LAMBDA EVENT", event);
   }
