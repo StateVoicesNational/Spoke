@@ -45,6 +45,8 @@ exports.down = function(knex, Promise) {
       table.dropColumn("error_code");
     }),
     knex.schema.alterTable("log", table => {
+      table.dropColumn("from_num");
+      table.dropColumn("to_num");
       table.dropColumn("error_code");
     })
   ]);
