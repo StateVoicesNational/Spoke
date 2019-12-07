@@ -38,7 +38,7 @@ function cleanHeaders(event) {
   }
 }
 
-exports.handler = (event, context, handleCallback) => {
+exports.handler = async (event, context) => {
   // Note: When lambda is called with invoke() we MUST call handleCallback with a success
   // or Lambda will re-run/re-try the invocation twice:
   // https://docs.aws.amazon.com/lambda/latest/dg/retries-on-errors.html
@@ -53,7 +53,12 @@ exports.handler = (event, context, handleCallback) => {
     invocationEvent = event;
     invocationContext = context;
     cleanHeaders(event);
-    const webResponse = awsServerlessExpress.proxy(server, event, context);
+    const webResponse = awsServerlessExpress.proxy(
+      server,
+      event,
+      context,
+      "PROMISE"
+    ).promise;
     if (process.env.DEBUG_SCALING) {
       const endTime = context.getRemainingTimeInMillis
         ? context.getRemainingTimeInMillis()
@@ -78,28 +83,28 @@ exports.handler = (event, context, handleCallback) => {
       const job = jobs[event.command];
       // behavior and arguments documented here:
       // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Lambda.html#invoke-property
-      job(
-        event,
-        function dispatcher(dataToSend, callback) {
-          const lambda = new AWS.Lambda();
-          return lambda.invoke(
-            {
-              FunctionName: functionName,
-              InvocationType: "Event", //asynchronous
-              Payload: JSON.stringify(dataToSend)
-            },
-            function(err, dataReceived) {
-              if (err) {
-                console.error("Failed to invoke Lambda job: ", err);
-              }
-              if (callback) {
-                callback(err, dataReceived);
-              }
+      const result = await job(event, function dispatcher(
+        dataToSend,
+        callback
+      ) {
+        const lambda = new AWS.Lambda();
+        return lambda.invoke(
+          {
+            FunctionName: functionName,
+            InvocationType: "Event", //asynchronous
+            Payload: JSON.stringify(dataToSend)
+          },
+          function(err, dataReceived) {
+            if (err) {
+              console.error("Failed to invoke Lambda job: ", err);
             }
-          );
-        },
-        handleCallback
-      );
+            if (callback) {
+              callback(err, dataReceived);
+            }
+          }
+        );
+      });
+      return result;
     } else {
       console.error("Unfound command sent as a Lambda event: " + event.command);
     }

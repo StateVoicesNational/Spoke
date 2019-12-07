@@ -182,10 +182,14 @@ export async function handleIncomingMessages() {
 }
 
 export async function runDatabaseMigrations(event, dispatcher, eventCallback) {
-  await r.knex.migrate.latest();
+  console.log("inside runDatabaseMigrations1");
+  console.log("inside runDatabaseMigrations2", event);
+  await r.k.migrate.latest();
+  console.log("after latest() runDatabaseMigrations", event);
   if (eventCallback) {
     eventCallback(null, "completed migrations");
   }
+  return "completed migrations runDatabaseMigrations";
 }
 
 export async function loadContactsFromDataWarehouseFragmentJob(
@@ -205,6 +209,7 @@ export async function loadContactsFromDataWarehouseFragmentJob(
       eventCallback(err, null);
     }
   }
+  return "completed";
 }
 
 const processMap = {
@@ -241,4 +246,23 @@ export async function dispatchProcesses(event, dispatcher, eventCallback) {
       toDispatch[p]().then();
     }
   }
+  return "completed";
 }
+
+export async function ping(event, dispatcher) {
+  return "pong";
+}
+
+export default {
+  runDatabaseMigrations,
+  dispatchProcesses,
+  loadContactsFromDataWarehouseFragmentJob,
+  ping,
+  processJobs,
+  checkMessageQueue,
+  messageSender01,
+  messageSender234,
+  messageSender56,
+  messageSender789,
+  handleIncomingMessages
+};
