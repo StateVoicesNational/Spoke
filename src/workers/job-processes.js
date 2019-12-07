@@ -192,6 +192,24 @@ export async function runDatabaseMigrations(event, dispatcher, eventCallback) {
   return "completed migrations runDatabaseMigrations";
 }
 
+export async function databaseMigrationChange(
+  event,
+  dispatcher,
+  eventCallback
+) {
+  console.log("inside databaseMigrationChange", event);
+  if (event.up) {
+    await r.k.migrate.up();
+  } else {
+    await r.k.migrate.down();
+  }
+  console.log("after databaseMigrationChange", event);
+  if (eventCallback) {
+    eventCallback(null, "completed databaseMigrationChange");
+  }
+  return "completed databaseMigrationChange";
+}
+
 export async function loadContactsFromDataWarehouseFragmentJob(
   event,
   dispatcher,
@@ -255,6 +273,7 @@ export async function ping(event, dispatcher) {
 
 export default {
   runDatabaseMigrations,
+  databaseMigrationChange,
   dispatchProcesses,
   loadContactsFromDataWarehouseFragmentJob,
   ping,
