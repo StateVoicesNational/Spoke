@@ -175,18 +175,25 @@ ConversationPreviewModal.propTypes = {
   onForceRefresh: PropTypes.func
 };
 
+export const createOptOutMutation = gql`
+  mutation createOptOut(
+    $optOut: OptOutInput!
+    $campaignContactId: String!
+    $organizationId: String!
+  ) {
+    createOptOut(
+      optOut: $optOut
+      campaignContactId: $campaignContactId
+      organizationId: $organizationId
+    ) {
+      id
+    }
+  }
+`;
+
 const mapMutationsToProps = () => ({
   createOptOut: (optOut, campaignContactId) => ({
-    mutation: gql`
-      mutation createOptOut(
-        $optOut: OptOutInput!
-        $campaignContactId: String!
-      ) {
-        createOptOut(optOut: $optOut, campaignContactId: $campaignContactId) {
-          id
-        }
-      }
-    `,
+    mutation: createOptOutMutation,
     variables: {
       optOut,
       campaignContactId

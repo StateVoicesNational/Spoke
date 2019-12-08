@@ -416,3 +416,13 @@ export async function getCampaignContact(id) {
     .where({ id })
     .first();
 }
+
+export async function getOptOut(assignmentId, cell) {
+  return await r
+    .knex("opt_out")
+    .where({
+      cell,
+      assignment_id: assignmentId
+    })
+    .first();
+}

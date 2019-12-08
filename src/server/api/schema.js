@@ -46,6 +46,7 @@ import {
 import {
   accessRequired,
   assignmentRequired,
+  assignmentOrAdminRequired,
   authRequired,
   superAdminRequired
 } from "./errors";
@@ -957,11 +958,15 @@ const rootMutations = {
 
     createOptOut: async (
       _,
-      { optOut, campaignContactId },
+      { organizationId, optOut, campaignContactId },
       { loaders, user }
     ) => {
       const contact = await loaders.campaignContact.load(campaignContactId);
-      await assignmentRequired(user, contact.assignment_id);
+      await assignmentOrAdminRequired(
+        user,
+        organizationId,
+        contact.assignment_id
+      );
 
       const { assignmentId, cell, reason } = optOut;
       const campaign = await loaders.campaign.load(contact.campaign_id);
