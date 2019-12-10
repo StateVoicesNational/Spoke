@@ -11,7 +11,7 @@ import ConversationPreviewModal from "./ConversationPreviewModal";
 
 import { MESSAGE_STATUSES } from "../../components/IncomingMessageFilter";
 
-const prepareDataTableData = conversations =>
+export const prepareDataTableData = conversations =>
   conversations.map(conversation => ({
     campaignTitle: conversation.campaign.title,
     texter: conversation.texter.displayName,
@@ -274,58 +274,62 @@ IncomingMessageList.propTypes = {
   onForceRefresh: type.func
 };
 
-const mapQueriesToProps = ({ ownProps }) => ({
-  conversations: {
-    query: gql`
-      query Q(
-        $organizationId: String!
-        $cursor: OffsetLimitCursor!
-        $contactsFilter: ContactsFilter
-        $campaignsFilter: CampaignsFilter
-        $assignmentsFilter: AssignmentsFilter
-        $utc: String
-      ) {
-        conversations(
-          cursor: $cursor
-          organizationId: $organizationId
-          campaignsFilter: $campaignsFilter
-          contactsFilter: $contactsFilter
-          assignmentsFilter: $assignmentsFilter
-          utc: $utc
+export const conversationsQuery = `
+  query Q(
+          $organizationId: String!
+          $cursor: OffsetLimitCursor!
+          $contactsFilter: ContactsFilter
+          $campaignsFilter: CampaignsFilter
+          $assignmentsFilter: AssignmentsFilter
+          $utc: String
         ) {
-          pageInfo {
-            limit
-            offset
-            total
-          }
-          conversations {
-            texter {
-              id
-              displayName
+          conversations(
+            cursor: $cursor
+            organizationId: $organizationId
+            campaignsFilter: $campaignsFilter
+            contactsFilter: $contactsFilter
+            assignmentsFilter: $assignmentsFilter
+            utc: $utc
+          ) {
+            pageInfo {
+              limit
+              offset
+              total
             }
-            contact {
-              id
-              assignmentId
-              firstName
-              lastName
-              cell
-              messageStatus
-              messages {
+            conversations {
+              texter {
                 id
-                text
-                isFromContact
+                displayName
               }
-              optOut {
+              contact {
+                id
+                assignmentId
+                firstName
+                lastName
                 cell
+                messageStatus
+                messages {
+                  id
+                  text
+                  isFromContact
+                }
+                optOut {
+                  cell
+                }
               }
-            }
-            campaign {
-              id
-              title
+              campaign {
+                id
+                title
+              }
             }
           }
         }
-      }
+      `;
+
+const mapQueriesToProps = ({ ownProps }) => ({
+  conversations: {
+    query: gql`
+      ${conversationsQuery}
     `,
     variables: {
       organizationId: ownProps.organizationId,

@@ -7,6 +7,9 @@ import {
   CampaignContact,
   r
 } from "../src/server/models/";
+
+import { conversationsQuery } from "../src/components/IncomingMessageList";
+
 import { graphql } from "graphql";
 
 export async function setupTest() {
@@ -111,6 +114,29 @@ export async function runGql(query, vars, user) {
 export async function runComponentGql(componentDataQuery, queryVars, user) {
   return await runGql(componentDataQuery.loc.source.body, queryVars, user);
 }
+
+export const getConversations = async (
+  user,
+  organizationId,
+  contactsFilter,
+  campaignsFilter,
+  assignmentsFilter
+) => {
+  const cursor = {
+    offset: 0,
+    limit: 1000
+  };
+  const variables = {
+    cursor,
+    organizationId,
+    contactsFilter,
+    campaignsFilter,
+    assignmentsFilter
+  };
+
+  const result = await runGql(conversationsQuery, variables, user);
+  return result;
+};
 
 export async function createInvite() {
   const rootValue = {};

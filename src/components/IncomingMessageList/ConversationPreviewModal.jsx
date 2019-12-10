@@ -9,6 +9,8 @@ import loadData from "../../containers//hoc/load-data";
 import wrapMutations from "../../containers/hoc/wrap-mutations";
 import MessageResponse from "./MessageResponse";
 
+import { dataTest } from "../../lib/attributes";
+
 const styles = StyleSheet.create({
   conversationRow: {
     color: "white",
@@ -20,10 +22,16 @@ const styles = StyleSheet.create({
 
 class MessageList extends Component {
   componentDidMount() {
+    if (typeof this.refs.messageWindow.scrollTo !== "function") {
+      return;
+    }
     this.refs.messageWindow.scrollTo(0, this.refs.messageWindow.scrollHeight);
   }
 
   componentDidUpdate() {
+    if (typeof this.refs.messageWindow.scrollTo !== "function") {
+      return;
+    }
     this.refs.messageWindow.scrollTo(0, this.refs.messageWindow.scrollHeight);
   }
 
@@ -92,7 +100,7 @@ ConversationPreviewBody.propTypes = {
   conversation: PropTypes.object
 };
 
-class ConversationPreviewModal extends Component {
+export class _ConversationPreviewModal extends Component {
   constructor(props) {
     super(props);
 
@@ -133,6 +141,7 @@ class ConversationPreviewModal extends Component {
 
     const primaryActions = [
       <FlatButton
+        {...dataTest("conversationPreviewModalOptOutButton")}
         label="Opt-Out"
         secondary={true}
         onClick={this.handleClickOptOut}
@@ -167,7 +176,7 @@ class ConversationPreviewModal extends Component {
   }
 }
 
-ConversationPreviewModal.propTypes = {
+_ConversationPreviewModal.propTypes = {
   organizationId: PropTypes.string,
   conversation: PropTypes.object,
   onRequestClose: PropTypes.func,
@@ -194,6 +203,6 @@ const mapMutationsToProps = () => ({
   })
 });
 
-export default loadData(wrapMutations(ConversationPreviewModal), {
+export default loadData(wrapMutations(_ConversationPreviewModal), {
   mapMutationsToProps
 });
