@@ -7,10 +7,12 @@ _December 2019:_ Version 4.0
 
 This release includes the following improvements:
 
-- Fixed bug that was not allowing texts to be reassigned in message review
+- Adds better error logging to Spoke allowing visibility into errors that twilio and other messaging services are sending rather than them getting "lost"
+- Fixes bulk send, which is used outside the USA to send more than one initial message with a single button click making it usable again!
 - Multiple documentation fixes including better documentation on how to run the test suite
-- Fixes bug that made deployment fail for AWS Lambda
-- Adds redis into the testing suite for more reliable tests
+- Adds 2 React component tests
+- Fixes bugs that wouldn't let you exit out of adding a new script, that made reassigning contacts often not work, that would often cause the skip reply button not to appear
+- Updates the google-libphonenumber library to allow phone numbers using newer area codes (e.g. 463) to be validated.
 
 Deploy Steps:
 
