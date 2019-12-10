@@ -1,4 +1,30 @@
 # Release Notes
+
+## v4.0
+
+_December 2019:_ Version 4.0
+**Note:** This is a major release and therefore requires a schema change. See the deploy steps section for details.
+
+This release includes the following improvements:
+
+- Fixed bug that was not allowing texts to be reassigned in message review
+- Multiple documentation fixes including better documentation on how to run the test suite
+- Fixes bug that made deployment fail for AWS Lambda
+- Adds redis into the testing suite for more reliable tests
+
+Deploy Steps:
+
+- <steps here>
+
+Thanks to all the contributors apart of this release including:
+[ibrand](https://github.com/ibrand),
+[lperson](https://github.com/lperson),
+[jeffm2001](https://github.com/jeffm2001),
+[SAnschutz](https://github.com/SAnschutz),
+[schuyler1d](https://github.com/schuyler1d),
+[briantam23](https://github.com/briantam23),
+[tstickles](https://github.com/tstickles)
+
 ## v3.2
 
 _November 2019:_ Version 3.2.0
