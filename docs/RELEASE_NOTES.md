@@ -16,7 +16,9 @@ This release includes the following improvements:
 
 Deploy Steps:
 
-- <steps here>
+- For smaller instances (less than 1 million texts/contacts), the migration should complete automatically.
+- For larger instances, it's better to enable the environment variable `SUPPRESS_MIGRATIONS=1`
+  and then follow the relevant steps of your platform to upgrade ( [Heroku](./HOWTO_HEROKU_DEPLOY.md#migrating-the-database), [AWS Lambda](./DEPLOYING_AWS_LAMBDA.md#migrating-the-database) )
 
 Thanks to all the contributors apart of this release including:
 [ibrand](https://github.com/ibrand),

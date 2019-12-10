@@ -67,3 +67,25 @@ git remote add heroku https://git.heroku.com/myspokeapp.git
 git push heroku master
 ```
 You may find that the Customize Log In toggle in auth0 has been disabled, so you will want to turn that back on. You will also want to make sure you are running the latest version of the code for that. See the instructions in Step 11 in the main readme doc. 
+
+### Migrating the Database
+
+For smaller instances with a single dyno, Spoke will automatically
+update the database with schema changes when you update the code.
+Even for smaller instances, it's generally good practice to pause the
+system or at least do so during minimal/zero texting activity.
+
+For large instances (100K-millions of texts and contacts) or extensive
+schema changes,  it's better  to be cautious  during a  migration.  In
+those cases, you should follow the following steps:
+
+1. Pause all of the dynos or disable web requests coming in, in another way.
+
+2. Run (yes it looks a bit redundant)
+
+```
+   heroku run npm run knex migrate:latest
+```
+
+3. Ideally, verify that the migrations have completed on the database.
+   Then re-enable the dynos and web interface.
