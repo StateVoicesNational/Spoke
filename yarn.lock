@@ -6344,10 +6344,10 @@ google-auth-library@^3.0.0:
     lru-cache "^5.0.0"
     semver "^5.5.0"
 
-google-libphonenumber@^1.0.25:
-  version "1.1.2"
-  resolved "https://registry.yarnpkg.com/google-libphonenumber/-/google-libphonenumber-1.1.2.tgz#bf058975c31f7e3638333b0d630ef38dd3263b48"
-  integrity sha1-vwWJdcMffjY4MzsNYw7zjdMmO0g=
+google-libphonenumber@^3.0.0:
+  version "3.2.6"
+  resolved "https://registry.yarnpkg.com/google-libphonenumber/-/google-libphonenumber-3.2.6.tgz#3d725b48ff44706b80246e77f95f2c2fdc6fd729"
+  integrity sha512-6QCQAaKJlSd/1dUqvdQf7zzfb3uiZHsG8yhCfOdCVRfMuPZ/VDIEB47y5SYwjPQJPs7ebfW5jj6PeobB9JJ4JA==
 
 google-p12-pem@^1.0.0:
   version "1.0.4"
