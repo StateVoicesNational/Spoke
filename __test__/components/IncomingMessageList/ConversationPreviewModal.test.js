@@ -11,11 +11,11 @@ import ConversationPreviewModal, {
 import { prepareDataTableData } from "../../../src/components/IncomingMessageList";
 
 import ReactTestUtils from "react-dom/test-utils";
-import getMuiTheme from "material-ui/styles/getMuiTheme";
 import Store from "../../../src/store";
 import { createMemoryHistory } from "react-router";
 import ApolloClientSingleton from "../../../src/network/apollo-client-singleton";
 import { ApolloProvider } from "react-apollo";
+import Dialog from "material-ui/Dialog";
 
 import { r } from "../../../src/server/models";
 
@@ -49,13 +49,13 @@ describe("ConversationPreviewModal", async () => {
 
   let optOut;
   let conversations;
+  let conversation;
+  let onRequestCloseMock;
 
   let component;
   let store;
 
-  let clicked = false;
-
-  beforeEach(async () => {
+  beforeAll(async () => {
     // Set up an entire working campaign
     await setupTest();
     jest.restoreAllMocks();
@@ -84,8 +84,8 @@ describe("ConversationPreviewModal", async () => {
 
     optOut = {
       cell: optOutContact.cell,
-      assignmentId,
-      reason: "they were snotty"
+      assignmentId: assignmentId.toString(),
+      reason: ""
     };
 
     const campaignsFilter = {
@@ -101,53 +101,76 @@ describe("ConversationPreviewModal", async () => {
     );
 
     store = new Store(createMemoryHistory("/")).data;
-
-    const root = document.createElement("div");
-    document.body.appendChild(root);
-
-    StyleSheetTestUtils.suppressStyleInjection();
-    component = mount(
-      <ApolloProvider store={store} client={ApolloClientSingleton}>
-        <MuiThemeProvider>
-          <ConversationPreviewModal
-            organizationId={organizationId}
-            conversation={
-              prepareDataTableData(
-                conversations.data.conversations.conversations
-              )[0]
-            }
-            onForceRefresh={() => {}}
-            onRequestClose={() => {}}
-          />
-        </MuiThemeProvider>
-      </ApolloProvider>,
-      {
-        attachTo: root
-      }
-    );
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
-  afterEach(async () => {
+  afterAll(async () => {
     await cleanupTest();
     if (r.redis) r.redis.flushdb();
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
-  it("does something", async () => {
-    StyleSheetTestUtils.suppressStyleInjection();
-    const x = component.find(_ConversationPreviewModal);
-    x.first().instance().props.mutations.createOptOut = async (
-      optOut,
-      campaignContactId
-    ) => {
-      clicked = true;
-      return {};
-    };
+  describe("when a message review user opts out a user", async () => {
+    beforeAll(async () => {
+      const root = document.createElement("div");
+      document.body.appendChild(root);
 
-    const optOutButton = document.querySelector(
-      "[data-test=conversationPreviewModalOptOutButton]"
-    );
+      conversation = prepareDataTableData(
+        conversations.data.conversations.conversations
+      )[0];
 
-    await ReactTestUtils.Simulate.click(optOutButton);
-    expect(clicked).toBeTruthy();
+      onRequestCloseMock = jest.fn();
+
+      component = mount(
+        <ApolloProvider store={store} client={ApolloClientSingleton}>
+          <MuiThemeProvider>
+            <ConversationPreviewModal
+              organizationId={organizationId}
+              conversation={conversation}
+              onForceRefresh={() => {}}
+              onRequestClose={onRequestCloseMock}
+            />
+          </MuiThemeProvider>
+        </ApolloProvider>,
+        {
+          attachTo: root
+        }
+      );
+    });
+
+    it("calls the createOptOut mutation", async () => {
+      const createOptOutMock = jest.fn((_optOut, _campaignContactId) =>
+        Promise.resolve({ campaignContactId: _campaignContactId })
+      );
+      const conversationPreviewModal = component.find(
+        _ConversationPreviewModal
+      );
+      conversationPreviewModal
+        .first()
+        .instance().props.mutations.createOptOut = createOptOutMock;
+
+      const dialog = conversationPreviewModal.find(Dialog);
+      expect(dialog.first().instance().props.open).toBe(true);
+
+      const optOutButton = document.querySelector(
+        "[data-test=conversationPreviewModalOptOutButton]"
+      );
+
+      await ReactTestUtils.Simulate.click(optOutButton);
+
+      expect(createOptOutMock).toBeCalledTimes(1);
+      expect(createOptOutMock).toBeCalledWith(
+        organizationId,
+        optOut,
+        optOutContact.id.toString()
+      );
+    });
+
+    afterAll(() => {
+      // expect the dialog to be closed
+      // this is in afterAll because if we put it in a test
+      // the state of the comnponent would not changed
+      // we need another tick for the state changes
+      expect(onRequestCloseMock).toBeCalledTimes(1);
+      expect(dialog.first().instance().props.open).toBe(false);
+    });
   });
 });

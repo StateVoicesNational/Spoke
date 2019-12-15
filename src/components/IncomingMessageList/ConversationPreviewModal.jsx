@@ -10,6 +10,7 @@ import wrapMutations from "../../containers/hoc/wrap-mutations";
 import MessageResponse from "./MessageResponse";
 
 import { dataTest } from "../../lib/attributes";
+import createOptOutMutation from "../../lib/client/createOptOut";
 
 const styles = StyleSheet.create({
   conversationRow: {
@@ -118,6 +119,7 @@ export class _ConversationPreviewModal extends Component {
     };
     try {
       const response = await this.props.mutations.createOptOut(
+        this.props.organizationId,
         optOut,
         campaignContactId
       );
@@ -126,6 +128,7 @@ export class _ConversationPreviewModal extends Component {
         if ("message" in response.errors) {
           errorText = response.errors.message;
         }
+        console.log(errorText);
         throw new Error(errorText);
       }
       this.props.onForceRefresh();
@@ -185,22 +188,7 @@ _ConversationPreviewModal.propTypes = {
 };
 
 const mapMutationsToProps = () => ({
-  createOptOut: (optOut, campaignContactId) => ({
-    mutation: gql`
-      mutation createOptOut(
-        $optOut: OptOutInput!
-        $campaignContactId: String!
-      ) {
-        createOptOut(optOut: $optOut, campaignContactId: $campaignContactId) {
-          id
-        }
-      }
-    `,
-    variables: {
-      optOut,
-      campaignContactId
-    }
-  })
+  createOptOut: createOptOutMutation
 });
 
 export default loadData(wrapMutations(_ConversationPreviewModal), {

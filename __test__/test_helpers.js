@@ -105,6 +105,8 @@ const mySchema = makeExecutableSchema({
   allowUndefinedInResolve: true
 });
 
+export const getExecutableSchema = () => mySchema;
+
 export async function runGql(query, vars, user) {
   const rootValue = {};
   const context = getContext({ user });
