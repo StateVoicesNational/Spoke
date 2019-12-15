@@ -274,6 +274,7 @@ const rootSchema = gql`
     createOptOut(
       optOut: OptOutInput!
       campaignContactId: String!
+      organizationId: String!
     ): CampaignContact
     editCampaignContactMessageStatus(
       messageStatus: String!
