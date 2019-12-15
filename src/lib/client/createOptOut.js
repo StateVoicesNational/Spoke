@@ -18,7 +18,7 @@ export const createOptOutGql = gql`
     createOptOut(
       optOut: $optOut
       campaignContactId: $campaignContactId
-      organizationId: $organixzationId
+      organizationId: $organizationId
     ) {
       id
     }

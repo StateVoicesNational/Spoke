@@ -250,8 +250,10 @@ export class IncomingMessageList extends Component {
           selectedRows={clearSelectedMessages ? null : this.state.selectedRows}
         />
         <ConversationPreviewModal
+          organizationId={this.props.organizationId}
           conversation={this.state.activeConversation}
           onRequestClose={this.handleCloseConversation}
+          onForceRefresh={this.props.onForceRefresh}
         />
       </div>
     );
