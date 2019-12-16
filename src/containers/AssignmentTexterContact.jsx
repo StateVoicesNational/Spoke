@@ -181,7 +181,7 @@ const inlineStyles = {
   }
 };
 
-export class AssignmentTexterContact extends React.Component {
+export class InnerAssignmentTexterContact extends React.Component {
   constructor(props) {
     super(props);
 
@@ -488,9 +488,14 @@ export class AssignmentTexterContact extends React.Component {
       };
 
       await this.handleSubmitSurveys();
-      await this.props.mutations.createOptOut(optOut, contact.id);
+      await this.props.mutations.createOptOut(
+        this.props.organizationId,
+        optOut,
+        contact.id
+      );
       this.props.onFinishContact(contact.id);
     } catch (e) {
+      console.log("ERRROR", e);
       this.handleSendMessageError(e);
     }
   };
@@ -830,13 +835,13 @@ export class AssignmentTexterContact extends React.Component {
         <Divider />
         <CardActions className={css(styles.optOutCard)}>
           <GSForm
+            onSubmit={this.handleOptOut}
             className={css(styles.optOutCard)}
             schema={this.optOutSchema}
             onChange={({ optOutMessageText }) =>
               this.setState({ optOutMessageText })
             }
             value={{ optOutMessageText: this.state.optOutMessageText }}
-            onSubmit={this.handleOptOut}
           >
             <Form.Field
               name="optOutMessageText"
@@ -975,7 +980,7 @@ export class AssignmentTexterContact extends React.Component {
   }
 }
 
-AssignmentTexterContact.propTypes = {
+InnerAssignmentTexterContact.propTypes = {
   organizationId: PropTypes.string,
   contact: PropTypes.object,
   campaign: PropTypes.object,
@@ -1086,6 +1091,9 @@ const mapMutationsToProps = () => ({
   })
 });
 
-export default loadData(wrapMutations(withRouter(AssignmentTexterContact)), {
-  mapMutationsToProps
-});
+export default loadData(
+  wrapMutations(withRouter(InnerAssignmentTexterContact)),
+  {
+    mapMutationsToProps
+  }
+);
