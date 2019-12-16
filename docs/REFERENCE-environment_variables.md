@@ -18,6 +18,7 @@ DB_MAX_POOL                       | Database connection pool maximum size. _Defa
 DB_MIN_POOL                       | Database connection pool minumum size. _Default_: 2.
 DB_NAME                           | Database connection name. _Required_.
 DB_PORT                           | Database connection port. _Required_.
+DB_SCHEMA                         | Optional postgres database schema to use instead of public. Useful for running multiple instances on a shared DB server. _Default_: ""
 DB_TYPE                           | Database connection type for [Knex](http://knexjs.org/#Installation-client). _Options_: mysql, pg, sqlite3. _Default_: sqlite3.
 DB_USE_SSL                        | Boolean value to determine whether database connections should use SSL. _Default_: false.
 DEBUG_SCALING                     | Emit console.log on events related to scaling issues. _Default_: false.
@@ -41,7 +42,7 @@ MAILGUN_SMTP_PASSWORD             | 'Default Password' in Mailgun. _Required for
 MAILGUN_SMTP_PORT                 | _Default_: 587. Do not modify. _Required for Mailgun usage._
 MAILGUN_SMTP_SERVER               | _Default_: smtp.mailgun.org. Do not modify. _Required for Mailgun usage._
 MAX_CONTACTS                      | If set each campaign can only have a maximum of the value (an integer). This is good for staging/QA/evaluation instances.  _Default_: false (i.e. there is no maximum)
-MAX_CONTACTS_PER_TEXTER           | Maximum contacts that a texter can send to, per campaign. This is particularly useful for dynamic assignment. This must not be blank/empty and must be a number greater than 0. 
+MAX_CONTACTS_PER_TEXTER           | Maximum contacts that a texter can send to, per campaign. This is particularly useful for dynamic assignment. This must not be blank/empty and must be a number greater than 0.
 MAX_MESSAGE_LENGTH                | The maximum size for a message that a texter can send. When you send a SMS message over 160 characters the message will be split, so you might want to set this as 160 or less if you have a high SMS-only target demographic. _Default_: 99999
 NEXMO_API_KEY                     | Nexmo API key. Required if using Nexmo.
 NEXMO_API_SECRET                  | Nexmo API secret. Required if using Nexmo.
