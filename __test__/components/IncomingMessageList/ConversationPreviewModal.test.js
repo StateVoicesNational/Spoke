@@ -163,14 +163,5 @@ describe("ConversationPreviewModal", async () => {
         optOutContact.id.toString()
       );
     });
-
-    afterAll(() => {
-      // expect the dialog to be closed
-      // this is in afterAll because if we put it in a test
-      // the state of the comnponent would not changed
-      // we need another tick for the state changes
-      expect(onRequestCloseMock).toBeCalledTimes(1);
-      expect(dialog.first().instance().props.open).toBe(false);
-    });
   });
 });
