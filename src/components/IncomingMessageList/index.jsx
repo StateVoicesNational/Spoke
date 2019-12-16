@@ -21,10 +21,7 @@ const prepareDataTableData = conversations =>
       conversation.contact.lastName +
       (conversation.contact.optOut.cell ? "⛔️" : ""),
     status: conversation.contact.messageStatus,
-    messages: conversation.contact.messages,
-    assignmentId: conversation.contact.assignmentId,
-    cell: conversation.contact.cell,
-    campaignContactId: conversation.contact.id
+    messages: conversation.contact.messages
   }));
 
 const prepareSelectedRowsData = (conversations, rowsSelected) => {
@@ -270,8 +267,7 @@ IncomingMessageList.propTypes = {
   onConversationCountChanged: type.func,
   utc: type.string,
   conversations: type.object,
-  clearSelectedMessages: type.bool,
-  onForceRefresh: type.func
+  clearSelectedMessages: type.bool
 };
 
 const mapQueriesToProps = ({ ownProps }) => ({

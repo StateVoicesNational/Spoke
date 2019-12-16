@@ -102,11 +102,10 @@ class ConversationPreviewModal extends Component {
   }
 
   handleClickOptOut = async () => {
-    const { cell, assignmentId, campaignContactId } = this.props.conversation;
+    const { contact } = this.props.conversation;
     const optOut = {
-      cell,
-      assignmentId,
-      reason: ""
+      cell: contact.cell,
+      assignmentId: contact.assignmentId
     };
     try {
       const response = await this.props.mutations.createOptOut(
@@ -114,14 +113,9 @@ class ConversationPreviewModal extends Component {
         campaignContactId
       );
       if (response.errors) {
-        let errorText = "Error processing opt-out.";
-        if ("message" in response.errors) {
-          errorText = response.errors.message;
-        }
+        const errorText = response.errors.join("\n");
         throw new Error(errorText);
       }
-      this.props.onForceRefresh();
-      this.props.onRequestClose();
     } catch (error) {
       this.setState({ optOutError: error.message });
     }
