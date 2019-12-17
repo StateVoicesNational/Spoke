@@ -2,7 +2,7 @@
 name: Feature request
 about: Suggest an idea for Spoke
 title: 'Feature Request: <your-title-here>'
-labels: enhancement
+labels: C-enhancement
 assignees: ''
 
 ---
