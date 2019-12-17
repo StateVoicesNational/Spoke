@@ -19,7 +19,9 @@ const prepareDataTableData = conversations =>
       conversation.contact.firstName +
       " " +
       conversation.contact.lastName +
-      (conversation.contact.optOut.cell ? "⛔️" : ""),
+      // \u26d4 is the No Entry symbol: http://unicode.org/cldr/utility/character.jsp?a=26D4
+      // including it directly breaks some text editors
+      (conversation.contact.optOut.cell ? "\u26d4" : ""),
     status: conversation.contact.messageStatus,
     messages: conversation.contact.messages
   }));
@@ -42,6 +44,7 @@ const prepareSelectedRowsData = (conversations, rowsSelected) => {
   });
 };
 
+// TODO: move this to containers/ since it loads data externally into props
 export class IncomingMessageList extends Component {
   constructor(props) {
     super(props);
@@ -207,6 +210,9 @@ export class IncomingMessageList extends Component {
       conversations,
       rowsSelected
     );
+    // TODO: selected conversations sends texter+contact+campaign info
+    // maybe no changes are necessary on client side and just what is processed
+    // on server would be changed
     this.props.onConversationSelected(rowsSelected, selectedConversations);
   };
 
@@ -270,6 +276,7 @@ IncomingMessageList.propTypes = {
   clearSelectedMessages: type.bool
 };
 
+// TODO: what info can we reduce here
 const mapQueriesToProps = ({ ownProps }) => ({
   conversations: {
     query: gql`
