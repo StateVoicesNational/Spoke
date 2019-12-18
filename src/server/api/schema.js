@@ -333,7 +333,8 @@ const rootMutations = {
           text: message,
           error_code: null,
           service_id: mockId,
-          assignment_id: lastMessage.assignment_id,
+          campaign_contact_id: contact.id,
+          messageservice_sid: lastMessage.messageservice_sid,
           service: lastMessage.service,
           send_status: "DELIVERED"
         })
@@ -925,8 +926,12 @@ const rootMutations = {
     bulkSendMessages: async (_, { assignmentId }, { loaders, user }) => {
       return await bulkSendMessages(assignmentId, loaders, user);
     },
-    sendMessage: async (_, { message, campaignContactId }, { loaders }) => {
-      return await sendMessage(message, campaignContactId, loaders);
+    sendMessage: async (
+      _,
+      { message, campaignContactId },
+      { loaders, user }
+    ) => {
+      return await sendMessage(message, campaignContactId, loaders, user);
     },
     deleteQuestionResponses: async (
       _,
