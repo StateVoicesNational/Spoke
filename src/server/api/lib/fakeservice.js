@@ -67,7 +67,7 @@ async function convertMessagePartsToMessage(messageParts) {
     user_number: userNumber,
     is_from_contact: true,
     text,
-    service_response: JSON.stringify(messageParts),
+    error_code: null,
     service_id,
     assignment_id: lastMessage.assignment_id,
     service: "fakeservice",
