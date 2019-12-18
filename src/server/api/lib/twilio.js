@@ -54,7 +54,9 @@ async function convertMessagePartsToMessage(messageParts) {
     .replace(/\0/g, ""); // strip all UTF-8 null characters (0x00)
 
   const lastMessage = await getLastMessage({
-    contactNumber
+    contactNumber,
+    service: "twilio",
+    servicemessage_sid: serviceMessages[0].MessagingServiceSid
   });
   return new Message({
     contact_number: contactNumber,
@@ -63,7 +65,8 @@ async function convertMessagePartsToMessage(messageParts) {
     text,
     error_code: null,
     service_id: serviceMessages[0].MessagingServiceSid,
-    assignment_id: lastMessage.assignment_id,
+    messageservice_sid: serviceMessages[0].MessagingServiceSid,
+    campaign_contact_id: lastMessage.campaign_contact_id,
     service: "twilio",
     send_status: "DELIVERED"
   });
@@ -135,7 +138,7 @@ function parseMessageText(message) {
   return params;
 }
 
-async function sendMessage(message, contact, trx) {
+async function sendMessage(message, contact, trx, organization) {
   if (!twilio) {
     log.warn(
       "cannot actually send SMS message -- twilio is not fully configured:",
@@ -155,16 +158,6 @@ async function sendMessage(message, contact, trx) {
     if (message.service !== "twilio") {
       log.warn("Message not marked as a twilio message", message.id);
     }
-
-    const messageParams = Object.assign(
-      {
-        to: message.contact_number,
-        body: message.text,
-        messagingServiceSid: process.env.TWILIO_MESSAGE_SERVICE_SID,
-        statusCallback: process.env.TWILIO_STATUS_CALLBACK_URL
-      },
-      parseMessageText(message)
-    );
 
     let twilioValidityPeriod = process.env.TWILIO_MESSAGE_VALIDITY_PERIOD;
 
@@ -196,13 +189,37 @@ async function sendMessage(message, contact, trx) {
         );
       }
     }
+    const messageToSave = {
+      ...message
+    };
 
-    if (twilioValidityPeriod) {
-      messageParams.validityPeriod = twilioValidityPeriod;
-    }
+    // FUTURE: this can be based on (contact, organization)
+    // Note organization won't always be available, so we'll need to conditionally look it up based on contact
+    messagingServiceSid = process.env.TWILIO_MESSAGE_SERVICE_SID;
+    messageToSave.messageservice_sid = messagingServiceSid;
+
+    const messageParams = Object.assign(
+      {
+        to: message.contact_number,
+        body: message.text,
+        messagingServiceSid: messagingServiceSid,
+        statusCallback: process.env.TWILIO_STATUS_CALLBACK_URL,
+        validityPeriod: twilioValidityPeriod || undefined
+      },
+      parseMessageText(messageToSave)
+    );
 
     twilio.messages.create(messageParams, (err, response) => {
-      postMessageSend(message, contact, trx, resolve, reject, err, response);
+      postMessageSend(
+        messageToSave,
+        contact,
+        trx,
+        resolve,
+        reject,
+        err,
+        response,
+        organization
+      );
     });
   });
 }
@@ -214,7 +231,8 @@ export function postMessageSend(
   resolve,
   reject,
   err,
-  response
+  response,
+  organization
 ) {
   const messageToSave = {
     ...message
@@ -306,19 +324,29 @@ async function handleDeliveryReport(report) {
       .limit(1)(0)
       .default(null);
     if (message) {
-      message.service_response_at = new Date();
+      const changes = {
+        service_response_at: new Date()
+      };
       if (messageStatus === "delivered") {
-        message.send_status = "DELIVERED";
+        changes.send_status = "DELIVERED";
       } else if (
         messageStatus === "failed" ||
         messageStatus === "undelivered"
       ) {
-        message.send_status = "ERROR";
-        message.error_code = Number(report.ErrorCode) || 0;
+        changes.send_status = "ERROR";
+        const errorCode = Number(report.ErrorCode) || 0;
+        changes.error_code = errorCode;
+        if (message.campaign_contact_id) {
+          await r
+            .knex("campaign_contact")
+            .where("id", message.campaign_contact_id)
+            .update("error_code", errorCode);
+        }
       }
-      await Message.save(message, { conflict: "update" });
-
-      // FUTURE: update campaign_contact.error_code based on message.campaign_contact_id
+      await r
+        .knex("message")
+        .where("id", message.id)
+        .update(changes);
     }
   }
 }

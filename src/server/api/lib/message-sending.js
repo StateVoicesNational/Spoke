@@ -1,17 +1,20 @@
 import { r } from "../../models";
 
-export async function getLastMessage({ contactNumber, service }) {
-  const lastMessage = await r
-    .table("message")
-    .getAll(contactNumber, { index: "contact_number" })
-    .filter({
+export async function getLastMessage({
+  contactNumber,
+  service,
+  messageServiceSid
+}) {
+  const [lastMessage] = await r
+    .knex("message")
+    .select("campaign_contact_id")
+    .where({
+      contact_number: contactNumber,
+      messageservice_sid: messageServiceSid,
       is_from_contact: false,
       service
     })
-    .orderBy(r.desc("created_at"))
-    .limit(1)
-    .pluck("assignment_id")(0)
-    .default(null);
+    .orderBy("created_at", "desc");
 
   return lastMessage;
 }
@@ -33,8 +36,9 @@ export async function saveNewIncomingMessage(messageInstance) {
 
   await r
     .table("campaign_contact")
-    .getAll(messageInstance.assignment_id, { index: "assignment_id" })
-    .filter({ cell: messageInstance.contact_number })
+    .getAll(messageInstance.campaign_contact_id, {
+      index: "campaign_contact_id"
+    })
     .limit(1)
     .update({ message_status: "needsResponse", updated_at: "now()" });
 }

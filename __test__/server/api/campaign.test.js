@@ -808,7 +808,6 @@ describe("Bulk Send", async () => {
 
     // send some texts
     const bulkSendResult = await bulkSendMessages(assignmentId, testTexterUser);
-    console.log(bulkSendResult);
     resultTestFunction(bulkSendResult);
 
     // TEXTER 1 (95 needsMessage, 5 needsResponse)
