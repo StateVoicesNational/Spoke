@@ -47,11 +47,16 @@ export default class CampaignCannedResponsesForm extends React.Component {
   });
 
   showAddForm() {
+    const handleCloseAddForm = () => {
+      this.setState({ showForm: false });
+    };
+
     if (this.state.showForm) {
       return (
         <div className={css(styles.formContainer)}>
           <div className={css(styles.form)}>
             <CampaignCannedResponseForm
+              handleCloseAddForm={handleCloseAddForm}
               onSaveCannedResponse={ele => {
                 const newVals = this.props.formValues.cannedResponses.slice(0);
                 const newEle = {

@@ -1,12 +1,10 @@
-import camelCaseKeys from "camelcase-keys";
 import GraphQLDate from "graphql-date";
 import GraphQLJSON from "graphql-type-json";
 import { GraphQLError } from "graphql/error";
 import isUrl from "is-url";
 import { organizationCache } from "../models/cacheable_queries/organization";
 
-import { gzip, log, makeTree } from "../../lib";
-import { applyScript } from "../../lib/scripts";
+import { gzip, makeTree } from "../../lib";
 import { capitalizeWord } from "./lib/utils";
 import {
   assignTexters,
@@ -26,12 +24,11 @@ import {
   Message,
   Organization,
   QuestionResponse,
-  User,
   UserOrganization,
   r,
-  cacheableData
+  cacheableData,
+  loaders
 } from "../models";
-// import { isBetweenTextingHours } from '../../lib/timezones'
 import { Notifications, sendUserNotification } from "../notifications";
 import { resolvers as assignmentResolvers } from "./assignment";
 import { getCampaigns, resolvers as campaignResolvers } from "./campaign";
@@ -43,16 +40,10 @@ import {
   reassignConversations,
   resolvers as conversationsResolver
 } from "./conversations";
-import {
-  accessRequired,
-  assignmentRequired,
-  authRequired,
-  superAdminRequired
-} from "./errors";
+import { accessRequired, assignmentRequired, authRequired } from "./errors";
 import { resolvers as interactionStepResolvers } from "./interaction-step";
 import { resolvers as inviteResolvers } from "./invite";
 import { saveNewIncomingMessage } from "./lib/message-sending";
-import serviceMap from "./lib/services";
 import { resolvers as messageResolvers } from "./message";
 import { resolvers as optOutResolvers } from "./opt-out";
 import { resolvers as organizationResolvers } from "./organization";
@@ -62,7 +53,11 @@ import { resolvers as questionResponseResolvers } from "./question-response";
 import { getUsers, resolvers as userResolvers } from "./user";
 import { change } from "../local-auth-helpers";
 
-import { getSendBeforeTimeUtc } from "../../lib/timezones";
+import {
+  sendMessage,
+  bulkSendMessages,
+  findNewCampaignContact
+} from "./mutations";
 
 const uuidv4 = require("uuid").v4;
 const JOBS_SAME_PROCESS = !!(
@@ -336,11 +331,7 @@ const rootMutations = {
           user_number: userNumber,
           is_from_contact: true,
           text: message,
-          service_response: JSON.stringify({
-            fakeMessage: true,
-            userId: user.id,
-            userFirstName: user.first_name
-          }),
+          error_code: null,
           service_id: mockId,
           assignment_id: lastMessage.assignment_id,
           service: lastMessage.service,
@@ -882,6 +873,12 @@ const rootMutations = {
     ) => {
       await assignmentRequired(user, assignmentId);
       const contacts = contactIds.map(async contactId => {
+        // this is a super-local change to handle the specific case
+        // of message_status being updated in a separate message-handling
+        // process -- incomingmessagehandler -- and not updating the
+        // DataLoader (https://github.com/graphql/dataloader) cache.
+        loaders.campaignContact.clear(contactId);
+
         const contact = await loaders.campaignContact.load(contactId);
         if (contact && contact.assignment_id === Number(assignmentId)) {
           return contact;
@@ -897,62 +894,9 @@ const rootMutations = {
     findNewCampaignContact: async (
       _,
       { assignmentId, numberContacts },
-      { loaders, user }
+      { user }
     ) => {
-      /* This attempts to find a new contact for the assignment, in the case that useDynamicAssigment == true */
-      const assignment = await Assignment.get(assignmentId);
-      await assignmentRequired(user, assignmentId, assignment);
-
-      const campaign = await Campaign.get(assignment.campaign_id);
-      if (!campaign.use_dynamic_assignment || assignment.max_contacts === 0) {
-        return { found: false };
-      }
-
-      const contactsCount = await r.getCount(
-        r.knex("campaign_contact").where("assignment_id", assignmentId)
-      );
-
-      numberContacts = numberContacts || 1;
-      if (
-        assignment.max_contacts &&
-        contactsCount + numberContacts > assignment.max_contacts
-      ) {
-        numberContacts = assignment.max_contacts - contactsCount;
-      }
-      // Don't add more if they already have that many
-      const result = await r.getCount(
-        r.knex("campaign_contact").where({
-          assignment_id: assignmentId,
-          message_status: "needsMessage",
-          is_opted_out: false
-        })
-      );
-      if (result >= numberContacts) {
-        return { found: false };
-      }
-
-      const updatedCount = await r
-        .knex("campaign_contact")
-        .where(
-          "id",
-          "in",
-          r
-            .knex("campaign_contact")
-            .where({
-              assignment_id: null,
-              campaign_id: campaign.id
-            })
-            .limit(numberContacts)
-            .select("id")
-        )
-        .update({ assignment_id: assignmentId })
-        .catch(log.error);
-
-      if (updatedCount > 0) {
-        return { found: true };
-      } else {
-        return { found: false };
-      }
+      return await findNewCampaignContact(assignmentId, numberContacts, user);
     },
 
     createOptOut: async (
@@ -974,198 +918,15 @@ const rootMutations = {
         campaign
       });
 
+      loaders.campaignContact.clear(campaignContactId.toString());
+
       return loaders.campaignContact.load(campaignContactId);
     },
-    bulkSendMessages: async (_, { assignmentId }, loaders) => {
-      if (!process.env.ALLOW_SEND_ALL || !process.env.NOT_IN_USA) {
-        log.error("Not allowed to send all messages at once");
-        throw new GraphQLError({
-          status: 403,
-          message: "Not allowed to send all messages at once"
-        });
-      }
-
-      const assignment = await Assignment.get(assignmentId);
-      const campaign = await Campaign.get(assignment.campaign_id);
-      // Assign some contacts
-      await rootMutations.RootMutation.findNewCampaignContact(
-        _,
-        {
-          assignmentId,
-          numberContacts: Number(process.env.BULK_SEND_CHUNK_SIZE) - 1
-        },
-        loaders
-      );
-
-      const contacts = await r
-        .knex("campaign_contact")
-        .where({ message_status: "needsMessage" })
-        .where({ assignment_id: assignmentId })
-        .orderByRaw("updated_at")
-        .limit(process.env.BULK_SEND_CHUNK_SIZE);
-
-      const texter = camelCaseKeys(await User.get(assignment.user_id));
-      const customFields = Object.keys(JSON.parse(contacts[0].custom_fields));
-
-      const contactMessages = await contacts.map(async contact => {
-        const script = await campaignContactResolvers.CampaignContact.currentInteractionStepScript(
-          contact
-        );
-        contact.customFields = contact.custom_fields;
-        const text = applyScript({
-          contact: camelCaseKeys(contact),
-          texter,
-          script,
-          customFields
-        });
-        const contactMessage = {
-          contactNumber: contact.cell,
-          userId: assignment.user_id,
-          text,
-          assignmentId
-        };
-        await rootMutations.RootMutation.sendMessage(
-          _,
-          { message: contactMessage, campaignContactId: contact.id },
-          loaders
-        );
-      });
-
-      return [];
+    bulkSendMessages: async (_, { assignmentId }, { loaders, user }) => {
+      return await bulkSendMessages(assignmentId, loaders, user);
     },
     sendMessage: async (_, { message, campaignContactId }, { loaders }) => {
-      const contact = await loaders.campaignContact.load(campaignContactId);
-      const campaign = await loaders.campaign.load(contact.campaign_id);
-      if (
-        contact.assignment_id !== parseInt(message.assignmentId) ||
-        campaign.is_archived
-      ) {
-        throw new GraphQLError({
-          status: 400,
-          message: "Your assignment has changed"
-        });
-      }
-      const organization = await r
-        .table("campaign")
-        .get(contact.campaign_id)
-        .eqJoin("organization_id", r.table("organization"))("right");
-
-      const orgFeatures = JSON.parse(organization.features || "{}");
-
-      const optOut = await r
-        .table("opt_out")
-        .getAll(contact.cell, { index: "cell" })
-        .filter({ organization_id: organization.id })
-        .limit(1)(0)
-        .default(null);
-      if (optOut) {
-        throw new GraphQLError({
-          status: 400,
-          message: "Skipped sending because this contact was already opted out"
-        });
-      }
-
-      // const zipData = await r.table('zip_code')
-      //   .get(contact.zip)
-      //   .default(null)
-
-      // const config = {
-      //   textingHoursEnforced: organization.texting_hours_enforced,
-      //   textingHoursStart: organization.texting_hours_start,
-      //   textingHoursEnd: organization.texting_hours_end,
-      // }
-      // const offsetData = zipData ? { offset: zipData.timezone_offset, hasDST: zipData.has_dst } : null
-      // if (!isBetweenTextingHours(offsetData, config)) {
-      //   throw new GraphQLError({
-      //     status: 400,
-      //     message: "Skipped sending because it's now outside texting hours for this contact"
-      //   })
-      // }
-
-      const { contactNumber, text } = message;
-
-      if (text.length > (process.env.MAX_MESSAGE_LENGTH || 99999)) {
-        throw new GraphQLError({
-          status: 400,
-          message: "Message was longer than the limit"
-        });
-      }
-
-      const replaceCurlyApostrophes = rawText =>
-        rawText.replace(/[\u2018\u2019]/g, "'");
-
-      let contactTimezone = {};
-      if (contact.timezone_offset) {
-        // couldn't look up the timezone by zip record, so we load it
-        // from the campaign_contact directly if it's there
-        const [offset, hasDST] = contact.timezone_offset.split("_");
-        contactTimezone.offset = parseInt(offset, 10);
-        contactTimezone.hasDST = hasDST === "1";
-      }
-
-      const sendBefore = getSendBeforeTimeUtc(
-        contactTimezone,
-        {
-          textingHoursEnd: organization.texting_hours_end,
-          textingHoursEnforced: organization.texting_hours_enforced
-        },
-        {
-          textingHoursEnd: campaign.texting_hours_end,
-          overrideOrganizationTextingHours:
-            campaign.override_organization_texting_hours,
-          textingHoursEnforced: campaign.texting_hours_enforced,
-          timezone: campaign.timezone
-        }
-      );
-
-      const sendBeforeDate = sendBefore ? sendBefore.toDate() : null;
-
-      if (sendBeforeDate && sendBeforeDate <= Date.now()) {
-        throw new GraphQLError({
-          status: 400,
-          message: "Outside permitted texting time for this recipient"
-        });
-      }
-
-      const messageInstance = new Message({
-        text: replaceCurlyApostrophes(text),
-        contact_number: contactNumber,
-        user_number: "",
-        assignment_id: message.assignmentId,
-        send_status: JOBS_SAME_PROCESS ? "SENDING" : "QUEUED",
-        service: orgFeatures.service || process.env.DEFAULT_SERVICE || "",
-        is_from_contact: false,
-        queued_at: new Date(),
-        send_before: sendBeforeDate
-      });
-
-      await messageInstance.save();
-      const service =
-        serviceMap[
-          messageInstance.service ||
-            process.env.DEFAULT_SERVICE ||
-            global.DEFAULT_SERVICE
-        ];
-
-      contact.updated_at = "now()";
-
-      if (
-        contact.message_status === "needsResponse" ||
-        contact.message_status === "convo"
-      ) {
-        contact.message_status = "convo";
-      } else {
-        contact.message_status = "messaged";
-      }
-
-      await contact.save();
-
-      log.info(
-        `Sending (${service}): ${messageInstance.user_number} -> ${messageInstance.contact_number}\nMessage: ${messageInstance.text}`
-      );
-
-      service.sendMessage(messageInstance, contact);
-      return contact;
+      return await sendMessage(message, campaignContactId, loaders);
     },
     deleteQuestionResponses: async (
       _,
