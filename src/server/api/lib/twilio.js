@@ -237,7 +237,7 @@ export function postMessageSend(
   const messageToSave = {
     ...message
   };
-  log.info("messageToSave", messageToSave);
+  // log.info("messageToSave", messageToSave);
   let hasError = false;
   if (err) {
     hasError = true;

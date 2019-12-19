@@ -63,7 +63,7 @@ Message.ensureIndex("campaign_contact_id");
 Message.ensureIndex("send_status");
 //Message.ensureIndex("contact_number");
 Message.ensureIndex("service_id");
-Message.ensureIndex("cell_messageservice_sid", doc => [
+Message.ensureIndex("cell_messageservice_sid_idx", doc => [
   doc("contact_number"),
   doc("messageservice_sid")
 ]);

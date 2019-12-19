@@ -149,9 +149,9 @@ export const sendMessage = async (
 
   await contact.save();
 
-  log.info(
-    `Sending (${service}): ${messageInstance.user_number} -> ${messageInstance.contact_number}\nMessage: ${messageInstance.text}`
-  );
+  // log.info(
+  //   `Sending (${serviceName}): ${messageInstance.user_number} -> ${messageInstance.contact_number}\nMessage: ${messageInstance.text}`
+  // );
 
   //NO AWAIT: pro=return before api completes, con=context needs to stay alive
   service.sendMessage(messageInstance, contact, organization);
