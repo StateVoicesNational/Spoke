@@ -14,7 +14,7 @@
     "PASSPORT_STRATEGY": {
       "description": "Either 'auth0' or 'local' -- We recommend auth0 for production systems",
       "required": true,
-      "value": "auth0"
+      "value": "local"
     },
 
     "AUTH0_DOMAIN": {

@@ -172,6 +172,9 @@ Do **NOT** set:
 - `S3_STATIC_PATH`: This will be the s3cmd upload path that corresponds to STATIC_BASE_URL. So if `STATIC_BASE_URL=https://s3.amazon.com/spoke.example.com/static/` then `S3_STATIC_PATH=s3://spoke.example.com/static/` You will also need a ~/.s3cfg file that has the s3 upload credentials. See `package.json`'s postinstall script and more specifically `prod-static-upload`.
 - `"LAMBDA_DEBUG_LOG": "1",`: (ONLY FOR DEBUGGING) This will send more details of requests to the CloudWatch log. However, it will include the full request details, e.g. so do not use this in production.
 
+For large production environments, it might also be a good idea to add `"SUPPRESS_MIGRATIONS": "1"` so that any time you update the schema with a version upgrade,
+you can manually run the migration (see below) rather than it accidentally trigger on multiple lambdas at once.
+
 ## Deploy
 
 To create the AWS Lambda function and the API Gateway to access it, run the following being sure to substitute in the correct values:
@@ -221,13 +224,23 @@ $ AWS_PROFILE=[your_profile_nickname] claudia add-scheduled-event \
 
 ### Migrating the Database
 
-Migrations are created with knex[https://knexjs.org/#Migrations]. You can trigger migration updates with the following command:
+Migrations are created with knex[https://knexjs.org/#Migrations].
+
+You can trigger migration updates with the following command:
 
 ```sh
 $ AWS_PROFILE=[your_profile_nickname] claudia test-lambda --event ./deploy/lambda-migrate-database.js
 ```
 
 (Note: the migration will probably take much less than the 5 minutes or whatever your lambda timeout is, however it will look like `test-lambda` is still running/doing something. If you've confirmed on the DB side that the migration completed, it's safe to `Ctrl + c`)
+
+For major database changes on large database instances, you should
+probably disable the web interface so that web requests triggering
+database calls are not made. In AWS, the easiest way to do this is:
+
+1. In the API Gateway Custom Domains (see below) section, add an
+   invalid prefix (like `/xxx`) to the domain.
+2. Then in the Lambda AWS Console, you can disable any CloudWatch event triggers
 
 ### Add a Custom Domain
 

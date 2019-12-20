@@ -29,9 +29,6 @@ const Message = thinky.createModel(
         .required()
         .allowNull(false),
       text: optionalString(),
-      // for errors,etc returned back by the service
-      // will be several json strings appended together, so JSON.parse will NOT work
-      service_response: optionalString(),
       assignment_id: requiredString(),
       service: optionalString(),
       service_id: optionalString().stopReference(),
@@ -44,6 +41,10 @@ const Message = thinky.createModel(
         "PAUSED",
         "NOT_ATTEMPTED"
       ),
+      error_code: type
+        .integer()
+        .allowNull()
+        .default(null),
       created_at: timestamp(),
       queued_at: timestamp(),
       sent_at: timestamp(),
@@ -57,7 +58,6 @@ const Message = thinky.createModel(
 Message.ensureIndex("user_id");
 Message.ensureIndex("assignment_id");
 Message.ensureIndex("send_status");
-Message.ensureIndex("user_number");
 Message.ensureIndex("contact_number");
 Message.ensureIndex("service_id");
 
