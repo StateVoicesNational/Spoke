@@ -8,7 +8,7 @@ import {
   r
 } from "../src/server/models/";
 
-import { conversationsQuery } from "../src/components/IncomingMessageList";
+import { conversationsQuery } from "../src/containers/IncomingMessageList";
 
 import { graphql } from "graphql";
 

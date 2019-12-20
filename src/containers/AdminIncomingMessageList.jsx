@@ -4,7 +4,7 @@ import _ from "lodash";
 
 import IncomingMessageActions from "../components/IncomingMessageActions";
 import IncomingMessageFilter from "../components/IncomingMessageFilter";
-import IncomingMessageList from "../components/IncomingMessageList";
+import IncomingMessageList from "../containers/IncomingMessageList";
 import LoadingIndicator from "../components/LoadingIndicator";
 import PaginatedCampaignsRetriever from "./PaginatedCampaignsRetriever";
 import gql from "graphql-tag";

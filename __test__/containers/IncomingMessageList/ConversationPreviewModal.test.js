@@ -7,8 +7,8 @@ import { StyleSheetTestUtils } from "aphrodite";
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import ConversationPreviewModal, {
   _ConversationPreviewModal
-} from "../../../src/components/IncomingMessageList/ConversationPreviewModal";
-import { prepareDataTableData } from "../../../src/components/IncomingMessageList";
+} from "../../../src/containers/IncomingMessageList/ConversationPreviewModal";
+import { prepareDataTableData } from "../../../src/containers/IncomingMessageList";
 
 import ReactTestUtils from "react-dom/test-utils";
 import Store from "../../../src/store";
