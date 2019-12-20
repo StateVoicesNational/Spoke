@@ -5,6 +5,7 @@ import {
   setupTest,
   cleanupTest,
   runComponentGql,
+  runGql,
   createUser,
   createInvite,
   createOrganization,
@@ -17,7 +18,7 @@ import {
   getOptOut
 } from "../../test_helpers";
 
-import { createOptOutMutation } from "../../../src/components/IncomingMessageList/ConversationPreviewModal";
+import { createOptOutGqlString as createOptOutGql } from "../../../src/lib/client/createOptOut";
 
 describe.only("createOptOut", () => {
   let testAdminUser;
@@ -70,8 +71,8 @@ describe.only("createOptOut", () => {
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
   it("creates an opt out when the contact is assigned to the current user", async () => {
-    const optOutResult = await runComponentGql(
-      createOptOutMutation,
+    const optOutResult = await runGql(
+      createOptOutGql,
       variables,
       testTexterUser
     );
@@ -89,11 +90,13 @@ describe.only("createOptOut", () => {
   });
 
   it("creates an opt out when the current user is an admin user and the contact is assigned to a different user", async () => {
-    const optOutResult = await runComponentGql(
-      createOptOutMutation,
+    const optOutResult = await runGql(
+      createOptOutGql,
       variables,
       testAdminUser
     );
+
+    console.log("optOutResult", optOutResult);
 
     expect(optOutResult.data.createOptOut.id).toEqual(
       optOutContact.id.toString()
@@ -108,8 +111,8 @@ describe.only("createOptOut", () => {
   });
 
   it("returns an error when the user attempting the optout is neither an admin nor assigned to the contact", async () => {
-    const optOutResult = await runComponentGql(
-      createOptOutMutation,
+    const optOutResult = await runGql(
+      createOptOutGql,
       variables,
       testTexterUser2
     );

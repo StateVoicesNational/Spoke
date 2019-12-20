@@ -201,8 +201,9 @@ describe("when the texter clicks the opt-out button", () => {
   let organizationId;
   let optOutContact;
   let assignmentId;
+  let root;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     await setupTest();
     const testAdminUser = await createUser();
     const testInvite = await createInvite();
@@ -255,11 +256,11 @@ describe("when the texter clicks the opt-out button", () => {
     StyleSheetTestUtils.suppressStyleInjection();
     const store = new Store(createMemoryHistory("/")).data;
 
-    const root = document.createElement("div");
+    root = document.createElement("div");
     document.body.appendChild(root);
 
     // the destructuring below is a hack to avoid "hasOwnProperty is not a function" errors
-    component = mount(
+    component = await mount(
       <ApolloProvider store={store} client={ApolloClientSingleton}>
         <MuiThemeProvider>
           <AssignmentTexterContact
@@ -279,7 +280,9 @@ describe("when the texter clicks the opt-out button", () => {
     );
   });
 
-  afterAll(async () => {
+  afterEach(async () => {
+    component.unmount();
+    document.body.removeChild(root);
     await cleanupTest();
     if (r.redis) r.redis.flushdb();
   });

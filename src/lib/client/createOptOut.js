@@ -1,16 +1,6 @@
 import gql from "graphql-tag";
 
-const createOptOutMutation = (organizationId, optOut, campaignContactId) => ({
-  mutation: createOptOutGql,
-  variables: {
-    organizationId,
-    optOut,
-    campaignContactId
-  }
-});
-
-export const createOptOutGql = gql`
-  mutation createOptOut(
+export const createOptOutGqlString = `mutation createOptOut(
     $organizationId: String!
     $optOut: OptOutInput!
     $campaignContactId: String!
@@ -22,7 +12,19 @@ export const createOptOutGql = gql`
     ) {
       id
     }
-  }
+  }`;
+
+export const createOptOutGql = gql`
+  ${createOptOutGqlString}
 `;
+
+const createOptOutMutation = (organizationId, optOut, campaignContactId) => ({
+  mutation: createOptOutGql,
+  variables: {
+    organizationId,
+    optOut,
+    campaignContactId
+  }
+});
 
 export default createOptOutMutation;
