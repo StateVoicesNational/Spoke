@@ -44,7 +44,7 @@ import {
   accessRequired,
   assignmentRequired,
   authRequired,
-  assignmentOrAdminRequired
+  assignmentOrAdminRoleRequired
 } from "./errors";
 import { resolvers as interactionStepResolvers } from "./interaction-step";
 import { resolvers as inviteResolvers } from "./invite";
@@ -910,7 +910,7 @@ const rootMutations = {
       { loaders, user }
     ) => {
       const contact = await loaders.campaignContact.load(campaignContactId);
-      await assignmentOrAdminRequired(
+      await assignmentOrAdminRoleRequired(
         user,
         organizationId,
         contact.assignment_id

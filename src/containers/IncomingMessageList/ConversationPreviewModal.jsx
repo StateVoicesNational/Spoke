@@ -101,7 +101,7 @@ ConversationPreviewBody.propTypes = {
   conversation: PropTypes.object
 };
 
-export class _ConversationPreviewModal extends Component {
+export class InnerConversationPreviewModal extends Component {
   constructor(props) {
     super(props);
 
@@ -179,7 +179,7 @@ export class _ConversationPreviewModal extends Component {
   }
 }
 
-_ConversationPreviewModal.propTypes = {
+InnerConversationPreviewModal.propTypes = {
   organizationId: PropTypes.string,
   conversation: PropTypes.object,
   onRequestClose: PropTypes.func,
@@ -191,6 +191,6 @@ const mapMutationsToProps = () => ({
   createOptOut: createOptOutMutation
 });
 
-export default loadData(wrapMutations(_ConversationPreviewModal), {
+export default loadData(wrapMutations(InnerConversationPreviewModal), {
   mapMutationsToProps
 });

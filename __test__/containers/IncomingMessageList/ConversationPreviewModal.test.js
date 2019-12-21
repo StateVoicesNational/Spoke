@@ -6,7 +6,7 @@ import { mount } from "enzyme";
 import { StyleSheetTestUtils } from "aphrodite";
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import ConversationPreviewModal, {
-  _ConversationPreviewModal
+  InnerConversationPreviewModal
 } from "../../../src/containers/IncomingMessageList/ConversationPreviewModal";
 import { prepareDataTableData } from "../../../src/containers/IncomingMessageList";
 
@@ -141,7 +141,7 @@ describe("ConversationPreviewModal", async () => {
         Promise.resolve({ campaignContactId: _campaignContactId })
       );
       const conversationPreviewModal = component.find(
-        _ConversationPreviewModal
+        InnerConversationPreviewModal
       );
       conversationPreviewModal
         .first()

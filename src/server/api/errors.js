@@ -30,7 +30,7 @@ export async function accessRequired(
   }
 }
 
-export async function assignmentOrAdminRequired(
+export async function assignmentOrAdminRoleRequired(
   user,
   orgId,
   assignmentId,
@@ -38,7 +38,7 @@ export async function assignmentOrAdminRequired(
 ) {
   authRequired(user);
   const isAdmin = await cacheableData.user.userHasRole(user, orgId, "ADMIN");
-  if (isAdmin || user.is_superAdmin) {
+  if (isAdmin || user.is_superadmin) {
     return true;
   }
 
