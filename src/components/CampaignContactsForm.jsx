@@ -322,8 +322,10 @@ export default class CampaignContactsForm extends React.Component {
       <span>
         Your upload file should be in CSV format with column headings in the
         first row. You must include{" "}
-        <span className={css(styles.csvHeader)}>firstName</span>,
-        <span className={css(styles.csvHeader)}>lastName</span>, and
+        <span className={css(styles.csvHeader)}>firstName</span>, (or{" "}
+        <span className={css(styles.csvHeader)}>first_name</span>),
+        <span className={css(styles.csvHeader)}>lastName</span>
+        (or <span className={css(styles.csvHeader)}>last_name</span>), and
         <span className={css(styles.csvHeader)}>cell</span> columns. If you
         include a <span className={css(styles.csvHeader)}>zip</span> column,
         we'll use the zip to guess the contact's timezone for enforcing texting
