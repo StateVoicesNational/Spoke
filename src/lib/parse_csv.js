@@ -1,6 +1,7 @@
 import Papa from "papaparse";
 import _ from "lodash";
 import { getFormattedPhoneNumber, getFormattedZip } from "../lib";
+import humps from "humps";
 
 const requiredUploadFields = ["firstName", "lastName", "cell"];
 const topLevelUploadFields = [
@@ -62,13 +63,26 @@ const getValidatedData = (data, optOuts) => {
   };
 };
 
+const ensureCamelCaseRequiredHeaders = columnHeader => {
+  const camelizedColumnHeader = humps.camelize(columnHeader);
+
+  if (
+    requiredUploadFields.includes(camelizedColumnHeader) &&
+    camelizedColumnHeader !== columnHeader
+  ) {
+    return camelizedColumnHeader;
+  }
+
+  return columnHeader;
+};
+
 export const parseCSV = (file, optOuts, callback) => {
   Papa.parse(file, {
     header: true,
+    transformHeader: ensureCamelCaseRequiredHeaders,
     // eslint-disable-next-line no-shadow, no-unused-vars
     complete: ({ data, meta, errors }, file) => {
       const fields = meta.fields;
-
       const missingFields = [];
 
       for (const field of requiredUploadFields) {
