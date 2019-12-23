@@ -15,7 +15,7 @@ import { getFormattedPhoneNumber } from "../lib/phone-format.js";
 import serviceMap from "../server/api/lib/services";
 import {
   getLastMessage,
-  saveNewIncomingMessage
+  processNewIncomingMessage
 } from "../server/api/lib/message-sending";
 import importScriptFromDocument from "../server/api/lib/import-script.";
 
@@ -1239,7 +1239,7 @@ export async function handleIncomingMessageParts() {
         "Saving message with service message ID",
         messagesToSave[i].service_id
       );
-      await saveNewIncomingMessage(messagesToSave[i]);
+      await processNewIncomingMessage(messagesToSave[i]);
     }
 
     const messageIdsToDelete = messagePartsToDelete.map(m => m.id);

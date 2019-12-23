@@ -20,6 +20,7 @@ import { seedZipCodes } from "./seeds/seed-zip-codes";
 import { setupUserNotificationObservers } from "./notifications";
 import { TwimlResponse } from "twilio";
 import { existsSync } from "fs";
+import { getHandlers } from "./incoming_message_handlers";
 
 process.on("uncaughtException", ex => {
   log.error(ex);
@@ -205,5 +206,11 @@ if (port) {
     log.info(`Node app is running on port ${port}`);
   });
 }
+
+// call this to load incoming message handlers
+// it will throw an exception and crash the app if
+// there is a misconfiguration or if one of the handlers
+// does not export processMessage
+getHandlers();
 
 export default app;

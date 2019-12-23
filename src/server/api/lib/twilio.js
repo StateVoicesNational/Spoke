@@ -2,7 +2,7 @@ import Twilio from "twilio";
 import { getFormattedPhoneNumber } from "../../../lib/phone-format";
 import { Log, Message, PendingMessagePart, r } from "../../models";
 import { log } from "../../../lib";
-import { getLastMessage, saveNewIncomingMessage } from "./message-sending";
+import { getLastMessage, processNewIncomingMessage } from "./message-sending";
 
 // TWILIO error_codes:
 // > 1 (i.e. positive) error_codes are reserved for Twilio error codes
@@ -355,7 +355,7 @@ async function handleIncomingMessage(message) {
       pendingMessagePart
     ]);
     if (finalMessage) {
-      await saveNewIncomingMessage(finalMessage);
+      await processNewIncomingMessage(finalMessage);
     }
   }
 

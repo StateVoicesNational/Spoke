@@ -43,7 +43,7 @@ import {
 import { accessRequired, assignmentRequired, authRequired } from "./errors";
 import { resolvers as interactionStepResolvers } from "./interaction-step";
 import { resolvers as inviteResolvers } from "./invite";
-import { saveNewIncomingMessage } from "./lib/message-sending";
+import { processNewIncomingMessage } from "./lib/message-sending";
 import { resolvers as messageResolvers } from "./message";
 import { resolvers as optOutResolvers } from "./opt-out";
 import { resolvers as organizationResolvers } from "./organization";
@@ -325,7 +325,7 @@ const rootMutations = {
       const mockId = `mocked_${Math.random()
         .toString(36)
         .replace(/[^a-zA-Z1-9]+/g, "")}`;
-      await saveNewIncomingMessage(
+      await processNewIncomingMessage(
         new Message({
           contact_number: contactNumber,
           user_number: userNumber,
