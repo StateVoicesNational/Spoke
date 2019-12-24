@@ -5,7 +5,7 @@ export async function getLastMessage({
   service,
   messageServiceSid
 }) {
-  const [lastMessage] = await r
+  const lastMessage = await r
     .knex("message")
     .select("campaign_contact_id")
     .where({
@@ -14,7 +14,8 @@ export async function getLastMessage({
       is_from_contact: false,
       service
     })
-    .orderBy("created_at", "desc");
+    .orderBy("created_at", "desc")
+    .first();
 
   return lastMessage;
 }
