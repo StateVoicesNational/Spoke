@@ -301,9 +301,13 @@ export function postMessageSend(
         sent_at: new Date()
       },
       options
-    ).then((newMessage, saveError) => {
-      resolve(newMessage);
-    });
+    )
+      .then((newMessage, saveError) => {
+        resolve(newMessage);
+      })
+      .catch(err => {
+        reject(err);
+      });
   }
 }
 
