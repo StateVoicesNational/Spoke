@@ -1,8 +1,8 @@
-import { createStore, combineReducers, compose, applyMiddleware } from 'redux'
-import { routerReducer, routerMiddleware } from 'react-router-redux'
-import ReduxThunk from 'redux-thunk'
-import ApolloClientSingleton from '../network/apollo-client-singleton'
-import * as reducers from './reducers'
+import { createStore, combineReducers, compose, applyMiddleware } from "redux";
+import { routerReducer, routerMiddleware } from "react-router-redux";
+import ReduxThunk from "redux-thunk";
+import ApolloClientSingleton from "../network/apollo-client-singleton";
+import * as reducers from "./reducers";
 
 export default class Store {
   constructor(history, initialState = {}) {
@@ -10,7 +10,7 @@ export default class Store {
       ...reducers,
       apollo: ApolloClientSingleton.reducer(),
       routing: routerReducer
-    })
+    });
 
     this.data = createStore(
       reducer,
@@ -21,9 +21,11 @@ export default class Store {
           ApolloClientSingleton.middleware(),
           ReduxThunk.withExtraArgument(ApolloClientSingleton)
         ),
-         typeof window === 'object' &&
-         typeof window.devToolsExtension !== 'undefined' ? window.devToolsExtension() : f => f
+        typeof window === "object" &&
+          typeof window.devToolsExtension !== "undefined"
+          ? window.devToolsExtension()
+          : f => f
       )
-    )
+    );
   }
 }

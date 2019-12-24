@@ -14,5 +14,4 @@ export const schema = `
     responderCount: Int
     question: Question
   }
-`
-
+`;

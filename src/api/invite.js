@@ -4,5 +4,4 @@ export const schema = `
     isValid: Boolean
     hash: String
   }
-`
-
+`;
