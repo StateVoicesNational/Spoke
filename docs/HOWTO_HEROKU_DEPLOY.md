@@ -25,8 +25,8 @@ The default deployment from the Heroku button is free, but has a processing and 
 This may be sufficient for a single small campaign, but if you intend multiple/regular campaigns, we recommend upgrading
 the database and possibly the `web` 'dyno' instance (to [Hobby or Standard](https://devcenter.heroku.com/articles/dynos)).  At the time of this writing a ['hobby basic' level for the database is ~$9.00/month](https://devcenter.heroku.com/articles/heroku-postgres-plans#plan-tiers).
 
-For production scale, the best time to upgrade the database is before you start using the app, because the easiest path erases all
-previous data.  If you have existing data, please refer to Heroku docs on [how to upgrade a database](https://devcenter.heroku.com/articles/upgrading-heroku-postgres-databases) (it's complicated).
+For production scale, the best time to upgrade the database is after you have completed basic setup at the Hobby database level (created a first user account, the Owner role, and logged in through the admin UI, then created the Organization, set SUPPRESS_SELF_INVITE to `true` after creating the Organization, and perhaps created and ran a small first live test Campaign) and before you start using the app for live real Campaigns, because the easiest path erases all
+previous data.  If you have existing data, please refer to Heroku docs on [how to upgrade a database](https://devcenter.heroku.com/articles/upgrading-heroku-postgres-databases) (it's complicated). After you have upgraded a Heroku Postgres database plan from the Hobby level to, say, a Standard level Heroku Postgres database, you *must* enable the `PGSSLMODE=require` config var/env variable. Please be sure to read [our documentation on environment variables and what they do](REFERENCE-environment_variables.md) now :) . 
 
 If you have not used the app, after you've created the instance (filled out the variables, and 'deployed' it)
 follow these steps:
@@ -67,3 +67,25 @@ git remote add heroku https://git.heroku.com/myspokeapp.git
 git push heroku master
 ```
 You may find that the Customize Log In toggle in auth0 has been disabled, so you will want to turn that back on. You will also want to make sure you are running the latest version of the code for that. See the instructions in Step 11 in the main readme doc. 
+
+### Migrating the Database
+
+For smaller instances with a single dyno, Spoke will automatically
+update the database with schema changes when you update the code.
+Even for smaller instances, it's generally good practice to pause the
+system or at least do so during minimal/zero texting activity.
+
+For large instances (100K-millions of texts and contacts) or extensive
+schema changes,  it's better  to be cautious  during a  migration.  In
+those cases, you should follow the following steps:
+
+1. Pause all of the dynos or disable web requests coming in, in another way.
+
+2. Run (yes it looks a bit redundant)
+
+```
+   heroku run npm run knex migrate:latest
+```
+
+3. Ideally, verify that the migrations have completed on the database.
+   Then re-enable the dynos and web interface.

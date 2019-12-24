@@ -1,18 +1,18 @@
-import PropTypes from 'prop-types'
-import React from 'react'
-import Navigation from '../components/Navigation'
-import { ListItem } from 'material-ui/List'
-import { withRouter } from 'react-router'
-import { dataTest } from '../lib/attributes'
+import PropTypes from "prop-types";
+import React from "react";
+import Navigation from "../components/Navigation";
+import { ListItem } from "material-ui/List";
+import { withRouter } from "react-router";
+import { dataTest } from "../lib/attributes";
 
 class AdminNavigation extends React.Component {
   urlFromPath(path) {
-    const { organizationId } = this.props
-    return `/admin/${organizationId}/${path}`
+    const { organizationId } = this.props;
+    return `/admin/${organizationId}/${path}`;
   }
 
   render() {
-    const { organizationId, sections } = this.props
+    const { organizationId, sections } = this.props;
     return (
       <Navigation
         onToggleMenu={this.props.onToggleMenu}
@@ -23,7 +23,7 @@ class AdminNavigation extends React.Component {
         }))}
         switchListItem={
           <ListItem
-            {...dataTest('navSwitchToTexter')}
+            {...dataTest("navSwitchToTexter")}
             primaryText="Switch to texter"
             onTouchTap={() =>
               this.props.router.push(`/app/${organizationId}/todos`)
@@ -31,13 +31,13 @@ class AdminNavigation extends React.Component {
           />
         }
       />
-    )
+    );
   }
 }
 
 AdminNavigation.defaultProps = {
   showMenu: true
-}
+};
 
 AdminNavigation.propTypes = {
   data: PropTypes.object,
@@ -47,6 +47,6 @@ AdminNavigation.propTypes = {
   params: PropTypes.object,
   onToggleMenu: PropTypes.func.isRequired,
   showMenu: PropTypes.bool
-}
+};
 
-export default withRouter(AdminNavigation)
+export default withRouter(AdminNavigation);
