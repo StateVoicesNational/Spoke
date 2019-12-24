@@ -1,5 +1,4 @@
 exports.up = function(knex, Promise) {
-  const isPostgres = knex.client.config.client === "pg";
   return knex.schema.alterTable("message", table => {
     // NOTE: this could be an expensive migration which locks tables for some time, if you have millions of message rows
     // In that case, we recommend performing this migration manually during planned downtime
