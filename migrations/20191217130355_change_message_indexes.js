@@ -4,6 +4,7 @@ exports.up = function(knex, Promise) {
     // In that case, we recommend performing this migration manually during planned downtime
 
     table.dropIndex("contact_number"); // Will be recreated with messageservice_sid
+    table.dropIndex("assignment_id"); // SHOULD NO LONGER BE REQUIRED
     // For Postgres, consider concurrent creation with manual command:
     // CREATE INDEX CONCURRENTLY cell_messageservice_sid_idx ON message (contact_number, messageservice_sid)
     table.index(
@@ -24,5 +25,6 @@ exports.down = function(knex, Promise) {
     );
     table.dropIndex("campaign_contact_id", "message_campaign_contact_id_index");
     table.index("contact_number");
+    table.index("assignment_id");
   });
 };
