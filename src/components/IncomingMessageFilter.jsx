@@ -2,12 +2,14 @@ import React, { Component } from "react";
 import type from "prop-types";
 import Toggle from "material-ui/Toggle";
 
+import _ from "lodash";
 import { Card, CardHeader, CardText } from "material-ui/Card";
 import AutoComplete from "material-ui/AutoComplete";
 import SelectField from "material-ui/SelectField";
 import MenuItem from "material-ui/MenuItem";
 import theme from "../styles/theme";
 import { dataSourceItem } from "./utils";
+import SelectedCampaigns from "./SelectedCampaigns";
 
 import { StyleSheet, css } from "aphrodite";
 
@@ -69,16 +71,12 @@ class IncomingMessageFilter extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {};
-
-    this.onMessageFilterSelectChanged = this.onMessageFilterSelectChanged.bind(
-      this
-    );
-    this.onTexterSelected = this.onTexterSelected.bind(this);
-    this.onCampaignSelected = this.onCampaignSelected.bind(this);
+    this.state = {
+      selectedCampaigns: []
+    };
   }
 
-  onMessageFilterSelectChanged(event, index, values) {
+  onMessageFilterSelectChanged = (event, index, values) => {
     this.setState({ messageFilter: values });
     const messageStatuses = new Set();
     values.forEach(value => {
@@ -92,14 +90,14 @@ class IncomingMessageFilter extends Component {
 
     const messageStatusesString = Array.from(messageStatuses).join(",");
     this.props.onMessageFilterChanged(messageStatusesString);
-  }
+  };
 
-  onCampaignSelected(selection, index) {
+  onCampaignSelected = (selection, index) => {
     let campaignId = undefined;
     if (index === -1) {
-      const campaign = this.props.texters.find(campaign => {
-        return campaign.title === selection;
-      });
+      const campaign = this.props.campaigns.find(
+        cmpgn => cmpgn.title === selection
+      );
       if (campaign) {
         campaignId = campaign.id;
       }
@@ -107,11 +105,20 @@ class IncomingMessageFilter extends Component {
       campaignId = selection.value.key;
     }
     if (campaignId) {
-      this.props.onCampaignChanged(parseInt(campaignId, 10));
-    }
-  }
+      const selectedCampaigns = this.makeSelectedCampaignsArray(
+        selection.rawValue,
+        selection.text
+      );
+      this.setState({
+        selectedCampaigns,
+        campaignSearchText: ""
+      });
 
-  onTexterSelected(selection, index) {
+      this.fireCampaignChanged(selectedCampaigns);
+    }
+  };
+
+  onTexterSelected = (selection, index) => {
     let texterUserId = undefined;
     if (index === -1) {
       const texter = this.props.texters.find(texter => {
@@ -126,7 +133,41 @@ class IncomingMessageFilter extends Component {
     if (texterUserId) {
       this.props.onTexterChanged(parseInt(texterUserId, 10));
     }
-  }
+  };
+
+  handleCampaignRemoved = campaignId => {
+    const selectedCampaigns = this.state.selectedCampaigns.filter(
+      campaign => campaign.key !== campaignId
+    );
+    this.setState({
+      selectedCampaigns
+    });
+
+    this.fireCampaignChanged(selectedCampaigns);
+  };
+
+  fireCampaignChanged = selectedCampaigns => {
+    const selectedCampaignIds = selectedCampaigns.map(campaign =>
+      parseInt(campaign.key, 10)
+    );
+    this.props.onCampaignChanged(selectedCampaignIds);
+  };
+
+  removeAllCampaignsFromCampaignsArray = campaign =>
+    campaign.key !== ALL_CAMPAIGNS;
+
+  makeSelectedCampaignsArray = (campaignId, campaignText) => {
+    const selectedCampaign = { key: campaignId, text: campaignText };
+    if (campaignId === ALL_CAMPAIGNS) {
+      return [selectedCampaign];
+    }
+    return _.concat(
+      this.state.selectedCampaigns.filter(
+        this.removeAllCampaignsFromCampaignsArray
+      ),
+      selectedCampaign
+    );
+  };
 
   render() {
     const texterNodes = TEXTER_FILTERS.map(texterFilter =>
@@ -237,7 +278,7 @@ class IncomingMessageFilter extends Component {
                 searchText={this.state.campaignSearchText}
                 dataSource={campaignNodes}
                 hintText={"Search for a campaign"}
-                floatingLabelText={"Campaign"}
+                floatingLabelText={"Select a campaign"}
                 onNewRequest={this.onCampaignSelected}
               />
             </div>
@@ -257,6 +298,10 @@ class IncomingMessageFilter extends Component {
                 onNewRequest={this.onTexterSelected}
               />
             </div>
+            <SelectedCampaigns
+              campaigns={this.state.selectedCampaigns}
+              onDeleteRequested={this.handleCampaignRemoved}
+            />
           </div>
         </CardText>
       </Card>
