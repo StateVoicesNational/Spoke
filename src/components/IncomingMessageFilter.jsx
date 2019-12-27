@@ -147,10 +147,7 @@ class IncomingMessageFilter extends Component {
   };
 
   fireCampaignChanged = selectedCampaigns => {
-    const selectedCampaignIds = selectedCampaigns.map(campaign =>
-      parseInt(campaign.key, 10)
-    );
-    this.props.onCampaignChanged(selectedCampaignIds);
+    this.props.onCampaignChanged(this.selectedCampaignIds(selectedCampaigns));
   };
 
   removeAllCampaignsFromCampaignsArray = campaign =>
@@ -166,6 +163,16 @@ class IncomingMessageFilter extends Component {
         this.removeAllCampaignsFromCampaignsArray
       ),
       selectedCampaign
+    );
+  };
+
+  selectedCampaignIds = selectedCampaigns =>
+    selectedCampaigns.map(campaign => parseInt(campaign.key, 10));
+
+  campaignsNotAlreadySelected = campaign => {
+    console.log(campaign);
+    return !this.selectedCampaignIds(this.state.selectedCampaigns).includes(
+      parseInt(campaign.id, 10)
     );
   };
 
@@ -189,11 +196,13 @@ class IncomingMessageFilter extends Component {
     ).concat(
       !this.props.campaigns
         ? []
-        : this.props.campaigns.map(campaign => {
-            const campaignId = parseInt(campaign.id, 10);
-            const campaignDisplay = `${campaignId}: ${campaign.title}`;
-            return dataSourceItem(campaignDisplay, campaignId);
-          })
+        : this.props.campaigns
+            .filter(this.campaignsNotAlreadySelected)
+            .map(campaign => {
+              const campaignId = parseInt(campaign.id, 10);
+              const campaignDisplay = `${campaignId}: ${campaign.title}`;
+              return dataSourceItem(campaignDisplay, campaignId);
+            })
     );
     campaignNodes.sort((left, right) => {
       return left.text.localeCompare(right.text, "en", { sensitivity: "base" });
