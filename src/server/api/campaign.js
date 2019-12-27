@@ -19,7 +19,10 @@ export function addCampaignsFilterToQuery(queryParam, campaignsFilter) {
         "campaign.id",
         parseInt(campaignsFilter.campaignId, 10)
       );
-    } else if ("campaignIds" in campaignsFilter) {
+    } else if (
+      "campaignIds" in campaignsFilter &&
+      campaignsFilter.campaignIds.length > 0
+    ) {
       query = query.whereIn("campaign.id", campaignsFilter.campaignIds);
     }
 
