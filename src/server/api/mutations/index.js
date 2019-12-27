@@ -1,15 +1,5 @@
-import {
-  sendMessage
-} from "./sendMessage";
-import {
-  bulkSendMessages
-} from "./bulkSendMessages";
-import {
-  findNewCampaignContact
-} from "./findNewCampaignContact";
+import { sendMessage } from "./sendMessage";
+import { bulkSendMessages } from "./bulkSendMessages";
+import { findNewCampaignContact } from "./findNewCampaignContact";
 
-export {
-  sendMessage,
-  bulkSendMessages,
-  findNewCampaignContact
-};
+export { sendMessage, bulkSendMessages, findNewCampaignContact };

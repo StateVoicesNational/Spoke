@@ -11,7 +11,7 @@ import ConversationPreviewModal from "./ConversationPreviewModal";
 
 import { MESSAGE_STATUSES } from "../../components/IncomingMessageFilter";
 
-const prepareDataTableData = conversations =>
+export const prepareDataTableData = conversations =>
   conversations.map(conversation => ({
     campaignTitle: conversation.campaign.title,
     texter: conversation.texter.displayName,
@@ -23,7 +23,10 @@ const prepareDataTableData = conversations =>
       // including it directly breaks some text editors
       (conversation.contact.optOut.cell ? "\u26d4" : ""),
     status: conversation.contact.messageStatus,
-    messages: conversation.contact.messages
+    messages: conversation.contact.messages,
+    assignmentId: conversation.contact.assignmentId,
+    cell: conversation.contact.cell,
+    campaignContactId: conversation.contact.id
   }));
 
 const prepareSelectedRowsData = (conversations, rowsSelected) => {
@@ -249,8 +252,10 @@ export class IncomingMessageList extends Component {
           selectedRows={clearSelectedMessages ? null : this.state.selectedRows}
         />
         <ConversationPreviewModal
+          organizationId={this.props.organizationId}
           conversation={this.state.activeConversation}
           onRequestClose={this.handleCloseConversation}
+          onForceRefresh={this.props.onForceRefresh}
         />
       </div>
     );
@@ -269,61 +274,66 @@ IncomingMessageList.propTypes = {
   onConversationCountChanged: type.func,
   utc: type.string,
   conversations: type.object,
-  clearSelectedMessages: type.bool
+  clearSelectedMessages: type.bool,
+  onForceRefresh: type.func
 };
+
+export const conversationsQuery = `
+  query Q(
+          $organizationId: String!
+          $cursor: OffsetLimitCursor!
+          $contactsFilter: ContactsFilter
+          $campaignsFilter: CampaignsFilter
+          $assignmentsFilter: AssignmentsFilter
+          $utc: String
+        ) {
+          conversations(
+            cursor: $cursor
+            organizationId: $organizationId
+            campaignsFilter: $campaignsFilter
+            contactsFilter: $contactsFilter
+            assignmentsFilter: $assignmentsFilter
+            utc: $utc
+          ) {
+            pageInfo {
+              limit
+              offset
+              total
+            }
+            conversations {
+              texter {
+                id
+                displayName
+              }
+              contact {
+                id
+                assignmentId
+                firstName
+                lastName
+                cell
+                messageStatus
+                messages {
+                  id
+                  text
+                  isFromContact
+                }
+                optOut {
+                  cell
+                }
+              }
+              campaign {
+                id
+                title
+              }
+            }
+          }
+        }
+      `;
 
 const mapQueriesToProps = ({ ownProps }) => ({
   conversations: {
     query: gql`
-      query Q(
-        $organizationId: String!
-        $cursor: OffsetLimitCursor!
-        $contactsFilter: ContactsFilter
-        $campaignsFilter: CampaignsFilter
-        $assignmentsFilter: AssignmentsFilter
-        $utc: String
-      ) {
-        conversations(
-          cursor: $cursor
-          organizationId: $organizationId
-          campaignsFilter: $campaignsFilter
-          contactsFilter: $contactsFilter
-          assignmentsFilter: $assignmentsFilter
-          utc: $utc
-        ) {
-          pageInfo {
-            limit
-            offset
-            total
-          }
-          conversations {
-            texter {
-              id
-              displayName
-            }
-            contact {
-              id
-              assignmentId
-              firstName
-              lastName
-              cell
-              messageStatus
-              messages {
-                id
-                text
-                isFromContact
-              }
-              optOut {
-                cell
-              }
-            }
-            campaign {
-              id
-              title
-            }
-          }
-        }
-      }
+      ${conversationsQuery}
     `,
     variables: {
       organizationId: ownProps.organizationId,

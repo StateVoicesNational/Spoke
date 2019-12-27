@@ -224,7 +224,7 @@ $ AWS_PROFILE=[your_profile_nickname] claudia add-scheduled-event \
 
 ### Migrating the Database
 
-Migrations are created with knex[https://knexjs.org/#Migrations]. 
+Migrations are created with knex[https://knexjs.org/#Migrations].
 
 You can trigger migration updates with the following command:
 
@@ -234,11 +234,11 @@ $ AWS_PROFILE=[your_profile_nickname] claudia test-lambda --event ./deploy/lambd
 
 (Note: the migration will probably take much less than the 5 minutes or whatever your lambda timeout is, however it will look like `test-lambda` is still running/doing something. If you've confirmed on the DB side that the migration completed, it's safe to `Ctrl + c`)
 
-For major  database changes  on large  database instances,  you should
-probably disable  the web  interface so  that web  requests triggering
-database calls are not made.  In AWS, the easiest way to do this is:
+For major database changes on large database instances, you should
+probably disable the web interface so that web requests triggering
+database calls are not made. In AWS, the easiest way to do this is:
 
-1. In the API  Gateway Custom  Domains (see below)  section, add  an 
+1. In the API Gateway Custom Domains (see below) section, add an
    invalid prefix (like `/xxx`) to the domain.
 2. Then in the Lambda AWS Console, you can disable any CloudWatch event triggers
 

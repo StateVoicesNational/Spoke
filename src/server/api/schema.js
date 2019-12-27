@@ -40,7 +40,12 @@ import {
   reassignConversations,
   resolvers as conversationsResolver
 } from "./conversations";
-import { accessRequired, assignmentRequired, authRequired } from "./errors";
+import {
+  accessRequired,
+  assignmentRequired,
+  authRequired,
+  assignmentOrAdminRoleRequired
+} from "./errors";
 import { resolvers as interactionStepResolvers } from "./interaction-step";
 import { resolvers as inviteResolvers } from "./invite";
 import { saveNewIncomingMessage } from "./lib/message-sending";
@@ -902,11 +907,15 @@ const rootMutations = {
 
     createOptOut: async (
       _,
-      { optOut, campaignContactId },
+      { organizationId, optOut, campaignContactId },
       { loaders, user }
     ) => {
       const contact = await loaders.campaignContact.load(campaignContactId);
-      await assignmentRequired(user, contact.assignment_id);
+      await assignmentOrAdminRoleRequired(
+        user,
+        organizationId,
+        contact.assignment_id
+      );
 
       const { assignmentId, cell, reason } = optOut;
       const campaign = await loaders.campaign.load(contact.campaign_id);

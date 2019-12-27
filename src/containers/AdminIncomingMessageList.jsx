@@ -4,7 +4,7 @@ import _ from "lodash";
 
 import IncomingMessageActions from "../components/IncomingMessageActions";
 import IncomingMessageFilter from "../components/IncomingMessageFilter";
-import IncomingMessageList from "../components/IncomingMessageList";
+import IncomingMessageList from "../containers/IncomingMessageList";
 import LoadingIndicator from "../components/LoadingIndicator";
 import PaginatedCampaignsRetriever from "./PaginatedCampaignsRetriever";
 import gql from "graphql-tag";
@@ -291,6 +291,14 @@ export class AdminIncomingMessageList extends Component {
     });
   };
 
+  handleForceRefresh = (clearSelectedMessages = false) => {
+    this.setState({
+      utc: Date.now().toString(),
+      needsRender: true,
+      clearSelectedMessages
+    });
+  };
+
   render() {
     const cursor = {
       offset: this.state.page * this.state.pageSize,
@@ -366,6 +374,7 @@ export class AdminIncomingMessageList extends Component {
               onConversationSelected={this.handleRowSelection}
               onConversationCountChanged={this.conversationCountChanged}
               clearSelectedMessages={this.state.clearSelectedMessages}
+              onForceRefresh={this.handleForceRefresh}
             />
           </div>
         )}

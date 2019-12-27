@@ -1,17 +1,12 @@
-import {
-  log
-} from "../../../lib";
-import {
-  Assignment,
-  Campaign,
-  r
-} from "../../models";
-import {
-  assignmentRequired
-} from "../errors";
+import { log } from "../../../lib";
+import { Assignment, Campaign, r } from "../../models";
+import { assignmentRequired } from "../errors";
 
-
-export const findNewCampaignContact = async (assignmentId, numberContacts, user) => {
+export const findNewCampaignContact = async (
+  assignmentId,
+  numberContacts,
+  user
+) => {
   /* This attempts to find a new contact for the assignment, in the case that useDynamicAssigment == true */
   const assignment = await Assignment.get(assignmentId);
   await assignmentRequired(user, assignmentId, assignment);
@@ -55,13 +50,13 @@ export const findNewCampaignContact = async (assignmentId, numberContacts, user)
       "id",
       "in",
       r
-      .knex("campaign_contact")
-      .where({
-        assignment_id: null,
-        campaign_id: campaign.id
-      })
-      .limit(numberContacts)
-      .select("id")
+        .knex("campaign_contact")
+        .where({
+          assignment_id: null,
+          campaign_id: campaign.id
+        })
+        .limit(numberContacts)
+        .select("id")
     )
     .update({
       assignment_id: assignmentId

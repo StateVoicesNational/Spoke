@@ -7,6 +7,9 @@ import {
   CampaignContact,
   r
 } from "../src/server/models/";
+
+import { conversationsQuery } from "../src/containers/IncomingMessageList";
+
 import { graphql } from "graphql";
 
 export async function setupTest() {
@@ -102,6 +105,8 @@ const mySchema = makeExecutableSchema({
   allowUndefinedInResolve: true
 });
 
+export const getExecutableSchema = () => mySchema;
+
 export async function runGql(query, vars, user) {
   const rootValue = {};
   const context = getContext({ user });
@@ -111,6 +116,29 @@ export async function runGql(query, vars, user) {
 export async function runComponentGql(componentDataQuery, queryVars, user) {
   return await runGql(componentDataQuery.loc.source.body, queryVars, user);
 }
+
+export const getConversations = async (
+  user,
+  organizationId,
+  contactsFilter,
+  campaignsFilter,
+  assignmentsFilter
+) => {
+  const cursor = {
+    offset: 0,
+    limit: 1000
+  };
+  const variables = {
+    cursor,
+    organizationId,
+    contactsFilter,
+    campaignsFilter,
+    assignmentsFilter
+  };
+
+  const result = await runGql(conversationsQuery, variables, user);
+  return result;
+};
 
 export async function createInvite() {
   const rootValue = {};
@@ -431,5 +459,15 @@ export async function getCampaignContact(id) {
   return await r
     .knex("campaign_contact")
     .where({ id })
+    .first();
+}
+
+export async function getOptOut(assignmentId, cell) {
+  return await r
+    .knex("opt_out")
+    .where({
+      cell,
+      assignment_id: assignmentId
+    })
     .first();
 }

@@ -423,6 +423,7 @@ export class AssignmentTexter extends React.Component {
     return (
       <AssignmentTexterContact
         key={contact.id}
+        organizationId={this.props.organizationId}
         assignment={assignment}
         campaignContactId={contact.id}
         contact={contactData}

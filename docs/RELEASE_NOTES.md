@@ -18,15 +18,14 @@ Deploy Steps:
 
 - Warning: This migration removes the `message.service_response` column which tracks responses to/from the Twilio API.
   This data is not needed for the application to function, but e.g. some users have queried it to keep the MediaUrl values
-  (i.e. images sent to the texter, even though they aren't displayed).  After the migration, they will still be queryable for
-  new texts (only POST-migration texts) in the `log` table.  If you're not sure, then before deploying, make sure you backup
+  (i.e. images sent to the texter, even though they aren't displayed). After the migration, they will still be queryable for
+  new texts (only POST-migration texts) in the `log` table. If you're not sure, then before deploying, make sure you backup
   the `message` table--at least the `message.service_response` column.
 - For the speediest migration, we recommend DELETING all past log rows with `TRUNCATE TABLE LOG`.
   Before doing so, consider backing up the `log` table -- though no data there is needed for running the application (and it takes up considerable space).
 - For smaller instances (less than 1 million texts/contacts), the migration should complete automatically.
 - For larger instances, it's better to enable the environment variable `SUPPRESS_MIGRATIONS=1`
   and then follow the relevant steps of your platform to upgrade ( [Heroku](./HOWTO_HEROKU_DEPLOY.md#migrating-the-database), [AWS Lambda](./DEPLOYING_AWS_LAMBDA.md#migrating-the-database) )
-
 
 Thanks to all the contributors apart of this release including:
 [ibrand](https://github.com/ibrand),
