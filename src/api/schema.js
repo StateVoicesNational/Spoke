@@ -227,6 +227,7 @@ const rootSchema = gql`
       campaignsFilter: CampaignsFilter
       role: String
       sortBy: SortPeopleBy
+      filterString: String
     ): UsersReturn
   }
 

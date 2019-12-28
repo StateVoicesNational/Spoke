@@ -58,12 +58,15 @@ function buildOrderBy(query, sortBy) {
   return query.orderByRaw(fragmentArray.join(", "));
 }
 
+const addLeftOuterJoin = query =>
+  query.leftOuterJoin("assignment", "assignment.user_id", "user.id");
+
 export function buildUserOrganizationQuery(
   queryParam,
   organizationId,
   role,
-  campaignId,
-  offset
+  campaignsFilter,
+  filterString
 ) {
   const roleFilter = role ? { role } : {};
 
@@ -74,10 +77,43 @@ export function buildUserOrganizationQuery(
     .whereRaw('"user_organization"."organization_id" = ?', organizationId)
     .distinct();
 
-  if (campaignId) {
-    query = query
-      .leftOuterJoin("assignment", "assignment.user_id", "user.id")
-      .where({ "assignment.campaign_id": campaignId });
+  if (filterString) {
+    const filterStringWithPercents = (
+      "%" +
+      filterString +
+      "%"
+    ).toLocaleLowerCase();
+    query = query.andWhere(
+      r.knex.raw(
+        "lower(first_name) like ? OR lower(last_name) like ? OR lower(email) like ?",
+        [
+          filterStringWithPercents,
+          filterStringWithPercents,
+          filterStringWithPercents
+        ]
+      )
+    );
+  }
+
+  if (campaignsFilter) {
+    if (campaignsFilter.campaignId) {
+      query = addLeftOuterJoin(query);
+      query = query.where({
+        "assignment.campaign_id": campaignsFilter.campaignId
+      });
+    } else if (
+      campaignsFilter.campaignIds &&
+      campaignsFilter.campaignIds.length > 0
+    ) {
+      const questionMarks = Array(campaignsFilter.campaignIds.length)
+        .fill("?")
+        .join(",");
+      query = addLeftOuterJoin(query);
+      query = query.whereRaw(
+        `"assignment"."campaign_id" in (${questionMarks})`,
+        campaignsFilter.campaignIds
+      );
+    }
   }
 
   return query;
@@ -86,24 +122,33 @@ export function buildUserOrganizationQuery(
 export function buildSortedUserOrganizationQuery(
   organizationId,
   role,
-  campaignId,
-  sortBy
+  campaignsFilter,
+  sortBy,
+  filterString
 ) {
   const query = buildUserOrganizationQuery(
     buildSelect(sortBy),
     organizationId,
     role,
-    campaignId
+    campaignsFilter,
+    filterString
   );
   return buildOrderBy(query, sortBy);
 }
 
-function buildUsersQuery(organizationId, campaignsFilter, role, sortBy) {
+function buildUsersQuery(
+  organizationId,
+  campaignsFilter,
+  role,
+  sortBy,
+  filterString
+) {
   return buildSortedUserOrganizationQuery(
     organizationId,
     role,
-    campaignsFilter && campaignsFilter.campaignId,
-    sortBy
+    campaignsFilter,
+    sortBy,
+    filterString
   );
 }
 
@@ -112,13 +157,15 @@ export async function getUsers(
   cursor,
   campaignsFilter,
   role,
-  sortBy
+  sortBy,
+  filterString
 ) {
   let usersQuery = buildUsersQuery(
     organizationId,
     campaignsFilter,
     role,
-    sortBy
+    sortBy,
+    filterString
   );
 
   if (cursor) {
