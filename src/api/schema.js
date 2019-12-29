@@ -200,6 +200,14 @@ const rootSchema = gql`
     OLDEST
   }
 
+  enum SortCampaignsBy {
+    DUE_DATE_ASC
+    DUE_DATE_DESC
+    ID_ASC
+    ID_DESC
+    TITLE
+  }
+
   type RootQuery {
     currentUser: User
     organization(id: String!, utc: String): Organization
@@ -220,6 +228,7 @@ const rootSchema = gql`
       organizationId: String!
       cursor: OffsetLimitCursor
       campaignsFilter: CampaignsFilter
+      sortBy: SortCampaignsBy
     ): CampaignsReturn
     people(
       organizationId: String!
