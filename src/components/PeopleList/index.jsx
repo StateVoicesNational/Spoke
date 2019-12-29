@@ -106,8 +106,10 @@ export class PeopleList extends Component {
 
   updateUser() {
     this.setState({
-      userEdit: false,
-      forceUpdateTime: Date.now()
+      userEdit: false
+    });
+    this.props.users.refetch({
+      cursor: this.state.cursor
     });
   }
 
@@ -149,6 +151,12 @@ export class PeopleList extends Component {
           returnValue.people.pageInfo = fetchMoreResult.data.people.pageInfo;
         }
         return returnValue;
+      }
+    });
+    this.setState({
+      cursor: {
+        offset: newPage * pageSize,
+        limit: pageSize
       }
     });
   };
