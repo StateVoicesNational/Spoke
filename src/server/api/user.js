@@ -8,6 +8,8 @@ const created = '"user"."created_at"';
 const oldest = created;
 const newest = '"user"."created_at" desc';
 
+const lower = column => `lower(${column})`;
+
 function buildSelect(sortBy) {
   const userStar = '"user".*';
 
@@ -15,9 +17,9 @@ function buildSelect(sortBy) {
 
   switch (sortBy) {
     case "COUNT_ONLY":
-      return r.knex;
+      return r.knex.countDistinct("user.id");
     case "LAST_NAME":
-      fragmentArray = [userStar];
+      fragmentArray = [userStar, lower(lastName), lower(firstName)];
       break;
     case "NEWEST":
       fragmentArray = [userStar];
@@ -27,7 +29,7 @@ function buildSelect(sortBy) {
       break;
     case "FIRST_NAME":
     default:
-      fragmentArray = [userStar];
+      fragmentArray = [userStar, lower(lastName), lower(firstName)];
       break;
   }
 
@@ -41,7 +43,7 @@ function buildOrderBy(query, sortBy) {
     case "COUNT_ONLY":
       return query;
     case "LAST_NAME":
-      fragmentArray = [lastName, firstName, newest];
+      fragmentArray = [lower(lastName), lower(firstName), newest];
       break;
     case "NEWEST":
       fragmentArray = [newest];
@@ -51,7 +53,7 @@ function buildOrderBy(query, sortBy) {
       break;
     case "FIRST_NAME":
     default:
-      fragmentArray = [firstName, lastName, newest];
+      fragmentArray = [lower(firstName), lower(lastName), newest];
       break;
   }
 
