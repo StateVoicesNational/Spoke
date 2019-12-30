@@ -68,7 +68,8 @@ export function buildUserOrganizationQuery(
   organizationId,
   role,
   campaignsFilter,
-  filterString
+  filterString,
+  filterBy
 ) {
   const roleFilter = role ? { role } : {};
 
@@ -85,16 +86,31 @@ export function buildUserOrganizationQuery(
       filterString +
       "%"
     ).toLocaleLowerCase();
-    query = query.andWhere(
-      r.knex.raw(
-        "lower(first_name) like ? OR lower(last_name) like ? OR lower(email) like ?",
-        [
-          filterStringWithPercents,
-          filterStringWithPercents,
-          filterStringWithPercents
-        ]
-      )
-    );
+
+    if (filterBy === "FIRST_NAME") {
+      query = query.andWhere(
+        r.knex.raw("lower(first_name) like ?", [filterStringWithPercents])
+      );
+    } else if (filterBy === "LAST_NAME") {
+      query = query.andWhere(
+        r.knex.raw("lower(last_name) like ?", [filterStringWithPercents])
+      );
+    } else if (filterBy === "EMAIL") {
+      query = query.andWhere(
+        r.knex.raw("lower(email) like ?", [filterStringWithPercents])
+      );
+    } else {
+      query = query.andWhere(
+        r.knex.raw(
+          "lower(first_name) like ? OR lower(last_name) like ? OR lower(email) like ?",
+          [
+            filterStringWithPercents,
+            filterStringWithPercents,
+            filterStringWithPercents
+          ]
+        )
+      );
+    }
   }
 
   if (campaignsFilter) {
@@ -126,14 +142,16 @@ export function buildSortedUserOrganizationQuery(
   role,
   campaignsFilter,
   sortBy,
-  filterString
+  filterString,
+  filterBy
 ) {
   const query = buildUserOrganizationQuery(
     buildSelect(sortBy),
     organizationId,
     role,
     campaignsFilter,
-    filterString
+    filterString,
+    filterBy
   );
   return buildOrderBy(query, sortBy);
 }
@@ -143,14 +161,16 @@ function buildUsersQuery(
   campaignsFilter,
   role,
   sortBy,
-  filterString
+  filterString,
+  filterBy
 ) {
   return buildSortedUserOrganizationQuery(
     organizationId,
     role,
     campaignsFilter,
     sortBy,
-    filterString
+    filterString,
+    filterBy
   );
 }
 
@@ -160,14 +180,16 @@ export async function getUsers(
   campaignsFilter,
   role,
   sortBy,
-  filterString
+  filterString,
+  filterBy
 ) {
   let usersQuery = buildUsersQuery(
     organizationId,
     campaignsFilter,
     role,
     sortBy,
-    filterString
+    filterString,
+    filterBy
   );
 
   if (cursor) {
@@ -181,12 +203,12 @@ export async function getUsers(
       "COUNT_ONLY"
     );
 
-    const usersCount = await r.getCountDistinct(usersCountQuery, "user.id");
+    const usersCountArray = await usersCountQuery;
 
     const pageInfo = {
       limit: cursor.limit,
       offset: cursor.offset,
-      total: usersCount
+      total: usersCountArray[0].count
     };
 
     return {

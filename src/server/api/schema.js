@@ -1219,7 +1219,15 @@ const rootResolvers = {
     },
     people: async (
       _,
-      { organizationId, cursor, campaignsFilter, role, sortBy, filterString },
+      {
+        organizationId,
+        cursor,
+        campaignsFilter,
+        role,
+        sortBy,
+        filterString,
+        filterBy
+      },
       { user }
     ) => {
       await accessRequired(user, organizationId, "SUPERVOLUNTEER");
@@ -1229,7 +1237,8 @@ const rootResolvers = {
         campaignsFilter,
         role,
         sortBy,
-        filterString
+        filterString,
+        filterBy
       );
     }
   }
