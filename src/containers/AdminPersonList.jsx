@@ -75,18 +75,57 @@ class AdminPersonList extends React.Component {
 
   DEFAULT_SORT_BY_VALUE = this.FIRST_NAME_SORT.value;
 
+  FIRST_NAME_FILTER = {
+    display: "First Name",
+    value: "FIRST_NAME"
+  };
+  LAST_NAME_FILTER = {
+    display: "Last Name",
+    value: "LAST_NAME"
+  };
+  EMAIL_FILTER = {
+    display: "Email",
+    value: "EMAIL"
+  };
+
+  ANY_FILTER = {
+    display: "Any",
+    value: "ANY"
+  };
+
+  FILTERS = [
+    this.FIRST_NAME_FILTER,
+    this.LAST_NAME_FILTER,
+    this.EMAIL_FILTER,
+    this.ANY_FILTER
+  ];
+
+  DEFAULT_FILTER_BY_VALUE = this.FIRST_NAME_FILTER.value;
+
   makeQueryItem = (name, value) => {
     return value ? `${name}=${value}` : undefined;
+  };
+
+  determineCampaignIdForFilter = changedItems => {
+    if (changedItems.campaignId && changedItems.campaignId === ALL_CAMPAIGNS) {
+      return undefined;
+    }
+
+    return changedItems.campaignId || this.props.location.query.campaignId;
   };
 
   handleFilterChange = changedItems => {
     const campaignId = this.makeQueryItem(
       "campaignId",
-      changedItems.campaignId || this.props.location.query.campaignId
+      this.determineCampaignIdForFilter(changedItems)
     );
     const sortBy = this.makeQueryItem(
       "sortBy",
       changedItems.sortBy || this.props.location.query.sortBy
+    );
+    const filterBy = this.makeQueryItem(
+      "filterBy",
+      changedItems.filterBy || this.props.location.query.filterBy
     );
     const role =
       changedItems.role !== ALL_ROLES &&
@@ -101,7 +140,7 @@ class AdminPersonList extends React.Component {
         : this.props.location.query.searchString
     );
 
-    const query = [campaignId, sortBy, role, searchString]
+    const query = [campaignId, sortBy, filterBy, role, searchString]
       .filter(item => item !== undefined)
       .join("&");
 
@@ -124,7 +163,11 @@ class AdminPersonList extends React.Component {
   }
 
   handleSortByChanged = (event, index, sortBy) => {
-    this.setState({ sortBy });
+    this.handleFilterChange({ sortBy });
+  };
+
+  handleFilterByChanged = (event, index, filterBy) => {
+    this.handleFilterChange({ filterBy });
   };
 
   handleSearchRequested = searchString => {
@@ -142,10 +185,14 @@ class AdminPersonList extends React.Component {
     const campaigns = organization ? organization.campaigns : { campaigns: [] };
     return (
       <DropDownMenu
-        value={this.props.location.query.campaignId}
+        value={this.props.location.query.campaignId || ALL_CAMPAIGNS}
         onChange={this.handleCampaignChange}
       >
-        <MenuItem primaryText="All Campaigns" />
+        <MenuItem
+          primaryText="All Campaigns"
+          value={ALL_CAMPAIGNS}
+          key={ALL_CAMPAIGNS}
+        />
         {campaigns.campaigns.map(campaign => (
           <MenuItem
             value={campaign.id}
@@ -172,6 +219,21 @@ class AdminPersonList extends React.Component {
     </DropDownMenu>
   );
 
+  renderFilterBy = () => (
+    <DropDownMenu
+      value={this.props.location.query.filterBy || this.DEFAULT_FILTER_BY_VALUE}
+      onChange={this.handleFilterByChanged}
+    >
+      {this.FILTERS.map(filter => (
+        <MenuItem
+          value={filter.value}
+          key={filter.value}
+          primaryText={"Filter by " + filter.display}
+        />
+      ))}
+    </DropDownMenu>
+  );
+
   renderRoles = () => (
     <SimpleRolesDropdown
       onChange={this.handleRoleChanged}
@@ -192,6 +254,7 @@ class AdminPersonList extends React.Component {
             {this.renderCampaignList()}
             {this.renderRoles()}
             {this.renderSortBy()}
+            {this.renderFilterBy()}
           </div>
           <Search
             onSearchRequested={this.handleSearchRequested}
@@ -213,6 +276,9 @@ class AdminPersonList extends React.Component {
           currentUser={currentUser}
           sortBy={
             this.props.location.query.sortBy || this.DEFAULT_SORT_BY_VALUE
+          }
+          filterBy={
+            this.props.location.query.filterBy || this.DEFAULT_FILTER_BY_VALUE
           }
           searchString={this.props.location.query.searchString}
           role={this.props.location.query.role}

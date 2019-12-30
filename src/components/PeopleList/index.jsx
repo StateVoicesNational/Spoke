@@ -375,6 +375,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
         $campaignsFilter: CampaignsFilter
         $sortBy: SortPeopleBy
         $filterString: String
+        $filterBy: FilterPeopleBy
         $role: String
       ) {
         people(
@@ -383,6 +384,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
           campaignsFilter: $campaignsFilter
           sortBy: $sortBy
           filterString: $filterString
+          filterBy: $filterBy
           role: $role
         ) {
           ... on PaginatedUsers {
@@ -406,6 +408,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
       organizationId: ownProps.organizationId,
       campaignsFilter: ownProps.campaignsFilter,
       sortBy: ownProps.sortBy || "FIRST_NAME",
+      filterBy: ownProps.filterBy || "FIRST_NAME",
       filterString: ownProps.searchString,
       role: ownProps.role
     },
