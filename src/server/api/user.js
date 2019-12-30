@@ -208,7 +208,7 @@ export async function getUsers(
     const pageInfo = {
       limit: cursor.limit,
       offset: cursor.offset,
-      total: usersCountArray[0].count
+      total: parseInt(usersCountArray[0].count, 10)
     };
 
     return {

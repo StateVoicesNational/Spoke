@@ -1,9 +1,13 @@
-export const schema = `
+import gql from "graphql-tag";
+
+export const schema = gql`
   input CampaignsFilter {
     isArchived: Boolean
     campaignId: Int
+    campaignIds: [Int]
     listSize: Int
     pageSize: Int
+    searchString: String
   }
 
   type CampaignStats {
@@ -39,7 +43,7 @@ export const schema = `
     hasUnsentInitialMessages: Boolean
     customFields: [String]
     cannedResponses(userId: String): [CannedResponse]
-    stats: CampaignStats,
+    stats: CampaignStats
     pendingJobs: [JobRequest]
     datawarehouseAvailable: Boolean
     useDynamicAssignment: Boolean

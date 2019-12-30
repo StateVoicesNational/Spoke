@@ -214,23 +214,44 @@ const mapMutationsToProps = () => ({
   })
 });
 
-const mapQueriesToProps = ({ ownProps }) => ({
-  data: {
-    query: gql`query adminGetCampaigns($organizationId: String!, $campaignsFilter: CampaignsFilter) {
-      organization(id: $organizationId) {
-        id
-        campaigns(campaignsFilter: $campaignsFilter) {
-          ... on CampaignsList{
+export const getCampaignsQuery = `
+  query adminGetCampaigns(
+      $organizationId: String!,
+      $campaignsFilter: CampaignsFilter,
+      $cursor: OffsetLimitCursor,
+      $sortBy: SortCampaignsBy) {
+    organization(id: $organizationId) {
+      id
+      campaigns(campaignsFilter: $campaignsFilter, cursor: $cursor, sortBy: $sortBy) {
+        ... on CampaignsList{
+          campaigns{
+            ${campaignInfoFragment}
+          }
+        }
+        ... on PaginatedCampaigns{
+            pageInfo {
+              offset
+              limit
+              total
+            }
             campaigns{
               ${campaignInfoFragment}
             }
           }
         }
       }
-    }`,
+    }`;
+
+const mapQueriesToProps = ({ ownProps }) => ({
+  data: {
+    query: gql`
+      ${getCampaignsQuery}
+    `,
     variables: {
+      cursor: { offset: 0, limit: INITIAL_ROW_SIZE },
       organizationId: ownProps.organizationId,
-      campaignsFilter: ownProps.campaignsFilter
+      campaignsFilter: ownProps.campaignsFilter,
+      sortBy: ownProps.sortBy
     },
     forceFetch: true
   }

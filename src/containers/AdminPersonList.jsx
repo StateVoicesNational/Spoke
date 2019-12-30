@@ -14,7 +14,7 @@ import theme from "../styles/theme";
 import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
 import { dataTest } from "../lib/attributes";
-import PeopleList from "../components/PeopleList";
+import PeopleList from "../containers/PeopleList";
 import { StyleSheet, css } from "aphrodite";
 import Search from "../components/Search";
 import SimpleRolesDropdown, {

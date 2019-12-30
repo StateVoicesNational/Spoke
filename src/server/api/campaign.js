@@ -1,7 +1,6 @@
 import { accessRequired } from "./errors";
 import { mapFieldsToModel } from "./lib/utils";
 import { Campaign, JobRequest, r, cacheableData } from "../models";
-import { currentEditors } from "../models/cacheable_queries";
 import { getUsers } from "./user";
 
 const title = 'lower("campaign"."title")';
@@ -21,7 +20,24 @@ export function addCampaignsFilterToQuery(queryParam, campaignsFilter) {
         "campaign.id",
         parseInt(campaignsFilter.campaignId, 10)
       );
+    } else if (
+      "campaignIds" in campaignsFilter &&
+      campaignsFilter.campaignIds.length > 0
+    ) {
+      query = query.whereIn("campaign.id", campaignsFilter.campaignIds);
     }
+
+    if ("searchString" in campaignsFilter && campaignsFilter.searchString) {
+      const searchStringWithPercents = (
+        "%" +
+        campaignsFilter.searchString +
+        "%"
+      ).toLocaleLowerCase();
+      query = query.andWhere(
+        r.knex.raw(`${title} like ?`, [searchStringWithPercents])
+      );
+    }
+
     if (resultSize && !pageSize) {
       query = query.limit(resultSize);
     }
@@ -98,7 +114,7 @@ export async function getCampaigns(
   sortBy
 ) {
   let campaignsQuery = buildCampaignQuery(
-    r.knex.select("*"),
+    buildSelectClause(sortBy),
     organizationId,
     campaignsFilter
   );
@@ -125,9 +141,9 @@ export async function getCampaigns(
       campaigns,
       pageInfo
     };
-  } else {
-    return campaignsQuery;
   }
+
+  return campaignsQuery;
 }
 
 export const resolvers = {

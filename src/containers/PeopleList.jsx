@@ -1,17 +1,17 @@
 import React, { Component } from "react";
 import type from "prop-types";
 import FlatButton from "material-ui/FlatButton";
-import loadData from "../../containers/hoc/load-data";
+import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
-import LoadingIndicator from "../../components/LoadingIndicator";
+import LoadingIndicator from "../components/LoadingIndicator";
 import DataTables from "material-ui-datatables";
-import UserEditDialog from "./UserEditDialog";
-import ResetPasswordDialog from "./ResetPasswordDialog";
-import RolesDropdown from "./RolesDropdown";
-import { dataTest } from "../../lib/attributes";
+import UserEditDialog from "../components/PeopleList/UserEditDialog";
+import ResetPasswordDialog from "../components/PeopleList/ResetPasswordDialog";
+import RolesDropdown from "../components/PeopleList/RolesDropdown";
+import { dataTest } from "../lib/attributes";
 
 import PeopleIcon from "material-ui/svg-icons/social/people";
-import Empty from "../../components/Empty";
+import Empty from "../components/Empty";
 
 const prepareDataTableData = users =>
   users.map(user => ({
@@ -366,9 +366,7 @@ const mapMutationsToProps = () => ({
   })
 });
 
-const mapQueriesToProps = ({ ownProps }) => ({
-  users: {
-    query: gql`
+export const getUsersGql = `
       query getUsers(
         $organizationId: String!
         $cursor: OffsetLimitCursor
@@ -401,8 +399,11 @@ const mapQueriesToProps = ({ ownProps }) => ({
             }
           }
         }
-      }
-    `,
+      }`
+
+const mapQueriesToProps = ({ ownProps }) => ({
+  users: {
+    query: gql`${getUsersGql}`,
     variables: {
       cursor: { offset: 0, limit: INITIAL_PAGE_SIZE },
       organizationId: ownProps.organizationId,
