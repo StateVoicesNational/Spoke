@@ -1251,6 +1251,45 @@ export async function handleIncomingMessageParts() {
   }
 }
 
+export async function loadMessages(csvFile) {
+  return new Promise((resolve, reject) => {
+    Papa.parse(csvFile, {
+      header: true,
+      complete: ({ data, meta, errors }, file) => {
+        const fields = meta.fields;
+        console.log("FIELDS", fields);
+        console.log("FIRST LINE", data[0]);
+        const promises = [];
+        data.forEach(row => {
+          if (!row.contact_number) {
+            return;
+          }
+          const twilioMessage = {
+            From: `+1${row.contact_number}`,
+            To: `+1${row.user_number}`,
+            Body: row.text,
+            MessageSid: row.service_id,
+            MessagingServiceSid: row.service_id,
+            FromZip: row.zip, // unused at the moment
+            spokeCreatedAt: row.created_at
+          };
+          promises.push(serviceMap.twilio.handleIncomingMessage(twilioMessage));
+        });
+        console.log("Started all promises for CSV");
+        Promise.all(promises)
+          .then(doneDid => {
+            console.log(`Processed ${doneDid.length} rows for CSV`);
+            resolve(doneDid);
+          })
+          .catch(err => {
+            console.error("Error processing for CSV", err);
+            reject(err);
+          });
+      }
+    });
+  });
+}
+
 // Temporary fix for orgless users
 // See https://github.com/MoveOnOrg/Spoke/issues/934
 // and job-processes.js
