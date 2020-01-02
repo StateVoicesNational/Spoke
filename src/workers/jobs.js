@@ -328,11 +328,18 @@ export async function uploadContacts(job) {
 
   let deleteOptOutCells;
   try {
-    knexResult = await r
+    const knexOptOutDeleteQuery = r
       .knex("campaign_contact")
       .whereIn("cell", getOptOutSubQuery(campaign.organization_id))
       .where("campaign_id", campaignId)
-      .delete()
+      .delete();
+    console.log(
+      "DEBUG: uploadContacts 4 query",
+      knexOptOutDeleteQuery.toSQL
+        ? knexOptOutDeleteQuery.toSQL()
+        : knexOptOutDeleteQuery
+    );
+    knexResult = await knexOptOutDeleteQuery
       .then(result => {
         deleteOptOutCells = result;
         console.log("deleted result: " + deleteOptOutCells);
