@@ -216,7 +216,7 @@ export async function uploadContacts(job) {
     contacts = contacts.slice(0, maxContacts);
   }
 
-  console.log('DEBUG: uploadContacts', campaignId, contacts.length);
+  console.log("DEBUG: uploadContacts", campaignId, contacts.length);
 
   const numChunks = Math.ceil(contacts.length / chunkSize);
 
@@ -228,53 +228,91 @@ export async function uploadContacts(job) {
     }
   }
 
-  console.log('DEBUG: uploadContacts 2 begin', campaignId);
+  console.log("DEBUG: uploadContacts 2 begin", campaignId);
   for (let index = 0; index < numChunks; index++) {
     await updateJob(job, Math.round((maxPercentage / numChunks) * index))
       .then(result => {
-        console.log('DEBUG: uploadContacts 2a updateJob', campaignId, index, job.id);
+        console.log(
+          "DEBUG: uploadContacts 2a updateJob",
+          campaignId,
+          index,
+          job.id
+        );
       })
       .catch(err => {
-        console.log('DEBUG: uploadContacts 2b updateJob error', campaignId, index, job.id, err);
+        console.log(
+          "DEBUG: uploadContacts 2b updateJob error",
+          campaignId,
+          index,
+          job.id,
+          err
+        );
       });
     const savePortion = contacts.slice(
       index * chunkSize,
       (index + 1) * chunkSize
     );
-    console.log('DEBUG: uploadContacts 2c pre-save', campaignId, index, savePortion.length);
+    console.log(
+      "DEBUG: uploadContacts 2c pre-save",
+      campaignId,
+      index,
+      savePortion.length
+    );
     await CampaignContact.save(savePortion)
       .then(result => {
-        console.log('DEBUG: uploadContacts 2d save', campaignId, index, savePortion.length);
+        console.log(
+          "DEBUG: uploadContacts 2d save",
+          campaignId,
+          index,
+          savePortion.length
+        );
       })
       .catch(err => {
-        console.log('DEBUG: uploadContacts 2e save error', campaignId, index, savePortion.length, err);
+        console.log(
+          "DEBUG: uploadContacts 2e save error",
+          campaignId,
+          index,
+          savePortion.length,
+          err
+        );
       });
   }
-  console.log('DEBUG: uploadContacts 2 completed', campaignId);
+  console.log("DEBUG: uploadContacts 2 completed", campaignId);
 
-  console.log('DEBUG: uploadContacts 3 begin', campaignId);
+  console.log("DEBUG: uploadContacts 3 begin", campaignId);
   let knexResult;
   let optOutCellResults;
   let optOutCellCount = 0;
   try {
-    knexResult = await r
+    const knexOptQuery = r
       .knex("campaign_contact")
       .whereIn("cell", function optouts() {
         this.select("cell")
           .from("opt_out")
           .where("organization_id", campaign.organization_id);
-      })
-      .then(async (result) => {
+      });
+    console.log(
+      "DEBUG: uploadContacts 3a ",
+      knexOptQuery.toSQL ? knexOptQuery.toSQL() : knexOptQuery
+    );
+    knexResult = await knexOptQuery
+      .then(async result => {
         optOutCellResults = result;
+        console.log("DEBUG: uploadContacts 3a1 ", result);
         optOutCellCount = await r.getCount(result);
       })
       .catch(err => {
-        console.log('DEBUG: uploadContacts 3b query error', campaignId, err);
+        console.log("DEBUG: uploadContacts 3b query error", campaignId, err);
       });
   } catch (err) {
-    console.log('DEBUG: uploadContacts 3a query build error', campaignId, err);
+    console.log("DEBUG: uploadContacts 3a query build error", campaignId, err);
   }
-  console.log('DEBUG: uploadContacts 3 completed', campaignId, optOutCellCount, optOutCellResults);
+  console.log(
+    "DEBUG: uploadContacts 3 completed",
+    campaignId,
+    optOutCellCount,
+    optOutCellResults
+  );
 
   /*
   const optOutCellResults = await r
@@ -300,12 +338,16 @@ export async function uploadContacts(job) {
         console.log("deleted result: " + deleteOptOutCells);
       })
       .catch(err => {
-        console.log('DEBUG: uploadContacts 4b query error', campaignId, err);
+        console.log("DEBUG: uploadContacts 4b query error", campaignId, err);
       });
   } catch (err) {
-    console.log('DEBUG: uploadContacts 4a query build error', campaignId, err);
+    console.log("DEBUG: uploadContacts 4a query build error", campaignId, err);
   }
-  console.log('DEBUG: uploadContacts 4c completed', campaignId, deleteOptOutCells);
+  console.log(
+    "DEBUG: uploadContacts 4c completed",
+    campaignId,
+    deleteOptOutCells
+  );
 
   /*
   const deleteOptOutCells = await r
