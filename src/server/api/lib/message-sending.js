@@ -18,15 +18,14 @@ export async function getLastMessage({ contactNumber, service }) {
 
 export async function saveNewIncomingMessage(messageInstance) {
   if (messageInstance.service_id) {
-    const countResult = await r.getCount(
-      r.knex("message").where("service_id", messageInstance.service_id)
-    );
-    if (countResult) {
-      console.error(
-        "DUPLICATE MESSAGE SAVED",
-        countResult.count,
-        messageInstance
-      );
+    const [duplicateMessage] = await r
+      .knex("message")
+      .where("service_id", messageInstance.service_id)
+      .select("id")
+      .limit(1);
+    if (duplicateMessage) {
+      console.error("DUPLICATE MESSAGE", duplicateMessage, messageInstance);
+      return;
     }
   }
   await messageInstance.save();
