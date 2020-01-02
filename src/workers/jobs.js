@@ -281,39 +281,7 @@ export async function uploadContacts(job) {
 
   console.log("DEBUG: uploadContacts 3 begin", campaignId);
   let knexResult;
-  let optOutCellResults;
-  let optOutCellCount = 0;
-  try {
-    const knexOptQuery = r
-      .knex("campaign_contact")
-      .whereIn("cell", function optouts() {
-        this.select("cell")
-          .from("opt_out")
-          .where("organization_id", campaign.organization_id);
-      });
-    console.log(
-      "DEBUG: uploadContacts 3a ",
-      knexOptQuery.toSQL ? knexOptQuery.toSQL() : knexOptQuery
-    );
-    knexResult = await knexOptQuery
-      .then(async result => {
-        optOutCellResults = result;
-        console.log("DEBUG: uploadContacts 3a1 ", result);
-        optOutCellCount = await r.getCount(result);
-      })
-      .catch(err => {
-        console.log("DEBUG: uploadContacts 3b query error", campaignId, err);
-      });
-  } catch (err) {
-    console.log("DEBUG: uploadContacts 3a query build error", campaignId, err);
-  }
-  console.log(
-    "DEBUG: uploadContacts 3 completed",
-    campaignId,
-    optOutCellCount,
-    optOutCellResults
-  );
-
+  let optOutCellCount = "unknown";
   /*
   const optOutCellResults = await r
     .knex("campaign_contact")
