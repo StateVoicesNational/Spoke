@@ -227,34 +227,50 @@ export async function uploadContacts(job) {
   }
 
   for (let index = 0; index < numChunks; index++) {
-    await updateJob(job, Math.round((maxPercentage / numChunks) * index));
+    await updateJob(job, Math.round((maxPercentage / numChunks) * index))
+      .catch(err => {
+        console.log(
+          "Error updating job:",
+          campaignId,
+          job.id,
+          err
+        );
+      });
     const savePortion = contacts.slice(
       index * chunkSize,
       (index + 1) * chunkSize
     );
-    await CampaignContact.save(savePortion);
+    await CampaignContact.save(savePortion)
+      .catch(err => {
+        console.log(
+          "Error saving campaign contacts:",
+          campaignId,
+          err
+        );
+      });
   }
 
-  const optOutCellCount = await r
-    .knex("campaign_contact")
-    .whereIn("cell", function optouts() {
-      this.select("cell")
-        .from("opt_out")
-        .where("organization_id", campaign.organization_id);
-    });
-
-  const deleteOptOutCells = await r
+  let deleteOptOutCells;
+  const knexOptOutDeleteResult = await r
     .knex("campaign_contact")
     .whereIn("cell", getOptOutSubQuery(campaign.organization_id))
     .where("campaign_id", campaignId)
     .delete()
     .then(result => {
-      console.log("deleted result: " + result);
+      deleteOptOutCells = result;
+      console.log("Deleted opt-outs: " + deleteOptOutCells);
+    })
+    .catch(err => {
+      console.log(
+        "Error deleting opt-outs:",
+        campaignId,
+        err
+      );
     });
 
   if (deleteOptOutCells) {
     jobMessages.push(
-      `Number of contacts excluded due to their opt-out status: ${optOutCellCount}`
+      `Number of contacts excluded due to their opt-out status: ${deleteOptOutCells}`
     );
   }
 
