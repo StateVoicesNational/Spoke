@@ -58,14 +58,16 @@ async function convertMessagePartsToMessage(messageParts) {
     service: "twilio",
     servicemessage_sid: serviceMessages[0].MessagingServiceSid
   });
+  if (!lastMessage) {
+    return;
+  }
   return new Message({
     contact_number: contactNumber,
     user_number: userNumber,
     is_from_contact: true,
     text,
     error_code: null,
-    service_id: serviceMessages[0].MessagingServiceSid,
-    messageservice_sid: serviceMessages[0].MessagingServiceSid,
+    service_id: firstPart.service_id,
     campaign_contact_id: lastMessage.campaign_contact_id,
     service: "twilio",
     send_status: "DELIVERED"
@@ -377,7 +379,6 @@ async function handleIncomingMessage(message) {
     user_number: userNumber,
     contact_number: contactNumber
   });
-
   if (!process.env.JOBS_SAME_PROCESS) {
     // If multiple processes, just insert the message part and let another job handle it
     await r.knex("pending_message_part").insert(pendingMessagePart);
@@ -387,6 +388,9 @@ async function handleIncomingMessage(message) {
       pendingMessagePart
     ]);
     if (finalMessage) {
+      if (message.spokeCreatedAt) {
+        finalMessage.created_at = message.spokeCreatedAt;
+      }
       await saveNewIncomingMessage(finalMessage);
     }
   }
