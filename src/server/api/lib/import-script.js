@@ -359,10 +359,13 @@ const importScriptFromDocument = async (campaignId, scriptUrl) => {
     throw new Error(`Invalid URL. This doesn't seem like a Google Docs URL.`);
   }
   const documentId = match[1];
+  console.log('docid', documentId);
   const result = await getDocument(documentId);
-
+  console.log('RESULT', result);
   const document = result.data.body.content;
+  console.log('doc', document);
   const sections = getSections(document);
+  console.log('sections', sections);
 
   const interactionParagraphs = getInteractions(sections);
   const interactionsHierarchy = makeInteractionHierarchy(
