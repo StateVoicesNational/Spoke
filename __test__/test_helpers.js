@@ -61,16 +61,18 @@ export function getGql(componentPath, props, dataKey = "data") {
   return { query, mutations };
 }
 
-export async function createUser(
-  userInfo = {
+export async function createUser(userInfo = {}) {
+  const defaultUserInfo = {
     auth0_id: "test123",
     first_name: "TestUserFirst",
     last_name: "TestUserLast",
     cell: "555-555-5555",
     email: "testuser@example.com"
-  }
-) {
-  const user = new User(userInfo);
+  };
+  const user = new User({
+    ...defaultUserInfo,
+    ...userInfo
+  });
   await user.save();
   return user;
 }
@@ -111,6 +113,29 @@ export async function runGql(query, vars, user) {
 export async function runComponentGql(componentDataQuery, queryVars, user) {
   return await runGql(componentDataQuery.loc.source.body, queryVars, user);
 }
+
+export const updateUserRoles = async (
+  adminUser,
+  organizationId,
+  userId,
+  roles
+) => {
+  const query = `mutation editOrganizationRoles(
+      $organizationId: String!,
+      $userId: String!,
+      $roles: [String]) {
+    editOrganizationRoles(userId: $userId, organizationId: $organizationId, roles: $roles) {
+      id
+    }
+  }`;
+
+  const variables = {
+    organizationId,
+    userId,
+    roles
+  };
+  return await runGql(query, variables, adminUser);
+};
 
 export async function createInvite() {
   const rootValue = {};
@@ -222,14 +247,18 @@ export async function copyCampaign(campaignId, user) {
   return await graphql(mySchema, query, rootValue, context, { campaignId });
 }
 
-export async function createTexter(organization) {
+export async function createTexter(organization, userInfo = {}) {
   const rootValue = {};
-  const user = await createUser({
+  const defaultUserInfo = {
     auth0_id: "test456",
     first_name: "TestTexterFirst",
     last_name: "TestTexterLast",
     cell: "555-555-6666",
     email: "testtexter@example.com"
+  };
+  const user = await createUser({
+    ...defaultUserInfo,
+    ...userInfo
   });
   const joinQuery = `
   mutation joinOrganization($organizationUuid: String!) {

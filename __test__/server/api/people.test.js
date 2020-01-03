@@ -11,31 +11,177 @@ import {
   createOrganization,
   createCampaign,
   createTexter,
+  createContacts,
+  assignTexter,
+  updateUserRoles,
   runGql
 } from "../../test_helpers";
 
-describe.skip("people", async () => {
-  let testTexterUser;
-  let testAdminUser;
+describe("people", async () => {
+  let testTexterUsers;
+  let testAdminUsers;
+  let testContacts;
+  let testCampaigns;
   let testInvite;
   let testOrganization;
-  let testCampaign;
   let organizationId;
+  let variables;
+  let cursor;
 
   beforeEach(async () => {
-    // Set up an entire working campaign
     await setupTest();
-    testAdminUser = await createUser();
-    testInvite = await createInvite();
-    testOrganization = await createOrganization(testAdminUser, testInvite);
-    organizationId = testOrganization.data.createOrganization.id;
-    testCampaign = await createCampaign(
-      testAdminUser,
-      testOrganization,
-      "Apples",
-      { dueBy: new Date(2019, 11, 31) }
+
+    testAdminUsers = [];
+    testAdminUsers.push(
+      await createUser({
+        first_name: "Bill",
+        last_name: "Graham",
+        cell: "555-555-6666",
+        email: "bill@bgp.com"
+      })
     );
-    testTexterUser = await createTexter(testOrganization);
+
+    testAdminUsers.push(
+      await createUser({
+        first_name: "Sam",
+        last_name: "Cutler",
+        cell: "555-555-7777",
+        email: "sam@dead.net"
+      })
+    );
+
+    testInvite = await createInvite();
+    testOrganization = await createOrganization(testAdminUsers[0], testInvite);
+    organizationId = testOrganization.data.createOrganization.id;
+
+    await updateUserRoles(
+      testAdminUsers[0],
+      organizationId,
+      testAdminUsers[0].id,
+      ["OWNER", "ADMIN"]
+    );
+
+    await updateUserRoles(
+      testAdminUsers[0],
+      organizationId,
+      testAdminUsers[1].id,
+      ["ADMIN"]
+    );
+
+    // campaigns
+    testCampaigns = [];
+    testCampaigns.push(
+      await createCampaign(testAdminUsers[0], testOrganization, "Apples", {
+        dueBy: new Date(2019, 11, 31)
+      })
+    );
+
+    testCampaigns.push(
+      await createCampaign(testAdminUsers[0], testOrganization, "Oranges", {
+        dueBy: new Date(2019, 11, 30)
+      })
+    );
+
+    testCampaigns.push(
+      await createCampaign(
+        testAdminUsers[0],
+        testOrganization,
+        "Apples and Oranges",
+        { dueBy: new Date(2019, 11, 29) }
+      )
+    );
+
+    testCampaigns.push(
+      await createCampaign(testAdminUsers[0], testOrganization, "Banana", {
+        dueBy: new Date(2019, 11, 28)
+      })
+    );
+
+    // texters
+    testTexterUsers = [];
+    testTexterUsers.push(
+      await createTexter(testOrganization, {
+        first_name: "Jerry",
+        last_name: "Garcia",
+        cell: "555-555-1111",
+        email: "jerry@dead.net"
+      })
+    );
+
+    testTexterUsers.push(
+      await createTexter(testOrganization, {
+        first_name: "Bob",
+        last_name: "Weir",
+        cell: "555-555-2222",
+        email: "bob@dead.net"
+      })
+    );
+
+    testTexterUsers.push(
+      await createTexter(testOrganization, {
+        first_name: "Phil",
+        last_name: "Lesh",
+        cell: "555-555-3333",
+        email: "phil@gmail.com"
+      })
+    );
+
+    testTexterUsers.push(
+      await createTexter(testOrganization, {
+        first_name: "Mickey",
+        last_name: "Hart",
+        cell: "555-555-4444",
+        email: "mickey@dead.net"
+      })
+    );
+
+    testTexterUsers.push(
+      await createTexter(testOrganization, {
+        first_name: "William",
+        last_name: "Kreutzman",
+        cell: "555-555-5555",
+        email: "bill@dead.net"
+      })
+    );
+
+    // contacts
+    testContacts = [];
+    testContacts.push(await createContacts(testCampaigns[0], 10));
+    testContacts.push(await createContacts(testCampaigns[1], 10));
+    testContacts.push(await createContacts(testCampaigns[2], 10));
+    testContacts.push(await createContacts(testCampaigns[3], 10));
+
+    // assign contacts
+    await assignTexter(testAdminUsers[0], null, testCampaigns[0], [
+      { id: testTexterUsers[0].id, needsMessageCount: 3 },
+      { id: testTexterUsers[1].id, needsMessageCount: 3 }
+    ]);
+
+    await assignTexter(testAdminUsers[0], null, testCampaigns[1], [
+      { id: testTexterUsers[2].id, needsMessageCount: 3 },
+      { id: testTexterUsers[3].id, needsMessageCount: 3 }
+    ]);
+
+    await assignTexter(testAdminUsers[0], null, testCampaigns[2], [
+      { id: testTexterUsers[0].id, needsMessageCount: 3 },
+      { id: testTexterUsers[4].id, needsMessageCount: 3 }
+    ]);
+
+    await assignTexter(testAdminUsers[0], null, testCampaigns[3], [
+      { id: testTexterUsers[1].id, needsMessageCount: 3 },
+      { id: testTexterUsers[3].id, needsMessageCount: 3 }
+    ]);
+
+    // other stuff
+    cursor = {
+      offset: 0,
+      limit: 1000
+    };
+
+    variables = {
+      cursor,
+      organizationId
+    };
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
   afterEach(async () => {
@@ -43,151 +189,186 @@ describe.skip("people", async () => {
     if (r.redis) r.redis.flushdb();
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
-  describe("organization query", async () => {
-    let testCampaign2;
-    let testCampaign3;
-    let testCampaign4;
-    let variables;
-    let cursor;
+  describe("filtering", async () => {
+    const testFiltering = async (result, expectedUsers) => {
+      expect(result.data.people.users.length).toEqual(expectedUsers.length);
 
-    beforeEach(async () => {
-      testCampaign2 = await createCampaign(
-        testAdminUser,
-        testOrganization,
-        "Oranges",
-        { dueBy: new Date(2019, 11, 30) }
+      const receivedIds = result.data.people.users.map(user =>
+        parseInt(user.id, 10)
       );
-      testCampaign3 = await createCampaign(
-        testAdminUser,
-        testOrganization,
-        "Apples and Oranges",
-        { dueBy: new Date(2019, 11, 29) }
+      expect(receivedIds).toEqual(
+        expect.arrayContaining(expectedUsers.map(user => user.id))
       );
-      testCampaign4 = await createCampaign(
-        testAdminUser,
-        testOrganization,
-        "Banana",
-        { dueBy: new Date(2019, 11, 28) }
-      );
+    };
 
-      cursor = {
-        offset: 0,
-        limit: 1000
-      };
-
-      variables = {
-        cursor,
-        organizationId
-      };
-    });
-
-    it("filters by a single campaign id", async () => {
+    it("filters users to those assigned to a single campaign", async () => {
       const campaignsFilter = {
-        campaignId: testCampaign.id
+        campaignId: testCampaigns[0].id
       };
       variables.campaignsFilter = campaignsFilter;
-
-      const result = await runGql(getCampaignsQuery, variables, testAdminUser);
-      expect(result.data.organization.campaigns.campaigns.length).toEqual(1);
-      expect(result.data.organization.campaigns.campaigns[0].id).toEqual(
-        testCampaign.id
-      );
+      const result = await runGql(getUsersGql, variables, testAdminUsers[0]);
+      await testFiltering(result, [testTexterUsers[0], testTexterUsers[1]]);
     });
 
-    it("filter by more than one campaign id", async () => {
+    it("filters users to those assigned to multiple campaigns", async () => {
       const campaignsFilter = {
-        campaignIds: [testCampaign.id, testCampaign2.id]
+        campaignIds: [testCampaigns[0].id, testCampaigns[3].id]
       };
       variables.campaignsFilter = campaignsFilter;
-
-      const result = await runGql(getCampaignsQuery, variables, testAdminUser);
-      expect(result.data.organization.campaigns.campaigns.length).toEqual(2);
-
-      const returnedIds = result.data.organization.campaigns.campaigns.map(
-        campaign => campaign.id
-      );
-      expect(returnedIds).toContain(testCampaign.id);
-      expect(returnedIds).toContain(testCampaign2.id);
-    });
-
-    it("filters by search string", async () => {
-      const campaignsFilter = {
-        searchString: "oranges"
-      };
-      variables.campaignsFilter = campaignsFilter;
-
-      const result = await runGql(getCampaignsQuery, variables, testAdminUser);
-      expect(result.data.organization.campaigns.campaigns.length).toEqual(2);
-
-      const returnedIds = result.data.organization.campaigns.campaigns.map(
-        campaign => campaign.id
-      );
-      expect(returnedIds).toContain(testCampaign2.id);
-      expect(returnedIds).toContain(testCampaign3.id);
-    });
-
-    it("regular texters don't have permission", async () => {
-      const result = await runGql(getCampaignsQuery, variables, testTexterUser);
-      expect(result.errors).toEqual([
-        new GraphQLError("You are not authorized to access that resource.")
+      const result = await runGql(getUsersGql, variables, testAdminUsers[0]);
+      await testFiltering(result, [
+        testTexterUsers[0],
+        testTexterUsers[1],
+        testTexterUsers[3]
       ]);
     });
 
-    describe("sorts", async () => {
-      const runTest = async (sortBy, expectedOrderedIds) => {
-        variables.sortBy = sortBy;
-        const result = await runGql(
-          getCampaignsQuery,
-          variables,
-          testAdminUser
-        );
-        expect(result.data.organization.campaigns.campaigns.length).toEqual(4);
-        const returnedIds = result.data.organization.campaigns.campaigns.map(
-          campaign => campaign.id
-        );
-        expect(returnedIds).toEqual(expectedOrderedIds);
-      };
+    const testRoleFiltering = async (role, expectedUsers) => {
+      variables.role = role;
+      const result = await runGql(getUsersGql, variables, testAdminUsers[0]);
+      await testFiltering(result, expectedUsers);
+    };
 
-      it("sorts by due date ascending", async () => {
-        await runTest("DUE_DATE_ASC", [
-          testCampaign4.id,
-          testCampaign3.id,
-          testCampaign2.id,
-          testCampaign.id
-        ]);
-      });
-      it("sorts by due date descending", async () => {
-        await runTest("DUE_DATE_DESC", [
-          testCampaign.id,
-          testCampaign2.id,
-          testCampaign3.id,
-          testCampaign4.id
-        ]);
-      });
-      it("sorts by id ascending", async () => {
-        await runTest("ID_ASC", [
-          testCampaign.id,
-          testCampaign2.id,
-          testCampaign3.id,
-          testCampaign4.id
-        ]);
-      });
-      it("sorts by id desc", async () => {
-        await runTest("ID_DESC", [
-          testCampaign4.id,
-          testCampaign3.id,
-          testCampaign2.id,
-          testCampaign.id
-        ]);
-      });
-      it("sorts by title", async () => {
-        await runTest("TITLE", [
-          testCampaign.id,
-          testCampaign3.id,
-          testCampaign4.id,
-          testCampaign2.id
-        ]);
-      });
+    it("filters users by role, selecting admins", async () => {
+      await testRoleFiltering("ADMIN", testAdminUsers);
+    });
+
+    it("filters users by role, selecting texters", async () => {
+      await testRoleFiltering("TEXTER", testTexterUsers);
+    });
+
+    it("selects all users when role filter is not provided", async () => {
+      await testRoleFiltering("", [...testTexterUsers, ...testAdminUsers]);
+    });
+
+    const testFilterStringFiltering = async (
+      filterBy,
+      filterString,
+      expectedUsers
+    ) => {
+      variables.filterBy = filterBy;
+      variables.filterString = filterString;
+      const result = await runGql(getUsersGql, variables, testAdminUsers[0]);
+      await testFiltering(result, expectedUsers);
+    };
+
+    it("filters by first name", async () => {
+      await testFilterStringFiltering("FIRST_NAME", "jerry", [
+        testTexterUsers[0]
+      ]);
+    });
+
+    it("filters by first name with partial match", async () => {
+      await testFilterStringFiltering("FIRST_NAME", "il", [
+        testTexterUsers[2],
+        testTexterUsers[4],
+        testAdminUsers[0]
+      ]);
+    });
+
+    it("filters by first name case insensitive", async () => {
+      await testFilterStringFiltering("FIRST_NAME", "JERRY", [
+        testTexterUsers[0]
+      ]);
+    });
+
+    it("filters by last name", async () => {
+      await testFilterStringFiltering("LAST_NAME", "garcia", [
+        testTexterUsers[0]
+      ]);
+    });
+
+    it("filters by last name case insensitive", async () => {
+      await testFilterStringFiltering("LAST_NAME", "GARCIA", [
+        testTexterUsers[0]
+      ]);
+    });
+
+    it("filters by last name with partial match", async () => {
+      await testFilterStringFiltering("LAST_NAME", "ha", [
+        testTexterUsers[3],
+        testAdminUsers[0]
+      ]);
+    });
+
+    it("filters by email", async () => {
+      await testFilterStringFiltering("EMAIL", "jerry@dead.net", [
+        testTexterUsers[0]
+      ]);
+    });
+
+    it("filters by email with partial match", async () => {
+      await testFilterStringFiltering("EMAIL", "dead", [
+        testTexterUsers[0],
+        testTexterUsers[1],
+        testTexterUsers[3],
+        testTexterUsers[4],
+        testAdminUsers[1]
+      ]);
+    });
+
+    it("filters by any", async () => {
+      await testFilterStringFiltering("ANY", "bill", [
+        testTexterUsers[4],
+        testAdminUsers[0]
+      ]);
+    });
+
+    it("behaves correctly when there is no filter string", async () => {
+      await testFilterStringFiltering("ANY", "", [
+        ...testTexterUsers,
+        ...testAdminUsers
+      ]);
+    });
+
+    it("behaves correctly when filterBy is not an exact match", async () => {
+      variables.filterBy = "any";
+      variables.filterString = "dead.net";
+      const result = await runGql(getUsersGql, variables, testAdminUsers[0]);
+
+      expect(result.data).toBeUndefined();
+      expect(result.errors).toEqual([
+        new GraphQLError(
+          'Variable "$filterBy" got invalid value "any"; Expected type FilterPeopleBy; did you mean ANY?'
+        )
+      ]);
+    });
+
+    it("returns no users if none match the filter", async () => {
+      await testFilterStringFiltering("ANY", "xxx", []);
+    });
+
+    it("filters by campaign and search string", async () => {
+      variables.filterBy = "EMAIL";
+      variables.filterString = "jerry";
+      variables.campaignId = testCampaigns[0].id;
+      const result = await runGql(getUsersGql, variables, testAdminUsers[0]);
+      await testFiltering(result, [testTexterUsers[0]]);
+    });
+
+    it("filters by campaign, search string and role", async () => {
+      variables.filterBy = "EMAIL";
+      variables.filterString = "jerry";
+      variables.campaignId = testCampaigns[0].id;
+      variables.role = "TEXTER";
+      const result = await runGql(getUsersGql, variables, testAdminUsers[0]);
+      await testFiltering(result, [testTexterUsers[0]]);
     });
   });
+
+  describe("sorting", async () => {
+    it("sorts by first name", async () => {});
+
+    it("sorts by last name", async () => {});
+
+    it("sorts newest first", async () => {});
+
+    it("sorts oldest first", async () => {});
+  });
+
+  describe("pagination", async () => {});
+
+  describe("combined sorting and filtering", async () => {});
+
+  describe("permissions", async () => {});
 });
