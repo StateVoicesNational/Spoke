@@ -357,18 +357,126 @@ describe("people", async () => {
   });
 
   describe("sorting", async () => {
-    it("sorts by first name", async () => {});
+    const testSortResults = async (result, expectedUsers) => {
+      expect(result.data.people.users.length).toEqual(expectedUsers.length);
 
-    it("sorts by last name", async () => {});
+      const receivedIds = result.data.people.users.map(user =>
+        parseInt(user.id, 10)
+      );
 
-    it("sorts newest first", async () => {});
+      expect(receivedIds).toEqual(expectedUsers.map(user => user.id));
+    };
 
-    it("sorts oldest first", async () => {});
+    const testSorting = async (sortBy, expectedUsers) => {
+      variables.sortBy = sortBy;
+      const result = await runGql(getUsersGql, variables, testAdminUsers[0]);
+      await testSortResults(result, expectedUsers);
+    };
+
+    const sortExpected = (sortBy, desc = false) => (a, b) => {
+      const aLower =
+        typeof a[sortBy] === "string" ? a[sortBy].toLowerCase() : a[sortBy];
+      const bLower =
+        typeof b[sortBy] === "string" ? b[sortBy].toLowerCase() : b[sortBy];
+      if (aLower === bLower) return 0;
+      if (aLower < bLower) return desc ? 1 : -1;
+      return desc ? -1 : 1;
+    };
+
+    it("sorts by first name", async () => {
+      await testSorting(
+        "FIRST_NAME",
+        [...testAdminUsers, ...testTexterUsers].sort(sortExpected("first_name"))
+      );
+    });
+
+    it("sorts by last name", async () => {
+      await testSorting(
+        "LAST_NAME",
+        [...testAdminUsers, ...testTexterUsers].sort(sortExpected("last_name"))
+      );
+    });
+
+    it("sorts newest first", async () => {
+      await testSorting(
+        "NEWEST",
+        [...testAdminUsers, ...testTexterUsers].sort(sortExpected("id", true))
+      );
+    });
+
+    it("sorts oldest first", async () => {
+      await testSorting(
+        "OLDEST",
+        [...testAdminUsers, ...testTexterUsers].sort(sortExpected("id"))
+      );
+    });
+
+    it("filters texters and sorts newest first", async () => {
+      variables.sortBy = "NEWEST";
+      variables.role = "TEXTER";
+      const result = await runGql(getUsersGql, variables, testAdminUsers[0]);
+      await testSortResults(
+        result,
+        testTexterUsers.sort(sortExpected("id", true))
+      );
+    });
   });
 
-  describe("pagination", async () => {});
+  describe("pagination", async () => {
+    beforeEach(async () => {
+      cursor = {
+        offset: 0,
+        limit: 2
+      };
 
-  describe("combined sorting and filtering", async () => {});
+      variables = {
+        cursor,
+        organizationId,
+        sortBy: "OLDEST",
+        role: "TEXTER"
+      };
+    });
 
-  describe("permissions", async () => {});
+    const testPagination = async offset => {
+      cursor.offset = offset;
+      const result = await runGql(getUsersGql, variables, testAdminUsers[0]);
+
+      const receivedIds = result.data.people.users.map(user =>
+        parseInt(user.id, 10)
+      );
+
+      expect(receivedIds).toEqual(
+        testTexterUsers.slice(offset, offset + 2).map(user => user.id)
+      );
+      expect(receivedIds.length).toEqual(
+        testTexterUsers.slice(offset, offset + 2).length
+      );
+      expect(result.data.people.pageInfo).toEqual({
+        limit: 2,
+        offset,
+        total: 5
+      });
+    };
+
+    it("returns the first 2", async () => {
+      await testPagination(0);
+    });
+
+    it("returns 2 from the middle", async () => {
+      await testPagination(2);
+    });
+
+    it("returns the last one", async () => {
+      await testPagination(4);
+    });
+  });
+
+  describe("permissions", async () => {
+    it("doesn't allow texter users to retrieve people", async () => {
+      const result = await runGql(getUsersGql, variables, testTexterUsers[0]);
+      expect(result.errors).toEqual([
+        new GraphQLError("You are not authorized to access that resource.")
+      ]);
+    });
+  });
 });
