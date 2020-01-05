@@ -51,6 +51,8 @@ class Home extends React.Component {
         this.props.router.push(`/admin/${user.ownerOrganizations[0].id}`);
       } else if (user.texterOrganizations.length > 0) {
         this.props.router.push(`/app/${user.texterOrganizations[0].id}`);
+      } else if (user.suspendedOrganizations.length > 0) {
+        this.props.router.push(`/app/${user.suspendedOrganizations[0].id}`);
       } else {
         this.setState({ orgLessUser: true });
       }
@@ -147,6 +149,9 @@ const mapQueriesToProps = () => ({
             id
           }
           texterOrganizations: organizations(role: "TEXTER") {
+            id
+          }
+          suspendedOrganizations: organizations(role: "SUSPENDED") {
             id
           }
         }

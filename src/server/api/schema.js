@@ -1127,7 +1127,7 @@ const rootResolvers = {
         await accessRequired(
           user,
           campaign.organization_id,
-          "TEXTER",
+          "SUSPENDED",
           /* allowSuperadmin=*/ true
         );
       } else {
@@ -1141,7 +1141,7 @@ const rootResolvers = {
       return assignment;
     },
     organization: async (_, { id }, { user, loaders }) => {
-      await accessRequired(user, id, "TEXTER");
+      await accessRequired(user, id, "SUSPENDED");
       return await loaders.organization.load(id);
     },
     inviteByHash: async (_, { hash }, { loaders, user }) => {
@@ -1159,7 +1159,7 @@ const rootResolvers = {
       if (user.is_superadmin) {
         return r.table("organization");
       } else {
-        return await cacheableData.user.userOrgs(user.id, "TEXTER");
+        return await cacheableData.user.userOrgs(user.id, "SUSPENDED");
       }
     },
     availableActions: (_, { organizationId }, { user }) => {
