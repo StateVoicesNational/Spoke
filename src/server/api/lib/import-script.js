@@ -4,11 +4,14 @@ import _ from "lodash";
 import { compose, map, reduce, getOr, find, filter, has } from "lodash/fp";
 
 import { r } from "../../models";
+import { getConfig } from "./config";
 
 const textRegex = RegExp(".*[A-Za-z0-9]+.*");
 
 const getDocument = async documentId => {
-  const auth = google.auth.fromJSON(JSON.parse(process.env.GOOGLE_SECRET));
+  //const auth = google.auth.fromJSON(JSON.parse(process.env.GOOGLE_SECRET));
+  console.log('SECRETS', JSON.parse(getConfig("GOOGLE_SECRET")));
+  const auth = google.auth.fromJSON(JSON.parse(getConfig("GOOGLE_SECRET")));
   auth.scopes = ["https://www.googleapis.com/auth/documents"];
 
   const docs = google.docs({
@@ -21,6 +24,7 @@ const getDocument = async documentId => {
     result = await docs.documents.get({
       documentId
     });
+    console.log('RESULT', result)
   } catch (err) {
     console.log(err);
     throw new Error(err.message);
@@ -360,7 +364,13 @@ const importScriptFromDocument = async (campaignId, scriptUrl) => {
   }
   const documentId = match[1];
   console.log('docid', documentId);
-  const result = await getDocument(documentId);
+  let result;
+  try {
+    result = await getDocument(documentId);
+  } catch(err) {
+    console.error('ImportScript Failed', err);
+    throw new Error(`Retrieving Google doc failed due to access, secret config, or invalid google url`);
+  }
   console.log('RESULT', result);
   const document = result.data.body.content;
   console.log('doc', document);
