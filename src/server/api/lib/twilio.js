@@ -56,9 +56,14 @@ async function convertMessagePartsToMessage(messageParts) {
   const lastMessage = await getLastMessage({
     contactNumber,
     service: "twilio",
-    servicemessage_sid: serviceMessages[0].MessagingServiceSid
+    messageServiceSid: serviceMessages[0].MessagingServiceSid
   });
   if (!lastMessage) {
+    console.error(
+      "Message thread not found (probably text spam)",
+      contactNumber,
+      serviceMessages[0]
+    );
     return;
   }
   return new Message({
@@ -69,6 +74,7 @@ async function convertMessagePartsToMessage(messageParts) {
     error_code: null,
     service_id: firstPart.service_id,
     campaign_contact_id: lastMessage.campaign_contact_id,
+    messageservice_sid: serviceMessages[0].MessagingServiceSid,
     service: "twilio",
     send_status: "DELIVERED"
   });
@@ -197,7 +203,7 @@ async function sendMessage(message, contact, trx, organization) {
 
     // FUTURE: this can be based on (contact, organization)
     // Note organization won't always be available, so we'll need to conditionally look it up based on contact
-    messagingServiceSid = process.env.TWILIO_MESSAGE_SERVICE_SID;
+    const messagingServiceSid = process.env.TWILIO_MESSAGE_SERVICE_SID;
     messageToSave.messageservice_sid = messagingServiceSid;
 
     const messageParams = Object.assign(
@@ -205,12 +211,13 @@ async function sendMessage(message, contact, trx, organization) {
         to: message.contact_number,
         body: message.text,
         messagingServiceSid: messagingServiceSid,
-        statusCallback: process.env.TWILIO_STATUS_CALLBACK_URL,
-        validityPeriod: twilioValidityPeriod || undefined
+        statusCallback: process.env.TWILIO_STATUS_CALLBACK_URL
       },
+      twilioValidityPeriod ? { validityPeriod: twilioValidityPeriod } : {},
       parseMessageText(messageToSave)
     );
 
+    console.log("twilioMessage", messageParams);
     twilio.messages.create(messageParams, (err, response) => {
       postMessageSend(
         messageToSave,
@@ -239,7 +246,7 @@ export function postMessageSend(
   const messageToSave = {
     ...message
   };
-  // log.info("messageToSave", messageToSave);
+  log.info("messageToSave", messageToSave, response, err);
   let hasError = false;
   if (err) {
     hasError = true;
@@ -283,6 +290,7 @@ export function postMessageSend(
       Message.save(messageToSave, options),
       contactUpdateQuery
     ]).then(() => {
+      console.log("Saved message error status", messageToSave, options, err);
       reject(
         err ||
           (response
@@ -319,7 +327,7 @@ async function handleDeliveryReport(report) {
     await Log.save({
       message_sid: report.MessageSid,
       body: JSON.stringify(report),
-      error_code: Number(report.ErrorCode) || 0,
+      error_code: Number(report.ErrorCode || 0) || 0,
       from_num: report.From || null,
       to_num: report.To || null
     });
@@ -340,7 +348,7 @@ async function handleDeliveryReport(report) {
         messageStatus === "undelivered"
       ) {
         changes.send_status = "ERROR";
-        const errorCode = Number(report.ErrorCode) || 0;
+        const errorCode = Number(report.ErrorCode || 0) || 0;
         changes.error_code = errorCode;
         if (message.campaign_contact_id) {
           await r
@@ -379,20 +387,21 @@ async function handleIncomingMessage(message) {
     user_number: userNumber,
     contact_number: contactNumber
   });
-  if (!process.env.JOBS_SAME_PROCESS) {
-    // If multiple processes, just insert the message part and let another job handle it
-    await r.knex("pending_message_part").insert(pendingMessagePart);
-  } else {
+  if (process.env.JOBS_SAME_PROCESS || global.JOBS_SAME_PROCESS) {
     // Handle the message directly and skip saving an intermediate part
     const finalMessage = await convertMessagePartsToMessage([
       pendingMessagePart
     ]);
+    console.log("Contact reply", finalMessage, pendingMessagePart);
     if (finalMessage) {
       if (message.spokeCreatedAt) {
         finalMessage.created_at = message.spokeCreatedAt;
       }
       await saveNewIncomingMessage(finalMessage);
     }
+  } else {
+    // If multiple processes, just insert the message part and let another job handle it
+    await r.knex("pending_message_part").insert(pendingMessagePart);
   }
 
   // store mediaurl data in Log, so it can be extracted manually

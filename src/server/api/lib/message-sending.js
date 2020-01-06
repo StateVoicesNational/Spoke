@@ -35,10 +35,7 @@ export async function saveNewIncomingMessage(messageInstance) {
   await messageInstance.save();
 
   await r
-    .table("campaign_contact")
-    .getAll(messageInstance.campaign_contact_id, {
-      index: "campaign_contact_id"
-    })
-    .limit(1)
+    .knex("campaign_contact")
+    .where("id", messageInstance.campaign_contact_id)
     .update({ message_status: "needsResponse", updated_at: "now()" });
 }
