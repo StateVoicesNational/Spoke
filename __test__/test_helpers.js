@@ -81,11 +81,12 @@ export async function createUser(
 export async function createContacts(campaign, count = 1) {
   const campaignId = campaign.id;
   const contacts = [];
+  const startNum = "+15155500000";
   for (let i = 0; i < count; i++) {
     const contact = new CampaignContact({
       first_name: `Ann${i}`,
       last_name: `Lewis${i}`,
-      cell: "5555555555".substr(String(i).length) + String(i),
+      cell: startNum.substr(0, startNum.length - String(i).length) + String(i),
       zip: "12345",
       campaign_id: campaignId
     });
