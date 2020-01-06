@@ -6,7 +6,7 @@ _January 2019:_ Version 4.1
 
 This release includes the following improvements:
 
-- Fixes some crucial bugs in twilio.js
+- Fixes twilio bugs for incoming text spam and message duplicate tests
 
 Thanks to @schuyler1d for this critical patch. This patch will be required in order to successfully update to v5.0
 
