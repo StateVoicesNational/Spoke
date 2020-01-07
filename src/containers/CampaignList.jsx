@@ -248,7 +248,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
       ${getCampaignsQuery}
     `,
     variables: {
-      cursor: { offset: 0, limit: INITIAL_ROW_SIZE },
+      cursor: { offset: 0, limit: 50 },
       organizationId: ownProps.organizationId,
       campaignsFilter: ownProps.campaignsFilter,
       sortBy: ownProps.sortBy
