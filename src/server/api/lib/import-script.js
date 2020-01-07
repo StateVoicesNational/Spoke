@@ -9,8 +9,6 @@ import { getConfig } from "./config";
 const textRegex = RegExp(".*[A-Za-z0-9]+.*");
 
 const getDocument = async documentId => {
-  //const auth = google.auth.fromJSON(JSON.parse(process.env.GOOGLE_SECRET));
-  console.log('SECRETS', JSON.parse(getConfig("GOOGLE_SECRET")));
   const auth = google.auth.fromJSON(JSON.parse(getConfig("GOOGLE_SECRET")));
   auth.scopes = ["https://www.googleapis.com/auth/documents"];
 
@@ -24,7 +22,6 @@ const getDocument = async documentId => {
     result = await docs.documents.get({
       documentId
     });
-    console.log('RESULT', result)
   } catch (err) {
     console.log(err);
     throw new Error(err.message);
@@ -363,7 +360,6 @@ const importScriptFromDocument = async (campaignId, scriptUrl) => {
     throw new Error(`Invalid URL. This doesn't seem like a Google Docs URL.`);
   }
   const documentId = match[1];
-  console.log('docid', documentId);
   let result;
   try {
     result = await getDocument(documentId);
@@ -371,11 +367,8 @@ const importScriptFromDocument = async (campaignId, scriptUrl) => {
     console.error('ImportScript Failed', err);
     throw new Error(`Retrieving Google doc failed due to access, secret config, or invalid google url`);
   }
-  console.log('RESULT', result);
   const document = result.data.body.content;
-  console.log('doc', document);
   const sections = getSections(document);
-  console.log('sections', sections);
 
   const interactionParagraphs = getInteractions(sections);
   const interactionsHierarchy = makeInteractionHierarchy(

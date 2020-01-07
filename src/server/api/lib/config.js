@@ -29,10 +29,11 @@ if (CONFIG === null && process.env.CONFIG_FILE) {
   const localDir = process.cwd();
   console.log('CONFIG FILE', process.env.CONFIG_FILE, process.cwd(), __dirname);
   if (fs.existsSync(process.env.CONFIG_FILE)) {
-    console.log('CONFIG FILE EXISTS')
+    console.log('CONFIG FILE EXISTS at location')
     CONFIG = JSON.parse(fs.readFileSync(process.env.CONFIG_FILE, 'utf8'));
-    console.log('CONFIG FILE DATA', CONFIG)
-  } else if (fs.existsSync(`${localDir}/CONFIG_FILE.json`)) {
+  } else if (process.env.NODE_ENV === "production"
+             && fs.existsSync(`${localDir}/CONFIG_FILE.json`)) {
+    console.log('CONFIG FILE EXISTS locally')
     CONFIG = JSON.parse(fs.readFileSync(`${localDir}/CONFIG_FILE.json`, 'utf8'));
   }
 }
