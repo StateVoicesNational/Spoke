@@ -7,6 +7,7 @@ _January 2019:_ Version 4.1
 This release includes the following improvements:
 
 - Fixes twilio bugs for incoming text spam and message duplicate tests
+- Fixes bug in which Spoke was not scrubbing opt outs from larger organizations
 
 Thanks to @schuyler1d for this critical patch. This patch will be required in order to successfully update to v5.0
 
