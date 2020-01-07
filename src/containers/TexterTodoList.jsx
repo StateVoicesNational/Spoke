@@ -80,6 +80,14 @@ class TexterTodoList extends React.Component {
 
   render() {
     this.termsAgreed();
+
+    if (this.props.data.errors && this.props.params.organizationId) {
+      this.props.router.push(
+        `/app/${this.props.params.organizationId}/suspended`
+      );
+      return null;
+    }
+
     const todos = this.props.data.currentUser.todos;
     const renderedTodos = this.renderTodoList(todos);
 

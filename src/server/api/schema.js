@@ -40,7 +40,12 @@ import {
   reassignConversations,
   resolvers as conversationsResolver
 } from "./conversations";
-import { accessRequired, assignmentRequired, authRequired } from "./errors";
+import {
+  accessRequired,
+  assignmentRequired,
+  assignmentAndNotSuspended,
+  authRequired
+} from "./errors";
 import { resolvers as interactionStepResolvers } from "./interaction-step";
 import { resolvers as inviteResolvers } from "./invite";
 import { saveNewIncomingMessage } from "./lib/message-sending";
@@ -52,6 +57,7 @@ import { resolvers as questionResolvers } from "./question";
 import { resolvers as questionResponseResolvers } from "./question-response";
 import { getUsers, resolvers as userResolvers } from "./user";
 import { change } from "../local-auth-helpers";
+import { flatten, get } from "lodash";
 
 import {
   sendMessage,
@@ -868,10 +874,10 @@ const rootMutations = {
     },
     getAssignmentContacts: async (
       _,
-      { assignmentId, contactIds, findNew },
+      { organizationId, assignmentId, contactIds, findNew },
       { loaders, user }
     ) => {
-      await assignmentRequired(user, assignmentId);
+      await assignmentAndNotSuspended(organizationId, user, assignmentId);
       const contacts = contactIds.map(async contactId => {
         // this is a super-local change to handle the specific case
         // of message_status being updated in a separate message-handling
@@ -925,8 +931,12 @@ const rootMutations = {
     bulkSendMessages: async (_, { assignmentId }, { loaders, user }) => {
       return await bulkSendMessages(assignmentId, loaders, user);
     },
-    sendMessage: async (_, { message, campaignContactId }, { loaders }) => {
-      return await sendMessage(message, campaignContactId, loaders);
+    sendMessage: async (
+      _,
+      { message, campaignContactId },
+      { loaders, user }
+    ) => {
+      return await sendMessage(message, campaignContactId, loaders, user);
     },
     deleteQuestionResponses: async (
       _,
@@ -1154,6 +1164,10 @@ const rootResolvers = {
       } else {
         return user;
       }
+    },
+    currentUserWithAccess: async (_, { organizationId, role }, { user }) => {
+      await accessRequired(user, organizationId, role, false);
+      return user;
     },
     organizations: async (_, { id }, { user }) => {
       if (user.is_superadmin) {

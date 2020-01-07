@@ -56,6 +56,28 @@ export async function assignmentRequired(user, assignmentId, assignment) {
   return true;
 }
 
+export async function assignmentAndNotSuspended(
+  organizationId,
+  user,
+  assignmentId,
+  assignment,
+  allowSupervolunteer = true
+) {
+  try {
+    await accessRequired(user, organizationId, "TEXTER");
+    await assignmentRequired(user, assignmentId, assignment);
+  } catch (e) {
+    console.log(typeof e);
+    if (e instanceof GraphQLError && allowSupervolunteer) {
+      await accessRequired(user, organizationId, "SUPERVOLUNTEER", true);
+    } else {
+      throw e;
+    }
+  }
+
+  return true;
+}
+
 export function superAdminRequired(user) {
   authRequired(user);
 

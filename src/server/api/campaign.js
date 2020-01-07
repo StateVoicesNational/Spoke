@@ -235,14 +235,14 @@ export const resolvers = {
       return query;
     },
     interactionSteps: async (campaign, _, { user }) => {
-      await accessRequired(user, campaign.organization_id, "SUSPENDED", true);
+      await accessRequired(user, campaign.organization_id, "TEXTER", true);
       return (
         campaign.interactionSteps ||
         cacheableData.campaign.dbInteractionSteps(campaign.id)
       );
     },
     cannedResponses: async (campaign, { userId }, { user }) => {
-      await accessRequired(user, campaign.organization_id, "SUSPENDED", true);
+      await accessRequired(user, campaign.organization_id, "TEXTER", true);
       return await cacheableData.cannedResponse.query({
         userId: userId || "",
         campaignId: campaign.id
@@ -268,7 +268,7 @@ export const resolvers = {
       // This is the same as hasUnassignedContacts, but the access control
       // is different because for TEXTERs it's just for dynamic campaigns
       // but hasUnassignedContacts for admins is for the campaigns list
-      await accessRequired(user, campaign.organization_id, "SUSPENDED", true);
+      await accessRequired(user, campaign.organization_id, "TEXTER", true);
       if (!campaign.use_dynamic_assignment || campaign.is_archived) {
         return false;
       }

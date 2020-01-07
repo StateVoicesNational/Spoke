@@ -1,27 +1,28 @@
-import {
-  GraphQLError
-} from "graphql/error";
+import { GraphQLError } from "graphql/error";
 
-import {
-  log
-} from "../../../lib";
-import {
-  Message,
-  r
-} from "../../models";
+import { accessRequired } from "../errors";
+
+import { log } from "../../../lib";
+import { Message, r } from "../../models";
 import serviceMap from "../lib/services";
 
-import {
-  getSendBeforeTimeUtc
-} from "../../../lib/timezones";
+import { getSendBeforeTimeUtc } from "../../../lib/timezones";
 
 const JOBS_SAME_PROCESS = !!(
   process.env.JOBS_SAME_PROCESS || global.JOBS_SAME_PROCESS
 );
 
-export const sendMessage = async (message, campaignContactId, loaders) => {
+export const sendMessage = async (
+  message,
+  campaignContactId,
+  loaders,
+  user
+) => {
   const contact = await loaders.campaignContact.load(campaignContactId);
   const campaign = await loaders.campaign.load(contact.campaign_id);
+
+  await accessRequired(user, campaign.organization_id, "TEXTER");
+
   if (
     contact.assignment_id !== parseInt(message.assignmentId) ||
     campaign.is_archived
@@ -31,6 +32,7 @@ export const sendMessage = async (message, campaignContactId, loaders) => {
       message: "Your assignment has changed"
     });
   }
+
   const organization = await r
     .table("campaign")
     .get(contact.campaign_id)
@@ -72,10 +74,7 @@ export const sendMessage = async (message, campaignContactId, loaders) => {
   //   })
   // }
 
-  const {
-    contactNumber,
-    text
-  } = message;
+  const { contactNumber, text } = message;
 
   if (text.length > (process.env.MAX_MESSAGE_LENGTH || 99999)) {
     throw new GraphQLError({
@@ -97,12 +96,15 @@ export const sendMessage = async (message, campaignContactId, loaders) => {
   }
 
   const sendBefore = getSendBeforeTimeUtc(
-    contactTimezone, {
+    contactTimezone,
+    {
       textingHoursEnd: organization.texting_hours_end,
       textingHoursEnforced: organization.texting_hours_enforced
-    }, {
+    },
+    {
       textingHoursEnd: campaign.texting_hours_end,
-      overrideOrganizationTextingHours: campaign.override_organization_texting_hours,
+      overrideOrganizationTextingHours:
+        campaign.override_organization_texting_hours,
       textingHoursEnforced: campaign.texting_hours_enforced,
       timezone: campaign.timezone
     }
@@ -133,8 +135,8 @@ export const sendMessage = async (message, campaignContactId, loaders) => {
   const service =
     serviceMap[
       messageInstance.service ||
-      process.env.DEFAULT_SERVICE ||
-      global.DEFAULT_SERVICE
+        process.env.DEFAULT_SERVICE ||
+        global.DEFAULT_SERVICE
     ];
 
   contact.updated_at = "now()";

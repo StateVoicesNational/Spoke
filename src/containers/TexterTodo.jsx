@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 import React from "react";
 import AssignmentTexter from "../components/AssignmentTexter";
+import Empty from "../components/Empty";
 import { withRouter } from "react-router";
 import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
@@ -115,6 +116,15 @@ export class TexterTodo extends React.Component {
     }
   }
 
+  shouldComponentUpdate = nextProps => {
+    if (nextProps.data.errors && this.props.params.organizationId) {
+      this.props.router.push(
+        `/app/${this.props.params.organizationId}/suspended`
+      );
+    }
+    return true;
+  };
+
   assignContactsIfNeeded = async (checkServer = false, currentIndex) => {
     const { assignment } = this.props.data;
     // TODO: should we assign a single contact at first, and then afterwards assign 10
@@ -178,6 +188,16 @@ export class TexterTodo extends React.Component {
 
   render() {
     const { assignment } = this.props.data;
+
+    if (
+      !assignment ||
+      (this.props.data.errors && this.props.params.organizationId)
+    ) {
+      this.props.router.push(
+        `/app/${this.props.params.organizationId}/suspended`
+      );
+    }
+
     const contacts = assignment ? assignment.contacts : [];
     const allContactsCount = assignment ? assignment.allContactsCount : 0;
     return (
@@ -242,13 +262,14 @@ const mapMutationsToProps = ({ ownProps }) => ({
   }),
   getAssignmentContacts: (contactIds, findNew) => ({
     mutation: gql`
-      mutation getAssignmentContacts($assignmentId: String!, $contactIds: [String]!, $findNew: Boolean) {
-        getAssignmentContacts(assignmentId: $assignmentId, contactIds: $contactIds, findNew: $findNew) {
+      mutation getAssignmentContacts($organizationId: String!, $assignmentId: String!, $contactIds: [String]!, $findNew: Boolean) {
+        getAssignmentContacts(organizationId: $organizationId, assignmentId: $assignmentId, contactIds: $contactIds, findNew: $findNew) {
           ${contactDataFragment}
         }
       }
     `,
     variables: {
+      organizationId: ownProps.params.organizationId,
       assignmentId: ownProps.params.assignmentId,
       contactIds,
       findNew: !!findNew

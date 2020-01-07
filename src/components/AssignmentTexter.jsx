@@ -9,8 +9,10 @@ import LoadingIndicator from "./LoadingIndicator";
 import { StyleSheet, css } from "aphrodite";
 import { withRouter } from "react-router";
 import Check from "material-ui/svg-icons/action/check-circle";
+import Lock from "material-ui/svg-icons/action/lock-outline";
 import Empty from "../components/Empty";
 import RaisedButton from "material-ui/RaisedButton";
+import { get } from "lodash";
 
 const styles = StyleSheet.create({
   container: {
@@ -163,10 +165,10 @@ export class AssignmentTexter extends React.Component {
         .slice(newIndex + BATCH_FORWARD, newIndex + BATCH_FORWARD + BATCH_GET)
         .map(c => c.id)
         .filter(cId => !force || !this.state.contactCache[cId]);
-      // console.log('getContactData batch forward ', getIds)
+      console.log("getContactData batch forward ", getIds);
     } else if (
       !getIds.length &&
-      this.props.assignment.campaign.useDynamicAssignment &&
+      get(this.props, "assignment.campaign.useDynamicAssignment") &&
       // If we have just crossed the threshold of contact data we have, get more
       contacts[newIndex + BATCH_FORWARD - 1] &&
       !contacts[newIndex + BATCH_FORWARD]
@@ -174,9 +176,13 @@ export class AssignmentTexter extends React.Component {
       this.props.getNewContacts();
     }
     if (getIds.length) {
-      // console.log('getContactData length', newIndex, getIds.length)
+      console.log("getContactData length", newIndex, getIds.length);
       this.setState({ loading: true });
       const contactData = await this.props.loadContacts(getIds);
+      if (contactData.errors && this.props.organizationId) {
+        this.props.router.push(`/app/${this.props.organizationId}/suspended`);
+      }
+
       const {
         data: { getAssignmentContacts }
       } = contactData;
