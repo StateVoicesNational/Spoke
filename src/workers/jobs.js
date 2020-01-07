@@ -17,7 +17,7 @@ import {
   getLastMessage,
   saveNewIncomingMessage
 } from "../server/api/lib/message-sending";
-import importScriptFromDocument from "../server/api/lib/import-script.";
+import importScriptFromDocument from "../server/api/lib/import-script";
 
 import AWS from "aws-sdk";
 import Papa from "papaparse";
