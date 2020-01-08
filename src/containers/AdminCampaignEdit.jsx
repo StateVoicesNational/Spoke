@@ -302,7 +302,7 @@ class AdminCampaignEdit extends React.Component {
   }
 
   sections() {
-    return [
+    const finalSections = [
       {
         title: "Basics",
         content: CampaignBasicsForm,
@@ -415,8 +415,10 @@ class AdminCampaignEdit extends React.Component {
         blocksStarting: false,
         expandAfterCampaignStarts: true,
         expandableBySuperVolunteers: false
-      },
-      {
+      }
+    ];
+    if (window.CAN_GOOGLE_IMPORT) {
+      finalSections.push({
         title: "Script Import",
         content: AdminScriptImport,
         keys: [],
@@ -428,8 +430,9 @@ class AdminCampaignEdit extends React.Component {
           campaignData: this.props.campaignData
         },
         doNotSaveAfterSubmit: true
-      }
-    ];
+      });
+    }
+    return finalSections;
   }
 
   sectionSaveStatus(section) {

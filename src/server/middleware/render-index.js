@@ -1,3 +1,7 @@
+import { hasConfig } from "../api/lib/config";
+
+const canGoogleImport = hasConfig("GOOGLE_SECRET");
+
 const rollbarScript = process.env.ROLLBAR_CLIENT_TOKEN
   ? `<script>
     var _rollbarConfig = {
@@ -78,6 +82,7 @@ export default function renderIndex(html, css, assetMap, store) {
       window.DST_REFERENCE_TIMEZONE="${process.env.DST_REFERENCE_TIMEZONE ||
         "America/New_York"}"
       window.PASSPORT_STRATEGY="${process.env.PASSPORT_STRATEGY || ""}"
+      window.CAN_GOOGLE_IMPORT=${canGoogleImport}
     </script>
     <script src="${assetMap["bundle.js"]}"></script>
   </body>
