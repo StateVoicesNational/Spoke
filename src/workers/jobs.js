@@ -184,6 +184,11 @@ export async function processSqsMessages() {
   return p;
 }
 
+export async function completeContactLoad(job) {
+
+
+}
+
 const unzipPayload = async job =>
   JSON.parse(await gunzip(Buffer.from(job.payload, "base64")));
 
