@@ -127,6 +127,7 @@ class UserEdit extends React.Component {
       userFields = {
         firstName: yup.string().required(),
         lastName: yup.string().required(),
+        alias: yup.string(),
         cell: yup.string().required(),
       };
     }
@@ -168,6 +169,7 @@ class UserEdit extends React.Component {
                 name="lastName"
                 {...dataTest('lastName')}
               />
+              <Form.Field label="Alias" name="alias" {...dataTest('alias')} />
               <Form.Field
                 label="Cell Number"
                 name="cell"
@@ -270,6 +272,7 @@ const mapQueriesToProps = ({ ownProps }) => {
               firstName
               email
               lastName
+              alias
               cell
             }
           }
@@ -297,6 +300,7 @@ const mapMutationsToProps = ({ ownProps }) => {
               id
               firstName
               lastName
+              alias
               cell
               email
             }

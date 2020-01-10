@@ -174,7 +174,7 @@ export const resolvers = {
   },
   User: {
     ...mapFieldsToModel(
-      ["id", "firstName", "lastName", "email", "cell", "assignedCell", "terms"],
+      ["id", "firstName", "lastName", "alias", "email", "cell", "assignedCell", "terms"],
       User
     ),
     displayName: user => `${user.first_name} ${user.last_name}`,
