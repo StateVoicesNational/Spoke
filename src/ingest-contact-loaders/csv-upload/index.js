@@ -2,16 +2,16 @@ import { completeContactLoad } from "../../workers/jobs";
 import { r } from "../../server/models";
 import { getConfig, hasConfig } from "../../server/api/lib/config";
 
-export const name = "test-fakedata";
+export const name = "csv-upload";
 
 export function displayName() {
-  return "Fake Data for Testing";
+  return "CSV Upload";
 }
 
 export function serverAdministratorInstructions() {
   return {
     "environmentVariables": [],
-    "description": "",
+    "description": "CSV Upload a list of contacts",
     "setupInstructions": "Nothing is necessary to setup since this is default functionality"
   }
 }
@@ -24,10 +24,8 @@ export async function available(organization) {
   /// If this is instantaneous, you can have it be 0 (i.e. always), but if it takes time
   /// to e.g. verify credentials or test server availability,
   /// then it's better to allow the result to be cached
-  const orgFeatures = JSON.parse(organization.features || "{}");
-  const result = (orgFeatures.service || getConfig("DEFAULT_SERVICE")) === "fakeservice"
   return {
-    result,
+    result: true,
     expiresSeconds: 0
   }
 }
@@ -42,7 +40,8 @@ export function addServerEndpoints(expressApp) {
 
 export function clientChoiceDataCacheKey(organization, campaign, user) {
   /// returns a string to cache getClientChoiceData -- include items that relate to cacheability
-  return `${organization.id}-${campaign.id}`;
+  //return `${organization.id}-${campaign.id}`;
+  return "";
 }
 
 export async function getClientChoiceData(organization, campaign, user, loaders) {
@@ -51,7 +50,7 @@ export async function getClientChoiceData(organization, campaign, user, loaders)
   /// return a json object which will be cached for expiresSeconds long
   /// `data` should be a single string -- it can be JSON which you can parse in the client component
   return {
-    data: `choice data from server ${Math.random()}`,
+    data: "",
     expiresSeconds: 0
   };
 }
@@ -82,30 +81,7 @@ export async function processContactLoad(job, maxContacts) {
     .where("campaign_id", campaignId)
     .delete();
 
-  const contactData = JSON.parse(job.payload);
-  const areaCodes = ['213','323','212','718','646', '661'];
-  const contactCount = Math.min(
-    contactData.requestContactCount || 0,
-    (maxContacts ? maxContacts : areaCodes.length * 100),
-    areaCodes.length * 100);
-  const newContacts = [];
-  for (let i=0; i < contactCount; i++) {
-    const ac = areaCodes[parseInt(i/100, 10)];
-    const suffix = String("00" + (i % 100)).slice(-2);
-    newContacts.push({
-      first_name: `Foo${i}`,
-      last_name: `Bar${i}`,
-      // conform to Hollywood-reserved numbers
-      // https://www.businessinsider.com/555-phone-number-tv-movies-telephone-exchange-names-ghostbusters-2018-3
-      cell: `+1${ac}555${suffix}`,
-      zip: "10011",
-      custom_fields: "{}",
-      message_status: "needsMessage",
-      campaign_id: campaignId,
-    });
-  }
-
-  await r.knex("campaign_contact").insert(newContacts);
+  // TODO
 
   await completeContactLoad(job, jobMessages);
 }
