@@ -2,6 +2,8 @@ import { completeContactLoad } from "../../workers/jobs";
 import { r } from "../../server/models";
 import { getConfig, hasConfig } from "../../server/api/lib/config";
 
+export const name = "test-fakedata";
+
 export function displayName() {
   return "Fake Data for Testing";
 }
@@ -15,7 +17,7 @@ export function serverAdministratorInstructions() {
 }
 
 export async function available(organization) {
-  /// return an object with two keys: result: true/false, 
+  /// return an object with two keys: result: true/false
   /// if the ingest-contact-loader is usable and has
   /// Sometimes credentials need to be setup, etc.
   /// A second key expiresSeconds: should be how often this needs to be checked
@@ -26,7 +28,7 @@ export async function available(organization) {
   const result = (orgFeatures.service || getConfig("DEFAULT_SERVICE")) === "fakeservice"
   return {
     result,
-    expiresSeconds: 100000000
+    expiresSeconds: 0
   }
 }
 
@@ -38,7 +40,11 @@ export function addServerEndpoints(expressApp) {
   return;
 }
 
-export async function clientChoiceData(organization, campaign, user, loaders) {
+export function clientChoiceDataCacheKey(organization, campaign, user) {
+  return `${organization.id}-${campaign.id}`;
+}
+
+export async function getClientChoiceData(organization, campaign, user, loaders) {
   /// data to be sent to the admin client to present options to the component or similar
   /// The react-component will be sent this data as a property
   /// return a json object which will be cached for expiresSeconds long
@@ -46,26 +52,61 @@ export async function clientChoiceData(organization, campaign, user, loaders) {
   /// `dependsOn` should be an array that is the list of arguments the result depends on
   ///   it can include "organization", "campaign", "user" (the strings)
   return {
-    data: "",
-    dependsOn: ["organization"],
+    data: `choice data from server ${Math.random()}`,
     expiresSeconds: 0
   };
 }
 
-export async function processContactLoad(job, context) {
+export async function processContactLoad(job, maxContacts) {
   /// trigger processing -- this will likely be the most important part
   /// you should load contacts into the contact table with the job.campaign_id
   /// Since this might just *begin* the processing and other work might
   /// need to be completed asynchronously after this is completed (e.g. to distribute loads)
   /// AFTER true contact-load completion, this (or another function) MUST call
   /// src/workers/jobs.js::completeContactLoad(job)
-  ///   The async function completeContactLoad(job) will delete opt-outs, clear/update caching, etc.
-  /// The @context argument is 'similar' to the AWS Lambda context, and will have a getRemainingMilliseconds() function
-  /// along with a context.succeed() call which can indicate completion
-  await completeContactLoad(job, context);
-}
+  ///   The async function completeContactLoad(job) will delete opt-outs, delete duplicate cells, clear/update caching, etc.
+  /// Basic responsibilities:
+  /// 1. delete previous campaign contacts on a previous choice/upload
+  /// 2. set campaign_contact.campaign_id = job.campaign_id on all uploaded contacts
+  /// 3. set campaign_contact.message_status = "needsMessage" on all uploaded contacts
+  /// 4. Ensure that campaign_contact.cell is in the standard phone format "+15551234567"
+  ///    -- do NOT trust your backend to ensure this
+  /// Things to consider in your implementation:
+  /// * Batching
+  /// * Error handling
+  /// * "Request of Doom" scenarios -- queries or jobs too big to complete
+  const campaignId = job.campaign_id;
+  let jobMessages;
 
-export async function loadOptOuts(organization) {
-  // This function can be called periodically to sync optouts from an external source
-  return
+  await r
+    .knex("campaign_contact")
+    .where("campaign_id", campaignId)
+    .delete();
+
+  const contactData = JSON.parse(job.payload);
+  const areaCodes = ['213','323','212','718','646', '661'];
+  const contactCount = Math.min(
+    contactData.requestContactCount || 0,
+    (maxContacts ? maxContacts : areaCodes.length * 100),
+    areaCodes.length * 100);
+  const newContacts = [];
+  for (let i=0; i < contactCount; i++) {
+    const ac = areaCodes[parseInt(i/100, 10)];
+    const suffix = String("00" + (i % 100)).slice(-2);
+    newContacts.push({
+      first_name: `Foo${i}`,
+      last_name: `Bar${i}`,
+      // conform to Hollywood-reserved numbers
+      // https://www.businessinsider.com/555-phone-number-tv-movies-telephone-exchange-names-ghostbusters-2018-3
+      cell: `+1${ac}555${suffix}`,
+      zip: "10011",
+      custom_fields: "{}",
+      message_status: "needsMessage",
+      campaign_id: campaignId,
+    });
+  }
+
+  await r.knex("campaign_contact").insert(newContacts);
+
+  await completeContactLoad(job, jobMessages);
 }

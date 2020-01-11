@@ -13,6 +13,7 @@ import {
   loadContactsFromDataWarehouse,
   uploadContacts
 } from "../../workers/jobs";
+import { getIngestMethod } from "../../ingest-contact-loaders";
 import {
   Assignment,
   Campaign,
@@ -111,6 +112,27 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
       delete campaignUpdates[key];
     }
   });
+
+  if (campaign.ingestMethod && campaign.contactData) {
+    await accessRequired(user, organizationId, "ADMIN", /* superadmin*/ true);
+    const organization = await loaders.organization.load(organizationId);
+    const ingestMethod = await getIngestMethod(campaign.ingestMethod, organization);
+    if (ingestMethod) {
+      let job = await JobRequest.save({
+        queue_name: `${id}:edit_campaign`,
+        job_type: campaign.ingestMethod,
+        locks_queue: true,
+        assigned: JOBS_SAME_PROCESS, // can get called immediately, below
+        campaign_id: id,
+        payload: campaign.contactData
+      });
+      if (JOBS_SAME_PROCESS) {
+        ingestMethod.processContactLoad(job, false, {/*FUTURE: context obj*/})
+      }
+    } else {
+      console.error("ingestMethod unavailable", campaign.ingestMethod);
+    }
+  }
 
   if (campaign.hasOwnProperty("contacts") && campaign.contacts) {
     await accessRequired(user, organizationId, "ADMIN", /* superadmin*/ true);

@@ -184,9 +184,72 @@ export async function processSqsMessages() {
   return p;
 }
 
-export async function completeContactLoad(job) {
+export async function completeContactLoad(job, jobMessages) {
+  const campaignId = job.campaign_id;
+  const campaign = await Campaign.get(campaignId);
+  const organization = await Organization.get(campaign.organization_id);
 
+  let deleteOptOutCells;
+  const knexOptOutDeleteResult = await r
+    .knex("campaign_contact")
+    .whereIn("cell", getOptOutSubQuery(campaign.organization_id))
+    .where("campaign_id", campaignId)
+    .delete()
+    .then(result => {
+      deleteOptOutCells = result;
+      console.log("Deleted opt-outs: " + deleteOptOutCells);
+    })
+    .catch(err => {
+      console.log(
+        "Error deleting opt-outs:",
+        campaignId,
+        err
+      );
+    });
 
+  // delete duplicate cells
+  await r
+    .knex("campaign_contact")
+    .whereIn(
+      "id",
+      r
+        .knex("campaign_contact")
+        .select("campaign_contact.id")
+        .leftJoin("campaign_contact AS c2", function joinSelf() {
+          this.on("c2.campaign_id", "=", "campaign_contact.campaign_id")
+            .andOn("c2.cell", "=", "campaign_contact.cell")
+            .andOn("c2.id", ">", "campaign_contact.id");
+        })
+        .where("campaign_contact.campaign_id", campaignId)
+        .whereNotNull("c2.id")
+    )
+    .delete()
+    .then(result => {
+      console.log("Deduplication result", campaignId, result);
+    })
+    .catch(err => {
+      console.error("Failed deduplication", campaignId, err);
+    });
+
+  if (deleteOptOutCells) {
+    jobMessages.push(
+      `Number of contacts excluded due to their opt-out status: ${deleteOptOutCells}`
+    );
+  }
+  if (job.id) {
+    if (jobMessages.length) {
+      await r
+        .knex("job_request")
+        .where("id", job.id)
+        .update({ result_message: jobMessages.join("\n") });
+    } else {
+      await r
+        .table("job_request")
+        .get(job.id)
+        .delete();
+    }
+  }
+  await cacheableData.campaign.reload(campaignId);
 }
 
 const unzipPayload = async job =>
@@ -255,44 +318,7 @@ export async function uploadContacts(job) {
       });
   }
 
-  let deleteOptOutCells;
-  const knexOptOutDeleteResult = await r
-    .knex("campaign_contact")
-    .whereIn("cell", getOptOutSubQuery(campaign.organization_id))
-    .where("campaign_id", campaignId)
-    .delete()
-    .then(result => {
-      deleteOptOutCells = result;
-      console.log("Deleted opt-outs: " + deleteOptOutCells);
-    })
-    .catch(err => {
-      console.log(
-        "Error deleting opt-outs:",
-        campaignId,
-        err
-      );
-    });
-
-  if (deleteOptOutCells) {
-    jobMessages.push(
-      `Number of contacts excluded due to their opt-out status: ${deleteOptOutCells}`
-    );
-  }
-
-  if (job.id) {
-    if (jobMessages.length) {
-      await r
-        .knex("job_request")
-        .where("id", job.id)
-        .update({ result_message: jobMessages.join("\n") });
-    } else {
-      await r
-        .table("job_request")
-        .get(job.id)
-        .delete();
-    }
-  }
-  await cacheableData.campaign.reload(campaignId);
+  await completeContactLoad(job, jobMessages);
 }
 
 export async function loadContactsFromDataWarehouseFragment(jobEvent) {
