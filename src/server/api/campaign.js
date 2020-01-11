@@ -3,6 +3,7 @@ import { mapFieldsToModel } from "./lib/utils";
 import { Campaign, JobRequest, r, cacheableData } from "../models";
 import { currentEditors } from "../models/cacheable_queries";
 import { getUsers } from "./user";
+import { getAvailableIngestMethods, getMethodChoiceData } from "../../ingest-contact-loaders";
 
 export function addCampaignsFilterToQuery(queryParam, campaignsFilter) {
   let query = queryParam;
@@ -201,6 +202,39 @@ export const resolvers = {
         .table("job_request")
         .filter({ campaign_id: campaign.id })
         .orderBy("updated_at", "desc");
+    },
+    ingestMethodsAvailable: async (campaign, _, { user, loaders }) => {
+      await accessRequired(
+        user,
+        campaign.organization_id,
+        "ADMIN",
+        true
+      );
+      const organization = await loaders.organization.load(campaign.organization_id);
+      const ingestMethods = await getAvailableIngestMethods(organization);
+      return Promise.all(
+        ingestMethods.map(async ingestMethod => {
+          const clientChoiceData = await getMethodChoiceData(
+            ingestMethod,
+            organization,
+            campaign,
+            user,
+            loaders);
+          return {
+            name: ingestMethod.name,
+            displayName: ingestMethod.displayName(),
+            clientChoiceData
+          }})
+      );
+    },
+    ingestMethod: async (campaign, _, { user, loaders }) => {
+      await accessRequired(
+        user,
+        campaign.organization_id,
+        "ADMIN",
+        true
+      );
+      return null;
     },
     texters: async (campaign, _, { user }) => {
       await accessRequired(
