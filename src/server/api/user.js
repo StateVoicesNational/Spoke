@@ -177,7 +177,7 @@ export const resolvers = {
       ["id", "firstName", "lastName", "alias", "email", "cell", "assignedCell", "terms"],
       User
     ),
-    displayName: user => `${user.first_name} ${user.last_name}`,
+    displayName: user => `${user.first_name}${user.alias ? ` (${user.alias}) ` : " "}${user.last_name}`,
     assignment: async (user, { campaignId }) => {
       if (
         user.assignment_id &&
