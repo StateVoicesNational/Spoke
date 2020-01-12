@@ -113,10 +113,7 @@ export function getContacts(
 export const resolvers = {
   Assignment: {
     ...mapFieldsToModel(["id", "maxContacts"], Assignment),
-    texter: async (assignment, _, { loaders }) =>
-      assignment.texter
-        ? assignment.texter
-        : loaders.user.load(assignment.user_id),
+    texter: async (assignment) => await r.table("user").get(assignment.user_id),
     campaign: async (assignment, _, { loaders }) =>
       loaders.campaign.load(assignment.campaign_id),
     contactsCount: async (assignment, { contactsFilter }) => {
