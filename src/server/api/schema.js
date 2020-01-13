@@ -422,14 +422,14 @@ const rootMutations = {
       } else {
         const member = userRes[0];
 
-        const newUserData = {
-          first_name: capitalizeWord(userData.firstName),
-          last_name: capitalizeWord(userData.lastName),
-          email: userData.email,
-          cell: userData.cell
-        };
-
         if (userData) {
+          const newUserData = {
+            first_name: capitalizeWord(userData.firstName),
+            last_name: capitalizeWord(userData.lastName),
+            email: userData.email,
+            cell: userData.cell
+          };
+
           const userRes = await r
             .knex("user")
             .where("id", userId)
