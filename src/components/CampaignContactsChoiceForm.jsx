@@ -46,13 +46,15 @@ export default class CampaignContactsChoiceForm extends React.Component {
   getCurrentMethod() {
     const { ingestMethodChoices } = this.props;
     if (this.state.ingestMethod) {
-      return ingestMethodChoices.filter(m => m.name === this.state.ingestMethod)[0]
+      return ingestMethodChoices.filter(
+        m => m.name === this.state.ingestMethod
+      )[0];
     }
     return ingestMethodChoices[0];
   }
 
   ingestMethodChanged(event, index, value) {
-    this.setState({ingestMethod: value});
+    this.setState({ ingestMethod: value });
   }
 
   handleChange(contactData) {
@@ -64,11 +66,10 @@ export default class CampaignContactsChoiceForm extends React.Component {
 
   render() {
     const { ingestMethodChoices } = this.props;
-    let subtitle = (
-      ingestMethodChoices.length > 1
-      ? (<span>Choose an ingest method</span>)
-      : null
-    );
+    let subtitle =
+      ingestMethodChoices.length > 1 ? (
+        <span>Choose an ingest method</span>
+      ) : null;
     const ingestMethod = this.getCurrentMethod();
     const ingestMethodName = ingestMethod.name;
     const IngestComponent = components[ingestMethodName];
@@ -82,47 +83,46 @@ export default class CampaignContactsChoiceForm extends React.Component {
           {!this.props.jobResultMessage ? (
             ""
           ) : (
-              <div>
+            <div>
               <CampaignFormSectionHeading title="Job Outcome" />
               <div>{this.props.jobResultMessage}</div>
-              </div>
+            </div>
           )}
-         <GSForm
-           schema={yup.object({
-             ingestMethod: yup.string()
-           })}
-           onSubmit={formValues => {}}
+          <GSForm
+            schema={yup.object({
+              ingestMethod: yup.string()
+            })}
+            onSubmit={formValues => {}}
           >
-           <SelectField
-                name={"ingestMethod"}
-                value={ingestMethodName}
-                floatingLabelText={"Contact Load Method"}
-                floatingLabelFixed
-                onChange={this.ingestMethodChanged}
-              >
-                {ingestMethodChoices.map(methodChoice => (
-                    <MenuItem
-                      key={methodChoice.name}
-                      value={methodChoice.name}
-                      primaryText={methodChoice.displayName}
-                      checked={ingestMethod==methodChoice.name}
-                    />
-                  ))
-                }
-              </SelectField>
+            <SelectField
+              name={"ingestMethod"}
+              value={ingestMethodName}
+              floatingLabelText={"Contact Load Method"}
+              floatingLabelFixed
+              onChange={this.ingestMethodChanged}
+            >
+              {ingestMethodChoices.map(methodChoice => (
+                <MenuItem
+                  key={methodChoice.name}
+                  value={methodChoice.name}
+                  primaryText={methodChoice.displayName}
+                  checked={ingestMethod == methodChoice.name}
+                />
+              ))}
+            </SelectField>
           </GSForm>
-         <IngestComponent
-            onChange={(chg) => {this.handleChange(chg)}}
+          <IngestComponent
+            onChange={chg => {
+              this.handleChange(chg);
+            }}
             onSubmit={this.props.onSubmit}
             campaignIsStarted={this.props.ensureComplete}
             icons={icons}
-            theme={theme}
             saveDisabled={this.props.saveDisabled}
             saveLabel={this.props.saveLabel}
             clientChoiceData={ingestMethod.clientChoiceData}
             jobResultMessage={null}
-            />
-
+          />
         </div>
       </div>
     );
