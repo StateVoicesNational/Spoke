@@ -45,8 +45,10 @@ const CampaignContact = thinky.createModel(
   { noAutoCreation: true }
 );
 
+// can we drop these with the lower two added?
 CampaignContact.ensureIndex("assignment_id");
 CampaignContact.ensureIndex("campaign_id");
+
 CampaignContact.ensureIndex("cell");
 CampaignContact.ensureIndex("campaign_assignment", doc => [
   doc("campaign_id"),
