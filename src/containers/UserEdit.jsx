@@ -1,27 +1,27 @@
-import PropTypes from 'prop-types';
-import React from 'react';
-import loadData from './hoc/load-data';
-import wrapMutations from './hoc/wrap-mutations';
-import gql from 'graphql-tag';
+import PropTypes from "prop-types";
+import React from "react";
+import loadData from "./hoc/load-data";
+import wrapMutations from "./hoc/wrap-mutations";
+import gql from "graphql-tag";
 
-import GSForm from '../components/forms/GSForm';
-import Form from 'react-formal';
-import yup from 'yup';
-import Dialog from 'material-ui/Dialog';
-import RaisedButton from 'material-ui/RaisedButton';
-import { StyleSheet, css } from 'aphrodite';
+import GSForm from "../components/forms/GSForm";
+import Form from "react-formal";
+import yup from "yup";
+import Dialog from "material-ui/Dialog";
+import RaisedButton from "material-ui/RaisedButton";
+import { StyleSheet, css } from "aphrodite";
 
-import { dataTest } from '../lib/attributes';
+import { dataTest } from "../lib/attributes";
 
 const styles = StyleSheet.create({
   buttons: {
-    display: 'flex',
+    display: "flex"
   },
   container: {
-    display: 'inline-block',
+    display: "inline-block",
     marginRight: 20,
-    marginTop: 15,
-  },
+    marginTop: 15
+  }
 });
 
 class UserEdit extends React.Component {
@@ -29,7 +29,7 @@ class UserEdit extends React.Component {
     super(props);
     this.state = {
       changePasswordDialog: false,
-      successDialog: false,
+      successDialog: false
     };
     this.handleSave = this.handleSave.bind(this);
     this.handleClick = this.handleClick.bind(this);
@@ -50,7 +50,7 @@ class UserEdit extends React.Component {
       if (this.props.onRequestClose) {
         this.props.onRequestClose();
       }
-    } else if (this.props.authType === 'change') {
+    } else if (this.props.authType === "change") {
       // change password
       const res = await this.props.mutations.changeUserPassword(formData);
       if (res.errors) {
@@ -62,18 +62,18 @@ class UserEdit extends React.Component {
       const allData = {
         nextUrl: this.props.nextUrl,
         authType: this.props.authType,
-        ...formData,
+        ...formData
       };
-      const res = await fetch('/login-callback', {
-        method: 'POST',
+      const res = await fetch("/login-callback", {
+        method: "POST",
         body: JSON.stringify(allData),
-        headers: { 'Content-Type': 'application/json' },
+        headers: { "Content-Type": "application/json" }
       });
       const { redirected, headers, status, url } = res;
       if (redirected && status === 200) {
         this.props.router.replace(url);
       } else if (status === 401) {
-        throw new Error(headers.get('www-authenticate') || '');
+        throw new Error(headers.get("www-authenticate") || "");
       }
     }
   }
@@ -98,37 +98,37 @@ class UserEdit extends React.Component {
     let passwordFields = {};
     if (authType) {
       passwordFields = {
-        password: yup.string().required(),
+        password: yup.string().required()
       };
     }
 
-    if (authType === 'change') {
+    if (authType === "change") {
       passwordFields = {
         ...passwordFields,
-        newPassword: yup.string().required(),
+        newPassword: yup.string().required()
       };
     }
 
-    if (authType && authType !== 'login') {
+    if (authType && authType !== "login") {
       passwordFields = {
         ...passwordFields,
         passwordConfirm: yup
           .string()
           .oneOf(
-            [yup.ref(authType === 'change' ? 'newPassword' : 'password')],
-            'Passwords must match'
+            [yup.ref(authType === "change" ? "newPassword" : "password")],
+            "Passwords must match"
           )
-          .required(),
+          .required()
       };
     }
 
     let userFields = {};
-    if (!authType || authType === 'signup') {
+    if (!authType || authType === "signup") {
       userFields = {
         firstName: yup.string().required(),
         lastName: yup.string().required(),
         alias: yup.string(),
-        cell: yup.string().required(),
+        cell: yup.string().required()
       };
     }
 
@@ -138,7 +138,7 @@ class UserEdit extends React.Component {
         .email()
         .required(),
       ...userFields,
-      ...passwordFields,
+      ...passwordFields
     });
   }
 
@@ -156,31 +156,31 @@ class UserEdit extends React.Component {
           defaultValue={user}
           className={style}
         >
-          <Form.Field label="Email" name="email" {...dataTest('email')} />
-          {(!authType || authType === 'signup') && (
+          <Form.Field label="Email" name="email" {...dataTest("email")} />
+          {(!authType || authType === "signup") && (
             <span>
               <Form.Field
                 label="First name"
                 name="firstName"
-                {...dataTest('firstName')}
+                {...dataTest("firstName")}
               />
               <Form.Field
                 label="Last name"
                 name="lastName"
-                {...dataTest('lastName')}
+                {...dataTest("lastName")}
               />
-              <Form.Field label="Alias" name="alias" {...dataTest('alias')} />
+              <Form.Field label="Alias" name="alias" {...dataTest("alias")} />
               <Form.Field
                 label="Cell Number"
                 name="cell"
-                {...dataTest('cell')}
+                {...dataTest("cell")}
               />
             </span>
           )}
           {authType && (
             <Form.Field label="Password" name="password" type="password" />
           )}
-          {authType === 'change' && (
+          {authType === "change" && (
             <Form.Field
               label="New Password"
               name="newPassword"
@@ -188,7 +188,7 @@ class UserEdit extends React.Component {
             />
           )}
           {authType &&
-            authType !== 'login' && (
+            authType !== "login" && (
               <Form.Field
                 label="Confirm Password"
                 name="passwordConfirm"
@@ -196,7 +196,7 @@ class UserEdit extends React.Component {
               />
             )}
           <div className={css(styles.buttons)}>
-            {authType !== 'change' &&
+            {authType !== "change" &&
               userId &&
               userId === data.currentUser.id && (
                 <div className={css(styles.container)}>
@@ -207,12 +207,12 @@ class UserEdit extends React.Component {
                   />
                 </div>
               )}
-            <Form.Button type="submit" label={saveLabel || 'Save'} />
+            <Form.Button type="submit" label={saveLabel || "Save"} />
           </div>
         </GSForm>
         <div>
           <Dialog
-            {...dataTest('changePasswordDialog')}
+            {...dataTest("changePasswordDialog")}
             title="Change your password"
             modal={false}
             open={this.state.changePasswordDialog}
@@ -228,7 +228,7 @@ class UserEdit extends React.Component {
             />
           </Dialog>
           <Dialog
-            {...dataTest('successPasswordDialog')}
+            {...dataTest("successPasswordDialog")}
             title="Password changed successfully!"
             modal={false}
             open={this.state.successDialog}
@@ -258,7 +258,7 @@ UserEdit.propTypes = {
   style: PropTypes.string,
   handleClose: PropTypes.func,
   openSuccessDialog: PropTypes.func,
-  query: PropTypes.function,
+  query: PropTypes.function
 };
 
 const mapQueriesToProps = ({ ownProps }) => {
@@ -276,8 +276,8 @@ const mapQueriesToProps = ({ ownProps }) => {
               cell
             }
           }
-        `,
-      },
+        `
+      }
     };
   }
 };
@@ -309,8 +309,8 @@ const mapMutationsToProps = ({ ownProps }) => {
         variables: {
           userId: ownProps.userId,
           organizationId: ownProps.organizationId,
-          userData,
-        },
+          userData
+        }
       }),
       changeUserPassword: formData => ({
         mutation: gql`
@@ -325,14 +325,14 @@ const mapMutationsToProps = ({ ownProps }) => {
         `,
         variables: {
           userId: ownProps.userId,
-          formData,
-        },
-      }),
+          formData
+        }
+      })
     };
   }
 };
 
 export default loadData(wrapMutations(UserEdit), {
   mapQueriesToProps,
-  mapMutationsToProps,
+  mapMutationsToProps
 });
