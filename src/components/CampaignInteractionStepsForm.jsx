@@ -1,18 +1,11 @@
 import type from "prop-types";
 import React from "react";
-import ReactDOM from "react-dom";
-import Divider from "material-ui/Divider";
-import ContentClear from "material-ui/svg-icons/content/clear";
-import FlatButton from "material-ui/FlatButton";
 import RaisedButton from "material-ui/RaisedButton";
-import RadioButtonUnchecked from "material-ui/svg-icons/toggle/radio-button-unchecked";
 import IconButton from "material-ui/IconButton";
 import DeleteIcon from "material-ui/svg-icons/action/delete";
-import { Card, CardActions, CardHeader, CardText } from "material-ui/Card";
+import { Card, CardHeader, CardText } from "material-ui/Card";
 import theme from "../styles/theme";
 import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
-import ForwardIcon from "material-ui/svg-icons/navigation/arrow-forward";
-import HelpIcon from "material-ui/svg-icons/action/help";
 import HelpIconOutline from "material-ui/svg-icons/action/help-outline";
 import Form from "react-formal";
 import GSForm from "./forms/GSForm";
@@ -50,16 +43,31 @@ export default class CampaignInteractionStepsForm extends React.Component {
     interactionSteps: this.props.formValues.interactionSteps[0]
       ? this.props.formValues.interactionSteps
       : [
-          {
-            id: "newId",
-            parentInteractionId: null,
-            questionText: "",
-            answerOption: "",
-            script: "",
-            answerActions: "",
-            isDeleted: false
-          }
-        ]
+        {
+          id: "newId",
+          parentInteractionId: null,
+          questionText: "",
+          answerOption: "",
+          script: "",
+          answerActions: "",
+          isDeleted: false
+        }
+      ],
+    displayAllSteps: false
+  };
+
+  /*
+    this.statye.displayAllSteps is used to cause only the root interaction
+    node to render when the component first mounts.  ComponentDidMount sets
+    displayAllSteps to true, which forces render to run again, this time
+    including all interaction steps. This cuts half the time required to
+    render the interaction steps after clicking the header to expand the
+    interaction steps card.
+  */
+  componentDidMount = () => {
+    if (!this.state.displayAllSteps) {
+      this.setState({ displayAllSteps: true });
+    }
   };
 
   onSave = async () => {
@@ -132,7 +140,10 @@ export default class CampaignInteractionStepsForm extends React.Component {
     answerActions: yup.string()
   });
 
-  renderInteractionStep(interactionStep, title = "Start") {
+  renderInteractionStep(
+    interactionStep,
+    title = "Start"
+  ) {
     return (
       <div>
         <Card
@@ -244,18 +255,17 @@ export default class CampaignInteractionStepsForm extends React.Component {
           ) : (
             ""
           )}
-          {interactionStep.interactionSteps
-            .filter(is => !is.isDeleted)
-            .map(is => {
-              return (
+          {this.state.displayAllSteps &&
+            interactionStep.interactionSteps
+              .filter(is => !is.isDeleted)
+              .map(is => (
                 <div>
                   {this.renderInteractionStep(
                     is,
                     `Question: ${interactionStep.questionText}`
                   )}
                 </div>
-              );
-            })}
+              ))}
         </div>
       </div>
     );
