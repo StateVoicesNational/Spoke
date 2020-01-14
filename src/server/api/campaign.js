@@ -209,7 +209,10 @@ export const resolvers = {
       const organization = await loaders.organization.load(
         campaign.organization_id
       );
-      const ingestMethods = await getAvailableIngestMethods(organization);
+      const organization = await loaders.organization.load(
+        campaign.organization_id
+      );
+      const ingestMethods = await getAvailableIngestMethods(organization, user);
       return Promise.all(
         ingestMethods.map(async ingestMethod => {
           const clientChoiceData = await getMethodChoiceData(

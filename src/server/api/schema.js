@@ -115,7 +115,8 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     const organization = await loaders.organization.load(organizationId);
     const ingestMethod = await getIngestMethod(
       campaign.ingestMethod,
-      organization
+      organization,
+      user
     );
     if (ingestMethod) {
       let job = await JobRequest.save({

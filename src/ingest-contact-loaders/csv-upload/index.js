@@ -13,13 +13,14 @@ export function displayName() {
 
 export function serverAdministratorInstructions() {
   return {
-    "environmentVariables": [],
-    "description": "CSV Upload a list of contacts",
-    "setupInstructions": "Nothing is necessary to setup since this is default functionality"
-  }
+    environmentVariables: [],
+    description: "CSV Upload a list of contacts",
+    setupInstructions:
+      "Nothing is necessary to setup since this is default functionality"
+  };
 }
 
-export async function available(organization) {
+export async function available(organization, user) {
   /// return an object with two keys: result: true/false
   /// if the ingest-contact-loader is usable and has
   /// Sometimes credentials need to be setup, etc.
@@ -30,7 +31,7 @@ export async function available(organization) {
   return {
     result: true,
     expiresSeconds: 0
-  }
+  };
 }
 
 export function addServerEndpoints(expressApp) {
@@ -47,7 +48,12 @@ export function clientChoiceDataCacheKey(organization, campaign, user) {
   return "";
 }
 
-export async function getClientChoiceData(organization, campaign, user, loaders) {
+export async function getClientChoiceData(
+  organization,
+  campaign,
+  user,
+  loaders
+) {
   /// data to be sent to the admin client to present options to the component or similar
   /// The react-component will be sent this data as a property
   /// return a json object which will be cached for expiresSeconds long
@@ -86,7 +92,7 @@ export async function processContactLoad(job, maxContacts) {
 
   // TODO
   let contacts;
-  if (job.payload[0] === '{') {
+  if (job.payload[0] === "{") {
     contacts = JSON.parse(job.payload).contacts;
   } else {
     contacts = (await unzipPayload(job)).contacts;
@@ -122,14 +128,9 @@ export async function processContactLoad(job, maxContacts) {
       index * chunkSize,
       (index + 1) * chunkSize
     );
-    await CampaignContact.save(savePortion)
-      .catch(err => {
-        console.log(
-          "Error saving campaign contacts:",
-          campaignId,
-          err
-        );
-      });
+    await CampaignContact.save(savePortion).catch(err => {
+      console.log("Error saving campaign contacts:", campaignId, err);
+    });
   }
 
   await completeContactLoad(job, jobMessages);

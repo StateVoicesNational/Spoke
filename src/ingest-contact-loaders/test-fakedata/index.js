@@ -10,13 +10,14 @@ export function displayName() {
 
 export function serverAdministratorInstructions() {
   return {
-    "environmentVariables": [],
-    "description": "",
-    "setupInstructions": "Nothing is necessary to setup since this is default functionality"
-  }
+    environmentVariables: [],
+    description: "",
+    setupInstructions:
+      "Nothing is necessary to setup since this is default functionality"
+  };
 }
 
-export async function available(organization) {
+export async function available(organization, user) {
   /// return an object with two keys: result: true/false
   /// if the ingest-contact-loader is usable and has
   /// Sometimes credentials need to be setup, etc.
@@ -25,11 +26,12 @@ export async function available(organization) {
   /// to e.g. verify credentials or test server availability,
   /// then it's better to allow the result to be cached
   const orgFeatures = JSON.parse(organization.features || "{}");
-  const result = (orgFeatures.service || getConfig("DEFAULT_SERVICE")) === "fakeservice"
+  const result =
+    (orgFeatures.service || getConfig("DEFAULT_SERVICE")) === "fakeservice";
   return {
     result,
     expiresSeconds: 0
-  }
+  };
 }
 
 export function addServerEndpoints(expressApp) {
@@ -45,7 +47,12 @@ export function clientChoiceDataCacheKey(organization, campaign, user) {
   return `${organization.id}-${campaign.id}`;
 }
 
-export async function getClientChoiceData(organization, campaign, user, loaders) {
+export async function getClientChoiceData(
+  organization,
+  campaign,
+  user,
+  loaders
+) {
   /// data to be sent to the admin client to present options to the component or similar
   /// The react-component will be sent this data as a property
   /// return a json object which will be cached for expiresSeconds long
@@ -83,14 +90,15 @@ export async function processContactLoad(job, maxContacts) {
     .delete();
 
   const contactData = JSON.parse(job.payload);
-  const areaCodes = ['213','323','212','718','646', '661'];
+  const areaCodes = ["213", "323", "212", "718", "646", "661"];
   const contactCount = Math.min(
     contactData.requestContactCount || 0,
-    (maxContacts ? maxContacts : areaCodes.length * 100),
-    areaCodes.length * 100);
+    maxContacts ? maxContacts : areaCodes.length * 100,
+    areaCodes.length * 100
+  );
   const newContacts = [];
-  for (let i=0; i < contactCount; i++) {
-    const ac = areaCodes[parseInt(i/100, 10)];
+  for (let i = 0; i < contactCount; i++) {
+    const ac = areaCodes[parseInt(i / 100, 10)];
     const suffix = String("00" + (i % 100)).slice(-2);
     newContacts.push({
       first_name: `Foo${i}`,
@@ -101,7 +109,7 @@ export async function processContactLoad(job, maxContacts) {
       zip: "10011",
       custom_fields: "{}",
       message_status: "needsMessage",
-      campaign_id: campaignId,
+      campaign_id: campaignId
     });
   }
 
