@@ -24,7 +24,6 @@ import Papa from "papaparse";
 import moment from "moment";
 import { sendEmail } from "../server/mail";
 import { Notifications, sendUserNotification } from "../server/notifications";
-import { unzip } from "zlib";
 
 const defensivelyDeleteJob = async job => {
   if (job.id) {
@@ -252,8 +251,9 @@ export async function completeContactLoad(job, jobMessages) {
   await cacheableData.campaign.reload(campaignId);
 }
 
-const unzipPayload = async job =>
-  JSON.parse(await gunzip(Buffer.from(job.payload, "base64")));
+export async function unzipPayload(job) {
+  return JSON.parse(await gunzip(Buffer.from(job.payload, "base64")));
+}
 
 export async function uploadContacts(job) {
   const campaignId = job.campaign_id;

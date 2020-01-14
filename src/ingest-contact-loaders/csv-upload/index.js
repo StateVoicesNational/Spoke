@@ -1,6 +1,9 @@
 import { completeContactLoad } from "../../workers/jobs";
-import { r } from "../../server/models";
+import { r, CampaignContact } from "../../server/models";
 import { getConfig, hasConfig } from "../../server/api/lib/config";
+
+import { updateJob } from "../../lib";
+import { getTimezoneByZip, unzipPayload } from "../../workers/jobs";
 
 export const name = "csv-upload";
 
@@ -74,7 +77,7 @@ export async function processContactLoad(job, maxContacts) {
   /// * Error handling
   /// * "Request of Doom" scenarios -- queries or jobs too big to complete
   const campaignId = job.campaign_id;
-  let jobMessages;
+  const jobMessages = [];
 
   await r
     .knex("campaign_contact")
@@ -82,6 +85,52 @@ export async function processContactLoad(job, maxContacts) {
     .delete();
 
   // TODO
+  let contacts;
+  if (job.payload[0] === '{') {
+    contacts = JSON.parse(job.payload).contacts;
+  } else {
+    contacts = (await unzipPayload(job)).contacts;
+  }
+  if (maxContacts) {
+    // note: maxContacts == 0 means no maximum
+    contacts = contacts.slice(0, maxContacts);
+  }
+  const chunkSize = 1000;
+
+  const numChunks = Math.ceil(contacts.length / chunkSize);
+
+  for (let index = 0; index < contacts.length; index++) {
+    const datum = contacts[index];
+    if (datum.zip) {
+      // using memoization and large ranges of homogenous zips
+      datum.timezone_offset = await getTimezoneByZip(datum.zip);
+    }
+    datum.campaign_id = campaignId;
+  }
+  for (let index = 0; index < numChunks; index++) {
+    /*
+    await updateJob(job, Math.round((maxPercentage / numChunks) * index))
+      .catch(err => {
+        console.log(
+          "Error updating job:",
+          campaignId,
+          job.id,
+          err
+        );
+      });*/
+    const savePortion = contacts.slice(
+      index * chunkSize,
+      (index + 1) * chunkSize
+    );
+    await CampaignContact.save(savePortion)
+      .catch(err => {
+        console.log(
+          "Error saving campaign contacts:",
+          campaignId,
+          err
+        );
+      });
+  }
 
   await completeContactLoad(job, jobMessages);
 }
