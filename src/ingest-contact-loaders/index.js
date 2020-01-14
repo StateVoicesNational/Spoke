@@ -2,24 +2,24 @@ import { getConfig } from "../server/api/lib/config";
 import { r } from "../server/models";
 
 const availabilityCacheKey = (name, organizationId) =>
-      `${process.env.CACHE_PREFIX || ""}ingestavail-${name}-${organizationId}`;
-const choiceDataCacheKey = (suffix) => `${process.env.CACHE_PREFIX || ""}ingestchoices-${suffix}`;
-
+  `${process.env.CACHE_PREFIX || ""}ingestavail-${name}-${organizationId}`;
+const choiceDataCacheKey = suffix =>
+  `${process.env.CACHE_PREFIX || ""}ingestchoices-${suffix}`;
 
 function getIngestMethods() {
-  const enabledIngestMethods = (getConfig("CONTACT_LOADERS") || "csv-upload").split(",");
-  const ingestMethods = {}
+  const enabledIngestMethods = (
+    getConfig("CONTACT_LOADERS") || "csv-upload,datawarehouse"
+  ).split(",");
+  const ingestMethods = {};
   enabledIngestMethods.forEach(name => {
     try {
       const c = require(`./${name}/index.js`);
       ingestMethods[name] = c;
-    } catch(err) {
-      console.error(
-        "CONTACT_LOADERS failed to load ingestMethod", name
-      );
+    } catch (err) {
+      console.error("CONTACT_LOADERS failed to load ingestMethod", name);
     }
   });
-  return ingestMethods
+  return ingestMethods;
 }
 
 const CONFIGURED_INGEST_METHODS = getIngestMethods();
@@ -41,7 +41,8 @@ async function getSetCacheableResult(cacheKey, fallbackFunc) {
 async function getIngestAvailability(name, ingestMethod, organization) {
   return await getSetCacheableResult(
     availabilityCacheKey(name, organization.id),
-    async () => ingestMethod.available(organization));
+    async () => ingestMethod.available(organization)
+  );
 }
 
 export async function getIngestMethod(name, organization) {
@@ -49,7 +50,8 @@ export async function getIngestMethod(name, organization) {
     const isAvail = await getIngestAvailability(
       name,
       CONFIGURED_INGEST_METHODS[name],
-      organization);
+      organization
+    );
     if (isAvail.result) {
       return CONFIGURED_INGEST_METHODS[name];
     }
@@ -58,14 +60,25 @@ export async function getIngestMethod(name, organization) {
 
 export async function getAvailableIngestMethods(organization) {
   return Promise.all(
-    Object.keys(CONFIGURED_INGEST_METHODS)
-      .map(name => getIngestMethod(name, organization)));
+    Object.keys(CONFIGURED_INGEST_METHODS).map(name =>
+      getIngestMethod(name, organization)
+    )
+  );
 }
 
-export async function getMethodChoiceData(ingestMethod, organization, campaign, user, loaders) {
-  const cacheFunc = ingestMethod.clientChoiceDataCacheKey || ((org) => `${org.id}`);
-  const cacheKey = choiceDataCacheKey(cacheFunc(organization, campaign, user, loaders));
-  return (await getSetCacheableResult(cacheKey, async () => (
+export async function getMethodChoiceData(
+  ingestMethod,
+  organization,
+  campaign,
+  user,
+  loaders
+) {
+  const cacheFunc =
+    ingestMethod.clientChoiceDataCacheKey || (org => `${org.id}`);
+  const cacheKey = choiceDataCacheKey(
+    cacheFunc(organization, campaign, user, loaders)
+  );
+  return (await getSetCacheableResult(cacheKey, async () =>
     ingestMethod.getClientChoiceData(organization, campaign, user, loaders)
-  ))).data;
+  )).data;
 }
