@@ -16,7 +16,7 @@ export function serverAdministratorInstructions() {
   }
 }
 
-export async function available(organization) {
+export async function available(organization, user) {
   /// return an object with two keys: result: true/false
   /// if the ingest-contact-loader is usable and has
   /// Sometimes credentials need to be setup, etc.
