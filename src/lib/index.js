@@ -51,8 +51,7 @@ export {
   isRoleGreater
 } from "./permissions";
 
-const getValidatedData = (data, optOuts) => {
-  const optOutCells = optOuts.map(optOut => optOut.cell);
+const getValidatedData = (data) => {
   let validatedData;
   let result;
   // For some reason destructuring is not working here
@@ -76,13 +75,6 @@ const getValidatedData = (data, optOuts) => {
   validatedData = _.uniqBy(validatedData, row => row.cell);
   const dupeCount = count - validatedData.length;
 
-  result = _.partition(
-    validatedData,
-    row => optOutCells.indexOf(row.cell) === -1
-  );
-  validatedData = result[0];
-  const optOutRows = result[1];
-
   validatedData = _.map(validatedData, row =>
     _.extend(row, {
       zip: row.zip ? getFormattedZip(row.zip) : null
@@ -94,7 +86,6 @@ const getValidatedData = (data, optOuts) => {
     validatedData,
     validationStats: {
       dupeCount,
-      optOutCount: optOutRows.length,
       invalidCellCount: invalidCellRows.length,
       missingCellCount: missingCellRows.length,
       zipCount
@@ -124,7 +115,7 @@ export const gunzip = buf =>
     });
   });
 
-export const parseCSV = (file, optOuts, callback) => {
+export const parseCSV = (file, callback) => {
   Papa.parse(file, {
     header: true,
     // eslint-disable-next-line no-shadow, no-unused-vars
@@ -143,10 +134,7 @@ export const parseCSV = (file, optOuts, callback) => {
         const error = `Missing fields: ${missingFields.join(", ")}`;
         callback({ error });
       } else {
-        const { validationStats, validatedData } = getValidatedData(
-          data,
-          optOuts
-        );
+        const { validationStats, validatedData } = getValidatedData(data)
 
         const customFields = fields.filter(
           field => topLevelUploadFields.indexOf(field) === -1

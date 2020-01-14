@@ -2,7 +2,7 @@ import { getConfig } from "../server/api/lib/config";
 
 function getComponents() {
   // TODO: default will be csv-upload for real version
-  const enabledComponents = (getConfig("CONTACT_LOADERS") || "test-fakedata").split(",");
+  const enabledComponents = (getConfig("CONTACT_LOADERS") || "csv-upload").split(",");
   const components = {}
   enabledComponents.forEach(componentName => {
     try {

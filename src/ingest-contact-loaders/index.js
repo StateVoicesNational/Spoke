@@ -7,8 +7,7 @@ const choiceDataCacheKey = (suffix) => `${process.env.CACHE_PREFIX || ""}ingestc
 
 
 function getIngestMethods() {
-  // TODO: default will be csv-upload for real version
-  const enabledIngestMethods = (getConfig("CONTACT_LOADERS") || "test-fakedata").split(",");
+  const enabledIngestMethods = (getConfig("CONTACT_LOADERS") || "csv-upload").split(",");
   const ingestMethods = {}
   enabledIngestMethods.forEach(name => {
     try {
