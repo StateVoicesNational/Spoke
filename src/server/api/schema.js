@@ -9,9 +9,7 @@ import { capitalizeWord } from "./lib/utils";
 import {
   assignTexters,
   exportCampaign,
-  importScript,
-  loadContactsFromDataWarehouse,
-  uploadContacts
+  importScript
 } from "../../workers/jobs";
 import { getIngestMethod } from "../../ingest-contact-loaders";
 import {
@@ -19,7 +17,6 @@ import {
   Campaign,
   CannedResponse,
   InteractionStep,
-  datawarehouse,
   Invite,
   JobRequest,
   Message,
@@ -116,7 +113,10 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
   if (campaign.ingestMethod && campaign.contactData) {
     await accessRequired(user, organizationId, "ADMIN", /* superadmin*/ true);
     const organization = await loaders.organization.load(organizationId);
-    const ingestMethod = await getIngestMethod(campaign.ingestMethod, organization);
+    const ingestMethod = await getIngestMethod(
+      campaign.ingestMethod,
+      organization
+    );
     if (ingestMethod) {
       let job = await JobRequest.save({
         queue_name: `${id}:edit_campaign`,
@@ -127,60 +127,15 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
         payload: campaign.contactData
       });
       if (JOBS_SAME_PROCESS) {
-        ingestMethod.processContactLoad(job, false, {/*FUTURE: context obj*/})
+        ingestMethod.processContactLoad(job, false, {
+          /*FUTURE: context obj*/
+        });
       }
     } else {
       console.error("ingestMethod unavailable", campaign.ingestMethod);
     }
   }
 
-  if (campaign.hasOwnProperty("contacts") && campaign.contacts) {
-    await accessRequired(user, organizationId, "ADMIN", /* superadmin*/ true);
-    const contactsToSave = campaign.contacts.map(datum => {
-      const modelData = {
-        campaign_id: datum.campaignId,
-        first_name: datum.firstName,
-        last_name: datum.lastName,
-        cell: datum.cell,
-        external_id: datum.external_id,
-        custom_fields: datum.customFields,
-        zip: datum.zip
-      };
-      modelData.campaign_id = id;
-      return modelData;
-    });
-    const compressedString = await gzip(JSON.stringify(contactsToSave));
-    let job = await JobRequest.save({
-      queue_name: `${id}:edit_campaign`,
-      job_type: "upload_contacts",
-      locks_queue: true,
-      assigned: JOBS_SAME_PROCESS, // can get called immediately, below
-      campaign_id: id,
-      // NOTE: stringifying because compressedString is a binary buffer
-      payload: compressedString.toString("base64")
-    });
-    if (JOBS_SAME_PROCESS) {
-      uploadContacts(job);
-    }
-  }
-  if (
-    campaign.hasOwnProperty("contactSql") &&
-    datawarehouse &&
-    user.is_superadmin
-  ) {
-    await accessRequired(user, organizationId, "ADMIN", /* superadmin*/ true);
-    let job = await JobRequest.save({
-      queue_name: `${id}:edit_campaign`,
-      job_type: "upload_contacts_sql",
-      locks_queue: true,
-      assigned: JOBS_SAME_PROCESS, // can get called immediately, below
-      campaign_id: id,
-      payload: campaign.contactSql
-    });
-    if (JOBS_SAME_PROCESS) {
-      loadContactsFromDataWarehouse(job);
-    }
-  }
   if (campaign.hasOwnProperty("texters")) {
     let job = await JobRequest.save({
       queue_name: `${id}:edit_campaign`,

@@ -2,19 +2,19 @@ import { getConfig } from "../server/api/lib/config";
 
 function getComponents() {
   // TODO: default will be csv-upload for real version
-  const enabledComponents = (getConfig("CONTACT_LOADERS") || "csv-upload").split(",");
-  const components = {}
+  const enabledComponents = (
+    getConfig("CONTACT_LOADERS") || "csv-upload,datawarehouse"
+  ).split(",");
+  const components = {};
   enabledComponents.forEach(componentName => {
     try {
       const c = require(`./${componentName}/react-component.js`);
       components[componentName] = c.CampaignContactsForm;
-    } catch(err) {
-      console.error(
-        "CONTACT_LOADERS failed to load component", componentName
-      );
+    } catch (err) {
+      console.error("CONTACT_LOADERS failed to load component", componentName);
     }
   });
-  return components
+  return components;
 }
 
 const componentList = getComponents();

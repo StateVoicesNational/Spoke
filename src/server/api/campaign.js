@@ -3,7 +3,10 @@ import { mapFieldsToModel } from "./lib/utils";
 import { Campaign, JobRequest, r, cacheableData } from "../models";
 import { currentEditors } from "../models/cacheable_queries";
 import { getUsers } from "./user";
-import { getAvailableIngestMethods, getMethodChoiceData } from "../../ingest-contact-loaders";
+import {
+  getAvailableIngestMethods,
+  getMethodChoiceData
+} from "../../ingest-contact-loaders";
 
 export function addCampaignsFilterToQuery(queryParam, campaignsFilter) {
   let query = queryParam;
@@ -189,8 +192,6 @@ export const resolvers = {
     organization: async (campaign, _, { loaders }) =>
       campaign.organization ||
       loaders.organization.load(campaign.organization_id),
-    datawarehouseAvailable: (campaign, _, { user }) =>
-      user.is_superadmin && !!process.env.WAREHOUSE_DB_HOST,
     pendingJobs: async (campaign, _, { user }) => {
       await accessRequired(
         user,
@@ -204,13 +205,10 @@ export const resolvers = {
         .orderBy("updated_at", "desc");
     },
     ingestMethodsAvailable: async (campaign, _, { user, loaders }) => {
-      await accessRequired(
-        user,
-        campaign.organization_id,
-        "ADMIN",
-        true
+      await accessRequired(user, campaign.organization_id, "ADMIN", true);
+      const organization = await loaders.organization.load(
+        campaign.organization_id
       );
-      const organization = await loaders.organization.load(campaign.organization_id);
       const ingestMethods = await getAvailableIngestMethods(organization);
       return Promise.all(
         ingestMethods.map(async ingestMethod => {
@@ -219,21 +217,18 @@ export const resolvers = {
             organization,
             campaign,
             user,
-            loaders);
+            loaders
+          );
           return {
             name: ingestMethod.name,
             displayName: ingestMethod.displayName(),
             clientChoiceData
-          }})
+          };
+        })
       );
     },
     ingestMethod: async (campaign, _, { user, loaders }) => {
-      await accessRequired(
-        user,
-        campaign.organization_id,
-        "ADMIN",
-        true
-      );
+      await accessRequired(user, campaign.organization_id, "ADMIN", true);
       return null;
     },
     texters: async (campaign, _, { user }) => {

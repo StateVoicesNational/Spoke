@@ -49,7 +49,6 @@ export const schema = `
     pendingJobs: [JobRequest]
     ingestMethodsAvailable: [IngestMethod]
     ingestMethod: IngestMethod
-    datawarehouseAvailable: Boolean
     useDynamicAssignment: Boolean
     introHtml: String
     primaryColor: String
