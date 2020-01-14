@@ -18,6 +18,7 @@
     "knex": "knex --knexfile ./knexfile.env.js",
     "clean": "rm -rf $OUTPUT_DIR",
     "lint": "eslint --fix --ext js --ext jsx src",
+    "process-message-csv": "./dev-tools/babel-run-with-env.js ./src/workers/process-message-csv.js",
     "prod-build-client": "webpack --config ./webpack/config.js",
     "prod-build-server": "babel ./src  -d ./build/server --source-maps --copy-files; babel ./migrations -d ./build/server/migrations/ --source-maps --copy-files",
     "prod-build": "npm run clean && npm run prod-build-client && npm run prod-build-server",
