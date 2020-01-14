@@ -131,8 +131,7 @@ async function createCampaign(
   user,
   title,
   description,
-  organizationId,
-  contacts = []
+  organizationId
 ) {
   const context = getContext({ user });
 
@@ -140,18 +139,13 @@ async function createCampaign(
     createCampaign(campaign: $input) {
       id
       title
-      contacts {
-        firstName
-        lastName
-      }
     }
   }`;
   const variables = {
     input: {
       title,
       description,
-      organizationId,
-      contacts
+      organizationId
     }
   };
 
