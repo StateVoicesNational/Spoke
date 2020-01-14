@@ -9,7 +9,6 @@ describe("parseCSV", () => {
       const csv = "firstName,lastName,cell\ntest,test,61468511000";
       parseCSV(
         csv,
-        [],
         ({ contacts, customFields, validationStats, error }) => {
           expect(error).toBeFalsy();
           expect(contacts.length).toEqual(1);
