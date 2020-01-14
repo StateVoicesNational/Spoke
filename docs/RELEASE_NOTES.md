@@ -16,7 +16,7 @@ This release includes the following improvements:
 
 Deploy Steps:
 
-### Instructions for migrating large database instances (>1million messages/contacts)
+**Instructions for migrating large database instances (>1million messages/contacts)**
 
 1. Make sure SUPPRESS_MIGRATIONS=1 in your environment
 2. Before deploying the code, you will want to do most of these changes (manually) beforehand, ideally while the system is down. If you are planning to do these migrations before deploying the new code, we strongly recommend merging [this PR separate from the schema changes](https://github.com/MoveOnOrg/Spoke/pull/1346) BEFORE these steps to your production instance. It removes a few bugs which caused postgres to deadlock on message table updates. Instructions below assume Postgres.
