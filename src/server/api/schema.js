@@ -116,7 +116,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
   if (campaign.ingestMethod && campaign.contactData) {
     await accessRequired(user, organizationId, "ADMIN", /* superadmin*/ true);
     const organization = await loaders.organization.load(organizationId);
-    const ingestMethod = await getIngestMethod(campaign.ingestMethod, organization);
+    const ingestMethod = await getIngestMethod(campaign.ingestMethod, organization, user);
     if (ingestMethod) {
       let job = await JobRequest.save({
         queue_name: `${id}:edit_campaign`,
