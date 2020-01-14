@@ -6,7 +6,5 @@ export const schema = `
     contactNumber: String
     createdAt: Date
     isFromContact: Boolean
-    assignment: Assignment
-    campaignId: String
   }
 `;

@@ -4,11 +4,12 @@ import _ from "lodash";
 import { compose, map, reduce, getOr, find, filter, has } from "lodash/fp";
 
 import { r } from "../../models";
+import { getConfig } from "./config";
 
 const textRegex = RegExp(".*[A-Za-z0-9]+.*");
 
 const getDocument = async documentId => {
-  const auth = google.auth.fromJSON(JSON.parse(process.env.GOOGLE_SECRET));
+  const auth = google.auth.fromJSON(JSON.parse(getConfig("GOOGLE_SECRET")));
   auth.scopes = ["https://www.googleapis.com/auth/documents"];
 
   const docs = google.docs({
@@ -359,8 +360,13 @@ const importScriptFromDocument = async (campaignId, scriptUrl) => {
     throw new Error(`Invalid URL. This doesn't seem like a Google Docs URL.`);
   }
   const documentId = match[1];
-  const result = await getDocument(documentId);
-
+  let result;
+  try {
+    result = await getDocument(documentId);
+  } catch(err) {
+    console.error('ImportScript Failed', err);
+    throw new Error(`Retrieving Google doc failed due to access, secret config, or invalid google url`);
+  }
   const document = result.data.body.content;
   const sections = getSections(document);
 
