@@ -1,5 +1,94 @@
 # Release Notes
 
+_January 2020:_ Version 5.0
+**Note:** This is a major release and therefore requires a schema change. See the deploy steps section for details.
+
+This release includes the following improvements:
+
+- Upgrades react-formal, which gets rid of browser-console warnings related to prop-types
+- Fixes a bug for interaction step selection in safari
+- Fixes a bug that was causing the people page to not allow you to edit users
+- Adds smart color contrasting for the color picker in the campaign creation flow so that you can read the name of your campaign name no matter which color you make it
+- Adds an option to allow sharing a single postgres database across multiple Spoke instances, but keep data separate, e.g. using `heroku addons:attach`
+- Schema changes paving the way for scaling improvements
+- Fixes editing files in emacs by avoiding using unicode
+- Allows the Google Script Import feature to be deployed on AWS Lambda
+
+Deploy Steps:
+
+**Instructions for migrating large database instances (>1million messages/contacts)**
+
+1. Make sure SUPPRESS_MIGRATIONS=1 in your environment
+2. Before deploying the code, you will want to do most of these changes (manually) beforehand, ideally while the system is down. If you are planning to do these migrations before deploying the new code, we strongly recommend merging [this PR separate from the schema changes](https://github.com/MoveOnOrg/Spoke/pull/1346) BEFORE these steps to your production instance. It removes a few bugs which caused postgres to deadlock on message table updates. Instructions below assume Postgres.
+
+2.1 Create the additional columns:
+
+```
+ALTER TABLE message ADD COLUMN campaign_contact_id integer NULL REFERENCES campaign_contact(id);
+ALTER TABLE message ADD COLUMN messageservice_sid text NULL;
+ALTER TABLE message ALTER COLUMN assignment_id DROP NOT NULL;
+```
+
+These should be non-blocking and 'quick' -- i.e. downtime is probably unnecessary.
+
+2.2 Once those complete, you will want to create the campaign_contact_id INDEX:
+
+```
+CREATE INDEX CONCURRENTLY message_campaign_contact_id_index ON message (campaign_contact_id)
+```
+
+The CONCURRENTLY adverb should make this possible without downtime, but sometimes caution is best.
+
+2.3 (LOCKING: Best with system unstressed/down) Next you want to start filling in the campaign_contact_id. You may want to prioritize live or recent campaigns with additional qualifications or do this in batches with a command similar to:
+
+```
+UPDATE message
+SET campaign_contact_id = campaign_contact.id
+FROM campaign_contact
+WHERE message.assignment_id = campaign_contact.assignment_id
+  AND message.contact_number = campaign_contact.cell
+  AND message.id IN (
+    SELECT id
+    FROM message
+    WHERE campaign_contact_id IS NULL
+    LIMIT 1000000
+  )
+```
+
+Note the "LIMIT 100000" is doing it in batches of 1 million. Another strategy would be to find the lowest campaign_contact_id value for your live campaigns and add a `WHERE campaign_contact.id > XXX` where XXX is that value (or do the same thing for message.id > XXX).
+
+This WILL LOCK the MESSAGE table -- and thus stop processing of events, so you will want to do this off-hours, ideally with the system down.
+
+Once you have done this with the majority of messages, especially messages for live campaigns, you should now be ready for _real_ downtime.
+
+2.4 (LOCKING: _Requires_ downtime) The final step is to definitely take the system down if you haven't already. Complete updates to messageservice_sid and campaign_contact_id, there are some final steps:
+
+```
+CREATE INDEX CONCURRENTLY cell_messageservice_sid_idx ON message (contact_number, messageservice_sid);
+DROP INDEX message_contact_number_index;
+INSERT INTO knex_migrations (name, batch, migration_time) VALUES
+  ( '20191217125726_add_message_campaign_contact_id.js', 3, now()),
+  ( '20191217130355_change_message_indexes.js', 3, now()),
+  ('20191217130000_message_migrate_data.js', 3, now());
+```
+
+2.5 Deploy the new code!
+2.6 As soon as possible (after system is working) then run:
+
+```
+DROP INDEX message_assignment_id_index;
+```
+
+NOTES:
+
+- One of the main challenges besides migrating and indexing a large table is that many indexes on the `message` table with so many inserts, can tax the insertions too much and slow the system down. So, while we are indexing both assignment_id AND contact_number AND contact_number+messageservice_sid AND campaign_contact_id, the system is likely to be over stressed. This is why we stagger the index creation and then drop the unnecessary indexes as soon as we have the system up again. Obviously if ALL these steps are done during a single downtime, event, then that would work too -- but staggering them can allow shorter and stepped periods of downtime or migration.
+
+Thanks to all the contributors part of this release including:
+[lperson](https://github.com/lperson),
+[jeffm2001](https://github.com/jeffm2001),
+[SAnschutz](https://github.com/SAnschutz),
+[schuyler1d](https://github.com/schuyler1d)
+
 ## v4.1
 
 _January 2019:_ Version 4.1
@@ -38,7 +127,7 @@ Deploy Steps:
 - For larger instances, it's better to enable the environment variable `SUPPRESS_MIGRATIONS=1`
   and then follow the relevant steps of your platform to upgrade ( [Heroku](./HOWTO_HEROKU_DEPLOY.md#migrating-the-database), [AWS Lambda](./DEPLOYING_AWS_LAMBDA.md#migrating-the-database) )
 
-Thanks to all the contributors apart of this release including:
+Thanks to all the contributors part of this release including:
 [ibrand](https://github.com/ibrand),
 [lperson](https://github.com/lperson),
 [jeffm2001](https://github.com/jeffm2001),
@@ -58,7 +147,7 @@ This release includes the following improvements:
 - Fixes bug that made deployment fail for AWS Lambda
 - Adds redis into the testing suite for more reliable tests
 
-Thanks to all the contributors apart of this release including:
+Thanks to all the contributors part of this release including:
 [stevenfranks](https://github.com/stevenfranks),
 [ibrand](https://github.com/ibrand),
 [lperson](https://github.com/lperson),
@@ -78,7 +167,7 @@ This release includes the following improvements:
 - Fixes some bugs around copying campaigns
 - Fixes bugs for new instances deployed to Heroku
 
-Thanks to all the contributors apart of this release including:
+Thanks to all the contributors part of this release including:
 [filafb](https://github.com/filafb),
 [ibrand](https://github.com/ibrand),
 [lperson](https://github.com/lperson),
@@ -108,7 +197,7 @@ Note on Knex Migration:
 Anyone that is upgrading from a version released earlier than March 2018 should see this issue comment:
 https://github.com/MoveOnOrg/Spoke/pull/1154#issuecomment-510163604
 
-Thanks to all the contributors apart of this release including:
+Thanks to all the contributors part of this release including:
 [AnuradhaNaik](https://github.com/AnuradhaNaik),
 [azuzunaga](https://github.com/azuzunaga),
 [filafb](https://github.com/filafb),
@@ -141,7 +230,7 @@ Lambda:
 
 This version includes an update for the Node runtime environment. For current AWS Lambda Users - you can update your Node runtime to 8.10 by either visiting the `Function code` Section and moving the drop down to 8.10 or by running the following script: `claudia update --runtime nodejs8.10`. For new Lambda deployments, Claudia.js will default to Node 8.10.
 
-Thanks to all the contributors apart of this release including:
+Thanks to all the contributors part of this release including:
 [anasauceda](https://github.com/anasauceda),
 [azuzunaga](https://github.com/azuzunaga),
 [bchrobot](https://github.com/bchrobot),
