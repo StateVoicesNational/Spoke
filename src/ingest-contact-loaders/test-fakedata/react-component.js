@@ -42,11 +42,17 @@ export class CampaignContactsForm extends React.Component {
           onChange={value => {
             this.props.onChange(JSON.stringify(value));
           }}
-         />
+        />
         <List>
-          <ListItem primaryText={clientChoiceData} leftIcon={this.props.icons.check} />
+          <ListItem
+            primaryText={clientChoiceData}
+            leftIcon={this.props.icons.check}
+          />
           {this.props.jobResultMessage ? (
-            <ListItem primaryText={this.props.jobResultMessage} leftIcon={this.props.icons.warning} />
+            <ListItem
+              primaryText={this.props.jobResultMessage}
+              leftIcon={this.props.icons.warning}
+            />
           ) : null}
         </List>
 
@@ -54,7 +60,7 @@ export class CampaignContactsForm extends React.Component {
           type="submit"
           disabled={this.props.saveDisabled}
           label={this.props.saveLabel}
-         />
+        />
       </GSForm>
     );
   }
@@ -66,7 +72,6 @@ CampaignContactsForm.propTypes = {
   campaignIsStarted: type.bool,
 
   icons: type.object,
-  theme: type.object,
 
   saveDisabled: type.bool,
   saveLabel: type.string,
