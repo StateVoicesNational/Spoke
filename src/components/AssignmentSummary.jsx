@@ -3,6 +3,7 @@ import React, { Component } from "react";
 import { Card, CardActions, CardTitle } from "material-ui/Card";
 import { StyleSheet, css } from "aphrodite";
 import loadData from "../containers/hoc/load-data";
+import { setContrastingColor } from "../lib/color-contrast-helper";
 import gql from "graphql-tag";
 import RaisedButton from "material-ui/RaisedButton";
 import Badge from "material-ui/Badge";
@@ -127,13 +128,20 @@ export class AssignmentSummary extends Component {
       useDynamicAssignment
     } = assignment.campaign;
     const maxContacts = assignment.maxContacts;
+
+    const cardTitleTextColor = setContrastingColor(primaryColor);
+
     return (
       <div className={css(styles.container)}>
         <Card key={assignment.id}>
           <CardTitle
             title={title}
+            titleStyle={{ color: cardTitleTextColor }}
             subtitle={`${description} - ${moment(dueBy).format("MMM D YYYY")}`}
-            style={{ backgroundColor: primaryColor }}
+            subtitleStyle={{ color: cardTitleTextColor }}
+            style={{
+              backgroundColor: primaryColor
+            }}
             children={
               logoImageUrl ? (
                 <img src={logoImageUrl} className={css(styles.image)} />
