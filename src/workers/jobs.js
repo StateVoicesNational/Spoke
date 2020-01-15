@@ -968,8 +968,14 @@ export async function exportCampaign(job) {
       .select()
       .where("assignment_id", assignment.id);
     const messages = await r
-      .table("message")
-      .getAll(assignment.id, { index: "assignment_id" });
+      .knex("message")
+      .leftJoin(
+        "campaign_contact",
+        "campaign_contact.id",
+        "message.campaign_contact_id"
+      )
+      .select("message.*", "campaign_contact.assignment_id")
+      .where("campaign_contact.assignment_id", assignment.id);
     let convertedMessages = messages.map(message => {
       const messageRow = {
         assignmentId: message.assignment_id,
@@ -979,7 +985,8 @@ export async function exportCampaign(job) {
         isFromContact: message.is_from_contact,
         sendStatus: message.send_status,
         attemptedAt: moment(message.created_at).toISOString(),
-        text: message.text
+        text: message.text,
+        errorCode: message.error_code
       };
       return messageRow;
     });
@@ -1006,6 +1013,7 @@ export async function exportCampaign(job) {
           ? "true"
           : "false",
         "contact[messageStatus]": contact.message_status,
+        "contact[errorCode]": contact.error_code,
         "contact[external_id]": contact.external_id
       };
       const customFields = JSON.parse(contact.custom_fields);

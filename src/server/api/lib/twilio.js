@@ -54,9 +54,16 @@ async function convertMessagePartsToMessage(messageParts) {
     .replace(/\0/g, ""); // strip all UTF-8 null characters (0x00)
 
   const lastMessage = await getLastMessage({
-    contactNumber
+    contactNumber,
+    service: "twilio",
+    messageServiceSid: serviceMessages[0].MessagingServiceSid
   });
   if (!lastMessage) {
+    console.error(
+      "Message thread not found (probably text spam)",
+      contactNumber,
+      serviceMessages[0]
+    );
     return;
   }
   return new Message({
@@ -66,7 +73,8 @@ async function convertMessagePartsToMessage(messageParts) {
     text,
     error_code: null,
     service_id: firstPart.service_id,
-    assignment_id: lastMessage.assignment_id,
+    campaign_contact_id: lastMessage.campaign_contact_id,
+    messageservice_sid: serviceMessages[0].MessagingServiceSid,
     service: "twilio",
     send_status: "DELIVERED"
   });
@@ -138,7 +146,7 @@ function parseMessageText(message) {
   return params;
 }
 
-async function sendMessage(message, contact, trx) {
+async function sendMessage(message, contact, trx, organization) {
   if (!twilio) {
     log.warn(
       "cannot actually send SMS message -- twilio is not fully configured:",
@@ -158,16 +166,6 @@ async function sendMessage(message, contact, trx) {
     if (message.service !== "twilio") {
       log.warn("Message not marked as a twilio message", message.id);
     }
-
-    const messageParams = Object.assign(
-      {
-        to: message.contact_number,
-        body: message.text,
-        messagingServiceSid: process.env.TWILIO_MESSAGE_SERVICE_SID,
-        statusCallback: process.env.TWILIO_STATUS_CALLBACK_URL
-      },
-      parseMessageText(message)
-    );
 
     let twilioValidityPeriod = process.env.TWILIO_MESSAGE_VALIDITY_PERIOD;
 
@@ -199,13 +197,38 @@ async function sendMessage(message, contact, trx) {
         );
       }
     }
+    const messageToSave = {
+      ...message
+    };
 
-    if (twilioValidityPeriod) {
-      messageParams.validityPeriod = twilioValidityPeriod;
-    }
+    // FUTURE: this can be based on (contact, organization)
+    // Note organization won't always be available, so we'll need to conditionally look it up based on contact
+    const messagingServiceSid = process.env.TWILIO_MESSAGE_SERVICE_SID;
+    messageToSave.messageservice_sid = messagingServiceSid;
 
+    const messageParams = Object.assign(
+      {
+        to: message.contact_number,
+        body: message.text,
+        messagingServiceSid: messagingServiceSid,
+        statusCallback: process.env.TWILIO_STATUS_CALLBACK_URL
+      },
+      twilioValidityPeriod ? { validityPeriod: twilioValidityPeriod } : {},
+      parseMessageText(messageToSave)
+    );
+
+    console.log("twilioMessage", messageParams);
     twilio.messages.create(messageParams, (err, response) => {
-      postMessageSend(message, contact, trx, resolve, reject, err, response);
+      postMessageSend(
+        messageToSave,
+        contact,
+        trx,
+        resolve,
+        reject,
+        err,
+        response,
+        organization
+      );
     });
   });
 }
@@ -217,12 +240,13 @@ export function postMessageSend(
   resolve,
   reject,
   err,
-  response
+  response,
+  organization
 ) {
   const messageToSave = {
     ...message
   };
-  log.info("messageToSave", messageToSave);
+  log.info("messageToSave", messageToSave, response, err);
   let hasError = false;
   if (err) {
     hasError = true;
@@ -266,6 +290,7 @@ export function postMessageSend(
       Message.save(messageToSave, options),
       contactUpdateQuery
     ]).then(() => {
+      console.log("Saved message error status", messageToSave, options, err);
       reject(
         err ||
           (response
@@ -286,9 +311,13 @@ export function postMessageSend(
         sent_at: new Date()
       },
       options
-    ).then((newMessage, saveError) => {
-      resolve(newMessage);
-    });
+    )
+      .then((newMessage, saveError) => {
+        resolve(newMessage);
+      })
+      .catch(err => {
+        reject(err);
+      });
   }
 }
 
@@ -298,7 +327,7 @@ async function handleDeliveryReport(report) {
     await Log.save({
       message_sid: report.MessageSid,
       body: JSON.stringify(report),
-      error_code: Number(report.ErrorCode) || 0,
+      error_code: Number(report.ErrorCode || 0) || 0,
       from_num: report.From || null,
       to_num: report.To || null
     });
@@ -309,19 +338,29 @@ async function handleDeliveryReport(report) {
       .limit(1)(0)
       .default(null);
     if (message) {
-      message.service_response_at = new Date();
+      const changes = {
+        service_response_at: new Date()
+      };
       if (messageStatus === "delivered") {
-        message.send_status = "DELIVERED";
+        changes.send_status = "DELIVERED";
       } else if (
         messageStatus === "failed" ||
         messageStatus === "undelivered"
       ) {
-        message.send_status = "ERROR";
-        message.error_code = Number(report.ErrorCode) || 0;
+        changes.send_status = "ERROR";
+        const errorCode = Number(report.ErrorCode || 0) || 0;
+        changes.error_code = errorCode;
+        if (message.campaign_contact_id) {
+          await r
+            .knex("campaign_contact")
+            .where("id", message.campaign_contact_id)
+            .update("error_code", errorCode);
+        }
       }
-      await Message.save(message, { conflict: "update" });
-
-      // FUTURE: update campaign_contact.error_code based on message.campaign_contact_id
+      await r
+        .knex("message")
+        .where("id", message.id)
+        .update(changes);
     }
   }
 }
@@ -348,20 +387,21 @@ async function handleIncomingMessage(message) {
     user_number: userNumber,
     contact_number: contactNumber
   });
-  if (!process.env.JOBS_SAME_PROCESS) {
-    // If multiple processes, just insert the message part and let another job handle it
-    await r.knex("pending_message_part").insert(pendingMessagePart);
-  } else {
+  if (process.env.JOBS_SAME_PROCESS || global.JOBS_SAME_PROCESS) {
     // Handle the message directly and skip saving an intermediate part
     const finalMessage = await convertMessagePartsToMessage([
       pendingMessagePart
     ]);
+    console.log("Contact reply", finalMessage, pendingMessagePart);
     if (finalMessage) {
       if (message.spokeCreatedAt) {
         finalMessage.created_at = message.spokeCreatedAt;
       }
       await saveNewIncomingMessage(finalMessage);
     }
+  } else {
+    // If multiple processes, just insert the message part and let another job handle it
+    await r.knex("pending_message_part").insert(pendingMessagePart);
   }
 
   // store mediaurl data in Log, so it can be extracted manually

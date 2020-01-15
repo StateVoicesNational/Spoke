@@ -61,11 +61,10 @@ it("should send an inital message to test contacts", async () => {
   expect(campaignContact.messages[0].text).toBe(message.text);
 
   const expectedDbMessage = {
-    // user_id: testTexterUser.id, //FUTURE
+    user_id: testTexterUser.id,
     contact_number: testContact.cell,
     text: message.text,
-    assignment_id: assignmentId
-    // campaign_contact_id: testContact.id //FUTURE
+    campaign_contact_id: testContact.id
   };
 
   // wait for fakeservice to mark the message as sent
@@ -132,10 +131,9 @@ it("should be able to receive a response and reply (using fakeService)", async (
       expect.objectContaining({
         send_status: "DELIVERED",
         text: `responding to ${message.text}`,
-        // user_id: testTexterUser.id, //FUTURE
+        user_id: testTexterUser.id,
         contact_number: testContact.cell,
-        assignment_id: assignmentId
-        // campaign_contact_id: testContact.id //FUTURE
+        campaign_contact_id: testContact.id
       })
     );
   });
