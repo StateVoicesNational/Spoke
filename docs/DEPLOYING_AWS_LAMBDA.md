@@ -122,7 +122,7 @@ Create an RDS instance running Postgres 10.4 with the following settings:
 
 ### Configure Deploy Environment
 
-1. First make sure you are running node 8.10 (compatible with AWS Lambda) `nvm install 8.10; nvm use 8.10`
+1. First make sure you are running node 10.3 (compatible with AWS Lambda) `nvm install 10.3; nvm use`
 2. Install Claudia js: `npm install -g claudia`
 3. Create an admin user on AWS selecting programmatic access. Add that profile to `~/.aws/credentials` giving it a nickname to use later in shell commands:
    ```
@@ -174,6 +174,17 @@ Do **NOT** set:
 
 For large production environments, it might also be a good idea to add `"SUPPRESS_MIGRATIONS": "1"` so that any time you update the schema with a version upgrade,
 you can manually run the migration (see below) rather than it accidentally trigger on multiple lambdas at once.
+
+
+#### Environment variable maximum: 4K
+
+AWS Lambda has a maximum size limit for all environment variable data of 4K -- this should generally be harmless.
+However, some environment variables like GOOGLE_SECRET for script import can be quite large.  In this case, create
+another file (does not have to be located in your Spoke project directory) in the same format as production-env.json
+with GOOGLE_SECRET as a top-level JSON key (currently, no other variables are supported from this file).
+
+Then set the variable in production-env.json CONFIG_FILE: "/absolute/path/to/configfile.json" -- during deployment (below),
+this file will be copied into the lambda function zip file and get deployed with the rest of the code.
 
 ## Deploy
 
