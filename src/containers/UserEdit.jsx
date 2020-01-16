@@ -271,28 +271,31 @@ const mapQueriesToProps = ({ ownProps }) => {
   }
 };
 
+export const editUserMutation = `
+  mutation editUser(
+    $organizationId: String!
+    $userId: Int!
+    $userData: UserInput
+  ) {
+    editUser(
+      organizationId: $organizationId
+      userId: $userId
+      userData: $userData
+    ) {
+      id
+      firstName
+      lastName
+      cell
+      email
+    }
+  }`;
+
 const mapMutationsToProps = ({ ownProps }) => {
   if (ownProps.userId) {
     return {
       editUser: userData => ({
         mutation: gql`
-          mutation editUser(
-            $organizationId: String!
-            $userId: Int!
-            $userData: UserInput
-          ) {
-            editUser(
-              organizationId: $organizationId
-              userId: $userId
-              userData: $userData
-            ) {
-              id
-              firstName
-              lastName
-              cell
-              email
-            }
-          }
+          ${editUserMutation}
         `,
         variables: {
           userId: ownProps.userId,

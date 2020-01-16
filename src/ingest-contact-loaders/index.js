@@ -16,6 +16,7 @@ function getIngestMethods() {
     try {
       const c = require(`./${name}/index.js`);
       ingestMethods[name] = c;
+      // console.log('LOADING INGEST METHOD', name, c);
     } catch (err) {
       console.error("CONTACT_LOADERS failed to load ingestMethod", name);
     }
@@ -40,10 +41,10 @@ async function getSetCacheableResult(cacheKey, fallbackFunc) {
 }
 
 async function getIngestAvailability(name, ingestMethod, organization, user) {
-  return await getSetCacheableResult(
+  return (await getSetCacheableResult(
     availabilityCacheKey(name, organization.id, user.id),
     async () => ingestMethod.available(organization, user)
-  );
+  )).result;
 }
 
 export async function getIngestMethod(name, organization, user) {
@@ -54,18 +55,21 @@ export async function getIngestMethod(name, organization, user) {
       organization,
       user
     );
-    if (isAvail.result) {
+    // console.log('getIngestMethod', name, organization, user, 'isavail', isAvail);
+    if (isAvail) {
       return CONFIGURED_INGEST_METHODS[name];
     }
   }
 }
 
 export async function getAvailableIngestMethods(organization, user) {
-  return Promise.all(
+  const ingestMethods = await Promise.all(
     Object.keys(CONFIGURED_INGEST_METHODS).map(name =>
       getIngestMethod(name, organization, user)
     )
   );
+  // console.log('availableIngestMethods', ingestMethods);
+  return ingestMethods.filter(x => x);
 }
 
 export async function getMethodChoiceData(

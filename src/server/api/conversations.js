@@ -101,7 +101,7 @@ export async function getConversations(
     "campaign_contact.message_status",
     "campaign_contact.is_opted_out",
     "campaign_contact.updated_at",
-    "campaign_contact.assignment_id",
+    "assignment.id as assignment_id",
     "opt_out.cell as opt_out_cell",
     "user.id as u_id",
     "user.first_name as u_first_name",
@@ -129,9 +129,7 @@ export async function getConversations(
   query = query.whereIn("campaign_contact.id", ccIds);
 
   query = query.leftJoin("message", table => {
-    table
-      .on("message.assignment_id", "=", "assignment.id")
-      .andOn("message.contact_number", "=", "campaign_contact.cell");
+    table.on("message.campaign_contact_id", "=", "campaign_contact.id");
   });
 
   query = query
@@ -218,9 +216,7 @@ export async function getCampaignIdMessageIdsAndCampaignIdContactIdsMaps(
   );
 
   query = query.leftJoin("message", table => {
-    table
-      .on("message.assignment_id", "=", "assignment.id")
-      .andOn("message.contact_number", "=", "campaign_contact.cell");
+    table.on("message.campaign_contact_id", "=", "campaign_contact.id");
   });
 
   query = query.orderBy("cc_id");
@@ -311,21 +307,6 @@ export async function reassignConversations(
         campaignId,
         assignmentId: assignmentId.toString()
       });
-    }
-    for (const [campaignId, messageIds] of campaignIdMessagesIdsMap) {
-      const assignmentId = campaignIdAssignmentIdMap.get(campaignId);
-
-      await r
-        .knex("message")
-        .whereIn(
-          "id",
-          messageIds.map(messageId => {
-            return messageId;
-          })
-        )
-        .update({
-          assignment_id: assignmentId
-        });
     }
   } catch (error) {
     log.error(error);

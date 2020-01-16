@@ -101,12 +101,15 @@ export const resolvers = {
         "SUPERVOLUNTEER",
         true
       );
-      return r
-        .table("assignment")
-        .getAll(campaign.id, { index: "campaign_id" })
-        .eqJoin("id", r.table("message"), { index: "assignment_id" })
-        .filter({ is_from_contact: false })
-        .count();
+      return r.getCount(
+        r
+          .knex("campaign_contact")
+          .join("message", "message.campaign_contact_id", "campaign_contact.id")
+          .where({
+            "campaign_contact.campaign_id": campaign.id,
+            "message.is_from_contact": false
+          })
+      );
     },
     receivedMessagesCount: async (campaign, _, { user }) => {
       await accessRequired(
@@ -115,14 +118,14 @@ export const resolvers = {
         "SUPERVOLUNTEER",
         true
       );
-      return (
+      return r.getCount(
         r
-          .table("assignment")
-          .getAll(campaign.id, { index: "campaign_id" })
-          // TODO: NEEDSTESTING -- see above setMessagesCount()
-          .eqJoin("id", r.table("message"), { index: "assignment_id" })
-          .filter({ is_from_contact: true })
-          .count()
+          .knex("campaign_contact")
+          .join("message", "message.campaign_contact_id", "campaign_contact.id")
+          .where({
+            "campaign_contact.campaign_id": campaign.id,
+            "message.is_from_contact": true
+          })
       );
     },
     optOutsCount: async (campaign, _, { user }) => {
