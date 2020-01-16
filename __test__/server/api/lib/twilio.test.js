@@ -1,6 +1,8 @@
 /* eslint-disable no-unused-expressions, consistent-return */
 import { r, Message } from "../../../../src/server/models/";
 import { postMessageSend } from "../../../../src/server/api/lib/twilio";
+import twilio from "../../../../src/server/api/lib/twilio";
+import { getLastMessage } from "../../../../src/server/api/lib/message-sending";
 
 import {
   setupTest,
@@ -152,6 +154,43 @@ it("postMessageSend error from twilio response should fail immediately", async (
     expect(message.error_code).toEqual(11200);
     expect(message.send_status).toEqual("ERROR");
   }
+});
+
+it("handleIncomingMessage should save message and update contact state", async () => {
+  const message = await Message.save({
+    assignment_id: assignmentId,
+    campaign_contact_id: dbCampaignContact.id,
+    contact_number: dbCampaignContact.cell,
+    messageservice_sid: "fakeSid_MK123",
+    is_from_contact: false,
+    send_status: "SENT",
+    service: "twilio",
+    text: "some message",
+    user_id: testTexterUser.id,
+    service_id: "123123123"
+  });
+  const lastMessage = await getLastMessage({
+    contactNumber: dbCampaignContact.cell,
+    service: "twilio",
+    messageServiceSid: "fakeSid_MK123"
+  });
+
+  expect(lastMessage.campaign_contact_id).toEqual(dbCampaignContact.id);
+  await twilio.handleIncomingMessage({
+    From: dbCampaignContact.cell,
+    To: "+16465559999",
+    MessageSid: "TestMessageId",
+    Body: "Fake reply",
+    MessagingServiceSid: "fakeSid_MK123"
+  });
+  const [reply] = await r.knex("message").where("service_id", "TestMessageId");
+  dbCampaignContact = await getCampaignContact(dbCampaignContact.id);
+  expect(reply.send_status).toEqual("DELIVERED");
+  expect(reply.campaign_contact_id).toEqual(dbCampaignContact.id);
+  expect(reply.contact_number).toEqual(dbCampaignContact.cell);
+  expect(reply.user_number).toEqual("+16465559999");
+  expect(reply.messageservice_sid).toEqual("fakeSid_MK123");
+  expect(dbCampaignContact.message_status).toEqual("needsResponse");
 });
 
 // FUTURE
