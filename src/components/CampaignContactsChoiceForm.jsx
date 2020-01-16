@@ -45,16 +45,16 @@ export default class CampaignContactsChoiceForm extends React.Component {
 
   getCurrentMethod() {
     const { ingestMethodChoices } = this.props;
-    if (this.state.ingestMethod) {
-      return ingestMethodChoices.filter(
-        m => m.name === this.state.ingestMethod
-      )[0];
+    // console.log('getcurrentmethod', this.state, ingestMethodChoices);
+    if (this.state.ingestMethodIndex) {
+      return ingestMethodChoices[this.state.ingestMethodIndex];
     }
     return ingestMethodChoices[0];
   }
 
-  ingestMethodChanged(event, index, value) {
-    this.setState({ ingestMethod: value });
+  ingestMethodChanged(event, index, val) {
+    // console.log('ingestMethodChanged', index, val, event);
+    this.setState({ ingestMethodIndex: index });
   }
 
   handleChange(contactData) {
@@ -99,7 +99,7 @@ export default class CampaignContactsChoiceForm extends React.Component {
               value={ingestMethodName}
               floatingLabelText={"Contact Load Method"}
               floatingLabelFixed
-              onChange={this.ingestMethodChanged}
+              onChange={(e, index, val) => this.ingestMethodChanged(e, index, val)}
             >
               {ingestMethodChoices.map(methodChoice => (
                 <MenuItem
