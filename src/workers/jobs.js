@@ -1,6 +1,5 @@
 import {
   r,
-  datawarehouse,
   cacheableData,
   Assignment,
   Campaign,
@@ -11,7 +10,6 @@ import {
 } from "../server/models";
 import { log, gunzip, zipToTimeZone, convertOffsetsToStrings } from "../lib";
 import { updateJob } from "./lib";
-import { getFormattedPhoneNumber } from "../lib/phone-format.js";
 import serviceMap from "../server/api/lib/services";
 import {
   getLastMessage,
@@ -47,7 +45,6 @@ const defensivelyDeleteJob = async job => {
 };
 
 const zipMemoization = {};
-let warehouseConnection = null;
 
 function optOutsByOrgId(orgId) {
   return r.knex

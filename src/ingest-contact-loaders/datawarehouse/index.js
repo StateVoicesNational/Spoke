@@ -1,6 +1,18 @@
-import { completeContactLoad } from "../../workers/jobs";
-import { r, datawarehouse, CampaignContact } from "../../server/models";
+import {
+  completeContactLoad,
+  getTimezoneByZip,
+  sendJobToAWSLambda
+} from "../../workers/jobs";
+import {
+  r,
+  datawarehouse,
+  CampaignContact,
+  Campaign
+} from "../../server/models";
 import { getConfig, hasConfig } from "../../server/api/lib/config";
+import { getFormattedPhoneNumber } from "../../lib/phone-format.js";
+
+let warehouseConnection = null;
 
 export const name = "datawarehouse";
 
@@ -68,17 +80,24 @@ export async function getClientChoiceData(
   let isConnected = false;
   let messages = [];
   try {
-    const [res] = datawarehouse.raw("select 1 as result");
-    if (res === 1) {
-      isConnected = true;
+    warehouseConnection = warehouseConnection || datawarehouse();
+    if (warehouseConnection) {
+      const res = await warehouseConnection.raw("select 1 as result");
+      console.log("warehouse connection test result", res);
+      if (res && res.rows && res.rows[0] && res.rows[0].result === 1) {
+        isConnected = true;
+      }
+    } else {
+      messages.push("no connection");
     }
   } catch (err) {
+    console.error("warehouse connection error", err);
     isConnected = false;
     messages.push(err);
   }
 
   return {
-    data: JSON.stringify({ isConnectd, messages }),
+    data: JSON.stringify({ isConnected, messages }),
     expiresSeconds: 3600 // an hour
   };
 }
@@ -104,16 +123,18 @@ export async function processContactLoad(job, maxContacts) {
   const campaignId = job.campaign_id;
   let jobMessages;
 
-  await r
-    .knex("campaign_contact")
-    .where("campaign_id", campaignId)
-    .delete();
-
-  const contactData = JSON.parse(job.payload);
-
-  // TODO
-
-  await completeContactLoad(job, jobMessages);
+  loadContactsFromDataWarehouse(job, maxContacts)
+    .then(res => {
+      console.log("datawarehouse: finished running", job.id, job.campaign_id);
+    })
+    .catch(err => {
+      console.error(
+        "datawarehouse: failed running",
+        job.id,
+        job.campaign_id,
+        err
+      );
+    });
 }
 
 export async function loadContactsFromDataWarehouseFragment(jobEvent) {
@@ -215,7 +236,7 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
         contact.zip &&
         !contactCustomFields.hasOwnProperty("timezone_offset")
       ) {
-        contact.timezone_offset = getTimezoneByZip(contact.zip);
+        contact.timezone_offset = await getTimezoneByZip(contact.zip);
       }
       if (contactCustomFields.hasOwnProperty("timezone_offset")) {
         contact.timezone_offset = contactCustomFields["timezone_offset"];
@@ -252,19 +273,6 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
       // now that we've saved them all, we delete everyone that is opted out locally
       // doing this in one go so that we can get the DB to do the indexed cell matching
 
-      // delete optout cells
-      await r
-        .knex("campaign_contact")
-        .whereIn("cell", getOptOutSubQuery(jobEvent.organizationId))
-        .where("campaign_id", jobEvent.campaignId)
-        .delete()
-        .then(result => {
-          console.log(
-            `loadContactsFromDataWarehouseFragment # of contacts opted out removed from DW query (${jobEvent.campaignId}): ${result}`
-          );
-          validationStats.optOutCount = result;
-        });
-
       // delete invalid cells
       await r
         .knex("campaign_contact")
@@ -277,36 +285,8 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
           );
           validationStats.invalidCellCount = result;
         });
-
-      // delete duplicate cells
-      await r
-        .knex("campaign_contact")
-        .whereIn(
-          "id",
-          r
-            .knex("campaign_contact")
-            .select("campaign_contact.id")
-            .leftJoin("campaign_contact AS c2", function joinSelf() {
-              this.on("c2.campaign_id", "=", "campaign_contact.campaign_id")
-                .andOn("c2.cell", "=", "campaign_contact.cell")
-                .andOn("c2.id", ">", "campaign_contact.id");
-            })
-            .where("campaign_contact.campaign_id", jobEvent.campaignId)
-            .whereNotNull("c2.id")
-        )
-        .delete()
-        .then(result => {
-          console.log(
-            `loadContactsFromDataWarehouseFragment # of contacts with duplicate cells removed from DW query (${jobEvent.campaignId}): ${result}`
-          );
-          validationStats.duplicateCellCount = result;
-        });
     }
-    await r
-      .table("job_request")
-      .get(jobEvent.jobId)
-      .delete();
-    await cacheableData.campaign.reload(jobEvent.campaignId);
+    completeContactLoad(job, jobMessages);
     return { completed: 1, validationStats };
   } else if (jobEvent.part < jobEvent.totalParts - 1) {
     const newPart = jobEvent.part + 1;
@@ -333,7 +313,7 @@ export async function loadContactsFromDataWarehouseFragment(jobEvent) {
 export async function loadContactsFromDataWarehouse(job) {
   console.log("STARTING loadContactsFromDataWarehouse", job.payload);
   const jobMessages = [];
-  const sqlQuery = job.payload;
+  const sqlQuery = JSON.parse(job.payload).contactSql;
 
   if (!sqlQuery.startsWith("SELECT") || sqlQuery.indexOf(";") >= 0) {
     log.error(
