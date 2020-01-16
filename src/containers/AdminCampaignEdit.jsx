@@ -33,7 +33,6 @@ const campaignInfoFragment = `
   isStarted
   isArchived
   contactsCount
-  datawarehouseAvailable
   customFields
   useDynamicAssignment
   logoImageUrl
@@ -312,13 +311,15 @@ class AdminCampaignEdit extends React.Component {
         title: "Contacts",
         content: CampaignContactsChoiceForm,
         keys: ["contactData", "ingestMethod"],
-        checkCompleted: () => this.props.campaignData.campaign.contactsCount > 0,
+        checkCompleted: () =>
+          this.props.campaignData.campaign.contactsCount > 0,
         checkSaved: () => !this.state.campaignFormValues.contactData,
         blocksStarting: true,
         expandAfterCampaignStarts: false,
         expandableBySuperVolunteers: false,
         extraProps: {
-          ingestMethodChoices: this.props.campaignData.campaign.ingestMethodsAvailable || "",
+          ingestMethodChoices:
+            this.props.campaignData.campaign.ingestMethodsAvailable || "",
           jobResultMessage:
             (
               this.props.pendingJobsData.campaign.pendingJobs.filter(job =>
