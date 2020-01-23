@@ -20,7 +20,7 @@ const check = <CheckIcon color={theme.colors.green} />;
 const warning = <WarningIcon color={theme.colors.orange} />;
 const error = <ErrorIcon color={theme.colors.red} />;
 
-const icons = {
+export const icons = {
   check,
   warning,
   error

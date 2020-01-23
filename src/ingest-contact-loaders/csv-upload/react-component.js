@@ -11,7 +11,6 @@ import CampaignFormSectionHeading from "../../components/CampaignFormSectionHead
 import { StyleSheet, css } from "aphrodite";
 import theme from "../../styles/theme";
 import yup from "yup";
-import { dataTest } from "../../lib/attributes";
 
 const innerStyles = {
   button: {
@@ -55,7 +54,6 @@ export class CampaignContactsForm extends React.Component {
       parseCSV(
         file,
         ({ contacts, customFields, validationStats, error }) => {
-          console.log('FINAL', contacts, customFields, validationStats, error);
           if (error) {
             this.handleUploadError(error);
           } else if (contacts.length === 0) {
@@ -129,7 +127,6 @@ export class CampaignContactsForm extends React.Component {
       <List>
         <Subheader>Uploaded</Subheader>
         <ListItem
-          {...dataTest("uploadedContacts")}
           primaryText={`${contactsCount} contacts`}
           leftIcon={this.props.icons.check}
         />
@@ -187,15 +184,15 @@ export class CampaignContactsForm extends React.Component {
     return (
       <div>
         <RaisedButton
-          {...dataTest("uploadButton")}
           style={innerStyles.button}
           label={uploading ? "Uploading..." : "Upload contacts"}
           labelPosition="before"
           disabled={uploading}
-          onClick={() => document.querySelector("#contact-upload").click()}
+          onClick={() => this.uploadButton.click()}
         />
         <input
           id="contact-upload"
+          ref={input => input && (this.uploadButton = input)}
           type="file"
           className={css(styles.exampleImageInput)}
           onChange={this.handleUpload}
@@ -229,7 +226,7 @@ export class CampaignContactsForm extends React.Component {
           {this.renderValidationStats()}
           {contactUploadError ? (
             <List>
-              <ListItem primaryText={contactUploadError} leftIcon={this.props.icons.error} />
+              <ListItem id="uploadError" primaryText={contactUploadError} leftIcon={this.props.icons.error} />
             </List>
           ) : (
             ""
