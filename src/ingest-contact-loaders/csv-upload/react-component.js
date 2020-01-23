@@ -54,7 +54,6 @@ export class CampaignContactsForm extends React.Component {
       parseCSV(
         file,
         ({ contacts, customFields, validationStats, error }) => {
-          console.log('FINAL', contacts, customFields, validationStats, error);
           if (error) {
             this.handleUploadError(error);
           } else if (contacts.length === 0) {
@@ -227,7 +226,7 @@ export class CampaignContactsForm extends React.Component {
           {this.renderValidationStats()}
           {contactUploadError ? (
             <List>
-              <ListItem primaryText={contactUploadError} leftIcon={this.props.icons.error} />
+              <ListItem id="uploadError" primaryText={contactUploadError} leftIcon={this.props.icons.error} />
             </List>
           ) : (
             ""
