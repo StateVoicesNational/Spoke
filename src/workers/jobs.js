@@ -274,63 +274,6 @@ export async function unzipPayload(job) {
   return JSON.parse(await gunzip(Buffer.from(job.payload, "base64")));
 }
 
-export async function uploadContacts(job) {
-  const campaignId = job.campaign_id;
-  // We do this deletion in schema.js but we do it again here just in case the the queue broke and we had a backlog of contact uploads for one campaign
-  const campaign = await Campaign.get(campaignId);
-  const organization = await Organization.get(campaign.organization_id);
-  const orgFeatures = JSON.parse(organization.features || "{}");
-
-  const jobMessages = [];
-
-  await r
-    .table("campaign_contact")
-    .getAll(campaignId, { index: "campaign_id" })
-    .delete();
-  const maxPercentage = 100;
-  let contacts = await unzipPayload(job);
-  const chunkSize = 1000;
-
-  const maxContacts = parseInt(
-    orgFeatures.hasOwnProperty("maxContacts")
-      ? orgFeatures.maxContacts
-      : process.env.MAX_CONTACTS || 0,
-    10
-  );
-
-  if (maxContacts) {
-    // note: maxContacts == 0 means no maximum
-    contacts = contacts.slice(0, maxContacts);
-  }
-
-  const numChunks = Math.ceil(contacts.length / chunkSize);
-
-  for (let index = 0; index < contacts.length; index++) {
-    const datum = contacts[index];
-    if (datum.zip) {
-      // using memoization and large ranges of homogenous zips
-      datum.timezone_offset = await getTimezoneByZip(datum.zip);
-    }
-  }
-
-  for (let index = 0; index < numChunks; index++) {
-    await updateJob(job, Math.round((maxPercentage / numChunks) * index)).catch(
-      err => {
-        console.log("Error updating job:", campaignId, job.id, err);
-      }
-    );
-    const savePortion = contacts.slice(
-      index * chunkSize,
-      (index + 1) * chunkSize
-    );
-    await CampaignContact.save(savePortion).catch(err => {
-      console.log("Error saving campaign contacts:", campaignId, err);
-    });
-  }
-
-  await completeContactLoad(job, jobMessages);
-}
-
 export async function assignTexters(job) {
   // Assigns UNassigned campaign contacts to texters
   // It does NOT re-assign contacts to other texters
