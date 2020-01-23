@@ -5,9 +5,6 @@ import {
   dispatchContactIngestLoad,
   exportCampaign,
   processSqsMessages,
-  uploadContacts,
-  loadContactsFromDataWarehouse,
-  loadContactsFromDataWarehouseFragment,
   assignTexters,
   sendMessages,
   handleIncomingMessageParts,
@@ -30,8 +27,6 @@ export { seedZipCodes } from "../server/seeds/seed-zip-codes";
 
 const jobMap = {
   export: exportCampaign,
-  upload_contacts: uploadContacts,
-  upload_contacts_sql: loadContactsFromDataWarehouse,
   assign_texters: assignTexters,
   import_script: importScript
 };
@@ -215,26 +210,6 @@ export async function databaseMigrationChange(
   return "completed databaseMigrationChange";
 }
 
-export async function loadContactsFromDataWarehouseFragmentJob(
-  event,
-  dispatcher,
-  eventCallback
-) {
-  const eventAsJob = event;
-  console.log("LAMBDA INVOCATION job-processes", event);
-  try {
-    const rv = await loadContactsFromDataWarehouseFragment(eventAsJob);
-    if (eventCallback) {
-      eventCallback(null, rv);
-    }
-  } catch (err) {
-    if (eventCallback) {
-      eventCallback(err, null);
-    }
-  }
-  return "completed";
-}
-
 const processMap = {
   processJobs,
   messageSender01,
@@ -280,7 +255,6 @@ export default {
   runDatabaseMigrations,
   databaseMigrationChange,
   dispatchProcesses,
-  loadContactsFromDataWarehouseFragmentJob,
   ping,
   processJobs,
   checkMessageQueue,
