@@ -47,6 +47,12 @@ async function getIngestAvailability(name, ingestMethod, organization, user) {
   )).result;
 }
 
+export function rawIngestMethod(name) {
+  /// RARE: You should almost always use getIngestMethod() below,
+  /// unless workflow has already tested availability for the org-user
+  return CONFIGURED_INGEST_METHODS[name];
+}
+
 export async function getIngestMethod(name, organization, user) {
   if (name in CONFIGURED_INGEST_METHODS) {
     const isAvail = await getIngestAvailability(
