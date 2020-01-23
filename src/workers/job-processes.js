@@ -2,6 +2,7 @@ import { r } from "../server/models";
 import { sleep, getNextJob } from "./lib";
 import { log } from "../lib";
 import {
+  dispatchContactIngestLoad,
   exportCampaign,
   processSqsMessages,
   uploadContacts,
@@ -44,7 +45,11 @@ export async function processJobs() {
       await sleep(1000);
       const job = await getNextJob();
       if (job) {
-        await jobMap[job.job_type](job);
+        if (job.job_type in jobMap) {
+          await jobMap[job.job_type](job);
+        } else if (job.job_type.startsWith("ingest.")) {
+          await dispatchContactIngestLoad(job);
+        }
       }
 
       const twoMinutesAgo = new Date(new Date() - 1000 * 60 * 2);

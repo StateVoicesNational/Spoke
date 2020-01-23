@@ -8,6 +8,7 @@ import { gzip, makeTree } from "../../lib";
 import { capitalizeWord } from "./lib/utils";
 import {
   assignTexters,
+  dispatchContactIngestLoad,
   exportCampaign,
   importScript,
   loadContactsFromDataWarehouse,
@@ -120,14 +121,14 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     if (ingestMethod) {
       let job = await JobRequest.save({
         queue_name: `${id}:edit_campaign`,
-        job_type: campaign.ingestMethod,
+        job_type: `ingest.${campaign.ingestMethod}`,
         locks_queue: true,
         assigned: JOBS_SAME_PROCESS, // can get called immediately, below
         campaign_id: id,
         payload: campaign.contactData
       });
       if (JOBS_SAME_PROCESS) {
-        ingestMethod.processContactLoad(job, false, {/*FUTURE: context obj*/})
+        dispatchContactIngestLoad(job, organization, {/*FUTURE: context obj*/});
       }
     } else {
       console.error("ingestMethod unavailable", campaign.ingestMethod);

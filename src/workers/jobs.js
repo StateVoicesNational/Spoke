@@ -18,6 +18,7 @@ import {
   saveNewIncomingMessage
 } from "../server/api/lib/message-sending";
 import importScriptFromDocument from "../server/api/lib/import-script";
+import { rawIngestMethod } from "../ingest-contact-loaders";
 
 import AWS from "aws-sdk";
 import Papa from "papaparse";
@@ -181,6 +182,26 @@ export async function processSqsMessages() {
     });
   });
   return p;
+}
+
+export async function dispatchContactIngestLoad(job, organization) {
+  if (!organization) {
+    const campaign = await Campaign.get(job.campaign_id);
+    organization = await Organization.get(campaign.organization_id);
+  }
+  const ingestMethod = rawIngestMethod(job.job_type.replace('ingest.',''));
+  if (!ingestMethod) {
+    console.error("dispatchContactIngestLoad not found. invalid job type", job.job_type);
+    return;
+  }
+  const orgFeatures = JSON.parse(organization.features || "{}");
+  const maxContacts = parseInt(
+    orgFeatures.hasOwnProperty("maxContacts")
+      ? orgFeatures.maxContacts
+      : process.env.MAX_CONTACTS || 0,
+    10
+  );
+  await ingestMethod.processContactLoad(job, maxContacts, {/*FUTURE: context obj*/});
 }
 
 export async function completeContactLoad(job, jobMessages) {
