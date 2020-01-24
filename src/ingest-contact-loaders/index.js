@@ -4,8 +4,8 @@ import { r } from "../server/models";
 const availabilityCacheKey = (name, organizationId, userId) =>
   `${process.env.CACHE_PREFIX ||
     ""}ingestavail-${name}-${organizationId}-${userId}`;
-const choiceDataCacheKey = suffix =>
-  `${process.env.CACHE_PREFIX || ""}ingestchoices-${suffix}`;
+const choiceDataCacheKey = (name, suffix) =>
+  `${process.env.CACHE_PREFIX || ""}ingestchoices-${name}-${suffix}`;
 
 function getIngestMethods() {
   const enabledIngestMethods = (getConfig("CONTACT_LOADERS") || "csv-upload").split(",");
@@ -86,6 +86,7 @@ export async function getMethodChoiceData(
   const cacheFunc =
     ingestMethod.clientChoiceDataCacheKey || (org => `${org.id}`);
   const cacheKey = choiceDataCacheKey(
+    ingestMethod.name,
     cacheFunc(organization, campaign, user, loaders)
   );
   return (await getSetCacheableResult(cacheKey, async () =>
