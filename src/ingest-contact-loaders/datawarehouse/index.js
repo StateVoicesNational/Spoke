@@ -83,7 +83,6 @@ export async function getClientChoiceData(
     warehouseConnection = warehouseConnection || datawarehouse();
     if (warehouseConnection) {
       const res = await warehouseConnection.raw("select 1 as result");
-      console.log("warehouse connection test result", res);
       if (res && res.rows && res.rows[0] && res.rows[0].result === 1) {
         isConnected = true;
       }
