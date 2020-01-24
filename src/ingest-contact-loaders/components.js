@@ -1,9 +1,8 @@
 import { getConfig } from "../server/api/lib/config";
 
 function getComponents() {
-  // TODO: default will be csv-upload for real version
   const enabledComponents = (
-    getConfig("CONTACT_LOADERS") || "csv-upload,datawarehouse"
+    global.CONTACT_LOADERS || "csv-upload,test-fakedata,datawarehouse"
   ).split(",");
   const components = {};
   enabledComponents.forEach(componentName => {
