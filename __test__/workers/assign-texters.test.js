@@ -86,13 +86,13 @@ describe("test texter assignment in dynamic mode", () => {
       job_type: "assign_texters"
     });
     await assignTexters(job);
-    const result = await r
-      .knex("campaign_contact")
-      .where({ campaign_id: campaign.id })
-      .whereNotNull("assignment_id")
-      .count();
-    const assignedTextersCount = result[0]["count"];
-    expect(assignedTextersCount).toEqual("0");
+    const assignedTextersCount = await r.getCount(
+      r
+        .knex("campaign_contact")
+        .where({ campaign_id: campaign.id })
+        .whereNotNull("assignment_id")
+    );
+    expect(assignedTextersCount).toEqual(0);
   });
 
   it("supports saving null or zero maxContacts", async () => {
