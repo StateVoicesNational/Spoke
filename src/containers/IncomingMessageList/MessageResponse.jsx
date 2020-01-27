@@ -32,12 +32,12 @@ class MessageResponse extends Component {
   }
 
   createMessageToContact(text) {
-    const { contact, texter } = this.props.conversation;
+    const contact = this.props.conversation;
 
     return {
       assignmentId: contact.assignmentId,
       contactNumber: contact.cell,
-      userId: texter.id,
+      userId: contact.texter.id,
       text
     };
   }
@@ -45,7 +45,7 @@ class MessageResponse extends Component {
   handleMessageFormChange = ({ messageText }) => this.setState({ messageText });
 
   handleMessageFormSubmit = async ({ messageText }) => {
-    const { contact } = this.props.conversation;
+    const { campaignContactId } = this.props.conversation;
     const message = this.createMessageToContact(messageText);
     if (this.state.isSending) {
       return; // stops from multi-send
@@ -56,7 +56,7 @@ class MessageResponse extends Component {
     try {
       const response = await this.props.mutations.sendMessage(
         message,
-        contact.id
+        campaignContactId
       );
       const { messages } = response.data.sendMessage;
       this.props.messagesChanged(messages);

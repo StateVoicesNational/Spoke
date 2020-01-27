@@ -14,7 +14,7 @@ import { MESSAGE_STATUSES } from "../../components/IncomingMessageFilter";
 export const prepareDataTableData = conversations =>
   conversations.map(conversation => ({
     campaignTitle: conversation.campaign.title,
-    texter: conversation.texter.displayName,
+    texter: conversation.texter,
     to:
       conversation.contact.firstName +
       " " +
@@ -103,7 +103,8 @@ export class IncomingMessageList extends Component {
         textOverflow: "ellipsis",
         overflow: "scroll",
         whiteSpace: "pre-line"
-      }
+      },
+      render: (columnKey, row) => <span>row.texter.displayName</span>
     },
     {
       key: "to",
