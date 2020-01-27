@@ -16,7 +16,6 @@ function getIngestMethods() {
     try {
       const c = require(`./${name}/index.js`);
       ingestMethods[name] = c;
-      // console.log('LOADING INGEST METHOD', name, c);
     } catch (err) {
       console.error("CONTACT_LOADERS failed to load ingestMethod", name);
     }
@@ -61,7 +60,6 @@ export async function getIngestMethod(name, organization, user) {
       organization,
       user
     );
-    // console.log('getIngestMethod', name, organization, user, 'isavail', isAvail);
     if (isAvail) {
       return CONFIGURED_INGEST_METHODS[name];
     }
@@ -74,7 +72,6 @@ export async function getAvailableIngestMethods(organization, user) {
       getIngestMethod(name, organization, user)
     )
   );
-  // console.log('availableIngestMethods', ingestMethods);
   return ingestMethods.filter(x => x);
 }
 
