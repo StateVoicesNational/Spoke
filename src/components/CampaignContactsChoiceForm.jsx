@@ -45,7 +45,6 @@ export default class CampaignContactsChoiceForm extends React.Component {
 
   getCurrentMethod() {
     const { ingestMethodChoices } = this.props;
-    // console.log('getcurrentmethod', this.state, ingestMethodChoices);
     if (this.state.ingestMethodIndex) {
       return ingestMethodChoices[this.state.ingestMethodIndex];
     }
@@ -53,7 +52,6 @@ export default class CampaignContactsChoiceForm extends React.Component {
   }
 
   ingestMethodChanged(event, index, val) {
-    // console.log('ingestMethodChanged', index, val, event);
     this.setState({ ingestMethodIndex: index });
   }
 
@@ -68,7 +66,7 @@ export default class CampaignContactsChoiceForm extends React.Component {
     const { ingestMethodChoices } = this.props;
     let subtitle =
       ingestMethodChoices.length > 1 ? (
-        <span>Choose an ingest method</span>
+        <span>Choose contact loading method</span>
       ) : null;
     const ingestMethod = this.getCurrentMethod();
     const ingestMethodName = ingestMethod.name;
