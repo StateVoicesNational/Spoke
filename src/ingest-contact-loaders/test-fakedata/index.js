@@ -18,7 +18,7 @@ export function serverAdministratorInstructions() {
 
 export async function available(organization, user) {
   /// return an object with two keys: result: true/false
-  /// if the ingest-contact-loader is usable and has
+  /// these keys indicate if the ingest-contact-loader is usable
   /// Sometimes credentials need to be setup, etc.
   /// A second key expiresSeconds: should be how often this needs to be checked
   /// If this is instantaneous, you can have it be 0 (i.e. always), but if it takes time
@@ -57,23 +57,29 @@ export async function getClientChoiceData(organization, campaign, user, loaders)
 }
 
 export async function processContactLoad(job, maxContacts) {
-  /// trigger processing -- this will likely be the most important part
+  /// Trigger processing -- this will likely be the most important part
   /// you should load contacts into the contact table with the job.campaign_id
   /// Since this might just *begin* the processing and other work might
   /// need to be completed asynchronously after this is completed (e.g. to distribute loads)
-  /// AFTER true contact-load completion, this (or another function) MUST call
-  /// src/workers/jobs.js::completeContactLoad(job)
-  ///   The async function completeContactLoad(job) will delete opt-outs, delete duplicate cells, clear/update caching, etc.
+  /// After true contact-load completion, this (or another function)
+  /// MUST call src/workers/jobs.js::completeContactLoad(job)
+  ///   The async function completeContactLoad(job) will
+  ///      * delete contacts that are in the opt_out table,
+  ///      * delete duplicate cells,
+  ///      * clear/update caching, etc.
   /// Basic responsibilities:
-  /// 1. delete previous campaign contacts on a previous choice/upload
-  /// 2. set campaign_contact.campaign_id = job.campaign_id on all uploaded contacts
-  /// 3. set campaign_contact.message_status = "needsMessage" on all uploaded contacts
+  /// 1. Delete previous campaign contacts on a previous choice/upload
+  /// 2. Set campaign_contact.campaign_id = job.campaign_id on all uploaded contacts
+  /// 3. Set campaign_contact.message_status = "needsMessage" on all uploaded contacts
   /// 4. Ensure that campaign_contact.cell is in the standard phone format "+15551234567"
   ///    -- do NOT trust your backend to ensure this
+  /// 5. If your source doesn't have timezone offset info already, then you need to
+  ///    fill the campaign_contact.timezone_offset with getTimezoneByZip(contact.zip) (from "../../workers/jobs")
   /// Things to consider in your implementation:
   /// * Batching
   /// * Error handling
   /// * "Request of Doom" scenarios -- queries or jobs too big to complete
+
   const campaignId = job.campaign_id;
   let jobMessages;
 
