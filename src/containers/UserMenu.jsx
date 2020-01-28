@@ -14,7 +14,7 @@ import { dataTest } from "../lib/attributes";
 
 const avatarSize = 28;
 
-class UserMenu extends Component {
+export class UserMenu extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -150,21 +150,23 @@ UserMenu.propTypes = {
   router: PropTypes.object
 };
 
+export const dataQuery = gql`
+  query getCurrentUserForMenu {
+    currentUser {
+      id
+      displayName
+      email
+      organizations {
+        id
+        name
+      }
+    }
+  }
+`;
+
 const mapQueriesToProps = () => ({
   data: {
-    query: gql`
-      query getCurrentUserForMenu {
-        currentUser {
-          id
-          displayName
-          email
-          organizations {
-            id
-            name
-          }
-        }
-      }
-    `,
+    query: dataQuery,
     forceFetch: true
   }
 });
