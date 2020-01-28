@@ -21,7 +21,7 @@ export function serverAdministratorInstructions() {
 
 export async function available(organization, user) {
   /// return an object with two keys: result: true/false
-  /// if the ingest-contact-loader is usable and has
+  /// these keys indicate if the ingest-contact-loader is usable
   /// Sometimes credentials need to be setup, etc.
   /// A second key expiresSeconds: should be how often this needs to be checked
   /// If this is instantaneous, you can have it be 0 (i.e. always), but if it takes time
