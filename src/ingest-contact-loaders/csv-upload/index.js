@@ -84,7 +84,6 @@ export async function processContactLoad(job, maxContacts) {
     .where("campaign_id", campaignId)
     .delete();
 
-  // TODO
   let contacts;
   if (job.payload[0] === '{') {
     contacts = JSON.parse(job.payload).contacts;
@@ -108,23 +107,13 @@ export async function processContactLoad(job, maxContacts) {
     datum.campaign_id = campaignId;
   }
   for (let index = 0; index < numChunks; index++) {
-    /*
-    await updateJob(job, Math.round((maxPercentage / numChunks) * index))
-      .catch(err => {
-        console.log(
-          "Error updating job:",
-          campaignId,
-          job.id,
-          err
-        );
-      });*/
     const savePortion = contacts.slice(
       index * chunkSize,
       (index + 1) * chunkSize
     );
     await CampaignContact.save(savePortion)
       .catch(err => {
-        console.log(
+        console.error(
           "Error saving campaign contacts:",
           campaignId,
           err
