@@ -1,15 +1,15 @@
 import type from "prop-types";
 import React from "react";
 import RaisedButton from "material-ui/RaisedButton";
-import GSForm from "../../components/forms/GSForm";
+import GSForm from "../../../components/forms/GSForm";
 import Form from "react-formal";
 import Subheader from "material-ui/Subheader";
 import Divider from "material-ui/Divider";
 import { ListItem, List } from "material-ui/List";
-import { parseCSV, gzip } from "../../lib";
-import CampaignFormSectionHeading from "../../components/CampaignFormSectionHeading";
+import { parseCSV, gzip } from "../../../lib";
+import CampaignFormSectionHeading from "../../../components/CampaignFormSectionHeading";
 import { StyleSheet, css } from "aphrodite";
-import theme from "../../styles/theme";
+import theme from "../../../styles/theme";
 import yup from "yup";
 
 const innerStyles = {
@@ -51,20 +51,19 @@ export class CampaignContactsForm extends React.Component {
     event.preventDefault();
     const file = event.target.files[0];
     this.setState({ uploading: true }, () => {
-      parseCSV(
-        file,
-        ({ contacts, customFields, validationStats, error }) => {
-          if (error) {
-            this.handleUploadError(error);
-          } else if (contacts.length === 0) {
-            this.handleUploadError("Upload at least one contact");
-          } else if (contacts.length > 0) {
-            this.handleUploadSuccess(validationStats,
-                                     this.organizationCustomFields(contacts, customFields),
-                                     customFields);
-          }
+      parseCSV(file, ({ contacts, customFields, validationStats, error }) => {
+        if (error) {
+          this.handleUploadError(error);
+        } else if (contacts.length === 0) {
+          this.handleUploadError("Upload at least one contact");
+        } else if (contacts.length > 0) {
+          this.handleUploadSuccess(
+            validationStats,
+            this.organizationCustomFields(contacts, customFields),
+            customFields
+          );
         }
-      );
+      });
     });
   };
 
@@ -116,7 +115,7 @@ export class CampaignContactsForm extends React.Component {
     // return this.props.onChange(JSON.stringify(contactCollection));
     gzip(JSON.stringify(contactCollection)).then(gzippedData => {
       self.props.onChange(gzippedData.toString("base64"));
-    })
+    });
   }
 
   renderContactStats() {
@@ -217,8 +216,7 @@ export class CampaignContactsForm extends React.Component {
           </div>
         )}
         <GSForm
-          schema={yup.object({
-          })}
+          schema={yup.object({})}
           onSubmit={formValues => {
             this.props.onSubmit();
           }}
@@ -228,7 +226,11 @@ export class CampaignContactsForm extends React.Component {
           {this.renderValidationStats()}
           {contactUploadError ? (
             <List>
-              <ListItem id="uploadError" primaryText={contactUploadError} leftIcon={this.props.icons.error} />
+              <ListItem
+                id="uploadError"
+                primaryText={contactUploadError}
+                leftIcon={this.props.icons.error}
+              />
             </List>
           ) : (
             ""

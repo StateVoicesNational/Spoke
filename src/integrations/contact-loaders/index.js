@@ -1,5 +1,5 @@
-import { getConfig } from "../server/api/lib/config";
-import { r } from "../server/models";
+import { getConfig } from "../../server/api/lib/config";
+import { r } from "../../server/models";
 
 const availabilityCacheKey = (name, organizationId, userId) =>
   `${process.env.CACHE_PREFIX ||

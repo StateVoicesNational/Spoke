@@ -1,6 +1,6 @@
-import { completeContactLoad } from "../../workers/jobs";
-import { r } from "../../server/models";
-import { getConfig, hasConfig } from "../../server/api/lib/config";
+import { completeContactLoad } from "../../../workers/jobs";
+import { r } from "../../../server/models";
+import { getConfig, hasConfig } from "../../../server/api/lib/config";
 
 export const name = "test-fakedata";
 

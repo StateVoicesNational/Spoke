@@ -2,15 +2,15 @@ import {
   completeContactLoad,
   getTimezoneByZip,
   sendJobToAWSLambda
-} from "../../workers/jobs";
+} from "../../../workers/jobs";
 import {
   r,
   datawarehouse,
   CampaignContact,
   Campaign
-} from "../../server/models";
-import { getConfig, hasConfig } from "../../server/api/lib/config";
-import { getFormattedPhoneNumber } from "../../lib/phone-format.js";
+} from "../../../server/models";
+import { getConfig, hasConfig } from "../../../server/api/lib/config";
+import { getFormattedPhoneNumber } from "../../../lib/phone-format.js";
 
 let warehouseConnection = null;
 

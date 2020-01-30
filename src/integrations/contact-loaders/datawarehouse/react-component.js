@@ -1,10 +1,10 @@
 import type from "prop-types";
 import React from "react";
-import GSForm from "../../components/forms/GSForm";
+import GSForm from "../../../components/forms/GSForm";
 import Form from "react-formal";
 import { ListItem, List } from "material-ui/List";
-import CampaignFormSectionHeading from "../../components/CampaignFormSectionHeading";
-import theme from "../../styles/theme";
+import CampaignFormSectionHeading from "../../../components/CampaignFormSectionHeading";
+import theme from "../../../styles/theme";
 import { StyleSheet, css } from "aphrodite";
 import yup from "yup";
 
