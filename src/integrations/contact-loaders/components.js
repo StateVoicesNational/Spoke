@@ -1,4 +1,4 @@
-import { getConfig } from "../server/api/lib/config";
+import { getConfig } from "../../server/api/lib/config";
 
 function getComponents() {
   const enabledComponents = (

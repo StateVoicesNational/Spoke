@@ -1,9 +1,9 @@
-import { completeContactLoad } from "../../workers/jobs";
-import { r, CampaignContact } from "../../server/models";
-import { getConfig, hasConfig } from "../../server/api/lib/config";
+import { completeContactLoad } from "../../../workers/jobs";
+import { r, CampaignContact } from "../../../server/models";
+import { getConfig, hasConfig } from "../../../server/api/lib/config";
 
-import { updateJob } from "../../lib";
-import { getTimezoneByZip, unzipPayload } from "../../workers/jobs";
+import { updateJob } from "../../../lib";
+import { getTimezoneByZip, unzipPayload } from "../../../workers/jobs";
 
 export const name = "csv-upload";
 
