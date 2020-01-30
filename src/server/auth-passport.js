@@ -115,10 +115,9 @@ export function setupLocalAuthPassport() {
 
   passport.deserializeUser(
     wrap(async (id, done) => {
-      const user = await cacheableData.user.userLoggedIn(
-        "id",
-        parseInt(id, 10)
-      );
+      const userId = parseInt(id, 10);
+      const user =
+        userId && (await cacheableData.user.userLoggedIn("id", userId));
       done(null, user || false);
     })
   );
