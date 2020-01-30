@@ -74,7 +74,8 @@ if (DB_JSON) {
   config = {
     client: "sqlite3",
     connection: { filename: "./mydb.sqlite" },
-    defaultsUnsupported: true
+    defaultsUnsupported: true,
+    useNullAsDefault: true
   };
 }
 
