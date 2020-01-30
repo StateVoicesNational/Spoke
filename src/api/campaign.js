@@ -12,6 +12,12 @@ export const schema = `
     optOutsCount: Int
   }
 
+  type IngestMethod {
+    name: String!
+    displayName: String
+    clientChoiceData: String
+  }
+
   type JobRequest {
     id: String
     jobType: String
@@ -41,7 +47,8 @@ export const schema = `
     cannedResponses(userId: String): [CannedResponse]
     stats: CampaignStats,
     pendingJobs: [JobRequest]
-    datawarehouseAvailable: Boolean
+    ingestMethodsAvailable: [IngestMethod]
+    ingestMethod: IngestMethod
     useDynamicAssignment: Boolean
     introHtml: String
     primaryColor: String

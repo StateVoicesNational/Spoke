@@ -13,6 +13,7 @@ const {
   DB_NAME,
   DB_PASSWORD,
   DB_USER,
+  DB_SCHEMA,
   DATABASE_URL,
   NODE_ENV
 } = process.env;
@@ -50,6 +51,7 @@ if (DB_JSON) {
   config = {
     client: /postgres/.test(dbType) ? "pg" : dbType,
     connection: DATABASE_URL,
+    searchPath: DB_SCHEMA || "",
     migrations: {
       directory: process.env.KNEX_MIGRATION_DIR || "./migrations/"
     },

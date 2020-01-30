@@ -14,8 +14,19 @@ import {
   UserOrganization
 } from "../src/server/models/";
 import { resolvers as campaignResolvers } from "../src/server/api/campaign";
-import { getContext, setupTest, cleanupTest } from "./test_helpers";
+import {
+  setupTest,
+  cleanupTest,
+  getContext,
+  createUser as helperCreateUser,
+  createTexter as helperCreateTexter,
+  createOrganization as helperCreateOrganization,
+  createInvite as helperCreateInvite,
+  runGql
+} from "./test_helpers";
 import { makeExecutableSchema } from "graphql-tools";
+
+import { editUserMutation } from "../src/containers/UserEdit.jsx";
 
 const mySchema = makeExecutableSchema({
   typeDefs: schema,
@@ -127,31 +138,20 @@ async function createOrganization(user, name, userId, inviteId) {
   }
 }
 
-async function createCampaign(
-  user,
-  title,
-  description,
-  organizationId,
-  contacts = []
-) {
+async function createCampaign(user, title, description, organizationId) {
   const context = getContext({ user });
 
   const campaignQuery = `mutation createCampaign($input: CampaignInput!) {
     createCampaign(campaign: $input) {
       id
       title
-      contacts {
-        firstName
-        lastName
-      }
     }
   }`;
   const variables = {
     input: {
       title,
       description,
-      organizationId,
-      contacts
+      organizationId
     }
   };
 
@@ -694,6 +694,83 @@ describe("Campaign", () => {
       originalIntFiltered.forEach(interaction => {
         expect(copiedIntFiltered).toContainEqual(interaction);
       });
+    });
+  });
+});
+
+describe.only("editUser mutation", () => {
+  let testAdminUser;
+  let testTexter;
+  let testOrganization;
+  let organizationId;
+  let variables;
+
+  beforeEach(async () => {
+    await setupTest();
+    testAdminUser = await helperCreateUser();
+    testOrganization = await helperCreateOrganization(
+      testAdminUser,
+      await helperCreateInvite()
+    );
+    organizationId = testOrganization.data.createOrganization.id;
+    testTexter = await helperCreateTexter(testOrganization);
+
+    variables = {
+      organizationId,
+      userId: testTexter.id,
+      userData: null
+    };
+  }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
+
+  afterEach(async () => {
+    await cleanupTest();
+    if (r.redis) r.redis.flushdb();
+  }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
+
+  it("returns the user if it is called with a userId by no userData", async () => {
+    const result = await runGql(editUserMutation, variables, testAdminUser);
+    expect(result).toEqual({
+      data: {
+        editUser: {
+          id: "2",
+          firstName: "TestTexterFirst",
+          lastName: "TestTexterLast",
+          cell: "555-555-6666",
+          email: "testtexter@example.com"
+        }
+      }
+    });
+  });
+
+  it("updates the user if it is called with a userId and userData", async () => {
+    const userData = {
+      firstName: "Jerry",
+      lastName: "Garcia",
+      email: "jerry@heaven.org",
+      cell: "4151111111"
+    };
+
+    variables.userData = userData;
+
+    // the mutation returns the right thing
+    const result = await runGql(editUserMutation, variables, testAdminUser);
+    expect(result).toEqual({
+      data: {
+        editUser: {
+          ...userData,
+          id: testTexter.id.toString()
+        }
+      }
+    });
+
+    // it gets updated in the database
+    const updatedUser = await r.knex("user").where("id", testTexter.id);
+    expect(updatedUser[0]).toMatchObject({
+      first_name: userData.firstName,
+      last_name: userData.lastName,
+      email: userData.email,
+      cell: userData.cell,
+      id: testTexter.id
     });
   });
 });

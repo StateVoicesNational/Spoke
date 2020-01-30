@@ -1,24 +1,16 @@
 import type from "prop-types";
 import React from "react";
 import RaisedButton from "material-ui/RaisedButton";
-import GSForm from "../components/forms/GSForm";
+import GSForm from "../../components/forms/GSForm";
 import Form from "react-formal";
 import Subheader from "material-ui/Subheader";
 import Divider from "material-ui/Divider";
 import { ListItem, List } from "material-ui/List";
-import { parseCSV } from "../lib";
-import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
-import CheckIcon from "material-ui/svg-icons/action/check-circle";
-import WarningIcon from "material-ui/svg-icons/alert/warning";
-import ErrorIcon from "material-ui/svg-icons/alert/error";
-import theme from "../styles/theme";
+import { parseCSV, gzip } from "../../lib";
+import CampaignFormSectionHeading from "../../components/CampaignFormSectionHeading";
 import { StyleSheet, css } from "aphrodite";
+import theme from "../../styles/theme";
 import yup from "yup";
-import { dataTest } from "../lib/attributes";
-
-const checkIcon = <CheckIcon color={theme.colors.green} />;
-const warningIcon = <WarningIcon color={theme.colors.orange} />;
-const errorIcon = <ErrorIcon color={theme.colors.red} />;
 
 const innerStyles = {
   button: {
@@ -48,46 +40,11 @@ const styles = StyleSheet.create({
   }
 });
 
-export default class CampaignContactsForm extends React.Component {
+export class CampaignContactsForm extends React.Component {
   state = {
     uploading: false,
     validationStats: null,
     contactUploadError: null
-  };
-
-  validateSql = sql => {
-    const errors = [];
-    if (!sql.startsWith("SELECT")) {
-      errors.push('Must start with "SELECT" in caps');
-    }
-    if (
-      /LIMIT (\d+)/i.test(sql) &&
-      parseInt(sql.match(/LIMIT (\d+)/i)[1], 10) > 10000
-    ) {
-      errors.push(
-        "Spoke currently does not support LIMIT statements of higher than 10000"
-      );
-    }
-    const requiredFields = ["first_name", "last_name", "cell"];
-    requiredFields.forEach(f => {
-      if (sql.indexOf(f) === -1) {
-        errors.push('"' + f + '" is a required column');
-      }
-    });
-    if (sql.indexOf(";") >= 0) {
-      errors.push('Do not include a trailing (or any) ";"');
-    }
-    if (!errors.length) {
-      this.setState({
-        contactSqlError: null
-      });
-      this.props.onChange({
-        contactSql: sql
-      });
-    } else {
-      this.setState({ contactSqlError: errors.join(", ") });
-      this.props.onChange({});
-    }
   };
 
   handleUpload = event => {
@@ -96,14 +53,15 @@ export default class CampaignContactsForm extends React.Component {
     this.setState({ uploading: true }, () => {
       parseCSV(
         file,
-        this.props.optOuts,
         ({ contacts, customFields, validationStats, error }) => {
           if (error) {
             this.handleUploadError(error);
           } else if (contacts.length === 0) {
             this.handleUploadError("Upload at least one contact");
           } else if (contacts.length > 0) {
-            this.handleUploadSuccess(validationStats, contacts, customFields);
+            this.handleUploadSuccess(validationStats,
+                                     this.organizationCustomFields(contacts, customFields),
+                                     customFields);
           }
         }
       );
@@ -119,38 +77,64 @@ export default class CampaignContactsForm extends React.Component {
     });
   }
 
+  organizationCustomFields(contacts, customFieldsList) {
+    return contacts.map(contact => {
+      const customFields = {};
+      const contactInput = {
+        cell: contact.cell,
+        first_name: contact.firstName,
+        last_name: contact.lastName,
+        zip: contact.zip || "",
+        external_id: contact.external_id || ""
+      };
+      customFieldsList.forEach(key => {
+        if (contact.hasOwnProperty(key)) {
+          customFields[key] = contact[key];
+        }
+      });
+      contactInput.custom_fields = JSON.stringify(customFields);
+      return contactInput;
+    });
+  }
+
   handleUploadSuccess(validationStats, contacts, customFields) {
     this.setState({
       validationStats,
+      customFields,
       uploading: false,
-      contactUploadError: null
+      contactUploadError: null,
+      contactsCount: contacts.length
     });
     const contactCollection = {
       contactsCount: contacts.length,
-      contactSql: null,
       customFields,
       contacts
     };
-    this.props.onChange(contactCollection);
+    const self = this;
+    // uncomment here to make the data uncompresed on-upload
+    // occasionally useful for debugging to see decoded data in-transit
+    // return this.props.onChange(JSON.stringify(contactCollection));
+    gzip(JSON.stringify(contactCollection)).then(gzippedData => {
+      self.props.onChange(gzippedData.toString("base64"));
+    })
   }
 
   renderContactStats() {
-    const { customFields, contactsCount } = this.props.formValues;
+    const { customFields, contactsCount } = this.state;
 
-    if (contactsCount === 0) {
+    if (!contactsCount) {
       return "";
     }
     return (
       <List>
         <Subheader>Uploaded</Subheader>
         <ListItem
-          {...dataTest("uploadedContacts")}
           primaryText={`${contactsCount} contacts`}
-          leftIcon={checkIcon}
+          leftIcon={this.props.icons.check}
         />
         <ListItem
           primaryText={`${customFields.length} custom fields`}
-          leftIcon={checkIcon}
+          leftIcon={this.props.icons.check}
           nestedItems={customFields.map((field, index) => (
             <ListItem
               key={index}
@@ -171,15 +155,13 @@ export default class CampaignContactsForm extends React.Component {
     const {
       dupeCount,
       missingCellCount,
-      invalidCellCount,
-      optOutCount
+      invalidCellCount
     } = this.state.validationStats;
 
     let stats = [
       [dupeCount, "duplicates"],
       [missingCellCount, "rows with missing numbers"],
-      [invalidCellCount, "rows with invalid numbers"],
-      [optOutCount, "opt-outs"]
+      [invalidCellCount, "rows with invalid numbers"]
     ];
     stats = stats
       .filter(([count]) => count > 0)
@@ -190,7 +172,7 @@ export default class CampaignContactsForm extends React.Component {
         {stats.map((stat, index) => (
           <ListItem
             key={index}
-            leftIcon={warningIcon}
+            leftIcon={this.props.icons.warning}
             innerDivStyle={innerStyles.nestedItem}
             primaryText={stat}
           />
@@ -204,15 +186,15 @@ export default class CampaignContactsForm extends React.Component {
     return (
       <div>
         <RaisedButton
-          {...dataTest("uploadButton")}
           style={innerStyles.button}
           label={uploading ? "Uploading..." : "Upload contacts"}
           labelPosition="before"
           disabled={uploading}
-          onClick={() => document.querySelector("#contact-upload").click()}
+          onClick={() => this.uploadButton.click()}
         />
         <input
           id="contact-upload"
+          ref={input => input && (this.uploadButton = input)}
           type="file"
           className={css(styles.exampleImageInput)}
           onChange={this.handleUpload}
@@ -223,7 +205,7 @@ export default class CampaignContactsForm extends React.Component {
   }
 
   renderForm() {
-    const { contactUploadError, contactSqlError } = this.state;
+    const { contactUploadError } = this.state;
     return (
       <div>
         {!this.props.jobResultMessage ? (
@@ -236,73 +218,17 @@ export default class CampaignContactsForm extends React.Component {
         )}
         <GSForm
           schema={yup.object({
-            contactSql: yup.string()
           })}
           onSubmit={formValues => {
-            // sets values locally
-            this.setState({ ...formValues });
-            // triggers the parent to update values
-            this.props.onChange({ ...formValues });
-            // and now do whatever happens when clicking 'Next'
             this.props.onSubmit();
           }}
         >
           {this.renderUploadButton()}
-          {!this.props.datawarehouseAvailable ? (
-            ""
-          ) : (
-            <div>
-              <div>
-                Instead of uploading contacts, as a super-admin, you can also
-                create a SQL query directly from the data warehouse that will
-                load in contacts. The SQL requires some constraints:
-                <ul>
-                  <li>Start the query with "SELECT"</li>
-                  <li>Do not include a trailing (or any) semicolon</li>
-                  <li>
-                    Three columns are necessary:
-                    <span className={css(styles.csvHeader)}>first_name</span>,
-                    <span className={css(styles.csvHeader)}>last_name</span>,
-                    <span className={css(styles.csvHeader)}>cell</span>,
-                  </li>
-                  <li>
-                    Optional fields are:
-                    <span className={css(styles.csvHeader)}>zip</span>,
-                    <span className={css(styles.csvHeader)}>external_id</span>
-                  </li>
-                  <li>
-                    Make sure you make those names exactly possibly requiring an
-                    <span className={css(styles.csvHeader)}>
-                      as field_name
-                    </span>{" "}
-                    sometimes.
-                  </li>
-                  <li>Other columns will be added to the customFields</li>
-                </ul>
-              </div>
-              <Form.Field
-                name="contactSql"
-                type="textarea"
-                rows="5"
-                onChange={this.validateSql}
-              />
-              {contactSqlError ? (
-                <List>
-                  <ListItem
-                    primaryText={contactSqlError}
-                    leftIcon={errorIcon}
-                  />
-                </List>
-              ) : (
-                ""
-              )}
-            </div>
-          )}
           {this.renderContactStats()}
           {this.renderValidationStats()}
           {contactUploadError ? (
             <List>
-              <ListItem primaryText={contactUploadError} leftIcon={errorIcon} />
+              <ListItem id="uploadError" primaryText={contactUploadError} leftIcon={this.props.icons.error} />
             </List>
           ) : (
             ""
@@ -338,10 +264,7 @@ export default class CampaignContactsForm extends React.Component {
 
     return (
       <div>
-        <CampaignFormSectionHeading
-          title="Who are you contacting?"
-          subtitle={subtitle}
-        />
+        {subtitle}
         {this.renderForm()}
       </div>
     );
@@ -349,13 +272,15 @@ export default class CampaignContactsForm extends React.Component {
 }
 
 CampaignContactsForm.propTypes = {
-  datawarehouseAvailable: type.bool,
   onChange: type.func,
-  optOuts: type.array,
-  formValues: type.object,
-  ensureComplete: type.bool,
   onSubmit: type.func,
+  campaignIsStarted: type.bool,
+
+  icons: type.object,
+
   saveDisabled: type.bool,
   saveLabel: type.string,
+
+  clientChoiceData: type.string,
   jobResultMessage: type.string
 };
