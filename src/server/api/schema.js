@@ -12,7 +12,7 @@ import {
   exportCampaign,
   importScript
 } from "../../workers/jobs";
-import { getIngestMethod } from "../../ingest-contact-loaders";
+import { getIngestMethod } from "../../integrations/contact-loaders";
 import {
   Assignment,
   Campaign,
@@ -966,7 +966,7 @@ const rootMutations = {
         if (interactionStepAction) {
           // run interaction step handler
           try {
-            const handler = require(`../action_handlers/${interactionStepAction}.js`);
+            const handler = require(`../../integrations/action-handlers/${interactionStepAction}.js`);
             handler.processAction(
               qr,
               interactionStepResult[0],
@@ -1156,7 +1156,7 @@ const rootResolvers = {
         .map(handler => {
           return {
             name: handler,
-            handler: require(`../action_handlers/${handler}.js`)
+            handler: require(`../../integrations/action-handlers/${handler}.js`)
           };
         })
         .filter(async h => h && (await h.handler.available(organizationId)));

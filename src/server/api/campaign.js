@@ -6,7 +6,7 @@ import { getUsers } from "./user";
 import {
   getAvailableIngestMethods,
   getMethodChoiceData
-} from "../../ingest-contact-loaders";
+} from "../../integrations/contact-loaders";
 
 export function addCampaignsFilterToQuery(queryParam, campaignsFilter) {
   let query = queryParam;

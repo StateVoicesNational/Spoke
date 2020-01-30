@@ -13,7 +13,7 @@ import CheckIcon from "material-ui/svg-icons/action/check-circle";
 import WarningIcon from "material-ui/svg-icons/alert/warning";
 import ErrorIcon from "material-ui/svg-icons/alert/error";
 import theme from "../styles/theme";
-import components from "../ingest-contact-loaders/components";
+import components from "../integrations/contact-loaders/components";
 import yup from "yup";
 
 const check = <CheckIcon color={theme.colors.green} />;
