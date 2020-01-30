@@ -138,31 +138,20 @@ async function createOrganization(user, name, userId, inviteId) {
   }
 }
 
-async function createCampaign(
-  user,
-  title,
-  description,
-  organizationId,
-  contacts = []
-) {
+async function createCampaign(user, title, description, organizationId) {
   const context = getContext({ user });
 
   const campaignQuery = `mutation createCampaign($input: CampaignInput!) {
     createCampaign(campaign: $input) {
       id
       title
-      contacts {
-        firstName
-        lastName
-      }
     }
   }`;
   const variables = {
     input: {
       title,
       description,
-      organizationId,
-      contacts
+      organizationId
     }
   };
 
