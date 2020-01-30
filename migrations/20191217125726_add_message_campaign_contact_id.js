@@ -4,10 +4,12 @@ exports.up = function(knex) {
     table.integer("campaign_contact_id").unsigned();
     table.foreign("campaign_contact_id").references("campaign_contact.id");
     table.text("messageservice_sid");
-    table
-      .integer("assignment_id")
-      .nullable()
-      .alter();
+    if (!/sqlite/.test(knex.client.config.client)) {
+      table
+        .integer("assignment_id")
+        .nullable()
+        .alter();
+    }
     //table.index("campaign_contact_id"); // wait to do this in a second migration
   });
 };
@@ -18,9 +20,11 @@ exports.down = function(knex) {
     table.dropForeign("campaign_contact_id");
     table.dropColumn("campaign_contact_id");
     table.dropColumn("messageservice_sid");
-    table
-      .integer("assignment_id")
-      .notNullable()
-      .alter();
+    if (!/sqlite/.test(knex.client.config.client)) {
+      table
+        .integer("assignment_id")
+        .notNullable()
+        .alter();
+    }
   });
 };

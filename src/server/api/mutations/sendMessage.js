@@ -135,7 +135,7 @@ export const sendMessage = async (
 
   await messageInstance.save();
 
-  contact.updated_at = "now()";
+  contact.updated_at = new Date();
   const initialMessageStatus = contact.message_status;
 
   if (
