@@ -19,7 +19,9 @@ const prepareDataTableData = conversations =>
       conversation.contact.firstName +
       " " +
       conversation.contact.lastName +
-      (conversation.contact.optOut.cell ? "⛔️" : ""),
+      // \u26d4 is the No Entry symbol: http://unicode.org/cldr/utility/character.jsp?a=26D4
+      // including it directly breaks some text editors
+      (conversation.contact.optOut.cell ? "\u26d4" : ""),
     status: conversation.contact.messageStatus,
     messages: conversation.contact.messages
   }));
