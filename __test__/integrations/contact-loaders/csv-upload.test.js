@@ -4,15 +4,15 @@ import {
   available,
   getClientChoiceData,
   processContactLoad
-} from "../../src/ingest-contact-loaders/csv-upload";
-import { CampaignContactsForm } from "../../src/ingest-contact-loaders/csv-upload/react-component";
+} from "../../../src/integrations/contact-loaders/csv-upload";
+import { CampaignContactsForm } from "../../../src/integrations/contact-loaders/csv-upload/react-component";
 
 // csv-upload libs for validation
-import { unzipPayload } from "../../src/workers/jobs";
-import { parseCSV, gzip } from "../../src/lib";
+import { unzipPayload } from "../../../src/workers/jobs";
+import { parseCSV, gzip } from "../../../src/lib";
 
 // server-testing libs
-import { r } from "../../src/server/models/";
+import { r } from "../../../src/server/models/";
 import {
   setupTest,
   cleanupTest,
@@ -22,15 +22,15 @@ import {
   createOrganization,
   createCampaign,
   saveCampaign
-} from "../test_helpers";
+} from "../../test_helpers";
 
 // client-testing libs
 import React from "react";
 import { shallow, mount } from "enzyme";
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import { StyleSheetTestUtils } from "aphrodite";
-import CampaignContactsChoiceForm from "../../src/components/CampaignContactsChoiceForm";
-import { icons } from "../../src/components/CampaignContactsChoiceForm";
+import CampaignContactsChoiceForm from "../../../src/components/CampaignContactsChoiceForm";
+import { icons } from "../../../src/components/CampaignContactsChoiceForm";
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
