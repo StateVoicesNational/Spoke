@@ -10,7 +10,8 @@ import {
   assignTexters,
   dispatchContactIngestLoad,
   exportCampaign,
-  importScript
+  importScript,
+  loadCampaignCache
 } from "../../workers/jobs";
 import { getIngestMethod } from "../../integrations/contact-loaders";
 import {
@@ -724,9 +725,17 @@ const rootMutations = {
       );
       return campaigns;
     },
-    startCampaign: async (_, { id }, { user, loaders }) => {
+    startCampaign: async (
+      _,
+      { id },
+      { user, loaders, remainingMilliseconds }
+    ) => {
       const campaign = await loaders.campaign.load(id);
       await accessRequired(user, campaign.organization_id, "ADMIN");
+      const organization = await loaders.organization.load(
+        campaign.organization_id
+      );
+
       campaign.is_started = true;
 
       await campaign.save();
@@ -735,6 +744,9 @@ const rootMutations = {
         type: Notifications.CAMPAIGN_STARTED,
         campaignId: id
       });
+
+      // some asynchronous cache-priming:
+      loadCampaignCache(campaign, organization, { remainingMilliseconds });
       return campaign;
     },
     editCampaign: async (_, { id, campaign }, { user, loaders }) => {
@@ -844,7 +856,8 @@ const rootMutations = {
       const contact = await loaders.campaignContact.load(campaignContactId);
       await assignmentRequired(user, contact.assignment_id);
       contact.message_status = messageStatus;
-      return await contact.save();
+      await cacheableData.campaignContact.updateStatus(contact, messageStatus);
+      return contact;
     },
     getAssignmentContacts: async (
       _,
@@ -853,20 +866,23 @@ const rootMutations = {
     ) => {
       await assignmentRequired(user, assignmentId);
       const contacts = contactIds.map(async contactId => {
-        // this is a super-local change to handle the specific case
-        // of message_status being updated in a separate message-handling
-        // process -- incomingmessagehandler -- and not updating the
-        // DataLoader (https://github.com/graphql/dataloader) cache.
-        loaders.campaignContact.clear(contactId);
+        // note we are loading from cacheableData and NOT loaders to avoid loader staleness
+        // this is relevant for the possible multiple web dynos
+        let contact = await cacheableData.campaignContact.load(contactId);
+        if (contact.assignment_id === null) {
+          // In case assignment_id from cache needs to be refreshed, try again
+          await cacheableData.campaignContact.clear(contact.id);
+          contact = await loaders.campaignContact.load(contactId);
+        }
 
-        const contact = await loaders.campaignContact.load(contactId);
-        if (contact && contact.assignment_id === Number(assignmentId)) {
+        if (contact && Number(contact.assignment_id) === Number(assignmentId)) {
           return contact;
         }
+
         return null;
       });
       if (findNew) {
-        // maybe TODO: we could automatically add dynamic assignments in the same api call
+        // maybe FUTURE: we could automatically add dynamic assignments in the same api call
         // findNewCampaignContact()
       }
       return contacts;

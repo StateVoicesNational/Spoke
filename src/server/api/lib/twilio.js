@@ -1,6 +1,12 @@
 import Twilio from "twilio";
 import { getFormattedPhoneNumber } from "../../../lib/phone-format";
-import { Log, Message, PendingMessagePart, r } from "../../models";
+import {
+  Log,
+  Message,
+  PendingMessagePart,
+  r,
+  cacheableData
+} from "../../models";
 import { log } from "../../../lib";
 import { getLastMessage, saveNewIncomingMessage } from "./message-sending";
 
@@ -162,6 +168,11 @@ async function sendMessage(message, contact, trx, organization) {
     return "test_message_uuid";
   }
 
+  // Note organization won't always be available, so then contact can trace to it
+  const messagingServiceSid = await cacheableData.organization.getMessageServiceSid(
+    organization,
+    contact
+  );
   return new Promise((resolve, reject) => {
     if (message.service !== "twilio") {
       log.warn("Message not marked as a twilio message", message.id);
@@ -201,9 +212,6 @@ async function sendMessage(message, contact, trx, organization) {
       ...message
     };
 
-    // FUTURE: this can be based on (contact, organization)
-    // Note organization won't always be available, so we'll need to conditionally look it up based on contact
-    const messagingServiceSid = process.env.TWILIO_MESSAGE_SERVICE_SID;
     messageToSave.messageservice_sid = messagingServiceSid;
 
     const messageParams = Object.assign(
