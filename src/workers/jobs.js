@@ -987,6 +987,21 @@ export async function loadMessages(csvFile) {
   });
 }
 
+export function loadCampaignCache(
+  campaign,
+  organization,
+  { remainingMilliseconds }
+) {
+  // Asynchronously start running a refresh of all the campaign data into
+  // our cache.  This should refresh/clear any corruption
+  console.log("loadCampaignCache async tasks...", campaign.id);
+  cacheableData.campaignContact
+    .loadMany(campaign, organization, { remainingMilliseconds })
+    .then(() => {
+      console.log("FINISHED contact loadMany", campaign.id);
+    });
+}
+
 // Temporary fix for orgless users
 // See https://github.com/MoveOnOrg/Spoke/issues/934
 // and job-processes.js

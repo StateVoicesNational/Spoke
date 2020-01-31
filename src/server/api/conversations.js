@@ -298,9 +298,16 @@ export async function reassignConversations(
 
       // Clear the DataLoader cache for the campaign contacts affected by the foregoing
       // SQL statement to keep the cache in sync.  This will force the campaignContact
-      // to be refreshed from the database.
-      campaignContactIds.forEach(campaignContactId =>
-        loaders.campaignContact.clear(campaignContactId.toString())
+      // to be refreshed. We also update the assignment in the cache
+      await Promise.all(
+        campaignContactIds.map(async campaignContactId => {
+          loaders.campaignContact.clear(campaignContactId.toString());
+          await cacheableData.campaignContact.updateAssignmentCache(
+            campaignContactId,
+            assignmentId,
+            newTexterUserId
+          );
+        })
       );
 
       returnCampaignIdAssignmentIds.push({
