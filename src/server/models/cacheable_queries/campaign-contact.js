@@ -254,7 +254,7 @@ const campaignContactCache = {
     } else {
       query = query.where("campaign_contact.campaign_id", campaign.id);
     }
-    let messageServiceSid = await organization.getMessageServiceSid(
+    let messageServiceSid = await organizationCache.getMessageServiceSid(
       organization
     );
     // We process the results in a stream, because this could be a very large result
