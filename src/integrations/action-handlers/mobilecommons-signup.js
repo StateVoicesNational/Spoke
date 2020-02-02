@@ -1,6 +1,6 @@
 import request from "request";
 import aws from "aws-sdk";
-import { r } from "../../models";
+import { r } from "../../server/models";
 import { actionKitSignup } from "./helper-ak-sync.js";
 // What the user sees as the option
 export const displayName = () => "Mobile Commons Signup";
