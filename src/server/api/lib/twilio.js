@@ -8,7 +8,7 @@ import {
   cacheableData
 } from "../../models";
 import { log } from "../../../lib";
-import { getLastMessage, saveNewIncomingMessage } from "./message-sending";
+import { saveNewIncomingMessage } from "./message-sending";
 
 // TWILIO error_codes:
 // > 1 (i.e. positive) error_codes are reserved for Twilio error codes
@@ -58,20 +58,6 @@ async function convertMessagePartsToMessage(messageParts) {
     .map(serviceMessage => serviceMessage.Body)
     .join("")
     .replace(/\0/g, ""); // strip all UTF-8 null characters (0x00)
-
-  const lastMessage = await getLastMessage({
-    contactNumber,
-    service: "twilio",
-    messageServiceSid: serviceMessages[0].MessagingServiceSid
-  });
-  if (!lastMessage) {
-    console.error(
-      "Message thread not found (probably text spam)",
-      contactNumber,
-      serviceMessages[0]
-    );
-    return;
-  }
   return new Message({
     contact_number: contactNumber,
     user_number: userNumber,
@@ -79,7 +65,8 @@ async function convertMessagePartsToMessage(messageParts) {
     text,
     error_code: null,
     service_id: firstPart.service_id,
-    campaign_contact_id: lastMessage.campaign_contact_id,
+    // will be set during cacheableData.message.save()
+    // campaign_contact_id: lastMessage.campaign_contact_id,
     messageservice_sid: serviceMessages[0].MessagingServiceSid,
     service: "twilio",
     send_status: "DELIVERED"

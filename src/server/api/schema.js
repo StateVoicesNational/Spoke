@@ -285,6 +285,7 @@ const rootMutations = {
 
       await accessRequired(user, campaign.organization_id, "ADMIN");
 
+      // TODO: remove this query or switch at least to getLastMessage
       const lastMessage = await r
         .table("message")
         .getAll(contact.assignment_id, { index: "assignment_id" })
@@ -317,7 +318,8 @@ const rootMutations = {
           messageservice_sid: lastMessage.messageservice_sid,
           service: lastMessage.service,
           send_status: "DELIVERED"
-        })
+        }),
+        contact
       );
       return loaders.campaignContact.load(id);
     },

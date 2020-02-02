@@ -156,11 +156,9 @@ export const resolvers = {
         return campaignContact.messages;
       }
 
-      const messages = await r
-        .knex("message")
-        .where("campaign_contact_id", campaignContact.id)
-        .orderBy("created_at");
-
+      const messages = cacheableData.message.query({
+        campaignContactId: campaignContact.id
+      });
       return messages;
     },
     optOut: async (campaignContact, _, { loaders }) => {
