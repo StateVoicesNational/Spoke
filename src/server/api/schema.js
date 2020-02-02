@@ -937,10 +937,14 @@ const rootMutations = {
       await assignmentRequired(user, contact.assignment_id);
       // TODO: maybe undo action_handler
       await r
-        .table("question_response")
-        .getAll(campaignContactId, { index: "campaign_contact_id" })
-        .getAll(...interactionStepIds, { index: "interaction_step_id" })
+        .knex("question_response")
+        .where("campaign_contact_id", campaignContactId)
+        .whereIn("interaction_step_id", interactionStepIds)
         .delete();
+
+      // update cache
+      await cacheableData.questionResponse.reloadQuery(campaignContactId);
+
       return contact;
     },
     updateQuestionResponses: async (
@@ -998,6 +1002,8 @@ const rootMutations = {
           }
         }
       }
+      // update cache
+      await cacheableData.questionResponse.clearQuery(campaignContactId);
 
       const contact = loaders.campaignContact.load(campaignContactId);
       return contact;
