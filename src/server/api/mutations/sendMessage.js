@@ -16,7 +16,7 @@ export const sendMessage = async (
   loaders,
   user
 ) => {
-  const contact = await loaders.campaignContact.load(campaignContactId);
+  let contact = await loaders.campaignContact.load(campaignContactId);
   const campaign = await loaders.campaign.load(contact.campaign_id);
   if (
     contact.assignment_id !== parseInt(message.assignmentId) ||
@@ -147,7 +147,7 @@ export const sendMessage = async (
     contact.message_status = "messaged";
   }
 
-  await contact.save();
+  contact = await cacheableData.message.save({ messageInstance, contact });
 
   // log.info(
   //   `Sending (${serviceName}): ${messageInstance.user_number} -> ${messageInstance.contact_number}\nMessage: ${messageInstance.text}`

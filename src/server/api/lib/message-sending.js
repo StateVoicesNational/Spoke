@@ -1,4 +1,4 @@
-import { r } from "../../models";
+import { r, cacheableData } from "../../models";
 
 export async function getLastMessage({
   contactNumber,
@@ -20,22 +20,6 @@ export async function getLastMessage({
   return lastMessage;
 }
 
-export async function saveNewIncomingMessage(messageInstance) {
-  if (messageInstance.service_id) {
-    const [duplicateMessage] = await r
-      .knex("message")
-      .where("service_id", messageInstance.service_id)
-      .select("id")
-      .limit(1);
-    if (duplicateMessage) {
-      console.error("DUPLICATE MESSAGE", duplicateMessage, messageInstance);
-      return;
-    }
-  }
-  await messageInstance.save();
-
-  await r
-    .knex("campaign_contact")
-    .where("id", messageInstance.campaign_contact_id)
-    .update({ message_status: "needsResponse", updated_at: new Date() });
+export async function saveNewIncomingMessage(messageInstance, contact) {
+  await cacheableData.message.save({ messageInstance, contact });
 }
