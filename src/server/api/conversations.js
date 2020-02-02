@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { Assignment, r, loaders } from "../models";
+import { Assignment, cacheableData, r, loaders } from "../models";
 import { addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue } from "./assignment";
 import { buildCampaignQuery } from "./campaign";
 import { log } from "../../lib";
