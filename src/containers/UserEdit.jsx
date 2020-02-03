@@ -257,8 +257,7 @@ UserEdit.propTypes = {
   nextUrl: PropTypes.string,
   style: PropTypes.string,
   handleClose: PropTypes.func,
-  openSuccessDialog: PropTypes.func,
-  query: PropTypes.function
+  openSuccessDialog: PropTypes.func
 };
 
 const mapQueriesToProps = ({ ownProps }) => {
