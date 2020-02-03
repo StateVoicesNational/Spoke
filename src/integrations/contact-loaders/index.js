@@ -9,7 +9,7 @@ const choiceDataCacheKey = (name, suffix) =>
 
 function getIngestMethods() {
   const enabledIngestMethods = (
-    getConfig("CONTACT_LOADERS") || "csv-upload,datawarehouse"
+    getConfig("CONTACT_LOADERS") || "csv-upload,test-fakedata,datawarehouse"
   ).split(",");
   const ingestMethods = {};
   enabledIngestMethods.forEach(name => {
@@ -27,14 +27,14 @@ const CONFIGURED_INGEST_METHODS = getIngestMethods();
 
 async function getSetCacheableResult(cacheKey, fallbackFunc) {
   if (r.redis) {
-    const cacheRes = await r.redis.get(cacheKey);
+    const cacheRes = await r.redis.getAsync(cacheKey);
     if (cacheRes) {
       return JSON.parse(cacheRes);
     }
   }
   const slowRes = await fallbackFunc();
   if (r.redis && slowRes && slowRes.expireSeconds) {
-    await r.redis.set(cacheKey, JSON.stringify(slowRes), slowRes.expireSeconds);
+    await r.redis.setAsync(cacheKey, JSON.stringify(slowRes), slowRes.expireSeconds);
   }
   return slowRes;
 }
