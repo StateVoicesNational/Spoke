@@ -169,7 +169,7 @@ class UserEdit extends React.Component {
                 name="lastName"
                 {...dataTest("lastName")}
               />
-              <Form.Field label="Alias" name="alias" {...dataTest("alias")} />
+              <Form.Field label="Texting Alias (optional)" name="alias" {...dataTest("alias")} />
               <Form.Field
                 label="Cell Number"
                 name="cell"
