@@ -1,9 +1,9 @@
-import thinky from './thinky';
+import thinky from "./thinky";
 const type = thinky.type;
-import { requiredString, timestamp } from './custom-types';
+import { requiredString, timestamp } from "./custom-types";
 
 const User = thinky.createModel(
-  'user',
+  "user",
   type
     .object()
     .schema({
@@ -12,13 +12,13 @@ const User = thinky.createModel(
       auth0_id: requiredString().stopReference(),
       first_name: requiredString(),
       last_name: requiredString(),
-      alias: type.string().default(''),
+      alias: type.string().default(""),
       cell: requiredString(),
       email: requiredString(),
       created_at: timestamp(),
       assigned_cell: type.string(),
       is_superadmin: type.boolean(),
-      terms: type.boolean().default(false),
+      terms: type.boolean().default(false)
     })
     .allowExtra(false),
   { noAutoCreation: true }

@@ -1,7 +1,7 @@
-import { resolvers } from '../src/server/api/schema';
-import { schema } from '../src/api/schema';
-import { assignmentRequired } from '../src/server/api/errors';
-import { graphql } from 'graphql';
+import { resolvers } from "../src/server/api/schema";
+import { schema } from "../src/api/schema";
+import { assignmentRequired } from "../src/server/api/errors";
+import { graphql } from "graphql";
 import {
   User,
   Organization,
@@ -11,16 +11,16 @@ import {
   r,
   CannedResponse,
   InteractionStep,
-  UserOrganization,
-} from '../src/server/models/';
-import { resolvers as campaignResolvers } from '../src/server/api/campaign';
-import { getContext, setupTest, cleanupTest } from './test_helpers';
-import { makeExecutableSchema } from 'graphql-tools';
+  UserOrganization
+} from "../src/server/models/";
+import { resolvers as campaignResolvers } from "../src/server/api/campaign";
+import { getContext, setupTest, cleanupTest } from "./test_helpers";
+import { makeExecutableSchema } from "graphql-tools";
 
 const mySchema = makeExecutableSchema({
   typeDefs: schema,
   resolvers,
-  allowUndefinedInResolve: true,
+  allowUndefinedInResolve: true
 });
 
 const rootValue = {};
@@ -37,41 +37,41 @@ let testTexterUser;
 
 async function createUser(
   userInfo = {
-    auth0_id: 'test123',
-    first_name: 'TestUserFirst',
-    last_name: 'TestUserLast',
-    alias: 'TestUserAlias',
-    cell: '555-555-5555',
-    email: 'testuser@example.com',
+    auth0_id: "test123",
+    first_name: "TestUserFirst",
+    last_name: "TestUserLast",
+    alias: "TestUserAlias",
+    cell: "555-555-5555",
+    email: "testuser@example.com"
   }
 ) {
   const user = new User(userInfo);
   try {
     await user.save();
-    console.log('created user');
+    console.log("created user");
     console.log(user);
     return user;
   } catch (err) {
-    console.error('Error saving user');
+    console.error("Error saving user");
     return false;
   }
 }
 
 async function createContact(campaignId) {
   const contact = new CampaignContact({
-    first_name: 'Ann',
-    last_name: 'Lewis',
-    cell: '5555555555',
-    zip: '12345',
-    campaign_id: campaignId,
+    first_name: "Ann",
+    last_name: "Lewis",
+    cell: "5555555555",
+    zip: "12345",
+    campaign_id: campaignId
   });
   try {
     await contact.save();
-    console.log('created contact');
+    console.log("created contact");
     console.log(contact);
     return contact;
   } catch (err) {
-    console.error('Error saving contact: ', err);
+    console.error("Error saving contact: ", err);
     return false;
   }
 }
@@ -87,7 +87,7 @@ async function createInvite() {
     const invite = await graphql(mySchema, inviteQuery, rootValue, context);
     return invite;
   } catch (err) {
-    console.error('Error creating invite');
+    console.error("Error creating invite");
     return false;
   }
 }
@@ -110,7 +110,7 @@ async function createOrganization(user, name, userId, inviteId) {
   const variables = {
     userId,
     name,
-    inviteId,
+    inviteId
   };
 
   try {
@@ -123,7 +123,7 @@ async function createOrganization(user, name, userId, inviteId) {
     );
     return org;
   } catch (err) {
-    console.error('Error creating organization');
+    console.error("Error creating organization");
     return false;
   }
 }
@@ -152,8 +152,8 @@ async function createCampaign(
       title,
       description,
       organizationId,
-      contacts,
-    },
+      contacts
+    }
   };
 
   try {
@@ -166,7 +166,7 @@ async function createCampaign(
     );
     return campaign;
   } catch (err) {
-    console.error('Error creating campaign');
+    console.error("Error creating campaign");
     return false;
   }
 }
@@ -182,7 +182,7 @@ afterAll(
   global.DATABASE_SETUP_TEARDOWN_TIMEOUT
 );
 
-it('should be undefined when user not logged in', async () => {
+it("should be undefined when user not logged in", async () => {
   const query = `{
     currentUser {
       id
@@ -192,10 +192,10 @@ it('should be undefined when user not logged in', async () => {
   const result = await graphql(mySchema, query, rootValue, context);
   const data = result;
 
-  expect(typeof data.currentUser).toEqual('undefined');
+  expect(typeof data.currentUser).toEqual("undefined");
 });
 
-it('should return the current user when user is logged in', async () => {
+it("should return the current user when user is logged in", async () => {
   testAdminUser = await createUser();
   const query = `{
     currentUser {
@@ -206,64 +206,64 @@ it('should return the current user when user is logged in', async () => {
   const result = await graphql(mySchema, query, rootValue, context);
   const { data } = result;
 
-  expect(data.currentUser.email).toBe('testuser@example.com');
+  expect(data.currentUser.email).toBe("testuser@example.com");
 });
 
 // TESTING CAMPAIGN CREATION FROM END TO END
 
-it('should create an invite', async () => {
+it("should create an invite", async () => {
   testInvite = await createInvite();
 
   expect(testInvite.data.createInvite.id).toBeTruthy();
 });
 
-it('should convert an invitation and user into a valid organization instance', async () => {
+it("should convert an invitation and user into a valid organization instance", async () => {
   if (testInvite && testAdminUser) {
-    console.log('user and invite for org');
+    console.log("user and invite for org");
     console.log([testAdminUser, testInvite.data]);
 
     testOrganization = await createOrganization(
       testAdminUser,
-      'Testy test organization',
+      "Testy test organization",
       testInvite.data.createInvite.id,
       testInvite.data.createInvite.id
     );
 
     expect(testOrganization.data.createOrganization.name).toBe(
-      'Testy test organization'
+      "Testy test organization"
     );
   } else {
-    console.log('Failed to create invite and/or user for organization test');
+    console.log("Failed to create invite and/or user for organization test");
     return false;
   }
 });
 
-it('should create a test campaign', async () => {
-  const campaignTitle = 'test campaign';
+it("should create a test campaign", async () => {
+  const campaignTitle = "test campaign";
   testCampaign = await createCampaign(
     testAdminUser,
     campaignTitle,
-    'test description',
+    "test description",
     testOrganization.data.createOrganization.id
   );
 
   expect(testCampaign.data.createCampaign.title).toBe(campaignTitle);
 });
 
-it('should create campaign contacts', async () => {
+it("should create campaign contacts", async () => {
   const contact = await createContact(testCampaign.data.createCampaign.id);
   expect(contact.campaign_id).toBe(
     parseInt(testCampaign.data.createCampaign.id)
   );
 });
 
-it('should add texters to a organization', async () => {
+it("should add texters to a organization", async () => {
   testTexterUser = await createUser({
-    auth0_id: 'test456',
-    first_name: 'TestTexterFirst',
-    last_name: 'TestTexterLast',
-    cell: '555-555-6666',
-    email: 'testtexter@example.com',
+    auth0_id: "test456",
+    first_name: "TestTexterFirst",
+    last_name: "TestTexterLast",
+    cell: "555-555-6666",
+    email: "testtexter@example.com"
   });
   const joinQuery = `
   mutation joinOrganization($organizationUuid: String!) {
@@ -272,7 +272,7 @@ it('should add texters to a organization', async () => {
     }
   }`;
   const variables = {
-    organizationUuid: testOrganization.data.createOrganization.uuid,
+    organizationUuid: testOrganization.data.createOrganization.uuid
   };
   const context = getContext({ user: testTexterUser });
   const result = await graphql(
@@ -285,7 +285,7 @@ it('should add texters to a organization', async () => {
   expect(result.data.joinOrganization.id).toBeTruthy();
 });
 
-it('should assign texters to campaign contacts', async () => {
+it("should assign texters to campaign contacts", async () => {
   const campaignEditQuery = `
   mutation editCampaign($campaignId: String!, $campaign: CampaignInput!) {
     editCampaign(id: $campaignId, campaign: $campaign) {
@@ -327,14 +327,14 @@ it('should assign texters to campaign contacts', async () => {
   const campaignId = updateCampaign.id;
   updateCampaign.texters = [
     {
-      id: testTexterUser.id,
-    },
+      id: testTexterUser.id
+    }
   ];
   delete updateCampaign.id;
   delete updateCampaign.contacts;
   const variables = {
     campaignId,
-    campaign: updateCampaign,
+    campaign: updateCampaign
   };
   const result = await graphql(
     mySchema,
@@ -357,19 +357,19 @@ it('should assign texters to campaign contacts', async () => {
 
 // it('should send an inital message to test contacts', async() => {})
 
-describe('Campaign', () => {
+describe("Campaign", () => {
   let organization;
   const adminUser = { is_superadmin: true, id: 1 };
 
   beforeEach(async () => {
     organization = await new Organization({
-      name: 'organization',
+      name: "organization",
       texting_hours_start: 0,
-      texting_hours_end: 0,
+      texting_hours_end: 0
     }).save();
   });
 
-  describe('contacts', async () => {
+  describe("contacts", async () => {
     let campaigns;
     let contacts;
     beforeEach(async () => {
@@ -379,14 +379,14 @@ describe('Campaign', () => {
             organization_id: organization.id,
             is_started: false,
             is_archived: false,
-            due_by: new Date(),
+            due_by: new Date()
           }),
           new Campaign({
             organization_id: organization.id,
             is_started: false,
             is_archived: false,
-            due_by: new Date(),
-          }),
+            due_by: new Date()
+          })
         ].map(async each => each.save())
       );
 
@@ -394,19 +394,19 @@ describe('Campaign', () => {
         [
           new CampaignContact({
             campaign_id: campaigns[0].id,
-            cell: '',
-            message_status: 'closed',
+            cell: "",
+            message_status: "closed"
           }),
           new CampaignContact({
             campaign_id: campaigns[1].id,
-            cell: '',
-            message_status: 'closed',
-          }),
+            cell: "",
+            message_status: "closed"
+          })
         ].map(async each => each.save())
       );
     });
 
-    test('resolves contacts', async () => {
+    test("resolves contacts", async () => {
       const results = await campaignResolvers.Campaign.contacts(
         campaigns[0],
         null,
@@ -416,7 +416,7 @@ describe('Campaign', () => {
       expect(results[0].campaign_id).toEqual(campaigns[0].id);
     });
 
-    test('resolves contacts count', async () => {
+    test("resolves contacts count", async () => {
       const results = await campaignResolvers.Campaign.contactsCount(
         campaigns[0],
         null,
@@ -425,12 +425,12 @@ describe('Campaign', () => {
       expect(results).toEqual(1);
     });
 
-    test('resolves contacts count when empty', async () => {
+    test("resolves contacts count when empty", async () => {
       const campaign = await new Campaign({
         organization_id: organization.id,
         is_started: false,
         is_archived: false,
-        due_by: new Date(),
+        due_by: new Date()
       }).save();
       const results = await campaignResolvers.Campaign.contactsCount(
         campaign,
@@ -440,7 +440,7 @@ describe('Campaign', () => {
       expect(results).toEqual(0);
     });
 
-    describe('unassigned contacts', () => {
+    describe("unassigned contacts", () => {
       let campaign;
 
       beforeEach(async () => {
@@ -449,15 +449,15 @@ describe('Campaign', () => {
           is_started: false,
           is_archived: false,
           use_dynamic_assignment: true,
-          due_by: new Date(),
+          due_by: new Date()
         }).save();
       });
 
-      test('resolves unassigned contacts when true', async () => {
+      test("resolves unassigned contacts when true", async () => {
         const contact = await new CampaignContact({
           campaign_id: campaign.id,
-          message_status: 'needsMessage',
-          cell: '',
+          message_status: "needsMessage",
+          cell: ""
         }).save();
 
         const results = await campaignResolvers.Campaign.hasUnassignedContacts(
@@ -474,25 +474,25 @@ describe('Campaign', () => {
         expect(resultsForTexter).toEqual(true);
       });
 
-      test('resolves unassigned contacts when false with assigned contacts', async () => {
+      test("resolves unassigned contacts when false with assigned contacts", async () => {
         const user = await new User({
-          auth0_id: 'test123',
-          first_name: 'TestUserFirst',
-          last_name: 'TestUserLast',
-          cell: '555-555-5555',
-          email: 'testuser@example.com',
+          auth0_id: "test123",
+          first_name: "TestUserFirst",
+          last_name: "TestUserLast",
+          cell: "555-555-5555",
+          email: "testuser@example.com"
         }).save();
 
         const assignment = await new Assignment({
           user_id: user.id,
-          campaign_id: campaign.id,
+          campaign_id: campaign.id
         }).save();
 
         const contact = await new CampaignContact({
           campaign_id: campaign.id,
           assignment_id: assignment.id,
-          message_status: 'closed',
-          cell: '',
+          message_status: "closed",
+          cell: ""
         }).save();
 
         const results = await campaignResolvers.Campaign.hasUnassignedContacts(
@@ -509,7 +509,7 @@ describe('Campaign', () => {
         expect(resultsForTexter).toEqual(false);
       });
 
-      test('resolves unassigned contacts when false with no contacts', async () => {
+      test("resolves unassigned contacts when false with no contacts", async () => {
         const results = await campaignResolvers.Campaign.hasUnassignedContacts(
           campaign,
           null,
@@ -518,12 +518,12 @@ describe('Campaign', () => {
         expect(results).toEqual(false);
       });
 
-      test('test assignmentRequired access control', async () => {
+      test("test assignmentRequired access control", async () => {
         const user = await createUser();
 
         const assignment = await new Assignment({
           user_id: user.id,
-          campaign_id: campaign.id,
+          campaign_id: campaign.id
         }).save();
 
         const allowUser = await assignmentRequired(
@@ -539,7 +539,7 @@ describe('Campaign', () => {
         expect(allowUserAssignmentId).toEqual(true);
         try {
           const notAllowed = await assignmentRequired(user, -1);
-          throw new Exception('should throw BEFORE this exception');
+          throw new Exception("should throw BEFORE this exception");
         } catch (err) {
           expect(/not authorized/.test(String(err))).toEqual(true);
         }
@@ -547,7 +547,7 @@ describe('Campaign', () => {
     });
   });
 
-  describe('Copy Campaign', () => {
+  describe("Copy Campaign", () => {
     let campaign;
     let copiedCampaign;
     let grandpaInteraction;
@@ -563,56 +563,56 @@ describe('Campaign', () => {
       await new UserOrganization({
         user_id: userTest.id,
         organization_id: organization.id,
-        role: 'OWNER',
+        role: "OWNER"
       }).save();
       // creating campaign, interactions (two levels down), and canned responses
       campaign = await new Campaign({
         organization_id: organization.id,
-        title: 'My campaign',
-        description: 'This is my new campaign',
+        title: "My campaign",
+        description: "This is my new campaign",
         is_started: false,
         is_archived: false,
         use_dynamic_assignment: true,
-        due_by: new Date(),
+        due_by: new Date()
       }).save();
       grandpaInteraction = new InteractionStep({
         campaign_id: campaign.id,
-        question: 'Favorite color',
+        question: "Favorite color",
         script: "Hi {firstName}! What's your favorite color?",
-        parent_interaction_id: null,
+        parent_interaction_id: null
       });
       await grandpaInteraction.save();
       parantInteraction = new InteractionStep({
         campaign_id: campaign.id,
         parent_interaction_id: grandpaInteraction.id,
-        answer_option: 'Blue',
+        answer_option: "Blue"
       });
       await parantInteraction.save();
       childInteraction = new InteractionStep({
         campaign_id: campaign.id,
         parent_interaction_id: parantInteraction.id,
-        answer_option: 'Thanks. Blue is Awesome!',
+        answer_option: "Thanks. Blue is Awesome!"
       });
       await childInteraction.save();
       cannedResponseOne = new CannedResponse({
         campaign_id: campaign.id,
-        text: 'Hello {firstName}',
-        title: 'Hello',
+        text: "Hello {firstName}",
+        title: "Hello"
       });
       cannedResponseTwo = new CannedResponse({
         campaign_id: campaign.id,
-        text: 'Just check in',
-        title: 'Check in',
+        text: "Just check in",
+        title: "Check in"
       });
       cannedResponseThree = new CannedResponse({
         campaign_id: campaign.id,
-        text: 'Good bye {firstName}',
-        title: 'GoodBye',
+        text: "Good bye {firstName}",
+        title: "GoodBye"
       });
       await Promise.all([
         cannedResponseOne.save(),
         cannedResponseTwo.save(),
-        cannedResponseThree.save(),
+        cannedResponseThree.save()
       ]);
       // a helper function to help querying both the original and copied campaign
       queryHelper = async (table, campaignId) => {
@@ -628,69 +628,69 @@ describe('Campaign', () => {
           loaders: {
             campaign: {
               load: async id => {
-                const findCampaign = await r.knex('campaign').where({ id });
+                const findCampaign = await r.knex("campaign").where({ id });
                 return findCampaign[0];
-              },
-            },
-          },
+              }
+            }
+          }
         }
       );
     });
-    test('creates and returns a copy of the campaign', () => {
+    test("creates and returns a copy of the campaign", () => {
       expect(campaign.id).not.toEqual(copiedCampaign.id);
       expect(campaign.description).toEqual(copiedCampaign.description);
       expect(copiedCampaign.title).toEqual(`COPY - ${campaign.title}`);
     });
-    test('the copied campaign has the same canned response as the original one', async () => {
+    test("the copied campaign has the same canned response as the original one", async () => {
       const originalCannedResponseP = queryHelper(
-        'canned_response',
+        "canned_response",
         campaign.id
       );
       const copiedCannedResponseP = queryHelper(
-        'canned_response',
+        "canned_response",
         copiedCampaign.id
       );
       const [originalCannedResponse, copiedCannedResponse] = await Promise.all([
         originalCannedResponseP,
-        copiedCannedResponseP,
+        copiedCannedResponseP
       ]);
       const originalCannedFiltered = originalCannedResponse.map(el => ({
         text: el.text,
-        title: el.title,
+        title: el.title
       }));
       const copiedFiltered = copiedCannedResponse.map(el => ({
         text: el.text,
-        title: el.title,
+        title: el.title
       }));
       expect(copiedCannedResponse).toHaveLength(originalCannedResponse.length);
       originalCannedFiltered.forEach(response => {
         expect(copiedFiltered).toContainEqual(response);
       });
     });
-    test('the copied campaign has the same interactions as the original one', async () => {
+    test("the copied campaign has the same interactions as the original one", async () => {
       const originalInteractionsP = queryHelper(
-        'interaction_step',
+        "interaction_step",
         campaign.id
       );
       const copiedInteractionsP = queryHelper(
-        'interaction_step',
+        "interaction_step",
         copiedCampaign.id
       );
       const [originalInteractions, copiedInteractions] = await Promise.all([
         originalInteractionsP,
-        copiedInteractionsP,
+        copiedInteractionsP
       ]);
       const originalIntFiltered = originalInteractions.map(int => ({
         question: int.question,
         script: int.script,
         answer_option: int.answer_option,
-        answer_actions: int.answer_actions,
+        answer_actions: int.answer_actions
       }));
       const copiedIntFiltered = copiedInteractions.map(int => ({
         question: int.question,
         script: int.script,
         answer_option: int.answer_option,
-        answer_actions: int.answer_actions,
+        answer_actions: int.answer_actions
       }));
       expect(copiedInteractions).toHaveLength(originalInteractions.length);
       originalIntFiltered.forEach(interaction => {
@@ -700,24 +700,24 @@ describe('Campaign', () => {
   });
 });
 
-describe('Contact schema', () => {
-  test('has an alias field', async () => {
+describe("Contact schema", () => {
+  test("has an alias field", async () => {
     // create a default user...
     const user = await createUser();
     // ...and check if it's on the DB. The object being returned in the above function is not the db instance.
     const userFromDB = await User.getAll(user.id);
-    expect(userFromDB[0].alias).toEqual('TestUserAlias');
+    expect(userFromDB[0].alias).toEqual("TestUserAlias");
   });
-  test('the alias field defaults to an empty string', async () => {
+  test("the alias field defaults to an empty string", async () => {
     const userWithoutAliasObj = {
-      auth0_id: 'test123',
-      first_name: 'TestUserFirst',
-      last_name: 'TestUserLast',
-      cell: '555-555-5555',
-      email: 'testuser@example.com',
+      auth0_id: "test123",
+      first_name: "TestUserFirst",
+      last_name: "TestUserLast",
+      cell: "555-555-5555",
+      email: "testuser@example.com"
     };
     const user = await createUser(userWithoutAliasObj);
     const userFromDB = await User.getAll(user.id);
-    expect(userFromDB[0].alias).toEqual('');
+    expect(userFromDB[0].alias).toEqual("");
   });
 });
