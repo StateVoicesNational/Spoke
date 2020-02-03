@@ -439,111 +439,111 @@ describe("Campaign", () => {
       );
       expect(results).toEqual(0);
     });
+  });
 
-    describe("unassigned contacts", () => {
-      let campaign;
+  describe("unassigned contacts", () => {
+    let campaign;
 
-      beforeEach(async () => {
-        campaign = await new Campaign({
-          organization_id: organization.id,
-          is_started: false,
-          is_archived: false,
-          use_dynamic_assignment: true,
-          due_by: new Date()
-        }).save();
-      });
+    beforeEach(async () => {
+      campaign = await new Campaign({
+        organization_id: organization.id,
+        is_started: false,
+        is_archived: false,
+        use_dynamic_assignment: true,
+        due_by: new Date()
+      }).save();
+    });
 
-      test("resolves unassigned contacts when true", async () => {
-        const contact = await new CampaignContact({
-          campaign_id: campaign.id,
-          message_status: "needsMessage",
-          cell: ""
-        }).save();
+    test("resolves unassigned contacts when true", async () => {
+      const contact = await new CampaignContact({
+        campaign_id: campaign.id,
+        message_status: "needsMessage",
+        cell: ""
+      }).save();
 
-        const results = await campaignResolvers.Campaign.hasUnassignedContacts(
-          campaign,
-          null,
-          { user: adminUser }
-        );
-        expect(results).toEqual(true);
-        const resultsForTexter = await campaignResolvers.Campaign.hasUnassignedContactsForTexter(
-          campaign,
-          null,
-          { user: adminUser }
-        );
-        expect(resultsForTexter).toEqual(true);
-      });
+      const results = await campaignResolvers.Campaign.hasUnassignedContacts(
+        campaign,
+        null,
+        { user: adminUser }
+      );
+      expect(results).toEqual(true);
+      const resultsForTexter = await campaignResolvers.Campaign.hasUnassignedContactsForTexter(
+        campaign,
+        null,
+        { user: adminUser }
+      );
+      expect(resultsForTexter).toEqual(true);
+    });
 
-      test("resolves unassigned contacts when false with assigned contacts", async () => {
-        const user = await new User({
-          auth0_id: "test123",
-          first_name: "TestUserFirst",
-          last_name: "TestUserLast",
-          cell: "555-555-5555",
-          email: "testuser@example.com"
-        }).save();
+    test("resolves unassigned contacts when false with assigned contacts", async () => {
+      const user = await new User({
+        auth0_id: "test123",
+        first_name: "TestUserFirst",
+        last_name: "TestUserLast",
+        cell: "555-555-5555",
+        email: "testuser@example.com"
+      }).save();
 
-        const assignment = await new Assignment({
-          user_id: user.id,
-          campaign_id: campaign.id
-        }).save();
+      const assignment = await new Assignment({
+        user_id: user.id,
+        campaign_id: campaign.id
+      }).save();
 
-        const contact = await new CampaignContact({
-          campaign_id: campaign.id,
-          assignment_id: assignment.id,
-          message_status: "closed",
-          cell: ""
-        }).save();
+      const contact = await new CampaignContact({
+        campaign_id: campaign.id,
+        assignment_id: assignment.id,
+        message_status: "closed",
+        cell: ""
+      }).save();
 
-        const results = await campaignResolvers.Campaign.hasUnassignedContacts(
-          campaign,
-          null,
-          { user: adminUser }
-        );
-        expect(results).toEqual(false);
-        const resultsForTexter = await campaignResolvers.Campaign.hasUnassignedContactsForTexter(
-          campaign,
-          null,
-          { user: adminUser }
-        );
-        expect(resultsForTexter).toEqual(false);
-      });
+      const results = await campaignResolvers.Campaign.hasUnassignedContacts(
+        campaign,
+        null,
+        { user: adminUser }
+      );
+      expect(results).toEqual(false);
+      const resultsForTexter = await campaignResolvers.Campaign.hasUnassignedContactsForTexter(
+        campaign,
+        null,
+        { user: adminUser }
+      );
+      expect(resultsForTexter).toEqual(false);
+    });
 
-      test("resolves unassigned contacts when false with no contacts", async () => {
-        const results = await campaignResolvers.Campaign.hasUnassignedContacts(
-          campaign,
-          null,
-          { user: adminUser }
-        );
-        expect(results).toEqual(false);
-      });
+    test("resolves unassigned contacts when false with no contacts", async () => {
+      const results = await campaignResolvers.Campaign.hasUnassignedContacts(
+        campaign,
+        null,
+        { user: adminUser }
+      );
+      expect(results).toEqual(false);
+    });
 
-      test("test assignmentRequired access control", async () => {
-        const user = await createUser();
+    test("test assignmentRequired access control", async () => {
+      const user = await createUser();
 
-        const assignment = await new Assignment({
-          user_id: user.id,
-          campaign_id: campaign.id
-        }).save();
+      const assignment = await new Assignment({
+        user_id: user.id,
+        campaign_id: campaign.id
+      }).save();
 
-        const allowUser = await assignmentRequired(
-          user,
-          assignment.id,
-          assignment
-        );
-        expect(allowUser).toEqual(true);
-        const allowUserAssignmentId = await assignmentRequired(
-          user,
-          assignment.id
-        );
-        expect(allowUserAssignmentId).toEqual(true);
-        try {
-          const notAllowed = await assignmentRequired(user, -1);
-          throw new Exception("should throw BEFORE this exception");
-        } catch (err) {
-          expect(/not authorized/.test(String(err))).toEqual(true);
-        }
-      });
+      const allowUser = await assignmentRequired(
+        user,
+        assignment.id,
+        assignment
+      );
+      expect(allowUser).toEqual(true);
+      const allowUserAssignmentId = await assignmentRequired(
+        user,
+        assignment.id
+      );
+      expect(allowUserAssignmentId).toEqual(true);
+      try {
+        const notAllowed = await assignmentRequired(user, -1);
+        throw new Exception("should throw BEFORE this exception");
+      } catch (err) {
+        expect(/not authorized/.test(String(err))).toEqual(true);
+      }
     });
   });
 
