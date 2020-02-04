@@ -25,6 +25,10 @@ export class CampaignContactsForm extends React.Component {
         schema={yup.object({
           requestContactCount: yup.number().integer()
         })}
+        onChange={formValues => {
+          this.setState({ ...formValues });
+          this.props.onChange(JSON.stringify(formValues));
+        }}
         onSubmit={formValues => {
           // sets values locally
           this.setState({ ...formValues });
@@ -38,10 +42,6 @@ export class CampaignContactsForm extends React.Component {
           name="requestContactCount"
           type="number"
           label="How many fake contacts"
-          value={this.state.requestContactCount || 1}
-          onChange={value => {
-            this.props.onChange(JSON.stringify(value));
-          }}
         />
         <List>
           <ListItem
