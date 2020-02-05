@@ -53,7 +53,7 @@ export async function assignmentRequired(user, assignmentId, assignment) {
     // undefined or null
     throw new GraphQLError("You are not authorized to access that resource.");
   }
-  return true;
+  return userHasAssignment;
 }
 
 export function superAdminRequired(user) {
