@@ -295,7 +295,10 @@ it("should assign texters to campaign contacts", async () => {
       isStarted
       isArchived
       contactsCount
-      datawarehouseAvailable
+      ingestMethodsAvailable {
+        name
+        displayName
+      }
       customFields
       texters {
         id
@@ -342,6 +345,7 @@ it("should assign texters to campaign contacts", async () => {
     context,
     variables
   );
+
   expect(result.data.editCampaign.texters.length).toBe(1);
   expect(result.data.editCampaign.texters[0].assignment.contactsCount).toBe(1);
 });
@@ -536,7 +540,8 @@ describe("Campaign", () => {
         user,
         assignment.id
       );
-      expect(allowUserAssignmentId).toEqual(true);
+      expect(allowUserAssignmentId.user_id).toEqual(user.id);
+      expect(allowUserAssignmentId.id).toEqual(assignment.id);
       try {
         const notAllowed = await assignmentRequired(user, -1);
         throw new Exception("should throw BEFORE this exception");
@@ -698,7 +703,7 @@ describe("Campaign", () => {
   });
 });
 
-describe.only("editUser mutation", () => {
+describe("editUser mutation", () => {
   let testAdminUser;
   let testTexter;
   let testOrganization;
@@ -729,10 +734,10 @@ describe.only("editUser mutation", () => {
 
   it("returns the user if it is called with a userId by no userData", async () => {
     const result = await runGql(editUserMutation, variables, testAdminUser);
-    expect(result).toEqual({
+    expect(result).toMatchObject({
       data: {
         editUser: {
-          id: "2",
+          // id: "2", // id might be diff
           firstName: "TestTexterFirst",
           lastName: "TestTexterLast",
           cell: "555-555-6666",

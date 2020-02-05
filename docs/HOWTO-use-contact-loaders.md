@@ -21,7 +21,7 @@ Just enabling a contact loader is the first step, but contact loaders often
 have additional context required for them to be visible (e.g. for datawarehouse, many `WAREHOUSE_DB_*`
 environment variables need to be present (along with the user being a super-admin).
 
-The server admin can look at the ingest loader index.js file in the appropriate directory TKTK
+The server admin can look at the ingest loader index.js file in `src/integrations/contact-loaders/<CONTACT LOADER NAME>`
 inside the function `serverAdministratorInstructions`
 (this data might sometime be visible to superadmins on a documentation page)
 
