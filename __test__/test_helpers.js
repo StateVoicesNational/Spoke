@@ -68,10 +68,19 @@ export async function createUser(
     last_name: "TestUserLast",
     cell: "555-555-5555",
     email: "testuser@example.com"
-  }
+  },
+  organization_id = null,
+  role = null
 ) {
   const user = new User(userInfo);
   await user.save();
+  if (organization_id && role) {
+    await r.knex("user_organization").insert({
+      user_id: user.id,
+      organization_id,
+      role
+    });
+  }
   return user;
 }
 

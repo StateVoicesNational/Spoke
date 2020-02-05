@@ -208,7 +208,11 @@ export const resolvers = {
         .orderBy("updated_at", "desc");
     },
     ingestMethodsAvailable: async (campaign, _, { user, loaders }) => {
-      await accessRequired(user, campaign.organization_id, "ADMIN", true);
+      try {
+        await accessRequired(user, campaign.organization_id, "ADMIN", true);
+      } catch (err) {
+        return []; // for SUPERVOLUNTEERS
+      }
       const organization = await loaders.organization.load(
         campaign.organization_id
       );
@@ -231,7 +235,9 @@ export const resolvers = {
       );
     },
     ingestMethod: async (campaign, _, { user, loaders }) => {
-      await accessRequired(user, campaign.organization_id, "ADMIN", true);
+      // FUTURE: which ingestMethod was used and status
+      // try { ... for SUPERVOLUNTEER
+      // await accessRequired(user, campaign.organization_id, "ADMIN", true);
       return null;
     },
     texters: async (campaign, _, { user }) => {
