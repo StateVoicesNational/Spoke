@@ -36,6 +36,7 @@ let testAdminUser;
 let testInvite;
 let testOrganization;
 let testCampaign;
+let testSuperVolunteerUser;
 let testTexterUser;
 let testTexterUser2;
 let testContacts;
@@ -55,6 +56,17 @@ beforeEach(async () => {
   testContacts = await createContacts(testCampaign, NUMBER_OF_CONTACTS);
   testTexterUser = await createTexter(testOrganization);
   testTexterUser2 = await createTexter(testOrganization);
+  testSuperVolunteerUser = await createUser(
+    {
+      auth0_id: "xyz",
+      first_name: "SuperVolFirst",
+      last_name: "Lastsuper",
+      cell: "1234567890",
+      email: "supervol@example.com"
+    },
+    organizationId,
+    "SUPERVOLUNTEER"
+  );
   await assignTexter(testAdminUser, testTexterUser, testCampaign);
   const dbCampaignContact = await getCampaignContact(testContacts[0].id);
   assignmentId = dbCampaignContact.assignment_id;
@@ -66,6 +78,20 @@ afterEach(async () => {
   await cleanupTest();
   if (r.redis) r.redis.flushdb();
 }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
+
+it("allow supervolunteer to retrieve campaign data", async () => {
+  let campaignDataResults = await runComponentGql(
+    AdminCampaignEditQuery,
+    { campaignId: testCampaign.id },
+    testSuperVolunteerUser
+  );
+  expect(campaignDataResults.errors).toBe(undefined);
+  expect(campaignDataResults.data.campaign.description).toBe(
+    "test description"
+  );
+  // shouldn't have access to ingestMethods
+  expect(campaignDataResults.data.campaign.ingestMethodsAvailable).toEqual([]);
+});
 
 it("save campaign data, edit it, make sure the last value", async () => {
   let campaignDataResults = await runComponentGql(
