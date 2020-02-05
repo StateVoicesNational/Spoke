@@ -125,6 +125,7 @@
     "passport-local": "^1.0.0",
     "passport-local-authenticate": "^1.2.0",
     "pg": "^6.4.2",
+    "pg-query-stream": "^1.1.1",
     "prop-types": "^15.6.0",
     "query-string": "^4.1.0",
     "react": "^15.6.1",
@@ -178,7 +179,7 @@
     "regenerator-runtime": "^0.10.5",
     "saucelabs": "^1.5.0",
     "selenium-webdriver": "^3.6.0",
-    "sqlite3": "^4.0.0",
+    "sqlite3": "^4.1.1",
     "wait-on": "^2.1.0",
     "webpack-dev-server": "^2.9.4"
   },

@@ -559,6 +559,14 @@ export async function assignTexters(job) {
       .catch(log.error);
   }
 
+  if (campaign.is_started) {
+    await cacheableData.campaignContact.updateCampaignAssignmentCache(
+      job.campaign_id,
+      // await the full thing if we are testing to avoid async blocks
+      global.TEST_ENVIRONMENT
+    );
+  }
+
   if (job.id) {
     await r
       .table("job_request")
@@ -987,7 +995,7 @@ export async function loadMessages(csvFile) {
   });
 }
 
-export function loadCampaignCache(
+export async function loadCampaignCache(
   campaign,
   organization,
   { remainingMilliseconds }
@@ -995,11 +1003,15 @@ export function loadCampaignCache(
   // Asynchronously start running a refresh of all the campaign data into
   // our cache.  This should refresh/clear any corruption
   console.log("loadCampaignCache async tasks...", campaign.id);
-  cacheableData.campaignContact
+  const loadJob = cacheableData.campaignContact
     .loadMany(campaign, organization, { remainingMilliseconds })
     .then(() => {
       console.log("FINISHED contact loadMany", campaign.id);
     });
+  if (global.TEST_ENVIRONMENT) {
+    // otherwise this races with texting
+    await loadJob;
+  }
 }
 
 // Temporary fix for orgless users

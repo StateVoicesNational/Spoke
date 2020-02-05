@@ -64,20 +64,26 @@ export default class CampaignContactsChoiceForm extends React.Component {
 
   render() {
     const { ingestMethodChoices } = this.props;
-    let subtitle =
-      ingestMethodChoices.length > 1 ? (
-        <span>Choose contact loading method</span>
-      ) : null;
     const ingestMethod = this.getCurrentMethod();
     const ingestMethodName = ingestMethod.name;
     const IngestComponent = components[ingestMethodName];
     return (
       <div>
-        <CampaignFormSectionHeading
-          title="Who are you contacting?"
-          subtitle={subtitle}
-        />
+        <CampaignFormSectionHeading title="Who are you contacting?" />
         <div>
+          {!this.props.contactsCount ? (
+            ""
+          ) : (
+            <div>
+              <CampaignFormSectionHeading
+                title={`Loaded Contacts: ${this.props.contactsCount}`}
+              />
+              <div>
+                Submitting new contacts will replace the current loaded
+                contacts.
+              </div>
+            </div>
+          )}
           {!this.props.jobResultMessage ? (
             ""
           ) : (
@@ -140,5 +146,6 @@ CampaignContactsChoiceForm.propTypes = {
   saveDisabled: type.bool,
   saveLabel: type.string,
   jobResultMessage: type.string,
-  ingestMethodChoices: type.array.isRequired
+  ingestMethodChoices: type.array.isRequired,
+  contactsCount: type.number
 };

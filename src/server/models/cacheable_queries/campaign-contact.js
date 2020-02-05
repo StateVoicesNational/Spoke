@@ -37,9 +37,10 @@ const messageStatusKey = id =>
 const cellTargetKey = (cell, messageServiceSid) =>
   `${process.env.CACHE_PREFIX || ""}cell-${cell}-${messageServiceSid || "x"}`;
 
-// assignment_id and user_id of assignment
-const contactAssignmentKey = id =>
-  `${process.env.CACHE_PREFIX || ""}contactassignment-${id}`;
+// HASH<campaignId> assignment_id and user_id (sometimes) of assignment
+// This allows us to clear assignment cache all at once for a campaign
+const contactAssignmentKey = campaignId =>
+  `${process.env.CACHE_PREFIX || ""}contactassignment-${campaignId}`;
 
 const generateCacheRecord = (
   dbRecord,
@@ -50,11 +51,9 @@ const generateCacheRecord = (
   // This should be contactinfo that
   // never needs to be updated by an action of the texter or contact
   id: dbRecord.id,
-  // don't cache inside contact if we have dynamic assignment
-  assignment_id: campaign.use_dynamic_assignment
-    ? undefined
-    : dbRecord.assignment_id,
-  user_id: campaign.use_dynamic_assignment ? undefined : dbRecord.user_id, // assigned user_id
+  // don't cache inside contact: using separate cache
+  // assignment_id: dbRecord.assignment_id,
+  // user_id: dbRecord.user_id, // assigned user_id
   campaign_id: dbRecord.campaign_id,
   organization_id: organizationId,
   dynamic_assignment: campaign.use_dynamic_assignment,
@@ -73,22 +72,23 @@ const generateCacheRecord = (
   state: dbRecord.state
 });
 
-export const setCacheContactAssignment = async (id, contactObj) => {
+export const setCacheContactAssignment = async (id, campaignId, contactObj) => {
   if (r.redis && contactObj && contactObj.assignment_id) {
-    const assignmentKey = contactAssignmentKey(id);
+    const assignmentKey = contactAssignmentKey(campaignId);
     // console.log('setCacheContactAssignment', id, contactObj.assignment_id, contactObj.user_id, assignmentKey)
     await r.redis
       .multi()
-      .set(
+      .hset(
         assignmentKey,
-        [contactObj.assignment_id, contactObj.user_id].join(":")
+        id,
+        [contactObj.assignment_id || "", contactObj.user_id || ""].join(":")
       )
       .expire(assignmentKey, 43200)
       .execAsync();
   }
 };
 
-export const getCacheContactAssignment = async (id, contactObj) => {
+export const getCacheContactAssignment = async (id, campaignId, contactObj) => {
   if (contactObj && contactObj.assignment_id) {
     return {
       assignment_id: contactObj.assignment_id,
@@ -96,11 +96,29 @@ export const getCacheContactAssignment = async (id, contactObj) => {
     };
   }
   if (r.redis) {
-    const contactAssignment = await r.redis.getAsync(contactAssignmentKey(id));
+    const contactAssignment = await r.redis.hgetAsync(
+      contactAssignmentKey(campaignId),
+      id
+    );
     if (contactAssignment) {
       // eslint-disable-next-line camelcase
       const [assignment_id, user_id] = contactAssignment.split(":");
-      return { assignment_id, user_id };
+      // if empty string, then it's null
+      return {
+        assignment_id: assignment_id ? Number(assignment_id) : null,
+        user_id: user_id || null
+      };
+    }
+  } else {
+    // if no cache, load it from the db
+    const assignment = await r
+      .knex("campaign_contact")
+      .where("id", id)
+      .select("assignment_id")
+      .first();
+    if (assignment) {
+      await setCacheContactAssignment(id, campaignId, assignment);
+      return assignment;
     }
   }
   return {};
@@ -139,7 +157,11 @@ const saveCacheRecord = async (
         .execAsync();
       //await updateAssignmentContact(dbRecord, dbRecord.message_status);
     }
-    await setCacheContactAssignment(dbRecord.id, dbRecord);
+    await setCacheContactAssignment(
+      dbRecord.id,
+      dbRecord.campaign_id,
+      dbRecord
+    );
   }
   // NOT INCLUDED: (All SET on first-text (i.e. updateStatus) rather than initial save)
   // - cellTargetKey <cell><messageservice_sid>: to not steal the cell from another campaign "too early"
@@ -170,13 +192,12 @@ const clearMemoizedCache = id => {
 };
 
 const campaignContactCache = {
-  clear: async id => {
+  clear: async (id, campaignId) => {
     if (r.redis) {
-      await r.redis.delAsync(
-        cacheKey(id),
-        messageStatusKey(id),
-        contactAssignmentKey(id)
-      );
+      await r.redis.delAsync(cacheKey(id), messageStatusKey(id));
+      if (campaignId) {
+        await r.redis.hdelAsync(contactAssignmentKey(id), id);
+      }
     }
     clearMemoizedCache(id);
   },
@@ -194,12 +215,10 @@ const campaignContactCache = {
         }
         cacheData.message_status = await getMessageStatus(id, cacheData);
 
-        if (cacheData.dynamic_assignment) {
-          Object.assign(
-            cacheData,
-            await getCacheContactAssignment(id, cacheData)
-          );
-        }
+        Object.assign(
+          cacheData,
+          await getCacheContactAssignment(id, cacheData.campaign_id, cacheData)
+        );
 
         // console.log('contact fromCache', cacheData.id, cacheData.message_status)
         return modelWithExtraProps(cacheData, CampaignContact, [
@@ -286,7 +305,7 @@ const campaignContactCache = {
             next();
           },
           err => {
-            console.error("FAILED CACHE SAVE", err);
+            console.error("FAILED CONTACT CACHE SAVE", err);
             stream.end();
             next();
           }
@@ -351,12 +370,50 @@ const campaignContactCache = {
     return false;
   },
   getMessageStatus,
-  updateAssignmentCache: async (contactId, newAssignmentId, newUserId) => {
-    await setCacheContactAssignment(contactId, {
+  updateAssignmentCache: async (
+    contactId,
+    newAssignmentId,
+    newUserId,
+    campaignId
+  ) => {
+    await setCacheContactAssignment(contactId, campaignId, {
       assignment_id: newAssignmentId,
       user_id: newUserId
     });
     clearMemoizedCache(contactId);
+  },
+  updateCampaignAssignmentCache: async (campaignId, realAwait) => {
+    if (r.redis) {
+      const assignmentKey = contactAssignmentKey(campaignId);
+      // delete the whole cache
+      await r.redis.delAsync(assignmentKey);
+      // Now refill it, streaming for efficiency
+      const query = r
+        .knex("campaign_contact")
+        .where("campaign_id", campaignId)
+        .select("id", "assignment_id");
+      const result = query.stream(stream => {
+        const cacheSaver = new Writable({ objectMode: true });
+        // eslint-disable-next-line no-underscore-dangle
+        cacheSaver._write = (dbRecord, enc, next) => {
+          // Note: non-async land
+          setCacheContactAssignment(dbRecord.id, campaignId, dbRecord).then(
+            () => {
+              next();
+            },
+            err => {
+              console.error("FAILED CAMPAIGN ASSIGNMENT CACHE SAVE", err);
+              stream.end();
+              next();
+            }
+          );
+        };
+        stream.pipe(cacheSaver);
+      });
+      if (realAwait) {
+        await result;
+      }
+    }
   },
   updateStatus: async (contact, newStatus) => {
     // console.log('updateSTATUS', contact, newStatus)
@@ -383,14 +440,14 @@ const campaignContactCache = {
         .expire(statusKey, 43200)
         .expire(cellKey, 43200)
         .execAsync();
-      await updateAssignmentContact(contact, newStatus);
+      //await updateAssignmentContact(contact, newStatus);
     }
     clearMemoizedCache(contact.id);
     // console.log('updateStatus, CONTACT', contact)
     await r
       .knex("campaign_contact")
       .where("id", contact.id)
-      .update({ message_status: newStatus, updated_at: "now()" });
+      .update({ message_status: newStatus, updated_at: new Date() });
   }
 };
 
