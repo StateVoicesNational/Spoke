@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { Assignment, r, loaders } from "../models";
+import { Assignment, r, cacheableData, loaders } from "../models";
 import { addWhereClauseForContactsFilterMessageStatusIrrespectiveOfPastDue } from "./assignment";
 import { buildCampaignQuery } from "./campaign";
 import { log } from "../../lib";
@@ -305,7 +305,8 @@ export async function reassignConversations(
           await cacheableData.campaignContact.updateAssignmentCache(
             campaignContactId,
             assignmentId,
-            newTexterUserId
+            newTexterUserId,
+            campaignId
           );
         })
       );

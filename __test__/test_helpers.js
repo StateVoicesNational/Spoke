@@ -17,6 +17,10 @@ export async function cleanupTest() {
   await dropTables();
 }
 
+export function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 export function getContext(context) {
   return {
     ...context,
