@@ -540,7 +540,8 @@ describe("Campaign", () => {
         user,
         assignment.id
       );
-      expect(allowUserAssignmentId).toEqual(true);
+      expect(allowUserAssignmentId.user_id).toEqual(user.id);
+      expect(allowUserAssignmentId.id).toEqual(assignment.id);
       try {
         const notAllowed = await assignmentRequired(user, -1);
         throw new Exception("should throw BEFORE this exception");
