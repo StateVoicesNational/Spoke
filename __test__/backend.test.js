@@ -295,7 +295,10 @@ it("should assign texters to campaign contacts", async () => {
       isStarted
       isArchived
       contactsCount
-      datawarehouseAvailable
+      ingestMethodsAvailable {
+        name
+        displayName
+      }
       customFields
       texters {
         id
@@ -342,6 +345,7 @@ it("should assign texters to campaign contacts", async () => {
     context,
     variables
   );
+
   expect(result.data.editCampaign.texters.length).toBe(1);
   expect(result.data.editCampaign.texters[0].assignment.contactsCount).toBe(1);
 });
