@@ -746,7 +746,9 @@ const rootMutations = {
       });
 
       // some asynchronous cache-priming:
-      loadCampaignCache(campaign, organization, { remainingMilliseconds });
+      await loadCampaignCache(campaign, organization, {
+        remainingMilliseconds
+      });
       return campaign;
     },
     editCampaign: async (_, { id, campaign }, { user, loaders }) => {
@@ -864,14 +866,17 @@ const rootMutations = {
       { assignmentId, contactIds, findNew },
       { loaders, user }
     ) => {
-      await assignmentRequired(user, assignmentId);
+      const assignment = await assignmentRequired(user, assignmentId);
       const contacts = contactIds.map(async contactId => {
         // note we are loading from cacheableData and NOT loaders to avoid loader staleness
         // this is relevant for the possible multiple web dynos
         let contact = await cacheableData.campaignContact.load(contactId);
         if (contact.assignment_id === null) {
           // In case assignment_id from cache needs to be refreshed, try again
-          await cacheableData.campaignContact.clear(contact.id);
+          await cacheableData.campaignContact.clear(
+            contact.id,
+            assignment.campaign_id
+          );
           contact = await loaders.campaignContact.load(contactId);
         }
 

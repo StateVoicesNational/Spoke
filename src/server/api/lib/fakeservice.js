@@ -1,5 +1,5 @@
 import { getLastMessage } from "./message-sending";
-import { Message, PendingMessagePart, r } from "../../models";
+import { Message, PendingMessagePart, r, cacheableData } from "../../models";
 import { log } from "../../../lib";
 
 // This 'fakeservice' allows for fake-sending messages
@@ -35,8 +35,7 @@ async function sendMessage(message, contact, trx, organization) {
       text: `responding to ${message.text}`,
       send_status: "DELIVERED"
     });
-    contact.message_status = "needsResponse";
-    await contact.save();
+    await cacheableData.campaignContact.updateStatus(contact, "needsResponse");
   }
 }
 

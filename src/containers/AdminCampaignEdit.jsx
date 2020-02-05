@@ -318,6 +318,7 @@ class AdminCampaignEdit extends React.Component {
         expandAfterCampaignStarts: false,
         expandableBySuperVolunteers: false,
         extraProps: {
+          contactsCount: this.props.campaignData.campaign.contactsCount,
           ingestMethodChoices:
             this.props.campaignData.campaign.ingestMethodsAvailable || "",
           jobResultMessage:
@@ -459,8 +460,7 @@ class AdminCampaignEdit extends React.Component {
   }
 
   renderCampaignFormSection(section, forceDisable) {
-    let shouldDisable =
-      forceDisable || (!this.isNew() && this.checkSectionSaved(section));
+    let shouldDisable = forceDisable || this.checkSectionSaved(section);
     const ContentComponent = section.content;
     const formValues = this.getSectionState(section);
     return (
