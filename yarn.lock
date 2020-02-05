@@ -10785,10 +10785,10 @@ pg-pool@1.*:
     generic-pool "2.4.3"
     object-assign "4.1.0"
 
-pg-query-stream@1.1.1:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/pg-query-stream/-/pg-query-stream-1.1.1.tgz#65e97436ef809d1e160eba84ebf11b9e4742eab4"
-  integrity sha1-Zel0Nu+AnR4WDrqE6/EbnkdC6rQ=
+pg-query-stream@^1.1.1:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/pg-query-stream/-/pg-query-stream-1.1.2.tgz#d089ff633b9ece40712f4f76da25ac253d88ec96"
+  integrity sha512-84hsUVjbrvXYIpVH+6FrKajfOnmTo7Wc/CXPtSyv41JmUnLcQ2lcVrkR7+m4VPtL28FdcZA7Q7ab4X0za4BhrQ==
   dependencies:
     pg-cursor "1.3.0"
 
