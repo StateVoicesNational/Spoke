@@ -49,7 +49,7 @@ const MessageList = function MessageList(props) {
           style={message.isFromContact ? styles.received : styles.sent}
           key={message.id}
           primaryText={message.text}
-          secondaryText={moment(message.createdAt).fromNow()}
+          secondaryText={moment.utc(message.createdAt).fromNow()}
         />
       ))}
       {optOutItem}

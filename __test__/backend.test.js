@@ -138,31 +138,20 @@ async function createOrganization(user, name, userId, inviteId) {
   }
 }
 
-async function createCampaign(
-  user,
-  title,
-  description,
-  organizationId,
-  contacts = []
-) {
+async function createCampaign(user, title, description, organizationId) {
   const context = getContext({ user });
 
   const campaignQuery = `mutation createCampaign($input: CampaignInput!) {
     createCampaign(campaign: $input) {
       id
       title
-      contacts {
-        firstName
-        lastName
-      }
     }
   }`;
   const variables = {
     input: {
       title,
       description,
-      organizationId,
-      contacts
+      organizationId
     }
   };
 
@@ -306,7 +295,10 @@ it("should assign texters to campaign contacts", async () => {
       isStarted
       isArchived
       contactsCount
-      datawarehouseAvailable
+      ingestMethodsAvailable {
+        name
+        displayName
+      }
       customFields
       texters {
         id
@@ -353,6 +345,7 @@ it("should assign texters to campaign contacts", async () => {
     context,
     variables
   );
+
   expect(result.data.editCampaign.texters.length).toBe(1);
   expect(result.data.editCampaign.texters[0].assignment.contactsCount).toBe(1);
 });
@@ -709,7 +702,7 @@ describe("Campaign", () => {
   });
 });
 
-describe.only("editUser mutation", () => {
+describe("editUser mutation", () => {
   let testAdminUser;
   let testTexter;
   let testOrganization;
@@ -740,10 +733,10 @@ describe.only("editUser mutation", () => {
 
   it("returns the user if it is called with a userId by no userData", async () => {
     const result = await runGql(editUserMutation, variables, testAdminUser);
-    expect(result).toEqual({
+    expect(result).toMatchObject({
       data: {
         editUser: {
-          id: "2",
+          // id: "2", // id might be diff
           firstName: "TestTexterFirst",
           lastName: "TestTexterLast",
           cell: "555-555-6666",

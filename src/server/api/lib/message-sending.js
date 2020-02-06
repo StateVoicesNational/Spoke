@@ -37,5 +37,5 @@ export async function saveNewIncomingMessage(messageInstance) {
   await r
     .knex("campaign_contact")
     .where("id", messageInstance.campaign_contact_id)
-    .update({ message_status: "needsResponse", updated_at: "now()" });
+    .update({ message_status: "needsResponse", updated_at: new Date() });
 }
