@@ -1,5 +1,20 @@
 # Release Notes
 
+_February 2020:_ Version 5.1
+This release includes the following improvements:
+
+- Accepts and correctly handles contacts csv files with first_name instead of firstName and last_name instead of lastName for their respective column headers
+- Creates a new [contact loader ingest framework](./HOWTO-use-contact-loaders.md) allowing for new methods of importing and ingesting contacts to be implemented.
+- Re-enables the sqlite test suite and fixes errors surfaced by doing so
+- Bug fixes around switching from Auth0 to local auth
+- Fixes the spelling of "Optouts" to Opt-outs in admin dashboard nav
+
+Thanks to all the contributors part of this release including:
+[lperson](https://github.com/lperson),
+[schuyler1d](https://github.com/schuyler1d),
+[ibrand](https://github.com/ibrand),
+[dannytatom](https://github.com/dannytatom)
+
 _January 2020:_ Version 5.0
 **Note:** This is a major release and therefore requires a schema change. See the deploy steps section for details.
 
