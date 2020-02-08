@@ -102,20 +102,28 @@ class ConversationPreviewModal extends Component {
   }
 
   handleClickOptOut = async () => {
-    const { contact } = this.props.conversation;
+    const { assignmentId, cell, campaignContactId } = this.props.conversation;
+
     const optOut = {
-      cell: contact.cell,
-      assignmentId: contact.assignmentId
+      cell,
+      assignmentId
     };
+
     try {
       const response = await this.props.mutations.createOptOut(
         optOut,
         campaignContactId
       );
       if (response.errors) {
-        const errorText = response.errors.join("\n");
+        let errorText = "Error processing opt-out.";
+        if ("message" in response.errors) {
+          errorText = response.errors.message;
+        }
+        console.log(errorText);
         throw new Error(errorText);
       }
+      this.props.onForceRefresh();
+      this.props.onRequestClose();
     } catch (error) {
       this.setState({ optOutError: error.message });
     }
@@ -126,16 +134,8 @@ class ConversationPreviewModal extends Component {
       isOpen = conversation !== undefined;
 
     const primaryActions = [
-      <FlatButton
-        label="Opt-Out"
-        secondary={true}
-        onClick={this.handleClickOptOut}
-      />,
-      <FlatButton
-        label="Close"
-        primary={true}
-        onClick={this.props.onRequestClose}
-      />
+      <FlatButton label="Opt-Out" secondary onClick={this.handleClickOptOut} />,
+      <FlatButton label="Close" primary onClick={this.props.onRequestClose} />
     ];
 
     return (
@@ -163,7 +163,8 @@ class ConversationPreviewModal extends Component {
 
 ConversationPreviewModal.propTypes = {
   conversation: PropTypes.object,
-  onRequestClose: PropTypes.func
+  onRequestClose: PropTypes.func,
+  onForceRefresh: PropTypes.func
 };
 
 const mapMutationsToProps = () => ({
