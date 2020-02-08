@@ -39,7 +39,12 @@ import {
   reassignConversations,
   resolvers as conversationsResolver
 } from "./conversations";
-import { accessRequired, assignmentRequired, authRequired } from "./errors";
+import {
+  accessRequired,
+  assignmentOrAdminRoleRequired,
+  assignmentRequired,
+  authRequired
+} from "./errors";
 import { resolvers as interactionStepResolvers } from "./interaction-step";
 import { resolvers as inviteResolvers } from "./invite";
 import { saveNewIncomingMessage } from "./lib/message-sending";
@@ -886,11 +891,15 @@ const rootMutations = {
       { loaders, user }
     ) => {
       const contact = await loaders.campaignContact.load(campaignContactId);
-      await assignmentRequired(user, contact.assignment_id);
-
-      const { assignmentId, cell, reason } = optOut;
       const campaign = await loaders.campaign.load(contact.campaign_id);
 
+      await assignmentOrAdminRoleRequired(
+        user,
+        campaign.organization_id,
+        contact.assignment_id
+      );
+
+      const { assignmentId, cell, reason } = optOut;
       await cacheableData.optOut.save({
         cell,
         campaignContactId,
