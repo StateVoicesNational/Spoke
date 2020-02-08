@@ -284,22 +284,23 @@ const rootMutations = {
 
       await accessRequired(user, campaign.organization_id, "ADMIN");
 
-      const lastMessage = await r
-        .table("message")
-        .getAll(contact.assignment_id, { index: "assignment_id" })
-        .filter({ contact_number: contact.cell })
-        .limit(1)(0)
-        .default(null);
+      const lastMessages = await r.knex
+        .select()
+        .from("message")
+        .where({ contact_number: contact.cell })
+        .orderBy("id", "desc")
+        .limit(1);
 
-      if (!lastMessage) {
-        throw new GraphQLError({
+      if (!lastMessages.length) {
+        const errorStatusAndMessage = {
           status: 400,
           message:
             "Cannot fake a reply to a contact that has no existing thread yet"
-        });
+        };
+        throw new GraphQLError(errorStatusAndMessage);
       }
 
-      const userNumber = lastMessage.user_number;
+      const userNumber = lastMessages[0].user_number;
       const contactNumber = contact.cell;
       const mockId = `mocked_${Math.random()
         .toString(36)
@@ -313,8 +314,8 @@ const rootMutations = {
           error_code: null,
           service_id: mockId,
           campaign_contact_id: contact.id,
-          messageservice_sid: lastMessage.messageservice_sid,
-          service: lastMessage.service,
+          messageservice_sid: lastMessages[0].messageservice_sid,
+          service: lastMessages[0].service,
           send_status: "DELIVERED"
         })
       );
