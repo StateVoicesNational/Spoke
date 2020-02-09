@@ -422,9 +422,9 @@ const rootMutations = {
         const member = userRes[0];
 
         const newUserData = {
-          first_name: capitalizeWord(userData.firstName),
-          last_name: capitalizeWord(userData.lastName),
-          alias: capitalizeWord(userData.alias),
+          first_name: capitalizeWord(userData.firstName).trim(),
+          last_name: capitalizeWord(userData.lastName).trim(),
+          alias: capitalizeWord(userData.alias).trim(),
           email: userData.email,
           cell: userData.cell
         };
