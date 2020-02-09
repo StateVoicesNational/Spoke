@@ -20,6 +20,7 @@ import { seedZipCodes } from "./seeds/seed-zip-codes";
 import { setupUserNotificationObservers } from "./notifications";
 import { TwimlResponse } from "twilio";
 import { existsSync } from "fs";
+import _ from "lodash";
 
 process.on("uncaughtException", ex => {
   log.error(ex);
@@ -178,6 +179,15 @@ app.use(
   "/graphql",
   graphqlExpress(request => ({
     schema: executableSchema,
+    formatError: err => {
+      if ("message" in err && _.has(err, "originalError.status")) {
+        return {
+          message: err.message,
+          status: err.originalError.status
+        };
+      }
+      return err;
+    },
     context: {
       loaders: createLoaders(),
       user: request.user,

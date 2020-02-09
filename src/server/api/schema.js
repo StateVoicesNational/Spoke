@@ -1,6 +1,6 @@
 import GraphQLDate from "graphql-date";
 import GraphQLJSON from "graphql-type-json";
-import { GraphQLError } from "graphql/error";
+import { GraphQLErrorWithStatus, GraphQLError } from "./lib/graphQLError";
 import isUrl from "is-url";
 import { organizationCache } from "../models/cacheable_queries/organization";
 
@@ -292,11 +292,10 @@ const rootMutations = {
         .default(null);
 
       if (!lastMessage) {
-        throw new GraphQLError({
-          status: 400,
-          message:
-            "Cannot fake a reply to a contact that has no existing thread yet"
-        });
+        throw new GraphQLErrorWithStatus(
+          "Cannot fake a reply to a contact that has no existing thread yet",
+          400
+        );
       }
 
       const userNumber = lastMessage.user_number;
@@ -515,10 +514,7 @@ const rootMutations = {
         .select("campaign.*")
         .first();
       if (!campaign) {
-        throw new GraphQLError({
-          status: 403,
-          message: "Invalid join request"
-        });
+        throw new GraphQLErrorWithStatus("Invalid join request", 403);
       }
       const assignment = await r
         .table("assignment")
@@ -753,10 +749,10 @@ const rootMutations = {
         campaign.hasOwnProperty("contacts") &&
         campaign.contacts
       ) {
-        throw new GraphQLError({
-          status: 400,
-          message: "Not allowed to add contacts after the campaign starts"
-        });
+        throw new GraphQLErrorWithStatus(
+          "Not allowed to add contacts after the campaign starts",
+          400
+        );
       }
       return editCampaign(id, campaign, loaders, user, origCampaign);
     },
@@ -811,10 +807,10 @@ const rootMutations = {
       authRequired(user);
       const invite = await loaders.invite.load(inviteId);
       if (!invite || !invite.is_valid) {
-        throw new GraphQLError({
-          status: 400,
-          message: "That invitation is no longer valid"
-        });
+        throw new GraphQLErrorWithStatus(
+          "That invitation is no longer valid",
+          400
+        );
       }
 
       const newOrganization = await Organization.save({

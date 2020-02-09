@@ -1,5 +1,5 @@
 import camelCaseKeys from "camelcase-keys";
-import { GraphQLError } from "graphql/error";
+import { GraphQLErrorWithStatus, GraphQLError } from "../lib/graphQLError";
 
 import { applyScript } from "../../../lib/scripts";
 import { Assignment, r, User } from "../../models";
@@ -11,10 +11,10 @@ import { sendMessage, findNewCampaignContact } from "./index";
 export const bulkSendMessages = async (assignmentId, loaders, user) => {
   if (!process.env.ALLOW_SEND_ALL || !process.env.NOT_IN_USA) {
     log.error("Not allowed to send all messages at once");
-    throw new GraphQLError({
-      status: 403,
-      message: "Not allowed to send all messages at once"
-    });
+    throw new GraphQLErrorWithStatus(
+      "Not allowed to send all messages at once",
+      403
+    );
   }
 
   const assignment = await Assignment.get(assignmentId);

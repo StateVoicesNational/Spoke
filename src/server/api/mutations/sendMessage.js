@@ -1,4 +1,4 @@
-import { GraphQLError } from "graphql/error";
+import { GraphQLErrorWithStatus } from "../lib/graphQLError";
 
 import { log } from "../../../lib";
 import { Message, r } from "../../models";
@@ -22,10 +22,7 @@ export const sendMessage = async (
     contact.assignment_id !== parseInt(message.assignmentId) ||
     campaign.is_archived
   ) {
-    throw new GraphQLError({
-      status: 400,
-      message: "Your assignment has changed"
-    });
+    throw new GraphQLErrorWithStatus("Your assignment has changed", 400);
   }
   const organization = await r
     .table("campaign")
@@ -45,10 +42,10 @@ export const sendMessage = async (
     .limit(1)(0)
     .default(null);
   if (optOut) {
-    throw new GraphQLError({
-      status: 400,
-      message: "Skipped sending because this contact was already opted out"
-    });
+    throw new GraphQLErrorWithStatus(
+      "Skipped sending because this contact was already opted out",
+      400
+    );
   }
 
   // const zipData = await r.table('zip_code')
@@ -62,19 +59,13 @@ export const sendMessage = async (
   // }
   // const offsetData = zipData ? { offset: zipData.timezone_offset, hasDST: zipData.has_dst } : null
   // if (!isBetweenTextingHours(offsetData, config)) {
-  //   throw new GraphQLError({
-  //     status: 400,
-  //     message: "Skipped sending because it's now outside texting hours for this contact"
-  //   })
+  //   throw new GraphQLErrorWithStatus("Skipped sending because it's now outside texting hours for this contact", 400);
   // }
 
   const { contactNumber, text } = message;
 
   if (text.length > (process.env.MAX_MESSAGE_LENGTH || 99999)) {
-    throw new GraphQLError({
-      status: 400,
-      message: "Message was longer than the limit"
-    });
+    throw new GraphQLErrorWithStatus("Message was longer than the limit", 400);
   }
 
   const replaceCurlyApostrophes = rawText =>
@@ -107,10 +98,10 @@ export const sendMessage = async (
   const sendBeforeDate = sendBefore ? sendBefore.toDate() : null;
 
   if (sendBeforeDate && sendBeforeDate <= Date.now()) {
-    throw new GraphQLError({
-      status: 400,
-      message: "Outside permitted texting time for this recipient"
-    });
+    throw new GraphQLErrorWithStatus(
+      "Outside permitted texting time for this recipient",
+      400
+    );
   }
   const serviceName =
     orgFeatures.service ||

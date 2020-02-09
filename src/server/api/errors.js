@@ -1,12 +1,12 @@
-import { GraphQLError } from "graphql/error";
+import { GraphQLError, GraphQLErrorWithStatus } from "./lib/graphQLError";
 import { r, cacheableData } from "../models";
 
 export function authRequired(user) {
   if (!user) {
-    throw new GraphQLError({
-      status: 401,
-      message: "You must login to access that resource."
-    });
+    throw new GraphQLErrorWithStatus(
+      "You must login to access that resource.",
+      401
+    );
   }
 }
 
@@ -51,7 +51,10 @@ export async function assignmentRequired(user, assignmentId, assignment) {
 
   if (!userHasAssignment) {
     // undefined or null
-    throw new GraphQLError("You are not authorized to access that resource.");
+    throw new GraphQLErrorWithStatus(
+      "You are not authorized to access that resource.",
+      401
+    );
   }
   return true;
 }
