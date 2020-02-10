@@ -97,7 +97,7 @@ app.use((req, res, next) => {
 // give contact loaders a chance
 const configuredIngestMethods = rawAllMethods();
 Object.keys(configuredIngestMethods).forEach(ingestMethodName => {
-  const ingestMethod = CONFIGURED_INGEST_METHODS[ingestMethodName];
+  const ingestMethod = configuredIngestMethods[ingestMethodName];
   if (ingestMethod && ingestMethod.addServerEndpoints) {
     ingestMethod.addServerEndpoints(app);
   }
