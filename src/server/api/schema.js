@@ -8,17 +8,16 @@ import { gzip, makeTree } from "../../lib";
 import { capitalizeWord } from "./lib/utils";
 import {
   assignTexters,
+  dispatchContactIngestLoad,
   exportCampaign,
-  importScript,
-  loadContactsFromDataWarehouse,
-  uploadContacts
+  importScript
 } from "../../workers/jobs";
+import { getIngestMethod } from "../../integrations/contact-loaders";
 import {
   Assignment,
   Campaign,
   CannedResponse,
   InteractionStep,
-  datawarehouse,
   Invite,
   JobRequest,
   Message,
@@ -112,53 +111,33 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     }
   });
 
-  if (campaign.hasOwnProperty("contacts") && campaign.contacts) {
+  if (campaign.ingestMethod && campaign.contactData) {
     await accessRequired(user, organizationId, "ADMIN", /* superadmin*/ true);
-    const contactsToSave = campaign.contacts.map(datum => {
-      const modelData = {
-        campaign_id: datum.campaignId,
-        first_name: datum.firstName,
-        last_name: datum.lastName,
-        cell: datum.cell,
-        external_id: datum.external_id,
-        custom_fields: datum.customFields,
-        zip: datum.zip
-      };
-      modelData.campaign_id = id;
-      return modelData;
-    });
-    const compressedString = await gzip(JSON.stringify(contactsToSave));
-    let job = await JobRequest.save({
-      queue_name: `${id}:edit_campaign`,
-      job_type: "upload_contacts",
-      locks_queue: true,
-      assigned: JOBS_SAME_PROCESS, // can get called immediately, below
-      campaign_id: id,
-      // NOTE: stringifying because compressedString is a binary buffer
-      payload: compressedString.toString("base64")
-    });
-    if (JOBS_SAME_PROCESS) {
-      uploadContacts(job);
+    const organization = await loaders.organization.load(organizationId);
+    const ingestMethod = await getIngestMethod(
+      campaign.ingestMethod,
+      organization,
+      user
+    );
+    if (ingestMethod) {
+      let job = await JobRequest.save({
+        queue_name: `${id}:edit_campaign`,
+        job_type: `ingest.${campaign.ingestMethod}`,
+        locks_queue: true,
+        assigned: JOBS_SAME_PROCESS, // can get called immediately, below
+        campaign_id: id,
+        payload: campaign.contactData
+      });
+      if (JOBS_SAME_PROCESS) {
+        dispatchContactIngestLoad(job, organization, {
+          /*FUTURE: context obj*/
+        });
+      }
+    } else {
+      console.error("ingestMethod unavailable", campaign.ingestMethod);
     }
   }
-  if (
-    campaign.hasOwnProperty("contactSql") &&
-    datawarehouse &&
-    user.is_superadmin
-  ) {
-    await accessRequired(user, organizationId, "ADMIN", /* superadmin*/ true);
-    let job = await JobRequest.save({
-      queue_name: `${id}:edit_campaign`,
-      job_type: "upload_contacts_sql",
-      locks_queue: true,
-      assigned: JOBS_SAME_PROCESS, // can get called immediately, below
-      campaign_id: id,
-      payload: campaign.contactSql
-    });
-    if (JOBS_SAME_PROCESS) {
-      loadContactsFromDataWarehouse(job);
-    }
-  }
+
   if (campaign.hasOwnProperty("texters")) {
     let job = await JobRequest.save({
       queue_name: `${id}:edit_campaign`,
@@ -333,7 +312,8 @@ const rootMutations = {
           text: message,
           error_code: null,
           service_id: mockId,
-          assignment_id: lastMessage.assignment_id,
+          campaign_contact_id: contact.id,
+          messageservice_sid: lastMessage.messageservice_sid,
           service: lastMessage.service,
           send_status: "DELIVERED"
         })
@@ -421,14 +401,14 @@ const rootMutations = {
       } else {
         const member = userRes[0];
 
-        const newUserData = {
-          first_name: capitalizeWord(userData.firstName),
-          last_name: capitalizeWord(userData.lastName),
-          email: userData.email,
-          cell: userData.cell
-        };
-
         if (userData) {
+          const newUserData = {
+            first_name: capitalizeWord(userData.firstName),
+            last_name: capitalizeWord(userData.lastName),
+            email: userData.email,
+            cell: userData.cell
+          };
+
           const userRes = await r
             .knex("user")
             .where("id", userId)
@@ -925,8 +905,12 @@ const rootMutations = {
     bulkSendMessages: async (_, { assignmentId }, { loaders, user }) => {
       return await bulkSendMessages(assignmentId, loaders, user);
     },
-    sendMessage: async (_, { message, campaignContactId }, { loaders }) => {
-      return await sendMessage(message, campaignContactId, loaders);
+    sendMessage: async (
+      _,
+      { message, campaignContactId },
+      { loaders, user }
+    ) => {
+      return await sendMessage(message, campaignContactId, loaders, user);
     },
     deleteQuestionResponses: async (
       _,
@@ -982,7 +966,7 @@ const rootMutations = {
         if (interactionStepAction) {
           // run interaction step handler
           try {
-            const handler = require(`../action_handlers/${interactionStepAction}.js`);
+            const handler = require(`../../integrations/action-handlers/${interactionStepAction}.js`);
             handler.processAction(
               qr,
               interactionStepResult[0],
@@ -1172,7 +1156,7 @@ const rootResolvers = {
         .map(handler => {
           return {
             name: handler,
-            handler: require(`../action_handlers/${handler}.js`)
+            handler: require(`../../integrations/action-handlers/${handler}.js`)
           };
         })
         .filter(async h => h && (await h.handler.available(organizationId)));
