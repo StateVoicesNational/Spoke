@@ -23,7 +23,7 @@ Please let us know if you deployed by filling out this form [here](https://act.m
 
 ### Downloading
 
-1. Install either sqlite (or another [knex](http://knexjs.org/#Installation-client)-supported database)
+1. Install either sqlite, postgres, or another [knex](http://knexjs.org/#Installation-client)-supported database.
 2. Install the Node version listed in `.nvmrc`. [NVM](https://github.com/creationix/nvm) is one way to do this (from the spoke directory):
    ```
    nvm install
