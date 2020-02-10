@@ -304,7 +304,7 @@ export async function sendMessage(campaignContactId, user, message) {
           }
         }
       }`;
-  const context = getContext({ user: user });
+  const context = getContext({ user });
   const variables = {
     message,
     campaignContactId
@@ -442,4 +442,58 @@ export async function getCampaignContact(id) {
     .knex("campaign_contact")
     .where({ id })
     .first();
+}
+
+export async function getOptOut(assignmentId, cell) {
+  return await r
+    .knex("opt_out")
+    .where({
+      cell,
+      assignment_id: assignmentId
+    })
+    .first();
+}
+
+export async function createStartedCampaign() {
+  const testAdminUser = await createUser();
+  const testInvite = await createInvite();
+  const testOrganization = await createOrganization(testAdminUser, testInvite);
+  const organizationId = testOrganization.data.createOrganization.id;
+  const testCampaign = await createCampaign(testAdminUser, testOrganization);
+  const testContacts = await createContacts(testCampaign, 100);
+  const testTexterUser = await createTexter(testOrganization);
+  const testTexterUser2 = await createTexter(testOrganization);
+  await startCampaign(testAdminUser, testCampaign);
+
+  await assignTexter(testAdminUser, testTexterUser, testCampaign);
+  const dbCampaignContact = await getCampaignContact(testContacts[0].id);
+  const assignmentId = dbCampaignContact.assignment_id;
+  const assignment = (await r.knex("assignment").where("id", assignmentId))[0];
+
+  const testSuperAdminUser = await createUser(
+    {
+      auth0_id: "2024561111",
+      first_name: "super",
+      last_name: "admin",
+      cell: "202-456-1111",
+      email: "superadmin@example.com",
+      is_superadmin: true
+    },
+    organizationId,
+    "ADMIN"
+  );
+
+  return {
+    testAdminUser,
+    testInvite,
+    testOrganization,
+    testCampaign,
+    testTexterUser,
+    testTexterUser2,
+    testContacts,
+    assignmentId,
+    assignment,
+    testSuperAdminUser,
+    organizationId
+  };
 }
