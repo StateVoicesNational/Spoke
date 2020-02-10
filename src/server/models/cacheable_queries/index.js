@@ -4,6 +4,7 @@ import cannedResponse from "./canned-response";
 import message from "./message";
 import optOut from "./opt-out";
 import organization from "./organization";
+import questionResponse from "./question-response";
 import user from "./user";
 
 const cacheableData = {
@@ -13,6 +14,7 @@ const cacheableData = {
   message,
   optOut,
   organization,
+  questionResponse,
   user
 };
 
