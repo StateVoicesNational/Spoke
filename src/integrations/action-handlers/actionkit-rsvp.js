@@ -1,5 +1,5 @@
 import request from "request";
-import { r } from "../models";
+import { r } from "../../server/models";
 import crypto from "crypto";
 
 export const displayName = () => "ActionKit Event RSVP";

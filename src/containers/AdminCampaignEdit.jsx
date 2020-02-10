@@ -14,7 +14,8 @@ import loadData from "./hoc/load-data";
 import wrapMutations from "./hoc/wrap-mutations";
 import RaisedButton from "material-ui/RaisedButton";
 import CampaignBasicsForm from "../components/CampaignBasicsForm";
-import CampaignContactsForm from "../components/CampaignContactsForm";
+//import CampaignContactsForm from "../components/CampaignContactsForm";
+import CampaignContactsChoiceForm from "../components/CampaignContactsChoiceForm";
 import CampaignTextersForm from "../components/CampaignTextersForm";
 import CampaignInteractionStepsForm from "../components/CampaignInteractionStepsForm";
 import CampaignCannedResponsesForm from "../components/CampaignCannedResponsesForm";
@@ -32,7 +33,6 @@ const campaignInfoFragment = `
   isStarted
   isArchived
   contactsCount
-  datawarehouseAvailable
   customFields
   useDynamicAssignment
   logoImageUrl
@@ -66,6 +66,14 @@ const campaignInfoFragment = `
     id
     title
     text
+  }
+  ingestMethodsAvailable {
+    name
+    displayName
+    clientChoiceData
+  }
+  ingestMethod {
+    name
   }
   editors
 `;
@@ -122,11 +130,11 @@ class AdminCampaignEdit extends React.Component {
       ...this.state.campaignFormValues,
       ...campaignDataCopy
     };
-    // contacts and contactSql need to be *deleted*
+    // contactData needs to be *deleted*
     // when contacts are done on backend so that Contacts section
     // can be marked saved, but only when user is NOT editing Contacts
     if (campaignDataCopy.contactsCount > 0) {
-      const specialCases = ["contacts", "contactSql"];
+      const specialCases = ["contactData"];
       specialCases.forEach(key => {
         if (expandedKeys.indexOf(key) === -1) {
           delete pushToFormValues[key];
@@ -218,29 +226,6 @@ class AdminCampaignEdit extends React.Component {
       // Transform the campaign into an input understood by the server
       delete newCampaign.customFields;
       delete newCampaign.contactsCount;
-      if (newCampaign.hasOwnProperty("contacts") && newCampaign.contacts) {
-        const contactData = newCampaign.contacts.map(contact => {
-          const customFields = {};
-          const contactInput = {
-            cell: contact.cell,
-            firstName: contact.firstName,
-            lastName: contact.lastName,
-            zip: contact.zip || "",
-            external_id: contact.external_id || ""
-          };
-          Object.keys(contact).forEach(key => {
-            if (!contactInput.hasOwnProperty(key)) {
-              customFields[key] = contact[key];
-            }
-          });
-          contactInput.customFields = JSON.stringify(customFields);
-          return contactInput;
-        });
-        newCampaign.contacts = contactData;
-        newCampaign.texters = [];
-      } else {
-        newCampaign.contacts = null;
-      }
       if (newCampaign.hasOwnProperty("texters")) {
         newCampaign.texters = newCampaign.texters.map(texter => ({
           id: texter.id,
@@ -302,7 +287,7 @@ class AdminCampaignEdit extends React.Component {
   }
 
   sections() {
-    return [
+    const finalSections = [
       {
         title: "Basics",
         content: CampaignBasicsForm,
@@ -324,25 +309,18 @@ class AdminCampaignEdit extends React.Component {
       },
       {
         title: "Contacts",
-        content: CampaignContactsForm,
-        keys: ["contacts", "contactsCount", "customFields", "contactSql"],
-        checkCompleted: () => this.state.campaignFormValues.contactsCount > 0,
-        checkSaved: () =>
-          // Must be false for save to be tried
-          // Must be true for green bar, etc.
-          // This is a little awkward because neither of these fields are 'updated'
-          //   from the campaignData query, so we must delete them after save/update
-          //   at the right moment (see componentWillReceiveProps)
-          this.state.campaignFormValues.contactsCount > 0 &&
-          this.state.campaignFormValues.hasOwnProperty("contacts") === false &&
-          this.state.campaignFormValues.hasOwnProperty("contactSql") === false,
+        content: CampaignContactsChoiceForm,
+        keys: ["contactData", "ingestMethod"],
+        checkCompleted: () =>
+          this.props.campaignData.campaign.contactsCount > 0,
+        checkSaved: () => !this.state.campaignFormValues.contactData,
         blocksStarting: true,
         expandAfterCampaignStarts: false,
         expandableBySuperVolunteers: false,
         extraProps: {
-          optOuts: [], // this.props.organizationData.organization.optOuts, // <= doesn't scale
-          datawarehouseAvailable: this.props.campaignData.campaign
-            .datawarehouseAvailable,
+          contactsCount: this.props.campaignData.campaign.contactsCount,
+          ingestMethodChoices:
+            this.props.campaignData.campaign.ingestMethodsAvailable || "",
           jobResultMessage:
             (
               this.props.pendingJobsData.campaign.pendingJobs.filter(job =>
@@ -415,8 +393,10 @@ class AdminCampaignEdit extends React.Component {
         blocksStarting: false,
         expandAfterCampaignStarts: true,
         expandableBySuperVolunteers: false
-      },
-      {
+      }
+    ];
+    if (window.CAN_GOOGLE_IMPORT) {
+      finalSections.push({
         title: "Script Import",
         content: AdminScriptImport,
         keys: [],
@@ -428,8 +408,9 @@ class AdminCampaignEdit extends React.Component {
           campaignData: this.props.campaignData
         },
         doNotSaveAfterSubmit: true
-      }
-    ];
+      });
+    }
+    return finalSections;
   }
 
   sectionSaveStatus(section) {
@@ -479,8 +460,7 @@ class AdminCampaignEdit extends React.Component {
   }
 
   renderCampaignFormSection(section, forceDisable) {
-    let shouldDisable =
-      forceDisable || (!this.isNew() && this.checkSectionSaved(section));
+    let shouldDisable = forceDisable || this.checkSectionSaved(section);
     const ContentComponent = section.content;
     const formValues = this.getSectionState(section);
     return (
