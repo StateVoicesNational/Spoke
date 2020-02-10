@@ -6,7 +6,10 @@ exports.up = function(knex, Promise) {
         .nullable()
         .default(null);
       table.dropColumn("service_response");
-      table.dropIndex("user_number");
+      if (!/sqlite/.test(knex.client.config.client)) {
+        // sqlite doesn't find it
+        table.dropIndex("user_number");
+      }
     }),
     knex.schema.alterTable("campaign_contact", table => {
       table

@@ -1,25 +1,21 @@
-import {
-  GraphQLError
-} from "graphql/error";
+import { GraphQLError } from "graphql/error";
 
-import {
-  log
-} from "../../../lib";
-import {
-  Message,
-  r
-} from "../../models";
+import { log } from "../../../lib";
+import { Message, r } from "../../models";
 import serviceMap from "../lib/services";
 
-import {
-  getSendBeforeTimeUtc
-} from "../../../lib/timezones";
+import { getSendBeforeTimeUtc } from "../../../lib/timezones";
 
 const JOBS_SAME_PROCESS = !!(
   process.env.JOBS_SAME_PROCESS || global.JOBS_SAME_PROCESS
 );
 
-export const sendMessage = async (message, campaignContactId, loaders) => {
+export const sendMessage = async (
+  message,
+  campaignContactId,
+  loaders,
+  user
+) => {
   const contact = await loaders.campaignContact.load(campaignContactId);
   const campaign = await loaders.campaign.load(contact.campaign_id);
   if (
@@ -72,10 +68,7 @@ export const sendMessage = async (message, campaignContactId, loaders) => {
   //   })
   // }
 
-  const {
-    contactNumber,
-    text
-  } = message;
+  const { contactNumber, text } = message;
 
   if (text.length > (process.env.MAX_MESSAGE_LENGTH || 99999)) {
     throw new GraphQLError({
@@ -97,12 +90,15 @@ export const sendMessage = async (message, campaignContactId, loaders) => {
   }
 
   const sendBefore = getSendBeforeTimeUtc(
-    contactTimezone, {
+    contactTimezone,
+    {
       textingHoursEnd: organization.texting_hours_end,
       textingHoursEnforced: organization.texting_hours_enforced
-    }, {
+    },
+    {
       textingHoursEnd: campaign.texting_hours_end,
-      overrideOrganizationTextingHours: campaign.override_organization_texting_hours,
+      overrideOrganizationTextingHours:
+        campaign.override_organization_texting_hours,
       textingHoursEnforced: campaign.texting_hours_enforced,
       timezone: campaign.timezone
     }
@@ -116,28 +112,31 @@ export const sendMessage = async (message, campaignContactId, loaders) => {
       message: "Outside permitted texting time for this recipient"
     });
   }
-
+  const serviceName =
+    orgFeatures.service ||
+    global.DEFAULT_SERVICE ||
+    process.env.DEFAULT_SERVICE ||
+    "";
+  const service = serviceMap[serviceName];
+  const finalText = replaceCurlyApostrophes(text);
   const messageInstance = new Message({
-    text: replaceCurlyApostrophes(text),
+    text: finalText,
     contact_number: contactNumber,
     user_number: "",
-    assignment_id: message.assignmentId,
+    user_id: user.id,
+    campaign_contact_id: contact.id,
+    messageservice_sid: null,
     send_status: JOBS_SAME_PROCESS ? "SENDING" : "QUEUED",
-    service: orgFeatures.service || process.env.DEFAULT_SERVICE || "",
+    service: serviceName,
     is_from_contact: false,
     queued_at: new Date(),
     send_before: sendBeforeDate
   });
 
   await messageInstance.save();
-  const service =
-    serviceMap[
-      messageInstance.service ||
-      process.env.DEFAULT_SERVICE ||
-      global.DEFAULT_SERVICE
-    ];
 
-  contact.updated_at = "now()";
+  contact.updated_at = new Date();
+  const initialMessageStatus = contact.message_status;
 
   if (
     contact.message_status === "needsResponse" ||
@@ -150,10 +149,22 @@ export const sendMessage = async (message, campaignContactId, loaders) => {
 
   await contact.save();
 
-  log.info(
-    `Sending (${service}): ${messageInstance.user_number} -> ${messageInstance.contact_number}\nMessage: ${messageInstance.text}`
-  );
+  // log.info(
+  //   `Sending (${serviceName}): ${messageInstance.user_number} -> ${messageInstance.contact_number}\nMessage: ${messageInstance.text}`
+  // );
 
-  service.sendMessage(messageInstance, contact);
+  //NO AWAIT: pro=return before api completes, con=context needs to stay alive
+  service.sendMessage(messageInstance, contact, organization);
+  if (initialMessageStatus === "needsMessage") {
+    // don't both requerying the messages list on the response
+    contact.messages = [
+      {
+        id: "initial",
+        text: finalText,
+        created_at: new Date(),
+        is_from_contact: false
+      }
+    ];
+  }
   return contact;
 };

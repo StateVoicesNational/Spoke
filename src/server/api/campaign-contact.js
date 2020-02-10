@@ -156,11 +156,8 @@ export const resolvers = {
       }
 
       const messages = await r
-        .table("message")
-        .getAll(campaignContact.assignment_id, { index: "assignment_id" })
-        .filter({
-          contact_number: campaignContact.cell
-        })
+        .knex("message")
+        .where("campaign_contact_id", campaignContact.id)
         .orderBy("created_at");
 
       return messages;
