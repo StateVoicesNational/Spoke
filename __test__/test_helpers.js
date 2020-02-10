@@ -68,21 +68,31 @@ export async function createUser(
     last_name: "TestUserLast",
     cell: "555-555-5555",
     email: "testuser@example.com"
-  }
+  },
+  organization_id = null,
+  role = null
 ) {
   const user = new User(userInfo);
   await user.save();
+  if (organization_id && role) {
+    await r.knex("user_organization").insert({
+      user_id: user.id,
+      organization_id,
+      role
+    });
+  }
   return user;
 }
 
 export async function createContacts(campaign, count = 1) {
   const campaignId = campaign.id;
   const contacts = [];
+  const startNum = "+15155500000";
   for (let i = 0; i < count; i++) {
     const contact = new CampaignContact({
       first_name: `Ann${i}`,
       last_name: `Lewis${i}`,
-      cell: "5555555555".substr(String(i).length) + String(i),
+      cell: startNum.substr(0, startNum.length - String(i).length) + String(i),
       zip: "12345",
       campaign_id: campaignId
     });

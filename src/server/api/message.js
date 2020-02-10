@@ -13,7 +13,6 @@ export const resolvers = {
         "isFromContact"
       ],
       Message
-    ),
-    campaignId: instance => instance["campaign_id"]
+    )
   }
 };

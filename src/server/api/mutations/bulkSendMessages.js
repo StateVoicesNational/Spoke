@@ -1,27 +1,12 @@
 import camelCaseKeys from "camelcase-keys";
-import {
-  GraphQLError
-} from "graphql/error";
+import { GraphQLError } from "graphql/error";
 
-import {
-  applyScript
-} from "../../../lib/scripts";
-import {
-  Assignment,
-  r,
-  User
-} from "../../models";
+import { applyScript } from "../../../lib/scripts";
+import { Assignment, r, User } from "../../models";
 
-import {
-  getTopMostParent,
-  log
-} from "../../../lib";
+import { getTopMostParent, log } from "../../../lib";
 
-import {
-  sendMessage,
-  findNewCampaignContact
-} from "./index";
-
+import { sendMessage, findNewCampaignContact } from "./index";
 
 export const bulkSendMessages = async (assignmentId, loaders, user) => {
   if (!process.env.ALLOW_SEND_ALL || !process.env.NOT_IN_USA) {
@@ -81,11 +66,7 @@ export const bulkSendMessages = async (assignmentId, loaders, user) => {
       text,
       assignmentId
     };
-    await sendMessage(
-      contactMessage,
-      contact.id,
-      loaders
-    );
+    await sendMessage(contactMessage, contact.id, loaders, user);
   });
 
   return contactMessages;

@@ -1,6 +1,5 @@
 import {
   r,
-  datawarehouse,
   cacheableData,
   Assignment,
   Campaign,
@@ -11,20 +10,19 @@ import {
 } from "../server/models";
 import { log, gunzip, zipToTimeZone, convertOffsetsToStrings } from "../lib";
 import { updateJob } from "./lib";
-import { getFormattedPhoneNumber } from "../lib/phone-format.js";
 import serviceMap from "../server/api/lib/services";
 import {
   getLastMessage,
   saveNewIncomingMessage
 } from "../server/api/lib/message-sending";
-import importScriptFromDocument from "../server/api/lib/import-script.";
+import importScriptFromDocument from "../server/api/lib/import-script";
+import { rawIngestMethod } from "../integrations/contact-loaders";
 
 import AWS from "aws-sdk";
 import Papa from "papaparse";
 import moment from "moment";
 import { sendEmail } from "../server/mail";
 import { Notifications, sendUserNotification } from "../server/notifications";
-import { unzip } from "zlib";
 
 const defensivelyDeleteJob = async job => {
   if (job.id) {
@@ -48,23 +46,6 @@ const defensivelyDeleteJob = async job => {
 };
 
 const zipMemoization = {};
-let warehouseConnection = null;
-function optOutsByOrgId(orgId) {
-  return r.knex
-    .select("cell")
-    .from("opt_out")
-    .where("organization_id", orgId);
-}
-
-function optOutsByInstance() {
-  return r.knex.select("cell").from("opt_out");
-}
-
-function getOptOutSubQuery(orgId) {
-  return !!process.env.OPTOUTS_SHARE_ALL_ORGS
-    ? optOutsByInstance()
-    : optOutsByOrgId(orgId);
-}
 
 function optOutsByOrgId(orgId) {
   return r.knex
@@ -200,80 +181,79 @@ export async function processSqsMessages() {
   return p;
 }
 
-const unzipPayload = async job =>
-  JSON.parse(await gunzip(Buffer.from(job.payload, "base64")));
-
-export async function uploadContacts(job) {
-  const campaignId = job.campaign_id;
-  // We do this deletion in schema.js but we do it again here just in case the the queue broke and we had a backlog of contact uploads for one campaign
-  const campaign = await Campaign.get(campaignId);
-  const organization = await Organization.get(campaign.organization_id);
+export async function dispatchContactIngestLoad(job, organization) {
+  if (!organization) {
+    const campaign = await Campaign.get(job.campaign_id);
+    organization = await Organization.get(campaign.organization_id);
+  }
+  const ingestMethod = rawIngestMethod(job.job_type.replace("ingest.", ""));
+  if (!ingestMethod) {
+    console.error(
+      "dispatchContactIngestLoad not found. invalid job type",
+      job.job_type
+    );
+    return;
+  }
   const orgFeatures = JSON.parse(organization.features || "{}");
-
-  const jobMessages = [];
-
-  await r
-    .table("campaign_contact")
-    .getAll(campaignId, { index: "campaign_id" })
-    .delete();
-  const maxPercentage = 100;
-  let contacts = await unzipPayload(job);
-  const chunkSize = 1000;
-
   const maxContacts = parseInt(
     orgFeatures.hasOwnProperty("maxContacts")
       ? orgFeatures.maxContacts
       : process.env.MAX_CONTACTS || 0,
     10
   );
+  await ingestMethod.processContactLoad(job, maxContacts, {
+    /*FUTURE: context obj*/
+  });
+}
 
-  if (maxContacts) {
-    // note: maxContacts == 0 means no maximum
-    contacts = contacts.slice(0, maxContacts);
-  }
+export async function completeContactLoad(job, jobMessages) {
+  const campaignId = job.campaign_id;
+  const campaign = await Campaign.get(campaignId);
+  const organization = await Organization.get(campaign.organization_id);
 
-  const numChunks = Math.ceil(contacts.length / chunkSize);
-
-  for (let index = 0; index < contacts.length; index++) {
-    const datum = contacts[index];
-    if (datum.zip) {
-      // using memoization and large ranges of homogenous zips
-      datum.timezone_offset = await getTimezoneByZip(datum.zip);
-    }
-  }
-
-  for (let index = 0; index < numChunks; index++) {
-    await updateJob(job, Math.round((maxPercentage / numChunks) * index));
-    const savePortion = contacts.slice(
-      index * chunkSize,
-      (index + 1) * chunkSize
-    );
-    await CampaignContact.save(savePortion);
-  }
-
-  const optOutCellCount = await r
-    .knex("campaign_contact")
-    .whereIn("cell", function optouts() {
-      this.select("cell")
-        .from("opt_out")
-        .where("organization_id", campaign.organization_id);
-    });
-
-  const deleteOptOutCells = await r
+  let deleteOptOutCells;
+  const knexOptOutDeleteResult = await r
     .knex("campaign_contact")
     .whereIn("cell", getOptOutSubQuery(campaign.organization_id))
     .where("campaign_id", campaignId)
     .delete()
     .then(result => {
-      console.log("deleted result: " + result);
+      deleteOptOutCells = result;
+      console.log("Deleted opt-outs: " + deleteOptOutCells);
+    })
+    .catch(err => {
+      console.log("Error deleting opt-outs:", campaignId, err);
+    });
+
+  // delete duplicate cells
+  await r
+    .knex("campaign_contact")
+    .whereIn(
+      "id",
+      r
+        .knex("campaign_contact")
+        .select("campaign_contact.id")
+        .leftJoin("campaign_contact AS c2", function joinSelf() {
+          this.on("c2.campaign_id", "=", "campaign_contact.campaign_id")
+            .andOn("c2.cell", "=", "campaign_contact.cell")
+            .andOn("c2.id", ">", "campaign_contact.id");
+        })
+        .where("campaign_contact.campaign_id", campaignId)
+        .whereNotNull("c2.id")
+    )
+    .delete()
+    .then(result => {
+      console.log("Deduplication result", campaignId, result);
+    })
+    .catch(err => {
+      console.error("Failed deduplication", campaignId, err);
     });
 
   if (deleteOptOutCells) {
     jobMessages.push(
-      `Number of contacts excluded due to their opt-out status: ${optOutCellCount}`
+      `Number of contacts excluded due to their opt-out status: ${deleteOptOutCells}`
     );
   }
-
   if (job.id) {
     if (jobMessages.length) {
       await r
@@ -290,299 +270,8 @@ export async function uploadContacts(job) {
   await cacheableData.campaign.reload(campaignId);
 }
 
-export async function loadContactsFromDataWarehouseFragment(jobEvent) {
-  console.log(
-    "starting loadContactsFromDataWarehouseFragment",
-    jobEvent.campaignId,
-    jobEvent.limit,
-    jobEvent.offset,
-    jobEvent
-  );
-  const insertOptions = {
-    batchSize: 1000
-  };
-  const jobCompleted = await r
-    .knex("job_request")
-    .where("id", jobEvent.jobId)
-    .select("status")
-    .first();
-  if (!jobCompleted) {
-    console.log(
-      "loadContactsFromDataWarehouseFragment job no longer exists",
-      jobEvent.campaignId,
-      jobCompleted,
-      jobEvent
-    );
-    return { alreadyComplete: 1 };
-  }
-
-  let sqlQuery = jobEvent.query;
-  if (jobEvent.limit) {
-    sqlQuery += " LIMIT " + jobEvent.limit;
-  }
-  if (jobEvent.offset) {
-    sqlQuery += " OFFSET " + jobEvent.offset;
-  }
-  let knexResult;
-  try {
-    warehouseConnection = warehouseConnection || datawarehouse();
-    console.log(
-      "loadContactsFromDataWarehouseFragment RUNNING WAREHOUSE query",
-      sqlQuery
-    );
-    knexResult = await warehouseConnection.raw(sqlQuery);
-  } catch (err) {
-    // query failed
-    log.error("Data warehouse query failed: ", err);
-    jobMessages.push(`Data warehouse count query failed with ${err}`);
-    // TODO: send feedback about job
-  }
-  const fields = {};
-  const customFields = {};
-  const contactFields = {
-    first_name: 1,
-    last_name: 1,
-    cell: 1,
-    zip: 1,
-    external_id: 1
-  };
-  knexResult.fields.forEach(f => {
-    fields[f.name] = 1;
-    if (!(f.name in contactFields)) {
-      customFields[f.name] = 1;
-    }
-  });
-  if (!("first_name" in fields && "last_name" in fields && "cell" in fields)) {
-    log.error(
-      "SQL statement does not return first_name, last_name, and cell: ",
-      sqlQuery,
-      fields
-    );
-    jobMessages.push(
-      `SQL statement does not return first_name, last_name and cell => ${sqlQuery} => with fields ${fields}`
-    );
-    return;
-  }
-
-  const savePortion = await Promise.all(
-    knexResult.rows.map(async row => {
-      const formatCell = getFormattedPhoneNumber(
-        row.cell,
-        process.env.PHONE_NUMBER_COUNTRY || "US"
-      );
-      const contact = {
-        campaign_id: jobEvent.campaignId,
-        first_name: row.first_name || "",
-        last_name: row.last_name || "",
-        cell: formatCell,
-        zip: row.zip || "",
-        external_id: row.external_id ? String(row.external_id) : "",
-        assignment_id: null,
-        message_status: "needsMessage"
-      };
-      const contactCustomFields = {};
-      Object.keys(customFields).forEach(f => {
-        contactCustomFields[f] = row[f];
-      });
-      contact.custom_fields = JSON.stringify(contactCustomFields);
-      if (
-        contact.zip &&
-        !contactCustomFields.hasOwnProperty("timezone_offset")
-      ) {
-        contact.timezone_offset = getTimezoneByZip(contact.zip);
-      }
-      if (contactCustomFields.hasOwnProperty("timezone_offset")) {
-        contact.timezone_offset = contactCustomFields["timezone_offset"];
-      }
-      return contact;
-    })
-  );
-
-  await CampaignContact.save(savePortion, insertOptions);
-  await r
-    .knex("job_request")
-    .where("id", jobEvent.jobId)
-    .increment("status", 1);
-  const validationStats = {};
-  const completed = await r
-    .knex("job_request")
-    .where("id", jobEvent.jobId)
-    .select("status")
-    .first();
-  console.log(
-    "loadContactsFromDataWarehouseFragment toward end",
-    completed,
-    jobEvent
-  );
-
-  if (!completed) {
-    console.log(
-      "loadContactsFromDataWarehouseFragment job has been deleted",
-      completed,
-      jobEvent.campaignId
-    );
-  } else if (jobEvent.totalParts && completed.status >= jobEvent.totalParts) {
-    if (jobEvent.organizationId) {
-      // now that we've saved them all, we delete everyone that is opted out locally
-      // doing this in one go so that we can get the DB to do the indexed cell matching
-
-      // delete optout cells
-      await r
-        .knex("campaign_contact")
-        .whereIn("cell", getOptOutSubQuery(jobEvent.organizationId))
-        .where("campaign_id", jobEvent.campaignId)
-        .delete()
-        .then(result => {
-          console.log(
-            `loadContactsFromDataWarehouseFragment # of contacts opted out removed from DW query (${jobEvent.campaignId}): ${result}`
-          );
-          validationStats.optOutCount = result;
-        });
-
-      // delete invalid cells
-      await r
-        .knex("campaign_contact")
-        .whereRaw("length(cell) != 12")
-        .andWhere("campaign_id", jobEvent.campaignId)
-        .delete()
-        .then(result => {
-          console.log(
-            `loadContactsFromDataWarehouseFragment # of contacts with invalid cells removed from DW query (${jobEvent.campaignId}): ${result}`
-          );
-          validationStats.invalidCellCount = result;
-        });
-
-      // delete duplicate cells
-      await r
-        .knex("campaign_contact")
-        .whereIn(
-          "id",
-          r
-            .knex("campaign_contact")
-            .select("campaign_contact.id")
-            .leftJoin("campaign_contact AS c2", function joinSelf() {
-              this.on("c2.campaign_id", "=", "campaign_contact.campaign_id")
-                .andOn("c2.cell", "=", "campaign_contact.cell")
-                .andOn("c2.id", ">", "campaign_contact.id");
-            })
-            .where("campaign_contact.campaign_id", jobEvent.campaignId)
-            .whereNotNull("c2.id")
-        )
-        .delete()
-        .then(result => {
-          console.log(
-            `loadContactsFromDataWarehouseFragment # of contacts with duplicate cells removed from DW query (${jobEvent.campaignId}): ${result}`
-          );
-          validationStats.duplicateCellCount = result;
-        });
-    }
-    await r
-      .table("job_request")
-      .get(jobEvent.jobId)
-      .delete();
-    await cacheableData.campaign.reload(jobEvent.campaignId);
-    return { completed: 1, validationStats };
-  } else if (jobEvent.part < jobEvent.totalParts - 1) {
-    const newPart = jobEvent.part + 1;
-    const newJob = {
-      ...jobEvent,
-      part: newPart,
-      offset: newPart * jobEvent.step,
-      limit: jobEvent.step,
-      command: "loadContactsFromDataWarehouseFragmentJob"
-    };
-    if (process.env.WAREHOUSE_DB_LAMBDA_ITERATION) {
-      console.log(
-        "SENDING TO LAMBDA loadContactsFromDataWarehouseFragment",
-        newJob
-      );
-      await sendJobToAWSLambda(newJob);
-      return { invokedAgain: 1 };
-    } else {
-      return loadContactsFromDataWarehouseFragment(newJob);
-    }
-  }
-}
-
-export async function loadContactsFromDataWarehouse(job) {
-  console.log("STARTING loadContactsFromDataWarehouse", job.payload);
-  const jobMessages = [];
-  const sqlQuery = job.payload;
-
-  if (!sqlQuery.startsWith("SELECT") || sqlQuery.indexOf(";") >= 0) {
-    log.error(
-      "Malformed SQL statement.  Must begin with SELECT and not have any semicolons: ",
-      sqlQuery
-    );
-    return;
-  }
-  if (!datawarehouse) {
-    log.error("No data warehouse connection, so cannot load contacts", job);
-    return;
-  }
-
-  let knexCountRes;
-  let knexCount;
-  try {
-    warehouseConnection = warehouseConnection || datawarehouse();
-    knexCountRes = await warehouseConnection.raw(
-      `SELECT COUNT(*) FROM ( ${sqlQuery} ) AS QUERYCOUNT`
-    );
-  } catch (err) {
-    log.error("Data warehouse count query failed: ", err);
-    jobMessages.push(`Data warehouse count query failed with ${err}`);
-  }
-
-  if (knexCountRes) {
-    knexCount = knexCountRes.rows[0].count;
-    if (!knexCount || knexCount == 0) {
-      jobMessages.push("Error: Data warehouse query returned zero results");
-    }
-  }
-
-  const STEP =
-    r.kninky && r.kninky.defaultsUnsupported
-      ? 10 // sqlite has a max of 100 variables and ~8 or so are used per insert
-      : 10000; // default
-  const campaign = await Campaign.get(job.campaign_id);
-  const totalParts = Math.ceil(knexCount / STEP);
-
-  if (totalParts > 1 && /LIMIT/.test(sqlQuery)) {
-    // We do naive string concatenation when we divide queries up for parts
-    // just appending " LIMIT " and " OFFSET " arguments.
-    // If there is already a LIMIT in the query then we'll be unable to do that
-    // so we error out.  Note that if the total is < 10000, then LIMIT will be respected
-    jobMessages.push(
-      `Error: LIMIT in query not supported for results larger than ${STEP}. Count was ${knexCount}`
-    );
-  }
-
-  if (job.id && jobMessages.length) {
-    let resultMessages = await r
-      .knex("job_request")
-      .where("id", job.id)
-      .update({ result_message: jobMessages.join("\n") });
-    return resultMessages;
-  }
-
-  await r
-    .knex("campaign_contact")
-    .where("campaign_id", job.campaign_id)
-    .delete();
-
-  await loadContactsFromDataWarehouseFragment({
-    jobId: job.id,
-    query: sqlQuery,
-    campaignId: job.campaign_id,
-    jobMessages,
-    // beyond job object:
-    organizationId: campaign.organization_id,
-    totalParts,
-    totalCount: knexCount,
-    step: STEP,
-    part: 0,
-    limit: totalParts > 1 ? STEP : 0 // 0 is unlimited
-  });
+export async function unzipPayload(job) {
+  return JSON.parse(await gunzip(Buffer.from(job.payload, "base64")));
 }
 
 export async function assignTexters(job) {
@@ -937,8 +626,14 @@ export async function exportCampaign(job) {
       .select()
       .where("assignment_id", assignment.id);
     const messages = await r
-      .table("message")
-      .getAll(assignment.id, { index: "assignment_id" });
+      .knex("message")
+      .leftJoin(
+        "campaign_contact",
+        "campaign_contact.id",
+        "message.campaign_contact_id"
+      )
+      .select("message.*", "campaign_contact.assignment_id")
+      .where("campaign_contact.assignment_id", assignment.id);
     let convertedMessages = messages.map(message => {
       const messageRow = {
         assignmentId: message.assignment_id,
@@ -948,7 +643,8 @@ export async function exportCampaign(job) {
         isFromContact: message.is_from_contact,
         sendStatus: message.send_status,
         attemptedAt: moment(message.created_at).toISOString(),
-        text: message.text
+        text: message.text,
+        errorCode: message.error_code
       };
       return messageRow;
     });
@@ -975,6 +671,7 @@ export async function exportCampaign(job) {
           ? "true"
           : "false",
         "contact[messageStatus]": contact.message_status,
+        "contact[errorCode]": contact.error_code,
         "contact[external_id]": contact.external_id
       };
       const customFields = JSON.parse(contact.custom_fields);
@@ -1249,6 +946,45 @@ export async function handleIncomingMessageParts() {
       .getAll(...messageIdsToDelete)
       .delete();
   }
+}
+
+export async function loadMessages(csvFile) {
+  return new Promise((resolve, reject) => {
+    Papa.parse(csvFile, {
+      header: true,
+      complete: ({ data, meta, errors }, file) => {
+        const fields = meta.fields;
+        console.log("FIELDS", fields);
+        console.log("FIRST LINE", data[0]);
+        const promises = [];
+        data.forEach(row => {
+          if (!row.contact_number) {
+            return;
+          }
+          const twilioMessage = {
+            From: `+1${row.contact_number}`,
+            To: `+1${row.user_number}`,
+            Body: row.text,
+            MessageSid: row.service_id,
+            MessagingServiceSid: row.service_id,
+            FromZip: row.zip, // unused at the moment
+            spokeCreatedAt: row.created_at
+          };
+          promises.push(serviceMap.twilio.handleIncomingMessage(twilioMessage));
+        });
+        console.log("Started all promises for CSV");
+        Promise.all(promises)
+          .then(doneDid => {
+            console.log(`Processed ${doneDid.length} rows for CSV`);
+            resolve(doneDid);
+          })
+          .catch(err => {
+            console.error("Error processing for CSV", err);
+            reject(err);
+          });
+      }
+    });
+  });
 }
 
 // Temporary fix for orgless users
