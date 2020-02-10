@@ -3,6 +3,7 @@ import campaignContact from "./campaign-contact";
 import cannedResponse from "./canned-response";
 import optOut from "./opt-out";
 import organization from "./organization";
+import questionResponse from "./question-response";
 import user from "./user";
 
 const cacheableData = {
@@ -11,6 +12,7 @@ const cacheableData = {
   cannedResponse,
   optOut,
   organization,
+  questionResponse,
   user
 };
 
