@@ -2,11 +2,9 @@ import { r } from "../server/models";
 import { sleep, getNextJob } from "./lib";
 import { log } from "../lib";
 import {
+  dispatchContactIngestLoad,
   exportCampaign,
   processSqsMessages,
-  uploadContacts,
-  loadContactsFromDataWarehouse,
-  loadContactsFromDataWarehouseFragment,
   assignTexters,
   sendMessages,
   handleIncomingMessageParts,
@@ -29,8 +27,6 @@ export { seedZipCodes } from "../server/seeds/seed-zip-codes";
 
 const jobMap = {
   export: exportCampaign,
-  upload_contacts: uploadContacts,
-  upload_contacts_sql: loadContactsFromDataWarehouse,
   assign_texters: assignTexters,
   import_script: importScript
 };
@@ -44,7 +40,11 @@ export async function processJobs() {
       await sleep(1000);
       const job = await getNextJob();
       if (job) {
-        await jobMap[job.job_type](job);
+        if (job.job_type in jobMap) {
+          await jobMap[job.job_type](job);
+        } else if (job.job_type.startsWith("ingest.")) {
+          await dispatchContactIngestLoad(job);
+        }
       }
 
       const twoMinutesAgo = new Date(new Date() - 1000 * 60 * 2);
@@ -210,26 +210,6 @@ export async function databaseMigrationChange(
   return "completed databaseMigrationChange";
 }
 
-export async function loadContactsFromDataWarehouseFragmentJob(
-  event,
-  dispatcher,
-  eventCallback
-) {
-  const eventAsJob = event;
-  console.log("LAMBDA INVOCATION job-processes", event);
-  try {
-    const rv = await loadContactsFromDataWarehouseFragment(eventAsJob);
-    if (eventCallback) {
-      eventCallback(null, rv);
-    }
-  } catch (err) {
-    if (eventCallback) {
-      eventCallback(err, null);
-    }
-  }
-  return "completed";
-}
-
 const processMap = {
   processJobs,
   messageSender01,
@@ -275,7 +255,6 @@ export default {
   runDatabaseMigrations,
   databaseMigrationChange,
   dispatchProcesses,
-  loadContactsFromDataWarehouseFragmentJob,
   ping,
   processJobs,
   checkMessageQueue,

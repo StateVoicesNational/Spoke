@@ -3,6 +3,10 @@ import { mapFieldsToModel } from "./lib/utils";
 import { Campaign, JobRequest, r, cacheableData } from "../models";
 import { currentEditors } from "../models/cacheable_queries";
 import { getUsers } from "./user";
+import {
+  getAvailableIngestMethods,
+  getMethodChoiceData
+} from "../../integrations/contact-loaders";
 
 export function addCampaignsFilterToQuery(queryParam, campaignsFilter) {
   let query = queryParam;
@@ -97,12 +101,15 @@ export const resolvers = {
         "SUPERVOLUNTEER",
         true
       );
-      return r
-        .table("assignment")
-        .getAll(campaign.id, { index: "campaign_id" })
-        .eqJoin("id", r.table("message"), { index: "assignment_id" })
-        .filter({ is_from_contact: false })
-        .count();
+      return r.getCount(
+        r
+          .knex("campaign_contact")
+          .join("message", "message.campaign_contact_id", "campaign_contact.id")
+          .where({
+            "campaign_contact.campaign_id": campaign.id,
+            "message.is_from_contact": false
+          })
+      );
     },
     receivedMessagesCount: async (campaign, _, { user }) => {
       await accessRequired(
@@ -111,14 +118,14 @@ export const resolvers = {
         "SUPERVOLUNTEER",
         true
       );
-      return (
+      return r.getCount(
         r
-          .table("assignment")
-          .getAll(campaign.id, { index: "campaign_id" })
-          // TODO: NEEDSTESTING -- see above setMessagesCount()
-          .eqJoin("id", r.table("message"), { index: "assignment_id" })
-          .filter({ is_from_contact: true })
-          .count()
+          .knex("campaign_contact")
+          .join("message", "message.campaign_contact_id", "campaign_contact.id")
+          .where({
+            "campaign_contact.campaign_id": campaign.id,
+            "message.is_from_contact": true
+          })
       );
     },
     optOutsCount: async (campaign, _, { user }) => {
@@ -188,8 +195,6 @@ export const resolvers = {
     organization: async (campaign, _, { loaders }) =>
       campaign.organization ||
       loaders.organization.load(campaign.organization_id),
-    datawarehouseAvailable: (campaign, _, { user }) =>
-      user.is_superadmin && !!process.env.WAREHOUSE_DB_HOST,
     pendingJobs: async (campaign, _, { user }) => {
       await accessRequired(
         user,
@@ -201,6 +206,39 @@ export const resolvers = {
         .table("job_request")
         .filter({ campaign_id: campaign.id })
         .orderBy("updated_at", "desc");
+    },
+    ingestMethodsAvailable: async (campaign, _, { user, loaders }) => {
+      try {
+        await accessRequired(user, campaign.organization_id, "ADMIN", true);
+      } catch (err) {
+        return []; // for SUPERVOLUNTEERS
+      }
+      const organization = await loaders.organization.load(
+        campaign.organization_id
+      );
+      const ingestMethods = await getAvailableIngestMethods(organization, user);
+      return Promise.all(
+        ingestMethods.map(async ingestMethod => {
+          const clientChoiceData = await getMethodChoiceData(
+            ingestMethod,
+            organization,
+            campaign,
+            user,
+            loaders
+          );
+          return {
+            name: ingestMethod.name,
+            displayName: ingestMethod.displayName(),
+            clientChoiceData
+          };
+        })
+      );
+    },
+    ingestMethod: async (campaign, _, { user, loaders }) => {
+      // FUTURE: which ingestMethod was used and status
+      // try { ... for SUPERVOLUNTEER
+      // await accessRequired(user, campaign.organization_id, "ADMIN", true);
+      return null;
     },
     texters: async (campaign, _, { user }) => {
       await accessRequired(

@@ -106,8 +106,8 @@ const rootSchema = gql`
     primaryColor: String
     introHtml: String
     useDynamicAssignment: Boolean
-    contacts: [CampaignContactInput]
-    contactSql: String
+    ingestMethod: String
+    contactData: String
     organizationId: String
     texters: [TexterInput]
     interactionSteps: InteractionStepInput

@@ -169,7 +169,11 @@ class UserEdit extends React.Component {
                 name="lastName"
                 {...dataTest("lastName")}
               />
-              <Form.Field label="Texting Alias (optional)" name="alias" {...dataTest("alias")} />
+              <Form.Field
+                label="Texting Alias (optional)"
+                name="alias"
+                {...dataTest("alias")}
+              />
               <Form.Field
                 label="Cell Number"
                 name="cell"
@@ -187,26 +191,23 @@ class UserEdit extends React.Component {
               type="password"
             />
           )}
-          {authType &&
-            authType !== "login" && (
-              <Form.Field
-                label="Confirm Password"
-                name="passwordConfirm"
-                type="password"
-              />
-            )}
+          {authType && authType !== "login" && (
+            <Form.Field
+              label="Confirm Password"
+              name="passwordConfirm"
+              type="password"
+            />
+          )}
           <div className={css(styles.buttons)}>
-            {authType !== "change" &&
-              userId &&
-              userId === data.currentUser.id && (
-                <div className={css(styles.container)}>
-                  <RaisedButton
-                    onTouchTap={this.handleClick}
-                    label="Change password"
-                    variant="outlined"
-                  />
-                </div>
-              )}
+            {authType !== "change" && userId && userId === data.currentUser.id && (
+              <div className={css(styles.container)}>
+                <RaisedButton
+                  onTouchTap={this.handleClick}
+                  label="Change password"
+                  variant="outlined"
+                />
+              </div>
+            )}
             <Form.Button type="submit" label={saveLabel || "Save"} />
           </div>
         </GSForm>
@@ -281,29 +282,32 @@ const mapQueriesToProps = ({ ownProps }) => {
   }
 };
 
+export const editUserMutation = `
+  mutation editUser(
+    $organizationId: String!
+    $userId: Int!
+    $userData: UserInput
+  ) {
+    editUser(
+      organizationId: $organizationId
+      userId: $userId
+      userData: $userData
+    ) {
+      id
+      firstName
+      lastName
+      alias
+      cell
+      email
+    }
+  }`;
+
 const mapMutationsToProps = ({ ownProps }) => {
   if (ownProps.userId) {
     return {
       editUser: userData => ({
         mutation: gql`
-          mutation editUser(
-            $organizationId: String!
-            $userId: Int!
-            $userData: UserInput
-          ) {
-            editUser(
-              organizationId: $organizationId
-              userId: $userId
-              userData: $userData
-            ) {
-              id
-              firstName
-              lastName
-              alias
-              cell
-              email
-            }
-          }
+          ${editUserMutation}
         `,
         variables: {
           userId: ownProps.userId,
