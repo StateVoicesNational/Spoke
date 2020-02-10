@@ -68,7 +68,9 @@ export async function assignmentOrAdminRoleRequired(
     return true;
   }
 
-  return await assignmentRequired(user, assignmentId, assignment);
+  // calling exports.assignmentRequired instead of just assignmentRequired
+  // is functionally identical but it allos us to mock assignmentRequired
+  return await exports.assignmentRequired(user, assignmentId, assignment);
 }
 
 export function superAdminRequired(user) {
