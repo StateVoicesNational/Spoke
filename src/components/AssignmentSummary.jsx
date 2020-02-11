@@ -1,65 +1,65 @@
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import { Card, CardActions, CardTitle } from "material-ui/Card";
-import { StyleSheet, css } from "aphrodite";
-import loadData from "../containers/hoc/load-data";
-import { setContrastingColor } from "../lib/color-contrast-helper";
-import gql from "graphql-tag";
-import RaisedButton from "material-ui/RaisedButton";
-import Badge from "material-ui/Badge";
-import moment from "moment";
-import Divider from "material-ui/Divider";
-import { withRouter } from "react-router";
-import { dataTest } from "../lib/attributes";
+import PropTypes from 'prop-types'
+import React, {Component} from 'react'
+import {Card, CardActions, CardTitle} from 'material-ui/Card'
+import {StyleSheet, css} from 'aphrodite'
+import loadData from '../containers/hoc/load-data'
+import {setContrastingColor} from '../lib/color-contrast-helper'
+import gql from 'graphql-tag'
+import RaisedButton from 'material-ui/RaisedButton'
+import Badge from 'material-ui/Badge'
+import moment from 'moment'
+import Divider from 'material-ui/Divider'
+import {withRouter} from 'react-router'
+import {dataTest} from '../lib/attributes'
 
 const inlineStyles = {
   badge: {
     fontSize: 12,
     top: 20,
     right: 20,
-    padding: "4px 2px 0px 2px",
+    padding: '4px 2px 0px 2px',
     width: 20,
-    textAlign: "center",
-    verticalAlign: "middle",
+    textAlign: 'center',
+    verticalAlign: 'middle',
     height: 20
   },
   pastMsgStyle: {
-    backgroundColor: "#FFD700",
+    backgroundColor: '#FFD700',
     fontSize: 12,
     top: 20,
     right: 20,
-    padding: "4px 2px 0px 2px",
+    padding: '4px 2px 0px 2px',
     width: 20,
-    textAlign: "center",
-    verticalAlign: "middle",
+    textAlign: 'center',
+    verticalAlign: 'middle',
     height: 20
   }
-};
+}
 
 const styles = StyleSheet.create({
   container: {
-    margin: "20px 0"
+    margin: '20px 0'
   },
   image: {
-    position: "absolute",
-    height: "70%",
-    top: "20px",
-    right: "20px"
+    position: 'absolute',
+    height: '70%',
+    top: '20px',
+    right: '20px'
   }
-});
+})
 
 export class AssignmentSummary extends Component {
   state = {
     badTimezoneTooltipOpen: false
-  };
+  }
 
   goToTodos(contactsFilter, assignmentId) {
-    const { organizationId, router } = this.props;
+    const {organizationId, router} = this.props
 
     if (contactsFilter) {
       router.push(
         `/app/${organizationId}/todos/${assignmentId}/${contactsFilter}`
-      );
+      )
     }
   }
 
@@ -75,7 +75,7 @@ export class AssignmentSummary extends Component {
     style
   }) {
     if (count === 0 && hideIfZero) {
-      return "";
+      return ''
     }
     if (count === 0) {
       return (
@@ -86,13 +86,13 @@ export class AssignmentSummary extends Component {
           primary={primary && !disabled}
           onClick={() => this.goToTodos(contactsFilter, assignment.id)}
         />
-      );
+      )
     } else {
       return (
         <Badge
           key={title}
           badgeStyle={style || inlineStyles.badge}
-          badgeContent={count || ""}
+          badgeContent={count || ''}
           primary={primary && !disabled}
           secondary={!primary && !disabled}
         >
@@ -103,7 +103,7 @@ export class AssignmentSummary extends Component {
             onClick={() => this.goToTodos(contactsFilter, assignment.id)}
           />
         </Badge>
-      );
+      )
     }
   }
 
@@ -116,7 +116,7 @@ export class AssignmentSummary extends Component {
       totalMessagedCount,
       pastMessagesCount,
       skippedMessagesCount
-    } = this.props;
+    } = this.props
     const {
       title,
       description,
@@ -126,19 +126,19 @@ export class AssignmentSummary extends Component {
       logoImageUrl,
       introHtml,
       useDynamicAssignment
-    } = assignment.campaign;
-    const maxContacts = assignment.maxContacts;
+    } = assignment.campaign
+    const maxContacts = assignment.maxContacts
 
-    const cardTitleTextColor = setContrastingColor(primaryColor);
+    const cardTitleTextColor = setContrastingColor(primaryColor)
 
     return (
       <div className={css(styles.container)}>
         <Card key={assignment.id}>
           <CardTitle
             title={title}
-            titleStyle={{ color: cardTitleTextColor }}
-            subtitle={`${description} - ${moment(dueBy).format("MMM D YYYY")}`}
-            subtitleStyle={{ color: cardTitleTextColor }}
+            titleStyle={{color: cardTitleTextColor}}
+            subtitle={`${description} - ${moment(dueBy).format('MMM D YYYY')}`}
+            subtitleStyle={{color: cardTitleTextColor}}
             style={{
               backgroundColor: primaryColor
             }}
@@ -146,21 +146,21 @@ export class AssignmentSummary extends Component {
               logoImageUrl ? (
                 <img src={logoImageUrl} className={css(styles.image)} />
               ) : (
-                ""
+                ''
               )
             }
           />
           <Divider />
-          <div style={{ margin: "20px" }}>
-            <div dangerouslySetInnerHTML={{ __html: introHtml }} />
+          <div style={{margin: '20px'}}>
+            <div dangerouslySetInnerHTML={{__html: introHtml}} />
           </div>
           <CardActions>
             {window.NOT_IN_USA && window.ALLOW_SEND_ALL
-              ? ""
+              ? ''
               : this.renderBadgedButton({
-                  dataTestText: "sendFirstTexts",
+                  dataTestText: 'sendFirstTexts',
                   assignment,
-                  title: "Send first texts",
+                  title: 'Send first texts',
                   count: unmessagedCount,
                   primary: true,
                   disabled:
@@ -168,55 +168,55 @@ export class AssignmentSummary extends Component {
                       !hasUnassignedContactsForTexter &&
                       unmessagedCount == 0) ||
                     (useDynamicAssignment && maxContacts === 0),
-                  contactsFilter: "text",
+                  contactsFilter: 'text',
                   hideIfZero: !useDynamicAssignment
                 })}
             {window.NOT_IN_USA && window.ALLOW_SEND_ALL
-              ? ""
+              ? ''
               : this.renderBadgedButton({
-                  dataTestText: "sendReplies",
+                  dataTestText: 'Respond',
                   assignment,
-                  title: "Send replies",
+                  title: 'Respond',
                   count: unrepliedCount,
                   primary: false,
                   disabled: false,
-                  contactsFilter: "reply",
+                  contactsFilter: 'reply',
                   hideIfZero: true
                 })}
             {this.renderBadgedButton({
               assignment,
-              title: "Past Messages",
+              title: 'Past Messages',
               count: pastMessagesCount,
               style: inlineStyles.pastMsgStyle,
               primary: false,
               disabled: false,
-              contactsFilter: "stale",
+              contactsFilter: 'stale',
               hideIfZero: true
             })}
             {this.renderBadgedButton({
               assignment,
-              title: "Skipped Messages",
+              title: 'Skipped Messages',
               count: skippedMessagesCount,
               style: inlineStyles.pastMsgStyle,
               primary: false,
               disabled: false,
-              contactsFilter: "skipped",
+              contactsFilter: 'skipped',
               hideIfZero: true
             })}
             {window.NOT_IN_USA && window.ALLOW_SEND_ALL
               ? this.renderBadgedButton({
                   assignment,
-                  title: "Send messages",
+                  title: 'Send messages',
                   primary: true,
                   disabled: false,
-                  contactsFilter: "all",
+                  contactsFilter: 'all',
                   count: 0,
                   hideIfZero: false
                 })
-              : ""}
+              : ''}
             {this.renderBadgedButton({
               assignment,
-              title: "Send later",
+              title: 'Send later',
               count: badTimezoneCount,
               primary: false,
               disabled: true,
@@ -226,7 +226,7 @@ export class AssignmentSummary extends Component {
           </CardActions>
         </Card>
       </div>
-    );
+    )
   }
 }
 
@@ -242,6 +242,6 @@ AssignmentSummary.propTypes = {
   skippedMessagesCount: PropTypes.number,
   data: PropTypes.object,
   mutations: PropTypes.object
-};
+}
 
-export default withRouter(AssignmentSummary);
+export default withRouter(AssignmentSummary)
