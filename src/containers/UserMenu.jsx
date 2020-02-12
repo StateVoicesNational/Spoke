@@ -130,7 +130,11 @@ export class UserMenu extends Component {
               primaryText="Home"
               onClick={this.handleReturn}
             />
-            <MenuItem primaryText="FAQs" onClick={this.handleRequestFaqs} />
+            <MenuItem
+              {...dataTest("FAQs")}
+              primaryText="FAQs"
+              onClick={this.handleRequestFaqs}
+            />
             <Divider />
             <MenuItem
               {...dataTest("userMenuLogOut")}
