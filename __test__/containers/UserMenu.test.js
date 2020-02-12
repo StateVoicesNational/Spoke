@@ -7,7 +7,6 @@ import { StyleSheetTestUtils } from "aphrodite";
 
 import { UserMenu } from "../../src/containers/UserMenu";
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
-import Menu from "material-ui/Menu";
 
 describe("UserMenu", () => {
   it("renders the correct user Avatar icon", async () => {
@@ -62,17 +61,19 @@ describe("UserMenu", () => {
       </MuiThemeProvider>
     ).find(UserMenu);
 
-    // const nameMenuItem = wrapper.find("MenuItem");
-    // The popover loads as an object
+    // Make sure the menu loads
     const menuPopover = wrapper.find("Popover");
     expect(menuPopover.length).toBeGreaterThan(0);
 
-    const menuItemArray = menuPopover.props().children.props.children;
+    const menuContentArray = menuPopover.props().children.props.children;
+    const menuItems = menuContentArray.filter(
+      item => item.type && item.type.muiName === "MenuItem"
+    );
 
-    // First MenuItem should always be the user's display name
-    expect(menuItemArray[0].props["data-test"]).toBe("userMenuDisplayName");
-
-    // Second MenuItem will be a divider
-    console.log("MENU ITEM ", menuItemArray[1]);
+    // Check for each thing we always expect to see in the menu
+    expect(menuItems[0].props["data-test"]).toBe("userMenuDisplayName");
+    expect(menuItems[1].props["data-test"]).toBe("home");
+    expect(menuItems[2].props["data-test"]).toBe("FAQs");
+    expect(menuItems[3].props["data-test"]).toBe("userMenuLogOut");
   });
 });
