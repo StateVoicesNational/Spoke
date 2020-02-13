@@ -494,6 +494,82 @@ export async function createStartedCampaign() {
     assignmentId,
     assignment,
     testSuperAdminUser,
-    organizationId
+    organizationId,
+    dbCampaignContact
   };
 }
+
+export const getConversations = async (
+  user,
+  organizationId,
+  contactsFilter,
+  campaignsFilter,
+  assignmentsFilter
+) => {
+  const cursor = {
+    offset: 0,
+    limit: 1000
+  };
+  const variables = {
+    cursor,
+    organizationId,
+    contactsFilter,
+    campaignsFilter,
+    assignmentsFilter
+  };
+
+  const conversationsQuery = `
+    query Q(
+          $organizationId: String!
+          $cursor: OffsetLimitCursor!
+          $contactsFilter: ContactsFilter
+          $campaignsFilter: CampaignsFilter
+          $assignmentsFilter: AssignmentsFilter
+          $utc: String
+        ) {
+          conversations(
+            cursor: $cursor
+            organizationId: $organizationId
+            campaignsFilter: $campaignsFilter
+            contactsFilter: $contactsFilter
+            assignmentsFilter: $assignmentsFilter
+            utc: $utc
+          ) {
+            pageInfo {
+              limit
+              offset
+              total
+            }
+            conversations {
+              texter {
+                id
+                displayName
+              }
+              contact {
+                id
+                assignmentId
+                firstName
+                lastName
+                cell
+                messageStatus
+                messages {
+                  id
+                  text
+                  isFromContact
+                }
+                optOut {
+                  cell
+                }
+              }
+              campaign {
+                id
+                title
+              }
+            }
+          }
+        }
+      `;
+
+  const result = await runGql(conversationsQuery, variables, user);
+  return result;
+};

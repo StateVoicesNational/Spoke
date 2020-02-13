@@ -9,6 +9,8 @@ import loadData from "../../containers//hoc/load-data";
 import wrapMutations from "../../containers/hoc/wrap-mutations";
 import MessageResponse from "./MessageResponse";
 
+import { dataTest } from "../../lib/attributes";
+
 const styles = StyleSheet.create({
   conversationRow: {
     color: "white",
@@ -20,10 +22,16 @@ const styles = StyleSheet.create({
 
 class MessageList extends Component {
   componentDidMount() {
+    if (typeof this.refs.messageWindow.scrollTo !== "function") {
+      return;
+    }
     this.refs.messageWindow.scrollTo(0, this.refs.messageWindow.scrollHeight);
   }
 
   componentDidUpdate() {
+    if (typeof this.refs.messageWindow.scrollTo !== "function") {
+      return;
+    }
     this.refs.messageWindow.scrollTo(0, this.refs.messageWindow.scrollHeight);
   }
 
@@ -92,7 +100,7 @@ ConversationPreviewBody.propTypes = {
   conversation: PropTypes.object
 };
 
-class ConversationPreviewModal extends Component {
+export class InnerConversationPreviewModal extends Component {
   constructor(props) {
     super(props);
 
@@ -134,8 +142,17 @@ class ConversationPreviewModal extends Component {
       isOpen = conversation !== undefined;
 
     const primaryActions = [
-      <FlatButton label="Opt-Out" secondary onClick={this.handleClickOptOut} />,
-      <FlatButton label="Close" primary onClick={this.props.onRequestClose} />
+      <FlatButton
+        {...dataTest("conversationPreviewModalOptOutButton")}
+        label="Opt-Out"
+        secondary={true}
+        onClick={this.handleClickOptOut}
+      />,
+      <FlatButton
+        label="Close"
+        primary={true}
+        onClick={this.props.onRequestClose}
+      />
     ];
 
     return (
@@ -161,9 +178,10 @@ class ConversationPreviewModal extends Component {
   }
 }
 
-ConversationPreviewModal.propTypes = {
+InnerConversationPreviewModal.propTypes = {
   conversation: PropTypes.object,
   onRequestClose: PropTypes.func,
+  mutations: PropTypes.object,
   onForceRefresh: PropTypes.func
 };
 
@@ -193,6 +211,6 @@ const mapMutationsToProps = () => ({
   })
 });
 
-export default loadData(wrapMutations(ConversationPreviewModal), {
+export default loadData(wrapMutations(InnerConversationPreviewModal), {
   mapMutationsToProps
 });
