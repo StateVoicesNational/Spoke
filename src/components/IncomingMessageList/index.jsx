@@ -11,7 +11,7 @@ import ConversationPreviewModal from "./ConversationPreviewModal";
 
 import { MESSAGE_STATUSES } from "../../components/IncomingMessageFilter";
 
-const prepareDataTableData = conversations =>
+export const prepareDataTableData = conversations =>
   conversations.map(conversation => ({
     campaignTitle: conversation.campaign.title,
     texter: conversation.texter.displayName,
