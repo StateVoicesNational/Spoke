@@ -367,20 +367,23 @@ export class AssignmentTexterContactControls extends React.Component {
     const { messageStatus } = contact;
     const size = document.documentElement.clientWidth;
 
-    const { onNext, onPrevious, title } = navigationToolbarChildren;
+    let navigationToolbar = [];
+    if (navigationToolbarChildren) {
+      const { onNext, onPrevious, title } = navigationToolbarChildren;
 
-    const navigationToolbar = [
-      <ToolbarTitle
-        className={css(styles.navigationToolbarTitle)}
-        text={title}
-      />,
-      <IconButton onTouchTap={onPrevious} disabled={!onPrevious}>
-        <NavigateBeforeIcon />
-      </IconButton>,
-      <IconButton onTouchTap={onNext} disabled={!onNext}>
-        <NavigateNextIcon />
-      </IconButton>
-    ];
+      navigationToolbar = [
+        <ToolbarTitle
+          className={css(styles.navigationToolbarTitle)}
+          text={title}
+        />,
+        <IconButton onTouchTap={onPrevious} disabled={!onPrevious}>
+          <NavigateBeforeIcon />
+        </IconButton>,
+        <IconButton onTouchTap={onNext} disabled={!onNext}>
+          <NavigateNextIcon />
+        </IconButton>
+      ];
+    }
 
     if (messageStatusFilter === "needsMessage") {
       return (
