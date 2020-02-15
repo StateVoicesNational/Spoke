@@ -502,9 +502,8 @@ export class AssignmentTexterContactControls extends React.Component {
         campaignCannedResponses={campaignCannedResponses}
         userCannedResponses={userCannedResponses}
         customFields={campaign.customFields}
-        campaignId={campaign.id}
-        texterId={texter.id}
         onSelectCannedResponse={this.handleCannedResponseChange}
+        onCreateCannedResponse={this.props.onCreateCannedResponse}
       />
     );
   }
@@ -652,30 +651,23 @@ AssignmentTexterContactControls.propTypes = {
   // data
   contact: PropTypes.object,
   campaign: PropTypes.object,
-  messageStatusFilter: PropTypes.string,
+  assignment: PropTypes.object,
+  texter: PropTypes.object,
 
   // parent state
   disabled: PropTypes.bool,
+  navigationToolbarChildren: PropTypes.object,
+  messageStatusFilter: PropTypes.string,
 
   // parent config/callbacks
   startingMessage: PropTypes.string,
   onMessageFormSubmit: PropTypes.func,
   onOptOut: PropTypes.func,
   onQuestionResponseChange: PropTypes.func,
+  onCreateCannedResponse: PropTypes.func,
   onExitTexter: PropTypes.func,
   onEditStatus: PropTypes.func,
-  getMessageTextFromScript: PropTypes.func,
-  //--both in contact: availableInteractionSteps + questionResponses
-  //
-  // assignment=
-  // for cannedresponses list:
-  // maybe also needs handleNewCannedReponse
-  assignment: PropTypes.object,
-  texter: PropTypes.object,
-  // navigationToolbarChildren=
-  // next/prev buttons with figured out of
-  // replace with: first/middle/last, handleNavigatePrevious/Next
-  navigationToolbarChildren: PropTypes.object
+  getMessageTextFromScript: PropTypes.func
 };
 
 export default AssignmentTexterContactControls;

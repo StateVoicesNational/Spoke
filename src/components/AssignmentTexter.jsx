@@ -455,7 +455,7 @@ AssignmentTexter.propTypes = {
   getNewContacts: PropTypes.func,
   assignContactsIfNeeded: PropTypes.func,
   organizationId: PropTypes.string,
-  ChildComponent: PropTypes.object,
+  ChildComponent: PropTypes.func,
   messageStatusFilter: PropTypes.string
 };
 
