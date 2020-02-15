@@ -50,7 +50,15 @@ const tests = {
       messageStatus: "needsMessage",
       questionResponseValues: [],
       messages: [],
-      customFields: "{}"
+      customFields: "{}",
+      location: {
+        city: "Tucson",
+        state: "AZ",
+        timezone: {
+          offset: -7,
+          hasDST: 1
+        }
+      }
     }
   },
   b: {
@@ -122,17 +130,47 @@ const tests = {
       firstName: "Joe",
       lastName: "Femur",
       messageStatus: "needsMessage",
+      location: {
+        city: "Youngstown",
+        state: "OH",
+        timezone: {
+          offset: -5,
+          hasDST: 1
+        }
+      },
       questionResponseValues: [],
       messages: [
         {
           text: "Will you come to the event?",
           isFromContact: false,
-          createdAt: new Date(Number(new Date()) - 14 * 60 * 1000) // 14 minutes ago
+          createdAt: new Date(Number(new Date()) - 314 * 60 * 1000)
         },
         {
-          text: "Yes, that would be lovely!",
+          text: "Sorry, who is this?",
           isFromContact: true,
-          createdAt: new Date()
+          createdAt: new Date(Number(new Date()) - 142 * 60 * 1000)
+        },
+        {
+          text:
+            "We are the people. We need your help, or the apocolypse will come early.",
+          isFromContact: false,
+          createdAt: new Date(Number(new Date()) - 140 * 60 * 1000)
+        },
+        {
+          text:
+            "Oh -- the people are the best -- if only we rallied around our common interests.",
+          isFromContact: true,
+          createdAt: new Date(Number(new Date()) - 14 * 60 * 1000)
+        },
+        {
+          text: "I know, people are wonderful luminous beings.",
+          isFromContact: false,
+          createdAt: new Date(Number(new Date()) - 10 * 60 * 1000)
+        },
+        {
+          text: "Okay, sign me up -- that event sounds great!",
+          isFromContact: true,
+          createdAt: new Date(Number(new Date()) - 4 * 60 * 1000) // 4 minutes ago
         }
       ],
       customFields:
