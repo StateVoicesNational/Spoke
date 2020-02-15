@@ -199,6 +199,15 @@ export class AssignmentTexterContact extends React.Component {
     this.setState({ questionResponses });
   };
 
+  handleCreateCannedResponse = async ({ cannedResponse }) => {
+    const saveObject = {
+      ...cannedResponse,
+      campaignId: this.props.campaign.id,
+      userId: this.props.texter.id
+    };
+    await this.mutations.createCannedResponse(saveObject);
+  };
+
   handleSubmitSurveys = async () => {
     const { contact } = this.props;
     if (!this.state.questionResponses) {
@@ -368,6 +377,7 @@ export class AssignmentTexterContact extends React.Component {
           onMessageFormSubmit={this.handleMessageFormSubmit}
           onOptOut={this.handleOptOut}
           onQuestionResponseChange={this.handleQuestionResponseChange}
+          onCreateCannedResponse={this.handleCreateCannedResponse}
           onExitTexter={this.props.onExitTexter}
           onEditStatus={this.handleEditStatus}
           getMessageTextFromScript={this.getMessageTextFromScript}
