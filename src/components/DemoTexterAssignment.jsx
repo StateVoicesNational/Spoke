@@ -75,12 +75,42 @@ const tests = {
           {
             id: "13",
             script: "Hi {firstName}, have you voted today, yet?",
-            question: { text: "", answerOptions: [] }
+            question: {
+              text: "Attend Event?",
+              answerOptions: [
+                {
+                  value: "Yes",
+                  nextInteractionStep: {
+                    script: "That's great, we'll see you there!"
+                  }
+                },
+                {
+                  value: "No",
+                  nextInteractionStep: {
+                    script: "That's too bad, but we love you anyway!"
+                  }
+                }
+              ]
+            }
           }
         ],
         customFields: ["donationLink", "vendor_id"]
       },
-      campaignCannedResponses: [],
+      campaignCannedResponses: [
+        {
+          id: "1",
+          title: "Moved",
+          text:
+            "I'm sorry, we'll update your address -- what is your current zip code?",
+          isUserCreated: false
+        },
+        {
+          id: "2",
+          title: "Wrong number",
+          text: "Ok, we'll remove you from our list.",
+          isUserCreated: false
+        }
+      ],
       userCannedResponses: []
     },
     texter: {
@@ -109,6 +139,9 @@ const tests = {
         '{"donationLink": "https://d.example.com/abc123", "vendor_id": "abc123"}'
     }
   }
+  // other tests:
+  // c: current question response is deeper in the state
+  // d: no questions at all
 };
 
 export function generateDemoTexterContact(test) {
