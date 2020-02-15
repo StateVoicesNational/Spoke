@@ -35,12 +35,19 @@ class ScriptList extends React.Component {
     this.setState({
       dialogOpen: true
     });
+    // hack so mobile onclick doesn't close immediately
+    setTimeout(() => {
+      this.setState({ dialogReady: true });
+    }, 200);
   };
 
   handleCloseDialog = () => {
-    this.setState({
-      dialogOpen: false
-    });
+    if (this.state.dialogReady) {
+      this.setState({
+        dialogOpen: false,
+        dialogReady: false
+      });
+    }
   };
 
   render() {
