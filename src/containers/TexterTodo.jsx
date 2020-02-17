@@ -61,6 +61,7 @@ export const dataQuery = gql`
       }
       campaign {
         id
+        title
         isArchived
         useDynamicAssignment
         overrideOrganizationTextingHours
