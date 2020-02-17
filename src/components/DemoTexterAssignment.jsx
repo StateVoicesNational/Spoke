@@ -3,6 +3,7 @@ import React from "react";
 
 import AssignmentTexter from "../components/AssignmentTexter";
 import AssignmentTexterContactControls from "../components/AssignmentTexterContactControls";
+import AssignmentTexterContactNewControls from "../components/AssignmentTexterContactNewControls";
 import { applyScript } from "../lib/scripts";
 
 const logFunction = data => {
@@ -22,7 +23,8 @@ const tests = {
     },
     assignment: {
       campaign: {
-        id: 0,
+        id: 123,
+        title: "Event Recruitment for Saving the World",
         useDynamicAssignment: false,
         organization: {
           optOutMessage:
@@ -73,7 +75,8 @@ const tests = {
     },
     assignment: {
       campaign: {
-        id: 0,
+        id: 123,
+        title: "Event Recruitment for Saving the World",
         useDynamicAssignment: false,
         organization: {
           optOutMessage:
@@ -180,10 +183,15 @@ const tests = {
   // other tests:
   // c: current question response is deeper in the state
   // d: no questions at all
+  // e: opted out
 };
 
 export function generateDemoTexterContact(test) {
   const DemoAssignmentTexterContact = function(props) {
+    const ControlsComponent = /new=1/.test(document.location.search)
+      ? AssignmentTexterContactNewControls
+      : AssignmentTexterContactControls;
+    console.log("DemoAssignmentTexterContact", props);
     const getMessageTextFromScript = script => {
       return script
         ? applyScript({
@@ -196,7 +204,7 @@ export function generateDemoTexterContact(test) {
     };
 
     return (
-      <AssignmentTexterContactControls
+      <ControlsComponent
         contact={test.contact}
         campaign={test.assignment.campaign}
         texter={test.texter}
