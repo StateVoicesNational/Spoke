@@ -77,6 +77,7 @@
     "auth0-js": "^9.10.0",
     "aws-sdk": "^2.6.3",
     "aws-serverless-express": "^3.3.6",
+    "axios": "^0.19.2",
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",
