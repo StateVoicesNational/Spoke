@@ -1,5 +1,18 @@
 # Release Notes
 
+_February 2020:_ Version 5.2
+This release includes the following improvements:
+
+- Allow a user to specify multiple campaigns in message review
+- Adds `addServerEndpoint` to make ingest loaders fully work
+- Creates a local `.prettierrc` file so that our styles are consistent in new PRs
+- Retries sending Twilio messages with error_code < 0 5 times
+
+Thanks to all the contributors part of this release including:
+[lperson](https://github.com/lperson),
+[schuyler1d](https://github.com/schuyler1d),
+[ibrand](https://github.com/ibrand)
+
 _February 2020:_ Version 5.1
 This release includes the following improvements:
 
