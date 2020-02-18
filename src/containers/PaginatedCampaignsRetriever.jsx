@@ -93,7 +93,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
   campaigns: {
     query: gql`
       {
-        campaignsQuery
+        ${campaignsQuery}
       }
     `,
     variables: {
