@@ -92,9 +92,7 @@ export const campaignsQuery = `
 const mapQueriesToProps = ({ ownProps }) => ({
   campaigns: {
     query: gql`
-      {
-        ${campaignsQuery}
-      }
+      ${campaignsQuery}
     `,
     variables: {
       cursor: { offset: 0, limit: ownProps.pageSize },
