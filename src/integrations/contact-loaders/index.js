@@ -34,7 +34,11 @@ async function getSetCacheableResult(cacheKey, fallbackFunc) {
   }
   const slowRes = await fallbackFunc();
   if (r.redis && slowRes && slowRes.expireSeconds) {
-    await r.redis.setAsync(cacheKey, JSON.stringify(slowRes), slowRes.expireSeconds);
+    await r.redis.setAsync(
+      cacheKey,
+      JSON.stringify(slowRes),
+      slowRes.expireSeconds
+    );
   }
   return slowRes;
 }
@@ -50,6 +54,10 @@ export function rawIngestMethod(name) {
   /// RARE: You should almost always use getIngestMethod() below,
   /// unless workflow has already tested availability for the org-user
   return CONFIGURED_INGEST_METHODS[name];
+}
+
+export function rawAllMethods() {
+  return CONFIGURED_INGEST_METHODS;
 }
 
 export async function getIngestMethod(name, organization, user) {
