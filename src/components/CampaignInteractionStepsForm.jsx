@@ -63,6 +63,8 @@ export default class CampaignInteractionStepsForm extends React.Component {
     including all interaction steps. This cuts half the time required to
     render the interaction steps after clicking the header to expand the
     interaction steps card.
+
+    FUTURE: reevaluate this after React >=16 upgrade
   */
   componentDidMount = () => {
     if (!this.state.displayAllSteps) {
