@@ -148,7 +148,7 @@ const initialize = async (knex, Promise) => {
           .notNullable();
         t.boolean("is_opted_out").defaultTo(false);
         t.text("timezone_offset").defaultTo("");
-        if (isSqlite) {
+        if (!isSqlite) {
           t.index("assignment_id");
           t.foreign("assignment_id").references("assignment.id");
           t.index("campaign_id");
