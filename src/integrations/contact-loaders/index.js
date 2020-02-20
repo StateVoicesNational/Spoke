@@ -56,6 +56,10 @@ export function rawIngestMethod(name) {
   return CONFIGURED_INGEST_METHODS[name];
 }
 
+export function rawAllMethods() {
+  return CONFIGURED_INGEST_METHODS;
+}
+
 export async function getIngestMethod(name, organization, user) {
   if (name in CONFIGURED_INGEST_METHODS) {
     const isAvail = await getIngestAvailability(
