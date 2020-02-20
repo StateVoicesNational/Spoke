@@ -642,6 +642,9 @@ const rootMutations = {
         is_archived: false
       });
       const newCampaign = await campaignInstance.save();
+      await r.knex("campaign_admin").insert({
+        campaign_id: newCampaign.id
+      });
       const newCampaignId = newCampaign.id;
       const oldCampaignId = campaign.id;
 
