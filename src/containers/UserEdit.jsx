@@ -40,7 +40,7 @@ class UserEdit extends React.Component {
 
   async componentWillMount() {
     if (!this.props.authType) {
-      await this.props.mutations.editUser(this.props.data.currentUser);
+      await this.props.mutations.editUser(null);
     }
   }
 
@@ -261,6 +261,7 @@ UserEdit.propTypes = {
   openSuccessDialog: PropTypes.func
 };
 
+// eslint-disable-next-line consistent-return
 const mapQueriesToProps = ({ ownProps }) => {
   if (ownProps.userId) {
     return {
@@ -302,6 +303,7 @@ export const editUserMutation = `
     }
   }`;
 
+// eslint-disable-next-line consistent-return
 const mapMutationsToProps = ({ ownProps }) => {
   if (ownProps.userId) {
     return {
