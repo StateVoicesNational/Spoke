@@ -128,6 +128,15 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
         campaign_id: id,
         payload: campaign.contactData
       });
+      await r
+        .knex("campaign_admin")
+        .where("campaign_id", id)
+        .update({
+          contacts_count: null,
+          ingest_method: campaign.ingestMethod,
+          ingest_success: null
+        });
+
       if (JOBS_SAME_PROCESS) {
         dispatchContactIngestLoad(job, organization, {
           /*FUTURE: context obj*/
@@ -458,7 +467,11 @@ const rootMutations = {
 
       return updatedUser;
     },
-    joinOrganization: async (_, { organizationUuid }, { user, loaders }) => {
+    joinOrganization: async (
+      _,
+      { organizationUuid, queryParams },
+      { user, loaders }
+    ) => {
       let organization;
       [organization] = await r
         .knex("organization")
@@ -501,7 +514,7 @@ const rootMutations = {
     },
     assignUserToCampaign: async (
       _,
-      { organizationUuid, campaignId },
+      { organizationUuid, campaignId, queryParams },
       { user, loaders }
     ) => {
       const campaign = await r
@@ -610,6 +623,9 @@ const rootMutations = {
         is_archived: false
       });
       const newCampaign = await campaignInstance.save();
+      await r.knex("campaign_admin").insert({
+        campaign_id: newCampaign.id
+      });
       return editCampaign(newCampaign.id, campaign, loaders, user);
     },
     copyCampaign: async (_, { id }, { user, loaders }) => {

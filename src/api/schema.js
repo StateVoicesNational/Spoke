@@ -243,7 +243,10 @@ const rootSchema = gql`
       userId: String!
       inviteId: String!
     ): Organization
-    joinOrganization(organizationUuid: String!): Organization
+    joinOrganization(
+      organizationUuid: String!
+      queryParams: String
+    ): Organization
     editOrganizationRoles(
       organizationId: String!
       userId: String!
@@ -304,6 +307,7 @@ const rootSchema = gql`
     assignUserToCampaign(
       organizationUuid: String!
       campaignId: String!
+      queryParams: String
     ): Campaign
     userAgreeTerms(userId: String!): User
     reassignCampaignContacts(

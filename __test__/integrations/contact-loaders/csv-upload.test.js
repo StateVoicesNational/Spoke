@@ -100,6 +100,7 @@ describe("ingest-contact-loader method: csv-upload backend", async () => {
     const job = {
       payload: await gzip(JSON.stringify({ contacts })),
       campaign_id: testCampaign.id,
+      job_type: "ingest.csv-upload",
       id: 1
     };
     await processContactLoad(job);
@@ -115,6 +116,7 @@ describe("ingest-contact-loader method: csv-upload backend", async () => {
     const job = {
       payload: await gzip(JSON.stringify({ contacts: dupeContacts })),
       campaign_id: testCampaign.id,
+      job_type: "ingest.csv-upload",
       id: 1
     };
     await processContactLoad(job);
