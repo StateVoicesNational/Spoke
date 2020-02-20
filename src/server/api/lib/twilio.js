@@ -147,17 +147,21 @@ function parseMessageText(message) {
 }
 
 async function sendMessage(message, contact, trx, organization) {
-  if (!twilio) {
+  const APIERRORTEST = /apierrortest/.test(message.text);
+  if (!twilio && !APIERRORTEST) {
     log.warn(
       "cannot actually send SMS message -- twilio is not fully configured:",
       message.id
     );
     if (message.id) {
-      const options = trx ? { transaction: trx } : {};
-      await Message.get(message.id).update(
-        { send_status: "SENT", sent_at: new Date() },
-        options
-      );
+      let updateQuery = r
+        .knex("message")
+        .where("id", message.id)
+        .update({ send_status: "SENT", sent_at: new Date() });
+      if (trx) {
+        updateQuery = updateQuery.transacting(trx);
+      }
+      await updateQuery;
     }
     return "test_message_uuid";
   }
@@ -197,14 +201,12 @@ async function sendMessage(message, contact, trx, organization) {
         );
       }
     }
-    const messageToSave = {
-      ...message
-    };
+    const changes = {};
 
     // FUTURE: this can be based on (contact, organization)
     // Note organization won't always be available, so we'll need to conditionally look it up based on contact
     const messagingServiceSid = process.env.TWILIO_MESSAGE_SERVICE_SID;
-    messageToSave.messageservice_sid = messagingServiceSid;
+    changes.messageservice_sid = messagingServiceSid;
 
     const messageParams = Object.assign(
       {
@@ -214,22 +216,41 @@ async function sendMessage(message, contact, trx, organization) {
         statusCallback: process.env.TWILIO_STATUS_CALLBACK_URL
       },
       twilioValidityPeriod ? { validityPeriod: twilioValidityPeriod } : {},
-      parseMessageText(messageToSave)
+      parseMessageText(message)
     );
 
     console.log("twilioMessage", messageParams);
-    twilio.messages.create(messageParams, (err, response) => {
+    if (APIERRORTEST) {
       postMessageSend(
-        messageToSave,
+        message,
         contact,
         trx,
         resolve,
         reject,
-        err,
-        response,
-        organization
+        {
+          status: "ESOCKETTIMEDOUT",
+          message:
+            'FAKE TRIGGER(apierrortest) Unable to reach host: "api.twilio.com"'
+        }, // err
+        null, //response
+        organization,
+        changes
       );
-    });
+    } else {
+      twilio.messages.create(messageParams, (err, response) => {
+        postMessageSend(
+          message,
+          contact,
+          trx,
+          resolve,
+          reject,
+          err,
+          response,
+          organization,
+          changes
+        );
+      });
+    }
   });
 }
 
@@ -241,12 +262,15 @@ export function postMessageSend(
   reject,
   err,
   response,
-  organization
+  organization,
+  changes
 ) {
-  const messageToSave = {
-    ...message
-  };
-  log.info("messageToSave", messageToSave, response, err);
+  let changesToSave = changes
+    ? {
+        ...changes
+      }
+    : {};
+  log.info("postMessageSend", message, changes, response, err);
   let hasError = false;
   if (err) {
     hasError = true;
@@ -254,43 +278,44 @@ export function postMessageSend(
     console.log("Error sending message", err);
   }
   if (response) {
-    messageToSave.service_id = response.sid;
+    changesToSave.service_id = response.sid;
     hasError = !!response.error_code;
     if (hasError) {
-      messageToSave.error_code = response.error_code;
-      messageToSave.send_status = "ERROR";
+      changesToSave.error_code = response.error_code;
+      changesToSave.send_status = "ERROR";
     }
+  }
+  let updateQuery = r.knex("message").where("id", message.id);
+  if (trx) {
+    updateQuery = updateQuery.transacting(trx);
   }
 
   if (hasError) {
     if (err) {
-      if (messageToSave.error_code <= -MAX_SEND_ATTEMPTS) {
-        messageToSave.send_status = "ERROR";
+      if (message.error_code <= -MAX_SEND_ATTEMPTS) {
+        changesToSave.send_status = "ERROR";
       }
       // decrement error code starting from zero
-      messageToSave.error_code = Number(messageToSave.error_code || 0) - 1;
+      changesToSave.error_code = Number(message.error_code || 0) - 1;
     }
 
     let contactUpdateQuery = Promise.resolve(1);
-    if (contact && messageToSave.error_code) {
+    if (message.campaign_contact_id && changesToSave.error_code) {
       contactUpdateQuery = r
         .knex("campaign_contact")
-        .where("id", contact.id)
-        .update("error_code", messageToSave.error_code);
+        .where("id", message.campaign_contact_id)
+        .update("error_code", changesToSave.error_code);
     }
-    let options = { conflict: "update" };
+
+    updateQuery = updateQuery.update(changesToSave);
     if (trx) {
-      options.transaction = trx;
-      if (contact && messageToSave.error_code < 0) {
+      if (message.campaign_contact_id && changesToSave.error_code < 0) {
         contactUpdateQuery = contactUpdateQuery.transacting(trx);
       }
     }
 
-    Promise.all([
-      Message.save(messageToSave, options),
-      contactUpdateQuery
-    ]).then(() => {
-      console.log("Saved message error status", messageToSave, options, err);
+    Promise.all([updateQuery, contactUpdateQuery]).then(() => {
+      console.log("Saved message error status", changesToSave, err);
       reject(
         err ||
           (response
@@ -299,21 +324,19 @@ export function postMessageSend(
       );
     });
   } else {
-    let options = { conflict: "update" };
-    if (trx) {
-      options.transaction = trx;
-    }
-    Message.save(
-      {
-        ...messageToSave,
-        send_status: "SENT",
-        service: "twilio",
-        sent_at: new Date()
-      },
-      options
-    )
-      .then((newMessage, saveError) => {
-        resolve(newMessage);
+    changesToSave = {
+      ...changesToSave,
+      send_status: "SENT",
+      service: "twilio",
+      sent_at: new Date()
+    };
+    updateQuery
+      .update(changesToSave)
+      .then(newMessage => {
+        resolve({
+          ...message,
+          ...changesToSave
+        });
       })
       .catch(err => {
         reject(err);
