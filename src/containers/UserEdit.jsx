@@ -261,7 +261,6 @@ UserEdit.propTypes = {
   openSuccessDialog: PropTypes.func
 };
 
-// eslint-disable-next-line consistent-return
 const mapQueriesToProps = ({ ownProps }) => {
   if (ownProps.userId) {
     return {
@@ -303,7 +302,6 @@ export const editUserMutation = `
     }
   }`;
 
-// eslint-disable-next-line consistent-return
 const mapMutationsToProps = ({ ownProps }) => {
   if (ownProps.userId) {
     return {
