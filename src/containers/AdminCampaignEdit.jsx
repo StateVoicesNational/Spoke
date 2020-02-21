@@ -74,6 +74,7 @@ const campaignInfoFragment = `
   }
   ingestMethod {
     name
+    success
     result
     reference
     contactsCount

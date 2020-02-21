@@ -123,7 +123,13 @@ describe("ingest-contact-loader method: csv-upload backend", async () => {
     const dbContacts = await r
       .knex("campaign_contact")
       .where("campaign_id", testCampaign.id);
+    const adminResult = await r
+      .knex("campaign_admin")
+      .where("campaign_id", testCampaign.id)
+      .first();
     expect(dbContacts.length).toBe(1);
+    expect(adminResult.duplicate_contacts_count).toBe(1);
+    expect(adminResult.contacts_count).toBe(1);
     expect(dbContacts[0].first_name).toBe("fdsa");
     expect(dbContacts[0].last_name).toBe("yyyy");
     expect(dbContacts[0].custom_fields).toBe('{"custom1": "xyz"}');
