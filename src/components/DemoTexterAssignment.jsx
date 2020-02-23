@@ -33,7 +33,8 @@ const tests = {
         interactionSteps: [
           {
             id: "13",
-            script: "Hi {firstName}, have you voted today, yet?",
+            script:
+              "Hi {firstName}, have you voted today, yet? This election is crucial to a Democratic victory and removing fascism from power.",
             question: { text: "", answerOptions: [] }
           }
         ]
@@ -92,13 +93,39 @@ const tests = {
                 {
                   value: "Yes",
                   nextInteractionStep: {
-                    script: "That's great, we'll see you there!"
+                    id: "14",
+                    script:
+                      "That's great, we'll see you there! Will you bring a friend?"
                   }
                 },
                 {
                   value: "No",
                   nextInteractionStep: {
+                    id: "15",
                     script: "That's too bad, but we love you anyway!"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            id: "14",
+            script:
+              "That's great, we'll see you there! Will you bring a friend?",
+            question: {
+              text: "Bring friend?",
+              answerOptions: [
+                {
+                  value: "Yes, with friend",
+                  nextInteractionStep: {
+                    script: "Super, we'll add your +1"
+                  }
+                },
+                {
+                  value: "No, no friends",
+                  nextInteractionStep: {
+                    script:
+                      "It's too bad, hopefully you'll meet some cool people there."
                   }
                 }
               ]
@@ -144,33 +171,193 @@ const tests = {
       questionResponseValues: [],
       messages: [
         {
+          id: "fake1",
           text: "Will you come to the event?",
           isFromContact: false,
           createdAt: new Date(Number(new Date()) - 314 * 60 * 1000)
         },
         {
+          id: "fake2",
           text: "Sorry, who is this?",
           isFromContact: true,
           createdAt: new Date(Number(new Date()) - 142 * 60 * 1000)
         },
         {
+          id: "fake3",
           text:
             "We are the people. We need your help, or the apocolypse will come early.",
           isFromContact: false,
           createdAt: new Date(Number(new Date()) - 140 * 60 * 1000)
         },
         {
+          id: "fake4",
           text:
             "Oh -- the people are the best -- if only we rallied around our common interests.",
           isFromContact: true,
           createdAt: new Date(Number(new Date()) - 14 * 60 * 1000)
         },
         {
+          id: "fake5",
           text: "I know, people are wonderful luminous beings.",
           isFromContact: false,
           createdAt: new Date(Number(new Date()) - 10 * 60 * 1000)
         },
         {
+          id: "fake6",
+          text: "Okay, sign me up -- that event sounds great!",
+          isFromContact: true,
+          createdAt: new Date(Number(new Date()) - 4 * 60 * 1000) // 4 minutes ago
+        }
+      ],
+      customFields:
+        '{"donationLink": "https://d.example.com/abc123", "vendor_id": "abc123"}'
+    }
+  },
+  c: {
+    disabled: false,
+    messageStatusFilter: "needsResponse",
+    navigationToolbarChildren: {
+      onNext: null,
+      onPrevious: logFunction,
+      title: "88 of 88",
+      total: 88,
+      currentIndex: 88
+    },
+    assignment: {
+      campaign: {
+        id: 123,
+        title: "Event Recruitment for Saving the World",
+        useDynamicAssignment: false,
+        organization: {
+          optOutMessage:
+            "Sorry about that, removing you immediately -- have a good day!"
+        },
+        interactionSteps: [
+          {
+            id: "13",
+            script: "Hi {firstName}, have you voted today, yet?",
+            question: {
+              text: "Attend Event?",
+              answerOptions: [
+                {
+                  value: "Yes",
+                  nextInteractionStep: {
+                    id: "14",
+                    script:
+                      "That's great, we'll see you there! Will you bring a friend?"
+                  }
+                },
+                {
+                  value: "No",
+                  nextInteractionStep: {
+                    id: "15",
+                    script: "That's too bad, but we love you anyway!"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            id: "14",
+            script:
+              "That's great, we'll see you there! Will you bring a friend?",
+            question: {
+              text: "Bring friend?",
+              answerOptions: [
+                {
+                  value: "Yes, with friend",
+                  nextInteractionStep: {
+                    script: "Super, we'll add your +1"
+                  }
+                },
+                {
+                  value: "No, no friends",
+                  nextInteractionStep: {
+                    script:
+                      "It's too bad, hopefully you'll meet some cool people there."
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        customFields: ["donationLink", "vendor_id"]
+      },
+      campaignCannedResponses: [
+        {
+          id: "1",
+          title: "Moved",
+          text:
+            "I'm sorry, we'll update your address -- what is your current zip code?",
+          isUserCreated: false
+        },
+        {
+          id: "2",
+          title: "Wrong number",
+          text: "Ok, we'll remove you from our list.",
+          isUserCreated: false
+        }
+      ],
+      userCannedResponses: []
+    },
+    texter: {
+      firstName: "Texterfirst",
+      lastName: "Tlastname"
+    },
+    contact: {
+      id: "1",
+      firstName: "Joe",
+      lastName: "Femur",
+      messageStatus: "needsMessage",
+      location: {
+        city: "Youngstown",
+        state: "OH",
+        timezone: {
+          offset: -5,
+          hasDST: 1
+        }
+      },
+      questionResponseValues: [
+        {
+          interactionStepId: "13",
+          value: "Yes"
+        }
+      ],
+      messages: [
+        {
+          id: "fake1",
+          text: "Will you come to the event?",
+          isFromContact: false,
+          createdAt: new Date(Number(new Date()) - 314 * 60 * 1000)
+        },
+        {
+          id: "fake2",
+          text: "Sorry, who is this?",
+          isFromContact: true,
+          createdAt: new Date(Number(new Date()) - 142 * 60 * 1000)
+        },
+        {
+          id: "fake3",
+          text:
+            "We are the people. We need your help, or the apocolypse will come early.",
+          isFromContact: false,
+          createdAt: new Date(Number(new Date()) - 140 * 60 * 1000)
+        },
+        {
+          id: "fake4",
+          text:
+            "Oh -- the people are the best -- if only we rallied around our common interests.",
+          isFromContact: true,
+          createdAt: new Date(Number(new Date()) - 14 * 60 * 1000)
+        },
+        {
+          id: "fake5",
+          text: "I know, people are wonderful luminous beings.",
+          isFromContact: false,
+          createdAt: new Date(Number(new Date()) - 10 * 60 * 1000)
+        },
+        {
+          id: "fake6",
           text: "Okay, sign me up -- that event sounds great!",
           isFromContact: true,
           createdAt: new Date(Number(new Date()) - 4 * 60 * 1000) // 4 minutes ago
@@ -180,6 +367,7 @@ const tests = {
         '{"donationLink": "https://d.example.com/abc123", "vendor_id": "abc123"}'
     }
   }
+
   // other tests:
   // c: current question response is deeper in the state
   // d: no questions at all
@@ -248,3 +436,6 @@ export function generateDemoTexterContact(test) {
 
 export const DemoTexterNeedsMessage = generateDemoTexterContact(tests.a);
 export const DemoTexterNeedsResponse = generateDemoTexterContact(tests.b);
+export const DemoTexterNeedsResponse2ndQuestion = generateDemoTexterContact(
+  tests.c
+);
