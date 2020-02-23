@@ -39,75 +39,8 @@ import CreateIcon from "material-ui/svg-icons/content/create";
 import { dataTest } from "../lib/attributes";
 import { getContactTimezone } from "../lib/timezones";
 
-const styles = StyleSheet.create({
-  mobile: {
-    "@media(min-width: 425px)": {
-      display: "none !important"
-    }
-  },
-  desktop: {
-    "@media(max-width: 450px)": {
-      display: "none !important"
-    }
-  },
-  container: {
-    margin: 0,
-    position: "absolute",
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    display: "flex",
-    flexDirection: "column",
-    height: "100%"
-  },
-  optOutCard: {
-    "@media(max-width: 320px)": {
-      padding: "2px 10px !important"
-    },
-    zIndex: 2000,
-    backgroundColor: "white"
-  },
-  messageForm: {
-    backgroundColor: "red"
-  },
-  loadingIndicator: {
-    maxWidth: "50%"
-  },
-  navigationToolbarTitle: {
-    fontSize: "12px"
-  },
-  topFixedSection: {
-    flex: "0 0 auto"
-  },
-  middleScrollingSection: {
-    flex: "1 1 auto",
-    overflowY: "scroll",
-    overflow: "-moz-scrollbars-vertical",
-    overflowX: "hidden"
-  },
-  textField: {
-    "@media(max-width: 350px)": {
-      overflowY: "scroll !important"
-    }
-  },
-  dialogActions: {
-    marginTop: 20,
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "flex-end"
-  },
-  lgMobileToolBar: {
-    "@media(max-width: 449px) and (min-width: 300px)": {
-      display: "inline-block"
-    },
-    "@media(max-width: 320px) and (min-width: 300px)": {
-      marginLeft: "-30px !important"
-    }
-  }
-});
-
 const inlineStyles = {
+  // passed to MessageList whole
   mobileToolBar: {
     position: "absolute",
     bottom: "-5"
@@ -116,9 +49,6 @@ const inlineStyles = {
     "@media(max-width: 450px)": {
       marginBottom: "1"
     }
-  },
-  dialogButton: {
-    display: "inline-block"
   },
   exitTexterIconButton: {
     float: "left",
@@ -181,12 +111,22 @@ const inlineStyles = {
 };
 
 const flexStyles = StyleSheet.create({
-  sectionHeaderToolbar: {
-    // see ContactToolbarNew component
+  topContainer: {
+    margin: 0,
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    display: "flex",
+    flexDirection: "column",
+    height: "100%"
   },
-  /// * Section Scrolling Message Thread
+  sectionHeaderToolbar: {
+    flex: "0 0 auto"
+  },
+  /// * Section Scroll3ing Message Thread
   sectionMessageThread: {
-    // middleScrollingSection: {
     flex: "1 1 auto",
     overflowY: "scroll",
     overflow: "-moz-scrollbars-vertical",
@@ -194,7 +134,20 @@ const flexStyles = StyleSheet.create({
   },
   /// * Section OptOut Dialog
   sectionOptOutDialog: {
-    // uses Card default
+    "@media(max-width: 320px)": {
+      padding: "2px 10px !important"
+    },
+    zIndex: 2000,
+    backgroundColor: "white"
+  },
+  subSectionOptOutDialogActions: {
+    marginTop: 20,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "flex-end"
+  },
+  subSubSectionOptOutDialogActionButton: {
+    display: "inline-block"
   },
   /// * Section Texting Input Field
   sectionMessageField: {
@@ -202,6 +155,11 @@ const flexStyles = StyleSheet.create({
     flex: "2 0 20px",
     padding: "0px 4px",
     marginBottom: "8px"
+  },
+  subSectionMessageFieldTextField: {
+    "@media(max-width: 350px)": {
+      overflowY: "scroll !important"
+    }
   },
   /// * Section Reply/Exit Buttons
   sectionButtons: {
@@ -302,6 +260,7 @@ export class AssignmentTexterContactControls extends React.Component {
       questionResponses,
       props.campaign.interactionSteps
     );
+    console.log("availableSteps", availableSteps);
     this.state = {
       questionResponses,
       optOutMessageText: props.campaign.organization.optOutMessage,
@@ -309,6 +268,7 @@ export class AssignmentTexterContactControls extends React.Component {
       messageText: this.getStartingMessageText(),
       optOutDialogOpen: false,
       messageFocus: false,
+      availableSteps: availableSteps,
       currentInteractionStep:
         availableSteps.length > 0
           ? availableSteps[availableSteps.length - 1]
@@ -394,9 +354,16 @@ export class AssignmentTexterContactControls extends React.Component {
       }
     }
 
+    const availableSteps = getAvailableInteractionSteps(
+      questionResponses,
+      interactionSteps
+    );
+    // TODO sky: ? do we sometimes need to update state.currentInteractionStep?
+    // it doesn't seem to be able to change if we clear a response
     this.setState(
       {
-        questionResponses
+        questionResponses,
+        availableSteps
       },
       () => {
         this.handleChangeScript(nextScript);
@@ -505,11 +472,14 @@ export class AssignmentTexterContactControls extends React.Component {
     }
     return (
       <Card>
-        <CardTitle className={css(styles.optOutCard)} title="Opt out user" />
+        <CardTitle
+          className={css(flexStyles.sectionOptOutDialog)}
+          title="Opt out user"
+        />
         <Divider />
-        <CardActions className={css(styles.optOutCard)}>
+        <CardActions className={css(flexStyles.sectionOptOutDialog)}>
           <GSForm
-            className={css(styles.optOutCard)}
+            className={css(flexStyles.sectionOptOutDialog)}
             schema={this.optOutSchema}
             onChange={({ optOutMessageText }) =>
               this.setState({ optOutMessageText })
@@ -523,15 +493,19 @@ export class AssignmentTexterContactControls extends React.Component {
               autoFocus
               multiLine
             />
-            <div className={css(styles.dialogActions)}>
+            <div className={css(flexStyles.subSectionOptOutDialogActions)}>
               <FlatButton
-                style={inlineStyles.dialogButton}
+                className={css(
+                  flexStyles.subSubSectionOptOutDialogActionButton
+                )}
                 label="Cancel"
                 onTouchTap={this.handleCloseDialog}
               />
               <Form.Button
                 type="submit"
-                style={inlineStyles.dialogButton}
+                className={css(
+                  flexStyles.subSubSectionOptOutDialogActionButton
+                )}
                 component={GSSubmitButton}
                 label={
                   this.state.optOutMessageText.length
@@ -549,7 +523,7 @@ export class AssignmentTexterContactControls extends React.Component {
   renderMessageSending() {
     console.log("renderMessageSending", this.props);
     const { contact, messageStatusFilter } = this.props;
-    const { optOutDialogOpen } = this.state;
+    const { optOutDialogOpen, availableSteps } = this.state;
     const firstMessage = messageStatusFilter === "needsMessage";
 
     const message = (
@@ -562,7 +536,7 @@ export class AssignmentTexterContactControls extends React.Component {
           onChange={firstMessage ? "" : this.handleMessageFormChange}
         >
           <Form.Field
-            className={css(styles.textField)}
+            className={css(flexStyles.subSectionMessageFieldTextField)}
             name="messageText"
             label="Your message"
             onFocus={() => {
@@ -580,13 +554,16 @@ export class AssignmentTexterContactControls extends React.Component {
     );
 
     const sendButtonHeight = firstMessage ? "40%" : "36px";
-    const currentQuestion = "Do you believe in love?";
+    const currentQuestion =
+      this.state.currentInteractionStep &&
+      this.state.currentInteractionStep.question &&
+      this.state.currentInteractionStep.question.text;
     console.log(
       "REFS renderMessageSending return",
       message,
       this.refs.answerButtons && this.refs.answerButtons.offsetHeight
     );
-    const quickButtonSpace =
+    const shortcutButtonSpace =
       this.refs.answerButtons &&
       // 114=25(top q)+40(main btns)+40(xtra row)+9px(padding)
       this.refs.answerButtons.offsetHeight >= 105;
@@ -609,7 +586,7 @@ export class AssignmentTexterContactControls extends React.Component {
             ) : null}
             <div
               className={css(flexStyles.subSubAnswerButtonsColumns)}
-              style={quickButtonSpace ? { height: "89px" } : null}
+              style={shortcutButtonSpace ? { height: "89px" } : null}
             >
               <FlatButton
                 label={
@@ -623,7 +600,10 @@ export class AssignmentTexterContactControls extends React.Component {
                 onTouchTap={this.handleOpenPopover}
                 className={css(flexStyles.flatButton)}
                 labelStyle={inlineStyles.flatButtonLabel}
-                backgroundColor="white"
+                backgroundColor={
+                  availableSteps.length ? "white" : "rgb(176, 176, 176)"
+                }
+                disabled={!availableSteps.length}
               />
               <div
                 style={{
@@ -655,7 +635,7 @@ export class AssignmentTexterContactControls extends React.Component {
               style={{
                 float: "right",
                 marginRight: "18px",
-                height: quickButtonSpace ? "89px" : "42px"
+                height: shortcutButtonSpace ? "89px" : "42px"
               }}
             >
               <FlatButton
@@ -735,8 +715,8 @@ export class AssignmentTexterContactControls extends React.Component {
     const { optOutDialogOpen } = this.state;
     console.log("AssignmentTexterContactNewControls", this.props);
     return (
-      <div className={css(styles.container)}>
-        <div className={css(styles.topFixedSection)}>
+      <div className={css(flexStyles.topContainer)}>
+        <div className={css(flexStyles.sectionHeaderToolbar)}>
           <ContactToolbarNew
             campaign={this.props.campaign}
             campaignContact={this.props.contact}
@@ -756,7 +736,7 @@ export class AssignmentTexterContactControls extends React.Component {
         <div
           {...dataTest("messageList")}
           ref="messageScrollContainer"
-          className={css(styles.middleScrollingSection)}
+          className={css(flexStyles.sectionMessageThread)}
         >
           <MessageList
             contact={this.props.contact}
