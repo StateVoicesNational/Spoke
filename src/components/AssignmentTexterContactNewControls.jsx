@@ -10,6 +10,8 @@ import FlatButton from "material-ui/FlatButton";
 import NavigateHomeIcon from "material-ui/svg-icons/action/home";
 import NavigateBeforeIcon from "material-ui/svg-icons/image/navigate-before";
 import NavigateNextIcon from "material-ui/svg-icons/image/navigate-next";
+import ArrowBackIcon from "material-ui/svg-icons/navigation/arrow-back";
+import ArrowForwardIcon from "material-ui/svg-icons/navigation/arrow-forward";
 import { grey100 } from "material-ui/styles/colors";
 import IconButton from "material-ui/IconButton/IconButton";
 import { Toolbar, ToolbarGroup, ToolbarTitle } from "material-ui/Toolbar";
@@ -83,16 +85,6 @@ const styles = StyleSheet.create({
     overflowY: "scroll",
     overflow: "-moz-scrollbars-vertical",
     overflowX: "hidden"
-  },
-  bottomFixedSection: {
-    borderTop: `1px solid ${grey100}`,
-    flex: "1 0 auto",
-    marginBottom: "none"
-  },
-  messageField: {
-    flex: "2 0 20px",
-    padding: "0px 4px",
-    marginBottom: "8px"
   },
   textField: {
     "@media(max-width: 350px)": {
@@ -177,8 +169,120 @@ const inlineStyles = {
     fontWeight: "600",
     fontSize: "105%",
     marginBottom: "10px"
+  },
+  sendButton: {
+    width: "100%",
+    height: "100%",
+    borderRadius: "0px"
+  },
+  flatButtonLabel: {
+    textTransform: "none"
   }
 };
+
+const flexStyles = StyleSheet.create({
+  sectionHeaderToolbar: {
+    // see ContactToolbarNew component
+  },
+  /// * Section Scrolling Message Thread
+  sectionMessageThread: {
+    // middleScrollingSection: {
+    flex: "1 1 auto",
+    overflowY: "scroll",
+    overflow: "-moz-scrollbars-vertical",
+    overflowX: "hidden"
+  },
+  /// * Section OptOut Dialog
+  sectionOptOutDialog: {
+    // uses Card default
+  },
+  /// * Section Texting Input Field
+  sectionMessageField: {
+    // messageField
+    flex: "2 0 20px",
+    padding: "0px 4px",
+    marginBottom: "8px"
+  },
+  /// * Section Reply/Exit Buttons
+  sectionButtons: {
+    // buttons
+    flex: "4 0 130px", // stretches and shrinks more quickly than message
+    flexDirection: "column",
+    display: "flex",
+    // flexWrap: "wrap",
+    overflow: "hidden",
+    position: "relative",
+    backgroundColor: "rgb(240, 240, 240)"
+  },
+  subButtonsAnswerButtons: {
+    flex: "1 1 80px", // keeps bottom buttons in place
+    // internal:
+    margin: "9px 0px 0px 9px",
+    width: "100%",
+    // similar to 572 below, but give room for other shortcut-buttons
+    maxWidth: "820px"
+  },
+  subSubButtonsAnswerButtonsCurrentQuestion: {
+    marginBottom: "4px",
+    //flex: "0 0 auto",
+    width: "100%",
+    // for mobile:
+    whiteSpace: "nowrap",
+    overflow: "hidden"
+  },
+  subSubAnswerButtonsColumns: {
+    "@media(min-width: 450px)": {
+      // mobile crunch gives up on 50%, so only bigger
+      width: "46%"
+    },
+    display: "inline-block",
+    //flex: "1 1 50%",
+    overflow: "hidden",
+    position: "relative"
+  },
+  subButtonsExitButtons: {
+    // next/prev/skip/optout
+    // width: "100%", default is better on mobile
+    maxWidth: "572px",
+    height: "40px",
+    margin: "9px",
+    // default works better for mobile right margin
+    // flex: "0 0 40px",
+    // internal:
+    display: "flex",
+    flexDirection: "column",
+    flexWrap: "wrap",
+    alignContent: "space-between",
+    // to 'win' against absoslute positioned content above it:
+    backgroundColor: "rgb(240, 240, 240)",
+    zIndex: "10"
+  },
+  /// * Section Send Button
+  sectionSend: {
+    //sendButtonWrapper
+    //flex: `0 0 ${sendButtonHeight}`, VARIABLE BELOW
+    //height: ${sendButtonHeight}, VARIABLE BELOW
+    padding: "9px"
+  },
+  flatButton: {
+    height: "40px",
+    border: "1px solid #949494",
+    // FlatButton property, setting here, overrides hover
+    // backgroundColor: "white",
+    borderRadius: "0",
+    boxShadow: "none",
+    "@media(max-width: 450px)": {
+      // mobile crunch
+      minWidth: "auto"
+    }
+  },
+  flatButtonLabelMobile: {
+    "@media(max-width: 327px)": {
+      // mobile crunch
+      display: "none"
+    }
+  }
+});
 
 export class AssignmentTexterContactControls extends React.Component {
   constructor(props) {
@@ -324,17 +428,6 @@ export class AssignmentTexterContactControls extends React.Component {
     });
   };
 
-  renderMiddleScrollingSection() {
-    const { contact } = this.props;
-    return (
-      <MessageList
-        contact={contact}
-        messages={contact.messages}
-        styles={inlineStyles}
-      />
-    );
-  }
-
   renderSurveySection() {
     const { campaign, contact } = this.props;
     const { questionResponses } = this.state;
@@ -345,22 +438,14 @@ export class AssignmentTexterContactControls extends React.Component {
       campaign.interactionSteps
     );
 
-    return messages.length === 0 ? (
-      <Empty
-        title={"This is your first message to " + contact.firstName}
-        icon={<CreateIcon color="rgb(83, 180, 119)" />}
-        hideMobile
+    return (
+      <AssignmentTexterSurveys
+        contact={contact}
+        interactionSteps={availableInteractionSteps}
+        onQuestionResponseChange={this.handleQuestionResponseChange}
+        currentInteractionStep={this.state.currentInteractionStep}
+        questionResponses={questionResponses}
       />
-    ) : (
-      <div>
-        <AssignmentTexterSurveys
-          contact={contact}
-          interactionSteps={availableInteractionSteps}
-          onQuestionResponseChange={this.handleQuestionResponseChange}
-          currentInteractionStep={this.state.currentInteractionStep}
-          questionResponses={questionResponses}
-        />
-      </div>
     );
   }
 
@@ -369,16 +454,22 @@ export class AssignmentTexterContactControls extends React.Component {
     let button = null;
     if (messageStatus === "closed") {
       button = (
-        <RaisedButton
+        <FlatButton
           onTouchTap={() => this.props.onEditStatus("needsResponse")}
           label="Reopen"
+          className={css(flexStyles.flatButton)}
+          labelStyle={inlineStyles.flatButtonLabel}
+          backgroundColor="white"
         />
       );
-    } else if (messageStatus === "needsResponse") {
+    } else {
       button = (
-        <RaisedButton
+        <FlatButton
           onTouchTap={() => this.props.onEditStatus("closed", true)}
           label="Skip"
+          className={css(flexStyles.flatButton)}
+          labelStyle={inlineStyles.flatButtonLabel}
+          backgroundColor="white"
         />
       );
     }
@@ -501,27 +592,6 @@ export class AssignmentTexterContactControls extends React.Component {
     return "";
   }
 
-  renderTopFixedSection() {
-    const { contact } = this.props;
-    return (
-      <ContactToolbarNew
-        campaign={this.props.campaign}
-        campaignContact={contact}
-        navigationToolbarChildren={this.props.navigationToolbarChildren}
-        leftToolbarIcon={
-          <IconButton
-            onTouchTap={this.props.onExitTexter}
-            style={inlineStyles.exitTexterIconButton}
-            tooltip="Return Home"
-            tooltipPosition="bottom-center"
-          >
-            <NavigateHomeIcon color={"white"} />
-          </IconButton>
-        }
-      />
-    );
-  }
-
   renderCannedResponsePopover() {
     const { campaign, assignment, texter } = this.props;
     const { userCannedResponses, campaignCannedResponses } = assignment;
@@ -587,61 +657,20 @@ export class AssignmentTexterContactControls extends React.Component {
     );
   }
 
-  renderCorrectSendButton() {
-    const { campaign } = this.props;
-    const { contact } = this.props;
-    if (
-      contact.messageStatus === "messaged" ||
-      contact.messageStatus === "convo" ||
-      contact.messageStatus === "needsResponse"
-    ) {
-      return (
-        <SendButtonArrow
-          threeClickEnabled={false}
-          onFinalTouchTap={this.handleClickSendMessageButton}
-          disabled={this.props.disabled}
-        />
-      );
-    }
-    return null;
-  }
-
-  renderBottomFixedSection() {
+  renderMessageSending() {
+    console.log("renderMessageSending", this.props);
+    const { contact, messageStatusFilter } = this.props;
     const { optOutDialogOpen } = this.state;
-    /*
-        {this.renderSurveySection()}
-        <div>
-          {message}
-          { ? "" : this.renderActionToolbar()}
-        </div>
-        {
-        {this.renderCannedResponsePopover()}
-        {this.renderCorrectSendButton()}
-    */
+    const firstMessage = messageStatusFilter === "needsMessage";
 
-    return optOutDialogOpen ? (
-      this.renderOptOutDialog()
-    ) : (
-      <div style={wrapper}></div>
-    );
-  }
-
-  render() {
-    console.log("AssignmentTexterContactNewControls", this.props);
-    const { messageStatusFilter } = this.props;
-    const { optOutDialogOpen } = this.state;
     const message = (
-      <div className={css(styles.messageField)}>
+      <div className={css(flexStyles.sectionMessageField)}>
         <GSForm
           ref="form"
           schema={this.messageSchema}
           value={{ messageText: this.state.messageText }}
           onSubmit={this.props.onMessageFormSubmit}
-          onChange={
-            messageStatusFilter === "needsMessage"
-              ? ""
-              : this.handleMessageFormChange
-          }
+          onChange={firstMessage ? "" : this.handleMessageFormChange}
         >
           <Form.Field
             className={css(styles.textField)}
@@ -660,105 +689,209 @@ export class AssignmentTexterContactControls extends React.Component {
         </GSForm>
       </div>
     );
-    const wrapper = {
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "stretch",
-      alignContent: "stretch"
-    };
-    const buttons = {
-      flex: "4 1 auto", // stretches and shrinks more quickly than message
-      display: "flex",
-      flexWrap: "wrap",
-      overflow: "hidden",
-      position: "relative"
-    };
-    const button1 = {
-      height: "30px",
-      border: "1px solid black",
-      padding: "3px"
-    };
-    const firstMessage = messageStatusFilter === "needsMessage";
-    const sendButtonHeight = firstMessage ? "40%" : "36px";
-    const sendButtonWrapper = {
-      flex: `0 0 ${sendButtonHeight}`,
-      height: sendButtonHeight,
-      padding: "12px"
-    };
 
-    const sendButton = {
-      width: "100%",
-      height: "100%"
-    };
-    return (
-      <div
-        className={css(styles.container)}
-        style={
-          this.props.contact.messageStatus === "needsResponse"
-            ? { backgroundColor: "rgba(83, 180, 119, 0.25)" }
-            : {}
-        }
-      >
-        <div className={css(styles.topFixedSection)}>
-          {this.renderTopFixedSection()}
-        </div>
-        {this.renderMiddleScrollingSection()}
-        {optOutDialogOpen
-          ? this.renderOptOutDialog()
-          : [
-              message,
-              firstMessage ? null : (
-                <div style={buttons}>
-                  Question: []
-                  <div style={button1}>Question Answered</div>
-                  <div style={button1}>Other Responses</div>
-                  <div style={button1}>Left</div>
-                  <div style={button1}>Opt-Out</div>
-                  <div style={button1}>Right</div>
-                  <div style={button1}>Skip</div>
-                  <div style={{ position: "absolute" }}>
-                    <div style={button1}>Question Answered</div>
-                    <div style={button1}>Other Responses</div>
-                    <div style={button1}>Left</div>
-                    <div style={button1}>Skip</div>
-                    <div style={button1}>Opt-Out</div>
-                    <div style={button1}>Right</div>
-                    <div style={button1}>Question Answered</div>
-                    <div style={button1}>Other Responses</div>
-                    <div style={button1}>Left</div>
-                    <div style={button1}>Skip</div>
-                    <div style={button1}>Opt-Out</div>
-                    <div style={button1}>Right</div>
-                    <div style={button1}>Question Answered</div>
-                    <div style={button1}>Other Responses</div>
-                    <div style={button1}>Left</div>
-                    <div style={button1}>Skip</div>
-                    <div style={button1}>Opt-Out</div>
-                    <div style={button1}>Right</div>
-                  </div>
-                </div>
-              ),
-              <div style={sendButtonWrapper}>
-                <RaisedButton
-                  {...dataTest("send")}
-                  onTouchTap={this.handleClickSendMessageButton}
-                  disabled={this.props.disabled}
-                  label={"Send"}
-                  style={sendButton}
-                  primary
+    const sendButtonHeight = firstMessage ? "40%" : "36px";
+    const currentQuestion = "Do you believe in love?";
+    console.log(
+      "REFS renderMessageSending return",
+      message,
+      this.refs.answerButtons && this.refs.answerButtons.offsetHeight
+    );
+    const quickButtonSpace =
+      this.refs.answerButtons &&
+      // 114=25(top q)+40(main btns)+40(xtra row)+9px(padding)
+      this.refs.answerButtons.offsetHeight >= 105;
+    return [
+      message,
+      firstMessage ? null : (
+        <div className={css(flexStyles.sectionButtons)}>
+          <div
+            className={css(flexStyles.subButtonsAnswerButtons)}
+            ref="answerButtons"
+          >
+            {currentQuestion ? (
+              <div
+                className={css(
+                  flexStyles.subSubButtonsAnswerButtonsCurrentQuestion
+                )}
+              >
+                <b>Current Question:</b> {currentQuestion}
+              </div>
+            ) : null}
+            <div
+              className={css(flexStyles.subSubAnswerButtonsColumns)}
+              style={quickButtonSpace ? { height: "89px" } : null}
+            >
+              <FlatButton
+                label={
+                  <span>
+                    Answer Q
+                    <span className={css(flexStyles.flatButtonLabelMobile)}>
+                      uestion
+                    </span>
+                  </span>
+                }
+                onTouchTap={this.handleOpenPopover}
+                className={css(flexStyles.flatButton)}
+                labelStyle={inlineStyles.flatButtonLabel}
+                backgroundColor="white"
+              />
+              <div
+                style={{
+                  height: "40px",
+                  position: "absolute",
+                  top: "40px",
+                  width: "100%",
+                  padding: "9px 9px 0 9px"
+                }}
+              >
+                <FlatButton
+                  label={"Yes"}
+                  onTouchTap={this.handleOpenPopover}
+                  className={css(flexStyles.flatButton)}
+                  labelStyle={inlineStyles.flatButtonLabel}
+                  backgroundColor="white"
+                />
+                <FlatButton
+                  label={"No"}
+                  onTouchTap={this.handleOpenPopover}
+                  className={css(flexStyles.flatButton)}
+                  labelStyle={inlineStyles.flatButtonLabel}
+                  backgroundColor="white"
                 />
               </div>
-            ]}
+            </div>
+            <div
+              className={css(flexStyles.subSubAnswerButtonsColumns)}
+              style={{
+                float: "right",
+                marginRight: "18px",
+                height: quickButtonSpace ? "89px" : "42px"
+              }}
+            >
+              <FlatButton
+                label="Other Responses"
+                onTouchTap={this.handleOpenPopover}
+                className={css(flexStyles.flatButton)}
+                labelStyle={inlineStyles.flatButtonLabel}
+                backgroundColor="white"
+              />
+            </div>
+          </div>
+          <div className={css(flexStyles.subButtonsExitButtons)}>
+            <FlatButton
+              onTouchTap={this.props.navigationToolbarChildren.onPrevious}
+              disabled={!this.props.navigationToolbarChildren.onPrevious}
+              tooltip="Previous Contact"
+              tooltipPosition="button-center"
+              className={css(flexStyles.flatButton)}
+              style={{ paddingTop: "6px" }}
+              label={<ArrowBackIcon />}
+              backgroundColor={
+                this.props.navigationToolbarChildren.onPrevious
+                  ? "white"
+                  : "rgb(176, 176, 176)"
+              }
+            />
+
+            {this.renderNeedsResponseToggleButton(contact)}
+
+            <FlatButton
+              {...dataTest("optOut")}
+              secondary
+              label="Opt-out"
+              onTouchTap={this.handleOpenDialog}
+              tooltip="Opt out this contact"
+              className={css(flexStyles.flatButton)}
+              labelStyle={inlineStyles.flatButtonLabel}
+              backgroundColor="white"
+            />
+
+            <FlatButton
+              onTouchTap={this.props.navigationToolbarChildren.onNext}
+              disabled={!this.props.navigationToolbarChildren.onNext}
+              tooltip="Next Contact"
+              tooltipPosition="bottom-center"
+              label={<ArrowForwardIcon />}
+              className={css(flexStyles.flatButton)}
+              style={{ paddingTop: "6px" }}
+              backgroundColor={
+                this.props.navigationToolbarChildren.onNext
+                  ? "white"
+                  : "rgb(176, 176, 176)"
+              }
+              labelStyle={inlineStyles.flatButtonLabel}
+            />
+          </div>
+        </div>
+      ),
+      <div
+        className={css(flexStyles.sectionSend)}
+        style={{ flex: `0 0 ${sendButtonHeight}`, height: sendButtonHeight }}
+      >
+        <RaisedButton
+          {...dataTest("send")}
+          onTouchTap={this.handleClickSendMessageButton}
+          disabled={this.props.disabled}
+          label={"Send"}
+          style={inlineStyles.sendButton}
+          primary
+        />
+      </div>,
+      this.renderCannedResponsePopover()
+    ];
+
+    /*
+        {this.renderSurveySection()}
+        <div>
+          {message}
+          { ? "" : this.renderActionToolbar()}
+        </div>
+        {
+        {this.renderCannedResponsePopover()}
+    */
+  }
+
+  render() {
+    const { optOutDialogOpen } = this.state;
+    console.log("AssignmentTexterContactNewControls", this.props);
+    return (
+      <div className={css(styles.container)}>
+        <div className={css(styles.topFixedSection)}>
+          <ContactToolbarNew
+            campaign={this.props.campaign}
+            campaignContact={this.props.contact}
+            navigationToolbarChildren={this.props.navigationToolbarChildren}
+            leftToolbarIcon={
+              <IconButton
+                onTouchTap={this.props.onExitTexter}
+                style={inlineStyles.exitTexterIconButton}
+                tooltip="Return Home"
+                tooltipPosition="bottom-center"
+              >
+                <NavigateHomeIcon color={"white"} />
+              </IconButton>
+            }
+          />
+        </div>
+        <div
+          {...dataTest("messageList")}
+          ref="messageScrollContainer"
+          className={css(styles.middleScrollingSection)}
+        >
+          <MessageList
+            contact={this.props.contact}
+            messages={this.props.contact.messages}
+            styles={inlineStyles}
+          />
+        </div>
+        {optOutDialogOpen
+          ? this.renderOptOutDialog()
+          : this.renderMessageSending()}
       </div>
     );
   }
 }
-/*
-        <div className={css(styles.bottomFixedSection)}>
-          {this.renderBottomFixedSection()}
-        </div>
-
-*/
 
 AssignmentTexterContactControls.propTypes = {
   // data

@@ -34,9 +34,10 @@ const MessageList = function MessageList(props) {
     <div>
       <Divider />
       <ListItem
-        style={defaultStyles.optOut}
-        leftIcon={<ProhibitedIcon style={{ fill: red300 }} />}
         disabled
+        style={defaultStyles.optOut}
+        key={"optout-item"}
+        leftIcon={<ProhibitedIcon style={{ fill: red300 }} />}
         primaryText={`${contact.firstName} opted out of texts`}
         secondaryText={moment(optOut.createdAt).fromNow()}
       />
