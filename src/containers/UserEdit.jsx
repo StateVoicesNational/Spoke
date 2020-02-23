@@ -127,7 +127,7 @@ class UserEdit extends React.Component {
       userFields = {
         firstName: yup.string().required(),
         lastName: yup.string().required(),
-        alias: yup.string(),
+        alias: yup.string().nullable(),
         cell: yup.string().required()
       };
     }
