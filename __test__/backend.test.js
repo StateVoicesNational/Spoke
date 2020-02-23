@@ -712,7 +712,7 @@ describe("Contact schema", () => {
     const userFromDB = await User.getAll(user.id);
     expect(userFromDB[0].alias).toEqual("TestUserAlias");
   });
-  test("the alias field defaults to an empty string", async () => {
+  test("the alias field defaults to null", async () => {
     const userWithoutAliasObj = {
       auth0_id: "test123",
       first_name: "TestUserFirst",
@@ -722,7 +722,7 @@ describe("Contact schema", () => {
     };
     const user = await createUser(userWithoutAliasObj);
     const userFromDB = await User.getAll(user.id);
-    expect(userFromDB[0].alias).toEqual("");
+    expect(userFromDB[0].alias).toBeNull();
   });
 });
 
