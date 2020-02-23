@@ -216,6 +216,10 @@ const flexStyles = StyleSheet.create({
   },
   subButtonsAnswerButtons: {
     flex: "1 1 80px", // keeps bottom buttons in place
+    // height:105: webkit needs constraint on height sometimes
+    //   during the inflection point of showing the shortcut-buttons
+    //   without the height, the exit buttons get pushed down oddly
+    height: "105px",
     // internal:
     margin: "9px 0px 0px 9px",
     width: "100%",
@@ -477,121 +481,6 @@ export class AssignmentTexterContactControls extends React.Component {
     return button;
   }
 
-  renderActionToolbar() {
-    const {
-      contact,
-      campaign,
-      assignment,
-      navigationToolbarChildren,
-      onFinishContact,
-      messageStatusFilter
-    } = this.props;
-    const { messageStatus } = contact;
-    const size = document.documentElement.clientWidth;
-
-    let navigationToolbar = [];
-    if (navigationToolbarChildren) {
-      const { onNext, onPrevious, title } = navigationToolbarChildren;
-
-      navigationToolbar = [
-        <ToolbarTitle
-          className={css(styles.navigationToolbarTitle)}
-          text={title}
-        />,
-        <IconButton onTouchTap={onPrevious} disabled={!onPrevious}>
-          <NavigateBeforeIcon />
-        </IconButton>,
-        <IconButton onTouchTap={onNext} disabled={!onNext}>
-          <NavigateNextIcon />
-        </IconButton>
-      ];
-    }
-
-    if (messageStatusFilter === "needsMessage") {
-      return (
-        <div>
-          <Toolbar style={inlineStyles.actionToolbarFirst}>
-            <ToolbarGroup firstChild>
-              <SendButton
-                threeClickEnabled={false}
-                onFinalTouchTap={this.handleClickSendMessageButton}
-                disabled={this.props.disabled}
-              />
-              <div style={{ float: "right", marginLeft: 20 }}>
-                {navigationToolbar}
-              </div>
-            </ToolbarGroup>
-          </Toolbar>
-        </div>
-      );
-    } else if (size < 450) {
-      // for needsResponse or messaged or convo
-      return (
-        <div>
-          <Toolbar
-            className={css(styles.mobile)}
-            style={inlineStyles.actionToolbar}
-          >
-            <ToolbarGroup
-              style={inlineStyles.mobileToolBar}
-              className={css(styles.lgMobileToolBar)}
-              firstChild
-            >
-              <RaisedButton
-                {...dataTest("optOut")}
-                secondary
-                label="Opt out"
-                onTouchTap={this.handleOpenDialog}
-                tooltip="Opt out this contact"
-              />
-              <RaisedButton
-                style={inlineStyles.mobileCannedReplies}
-                label="Canned replies"
-                onTouchTap={this.handleOpenPopover}
-              />
-              {this.renderNeedsResponseToggleButton(contact)}
-              <div style={{ float: "right", marginLeft: "-30px" }}>
-                {navigationToolbar}
-              </div>
-            </ToolbarGroup>
-          </Toolbar>
-        </div>
-      );
-    } else if (size >= 768) {
-      // for needsResponse or messaged
-      return (
-        <div>
-          <Toolbar style={inlineStyles.actionToolbarFirst}>
-            <ToolbarGroup firstChild>
-              <SendButton
-                threeClickEnabled={false}
-                onFinalTouchTap={this.handleClickSendMessageButton}
-                disabled={this.props.disabled}
-              />
-              {this.renderNeedsResponseToggleButton(contact)}
-              <RaisedButton
-                label="Other responses"
-                onTouchTap={this.handleOpenPopover}
-              />
-              <RaisedButton
-                {...dataTest("optOut")}
-                secondary
-                label="Opt out"
-                onTouchTap={this.handleOpenDialog}
-                tooltip="Opt out this contact"
-                tooltipPosition="top-center"
-              />
-              <div style={{ float: "right", marginLeft: 20 }}>
-                {navigationToolbar}
-              </div>
-            </ToolbarGroup>
-          </Toolbar>
-        </div>
-      );
-    }
-    return "";
-  }
-
   renderCannedResponsePopover() {
     const { campaign, assignment, texter } = this.props;
     const { userCannedResponses, campaignCannedResponses } = assignment;
@@ -840,16 +729,6 @@ export class AssignmentTexterContactControls extends React.Component {
       </div>,
       this.renderCannedResponsePopover()
     ];
-
-    /*
-        {this.renderSurveySection()}
-        <div>
-          {message}
-          { ? "" : this.renderActionToolbar()}
-        </div>
-        {
-        {this.renderCannedResponsePopover()}
-    */
   }
 
   render() {
