@@ -58,6 +58,7 @@ export const dataQuery = gql`
         id
         firstName
         lastName
+        alias
       }
       campaign {
         id
