@@ -8,7 +8,16 @@ import fs from "fs";
 
 let CONFIG = null;
 
-export function getConfig(key) {
+export function getConfig(key, organization) {
+  if (organization) {
+    let features =
+      organization.feature ||
+      (organization.features && JSON.parse(organization.features)) ||
+      {};
+    if (features[key]) {
+      return features[key];
+    }
+  }
   if (key in global) {
     return global[key];
   } else if (key in process.env) {
