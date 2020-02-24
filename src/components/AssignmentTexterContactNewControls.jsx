@@ -25,6 +25,7 @@ import GSSubmitButton from "../components/forms/GSSubmitButton";
 import SendButton from "../components/SendButton";
 import SendButtonArrow from "../components/SendButtonArrow";
 import CircularProgress from "material-ui/CircularProgress";
+import Popover from "material-ui/Popover";
 import Snackbar from "material-ui/Snackbar";
 import {
   getChildren,
@@ -265,6 +266,7 @@ export class AssignmentTexterContactControls extends React.Component {
       questionResponses,
       optOutMessageText: props.campaign.organization.optOutMessage,
       responsePopoverOpen: false,
+      answerPopoverOpen: false,
       messageText: this.getStartingMessageText(),
       optOutDialogOpen: false,
       currentShortcutSpace: 0,
@@ -399,6 +401,20 @@ export class AssignmentTexterContactControls extends React.Component {
 
   handleMessageFormChange = ({ messageText }) => this.setState({ messageText });
 
+  handleOpenAnswerPopover = event => {
+    event.preventDefault();
+    this.setState({
+      answerPopoverAnchorEl: event.currentTarget,
+      answerPopoverOpen: true
+    });
+  };
+
+  handleCloseAnswerPopover = () => {
+    this.setState({
+      answerPopoverOpen: false
+    });
+  };
+
   handleOpenResponsePopover = event => {
     event.preventDefault();
     this.setState({
@@ -415,7 +431,7 @@ export class AssignmentTexterContactControls extends React.Component {
 
   renderSurveySection() {
     const { campaign, contact } = this.props;
-    const { questionResponses } = this.state;
+    const { answerPopoverOpen, questionResponses } = this.state;
     const { messages } = contact;
 
     const availableInteractionSteps = getAvailableInteractionSteps(
@@ -424,13 +440,27 @@ export class AssignmentTexterContactControls extends React.Component {
     );
 
     return (
-      <AssignmentTexterSurveys
-        contact={contact}
-        interactionSteps={availableInteractionSteps}
-        onQuestionResponseChange={this.handleQuestionResponseChange}
-        currentInteractionStep={this.state.currentInteractionStep}
-        questionResponses={questionResponses}
-      />
+      <Popover
+        style={inlineStyles.popover}
+        open={answerPopoverOpen}
+        anchorEl={this.state.answerPopoverAnchorEl}
+        anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
+        targetOrigin={{ horizontal: "left", vertical: "bottom" }}
+        onRequestClose={this.handleCloseAnswerPopover}
+        style={{
+          overflowY: "scroll",
+          width: "75%"
+        }}
+      >
+        <AssignmentTexterSurveys
+          contact={contact}
+          interactionSteps={availableInteractionSteps}
+          onQuestionResponseChange={this.handleQuestionResponseChange}
+          currentInteractionStep={this.state.currentInteractionStep}
+          questionResponses={questionResponses}
+          onRequestClose={this.handleCloseAnswerPopover}
+        />
+      </Popover>
     );
   }
 
@@ -612,9 +642,7 @@ export class AssignmentTexterContactControls extends React.Component {
                     </span>
                   </span>
                 }
-                onTouchTap={evt => {
-                  console.log("answer question", evt, this);
-                }}
+                onTouchTap={this.handleOpenAnswerPopover}
                 className={css(flexStyles.flatButton)}
                 labelStyle={inlineStyles.flatButtonLabel}
                 backgroundColor={
@@ -724,7 +752,8 @@ export class AssignmentTexterContactControls extends React.Component {
           primary
         />
       </div>,
-      this.renderCannedResponsePopover()
+      this.renderCannedResponsePopover(),
+      this.renderSurveySection()
     ];
   }
 
