@@ -789,59 +789,61 @@ export async function importScript(job) {
 let pastMessages = [];
 
 export async function sendMessages(queryFunc, defaultStatus) {
+  let trySendCount = 0;
   try {
-    await knex.transaction(async trx => {
-      let messages = [];
-      try {
-        let messageQuery = r
-          .knex("message")
-          .transacting(trx)
-          .forUpdate()
-          .where({ send_status: defaultStatus || "QUEUED" });
-
-        if (queryFunc) {
-          messageQuery = queryFunc(messageQuery);
-        }
-
-        messages = await messageQuery.orderBy("created_at");
-      } catch (err) {
-        // Unable to obtain lock on these rows meaning another process must be
-        // sending them. We will exit gracefully in that case.
-        trx.rollback();
-        return;
+    const trx = await r.knex.transaction();
+    let messages = [];
+    try {
+      let messageQuery = trx("message")
+        .forUpdate()
+        .where({ send_status: defaultStatus || "QUEUED" });
+      if (queryFunc) {
+        messageQuery = queryFunc(messageQuery);
       }
 
-      try {
-        for (let index = 0; index < messages.length; index++) {
-          let message = messages[index];
-          if (pastMessages.indexOf(message.id) !== -1) {
-            throw new Error(
-              "Encountered send message request of the same message." +
-                " This is scary!  If ok, just restart process. Message ID: " +
-                message.id
-            );
-          }
-          message.service = message.service || process.env.DEFAULT_SERVICE;
-          const service = serviceMap[message.service];
-          log.info(
-            `Sending (${message.service}): ${message.user_number} -> ${message.contact_number}\nMessage: ${message.text}`
+      messages = await messageQuery.orderBy("created_at");
+    } catch (err) {
+      // Unable to obtain lock on these rows meaning another process must be
+      // sending them. We will exit gracefully in that case.
+      console.info("LOCKED ROWS", err);
+      trx.rollback();
+      return 0;
+    }
+
+    try {
+      for (let index = 0; index < messages.length; index++) {
+        let message = messages[index];
+        if (pastMessages.indexOf(message.id) !== -1) {
+          throw new Error(
+            "Encountered send message request of the same message." +
+              " This is scary!  If ok, just restart process. Message ID: " +
+              message.id
           );
+        }
+        message.service = message.service || process.env.DEFAULT_SERVICE;
+        const service = serviceMap[message.service];
+        log.info(
+          `Sending (${message.service}): ${message.user_number} -> ${message.contact_number}\nMessage: ${message.text}`
+        );
+        try {
           await service.sendMessage(message, null, trx);
           pastMessages.push(message.id);
           pastMessages = pastMessages.slice(-100); // keep the last 100
+        } catch (err) {
+          console.error("Failed sendMessage", err);
         }
-
-        trx.commit();
-      } catch (err) {
-        console.log("error sending messages:");
-        console.error(err);
-        trx.rollback();
+        trySendCount += 1;
       }
-    });
+      await trx.commit();
+    } catch (err) {
+      console.error("Error sending messages:", err);
+      await trx.rollback();
+    }
   } catch (err) {
     console.log("sendMessages transaction errored:");
     console.error(err);
   }
+  return trySendCount;
 }
 
 export async function handleIncomingMessageParts() {
