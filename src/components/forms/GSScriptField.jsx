@@ -28,7 +28,8 @@ export default class GSScriptField extends GSFormField {
     event.preventDefault();
     this.setState(
       {
-        open: true
+        open: true,
+        script: this.props.value
       },
       () => this.refs.dialogScriptInput.focus()
     );
@@ -36,8 +37,7 @@ export default class GSScriptField extends GSFormField {
 
   handleCloseDialog = () => {
     this.setState({
-      open: false,
-      script: this.props.value
+      open: false
     });
   };
 
@@ -89,6 +89,9 @@ export default class GSScriptField extends GSFormField {
       <div>
         <TextField
           multiLine
+          onFocus={event => {
+            this.handleOpenDialog(event);
+          }}
           onTouchTap={event => {
             this.handleOpenDialog(event);
           }}
