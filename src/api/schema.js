@@ -137,6 +137,7 @@ const rootSchema = gql`
     id: String
     firstName: String!
     lastName: String!
+    alias: String
     email: String!
     cell: String!
     oldPassword: String

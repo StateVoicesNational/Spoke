@@ -417,8 +417,11 @@ const rootMutations = {
 
         if (userData) {
           const newUserData = {
-            first_name: capitalizeWord(userData.firstName),
-            last_name: capitalizeWord(userData.lastName),
+            first_name: capitalizeWord(userData.firstName).trim(),
+            last_name: capitalizeWord(userData.lastName).trim(),
+            alias: userData.alias
+              ? capitalizeWord(userData.alias).trim()
+              : null,
             email: userData.email,
             cell: userData.cell
           };
