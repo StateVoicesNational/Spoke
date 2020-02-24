@@ -267,6 +267,7 @@ export class AssignmentTexterContactControls extends React.Component {
       responsePopoverOpen: false,
       messageText: this.getStartingMessageText(),
       optOutDialogOpen: false,
+      currentShortcutSpace: 0,
       messageFocus: false,
       availableSteps: availableSteps,
       currentInteractionStep:
@@ -285,10 +286,12 @@ export class AssignmentTexterContactControls extends React.Component {
 
     // note: key*down* is necessary to stop propagation of keyup for the textarea element
     document.body.addEventListener("keydown", this.onEnter);
+    window.addEventListener("resize", this.onResize);
   }
 
   componentWillUnmount() {
     document.body.removeEventListener("keydown", this.onEnter);
+    window.removeEventListener("resize", this.onResize);
   }
 
   getStartingMessageText() {
@@ -299,6 +302,13 @@ export class AssignmentTexterContactControls extends React.Component {
         )
       : "";
   }
+
+  onResize = evt => {
+    // trigger re-render to determine whether there's space for shortcuts
+    this.setState({
+      currentShortcutSpace: this.refs.answerButtons.offsetHeight
+    });
+  };
 
   onEnter = evt => {
     // FUTURE: consider disabling except in needsMessage
@@ -331,7 +341,11 @@ export class AssignmentTexterContactControls extends React.Component {
   };
 
   handleOpenDialog = () => {
-    this.setState({ optOutDialogOpen: true });
+    this.setState({
+      optOutDialogOpen: true,
+      // store this, because on-close, we lose this
+      currentShortcutSpace: this.refs.answerButtons.offsetHeight
+    });
   };
 
   handleCloseDialog = () => {
@@ -385,7 +399,7 @@ export class AssignmentTexterContactControls extends React.Component {
 
   handleMessageFormChange = ({ messageText }) => this.setState({ messageText });
 
-  handleOpenPopover = event => {
+  handleOpenResponsePopover = event => {
     event.preventDefault();
     this.setState({
       responsePopoverAnchorEl: event.currentTarget,
@@ -393,7 +407,7 @@ export class AssignmentTexterContactControls extends React.Component {
     });
   };
 
-  handleClosePopover = () => {
+  handleCloseResponsePopover = () => {
     this.setState({
       responsePopoverOpen: false
     });
@@ -454,7 +468,7 @@ export class AssignmentTexterContactControls extends React.Component {
 
     return (
       <CannedResponseMenu
-        onRequestClose={this.handleClosePopover}
+        onRequestClose={this.handleCloseResponsePopover}
         open={this.state.responsePopoverOpen}
         anchorEl={this.state.responsePopoverAnchorEl}
         campaignCannedResponses={campaignCannedResponses}
@@ -556,17 +570,18 @@ export class AssignmentTexterContactControls extends React.Component {
     const sendButtonHeight = firstMessage ? "40%" : "36px";
     const currentQuestion =
       this.state.currentInteractionStep &&
-      this.state.currentInteractionStep.question &&
-      this.state.currentInteractionStep.question.text;
+      this.state.currentInteractionStep.question;
     console.log(
       "REFS renderMessageSending return",
       message,
-      this.refs.answerButtons && this.refs.answerButtons.offsetHeight
+      this.refs.answerButtons && this.refs.answerButtons.offsetHeight,
+      "old height",
+      this.state.currentShortcutSpace
     );
     const shortcutButtonSpace =
-      this.refs.answerButtons &&
       // 114=25(top q)+40(main btns)+40(xtra row)+9px(padding)
-      this.refs.answerButtons.offsetHeight >= 105;
+      ((this.refs.answerButtons && this.refs.answerButtons.offsetHeight) ||
+        this.state.currentShortcutSpace) >= 114;
     return [
       message,
       firstMessage ? null : (
@@ -581,7 +596,7 @@ export class AssignmentTexterContactControls extends React.Component {
                   flexStyles.subSubButtonsAnswerButtonsCurrentQuestion
                 )}
               >
-                <b>Current Question:</b> {currentQuestion}
+                <b>Current Question:</b> {currentQuestion.text}
               </div>
             ) : null}
             <div
@@ -597,7 +612,9 @@ export class AssignmentTexterContactControls extends React.Component {
                     </span>
                   </span>
                 }
-                onTouchTap={this.handleOpenPopover}
+                onTouchTap={evt => {
+                  console.log("answer question", evt, this);
+                }}
                 className={css(flexStyles.flatButton)}
                 labelStyle={inlineStyles.flatButtonLabel}
                 backgroundColor={
@@ -605,30 +622,30 @@ export class AssignmentTexterContactControls extends React.Component {
                 }
                 disabled={!availableSteps.length}
               />
-              <div
-                style={{
-                  height: "40px",
-                  position: "absolute",
-                  top: "40px",
-                  width: "100%",
-                  padding: "9px 9px 0 9px"
-                }}
-              >
-                <FlatButton
-                  label={"Yes"}
-                  onTouchTap={this.handleOpenPopover}
-                  className={css(flexStyles.flatButton)}
-                  labelStyle={inlineStyles.flatButtonLabel}
-                  backgroundColor="white"
-                />
-                <FlatButton
-                  label={"No"}
-                  onTouchTap={this.handleOpenPopover}
-                  className={css(flexStyles.flatButton)}
-                  labelStyle={inlineStyles.flatButtonLabel}
-                  backgroundColor="white"
-                />
-              </div>
+              {currentQuestion ? (
+                <div
+                  style={{
+                    height: "40px",
+                    position: "absolute",
+                    top: "40px",
+                    width: "100%",
+                    padding: "9px 9px 0 9px"
+                  }}
+                >
+                  {currentQuestion.answerOptions.map(answer => (
+                    <FlatButton
+                      key={answer.value.replace(/\W/, "")}
+                      label={answer.value}
+                      onTouchTap={evt => {
+                        console.log("Shortcut Answer", evt, answer, this);
+                      }}
+                      className={css(flexStyles.flatButton)}
+                      labelStyle={inlineStyles.flatButtonLabel}
+                      backgroundColor="white"
+                    />
+                  ))}
+                </div>
+              ) : null}
             </div>
             <div
               className={css(flexStyles.subSubAnswerButtonsColumns)}
@@ -640,7 +657,7 @@ export class AssignmentTexterContactControls extends React.Component {
             >
               <FlatButton
                 label="Other Responses"
-                onTouchTap={this.handleOpenPopover}
+                onTouchTap={this.handleOpenResponsePopover}
                 className={css(flexStyles.flatButton)}
                 labelStyle={inlineStyles.flatButtonLabel}
                 backgroundColor="white"
