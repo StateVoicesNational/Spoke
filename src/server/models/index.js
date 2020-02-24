@@ -94,7 +94,9 @@ const loaders = {
   }),
   user: createLoader(User),
   interactionStep: createLoader(InteractionStep),
-  campaignContact: createLoader(CampaignContact),
+  campaignContact: createLoader(CampaignContact, {
+    cacheObj: cacheableData.campaignContact
+  }),
   zipCode: createLoader(ZipCode, { idKey: "zip" }),
   log: createLoader(Log),
   cannedResponse: createLoader(CannedResponse),
