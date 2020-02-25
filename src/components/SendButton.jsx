@@ -10,7 +10,6 @@ const styles = StyleSheet.create({
   container: {
     display: "inline-block",
     marginLeft: 24,
-    marginBottom: 10
   }
 });
 class SendButton extends Component {
