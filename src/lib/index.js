@@ -40,4 +40,7 @@ export {
 } from "./permissions";
 
 export { gzip, gunzip } from "./gzip";
-export { parseCSV } from "./parse_csv.js";
+export {
+  parseCSV,
+  parseCSVAsync
+} from "./parse_csv.js";

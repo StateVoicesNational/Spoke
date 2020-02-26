@@ -76,14 +76,36 @@ const ensureCamelCaseRequiredHeaders = columnHeader => {
   return columnHeader;
 };
 
-export const parseCSV = (file, callback) => {
+export const parseCSV = (file, onCompleteCallback, rowTransformer) => {
   Papa.parse(file, {
     header: true,
     transformHeader: ensureCamelCaseRequiredHeaders,
     // eslint-disable-next-line no-shadow, no-unused-vars
-    complete: ({ data, meta, errors }, file) => {
-      const fields = meta.fields;
+    complete: ({ data: parserData, meta, errors }, file) => {
+      let fields = meta.fields;
       const missingFields = [];
+
+      let data = parserData;
+      let transformerResults = {
+        rows: [],
+        fields: []
+      }
+      if (rowTransformer) {
+        transformerResults = parserData.reduce(
+          (results, originalRow) => {
+            const {row, addedFields} = rowTransformer(fields, originalRow)
+            results.rows.push(row);
+            addedFields.forEach(field => {
+              if (!fields.includes(field)) {
+                fields.push(field);
+              }
+            });
+            return results;
+          },
+          transformerResults
+        );
+        data = transformerResults.rows;
+      }
 
       for (const field of requiredUploadFields) {
         if (fields.indexOf(field) === -1) {
@@ -93,7 +115,7 @@ export const parseCSV = (file, callback) => {
 
       if (missingFields.length > 0) {
         const error = `Missing fields: ${missingFields.join(", ")}`;
-        callback({ error });
+        onCompleteCallback({ error });
       } else {
         const { validationStats, validatedData } = getValidatedData(data);
 
@@ -101,7 +123,7 @@ export const parseCSV = (file, callback) => {
           field => topLevelUploadFields.indexOf(field) === -1
         );
 
-        callback({
+        onCompleteCallback({
           customFields,
           validationStats,
           contacts: validatedData

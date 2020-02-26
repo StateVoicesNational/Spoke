@@ -1,7 +1,11 @@
 import { completeContactLoad } from "../../../workers/jobs";
 import { r } from "../../../server/models";
 import { getConfig, hasConfig } from "../../../server/api/lib/config";
+import { parseCSVAsync } from "../../../lib";
+import { getTimezoneByZip } from "../../../workers/jobs";
 
+import _ from "lodash";
+import { GraphQLError } from "graphql/error";
 import axios from "axios";
 
 export const name = "ngpvan";
@@ -9,6 +13,13 @@ export const name = "ngpvan";
 export function displayName() {
   return "NGP VAN";
 }
+
+const getVanAuth = () => {
+  const buffer = new Buffer.from(
+    `${getConfig("NGP_VAN_APP_NAME")}:${getConfig("NGP_VAN_API_KEY")}|0`
+  );
+  return `Basic ${buffer.toString("base64")}`;
+};
 
 export function serverAdministratorInstructions() {
   return {
@@ -55,25 +66,19 @@ export async function getClientChoiceData(
 ) {
   let response;
 
-  const buffer = new Buffer.from(
-    `${getConfig("NGP_VAN_APP_NAME")}:${getConfig("NGP_VAN_API_KEY")}|0`
-  );
-  const authorization = `Basic ${buffer.toString("base64")}`;
-
   try {
+    // TODO(lmp) so much to do here ... look for errors, retry, get multiple pages
     response = await axios({
       url: "https://api.securevan.com/v4/savedLists",
       method: "GET",
       headers: {
-        Authorization: authorization
+        Authorization: getVanAuth()
       },
-      validateStatus: () => true
+      validateStatus: status => status === 200
     });
   } catch (error) {
-    response = {
-      data: error
-    };
     console.log(error);
+    throw new GraphQLError(error.message);
   }
 
   // / data to be sent to the admin client to present options to the component or similar
@@ -81,26 +86,137 @@ export async function getClientChoiceData(
   // / return a json object which will be cached for expiresSeconds long
   // / `data` should be a single string -- it can be JSON which you can parse in the client component
   return {
-    data: `${JSON.stringify(response.data)}`,
-    expiresSeconds: 60
+    data: `${JSON.stringify(_.get(response, "data.items", []))}`,
+    expiresSeconds: 300
   };
 }
 
+const parseCsvCallback = ({
+  contacts,
+  customFields,
+  validationStats,
+  error
+}) => {
+  if (error) {
+    // TODO(lmp) call completeContactLoad
+    console.log(error);
+  } else if (contacts.length === 0) {
+    // TODO(lmp) call completeContactLoad
+  } else if (contacts.length > 0) {
+    console.log("contacts.length", contacts.length);
+    // this.handleUploadSuccess(
+    //   validationStats,
+    //   this.organizationCustomFields(contacts, customFields),
+    //   customFields
+    // );
+  }
+};
+
+// const requiredUploadFields = ["firstName", "lastName", "cell"];
+// const topLevelUploadFields = [
+//   "firstName",
+//   "lastName",
+//   "cell",
+//   "zip",
+//   "external_id"
+// ];
+//
+
+export const getZipFromRow = row => {
+  const regexes = [
+    new RegExp(".*\\s(\\d{5})\\s*$"),
+    new RegExp(".*\\s(\\d{5}-\\d{4})\\s*$")
+  ];
+
+  let zip = undefined;
+  _.forEach(regexes, regex => {
+    const matches = regex.exec(row.Address || "");
+    if (matches) {
+      zip = matches[1];
+      return false; // stop iterating
+    }
+  });
+
+  return zip;
+};
+
+const countryCodeOk = countryCode =>
+  !countryCode ||
+  (countryCode && countryCode === (process.env.PHONE_NUMBER_COUNTRY || "US"));
+
+const treatAsCellPhone = (isCellPhone, assumeCellPhone) => assumeCellPhone || (isCellPhone && Number(isCellPhone));
+
+const getPhoneNumberIfLikelyCell = (phoneType, row) => {
+  const phoneKey = `${phoneType.typeName}Phone`;
+  const dialingPrefixKey = `${phoneType.typeName}PhoneDialingPrefix`;
+  const countryCodeKey = `${phoneType.typeName}PhoneCountryCode`;
+  const isCellPhoneKey = `Is${phoneType.typeName}PhoneACellExchange`;
+
+  if (row[phoneKey]) {
+    if (
+      countryCodeOk(row[countryCodeKey]) &&
+      treatAsCellPhone(
+        row[isCellPhoneKey],
+        phoneType.assumeCellIfPresent
+      )
+    ) {
+      return `${row[dialingPrefixKey]}${row[phoneKey]}`;
+    }
+  }
+
+  return undefined;
+};
+
+export const getCellFromRow = row => {
+  const phoneTypes = [
+    { typeName: "Cell", assumeCellIfPresent: true },
+    { typeName: "Home", assumeCellIfPresent: false },
+    { typeName: "Work", assumeCellIfPresent: false }
+  ];
+  let cell = undefined;
+  _.forEach(phoneTypes, phoneType => {
+    cell = getPhoneNumberIfLikelyCell(phoneType, row);
+    if (cell) {
+      return false; // stop iterating
+    }
+  });
+
+  return cell;
+};
+
+export const rowTransformer = (originalFields, originalRow) => {
+  const addedFields = ["external_id"];
+
+  const row = {
+    ...originalRow
+  };
+
+  row.cell = exports.getCellFromRow(originalRow);
+  if (row.cell) {
+    addedFields.push("cell");
+  }
+
+  row.zip = exports.getZipFromRow(originalRow);
+  if (row.zip) {
+    addedFields.push("zip");
+
+    // const timeZone = getTimezoneByZip(row.zip);
+    // if (timeZone) {
+    //   row.timezone_offset = timeZone;
+    //   addedFields.push("timezone_offset");
+    // }
+  }
+
+  row.external_id = row.VanID;
+
+  return { row, addedFields };
+};
+
 export async function processContactLoad(job, maxContacts) {
-  // / Trigger processing -- this will likely be the most important part
-  // / you should load contacts into the contact table with the job.campaign_id
-  // / Since this might just *begin* the processing and other work might
-  // / need to be completed asynchronously after this is completed (e.g. to distribute loads)
-  // / After true contact-load completion, this (or another function)
-  // / MUST call src/workers/jobs.js::completeContactLoad(job)
-  // /   The async function completeContactLoad(job) will
-  // /      * delete contacts that are in the opt_out table,
-  // /      * delete duplicate cells,
-  // /      * clear/update caching, etc.
   // / Basic responsibilities:
-  // / 1. Delete previous campaign contacts on a previous choice/upload
-  // / 2. Set campaign_contact.campaign_id = job.campaign_id on all uploaded contacts
-  // / 3. Set campaign_contact.message_status = "needsMessage" on all uploaded contacts
+  // / 1. TODO Delete previous campaign contacts on a previous choice/upload
+  // / 2. TODO Set campaign_contact.campaign_id = job.campaign_id on all uploaded contacts
+  // / 3. TODO Set campaign_contact.message_status = "needsMessage" on all uploaded contacts
   // / 4. Ensure that campaign_contact.cell is in the standard phone format "+15551234567"
   // /    -- do NOT trust your backend to ensure this
   // / 5. If your source doesn't have timezone offset info already, then you need to
@@ -110,39 +226,53 @@ export async function processContactLoad(job, maxContacts) {
   // / * Error handling
   // / * "Request of Doom" scenarios -- queries or jobs too big to complete
 
-  const campaignId = job.campaign_id;
-  let jobMessages;
-
-  await r
-    .knex("campaign_contact")
-    .where("campaign_id", campaignId)
-    .delete();
-
-  const contactData = JSON.parse(job.payload);
-  const areaCodes = ["213", "323", "212", "718", "646", "661"];
-  const contactCount = Math.min(
-    contactData.requestContactCount || 0,
-    maxContacts ? maxContacts : areaCodes.length * 100,
-    areaCodes.length * 100
-  );
-  const newContacts = [];
-  for (let i = 0; i < contactCount; i++) {
-    const ac = areaCodes[parseInt(i / 100, 10)];
-    const suffix = String("00" + (i % 100)).slice(-2);
-    newContacts.push({
-      first_name: `Foo${i}`,
-      last_name: `Bar${i}`,
-      // conform to Hollywood-reserved numbers
-      // https://www.businessinsider.com/555-phone-number-tv-movies-telephone-exchange-names-ghostbusters-2018-3
-      cell: `+1${ac}555${suffix}`,
-      zip: "10011",
-      custom_fields: "{}",
-      message_status: "needsMessage",
-      campaign_id: campaignId
+  let response;
+  try {
+    // TODO(lmp) so much to do here ... look for errors, retry, get multiple pages
+    response = await axios({
+      url: "https://api.securevan.com/v4/exportJobs",
+      method: "POST",
+      headers: {
+        Authorization: getVanAuth()
+      },
+      data: {
+        savedListId: job.payload,
+        type: getConfig("NGP_VAN_EXPORT_JOB_TYPE_ID"),
+        webhookUrl: getConfig("NGP_VAN_WEBHOOK_URL")
+      },
+      validateStatus: status => status >= 200 && status < 300
     });
+  } catch (error) {
+    console.log(error);
+    throw new GraphQLError(error.message);
   }
 
-  await r.knex("campaign_contact").insert(newContacts);
+  let downloadUrl;
+  if (response.data.status !== "Completed") {
+    // TODO(lmp) implement web hook to get called back when jobs complete
+    const message = `Export job not immediately completed ${JSON.stringify(
+      job
+    )}`;
+    console.log(message);
+    throw new GraphQLError(message);
+  }
 
-  await completeContactLoad(job, jobMessages);
+  downloadUrl = response.data.downloadUrl;
+
+  try {
+    const vanResponse = await axios({
+      url: downloadUrl,
+      method: "GET",
+      validateStatus: status => status === 200
+    });
+
+    const vanContacts = vanResponse.data;
+
+    const parsed = await parseCSVAsync(vanContacts, parseCsvCallback, rowTransformer);
+    console.log(parsed);
+  } catch (error) {
+    console.log(error);
+    // TODO(lmp) call failedContactLoad
+    throw new GraphQLError(error.message);
+  }
 }
