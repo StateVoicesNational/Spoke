@@ -324,8 +324,8 @@ class AdminCampaignEdit extends React.Component {
           jobResultMessage:
             (
               this.props.pendingJobsData.campaign.pendingJobs.filter(job =>
-                /contacts/.test(job.jobType)
-              )[0] || {}
+                /ingest/.test(job.jobType)
+              ).reverse()[0] || {}
             ).resultMessage || ""
         }
       },
