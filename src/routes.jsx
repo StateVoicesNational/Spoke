@@ -25,7 +25,8 @@ import TexterFaqs from "./components/TexterFrequentlyAskedQuestions";
 import FAQs from "./lib/faqs";
 import {
   DemoTexterNeedsMessage,
-  DemoTexterNeedsResponse
+  DemoTexterNeedsResponse,
+  DemoTexterNeedsResponse2ndQuestion
 } from "./components/DemoTexterAssignment";
 
 export default function makeRoutes(requireAuth = () => {}) {
@@ -178,6 +179,13 @@ export default function makeRoutes(requireAuth = () => {}) {
           path="reply"
           components={{
             main: props => <DemoTexterNeedsResponse {...props} />,
+            topNav: null
+          }}
+        />
+        <Route
+          path="reply2"
+          components={{
+            main: props => <DemoTexterNeedsResponse2ndQuestion {...props} />,
             topNav: null
           }}
         />

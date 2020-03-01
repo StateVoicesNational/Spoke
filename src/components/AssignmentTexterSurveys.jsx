@@ -2,6 +2,8 @@ import PropTypes from "prop-types";
 import React, { Component } from "react";
 import { grey50 } from "material-ui/styles/colors";
 import { Card, CardHeader, CardText } from "material-ui/Card";
+import Subheader from "material-ui/Subheader";
+import { List, ListItem } from "material-ui/List";
 import MenuItem from "material-ui/MenuItem";
 import Divider from "material-ui/Divider";
 import SelectField from "material-ui/SelectField";
@@ -81,7 +83,7 @@ class AssignmentTexterSurveys extends Component {
       />
     ));
 
-    menuItems.push(<Divider />);
+    menuItems.push(<Divider key={`div${step.id}`} />);
     menuItems.push(
       <MenuItem
         key="clear"
@@ -93,8 +95,9 @@ class AssignmentTexterSurveys extends Component {
     return menuItems;
   }
 
-  renderStep(step, isCurrentStep) {
-    const { questionResponses } = this.props;
+  renderStep(step) {
+    const { questionResponses, currentInteractionStep } = this.props;
+    const isCurrentStep = step.id === currentInteractionStep.id;
     const responseValue = questionResponses[step.id];
     const { question } = step;
 
@@ -121,6 +124,30 @@ class AssignmentTexterSurveys extends Component {
     );
   }
 
+  renderCurrentStep(step) {
+    const { onRequestClose } = this.props;
+    if (typeof this.props.onRequestClose != "function") {
+      return this.renderStep(step);
+    }
+    return (
+      <List>
+        <Divider />
+        <Subheader>{step.question.text}</Subheader>
+        {step.question.answerOptions.map((answerOption, index) => (
+          <ListItem
+            value={answerOption.value}
+            onTouchTap={() => {
+              this.handleSelectChange(step, index, answerOption.value);
+              this.props.onRequestClose();
+            }}
+            key={answerOption.value}
+            primaryText={answerOption.value}
+          />
+        ))}
+      </List>
+    );
+  }
+
   render() {
     const { interactionSteps, currentInteractionStep } = this.props;
 
@@ -135,12 +162,10 @@ class AssignmentTexterSurveys extends Component {
         <CardText style={styles.cardText}>
           {showAllQuestions
             ? ""
-            : this.renderStep(currentInteractionStep, true)}
+            : this.renderCurrentStep(currentInteractionStep)}
         </CardText>
         <CardText style={styles.cardText} expandable>
-          {interactionSteps.map(step =>
-            this.renderStep(step, step.id === currentInteractionStep.id)
-          )}
+          {interactionSteps.map(step => this.renderStep(step))}
         </CardText>
       </Card>
     );
@@ -152,7 +177,8 @@ AssignmentTexterSurveys.propTypes = {
   interactionSteps: PropTypes.array,
   currentInteractionStep: PropTypes.object,
   questionResponses: PropTypes.object,
-  onQuestionResponseChange: PropTypes.func
+  onQuestionResponseChange: PropTypes.func,
+  onRequestClose: PropTypes.func
 };
 
 export default AssignmentTexterSurveys;
