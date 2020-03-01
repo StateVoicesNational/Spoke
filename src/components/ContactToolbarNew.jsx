@@ -93,7 +93,8 @@ const ContactToolbar = function ContactToolbar(props) {
             {props.navigationToolbarChildren.title}
           </div>
           <div style={inlineStyles.titleBig} title={props.campaign.title}>
-            {props.campaign.title} ({props.campaign.id})
+            <span style={{ color: "#B0B0B0" }}>({props.campaign.id})</span>{" "}
+            {props.campaign.title}
           </div>
           <div style={inlineStyles.titleSmall}>
             {formattedLocalTime} - {formattedLocation}

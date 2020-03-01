@@ -40,47 +40,13 @@ import CreateIcon from "material-ui/svg-icons/content/create";
 import { dataTest } from "../lib/attributes";
 import { getContactTimezone } from "../lib/timezones";
 
-const inlineStyles = {
-  // passed to MessageList whole
-  mobileToolBar: {
-    position: "absolute",
-    bottom: "-5"
-  },
-  mobileCannedReplies: {
-    "@media(max-width: 450px)": {
-      marginBottom: "1"
-    }
-  },
-  exitTexterIconButton: {
-    float: "left",
-    height: "56px",
-    zIndex: 100,
-    top: 0,
-    left: "-20"
-  },
-  toolbarIconButton: {
-    position: "absolute",
-    top: 0
-    // without this the toolbar icons are not centered vertically
-  },
-  actionToolbar: {
-    backgroundColor: "white",
-    "@media(min-width: 450px)": {
-      marginBottom: 5
-    },
-    "@media(max-width: 450px)": {
-      marginBottom: 50
-    }
-  },
-  actionToolbarFirst: {
-    backgroundColor: "white"
-  },
+const messageListStyles = {
+  // passesd directly to <MessageList>
   messageList: {
     backgroundColor: "#f0f0f0",
     flex: "2 4 auto",
-    overflowY: "scroll",
-    overflow: "-moz-scrollbars-vertical",
-    overflowX: "hidden"
+    overflow: "hidden",
+    overflow: "-moz-scrollbars-vertical"
   },
   messageSent: {
     textAlign: "right",
@@ -100,6 +66,20 @@ const inlineStyles = {
     fontWeight: "600",
     fontSize: "105%",
     marginBottom: "10px"
+  }
+};
+
+const inlineStyles = {
+  inlineBlock: {
+    display: "inline-block"
+  },
+  exitTexterIconButton: {
+    float: "left",
+    padding: "3px",
+    height: "56px",
+    zIndex: 100,
+    top: 0,
+    left: "-12px"
   },
   sendButton: {
     width: "100%",
@@ -126,18 +106,16 @@ const flexStyles = StyleSheet.create({
   sectionHeaderToolbar: {
     flex: "0 0 auto"
   },
-  /// * Section Scroll3ing Message Thread
+  /// * Section Scrolling Message Thread
   sectionMessageThread: {
-    flex: "1 1 auto",
+    flex: "1 4 auto",
     overflowY: "scroll",
     overflow: "-moz-scrollbars-vertical",
     overflowX: "hidden"
   },
   /// * Section OptOut Dialog
   sectionOptOutDialog: {
-    "@media(max-width: 320px)": {
-      padding: "2px 10px !important"
-    },
+    padding: "4px 10px 9px 10px",
     zIndex: 2000,
     backgroundColor: "white"
   },
@@ -146,9 +124,6 @@ const flexStyles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     justifyContent: "flex-end"
-  },
-  subSubSectionOptOutDialogActionButton: {
-    display: "inline-block"
   },
   /// * Section Texting Input Field
   sectionMessageField: {
@@ -164,8 +139,16 @@ const flexStyles = StyleSheet.create({
   },
   /// * Section Reply/Exit Buttons
   sectionButtons: {
-    // buttons
-    flex: "4 0 130px", // stretches and shrinks more quickly than message
+    // TODO: maybe make this contingent on whether there are answer buttons
+    "@media(max-height: 600px)": {
+      flexBasis: "130px"
+    },
+    "@media(min-height: 600px)": {
+      flexBasis: "190px"
+    },
+    flexGrow: "4",
+    flexShrink: "0",
+    // flexBasis: ${130px|190px}", // stretches and shrinks more quickly than message
     flexDirection: "column",
     display: "flex",
     // flexWrap: "wrap",
@@ -261,7 +244,6 @@ export class AssignmentTexterContactControls extends React.Component {
       questionResponses,
       props.campaign.interactionSteps
     );
-    console.log("availableSteps", availableSteps);
     this.state = {
       questionResponses,
       optOutMessageText: props.campaign.organization.optOutMessage,
@@ -531,6 +513,53 @@ export class AssignmentTexterContactControls extends React.Component {
             value={{ optOutMessageText: this.state.optOutMessageText }}
             onSubmit={this.props.onOptOut}
           >
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "flex-end"
+              }}
+            >
+              <FlatButton
+                className={css(flexStyles.flatButton)}
+                labelStyle={inlineStyles.flatButtonLabel}
+                style={{
+                  margin: "9px",
+                  color:
+                    this.state.optOutMessageText ===
+                    this.props.campaign.organization.optOutMessage
+                      ? "white"
+                      : "#494949",
+                  backgroundColor:
+                    this.state.optOutMessageText ===
+                    this.props.campaign.organization.optOutMessage
+                      ? "#727272"
+                      : "white"
+                }}
+                label="Standard Message"
+                onTouchTap={() => {
+                  this.setState({
+                    optOutMessageText: this.props.campaign.organization
+                      .optOutMessage
+                  });
+                }}
+              />
+              <FlatButton
+                className={css(flexStyles.flatButton)}
+                labelStyle={inlineStyles.flatButtonLabel}
+                style={{
+                  margin: "0 9px 0 9px",
+                  color:
+                    this.state.optOutMessageText === "" ? "white" : "#494949",
+                  backgroundColor:
+                    this.state.optOutMessageText === "" ? "#727272" : "white"
+                }}
+                label="No Message"
+                onTouchTap={() => {
+                  this.setState({ optOutMessageText: "" });
+                }}
+              />
+            </div>
             <Form.Field
               name="optOutMessageText"
               fullWidth
@@ -539,22 +568,27 @@ export class AssignmentTexterContactControls extends React.Component {
             />
             <div className={css(flexStyles.subSectionOptOutDialogActions)}>
               <FlatButton
-                className={css(
-                  flexStyles.subSubSectionOptOutDialogActionButton
-                )}
+                className={css(flexStyles.flatButton)}
+                labelStyle={inlineStyles.flatButtonLabel}
+                style={inlineStyles.inlineBlock}
                 label="Cancel"
                 onTouchTap={this.handleCloseDialog}
               />
-              <Form.Button
+              <FlatButton
                 type="submit"
-                className={css(
-                  flexStyles.subSubSectionOptOutDialogActionButton
-                )}
-                component={GSSubmitButton}
+                onTouchTap={this.props.onOptOut}
+                className={css(flexStyles.flatButton)}
+                labelStyle={inlineStyles.flatButtonLabel}
+                style={{
+                  ...inlineStyles.inlineBlock,
+                  borderColor: "#790000",
+                  color: "white"
+                }}
+                backgroundColor="#BC0000"
                 label={
                   this.state.optOutMessageText.length
-                    ? "Send"
-                    : "Opt Out without Text"
+                    ? "Opt-Out"
+                    : "Opt-Out without Text"
                 }
               />
             </div>
@@ -565,9 +599,13 @@ export class AssignmentTexterContactControls extends React.Component {
   }
 
   renderMessageSending() {
-    console.log("renderMessageSending", this.props);
     const { contact, messageStatusFilter } = this.props;
-    const { optOutDialogOpen, availableSteps } = this.state;
+    const {
+      optOutDialogOpen,
+      availableSteps,
+      questionResponses,
+      currentInteractionStep
+    } = this.state;
     const firstMessage = messageStatusFilter === "needsMessage";
 
     const message = (
@@ -598,16 +636,25 @@ export class AssignmentTexterContactControls extends React.Component {
     );
 
     const sendButtonHeight = firstMessage ? "40%" : "36px";
-    const currentQuestion =
-      this.state.currentInteractionStep &&
-      this.state.currentInteractionStep.question;
-    console.log(
-      "REFS renderMessageSending return",
-      message,
-      this.refs.answerButtons && this.refs.answerButtons.offsetHeight,
-      "old height",
-      this.state.currentShortcutSpace
-    );
+    let currentQuestion = null;
+    let currentQuestionAnswered = null;
+    let currentQuestionOptions = null;
+    if (currentInteractionStep) {
+      currentQuestion = currentInteractionStep.question;
+      currentQuestionAnswered = questionResponses[currentInteractionStep.id];
+      currentQuestionOptions = currentQuestion.answerOptions.map(answer => {
+        const label = answer.value.match(/^(\w+)([^\s\w]|$)/);
+        return {
+          answer: answer,
+          label: label ? label[1] : "Yes__No__Maybe__toomuch"
+        };
+      });
+      const joinedLength = currentQuestionOptions.map(o => o.label).join("__");
+      if (joinedLength.length > 14) {
+        // too many/long options
+        currentQuestionOptions = null;
+      }
+    }
     const shortcutButtonSpace =
       // 114=25(top q)+40(main btns)+40(xtra row)+9px(padding)
       ((this.refs.answerButtons && this.refs.answerButtons.offsetHeight) ||
@@ -626,7 +673,15 @@ export class AssignmentTexterContactControls extends React.Component {
                   flexStyles.subSubButtonsAnswerButtonsCurrentQuestion
                 )}
               >
-                <b>Current Question:</b> {currentQuestion.text}
+                {currentQuestionAnswered ? (
+                  <span>
+                    {currentQuestion.text}: <b>{currentQuestionAnswered}</b>
+                  </span>
+                ) : (
+                  <span>
+                    <b>Current Question:</b> {currentQuestion.text}
+                  </span>
+                )}
               </div>
             ) : null}
             <div
@@ -650,26 +705,46 @@ export class AssignmentTexterContactControls extends React.Component {
                 }
                 disabled={!availableSteps.length}
               />
-              {currentQuestion ? (
+              {currentQuestionOptions ? (
                 <div
                   style={{
                     height: "40px",
                     position: "absolute",
                     top: "40px",
                     width: "100%",
-                    padding: "9px 9px 0 9px"
+                    padding: "9px"
                   }}
                 >
-                  {currentQuestion.answerOptions.map(answer => (
+                  {currentQuestionOptions.map(opt => (
                     <FlatButton
-                      key={answer.value.replace(/\W/, "")}
-                      label={answer.value}
+                      key={opt.answer.value.replace(/\W/, "")}
+                      label={opt.label}
                       onTouchTap={evt => {
-                        console.log("Shortcut Answer", evt, answer, this);
+                        this.handleQuestionResponseChange({
+                          interactionStep: currentInteractionStep,
+                          questionResponseValue: opt.answer.value,
+                          nextScript:
+                            (opt.answer.nextInteractionStep &&
+                              opt.answer.nextInteractionStep.script) ||
+                            null
+                        });
                       }}
                       className={css(flexStyles.flatButton)}
-                      labelStyle={inlineStyles.flatButtonLabel}
-                      backgroundColor="white"
+                      style={{ marginLeft: "9px" }}
+                      labelStyle={{
+                        ...inlineStyles.flatButtonLabel,
+                        color:
+                          opt.answer.value ===
+                          questionResponses[currentInteractionStep.id]
+                            ? "white"
+                            : "#494949"
+                      }}
+                      backgroundColor={
+                        opt.answer.value ===
+                        questionResponses[currentInteractionStep.id]
+                          ? "#727272"
+                          : "white"
+                      }
                     />
                   ))}
                 </div>
@@ -759,7 +834,6 @@ export class AssignmentTexterContactControls extends React.Component {
 
   render() {
     const { optOutDialogOpen } = this.state;
-    console.log("AssignmentTexterContactNewControls", this.props);
     return (
       <div className={css(flexStyles.topContainer)}>
         <div className={css(flexStyles.sectionHeaderToolbar)}>
@@ -787,7 +861,7 @@ export class AssignmentTexterContactControls extends React.Component {
           <MessageList
             contact={this.props.contact}
             messages={this.props.contact.messages}
-            styles={inlineStyles}
+            styles={messageListStyles}
           />
         </div>
         {optOutDialogOpen
