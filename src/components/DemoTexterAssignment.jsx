@@ -188,25 +188,6 @@ const tests = {
             "We are the people. We need your help, or the apocolypse will come early.",
           isFromContact: false,
           createdAt: new Date(Number(new Date()) - 140 * 60 * 1000)
-        },
-        {
-          id: "fake4",
-          text:
-            "Oh -- the people are the best -- if only we rallied around our common interests.",
-          isFromContact: true,
-          createdAt: new Date(Number(new Date()) - 14 * 60 * 1000)
-        },
-        {
-          id: "fake5",
-          text: "I know, people are wonderful luminous beings.",
-          isFromContact: false,
-          createdAt: new Date(Number(new Date()) - 10 * 60 * 1000)
-        },
-        {
-          id: "fake6",
-          text: "Okay, sign me up -- that event sounds great!",
-          isFromContact: true,
-          createdAt: new Date(Number(new Date()) - 4 * 60 * 1000) // 4 minutes ago
         }
       ],
       customFields:
