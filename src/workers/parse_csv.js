@@ -18,3 +18,4 @@ parseCSV[util.promisify.custom] = (file, rowTransformer) => {
 };
 
 export const parseCSVAsync = util.promisify(parseCSV);
+export default parseCSVAsync;

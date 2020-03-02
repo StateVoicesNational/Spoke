@@ -1,7 +1,7 @@
 import { completeContactLoad } from "../../../workers/jobs";
 import { r } from "../../../server/models";
 import { getConfig, hasConfig } from "../../../server/api/lib/config";
-import { parseCSVAsync } from "../../../lib";
+import { parseCSVAsync } from "../../../workers/parse_csv";
 import { getTimezoneByZip } from "../../../workers/jobs";
 
 import _ from "lodash";
@@ -144,7 +144,8 @@ const countryCodeOk = countryCode =>
   !countryCode ||
   (countryCode && countryCode === (process.env.PHONE_NUMBER_COUNTRY || "US"));
 
-const treatAsCellPhone = (isCellPhone, assumeCellPhone) => assumeCellPhone || (isCellPhone && Number(isCellPhone));
+const treatAsCellPhone = (isCellPhone, assumeCellPhone) =>
+  assumeCellPhone || (isCellPhone && Number(isCellPhone));
 
 const getPhoneNumberIfLikelyCell = (phoneType, row) => {
   const phoneKey = `${phoneType.typeName}Phone`;
@@ -155,10 +156,7 @@ const getPhoneNumberIfLikelyCell = (phoneType, row) => {
   if (row[phoneKey]) {
     if (
       countryCodeOk(row[countryCodeKey]) &&
-      treatAsCellPhone(
-        row[isCellPhoneKey],
-        phoneType.assumeCellIfPresent
-      )
+      treatAsCellPhone(row[isCellPhoneKey], phoneType.assumeCellIfPresent)
     ) {
       return `${row[dialingPrefixKey]}${row[phoneKey]}`;
     }
@@ -213,6 +211,7 @@ export const rowTransformer = (originalFields, originalRow) => {
 };
 
 export async function processContactLoad(job, maxContacts) {
+  // TODO do something with maxContacts
   // / Basic responsibilities:
   // / 1. TODO Delete previous campaign contacts on a previous choice/upload
   // / 2. TODO Set campaign_contact.campaign_id = job.campaign_id on all uploaded contacts
@@ -225,7 +224,6 @@ export async function processContactLoad(job, maxContacts) {
   // / * Batching
   // / * Error handling
   // / * "Request of Doom" scenarios -- queries or jobs too big to complete
-
   let response;
   try {
     // TODO(lmp) so much to do here ... look for errors, retry, get multiple pages
@@ -268,8 +266,10 @@ export async function processContactLoad(job, maxContacts) {
 
     const vanContacts = vanResponse.data;
 
-    const parsed = await parseCSVAsync(vanContacts, parseCsvCallback, rowTransformer);
-    console.log(parsed);
+    const { customFields, validationStats, contacts } = await parseCSVAsync(
+      vanContacts,
+      rowTransformer
+    );
   } catch (error) {
     console.log(error);
     // TODO(lmp) call failedContactLoad
