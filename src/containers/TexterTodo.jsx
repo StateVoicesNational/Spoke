@@ -206,7 +206,8 @@ TexterTodo.propTypes = {
   params: PropTypes.object,
   data: PropTypes.object,
   mutations: PropTypes.object,
-  router: PropTypes.object
+  router: PropTypes.object,
+  location: PropTypes.object
 };
 
 const mapQueriesToProps = ({ ownProps }) => ({

@@ -8,25 +8,16 @@ import AssignmentTexterSurveys from "../components/AssignmentTexterSurveys";
 import RaisedButton from "material-ui/RaisedButton";
 import FlatButton from "material-ui/FlatButton";
 import NavigateHomeIcon from "material-ui/svg-icons/action/home";
-import NavigateBeforeIcon from "material-ui/svg-icons/image/navigate-before";
-import NavigateNextIcon from "material-ui/svg-icons/image/navigate-next";
 import ArrowBackIcon from "material-ui/svg-icons/navigation/arrow-back";
 import ArrowForwardIcon from "material-ui/svg-icons/navigation/arrow-forward";
-import { grey100 } from "material-ui/styles/colors";
 import IconButton from "material-ui/IconButton/IconButton";
-import { Toolbar, ToolbarGroup, ToolbarTitle } from "material-ui/Toolbar";
 import { Card, CardActions, CardTitle } from "material-ui/Card";
 import Divider from "material-ui/Divider";
-import gql from "graphql-tag";
 import yup from "yup";
 import GSForm from "../components/forms/GSForm";
 import Form from "react-formal";
-import GSSubmitButton from "../components/forms/GSSubmitButton";
-import SendButton from "../components/SendButton";
-import SendButtonArrow from "../components/SendButtonArrow";
-import CircularProgress from "material-ui/CircularProgress";
 import Popover from "material-ui/Popover";
-import Snackbar from "material-ui/Snackbar";
+
 import {
   getChildren,
   getAvailableInteractionSteps,
@@ -35,15 +26,12 @@ import {
   log,
   isBetweenTextingHours
 } from "../lib";
-import Empty from "../components/Empty";
-import CreateIcon from "material-ui/svg-icons/content/create";
+
 import { dataTest } from "../lib/attributes";
-import { getContactTimezone } from "../lib/timezones";
 
 const messageListStyles = {
   // passesd directly to <MessageList>
   messageList: {
-    backgroundColor: "#f0f0f0",
     flex: "2 4 auto",
     overflow: "hidden",
     overflow: "-moz-scrollbars-vertical"
@@ -108,10 +96,11 @@ const flexStyles = StyleSheet.create({
   },
   /// * Section Scrolling Message Thread
   sectionMessageThread: {
-    flex: "1 4 auto",
+    flex: "1 2 auto",
     overflowY: "scroll",
     overflow: "-moz-scrollbars-vertical",
-    overflowX: "hidden"
+    overflowX: "hidden",
+    backgroundColor: "#f0f0f0"
   },
   /// * Section OptOut Dialog
   sectionOptOutDialog: {
@@ -128,7 +117,7 @@ const flexStyles = StyleSheet.create({
   /// * Section Texting Input Field
   sectionMessageField: {
     // messageField
-    flex: "2 0 20px",
+    flex: "1 0 20px",
     padding: "0px 4px",
     marginBottom: "8px"
   },
@@ -146,7 +135,7 @@ const flexStyles = StyleSheet.create({
     "@media(min-height: 600px)": {
       flexBasis: "190px"
     },
-    flexGrow: "4",
+    flexGrow: "0",
     flexShrink: "0",
     // flexBasis: ${130px|190px}", // stretches and shrinks more quickly than message
     flexDirection: "column",
@@ -511,7 +500,10 @@ export class AssignmentTexterContactControls extends React.Component {
               this.setState({ optOutMessageText })
             }
             value={{ optOutMessageText: this.state.optOutMessageText }}
-            onSubmit={this.props.onOptOut}
+            onSubmit={obj => {
+              console.log("Optout submit", obj);
+              this.props.onOptOut(obj);
+            }}
           >
             <div
               style={{
@@ -576,7 +568,6 @@ export class AssignmentTexterContactControls extends React.Component {
               />
               <FlatButton
                 type="submit"
-                onTouchTap={this.props.onOptOut}
                 className={css(flexStyles.flatButton)}
                 labelStyle={inlineStyles.flatButtonLabel}
                 style={{
