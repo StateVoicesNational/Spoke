@@ -76,34 +76,51 @@ const ensureCamelCaseRequiredHeaders = columnHeader => {
   return columnHeader;
 };
 
+export const organizationCustomFields = (contacts, customFieldsList) => {
+  return contacts.map(contact => {
+    const customFields = {};
+    const contactInput = {
+      cell: contact.cell,
+      first_name: contact.firstName,
+      last_name: contact.lastName,
+      zip: contact.zip || "",
+      external_id: contact.external_id || ""
+    };
+    customFieldsList.forEach(key => {
+      if (contact.hasOwnProperty(key)) {
+        customFields[key] = contact[key];
+      }
+    });
+    contactInput.custom_fields = JSON.stringify(customFields);
+    return contactInput;
+  });
+};
+
 export const parseCSV = (file, onCompleteCallback, rowTransformer) => {
   Papa.parse(file, {
     header: true,
     transformHeader: ensureCamelCaseRequiredHeaders,
     // eslint-disable-next-line no-shadow, no-unused-vars
     complete: ({ data: parserData, meta, errors }, file) => {
-      let fields = meta.fields;
+      const fields = meta.fields;
       const missingFields = [];
 
       let data = parserData;
       let transformerResults = {
         rows: [],
         fields: []
-      }
+      };
       if (rowTransformer) {
-        transformerResults = parserData.reduce(
-          (results, originalRow) => {
-            const {row, addedFields} = rowTransformer(fields, originalRow)
-            results.rows.push(row);
-            addedFields.forEach(field => {
-              if (!fields.includes(field)) {
-                fields.push(field);
-              }
-            });
-            return results;
-          },
-          transformerResults
-        );
+        transformerResults = parserData.reduce((results, originalRow) => {
+          const { row, addedFields } = rowTransformer(fields, originalRow);
+          results.rows.push(row);
+          addedFields.forEach(field => {
+            if (!fields.includes(field)) {
+              fields.push(field);
+            }
+          });
+          return results;
+        }, transformerResults);
         data = transformerResults.rows;
       }
 
@@ -123,10 +140,15 @@ export const parseCSV = (file, onCompleteCallback, rowTransformer) => {
           field => topLevelUploadFields.indexOf(field) === -1
         );
 
+        const contactsWithCustomFields = organizationCustomFields(
+          validatedData,
+          customFields
+        );
+
         onCompleteCallback({
           customFields,
           validationStats,
-          contacts: validatedData
+          contacts: contactsWithCustomFields
         });
       }
     }

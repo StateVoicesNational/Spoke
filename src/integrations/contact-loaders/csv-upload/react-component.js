@@ -6,7 +6,7 @@ import Form from "react-formal";
 import Subheader from "material-ui/Subheader";
 import Divider from "material-ui/Divider";
 import { ListItem, List } from "material-ui/List";
-import { parseCSV, gzip } from "../../../lib";
+import { parseCSV, gzip, organizationCustomFields } from "../../../lib";
 import CampaignFormSectionHeading from "../../../components/CampaignFormSectionHeading";
 import { StyleSheet, css } from "aphrodite";
 import theme from "../../../styles/theme";
@@ -57,11 +57,7 @@ export class CampaignContactsForm extends React.Component {
         } else if (contacts.length === 0) {
           this.handleUploadError("Upload at least one contact");
         } else if (contacts.length > 0) {
-          this.handleUploadSuccess(
-            validationStats,
-            this.organizationCustomFields(contacts, customFields),
-            customFields
-          );
+          this.handleUploadSuccess(validationStats, contacts, customFields);
         }
       });
     });
@@ -73,26 +69,6 @@ export class CampaignContactsForm extends React.Component {
       uploading: false,
       contactUploadError: error,
       contacts: null
-    });
-  }
-
-  organizationCustomFields(contacts, customFieldsList) {
-    return contacts.map(contact => {
-      const customFields = {};
-      const contactInput = {
-        cell: contact.cell,
-        first_name: contact.firstName,
-        last_name: contact.lastName,
-        zip: contact.zip || "",
-        external_id: contact.external_id || ""
-      };
-      customFieldsList.forEach(key => {
-        if (contact.hasOwnProperty(key)) {
-          customFields[key] = contact[key];
-        }
-      });
-      contactInput.custom_fields = JSON.stringify(customFields);
-      return contactInput;
     });
   }
 
