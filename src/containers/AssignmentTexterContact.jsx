@@ -5,6 +5,7 @@ import MessageList from "../components/MessageList";
 import CannedResponseMenu from "../components/CannedResponseMenu";
 import AssignmentTexterSurveys from "../components/AssignmentTexterSurveys";
 import AssignmentTexterContactControls from "../components/AssignmentTexterContactControls";
+import AssignmentTexterContactNewControls from "../components/AssignmentTexterContactNewControls";
 import RaisedButton from "material-ui/RaisedButton";
 import FlatButton from "material-ui/FlatButton";
 import NavigateHomeIcon from "material-ui/svg-icons/action/home";
@@ -280,8 +281,9 @@ export class AssignmentTexterContact extends React.Component {
       await this.handleSubmitSurveys();
       await this.props.mutations.createOptOut(optOut, contact.id);
       this.props.onFinishContact(contact.id);
-    } catch (e) {
-      this.handleSendMessageError(e);
+    } catch (err) {
+      console.log("handleOptOut Error", err);
+      this.handleSendMessageError(err);
     }
   };
 
@@ -355,6 +357,9 @@ export class AssignmentTexterContact extends React.Component {
   });
 
   render() {
+    const ControlsComponent = /new=1/.test(document.location.search)
+      ? AssignmentTexterContactNewControls
+      : AssignmentTexterContactControls;
     return (
       <div>
         {this.state.disabled ? (
@@ -365,7 +370,7 @@ export class AssignmentTexterContact extends React.Component {
         ) : (
           ""
         )}
-        <AssignmentTexterContactControls
+        <ControlsComponent
           contact={this.props.contact}
           campaign={this.props.campaign}
           texter={this.props.texter}
