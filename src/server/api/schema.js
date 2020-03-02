@@ -802,6 +802,7 @@ const rootMutations = {
         campaignId: cannedResponse.campaignId,
         userId: cannedResponse.userId
       });
+      return cannedResponseInstance;
     },
     createOrganization: async (
       _,
