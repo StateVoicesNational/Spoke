@@ -3,6 +3,7 @@ import { r } from "../../../src/server/models/";
 import { dataQuery as TexterTodoListQuery } from "../../../src/containers/TexterTodoList";
 import { dataQuery as TexterTodoQuery } from "../../../src/containers/TexterTodo";
 import { campaignDataQuery as AdminCampaignEditQuery } from "../../../src/containers/AdminCampaignEdit";
+import { campaignsQuery } from "../../../src/containers/PaginatedCampaignsRetriever";
 
 import {
   bulkReassignCampaignContactsMutation,
@@ -29,7 +30,8 @@ import {
   startCampaign,
   getCampaignContact,
   sendMessage,
-  bulkSendMessages
+  bulkSendMessages,
+  runGql
 } from "../../test_helpers";
 
 let testAdminUser;
@@ -294,7 +296,7 @@ it("save campaign interaction steps, edit it, make sure the last value is set", 
   const compareToLater = async (campaignId, prevCampaignIsteps) => {
     const campaignDataResults = await runComponentGql(
       AdminCampaignEditQuery,
-      { campaignId: campaignId },
+      { campaignId },
       testAdminUser
     );
 
@@ -954,5 +956,51 @@ describe("Bulk Send", async () => {
       bulkSendChunkSize: NUMBER_OF_CONTACTS
     };
     await testBulkSend(params, 0, expectErrorBulkSending);
+  });
+});
+
+describe("campaigns query", async () => {
+  let testCampaign2;
+  let testCampaign3;
+
+  const cursor = {
+    offset: 0,
+    limit: 1000
+  };
+
+  beforeEach(async () => {
+    testCampaign2 = await createCampaign(testAdminUser, testOrganization);
+    testCampaign3 = await createCampaign(testAdminUser, testOrganization);
+  });
+
+  it("correctly filters by a single campaign id", async () => {
+    const campaignsFilter = {
+      campaignId: testCampaign.id
+    };
+    const variables = {
+      cursor,
+      organizationId,
+      campaignsFilter
+    };
+
+    const result = await runGql(campaignsQuery, variables, testAdminUser);
+    expect(result.data.campaigns.campaigns).toHaveLength(1);
+    expect(result.data.campaigns.campaigns[0].id).toEqual(testCampaign.id);
+  });
+
+  it("correctly filter by more than one campaign id", async () => {
+    const campaignsFilter = {
+      campaignIds: [testCampaign.id, testCampaign2.id]
+    };
+    const variables = {
+      cursor,
+      organizationId,
+      campaignsFilter
+    };
+
+    const result = await runGql(campaignsQuery, variables, testAdminUser);
+    expect(result.data.campaigns.campaigns.length).toEqual(2);
+    expect(result.data.campaigns.campaigns[0].id).toEqual(testCampaign.id);
+    expect(result.data.campaigns.campaigns[1].id).toEqual(testCampaign2.id);
   });
 });
