@@ -108,7 +108,7 @@
     "isomorphic-fetch": "^2.2.1",
     "jest-each": "^0.3.1",
     "json-loader": "^0.5.4",
-    "knex": "^0.17.3",
+    "knex": "^0.20.7",
     "lodash": "^4.13.1",
     "mailgun-js": "^0.16.0",
     "material-ui": "^0.20.1",
@@ -162,6 +162,7 @@
     "enzyme-adapter-react-15": "^1.0.5",
     "eslint": "2.13.1",
     "eslint-config-airbnb": "^9.0.1",
+    "eslint-config-prettier": "^6.10.0",
     "eslint-plugin-import": "^1.10.2",
     "eslint-plugin-jsx-a11y": "^1.5.5",
     "eslint-plugin-react": "^5.2.2",
@@ -189,7 +190,7 @@
     }
   },
   "lint-staged": {
-    "*.{js,jsx,css,json,md}": [
+    "*.{js,jsx,css,json}": [
       "prettier --write",
       "git add"
     ]
