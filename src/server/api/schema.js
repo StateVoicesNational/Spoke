@@ -89,6 +89,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     "SUPERVOLUNTEER",
     /* superadmin*/ true
   );
+  const organization = await loaders.organization.load(organizationId);
   const campaignUpdates = {
     id,
     title,
@@ -114,7 +115,6 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
 
   if (campaign.ingestMethod && campaign.contactData) {
     await accessRequired(user, organizationId, "ADMIN", /* superadmin*/ true);
-    const organization = await loaders.organization.load(organizationId);
     const ingestMethod = await getIngestMethod(
       campaign.ingestMethod,
       organization,
@@ -201,7 +201,24 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
   }
 
   const newCampaign = await Campaign.get(id).update(campaignUpdates);
-  await cacheableData.campaign.reload(id);
+  const campaignRefreshed = await cacheableData.campaign.load(id, {
+    forceLoad: true
+  });
+
+  // hacky easter egg to force reload campaign contacts
+  if (
+    campaignUpdates.description &&
+    campaignUpdates.description.endsWith("..")
+  ) {
+    // some asynchronous cache-priming
+    console.log(
+      "force-loading loadCampaignCache",
+      campaignRefreshed,
+      organization
+    );
+    await loadCampaignCache(campaignRefreshed, organization, {});
+  }
+
   return newCampaign || loaders.campaign.load(id);
 }
 
@@ -739,14 +756,16 @@ const rootMutations = {
       campaign.is_started = true;
 
       await campaign.save();
-      cacheableData.campaign.reload(id);
+      const campaignRefreshed = cacheableData.campaign.load(id, {
+        forceLoad: true
+      });
       await sendUserNotification({
         type: Notifications.CAMPAIGN_STARTED,
         campaignId: id
       });
 
       // some asynchronous cache-priming:
-      await loadCampaignCache(campaign, organization, {
+      await loadCampaignCache(campaignRefreshed, organization, {
         remainingMilliseconds
       });
       return campaign;
