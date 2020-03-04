@@ -1,8 +1,6 @@
-import { completeContactLoad } from "../../../workers/jobs";
-import { r } from "../../../server/models";
-import { getConfig, hasConfig } from "../../../server/api/lib/config";
+import { finalizeContactLoad } from "../helpers";
+import { getConfig } from "../../../server/api/lib/config";
 import { parseCSVAsync } from "../../../workers/parse_csv";
-import { getTimezoneByZip } from "../../../workers/jobs";
 
 import _ from "lodash";
 import { GraphQLError } from "graphql/error";
@@ -270,6 +268,8 @@ export async function processContactLoad(job, maxContacts) {
       vanContacts,
       rowTransformer
     );
+
+    await finalizeContactLoad(job, contacts, maxContacts);
   } catch (error) {
     console.log(error);
     // TODO(lmp) call failedContactLoad
