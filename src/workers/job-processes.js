@@ -75,20 +75,26 @@ export async function checkMessageQueue() {
 const messageSenderCreator = (subQuery, defaultStatus) => {
   return async event => {
     console.log("Running a message sender");
+    let sentCount = 0;
     setupUserNotificationObservers();
     let delay = 1100;
     if (event && event.delay) {
       delay = parseInt(event.delay, 10);
     }
+    let maxCount = -1; // never ends with -1 since --maxCount will never be 0
+    if (event && event.maxCount) {
+      maxCount = parseInt(event.maxCount, 10) || -1;
+    }
     // eslint-disable-next-line no-constant-condition
-    while (true) {
+    while (--maxCount) {
       try {
         await sleep(delay);
-        await sendMessages(subQuery, defaultStatus);
+        sentCount += await sendMessages(subQuery, defaultStatus);
       } catch (ex) {
         log.error(ex);
       }
     }
+    return sentCount;
   };
 };
 
@@ -140,6 +146,19 @@ export const failedDayMessageSender = messageSenderCreator(function(mQuery) {
   // texts over and over
   const oneDayAgo = new Date(new Date() - 1000 * 60 * 60 * 24);
   return mQuery.where("created_at", ">", oneDayAgo);
+}, "SENDING");
+
+export const erroredMessageSender = messageSenderCreator(function(mQuery) {
+  // messages that were attempted to be sent twenty minutes ago in status=SENDING
+  // and also error_code < 0 which means a DNS error.
+  // when JOBS_SAME_PROCESS is enabled, the send attempt is done immediately.
+  // However, if it's still marked SENDING, then it must have failed to go out.
+  // This is OK to run in a scheduled event because we are specifically narrowing on the error_code
+  // It's important though that runs are never in parallel
+  const twentyMinutesAgo = new Date(new Date() - 1000 * 60 * 20);
+  return mQuery
+    .where("created_at", ">", twentyMinutesAgo)
+    .where("error_code", "<", 0);
 }, "SENDING");
 
 export async function handleIncomingMessages() {
@@ -224,6 +243,7 @@ const processMap = {
 // the others and messageSender should just pick up the stragglers
 const syncProcessMap = {
   // 'failedMessageSender': failedMessageSender, //see method for danger
+  erroredMessageSender,
   handleIncomingMessages,
   checkMessageQueue,
   fixOrgless,
@@ -241,7 +261,11 @@ export async function dispatchProcesses(event, dispatcher, eventCallback) {
       // / to dispatch processes to other lambda invocations
       // dispatcher({'command': p})
       console.log("process", p);
-      toDispatch[p]().then();
+      toDispatch[p]()
+        .then()
+        .catch(err => {
+          console.error("Process Error", p, err);
+        });
     }
   }
   return "completed";
