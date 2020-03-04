@@ -3,7 +3,7 @@ import { r, Message } from "../../../../src/server/models/";
 import { postMessageSend } from "../../../../src/server/api/lib/twilio";
 import twilio from "../../../../src/server/api/lib/twilio";
 import { getLastMessage } from "../../../../src/server/api/lib/message-sending";
-
+import { erroredMessageSender } from "../../../../src/workers/job-processes";
 import {
   setupTest,
   cleanupTest,
@@ -58,7 +58,8 @@ afterEach(async () => {
 
 it("postMessageSend success should save message and update contact state", async () => {
   const message = await Message.save({
-    assignment_id: assignmentId,
+    campaign_contact_id: dbCampaignContact.id,
+    messageservice_sid: "fakeSid_MK123",
     contact_number: dbCampaignContact.cell,
     is_from_contact: false,
     send_status: "SENDING",
@@ -86,7 +87,8 @@ it("postMessageSend success should save message and update contact state", async
 
 it("postMessageSend network error should decrement on err/failure ", async () => {
   let message = await Message.save({
-    assignment_id: assignmentId,
+    campaign_contact_id: dbCampaignContact.id,
+    messageservice_sid: "fakeSid_MK123",
     contact_number: dbCampaignContact.cell,
     is_from_contact: false,
     send_status: "SENDING",
@@ -124,7 +126,8 @@ it("postMessageSend network error should decrement on err/failure ", async () =>
 
 it("postMessageSend error from twilio response should fail immediately", async () => {
   let message = await Message.save({
-    assignment_id: assignmentId,
+    campaign_contact_id: dbCampaignContact.id,
+    messageservice_sid: "fakeSid_MK123",
     contact_number: dbCampaignContact.cell,
     is_from_contact: false,
     send_status: "SENDING",
@@ -158,7 +161,6 @@ it("postMessageSend error from twilio response should fail immediately", async (
 
 it("handleIncomingMessage should save message and update contact state", async () => {
   const message = await Message.save({
-    assignment_id: assignmentId,
     campaign_contact_id: dbCampaignContact.id,
     contact_number: dbCampaignContact.cell,
     messageservice_sid: "fakeSid_MK123",
@@ -191,6 +193,31 @@ it("handleIncomingMessage should save message and update contact state", async (
   expect(reply.user_number).toEqual("+16465559999");
   expect(reply.messageservice_sid).toEqual("fakeSid_MK123");
   expect(dbCampaignContact.message_status).toEqual("needsResponse");
+});
+
+it("postMessageSend+erroredMessageSender network error should decrement on err/failure ", async () => {
+  let message = await Message.save({
+    campaign_contact_id: dbCampaignContact.id,
+    messageservice_sid: "fakeSid_MK123",
+    contact_number: dbCampaignContact.cell,
+    is_from_contact: false,
+    send_status: "SENDING",
+    service: "twilio", // important since message.service is used in erroredMessageSender
+    text: "apierrortest <= IMPORTANT text to make this test work!",
+    user_id: testTexterUser.id,
+    error_code: -1 // important to start with an error
+  });
+  for (let i = 1; i < 7; i++) {
+    const errorSendResult = await erroredMessageSender({
+      delay: 1,
+      maxCount: 2
+    });
+    if (i < 6) {
+      expect(errorSendResult).toBe(1);
+    } else {
+      expect(errorSendResult).toBe(0);
+    }
+  }
 });
 
 // FUTURE
