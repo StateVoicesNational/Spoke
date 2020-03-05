@@ -245,7 +245,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     await loadCampaignCache(campaignRefreshed, organization, {});
   }
 
-  return campaignRefreshed;
+  return Campaign.get(id);
 }
 
 async function updateInteractionSteps(
