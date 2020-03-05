@@ -200,12 +200,21 @@ export class AssignmentTexterContact extends React.Component {
   };
 
   handleCreateCannedResponse = async ({ cannedResponse }) => {
-    const saveObject = {
-      ...cannedResponse,
-      campaignId: this.props.campaign.id,
-      userId: this.props.texter.id
-    };
-    await this.mutations.createCannedResponse(saveObject);
+    try {
+      const saveObject = {
+        ...cannedResponse,
+        campaignId: this.props.campaign.id,
+        userId: this.props.texter.id
+      };
+      await this.props.mutations.createCannedResponse(saveObject);
+    } catch (err) {
+      console.log(
+        "handleCreateCannedRepsonse Error",
+        err,
+        cannedResponse,
+        this
+      );
+    }
   };
 
   handleSubmitSurveys = async () => {

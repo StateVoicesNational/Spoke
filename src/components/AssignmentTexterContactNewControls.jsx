@@ -170,6 +170,9 @@ const flexStyles = StyleSheet.create({
       // mobile crunch gives up on 50%, so only bigger
       width: "46%"
     },
+    "@media(min-height: 600px)": {
+      height: "89px"
+    },
     display: "inline-block",
     //flex: "1 1 50%",
     overflow: "hidden",
@@ -500,10 +503,7 @@ export class AssignmentTexterContactControls extends React.Component {
               this.setState({ optOutMessageText })
             }
             value={{ optOutMessageText: this.state.optOutMessageText }}
-            onSubmit={obj => {
-              console.log("Optout submit", obj);
-              this.props.onOptOut(obj);
-            }}
+            onSubmit={this.props.onOptOut}
           >
             <div
               style={{
@@ -675,10 +675,7 @@ export class AssignmentTexterContactControls extends React.Component {
                 )}
               </div>
             ) : null}
-            <div
-              className={css(flexStyles.subSubAnswerButtonsColumns)}
-              style={shortcutButtonSpace ? { height: "89px" } : null}
-            >
+            <div className={css(flexStyles.subSubAnswerButtonsColumns)}>
               <FlatButton
                 label={
                   <span>
@@ -745,8 +742,7 @@ export class AssignmentTexterContactControls extends React.Component {
               className={css(flexStyles.subSubAnswerButtonsColumns)}
               style={{
                 float: "right",
-                marginRight: "18px",
-                height: shortcutButtonSpace ? "89px" : "42px"
+                marginRight: "18px"
               }}
             >
               <FlatButton
