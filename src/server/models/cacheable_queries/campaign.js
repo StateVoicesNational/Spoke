@@ -151,6 +151,10 @@ const campaignCache = {
         return campaign;
       }
     }
+    if (opts && opts.forceLoad) {
+      loaders.campaign.clear(String(id));
+      loaders.campaign.clear(Number(id));
+    }
     return await Campaign.get(id);
   },
   reload: loadDeep,
