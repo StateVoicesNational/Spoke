@@ -133,6 +133,42 @@ const query = async queryObj => {
   return dbResult;
 };
 
+const incomingMessageMatching = async (messageInstance, activeCellFound) => {
+  if (!activeCellFound) {
+    // No active thread to attach message to. This should be very RARE
+    // This could happen way after a campaign is closed and a contact responds 'very late'
+    // or e.g. gives the 'number for moveon' to another person altogether that tries to text it.
+    console.error("ORPHAN MESSAGE", messageInstance, activeCellFound);
+    return "ORPHAN MESSAGE";
+  }
+  // Check to see if the message is a duplicate of the last one
+  // if-case==db result from lastMessage, else-case==cache-result
+  if (activeCellFound.service_id) {
+    // DB non-caching contect
+    if (messageInstance.service_id === activeCellFound.service_id) {
+      // already saved the message -- this is a duplicate message
+      console.error("DUPLICATE MESSAGE DB", messageInstance, activeCellFound);
+      return "DUPLICATE MESSAGE DB";
+    }
+  } else {
+    // cached context looking through message thread
+    const messageThread = await query({
+      campaignContactId: activeCellFound.campaign_contact_id
+    });
+    const redundant = messageThread.filter(
+      m => m.service_id && m.service_id === messageInstance.service_id
+    );
+    if (redundant.length) {
+      console.error(
+        "DUPLICATE MESSAGE CACHE",
+        messageInstance,
+        activeCellFound
+      );
+      return "DUPLICATE MESSAGE CACHE";
+    }
+  }
+};
+
 const messageCache = {
   clearQuery: async queryObj => {
     if (r.redis) {
@@ -142,99 +178,63 @@ const messageCache = {
   },
   query,
   save: async ({ messageInstance, contact }) => {
-    // 0. Gathers any missing data in the case of is_from_contact
+    // 0. Gathers any missing data in the case of is_from_contact: campaign_contact_id
     // 1. Saves the messageInstance
     // 2. Updates the campaign_contact record with an updated status and updated_at
     // 3. Updates all the related caches
-    const contactData = Object.assign({}, contact || {});
+
     // console.log('message SAVE', contact, messageInstance)
+    const messageToSave = { ...messageInstance };
+    let newStatus = "needsResponse";
+
     if (messageInstance.is_from_contact) {
-      // is_from_contact is a particularly complex conditional
-      // This is because we don't have the contact id or other info
-      // coming in, but must determine it from cell and messageservice_sid
+      // console.log('message SAVE lookup')
       const activeCellFound = await campaignContactCache.lookupByCell(
         messageInstance.contact_number,
         messageInstance.service,
         messageInstance.messageservice_sid
       );
-
       // console.log('activeCellFound', activeCellFound)
-      if (!activeCellFound) {
-        // No active thread to attach message to. This should be very RARE
-        // This could happen way after a campaign is closed and a contact responds 'very late'
-        // or e.g. gives the 'number for moveon' to another person altogether that tries to text it.
-        console.error("ORPHAN MESSAGE", messageInstance, activeCellFound);
-        return false;
+      const matchError = await incomingMessageMatching(
+        messageInstance,
+        activeCellFound
+      );
+      if (matchError) {
+        return { error: matchError };
       }
-      // Check to see if the message is a duplicate of the last one
-      // if-case==db result from lastMessage, else-case==cache-result
-      if (activeCellFound.service_id) {
-        // DB non-caching contect
-        if (messageInstance.service_id === activeCellFound.service_id) {
-          // already saved the message -- this is a duplicate message
-          console.error("DUPLICATE MESSAGE", messageInstance, activeCellFound);
-          return false;
-        }
-      } else {
-        // cached context looking through message thread
-        const messageThread = await query({
-          campaignContactId: activeCellFound.campaign_contact_id
-        });
-        const redundant = messageThread.filter(
-          m => m.service_id && m.service_id === messageInstance.service_id
-        );
-        if (redundant.length) {
-          console.error("DUPLICATE MESSAGE", messageInstance, activeCellFound);
-          return false;
-        }
-      }
-      contactData.id = contactData.id || activeCellFound.campaign_contact_id;
-      contactData.assignment_id =
-        contactData.assignment_id || activeCellFound.assignment_id;
-      contactData.message_status =
-        contactData.message_status || activeCellFound.message_status;
-      contactData.timezone_offset =
-        contactData.timezone_offset || activeCellFound.timezone_offset;
-
-      contactData.cell = contactData.cell || messageInstance.contact_number;
-      contactData.messageservice_sid =
-        contactData.messageservice_sid || messageInstance.messageservice_sid;
-
-      const updateFields = ["campaign_contact_id", "assignment_id"];
-      updateFields.forEach(f => {
-        if (!messageInstance[f]) {
-          // eslint-disable-next-line no-param-reassign
-          messageInstance[f] = activeCellFound[f];
-        }
-      });
-    } // endif messageInstance.is_from_contact
-
-    // We set created_at so that the cache can return something with a valid date for the client
-    // eslint-disable-next-line no-param-reassign
-    messageInstance.created_at = new Date();
-
-    // console.log('hi saveMsg1', contactData, contact)
-    await saveMessageCache(contactData.id, [messageInstance]);
-    // console.log('hi saveMsg2')
-    let newStatus = "needsResponse";
-    if (!messageInstance.is_from_contact) {
+      messageToSave.campaign_contact_id =
+        messageInstance.campaign_contact_id ||
+        activeCellFound.campaign_contact_id;
+    } else {
+      // IS from contact:
       newStatus =
-        contactData.message_status === "needsResponse" ||
-        contactData.message_status === "convo"
+        contact.message_status === "needsResponse" ||
+        contact.message_status === "convo"
           ? "convo"
           : "messaged";
     }
-    // console.log('hi saveMsg3', newStatus, contactData)
+
+    messageToSave.created_at = new Date();
+    await saveMessageCache(messageToSave.campaign_contact_id, [messageToSave]);
+    const contactData = {
+      id: messageToSave.campaign_contact_id,
+      cell: messageToSave.contact_number,
+      messageservice_sid: messageToSave.messageservice_sid
+    };
+    // console.log('hi saveMsg3', newStatus, contactData);
     await campaignContactCache.updateStatus(contactData, newStatus);
     const savedMessage = await Message.save(
-      messageInstance,
-      messageInstance.id ? { conflict: "update" } : undefined
+      messageToSave,
+      messageToSave.id ? { conflict: "update" } : undefined
     );
     // We modify this info for sendMessage so it can send through the service with the id, etc.
     // eslint-disable-next-line no-param-reassign
-    messageInstance.id = messageInstance.id || savedMessage.id;
+    messageToSave.id = messageInstance.id || savedMessage.id;
     // console.log('hi saveMsg4', newStatus)
-    return { ...contactData, message_status: newStatus };
+    return {
+      message: messageToSave,
+      contactStatus: newStatus
+    };
   }
 };
 

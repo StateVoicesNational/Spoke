@@ -5,19 +5,12 @@ export async function getLastMessage({
   service,
   messageServiceSid
 }) {
-  const lastMessage = await r
-    .knex("message")
-    .select("campaign_contact_id")
-    .where({
-      contact_number: contactNumber,
-      messageservice_sid: messageServiceSid,
-      is_from_contact: false,
-      service
-    })
-    .orderBy("created_at", "desc")
-    .first();
-
-  return lastMessage;
+  const lookup = await cacheableData.campaignContact.lookupByCell(
+    contactNumber,
+    service,
+    messageServiceSid
+  );
+  return lookup;
 }
 
 export async function saveNewIncomingMessage(messageInstance, contact) {
