@@ -333,7 +333,7 @@ export class AssignmentTexterContactControls extends React.Component {
     );
   }
 
-  renderNeedsResponseToggleButton(contact) {
+  renderNeedsResponseToggleButton(contact, messageStatusFilter) {
     const { messageStatus } = contact;
     let button = null;
     if (messageStatus === "closed") {
@@ -343,7 +343,7 @@ export class AssignmentTexterContactControls extends React.Component {
           label="Reopen"
         />
       );
-    } else if (messageStatus === "needsResponse") {
+    } else if (messageStatusFilter === "needsResponse") {
       button = (
         <RaisedButton
           onTouchTap={() => this.props.onEditStatus("closed", true)}
@@ -366,7 +366,12 @@ export class AssignmentTexterContactControls extends React.Component {
     } = this.props;
     const { messageStatus } = contact;
     const size = document.documentElement.clientWidth;
-
+    console.log(
+      "renderActionToolbar",
+      messageStatusFilter,
+      messageStatus,
+      contact
+    );
     let navigationToolbar = [];
     if (navigationToolbarChildren) {
       const { onNext, onPrevious, title } = navigationToolbarChildren;
@@ -427,7 +432,10 @@ export class AssignmentTexterContactControls extends React.Component {
                 label="Canned replies"
                 onTouchTap={this.handleOpenPopover}
               />
-              {this.renderNeedsResponseToggleButton(contact)}
+              {this.renderNeedsResponseToggleButton(
+                contact,
+                messageStatusFilter
+              )}
               <div style={{ float: "right", marginLeft: "-30px" }}>
                 {navigationToolbar}
               </div>
@@ -446,7 +454,10 @@ export class AssignmentTexterContactControls extends React.Component {
                 onFinalTouchTap={this.handleClickSendMessageButton}
                 disabled={this.props.disabled}
               />
-              {this.renderNeedsResponseToggleButton(contact)}
+              {this.renderNeedsResponseToggleButton(
+                contact,
+                messageStatusFilter
+              )}
               <RaisedButton
                 label="Other responses"
                 onTouchTap={this.handleOpenPopover}
