@@ -96,13 +96,11 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
   );
   const organization = await loaders.organization.load(organizationId);
   const campaignUpdates = {
-    id,
     title,
     description,
     due_by: dueBy,
-    organization_id: organizationId,
     use_dynamic_assignment: useDynamicAssignment,
-    logo_image_url: isUrl(logoImageUrl) ? logoImageUrl : "",
+    logo_image_url: logoImageUrl,
     primary_color: primaryColor,
     intro_html: introHtml,
     override_organization_texting_hours: overrideOrganizationTextingHours,
@@ -117,9 +115,21 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
       delete campaignUpdates[key];
     }
   });
+  if (campaignUpdates.logo_image_url && !isUrl(logoImageUrl)) {
+    campaignUpdates.logo_image_url = "";
+  }
+
+  let changed = Boolean(Object.keys(campaignUpdates).length);
+  if (changed) {
+    await r
+      .knex("campaign")
+      .where("id", id)
+      .update(campaignUpdates);
+  }
 
   if (campaign.ingestMethod && campaign.contactData) {
     await accessRequired(user, organizationId, "ADMIN", /* superadmin*/ true);
+    changed = true;
     const ingestMethod = await getIngestMethod(
       campaign.ingestMethod,
       organization,
@@ -154,6 +164,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
   }
 
   if (campaign.hasOwnProperty("texters")) {
+    changed = true;
     let job = await JobRequest.save({
       queue_name: `${id}:edit_campaign`,
       locks_queue: true,
@@ -176,6 +187,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
   }
 
   if (campaign.hasOwnProperty("interactionSteps")) {
+    changed = true;
     await accessRequired(
       user,
       organizationId,
@@ -191,6 +203,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
   }
 
   if (campaign.hasOwnProperty("cannedResponses")) {
+    changed = true;
     const cannedResponses = campaign.cannedResponses;
     const convertedResponses = [];
     for (let index = 0; index < cannedResponses.length; index++) {
@@ -214,9 +227,8 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     });
   }
 
-  const newCampaign = await Campaign.get(id).update(campaignUpdates);
   const campaignRefreshed = await cacheableData.campaign.load(id, {
-    forceLoad: true
+    forceLoad: changed
   });
 
   // hacky easter egg to force reload campaign contacts
@@ -233,7 +245,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     await loadCampaignCache(campaignRefreshed, organization, {});
   }
 
-  return newCampaign || loaders.campaign.load(id);
+  return campaignRefreshed;
 }
 
 async function updateInteractionSteps(
@@ -783,7 +795,7 @@ const rootMutations = {
       campaign.is_started = true;
 
       await campaign.save();
-      const campaignRefreshed = cacheableData.campaign.load(id, {
+      const campaignRefreshed = await cacheableData.campaign.load(id, {
         forceLoad: true
       });
       await sendUserNotification({
@@ -795,7 +807,7 @@ const rootMutations = {
       await loadCampaignCache(campaignRefreshed, organization, {
         remainingMilliseconds
       });
-      return campaign;
+      return campaignRefreshed;
     },
     editCampaign: async (_, { id, campaign }, { user, loaders }) => {
       const origCampaign = await Campaign.get(id);
