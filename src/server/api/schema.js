@@ -118,7 +118,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
   if (campaignUpdates.logo_image_url && !isUrl(logoImageUrl)) {
     campaignUpdates.logo_image_url = "";
   }
-
+  console.log("CAMPAIGN UPDATES", Object.keys(campaignUpdates));
   let changed = Boolean(Object.keys(campaignUpdates).length);
   if (changed) {
     await r
@@ -1189,7 +1189,7 @@ const rootResolvers = {
   },
   RootQuery: {
     campaign: async (_, { id }, { loaders, user }) => {
-      const campaign = await loaders.campaign.load(id);
+      const campaign = await Campaign.get(id);
       await accessRequired(user, campaign.organization_id, "SUPERVOLUNTEER");
       return campaign;
     },
