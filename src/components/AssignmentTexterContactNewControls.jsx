@@ -5,6 +5,8 @@ import ContactToolbarNew from "../components/ContactToolbarNew";
 import MessageList from "../components/MessageList";
 import CannedResponseMenu from "../components/CannedResponseMenu";
 import AssignmentTexterSurveys from "../components/AssignmentTexterSurveys";
+import Empty from "../components/Empty";
+import GSForm from "../components/forms/GSForm";
 import RaisedButton from "material-ui/RaisedButton";
 import FlatButton from "material-ui/FlatButton";
 import NavigateHomeIcon from "material-ui/svg-icons/action/home";
@@ -13,9 +15,9 @@ import ArrowForwardIcon from "material-ui/svg-icons/navigation/arrow-forward";
 import IconButton from "material-ui/IconButton/IconButton";
 import { Card, CardActions, CardTitle } from "material-ui/Card";
 import Divider from "material-ui/Divider";
+import CreateIcon from "material-ui/svg-icons/content/create";
 import yup from "yup";
 import theme from "../styles/theme";
-import GSForm from "../components/forms/GSForm";
 import Form from "react-formal";
 import Popover from "material-ui/Popover";
 
@@ -858,11 +860,21 @@ export class AssignmentTexterContactControls extends React.Component {
           ref="messageScrollContainer"
           className={css(flexStyles.sectionMessageThread)}
         >
-          <MessageList
-            contact={this.props.contact}
-            messages={this.props.contact.messages}
-            styles={messageListStyles}
-          />
+          {this.props.messageStatusFilter === "needsMessage" ? (
+            <Empty
+              title={
+                "This is your first message to " + this.props.contact.firstName
+              }
+              icon={<CreateIcon color="rgb(83, 180, 119)" />}
+              hideMobile
+            />
+          ) : (
+            <MessageList
+              contact={this.props.contact}
+              messages={this.props.contact.messages}
+              styles={messageListStyles}
+            />
+          )}
         </div>
         {optOutDialogOpen
           ? this.renderOptOutDialog()
