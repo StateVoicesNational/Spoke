@@ -203,7 +203,6 @@ const flexStyles = StyleSheet.create({
     width: "100%",
     height: "100%",
     borderRadius: "0px",
-    backgroundColor: theme.colors.coreBackgroundColor,
     color: "white"
   },
   flatButton: {
@@ -823,6 +822,8 @@ export class AssignmentTexterContactControls extends React.Component {
             flexStyles.subSectionSendButton
           )}`}
           labelStyle={inlineStyles.flatButtonLabel}
+          backgroundColor={theme.colors.coreBackgroundColor}
+          hoverColor={theme.colors.coreHoverColor}
           primary
         />
       </div>,
