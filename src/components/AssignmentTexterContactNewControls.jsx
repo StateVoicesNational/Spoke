@@ -14,6 +14,7 @@ import IconButton from "material-ui/IconButton/IconButton";
 import { Card, CardActions, CardTitle } from "material-ui/Card";
 import Divider from "material-ui/Divider";
 import yup from "yup";
+import theme from "../styles/theme";
 import GSForm from "../components/forms/GSForm";
 import Form from "react-formal";
 import Popover from "material-ui/Popover";
@@ -39,7 +40,7 @@ const messageListStyles = {
   messageSent: {
     textAlign: "right",
     marginLeft: "30%",
-    backgroundColor: "#009D52",
+    backgroundColor: theme.colors.coreBackgroundColor,
     color: "white",
     borderRadius: "16px",
     fontWeight: "600",
@@ -68,11 +69,6 @@ const inlineStyles = {
     zIndex: 100,
     top: 0,
     left: "-12px"
-  },
-  sendButton: {
-    width: "100%",
-    height: "100%",
-    borderRadius: "0px"
   },
   flatButtonLabel: {
     textTransform: "none"
@@ -200,7 +196,15 @@ const flexStyles = StyleSheet.create({
     //sendButtonWrapper
     //flex: `0 0 ${sendButtonHeight}`, VARIABLE BELOW
     //height: ${sendButtonHeight}, VARIABLE BELOW
-    padding: "9px"
+    padding: "9px",
+    backgroundColor: "rgb(240, 240, 240)"
+  },
+  subSectionSendButton: {
+    width: "100%",
+    height: "100%",
+    borderRadius: "0px",
+    backgroundColor: theme.colors.coreBackgroundColor,
+    color: "white"
   },
   flatButton: {
     height: "40px",
@@ -580,9 +584,11 @@ export class AssignmentTexterContactControls extends React.Component {
                 }}
                 backgroundColor="#BC0000"
                 label={
-                  this.state.optOutMessageText.length
-                    ? "Opt-Out"
-                    : "Opt-Out without Text"
+                  this.state.optOutMessageText.length ? (
+                    <span>&crarr; Opt-Out</span>
+                  ) : (
+                    <span>&crarr; Opt-Out without Text</span>
+                  )
                 }
               />
             </div>
@@ -808,12 +814,15 @@ export class AssignmentTexterContactControls extends React.Component {
         className={css(flexStyles.sectionSend)}
         style={{ flex: `0 0 ${sendButtonHeight}`, height: sendButtonHeight }}
       >
-        <RaisedButton
+        <FlatButton
           {...dataTest("send")}
           onTouchTap={this.handleClickSendMessageButton}
           disabled={this.props.disabled}
-          label={"Send"}
-          style={inlineStyles.sendButton}
+          label={<span>&crarr; Send</span>}
+          className={`${css(flexStyles.flatButton)} ${css(
+            flexStyles.subSectionSendButton
+          )}`}
+          labelStyle={inlineStyles.flatButtonLabel}
           primary
         />
       </div>,
