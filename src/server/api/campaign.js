@@ -53,6 +53,11 @@ export function buildCampaignQuery(
   }
 
   query = query.where("campaign.organization_id", organizationId);
+  query = query.leftJoin(
+    "campaign_admin",
+    "campaign_admin.campaign_id",
+    "campaign.id"
+  );
   query = addCampaignsFilterToQuery(query, campaignsFilter);
 
   return query;
@@ -60,7 +65,11 @@ export function buildCampaignQuery(
 
 export async function getCampaigns(organizationId, cursor, campaignsFilter) {
   let campaignsQuery = buildCampaignQuery(
-    r.knex.select("*"),
+    r.knex.select(
+      "campaign.*",
+      "campaign_admin.contacts_count",
+      "campaign_admin.ingest_success"
+    ),
     organizationId,
     campaignsFilter
   );
@@ -241,10 +250,37 @@ export const resolvers = {
       );
     },
     ingestMethod: async (campaign, _, { user, loaders }) => {
-      // FUTURE: which ingestMethod was used and status
-      // try { ... for SUPERVOLUNTEER
-      // await accessRequired(user, campaign.organization_id, "ADMIN", true);
-      return null;
+      try {
+        await accessRequired(user, campaign.organization_id, "ADMIN", true);
+      } catch (err) {
+        return null; // for SUPERVOLUNTEERS
+      }
+      if (campaign.hasOwnProperty("contacts_count")) {
+        return {
+          contactsCount: campaign.contacts_count,
+          success: campaign.ingest_success || null
+        };
+      }
+
+      const status =
+        campaign.campaignAdmin ||
+        (await r
+          .knex("campaign_admin")
+          .where("campaign_id", campaign.id)
+          .first());
+      if (!status || !status.ingest_method) {
+        return null;
+      }
+      return {
+        name: status.ingest_method,
+        success: status.ingest_success,
+        result: status.ingest_result,
+        reference: status.ingest_data_reference,
+        contactsCount: status.contacts_count,
+        deletedOptouts: status.deleted_optouts_count,
+        deletedDupes: status.duplicate_contacts_count,
+        updatedAt: status.updated_at ? new Date(status.updated_at) : null
+      };
     },
     texters: async (campaign, _, { user }) => {
       await accessRequired(
