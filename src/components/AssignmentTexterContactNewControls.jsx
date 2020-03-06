@@ -291,7 +291,10 @@ export class AssignmentTexterContactControls extends React.Component {
     if (evt.keyCode === 13) {
       evt.preventDefault();
       // pressing the Enter key submits
-      if (!this.state.optOutDialogOpen) {
+      if (this.state.optOutDialogOpen) {
+        const { optOutMessageText } = this.state;
+        this.props.onOptOut({ optOutMessageText });
+      } else {
         this.handleClickSendMessageButton();
       }
     }
