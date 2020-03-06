@@ -118,7 +118,6 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
   if (campaignUpdates.logo_image_url && !isUrl(logoImageUrl)) {
     campaignUpdates.logo_image_url = "";
   }
-  console.log("CAMPAIGN UPDATES", Object.keys(campaignUpdates));
   let changed = Boolean(Object.keys(campaignUpdates).length);
   if (changed) {
     await r
