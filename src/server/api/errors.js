@@ -32,7 +32,7 @@ export async function accessRequired(
 
 export async function assignmentRequired(user, assignmentId, assignment) {
   authRequired(user);
-  console.log("assignmentRequired", user, assignmentId);
+
   if (user.is_superadmin) {
     return true;
   }
@@ -49,12 +49,6 @@ export async function assignmentRequired(user, assignmentId, assignment) {
     })
     .limit(1);
 
-  console.log(
-    "assignmentRequired result",
-    user,
-    assignmentId,
-    userHasAssignment
-  );
   if (!userHasAssignment) {
     // undefined or null
     throw new GraphQLError("You are not authorized to access that resource.");
@@ -69,15 +63,11 @@ export async function assignmentOrAdminRoleRequired(
   assignment
 ) {
   authRequired(user);
-  console.log("assignmentOrAdminRoleRequired", user, orgId, assignmentId);
-  try {
-    const isAdmin = await cacheableData.user.userHasRole(user, orgId, "ADMIN");
-    if (isAdmin || user.is_superadmin) {
-      return true;
-    }
-  } catch (err) {
-    console.error("assignmentOrAdminRoleRequired Error", err);
+  const isAdmin = await cacheableData.user.userHasRole(user, orgId, "ADMIN");
+  if (isAdmin || user.is_superadmin) {
+    return true;
   }
+
   // calling exports.assignmentRequired instead of just assignmentRequired
   // is functionally identical but it allows us to mock assignmentRequired
   return await exports.assignmentRequired(user, assignmentId, assignment);
