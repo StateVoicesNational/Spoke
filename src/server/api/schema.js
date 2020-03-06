@@ -967,11 +967,6 @@ const rootMutations = {
       const contact = await loaders.campaignContact.load(campaignContactId);
       const campaign = await loaders.campaign.load(contact.campaign_id);
 
-      console.log(
-        "createOptOut calling assignmentOrAdminRoleRequired",
-        user,
-        contact.assignment_id
-      );
       await assignmentOrAdminRoleRequired(
         user,
         campaign.organization_id,
@@ -1000,7 +995,6 @@ const rootMutations = {
       { message, campaignContactId },
       { loaders, user }
     ) => {
-      console.log("sendMessage", campaignContactId, user);
       return await sendMessage(message, campaignContactId, loaders, user);
     },
     deleteQuestionResponses: async (
