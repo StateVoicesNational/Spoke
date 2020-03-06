@@ -23,6 +23,11 @@ import Settings from "./containers/Settings";
 import UserEdit from "./containers/UserEdit";
 import TexterFaqs from "./components/TexterFrequentlyAskedQuestions";
 import FAQs from "./lib/faqs";
+import {
+  DemoTexterNeedsMessage,
+  DemoTexterNeedsResponse,
+  DemoTexterNeedsResponse2ndQuestion
+} from "./components/DemoTexterAssignment";
 
 export default function makeRoutes(requireAuth = () => {}) {
   return (
@@ -162,6 +167,29 @@ export default function makeRoutes(requireAuth = () => {}) {
         component={JoinTeam}
         onEnter={requireAuth}
       />
+      <Route path="demo" component={TexterDashboard}>
+        <Route
+          path="text"
+          components={{
+            main: props => <DemoTexterNeedsMessage {...props} />,
+            topNav: null
+          }}
+        />
+        <Route
+          path="reply"
+          components={{
+            main: props => <DemoTexterNeedsResponse {...props} />,
+            topNav: null
+          }}
+        />
+        <Route
+          path="reply2"
+          components={{
+            main: props => <DemoTexterNeedsResponse2ndQuestion {...props} />,
+            topNav: null
+          }}
+        />
+      </Route>
     </Route>
   );
 }

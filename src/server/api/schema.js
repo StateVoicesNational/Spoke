@@ -40,7 +40,12 @@ import {
   reassignConversations,
   resolvers as conversationsResolver
 } from "./conversations";
-import { accessRequired, assignmentRequired, authRequired } from "./errors";
+import {
+  accessRequired,
+  assignmentOrAdminRoleRequired,
+  assignmentRequired,
+  authRequired
+} from "./errors";
 import { resolvers as interactionStepResolvers } from "./interaction-step";
 import { resolvers as inviteResolvers } from "./invite";
 import { saveNewIncomingMessage } from "./lib/message-sending";
@@ -113,7 +118,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
   if (campaignUpdates.logo_image_url && !isUrl(logoImageUrl)) {
     campaignUpdates.logo_image_url = "";
   }
-
+  console.log("CAMPAIGN UPDATES", Object.keys(campaignUpdates));
   let changed = Boolean(Object.keys(campaignUpdates).length);
   if (changed) {
     await r
@@ -139,6 +144,15 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
         campaign_id: id,
         payload: campaign.contactData
       });
+      await r
+        .knex("campaign_admin")
+        .where("campaign_id", id)
+        .update({
+          contacts_count: null,
+          ingest_method: campaign.ingestMethod,
+          ingest_success: null
+        });
+
       if (JOBS_SAME_PROCESS) {
         dispatchContactIngestLoad(job, organization, {
           /*FUTURE: context obj*/
@@ -231,7 +245,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     await loadCampaignCache(campaignRefreshed, organization, {});
   }
 
-  return campaignRefreshed;
+  return Campaign.get(id);
 }
 
 async function updateInteractionSteps(
@@ -435,8 +449,11 @@ const rootMutations = {
 
         if (userData) {
           const newUserData = {
-            first_name: capitalizeWord(userData.firstName),
-            last_name: capitalizeWord(userData.lastName),
+            first_name: capitalizeWord(userData.firstName).trim(),
+            last_name: capitalizeWord(userData.lastName).trim(),
+            alias: userData.alias
+              ? capitalizeWord(userData.alias).trim()
+              : null,
             email: userData.email,
             cell: userData.cell
           };
@@ -490,7 +507,11 @@ const rootMutations = {
 
       return updatedUser;
     },
-    joinOrganization: async (_, { organizationUuid }, { user, loaders }) => {
+    joinOrganization: async (
+      _,
+      { organizationUuid, queryParams },
+      { user, loaders }
+    ) => {
       let organization;
       [organization] = await r
         .knex("organization")
@@ -533,7 +554,7 @@ const rootMutations = {
     },
     assignUserToCampaign: async (
       _,
-      { organizationUuid, campaignId },
+      { organizationUuid, campaignId, queryParams },
       { user, loaders }
     ) => {
       const campaign = await r
@@ -642,6 +663,9 @@ const rootMutations = {
         is_archived: false
       });
       const newCampaign = await campaignInstance.save();
+      await r.knex("campaign_admin").insert({
+        campaign_id: newCampaign.id
+      });
       return editCampaign(newCampaign.id, campaign, loaders, user);
     },
     copyCampaign: async (_, { id }, { user, loaders }) => {
@@ -658,6 +682,9 @@ const rootMutations = {
         is_archived: false
       });
       const newCampaign = await campaignInstance.save();
+      await r.knex("campaign_admin").insert({
+        campaign_id: newCampaign.id
+      });
       const newCampaignId = newCampaign.id;
       const oldCampaignId = campaign.id;
 
@@ -849,6 +876,7 @@ const rootMutations = {
         campaignId: cannedResponse.campaignId,
         userId: cannedResponse.userId
       });
+      return cannedResponseInstance;
     },
     createOrganization: async (
       _,
@@ -939,10 +967,15 @@ const rootMutations = {
       { loaders, user }
     ) => {
       const contact = await loaders.campaignContact.load(campaignContactId);
-      await assignmentRequired(user, contact.assignment_id);
+      const campaign = await loaders.campaign.load(contact.campaign_id);
+
+      await assignmentOrAdminRoleRequired(
+        user,
+        campaign.organization_id,
+        contact.assignment_id
+      );
 
       const { assignmentId, cell, reason } = optOut;
-      const campaign = await loaders.campaign.load(contact.campaign_id);
 
       await cacheableData.optOut.save({
         cell,
@@ -1159,7 +1192,7 @@ const rootResolvers = {
   },
   RootQuery: {
     campaign: async (_, { id }, { loaders, user }) => {
-      const campaign = await loaders.campaign.load(id);
+      const campaign = await Campaign.get(id);
       await accessRequired(user, campaign.organization_id, "SUPERVOLUNTEER");
       return campaign;
     },
