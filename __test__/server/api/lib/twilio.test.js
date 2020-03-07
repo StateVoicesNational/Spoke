@@ -34,14 +34,10 @@ let organizationId;
 let assignmentId;
 let dbCampaignContact;
 let queryLog;
-let tempEnabled = false;
 
 function spokeDbListener(data) {
   if (queryLog) {
     queryLog.push(data);
-    if (tempEnabled && (data.method == "select" || data.method == "first")) {
-      console.log("SELECT QUERY", data.sql);
-    }
   }
 }
 
@@ -180,14 +176,12 @@ it("postMessageSend error from twilio response should fail immediately", async (
 
 it("handleIncomingMessage should save message and update contact state", async () => {
   // use caching
-  tempEnabled = false;
   const org = await cacheableData.organization.load(organizationId);
   const campaign = await cacheableData.campaign.load(testCampaign.id, {
     forceLoad: true
   });
   await cacheableData.campaignContact.loadMany(campaign, org, {});
   queryLog = [];
-  tempEnabled = true;
   await cacheableData.message.save({
     contact: dbCampaignContact,
     messageInstance: new Message({
@@ -219,14 +213,13 @@ it("handleIncomingMessage should save message and update contact state", async (
   });
 
   if (r.redis) {
-    // no select statements should have fired!
+    // IMPORTANT: this should be tested before we do SELECT statements below
+    //   in the test itself to check the database
     const selectMethods = { select: 1, first: 1 };
     const selectCalls = queryLog.filter(q => q.method in selectMethods);
-    if (selectCalls) {
-      console.log("SKYSKY", selectCalls.map(q => [q.method, q.sql]));
-    }
+    // NO select statements should have fired!
+    expect(selectCalls).toEqual([]);
   }
-  tempEnabled = false;
 
   const [reply] = await r.knex("message").where("service_id", "TestMessageId");
   dbCampaignContact = await getCampaignContact(dbCampaignContact.id);
