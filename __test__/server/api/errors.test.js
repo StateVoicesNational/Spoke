@@ -49,13 +49,13 @@ describe("errors.js", () => {
   });
 
   describe("#assignmentRequired", () => {
-    it("returns true when a texter user has the assignment", async () => {
-      expect(
-        await assignmentRequired(
-          startedCampaign.testTexterUser,
-          startedCampaign.assignmentId
-        )
-      ).toBe(true);
+    it("returns truthy when a texter user has the assignment", async () => {
+      const assignment = await assignmentRequired(
+        startedCampaign.testTexterUser,
+        startedCampaign.assignmentId
+      );
+      expect(Boolean(assignment)).toBe(true);
+      expect(assignment.campaign_id).toBe(1);
     });
 
     describe("when the user does not have the assignment", () => {
