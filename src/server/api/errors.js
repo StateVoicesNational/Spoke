@@ -45,7 +45,7 @@ export async function assignmentRequired(
     // if we are passed the full assignment object, we can test directly
     return true;
   }
-  if (contact && contact.assignment_id === Number(assignmentId)) {
+  if (contact && contact.user_id === user.id) {
     // cached contact data can have assignment_id and user_id
     return true;
   }

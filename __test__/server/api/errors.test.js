@@ -141,6 +141,7 @@ describe("errors.js", () => {
       expect(spy).toHaveBeenCalledWith(
         startedCampaign.testTexterUser,
         startedCampaign.assignmentId,
+        null,
         undefined
       );
     });
