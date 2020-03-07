@@ -44,6 +44,13 @@ let testTexterUser2;
 let testContacts;
 let organizationId;
 let assignmentId;
+let queryLog;
+
+function spokeDbListener(data) {
+  if (queryLog) {
+    queryLog.push(data);
+  }
+}
 
 const NUMBER_OF_CONTACTS = 100;
 
@@ -74,9 +81,12 @@ beforeEach(async () => {
   assignmentId = dbCampaignContact.assignment_id;
   // await createScript(testAdminUser, testCampaign)
   // await startCampaign(testAdminUser, testCampaign)
+  r.knex.on("query", spokeDbListener);
 }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
 afterEach(async () => {
+  queryLog = null;
+  r.knex.removeListener("query", spokeDbListener);
   await cleanupTest();
   if (r.redis) r.redis.flushdb();
 }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);

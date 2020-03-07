@@ -106,7 +106,7 @@ export const getCacheContactAssignment = async (id, campaignId, contactObj) => {
       // if empty string, then it's null
       return {
         assignment_id: assignment_id ? Number(assignment_id) : null,
-        user_id: user_id || null
+        user_id: user_id ? Number(user_id) : null
       };
     }
   } else {

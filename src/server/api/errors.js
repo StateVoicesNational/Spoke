@@ -30,7 +30,12 @@ export async function accessRequired(
   }
 }
 
-export async function assignmentRequired(user, assignmentId, assignment) {
+export async function assignmentRequired(
+  user,
+  assignmentId,
+  assignment,
+  contact
+) {
   authRequired(user);
 
   if (user.is_superadmin) {
@@ -38,6 +43,10 @@ export async function assignmentRequired(user, assignmentId, assignment) {
   }
   if (assignment && assignment.user_id === user.id) {
     // if we are passed the full assignment object, we can test directly
+    return true;
+  }
+  if (contact && contact.assignment_id === Number(assignmentId)) {
+    // cached contact data can have assignment_id and user_id
     return true;
   }
 
@@ -56,11 +65,11 @@ export async function assignmentRequired(user, assignmentId, assignment) {
   return userHasAssignment;
 }
 
-export async function assignmentOrAdminRoleRequired(
+export async function assignmentRequiredOrAdminRole(
   user,
   orgId,
   assignmentId,
-  assignment
+  contact
 ) {
   authRequired(user);
   const isAdmin = await cacheableData.user.userHasRole(user, orgId, "ADMIN");
@@ -70,7 +79,7 @@ export async function assignmentOrAdminRoleRequired(
 
   // calling exports.assignmentRequired instead of just assignmentRequired
   // is functionally identical but it allows us to mock assignmentRequired
-  return await exports.assignmentRequired(user, assignmentId, assignment);
+  return await exports.assignmentRequired(user, assignmentId, null, contact);
 }
 
 export function superAdminRequired(user) {

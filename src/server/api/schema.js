@@ -42,7 +42,7 @@ import {
 } from "./conversations";
 import {
   accessRequired,
-  assignmentOrAdminRoleRequired,
+  assignmentRequiredOrAdminRole,
   assignmentRequired,
   authRequired
 } from "./errors";
@@ -917,7 +917,7 @@ const rootMutations = {
       { loaders, user }
     ) => {
       const contact = await loaders.campaignContact.load(campaignContactId);
-      await assignmentRequired(user, contact.assignment_id);
+      await assignmentRequired(user, contact.assignment_id, null, contact);
       contact.message_status = messageStatus;
       await cacheableData.campaignContact.updateStatus(contact, messageStatus);
       return contact;
@@ -927,7 +927,7 @@ const rootMutations = {
       { assignmentId, contactIds, findNew },
       { loaders, user }
     ) => {
-      const assignment = await assignmentRequired(user, assignmentId);
+      await assignmentRequired(user, assignmentId);
       const contacts = contactIds.map(async contactId => {
         // note we are loading from cacheableData and NOT loaders to avoid loader staleness
         // this is relevant for the possible multiple web dynos
@@ -936,7 +936,7 @@ const rootMutations = {
           // In case assignment_id from cache needs to be refreshed, try again
           await cacheableData.campaignContact.clear(
             contact.id,
-            assignment.campaign_id
+            contact.campaign_id
           );
           contact = await loaders.campaignContact.load(contactId);
         }
@@ -969,10 +969,11 @@ const rootMutations = {
       const contact = await loaders.campaignContact.load(campaignContactId);
       const campaign = await loaders.campaign.load(contact.campaign_id);
 
-      await assignmentOrAdminRoleRequired(
+      await assignmentRequiredOrAdminRole(
         user,
         campaign.organization_id,
-        contact.assignment_id
+        contact.assignment_id,
+        contact
       );
 
       const { assignmentId, cell, reason } = optOut;
@@ -1005,7 +1006,7 @@ const rootMutations = {
       { loaders, user }
     ) => {
       const contact = await loaders.campaignContact.load(campaignContactId);
-      await assignmentRequired(user, contact.assignment_id);
+      await assignmentRequired(user, contact.assignment_id, null, contact);
       // TODO: maybe undo action_handler
       await r
         .knex("question_response")
