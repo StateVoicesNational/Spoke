@@ -3,7 +3,6 @@ import { r, CampaignContact } from "../../server/models";
 
 export const finalizeContactLoad = async (job, inputContacts, maxContacts) => {
   const campaignId = job.campaign_id;
-  const jobMessages = [];
 
   let contacts = inputContacts;
 
@@ -34,9 +33,10 @@ export const finalizeContactLoad = async (job, inputContacts, maxContacts) => {
       (index + 1) * chunkSize
     );
     await CampaignContact.save(savePortion).catch(err => {
+      // eslint-disable-next-line no-console
       console.error("Error saving campaign contacts:", campaignId, err);
     });
   }
 
-  await completeContactLoad(job, jobMessages);
+  await completeContactLoad(job, []);
 };
