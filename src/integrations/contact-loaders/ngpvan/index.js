@@ -13,7 +13,7 @@ export function displayName() {
 }
 
 const getVanAuth = () => {
-  const buffer = new Buffer.from(
+  const buffer = Buffer.from(
     `${getConfig("NGP_VAN_APP_NAME")}:${getConfig("NGP_VAN_API_KEY")}|0`
   );
   return `Basic ${buffer.toString("base64")}`;
@@ -36,6 +36,7 @@ export async function available(organization, user) {
   // / If this is instantaneous, you can have it be 0 (i.e. always), but if it takes time
   // / to e.g. verify credentials or test server availability,
   // / then it's better to allow the result to be cached
+  // TODO
   const result = true;
   return {
     result,
@@ -48,6 +49,7 @@ export function addServerEndpoints(expressApp) {
   // / this is where you would run e.g. app.post(....)
   // / Be mindful of security and make sure there's
   // / This is NOT where or how the client send or receive contact data
+  // TODO
   return;
 }
 
@@ -75,6 +77,7 @@ export async function getClientChoiceData(
       validateStatus: status => status === 200
     });
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.log(error);
     throw new GraphQLError(error.message);
   }
@@ -89,37 +92,6 @@ export async function getClientChoiceData(
   };
 }
 
-const parseCsvCallback = ({
-  contacts,
-  customFields,
-  validationStats,
-  error
-}) => {
-  if (error) {
-    // TODO(lmp) call completeContactLoad
-    console.log(error);
-  } else if (contacts.length === 0) {
-    // TODO(lmp) call completeContactLoad
-  } else if (contacts.length > 0) {
-    console.log("contacts.length", contacts.length);
-    // this.handleUploadSuccess(
-    //   validationStats,
-    //   this.organizationCustomFields(contacts, customFields),
-    //   customFields
-    // );
-  }
-};
-
-// const requiredUploadFields = ["firstName", "lastName", "cell"];
-// const topLevelUploadFields = [
-//   "firstName",
-//   "lastName",
-//   "cell",
-//   "zip",
-//   "external_id"
-// ];
-//
-
 export const getZipFromRow = row => {
   const regexes = [
     new RegExp(".*\\s(\\d{5})\\s*$"),
@@ -133,6 +105,7 @@ export const getZipFromRow = row => {
       zip = matches[1];
       return false; // stop iterating
     }
+    return true;
   });
 
   return zip;
@@ -175,6 +148,7 @@ export const getCellFromRow = row => {
     if (cell) {
       return false; // stop iterating
     }
+    return true;
   });
 
   return cell;
@@ -209,19 +183,6 @@ export const rowTransformer = (originalFields, originalRow) => {
 };
 
 export async function processContactLoad(job, maxContacts) {
-  // TODO do something with maxContacts
-  // / Basic responsibilities:
-  // / 1. TODO Delete previous campaign contacts on a previous choice/upload
-  // / 2. TODO Set campaign_contact.campaign_id = job.campaign_id on all uploaded contacts
-  // / 3. TODO Set campaign_contact.message_status = "needsMessage" on all uploaded contacts
-  // / 4. Ensure that campaign_contact.cell is in the standard phone format "+15551234567"
-  // /    -- do NOT trust your backend to ensure this
-  // / 5. If your source doesn't have timezone offset info already, then you need to
-  // /    fill the campaign_contact.timezone_offset with getTimezoneByZip(contact.zip) (from "../../workers/jobs")
-  // / Things to consider in your implementation:
-  // / * Batching
-  // / * Error handling
-  // / * "Request of Doom" scenarios -- queries or jobs too big to complete
   let response;
   try {
     // TODO(lmp) so much to do here ... look for errors, retry, get multiple pages
@@ -239,21 +200,22 @@ export async function processContactLoad(job, maxContacts) {
       validateStatus: status => status >= 200 && status < 300
     });
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.log(error);
     throw new GraphQLError(error.message);
   }
 
-  let downloadUrl;
   if (response.data.status !== "Completed") {
     // TODO(lmp) implement web hook to get called back when jobs complete
     const message = `Export job not immediately completed ${JSON.stringify(
       job
     )}`;
+    // eslint-disable-next-line no-console
     console.log(message);
     throw new GraphQLError(message);
   }
 
-  downloadUrl = response.data.downloadUrl;
+  const downloadUrl = response.data.downloadUrl;
 
   try {
     const vanResponse = await axios({
@@ -264,13 +226,30 @@ export async function processContactLoad(job, maxContacts) {
 
     const vanContacts = vanResponse.data;
 
-    const { customFields, validationStats, contacts } = await parseCSVAsync(
+    // const parseCsvCallback = ({
+    //   contacts,
+    //   customFields,
+    //   validationStats,
+    //   error
+    // }) => {
+    //   if (error) {
+    //     // TODO(lmp) call completeContactLoad
+    //     console.log(error);
+    //   } else if (contacts.length === 0) {
+    //     // TODO(lmp) call completeContactLoad
+    //   } else if (contacts.length > 0) {
+    //     console.log("contacts.length", contacts.length);
+    //   }
+    // };
+
+    const { validationStats, contacts } = await parseCSVAsync(
       vanContacts,
       rowTransformer
     );
 
     await finalizeContactLoad(job, contacts, maxContacts);
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.log(error);
     // TODO(lmp) call failedContactLoad
     throw new GraphQLError(error.message);
