@@ -27,6 +27,7 @@ export {
   getInteractionTree,
   sortInteractionSteps,
   interactionStepForId,
+  getAvailableInteractionSteps,
   getTopMostParent,
   getChildren,
   makeTree
