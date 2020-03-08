@@ -13,8 +13,6 @@ import Dialog from "material-ui/Dialog";
 import CannedResponseForm from "./CannedResponseForm";
 import GSSubmitButton from "./forms/GSSubmitButton";
 import Form from "react-formal";
-import { connect } from "react-apollo";
-import gql from "graphql-tag";
 import { log } from "../lib";
 
 // import { insert, update, remove } from '../../api/scripts/methods'
@@ -29,7 +27,6 @@ class ScriptList extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      script: props.script,
       dialogOpen: false
     };
   }
@@ -38,13 +35,19 @@ class ScriptList extends React.Component {
     this.setState({
       dialogOpen: true
     });
+    // hack so mobile onclick doesn't close immediately
+    setTimeout(() => {
+      this.setState({ dialogReady: true });
+    }, 200);
   };
 
   handleCloseDialog = () => {
-    this.setState({
-      dialogOpen: false,
-      script: null
-    });
+    if (this.state.dialogReady) {
+      this.setState({
+        dialogOpen: false,
+        dialogReady: false
+      });
+    }
   };
 
   render() {
@@ -52,23 +55,16 @@ class ScriptList extends React.Component {
       subheader,
       scripts,
       onSelectCannedResponse,
+      onCreateCannedResponse,
       showAddScriptButton,
-      customFields,
-      campaignId,
-      mutations,
-      texterId
+      customFields
     } = this.props;
     const { dialogOpen } = this.state;
 
     const onSaveCannedResponse = async cannedResponse => {
+      this.setState({ dialogOpen: false });
       try {
-        const saveObject = {
-          ...cannedResponse,
-          campaignId,
-          userId: texterId
-        };
-        await mutations.createCannedResponse(saveObject);
-        this.setState({ dialogOpen: false });
+        await onCreateCannedResponse({ cannedResponse });
       } catch (err) {
         log.error(err);
       }
@@ -143,7 +139,6 @@ class ScriptList extends React.Component {
             <CannedResponseForm
               onSaveCannedResponse={onSaveCannedResponse}
               customFields={customFields}
-              script={this.state.script}
             />
           </Dialog>
         </Form.Context>
@@ -157,26 +152,9 @@ ScriptList.propTypes = {
   scripts: PropTypes.arrayOf(PropTypes.object),
   subheader: PropTypes.element,
   onSelectCannedResponse: PropTypes.func,
+  onCreateCannedResponse: PropTypes.func,
   showAddScriptButton: PropTypes.bool,
-  customFields: PropTypes.array,
-  campaignId: PropTypes.number,
-  mutations: PropTypes.object,
-  texterId: PropTypes.number
+  customFields: PropTypes.array
 };
 
-const mapMutationsToProps = () => ({
-  createCannedResponse: cannedResponse => ({
-    mutation: gql`
-      mutation createCannedResponse($cannedResponse: CannedResponseInput!) {
-        createCannedResponse(cannedResponse: $cannedResponse) {
-          id
-        }
-      }
-    `,
-    variables: { cannedResponse }
-  })
-});
-
-export default connect({
-  mapMutationsToProps
-})(ScriptList);
+export default ScriptList;

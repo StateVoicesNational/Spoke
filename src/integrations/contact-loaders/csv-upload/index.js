@@ -1,8 +1,6 @@
 import { finalizeContactLoad } from "../helpers";
 import { unzipPayload } from "../../../workers/jobs";
 
-import { updateJob } from "../../../lib";
-
 export const name = "csv-upload";
 
 export function displayName() {

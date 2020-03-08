@@ -1,4 +1,5 @@
 import { r, loaders } from "../../models";
+import { getConfig } from "../../api/lib/config";
 
 const cacheKey = orgId => `${process.env.CACHE_PREFIX || ""}org-${orgId}`;
 
@@ -9,6 +10,9 @@ const organizationCache = {
     }
     loaders.organization.clear(String(id));
     loaders.organization.clear(Number(id));
+  },
+  getMessageServiceSid: async organization => {
+    return getConfig("TWILIO_MESSAGE_SERVICE_SID", organization);
   },
   load: async id => {
     if (r.redis) {
