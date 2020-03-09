@@ -24,7 +24,10 @@ const DISABLE_DB_LOG = process.env.DISABLE_DB_LOG || global.DISABLE_DB_LOG;
 
 if (process.env.TWILIO_API_KEY && process.env.TWILIO_AUTH_TOKEN) {
   // eslint-disable-next-line new-cap
-  twilio = Twilio(process.env.TWILIO_API_KEY, process.env.TWILIO_AUTH_TOKEN);
+  twilio = new Twilio(
+    process.env.TWILIO_API_KEY,
+    process.env.TWILIO_AUTH_TOKEN
+  );
 } else {
   log.warn("NO TWILIO CONNECTION");
 }
