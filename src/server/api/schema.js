@@ -925,6 +925,8 @@ const rootMutations = {
       { loaders, user }
     ) => {
       const assignment = await assignmentRequired(user, assignmentId);
+      // TODO: if cache failure, then query for all assignment_ids at once
+      // TODO: limit number of contactIds we will return. (maybe 100?)
       const contacts = contactIds.map(async contactId => {
         // note we are loading from cacheableData and NOT loaders to avoid loader staleness
         // this is relevant for the possible multiple web dynos

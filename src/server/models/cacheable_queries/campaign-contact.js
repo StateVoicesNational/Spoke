@@ -386,7 +386,9 @@ const campaignContactCache = {
     if (r.redis) {
       const assignmentKey = contactAssignmentKey(campaignId);
       // delete the whole cache
-      await r.redis.delAsync(assignmentKey);
+      // do NOT delete current cache as mostly people are re-assigned
+      // TODO: handle unassignments
+      // await r.redis.delAsync(assignmentKey);
       // Now refill it, streaming for efficiency
       const query = r
         .knex("campaign_contact")

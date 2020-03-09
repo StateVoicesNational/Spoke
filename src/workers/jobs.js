@@ -395,6 +395,7 @@ export async function assignTexters(job) {
   */
   const payload = JSON.parse(job.payload);
   const cid = job.campaign_id;
+  console.log("assignTexters1", cid, payload);
   const campaign = (await r.knex("campaign").where({ id: cid }))[0];
   const texters = payload.texters;
   const currentAssignments = await r
@@ -603,11 +604,20 @@ export async function assignTexters(job) {
   }
 
   if (campaign.is_started) {
-    await cacheableData.campaignContact.updateCampaignAssignmentCache(
+    console.log(
+      "assignTexterscache1",
       job.campaign_id,
-      // await the full thing if we are testing to avoid async blocks
       global.TEST_ENVIRONMENT
     );
+    try {
+      await cacheableData.campaignContact.updateCampaignAssignmentCache(
+        job.campaign_id,
+        // await the full thing if we are testing to avoid async blocks
+        global.TEST_ENVIRONMENT
+      );
+    } catch (err) {
+      console.log("assignTexterscache Error", job.campaign_id, err);
+    }
   }
 
   if (job.id) {
