@@ -47,6 +47,14 @@ export class AssignmentTexter extends React.Component {
     this.updateCurrentContactIndex(0);
   }
 
+  componentDidMount() {
+    document.addEventListener("keydown", this.handleArrowPress, false);
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener("keydown", this.handleArrowPress, false);
+  }
+
   componentWillUpdate(nextProps, nextState) {
     // When we send a message that changes the contact status,
     // then if parent.refreshData is called, then props.contacts
@@ -296,6 +304,14 @@ export class AssignmentTexter extends React.Component {
     this.setState({ direction: "left" }, () =>
       this.incrementCurrentContactIndex(-1)
     );
+  };
+
+  handleArrowPress = e => {
+    if (e.key === "ArrowRight") {
+      this.handleNavigateNext();
+    } else if (e.key === "ArrowLeft") {
+      this.handleNavigatePrevious();
+    }
   };
 
   handleCannedResponseChange = script => {
