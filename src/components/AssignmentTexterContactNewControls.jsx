@@ -715,7 +715,7 @@ export class AssignmentTexterContactControls extends React.Component {
                 >
                   {currentQuestionOptions.map(opt => (
                     <FlatButton
-                      key={opt.answer.value.replace(/\W/, "")}
+                      key={`shortcut_${opt.answer.value}`}
                       label={opt.label}
                       onTouchTap={evt => {
                         this.handleQuestionResponseChange({
