@@ -604,19 +604,21 @@ export async function assignTexters(job) {
   }
 
   if (campaign.is_started) {
-    console.log(
-      "assignTexterscache1",
-      job.campaign_id,
-      global.TEST_ENVIRONMENT
-    );
-    try {
+    console.log("assignTexterscache1", job.campaign_id);
+    if (global.TEST_ENVIRONMENT) {
+      // await the full thing if we are testing to avoid async blocks
       await cacheableData.campaignContact.updateCampaignAssignmentCache(
-        job.campaign_id,
-        // await the full thing if we are testing to avoid async blocks
-        global.TEST_ENVIRONMENT
+        job.campaign_id
       );
-    } catch (err) {
-      console.log("assignTexterscache Error", job.campaign_id, err);
+    } else {
+      cacheableData.campaignContact
+        .updateCampaignAssignmentCache(job.campaign_id)
+        .then(res => {
+          console.log("assignTexterscache Loaded", job.campaign_id, res);
+        })
+        .catch(err => {
+          console.log("assignTexterscache Error", job.campaign_id, err);
+        });
     }
   }
 
