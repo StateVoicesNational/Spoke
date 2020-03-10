@@ -2,7 +2,13 @@ import { completeContactLoad, getTimezoneByZip } from "../../workers/jobs";
 import { r, CampaignContact } from "../../server/models";
 import { updateJob } from "../../workers/lib";
 
-export const finalizeContactLoad = async (job, inputContacts, maxContacts) => {
+export const finalizeContactLoad = async (
+  job,
+  inputContacts,
+  maxContacts,
+  ingestDataReference,
+  ingestResult
+) => {
   const campaignId = job.campaign_id;
 
   let contacts = inputContacts;
@@ -40,8 +46,9 @@ export const finalizeContactLoad = async (job, inputContacts, maxContacts) => {
     await CampaignContact.save(savePortion).catch(err => {
       // eslint-disable-next-line no-console
       console.error("Error saving campaign contacts:", campaignId, err);
+      // call the error thing
     });
   }
 
-  await completeContactLoad(job, []);
+  await completeContactLoad(job, [], ingestDataReference, ingestResult);
 };

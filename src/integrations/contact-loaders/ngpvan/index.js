@@ -50,13 +50,32 @@ export function addServerEndpoints(expressApp) {
   // / Be mindful of security and make sure there's
   // / This is NOT where or how the client send or receive contact data
   // TODO
+
+  // expressApp.post('/ingest-data/ngpvan/:jobid/:maxcontacts/:listid', function(req, res) {
+  //   const jobId = req.params.jobid
+  //   const job = await r.knex("job").where('id', jobId)
+  //   if (req.FILES.length) {
+  //      await axios();
+  //      finalizeContactData(req.FILES[0], job, req.params.maxcontacts);
+  //   }
+  //   res.send('ok');
+  // });
+
   return;
 }
 
 export function clientChoiceDataCacheKey(organization, campaign, user) {
   // / returns a string to cache getClientChoiceData -- include items that relate to cacheability
-  return `${organization.id}-${campaign.id}`;
+  return `${organization.id}`;
 }
+
+// export function intermediateadmindatarequest(organization, campaign, user, datadetails, clientchoicedata) {
+//   if (datadetails.startswith('page')) {
+//      const choicedata = json.parse(clientchoicedata);
+//     const page = datadetails.match(/page=(\d+)/)
+//
+//   }
+// }
 
 export async function getClientChoiceData(
   organization,
@@ -155,7 +174,7 @@ export const getCellFromRow = row => {
 };
 
 export const rowTransformer = (originalFields, originalRow) => {
-  const addedFields = ["external_id"];
+  const addedFields = ["external_id", "firstName", "lastName"];
 
   const row = {
     ...originalRow
@@ -247,7 +266,17 @@ export async function processContactLoad(job, maxContacts) {
       rowTransformer
     );
 
-    await finalizeContactLoad(job, contacts, maxContacts);
+    // ingestDataReference -- add list id
+    // ingestResult -- payload describing what happened underdable by react component, warnings, stats,
+    const ingestDataReference = "";
+    const ingestResult = "";
+    await finalizeContactLoad(
+      job,
+      contacts,
+      maxContacts,
+      ingestDataReference,
+      ingestResult
+    );
   } catch (error) {
     // eslint-disable-next-line no-console
     console.log(error);

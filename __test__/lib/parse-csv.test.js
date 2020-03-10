@@ -14,12 +14,12 @@ describe("parseCSV", () => {
     });
   });
 
-  describe("When required headers are snake case", () => {
+  describe("When required headers are snake_case", () => {
     const mockCallback = jest.fn();
     const csv =
       "first_name,last_name,cell,zip\r\nJerome,Garcia,14155551212,94970\r\n";
 
-    it("calls the callback with a contact with camel case fields", () => {
+    it("calls the callback with a contact with snake case fields", () => {
       parseCSV(csv, mockCallback);
 
       expect(mockCallback).toHaveBeenCalledTimes(1);
@@ -39,7 +39,7 @@ describe("parseCSV", () => {
     const csv =
       "FirstName,LastName,cell,zip\r\nJerome,Garcia,14155551212,94970\r\n";
 
-    it("calls the callback with a contact with camel case fields", () => {
+    it("calls the callback with a contact with snake case fields", () => {
       parseCSV(csv, mockCallback);
 
       expect(mockCallback).toHaveBeenCalledTimes(1);

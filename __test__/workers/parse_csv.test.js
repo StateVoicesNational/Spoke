@@ -13,9 +13,11 @@ describe("#parseCSVAsync", () => {
     expect(parsed.contacts).toHaveLength(1);
     expect(parsed.contacts[0]).toEqual({
       cell: "+14155551212",
-      firstName: "Jerome",
-      lastName: "Garcia",
-      zip: "94970"
+      first_name: "Jerome",
+      last_name: "Garcia",
+      zip: "94970",
+      custom_fields: "{}",
+      external_id: ""
     });
     expect(parsed.customFields).toEqual([]);
     expect(parsed.validationStats).toEqual({
