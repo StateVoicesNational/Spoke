@@ -100,6 +100,7 @@ export const parseCSV = (file, onCompleteCallback, rowTransformer) => {
   Papa.parse(file, {
     header: true,
     transformHeader: ensureCamelCaseRequiredHeaders,
+    skipEmptyLines: true,
     // eslint-disable-next-line no-shadow, no-unused-vars
     complete: ({ data: parserData, meta, errors }, file) => {
       const fields = meta.fields;

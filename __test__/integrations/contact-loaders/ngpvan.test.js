@@ -218,9 +218,17 @@ describe("ngpvan", () => {
 
     it("delegates to its dependencies", () => {
       const inputFields = ["VanID"];
-      const expectedFields = ["cell", "zip", "external_id"];
+      const expectedFields = [
+        "firstName",
+        "lastName",
+        "cell",
+        "zip",
+        "external_id"
+      ];
       const inputRow = {
-        VanID: "abc"
+        VanID: "abc",
+        firstName: "Jerry",
+        lastName: "Garcia"
       };
       const transformedRow = rowTransformer(inputFields, inputRow);
       expect(getCellFromRowSpy.mock.calls).toEqual([[inputRow]]);
@@ -229,7 +237,9 @@ describe("ngpvan", () => {
         VanID: "abc",
         external_id: "abc",
         cell: "12024561414",
-        zip: "07052"
+        zip: "07052",
+        firstName: "Jerry",
+        lastName: "Garcia"
       });
       expect(transformedRow.addedFields.length).toEqual(expectedFields.length);
       expect(transformedRow.addedFields).toEqual(
