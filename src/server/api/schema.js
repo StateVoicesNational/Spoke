@@ -924,20 +924,34 @@ const rootMutations = {
       { assignmentId, contactIds, findNew },
       { loaders, user }
     ) => {
-      const assignment = await assignmentRequired(user, assignmentId);
-      // TODO: if cache failure, then query for all assignment_ids at once
-      // TODO: limit number of contactIds we will return. (maybe 100?)
-      const contacts = contactIds.map(async contactId => {
+      if (contactIds.length === 0) {
+        return [];
+      }
+      const firstContact = await cacheableData.campaignContact.load(
+        contactIds[0]
+      );
+      await assignmentRequired(user, assignmentId, null, firstContact);
+      let triedUpdate = false;
+      const contacts = contactIds.map(async (contactId, cIdx) => {
         // note we are loading from cacheableData and NOT loaders to avoid loader staleness
         // this is relevant for the possible multiple web dynos
-        let contact = await cacheableData.campaignContact.load(contactId);
-        if (contact.assignment_id === null) {
+        let contact =
+          cIdx === 0
+            ? firstContact
+            : await cacheableData.campaignContact.load(contactId);
+        if (
+          contact.assignment_id === null &&
+          contact.hasOwnProperty("user_id") &&
+          !triedUpdate
+        ) {
           // In case assignment_id from cache needs to be refreshed, try again
-          await cacheableData.campaignContact.clear(
-            contact.id,
-            assignment.campaign_id
+          // user_id will only be a property if it's from a cached response
+          triedUpdate = true;
+          await cacheableData.campaignContact.updateCampaignAssignmentCache(
+            contact.campaign_id,
+            contactIds
           );
-          contact = await loaders.campaignContact.load(contactId);
+          contact = await cacheableData.campaignContact.load(contactId);
         }
 
         if (contact && Number(contact.assignment_id) === Number(assignmentId)) {
