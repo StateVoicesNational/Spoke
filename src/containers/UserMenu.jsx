@@ -116,15 +116,18 @@ class UserMenu extends Component {
               {currentUser.email}
             </MenuItem>
             <Divider />
-            <Subheader>Teams</Subheader>
-            {currentUser.organizations.map(organization => (
-              <MenuItem
-                key={organization.id}
-                primaryText={organization.name}
-                value={organization.id}
-              />
-            ))}
-            <Divider />
+            {currentUser.organizations.length > 1 && (
+              <Subheader>Teams</Subheader>
+            )}
+            {currentUser.organizations.length > 1 &&
+              currentUser.organizations.map(organization => (
+                <MenuItem
+                  key={organization.id}
+                  primaryText={organization.name}
+                  value={organization.id}
+                />
+              ))}
+            {currentUser.organizations.length > 1 && <Divider />}
             <MenuItem
               {...dataTest("home")}
               primaryText="Home"
