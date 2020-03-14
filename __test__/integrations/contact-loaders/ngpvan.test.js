@@ -219,8 +219,8 @@ describe("ngpvan", () => {
     it("delegates to its dependencies", () => {
       const inputFields = ["VanID"];
       const expectedFields = [
-        "firstName",
-        "lastName",
+        //"firstName",
+        //"lastName",
         "cell",
         "zip",
         "external_id"

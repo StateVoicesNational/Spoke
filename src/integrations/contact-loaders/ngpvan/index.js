@@ -174,7 +174,7 @@ export const getCellFromRow = row => {
 };
 
 export const rowTransformer = (originalFields, originalRow) => {
-  const addedFields = ["external_id", "firstName", "lastName"];
+  const addedFields = ["external_id"];
 
   const row = {
     ...originalRow
