@@ -6,11 +6,41 @@ import Form from "react-formal";
 import Subheader from "material-ui/Subheader";
 import Divider from "material-ui/Divider";
 import { ListItem, List } from "material-ui/List";
-import { parseCSV, gzip, organizationCustomFields } from "../../../lib";
+import {
+  parseCSV,
+  gzip,
+  organizationCustomFields,
+  requiredUploadFields
+} from "../../../lib";
 import CampaignFormSectionHeading from "../../../components/CampaignFormSectionHeading";
 import { StyleSheet, css } from "aphrodite";
 import theme from "../../../styles/theme";
 import yup from "yup";
+import humps from "humps";
+
+export const ensureCamelCaseRequiredHeaders = columnHeader => {
+  /*
+   * This function changes:
+   *  first_name to firstName
+   *  last_name to lastName
+   *  FirstName to firstName
+   *  LastName to lastName
+   *
+   * It changes no other fields.
+   *
+   * If other fields that could be either snake_case or camelCase
+   * are added to `requiredUploadFields` it will do the same for them.
+   * */
+  const camelizedColumnHeader = humps.camelize(columnHeader);
+  if (
+    requiredUploadFields.includes(camelizedColumnHeader) &&
+    camelizedColumnHeader !== columnHeader
+  ) {
+    return camelizedColumnHeader;
+  }
+
+  return columnHeader;
+};
 
 const innerStyles = {
   button: {
@@ -51,15 +81,19 @@ export class CampaignContactsForm extends React.Component {
     event.preventDefault();
     const file = event.target.files[0];
     this.setState({ uploading: true }, () => {
-      parseCSV(file, ({ contacts, customFields, validationStats, error }) => {
-        if (error) {
-          this.handleUploadError(error);
-        } else if (contacts.length === 0) {
-          this.handleUploadError("Upload at least one contact");
-        } else if (contacts.length > 0) {
-          this.handleUploadSuccess(validationStats, contacts, customFields);
-        }
-      });
+      parseCSV(
+        file,
+        ({ contacts, customFields, validationStats, error }) => {
+          if (error) {
+            this.handleUploadError(error);
+          } else if (contacts.length === 0) {
+            this.handleUploadError("Upload at least one contact");
+          } else if (contacts.length > 0) {
+            this.handleUploadSuccess(validationStats, contacts, customFields);
+          }
+        },
+        { headerTransformer: ensureCamelCaseRequiredHeaders }
+      );
     });
   };
 

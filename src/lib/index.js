@@ -41,4 +41,8 @@ export {
 } from "./permissions";
 
 export { gzip, gunzip } from "./gzip";
-export { parseCSV, organizationCustomFields } from "./parse_csv.js";
+export {
+  parseCSV,
+  organizationCustomFields,
+  requiredUploadFields
+} from "./parse_csv.js";

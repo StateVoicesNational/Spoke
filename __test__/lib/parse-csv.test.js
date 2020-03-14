@@ -1,3 +1,4 @@
+import Papa from "papaparse";
 import { parseCSV, organizationCustomFields } from "../../src/lib";
 
 describe("parseCSV", () => {
@@ -14,42 +15,34 @@ describe("parseCSV", () => {
     });
   });
 
-  describe("When required headers are snake_case", () => {
-    const mockCallback = jest.fn();
-    const csv =
-      "first_name,last_name,cell,zip\r\nJerome,Garcia,14155551212,94970\r\n";
+  describe("when a header transformer is provided", () => {
+    let csv;
 
-    it("calls the callback with a contact with snake case fields", () => {
-      parseCSV(csv, mockCallback);
-
-      expect(mockCallback).toHaveBeenCalledTimes(1);
-      expect(mockCallback.mock.calls[0][0].contacts[0]).toEqual({
-        cell: "+14155551212",
-        first_name: "Jerome",
-        last_name: "Garcia",
-        zip: "94970",
-        custom_fields: "{}",
-        external_id: ""
-      });
+    beforeEach(async () => {
+      csv =
+        "first_name,last_name,cell,zip\r\nJerome,Garcia,14155551212,94970\r\n";
+      jest.spyOn(Papa, "parse");
     });
-  });
 
-  describe("When required headers are CamelCaps", () => {
-    const mockCallback = jest.fn();
-    const csv =
-      "FirstName,LastName,cell,zip\r\nJerome,Garcia,14155551212,94970\r\n";
+    afterEach(async () => {
+      jest.restoreAllMocks();
+    });
 
-    it("calls the callback with a contact with snake case fields", () => {
-      parseCSV(csv, mockCallback);
+    it("is passed to Papa.parse", async () => {
+      parseCSV(csv, () => {}, { headerTransformer: () => {} });
+      expect(Papa.parse).toHaveBeenCalledTimes(1);
+      expect(Papa.parse.mock.calls[0][0]).toEqual(csv);
+      expect(Papa.parse.mock.calls[0][1]).toHaveProperty("transformHeader");
+    });
 
-      expect(mockCallback).toHaveBeenCalledTimes(1);
-      expect(mockCallback.mock.calls[0][0].contacts[0]).toEqual({
-        cell: "+14155551212",
-        first_name: "Jerome",
-        last_name: "Garcia",
-        zip: "94970",
-        custom_fields: "{}",
-        external_id: ""
+    describe("and when a header transformer is not provided", () => {
+      it("does not pass a header transformer to Papa.parse", async () => {
+        parseCSV(csv, () => {}, {});
+        expect(Papa.parse).toHaveBeenCalledTimes(1);
+        expect(Papa.parse.mock.calls[0][0]).toEqual(csv);
+        expect(Papa.parse.mock.calls[0][1]).not.toHaveProperty(
+          "transformHeader"
+        );
       });
     });
   });
@@ -98,7 +91,9 @@ describe("parseCSV", () => {
     ).join(",")}\r\n${Object.values(contacts[1]).join(",")}`;
 
     it("it calls the rowTransformer for each row and returns the transformed data", () => {
-      parseCSV(csv, mockCallback, mockRowTransformer);
+      parseCSV(csv, mockCallback, {
+        rowTransformer: mockRowTransformer
+      });
 
       expect(mockRowTransformer).toHaveBeenCalledTimes(2);
       expect(mockRowTransformer.mock.calls[0][0]).toEqual(

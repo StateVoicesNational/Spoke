@@ -1,9 +1,8 @@
 import Papa from "papaparse";
 import _ from "lodash";
 import { getFormattedPhoneNumber, getFormattedZip } from "../lib";
-import humps from "humps";
 
-const requiredUploadFields = ["firstName", "lastName", "cell"];
+export const requiredUploadFields = ["firstName", "lastName", "cell"];
 const topLevelUploadFields = [
   "firstName",
   "lastName",
@@ -54,28 +53,6 @@ const getValidatedData = data => {
   };
 };
 
-const ensureCamelCaseRequiredHeaders = columnHeader => {
-  /*
-   * This function changes:
-   *  first_name to firstName
-   *  last_name to lastName
-   *
-   * It changes no other fields.
-   *
-   * If other fields that could be either snake_case or camelCase
-   * are added to `requiredUploadFields` it will do the same for them.
-   * */
-  const camelizedColumnHeader = humps.camelize(columnHeader);
-  if (
-    requiredUploadFields.includes(camelizedColumnHeader) &&
-    camelizedColumnHeader !== columnHeader
-  ) {
-    return camelizedColumnHeader;
-  }
-
-  return columnHeader;
-};
-
 export const organizationCustomFields = (contacts, customFieldsList) => {
   return contacts.map(contact => {
     const customFields = {};
@@ -96,10 +73,11 @@ export const organizationCustomFields = (contacts, customFieldsList) => {
   });
 };
 
-export const parseCSV = (file, onCompleteCallback, rowTransformer) => {
+export const parseCSV = (file, onCompleteCallback, options) => {
+  const { rowTransformer, headerTransformer } = options || {};
   Papa.parse(file, {
     header: true,
-    transformHeader: ensureCamelCaseRequiredHeaders,
+    ...(headerTransformer && { transformHeader: headerTransformer }),
     skipEmptyLines: true,
     // eslint-disable-next-line no-shadow, no-unused-vars
     complete: ({ data: parserData, meta, errors }, file) => {
