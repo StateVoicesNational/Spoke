@@ -86,6 +86,7 @@ export const dataQuery = gql`
             text
             answerOptions {
               value
+              interactionStepId
               nextInteractionStep {
                 id
                 script
