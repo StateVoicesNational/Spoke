@@ -1,6 +1,7 @@
 import { finalizeContactLoad } from "../helpers";
 import { getConfig } from "../../../server/api/lib/config";
 import { parseCSVAsync } from "../../../workers/parse_csv";
+import { failedContactLoad } from "../../../workers/jobs";
 
 import _ from "lodash";
 import { GraphQLError } from "graphql/error";
@@ -27,6 +28,14 @@ export function serverAdministratorInstructions() {
       "Nothing is necessary to setup since this is default functionality"
   };
 }
+
+const handleFailedContactLoad = (job, ingestDataReference, message) => {
+  // eslint-disable-next-line no-console
+  console.error(message);
+  failedContactLoad(job, null, ingestDataReference, {
+    errors: [message]
+  });
+};
 
 export async function available(organization, user) {
   // / return an object with two keys: result: true/false
@@ -96,9 +105,9 @@ export async function getClientChoiceData(
       validateStatus: status => status === 200
     });
   } catch (error) {
+    // TODO
     // eslint-disable-next-line no-console
     console.log(error);
-    throw new GraphQLError(error.message);
   }
 
   // / data to be sent to the admin client to present options to the component or similar
@@ -201,8 +210,23 @@ export const rowTransformer = (originalFields, originalRow) => {
   return { row, addedFields };
 };
 
+export const headerTransformer = header => {
+  switch (header) {
+    case "FirstName":
+      return "firstName";
+    case "LastName":
+      return "lastName";
+    default:
+      return header;
+  }
+};
+
 export async function processContactLoad(job, maxContacts) {
   let response;
+  let ingestDataReference = { savedListId: job.payload };
+  let vanResponse;
+  let vanContacts;
+
   try {
     // TODO(lmp) so much to do here ... look for errors, retry, get multiple pages
     response = await axios({
@@ -219,9 +243,12 @@ export async function processContactLoad(job, maxContacts) {
       validateStatus: status => status >= 200 && status < 300
     });
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.log(error);
-    throw new GraphQLError(error.message);
+    handleFailedContactLoad(
+      job,
+      ingestDataReference,
+      `Error requesting VAN export job. ${error}`
+    );
+    return;
   }
 
   if (response.data.status !== "Completed") {
@@ -231,19 +258,30 @@ export async function processContactLoad(job, maxContacts) {
     )}`;
     // eslint-disable-next-line no-console
     console.log(message);
-    throw new GraphQLError(message);
   }
 
   const downloadUrl = response.data.downloadUrl;
 
   try {
-    const vanResponse = await axios({
+    vanResponse = await axios({
       url: downloadUrl,
       method: "GET",
       validateStatus: status => status === 200
     });
+  } catch (error) {
+    handleFailedContactLoad(
+      job,
+      ingestDataReference,
+      `Error downloading VAN contacts. ${error}`
+    );
+    return;
+  }
 
-    const vanContacts = vanResponse.data;
+  let parserContacts;
+  let parserValidationStats;
+
+  try {
+    vanContacts = vanResponse.data;
 
     // const parseCsvCallback = ({
     //   contacts,
@@ -261,26 +299,40 @@ export async function processContactLoad(job, maxContacts) {
     //   }
     // };
 
-    const { validationStats, contacts } = await parseCSVAsync(
-      vanContacts,
-      rowTransformer
-    );
+    const { validationStats, contacts } = await parseCSVAsync(vanContacts, {
+      rowTransformer,
+      headerTransformer
+    });
 
+    parserContacts = contacts;
+    parserValidationStats = validationStats;
+  } catch (error) {
+    handleFailedContactLoad(
+      job,
+      ingestDataReference,
+      `Error parsing VAN response. ${error}`
+    );
+    return;
+  }
+
+  try {
     // ingestDataReference -- add list id
     // ingestResult -- payload describing what happened underdable by react component, warnings, stats,
-    const ingestDataReference = "";
-    const ingestResult = "";
+    const ingestResult = parserValidationStats;
+
     await finalizeContactLoad(
       job,
-      contacts,
+      parserContacts,
       maxContacts,
       ingestDataReference,
       ingestResult
     );
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.log(error);
-    // TODO(lmp) call failedContactLoad
-    throw new GraphQLError(error.message);
+    handleFailedContactLoad(
+      job,
+      ingestDataReference,
+      `Error loading VAN contacts to the database. ${error}`
+    );
+    return;
   }
 }
