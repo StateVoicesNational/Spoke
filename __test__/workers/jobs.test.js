@@ -1,6 +1,15 @@
-import { getTimezoneByZip } from "../../src/workers/jobs";
+import { getTimezoneByZip, completeContactLoad } from "../../src/workers/jobs";
 import { r, ZipCode } from "../../src/server/models";
-import { setupTest, cleanupTest } from "../test_helpers";
+import {
+  setupTest,
+  cleanupTest,
+  createCampaign,
+  createContacts,
+  createJob,
+  createUser,
+  createInvite,
+  createOrganization
+} from "../test_helpers";
 
 jest.mock("../../src/lib/zip-format");
 var zipFormat = require("../../src/lib/zip-format");
@@ -72,6 +81,65 @@ describe("test getTimezoneByZip", () => {
         .getAll()
         .delete();
     }
+  });
+});
+
+describe("completeContactLoad", () => {
+  let adminUser;
+  let invite;
+  let organization;
+  let campaign;
+  let contacts;
+  let job;
+  let expectedCampaignAdminFields;
+
+  beforeAll(
+    async () => await setupTest(),
+    global.DATABASE_SETUP_TEARDOWN_TIMEOUT
+  );
+  afterAll(
+    async () => await cleanupTest(),
+    global.DATABASE_SETUP_TEARDOWN_TIMEOUT
+  );
+
+  beforeEach(async () => {
+    adminUser = await createUser();
+    invite = await createInvite();
+    organization = await createOrganization(adminUser, invite);
+    campaign = await createCampaign(adminUser, organization);
+    contacts = await createContacts(campaign, 2);
+    job = await createJob(campaign);
+  });
+
+  beforeEach(async () => {
+    expectedCampaignAdminFields = {
+      campaign_id: 1,
+      contacts_count: 2,
+      deleted_optouts_count: 0,
+      duplicate_contacts_count: 0,
+      id: 1,
+      ingest_data_reference: "fake_ingest_data_reference",
+      ingest_method: "fake_job_type",
+      ingest_result: "fake_ingest_result",
+      ingest_success: 1
+    };
+  });
+
+  it("updates campaign_admin", async () => {
+    await completeContactLoad(
+      job,
+      null,
+      "fake_ingest_data_reference",
+      "fake_ingest_result"
+    );
+
+    const campaignAdminRecord = await r
+      .knex("campaign_admin")
+      .where({ campaign_id: campaign.id });
+
+    expect(campaignAdminRecord[0]).toEqual(
+      expect.objectContaining(expectedCampaignAdminFields)
+    );
   });
 });
 
