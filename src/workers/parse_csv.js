@@ -1,7 +1,7 @@
 import util from "util";
 import { parseCSV } from "../lib/parse_csv";
 
-parseCSV[util.promisify.custom] = (file, rowTransformer) => {
+parseCSV[util.promisify.custom] = (file, options) => {
   return new Promise((resolve, reject) => {
     parseCSV(
       file,
@@ -12,7 +12,7 @@ parseCSV[util.promisify.custom] = (file, rowTransformer) => {
           resolve(result);
         }
       },
-      rowTransformer
+      options
     );
   });
 };
