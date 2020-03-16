@@ -23,6 +23,7 @@ import Papa from "papaparse";
 import moment from "moment";
 import { sendEmail } from "../server/mail";
 import { Notifications, sendUserNotification } from "../server/notifications";
+import _ from "lodash";
 
 const defensivelyDeleteJob = async job => {
   if (job.id) {
@@ -295,8 +296,12 @@ export async function completeContactLoad(
     .knex("campaign_admin")
     .where("campaign_id", campaignId)
     .update({
-      deleted_optouts_count: deleteOptOutCells || null,
-      duplicate_contacts_count: deleteDuplicateCells || null,
+      deleted_optouts_count:
+        deleteOptOutCells || deleteOptOutCells === 0 ? deleteOptOutCells : null,
+      duplicate_contacts_count:
+        deleteDuplicateCells || deleteDuplicateCells === 0
+          ? deleteDuplicateCells
+          : null,
       contacts_count: finalContactCount,
       ingest_method: job.job_type.replace(/^ingest./, ""),
       ingest_success: true,
