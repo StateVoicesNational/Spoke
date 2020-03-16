@@ -84,6 +84,7 @@ export default function renderIndex(html, css, assetMap, store) {
       window.DST_REFERENCE_TIMEZONE="${process.env.DST_REFERENCE_TIMEZONE ||
         "America/New_York"}"
       window.PASSPORT_STRATEGY="${process.env.PASSPORT_STRATEGY || ""}"
+      window.CORE_BACKGROUND_COLOR="${process.env.CORE_BACKGROUND_COLOR || ""}"
       window.CAN_GOOGLE_IMPORT=${canGoogleImport}
     </script>
     <script src="${assetMap["bundle.js"]}"></script>

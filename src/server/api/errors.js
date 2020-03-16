@@ -30,7 +30,12 @@ export async function accessRequired(
   }
 }
 
-export async function assignmentRequired(user, assignmentId, assignment) {
+export async function assignmentRequired(
+  user,
+  assignmentId,
+  assignment,
+  contact
+) {
   authRequired(user);
 
   if (user.is_superadmin) {
@@ -38,6 +43,15 @@ export async function assignmentRequired(user, assignmentId, assignment) {
   }
   if (assignment && assignment.user_id === user.id) {
     // if we are passed the full assignment object, we can test directly
+    return true;
+  }
+  if (
+    contact &&
+    contact.user_id === user.id &&
+    contact.assignment_id === Number(assignmentId)
+  ) {
+    // cached contact data can have assignment_id and user_id
+    // check both to verify that the assignmentId-userId pair are accepted
     return true;
   }
 

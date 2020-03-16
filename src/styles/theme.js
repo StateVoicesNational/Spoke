@@ -1,4 +1,12 @@
+import tinycolor from "tinycolor2";
+
+const coreBackgroundColor = global.CORE_BACKGROUND_COLOR || "rgb(83, 180, 119)";
+
 const colors = {
+  coreBackgroundColor: coreBackgroundColor,
+  coreHoverColor: tinycolor(coreBackgroundColor)
+    .darken(5)
+    .toHexString(),
   orange: "rgb(255, 102, 0)",
   lightGreen: "rgb(245, 255, 247)",
   blue: "rgb(20, 127, 215)",
@@ -95,7 +103,7 @@ const layouts = {
     marginLeft: "auto",
     marginRight: "auto",
     textAlign: "center",
-    backgroundColor: colors.green,
+    backgroundColor: colors.coreBackgroundColor,
     color: colors.white
   }
 };

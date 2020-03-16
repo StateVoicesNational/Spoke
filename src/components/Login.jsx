@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
   },
   header: {
     ...theme.text.header,
-    color: theme.colors.green,
+    color: theme.colors.coreBackgroundColor,
     "text-align": "center",
     "margin-bottom": 0
   }
