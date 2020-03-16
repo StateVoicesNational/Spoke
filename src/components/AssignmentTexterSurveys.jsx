@@ -74,19 +74,23 @@ class AssignmentTexterSurveys extends Component {
     });
   };
 
-  renderAnswers(step) {
+  renderAnswers(step, currentStep) {
     const menuItems = step.question.answerOptions.map(answerOption => (
       <MenuItem
-        key={answerOption.value}
+        key={`${currentStep}_${step.id}_${
+          answerOption.nextInteractionStep
+            ? answerOption.nextInteractionStep.id
+            : answerOption.value
+        }`}
         value={answerOption.value}
         primaryText={answerOption.value}
       />
     ));
 
-    menuItems.push(<Divider key={`div${step.id}`} />);
+    menuItems.push(<Divider key={`div${currentStep}_${step.id}`} />);
     menuItems.push(
       <MenuItem
-        key="clear"
+        key="clear${currentStep}"
         value="clearResponse"
         primaryText="Clear response"
       />
@@ -95,14 +99,14 @@ class AssignmentTexterSurveys extends Component {
     return menuItems;
   }
 
-  renderStep(step) {
+  renderStep(step, currentStep) {
     const { questionResponses, currentInteractionStep } = this.props;
     const isCurrentStep = step.id === currentInteractionStep.id;
     const responseValue = questionResponses[step.id];
     const { question } = step;
 
     return question.text ? (
-      <div>
+      <div key={`topdiv${currentStep || 0}_${step.id}`}>
         <SelectField
           style={
             isCurrentStep ? styles.currentStepSelect : styles.previousStepSelect
@@ -110,13 +114,14 @@ class AssignmentTexterSurveys extends Component {
           onChange={(event, index, value) =>
             this.handleSelectChange(step, index, value)
           }
+          key={`select${currentStep || 0}_${step.id}`}
           name={question.id}
           fullWidth
           value={responseValue}
           floatingLabelText={question.text}
           hintText="Choose answer"
         >
-          {this.renderAnswers(step)}
+          {this.renderAnswers(step, currentStep || 0)}
         </SelectField>
       </div>
     ) : (
@@ -127,12 +132,12 @@ class AssignmentTexterSurveys extends Component {
   renderCurrentStep(step) {
     const { onRequestClose } = this.props;
     if (typeof this.props.onRequestClose != "function") {
-      return this.renderStep(step);
+      return this.renderStep(step, 1);
     }
     return (
-      <List>
-        <Divider />
-        <Subheader>{step.question.text}</Subheader>
+      <List key="curlist">
+        <Divider key="curdivider" />
+        <Subheader key="cursubheader">{step.question.text}</Subheader>
         {step.question.answerOptions.map((answerOption, index) => (
           <ListItem
             value={answerOption.value}
@@ -140,7 +145,7 @@ class AssignmentTexterSurveys extends Component {
               this.handleSelectChange(step, index, answerOption.value);
               this.props.onRequestClose();
             }}
-            key={answerOption.value}
+            key={`cur${index}_${answerOption.value}`}
             primaryText={answerOption.value}
           />
         ))}
@@ -159,13 +164,13 @@ class AssignmentTexterSurveys extends Component {
           title={showAllQuestions ? "All questions" : "Current question"}
           showExpandableButton={interactionSteps.length > 1}
         />
-        <CardText style={styles.cardText}>
+        <CardText style={styles.cardText} key={"curcard"}>
           {showAllQuestions
             ? ""
             : this.renderCurrentStep(currentInteractionStep)}
         </CardText>
-        <CardText style={styles.cardText} expandable>
-          {interactionSteps.map(step => this.renderStep(step))}
+        <CardText style={styles.cardText} key={"curtext"} expandable>
+          {interactionSteps.map(step => this.renderStep(step, 0))}
         </CardText>
       </Card>
     );
