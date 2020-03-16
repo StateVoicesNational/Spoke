@@ -120,8 +120,7 @@ describe("completeContactLoad", () => {
       id: 1,
       ingest_data_reference: "fake_ingest_data_reference",
       ingest_method: "fake_job_type",
-      ingest_result: "fake_ingest_result",
-      ingest_success: 1
+      ingest_result: "fake_ingest_result"
     };
   });
 
@@ -133,12 +132,17 @@ describe("completeContactLoad", () => {
       "fake_ingest_result"
     );
 
-    const campaignAdminRecord = await r
+    const campaignAdminResult = await r
       .knex("campaign_admin")
       .where({ campaign_id: campaign.id });
 
-    expect(campaignAdminRecord[0]).toEqual(
+    expect(campaignAdminResult[0]).toEqual(
       expect.objectContaining(expectedCampaignAdminFields)
+    );
+
+    // This will be true on postgres and 1 on sqlite
+    expect([1, true].includes(campaignAdminResult[0].ingest_success)).toEqual(
+      true
     );
   });
 });
