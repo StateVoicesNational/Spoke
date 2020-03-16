@@ -295,8 +295,12 @@ export async function completeContactLoad(
     .knex("campaign_admin")
     .where("campaign_id", campaignId)
     .update({
-      deleted_optouts_count: deleteOptOutCells || null,
-      duplicate_contacts_count: deleteDuplicateCells || null,
+      deleted_optouts_count:
+        deleteOptOutCells || deleteOptOutCells === 0 ? deleteOptOutCells : null,
+      duplicate_contacts_count:
+        deleteDuplicateCells || deleteDuplicateCells === 0
+          ? deleteDuplicateCells
+          : null,
       contacts_count: finalContactCount,
       ingest_method: job.job_type.replace(/^ingest./, ""),
       ingest_success: true,
@@ -395,6 +399,7 @@ export async function assignTexters(job) {
   */
   const payload = JSON.parse(job.payload);
   const cid = job.campaign_id;
+  console.log("assignTexters1", cid, payload);
   const campaign = (await r.knex("campaign").where({ id: cid }))[0];
   const texters = payload.texters;
   const currentAssignments = await r
@@ -603,11 +608,22 @@ export async function assignTexters(job) {
   }
 
   if (campaign.is_started) {
-    await cacheableData.campaignContact.updateCampaignAssignmentCache(
-      job.campaign_id,
+    console.log("assignTexterscache1", job.campaign_id);
+    if (global.TEST_ENVIRONMENT) {
       // await the full thing if we are testing to avoid async blocks
-      global.TEST_ENVIRONMENT
-    );
+      await cacheableData.campaignContact.updateCampaignAssignmentCache(
+        job.campaign_id
+      );
+    } else {
+      cacheableData.campaignContact
+        .updateCampaignAssignmentCache(job.campaign_id)
+        .then(res => {
+          console.log("assignTexterscache Loaded", job.campaign_id, res);
+        })
+        .catch(err => {
+          console.log("assignTexterscache Error", job.campaign_id, err);
+        });
+    }
   }
 
   if (job.id) {

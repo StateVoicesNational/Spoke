@@ -89,6 +89,7 @@ export const setCacheContactAssignment = async (id, campaignId, contactObj) => {
 };
 
 export const getCacheContactAssignment = async (id, campaignId, contactObj) => {
+  // console.log('getCacheContactAssignment0', id, contactObj.assignment_id);
   if (contactObj && contactObj.assignment_id) {
     return {
       assignment_id: contactObj.assignment_id,
@@ -100,25 +101,30 @@ export const getCacheContactAssignment = async (id, campaignId, contactObj) => {
       contactAssignmentKey(campaignId),
       id
     );
-    if (contactAssignment) {
-      // eslint-disable-next-line camelcase
-      const [assignment_id, user_id] = contactAssignment.split(":");
-      // if empty string, then it's null
-      return {
-        assignment_id: assignment_id ? Number(assignment_id) : null,
-        user_id: user_id || null
-      };
-    }
+    // console.log('getContactAssignmentCache1', contactAssignment)
+    // eslint-disable-next-line camelcase
+    const [assignment_id, user_id] = (contactAssignment || ":").split(":");
+    // console.log('getContactAssignmentCache2', contactAssignment, assignment_id, user_id);
+    // if empty string, then it's null
+    return {
+      assignment_id: assignment_id ? Number(assignment_id) : null,
+      user_id: user_id ? Number(user_id) : null
+    };
   } else {
     // if no cache, load it from the db
     const assignment = await r
       .knex("campaign_contact")
-      .where("id", id)
-      .select("assignment_id")
+      .leftJoin("assignment", "assignment.id", "campaign_contact.assignment_id")
+      .where("campaign_contact.id", id)
+      .select("assignment_id", "user_id")
       .first();
     if (assignment) {
       await setCacheContactAssignment(id, campaignId, assignment);
-      return assignment;
+      const { assignment_id, user_id } = assignment;
+      return {
+        assignment_id: assignment_id ? Number(assignment_id) : null,
+        user_id: user_id ? Number(user_id) : null
+      };
     }
   }
   return {};
@@ -214,7 +220,6 @@ const campaignContactCache = {
           });
         }
         cacheData.message_status = await getMessageStatus(id, cacheData);
-
         Object.assign(
           cacheData,
           await getCacheContactAssignment(id, cacheData.campaign_id, cacheData)
@@ -232,6 +237,12 @@ const campaignContactCache = {
       } else if (opts && opts.onlyCache) {
         return null;
       }
+      // Note that we don't try to load/save the cache
+      // We keep the contact in the cache one time only, and then if it expires
+      // the campaign is probably older, so let's just keep it out of cache.
+      // Also, in order to loadMany, we need to load the campaign and organization info
+      // which seems slightly burdensome per-contact
+      // FUTURE: Maybe we will revisit this after we see performance data
     }
     return await CampaignContact.get(id);
   },
@@ -382,16 +393,20 @@ const campaignContactCache = {
     });
     clearMemoizedCache(contactId);
   },
-  updateCampaignAssignmentCache: async (campaignId, realAwait) => {
+  updateCampaignAssignmentCache: async (campaignId, contactIds) => {
     if (r.redis) {
       const assignmentKey = contactAssignmentKey(campaignId);
-      // delete the whole cache
-      await r.redis.delAsync(assignmentKey);
+      // We do NOT delete current cache as mostly people are re-assigned.
+      // When people are zero-d out, then the assignments themselves are deleted
+      // await r.redis.delAsync(assignmentKey);
       // Now refill it, streaming for efficiency
-      const query = r
+      let query = r
         .knex("campaign_contact")
         .where("campaign_id", campaignId)
         .select("id", "assignment_id");
+      if (contactIds) {
+        query = query.whereIn("id", contactIds);
+      }
       const result = query.stream(stream => {
         const cacheSaver = new Writable({ objectMode: true });
         // eslint-disable-next-line no-underscore-dangle
@@ -410,9 +425,13 @@ const campaignContactCache = {
         };
         stream.pipe(cacheSaver);
       });
-      if (realAwait) {
-        await result;
-      }
+      return result
+        .then(done => {
+          console.log("updateCampaignAssignmentCache Completed", campaignId);
+        })
+        .catch(err => {
+          console.log("updateCampaignAssignmentCache Error", campaignId, err);
+        });
     }
   },
   updateStatus: async (contact, newStatus) => {
