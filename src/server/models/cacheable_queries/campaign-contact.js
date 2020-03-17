@@ -267,7 +267,7 @@ const campaignContactCache = {
     ) {
       return;
     }
-    // console.log('campaign-contact loadMany', campaign.id)
+    console.log("campaign-contact loadMany", campaign.id);
     loaders.campaignContact.clearAll();
     // 1. load the data
     let query = r
