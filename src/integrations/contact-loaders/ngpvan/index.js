@@ -4,8 +4,7 @@ import { parseCSVAsync } from "../../../workers/parse_csv";
 import { failedContactLoad } from "../../../workers/jobs";
 
 import _ from "lodash";
-import { GraphQLError } from "graphql/error";
-import axios from "axios";
+import { getAxiosWithRetries } from "../../../server/lib/axiosWithRetries";
 
 export const name = "ngpvan";
 
@@ -29,7 +28,7 @@ export function serverAdministratorInstructions() {
   };
 }
 
-const handleFailedContactLoad = (job, ingestDataReference, message) => {
+export const handleFailedContactLoad = (job, ingestDataReference, message) => {
   // eslint-disable-next-line no-console
   console.error(message);
   failedContactLoad(job, null, ingestDataReference, {
@@ -94,9 +93,11 @@ export async function getClientChoiceData(
 ) {
   let response;
 
+  // TODO filter out lists larger than configured maximum
+  //
   try {
     // TODO(lmp) so much to do here ... look for errors, retry, get multiple pages
-    response = await axios({
+    response = await getAxiosWithRetries()({
       url: "https://api.securevan.com/v4/savedLists",
       method: "GET",
       headers: {
@@ -228,8 +229,7 @@ export async function processContactLoad(job, maxContacts) {
   let vanContacts;
 
   try {
-    // TODO(lmp) so much to do here ... look for errors, retry, get multiple pages
-    response = await axios({
+    response = await getAxiosWithRetries()({
       url: "https://api.securevan.com/v4/exportJobs",
       method: "POST",
       headers: {
@@ -243,7 +243,7 @@ export async function processContactLoad(job, maxContacts) {
       validateStatus: status => status >= 200 && status < 300
     });
   } catch (error) {
-    handleFailedContactLoad(
+    exports.handleFailedContactLoad(
       job,
       ingestDataReference,
       `Error requesting VAN export job. ${error}`
@@ -252,6 +252,7 @@ export async function processContactLoad(job, maxContacts) {
   }
 
   if (response.data.status !== "Completed") {
+    // TODO handle status === "Error" or "Requested"
     // TODO(lmp) implement web hook to get called back when jobs complete
     const message = `Export job not immediately completed ${JSON.stringify(
       job
@@ -263,13 +264,13 @@ export async function processContactLoad(job, maxContacts) {
   const downloadUrl = response.data.downloadUrl;
 
   try {
-    vanResponse = await axios({
+    vanResponse = await getAxiosWithRetries()({
       url: downloadUrl,
       method: "GET",
       validateStatus: status => status === 200
     });
   } catch (error) {
-    handleFailedContactLoad(
+    exports.handleFailedContactLoad(
       job,
       ingestDataReference,
       `Error downloading VAN contacts. ${error}`
@@ -307,7 +308,7 @@ export async function processContactLoad(job, maxContacts) {
     parserContacts = contacts;
     parserValidationStats = validationStats;
   } catch (error) {
-    handleFailedContactLoad(
+    exports.handleFailedContactLoad(
       job,
       ingestDataReference,
       `Error parsing VAN response. ${error}`
@@ -316,8 +317,6 @@ export async function processContactLoad(job, maxContacts) {
   }
 
   try {
-    // ingestDataReference -- add list id
-    // ingestResult -- payload describing what happened underdable by react component, warnings, stats,
     const ingestResult = parserValidationStats;
 
     await finalizeContactLoad(
@@ -328,7 +327,7 @@ export async function processContactLoad(job, maxContacts) {
       ingestResult
     );
   } catch (error) {
-    handleFailedContactLoad(
+    exports.handleFailedContactLoad(
       job,
       ingestDataReference,
       `Error loading VAN contacts to the database. ${error}`

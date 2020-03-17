@@ -19,6 +19,8 @@ describe("ngpvan", () => {
     let oldNgpVanExportJobTypeId;
     let oldNgpVanAppName;
     let oldNgpVanApiKey;
+    let makeSuccessfulExportJobPostNock;
+    let makeSuccessfulGetCsvNock;
 
     beforeEach(async () => {
       oldNgpVanWebhookUrl = process.env.NGP_VAN_WEBHOOK_URL;
@@ -68,8 +70,58 @@ describe("ngpvan", () => {
     });
 
     beforeEach(async () => {
+      makeSuccessfulGetCsvNock = () =>
+        nock("https://ngpvan.blob.core.windows.net:443", {
+          encodedQueryParams: true
+        })
+          .get("/pii.csv")
+          .reply(200, csvReply, [
+            "Content-Length",
+            "5099",
+            "Content-Type",
+            "application/octet-stream",
+            "Content-MD5",
+            "PmcLuVB3RZGoGcJ3NLF9wA=="
+          ]);
+    });
+
+    beforeEach(async () => {
+      makeSuccessfulExportJobPostNock = () =>
+        nock("https://api.securevan.com:443", {
+          encodedQueryParams: true,
+          reqheaders: {
+            authorization: "Basic c3Bva2U6dG9wc2VjcmV0fDA="
+          }
+        })
+          .post(
+            "/v4/exportJobs",
+            '{"savedListId":682951,"type":"7","webhookUrl":"https://www.example.com"}'
+          )
+          .reply(201, {
+            surveyQuestions: null,
+            activistCodes: null,
+            customFields: null,
+            districtFields: null,
+            canvassFileRequestId: 1286,
+            exportJobId: 1286,
+            canvassFileRequestGuid: "260ca0f4-7a74-d962-749f-685259ac61b2",
+            exportJobGuid: "260ca0f4-7a74-d962-749f-685259ac61b2",
+            savedListId: 682951,
+            webhookUrl: "https://231c9292.ngrok.io/hello_van",
+            downloadUrl: "https://ngpvan.blob.core.windows.net:443/pii.csv",
+            status: "Completed",
+            type: 3,
+            dateExpired: "2020-02-27T05:35:51.9364193Z",
+            errorCode: null
+          });
+    });
+
+    beforeEach(async () => {
       jest.spyOn(csvParser, "parseCSVAsync");
       jest.spyOn(helpers, "finalizeContactLoad").mockImplementation(() => true);
+      jest
+        .spyOn(ngpvan, "handleFailedContactLoad")
+        .mockImplementation(() => true);
     });
 
     afterEach(async () => {
@@ -77,55 +129,24 @@ describe("ngpvan", () => {
       process.env.NGP_VAN_EXPORT_JOB_TYPE_ID = oldNgpVanExportJobTypeId;
       process.env.NGP_VAN_APP_NAME = oldNgpVanAppName;
       process.env.NGP_VAN_API_KEY = oldNgpVanApiKey;
+      jest.restoreAllMocks();
     });
 
     it("calls the api and its dependencies", async () => {
-      const exportJobsNock = nock("https://api.securevan.com:443", {
-        encodedQueryParams: true,
-        reqheaders: {
-          authorization: "Basic c3Bva2U6dG9wc2VjcmV0fDA="
-        }
-      })
-        .post(
-          "/v4/exportJobs",
-          '{"savedListId":682951,"type":"7","webhookUrl":"https://www.example.com"}'
-        )
-        .reply(201, {
-          surveyQuestions: null,
-          activistCodes: null,
-          customFields: null,
-          districtFields: null,
-          canvassFileRequestId: 1286,
-          exportJobId: 1286,
-          canvassFileRequestGuid: "260ca0f4-7a74-d962-749f-685259ac61b2",
-          exportJobGuid: "260ca0f4-7a74-d962-749f-685259ac61b2",
-          savedListId: 682951,
-          webhookUrl: "https://231c9292.ngrok.io/hello_van",
-          downloadUrl: "https://ngpvan.blob.core.windows.net:443/pii.csv",
-          status: "Completed",
-          type: 3,
-          dateExpired: "2020-02-27T05:35:51.9364193Z",
-          errorCode: null
-        });
-
-      const getCsvNock = nock("https://ngpvan.blob.core.windows.net:443", {
-        encodedQueryParams: true
-      })
-        .get("/pii.csv")
-        .reply(200, csvReply, [
-          "Content-Length",
-          "5099",
-          "Content-Type",
-          "application/octet-stream",
-          "Content-MD5",
-          "PmcLuVB3RZGoGcJ3NLF9wA=="
-        ]);
+      const exportJobsNock = makeSuccessfulExportJobPostNock();
+      const getCsvNock = makeSuccessfulGetCsvNock();
 
       await processContactLoad(job, maxContacts);
 
       expect(csvParser.parseCSVAsync).toHaveBeenCalledTimes(1);
-      expect(csvParser.parseCSVAsync.mock.calls[0][0]).toEqual(csvReply);
-      expect(csvParser.parseCSVAsync.mock.calls[0][1]).toBeInstanceOf(Function);
+
+      expect(csvParser.parseCSVAsync).toBeCalledWith(
+        csvReply,
+        expect.objectContaining({
+          rowTransformer: expect.any(Function),
+          headerTransformer: expect.any(Function)
+        })
+      );
 
       expect(helpers.finalizeContactLoad).toHaveBeenCalledTimes(1);
       expect(helpers.finalizeContactLoad.mock.calls[0][0]).toEqual(job);
@@ -198,6 +219,105 @@ describe("ngpvan", () => {
       exportJobsNock.done();
       getCsvNock.done();
     });
+
+    describe("when POST to exportJobs fails", () => {
+      it("calls handleFailedContactLoad", async () => {
+        const exportJobsNock = nock("https://api.securevan.com:443", {
+          encodedQueryParams: true,
+          reqheaders: {
+            authorization: "Basic c3Bva2U6dG9wc2VjcmV0fDA="
+          }
+        })
+          .post(
+            "/v4/exportJobs",
+            '{"savedListId":682951,"type":"7","webhookUrl":"https://www.example.com"}'
+          )
+          .thrice()
+          .reply(500);
+
+        await processContactLoad(job, maxContacts);
+
+        expect(helpers.finalizeContactLoad).not.toHaveBeenCalled();
+        expect(csvParser.parseCSVAsync).not.toHaveBeenCalled();
+
+        expect(ngpvan.handleFailedContactLoad.mock.calls).toEqual([
+          [
+            job,
+            {
+              savedListId: job.payload
+            },
+            "Error requesting VAN export job. Error: Request failed with status code 500"
+          ]
+        ]);
+
+        exportJobsNock.done();
+      });
+    });
+
+    describe("when GET from downloadURL fails", () => {
+      it("calls handleFailedContactLoad", async () => {
+        const exportJobsNock = makeSuccessfulExportJobPostNock();
+
+        const getCsvNock = nock("https://ngpvan.blob.core.windows.net:443", {
+          encodedQueryParams: true
+        })
+          .get("/pii.csv")
+          .thrice()
+          .reply(500);
+
+        await processContactLoad(job, maxContacts);
+
+        expect(helpers.finalizeContactLoad).not.toHaveBeenCalled();
+        expect(csvParser.parseCSVAsync).not.toHaveBeenCalled();
+
+        expect(ngpvan.handleFailedContactLoad.mock.calls).toEqual([
+          [
+            job,
+            {
+              savedListId: job.payload
+            },
+            "Error downloading VAN contacts. Error: Request failed with status code 500"
+          ]
+        ]);
+
+        exportJobsNock.done();
+      });
+    });
+
+    describe("when parseCSVAsync failes", () => {
+      beforeEach(async () => {
+        csvParser.parseCSVAsync.mockRestore();
+        jest
+          .spyOn(csvParser, "parseCSVAsync")
+          .mockRejectedValue(new Error("malformed csv"));
+      });
+      it("calls handleFailedContactLoad", async () => {
+        const exportJobsNock = makeSuccessfulExportJobPostNock();
+        const getCsvNock = makeSuccessfulGetCsvNock();
+
+        await processContactLoad(job, maxContacts);
+
+        expect(helpers.finalizeContactLoad).not.toHaveBeenCalled();
+        expect(csvParser.parseCSVAsync).toHaveBeenCalledTimes(1);
+
+        expect(ngpvan.handleFailedContactLoad.mock.calls).toEqual([
+          [
+            job,
+            {
+              savedListId: job.payload
+            },
+            "Error parsing VAN response. Error: malformed csv"
+          ]
+        ]);
+
+        getCsvNock.done();
+        exportJobsNock.done();
+      });
+    });
+  });
+
+  describe("handleFailedContactLoad", () => {
+    // TODO(lmp)
   });
 
   describe("rowTransformer", () => {
