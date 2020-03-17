@@ -2,7 +2,7 @@ import { r } from "../../../src/server/models/";
 import {
   authRequired,
   assignmentRequired,
-  assignmentOrAdminRoleRequired
+  assignmentRequiredOrAdminRole
 } from "../../../src/server/api/errors";
 
 const errors = require("../../../src/server/api/errors.js");
@@ -121,7 +121,7 @@ describe("errors.js", () => {
     });
   });
 
-  describe("#assignmentOrAdminRoleRequired", () => {
+  describe("#assignmentRequiredOrAdminRole", () => {
     let spy;
 
     beforeEach(async () => {
@@ -133,7 +133,7 @@ describe("errors.js", () => {
     });
 
     it("calls assignmentRequired", async () => {
-      await assignmentOrAdminRoleRequired(
+      await assignmentRequiredOrAdminRole(
         startedCampaign.testTexterUser,
         startedCampaign.organizationId,
         startedCampaign.assignmentId
@@ -141,6 +141,7 @@ describe("errors.js", () => {
       expect(spy).toHaveBeenCalledWith(
         startedCampaign.testTexterUser,
         startedCampaign.assignmentId,
+        null,
         undefined
       );
     });
@@ -148,7 +149,7 @@ describe("errors.js", () => {
     describe("when the user is an admin", () => {
       it("returns true", async () => {
         expect(
-          await assignmentOrAdminRoleRequired(
+          await assignmentRequiredOrAdminRole(
             startedCampaign.testAdminUser,
             startedCampaign.organizationId,
             startedCampaign.assignmentId
@@ -161,7 +162,7 @@ describe("errors.js", () => {
     describe("when the user is a superadmin", () => {
       it("returns true", async () => {
         expect(
-          await assignmentOrAdminRoleRequired(
+          await assignmentRequiredOrAdminRole(
             startedCampaign.testSuperAdminUser,
             startedCampaign.organizationId,
             startedCampaign.assignmentId

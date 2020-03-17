@@ -42,7 +42,7 @@ import {
 } from "./conversations";
 import {
   accessRequired,
-  assignmentOrAdminRoleRequired,
+  assignmentRequiredOrAdminRole,
   assignmentRequired,
   authRequired
 } from "./errors";
@@ -930,7 +930,13 @@ const rootMutations = {
       const firstContact = await cacheableData.campaignContact.load(
         contactIds[0]
       );
-      await assignmentRequired(user, assignmentId, null, firstContact);
+      const campaign = await loaders.campaign.load(firstContact.campaign_id);
+      await assignmentRequiredOrAdminRole(
+        user,
+        campaign.organization_id,
+        assignmentId,
+        firstContact
+      );
       let triedUpdate = false;
       const contacts = contactIds.map(async (contactId, cIdx) => {
         // note we are loading from cacheableData and NOT loaders to avoid loader staleness
@@ -982,7 +988,7 @@ const rootMutations = {
       const contact = await loaders.campaignContact.load(campaignContactId);
       const campaign = await loaders.campaign.load(contact.campaign_id);
 
-      await assignmentOrAdminRoleRequired(
+      await assignmentRequiredOrAdminRole(
         user,
         campaign.organization_id,
         contact.assignment_id
