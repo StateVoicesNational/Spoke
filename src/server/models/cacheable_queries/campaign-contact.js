@@ -307,6 +307,9 @@ const campaignContactCache = {
       // eslint-disable-next-line no-underscore-dangle
       cacheSaver._write = (dbRecord, enc, next) => {
         // Note: non-async land
+        if (dbRecord.id % 1000 === 0) {
+          console.log("contact loadMany contacts", campaign.id, dbRecord.id);
+        }
         saveCacheRecord(
           dbRecord,
           organization,
