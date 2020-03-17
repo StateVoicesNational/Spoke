@@ -338,6 +338,7 @@ const campaignContactCache = {
       };
       stream.pipe(cacheSaver);
     });
+    console.log("contact loadMany finish stream", campaign.id);
   },
   lookupByCell: async (cell, service, messageServiceSid, bailWithoutCache) => {
     // Used to lookup contact/campaign information by cell number for incoming messages
