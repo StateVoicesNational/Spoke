@@ -1095,7 +1095,7 @@ export async function fixOrgless() {
       });
       console.log(
         "added orgless user " +
-          user.id +
+          orglessUser.id +
           " to organization " +
           process.env.DEFAULT_ORG
       );
