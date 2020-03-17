@@ -70,11 +70,11 @@ export async function assignmentRequired(
   return userHasAssignment;
 }
 
-export async function assignmentOrAdminRoleRequired(
+export async function assignmentRequiredOrAdminRole(
   user,
   orgId,
   assignmentId,
-  assignment
+  contact
 ) {
   authRequired(user);
   const isAdmin = await cacheableData.user.userHasRole(user, orgId, "ADMIN");
@@ -84,7 +84,7 @@ export async function assignmentOrAdminRoleRequired(
 
   // calling exports.assignmentRequired instead of just assignmentRequired
   // is functionally identical but it allows us to mock assignmentRequired
-  return await exports.assignmentRequired(user, assignmentId, assignment);
+  return await exports.assignmentRequired(user, assignmentId, null, contact);
 }
 
 export function superAdminRequired(user) {
