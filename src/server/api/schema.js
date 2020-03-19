@@ -327,12 +327,10 @@ const rootMutations = {
 
       await accessRequired(user, campaign.organization_id, "ADMIN");
 
-      const lastMessage = await r
-        .table("message")
-        .getAll(contact.assignment_id, { index: "assignment_id" })
-        .filter({ contact_number: contact.cell })
-        .limit(1)(0)
-        .default(null);
+      const [lastMessage] = await r
+        .knex("message")
+        .where("campaign_contact_id", id)
+        .limit(1);
 
       if (!lastMessage) {
         throw new GraphQLError({
