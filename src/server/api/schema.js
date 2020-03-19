@@ -986,12 +986,17 @@ const rootMutations = {
       const contact = await loaders.campaignContact.load(campaignContactId);
       const campaign = await loaders.campaign.load(contact.campaign_id);
 
+      console.log("createOptOut", campaignContactId, contact.campaign_id);
       await assignmentRequiredOrAdminRole(
         user,
         campaign.organization_id,
         contact.assignment_id
       );
-
+      console.log(
+        "createOptOut post access",
+        campaignContactId,
+        contact.campaign_id
+      );
       const { assignmentId, cell, reason } = optOut;
 
       await cacheableData.optOut.save({
@@ -1001,7 +1006,11 @@ const rootMutations = {
         assignmentId,
         campaign
       });
-
+      console.log(
+        "createOptOut post save",
+        campaignContactId,
+        contact.campaign_id
+      );
       loaders.campaignContact.clear(campaignContactId.toString());
 
       return loaders.campaignContact.load(campaignContactId);
