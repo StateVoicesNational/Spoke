@@ -49,6 +49,7 @@ import {
 import { resolvers as interactionStepResolvers } from "./interaction-step";
 import { resolvers as inviteResolvers } from "./invite";
 import { saveNewIncomingMessage } from "./lib/message-sending";
+import { getConfig } from "./lib/config";
 import { resolvers as messageResolvers } from "./message";
 import { resolvers as optOutResolvers } from "./opt-out";
 import { resolvers as organizationResolvers } from "./organization";
@@ -632,7 +633,10 @@ const rootMutations = {
       return await Organization.get(organizationId);
     },
     createInvite: async (_, { user }) => {
-      if ((user && user.is_superadmin) || !process.env.SUPPRESS_SELF_INVITE) {
+      if (
+        (user && user.is_superadmin) ||
+        !getConfig("SUPPRESS_SELF_INVITE", null, { truthy: true })
+      ) {
         const inviteInstance = new Invite({
           is_valid: true,
           hash: uuidv4()
