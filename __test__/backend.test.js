@@ -778,3 +778,10 @@ describe("editUser mutation", () => {
     });
   });
 });
+
+describe("A tag table", () => {
+  it("holds all tags with title, and description, and tags belongs to organizations", () => {});
+  it("name, description, and organization cannot be null", () => {});
+  it("tags has a default field 'is_deleted' as true, but can be updated to false", () => {});
+  it("a tag is applied to a message, and is associated to a campaign, a contact, and can hold a value that explains why that tag was applied to that message", () => {});
+});
