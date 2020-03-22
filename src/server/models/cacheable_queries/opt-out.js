@@ -13,7 +13,14 @@ const sharingOptOuts = !!process.env.OPTOUTS_SHARE_ALL_ORGS;
 
 const loadMany = async organizationId => {
   if (r.redis) {
-    let dbQuery = r.knex("opt_out").select("cell");
+    // We limit the optout cache load
+    // since we only need optouts that occurred between the
+    // time we started a campaign and loaded the cache.
+    let dbQuery = r
+      .knex("opt_out")
+      .select("cell")
+      .orderBy("id", "desc")
+      .limit(process.env.OPTOUTS_CACHE_MAX || 1000000);
     if (!sharingOptOuts) {
       dbQuery = dbQuery.where("organization_id", organizationId);
     }
@@ -30,8 +37,11 @@ const loadMany = async organizationId => {
         hashKey,
         cellOptOuts.slice(100 * i100, 100 * i100 + 100)
       );
+      if (i100 === 0) {
+        await r.redis.expire(hashKey, 43200);
+      }
     }
-    await r.redis.expire(hashKey, 43200);
+    return cellOptOuts.length;
   }
 };
 
@@ -68,7 +78,21 @@ const optOutCache = {
       }
       // note NOT awaiting this -- it should run in background
       // ideally not blocking the rest of the request
-      loadMany(organizationId);
+      loadMany(organizationId)
+        .then(optOutCount => {
+          console.log(
+            "optOutCache loaded for organization",
+            organizationId,
+            optOutCount
+          );
+        })
+        .catch(err => {
+          console.log(
+            "optOutCache Error for organization",
+            organizationId,
+            err
+          );
+        });
     }
     const dbResult = await r
       .knex("opt_out")

@@ -42,7 +42,7 @@ import {
 } from "./conversations";
 import {
   accessRequired,
-  assignmentOrAdminRoleRequired,
+  assignmentRequiredOrAdminRole,
   assignmentRequired,
   authRequired
 } from "./errors";
@@ -327,12 +327,10 @@ const rootMutations = {
 
       await accessRequired(user, campaign.organization_id, "ADMIN");
 
-      const lastMessage = await r
-        .table("message")
-        .getAll(contact.assignment_id, { index: "assignment_id" })
-        .filter({ contact_number: contact.cell })
-        .limit(1)(0)
-        .default(null);
+      const [lastMessage] = await r
+        .knex("message")
+        .where("campaign_contact_id", id)
+        .limit(1);
 
       if (!lastMessage) {
         throw new GraphQLError({
@@ -930,7 +928,13 @@ const rootMutations = {
       const firstContact = await cacheableData.campaignContact.load(
         contactIds[0]
       );
-      await assignmentRequired(user, assignmentId, null, firstContact);
+      const campaign = await loaders.campaign.load(firstContact.campaign_id);
+      await assignmentRequiredOrAdminRole(
+        user,
+        campaign.organization_id,
+        assignmentId,
+        firstContact
+      );
       let triedUpdate = false;
       const contacts = contactIds.map(async (contactId, cIdx) => {
         // note we are loading from cacheableData and NOT loaders to avoid loader staleness
@@ -982,12 +986,17 @@ const rootMutations = {
       const contact = await loaders.campaignContact.load(campaignContactId);
       const campaign = await loaders.campaign.load(contact.campaign_id);
 
-      await assignmentOrAdminRoleRequired(
+      console.log("createOptOut", campaignContactId, contact.campaign_id);
+      await assignmentRequiredOrAdminRole(
         user,
         campaign.organization_id,
         contact.assignment_id
       );
-
+      console.log(
+        "createOptOut post access",
+        campaignContactId,
+        contact.campaign_id
+      );
       const { assignmentId, cell, reason } = optOut;
 
       await cacheableData.optOut.save({
@@ -997,7 +1006,11 @@ const rootMutations = {
         assignmentId,
         campaign
       });
-
+      console.log(
+        "createOptOut post save",
+        campaignContactId,
+        contact.campaign_id
+      );
       loaders.campaignContact.clear(campaignContactId.toString());
 
       return loaders.campaignContact.load(campaignContactId);

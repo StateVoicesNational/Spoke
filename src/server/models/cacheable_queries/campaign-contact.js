@@ -42,6 +42,9 @@ const cellTargetKey = (cell, messageServiceSid) =>
 const contactAssignmentKey = campaignId =>
   `${process.env.CACHE_PREFIX || ""}contactassignment-${campaignId}`;
 
+const CONTACT_CACHE_ENABLED =
+  process.env.REDIS_CONTACT_CACHE || global.REDIS_CONTACT_CACHE;
+
 const generateCacheRecord = (
   dbRecord,
   organizationId,
@@ -73,7 +76,12 @@ const generateCacheRecord = (
 });
 
 export const setCacheContactAssignment = async (id, campaignId, contactObj) => {
-  if (r.redis && contactObj && contactObj.assignment_id) {
+  if (
+    r.redis &&
+    CONTACT_CACHE_ENABLED &&
+    contactObj &&
+    contactObj.assignment_id
+  ) {
     const assignmentKey = contactAssignmentKey(campaignId);
     // console.log('setCacheContactAssignment', id, contactObj.assignment_id, contactObj.user_id, assignmentKey)
     await r.redis
@@ -208,7 +216,7 @@ const campaignContactCache = {
     clearMemoizedCache(id);
   },
   load: async (id, opts) => {
-    if (r.redis) {
+    if (r.redis && CONTACT_CACHE_ENABLED) {
       const cacheRecord = await r.redis.getAsync(cacheKey(id));
       if (cacheRecord) {
         // console.log('contact cacheRecord', cacheRecord)
@@ -234,8 +242,6 @@ const campaignContactCache = {
           "messageservice_sid",
           "dynamic_assignment"
         ]);
-      } else if (opts && opts.onlyCache) {
-        return null;
       }
       // Note that we don't try to load/save the cache
       // We keep the contact in the cache one time only, and then if it expires
@@ -253,10 +259,15 @@ const campaignContactCache = {
   ) => {
     // queryFunc(query) has query input of a knex query
     // queryFunc should return a query with added where clauses
-    if (!r.redis || !organization || !(campaign || queryFunc)) {
+    if (
+      !r.redis ||
+      !CONTACT_CACHE_ENABLED ||
+      !organization ||
+      !(campaign || queryFunc)
+    ) {
       return;
     }
-    // console.log('campaign-contact loadMany', campaign.id)
+    console.log("campaign-contact loadMany", campaign.id);
     loaders.campaignContact.clearAll();
     // 1. load the data
     let query = r
@@ -296,6 +307,9 @@ const campaignContactCache = {
       // eslint-disable-next-line no-underscore-dangle
       cacheSaver._write = (dbRecord, enc, next) => {
         // Note: non-async land
+        if (dbRecord.id % 1000 === 0) {
+          console.log("contact loadMany contacts", campaign.id, dbRecord.id);
+        }
         saveCacheRecord(
           dbRecord,
           organization,
@@ -324,6 +338,7 @@ const campaignContactCache = {
       };
       stream.pipe(cacheSaver);
     });
+    console.log("contact loadMany finish stream", campaign.id);
   },
   lookupByCell: async (cell, service, messageServiceSid, bailWithoutCache) => {
     // Used to lookup contact/campaign information by cell number for incoming messages
@@ -334,7 +349,7 @@ const campaignContactCache = {
     // after an initial outgoing message, there should always be a 'last message'
     // The cached version uses the info added in the updateStatus (of a contact) method below
     // which is called for incoming AND outgoing messages.
-    if (r.redis) {
+    if (r.redis && CONTACT_CACHE_ENABLED) {
       const cellData = await r.redis.getAsync(
         cellTargetKey(cell, messageServiceSid)
       );
@@ -394,7 +409,7 @@ const campaignContactCache = {
     clearMemoizedCache(contactId);
   },
   updateCampaignAssignmentCache: async (campaignId, contactIds) => {
-    if (r.redis) {
+    if (r.redis && CONTACT_CACHE_ENABLED) {
       const assignmentKey = contactAssignmentKey(campaignId);
       // We do NOT delete current cache as mostly people are re-assigned.
       // When people are zero-d out, then the assignments themselves are deleted
@@ -436,7 +451,7 @@ const campaignContactCache = {
   },
   updateStatus: async (contact, newStatus) => {
     // console.log('updateSTATUS', contact, newStatus)
-    if (r.redis) {
+    if (r.redis && CONTACT_CACHE_ENABLED) {
       const contactKey = cacheKey(contact.id);
       const statusKey = messageStatusKey(contact.id);
       // NOTE: contact.messageservice_sid is not a field, but will have been

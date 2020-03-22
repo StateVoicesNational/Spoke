@@ -98,7 +98,7 @@ export class CampaignContactsForm extends React.Component {
     const result = lastResult.result && JSON.parse(lastResult.result);
     return (
       <List>
-        <Subheader>Last Upload</Subheader>
+        <Subheader>Last Import</Subheader>
         {_.get(reference, "savedListName") && (
           <ListItem
             primaryText={`List name: ${reference.savedListName}`}

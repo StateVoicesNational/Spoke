@@ -1070,7 +1070,7 @@ export async function loadCampaignCache(
       console.log("FINISHED contact loadMany", campaign.id);
     })
     .catch(err => {
-      console.error("ERROR contact loadMany", err, campaign);
+      console.error("ERROR contact loadMany", campaign.id, err, campaign);
     });
   if (global.TEST_ENVIRONMENT) {
     // otherwise this races with texting
@@ -1099,7 +1099,7 @@ export async function fixOrgless() {
       });
       console.log(
         "added orgless user " +
-          user.id +
+          orglessUser.id +
           " to organization " +
           process.env.DEFAULT_ORG
       );
