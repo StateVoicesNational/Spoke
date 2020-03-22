@@ -4,15 +4,132 @@ import {
   getCellFromRow,
   getZipFromRow,
   rowTransformer,
-  processContactLoad
+  processContactLoad,
+  handleFailedContactLoad,
+  getClientChoiceData
 } from "../../../src/integrations/contact-loaders/ngpvan";
+
 const csvParser = require("../../../src/workers/parse_csv");
 const ngpvan = require("../../../src/integrations/contact-loaders/ngpvan");
 const helpers = require("../../../src/integrations/contact-loaders/helpers");
+const jobs = require("../../../src/workers/jobs");
 
 describe("ngpvan", () => {
+  describe("getClientChoiceData", () => {
+    let oldMaximumListSize;
+    let oldNgpVanApiKey;
+    let oldNgpVanAppName;
+    let oldNgpVanCacheTtl;
+    let makeGetSavedListsNock;
+    let listItems;
+
+    beforeEach(async () => {
+      oldMaximumListSize = process.env.NGP_VAN_MAXIMUM_LIST_SIZE;
+      oldNgpVanAppName = process.env.NGP_VAN_APP_NAME;
+      oldNgpVanApiKey = process.env.NGP_VAN_API_KEY;
+      oldNgpVanCacheTtl = process.env.NGP_VAN_CACHE_TTL;
+      process.env.NGP_VAN_MAXIMUM_LIST_SIZE = 20;
+      process.env.NGP_VAN_APP_NAME = "spoke";
+      process.env.NGP_VAN_API_KEY = "topsecret";
+      process.env.NGP_VAN_CACHE_TTL = 30;
+    });
+
+    beforeEach(async () => {
+      listItems = [
+        {
+          savedListId: 682913,
+          name: "200-220 W 103",
+          description: null,
+          listCount: 171,
+          doorCount: 127
+        },
+        {
+          savedListId: 682951,
+          name: "East Gate Lane",
+          description: "Voters on East Gate Lane",
+          listCount: 32,
+          doorCount: 21
+        },
+        {
+          savedListId: 682993,
+          name: "17-year olds",
+          description: null,
+          listCount: 269,
+          doorCount: 266
+        },
+        {
+          savedListId: 683013,
+          name: "W103",
+          description: null,
+          listCount: 63,
+          doorCount: 44
+        },
+        {
+          savedListId: 683399,
+          name: "17 Year Olds",
+          description: null,
+          listCount: 266,
+          doorCount: 263
+        }
+      ];
+    });
+
+    afterEach(async () => {
+      process.env.NGP_VAN_APP_NAME = oldNgpVanAppName;
+      process.env.NGP_VAN_API_KEY = oldNgpVanApiKey;
+      process.env.NGP_VAN_MAXIMUM_LIST_SIZE = oldMaximumListSize;
+      jest.restoreAllMocks();
+    });
+
+    it("returns what we expect", async () => {
+      const getSavedListsNock = nock("https://api.securevan.com:443", {
+        encodedQueryParams: true,
+        reqheaders: {
+          authorization: "Basic c3Bva2U6dG9wc2VjcmV0fDA="
+        }
+      })
+        .get(
+          `/v4/savedLists?$top=&maxPeopleCount=${process.env.NGP_VAN_MAXIMUM_LIST_SIZE}`
+        )
+        .reply(200, {
+          items: listItems,
+          nextPageLink: null,
+          count: 5
+        });
+      const savedListsResponse = await getClientChoiceData();
+
+      expect(JSON.parse(savedListsResponse.data).items).toEqual(listItems);
+      expect(savedListsResponse.expireSeconds).toEqual(30);
+      getSavedListsNock.done();
+    });
+
+    describe("when there is an error retrieving the list", () => {
+      it("returns what we expect", async () => {
+        const getSavedListsNock = nock("https://api.securevan.com:443", {
+          encodedQueryParams: true,
+          reqheaders: {
+            authorization: "Basic c3Bva2U6dG9wc2VjcmV0fDA="
+          }
+        })
+          .get(
+            `/v4/savedLists?$top=&maxPeopleCount=${process.env.NGP_VAN_MAXIMUM_LIST_SIZE}`
+          )
+          .reply(404);
+
+        const savedListsResponse = await getClientChoiceData();
+
+        expect(JSON.parse(savedListsResponse.data)).toEqual({
+          error:
+            "Error retrieving saved list metadata from VAN Error: Request failed with status code 404"
+        });
+        getSavedListsNock.done();
+      });
+    });
+  });
+
   describe("@processContactLoad", () => {
     let job;
+    let payload;
     let maxContacts;
     let csvReply;
     let oldNgpVanWebhookUrl;
@@ -34,9 +151,14 @@ describe("ngpvan", () => {
     });
 
     beforeEach(async () => {
+      payload = {
+        savedListId: 682951,
+        savedListName: "democrats on 103rd Street"
+      };
+
       job = {
         campaign_id: 1,
-        payload: 682951
+        payload: JSON.stringify(payload)
       };
     });
 
@@ -220,6 +342,31 @@ describe("ngpvan", () => {
       getCsvNock.done();
     });
 
+    describe("when there are no contacts in the VAN list", () => {
+      beforeEach(async () => {
+        csvParser.parseCSVAsync.mockRestore();
+        jest.spyOn(csvParser, "parseCSVAsync").mockResolvedValue({
+          validationStats: {},
+          contacts: []
+        });
+
+        csvReply =
+          "CanvassFileRequestID,VanID,Address,FirstName,LastName,StreetAddress,City,State,ZipOrPostal,County,Employer,Occupation,Email,HomePhone,IsHomePhoneACellExchange,CellPhone,WorkPhone,IsWorkPhoneACellExchange,Phone,OptInPhone,OptInStatus,OptInPhoneType,CongressionalDistrict,StateHouse,StateSenate,Party,PollingLocation,PollingAddress,PollingCity";
+      });
+
+      it("calls handleFailedContactLoad", async () => {
+        const exportJobsNock = makeSuccessfulExportJobPostNock();
+        const getCsvNock = makeSuccessfulGetCsvNock();
+
+        await processContactLoad(job, maxContacts);
+        expect(ngpvan.handleFailedContactLoad.mock.calls).toEqual([
+          [job, payload, "No contacts ingested. Check the selected list."]
+        ]);
+        exportJobsNock.done();
+        getCsvNock.done();
+      });
+    });
+
     describe("when POST to exportJobs fails", () => {
       it("calls handleFailedContactLoad", async () => {
         const exportJobsNock = nock("https://api.securevan.com:443", {
@@ -243,9 +390,7 @@ describe("ngpvan", () => {
         expect(ngpvan.handleFailedContactLoad.mock.calls).toEqual([
           [
             job,
-            {
-              savedListId: job.payload
-            },
+            payload,
             "Error requesting VAN export job. Error: Request failed with status code 500"
           ]
         ]);
@@ -273,9 +418,7 @@ describe("ngpvan", () => {
         expect(ngpvan.handleFailedContactLoad.mock.calls).toEqual([
           [
             job,
-            {
-              savedListId: job.payload
-            },
+            payload,
             "Error downloading VAN contacts. Error: Request failed with status code 500"
           ]
         ]);
@@ -284,13 +427,14 @@ describe("ngpvan", () => {
       });
     });
 
-    describe("when parseCSVAsync failes", () => {
+    describe("when parseCSVAsync fails", () => {
       beforeEach(async () => {
         csvParser.parseCSVAsync.mockRestore();
         jest
           .spyOn(csvParser, "parseCSVAsync")
           .mockRejectedValue(new Error("malformed csv"));
       });
+
       it("calls handleFailedContactLoad", async () => {
         const exportJobsNock = makeSuccessfulExportJobPostNock();
         const getCsvNock = makeSuccessfulGetCsvNock();
@@ -301,12 +445,42 @@ describe("ngpvan", () => {
         expect(csvParser.parseCSVAsync).toHaveBeenCalledTimes(1);
 
         expect(ngpvan.handleFailedContactLoad.mock.calls).toEqual([
+          [job, payload, "Error parsing VAN response. Error: malformed csv"]
+        ]);
+
+        getCsvNock.done();
+        exportJobsNock.done();
+      });
+    });
+
+    describe("when finalizeContactLoad fails", () => {
+      beforeEach(async () => {
+        csvParser.parseCSVAsync.mockRestore();
+        jest.spyOn(csvParser, "parseCSVAsync").mockResolvedValue({
+          validationStats: {},
+          contacts: [{}, {}]
+        });
+
+        helpers.finalizeContactLoad.mockRestore();
+        jest
+          .spyOn(helpers, "finalizeContactLoad")
+          .mockRejectedValue(new Error("oh no!"));
+      });
+
+      it("calls handleFailedContactLoad", async () => {
+        const exportJobsNock = makeSuccessfulExportJobPostNock();
+        const getCsvNock = makeSuccessfulGetCsvNock();
+
+        await processContactLoad(job, maxContacts);
+
+        expect(helpers.finalizeContactLoad).toHaveBeenCalledTimes(1);
+        expect(csvParser.parseCSVAsync).toHaveBeenCalledTimes(1);
+
+        expect(ngpvan.handleFailedContactLoad.mock.calls).toEqual([
           [
             job,
-            {
-              savedListId: job.payload
-            },
-            "Error parsing VAN response. Error: malformed csv"
+            payload,
+            "Error loading VAN contacts to the database. Error: oh no!"
           ]
         ]);
 
@@ -317,7 +491,35 @@ describe("ngpvan", () => {
   });
 
   describe("handleFailedContactLoad", () => {
-    // TODO(lmp)
+    let job;
+    let payload;
+    beforeEach(async () => {
+      payload = {
+        data: "fake"
+      };
+
+      job = {
+        payload: JSON.stringify(payload)
+      };
+
+      jest.spyOn(jobs, "failedContactLoad");
+    });
+
+    it("calls failedContactLoad", async () => {
+      handleFailedContactLoad(job, payload, "fake_message");
+
+      expect(jobs.failedContactLoad.mock.calls).toEqual([
+        [
+          job,
+          null,
+          job.payload,
+          {
+            errors: ["fake_message"],
+            ...payload
+          }
+        ]
+      ]);
+    });
   });
 
   describe("rowTransformer", () => {
@@ -338,13 +540,7 @@ describe("ngpvan", () => {
 
     it("delegates to its dependencies", () => {
       const inputFields = ["VanID"];
-      const expectedFields = [
-        //"firstName",
-        //"lastName",
-        "cell",
-        "zip",
-        "external_id"
-      ];
+      const expectedFields = ["cell", "zip", "external_id"];
       const inputRow = {
         VanID: "abc",
         firstName: "Jerry",

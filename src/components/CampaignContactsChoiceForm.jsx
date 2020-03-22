@@ -12,6 +12,7 @@ import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
 import CheckIcon from "material-ui/svg-icons/action/check-circle";
 import WarningIcon from "material-ui/svg-icons/alert/warning";
 import ErrorIcon from "material-ui/svg-icons/alert/error";
+import InfoIcon from "material-ui/svg-icons/action/info";
 import theme from "../styles/theme";
 import components from "../integrations/contact-loaders/components";
 import yup from "yup";
@@ -19,11 +20,13 @@ import yup from "yup";
 const check = <CheckIcon color={theme.colors.green} />;
 const warning = <WarningIcon color={theme.colors.orange} />;
 const error = <ErrorIcon color={theme.colors.red} />;
+const info = <InfoIcon color={theme.colors.green} />;
 
 export const icons = {
   check,
   warning,
-  error
+  error,
+  info
 };
 
 const innerStyles = {
