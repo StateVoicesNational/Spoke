@@ -2,24 +2,12 @@ import type from "prop-types";
 import React from "react";
 import RaisedButton from "material-ui/RaisedButton";
 import { ListItem, List } from "material-ui/List";
-import CheckIcon from "material-ui/svg-icons/action/check-circle";
-import WarningIcon from "material-ui/svg-icons/alert/warning";
-import ErrorIcon from "material-ui/svg-icons/alert/error";
 import { StyleSheet, css } from "aphrodite";
 import AutoComplete from "material-ui/AutoComplete";
-import theme from "../../../styles/theme";
+import Subheader from "material-ui/Subheader";
+import _ from "lodash";
 
 import { dataSourceItem } from "../../../components/utils";
-
-const innerStyles = {
-  button: {
-    margin: "24px 5px 24px 0",
-    fontSize: "10px"
-  },
-  nestedItem: {
-    fontSize: "12px"
-  }
-};
 
 const styles = StyleSheet.create({
   form: {
@@ -38,8 +26,7 @@ export class CampaignContactsForm extends React.Component {
   buildSelectData = () => {
     const { clientChoiceData } = this.props;
     const clientChoiceDataObject = JSON.parse(clientChoiceData);
-    console.log('client choice data obj ', clientChoiceDataObject);
-    return clientChoiceDataObject.map(item =>
+    return clientChoiceDataObject.items.map(item =>
       dataSourceItem(item.name, item.savedListId)
     );
   };
@@ -71,7 +58,12 @@ export class CampaignContactsForm extends React.Component {
           if (typeof value === "object") {
             const savedListId = value.rawValue;
             this.setState({ savedListId });
-            this.props.onChange(savedListId);
+            this.props.onChange(
+              JSON.stringify({
+                savedListId,
+                savedListName: this.state.searchText
+              })
+            );
           } else {
             // if it matches one item, that's their selection
             const regex = new RegExp(`.*${value}.*`, "i");
@@ -81,7 +73,9 @@ export class CampaignContactsForm extends React.Component {
               const savedListId = matches[0].rawValue;
               const searchText = matches[0].text;
               this.setState({ searchText, savedListId });
-              this.props.onChange(savedListId);
+              this.props.onChange(
+                JSON.stringify({ savedListId, savedListName: searchText })
+              );
             }
           }
         }}
@@ -98,15 +92,53 @@ export class CampaignContactsForm extends React.Component {
     />
   );
 
-  renderJobResult = () =>
-    this.props.jobResultMessage ? (
+  renderJobResult = () => {
+    const { lastResult } = this.props;
+    const reference = lastResult.reference && JSON.parse(lastResult.reference);
+    const result = lastResult.result && JSON.parse(lastResult.result);
+    return (
       <List>
-        <ListItem
-          primaryText={this.props.jobResultMessage}
-          leftIcon={this.props.icons.warning}
-        />
+        <Subheader>Last Upload</Subheader>
+        {_.get(reference, "savedListName") && (
+          <ListItem
+            primaryText={`List name: ${reference.savedListName}`}
+            leftIcon={this.props.icons.info}
+          />
+        )}
+        {_.get(result, "errors") &&
+          result.errors.map(error => (
+            <ListItem
+              primaryText={`${error}`}
+              leftIcon={this.props.icons.error}
+            />
+          ))}
+        {(_.get(result, "dupeCount") && (
+          <ListItem
+            primaryText={`${result.dupeCount} duplicates removed`}
+            leftIcon={this.props.icons.warning}
+          />
+        )) ||
+          null}
+        {(_.get(result, "missingCellCount") && (
+          <ListItem
+            primaryText={`${result.missingCellCount} contacts with no cell phone removed`}
+            leftIcon={this.props.icons.warning}
+          />
+        )) ||
+          null}
+        {(_.get(result, "zipCount") &&
+          lastResult.contactsCount &&
+          result.zipCount - 1 < lastResult.contactsCount && (
+            <ListItem
+              primaryText={`${lastResult.contactsCount -
+                result.zipCount} contacts with no ZIP code imported`}
+              leftIcon={this.props.icons.info}
+            />
+          )) ||
+          null}
       </List>
-    ) : null;
+    );
+  };
 
   render() {
     return (
@@ -130,5 +162,6 @@ CampaignContactsForm.propTypes = {
   saveLabel: type.string,
 
   clientChoiceData: type.string,
-  jobResultMessage: type.string
+  jobResultMessage: type.string,
+  lastResult: type.string
 };

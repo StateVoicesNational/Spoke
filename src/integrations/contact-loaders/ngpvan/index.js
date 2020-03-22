@@ -31,8 +31,9 @@ export function serverAdministratorInstructions() {
 export const handleFailedContactLoad = (job, ingestDataReference, message) => {
   // eslint-disable-next-line no-console
   console.error(message);
-  failedContactLoad(job, null, ingestDataReference, {
-    errors: [message]
+  failedContactLoad(job, null, JSON.stringify(ingestDataReference), {
+    errors: [message],
+    ...ingestDataReference
   });
 };
 
@@ -40,7 +41,7 @@ export async function available(organization, user) {
   // / return an object with two keys: result: true/false
   // / these keys indicate if the ingest-contact-loader is usable
   // / Sometimes credentials need to be setup, etc.
-  // / A second key expiresSeconds: should be how often this needs to be checked
+  // / A second key expireSeconds: should be how often this needs to be checked
   // / If this is instantaneous, you can have it be 0 (i.e. always), but if it takes time
   // / to e.g. verify credentials or test server availability,
   // / then it's better to allow the result to be cached
@@ -48,7 +49,7 @@ export async function available(organization, user) {
   const result = true;
   return {
     result,
-    expiresSeconds: 60
+    expireSeconds: 60
   };
 }
 
@@ -77,14 +78,6 @@ export function clientChoiceDataCacheKey(organization, campaign, user) {
   return `${organization.id}`;
 }
 
-// export function intermediateadmindatarequest(organization, campaign, user, datadetails, clientchoicedata) {
-//   if (datadetails.startswith('page')) {
-//      const choicedata = json.parse(clientchoicedata);
-//     const page = datadetails.match(/page=(\d+)/)
-//
-//   }
-// }
-
 export async function getClientChoiceData(
   organization,
   campaign,
@@ -93,12 +86,13 @@ export async function getClientChoiceData(
 ) {
   let response;
 
-  // TODO filter out lists larger than configured maximum
-  //
   try {
-    // TODO(lmp) so much to do here ... look for errors, retry, get multiple pages
+    const maxPeopleCount =
+      Number(getConfig("NGP_VAN_MAXIMUM_LIST_SIZE")) || 75000;
+
+    // The savedLists endpoint supports pagination; we are ignoring pagination now
     response = await getAxiosWithRetries()({
-      url: "https://api.securevan.com/v4/savedLists",
+      url: `https://api.securevan.com/v4/savedLists?$top=&maxPeopleCount=${maxPeopleCount}`,
       method: "GET",
       headers: {
         Authorization: getVanAuth()
@@ -106,18 +100,19 @@ export async function getClientChoiceData(
       validateStatus: status => status === 200
     });
   } catch (error) {
-    // TODO
+    const message = `Error retrieving saved list metadata from VAN ${error}`;
     // eslint-disable-next-line no-console
-    console.log(error);
+    console.log(message);
+    return { data: `${JSON.stringify({ error: message })}` };
   }
 
   // / data to be sent to the admin client to present options to the component or similar
   // / The react-component will be sent this data as a property
-  // / return a json object which will be cached for expiresSeconds long
+  // / return a json object which will be cached for expireSeconds long
   // / `data` should be a single string -- it can be JSON which you can parse in the client component
   return {
-    data: `${JSON.stringify(_.get(response, "data.items", []))}`,
-    expiresSeconds: 300
+    data: `${JSON.stringify({ items: _.get(response, "data.items", []) })}`,
+    expireSeconds: Number(getConfig("NGP_VAN_CACHE_TTL")) || 300
   };
 }
 
@@ -224,7 +219,7 @@ export const headerTransformer = header => {
 
 export async function processContactLoad(job, maxContacts) {
   let response;
-  let ingestDataReference = { savedListId: job.payload };
+  const ingestDataReference = JSON.parse(job.payload);
   let vanResponse;
   let vanContacts;
 
@@ -236,7 +231,7 @@ export async function processContactLoad(job, maxContacts) {
         Authorization: getVanAuth()
       },
       data: {
-        savedListId: job.payload,
+        savedListId: ingestDataReference.savedListId,
         type: getConfig("NGP_VAN_EXPORT_JOB_TYPE_ID"),
         webhookUrl: getConfig("NGP_VAN_WEBHOOK_URL")
       },
@@ -261,6 +256,8 @@ export async function processContactLoad(job, maxContacts) {
     console.log(message);
   }
 
+  // TODO check for errors in the response
+
   const downloadUrl = response.data.downloadUrl;
 
   try {
@@ -284,26 +281,19 @@ export async function processContactLoad(job, maxContacts) {
   try {
     vanContacts = vanResponse.data;
 
-    // const parseCsvCallback = ({
-    //   contacts,
-    //   customFields,
-    //   validationStats,
-    //   error
-    // }) => {
-    //   if (error) {
-    //     // TODO(lmp) call completeContactLoad
-    //     console.log(error);
-    //   } else if (contacts.length === 0) {
-    //     // TODO(lmp) call completeContactLoad
-    //   } else if (contacts.length > 0) {
-    //     console.log("contacts.length", contacts.length);
-    //   }
-    // };
-
     const { validationStats, contacts } = await parseCSVAsync(vanContacts, {
       rowTransformer,
       headerTransformer
     });
+
+    if (contacts.length === 0) {
+      exports.handleFailedContactLoad(
+        job,
+        ingestDataReference,
+        "No contacts ingested. Check the selected list."
+      );
+      return;
+    }
 
     parserContacts = contacts;
     parserValidationStats = validationStats;
@@ -323,7 +313,7 @@ export async function processContactLoad(job, maxContacts) {
       job,
       parserContacts,
       maxContacts,
-      ingestDataReference,
+      JSON.stringify(ingestDataReference),
       ingestResult
     );
   } catch (error) {
