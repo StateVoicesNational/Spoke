@@ -110,7 +110,7 @@ class AdminReplySender extends React.Component {
     return (
       <div>
         {data.campaign.contacts.map(contact => {
-          if (contact.messageStatus === "messaged") {
+          if (contact.messageStatus !== "needsMessage") {
             return this.renderMessageSendingForm(contact);
           }
           return "";

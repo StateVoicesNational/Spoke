@@ -502,7 +502,7 @@ describe("ngpvan", () => {
         payload: JSON.stringify(payload)
       };
 
-      jest.spyOn(jobs, "failedContactLoad");
+      jest.spyOn(jobs, "failedContactLoad").mockRejectedValue(true);
     });
 
     it("calls failedContactLoad", async () => {

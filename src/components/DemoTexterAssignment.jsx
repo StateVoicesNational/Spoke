@@ -10,7 +10,7 @@ const logFunction = data => {
   console.log("logging data", data);
 };
 
-const tests = {
+export const tests = {
   a: {
     disabled: false,
     messageStatusFilter: "needsMessage",
@@ -93,6 +93,7 @@ const tests = {
               answerOptions: [
                 {
                   value: "Yes",
+                  interactionStepId: "14",
                   nextInteractionStep: {
                     id: "14",
                     script:
@@ -101,6 +102,7 @@ const tests = {
                 },
                 {
                   value: "No",
+                  interactionStepId: "15",
                   nextInteractionStep: {
                     id: "15",
                     script: "That's too bad, but we love you anyway!"
@@ -118,7 +120,9 @@ const tests = {
               answerOptions: [
                 {
                   value: "Yes, with friend",
+                  interactionStepId: "20",
                   nextInteractionStep: {
+                    id: "20",
                     script: "Super, we'll add your +1"
                   }
                 },
@@ -218,6 +222,7 @@ const tests = {
               answerOptions: [
                 {
                   value: "Yes",
+                  interactionStepId: "14",
                   nextInteractionStep: {
                     id: "14",
                     script:
@@ -226,6 +231,7 @@ const tests = {
                 },
                 {
                   value: "No",
+                  interactionStepId: "15",
                   nextInteractionStep: {
                     id: "15",
                     script: "That's too bad, but we love you anyway!"
@@ -243,13 +249,17 @@ const tests = {
               answerOptions: [
                 {
                   value: "Yes, with friend",
+                  interactionStepId: "20",
                   nextInteractionStep: {
+                    id: "20",
                     script: "Super, we'll add your +1"
                   }
                 },
                 {
                   value: "No, no friends",
+                  interactionStepId: "21",
                   nextInteractionStep: {
+                    id: "21",
                     script:
                       "It's too bad, hopefully you'll meet some cool people there."
                   }

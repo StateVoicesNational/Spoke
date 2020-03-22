@@ -28,10 +28,14 @@ export function serverAdministratorInstructions() {
   };
 }
 
-export const handleFailedContactLoad = (job, ingestDataReference, message) => {
+export const handleFailedContactLoad = async (
+  job,
+  ingestDataReference,
+  message
+) => {
   // eslint-disable-next-line no-console
   console.error(message);
-  failedContactLoad(job, null, JSON.stringify(ingestDataReference), {
+  await failedContactLoad(job, null, JSON.stringify(ingestDataReference), {
     errors: [message],
     ...ingestDataReference
   });
@@ -238,7 +242,7 @@ export async function processContactLoad(job, maxContacts) {
       validateStatus: status => status >= 200 && status < 300
     });
   } catch (error) {
-    exports.handleFailedContactLoad(
+    await exports.handleFailedContactLoad(
       job,
       ingestDataReference,
       `Error requesting VAN export job. ${error}`
@@ -267,7 +271,7 @@ export async function processContactLoad(job, maxContacts) {
       validateStatus: status => status === 200
     });
   } catch (error) {
-    exports.handleFailedContactLoad(
+    await exports.handleFailedContactLoad(
       job,
       ingestDataReference,
       `Error downloading VAN contacts. ${error}`
@@ -287,7 +291,7 @@ export async function processContactLoad(job, maxContacts) {
     });
 
     if (contacts.length === 0) {
-      exports.handleFailedContactLoad(
+      await exports.handleFailedContactLoad(
         job,
         ingestDataReference,
         "No contacts ingested. Check the selected list."
@@ -298,7 +302,7 @@ export async function processContactLoad(job, maxContacts) {
     parserContacts = contacts;
     parserValidationStats = validationStats;
   } catch (error) {
-    exports.handleFailedContactLoad(
+    await exports.handleFailedContactLoad(
       job,
       ingestDataReference,
       `Error parsing VAN response. ${error}`
@@ -317,7 +321,7 @@ export async function processContactLoad(job, maxContacts) {
       ingestResult
     );
   } catch (error) {
-    exports.handleFailedContactLoad(
+    await exports.handleFailedContactLoad(
       job,
       ingestDataReference,
       `Error loading VAN contacts to the database. ${error}`
