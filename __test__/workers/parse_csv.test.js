@@ -4,7 +4,7 @@ describe("#parseCSVAsync", () => {
   let csv;
 
   beforeEach(async () => {
-    csv = "FirstName,LastName,cell,zip\r\nJerome,Garcia,14155551212,94970";
+    csv = "firstName,lastName,cell,zip\r\nJerome,Garcia,14155551212,94970";
   });
 
   it("returns a promise", async () => {
