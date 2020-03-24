@@ -10,9 +10,7 @@ Spoke was created by Saikat Chakrabarti and Sheena Pakanati, and is now maintain
 The latest version is [5.2](https://github.com/MoveOnOrg/Spoke/tree/v5.2) (see [release notes](https://github.com/MoveOnOrg/Spoke/blob/main/docs/RELEASE_NOTES.md#v52)) which we recommend for production use, while our `main` branch is where features still in development and testing will be available.
 
 ## Deploy to Heroku
-This button will start the process for deploying Spoke with production level infrastructure. This will have a monthly cost of about $50.
-Clicking the button will **not** instantly deploy, so you can read the final cost before doing anything.
-We have this in place so that using this button sets up an org for production level usage of Spoke. If you want to test out Spoke for free, use the [demo site](https://spoke-demo.herokuapp.com) instead.
+
 <a href="https://heroku.com/deploy?template=https://github.com/MoveOnOrg/Spoke/tree/v5.2">
   <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy">
 </a>

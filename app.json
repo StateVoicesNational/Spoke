@@ -164,7 +164,11 @@
       "value": "/spoke/build/server/migrations/"
     }
   },
-  "addons": ["heroku-postgresql:standard-0", "mailgun:starter"],
+  "addons": [
+    "heroku-postgresql:standard-0",
+    "mailgun:starter",
+    "heroku-redis:hobby-dev"
+  ],
   "formation": {
     "web": {
       "quantity": 1,
