@@ -450,38 +450,52 @@ const campaignContactCache = {
     }
   },
   updateStatus: async (contact, newStatus) => {
-    // console.log('updateSTATUS', contact, newStatus)
-    if (r.redis && CONTACT_CACHE_ENABLED) {
-      const contactKey = cacheKey(contact.id);
-      const statusKey = messageStatusKey(contact.id);
-      // NOTE: contact.messageservice_sid is not a field, but will have been
-      //       added on to the contact object from message.save
-      // Other contexts don't really need to update the cell key -- just the status
-      const cellKey = cellTargetKey(contact.cell, contact.messageservice_sid);
-      // console.log('contact updateStatus', cellKey, newStatus, contact)
-      await r.redis
-        .multi()
-        .set(statusKey, newStatus)
-        // We update the cell info on status updates, because this happens
-        // during message sending -- this is exactly the moment we want to
-        // 'steal' a cell from one (presumably older) campaign into another
-        .set(
-          cellKey,
-          [contact.id, contact.assignment_id, contact.timezone_offset].join(":")
-        )
-        // delay expiration for contacts we continue to update
-        .expire(contactKey, 43200)
-        .expire(statusKey, 43200)
-        .expire(cellKey, 43200)
-        .execAsync();
-      //await updateAssignmentContact(contact, newStatus);
+    // console.log('updateSTATUS', newStatus, contact)
+    try {
+      await r
+        .knex("campaign_contact")
+        .where("id", contact.id)
+        .update({ message_status: newStatus, updated_at: new Date() });
+
+      if (r.redis && CONTACT_CACHE_ENABLED) {
+        const contactKey = cacheKey(contact.id);
+        const statusKey = messageStatusKey(contact.id);
+        // NOTE: contact.messageservice_sid is not a field, but will have been
+        //       added on to the contact object from message.save
+        // Other contexts don't really need to update the cell key -- just the status
+        const cellKey = cellTargetKey(contact.cell, contact.messageservice_sid);
+        // console.log('contact updateStatus', cellKey, newStatus, contact)
+        await r.redis
+          .multi()
+          .set(statusKey, newStatus)
+          // We update the cell info on status updates, because this happens
+          // during message sending -- this is exactly the moment we want to
+          // 'steal' a cell from one (presumably older) campaign into another
+          .set(
+            cellKey,
+            [contact.id, contact.assignment_id, contact.timezone_offset].join(
+              ":"
+            )
+          )
+          // delay expiration for contacts we continue to update
+          .expire(contactKey, 43200)
+          .expire(statusKey, 43200)
+          .expire(cellKey, 43200)
+          .execAsync();
+        //await updateAssignmentContact(contact, newStatus);
+      }
+      clearMemoizedCache(contact.id);
+    } catch (err) {
+      console.log(
+        "contact updateStatus Error",
+        cellKey,
+        newStatus,
+        contact,
+        err
+      );
     }
-    clearMemoizedCache(contact.id);
+
     // console.log('updateStatus, CONTACT', contact)
-    await r
-      .knex("campaign_contact")
-      .where("id", contact.id)
-      .update({ message_status: newStatus, updated_at: new Date() });
   }
 };
 
