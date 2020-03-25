@@ -1,5 +1,5 @@
 import DataLoader from "dataloader";
-import { r } from "../../models";
+import { r, loaders } from "../../models";
 import { isRoleGreater } from "../../../lib/permissions";
 
 /*
@@ -231,6 +231,8 @@ const userCache = {
         await r.redis.delAsync(userAuthKey(authId));
       }
     }
+    loaders.user.clear(Number(userId));
+    loaders.user.clear(String(userId));
   }
 };
 

@@ -29,6 +29,10 @@ const campaignInfoFragment = `
   creator {
     displayName
   }
+  ingestMethod {
+    success
+    contactsCount
+  }
 `;
 
 const inlineStyles = {
@@ -77,7 +81,8 @@ export class CampaignList extends React.Component {
       isStarted,
       isArchived,
       hasUnassignedContacts,
-      hasUnsentInitialMessages
+      hasUnsentInitialMessages,
+      ingestMethod
     } = campaign;
     const { adminPerms, selectMultiple } = this.props;
 
@@ -99,6 +104,10 @@ export class CampaignList extends React.Component {
     const tags = [];
     if (!isStarted) {
       tags.push("Not started");
+    }
+
+    if (ingestMethod && ingestMethod.success === false) {
+      tags.push("Contact loading failed");
     }
 
     if (hasUnassignedContacts) {
@@ -128,6 +137,9 @@ export class CampaignList extends React.Component {
           {dueByMoment.isValid()
             ? dueByMoment.format("MMM D, YYYY")
             : "No due date set"}
+          {ingestMethod && ingestMethod.contactsCount
+            ? ` - contacts: ${ingestMethod.contactsCount}`
+            : ""}
         </span>
       </span>
     );

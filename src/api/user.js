@@ -3,6 +3,7 @@ export const schema = `
     id: ID
     firstName: String
     lastName: String
+    alias: String
     displayName: String
     email: String
     cell: String
@@ -14,7 +15,7 @@ export const schema = `
     terms: Boolean
     cacheable: Boolean
   }
-  
+
 type UsersList {
   users: [User]
 }

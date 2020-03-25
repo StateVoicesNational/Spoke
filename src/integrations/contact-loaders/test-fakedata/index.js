@@ -1,4 +1,4 @@
-import { completeContactLoad } from "../../../workers/jobs";
+import { completeContactLoad, failedContactLoad } from "../../../workers/jobs";
 import { r } from "../../../server/models";
 import { getConfig, hasConfig } from "../../../server/api/lib/config";
 
@@ -88,7 +88,6 @@ export async function processContactLoad(job, maxContacts) {
   /// * "Request of Doom" scenarios -- queries or jobs too big to complete
 
   const campaignId = job.campaign_id;
-  let jobMessages;
 
   await r
     .knex("campaign_contact")
@@ -96,6 +95,22 @@ export async function processContactLoad(job, maxContacts) {
     .delete();
 
   const contactData = JSON.parse(job.payload);
+  if (contactData.requestContactCount === 42) {
+    await failedContactLoad(
+      job,
+      null,
+      // a reference so you can persist user choices
+      // This will be lastResult.reference in react-component property
+      String(contactData.requestContactCount),
+      // a place where you can save result messages based on the outcome
+      // This will be lastResult.result in react-component property
+      JSON.stringify({
+        message:
+          "42 is life, the universe everything. Please choose a different number."
+      })
+    );
+    return; // bail early
+  }
   const areaCodes = ["213", "323", "212", "718", "646", "661"];
   const contactCount = Math.min(
     contactData.requestContactCount || 0,
@@ -121,5 +136,11 @@ export async function processContactLoad(job, maxContacts) {
 
   await r.knex("campaign_contact").insert(newContacts);
 
-  await completeContactLoad(job, jobMessages);
+  await completeContactLoad(
+    job,
+    null,
+    // see failedContactLoad above for descriptions
+    String(contactData.requestContactCount),
+    JSON.stringify({ finalCount: contactCount })
+  );
 }

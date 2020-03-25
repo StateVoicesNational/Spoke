@@ -116,7 +116,7 @@ export const resolvers = {
     texter: async (assignment, _, { loaders }) =>
       assignment.texter
         ? assignment.texter
-        : loaders.user.load(assignment.user_id),
+        : await loaders.user.load(assignment.user_id),
     campaign: async (assignment, _, { loaders }) =>
       loaders.campaign.load(assignment.campaign_id),
     contactsCount: async (assignment, { contactsFilter }) => {
@@ -130,12 +130,14 @@ export const resolvers = {
         getContacts(assignment, contactsFilter, organization, campaign, true)
       );
     },
-    contacts: async (assignment, { contactsFilter }) => {
-      const campaign = await r.table("campaign").get(assignment.campaign_id);
+    contacts: async (assignment, { contactsFilter }, { loaders }) => {
+      const campaign = await cacheableData.campaign.load(
+        assignment.campaign_id
+      );
 
-      const organization = await r
-        .table("organization")
-        .get(campaign.organization_id);
+      const organization = await loaders.organization.load(
+        campaign.organization_id
+      );
       return getContacts(assignment, contactsFilter, organization, campaign);
     },
     campaignCannedResponses: async assignment =>
