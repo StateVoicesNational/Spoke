@@ -327,13 +327,10 @@ const rootMutations = {
 
       await accessRequired(user, campaign.organization_id, "ADMIN");
 
-      // TODO: remove this query or switch at least to getLastMessage
-      const lastMessage = await r
-        .table("message")
-        .getAll(contact.assignment_id, { index: "assignment_id" })
-        .filter({ contact_number: contact.cell })
-        .limit(1)(0)
-        .default(null);
+      const [lastMessage] = await r
+        .knex("message")
+        .where("campaign_contact_id", id)
+        .limit(1);
 
       if (!lastMessage) {
         throw new GraphQLError({
@@ -926,18 +923,40 @@ const rootMutations = {
       { assignmentId, contactIds, findNew },
       { loaders, user }
     ) => {
-      await assignmentRequired(user, assignmentId);
-      const contacts = contactIds.map(async contactId => {
+      if (contactIds.length === 0) {
+        return [];
+      }
+      const firstContact = await cacheableData.campaignContact.load(
+        contactIds[0]
+      );
+      const campaign = await loaders.campaign.load(firstContact.campaign_id);
+      await assignmentRequiredOrAdminRole(
+        user,
+        campaign.organization_id,
+        assignmentId,
+        firstContact
+      );
+      let triedUpdate = false;
+      const contacts = contactIds.map(async (contactId, cIdx) => {
         // note we are loading from cacheableData and NOT loaders to avoid loader staleness
         // this is relevant for the possible multiple web dynos
-        let contact = await cacheableData.campaignContact.load(contactId);
-        if (contact.assignment_id === null) {
+        let contact =
+          cIdx === 0
+            ? firstContact
+            : await cacheableData.campaignContact.load(contactId);
+        if (
+          contact.assignment_id === null &&
+          contact.hasOwnProperty("user_id") &&
+          !triedUpdate
+        ) {
           // In case assignment_id from cache needs to be refreshed, try again
-          await cacheableData.campaignContact.clear(
-            contact.id,
-            contact.campaign_id
+          // user_id will only be a property if it's from a cached response
+          triedUpdate = true;
+          await cacheableData.campaignContact.updateCampaignAssignmentCache(
+            contact.campaign_id,
+            contactIds
           );
-          contact = await loaders.campaignContact.load(contactId);
+          contact = await cacheableData.campaignContact.load(contactId);
         }
 
         if (contact && Number(contact.assignment_id) === Number(assignmentId)) {
@@ -968,13 +987,18 @@ const rootMutations = {
       const contact = await loaders.campaignContact.load(campaignContactId);
       const campaign = await loaders.campaign.load(contact.campaign_id);
 
+      console.log("createOptOut", campaignContactId, contact.campaign_id);
       await assignmentRequiredOrAdminRole(
         user,
         campaign.organization_id,
         contact.assignment_id,
         contact
       );
-
+      console.log(
+        "createOptOut post access",
+        campaignContactId,
+        contact.campaign_id
+      );
       const { assignmentId, cell, reason } = optOut;
 
       await cacheableData.optOut.save({
@@ -984,7 +1008,11 @@ const rootMutations = {
         assignmentId,
         campaign
       });
-
+      console.log(
+        "createOptOut post save",
+        campaignContactId,
+        contact.campaign_id
+      );
       loaders.campaignContact.clear(campaignContactId.toString());
 
       return loaders.campaignContact.load(campaignContactId);

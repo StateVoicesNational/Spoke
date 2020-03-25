@@ -10,7 +10,7 @@ const logFunction = data => {
   console.log("logging data", data);
 };
 
-const tests = {
+export const tests = {
   a: {
     disabled: false,
     messageStatusFilter: "needsMessage",
@@ -34,7 +34,7 @@ const tests = {
           {
             id: "13",
             script:
-              "Hi {firstName}, have you voted today, yet? This election is crucial to a Democratic victory and removing fascism from power.",
+              'Hi, this is {firstName}, a MoveOn volunteer. Can you attend our "Save the world" event Saturday at noon in DC?',
             question: { text: "", answerOptions: [] }
           }
         ]
@@ -43,7 +43,7 @@ const tests = {
       userCannedResponses: []
     },
     texter: {
-      firstName: "Texterfirst",
+      firstName: "Erik",
       lastName: "Tlastname"
     },
     contact: {
@@ -86,12 +86,14 @@ const tests = {
         interactionSteps: [
           {
             id: "13",
-            script: "Hi {firstName}, have you voted today, yet?",
+            script:
+              'Hi, this is {firstName}, a MoveOn volunteer. Can you attend our "Save the world" event Saturday at noon in DC?',
             question: {
               text: "Attend Event?",
               answerOptions: [
                 {
                   value: "Yes",
+                  interactionStepId: "14",
                   nextInteractionStep: {
                     id: "14",
                     script:
@@ -100,6 +102,7 @@ const tests = {
                 },
                 {
                   value: "No",
+                  interactionStepId: "15",
                   nextInteractionStep: {
                     id: "15",
                     script: "That's too bad, but we love you anyway!"
@@ -117,7 +120,9 @@ const tests = {
               answerOptions: [
                 {
                   value: "Yes, with friend",
+                  interactionStepId: "20",
                   nextInteractionStep: {
+                    id: "20",
                     script: "Super, we'll add your +1"
                   }
                 },
@@ -172,22 +177,16 @@ const tests = {
       messages: [
         {
           id: "fake1",
-          text: "Will you come to the event?",
+          text:
+            'Hi, this is Erik, a MoveOn volunteer. Can you attend our "Save the world" event Saturday at noon in DC?',
           isFromContact: false,
           createdAt: new Date(Number(new Date()) - 314 * 60 * 1000)
         },
         {
           id: "fake2",
-          text: "Sorry, who is this?",
+          text: "Yes! I will be there to help save the world.",
           isFromContact: true,
           createdAt: new Date(Number(new Date()) - 142 * 60 * 1000)
-        },
-        {
-          id: "fake3",
-          text:
-            "We are the people. We need your help, or the apocolypse will come early.",
-          isFromContact: false,
-          createdAt: new Date(Number(new Date()) - 140 * 60 * 1000)
         }
       ],
       customFields:
@@ -216,12 +215,14 @@ const tests = {
         interactionSteps: [
           {
             id: "13",
-            script: "Hi {firstName}, have you voted today, yet?",
+            script:
+              'Hi, this is {firstName}, a MoveOn volunteer. Can you attend our "Save the world" event Saturday at noon in DC?',
             question: {
               text: "Attend Event?",
               answerOptions: [
                 {
                   value: "Yes",
+                  interactionStepId: "14",
                   nextInteractionStep: {
                     id: "14",
                     script:
@@ -230,6 +231,7 @@ const tests = {
                 },
                 {
                   value: "No",
+                  interactionStepId: "15",
                   nextInteractionStep: {
                     id: "15",
                     script: "That's too bad, but we love you anyway!"
@@ -247,13 +249,17 @@ const tests = {
               answerOptions: [
                 {
                   value: "Yes, with friend",
+                  interactionStepId: "20",
                   nextInteractionStep: {
+                    id: "20",
                     script: "Super, we'll add your +1"
                   }
                 },
                 {
                   value: "No, no friends",
+                  interactionStepId: "21",
                   nextInteractionStep: {
+                    id: "21",
                     script:
                       "It's too bad, hopefully you'll meet some cool people there."
                   }
@@ -307,39 +313,39 @@ const tests = {
       messages: [
         {
           id: "fake1",
-          text: "Will you come to the event?",
+          text:
+            'Hi, this is Erik, a MoveOn volunteer. Can you attend our "Save the world" event Saturday at noon in DC?',
           isFromContact: false,
           createdAt: new Date(Number(new Date()) - 314 * 60 * 1000)
         },
         {
           id: "fake2",
-          text: "Sorry, who is this?",
+          text: "Yes! I will be there to help save the world.",
           isFromContact: true,
           createdAt: new Date(Number(new Date()) - 142 * 60 * 1000)
         },
         {
           id: "fake3",
           text:
-            "We are the people. We need your help, or the apocolypse will come early.",
+            "That's great -- can you bring a friend -- the more the merrier!",
           isFromContact: false,
           createdAt: new Date(Number(new Date()) - 140 * 60 * 1000)
         },
         {
           id: "fake4",
-          text:
-            "Oh -- the people are the best -- if only we rallied around our common interests.",
+          text: "Not sure, I'll see if someone can make it.",
           isFromContact: true,
           createdAt: new Date(Number(new Date()) - 14 * 60 * 1000)
         },
         {
           id: "fake5",
-          text: "I know, people are wonderful luminous beings.",
+          text: "Ok, let us know what they say.",
           isFromContact: false,
           createdAt: new Date(Number(new Date()) - 10 * 60 * 1000)
         },
         {
           id: "fake6",
-          text: "Okay, sign me up -- that event sounds great!",
+          text: "I got their response and they can't make it, so I'll be solo.",
           isFromContact: true,
           createdAt: new Date(Number(new Date()) - 4 * 60 * 1000) // 4 minutes ago
         }

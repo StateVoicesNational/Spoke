@@ -42,6 +42,9 @@ const cellTargetKey = (cell, messageServiceSid) =>
 const contactAssignmentKey = campaignId =>
   `${process.env.CACHE_PREFIX || ""}contactassignment-${campaignId}`;
 
+const CONTACT_CACHE_ENABLED =
+  process.env.REDIS_CONTACT_CACHE || global.REDIS_CONTACT_CACHE;
+
 const generateCacheRecord = (
   dbRecord,
   organizationId,
@@ -73,7 +76,12 @@ const generateCacheRecord = (
 });
 
 export const setCacheContactAssignment = async (id, campaignId, contactObj) => {
-  if (r.redis && contactObj && contactObj.assignment_id) {
+  if (
+    r.redis &&
+    CONTACT_CACHE_ENABLED &&
+    contactObj &&
+    contactObj.assignment_id
+  ) {
     const assignmentKey = contactAssignmentKey(campaignId);
     // console.log('setCacheContactAssignment', id, contactObj.assignment_id, contactObj.user_id, assignmentKey)
     await r.redis
@@ -89,6 +97,7 @@ export const setCacheContactAssignment = async (id, campaignId, contactObj) => {
 };
 
 export const getCacheContactAssignment = async (id, campaignId, contactObj) => {
+  // console.log('getCacheContactAssignment0', id, contactObj.assignment_id);
   if (contactObj && contactObj.assignment_id) {
     return {
       assignment_id: contactObj.assignment_id,
@@ -100,9 +109,11 @@ export const getCacheContactAssignment = async (id, campaignId, contactObj) => {
       contactAssignmentKey(campaignId),
       id
     );
+    // console.log('getContactAssignmentCache1', contactAssignment)
     if (contactAssignment) {
       // eslint-disable-next-line camelcase
-      const [assignment_id, user_id] = contactAssignment.split(":");
+      const [assignment_id, user_id] = (contactAssignment || ":").split(":");
+      // console.log('getContactAssignmentCache2', contactAssignment, assignment_id, user_id);
       // if empty string, then it's null
       return {
         assignment_id: assignment_id ? Number(assignment_id) : null,
@@ -113,12 +124,17 @@ export const getCacheContactAssignment = async (id, campaignId, contactObj) => {
     // if no cache, load it from the db
     const assignment = await r
       .knex("campaign_contact")
-      .where("id", id)
-      .select("assignment_id")
+      .leftJoin("assignment", "assignment.id", "campaign_contact.assignment_id")
+      .where("campaign_contact.id", id)
+      .select("assignment_id", "user_id")
       .first();
     if (assignment) {
       await setCacheContactAssignment(id, campaignId, assignment);
-      return assignment;
+      const { assignment_id, user_id } = assignment;
+      return {
+        assignment_id: assignment_id ? Number(assignment_id) : null,
+        user_id: user_id ? Number(user_id) : null
+      };
     }
   }
   return {};
@@ -202,7 +218,7 @@ const campaignContactCache = {
     clearMemoizedCache(id);
   },
   load: async (id, opts) => {
-    if (r.redis) {
+    if (r.redis && CONTACT_CACHE_ENABLED) {
       const cacheRecord = await r.redis.getAsync(cacheKey(id));
       if (cacheRecord) {
         // console.log('contact cacheRecord', cacheRecord)
@@ -214,7 +230,6 @@ const campaignContactCache = {
           });
         }
         cacheData.message_status = await getMessageStatus(id, cacheData);
-
         Object.assign(
           cacheData,
           await getCacheContactAssignment(id, cacheData.campaign_id, cacheData)
@@ -229,10 +244,13 @@ const campaignContactCache = {
           "messageservice_sid",
           "dynamic_assignment"
         ]);
-      } else if (opts && opts.onlyCache) {
-        return null;
       }
-      console.log("uncached record", id);
+      // Note that we don't try to load/save the cache
+      // We keep the contact in the cache one time only, and then if it expires
+      // the campaign is probably older, so let's just keep it out of cache.
+      // Also, in order to loadMany, we need to load the campaign and organization info
+      // which seems slightly burdensome per-contact
+      // FUTURE: Maybe we will revisit this after we see performance data
     }
     return await CampaignContact.get(id);
   },
@@ -243,10 +261,15 @@ const campaignContactCache = {
   ) => {
     // queryFunc(query) has query input of a knex query
     // queryFunc should return a query with added where clauses
-    if (!r.redis || !organization || !(campaign || queryFunc)) {
+    if (
+      !r.redis ||
+      !CONTACT_CACHE_ENABLED ||
+      !organization ||
+      !(campaign || queryFunc)
+    ) {
       return;
     }
-    // console.log('campaign-contact loadMany', campaign.id)
+    console.log("campaign-contact loadMany", campaign.id);
     loaders.campaignContact.clearAll();
     // 1. load the data
     let query = r
@@ -286,6 +309,9 @@ const campaignContactCache = {
       // eslint-disable-next-line no-underscore-dangle
       cacheSaver._write = (dbRecord, enc, next) => {
         // Note: non-async land
+        if (dbRecord.id % 1000 === 0) {
+          console.log("contact loadMany contacts", campaign.id, dbRecord.id);
+        }
         saveCacheRecord(
           dbRecord,
           organization,
@@ -314,6 +340,7 @@ const campaignContactCache = {
       };
       stream.pipe(cacheSaver);
     });
+    console.log("contact loadMany finish stream", campaign.id);
   },
   lookupByCell: async (cell, service, messageServiceSid, bailWithoutCache) => {
     // Used to lookup contact/campaign information by cell number for incoming messages
@@ -324,10 +351,11 @@ const campaignContactCache = {
     // after an initial outgoing message, there should always be a 'last message'
     // The cached version uses the info added in the updateStatus (of a contact) method below
     // which is called for incoming AND outgoing messages.
-    if (r.redis) {
-      const cellKey = cellTargetKey(cell, messageServiceSid);
-      const cellData = await r.redis.getAsync(cellKey);
-      // console.log('lookupByCell cache', cellKey, cell, service, messageServiceSid, cellData)
+    if (r.redis && CONTACT_CACHE_ENABLED) {
+      const cellData = await r.redis.getAsync(
+        cellTargetKey(cell, messageServiceSid)
+      );
+      // console.log('lookupByCell cache', cell, service, messageServiceSid, cellData)
       if (cellData) {
         // eslint-disable-next-line camelcase
         const [campaign_contact_id, _, timezone_offset] = cellData.split(":");
@@ -377,16 +405,20 @@ const campaignContactCache = {
     });
     clearMemoizedCache(contactId);
   },
-  updateCampaignAssignmentCache: async (campaignId, realAwait) => {
-    if (r.redis) {
+  updateCampaignAssignmentCache: async (campaignId, contactIds) => {
+    if (r.redis && CONTACT_CACHE_ENABLED) {
       const assignmentKey = contactAssignmentKey(campaignId);
-      // delete the whole cache
-      await r.redis.delAsync(assignmentKey);
+      // We do NOT delete current cache as mostly people are re-assigned.
+      // When people are zero-d out, then the assignments themselves are deleted
+      // await r.redis.delAsync(assignmentKey);
       // Now refill it, streaming for efficiency
-      const query = r
+      let query = r
         .knex("campaign_contact")
         .where("campaign_id", campaignId)
         .select("id", "assignment_id");
+      if (contactIds) {
+        query = query.whereIn("id", contactIds);
+      }
       const result = query.stream(stream => {
         const cacheSaver = new Writable({ objectMode: true });
         // eslint-disable-next-line no-underscore-dangle
@@ -405,43 +437,62 @@ const campaignContactCache = {
         };
         stream.pipe(cacheSaver);
       });
-      if (realAwait) {
-        await result;
-      }
+      return result
+        .then(done => {
+          console.log("updateCampaignAssignmentCache Completed", campaignId);
+        })
+        .catch(err => {
+          console.log("updateCampaignAssignmentCache Error", campaignId, err);
+        });
     }
   },
   updateStatus: async (contact, newStatus) => {
-    // console.log('updateSTATUS', contact, newStatus)
-    if (r.redis) {
-      const contactKey = cacheKey(contact.id);
-      const statusKey = messageStatusKey(contact.id);
-      // NOTE: contact.messageservice_sid is not a field, but will have been
-      //       added on to the contact object from message.save
-      // Other contexts don't really need to update the cell key -- just the status
-      const cellKey = cellTargetKey(contact.cell, contact.messageservice_sid);
-      // console.log('contact updateStatus', cellKey, newStatus, contact);
-      let redisQuery = r.redis
-        .multi()
-        // We update the cell info on status updates, because this happens
-        // during message sending -- this is exactly the moment we want to
-        // 'steal' a cell from one (presumably older) campaign into another
-        // delay expiration for contacts we continue to update
-        .set(cellKey, [contact.id, "", contact.timezone_offset || ""].join(":"))
-        .expire(cellKey, 43200)
-        .expire(contactKey, 43200)
-        .expire(statusKey, 43200);
-      if (newStatus) {
-        redisQuery = redisQuery.set(statusKey, newStatus);
+    // console.log('updateSTATUS', newStatus, contact)
+    try {
+      await r
+        .knex("campaign_contact")
+        .where("id", contact.id)
+        .update({ message_status: newStatus, updated_at: new Date() });
+
+      if (r.redis && CONTACT_CACHE_ENABLED) {
+        const contactKey = cacheKey(contact.id);
+        const statusKey = messageStatusKey(contact.id);
+        // NOTE: contact.messageservice_sid is not a field, but will have been
+        //       added on to the contact object from message.save
+        // Other contexts don't really need to update the cell key -- just the status
+        const cellKey = cellTargetKey(contact.cell, contact.messageservice_sid);
+        // console.log('contact updateStatus', cellKey, newStatus, contact)
+        let redisQuery = r.redis
+          .multi()
+          // We update the cell info on status updates, because this happens
+          // during message sending -- this is exactly the moment we want to
+          // 'steal' a cell from one (presumably older) campaign into another
+          // delay expiration for contacts we continue to update
+          .set(
+            cellKey,
+            [contact.id, "", contact.timezone_offset || ""].join(":")
+          )
+          // delay expiration for contacts we continue to update
+          .expire(contactKey, 43200)
+          .expire(statusKey, 43200)
+          .expire(cellKey, 43200);
+        if (newStatus) {
+          redisQuery = redisQuery.set(statusKey, newStatus);
+        }
+        await redisQuery.execAsync();
+        //await updateAssignmentContact(contact, newStatus);
       }
-      await redisQuery.execAsync();
-      //await updateAssignmentContact(contact, newStatus);
+      clearMemoizedCache(contact.id);
+    } catch (err) {
+      console.log(
+        "contact updateStatus Error",
+        cellKey,
+        newStatus,
+        contact,
+        err
+      );
     }
-    clearMemoizedCache(contact.id);
     // console.log('updateStatus, CONTACT', contact)
-    await r
-      .knex("campaign_contact")
-      .where("id", contact.id)
-      .update({ message_status: newStatus, updated_at: new Date() });
   }
 };
 

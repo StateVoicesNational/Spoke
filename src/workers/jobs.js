@@ -395,6 +395,7 @@ export async function assignTexters(job) {
   */
   const payload = JSON.parse(job.payload);
   const cid = job.campaign_id;
+  console.log("assignTexters1", cid, payload);
   const campaign = (await r.knex("campaign").where({ id: cid }))[0];
   const texters = payload.texters;
   const currentAssignments = await r
@@ -603,11 +604,22 @@ export async function assignTexters(job) {
   }
 
   if (campaign.is_started) {
-    await cacheableData.campaignContact.updateCampaignAssignmentCache(
-      job.campaign_id,
+    console.log("assignTexterscache1", job.campaign_id);
+    if (global.TEST_ENVIRONMENT) {
       // await the full thing if we are testing to avoid async blocks
-      global.TEST_ENVIRONMENT
-    );
+      await cacheableData.campaignContact.updateCampaignAssignmentCache(
+        job.campaign_id
+      );
+    } else {
+      cacheableData.campaignContact
+        .updateCampaignAssignmentCache(job.campaign_id)
+        .then(res => {
+          console.log("assignTexterscache Loaded", job.campaign_id, res);
+        })
+        .catch(err => {
+          console.log("assignTexterscache Error", job.campaign_id, err);
+        });
+    }
   }
 
   if (job.id) {
@@ -1054,7 +1066,7 @@ export async function loadCampaignCache(
       console.log("FINISHED contact loadMany", campaign.id);
     })
     .catch(err => {
-      console.error("ERROR contact loadMany", err, campaign);
+      console.error("ERROR contact loadMany", campaign.id, err, campaign);
     });
   if (global.TEST_ENVIRONMENT) {
     // otherwise this races with texting
@@ -1083,7 +1095,7 @@ export async function fixOrgless() {
       });
       console.log(
         "added orgless user " +
-          user.id +
+          orglessUser.id +
           " to organization " +
           process.env.DEFAULT_ORG
       );
