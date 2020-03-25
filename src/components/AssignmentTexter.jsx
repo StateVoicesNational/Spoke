@@ -1,10 +1,6 @@
 import PropTypes from "prop-types";
 import React from "react";
-import { ToolbarTitle } from "material-ui/Toolbar";
 import IconButton from "material-ui/IconButton/IconButton";
-import NavigateBeforeIcon from "material-ui/svg-icons/image/navigate-before";
-import NavigateNextIcon from "material-ui/svg-icons/image/navigate-next";
-import AssignmentTexterContact from "../containers/AssignmentTexterContact";
 import LoadingIndicator from "./LoadingIndicator";
 import { StyleSheet, css } from "aphrodite";
 import { withRouter } from "react-router";
@@ -24,9 +20,6 @@ const styles = StyleSheet.create({
     zIndex: 1002,
     backgroundColor: "white",
     overflow: "hidden"
-  },
-  navigationToolbarTitle: {
-    fontSize: "12px"
   }
 });
 
@@ -327,45 +320,34 @@ export class AssignmentTexter extends React.Component {
     return this.getContact(contacts, 0);
   }
 
-  renderNavigationToolbarChildren() {
+  getNavigationToolbarChildren() {
     const { allContactsCount } = this.props;
     const remainingContacts = this.contactCount();
     const messagedContacts = allContactsCount - remainingContacts;
 
     const currentIndex = this.state.currentContactIndex + 1 + messagedContacts;
-    let ofHowMany = allContactsCount;
+    let total = allContactsCount;
     if (
-      ofHowMany === currentIndex &&
+      total === currentIndex &&
       this.props.assignment.campaign.useDynamicAssignment
     ) {
-      ofHowMany = "?";
+      total = "?";
     }
-    const title = `${currentIndex} of ${ofHowMany}`;
-    return [
-      <ToolbarTitle
-        className={css(styles.navigationToolbarTitle)}
-        text={title}
-      />,
-      <IconButton
-        onTouchTap={this.handleNavigatePrevious}
-        disabled={!this.hasPrevious()}
-      >
-        <NavigateBeforeIcon />
-      </IconButton>,
-      <IconButton
-        onTouchTap={this.handleNavigateNext}
-        disabled={!this.hasNext()}
-      >
-        <NavigateNextIcon />
-      </IconButton>
-    ];
+    const title = `${currentIndex} of ${total}`;
+    return {
+      onPrevious: this.hasPrevious() ? this.handleNavigatePrevious : null,
+      onNext: this.hasNext() ? this.handleNavigateNext : null,
+      currentIndex,
+      total,
+      title
+    };
   }
 
   renderTexter() {
-    const { assignment } = this.props;
+    const { assignment, ChildComponent } = this.props;
     const { campaign, texter } = assignment;
     const contact = this.currentContact();
-    const navigationToolbarChildren = this.renderNavigationToolbarChildren();
+    const navigationToolbarChildren = this.getNavigationToolbarChildren();
     if (!contact || !contact.id) {
       console.log("NO CONTACT", contact, this.props);
       return <LoadingIndicator />;
@@ -420,8 +402,9 @@ export class AssignmentTexter extends React.Component {
       }, self.state.reloadDelay);
       return <LoadingIndicator />;
     }
+    // ChildComponent is AssignmentTexterContact except for demo/testing
     return (
-      <AssignmentTexterContact
+      <ChildComponent
         key={contact.id}
         assignment={assignment}
         campaignContactId={contact.id}
@@ -432,6 +415,7 @@ export class AssignmentTexter extends React.Component {
         onFinishContact={this.handleFinishContact}
         refreshData={this.props.refreshData}
         onExitTexter={this.handleExitTexter}
+        messageStatusFilter={this.props.messageStatusFilter}
       />
     );
   }
@@ -470,7 +454,9 @@ AssignmentTexter.propTypes = {
   loadContacts: PropTypes.func,
   getNewContacts: PropTypes.func,
   assignContactsIfNeeded: PropTypes.func,
-  organizationId: PropTypes.string
+  organizationId: PropTypes.string,
+  ChildComponent: PropTypes.func,
+  messageStatusFilter: PropTypes.string
 };
 
 export default withRouter(AssignmentTexter);

@@ -148,11 +148,12 @@ const initialize = async (knex, Promise) => {
           .notNullable();
         t.boolean("is_opted_out").defaultTo(false);
         t.text("timezone_offset").defaultTo("");
-
-        t.index("assignment_id");
-        t.foreign("assignment_id").references("assignment.id");
-        t.index("campaign_id");
-        t.foreign("campaign_id").references("campaign.id");
+        if (!isSqlite) {
+          t.index("assignment_id");
+          t.foreign("assignment_id").references("assignment.id");
+          t.index("campaign_id");
+          t.foreign("campaign_id").references("campaign.id");
+        }
         t.index("cell");
         t.index(
           ["campaign_id", "assignment_id"],

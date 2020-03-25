@@ -16,14 +16,15 @@ const TOP_LEVEL_UPLOAD_FIELDS = [
   "zip",
   "external_id"
 ];
-const TEXTER_SCRIPT_FIELDS = ["texterFirstName", "texterLastName"];
+const TEXTER_SCRIPT_FIELDS = ["texterFirstName", "texterLastName", "texterAliasOrFirstName"];
 
 // Fields that should be capitalized when a script is applied
 const CAPITALIZE_FIELDS = [
   "firstName",
   "lastName",
   "texterFirstName",
-  "texterLastName"
+  "texterLastName",
+  "texterAliasOrFirstName"
 ];
 
 // TODO: This will include zipCode even if you ddin't upload it
@@ -37,7 +38,9 @@ const capitalize = str => {
 
 const getScriptFieldValue = (contact, texter, fieldName) => {
   let result;
-  if (fieldName === "texterFirstName") {
+  if (fieldName === "texterAliasOrFirstName") {
+    result = texter.alias ? texter.alias : texter.firstName;
+  } else if (fieldName === "texterFirstName") {
     result = texter.firstName;
   } else if (fieldName === "texterLastName") {
     result = texter.lastName;
