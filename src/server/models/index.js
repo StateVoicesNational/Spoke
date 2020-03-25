@@ -18,6 +18,8 @@ import UserCell from "./user-cell";
 import Message from "./message";
 import ZipCode from "./zip-code";
 import Log from "./log";
+import Tag from "./tag";
+import TagContent from "./tag-content";
 
 import thinky from "./thinky";
 import datawarehouse from "./datawarehouse";
@@ -57,7 +59,9 @@ const tableList = [
   "question_response",
   "user_cell",
   "user_organization",
-  "zip_code" // good candidate (or by contact)?
+  "zip_code", // good candidate (or by contact)?,
+  "tag",
+  "tag_content"
 ];
 
 function createTablesIfNecessary() {
@@ -134,5 +138,7 @@ export {
   UserOrganization,
   User,
   ZipCode,
-  Log
+  Log,
+  Tag,
+  TagContent
 };
