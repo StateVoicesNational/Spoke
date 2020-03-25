@@ -369,12 +369,6 @@ export class AssignmentTexterContactControls extends React.Component {
     } = this.props;
     const { messageStatus } = contact;
     const size = document.documentElement.clientWidth;
-    console.log(
-      "renderActionToolbar",
-      messageStatusFilter,
-      messageStatus,
-      contact
-    );
     let navigationToolbar = [];
     if (navigationToolbarChildren) {
       const { onNext, onPrevious, title } = navigationToolbarChildren;
