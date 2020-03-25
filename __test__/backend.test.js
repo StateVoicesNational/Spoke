@@ -809,7 +809,7 @@ describe("A tag table", () => {
   beforeEach(async () => {
     await setupTest();
 
-    //Creating the instances needed to create a new tag and update its content
+    // Creating the instances needed to create a new tag and update its content
     userTest = await createUser();
     inviteTest = await createInvite();
     organizationTest = await createOrganization(
@@ -826,16 +826,14 @@ describe("A tag table", () => {
     );
     contactTest = await createContact(campaignTest.data.createCampaign.id);
 
-    //createCampaign feeds the campaign_contact table, so we can use it from de db to create the tag content
-    campaignContactFromDB = await r
-      .knex("campaign_contact")
-      .where({
-        campaign_id: contactTest.campaign_id,
-        first_name: contactTest.first_name,
-        last_name: contactTest.last_name
-      });
+    // createCampaign feeds the campaign_contact table, so we can use it from de db to create the tag content
+    campaignContactFromDB = await r.knex("campaign_contact").where({
+      campaign_id: contactTest.campaign_id,
+      first_name: contactTest.first_name,
+      last_name: contactTest.last_name
+    });
 
-    //a tag that will be used accross most of the tets
+    // a tag that will be used accross most of the tets
     tagFields = {
       title: "A new tag",
       description: "This is a description for a new tag",
@@ -850,15 +848,15 @@ describe("A tag table", () => {
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
   it("holds all tags with title, and description, and tags belongs to organizations", async () => {
-    //find from DB the Tag created
+    // find from DB the Tag created
     const [tagFromDB] = await Tag.getAll();
-    //it should match the object that was used to create it
+    // it should match the object that was used to create it
     expect(tagFromDB.title).toBe(tagFields.title);
     expect(tagFromDB.description).toBe(tagFields.description);
     expect(tagFromDB.organization_id).toBe(tagFields.organization_id);
   });
   it("name, description, and organization cannot be null", async () => {
-    //create new Tags, where not nullable fields receive null as their value
+    // create new Tags, where not nullable fields receive null as their value
     const incompletedTags = [
       { ...tagFields, ...{ title: null } },
       { ...tagFields, ...{ description: null } },
@@ -870,7 +868,7 @@ describe("A tag table", () => {
       tagsDBInstance.push(new Tag(tag));
     });
 
-    //For some reason, I couldn't make .toThrow() to work. So catching all errors and comparing with the incompletedTags array
+    // For some reason, I couldn't make .toThrow() to work. So catching all errors and comparing with the incompletedTags array
     const catchErrors = [];
 
     for (let i = 0; i < tagsDBInstance.length; i++) {
@@ -901,14 +899,14 @@ describe("A tag table", () => {
     beforeEach(async () => {
       await setupTest();
 
-      //create an new message on DB
+      // create an new message on DB
       await createMessage(
         contactTest,
         "hello there",
         campaignContactFromDB[0].id
       );
 
-      //Get all instance necessary to test from the DB
+      // Get all instance necessary to test from the DB
       const [
         [tagFromDB],
         [messageFromDB],
@@ -931,7 +929,7 @@ describe("A tag table", () => {
         campaign_contact_id: campaignContactFromDB[0].id
       };
 
-      //Tag a message! used accross the tests below
+      // Tag a message! used accross the tests below
       await new TagContent(tagContent).save();
     }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
@@ -941,19 +939,19 @@ describe("A tag table", () => {
     }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
     it("is applied to a message, and is associated to a campaign, a contact, and can hold a value that explains why that tag was applied to that message", async () => {
-      //Check on db if the tag content was created
+      // Check on db if the tag content was created
       const [tagContentFromDB] = await TagContent.getAll();
       expect(tagContentFromDB).toMatchObject(tagContent);
     });
 
     it("one tag can be applied to two different messages", async () => {
-      //Create a new message..
+      // Create a new message..
       const newMessage = await createMessage(
         contactTest,
         "A new message",
         campaignContactFromDB[0].id
       );
-      //...and aply the same tag applied to another message
+      // ...and aply the same tag applied to another message
       const newTagContent = {
         value: "Tagged a different message",
         tag_id: tagTest.id,
@@ -974,7 +972,7 @@ describe("A tag table", () => {
         description: "This is not the same tag",
         organization_id: organizationTest.data.createOrganization.id
       };
-      //Create a new tag...
+      // Create a new tag...
       const newTag = await new Tag(newTagFields).save();
       const newTagContent = {
         value: "Testing tagging same message two different tags",
@@ -983,7 +981,7 @@ describe("A tag table", () => {
         campaign_id: campaignTestForTagContent.id,
         campaign_contact_id: campaignContactFromDB[0].id
       };
-      //and tag a message that already was tagged
+      // and tag a message that already was tagged
       await new TagContent(newTagContent).save();
       const tagContentFromDB = await TagContent.getAll();
       expect(tagContentFromDB[0].message_id).toBe(
