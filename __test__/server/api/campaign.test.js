@@ -407,6 +407,36 @@ it("should save campaign canned responses across copies and match saved data", a
   }
 });
 
+describe("Caching", async () => {
+  if (r.redis) {
+    it("should not have any selects on a cached campaign when message sending", async () => {
+      await createScript(testAdminUser, testCampaign);
+      await startCampaign(testAdminUser, testCampaign);
+
+      queryLog = [];
+      console.log("STARTING TEXTING");
+      for (let i = 0; i < 5; i++) {
+        const messageResult = await sendMessage(
+          testContacts[i].id,
+          testTexterUser,
+          {
+            userId: testTexterUser.id,
+            contactNumber: testContacts[i].cell,
+            text: "test text",
+            assignmentId
+          }
+        );
+      }
+      // should only have done updates and inserts
+      expect(
+        queryLog
+          .map(q => ({ method: q.method, sql: q.sql }))
+          .filter(q => q.method === "select")
+      ).toEqual([]);
+    });
+  }
+});
+
 describe("Reassignments", async () => {
   it("should allow reassignments before campaign start", async () => {
     // - user gets assignment todos
