@@ -4,7 +4,8 @@ exports.up = async knex => {
       tableName: "tag",
       create: t => {
         t.increments("id").primary();
-        t.text("title").notNullable();
+        t.text("group");
+        t.text("name").notNullable();
         t.text("description").notNullable();
         t.boolean("is_deleted").defaultTo(false);
         t.timestamp("created_at")
@@ -18,16 +19,12 @@ exports.up = async knex => {
       }
     },
     {
-      tableName: "tag_content",
+      tableName: "tag_campaign_contact",
       create: t => {
         t.increments("id").primary();
         t.text("value");
         t.integer("tag_id").notNullable();
         t.foreign("tag_id").references("tag.id");
-        t.integer("message_id").notNullable();
-        t.foreign("message_id").references("message.id");
-        t.integer("campaign_id").notNullable();
-        t.foreign("campaign_id").references("campaign.id");
         t.integer("campaign_contact_id").notNullable();
         t.foreign("campaign_contact_id").references("campaign_contact.id");
         t.timestamp("created_at")
