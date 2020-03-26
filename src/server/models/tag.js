@@ -9,7 +9,8 @@ const Tag = thinky.createModel(
     .object()
     .schema({
       id: type.string(),
-      title: requiredString(),
+      name: requiredString(),
+      group: type.string(),
       description: requiredString(),
       is_deleted: type.boolean().default(false),
       created_at: timestamp(),
