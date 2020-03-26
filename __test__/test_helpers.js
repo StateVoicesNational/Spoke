@@ -577,3 +577,24 @@ export const getConversations = async (
   const result = await runGql(conversationsQuery, variables, user);
   return result;
 };
+
+export const createJob = async (campaign, overrides) => {
+  const job = {
+    campaign_id: campaign.id,
+    payload: "fake_payload",
+    queue_name: "1:fake_queue_name",
+    job_type: "fake_job_type",
+    locks_queue: true,
+    assigned: true,
+    status: 0,
+    ...(overrides && overrides)
+  };
+
+  const [job_id] = await r
+    .knex("job_request")
+    .returning("id")
+    .insert(job);
+  job.id = job_id;
+
+  return job;
+};
