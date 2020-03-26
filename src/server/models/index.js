@@ -19,7 +19,7 @@ import Message from "./message";
 import ZipCode from "./zip-code";
 import Log from "./log";
 import Tag from "./tag";
-import TagContent from "./tag-content";
+import TagCampaignContact from "./tag-campaign-contact";
 
 import thinky from "./thinky";
 import datawarehouse from "./datawarehouse";
@@ -61,7 +61,7 @@ const tableList = [
   "user_organization",
   "zip_code", // good candidate (or by contact)?,
   "tag",
-  "tag_content"
+  "tag_campaign_contact"
 ];
 
 function createTablesIfNecessary() {
@@ -140,5 +140,5 @@ export {
   ZipCode,
   Log,
   Tag,
-  TagContent
+  TagCampaignContact
 };
