@@ -1,5 +1,26 @@
 # Release Notes
 
+## v5.3
+_March 2020:_ Version 5.3
+This release includes the following improvements:
+
+- Allow texters to send messages using an alias. If there is no alias for that texter, the message will include texter's first name when the interactions is `{ texterAliasOrFirstName }`
+- Scaling improvements
+- Add organization as an argument to getConfig so config can come from `organization.features` json column OR global context
+- Refactor AssignmentTexterContact to create new demo screens for the texter UI in prep for a texter UI redesign and to help with training
+- Reduces memory and write pressure in the database through removing superfluous indexes from campaign-contact
+- Adds functionality to the Contact Loaders ingest framework for persistence and some api/integration use-cases
+- New component tests
+- Server change to allow admins to opt out any contact, even those not assigned to them.
+- Fix send button alignment
+
+Thanks to all the contributors part of this release including:
+[filafb](https://github.com/filab),
+[lperson](https://github.com/lperson),
+[schuyler1d](https://github.com/schuyler1d),
+[ibrand](https://github.com/ibrand),
+[rahatarmanahmed](https://github.com/rahatarmanahmed)
+
 ## v5.2
 _February 2020:_ Version 5.2
 This release includes the following improvements:
