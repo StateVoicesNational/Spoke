@@ -1060,7 +1060,7 @@ export async function loadCampaignCache(
   // Asynchronously start running a refresh of all the campaign data into
   // our cache.  This should refresh/clear any corruption
   console.log("loadCampaignCache async tasks...", campaign.id);
-  const loadJob = cacheableData.campaignContact
+  const loadContacts = cacheableData.campaignContact
     .loadMany(campaign, organization, { remainingMilliseconds })
     .then(() => {
       console.log("FINISHED contact loadMany", campaign.id);
@@ -1068,9 +1068,11 @@ export async function loadCampaignCache(
     .catch(err => {
       console.error("ERROR contact loadMany", campaign.id, err, campaign);
     });
+  const loadOptOuts = cacheableData.optOut.loadMany(organization.id);
   if (global.TEST_ENVIRONMENT) {
     // otherwise this races with texting
-    await loadJob;
+    await loadContacts;
+    await loadOptOuts;
   }
 }
 
