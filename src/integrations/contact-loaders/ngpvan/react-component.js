@@ -94,6 +94,9 @@ export class CampaignContactsForm extends React.Component {
 
   renderJobResult = () => {
     const { lastResult } = this.props;
+    if (!lastResult) {
+      return null;
+    }
     const reference = lastResult.reference && JSON.parse(lastResult.reference);
     const result = lastResult.result && JSON.parse(lastResult.result);
     return (

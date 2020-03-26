@@ -8,6 +8,12 @@ import { getAxiosWithRetries } from "../../../server/lib/axiosWithRetries";
 
 export const name = "ngpvan";
 
+export const DEFAULT_NGP_VAN_API_BASE_URL = "https://api.securevan.com";
+export const DEFAULT_NGP_VAN_MAXIMUM_LIST_SIZE = 75000;
+export const DEFAULT_NGP_VAN_CACHE_TTL = 300;
+export const DEFAULT_NGP_VAN_EXPORT_JOB_TYPE_ID = 8;
+export const DEFAULT_PHONE_NUMBER_COUNTRY = "US";
+
 export function displayName() {
   return "NGP VAN";
 }
@@ -18,6 +24,10 @@ const getVanAuth = () => {
   );
   return `Basic ${buffer.toString("base64")}`;
 };
+
+export const makeVanUrl = pathAndQuery =>
+  `${getConfig("NGP_VAN_API_BASE_URL") ||
+    DEFAULT_NGP_VAN_API_BASE_URL}/${pathAndQuery}`;
 
 export function serverAdministratorInstructions() {
   return {
@@ -58,23 +68,23 @@ export async function available(organization, user) {
 }
 
 export function addServerEndpoints(expressApp) {
-  // / If you need to create API endpoints for server-to-server communication
-  // / this is where you would run e.g. app.post(....)
-  // / Be mindful of security and make sure there's
-  // / This is NOT where or how the client send or receive contact data
-  // TODO
-
-  // expressApp.post('/ingest-data/ngpvan/:jobid/:maxcontacts/:listid', function(req, res) {
-  //   const jobId = req.params.jobid
-  //   const job = await r.knex("job").where('id', jobId)
-  //   if (req.FILES.length) {
-  //      await axios();
-  //      finalizeContactData(req.FILES[0], job, req.params.maxcontacts);
-  //   }
-  //   res.send('ok');
-  // });
-
-  return;
+  // this method allows us to add server endpoint to serve as a webhook for external systems
+  // For example, VAN will call this webhook when a contact export is complete on their end
+  // Currently, this is implemented by VAN as a placeholder, it carries no meaningful data and
+  // is included here for illustrative purposes.
+  expressApp.post(
+    "/ingest-data/ngpvan/:jobId/:maxContacts/:vanListId",
+    function(req, res) {
+      const { jobId, maxContacts, vanListId } = req.params;
+      console.log(
+        "Received callback from VAN with parameters: jobId, maxContacts, vanListId",
+        jobId,
+        maxContacts,
+        vanListId
+      );
+      res.send("OK");
+    }
+  );
 }
 
 export function clientChoiceDataCacheKey(organization, campaign, user) {
@@ -92,11 +102,12 @@ export async function getClientChoiceData(
 
   try {
     const maxPeopleCount =
-      Number(getConfig("NGP_VAN_MAXIMUM_LIST_SIZE")) || 75000;
+      Number(getConfig("NGP_VAN_MAXIMUM_LIST_SIZE")) ||
+      DEFAULT_NGP_VAN_MAXIMUM_LIST_SIZE;
 
     // The savedLists endpoint supports pagination; we are ignoring pagination now
     response = await getAxiosWithRetries()({
-      url: `https://api.securevan.com/v4/savedLists?$top=&maxPeopleCount=${maxPeopleCount}`,
+      url: makeVanUrl(`v4/savedLists?$top=&maxPeopleCount=${maxPeopleCount}`),
       method: "GET",
       headers: {
         Authorization: getVanAuth()
@@ -116,7 +127,8 @@ export async function getClientChoiceData(
   // / `data` should be a single string -- it can be JSON which you can parse in the client component
   return {
     data: `${JSON.stringify({ items: _.get(response, "data.items", []) })}`,
-    expireSeconds: Number(getConfig("NGP_VAN_CACHE_TTL")) || 300
+    expireSeconds:
+      Number(getConfig("NGP_VAN_CACHE_TTL")) || DEFAULT_NGP_VAN_CACHE_TTL
   };
 }
 
@@ -141,7 +153,9 @@ export const getZipFromRow = row => {
 
 const countryCodeOk = countryCode =>
   !countryCode ||
-  (countryCode && countryCode === (process.env.PHONE_NUMBER_COUNTRY || "US"));
+  (countryCode &&
+    countryCode ===
+      (process.env.PHONE_NUMBER_COUNTRY || DEFAULT_PHONE_NUMBER_COUNTRY));
 
 const treatAsCellPhone = (isCellPhone, assumeCellPhone) =>
   assumeCellPhone || (isCellPhone && Number(isCellPhone));
@@ -227,17 +241,25 @@ export async function processContactLoad(job, maxContacts) {
   let vanResponse;
   let vanContacts;
 
+  const webhookUrl = `${getConfig(
+    "NGP_VAN_WEBHOOK_BASE_URL"
+  )}/ingest-data/ngpvan/${job.id}/${maxContacts || 0}/${
+    ingestDataReference.savedListId
+  }`;
+
   try {
     response = await getAxiosWithRetries()({
-      url: "https://api.securevan.com/v4/exportJobs",
+      url: makeVanUrl("v4/exportJobs"),
       method: "POST",
       headers: {
         Authorization: getVanAuth()
       },
       data: {
         savedListId: ingestDataReference.savedListId,
-        type: getConfig("NGP_VAN_EXPORT_JOB_TYPE_ID"),
-        webhookUrl: getConfig("NGP_VAN_WEBHOOK_URL")
+        type:
+          getConfig("NGP_VAN_EXPORT_JOB_TYPE_ID") ||
+          DEFAULT_NGP_VAN_EXPORT_JOB_TYPE_ID,
+        webhookUrl
       },
       validateStatus: status => status >= 200 && status < 300
     });

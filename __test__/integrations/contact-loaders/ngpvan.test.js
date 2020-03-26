@@ -6,7 +6,8 @@ import {
   rowTransformer,
   processContactLoad,
   handleFailedContactLoad,
-  getClientChoiceData
+  getClientChoiceData,
+  makeVanUrl
 } from "../../../src/integrations/contact-loaders/ngpvan";
 
 const csvParser = require("../../../src/workers/parse_csv");
@@ -15,12 +16,45 @@ const helpers = require("../../../src/integrations/contact-loaders/helpers");
 const jobs = require("../../../src/workers/jobs");
 
 describe("ngpvan", () => {
-  describe("getClientChoiceData", () => {
+  let fakeNgpVanBaseApiUrl;
+  beforeEach(async () => {
+    fakeNgpVanBaseApiUrl = "https://www.relisten.com";
+  });
+
+  describe("#makeVanUrl", () => {
+    let oldNgpVanApiBaseUrl;
+    beforeEach(async () => {
+      oldNgpVanApiBaseUrl = process.env.NGP_VAN_API_BASE_URL;
+      process.env.NGP_VAN_API_BASE_URL = "http://knexjs.org";
+    });
+
+    afterEach(async () => {
+      process.env.NGP_VAN_API_BASE_URL = oldNgpVanApiBaseUrl;
+    });
+
+    it("makes a URL with base url from the environment", async () => {
+      expect(makeVanUrl("index.html")).toEqual("http://knexjs.org/index.html");
+    });
+
+    describe("when NGP_VAN_API_BASE_URL is not set in the environment", () => {
+      beforeEach(async () => {
+        delete process.env.NGP_VAN_API_BASE_URL;
+      });
+
+      it("makes a URL with the default base url", async () => {
+        expect(makeVanUrl("index.html")).toEqual(
+          "https://api.securevan.com/index.html"
+        );
+      });
+    });
+  });
+
+  describe("#getClientChoiceData", () => {
     let oldMaximumListSize;
     let oldNgpVanApiKey;
     let oldNgpVanAppName;
     let oldNgpVanCacheTtl;
-    let makeGetSavedListsNock;
+    let oldNgpVanApiBaseUrl;
     let listItems;
 
     beforeEach(async () => {
@@ -28,10 +62,12 @@ describe("ngpvan", () => {
       oldNgpVanAppName = process.env.NGP_VAN_APP_NAME;
       oldNgpVanApiKey = process.env.NGP_VAN_API_KEY;
       oldNgpVanCacheTtl = process.env.NGP_VAN_CACHE_TTL;
+      oldNgpVanApiBaseUrl = process.env.NGP_VAN_API_BASE_URL;
       process.env.NGP_VAN_MAXIMUM_LIST_SIZE = 20;
       process.env.NGP_VAN_APP_NAME = "spoke";
       process.env.NGP_VAN_API_KEY = "topsecret";
       process.env.NGP_VAN_CACHE_TTL = 30;
+      process.env.NGP_VAN_API_BASE_URL = fakeNgpVanBaseApiUrl;
     });
 
     beforeEach(async () => {
@@ -78,11 +114,13 @@ describe("ngpvan", () => {
       process.env.NGP_VAN_APP_NAME = oldNgpVanAppName;
       process.env.NGP_VAN_API_KEY = oldNgpVanApiKey;
       process.env.NGP_VAN_MAXIMUM_LIST_SIZE = oldMaximumListSize;
+      process.env.NGP_VAN_API_BASE_URL = oldNgpVanApiBaseUrl;
+      process.env.NGP_VAN_CACHE_TTL = oldNgpVanCacheTtl;
       jest.restoreAllMocks();
     });
 
     it("returns what we expect", async () => {
-      const getSavedListsNock = nock("https://api.securevan.com:443", {
+      const getSavedListsNock = nock(`${fakeNgpVanBaseApiUrl}:443`, {
         encodedQueryParams: true,
         reqheaders: {
           authorization: "Basic c3Bva2U6dG9wc2VjcmV0fDA="
@@ -105,7 +143,7 @@ describe("ngpvan", () => {
 
     describe("when there is an error retrieving the list", () => {
       it("returns what we expect", async () => {
-        const getSavedListsNock = nock("https://api.securevan.com:443", {
+        const getSavedListsNock = nock(`${fakeNgpVanBaseApiUrl}:443`, {
           encodedQueryParams: true,
           reqheaders: {
             authorization: "Basic c3Bva2U6dG9wc2VjcmV0fDA="
@@ -138,16 +176,20 @@ describe("ngpvan", () => {
     let oldNgpVanApiKey;
     let makeSuccessfulExportJobPostNock;
     let makeSuccessfulGetCsvNock;
+    let webhookUrl;
+    let oldNgpVanApiBaseUrl;
 
     beforeEach(async () => {
-      oldNgpVanWebhookUrl = process.env.NGP_VAN_WEBHOOK_URL;
+      oldNgpVanWebhookUrl = process.env.NGP_VAN_WEBHOOK_BASE_URL;
       oldNgpVanExportJobTypeId = process.env.NGP_VAN_EXPORT_JOB_TYPE_ID;
       oldNgpVanAppName = process.env.NGP_VAN_APP_NAME;
       oldNgpVanApiKey = process.env.NGP_VAN_API_KEY;
-      process.env.NGP_VAN_WEBHOOK_URL = "https://www.example.com";
+      oldNgpVanApiBaseUrl = process.env.NGP_VAN_API_BASE_URL;
+      process.env.NGP_VAN_WEBHOOK_BASE_URL = "https://www.example.com";
       process.env.NGP_VAN_EXPORT_JOB_TYPE_ID = 7;
       process.env.NGP_VAN_APP_NAME = "spoke";
       process.env.NGP_VAN_API_KEY = "topsecret";
+      process.env.NGP_VAN_API_BASE_URL = fakeNgpVanBaseApiUrl;
     });
 
     beforeEach(async () => {
@@ -157,6 +199,7 @@ describe("ngpvan", () => {
       };
 
       job = {
+        id: 7,
         campaign_id: 1,
         payload: JSON.stringify(payload)
       };
@@ -208,8 +251,14 @@ describe("ngpvan", () => {
     });
 
     beforeEach(async () => {
+      webhookUrl = `"https://www.example.com/ingest-data/ngpvan/${
+        job.id
+      }/${maxContacts || 0}/682951"`;
+    });
+
+    beforeEach(async () => {
       makeSuccessfulExportJobPostNock = () =>
-        nock("https://api.securevan.com:443", {
+        nock(`${fakeNgpVanBaseApiUrl}:443`, {
           encodedQueryParams: true,
           reqheaders: {
             authorization: "Basic c3Bva2U6dG9wc2VjcmV0fDA="
@@ -217,7 +266,7 @@ describe("ngpvan", () => {
         })
           .post(
             "/v4/exportJobs",
-            '{"savedListId":682951,"type":"7","webhookUrl":"https://www.example.com"}'
+            `{"savedListId":682951,"type":"7","webhookUrl":${webhookUrl}}`
           )
           .reply(201, {
             surveyQuestions: null,
@@ -229,7 +278,7 @@ describe("ngpvan", () => {
             canvassFileRequestGuid: "260ca0f4-7a74-d962-749f-685259ac61b2",
             exportJobGuid: "260ca0f4-7a74-d962-749f-685259ac61b2",
             savedListId: 682951,
-            webhookUrl: "https://231c9292.ngrok.io/hello_van",
+            webhookUrl: webhookUrl,
             downloadUrl: "https://ngpvan.blob.core.windows.net:443/pii.csv",
             status: "Completed",
             type: 3,
@@ -247,10 +296,11 @@ describe("ngpvan", () => {
     });
 
     afterEach(async () => {
-      process.env.NGP_VAN_WEBHOOK_URL = oldNgpVanWebhookUrl;
+      process.env.NGP_VAN_WEBHOOK_BASE_URL = oldNgpVanWebhookUrl;
       process.env.NGP_VAN_EXPORT_JOB_TYPE_ID = oldNgpVanExportJobTypeId;
       process.env.NGP_VAN_APP_NAME = oldNgpVanAppName;
       process.env.NGP_VAN_API_KEY = oldNgpVanApiKey;
+      process.env.NGP_VAN_API_BASE_URL = oldNgpVanApiBaseUrl;
       jest.restoreAllMocks();
     });
 
@@ -369,7 +419,7 @@ describe("ngpvan", () => {
 
     describe("when POST to exportJobs fails", () => {
       it("calls handleFailedContactLoad", async () => {
-        const exportJobsNock = nock("https://api.securevan.com:443", {
+        const exportJobsNock = nock(`${fakeNgpVanBaseApiUrl}:443`, {
           encodedQueryParams: true,
           reqheaders: {
             authorization: "Basic c3Bva2U6dG9wc2VjcmV0fDA="
@@ -377,7 +427,7 @@ describe("ngpvan", () => {
         })
           .post(
             "/v4/exportJobs",
-            '{"savedListId":682951,"type":"7","webhookUrl":"https://www.example.com"}'
+            `{"savedListId":682951,"type":"7","webhookUrl":${webhookUrl}}`
           )
           .thrice()
           .reply(500);
