@@ -7,7 +7,8 @@ import {
   processContactLoad,
   handleFailedContactLoad,
   getClientChoiceData,
-  makeVanUrl
+  makeVanUrl,
+  available
 } from "../../../src/integrations/contact-loaders/ngpvan";
 
 const csvParser = require("../../../src/workers/parse_csv");
@@ -19,6 +20,47 @@ describe("ngpvan", () => {
   let fakeNgpVanBaseApiUrl;
   beforeEach(async () => {
     fakeNgpVanBaseApiUrl = "https://www.relisten.com";
+  });
+
+  describe("#available", () => {
+    let oldNgpVanWebhookUrl;
+    let oldNgpVanAppName;
+    let oldNgpVanApiKey;
+
+    beforeEach(async () => {
+      oldNgpVanWebhookUrl = process.env.NGP_VAN_WEBHOOK_BASE_URL;
+      oldNgpVanAppName = process.env.NGP_VAN_APP_NAME;
+      oldNgpVanApiKey = process.env.NGP_VAN_API_KEY;
+      process.env.NGP_VAN_WEBHOOK_BASE_URL = "https://www.example.com";
+      process.env.NGP_VAN_APP_NAME = "spoke";
+      process.env.NGP_VAN_API_KEY = "topsecret";
+    });
+
+    afterEach(async () => {
+      process.env.NGP_VAN_WEBHOOK_BASE_URL = oldNgpVanWebhookUrl;
+      process.env.NGP_VAN_APP_NAME = oldNgpVanAppName;
+      process.env.NGP_VAN_API_KEY = oldNgpVanApiKey;
+    });
+
+    it("returns true when all required environment variables are present", async () => {
+      expect(await available()).toEqual({
+        result: true,
+        expireSeconds: 60
+      });
+    });
+
+    describe("when one of the environment variables is missing", () => {
+      beforeEach(async () => {
+        delete process.env.NGP_VAN_APP_NAME;
+      });
+
+      it("returns false", async () => {
+        expect(await available()).toEqual({
+          result: false,
+          expireSeconds: 60
+        });
+      });
+    });
   });
 
   describe("#makeVanUrl", () => {
@@ -392,6 +434,32 @@ describe("ngpvan", () => {
       getCsvNock.done();
     });
 
+    describe("when the POST to exportJobs succeeds but returns status !== Error and status !== Completed", () => {
+      beforeEach(async () => {
+        csvParser.parseCSVAsync.mockRestore();
+        jest.spyOn(csvParser, "parseCSVAsync");
+
+        csvReply = "";
+      });
+
+      it("calls handleFailedContactLoad", async () => {
+        const exportJobsNock = makeSuccessfulExportJobPostNock("Requested");
+
+        await processContactLoad(job, maxContacts);
+        expect(ngpvan.handleFailedContactLoad.mock.calls).toEqual([
+          [
+            job,
+            payload,
+            "Unexpected response when requesting VAN export job. VAN returned status Requested"
+          ]
+        ]);
+
+        expect(csvParser.parseCSVAsync).not.toHaveBeenCalled();
+
+        exportJobsNock.done();
+      });
+    });
+
     describe("when the POST to exportJobs succeeds but returns status === Error", () => {
       beforeEach(async () => {
         csvParser.parseCSVAsync.mockRestore();
@@ -411,6 +479,8 @@ describe("ngpvan", () => {
             "Error requesting VAN export job. VAN returned error code 777"
           ]
         ]);
+
+        expect(csvParser.parseCSVAsync).not.toHaveBeenCalled();
 
         exportJobsNock.done();
       });
@@ -475,7 +545,7 @@ describe("ngpvan", () => {
 
     describe("when GET from downloadURL fails", () => {
       it("calls handleFailedContactLoad", async () => {
-        const exportJobsNock = makeSuccessfulExportJobPostNock("COmpleted");
+        const exportJobsNock = makeSuccessfulExportJobPostNock("Completed");
 
         const getCsvNock = nock("https://ngpvan.blob.core.windows.net:443", {
           encodedQueryParams: true
