@@ -272,6 +272,15 @@ export async function processContactLoad(job, maxContacts) {
     return;
   }
 
+  if (response.data.status === "Error") {
+    await exports.handleFailedContactLoad(
+      job,
+      ingestDataReference,
+      `Error requesting VAN export job. VAN returned error code ${response.data.errorCode}`
+    );
+    return;
+  }
+
   if (response.data.status !== "Completed") {
     // TODO handle status === "Error" or "Requested"
     // TODO(lmp) implement web hook to get called back when jobs complete
@@ -281,8 +290,6 @@ export async function processContactLoad(job, maxContacts) {
     // eslint-disable-next-line no-console
     console.log(message);
   }
-
-  // TODO check for errors in the response
 
   const downloadUrl = response.data.downloadUrl;
 
