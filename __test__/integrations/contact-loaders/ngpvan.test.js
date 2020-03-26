@@ -257,7 +257,7 @@ describe("ngpvan", () => {
     });
 
     beforeEach(async () => {
-      makeSuccessfulExportJobPostNock = () =>
+      makeSuccessfulExportJobPostNock = (status, errorCode) =>
         nock(`${fakeNgpVanBaseApiUrl}:443`, {
           encodedQueryParams: true,
           reqheaders: {
@@ -278,12 +278,12 @@ describe("ngpvan", () => {
             canvassFileRequestGuid: "260ca0f4-7a74-d962-749f-685259ac61b2",
             exportJobGuid: "260ca0f4-7a74-d962-749f-685259ac61b2",
             savedListId: 682951,
-            webhookUrl: webhookUrl,
+            webhookUrl,
             downloadUrl: "https://ngpvan.blob.core.windows.net:443/pii.csv",
-            status: "Completed",
+            status,
             type: 3,
             dateExpired: "2020-02-27T05:35:51.9364193Z",
-            errorCode: null
+            errorCode: errorCode || null
           });
     });
 
@@ -305,7 +305,7 @@ describe("ngpvan", () => {
     });
 
     it("calls the api and its dependencies", async () => {
-      const exportJobsNock = makeSuccessfulExportJobPostNock();
+      const exportJobsNock = makeSuccessfulExportJobPostNock("Completed");
       const getCsvNock = makeSuccessfulGetCsvNock();
 
       await processContactLoad(job, maxContacts);
@@ -392,6 +392,30 @@ describe("ngpvan", () => {
       getCsvNock.done();
     });
 
+    describe("when the POST to exportJobs succeeds but returns status === Error", () => {
+      beforeEach(async () => {
+        csvParser.parseCSVAsync.mockRestore();
+        jest.spyOn(csvParser, "parseCSVAsync");
+
+        csvReply = "";
+      });
+
+      it("calls handleFailedContactLoad", async () => {
+        const exportJobsNock = makeSuccessfulExportJobPostNock("Error", 777);
+
+        await processContactLoad(job, maxContacts);
+        expect(ngpvan.handleFailedContactLoad.mock.calls).toEqual([
+          [
+            job,
+            payload,
+            "Error requesting VAN export job. VAN returned error code 777"
+          ]
+        ]);
+
+        exportJobsNock.done();
+      });
+    });
+
     describe("when there are no contacts in the VAN list", () => {
       beforeEach(async () => {
         csvParser.parseCSVAsync.mockRestore();
@@ -405,7 +429,7 @@ describe("ngpvan", () => {
       });
 
       it("calls handleFailedContactLoad", async () => {
-        const exportJobsNock = makeSuccessfulExportJobPostNock();
+        const exportJobsNock = makeSuccessfulExportJobPostNock("Completed");
         const getCsvNock = makeSuccessfulGetCsvNock();
 
         await processContactLoad(job, maxContacts);
@@ -451,7 +475,7 @@ describe("ngpvan", () => {
 
     describe("when GET from downloadURL fails", () => {
       it("calls handleFailedContactLoad", async () => {
-        const exportJobsNock = makeSuccessfulExportJobPostNock();
+        const exportJobsNock = makeSuccessfulExportJobPostNock("COmpleted");
 
         const getCsvNock = nock("https://ngpvan.blob.core.windows.net:443", {
           encodedQueryParams: true
@@ -486,7 +510,7 @@ describe("ngpvan", () => {
       });
 
       it("calls handleFailedContactLoad", async () => {
-        const exportJobsNock = makeSuccessfulExportJobPostNock();
+        const exportJobsNock = makeSuccessfulExportJobPostNock("Completed");
         const getCsvNock = makeSuccessfulGetCsvNock();
 
         await processContactLoad(job, maxContacts);
@@ -518,7 +542,7 @@ describe("ngpvan", () => {
       });
 
       it("calls handleFailedContactLoad", async () => {
-        const exportJobsNock = makeSuccessfulExportJobPostNock();
+        const exportJobsNock = makeSuccessfulExportJobPostNock("Completed");
         const getCsvNock = makeSuccessfulGetCsvNock();
 
         await processContactLoad(job, maxContacts);
