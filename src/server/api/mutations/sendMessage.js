@@ -28,7 +28,7 @@ export const sendMessage = async (
       message: "Your assignment has changed"
     });
   }
-  const organization = await cacheableData.organization.load(
+  const organization = await loaders.organization.load(
     campaign.organization_id
   );
   const orgFeatures = JSON.parse(organization.features || "{}");
