@@ -14,7 +14,7 @@ import {
   UserOrganization,
   Tag,
   Message,
-  TagContent
+  TagCampaignContact
 } from "../src/server/models/";
 import { resolvers as campaignResolvers } from "../src/server/api/campaign";
 import {
@@ -862,9 +862,10 @@ describe("A tag table", () => {
 
     // a tag that will be used accross most of the tets
     tagFields = {
-      title: "A new tag",
+      name: "A new tag",
       description: "This is a description for a new tag",
-      organization_id: organizationTest.data.createOrganization.id
+      organization_id: organizationTest.data.createOrganization.id,
+      group: "A group for my tag"
     };
     await new Tag(tagFields).save();
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
@@ -874,18 +875,16 @@ describe("A tag table", () => {
     if (r.redis) r.redis.flushdb();
   }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
-  it("holds all tags with title, and description, and tags belongs to organizations", async () => {
+  it("holds all tags with name, description, andr group, and tags belong to organizations", async () => {
     // find from DB the Tag created
     const [tagFromDB] = await Tag.getAll();
     // it should match the object that was used to create it
-    expect(tagFromDB.title).toBe(tagFields.title);
-    expect(tagFromDB.description).toBe(tagFields.description);
-    expect(tagFromDB.organization_id).toBe(tagFields.organization_id);
+    expect(tagFromDB).toMatchObject(tagFields);
   });
-  it("name, description, and organization cannot be null", async () => {
+  it("name, description, and organization cannot be null. Group can be null", async () => {
     // create new Tags, where not nullable fields receive null as their value
     const incompletedTags = [
-      { ...tagFields, ...{ title: null } },
+      { ...tagFields, ...{ name: null } },
       { ...tagFields, ...{ description: null } },
       { ...tagFields, ...{ organization_id: null } }
     ];
@@ -907,6 +906,13 @@ describe("A tag table", () => {
     }
     expect(catchErrors.length).toBe(incompletedTags.length);
   });
+  it("Group can be null", async () => {
+    const tagWithoutGroup = { ...tagFields, ...{ group: null } };
+
+    await new Tag(tagWithoutGroup).save();
+    const [tagCreated] = await Tag.getAll();
+    expect(tagCreated.group).toBe(null);
+  });
   it("has a default field 'is_deleted' as false, but can be updated to true", async () => {
     const [tagFromDB] = await Tag.getAll();
     expect(tagFromDB.isDeleted).toBeFalsy();
@@ -919,45 +925,22 @@ describe("A tag table", () => {
   });
   describe("and a tag", () => {
     let tagTest;
-    let messageTest;
-    let campaignTestForTagContent;
-    let tagContent;
+    let tagCampaignContent;
 
     beforeEach(async () => {
       await setupTest();
 
-      // create an new message on DB
-      await createMessage(
-        contactTest,
-        "hello there",
-        campaignContactFromDB[0].id
-      );
+      // Get tag needed to test from the DB
+      [tagTest] = await Tag.getAll();
 
-      // Get all instance necessary to test from the DB
-      const [
-        [tagFromDB],
-        [messageFromDB],
-        [campaignFromDB]
-      ] = await Promise.all([
-        Tag.getAll(),
-        Message.getAll(),
-        Campaign.getAll()
-      ]);
-
-      tagTest = tagFromDB;
-      messageTest = messageFromDB;
-      campaignTestForTagContent = campaignFromDB;
-
-      tagContent = {
-        value: "Tagged a message",
+      tagCampaignContent = {
+        value: "Tagged a contact",
         tag_id: tagTest.id,
-        message_id: messageTest.id,
-        campaign_id: campaignTestForTagContent.id,
         campaign_contact_id: campaignContactFromDB[0].id
       };
 
-      // Tag a message! used accross the tests below
-      await new TagContent(tagContent).save();
+      // Tag a contact! used accross the tests below
+      await new TagCampaignContact(tagCampaignContent).save();
     }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
     afterEach(async () => {
@@ -965,55 +948,56 @@ describe("A tag table", () => {
       if (r.redis) r.redis.flushdb();
     }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
-    it("is applied to a message, and is associated to a campaign, a contact, and can hold a value that explains why that tag was applied to that message", async () => {
+    it("is applied to a contact, and associated to a campaign, and can hold a value that explains why that tag was applied to that message", async () => {
       // Check on db if the tag content was created
-      const [tagContentFromDB] = await TagContent.getAll();
-      expect(tagContentFromDB).toMatchObject(tagContent);
+      const [tagContentFromDB] = await TagCampaignContact.getAll();
+      expect(tagContentFromDB).toMatchObject(tagCampaignContent);
     });
 
-    it("one tag can be applied to two different messages", async () => {
-      // Create a new message..
-      const newMessage = await createMessage(
-        contactTest,
-        "A new message",
-        campaignContactFromDB[0].id
+    it("one tag can be applied to two different contacts", async () => {
+      // Create a new contact..
+      const newContact = await createContact(
+        campaignTest.data.createCampaign.id
       );
-      // ...and aply the same tag applied to another message
-      const newTagContent = {
-        value: "Tagged a different message",
+      // get it from db
+      const queryTheNewContact = await r.knex("campaign_contact").where({
+        campaign_id: newContact.campaign_id,
+        first_name: newContact.first_name,
+        last_name: newContact.last_name
+      });
+      // ...and aply the same tag applied to another contact
+      const newTagCampaignContact = {
+        value: "Tagged a different contact",
         tag_id: tagTest.id,
-        message_id: newMessage.id,
-        campaign_id: campaignTestForTagContent.id,
-        campaign_contact_id: campaignContactFromDB[0].id
+        campaign_contact_id: queryTheNewContact[0].id
       };
-      await new TagContent(newTagContent).save();
+      await new TagCampaignContact(newTagCampaignContact).save();
 
-      const tagContentFromDB = await TagContent.getAll();
-      expect(tagContentFromDB[0].message_id).not.toBe(
-        tagContentFromDB[1].message_id
+      const newTagCampaignContactFromDB = await TagCampaignContact.getAll();
+      expect(newTagCampaignContactFromDB[0].campaign_contact_id).not.toBe(
+        newTagCampaignContactFromDB[1].campaign_contact_id
       );
     });
-    it("is possible to tag one message with two or more tags", async () => {
+    it("is possible to tag one contact with two or more tags", async () => {
       const newTagFields = {
-        title: "A different tag",
+        name: "A different tag",
         description: "This is not the same tag",
         organization_id: organizationTest.data.createOrganization.id
       };
       // Create a new tag...
       const newTag = await new Tag(newTagFields).save();
-      const newTagContent = {
+      const newTagCampaignContent = {
         value: "Testing tagging same message two different tags",
         tag_id: newTag.id,
-        message_id: messageTest.id,
-        campaign_id: campaignTestForTagContent.id,
         campaign_contact_id: campaignContactFromDB[0].id
       };
-      // and tag a message that already was tagged
-      await new TagContent(newTagContent).save();
-      const tagContentFromDB = await TagContent.getAll();
-      expect(tagContentFromDB[0].message_id).toBe(
-        tagContentFromDB[1].message_id
+      // and tag a contact that already was tagged
+      await new TagCampaignContact(newTagCampaignContent).save();
+      const tagContentFromDB = await TagCampaignContact.getAll();
+      expect(tagContentFromDB[0].campaign_contact_id).toBe(
+        tagContentFromDB[1].campaign_contact_id
       );
+      // just check it's not the same tag
       expect(tagContentFromDB[0].tag_id).not.toBe(tagContentFromDB[1].tag_id);
     });
   });
