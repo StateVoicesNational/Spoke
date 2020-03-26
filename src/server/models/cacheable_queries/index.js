@@ -1,15 +1,17 @@
-import campaignCache from "./campaign";
-import cannedResponseCache from "./canned-response";
-import optOutCache from "./opt-out";
-import organizationCache from "./organization";
-import userCache from "./user";
+import campaign from "./campaign";
+import campaignContact from "./campaign-contact";
+import cannedResponse from "./canned-response";
+import optOut from "./opt-out";
+import organization from "./organization";
+import user from "./user";
 
 const cacheableData = {
-  campaign: campaignCache,
-  cannedResponse: cannedResponseCache,
-  optOut: optOutCache,
-  organization: organizationCache,
-  user: userCache
+  campaign,
+  campaignContact,
+  cannedResponse,
+  optOut,
+  organization,
+  user
 };
 
 export default cacheableData;

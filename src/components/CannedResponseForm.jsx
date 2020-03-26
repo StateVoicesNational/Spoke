@@ -6,8 +6,8 @@ import GSForm from "./forms/GSForm";
 
 class CannedResponseForm extends React.Component {
   handleSave = formValues => {
-    const { onSaveCannedResponse } = this.props;
-    onSaveCannedResponse(formValues);
+    this.setState({ text: formValues.text });
+    this.props.onSaveCannedResponse(formValues);
   };
 
   render() {

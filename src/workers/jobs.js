@@ -206,12 +206,49 @@ export async function dispatchContactIngestLoad(job, organization) {
   });
 }
 
-export async function completeContactLoad(job, jobMessages) {
+export async function failedContactLoad(
+  job,
+  _,
+  ingestDataReference,
+  ingestResult
+) {
+  const campaignId = job.campaign_id;
+  const finalContactCount = await r.getCount(
+    r.knex("campaign_contact").where("campaign_id", campaignId)
+  );
+
+  await r
+    .knex("campaign_admin")
+    .where("campaign_id", campaignId)
+    .update({
+      deleted_optouts_count: null,
+      duplicate_contacts_count: null,
+      contacts_count: finalContactCount,
+      ingest_method: job.job_type.replace(/^ingest./, ""),
+      ingest_success: false,
+      ingest_result: ingestResult || null,
+      ingest_data_reference: ingestDataReference || null
+    });
+  if (job.id) {
+    await r
+      .table("job_request")
+      .get(job.id)
+      .delete();
+  }
+}
+
+export async function completeContactLoad(
+  job,
+  _,
+  ingestDataReference,
+  ingestResult
+) {
   const campaignId = job.campaign_id;
   const campaign = await Campaign.get(campaignId);
   const organization = await Organization.get(campaign.organization_id);
 
   let deleteOptOutCells;
+  let deleteDuplicateCells;
   const knexOptOutDeleteResult = await r
     .knex("campaign_contact")
     .whereIn("cell", getOptOutSubQuery(campaign.organization_id))
@@ -243,29 +280,35 @@ export async function completeContactLoad(job, jobMessages) {
     )
     .delete()
     .then(result => {
+      deleteDuplicateCells = result;
       console.log("Deduplication result", campaignId, result);
     })
     .catch(err => {
       console.error("Failed deduplication", campaignId, err);
     });
 
-  if (deleteOptOutCells) {
-    jobMessages.push(
-      `Number of contacts excluded due to their opt-out status: ${deleteOptOutCells}`
-    );
-  }
+  const finalContactCount = await r.getCount(
+    r.knex("campaign_contact").where("campaign_id", campaignId)
+  );
+
+  await r
+    .knex("campaign_admin")
+    .where("campaign_id", campaignId)
+    .update({
+      deleted_optouts_count: deleteOptOutCells || null,
+      duplicate_contacts_count: deleteDuplicateCells || null,
+      contacts_count: finalContactCount,
+      ingest_method: job.job_type.replace(/^ingest./, ""),
+      ingest_success: true,
+      ingest_result: ingestResult || null,
+      ingest_data_reference: ingestDataReference || null
+    });
+
   if (job.id) {
-    if (jobMessages.length) {
-      await r
-        .knex("job_request")
-        .where("id", job.id)
-        .update({ result_message: jobMessages.join("\n") });
-    } else {
-      await r
-        .table("job_request")
-        .get(job.id)
-        .delete();
-    }
+    await r
+      .table("job_request")
+      .get(job.id)
+      .delete();
   }
   await cacheableData.campaign.reload(campaignId);
 }
@@ -352,6 +395,7 @@ export async function assignTexters(job) {
   */
   const payload = JSON.parse(job.payload);
   const cid = job.campaign_id;
+  console.log("assignTexters1", cid, payload);
   const campaign = (await r.knex("campaign").where({ id: cid }))[0];
   const texters = payload.texters;
   const currentAssignments = await r
@@ -557,6 +601,25 @@ export async function assignTexters(job) {
       .where("id", "in", assignmentsToDelete)
       .delete()
       .catch(log.error);
+  }
+
+  if (campaign.is_started) {
+    console.log("assignTexterscache1", job.campaign_id);
+    if (global.TEST_ENVIRONMENT) {
+      // await the full thing if we are testing to avoid async blocks
+      await cacheableData.campaignContact.updateCampaignAssignmentCache(
+        job.campaign_id
+      );
+    } else {
+      cacheableData.campaignContact
+        .updateCampaignAssignmentCache(job.campaign_id)
+        .then(res => {
+          console.log("assignTexterscache Loaded", job.campaign_id, res);
+        })
+        .catch(err => {
+          console.log("assignTexterscache Error", job.campaign_id, err);
+        });
+    }
   }
 
   if (job.id) {
@@ -989,6 +1052,28 @@ export async function loadMessages(csvFile) {
   });
 }
 
+export async function loadCampaignCache(
+  campaign,
+  organization,
+  { remainingMilliseconds }
+) {
+  // Asynchronously start running a refresh of all the campaign data into
+  // our cache.  This should refresh/clear any corruption
+  console.log("loadCampaignCache async tasks...", campaign.id);
+  const loadJob = cacheableData.campaignContact
+    .loadMany(campaign, organization, { remainingMilliseconds })
+    .then(() => {
+      console.log("FINISHED contact loadMany", campaign.id);
+    })
+    .catch(err => {
+      console.error("ERROR contact loadMany", campaign.id, err, campaign);
+    });
+  if (global.TEST_ENVIRONMENT) {
+    // otherwise this races with texting
+    await loadJob;
+  }
+}
+
 // Temporary fix for orgless users
 // See https://github.com/MoveOnOrg/Spoke/issues/934
 // and job-processes.js
@@ -1010,7 +1095,7 @@ export async function fixOrgless() {
       });
       console.log(
         "added orgless user " +
-          user.id +
+          orglessUser.id +
           " to organization " +
           process.env.DEFAULT_ORG
       );
