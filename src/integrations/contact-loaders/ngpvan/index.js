@@ -59,8 +59,11 @@ export async function available(organization, user) {
   // / If this is instantaneous, you can have it be 0 (i.e. always), but if it takes time
   // / to e.g. verify credentials or test server availability,
   // / then it's better to allow the result to be cached
-  // TODO
-  const result = true;
+
+  const result =
+    !!getConfig("NGP_VAN_API_KEY") &&
+    !!getConfig("NGP_VAN_APP_NAME") &&
+    !!getConfig("NGP_VAN_WEBHOOK_BASE_URL");
   return {
     result,
     expireSeconds: 60
@@ -282,13 +285,12 @@ export async function processContactLoad(job, maxContacts) {
   }
 
   if (response.data.status !== "Completed") {
-    // TODO handle status === "Error" or "Requested"
-    // TODO(lmp) implement web hook to get called back when jobs complete
-    const message = `Export job not immediately completed ${JSON.stringify(
-      job
-    )}`;
-    // eslint-disable-next-line no-console
-    console.log(message);
+    await exports.handleFailedContactLoad(
+      job,
+      ingestDataReference,
+      `Unexpected response when requesting VAN export job. VAN returned status ${response.data.status}`
+    );
+    return;
   }
 
   const downloadUrl = response.data.downloadUrl;
