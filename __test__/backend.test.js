@@ -956,12 +956,16 @@ describe("A tag table", () => {
 
     it("one tag can be applied to two different contacts", async () => {
       // Create a new contact..
-      const newContact = await createContact(
-        campaignTest.data.createCampaign.id
-      );
+      const newContact = await new CampaignContact({
+        campaign_id: campaignTest.data.createCampaign.id,
+        first_name: "Dwight",
+        last_name: "Schrute",
+        cell: "5555555555",
+        zip: "18503"
+      }).save();
       // get it from db
       const queryTheNewContact = await r.knex("campaign_contact").where({
-        campaign_id: newContact.campaign_id,
+        campaign_id: Number(newContact.campaign_id),
         first_name: newContact.first_name,
         last_name: newContact.last_name
       });
