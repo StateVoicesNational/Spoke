@@ -11,10 +11,18 @@ import {
   available
 } from "../../../src/integrations/contact-loaders/ngpvan";
 
+import { CampaignContactsForm } from "../../../src/integrations/contact-loaders/ngpvan/react-component";
+
 const csvParser = require("../../../src/workers/parse_csv");
 const ngpvan = require("../../../src/integrations/contact-loaders/ngpvan");
 const helpers = require("../../../src/integrations/contact-loaders/helpers");
 const jobs = require("../../../src/workers/jobs");
+
+// client-testing libs
+import React from "react";
+import { shallow } from "enzyme";
+import { StyleSheetTestUtils } from "aphrodite";
+import { icons } from "../../../src/components/CampaignContactsChoiceForm";
 
 describe("ngpvan", () => {
   let fakeNgpVanBaseApiUrl;
@@ -850,6 +858,212 @@ describe("ngpvan", () => {
       [{ Address: "350 Fifth Avenue, New York, NY 10118=1AAA" }, undefined]
     ]).test("getZipFromRow( %j ) returns %s", (allegedAddress, allegedZip) => {
       expect(getZipFromRow(allegedAddress)).toEqual(allegedZip);
+    });
+  });
+
+  describe("react-component.campaignContactsForm", () => {
+    let onSubmit;
+    let onChange;
+    let wrapper;
+    let component;
+    let commonProps;
+    let dataSourceExpectation;
+
+    beforeEach(async () => {
+      onSubmit = () => {};
+      onChange = () => {};
+
+      dataSourceExpectation = [
+        {
+          rawValue: 682913,
+          text: "200-220 W 103",
+          value: expect.objectContaining({
+            props: expect.objectContaining({ primaryText: "200-220 W 103" })
+          })
+        }
+      ];
+
+      commonProps = {
+        onChange,
+        onSubmit,
+        campaignIsStarted: false,
+        icons,
+        saveDisabled: false,
+        saveLabel: "Save",
+        clientChoiceData: JSON.stringify({
+          items: [
+            {
+              savedListId: 682913,
+              name: "200-220 W 103",
+              description: null,
+              listCount: 171,
+              doorCount: 127
+            }
+          ]
+        }),
+        jobResultMessage: null
+      };
+
+      StyleSheetTestUtils.suppressStyleInjection();
+    });
+
+    afterEach(async () => {
+      jest.restoreAllMocks();
+    });
+
+    it("populates its data correctly", async () => {
+      wrapper = shallow(<CampaignContactsForm {...commonProps} />);
+      component = wrapper.instance();
+      const autocomplete = wrapper.find("AutoComplete");
+      expect(autocomplete.props().dataSource).toEqual(dataSourceExpectation);
+      expect(autocomplete.props().searchText).toBe(undefined);
+      expect(autocomplete.props().hintText).toEqual("Select a list to import");
+    });
+
+    describe("when lastResult indicates a success", () => {
+      beforeEach(async () => {
+        StyleSheetTestUtils.suppressStyleInjection();
+        wrapper = shallow(
+          <CampaignContactsForm
+            {...commonProps}
+            lastResult={{
+              name: "ngpvan",
+              success: true,
+              result:
+                '{"dupeCount":0,"invalidCellCount":0,"missingCellCount":260,"zipCount":9}',
+              reference:
+                '{"savedListId":682913,"savedListName":"200-220 W 103"}',
+              contactsCount: 9,
+              deletedOptouts: 0,
+              deletedDupes: 0,
+              updatedAt: "2020-03-25T02:53:37.514Z"
+            }}
+          />
+        );
+        component = wrapper.instance();
+      });
+
+      it("populates the selected list name in the autocomplete and displays the results", async () => {
+        const autocomplete = wrapper.find("AutoComplete");
+        expect(autocomplete.props().dataSource).toEqual(dataSourceExpectation);
+        expect(component.props.lastResult).toEqual({
+          contactsCount: 9,
+          deletedDupes: 0,
+          deletedOptouts: 0,
+          name: "ngpvan",
+          reference: '{"savedListId":682913,"savedListName":"200-220 W 103"}',
+          result:
+            '{"dupeCount":0,"invalidCellCount":0,"missingCellCount":260,"zipCount":9}',
+          success: true,
+          updatedAt: "2020-03-25T02:53:37.514Z"
+        });
+        expect(autocomplete.props().searchText).toEqual("200-220 W 103");
+        expect(autocomplete.props().hintText).toEqual(
+          "Select a list to import"
+        );
+        const subheader = wrapper.find("Subheader");
+        expect(subheader.props().children).toEqual("Last Import");
+
+        const listItems = wrapper.find("ListItem");
+        expect(listItems.at(0).props().primaryText).toEqual(
+          "List name: 200-220 W 103"
+        );
+        expect(listItems.at(1).props().primaryText).toEqual(
+          "260 contacts with no cell phone removed"
+        );
+        expect(listItems.at(2).props().primaryText).toEqual(
+          "0 contacts with no ZIP code imported"
+        );
+        expect(listItems.at(3).exists()).toEqual(false);
+      });
+    });
+
+    describe("when lastResult indicates a failure", () => {
+      beforeEach(async () => {
+        StyleSheetTestUtils.suppressStyleInjection();
+        wrapper = shallow(
+          <CampaignContactsForm
+            {...commonProps}
+            lastResult={{
+              name: "ngpvan",
+              success: false,
+              result:
+                '{"errors":["Error requesting VAN export job. Error: Request failed with status code 404"],"savedListId":682913,"savedListName":"200-220 W 103"}',
+              reference:
+                '{"savedListId":682913,"savedListName":"200-220 W 103"}',
+              contactsCount: 9,
+              deletedOptouts: null,
+              deletedDupes: null,
+              updatedAt: "2020-03-25T02:53:37.514Z"
+            }}
+          />
+        );
+        component = wrapper.instance();
+      });
+
+      it("populates the selected list name in the autocomplete and displays the results", async () => {
+        const autocomplete = wrapper.find("AutoComplete");
+        expect(autocomplete.props().dataSource).toEqual(dataSourceExpectation);
+        expect(component.props.lastResult).toEqual({
+          contactsCount: 9,
+          deletedDupes: null,
+          deletedOptouts: null,
+          name: "ngpvan",
+          reference: '{"savedListId":682913,"savedListName":"200-220 W 103"}',
+          result:
+            '{"errors":["Error requesting VAN export job. Error: Request failed with status code 404"],"savedListId":682913,"savedListName":"200-220 W 103"}',
+          success: false,
+          updatedAt: "2020-03-25T02:53:37.514Z"
+        });
+        expect(autocomplete.props().searchText).toEqual("200-220 W 103");
+        expect(autocomplete.props().hintText).toEqual(
+          "Select a list to import"
+        );
+        const subheader = wrapper.find("Subheader");
+        expect(subheader.props().children).toEqual("Last Import");
+
+        const listItems = wrapper.find("ListItem");
+        expect(listItems.at(0).props().primaryText).toEqual(
+          "List name: 200-220 W 103"
+        );
+        expect(listItems.at(1).props().primaryText).toEqual(
+          "Error requesting VAN export job. Error: Request failed with status code 404"
+        );
+        expect(listItems.at(2).exists()).toEqual(false);
+      });
+    });
+
+    describe("when there is no last result", () => {
+      beforeEach(async () => {
+        StyleSheetTestUtils.suppressStyleInjection();
+        wrapper = shallow(
+          <CampaignContactsForm {...commonProps} lastResult={null} />
+        );
+        component = wrapper.instance();
+      });
+
+      it("does not display any results or previously selected list", async () => {
+        const autocomplete = wrapper.find("AutoComplete");
+        expect(autocomplete.props().dataSource).toEqual([
+          {
+            rawValue: 682913,
+            text: "200-220 W 103",
+            value: expect.objectContaining({
+              props: expect.objectContaining({ primaryText: "200-220 W 103" })
+            })
+          }
+        ]);
+        expect(component.props.lastResult).toEqual(null);
+        expect(autocomplete.props().searchText).toEqual(undefined);
+        expect(autocomplete.props().hintText).toEqual(
+          "Select a list to import"
+        );
+        const subheader = wrapper.find("Subheader");
+        expect(subheader.exists()).toEqual(false);
+
+        const listItems = wrapper.find("ListItem");
+        expect(listItems.exists()).toEqual(false);
+      });
     });
   });
 });

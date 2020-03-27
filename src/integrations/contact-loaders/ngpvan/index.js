@@ -64,6 +64,13 @@ export async function available(organization, user) {
     !!getConfig("NGP_VAN_API_KEY") &&
     !!getConfig("NGP_VAN_APP_NAME") &&
     !!getConfig("NGP_VAN_WEBHOOK_BASE_URL");
+
+  if (!result) {
+    console.log(
+      "ngpvan contact loader unavailable. Missing one or more required environment variables."
+    );
+  }
+
   return {
     result,
     expireSeconds: 60
