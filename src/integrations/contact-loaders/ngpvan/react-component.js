@@ -18,10 +18,18 @@ const styles = StyleSheet.create({
 });
 
 export class CampaignContactsForm extends React.Component {
-  state = {
-    errorResult: null,
-    savedListId: undefined
-  };
+  constructor(props) {
+    super(props);
+    const { lastResult } = this.props;
+    const reference =
+      lastResult && lastResult.reference && JSON.parse(lastResult.reference);
+    const searchText = (reference && reference.savedListName) || undefined;
+    this.state = {
+      errorResult: undefined,
+      savedListId: undefined,
+      searchText
+    };
+  }
 
   buildSelectData = () => {
     const { clientChoiceData } = this.props;
