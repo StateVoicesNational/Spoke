@@ -4,6 +4,7 @@ import Chip from "../components/Chip";
 import CreateIcon from "material-ui/svg-icons/content/create";
 import DeleteIcon from "material-ui/svg-icons/action/delete-forever";
 import RaisedButton from "material-ui/RaisedButton";
+import FlatButton from "material-ui/FlatButton";
 import { red500 } from "material-ui/styles/colors";
 import FloatingActionButton from "material-ui/FloatingActionButton";
 import ContentAdd from "material-ui/svg-icons/content/add";
@@ -31,7 +32,12 @@ const styles = StyleSheet.create({
   },
   fields: {
     display: "flex",
-    flexDirection: "column"
+    flexDirection: "column",
+    marginBotton: 16
+  },
+  dialogButtons: {
+    marginTop: 32,
+    textAlign: "right"
   }
 });
 
@@ -137,13 +143,15 @@ class Tags extends React.Component {
           open={this.state.openTagDialog}
           onRequestClose={this.handleClose}
         >
-          <GSForm
-            schema={formSchema}
-            onSubmit={this.handleSave}
-            className={css(styles.fields)}
-          >
-            <Form.Field label="Title" name="title" />
-            <Form.Field label="Description" name="description" />
+          <GSForm schema={formSchema} onSubmit={this.handleSave}>
+            <div className={css(styles.fields)}>
+              <Form.Field label="Title" name="title" />
+              <Form.Field label="Description" name="description" />
+            </div>
+            <div className={css(styles.dialogButtons)}>
+              <FlatButton onTouchTap={this.handleClose} label="Cancel" />
+              <FlatButton onTouchTap={this.handleAdd} label="Create" primary />
+            </div>
           </GSForm>
         </Dialog>
       </div>
