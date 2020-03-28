@@ -53,7 +53,7 @@ describe("ngpvan", () => {
     it("returns true when all required environment variables are present", async () => {
       expect(await available()).toEqual({
         result: true,
-        expireSeconds: 60
+        expiresSeconds: 60
       });
     });
 
@@ -65,7 +65,7 @@ describe("ngpvan", () => {
       it("returns false", async () => {
         expect(await available()).toEqual({
           result: false,
-          expireSeconds: 60
+          expiresSeconds: 60
         });
       });
     });
@@ -187,7 +187,7 @@ describe("ngpvan", () => {
       const savedListsResponse = await getClientChoiceData();
 
       expect(JSON.parse(savedListsResponse.data).items).toEqual(listItems);
-      expect(savedListsResponse.expireSeconds).toEqual(30);
+      expect(savedListsResponse.expiresSeconds).toEqual(30);
       getSavedListsNock.done();
     });
 
