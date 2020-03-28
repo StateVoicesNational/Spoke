@@ -47,7 +47,7 @@ export async function available(organization, user) {
   /// to e.g. verify credentials or test server availability,
   /// then it's better to allow the result to be cached
   const result = user.is_superadmin && hasConfig("WAREHOUSE_DB_HOST");
-  // FUTURE: maybe test connection and then have expireSeconds caching
+  // FUTURE: maybe test connection and then have expiresSeconds caching
   return {
     result,
     expiresSeconds: 0
