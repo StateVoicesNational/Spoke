@@ -5,6 +5,13 @@ import CreateIcon from "material-ui/svg-icons/content/create";
 import DeleteIcon from "material-ui/svg-icons/action/delete-forever";
 import RaisedButton from "material-ui/RaisedButton";
 import { red500 } from "material-ui/styles/colors";
+import FloatingActionButton from "material-ui/FloatingActionButton";
+import ContentAdd from "material-ui/svg-icons/content/add";
+import theme from "../styles/theme";
+import Dialog from "material-ui/Dialog";
+import yup from "yup";
+import GSForm from "../components/forms/GSForm";
+import Form from "react-formal";
 import { StyleSheet, css } from "aphrodite";
 
 const styles = StyleSheet.create({
@@ -21,6 +28,10 @@ const styles = StyleSheet.create({
   },
   editButton: {
     marginRight: 6
+  },
+  fields: {
+    display: "flex",
+    flexDirection: "column"
   }
 });
 
@@ -68,7 +79,28 @@ const tags = [
 ];
 
 class Tags extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      openTagDialog: false
+    };
+    this.handleOpen = this.handleOpen.bind(this);
+    this.handleClose = this.handleClose.bind(this);
+  }
+
+  handleOpen() {
+    this.setState({ openTagDialog: true });
+  }
+
+  handleClose() {
+    this.setState({ openTagDialog: false });
+  }
+
   render() {
+    const formSchema = yup.object({
+      title: yup.string().required(),
+      description: yup.string().nullable()
+    });
     return (
       <div className={css(styles.cards)}>
         {tags.map((tag, id) => (
@@ -93,6 +125,27 @@ class Tags extends React.Component {
             </CardText>
           </Card>
         ))}
+        <FloatingActionButton
+          style={theme.components.floatingButton}
+          onTouchTap={this.handleOpen}
+        >
+          <ContentAdd />
+        </FloatingActionButton>
+        <Dialog
+          title="Create Tag"
+          modal={false}
+          open={this.state.openTagDialog}
+          onRequestClose={this.handleClose}
+        >
+          <GSForm
+            schema={formSchema}
+            onSubmit={this.handleSave}
+            className={css(styles.fields)}
+          >
+            <Form.Field label="Title" name="title" />
+            <Form.Field label="Description" name="description" />
+          </GSForm>
+        </Dialog>
       </div>
     );
   }
