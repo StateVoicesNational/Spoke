@@ -89,6 +89,11 @@ class AdminDashboard extends React.Component {
         role: "SUPERVOLUNTEER"
       },
       {
+        name: "Tags",
+        path: "tags",
+        role: "SUPERVOLUNTEER"
+      },
+      {
         name: "Settings",
         path: "settings",
         role: "SUPERVOLUNTEER"
