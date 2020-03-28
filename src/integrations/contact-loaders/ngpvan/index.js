@@ -55,7 +55,7 @@ export async function available(organization, user) {
   // / return an object with two keys: result: true/false
   // / these keys indicate if the ingest-contact-loader is usable
   // / Sometimes credentials need to be setup, etc.
-  // / A second key expireSeconds: should be how often this needs to be checked
+  // / A second key expiresSeconds: should be how often this needs to be checked
   // / If this is instantaneous, you can have it be 0 (i.e. always), but if it takes time
   // / to e.g. verify credentials or test server availability,
   // / then it's better to allow the result to be cached
@@ -73,7 +73,7 @@ export async function available(organization, user) {
 
   return {
     result,
-    expireSeconds: 60
+    expiresSeconds: 60
   };
 }
 
@@ -133,11 +133,11 @@ export async function getClientChoiceData(
 
   // / data to be sent to the admin client to present options to the component or similar
   // / The react-component will be sent this data as a property
-  // / return a json object which will be cached for expireSeconds long
+  // / return a json object which will be cached for expiresSeconds long
   // / `data` should be a single string -- it can be JSON which you can parse in the client component
   return {
     data: `${JSON.stringify({ items: _.get(response, "data.items", []) })}`,
-    expireSeconds:
+    expiresSeconds:
       Number(getConfig("NGP_VAN_CACHE_TTL")) || DEFAULT_NGP_VAN_CACHE_TTL
   };
 }

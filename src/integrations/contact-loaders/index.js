@@ -33,21 +33,23 @@ async function getSetCacheableResult(cacheKey, fallbackFunc) {
     }
   }
   const slowRes = await fallbackFunc();
-  if (r.redis && slowRes && slowRes.expireSeconds) {
+  if (r.redis && slowRes && slowRes.expiresSeconds) {
     await r.redis.setAsync(
       cacheKey,
       JSON.stringify(slowRes),
-      slowRes.expireSeconds
+      slowRes.expiresSeconds
     );
   }
   return slowRes;
 }
 
 async function getIngestAvailability(name, ingestMethod, organization, user) {
-  return (await getSetCacheableResult(
-    availabilityCacheKey(name, organization.id, user.id),
-    async () => ingestMethod.available(organization, user)
-  )).result;
+  return (
+    await getSetCacheableResult(
+      availabilityCacheKey(name, organization.id, user.id),
+      async () => ingestMethod.available(organization, user)
+    )
+  ).result;
 }
 
 export function rawIngestMethod(name) {
@@ -96,7 +98,9 @@ export async function getMethodChoiceData(
     ingestMethod.name,
     cacheFunc(organization, campaign, user, loaders)
   );
-  return (await getSetCacheableResult(cacheKey, async () =>
-    ingestMethod.getClientChoiceData(organization, campaign, user, loaders)
-  )).data;
+  return (
+    await getSetCacheableResult(cacheKey, async () =>
+      ingestMethod.getClientChoiceData(organization, campaign, user, loaders)
+    )
+  ).data;
 }
