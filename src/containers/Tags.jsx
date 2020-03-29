@@ -43,42 +43,50 @@ const styles = StyleSheet.create({
 
 const tags = [
   {
-    name: "fun",
+    id: 1,
+    title: "fun",
     description: "this is fun",
     is_deleted: false
   },
   {
-    name: "stupid",
+    id: 2,
+    title: "stupid",
     description: "this is stupid",
     is_deleted: false
   },
   {
-    name: "fun",
+    id: 3,
+    title: "fun",
     description: "this is fun",
     is_deleted: false
   },
   {
-    name: "stupid",
+    id: 4,
+    title: "stupid",
     description: "this is stupid",
     is_deleted: false
   },
   {
-    name: "fun",
+    id: 5,
+    title: "fun",
     description: "this is fun",
     is_deleted: false
   },
   {
-    name: "stupid",
+    id: 6,
+    title: "stupid",
     description: "this is stupid",
     is_deleted: false
   },
   {
-    name: "fun",
+    id: 7,
+    title: "fun",
     description: "this is fun",
     is_deleted: false
   },
   {
-    name: "stupid",
+    id: 8,
+    title: "stupid",
     description: "this is stupid",
     is_deleted: false
   }
@@ -88,14 +96,22 @@ class Tags extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      openTagDialog: false
+      openTagDialog: false,
+      dialogMode: "create",
+      tag: {}
     };
     this.handleOpen = this.handleOpen.bind(this);
     this.handleClose = this.handleClose.bind(this);
+    this.handleOpenEdit = this.handleOpenEdit.bind(this);
   }
 
   handleOpen() {
-    this.setState({ openTagDialog: true });
+    this.setState({ openTagDialog: true, dialogMode: "create", tag: {} });
+  }
+
+  handleOpenEdit(tag) {
+    return () =>
+      this.setState({ openTagDialog: true, dialogMode: "edit", tag });
   }
 
   handleClose() {
@@ -103,18 +119,19 @@ class Tags extends React.Component {
   }
 
   render() {
+    const { openTagDialog, dialogMode, tag } = this.state;
     const formSchema = yup.object({
       title: yup.string().required(),
       description: yup.string().nullable()
     });
     return (
       <div className={css(styles.cards)}>
-        {tags.map((tag, id) => (
-          <Card className={css(styles.card)} key={id}>
+        {tags.map(t => (
+          <Card className={css(styles.card)} key={t.id}>
             <CardText>
-              <Chip style={{ margin: 0 }} text={tag.name} />
+              <Chip style={{ margin: 0 }} text={t.title} />
             </CardText>
-            <CardText>{tag.description}</CardText>
+            <CardText>{t.description}</CardText>
             <CardText className={css(styles.buttons)}>
               <RaisedButton
                 className={css(styles.editButton)}
@@ -122,6 +139,7 @@ class Tags extends React.Component {
                 label="Edit"
                 labelPosition="before"
                 icon={<CreateIcon />}
+                onTouchTap={this.handleOpenEdit(t)}
               />
               <RaisedButton
                 label="Delete"
@@ -138,19 +156,27 @@ class Tags extends React.Component {
           <ContentAdd />
         </FloatingActionButton>
         <Dialog
-          title="Create Tag"
+          title={dialogMode === "create" ? "Create Tag" : "Edit Tag"}
           modal={false}
-          open={this.state.openTagDialog}
+          open={openTagDialog}
           onRequestClose={this.handleClose}
         >
-          <GSForm schema={formSchema} onSubmit={this.handleSave}>
+          <GSForm
+            schema={formSchema}
+            onSubmit={this.handleSave}
+            defaultValue={tag}
+          >
             <div className={css(styles.fields)}>
               <Form.Field label="Title" name="title" />
               <Form.Field label="Description" name="description" />
             </div>
             <div className={css(styles.dialogButtons)}>
               <FlatButton onTouchTap={this.handleClose} label="Cancel" />
-              <FlatButton onTouchTap={this.handleAdd} label="Create" primary />
+              <FlatButton
+                onTouchTap={this.handleAdd}
+                label={dialogMode === "create" ? "Create" : "Save"}
+                primary
+              />
             </div>
           </GSForm>
         </Dialog>
