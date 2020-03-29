@@ -98,7 +98,7 @@ class Tags extends React.Component {
     this.state = {
       openTagDialog: false,
       dialogMode: "create",
-      tag: {}
+      tagId: null
     };
     this.handleOpen = this.handleOpen.bind(this);
     this.handleClose = this.handleClose.bind(this);
@@ -106,12 +106,12 @@ class Tags extends React.Component {
   }
 
   handleOpen() {
-    this.setState({ openTagDialog: true, dialogMode: "create", tag: {} });
+    this.setState({ openTagDialog: true, dialogMode: "create", tagId: null });
   }
 
-  handleOpenEdit(tag) {
+  handleOpenEdit(tagId) {
     return () =>
-      this.setState({ openTagDialog: true, dialogMode: "edit", tag });
+      this.setState({ openTagDialog: true, dialogMode: "edit", tagId });
   }
 
   handleClose() {
@@ -119,11 +119,12 @@ class Tags extends React.Component {
   }
 
   render() {
-    const { openTagDialog, dialogMode, tag } = this.state;
+    const { openTagDialog, dialogMode, tagId } = this.state;
     const formSchema = yup.object({
       title: yup.string().required(),
       description: yup.string().nullable()
     });
+    const dialogTag = tagId ? tags.find(t => t.id === tagId) : {};
     return (
       <div className={css(styles.cards)}>
         {tags.map(t => (
@@ -139,7 +140,7 @@ class Tags extends React.Component {
                 label="Edit"
                 labelPosition="before"
                 icon={<CreateIcon />}
-                onTouchTap={this.handleOpenEdit(t)}
+                onTouchTap={this.handleOpenEdit(t.id)}
               />
               <RaisedButton
                 label="Delete"
@@ -164,7 +165,7 @@ class Tags extends React.Component {
           <GSForm
             schema={formSchema}
             onSubmit={this.handleSave}
-            defaultValue={tag}
+            defaultValue={dialogTag}
           >
             <div className={css(styles.fields)}>
               <Form.Field label="Title" name="title" />
