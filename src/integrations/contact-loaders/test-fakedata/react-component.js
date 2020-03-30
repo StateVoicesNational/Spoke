@@ -19,7 +19,14 @@ export class CampaignContactsForm extends React.Component {
   };
 
   render() {
-    const { clientChoiceData } = this.props;
+    const { clientChoiceData, lastResult } = this.props;
+    let resultMessage = "";
+    if (lastResult && lastResult.result) {
+      const { message, finalCount } = JSON.parse(lastResult.result);
+      resultMessage = message
+        ? message
+        : `Final count was ${finalCount} when you chose ${lastResult.reference}`;
+    }
     return (
       <GSForm
         schema={yup.object({
@@ -48,9 +55,9 @@ export class CampaignContactsForm extends React.Component {
             primaryText={clientChoiceData}
             leftIcon={this.props.icons.check}
           />
-          {this.props.jobResultMessage ? (
+          {resultMessage ? (
             <ListItem
-              primaryText={this.props.jobResultMessage}
+              primaryText={resultMessage}
               leftIcon={this.props.icons.warning}
             />
           ) : null}
@@ -77,5 +84,6 @@ CampaignContactsForm.propTypes = {
   saveLabel: type.string,
 
   clientChoiceData: type.string,
-  jobResultMessage: type.string
+  jobResultMessage: type.string,
+  lastResult: type.object
 };

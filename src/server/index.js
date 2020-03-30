@@ -20,6 +20,7 @@ import { seedZipCodes } from "./seeds/seed-zip-codes";
 import { setupUserNotificationObservers } from "./notifications";
 import { TwimlResponse } from "twilio";
 import { existsSync } from "fs";
+import { rawAllMethods } from "../integrations/contact-loaders";
 
 process.on("uncaughtException", ex => {
   log.error(ex);
@@ -91,6 +92,15 @@ app.use((req, res, next) => {
     req.awsContext = context;
   }
   next();
+});
+
+// give contact loaders a chance
+const configuredIngestMethods = rawAllMethods();
+Object.keys(configuredIngestMethods).forEach(ingestMethodName => {
+  const ingestMethod = configuredIngestMethods[ingestMethodName];
+  if (ingestMethod && ingestMethod.addServerEndpoints) {
+    ingestMethod.addServerEndpoints(app);
+  }
 });
 
 app.post(

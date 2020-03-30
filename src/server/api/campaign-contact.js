@@ -21,7 +21,6 @@ export const resolvers = {
         "cell",
         "zip",
         "customFields",
-        "messageStatus",
         "assignmentId",
         "external_id"
       ],
@@ -31,7 +30,9 @@ export const resolvers = {
       if (campaignContact.message_status) {
         return campaignContact.message_status;
       }
-      // TODO: look it up via cacheing
+      return await cacheableData.campaignContact.getMessageStatus(
+        campaignContact.id
+      );
     },
     campaign: async (campaignContact, _, { loaders }) =>
       loaders.campaign.load(campaignContact.campaign_id),

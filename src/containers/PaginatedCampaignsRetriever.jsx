@@ -62,9 +62,7 @@ export class PaginatedCampaignsRetriever extends Component {
   }
 }
 
-const mapQueriesToProps = ({ ownProps }) => ({
-  campaigns: {
-    query: gql`
+export const campaignsQuery = `
       query qq(
         $organizationId: String!
         $cursor: OffsetLimitCursor
@@ -89,6 +87,12 @@ const mapQueriesToProps = ({ ownProps }) => ({
           }
         }
       }
+    `;
+
+const mapQueriesToProps = ({ ownProps }) => ({
+  campaigns: {
+    query: gql`
+      ${campaignsQuery}
     `,
     variables: {
       cursor: { offset: 0, limit: ownProps.pageSize },
