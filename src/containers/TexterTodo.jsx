@@ -159,7 +159,7 @@ export class TexterTodo extends React.Component {
         assignment.id
       )).data.findNewCampaignContact.found;
       console.log("getNewContacts ?added", didAddContacts);
-      if (didAddContacts | waitForServer) {
+      if (didAddContacts || waitForServer) {
         await this.props.data.refetch();
       }
       this.loadingNewContacts = false;
