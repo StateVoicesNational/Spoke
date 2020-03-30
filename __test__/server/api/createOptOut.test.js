@@ -67,8 +67,6 @@ describe("createOptOut", () => {
       startedCampaign.testAdminUser
     );
 
-    console.log("optOutResult", optOutResult);
-
     expect(optOutResult.data.createOptOut.id).toEqual(
       optOutContact.id.toString()
     );

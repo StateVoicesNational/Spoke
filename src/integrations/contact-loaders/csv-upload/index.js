@@ -2,7 +2,7 @@ import { completeContactLoad } from "../../../workers/jobs";
 import { r, CampaignContact } from "../../../server/models";
 import { getConfig, hasConfig } from "../../../server/api/lib/config";
 
-import { updateJob } from "../../../lib";
+import { updateJob } from "../../../workers/lib";
 import { getTimezoneByZip, unzipPayload } from "../../../workers/jobs";
 
 export const name = "csv-upload";
@@ -119,6 +119,9 @@ export async function processContactLoad(job, maxContacts) {
     datum.campaign_id = campaignId;
   }
   for (let index = 0; index < numChunks; index++) {
+    await updateJob(job, Math.round((100 / numChunks) * index)).catch(err => {
+      console.error("Error updating job:", campaignId, job.id, err);
+    });
     const savePortion = contacts.slice(
       index * chunkSize,
       (index + 1) * chunkSize
