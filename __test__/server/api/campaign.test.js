@@ -143,6 +143,9 @@ it("save campaign data, edit it, make sure the last value", async () => {
     { campaignId: testCampaign.id },
     testAdminUser
   );
+  expect(campaignDataResults.data.campaign.title).toEqual(
+    "test campaign new title"
+  );
 
   texterCampaignDataResults = await runComponentGql(
     TexterTodoListQuery,

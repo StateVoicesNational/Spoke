@@ -26,18 +26,17 @@ class CannedResponseMenu extends React.Component {
   };
 
   renderCannedResponses({ scripts, subheader, showAddScriptButton }) {
-    const { customFields, campaignId, texterId } = this.props;
+    const { customFields } = this.props;
 
     return (
       <ScriptList
-        texterId={texterId}
-        campaignId={campaignId}
         scripts={scripts}
         showAddScriptButton={showAddScriptButton}
         duplicateCampaignResponses
         customFields={customFields}
         subheader={subheader}
         onSelectCannedResponse={this.handleSelectCannedResponse}
+        onCreateCannedResponse={this.props.onCreateCannedResponse}
       />
     );
   }
@@ -86,13 +85,12 @@ class CannedResponseMenu extends React.Component {
 CannedResponseMenu.propTypes = {
   scripts: type.array,
   onSelectCannedResponse: type.func,
+  onCreateCannedResponse: type.func,
   onRequestClose: type.func,
   customFields: type.array,
-  texterId: type.number,
   userCannedResponses: type.array,
   open: type.bool,
   anchorEl: type.object,
-  campaignId: type.number,
   campaignCannedResponses: type.array
 };
 
