@@ -9,7 +9,13 @@ describe("AssignmentTexterSurveys component", () => {
     question: {
       id: 1,
       text: "What is foo?",
-      answerOptions: [{ nextInteractionStep: { script: "foo" } }]
+      answerOptions: [
+        {
+          value: "Foo is an animal",
+          interactionStepId: 3,
+          nextInteractionStep: { script: "foo" }
+        }
+      ]
     }
   };
   const interactionSteps = [currentInteractionStep];

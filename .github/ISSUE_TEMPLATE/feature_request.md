@@ -1,10 +1,9 @@
 ---
 name: Feature request
 about: Suggest an idea for Spoke
-title: 'Feature Request: <your-title-here>'
+title: "Feature Request: <your-title-here>"
 labels: C-enhancement
-assignees: ''
-
+assignees: ""
 ---
 
 **Problem**

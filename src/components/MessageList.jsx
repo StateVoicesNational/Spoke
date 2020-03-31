@@ -6,7 +6,7 @@ import ProhibitedIcon from "material-ui/svg-icons/av/not-interested";
 import Divider from "material-ui/Divider";
 import { red300 } from "material-ui/styles/colors";
 
-const styles = {
+const defaultStyles = {
   optOut: {
     fontSize: "13px",
     fontStyle: "italic"
@@ -23,16 +23,21 @@ const styles = {
 };
 
 const MessageList = function MessageList(props) {
-  const { contact } = props;
+  const { contact, styles } = props;
   const { optOut, messages } = contact;
+
+  const received = (styles && styles.messageReceived) || defaultStyles.received;
+  const sent = (styles && styles.messageSent) || defaultStyles.sent;
+  const listStyle = (styles && styles.messageList) || {};
 
   const optOutItem = optOut ? (
     <div>
       <Divider />
       <ListItem
-        style={styles.optOut}
-        leftIcon={<ProhibitedIcon style={{ fill: red300 }} />}
         disabled
+        style={defaultStyles.optOut}
+        key={"optout-item"}
+        leftIcon={<ProhibitedIcon style={{ fill: red300 }} />}
         primaryText={`${contact.firstName} opted out of texts`}
         secondaryText={moment(optOut.createdAt).fromNow()}
       />
@@ -42,11 +47,11 @@ const MessageList = function MessageList(props) {
   );
 
   return (
-    <List>
+    <List style={listStyle}>
       {messages.map(message => (
         <ListItem
           disabled
-          style={message.isFromContact ? styles.received : styles.sent}
+          style={message.isFromContact ? received : sent}
           key={message.id}
           primaryText={message.text}
           secondaryText={moment.utc(message.createdAt).fromNow()}
@@ -58,7 +63,8 @@ const MessageList = function MessageList(props) {
 };
 
 MessageList.propTypes = {
-  contact: PropTypes.object
+  contact: PropTypes.object,
+  styles: PropTypes.object
 };
 
 export default MessageList;
