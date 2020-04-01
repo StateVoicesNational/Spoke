@@ -18,6 +18,24 @@ const organizationCache = {
     }
     return getConfig("TWILIO_MESSAGE_SERVICE_SID", organization);
   },
+  getMessageServiceAuth: async (organization, contact, messageText) => {
+    // Note organization won't always be available, so we'll need to conditionally look it up based on contact
+    if (messageText && /twilioapitest/.test(messageText)) {
+      return {
+        messagingServiceSid: "fakeSid_MK123",
+        authToken: "foobar",
+        apiKey: "foobarbaz"
+      };
+    }
+    return {
+      messagingServiceSid: getConfig(
+        "TWILIO_MESSAGE_SERVICE_SID",
+        organization
+      ),
+      authToken: getConfig("TWILIO_API_KEY", organization),
+      apiKey: getConfig("TWILIO_AUTH_TOKEN", organization)
+    };
+  },
   load: async id => {
     if (r.redis) {
       const orgData = await r.redis.getAsync(cacheKey(id));
