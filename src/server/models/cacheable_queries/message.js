@@ -12,6 +12,9 @@ import campaignContactCache from "./campaign-contact";
 const cacheKey = contactId =>
   `${process.env.CACHE_PREFIX || ""}messages-${contactId}`;
 
+const CONTACT_CACHE_ENABLED =
+  process.env.REDIS_CONTACT_CACHE || global.REDIS_CONTACT_CACHE;
+
 const dbQuery = ({ campaignId, contactId }) => {
   const cols = Object.keys(Message.fields)
     .filter(f => f !== "service_response")
@@ -67,7 +70,7 @@ const contactIdFromOther = async ({
 };
 
 const saveMessageCache = async (contactId, contactMessages, overwriteFull) => {
-  if (r.redis) {
+  if (r.redis && CONTACT_CACHE_ENABLED) {
     const key = cacheKey(contactId);
     let redisQ = r.redis.multi();
     if (overwriteFull) {
@@ -91,7 +94,7 @@ const saveMessageCache = async (contactId, contactMessages, overwriteFull) => {
 
 const cacheDbResult = async dbResult => {
   // We assume we are getting a result that is comprehensive for each contact
-  if (r.redis) {
+  if (r.redis && CONTACT_CACHE_ENABLED) {
     const contacts = {};
     dbResult.forEach(m => {
       if (m.campaign_contact_id in contacts) {
@@ -112,7 +115,7 @@ const query = async queryObj => {
   // queryObj ~ { campaignContactId, assignmentId, cell, service, messageServiceSid }
   let cid = query.campaignContactId;
   // console.log('message query', queryObj)
-  if (r.redis) {
+  if (r.redis && CONTACT_CACHE_ENABLED) {
     cid = await contactIdFromOther(queryObj);
     if (cid) {
       const [exists, messages] = await r.redis
