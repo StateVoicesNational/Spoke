@@ -160,7 +160,11 @@ async function sendMessage(message, contact, trx, organization) {
   }
 
   // Note organization won't always be available, so then contact can trace to it
-  const messagingServiceSid = await cacheableData.organization.getMessageServiceSid(
+  const {
+    messagingServiceSid,
+    authToken,
+    apiKey
+  } = await cacheableData.organization.getMessageServiceAuth(
     organization,
     contact,
     message.text
@@ -242,10 +246,7 @@ async function sendMessage(message, contact, trx, organization) {
         changes
       );
     } else {
-      const twilioMultiTenant = Twilio(
-        getConfig("TWILIO_API_KEY", organization),
-        getConfig("TWILIO_AUTH_TOKEN", organization)
-      );
+      const twilioMultiTenant = Twilio(apiKey, authToken);
       twilioMultiTenant.messages.create(messageParams, (err, response) => {
         postMessageSend(
           message,
