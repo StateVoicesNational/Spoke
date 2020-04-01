@@ -59,11 +59,11 @@ const tableList = [
   "opt_out", // good candidate
   "pending_message_part",
   "question_response",
+  "tag",
+  "tag_campaign_contact",
   "user_cell",
   "user_organization",
-  "zip_code", // good candidate (or by contact)?,
-  "tag",
-  "tag_campaign_contact"
+  "zip_code" // good candidate (or by contact)?,
 ];
 
 function createTablesIfNecessary() {
