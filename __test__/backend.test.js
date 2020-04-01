@@ -11,8 +11,7 @@ import {
   r,
   CannedResponse,
   InteractionStep,
-  UserOrganization,
-  Message
+  UserOrganization
 } from "../src/server/models/";
 import { resolvers as campaignResolvers } from "../src/server/api/campaign";
 import {
@@ -142,6 +141,7 @@ async function createOrganization(user, name, userId, inviteId) {
 
 async function createCampaign(user, title, description, organizationId) {
   const context = getContext({ user });
+
   const campaignQuery = `mutation createCampaign($input: CampaignInput!) {
     createCampaign(campaign: $input) {
       id
@@ -167,23 +167,6 @@ async function createCampaign(user, title, description, organizationId) {
     return campaign;
   } catch (err) {
     console.error("Error creating campaign");
-    return false;
-  }
-}
-
-async function createMessage(contact, text, campaignContactId) {
-  const { cell } = contact;
-  const newMessage = new Message({
-    contact_number: cell,
-    is_from_contact: false,
-    text,
-    send_status: "SENT",
-    campaign_contact_id: campaignContactId
-  });
-  try {
-    const messageCreated = await newMessage.save();
-    return messageCreated;
-  } catch (e) {
     return false;
   }
 }
