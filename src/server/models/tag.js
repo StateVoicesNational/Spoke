@@ -21,4 +21,9 @@ const Tag = thinky.createModel(
   { noAutoCreation: true, depenencies: [Organization] }
 );
 
+Tag.ensureIndex("organization_is_deleted", doc => [
+  doc("organization_id"),
+  doc("is_deleted")
+]);
+
 export default Tag;

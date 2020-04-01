@@ -23,4 +23,6 @@ const TagCampaignContact = thinky.createModel(
   }
 );
 
+TagCampaignContact.ensureIndex("campaign_contact_id");
+
 export default TagCampaignContact;
