@@ -1,4 +1,6 @@
 exports.up = async knex => {
+  const isSqlite = /sqlite/.test(knex.client.config.client);
+
   const buildTableSchema = [
     {
       tableName: "tag",
@@ -15,7 +17,11 @@ exports.up = async knex => {
           .notNullable()
           .defaultTo(knex.fn.now());
         t.integer("organization_id").notNullable();
-        t.foreign("organization_id").references("organization.id");
+
+        if (!isSqlite) {
+          t.foreign("organization_id").references("organization.id");
+          t.index(["organization_id", "is_deleted"]);
+        }
       }
     },
     {
@@ -24,15 +30,19 @@ exports.up = async knex => {
         t.increments("id").primary();
         t.text("value");
         t.integer("tag_id").notNullable();
-        t.foreign("tag_id").references("tag.id");
         t.integer("campaign_contact_id").notNullable();
-        t.foreign("campaign_contact_id").references("campaign_contact.id");
         t.timestamp("created_at")
           .notNullable()
           .defaultTo(knex.fn.now());
         t.timestamp("updated_at")
           .notNullable()
           .defaultTo(knex.fn.now());
+        if (!isSqlite) {
+          t.foreign("tag_id").references("tag.id");
+
+          t.foreign("campaign_contact_id").references("campaign_contact.id");
+          t.index("campaign_contact_id");
+        }
       }
     }
   ];
@@ -49,5 +59,7 @@ exports.up = async knex => {
 };
 
 exports.down = knex => {
-  return knex.schema.dropTableIfExists("tag_content").dropTableIfExists("tag");
+  return knex.schema
+    .dropTableIfExists("tag_campaign_contact")
+    .dropTableIfExists("tag");
 };
