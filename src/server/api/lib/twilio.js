@@ -7,7 +7,7 @@ import {
   r,
   cacheableData
 } from "../../models";
-import { log } from "../../../lib";
+import { log, getConfig } from "../../../lib";
 import { saveNewIncomingMessage } from "./message-sending";
 
 // TWILIO error_codes:
@@ -26,7 +26,7 @@ if (process.env.TWILIO_API_KEY && process.env.TWILIO_AUTH_TOKEN) {
   // eslint-disable-next-line new-cap
   twilio = Twilio(process.env.TWILIO_API_KEY, process.env.TWILIO_AUTH_TOKEN);
 } else {
-  log.warn("NO TWILIO CONNECTION");
+  log.warn("NO GLOBAL TWILIO CONNECTION");
 }
 
 if (!process.env.TWILIO_MESSAGE_SERVICE_SID) {
@@ -242,7 +242,11 @@ async function sendMessage(message, contact, trx, organization) {
         changes
       );
     } else {
-      twilio.messages.create(messageParams, (err, response) => {
+      const twilioMultiTenant = Twilio(
+        getConfig("TWILIO_API_KEY", organization),
+        getConfig("TWILIO_AUTH_TOKEN", organization)
+      );
+      twilioMultiTenant.messages.create(messageParams, (err, response) => {
         postMessageSend(
           message,
           contact,
