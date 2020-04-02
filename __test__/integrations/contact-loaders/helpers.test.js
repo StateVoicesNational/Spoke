@@ -44,8 +44,7 @@ describe("contact-loaders/helpers", () => {
       contacts = [
         {
           cell: "+13214028326",
-          custom_fields:
-            '{"CanvassFileRequestID":"1286","VanID":"6455083","Address":"627 Wizow Way, Lofaje, DE 89435","StreetAddress":"627 Wizow Way","City":"Lofaje","State":"DE","ZipOrPostal":"","County":"Suffolk","Employer":"","Occupation":"","Email":"","HomePhone":"","IsHomePhoneACellExchange":"","CellPhone":"(321) 402-8326","WorkPhone":"","IsWorkPhoneACellExchange":"","Phone":"(384) 984-5966","OptInPhone":"","OptInStatus":"","OptInPhoneType":"","CongressionalDistrict":"001","StateHouse":"004","StateSenate":"002","Party":"D","PollingLocation":"","PollingAddress":"","PollingCity":""}',
+          custom_fields: '{"County":"Suffolk"}',
           external_id: "6455083",
           first_name: "Larry",
           last_name: "Foster",
@@ -53,8 +52,7 @@ describe("contact-loaders/helpers", () => {
         },
         {
           cell: "+12425544053",
-          custom_fields:
-            '{"CanvassFileRequestID":"1286","VanID":"6475967","Address":"902 Jotho Park, Ilibaed, MN 91571","StreetAddress":"902 Jotho Park","City":"Ilibaed","State":"MN","ZipOrPostal":"","County":"Suffolk","Employer":"","Occupation":"","Email":"","HomePhone":"(887) 867-3213","IsHomePhoneACellExchange":"0","CellPhone":"(242) 554-4053","WorkPhone":"","IsWorkPhoneACellExchange":"","Phone":"(473) 324-5133","OptInPhone":"","OptInStatus":"","OptInPhoneType":"","CongressionalDistrict":"001","StateHouse":"004","StateSenate":"002","Party":"D","PollingLocation":"","PollingAddress":"","PollingCity":""}',
+          custom_fields: '{"County":"Nassau"}',
           external_id: "6475967",
           first_name: "Cordelia",
           last_name: "Gagliardi",
@@ -62,8 +60,7 @@ describe("contact-loaders/helpers", () => {
         },
         {
           cell: "+17705005813",
-          custom_fields:
-            '{"CanvassFileRequestID":"1286","VanID":"6678759","Address":"1229 Dubud Cir, Gujufbik, MA 67577","StreetAddress":"1229 Dubud Cir","City":"Gujufbik","State":"MA","ZipOrPostal":"","County":"Suffolk","Employer":"","Occupation":"","Email":"","HomePhone":"(530) 591-9876","IsHomePhoneACellExchange":"0","CellPhone":"(770) 500-5813","WorkPhone":"","IsWorkPhoneACellExchange":"","Phone":"(865) 787-7929","OptInPhone":"","OptInStatus":"","OptInPhoneType":"","CongressionalDistrict":"001","StateHouse":"004","StateSenate":"002","Party":"O","PollingLocation":"","PollingAddress":"","PollingCity":""}',
+          custom_fields: '{"County":"Oneida"}',
           external_id: "6678759",
           first_name: "Zachary",
           last_name: "Chapman",
@@ -71,8 +68,7 @@ describe("contact-loaders/helpers", () => {
         },
         {
           cell: "+17659277705",
-          custom_fields:
-            '{"CanvassFileRequestID":"1286","VanID":"6687736","Address":"1660 Tiwa Pike, Owucudji, MD 78594","StreetAddress":"1660 Tiwa Pike","City":"Owucudji","State":"MD","ZipOrPostal":"","County":"Suffolk","Employer":"","Occupation":"","Email":"","HomePhone":"","IsHomePhoneACellExchange":"","CellPhone":"(765) 927-7705","WorkPhone":"","IsWorkPhoneACellExchange":"","Phone":"(232) 872-2395","OptInPhone":"","OptInStatus":"","OptInPhoneType":"","CongressionalDistrict":"001","StateHouse":"004","StateSenate":"002","Party":"D","PollingLocation":"","PollingAddress":"","PollingCity":""}',
+          custom_fields: '{"County":"Rockland"}',
           external_id: "6687736",
           first_name: "Phoebe",
           last_name: "König",
@@ -80,8 +76,7 @@ describe("contact-loaders/helpers", () => {
         },
         {
           cell: "+18309785900",
-          custom_fields:
-            '{"CanvassFileRequestID":"1286","VanID":"6687737","Address":"1820 Kasi Plz, Uhokuicu, NJ 70521","StreetAddress":"1820 Kasi Plz","City":"Uhokuicu","State":"NJ","ZipOrPostal":"","County":"Suffolk","Employer":"","Occupation":"","Email":"","HomePhone":"","IsHomePhoneACellExchange":"","CellPhone":"(830) 978-5900","WorkPhone":"","IsWorkPhoneACellExchange":"","Phone":"(256) 289-2236","OptInPhone":"","OptInStatus":"","OptInPhoneType":"","CongressionalDistrict":"001","StateHouse":"004","StateSenate":"002","Party":"R","PollingLocation":"","PollingAddress":"","PollingCity":""}',
+          custom_fields: '{"County":"Westchester"}',
           external_id: "6687737",
           first_name: "Andrew",
           last_name: "Coli",
@@ -89,8 +84,7 @@ describe("contact-loaders/helpers", () => {
         },
         {
           cell: "+18314016718",
-          custom_fields:
-            '{"CanvassFileRequestID":"1286","VanID":"20700354","Address":"241 Ozno Sq, Pomizivi, TN 13358","StreetAddress":"241 Ozno Sq","City":"Pomizivi","State":"TN","ZipOrPostal":"","County":"Suffolk","Employer":"","Occupation":"","Email":"","HomePhone":"","IsHomePhoneACellExchange":"","CellPhone":"(831) 401-6718","WorkPhone":"","IsWorkPhoneACellExchange":"","Phone":"(670) 427-8081","OptInPhone":"","OptInStatus":"","OptInPhoneType":"","CongressionalDistrict":"001","StateHouse":"004","StateSenate":"002","Party":"R","PollingLocation":"","PollingAddress":"","PollingCity":""}',
+          custom_fields: '{"County":"Kings"}',
           external_id: "20700354",
           first_name: "Marion",
           last_name: "Cook",
@@ -98,8 +92,7 @@ describe("contact-loaders/helpers", () => {
         },
         {
           cell: "+18028972566",
-          custom_fields:
-            '{"CanvassFileRequestID":"1286","VanID":"21681436","Address":"902 Hamze Pl, Biuhke, SC 35341","StreetAddress":"902 Hamze Pl","City":"Biuhke","State":"SC","ZipOrPostal":"","County":"Suffolk","Employer":"","Occupation":"","Email":"","HomePhone":"","IsHomePhoneACellExchange":"","CellPhone":"(802) 897-2566","WorkPhone":"","IsWorkPhoneACellExchange":"","Phone":"(332) 794-5172","OptInPhone":"","OptInStatus":"","OptInPhoneType":"","CongressionalDistrict":"001","StateHouse":"004","StateSenate":"002","Party":"R","PollingLocation":"","PollingAddress":"","PollingCity":""}',
+          custom_fields: '{"County":"Queens"}',
           external_id: "21681436",
           first_name: "Bill",
           last_name: "Fiore",
@@ -213,8 +206,7 @@ describe("contact-loaders/helpers", () => {
         contacts = [
           {
             cell: "+13214028326",
-            custom_fields:
-              '{"CanvassFileRequestID":"1286","VanID":"6455083","Address":"627 Wizow Way, Lofaje, DE 89435","StreetAddress":"627 Wizow Way","City":"Lofaje","State":"DE","ZipOrPostal":"","County":"Suffolk","Employer":"","Occupation":"","Email":"","HomePhone":"","IsHomePhoneACellExchange":"","CellPhone":"(321) 402-8326","WorkPhone":"","IsWorkPhoneACellExchange":"","Phone":"(384) 984-5966","OptInPhone":"","OptInStatus":"","OptInPhoneType":"","CongressionalDistrict":"001","StateHouse":"004","StateSenate":"002","Party":"D","PollingLocation":"","PollingAddress":"","PollingCity":""}',
+            custom_fields: '{"County":"Suffolk"}',
             external_id: "6455083",
             first_name: "Larry",
             last_name: "Foster"
