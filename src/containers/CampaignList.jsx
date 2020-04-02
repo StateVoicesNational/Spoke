@@ -151,19 +151,28 @@ export class CampaignList extends React.Component {
         style={listItemStyle}
         key={campaign.id}
         primaryText={primaryText}
-        onTouchTap={({
-          currentTarget: {
-            firstElementChild: {
-              firstElementChild: { checked }
-            }
-          }
-        }) => {
+        onTouchTap={event => {
+          event.persist();
+
+          // if selectMultiple is true, then the checkbox is showing and checked is set to the status of that checkbox.
+          // Otherwise it is set to be a node and is still truthy
+          const {
+            checked
+          } = event.currentTarget.firstElementChild.firstElementChild;
+
           if (selectMultiple) {
             this.props.handleChecked({ campaignId: campaign.id, checked });
           } else {
-            return !isStarted
-              ? this.props.router.push(`${campaignUrl}/edit`)
-              : this.props.router.push(campaignUrl);
+            if (event.nativeEvent.metaKey || event.nativeEvent.ctrlKey) {
+              // in this case, open in new tab
+              return !isStarted
+                ? window.open(`${campaignUrl}/edit`, "_blank")
+                : window.open(campaignUrl, "_blank");
+            } else {
+              return !isStarted
+                ? this.props.router.push(`${campaignUrl}/edit`)
+                : this.props.router.push(campaignUrl);
+            }
           }
         }}
         secondaryText={secondaryText}
