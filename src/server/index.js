@@ -184,11 +184,6 @@ addMockFunctionsToSchema({
   preserveResolvers: true
 });
 
-// TODO(lmp) delete this when we have a real webook for ngpvan
-app.use("/hello_van", (req, res) => {
-  res.end();
-});
-
 app.use(
   "/graphql",
   graphqlExpress(request => ({
