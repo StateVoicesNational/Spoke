@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     marginBotton: 16
   },
-  dialogButtons: {
+  submit: {
     marginTop: 32,
     textAlign: "right"
   }
@@ -158,7 +158,6 @@ class Tags extends React.Component {
         </FloatingActionButton>
         <Dialog
           title={dialogMode === "create" ? "Create Tag" : "Edit Tag"}
-          modal={false}
           open={openTagDialog}
           onRequestClose={this.handleClose}
         >
@@ -171,14 +170,11 @@ class Tags extends React.Component {
               <Form.Field label="Title" name="title" />
               <Form.Field label="Description" name="description" />
             </div>
-            <div className={css(styles.dialogButtons)}>
-              <FlatButton onTouchTap={this.handleClose} label="Cancel" />
-              <FlatButton
-                onTouchTap={this.handleAdd}
-                label={dialogMode === "create" ? "Create" : "Save"}
-                primary
-              />
-            </div>
+            <Form.Button
+              className={css(styles.submit)}
+              type="submit"
+              label={dialogMode === "create" ? "Create" : "Save"}
+            />
           </GSForm>
         </Dialog>
       </div>
