@@ -13,6 +13,7 @@ import {
 
 import { CampaignContactsForm } from "../../../src/integrations/contact-loaders/ngpvan/react-component";
 
+const config = require("../../../src/server/api/lib/config");
 const csvParser = require("../../../src/workers/parse_csv");
 const ngpvan = require("../../../src/integrations/contact-loaders/ngpvan");
 const helpers = require("../../../src/integrations/contact-loaders/helpers");
@@ -228,6 +229,7 @@ describe("ngpvan", () => {
     let makeSuccessfulGetCsvNock;
     let webhookUrl;
     let oldNgpVanApiBaseUrl;
+    let organization;
 
     beforeEach(async () => {
       oldNgpVanWebhookUrl = process.env.NGP_VAN_WEBHOOK_BASE_URL;
@@ -252,6 +254,11 @@ describe("ngpvan", () => {
         id: 7,
         campaign_id: 1,
         payload: JSON.stringify(payload)
+      };
+
+      organization = {
+        id: 77,
+        name: "What good shall I do today?"
       };
     });
 
@@ -343,6 +350,7 @@ describe("ngpvan", () => {
       jest
         .spyOn(ngpvan, "handleFailedContactLoad")
         .mockImplementation(() => true);
+      jest.spyOn(config, "getConfig");
     });
 
     afterEach(async () => {
@@ -358,7 +366,7 @@ describe("ngpvan", () => {
       const exportJobsNock = makeSuccessfulExportJobPostNock("Completed");
       const getCsvNock = makeSuccessfulGetCsvNock();
 
-      await processContactLoad(job, maxContacts);
+      await processContactLoad(job, maxContacts, organization);
 
       expect(csvParser.parseCSVAsync).toHaveBeenCalledTimes(1);
 
@@ -438,6 +446,14 @@ describe("ngpvan", () => {
         }
       ]);
 
+      expect(config.getConfig.mock.calls).toEqual([
+        [expect.any(String), organization],
+        [expect.any(String), organization],
+        [expect.any(String), organization],
+        [expect.any(String), organization],
+        [expect.any(String), organization]
+      ]);
+
       exportJobsNock.done();
       getCsvNock.done();
     });
@@ -453,7 +469,7 @@ describe("ngpvan", () => {
       it("calls handleFailedContactLoad", async () => {
         const exportJobsNock = makeSuccessfulExportJobPostNock("Requested");
 
-        await processContactLoad(job, maxContacts);
+        await processContactLoad(job, maxContacts, organization);
         expect(ngpvan.handleFailedContactLoad.mock.calls).toEqual([
           [
             job,
@@ -479,7 +495,7 @@ describe("ngpvan", () => {
       it("calls handleFailedContactLoad", async () => {
         const exportJobsNock = makeSuccessfulExportJobPostNock("Error", 777);
 
-        await processContactLoad(job, maxContacts);
+        await processContactLoad(job, maxContacts, organization);
         expect(ngpvan.handleFailedContactLoad.mock.calls).toEqual([
           [
             job,
@@ -510,7 +526,7 @@ describe("ngpvan", () => {
         const exportJobsNock = makeSuccessfulExportJobPostNock("Completed");
         const getCsvNock = makeSuccessfulGetCsvNock();
 
-        await processContactLoad(job, maxContacts);
+        await processContactLoad(job, maxContacts, organization);
         expect(ngpvan.handleFailedContactLoad.mock.calls).toEqual([
           [job, payload, "No contacts ingested. Check the selected list."]
         ]);
@@ -534,7 +550,7 @@ describe("ngpvan", () => {
           .thrice()
           .reply(500);
 
-        await processContactLoad(job, maxContacts);
+        await processContactLoad(job, maxContacts, organization);
 
         expect(helpers.finalizeContactLoad).not.toHaveBeenCalled();
         expect(csvParser.parseCSVAsync).not.toHaveBeenCalled();
@@ -562,7 +578,7 @@ describe("ngpvan", () => {
           .thrice()
           .reply(500);
 
-        await processContactLoad(job, maxContacts);
+        await processContactLoad(job, maxContacts, organization);
 
         expect(helpers.finalizeContactLoad).not.toHaveBeenCalled();
         expect(csvParser.parseCSVAsync).not.toHaveBeenCalled();
@@ -591,7 +607,7 @@ describe("ngpvan", () => {
         const exportJobsNock = makeSuccessfulExportJobPostNock("Completed");
         const getCsvNock = makeSuccessfulGetCsvNock();
 
-        await processContactLoad(job, maxContacts);
+        await processContactLoad(job, maxContacts, organization);
 
         expect(helpers.finalizeContactLoad).not.toHaveBeenCalled();
         expect(csvParser.parseCSVAsync).toHaveBeenCalledTimes(1);
@@ -623,7 +639,7 @@ describe("ngpvan", () => {
         const exportJobsNock = makeSuccessfulExportJobPostNock("Completed");
         const getCsvNock = makeSuccessfulGetCsvNock();
 
-        await processContactLoad(job, maxContacts);
+        await processContactLoad(job, maxContacts, organization);
 
         expect(helpers.finalizeContactLoad).toHaveBeenCalledTimes(1);
         expect(csvParser.parseCSVAsync).toHaveBeenCalledTimes(1);
