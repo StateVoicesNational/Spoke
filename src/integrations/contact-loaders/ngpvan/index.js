@@ -18,15 +18,18 @@ export function displayName() {
   return "NGP VAN";
 }
 
-const getVanAuth = () => {
+const getVanAuth = organization => {
   const buffer = Buffer.from(
-    `${getConfig("NGP_VAN_APP_NAME")}:${getConfig("NGP_VAN_API_KEY")}|0`
+    `${getConfig("NGP_VAN_APP_NAME", organization)}:${getConfig(
+      "NGP_VAN_API_KEY",
+      organization
+    )}|0`
   );
   return `Basic ${buffer.toString("base64")}`;
 };
 
-export const makeVanUrl = pathAndQuery =>
-  `${getConfig("NGP_VAN_API_BASE_URL") ||
+export const makeVanUrl = (pathAndQuery, organization) =>
+  `${getConfig("NGP_VAN_API_BASE_URL", organization) ||
     DEFAULT_NGP_VAN_API_BASE_URL}/${pathAndQuery}`;
 
 export function serverAdministratorInstructions() {
@@ -61,9 +64,9 @@ export async function available(organization, user) {
   // / then it's better to allow the result to be cached
 
   const result =
-    !!getConfig("NGP_VAN_API_KEY") &&
-    !!getConfig("NGP_VAN_APP_NAME") &&
-    !!getConfig("NGP_VAN_WEBHOOK_BASE_URL");
+    !!getConfig("NGP_VAN_API_KEY", organization) &&
+    !!getConfig("NGP_VAN_APP_NAME", organization) &&
+    !!getConfig("NGP_VAN_WEBHOOK_BASE_URL", organization);
 
   if (!result) {
     console.log(
@@ -112,15 +115,18 @@ export async function getClientChoiceData(
 
   try {
     const maxPeopleCount =
-      Number(getConfig("NGP_VAN_MAXIMUM_LIST_SIZE")) ||
+      Number(getConfig("NGP_VAN_MAXIMUM_LIST_SIZE", organization)) ||
       DEFAULT_NGP_VAN_MAXIMUM_LIST_SIZE;
 
     // The savedLists endpoint supports pagination; we are ignoring pagination now
     response = await getAxiosWithRetries()({
-      url: makeVanUrl(`v4/savedLists?$top=&maxPeopleCount=${maxPeopleCount}`),
+      url: makeVanUrl(
+        `v4/savedLists?$top=&maxPeopleCount=${maxPeopleCount}`,
+        organization
+      ),
       method: "GET",
       headers: {
-        Authorization: getVanAuth()
+        Authorization: getVanAuth(organization)
       },
       validateStatus: status => status === 200
     });
@@ -138,7 +144,8 @@ export async function getClientChoiceData(
   return {
     data: `${JSON.stringify({ items: _.get(response, "data.items", []) })}`,
     expiresSeconds:
-      Number(getConfig("NGP_VAN_CACHE_TTL")) || DEFAULT_NGP_VAN_CACHE_TTL
+      Number(getConfig("NGP_VAN_CACHE_TTL", organization)) ||
+      DEFAULT_NGP_VAN_CACHE_TTL
   };
 }
 
@@ -245,29 +252,30 @@ export const headerTransformer = header => {
   }
 };
 
-export async function processContactLoad(job, maxContacts) {
+export async function processContactLoad(job, maxContacts, organization) {
   let response;
   const ingestDataReference = JSON.parse(job.payload);
   let vanResponse;
   let vanContacts;
 
   const webhookUrl = `${getConfig(
-    "NGP_VAN_WEBHOOK_BASE_URL"
+    "NGP_VAN_WEBHOOK_BASE_URL",
+    organization
   )}/ingest-data/ngpvan/${job.id}/${maxContacts || 0}/${
     ingestDataReference.savedListId
   }`;
 
   try {
     response = await getAxiosWithRetries()({
-      url: makeVanUrl("v4/exportJobs"),
+      url: makeVanUrl("v4/exportJobs", organization),
       method: "POST",
       headers: {
-        Authorization: getVanAuth()
+        Authorization: getVanAuth(organization)
       },
       data: {
         savedListId: ingestDataReference.savedListId,
         type:
-          getConfig("NGP_VAN_EXPORT_JOB_TYPE_ID") ||
+          getConfig("NGP_VAN_EXPORT_JOB_TYPE_ID", organization) ||
           DEFAULT_NGP_VAN_EXPORT_JOB_TYPE_ID,
         webhookUrl
       },
