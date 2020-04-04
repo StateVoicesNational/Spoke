@@ -319,6 +319,12 @@ describe("ngpvan", () => {
           encodedQueryParams: true,
           reqheaders: {
             authorization: "Basic c3Bva2U6dG9wc2VjcmV0fDA="
+            //   "accept-encoding": ["gzip,deflate"],
+            //   "user-agent": [
+            //     "node-fetch/1.0 (+https://github.com/bitinn/node-fetch)"
+            //   ],
+            //   connection: ["close"],
+            //   accept: ["|)}>#*"]
           }
         })
           .post(
