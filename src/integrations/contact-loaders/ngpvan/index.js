@@ -2,9 +2,9 @@ import { finalizeContactLoad } from "../helpers";
 import { getConfig } from "../../../server/api/lib/config";
 import { parseCSVAsync } from "../../../workers/parse_csv";
 import { failedContactLoad } from "../../../workers/jobs";
+import requestWithRetry from "../../../server/lib/http-request.js";
 
 import _ from "lodash";
-import { getAxiosWithRetries } from "../../../server/lib/axiosWithRetries";
 
 export const name = "ngpvan";
 
@@ -111,25 +111,27 @@ export async function getClientChoiceData(
   user,
   loaders
 ) {
-  let response;
+  let responseJson;
 
   try {
     const maxPeopleCount =
       Number(getConfig("NGP_VAN_MAXIMUM_LIST_SIZE", organization)) ||
       DEFAULT_NGP_VAN_MAXIMUM_LIST_SIZE;
 
+    const url = makeVanUrl(
+      `v4/savedLists?$top=&maxPeopleCount=${maxPeopleCount}`,
+      organization
+    );
+
     // The savedLists endpoint supports pagination; we are ignoring pagination now
-    response = await getAxiosWithRetries()({
-      url: makeVanUrl(
-        `v4/savedLists?$top=&maxPeopleCount=${maxPeopleCount}`,
-        organization
-      ),
+    const response = await requestWithRetry(url, {
       method: "GET",
       headers: {
         Authorization: getVanAuth(organization)
-      },
-      validateStatus: status => status === 200
+      }
     });
+
+    responseJson = await response.json();
   } catch (error) {
     const message = `Error retrieving saved list metadata from VAN ${error}`;
     // eslint-disable-next-line no-console
@@ -142,7 +144,7 @@ export async function getClientChoiceData(
   // / return a json object which will be cached for expiresSeconds long
   // / `data` should be a single string -- it can be JSON which you can parse in the client component
   return {
-    data: `${JSON.stringify({ items: _.get(response, "data.items", []) })}`,
+    data: `${JSON.stringify(responseJson)}`,
     expiresSeconds:
       Number(getConfig("NGP_VAN_CACHE_TTL", organization)) ||
       DEFAULT_NGP_VAN_CACHE_TTL
@@ -253,7 +255,7 @@ export const headerTransformer = header => {
 };
 
 export async function processContactLoad(job, maxContacts, organization) {
-  let response;
+  let responseJson;
   const ingestDataReference = JSON.parse(job.payload);
   let vanResponse;
   let vanContacts;
@@ -266,21 +268,26 @@ export async function processContactLoad(job, maxContacts, organization) {
   }`;
 
   try {
-    response = await getAxiosWithRetries()({
-      url: makeVanUrl("v4/exportJobs", organization),
+    const url = makeVanUrl("v4/exportJobs", organization);
+    const response = await requestWithRetry(url, {
       method: "POST",
       headers: {
-        Authorization: getVanAuth(organization)
+        Authorization: getVanAuth(organization),
+        "Content-Type": "application/json"
       },
-      data: {
+      body: JSON.stringify({
         savedListId: ingestDataReference.savedListId,
         type:
           getConfig("NGP_VAN_EXPORT_JOB_TYPE_ID", organization) ||
           DEFAULT_NGP_VAN_EXPORT_JOB_TYPE_ID,
         webhookUrl
+      }),
+      validateStatus: status => {
+        return status >= 200 && status < 300;
       },
-      validateStatus: status => status >= 200 && status < 300
+      compress: false
     });
+    responseJson = await response.json();
   } catch (error) {
     await exports.handleFailedContactLoad(
       job,
@@ -290,31 +297,29 @@ export async function processContactLoad(job, maxContacts, organization) {
     return;
   }
 
-  if (response.data.status === "Error") {
+  if (responseJson.status === "Error") {
     await exports.handleFailedContactLoad(
       job,
       ingestDataReference,
-      `Error requesting VAN export job. VAN returned error code ${response.data.errorCode}`
+      `Error requesting VAN export job. VAN returned error code ${responseJson.errorCode}`
     );
     return;
   }
 
-  if (response.data.status !== "Completed") {
+  if (responseJson.status !== "Completed") {
     await exports.handleFailedContactLoad(
       job,
       ingestDataReference,
-      `Unexpected response when requesting VAN export job. VAN returned status ${response.data.status}`
+      `Unexpected response when requesting VAN export job. VAN returned status ${responseJson.status}`
     );
     return;
   }
 
-  const downloadUrl = response.data.downloadUrl;
+  const downloadUrl = responseJson.downloadUrl;
 
   try {
-    vanResponse = await getAxiosWithRetries()({
-      url: downloadUrl,
-      method: "GET",
-      validateStatus: status => status === 200
+    vanResponse = await requestWithRetry(downloadUrl, {
+      method: "GET"
     });
   } catch (error) {
     await exports.handleFailedContactLoad(
@@ -329,7 +334,7 @@ export async function processContactLoad(job, maxContacts, organization) {
   let parserValidationStats;
 
   try {
-    vanContacts = vanResponse.data;
+    const vanContacts = await vanResponse.text();
 
     const { validationStats, contacts } = await parseCSVAsync(vanContacts, {
       rowTransformer,
