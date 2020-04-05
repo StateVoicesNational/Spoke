@@ -90,11 +90,11 @@ describe("requestWithRetry", () => {
         ["validateStatus is an integer", 200],
         ["validateStatus is an array", [200]],
         ["validateStatus is an function", status => status === 200]
-      ]).test("%s", async (description, validateStatus, done) => {
+      ]).test("%s", async (description, validateStatus) => {
         let error;
 
         try {
-          const result = await requestWithRetry(`${url}${path}`, {
+          await requestWithRetry(`${url}${path}`, {
             method: "POST",
             headers,
             body,
@@ -105,38 +105,82 @@ describe("requestWithRetry", () => {
         }
 
         expect(error).not.toBeUndefined();
-        expect(error).toEqual(new Error("Request failed with status code 201"));
+        expect(error.toString()).toMatch(
+          /Error: Request id .+ failed; received status 201/
+        );
 
         nocked.done();
-        done();
       });
     });
   });
 
-  describe.only("when the request times out", () => {
-    let nocked;
-    beforeEach(async () => {
-      nocked = nock(url)
-        .get(path)
-        .times(1)
-        .delay(2000)
-        .reply(200);
-    });
-
+  describe("when the request times out", () => {
     it("retries", async () => {
+      let error;
+      const nocked = nock(url)
+        .get(path)
+        .times(4)
+        .delay(1000)
+        .reply(200);
       try {
-        const result = await requestWithRetry(`${url}${path}`, {
+        await requestWithRetry(`${url}${path}`, {
           method: "GET",
-          retries: 0,
-          timeout: 1000
+          retries: 3,
+          timeout: 500
         });
-        const received_body = await result.text();
-        //expect(received_body).toEqual("Hello world.");
-      } catch (error) {
-        console.log("oh shit", error);
+      } catch (caughtException) {
+        error = caughtException;
       } finally {
+        expect(error.toString()).toMatch(
+          /Error: Request id .+ failed; all 3 retries exhausted/
+        );
         nocked.done();
       }
+    });
+
+    describe("when we don't provide retries and timeout", () => {
+      it("uses the defaults, meaning, it won't time out", async () => {
+        let error;
+        const nocked = nock(url)
+          .get(path)
+          .times(1)
+          .delay(1000)
+          .reply(200);
+        try {
+          await requestWithRetry(`${url}${path}`, {
+            method: "GET"
+          });
+        } catch (caughtException) {
+          error = caughtException;
+        } finally {
+          expect(error).not.toEqual(expect.anything());
+          nocked.done();
+        }
+      });
+    });
+
+    describe("when we don't provide retries", () => {
+      it("it retries twice", async () => {
+        let error;
+        const nocked = nock(url)
+          .get(path)
+          .times(3)
+          .delay(1000)
+          .reply(200);
+        try {
+          await requestWithRetry(`${url}${path}`, {
+            method: "GET",
+            timeout: 500
+          });
+        } catch (caughtException) {
+          error = caughtException;
+        } finally {
+          expect(error.toString()).toMatch(
+            /Error: Request id .+ failed; all 2 retries exhausted/
+          );
+          nocked.done();
+        }
+      });
     });
   });
 });
