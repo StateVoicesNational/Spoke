@@ -5,7 +5,6 @@ import { ListItem, List } from "material-ui/List";
 import { StyleSheet, css } from "aphrodite";
 import AutoComplete from "material-ui/AutoComplete";
 import Subheader from "material-ui/Subheader";
-import _ from "lodash";
 
 import { dataSourceItem } from "../../../components/utils";
 
@@ -105,39 +104,40 @@ export class CampaignContactsForm extends React.Component {
     if (!lastResult) {
       return null;
     }
-    const reference = lastResult.reference && JSON.parse(lastResult.reference);
-    const result = lastResult.result && JSON.parse(lastResult.result);
+    const reference =
+      (lastResult.reference && JSON.parse(lastResult.reference)) || {};
+    const result = (lastResult.result && JSON.parse(lastResult.result)) || {};
     return (
       <List>
         <Subheader>Last Import</Subheader>
-        {_.get(reference, "savedListName") && (
+        {reference.savedListName && (
           <ListItem
             primaryText={`List name: ${reference.savedListName}`}
             leftIcon={this.props.icons.info}
           />
         )}
-        {_.get(result, "errors") &&
+        {result.errors &&
           result.errors.map(error => (
             <ListItem
               primaryText={`${error}`}
               leftIcon={this.props.icons.error}
             />
           ))}
-        {(_.get(result, "dupeCount") && (
+        {(result.dupeCount && (
           <ListItem
             primaryText={`${result.dupeCount} duplicates removed`}
             leftIcon={this.props.icons.warning}
           />
         )) ||
           null}
-        {(_.get(result, "missingCellCount") && (
+        {(result.missingCellCount && (
           <ListItem
             primaryText={`${result.missingCellCount} contacts with no cell phone removed`}
             leftIcon={this.props.icons.warning}
           />
         )) ||
           null}
-        {(_.get(result, "zipCount") &&
+        {(result.zipCount &&
           lastResult.contactsCount &&
           result.zipCount - 1 < lastResult.contactsCount && (
             <ListItem
