@@ -119,6 +119,8 @@
     "moment": "^2.14.1",
     "moment-timezone": "^0.5.14",
     "nexmo": "^1.0.0-beta-7",
+    "node-abort-controller": "^1.0.4",
+    "node-fetch": "^2.6.0",
     "nodemailer": "^4.3.1",
     "papaparse": "^5.1.1",
     "passport": "^0.3.2",
