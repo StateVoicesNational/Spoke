@@ -4,8 +4,6 @@ import { parseCSVAsync } from "../../../workers/parse_csv";
 import { failedContactLoad } from "../../../workers/jobs";
 import requestWithRetry from "../../../server/lib/http-request.js";
 
-import _ from "lodash";
-
 export const name = "ngpvan";
 
 export const DEFAULT_NGP_VAN_API_BASE_URL = "https://api.securevan.com";
@@ -166,14 +164,15 @@ export const getZipFromRow = row => {
     new RegExp(".*\\s(\\d{5}-\\d{4})\\s*$")
   ];
 
-  let zip = undefined;
-  _.forEach(regexes, regex => {
+  let zip;
+  regexes.some(regex => {
+    console.log("regex", regex);
     const matches = regex.exec(row.Address || "");
     if (matches) {
       zip = matches[1];
-      return false; // stop iterating
+      return true; // stop iterating
     }
-    return true;
+    return false;
   });
 
   return zip;
@@ -213,12 +212,12 @@ export const getCellFromRow = row => {
     { typeName: "Work", assumeCellIfPresent: false }
   ];
   let cell = undefined;
-  _.forEach(phoneTypes, phoneType => {
+  phoneTypes.some(phoneType => {
     cell = getPhoneNumberIfLikelyCell(phoneType, row);
     if (cell) {
-      return false; // stop iterating
+      return true; // stop iterating
     }
-    return true;
+    return false;
   });
 
   return cell;
