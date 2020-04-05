@@ -208,8 +208,9 @@ describe("ngpvan", () => {
         const savedListsResponse = await getClientChoiceData();
 
         expect(JSON.parse(savedListsResponse.data)).toEqual({
-          error:
-            "Error retrieving saved list metadata from VAN Error: Request failed with status code 404"
+          error: expect.stringMatching(
+            /Error retrieving saved list metadata from VAN Error: Request id .+ failed; received status 404/
+          )
         });
         getSavedListsNock.done();
       });
@@ -565,7 +566,9 @@ describe("ngpvan", () => {
           [
             job,
             payload,
-            "Error requesting VAN export job. Error: Request failed with status code 500"
+            expect.stringMatching(
+              /Error requesting VAN export job. Error: Request id .+ failed; all 2 retries exhausted/
+            )
           ]
         ]);
 
@@ -593,7 +596,9 @@ describe("ngpvan", () => {
           [
             job,
             payload,
-            "Error downloading VAN contacts. Error: Request failed with status code 500"
+            expect.stringMatching(
+              /Error downloading VAN contacts. Error: Request id .+ failed; all 2 retries exhausted/
+            )
           ]
         ]);
 
