@@ -34,10 +34,19 @@ export const makeVanUrl = (pathAndQuery, organization) =>
 
 export function serverAdministratorInstructions() {
   return {
-    environmentVariables: [],
-    description: "",
+    description:
+      "Load contacts from VAN (and LAN, everyaction, etc.) saved lists",
     setupInstructions:
-      "Nothing is necessary to setup since this is default functionality"
+      "Get an APP name and API key for your VAN account. Add them to your config, along with NGP_VAN_WEBHOOK_BASE_URL. In most cases the defaults for the other environment variables will work",
+    environmentVariables: [
+      "NGP_VAN_API_KEY",
+      "NGP_VAN_API_BASE_URL",
+      "NGP_VAN_APP_NAME",
+      "NGP_VAN_CACHE_TTL",
+      "NGP_VAN_EXPORT_JOB_TYPE_ID",
+      "NGP_VAN_MAXIMUM_LIST_SIZE",
+      "NGP_VAN_WEBHOOK_BASE_URL"
+    ]
   };
 }
 
