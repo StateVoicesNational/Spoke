@@ -22,6 +22,7 @@ const MAX_SEND_ATTEMPTS = 5;
 const MESSAGE_VALIDITY_PADDING_SECONDS = 30;
 const MAX_TWILIO_MESSAGE_VALIDITY = 14400;
 const DISABLE_DB_LOG = process.env.DISABLE_DB_LOG || global.DISABLE_DB_LOG;
+const SKIP_TWILIO_VALIDATION = process.env.SKIP_TWILIO_VALIDATION || global.SKIP_TWILIO_VALIDATION;
 
 if (process.env.TWILIO_API_KEY && process.env.TWILIO_AUTH_TOKEN) {
   // eslint-disable-next-line new-cap
@@ -36,17 +37,23 @@ if (!process.env.TWILIO_MESSAGE_SERVICE_SID) {
   );
 }
 
-function webhook() {
-  log.warn("twilio webhook call"); // sky: doesn't run this
-  if (twilioGlobal) {
-    return Twilio.webhook();
-  } else {
-    log.warn("NO TWILIO WEB VALIDATION");
-    return function(req, res, next) {
-      next();
+const headerValidator = () => {
+  if (!!SKIP_TWILIO_VALIDATION) return (req, res, next) => next();
+
+  return async (req, res, next) => {
+    const organization = req.params.orgId
+      ? await cacheableData.organization.load(req.params.orgId) : null;
+    const { authToken } = organization
+      ? await cacheableData.organization.getMessageServiceAuth(organization)
+      : process.env.TWILIO_AUTH_TOKEN;
+    const options = {
+      validate: true,
+      protocol: "https",
     };
-  }
-}
+
+    return Twilio.webhook(authToken, options)(req, res, next);
+  };
+};
 
 async function convertMessagePartsToMessage(messageParts) {
   const firstPart = messageParts[0];
@@ -461,7 +468,7 @@ async function handleIncomingMessage(message) {
 
 export default {
   syncMessagePartProcessing: !!process.env.JOBS_SAME_PROCESS,
-  webhook,
+  headerValidator,
   convertMessagePartsToMessage,
   findNewCell,
   rentNewCell,

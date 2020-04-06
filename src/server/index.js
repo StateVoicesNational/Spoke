@@ -117,8 +117,8 @@ app.post(
 );
 
 app.post(
-  "/twilio",
-  twilio.webhook(),
+  "/twilio/:orgId?",
+  twilio.headerValidator(),
   wrap(async (req, res) => {
     try {
       await twilio.handleIncomingMessage(req.body);
