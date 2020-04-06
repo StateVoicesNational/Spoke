@@ -32,8 +32,8 @@ const organizationCache = {
         "TWILIO_MESSAGE_SERVICE_SID",
         organization
       ),
-      authToken: getConfig("TWILIO_API_KEY", organization),
-      apiKey: getConfig("TWILIO_AUTH_TOKEN", organization)
+      authToken: getConfig("TWILIO_AUTH_TOKEN", organization),
+      apiKey: getConfig("TWILIO_API_KEY", organization)
     };
   },
   load: async id => {

@@ -7,7 +7,7 @@ import {
   r,
   cacheableData
 } from "../../models";
-import { log, getConfig } from "../../../lib";
+import { log } from "../../../lib";
 import { saveNewIncomingMessage } from "./message-sending";
 
 // TWILIO error_codes:
@@ -16,7 +16,8 @@ import { saveNewIncomingMessage } from "./message-sending";
 // -100-....: custom local errors
 // -101: incoming message with a MediaUrl
 
-let twilio = null;
+// Global twilio only used for find/rent cell.
+let twilioGlobal = null;
 const MAX_SEND_ATTEMPTS = 5;
 const MESSAGE_VALIDITY_PADDING_SECONDS = 30;
 const MAX_TWILIO_MESSAGE_VALIDITY = 14400;
@@ -24,7 +25,7 @@ const DISABLE_DB_LOG = process.env.DISABLE_DB_LOG || global.DISABLE_DB_LOG;
 
 if (process.env.TWILIO_API_KEY && process.env.TWILIO_AUTH_TOKEN) {
   // eslint-disable-next-line new-cap
-  twilio = Twilio(process.env.TWILIO_API_KEY, process.env.TWILIO_AUTH_TOKEN);
+  twilioGlobal = Twilio(process.env.TWILIO_API_KEY, process.env.TWILIO_AUTH_TOKEN);
 } else {
   log.warn("NO GLOBAL TWILIO CONNECTION");
 }
@@ -37,7 +38,7 @@ if (!process.env.TWILIO_MESSAGE_SERVICE_SID) {
 
 function webhook() {
   log.warn("twilio webhook call"); // sky: doesn't run this
-  if (twilio) {
+  if (twilioGlobal) {
     return Twilio.webhook();
   } else {
     log.warn("NO TWILIO WEB VALIDATION");
@@ -74,11 +75,11 @@ async function convertMessagePartsToMessage(messageParts) {
 }
 
 async function findNewCell() {
-  if (!twilio) {
+  if (!twilioGlobal) {
     return { availablePhoneNumbers: [{ phone_number: "+15005550006" }] };
   }
   return new Promise((resolve, reject) => {
-    twilio.availablePhoneNumbers("US").local.list({}, (err, data) => {
+    twilioGlobal.availablePhoneNumbers("US").local.list({}, (err, data) => {
       if (err) {
         reject(new Error(err));
       } else {
@@ -89,7 +90,7 @@ async function findNewCell() {
 }
 
 async function rentNewCell() {
-  if (!twilio) {
+  if (!twilioGlobal) {
     const num = "1234"
       .split("")
       .map(() => parseInt(Math.random() * 10))
@@ -105,7 +106,7 @@ async function rentNewCell() {
     newCell.availablePhoneNumbers[0].phone_number
   ) {
     return new Promise((resolve, reject) => {
-      twilio.incomingPhoneNumbers.create(
+      twilioGlobal.incomingPhoneNumbers.create(
         {
           phoneNumber: newCell.availablePhoneNumbers[0].phone_number,
           smsApplicationSid: process.env.TWILIO_APPLICATION_SID
@@ -140,6 +141,17 @@ function parseMessageText(message) {
 }
 
 async function sendMessage(message, contact, trx, organization) {
+  // Note organization won't always be available, so then contact can trace to it
+  const {
+    messagingServiceSid,
+    authToken,
+    apiKey
+  } = await cacheableData.organization.getMessageServiceAuth(
+    organization,
+    contact,
+    message.text
+  );
+  const twilio = Twilio(apiKey, authToken);
   const APITEST = /twilioapitest/.test(message.text);
   if (!twilio && !APITEST) {
     log.warn(
@@ -159,16 +171,7 @@ async function sendMessage(message, contact, trx, organization) {
     return "test_message_uuid";
   }
 
-  // Note organization won't always be available, so then contact can trace to it
-  const {
-    messagingServiceSid,
-    authToken,
-    apiKey
-  } = await cacheableData.organization.getMessageServiceAuth(
-    organization,
-    contact,
-    message.text
-  );
+
   return new Promise((resolve, reject) => {
     if (message.service !== "twilio") {
       log.warn("Message not marked as a twilio message", message.id);
@@ -246,8 +249,7 @@ async function sendMessage(message, contact, trx, organization) {
         changes
       );
     } else {
-      const twilioMultiTenant = Twilio(apiKey, authToken);
-      twilioMultiTenant.messages.create(messageParams, (err, response) => {
+      twilio.messages.create(messageParams, (err, response) => {
         postMessageSend(
           message,
           contact,
