@@ -16,26 +16,11 @@ import { saveNewIncomingMessage } from "./message-sending";
 // -100-....: custom local errors
 // -101: incoming message with a MediaUrl
 
-// Global twilio only used for find/rent cell.
-let twilioGlobal = null;
 const MAX_SEND_ATTEMPTS = 5;
 const MESSAGE_VALIDITY_PADDING_SECONDS = 30;
 const MAX_TWILIO_MESSAGE_VALIDITY = 14400;
 const DISABLE_DB_LOG = process.env.DISABLE_DB_LOG || global.DISABLE_DB_LOG;
 const SKIP_TWILIO_VALIDATION = process.env.SKIP_TWILIO_VALIDATION || global.SKIP_TWILIO_VALIDATION;
-
-if (process.env.TWILIO_API_KEY && process.env.TWILIO_AUTH_TOKEN) {
-  // eslint-disable-next-line new-cap
-  twilioGlobal = Twilio(process.env.TWILIO_API_KEY, process.env.TWILIO_AUTH_TOKEN);
-} else {
-  log.warn("NO GLOBAL TWILIO CONNECTION");
-}
-
-if (!process.env.TWILIO_MESSAGE_SERVICE_SID) {
-  log.warn(
-    "Twilio will not be able to send without TWILIO_MESSAGE_SERVICE_SID set"
-  );
-}
 
 const headerValidator = () => {
   if (!!SKIP_TWILIO_VALIDATION) return (req, res, next) => next();
@@ -79,57 +64,6 @@ async function convertMessagePartsToMessage(messageParts) {
     service: "twilio",
     send_status: "DELIVERED"
   });
-}
-
-async function findNewCell() {
-  if (!twilioGlobal) {
-    return { availablePhoneNumbers: [{ phone_number: "+15005550006" }] };
-  }
-  return new Promise((resolve, reject) => {
-    twilioGlobal.availablePhoneNumbers("US").local.list({}, (err, data) => {
-      if (err) {
-        reject(new Error(err));
-      } else {
-        resolve(data);
-      }
-    });
-  });
-}
-
-async function rentNewCell() {
-  if (!twilioGlobal) {
-    const num = "1234"
-      .split("")
-      .map(() => parseInt(Math.random() * 10))
-      .join("");
-    return getFormattedPhoneNumber(`+1212555${num}`);
-  }
-  const newCell = await findNewCell();
-
-  if (
-    newCell &&
-    newCell.availablePhoneNumbers &&
-    newCell.availablePhoneNumbers[0] &&
-    newCell.availablePhoneNumbers[0].phone_number
-  ) {
-    return new Promise((resolve, reject) => {
-      twilioGlobal.incomingPhoneNumbers.create(
-        {
-          phoneNumber: newCell.availablePhoneNumbers[0].phone_number,
-          smsApplicationSid: process.env.TWILIO_APPLICATION_SID
-        },
-        (err, purchasedNumber) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(purchasedNumber.phone_number);
-          }
-        }
-      );
-    });
-  }
-
-  throw new Error("Did not find any cell");
 }
 
 const mediaExtractor = new RegExp(/\[\s*(http[^\]\s]*)\s*\]/);
@@ -470,8 +404,6 @@ export default {
   syncMessagePartProcessing: !!process.env.JOBS_SAME_PROCESS,
   headerValidator,
   convertMessagePartsToMessage,
-  findNewCell,
-  rentNewCell,
   sendMessage,
   handleDeliveryReport,
   handleIncomingMessage,
