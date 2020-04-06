@@ -84,7 +84,7 @@ const requestWithRetry = async (url, props) => {
     let response;
 
     const controller = new AbortController();
-    const controllerTimeout = setInterval(() => {
+    const controllerTimeout = setTimeout(() => {
       controller.abort();
     }, timeout);
 
