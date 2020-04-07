@@ -160,11 +160,11 @@ describe("requestWithRetry", () => {
     });
 
     describe("when we don't provide retries", () => {
-      it("it retries twice", async () => {
+      it("it does not retry", async () => {
         let error;
         const nocked = nock(url)
           .get(path)
-          .times(3)
+          .times(1)
           .delay(1000)
           .reply(200);
         try {
@@ -176,7 +176,7 @@ describe("requestWithRetry", () => {
           error = caughtException;
         } finally {
           expect(error.toString()).toMatch(
-            /Error: Request id .+ failed; all 2 retries exhausted/
+            /Error: Request id .+ failed; timeout after 500ms/
           );
           nocked.done();
         }

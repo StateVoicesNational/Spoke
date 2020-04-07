@@ -5,12 +5,7 @@ import { v4 as uuid } from "uuid";
 
 const requestWithRetry = async (
   url,
-  {
-    validateStatus,
-    retries = retries === 0 ? 0 : retries || 2,
-    timeout = 2000,
-    ...props
-  } = {}
+  { validateStatus, retries = retries || 0, timeout = 2000, ...props } = {}
 ) => {
   const requestId = uuid();
 
