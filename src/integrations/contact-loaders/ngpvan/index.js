@@ -135,7 +135,8 @@ export async function getClientChoiceData(
       method: "GET",
       headers: {
         Authorization: getVanAuth(organization)
-      }
+      },
+      retries: 0
     });
 
     responseJson = await response.json();
@@ -279,6 +280,7 @@ export async function processContactLoad(job, maxContacts, organization) {
     const url = makeVanUrl("v4/exportJobs", organization);
     const response = await requestWithRetry(url, {
       method: "POST",
+      retries: 0,
       headers: {
         Authorization: getVanAuth(organization),
         "Content-Type": "application/json"
@@ -327,7 +329,8 @@ export async function processContactLoad(job, maxContacts, organization) {
 
   try {
     vanResponse = await requestWithRetry(downloadUrl, {
-      method: "GET"
+      method: "GET",
+      retries: 0
     });
   } catch (error) {
     await exports.handleFailedContactLoad(
