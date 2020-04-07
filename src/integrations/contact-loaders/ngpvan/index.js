@@ -2,7 +2,7 @@ import { finalizeContactLoad } from "../helpers";
 import { getConfig } from "../../../server/api/lib/config";
 import { parseCSVAsync } from "../../../workers/parse_csv";
 import { failedContactLoad } from "../../../workers/jobs";
-import requestWithRetry from "../../../server/lib/http-request.js";
+import HttpRequest from "../../../server/lib/http-request.js";
 
 export const name = "ngpvan";
 
@@ -131,7 +131,7 @@ export async function getClientChoiceData(
     );
 
     // The savedLists endpoint supports pagination; we are ignoring pagination now
-    const response = await requestWithRetry(url, {
+    const response = await HttpRequest(url, {
       method: "GET",
       headers: {
         Authorization: getVanAuth(organization)
@@ -278,7 +278,7 @@ export async function processContactLoad(job, maxContacts, organization) {
 
   try {
     const url = makeVanUrl("v4/exportJobs", organization);
-    const response = await requestWithRetry(url, {
+    const response = await HttpRequest(url, {
       method: "POST",
       retries: 0,
       headers: {
@@ -328,7 +328,7 @@ export async function processContactLoad(job, maxContacts, organization) {
   const downloadUrl = responseJson.downloadUrl;
 
   try {
-    vanResponse = await requestWithRetry(downloadUrl, {
+    vanResponse = await HttpRequest(downloadUrl, {
       method: "GET",
       retries: 0
     });
