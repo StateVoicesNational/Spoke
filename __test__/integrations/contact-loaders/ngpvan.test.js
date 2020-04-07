@@ -554,7 +554,6 @@ describe("ngpvan", () => {
             "/v4/exportJobs",
             `{"savedListId":682951,"type":"7","webhookUrl":${webhookUrl}}`
           )
-          .thrice()
           .reply(500);
 
         await processContactLoad(job, maxContacts, organization);
@@ -567,7 +566,7 @@ describe("ngpvan", () => {
             job,
             payload,
             expect.stringMatching(
-              /Error requesting VAN export job. Error: Request id .+ failed; all 2 retries exhausted/
+              /Error requesting VAN export job. Error: Request id .+ failed; received status 500/
             )
           ]
         ]);
@@ -584,7 +583,6 @@ describe("ngpvan", () => {
           encodedQueryParams: true
         })
           .get("/pii.csv")
-          .thrice()
           .reply(500);
 
         await processContactLoad(job, maxContacts, organization);
@@ -597,7 +595,7 @@ describe("ngpvan", () => {
             job,
             payload,
             expect.stringMatching(
-              /Error downloading VAN contacts. Error: Request id .+ failed; all 2 retries exhausted/
+              /Error downloading VAN contacts. Error: Request id .+ failed; received status 500/
             )
           ]
         ]);
