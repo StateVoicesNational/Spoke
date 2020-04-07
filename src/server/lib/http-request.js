@@ -3,20 +3,16 @@ import AbortController from "node-abort-controller";
 import { log } from "../../lib";
 import { v4 as uuid } from "uuid";
 
-const requestWithRetry = async (url, props) => {
-  const originalProps = props || {};
-  const remainingProps = {
-    ...(originalProps || {})
-  };
-  delete remainingProps.validateStatus;
-  delete remainingProps.retries;
-  delete remainingProps.timeout;
-
+const requestWithRetry = async (
+  url,
+  {
+    validateStatus,
+    retries = retries === 0 ? 0 : retries || 2,
+    timeout = 2000,
+    ...props
+  } = {}
+) => {
   const requestId = uuid();
-  const propsRetries = originalProps.retries;
-  const retries =
-    propsRetries !== null && propsRetries !== undefined ? propsRetries : 2;
-  const timeout = originalProps.timeout || 2000;
 
   const retryDelay = () => {
     const baseDelay = 50;
@@ -24,16 +20,15 @@ const requestWithRetry = async (url, props) => {
     return baseDelay + randomDelay;
   };
 
-  const validateStatus = status => {
-    const validateProp = originalProps.validateStatus;
+  const statusValidator = status => {
     let acceptableStatuses = [200];
-    if (validateProp) {
-      if (typeof validateProp === "function") {
-        return validateProp(status);
-      } else if (Array.isArray(validateProp)) {
-        acceptableStatuses = validateProp;
+    if (validateStatus) {
+      if (typeof validateStatus === "function") {
+        return validateStatus(status);
+      } else if (Array.isArray(validateStatus)) {
+        acceptableStatuses = validateStatus;
       } else {
-        acceptableStatuses = [validateProp];
+        acceptableStatuses = [validateStatus];
       }
     }
 
@@ -50,7 +45,7 @@ const requestWithRetry = async (url, props) => {
     ERROR: 3
   };
   const shouldRetryReturnOrError = (attempt, error, resp) => {
-    if (validateStatus(resp && resp.status)) {
+    if (statusValidator(resp && resp.status)) {
       return RetryReturnError.RETURN;
     }
 
@@ -84,13 +79,13 @@ const requestWithRetry = async (url, props) => {
     let response;
 
     const controller = new AbortController();
-    const controllerTimeout = setInterval(() => {
+    const controllerTimeout = setTimeout(() => {
       controller.abort();
     }, timeout);
 
     try {
       response = await originalFetch(url, {
-        ...remainingProps,
+        ...props,
         signal: controller.signal
       });
     } catch (caughtException) {
