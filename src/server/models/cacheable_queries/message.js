@@ -15,20 +15,11 @@ const cacheKey = contactId =>
 const CONTACT_CACHE_ENABLED =
   process.env.REDIS_CONTACT_CACHE || global.REDIS_CONTACT_CACHE;
 
-const dbQuery = ({ campaignId, contactId }) => {
-  const cols = Object.keys(Message.fields)
-    .filter(f => f !== "service_response")
-    .map(f => `message.${f}`);
-  let query = r.knex("message").select(...cols);
-  // console.log('message dbquery', contactId, cols)
-  if (contactId) {
-    query = query.where("campaign_contact_id", contactId);
-  } else if (campaignId) {
-    query = query
-      .join("assignment", "message.assignment_id", "assignment.id")
-      .where("assignment.campaign_id", campaignId);
-  }
-  return query.orderBy("created_at");
+const dbQuery = ({ campaignContactId }) => {
+  return r
+    .knex("message")
+    .where("campaign_contact_id", campaignContactId)
+    .orderBy("created_at");
 };
 
 const contactIdFromOther = async ({
@@ -111,17 +102,15 @@ const cacheDbResult = async dbResult => {
   }
 };
 
-const query = async queryObj => {
+const query = async ({ campaignContactId }) => {
   // queryObj ~ { campaignContactId, assignmentId, cell, service, messageServiceSid }
-  let cid = query.campaignContactId;
-  // console.log('message query', queryObj)
   if (r.redis && CONTACT_CACHE_ENABLED) {
-    cid = await contactIdFromOther(queryObj);
-    if (cid) {
+    campaignContactId = await contactIdFromOther(queryObj);
+    if (campaignContactId) {
       const [exists, messages] = await r.redis
         .multi()
-        .exists(cacheKey(cid))
-        .lrange(cacheKey(cid), 0, -1)
+        .exists(cacheKey(campaignContactId))
+        .lrange(cacheKey(campaignContactId), 0, -1)
         .execAsync();
       // console.log('cached messages exist?', exists, messages)
       if (exists) {
@@ -130,8 +119,8 @@ const query = async queryObj => {
       }
     }
   }
-  // console.log('dbQuery', cid)
-  const dbResult = await dbQuery({ contactId: cid });
+  // console.log('dbQuery', campaignContactId)
+  const dbResult = await dbQuery({ campaignContactId });
   await cacheDbResult(dbResult);
   return dbResult;
 };
