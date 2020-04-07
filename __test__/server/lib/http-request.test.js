@@ -182,5 +182,50 @@ describe("requestWithRetry", () => {
         }
       });
     });
+
+    describe("when retries is 0", () => {
+      let error;
+      it("it doesn't retry", async () => {
+        const nocked = nock(url)
+          .get(path)
+          .reply(500);
+        try {
+          await requestWithRetry(`${url}${path}`, {
+            method: "GET",
+            retries: 0
+          });
+        } catch (caughtException) {
+          error = caughtException;
+        } finally {
+          expect(error.toString()).toMatch(
+            /Error: Request id .+ failed; received status 500/
+          );
+          nocked.done();
+        }
+      });
+
+      describe("when it times out", () => {
+        it("it doesn't retry", async () => {
+          const nocked = nock(url)
+            .get(path)
+            .delay(1000)
+            .reply(500);
+          try {
+            await requestWithRetry(`${url}${path}`, {
+              method: "GET",
+              timeout: 100,
+              retries: 0
+            });
+          } catch (caughtException) {
+            error = caughtException;
+          } finally {
+            expect(error.toString()).toMatch(
+              /Error: Request id .+ failed; timeout after 100ms/
+            );
+            nocked.done();
+          }
+        });
+      });
+    });
   });
 });
