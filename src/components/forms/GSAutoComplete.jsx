@@ -42,7 +42,7 @@ export default class GSAutoComplete extends GSFormField {
           }
           this.setState({ name: searchText });
         }}
-        searchText={this.state.value.label}
+        searchText={this.state.name}
         dataSource={this.state.dataSource}
         onNewRequest={value => {
           // If you're searching but get no match, value is a string
