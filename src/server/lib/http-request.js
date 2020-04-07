@@ -46,32 +46,30 @@ const requestWithRetry = async (
   };
   const shouldRetryReturnOrError = (attempt, error, resp) => {
     if (statusValidator(resp && resp.status)) {
-      return RetryReturnError.RETURN;
+      return [RetryReturnError.RETURN];
     }
 
-    if (
-      attempt < retries &&
-      (error || (resp && resp.status >= 500 && resp.status <= 599))
-    ) {
-      let message;
+    let message = resp ? `received status ${resp.status}` : "";
+    if (error || (resp && resp.status >= 500 && resp.status <= 599)) {
       if (error) {
         let tweakedError = error;
         if (error.toString && error.toString().match(/.*AbortError.*/g)) {
-          tweakedError = `timeout after ${timeout}ms`;
+          tweakedError = new Error(`timeout after ${timeout}ms`);
         }
-        message = `error -- ${tweakedError}`;
-      } else {
-        message = `status code ${resp.status}`;
+        message = `${tweakedError.message}`;
       }
 
       log.warn(
-        `Retrying request id ${requestId}. Reason: ${message}. Details: ${logRequest()}. Retry ${attempt +
-          1} of ${retries}`
+        `Request id ${requestId} failed. Reason: ${message}. Details: ${logRequest()}. Attempt ${attempt +
+          1} of ${retries + 1}`
       );
-      return RetryReturnError.RETRY;
+
+      if (attempt < retries) {
+        return [RetryReturnError.RETRY];
+      }
     }
 
-    return RetryReturnError.ERROR;
+    return [RetryReturnError.ERROR, message];
   };
 
   for (let attempt = 0; attempt < retries + 1; attempt++) {
@@ -94,17 +92,20 @@ const requestWithRetry = async (
       clearTimeout(controllerTimeout);
     }
 
-    const retryReturnError = shouldRetryReturnOrError(attempt, error, response);
+    let [retryReturnError, message] = shouldRetryReturnOrError(
+      attempt,
+      error,
+      response
+    );
 
     if (retryReturnError === RetryReturnError.RETRY) {
       await setTimeout(() => {}, retryDelay());
       continue;
     } else if (retryReturnError === RetryReturnError.ERROR) {
-      let message;
-      if (attempt >= retries) {
+      if (attempt >= retries && retries > 0) {
         message = `Request id ${requestId} failed; all ${retries} retries exhausted`;
-      } else if (response) {
-        message = `Request id ${requestId} failed; received status ${response.status}`;
+      } else if (message) {
+        message = `Request id ${requestId} failed; ${message}`;
       } else {
         message = `Request id ${requestId} failed; no further information`;
       }
