@@ -270,6 +270,12 @@ const rootSchema = gql`
       organizationId: String!
       optOutMessage: String!
     ): Organization
+    updateTwilioAuth(
+      organizationId: String!
+      twilioApiKey: String
+      twilioAuthToken: String
+      twilioMessageServiceSid: String
+    ): Organization
     bulkSendMessages(assignmentId: Int!): [CampaignContact]
     sendMessage(
       message: MessageInput!
