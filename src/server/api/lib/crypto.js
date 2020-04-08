@@ -1,6 +1,7 @@
+import { getConfig } from "./config";
 const crypto = require("crypto");
 
-const secret = process.env.SESSION_SECRET;
+const secret = getConfig('SESSION_SECRET');
 const algorithm = "aes-256-cbc";
 
 if (!secret) {
