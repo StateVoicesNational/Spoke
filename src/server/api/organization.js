@@ -44,6 +44,18 @@ export const resolvers = {
         : process.env.OPT_OUT_MESSAGE) ||
       "I'm opting you out of texts immediately. Have a great day.",
     textingHoursStart: organization => organization.texting_hours_start,
-    textingHoursEnd: organization => organization.texting_hours_end
+    textingHoursEnd: organization => organization.texting_hours_end,
+    twilioApiKey: organization =>
+      organization.features.indexOf("TWILIO_API_KEY") !== -1
+        ? JSON.parse(organization.features).TWILIO_API_KEY
+        : null,
+    twilioAuthToken: organization =>
+      organization.features.indexOf("TWILIO_AUTH_TOKEN") !== -1
+        ? JSON.parse(organization.features).TWILIO_AUTH_TOKEN
+        : null,
+    twilioMessageServiceSid: organization =>
+      organization.features.indexOf("TWILIO_MESSAGE_SERVICE_SID") !== -1
+        ? JSON.parse(organization.features).TWILIO_MESSAGE_SERVICE_SID
+        : null,
   }
 };

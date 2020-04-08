@@ -57,6 +57,7 @@ import { resolvers as questionResolvers } from "./question";
 import { resolvers as questionResponseResolvers } from "./question-response";
 import { getUsers, resolvers as userResolvers } from "./user";
 import { change } from "../local-auth-helpers";
+import { symmetricEncrypt } from "./lib/crypto";
 
 import {
   sendMessage,
@@ -629,6 +630,31 @@ const rootMutations = {
 
       await organization.save();
       await organizationCache.clear(organizationId);
+
+      return await Organization.get(organizationId);
+    },
+    updateTwilioAuth: async (
+      _, {
+        organizationId,
+        twilioApiKey,
+        twilioAuthToken,
+        twilioMessageServiceSid
+      }, {
+        user
+      }
+    ) => {
+      await accessRequired(user, organizationId, "OWNER");
+
+      const organization = await Organization.get(organizationId);
+      const featuresJSON = JSON.parse(organization.features || "{}");
+      featuresJSON.TWILIO_API_KEY = twilioApiKey;
+      featuresJSON.TWILIO_AUTH_TOKEN = twilioAuthToken
+        ? symmetricEncrypt(twilioAuthToken) : twilioAuthToken;
+      featuresJSON.TWILIO_MESSAGE_SERVICE_SID = twilioMessageServiceSid;
+      organization.features = JSON.stringify(featuresJSON);
+
+      await organization.save();
+      await cacheableData.organization.clear(organizationId);
 
       return await Organization.get(organizationId);
     },

@@ -143,6 +143,73 @@ class Settings extends React.Component {
     );
   }
 
+  handleSubmitTwilioAuthForm = async ({
+    apiKey,
+    authToken,
+    messageServiceSid
+  }) => {
+    const originalAuthToken = this.props.data.organization.twilioAuthToken;
+    await this.props.mutations.updateTwilioAuth(
+      apiKey,
+      authToken === '<Encrypted>' ? originalAuthToken : authToken,
+      messageServiceSid
+    );
+  };
+
+  renderTwilioAuthForm() {
+    const { organization } = this.props.data;
+    const { twilioApiKey, twilioAuthToken, twilioMessageServiceSid } = organization;
+    const formSchema = yup.object({
+      apiKey: yup.string().nullable(),
+      authToken: yup.string().nullable(),
+      messageServiceSid: yup.string().nullable()
+    });
+
+    return (
+      <Card>
+        <CardHeader title="Twilio Credentials" />
+        <CardText>
+          <div className={css(styles.section)}>
+            <span className={css(styles.sectionLabel)}>
+              You can set Twilio API credentials specifically for this
+              Organization by entering them here.
+            </span>
+            <GSForm
+              schema={formSchema}
+              onSubmit={this.handleSubmitTwilioAuthForm}
+              defaultValue={{
+                apiKey: twilioApiKey,
+                authToken: twilioAuthToken ? "<Encrypted>" : twilioAuthToken,
+                messageServiceSid: twilioMessageServiceSid
+              }}
+            >
+              <Form.Field
+                label="Twilio API Key"
+                name="apiKey"
+                fullWidth
+              />
+              <Form.Field
+                label="Twilio Auth Token"
+                name="authToken"
+                fullWidth
+              />
+              <Form.Field
+                label="Default Message Service SID"
+                name="messageServiceSid"
+                fullWidth
+              />
+
+              <Form.Button
+                type="submit"
+                label={this.props.saveLabel || "Save Twilio Credentials"}
+              />
+            </GSForm>
+          </div>
+        </CardText>
+      </Card>
+    );
+  }
+
   render() {
     const { organization } = this.props.data;
     const { optOutMessage } = organization;
@@ -217,6 +284,7 @@ class Settings extends React.Component {
           </CardActions>
         </Card>
         <div>{this.renderTextingHoursForm()}</div>
+        <div>{this.renderTwilioAuthForm()}</div>
       </div>
     );
   }
@@ -295,7 +363,35 @@ const mapMutationsToProps = ({ ownProps }) => ({
       organizationId: ownProps.params.organizationId,
       optOutMessage
     }
-  })
+  }),
+  updateTwilioAuth: (apiKey, authToken, messageServiceSid) => ({
+    mutation: gql`
+      mutation updateTwilioAuth(
+        $twilioApiKey: String
+        $twilioAuthToken: String
+        $twilioMessageServiceSid: String
+        $organizationId: String!
+      ) {
+        updateTwilioAuth(
+          twilioApiKey: $twilioApiKey
+          twilioAuthToken: $twilioAuthToken
+          twilioMessageServiceSid: $twilioMessageServiceSid
+          organizationId: $organizationId
+        ) {
+          id
+          twilioApiKey
+          twilioAuthToken
+          twilioMessageServiceSid
+        }
+      }
+    `,
+    variables: {
+      organizationId: ownProps.params.organizationId,
+      twilioApiKey: apiKey,
+      twilioAuthToken: authToken,
+      twilioMessageServiceSid: messageServiceSid
+    }
+  }),
 });
 
 const mapQueriesToProps = ({ ownProps }) => ({
@@ -309,6 +405,9 @@ const mapQueriesToProps = ({ ownProps }) => ({
           textingHoursStart
           textingHoursEnd
           optOutMessage
+          twilioApiKey
+          twilioAuthToken
+          twilioMessageServiceSid
         }
       }
     `,
