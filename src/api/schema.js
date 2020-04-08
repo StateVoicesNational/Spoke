@@ -50,6 +50,7 @@ import {
   schema as cannedResponseSchema,
   resolvers as cannedResponseResolvers
 } from "./canned-response";
+import { schema as tagSchema, resolvers as tagResolvers } from "./tag";
 import { schema as inviteSchema, resolvers as inviteResolvers } from "./invite";
 
 const rootSchema = gql`
@@ -172,6 +173,14 @@ const rootSchema = gql`
     assignmentId: String!
   }
 
+  input TagInput {
+    id: String
+    name: String!
+    group: String
+    description: String!
+    isDeleted: Boolean
+  }
+
   type Action {
     name: String
     display_name: String
@@ -229,6 +238,7 @@ const rootSchema = gql`
       role: String
       sortBy: SortPeopleBy
     ): UsersReturn
+    tags(organizationId: String!): TagsList
   }
 
   type RootMutation {
@@ -324,6 +334,9 @@ const rootSchema = gql`
       newTexterUserId: String!
     ): [CampaignIdAssignmentId]
     importCampaignScript(campaignId: String!, url: String!): Int
+    createTag(organizationId: String!, tagData: TagInput!): Tag
+    editTag(organizationId: String!, id: String!, tagData: TagInput!): Tag
+    deleteTag(organizationId: String!, id: String!): Tag
   }
 
   schema {
@@ -349,5 +362,6 @@ export const schema = [
   questionResponseSchema,
   questionSchema,
   inviteSchema,
-  conversationSchema
+  conversationSchema,
+  tagSchema
 ];
