@@ -152,8 +152,6 @@ export class CampaignList extends React.Component {
         key={campaign.id}
         primaryText={primaryText}
         onTouchTap={event => {
-          event.persist();
-
           // if selectMultiple is true, then the checkbox is showing and checked is set to the status of that checkbox.
           // Otherwise it is set to be a node and is still truthy
           const {
