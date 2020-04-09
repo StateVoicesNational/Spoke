@@ -1,5 +1,5 @@
 import request from "request";
-import { r } from "../../server/models";
+import { r, cacheableData } from "../../server/models";
 
 // What the user sees as the option
 export const displayName = () => "Test Action";
@@ -29,9 +29,8 @@ export async function processAction(
   // This is a meta action that updates a variable in the contact record itself.
   // Generally, you want to send action data to the outside world, so you
   // might want the request library loaded above
-  const contact = await r
-    .knex("campaign_contact")
-    .where("campaign_contact.id", campaignContactId);
+  const contact = await cacheableData.campaignContact.load(campaignContactId);
+
   const customFields = JSON.parse(contact.custom_fields || "{}");
   if (customFields) {
     customFields["processed_test_action"] = "completed";
