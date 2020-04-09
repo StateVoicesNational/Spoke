@@ -97,6 +97,7 @@ class Tags extends React.Component {
 
   render() {
     const { tags } = this.props.data.tags;
+    console.log(tags);
     const { openTagDialog, dialogMode, tagId } = this.state;
     const formSchema = yup.object({
       name: yup.string().required(),
@@ -180,6 +181,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
             group
             description
             isDeleted
+            organizationId
           }
         }
       }
