@@ -1,4 +1,5 @@
 import { r, Message } from "../../models";
+import campaignCache from "./campaign";
 import campaignContactCache from "./campaign-contact";
 
 // QUEUE
@@ -105,7 +106,7 @@ const cacheDbResult = async dbResult => {
 const query = async ({ campaignContactId }) => {
   // queryObj ~ { campaignContactId, assignmentId, cell, service, messageServiceSid }
   if (r.redis && CONTACT_CACHE_ENABLED) {
-    campaignContactId = await contactIdFromOther(queryObj);
+    // campaignContactId = await contactIdFromOther(queryObj);
     if (campaignContactId) {
       const [exists, messages] = await r.redis
         .multi()
@@ -207,6 +208,14 @@ const messageCache = {
     }
 
     messageToSave.created_at = new Date();
+    const savedMessage = await Message.save(
+      messageToSave,
+      messageToSave.id ? { conflict: "update" } : undefined
+    );
+    // We modify this info for sendMessage so it can send through the service with the id, etc.
+    // eslint-disable-next-line no-param-reassign
+    messageToSave.id = messageInstance.id || savedMessage.id;
+
     await saveMessageCache(messageToSave.campaign_contact_id, [messageToSave]);
     const contactData = {
       id: messageToSave.campaign_contact_id,
@@ -215,14 +224,13 @@ const messageCache = {
     };
     // console.log('hi saveMsg3', newStatus, contactData);
     await campaignContactCache.updateStatus(contactData, newStatus);
-    const savedMessage = await Message.save(
-      messageToSave,
-      messageToSave.id ? { conflict: "update" } : undefined
-    );
-    // We modify this info for sendMessage so it can send through the service with the id, etc.
-    // eslint-disable-next-line no-param-reassign
-    messageToSave.id = messageInstance.id || savedMessage.id;
     // console.log('hi saveMsg4', newStatus)
+    if (
+      !messageInstance.is_from_contact &&
+      contact.message_status === "needsMessage"
+    ) {
+      await campaignCache.incrMessaged(contact.campaign_id);
+    }
     return {
       message: messageToSave,
       contactStatus: newStatus

@@ -20,6 +20,11 @@ import { assembleAnswerOptions } from "../../../lib/interaction-step-helpers";
 // * campaignCannedResponses (saved in canned-responses.js instead)
 
 const cacheKey = id => `${process.env.CACHE_PREFIX || ""}campaign-${id}`;
+const infoCacheKey = id =>
+  `${process.env.CACHE_PREFIX || ""}campaigninfo-${id}`;
+
+const CONTACT_CACHE_ENABLED =
+  process.env.REDIS_CONTACT_CACHE || global.REDIS_CONTACT_CACHE;
 
 const dbCustomFields = async id => {
   const campaignContacts = await r
@@ -74,6 +79,9 @@ const loadDeep = async id => {
     campaign.customFields = await dbCustomFields(id);
     campaign.interactionSteps = await dbInteractionSteps(id);
     campaign.contactTimezones = await dbContactTimezones(id);
+    campaign.contactCount = await r.getCount(
+      r.knex("campaign_contact").where("campaign_id", id)
+    );
     // cache userIds for all assignments
     // console.log('loaded deep campaign', JSON.stringify(campaign, null, 2))
     // We should only cache organization data
@@ -160,7 +168,13 @@ const campaignCache = {
   reload: loadDeep,
   currentEditors,
   dbCustomFields,
-  dbInteractionSteps
+  dbInteractionSteps,
+  incrMessaged: async id => {
+    if (r.redis && CONTACT_CACHE_ENABLED) {
+      const infoKey = infoCacheKey(id);
+      await r.redis.hincrbyAsync(infoKey, "contactCount", 1);
+    }
+  }
 };
 
 export default campaignCache;
