@@ -1080,7 +1080,7 @@ const rootMutations = {
           // run interaction step handler
           try {
             const handler = require(`../../integrations/action-handlers/${interactionStepAction}.js`);
-            handler.processAction(
+            await handlerprocessAction(
               qr,
               interactionStepResult[0],
               campaignContactId

@@ -31,7 +31,7 @@ export async function processAction(
   // might want the request library loaded above
   const contact = await r
     .knex("campaign_contact")
-    .where("campaign_contact_id", campaignContactId);
+    .where("campaign_contact.id", campaignContactId);
   const customFields = JSON.parse(contact.custom_fields || "{}");
   if (customFields) {
     customFields["processed_test_action"] = "completed";
