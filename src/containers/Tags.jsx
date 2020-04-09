@@ -40,7 +40,8 @@ const styles = StyleSheet.create({
   },
   submit: {
     marginTop: 32,
-    textAlign: "right"
+    display: "flex",
+    justifyContent: "flex-end"
   }
 });
 
@@ -97,7 +98,6 @@ class Tags extends React.Component {
 
   render() {
     const { tags } = this.props.data.tags;
-    console.log(tags);
     const { openTagDialog, dialogMode, tagId } = this.state;
     const formSchema = yup.object({
       name: yup.string().required(),
@@ -152,11 +152,12 @@ class Tags extends React.Component {
               <Form.Field label="Name" name="name" />
               <Form.Field label="Description" name="description" />
             </div>
-            <Form.Button
-              className={css(styles.submit)}
-              type="submit"
-              label={dialogMode === "create" ? "Create" : "Save"}
-            />
+            <div className={css(styles.submit)}>
+              <Form.Button
+                type="submit"
+                label={dialogMode === "create" ? "Create" : "Save"}
+              />
+            </div>
           </GSForm>
         </Dialog>
       </div>

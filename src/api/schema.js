@@ -179,6 +179,7 @@ const rootSchema = gql`
     group: String
     description: String!
     isDeleted: Boolean
+    organizationId: String
   }
 
   type Action {
