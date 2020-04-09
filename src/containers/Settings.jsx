@@ -160,9 +160,9 @@ class Settings extends React.Component {
     const { organization } = this.props.data;
     const { twilioApiKey, twilioAuthToken, twilioMessageServiceSid } = organization;
     const formSchema = yup.object({
-      apiKey: yup.string().nullable(),
-      authToken: yup.string().nullable(),
-      messageServiceSid: yup.string().nullable()
+      apiKey: yup.string().nullable().max(64),
+      authToken: yup.string().nullable().max(64),
+      messageServiceSid: yup.string().nullable().max(64)
     });
 
     return (
