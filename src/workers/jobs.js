@@ -1069,10 +1069,15 @@ export async function loadCampaignCache(
       console.error("ERROR contact loadMany", campaign.id, err, campaign);
     });
   const loadOptOuts = cacheableData.optOut.loadMany(organization.id);
+  const loadAssignments = cacheableData.campaignContact.updateCampaignAssignmentCache(
+    campaign.id
+  );
+
   if (global.TEST_ENVIRONMENT) {
     // otherwise this races with texting
     await loadContacts;
     await loadOptOuts;
+    await loadAssignments;
   }
 }
 

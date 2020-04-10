@@ -282,6 +282,15 @@ export const resolvers = {
         updatedAt: status.updated_at ? new Date(status.updated_at) : null
       };
     },
+    completionStats: async campaign => {
+      // must be cache-loaded or bust:
+      const stats = await cacheableData.campaign.completionStats(campaign.id);
+      return {
+        contactsCount: campaign.contactsCount || stats.contactsCount || null,
+        assignedCount: stats.assignedCount || null,
+        messagedCount: stats.messagedCount || null
+      };
+    },
     texters: async (campaign, _, { user }) => {
       await accessRequired(
         user,
@@ -366,6 +375,11 @@ export const resolvers = {
         "SUPERVOLUNTEER",
         true
       );
+      if (campaign.assignedCount) {
+        return (
+          Number(campaign.contactsCount) - Number(campaign.assignedCount) === 0
+        );
+      }
       const contacts = await r
         .knex("campaign_contact")
         .select("id")
@@ -380,6 +394,11 @@ export const resolvers = {
         "SUPERVOLUNTEER",
         true
       );
+      if (campaign.messagedCount) {
+        return (
+          Number(campaign.contactsCount) - Number(campaign.messagedCount) === 0
+        );
+      }
       const contacts = await r
         .knex("campaign_contact")
         .select("id")
