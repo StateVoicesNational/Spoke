@@ -413,7 +413,7 @@ const campaignContactCache = {
   updateCampaignAssignmentCache: async (campaignId, contactIds) => {
     try {
       if (r.redis && CONTACT_CACHE_ENABLED) {
-        console.log("updateCampaignAssignmentCache", campaignId, contactIds);
+        // console.log("updateCampaignAssignmentCache", campaignId, contactIds);
         const assignmentKey = contactAssignmentKey(campaignId);
         // We do NOT delete current cache as mostly people are re-assigned.
         // When people are zero-d out, then the assignments themselves are deleted
@@ -426,6 +426,7 @@ const campaignContactCache = {
         if (contactIds) {
           query = query.whereIn("id", contactIds);
         } else {
+          // console.log('updateCampaignAssignmentCache updateAssignedCount', campaignId);
           await campaignCache.updateAssignedCount(campaignId);
         }
         const result = query.stream(stream => {

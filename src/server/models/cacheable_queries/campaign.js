@@ -79,7 +79,7 @@ const loadDeep = async id => {
     campaign.customFields = await dbCustomFields(id);
     campaign.interactionSteps = await dbInteractionSteps(id);
     campaign.contactTimezones = await dbContactTimezones(id);
-    campaign.contactCount = await r.getCount(
+    campaign.contactsCount = await r.getCount(
       r.knex("campaign_contact").where("campaign_id", id)
     );
     // cache userIds for all assignments
@@ -91,7 +91,9 @@ const loadDeep = async id => {
     await r.redis
       .multi()
       .set(cacheKey(id), JSON.stringify(campaign))
+      .hset(infoCacheKey(id), "contactsCount", campaign.contactsCount)
       .expire(cacheKey(id), 43200)
+      .expire(infoCacheKey(id), 43200)
       .execAsync();
   }
   // console.log('clearing campaign', id, typeof id, loaders.campaign)
@@ -163,9 +165,7 @@ const campaignCache = {
           "customFields",
           "interactionSteps",
           "contactTimezones",
-          "contactCount",
-          "assignedCount",
-          "messagedCount"
+          "contactsCount"
         ]);
         return campaign;
       }
@@ -180,30 +180,45 @@ const campaignCache = {
   currentEditors,
   dbCustomFields,
   dbInteractionSteps,
+  completionStats: async id => {
+    if (r.redis && CONTACT_CACHE_ENABLED) {
+      const data = await r.redis.hgetallAsync(infoCacheKey(id));
+      return data || {};
+    }
+    return {};
+  },
   updateAssignedCount: async id => {
     if (r.redis && CONTACT_CACHE_ENABLED) {
-      const assignCount = await r.getCount(
-        r
-          .knex("campaign_contact")
-          .where("campaign_id", id)
-          .whereNull("assignment_id")
-      );
-      const infoKey = infoCacheKey(id);
-      await r.redis
-        .multi()
-        .hset(infoKey, "assignedCount", assignCount)
-        .expire(infoKey, 43200)
-        .execAsync();
+      try {
+        const assignCount = await r.getCount(
+          r
+            .knex("campaign_contact")
+            .where("campaign_id", id)
+            .whereNotNull("assignment_id")
+        );
+        const infoKey = infoCacheKey(id);
+        await r.redis
+          .multi()
+          .hset(infoKey, "assignedCount", assignCount)
+          .expire(infoKey, 43200)
+          .execAsync();
+      } catch (err) {
+        console.log("campaign.updateAssignedCount Error", id, err);
+      }
     }
   },
   incrMessaged: async id => {
     if (r.redis && CONTACT_CACHE_ENABLED) {
-      const infoKey = infoCacheKey(id);
-      await r.redis
-        .multi()
-        .hincrby(infoKey, "messagedCount", 1)
-        .expire(infoKey, 43200)
-        .execAsync();
+      try {
+        const infoKey = infoCacheKey(id);
+        await r.redis
+          .multi()
+          .hincrby(infoKey, "messagedCount", 1)
+          .expire(infoKey, 43200)
+          .execAsync();
+      } catch (err) {
+        console.log("campaign.incrMessaged Error", id, err);
+      }
     }
   }
 };
