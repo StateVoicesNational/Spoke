@@ -51,6 +51,7 @@ async function createUser(
     auth0_id: "test123",
     first_name: "TestUserFirst",
     last_name: "TestUserLast",
+    alias: "TestUserAlias",
     cell: "555-555-5555",
     email: "testuser@example.com"
   }
@@ -540,7 +541,8 @@ describe("Campaign", () => {
         user,
         assignment.id
       );
-      expect(allowUserAssignmentId).toEqual(true);
+      expect(allowUserAssignmentId.user_id).toEqual(user.id);
+      expect(allowUserAssignmentId.id).toEqual(assignment.id);
       try {
         const notAllowed = await assignmentRequired(user, -1);
         throw new Exception("should throw BEFORE this exception");
@@ -549,6 +551,7 @@ describe("Campaign", () => {
       }
     });
   });
+
   describe("Copy Campaign", () => {
     let campaign;
     let copiedCampaign;
@@ -702,6 +705,28 @@ describe("Campaign", () => {
   });
 });
 
+describe("Contact schema", () => {
+  test("has an alias field", async () => {
+    // create a default user...
+    const user = await createUser();
+    // ...and check if it's on the DB. The object being returned in the above function is not the db instance.
+    const userFromDB = await User.getAll(user.id);
+    expect(userFromDB[0].alias).toEqual("TestUserAlias");
+  });
+  test("the alias field defaults to null", async () => {
+    const userWithoutAliasObj = {
+      auth0_id: "test123",
+      first_name: "TestUserFirst",
+      last_name: "TestUserLast",
+      cell: "555-555-5555",
+      email: "testuser@example.com"
+    };
+    const user = await createUser(userWithoutAliasObj);
+    const userFromDB = await User.getAll(user.id);
+    expect(userFromDB[0].alias).toBeNull();
+  });
+});
+
 describe("editUser mutation", () => {
   let testAdminUser;
   let testTexter;
@@ -750,6 +775,7 @@ describe("editUser mutation", () => {
     const userData = {
       firstName: "Jerry",
       lastName: "Garcia",
+      alias: "JG",
       email: "jerry@heaven.org",
       cell: "4151111111"
     };
@@ -772,6 +798,7 @@ describe("editUser mutation", () => {
     expect(updatedUser[0]).toMatchObject({
       first_name: userData.firstName,
       last_name: userData.lastName,
+      alias: userData.alias,
       email: userData.email,
       cell: userData.cell,
       id: testTexter.id

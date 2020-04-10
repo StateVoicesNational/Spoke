@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 import React from "react";
 import AssignmentTexter from "../components/AssignmentTexter";
+import AssignmentTexterContact from "../containers/AssignmentTexterContact";
 import { withRouter } from "react-router";
 import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
@@ -57,9 +58,11 @@ export const dataQuery = gql`
         id
         firstName
         lastName
+        alias
       }
       campaign {
         id
+        title
         isArchived
         useDynamicAssignment
         overrideOrganizationTextingHours
@@ -83,6 +86,7 @@ export const dataQuery = gql`
             text
             answerOptions {
               value
+              interactionStepId
               nextInteractionStep {
                 id
                 script
@@ -191,6 +195,8 @@ export class TexterTodo extends React.Component {
         getNewContacts={this.getNewContacts}
         onRefreshAssignmentContacts={this.refreshAssignmentContacts}
         organizationId={this.props.params.organizationId}
+        ChildComponent={AssignmentTexterContact}
+        messageStatusFilter={this.props.messageStatus}
       />
     );
   }
@@ -201,7 +207,8 @@ TexterTodo.propTypes = {
   params: PropTypes.object,
   data: PropTypes.object,
   mutations: PropTypes.object,
-  router: PropTypes.object
+  router: PropTypes.object,
+  location: PropTypes.object
 };
 
 const mapQueriesToProps = ({ ownProps }) => ({
