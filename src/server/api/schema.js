@@ -987,7 +987,12 @@ const rootMutations = {
       const contact = await loaders.campaignContact.load(campaignContactId);
       const campaign = await loaders.campaign.load(contact.campaign_id);
 
-      console.log("createOptOut", campaignContactId, contact.campaign_id);
+      console.log(
+        "createOptOut",
+        campaignContactId,
+        contact.campaign_id,
+        contact.assignment_id
+      );
       await assignmentRequiredOrAdminRole(
         user,
         campaign.organization_id,

@@ -1,4 +1,5 @@
 import { r, loaders, CampaignContact } from "../../models";
+import campaignCache from "./campaign";
 import optOutCache from "./opt-out";
 import organizationCache from "./organization";
 import { modelWithExtraProps } from "./lib";
@@ -235,7 +236,11 @@ const campaignContactCache = {
           await getCacheContactAssignment(id, cacheData.campaign_id, cacheData)
         );
 
-        // console.log('contact fromCache', cacheData.id, cacheData.message_status)
+        console.log(
+          "contact fromCache",
+          cacheData.id,
+          cacheData.message_status
+        );
         return modelWithExtraProps(cacheData, CampaignContact, [
           "organization_id",
           "city",
@@ -406,44 +411,55 @@ const campaignContactCache = {
     clearMemoizedCache(contactId);
   },
   updateCampaignAssignmentCache: async (campaignId, contactIds) => {
-    if (r.redis && CONTACT_CACHE_ENABLED) {
-      const assignmentKey = contactAssignmentKey(campaignId);
-      // We do NOT delete current cache as mostly people are re-assigned.
-      // When people are zero-d out, then the assignments themselves are deleted
-      // await r.redis.delAsync(assignmentKey);
-      // Now refill it, streaming for efficiency
-      let query = r
-        .knex("campaign_contact")
-        .where("campaign_id", campaignId)
-        .select("id", "assignment_id");
-      if (contactIds) {
-        query = query.whereIn("id", contactIds);
-      }
-      const result = query.stream(stream => {
-        const cacheSaver = new Writable({ objectMode: true });
-        // eslint-disable-next-line no-underscore-dangle
-        cacheSaver._write = (dbRecord, enc, next) => {
-          // Note: non-async land
-          setCacheContactAssignment(dbRecord.id, campaignId, dbRecord).then(
-            () => {
-              next();
-            },
-            err => {
-              console.error("FAILED CAMPAIGN ASSIGNMENT CACHE SAVE", err);
-              stream.end();
-              next();
-            }
-          );
-        };
-        stream.pipe(cacheSaver);
-      });
-      return result
-        .then(done => {
-          console.log("updateCampaignAssignmentCache Completed", campaignId);
-        })
-        .catch(err => {
-          console.log("updateCampaignAssignmentCache Error", campaignId, err);
+    try {
+      if (r.redis && CONTACT_CACHE_ENABLED) {
+        console.log("updateCampaignAssignmentCache", campaignId, contactIds);
+        const assignmentKey = contactAssignmentKey(campaignId);
+        // We do NOT delete current cache as mostly people are re-assigned.
+        // When people are zero-d out, then the assignments themselves are deleted
+        // await r.redis.delAsync(assignmentKey);
+        // Now refill it, streaming for efficiency
+        let query = r
+          .knex("campaign_contact")
+          .where("campaign_id", campaignId)
+          .select("id", "assignment_id");
+        if (contactIds) {
+          query = query.whereIn("id", contactIds);
+        } else {
+          await campaignCache.updateAssignedCount(campaignId);
+        }
+        const result = query.stream(stream => {
+          const cacheSaver = new Writable({ objectMode: true });
+          // eslint-disable-next-line no-underscore-dangle
+          cacheSaver._write = (dbRecord, enc, next) => {
+            // Note: non-async land
+            setCacheContactAssignment(dbRecord.id, campaignId, dbRecord).then(
+              () => {
+                next();
+              },
+              err => {
+                console.error("FAILED CAMPAIGN ASSIGNMENT CACHE SAVE", err);
+                stream.end();
+                next();
+              }
+            );
+          };
+          stream.pipe(cacheSaver);
         });
+        return result
+          .then(done => {
+            console.log("updateCampaignAssignmentCache Completed", campaignId);
+          })
+          .catch(err => {
+            console.log("updateCampaignAssignmentCache Error", campaignId, err);
+          });
+      }
+    } catch (err) {
+      console.log(
+        "updateCampaignAssignmentCache Function Error",
+        campaignId,
+        err
+      );
     }
   },
   updateStatus: async (contact, newStatus) => {

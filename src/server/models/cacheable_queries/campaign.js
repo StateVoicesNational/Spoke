@@ -150,11 +150,22 @@ const campaignCache = {
         // console.log('new campaign data', id, campaignData)
       }
       if (campaignObj) {
+        campaignObj.assignedCount = await r.redis.hgetAsync(
+          infoCacheKey(id),
+          "assignedCount"
+        );
+        campaignObj.messagedCount = await r.redis.hgetAsync(
+          infoCacheKey(id),
+          "messagedCount"
+        );
         // console.log('campaign cache', cacheKey(id), campaignObj, campaignData)
         const campaign = modelWithExtraProps(campaignObj, Campaign, [
           "customFields",
           "interactionSteps",
-          "contactTimezones"
+          "contactTimezones",
+          "contactCount",
+          "assignedCount",
+          "messagedCount"
         ]);
         return campaign;
       }
@@ -169,10 +180,30 @@ const campaignCache = {
   currentEditors,
   dbCustomFields,
   dbInteractionSteps,
+  updateAssignedCount: async id => {
+    if (r.redis && CONTACT_CACHE_ENABLED) {
+      const assignCount = await r.getCount(
+        r
+          .knex("campaign_contact")
+          .where("campaign_id", id)
+          .whereNull("assignment_id")
+      );
+      const infoKey = infoCacheKey(id);
+      await r.redis
+        .multi()
+        .hset(infoKey, "assignedCount", assignCount)
+        .expire(infoKey, 43200)
+        .execAsync();
+    }
+  },
   incrMessaged: async id => {
     if (r.redis && CONTACT_CACHE_ENABLED) {
       const infoKey = infoCacheKey(id);
-      await r.redis.hincrbyAsync(infoKey, "contactCount", 1);
+      await r.redis
+        .multi()
+        .hincrby(infoKey, "messagedCount", 1)
+        .expire(infoKey, 43200)
+        .execAsync();
     }
   }
 };
