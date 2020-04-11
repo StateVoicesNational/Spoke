@@ -136,7 +136,8 @@ export async function getClientChoiceData(
       headers: {
         Authorization: getVanAuth(organization)
       },
-      retries: 0
+      retries: 0,
+      timeout: 5000
     });
 
     responseJson = await response.json();
@@ -167,7 +168,6 @@ export const getZipFromRow = row => {
 
   let zip;
   regexes.some(regex => {
-    console.log("regex", regex);
     const matches = regex.exec(row.Address || "");
     if (matches) {
       zip = matches[1];
@@ -281,6 +281,7 @@ export async function processContactLoad(job, maxContacts, organization) {
     const response = await HttpRequest(url, {
       method: "POST",
       retries: 0,
+      timeout: 5000,
       headers: {
         Authorization: getVanAuth(organization),
         "Content-Type": "application/json"
@@ -330,7 +331,8 @@ export async function processContactLoad(job, maxContacts, organization) {
   try {
     vanResponse = await HttpRequest(downloadUrl, {
       method: "GET",
-      retries: 0
+      retries: 0,
+      timeout: 5000
     });
   } catch (error) {
     await exports.handleFailedContactLoad(
