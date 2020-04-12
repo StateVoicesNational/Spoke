@@ -7,7 +7,6 @@ import {
   processContactLoad,
   handleFailedContactLoad,
   getClientChoiceData,
-  makeVanUrl,
   available
 } from "../../../src/integrations/contact-loaders/ngpvan";
 
@@ -68,34 +67,6 @@ describe("ngpvan", () => {
           result: false,
           expiresSeconds: 60
         });
-      });
-    });
-  });
-
-  describe("#makeVanUrl", () => {
-    let oldNgpVanApiBaseUrl;
-    beforeEach(async () => {
-      oldNgpVanApiBaseUrl = process.env.NGP_VAN_API_BASE_URL;
-      process.env.NGP_VAN_API_BASE_URL = "http://knexjs.org";
-    });
-
-    afterEach(async () => {
-      process.env.NGP_VAN_API_BASE_URL = oldNgpVanApiBaseUrl;
-    });
-
-    it("makes a URL with base url from the environment", async () => {
-      expect(makeVanUrl("index.html")).toEqual("http://knexjs.org/index.html");
-    });
-
-    describe("when NGP_VAN_API_BASE_URL is not set in the environment", () => {
-      beforeEach(async () => {
-        delete process.env.NGP_VAN_API_BASE_URL;
-      });
-
-      it("makes a URL with the default base url", async () => {
-        expect(makeVanUrl("index.html")).toEqual(
-          "https://api.securevan.com/index.html"
-        );
       });
     });
   });
@@ -601,6 +572,7 @@ describe("ngpvan", () => {
         ]);
 
         exportJobsNock.done();
+        getCsvNock.done();
       });
     });
 

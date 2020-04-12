@@ -3,10 +3,10 @@ import { getConfig } from "../../../server/api/lib/config";
 import { parseCSVAsync } from "../../../workers/parse_csv";
 import { failedContactLoad } from "../../../workers/jobs";
 import HttpRequest from "../../../server/lib/http-request.js";
+import Van from "../../lib/ngpvan";
 
 export const name = "ngpvan";
 
-export const DEFAULT_NGP_VAN_API_BASE_URL = "https://api.securevan.com";
 export const DEFAULT_NGP_VAN_MAXIMUM_LIST_SIZE = 75000;
 export const DEFAULT_NGP_VAN_CACHE_TTL = 300;
 export const DEFAULT_NGP_VAN_EXPORT_JOB_TYPE_ID = 8;
@@ -15,20 +15,6 @@ export const DEFAULT_PHONE_NUMBER_COUNTRY = "US";
 export function displayName() {
   return "NGP VAN";
 }
-
-const getVanAuth = organization => {
-  const buffer = Buffer.from(
-    `${getConfig("NGP_VAN_APP_NAME", organization)}:${getConfig(
-      "NGP_VAN_API_KEY",
-      organization
-    )}|0`
-  );
-  return `Basic ${buffer.toString("base64")}`;
-};
-
-export const makeVanUrl = (pathAndQuery, organization) =>
-  `${getConfig("NGP_VAN_API_BASE_URL", organization) ||
-    DEFAULT_NGP_VAN_API_BASE_URL}/${pathAndQuery}`;
 
 export function serverAdministratorInstructions() {
   return {
@@ -125,7 +111,7 @@ export async function getClientChoiceData(
       Number(getConfig("NGP_VAN_MAXIMUM_LIST_SIZE", organization)) ||
       DEFAULT_NGP_VAN_MAXIMUM_LIST_SIZE;
 
-    const url = makeVanUrl(
+    const url = Van.makeUrl(
       `v4/savedLists?$top=&maxPeopleCount=${maxPeopleCount}`,
       organization
     );
@@ -134,7 +120,7 @@ export async function getClientChoiceData(
     const response = await HttpRequest(url, {
       method: "GET",
       headers: {
-        Authorization: getVanAuth(organization)
+        Authorization: Van.getAuth(organization)
       },
       retries: 0,
       timeout: 5000
@@ -277,13 +263,13 @@ export async function processContactLoad(job, maxContacts, organization) {
   }`;
 
   try {
-    const url = makeVanUrl("v4/exportJobs", organization);
+    const url = Van.makeUrl("v4/exportJobs", organization);
     const response = await HttpRequest(url, {
       method: "POST",
       retries: 0,
       timeout: 5000,
       headers: {
-        Authorization: getVanAuth(organization),
+        Authorization: Van.getAuth(organization),
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
