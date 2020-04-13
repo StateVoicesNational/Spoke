@@ -742,6 +742,26 @@ const rootMutations = {
     unarchiveCampaign: async (_, { id }, { user, loaders }) => {
       const campaign = await loaders.campaign.load(id);
       await accessRequired(user, campaign.organization_id, "ADMIN");
+
+      if (!campaign.messaging_service_sid) {
+        const organization = await Organization.get(campaign.organization_id);
+        const featuresJSON = JSON.parse(organization.features || "{}");
+        const messagingServiceSidPool =
+          featuresJSON["TWILIO_MESSAGING_SERVICE_SID_POOL"] || [];
+
+        for (var i = 0; i < messagingServiceSidPool.length; i++) {
+          if (messagingServiceSidPool[i]["STATUS"] === "FREE") {
+            campaign.messaging_service_sid =
+              messagingServiceSidPool[i]["MESSAGING_SERVICE_SID"];
+            messagingServiceSidPool[i]["STATUS"] = "LEASED";
+            messagingServiceSidPool[i]["CAMPAIGN_ID"] = id;
+          }
+        }
+        organization.features = JSON.stringify(featuresJSON);
+        await organization.save();
+        await cacheableData.organization.clear(campaign.organization_id);
+      }
+
       campaign.is_archived = false;
       await campaign.save();
       await cacheableData.campaign.clear(id);
@@ -750,6 +770,28 @@ const rootMutations = {
     archiveCampaign: async (_, { id }, { user, loaders }) => {
       const campaign = await loaders.campaign.load(id);
       await accessRequired(user, campaign.organization_id, "ADMIN");
+
+      if (campaign.messaging_service_sid) {
+        const organization = await Organization.get(campaign.organization_id);
+        const featuresJSON = JSON.parse(organization.features || "{}");
+        const messagingServiceSidPool =
+          featuresJSON["TWILIO_MESSAGING_SERVICE_SID_POOL"] || [];
+
+        for (var i = 0; i < messagingServiceSidPool.length; i++) {
+          if (
+            messagingServiceSidPool[i]["MESSAGING_SERVICE_SID"] ===
+            campaign.messaging_service_sid
+          ) {
+            campaign.messaging_service_sid = "";
+            messagingServiceSidPool[i]["STATUS"] = "FREE";
+            delete messagingServiceSidPool[i]["CAMPAIGN_ID"];
+          }
+        }
+        organization.features = JSON.stringify(featuresJSON);
+        await organization.save();
+        await cacheableData.organization.clear(campaign.organization_id);
+      }
+
       campaign.is_archived = true;
       await campaign.save();
       await cacheableData.campaign.clear(id);
@@ -766,6 +808,29 @@ const rootMutations = {
           accessRequired(user, campaign.organization_id, "ADMIN")
         )
       );
+      // Assuming that all campaigns to be archived belong to the same organizations
+      const organization = await Organization.get(campaign.organization_id);
+      const featuresJSON = JSON.parse(organization.features || "{}");
+      const messagingServiceSidPool =
+        featuresJSON["TWILIO_MESSAGING_SERVICE_SID_POOL"] || [];
+
+      campaigns.forEach(campaign => {
+        if (campaign.messaging_service_sid) {
+          for (var i = 0; i < messagingServiceSidPool.length; i++) {
+            if (
+              messagingServiceSidPool[i]["MESSAGING_SERVICE_SID"] ===
+              campaign.messaging_service_sid
+            ) {
+              campaign.messaging_service_sid = "";
+              messagingServiceSidPool[i]["STATUS"] = "FREE";
+              delete messagingServiceSidPool[i]["CAMPAIGN_ID"];
+            }
+          }
+        }
+      });
+      organization.features = JSON.stringify(featuresJSON);
+      await organization.save();
+      await cacheableData.organization.clear(campaign.organization_id);
 
       campaigns.forEach(campaign => {
         campaign.is_archived = true;
@@ -778,6 +843,14 @@ const rootMutations = {
       );
       return campaigns;
     },
+    // TODO(arathi1): Only lease from pool on unarchive+start if it's not set in campaign.
+    // Return sid to org pool on archive+archives if one present.
+    // {
+    //   'TWILIO_SUB_ACCOUNT_SID': 'XXXX',
+    //   'TWILIO_MESSAGING_SERVICE_SID_POOL': [
+    //     {'MESSAGING_SERVICE_SID': 'MMMM', 'STATUS': 'FREE'},
+    //     {'MESSAGING_SERVICE_SID': 'MMMM', 'STATUS': 'LEASED', 'CAMPAIGN_ID': '1234'}
+    //   ]}
     startCampaign: async (
       _,
       { id },
@@ -785,10 +858,26 @@ const rootMutations = {
     ) => {
       const campaign = await loaders.campaign.load(id);
       await accessRequired(user, campaign.organization_id, "ADMIN");
-      const organization = await loaders.organization.load(
-        campaign.organization_id
-      );
+      const organization = await Organization.get(campaign.organization_id);
+      if (!campaign.messaging_service_sid) {
+        const featuresJSON = JSON.parse(organization.features || "{}");
+        const messagingServiceSidPool =
+          featuresJSON["TWILIO_MESSAGING_SERVICE_SID_POOL"] || [];
 
+        var foundOne = false;
+        for (var i = 0; i < messagingServiceSidPool.length; i++) {
+          if (messagingServiceSidPool[i]["STATUS"] === "FREE") {
+            foundOne = true;
+            campaign.messaging_service_sid =
+              messagingServiceSidPool[i]["MESSAGING_SERVICE_SID"];
+            messagingServiceSidPool[i]["STATUS"] = "LEASED";
+            messagingServiceSidPool[i]["CAMPAIGN_ID"] = id;
+          }
+        }
+        organization.features = JSON.stringify(featuresJSON);
+        await organization.save();
+        await cacheableData.organization.clear(campaign.organization_id);
+      }
       campaign.is_started = true;
 
       await campaign.save();

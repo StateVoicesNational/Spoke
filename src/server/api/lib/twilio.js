@@ -1,8 +1,10 @@
 import Twilio from "twilio";
 import { getFormattedPhoneNumber } from "../../../lib/phone-format";
 import {
+  Campaign,
   Log,
   Message,
+  Organization,
   PendingMessagePart,
   r,
   cacheableData
@@ -17,6 +19,8 @@ import { getLastMessage, saveNewIncomingMessage } from "./message-sending";
 // -101: incoming message with a MediaUrl
 
 let twilio = null;
+let twilioSubAccountSidToClient = {};
+let campaignIdToMessagingServiceSid = {};
 const MAX_SEND_ATTEMPTS = 5;
 const MESSAGE_VALIDITY_PADDING_SECONDS = 30;
 const MAX_TWILIO_MESSAGE_VALIDITY = 14400;
@@ -24,16 +28,18 @@ const DISABLE_DB_LOG = process.env.DISABLE_DB_LOG || global.DISABLE_DB_LOG;
 
 if (process.env.TWILIO_API_KEY && process.env.TWILIO_AUTH_TOKEN) {
   // eslint-disable-next-line new-cap
+  // TODO(arathi1): Replace line to include sub-account id
+  // // require('twilio')(accountSid, authToken, { accountSid: subaccountSid });
   twilio = Twilio(process.env.TWILIO_API_KEY, process.env.TWILIO_AUTH_TOKEN);
 } else {
   log.warn("NO TWILIO CONNECTION");
 }
 
-if (!process.env.TWILIO_MESSAGE_SERVICE_SID) {
+/* if (!process.env.TWILIO_MESSAGE_SERVICE_SID) {
   log.warn(
     "Twilio will not be able to send without TWILIO_MESSAGE_SERVICE_SID set"
   );
-}
+} */
 
 function webhook() {
   log.warn("twilio webhook call"); // sky: doesn't run this
@@ -173,10 +179,36 @@ async function sendMessage(message, contact, trx, organization) {
   }
 
   // Note organization won't always be available, so then contact can trace to it
-  const messagingServiceSid = await cacheableData.organization.getMessageServiceSid(
-    organization,
-    contact
+  // const messagingServiceSid = await cacheableData.organization.getMessageServiceSid(
+  //   organization,
+  //   contact
+  // );
+  if (!organization) {
+    const campaign = await Campaign.get(contact.campaign_id);
+    organization = await Organization.get(campaign.organization_id);
+  }
+  const subAccountSid = await cacheableData.organization.getSubAccountSid(
+    organization
   );
+  const subAccountAuthToken = await cacheableData.organization.getSubAccountAuthToken(
+    organization
+  );
+  log.info(
+    "Sub-account SID",
+    subAccountSid,
+    "sub-account auth token",
+    subAccountAuthToken,
+    "organization",
+    organization
+  );
+
+  const campaignId = contact.campaign_id;
+  if (!campaignIdToMessagingServiceSid[campaignId]) {
+    let campaign = await Campaign.get(campaignId);
+    campaignIdToMessagingServiceSid[campaignId] =
+      campaign.messaging_service_sid;
+  }
+
   return new Promise((resolve, reject) => {
     if (message.service !== "twilio") {
       log.warn("Message not marked as a twilio message", message.id);
@@ -214,9 +246,8 @@ async function sendMessage(message, contact, trx, organization) {
     }
     const changes = {};
 
-    // FUTURE: this can be based on (contact, organization)
-    // Note organization won't always be available, so we'll need to conditionally look it up based on contact
-    const messagingServiceSid = process.env.TWILIO_MESSAGE_SERVICE_SID;
+    const messagingServiceSid = campaignIdToMessagingServiceSid[campaignId];
+    console.log("Campaign messaging service sid", messagingServiceSid);
     changes.messageservice_sid = messagingServiceSid;
 
     const messageParams = Object.assign(
@@ -248,19 +279,28 @@ async function sendMessage(message, contact, trx, organization) {
         changes
       );
     } else {
-      twilio.messages.create(messageParams, (err, response) => {
-        postMessageSend(
-          message,
-          contact,
-          trx,
-          resolve,
-          reject,
-          err,
-          response,
-          organization,
-          changes
+      if (!twilioSubAccountSidToClient[subAccountSid]) {
+        twilioSubAccountSidToClient[subAccountSid] = Twilio(
+          subAccountSid,
+          subAccountAuthToken
         );
-      });
+      }
+      twilioSubAccountSidToClient[subAccountSid].messages.create(
+        messageParams,
+        (err, response) => {
+          postMessageSend(
+            message,
+            contact,
+            trx,
+            resolve,
+            reject,
+            err,
+            response,
+            organization,
+            changes
+          );
+        }
+      );
     }
   });
 }

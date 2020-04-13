@@ -14,6 +14,12 @@ const organizationCache = {
   getMessageServiceSid: async organization => {
     return getConfig("TWILIO_MESSAGE_SERVICE_SID", organization);
   },
+  getSubAccountSid: async organization => {
+    return getConfig("TWILIO_SUB_ACCOUNT_SID", organization);
+  },
+  getSubAccountAuthToken: async organization => {
+    return getConfig("TWILIO_SUB_ACCOUNT_AUTH_TOKEN", organization);
+  },
   load: async id => {
     if (r.redis) {
       const orgData = await r.redis.getAsync(cacheKey(id));
