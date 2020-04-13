@@ -3,7 +3,7 @@ import { getConfig } from "../../../server/api/lib/config";
 import { parseCSVAsync } from "../../../workers/parse_csv";
 import { failedContactLoad } from "../../../workers/jobs";
 import HttpRequest from "../../../server/lib/http-request.js";
-import Van from "../../lib/ngpvan";
+import Van from "./util";
 
 export const name = "ngpvan";
 
