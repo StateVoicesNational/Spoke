@@ -11,6 +11,7 @@ import {
   createUser,
   createInvite,
   createOrganization,
+  setTwilioAuth,
   createCampaign,
   saveCampaign,
   copyCampaign,
@@ -25,12 +26,15 @@ import {
 
 let testAdminUser;
 let testInvite;
+let testInvite2;
 let testOrganization;
+let testOrganization2;
 let testCampaign;
 let testTexterUser;
 let testTexterUser2;
 let testContacts;
 let organizationId;
+let organizationId2;
 let assignmentId;
 let dbCampaignContact;
 let queryLog;
@@ -56,6 +60,11 @@ beforeEach(async () => {
   assignmentId = dbCampaignContact.assignment_id;
   await createScript(testAdminUser, testCampaign);
   await startCampaign(testAdminUser, testCampaign);
+  testInvite2 = await createInvite();
+  testOrganization2 = await createOrganization(testAdminUser, testInvite2);
+  organizationId2 = testOrganization2.data.createOrganization.id;
+  await setTwilioAuth(testAdminUser, testOrganization2);
+
   // use caching
   await cacheableData.organization.load(organizationId);
   await cacheableData.campaign.load(testCampaign.id, { forceLoad: true });
@@ -255,6 +264,21 @@ it("postMessageSend+erroredMessageSender network error should decrement on err/f
       expect(errorSendResult).toBe(0);
     }
   }
+});
+
+it("orgs should have separate twilio credentials",
+async () => {
+  global.TWILIO_MULTI_ORG = true;
+
+  const org1 = await cacheableData.organization.load(organizationId);
+  const org1Auth = await cacheableData.organization.getTwilioAuth(org1);
+  expect(org1Auth.authToken).toBeUndefined();
+  expect(org1Auth.apiKey).toBe("");
+
+  const org2 = await cacheableData.organization.load(organizationId2);
+  const org2Auth = await cacheableData.organization.getTwilioAuth(org2);
+  expect(org2Auth.authToken).toBe("test_twlio_auth_token");
+  expect(org2Auth.apiKey).toBe("test_twilio_api_key");
 });
 
 // FUTURE
