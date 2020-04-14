@@ -9,7 +9,6 @@ import {
 } from "../../models";
 import { log } from "../../../lib";
 import { saveNewIncomingMessage } from "./message-sending";
-import { symmetricDecrypt } from "./crypto";
 
 // TWILIO error_codes:
 // > 1 (i.e. positive) error_codes are reserved for Twilio error codes
@@ -29,9 +28,7 @@ const headerValidator = () => {
   return async (req, res, next) => {
     const organization = req.params.orgId
       ? await cacheableData.organization.load(req.params.orgId) : null;
-    const { authToken } = organization
-      ? await getTwilioAuth(organization)
-      : process.env.TWILIO_AUTH_TOKEN;
+    const { authToken } = await cacheableData.organization.getTwilioAuth(organization);
     const options = {
       validate: true,
       protocol: "https",
@@ -39,20 +36,6 @@ const headerValidator = () => {
 
     return Twilio.webhook(authToken, options)(req, res, next);
   };
-};
-
-const getTwilioAuth = async organization => {
-  let {
-    authToken,
-    apiKey
-  } = await cacheableData.organization.getTwilioAuth(organization);
-  // If token is not encrypted, decryption will error. That's fine.
-  try {
-    authToken = symmetricDecrypt(authToken);
-  } catch (ex) {
-    log.warn("Unencrypted authToken");
-  }
-  return { authToken, apiKey };
 };
 
 async function convertMessagePartsToMessage(messageParts) {
@@ -97,7 +80,10 @@ function parseMessageText(message) {
 }
 
 async function sendMessage(message, contact, trx, organization) {
-  const { authToken, apiKey } = await getTwilioAuth(organization);
+  const {
+    authToken,
+    apiKey
+  } = await cacheableData.organization.getTwilioAuth(organization);
   const twilio = Twilio(apiKey, authToken);
   const APITEST = /twilioapitest/.test(message.text);
   if (!twilio && !APITEST) {

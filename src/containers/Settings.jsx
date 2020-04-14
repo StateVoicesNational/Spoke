@@ -148,10 +148,9 @@ class Settings extends React.Component {
     authToken,
     messageServiceSid
   }) => {
-    const originalAuthToken = this.props.data.organization.twilioAuthToken;
     await this.props.mutations.updateTwilioAuth(
       apiKey,
-      authToken === '<Encrypted>' ? originalAuthToken : authToken,
+      authToken === '<Encrypted>' ? false : authToken,
       messageServiceSid
     );
   };
@@ -212,7 +211,7 @@ class Settings extends React.Component {
 
   render() {
     const { organization } = this.props.data;
-    const { optOutMessage } = organization;
+    const { optOutMessage, twilioMultiOrg } = organization;
     const formSchema = yup.object({
       optOutMessage: yup.string().required()
     });
@@ -284,7 +283,7 @@ class Settings extends React.Component {
           </CardActions>
         </Card>
         <div>{this.renderTextingHoursForm()}</div>
-        <div>{this.renderTwilioAuthForm()}</div>
+        <div>{twilioMultiOrg && this.renderTwilioAuthForm()}</div>
       </div>
     );
   }
@@ -408,6 +407,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
           twilioApiKey
           twilioAuthToken
           twilioMessageServiceSid
+          twilioMultiOrg
         }
       }
     `,

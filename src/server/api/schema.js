@@ -648,7 +648,7 @@ const rootMutations = {
       const organization = await Organization.get(organizationId);
       const featuresJSON = JSON.parse(organization.features || "{}");
       featuresJSON.TWILIO_API_KEY = twilioApiKey;
-      featuresJSON.TWILIO_AUTH_TOKEN = twilioAuthToken
+      featuresJSON.TWILIO_AUTH_TOKEN_ENCRYPTED = twilioAuthToken
         ? symmetricEncrypt(twilioAuthToken) : twilioAuthToken;
       featuresJSON.TWILIO_MESSAGE_SERVICE_SID = twilioMessageServiceSid;
       organization.features = JSON.stringify(featuresJSON);
