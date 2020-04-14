@@ -375,10 +375,9 @@ export const resolvers = {
         "SUPERVOLUNTEER",
         true
       );
-      if (campaign.assignedCount) {
-        return (
-          Number(campaign.contactsCount) - Number(campaign.assignedCount) === 0
-        );
+      const stats = await cacheableData.campaign.completionStats(campaign.id);
+      if (stats.assignedCount && campaign.contactsCount) {
+        return Number(campaign.contactsCount) - Number(stats.assignedCount) > 0;
       }
       const contacts = await r
         .knex("campaign_contact")
@@ -394,10 +393,9 @@ export const resolvers = {
         "SUPERVOLUNTEER",
         true
       );
-      if (campaign.messagedCount) {
-        return (
-          Number(campaign.contactsCount) - Number(campaign.messagedCount) === 0
-        );
+      const stats = await cacheableData.campaign.completionStats(campaign.id);
+      if (stats.messagedCount && campaign.contactsCount) {
+        return Number(campaign.contactsCount) - Number(stats.messagedCount) > 0;
       }
       const contacts = await r
         .knex("campaign_contact")
