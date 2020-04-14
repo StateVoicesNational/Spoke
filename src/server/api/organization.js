@@ -57,6 +57,5 @@ export const resolvers = {
       organization.features.indexOf("TWILIO_MESSAGE_SERVICE_SID") !== -1
         ? JSON.parse(organization.features).TWILIO_MESSAGE_SERVICE_SID
         : null,
-    twilioMultiOrg: () => process.env.TWILIO_MULTI_ORG || false,
   }
 };

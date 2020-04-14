@@ -14,6 +14,5 @@ export const schema = `
     twilioApiKey: String
     twilioAuthToken: String
     twilioMessageServiceSid: String
-    twilioMultiOrg: Boolean
   }
 `;
