@@ -8,9 +8,11 @@ import Form from "react-formal";
 import Dialog from "material-ui/Dialog";
 import GSSubmitButton from "../components/forms/GSSubmitButton";
 import FlatButton from "material-ui/FlatButton";
+import DisplayLink from "../components/DisplayLink";
 import yup from "yup";
 import { Card, CardText, CardActions, CardHeader } from "material-ui/Card";
 import { StyleSheet, css } from "aphrodite";
+import theme from "../styles/theme";
 import Toggle from "material-ui/Toggle";
 import moment from "moment";
 const styles = StyleSheet.create({
@@ -35,6 +37,9 @@ const styles = StyleSheet.create({
 const inlineStyles = {
   dialogButton: {
     display: "inline-block"
+  },
+  shadeBox: {
+    backgroundColor: theme.colors.lightGray
   }
 };
 
@@ -158,6 +163,11 @@ class Settings extends React.Component {
   renderTwilioAuthForm() {
     const { organization } = this.props.data;
     const { twilioApiKey, twilioAuthToken, twilioMessageServiceSid } = organization;
+    const allSet = twilioApiKey && twilioAuthToken && twilioMessageServiceSid;
+    let baseUrl = "http://base";
+    if (typeof window !== "undefined") {
+      baseUrl = window.location.origin;
+    }
     const formSchema = yup.object({
       apiKey: yup.string().nullable().max(64),
       authToken: yup.string().nullable().max(64),
@@ -167,6 +177,14 @@ class Settings extends React.Component {
     return (
       <Card>
         <CardHeader title="Twilio Credentials" />
+        {allSet && (
+          <CardText style={inlineStyles.shadeBox}>
+            <DisplayLink
+              url={`${baseUrl}/twilio/${organization.id}`}
+              textContent="Twilio credentials are configured for this organization. You should set the inbound Request URL in your Twilio messaging service to this link."
+            />
+          </CardText>
+        )}
         <CardText>
           <div className={css(styles.section)}>
             <span className={css(styles.sectionLabel)}>
