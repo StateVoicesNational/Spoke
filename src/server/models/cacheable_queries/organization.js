@@ -1,5 +1,6 @@
 import { r, loaders } from "../../models";
-import { getConfig } from "../../api/lib/config";
+import { getConfig, hasConfig } from "../../api/lib/config";
+import { symmetricDecrypt } from "../../api/lib/crypto";
 
 const cacheKey = orgId => `${process.env.CACHE_PREFIX || ""}org-${orgId}`;
 
@@ -19,10 +20,15 @@ const organizationCache = {
     return getConfig("TWILIO_MESSAGE_SERVICE_SID", organization);
   },
   getTwilioAuth: async organization => {
-    return {
-      authToken: getConfig("TWILIO_AUTH_TOKEN", organization),
-      apiKey: getConfig("TWILIO_API_KEY", organization)
-    };
+    const multiOrg = getConfig("TWILIO_MULTI_ORG");
+    const hasOrgToken = hasConfig("TWILIO_AUTH_TOKEN_ENCRYPTED", organization);
+    const authToken = multiOrg && hasOrgToken
+      ? symmetricDecrypt(getConfig("TWILIO_AUTH_TOKEN_ENCRYPTED", organization))
+      : getConfig("TWILIO_AUTH_TOKEN");
+    const apiKey = multiOrg
+      ? getConfig("TWILIO_API_KEY", organization)
+      : getConfig("TWILIO_API_KEY");
+    return { authToken, apiKey };
   },
   load: async id => {
     if (r.redis) {
