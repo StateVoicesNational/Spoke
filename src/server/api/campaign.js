@@ -289,7 +289,8 @@ export const resolvers = {
         contactsCount: campaign.contactsCount || stats.contactsCount || null,
         // 0 should still diffrentiate from null
         assignedCount: stats.assignedCount > -1 ? stats.assignedCount : null,
-        messagedCount: stats.messagedCount > -1 ? stats.messagedCount : null
+        // messagedCount won't be defined until some messages are sent
+        messagedCount: stats.assignedCount ? stats.messagedCount || 0 : null
       };
     },
     texters: async (campaign, _, { user }) => {
