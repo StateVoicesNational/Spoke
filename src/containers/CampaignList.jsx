@@ -144,6 +144,7 @@ export class CampaignList extends React.Component {
             : "No due date set"}
           {campaign.completionStats.assignedCount ? (
             <span>
+              {" - "}
               contacts: {campaign.completionStats.contactsCount}, assigned:{" "}
               {campaign.completionStats.assignedCount}, messaged:{" "}
               {campaign.completionStats.messagedCount}
