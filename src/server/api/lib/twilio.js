@@ -366,6 +366,17 @@ export function postMessageSend(
 async function handleDeliveryReport(report) {
   const messageSid = report.MessageSid;
   if (messageSid) {
+    const messageStatus = report.MessageStatus;
+
+    // Scalability: we don't care about "queued" and "sent" status updates so
+    // we skip writing to the database.
+    // Log just in case we need to debug something. Detailed logs can be viewed here:
+    // https://www.twilio.com/log/sms/logs/<SID>
+    log.info(`Message status ${messageSid}: ${messageStatus}`);
+    if (messageStatus === "queued" || messageStatus === "sent") {
+      return;
+    }
+
     if (!DISABLE_DB_LOG) {
       await Log.save({
         message_sid: report.MessageSid,
@@ -375,7 +386,7 @@ async function handleDeliveryReport(report) {
         to_num: report.To || null
       });
     }
-    const messageStatus = report.MessageStatus;
+
     const lookup = await cacheableData.campaignContact.lookupByCell(
       report.To,
       "twilio",
