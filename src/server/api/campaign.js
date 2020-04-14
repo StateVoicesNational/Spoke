@@ -287,8 +287,9 @@ export const resolvers = {
       const stats = await cacheableData.campaign.completionStats(campaign.id);
       return {
         contactsCount: campaign.contactsCount || stats.contactsCount || null,
-        assignedCount: stats.assignedCount || null,
-        messagedCount: stats.messagedCount || null
+        // 0 should still diffrentiate from null
+        assignedCount: stats.assignedCount > -1 ? stats.assignedCount : null,
+        messagedCount: stats.messagedCount > -1 ? stats.messagedCount : null
       };
     },
     texters: async (campaign, _, { user }) => {
