@@ -84,7 +84,10 @@ async function sendMessage(message, contact, trx, organization) {
     authToken,
     apiKey
   } = await cacheableData.organization.getTwilioAuth(organization);
-  const twilio = Twilio(apiKey, authToken);
+  let twilio = null;
+  if (apiKey && authToken) {
+    twilio = Twilio(apiKey, authToken);
+  }
   const APITEST = /twilioapitest/.test(message.text);
   if (!twilio && !APITEST) {
     log.warn(
