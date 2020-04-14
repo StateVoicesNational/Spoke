@@ -279,7 +279,7 @@ export async function processContactLoad(job, maxContacts, organization) {
           DEFAULT_NGP_VAN_EXPORT_JOB_TYPE_ID,
         webhookUrl
       }),
-      validateStatus: status => {
+      statusValidationFunction: status => {
         return status >= 200 && status < 300;
       },
       compress: false

@@ -3,9 +3,27 @@ import AbortController from "node-abort-controller";
 import { log } from "../../lib";
 import { v4 as uuid } from "uuid";
 
+// An HTTP client that supports timeout, retries and flexible status validation
+//
+// Parameters
+// url: the url you want to hit
+// options:
+//   * All options supported by node-fetch
+//   * statusValidationFunction: a function that takes one parameter (HTTP result code)
+//     and returns true of that result code indicates success, false otherwise
+//   * validStatuses: an array of integers that should be considered successful HTTP
+//     result codees.  Will be ignored if statusValidationFunction is also provided
+//   * retries: number of times to retry failed attempts, defaults to 0
+//   * timeout: millisconds
 const requestWithRetry = async (
   url,
-  { validateStatus, retries = retries || 0, timeout = 2000, ...props } = {}
+  {
+    validStatuses,
+    statusValidationFunction,
+    retries = retries || 0,
+    timeout = 2000,
+    ...props
+  } = {}
 ) => {
   const requestId = uuid();
 
@@ -17,14 +35,11 @@ const requestWithRetry = async (
 
   const statusValidator = status => {
     let acceptableStatuses = [200];
-    if (validateStatus) {
-      if (typeof validateStatus === "function") {
-        return validateStatus(status);
-      } else if (Array.isArray(validateStatus)) {
-        acceptableStatuses = validateStatus;
-      } else {
-        acceptableStatuses = [validateStatus];
-      }
+
+    if (statusValidationFunction) {
+      return statusValidationFunction(status);
+    } else if (validStatuses) {
+      acceptableStatuses = validStatuses;
     }
 
     return acceptableStatuses.includes(status);
