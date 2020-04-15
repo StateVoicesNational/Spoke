@@ -16,7 +16,7 @@ export const sendMessage = async (
   loaders,
   user
 ) => {
-  const contact = await loaders.campaignContact.load(campaignContactId);
+  let contact = await loaders.campaignContact.load(campaignContactId);
   const campaign = await loaders.campaign.load(contact.campaign_id);
   if (
     contact.assignment_id !== parseInt(message.assignmentId) ||
@@ -28,7 +28,7 @@ export const sendMessage = async (
       message: "Your assignment has changed"
     });
   }
-  const organization = await cacheableData.organization.load(
+  const organization = await loaders.organization.load(
     campaign.organization_id
   );
   const orgFeatures = JSON.parse(organization.features || "{}");
@@ -124,30 +124,20 @@ export const sendMessage = async (
     queued_at: new Date(),
     send_before: sendBeforeDate
   });
-  await messageInstance.save();
 
-  contact.updated_at = new Date();
   const initialMessageStatus = contact.message_status;
 
-  if (
-    contact.message_status === "needsResponse" ||
-    contact.message_status === "convo"
-  ) {
-    contact.message_status = "convo";
-  } else {
-    contact.message_status = "messaged";
-  }
-
-  await cacheableData.campaignContact.updateStatus(
-    contact,
-    contact.message_status
-  );
+  const saveResult = await cacheableData.message.save({
+    messageInstance,
+    contact
+  });
+  contact.message_status = saveResult.contactStatus;
 
   // log.info(
   //   `Sending (${serviceName}): ${messageInstance.user_number} -> ${messageInstance.contact_number}\nMessage: ${messageInstance.text}`
   // );
   //NO AWAIT: pro=return before api completes, con=context needs to stay alive
-  service.sendMessage(messageInstance, contact, organization);
+  service.sendMessage(saveResult.message, contact, null, organization);
 
   if (initialMessageStatus === "needsMessage") {
     // don't both requerying the messages list on the response

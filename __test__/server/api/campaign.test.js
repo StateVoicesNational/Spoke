@@ -44,6 +44,13 @@ let testTexterUser2;
 let testContacts;
 let organizationId;
 let assignmentId;
+let queryLog;
+
+function spokeDbListener(data) {
+  if (queryLog) {
+    queryLog.push(data);
+  }
+}
 
 const NUMBER_OF_CONTACTS = 100;
 
@@ -74,9 +81,12 @@ beforeEach(async () => {
   assignmentId = dbCampaignContact.assignment_id;
   // await createScript(testAdminUser, testCampaign)
   // await startCampaign(testAdminUser, testCampaign)
+  r.knex.on("query", spokeDbListener);
 }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
 afterEach(async () => {
+  queryLog = null;
+  r.knex.removeListener("query", spokeDbListener);
   await cleanupTest();
   if (r.redis) r.redis.flushdb();
 }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
@@ -394,6 +404,36 @@ it("should save campaign canned responses across copies and match saved data", a
     expect(campaignDataResults.data.campaign.cannedResponses[i].text).toEqual(
       `can${i + 1} {firstName}`
     );
+  }
+});
+
+describe("Caching", async () => {
+  if (r.redis) {
+    it("should not have any selects on a cached campaign when message sending", async () => {
+      await createScript(testAdminUser, testCampaign);
+      await startCampaign(testAdminUser, testCampaign);
+
+      queryLog = [];
+      console.log("STARTING TEXTING");
+      for (let i = 0; i < 5; i++) {
+        const messageResult = await sendMessage(
+          testContacts[i].id,
+          testTexterUser,
+          {
+            userId: testTexterUser.id,
+            contactNumber: testContacts[i].cell,
+            text: "test text",
+            assignmentId
+          }
+        );
+      }
+      // should only have done updates and inserts
+      expect(
+        queryLog
+          .map(q => ({ method: q.method, sql: q.sql }))
+          .filter(q => q.method === "select")
+      ).toEqual([]);
+    });
   }
 });
 
