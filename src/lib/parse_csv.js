@@ -1,9 +1,8 @@
 import Papa from "papaparse";
 import _ from "lodash";
 import { getFormattedPhoneNumber, getFormattedZip } from "../lib";
-import humps from "humps";
 
-const requiredUploadFields = ["firstName", "lastName", "cell"];
+export const requiredUploadFields = ["firstName", "lastName", "cell"];
 const topLevelUploadFields = [
   "firstName",
   "lastName",
@@ -54,36 +53,67 @@ const getValidatedData = data => {
   };
 };
 
-const ensureCamelCaseRequiredHeaders = columnHeader => {
-  /*
-   * This function changes:
-   *  first_name to firstName
-   *  last_name to lastName
-   *
-   * It changes no other fields.
-   *
-   * If other fields that could be either snake_case or camelCase
-   * are added to `requiredUploadFields` it will do the same for them.
-   * */
-  const camelizedColumnHeader = humps.camelize(columnHeader);
-  if (
-    requiredUploadFields.includes(camelizedColumnHeader) &&
-    camelizedColumnHeader !== columnHeader
-  ) {
-    return camelizedColumnHeader;
-  }
-
-  return columnHeader;
+export const organizationCustomFields = (contacts, customFieldsList) => {
+  return contacts.map(contact => {
+    const customFields = {};
+    const contactInput = {
+      cell: contact.cell,
+      first_name: contact.firstName,
+      last_name: contact.lastName,
+      zip: contact.zip || "",
+      external_id: contact.external_id || ""
+    };
+    customFieldsList.forEach(key => {
+      if (contact.hasOwnProperty(key)) {
+        customFields[key] = contact[key];
+      }
+    });
+    contactInput.custom_fields = JSON.stringify(customFields);
+    return contactInput;
+  });
 };
 
-export const parseCSV = (file, callback) => {
+export const parseCSV = (file, onCompleteCallback, options) => {
+  // options is a custom object that currently supports two properties
+  // rowTransformer -- a function that gets called on each row in the file
+  //   after it is parsed. It takes 2 parameters, an array of fields and
+  //   the object that results from parsing the row. It returns an object
+  //   after transformation. The function can do lookups, field mappings,
+  //   remove fields, add fields, etc. If it adds fields, it should push
+  //   them onto the fields array in the first parameter.
+  // headerTransformer -- a function that gets called once after the
+  //   header row is parsed. It takes one parameter, the header name, and
+  //   returns the header that should be used for the column. An example
+  //   would be to transform first_name to firstName, which is a required
+  //   field in Spoke.
+  const { rowTransformer, headerTransformer } = options || {};
   Papa.parse(file, {
     header: true,
-    transformHeader: ensureCamelCaseRequiredHeaders,
+    ...(headerTransformer && { transformHeader: headerTransformer }),
+    skipEmptyLines: true,
     // eslint-disable-next-line no-shadow, no-unused-vars
-    complete: ({ data, meta, errors }, file) => {
+    complete: ({ data: parserData, meta, errors }, file) => {
       const fields = meta.fields;
       const missingFields = [];
+
+      let data = parserData;
+      let transformerResults = {
+        rows: [],
+        fields: []
+      };
+      if (rowTransformer) {
+        transformerResults = parserData.reduce((results, originalRow) => {
+          const { row, addedFields } = rowTransformer(fields, originalRow);
+          results.rows.push(row);
+          addedFields.forEach(field => {
+            if (!fields.includes(field)) {
+              fields.push(field);
+            }
+          });
+          return results;
+        }, transformerResults);
+        data = transformerResults.rows;
+      }
 
       for (const field of requiredUploadFields) {
         if (fields.indexOf(field) === -1) {
@@ -93,7 +123,7 @@ export const parseCSV = (file, callback) => {
 
       if (missingFields.length > 0) {
         const error = `Missing fields: ${missingFields.join(", ")}`;
-        callback({ error });
+        onCompleteCallback({ error });
       } else {
         const { validationStats, validatedData } = getValidatedData(data);
 
@@ -101,10 +131,15 @@ export const parseCSV = (file, callback) => {
           field => topLevelUploadFields.indexOf(field) === -1
         );
 
-        callback({
+        const contactsWithCustomFields = organizationCustomFields(
+          validatedData,
+          customFields
+        );
+
+        onCompleteCallback({
           customFields,
           validationStats,
-          contacts: validatedData
+          contacts: contactsWithCustomFields
         });
       }
     }
