@@ -1,8 +1,9 @@
 import { mapFieldsToModel } from "./lib/utils";
-import { r, Organization } from "../models";
+import { r, Organization, cacheableData } from "../models";
 import { accessRequired } from "./errors";
 import { getCampaigns } from "./campaign";
 import { buildSortedUserOrganizationQuery } from "./user";
+import { getConfig } from "./lib/config";
 
 export const resolvers = {
   Organization: {
@@ -57,5 +58,17 @@ export const resolvers = {
       organization.features.indexOf("TWILIO_MESSAGE_SERVICE_SID") !== -1
         ? JSON.parse(organization.features).TWILIO_MESSAGE_SERVICE_SID
         : null,
+    fullyConfigured: async organization => {
+      if (getConfig("DEFAULT_SERVICE", organization) === 'twilio') {
+        const { authToken, apiKey } =
+          await cacheableData.organization.getTwilioAuth(organization);
+        const messagingServiceSid =
+          await cacheableData.organization.getMessageServiceSid(organization);
+        if (!(authToken && apiKey && messagingServiceSid)) {
+          return false;
+        }
+      }
+      return true;
+    },
   }
 };
