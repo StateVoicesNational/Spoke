@@ -647,10 +647,10 @@ const rootMutations = {
 
       const organization = await Organization.get(organizationId);
       const featuresJSON = JSON.parse(organization.features || "{}");
-      featuresJSON.TWILIO_API_KEY = twilioApiKey;
+      featuresJSON.TWILIO_API_KEY = twilioApiKey.substr(0, 64);
       featuresJSON.TWILIO_AUTH_TOKEN_ENCRYPTED = twilioAuthToken
-        ? symmetricEncrypt(twilioAuthToken) : twilioAuthToken;
-      featuresJSON.TWILIO_MESSAGE_SERVICE_SID = twilioMessageServiceSid;
+        ? symmetricEncrypt(twilioAuthToken).substr(0, 256) : twilioAuthToken;
+      featuresJSON.TWILIO_MESSAGE_SERVICE_SID = twilioMessageServiceSid.substr(0, 64);
       organization.features = JSON.stringify(featuresJSON);
 
       await organization.save();

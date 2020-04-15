@@ -268,8 +268,6 @@ it("postMessageSend+erroredMessageSender network error should decrement on err/f
 
 it("orgs should have separate twilio credentials",
 async () => {
-  global.TWILIO_MULTI_ORG = true;
-
   const org1 = await cacheableData.organization.load(organizationId);
   const org1Auth = await cacheableData.organization.getTwilioAuth(org1);
   expect(org1Auth.authToken).toBeUndefined();

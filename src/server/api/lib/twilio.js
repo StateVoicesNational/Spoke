@@ -20,10 +20,10 @@ const MAX_SEND_ATTEMPTS = 5;
 const MESSAGE_VALIDITY_PADDING_SECONDS = 30;
 const MAX_TWILIO_MESSAGE_VALIDITY = 14400;
 const DISABLE_DB_LOG = process.env.DISABLE_DB_LOG || global.DISABLE_DB_LOG;
-const SKIP_TWILIO_VALIDATION = process.env.SKIP_TWILIO_VALIDATION || global.SKIP_TWILIO_VALIDATION;
+const TWILIO_SKIP_VALIDATION = process.env.TWILIO_SKIP_VALIDATION || global.TWILIO_SKIP_VALIDATION;
 
 const headerValidator = () => {
-  if (!!SKIP_TWILIO_VALIDATION) return (req, res, next) => next();
+  if (!!TWILIO_SKIP_VALIDATION) return (req, res, next) => next();
 
   return async (req, res, next) => {
     const organization = req.params.orgId

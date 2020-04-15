@@ -20,14 +20,13 @@ const organizationCache = {
     return getConfig("TWILIO_MESSAGE_SERVICE_SID", organization);
   },
   getTwilioAuth: async organization => {
-    const multiOrg = getConfig("TWILIO_MULTI_ORG");
     const hasOrgToken = hasConfig("TWILIO_AUTH_TOKEN_ENCRYPTED", organization);
-    const authToken = multiOrg && hasOrgToken
+    // Note, allows unencrypted auth tokens to be (manually) stored in the db
+    // @todo: decide if this is necessary, or if UI/envars is sufficient.
+    const authToken = hasOrgToken
       ? symmetricDecrypt(getConfig("TWILIO_AUTH_TOKEN_ENCRYPTED", organization))
-      : getConfig("TWILIO_AUTH_TOKEN");
-    const apiKey = multiOrg
-      ? getConfig("TWILIO_API_KEY", organization)
-      : getConfig("TWILIO_API_KEY");
+      : getConfig("TWILIO_AUTH_TOKEN", organization);
+    const apiKey = getConfig("TWILIO_API_KEY", organization);
     return { authToken, apiKey };
   },
   load: async id => {
