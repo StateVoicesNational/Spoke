@@ -8,7 +8,7 @@ import fs from "fs";
 
 let CONFIG = null;
 
-export function getConfig(key, organization) {
+export function getConfig(key, organization, opts) {
   if (organization) {
     let features =
       organization.feature ||
@@ -19,11 +19,25 @@ export function getConfig(key, organization) {
     }
   }
   if (key in global) {
+    if (opts && opts.truthy) {
+      return Boolean(
+        global[key] && global[key] !== "0" && global[key] !== "false"
+      );
+    }
     return global[key];
   } else if (key in process.env) {
+    if (opts && opts.truthy) {
+      return Boolean(
+        process.env[key] &&
+          process.env[key] !== "0" &&
+          process.env[key] !== "false"
+      );
+    }
     return process.env[key];
   } else if (CONFIG && key in CONFIG) {
     return CONFIG[key];
+  } else if (opts && opts.truthy) {
+    return false;
   }
 }
 
