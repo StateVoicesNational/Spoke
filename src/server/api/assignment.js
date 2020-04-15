@@ -120,7 +120,7 @@ export const resolvers = {
         // Will use current user's cache if present
         return user;
       } else {
-        await loaders.user.load(assignment.user_id);
+        return await loaders.user.load(assignment.user_id);
       }
     },
     campaign: async (assignment, _, { loaders }) =>
