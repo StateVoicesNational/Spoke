@@ -90,10 +90,9 @@ const ContactToolbar = function ContactToolbar(props) {
         {leftToolbarIcon}
         <div style={inlineStyles.topFlex}>
           <div style={inlineStyles.titleSmall}>
-            {props.navigationToolbarChildren.title}
+            Campaign ID: {props.campaign.id}
           </div>
           <div style={inlineStyles.titleBig} title={props.campaign.title}>
-            <span style={{ color: "#B0B0B0" }}>({props.campaign.id})</span>{" "}
             {props.campaign.title}
           </div>
           <div style={inlineStyles.titleSmall}>
@@ -102,6 +101,20 @@ const ContactToolbar = function ContactToolbar(props) {
           <div
             style={{ fontSize: "24px", ...inlineStyles.titleBig }}
             title={`id:${campaignContact.id} m:${campaignContact.messages.length} s:${campaignContact.messageStatus}`}
+          >
+            {campaignContact.firstName}
+          </div>
+        </div>
+      </Toolbar>
+      <Toolbar style={{ ...inlineStyles.toolbar, backgroundColor: "#7E808B" }}>
+        {leftToolbarIcon}
+        <div style={inlineStyles.topFlex}>
+          <div style={{ ...inlineStyles.titleSmall, color: "white" }}>
+            {formattedLocation} - {formattedLocalTime}
+          </div>
+          <div
+            style={{ fontSize: "24px", ...inlineStyles.titleBig }}
+            title={"foo bar"}
           >
             {campaignContact.firstName}
           </div>

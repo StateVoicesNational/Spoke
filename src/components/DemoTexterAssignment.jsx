@@ -164,7 +164,7 @@ export const tests = {
       id: "1",
       firstName: "Joe",
       lastName: "Femur",
-      messageStatus: "needsMessage",
+      messageStatus: "needsResponse",
       location: {
         city: "Youngstown",
         state: "OH",
@@ -295,7 +295,7 @@ export const tests = {
       id: "1",
       firstName: "Joe",
       lastName: "Femur",
-      messageStatus: "needsMessage",
+      messageStatus: "needsResponse",
       location: {
         city: "Youngstown",
         state: "OH",
