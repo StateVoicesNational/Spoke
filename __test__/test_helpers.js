@@ -308,7 +308,7 @@ export async function sendMessage(campaignContactId, user, message) {
           }
         }
       }`;
-  const context = getContext({ user: user });
+  const context = getContext({ user });
   const variables = {
     message,
     campaignContactId

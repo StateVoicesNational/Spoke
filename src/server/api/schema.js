@@ -334,11 +334,12 @@ const rootMutations = {
         .limit(1);
 
       if (!lastMessage) {
-        throw new GraphQLError({
+        const errorStatusAndMessage = {
           status: 400,
           message:
             "Cannot fake a reply to a contact that has no existing thread yet"
-        });
+        };
+        throw new GraphQLError(errorStatusAndMessage);
       }
 
       const userNumber = lastMessage.user_number;
@@ -1002,7 +1003,6 @@ const rootMutations = {
         contact.campaign_id
       );
       const { assignmentId, cell, reason } = optOut;
-
       await cacheableData.optOut.save({
         cell,
         campaignContactId,
