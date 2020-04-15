@@ -201,9 +201,7 @@ export async function dispatchContactIngestLoad(job, organization) {
       : process.env.MAX_CONTACTS || 0,
     10
   );
-  await ingestMethod.processContactLoad(job, maxContacts, {
-    /*FUTURE: context obj*/
-  });
+  await ingestMethod.processContactLoad(job, maxContacts, organization);
 }
 
 export async function failedContactLoad(
