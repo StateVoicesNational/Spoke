@@ -17,7 +17,7 @@ function getIngestMethods() {
       const c = require(`./${name}/index.js`);
       ingestMethods[name] = c;
     } catch (err) {
-      console.error("CONTACT_LOADERS failed to load ingestMethod", name);
+      console.error("CONTACT_LOADERS failed to load ingestMethod", name, err);
     }
   });
   return ingestMethods;
