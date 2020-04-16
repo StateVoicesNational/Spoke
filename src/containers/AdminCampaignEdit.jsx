@@ -74,6 +74,13 @@ const campaignInfoFragment = `
   }
   ingestMethod {
     name
+    success
+    result
+    reference
+    contactsCount
+    deletedOptouts
+    deletedDupes
+    updatedAt
   }
   editors
 `;
@@ -321,6 +328,8 @@ class AdminCampaignEdit extends React.Component {
           contactsCount: this.props.campaignData.campaign.contactsCount,
           ingestMethodChoices:
             this.props.campaignData.campaign.ingestMethodsAvailable || "",
+          pastIngestMethod:
+            this.props.campaignData.campaign.ingestMethod || null,
           jobResultMessage:
             (
               this.props.pendingJobsData.campaign.pendingJobs.filter(job =>

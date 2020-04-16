@@ -79,6 +79,7 @@ const signup = async ({
         auth0_id: passwordToSave,
         first_name: capitalizeWord(reqBody.firstName),
         last_name: capitalizeWord(reqBody.lastName),
+        alias: reqBody.alias ? capitalizeWord(reqBody.alias) : null,
         cell: reqBody.cell,
         is_superadmin: false
       });

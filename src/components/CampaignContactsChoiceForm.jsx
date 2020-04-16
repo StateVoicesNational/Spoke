@@ -44,9 +44,17 @@ export default class CampaignContactsChoiceForm extends React.Component {
   };
 
   getCurrentMethod() {
-    const { ingestMethodChoices } = this.props;
-    if (this.state.ingestMethodIndex) {
+    const { ingestMethodChoices, pastIngestMethod } = this.props;
+    if (typeof this.state.ingestMethodIndex === "number") {
       return ingestMethodChoices[this.state.ingestMethodIndex];
+    } else if (pastIngestMethod && pastIngestMethod.name) {
+      const index = ingestMethodChoices.findIndex(
+        m => m.name === pastIngestMethod.name
+      );
+      if (index) {
+        // make sure it's available
+        return ingestMethodChoices[index];
+      }
     }
     return ingestMethodChoices[0];
   }
@@ -63,9 +71,13 @@ export default class CampaignContactsChoiceForm extends React.Component {
   }
 
   render() {
-    const { ingestMethodChoices } = this.props;
+    const { ingestMethodChoices, pastIngestMethod } = this.props;
     const ingestMethod = this.getCurrentMethod();
     const ingestMethodName = ingestMethod.name;
+    const lastResult =
+      pastIngestMethod && pastIngestMethod.name === ingestMethodName
+        ? pastIngestMethod
+        : null;
     const IngestComponent = components[ingestMethodName];
     return (
       <div>
@@ -127,6 +139,7 @@ export default class CampaignContactsChoiceForm extends React.Component {
             saveDisabled={this.props.saveDisabled}
             saveLabel={this.props.saveLabel}
             clientChoiceData={ingestMethod.clientChoiceData}
+            lastResult={lastResult}
             jobResultMessage={null}
           />
         </div>
@@ -147,5 +160,6 @@ CampaignContactsChoiceForm.propTypes = {
   saveLabel: type.string,
   jobResultMessage: type.string,
   ingestMethodChoices: type.array.isRequired,
+  pastIngestMethod: type.object,
   contactsCount: type.number
 };

@@ -120,23 +120,28 @@ const currentEditors = async (campaign, user) => {
 
 const campaignCache = {
   clear,
-  load: async id => {
+  load: async (id, opts) => {
     // console.log('campaign cache load', id)
     if (r.redis) {
       let campaignData = await r.redis.getAsync(cacheKey(id));
-      // console.log('pre campaign cache', campaignData)
-      if (!campaignData || !campaignData.interactionSteps) {
-        // console.log('no campaigndata', id)
+      let campaignObj = campaignData ? JSON.parse(campaignData) : null;
+      // console.log('pre campaign cache', campaignObj)
+      if (
+        (opts && opts.forceLoad) ||
+        !campaignObj ||
+        !campaignObj.interactionSteps
+      ) {
+        // console.log('no campaigndata', id, campaignObj)
         const campaignNoCache = await loadDeep(id);
         if (campaignNoCache) {
-          // not found in db either
+          // archived or not found in db either
           return campaignNoCache;
         }
         campaignData = await r.redis.getAsync(cacheKey(id));
-        // console.log('new campaign data', campaignData)
+        campaignObj = campaignData ? JSON.parse(campaignData) : null;
+        // console.log('new campaign data', id, campaignData)
       }
-      if (campaignData) {
-        const campaignObj = JSON.parse(campaignData);
+      if (campaignObj) {
         // console.log('campaign cache', cacheKey(id), campaignObj, campaignData)
         const campaign = modelWithExtraProps(campaignObj, Campaign, [
           "customFields",
@@ -145,6 +150,10 @@ const campaignCache = {
         ]);
         return campaign;
       }
+    }
+    if (opts && opts.forceLoad) {
+      loaders.campaign.clear(String(id));
+      loaders.campaign.clear(Number(id));
     }
     return await Campaign.get(id);
   },

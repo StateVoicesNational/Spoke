@@ -43,9 +43,12 @@ export default wrap(async (req, res) => {
   const store = new Store(memoryHistory);
   const history = syncHistoryWithStore(memoryHistory, store.data);
   const authCheck = (nextState, replace) => {
+    const query = nextState.location.search
+      ? encodeURIComponent(nextState.location.search)
+      : "";
     if (!req.isAuthenticated()) {
       replace({
-        pathname: `/login?nextUrl=${nextState.location.pathname}`
+        pathname: `/login?nextUrl=${nextState.location.pathname}${query}`
       });
     }
   };
