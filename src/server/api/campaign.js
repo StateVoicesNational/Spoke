@@ -282,6 +282,17 @@ export const resolvers = {
         updatedAt: status.updated_at ? new Date(status.updated_at) : null
       };
     },
+    completionStats: async campaign => {
+      // must be cache-loaded or bust:
+      const stats = await cacheableData.campaign.completionStats(campaign.id);
+      return {
+        contactsCount: campaign.contactsCount || stats.contactsCount || null,
+        // 0 should still diffrentiate from null
+        assignedCount: stats.assignedCount > -1 ? stats.assignedCount : null,
+        // messagedCount won't be defined until some messages are sent
+        messagedCount: stats.assignedCount ? stats.messagedCount || 0 : null
+      };
+    },
     texters: async (campaign, _, { user }) => {
       await accessRequired(
         user,
@@ -366,6 +377,10 @@ export const resolvers = {
         "SUPERVOLUNTEER",
         true
       );
+      const stats = await cacheableData.campaign.completionStats(campaign.id);
+      if (stats.assignedCount && campaign.contactsCount) {
+        return Number(campaign.contactsCount) - Number(stats.assignedCount) > 0;
+      }
       const contacts = await r
         .knex("campaign_contact")
         .select("id")
@@ -380,6 +395,10 @@ export const resolvers = {
         "SUPERVOLUNTEER",
         true
       );
+      const stats = await cacheableData.campaign.completionStats(campaign.id);
+      if (stats.messagedCount && campaign.contactsCount) {
+        return Number(campaign.contactsCount) - Number(stats.messagedCount) > 0;
+      }
       const contacts = await r
         .knex("campaign_contact")
         .select("id")
