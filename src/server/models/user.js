@@ -12,6 +12,7 @@ const User = thinky.createModel(
       auth0_id: requiredString().stopReference(),
       first_name: requiredString(),
       last_name: requiredString(),
+      alias: type.string().default(null),
       cell: requiredString(),
       email: requiredString(),
       created_at: timestamp(),

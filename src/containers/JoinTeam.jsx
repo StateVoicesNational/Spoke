@@ -21,7 +21,9 @@ class JoinTeam extends React.Component {
     let organization = null;
     let campaign = null;
     try {
-      organization = await this.props.mutations.joinOrganization();
+      organization = await this.props.mutations.joinOrganization(
+        this.props.location.search
+      );
     } catch (ex) {
       this.setState({
         errors:
@@ -31,7 +33,9 @@ class JoinTeam extends React.Component {
 
     if (this.props.params.campaignId) {
       try {
-        campaign = await this.props.mutations.assignUserToCampaign();
+        campaign = await this.props.mutations.assignUserToCampaign(
+          this.props.location.search
+        );
       } catch (ex) {
         this.setState({
           errors:
@@ -59,29 +63,41 @@ class JoinTeam extends React.Component {
 
 JoinTeam.propTypes = {
   mutations: PropTypes.object,
-  router: PropTypes.object
+  router: PropTypes.object,
+  location: PropTypes.object
 };
 
 const mapMutationsToProps = ({ ownProps }) => ({
-  joinOrganization: () => ({
+  joinOrganization: queryParams => ({
     mutation: gql`
-      mutation joinOrganization($organizationUuid: String!) {
-        joinOrganization(organizationUuid: $organizationUuid) {
+      mutation joinOrganization(
+        $organizationUuid: String!
+        $queryParams: String
+      ) {
+        joinOrganization(
+          organizationUuid: $organizationUuid
+          queryParams: $queryParams
+        ) {
           id
         }
       }
     `,
-    variables: { organizationUuid: ownProps.params.organizationUuid }
+    variables: {
+      organizationUuid: ownProps.params.organizationUuid,
+      queryParams: queryParams
+    }
   }),
-  assignUserToCampaign: () => ({
+  assignUserToCampaign: queryParams => ({
     mutation: gql`
       mutation assignUserToCampaign(
         $organizationUuid: String!
         $campaignId: String!
+        $queryParams: String
       ) {
         assignUserToCampaign(
           organizationUuid: $organizationUuid
           campaignId: $campaignId
+          queryParams: $queryParams
         ) {
           id
         }
@@ -89,7 +105,8 @@ const mapMutationsToProps = ({ ownProps }) => ({
     `,
     variables: {
       campaignId: ownProps.params.campaignId,
-      organizationUuid: ownProps.params.organizationUuid
+      organizationUuid: ownProps.params.organizationUuid,
+      queryParams: queryParams
     }
   })
 });

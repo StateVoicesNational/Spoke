@@ -2,6 +2,7 @@ export const schema = `
   input CampaignsFilter {
     isArchived: Boolean
     campaignId: Int
+    campaignIds: [Int]
     listSize: Int
     pageSize: Int
   }
@@ -16,6 +17,13 @@ export const schema = `
     name: String!
     displayName: String
     clientChoiceData: String
+    success: Boolean
+    result: String
+    reference: String
+    contactsCount: Int
+    deletedOptouts: Int
+    deletedDupes: Int
+    updatedAt: Date
   }
 
   type JobRequest {

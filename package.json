@@ -10,7 +10,7 @@
   "scripts": {
     "test": "jest --runInBand --forceExit --detectOpenHandles",
     "test-cache": "REDIS_FAKE=1 jest --runInBand --forceExit --detectOpenHandles",
-    "test-rediscache": "REDIS_URL=redis://localhost:6379 CACHE_PREFIX=test jest --runInBand --forceExit --detectOpenHandles",
+    "test-rediscache": "REDIS_URL=redis://localhost:6379 CACHE_PREFIX=test REDIS_CONTACT_CACHE=1 jest --runInBand --forceExit --detectOpenHandles",
     "test-e2e": "jest --runInBand --config jest.config.e2e.js",
     "test-sqlite": "jest --config jest.config.sqlite.js --runInBand --forceExit --detectOpenHandles",
     "test-coverage": "jest --coverage",
@@ -108,7 +108,7 @@
     "isomorphic-fetch": "^2.2.1",
     "jest-each": "^0.3.1",
     "json-loader": "^0.5.4",
-    "knex": "^0.17.3",
+    "knex": "^0.20.7",
     "lodash": "^4.13.1",
     "mailgun-js": "^0.16.0",
     "material-ui": "^0.20.1",
@@ -125,6 +125,7 @@
     "passport-local": "^1.0.0",
     "passport-local-authenticate": "^1.2.0",
     "pg": "^6.4.2",
+    "pg-query-stream": "^1.1.1",
     "prop-types": "^15.6.0",
     "query-string": "^4.1.0",
     "react": "^15.6.1",
@@ -161,6 +162,7 @@
     "enzyme-adapter-react-15": "^1.0.5",
     "eslint": "2.13.1",
     "eslint-config-airbnb": "^9.0.1",
+    "eslint-config-prettier": "^6.10.0",
     "eslint-plugin-import": "^1.10.2",
     "eslint-plugin-jsx-a11y": "^1.5.5",
     "eslint-plugin-react": "^5.2.2",
@@ -188,7 +190,7 @@
     }
   },
   "lint-staged": {
-    "*.{js,jsx,css,json,md}": [
+    "*.{js,jsx,css,json}": [
       "prettier --write",
       "git add"
     ]
