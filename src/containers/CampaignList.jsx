@@ -9,7 +9,7 @@ import ArchiveIcon from "material-ui/svg-icons/content/archive";
 import UnarchiveIcon from "material-ui/svg-icons/content/unarchive";
 import IconButton from "material-ui/IconButton";
 import Checkbox from "material-ui/Checkbox";
-import { withRouter } from "react-router";
+import { withRouter, Link } from "react-router";
 import theme from "../styles/theme";
 import Chip from "../components/Chip";
 import loadData from "./hoc/load-data";
@@ -144,33 +144,21 @@ export class CampaignList extends React.Component {
       </span>
     );
 
-    const campaignUrl = `/admin/${this.props.organizationId}/campaigns/${campaign.id}`;
-    return (
+    const campaignListItem = (
       <ListItem
         {...dataTest("campaignRow")}
         style={listItemStyle}
         key={campaign.id}
         primaryText={primaryText}
-        onTouchTap={event => {
-          // if selectMultiple is true, then the checkbox is showing and checked is set to the status of that checkbox.
-          // Otherwise it is set to be a node and is still truthy
-          const {
-            checked
-          } = event.currentTarget.firstElementChild.firstElementChild;
-
+        onTouchTap={({
+          currentTarget: {
+            firstElementChild: {
+              firstElementChild: { checked }
+            }
+          }
+        }) => {
           if (selectMultiple) {
             this.props.handleChecked({ campaignId: campaign.id, checked });
-          } else {
-            if (event.nativeEvent.metaKey || event.nativeEvent.ctrlKey) {
-              // in this case, open in new tab
-              return !isStarted
-                ? window.open(`${campaignUrl}/edit`, "_blank")
-                : window.open(campaignUrl, "_blank");
-            } else {
-              return !isStarted
-                ? this.props.router.push(`${campaignUrl}/edit`)
-                : this.props.router.push(campaignUrl);
-            }
           }
         }}
         secondaryText={secondaryText}
@@ -181,7 +169,20 @@ export class CampaignList extends React.Component {
             : null
         }
         leftCheckbox={selectMultiple ? <Checkbox /> : null}
-      ></ListItem>
+      />
+    );
+
+    const campaignUrl = `/admin/${this.props.organizationId}/campaigns/${campaign.id}`;
+    return selectMultiple ? (
+      campaignListItem
+    ) : (
+      <Link
+        key={campaign.id}
+        style={{ textDecoration: "none" }}
+        to={!isStarted ? `${campaignUrl}/edit` : campaignUrl}
+      >
+        {campaignListItem}
+      </Link>
     );
   }
 
