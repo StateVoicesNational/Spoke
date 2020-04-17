@@ -77,10 +77,15 @@ export async function getIngestMethod(name, organization, user) {
 }
 
 export async function getAvailableIngestMethods(organization, user) {
+  const enabledIngestMethods = (
+    getConfig("CONTACT_LOADERS", organization) ||
+    "csv-upload,test-fakedata,datawarehouse"
+  ).split(",");
+
   const ingestMethods = await Promise.all(
-    Object.keys(CONFIGURED_INGEST_METHODS).map(name =>
-      getIngestMethod(name, organization, user)
-    )
+    enabledIngestMethods
+      .filter(name => name in CONFIGURED_INGEST_METHODS)
+      .map(name => getIngestMethod(name, organization, user))
   );
   return ingestMethods.filter(x => x);
 }

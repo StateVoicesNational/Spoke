@@ -2,7 +2,6 @@ import GraphQLDate from "graphql-date";
 import GraphQLJSON from "graphql-type-json";
 import { GraphQLError } from "graphql/error";
 import isUrl from "is-url";
-import { organizationCache } from "../models/cacheable_queries/organization";
 
 import { gzip, makeTree } from "../../lib";
 import { capitalizeWord } from "./lib/utils";
@@ -630,7 +629,7 @@ const rootMutations = {
       organization.features = JSON.stringify(featuresJSON);
 
       await organization.save();
-      await organizationCache.clear(organizationId);
+      await cacheableData.organization.clear(organizationId);
 
       return await Organization.get(organizationId);
     },
