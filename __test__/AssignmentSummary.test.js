@@ -263,7 +263,7 @@ describe("contacts filters", () => {
     expect(sendFirstTexts.contactsFilter).toBe("text");
 
     const sendReplies = mockRender.mock.calls[1][0];
-    expect(sendReplies.title).toBe("Send replies");
+    expect(sendReplies.title).toBe("Respond");
     expect(sendReplies.contactsFilter).toBe("reply");
 
     const sendLater = mockRender.mock.calls[2][0];
