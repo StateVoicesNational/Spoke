@@ -1,0 +1,27 @@
+name: Unit Tests
+
+on: push
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis
+        ports:
+        - 6379:6379
+      postgres:
+        image: postgres:10
+        env:
+          POSTGRES_USER: spoke_test
+          POSTGRES_PASSWORD: spoke_test
+          POSTGRES_DB: spoke_test
+        ports:
+        - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    steps:
+    - uses: actions/checkout@v2
+    - run: yarn
+    - run: yarn test
+    - run: yarn test-rediscache
+    - run: yarn test-sqlite
