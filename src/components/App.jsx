@@ -11,6 +11,7 @@ import GSDateField from "./forms/GSDateField";
 import GSScriptField from "./forms/GSScriptField";
 import GSSelectField from "./forms/GSSelectField";
 import GSPasswordField from "./forms/GSPasswordField";
+import GSAutoComplete from "./forms/GSAutoComplete";
 
 // Needed for MaterialUI
 injectTapEventPlugin();
@@ -22,7 +23,8 @@ Form.addInputTypes({
   email: GSTextField,
   script: GSScriptField,
   select: GSSelectField,
-  password: GSPasswordField
+  password: GSPasswordField,
+  autocomplete: GSAutoComplete
 });
 
 const styles = StyleSheet.create({
