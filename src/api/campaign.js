@@ -1,4 +1,6 @@
-export const schema = `
+import gql from "graphql-tag";
+
+export const schema = gql`
   input CampaignsFilter {
     isArchived: Boolean
     campaignId: Int
@@ -34,6 +36,18 @@ export const schema = `
     resultMessage: String
   }
 
+  type ActionChoice {
+    name: String!
+    details: String!
+  }
+
+  type Action {
+    name: String
+    display_name: String
+    instructions: String
+    clientChoiceData: [ActionChoice]
+  }
+
   type Campaign {
     id: ID
     organization: Organization
@@ -53,8 +67,9 @@ export const schema = `
     hasUnsentInitialMessages: Boolean
     customFields: [String]
     cannedResponses(userId: String): [CannedResponse]
-    stats: CampaignStats,
+    stats: CampaignStats
     pendingJobs: [JobRequest]
+    availableActions: [Action]
     ingestMethodsAvailable: [IngestMethod]
     ingestMethod: IngestMethod
     useDynamicAssignment: Boolean

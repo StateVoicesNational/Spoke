@@ -26,8 +26,7 @@ import {
   QuestionResponse,
   UserOrganization,
   r,
-  cacheableData,
-  loaders
+  cacheableData
 } from "../models";
 import { Notifications, sendUserNotification } from "../notifications";
 import { resolvers as assignmentResolvers } from "./assignment";
@@ -696,6 +695,7 @@ const rootMutations = {
             script: interaction.script,
             answerOption: interaction.answer_option,
             answerActions: interaction.answer_actions,
+            answerActionsData: interaction.answer_actions_data,
             isDeleted: interaction.is_deleted,
             campaign_id: newCampaignId,
             parentInteractionId: "new" + interaction.parent_interaction_id
@@ -708,6 +708,7 @@ const rootMutations = {
             script: interaction.script,
             answerOption: interaction.answer_option,
             answerActions: interaction.answer_actions,
+            answerActionsData: interaction.answer_actions_data,
             isDeleted: interaction.is_deleted,
             campaign_id: newCampaignId,
             parentInteractionId: interaction.parent_interaction_id
@@ -1258,30 +1259,6 @@ const rootResolvers = {
       } else {
         return await cacheableData.user.userOrgs(user.id, "TEXTER");
       }
-    },
-    availableActions: (_, { organizationId }, { user }) => {
-      if (!process.env.ACTION_HANDLERS) {
-        return [];
-      }
-      const allHandlers = process.env.ACTION_HANDLERS.split(",");
-
-      const availableHandlers = allHandlers
-        .map(handler => {
-          return {
-            name: handler,
-            handler: require(`../../integrations/action-handlers/${handler}.js`)
-          };
-        })
-        .filter(async h => h && (await h.handler.available(organizationId)));
-
-      const availableHandlerObjects = availableHandlers.map(handler => {
-        return {
-          name: handler.name,
-          display_name: handler.handler.displayName(),
-          instructions: handler.handler.instructions()
-        };
-      });
-      return availableHandlerObjects;
     },
     conversations: async (
       _,

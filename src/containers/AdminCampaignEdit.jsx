@@ -59,6 +59,7 @@ const campaignInfoFragment = `
     script
     answerOption
     answerActions
+    answerActionsData
     parentInteractionId
     isDeleted
   }
@@ -66,6 +67,15 @@ const campaignInfoFragment = `
     id
     title
     text
+  }
+  availableActions {
+    name
+    display_name
+    instructions
+    clientChoiceData {
+      name
+      details
+    }
   }
   ingestMethodsAvailable {
     name
@@ -373,7 +383,7 @@ class AdminCampaignEdit extends React.Component {
         expandableBySuperVolunteers: true,
         extraProps: {
           customFields: this.props.campaignData.campaign.customFields,
-          availableActions: this.props.availableActionsData.availableActions
+          availableActions: this.props.campaignData.campaign.availableActions
         }
       },
       {
@@ -718,8 +728,7 @@ AdminCampaignEdit.propTypes = {
   organizationData: PropTypes.object,
   params: PropTypes.object,
   location: PropTypes.object,
-  pendingJobsData: PropTypes.object,
-  availableActionsData: PropTypes.object
+  pendingJobsData: PropTypes.object
 };
 
 const mapQueriesToProps = ({ ownProps }) => ({
@@ -750,21 +759,6 @@ const mapQueriesToProps = ({ ownProps }) => ({
       organizationId: ownProps.params.organizationId
     },
     pollInterval: 20000
-  },
-  availableActionsData: {
-    query: gql`
-      query getActions($organizationId: String!) {
-        availableActions(organizationId: $organizationId) {
-          name
-          display_name
-          instructions
-        }
-      }
-    `,
-    variables: {
-      organizationId: ownProps.params.organizationId
-    },
-    forceFetch: true
   }
 });
 

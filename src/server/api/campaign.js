@@ -8,6 +8,11 @@ import {
   getMethodChoiceData
 } from "../../integrations/contact-loaders";
 
+import {
+  getAvailableActionHandlers,
+  getActionChoiceData
+} from "../../integrations/action-handlers";
+
 export function addCampaignsFilterToQuery(queryParam, campaignsFilter) {
   let query = queryParam;
 
@@ -221,6 +226,38 @@ export const resolvers = {
         .table("job_request")
         .filter({ campaign_id: campaign.id })
         .orderBy("updated_at", "desc");
+    },
+    availableActions: async (campaign, _, { user, loaders }) => {
+      campaign.organization =
+        campaign.organization ||
+        loaders.organization.load(campaign.organization_id);
+
+      const handlers = await getAvailableActionHandlers(
+        campaign.organization,
+        user
+      );
+
+      return Promise.all(
+        handlers.map(async handler => {
+          const clientChoiceDataStr = await getActionChoiceData(
+            handler,
+            campaign.organization,
+            campaign,
+            user,
+            loaders
+          );
+
+          const clientChoiceData =
+            JSON.parse(clientChoiceDataStr || "{}").items || [];
+
+          return {
+            name: handler.name,
+            display_name: handler.displayName(),
+            instructions: handler.instructions(),
+            clientChoiceData
+          };
+        })
+      );
     },
     ingestMethodsAvailable: async (campaign, _, { user, loaders }) => {
       try {
