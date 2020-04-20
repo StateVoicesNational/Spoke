@@ -1,5 +1,6 @@
 import { getConfig } from "../../server/api/lib/config";
 import { r } from "../../server/models";
+import { log } from "../../lib";
 
 const availabilityCacheKey = (name, organizationId, userId) =>
   `${process.env.CACHE_PREFIX ||
@@ -17,7 +18,7 @@ function getActionHandlers(organization) {
       const c = require(`./${name}.js`);
       actionHandlers[name] = c;
     } catch (err) {
-      console.error("ACTION_HANDLERS failed to load actionhandler", name, err);
+      log.error("ACTION_HANDLERS failed to load actionhandler", name, err);
     }
   });
   return actionHandlers;
@@ -36,11 +37,11 @@ async function getSetCacheableResult(cacheKey, fallbackFunc) {
   }
   const slowRes = await fallbackFunc();
   if (r.redis && slowRes && slowRes.expiresSeconds) {
-    await r.redis.setAsync(
-      cacheKey,
-      JSON.stringify(slowRes),
-      slowRes.expiresSeconds
-    );
+    await r.redis
+      .multi()
+      .set(cacheKey, JSON.stringify(slowRes))
+      .expire(cacheKey, slowRes.expiresSeconds)
+      .execAsync();
   }
   return slowRes;
 }
