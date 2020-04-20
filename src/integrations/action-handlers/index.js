@@ -8,7 +8,7 @@ const availabilityCacheKey = (name, organizationId, userId) =>
 const choiceDataCacheKey = (name, suffix) =>
   `${process.env.CACHE_PREFIX || ""}action-choices-${name}-${suffix}`;
 
-function getActionHandlers(organization) {
+export function getActionHandlers(organization) {
   const enabledActionHandlers = (
     getConfig("ACTION_HANDLERS", organization) || "test-action"
   ).split(",");
