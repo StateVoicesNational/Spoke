@@ -10,9 +10,6 @@ import Empty from "../components/Empty";
 import GSForm from "../components/forms/GSForm";
 import RaisedButton from "material-ui/RaisedButton";
 import FlatButton from "material-ui/FlatButton";
-import NavigateHomeIcon from "material-ui/svg-icons/action/home";
-import ArrowBackIcon from "material-ui/svg-icons/navigation/arrow-back";
-import ArrowForwardIcon from "material-ui/svg-icons/navigation/arrow-forward";
 import IconButton from "material-ui/IconButton/IconButton";
 import { Card, CardActions, CardTitle } from "material-ui/Card";
 import Divider from "material-ui/Divider";
@@ -40,25 +37,27 @@ const messageListStyles = {
   messageList: {
     flex: "2 4 auto",
     overflow: "hidden",
-    overflow: "-moz-scrollbars-vertical"
+    overflow: "-moz-scrollbars-vertical",
+    maxWidth: "574px"
   },
   messageSent: {
     textAlign: "right",
-    marginLeft: "30%",
-    backgroundColor: theme.colors.coreBackgroundColor,
-    color: "white",
-    borderRadius: "16px",
-    fontWeight: "600",
-    marginBottom: "10px",
-    fontSize: "13px"
-  },
-  messageReceived: {
-    fontSize: "13px",
-    marginRight: "30%",
+    marginLeft: "20%",
+    marginRight: "10px",
     backgroundColor: "white",
     borderRadius: "16px",
-    fontWeight: "600",
-    fontSize: "105%",
+    marginBottom: "10px",
+    fontSize: "95%"
+  },
+  messageReceived: {
+    marginRight: "20%",
+    marginLeft: "10px",
+    color: "white",
+    backgroundColor: "hsla(206, 99%, 31%, 0.74)", //#01579B",
+    borderRadius: "16px",
+    //fontWeight: "600",
+    fontSize: "110%",
+    lineHeight: "120%",
     marginBottom: "10px"
   }
 };
@@ -91,7 +90,16 @@ const flexStyles = StyleSheet.create({
     right: 0,
     display: "flex",
     flexDirection: "column",
-    height: "100%"
+    height: "100%",
+    backgroundColor: bgGrey
+  },
+  popover: {
+    width: "85%",
+    height: "85%",
+    "@media(min-height: 800px)": {
+      // if it's too tall, the current question options are too far away
+      height: "50%"
+    }
   },
   sectionHeaderToolbar: {
     flex: "0 0 auto"
@@ -108,7 +116,12 @@ const flexStyles = StyleSheet.create({
   sectionOptOutDialog: {
     padding: "4px 10px 9px 10px",
     zIndex: 2000,
-    backgroundColor: "white"
+    backgroundColor: "white",
+    "@media (hover: hover) and (pointer: fine)": {
+      // for touchpads and phones, the edge of the tablet is easier
+      // vs for desktops, we want to maximize how far the mouse needs to travel
+      maxWidth: "554px"
+    }
   },
   subSectionOptOutDialogActions: {
     marginTop: 20,
@@ -121,7 +134,8 @@ const flexStyles = StyleSheet.create({
     // messageField
     flex: "1 0 20px",
     padding: "0px 4px",
-    marginBottom: "8px"
+    marginBottom: "8px",
+    backgroundColor: "white"
   },
   subSectionMessageFieldTextField: {
     "@media(max-width: 350px)": {
@@ -132,10 +146,10 @@ const flexStyles = StyleSheet.create({
   sectionButtons: {
     // TODO: maybe make this contingent on whether there are answer buttons
     "@media(max-height: 600px)": {
-      flexBasis: "130px"
+      flexBasis: "106px" // TODO
     },
     "@media(min-height: 600px)": {
-      flexBasis: "190px"
+      flexBasis: "130px" // TODO
     },
     flexGrow: "0",
     flexShrink: "0",
@@ -152,7 +166,7 @@ const flexStyles = StyleSheet.create({
     // height:105: webkit needs constraint on height sometimes
     //   during the inflection point of showing the shortcut-buttons
     //   without the height, the exit buttons get pushed down oddly
-    height: "105px",
+    height: "15px", //TODO
     // internal:
     margin: "9px 0px 0px 9px",
     width: "100%"
@@ -172,7 +186,7 @@ const flexStyles = StyleSheet.create({
       width: "46%"
     },
     "@media(min-height: 600px)": {
-      height: "89px"
+      height: "39px" // TODO
     },
     display: "inline-block",
     //flex: "1 1 50%",
@@ -202,19 +216,19 @@ const flexStyles = StyleSheet.create({
   },
   /// * Section Send Button
   sectionSend: {
+    //sendButtonWrapper
+    flex: `0 0 auto`,
+    height: "36px",
+    display: "flex",
+    flexDirection: "column",
+    flexWrap: "wrap",
+    alignContent: "space-between",
+    padding: "9px",
     "@media (hover: hover) and (pointer: fine)": {
       // for touchpads and phones, the edge of the tablet is easier
       // vs for desktops, we want to maximize how far the mouse needs to travel
       maxWidth: "554px"
-    },
-    //sendButtonWrapper
-    //flex: `0 0 ${sendButtonHeight}`, VARIABLE BELOW
-    //height: ${sendButtonHeight}, VARIABLE BELOW
-    display: "flex",
-    flexDirection: "column",
-    flexWrap: "wrap",
-    padding: "9px",
-    backgroundColor: bgGrey
+    }
   },
   subSectionSendButton: {
     flex: "1 1 auto",
@@ -230,6 +244,7 @@ const flexStyles = StyleSheet.create({
     // backgroundColor: "white",
     borderRadius: "0",
     boxShadow: "none",
+    maxWidth: "300px",
     "@media(max-width: 450px)": {
       // mobile crunch
       minWidth: "auto"
@@ -337,7 +352,11 @@ export class AssignmentTexterContactControls extends React.Component {
   };
 
   handleCannedResponseChange = cannedResponseScript => {
-    this.handleChangeScript(cannedResponseScript);
+    console.log("cannedResponseChange", cannedResponseScript);
+    this.handleChangeScript(cannedResponseScript.text);
+    this.setState({
+      answerPopoverOpen: false
+    });
   };
 
   handleOpenDialog = () => {
@@ -440,15 +459,12 @@ export class AssignmentTexterContactControls extends React.Component {
     return (
       <Popover
         style={inlineStyles.popover}
+        className={css(flexStyles.popover)}
         open={answerPopoverOpen}
         anchorEl={this.state.answerPopoverAnchorEl}
         anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
         targetOrigin={{ horizontal: "left", vertical: "bottom" }}
         onRequestClose={this.handleCloseAnswerPopover}
-        style={{
-          overflowY: "scroll",
-          width: "75%"
-        }}
       >
         <AssignmentTexterSurveys
           contact={contact}
@@ -503,7 +519,10 @@ export class AssignmentTexterContactControls extends React.Component {
           onTouchTap={() => this.props.onEditStatus("closed", true)}
           label="Skip"
           className={css(flexStyles.flatButton)}
-          style={{ flex: "1 2 auto" }}
+          style={{
+            /*WTF: TODO resolve with reopen and labelStyle */
+            flex: "1 2 auto"
+          }}
           labelStyle={{ ...inlineStyles.flatButtonLabel, flex: "1 1 auto" }}
           backgroundColor="white"
         />
@@ -513,53 +532,13 @@ export class AssignmentTexterContactControls extends React.Component {
     return button;
   }
 
-  renderNavigation() {
-    return (
-      <div>
-        <FlatButton
-          onTouchTap={this.props.navigationToolbarChildren.onPrevious}
-          disabled={!this.props.navigationToolbarChildren.onPrevious}
-          tooltip="Previous Contact"
-          tooltipPosition="button-center"
-          className={css(flexStyles.flatButton)}
-          style={{ paddingTop: "6px" }}
-          label={<ArrowBackIcon />}
-          backgroundColor={
-            this.props.navigationToolbarChildren.onPrevious
-              ? "white"
-              : "rgb(176, 176, 176)"
-          }
-        />
-        <FlatButton
-          onTouchTap={this.props.navigationToolbarChildren.onNext}
-          disabled={!this.props.navigationToolbarChildren.onNext}
-          tooltip="Next Contact"
-          tooltipPosition="bottom-center"
-          label={<ArrowForwardIcon />}
-          className={css(flexStyles.flatButton)}
-          style={{ paddingTop: "6px" }}
-          backgroundColor={
-            this.props.navigationToolbarChildren.onNext
-              ? "white"
-              : "rgb(176, 176, 176)"
-          }
-          labelStyle={inlineStyles.flatButtonLabel}
-        />
-      </div>
-    );
-  }
-
   renderOptOutDialog() {
     if (!this.state.optOutDialogOpen) {
       return "";
     }
     return (
-      <Card>
-        <CardTitle
-          className={css(flexStyles.sectionOptOutDialog)}
-          title="Opt out user"
-        />
-        <Divider />
+      <Card className={css(flexStyles.sectionOptOutDialog)}>
+        <CardTitle title="Opt out user" />
         <CardActions className={css(flexStyles.sectionOptOutDialog)}>
           <GSForm
             className={css(flexStyles.sectionOptOutDialog)}
@@ -574,7 +553,7 @@ export class AssignmentTexterContactControls extends React.Component {
               style={{
                 display: "flex",
                 flexDirection: "column",
-                justifyContent: "flex-end"
+                justifyContent: "left"
               }}
             >
               <FlatButton
@@ -656,7 +635,7 @@ export class AssignmentTexterContactControls extends React.Component {
     );
   }
 
-  renderMessagingRowMessage(firstMessage) {
+  renderMessagingRowMessage({ readOnly = false }) {
     return (
       <div className={css(flexStyles.sectionMessageField)}>
         <GSForm
@@ -664,7 +643,11 @@ export class AssignmentTexterContactControls extends React.Component {
           schema={this.messageSchema}
           value={{ messageText: this.state.messageText }}
           onSubmit={this.props.onMessageFormSubmit}
-          onChange={firstMessage ? "" : this.handleMessageFormChange}
+          onChange={
+            readOnly
+              ? null // message is uneditable for firstMessage
+              : this.handleMessageFormChange
+          }
         >
           <Form.Field
             className={css(flexStyles.subSectionMessageFieldTextField)}
@@ -783,12 +766,9 @@ export class AssignmentTexterContactControls extends React.Component {
     );
   }
 
-  renderMessagingRowSendSkip(sendButtonHeight, contact) {
+  renderMessagingRowSendSkip(contact) {
     return (
-      <div
-        className={css(flexStyles.sectionSend)}
-        style={{ flex: `0 0 ${sendButtonHeight}`, height: sendButtonHeight }}
-      >
+      <div className={css(flexStyles.sectionSend)}>
         <FlatButton
           {...dataTest("send")}
           onTouchTap={this.handleClickSendMessageButton}
@@ -807,7 +787,7 @@ export class AssignmentTexterContactControls extends React.Component {
     );
   }
 
-  renderMessageSending() {
+  renderMessageControls() {
     const { contact, messageStatusFilter } = this.props;
     const {
       optOutDialogOpen,
@@ -815,9 +795,6 @@ export class AssignmentTexterContactControls extends React.Component {
       questionResponses,
       currentInteractionStep
     } = this.state;
-    const firstMessage = messageStatusFilter === "needsMessage";
-
-    const sendButtonHeight = firstMessage ? "40%" : "36px";
     let currentQuestion = null;
     let currentQuestionAnswered = null;
     let currentQuestionOptions = null;
@@ -837,87 +814,93 @@ export class AssignmentTexterContactControls extends React.Component {
         currentQuestionOptions = null;
       }
     }
+    if (optOutDialogOpen) {
+      return this.renderOptOutDialog();
+    }
     return [
-      this.renderMessagingRowMessage(firstMessage),
-
-      firstMessage ? null : (
-        <div className={css(flexStyles.sectionButtons)}>
-          <div
-            className={css(flexStyles.subButtonsAnswerButtons)}
-            ref="answerButtons"
-          >
-            {currentQuestion
-              ? this.renderMessagingRowCurrentQuestion(
-                  currentQuestion,
-                  currentQuestionAnswered
+      this.renderMessagingRowMessage({}),
+      <div className={css(flexStyles.sectionButtons)}>
+        <div
+          className={css(flexStyles.subButtonsAnswerButtons)}
+          ref="answerButtons"
+        >
+          {currentQuestion
+            ? this.renderMessagingRowCurrentQuestion(
+                currentQuestion,
+                currentQuestionAnswered
+              )
+            : null}
+          <div className={css(flexStyles.subSubAnswerButtonsColumns)}>
+            {currentQuestionOptions
+              ? this.renderMessagingRowReplyShortcuts(
+                  currentQuestionOptions,
+                  questionResponses,
+                  currentInteractionStep
                 )
               : null}
-            <div className={css(flexStyles.subSubAnswerButtonsColumns)}>
-              {currentQuestionOptions
-                ? this.renderMessagingRowReplyShortcuts(
-                    currentQuestionOptions,
-                    questionResponses,
-                    currentInteractionStep
-                  )
-                : null}
-            </div>
           </div>
-
-          {this.renderMessagingRowReplyButtons(availableSteps)}
         </div>
-      ),
-      this.renderMessagingRowSendSkip(sendButtonHeight, contact),
+
+        {this.renderMessagingRowReplyButtons(availableSteps)}
+      </div>,
+      this.renderMessagingRowSendSkip(contact),
       this.renderSurveySection()
     ];
   }
 
-  render() {
-    const { optOutDialogOpen } = this.state;
+  renderToolbar() {
     return (
-      <div className={css(flexStyles.topContainer)}>
-        <div className={css(flexStyles.sectionHeaderToolbar)}>
-          <ContactToolbarNew
-            campaign={this.props.campaign}
-            campaignContact={this.props.contact}
-            navigationToolbarChildren={this.props.navigationToolbarChildren}
-            leftToolbarIcon={
-              <IconButton
-                onTouchTap={this.props.onExitTexter}
-                style={inlineStyles.exitTexterIconButton}
-                tooltip="Return Home"
-                tooltipPosition="bottom-center"
-              >
-                <NavigateHomeIcon color={"white"} />
-              </IconButton>
-            }
-          />
-        </div>
-        <div
-          {...dataTest("messageList")}
-          ref="messageScrollContainer"
-          className={css(flexStyles.sectionMessageThread)}
-        >
-          {this.props.messageStatusFilter === "needsMessage" ? (
-            <Empty
-              title={
-                "This is your first message to " + this.props.contact.firstName
-              }
-              icon={<CreateIcon color="rgb(83, 180, 119)" />}
-              hideMobile
-            />
-          ) : (
+      <div className={css(flexStyles.sectionHeaderToolbar)}>
+        <ContactToolbarNew
+          campaign={this.props.campaign}
+          campaignContact={this.props.contact}
+          navigationToolbarChildren={this.props.navigationToolbarChildren}
+          onExit={this.props.onExitTexter}
+        />
+      </div>
+    );
+  }
+
+  renderFirstMessage() {
+    return [
+      this.renderToolbar(),
+      <div
+        {...dataTest("messageList")}
+        ref="messageScrollContainer"
+        className={css(flexStyles.sectionMessageThread)}
+      >
+        <Empty
+          title={
+            "This is your first message to " + this.props.contact.firstName
+          }
+          icon={<CreateIcon color="rgb(83, 180, 119)" />}
+        />
+      </div>,
+      this.renderMessagingRowMessage({ readOnly: true }),
+      this.renderMessagingRowSendSkip(this.props.contact)
+    ];
+  }
+
+  render() {
+    const firstMessage = this.props.messageStatusFilter === "needsMessage";
+    const content = firstMessage
+      ? this.renderFirstMessage()
+      : [
+          this.renderToolbar(),
+          <div
+            {...dataTest("messageList")}
+            ref="messageScrollContainer"
+            className={css(flexStyles.sectionMessageThread)}
+          >
             <MessageList
               contact={this.props.contact}
               messages={this.props.contact.messages}
               styles={messageListStyles}
             />
-          )}
-        </div>
-        {optOutDialogOpen
-          ? this.renderOptOutDialog()
-          : this.renderMessageSending()}
-      </div>
-    );
+          </div>,
+          this.renderMessageControls()
+        ];
+    return <div className={css(flexStyles.topContainer)}>{content}</div>;
   }
 }
 
