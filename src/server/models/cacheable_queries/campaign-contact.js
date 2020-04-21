@@ -233,7 +233,8 @@ const campaignContactCache = {
         cacheData.message_status = await getMessageStatus(id, cacheData);
         Object.assign(
           cacheData,
-          await getCacheContactAssignment(id, cacheData.campaign_id, cacheData)
+          await getCacheContactAssignment(id, cacheData.campaign_id, cacheData),
+          { cachedResult: true }
         );
 
         console.log(
@@ -247,7 +248,8 @@ const campaignContactCache = {
           "state",
           "user_id",
           "messageservice_sid",
-          "dynamic_assignment"
+          "dynamic_assignment",
+          "cachedResult"
         ]);
       }
       // Note that we don't try to load/save the cache
