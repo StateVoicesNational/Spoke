@@ -25,7 +25,8 @@ import {
   createInvite,
   createOrganization,
   createCampaign,
-  saveCampaign
+  saveCampaign,
+  sleep
 } from "../../test_helpers";
 
 // client-testing libs
@@ -35,10 +36,6 @@ import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import { StyleSheetTestUtils } from "aphrodite";
 import CampaignContactsChoiceForm from "../../../src/components/CampaignContactsChoiceForm";
 import { icons } from "../../../src/components/CampaignContactsChoiceForm";
-
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
 
 const contacts = [
   {

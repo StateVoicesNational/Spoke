@@ -33,6 +33,11 @@ const campaignInfoFragment = `
     success
     contactsCount
   }
+  completionStats {
+    contactsCount
+    assignedCount
+    messagedCount
+  }
 `;
 
 const inlineStyles = {
@@ -137,9 +142,18 @@ export class CampaignList extends React.Component {
           {dueByMoment.isValid()
             ? dueByMoment.format("MMM D, YYYY")
             : "No due date set"}
-          {ingestMethod && ingestMethod.contactsCount
-            ? ` - contacts: ${ingestMethod.contactsCount}`
-            : ""}
+          {campaign.completionStats.assignedCount ? (
+            <span>
+              {" - "}
+              contacts: {campaign.completionStats.contactsCount}, assigned:{" "}
+              {campaign.completionStats.assignedCount}, messaged:{" "}
+              {campaign.completionStats.messagedCount}
+            </span>
+          ) : ingestMethod && ingestMethod.contactsCount ? (
+            ` - contacts: ${ingestMethod.contactsCount}`
+          ) : (
+            ""
+          )}
         </span>
       </span>
     );
