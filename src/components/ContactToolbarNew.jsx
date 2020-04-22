@@ -14,7 +14,7 @@ import NavigateHomeIcon from "material-ui/svg-icons/action/home";
 
 const inlineStyles = {
   toolbar: {
-    backgroundColor: "#515259",
+    backgroundColor: "rgb(81, 82, 89)",
     color: "white"
   }
 };
