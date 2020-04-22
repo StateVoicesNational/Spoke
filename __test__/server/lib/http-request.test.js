@@ -3,14 +3,14 @@ import nock from "nock";
 
 import requestWithRetry from "../../../src/server/lib/http-request.js";
 
-describe("requestWithRetry", () => {
+describe("requestWithRetry", async () => {
   let url;
   let path;
   let headers;
   let body;
 
-  beforeEach(async () => {
-    url = "http://relisten.net";
+  beforeEach(() => {
+    url = "https://example.com";
     path = "/grateful-dead/1981/03/05/";
     headers = {
       "Content-Type": "application/json"
@@ -22,40 +22,36 @@ describe("requestWithRetry", () => {
     };
   });
 
-  describe("when the request is a successful get that returns text", () => {
-    it("handles the request and returns the text", async () => {
-      const nocked = nock(url)
-        .get(path)
-        .reply(200, "Hello world.");
-      const result = await requestWithRetry(`${url}${path}`);
-      const received_body = await result.text();
-      expect(received_body).toEqual("Hello world.");
-      nocked.done();
-    });
+  it("handles the get request and returns the text", async () => {
+    const nocked = nock(url)
+      .get(path)
+      .reply(200, "Hello world.");
+    const result = await requestWithRetry(`${url}${path}`);
+    const received_body = await result.text();
+    expect(received_body).toEqual("Hello world.");
+    nocked.done();
   });
 
-  describe("when the request is a successful post that returns text", () => {
-    it("handles the request and returns the text", async () => {
-      const nocked = nock(url, {
-        encodedQueryParams: true,
-        reqheaders: headers
-      })
-        .post(path)
-        .reply(200, "Nevertheless it was persisted.");
+  it("handles a post request and returns the text", async () => {
+    const nocked = nock(url, {
+      encodedQueryParams: true,
+      reqheaders: headers
+    })
+      .post(path)
+      .reply(200, "Nevertheless it was persisted.");
 
-      const result = await requestWithRetry(`${url}${path}`, {
-        method: "POST",
-        headers,
-        body
-      });
-
-      const received_body = await result.text();
-      expect(received_body).toEqual("Nevertheless it was persisted.");
-      nocked.done();
+    const result = await requestWithRetry(`${url}${path}`, {
+      method: "POST",
+      headers,
+      body
     });
+
+    const received_body = await result.text();
+    expect(received_body).toEqual("Nevertheless it was persisted.");
+    nocked.done();
   });
 
-  describe("validate status", () => {
+  describe("validate status", async () => {
     let nocked;
     beforeEach(async () => {
       nocked = nock(url, {
@@ -66,8 +62,8 @@ describe("requestWithRetry", () => {
         .reply(201, "Nevertheless it was persisted.");
     });
 
-    describe("successful status validation", () => {
-      describe("validStatuses is provided", async () => {
+    describe("successful status validation", async () => {
+      it("validStatuses is provided", async () => {
         const result = await requestWithRetry(`${url}${path}`, {
           method: "POST",
           headers,
@@ -80,7 +76,7 @@ describe("requestWithRetry", () => {
         nocked.done();
       });
 
-      describe("statusValidatioFunction is provided", async () => {
+      it("statusValidatioFunction is provided", async () => {
         const result = await requestWithRetry(`${url}${path}`, {
           method: "POST",
           headers,
@@ -94,8 +90,8 @@ describe("requestWithRetry", () => {
       });
     });
 
-    describe("unsuccessful status validation", () => {
-      describe("validStatuses is provided", async () => {
+    describe("unsuccessful status validation", async () => {
+      it("validStatuses is provided", async () => {
         let error;
 
         try {
@@ -117,7 +113,7 @@ describe("requestWithRetry", () => {
         nocked.done();
       });
 
-      describe("statusValidationFunction is provided", async () => {
+      it("statusValidationFunction is provided", async () => {
         let error;
 
         try {
@@ -141,7 +137,7 @@ describe("requestWithRetry", () => {
     });
   });
 
-  describe("when the request times out", () => {
+  describe("when the request times out", async () => {
     it("retries", async () => {
       let error;
       const nocked = nock(url)
@@ -165,52 +161,48 @@ describe("requestWithRetry", () => {
       }
     });
 
-    describe("when we don't provide retries and timeout", () => {
-      it("uses the defaults, meaning, it won't time out", async () => {
-        let error;
-        const nocked = nock(url)
-          .get(path)
-          .times(1)
-          .delay(1000)
-          .reply(200);
-        try {
-          await requestWithRetry(`${url}${path}`, {
-            method: "GET"
-          });
-        } catch (caughtException) {
-          error = caughtException;
-        } finally {
-          expect(error).not.toEqual(expect.anything());
-          nocked.done();
-        }
-      });
+    it("when we don't provide retries and timeout uses the defaults, meaning, it won't time out", async () => {
+      let error;
+      const nocked = nock(url)
+        .get(path)
+        .times(1)
+        .delay(1000)
+        .reply(200);
+      try {
+        await requestWithRetry(`${url}${path}`, {
+          method: "GET"
+        });
+      } catch (caughtException) {
+        error = caughtException;
+      } finally {
+        expect(error).not.toEqual(expect.anything());
+        nocked.done();
+      }
     });
 
-    describe("when we don't provide retries", () => {
-      it("it does not retry", async () => {
-        let error;
-        const nocked = nock(url)
-          .get(path)
-          .times(1)
-          .delay(1000)
-          .reply(200);
-        try {
-          await requestWithRetry(`${url}${path}`, {
-            method: "GET",
-            timeout: 500
-          });
-        } catch (caughtException) {
-          error = caughtException;
-        } finally {
-          expect(error.toString()).toMatch(
-            /Error: Request id .+ failed; timeout after 500ms/
-          );
-          nocked.done();
-        }
-      });
+    it("it does not retry by default", async () => {
+      let error;
+      const nocked = nock(url)
+        .get(path)
+        .times(1)
+        .delay(1000)
+        .reply(200);
+      try {
+        await requestWithRetry(`${url}${path}`, {
+          method: "GET",
+          timeout: 500
+        });
+      } catch (caughtException) {
+        error = caughtException;
+      } finally {
+        expect(error.toString()).toMatch(
+          /Error: Request id .+ failed; timeout after 500ms/
+        );
+        nocked.done();
+      }
     });
 
-    describe("when retries is 0", () => {
+    describe("when retries is 0", async () => {
       let error;
       it("it doesn't retry", async () => {
         const nocked = nock(url)
@@ -231,27 +223,25 @@ describe("requestWithRetry", () => {
         }
       });
 
-      describe("when it times out", () => {
-        it("it doesn't retry", async () => {
-          const nocked = nock(url)
-            .get(path)
-            .delay(1000)
-            .reply(500);
-          try {
-            await requestWithRetry(`${url}${path}`, {
-              method: "GET",
-              timeout: 100,
-              retries: 0
-            });
-          } catch (caughtException) {
-            error = caughtException;
-          } finally {
-            expect(error.toString()).toMatch(
-              /Error: Request id .+ failed; timeout after 100ms/
-            );
-            nocked.done();
-          }
-        });
+      it("timeout doesn't retry", async () => {
+        const nocked = nock(url)
+          .get(path)
+          .delay(1000)
+          .reply(500);
+        try {
+          await requestWithRetry(`${url}${path}`, {
+            method: "GET",
+            timeout: 100,
+            retries: 0
+          });
+        } catch (caughtException) {
+          error = caughtException;
+        } finally {
+          expect(error.toString()).toMatch(
+            /Error: Request id .+ failed; timeout after 100ms/
+          );
+          nocked.done();
+        }
       });
     });
   });

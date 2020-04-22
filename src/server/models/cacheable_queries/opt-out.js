@@ -27,6 +27,11 @@ const loadMany = async organizationId => {
     const dbResult = await dbQuery;
     const cellOptOuts = dbResult.map(rec => rec.cell);
     const hashKey = orgCacheKey(organizationId);
+
+    // if no optouts, the key should still exist for true negative lookups:
+    await r.redis.saddAsync(hashKey, ["0"]);
+    await r.redis.expire(hashKey, 43200);
+
     // save 100 at a time
     for (
       let i100 = 0, l100 = Math.ceil(cellOptOuts.length / 100);
@@ -37,9 +42,6 @@ const loadMany = async organizationId => {
         hashKey,
         cellOptOuts.slice(100 * i100, 100 * i100 + 100)
       );
-      if (i100 === 0) {
-        await r.redis.expire(hashKey, 43200);
-      }
     }
     return cellOptOuts.length;
   }
@@ -80,11 +82,13 @@ const optOutCache = {
       // ideally not blocking the rest of the request
       loadMany(organizationId)
         .then(optOutCount => {
-          console.log(
-            "optOutCache loaded for organization",
-            organizationId,
-            optOutCount
-          );
+          if (!global.TEST_ENVIRONMENT) {
+            console.log(
+              "optOutCache loaded for organization",
+              organizationId,
+              optOutCount
+            );
+          }
         })
         .catch(err => {
           console.log(

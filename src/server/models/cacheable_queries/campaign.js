@@ -20,6 +20,11 @@ import { assembleAnswerOptions } from "../../../lib/interaction-step-helpers";
 // * campaignCannedResponses (saved in canned-responses.js instead)
 
 const cacheKey = id => `${process.env.CACHE_PREFIX || ""}campaign-${id}`;
+const infoCacheKey = id =>
+  `${process.env.CACHE_PREFIX || ""}campaigninfo-${id}`;
+
+const CONTACT_CACHE_ENABLED =
+  process.env.REDIS_CONTACT_CACHE || global.REDIS_CONTACT_CACHE;
 
 const dbCustomFields = async id => {
   const campaignContacts = await r
@@ -74,6 +79,9 @@ const loadDeep = async id => {
     campaign.customFields = await dbCustomFields(id);
     campaign.interactionSteps = await dbInteractionSteps(id);
     campaign.contactTimezones = await dbContactTimezones(id);
+    campaign.contactsCount = await r.getCount(
+      r.knex("campaign_contact").where("campaign_id", id)
+    );
     // cache userIds for all assignments
     // console.log('loaded deep campaign', JSON.stringify(campaign, null, 2))
     // We should only cache organization data
@@ -83,7 +91,9 @@ const loadDeep = async id => {
     await r.redis
       .multi()
       .set(cacheKey(id), JSON.stringify(campaign))
+      .hset(infoCacheKey(id), "contactsCount", campaign.contactsCount)
       .expire(cacheKey(id), 43200)
+      .expire(infoCacheKey(id), 43200)
       .execAsync();
   }
   // console.log('clearing campaign', id, typeof id, loaders.campaign)
@@ -142,11 +152,20 @@ const campaignCache = {
         // console.log('new campaign data', id, campaignData)
       }
       if (campaignObj) {
+        campaignObj.assignedCount = await r.redis.hgetAsync(
+          infoCacheKey(id),
+          "assignedCount"
+        );
+        campaignObj.messagedCount = await r.redis.hgetAsync(
+          infoCacheKey(id),
+          "messagedCount"
+        );
         // console.log('campaign cache', cacheKey(id), campaignObj, campaignData)
         const campaign = modelWithExtraProps(campaignObj, Campaign, [
           "customFields",
           "interactionSteps",
-          "contactTimezones"
+          "contactTimezones",
+          "contactsCount"
         ]);
         return campaign;
       }
@@ -160,7 +179,48 @@ const campaignCache = {
   reload: loadDeep,
   currentEditors,
   dbCustomFields,
-  dbInteractionSteps
+  dbInteractionSteps,
+  completionStats: async id => {
+    if (r.redis && CONTACT_CACHE_ENABLED) {
+      const data = await r.redis.hgetallAsync(infoCacheKey(id));
+      return data || {};
+    }
+    return {};
+  },
+  updateAssignedCount: async id => {
+    if (r.redis && CONTACT_CACHE_ENABLED) {
+      try {
+        const assignCount = await r.getCount(
+          r
+            .knex("campaign_contact")
+            .where("campaign_id", id)
+            .whereNotNull("assignment_id")
+        );
+        const infoKey = infoCacheKey(id);
+        await r.redis
+          .multi()
+          .hset(infoKey, "assignedCount", assignCount)
+          .expire(infoKey, 43200)
+          .execAsync();
+      } catch (err) {
+        console.log("campaign.updateAssignedCount Error", id, err);
+      }
+    }
+  },
+  incrMessaged: async id => {
+    if (r.redis && CONTACT_CACHE_ENABLED) {
+      try {
+        const infoKey = infoCacheKey(id);
+        await r.redis
+          .multi()
+          .hincrby(infoKey, "messagedCount", 1)
+          .expire(infoKey, 43200)
+          .execAsync();
+      } catch (err) {
+        console.log("campaign.incrMessaged Error", id, err);
+      }
+    }
+  }
 };
 
 export default campaignCache;
