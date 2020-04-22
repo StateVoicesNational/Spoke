@@ -948,9 +948,12 @@ const rootMutations = {
           cIdx === 0
             ? firstContact
             : await cacheableData.campaignContact.load(contactId);
+
+        // If contact.assignment_id is null or misassigned,
+        // maybe the cache is stale so try refreshing.
         if (
           contact.cachedResult &&
-          contact.assignment_id === null &&
+          Number(contact.assignment_id) !== Number(assignmentId) &&
           !triedUpdate
         ) {
           // In case assignment_id from cache needs to be refreshed, try again
@@ -961,11 +964,6 @@ const rootMutations = {
             contactIds
           );
           contact = await cacheableData.campaignContact.load(contactId);
-          if (contact.assignment_id) {
-            // clearly we needed to reload the cache
-            // and should do it again
-            triedUpdate = false;
-          }
         }
 
         if (contact && Number(contact.assignment_id) === Number(assignmentId)) {
