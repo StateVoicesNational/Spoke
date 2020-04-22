@@ -508,6 +508,7 @@ class AdminCampaignEdit extends React.Component {
           fontSize: 16
         }}
       >
+        <h2>{this.props.campaignData.campaign.title}</h2>
         {this.state.startingCampaign ? (
           <div
             style={{
