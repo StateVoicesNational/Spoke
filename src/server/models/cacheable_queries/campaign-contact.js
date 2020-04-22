@@ -121,22 +121,27 @@ export const getCacheContactAssignment = async (id, campaignId, contactObj) => {
         user_id: user_id ? Number(user_id) : null
       };
     }
-  } else {
-    // if no cache, load it from the db
-    const assignment = await r
-      .knex("campaign_contact")
-      .leftJoin("assignment", "assignment.id", "campaign_contact.assignment_id")
-      .where("campaign_contact.id", id)
-      .select("assignment_id", "user_id")
-      .first();
-    if (assignment) {
-      await setCacheContactAssignment(id, campaignId, assignment);
-      const { assignment_id, user_id } = assignment;
-      return {
-        assignment_id: assignment_id ? Number(assignment_id) : null,
-        user_id: user_id ? Number(user_id) : null
-      };
-    }
+  }
+  // if no cache, load it from the db
+  const assignment = await r
+    .knex("campaign_contact")
+    .leftJoin("assignment", "assignment.id", "campaign_contact.assignment_id")
+    .where("campaign_contact.id", id)
+    .select("assignment_id", "user_id")
+    .first();
+  console.log(
+    "campaignContact.getCacheContactAssignment uncached assignment",
+    campaignId,
+    id,
+    assignment
+  );
+  if (assignment) {
+    await setCacheContactAssignment(id, campaignId, assignment);
+    const { assignment_id, user_id } = assignment;
+    return {
+      assignment_id: assignment_id ? Number(assignment_id) : null,
+      user_id: user_id ? Number(user_id) : null
+    };
   }
   return {};
 };
