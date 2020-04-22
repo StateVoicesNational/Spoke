@@ -5,7 +5,8 @@ import {
   Message,
   PendingMessagePart,
   r,
-  cacheableData
+  cacheableData,
+  Campaign
 } from "../../models";
 import { log } from "../../../lib";
 import { getLastMessage, saveNewIncomingMessage } from "./message-sending";
@@ -152,6 +153,11 @@ function parseMessageText(message) {
   return params;
 }
 
+async function getMessagingServiceSid(contact) {
+  const campaign = await Campaign.get(contact.campaign_id);
+  return campaign.messaging_service_sid;
+}
+
 async function sendMessage(message, contact, trx, organization) {
   const APIERRORTEST = /apierrortest/.test(message.text);
   if (!twilio && !APIERRORTEST) {
@@ -173,10 +179,8 @@ async function sendMessage(message, contact, trx, organization) {
   }
 
   // Note organization won't always be available, so then contact can trace to it
-  const messagingServiceSid = await cacheableData.organization.getMessageServiceSid(
-    organization,
-    contact
-  );
+  const messagingServiceSid = await getMessagingServiceSid(contact);
+
   return new Promise((resolve, reject) => {
     if (message.service !== "twilio") {
       log.warn("Message not marked as a twilio message", message.id);
@@ -214,9 +218,6 @@ async function sendMessage(message, contact, trx, organization) {
     }
     const changes = {};
 
-    // FUTURE: this can be based on (contact, organization)
-    // Note organization won't always be available, so we'll need to conditionally look it up based on contact
-    const messagingServiceSid = process.env.TWILIO_MESSAGE_SERVICE_SID;
     changes.messageservice_sid = messagingServiceSid;
 
     const messageParams = Object.assign(
@@ -450,6 +451,58 @@ async function handleIncomingMessage(message) {
   }
 }
 
+/**
+ * Create a new Twilio messaging service
+ */
+async function createMessagingService(friendlyName) {
+  const inboundRequestUrl = process.env.BASE_URL + "/twilio";
+  return await twilio.messaging.services.create({
+    friendlyName,
+    statusCallback: process.env.TWILIO_STATUS_CALLBACK_URL,
+    inboundRequestUrl: inboundRequestUrl
+  });
+}
+
+/**
+ * Search for phone numbers available for purchase
+ */
+async function searchForAvailableNumbers(areaCode, limit) {
+  const count = Math.min(limit, 30); // Twilio limit
+  return await twilio
+    .availablePhoneNumbers(process.env.PHONE_NUMBER_COUNTRY)
+    .local.list({
+      areaCode,
+      limit: count,
+      capabilities: ["SMS", "MMS"]
+    });
+}
+/**
+ * Buy a phone number
+ */
+async function buyNumber(phoneNumber) {
+  const response = await twilio.incomingPhoneNumbers.create({
+    phoneNumber,
+    friendlyName: `Managed by Spoke [${process.env.BASE_URL}]: ${phoneNumber}`
+  });
+  if (response.error) {
+    throw new Error(`Error buying twilio number: ${response.error}`);
+  }
+  log.debug(`Bought number ${phoneNumber} [${response.sid}]`);
+  return response.sid;
+}
+
+/**
+ * Add bought phone number to a messging service
+ */
+async function addNumberToMessagingService(
+  phoneNumberSid,
+  messagingServiceSid
+) {
+  return twilio.messaging
+    .services(messagingServiceSid)
+    .phoneNumbers.create({ phoneNumberSid });
+}
+
 export default {
   syncMessagePartProcessing: !!process.env.JOBS_SAME_PROCESS,
   webhook,
@@ -459,5 +512,9 @@ export default {
   sendMessage,
   handleDeliveryReport,
   handleIncomingMessage,
-  parseMessageText
+  parseMessageText,
+  createMessagingService,
+  buyNumber,
+  addNumberToMessagingService,
+  searchForAvailableNumbers
 };

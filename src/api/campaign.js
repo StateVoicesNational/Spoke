@@ -68,6 +68,8 @@ export const schema = `
     textingHoursStart: Int
     textingHoursEnd: Int
     timezone: String
+    messagingServiceSid: String
+    useOwnMessagingService: Boolean
   }
 
   type CampaignsList {

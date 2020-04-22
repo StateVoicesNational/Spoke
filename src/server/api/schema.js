@@ -6,6 +6,8 @@ import { organizationCache } from "../models/cacheable_queries/organization";
 
 import { gzip, makeTree } from "../../lib";
 import { capitalizeWord } from "./lib/utils";
+import twilio from "./lib/twilio";
+
 import {
   assignTexters,
   dispatchContactIngestLoad,
@@ -79,6 +81,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     logoImageUrl,
     introHtml,
     primaryColor,
+    useOwnMessagingService,
     overrideOrganizationTextingHours,
     textingHoursEnforced,
     textingHoursStart,
@@ -107,6 +110,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     texting_hours_enforced: textingHoursEnforced,
     texting_hours_start: textingHoursStart,
     texting_hours_end: textingHoursEnd,
+    use_own_messaging_service: useOwnMessagingService,
     timezone
   };
 
@@ -655,7 +659,8 @@ const rootMutations = {
         description: campaign.description,
         due_by: campaign.dueBy,
         is_started: false,
-        is_archived: false
+        is_archived: false,
+        use_own_messaging_service: false
       });
       const newCampaign = await campaignInstance.save();
       await r.knex("campaign_admin").insert({
@@ -788,6 +793,18 @@ const rootMutations = {
       const organization = await loaders.organization.load(
         campaign.organization_id
       );
+
+      if (campaign.use_own_messaging_service) {
+        const friendlyName = `Campaign: ${campaign.title} (${campaign.id}) [${process.env.BASE_URL}]`;
+        const messagingService = await twilio.createMessagingService(
+          friendlyName
+        );
+        campaign.messaging_service_sid = messagingService.sid;
+      } else {
+        campaign.messaging_service_sid = await cacheableData.organization.getMessageServiceSid(
+          organization
+        );
+      }
 
       campaign.is_started = true;
 

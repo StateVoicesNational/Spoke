@@ -112,6 +112,8 @@ const rootSchema = gql`
     texters: [TexterInput]
     interactionSteps: InteractionStepInput
     cannedResponses: [CannedResponseInput]
+    useOwnMessagingService: Boolean
+    messagingServiceSid: String
     overrideOrganizationTextingHours: Boolean
     textingHoursEnforced: Boolean
     textingHoursStart: Int

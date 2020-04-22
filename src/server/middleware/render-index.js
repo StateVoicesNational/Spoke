@@ -86,6 +86,8 @@ export default function renderIndex(html, css, assetMap, store) {
       window.PASSPORT_STRATEGY="${process.env.PASSPORT_STRATEGY || ""}"
       window.CORE_BACKGROUND_COLOR="${process.env.CORE_BACKGROUND_COLOR || ""}"
       window.CAN_GOOGLE_IMPORT=${canGoogleImport}
+      window.TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE=${process.env
+        .TWILIO_PER_CAMPAIGN_MESSAGING_SERVICE || false}
     </script>
     <script src="${assetMap["bundle.js"]}"></script>
   </body>
