@@ -2,11 +2,14 @@ import { getConfig } from "../../server/api/lib/config";
 import { r } from "../../server/models";
 import { log } from "../../lib";
 
-const availabilityCacheKey = (name, organizationId, userId) =>
-  `${process.env.CACHE_PREFIX ||
-    ""}action-avail-${name}-${organizationId}-${userId}`;
-const choiceDataCacheKey = (name, suffix) =>
-  `${process.env.CACHE_PREFIX || ""}action-choices-${name}-${suffix}`;
+export const availabilityCacheKey = (name, organization, userId) =>
+  `${getConfig("CACHE_PREFIX", organization) || ""}action-avail-${name}-${
+    organization.id
+  }-${userId}`;
+
+export const choiceDataCacheKey = (name, organization, suffix) =>
+  `${getConfig("CACHE_PREFIX", organization) ||
+    ""}action-choices-${name}-${suffix}`;
 
 export function getActionHandlers(organization) {
   const enabledActionHandlers = (
@@ -54,7 +57,7 @@ async function getActionHandlerAvailability(
   user
 ) {
   return (await getSetCacheableResult(
-    availabilityCacheKey(name, organization.id, user.id),
+    availabilityCacheKey(name, organization, user.id),
     async () => actionHandler.available(organization, user)
   )).result;
 }
@@ -104,6 +107,7 @@ export async function getActionChoiceData(
   const clientChoiceDataFunc = actionHandler.getClientChoiceData || (() => {});
   const cacheKey = choiceDataCacheKey(
     actionHandler.name,
+    organization,
     cacheFunc(organization, campaign, user, loaders)
   );
   return (
