@@ -156,10 +156,10 @@ const flexStyles = StyleSheet.create({
   sectionButtons: {
     // TODO: maybe make this contingent on whether there are answer buttons
     "@media(max-height: 600px)": {
-      flexBasis: "106px" // TODO
+      flexBasis: "96px" // TODO
     },
     "@media(min-height: 600px)": {
-      flexBasis: "130px" // TODO
+      flexBasis: "144px" // TODO
     },
     flexGrow: "0",
     flexShrink: "0",
@@ -183,7 +183,7 @@ const flexStyles = StyleSheet.create({
     // similar to 572 below, but give room for other shortcut-buttons
   },
   subSubButtonsAnswerButtonsCurrentQuestion: {
-    marginBottom: "4px",
+    marginBottom: "12px",
     //flex: "0 0 auto",
     width: "100%",
     // for mobile:
@@ -191,12 +191,9 @@ const flexStyles = StyleSheet.create({
     overflow: "hidden"
   },
   subSubAnswerButtonsColumns: {
-    "@media(min-width: 450px)": {
-      // mobile crunch gives up on 50%, so only bigger
-      width: "46%"
-    },
-    "@media(min-height: 600px)": {
-      height: "39px" // TODO
+    height: "0px",
+    "@media(min-height: 700px)": {
+      height: "40px" // TODO
     },
     display: "inline-block",
     //flex: "1 1 50%",
@@ -288,6 +285,7 @@ export class AssignmentTexterContactControls extends React.Component {
       responsePopoverOpen: false,
       answerPopoverOpen: false,
       messageText: this.getStartingMessageText(),
+      cannedResponseScript: null,
       optOutDialogOpen: false,
       currentShortcutSpace: 0,
       messageFocus: false,
@@ -364,6 +362,7 @@ export class AssignmentTexterContactControls extends React.Component {
   handleCannedResponseChange = cannedResponseScript => {
     this.handleChangeScript(cannedResponseScript.text);
     this.setState({
+      cannedResponseScript,
       answerPopoverOpen: false
     });
   };
@@ -421,7 +420,8 @@ export class AssignmentTexterContactControls extends React.Component {
     const messageText = this.props.getMessageTextFromScript(newScript) || "";
 
     this.setState({
-      messageText
+      messageText,
+      cannedResponseScript: null
     });
   };
 
@@ -713,24 +713,70 @@ export class AssignmentTexterContactControls extends React.Component {
     );
   }
 
-  renderMessagingRowReplyShortcuts(
-    currentQuestionOptions,
-    questionResponses,
-    currentInteractionStep
-  ) {
+  renderMessagingRowReplyShortcuts() {
+    const { assignment } = this.props;
+    const {
+      availableSteps,
+      questionResponses,
+      currentInteractionStep,
+      cannedResponseScript
+    } = this.state;
+
+    let joinedLength = 0;
+    let currentQuestion = null;
+    let currentQuestionAnswered = null;
+    let currentQuestionOptions = [];
+    // 1. Current Interaction Step Shortcuts
+    if (currentInteractionStep) {
+      currentQuestion = currentInteractionStep.question;
+      currentQuestionAnswered = questionResponses[currentInteractionStep.id];
+      currentQuestionOptions = currentQuestion.answerOptions.map(answer => {
+        const label = answer.value.match(/^(\w+)([^\s\w]|$)/);
+        return {
+          answer: answer,
+          label: label ? label[1] : "Yes__No__Maybe__toomuch"
+        };
+      });
+      joinedLength = currentQuestionOptions.map(o => o.label).join("__").length;
+      if (joinedLength > 30) {
+        // too many/long options
+        currentQuestionOptions = [];
+        joinedLength = 0;
+      }
+    }
+    // 2. Canned Response Shortcuts
+    let shortCannedResponses = [];
+    // If there's a current interaction step but we aren't showing choices
+    // then don't show canned response shortcuts either or it can
+    // cause confusion.
+    if (!currentInteractionStep || joinedLength !== 0) {
+      shortCannedResponses = assignment.campaignCannedResponses
+        .filter(
+          // allow for "Wrong Number"
+          script =>
+            (script.title.length < 13 || script.title[0] === ":") &&
+            script.title[script.title.length - 1] !== "."
+        )
+        .filter(script => {
+          if (joinedLength + 1 + script.title.length < 80) {
+            joinedLength += 1 + script.title.length;
+            return true;
+          }
+        });
+    }
+
+    if (!joinedLength) {
+      return null;
+    }
+    const isCurrentAnswer = opt =>
+      opt.answer.value === questionResponses[currentInteractionStep.id];
+    const isCurrentCannedResponse = script =>
+      cannedResponseScript && script.id === cannedResponseScript.id;
     return (
-      <div
-        style={{
-          height: "40px",
-          position: "absolute",
-          top: "40px",
-          width: "100%",
-          padding: "9px"
-        }}
-      >
+      <div>
         {currentQuestionOptions.map(opt => (
           <FlatButton
-            key={`shortcut_${opt.answer.value}`}
+            key={`shortcutStep_${opt.answer.value}`}
             label={opt.label}
             onTouchTap={evt => {
               this.handleQuestionResponseChange({
@@ -743,19 +789,29 @@ export class AssignmentTexterContactControls extends React.Component {
               });
             }}
             className={css(flexStyles.flatButton)}
+            style={{ marginRight: "9px" }}
+            labelStyle={{
+              ...inlineStyles.flatButtonLabel,
+              color: isCurrentAnswer(opt) ? "white" : "#494949"
+            }}
+            backgroundColor={isCurrentAnswer(opt) ? "#727272" : "white"}
+          />
+        ))}
+        {shortCannedResponses.map(script => (
+          <FlatButton
+            key={`shortcutScript_${script.id}`}
+            label={script.title.replace(/^:/, "")}
+            onTouchTap={evt => {
+              this.handleCannedResponseChange(script);
+            }}
+            className={css(flexStyles.flatButton)}
             style={{ marginLeft: "9px" }}
             labelStyle={{
               ...inlineStyles.flatButtonLabel,
-              color:
-                opt.answer.value ===
-                questionResponses[currentInteractionStep.id]
-                  ? "white"
-                  : "#494949"
+              color: isCurrentCannedResponse(script) ? "white" : "#494949"
             }}
             backgroundColor={
-              opt.answer.value === questionResponses[currentInteractionStep.id]
-                ? "#727272"
-                : "white"
+              isCurrentCannedResponse(script) ? "#727272" : "white"
             }
           />
         ))}
@@ -767,7 +823,7 @@ export class AssignmentTexterContactControls extends React.Component {
     return (
       <div className={css(flexStyles.subButtonsExitButtons)}>
         <FlatButton
-          label="All Responses"
+          label={<span>All Responses</span>}
           onTouchTap={this.handleOpenAnswerPopover}
           className={css(flexStyles.flatButton)}
           labelStyle={inlineStyles.flatButtonLabel}
@@ -814,32 +870,20 @@ export class AssignmentTexterContactControls extends React.Component {
   renderMessageControls() {
     const { contact, messageStatusFilter } = this.props;
     const {
-      optOutDialogOpen,
       availableSteps,
       questionResponses,
       currentInteractionStep
     } = this.state;
+
+    if (this.state.optOutDialogOpen) {
+      return this.renderOptOutDialog();
+    }
+
     let currentQuestion = null;
     let currentQuestionAnswered = null;
-    let currentQuestionOptions = null;
     if (currentInteractionStep) {
       currentQuestion = currentInteractionStep.question;
       currentQuestionAnswered = questionResponses[currentInteractionStep.id];
-      currentQuestionOptions = currentQuestion.answerOptions.map(answer => {
-        const label = answer.value.match(/^(\w+)([^\s\w]|$)/);
-        return {
-          answer: answer,
-          label: label ? label[1] : "Yes__No__Maybe__toomuch"
-        };
-      });
-      const joinedLength = currentQuestionOptions.map(o => o.label).join("__");
-      if (joinedLength.length > 14) {
-        // too many/long options
-        currentQuestionOptions = null;
-      }
-    }
-    if (optOutDialogOpen) {
-      return this.renderOptOutDialog();
     }
     return [
       this.renderMessagingRowMessage({}),
@@ -855,13 +899,7 @@ export class AssignmentTexterContactControls extends React.Component {
               )
             : null}
           <div className={css(flexStyles.subSubAnswerButtonsColumns)}>
-            {currentQuestionOptions
-              ? this.renderMessagingRowReplyShortcuts(
-                  currentQuestionOptions,
-                  questionResponses,
-                  currentInteractionStep
-                )
-              : null}
+            {this.renderMessagingRowReplyShortcuts()}
           </div>
         </div>
 
