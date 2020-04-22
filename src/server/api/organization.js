@@ -59,7 +59,10 @@ export const resolvers = {
         ? JSON.parse(organization.features).TWILIO_MESSAGE_SERVICE_SID
         : null,
     fullyConfigured: async organization => {
-      if (getConfig("DEFAULT_SERVICE", organization) === 'twilio') {
+      const serviceName =
+        getConfig("service", organization)
+        || getConfig("DEFAULT_SERVICE");
+      if (serviceName === 'twilio') {
         const { authToken, apiKey } =
           await cacheableData.organization.getTwilioAuth(organization);
         const messagingServiceSid =
