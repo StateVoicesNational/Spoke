@@ -22,3 +22,4 @@ coverage/
 *.rdb
 package-lock.json
 CONFIG_FILE.json
+scratch/
