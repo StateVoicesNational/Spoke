@@ -502,32 +502,34 @@ class AdminCampaignEdit extends React.Component {
     );
 
     return (
-      <div
-        style={{
-          marginBottom: 15,
-          fontSize: 16
-        }}
-      >
+      <div>
         <h2>{this.props.campaignData.campaign.title}</h2>
-        {this.state.startingCampaign ? (
-          <div
-            style={{
-              color: theme.colors.gray,
-              fontWeight: 800
-            }}
-          >
-            <CircularProgress
-              size={0.5}
+        <div
+          style={{
+            marginBottom: 15,
+            fontSize: 16
+          }}
+        >
+          {this.state.startingCampaign ? (
+            <div
               style={{
-                verticalAlign: "middle",
-                display: "inline-block"
+                color: theme.colors.gray,
+                fontWeight: 800
               }}
-            />
-            Starting your campaign...
-          </div>
-        ) : (
-          notStarting
-        )}
+            >
+              <CircularProgress
+                size={0.5}
+                style={{
+                  verticalAlign: "middle",
+                  display: "inline-block"
+                }}
+              />
+              Starting your campaign...
+            </div>
+          ) : (
+            notStarting
+          )}
+        </div>
       </div>
     );
   }
