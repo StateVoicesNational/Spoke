@@ -101,6 +101,16 @@ const flexStyles = StyleSheet.create({
       height: "50%"
     }
   },
+  popoverLink: {
+    float: "right",
+    width: "4em",
+    marginRight: "2em",
+    fontWeight: "normal",
+    fontSize: "80%"
+  },
+  popoverLinkColor: {
+    color: "rgb(81, 82, 89)"
+  },
   sectionHeaderToolbar: {
     flex: "0 0 auto"
   },
@@ -352,7 +362,6 @@ export class AssignmentTexterContactControls extends React.Component {
   };
 
   handleCannedResponseChange = cannedResponseScript => {
-    console.log("cannedResponseChange", cannedResponseScript);
     this.handleChangeScript(cannedResponseScript.text);
     this.setState({
       answerPopoverOpen: false
@@ -409,7 +418,7 @@ export class AssignmentTexterContactControls extends React.Component {
   };
 
   handleChangeScript = newScript => {
-    const messageText = this.props.getMessageTextFromScript(newScript);
+    const messageText = this.props.getMessageTextFromScript(newScript) || "";
 
     this.setState({
       messageText
@@ -456,6 +465,20 @@ export class AssignmentTexterContactControls extends React.Component {
       campaign.interactionSteps
     );
 
+    const otherResponsesLink =
+      this.state.currentInteractionStep &&
+      this.state.currentInteractionStep.question.answerOptions.length > 6 &&
+      assignment.campaignCannedResponses.length ? (
+        <div className={css(flexStyles.popoverLink)}>
+          <a
+            href="#otherresponses"
+            className={css(flexStyles.popoverLinkColor)}
+          >
+            Other Responses
+          </a>
+        </div>
+      ) : null;
+
     return (
       <Popover
         style={inlineStyles.popover}
@@ -471,6 +494,7 @@ export class AssignmentTexterContactControls extends React.Component {
           interactionSteps={availableInteractionSteps}
           onQuestionResponseChange={this.handleQuestionResponseChange}
           currentInteractionStep={this.state.currentInteractionStep}
+          listHeader={otherResponsesLink}
           questionResponses={questionResponses}
           onRequestClose={this.handleCloseAnswerPopover}
         />
@@ -479,7 +503,7 @@ export class AssignmentTexterContactControls extends React.Component {
           showAddScriptButton={false}
           duplicateCampaignResponses
           customFields={campaign.customFields}
-          subheader={"Other Responses"}
+          subheader={<div id="otherresponses">Other Responses</div>}
           onSelectCannedResponse={this.handleCannedResponseChange}
           onCreateCannedResponse={this.props.onCreateCannedResponse}
         />
@@ -488,7 +512,7 @@ export class AssignmentTexterContactControls extends React.Component {
           showAddScriptButton={true}
           duplicateCampaignResponses
           customFields={campaign.customFields}
-          subheader={"Personal Custom Responses"}
+          subheader={<span>Personal Custom Responses</span>}
           onSelectCannedResponse={this.handleCannedResponseChange}
           onCreateCannedResponse={this.props.onCreateCannedResponse}
         />

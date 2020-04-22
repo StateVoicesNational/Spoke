@@ -105,7 +105,8 @@ class ScriptList extends React.Component {
     const list =
       scripts.length === 0 ? null : (
         <List>
-          <Subheader>{subheader}</Subheader>,{listItems}
+          <Subheader>{subheader}</Subheader>
+          {listItems}
           <Divider />
         </List>
       );

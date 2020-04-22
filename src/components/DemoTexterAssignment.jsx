@@ -263,6 +263,47 @@ export const tests = {
                     script:
                       "It's too bad, hopefully you'll meet some cool people there."
                   }
+                },
+                {
+                  value: "Maybe",
+                  interactionStepId: "22",
+                  nextInteractionStep: {
+                    id: "22",
+                    script: "Super, we'll add your +1"
+                  }
+                },
+
+                {
+                  value: "Is it ok if my friend is a Republican?",
+                  interactionStepId: "23",
+                  nextInteractionStep: {
+                    id: "23",
+                    script: "Yes, let's make sure they hear important facts."
+                  }
+                },
+                {
+                  value: "More than one friend",
+                  interactionStepId: "24",
+                  nextInteractionStep: {
+                    id: "24",
+                    script: "You must be popular, we'll add your +10"
+                  }
+                },
+                {
+                  value: "Another possible answer",
+                  interactionStepId: "25",
+                  nextInteractionStep: {
+                    id: "25",
+                    script: "You must be popular, we'll add your +10"
+                  }
+                },
+                {
+                  value: "Yet Another possible answer",
+                  interactionStepId: "26",
+                  nextInteractionStep: {
+                    id: "26",
+                    script: "You must be popular, we'll add your +10"
+                  }
                 }
               ]
             }
