@@ -13,7 +13,6 @@ import ClearIcon from "material-ui/svg-icons/content/clear";
 const styles = {
   root: {},
   card: {
-    marginTop: 10,
     marginBottom: 10,
     backgroundColor: grey50,
     padding: 10
