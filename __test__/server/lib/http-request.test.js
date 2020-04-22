@@ -55,7 +55,7 @@ describe("requestWithRetry", () => {
     });
   });
 
-  describe("validateStatus", () => {
+  describe("validate status", () => {
     let nocked;
     beforeEach(async () => {
       nocked = nock(url, {
@@ -67,16 +67,25 @@ describe("requestWithRetry", () => {
     });
 
     describe("successful status validation", () => {
-      each([
-        ["validateStatus is an integer", 201],
-        ["validateStatus is an array", [201]],
-        ["validateStatus is an function", status => status === 201]
-      ]).test("%s", async (description, validateStatus) => {
+      describe("validStatuses is provided", async () => {
         const result = await requestWithRetry(`${url}${path}`, {
           method: "POST",
           headers,
           body,
-          validateStatus
+          validStatuses: [201]
+        });
+
+        const receivedBody = await result.text();
+        expect(receivedBody).toEqual("Nevertheless it was persisted.");
+        nocked.done();
+      });
+
+      describe("statusValidatioFunction is provided", async () => {
+        const result = await requestWithRetry(`${url}${path}`, {
+          method: "POST",
+          headers,
+          body,
+          statusValidationFunction: status => status === 201
         });
 
         const receivedBody = await result.text();
@@ -86,11 +95,7 @@ describe("requestWithRetry", () => {
     });
 
     describe("unsuccessful status validation", () => {
-      each([
-        ["validateStatus is an integer", 200],
-        ["validateStatus is an array", [200]],
-        ["validateStatus is an function", status => status === 200]
-      ]).test("%s", async (description, validateStatus) => {
+      describe("validStatuses is provided", async () => {
         let error;
 
         try {
@@ -98,7 +103,29 @@ describe("requestWithRetry", () => {
             method: "POST",
             headers,
             body,
-            validateStatus
+            validStatusesL: [200]
+          });
+        } catch (err) {
+          error = err;
+        }
+
+        expect(error).not.toBeUndefined();
+        expect(error.toString()).toMatch(
+          /Error: Request id .+ failed; received status 201/
+        );
+
+        nocked.done();
+      });
+
+      describe("statusValidationFunction is provided", async () => {
+        let error;
+
+        try {
+          await requestWithRetry(`${url}${path}`, {
+            method: "POST",
+            headers,
+            body,
+            statusValidationFunction: status => status === 200
           });
         } catch (err) {
           error = err;
@@ -160,11 +187,11 @@ describe("requestWithRetry", () => {
     });
 
     describe("when we don't provide retries", () => {
-      it("it retries twice", async () => {
+      it("it does not retry", async () => {
         let error;
         const nocked = nock(url)
           .get(path)
-          .times(3)
+          .times(1)
           .delay(1000)
           .reply(200);
         try {
@@ -176,7 +203,7 @@ describe("requestWithRetry", () => {
           error = caughtException;
         } finally {
           expect(error.toString()).toMatch(
-            /Error: Request id .+ failed; all 2 retries exhausted/
+            /Error: Request id .+ failed; timeout after 500ms/
           );
           nocked.done();
         }
