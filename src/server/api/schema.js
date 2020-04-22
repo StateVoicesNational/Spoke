@@ -1234,7 +1234,7 @@ const rootMutations = {
       await r
         .knex("tag")
         .where("id", id)
-        .delete();
+        .update({ is_deleted: true });
       return { id };
     }
   }

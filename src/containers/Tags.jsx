@@ -15,7 +15,7 @@ import Form from "react-formal";
 import { StyleSheet, css } from "aphrodite";
 import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
-import wrapMutations from "./hoc/wrap-mutations";
+import { withRouter } from "react-router";
 import PropTypes from "prop-types";
 
 const styles = StyleSheet.create({
@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
   }
 });
 
-class Tags extends React.Component {
+export class Tags extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -79,6 +79,7 @@ class Tags extends React.Component {
       formData,
       this.props.params.organizationId
     );
+    await this.props.data.refetch();
     this.handleClose();
   }
 
@@ -88,12 +89,18 @@ class Tags extends React.Component {
       this.props.params.organizationId,
       this.state.tagId
     );
+    await this.props.data.refetch();
     this.handleClose();
   }
 
   handleDelete(id) {
-    return () =>
-      this.props.mutations.deleteTag(this.props.params.organizationId, id);
+    return async () => {
+      await this.props.mutations.deleteTag(
+        this.props.params.organizationId,
+        id
+      );
+      this.props.data.refetch();
+    };
   }
 
   render() {
@@ -107,7 +114,7 @@ class Tags extends React.Component {
     return (
       <div className={css(styles.cards)}>
         {tags.map(t => (
-          <Card className={css(styles.card)} key={t.id}>
+          <Card className={css(styles.card)} id={t.id} key={t.id}>
             <CardText>
               <Chip style={{ margin: 0 }} text={t.name} />
             </CardText>
@@ -206,8 +213,7 @@ const mapMutationsToProps = () => ({
     variables: {
       tagData,
       organizationId
-    },
-    refetchQueries: [`getTags`]
+    }
   }),
   editTag: (tagData, organizationId, id) => ({
     mutation: gql`
@@ -225,8 +231,7 @@ const mapMutationsToProps = () => ({
       tagData,
       organizationId,
       id
-    },
-    refetchQueries: [`getTags`]
+    }
   }),
   deleteTag: (organizationId, id) => ({
     mutation: gql`
@@ -239,12 +244,11 @@ const mapMutationsToProps = () => ({
     variables: {
       organizationId,
       id
-    },
-    refetchQueries: [`getTags`]
+    }
   })
 });
 
-export default loadData(wrapMutations(Tags), {
+export default loadData(withRouter(Tags), {
   mapQueriesToProps,
   mapMutationsToProps
 });
