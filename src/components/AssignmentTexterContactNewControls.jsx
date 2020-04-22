@@ -14,6 +14,7 @@ import IconButton from "material-ui/IconButton/IconButton";
 import { Card, CardActions, CardTitle } from "material-ui/Card";
 import Divider from "material-ui/Divider";
 import CreateIcon from "material-ui/svg-icons/content/create";
+import DownIcon from "material-ui/svg-icons/navigation/arrow-drop-down";
 import yup from "yup";
 import theme from "../styles/theme";
 import Form from "react-formal";
@@ -823,7 +824,11 @@ export class AssignmentTexterContactControls extends React.Component {
     return (
       <div className={css(flexStyles.subButtonsExitButtons)}>
         <FlatButton
-          label={<span>All Responses</span>}
+          label={
+            <span>
+              All Responses <DownIcon style={{ verticalAlign: "middle" }} />
+            </span>
+          }
           onTouchTap={this.handleOpenAnswerPopover}
           className={css(flexStyles.flatButton)}
           labelStyle={inlineStyles.flatButtonLabel}

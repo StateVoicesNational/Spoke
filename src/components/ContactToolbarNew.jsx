@@ -30,8 +30,8 @@ const styles = StyleSheet.create({
   contactData: {
     flex: "1 2 auto",
     maxWidth: "80%",
-    "@media(max-width: 350px)": {
-      maxWidth: "50%"
+    "@media(max-width: 375px)": {
+      maxWidth: "50%" // iphone 5 and X
     }
   },
   titleSmall: {
