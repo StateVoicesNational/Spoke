@@ -195,6 +195,8 @@ export const resolvers = {
         "introHtml",
         "primaryColor",
         "logoImageUrl",
+        "useOwnMessagingService",
+        "messagingServiceSid",
         "overrideOrganizationTextingHours",
         "textingHoursEnforced",
         "textingHoursStart",
