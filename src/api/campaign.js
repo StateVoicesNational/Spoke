@@ -13,6 +13,12 @@ export const schema = `
     optOutsCount: Int
   }
 
+  type CampaignCompletionStats {
+    contactsCount: Int
+    assignedCount: Int
+    messagedCount: Int
+  }
+
   type IngestMethod {
     name: String!
     displayName: String
@@ -54,6 +60,7 @@ export const schema = `
     customFields: [String]
     cannedResponses(userId: String): [CannedResponse]
     stats: CampaignStats,
+    completionStats: CampaignCompletionStats
     pendingJobs: [JobRequest]
     ingestMethodsAvailable: [IngestMethod]
     ingestMethod: IngestMethod

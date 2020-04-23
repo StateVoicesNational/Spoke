@@ -9,7 +9,7 @@ import { dataTest } from "../lib/attributes";
 const styles = StyleSheet.create({
   container: {
     display: "inline-block",
-    marginLeft: 24,
+    marginLeft: 24
   }
 });
 class SendButton extends Component {

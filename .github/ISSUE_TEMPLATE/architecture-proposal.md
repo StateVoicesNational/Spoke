@@ -38,6 +38,9 @@ The template leans towards projects that are supported by an organization. We do
 #### Files/File-sections touched
 *What code will be needed?*
 
+#### Schema changes and migrations
+*What database schema changes and data migrations will be needed?*
+
 #### Any other links to details about the plan (maybe a Google Doc link, or other place where folks have commented)
 *Google docs or other platforms might be better for line by line commenting. If you're coordinating somewhere else in addition to here, paste a link! Remember that github allows anyone to view, so don't post a link with edit permissions*
 

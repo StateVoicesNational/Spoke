@@ -16,7 +16,11 @@ const TOP_LEVEL_UPLOAD_FIELDS = [
   "zip",
   "external_id"
 ];
-const TEXTER_SCRIPT_FIELDS = ["texterFirstName", "texterLastName", "texterAliasOrFirstName"];
+const TEXTER_SCRIPT_FIELDS = [
+  "texterFirstName",
+  "texterLastName",
+  "texterAliasOrFirstName"
+];
 
 // Fields that should be capitalized when a script is applied
 const CAPITALIZE_FIELDS = [
