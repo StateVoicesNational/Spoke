@@ -366,9 +366,9 @@ export class AssignmentTexterContact extends React.Component {
   });
 
   render() {
-    const ControlsComponent = /new=1/.test(document.location.search)
-      ? AssignmentTexterContactNewControls
-      : AssignmentTexterContactControls;
+    const ControlsComponent = /old=1/.test(document.location.search)
+      ? AssignmentTexterContactControls
+      : AssignmentTexterContactNewControls;
     return (
       <div>
         {this.state.disabled ? (
