@@ -842,7 +842,6 @@ export class AssignmentTexterContactControls extends React.Component {
           {...dataTest("optOut")}
           label="Opt-out"
           onTouchTap={this.handleOpenDialog}
-          tooltip="Opt out this contact"
           className={css(flexStyles.flatButton)}
           labelStyle={{ ...inlineStyles.flatButtonLabel, color: "#DE1A1A" }}
           backgroundColor="white"
@@ -892,7 +891,7 @@ export class AssignmentTexterContactControls extends React.Component {
     }
     return [
       this.renderMessagingRowMessage({}),
-      <div className={css(flexStyles.sectionButtons)}>
+      <div key="sectionButtons" className={css(flexStyles.sectionButtons)}>
         <div
           className={css(flexStyles.subButtonsAnswerButtons)}
           ref="answerButtons"
@@ -917,7 +916,7 @@ export class AssignmentTexterContactControls extends React.Component {
 
   renderToolbar() {
     return (
-      <div className={css(flexStyles.sectionHeaderToolbar)}>
+      <div key="toolbar" className={css(flexStyles.sectionHeaderToolbar)}>
         <ContactToolbarNew
           campaign={this.props.campaign}
           campaignContact={this.props.contact}
@@ -934,6 +933,7 @@ export class AssignmentTexterContactControls extends React.Component {
       <div
         {...dataTest("messageList")}
         ref="messageScrollContainer"
+        key="messageScrollContainer"
         className={css(flexStyles.sectionMessageThread)}
       >
         <Empty
@@ -956,6 +956,7 @@ export class AssignmentTexterContactControls extends React.Component {
           this.renderToolbar(),
           <div
             {...dataTest("messageList")}
+            key="messageScrollContainer"
             ref="messageScrollContainer"
             className={css(flexStyles.sectionMessageThread)}
           >
