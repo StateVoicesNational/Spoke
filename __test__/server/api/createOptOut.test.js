@@ -9,22 +9,13 @@ import {
   getOptOut
 } from "../../test_helpers";
 
+import { createOptOutGqlString as createOptOutGql } from "../../../src/components/IncomingMessageList/ConversationPreviewModal";
+
 describe("createOptOut", () => {
   let startedCampaign;
   let optOutContact;
   let optOut;
   let variables;
-  const createOptOutGql = `mutation createOptOut(
-      $optOut: OptOutInput!
-      $campaignContactId: String!
-    ) {
-      createOptOut(
-       optOut: $optOut
-       campaignContactId: $campaignContactId
-      ) {
-       id
-      }
-    }`;
 
   beforeEach(async () => {
     // Set up an entire working campaign

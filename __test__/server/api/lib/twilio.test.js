@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-expressions, consistent-return */
-import { r, Message } from "../../../../src/server/models/";
+import { r, Message, cacheableData } from "../../../../src/server/models/";
 import { postMessageSend } from "../../../../src/server/api/lib/twilio";
 import twilio from "../../../../src/server/api/lib/twilio";
 import { getLastMessage } from "../../../../src/server/api/lib/message-sending";
@@ -33,6 +33,13 @@ let testContacts;
 let organizationId;
 let assignmentId;
 let dbCampaignContact;
+let queryLog;
+
+function spokeDbListener(data) {
+  if (queryLog) {
+    queryLog.push(data);
+  }
+}
 
 beforeEach(async () => {
   // Set up an entire working campaign
@@ -49,9 +56,17 @@ beforeEach(async () => {
   assignmentId = dbCampaignContact.assignment_id;
   await createScript(testAdminUser, testCampaign);
   await startCampaign(testAdminUser, testCampaign);
+  // use caching
+  await cacheableData.organization.load(organizationId);
+  await cacheableData.campaign.load(testCampaign.id, { forceLoad: true });
+
+  queryLog = [];
+  r.knex.on("query", spokeDbListener);
 }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
 
 afterEach(async () => {
+  queryLog = null;
+  r.knex.removeListener("query", spokeDbListener);
   await cleanupTest();
   if (r.redis) r.redis.flushdb();
 }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
@@ -160,17 +175,28 @@ it("postMessageSend error from twilio response should fail immediately", async (
 });
 
 it("handleIncomingMessage should save message and update contact state", async () => {
-  const message = await Message.save({
-    campaign_contact_id: dbCampaignContact.id,
-    contact_number: dbCampaignContact.cell,
-    messageservice_sid: "fakeSid_MK123",
-    is_from_contact: false,
-    send_status: "SENT",
-    service: "twilio",
-    text: "some message",
-    user_id: testTexterUser.id,
-    service_id: "123123123"
+  // use caching
+  const org = await cacheableData.organization.load(organizationId);
+  const campaign = await cacheableData.campaign.load(testCampaign.id, {
+    forceLoad: true
   });
+  await cacheableData.campaignContact.loadMany(campaign, org, {});
+  queryLog = [];
+  await cacheableData.message.save({
+    contact: dbCampaignContact,
+    messageInstance: new Message({
+      campaign_contact_id: dbCampaignContact.id,
+      contact_number: dbCampaignContact.cell,
+      messageservice_sid: "fakeSid_MK123",
+      is_from_contact: false,
+      send_status: "SENT",
+      service: "twilio",
+      text: "some message",
+      user_id: testTexterUser.id,
+      service_id: "123123123"
+    })
+  });
+
   const lastMessage = await getLastMessage({
     contactNumber: dbCampaignContact.cell,
     service: "twilio",
@@ -185,8 +211,19 @@ it("handleIncomingMessage should save message and update contact state", async (
     Body: "Fake reply",
     MessagingServiceSid: "fakeSid_MK123"
   });
+
+  if (r.redis) {
+    // IMPORTANT: this should be tested before we do SELECT statements below
+    //   in the test itself to check the database
+    const selectMethods = { select: 1, first: 1 };
+    const selectCalls = queryLog.filter(q => q.method in selectMethods);
+    // NO select statements should have fired!
+    expect(selectCalls).toEqual([]);
+  }
+
   const [reply] = await r.knex("message").where("service_id", "TestMessageId");
   dbCampaignContact = await getCampaignContact(dbCampaignContact.id);
+
   expect(reply.send_status).toEqual("DELIVERED");
   expect(reply.campaign_contact_id).toEqual(dbCampaignContact.id);
   expect(reply.contact_number).toEqual(dbCampaignContact.cell);
@@ -203,7 +240,7 @@ it("postMessageSend+erroredMessageSender network error should decrement on err/f
     is_from_contact: false,
     send_status: "SENDING",
     service: "twilio", // important since message.service is used in erroredMessageSender
-    text: "apierrortest <= IMPORTANT text to make this test work!",
+    text: "twilioapitesterrortimeout <= IMPORTANT text to make this test work!",
     user_id: testTexterUser.id,
     error_code: -1 // important to start with an error
   });

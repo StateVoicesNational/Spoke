@@ -11,9 +11,13 @@ The latest version is [5.3](https://github.com/MoveOnOrg/Spoke/tree/v5.3) (see [
 
 ## Deploy to Heroku
 
+Use the Heroku Button to deploy a version of Spoke suitable for testing. This won't cost any money and will not support production usage. It's a great way to practice deploying Spoke or see it in action.
 <a href="https://heroku.com/deploy?template=https://github.com/MoveOnOrg/Spoke/tree/v5.3">
   <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy">
 </a>
+
+Or click [this link to deploy with a prod infrastructure set up to get up and running!](https://heroku.com/deploy?template=https://github.com/MoveOnOrg/Spoke/tree/heroku-button-paid)
+**NOTE:** Deploying with prod infrastructure will cost $75 ($25 dyno + $50 postgres) a month and should be suitable for production level usage for most organizations.
 
 Follow up instructions located [here](https://github.com/MoveOnOrg/Spoke/blob/main/docs/HOWTO_HEROKU_DEPLOY.md).
 
