@@ -15,6 +15,7 @@ import { Card, CardActions, CardTitle } from "material-ui/Card";
 import Divider from "material-ui/Divider";
 import CreateIcon from "material-ui/svg-icons/content/create";
 import DownIcon from "material-ui/svg-icons/navigation/arrow-drop-down";
+import SearchBar from "material-ui-search-bar";
 import yup from "yup";
 import theme from "../styles/theme";
 import Form from "react-formal";
@@ -434,6 +435,11 @@ export class AssignmentTexterContactControls extends React.Component {
       answerPopoverAnchorEl: event.currentTarget,
       answerPopoverOpen: true
     });
+    setTimeout(() => {
+      if (this.refs.responseSearchBar) {
+        this.refs.responseSearchBar.focus();
+      }
+    }, 500);
   };
 
   handleCloseAnswerPopover = () => {
@@ -458,7 +464,11 @@ export class AssignmentTexterContactControls extends React.Component {
 
   renderSurveySection() {
     const { assignment, campaign, contact } = this.props;
-    const { answerPopoverOpen, questionResponses } = this.state;
+    const {
+      answerPopoverOpen,
+      questionResponses,
+      currentInteractionStep
+    } = this.state;
     const { messages } = contact;
 
     const availableInteractionSteps = getAvailableInteractionSteps(
@@ -467,8 +477,8 @@ export class AssignmentTexterContactControls extends React.Component {
     );
 
     const otherResponsesLink =
-      this.state.currentInteractionStep &&
-      this.state.currentInteractionStep.question.answerOptions.length > 6 &&
+      currentInteractionStep &&
+      currentInteractionStep.question.answerOptions.length > 6 &&
       assignment.campaignCannedResponses.length ? (
         <div className={css(flexStyles.popoverLink)}>
           <a
@@ -479,7 +489,10 @@ export class AssignmentTexterContactControls extends React.Component {
           </a>
         </div>
       ) : null;
-
+    const showSearch =
+      assignment.campaignCannedResponses.length > 4 ||
+      (currentInteractionStep &&
+        currentInteractionStep.question.answerOptions.length > 6);
     return (
       <Popover
         style={inlineStyles.popover}
@@ -490,11 +503,20 @@ export class AssignmentTexterContactControls extends React.Component {
         targetOrigin={{ horizontal: "left", vertical: "bottom" }}
         onRequestClose={this.handleCloseAnswerPopover}
       >
+        {showSearch ? (
+          <SearchBar
+            onChange={foo => {
+              console.log("searchchange", foo);
+            }}
+            hintText={"Responses"}
+            ref="responseSearchBar"
+          />
+        ) : null}
         <AssignmentTexterSurveys
           contact={contact}
           interactionSteps={availableInteractionSteps}
           onQuestionResponseChange={this.handleQuestionResponseChange}
-          currentInteractionStep={this.state.currentInteractionStep}
+          currentInteractionStep={currentInteractionStep}
           listHeader={otherResponsesLink}
           questionResponses={questionResponses}
           onRequestClose={this.handleCloseAnswerPopover}
