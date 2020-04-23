@@ -113,10 +113,16 @@ export function getContacts(
 export const resolvers = {
   Assignment: {
     ...mapFieldsToModel(["id", "maxContacts"], Assignment),
-    texter: async (assignment, _, { loaders }) =>
-      assignment.texter
-        ? assignment.texter
-        : await loaders.user.load(assignment.user_id),
+    texter: async (assignment, _, { loaders, user }) => {
+      if (assignment.texter) {
+        return assignment.texter;
+      } else if (assignment.user_id === user.id) {
+        // Will use current user's cache if present
+        return user;
+      } else {
+        return await loaders.user.load(assignment.user_id);
+      }
+    },
     campaign: async (assignment, _, { loaders }) =>
       loaders.campaign.load(assignment.campaign_id),
     contactsCount: async (assignment, { contactsFilter }) => {
