@@ -366,9 +366,11 @@ export class AssignmentTexterContact extends React.Component {
   });
 
   render() {
-    const ControlsComponent = /old=1/.test(document.location.search)
-      ? AssignmentTexterContactControls
-      : AssignmentTexterContactNewControls;
+    const ControlsComponent =
+      /old=1/.test(document.location.search) ||
+      window.DEPRECATED_TEXTERUI === "GONE_SOON"
+        ? AssignmentTexterContactControls
+        : AssignmentTexterContactNewControls;
     return (
       <div>
         {this.state.disabled ? (
