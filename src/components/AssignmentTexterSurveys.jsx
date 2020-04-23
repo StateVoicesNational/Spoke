@@ -219,7 +219,7 @@ AssignmentTexterSurveys.propTypes = {
   interactionSteps: PropTypes.array,
   currentInteractionStep: PropTypes.object,
   questionResponses: PropTypes.object,
-  listHeader: PropTypes.elem,
+  listHeader: PropTypes.object,
   onQuestionResponseChange: PropTypes.func,
   onRequestClose: PropTypes.func
 };
