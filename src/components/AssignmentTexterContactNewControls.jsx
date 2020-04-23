@@ -361,11 +361,22 @@ export class AssignmentTexterContactControls extends React.Component {
   };
 
   handleCannedResponseChange = cannedResponseScript => {
-    this.handleChangeScript(cannedResponseScript.text);
-    this.setState({
-      cannedResponseScript,
-      answerPopoverOpen: false
-    });
+    const currentCannedResponseId =
+      this.state.cannedResponseScript && this.state.cannedResponseScript.id;
+
+    if (cannedResponseScript.id === currentCannedResponseId) {
+      // identical means we're cancelling it -- so it can be toggled
+      this.setState({
+        messageText: "",
+        cannedResponseScript: null
+      });
+    } else {
+      this.handleChangeScript(cannedResponseScript.text);
+      this.setState({
+        cannedResponseScript,
+        answerPopoverOpen: false
+      });
+    }
   };
 
   handleOpenDialog = () => {
@@ -458,7 +469,11 @@ export class AssignmentTexterContactControls extends React.Component {
 
   renderSurveySection() {
     const { assignment, campaign, contact } = this.props;
-    const { answerPopoverOpen, questionResponses } = this.state;
+    const {
+      answerPopoverOpen,
+      questionResponses,
+      cannedResponseScript
+    } = this.state;
     const { messages } = contact;
 
     const availableInteractionSteps = getAvailableInteractionSteps(
@@ -502,8 +517,8 @@ export class AssignmentTexterContactControls extends React.Component {
         <ScriptList
           scripts={assignment.campaignCannedResponses}
           showAddScriptButton={false}
-          duplicateCampaignResponses
           customFields={campaign.customFields}
+          currentCannedResponseScript={cannedResponseScript}
           subheader={<div id="otherresponses">Other Responses</div>}
           onSelectCannedResponse={this.handleCannedResponseChange}
           onCreateCannedResponse={this.props.onCreateCannedResponse}
@@ -511,8 +526,8 @@ export class AssignmentTexterContactControls extends React.Component {
         <ScriptList
           scripts={assignment.userCannedResponses}
           showAddScriptButton={true}
-          duplicateCampaignResponses
-          customFields={campaign.customFields}
+          customFields={[] /* texters shouldn't have access to custom fields */}
+          currentCannedResponseScript={cannedResponseScript}
           subheader={<span>Personal Custom Responses</span>}
           onSelectCannedResponse={this.handleCannedResponseChange}
           onCreateCannedResponse={this.props.onCreateCannedResponse}
@@ -782,9 +797,12 @@ export class AssignmentTexterContactControls extends React.Component {
             onTouchTap={evt => {
               this.handleQuestionResponseChange({
                 interactionStep: currentInteractionStep,
-                questionResponseValue: opt.answer.value,
+                questionResponseValue: isCurrentAnswer(opt)
+                  ? null
+                  : opt.answer.value,
                 nextScript:
-                  (opt.answer.nextInteractionStep &&
+                  (!isCurrentAnswer(opt) &&
+                    opt.answer.nextInteractionStep &&
                     opt.answer.nextInteractionStep.script) ||
                   null
               });

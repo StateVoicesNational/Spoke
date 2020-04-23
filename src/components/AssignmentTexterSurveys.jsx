@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import React, { Component } from "react";
-import { grey50 } from "material-ui/styles/colors";
+import theme from "../styles/theme";
 import { Card, CardHeader, CardText } from "material-ui/Card";
 import Subheader from "material-ui/Subheader";
 import { List, ListItem } from "material-ui/List";
@@ -14,7 +14,7 @@ const styles = {
   root: {},
   card: {
     marginBottom: 10,
-    backgroundColor: grey50,
+    backgroundColor: theme.components.popup.backgroundColor,
     padding: 10
   },
   cardHeader: {
@@ -22,8 +22,14 @@ const styles = {
   },
   cardText: {
     padding: 0
+  },
+  pastQuestionsLink: {
+    marginTop: "5px",
+    borderTop: `1px solid ${theme.components.popup.outline}`,
+    borderBottom: `1px solid ${theme.components.popup.outline}`
   }
 };
+
 class AssignmentTexterSurveys extends Component {
   constructor(props) {
     super(props);
@@ -153,11 +159,7 @@ class AssignmentTexterSurveys extends Component {
             key={`pastquestions`}
             primaryText={"Past Questions"}
             rightIcon={<ArrowRightIcon />}
-            style={{
-              marginTop: "5px",
-              borderTop: "1px solid black",
-              borderBottom: "1px solid black"
-            }}
+            style={styles.pastQuestionsLink}
           />
         ) : null}
         {step.question.answerOptions.map((answerOption, index) => (
