@@ -47,7 +47,7 @@ export async function available(organization, user) {
   /// to e.g. verify credentials or test server availability,
   /// then it's better to allow the result to be cached
   const result = user.is_superadmin && hasConfig("WAREHOUSE_DB_HOST");
-  // FUTURE: maybe test connection and then have expireSeconds caching
+  // FUTURE: maybe test connection and then have expiresSeconds caching
   return {
     result,
     expiresSeconds: 0
@@ -101,7 +101,7 @@ export async function getClientChoiceData(
   };
 }
 
-export async function processContactLoad(job, maxContacts) {
+export async function processContactLoad(job, maxContacts, organization) {
   /// trigger processing -- this will likely be the most important part
   /// you should load contacts into the contact table with the job.campaign_id
   /// Since this might just *begin* the processing and other work might
@@ -109,6 +109,11 @@ export async function processContactLoad(job, maxContacts) {
   /// AFTER true contact-load completion, this (or another function) MUST call
   /// src/workers/jobs.js::completeContactLoad(job)
   ///   The async function completeContactLoad(job) will delete opt-outs, delete duplicate cells, clear/update caching, etc.
+  /// The organization parameter is an object containing the name and other
+  ///   details about the organization on whose behalf this contact load
+  ///   was initiated. It is included here so it can be passed as the
+  ///   second parameter of getConfig in order to retrieve organization-
+  ///   specific configuration values.
   /// Basic responsibilities:
   /// 1. delete previous campaign contacts on a previous choice/upload
   /// 2. set campaign_contact.campaign_id = job.campaign_id on all uploaded contacts

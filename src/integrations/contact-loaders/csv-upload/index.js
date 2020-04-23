@@ -1,9 +1,5 @@
-import { completeContactLoad } from "../../../workers/jobs";
-import { r, CampaignContact } from "../../../server/models";
-import { getConfig, hasConfig } from "../../../server/api/lib/config";
-
-import { updateJob } from "../../../workers/lib";
-import { getTimezoneByZip, unzipPayload } from "../../../workers/jobs";
+import { finalizeContactLoad } from "../helpers";
+import { unzipPayload } from "../../../workers/jobs";
 
 export const name = "csv-upload";
 
@@ -64,7 +60,7 @@ export async function getClientChoiceData(
   };
 }
 
-export async function processContactLoad(job, maxContacts) {
+export async function processContactLoad(job, maxContacts, organization) {
   /// Trigger processing -- this will likely be the most important part
   /// you should load contacts into the contact table with the job.campaign_id
   /// Since this might just *begin* the processing and other work might
@@ -75,6 +71,11 @@ export async function processContactLoad(job, maxContacts) {
   ///      * delete contacts that are in the opt_out table,
   ///      * delete duplicate cells,
   ///      * clear/update caching, etc.
+  /// The organization parameter is an object containing the name and other
+  ///   details about the organization on whose behalf this contact load
+  ///   was initiated. It is included here so it can be passed as the
+  ///   second parameter of getConfig in order to retrieve organization-
+  ///   specific configuration values.
   /// Basic responsibilities:
   /// 1. Delete previous campaign contacts on a previous choice/upload
   /// 2. Set campaign_contact.campaign_id = job.campaign_id on all uploaded contacts
@@ -88,48 +89,12 @@ export async function processContactLoad(job, maxContacts) {
   /// * Error handling
   /// * "Request of Doom" scenarios -- queries or jobs too big to complete
 
-  const campaignId = job.campaign_id;
-  const jobMessages = [];
-
-  await r
-    .knex("campaign_contact")
-    .where("campaign_id", campaignId)
-    .delete();
-
   let contacts;
   if (job.payload[0] === "{") {
     contacts = JSON.parse(job.payload).contacts;
   } else {
     contacts = (await unzipPayload(job)).contacts;
   }
-  if (maxContacts) {
-    // note: maxContacts == 0 means no maximum
-    contacts = contacts.slice(0, maxContacts);
-  }
-  const chunkSize = 1000;
 
-  const numChunks = Math.ceil(contacts.length / chunkSize);
-
-  for (let index = 0; index < contacts.length; index++) {
-    const datum = contacts[index];
-    if (datum.zip) {
-      // using memoization and large ranges of homogenous zips
-      datum.timezone_offset = await getTimezoneByZip(datum.zip);
-    }
-    datum.campaign_id = campaignId;
-  }
-  for (let index = 0; index < numChunks; index++) {
-    await updateJob(job, Math.round((100 / numChunks) * index)).catch(err => {
-      console.error("Error updating job:", campaignId, job.id, err);
-    });
-    const savePortion = contacts.slice(
-      index * chunkSize,
-      (index + 1) * chunkSize
-    );
-    await CampaignContact.save(savePortion).catch(err => {
-      console.error("Error saving campaign contacts:", campaignId, err);
-    });
-  }
-
-  await completeContactLoad(job, jobMessages);
+  await finalizeContactLoad(job, contacts, maxContacts);
 }

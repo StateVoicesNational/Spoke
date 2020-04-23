@@ -12,6 +12,7 @@ import CampaignFormSectionHeading from "./CampaignFormSectionHeading";
 import CheckIcon from "material-ui/svg-icons/action/check-circle";
 import WarningIcon from "material-ui/svg-icons/alert/warning";
 import ErrorIcon from "material-ui/svg-icons/alert/error";
+import InfoIcon from "material-ui/svg-icons/action/info";
 import theme from "../styles/theme";
 import components from "../integrations/contact-loaders/components";
 import yup from "yup";
@@ -19,11 +20,13 @@ import yup from "yup";
 const check = <CheckIcon color={theme.colors.green} />;
 const warning = <WarningIcon color={theme.colors.orange} />;
 const error = <ErrorIcon color={theme.colors.red} />;
+const info = <InfoIcon color={theme.colors.green} />;
 
 export const icons = {
   check,
   warning,
-  error
+  error,
+  info
 };
 
 const innerStyles = {
@@ -73,7 +76,7 @@ export default class CampaignContactsChoiceForm extends React.Component {
   render() {
     const { ingestMethodChoices, pastIngestMethod } = this.props;
     const ingestMethod = this.getCurrentMethod();
-    const ingestMethodName = ingestMethod.name;
+    const ingestMethodName = ingestMethod && ingestMethod.name;
     const lastResult =
       pastIngestMethod && pastIngestMethod.name === ingestMethodName
         ? pastIngestMethod
@@ -124,24 +127,28 @@ export default class CampaignContactsChoiceForm extends React.Component {
                   key={methodChoice.name}
                   value={methodChoice.name}
                   primaryText={methodChoice.displayName}
-                  checked={ingestMethod == methodChoice.name}
+                  checked={
+                    ingestMethod && ingestMethod.name === methodChoice.name
+                  }
                 />
               ))}
             </SelectField>
           </GSForm>
-          <IngestComponent
-            onChange={chg => {
-              this.handleChange(chg);
-            }}
-            onSubmit={this.props.onSubmit}
-            campaignIsStarted={this.props.ensureComplete}
-            icons={icons}
-            saveDisabled={this.props.saveDisabled}
-            saveLabel={this.props.saveLabel}
-            clientChoiceData={ingestMethod.clientChoiceData}
-            lastResult={lastResult}
-            jobResultMessage={null}
-          />
+          {IngestComponent && (
+            <IngestComponent
+              onChange={chg => {
+                this.handleChange(chg);
+              }}
+              onSubmit={this.props.onSubmit}
+              campaignIsStarted={this.props.ensureComplete}
+              icons={icons}
+              saveDisabled={this.props.saveDisabled}
+              saveLabel={this.props.saveLabel}
+              clientChoiceData={ingestMethod && ingestMethod.clientChoiceData}
+              lastResult={lastResult}
+              jobResultMessage={null}
+            />
+          )}
         </div>
       </div>
     );

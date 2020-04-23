@@ -293,6 +293,14 @@ export class AdminIncomingMessageList extends Component {
     });
   };
 
+  handleForceRefresh = (clearSelectedMessages = false) => {
+    this.setState({
+      utc: Date.now().toString(),
+      needsRender: true,
+      clearSelectedMessages
+    });
+  };
+
   render() {
     const cursor = {
       offset: this.state.page * this.state.pageSize,
@@ -368,6 +376,7 @@ export class AdminIncomingMessageList extends Component {
               onConversationSelected={this.handleRowSelection}
               onConversationCountChanged={this.conversationCountChanged}
               clearSelectedMessages={this.state.clearSelectedMessages}
+              onForceRefresh={this.handleForceRefresh}
             />
           </div>
         )}

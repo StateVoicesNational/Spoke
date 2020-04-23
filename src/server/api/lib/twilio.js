@@ -7,8 +7,8 @@ import {
   r,
   cacheableData
 } from "../../models";
-import { log } from "../../../lib";
-import { getLastMessage, saveNewIncomingMessage } from "./message-sending";
+import { log, getConfig } from "../../../lib";
+import { saveNewIncomingMessage } from "./message-sending";
 
 // TWILIO error_codes:
 // > 1 (i.e. positive) error_codes are reserved for Twilio error codes
@@ -24,9 +24,12 @@ const DISABLE_DB_LOG = process.env.DISABLE_DB_LOG || global.DISABLE_DB_LOG;
 
 if (process.env.TWILIO_API_KEY && process.env.TWILIO_AUTH_TOKEN) {
   // eslint-disable-next-line new-cap
-  twilio = Twilio(process.env.TWILIO_API_KEY, process.env.TWILIO_AUTH_TOKEN);
+  twilio = new Twilio(
+    process.env.TWILIO_API_KEY,
+    process.env.TWILIO_AUTH_TOKEN
+  );
 } else {
-  log.warn("NO TWILIO CONNECTION");
+  log.warn("NO GLOBAL TWILIO CONNECTION");
 }
 
 if (!process.env.TWILIO_MESSAGE_SERVICE_SID) {
@@ -58,20 +61,6 @@ async function convertMessagePartsToMessage(messageParts) {
     .map(serviceMessage => serviceMessage.Body)
     .join("")
     .replace(/\0/g, ""); // strip all UTF-8 null characters (0x00)
-
-  const lastMessage = await getLastMessage({
-    contactNumber,
-    service: "twilio",
-    messageServiceSid: serviceMessages[0].MessagingServiceSid
-  });
-  if (!lastMessage) {
-    console.error(
-      "Message thread not found (probably text spam)",
-      contactNumber,
-      serviceMessages[0]
-    );
-    return;
-  }
   return new Message({
     contact_number: contactNumber,
     user_number: userNumber,
@@ -79,7 +68,8 @@ async function convertMessagePartsToMessage(messageParts) {
     text,
     error_code: null,
     service_id: firstPart.service_id,
-    campaign_contact_id: lastMessage.campaign_contact_id,
+    // will be set during cacheableData.message.save()
+    // campaign_contact_id: lastMessage.campaign_contact_id,
     messageservice_sid: serviceMessages[0].MessagingServiceSid,
     service: "twilio",
     send_status: "DELIVERED"
@@ -153,8 +143,8 @@ function parseMessageText(message) {
 }
 
 async function sendMessage(message, contact, trx, organization) {
-  const APIERRORTEST = /apierrortest/.test(message.text);
-  if (!twilio && !APIERRORTEST) {
+  const APITEST = /twilioapitest/.test(message.text);
+  if (!twilio && !APITEST) {
     log.warn(
       "cannot actually send SMS message -- twilio is not fully configured:",
       message.id
@@ -173,9 +163,14 @@ async function sendMessage(message, contact, trx, organization) {
   }
 
   // Note organization won't always be available, so then contact can trace to it
-  const messagingServiceSid = await cacheableData.organization.getMessageServiceSid(
+  const {
+    messagingServiceSid,
+    authToken,
+    apiKey
+  } = await cacheableData.organization.getMessageServiceAuth(
     organization,
-    contact
+    contact,
+    message.text
   );
   return new Promise((resolve, reject) => {
     if (message.service !== "twilio") {
@@ -214,9 +209,6 @@ async function sendMessage(message, contact, trx, organization) {
     }
     const changes = {};
 
-    // FUTURE: this can be based on (contact, organization)
-    // Note organization won't always be available, so we'll need to conditionally look it up based on contact
-    const messagingServiceSid = process.env.TWILIO_MESSAGE_SERVICE_SID;
     changes.messageservice_sid = messagingServiceSid;
 
     const messageParams = Object.assign(
@@ -231,24 +223,34 @@ async function sendMessage(message, contact, trx, organization) {
     );
 
     console.log("twilioMessage", messageParams);
-    if (APIERRORTEST) {
+    if (APITEST) {
+      let fakeErr = null;
+      let fakeResponse = null;
+      if (/twilioapitesterrortimeout/.test(message.text)) {
+        fakeErr = {
+          status: "ESOCKETTIMEDOUT",
+          message:
+            'FAKE TRIGGER(apierrortest) Unable to reach host: "api.twilio.com"'
+        };
+      } else {
+        fakeResponse = {
+          sid: `FAKETWILIIO${Math.random()}`
+        };
+      }
       postMessageSend(
         message,
         contact,
         trx,
         resolve,
         reject,
-        {
-          status: "ESOCKETTIMEDOUT",
-          message:
-            'FAKE TRIGGER(apierrortest) Unable to reach host: "api.twilio.com"'
-        }, // err
-        null, //response
+        fakeErr,
+        fakeResponse,
         organization,
         changes
       );
     } else {
-      twilio.messages.create(messageParams, (err, response) => {
+      const twilioMultiTenant = Twilio(apiKey, authToken);
+      twilioMultiTenant.messages.create(messageParams, (err, response) => {
         postMessageSend(
           message,
           contact,
@@ -341,15 +343,24 @@ export function postMessageSend(
       service: "twilio",
       sent_at: new Date()
     };
-    updateQuery
-      .update(changesToSave)
-      .then(newMessage => {
+    Promise.all([
+      updateQuery.update(changesToSave),
+      cacheableData.campaignContact.updateStatus({
+        ...contact,
+        messageservice_sid: changesToSave.messageservice_sid
+      })
+    ])
+      .then((newMessage, cacheResult) => {
         resolve({
           ...message,
           ...changesToSave
         });
       })
       .catch(err => {
+        console.error(
+          "Failed message and contact update on twilio postMessageSend",
+          err
+        );
         reject(err);
       });
   }
@@ -357,45 +368,55 @@ export function postMessageSend(
 
 async function handleDeliveryReport(report) {
   const messageSid = report.MessageSid;
-  if (messageSid && !DISABLE_DB_LOG) {
-    await Log.save({
-      message_sid: report.MessageSid,
-      body: JSON.stringify(report),
-      error_code: Number(report.ErrorCode || 0) || 0,
-      from_num: report.From || null,
-      to_num: report.To || null
-    });
+  if (messageSid) {
     const messageStatus = report.MessageStatus;
-    const message = await r
-      .table("message")
-      .getAll(messageSid, { index: "service_id" })
-      .limit(1)(0)
-      .default(null);
-    if (message) {
-      const changes = {
-        service_response_at: new Date()
-      };
-      if (messageStatus === "delivered") {
-        changes.send_status = "DELIVERED";
-      } else if (
-        messageStatus === "failed" ||
-        messageStatus === "undelivered"
-      ) {
-        changes.send_status = "ERROR";
-        const errorCode = Number(report.ErrorCode || 0) || 0;
-        changes.error_code = errorCode;
-        if (message.campaign_contact_id) {
-          await r
-            .knex("campaign_contact")
-            .where("id", message.campaign_contact_id)
-            .update("error_code", errorCode);
-        }
-      }
-      await r
-        .knex("message")
-        .where("id", message.id)
-        .update(changes);
+
+    // Scalability: we don't care about "queued" and "sent" status updates so
+    // we skip writing to the database.
+    // Log just in case we need to debug something. Detailed logs can be viewed here:
+    // https://www.twilio.com/log/sms/logs/<SID>
+    log.info(`Message status ${messageSid}: ${messageStatus}`);
+    if (messageStatus === "queued" || messageStatus === "sent") {
+      return;
     }
+
+    if (!DISABLE_DB_LOG) {
+      await Log.save({
+        message_sid: report.MessageSid,
+        body: JSON.stringify(report),
+        error_code: Number(report.ErrorCode || 0) || 0,
+        from_num: report.From || null,
+        to_num: report.To || null
+      });
+    }
+
+    const lookup = await cacheableData.campaignContact.lookupByCell(
+      report.To,
+      "twilio",
+      report.MessagingServiceSid
+    );
+    const changes = {
+      service_response_at: new Date()
+    };
+
+    if (messageStatus === "delivered") {
+      changes.send_status = "DELIVERED";
+    } else if (messageStatus === "failed" || messageStatus === "undelivered") {
+      changes.send_status = "ERROR";
+      const errorCode = Number(report.ErrorCode || 0) || 0;
+      changes.error_code = errorCode;
+      if (lookup && lookup.campaign_contact_id) {
+        await r
+          .knex("campaign_contact")
+          .where("id", lookup.campaign_contact_id)
+          .update("error_code", errorCode);
+      }
+    }
+    await r
+      .knex("message")
+      .where("service_id", messageSid)
+      .limit(1)
+      .update(changes);
   }
 }
 

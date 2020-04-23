@@ -122,7 +122,7 @@ Create an RDS instance running Postgres 10.4 with the following settings:
 
 ### Configure Deploy Environment
 
-1. First make sure you are running node 10.3 (compatible with AWS Lambda) `nvm install 10.3; nvm use`
+1. First make sure you are running node 10.x (compatible with AWS Lambda) `nvm install 10; nvm use`
 2. Install Claudia js: `npm install -g claudia`
 3. Create an admin user on AWS selecting programmatic access. Add that profile to `~/.aws/credentials` giving it a nickname to use later in shell commands:
    ```
