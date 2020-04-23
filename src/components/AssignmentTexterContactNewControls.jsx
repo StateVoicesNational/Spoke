@@ -657,16 +657,11 @@ export class AssignmentTexterContactControls extends React.Component {
                 style={{
                   ...inlineStyles.inlineBlock,
                   borderColor: "#790000",
-                  color: "white"
+                  color: "white",
+                  marginLeft: "9px"
                 }}
                 backgroundColor="#BC0000"
-                label={
-                  this.state.optOutMessageText.length ? (
-                    <span>&crarr; Opt-Out</span>
-                  ) : (
-                    <span>&crarr; Opt-Out without Text</span>
-                  )
-                }
+                label={<span>&crarr; Opt-Out</span>}
               />
             </div>
           </GSForm>
