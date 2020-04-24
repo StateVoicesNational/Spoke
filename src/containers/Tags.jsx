@@ -50,8 +50,10 @@ export class Tags extends React.Component {
     super(props);
     this.state = {
       openTagDialog: false,
-      dialogMode: "create",
-      tagId: null
+      tagId: null,
+      dialogTitle: "",
+      dialogSubmitHandler: null,
+      dialogButtonLabel: ""
     };
     this.handleOpen = this.handleOpen.bind(this);
     this.handleClose = this.handleClose.bind(this);
@@ -62,12 +64,24 @@ export class Tags extends React.Component {
   }
 
   handleOpen() {
-    this.setState({ openTagDialog: true, dialogMode: "create", tagId: null });
+    this.setState({
+      openTagDialog: true,
+      dialogTitle: "Create Tag",
+      dialogSubmitHandler: this.handleCreate,
+      dialogButtonLabel: "Create",
+      tagId: null
+    });
   }
 
   handleOpenEdit(tagId) {
     return () =>
-      this.setState({ openTagDialog: true, dialogMode: "edit", tagId });
+      this.setState({
+        openTagDialog: true,
+        dialogTitle: "Edit Tag",
+        dialogSubmitHandler: this.handleEdit,
+        dialogButtonLabel: "Save",
+        tagId
+      });
   }
 
   handleClose() {
@@ -105,10 +119,16 @@ export class Tags extends React.Component {
 
   render() {
     const tags = this.props.data.tags.tags.sort((a, b) => a.id - b.id);
-    const { openTagDialog, dialogMode, tagId } = this.state;
+    const {
+      openTagDialog,
+      dialogSubmitHandler,
+      dialogTitle,
+      dialogButtonLabel,
+      tagId
+    } = this.state;
     const formSchema = yup.object({
       name: yup.string().required(),
-      description: yup.string().nullable()
+      description: yup.string().required()
     });
     const dialogTag = tagId ? tags.find(t => t.id === tagId) : {};
     return (
@@ -144,15 +164,13 @@ export class Tags extends React.Component {
           <ContentAdd />
         </FloatingActionButton>
         <Dialog
-          title={dialogMode === "create" ? "Create Tag" : "Edit Tag"}
+          title={dialogTitle}
           open={openTagDialog}
           onRequestClose={this.handleClose}
         >
           <GSForm
             schema={formSchema}
-            onSubmit={
-              dialogMode === "create" ? this.handleCreate : this.handleEdit
-            }
+            onSubmit={dialogSubmitHandler}
             defaultValue={dialogTag}
           >
             <div className={css(styles.fields)}>
@@ -160,10 +178,7 @@ export class Tags extends React.Component {
               <Form.Field label="Description" name="description" />
             </div>
             <div className={css(styles.submit)}>
-              <Form.Button
-                type="submit"
-                label={dialogMode === "create" ? "Create" : "Save"}
-              />
+              <Form.Button type="submit" label={dialogButtonLabel} />
             </div>
           </GSForm>
         </Dialog>
