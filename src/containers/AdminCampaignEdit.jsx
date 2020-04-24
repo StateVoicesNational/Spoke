@@ -503,7 +503,9 @@ class AdminCampaignEdit extends React.Component {
 
     return (
       <div>
-        <h2>{this.props.campaignData.campaign.title}</h2>
+        {this.props.campaignData.campaign.title && (
+          <h2>{this.props.campaignData.campaign.title}</h2>
+        )}
         <div
           style={{
             marginBottom: 15,
