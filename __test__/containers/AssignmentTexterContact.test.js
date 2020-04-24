@@ -90,6 +90,13 @@ const propsWithEnforcedTextingHoursCampaign = {
     },
     messageStatus: "needsMessage",
     messages: []
+  },
+  navigationToolbarChildren: {
+    onNext: jest.fn(),
+    onPrevious: jest.fn(),
+    title: "1 of 2",
+    total: 2,
+    currentIndex: 1
   }
 };
 
@@ -114,6 +121,9 @@ describe("when contact is not within texting hours...", () => {
           assignment={propsWithEnforcedTextingHoursCampaign.assignment}
           refreshData={propsWithEnforcedTextingHoursCampaign.refreshData}
           contact={propsWithEnforcedTextingHoursCampaign.contact}
+          navigationToolbarChildren={
+            propsWithEnforcedTextingHoursCampaign.navigationToolbarChildren
+          }
         />
       </MuiThemeProvider>
     );
@@ -142,6 +152,9 @@ describe("when contact is within texting hours...", () => {
           assignment={propsWithEnforcedTextingHoursCampaign.assignment}
           refreshData={propsWithEnforcedTextingHoursCampaign.refreshData}
           contact={propsWithEnforcedTextingHoursCampaign.contact}
+          navigationToolbarChildren={
+            propsWithEnforcedTextingHoursCampaign.navigationToolbarChildren
+          }
         />
       </MuiThemeProvider>
     );
