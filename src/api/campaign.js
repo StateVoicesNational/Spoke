@@ -17,6 +17,7 @@ export const schema = `
     contactsCount: Int
     assignedCount: Int
     messagedCount: Int
+    errorCount: Int
   }
 
   type IngestMethod {

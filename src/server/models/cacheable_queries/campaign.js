@@ -160,12 +160,19 @@ const campaignCache = {
           infoCacheKey(id),
           "messagedCount"
         );
+        campaignObj.errorCount = await r.redis.hgetAsync(
+          infoCacheKey(id),
+          "errorCount"
+        );
         // console.log('campaign cache', cacheKey(id), campaignObj, campaignData)
         const campaign = modelWithExtraProps(campaignObj, Campaign, [
           "customFields",
           "interactionSteps",
           "contactTimezones",
-          "contactsCount"
+          "contactsCount",
+          "assignedCount",
+          "messagedCount",
+          "errorCount"
         ]);
         return campaign;
       }
@@ -207,13 +214,15 @@ const campaignCache = {
       }
     }
   },
-  incrMessaged: async id => {
+  incrCount: async (id, countType) => {
+    // countType={"messagedCount", "errorCount"}
+    console.log("incrCount", id, countType, CONTACT_CACHE_ENABLED);
     if (r.redis && CONTACT_CACHE_ENABLED) {
       try {
         const infoKey = infoCacheKey(id);
         await r.redis
           .multi()
-          .hincrby(infoKey, "messagedCount", 1)
+          .hincrby(infoKey, countType, 1)
           .expire(infoKey, 43200)
           .execAsync();
       } catch (err) {

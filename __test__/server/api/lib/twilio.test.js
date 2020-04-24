@@ -1,6 +1,9 @@
 /* eslint-disable no-unused-expressions, consistent-return */
 import { r, Message, cacheableData } from "../../../../src/server/models/";
-import { postMessageSend } from "../../../../src/server/api/lib/twilio";
+import {
+  postMessageSend,
+  handleDeliveryReport
+} from "../../../../src/server/api/lib/twilio";
 import twilio from "../../../../src/server/api/lib/twilio";
 import { getLastMessage } from "../../../../src/server/api/lib/message-sending";
 import { erroredMessageSender } from "../../../../src/workers/job-processes";
@@ -257,8 +260,106 @@ it("postMessageSend+erroredMessageSender network error should decrement on err/f
   }
 });
 
+it("handleDeliveryReport delivered", async () => {
+  const org = await cacheableData.organization.load(organizationId);
+  let campaign = await cacheableData.campaign.load(testCampaign.id, {
+    forceLoad: true
+  });
+  await cacheableData.campaignContact.loadMany(campaign, org, {});
+  queryLog = [];
+
+  const messageSid = "123123123";
+  await cacheableData.message.save({
+    contact: dbCampaignContact,
+    messageInstance: new Message({
+      campaign_contact_id: dbCampaignContact.id,
+      contact_number: dbCampaignContact.cell,
+      messageservice_sid: "fakeSid_MK123",
+      is_from_contact: false,
+      send_status: "SENT",
+      service: "twilio",
+      text: "some message",
+      user_id: testTexterUser.id,
+      service_id: messageSid
+    })
+  });
+  await handleDeliveryReport({
+    MessageSid: messageSid,
+    MessagingServiceSid: "fakeSid_MK123",
+    To: dbCampaignContact.cell,
+    MessageStatus: "delivered",
+    From: "+14145551010"
+  });
+
+  const messages = await r.knex("message").where("service_id", messageSid);
+  expect(messages.length).toBe(1);
+  expect(messages[0].error_code).toBe(null);
+  expect(messages[0].send_status).toBe("DELIVERED");
+
+  const contacts = await r
+    .knex("campaign_contact")
+    .where("id", dbCampaignContact.id);
+
+  expect(contacts.length).toBe(1);
+  expect(contacts[0].error_code).toBe(null);
+
+  if (r.redis) {
+    campaign = await cacheableData.campaign.load(testCampaign.id);
+    expect(campaign.errorCount).toBe(null);
+  }
+});
+
+it("handleDeliveryReport error", async () => {
+  const org = await cacheableData.organization.load(organizationId);
+  let campaign = await cacheableData.campaign.load(testCampaign.id, {
+    forceLoad: true
+  });
+  await cacheableData.campaignContact.loadMany(campaign, org, {});
+  queryLog = [];
+
+  const messageSid = "123123123";
+  await cacheableData.message.save({
+    contact: dbCampaignContact,
+    messageInstance: new Message({
+      campaign_contact_id: dbCampaignContact.id,
+      contact_number: dbCampaignContact.cell,
+      messageservice_sid: "fakeSid_MK123",
+      is_from_contact: false,
+      send_status: "SENT",
+      service: "twilio",
+      text: "some message",
+      user_id: testTexterUser.id,
+      service_id: messageSid
+    })
+  });
+  await handleDeliveryReport({
+    MessageSid: messageSid,
+    MessagingServiceSid: "fakeSid_MK123",
+    To: dbCampaignContact.cell,
+    MessageStatus: "failed",
+    From: "+14145551010",
+    ErrorCode: "98989"
+  });
+
+  const messages = await r.knex("message").where("service_id", messageSid);
+  expect(messages.length).toBe(1);
+  expect(messages[0].error_code).toBe(98989);
+  expect(messages[0].send_status).toBe("ERROR");
+
+  const contacts = await r
+    .knex("campaign_contact")
+    .where("id", dbCampaignContact.id);
+
+  expect(contacts.length).toBe(1);
+  expect(contacts[0].error_code).toBe(98989);
+
+  if (r.redis) {
+    campaign = await cacheableData.campaign.load(testCampaign.id);
+    expect(campaign.errorCount).toBe("1");
+  }
+});
+
 // FUTURE
-// * handleDeliveryReport (error and non-error)
 // * parseMessageText
 // * convertMessagePartsToMessage
 // * handleIncomingMessage (JOBS_SAME_PROCESS on and off)
