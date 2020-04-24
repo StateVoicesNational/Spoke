@@ -25,7 +25,7 @@ class AdminCampaignList extends React.Component {
       listSize: 0
     },
     archiveMultiple: false,
-    campaignsToArchive: {}
+    campaignsToArchive: []
   };
 
   handleClickNewButton = async () => {
@@ -59,7 +59,7 @@ class AdminCampaignList extends React.Component {
       this.setState({
         archiveMultiple: false,
         isLoading: false,
-        campaignsToArchive: {}
+        campaignsToArchive: []
       });
     }
   };
@@ -82,17 +82,10 @@ class AdminCampaignList extends React.Component {
     });
   };
 
-  handleChecked = ({ campaignId, checked }) => {
-    this.setState(prevState => {
-      const { campaignsToArchive } = prevState;
-      // checked has to be reversed here because the onTouchTap
-      // event fires before the input is checked.
-      if (!checked) {
-        campaignsToArchive[campaignId] = !checked;
-      } else {
-        delete campaignsToArchive[campaignId];
-      }
-      return { campaignsToArchive };
+  handleChecked = ({ campaignIds }) => {
+    console.log("handleChecked", campaignIds);
+    this.setState({
+      campaignsToArchive: campaignIds
     });
   };
 
@@ -166,7 +159,7 @@ class AdminCampaignList extends React.Component {
 
   renderActionButton() {
     if (this.state.archiveMultiple) {
-      const keys = Object.keys(this.state.campaignsToArchive);
+      const keys = this.state.campaignsToArchive;
       return (
         <FloatingActionButton
           {...dataTest("archiveCampaigns")}

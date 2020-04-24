@@ -1,4 +1,5 @@
 import { mapFieldsToModel } from "./lib/utils";
+import { getConfig } from "./lib/config";
 import { r, Organization } from "../models";
 import { accessRequired } from "./errors";
 import { getCampaigns } from "./campaign";
@@ -44,6 +45,9 @@ export const resolvers = {
         : process.env.OPT_OUT_MESSAGE) ||
       "I'm opting you out of texts immediately. Have a great day.",
     textingHoursStart: organization => organization.texting_hours_start,
-    textingHoursEnd: organization => organization.texting_hours_end
+    textingHoursEnd: organization => organization.texting_hours_end,
+    cacheable: (org, _, { user }) =>
+      //quanery logic.  levels are 0, 1, 2
+      r.redis ? (getConfig("REDIS_CONTACT_CACHE", org) ? 2 : 1) : 0
   }
 };
