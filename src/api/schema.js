@@ -50,7 +50,7 @@ import {
   schema as cannedResponseSchema,
   resolvers as cannedResponseResolvers
 } from "./canned-response";
-import { schema as tagSchema, resolvers as tagResolvers } from "./tag";
+import { schema as tagSchema } from "./tag";
 import { schema as inviteSchema, resolvers as inviteResolvers } from "./invite";
 
 const rootSchema = gql`
