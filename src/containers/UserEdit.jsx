@@ -170,6 +170,8 @@ class UserEdit extends React.Component {
           onSubmit={this.handleSave}
           defaultValue={user}
           className={style}
+          {...dataTest("userEditForm")}
+          data
         >
           <Form.Field label="Email" name="email" {...dataTest("email")} />
           {(!authType || authType === "signup") && (
