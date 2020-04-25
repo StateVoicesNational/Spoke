@@ -8,13 +8,13 @@
     "npm": "3.10.10"
   },
   "scripts": {
-    "test": "jest --runInBand --forceExit --detectOpenHandles",
+    "test": "jest --forceExit",
+    "test-debug": "jest --runInBand --forceExit --detectOpenHandles",
     "test-cache": "REDIS_FAKE=1 jest --runInBand --forceExit --detectOpenHandles",
     "test-rediscache": "REDIS_URL=redis://localhost:6379 CACHE_PREFIX=test REDIS_CONTACT_CACHE=1 jest --runInBand --forceExit --detectOpenHandles",
     "test-e2e": "jest --runInBand --config jest.config.e2e.js",
     "test-sqlite": "jest --config jest.config.sqlite.js --runInBand --forceExit --detectOpenHandles",
     "test-coverage": "jest --coverage",
-    "test-coverage-bothbackends": "jest --runInBand --config jest.config.sqlite.js -- __test__/backend.test.js &&  jest --coverage",
     "knex": "knex --knexfile ./knexfile.env.js",
     "clean": "rm -rf $OUTPUT_DIR",
     "lint": "eslint --fix --ext js --ext jsx src",

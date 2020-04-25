@@ -116,7 +116,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-yarn-
     - run: yarn
-    - run: yarn test-coverage-bothbackends
+    - run: yarn test-coverage
     - name: Upload Coverage
       uses: codecov/codecov-action@v1
 
