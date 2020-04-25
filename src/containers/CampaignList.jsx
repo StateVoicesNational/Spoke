@@ -179,8 +179,12 @@ export class CampaignList extends React.Component {
         render: (columnKey, row) =>
           organization.cacheable > 1 &&
           row.completionStats.assignedCount !== null ? (
-            row.completionStats.contactsCount -
-            row.completionStats.assignedCount
+            <Link
+              to={`/admin/${this.props.organizationId}/campaigns/${row.id}/edit`}
+            >
+              {row.completionStats.contactsCount -
+                row.completionStats.assignedCount}
+            </Link>
           ) : row.hasUnassignedContacts ? (
             <IconButton
               tooltip="Has unassigned contacts"
