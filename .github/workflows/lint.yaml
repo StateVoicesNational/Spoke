@@ -21,9 +21,9 @@ jobs:
       id: yarn-cache
       with:
         path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-        key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+        key: ${{ runner.os }}-${{ matrix.node-version }}-yarn-${{ hashFiles('**/yarn.lock') }}
         restore-keys: |
-          ${{ runner.os }}-yarn-
+          ${{ runner.os }}-${{ matrix.node-version }}-yarn-
     - run: yarn
     - name: Setup reviewdog
       run: |
@@ -38,4 +38,4 @@ jobs:
         $(npm bin)/eslint -f="json" ${INPUT_ESLINT_FLAGS:-'.'} \
         | jq -r '.[] | {filePath: .filePath, messages: .messages[]} | "\(.filePath):\(.messages.line):\(.messages.column):\(.messages.message) [\(.messages.ruleId)](https://eslint.org/docs/rules/\(.messages.ruleId))"' > lint-results
 
-        cat lint-results | reviewdog -efm="%f:%l:%c:%m" -reporter=github-check -diff="git diff origin/main..." -level=warning
+        cat lint-results | reviewdog -efm="%f:%l:%c:%m" -name="lint (${{ matrix.node-version }})" -reporter=github-check -diff="git diff origin/main..." -level=warning
