@@ -23,6 +23,8 @@ module.exports = {
     PASSPORT_STRATEGY: "local",
     SESSION_SECRET: "it is JUST a test! -- it better be!",
     TWILIO_API_KEY: "", // purposefully blank
+    TWILIO_AUTH_TOKEN: "",
+    TWILIO_MESSAGE_SERVICE_SID: "",
     TEST_ENVIRONMENT: "1"
   },
   moduleFileExtensions: ["js", "jsx"],
