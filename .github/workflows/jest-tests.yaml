@@ -3,7 +3,7 @@ name: Unit Tests
 on: push
 
 jobs:
-  tests:
+  test:
     runs-on: ubuntu-latest
     services:
       redis:
@@ -33,5 +33,63 @@ jobs:
           ${{ runner.os }}-yarn-
     - run: yarn
     - run: yarn test
+  test-rediscache:
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis
+        ports:
+        - 6379:6379
+      postgres:
+        image: postgres:10
+        env:
+          POSTGRES_USER: spoke_test
+          POSTGRES_PASSWORD: spoke_test
+          POSTGRES_DB: spoke_test
+        ports:
+        - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    steps:
+    - uses: actions/checkout@v2
+    - name: Get yarn cache directory path
+      id: yarn-cache-dir-path
+      run: echo "::set-output name=dir::$(yarn cache dir)"
+    - uses: actions/cache@v1
+      id: yarn-cache
+      with:
+        path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+        key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-yarn-
+    - run: yarn
     - run: yarn test-rediscache
+  test-sqlite:
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis
+        ports:
+        - 6379:6379
+      postgres:
+        image: postgres:10
+        env:
+          POSTGRES_USER: spoke_test
+          POSTGRES_PASSWORD: spoke_test
+          POSTGRES_DB: spoke_test
+        ports:
+        - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    steps:
+    - uses: actions/checkout@v2
+    - name: Get yarn cache directory path
+      id: yarn-cache-dir-path
+      run: echo "::set-output name=dir::$(yarn cache dir)"
+    - uses: actions/cache@v1
+      id: yarn-cache
+      with:
+        path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+        key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-yarn-
+    - run: yarn
     - run: yarn test-sqlite
