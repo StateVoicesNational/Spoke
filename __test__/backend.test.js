@@ -2,6 +2,9 @@ import { resolvers } from "../src/server/api/schema";
 import { schema } from "../src/api/schema";
 import { assignmentRequired } from "../src/server/api/errors";
 import { graphql } from "graphql";
+
+console.log("This is an intentional error");
+
 import {
   User,
   Organization,
