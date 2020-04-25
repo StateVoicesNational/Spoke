@@ -357,7 +357,8 @@ const rootMutations = {
           messageservice_sid: lastMessage.messageservice_sid,
           service: lastMessage.service,
           send_status: "DELIVERED"
-        })
+        }),
+        contact
       );
       return loaders.campaignContact.load(id);
     },
@@ -917,7 +918,7 @@ const rootMutations = {
       { loaders, user }
     ) => {
       const contact = await loaders.campaignContact.load(campaignContactId);
-      await assignmentRequired(user, contact.assignment_id);
+      await assignmentRequired(user, contact.assignment_id, null, contact);
       contact.message_status = messageStatus;
       await cacheableData.campaignContact.updateStatus(contact, messageStatus);
       return contact;
@@ -948,9 +949,12 @@ const rootMutations = {
           cIdx === 0
             ? firstContact
             : await cacheableData.campaignContact.load(contactId);
+
+        // If contact.assignment_id is null or misassigned,
+        // maybe the cache is stale so try refreshing.
         if (
-          contact.assignment_id === null &&
-          contact.hasOwnProperty("user_id") &&
+          contact.cachedResult &&
+          Number(contact.assignment_id) !== Number(assignmentId) &&
           !triedUpdate
         ) {
           // In case assignment_id from cache needs to be refreshed, try again
@@ -991,11 +995,17 @@ const rootMutations = {
       const contact = await loaders.campaignContact.load(campaignContactId);
       const campaign = await loaders.campaign.load(contact.campaign_id);
 
-      console.log("createOptOut", campaignContactId, contact.campaign_id);
+      console.log(
+        "createOptOut",
+        campaignContactId,
+        contact.campaign_id,
+        contact.assignment_id
+      );
       await assignmentRequiredOrAdminRole(
         user,
         campaign.organization_id,
-        contact.assignment_id
+        contact.assignment_id,
+        contact
       );
       console.log(
         "createOptOut post access",
@@ -1035,13 +1045,17 @@ const rootMutations = {
       { loaders, user }
     ) => {
       const contact = await loaders.campaignContact.load(campaignContactId);
-      await assignmentRequired(user, contact.assignment_id);
+      await assignmentRequired(user, contact.assignment_id, null, contact);
       // TODO: maybe undo action_handler
       await r
-        .table("question_response")
-        .getAll(campaignContactId, { index: "campaign_contact_id" })
-        .getAll(...interactionStepIds, { index: "interaction_step_id" })
+        .knex("question_response")
+        .where("campaign_contact_id", campaignContactId)
+        .whereIn("interaction_step_id", interactionStepIds)
         .delete();
+
+      // update cache
+      await cacheableData.questionResponse.reloadQuery(campaignContactId);
+
       return contact;
     },
     updateQuestionResponses: async (
@@ -1099,6 +1113,8 @@ const rootMutations = {
           }
         }
       }
+      // update cache
+      await cacheableData.questionResponse.clearQuery(campaignContactId);
 
       const contact = loaders.campaignContact.load(campaignContactId);
       return contact;

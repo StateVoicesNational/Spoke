@@ -15,6 +15,12 @@ export const schema = gql`
     optOutsCount: Int
   }
 
+  type CampaignCompletionStats {
+    contactsCount: Int
+    assignedCount: Int
+    messagedCount: Int
+  }
+
   type IngestMethod {
     name: String!
     displayName: String
@@ -68,6 +74,8 @@ export const schema = gql`
     customFields: [String]
     cannedResponses(userId: String): [CannedResponse]
     stats: CampaignStats
+    stats: CampaignStats
+    completionStats: CampaignCompletionStats
     pendingJobs: [JobRequest]
     availableActions: [Action]
     ingestMethodsAvailable: [IngestMethod]

@@ -43,10 +43,10 @@ export const resolvers = {
       if (campaignContact.message_status === "needsMessage") {
         return []; // it's the beginning, so there won't be any
       }
-      return await r
-        .knex("question_response")
-        .where("question_response.campaign_contact_id", campaignContact.id)
-        .select("value", "interaction_step_id");
+      return await cacheableData.questionResponse.query(
+        campaignContact.id,
+        true // minimalObj: we might need more info one day
+      );
     },
     questionResponses: async (campaignContact, _, { loaders }) => {
       const results = await r
@@ -156,11 +156,9 @@ export const resolvers = {
         return campaignContact.messages;
       }
 
-      const messages = await r
-        .knex("message")
-        .where("campaign_contact_id", campaignContact.id)
-        .orderBy("created_at");
-
+      const messages = cacheableData.message.query({
+        campaignContactId: campaignContact.id
+      });
       return messages;
     },
     optOut: async (campaignContact, _, { loaders }) => {
