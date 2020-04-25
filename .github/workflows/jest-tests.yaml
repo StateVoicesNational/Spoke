@@ -120,8 +120,6 @@ jobs:
           ${{ runner.os }}-${{ matrix.node-version }}-yarn-
     - run: yarn
     - run: yarn test-coverage-bothbackends
-    - run: bash <(curl -s https://codecov.io/bash)
-      env:
-        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-
+    - name: Upload Coverage
+      uses: codecov/codecov-action@v1
 
