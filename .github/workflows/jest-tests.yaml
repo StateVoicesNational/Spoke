@@ -71,9 +71,27 @@ jobs:
     - run: yarn test-rediscache
   test-sqlite:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [10.x, 11.x, 12.x]
+    services:
+      redis:
+        image: redis
+        ports:
+        - 6379:6379
+    steps:
+    - uses: actions/checkout@v2
+    - name: Get yarn cache directory path
+      id: yarn-cache-dir-path
+      run: echo "::set-output name=dir::$(yarn cache dir)"
+    - uses: actions/cache@v1
+      id: yarn-cache
+      with:
+        path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+        key: ${{ runner.os }}-${{ matrix.node-version }}-yarn-${{ hashFiles('**/yarn.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-${{ matrix.node-version }}-yarn-
+    - run: yarn
+    - run: yarn test-sqlite
+  coverage:
+    runs-on: ubuntu-latest
     services:
       redis:
         image: redis
@@ -101,4 +119,9 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-${{ matrix.node-version }}-yarn-
     - run: yarn
-    - run: yarn test-sqlite
+    - run: yarn test-coverage-bothbackends
+    - run: bash <(curl -s https://codecov.io/bash)
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+
