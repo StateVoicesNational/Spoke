@@ -74,7 +74,6 @@ export const schema = gql`
     customFields: [String]
     cannedResponses(userId: String): [CannedResponse]
     stats: CampaignStats
-    stats: CampaignStats
     completionStats: CampaignCompletionStats
     pendingJobs: [JobRequest]
     availableActions: [Action]

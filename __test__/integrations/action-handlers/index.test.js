@@ -369,7 +369,7 @@ describe("action-handlers/index", () => {
     });
   });
 
-  describe.only("#getActionChoiceData", () => {
+  describe("#getActionChoiceData", () => {
     let loaders;
     let expectedReturn;
 
