@@ -142,15 +142,28 @@ export class CampaignList extends React.Component {
             >
               {campaign.title}
             </Link>
+            {campaign.creator ? (
+              <span style={{ whiteSpace: "nowrap" }}>
+                {" "}
+                &mdash; Created by {campaign.creator.displayName}
+              </span>
+            ) : null}
             <div style={{ whiteSpace: "nowrap" }}>
-              {campaign.dueBy
-                ? `Due by: ${moment(campaign.dueBy).format("MMM D, YYYY")} `
-                : ""}
+              {campaign.dueBy ? (
+                <span key={`due${campaign.id}`}>
+                  Due by: {moment(campaign.dueBy).format("MMM D, YYYY")}
+                </span>
+              ) : (
+                ""
+              )}
               {(campaign.ingestMethod &&
-                (campaign.ingestMethod.contactsCount
-                  ? `Contacts: ${campaign.ingestMethod.contactsCount}`
-                  : campaign.ingestMethod.success === false &&
-                    "Contact loading failed")) ||
+                (campaign.ingestMethod.contactsCount ? (
+                  <span> Contacts: {campaign.ingestMethod.contactsCount}</span>
+                ) : (
+                  campaign.ingestMethod.success === false && (
+                    <span> Contact loading failed</span>
+                  )
+                ))) ||
                 ""}
             </div>
           </div>
