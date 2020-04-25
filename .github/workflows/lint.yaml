@@ -5,15 +5,9 @@ on: push
 jobs:
   lint:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [10.x, 11.x, 12.x]
     steps:
     - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
+    - uses: actions/setup-node@v1
     - name: Get yarn cache directory path
       id: yarn-cache-dir-path
       run: echo "::set-output name=dir::$(yarn cache dir)"
@@ -21,21 +15,18 @@ jobs:
       id: yarn-cache
       with:
         path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-        key: ${{ runner.os }}-${{ matrix.node-version }}-yarn-${{ hashFiles('**/yarn.lock') }}
+        key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
         restore-keys: |
-          ${{ runner.os }}-${{ matrix.node-version }}-yarn-
+          ${{ runner.os }}-yarn-
     - run: yarn
     - name: Setup reviewdog
       run: |
         mkdir -p $HOME/bin && curl -sfL https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh| sh -s -- -b $HOME/bin
         echo ::add-path::$HOME/bin
-        echo ::add-path::$(go env GOPATH)/bin # for Go projects
+        echo ::add-path::$(go env GOPATH)/bin
     - name: Run reviewdog
       env:
         REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         # Collect lint errors and add links to eslint docs.
-        $(npm bin)/eslint -f="json" ${INPUT_ESLINT_FLAGS:-'.'} \
-        | jq -r '.[] | {filePath: .filePath, messages: .messages[]} | "\(.filePath):\(.messages.line):\(.messages.column):\(.messages.message) [\(.messages.ruleId)](https://eslint.org/docs/rules/\(.messages.ruleId))"' > lint-results
-
-        cat lint-results | reviewdog -efm="%f:%l:%c:%m" -name="lint (${{ matrix.node-version }})" -reporter=github-check -diff="git diff origin/main..." -level=warning
+        $(npm bin)/eslint -f="stylish" | reviewdog -f="eslint" -reporter="github-check" -level=warning -diff="git diff origin/main..."
