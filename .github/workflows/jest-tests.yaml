@@ -38,9 +38,6 @@ jobs:
     - run: yarn test
   test-rediscache:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [10.x, 11.x, 12.x]
     services:
       redis:
         image: redis
@@ -64,9 +61,9 @@ jobs:
       id: yarn-cache
       with:
         path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-        key: ${{ runner.os }}-${{ matrix.node-version }}-yarn-${{ hashFiles('**/yarn.lock') }}
+        key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
         restore-keys: |
-          ${{ runner.os }}-${{ matrix.node-version }}-yarn-
+          ${{ runner.os }}-yarn-
     - run: yarn
     - run: yarn test-rediscache
   test-sqlite:
@@ -85,9 +82,9 @@ jobs:
       id: yarn-cache
       with:
         path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-        key: ${{ runner.os }}-${{ matrix.node-version }}-yarn-${{ hashFiles('**/yarn.lock') }}
+        key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
         restore-keys: |
-          ${{ runner.os }}-${{ matrix.node-version }}-yarn-
+          ${{ runner.os }}-yarn-
     - run: yarn
     - run: yarn test-sqlite
   coverage:
@@ -115,9 +112,9 @@ jobs:
       id: yarn-cache
       with:
         path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-        key: ${{ runner.os }}-${{ matrix.node-version }}-yarn-${{ hashFiles('**/yarn.lock') }}
+        key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
         restore-keys: |
-          ${{ runner.os }}-${{ matrix.node-version }}-yarn-
+          ${{ runner.os }}-yarn-
     - run: yarn
     - run: yarn test-coverage-bothbackends
     - name: Upload Coverage
