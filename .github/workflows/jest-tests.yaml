@@ -88,6 +88,7 @@ jobs:
     - run: yarn
     - run: yarn test-sqlite
   coverage:
+    timeout-minutes: 5
     runs-on: ubuntu-latest
     services:
       redis:
