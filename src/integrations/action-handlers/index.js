@@ -13,7 +13,8 @@ export const choiceDataCacheKey = (name, organization, suffix) =>
 
 export function getActionHandlers(organization) {
   const enabledActionHandlers = (
-    getConfig("ACTION_HANDLERS", organization) || "test-action"
+    getConfig("ACTION_HANDLERS", organization) ||
+    "test-action,complex-test-action"
   ).split(",");
   const actionHandlers = {};
   enabledActionHandlers.forEach(name => {
@@ -21,7 +22,9 @@ export function getActionHandlers(organization) {
       const c = require(`./${name}.js`);
       actionHandlers[name] = c;
     } catch (err) {
-      log.error("ACTION_HANDLERS failed to load actionhandler", name, err);
+      log.error(
+        `ACTION_HANDLERS failed to load actionhandler ${name} -- ${err}`
+      );
     }
   });
   return actionHandlers;
@@ -30,8 +33,7 @@ export function getActionHandlers(organization) {
 // TODO(lmp) how do we get organization into this?
 const CONFIGURED_ACTION_HANDLERS = getActionHandlers();
 
-// TODO(lmp) this is generic
-async function getSetCacheableResult(cacheKey, fallbackFunc) {
+export async function getSetCacheableResult(cacheKey, fallbackFunc) {
   if (r.redis) {
     const cacheRes = await r.redis.getAsync(cacheKey);
     if (cacheRes) {
@@ -49,8 +51,7 @@ async function getSetCacheableResult(cacheKey, fallbackFunc) {
   return slowRes;
 }
 
-// TODO(lmp) this could be generic
-async function getActionHandlerAvailability(
+export async function getActionHandlerAvailability(
   name,
   actionHandler,
   organization,
@@ -68,22 +69,21 @@ export function rawActionHandler(name) {
   return CONFIGURED_ACTION_HANDLERS[name];
 }
 
-export function rawAllMethods() {
+export function rawAllActionHandlers() {
   return CONFIGURED_ACTION_HANDLERS;
 }
 
 export async function getActionHandler(name, organization, user) {
+  let isAvail;
   if (name in CONFIGURED_ACTION_HANDLERS) {
-    const isAvail = await getActionHandlerAvailability(
+    isAvail = await getActionHandlerAvailability(
       name,
       CONFIGURED_ACTION_HANDLERS[name],
       organization,
       user
     );
-    if (isAvail) {
-      return CONFIGURED_ACTION_HANDLERS[name];
-    }
   }
+  return !!isAvail && CONFIGURED_ACTION_HANDLERS[name];
 }
 
 export async function getAvailableActionHandlers(organization, user) {
@@ -102,13 +102,17 @@ export async function getActionChoiceData(
   user,
   loaders
 ) {
-  const cacheFunc =
+  const cacheKeyFunc =
     actionHandler.clientChoiceDataCacheKey || (org => `${org.id}`);
-  const clientChoiceDataFunc = actionHandler.getClientChoiceData || (() => {});
+  const clientChoiceDataFunc =
+    actionHandler.getClientChoiceData ||
+    (() => ({
+      data: "{}"
+    }));
   const cacheKey = choiceDataCacheKey(
     actionHandler.name,
     organization,
-    cacheFunc(organization, campaign, user, loaders)
+    cacheKeyFunc(organization, campaign, user, loaders)
   );
   return (
     (await getSetCacheableResult(cacheKey, async () =>

@@ -12,6 +12,15 @@ export const instructions = () =>
   This action is for testing and as a code-template for new actions.
   `;
 
+export function clientChoiceDataCacheKey(
+  organization,
+  campaign,
+  user,
+  loaders
+) {
+  return `${organization.id}`;
+}
+
 // return true, if the action is usable and available for the organizationId
 // Sometimes this means certain variables/credentials must be setup
 // either in environment variables or organization.features json data
@@ -46,4 +55,35 @@ export async function processAction(
     .knex("campaign_contact")
     .where("campaign_contact.id", campaignContactId)
     .update("custom_fields", JSON.stringify(customFields));
+}
+
+export async function getClientChoiceData(organization, user) {
+  const items = [
+    {
+      name: "firebrick",
+      details: JSON.stringify({
+        hex: "#B22222",
+        rgb: {
+          r: 178,
+          g: 34,
+          b: 34
+        }
+      })
+    },
+    {
+      name: "indigo",
+      details: JSON.stringify({
+        hex: "#4B0082",
+        rgb: {
+          r: 75,
+          g: 0,
+          b: 130
+        }
+      })
+    }
+  ];
+  return {
+    data: `${JSON.stringify({ items })}`,
+    expiresSeconds: 300
+  };
 }
