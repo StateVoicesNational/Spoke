@@ -29,4 +29,4 @@ jobs:
         REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         # Collect lint errors and add links to eslint docs.
-        $(npm bin)/eslint -f="stylish" | reviewdog -f="eslint" -reporter="github-check" -level=warning -diff="git diff origin/main..."
+        $(npm bin)/eslint -f="stylish" | reviewdog -f="eslint" -reporter="github-check" -level=warning
