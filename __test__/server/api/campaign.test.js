@@ -4,6 +4,7 @@ import { dataQuery as TexterTodoListQuery } from "../../../src/containers/Texter
 import { dataQuery as TexterTodoQuery } from "../../../src/containers/TexterTodo";
 import { campaignDataQuery as AdminCampaignEditQuery } from "../../../src/containers/AdminCampaignEdit";
 import { campaignsQuery } from "../../../src/containers/PaginatedCampaignsRetriever";
+import twilio from "../../../src/server/api/lib/twilio";
 
 import {
   bulkReassignCampaignContactsMutation,
@@ -46,6 +47,7 @@ let organizationId;
 let assignmentId;
 
 const NUMBER_OF_CONTACTS = 100;
+jest.mock("../../../src/server/api/lib/twilio");
 
 beforeEach(async () => {
   // Set up an entire working campaign
@@ -1005,5 +1007,60 @@ describe("campaigns query", async () => {
     expect(result.data.campaigns.campaigns.length).toEqual(2);
     expect(result.data.campaigns.campaigns[0].id).toEqual(testCampaign.id);
     expect(result.data.campaigns.campaigns[1].id).toEqual(testCampaign2.id);
+  });
+});
+
+describe("useOwnMessagingService", async () => {
+  it("uses default messaging service when false", async () => {
+    const campaignDataResults = await runComponentGql(
+      AdminCampaignEditQuery,
+      { campaignId: testCampaign.id },
+      testAdminUser
+    );
+
+    await startCampaign(testAdminUser, testCampaign);
+    expect(campaignDataResults.data.campaign.useOwnMessagingService).toEqual(
+      false
+    );
+    expect(campaignDataResults.data.campaign.messagingServiceSid).toEqual(
+      process.env.TWILIO_MESSAGE_SERVICE_SID
+    );
+  });
+  it("creates new messaging service when true", async () => {
+    await saveCampaign(
+      testAdminUser,
+      { id: testCampaign.id, organizationId },
+      "test campaign new title",
+      true
+    );
+
+    const getCampaignsQuery = `
+      query getCampaign($campaignId: String!) {
+        campaign(id: $campaignId) {
+          id
+          useOwnMessagingService
+          messagingServiceSid
+        }
+      }
+    `;
+
+    const variables = {
+      campaignId: testCampaign.id
+    };
+
+    await startCampaign(testAdminUser, testCampaign);
+
+    const campaignDataResults = await runGql(
+      getCampaignsQuery,
+      variables,
+      testAdminUser
+    );
+
+    expect(campaignDataResults.data.campaign.useOwnMessagingService).toEqual(
+      true
+    );
+    expect(campaignDataResults.data.campaign.messagingServiceSid).toEqual(
+      "testTWILIOsid"
+    );
   });
 });
