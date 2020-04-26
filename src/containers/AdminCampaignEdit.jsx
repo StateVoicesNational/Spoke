@@ -59,6 +59,7 @@ const campaignInfoFragment = `
     script
     answerOption
     answerActions
+    answerActionsData
     parentInteractionId
     isDeleted
   }

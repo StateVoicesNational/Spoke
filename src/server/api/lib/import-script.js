@@ -247,6 +247,7 @@ const saveInteractionsHierarchyNode = async (
       script: interactionsHierarchyNode.script.join("\n") || "",
       answer_option: interactionsHierarchyNode.answer || "",
       answer_actions: "",
+      answer_actions_data: "",
       campaign_id: campaignId,
       is_deleted: false
     })
@@ -363,9 +364,11 @@ const importScriptFromDocument = async (campaignId, scriptUrl) => {
   let result;
   try {
     result = await getDocument(documentId);
-  } catch(err) {
-    console.error('ImportScript Failed', err);
-    throw new Error(`Retrieving Google doc failed due to access, secret config, or invalid google url`);
+  } catch (err) {
+    console.error("ImportScript Failed", err);
+    throw new Error(
+      `Retrieving Google doc failed due to access, secret config, or invalid google url`
+    );
   }
   const document = result.data.body.content;
   const sections = getSections(document);

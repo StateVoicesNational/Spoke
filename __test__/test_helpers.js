@@ -350,6 +350,7 @@ export function buildScript(steps = 2) {
             : "Step Script " + step,
         answerOption: "hmm" + step,
         answerActions: "",
+        answerActionsData: "",
         parentInteractionId: step > 0 ? "new" + (step - 1) : null,
         isDeleted: false,
         interactionSteps: createSteps(step + 1, max)

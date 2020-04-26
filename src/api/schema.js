@@ -86,6 +86,7 @@ const rootSchema = gql`
     script: String
     answerOption: String
     answerActions: String
+    answerActionsData: String
     parentInteractionId: String
     isDeleted: Boolean
     interactionSteps: [InteractionStepInput]

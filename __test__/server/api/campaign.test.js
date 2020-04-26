@@ -1047,3 +1047,90 @@ describe("campaigns query", async () => {
     expect(result.data.campaigns.campaigns[1].id).toEqual(testCampaign2.id);
   });
 });
+
+describe("all interaction steps fields travel round trip", () => {
+  it("does the thing", async () => {
+    const testCampaign2 = await createCampaign(testAdminUser, testOrganization);
+
+    const interactionSteps = {
+      id: "new0",
+      questionText: "what is your favorite breed?",
+      script: "hello [firstName], let's talk about dogs",
+      parentInteractionId: "",
+      answerOption: "",
+      answerActions: "",
+      answerActionsData: "",
+      isDeleted: false,
+      interactionSteps: [
+        {
+          id: "new1",
+          questionText: "",
+          script: "",
+          parentInteractionId: "new0",
+          answerOption: "golden retriever",
+          answerActions: "fake-actions",
+          answerActionsData: "fake-actions-data",
+          isDeleted: false
+        }
+      ]
+    };
+
+    const createScriptResult = await createScript(
+      testAdminUser,
+      testCampaign,
+      interactionSteps
+    );
+
+    expect(createScriptResult.data.editCampaign).toEqual({
+      id: testCampaign.id
+    });
+
+    const cursor = {
+      offset: 0,
+      limit: 1000
+    };
+
+    const campaignsFilter = {
+      campaignId: testCampaign.id
+    };
+
+    const variables = {
+      cursor,
+      organizationId,
+      campaignsFilter
+    };
+
+    const campaignDataResults = await runComponentGql(
+      AdminCampaignEditQuery,
+      { campaignId: testCampaign.id },
+      testAdminUser
+    );
+
+    const interactionStepsExpected = [
+      {
+        id: "1",
+        questionText: "what is your favorite breed?",
+        script: "hello [firstName], let's talk about dogs",
+        parentInteractionId: null,
+        answerOption: "",
+        answerActions: "",
+        answerActionsData: "",
+        isDeleted: false
+      },
+      {
+        id: "2",
+        questionText: "",
+        script: "",
+        parentInteractionId: "1",
+        answerOption: "golden retriever",
+        answerActions: "fake-actions",
+        answerActionsData: "fake-actions-data",
+        isDeleted: false
+      }
+    ];
+
+    expect(campaignDataResults.data.campaign.interactionSteps).toEqual(
+      interactionStepsExpected
+    );
+  });
+});

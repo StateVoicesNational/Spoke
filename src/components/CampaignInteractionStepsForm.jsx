@@ -50,6 +50,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
             answerOption: "",
             script: "",
             answerActions: "",
+            answerActionsData: "",
             isDeleted: false
           }
         ],
@@ -96,6 +97,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
             script: "",
             answerOption: "",
             answerActions: "",
+            answerActionsData: "",
             isDeleted: false
           }
         ]
