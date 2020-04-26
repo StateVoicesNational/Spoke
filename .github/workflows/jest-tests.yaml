@@ -4,10 +4,8 @@ on: push
 
 jobs:
   test:
+    timeout-minutes: 5
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [10.x, 11.x, 12.x]
     services:
       redis:
         image: redis
@@ -31,12 +29,15 @@ jobs:
       id: yarn-cache
       with:
         path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-        key: ${{ runner.os }}-${{ matrix.node-version }}-yarn-${{ hashFiles('**/yarn.lock') }}
+        key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
         restore-keys: |
-          ${{ runner.os }}-${{ matrix.node-version }}-yarn-
+          ${{ runner.os }}-yarn-
     - run: yarn
-    - run: yarn test
+    - run: yarn test-coverage
+    - name: Upload Coverage
+      uses: codecov/codecov-action@v1
   test-rediscache:
+    timeout-minutes: 5
     runs-on: ubuntu-latest
     services:
       redis:
@@ -71,6 +72,7 @@ jobs:
       with:
         flags: sqlite
   test-sqlite:
+    timeout-minutes: 5
     runs-on: ubuntu-latest
     services:
       redis:
@@ -95,9 +97,12 @@ jobs:
       uses: codecov/codecov-action@v1
       with:
         flags: sqlite
-  coverage:
+  test-othernode:
     timeout-minutes: 5
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [11.x, 12.x]
     services:
       redis:
         image: redis
@@ -121,10 +126,8 @@ jobs:
       id: yarn-cache
       with:
         path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-        key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+        key: ${{ runner.os }}-${{ matrix.node-version }}-yarn-${{ hashFiles('**/yarn.lock') }}
         restore-keys: |
-          ${{ runner.os }}-yarn-
+          ${{ runner.os }}-${{ matrix.node-version }}-yarn-
     - run: yarn
-    - run: yarn test-coverage
-    - name: Upload Coverage
-      uses: codecov/codecov-action@v1
+    - run: yarn test
