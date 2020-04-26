@@ -267,6 +267,7 @@ async function updateInteractionSteps(
         script: is.script,
         answer_option: is.answerOption,
         answer_actions: is.answerActions,
+        answer_actions_data: is.answerActionsData,
         campaign_id: campaignId,
         is_deleted: false
       });
@@ -290,6 +291,7 @@ async function updateInteractionSteps(
             script: is.script,
             answer_option: is.answerOption,
             answer_actions: is.answerActions,
+            answer_actions_data: is.answerActionsData,
             is_deleted: is.isDeleted
           });
       }
@@ -701,6 +703,7 @@ const rootMutations = {
             script: interaction.script,
             answerOption: interaction.answer_option,
             answerActions: interaction.answer_actions,
+            answerActionsData: interaction.answer_actions_data,
             isDeleted: interaction.is_deleted,
             campaign_id: newCampaignId,
             parentInteractionId: "new" + interaction.parent_interaction_id
@@ -713,6 +716,7 @@ const rootMutations = {
             script: interaction.script,
             answerOption: interaction.answer_option,
             answerActions: interaction.answer_actions,
+            answerActionsData: interaction.answer_actions_data,
             isDeleted: interaction.is_deleted,
             campaign_id: newCampaignId,
             parentInteractionId: interaction.parent_interaction_id

@@ -9,6 +9,7 @@ export const resolvers = {
         "script",
         "answerOption",
         "answerActions",
+        "answerActionsData",
         "parentInteractionId",
         "isDeleted"
       ],
