@@ -65,7 +65,11 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-yarn-
     - run: yarn
-    - run: yarn test-rediscache
+    - run: yarn test-rediscache-coverage
+    - name: Upload Coverage
+      uses: codecov/codecov-action@v1
+      with:
+        flags: sqlite
   test-sqlite:
     runs-on: ubuntu-latest
     services:
@@ -86,7 +90,11 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-yarn-
     - run: yarn
-    - run: yarn test-sqlite
+    - run: yarn test-sqlite-coverage
+    - name: Upload Coverage
+      uses: codecov/codecov-action@v1
+      with:
+        flags: sqlite
   coverage:
     timeout-minutes: 5
     runs-on: ubuntu-latest
@@ -120,4 +128,3 @@ jobs:
     - run: yarn test-coverage
     - name: Upload Coverage
       uses: codecov/codecov-action@v1
-
