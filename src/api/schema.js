@@ -106,8 +106,8 @@ const rootSchema = gql`
     primaryColor: String
     introHtml: String
     useDynamicAssignment: Boolean
-    contacts: [CampaignContactInput]
-    contactSql: String
+    ingestMethod: String
+    contactData: String
     organizationId: String
     texters: [TexterInput]
     interactionSteps: InteractionStepInput
@@ -137,6 +137,7 @@ const rootSchema = gql`
     id: String
     firstName: String!
     lastName: String!
+    alias: String
     email: String!
     cell: String!
     oldPassword: String
@@ -252,7 +253,10 @@ const rootSchema = gql`
       userId: String!
       inviteId: String!
     ): Organization
-    joinOrganization(organizationUuid: String!): Organization
+    joinOrganization(
+      organizationUuid: String!
+      queryParams: String
+    ): Organization
     editOrganizationRoles(
       organizationId: String!
       userId: String!
@@ -313,6 +317,7 @@ const rootSchema = gql`
     assignUserToCampaign(
       organizationUuid: String!
       campaignId: String!
+      queryParams: String
     ): Campaign
     userAgreeTerms(userId: String!): User
     reassignCampaignContacts(

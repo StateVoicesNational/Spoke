@@ -1,17 +1,16 @@
 ---
 name: Feature request
 about: Suggest an idea for Spoke
-title: 'Feature Request: <your-title-here>'
+title: "Feature Request: <your-title-here>"
 labels: C-enhancement
-assignees: ''
-
+assignees: ""
 ---
 
-**Is your feature request related to a problem? Please describe.**
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+**Problem**
+Is your feature request related to a problem? Please describe the problem with a clear and concise description. E.g. I'm always confused when[...]
 
-**Describe the solution you'd like**
-A clear and concise description of what you want to happen.
+**Solution**
+Describe the solution with a clear and concise description of what you want to happen.
 
-**Additional context**
+**Context**
 Add any other context or screenshots about the feature request here.

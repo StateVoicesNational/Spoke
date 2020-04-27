@@ -122,7 +122,7 @@ Create an RDS instance running Postgres 10.4 with the following settings:
 
 ### Configure Deploy Environment
 
-1. First make sure you are running node 8.10 (compatible with AWS Lambda) `nvm install 8.10; nvm use 8.10`
+1. First make sure you are running node 10.x (compatible with AWS Lambda) `nvm install 10; nvm use`
 2. Install Claudia js: `npm install -g claudia`
 3. Create an admin user on AWS selecting programmatic access. Add that profile to `~/.aws/credentials` giving it a nickname to use later in shell commands:
    ```
@@ -175,6 +175,16 @@ Do **NOT** set:
 For large production environments, it might also be a good idea to add `"SUPPRESS_MIGRATIONS": "1"` so that any time you update the schema with a version upgrade,
 you can manually run the migration (see below) rather than it accidentally trigger on multiple lambdas at once.
 
+#### Environment variable maximum: 4K
+
+AWS Lambda has a maximum size limit for all environment variable data of 4K -- this should generally be harmless.
+However, some environment variables like GOOGLE_SECRET for script import can be quite large. In this case, create
+another file (does not have to be located in your Spoke project directory) in the same format as production-env.json
+with GOOGLE_SECRET as a top-level JSON key (currently, no other variables are supported from this file).
+
+Then set the variable in production-env.json CONFIG_FILE: "/absolute/path/to/configfile.json" -- during deployment (below),
+this file will be copied into the lambda function zip file and get deployed with the rest of the code.
+
 ## Deploy
 
 To create the AWS Lambda function and the API Gateway to access it, run the following being sure to substitute in the correct values:
@@ -224,7 +234,7 @@ $ AWS_PROFILE=[your_profile_nickname] claudia add-scheduled-event \
 
 ### Migrating the Database
 
-Migrations are created with knex[https://knexjs.org/#Migrations]. 
+Migrations are created with knex[https://knexjs.org/#Migrations].
 
 You can trigger migration updates with the following command:
 
@@ -234,11 +244,11 @@ $ AWS_PROFILE=[your_profile_nickname] claudia test-lambda --event ./deploy/lambd
 
 (Note: the migration will probably take much less than the 5 minutes or whatever your lambda timeout is, however it will look like `test-lambda` is still running/doing something. If you've confirmed on the DB side that the migration completed, it's safe to `Ctrl + c`)
 
-For major  database changes  on large  database instances,  you should
-probably disable  the web  interface so  that web  requests triggering
-database calls are not made.  In AWS, the easiest way to do this is:
+For major database changes on large database instances, you should
+probably disable the web interface so that web requests triggering
+database calls are not made. In AWS, the easiest way to do this is:
 
-1. In the API  Gateway Custom  Domains (see below)  section, add  an 
+1. In the API Gateway Custom Domains (see below) section, add an
    invalid prefix (like `/xxx`) to the domain.
 2. Then in the Lambda AWS Console, you can disable any CloudWatch event triggers
 

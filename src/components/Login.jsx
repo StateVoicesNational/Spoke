@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
   },
   header: {
     ...theme.text.header,
-    color: theme.colors.green,
+    color: theme.colors.coreBackgroundColor,
     "text-align": "center",
     "margin-bottom": 0
   }
@@ -70,7 +70,9 @@ class Login extends React.Component {
     this.setState({ active: e.target.name });
   };
 
-  naiveVerifyInviteValid = nextUrl =>
+  naiveVerifyInviteValid = (nextUrl, maybeSignup) =>
+    (/^\/int/.test(nextUrl) && !maybeSignup) || // integration urls
+    /^\/sign/.test(nextUrl) || // signup integration urls
     /\/\w{8}-(\w{4}\-){3}\w{12}(\/|$)/.test(nextUrl);
 
   render() {
@@ -91,7 +93,7 @@ class Login extends React.Component {
       nextUrl && (nextUrl.includes("join") || nextUrl.includes("invite"));
     let displaySignUp;
     if (inviteLink) {
-      displaySignUp = this.naiveVerifyInviteValid(nextUrl);
+      displaySignUp = this.naiveVerifyInviteValid(nextUrl, true);
     }
 
     const saveLabels = {

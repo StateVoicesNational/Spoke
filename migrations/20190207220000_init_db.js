@@ -1,5 +1,6 @@
 const initialize = async (knex, Promise) => {
   // This object's keys are table names and each key's value is a function that defines that table's schema.
+  const isSqlite = /sqlite/.test(knex.client.config.client);
   const buildTableSchema = [
     {
       tableName: "user",
@@ -147,11 +148,12 @@ const initialize = async (knex, Promise) => {
           .notNullable();
         t.boolean("is_opted_out").defaultTo(false);
         t.text("timezone_offset").defaultTo("");
-
-        t.index("assignment_id");
-        t.foreign("assignment_id").references("assignment.id");
-        t.index("campaign_id");
-        t.foreign("campaign_id").references("campaign.id");
+        if (!isSqlite) {
+          t.index("assignment_id");
+          t.foreign("assignment_id").references("assignment.id");
+          t.index("campaign_id");
+          t.foreign("campaign_id").references("campaign.id");
+        }
         t.index("cell");
         t.index(
           ["campaign_id", "assignment_id"],
@@ -372,8 +374,11 @@ const initialize = async (knex, Promise) => {
         t.timestamp("send_before");
 
         t.index("assignment_id");
-        t.foreign("assignment_id").references("assignment.id");
-        t.foreign("user_id").references("user.id");
+        if (!isSqlite) {
+          // sqlite seems to bork on foreign declarations
+          t.foreign("assignment_id").references("assignment.id");
+          t.foreign("user_id").references("user.id");
+        }
         t.index("send_status");
         t.index("user_number");
         t.index("contact_number");

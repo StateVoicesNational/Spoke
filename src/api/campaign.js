@@ -16,6 +16,25 @@ export const schema = gql`
     optOutsCount: Int
   }
 
+  type CampaignCompletionStats {
+    contactsCount: Int
+    assignedCount: Int
+    messagedCount: Int
+  }
+
+  type IngestMethod {
+    name: String!
+    displayName: String
+    clientChoiceData: String
+    success: Boolean
+    result: String
+    reference: String
+    contactsCount: Int
+    deletedOptouts: Int
+    deletedDupes: Int
+    updatedAt: Date
+  }
+
   type JobRequest {
     id: String
     jobType: String
@@ -44,8 +63,10 @@ export const schema = gql`
     customFields: [String]
     cannedResponses(userId: String): [CannedResponse]
     stats: CampaignStats
+    completionStats: CampaignCompletionStats
     pendingJobs: [JobRequest]
-    datawarehouseAvailable: Boolean
+    ingestMethodsAvailable: [IngestMethod]
+    ingestMethod: IngestMethod
     useDynamicAssignment: Boolean
     introHtml: String
     primaryColor: String

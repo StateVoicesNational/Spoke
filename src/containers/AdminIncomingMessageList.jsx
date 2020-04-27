@@ -3,7 +3,9 @@ import React, { Component } from "react";
 import _ from "lodash";
 
 import IncomingMessageActions from "../components/IncomingMessageActions";
-import IncomingMessageFilter from "../components/IncomingMessageFilter";
+import IncomingMessageFilter, {
+  ALL_CAMPAIGNS
+} from "../components/IncomingMessageFilter";
 import IncomingMessageList from "../components/IncomingMessageList";
 import LoadingIndicator from "../components/LoadingIndicator";
 import PaginatedCampaignsRetriever from "./PaginatedCampaignsRetriever";
@@ -100,13 +102,13 @@ export class AdminIncomingMessageList extends Component {
     }
   };
 
-  handleCampaignChanged = async campaignId => {
+  handleCampaignChanged = async campaignIds => {
     const campaignsFilter = getCampaignsFilterForCampaignArchiveStatus(
       this.state.includeActiveCampaigns,
       this.state.includeArchivedCampaigns
     );
-    if (campaignId !== -1) {
-      campaignsFilter.campaignId = campaignId;
+    if (!campaignIds.find(campaignId => campaignId === ALL_CAMPAIGNS)) {
+      campaignsFilter.campaignIds = campaignIds;
     }
 
     await this.setState({
@@ -291,6 +293,14 @@ export class AdminIncomingMessageList extends Component {
     });
   };
 
+  handleForceRefresh = (clearSelectedMessages = false) => {
+    this.setState({
+      utc: Date.now().toString(),
+      needsRender: true,
+      clearSelectedMessages
+    });
+  };
+
   render() {
     const cursor = {
       offset: this.state.page * this.state.pageSize,
@@ -366,6 +376,7 @@ export class AdminIncomingMessageList extends Component {
               onConversationSelected={this.handleRowSelection}
               onConversationCountChanged={this.conversationCountChanged}
               clearSelectedMessages={this.state.clearSelectedMessages}
+              onForceRefresh={this.handleForceRefresh}
             />
           </div>
         )}

@@ -1,5 +1,5 @@
 import request from "request";
-import { r } from "../models";
+import { r } from "../../server/models";
 
 // What the user sees as the option
 export const displayName = () => "Test Action";

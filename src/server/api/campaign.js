@@ -3,6 +3,10 @@ import { mapFieldsToModel } from "./lib/utils";
 import { Campaign, JobRequest, r, cacheableData } from "../models";
 import { currentEditors } from "../models/cacheable_queries";
 import { getUsers } from "./user";
+import {
+  getAvailableIngestMethods,
+  getMethodChoiceData
+} from "../../integrations/contact-loaders";
 
 const title = 'lower("campaign"."title")';
 
@@ -62,6 +66,11 @@ export function buildCampaignQuery(
   }
 
   query = query.where("campaign.organization_id", organizationId);
+  query = query.leftJoin(
+    "campaign_admin",
+    "campaign_admin.campaign_id",
+    "campaign.id"
+  );
   query = addCampaignsFilterToQuery(query, campaignsFilter);
 
   return query;
@@ -97,9 +106,11 @@ const buildOrderByClause = (query, sortBy) => {
 };
 
 const buildSelectClause = sortBy => {
-  const campaignStar = '"campaign".*';
-
-  const fragmentArray = [campaignStar];
+  const fragmentArray = [
+    "campaign.*",
+    "campaign_admin.contacts_count",
+    "campaign_admin.ingest_success"
+  ];
 
   if (sortBy === "TITLE") {
     fragmentArray.push(title);
@@ -162,12 +173,15 @@ export const resolvers = {
         "SUPERVOLUNTEER",
         true
       );
-      return r
-        .table("assignment")
-        .getAll(campaign.id, { index: "campaign_id" })
-        .eqJoin("id", r.table("message"), { index: "assignment_id" })
-        .filter({ is_from_contact: false })
-        .count();
+      return r.getCount(
+        r
+          .knex("campaign_contact")
+          .join("message", "message.campaign_contact_id", "campaign_contact.id")
+          .where({
+            "campaign_contact.campaign_id": campaign.id,
+            "message.is_from_contact": false
+          })
+      );
     },
     receivedMessagesCount: async (campaign, _, { user }) => {
       await accessRequired(
@@ -176,14 +190,14 @@ export const resolvers = {
         "SUPERVOLUNTEER",
         true
       );
-      return (
+      return r.getCount(
         r
-          .table("assignment")
-          .getAll(campaign.id, { index: "campaign_id" })
-          // TODO: NEEDSTESTING -- see above setMessagesCount()
-          .eqJoin("id", r.table("message"), { index: "assignment_id" })
-          .filter({ is_from_contact: true })
-          .count()
+          .knex("campaign_contact")
+          .join("message", "message.campaign_contact_id", "campaign_contact.id")
+          .where({
+            "campaign_contact.campaign_id": campaign.id,
+            "message.is_from_contact": true
+          })
       );
     },
     optOutsCount: async (campaign, _, { user }) => {
@@ -253,8 +267,6 @@ export const resolvers = {
     organization: async (campaign, _, { loaders }) =>
       campaign.organization ||
       loaders.organization.load(campaign.organization_id),
-    datawarehouseAvailable: (campaign, _, { user }) =>
-      user.is_superadmin && !!process.env.WAREHOUSE_DB_HOST,
     pendingJobs: async (campaign, _, { user }) => {
       await accessRequired(
         user,
@@ -266,6 +278,77 @@ export const resolvers = {
         .table("job_request")
         .filter({ campaign_id: campaign.id })
         .orderBy("updated_at", "desc");
+    },
+    ingestMethodsAvailable: async (campaign, _, { user, loaders }) => {
+      try {
+        await accessRequired(user, campaign.organization_id, "ADMIN", true);
+      } catch (err) {
+        return []; // for SUPERVOLUNTEERS
+      }
+      const organization = await loaders.organization.load(
+        campaign.organization_id
+      );
+      const ingestMethods = await getAvailableIngestMethods(organization, user);
+      return Promise.all(
+        ingestMethods.map(async ingestMethod => {
+          const clientChoiceData = await getMethodChoiceData(
+            ingestMethod,
+            organization,
+            campaign,
+            user,
+            loaders
+          );
+          return {
+            name: ingestMethod.name,
+            displayName: ingestMethod.displayName(),
+            clientChoiceData
+          };
+        })
+      );
+    },
+    ingestMethod: async (campaign, _, { user, loaders }) => {
+      try {
+        await accessRequired(user, campaign.organization_id, "ADMIN", true);
+      } catch (err) {
+        return null; // for SUPERVOLUNTEERS
+      }
+      if (campaign.hasOwnProperty("contacts_count")) {
+        return {
+          contactsCount: campaign.contacts_count,
+          success: campaign.ingest_success || null
+        };
+      }
+
+      const status =
+        campaign.campaignAdmin ||
+        (await r
+          .knex("campaign_admin")
+          .where("campaign_id", campaign.id)
+          .first());
+      if (!status || !status.ingest_method) {
+        return null;
+      }
+      return {
+        name: status.ingest_method,
+        success: status.ingest_success,
+        result: status.ingest_result,
+        reference: status.ingest_data_reference,
+        contactsCount: status.contacts_count,
+        deletedOptouts: status.deleted_optouts_count,
+        deletedDupes: status.duplicate_contacts_count,
+        updatedAt: status.updated_at ? new Date(status.updated_at) : null
+      };
+    },
+    completionStats: async campaign => {
+      // must be cache-loaded or bust:
+      const stats = await cacheableData.campaign.completionStats(campaign.id);
+      return {
+        contactsCount: campaign.contactsCount || stats.contactsCount || null,
+        // 0 should still diffrentiate from null
+        assignedCount: stats.assignedCount > -1 ? stats.assignedCount : null,
+        // messagedCount won't be defined until some messages are sent
+        messagedCount: stats.assignedCount ? stats.messagedCount || 0 : null
+      };
     },
     texters: async (campaign, _, { user }) => {
       await accessRequired(
@@ -351,6 +434,10 @@ export const resolvers = {
         "SUPERVOLUNTEER",
         true
       );
+      const stats = await cacheableData.campaign.completionStats(campaign.id);
+      if (stats.assignedCount && campaign.contactsCount) {
+        return Number(campaign.contactsCount) - Number(stats.assignedCount) > 0;
+      }
       const contacts = await r
         .knex("campaign_contact")
         .select("id")
@@ -365,6 +452,10 @@ export const resolvers = {
         "SUPERVOLUNTEER",
         true
       );
+      const stats = await cacheableData.campaign.completionStats(campaign.id);
+      if (stats.messagedCount && campaign.contactsCount) {
+        return Number(campaign.contactsCount) - Number(stats.messagedCount) > 0;
+      }
       const contacts = await r
         .knex("campaign_contact")
         .select("id")
