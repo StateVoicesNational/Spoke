@@ -475,13 +475,14 @@ async function searchForAvailableNumbers(areaCode, limit) {
       capabilities: ["SMS", "MMS"]
     });
 }
+
 /**
  * Buy a phone number
  */
 async function buyNumber(phoneNumber) {
   const response = await twilio.incomingPhoneNumbers.create({
     phoneNumber,
-    friendlyName: `Managed by Spoke [${process.env.BASE_URL}]: ${phoneNumber}`
+    friendlyName: `Managed by Spoke: ${phoneNumber}`
   });
   if (response.error) {
     throw new Error(`Error buying twilio number: ${response.error}`);
