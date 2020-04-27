@@ -7,7 +7,7 @@ import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import { CampaignList } from "../../src/containers/CampaignList";
 import { StyleSheetTestUtils } from "aphrodite";
 
-describe("CampaignList", async () => {
+describe("CampaignList", () => {
   const mutations = {
     archiveCampaign: () => {},
     unarchiveCampaign: () => {}
@@ -18,7 +18,8 @@ describe("CampaignList", async () => {
     const campaignWithoutCreator = {
       id: 1,
       title: "Yes on A",
-      creator: null
+      creator: null,
+      completionStats: {}
     };
 
     const data = {
@@ -52,7 +53,8 @@ describe("CampaignList", async () => {
       id: 1,
       creator: {
         displayName: "Lorem Ipsum"
-      }
+      },
+      completionStats: {}
     };
 
     const data = {

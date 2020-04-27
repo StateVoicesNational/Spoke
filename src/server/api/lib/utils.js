@@ -7,7 +7,13 @@ export function mapFieldsToModel(fields, model) {
     const snakeKey = humps.decamelize(field, { separator: "_" });
     // eslint-disable-next-line no-underscore-dangle
     if (model._schema._schema.hasOwnProperty(snakeKey)) {
-      resolvers[field] = instance => instance[snakeKey];
+      if (/At$/.test(field)) {
+        // force a Date-type: esp. important for sqlite
+        resolvers[field] = instance =>
+          instance[snakeKey] ? new Date(instance[snakeKey]) : null;
+      } else {
+        resolvers[field] = instance => instance[snakeKey];
+      }
     } else {
       // eslint-disable-next-line no-underscore-dangle
       throw new Error(

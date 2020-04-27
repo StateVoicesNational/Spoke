@@ -34,7 +34,9 @@ async function convertMessagePartsToMessage(messageParts) {
 
   const lastMessage = await getLastMessage({
     contactNumber,
-    service: "nexmo"
+    service: "nexmo",
+    // Nexmo has nothing better that is both from sent and received message repsonses:
+    messageServiceSid: "nexmo"
   });
 
   return new Message({
@@ -44,7 +46,8 @@ async function convertMessagePartsToMessage(messageParts) {
     error_code: null,
     text,
     service_id: serviceMessages[0].service_id,
-    assignment_id: lastMessage.assignment_id,
+    campaign_contact_id: lastMessage.campaign_contact_id,
+    messageservice_sid: userNumber,
     service: "nexmo",
     send_status: "DELIVERED"
   });
@@ -107,17 +110,21 @@ async function rentNewCell() {
   throw new Error("Did not find any cell");
 }
 
-async function sendMessage(message, contact, trx) {
+async function sendMessage(message, contact, trx, organization) {
   if (!nexmo) {
     const options = trx ? { transaction: trx } : {};
     await Message.get(message.id).update({ send_status: "SENT" }, options);
     return "test_message_uuid";
   }
-
+  // FIXME|TODO: user_number is not set before
+  // until this is fixed, Nexmo will NOT work
+  // FUTURE: user_number should be decided here
+  // -- though that might need some more context, e.g. organization
+  const userNumber = message.user_number.replace(/^\+/, "");
   return new Promise((resolve, reject) => {
     // US numbers require that the + be removed when sending via nexmo
     nexmo.message.sendSms(
-      message.user_number.replace(/^\+/, ""),
+      userNumber,
       message.contact_number,
       message.text,
       {
@@ -141,6 +148,9 @@ async function sendMessage(message, contact, trx) {
         }
 
         messageToSave.service = "nexmo";
+        //userNum is required so can be tracked as messageservice_sid
+        messageToSave.messageservice_sid = getFormattedPhoneNumber(userNumber);
+        messageToSave.campaign_contact_id = contact.id;
 
         if (hasError) {
           if (messageToSave.service_messages.length >= MAX_SEND_ATTEMPTS) {
@@ -220,11 +230,7 @@ async function handleIncomingMessage(message) {
   let parentId = "";
   if (isConcat) {
     log.info(
-      `Incoming message part (${message["concat-part"]} of ${
-        message["concat-total"]
-      } for ref ${
-        message["concat-ref"]
-      }) from ${contactNumber} to ${userNumber}`
+      `Incoming message part (${message["concat-part"]} of ${message["concat-total"]} for ref ${message["concat-ref"]}) from ${contactNumber} to ${userNumber}`
     );
     parentId = message["concat-ref"];
   } else {

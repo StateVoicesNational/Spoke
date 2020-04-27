@@ -5,6 +5,7 @@ import User from "./user";
 import PendingMessagePart from "./pending-message-part";
 import Organization from "./organization";
 import Campaign from "./campaign";
+import CampaignAdmin from "./campaign-admin";
 import Assignment from "./assignment";
 import CampaignContact from "./campaign-contact";
 import InteractionStep from "./interaction-step";
@@ -43,6 +44,7 @@ const tableList = [
   "organization", // good candidate?
   "user", // good candidate
   "campaign", // good candidate
+  "campaign_admin",
   "assignment",
   // the rest are alphabetical
   "campaign_contact", // ?good candidate (or by cell)
@@ -92,7 +94,9 @@ const loaders = {
   }),
   user: createLoader(User),
   interactionStep: createLoader(InteractionStep),
-  campaignContact: createLoader(CampaignContact),
+  campaignContact: createLoader(CampaignContact, {
+    cacheObj: cacheableData.campaignContact
+  }),
   zipCode: createLoader(ZipCode, { idKey: "zip" }),
   log: createLoader(Log),
   cannedResponse: createLoader(CannedResponse),
@@ -120,6 +124,7 @@ export {
   datawarehouse,
   Assignment,
   Campaign,
+  CampaignAdmin,
   CampaignContact,
   InteractionStep,
   Invite,

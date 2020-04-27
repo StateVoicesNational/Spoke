@@ -1,60 +1,49 @@
-import {
-  GraphQLError
-} from "graphql/error";
+import { GraphQLError } from "graphql/error";
 
-import {
-  log
-} from "../../../lib";
-import {
-  Message,
-  r
-} from "../../models";
+import { log } from "../../../lib";
+import { Message, r, cacheableData } from "../../models";
 import serviceMap from "../lib/services";
 
-import {
-  getSendBeforeTimeUtc
-} from "../../../lib/timezones";
+import { getSendBeforeTimeUtc } from "../../../lib/timezones";
 
 const JOBS_SAME_PROCESS = !!(
   process.env.JOBS_SAME_PROCESS || global.JOBS_SAME_PROCESS
 );
 
-export const sendMessage = async (message, campaignContactId, loaders) => {
-  const contact = await loaders.campaignContact.load(campaignContactId);
+export const sendMessage = async (
+  message,
+  campaignContactId,
+  loaders,
+  user
+) => {
+  let contact = await loaders.campaignContact.load(campaignContactId);
   const campaign = await loaders.campaign.load(contact.campaign_id);
   if (
     contact.assignment_id !== parseInt(message.assignmentId) ||
     campaign.is_archived
   ) {
+    console.error("Error: assignment changed");
     throw new GraphQLError({
       status: 400,
       message: "Your assignment has changed"
     });
   }
-  const organization = await r
-    .table("campaign")
-    .get(contact.campaign_id)
-    .eqJoin("organization_id", r.table("organization"))("right");
-
+  const organization = await loaders.organization.load(
+    campaign.organization_id
+  );
   const orgFeatures = JSON.parse(organization.features || "{}");
 
-  const optOut = await r
-    .table("opt_out")
-    .getAll(contact.cell, {
-      index: "cell"
-    })
-    .filter({
-      organization_id: organization.id
-    })
-    .limit(1)(0)
-    .default(null);
+  const optOut = await cacheableData.optOut.query({
+    cell: contact.cell,
+    organizationId: campaign.organization_id
+  });
+
   if (optOut) {
     throw new GraphQLError({
       status: 400,
       message: "Skipped sending because this contact was already opted out"
     });
   }
-
   // const zipData = await r.table('zip_code')
   //   .get(contact.zip)
   //   .default(null)
@@ -72,10 +61,7 @@ export const sendMessage = async (message, campaignContactId, loaders) => {
   //   })
   // }
 
-  const {
-    contactNumber,
-    text
-  } = message;
+  const { contactNumber, text } = message;
 
   if (text.length > (process.env.MAX_MESSAGE_LENGTH || 99999)) {
     throw new GraphQLError({
@@ -97,63 +83,72 @@ export const sendMessage = async (message, campaignContactId, loaders) => {
   }
 
   const sendBefore = getSendBeforeTimeUtc(
-    contactTimezone, {
+    contactTimezone,
+    {
       textingHoursEnd: organization.texting_hours_end,
       textingHoursEnforced: organization.texting_hours_enforced
-    }, {
+    },
+    {
       textingHoursEnd: campaign.texting_hours_end,
-      overrideOrganizationTextingHours: campaign.override_organization_texting_hours,
+      overrideOrganizationTextingHours:
+        campaign.override_organization_texting_hours,
       textingHoursEnforced: campaign.texting_hours_enforced,
       timezone: campaign.timezone
     }
   );
 
   const sendBeforeDate = sendBefore ? sendBefore.toDate() : null;
-
   if (sendBeforeDate && sendBeforeDate <= Date.now()) {
     throw new GraphQLError({
       status: 400,
       message: "Outside permitted texting time for this recipient"
     });
   }
-
+  const serviceName =
+    orgFeatures.service ||
+    global.DEFAULT_SERVICE ||
+    process.env.DEFAULT_SERVICE ||
+    "";
+  const service = serviceMap[serviceName];
+  const finalText = replaceCurlyApostrophes(text);
   const messageInstance = new Message({
-    text: replaceCurlyApostrophes(text),
+    text: finalText,
     contact_number: contactNumber,
     user_number: "",
-    assignment_id: message.assignmentId,
+    user_id: user.id,
+    campaign_contact_id: contact.id,
+    messageservice_sid: null,
     send_status: JOBS_SAME_PROCESS ? "SENDING" : "QUEUED",
-    service: orgFeatures.service || process.env.DEFAULT_SERVICE || "",
+    service: serviceName,
     is_from_contact: false,
     queued_at: new Date(),
     send_before: sendBeforeDate
   });
 
-  await messageInstance.save();
-  const service =
-    serviceMap[
-      messageInstance.service ||
-      process.env.DEFAULT_SERVICE ||
-      global.DEFAULT_SERVICE
+  const initialMessageStatus = contact.message_status;
+
+  const saveResult = await cacheableData.message.save({
+    messageInstance,
+    contact
+  });
+  contact.message_status = saveResult.contactStatus;
+
+  // log.info(
+  //   `Sending (${serviceName}): ${messageInstance.user_number} -> ${messageInstance.contact_number}\nMessage: ${messageInstance.text}`
+  // );
+  //NO AWAIT: pro=return before api completes, con=context needs to stay alive
+  service.sendMessage(saveResult.message, contact, null, organization);
+
+  if (initialMessageStatus === "needsMessage") {
+    // don't both requerying the messages list on the response
+    contact.messages = [
+      {
+        id: "initial",
+        text: finalText,
+        created_at: new Date(),
+        is_from_contact: false
+      }
     ];
-
-  contact.updated_at = "now()";
-
-  if (
-    contact.message_status === "needsResponse" ||
-    contact.message_status === "convo"
-  ) {
-    contact.message_status = "convo";
-  } else {
-    contact.message_status = "messaged";
   }
-
-  await contact.save();
-
-  log.info(
-    `Sending (${service}): ${messageInstance.user_number} -> ${messageInstance.contact_number}\nMessage: ${messageInstance.text}`
-  );
-
-  service.sendMessage(messageInstance, contact);
   return contact;
 };

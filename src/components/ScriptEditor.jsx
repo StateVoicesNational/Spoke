@@ -82,12 +82,19 @@ class ScriptEditor extends React.Component {
 
     const editorState = this.getEditorState();
     this.state = {
-      editorState
+      editorState,
+      readyToAdd: false
     };
 
     this.focus = () => this.refs.editor.focus();
     this.onChange = this.onChange.bind(this);
     this.addCustomField = this.addCustomField.bind(this);
+    // start out with buttons disabled for 200ms
+    // because sometimes the click to open lands
+    // on one of the items.  After it opens, we enable them.
+    setTimeout(() => {
+      this.setState({ readyToAdd: true });
+    }, 200);
   }
 
   componentWillReceiveProps() {
@@ -95,7 +102,6 @@ class ScriptEditor extends React.Component {
     const { editorState } = this.state;
     const decorator = this.getCompositeDecorator(scriptFields);
     EditorState.set(editorState, { decorator });
-
     // this.setState({ editorState: this.getEditorState() })
   }
 
@@ -152,8 +158,11 @@ class ScriptEditor extends React.Component {
   }
 
   addCustomField(field) {
+    const { editorState, readyToAdd } = this.state;
+    if (!readyToAdd) {
+      return;
+    }
     const textToInsert = delimit(field);
-    const { editorState } = this.state;
     const selection = editorState.getSelection();
     const contentState = editorState.getCurrentContent();
     const newContentState = Modifier.insertText(
