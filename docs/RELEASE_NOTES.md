@@ -3,7 +3,7 @@
 _April 2020:_ Version 5.4
 This release includes the following improvements:
 
-- A new contact loader for loading contacts in straight from NGP VAN
+- *Experimental* A new contact loader for loading contacts in straight from NGP VAN (not yet testing on a production campaign)
 - Scaling improvements
 - Allow contact loaders to be toggled on a per-organization level
 - Improvements to the contact loaders framework
