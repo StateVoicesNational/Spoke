@@ -30,6 +30,13 @@ async function main() {
     const messagingServiceSid = (await Campaign.get(campaign))
       .messaging_service_sid;
 
+    if (messagingServiceSid == undefined) {
+      console.error(
+        `Couldnt get messaging service from Campaign ID: ${campaign}`
+      );
+      process.exit();
+    }
+
     let phoneNumbersToBuy = limit;
     do {
       const phoneNumbers = await twilio.searchForAvailableNumbers(
