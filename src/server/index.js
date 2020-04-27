@@ -16,9 +16,9 @@ import wrap from "./wrap";
 import { log } from "../lib";
 import nexmo from "./api/lib/nexmo";
 import twilio from "./api/lib/twilio";
+import { twiml } from "twilio";
 import { seedZipCodes } from "./seeds/seed-zip-codes";
 import { setupUserNotificationObservers } from "./notifications";
-import { TwimlResponse } from "twilio";
 import { existsSync } from "fs";
 import { rawAllMethods } from "../integrations/contact-loaders";
 
@@ -126,7 +126,7 @@ app.post(
       log.error(ex);
     }
 
-    const resp = new TwimlResponse();
+    const resp = new twiml.MessagingResponse();
     res.writeHead(200, { "Content-Type": "text/xml" });
     res.end(resp.toString());
   })
@@ -154,7 +154,7 @@ app.post(
     } catch (ex) {
       log.error(ex);
     }
-    const resp = new TwimlResponse();
+    const resp = new twiml.MessagingResponse();
     res.writeHead(200, { "Content-Type": "text/xml" });
     res.end(resp.toString());
   })
