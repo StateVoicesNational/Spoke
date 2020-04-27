@@ -455,11 +455,10 @@ async function handleIncomingMessage(message) {
  * Create a new Twilio messaging service
  */
 async function createMessagingService(friendlyName) {
-  const inboundRequestUrl = process.env.BASE_URL + "/twilio";
   return await twilio.messaging.services.create({
     friendlyName,
     statusCallback: process.env.TWILIO_STATUS_CALLBACK_URL,
-    inboundRequestUrl: inboundRequestUrl
+    inboundRequestUrl: process.env.TWILIO_INBOUND_URL
   });
 }
 
