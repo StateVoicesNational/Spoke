@@ -10,7 +10,8 @@ import {
   handleIncomingMessageParts,
   fixOrgless,
   clearOldJobs,
-  importScript
+  importScript,
+  buyTwilioNumbers
 } from "./jobs";
 import { setupUserNotificationObservers } from "../server/notifications";
 
@@ -28,7 +29,8 @@ export { seedZipCodes } from "../server/seeds/seed-zip-codes";
 const jobMap = {
   export: exportCampaign,
   assign_texters: assignTexters,
-  import_script: importScript
+  import_script: importScript,
+  buy_twilio_numbers: buyTwilioNumbers
 };
 
 export async function processJobs() {

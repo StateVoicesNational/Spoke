@@ -1,0 +1,17 @@
+NOTES (delete me before merging):
+  * Currently uses EXPERIMENTAL_* env var. I would prefer to not add yet another
+    env var but rather to just make it a setting that can be turned on/off on the
+    org settings screen
+  * Not currently generic (twilio table, buyTwilioNumbers, ...), I need to do
+    more research into other providers to generalize
+  * The buy numbers job isn't scoped to a campaign, easiest solution is
+    to add an organization_id column and make campaign_id nullable
+  * OWNERS can buy numbers, ADMINs can see what numbers are available
+    and allocate them to campaigns
+  * Warren-style campaign number reservation system in comments
+    to illustrate how it would work.
+    It's a nice way to prevent races when multiple campaigns are being
+    created simultaneously but it adds more complexity.
+    For a V1 i think we should only have two state (AVAILABLE and ALLOCATED)
+    and prevent the race in the startCampaign mutation by running it in a
+    transaction and failing if the desired quantity is not available.

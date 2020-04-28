@@ -353,6 +353,11 @@ const rootSchema = gql`
     createTag(organizationId: String!, tagData: TagInput!): Tag
     editTag(organizationId: String!, id: String!, tagData: TagInput!): Tag
     deleteTag(organizationId: String!, id: String!): Tag
+    buyTwilioNumbers(
+      organizationId: ID!
+      areaCode: String!
+      limit: Int!
+    ): JobRequest
   }
 
   schema {

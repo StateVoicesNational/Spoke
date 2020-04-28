@@ -1,6 +1,13 @@
 import gql from "graphql-tag";
 
+// for phone number reservation sytem add "reservedCount: Int!"
 export const schema = gql`
+  type TwilioPhoneNumberCountsByStatus {
+    areaCode: String!
+    availableCount: Int!
+    allocatedCount: Int!
+  }
+
   type Organization {
     id: ID
     uuid: String
@@ -22,5 +29,6 @@ export const schema = gql`
     twilioAuthToken: String
     twilioMessageServiceSid: String
     fullyConfigured: Boolean
+    twilioPhoneNumbers: [TwilioPhoneNumberCountsByStatus]
   }
 `;

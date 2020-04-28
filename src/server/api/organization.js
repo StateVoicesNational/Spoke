@@ -4,6 +4,7 @@ import { r, Organization, cacheableData } from "../models";
 import { accessRequired } from "./errors";
 import { getCampaigns } from "./campaign";
 import { buildSortedUserOrganizationQuery } from "./user";
+import { getConfig } from "./lib/config";
 
 export const resolvers = {
   Organization: {
@@ -101,6 +102,33 @@ export const resolvers = {
         }
       }
       return true;
+    },
+    twilioPhoneNumbers: async (organization, _, { user }) => {
+      await accessRequired(user, organization.id, "ADMIN");
+      if (
+        !getConfig("EXPERIMENTAL_TWILIO_INVENTORY", organization, {
+          truthy: true
+        })
+      ) {
+        throw Error("Twilio inventory management is not enabled");
+      }
+      const counts = await r
+        .knex("twilio_phone_number")
+        .select(
+          "area_code",
+          r.knex.raw("count(status = 'ALLOCATED' OR NULL) as allocated_count"),
+          // Uncomment revered_count if we add a reservation system:
+          // r.knex.raw("count(status = 'RESERVED' OR NULL) as reserved_count"),
+          r.knex.raw("count(status = 'AVAILABLE' OR NULL) as available_count")
+        )
+        .where("organization_id", organization.id)
+        .groupBy("area_code");
+      return counts.map(row => ({
+        areaCode: row.area_code,
+        allocatedCount: Number(row.allocated_count),
+        // reserved_count: Number(row.reserved_count),
+        availableCount: Number(row.available_count)
+      }));
     }
   }
 };
