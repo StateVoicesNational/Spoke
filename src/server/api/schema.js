@@ -10,7 +10,8 @@ import {
   dispatchContactIngestLoad,
   exportCampaign,
   importScript,
-  loadCampaignCache
+  loadCampaignCache,
+  buyTwilioNumbers
 } from "../../workers/jobs";
 import { getIngestMethod } from "../../integrations/contact-loaders";
 import {
@@ -26,8 +27,7 @@ import {
   Tag,
   UserOrganization,
   r,
-  cacheableData,
-  loaders
+  cacheableData
 } from "../models";
 import { Notifications, sendUserNotification } from "../notifications";
 import { resolvers as assignmentResolvers } from "./assignment";
@@ -1298,6 +1298,32 @@ const rootMutations = {
         .where("id", id)
         .update({ is_deleted: true });
       return { id };
+    },
+    buyTwilioNumbers: async (
+      _,
+      { organizationId, areaCode, limit },
+      { loaders, user }
+    ) => {
+      await accessRequired(user, organizationId, "OWNER");
+      const org = await loaders.organization.load(organizationId);
+      if (!getConfig("EXPERIMENTAL_TWILIO_INVENTORY", org, { truthy: true })) {
+        throw Error("Twilio inventory management is not enabled");
+      }
+      const job = await JobRequest.save({
+        queue_name: `${organizationId}:buy_twilio_numbers`,
+        organization_id: organizationId,
+        job_type: "buy_twilio_numbers",
+        locks_queue: false,
+        assigned: JOBS_SAME_PROCESS,
+        payload: JSON.stringify({
+          areaCode,
+          limit
+        })
+      });
+      if (JOBS_SAME_PROCESS) {
+        await buyTwilioNumbers(job);
+      }
+      return job;
     }
   }
 };

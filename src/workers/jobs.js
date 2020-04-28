@@ -17,6 +17,7 @@ import {
 } from "../server/api/lib/message-sending";
 import importScriptFromDocument from "../server/api/lib/import-script";
 import { rawIngestMethod } from "../integrations/contact-loaders";
+import twilio from "../server/api/lib/twilio";
 
 import AWS from "aws-sdk";
 import Papa from "papaparse";
@@ -1117,4 +1118,69 @@ export async function clearOldJobs(delay) {
     .where({ assigned: true })
     .where("updated_at", "<", delay)
     .delete();
+}
+
+const MAX_NUMBERS_PER_JOB = 500;
+
+// ***** lodash Only used for demo, delete before merging
+import _ from "lodash";
+
+export async function buyTwilioNumbers(job) {
+  if (!job.organization_id) {
+    throw Error("organization_id is required");
+  }
+  const payload = JSON.parse(job.payload);
+  const { areaCode, limit } = payload;
+  if (!areaCode || !limit) {
+    throw Error(
+      `Improperly configured, areaCode and limit are required ${payload}`
+    );
+  }
+  const organization = await Organization.get(job.organization_id);
+  async function buyBatch(size) {
+    let successCount = 0;
+    log.debug(`Attempting to buy batch of ${size} numbers`);
+
+    // **** DEMO ****
+    const response = _.fill(Array(size), { phoneNumber: `+1${areaCode}FAKE` });
+    // to search for real numbers:
+    // const response = await twilio.searchForAvailableNumbers(organization, areaCode, size);
+
+    for (const item of response) {
+      // ***** DEMO *****
+      await r.knex("twilio_phone_number").insert({
+        organization_id: organization.id,
+        area_code: areaCode,
+        phone_number: item.phoneNumber,
+        status: "AVAILABLE",
+        sid: `FAKE-${_.random(0, 1000000000, false)}`
+      });
+      // to buy real twilio numbers:
+      // await twilio.buyNumber(organization, item.phoneNumber);
+
+      successCount++;
+    }
+    log.debug(`Successfully bought ${successCount} number(s)`);
+    return successCount;
+  }
+
+  const totalRequested = Math.min(limit, MAX_NUMBERS_PER_JOB);
+  let totalPurchased = 0;
+  while (totalPurchased < totalRequested) {
+    const nextBatchSize = Math.min(30, totalRequested - totalPurchased);
+    const purchasedInBatch = await buyBatch(nextBatchSize);
+    totalPurchased += purchasedInBatch;
+    // TODO: update progress
+    if (purchasedInBatch === 0) {
+      log.warn("Failed buy as many numbers as requested");
+      break;
+    }
+  }
+  log.info(`Bought ${totalPurchased} number(s)`, {
+    status: "COMPLETE",
+    "Area Code": areaCode,
+    "Total Requested": totalRequested,
+    "Total Purchased": totalPurchased,
+    "Requested By": job.userId
+  });
 }
