@@ -10,7 +10,7 @@ async function asyncForEach(array, callback) {
 
 async function main() {
   try {
-    const { campaign, areaCode, limit } = parseArgs(process.argv, {
+    const { messagingServiceSid, areaCode, limit } = parseArgs(process.argv, {
       default: {
         limit: 1
       }
@@ -22,18 +22,8 @@ async function main() {
       process.exit();
     }
 
-    if (campaign === undefined) {
-      console.error(`Invalid Campaign ID: ${campaign}`);
-      process.exit();
-    }
-
-    const messagingServiceSid = (await Campaign.get(campaign))
-      .messaging_service_sid;
-
-    if (messagingServiceSid == undefined) {
-      console.error(
-        `Couldnt get messaging service from Campaign ID: ${campaign}`
-      );
+    if (limit < 1 && limit > 200) {
+      console.error("Limit should be between 1 and 200");
       process.exit();
     }
 
@@ -49,6 +39,9 @@ async function main() {
         await twilio.addNumberToMessagingService(
           phoneNumberSid,
           messagingServiceSid
+        );
+        console.log(
+          `Added PhoneNumber (${phoneNumber.phoneNumber}) to Messaging Serivce: ${messagingServiceSid}`
         );
       });
 
