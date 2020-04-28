@@ -29,10 +29,10 @@ This fork contains a new feature around allowing each campaign to have a new mes
 
 This fork contains a feature to allow you to buy phone numbers for campaigns from certain area codes. To buy numbers run the command on the server where spoke has been deployed (for example: Your Heroku instance console):
 
-`npm run buy-numbers -- --campaign <campaign id> --areaCode <areaCode> --limit <limit>`
+`npm run buy-numbers -- --messagingServiceSid <messagingServiceSid> --areaCode <areaCode> --limit <limit>`
 
 Variables:
-- `campaign`: ID of the Campaign, can be gotten from the campaign listing page, or the campaign stats page url.
+- `messagingServiceSid`: Messaging Service SID with which the bought phone numbers should be associated with. Can be gotten from the Campaign Messaging Service details page
 - `areaCode`: Area Code from which you want to buy the phone numbers
 - `limit`: How many phone numbers to buy, default limit is 1. Max recommended limit is 100. The buying works in batches of 30.
 
