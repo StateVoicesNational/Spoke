@@ -2,24 +2,47 @@ import PropTypes from "prop-types";
 import React from "react";
 import DropDownMenu from "material-ui/DropDownMenu";
 import MenuItem from "material-ui/MenuItem";
+import ArrowDown from "material-ui/svg-icons/navigation/arrow-downward";
+import ArrowUp from "material-ui/svg-icons/navigation/arrow-upward";
+import ArrowRight from "material-ui/svg-icons/navigation/arrow-forward";
 
-const DUE_DATE_ASC_SORT = {
-  display: "Due Date - Earliest First",
+export const DUE_DATE_ASC_SORT = {
+  display: (
+    <span>
+      Due Date, oldest
+      <ArrowRight style={{ height: "13px" }} />
+    </span>
+  ),
   value: "DUE_DATE_ASC"
 };
 
-const DUE_DATE_DESC_SORT = {
-  display: "Due Date - Latest First",
+export const DUE_DATE_DESC_SORT = {
+  display: (
+    <span>
+      Due Date, newest
+      <ArrowRight style={{ height: "13px" }} />
+    </span>
+  ),
   value: "DUE_DATE_DESC"
 };
 
 export const ID_ASC_SORT = {
-  display: "Created - Earliest First",
+  display: (
+    <span>
+      Created, oldest
+      <ArrowRight style={{ height: "13px" }} />
+    </span>
+  ),
   value: "ID_ASC"
 };
 
 export const ID_DESC_SORT = {
-  display: "Created - Latest First",
+  display: (
+    <span>
+      Created, newest
+      <ArrowRight style={{ height: "13px" }} />
+    </span>
+  ),
   value: "ID_DESC"
 };
 
@@ -29,10 +52,10 @@ const TITLE_SORT = {
 };
 
 const SORTS = [
-  DUE_DATE_ASC_SORT,
   DUE_DATE_DESC_SORT,
-  ID_ASC_SORT,
+  DUE_DATE_ASC_SORT,
   ID_DESC_SORT,
+  ID_ASC_SORT,
   TITLE_SORT
 ];
 
@@ -47,7 +70,7 @@ const SortBy = props => (
       <MenuItem
         value={sort.value}
         key={sort.value}
-        primaryText={"Sort By " + sort.display}
+        primaryText={<span>Sort: {sort.display}</span>}
       />
     ))}
   </DropDownMenu>
