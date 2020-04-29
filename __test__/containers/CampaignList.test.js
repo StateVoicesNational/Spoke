@@ -29,6 +29,8 @@ describe("CampaignList", () => {
 
     const data = {
       organization: {
+        id: 77,
+        cacheable: 2,
         campaigns: {
           campaigns: [campaignWithoutCreator],
           pageInfo: {
