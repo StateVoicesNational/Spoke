@@ -7,6 +7,7 @@ import {
   getAvailableIngestMethods,
   getMethodChoiceData
 } from "../../integrations/contact-loaders";
+import twilio from "./lib/twilio";
 
 export function addCampaignsFilterToQuery(queryParam, campaignsFilter) {
   let query = queryParam;
@@ -409,6 +410,12 @@ export const resolvers = {
         return cacheableData.campaign.currentEditors(campaign, user);
       }
       return "";
+    },
+    phoneNumbers: async campaign => {
+      const phoneNumbers = await twilio.getPhoneNumbersForService(
+        campaign.messaging_service_sid
+      );
+      return phoneNumbers.map(phoneNumber => phoneNumber.phoneNumber);
     },
     creator: async (campaign, _, { loaders }) =>
       campaign.creator_id ? loaders.user.load(campaign.creator_id) : null
