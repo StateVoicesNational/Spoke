@@ -65,6 +65,7 @@ export default class CampaignBasicsForm extends React.Component {
           value={this.formValues()}
           onChange={this.props.onChange}
           onSubmit={this.props.onSubmit}
+          {...dataTest("campaignBasicsForm")}
         >
           <Form.Field
             {...dataTest("title")}
