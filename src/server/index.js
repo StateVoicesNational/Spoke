@@ -104,8 +104,8 @@ Object.keys(configuredIngestMethods).forEach(ingestMethodName => {
 });
 
 app.post(
-  "/twilio",
-  twilio.webhook(),
+  "/twilio/:orgId?",
+  twilio.headerValidator(),
   wrap(async (req, res) => {
     try {
       await twilio.handleIncomingMessage(req.body);
@@ -161,10 +161,6 @@ app.post(
     res.end(resp.toString());
   })
 );
-
-// const accountSid = process.env.TWILIO_API_KEY
-// const authToken = process.env.TWILIO_AUTH_TOKEN
-// const client = require('twilio')(accountSid, authToken)
 
 app.get("/logout-callback", (req, res) => {
   req.logOut();
