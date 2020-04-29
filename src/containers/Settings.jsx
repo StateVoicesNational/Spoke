@@ -257,7 +257,7 @@ class Settings extends React.Component {
                 modal={true}
                 open={this.state.twilioDialogOpen}
               >
-                Changing Twilio credentials will break any campaigns that are currently running. Do you want to contunue?
+                Changing the Account SID or Messaging Service SID will break any campaigns that are currently running. Do you want to contunue?
               </Dialog>
             </GSForm>
           </div>
