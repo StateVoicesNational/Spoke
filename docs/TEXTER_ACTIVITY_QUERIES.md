@@ -168,3 +168,238 @@ ORDER BY updated_at DESC;
 - survey question response counts and percentage of total responses to survey question
 
 * count of contacts, texters, sent, count (and as percent of total sent) of replies, optouts and wrong numbers, for all campaigns
+
+
+### Queries used in Sisense / Periscope Dashboard by New York Civic Engagement Table:
+
+- Count of all messages, with filter for date range, organization, campaign 
+
+```sql
+SELECT count(*)
+FROM message m
+left join campaign_contact n
+on m.campaign_contact_id = n.id
+left join campaign c
+on n.campaign_id = c.ID
+left join organization o
+on o.ID = c.organization_ID
+where [m.created_at = daterange]
+and [o.name=organization]
+and [c.title=campaign]
+and c.title NOT LIKE '%Test%'
+and c.title NOT LIKE '%Demo%'
+```
+
+- Count of contacts texted, with same filters
+
+```sql
+select count(distinct m.contact_number) from message m
+left join campaign_contact n
+on m.campaign_contact_id = n.id
+left join campaign c
+on n.campaign_id = c.ID
+left join organization o
+on o.ID = c.organization_ID
+where [m.created_at = daterange]
+and [o.name=organization]
+and [c.title=campaign]
+and c.title NOT LIKE '%Test%'
+and c.title NOT LIKE '%Demo%'
+```
+
+- count of outbound messages
+
+``` sql
+select count(*) from message m 
+left join campaign_contact n
+on m.campaign_contact_id = n.id
+left join campaign c
+on n.campaign_id = c.ID
+left join organization o
+on o.ID = c.organization_ID
+where [m.created_at = daterange]
+and [o.name=organization]
+and [c.title=campaign]
+and m.is_from_contact = false
+and c.title NOT LIKE '%Test%'
+and c.title NOT LIKE '%Demo%'
+```
+
+- Count of inbound messages
+
+```sql
+select count(*) from message m 
+left join campaign_contact n
+on m.campaign_contact_id = n.id
+left join campaign c
+on n.campaign_id = c.ID
+left join organization o
+on o.ID = c.organization_ID
+where [m.created_at = daterange]
+and [o.name=organization]
+and [c.title=campaign]
+and m.is_from_contact = true
+and c.title NOT LIKE '%Test%'
+and c.title NOT LIKE '%Demo%'
+```
+
+- Count of Organization-wide opt-outs
+
+```sql
+select count(*) from opt_out t
+join organization o
+on o.ID = t.organization_ID
+left join campaign c
+on c.organization_ID = o.ID
+where [t.created_at = daterange]
+and [o.name=organization]
+and c.title NOT LIKE '%Test%'
+and c.title NOT LIKE '%Demo%'
+```
+
+- Count of Texters in a Campaign or Org
+
+```sql
+SELECT count(distinct m.user_id) from message m
+left join campaign_contact n
+on m.campaign_contact_id = n.id
+left join campaign c
+on n.campaign_id = c.ID
+left join organization o
+on o.ID = c.organization_ID
+where [m.created_at = daterange]
+and [o.name=organization]
+and [c.title=campaign]
+and c.title NOT LIKE '%Test%'
+and c.title NOT LIKE '%Demo%'
+```
+
+- Inbound vs Outbound Share of Messages (select pie graph visualization in Sisense)
+
+```sql
+select case when m.is_from_contact = true then 'Inbound' else 'Outbound' end as MessageType, count(*) from message m 
+left join campaign_contact n
+on m.campaign_contact_id = n.id
+left join campaign c
+on n.campaign_id = c.ID
+--left join user_organization z
+--on z.user_id = m.user_id
+left join organization o
+on o.ID = c.organization_ID
+where [m.created_at = daterange]
+and [o.name=organization]
+and [c.title=campaign]
+and c.title NOT LIKE '%Test%'
+and c.title NOT LIKE '%Demo%'
+group by MessageType
+```
+
+- Share of message status (select pie graph visualization)
+
+```sql
+select n.message_status, count(*)
+from campaign_contact n
+left join campaign c
+on c.id = n.campaign_id
+left join organization o 
+on o.ID = c.organization_ID
+where [c.created_at = daterange]
+and c.title NOT LIKE '%Test%'
+and c.title NOT LIKE '%Demo%'
+group by n.message_status
+```
+
+- Send success rate (select pie graph visualization)
+
+```sql 
+select m.send_status, count(*) from message m
+left join campaign_contact n
+on m.campaign_contact_id = n.id
+left join campaign c
+on n.campaign_id = c.ID
+left join organization o
+on o.ID = c.organization_ID
+where [m.created_at = daterange]
+and [o.name=organization]
+and [c.title=campaign]
+and c.title NOT LIKE '%Test%'
+and c.title NOT LIKE '%Demo%'
+group by m.send_status
+```
+
+- Total Messages by Date (select line graph visualization with sent as x axis and messages as y axis)
+
+```sql
+select c.title as Campaign, to_char(m.sent_at :: DATE, 'yyyy-mm-dd') as Sent, count(m.ID) as Messages from message m
+left join campaign_contact n
+on m.campaign_contact_id = n.id
+left join campaign c
+on n.campaign_id = c.ID
+left join organization o
+on o.ID = c.organization_ID
+where [m.created_at = daterange]
+and [o.name=organization]
+and [c.title=campaign]
+and m.send_status <> 'ERROR'
+and c.title NOT LIKE '%Test%'
+and c.title NOT LIKE '%Demo%'
+group by campaign, sent
+```
+
+- Table of Campaigns (select table visualization)
+
+```sql
+select o.name as Organization, c.title as Campaign, to_char(c.created_at :: DATE, 'mm/dd/yyyy') as Created, to_char(c.due_by :: DATE, 'mm/dd/yyyy') as Due from campaign c
+join organization o 
+on c.organization_ID = o.ID
+where [o.name=Organization]
+and [c.title=campaign]
+and c.title NOT LIKE '%Test%'
+and c.title NOT LIKE '%Demo%'
+order by c.created_at desc, c.due_by desc
+```
+
+- Table of Campaign Questions (select table visualization)
+
+```sql
+select distinct i.question as Questions from interaction_step i
+left join campaign c
+on c.ID = i.campaign_id
+left join organization o 
+on c.organization_ID = o.ID
+where i.question <> ''
+and 
+[c.title=Campaign]
+and 
+[o.name=organization]
+and c.title NOT LIKE '%Test%'
+and c.title NOT LIKE '%Demo%'
+```
+
+- Table of Questions and Answers (select table visualization)
+
+```sql
+select 
+--n.external_ID as VANID,
+--m.contact_number as Phone,
+i.question as Question, 
+q.value as Response, 
+count(*)
+from message m
+left join campaign_contact n
+on m.campaign_contact_id = n.id
+left join question_response q
+on n.id = q.campaign_contact_id
+left join interaction_step i
+on i.ID = q.interaction_step_id
+left join campaign c
+on n.campaign_id = c.ID
+left join organization o
+on o.ID = c.organization_ID
+where [m.created_at = daterange]
+and [o.name=organization]
+and [c.title=campaign]
+and i.question is not null
+group by 1,2
+--group by VANID, Phone, Question, Response
+```
