@@ -24,7 +24,7 @@ export const tests = {
     assignment: {
       campaign: {
         id: 10123,
-        title: "Event Recruitment for Saving the World",
+        title: "GOT Progressive Vote",
         useDynamicAssignment: false,
         organization: {
           optOutMessage:
@@ -34,7 +34,7 @@ export const tests = {
           {
             id: "13",
             script:
-              'Hi, this is {firstName}, a MoveOn volunteer. Can you attend our "Save the world" event Saturday at noon in DC?',
+              "Hi {firstName}, it's {texterAliasOrFirstName} a volunteer with MoveOn. There is an election in Arizona coming Tuesday. Will you vote progressive?",
             question: { text: "", answerOptions: [] }
           }
         ]
@@ -43,13 +43,13 @@ export const tests = {
       userCannedResponses: []
     },
     texter: {
-      firstName: "Erik",
+      firstName: "Carlos",
       lastName: "Tlastname"
     },
     contact: {
       id: "1",
-      firstName: "Joe",
-      lastName: "Femur",
+      firstName: "Delores",
+      lastName: "Huerta (Yeah, she's actually from California)",
       messageStatus: "needsMessage",
       questionResponseValues: [],
       messages: [],
@@ -77,7 +77,7 @@ export const tests = {
     assignment: {
       campaign: {
         id: 10123,
-        title: "Event Recruitment for Saving the World",
+        title: "GOT Progressive Vote",
         useDynamicAssignment: false,
         organization: {
           optOutMessage:
@@ -87,9 +87,9 @@ export const tests = {
           {
             id: "13",
             script:
-              'Hi, this is {firstName}, a MoveOn volunteer. Can you attend our "Save the world" event Saturday at noon in DC?',
+              "Hi {firstName}, it's {texterAliasOrFirstName}, a volunteer with MoveOn. There is an election in Ohio this coming Tuesday. Will you vote progressive?",
             question: {
-              text: "Attend Event?",
+              text: "Will you vote progressive?",
               answerOptions: [
                 {
                   value: "Yes",
@@ -97,7 +97,7 @@ export const tests = {
                   nextInteractionStep: {
                     id: "14",
                     script:
-                      "That's great, we'll see you there! Will you bring a friend?"
+                      "Great! Did you get your ballot in the mail? We suggest getting it ready to turn in early so that it doesn't get lost and it's fun to be done with something important. Let us know if you have any problems or questions. And let us know when you vote!"
                   }
                 },
                 {
@@ -114,23 +114,23 @@ export const tests = {
           {
             id: "14",
             script:
-              "That's great, we'll see you there! Will you bring a friend?",
+              "That's great, can you convince three friends to vote as well?",
             question: {
-              text: "Bring friend?",
+              text: "More friends?",
               answerOptions: [
                 {
-                  value: "Yes, with friend",
+                  value: "Yes, friends",
                   interactionStepId: "20",
                   nextInteractionStep: {
                     id: "20",
-                    script: "Super, we'll add your +1"
+                    script: "Super, we'll add your +3"
                   }
                 },
                 {
                   value: "No, no friends",
                   nextInteractionStep: {
                     script:
-                      "It's too bad, hopefully you'll meet some cool people there."
+                      "Ok, but we need all the help we can get in getting out the vote!"
                   }
                 }
               ]
@@ -150,21 +150,21 @@ export const tests = {
         {
           id: "2",
           title: "Wrong number",
-          text: "Ok, we'll remove you from our list.",
+          text: "Ok, we'll remove you from our list, {firstName}.",
           isUserCreated: false
         }
       ],
       userCannedResponses: []
     },
     texter: {
-      firstName: "Texterfirst",
+      firstName: "Christine",
       lastName: "Tlastname"
     },
     contact: {
       id: "1",
-      firstName: "Joe",
+      firstName: "Earl",
       lastName: "Femur",
-      messageStatus: "needsMessage",
+      messageStatus: "needsResponse",
       location: {
         city: "Youngstown",
         state: "OH",
@@ -178,13 +178,13 @@ export const tests = {
         {
           id: "fake1",
           text:
-            'Hi, this is Erik, a MoveOn volunteer. Can you attend our "Save the world" event Saturday at noon in DC?',
+            "Hi Earl, it's Christine, a volunteer with MoveOn. There is an election in Ohio this coming Tuesday. Will you vote progressive?",
           isFromContact: false,
           createdAt: new Date(Number(new Date()) - 314 * 60 * 1000)
         },
         {
           id: "fake2",
-          text: "Yes! I will be there to help save the world.",
+          text: "Yes! We need to help save the world.",
           isFromContact: true,
           createdAt: new Date(Number(new Date()) - 142 * 60 * 1000)
         }
@@ -216,9 +216,9 @@ export const tests = {
           {
             id: "13",
             script:
-              'Hi, this is {firstName}, a MoveOn volunteer. Can you attend our "Save the world" event Saturday at noon in DC?',
+              "Hi {firstName}, it's {texterAliasOrFirstName}, a volunteer with MoveOn. There is an election in Ohio this coming Tuesday. Will you vote progressive?",
             question: {
-              text: "Attend Event?",
+              text: "Will you vote progressive?",
               answerOptions: [
                 {
                   value: "Yes",
@@ -226,7 +226,7 @@ export const tests = {
                   nextInteractionStep: {
                     id: "14",
                     script:
-                      "That's great, we'll see you there! Will you bring a friend?"
+                      "Great! Did you get your ballot in the mail? We suggest getting it ready to turn in early so that it doesn't get lost and it's fun to be done with something important. Let us know if you have any problems or questions. And let us know when you vote!"
                   }
                 },
                 {
@@ -263,6 +263,47 @@ export const tests = {
                     script:
                       "It's too bad, hopefully you'll meet some cool people there."
                   }
+                },
+                {
+                  value: "Maybe",
+                  interactionStepId: "22",
+                  nextInteractionStep: {
+                    id: "22",
+                    script: "Super, we'll add your +1"
+                  }
+                },
+
+                {
+                  value: "Is it ok if my friend is a Republican?",
+                  interactionStepId: "23",
+                  nextInteractionStep: {
+                    id: "23",
+                    script: "Yes, let's make sure they hear important facts."
+                  }
+                },
+                {
+                  value: "More than one friend",
+                  interactionStepId: "24",
+                  nextInteractionStep: {
+                    id: "24",
+                    script: "You must be popular, we'll add your +10"
+                  }
+                },
+                {
+                  value: "Another possible answer",
+                  interactionStepId: "25",
+                  nextInteractionStep: {
+                    id: "25",
+                    script: "You must be popular, we'll add your +10"
+                  }
+                },
+                {
+                  value: "Yet Another possible answer",
+                  interactionStepId: "26",
+                  nextInteractionStep: {
+                    id: "26",
+                    script: "You must be popular, we'll add your +10"
+                  }
                 }
               ]
             }
@@ -281,7 +322,49 @@ export const tests = {
         {
           id: "2",
           title: "Wrong number",
-          text: "Ok, we'll remove you from our list.",
+          text: "Ok, we'll remove you from our list, {firstName}.",
+          isUserCreated: false
+        },
+        {
+          id: "3",
+          title: "Moved3",
+          text:
+            "I'm sorry, we'll update your address -- what is your current zip code?",
+          isUserCreated: false
+        },
+        {
+          id: "4",
+          title: "Moved4",
+          text:
+            "I'm sorry, we'll update your address -- what is your current zip code?",
+          isUserCreated: false
+        },
+        {
+          id: "5",
+          title: "Moved5",
+          text:
+            "I'm sorry, we'll update your address -- what is your current zip code?",
+          isUserCreated: false
+        },
+        {
+          id: "6",
+          title: "Moved6",
+          text:
+            "I'm sorry, we'll update your address -- what is your current zip code?",
+          isUserCreated: false
+        },
+        {
+          id: "7",
+          title: "Moved7",
+          text:
+            "I'm sorry, we'll update your address -- what is your current zip code?",
+          isUserCreated: false
+        },
+        {
+          id: "8",
+          title: "Moved8",
+          text:
+            "I'm sorry, we'll update your address -- what is your current zip code?",
           isUserCreated: false
         }
       ],
@@ -293,9 +376,9 @@ export const tests = {
     },
     contact: {
       id: "1",
-      firstName: "Joe",
+      firstName: "Joereallyreallyreallylongname",
       lastName: "Femur",
-      messageStatus: "needsMessage",
+      messageStatus: "needsResponse",
       location: {
         city: "Youngstown",
         state: "OH",
@@ -314,13 +397,13 @@ export const tests = {
         {
           id: "fake1",
           text:
-            'Hi, this is Erik, a MoveOn volunteer. Can you attend our "Save the world" event Saturday at noon in DC?',
+            "Hi Earl, it's Christine, a volunteer with MoveOn. There is an election in Ohio this coming Tuesday. Will you vote progressive?",
           isFromContact: false,
           createdAt: new Date(Number(new Date()) - 314 * 60 * 1000)
         },
         {
           id: "fake2",
-          text: "Yes! I will be there to help save the world.",
+          text: "Yes! We need to help save the world.",
           isFromContact: true,
           createdAt: new Date(Number(new Date()) - 142 * 60 * 1000)
         },
@@ -363,9 +446,9 @@ export const tests = {
 
 export function generateDemoTexterContact(test) {
   const DemoAssignmentTexterContact = function(props) {
-    const ControlsComponent = /new=1/.test(document.location.search)
-      ? AssignmentTexterContactNewControls
-      : AssignmentTexterContactControls;
+    const ControlsComponent = /old=1/.test(document.location.search)
+      ? AssignmentTexterContactControls
+      : AssignmentTexterContactNewControls;
     console.log("DemoAssignmentTexterContact", props);
     const getMessageTextFromScript = script => {
       return script
