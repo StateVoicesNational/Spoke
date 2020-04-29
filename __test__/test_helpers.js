@@ -162,7 +162,7 @@ export async function createOrganization(user, invite) {
 
 export async function setTwilioAuth(user, organization) {
   const rootValue = {};
-  const apiKey = 'test_twilio_api_key';
+  const accountSid = 'test_twilio_account_sid';
   const authToken = 'test_twlio_auth_token';
   const messageServiceSid = 'test_message_service';
   const orgId = organization.data.createOrganization.id;
@@ -171,19 +171,19 @@ export async function setTwilioAuth(user, organization) {
 
   const twilioQuery = `
       mutation updateTwilioAuth(
-        $twilioApiKey: String
+        $twilioAccountSid: String
         $twilioAuthToken: String
         $twilioMessageServiceSid: String
         $organizationId: String!
       ) {
         updateTwilioAuth(
-          twilioApiKey: $twilioApiKey
+          twilioAccountSid: $twilioAccountSid
           twilioAuthToken: $twilioAuthToken
           twilioMessageServiceSid: $twilioMessageServiceSid
           organizationId: $organizationId
         ) {
           id
-          twilioApiKey
+          twilioAccountSid
           twilioAuthToken
           twilioMessageServiceSid
         }
@@ -191,7 +191,7 @@ export async function setTwilioAuth(user, organization) {
 
   const variables = {
     organizationId: orgId,
-    twilioApiKey: apiKey,
+    twilioAccountSid: accountSid,
     twilioAuthToken: authToken,
     twilioMessageServiceSid: messageServiceSid
   };

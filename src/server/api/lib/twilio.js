@@ -82,11 +82,11 @@ function parseMessageText(message) {
 async function sendMessage(message, contact, trx, organization) {
   const {
     authToken,
-    apiKey
+    accountSid
   } = await cacheableData.organization.getTwilioAuth(organization);
   let twilio = null;
-  if (apiKey && authToken) {
-    twilio = Twilio(apiKey, authToken);
+  if (accountSid && authToken) {
+    twilio = Twilio(accountSid, authToken);
   }
   const APITEST = /twilioapitest/.test(message.text);
   if (!twilio && !APITEST) {

@@ -26,8 +26,11 @@ const organizationCache = {
     const authToken = hasOrgToken
       ? symmetricDecrypt(getConfig("TWILIO_AUTH_TOKEN_ENCRYPTED", organization))
       : getConfig("TWILIO_AUTH_TOKEN", organization);
-    const apiKey = getConfig("TWILIO_API_KEY", organization);
-    return { authToken, apiKey };
+    const accountSid = hasConfig("TWILIO_ACCOUNT_SID", organization)
+      ? getConfig("TWILIO_ACCOUNT_SID", organization)
+      // Check old TWILIO_API_KEY variable for backwards compatibility.
+      : getConfig("TWILIO_API_KEY", organization);
+    return { authToken, accountSid };
   },
   load: async id => {
     if (r.redis) {

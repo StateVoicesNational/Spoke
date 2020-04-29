@@ -160,10 +160,6 @@ app.post(
   })
 );
 
-// const accountSid = process.env.TWILIO_API_KEY
-// const authToken = process.env.TWILIO_AUTH_TOKEN
-// const client = require('twilio')(accountSid, authToken)
-
 app.get("/logout-callback", (req, res) => {
   req.logOut();
   res.redirect("/");

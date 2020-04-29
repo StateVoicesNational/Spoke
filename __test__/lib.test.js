@@ -53,7 +53,7 @@ describe("getConfig/hasConfig", () => {
   });
 
   it("should return false for hasConfig for blank set var", () => {
-    expect(hasConfig("TWILIO_API_KEY")).toBe(false);
+    expect(hasConfig("TWILIO_ACCOUNT_SID")).toBe(false);
   });
 
   it("should return true for hasConfig for set var", () => {

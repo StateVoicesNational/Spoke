@@ -272,7 +272,7 @@ const rootSchema = gql`
     ): Organization
     updateTwilioAuth(
       organizationId: String!
-      twilioApiKey: String
+      twilioAccountSid: String
       twilioAuthToken: String
       twilioMessageServiceSid: String
     ): Organization

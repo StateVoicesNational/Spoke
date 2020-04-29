@@ -11,7 +11,7 @@ export const schema = `
     textingHoursEnforced: Boolean
     textingHoursStart: Int
     textingHoursEnd: Int
-    twilioApiKey: String
+    twilioAccountSid: String
     twilioAuthToken: String
     twilioMessageServiceSid: String
     fullyConfigured: Boolean

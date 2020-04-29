@@ -49,12 +49,7 @@
       "value": "twilio"
     },
 
-    "TWILIO_API_KEY": {
-      "description": "for twilio integration and connected to twilio account",
-      "required": true
-    },
-
-    "TWILIO_APPLICATION_SID": {
+    "TWILIO_ACCOUNT_SID": {
       "description": "for twilio integration and connected to twilio account",
       "required": true
     },
