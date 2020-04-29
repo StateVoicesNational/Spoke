@@ -11,7 +11,8 @@ describe("Campaign list for campaign with null creator", () => {
   const campaignWithoutCreator = {
     id: 1,
     title: "Yes on A",
-    creator: null
+    creator: null,
+    completionStats: {}
   };
 
   const data = {
@@ -39,7 +40,8 @@ describe("Campaign list for campaign with creator", () => {
     id: 1,
     creator: {
       displayName: "Lorem Ipsum"
-    }
+    },
+    completionStats: {}
   };
 
   const data = {

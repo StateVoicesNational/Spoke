@@ -59,4 +59,30 @@ describe("getConfig/hasConfig", () => {
   it("should return true for hasConfig for set var", () => {
     expect(hasConfig("TEST_ENVIRONMENT")).toBe(true);
   });
+
+  it("should return true for truthy getConfig for set var 1", () => {
+    expect(getConfig("TEST_ENVIRONMENT", null, { truthy: true })).toBe(true);
+  });
+
+  it("should return true for truthy getConfig for set var non-empty str", () => {
+    expect(getConfig("DEFAULT_SERVICE", null, { truthy: true })).toBe(true);
+  });
+
+  it("should return false for truthy getConfig for set var 0", () => {
+    expect(getConfig("TEST_ENVIRONMENT_FAKE", null, { truthy: true })).toBe(
+      false
+    );
+  });
+
+  it("should return false for truthy getConfig for set var false", () => {
+    expect(getConfig("TEST_ENVIRONMENT_FAKE2", null, { truthy: true })).toBe(
+      false
+    );
+  });
+
+  it("should return false for truthy getConfig for unset var false", () => {
+    expect(getConfig("XXXTEST_ENVIRONMENT", null, { truthy: true })).toBe(
+      false
+    );
+  });
 });
