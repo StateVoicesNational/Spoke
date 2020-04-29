@@ -655,7 +655,7 @@ const rootMutations = {
       organization.features = JSON.stringify(featuresJSON);
 
       try {
-        if (twilioAuthToken) {
+        if (twilioAuthToken && global.TEST_ENVIRONMENT !== "1") {
           // Make sure Twilio credentials work.
           const twilio = Twilio(twilioAccountSid, twilioAuthToken);
           const accounts = await twilio.api.accounts.list();
