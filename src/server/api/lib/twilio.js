@@ -503,6 +503,15 @@ async function addNumberToMessagingService(
     .phoneNumbers.create({ phoneNumberSid });
 }
 
+/**
+ * Fetch Phone Numbers assigned to Messaging Service
+ */
+async function getPhoneNumbersForService(messagingServiceSid) {
+  return await twilio.messaging
+    .services(messagingServiceSid)
+    .phoneNumbers.list({ limit: 400 });
+}
+
 export default {
   syncMessagePartProcessing: !!process.env.JOBS_SAME_PROCESS,
   webhook,
@@ -516,5 +525,6 @@ export default {
   createMessagingService,
   buyNumber,
   addNumberToMessagingService,
-  searchForAvailableNumbers
+  searchForAvailableNumbers,
+  getPhoneNumbersForService
 };

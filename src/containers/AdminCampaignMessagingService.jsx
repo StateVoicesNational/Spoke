@@ -7,6 +7,7 @@ import theme from "../styles/theme";
 import DisplayLink from "../components/DisplayLink";
 import wrapMutations from "./hoc/wrap-mutations";
 import { StyleSheet, css } from "aphrodite";
+import { Table, TableBody, TableRow, TableRowColumn } from "material-ui/Table";
 
 const styles = StyleSheet.create({
   container: {
@@ -35,6 +36,20 @@ class AdminCampaignMessagingService extends React.Component {
             url={messagingServiceUrl}
             textContent={"Messaging Service URL:"}
           />
+          <br />
+          Total Phone Numbers: {campaign.phoneNumbers.length}
+        </div>
+        <div>
+          <Table selectable={false}>
+            <TableBody displayRowCheckbox={false} showRowHover>
+              {campaign.phoneNumbers.map(phoneNumber => (
+                <TableRow key={phoneNumber}>
+                  <TableRowColumn>{phoneNumber}</TableRowColumn>
+                </TableRow>
+              ))}
+              ;
+            </TableBody>
+          </Table>
         </div>
       </div>
     );
@@ -58,6 +73,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
           id
           title
           messagingServiceSid
+          phoneNumbers
         }
       }
     `,

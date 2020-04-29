@@ -70,6 +70,7 @@ export const schema = `
     timezone: String
     messagingServiceSid: String
     useOwnMessagingService: Boolean
+    phoneNumbers: [String]
   }
 
   type CampaignsList {
