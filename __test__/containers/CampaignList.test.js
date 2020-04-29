@@ -19,7 +19,12 @@ describe("CampaignList", () => {
       id: 1,
       title: "Yes on A",
       creator: null,
-      completionStats: {}
+      isStarted: true,
+      completionStats: {
+        contactsCount: 1300,
+        messagedCount: 98,
+        assignedCount: 199
+      }
     };
 
     const data = {
@@ -40,10 +45,15 @@ describe("CampaignList", () => {
       StyleSheetTestUtils.suppressStyleInjection();
       const wrapper = mount(
         <MuiThemeProvider>
-          <CampaignList data={data} mutations={mutations} />
+          <CampaignList data={data} mutations={mutations} adminPerms={true} />
         </MuiThemeProvider>
       );
-      expect(wrapper.text().includes("Created by")).toBeFalsy();
+      const text = wrapper.text();
+      expect(text.includes("Created by")).toBeFalsy();
+      expect(text.includes("Yes on A")).toBeTruthy();
+      expect(text).toMatch(/Archive/);
+      expect(text).toMatch(/1202/);
+      expect(text).toMatch(/1101/);
     });
   });
 
@@ -59,6 +69,8 @@ describe("CampaignList", () => {
 
     const data = {
       organization: {
+        id: 1,
+        cacheable: 2,
         campaigns: {
           campaigns: [campaignWithCreator],
           pageInfo: {
@@ -83,6 +95,7 @@ describe("CampaignList", () => {
           <span> &mdash; Created by Lorem Ipsum</span>
         )
       ).toBeTruthy();
+      expect(wrapper.text()).not.toMatch(/Archive/);
     });
   });
 });

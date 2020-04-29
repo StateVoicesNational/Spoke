@@ -17,8 +17,7 @@ import { MenuItem } from "material-ui/Menu";
 import { dataTest } from "../lib/attributes";
 import IconButton from "material-ui/IconButton/IconButton";
 import SortBy, {
-  ID_ASC_SORT,
-  ID_DESC_SORT
+  DUE_DATE_DESC_SORT
 } from "../components/AdminCampaignList/SortBy";
 import Paper from "material-ui/Paper";
 import Search from "../components/Search";
@@ -27,13 +26,10 @@ import { StyleSheet, css } from "aphrodite";
 const styles = StyleSheet.create({
   settings: {
     display: "flex",
-    flexDirection: "column",
+    flexDirection: "row",
     padding: "20px"
   }
 });
-
-const defaultSort = isArchived =>
-  isArchived ? ID_DESC_SORT.value : ID_ASC_SORT.value;
 
 class AdminCampaignList extends React.Component {
   state = {
@@ -43,8 +39,8 @@ class AdminCampaignList extends React.Component {
       searchString: ""
     },
     archiveMultiple: false,
-    campaignsToArchive: {},
-    sortBy: defaultSort(false)
+    campaignsToArchive: [],
+    sortBy: DUE_DATE_DESC_SORT.value
   };
 
   handleClickNewButton = async () => {
@@ -78,7 +74,7 @@ class AdminCampaignList extends React.Component {
       this.setState({
         archiveMultiple: false,
         isLoading: false,
-        campaignsToArchive: {}
+        campaignsToArchive: []
       });
     }
   };
@@ -87,8 +83,7 @@ class AdminCampaignList extends React.Component {
     this.setState({
       campaignsFilter: {
         isArchived
-      },
-      sortBy: defaultSort(isArchived)
+      }
     });
   };
 
@@ -101,17 +96,9 @@ class AdminCampaignList extends React.Component {
     });
   };
 
-  handleChecked = ({ campaignId, checked }) => {
-    this.setState(prevState => {
-      const { campaignsToArchive } = prevState;
-      // checked has to be reversed here because the onTouchTap
-      // event fires before the input is checked.
-      if (!checked) {
-        campaignsToArchive[campaignId] = !checked;
-      } else {
-        delete campaignsToArchive[campaignId];
-      }
-      return { campaignsToArchive };
+  handleChecked = ({ campaignIds }) => {
+    this.setState({
+      campaignsToArchive: campaignIds
     });
   };
 
@@ -171,6 +158,7 @@ class AdminCampaignList extends React.Component {
           searchString={this.state.campaignsFilter.searchString}
           onCancelSearch={this.handleCancelSearch}
           hintText="Search for campaign title. Hit enter to search."
+          style={{ width: "50%" }}
         />
       )
     );
@@ -178,11 +166,9 @@ class AdminCampaignList extends React.Component {
 
   renderFilters = () => (
     <Paper className={css(styles.settings)} zDepth={3}>
-      <span>
-        {this.props.params.adminPerms && this.renderArchiveMultiple()}
-        {this.renderArchivedAndSortBy()}
-      </span>
-      <span>{this.renderSearch()}</span>
+      {this.props.params.adminPerms && this.renderArchiveMultiple()}
+      {this.renderArchivedAndSortBy()}
+      {this.renderSearch()}
     </Paper>
   );
 
@@ -223,7 +209,7 @@ class AdminCampaignList extends React.Component {
 
   renderActionButton() {
     if (this.state.archiveMultiple) {
-      const keys = Object.keys(this.state.campaignsToArchive);
+      const keys = this.state.campaignsToArchive;
       return (
         <FloatingActionButton
           {...dataTest("archiveCampaigns")}
