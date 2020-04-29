@@ -222,6 +222,11 @@ const mapMutationsToProps = () => ({
       mutation createTag($tagData: TagInput!, $organizationId: String!) {
         createTag(tagData: $tagData, organizationId: $organizationId) {
           id
+          name
+          group
+          description
+          isDeleted
+          organizationId
         }
       }
     `,
@@ -239,6 +244,11 @@ const mapMutationsToProps = () => ({
       ) {
         editTag(tagData: $tagData, organizationId: $organizationId, id: $id) {
           id
+          name
+          group
+          description
+          isDeleted
+          organizationId
         }
       }
     `,
@@ -253,6 +263,7 @@ const mapMutationsToProps = () => ({
       mutation deleteTag($organizationId: String!, $id: String!) {
         deleteTag(organizationId: $organizationId, id: $id) {
           id
+          isDeleted
         }
       }
     `,

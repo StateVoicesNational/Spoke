@@ -1217,9 +1217,7 @@ const rootMutations = {
       const tagUpdates = {
         name: tagData.name,
         group: tagData.group,
-        description: tagData.description,
-        is_deleted: tagData.isDeleted,
-        organization_id: organizationId
+        description: tagData.description
       };
 
       await r
