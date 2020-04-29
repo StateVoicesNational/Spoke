@@ -23,6 +23,7 @@ import {
   Message,
   Organization,
   QuestionResponse,
+  Tag,
   UserOrganization,
   r,
   cacheableData,
@@ -55,6 +56,7 @@ import { resolvers as organizationResolvers } from "./organization";
 import { GraphQLPhone } from "./phone";
 import { resolvers as questionResolvers } from "./question";
 import { resolvers as questionResponseResolvers } from "./question-response";
+import { getTags, resolvers as tagResolvers } from "./tag";
 import { getUsers, resolvers as userResolvers } from "./user";
 import { change } from "../local-auth-helpers";
 
@@ -1218,6 +1220,43 @@ const rootMutations = {
       }
 
       return jobId;
+    },
+    createTag: async (_, { organizationId, tagData }, { user }) => {
+      await accessRequired(user, organizationId, "SUPERVOLUNTEER");
+      const tagInstance = new Tag({
+        organization_id: organizationId,
+        name: tagData.name,
+        group: tagData.group,
+        description: tagData.description,
+        is_deleted: false
+      });
+      const newTag = await tagInstance.save();
+      return newTag;
+    },
+    editTag: async (_, { organizationId, tagData, id }, { user }) => {
+      await accessRequired(user, organizationId, "SUPERVOLUNTEER");
+      const tagUpdates = {
+        name: tagData.name,
+        group: tagData.group,
+        description: tagData.description,
+        is_deleted: tagData.isDeleted,
+        organization_id: organizationId
+      };
+
+      await r
+        .knex("tag")
+        .where("id", id)
+        .update(tagUpdates);
+
+      return { id, ...tagUpdates };
+    },
+    deleteTag: async (_, { organizationId, id }, { user }) => {
+      await accessRequired(user, organizationId, "SUPERVOLUNTEER");
+      await r
+        .knex("tag")
+        .where("id", id)
+        .update({ is_deleted: true });
+      return { id };
     }
   }
 };
@@ -1342,6 +1381,10 @@ const rootResolvers = {
     ) => {
       await accessRequired(user, organizationId, "SUPERVOLUNTEER");
       return getUsers(organizationId, cursor, campaignsFilter, role, sortBy);
+    },
+    tags: async (_, { organizationId }, { user }) => {
+      await accessRequired(user, organizationId, "SUPERVOLUNTEER");
+      return getTags(organizationId);
     }
   }
 };
@@ -1364,5 +1407,6 @@ export const resolvers = {
   ...{ Phone: GraphQLPhone },
   ...questionResolvers,
   ...conversationsResolver,
+  ...tagResolvers,
   ...rootMutations
 };
