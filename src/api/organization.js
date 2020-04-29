@@ -17,5 +17,6 @@ export const schema = gql`
     textingHoursEnforced: Boolean
     textingHoursStart: Int
     textingHoursEnd: Int
+    cacheable: Int
   }
 `;

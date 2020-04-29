@@ -157,6 +157,7 @@ export const getCampaignsQuery = `query adminGetCampaigns(
         $sortBy: SortCampaignsBy) {
       organization(id: $organizationId) {
         id
+        cacheable
         campaigns(campaignsFilter: $campaignsFilter, cursor: $cursor, sortBy: $sortBy) {
           ... on CampaignsList{
             campaigns{
