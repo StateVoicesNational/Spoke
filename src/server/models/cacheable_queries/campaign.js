@@ -47,11 +47,13 @@ const dbInteractionSteps = async id => {
 };
 
 const dbContactTimezones = async id =>
-  (await r
-    .knex("campaign_contact")
-    .where("campaign_id", id)
-    .distinct("timezone_offset")
-    .select()).map(contact => contact.timezone_offset);
+  (
+    await r
+      .knex("campaign_contact")
+      .where("campaign_id", id)
+      .distinct("timezone_offset")
+      .select()
+  ).map(contact => contact.timezone_offset);
 
 const clear = async (id, campaign) => {
   if (r.redis) {
