@@ -148,16 +148,29 @@ class Settings extends React.Component {
     );
   }
 
+  handleOpenTwilioDialog = () =>
+    this.setState({ twilioDialogOpen: true });
+
+  handleCloseTwilioDialog = () =>
+    this.setState({ twilioDialogOpen: false });
+
   handleSubmitTwilioAuthForm = async ({
     apiKey,
     authToken,
     messageServiceSid
   }) => {
-    await this.props.mutations.updateTwilioAuth(
+    const res = await this.props.mutations.updateTwilioAuth(
       apiKey,
       authToken === '<Encrypted>' ? false : authToken,
       messageServiceSid
     );
+    if (res.errors) {
+      this.setState({ twilioError: res.errors.message });
+    }
+    else {
+      this.setState({ twilioError: undefined });
+    }
+    this.handleCloseTwilioDialog();
   };
 
   renderTwilioAuthForm() {
@@ -174,6 +187,20 @@ class Settings extends React.Component {
       messageServiceSid: yup.string().nullable().max(64)
     });
 
+    const dialogActions = [
+      <FlatButton
+        label="Cancel"
+        style={inlineStyles.dialogButton}
+        onClick={this.handleCloseTwilioDialog}
+      />,
+      <Form.Button
+        type="submit"
+        label="Save"
+        style={inlineStyles.dialogButton}
+        component={GSSubmitButton}
+      />
+    ];
+
     return (
       <Card>
         <CardHeader title="Twilio Credentials" />
@@ -183,6 +210,11 @@ class Settings extends React.Component {
               url={`${baseUrl}/twilio/${organization.id}`}
               textContent="Twilio credentials are configured for this organization. You should set the inbound Request URL in your Twilio messaging service to this link."
             />
+          </CardText>
+        )}
+        {this.state.twilioError && (
+          <CardText style={inlineStyles.shadeBox}>
+            {this.state.twilioError}
           </CardText>
         )}
         <CardText>
@@ -217,9 +249,16 @@ class Settings extends React.Component {
               />
 
               <Form.Button
-                type="submit"
                 label={this.props.saveLabel || "Save Twilio Credentials"}
+                onClick={this.handleOpenTwilioDialog}
               />
+              <Dialog
+                actions={dialogActions}
+                modal={true}
+                open={this.state.twilioDialogOpen}
+              >
+                Changing Twilio credentials will break any campaigns that are currently running. Do you want to contunue?
+              </Dialog>
             </GSForm>
           </div>
         </CardText>
