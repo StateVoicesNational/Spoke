@@ -46,9 +46,9 @@ export const resolvers = {
       "I'm opting you out of texts immediately. Have a great day.",
     textingHoursStart: organization => organization.texting_hours_start,
     textingHoursEnd: organization => organization.texting_hours_end,
-    twilioApiKey: organization =>
-      organization.features.indexOf("TWILIO_API_KEY") !== -1
-        ? JSON.parse(organization.features).TWILIO_API_KEY
+    twilioAccountSid: organization =>
+      organization.features.indexOf("TWILIO_ACCOUNT_SID") !== -1
+        ? JSON.parse(organization.features).TWILIO_ACCOUNT_SID
         : null,
     twilioAuthToken: organization =>
       organization.features.indexOf("TWILIO_AUTH_TOKEN_ENCRYPTED") !== -1
@@ -63,11 +63,11 @@ export const resolvers = {
         getConfig("service", organization)
         || getConfig("DEFAULT_SERVICE");
       if (serviceName === 'twilio') {
-        const { authToken, apiKey } =
+        const { authToken, accountSid } =
           await cacheableData.organization.getTwilioAuth(organization);
         const messagingServiceSid =
           await cacheableData.organization.getMessageServiceSid(organization);
-        if (!(authToken && apiKey && messagingServiceSid)) {
+        if (!(authToken && accountSid && messagingServiceSid)) {
           return false;
         }
       }

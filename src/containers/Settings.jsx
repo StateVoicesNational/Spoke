@@ -155,12 +155,12 @@ class Settings extends React.Component {
     this.setState({ twilioDialogOpen: false });
 
   handleSubmitTwilioAuthForm = async ({
-    apiKey,
+    accountSid,
     authToken,
     messageServiceSid
   }) => {
     const res = await this.props.mutations.updateTwilioAuth(
-      apiKey,
+      accountSid,
       authToken === '<Encrypted>' ? false : authToken,
       messageServiceSid
     );
@@ -175,14 +175,14 @@ class Settings extends React.Component {
 
   renderTwilioAuthForm() {
     const { organization } = this.props.data;
-    const { twilioApiKey, twilioAuthToken, twilioMessageServiceSid } = organization;
-    const allSet = twilioApiKey && twilioAuthToken && twilioMessageServiceSid;
+    const { twilioAccountSid, twilioAuthToken, twilioMessageServiceSid } = organization;
+    const allSet = twilioAccountSid && twilioAuthToken && twilioMessageServiceSid;
     let baseUrl = "http://base";
     if (typeof window !== "undefined") {
       baseUrl = window.location.origin;
     }
     const formSchema = yup.object({
-      apiKey: yup.string().nullable().max(64),
+      accountSid: yup.string().nullable().max(64),
       authToken: yup.string().nullable().max(64),
       messageServiceSid: yup.string().nullable().max(64)
     });
@@ -227,14 +227,14 @@ class Settings extends React.Component {
               schema={formSchema}
               onSubmit={this.handleSubmitTwilioAuthForm}
               defaultValue={{
-                apiKey: twilioApiKey,
+                accountSid: twilioAccountSid,
                 authToken: twilioAuthToken ? "<Encrypted>" : twilioAuthToken,
                 messageServiceSid: twilioMessageServiceSid
               }}
             >
               <Form.Field
-                label="Twilio API Key"
-                name="apiKey"
+                label="Twilio Account SID"
+                name="accountSid"
                 fullWidth
               />
               <Form.Field
@@ -420,22 +420,22 @@ const mapMutationsToProps = ({ ownProps }) => ({
       optOutMessage
     }
   }),
-  updateTwilioAuth: (apiKey, authToken, messageServiceSid) => ({
+  updateTwilioAuth: (accountSid, authToken, messageServiceSid) => ({
     mutation: gql`
       mutation updateTwilioAuth(
-        $twilioApiKey: String
+        $twilioAccountSid: String
         $twilioAuthToken: String
         $twilioMessageServiceSid: String
         $organizationId: String!
       ) {
         updateTwilioAuth(
-          twilioApiKey: $twilioApiKey
+          twilioAccountSid: $twilioAccountSid
           twilioAuthToken: $twilioAuthToken
           twilioMessageServiceSid: $twilioMessageServiceSid
           organizationId: $organizationId
         ) {
           id
-          twilioApiKey
+          twilioAccountSid
           twilioAuthToken
           twilioMessageServiceSid
         }
@@ -443,7 +443,7 @@ const mapMutationsToProps = ({ ownProps }) => ({
     `,
     variables: {
       organizationId: ownProps.params.organizationId,
-      twilioApiKey: apiKey,
+      twilioAccountSid: accountSid,
       twilioAuthToken: authToken,
       twilioMessageServiceSid: messageServiceSid
     }
@@ -461,7 +461,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
           textingHoursStart
           textingHoursEnd
           optOutMessage
-          twilioApiKey
+          twilioAccountSid
           twilioAuthToken
           twilioMessageServiceSid
         }

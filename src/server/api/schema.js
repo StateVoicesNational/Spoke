@@ -637,7 +637,7 @@ const rootMutations = {
     updateTwilioAuth: async (
       _, {
         organizationId,
-        twilioApiKey,
+        twilioAccountSid,
         twilioAuthToken,
         twilioMessageServiceSid
       }, {
@@ -648,7 +648,7 @@ const rootMutations = {
 
       const organization = await Organization.get(organizationId);
       const featuresJSON = JSON.parse(organization.features || "{}");
-      featuresJSON.TWILIO_API_KEY = twilioApiKey.substr(0, 64);
+      featuresJSON.TWILIO_ACCOUNT_SID = twilioAccountSid.substr(0, 64);
       featuresJSON.TWILIO_AUTH_TOKEN_ENCRYPTED = twilioAuthToken
         ? symmetricEncrypt(twilioAuthToken).substr(0, 256) : twilioAuthToken;
       featuresJSON.TWILIO_MESSAGE_SERVICE_SID = twilioMessageServiceSid.substr(0, 64);
@@ -657,7 +657,7 @@ const rootMutations = {
       try {
         if (twilioAuthToken) {
           // Make sure Twilio credentials work.
-          const twilio = Twilio(twilioApiKey, twilioAuthToken);
+          const twilio = Twilio(twilioAccountSid, twilioAuthToken);
           const accounts = await twilio.api.accounts.list();
         }
       } catch (err) {
