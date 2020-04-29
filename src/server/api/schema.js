@@ -59,6 +59,8 @@ import { resolvers as questionResponseResolvers } from "./question-response";
 import { getTags, resolvers as tagResolvers } from "./tag";
 import { getUsers, resolvers as userResolvers } from "./user";
 import { change } from "../local-auth-helpers";
+import { symmetricEncrypt } from "./lib/crypto";
+import Twilio from "twilio";
 
 import {
   sendMessage,
@@ -631,6 +633,45 @@ const rootMutations = {
       const featuresJSON = JSON.parse(organization.features || "{}");
       featuresJSON.opt_out_message = optOutMessage;
       organization.features = JSON.stringify(featuresJSON);
+
+      await organization.save();
+      await cacheableData.organization.clear(organizationId);
+
+      return await Organization.get(organizationId);
+    },
+    updateTwilioAuth: async (
+      _,
+      {
+        organizationId,
+        twilioAccountSid,
+        twilioAuthToken,
+        twilioMessageServiceSid
+      },
+      { user }
+    ) => {
+      await accessRequired(user, organizationId, "OWNER");
+
+      const organization = await Organization.get(organizationId);
+      const featuresJSON = JSON.parse(organization.features || "{}");
+      featuresJSON.TWILIO_ACCOUNT_SID = twilioAccountSid.substr(0, 64);
+      featuresJSON.TWILIO_AUTH_TOKEN_ENCRYPTED = twilioAuthToken
+        ? symmetricEncrypt(twilioAuthToken).substr(0, 256)
+        : twilioAuthToken;
+      featuresJSON.TWILIO_MESSAGE_SERVICE_SID = twilioMessageServiceSid.substr(
+        0,
+        64
+      );
+      organization.features = JSON.stringify(featuresJSON);
+
+      try {
+        if (twilioAuthToken && global.TEST_ENVIRONMENT !== "1") {
+          // Make sure Twilio credentials work.
+          const twilio = Twilio(twilioAccountSid, twilioAuthToken);
+          const accounts = await twilio.api.accounts.list();
+        }
+      } catch (err) {
+        throw new GraphQLError("Invalid Twilio credentials");
+      }
 
       await organization.save();
       await cacheableData.organization.clear(organizationId);

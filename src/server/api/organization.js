@@ -1,6 +1,6 @@
 import { mapFieldsToModel } from "./lib/utils";
 import { getConfig } from "./lib/config";
-import { r, Organization } from "../models";
+import { r, Organization, cacheableData } from "../models";
 import { accessRequired } from "./errors";
 import { getCampaigns } from "./campaign";
 import { buildSortedUserOrganizationQuery } from "./user";
@@ -52,6 +52,35 @@ export const resolvers = {
     textingHoursEnd: organization => organization.texting_hours_end,
     cacheable: (org, _, { user }) =>
       //quanery logic.  levels are 0, 1, 2
-      r.redis ? (getConfig("REDIS_CONTACT_CACHE", org) ? 2 : 1) : 0
+      r.redis ? (getConfig("REDIS_CONTACT_CACHE", org) ? 2 : 1) : 0,
+    twilioAccountSid: organization =>
+      organization.features.indexOf("TWILIO_ACCOUNT_SID") !== -1
+        ? JSON.parse(organization.features).TWILIO_ACCOUNT_SID
+        : null,
+    twilioAuthToken: organization =>
+      organization.features.indexOf("TWILIO_AUTH_TOKEN_ENCRYPTED") !== -1
+        ? JSON.parse(organization.features).TWILIO_AUTH_TOKEN_ENCRYPTED
+        : null,
+    twilioMessageServiceSid: organization =>
+      organization.features.indexOf("TWILIO_MESSAGE_SERVICE_SID") !== -1
+        ? JSON.parse(organization.features).TWILIO_MESSAGE_SERVICE_SID
+        : null,
+    fullyConfigured: async organization => {
+      const serviceName =
+        getConfig("service", organization) || getConfig("DEFAULT_SERVICE");
+      if (serviceName === "twilio") {
+        const {
+          authToken,
+          accountSid
+        } = await cacheableData.organization.getTwilioAuth(organization);
+        const messagingServiceSid = await cacheableData.organization.getMessageServiceSid(
+          organization
+        );
+        if (!(authToken && accountSid && messagingServiceSid)) {
+          return false;
+        }
+      }
+      return true;
+    }
   }
 };

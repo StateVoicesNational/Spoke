@@ -90,6 +90,7 @@ export default function renderIndex(html, css, assetMap, store) {
       window.CAN_GOOGLE_IMPORT=${canGoogleImport}
       window.SHOW_TAGS=${process.env.SHOW_TAGS || false}
       window.EXPERIMENTAL_TEXTERUI="${process.env.EXPERIMENTAL_TEXTERUI || ""}"
+      window.TWILIO_MULTI_ORG=${process.env.TWILIO_MULTI_ORG || false}
     </script>
     <script src="${assetMap["bundle.js"]}"></script>
   </body>

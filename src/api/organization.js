@@ -18,5 +18,9 @@ export const schema = gql`
     textingHoursStart: Int
     textingHoursEnd: Int
     cacheable: Int
+    twilioAccountSid: String
+    twilioAuthToken: String
+    twilioMessageServiceSid: String
+    fullyConfigured: Boolean
   }
 `;
