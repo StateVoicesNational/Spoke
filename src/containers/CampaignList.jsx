@@ -2,20 +2,11 @@ import gql from "graphql-tag";
 import SpeakerNotesIcon from "material-ui/svg-icons/action/speaker-notes";
 import PropTypes from "prop-types";
 import React from "react";
-import { List, ListItem } from "material-ui/List";
-import moment from "moment";
-import WarningIcon from "material-ui/svg-icons/alert/warning";
-import ArchiveIcon from "material-ui/svg-icons/content/archive";
-import UnarchiveIcon from "material-ui/svg-icons/content/unarchive";
-import IconButton from "material-ui/IconButton";
-import Checkbox from "material-ui/Checkbox";
 import { withRouter } from "react-router";
-import theme from "../styles/theme";
-import Chip from "../components/Chip";
 import loadData from "./hoc/load-data";
 import wrapMutations from "./hoc/wrap-mutations";
-import Empty from "../components/Empty";
-import { dataTest } from "../lib/attributes";
+import CampaignTable from "../components/AdminCampaignList/CampaignTable";
+import LoadingIndicator from "../components/LoadingIndicator";
 
 const campaignInfoFragment = `
   id
@@ -40,185 +31,104 @@ const campaignInfoFragment = `
   }
 `;
 
-const inlineStyles = {
-  past: {
-    opacity: 0.6
-  },
-  warn: {
-    color: theme.colors.orange
-  },
-  good: {
-    color: theme.colors.green
-  },
-  warnUnsent: {
-    color: theme.colors.blue
-  }
-};
+let ROW_SIZES = [50, 10, 25, 100];
+const INITIAL_ROW_SIZE = ROW_SIZES[0];
+ROW_SIZES.sort((a, b) => a - b);
 
 export class CampaignList extends React.Component {
-  renderRightIcon({ isArchived }) {
-    if (isArchived) {
-      return (
-        <IconButton
-          tooltip="Unarchive"
-          onTouchTap={async () =>
-            await this.props.mutations.unarchiveCampaign(campaign.id)
-          }
-        >
-          <UnarchiveIcon />
-        </IconButton>
-      );
-    }
-    return (
-      <IconButton
-        tooltip="Archive"
-        onTouchTap={async () =>
-          await this.props.mutations.archiveCampaign(campaign.id)
-        }
-      >
-        <ArchiveIcon />
-      </IconButton>
-    );
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      page: 0,
+      pageSize: INITIAL_ROW_SIZE
+    };
   }
 
-  renderRow(campaign) {
+  changePage = (pageDelta, pageSize) => {
     const {
-      isStarted,
-      isArchived,
-      hasUnassignedContacts,
-      hasUnsentInitialMessages,
-      ingestMethod
-    } = campaign;
-    const { adminPerms, selectMultiple } = this.props;
-
-    let listItemStyle = {};
-    let leftIcon = "";
-    if (isArchived) {
-      listItemStyle = inlineStyles.past;
-    } else if (!isStarted || hasUnassignedContacts) {
-      listItemStyle = inlineStyles.warn;
-      leftIcon = <WarningIcon />;
-    } else if (hasUnsentInitialMessages) {
-      listItemStyle = inlineStyles.warnUnsent;
-    } else {
-      listItemStyle = inlineStyles.good;
-    }
-
-    const dueByMoment = moment(campaign.dueBy);
-    const creatorName = campaign.creator ? campaign.creator.displayName : null;
-    const tags = [];
-    if (!isStarted) {
-      tags.push("Not started");
-    }
-
-    if (ingestMethod && ingestMethod.success === false) {
-      tags.push("Contact loading failed");
-    }
-
-    if (hasUnassignedContacts) {
-      tags.push("Unassigned contacts");
-    }
-
-    if (isStarted && hasUnsentInitialMessages) {
-      tags.push("Unsent initial messages");
-    }
-
-    const primaryText = (
-      <div>
-        {campaign.title}
-        {tags.map(tag => (
-          <Chip key={tag} text={tag} />
-        ))}
-      </div>
+      limit,
+      offset,
+      total
+    } = this.props.data.organization.campaigns.pageInfo;
+    const currentPage = Math.floor(offset / limit);
+    const pageSizeAdjustedCurrentPage = Math.floor(
+      (currentPage * limit) / pageSize
     );
-    const secondaryText = (
-      <span>
-        <span>
-          Campaign ID: {campaign.id}
-          <br />
-          {campaign.description}
-          {creatorName ? <span> &mdash; Created by {creatorName}</span> : null}
-          <br />
-          {dueByMoment.isValid()
-            ? dueByMoment.format("MMM D, YYYY")
-            : "No due date set"}
-          {campaign.completionStats.assignedCount ? (
-            <span>
-              {" - "}
-              contacts: {campaign.completionStats.contactsCount}, assigned:{" "}
-              {campaign.completionStats.assignedCount}, messaged:{" "}
-              {campaign.completionStats.messagedCount}
-            </span>
-          ) : ingestMethod && ingestMethod.contactsCount ? (
-            ` - contacts: ${ingestMethod.contactsCount}`
-          ) : (
-            ""
-          )}
-        </span>
-      </span>
-    );
-
-    const campaignUrl = `/admin/${this.props.organizationId}/campaigns/${campaign.id}`;
-    return (
-      <ListItem
-        {...dataTest("campaignRow")}
-        style={listItemStyle}
-        key={campaign.id}
-        primaryText={primaryText}
-        onTouchTap={({
-          currentTarget: {
-            firstElementChild: {
-              firstElementChild: { checked }
+    const maxPage = Math.floor(total / pageSize);
+    const newPage = Math.min(maxPage, pageSizeAdjustedCurrentPage + pageDelta);
+    this.props.data.fetchMore({
+      variables: {
+        cursor: {
+          offset: newPage * pageSize,
+          limit: pageSize
+        }
+      },
+      updateQuery: (prev, { fetchMoreResult }) => {
+        const returnValue = {
+          organization: {
+            campaigns: {
+              campaigns: []
             }
           }
-        }) => {
-          if (selectMultiple) {
-            this.props.handleChecked({ campaignId: campaign.id, checked });
-          } else {
-            return !isStarted
-              ? this.props.router.push(`${campaignUrl}/edit`)
-              : this.props.router.push(campaignUrl);
-          }
-        }}
-        secondaryText={secondaryText}
-        leftIcon={!selectMultiple ? leftIcon : null}
-        rightIconButton={
-          !selectMultiple && adminPerms
-            ? this.renderRightIcon({ isArchived })
-            : null
+        };
+
+        if (fetchMoreResult) {
+          returnValue.organization = fetchMoreResult.data.organization;
         }
-        leftCheckbox={selectMultiple ? <Checkbox /> : null}
-      ></ListItem>
-    );
-  }
+        return returnValue;
+      }
+    });
+    this.setState({
+      cursor: {
+        offset: newPage * pageSize,
+        limit: pageSize
+      }
+    });
+  };
+  handleNextPageClick = () => {
+    this.changePage(1, this.state.pageSize);
+  };
+
+  handlePreviousPageClick = () => {
+    this.changePage(-1, this.state.pageSize);
+  };
+
+  handleRowSizeChanged = (index, value) => {
+    console.log("rowsizechanged", index, value);
+    this.changePage(0, value);
+    this.setState({ pageSize: value });
+  };
 
   render() {
-    const { campaigns } = this.props.data.organization;
-    return campaigns.length === 0 ? (
-      <Empty title="No campaigns" icon={<SpeakerNotesIcon />} />
-    ) : (
-      <List>
-        {campaigns.campaigns.map(campaign => this.renderRow(campaign))}
-      </List>
+    if (this.props.data.loading || !this.props.data.organization) {
+      return <LoadingIndicator />;
+    }
+    return (
+      <CampaignTable
+        data={this.props.data}
+        onNextPageClick={this.handleNextPageClick}
+        onPreviousPageClick={this.handlePreviousPageClick}
+        onRowSizeChange={this.handleRowSizeChanged}
+        adminPerms={this.props.adminPerms}
+        selectMultiple={this.props.selectMultiple}
+        organizationId={this.props.organizationId}
+        handleChecked={this.props.handleChecked}
+      />
     );
   }
 }
 
 CampaignList.propTypes = {
-  campaigns: PropTypes.arrayOf(
-    PropTypes.shape({
-      dueBy: PropTypes.string,
-      title: PropTypes.string,
-      description: PropTypes.string
-    })
-  ),
   router: PropTypes.object,
   adminPerms: PropTypes.bool,
   selectMultiple: PropTypes.bool,
   organizationId: PropTypes.string,
   data: PropTypes.object,
   mutations: PropTypes.object,
-  handleChecked: PropTypes.func
+  handleChecked: PropTypes.func,
+  campaignsFilter: PropTypes.object,
+  sortBy: PropTypes.string
 };
 
 const mapMutationsToProps = () => ({
@@ -240,23 +150,44 @@ const mapMutationsToProps = () => ({
   })
 });
 
-const mapQueriesToProps = ({ ownProps }) => ({
-  data: {
-    query: gql`query adminGetCampaigns($organizationId: String!, $campaignsFilter: CampaignsFilter) {
+export const getCampaignsQuery = `query adminGetCampaigns(
+        $organizationId: String!,
+        $campaignsFilter: CampaignsFilter,
+        $cursor: OffsetLimitCursor,
+        $sortBy: SortCampaignsBy) {
       organization(id: $organizationId) {
         id
-        campaigns(campaignsFilter: $campaignsFilter) {
+        cacheable
+        campaigns(campaignsFilter: $campaignsFilter, cursor: $cursor, sortBy: $sortBy) {
           ... on CampaignsList{
             campaigns{
               ${campaignInfoFragment}
             }
           }
+          ... on PaginatedCampaigns{
+              pageInfo {
+                offset
+                limit
+                total
+              }
+              campaigns{
+                ${campaignInfoFragment}
+              }
+            }
+          }
         }
-      }
-    }`,
+      }`;
+
+const mapQueriesToProps = ({ ownProps }) => ({
+  data: {
+    query: gql`
+      ${getCampaignsQuery}
+    `,
     variables: {
+      cursor: { offset: 0, limit: INITIAL_ROW_SIZE },
       organizationId: ownProps.organizationId,
-      campaignsFilter: ownProps.campaignsFilter
+      campaignsFilter: ownProps.campaignsFilter,
+      sortBy: ownProps.sortBy
     },
     forceFetch: true
   }
