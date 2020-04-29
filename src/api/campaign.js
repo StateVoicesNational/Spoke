@@ -20,6 +20,7 @@ export const schema = gql`
     contactsCount: Int
     assignedCount: Int
     messagedCount: Int
+    errorCount: Int
   }
 
   type IngestMethod {

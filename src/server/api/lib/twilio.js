@@ -7,8 +7,9 @@ import {
   r,
   cacheableData
 } from "../../models";
-import { log, getConfig } from "../../../lib";
+import { log } from "../../../lib";
 import { saveNewIncomingMessage } from "./message-sending";
+import { getConfig } from "./config";
 
 // TWILIO error_codes:
 // > 1 (i.e. positive) error_codes are reserved for Twilio error codes
@@ -20,7 +21,7 @@ let twilio = null;
 const MAX_SEND_ATTEMPTS = 5;
 const MESSAGE_VALIDITY_PADDING_SECONDS = 30;
 const MAX_TWILIO_MESSAGE_VALIDITY = 14400;
-const DISABLE_DB_LOG = process.env.DISABLE_DB_LOG || global.DISABLE_DB_LOG;
+const DISABLE_DB_LOG = getConfig("DISABLE_DB_LOG");
 
 if (process.env.TWILIO_API_KEY && process.env.TWILIO_AUTH_TOKEN) {
   // eslint-disable-next-line new-cap
@@ -366,7 +367,7 @@ export function postMessageSend(
   }
 }
 
-async function handleDeliveryReport(report) {
+export async function handleDeliveryReport(report) {
   const messageSid = report.MessageSid;
   if (messageSid) {
     const messageStatus = report.MessageStatus;
@@ -390,33 +391,21 @@ async function handleDeliveryReport(report) {
       });
     }
 
-    const lookup = await cacheableData.campaignContact.lookupByCell(
-      report.To,
-      "twilio",
-      report.MessagingServiceSid
-    );
-    const changes = {
-      service_response_at: new Date()
-    };
-
-    if (messageStatus === "delivered") {
-      changes.send_status = "DELIVERED";
-    } else if (messageStatus === "failed" || messageStatus === "undelivered") {
-      changes.send_status = "ERROR";
-      const errorCode = Number(report.ErrorCode || 0) || 0;
-      changes.error_code = errorCode;
-      if (lookup && lookup.campaign_contact_id) {
-        await r
-          .knex("campaign_contact")
-          .where("id", lookup.campaign_contact_id)
-          .update("error_code", errorCode);
-      }
+    if (
+      messageStatus === "delivered" ||
+      messageStatus === "failed" ||
+      messageStatus === "undelivered"
+    ) {
+      await cacheableData.message.deliveryReport({
+        contactNumber: report.To,
+        userNumber: report.From,
+        messageSid: report.MessageSid,
+        service: "twilio",
+        messageServiceSid: report.MessagingServiceSid,
+        newStatus: messageStatus === "delivered" ? "DELIVERED" : "ERROR",
+        errorCode: Number(report.ErrorCode || 0) || 0
+      });
     }
-    await r
-      .knex("message")
-      .where("service_id", messageSid)
-      .limit(1)
-      .update(changes);
   }
 }
 
@@ -460,7 +449,7 @@ async function handleIncomingMessage(message) {
   }
 
   // store mediaurl data in Log, so it can be extracted manually
-  if (message.MediaUrl0 && !DISABLE_DB_LOG) {
+  if (message.MediaUrl0 && (!DISABLE_DB_LOG || getConfig("LOG_MEDIA_URL"))) {
     await Log.save({
       message_sid: MessageSid,
       body: JSON.stringify(message),
