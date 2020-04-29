@@ -201,9 +201,7 @@ export async function dispatchContactIngestLoad(job, organization) {
       : process.env.MAX_CONTACTS || 0,
     10
   );
-  await ingestMethod.processContactLoad(job, maxContacts, {
-    /*FUTURE: context obj*/
-  });
+  await ingestMethod.processContactLoad(job, maxContacts, organization);
 }
 
 export async function failedContactLoad(
@@ -247,8 +245,8 @@ export async function completeContactLoad(
   const campaign = await Campaign.get(campaignId);
   const organization = await Organization.get(campaign.organization_id);
 
-  let deleteOptOutCells;
-  let deleteDuplicateCells;
+  let deleteOptOutCells = null;
+  let deleteDuplicateCells = null;
   const knexOptOutDeleteResult = await r
     .knex("campaign_contact")
     .whereIn("cell", getOptOutSubQuery(campaign.organization_id))
@@ -295,8 +293,8 @@ export async function completeContactLoad(
     .knex("campaign_admin")
     .where("campaign_id", campaignId)
     .update({
-      deleted_optouts_count: deleteOptOutCells || null,
-      duplicate_contacts_count: deleteDuplicateCells || null,
+      deleted_optouts_count: deleteOptOutCells,
+      duplicate_contacts_count: deleteDuplicateCells,
       contacts_count: finalContactCount,
       ingest_method: job.job_type.replace(/^ingest./, ""),
       ingest_success: true,

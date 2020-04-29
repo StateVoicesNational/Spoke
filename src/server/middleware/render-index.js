@@ -1,4 +1,4 @@
-import { hasConfig } from "../api/lib/config";
+import { hasConfig, getConfig } from "../api/lib/config";
 
 const canGoogleImport = hasConfig("GOOGLE_SECRET");
 
@@ -69,7 +69,9 @@ export default function renderIndex(html, css, assetMap, store) {
       window.RENDERED_CLASS_NAMES=${JSON.stringify(css.renderedClassNames)}
       window.AUTH0_CLIENT_ID="${process.env.AUTH0_CLIENT_ID}"
       window.AUTH0_DOMAIN="${process.env.AUTH0_DOMAIN}"
-      window.SUPPRESS_SELF_INVITE="${process.env.SUPPRESS_SELF_INVITE || ""}"
+      window.SUPPRESS_SELF_INVITE=${getConfig("SUPPRESS_SELF_INVITE", null, {
+        truthy: true
+      })}
       window.NODE_ENV="${process.env.NODE_ENV}"
       window.PRIVACY_URL="${process.env.PRIVACY_URL || ""}"
       window.BASE_URL="${process.env.BASE_URL || ""}"
