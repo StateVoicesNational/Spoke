@@ -1,19 +1,20 @@
 import PropTypes from "prop-types";
 import React, { Component } from "react";
-import { grey50 } from "material-ui/styles/colors";
+import theme from "../styles/theme";
 import { Card, CardHeader, CardText } from "material-ui/Card";
 import Subheader from "material-ui/Subheader";
 import { List, ListItem } from "material-ui/List";
 import MenuItem from "material-ui/MenuItem";
 import Divider from "material-ui/Divider";
 import SelectField from "material-ui/SelectField";
+import ArrowRightIcon from "material-ui/svg-icons/hardware/keyboard-arrow-right";
+import ClearIcon from "material-ui/svg-icons/content/clear";
 
 const styles = {
   root: {},
   card: {
-    marginTop: 10,
     marginBottom: 10,
-    backgroundColor: grey50,
+    backgroundColor: theme.components.popup.backgroundColor,
     padding: 10
   },
   cardHeader: {
@@ -21,8 +22,14 @@ const styles = {
   },
   cardText: {
     padding: 0
+  },
+  pastQuestionsLink: {
+    marginTop: "5px",
+    borderTop: `1px solid ${theme.components.popup.outline}`,
+    borderBottom: `1px solid ${theme.components.popup.outline}`
   }
 };
+
 class AssignmentTexterSurveys extends Component {
   constructor(props) {
     super(props);
@@ -129,49 +136,81 @@ class AssignmentTexterSurveys extends Component {
     );
   }
 
-  renderCurrentStep(step) {
-    const { onRequestClose } = this.props;
-    if (typeof this.props.onRequestClose != "function") {
+  renderCurrentStep(step, oldStyle) {
+    const { onRequestClose, questionResponses, listHeader } = this.props;
+    if (oldStyle) {
       return this.renderStep(step, 1);
     }
+    const responseValue = questionResponses[step.id];
     return (
       <List key="curlist">
-        <Divider key="curdivider" />
-        <Subheader key="cursubheader">{step.question.text}</Subheader>
+        <h3 style={{ padding: 0, margin: 0 }}>
+          {listHeader}
+          <div style={{ fontWeight: "normal", fontSize: "70%" }}>
+            What was their response to:
+          </div>
+          {step.question.text}
+        </h3>
+        {Object.keys(questionResponses).length ? (
+          <ListItem
+            onTouchTap={() => {
+              this.handleExpandChange(true);
+            }}
+            key={`pastquestions`}
+            primaryText={"Past Questions"}
+            rightIcon={<ArrowRightIcon />}
+            style={styles.pastQuestionsLink}
+          />
+        ) : null}
         {step.question.answerOptions.map((answerOption, index) => (
           <ListItem
             value={answerOption.value}
             onTouchTap={() => {
-              this.handleSelectChange(step, index, answerOption.value);
+              this.handleSelectChange(
+                step,
+                index,
+                responseValue === answerOption.value
+                  ? "clearResponse"
+                  : answerOption.value
+              );
               this.props.onRequestClose();
             }}
             key={`cur${index}_${answerOption.value}`}
             primaryText={answerOption.value}
+            rightIcon={
+              responseValue === answerOption.value ? <ClearIcon /> : null
+            }
           />
         ))}
+        {responseValue ? null : null}
       </List>
     );
   }
 
   render() {
     const { interactionSteps, currentInteractionStep } = this.props;
+    const oldStyle = typeof this.props.onRequestClose != "function";
 
     const { showAllQuestions } = this.state;
     return interactionSteps.length === 0 ? null : (
       <Card style={styles.card} onExpandChange={this.handleExpandChange}>
-        <CardHeader
-          style={styles.cardHeader}
-          title={showAllQuestions ? "All questions" : "Current question"}
-          showExpandableButton={interactionSteps.length > 1}
-        />
+        {oldStyle || showAllQuestions ? (
+          <CardHeader
+            style={styles.cardHeader}
+            title={showAllQuestions ? "All questions" : "Current question"}
+            showExpandableButton={oldStyle && interactionSteps.length > 1}
+          />
+        ) : null}
         <CardText style={styles.cardText} key={"curcard"}>
           {showAllQuestions
             ? ""
-            : this.renderCurrentStep(currentInteractionStep)}
+            : this.renderCurrentStep(currentInteractionStep, oldStyle)}
         </CardText>
-        <CardText style={styles.cardText} key={"curtext"} expandable>
-          {interactionSteps.map(step => this.renderStep(step, 0))}
-        </CardText>
+        {showAllQuestions ? (
+          <CardText style={styles.cardText} key={"curtext"}>
+            {interactionSteps.map(step => this.renderStep(step, 0))}
+          </CardText>
+        ) : null}
       </Card>
     );
   }
@@ -182,6 +221,7 @@ AssignmentTexterSurveys.propTypes = {
   interactionSteps: PropTypes.array,
   currentInteractionStep: PropTypes.object,
   questionResponses: PropTypes.object,
+  listHeader: PropTypes.object,
   onQuestionResponseChange: PropTypes.func,
   onRequestClose: PropTypes.func
 };
