@@ -2,7 +2,6 @@ import GraphQLDate from "graphql-date";
 import GraphQLJSON from "graphql-type-json";
 import { GraphQLError } from "graphql/error";
 import isUrl from "is-url";
-import { organizationCache } from "../models/cacheable_queries/organization";
 
 import { gzip, makeTree } from "../../lib";
 import { capitalizeWord } from "./lib/utils";
@@ -49,6 +48,7 @@ import {
 import { resolvers as interactionStepResolvers } from "./interaction-step";
 import { resolvers as inviteResolvers } from "./invite";
 import { saveNewIncomingMessage } from "./lib/message-sending";
+import { getConfig } from "./lib/config";
 import { resolvers as messageResolvers } from "./message";
 import { resolvers as optOutResolvers } from "./opt-out";
 import { resolvers as organizationResolvers } from "./organization";
@@ -335,11 +335,12 @@ const rootMutations = {
         .limit(1);
 
       if (!lastMessage) {
-        throw new GraphQLError({
+        const errorStatusAndMessage = {
           status: 400,
           message:
             "Cannot fake a reply to a contact that has no existing thread yet"
-        });
+        };
+        throw new GraphQLError(errorStatusAndMessage);
       }
 
       const userNumber = lastMessage.user_number;
@@ -630,7 +631,7 @@ const rootMutations = {
       organization.features = JSON.stringify(featuresJSON);
 
       await organization.save();
-      await organizationCache.clear(organizationId);
+      await cacheableData.organization.clear(organizationId);
 
       return await Organization.get(organizationId);
     },
@@ -670,7 +671,10 @@ const rootMutations = {
       return await Organization.get(organizationId);
     },
     createInvite: async (_, { user }) => {
-      if ((user && user.is_superadmin) || !process.env.SUPPRESS_SELF_INVITE) {
+      if (
+        (user && user.is_superadmin) ||
+        !getConfig("SUPPRESS_SELF_INVITE", null, { truthy: true })
+      ) {
         const inviteInstance = new Invite({
           is_valid: true,
           hash: uuidv4()
@@ -981,9 +985,12 @@ const rootMutations = {
           cIdx === 0
             ? firstContact
             : await cacheableData.campaignContact.load(contactId);
+
+        // If contact.assignment_id is null or misassigned,
+        // maybe the cache is stale so try refreshing.
         if (
-          contact.assignment_id === null &&
-          contact.hasOwnProperty("user_id") &&
+          contact.cachedResult &&
+          Number(contact.assignment_id) !== Number(assignmentId) &&
           !triedUpdate
         ) {
           // In case assignment_id from cache needs to be refreshed, try again
@@ -1042,7 +1049,6 @@ const rootMutations = {
         contact.campaign_id
       );
       const { assignmentId, cell, reason } = optOut;
-
       await cacheableData.optOut.save({
         cell,
         campaignContactId,
