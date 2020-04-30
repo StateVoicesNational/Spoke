@@ -239,7 +239,7 @@ class Settings extends React.Component {
               onSubmit={this.handleSubmitTwilioAuthForm}
               defaultValue={{
                 accountSid: twilioAccountSid,
-                authToken: twilioAuthToken ? "<Encrypted>" : twilioAuthToken,
+                authToken: twilioAuthToken,
                 messageServiceSid: twilioMessageServiceSid
               }}
             >
