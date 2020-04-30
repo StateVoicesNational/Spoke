@@ -1,9 +1,15 @@
-export const schema = `
+import gql from "graphql-tag";
+
+export const schema = gql`
   type Organization {
     id: ID
     uuid: String
     name: String
-    campaigns(cursor:OffsetLimitCursor, campaignsFilter: CampaignsFilter): CampaignsReturn
+    campaigns(
+      cursor: OffsetLimitCursor
+      campaignsFilter: CampaignsFilter
+      sortBy: SortCampaignsBy
+    ): CampaignsReturn
     people(role: String, campaignId: String, sortBy: SortPeopleBy): [User]
     optOuts: [OptOut]
     threeClickEnabled: Boolean
@@ -11,5 +17,6 @@ export const schema = `
     textingHoursEnforced: Boolean
     textingHoursStart: Int
     textingHoursEnd: Int
+    cacheable: Int
   }
 `;

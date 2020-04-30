@@ -155,9 +155,9 @@ export class TexterTodo extends React.Component {
         assignment.contacts.map(c => c.id)
       );
       this.loadingNewContacts = true;
-      const didAddContacts = (await this.props.mutations.findNewCampaignContact(
-        assignment.id
-      )).data.findNewCampaignContact.found;
+      const didAddContacts = (
+        await this.props.mutations.findNewCampaignContact(assignment.id)
+      ).data.findNewCampaignContact.found;
       console.log("getNewContacts ?added", didAddContacts);
       if (didAddContacts || waitForServer) {
         await this.props.data.refetch();
