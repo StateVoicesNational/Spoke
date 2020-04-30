@@ -26,7 +26,7 @@ export const instructions = () =>
 export async function available(organizationId) {
   return {
     result: organizationId && umcConfigured,
-    expiresSeconds: 60
+    expiresSeconds: 600
   };
 }
 

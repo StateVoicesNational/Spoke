@@ -105,6 +105,7 @@ All action handlers ***must*** export the following:
 
 These exports are documented in comments in the reference implementation
 [test-action](../src/integrations/action-handlers/test-action.js).
+(_Coming soon!_)
 
 Action handlers that provide client-choice data  ***must*** export the following:
 - `clientChoiceDataCacheKey` -- a key to use to store and retrieve client choice data in a cache, in order to
@@ -117,6 +118,7 @@ Action handlers ***may*** export the following:
 
 These exports are documented in comments in the reference implementation
 [complex-text-action](../src/integrations/action-handlers/complex-test-action.jsr)
+(_Coming soon!_)
 
 ### Using addServerEndpoints
 

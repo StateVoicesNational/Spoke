@@ -25,7 +25,7 @@ export const instructions = () =>
 export async function available(organizationId) {
   return {
     result: organizationId && listId && mobileApiKey,
-    expiresSeconds: 60
+    expiresSeconds: 600
   };
 }
 

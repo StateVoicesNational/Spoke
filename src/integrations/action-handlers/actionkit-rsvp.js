@@ -42,7 +42,7 @@ export async function available(organizationId) {
 
   return {
     result: isAvailable,
-    expiresSeconds: 60
+    expiresSeconds: 600
   };
 }
 

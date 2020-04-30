@@ -20,7 +20,7 @@ export const instructions = () =>
 export async function available(organizationId) {
   return {
     result: true,
-    expiresSeconds: 60
+    expiresSeconds: 600
   };
 }
 
