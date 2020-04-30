@@ -218,11 +218,26 @@ const userLoggedIn = async (field, val) => {
   return user;
 };
 
+const hasNotifications = async (userId, organizationId) => {
+  if (r.redis) {
+    /// code here
+  }
+  return false;
+};
+
+const updateNotificationStatus = async (userId, organizationId, status) => {
+  if (r.redis) {
+    /// code here
+  }
+};
+
 const userCache = {
   userHasRole,
   userLoggedIn,
   userOrgs,
   orgRoles,
+  hasNotifications,
+  updateNotificationStatus,
   clearUser: async (userId, authId) => {
     if (r.redis) {
       await r.redis.delAsync(userRoleKey(userId));

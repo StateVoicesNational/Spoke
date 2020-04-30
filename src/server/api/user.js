@@ -228,6 +228,8 @@ export const resolvers = {
           organization_id: organizationId,
           is_archived: false
         })("left"),
+    hasNotifications: async (user, { organizationId }) =>
+      cacheableData.user.hasNotifications(user.id, organizationId),
     cacheable: () => false // FUTURE: Boolean(r.redis) when full assignment data is cached
   }
 };

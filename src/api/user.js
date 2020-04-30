@@ -14,6 +14,7 @@ export const schema = `
     assignment(campaignId: String): Assignment
     terms: Boolean
     cacheable: Boolean
+    hasNotifications: Boolean
   }
 
 type UsersList {
