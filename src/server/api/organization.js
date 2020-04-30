@@ -66,8 +66,8 @@ export const resolvers = {
     twilioAuthToken: async (organization, _, { user }) => {
       try {
         await accessRequired(user, organization.id, "OWNER");
-        return organization.features.indexOf("TWILIO_AUTH_TOKEN_ENCRYPTED") !==
-          -1
+        return JSON.parse(organization.features || "{}")
+          .TWILIO_AUTH_TOKEN_ENCRYPTED
           ? "<Encrypted>"
           : null;
       } catch (err) {
