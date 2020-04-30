@@ -46,32 +46,54 @@ export const resolvers = {
       "I'm opting you out of texts immediately. Have a great day.",
     textingHoursStart: organization => organization.texting_hours_start,
     textingHoursEnd: organization => organization.texting_hours_end,
-    twilioAccountSid: organization =>
-      organization.features.indexOf("TWILIO_ACCOUNT_SID") !== -1
-        ? JSON.parse(organization.features).TWILIO_ACCOUNT_SID
-        : null,
-    twilioAuthToken: organization =>
-      organization.features.indexOf("TWILIO_AUTH_TOKEN_ENCRYPTED") !== -1
-        ? JSON.parse(organization.features).TWILIO_AUTH_TOKEN_ENCRYPTED
-        : null,
-    twilioMessageServiceSid: organization =>
-      organization.features.indexOf("TWILIO_MESSAGE_SERVICE_SID") !== -1
-        ? JSON.parse(organization.features).TWILIO_MESSAGE_SERVICE_SID
-        : null,
+    twilioAccountSid: async (organization, _, { user }) => {
+      try {
+        await accessRequired(user, organization.id, "OWNER");
+        return organization.features.indexOf("TWILIO_ACCOUNT_SID") !== -1
+          ? JSON.parse(organization.features).TWILIO_ACCOUNT_SID
+          : null;
+      } catch (err) {
+        return null;
+      }
+    },
+    twilioAuthToken: async (organization, _, { user }) => {
+      try {
+        await accessRequired(user, organization.id, "OWNER");
+        return JSON.parse(organization.features || "{}")
+          .TWILIO_AUTH_TOKEN_ENCRYPTED
+          ? "<Encrypted>"
+          : null;
+      } catch (err) {
+        return null;
+      }
+    },
+    twilioMessageServiceSid: async (organization, _, { user }) => {
+      try {
+        await accessRequired(user, organization.id, "OWNER");
+        return organization.features.indexOf("TWILIO_MESSAGE_SERVICE_SID") !==
+          -1
+          ? JSON.parse(organization.features).TWILIO_MESSAGE_SERVICE_SID
+          : null;
+      } catch (err) {
+        return null;
+      }
+    },
     fullyConfigured: async organization => {
       const serviceName =
-        getConfig("service", organization)
-        || getConfig("DEFAULT_SERVICE");
-      if (serviceName === 'twilio') {
-        const { authToken, accountSid } =
-          await cacheableData.organization.getTwilioAuth(organization);
-        const messagingServiceSid =
-          await cacheableData.organization.getMessageServiceSid(organization);
+        getConfig("service", organization) || getConfig("DEFAULT_SERVICE");
+      if (serviceName === "twilio") {
+        const {
+          authToken,
+          accountSid
+        } = await cacheableData.organization.getTwilioAuth(organization);
+        const messagingServiceSid = await cacheableData.organization.getMessageServiceSid(
+          organization
+        );
         if (!(authToken && accountSid && messagingServiceSid)) {
           return false;
         }
       }
       return true;
-    },
+    }
   }
 };

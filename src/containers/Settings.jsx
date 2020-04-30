@@ -148,11 +148,9 @@ class Settings extends React.Component {
     );
   }
 
-  handleOpenTwilioDialog = () =>
-    this.setState({ twilioDialogOpen: true });
+  handleOpenTwilioDialog = () => this.setState({ twilioDialogOpen: true });
 
-  handleCloseTwilioDialog = () =>
-    this.setState({ twilioDialogOpen: false });
+  handleCloseTwilioDialog = () => this.setState({ twilioDialogOpen: false });
 
   handleSubmitTwilioAuthForm = async ({
     accountSid,
@@ -161,13 +159,12 @@ class Settings extends React.Component {
   }) => {
     const res = await this.props.mutations.updateTwilioAuth(
       accountSid,
-      authToken === '<Encrypted>' ? false : authToken,
+      authToken === "<Encrypted>" ? false : authToken,
       messageServiceSid
     );
     if (res.errors) {
       this.setState({ twilioError: res.errors.message });
-    }
-    else {
+    } else {
       this.setState({ twilioError: undefined });
     }
     this.handleCloseTwilioDialog();
@@ -175,16 +172,30 @@ class Settings extends React.Component {
 
   renderTwilioAuthForm() {
     const { organization } = this.props.data;
-    const { twilioAccountSid, twilioAuthToken, twilioMessageServiceSid } = organization;
-    const allSet = twilioAccountSid && twilioAuthToken && twilioMessageServiceSid;
+    const {
+      twilioAccountSid,
+      twilioAuthToken,
+      twilioMessageServiceSid
+    } = organization;
+    const allSet =
+      twilioAccountSid && twilioAuthToken && twilioMessageServiceSid;
     let baseUrl = "http://base";
     if (typeof window !== "undefined") {
       baseUrl = window.location.origin;
     }
     const formSchema = yup.object({
-      accountSid: yup.string().nullable().max(64),
-      authToken: yup.string().nullable().max(64),
-      messageServiceSid: yup.string().nullable().max(64)
+      accountSid: yup
+        .string()
+        .nullable()
+        .max(64),
+      authToken: yup
+        .string()
+        .nullable()
+        .max(64),
+      messageServiceSid: yup
+        .string()
+        .nullable()
+        .max(64)
     });
 
     const dialogActions = [
@@ -228,7 +239,7 @@ class Settings extends React.Component {
               onSubmit={this.handleSubmitTwilioAuthForm}
               defaultValue={{
                 accountSid: twilioAccountSid,
-                authToken: twilioAuthToken ? "<Encrypted>" : twilioAuthToken,
+                authToken: twilioAuthToken,
                 messageServiceSid: twilioMessageServiceSid
               }}
             >
@@ -257,7 +268,8 @@ class Settings extends React.Component {
                 modal={true}
                 open={this.state.twilioDialogOpen}
               >
-                Changing the Account SID or Messaging Service SID will break any campaigns that are currently running. Do you want to contunue?
+                Changing the Account SID or Messaging Service SID will break any
+                campaigns that are currently running. Do you want to contunue?
               </Dialog>
             </GSForm>
           </div>
@@ -447,7 +459,7 @@ const mapMutationsToProps = ({ ownProps }) => ({
       twilioAuthToken: authToken,
       twilioMessageServiceSid: messageServiceSid
     }
-  }),
+  })
 });
 
 const mapQueriesToProps = ({ ownProps }) => ({
