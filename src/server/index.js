@@ -18,7 +18,7 @@ import nexmo from "./api/lib/nexmo";
 import twilio from "./api/lib/twilio";
 import { seedZipCodes } from "./seeds/seed-zip-codes";
 import { setupUserNotificationObservers } from "./notifications";
-import { TwimlResponse } from "twilio";
+import { twiml } from "twilio";
 import { existsSync } from "fs";
 import { rawAllMethods } from "../integrations/contact-loaders";
 
@@ -104,19 +104,6 @@ Object.keys(configuredIngestMethods).forEach(ingestMethodName => {
 });
 
 app.post(
-  "/nexmo",
-  wrap(async (req, res) => {
-    try {
-      const messageId = await nexmo.handleIncomingMessage(req.body);
-      res.send(messageId);
-    } catch (ex) {
-      log.error(ex);
-      res.send("done");
-    }
-  })
-);
-
-app.post(
   "/twilio",
   twilio.webhook(),
   wrap(async (req, res) => {
@@ -126,24 +113,39 @@ app.post(
       log.error(ex);
     }
 
-    const resp = new TwimlResponse();
+    const resp = new twiml.MessagingResponse();
     res.writeHead(200, { "Content-Type": "text/xml" });
     res.end(resp.toString());
   })
 );
 
-app.post(
-  "/nexmo-message-report",
-  wrap(async (req, res) => {
-    try {
-      const body = req.body;
-      await nexmo.handleDeliveryReport(body);
-    } catch (ex) {
-      log.error(ex);
-    }
-    res.send("done");
-  })
-);
+if (process.env.NEXMO_API_KEY) {
+  app.post(
+    "/nexmo",
+    wrap(async (req, res) => {
+      try {
+        const messageId = await nexmo.handleIncomingMessage(req.body);
+        res.send(messageId);
+      } catch (ex) {
+        log.error(ex);
+        res.send("done");
+      }
+    })
+  );
+
+  app.post(
+    "/nexmo-message-report",
+    wrap(async (req, res) => {
+      try {
+        const body = req.body;
+        await nexmo.handleDeliveryReport(body);
+      } catch (ex) {
+        log.error(ex);
+      }
+      res.send("done");
+    })
+  );
+}
 
 app.post(
   "/twilio-message-report",
@@ -154,7 +156,7 @@ app.post(
     } catch (ex) {
       log.error(ex);
     }
-    const resp = new TwimlResponse();
+    const resp = new twiml.MessagingResponse();
     res.writeHead(200, { "Content-Type": "text/xml" });
     res.end(resp.toString());
   })

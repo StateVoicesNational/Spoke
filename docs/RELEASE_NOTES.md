@@ -1,4 +1,22 @@
 # Release Notes
+## v5.4
+_April 2020:_ Version 5.4
+This release includes the following improvements:
+
+- *Experimental* A new contact loader for loading contacts in straight from NGP VAN (not yet testing on a production campaign)
+- Scaling improvements
+- Allow contact loaders to be toggled on a per-organization level
+- Improvements to the contact loaders framework
+- Upgrades node version to 10.x and twilio
+- Account view has a more streamlined UI
+- Various bug fixes
+
+
+Thanks to all the contributors part of this release including:
+[aschneit](https://github.com/aschneit),
+[lperson](https://github.com/lperson),
+[schuyler1d](https://github.com/schuyler1d),
+[ibrand](https://github.com/ibrand),
 
 ## v5.3
 _March 2020:_ Version 5.3

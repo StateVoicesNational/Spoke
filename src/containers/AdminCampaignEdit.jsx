@@ -332,9 +332,9 @@ class AdminCampaignEdit extends React.Component {
             this.props.campaignData.campaign.ingestMethod || null,
           jobResultMessage:
             (
-              this.props.pendingJobsData.campaign.pendingJobs.filter(job =>
-                /contacts/.test(job.jobType)
-              )[0] || {}
+              this.props.pendingJobsData.campaign.pendingJobs
+                .filter(job => /ingest/.test(job.jobType))
+                .reverse()[0] || {}
             ).resultMessage || ""
         }
       },

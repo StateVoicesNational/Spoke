@@ -11,7 +11,7 @@ import ConversationPreviewModal from "./ConversationPreviewModal";
 
 import { MESSAGE_STATUSES } from "../../components/IncomingMessageFilter";
 
-const prepareDataTableData = conversations =>
+export const prepareDataTableData = conversations =>
   conversations.map(conversation => ({
     campaignTitle: conversation.campaign.title,
     texter: conversation.texter.displayName,
@@ -22,6 +22,9 @@ const prepareDataTableData = conversations =>
       // \u26d4 is the No Entry symbol: http://unicode.org/cldr/utility/character.jsp?a=26D4
       // including it directly breaks some text editors
       (conversation.contact.optOut.cell ? "\u26d4" : ""),
+    cell: conversation.contact.cell,
+    campaignContactId: conversation.contact.id,
+    assignmentId: conversation.contact.assignmentId,
     status: conversation.contact.messageStatus,
     messages: conversation.contact.messages
   }));
@@ -251,6 +254,7 @@ export class IncomingMessageList extends Component {
         <ConversationPreviewModal
           conversation={this.state.activeConversation}
           onRequestClose={this.handleCloseConversation}
+          onForceRefresh={this.props.onForceRefresh}
         />
       </div>
     );
@@ -269,7 +273,8 @@ IncomingMessageList.propTypes = {
   onConversationCountChanged: type.func,
   utc: type.string,
   conversations: type.object,
-  clearSelectedMessages: type.bool
+  clearSelectedMessages: type.bool,
+  onForceRefresh: type.func
 };
 
 const mapQueriesToProps = ({ ownProps }) => ({
