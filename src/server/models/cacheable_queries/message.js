@@ -1,5 +1,6 @@
 import { r, Message } from "../../models";
 import campaignCache from "./campaign";
+import userCache from "./user";
 import campaignContactCache from "./campaign-contact";
 
 // QUEUE
@@ -198,6 +199,7 @@ const messageCache = {
       messageToSave.campaign_contact_id =
         messageInstance.campaign_contact_id ||
         activeCellFound.campaign_contact_id;
+      // maybe to a notification to userCache.updateNotificationStatus() here
     } else {
       // IS from contact:
       newStatus =
