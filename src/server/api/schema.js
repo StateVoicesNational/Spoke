@@ -13,6 +13,7 @@ import {
   loadCampaignCache
 } from "../../workers/jobs";
 import { getIngestMethod } from "../../integrations/contact-loaders";
+import { getAvailableActionHandlers } from "../../integrations/action-handlers";
 import {
   Assignment,
   Campaign,
@@ -1282,26 +1283,23 @@ const rootResolvers = {
         return await cacheableData.user.userOrgs(user.id, "TEXTER");
       }
     },
-    availableActions: (_, { organizationId }, { user }) => {
+    availableActions: async (_, { organizationId }, { user }) => {
       if (!process.env.ACTION_HANDLERS) {
         return [];
       }
-      const allHandlers = process.env.ACTION_HANDLERS.split(",");
 
-      const availableHandlers = allHandlers
-        .map(handler => {
-          return {
-            name: handler,
-            handler: require(`../../integrations/action-handlers/${handler}.js`)
-          };
-        })
-        .filter(async h => h && (await h.handler.available(organizationId)));
-
+      const organization = await cacheableData.organization.load(
+        organizationId
+      );
+      const availableHandlers = await getAvailableActionHandlers(
+        organization,
+        user
+      );
       const availableHandlerObjects = availableHandlers.map(handler => {
         return {
           name: handler.name,
-          display_name: handler.handler.displayName(),
-          instructions: handler.handler.instructions()
+          display_name: handler.displayName(),
+          instructions: handler.instructions()
         };
       });
       return availableHandlerObjects;
