@@ -32,10 +32,7 @@ const getDocument = async documentId => {
 const getParagraphStyle = getOr("", "paragraph.paragraphStyle.namedStyleType");
 const getTextRun = getOr("", "textRun.content");
 const sanitizeTextRun = textRun => textRun.replace("\n", "");
-const getSanitizedTextRun = compose(
-  sanitizeTextRun,
-  getTextRun
-);
+const getSanitizedTextRun = compose(sanitizeTextRun, getTextRun);
 const concat = (left, right) => left.concat(right);
 const reduceStrings = reduce(concat, String());
 const getParagraphText = compose(

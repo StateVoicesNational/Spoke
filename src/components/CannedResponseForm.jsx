@@ -22,7 +22,7 @@ class CannedResponseForm extends React.Component {
         <GSForm ref="form" schema={modelSchema} onSubmit={this.handleSave}>
           <Form.Field name="title" autoFocus fullWidth label="Title" />
           <Form.Field
-            customFields={customFields}
+            customFields={customFields || []}
             name="text"
             type="script"
             label="Script"

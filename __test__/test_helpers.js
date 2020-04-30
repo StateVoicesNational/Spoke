@@ -163,7 +163,8 @@ export async function createOrganization(user, invite) {
 export async function createCampaign(
   user,
   organization,
-  title = "test campaign"
+  title = "test campaign",
+  args = {}
 ) {
   const rootValue = {};
   const description = "test description";
@@ -179,7 +180,8 @@ export async function createCampaign(
     input: {
       title,
       description,
-      organizationId
+      organizationId,
+      ...args
     }
   };
   const ret = await graphql(

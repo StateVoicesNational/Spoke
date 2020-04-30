@@ -6,8 +6,8 @@ import { dataTest } from "../lib/attributes";
 
 const inlineStyles = {
   icon: {
-    width: 200,
-    height: 200,
+    width: 180,
+    height: 180,
     opacity: 0.2
   }
 };
@@ -17,13 +17,13 @@ const inlineStyles = {
 const styles = StyleSheet.create({
   container: {
     marginTop: "10px",
-    width: 200,
+    width: 180,
     marginLeft: "auto",
     marginRight: "auto"
   },
   hideMobile: {
     marginTop: "10px",
-    width: 200,
+    width: 180,
     marginLeft: "auto",
     marginRight: "auto",
     "@media(max-width: 450px)": {

@@ -88,6 +88,8 @@ export default function renderIndex(html, css, assetMap, store) {
       window.PASSPORT_STRATEGY="${process.env.PASSPORT_STRATEGY || ""}"
       window.CORE_BACKGROUND_COLOR="${process.env.CORE_BACKGROUND_COLOR || ""}"
       window.CAN_GOOGLE_IMPORT=${canGoogleImport}
+      window.SHOW_TAGS=${process.env.SHOW_TAGS || false}
+      window.EXPERIMENTAL_TEXTERUI="${process.env.EXPERIMENTAL_TEXTERUI || ""}"
     </script>
     <script src="${assetMap["bundle.js"]}"></script>
   </body>

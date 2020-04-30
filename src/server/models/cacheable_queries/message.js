@@ -162,6 +162,44 @@ const incomingMessageMatching = async (messageInstance, activeCellFound) => {
   }
 };
 
+const deliveryReport = async ({
+  contactNumber,
+  messageSid,
+  service,
+  messageServiceSid,
+  newStatus,
+  errorCode
+}) => {
+  const changes = {
+    service_response_at: new Date(),
+    send_status: newStatus
+  };
+  if (newStatus === "ERROR") {
+    changes.error_code = errorCode;
+
+    const lookup = await campaignContactCache.lookupByCell(
+      contactNumber,
+      service || "",
+      messageServiceSid
+    );
+    if (lookup && lookup.campaign_contact_id) {
+      await r
+        .knex("campaign_contact")
+        .where("id", lookup.campaign_contact_id)
+        .update("error_code", errorCode);
+    }
+    console.log("deliveryReport", lookup);
+    if (lookup.campaign_id) {
+      campaignCache.incrCount(lookup.campaign_id, "errorCount");
+    }
+  }
+  await r
+    .knex("message")
+    .where("service_id", messageSid)
+    .limit(1)
+    .update(changes);
+};
+
 const messageCache = {
   clearQuery: async queryObj => {
     if (r.redis) {
@@ -169,6 +207,7 @@ const messageCache = {
       await r.redis.delAsync(cacheKey(contactId));
     }
   },
+  deliveryReport,
   query,
   save: async ({ messageInstance, contact }) => {
     // 0. Gathers any missing data in the case of is_from_contact: campaign_contact_id
@@ -220,7 +259,8 @@ const messageCache = {
     const contactData = {
       id: messageToSave.campaign_contact_id,
       cell: messageToSave.contact_number,
-      messageservice_sid: messageToSave.messageservice_sid
+      messageservice_sid: messageToSave.messageservice_sid,
+      campaign_id: contact && contact.campaign_id
     };
     // console.log('hi saveMsg3', newStatus, contactData);
     await campaignContactCache.updateStatus(contactData, newStatus);
@@ -229,7 +269,7 @@ const messageCache = {
       !messageInstance.is_from_contact &&
       contact.message_status === "needsMessage"
     ) {
-      await campaignCache.incrMessaged(contact.campaign_id);
+      await campaignCache.incrCount(contact.campaign_id, "messagedCount");
     }
     return {
       message: messageToSave,

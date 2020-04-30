@@ -4,6 +4,7 @@ import FlatButton from "material-ui/FlatButton";
 import { List, ListItem } from "material-ui/List";
 // import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert'
 import CreateIcon from "material-ui/svg-icons/content/create";
+import ClearIcon from "material-ui/svg-icons/content/clear";
 // import IconButton from 'material-ui/IconButton'
 // import IconMenu from 'material-ui/IconMenu'
 // import MenuItem from 'material-ui/MenuItem'
@@ -57,6 +58,7 @@ class ScriptList extends React.Component {
       onSelectCannedResponse,
       onCreateCannedResponse,
       showAddScriptButton,
+      currentCannedResponseScript,
       customFields
     } = this.props;
     const { dialogOpen } = this.state;
@@ -70,25 +72,6 @@ class ScriptList extends React.Component {
       }
     };
 
-    // const rightIconButton = (
-    //   <IconMenu
-    //     iconButtonElement={<IconButton><MoreVertIcon /></IconButton>}
-    //     anchorOrigin={{horizontal: 'left', vertical: 'bottom'}}
-    //     targetOrigin={{horizontal: 'left', vertical: 'bottom'}}
-    //   >
-    //     <MenuItem primaryText={duplicateCampaignResponses && !script.isUserCreated ? "Duplicate and edit" : "Edit"}
-    //       onTouchTap={() => this.handleEditScript(script)}
-    //     />
-    //     {
-    //       script.isUserCreated ? (
-    //         <MenuItem primaryText="Delete"
-    //           onTouchTap={() => this.handleDeleteScript(script.id)}
-    //         />
-    //       ) : ''
-    //     }
-    //   </IconMenu>
-    // )
-
     const rightIconButton = null;
     const listItems = scripts.map(script => (
       <ListItem
@@ -97,7 +80,12 @@ class ScriptList extends React.Component {
         key={script.id}
         primaryText={script.title}
         secondaryText={script.text}
-        rightIconButton={rightIconButton}
+        rightIconButton={
+          currentCannedResponseScript &&
+          currentCannedResponseScript.id === script.id ? (
+            <ClearIcon />
+          ) : null
+        }
         secondaryTextLines={2}
       />
     ));
@@ -105,7 +93,8 @@ class ScriptList extends React.Component {
     const list =
       scripts.length === 0 ? null : (
         <List>
-          <Subheader>{subheader}</Subheader>,{listItems}
+          <Subheader>{subheader}</Subheader>
+          {listItems}
           <Divider />
         </List>
       );
@@ -151,6 +140,7 @@ ScriptList.propTypes = {
   script: PropTypes.object,
   scripts: PropTypes.arrayOf(PropTypes.object),
   subheader: PropTypes.element,
+  currentCannedResponseScript: PropTypes.object,
   onSelectCannedResponse: PropTypes.func,
   onCreateCannedResponse: PropTypes.func,
   showAddScriptButton: PropTypes.bool,

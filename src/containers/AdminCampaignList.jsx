@@ -16,16 +16,31 @@ import IconMenu from "material-ui/IconMenu";
 import { MenuItem } from "material-ui/Menu";
 import { dataTest } from "../lib/attributes";
 import IconButton from "material-ui/IconButton/IconButton";
+import SortBy, {
+  DUE_DATE_DESC_SORT
+} from "../components/AdminCampaignList/SortBy";
+import Paper from "material-ui/Paper";
+import Search from "../components/Search";
+import { StyleSheet, css } from "aphrodite";
+
+const styles = StyleSheet.create({
+  settings: {
+    display: "flex",
+    flexDirection: "row",
+    padding: "20px"
+  }
+});
 
 class AdminCampaignList extends React.Component {
   state = {
     isLoading: false,
     campaignsFilter: {
       isArchived: false,
-      listSize: 0
+      searchString: ""
     },
     archiveMultiple: false,
-    campaignsToArchive: {}
+    campaignsToArchive: [],
+    sortBy: DUE_DATE_DESC_SORT.value
   };
 
   handleClickNewButton = async () => {
@@ -59,16 +74,15 @@ class AdminCampaignList extends React.Component {
       this.setState({
         archiveMultiple: false,
         isLoading: false,
-        campaignsToArchive: {}
+        campaignsToArchive: []
       });
     }
   };
 
-  handleFilterChange = (event, index, value) => {
+  handleFilterChange = (event, index, isArchived) => {
     this.setState({
       campaignsFilter: {
-        isArchived: value,
-        listSize: this.state.campaignsFilter.listSize
+        isArchived
       }
     });
   };
@@ -82,17 +96,9 @@ class AdminCampaignList extends React.Component {
     });
   };
 
-  handleChecked = ({ campaignId, checked }) => {
-    this.setState(prevState => {
-      const { campaignsToArchive } = prevState;
-      // checked has to be reversed here because the onTouchTap
-      // event fires before the input is checked.
-      if (!checked) {
-        campaignsToArchive[campaignId] = !checked;
-      } else {
-        delete campaignsToArchive[campaignId];
-      }
-      return { campaignsToArchive };
+  handleChecked = ({ campaignIds }) => {
+    this.setState({
+      campaignsToArchive: campaignIds
     });
   };
 
@@ -102,32 +108,69 @@ class AdminCampaignList extends React.Component {
     }, delay);
   };
 
-  renderListSizeOptions() {
-    return (
-      <DropDownMenu
-        value={this.state.campaignsFilter.listSize}
-        onChange={this.handleListSizeChange}
-      >
-        <MenuItem value={10} primaryText="10" />
-        <MenuItem value={25} primaryText="25" />
-        <MenuItem value={50} primaryText="50" />
-        <MenuItem value={100} primaryText="100" />
-        <MenuItem value={0} primaryText="All" />
-      </DropDownMenu>
-    );
-  }
+  handleSortByChanged = sortBy => {
+    this.setState({ sortBy });
+  };
 
-  renderFilters() {
+  handleSearchRequested = searchString => {
+    const campaignsFilter = {
+      ...this.state.campaignsFilter,
+      searchString
+    };
+    this.setState({ campaignsFilter });
+  };
+
+  handleCancelSearch = () => {
+    const campaignsFilter = {
+      ...this.state.campaignsFilter,
+      searchString: ""
+    };
+    this.setState({ campaignsFilter });
+  };
+
+  renderArchivedAndSortBy = () => {
     return (
-      <DropDownMenu
-        value={this.state.campaignsFilter.isArchived}
-        onChange={this.handleFilterChange}
-      >
-        <MenuItem value={false} primaryText="Current" />
-        <MenuItem value primaryText="Archived" />
-      </DropDownMenu>
+      !this.state.archiveMultiple && (
+        <span>
+          <span>
+            <DropDownMenu
+              value={this.state.campaignsFilter.isArchived}
+              onChange={this.handleFilterChange}
+            >
+              <MenuItem value={false} primaryText="Current" />
+              <MenuItem value primaryText="Archived" />
+            </DropDownMenu>
+            <SortBy
+              onChange={this.handleSortByChanged}
+              sortBy={this.state.sortBy}
+            />
+          </span>
+        </span>
+      )
     );
-  }
+  };
+
+  renderSearch = () => {
+    return (
+      !this.state.archiveMultiple && (
+        <Search
+          onSearchRequested={this.handleSearchRequested}
+          searchString={this.state.campaignsFilter.searchString}
+          onCancelSearch={this.handleCancelSearch}
+          hintText="Search for campaign title. Hit enter to search."
+          style={{ width: "50%" }}
+        />
+      )
+    );
+  };
+
+  renderFilters = () => (
+    <Paper className={css(styles.settings)} zDepth={3}>
+      {this.props.params.adminPerms && this.renderArchiveMultiple()}
+      {this.renderArchivedAndSortBy()}
+      {this.renderSearch()}
+    </Paper>
+  );
 
   renderArchiveMultiple() {
     return (
@@ -166,7 +209,7 @@ class AdminCampaignList extends React.Component {
 
   renderActionButton() {
     if (this.state.archiveMultiple) {
-      const keys = Object.keys(this.state.campaignsToArchive);
+      const keys = this.state.campaignsToArchive;
       return (
         <FloatingActionButton
           {...dataTest("archiveCampaigns")}
@@ -193,14 +236,13 @@ class AdminCampaignList extends React.Component {
     const { adminPerms } = this.props.params;
     return (
       <div>
-        {adminPerms && this.renderArchiveMultiple()}
-        {!this.state.archiveMultiple && this.renderFilters()}
-        {this.renderListSizeOptions()}
+        {this.renderFilters()}
         {this.state.isLoading ? (
           <LoadingIndicator />
         ) : (
           <CampaignList
             campaignsFilter={this.state.campaignsFilter}
+            sortBy={this.state.sortBy}
             organizationId={this.props.params.organizationId}
             adminPerms={adminPerms}
             selectMultiple={this.state.archiveMultiple}
