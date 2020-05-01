@@ -9,7 +9,11 @@ import cloneDeep from "lodash/cloneDeep";
 
 export default class CampaignMessagingServiceForm extends React.Component {
   formSchema = yup.object({
-    useOwnMessagingService: yup.boolean()
+    useOwnMessagingService: yup.boolean(),
+    messagingServiceSid: yup
+      .string()
+      .transform(value => (!value ? null : value))
+      .nullable()
   });
 
   toggled(name, isToggled) {
@@ -48,6 +52,21 @@ export default class CampaignMessagingServiceForm extends React.Component {
         {this.addToggleFormField(
           "useOwnMessagingService",
           "Create a new Messaging Service for this Campaign?"
+        )}
+
+        {this.props.formValues.useOwnMessagingService ? (
+          <div>
+            <Form.Field
+              name="messagingServiceSid"
+              label="Messaging Service SID"
+              fullWidth
+            />
+            <label>
+              Leave this blank to automatically create a messaging service
+            </label>
+          </div>
+        ) : (
+          ""
         )}
 
         <Form.Button

@@ -40,6 +40,7 @@ const campaignInfoFragment = `
   introHtml
   primaryColor
   useOwnMessagingService
+  messagingServiceSid
   overrideOrganizationTextingHours
   textingHoursEnforced
   textingHoursStart
@@ -410,7 +411,7 @@ class AdminCampaignEdit extends React.Component {
       finalSections.push({
         title: "Messaging Service",
         content: CampaignMessagingServiceForm,
-        keys: ["useOwnMessagingService"],
+        keys: ["useOwnMessagingService", "messagingServiceSid"],
         checkCompleted: () => true,
         blocksStarting: false,
         expandAfterCampaignStarts: false,
