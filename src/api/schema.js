@@ -185,7 +185,7 @@ const rootSchema = gql`
 
   type Action {
     name: String
-    display_name: String
+    displayName: String
     instructions: String
   }
 

@@ -202,7 +202,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
                       { value: "", label: "Action..." },
                       ...this.props.availableActions.map(action => ({
                         value: action.name,
-                        label: action.display_name
+                        label: action.displayName
                       }))
                     ]}
                   />

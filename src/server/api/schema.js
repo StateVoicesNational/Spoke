@@ -1269,7 +1269,7 @@ const rootMutations = {
 const rootResolvers = {
   Action: {
     name: o => o.name,
-    display_name: o => o.display_name,
+    displayName: o => o.displayName,
     instructions: o => o.instructions
   },
   FoundContact: {
@@ -1325,10 +1325,6 @@ const rootResolvers = {
       }
     },
     availableActions: async (_, { organizationId }, { user }) => {
-      if (!process.env.ACTION_HANDLERS) {
-        return [];
-      }
-
       const organization = await cacheableData.organization.load(
         organizationId
       );
@@ -1339,7 +1335,7 @@ const rootResolvers = {
       const availableHandlerObjects = availableHandlers.map(handler => {
         return {
           name: handler.name,
-          display_name: handler.displayName(),
+          displayName: handler.displayName(),
           instructions: handler.instructions()
         };
       });

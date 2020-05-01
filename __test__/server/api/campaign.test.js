@@ -1049,9 +1049,7 @@ describe("campaigns query", async () => {
 });
 
 describe("all interaction steps fields travel round trip", () => {
-  it("does the thing", async () => {
-    const testCampaign2 = await createCampaign(testAdminUser, testOrganization);
-
+  it("works", async () => {
     const interactionSteps = {
       id: "new0",
       questionText: "what is your favorite breed?",
@@ -1084,21 +1082,6 @@ describe("all interaction steps fields travel round trip", () => {
     expect(createScriptResult.data.editCampaign).toEqual({
       id: testCampaign.id
     });
-
-    const cursor = {
-      offset: 0,
-      limit: 1000
-    };
-
-    const campaignsFilter = {
-      campaignId: testCampaign.id
-    };
-
-    const variables = {
-      cursor,
-      organizationId,
-      campaignsFilter
-    };
 
     const campaignDataResults = await runComponentGql(
       AdminCampaignEditQuery,
