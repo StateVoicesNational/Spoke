@@ -757,7 +757,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
       query getActions($organizationId: String!) {
         availableActions(organizationId: $organizationId) {
           name
-          display_name
+          displayName
           instructions
         }
       }
