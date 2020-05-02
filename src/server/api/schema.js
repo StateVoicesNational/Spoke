@@ -13,7 +13,6 @@ import {
   loadCampaignCache
 } from "../../workers/jobs";
 import { getIngestMethod } from "../../integrations/contact-loaders";
-import { getAvailableActionHandlers } from "../../integrations/action-handlers";
 import {
   Assignment,
   Campaign,
@@ -27,8 +26,7 @@ import {
   Tag,
   UserOrganization,
   r,
-  cacheableData,
-  loaders
+  cacheableData
 } from "../models";
 import { Notifications, sendUserNotification } from "../notifications";
 import { resolvers as assignmentResolvers } from "./assignment";
@@ -1323,23 +1321,6 @@ const rootResolvers = {
       } else {
         return await cacheableData.user.userOrgs(user.id, "TEXTER");
       }
-    },
-    availableActions: async (_, { organizationId }, { user }) => {
-      const organization = await cacheableData.organization.load(
-        organizationId
-      );
-      const availableHandlers = await getAvailableActionHandlers(
-        organization,
-        user
-      );
-      const availableHandlerObjects = availableHandlers.map(handler => {
-        return {
-          name: handler.name,
-          displayName: handler.displayName(),
-          instructions: handler.instructions()
-        };
-      });
-      return availableHandlerObjects;
     },
     conversations: async (
       _,
