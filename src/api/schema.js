@@ -183,12 +183,6 @@ const rootSchema = gql`
     organizationId: String
   }
 
-  type Action {
-    name: String
-    displayName: String
-    instructions: String
-  }
-
   type FoundContact {
     found: Boolean
   }
@@ -227,7 +221,6 @@ const rootSchema = gql`
     inviteByHash(hash: String!): [Invite]
     assignment(id: String!): Assignment
     organizations: [Organization]
-    availableActions(organizationId: String!): [Action]
     conversations(
       cursor: OffsetLimitCursor!
       organizationId: String!

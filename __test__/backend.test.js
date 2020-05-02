@@ -1,5 +1,4 @@
 import { resolvers } from "../src/server/api/schema";
-import gql from "graphql-tag";
 import { schema } from "../src/api/schema";
 import { assignmentRequired } from "../src/server/api/errors";
 import { graphql } from "graphql";
@@ -23,14 +22,11 @@ import {
   createTexter as helperCreateTexter,
   createOrganization as helperCreateOrganization,
   createInvite as helperCreateInvite,
-  runGql,
-  createStartedCampaign
+  runGql
 } from "./test_helpers";
 import { makeExecutableSchema } from "graphql-tools";
 
 import { editUserMutation } from "../src/containers/UserEdit.jsx";
-
-const ActionHandlerFramework = require("../src/integrations/action-handlers");
 
 const mySchema = makeExecutableSchema({
   typeDefs: schema,
@@ -813,94 +809,5 @@ describe("editUser mutation", () => {
       cell: userData.cell,
       id: testTexter.id
     });
-  });
-});
-
-describe("rootQuery.availableActionData", () => {
-  let savedActionHandlers;
-  let query;
-  let variables;
-  let user;
-  let organization;
-
-  beforeAll(async () => {
-    savedActionHandlers = process.env.ACTION_HANDLERS;
-    await setupTest();
-  }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
-
-  afterAll(async () => {
-    await cleanupTest();
-  }, global.DATABASE_SETUP_TEARDOWN_TIMEOUT);
-
-  afterEach(async () => {
-    process.env.ACTION_HANDLERS = savedActionHandlers;
-    jest.restoreAllMocks();
-  });
-
-  beforeEach(async () => {
-    ({
-      testOrganization: {
-        data: { createOrganization: organization }
-      },
-      testAdminUser: user
-    } = await createStartedCampaign());
-
-    query = `
-      query getActions($organizationId: String!) {
-        availableActions(organizationId: $organizationId) {
-          name
-          displayName
-          instructions
-        }
-      }
-    `;
-
-    variables = {
-      organizationId: organization.id
-    };
-
-    jest
-      .spyOn(ActionHandlerFramework, "getAvailableActionHandlers")
-      .mockResolvedValue([
-        {
-          name: "thing 1",
-          displayName: () => "THING ONE",
-          instructions: () => "Thing 1 instructions"
-        },
-        {
-          name: "thing 2",
-          displayName: () => "THING TWO",
-          instructions: () => "Thing 2 instructions"
-        }
-      ]);
-  });
-
-  it("calls availableHandlers and handles the result correctly", async () => {
-    const result = await runGql(query, variables, user);
-
-    expect(
-      ActionHandlerFramework.getAvailableActionHandlers.mock.calls
-    ).toEqual([
-      [
-        expect.objectContaining({
-          id: Number(organization.id),
-          uuid: organization.uuid
-        }),
-        user
-      ]
-    ]);
-
-    expect(result.data.availableActions).toEqual([
-      {
-        name: "thing 1",
-        displayName: "THING ONE",
-        instructions: "Thing 1 instructions"
-      },
-      {
-        name: "thing 2",
-        displayName: "THING TWO",
-        instructions: "Thing 2 instructions"
-      }
-    ]);
   });
 });

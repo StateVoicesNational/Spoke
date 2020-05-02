@@ -4,6 +4,7 @@ import { r, Organization } from "../models";
 import { accessRequired } from "./errors";
 import { getCampaigns } from "./campaign";
 import { buildSortedUserOrganizationQuery } from "./user";
+import { getAvailableActionHandlers } from "../../integrations/action-handlers";
 
 export const resolvers = {
   Organization: {
@@ -38,6 +39,20 @@ export const resolvers = {
         campaignId,
         sortBy
       );
+    },
+    availableActions: async (organization, _, { user }) => {
+      const availableHandlers = await getAvailableActionHandlers(
+        organization,
+        user
+      );
+      const availableHandlerObjects = availableHandlers.map(handler => {
+        return {
+          name: handler.name,
+          displayName: handler.displayName(),
+          instructions: handler.instructions()
+        };
+      });
+      return availableHandlerObjects;
     },
     threeClickEnabled: organization =>
       organization.features.indexOf("threeClick") !== -1,
