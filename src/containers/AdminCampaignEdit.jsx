@@ -374,7 +374,8 @@ class AdminCampaignEdit extends React.Component {
         expandableBySuperVolunteers: true,
         extraProps: {
           customFields: this.props.campaignData.campaign.customFields,
-          availableActions: this.props.availableActionsData.availableActions
+          availableActions: this.props.organizationData.organization
+            .availableActions
         }
       },
       {
@@ -719,8 +720,7 @@ AdminCampaignEdit.propTypes = {
   organizationData: PropTypes.object,
   params: PropTypes.object,
   location: PropTypes.object,
-  pendingJobsData: PropTypes.object,
-  availableActionsData: PropTypes.object
+  pendingJobsData: PropTypes.object
 };
 
 const mapQueriesToProps = ({ ownProps }) => ({
@@ -744,6 +744,11 @@ const mapQueriesToProps = ({ ownProps }) => ({
             lastName
             displayName
           }
+          availableActions {
+            name
+            displayName
+            instructions
+          }
         }
       }
     `,
@@ -751,21 +756,6 @@ const mapQueriesToProps = ({ ownProps }) => ({
       organizationId: ownProps.params.organizationId
     },
     pollInterval: 20000
-  },
-  availableActionsData: {
-    query: gql`
-      query getActions($organizationId: String!) {
-        availableActions(organizationId: $organizationId) {
-          name
-          displayName
-          instructions
-        }
-      }
-    `,
-    variables: {
-      organizationId: ownProps.params.organizationId
-    },
-    forceFetch: true
   }
 });
 
