@@ -1,4 +1,5 @@
 /* eslint-disable no-unused-expressions, consistent-return */
+import gql from "graphql-tag";
 import { r } from "../../../src/server/models/";
 import { dataQuery as TexterTodoListQuery } from "../../../src/containers/TexterTodoList";
 import { dataQuery as TexterTodoQuery } from "../../../src/containers/TexterTodo";
@@ -1049,8 +1050,11 @@ describe("campaigns query", async () => {
 });
 
 describe("all interaction steps fields travel round trip", () => {
-  it("works", async () => {
-    const interactionSteps = {
+  let interactionSteps;
+  let interactionStepsExpected;
+
+  beforeEach(async () => {
+    interactionSteps = {
       id: "new0",
       questionText: "what is your favorite breed?",
       script: "hello [firstName], let's talk about dogs",
@@ -1072,7 +1076,9 @@ describe("all interaction steps fields travel round trip", () => {
         }
       ]
     };
+  });
 
+  it("works", async () => {
     const createScriptResult = await createScript(
       testAdminUser,
       testCampaign,
@@ -1089,7 +1095,7 @@ describe("all interaction steps fields travel round trip", () => {
       testAdminUser
     );
 
-    const interactionStepsExpected = [
+    interactionStepsExpected = [
       {
         id: "1",
         questionText: "what is your favorite breed?",
@@ -1115,5 +1121,83 @@ describe("all interaction steps fields travel round trip", () => {
     expect(campaignDataResults.data.campaign.interactionSteps).toEqual(
       interactionStepsExpected
     );
+  });
+
+  describe("all interaction step fields are available through assignment.campaign.interactionSteps", () => {
+    let query;
+    let variables;
+
+    beforeEach(async () => {
+      await createScript(testAdminUser, testCampaign, interactionSteps);
+
+      query = gql`
+        query assignment($id: String!) {
+          assignment(id: $id) {
+            id
+            campaign {
+              interactionSteps {
+                id
+                answerOption
+                answerActions
+                answerActionsData
+                isDeleted
+                parentInteractionId
+                questionText
+                script
+              }
+            }
+          }
+        }
+      `;
+
+      variables = {
+        id: assignmentId
+      };
+    });
+
+    it("returns what we expect", async () => {
+      const campaignDataResults = await runComponentGql(
+        query,
+        variables,
+        testSuperVolunteerUser
+      );
+
+      expect(
+        campaignDataResults.data.assignment.campaign.interactionSteps
+      ).toEqual(interactionStepsExpected);
+    });
+
+    describe("when the user is not a SUPERVOLUNTEER or higher", () => {
+      beforeEach(async () => {
+        interactionStepsExpected[0].answerActionsData = null;
+        interactionStepsExpected[1].answerActionsData = null;
+      });
+      it("doesn't return answerActionsData", async () => {
+        const campaignDataResults = await runComponentGql(
+          query,
+          variables,
+          testTexterUser
+        );
+
+        expect(
+          campaignDataResults.data.assignment.campaign.interactionSteps
+        ).toEqual(interactionStepsExpected);
+
+        const expectedError = expect.objectContaining({
+          path: expect.arrayContaining([
+            "assignment",
+            "campaign",
+            "interactionSteps",
+            "answerActionsData"
+          ]),
+          message: "You are not authorized to access that resource."
+        });
+
+        expect(campaignDataResults.errors).toEqual([
+          expectedError,
+          expectedError
+        ]);
+      });
+    });
   });
 });
