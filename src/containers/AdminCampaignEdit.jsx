@@ -431,9 +431,8 @@ class AdminCampaignEdit extends React.Component {
     let jobId = null;
     if (pendingJobs.length > 0) {
       if (section.title === "Contacts") {
-        relatedJob = pendingJobs.filter(
-          job =>
-            job.jobType === "upload_contacts" || job.jobType === "contact_sql"
+        relatedJob = pendingJobs.filter(job =>
+          job.jobType.startsWith("ingest")
         )[0];
       } else if (section.title === "Texters") {
         relatedJob = pendingJobs.filter(
