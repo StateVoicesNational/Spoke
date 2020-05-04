@@ -1148,12 +1148,13 @@ export async function buyTwilioNumbers(job) {
 
     for (const item of response) {
       // ***** DEMO *****
-      await r.knex("twilio_phone_number").insert({
+      await r.knex("owned_phone_number").insert({
         organization_id: organization.id,
         area_code: areaCode,
         phone_number: item.phoneNumber,
         status: "AVAILABLE",
-        sid: `FAKE-${_.random(0, 1000000000, false)}`
+        service: "fakeservice",
+        service_id: `FAKE-${_.random(0, 1000000000, false)}`
       });
       // to buy real twilio numbers:
       // await twilio.buyNumber(organization, item.phoneNumber);

@@ -103,7 +103,7 @@ export const resolvers = {
       }
       return true;
     },
-    twilioPhoneNumbers: async (organization, _, { user }) => {
+    phoneNumberCounts: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, "ADMIN");
       if (
         !getConfig("EXPERIMENTAL_TWILIO_INVENTORY", organization, {
@@ -112,8 +112,9 @@ export const resolvers = {
       ) {
         throw Error("Twilio inventory management is not enabled");
       }
+      const service = getConfig("DEFAULT_SERVICE");
       const counts = await r
-        .knex("twilio_phone_number")
+        .knex("owned_phone_number")
         .select(
           "area_code",
           r.knex.raw("count(status = 'ALLOCATED' OR NULL) as allocated_count"),
@@ -121,7 +122,10 @@ export const resolvers = {
           // r.knex.raw("count(status = 'RESERVED' OR NULL) as reserved_count"),
           r.knex.raw("count(status = 'AVAILABLE' OR NULL) as available_count")
         )
-        .where("organization_id", organization.id)
+        .where({
+          service,
+          organization_id: organization.id
+        })
         .groupBy("area_code");
       return counts.map(row => ({
         areaCode: row.area_code,

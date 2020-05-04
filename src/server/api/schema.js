@@ -1299,7 +1299,7 @@ const rootMutations = {
         .update({ is_deleted: true });
       return { id };
     },
-    buyTwilioNumbers: async (
+    buyPhoneNumbers: async (
       _,
       { organizationId, areaCode, limit },
       { loaders, user }
@@ -1307,8 +1307,11 @@ const rootMutations = {
       await accessRequired(user, organizationId, "OWNER");
       const org = await loaders.organization.load(organizationId);
       if (!getConfig("EXPERIMENTAL_TWILIO_INVENTORY", org, { truthy: true })) {
-        throw Error("Twilio inventory management is not enabled");
+        throw new Error("Twilio inventory management is not enabled");
       }
+      // if (getConfig("DEFAULT_SERVICE") !== "twilio") {
+      //   throw new Error("Buying numbers is currently only supported for Twilio.");
+      // }
       const job = await JobRequest.save({
         queue_name: `${organizationId}:buy_twilio_numbers`,
         organization_id: organizationId,
