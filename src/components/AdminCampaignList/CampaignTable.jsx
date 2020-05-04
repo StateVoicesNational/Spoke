@@ -16,6 +16,17 @@ import Empty from "../Empty";
 import { dataTest } from "../../lib/attributes";
 import DataTables from "material-ui-datatables";
 
+const inlineStyles = {
+  campaignInfo: {
+    whiteSpace: "nowrap"
+  },
+  campaignLink: {
+    fontSize: 16,
+    lineHeight: "16px",
+    textDecoration: "none"
+  }
+};
+
 export class CampaignTable extends React.Component {
   renderArchiveIcon(campaign) {
     if (campaign.isArchived) {
@@ -91,22 +102,25 @@ export class CampaignTable extends React.Component {
           <div style={{ margin: "6px 0" }}>
             <Link
               style={{
-                color: theme.colors.darkBlue,
-                fontSize: 16,
-                lineHeight: "16px",
-                textDecoration: "none"
+                ...inlineStyles.campaignLink,
+                color:
+                  campaign.isStarted &&
+                  !campaign.hasUnsentInitialMessages &&
+                  !campaign.hasUnassignedContacts
+                    ? theme.colors.green
+                    : theme.colors.darkBlue
               }}
               to={`/admin/${this.props.organizationId}/campaigns/${campaign.id}`}
             >
               {campaign.title}
             </Link>
             {campaign.creator ? (
-              <span style={{ whiteSpace: "nowrap" }}>
+              <span style={inlineStyles.campaignInfo}>
                 {" "}
                 &mdash; Created by {campaign.creator.displayName}
               </span>
             ) : null}
-            <div style={{ whiteSpace: "nowrap" }}>
+            <div style={inlineStyles.campaignInfo}>
               {campaign.dueBy ? (
                 <span key={`due${campaign.id}`}>
                   Due by: {moment(campaign.dueBy).format("MMM D, YYYY")}
