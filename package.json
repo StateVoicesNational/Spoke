@@ -117,7 +117,7 @@
     "material-ui-search-bar": "^0.4.2",
     "minilog": "^3.0.1",
     "moment": "2.14.1",
-    "moment-timezone": "^0.5.28",
+    "moment-timezone": "^0.5.14",
     "nexmo": "^1.0.0-beta-7",
     "node-abort-controller": "^1.0.4",
     "node-fetch": "^2.6.0",
