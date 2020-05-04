@@ -436,7 +436,7 @@ async function searchForAvailableNumbers(organization, areaCode, limit) {
 }
 
 /**
- * Buy a phone number and add it to the twilio_phone_number table
+ * Buy a phone number and add it to the owned_phone_number table
  */
 async function buyNumber(organization, phoneNumber) {
   const response = await getTwilio(organization).incomingPhoneNumbers.create({
@@ -451,11 +451,12 @@ async function buyNumber(organization, phoneNumber) {
   const formatted = getFormattedPhoneNumber(phoneNumber);
   // TODO[matteo]: make this work for non-US numbers
   const areaCode = formatted.slice(2, 5);
-  return await r.knex("twilio_phone_number").insert({
+  return await r.knex("owned_phone_number").insert({
     area_code: areaCode,
     phone_number: formatted,
     status: "AVAILABLE",
-    sid: response.sid
+    service: "twilio",
+    service_id: response.sid
   });
 }
 
