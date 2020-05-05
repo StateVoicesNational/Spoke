@@ -742,10 +742,11 @@ export class AssignmentTexterContactControls extends React.Component {
       currentQuestion = currentInteractionStep.question;
       currentQuestionAnswered = questionResponses[currentInteractionStep.id];
       currentQuestionOptions = currentQuestion.answerOptions.map(answer => {
+        // label is for one-word values or e.g. "Yes: ...."
         const label = answer.value.match(/^(\w+)([^\s\w]|$)/);
         return {
           answer: answer,
-          label: label ? label[1] : "Yes__No__Maybe__toomuch"
+          label: label ? label[1] : answer.value
         };
       });
       joinedLength = currentQuestionOptions.map(o => o.label).join("__").length;
