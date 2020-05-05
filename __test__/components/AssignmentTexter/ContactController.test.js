@@ -2,15 +2,15 @@ import React from "react";
 import { shallow } from "enzyme";
 import { StyleSheetTestUtils } from "aphrodite";
 
-import { genAssignment, contactGenerator } from "../test_client_helpers";
-import { AssignmentTexter } from "../../src/components/AssignmentTexter";
+import { genAssignment, contactGenerator } from "../../test_client_helpers";
+import { ContactController } from "../../../src/components/AssignmentTexter/ContactController";
 
 /*
     These tests try to ensure the 'texting loop' -- i.e. the loop between
     a texter getting contact data, sending a text, iterating through
     another contact and then texting them, etc.
 
-    Many asynchronous events occur and this component AssignmentTexter is
+    Many asynchronous events occur and this component ContactController is
     pretty much the orchestrator of that loop.  Its parent container, TexterTodo,
     is in charge of actually getting the data through GraphQL requests, and
     the child container AssignmentTexterContact is the user interface where the
@@ -42,7 +42,7 @@ function sleep(ms) {
 function genComponent(assignment, propertyOverrides = {}) {
   StyleSheetTestUtils.suppressStyleInjection();
   const wrapper = shallow(
-    <AssignmentTexter
+    <ContactController
       assignment={assignment}
       contacts={assignment.contacts}
       allContactsCount={assignment.allContactsCount}
@@ -60,7 +60,7 @@ function genComponent(assignment, propertyOverrides = {}) {
   return wrapper;
 }
 
-describe("AssignmentTexter process flows", async () => {
+describe("ContactController process flows", async () => {
   it("Normal nondynamic assignment queue", async () => {
     const assignment = genAssignment(
       false,

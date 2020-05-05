@@ -1,8 +1,8 @@
 import React from "react";
 import { shallow } from "enzyme";
-import AssignmentTexterSurveys from "../../src/components/AssignmentTexterSurveys";
+import Survey from "../../../src/components/AssignmentTexter/Survey";
 
-describe("AssignmentTexterSurveys component", () => {
+describe("Survey component", () => {
   const questionResponses = {};
   const currentInteractionStep = {
     id: 1,
@@ -21,7 +21,7 @@ describe("AssignmentTexterSurveys component", () => {
   const interactionSteps = [currentInteractionStep];
 
   const wrapper = shallow(
-    <AssignmentTexterSurveys
+    <Survey
       questionResponses={questionResponses}
       interactionSteps={interactionSteps}
       currentInteractionStep={currentInteractionStep}

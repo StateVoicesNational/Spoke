@@ -11,10 +11,10 @@ import ClearIcon from "material-ui/svg-icons/content/clear";
 import Subheader from "material-ui/Subheader";
 import Divider from "material-ui/Divider";
 import Dialog from "material-ui/Dialog";
-import CannedResponseForm from "./CannedResponseForm";
-import GSSubmitButton from "./forms/GSSubmitButton";
+import CannedResponseForm from "../CannedResponseForm";
+import GSSubmitButton from "../forms/GSSubmitButton";
 import Form from "react-formal";
-import { log } from "../lib";
+import { log } from "../../lib";
 
 // import { insert, update, remove } from '../../api/scripts/methods'
 
