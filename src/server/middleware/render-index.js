@@ -88,7 +88,7 @@ export default function renderIndex(html, css, assetMap, store) {
       window.PASSPORT_STRATEGY="${process.env.PASSPORT_STRATEGY || ""}"
       window.CORE_BACKGROUND_COLOR="${process.env.CORE_BACKGROUND_COLOR || ""}"
       window.CAN_GOOGLE_IMPORT=${canGoogleImport}
-      window.SHOW_TAGS=${process.env.SHOW_TAGS || false}
+      window.EXPERIMENTAL_TAGS=${process.env.EXPERIMENTAL_TAGS || false}
       window.EXPERIMENTAL_TEXTERUI="${process.env.EXPERIMENTAL_TEXTERUI || ""}"
       window.TWILIO_MULTI_ORG=${process.env.TWILIO_MULTI_ORG || false}
     </script>
