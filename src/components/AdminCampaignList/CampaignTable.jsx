@@ -130,6 +130,7 @@ export class CampaignTable extends React.Component {
           } else if (campaign.hasUnsentInitialMessages) {
             linkStyle = inlineStyles.warnUnsent;
           }
+          const editLink = campaign.isStarted ? "" : "/edit";
           return (
             <div style={{ margin: "6px 0" }}>
               <Link
@@ -137,7 +138,7 @@ export class CampaignTable extends React.Component {
                   ...inlineStyles.campaignLink,
                   ...linkStyle
                 }}
-                to={`/admin/${this.props.organizationId}/campaigns/${campaign.id}`}
+                to={`/admin/${this.props.organizationId}/campaigns/${campaign.id}${editLink}`}
               >
                 {campaign.title}
               </Link>
