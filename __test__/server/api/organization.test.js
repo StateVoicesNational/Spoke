@@ -232,6 +232,10 @@ describe("organization", async () => {
               name
               displayName
               instructions
+              clientChoiceData {
+                name
+                details
+              }
             }
           }
         }
@@ -276,12 +280,14 @@ describe("organization", async () => {
         {
           name: "thing 1",
           displayName: "THING ONE",
-          instructions: "Thing 1 instructions"
+          instructions: "Thing 1 instructions",
+          clientChoiceData: []
         },
         {
           name: "thing 2",
           displayName: "THING TWO",
-          instructions: "Thing 2 instructions"
+          instructions: "Thing 2 instructions",
+          clientChoiceData: []
         }
       ]);
     });
