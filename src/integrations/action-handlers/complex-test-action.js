@@ -12,12 +12,7 @@ export const instructions = () =>
   This action is for testing and as a code-template for new actions.
   `;
 
-export function clientChoiceDataCacheKey(
-  organization,
-  campaign,
-  user,
-  loaders
-) {
+export function clientChoiceDataCacheKey(organization, user, loaders) {
   return `${organization.id}`;
 }
 

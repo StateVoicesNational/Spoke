@@ -4,7 +4,10 @@ import { r, Organization } from "../models";
 import { accessRequired } from "./errors";
 import { getCampaigns } from "./campaign";
 import { buildSortedUserOrganizationQuery } from "./user";
-import { getAvailableActionHandlers } from "../../integrations/action-handlers";
+import {
+  getAvailableActionHandlers,
+  getActionChoiceData
+} from "../../integrations/action-handlers";
 
 export const resolvers = {
   Organization: {
@@ -40,19 +43,27 @@ export const resolvers = {
         sortBy
       );
     },
-    availableActions: async (organization, _, { user }) => {
+    availableActions: async (organization, _, { user, loaders }) => {
+      await accessRequired(user, organization.id, "SUPERVOLUNTEER");
       const availableHandlers = await getAvailableActionHandlers(
         organization,
         user
       );
-      const availableHandlerObjects = availableHandlers.map(handler => {
-        return {
-          name: handler.name,
-          displayName: handler.displayName(),
-          instructions: handler.instructions()
-        };
+
+      const promises = availableHandlers.map(handler => {
+        return getActionChoiceData(handler, organization, user, loaders).then(
+          clientChoiceData => {
+            return {
+              name: handler.name,
+              displayName: handler.displayName(),
+              instructions: handler.instructions(),
+              clientChoiceData
+            };
+          }
+        );
       });
-      return availableHandlerObjects;
+
+      return Promise.all(promises);
     },
     threeClickEnabled: organization =>
       organization.features.indexOf("threeClick") !== -1,
@@ -65,8 +76,8 @@ export const resolvers = {
       "I'm opting you out of texts immediately. Have a great day.",
     textingHoursStart: organization => organization.texting_hours_start,
     textingHoursEnd: organization => organization.texting_hours_end,
-    cacheable: (org, _, { user }) =>
-      //quanery logic.  levels are 0, 1, 2
-      r.redis ? (getConfig("REDIS_CONTACT_CACHE", org) ? 2 : 1) : 0
+    cacheable: org =>
+      // quanery logic.  levels are 0, 1, 2
+      (r.redis && (getConfig("REDIS_CONTACT_CACHE", org) ? 2 : 1)) || 0
   }
 };

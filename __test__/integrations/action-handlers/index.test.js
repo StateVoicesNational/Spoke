@@ -1,18 +1,19 @@
 import { r, createLoaders } from "../../../src/server/models";
+import each from "jest-each";
 import {
   setupTest,
   cleanupTest,
   createStartedCampaign
 } from "../../test_helpers";
-import * as ActionHandlers from "../../../src/integrations/action-handlers";
+const ActionHandlers = require("../../../src/integrations/action-handlers");
 const uuidv4 = require("uuid").v4;
 const TestAction = require("../../../src/integrations/action-handlers/test-action");
 const ComplexTestAction = require("../../../src/integrations/action-handlers/complex-test-action");
+const log = require("../../../src/lib").log;
 
 describe("action-handlers/index", () => {
   let organization;
   let user;
-  let campaign;
   let savedEnvironment;
 
   beforeAll(async () => {
@@ -25,7 +26,6 @@ describe("action-handlers/index", () => {
       testOrganization: {
         data: { createOrganization: organization }
       },
-      testCampaign: campaign,
       testAdminUser: user
     } = startedCampaign);
   });
@@ -248,25 +248,177 @@ describe("action-handlers/index", () => {
           expect(fallbackFunction.mock.calls).toEqual([[], []]);
         });
       });
+
+      describe("when cacheKey is null or undefined or not a string", () => {
+        beforeEach(async () => {
+          fallbackFunction = jest.fn().mockResolvedValue({
+            data: "hey now"
+          });
+        });
+
+        each([[null], [undefined], [0], [{}]]).test(
+          "it calls the fallback function twice when cacheKey is %s",
+          async testCacheKey => {
+            if (!r.redis) {
+              return;
+            }
+
+            let returned = await ActionHandlers.getSetCacheableResult(
+              testCacheKey,
+              fallbackFunction
+            );
+            expect(returned).toEqual({
+              data: "hey now"
+            });
+            expect(fallbackFunction.mock.calls).toEqual([[]]);
+
+            returned = await ActionHandlers.getSetCacheableResult(
+              cacheKey,
+              fallbackFunction
+            );
+            expect(returned).toEqual({
+              data: "hey now"
+            });
+          }
+        );
+      });
+    });
+  });
+
+  describe("validateActionHandler", () => {
+    each([[TestAction], [ComplexTestAction]]).test(
+      "Doesn't throw when it validates %j",
+      handler => {
+        expect(() =>
+          ActionHandlers.validateActionHandler(handler)
+        ).not.toThrow();
+      }
+    );
+
+    each([
+      [[{ name: "name", shouldValidate: true, type: "string" }]],
+      [[{ name: "displayName", shouldValidate: true, type: "function" }]],
+      [[{ name: "available", shouldValidate: true, type: "function" }]],
+      [[{ name: "processAction", shouldValidate: true, type: "function" }]],
+      [[{ name: "instructions", shouldValidate: true, type: "function" }]],
+      [
+        [{ name: "instructions", shouldValidate: true, type: "function" }],
+        [{ name: "processAction", shouldValidate: true, type: "function" }]
+      ],
+      [
+        [
+          {
+            name: "getClientChoiceData",
+            shouldValidate: false,
+            type: "function"
+          }
+        ]
+      ],
+      [
+        [
+          {
+            name: "clientChoiceDataCacheKey",
+            shouldValidate: false,
+            type: "function"
+          }
+        ]
+      ]
+    ]).test("validate that action handler implements %j", items => {
+      const fakeHandlerToValidate = {
+        name: "fake-handler",
+        displayName: () => {},
+        available: () => {},
+        processAction: () => {},
+        instructions: () => {}
+      };
+      items.forEach(item => {
+        delete fakeHandlerToValidate[item.name];
+      });
+
+      let error;
+      try {
+        ActionHandlers.validateActionHandler(fakeHandlerToValidate);
+      } catch (caughtError) {
+        error = caughtError;
+      } finally {
+        let expectedError;
+        if (items.some(item => item.shouldValidate)) {
+          expectedError = new Error(
+            `Missing required exports ${JSON.stringify(
+              items.map(item => item.name)
+            )}`
+          );
+        }
+        expect(error).toEqual(expectedError);
+      }
     });
   });
 
   describe("#getActionHandlerAvailability", () => {
-    beforeEach(async () => {
-      jest
-        .spyOn(TestAction, "available")
-        .mockResolvedValue({ result: "fake_result" });
-    });
-    it("calls actionHandler.available", async () => {
-      const returned = await ActionHandlers.getActionHandlerAvailability(
-        "test-action",
-        TestAction,
-        organization,
-        user
-      );
+    describe("happy path", () => {
+      beforeEach(async () => {
+        jest.spyOn(TestAction, "available").mockResolvedValue({
+          result: "fake_result"
+        });
+      });
+      it("calls actionHandler.available", async () => {
+        const returned = await ActionHandlers.getActionHandlerAvailability(
+          "test-action",
+          TestAction,
+          organization,
+          user
+        );
 
-      expect(returned).toEqual("fake_result");
-      expect(TestAction.available.mock.calls).toEqual([[organization, user]]);
+        expect(returned).toEqual("fake_result");
+        expect(TestAction.available.mock.calls).toEqual([[organization, user]]);
+      });
+    });
+
+    describe("when available throws an exception", () => {
+      beforeEach(async () => {
+        jest
+          .spyOn(TestAction, "available")
+          .mockRejectedValue(new Error("What could possibly go wrong?"));
+      });
+
+      it("returns false", async () => {
+        const returned = await ActionHandlers.getActionHandlerAvailability(
+          "test-action",
+          TestAction,
+          organization,
+          user
+        );
+
+        expect(returned).toEqual(false);
+        expect(TestAction.available.mock.calls).toEqual([[organization, user]]);
+      });
+    });
+
+    describe("when validateActionHandler throws an exception", () => {
+      beforeEach(async () => {
+        jest
+          .spyOn(ActionHandlers, "validateActionHandler")
+          .mockImplementation(() => {
+            throw new Error("fake complaint");
+          });
+
+        jest.spyOn(log, "error");
+      });
+
+      it("returns false", async () => {
+        const returned = await ActionHandlers.getActionHandlerAvailability(
+          "test-action",
+          TestAction,
+          organization,
+          user
+        );
+        expect(returned).toEqual(false);
+        expect(log.error.mock.calls).toEqual([
+          [
+            "FAILED TO POLL AVAILABILITY from action handler test-action. Error: fake complaint"
+          ]
+        ]);
+      });
     });
   });
 
@@ -376,18 +528,16 @@ describe("action-handlers/index", () => {
     beforeEach(async () => {
       loaders = createLoaders();
 
-      expectedReturn = {
-        items: [
-          {
-            details: '{"hex":"#B22222","rgb":{"r":178,"g":34,"b":34}}',
-            name: "firebrick"
-          },
-          {
-            details: '{"hex":"#4B0082","rgb":{"r":75,"g":0,"b":130}}',
-            name: "indigo"
-          }
-        ]
-      };
+      expectedReturn = [
+        {
+          details: '{"hex":"#B22222","rgb":{"r":178,"g":34,"b":34}}',
+          name: "firebrick"
+        },
+        {
+          details: '{"hex":"#4B0082","rgb":{"r":75,"g":0,"b":130}}',
+          name: "indigo"
+        }
+      ];
 
       jest.spyOn(ComplexTestAction, "getClientChoiceData");
       jest.spyOn(ComplexTestAction, "clientChoiceDataCacheKey");
@@ -397,57 +547,228 @@ describe("action-handlers/index", () => {
       const returned = await ActionHandlers.getActionChoiceData(
         ComplexTestAction,
         organization,
-        campaign,
         user,
         loaders
       );
 
-      const parsed = JSON.parse(returned);
-
-      expect(parsed).toEqual(expectedReturn);
+      expect(returned).toEqual(expectedReturn);
 
       expect(ComplexTestAction.clientChoiceDataCacheKey.mock.calls).toEqual([
-        [organization, campaign, user, loaders]
+        [organization, user, loaders]
       ]);
 
       expect(ComplexTestAction.getClientChoiceData.mock.calls).toEqual([
-        [organization, campaign, user, loaders]
+        [organization, user, loaders]
       ]);
 
       // handles the second call from the cache
       const secondCallReturned = await ActionHandlers.getActionChoiceData(
         ComplexTestAction,
         organization,
-        campaign,
         user,
         loaders
       );
 
-      const secondCallParsed = JSON.parse(secondCallReturned);
-
-      expect(secondCallParsed).toEqual(expectedReturn);
+      expect(secondCallReturned).toEqual(expectedReturn);
 
       expect(ComplexTestAction.clientChoiceDataCacheKey.mock.calls).toEqual([
-        [organization, campaign, user, loaders],
-        [organization, campaign, user, loaders]
+        [organization, user, loaders],
+        [organization, user, loaders]
       ]);
 
       expect(ComplexTestAction.getClientChoiceData.mock.calls).toEqual([
-        [organization, campaign, user, loaders],
-        ...(!r.redis && [[organization, campaign, user, loaders]])
+        [organization, user, loaders],
+        ...(!r.redis && [[organization, user, loaders]])
       ]);
     });
 
-    describe("when the handler doesn't have action choice data", () => {
-      it("returns an empty object", async () => {
+    describe("when the handler doesn't export getClientChoiceData", () => {
+      it("returns an empty array", async () => {
         const returned = await ActionHandlers.getActionChoiceData(
           TestAction,
           organization,
-          campaign,
           user,
           loaders
         );
-        expect(returned).toEqual("{}");
+        expect(returned).toEqual([]);
+      });
+    });
+
+    describe("edge cases", () => {
+      let fakeAction;
+      beforeEach(async () => {
+        fakeAction = {
+          name: "fake-action"
+        };
+      });
+      describe("when the handler doesn't export clientChoiceDataCacheKey", () => {
+        beforeEach(async () => {
+          fakeAction.getClientChoiceData =
+            ComplexTestAction.getClientChoiceData;
+          jest.spyOn(ActionHandlers, "getSetCacheableResult");
+        });
+        it("returns the expected choice data but creates a default cache key", async () => {
+          const returned = await ActionHandlers.getActionChoiceData(
+            fakeAction,
+            { id: 99 },
+            user,
+            loaders
+          );
+          expect(returned).toEqual(expectedReturn);
+          expect(ActionHandlers.getSetCacheableResult.mock.calls).toEqual([
+            ["action-choices-fake-action-99", expect.any(Function)]
+          ]);
+        });
+      });
+
+      describe("when the handler returned null or undefined from getClientChoiceData", () => {
+        beforeEach(async () => {
+          fakeAction.getClientChoiceData = () => undefined;
+        });
+        it("returns an empty array", async () => {
+          const returned = await ActionHandlers.getActionChoiceData(
+            fakeAction,
+            organization,
+            user,
+            loaders
+          );
+          expect(returned).toEqual([]);
+        });
+      });
+
+      describe("when the handler returns clientChoiceData without a data property", () => {
+        beforeEach(async () => {
+          fakeAction.getClientChoiceData = () => ({
+            expiresSeconds: 77
+          });
+        });
+        it("returns an empty array", async () => {
+          const returned = await ActionHandlers.getActionChoiceData(
+            fakeAction,
+            organization,
+            user,
+            loaders
+          );
+          expect(returned).toEqual([]);
+        });
+      });
+
+      describe("when the data property is bad JSON", () => {
+        beforeEach(async () => {
+          fakeAction.getClientChoiceData = () => ({
+            data: "bad sneakers and a piña colada my friend",
+            expiresSeconds: 77
+          });
+        });
+        it("returns an empty array", async () => {
+          const returned = await ActionHandlers.getActionChoiceData(
+            fakeAction,
+            organization,
+            user,
+            loaders
+          );
+          expect(returned).toEqual([]);
+        });
+      });
+
+      describe("when the data property doesn't have an items key", () => {
+        beforeEach(async () => {
+          fakeAction.getClientChoiceData = () => ({
+            data: "{}",
+            expiresSeconds: 77
+          });
+        });
+        it("returns an empty array", async () => {
+          const returned = await ActionHandlers.getActionChoiceData(
+            fakeAction,
+            organization,
+            user,
+            loaders
+          );
+          expect(returned).toEqual([]);
+        });
+      });
+
+      describe("when the items property is not an array", () => {
+        beforeEach(async () => {
+          fakeAction.getClientChoiceData = () => ({
+            data: JSON.stringify({ items: {} }),
+            expiresSeconds: 77
+          });
+          jest.spyOn(log, "error");
+        });
+        it("returns an empty array", async () => {
+          const returned = await ActionHandlers.getActionChoiceData(
+            fakeAction,
+            organization,
+            user,
+            loaders
+          );
+          expect(returned).toEqual([]);
+          expect(log.error.mock.calls).toEqual([
+            [
+              "Data received from fake-action.getClientChoiceData is not an array"
+            ]
+          ]);
+        });
+      });
+
+      describe("when getClientChoiceDataCacheKey throws an exception", () => {
+        beforeEach(async () => {
+          fakeAction.clientChoiceDataCacheKey = () => {
+            throw new Error("broken action handler");
+          };
+          fakeAction.getClientChoiceData =
+            ComplexTestAction.getClientChoiceData;
+          jest.spyOn(log, "error");
+          jest.spyOn(ActionHandlers, "getSetCacheableResult");
+        });
+        it("returns an empty array", async () => {
+          const returned = await ActionHandlers.getActionChoiceData(
+            fakeAction,
+            organization,
+            user,
+            loaders
+          );
+          expect(returned).toEqual(expectedReturn);
+          expect(log.error.mock.calls).toEqual([
+            [
+              "EXCEPTION GENERATING CACHE KEY for action handler fake-action Error: broken action handler"
+            ]
+          ]);
+          expect(ActionHandlers.getSetCacheableResult.mock.calls).toEqual([
+            [undefined, expect.any(Function)]
+          ]);
+        });
+      });
+
+      describe("when getClientChoiceData throws an exception", () => {
+        beforeEach(async () => {
+          fakeAction.clientChoiceDataCacheKey =
+            ComplexTestAction.clientChoiceDataCacheKey;
+          fakeAction.getClientChoiceData = () => {
+            throw new Error("complaint");
+          };
+          jest.spyOn(log, "error");
+          jest.spyOn(ActionHandlers, "getSetCacheableResult");
+        });
+        it("returns an empty array", async () => {
+          const returned = await ActionHandlers.getActionChoiceData(
+            fakeAction,
+            organization,
+            user,
+            loaders
+          );
+          expect(returned).toEqual([]);
+          expect(log.error.mock.calls).toEqual([
+            [
+              "EXCEPTION GETTING CLIENT CHOICE DATA for action handler fake-action Error: complaint"
+            ]
+          ]);
+          expect(ActionHandlers.getSetCacheableResult.mock.calls).toEqual([
+            ["action-choices-fake-action-1", expect.any(Function)]
+          ]);
+        });
       });
     });
   });
