@@ -100,7 +100,7 @@ class AdminDashboard extends React.Component {
       }
     ];
 
-    if (window.SHOW_TAGS === false) {
+    if (window.EXPERIMENTAL_TAGS === false) {
       sections = sections.filter(section => section.name !== "Tags");
     }
 
