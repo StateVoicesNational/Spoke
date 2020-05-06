@@ -8,6 +8,8 @@ const created = '"user"."created_at"';
 const oldest = created;
 const newest = '"user"."created_at" desc';
 
+const lower = column => `lower(${column})`;
+
 function buildSelect(sortBy) {
   const userStar = '"user".*';
 
@@ -15,9 +17,9 @@ function buildSelect(sortBy) {
 
   switch (sortBy) {
     case "COUNT_ONLY":
-      return r.knex;
+      return r.knex.countDistinct("user.id");
     case "LAST_NAME":
-      fragmentArray = [userStar];
+      fragmentArray = [userStar, lower(lastName), lower(firstName)];
       break;
     case "NEWEST":
       fragmentArray = [userStar];
@@ -27,7 +29,7 @@ function buildSelect(sortBy) {
       break;
     case "FIRST_NAME":
     default:
-      fragmentArray = [userStar];
+      fragmentArray = [userStar, lower(lastName), lower(firstName)];
       break;
   }
 
@@ -41,7 +43,7 @@ function buildOrderBy(query, sortBy) {
     case "COUNT_ONLY":
       return query;
     case "LAST_NAME":
-      fragmentArray = [lastName, firstName, newest];
+      fragmentArray = [lower(lastName), lower(firstName), newest];
       break;
     case "NEWEST":
       fragmentArray = [newest];
@@ -51,19 +53,23 @@ function buildOrderBy(query, sortBy) {
       break;
     case "FIRST_NAME":
     default:
-      fragmentArray = [firstName, lastName, newest];
+      fragmentArray = [lower(firstName), lower(lastName), newest];
       break;
   }
 
   return query.orderByRaw(fragmentArray.join(", "));
 }
 
+const addLeftOuterJoin = query =>
+  query.leftOuterJoin("assignment", "assignment.user_id", "user.id");
+
 export function buildUserOrganizationQuery(
   queryParam,
   organizationId,
   role,
-  campaignId,
-  offset
+  campaignsFilter,
+  filterString,
+  filterBy
 ) {
   const roleFilter = role ? { role } : {};
 
@@ -74,10 +80,58 @@ export function buildUserOrganizationQuery(
     .whereRaw('"user_organization"."organization_id" = ?', organizationId)
     .distinct();
 
-  if (campaignId) {
-    query = query
-      .leftOuterJoin("assignment", "assignment.user_id", "user.id")
-      .where({ "assignment.campaign_id": campaignId });
+  if (filterString) {
+    const filterStringWithPercents = (
+      "%" +
+      filterString +
+      "%"
+    ).toLocaleLowerCase();
+
+    if (filterBy === "FIRST_NAME") {
+      query = query.andWhere(
+        r.knex.raw("lower(first_name) like ?", [filterStringWithPercents])
+      );
+    } else if (filterBy === "LAST_NAME") {
+      query = query.andWhere(
+        r.knex.raw("lower(last_name) like ?", [filterStringWithPercents])
+      );
+    } else if (filterBy === "EMAIL") {
+      query = query.andWhere(
+        r.knex.raw("lower(email) like ?", [filterStringWithPercents])
+      );
+    } else {
+      query = query.andWhere(
+        r.knex.raw(
+          "lower(first_name) like ? OR lower(last_name) like ? OR lower(email) like ?",
+          [
+            filterStringWithPercents,
+            filterStringWithPercents,
+            filterStringWithPercents
+          ]
+        )
+      );
+    }
+  }
+
+  if (campaignsFilter) {
+    if (campaignsFilter.campaignId) {
+      query = addLeftOuterJoin(query);
+      query = query.where({
+        "assignment.campaign_id": campaignsFilter.campaignId
+      });
+    } else if (
+      campaignsFilter.campaignIds &&
+      campaignsFilter.campaignIds.length > 0
+    ) {
+      const questionMarks = Array(campaignsFilter.campaignIds.length)
+        .fill("?")
+        .join(",");
+      query = addLeftOuterJoin(query);
+      query = query.whereRaw(
+        `"assignment"."campaign_id" in (${questionMarks})`,
+        campaignsFilter.campaignIds
+      );
+    }
   }
 
   return query;
@@ -86,24 +140,37 @@ export function buildUserOrganizationQuery(
 export function buildSortedUserOrganizationQuery(
   organizationId,
   role,
-  campaignId,
-  sortBy
+  campaignsFilter,
+  sortBy,
+  filterString,
+  filterBy
 ) {
   const query = buildUserOrganizationQuery(
     buildSelect(sortBy),
     organizationId,
     role,
-    campaignId
+    campaignsFilter,
+    filterString,
+    filterBy
   );
   return buildOrderBy(query, sortBy);
 }
 
-function buildUsersQuery(organizationId, campaignsFilter, role, sortBy) {
+function buildUsersQuery(
+  organizationId,
+  campaignsFilter,
+  role,
+  sortBy,
+  filterString,
+  filterBy
+) {
   return buildSortedUserOrganizationQuery(
     organizationId,
     role,
-    campaignsFilter && campaignsFilter.campaignId,
-    sortBy
+    campaignsFilter,
+    sortBy,
+    filterString,
+    filterBy
   );
 }
 
@@ -112,13 +179,17 @@ export async function getUsers(
   cursor,
   campaignsFilter,
   role,
-  sortBy
+  sortBy,
+  filterString,
+  filterBy
 ) {
   let usersQuery = buildUsersQuery(
     organizationId,
     campaignsFilter,
     role,
-    sortBy
+    sortBy,
+    filterString,
+    filterBy
   );
 
   if (cursor) {
@@ -132,12 +203,12 @@ export async function getUsers(
       "COUNT_ONLY"
     );
 
-    const usersCount = await r.getCountDistinct(usersCountQuery, "user.id");
+    const usersCountArray = await usersCountQuery;
 
     const pageInfo = {
       limit: cursor.limit,
       offset: cursor.offset,
-      total: usersCount
+      total: parseInt(usersCountArray[0].count, 10)
     };
 
     return {
