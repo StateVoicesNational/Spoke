@@ -1107,8 +1107,14 @@ const rootMutations = {
       { questionResponses, campaignContactId },
       { loaders, user }
     ) => {
-      // TODO: check that the user has TEXTER role for the campaign
-      await authRequired(user);
+      const contact = await loaders.campaignContact.load(campaignContactId);
+      const campaign = await loaders.campaign.load(contact.campaign_id);
+      await assignmentRequiredOrAdminRole(
+        user,
+        campaign.organization_id,
+        contact.assignment_id,
+        contact
+      );
       const count = questionResponses.length;
 
       for (let i = 0; i < count; i++) {
@@ -1162,8 +1168,7 @@ const rootMutations = {
       // update cache
       await cacheableData.questionResponse.clearQuery(campaignContactId);
 
-      const contact = loaders.campaignContact.load(campaignContactId);
-      return contact;
+      return loaders.campaignContact.load(campaignContactId);
     },
     reassignCampaignContacts: async (
       _,
