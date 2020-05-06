@@ -97,11 +97,20 @@ class AdminDashboard extends React.Component {
         name: "Settings",
         path: "settings",
         role: "SUPERVOLUNTEER"
+      },
+      {
+        name: "Phone Numbers",
+        path: "phone-numbers",
+        role: "OWNER"
       }
     ];
 
     if (window.EXPERIMENTAL_TAGS === false) {
       sections = sections.filter(section => section.name !== "Tags");
+    }
+
+    if (!window.EXPERIMENTAL_PHONE_INVENTORY) {
+      sections = sections.filter(section => section.name !== "Phone Numbers");
     }
 
     let currentSection = sections.filter(section =>

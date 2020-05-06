@@ -1318,9 +1318,9 @@ const rootMutations = {
         );
       }
       const job = await JobRequest.save({
-        queue_name: `${organizationId}:buy_twilio_numbers`,
+        queue_name: `${organizationId}:buy_phone_numbers`,
         organization_id: organizationId,
-        job_type: "buy_twilio_numbers",
+        job_type: "buy_phone_numbers",
         locks_queue: false,
         assigned: JOBS_SAME_PROCESS,
         payload: JSON.stringify({

@@ -8,6 +8,15 @@ export const schema = `
     allocatedCount: Int!
   }
 
+  type BuyPhoneNumbersJobRequest {
+    id: String!
+    assigned: Boolean!
+    status: Int
+    resultMessage: String
+    areaCode: String!
+    limit: Int!
+  }
+  
   type Organization {
     id: ID
     uuid: String
@@ -29,6 +38,7 @@ export const schema = `
     twilioAuthToken: String
     twilioMessageServiceSid: String
     fullyConfigured: Boolean
+    pendingPhoneNumberJobs: [BuyPhoneNumbersJobRequest]
     phoneNumberCounts: [PhoneNumberCounts]
   }
 `;
