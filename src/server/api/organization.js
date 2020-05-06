@@ -105,7 +105,7 @@ export const resolvers = {
     phoneNumberCounts: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, "ADMIN");
       if (
-        !getConfig("EXPERIMENTAL_TWILIO_INVENTORY", organization, {
+        !getConfig("EXPERIMENTAL_PHONE_INVENTORY", organization, {
           truthy: true
         })
       ) {
