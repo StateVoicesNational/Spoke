@@ -2,12 +2,12 @@
 ## v5.5
 _May 2020:_ Version 5.5
 - Campaign List Admin changes (@lperson, @schuyler1d)
-- Twilio Auth per organization (@jeffm2001 ) -- Now if you enable TWILIO_MULTI_ORG environment variable, each organization can use a different Twilio account that they can setup in the Settings Admin tab. This also allows per-organization message services. There is more work coming to allow message services per-campaign and in-app phone number management
+- Twilio Auth per organization (@jeffm2001 ) -- Now if you enable TWILIO_MULTI_ORG environment variable, each organization can use a different Twilio account that they can setup in the Settings Admin tab. This also allows per-organization message services. There is more work coming to allow [message services per-campaign](https://github.com/MoveOnOrg/Spoke/issues/1495) and [in-app phone number management](https://github.com/MoveOnOrg/Spoke/issues/1518)
 - This release has several developing features -- you might say it's a 'preview' release of things to come. You can turn on these features with environment variables
   - EXPERIMENTAL_TEXTERUI: After some amazing design work by @arena with multiple iterations and two user testing rounds by @ibrand, We are planning to make this the DEFAULT texter interface in the next Spoke release. We know that this has some challenges for current deployments -- updating documentation and training materials for texters. Just like you switch ON this new version in this release, for one release (and no more), we intend that you will be able to set a different environment variable in order to keep the old interface. That should allow you to control the switch to the new interface gracefully.
     - We put a lot of work into this interface to accomodate upcoming features, radically improve the mobile (and generally cross-screen support) and address some issues that regularly come up for texters.
     - Please send your experience reports in testing
-    - More context can be seen at RFC: New Texter UI
+    - More context can be seen at [RFC: New Texter UI](https://github.com/MoveOnOrg/Spoke/pull/1522)
   - EXPERIMENTAL_TAGS: Tagging users instead of just saving question responses is a very common request, and we have a great volunteer team developing these features. This first step is creating an admin interface to create the tags. There will be more to come, but you can preview and test this development by enabling the environment variable. Thanks to @aschneit and @filafb and TKTK
 
 (a cypress stub was also merged into main for e2e tests recently)
@@ -17,6 +17,7 @@ Thanks to all the contributors part of this release including:
 [lperson](https://github.com/lperson),
 [schuyler1d](https://github.com/schuyler1d),
 [tmc](https://github.com/tmc),
+[filafb](https://github.com/filafb),
 [jasmosez](https://github.com/jasmosez)
 
 ## v5.4
