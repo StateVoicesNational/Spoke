@@ -3,7 +3,7 @@ import { getConfig } from "./lib/config";
 import { r, Organization, cacheableData } from "../models";
 import { accessRequired } from "./errors";
 import { getCampaigns } from "./campaign";
-import { buildSortedUserOrganizationQuery } from "./user";
+import { buildUsersQuery } from "./user";
 
 export const resolvers = {
   Organization: {
@@ -32,12 +32,7 @@ export const resolvers = {
     },
     people: async (organization, { role, campaignId, sortBy }, { user }) => {
       await accessRequired(user, organization.id, "SUPERVOLUNTEER");
-      return buildSortedUserOrganizationQuery(
-        organization.id,
-        role,
-        campaignId,
-        sortBy
-      );
+      return buildUsersQuery(organization.id, role, { campaignId }, sortBy);
     },
     threeClickEnabled: organization =>
       organization.features.indexOf("threeClick") !== -1,
