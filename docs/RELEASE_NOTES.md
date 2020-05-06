@@ -8,7 +8,7 @@ _May 2020:_ Version 5.5
     - We put a lot of work into this interface to accomodate upcoming features, radically improve the mobile (and generally cross-screen support) and address some issues that regularly come up for texters.
     - Please send your experience reports in testing
     - More context can be seen at [RFC: New Texter UI](https://github.com/MoveOnOrg/Spoke/pull/1522)
-  - EXPERIMENTAL_TAGS: Tagging users instead of just saving question responses is a very common request, and we have a great volunteer team developing these features. This first step is creating an admin interface to create the tags. There will be more to come, but you can preview and test this development by enabling the environment variable. Thanks to @aschneit and @filafb and TKTK
+  - EXPERIMENTAL_TAGS: Tagging users instead of just saving question responses is a very common request, and we have a great volunteer team developing these features. This first step is creating an admin interface to create the tags. There will be more to come, but you can preview and test this development by enabling the environment variable. Thanks to @aschneit and @filafb!
 
 (a cypress stub was also merged into main for e2e tests recently)
 
