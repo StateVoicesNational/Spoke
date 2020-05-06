@@ -25,13 +25,13 @@ const MAX_TWILIO_MESSAGE_VALIDITY = 14400;
 const DISABLE_DB_LOG = getConfig("DISABLE_DB_LOG");
 const TWILIO_SKIP_VALIDATION = getConfig("TWILIO_SKIP_VALIDATION");
 const BULK_REQUEST_CONCURRENCY = 10;
-
+// TODO: document env var
+const MAX_NUMBERS_PER_BUY_JOB = getConfig("MAX_NUMBERS_PER_BUY_JOB") || 100;
 
 async function getTwilio(organization) {
-  const {
-    authToken,
-    apiKey
-  } = await cacheableData.organization.getTwilioAuth(organization);
+  const { authToken, apiKey } = await cacheableData.organization.getTwilioAuth(
+    organization
+  );
   if (apiKey && authToken) {
     return Twilio(apiKey, authToken);
   }
@@ -438,11 +438,11 @@ async function searchForAvailableNumbers(organization, areaCode, limit) {
 /**
  * Buy a phone number and add it to the owned_phone_number table
  */
-async function buyNumber(organization, phoneNumber) {
-  const response = await getTwilio(organization).incomingPhoneNumbers.create({
+async function buyNumber(twilioInstance, phoneNumber) {
+  const response = await twilioInstance.incomingPhoneNumbers.create({
     phoneNumber,
     friendlyName: `Managed by Spoke [${process.env.BASE_URL}]: ${phoneNumber}`,
-    voiceUrl: process.env.TWILIO_VOICE_URL // will use default twilio recording if undefined
+    voiceUrl: getConfig("TWILIO_VOICE_URL", organization) // will use default twilio recording if undefined
   });
   if (response.error) {
     throw new Error(`Error buying twilio number: ${response.error}`);
@@ -458,6 +458,47 @@ async function buyNumber(organization, phoneNumber) {
     service: "twilio",
     service_id: response.sid
   });
+}
+
+/**
+ * Buy up to <limit> numbers in <areaCode>
+ */
+async function buyNumbersInAreaCode(organization, areaCode, limit) {
+  const twilioInstance = await getTwilio(organization);
+
+  async function buyBatch(size) {
+    let successCount = 0;
+    log.debug(`Attempting to buy batch of ${size} numbers`);
+
+    const response = await searchForAvailableNumbers(
+      twilioInstance,
+      areaCode,
+      size
+    );
+
+    // TODO: this step can be parallelized using bulkRequest
+    for (const item of response) {
+      await buyNumber(twilioInstance, item.phoneNumber);
+
+      successCount++;
+    }
+    log.debug(`Successfully bought ${successCount} number(s)`);
+    return successCount;
+  }
+
+  const totalRequested = Math.min(limit, MAX_NUMBERS_PER_BUY_JOB);
+  let totalPurchased = 0;
+  while (totalPurchased < totalRequested) {
+    const nextBatchSize = Math.min(30, totalRequested - totalPurchased);
+    const purchasedInBatch = await buyBatch(nextBatchSize);
+    totalPurchased += purchasedInBatch;
+    // TODO: update progress
+    if (purchasedInBatch === 0) {
+      log.warn("Failed to buy as many numbers as requested");
+      break;
+    }
+  }
+  return totalPurchased;
 }
 
 async function bulkRequest(array, fn) {
@@ -532,8 +573,9 @@ export default {
   handleDeliveryReport,
   handleIncomingMessage,
   parseMessageText,
-  searchForAvailableNumbers,
-  buyNumber,
+  // searchForAvailableNumbers,
+  // buyNumber,
+  buyNumbersInAreaCode,
   createMessagingService,
   deleteMessagingService,
   addNumbersToMessagingService,
