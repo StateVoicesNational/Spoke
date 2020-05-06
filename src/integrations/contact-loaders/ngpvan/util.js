@@ -9,7 +9,7 @@ export default class Van {
 
     if (!appName || !apiKey) {
       throw new Error(
-        "Environment missing NGP_VAN_APP_NAME or NGP_VAN_API_KEY. Unable to getGet aut. Unable to getGet auth"
+        "Environment missing NGP_VAN_APP_NAME or NGP_VAN_API_KEY"
       );
     }
 

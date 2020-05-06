@@ -11,3 +11,6 @@ export const getHighestRole = roles =>
 
 export const hasRole = (role, roles) =>
   hasRoleAtLeast(getHighestRole(roles), role);
+
+export const rolesEqualOrGreater = role =>
+  ROLE_HIERARCHY.slice(ROLE_HIERARCHY.indexOf(role));

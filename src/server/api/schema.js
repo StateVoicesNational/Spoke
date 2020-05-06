@@ -3,7 +3,7 @@ import GraphQLJSON from "graphql-type-json";
 import { GraphQLError } from "graphql/error";
 import isUrl from "is-url";
 
-import { gzip, makeTree } from "../../lib";
+import { gzip, makeTree, getHighestRole } from "../../lib";
 import { capitalizeWord } from "./lib/utils";
 import {
   assignTexters,
@@ -58,6 +58,8 @@ import { resolvers as questionResponseResolvers } from "./question-response";
 import { getTags, resolvers as tagResolvers } from "./tag";
 import { getUsers, resolvers as userResolvers } from "./user";
 import { change } from "../local-auth-helpers";
+import { symmetricEncrypt } from "./lib/crypto";
+import Twilio from "twilio";
 
 import {
   sendMessage,
@@ -407,26 +409,20 @@ const rootMutations = {
 
       await accessRequired(user, organizationId, roleRequired);
 
-      currentRoles.forEach(async curRole => {
-        if (roles.indexOf(curRole) === -1) {
-          await r
-            .table("user_organization")
-            .getAll([organizationId, userId], { index: "organization_user" })
-            .filter({ role: curRole })
-            .delete();
-        }
-      });
-
-      newOrgRoles = roles
-        .filter(newRole => currentRoles.indexOf(newRole) === -1)
-        .map(newRole => ({
+      // Roles is sent as an array for historical purposes
+      // but roles are hierarchical, so we only want one user_organization
+      // record.
+      await r
+        .knex("user_organization")
+        .where({ organization_id: organizationId, user_id: userId })
+        .delete();
+      if (roles.length) {
+        const newRole = getHighestRole(roles);
+        await r.knex("user_organization").insert({
           organization_id: organizationId,
           user_id: userId,
           role: newRole
-        }));
-
-      if (newOrgRoles.length) {
-        await UserOrganization.save(newOrgRoles, { conflict: "update" });
+        });
       }
       await cacheableData.user.clearUser(userId);
       return loaders.organization.load(organizationId);
@@ -632,6 +628,45 @@ const rootMutations = {
       const featuresJSON = JSON.parse(organization.features || "{}");
       featuresJSON.opt_out_message = optOutMessage;
       organization.features = JSON.stringify(featuresJSON);
+
+      await organization.save();
+      await cacheableData.organization.clear(organizationId);
+
+      return await Organization.get(organizationId);
+    },
+    updateTwilioAuth: async (
+      _,
+      {
+        organizationId,
+        twilioAccountSid,
+        twilioAuthToken,
+        twilioMessageServiceSid
+      },
+      { user }
+    ) => {
+      await accessRequired(user, organizationId, "OWNER");
+
+      const organization = await Organization.get(organizationId);
+      const featuresJSON = JSON.parse(organization.features || "{}");
+      featuresJSON.TWILIO_ACCOUNT_SID = twilioAccountSid.substr(0, 64);
+      featuresJSON.TWILIO_AUTH_TOKEN_ENCRYPTED = twilioAuthToken
+        ? symmetricEncrypt(twilioAuthToken).substr(0, 256)
+        : twilioAuthToken;
+      featuresJSON.TWILIO_MESSAGE_SERVICE_SID = twilioMessageServiceSid.substr(
+        0,
+        64
+      );
+      organization.features = JSON.stringify(featuresJSON);
+
+      try {
+        if (twilioAuthToken && global.TEST_ENVIRONMENT !== "1") {
+          // Make sure Twilio credentials work.
+          const twilio = Twilio(twilioAccountSid, twilioAuthToken);
+          const accounts = await twilio.api.accounts.list();
+        }
+      } catch (err) {
+        throw new GraphQLError("Invalid Twilio credentials");
+      }
 
       await organization.save();
       await cacheableData.organization.clear(organizationId);
@@ -1355,11 +1390,27 @@ const rootResolvers = {
     },
     people: async (
       _,
-      { organizationId, cursor, campaignsFilter, role, sortBy },
+      {
+        organizationId,
+        cursor,
+        campaignsFilter,
+        role,
+        sortBy,
+        filterString,
+        filterBy
+      },
       { user }
     ) => {
       await accessRequired(user, organizationId, "SUPERVOLUNTEER");
-      return getUsers(organizationId, cursor, campaignsFilter, role, sortBy);
+      return getUsers(
+        organizationId,
+        cursor,
+        campaignsFilter,
+        role,
+        sortBy,
+        filterString,
+        filterBy
+      );
     },
     tags: async (_, { organizationId }, { user }) => {
       await accessRequired(user, organizationId, "SUPERVOLUNTEER");

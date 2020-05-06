@@ -28,7 +28,7 @@ import {
   DemoTexterNeedsMessage,
   DemoTexterNeedsResponse,
   DemoTexterNeedsResponse2ndQuestion
-} from "./components/DemoTexterAssignment";
+} from "./components/AssignmentTexter/Demo";
 
 export default function makeRoutes(requireAuth = () => {}) {
   return (

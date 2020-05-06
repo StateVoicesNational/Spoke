@@ -27,13 +27,15 @@ class Search extends React.Component {
       onRequestSearch={this.handleSearchRequested}
       onChange={this.handleSearchStringChanged}
       value={this.props.searchString}
+      hintText={this.props.hintText}
     />
   );
 }
 
 Search.propTypes = {
   searchString: PropTypes.string,
-  onSearchRequested: PropTypes.func.isRequired
+  onSearchRequested: PropTypes.func.isRequired,
+  hintText: PropTypes.string
 };
 
 export default Search;

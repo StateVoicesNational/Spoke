@@ -44,7 +44,12 @@ describe("AssignmentSummary text", function t() {
     );
   });
 
-  each([[0, false], [1, false], [0, true], [1, true]]).test(
+  each([
+    [0, false],
+    [1, false],
+    [0, true],
+    [1, true]
+  ]).test(
     "renders title and html for notInUSA=%s and allowSendAll=%s",
     (notInUSA, allowSendAll) => {
       window.NOT_IN_USA = notInUSA;
@@ -263,7 +268,7 @@ describe("contacts filters", () => {
     expect(sendFirstTexts.contactsFilter).toBe("text");
 
     const sendReplies = mockRender.mock.calls[1][0];
-    expect(sendReplies.title).toBe("Send replies");
+    expect(sendReplies.title).toBe("Respond");
     expect(sendReplies.contactsFilter).toBe("reply");
 
     const sendLater = mockRender.mock.calls[2][0];
