@@ -11,7 +11,7 @@ import {
   fixOrgless,
   clearOldJobs,
   importScript,
-  buyTwilioNumbers
+  buyPhoneNumbers
 } from "./jobs";
 import { setupUserNotificationObservers } from "../server/notifications";
 
@@ -30,7 +30,7 @@ const jobMap = {
   export: exportCampaign,
   assign_texters: assignTexters,
   import_script: importScript,
-  buy_twilio_numbers: buyTwilioNumbers
+  buy_phone_numbers: buyPhoneNumbers
 };
 
 export async function processJobs() {

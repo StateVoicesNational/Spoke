@@ -102,6 +102,27 @@ export const resolvers = {
       }
       return true;
     },
+    pendingPhoneNumberJobs: async (organization, _, { user }) => {
+      await accessRequired(user, organization.id, "OWNER", true);
+      const jobs = await r
+        .knex("job_request")
+        .where({
+          job_type: "buy_phone_numbers",
+          organization_id: organization.id
+        })
+        .orderBy("updated_at", "desc");
+      return jobs.map(j => {
+        const payload = JSON.parse(j.payload);
+        return {
+          id: j.id,
+          assigned: j.assigned,
+          status: j.status,
+          resultMessage: j.result_message,
+          areaCode: payload.areaCode,
+          limit: payload.limit
+        };
+      });
+    },
     phoneNumberCounts: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, "ADMIN");
       if (
