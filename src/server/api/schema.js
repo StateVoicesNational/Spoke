@@ -1417,11 +1417,27 @@ const rootResolvers = {
     },
     people: async (
       _,
-      { organizationId, cursor, campaignsFilter, role, sortBy },
+      {
+        organizationId,
+        cursor,
+        campaignsFilter,
+        role,
+        sortBy,
+        filterString,
+        filterBy
+      },
       { user }
     ) => {
       await accessRequired(user, organizationId, "SUPERVOLUNTEER");
-      return getUsers(organizationId, cursor, campaignsFilter, role, sortBy);
+      return getUsers(
+        organizationId,
+        cursor,
+        campaignsFilter,
+        role,
+        sortBy,
+        filterString,
+        filterBy
+      );
     },
     tags: async (_, { organizationId }, { user }) => {
       await accessRequired(user, organizationId, "SUPERVOLUNTEER");
