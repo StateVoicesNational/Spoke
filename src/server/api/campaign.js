@@ -1,7 +1,6 @@
 import { accessRequired } from "./errors";
 import { mapFieldsToModel } from "./lib/utils";
 import { Campaign, JobRequest, r, cacheableData } from "../models";
-import { currentEditors } from "../models/cacheable_queries";
 import { getUsers } from "./user";
 import {
   getAvailableIngestMethods,
@@ -153,9 +152,9 @@ export async function getCampaigns(
       campaigns,
       pageInfo
     };
-  } else {
-    return campaignsQuery;
   }
+
+  return campaignsQuery;
 }
 
 export const resolvers = {

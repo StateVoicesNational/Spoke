@@ -1,11 +1,8 @@
 import PropTypes from "prop-types";
 import React from "react";
 import { StyleSheet, css } from "aphrodite";
-import MessageList from "../components/MessageList";
-import CannedResponseMenu from "../components/CannedResponseMenu";
-import AssignmentTexterSurveys from "../components/AssignmentTexterSurveys";
-import AssignmentTexterContactControls from "../components/AssignmentTexterContactControls";
-import AssignmentTexterContactNewControls from "../components/AssignmentTexterContactNewControls";
+import OldControls from "../components/AssignmentTexter/OldControls";
+import Controls from "../components/AssignmentTexter/Controls";
 import RaisedButton from "material-ui/RaisedButton";
 import FlatButton from "material-ui/FlatButton";
 import NavigateHomeIcon from "material-ui/svg-icons/action/home";
@@ -21,9 +18,7 @@ import yup from "yup";
 import GSForm from "../components/forms/GSForm";
 import Form from "react-formal";
 import GSSubmitButton from "../components/forms/GSSubmitButton";
-import SendButton from "../components/SendButton";
-import BulkSendButton from "../components/BulkSendButton";
-import SendButtonArrow from "../components/SendButtonArrow";
+import BulkSendButton from "../components/AssignmentTexter/BulkSendButton";
 import CircularProgress from "material-ui/CircularProgress";
 import Snackbar from "material-ui/Snackbar";
 import {
@@ -367,9 +362,10 @@ export class AssignmentTexterContact extends React.Component {
 
   render() {
     const ControlsComponent =
-      /new=1/.test(document.location.search) || window.EXPERIMENTAL_TEXTERUI
-        ? AssignmentTexterContactNewControls
-        : AssignmentTexterContactControls;
+      /old=1/.test(document.location.search) ||
+      window.DEPRECATED_TEXTERUI === "GONE_SOON"
+        ? OldControls
+        : Controls;
     return (
       <div>
         {this.state.disabled ? (

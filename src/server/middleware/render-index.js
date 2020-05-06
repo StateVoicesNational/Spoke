@@ -86,10 +86,16 @@ export default function renderIndex(html, css, assetMap, store) {
       window.DST_REFERENCE_TIMEZONE="${process.env.DST_REFERENCE_TIMEZONE ||
         "America/New_York"}"
       window.PASSPORT_STRATEGY="${process.env.PASSPORT_STRATEGY || ""}"
+      window.PEOPLE_PAGE_CAMPAIGN_FILTER_SORT = "${process.env
+        .PEOPLE_PAGE_CAMPAIGN_FILTER_SORT || ""}"
+      window.PEOPLE_PAGE_ROW_SIZES="${process.env.PEOPLE_PAGE_ROW_SIZES || ""}"
+      window.CONVERSATION_LIST_ROW_SIZES="${process.env
+        .CONVERSATION_LIST_ROW_SIZES || ""}"
       window.CORE_BACKGROUND_COLOR="${process.env.CORE_BACKGROUND_COLOR || ""}"
       window.CAN_GOOGLE_IMPORT=${canGoogleImport}
-      window.SHOW_TAGS=${process.env.SHOW_TAGS || false}
-      window.EXPERIMENTAL_TEXTERUI="${process.env.EXPERIMENTAL_TEXTERUI || ""}"
+      window.EXPERIMENTAL_TAGS=${process.env.EXPERIMENTAL_TAGS || false}
+      window.TWILIO_MULTI_ORG=${process.env.TWILIO_MULTI_ORG || false}
+      window.DEPRECATED_TEXTERUI="${process.env.DEPRECATED_TEXTERUI || ""}"
     </script>
     <script src="${assetMap["bundle.js"]}"></script>
   </body>

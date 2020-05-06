@@ -16,6 +16,40 @@ import Empty from "../Empty";
 import { dataTest } from "../../lib/attributes";
 import DataTables from "material-ui-datatables";
 
+const inlineStyles = {
+  past: {
+    opacity: 0.6
+  },
+  warn: {
+    color: theme.colors.orange
+  },
+  good: {
+    color: theme.colors.green
+  },
+  warnUnsent: {
+    color: theme.colors.darkBlue
+  },
+  campaignInfo: {
+    whiteSpace: "nowrap"
+  },
+  campaignLink: {
+    fontSize: 16,
+    lineHeight: "16px",
+    textDecoration: "none"
+  },
+  tableMovePaginationOnTop: {
+    position: "absolute",
+    top: "20px",
+    right: 0
+  },
+  tableSpaceForPaginationOnTop: {
+    paddingTop: "70px"
+  },
+  spaceForCreateButton: {
+    height: "60px"
+  }
+};
+
 export class CampaignTable extends React.Component {
   renderArchiveIcon(campaign) {
     if (campaign.isArchived) {
@@ -87,45 +121,57 @@ export class CampaignTable extends React.Component {
         style: {
           whiteSpace: "normal"
         },
-        render: (columnKey, campaign) => (
-          <div style={{ margin: "6px 0" }}>
-            <Link
-              style={{
-                color: theme.colors.darkBlue,
-                fontSize: 16,
-                lineHeight: "16px",
-                textDecoration: "none"
-              }}
-              to={`/admin/${this.props.organizationId}/campaigns/${campaign.id}`}
-            >
-              {campaign.title}
-            </Link>
-            {campaign.creator ? (
-              <span style={{ whiteSpace: "nowrap" }}>
-                {" "}
-                &mdash; Created by {campaign.creator.displayName}
-              </span>
-            ) : null}
-            <div style={{ whiteSpace: "nowrap" }}>
-              {campaign.dueBy ? (
-                <span key={`due${campaign.id}`}>
-                  Due by: {moment(campaign.dueBy).format("MMM D, YYYY")}
+        render: (columnKey, campaign) => {
+          let linkStyle = inlineStyles.good;
+          if (campaign.isArchived) {
+            linkStyle = inlineStyles.past;
+          } else if (!campaign.isStarted || campaign.hasUnassignedContacts) {
+            linkStyle = inlineStyles.warn;
+          } else if (campaign.hasUnsentInitialMessages) {
+            linkStyle = inlineStyles.warnUnsent;
+          }
+          const editLink = campaign.isStarted ? "" : "/edit";
+          return (
+            <div style={{ margin: "6px 0" }}>
+              <Link
+                style={{
+                  ...inlineStyles.campaignLink,
+                  ...linkStyle
+                }}
+                to={`/admin/${this.props.organizationId}/campaigns/${campaign.id}${editLink}`}
+              >
+                {campaign.title}
+              </Link>
+              {campaign.creator ? (
+                <span style={inlineStyles.campaignInfo}>
+                  {" "}
+                  &mdash; Created by {campaign.creator.displayName}
                 </span>
-              ) : (
-                ""
-              )}
-              {(campaign.ingestMethod &&
-                (campaign.ingestMethod.contactsCount ? (
-                  <span> Contacts: {campaign.ingestMethod.contactsCount}</span>
+              ) : null}
+              <div style={inlineStyles.campaignInfo}>
+                {campaign.dueBy ? (
+                  <span key={`due${campaign.id}`}>
+                    Due by: {moment(campaign.dueBy).format("MMM D, YYYY")}
+                  </span>
                 ) : (
-                  campaign.ingestMethod.success === false && (
-                    <span> Contact loading failed</span>
-                  )
-                ))) ||
-                ""}
+                  ""
+                )}
+                {(campaign.ingestMethod &&
+                  (campaign.ingestMethod.contactsCount ? (
+                    <span>
+                      {" "}
+                      Contacts: {campaign.ingestMethod.contactsCount}
+                    </span>
+                  ) : (
+                    campaign.ingestMethod.success === false && (
+                      <span> Contact loading failed</span>
+                    )
+                  ))) ||
+                  ""}
+              </div>
             </div>
-          </div>
-        )
+          );
+        }
       },
       {
         key: "unassigned",
@@ -183,31 +229,36 @@ export class CampaignTable extends React.Component {
     return campaigns.length === 0 ? (
       <Empty title="No campaigns" icon={<SpeakerNotesIcon />} />
     ) : (
-      <DataTables
-        data={campaigns}
-        columns={this.prepareTableColumns(this.props.data.organization)}
-        multiSelectable={this.props.selectMultiple}
-        selectable={true}
-        enableSelectAll={true}
-        showCheckboxes={this.props.selectMultiple}
-        onRowSelection={selectedRowIndexes =>
-          this.props.handleChecked({
-            campaignIds: selectedRowIndexes.map(i => campaigns[i].id)
-          })
-        }
-        page={displayPage}
-        rowSize={limit}
-        count={total}
-        onNextPageClick={this.props.onNextPageClick}
-        onPreviousPageClick={this.props.onPreviousPageClick}
-        onRowSizeChange={this.props.onRowSizeChange}
-        onSortOrderChange={(key, direction) => {
-          campaigns.sort(this.sortFunc(key));
-          if (direction === "desc") {
-            campaigns.reverse();
+      <div style={{ position: "relative" }}>
+        <DataTables
+          data={campaigns}
+          columns={this.prepareTableColumns(this.props.data.organization)}
+          multiSelectable={this.props.selectMultiple}
+          selectable={true}
+          enableSelectAll={true}
+          showCheckboxes={this.props.selectMultiple}
+          onRowSelection={selectedRowIndexes =>
+            this.props.handleChecked({
+              campaignIds: selectedRowIndexes.map(i => campaigns[i].id)
+            })
           }
-        }}
-      />
+          page={displayPage}
+          rowSize={limit}
+          count={total}
+          footerToolbarStyle={inlineStyles.tableMovePaginationOnTop}
+          tableWrapperStyle={inlineStyles.tableSpaceForPaginationOnTop}
+          onNextPageClick={this.props.onNextPageClick}
+          onPreviousPageClick={this.props.onPreviousPageClick}
+          onRowSizeChange={this.props.onRowSizeChange}
+          onSortOrderChange={(key, direction) => {
+            campaigns.sort(this.sortFunc(key));
+            if (direction === "desc") {
+              campaigns.reverse();
+            }
+          }}
+        />
+        <div style={inlineStyles.spaceForCreateButton}>.</div>
+      </div>
     );
   }
 }

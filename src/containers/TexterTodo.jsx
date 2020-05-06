@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import React from "react";
-import AssignmentTexter from "../components/AssignmentTexter";
-import AssignmentTexterContact from "../containers/AssignmentTexterContact";
+import AssignmentTexter from "../components/AssignmentTexter/ContactController";
+import AssignmentTexterContact from "./AssignmentTexterContact";
 import { withRouter } from "react-router";
 import loadData from "./hoc/load-data";
 import gql from "graphql-tag";
