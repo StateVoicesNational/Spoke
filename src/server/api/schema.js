@@ -393,13 +393,15 @@ const rootMutations = {
       { userId, organizationId, roles },
       { user, loaders }
     ) => {
-      const currentRoles = (await r
-        .knex("user_organization")
-        .where({
-          organization_id: organizationId,
-          user_id: userId
-        })
-        .select("role")).map(res => res.role);
+      const currentRoles = (
+        await r
+          .knex("user_organization")
+          .where({
+            organization_id: organizationId,
+            user_id: userId
+          })
+          .select("role")
+      ).map(res => res.role);
       const oldRoleIsOwner = currentRoles.indexOf("OWNER") !== -1;
       const newRoleIsOwner = roles.indexOf("OWNER") !== -1;
       const roleRequired = oldRoleIsOwner || newRoleIsOwner ? "OWNER" : "ADMIN";
@@ -1305,7 +1307,7 @@ const rootMutations = {
     ) => {
       await accessRequired(user, organizationId, "OWNER");
       const org = await loaders.organization.load(organizationId);
-      if (!getConfig("EXPERIMENTAL_TWILIO_INVENTORY", org, { truthy: true })) {
+      if (!getConfig("EXPERIMENTAL_PHONE_INVENTORY", org, { truthy: true })) {
         throw new Error("Phone inventory management is not enabled");
       }
       const serviceName = getConfig("DEFAULT_SERVICE", org);
