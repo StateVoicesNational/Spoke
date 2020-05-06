@@ -14,11 +14,11 @@ _May 2020:_ Version 5.5
 
 Thanks to all the contributors part of this release including:
 [aschneit](https://github.com/aschneit),
+[filafb](https://github.com/filafb),
+[jasmosez](https://github.com/jasmosez),
 [lperson](https://github.com/lperson),
 [schuyler1d](https://github.com/schuyler1d),
-[tmc](https://github.com/tmc),
-[filafb](https://github.com/filafb),
-[jasmosez](https://github.com/jasmosez)
+[tmc](https://github.com/tmc)
 
 ## v5.4
 _April 2020:_ Version 5.4
