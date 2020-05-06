@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import React, { Component } from "react";
-import theme from "../styles/theme";
+import theme from "../../styles/theme";
 import { Card, CardHeader, CardText } from "material-ui/Card";
 import Subheader from "material-ui/Subheader";
 import { List, ListItem } from "material-ui/List";

@@ -1,10 +1,10 @@
 import PropTypes from "prop-types";
 import React from "react";
 
-import AssignmentTexter from "../components/AssignmentTexter";
-import AssignmentTexterContactControls from "../components/AssignmentTexterContactControls";
-import AssignmentTexterContactNewControls from "../components/AssignmentTexterContactNewControls";
-import { applyScript } from "../lib/scripts";
+import ContactController from "./ContactController";
+import OldControls from "./OldControls";
+import Controls from "./Controls";
+import { applyScript } from "../../lib/scripts";
 
 const logFunction = data => {
   console.log("logging data", data);
@@ -447,8 +447,8 @@ export const tests = {
 export function generateDemoTexterContact(test) {
   const DemoAssignmentTexterContact = function(props) {
     const ControlsComponent = /old=1/.test(document.location.search)
-      ? AssignmentTexterContactControls
-      : AssignmentTexterContactNewControls;
+      ? OldControls
+      : Controls;
     console.log("DemoAssignmentTexterContact", props);
     const getMessageTextFromScript = script => {
       return script
@@ -483,7 +483,7 @@ export function generateDemoTexterContact(test) {
 
   const DemoTexterTest = function(props) {
     return (
-      <AssignmentTexter
+      <ContactController
         assignment={test.assignment}
         contacts={[{ id: test.contact.id }]}
         allContactsCount={test.navigationToolbarChildren.total}
