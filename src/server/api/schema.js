@@ -3,7 +3,7 @@ import GraphQLJSON from "graphql-type-json";
 import { GraphQLError } from "graphql/error";
 import isUrl from "is-url";
 
-import { gzip, makeTree } from "../../lib";
+import { gzip, makeTree, getHighestRole } from "../../lib";
 import { capitalizeWord } from "./lib/utils";
 import {
   assignTexters,
@@ -408,26 +408,20 @@ const rootMutations = {
 
       await accessRequired(user, organizationId, roleRequired);
 
-      currentRoles.forEach(async curRole => {
-        if (roles.indexOf(curRole) === -1) {
-          await r
-            .table("user_organization")
-            .getAll([organizationId, userId], { index: "organization_user" })
-            .filter({ role: curRole })
-            .delete();
-        }
-      });
-
-      newOrgRoles = roles
-        .filter(newRole => currentRoles.indexOf(newRole) === -1)
-        .map(newRole => ({
+      // Roles is sent as an array for historical purposes
+      // but roles are hierarchical, so we only want one user_organization
+      // record.
+      await r
+        .knex("user_organization")
+        .where({ organization_id: organizationId, user_id: userId })
+        .delete();
+      if (roles.length) {
+        const newRole = getHighestRole(roles);
+        await r.knex("user_organization").insert({
           organization_id: organizationId,
           user_id: userId,
           role: newRole
-        }));
-
-      if (newOrgRoles.length) {
-        await UserOrganization.save(newOrgRoles, { conflict: "update" });
+        });
       }
       await cacheableData.user.clearUser(userId);
       return loaders.organization.load(organizationId);

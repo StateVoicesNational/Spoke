@@ -6,7 +6,7 @@ const firstName = '"user"."first_name"';
 const lastName = '"user"."last_name"';
 const created = '"user"."created_at"';
 const oldest = created;
-const newest = '"user"."created_at" desc';
+const newest = '"user"."id" desc';
 
 const lower = column => `lower(${column})`;
 
@@ -14,63 +14,50 @@ function buildSelect(sortBy) {
   const userStar = '"user".*';
 
   let fragmentArray = undefined;
-
-  switch (sortBy) {
-    case "COUNT_ONLY":
-      return r.knex.countDistinct("user.id");
-    case "LAST_NAME":
-      fragmentArray = [userStar, lower(lastName), lower(firstName)];
-      break;
-    case "NEWEST":
-      fragmentArray = [userStar];
-      break;
-    case "OLDEST":
-      fragmentArray = [userStar];
-      break;
-    case "FIRST_NAME":
-    default:
-      fragmentArray = [userStar, lower(lastName), lower(firstName)];
-      break;
+  if (sortBy === "COUNT_ONLY") {
+    return r.knex.countDistinct("user.id");
+  } else if (sortBy === "NEWEST") {
+    fragmentArray = [userStar];
+  } else if (sortBy === "OLDEST") {
+    fragmentArray = [userStar];
+  } else {
+    //FIRST_NAME, LAST_NAME, Default
+    fragmentArray = [userStar, lower(lastName), lower(firstName)];
   }
-
   return r.knex.select(r.knex.raw(fragmentArray.join(", ")));
 }
 
 function buildOrderBy(query, sortBy) {
   let fragmentArray = undefined;
 
-  switch (sortBy) {
-    case "COUNT_ONLY":
-      return query;
-    case "LAST_NAME":
-      fragmentArray = [lower(lastName), lower(firstName), newest];
-      break;
-    case "NEWEST":
-      fragmentArray = [newest];
-      break;
-    case "OLDEST":
-      fragmentArray = [oldest];
-      break;
-    case "FIRST_NAME":
-    default:
-      fragmentArray = [lower(firstName), lower(lastName), newest];
-      break;
+  if (sortBy === "COUNT_ONLY") {
+    return query;
+  } else if (sortBy === "NEWEST") {
+    fragmentArray = [newest];
+  } else if (sortBy === "OLDEST") {
+    fragmentArray = [oldest];
+  } else if (sortBy === "LAST_NAME") {
+    fragmentArray = [lower(lastName), lower(firstName), newest];
+  } else {
+    // FIRST_NAME, Default
+    fragmentArray = [lower(firstName), lower(lastName), newest];
   }
-
+  console.log("buildOrderBy", sortBy, fragmentArray);
   return query.orderByRaw(fragmentArray.join(", "));
 }
 
 const addLeftOuterJoin = query =>
   query.leftOuterJoin("assignment", "assignment.user_id", "user.id");
 
-export function buildUserOrganizationQuery(
-  queryParam,
+export function buildUsersQuery(
   organizationId,
   role,
+  sortBy,
   campaignsFilter,
   filterString,
   filterBy
 ) {
+  const queryParam = buildSelect(sortBy);
   const roleFilter = role ? { role } : {};
 
   let query = queryParam
@@ -133,45 +120,7 @@ export function buildUserOrganizationQuery(
       );
     }
   }
-
-  return query;
-}
-
-export function buildSortedUserOrganizationQuery(
-  organizationId,
-  role,
-  campaignsFilter,
-  sortBy,
-  filterString,
-  filterBy
-) {
-  const query = buildUserOrganizationQuery(
-    buildSelect(sortBy),
-    organizationId,
-    role,
-    campaignsFilter,
-    filterString,
-    filterBy
-  );
   return buildOrderBy(query, sortBy);
-}
-
-function buildUsersQuery(
-  organizationId,
-  campaignsFilter,
-  role,
-  sortBy,
-  filterString,
-  filterBy
-) {
-  return buildSortedUserOrganizationQuery(
-    organizationId,
-    role,
-    campaignsFilter,
-    sortBy,
-    filterString,
-    filterBy
-  );
 }
 
 export async function getUsers(
@@ -185,9 +134,9 @@ export async function getUsers(
 ) {
   let usersQuery = buildUsersQuery(
     organizationId,
-    campaignsFilter,
     role,
     sortBy,
+    campaignsFilter,
     filterString,
     filterBy
   );
@@ -198,17 +147,16 @@ export async function getUsers(
 
     const usersCountQuery = buildUsersQuery(
       organizationId,
-      campaignsFilter,
       role,
-      "COUNT_ONLY"
+      "COUNT_ONLY",
+      campaignsFilter
     );
 
-    const usersCountArray = await usersCountQuery;
-
+    const usersCount = await r.getCount(usersCountQuery);
     const pageInfo = {
       limit: cursor.limit,
       offset: cursor.offset,
-      total: parseInt(usersCountArray[0].count, 10)
+      total: usersCount
     };
 
     return {

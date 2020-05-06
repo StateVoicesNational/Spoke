@@ -58,7 +58,7 @@ describe("people", async () => {
       testAdminUsers[0],
       organizationId,
       testAdminUsers[0].id,
-      ["OWNER", "ADMIN"]
+      ["OWNER"]
     );
 
     await updateUserRoles(
@@ -230,7 +230,7 @@ describe("people", async () => {
     };
 
     it("filters users by role, selecting admins", async () => {
-      await testRoleFiltering("ADMIN", testAdminUsers);
+      await testRoleFiltering("ADMIN", [testAdminUsers[1]]);
     });
 
     it("filters users by role, selecting texters", async () => {
