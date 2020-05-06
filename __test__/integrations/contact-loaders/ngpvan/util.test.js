@@ -87,9 +87,7 @@ describe("ngpvan/util", () => {
 
     const failureValidator = (auth, error) => {
       expect(error).toEqual(
-        new Error(
-          "Environment missing NGP_VAN_APP_NAME or NGP_VAN_API_KEY. Unable to getGet aut. Unable to getGet auth"
-        )
+        new Error("Environment missing NGP_VAN_APP_NAME or NGP_VAN_API_KEY")
       );
 
       expect(auth).not.toEqual(expect.anything());

@@ -218,7 +218,7 @@ const campaignCache = {
   },
   incrCount: async (id, countType) => {
     // countType={"messagedCount", "errorCount"}
-    console.log("incrCount", id, countType, CONTACT_CACHE_ENABLED);
+    // console.log("incrCount", id, countType, CONTACT_CACHE_ENABLED);
     if (r.redis && CONTACT_CACHE_ENABLED) {
       try {
         const infoKey = infoCacheKey(id);
