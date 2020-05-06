@@ -52,26 +52,6 @@ describe("User", () => {
         role: "OWNER"
       }).save();
       await new UserOrganization({
-        user_id: users[0].id,
-        organization_id: organization.id,
-        role: "ADMIN"
-      }).save();
-      await new UserOrganization({
-        user_id: users[0].id,
-        organization_id: organization.id,
-        role: "TEXTER"
-      }).save();
-      await new UserOrganization({
-        user_id: users[1].id,
-        organization_id: organization.id,
-        role: "OWNER"
-      }).save();
-      await new UserOrganization({
-        user_id: users[1].id,
-        organization_id: organization.id,
-        role: "ADMIN"
-      }).save();
-      await new UserOrganization({
         user_id: users[1].id,
         organization_id: organization.id,
         role: "TEXTER"

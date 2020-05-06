@@ -8,9 +8,11 @@ import Form from "react-formal";
 import Dialog from "material-ui/Dialog";
 import GSSubmitButton from "../components/forms/GSSubmitButton";
 import FlatButton from "material-ui/FlatButton";
+import DisplayLink from "../components/DisplayLink";
 import yup from "yup";
 import { Card, CardText, CardActions, CardHeader } from "material-ui/Card";
 import { StyleSheet, css } from "aphrodite";
+import theme from "../styles/theme";
 import Toggle from "material-ui/Toggle";
 import moment from "moment";
 const styles = StyleSheet.create({
@@ -35,6 +37,9 @@ const styles = StyleSheet.create({
 const inlineStyles = {
   dialogButton: {
     display: "inline-block"
+  },
+  shadeBox: {
+    backgroundColor: theme.colors.lightGray
   }
 };
 
@@ -143,6 +148,136 @@ class Settings extends React.Component {
     );
   }
 
+  handleOpenTwilioDialog = () => this.setState({ twilioDialogOpen: true });
+
+  handleCloseTwilioDialog = () => this.setState({ twilioDialogOpen: false });
+
+  handleSubmitTwilioAuthForm = async ({
+    accountSid,
+    authToken,
+    messageServiceSid
+  }) => {
+    const res = await this.props.mutations.updateTwilioAuth(
+      accountSid,
+      authToken === "<Encrypted>" ? false : authToken,
+      messageServiceSid
+    );
+    if (res.errors) {
+      this.setState({ twilioError: res.errors.message });
+    } else {
+      this.setState({ twilioError: undefined });
+    }
+    this.handleCloseTwilioDialog();
+  };
+
+  renderTwilioAuthForm() {
+    const { organization } = this.props.data;
+    const {
+      twilioAccountSid,
+      twilioAuthToken,
+      twilioMessageServiceSid
+    } = organization;
+    const allSet =
+      twilioAccountSid && twilioAuthToken && twilioMessageServiceSid;
+    let baseUrl = "http://base";
+    if (typeof window !== "undefined") {
+      baseUrl = window.location.origin;
+    }
+    const formSchema = yup.object({
+      accountSid: yup
+        .string()
+        .nullable()
+        .max(64),
+      authToken: yup
+        .string()
+        .nullable()
+        .max(64),
+      messageServiceSid: yup
+        .string()
+        .nullable()
+        .max(64)
+    });
+
+    const dialogActions = [
+      <FlatButton
+        label="Cancel"
+        style={inlineStyles.dialogButton}
+        onClick={this.handleCloseTwilioDialog}
+      />,
+      <Form.Button
+        type="submit"
+        label="Save"
+        style={inlineStyles.dialogButton}
+        component={GSSubmitButton}
+      />
+    ];
+
+    return (
+      <Card>
+        <CardHeader title="Twilio Credentials" />
+        {allSet && (
+          <CardText style={inlineStyles.shadeBox}>
+            <DisplayLink
+              url={`${baseUrl}/twilio/${organization.id}`}
+              textContent="Twilio credentials are configured for this organization. You should set the inbound Request URL in your Twilio messaging service to this link."
+            />
+          </CardText>
+        )}
+        {this.state.twilioError && (
+          <CardText style={inlineStyles.shadeBox}>
+            {this.state.twilioError}
+          </CardText>
+        )}
+        <CardText>
+          <div className={css(styles.section)}>
+            <span className={css(styles.sectionLabel)}>
+              You can set Twilio API credentials specifically for this
+              Organization by entering them here.
+            </span>
+            <GSForm
+              schema={formSchema}
+              onSubmit={this.handleSubmitTwilioAuthForm}
+              defaultValue={{
+                accountSid: twilioAccountSid,
+                authToken: twilioAuthToken,
+                messageServiceSid: twilioMessageServiceSid
+              }}
+            >
+              <Form.Field
+                label="Twilio Account SID"
+                name="accountSid"
+                fullWidth
+              />
+              <Form.Field
+                label="Twilio Auth Token"
+                name="authToken"
+                fullWidth
+              />
+              <Form.Field
+                label="Default Message Service SID"
+                name="messageServiceSid"
+                fullWidth
+              />
+
+              <Form.Button
+                label={this.props.saveLabel || "Save Twilio Credentials"}
+                onClick={this.handleOpenTwilioDialog}
+              />
+              <Dialog
+                actions={dialogActions}
+                modal={true}
+                open={this.state.twilioDialogOpen}
+              >
+                Changing the Account SID or Messaging Service SID will break any
+                campaigns that are currently running. Do you want to contunue?
+              </Dialog>
+            </GSForm>
+          </div>
+        </CardText>
+      </Card>
+    );
+  }
+
   render() {
     const { organization } = this.props.data;
     const { optOutMessage } = organization;
@@ -217,6 +352,7 @@ class Settings extends React.Component {
           </CardActions>
         </Card>
         <div>{this.renderTextingHoursForm()}</div>
+        <div>{window.TWILIO_MULTI_ORG && this.renderTwilioAuthForm()}</div>
       </div>
     );
   }
@@ -295,6 +431,34 @@ const mapMutationsToProps = ({ ownProps }) => ({
       organizationId: ownProps.params.organizationId,
       optOutMessage
     }
+  }),
+  updateTwilioAuth: (accountSid, authToken, messageServiceSid) => ({
+    mutation: gql`
+      mutation updateTwilioAuth(
+        $twilioAccountSid: String
+        $twilioAuthToken: String
+        $twilioMessageServiceSid: String
+        $organizationId: String!
+      ) {
+        updateTwilioAuth(
+          twilioAccountSid: $twilioAccountSid
+          twilioAuthToken: $twilioAuthToken
+          twilioMessageServiceSid: $twilioMessageServiceSid
+          organizationId: $organizationId
+        ) {
+          id
+          twilioAccountSid
+          twilioAuthToken
+          twilioMessageServiceSid
+        }
+      }
+    `,
+    variables: {
+      organizationId: ownProps.params.organizationId,
+      twilioAccountSid: accountSid,
+      twilioAuthToken: authToken,
+      twilioMessageServiceSid: messageServiceSid
+    }
   })
 });
 
@@ -309,6 +473,9 @@ const mapQueriesToProps = ({ ownProps }) => ({
           textingHoursStart
           textingHoursEnd
           optOutMessage
+          twilioAccountSid
+          twilioAuthToken
+          twilioMessageServiceSid
         }
       }
     `,

@@ -1,13 +1,13 @@
 import PropTypes from "prop-types";
 import React from "react";
 import { StyleSheet, css } from "aphrodite";
-import ContactToolbarNew from "../components/ContactToolbarNew";
-import MessageList from "../components/MessageList";
-import CannedResponseMenu from "../components/CannedResponseMenu";
-import AssignmentTexterSurveys from "../components/AssignmentTexterSurveys";
+import Toolbar from "./Toolbar";
+import MessageList from "./MessageList";
+import CannedResponseMenu from "./CannedResponseMenu";
+import Survey from "./Survey";
 import ScriptList from "./ScriptList";
-import Empty from "../components/Empty";
-import GSForm from "../components/forms/GSForm";
+import Empty from "../Empty";
+import GSForm from "../forms/GSForm";
 import RaisedButton from "material-ui/RaisedButton";
 import FlatButton from "material-ui/FlatButton";
 import IconButton from "material-ui/IconButton/IconButton";
@@ -16,7 +16,7 @@ import Divider from "material-ui/Divider";
 import CreateIcon from "material-ui/svg-icons/content/create";
 import DownIcon from "material-ui/svg-icons/navigation/arrow-drop-down";
 import yup from "yup";
-import theme from "../styles/theme";
+import theme from "../../styles/theme";
 import Form from "react-formal";
 import Popover from "material-ui/Popover";
 
@@ -29,9 +29,9 @@ import {
   interactionStepForId,
   log,
   isBetweenTextingHours
-} from "../lib";
+} from "../../lib";
 
-import { dataTest } from "../lib/attributes";
+import { dataTest } from "../../lib/attributes";
 
 const messageListStyles = {
   // passesd directly to <MessageList>
@@ -505,7 +505,7 @@ export class AssignmentTexterContactControls extends React.Component {
         targetOrigin={{ horizontal: "left", vertical: "bottom" }}
         onRequestClose={this.handleCloseAnswerPopover}
       >
-        <AssignmentTexterSurveys
+        <Survey
           contact={contact}
           interactionSteps={availableInteractionSteps}
           onQuestionResponseChange={this.handleQuestionResponseChange}
@@ -520,15 +520,6 @@ export class AssignmentTexterContactControls extends React.Component {
           customFields={campaign.customFields}
           currentCannedResponseScript={cannedResponseScript}
           subheader={<div id="otherresponses">Other Responses</div>}
-          onSelectCannedResponse={this.handleCannedResponseChange}
-          onCreateCannedResponse={this.props.onCreateCannedResponse}
-        />
-        <ScriptList
-          scripts={assignment.userCannedResponses}
-          showAddScriptButton={true}
-          customFields={[] /* texters shouldn't have access to custom fields */}
-          currentCannedResponseScript={cannedResponseScript}
-          subheader={<span>Personal Custom Responses</span>}
           onSelectCannedResponse={this.handleCannedResponseChange}
           onCreateCannedResponse={this.props.onCreateCannedResponse}
         />
@@ -742,10 +733,11 @@ export class AssignmentTexterContactControls extends React.Component {
       currentQuestion = currentInteractionStep.question;
       currentQuestionAnswered = questionResponses[currentInteractionStep.id];
       currentQuestionOptions = currentQuestion.answerOptions.map(answer => {
+        // label is for one-word values or e.g. "Yes: ...."
         const label = answer.value.match(/^(\w+)([^\s\w]|$)/);
         return {
           answer: answer,
-          label: label ? label[1] : "Yes__No__Maybe__toomuch"
+          label: label ? label[1] : answer.value
         };
       });
       joinedLength = currentQuestionOptions.map(o => o.label).join("__").length;
@@ -930,7 +922,7 @@ export class AssignmentTexterContactControls extends React.Component {
   renderToolbar() {
     return (
       <div key="toolbar" className={css(flexStyles.sectionHeaderToolbar)}>
-        <ContactToolbarNew
+        <Toolbar
           campaign={this.props.campaign}
           campaignContact={this.props.contact}
           navigationToolbarChildren={this.props.navigationToolbarChildren}
