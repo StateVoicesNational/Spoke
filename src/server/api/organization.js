@@ -4,7 +4,6 @@ import { r, Organization, cacheableData } from "../models";
 import { accessRequired } from "./errors";
 import { getCampaigns } from "./campaign";
 import { buildSortedUserOrganizationQuery } from "./user";
-import { getConfig } from "./lib/config";
 
 export const resolvers = {
   Organization: {
