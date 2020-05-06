@@ -23,6 +23,7 @@ import {
   Message,
   Organization,
   QuestionResponse,
+  Tag,
   UserOrganization,
   r,
   cacheableData,
@@ -55,8 +56,11 @@ import { resolvers as organizationResolvers } from "./organization";
 import { GraphQLPhone } from "./phone";
 import { resolvers as questionResolvers } from "./question";
 import { resolvers as questionResponseResolvers } from "./question-response";
+import { getTags, resolvers as tagResolvers } from "./tag";
 import { getUsers, resolvers as userResolvers } from "./user";
 import { change } from "../local-auth-helpers";
+import { symmetricEncrypt } from "./lib/crypto";
+import Twilio from "twilio";
 
 import {
   sendMessage,
@@ -388,13 +392,15 @@ const rootMutations = {
       { userId, organizationId, roles },
       { user, loaders }
     ) => {
-      const currentRoles = (await r
-        .knex("user_organization")
-        .where({
-          organization_id: organizationId,
-          user_id: userId
-        })
-        .select("role")).map(res => res.role);
+      const currentRoles = (
+        await r
+          .knex("user_organization")
+          .where({
+            organization_id: organizationId,
+            user_id: userId
+          })
+          .select("role")
+      ).map(res => res.role);
       const oldRoleIsOwner = currentRoles.indexOf("OWNER") !== -1;
       const newRoleIsOwner = roles.indexOf("OWNER") !== -1;
       const roleRequired = oldRoleIsOwner || newRoleIsOwner ? "OWNER" : "ADMIN";
@@ -627,6 +633,45 @@ const rootMutations = {
       const featuresJSON = JSON.parse(organization.features || "{}");
       featuresJSON.opt_out_message = optOutMessage;
       organization.features = JSON.stringify(featuresJSON);
+
+      await organization.save();
+      await cacheableData.organization.clear(organizationId);
+
+      return await Organization.get(organizationId);
+    },
+    updateTwilioAuth: async (
+      _,
+      {
+        organizationId,
+        twilioAccountSid,
+        twilioAuthToken,
+        twilioMessageServiceSid
+      },
+      { user }
+    ) => {
+      await accessRequired(user, organizationId, "OWNER");
+
+      const organization = await Organization.get(organizationId);
+      const featuresJSON = JSON.parse(organization.features || "{}");
+      featuresJSON.TWILIO_ACCOUNT_SID = twilioAccountSid.substr(0, 64);
+      featuresJSON.TWILIO_AUTH_TOKEN_ENCRYPTED = twilioAuthToken
+        ? symmetricEncrypt(twilioAuthToken).substr(0, 256)
+        : twilioAuthToken;
+      featuresJSON.TWILIO_MESSAGE_SERVICE_SID = twilioMessageServiceSid.substr(
+        0,
+        64
+      );
+      organization.features = JSON.stringify(featuresJSON);
+
+      try {
+        if (twilioAuthToken && global.TEST_ENVIRONMENT !== "1") {
+          // Make sure Twilio credentials work.
+          const twilio = Twilio(twilioAccountSid, twilioAuthToken);
+          const accounts = await twilio.api.accounts.list();
+        }
+      } catch (err) {
+        throw new GraphQLError("Invalid Twilio credentials");
+      }
 
       await organization.save();
       await cacheableData.organization.clear(organizationId);
@@ -1216,6 +1261,43 @@ const rootMutations = {
       }
 
       return jobId;
+    },
+    createTag: async (_, { organizationId, tagData }, { user }) => {
+      await accessRequired(user, organizationId, "SUPERVOLUNTEER");
+      const tagInstance = new Tag({
+        organization_id: organizationId,
+        name: tagData.name,
+        group: tagData.group,
+        description: tagData.description,
+        is_deleted: false
+      });
+      const newTag = await tagInstance.save();
+      return newTag;
+    },
+    editTag: async (_, { organizationId, tagData, id }, { user }) => {
+      await accessRequired(user, organizationId, "SUPERVOLUNTEER");
+      const tagUpdates = {
+        name: tagData.name,
+        group: tagData.group,
+        description: tagData.description,
+        is_deleted: tagData.isDeleted,
+        organization_id: organizationId
+      };
+
+      await r
+        .knex("tag")
+        .where("id", id)
+        .update(tagUpdates);
+
+      return { id, ...tagUpdates };
+    },
+    deleteTag: async (_, { organizationId, id }, { user }) => {
+      await accessRequired(user, organizationId, "SUPERVOLUNTEER");
+      await r
+        .knex("tag")
+        .where("id", id)
+        .update({ is_deleted: true });
+      return { id };
     }
   }
 };
@@ -1340,6 +1422,10 @@ const rootResolvers = {
     ) => {
       await accessRequired(user, organizationId, "SUPERVOLUNTEER");
       return getUsers(organizationId, cursor, campaignsFilter, role, sortBy);
+    },
+    tags: async (_, { organizationId }, { user }) => {
+      await accessRequired(user, organizationId, "SUPERVOLUNTEER");
+      return getTags(organizationId);
     }
   }
 };
@@ -1362,5 +1448,6 @@ export const resolvers = {
   ...{ Phone: GraphQLPhone },
   ...questionResolvers,
   ...conversationsResolver,
+  ...tagResolvers,
   ...rootMutations
 };

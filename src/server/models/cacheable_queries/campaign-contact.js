@@ -370,10 +370,16 @@ const campaignContactCache = {
       // console.log('lookupByCell cache', cell, service, messageServiceSid, cellData)
       if (cellData) {
         // eslint-disable-next-line camelcase
-        const [campaign_contact_id, _, timezone_offset] = cellData.split(":");
+        const [
+          campaign_contact_id,
+          _,
+          timezone_offset,
+          ...rest
+        ] = cellData.split(":");
         return {
           campaign_contact_id: Number(campaign_contact_id),
-          timezone_offset
+          timezone_offset,
+          campaign_id: rest.length ? rest[0] : undefined
         };
       }
       if (bailWithoutCache) {
@@ -494,7 +500,12 @@ const campaignContactCache = {
           // delay expiration for contacts we continue to update
           .set(
             cellKey,
-            [contact.id, "", contact.timezone_offset || ""].join(":")
+            [
+              contact.id,
+              "",
+              contact.timezone_offset || "",
+              contact.campaign_id || ""
+            ].join(":")
           )
           // delay expiration for contacts we continue to update
           .expire(contactKey, 43200)

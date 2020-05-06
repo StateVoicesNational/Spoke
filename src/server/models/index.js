@@ -19,6 +19,8 @@ import UserCell from "./user-cell";
 import Message from "./message";
 import ZipCode from "./zip-code";
 import Log from "./log";
+import Tag from "./tag";
+import TagCampaignContact from "./tag-campaign-contact";
 
 import thinky from "./thinky";
 import datawarehouse from "./datawarehouse";
@@ -57,6 +59,8 @@ const tableList = [
   "opt_out", // good candidate
   "pending_message_part",
   "question_response",
+  "tag",
+  "tag_campaign_contact",
   "user_cell",
   "user_organization",
   "zip_code" // good candidate (or by contact)?
@@ -139,5 +143,7 @@ export {
   UserOrganization,
   User,
   ZipCode,
-  Log
+  Log,
+  Tag,
+  TagCampaignContact
 };
