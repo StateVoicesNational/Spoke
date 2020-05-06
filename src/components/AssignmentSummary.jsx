@@ -178,9 +178,9 @@ export class AssignmentSummary extends Component {
             {window.NOT_IN_USA && window.ALLOW_SEND_ALL
               ? ""
               : this.renderBadgedButton({
-                  dataTestText: "sendReplies",
+                  dataTestText: "Respond",
                   assignment,
-                  title: "Send replies",
+                  title: "Respond",
                   count: unrepliedCount,
                   primary: false,
                   disabled: false,
