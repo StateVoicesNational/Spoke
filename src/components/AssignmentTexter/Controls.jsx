@@ -523,15 +523,6 @@ export class AssignmentTexterContactControls extends React.Component {
           onSelectCannedResponse={this.handleCannedResponseChange}
           onCreateCannedResponse={this.props.onCreateCannedResponse}
         />
-        <ScriptList
-          scripts={assignment.userCannedResponses}
-          showAddScriptButton={true}
-          customFields={[] /* texters shouldn't have access to custom fields */}
-          currentCannedResponseScript={cannedResponseScript}
-          subheader={<span>Personal Custom Responses</span>}
-          onSelectCannedResponse={this.handleCannedResponseChange}
-          onCreateCannedResponse={this.props.onCreateCannedResponse}
-        />
       </Popover>
     );
   }
