@@ -28,9 +28,17 @@ If you are using these instructions for an Heroku instance or AWS Lambda instanc
   - In your .env file, set `TWILIO_STATUS_CALLBACK_URL` to this same URL
 9. Click `Save`, and then visit the [dashboard](https://www.twilio.com/console)
 10. Under `Account Summary`
-  - `TWILIO_API_KEY` in your .env file (or Heroku config variable) is `ACCOUNT SID` in your Twilio console
-  - `TWILIO_APPLICATION_SID` in your .env file (or Heroku config variable) is `TWILIO_MESSAGE_SERVICE_SID` (these are the same values)
+  - `TWILIO_ACCOUNT_SID` in your .env file (or Heroku config variable) is `ACCOUNT SID` in your Twilio console
   - `TWILIO_AUTH_TOKEN` in your .env file (or Heroku config variable) is `AUTH TOKEN` in your Twilio console
 11. In your .env file, set `DEFAULT_SERVICE` to `twilio`
 12. If you want to send live text messages as part of your testing, you must buy a phone number and attach it to your project.
   - Click on `Numbers` and press on `+`. Search for a area code and click on buy (trial Twilio accounts give you $15~ to work with). In order to send messages, you will have to connect a credit card with a minimum charge of $20. 
+  
+## Multi-Org Twilio Setup
+If you follow the instructions above, every organization and campaign in your instance will use the same Twilio account and the same messaging service (phone number pool). If you want to use different twilio accounts and/or messaging services for each organization, you can basically follow the same instuctions with a couple of tweaks.
+
+- In your .env file, set `TWILIO_MULTI_ORG` to `true`. This will enable an additional section on the organization settings page where you can set Twilio credentials for the organization.
+- For security, Twilio Auth Tokens are encrypted using the `SESSION_SECRET` environment variable before being stored in the database.
+- You can still set instance-wide credentials in the .env file (as described above). If you do, those credentials will be used as fallback if credentials aren't configured for an organization.
+- It is not required to configure all settings for all organizations. For example, to use a single site-wide Twilio account but with separate phone number pools for some organizations, follow the instuctions above and then set the Default Message Service SID (leaving the other fields blank) in the organizations settings for the orgs you want to override.
+- When using multiple Twilio accounts you will need to change the Inbound Request URL for your messaging service in the Twilio console [step 7 above]. It should look like `https://<YOUR_HEROKU_APP_URL>/twilio/<ORG_ID>`. The correct URL to use will be displayed on the settings page after you save the Twilio credentials.

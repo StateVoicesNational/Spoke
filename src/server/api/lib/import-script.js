@@ -32,10 +32,7 @@ const getDocument = async documentId => {
 const getParagraphStyle = getOr("", "paragraph.paragraphStyle.namedStyleType");
 const getTextRun = getOr("", "textRun.content");
 const sanitizeTextRun = textRun => textRun.replace("\n", "");
-const getSanitizedTextRun = compose(
-  sanitizeTextRun,
-  getTextRun
-);
+const getSanitizedTextRun = compose(sanitizeTextRun, getTextRun);
 const concat = (left, right) => left.concat(right);
 const reduceStrings = reduce(concat, String());
 const getParagraphText = compose(
@@ -363,9 +360,11 @@ const importScriptFromDocument = async (campaignId, scriptUrl) => {
   let result;
   try {
     result = await getDocument(documentId);
-  } catch(err) {
-    console.error('ImportScript Failed', err);
-    throw new Error(`Retrieving Google doc failed due to access, secret config, or invalid google url`);
+  } catch (err) {
+    console.error("ImportScript Failed", err);
+    throw new Error(
+      `Retrieving Google doc failed due to access, secret config, or invalid google url`
+    );
   }
   const document = result.data.body.content;
   const sections = getSections(document);

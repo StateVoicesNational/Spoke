@@ -160,10 +160,50 @@ export async function createOrganization(user, invite) {
   return await graphql(mySchema, orgQuery, rootValue, context, variables);
 }
 
+export async function setTwilioAuth(user, organization) {
+  const rootValue = {};
+  const accountSid = "test_twilio_account_sid";
+  const authToken = "test_twlio_auth_token";
+  const messageServiceSid = "test_message_service";
+  const orgId = organization.data.createOrganization.id;
+
+  const context = getContext({ user });
+
+  const twilioQuery = `
+      mutation updateTwilioAuth(
+        $twilioAccountSid: String
+        $twilioAuthToken: String
+        $twilioMessageServiceSid: String
+        $organizationId: String!
+      ) {
+        updateTwilioAuth(
+          twilioAccountSid: $twilioAccountSid
+          twilioAuthToken: $twilioAuthToken
+          twilioMessageServiceSid: $twilioMessageServiceSid
+          organizationId: $organizationId
+        ) {
+          id
+          twilioAccountSid
+          twilioAuthToken
+          twilioMessageServiceSid
+        }
+      }`;
+
+  const variables = {
+    organizationId: orgId,
+    twilioAccountSid: accountSid,
+    twilioAuthToken: authToken,
+    twilioMessageServiceSid: messageServiceSid
+  };
+
+  return await graphql(mySchema, twilioQuery, rootValue, context, variables);
+}
+
 export async function createCampaign(
   user,
   organization,
-  title = "test campaign"
+  title = "test campaign",
+  args = {}
 ) {
   const rootValue = {};
   const description = "test description";
@@ -179,7 +219,8 @@ export async function createCampaign(
     input: {
       title,
       description,
-      organizationId
+      organizationId,
+      ...args
     }
   };
   const ret = await graphql(

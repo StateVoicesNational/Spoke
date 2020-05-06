@@ -22,7 +22,7 @@ module.exports = {
     DATABASE_SETUP_TEARDOWN_TIMEOUT: 60000,
     PASSPORT_STRATEGY: "local",
     SESSION_SECRET: "it is JUST a test! -- it better be!",
-    TWILIO_API_KEY: "", // purposefully blank
+    TWILIO_ACCOUNT_SID: "", // purposefully blank
     TEST_ENVIRONMENT: "1",
     TEST_ENVIRONMENT_FAKE: "0",
     TEST_ENVIRONMENT_FAKE2: "false"
