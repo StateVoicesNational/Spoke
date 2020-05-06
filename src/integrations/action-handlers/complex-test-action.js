@@ -44,6 +44,7 @@ export async function processAction(
   const customFields = JSON.parse(contact.custom_fields || "{}");
   if (customFields) {
     customFields["processed_test_action"] = "completed";
+    customFields["test_action_details"] = "completed";
   }
 
   await r

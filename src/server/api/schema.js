@@ -58,6 +58,7 @@ import { resolvers as questionResponseResolvers } from "./question-response";
 import { getTags, resolvers as tagResolvers } from "./tag";
 import { getUsers, resolvers as userResolvers } from "./user";
 import { change } from "../local-auth-helpers";
+const ActionHandlers = require("../../integrations/action-handlers");
 
 import {
   sendMessage,
@@ -1067,7 +1068,7 @@ const rootMutations = {
     updateQuestionResponses: async (
       _,
       { questionResponses, campaignContactId },
-      { loaders }
+      { loaders, user }
     ) => {
       const count = questionResponses.length;
 
@@ -1097,13 +1098,27 @@ const rootMutations = {
           .whereNot("answer_actions", "")
           .whereNotNull("answer_actions");
 
+        const campaignContact = await loaders.campaignContact.load(
+          campaignContactId
+        );
+        const campaign = await loaders.campaign.load(
+          campaignContact.campaign_id
+        );
+        const organization = await loaders.organization.load(
+          campaign.organization_id
+        );
+
         const interactionStepAction =
           interactionStepResult.length &&
           interactionStepResult[0].answer_actions;
         if (interactionStepAction) {
           // run interaction step handler
           try {
-            const handler = require(`../../integrations/action-handlers/${interactionStepAction}.js`);
+            const handler = await ActionHandlers.getActionHandler(
+              interactionStepAction,
+              organization,
+              user
+            );
             handler.processAction(
               qr,
               interactionStepResult[0],
