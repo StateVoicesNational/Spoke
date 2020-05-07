@@ -42,7 +42,6 @@ function buildOrderBy(query, sortBy) {
     // FIRST_NAME, Default
     fragmentArray = [lower(firstName), lower(lastName), newest];
   }
-  console.log("buildOrderBy", sortBy, fragmentArray);
   return query.orderByRaw(fragmentArray.join(", "));
 }
 
