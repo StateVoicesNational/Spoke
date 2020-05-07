@@ -1121,7 +1121,7 @@ const rootMutations = {
       );
 
       // The rest is for ACTION_HANDLERS
-      const organization = await loaders.organizatino.load(
+      const organization = await loaders.organization.load(
         campaign.organization_id
       );
       const actionHandlers = getConfig("ACTION_HANDLERS", organization);
