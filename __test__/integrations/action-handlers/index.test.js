@@ -616,7 +616,10 @@ describe("action-handlers/index", () => {
           );
           expect(returned).toEqual(expectedReturn);
           expect(ActionHandlers.getSetCacheableResult.mock.calls).toEqual([
-            ["action-choices-fake-action-99", expect.any(Function)]
+            [
+              `${process.env.CACHE_PREFIX || ""}action-choices-fake-action-99`,
+              expect.any(Function)
+            ]
           ]);
         });
       });
@@ -766,7 +769,10 @@ describe("action-handlers/index", () => {
             ]
           ]);
           expect(ActionHandlers.getSetCacheableResult.mock.calls).toEqual([
-            ["action-choices-fake-action-1", expect.any(Function)]
+            [
+              `${process.env.CACHE_PREFIX || ""}action-choices-fake-action-1`,
+              expect.any(Function)
+            ]
           ]);
         });
       });
