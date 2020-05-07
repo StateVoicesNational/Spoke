@@ -1,7 +1,6 @@
 import gql from "graphql-tag";
 
-// for phone number reservation sytem add "reservedCount: Int!"
-export const schema = `
+export const schema = gql`
   type PhoneNumberCounts {
     areaCode: String!
     availableCount: Int!
@@ -16,7 +15,7 @@ export const schema = `
     areaCode: String!
     limit: Int!
   }
-  
+
   type Organization {
     id: ID
     uuid: String

@@ -9,28 +9,12 @@ exports.up = async knex => {
       .references("id")
       .inTable("organization")
       .index();
-
-    // TODO: Twilio account sid might be required
-    // see: https://github.com/MoveOnOrg/Spoke/pull/1478/files
-
     table.string("phone_number").notNullable();
     table
       .string("area_code")
       .notNullable()
       .index();
     table.string("status").notNullable();
-
-    table
-      .integer("campaign_id")
-      .nullable()
-      .references("id")
-      .inTable("campaign")
-      .index();
-
-    // TODO: May or may not be needed depending on how we implement
-    // phone number selection in AdminCampaignEdit and startCampaign:
-    // table.timestamp("reserved_at").nullable();
-
     table.timestamp("created_at").defaultTo(knex.fn.now());
     table.unique(["service", "service_id"]);
   });
@@ -38,6 +22,7 @@ exports.up = async knex => {
   // ALLOW ORG-SCOPED JOBS
   const isSqlite = /sqlite/.test(knex.client.config.client);
   if (!isSqlite) {
+    // TODO: add columns to sqlite schema
     await knex.schema.alterTable("job_request", table => {
       table
         .integer("campaign_id")
