@@ -25,7 +25,7 @@ const MAX_TWILIO_MESSAGE_VALIDITY = 14400;
 const DISABLE_DB_LOG = getConfig("DISABLE_DB_LOG");
 const TWILIO_SKIP_VALIDATION = getConfig("TWILIO_SKIP_VALIDATION");
 const BULK_REQUEST_CONCURRENCY = 10;
-// TODO: document env var
+// TODO: document env var, us it in the frontend too
 const MAX_NUMBERS_PER_BUY_JOB = getConfig("MAX_NUMBERS_PER_BUY_JOB") || 100;
 
 async function getTwilio(organization) {
@@ -412,12 +412,17 @@ async function handleIncomingMessage(message) {
 }
 
 async function createMessagingService(organization, friendlyName) {
+  // TODO: document env var
+  const twilioBaseUrl = getConfig("TWILIO_BASE_URL", organization);
   return await getTwilio(organization).messaging.services.create({
     friendlyName,
-    // TODO[matteo]: URLs need to include the organization_id
-    //   once #1478 is merged
-    statusCallback: urlJoin(process.env.BASE_URL, "/twilio-message-report"),
-    inboundRequestUrl: urlJoin(process.env.BASE_URL, "/twilio")
+    statusCallback: urlJoin(twilioBaseUrl, "twilio-message-report"),
+    // TODO: double check that appending orgId always works
+    inboundRequestUrl: urlJoin(
+      twilioBaseUrl,
+      "twilio",
+      organization.id.toString()
+    )
   });
 }
 
@@ -438,7 +443,7 @@ async function searchForAvailableNumbers(organization, areaCode, limit) {
 /**
  * Buy a phone number and add it to the owned_phone_number table
  */
-async function buyNumber(twilioInstance, phoneNumber) {
+async function buyNumber(organization, twilioInstance, phoneNumber) {
   const response = await twilioInstance.incomingPhoneNumbers.create({
     phoneNumber,
     friendlyName: `Managed by Spoke [${process.env.BASE_URL}]: ${phoneNumber}`,
@@ -478,7 +483,7 @@ async function buyNumbersInAreaCode(organization, areaCode, limit) {
 
     // TODO: this step can be parallelized using bulkRequest
     for (const item of response) {
-      await buyNumber(twilioInstance, item.phoneNumber);
+      await buyNumber(organization, twilioInstance, item.phoneNumber);
 
       successCount++;
     }
@@ -575,9 +580,5 @@ export default {
   parseMessageText,
   // searchForAvailableNumbers,
   // buyNumber,
-  buyNumbersInAreaCode,
-  createMessagingService,
-  deleteMessagingService,
-  addNumbersToMessagingService,
-  removeNumbersFromMessagingService
+  buyNumbersInAreaCode
 };
