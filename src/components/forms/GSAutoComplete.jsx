@@ -50,12 +50,10 @@ export default class GSAutoComplete extends GSFormField {
           if (typeof value === "object") {
             const data = value.rawValue;
             this.setState({ data, name: value.text });
-            this.props.onChange(
-              JSON.stringify({
-                value: data,
-                label: value.text
-              })
-            );
+            this.props.onChange({
+              value: data,
+              label: value.text
+            });
           } else {
             // if it matches one item, that's their selection
             const matches = this.findMatchingChoices(value);
