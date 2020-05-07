@@ -1106,74 +1106,73 @@ const rootMutations = {
       { questionResponses, campaignContactId },
       { loaders, user }
     ) => {
-      const count = questionResponses.length;
+      const contact = await loaders.campaignContact.load(campaignContactId);
+      const campaign = await loaders.campaign.load(contact.campaign_id);
+      await assignmentRequiredOrAdminRole(
+        user,
+        campaign.organization_id,
+        contact.assignment_id,
+        contact
+      );
 
-      for (let i = 0; i < count; i++) {
-        const questionResponse = questionResponses[i];
-        const { interactionStepId, value } = questionResponse;
-        await r
-          .table("question_response")
-          .getAll(campaignContactId, { index: "campaign_contact_id" })
-          .filter({ interaction_step_id: interactionStepId })
-          .delete();
+      await cacheableData.questionResponse.save(
+        campaignContactId,
+        questionResponses
+      );
 
-        // TODO: maybe undo action_handler if updated answer
+      // The rest is for ACTION_HANDLERS
+      const organization = await loaders.organizatino.load(
+        campaign.organization_id
+      );
+      const actionHandlers = getConfig("ACTION_HANDLERS", organization);
+      if (actionHandlers) {
+        const interactionSteps =
+          campaign.interactionSteps ||
+          (await cacheableData.campaign.dbInteractionSteps(campaign.id));
 
-        const qr = await new QuestionResponse({
-          campaign_contact_id: campaignContactId,
-          interaction_step_id: interactionStepId,
-          value
-        }).save();
-        const interactionStepResult = await r
-          .knex("interaction_step")
-          // TODO: is this really parent_interaction_id or just interaction_id?
-          .where({
-            parent_interaction_id: interactionStepId,
-            answer_option: value
-          })
-          .whereNot("answer_actions", "")
-          .whereNotNull("answer_actions");
+        const count = questionResponses.length;
 
-        const campaignContact = await loaders.campaignContact.load(
-          campaignContactId
-        );
-        const campaign = await loaders.campaign.load(
-          campaignContact.campaign_id
-        );
-        const organization = await loaders.organization.load(
-          campaign.organization_id
-        );
+        for (let i = 0; i < count; i++) {
+          const questionResponse = questionResponses[i];
+          const { interactionStepId, value } = questionResponse;
 
-        const interactionStepAction =
-          interactionStepResult.length &&
-          interactionStepResult[0].answer_actions;
-        if (interactionStepAction) {
-          // run interaction step handler
-          try {
-            const handler = await ActionHandlers.getActionHandler(
-              interactionStepAction,
-              organization,
-              user
-            );
-            handler.processAction(
-              qr,
-              interactionStepResult[0],
-              campaignContactId
-            );
-          } catch (err) {
-            console.error(
-              "Handler for InteractionStep",
-              interactionStepId,
-              "Does Not Exist:",
-              interactionStepAction
-            );
+          const interactionStepResult = interactionSteps.filter(
+            is =>
+              is.answer_actions &&
+              is.answer_option === value &&
+              is.parent_interaction_id === Number(interactionStepId)
+          );
+
+          const interactionStepAction =
+            interactionStepResult.length &&
+            interactionStepResult[0].answer_actions;
+          if (interactionStepAction) {
+            // run interaction step handler
+            try {
+              const handler = await ActionHandlers.getActionHandler(
+                interactionStepAction,
+                organization,
+                user
+              );
+              handler.processAction(
+                questionResponse,
+                interactionStepResult[0],
+                campaignContactId,
+                contact,
+                campaign,
+                organization
+              );
+            } catch (err) {
+              console.error(
+                "Handler for InteractionStep",
+                interactionStepId,
+                "Does Not Exist:",
+                interactionStepAction
+              );
+            }
           }
         }
       }
-      // update cache
-      await cacheableData.questionResponse.clearQuery(campaignContactId);
-
-      const contact = loaders.campaignContact.load(campaignContactId);
       return contact;
     },
     reassignCampaignContacts: async (
@@ -1243,8 +1242,9 @@ const rootMutations = {
         newTexterUserId
       );
     },
-    importCampaignScript: async (_, { campaignId, url }, { loaders }) => {
+    importCampaignScript: async (_, { campaignId, url }, { loaders, user }) => {
       const campaign = await loaders.campaign.load(campaignId);
+      await accessRequired(user, campaignId.organization_id, "ADMIN", true);
       if (campaign.is_started || campaign.is_archived) {
         throw new GraphQLError(
           "Cannot import a campaign script for a campaign that is started or archived"
