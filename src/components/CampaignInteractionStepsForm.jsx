@@ -38,25 +38,27 @@ const styles = {
 };
 
 export default class CampaignInteractionStepsForm extends React.Component {
-  state = {
-    focusedField: null,
-    interactionSteps: this.props.formValues.interactionSteps[0]
-      ? this.props.formValues.interactionSteps
-      : [
-          {
-            id: "newId",
-            parentInteractionId: null,
-            questionText: "",
-            answerOption: "",
-            script: "",
-            answerActions: "",
-            answerActionsData: "",
-            isDeleted: false
-          }
-        ],
-    displayAllSteps: false
-  };
-
+  constructor(props) {
+    super(props);
+    this.state = {
+      focusedField: null,
+      interactionSteps: this.props.formValues.interactionSteps[0]
+        ? this.props.formValues.interactionSteps
+        : [
+            {
+              id: "newId",
+              parentInteractionId: null,
+              questionText: "",
+              answerOption: "",
+              script: "",
+              answerActions: "",
+              answerActionsData: "",
+              isDeleted: false
+            }
+          ],
+      displayAllSteps: false
+    };
+  }
   /*
     this.state.displayAllSteps is used to cause only the root interaction
     node to render when the component first mounts.  ComponentDidMount sets
@@ -74,8 +76,22 @@ export default class CampaignInteractionStepsForm extends React.Component {
   };
 
   onSave = async () => {
+    const tweakedInteractionSteps = this.state.interactionSteps.map(is => {
+      const tweakedInteractionStep = {
+        ...is
+      };
+
+      if (is.answerActionsData && typeof is.answerActionsData !== "string") {
+        tweakedInteractionStep.answerActionsData = JSON.stringify(
+          is.answerActionsData
+        );
+      }
+
+      return tweakedInteractionStep;
+    });
+
     await this.props.onChange({
-      interactionSteps: makeTree(this.state.interactionSteps)
+      interactionSteps: makeTree(tweakedInteractionSteps)
     });
     this.props.onSubmit();
   };
@@ -147,10 +163,10 @@ export default class CampaignInteractionStepsForm extends React.Component {
     answerActionsData: yup.string()
   });
 
-  renderInteractionStep(interactionStep, title = "Start") {
+  renderInteractionStep(interactionStep, availableActions, title = "Start") {
     const answerActions =
       interactionStep.answerActions &&
-      this.availableActions[interactionStep.answerActions];
+      availableActions[interactionStep.answerActions];
     let clientChoiceData;
     let instructions;
 
@@ -185,9 +201,10 @@ export default class CampaignInteractionStepsForm extends React.Component {
               value={{
                 ...interactionStep,
                 ...(interactionStep.answerActionsData && {
-                  answerActionsData: JSON.parse(
-                    interactionStep.answerActionsData
-                  )
+                  answerActionsData:
+                    typeof interactionStep.answerActionsData === "string"
+                      ? JSON.parse(interactionStep.answerActionsData)
+                      : interactionStep.answerActionsData
                 })
               }}
               onChange={this.handleFormChange.bind(this)}
@@ -288,6 +305,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
                 <div>
                   {this.renderInteractionStep(
                     is,
+                    availableActions,
                     `Question: ${interactionStep.questionText}`
                   )}
                 </div>
@@ -298,7 +316,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
   }
 
   render() {
-    this.availableActions = this.props.availableActions.reduce(
+    const availableActions = this.props.availableActions.reduce(
       (result, action) => {
         const toReturn = {
           ...result
@@ -317,7 +335,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
           title="What do you want to discuss?"
           subtitle="You can add scripts and questions and your texters can indicate responses from your contacts. For example, you might want to collect RSVPs to an event or find out whether to follow up about a different volunteer activity."
         />
-        {this.renderInteractionStep(tree)}
+        {this.renderInteractionStep(tree, availableActions)}
         <RaisedButton
           {...dataTest("interactionSubmit")}
           primary
