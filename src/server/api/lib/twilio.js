@@ -411,21 +411,6 @@ async function handleIncomingMessage(message) {
   }
 }
 
-async function createMessagingService(organization, friendlyName) {
-  // TODO: document env var
-  const twilioBaseUrl = getConfig("TWILIO_BASE_URL", organization);
-  return await getTwilio(organization).messaging.services.create({
-    friendlyName,
-    statusCallback: urlJoin(twilioBaseUrl, "twilio-message-report"),
-    // TODO: double check that appending orgId always works
-    inboundRequestUrl: urlJoin(
-      twilioBaseUrl,
-      "twilio",
-      organization.id.toString()
-    )
-  });
-}
-
 /**
  * Search for phone numbers available for purchase
  */
@@ -463,6 +448,15 @@ async function buyNumber(organization, twilioInstance, phoneNumber) {
     service: "twilio",
     service_id: response.sid
   });
+}
+
+async function bulkRequest(array, fn) {
+  const chunks = _.chunk(array, BULK_REQUEST_CONCURRENCY);
+  const results = [];
+  for (const chunk of chunks) {
+    results.push(...(await Promise.all(chunk.map(fn))));
+  }
+  return results;
 }
 
 /**
@@ -506,70 +500,6 @@ async function buyNumbersInAreaCode(organization, areaCode, limit) {
   return totalPurchased;
 }
 
-async function bulkRequest(array, fn) {
-  const chunks = _.chunk(array, BULK_REQUEST_CONCURRENCY);
-  const results = [];
-  for (const chunk of chunks) {
-    results.push(...(await Promise.all(chunk.map(fn))));
-  }
-  return results;
-}
-
-/**
- * Bulk remove numbers from a Messaging Service.
- *
- * This operation keeps numbers in the Spoke inventory and makes them available to
- * other Messaging Services.
- *
- * Failures can be ignored with 'ignoreFailures', which is useful if you aren't sure
- * which numbers are part of the messaging service, e.g. when rolling back after
- * a failure in addNumbersToMessagingService.
- */
-async function removeNumbersFromMessagingService(
-  organization,
-  phoneSids,
-  messagingServiceSid,
-  ignoreFailure = true
-) {
-  const twilioInstance = getTwilio(organization);
-  return await bulkRequest(phoneSids, async phoneNumberSid => {
-    try {
-      return await twilioInstance.messaging
-        .services(messagingServiceSid)
-        .phoneNumbers(phoneNumberSid)
-        .remove();
-    } catch (e) {
-      log.warn({
-        msg: "Error removing numbers from a Messaging Service",
-        error: e,
-        ignoreFailure
-      });
-      if (!ignoreFailure) {
-        throw e;
-      }
-    }
-  });
-}
-
-async function addNumbersToMessagingService(
-  organization,
-  phoneSids,
-  messagingServiceSid
-) {
-  const twilioInstance = getTwilio(organization);
-  return await bulkRequest(phoneSids, async phoneNumberSid =>
-    twilioInstance.messaging
-      .services(messagingServiceSid)
-      .phoneNumbers.create({ phoneNumberSid })
-  );
-}
-
-async function deleteMessagingService(organization, messagingServiceSid) {
-  return getTwilio(organization)
-    .messaging.services(messagingServiceSid)
-    .remove();
-}
-
 export default {
   syncMessagePartProcessing: !!process.env.JOBS_SAME_PROCESS,
   headerValidator,
@@ -578,7 +508,5 @@ export default {
   handleDeliveryReport,
   handleIncomingMessage,
   parseMessageText,
-  // searchForAvailableNumbers,
-  // buyNumber,
   buyNumbersInAreaCode
 };
