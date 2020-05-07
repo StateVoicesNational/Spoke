@@ -1099,8 +1099,16 @@ const rootMutations = {
     updateQuestionResponses: async (
       _,
       { questionResponses, campaignContactId },
-      { loaders }
+      { loaders, user }
     ) => {
+      const contact = await loaders.campaignContact.load(campaignContactId);
+      const campaign = await loaders.campaign.load(contact.campaign_id);
+      await assignmentRequiredOrAdminRole(
+        user,
+        campaign.organization_id,
+        contact.assignment_id,
+        contact
+      );
       const count = questionResponses.length;
 
       for (let i = 0; i < count; i++) {
@@ -1154,8 +1162,7 @@ const rootMutations = {
       // update cache
       await cacheableData.questionResponse.clearQuery(campaignContactId);
 
-      const contact = loaders.campaignContact.load(campaignContactId);
-      return contact;
+      return loaders.campaignContact.load(campaignContactId);
     },
     reassignCampaignContacts: async (
       _,
@@ -1224,8 +1231,9 @@ const rootMutations = {
         newTexterUserId
       );
     },
-    importCampaignScript: async (_, { campaignId, url }, { loaders }) => {
+    importCampaignScript: async (_, { campaignId, url }, { loaders, user }) => {
       const campaign = await loaders.campaign.load(campaignId);
+      await accessRequired(user, campaignId.organization_id, "ADMIN", true);
       if (campaign.is_started || campaign.is_archived) {
         throw new GraphQLError(
           "Cannot import a campaign script for a campaign that is started or archived"
