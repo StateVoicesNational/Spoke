@@ -405,28 +405,31 @@ export async function bulkSendMessages(assignmentId, user) {
   return await graphql(mySchema, query, rootValue, context, variables);
 }
 
-export function buildScript(steps = 2) {
+export function buildScript(steps = 2, choices = 1) {
+  const makeStep = (step, max, choice = "") => ({
+    id: `new${step}_${choice}`,
+    questionText: `hmm${step}`,
+    script:
+      step === 1
+        ? "{lastName}"
+        : step === 0
+        ? "autorespond {zip}"
+        : `${choice}Step Script ${step}`,
+    answerOption: `${choice}hmm${step}`,
+    answerActions: "",
+    parentInteractionId: step > 0 ? "new" + (step - 1) + "_" : null,
+    isDeleted: false,
+    interactionSteps: choice ? [] : createSteps(step + 1, max)
+  });
   const createSteps = (step, max) => {
     if (max <= step) {
       return [];
     }
-    return [
-      {
-        id: "new" + step,
-        questionText: "hmm" + step,
-        script:
-          step === 1
-            ? "{lastName}"
-            : step === 0
-            ? "autorespond {zip}"
-            : "Step Script " + step,
-        answerOption: "hmm" + step,
-        answerActions: "",
-        parentInteractionId: step > 0 ? "new" + (step - 1) : null,
-        isDeleted: false,
-        interactionSteps: createSteps(step + 1, max)
-      }
-    ];
+    const rv = [makeStep(step, max)];
+    for (let i = 1; i < choices; i++) {
+      rv.push(makeStep(step, max, i));
+    }
+    return rv;
   };
   return createSteps(0, steps);
 }
@@ -435,7 +438,8 @@ export async function createScript(
   admin,
   campaign,
   interactionSteps,
-  steps = 2
+  steps = 2,
+  choices = 1
 ) {
   const rootValue = {};
   const campaignEditQuery = `
@@ -448,7 +452,7 @@ export async function createScript(
   let builtInteractionSteps;
 
   if (!interactionSteps) {
-    builtInteractionSteps = buildScript(steps);
+    builtInteractionSteps = buildScript(steps, choices);
   }
 
   const context = getContext({ user: admin });
