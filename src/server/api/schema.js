@@ -1115,65 +1115,82 @@ const rootMutations = {
         contact
       );
 
-      await cacheableData.questionResponse.save(
-        campaignContactId,
-        questionResponses
-      );
-
-      // The rest is for ACTION_HANDLERS
-      const organization = await loaders.organization.load(
-        campaign.organization_id
-      );
-      const actionHandlers = getConfig("ACTION_HANDLERS", organization);
-      if (actionHandlers) {
-        const interactionSteps =
-          campaign.interactionSteps ||
-          (await cacheableData.campaign.dbInteractionSteps(campaign.id));
-
-        const count = questionResponses.length;
-
-        for (let i = 0; i < count; i++) {
-          const questionResponse = questionResponses[i];
-          const { interactionStepId, value } = questionResponse;
-
-          const interactionStepResult = interactionSteps.filter(
-            is =>
-              is.answer_actions &&
-              is.answer_option === value &&
-              is.parent_interaction_id === Number(interactionStepId)
+      return cacheableData.questionResponse
+        .save(campaignContactId, questionResponses)
+        .then(async () => {
+          // The rest is for ACTION_HANDLERS
+          const organization = await loaders.organization.load(
+            campaign.organization_id
           );
 
-          const interactionStepAction =
-            interactionStepResult.length &&
-            interactionStepResult[0].answer_actions;
-          if (interactionStepAction) {
-            // run interaction step handler
-            try {
-              const handler = await ActionHandlers.getActionHandler(
+          const actionHandlersConfigured = !!ActionHandlers.rawAllActionHandlers();
+          if (actionHandlersConfigured) {
+            const interactionSteps =
+              campaign.interactionSteps ||
+              (await cacheableData.campaign.dbInteractionSteps(campaign.id));
+
+            const getAndProcessAction = questionResponse => {
+              const { interactionStepId, value } = questionResponse;
+
+              const interactionStepResult = interactionSteps.filter(
+                is =>
+                  is.answer_actions &&
+                  is.answer_option === value &&
+                  is.parent_interaction_id === Number(interactionStepId)
+              );
+
+              const interactionStepAction =
+                interactionStepResult.length &&
+                interactionStepResult[0].answer_actions;
+
+              if (!interactionStepAction) {
+                return Promise.resolve();
+              }
+
+              // run interaction step handler
+              return ActionHandlers.getActionHandler(
                 interactionStepAction,
                 organization,
                 user
-              );
-              handler.processAction(
-                questionResponse,
-                interactionStepResult[0],
-                campaignContactId,
-                contact,
-                campaign,
-                organization
-              );
-            } catch (err) {
-              console.error(
-                "Handler for InteractionStep",
-                interactionStepId,
-                "Does Not Exist:",
-                interactionStepAction
-              );
-            }
+              )
+                .then(handler => {
+                  return handler
+                    .processAction(
+                      questionResponse,
+                      interactionStepResult[0],
+                      campaignContactId,
+                      contact,
+                      campaign,
+                      organization
+                    )
+                    .catch(err => {
+                      // eslint-disable-next-line no-console
+                      console.error(
+                        "Error executing handler for InteractionStep",
+                        interactionStepId,
+                        interactionStepAction,
+                        err
+                      );
+                    });
+                })
+                .catch(err => {
+                  // eslint-disable-next-line no-console
+                  console.error(
+                    "Error loading handler for InteractionStep",
+                    interactionStepId,
+                    interactionStepAction,
+                    err
+                  );
+                });
+            };
+
+            const promises = questionResponses.map(getAndProcessAction);
+            return Promise.all(promises).then(() => {
+              return contact;
+            });
           }
-        }
-      }
-      return contact;
+          return contact;
+        });
     },
     reassignCampaignContacts: async (
       _,
