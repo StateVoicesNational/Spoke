@@ -29,14 +29,14 @@ export async function available(organizationId) {
 export async function processAction(
   questionResponse,
   interactionStep,
-  campaignContactId
+  campaignContactId,
+  contact
+  // campaign,    // unused parameter
+  // organization // unused parameter
 ) {
   // This is a meta action that updates a variable in the contact record itself.
   // Generally, you want to send action data to the outside world, so you
   // might want the request library loaded above
-  const contact = await r
-    .knex("campaign_contact")
-    .where("campaign_contact_id", campaignContactId);
   const customFields = JSON.parse(contact.custom_fields || "{}");
   if (customFields) {
     customFields["processed_test_action"] = "completed";
