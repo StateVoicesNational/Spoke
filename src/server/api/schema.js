@@ -3,7 +3,7 @@ import GraphQLJSON from "graphql-type-json";
 import { GraphQLError } from "graphql/error";
 import isUrl from "is-url";
 
-import { gzip, makeTree, getHighestRole } from "../../lib";
+import { log, gzip, makeTree, getHighestRole } from "../../lib";
 import { capitalizeWord } from "./lib/utils";
 import {
   assignTexters,
@@ -1115,7 +1115,7 @@ const rootMutations = {
         contact
       );
 
-      return cacheableData.questionResponse
+      cacheableData.questionResponse
         .save(campaignContactId, questionResponses)
         .then(async () => {
           // The rest is for ACTION_HANDLERS
@@ -1144,17 +1144,21 @@ const rootMutations = {
                 interactionStepResult[0].answer_actions;
 
               if (!interactionStepAction) {
-                return Promise.resolve();
+                return;
               }
 
               // run interaction step handler
-              return ActionHandlers.getActionHandler(
+              ActionHandlers.getActionHandler(
                 interactionStepAction,
                 organization,
                 user
               )
                 .then(handler => {
-                  return handler
+                  if (!handler) {
+                    throw new Error("Handler not available");
+                  }
+
+                  handler
                     .processAction(
                       questionResponse,
                       interactionStepResult[0],
@@ -1164,33 +1168,32 @@ const rootMutations = {
                       organization
                     )
                     .catch(err => {
-                      // eslint-disable-next-line no-console
-                      console.error(
-                        "Error executing handler for InteractionStep",
-                        interactionStepId,
-                        interactionStepAction,
-                        err
+                      log.error(
+                        `Error executing handler for InteractionStep ${interactionStepId} InteractionStepAction ${interactionStepAction} error ${err}`
                       );
                     });
                 })
                 .catch(err => {
-                  // eslint-disable-next-line no-console
-                  console.error(
-                    "Error loading handler for InteractionStep",
-                    interactionStepId,
-                    interactionStepAction,
-                    err
+                  log.error(
+                    `Error loading handler for InteractionStep ${interactionStepId} InteractionStepAction ${interactionStepAction} error ${err}`
                   );
                 });
             };
 
             const promises = questionResponses.map(getAndProcessAction);
-            return Promise.all(promises).then(() => {
-              return contact;
-            });
+            await Promise.all(promises);
           }
-          return contact;
+          return Promise.resolve();
+        })
+        .catch(err => {
+          log.error(
+            `Error saving updated QuestionResponse for campaignContactID ${campaignContactId} questionResponses ${JSON.stringify(
+              questionResponses
+            )} error ${err}`
+          );
         });
+
+      return contact;
     },
     reassignCampaignContacts: async (
       _,
