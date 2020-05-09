@@ -156,7 +156,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
                 this.deleteStep(isp.id);
               });
           }
-          return is;
+          return copiedInteractionStep;
         })
       });
     };
@@ -385,7 +385,7 @@ export default class CampaignInteractionStepsForm extends React.Component {
         <RaisedButton
           {...dataTest("interactionSubmit")}
           disabled={this.state.interactionSteps.some(
-            is => is.needRequiredAnswerActionsData
+            is => is.needRequiredAnswerActionsData && !is.isDeleted
           )}
           primary
           label={this.props.saveLabel}
