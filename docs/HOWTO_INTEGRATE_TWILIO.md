@@ -32,7 +32,7 @@ If you are using these instructions for an Heroku instance or AWS Lambda instanc
   - `TWILIO_AUTH_TOKEN` in your .env file (or `TWILIO_AUTH_TOKEN` Heroku config variable) is `AUTH TOKEN` in your Twilio console
 11. `DEFAULT_SERVICE` in your .env file (or `DEFAULT_SERVICE` Heroku config variable) is `twilio`
 12. If you want to send live text messages as part of your testing, you must buy a phone number and attach it to your project.
-  - Click on `Numbers` and press on `+`. Search for a area code and click on buy (trial Twilio accounts give you $15~ to work with). In order to send messages, you will have to connect a credit card with a minimum charge of $20. It is recommended to purchase at least 1 phone numbers per 200 messages you plan to send.
+  - Click on `Numbers` and press on `+`. Search for a area code and click on buy (trial Twilio accounts give you $15~ to work with). In order to send messages, you will have to connect a credit card with a minimum charge of $20. It is recommended to purchase at least 1 phone numbers per 200 contacts you plan to send to.
   
 ## Multi-Org Twilio Setup
 If you follow the instructions above, every organization and campaign in your instance will use the same Twilio account and the same messaging service (phone number pool). If you want to use different twilio accounts and/or messaging services for each organization, you can basically follow the same instuctions with a couple of tweaks.
