@@ -52,54 +52,54 @@ export const resolvers = {
       const results = await r
         .knex("question_response as qres")
         .where("qres.campaign_contact_id", campaignContact.id)
-        .join(
+        .leftJoin(
           "interaction_step",
           "qres.interaction_step_id",
           "interaction_step.id"
         )
-        .join(
+        .leftJoin(
           "interaction_step as child",
           "qres.interaction_step_id",
           "child.parent_interaction_id"
         )
         .select(
-          "child.answer_option",
-          "child.id",
-          "child.parent_interaction_id",
-          "child.created_at",
-          "interaction_step.interaction_step_id",
+          "child.answer_option as child_answer_option",
+          "child.id as child_id",
+          "child.parent_interaction_id as child_parent_interaction_id",
+          "child.created_at as child_created_at",
+          "interaction_step.parent_interaction_id as interaction_step_parent_interaction_id",
+          "interaction_step.id as interaction_step_id",
           "interaction_step.campaign_id",
           "interaction_step.question",
           "interaction_step.script",
-          "qres.id",
-          "qres.value",
-          "qres.created_at",
-          "qres.interaction_step_id"
+          "child.answer_actions as action",
+          "qres.id as qres_id",
+          "qres.value as qres_value",
+          "qres.created_at as qres_created_at",
+          "qres.interaction_step_id as qres_interaction_step_id"
         )
         .catch(log.error);
 
-      let formatted = {};
+      const formatted = {};
 
       for (let i = 0; i < results.length; i++) {
         const res = results[i];
 
-        const responseId = res["qres.id"];
-        const responseValue = res["qres.value"];
-        const answerValue = res["child.answer_option"];
-        const interactionStepId = res["child.id"];
+        const responseId = res.qres_id;
+        const responseValue = res.qres_value;
+        const answerValue = res.child_answer_option;
+        const interactionStepId = res.child_id;
 
         if (responseId in formatted) {
-          formatted[responseId]["parent_interaction_step"][
-            "answer_options"
-          ].push({
+          formatted[responseId].parent_interaction_step.answer_options.push({
             value: answerValue,
             interaction_step_id: interactionStepId
           });
           if (responseValue === answerValue) {
-            formatted[responseId]["interaction_step_id"] = interactionStepId;
+            formatted[responseId].interaction_step_id = interactionStepId;
           }
         } else {
-          formatted[responseId] = {
+          const questionResponse = {
             contact_response_value: responseValue,
             interaction_step_id: interactionStepId,
             parent_interaction_step: {
@@ -107,16 +107,18 @@ export const resolvers = {
               answer_options: [
                 { value: answerValue, interaction_step_id: interactionStepId }
               ],
-              campaign_id: res["interaction_step.campaign_id"],
-              created_at: res["child.created_at"],
+              campaign_id: res.campaign_id,
+              created_at: res.child_created_at,
               id: responseId,
-              parent_interaction_id:
-                res["interaction_step.parent_interaction_id"],
-              question: res["interaction_step.question"],
-              script: res["interaction_step.script"]
+              parent_interaction_id: res.interaction_step_parent_interaction_id,
+              question: res.question || "",
+              script: res.script || ""
             },
-            value: responseValue
+            value: responseValue,
+            action: res.action || ""
           };
+
+          formatted[responseId] = questionResponse;
         }
       }
       return Object.values(formatted);
