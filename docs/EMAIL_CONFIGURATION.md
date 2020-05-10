@@ -13,7 +13,7 @@ When you auto-deploy to Heroku, the Mailgun add-on is automatically provisioned 
 
 1. Navigate to Add-Ons in your Heroku app and click on Mailgun, or run `heroku addons:open mailgun`.
 2. Click on Domains. Add a custom domain (often a subdomain like `email.bartletforamerica.com`, but not one that's already in use).
-3. Configure the provided TXT and MX records with your DNS provider. Mailgun periodically checks for DNS record creation, and also provides an option to trigger the check manually.
+3. Configure the provided TXT, MX, and CNAME records with your DNS provider. Mailgun periodically checks for DNS record creation, and also provides an option to trigger the check manually.
 4. Configure the following Mailgun environment variables:
   - `MAILGUN_DOMAIN`
   - `MAILGUN_PUBLIC_KEY`
