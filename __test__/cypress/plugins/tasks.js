@@ -65,6 +65,18 @@ export function makeTasks(config) {
       }
 
       return user.id;
+    },
+
+    clearTestOrgPhoneNumbers: async areaCode => {
+      await r
+        .knex("owned_phone_number")
+        .where({
+          organization_id: config.env.TEST_ORGANIZATION_ID,
+          service: "fakeservice",
+          area_code: areaCode
+        })
+        .delete();
+      return null;
     }
   };
 }

@@ -105,7 +105,7 @@ async function buyNumbersInAreaCode(organization, areaCode, limit) {
   }
 
   // add some latency
-  await new Promise(resolve => setTimeout(resolve, limit * 100));
+  await new Promise(resolve => setTimeout(resolve, limit * 25));
   await r.knex("owned_phone_number").insert(rows);
   return limit;
 }
