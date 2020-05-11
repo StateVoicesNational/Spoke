@@ -91,13 +91,6 @@ export default function renderIndex(html, css, assetMap, store) {
       window.EXPERIMENTAL_TAGS=${process.env.EXPERIMENTAL_TAGS || false}
       window.EXPERIMENTAL_TEXTERUI="${process.env.EXPERIMENTAL_TEXTERUI || ""}"
       window.TWILIO_MULTI_ORG=${process.env.TWILIO_MULTI_ORG || false}
-      window.EXPERIMENTAL_PHONE_INVENTORY=${getConfig(
-        "EXPERIMENTAL_PHONE_INVENTORY",
-        null,
-        {
-          truthy: true
-        }
-      )}
     </script>
     <script src="${assetMap["bundle.js"]}"></script>
   </body>
