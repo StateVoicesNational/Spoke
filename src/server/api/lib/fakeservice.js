@@ -1,6 +1,5 @@
 import { getLastMessage } from "./message-sending";
 import { Message, PendingMessagePart, r, cacheableData } from "../../models";
-import _ from "lodash";
 import uuid from "uuid";
 
 // This 'fakeservice' allows for fake-sending messages
@@ -94,10 +93,11 @@ async function handleIncomingMessage(message) {
 async function buyNumbersInAreaCode(organization, areaCode, limit) {
   const rows = [];
   for (let i = 0; i < limit; i++) {
+    const last4 = limit.toString().padStart(4, "0");
     rows.push({
       organization_id: organization.id,
       area_code: areaCode,
-      phone_number: `+1${areaCode}555FAKE`,
+      phone_number: `+1${areaCode}XYZ${last4}`,
       status: "AVAILABLE",
       service: "fakeservice",
       service_id: uuid.v4()
