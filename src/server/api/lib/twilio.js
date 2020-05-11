@@ -11,7 +11,6 @@ import { log } from "../../../lib";
 import { saveNewIncomingMessage } from "./message-sending";
 import { getConfig } from "./config";
 import _ from "lodash";
-import urlJoin from "url-join";
 
 // TWILIO error_codes:
 // > 1 (i.e. positive) error_codes are reserved for Twilio error codes
