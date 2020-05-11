@@ -1,3 +1,5 @@
+const helpers = require("./helpers");
+
 exports.up = async knex => {
   await knex.schema.createTable("owned_phone_number", table => {
     table.increments();
@@ -20,9 +22,33 @@ exports.up = async knex => {
   });
 
   // ALLOW ORG-SCOPED JOBS
-  const isSqlite = /sqlite/.test(knex.client.config.client);
-  if (!isSqlite) {
-    // TODO: add columns to sqlite schema
+  if (helpers.isSqlite(knex)) {
+    await helpers.redefineSqliteTable(knex, "job_request", t => {
+      t.increments("id");
+      t.integer("campaign_id").nullable();
+      t.integer("organization_id")
+        .nullable()
+        .references("id")
+        .inTable("organization")
+        .index();
+      t.text("payload").notNullable();
+      t.text("queue_name").notNullable();
+      t.text("job_type").notNullable();
+      t.text("result_message").defaultTo("");
+      t.boolean("locks_queue").defaultTo(false);
+      t.boolean("assigned").defaultTo(false);
+      t.integer("status").defaultTo(0);
+      t.timestamp("updated_at")
+        .notNullable()
+        .defaultTo(knex.fn.now());
+      t.timestamp("created_at")
+        .notNullable()
+        .defaultTo(knex.fn.now());
+
+      t.index("queue_name");
+      t.foreign("campaign_id").references("campaign.id");
+    });
+  } else {
     await knex.schema.alterTable("job_request", table => {
       table
         .integer("campaign_id")
@@ -44,8 +70,28 @@ exports.down = async knex => {
     .whereNull("campaign_id")
     .delete();
 
-  const isSqlite = /sqlite/.test(knex.client.config.client);
-  if (!isSqlite) {
+  if (helpers.isSqlite(knex)) {
+    await helpers.redefineSqliteTable(knex, "job_request", t => {
+      t.increments("id");
+      t.integer("campaign_id").notNullable();
+      t.text("payload").notNullable();
+      t.text("queue_name").notNullable();
+      t.text("job_type").notNullable();
+      t.text("result_message").defaultTo("");
+      t.boolean("locks_queue").defaultTo(false);
+      t.boolean("assigned").defaultTo(false);
+      t.integer("status").defaultTo(0);
+      t.timestamp("updated_at")
+        .notNullable()
+        .defaultTo(knex.fn.now());
+      t.timestamp("created_at")
+        .notNullable()
+        .defaultTo(knex.fn.now());
+
+      t.index("queue_name");
+      t.foreign("campaign_id").references("campaign.id");
+    });
+  } else {
     await knex.schema.alterTable("job_request", table => {
       table.dropColumn("organization_id");
       table
