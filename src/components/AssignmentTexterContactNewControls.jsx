@@ -5,21 +5,22 @@ import ContactToolbarNew from "../components/ContactToolbarNew";
 import MessageList from "../components/MessageList";
 import CannedResponseMenu from "../components/CannedResponseMenu";
 import AssignmentTexterSurveys from "../components/AssignmentTexterSurveys";
+import ScriptList from "./ScriptList";
 import Empty from "../components/Empty";
 import GSForm from "../components/forms/GSForm";
 import RaisedButton from "material-ui/RaisedButton";
 import FlatButton from "material-ui/FlatButton";
-import NavigateHomeIcon from "material-ui/svg-icons/action/home";
-import ArrowBackIcon from "material-ui/svg-icons/navigation/arrow-back";
-import ArrowForwardIcon from "material-ui/svg-icons/navigation/arrow-forward";
 import IconButton from "material-ui/IconButton/IconButton";
 import { Card, CardActions, CardTitle } from "material-ui/Card";
 import Divider from "material-ui/Divider";
 import CreateIcon from "material-ui/svg-icons/content/create";
+import DownIcon from "material-ui/svg-icons/navigation/arrow-drop-down";
 import yup from "yup";
 import theme from "../styles/theme";
 import Form from "react-formal";
 import Popover from "material-ui/Popover";
+
+const bgGrey = "rgb(214, 215, 223)";
 
 import {
   getChildren,
@@ -37,25 +38,27 @@ const messageListStyles = {
   messageList: {
     flex: "2 4 auto",
     overflow: "hidden",
-    overflow: "-moz-scrollbars-vertical"
+    overflow: "-moz-scrollbars-vertical",
+    maxWidth: "574px"
   },
   messageSent: {
     textAlign: "right",
-    marginLeft: "30%",
-    backgroundColor: theme.colors.coreBackgroundColor,
-    color: "white",
-    borderRadius: "16px",
-    fontWeight: "600",
-    marginBottom: "10px",
-    fontSize: "13px"
-  },
-  messageReceived: {
-    fontSize: "13px",
-    marginRight: "30%",
+    marginLeft: "20%",
+    marginRight: "10px",
     backgroundColor: "white",
     borderRadius: "16px",
-    fontWeight: "600",
-    fontSize: "105%",
+    marginBottom: "10px",
+    fontSize: "95%"
+  },
+  messageReceived: {
+    marginRight: "20%",
+    marginLeft: "10px",
+    color: "white",
+    backgroundColor: "hsla(206, 99%, 31%, 0.74)", //#01579B",
+    borderRadius: "16px",
+    //fontWeight: "600",
+    fontSize: "110%",
+    lineHeight: "120%",
     marginBottom: "10px"
   }
 };
@@ -73,7 +76,8 @@ const inlineStyles = {
     left: "-12px"
   },
   flatButtonLabel: {
-    textTransform: "none"
+    textTransform: "none",
+    fontWeight: "bold"
   }
 };
 
@@ -87,7 +91,26 @@ const flexStyles = StyleSheet.create({
     right: 0,
     display: "flex",
     flexDirection: "column",
-    height: "100%"
+    height: "100%",
+    backgroundColor: bgGrey
+  },
+  popover: {
+    width: "85%",
+    height: "85%",
+    "@media(min-height: 800px)": {
+      // if it's too tall, the current question options are too far away
+      height: "50%"
+    }
+  },
+  popoverLink: {
+    float: "right",
+    width: "4em",
+    marginRight: "2em",
+    fontWeight: "normal",
+    fontSize: "80%"
+  },
+  popoverLinkColor: {
+    color: "rgb(81, 82, 89)"
   },
   sectionHeaderToolbar: {
     flex: "0 0 auto"
@@ -104,7 +127,12 @@ const flexStyles = StyleSheet.create({
   sectionOptOutDialog: {
     padding: "4px 10px 9px 10px",
     zIndex: 2000,
-    backgroundColor: "white"
+    backgroundColor: "white",
+    "@media (hover: hover) and (pointer: fine)": {
+      // for touchpads and phones, the edge of the tablet is easier
+      // vs for desktops, we want to maximize how far the mouse needs to travel
+      maxWidth: "554px"
+    }
   },
   subSectionOptOutDialogActions: {
     marginTop: 20,
@@ -117,7 +145,8 @@ const flexStyles = StyleSheet.create({
     // messageField
     flex: "1 0 20px",
     padding: "0px 4px",
-    marginBottom: "8px"
+    marginBottom: "8px",
+    backgroundColor: "white"
   },
   subSectionMessageFieldTextField: {
     "@media(max-width: 350px)": {
@@ -128,10 +157,10 @@ const flexStyles = StyleSheet.create({
   sectionButtons: {
     // TODO: maybe make this contingent on whether there are answer buttons
     "@media(max-height: 600px)": {
-      flexBasis: "130px"
+      flexBasis: "96px" // TODO
     },
     "@media(min-height: 600px)": {
-      flexBasis: "190px"
+      flexBasis: "144px" // TODO
     },
     flexGrow: "0",
     flexShrink: "0",
@@ -141,22 +170,21 @@ const flexStyles = StyleSheet.create({
     // flexWrap: "wrap",
     overflow: "hidden",
     position: "relative",
-    backgroundColor: "rgb(240, 240, 240)"
+    backgroundColor: bgGrey
   },
   subButtonsAnswerButtons: {
     flex: "1 1 80px", // keeps bottom buttons in place
     // height:105: webkit needs constraint on height sometimes
     //   during the inflection point of showing the shortcut-buttons
     //   without the height, the exit buttons get pushed down oddly
-    height: "105px",
+    height: "15px", //TODO
     // internal:
     margin: "9px 0px 0px 9px",
-    width: "100%",
+    width: "100%"
     // similar to 572 below, but give room for other shortcut-buttons
-    maxWidth: "820px"
   },
   subSubButtonsAnswerButtonsCurrentQuestion: {
-    marginBottom: "4px",
+    marginBottom: "12px",
     //flex: "0 0 auto",
     width: "100%",
     // for mobile:
@@ -164,12 +192,9 @@ const flexStyles = StyleSheet.create({
     overflow: "hidden"
   },
   subSubAnswerButtonsColumns: {
-    "@media(min-width: 450px)": {
-      // mobile crunch gives up on 50%, so only bigger
-      width: "46%"
-    },
-    "@media(min-height: 600px)": {
-      height: "89px"
+    height: "0px",
+    "@media(min-height: 700px)": {
+      height: "40px" // TODO
     },
     display: "inline-block",
     //flex: "1 1 50%",
@@ -179,7 +204,6 @@ const flexStyles = StyleSheet.create({
   subButtonsExitButtons: {
     // next/prev/skip/optout
     // width: "100%", default is better on mobile
-    maxWidth: "572px",
     height: "40px",
     margin: "9px",
     // default works better for mobile right margin
@@ -190,21 +214,35 @@ const flexStyles = StyleSheet.create({
     flexWrap: "wrap",
     alignContent: "space-between",
     // to 'win' against absoslute positioned content above it:
-    backgroundColor: "rgb(240, 240, 240)",
-    zIndex: "10"
+    backgroundColor: bgGrey,
+    zIndex: "10",
+    "@media (hover: hover) and (pointer: fine)": {
+      // for touchpads and phones, the edge of the tablet is easier
+      // vs for desktops, we want to maximize how far the mouse needs to travel
+      maxWidth: "554px"
+    }
   },
   /// * Section Send Button
   sectionSend: {
     //sendButtonWrapper
-    //flex: `0 0 ${sendButtonHeight}`, VARIABLE BELOW
-    //height: ${sendButtonHeight}, VARIABLE BELOW
+    flex: `0 0 auto`,
+    height: "36px",
+    display: "flex",
+    flexDirection: "column",
+    flexWrap: "wrap",
+    alignContent: "space-between",
     padding: "9px",
-    backgroundColor: "rgb(240, 240, 240)"
+    "@media (hover: hover) and (pointer: fine)": {
+      // for touchpads and phones, the edge of the tablet is easier
+      // vs for desktops, we want to maximize how far the mouse needs to travel
+      maxWidth: "554px"
+    }
   },
   subSectionSendButton: {
-    width: "100%",
+    flex: "1 1 auto",
+    width: "70%",
     height: "100%",
-    borderRadius: "0px",
+    //borderRadius: "0px",
     color: "white"
   },
   flatButton: {
@@ -214,6 +252,7 @@ const flexStyles = StyleSheet.create({
     // backgroundColor: "white",
     borderRadius: "0",
     boxShadow: "none",
+    maxWidth: "300px",
     "@media(max-width: 450px)": {
       // mobile crunch
       minWidth: "auto"
@@ -247,6 +286,7 @@ export class AssignmentTexterContactControls extends React.Component {
       responsePopoverOpen: false,
       answerPopoverOpen: false,
       messageText: this.getStartingMessageText(),
+      cannedResponseScript: null,
       optOutDialogOpen: false,
       currentShortcutSpace: 0,
       messageFocus: false,
@@ -321,7 +361,22 @@ export class AssignmentTexterContactControls extends React.Component {
   };
 
   handleCannedResponseChange = cannedResponseScript => {
-    this.handleChangeScript(cannedResponseScript);
+    const currentCannedResponseId =
+      this.state.cannedResponseScript && this.state.cannedResponseScript.id;
+
+    if (cannedResponseScript.id === currentCannedResponseId) {
+      // identical means we're cancelling it -- so it can be toggled
+      this.setState({
+        messageText: "",
+        cannedResponseScript: null
+      });
+    } else {
+      this.handleChangeScript(cannedResponseScript.text);
+      this.setState({
+        cannedResponseScript,
+        answerPopoverOpen: false
+      });
+    }
   };
 
   handleOpenDialog = () => {
@@ -374,10 +429,11 @@ export class AssignmentTexterContactControls extends React.Component {
   };
 
   handleChangeScript = newScript => {
-    const messageText = this.props.getMessageTextFromScript(newScript);
+    const messageText = this.props.getMessageTextFromScript(newScript) || "";
 
     this.setState({
-      messageText
+      messageText,
+      cannedResponseScript: null
     });
   };
 
@@ -412,8 +468,12 @@ export class AssignmentTexterContactControls extends React.Component {
   };
 
   renderSurveySection() {
-    const { campaign, contact } = this.props;
-    const { answerPopoverOpen, questionResponses } = this.state;
+    const { assignment, campaign, contact } = this.props;
+    const {
+      answerPopoverOpen,
+      questionResponses,
+      cannedResponseScript
+    } = this.state;
     const { messages } = contact;
 
     const availableInteractionSteps = getAvailableInteractionSteps(
@@ -421,26 +481,56 @@ export class AssignmentTexterContactControls extends React.Component {
       campaign.interactionSteps
     );
 
+    const otherResponsesLink =
+      this.state.currentInteractionStep &&
+      this.state.currentInteractionStep.question.answerOptions.length > 6 &&
+      assignment.campaignCannedResponses.length ? (
+        <div className={css(flexStyles.popoverLink)}>
+          <a
+            href="#otherresponses"
+            className={css(flexStyles.popoverLinkColor)}
+          >
+            Other Responses
+          </a>
+        </div>
+      ) : null;
+
     return (
       <Popover
         style={inlineStyles.popover}
+        className={css(flexStyles.popover)}
         open={answerPopoverOpen}
         anchorEl={this.state.answerPopoverAnchorEl}
         anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
         targetOrigin={{ horizontal: "left", vertical: "bottom" }}
         onRequestClose={this.handleCloseAnswerPopover}
-        style={{
-          overflowY: "scroll",
-          width: "75%"
-        }}
       >
         <AssignmentTexterSurveys
           contact={contact}
           interactionSteps={availableInteractionSteps}
           onQuestionResponseChange={this.handleQuestionResponseChange}
           currentInteractionStep={this.state.currentInteractionStep}
+          listHeader={otherResponsesLink}
           questionResponses={questionResponses}
           onRequestClose={this.handleCloseAnswerPopover}
+        />
+        <ScriptList
+          scripts={assignment.campaignCannedResponses}
+          showAddScriptButton={false}
+          customFields={campaign.customFields}
+          currentCannedResponseScript={cannedResponseScript}
+          subheader={<div id="otherresponses">Other Responses</div>}
+          onSelectCannedResponse={this.handleCannedResponseChange}
+          onCreateCannedResponse={this.props.onCreateCannedResponse}
+        />
+        <ScriptList
+          scripts={assignment.userCannedResponses}
+          showAddScriptButton={true}
+          customFields={[] /* texters shouldn't have access to custom fields */}
+          currentCannedResponseScript={cannedResponseScript}
+          subheader={<span>Personal Custom Responses</span>}
+          onSelectCannedResponse={this.handleCannedResponseChange}
+          onCreateCannedResponse={this.props.onCreateCannedResponse}
         />
       </Popover>
     );
@@ -449,12 +539,16 @@ export class AssignmentTexterContactControls extends React.Component {
   renderNeedsResponseToggleButton(contact) {
     const { messageStatus } = contact;
     let button = null;
-    if (messageStatus === "closed") {
+    if (messageStatus === "needsMessage") {
+      return null;
+    } else if (messageStatus === "closed") {
+      // todo: add flex: style.
       button = (
         <FlatButton
           onTouchTap={() => this.props.onEditStatus("needsResponse")}
           label="Reopen"
           className={css(flexStyles.flatButton)}
+          style={{ flex: "1 1 auto" }}
           labelStyle={inlineStyles.flatButtonLabel}
           backgroundColor="white"
         />
@@ -465,7 +559,11 @@ export class AssignmentTexterContactControls extends React.Component {
           onTouchTap={() => this.props.onEditStatus("closed", true)}
           label="Skip"
           className={css(flexStyles.flatButton)}
-          labelStyle={inlineStyles.flatButtonLabel}
+          style={{
+            /*WTF: TODO resolve with reopen and labelStyle */
+            flex: "1 2 auto"
+          }}
+          labelStyle={{ ...inlineStyles.flatButtonLabel, flex: "1 1 auto" }}
           backgroundColor="white"
         />
       );
@@ -474,35 +572,13 @@ export class AssignmentTexterContactControls extends React.Component {
     return button;
   }
 
-  renderCannedResponsePopover() {
-    const { campaign, assignment, texter } = this.props;
-    const { userCannedResponses, campaignCannedResponses } = assignment;
-
-    return (
-      <CannedResponseMenu
-        onRequestClose={this.handleCloseResponsePopover}
-        open={this.state.responsePopoverOpen}
-        anchorEl={this.state.responsePopoverAnchorEl}
-        campaignCannedResponses={campaignCannedResponses}
-        userCannedResponses={userCannedResponses}
-        customFields={campaign.customFields}
-        onSelectCannedResponse={this.handleCannedResponseChange}
-        onCreateCannedResponse={this.props.onCreateCannedResponse}
-      />
-    );
-  }
-
   renderOptOutDialog() {
     if (!this.state.optOutDialogOpen) {
       return "";
     }
     return (
-      <Card>
-        <CardTitle
-          className={css(flexStyles.sectionOptOutDialog)}
-          title="Opt out user"
-        />
-        <Divider />
+      <Card className={css(flexStyles.sectionOptOutDialog)}>
+        <CardTitle title="Opt out user" />
         <CardActions className={css(flexStyles.sectionOptOutDialog)}>
           <GSForm
             className={css(flexStyles.sectionOptOutDialog)}
@@ -517,7 +593,7 @@ export class AssignmentTexterContactControls extends React.Component {
               style={{
                 display: "flex",
                 flexDirection: "column",
-                justifyContent: "flex-end"
+                justifyContent: "left"
               }}
             >
               <FlatButton
@@ -581,16 +657,11 @@ export class AssignmentTexterContactControls extends React.Component {
                 style={{
                   ...inlineStyles.inlineBlock,
                   borderColor: "#790000",
-                  color: "white"
+                  color: "white",
+                  marginLeft: "9px"
                 }}
                 backgroundColor="#BC0000"
-                label={
-                  this.state.optOutMessageText.length ? (
-                    <span>&crarr; Opt-Out</span>
-                  ) : (
-                    <span>&crarr; Opt-Out without Text</span>
-                  )
-                }
+                label={<span>&crarr; Opt-Out</span>}
               />
             </div>
           </GSForm>
@@ -599,24 +670,19 @@ export class AssignmentTexterContactControls extends React.Component {
     );
   }
 
-  renderMessageSending() {
-    const { contact, messageStatusFilter } = this.props;
-    const {
-      optOutDialogOpen,
-      availableSteps,
-      questionResponses,
-      currentInteractionStep
-    } = this.state;
-    const firstMessage = messageStatusFilter === "needsMessage";
-
-    const message = (
+  renderMessagingRowMessage({ readOnly = false }) {
+    return (
       <div className={css(flexStyles.sectionMessageField)}>
         <GSForm
           ref="form"
           schema={this.messageSchema}
           value={{ messageText: this.state.messageText }}
           onSubmit={this.props.onMessageFormSubmit}
-          onChange={firstMessage ? "" : this.handleMessageFormChange}
+          onChange={
+            readOnly
+              ? null // message is uneditable for firstMessage
+              : this.handleMessageFormChange
+          }
         >
           <Form.Field
             className={css(flexStyles.subSectionMessageFieldTextField)}
@@ -635,186 +701,172 @@ export class AssignmentTexterContactControls extends React.Component {
         </GSForm>
       </div>
     );
+  }
 
-    const sendButtonHeight = firstMessage ? "40%" : "36px";
+  renderMessagingRowCurrentQuestion(currentQuestion, currentQuestionAnswered) {
+    return (
+      <div
+        className={css(flexStyles.subSubButtonsAnswerButtonsCurrentQuestion)}
+      >
+        {currentQuestionAnswered ? (
+          <span>
+            {currentQuestion.text}: <b>{currentQuestionAnswered}</b>
+          </span>
+        ) : (
+          <span>
+            <span className={css(flexStyles.flatButtonLabelMobile)}>
+              What was their reply to:{" "}
+            </span>
+            <b>{currentQuestion.text}</b>
+          </span>
+        )}
+      </div>
+    );
+  }
+
+  renderMessagingRowReplyShortcuts() {
+    const { assignment } = this.props;
+    const {
+      availableSteps,
+      questionResponses,
+      currentInteractionStep,
+      cannedResponseScript
+    } = this.state;
+
+    let joinedLength = 0;
     let currentQuestion = null;
     let currentQuestionAnswered = null;
-    let currentQuestionOptions = null;
+    let currentQuestionOptions = [];
+    // 1. Current Interaction Step Shortcuts
     if (currentInteractionStep) {
       currentQuestion = currentInteractionStep.question;
       currentQuestionAnswered = questionResponses[currentInteractionStep.id];
       currentQuestionOptions = currentQuestion.answerOptions.map(answer => {
+        // label is for one-word values or e.g. "Yes: ...."
         const label = answer.value.match(/^(\w+)([^\s\w]|$)/);
         return {
           answer: answer,
-          label: label ? label[1] : "Yes__No__Maybe__toomuch"
+          label: label ? label[1] : answer.value
         };
       });
-      const joinedLength = currentQuestionOptions.map(o => o.label).join("__");
-      if (joinedLength.length > 14) {
+      joinedLength = currentQuestionOptions.map(o => o.label).join("__").length;
+      if (joinedLength > 30) {
         // too many/long options
-        currentQuestionOptions = null;
+        currentQuestionOptions = [];
+        joinedLength = 0;
       }
     }
-    const shortcutButtonSpace =
-      // 114=25(top q)+40(main btns)+40(xtra row)+9px(padding)
-      ((this.refs.answerButtons && this.refs.answerButtons.offsetHeight) ||
-        this.state.currentShortcutSpace) >= 114;
-    return [
-      message,
-      firstMessage ? null : (
-        <div className={css(flexStyles.sectionButtons)}>
-          <div
-            className={css(flexStyles.subButtonsAnswerButtons)}
-            ref="answerButtons"
-          >
-            {currentQuestion ? (
-              <div
-                className={css(
-                  flexStyles.subSubButtonsAnswerButtonsCurrentQuestion
-                )}
-              >
-                {currentQuestionAnswered ? (
-                  <span>
-                    {currentQuestion.text}: <b>{currentQuestionAnswered}</b>
-                  </span>
-                ) : (
-                  <span>
-                    <b>Current Question:</b> {currentQuestion.text}
-                  </span>
-                )}
-              </div>
-            ) : null}
-            <div className={css(flexStyles.subSubAnswerButtonsColumns)}>
-              <FlatButton
-                label={
-                  <span>
-                    Answer Q
-                    <span className={css(flexStyles.flatButtonLabelMobile)}>
-                      uestion
-                    </span>
-                  </span>
-                }
-                onTouchTap={this.handleOpenAnswerPopover}
-                className={css(flexStyles.flatButton)}
-                labelStyle={inlineStyles.flatButtonLabel}
-                backgroundColor={
-                  availableSteps.length ? "white" : "rgb(176, 176, 176)"
-                }
-                disabled={!availableSteps.length}
-              />
-              {currentQuestionOptions ? (
-                <div
-                  style={{
-                    height: "40px",
-                    position: "absolute",
-                    top: "40px",
-                    width: "100%",
-                    padding: "9px"
-                  }}
-                >
-                  {currentQuestionOptions.map(opt => (
-                    <FlatButton
-                      key={`shortcut_${opt.answer.value}`}
-                      label={opt.label}
-                      onTouchTap={evt => {
-                        this.handleQuestionResponseChange({
-                          interactionStep: currentInteractionStep,
-                          questionResponseValue: opt.answer.value,
-                          nextScript:
-                            (opt.answer.nextInteractionStep &&
-                              opt.answer.nextInteractionStep.script) ||
-                            null
-                        });
-                      }}
-                      className={css(flexStyles.flatButton)}
-                      style={{ marginLeft: "9px" }}
-                      labelStyle={{
-                        ...inlineStyles.flatButtonLabel,
-                        color:
-                          opt.answer.value ===
-                          questionResponses[currentInteractionStep.id]
-                            ? "white"
-                            : "#494949"
-                      }}
-                      backgroundColor={
-                        opt.answer.value ===
-                        questionResponses[currentInteractionStep.id]
-                          ? "#727272"
-                          : "white"
-                      }
-                    />
-                  ))}
-                </div>
-              ) : null}
-            </div>
-            <div
-              className={css(flexStyles.subSubAnswerButtonsColumns)}
-              style={{
-                float: "right",
-                marginRight: "18px"
-              }}
-            >
-              <FlatButton
-                label="Other Responses"
-                onTouchTap={this.handleOpenResponsePopover}
-                className={css(flexStyles.flatButton)}
-                labelStyle={inlineStyles.flatButtonLabel}
-                backgroundColor="white"
-              />
-            </div>
-          </div>
-          <div className={css(flexStyles.subButtonsExitButtons)}>
-            <FlatButton
-              onTouchTap={this.props.navigationToolbarChildren.onPrevious}
-              disabled={!this.props.navigationToolbarChildren.onPrevious}
-              tooltip="Previous Contact"
-              tooltipPosition="button-center"
-              className={css(flexStyles.flatButton)}
-              style={{ paddingTop: "6px" }}
-              label={<ArrowBackIcon />}
-              backgroundColor={
-                this.props.navigationToolbarChildren.onPrevious
-                  ? "white"
-                  : "rgb(176, 176, 176)"
-              }
-            />
+    // 2. Canned Response Shortcuts
+    let shortCannedResponses = [];
+    // If there's a current interaction step but we aren't showing choices
+    // then don't show canned response shortcuts either or it can
+    // cause confusion.
+    if (!currentInteractionStep || joinedLength !== 0) {
+      shortCannedResponses = assignment.campaignCannedResponses
+        .filter(
+          // allow for "Wrong Number"
+          script =>
+            (script.title.length < 13 || script.title[0] === ":") &&
+            script.title[script.title.length - 1] !== "."
+        )
+        .filter(script => {
+          if (joinedLength + 1 + script.title.length < 80) {
+            joinedLength += 1 + script.title.length;
+            return true;
+          }
+        });
+    }
 
-            {this.renderNeedsResponseToggleButton(contact)}
+    if (!joinedLength) {
+      return null;
+    }
+    const isCurrentAnswer = opt =>
+      opt.answer.value === questionResponses[currentInteractionStep.id];
+    const isCurrentCannedResponse = script =>
+      cannedResponseScript && script.id === cannedResponseScript.id;
+    return (
+      <div>
+        {currentQuestionOptions.map(opt => (
+          <FlatButton
+            key={`shortcutStep_${opt.answer.value}`}
+            label={opt.label}
+            onTouchTap={evt => {
+              this.handleQuestionResponseChange({
+                interactionStep: currentInteractionStep,
+                questionResponseValue: isCurrentAnswer(opt)
+                  ? null
+                  : opt.answer.value,
+                nextScript:
+                  (!isCurrentAnswer(opt) &&
+                    opt.answer.nextInteractionStep &&
+                    opt.answer.nextInteractionStep.script) ||
+                  null
+              });
+            }}
+            className={css(flexStyles.flatButton)}
+            style={{ marginRight: "9px" }}
+            labelStyle={{
+              ...inlineStyles.flatButtonLabel,
+              color: isCurrentAnswer(opt) ? "white" : "#494949"
+            }}
+            backgroundColor={isCurrentAnswer(opt) ? "#727272" : "white"}
+          />
+        ))}
+        {shortCannedResponses.map(script => (
+          <FlatButton
+            key={`shortcutScript_${script.id}`}
+            label={script.title.replace(/^:/, "")}
+            onTouchTap={evt => {
+              this.handleCannedResponseChange(script);
+            }}
+            className={css(flexStyles.flatButton)}
+            style={{ marginLeft: "9px" }}
+            labelStyle={{
+              ...inlineStyles.flatButtonLabel,
+              color: isCurrentCannedResponse(script) ? "white" : "#494949"
+            }}
+            backgroundColor={
+              isCurrentCannedResponse(script) ? "#727272" : "white"
+            }
+          />
+        ))}
+      </div>
+    );
+  }
 
-            <FlatButton
-              {...dataTest("optOut")}
-              secondary
-              label="Opt-out"
-              onTouchTap={this.handleOpenDialog}
-              tooltip="Opt out this contact"
-              className={css(flexStyles.flatButton)}
-              labelStyle={inlineStyles.flatButtonLabel}
-              backgroundColor="white"
-            />
+  renderMessagingRowReplyButtons(availableSteps) {
+    return (
+      <div className={css(flexStyles.subButtonsExitButtons)}>
+        <FlatButton
+          label={
+            <span>
+              All Responses <DownIcon style={{ verticalAlign: "middle" }} />
+            </span>
+          }
+          onTouchTap={this.handleOpenAnswerPopover}
+          className={css(flexStyles.flatButton)}
+          labelStyle={inlineStyles.flatButtonLabel}
+          backgroundColor={
+            availableSteps.length ? "white" : "rgb(176, 176, 176)"
+          }
+          disabled={!availableSteps.length}
+        />
 
-            <FlatButton
-              onTouchTap={this.props.navigationToolbarChildren.onNext}
-              disabled={!this.props.navigationToolbarChildren.onNext}
-              tooltip="Next Contact"
-              tooltipPosition="bottom-center"
-              label={<ArrowForwardIcon />}
-              className={css(flexStyles.flatButton)}
-              style={{ paddingTop: "6px" }}
-              backgroundColor={
-                this.props.navigationToolbarChildren.onNext
-                  ? "white"
-                  : "rgb(176, 176, 176)"
-              }
-              labelStyle={inlineStyles.flatButtonLabel}
-            />
-          </div>
-        </div>
-      ),
-      <div
-        className={css(flexStyles.sectionSend)}
-        style={{ flex: `0 0 ${sendButtonHeight}`, height: sendButtonHeight }}
-      >
+        <FlatButton
+          {...dataTest("optOut")}
+          label="Opt-out"
+          onTouchTap={this.handleOpenDialog}
+          className={css(flexStyles.flatButton)}
+          labelStyle={{ ...inlineStyles.flatButtonLabel, color: "#DE1A1A" }}
+          backgroundColor="white"
+        />
+      </div>
+    );
+  }
+
+  renderMessagingRowSendSkip(contact) {
+    return (
+      <div className={css(flexStyles.sectionSend)}>
         <FlatButton
           {...dataTest("send")}
           onTouchTap={this.handleClickSendMessageButton}
@@ -828,59 +880,109 @@ export class AssignmentTexterContactControls extends React.Component {
           hoverColor={theme.colors.coreHoverColor}
           primary
         />
+        {this.renderNeedsResponseToggleButton(contact)}
+      </div>
+    );
+  }
+
+  renderMessageControls() {
+    const { contact, messageStatusFilter } = this.props;
+    const {
+      availableSteps,
+      questionResponses,
+      currentInteractionStep
+    } = this.state;
+
+    if (this.state.optOutDialogOpen) {
+      return this.renderOptOutDialog();
+    }
+
+    let currentQuestion = null;
+    let currentQuestionAnswered = null;
+    if (currentInteractionStep) {
+      currentQuestion = currentInteractionStep.question;
+      currentQuestionAnswered = questionResponses[currentInteractionStep.id];
+    }
+    return [
+      this.renderMessagingRowMessage({}),
+      <div key="sectionButtons" className={css(flexStyles.sectionButtons)}>
+        <div
+          className={css(flexStyles.subButtonsAnswerButtons)}
+          ref="answerButtons"
+        >
+          {currentQuestion
+            ? this.renderMessagingRowCurrentQuestion(
+                currentQuestion,
+                currentQuestionAnswered
+              )
+            : null}
+          <div className={css(flexStyles.subSubAnswerButtonsColumns)}>
+            {this.renderMessagingRowReplyShortcuts()}
+          </div>
+        </div>
+
+        {this.renderMessagingRowReplyButtons(availableSteps)}
       </div>,
-      this.renderCannedResponsePopover(),
+      this.renderMessagingRowSendSkip(contact),
       this.renderSurveySection()
     ];
   }
 
-  render() {
-    const { optOutDialogOpen } = this.state;
+  renderToolbar() {
     return (
-      <div className={css(flexStyles.topContainer)}>
-        <div className={css(flexStyles.sectionHeaderToolbar)}>
-          <ContactToolbarNew
-            campaign={this.props.campaign}
-            campaignContact={this.props.contact}
-            navigationToolbarChildren={this.props.navigationToolbarChildren}
-            leftToolbarIcon={
-              <IconButton
-                onTouchTap={this.props.onExitTexter}
-                style={inlineStyles.exitTexterIconButton}
-                tooltip="Return Home"
-                tooltipPosition="bottom-center"
-              >
-                <NavigateHomeIcon color={"white"} />
-              </IconButton>
-            }
-          />
-        </div>
-        <div
-          {...dataTest("messageList")}
-          ref="messageScrollContainer"
-          className={css(flexStyles.sectionMessageThread)}
-        >
-          {this.props.messageStatusFilter === "needsMessage" ? (
-            <Empty
-              title={
-                "This is your first message to " + this.props.contact.firstName
-              }
-              icon={<CreateIcon color="rgb(83, 180, 119)" />}
-              hideMobile
-            />
-          ) : (
+      <div key="toolbar" className={css(flexStyles.sectionHeaderToolbar)}>
+        <ContactToolbarNew
+          campaign={this.props.campaign}
+          campaignContact={this.props.contact}
+          navigationToolbarChildren={this.props.navigationToolbarChildren}
+          onExit={this.props.onExitTexter}
+        />
+      </div>
+    );
+  }
+
+  renderFirstMessage() {
+    return [
+      this.renderToolbar(),
+      <div
+        {...dataTest("messageList")}
+        ref="messageScrollContainer"
+        key="messageScrollContainer"
+        className={css(flexStyles.sectionMessageThread)}
+      >
+        <Empty
+          title={
+            "This is your first message to " + this.props.contact.firstName
+          }
+          icon={<CreateIcon color="rgb(83, 180, 119)" />}
+        />
+      </div>,
+      this.renderMessagingRowMessage({ readOnly: true }),
+      this.renderMessagingRowSendSkip(this.props.contact)
+    ];
+  }
+
+  render() {
+    const firstMessage = this.props.messageStatusFilter === "needsMessage";
+    const content = firstMessage
+      ? this.renderFirstMessage()
+      : [
+          this.renderToolbar(),
+          <div
+            {...dataTest("messageList")}
+            key="messageScrollContainer"
+            ref="messageScrollContainer"
+            className={css(flexStyles.sectionMessageThread)}
+          >
             <MessageList
               contact={this.props.contact}
               messages={this.props.contact.messages}
               styles={messageListStyles}
             />
-          )}
-        </div>
-        {optOutDialogOpen
-          ? this.renderOptOutDialog()
-          : this.renderMessageSending()}
-      </div>
-    );
+          </div>,
+          this.renderMessageControls()
+        ];
+    return <div className={css(flexStyles.topContainer)}>{content}</div>;
   }
 }
 

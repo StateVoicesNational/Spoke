@@ -24,8 +24,11 @@ module.exports = {
     SESSION_SECRET: "it is JUST a test! -- it better be!",
     TWILIO_API_KEY: "", // purposefully blank
     TWILIO_AUTH_TOKEN: "",
+    TWILIO_ACCOUNT_SID: "", // purposefully blank
     TWILIO_MESSAGE_SERVICE_SID: "",
-    TEST_ENVIRONMENT: "1"
+    TEST_ENVIRONMENT: "1",
+    TEST_ENVIRONMENT_FAKE: "0",
+    TEST_ENVIRONMENT_FAKE2: "false"
   },
   moduleFileExtensions: ["js", "jsx"],
   transform: {
@@ -45,5 +48,9 @@ module.exports = {
     "!**/coverage/**"
   ],
   setupTestFrameworkScriptFile: "<rootDir>/__test__/setup.js",
-  testPathIgnorePatterns: ["<rootDir>/node_modules/", "<rootDir>/__test__/e2e/"]
+  testPathIgnorePatterns: [
+    "<rootDir>/node_modules/",
+    "<rootDir>/__test__/cypress/",
+    "<rootDir>/__test__/e2e/"
+  ]
 };

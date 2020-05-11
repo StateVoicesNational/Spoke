@@ -9,6 +9,8 @@ import loadData from "../../containers//hoc/load-data";
 import wrapMutations from "../../containers/hoc/wrap-mutations";
 import MessageResponse from "./MessageResponse";
 
+import { dataTest } from "../../lib/attributes";
+
 const styles = StyleSheet.create({
   conversationRow: {
     color: "white",
@@ -20,10 +22,16 @@ const styles = StyleSheet.create({
 
 class MessageList extends Component {
   componentDidMount() {
+    if (typeof this.refs.messageWindow.scrollTo !== "function") {
+      return;
+    }
     this.refs.messageWindow.scrollTo(0, this.refs.messageWindow.scrollHeight);
   }
 
   componentDidUpdate() {
+    if (typeof this.refs.messageWindow.scrollTo !== "function") {
+      return;
+    }
     this.refs.messageWindow.scrollTo(0, this.refs.messageWindow.scrollHeight);
   }
 
@@ -92,7 +100,7 @@ ConversationPreviewBody.propTypes = {
   conversation: PropTypes.object
 };
 
-class ConversationPreviewModal extends Component {
+export class InnerConversationPreviewModal extends Component {
   constructor(props) {
     super(props);
 
@@ -102,20 +110,28 @@ class ConversationPreviewModal extends Component {
   }
 
   handleClickOptOut = async () => {
-    const { contact } = this.props.conversation;
+    const { assignmentId, cell, campaignContactId } = this.props.conversation;
+
     const optOut = {
-      cell: contact.cell,
-      assignmentId: contact.assignmentId
+      cell,
+      assignmentId
     };
+
     try {
       const response = await this.props.mutations.createOptOut(
         optOut,
         campaignContactId
       );
       if (response.errors) {
-        const errorText = response.errors.join("\n");
+        let errorText = "Error processing opt-out.";
+        if ("message" in response.errors) {
+          errorText = response.errors.message;
+        }
+        console.log(errorText);
         throw new Error(errorText);
       }
+      this.props.onForceRefresh();
+      this.props.onRequestClose();
     } catch (error) {
       this.setState({ optOutError: error.message });
     }
@@ -127,6 +143,7 @@ class ConversationPreviewModal extends Component {
 
     const primaryActions = [
       <FlatButton
+        {...dataTest("conversationPreviewModalOptOutButton")}
         label="Opt-Out"
         secondary={true}
         onClick={this.handleClickOptOut}
@@ -161,27 +178,32 @@ class ConversationPreviewModal extends Component {
   }
 }
 
-ConversationPreviewModal.propTypes = {
+InnerConversationPreviewModal.propTypes = {
   conversation: PropTypes.object,
-  onRequestClose: PropTypes.func
+  onRequestClose: PropTypes.func,
+  mutations: PropTypes.object,
+  onForceRefresh: PropTypes.func
 };
+
+export const createOptOutGqlString = `mutation createOptOut(
+  $optOut: OptOutInput!
+  $campaignContactId: String!
+) {
+  createOptOut(
+   optOut: $optOut
+   campaignContactId: $campaignContactId
+  ) {
+   id
+  }
+}`;
+
+export const createOptOutGql = gql`
+  ${createOptOutGqlString}
+`;
 
 const mapMutationsToProps = () => ({
   createOptOut: (optOut, campaignContactId) => ({
-    mutation: gql`
-      mutation createOptOut(
-        $optOut: OptOutInput!
-        $campaignContactId: String!
-      ) {
-        createOptOut(optOut: $optOut, campaignContactId: $campaignContactId) {
-          id
-          optOut {
-            id
-            createdAt
-          }
-        }
-      }
-    `,
+    mutation: createOptOutGql,
     variables: {
       optOut,
       campaignContactId
@@ -189,6 +211,6 @@ const mapMutationsToProps = () => ({
   })
 });
 
-export default loadData(wrapMutations(ConversationPreviewModal), {
+export default loadData(wrapMutations(InnerConversationPreviewModal), {
   mapMutationsToProps
 });
