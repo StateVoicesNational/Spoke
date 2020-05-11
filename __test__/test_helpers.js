@@ -123,7 +123,11 @@ const mySchema = makeExecutableSchema({
 export async function runGql(query, vars, user) {
   const rootValue = {};
   const context = getContext({ user });
-  return await graphql(mySchema, query, rootValue, context, vars);
+  const result = await graphql(mySchema, query, rootValue, context, vars);
+  if (result && result.errors) {
+    console.log("runGql failed " + JSON.stringify(result));
+  }
+  return result;
 }
 
 export async function runComponentGql(componentDataQuery, queryVars, user) {
@@ -250,14 +254,17 @@ export async function createCampaign(
       ...args
     }
   };
-  const ret = await graphql(
+  const result = await graphql(
     mySchema,
     campaignQuery,
     rootValue,
     context,
     variables
   );
-  return ret.data.createCampaign;
+  if (result.errors) {
+    throw new Exception("Create campaign failed " + JSON.stringify(result));
+  }
+  return result.data.createCampaign;
 }
 
 export async function saveCampaign(user, campaign, title = "test campaign") {
@@ -281,14 +288,17 @@ export async function saveCampaign(user, campaign, title = "test campaign") {
     },
     campaignId: campaign.id
   };
-  const ret = await graphql(
+  const result = await graphql(
     mySchema,
     campaignQuery,
     rootValue,
     context,
     variables
   );
-  return ret.data.editCampaign;
+  if (result.errors) {
+    throw new Exception("Create campaign failed " + JSON.stringify(result));
+  }
+  return result.data.editCampaign;
 }
 
 export async function copyCampaign(campaignId, user) {
@@ -315,6 +325,9 @@ export async function createTexter(organization, userInfo = {}) {
     ...defaultUserInfo,
     ...userInfo
   });
+  if (user.errors) {
+    throw new Exception("createUsers failed " + JSON.stringify(user));
+  }
   const joinQuery = `
   mutation joinOrganization($organizationUuid: String!) {
     joinOrganization(organizationUuid: $organizationUuid) {
@@ -325,7 +338,16 @@ export async function createTexter(organization, userInfo = {}) {
     organizationUuid: organization.data.createOrganization.uuid
   };
   const context = getContext({ user });
-  await graphql(mySchema, joinQuery, rootValue, context, variables);
+  const result = await graphql(
+    mySchema,
+    joinQuery,
+    rootValue,
+    context,
+    variables
+  );
+  if (result.errors) {
+    throw new Exception("joinOrganization failed " + JSON.stringify(result));
+  }
   return user;
 }
 
@@ -356,13 +378,17 @@ export async function assignTexter(admin, user, campaign, assignments) {
     campaignId,
     campaign: updateCampaign
   };
-  return await graphql(
+  const result = await graphql(
     mySchema,
     campaignEditQuery,
     rootValue,
     context,
     variables
   );
+  if (result.errors) {
+    throw new Exception("assignTexter failed " + JSON.stringify(result));
+  }
+  return result;
 }
 
 export async function sendMessage(campaignContactId, user, message) {
@@ -385,7 +411,11 @@ export async function sendMessage(campaignContactId, user, message) {
     message,
     campaignContactId
   };
-  return await graphql(mySchema, query, rootValue, context, variables);
+  const result = await graphql(mySchema, query, rootValue, context, variables);
+  if (result.errors) {
+    console.log("sendMessage errors", result);
+  }
+  return result;
 }
 
 export async function bulkSendMessages(assignmentId, user) {

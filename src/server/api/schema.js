@@ -3,7 +3,7 @@ import GraphQLJSON from "graphql-type-json";
 import { GraphQLError } from "graphql/error";
 import isUrl from "is-url";
 
-import { gzip, makeTree, getHighestRole } from "../../lib";
+import { gzip, makeTree, getHighestRole, hasRole } from "../../lib";
 import { capitalizeWord } from "./lib/utils";
 import {
   assignTexters,
@@ -81,6 +81,7 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
     description,
     dueBy,
     useDynamicAssignment,
+    batchSize,
     logoImageUrl,
     introHtml,
     primaryColor,
@@ -122,6 +123,9 @@ async function editCampaign(id, campaign, loaders, user, origCampaignRecord) {
   });
   if (campaignUpdates.logo_image_url && !isUrl(logoImageUrl)) {
     campaignUpdates.logo_image_url = "";
+  }
+  if (origCampaignRecord && !origCampaignRecord.join_token) {
+    campaignUpdates.join_token = uuidv4();
   }
   let changed = Boolean(Object.keys(campaignUpdates).length);
   if (changed) {
@@ -509,86 +513,81 @@ const rootMutations = {
     },
     joinOrganization: async (
       _,
-      { organizationUuid, queryParams },
-      { user, loaders }
-    ) => {
-      let organization;
-      [organization] = await r
-        .knex("organization")
-        .where("uuid", organizationUuid);
-      if (organization) {
-        const userOrg = await r
-          .table("user_organization")
-          .getAll(user.id, { index: "user_id" })
-          .filter({ organization_id: organization.id })
-          .limit(1)(0)
-          .default(null);
-        if (!userOrg) {
-          await UserOrganization.save({
-            user_id: user.id,
-            organization_id: organization.id,
-            role: "TEXTER"
-          }).error(function(error) {
-            // Unexpected errors
-            console.log("error on userOrganization save", error);
-          });
-          await cacheableData.user.clearUser(user.id);
-        } else {
-          // userOrg exists
-          console.log(
-            "existing userOrg " +
-              userOrg.id +
-              " user " +
-              user.id +
-              " organizationUuid " +
-              organizationUuid
-          );
-        }
-      } else {
-        // no organization
-        console.log(
-          "no organization with id " + organizationUuid + " for user " + user.id
-        );
-      }
-      return organization;
-    },
-    assignUserToCampaign: async (
-      _,
       { organizationUuid, campaignId, queryParams },
       { user, loaders }
     ) => {
-      const campaign = await r
-        .knex("campaign")
-        .leftJoin("organization", "campaign.organization_id", "organization.id")
+      let organization;
+      let campaign;
+      let userOrg;
+      if (campaignId) {
+        campaign = await r
+          .knex("campaign")
+          .where({
+            id: campaignId,
+            join_token: organizationUuid,
+            use_dynamic_assignment: true,
+            is_started: true
+          })
+          .first();
+        if (campaign) {
+          organization = loaders.organization.load(campaign.organization_id);
+        } else {
+          throw new GraphQLError("Invalid join request");
+        }
+      } else {
+        organization = await r
+          .knex("organization")
+          .where("uuid", organizationUuid)
+          .first();
+      }
+      if (!organization) {
+        throw new GraphQLError("Invalid join request");
+      }
+      userOrg = await r
+        .knex("user_organization")
         .where({
-          "campaign.id": campaignId,
-          "campaign.use_dynamic_assignment": true,
-          "organization.uuid": organizationUuid
-        })
-        .select("campaign.*")
-        .first();
-      if (!campaign) {
-        throw new GraphQLError({
-          status: 403,
-          message: "Invalid join request"
-        });
-      }
-      const assignment = await r
-        .table("assignment")
-        .getAll(user.id, { index: "user_id" })
-        .filter({ campaign_id: campaign.id })
-        .limit(1)(0)
-        .default(null);
-      if (!assignment) {
-        await Assignment.save({
           user_id: user.id,
-          campaign_id: campaign.id,
-          max_contacts: process.env.MAX_CONTACTS_PER_TEXTER
-            ? parseInt(process.env.MAX_CONTACTS_PER_TEXTER, 10)
-            : null
-        });
+          organization_id: organization.id
+        })
+        .select("role")
+        .first();
+      if (!userOrg) {
+        try {
+          await r.knex("user_organization").insert({
+            user_id: user.id,
+            organization_id: organization.id,
+            role: "TEXTER"
+          });
+        } catch (error) {
+          // Unexpected errors
+          console.log("error on userOrganization save", error);
+          throw new GraphQLError(
+            "Error on saving user-organization connection"
+          );
+        }
+        await cacheableData.user.clearUser(user.id);
       }
-      return campaign;
+      if (campaign && (!userOrg || hasRole("TEXTER", [userOrg.role]))) {
+        const assignment = await r
+          .knex("assignment")
+          .where({
+            campaign_id: campaign.id,
+            user_id: user.id
+          })
+          .first();
+        if (!assignment) {
+          const maxContacts = getConfig(
+            "MAX_CONTACTS_PER_TEXTER",
+            organization
+          );
+          await r.knex("assignment").insert({
+            user_id: user.id,
+            campaign_id: campaign.id,
+            max_contacts: maxContacts ? Number(maxContacts) : null
+          });
+        }
+      }
+      return organization;
     },
     updateTextingHours: async (
       _,
@@ -702,7 +701,8 @@ const rootMutations = {
         description: campaign.description,
         due_by: campaign.dueBy,
         is_started: false,
-        is_archived: false
+        is_archived: false,
+        join_token: uuidv4()
       });
       const newCampaign = await campaignInstance.save();
       await r.knex("campaign_admin").insert({

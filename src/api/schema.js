@@ -70,6 +70,7 @@ const rootSchema = gql`
     primaryColor: String
     introHtml: String
     useDynamicAssignment: Boolean
+    batchSize: Int
     ingestMethod: String
     contactData: String
     organizationId: String
@@ -231,6 +232,7 @@ const rootSchema = gql`
     ): Organization
     joinOrganization(
       organizationUuid: String!
+      campaignId: String
       queryParams: String
     ): Organization
     editOrganizationRoles(
@@ -296,11 +298,6 @@ const rootSchema = gql`
       assignmentId: String!
       numberContacts: Int!
     ): FoundContact
-    assignUserToCampaign(
-      organizationUuid: String!
-      campaignId: String!
-      queryParams: String
-    ): Campaign
     userAgreeTerms(userId: String!): User
     reassignCampaignContacts(
       organizationId: String!

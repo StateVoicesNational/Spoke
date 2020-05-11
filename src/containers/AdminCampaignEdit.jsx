@@ -20,6 +20,7 @@ import CampaignContactsChoiceForm from "../components/CampaignContactsChoiceForm
 import CampaignTextersForm from "../components/CampaignTextersForm";
 import CampaignInteractionStepsForm from "../components/CampaignInteractionStepsForm";
 import CampaignCannedResponsesForm from "../components/CampaignCannedResponsesForm";
+import CampaignDynamicAssignmentForm from "../components/CampaignDynamicAssignmentForm";
 import { dataTest, camelCase } from "../lib/attributes";
 import CampaignTextingHoursForm from "../components/CampaignTextingHoursForm";
 
@@ -31,6 +32,8 @@ const campaignInfoFragment = `
   title
   description
   dueBy
+  joinToken
+  batchSize
   isStarted
   isArchived
   contactsCount
@@ -192,6 +195,7 @@ class AdminCampaignEdit extends React.Component {
   }
 
   handleChange = formValues => {
+    console.log("handleChange", formValues);
     this.setState({
       campaignFormValues: {
         ...this.state.campaignFormValues,
@@ -343,7 +347,7 @@ class AdminCampaignEdit extends React.Component {
       {
         title: "Texters",
         content: CampaignTextersForm,
-        keys: ["texters", "contactsCount", "useDynamicAssignment"],
+        keys: ["texters", "contactsCount"],
         checkCompleted: () =>
           (this.state.campaignFormValues.texters.length > 0 &&
             this.state.campaignFormValues.contactsCount ===
@@ -389,6 +393,18 @@ class AdminCampaignEdit extends React.Component {
         expandableBySuperVolunteers: true,
         extraProps: {
           customFields: this.props.campaignData.campaign.customFields
+        }
+      },
+      {
+        title: "Dynamic Assignment",
+        content: CampaignDynamicAssignmentForm,
+        keys: ["batchSize", "useDynamicAssignment"],
+        checkCompleted: () => true,
+        blocksStarting: false,
+        expandAfterCampaignStarts: true,
+        expandableBySuperVolunteers: true,
+        extraProps: {
+          joinToken: this.props.campaignData.campaign.joinToken
         }
       },
       {

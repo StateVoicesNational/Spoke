@@ -49,6 +49,8 @@ export const schema = gql`
     organization: Organization
     title: String
     description: String
+    joinToken: String
+    batchSize: Int
     dueBy: Date
     isStarted: Boolean
     isArchived: Boolean
