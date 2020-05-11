@@ -160,10 +160,50 @@ export async function createOrganization(user, invite) {
   return await graphql(mySchema, orgQuery, rootValue, context, variables);
 }
 
+export async function setTwilioAuth(user, organization) {
+  const rootValue = {};
+  const accountSid = "test_twilio_account_sid";
+  const authToken = "test_twlio_auth_token";
+  const messageServiceSid = "test_message_service";
+  const orgId = organization.data.createOrganization.id;
+
+  const context = getContext({ user });
+
+  const twilioQuery = `
+      mutation updateTwilioAuth(
+        $twilioAccountSid: String
+        $twilioAuthToken: String
+        $twilioMessageServiceSid: String
+        $organizationId: String!
+      ) {
+        updateTwilioAuth(
+          twilioAccountSid: $twilioAccountSid
+          twilioAuthToken: $twilioAuthToken
+          twilioMessageServiceSid: $twilioMessageServiceSid
+          organizationId: $organizationId
+        ) {
+          id
+          twilioAccountSid
+          twilioAuthToken
+          twilioMessageServiceSid
+        }
+      }`;
+
+  const variables = {
+    organizationId: orgId,
+    twilioAccountSid: accountSid,
+    twilioAuthToken: authToken,
+    twilioMessageServiceSid: messageServiceSid
+  };
+
+  return await graphql(mySchema, twilioQuery, rootValue, context, variables);
+}
+
 export async function createCampaign(
   user,
   organization,
-  title = "test campaign"
+  title = "test campaign",
+  args = {}
 ) {
   const rootValue = {};
   const description = "test description";
@@ -179,7 +219,8 @@ export async function createCampaign(
     input: {
       title,
       description,
-      organizationId
+      organizationId,
+      ...args
     }
   };
   const ret = await graphql(
@@ -315,7 +356,7 @@ export async function sendMessage(campaignContactId, user, message) {
           }
         }
       }`;
-  const context = getContext({ user: user });
+  const context = getContext({ user });
   const variables = {
     message,
     campaignContactId
@@ -583,4 +624,25 @@ export const getConversations = async (
 
   const result = await runGql(conversationsQuery, variables, user);
   return result;
+};
+
+export const createJob = async (campaign, overrides) => {
+  const job = {
+    campaign_id: campaign.id,
+    payload: "fake_payload",
+    queue_name: "1:fake_queue_name",
+    job_type: "fake_job_type",
+    locks_queue: true,
+    assigned: true,
+    status: 0,
+    ...(overrides && overrides)
+  };
+
+  const [job_id] = await r
+    .knex("job_request")
+    .returning("id")
+    .insert(job);
+  job.id = job_id;
+
+  return job;
 };

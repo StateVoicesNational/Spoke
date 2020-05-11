@@ -1,33 +1,48 @@
 import PropTypes from "prop-types";
 import React from "react";
+import { StyleSheet, css } from "aphrodite";
 import { Toolbar, ToolbarGroup, ToolbarTitle } from "material-ui/Toolbar";
 import { getDisplayPhoneNumber } from "../lib/phone-format";
 import { getLocalTime, getContactTimezone } from "../lib/timezones";
 import { getProcessEnvDstReferenceTimezone } from "../lib/tz-helpers";
+import ActionFace from "material-ui/svg-icons/action/face";
+import IconButton from "material-ui/IconButton/IconButton";
 import { grey100 } from "material-ui/styles/colors";
+import ArrowBackIcon from "material-ui/svg-icons/navigation/arrow-back";
+import ArrowForwardIcon from "material-ui/svg-icons/navigation/arrow-forward";
+import NavigateHomeIcon from "material-ui/svg-icons/action/home";
 
 const inlineStyles = {
   toolbar: {
-    backgroundColor: "#515259",
+    backgroundColor: "rgb(81, 82, 89)",
     color: "white"
-  },
+  }
+};
+
+const styles = StyleSheet.create({
   topFlex: {
-    width: "100%",
     display: "flex",
     flexWrap: "wrap",
     flexDirection: "column",
-    alignContent: "space-between"
+    alignContent: "flex-start",
+    marginLeft: "-24px"
+  },
+  contactData: {
+    flex: "1 2 auto",
+    maxWidth: "80%",
+    "@media(max-width: 375px)": {
+      maxWidth: "50%" // iphone 5 and X
+    }
   },
   titleSmall: {
     height: "18px",
     lineHeight: "18px",
     paddingTop: "4px",
     paddingRight: "10px",
-    color: "#B0B0B0",
     overflow: "hidden",
     textOverflow: "ellipsis",
     whiteSpace: "nowrap",
-    width: "50%"
+    maxWidth: "95%"
   },
   titleBig: {
     height: "34px",
@@ -38,12 +53,32 @@ const inlineStyles = {
     overflow: "hidden",
     textOverflow: "ellipsis",
     whiteSpace: "nowrap",
-    width: "50%"
+    maxWidth: "90%"
+  },
+  contactToolbarIconButton: {
+    padding: "3px",
+    height: "56px",
+    "@media(max-width: 350px)": {
+      width: "50px"
+    }
+  },
+  navigation: {
+    flex: "0 0 130px",
+    display: "flex",
+    flexDirection: "column",
+    flexWrap: "wrap"
+  },
+  navigationTitle: {
+    flex: "1 1 auto",
+    width: "3em",
+    height: "100%",
+    padding: "6px",
+    textAlign: "center"
   }
-};
+});
 
 const ContactToolbar = function ContactToolbar(props) {
-  const { campaignContact, leftToolbarIcon } = props;
+  const { campaignContact, navigationToolbarChildren } = props;
 
   const { location } = campaignContact;
 
@@ -87,24 +122,73 @@ const ContactToolbar = function ContactToolbar(props) {
   return (
     <div>
       <Toolbar style={inlineStyles.toolbar}>
-        {leftToolbarIcon}
-        <div style={inlineStyles.topFlex}>
-          <div style={inlineStyles.titleSmall}>
-            {props.navigationToolbarChildren.title}
+        <div className={css(styles.topFlex)} style={{ width: "100%" }}>
+          <IconButton
+            onTouchTap={props.onExit}
+            className={css(styles.contactToolbarIconButton)}
+          >
+            tooltip="Return Home" tooltipPosition="bottom-center" >
+            <NavigateHomeIcon color={"white"} />
+          </IconButton>
+          <div className={css(styles.titleSmall)} style={{ color: "#B0B0B0" }}>
+            Campaign ID: {props.campaign.id}
           </div>
-          <div style={inlineStyles.titleBig} title={props.campaign.title}>
-            <span style={{ color: "#B0B0B0" }}>({props.campaign.id})</span>{" "}
+          <div className={css(styles.titleBig)} title={props.campaign.title}>
             {props.campaign.title}
           </div>
-          <div style={inlineStyles.titleSmall}>
+        </div>
+      </Toolbar>
+      <Toolbar style={{ ...inlineStyles.toolbar, backgroundColor: "#7E808B" }}>
+        <div className={`${css(styles.topFlex)} ${css(styles.contactData)}`}>
+          <IconButton className={css(styles.contactToolbarIconButton)}>
+            <ActionFace color="white" />
+          </IconButton>
+
+          <div className={css(styles.titleSmall)} style={{ color: "white" }}>
             {formattedLocalTime} - {formattedLocation}
           </div>
           <div
-            style={{ fontSize: "24px", ...inlineStyles.titleBig }}
-            title={`id:${campaignContact.id} m:${campaignContact.messages.length} s:${campaignContact.messageStatus}`}
+            className={css(styles.titleBig)}
+            style={{ fontSize: "24px" }}
+            title={"foo bar"}
           >
             {campaignContact.firstName}
           </div>
+        </div>
+        <div className={css(styles.navigation)}>
+          <IconButton
+            onTouchTap={navigationToolbarChildren.onPrevious}
+            disabled={!navigationToolbarChildren.onPrevious}
+            tooltip="Previous Contact"
+            className={css(styles.contactToolbarIconButton)}
+            style={{ flex: "0 0 56px", width: "45px" }}
+          >
+            <ArrowBackIcon
+              color={
+                navigationToolbarChildren.onPrevious
+                  ? "white"
+                  : "rgb(176, 176, 176)"
+              }
+            />
+          </IconButton>
+          <div className={css(styles.navigationTitle)}>
+            {navigationToolbarChildren.title}
+          </div>
+          <IconButton
+            onTouchTap={navigationToolbarChildren.onNext}
+            disabled={!navigationToolbarChildren.onNext}
+            tooltip="Next Contact"
+            className={css(styles.contactToolbarIconButton)}
+            style={{ flex: "0 0 56px", width: "45px" }}
+          >
+            <ArrowForwardIcon
+              color={
+                navigationToolbarChildren.onNext
+                  ? "white"
+                  : "rgb(176, 176, 176)"
+              }
+            />
+          </IconButton>
         </div>
       </Toolbar>
     </div>
@@ -114,7 +198,7 @@ const ContactToolbar = function ContactToolbar(props) {
 ContactToolbar.propTypes = {
   campaignContact: PropTypes.object, // contacts for current assignment
   campaign: PropTypes.object,
-  leftToolbarIcon: PropTypes.element,
+  onExit: PropTypes.func,
   navigationToolbarChildren: PropTypes.object
 };
 
