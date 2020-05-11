@@ -150,7 +150,6 @@
     "thinky": "^2.3.3",
     "timezonecomplete": "^5.5.0",
     "twilio": "^3.40.0",
-    "url-join": "^4.0.1",
     "uuid": "^3.1.0",
     "wait-for-expect": "^1.1.1",
     "webpack": "^3.8.1",
