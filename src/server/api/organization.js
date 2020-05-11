@@ -144,8 +144,6 @@ export const resolvers = {
         .select(
           "area_code",
           r.knex.raw("count(status = 'ALLOCATED' OR NULL) as allocated_count"),
-          // Uncomment revered_count if we add a reservation system:
-          // r.knex.raw("count(status = 'RESERVED' OR NULL) as reserved_count"),
           r.knex.raw("count(status = 'AVAILABLE' OR NULL) as available_count")
         )
         .where({
@@ -156,7 +154,6 @@ export const resolvers = {
       return counts.map(row => ({
         areaCode: row.area_code,
         allocatedCount: Number(row.allocated_count),
-        // reserved_count: Number(row.reserved_count),
         availableCount: Number(row.available_count)
       }));
     }

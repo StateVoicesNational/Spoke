@@ -23,16 +23,16 @@ const MESSAGE_VALIDITY_PADDING_SECONDS = 30;
 const MAX_TWILIO_MESSAGE_VALIDITY = 14400;
 const DISABLE_DB_LOG = getConfig("DISABLE_DB_LOG");
 const TWILIO_SKIP_VALIDATION = getConfig("TWILIO_SKIP_VALIDATION");
-const BULK_REQUEST_CONCURRENCY = 10;
-// TODO: document env var, us it in the frontend too
+const BULK_REQUEST_CONCURRENCY = 5;
 const MAX_NUMBERS_PER_BUY_JOB = getConfig("MAX_NUMBERS_PER_BUY_JOB") || 100;
 
 async function getTwilio(organization) {
-  const { authToken, apiKey } = await cacheableData.organization.getTwilioAuth(
-    organization
-  );
-  if (apiKey && authToken) {
-    return Twilio(apiKey, authToken);
+  const {
+    authToken,
+    accountSid
+  } = await cacheableData.organization.getTwilioAuth(organization);
+  if (accountSid && authToken) {
+    return Twilio(accountSid, authToken);
   }
   return null;
 }
@@ -413,15 +413,13 @@ async function handleIncomingMessage(message) {
 /**
  * Search for phone numbers available for purchase
  */
-async function searchForAvailableNumbers(organization, areaCode, limit) {
+async function searchForAvailableNumbers(twilioInstance, areaCode, limit) {
   const count = Math.min(limit, 30); // Twilio limit
-  return await getTwilio(organization)
-    .availablePhoneNumbers("US")
-    .local.list({
-      areaCode,
-      limit: count,
-      capabilities: ["SMS", "MMS"]
-    });
+  return twilioInstance.availablePhoneNumbers("US").local.list({
+    areaCode,
+    limit: count,
+    capabilities: ["SMS", "MMS"]
+  });
 }
 
 /**
@@ -438,9 +436,11 @@ async function buyNumber(organization, twilioInstance, phoneNumber) {
   }
   log.debug(`Bought number ${phoneNumber} [${response.sid}]`);
   const formatted = getFormattedPhoneNumber(phoneNumber);
-  // TODO[matteo]: make this work for non-US numbers
-  const areaCode = formatted.slice(2, 5);
+  // Note: relies on the fact that twilio returns E. 164 formatted numbers
+  //  and only works in the US
+  const areaCode = phoneNumber.slice(2, 5);
   return await r.knex("owned_phone_number").insert({
+    organization_id: organization.id,
     area_code: areaCode,
     phone_number: formatted,
     status: "AVAILABLE",
@@ -463,7 +463,6 @@ async function bulkRequest(array, fn) {
  */
 async function buyNumbersInAreaCode(organization, areaCode, limit) {
   const twilioInstance = await getTwilio(organization);
-
   async function buyBatch(size) {
     let successCount = 0;
     log.debug(`Attempting to buy batch of ${size} numbers`);
@@ -474,12 +473,11 @@ async function buyNumbersInAreaCode(organization, areaCode, limit) {
       size
     );
 
-    // TODO: this step can be parallelized using bulkRequest
-    for (const item of response) {
+    await bulkRequest(response, async item => {
       await buyNumber(organization, twilioInstance, item.phoneNumber);
-
       successCount++;
-    }
+    });
+
     log.debug(`Successfully bought ${successCount} number(s)`);
     return successCount;
   }
@@ -490,7 +488,6 @@ async function buyNumbersInAreaCode(organization, areaCode, limit) {
     const nextBatchSize = Math.min(30, totalRequested - totalPurchased);
     const purchasedInBatch = await buyBatch(nextBatchSize);
     totalPurchased += purchasedInBatch;
-    // TODO: update progress
     if (purchasedInBatch === 0) {
       log.warn("Failed to buy as many numbers as requested");
       break;

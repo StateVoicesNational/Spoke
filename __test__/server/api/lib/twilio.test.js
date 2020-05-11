@@ -1,30 +1,25 @@
 /* eslint-disable no-unused-expressions, consistent-return */
 import { r, Message, cacheableData } from "../../../../src/server/models/";
-import {
+import twilio, {
   postMessageSend,
   handleDeliveryReport
 } from "../../../../src/server/api/lib/twilio";
-import twilio from "../../../../src/server/api/lib/twilio";
 import { getLastMessage } from "../../../../src/server/api/lib/message-sending";
 import { erroredMessageSender } from "../../../../src/workers/job-processes";
 import {
   setupTest,
   cleanupTest,
-  runComponentGql,
   createUser,
   createInvite,
   createOrganization,
   setTwilioAuth,
   createCampaign,
-  saveCampaign,
-  copyCampaign,
   createContacts,
   createTexter,
   assignTexter,
   createScript,
   startCampaign,
-  getCampaignContact,
-  sendMessage
+  getCampaignContact
 } from "../../../test_helpers";
 
 let testAdminUser;
@@ -34,7 +29,6 @@ let testOrganization;
 let testOrganization2;
 let testCampaign;
 let testTexterUser;
-let testTexterUser2;
 let testContacts;
 let organizationId;
 let organizationId2;
@@ -47,6 +41,31 @@ function spokeDbListener(data) {
     queryLog.push(data);
   }
 }
+
+jest.mock("twilio", () => {
+  const uuid = require("uuid");
+  return jest.fn().mockImplementation(() => ({
+    availablePhoneNumbers: _ => ({
+      local: {
+        list: ({ areaCode, limit }) => {
+          const response = [];
+          for (let i = 0; i < limit; i++) {
+            const last4 = limit.toString().padStart(4, "0");
+            response.push({
+              phoneNumber: `+1${areaCode}XYZ${last4}`
+            });
+          }
+          return response;
+        }
+      }
+    }),
+    incomingPhoneNumbers: {
+      create: () => ({
+        sid: `PNTEST${uuid.v4()}`
+      })
+    }
+  }));
+});
 
 beforeEach(async () => {
   // Set up an entire working campaign
@@ -378,6 +397,16 @@ it("orgs should have separate twilio credentials", async () => {
   const org2Auth = await cacheableData.organization.getTwilioAuth(org2);
   expect(org2Auth.authToken).toBe("test_twlio_auth_token");
   expect(org2Auth.accountSid).toBe("test_twilio_account_sid");
+});
+
+it("Buys numbers in batches from twilio", async () => {
+  const org2 = await cacheableData.organization.load(organizationId2);
+  await twilio.buyNumbersInAreaCode(org2, "212", 35);
+  const inventoryCount = await r.getCount(
+    r.knex("owned_phone_number").where("area_code", "212")
+  );
+
+  expect(inventoryCount).toEqual(35);
 });
 
 // FUTURE

@@ -36,19 +36,6 @@ const inlineStyles = {
   }
 };
 
-const buyNumbersFormSchema = yup.object({
-  areaCode: yup
-    .string()
-    .required()
-    .length(3)
-    .matches(/[0-9]+/),
-  limit: yup
-    .number()
-    .required()
-    .max(100)
-    .min(1)
-});
-
 class AdminPhoneNumberInventory extends React.Component {
   static propTypes = {
     organizationData: PropTypes.object,
@@ -61,6 +48,21 @@ class AdminPhoneNumberInventory extends React.Component {
     this.state = {
       buyNumbersDialogOpen: false
     };
+  }
+
+  buyNumbersFormSchema() {
+    return yup.object({
+      areaCode: yup
+        .string()
+        .required()
+        .length(3)
+        .matches(/[0-9]+/),
+      limit: yup
+        .number()
+        .required()
+        .max(window.MAX_NUMBERS_PER_BUY_JOB)
+        .min(1)
+    });
   }
 
   handleBuyNumbersOpen = () => {
@@ -120,7 +122,7 @@ class AdminPhoneNumberInventory extends React.Component {
   renderBuyNumbersForm() {
     return (
       <GSForm
-        schema={buyNumbersFormSchema}
+        schema={this.buyNumbersFormSchema()}
         onSubmit={this.handleBuyNumbersSubmit}
         {...dataTest("buyNumbersForm")}
       >
