@@ -102,6 +102,12 @@ export const resolvers = {
       }
       return true;
     },
+    phoneInventoryEnabled: async (organization, _, { user }) => {
+      await accessRequired(user, organization.id, "SUPERVOLUNTEER");
+      return getConfig("EXPERIMENTAL_PHONE_INVENTORY", organization, {
+        truthy: true
+      });
+    },
     pendingPhoneNumberJobs: async (organization, _, { user }) => {
       await accessRequired(user, organization.id, "OWNER", true);
       const jobs = await r

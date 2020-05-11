@@ -109,7 +109,7 @@ class AdminDashboard extends React.Component {
       sections = sections.filter(section => section.name !== "Tags");
     }
 
-    if (!window.EXPERIMENTAL_PHONE_INVENTORY) {
+    if (!this.props.data.organization.phoneInventoryEnabled) {
       sections = sections.filter(section => section.name !== "Phone Numbers");
     }
 
@@ -155,6 +155,10 @@ const mapQueriesToProps = ({ ownProps }) => ({
         currentUser {
           id
           roles(organizationId: $organizationId)
+        }
+        organization(id: $organizationId) {
+          name
+          phoneInventoryEnabled
         }
       }
     `,

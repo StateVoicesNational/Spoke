@@ -37,6 +37,7 @@ export const schema = gql`
     twilioAuthToken: String
     twilioMessageServiceSid: String
     fullyConfigured: Boolean
+    phoneInventoryEnabled: Boolean
     pendingPhoneNumberJobs: [BuyPhoneNumbersJobRequest]
     phoneNumberCounts: [PhoneNumberCounts]
   }
