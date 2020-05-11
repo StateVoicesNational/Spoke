@@ -92,15 +92,19 @@ async function handleIncomingMessage(message) {
 }
 
 async function buyNumbersInAreaCode(organization, areaCode, limit) {
-  const rows = _.times(limit, () => ({
-    organization_id: organization.id,
-    area_code: areaCode,
-    phone_number: `+1${areaCode}555FAKE`,
-    status: "AVAILABLE",
-    service: "fakeservice",
-    service_id: uuid.v4()
-  }));
+  const rows = [];
+  for (let i = 0; i < limit; i++) {
+    rows.push({
+      organization_id: organization.id,
+      area_code: areaCode,
+      phone_number: `+1${areaCode}555FAKE`,
+      status: "AVAILABLE",
+      service: "fakeservice",
+      service_id: uuid.v4()
+    });
+  }
 
+  // add some latency
   await new Promise(resolve => setTimeout(resolve, limit * 100));
   await r.knex("owned_phone_number").insert(rows);
   return limit;

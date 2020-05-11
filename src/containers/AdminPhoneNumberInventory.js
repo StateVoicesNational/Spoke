@@ -101,12 +101,17 @@ class AdminPhoneNumberInventory extends React.Component {
       {
         key: "availableCount",
         label: "Available",
+        style: inlineStyles.column
+      },
+      // TODO: display additional information here about pending and past jobs
+      {
+        key: "pendingJobs",
+        label: "",
         style: inlineStyles.column,
         render: (columnKey, row) => {
           if (pendingPhoneNumberJobs.some(j => j.areaCode === row.areaCode)) {
             return <CircularProgress size={25} />;
           }
-          return row.availableCount;
         }
       }
     ];
