@@ -228,7 +228,7 @@ const mapQueriesToProps = ({ ownProps }) => ({
     variables: {
       organizationId: ownProps.params.organizationId
     },
-    pollingInterval: 5000,
+    pollInterval: 5000,
     forceFetch: true
   }
 });
