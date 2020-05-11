@@ -245,6 +245,7 @@ export const resolvers = {
         "id",
         "title",
         "description",
+        "batchSize",
         "isStarted",
         "isArchived",
         "useDynamicAssignment",
@@ -263,6 +264,15 @@ export const resolvers = {
       campaign.due_by instanceof Date || !campaign.due_by
         ? campaign.due_by || null
         : new Date(campaign.due_by),
+    joinToken: async (campaign, _, { user }) => {
+      await accessRequired(
+        user,
+        campaign.organization_id,
+        "SUPERVOLUNTEER",
+        true
+      );
+      return campaign.join_token;
+    },
     organization: async (campaign, _, { loaders }) =>
       campaign.organization ||
       loaders.organization.load(campaign.organization_id),
