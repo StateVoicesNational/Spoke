@@ -5,6 +5,20 @@ require("dotenv").load();
 require("babel-register");
 require("babel-polyfill");
 
+if (process.env.DEFAULT_SERVICE !== "fakeservice") {
+  throw Error(
+    "Running Cypress tests against Twilio is not currently supported"
+  );
+}
+
+if (process.env.DB_TYPE !== "pg") {
+  // Not supported because of a conflict between the sqlite and electron binaries
+  // See: https://github.com/MoveOnOrg/Spoke/issues/1529#issuecomment-623680962
+  throw Error(
+    "Running Cypress tests against Sqlite is not currently supported"
+  );
+}
+
 const makeTasks = require("./tasks").makeTasks;
 const utils = require("./utils");
 

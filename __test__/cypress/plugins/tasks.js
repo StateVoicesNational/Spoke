@@ -43,7 +43,10 @@ export function makeTasks(config) {
 
       const role = await r
         .knex("user_organization")
-        .where({ organization_id: config.env.TEST_ORGANIZATION_ID })
+        .where({
+          organization_id: config.env.TEST_ORGANIZATION_ID,
+          user_id: user.id
+        })
         .first();
 
       if (!role) {
