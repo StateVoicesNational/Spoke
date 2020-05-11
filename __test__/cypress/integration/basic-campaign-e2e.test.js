@@ -29,8 +29,9 @@ describe("End-to-end campaign flow", () => {
     cy.get("button")
       .contains("1")
       .click();
-    // wait for modal to get dismissed, see if there is a better way to do this
-    cy.wait(200);
+
+    // wait for modal to get dismissed, maybe use https://www.npmjs.com/package/cypress-wait-until
+    cy.wait(500);
     cy.get("[data-test=campaignBasicsForm]").submit();
 
     // Upload Contacts
@@ -89,6 +90,8 @@ describe("End-to-end campaign flow", () => {
         );
       });
       cy.get("button[data-test=send]").click();
+      // wait advance to next contact
+      cy.wait(200);
       cy.get("textArea[name=messageText]").then(el => {
         expect(el).to.have.text(
           "Hi Contactfirst2 this is Texter1first, how are you?"
