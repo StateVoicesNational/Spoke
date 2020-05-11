@@ -189,7 +189,6 @@ class AdminPhoneNumberInventory extends React.Component {
           <ContentAdd />
         </FloatingActionButton>
         <Dialog
-          {...dataTest("editPersonDialog")}
           title="Buy Numbers"
           modal={false}
           open={this.state.buyNumbersDialogOpen}
