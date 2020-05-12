@@ -170,8 +170,6 @@ ORDER BY updated_at DESC;
 * count of contacts, texters, sent, count (and as percent of total sent) of replies, optouts and wrong numbers, for all campaigns
 
 
-### Queries used in Sisense / Periscope Dashboard by New York Civic Engagement Table:
-
 - Count of all messages, with filter for date range, organization, campaign 
 
 ```sql
@@ -190,7 +188,7 @@ and c.title NOT LIKE '%Test%'
 and c.title NOT LIKE '%Demo%'
 ```
 
-- Count of contacts texted, with same filters
+- Count of contacts texted, with filter for date range, organization, campaign 
 
 ```sql
 select count(distinct m.contact_number) from message m
@@ -207,7 +205,7 @@ and c.title NOT LIKE '%Test%'
 and c.title NOT LIKE '%Demo%'
 ```
 
-- count of outbound messages
+- count of outbound messages, with filter for date range, organization, campaign 
 
 ``` sql
 select count(*) from message m 
@@ -225,7 +223,7 @@ and c.title NOT LIKE '%Test%'
 and c.title NOT LIKE '%Demo%'
 ```
 
-- Count of inbound messages
+- Count of inbound messages, with filter for date range, organization, campaign 
 
 ```sql
 select count(*) from message m 
@@ -243,7 +241,7 @@ and c.title NOT LIKE '%Test%'
 and c.title NOT LIKE '%Demo%'
 ```
 
-- Count of Organization-wide opt-outs
+- Count of Organization-wide opt-outs, with filter for date range, organization
 
 ```sql
 select count(*) from opt_out t
@@ -257,7 +255,7 @@ and c.title NOT LIKE '%Test%'
 and c.title NOT LIKE '%Demo%'
 ```
 
-- Count of Texters in a Campaign or Org
+- Count of Texters in a Campaign or Org, with filter for date range, organization, campaign 
 
 ```sql
 SELECT count(distinct m.user_id) from message m
@@ -274,7 +272,7 @@ and c.title NOT LIKE '%Test%'
 and c.title NOT LIKE '%Demo%'
 ```
 
-- Inbound vs Outbound Share of Messages (select pie graph visualization in Sisense)
+- Inbound vs Outbound Share of Messages (recommend a pie graph to visualize the tables)
 
 ```sql
 select case when m.is_from_contact = true then 'Inbound' else 'Outbound' end as MessageType, count(*) from message m 
@@ -294,7 +292,7 @@ and c.title NOT LIKE '%Demo%'
 group by MessageType
 ```
 
-- Share of message status (select pie graph visualization)
+- Share of message status (pie graph visualization recommended)
 
 ```sql
 select n.message_status, count(*)
@@ -304,12 +302,14 @@ on c.id = n.campaign_id
 left join organization o 
 on o.ID = c.organization_ID
 where [c.created_at = daterange]
+and [o.name=organization]
+and [c.title=campaign]
 and c.title NOT LIKE '%Test%'
 and c.title NOT LIKE '%Demo%'
 group by n.message_status
 ```
 
-- Send success rate (select pie graph visualization)
+- Send success rate (recommend pie graph visualization)
 
 ```sql 
 select m.send_status, count(*) from message m
@@ -327,7 +327,7 @@ and c.title NOT LIKE '%Demo%'
 group by m.send_status
 ```
 
-- Total Messages by Date (select line graph visualization with sent as x axis and messages as y axis)
+- Total Messages by Date (recommend line graph visualization with sent as x axis and messages as y axis)
 
 ```sql
 select c.title as Campaign, to_char(m.sent_at :: DATE, 'yyyy-mm-dd') as Sent, count(m.ID) as Messages from message m
@@ -346,7 +346,7 @@ and c.title NOT LIKE '%Demo%'
 group by campaign, sent
 ```
 
-- Table of Campaigns (select table visualization)
+- Table of Campaigns
 
 ```sql
 select o.name as Organization, c.title as Campaign, to_char(c.created_at :: DATE, 'mm/dd/yyyy') as Created, to_char(c.due_by :: DATE, 'mm/dd/yyyy') as Due from campaign c
@@ -359,7 +359,7 @@ and c.title NOT LIKE '%Demo%'
 order by c.created_at desc, c.due_by desc
 ```
 
-- Table of Campaign Questions (select table visualization)
+- Table of Campaign Questions
 
 ```sql
 select distinct i.question as Questions from interaction_step i
@@ -376,7 +376,7 @@ and c.title NOT LIKE '%Test%'
 and c.title NOT LIKE '%Demo%'
 ```
 
-- Table of Questions and Answers (select table visualization)
+- Table of Questions and Answers
 
 ```sql
 select 
