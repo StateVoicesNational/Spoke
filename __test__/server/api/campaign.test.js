@@ -1207,7 +1207,7 @@ describe("all interaction steps fields travel round trip", () => {
   });
 });
 
-describe.only("mutations.updateQuestionResponses", () => {
+describe("mutations.updateQuestionResponses", () => {
   let adminUser;
   let campaign;
   let texterUser;
